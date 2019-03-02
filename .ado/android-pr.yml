@@ -10,8 +10,7 @@ jobs:
   - job: AndroidRNPR
     displayName: Android React Native PR
     pool:
-      name: OE Standard Pool
-      demands: ['Agent.OS -equals Windows_NT', 'ANDROID_NDK', 'OnPrem -equals False']
+      name: Hosted VS2017
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
     steps:
