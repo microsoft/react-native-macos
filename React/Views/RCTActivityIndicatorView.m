@@ -68,16 +68,26 @@
 
 - (void)setColor:(UIColor*)color
 {
-  _color = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
-  CIFilter *colorPoly = [CIFilter filterWithName:@"CIColorPolynomial"];
-  [colorPoly setDefaults];
-  CIVector *redVector = [CIVector vectorWithX:color.redComponent Y:0 Z:0 W:0];
-  CIVector *greenVector = [CIVector vectorWithX:color.greenComponent Y:0 Z:0 W:0];
-  CIVector *blueVector = [CIVector vectorWithX:color.blueComponent Y:0 Z:0 W:0];
-  [colorPoly setValue:redVector forKey:@"inputRedCoefficients"];
-  [colorPoly setValue:greenVector forKey:@"inputGreenCoefficients"];
-  [colorPoly setValue:blueVector forKey:@"inputBlueCoefficients"];
-  self.contentFilters = @[colorPoly];
+  _color = color;
+}
+
+- (void)updateLayer
+{
+  [super updateLayer];
+  if (_color) {
+    CGFloat r, g, b, a;
+    [[_color colorUsingColorSpaceName:NSCalibratedRGBColorSpace] getRed:&r green:&g blue:&b alpha:&a];
+
+    CIFilter *colorPoly = [CIFilter filterWithName:@"CIColorPolynomial"];
+    [colorPoly setDefaults];
+    CIVector *redVector = [CIVector vectorWithX:r Y:0 Z:0 W:0];
+    CIVector *greenVector = [CIVector vectorWithX:g Y:0 Z:0 W:0];
+    CIVector *blueVector = [CIVector vectorWithX:b Y:0 Z:0 W:0];
+    [colorPoly setValue:redVector forKey:@"inputRedCoefficients"];
+    [colorPoly setValue:greenVector forKey:@"inputGreenCoefficients"];
+    [colorPoly setValue:blueVector forKey:@"inputBlueCoefficients"];
+    self.contentFilters = @[colorPoly];
+  }
 }
 
 - (void)setHidesWhenStopped:(BOOL)hidesWhenStopped
