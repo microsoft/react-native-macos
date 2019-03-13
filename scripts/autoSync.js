@@ -5,7 +5,7 @@ class AutoSync  {
         this.vsoRepoID = vsoRepoID;
         this.vsoApiUrl = vsoApiUrl;
         this.myHeaders = {
-            'Authorization': 'Basic ' + new Buffer("" + ":" + myToken).toString('base64'),
+            'Authorization': 'Basic ' + new Buffer("" + ":" + myToken).toString('base64'), // eslint-disable-line no-undef
             'Content-Type': 'application/json'
         };
     }
