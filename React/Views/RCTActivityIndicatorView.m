@@ -66,6 +66,14 @@
   }
 }
 
+- (void)setColor: (UIColor*)color
+{
+  if (_color != color) {
+    _color = color;
+    [self setNeedsDisplay:YES];
+  }
+}
+
 - (void)updateLayer
 {
   [super updateLayer];
