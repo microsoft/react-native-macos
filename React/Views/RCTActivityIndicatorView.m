@@ -66,11 +66,6 @@
   }
 }
 
-- (void)setColor:(UIColor*)color
-{
-  _color = color;
-}
-
 - (void)updateLayer
 {
   [super updateLayer];
