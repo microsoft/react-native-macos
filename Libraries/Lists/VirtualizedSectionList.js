@@ -288,8 +288,8 @@ class VirtualizedSectionList<SectionT: SectionBase> extends React.PureComponent<
 
   _handleKeyDown = e => {
     if (Platform.OS === 'macos') {
-      const event = e['nativeEvent'];
-      const key = event['key'];
+      const event = e.nativeEvent;
+      const key = event.key;
       let prevIndexPath = this.state.selectedRowIndexPath;
       let nextIndexPath = null;
       const sectionIndex = this.state.selectedRowIndexPath.sectionIndex;

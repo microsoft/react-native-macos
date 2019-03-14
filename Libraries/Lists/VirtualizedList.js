@@ -1250,8 +1250,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       this.props.onKeyDown(e);
     } else {
       if (Platform.OS === 'macos') {
-        const event = e['nativeEvent'];
-        const key = event['key'];
+        const event = e.nativeEvent;
+        const key = event.key;
 
         let prevIndex = -1;
         let newIndex = -1;

@@ -732,8 +732,8 @@ const ScrollView = createReactClass({
     if (this.props.onKeyDown) {
       this.props.onKeyDown(e);
     } else {
-      const event = e['nativeEvent'];
-      const key = event['key'];
+      const event = e.nativeEvent;
+      const key = event.key;
       const kMinScrollOffset = 10;
 
       if (Platform.OS === 'macos') {
