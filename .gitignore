@@ -19,7 +19,12 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
-project.xcworkspace
+# exclude project.xcworkspace except for xcshareddata/WorkspaceSettings.xcsettings
+project.xcworkspace/*
+**/project.xcworkspace/contents.xcworkspacedata
+#!project.xcworkspace/xcshareddata
+**/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+#!project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
 
 # Gradle
 /build/
