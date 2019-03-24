@@ -24,9 +24,7 @@ import type {
 } from 'ViewAccessibility';
 
 // [TODO(macOS ISS#2323203)
-const {DraggedTypes} = require('DraggedType');
-
-import type {DraggedType} from 'DraggedType';
+import type {DraggedTypesType} from 'DraggedType';
 // ]TODO(macOS ISS#2323203)
 
 export type ViewLayout = Layout;
@@ -567,10 +565,5 @@ export type ViewProps = $ReadOnly<{|
    *
    * @platform macos
    */
-  draggedTypes?: ?DraggedTypes | ?$ReadOnlyArray<DraggedTypes>, // TODO(macOS ISS#2323203)
-
-  /**
-   * Any additional platform-specific view prop types, or prop type overrides.
-   */
-  ...PlatformViewPropTypes,
+  draggedTypes?: ?DraggedTypesType, // TODO(macOS ISS#2323203)
 |}>;
