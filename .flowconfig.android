@@ -22,6 +22,10 @@
 ; Ignore polyfills
 .*/Libraries/polyfills/.*
 
+
+; Ignore rn-cli.config.js
+<PROJECT_ROOT>/rn-cli.config.js
+
 ; These should not be required directly
 ; require from fbjs/lib instead: require('fbjs/lib/invariant')
 .*/node_modules/invariant/.*
