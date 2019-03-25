@@ -36,6 +36,8 @@ type PickerIOSChangeEvent = SyntheticEvent<
   |}>,
 >;
 
+type Label = Stringish | number;
+
 type PickerIOSProps = $ReadOnly<{|
   ...ViewProps,
   children: React.ChildrenArray<React.Element<typeof PickerIOSItem>>,
