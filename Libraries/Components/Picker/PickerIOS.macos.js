@@ -25,6 +25,7 @@ var processColor = require('processColor');
 var createReactClass = require('create-react-class');
 var requireNativeComponent = require('requireNativeComponent');
 
+import type {ColorValue} from 'StyleSheetTypes';
 import type {ViewProps} from 'ViewPropTypes';
 import type {TextStyleProp} from 'StyleSheet';
 
@@ -44,6 +45,11 @@ type PickerIOSProps = $ReadOnly<{|
   selectedValue: any,
 |}>;
 
+type ItemProps = $ReadOnly<{|
+  label: ?Label,
+  value?: ?any,
+  color?: ?ColorValue,
+|}>;
 
 const PickerIOSItem = (props: ItemProps) => {
   return null;
