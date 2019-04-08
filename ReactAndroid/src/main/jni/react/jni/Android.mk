@@ -59,18 +59,8 @@ LOCAL_SHARED_LIBRARIES := libfolly_json libfb libglog_init libyoga libprivatedat
 LOCAL_V8_FILES := \
   AndroidV8Factory.cpp
 
-LOCAL_JSC_FILES := \
-  AndroidJSCFactory.cpp \
-  JSCPerfLogging.cpp \
-
-ifeq ($(V8_ENABLED), 1)
-  LOCAL_SRC_FILES += $(LOCAL_V8_FILES)
-  LOCAL_CFLAGS += -DV8_ENABLED=1
-else
-  LOCAL_SRC_FILES += $(LOCAL_JSC_FILES)
-  LOCAL_CFLAGS += -DV8_ENABLED=0
-  LOCAL_SHARED_LIBRARIES += libjsc
-endif
+LOCAL_SRC_FILES += $(LOCAL_V8_FILES)
+LOCAL_CFLAGS += -DV8_ENABLED=1
 
 # The static libraries (.a files) that this module depends on.
 LOCAL_STATIC_LIBRARIES := libreactnative
