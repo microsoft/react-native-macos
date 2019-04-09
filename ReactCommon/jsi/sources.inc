@@ -14,18 +14,21 @@ SOURCES_V8_FILES = \
   ..\V8Runtime_droid.cpp \
   ..\V8Runtime_shared.cpp \
 
-SOURCES_JSC_FILES = \	
+SOURCES_JSC_FILES = \
   ..\JSCRuntime.cpp \
 
 !if ($(V8_ENABLED) == 1)
+
 SOURCES_ANDROID = \
   $(SOURCES_SHARED) \
   $(SOURCES_V8_FILES) \
-!else	
- SOURCES_ANDROID = \	
-  $(SOURCES_SHARED);\	
-  $(SOURCES_JSC_FILES); \	
-!endif	
+
+!else
+
+SOURCES_ANDROID = \
+  $(SOURCES_SHARED);\
+  $(SOURCES_JSC_FILES); \
+!endif
 
 SOURCES_WIN32 = \
   $(SOURCES_SHARED) \
