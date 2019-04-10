@@ -41,7 +41,4 @@ else
   LOCAL_SHARED_LIBRARIES += libjsc
 endif
 
-LOCAL_SRC_FILES += $(LOCAL_V8_FILES)
-LOCAL_SHARED_LIBRARIES += libv8 libv8platform libv8base
-
 include $(BUILD_STATIC_LIBRARY)
