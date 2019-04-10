@@ -72,9 +72,6 @@ else
   LOCAL_SHARED_LIBRARIES += libjsc
 endif
 
-LOCAL_SRC_FILES += $(LOCAL_V8_FILES)
-LOCAL_CFLAGS += -DV8_ENABLED=1
-
 # The static libraries (.a files) that this module depends on.
 LOCAL_STATIC_LIBRARIES := libreactnative
 
