@@ -34,6 +34,14 @@ void UIGraphicsBeginImageContextWithOptions(CGSize size, __unused BOOL opaque, C
 		scale = 1.0;
 	}
 
+  // Ensure that the width and height are at least 1 otherwise
+  // CGBitmapContextCreate will fail preventing the new
+  // NSGraphicsContext from being created.  If NSGraphicsContext
+  // is not created with a the RCTGraphicsContextSizeKey ivar,
+  // then balanced UIGraphicsEndImageContext calls will RCTAssert
+  // and crash the app.
+  // On iOS it is legal to call UIGraphicsBeginImageContextWithOptions with
+  // 0 width and/or height and it doesn't crash in UIGraphicsEndImageContext.
 	size_t width = fmax(ceilf(size.width * scale), 1);
 	size_t height = fmax(ceilf(size.height * scale), 1);
 
