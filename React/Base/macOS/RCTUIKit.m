@@ -34,13 +34,14 @@ void UIGraphicsBeginImageContextWithOptions(CGSize size, __unused BOOL opaque, C
 		scale = 1.0;
 	}
 
-	size_t width = ceilf(size.width * scale);
-	size_t height = ceilf(size.height * scale);
+	size_t width = fmax(ceilf(size.width * scale), 1);
+	size_t height = fmax(ceilf(size.height * scale), 1);
 
 	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 	CGContextRef ctx = CGBitmapContextCreate(NULL, width, height, 8/*bitsPerComponent*/, width * 4/*bytesPerRow*/, colorSpace, kCGImageAlphaPremultipliedFirst);
 	CGColorSpaceRelease(colorSpace);
 
+	RCTAssert(ctx != NULL, @"CGBitmapContextCreate failed.");
 	if (ctx != NULL)
 	{
 		// flip the context (top left at 0, 0) and scale it
