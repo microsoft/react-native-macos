@@ -18,9 +18,15 @@
 
 #include <folly/Portability.h>
 
-#if !FOLLY_MOBILE
-#error Folly mobile is not set!
-#endif
+
+#define PSFSTRING2(x) #x
+#define PSFSTRING(x) PSFSTRING2(x)
+#pragma message(Printing properties)
+#pragma message(PSFSTRING(FOLLY_SSE))
+#pragma message(PSFSTRING(FOLLY_NEON))
+#pragma message(PSFSTRING(FOLLY_AARCH64))
+#pragma message(PSFSTRING(FOLLY_MOBILE))
+#pragma message(PSFSTRING(WINAPI_FAMILY))
 
 // F14 has been implemented for SSE2 and NEON (so far).
 //
@@ -46,10 +52,17 @@
 #endif
 #if (FOLLY_SSE >= 2 || (FOLLY_NEON && FOLLY_AARCH64)) && !FOLLY_MOBILE
 #define FOLLY_F14_VECTOR_INTRINSICS_AVAILABLE 1
+#error Uh-oh, setting FOLLY_F14_VECTOR_INTRINSICS_AVAILABLE...
 #else
 #define FOLLY_F14_VECTOR_INTRINSICS_AVAILABLE 0
 #endif
 #endif
+
+
+#if FOLLY_SSE
+#error FOLLY_F14_VECTOR_INTRINSICS_AVAILABLE is not set!
+#endif
+
 
 #if FOLLY_SSE_PREREQ(4, 2) || __ARM_FEATURE_CRC32
 #define FOLLY_F14_CRC_INTRINSIC_AVAILABLE 1
