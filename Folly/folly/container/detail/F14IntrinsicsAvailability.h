@@ -18,6 +18,10 @@
 
 #include <folly/Portability.h>
 
+#if !FOLLY_MOBILE
+#error Folly mobile is not set!
+#endif
+
 // F14 has been implemented for SSE2 and NEON (so far).
 //
 // This platform detection is a bit of a mess because it combines the
