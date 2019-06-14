@@ -189,6 +189,9 @@ const styles = StyleSheet.create({
       macos: {
         backgroundColor: {semantic: 'controlBackgroundColor'},
       },
+      ios: {
+        backgroundColor: {semantic: 'systemBackgroundColor'}
+      },
       default: {
         // ]TODO(macOS ISS#2323203)
         backgroundColor: '#eeeeee',

@@ -38,7 +38,7 @@ function normalizeColor(
     return null;
   }
 
-  if (typeof color === 'object' && color !== null && Platform.OS === 'macos') {
+  if (typeof color === 'object' && color !== null && (Platform.OS === 'macos' || Platform.OS === 'ios')) {
     // [TODO(macOS ISS#2323203)
     if ('semantic' in color) {
       // a macos semantic color

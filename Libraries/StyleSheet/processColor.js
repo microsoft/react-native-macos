@@ -30,7 +30,7 @@ function processColor(
 
   if (
     typeof int32Color === 'object' &&
-    Platform.OS === 'macos' /* [TODO(macOS ISS#2323203) */
+    (Platform.OS === 'macos' || Platform.OS === 'ios') /* [TODO(macOS ISS#2323203) */
   ) {
     if ('dynamic' in int32Color && int32Color.dynamic !== undefined) {
       const dynamic = int32Color.dynamic;
