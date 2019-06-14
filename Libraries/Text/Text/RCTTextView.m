@@ -148,9 +148,9 @@
 
 - (void)drawRect:(CGRect)rect
 {
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+// [TODO(macOS ISS#2323203)
   [super drawRect:rect];
-#endif // ]TODO(macOS ISS#2323203)
+// ]TODO(macOS ISS#2323203)
   if (!_textStorage) {
     return;
   }

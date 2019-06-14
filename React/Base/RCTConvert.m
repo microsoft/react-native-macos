@@ -606,8 +606,56 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
       @"systemPurpleColor": @{}, // 10_10
       @"systemRedColor": @{},    // 10_10
       @"systemYellowColor": @{}, // 10_10
-#else
+#else // TARGET_OS_IOS
+      // https://developer.apple.com/documentation/uikit/uicolor/ui_element_colors
+      // Label Colors
+      @"labelColor": @{}, // 13
+      @"secondaryLabelColor": @{}, // 13
+      @"tertiaryLabelColor": @{}, // 13
+      @"quaternaryLabelColor": @{}, // 13
+      // Fill Colors
+      @"systemFillColor": @{}, // 13
+      @"secondarySystemFillColor": @{}, // 13
+      @"tertiarySystemFillColor": @{}, // 13
+      @"quaternarySystemFillColor": @{}, // 13
+      // Text Colors
+      @"placeholderTextColor": @{}, // 13
+      // Standard Content Background Colors
       @"systemBackgroundColor": @{}, // 13
+      @"secondarySystemBackgroundColor": @{}, // 13
+      @"tertiarySystemBackgroundColor": @{}, // 13
+      // Grouped Content Background Colors
+      @"systemGroupedBackgroundColor": @{}, // 13
+      @"secondarySystemGroupedBackgroundColor": @{}, // 13
+      @"tertiarySystemGroupedBackgroundColor": @{}, // 13
+      // Separator Colors
+      @"separatorColor": @{}, // 13
+      @"opaqueSeparatorColor": @{}, // 13
+      // Link Color
+      @"linkColor": @{}, // 13
+      // Nonadaptable Colors
+      @"darkTextColor": @{},
+      @"lightTextColor": @{},
+      // https://developer.apple.com/documentation/uikit/uicolor/standard_colors
+      // Adaptable Colors
+      @"systemBlueColor": @{},
+      @"systemBrownColor": @{}, // 13
+      @"systemGreenColor": @{},
+      @"systemIndigoColor": @{}, // 13
+      @"systemOrangeColor": @{},
+      @"systemPinkColor": @{},
+      @"systemPurpleColor": @{},
+      @"systemRedColor": @{},
+      @"systemTealColor": @{},
+      @"systemYellowColor": @{},
+      // Adaptable Gray Colors
+      @"systemGrayColor": @{},
+      @"systemGray2Color": @{}, // 13
+      @"systemGray3Color": @{}, // 13
+      @"systemGray4Color": @{}, // 13
+      @"systemGray5Color": @{}, // 13
+      @"systemGray6Color": @{}, // 13
+      
 #endif
 #if DEBUG
       // The follow exist for Unit Tests

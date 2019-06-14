@@ -588,6 +588,16 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:unused)
   }
   return YES;
 }
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+  [super traitCollectionDidChange: previousTraitCollection];
+  if (@available(iOS 13.0, *)) {
+    if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+      [self.layer setNeedsDisplay];
+    }
+  }
+}
+
 // ]TODO(OSS Candidate ISS#2710739)
 
 #pragma mark - Borders
@@ -766,6 +776,12 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x) {
   // solve this, we'll need to add a container view inside the main view to
   // correctly clip the subviews.
 
+  id savedTraitCollection = nil;
+  if (@available(iOS 13.0, *)) {
+    savedTraitCollection = [UITraitCollection currentTraitCollection];
+    [UITraitCollection setCurrentTraitCollection:[self traitCollection]];
+  }
+
   if (useIOSBorderRendering) {
     layer.cornerRadius = cornerRadii.topLeft;
     layer.borderColor = borderColors.left;
@@ -775,6 +791,10 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x) {
     layer.needsDisplayOnBoundsChange = NO;
     layer.mask = nil;
     return;
+  }
+
+  if (@available(iOS 13.0, *)) {
+    [UITraitCollection setCurrentTraitCollection:savedTraitCollection];
   }
 
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
