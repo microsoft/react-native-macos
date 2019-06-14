@@ -507,19 +507,19 @@ RCT_CGSTRUCT_CONVERTER(CGAffineTransform, (@[
   @"a", @"b", @"c", @"d", @"tx", @"ty"
 ]))
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+// [TODO(macOS ISS#2323203)
 static NSString *const RCTFallback = @"fallback";
 static NSString *const RCTSelector = @"selector";
 static NSString *const RCTIndex = @"index";
 
-/** The following dictionary defines the react-native semantic colors for macos.
+/** The following dictionary defines the react-native semantic colors for macos and ios.
  *  If the value for a given name is empty then the name itself
- *  is used as the NSColor selector.
+ *  is used as the UIColor selector.
  *  If the RCTSelector key is present then that value is used for a selector instead
  *  of the key name.
  *  If the given selector is not available on the running OS version then
  *  the RCTFallback selector is used instead.
- *  If the RCTIndex key is present then object returned from NSColor is an
+ *  If the RCTIndex key is present then object returned from UIColor is an
  *  NSArray and the object at index RCTIndex is to be used.
  */
 static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
@@ -527,6 +527,7 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
   static NSDictionary<NSString *, NSDictionary *> *colorMap = nil;
   if (colorMap == nil) {
     colorMap = @{
+#if TARGET_OS_OSX
       // https://developer.apple.com/documentation/appkit/nscolor/ui_element_colors
       // Label Colors
       @"labelColor": @{}, // 10_10
@@ -605,6 +606,9 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
       @"systemPurpleColor": @{}, // 10_10
       @"systemRedColor": @{},    // 10_10
       @"systemYellowColor": @{}, // 10_10
+#else
+      @"systemBackgroundColor": @{}, // 13
+#endif
 #if DEBUG
       // The follow exist for Unit Tests
       @"unitTestFallbackColor": @{
@@ -626,13 +630,13 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
   return colorMap;
 }
 
-/** Returns an NSColor based on a semantic color name.
+/** Returns an UIColor based on a semantic color name.
  *  Returns nil if the semantic color name is invalid.
  */
-static NSColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
+static UIColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
 {
   NSDictionary<NSString *, NSDictionary *> *colorMap = RCTSemanticColorsMap();
-  NSColor *color = nil;
+  UIColor *color = nil;
   NSDictionary<NSString *, id> *colorInfo = colorMap[semanticColorName];
   if (colorInfo) {
     NSString *semanticColorSelector = colorInfo[RCTSelector];
@@ -640,16 +644,16 @@ static NSColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
       semanticColorSelector = semanticColorName;
     }
     SEL selector = NSSelectorFromString(semanticColorSelector);
-    if (![NSColor respondsToSelector:selector]) {
+    if (![UIColor respondsToSelector:selector]) {
       semanticColorSelector = colorInfo[RCTFallback];
       selector = NSSelectorFromString(semanticColorSelector);
     }
-    RCTAssert ([NSColor respondsToSelector:selector], @"NSColor does not respond to a semantic color selector.");
-    Class klass = [NSColor class];
+    RCTAssert ([UIColor respondsToSelector:selector], @"UIColor does not respond to a semantic color selector.");
+    Class klass = [UIColor class];
     IMP imp = [klass methodForSelector:selector];
     id (*getSemanticColorObject)(id, SEL) = (void *)imp;
     id colorObject = getSemanticColorObject(klass, selector);
-    if ([colorObject isKindOfClass:[NSColor class]]) {
+    if ([colorObject isKindOfClass:[UIColor class]]) {
       color = colorObject;
     } else if ([colorObject isKindOfClass:[NSArray class]]) {
       NSArray *colors = colorObject;
@@ -679,7 +683,7 @@ static NSString *RCTSemanticColorNames()
   }
   return names;
 }
-#endif // ]TODO(macOS ISS#2323203)
+// ]TODO(macOS ISS#2323203)
 
 + (UIColor *)UIColor:(id)json
 {
@@ -700,35 +704,46 @@ static NSString *RCTSemanticColorNames()
     CGFloat g = ((argb >> 8) & 0xFF) / 255.0;
     CGFloat b = (argb & 0xFF) / 255.0;
     return [UIColor colorWithRed:r green:g blue:b alpha:a];
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+// [TODO(macOS ISS#2323203)
   } else if ([json isKindOfClass:[NSDictionary class]]) {
     NSDictionary *dictionary = json;
     id value = nil;
     if ((value = [dictionary objectForKey:@"semantic"])) {
       NSString *semanticName = value;
-      NSColor *color = RCTColorFromSemanticColorName(semanticName);
+      UIColor *color = RCTColorFromSemanticColorName(semanticName);
       if (color == nil) {
-        RCTLogConvertError(json, [@"an NSColor.  Expected one of the following values: " stringByAppendingString:RCTSemanticColorNames()]);
+        RCTLogConvertError(json, [@"an UIColor.  Expected one of the following values: " stringByAppendingString:RCTSemanticColorNames()]);
       }
       return color;
     } else if ((value = [dictionary objectForKey:@"dynamic"])) {
       NSDictionary *appearances = value;
       id light = [appearances objectForKey:@"light"];
-      NSColor *lightColor = [RCTConvert UIColor:light];
+      UIColor *lightColor = [RCTConvert UIColor:light];
       id dark = [appearances objectForKey:@"dark"];
-      NSColor *darkColor = [RCTConvert UIColor:dark];
+      UIColor *darkColor = [RCTConvert UIColor:dark];
       if (lightColor != nil && darkColor != nil) {
+#if TARGET_OS_OSX
         RCTDynamicColor *color = [[RCTDynamicColor alloc] initWithAquaColor:lightColor darkAquaColor:darkColor];
         return color;
+#else
+        if (@available(iOS 13.0, *)) {
+          UIColor *color = [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull collection) {
+            return collection.userInterfaceStyle == UIUserInterfaceStyleLight ? lightColor : darkColor;
+          }];
+          return color;
+        } else {
+          return lightColor;
+        }
+#endif
       } else {
-        RCTLogConvertError(json, @"an NSColor. Expected a mac dynamic appearance aware color.");
+        RCTLogConvertError(json, @"an UIColor. Expected a mac dynamic appearance aware color.");
         return nil;
       }
     } else {
-      RCTLogConvertError(json, @"an NSColor. Expected a mac semantic color or dynamic appearance aware color.");
+      RCTLogConvertError(json, @"an UIColor. Expected a mac semantic color or dynamic appearance aware color.");
       return nil;
     }
-#endif // [TODO(macOS ISS#2323203)
+// ]TODO(macOS ISS#2323203)
   } else {
     RCTLogConvertError(json, @"a UIColor. Did you forget to call processColor() on the JS side?");
     return nil;
