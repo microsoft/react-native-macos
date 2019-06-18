@@ -9,10 +9,6 @@ plugins {
     id("de.undercouch.download")
 }
 
-
-
-
-
 import de.undercouch.gradle.tasks.download.Download
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.apache.tools.ant.filters.ReplaceTokens
@@ -51,14 +47,12 @@ def JSCPath = '../jsc'
 def V8Path = 'packages/Office.Google_V8.Android.7.0.276.32-v1'
 
 def hasBoostNuget = file(BoostNugetPath).exists()
+
 def JSEngineUsed = 'V8'
 
 task createNativeDepsDirectories {
     thirdPartyNdkDir.mkdirs()
 }
-
-
-
 
 // For GitHub CI - we use this task
 task downloadBoost(dependsOn: createNativeDepsDirectories, type: Download) {

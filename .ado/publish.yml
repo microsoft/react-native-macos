@@ -6,7 +6,7 @@ trigger:
   branches:
     include:
       - master
-      - fb59merge
+      - 0.58-stable
       - fabric
   paths:
     exclude:
@@ -34,6 +34,11 @@ jobs:
         displayName: npm install
         inputs:
           script: npm install
+
+      - task: CmdLine@2
+        displayName: Bump package version
+        inputs:
+          script: node .ado/bumpFileVersions.js
 
       - task: NuGetCommand@2
         displayName: NuGet restore

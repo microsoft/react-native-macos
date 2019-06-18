@@ -33,10 +33,10 @@ LOCAL_STATIC_LIBRARIES := libreactnative
 # LOCAL_SHARED_LIBRARIES variable.
 LOCAL_MODULE := reactnativejni
 
-
 LOCAL_SRC_FILES := \
   CatalystInstanceImpl.cpp \
   CxxModuleWrapper.cpp \
+  InstanceManager.cpp \
   JavaModuleWrapper.cpp \
   JReactMarker.cpp \
   JSLogging.cpp \
@@ -97,6 +97,7 @@ $(call import-module,jsiexecutor)
 # TODO(ramanpreet):
 #   Why doesn't this import-module call generate a jscexecutor.so file?
 # $(call import-module,jscexecutor)
+
 ifeq ($(JS_ENGINEUSED), JSC)
 include $(REACT_SRC_DIR)/jscexecutor/Android.mk
 endif
