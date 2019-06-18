@@ -20,8 +20,8 @@ import com.facebook.react.bridge.JavaScriptExecutorFactory;
 import com.facebook.react.bridge.ReactMarker;
 import com.facebook.react.bridge.ReactMarkerConstants;
 import com.facebook.react.shell.MainReactPackage;
-// import com.facebook.react.v8executor.V8ExecutorFactory;
-import com.facebook.react.jscexecutor.JSCExecutorFactory;
+import com.facebook.react.v8executor.V8ExecutorFactory;
+// import com.facebook.react.jscexecutor.JSCExecutorFactory;
 
 
 import java.io.File;
@@ -89,8 +89,8 @@ public class RNTesterApplication extends Application implements ReactApplication
         jseCacheDirectoryPath = jsDataStore.getAbsolutePath();
       }
 
-      // return new V8ExecutorFactory(appName, deviceName, new V8ExecutorFactory.V8ConfigParams(jseCacheDirectoryPath, V8ExecutorFactory.V8ConfigParams.CacheType.CodeCache, false));
-      return new JSCExecutorFactory(appName, deviceName);
+      return new V8ExecutorFactory(appName, deviceName, new V8ExecutorFactory.V8ConfigParams(jseCacheDirectoryPath, V8ExecutorFactory.V8ConfigParams.CacheType.CodeCache, false));
+      // return new JSCExecutorFactory(appName, deviceName);
     }
   };
 
