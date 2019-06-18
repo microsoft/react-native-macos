@@ -33,20 +33,4 @@ namespace Logging {
   void setLevel(LoggingLevel loggingLevel);
 }
 
-#endif // (!defined (NOJSC)) && (!V8_ENABLED)
-
-// Logging levels are aligned with devmain's logging level
-// which are present at %SRCROOT%\liblet\Logging\androidjava\src\com\microsoft\office\loggingapi\Logging.java
-namespace Logging {
-  enum LoggingLevel {VERBOSE = 200, INFO = 50, WARNING = 15, ERROR = 10};
-
-  //const std::string LOGGING_LEVEL_KEY("LoggingLevel");
-
-  LoggingLevel forValue(int level);
-
-  LoggingLevel getLevel();
-
-  void setLevel(LoggingLevel loggingLevel);
-}
-
 } }

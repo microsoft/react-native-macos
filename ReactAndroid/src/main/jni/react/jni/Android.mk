@@ -36,7 +36,6 @@ LOCAL_MODULE := reactnativejni
 LOCAL_SRC_FILES := \
   CatalystInstanceImpl.cpp \
   CxxModuleWrapper.cpp \
-  InstanceManager.cpp \
   JavaModuleWrapper.cpp \
   JReactMarker.cpp \
   JSLogging.cpp \

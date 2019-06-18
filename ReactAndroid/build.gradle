@@ -48,7 +48,7 @@ def V8Path = 'packages/Office.Google_V8.Android.7.0.276.32-v1'
 
 def hasBoostNuget = file(BoostNugetPath).exists()
 
-def JSEngineUsed = 'V8'
+def JSEngineUsed = 'JSC'
 
 task createNativeDepsDirectories {
     thirdPartyNdkDir.mkdirs()
