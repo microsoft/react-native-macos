@@ -13,7 +13,11 @@ import android.os.SystemClock;
 import com.facebook.soloader.SoLoader;
 import com.facebook.systrace.Systrace;
 
+import com.facebook.react.BuildConfig;
+
 public class ReactBridge {
+  private static String JS_ENGINE_USED = BuildConfig.JS_ENGINE_USED;
+
   private static volatile long sLoadStartTime = 0;
   private static volatile long sLoadEndTime = 0;
 
@@ -29,6 +33,9 @@ public class ReactBridge {
       return;
     }
     sDidInit = true;
+
+    if(JS_ENGINE_USED == "JSC")
+      sUseJSC = true;
 
     sLoadStartTime = SystemClock.uptimeMillis();
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "ReactBridge.staticInit::load:reactnativejni");
