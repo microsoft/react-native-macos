@@ -86,10 +86,12 @@ public class RNTesterApplication extends Application implements ReactApplication
       if ((jsDataStore.exists() && jsDataStore.isDirectory()) || jsDataStore.mkdirs()) {
         jseCacheDirectoryPath = jsDataStore.getAbsolutePath();
       }
-      if(BuildConfig.JS_ENGINE_USED.equals("V8"))
+      if(BuildConfig.JS_ENGINE_USED.equals("V8")){
         return new V8ExecutorFactory(appName, deviceName, new V8ExecutorFactory.V8ConfigParams(jseCacheDirectoryPath, V8ExecutorFactory.V8ConfigParams.CacheType.CodeCache, false));
-      else if(BuildConfig.JS_ENGINE_USED.equals("JSC"))
+      }
+      else if(BuildConfig.JS_ENGINE_USED.equals("JSC")){
         return new JSCExecutorFactory(appName, deviceName);
+      }
       else return null;
     }
   };

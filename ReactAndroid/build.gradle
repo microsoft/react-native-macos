@@ -47,6 +47,7 @@ def V8Path = 'packages/Office.Google_V8.Android.7.0.276.32-v1'
 def hasBoostNuget = file(BoostNugetPath).exists()
 
 //Set the value of JSEngineUsed as 'V8' or 'JSC' to enable the respective engine
+
 def JSEngineUsed = 'V8'
 
 task createNativeDepsDirectories {
@@ -144,18 +145,15 @@ task downloadJSC(dependsOn: createNativeDepsDirectories, type: Download) {
 
 // Create Android.mk library module based on jsc from npm
 task prepareJSC(dependsOn: JSEngineUsed=='V8' ? [] : [downloadJSC]) {
-    if (JSEngineUsed=='JSC')
-    {
-        doLast 
-        {
+    if (JSEngineUsed=='JSC'){
+        doLast {
             def jscTar = tarTree(downloadJSC.dest)
             def jscAAR = jscTar.matching({ it.include "**/android-jsc/**/*.aar" }).singleFile
             def soFiles = zipTree(jscAAR).matching({ it.include "**/*.so" })
 
             def headerFiles = jscTar.matching({ it.include "**/include/*.h" })
 
-            copy 
-            {
+            copy {
                 from(soFiles)
                 from(headerFiles)
                 from("src/main/jni/third-party/jsc/Android.mk")
@@ -354,8 +352,7 @@ dependencies {
     api("com.squareup.okhttp3:okhttp:${OKHTTP_VERSION}")
     api("com.squareup.okhttp3:okhttp-urlconnection:${OKHTTP_VERSION}")
     api("com.squareup.okio:okio:1.15.0")
-    if(JSEngineUsed=='JSC')
-    {
+    if(JSEngineUsed=='JSC'){
         compile 'org.webkit:android-jsc:r174650'
     }
 
