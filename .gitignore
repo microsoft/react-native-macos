@@ -64,6 +64,9 @@ package-lock.json
 /ReactAndroid/src/androidTest/assets/AndroidTestBundle.js
 *.js.meta
 
+# Visual Studio
+/.vscode/
+
 /coverage
 /third-party
 /packages/
