@@ -16,7 +16,6 @@ import com.facebook.systrace.Systrace;
 import com.facebook.react.BuildConfig;
 
 public class ReactBridge {
-  private static String JS_ENGINE_USED = BuildConfig.JS_ENGINE_USED;
 
   private static volatile long sLoadStartTime = 0;
   private static volatile long sLoadEndTime = 0;
@@ -34,7 +33,7 @@ public class ReactBridge {
     }
     sDidInit = true;
 
-    if(JS_ENGINE_USED == "JSC")
+    if(BuildConfig.JS_ENGINE_USED.equals("JSC"))
       sUseJSC = true;
 
     sLoadStartTime = SystemClock.uptimeMillis();
@@ -67,9 +66,5 @@ public class ReactBridge {
 
   public static long getLoadEndTime() {
     return sLoadEndTime;
-  }
-
-  public static void useJSC() {
-    sUseJSC = true;
   }
 }

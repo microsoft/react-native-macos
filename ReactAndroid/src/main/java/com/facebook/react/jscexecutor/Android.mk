@@ -9,9 +9,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := jscexecutor
 
-ifeq ($(JS_ENGINEUSED), JSC)
-  LOCAL_SRC_FILES := $(wildcard $(LOCAL_PATH)/*.cpp)
-endif
+LOCAL_SRC_FILES := $(wildcard $(LOCAL_PATH)/*.cpp)
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 
