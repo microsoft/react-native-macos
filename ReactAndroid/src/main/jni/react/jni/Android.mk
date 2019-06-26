@@ -59,17 +59,10 @@ LOCAL_SRC_FILES := \
 LOCAL_V8_FILES := \
   InstanceManager.cpp \
   AndroidV8Factory.cpp
-<<<<<<< HEAD
 
-ifeq ($(JS_ENGINEUSED), V8)
-  LOCAL_SRC_FILES += $(LOCAL_V8_FILES)
-else
-=======
-  
 ifeq ($(JS_ENGINE), V8)
   LOCAL_SRC_FILES += $(LOCAL_V8_FILES)
 else ifeq ($(JS_ENGINE), JSC)
->>>>>>> 536eed3ab6291d917a2adef81362c85335705f63
   LOCAL_SHARED_LIBRARIES += libjsc
 endif
 

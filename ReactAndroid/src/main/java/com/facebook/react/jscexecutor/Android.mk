@@ -11,7 +11,6 @@ LOCAL_MODULE := jscexecutor
 
 LOCAL_SRC_FILES := $(wildcard $(LOCAL_PATH)/*.cpp)
 
-
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 
 LOCAL_CFLAGS += -fvisibility=hidden -fexceptions -frtti
