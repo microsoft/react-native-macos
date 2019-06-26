@@ -16,11 +16,6 @@ import com.facebook.systrace.Systrace;
 import com.facebook.react.BuildConfig;
 
 public class ReactBridge {
-<<<<<<< HEAD
-  private static String JS_ENGINE_USED = BuildConfig.JS_ENGINE_USED;
-
-=======
->>>>>>> made the suggested changes
   private static volatile long sLoadStartTime = 0;
   private static volatile long sLoadEndTime = 0;
 
