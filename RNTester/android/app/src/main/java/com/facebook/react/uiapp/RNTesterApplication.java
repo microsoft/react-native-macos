@@ -92,9 +92,13 @@ public class RNTesterApplication extends Application implements ReactApplication
       else if(BuildConfig.JS_ENGINE_USED.equals("JSC")){
         return new JSCExecutorFactory(appName, deviceName);
       }
+<<<<<<< HEAD
       else{
         return null;
       }
+=======
+      else return null;
+>>>>>>> made the suggested changes
     }
   };
 
