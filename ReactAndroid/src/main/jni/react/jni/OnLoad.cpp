@@ -31,8 +31,6 @@ namespace react {
 
 namespace {
 
-// TODO: can we avoid these wrapper classes, and instead specialize the logic in CatalystInstanceImpl
-
 struct JavaJSExecutor : public JavaClass<JavaJSExecutor> {
   static constexpr auto kJavaDescriptor = "Lcom/facebook/react/bridge/JavaJSExecutor;";
 };

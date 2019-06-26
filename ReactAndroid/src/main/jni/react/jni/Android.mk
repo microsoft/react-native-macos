@@ -57,11 +57,19 @@ LOCAL_SRC_FILES := \
   WritableNativeMap.cpp \
 
 LOCAL_V8_FILES := \
+  InstanceManager.cpp \
   AndroidV8Factory.cpp
+<<<<<<< HEAD
 
 ifeq ($(JS_ENGINEUSED), V8)
   LOCAL_SRC_FILES += $(LOCAL_V8_FILES)
 else
+=======
+  
+ifeq ($(JS_ENGINE), V8)
+  LOCAL_SRC_FILES += $(LOCAL_V8_FILES)
+else ifeq ($(JS_ENGINE), JSC)
+>>>>>>> 536eed3ab6291d917a2adef81362c85335705f63
   LOCAL_SHARED_LIBRARIES += libjsc
 endif
 
@@ -86,7 +94,7 @@ $(call import-module,privatedata)
 $(call import-module,fb)
 $(call import-module,fbgloginit)
 $(call import-module,folly)
-ifeq ($(JS_ENGINEUSED), JSC)
+ifeq ($(JS_ENGINE), JSC)
   $(call import-module,jsc)
 endif
 $(call import-module,yogajni)
@@ -97,9 +105,8 @@ $(call import-module,jsiexecutor)
 #   Why doesn't this import-module call generate a jscexecutor.so file?
 # $(call import-module,jscexecutor)
 
-ifeq ($(JS_ENGINEUSED), JSC)
-include $(REACT_SRC_DIR)/jscexecutor/Android.mk
-endif
-ifeq ($(JS_ENGINEUSED), V8)
-include $(REACT_SRC_DIR)/v8executor/Android.mk
+ifeq ($(JS_ENGINE), JSC)
+  include $(REACT_SRC_DIR)/jscexecutor/Android.mk
+else ifeq ($(JS_ENGINE), V8)
+  include $(REACT_SRC_DIR)/v8executor/Android.mk
 endif

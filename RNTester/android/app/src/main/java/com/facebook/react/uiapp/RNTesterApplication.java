@@ -34,7 +34,6 @@ import static com.facebook.react.modules.systeminfo.AndroidInfoHelpers.getFriend
 public class RNTesterApplication extends Application implements ReactApplication {
  private static final String JSE_CACHING_DIRECTORY_NAME = "cache";
 
- private static String JS_ENGINE_USED = BuildConfig.JS_ENGINE_USED;
   static class RNTesterReactMarker implements ReactMarker.MarkerListener {
     final private static String LOG_TAG = "RNTesterReactMarker";
 
@@ -87,10 +86,15 @@ public class RNTesterApplication extends Application implements ReactApplication
       if ((jsDataStore.exists() && jsDataStore.isDirectory()) || jsDataStore.mkdirs()) {
         jseCacheDirectoryPath = jsDataStore.getAbsolutePath();
       }
-      if(JS_ENGINE_USED=="V8")
-      return new V8ExecutorFactory(appName, deviceName, new V8ExecutorFactory.V8ConfigParams(jseCacheDirectoryPath, V8ExecutorFactory.V8ConfigParams.CacheType.CodeCache, false));
-      else
-      return new JSCExecutorFactory(appName, deviceName);
+      if(BuildConfig.JS_ENGINE_USED.equals("V8")){
+        return new V8ExecutorFactory(appName, deviceName, new V8ExecutorFactory.V8ConfigParams(jseCacheDirectoryPath, V8ExecutorFactory.V8ConfigParams.CacheType.CodeCache, false));
+      }
+      else if(BuildConfig.JS_ENGINE_USED.equals("JSC")){
+        return new JSCExecutorFactory(appName, deviceName);
+      }
+      else{
+        return null;
+      }
     }
   };
 

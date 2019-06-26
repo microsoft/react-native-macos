@@ -34,8 +34,9 @@ public class ReactBridge {
     }
     sDidInit = true;
 
-    if(JS_ENGINE_USED == "JSC")
+    if(BuildConfig.JS_ENGINE_USED.equals("JSC")){
       sUseJSC = true;
+    }
 
     sLoadStartTime = SystemClock.uptimeMillis();
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "ReactBridge.staticInit::load:reactnativejni");
@@ -67,9 +68,5 @@ public class ReactBridge {
 
   public static long getLoadEndTime() {
     return sLoadEndTime;
-  }
-
-  public static void useJSC() {
-    sUseJSC = true;
   }
 }
