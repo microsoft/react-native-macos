@@ -13,16 +13,6 @@ namespace react {
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 
-#if (!_MSC_VER) && (!V8_ENABLED)
-namespace JSCNativeHooks {
-
-Hook loggingHook = nullptr;
-Hook nowHook = nullptr;
-ConfigurationHook installPerfHooks = nullptr;
-
-}
-#endif // (!_MSC_VER) && (!V8_ENABLED)
-
 #if __clang__
 #pragma clang diagnostic pop
 #endif
