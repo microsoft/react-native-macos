@@ -774,14 +774,18 @@ static NSString *RCTSemanticColorNames()
         RCTDynamicColor *color = [[RCTDynamicColor alloc] initWithAquaColor:lightColor darkAquaColor:darkColor];
         return color;
 #else
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
         if (@available(iOS 13.0, *)) {
           UIColor *color = [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull collection) {
             return collection.userInterfaceStyle == UIUserInterfaceStyleLight ? lightColor : darkColor;
           }];
           return color;
         } else {
+#endif
           return lightColor;
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
         }
+#endif
 #endif
       } else {
         RCTLogConvertError(json, @"an UIColor. Expected a mac dynamic appearance aware color.");
