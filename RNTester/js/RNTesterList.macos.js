@@ -18,6 +18,11 @@ export type RNTesterExample = {
 
 const ComponentExamples: Array<RNTesterExample> = [
   {
+    key: 'DarkModeExample',
+    module: require('./DarkModeExample'),
+    supportsTVOS: true,
+  },
+  {
     key: 'ActivityIndicatorExample',
     module: require('./ActivityIndicatorExample'),
     supportsTVOS: false,
