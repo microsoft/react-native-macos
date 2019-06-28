@@ -2,13 +2,13 @@
 #include <folly/dynamic.h>
 #include <jsiexecutor/jsireact/JSIExecutor.h>
 #include <jsi/V8Runtime.h>
-#include "JSLoader.h"
-#include <JSLogging.h>
+#include "react/jni/JSLoader.h"
+#include <react/jni/JSLogging.h>
 #include "InstanceManager.h"
-#include <ReadableNativeMap.h>
+#include <react/jni/ReadableNativeMap.h>
 #include "V8ExecutorFactory.h"
 
-namespace facebook { namespace react {
+namespace facebook { namespace react { namespace jsi{
 
 struct DefaultInstanceCallback final : public InstanceCallback
 {
@@ -51,7 +51,7 @@ std::shared_ptr<Instance> CreateReactInstance(
 	}
 
 	folly::dynamic v8Config = folly::dynamic::object;
-	std::unique_ptr<JSExecutorFactory> jsExecutorFactory{ folly::make_unique<v8executor::V8ExecutorFactory>(std::move(v8Config))};
+	std::unique_ptr<JSExecutorFactory> jsExecutorFactory{ folly::make_unique<V8ExecutorFactory>(std::move(v8Config))};
 	std::unique_ptr<ModuleRegistry> moduleRegistry{ std::make_unique<ModuleRegistry>(std::move(modules)) };
 
 	// Initialize bridge.
@@ -99,4 +99,4 @@ std::shared_ptr<Instance> CreateReactInstance(
 	return instance;
 }
 
-}}//namespace facebook::react
+}}}//namespace facebook::react::jsi

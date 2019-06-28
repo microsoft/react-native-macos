@@ -30,7 +30,7 @@ class V8ExecutorHolder
     // Android.
     JReactMarker::setLogPerfMarkerIfNeeded();
     // TODO mhorowitz T28461666 fill in some missing nice to have glue
-    return makeCxxInstance(folly::make_unique<v8executor::V8ExecutorFactory>(v8Config->consume()));
+    return makeCxxInstance(folly::make_unique<jsi::V8ExecutorFactory>(v8Config->consume()));
   }
 
   static void registerNatives() {
@@ -43,7 +43,6 @@ class V8ExecutorHolder
   friend HybridBase;
   using HybridBase::HybridBase;
 };
-
 } // namespace react
 } // namespace facebook
 

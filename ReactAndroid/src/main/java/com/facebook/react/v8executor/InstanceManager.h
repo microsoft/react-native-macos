@@ -4,10 +4,10 @@
 #include <android/asset_manager_jni.h>
 #include <cxxreact/CxxNativeModule.h>
 #include <cxxreact/Instance.h>
-#include <../../ReactAndroid/src/main/jni/first-party/fb/include/fb/fbjni.h>
+#include <fb/fbjni.h>
 #include <folly/Memory.h>
 
-namespace facebook { namespace react {
+namespace facebook { namespace react { namespace jsi{
 
 std::shared_ptr<Instance> CreateReactInstance(
 	AAssetManager* assetManager,
@@ -16,4 +16,4 @@ std::shared_ptr<Instance> CreateReactInstance(
 	std::shared_ptr<MessageQueueThread>&& jsQueue,
 	std::shared_ptr<MessageQueueThread>&& nativeQueue) noexcept;
 
-}} //namespace facebook::react
+}}} //namespace facebook::react::jsi

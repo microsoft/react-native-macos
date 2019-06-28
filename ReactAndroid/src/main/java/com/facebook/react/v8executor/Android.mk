@@ -12,7 +12,7 @@ LOCAL_MODULE := v8executor
 LOCAL_SRC_FILES := $(wildcard $(LOCAL_PATH)/*.cpp)
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
-LOCAL_C_INCLUDES += $(REACT_JNI_DIR)
+LOCAL_C_INCLUDES += $(THIRD_PARTY_NDK_SRC_DIR)/..
 
 LOCAL_CFLAGS += -fvisibility=hidden -fexceptions -frtti
 
