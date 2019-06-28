@@ -1,9 +1,11 @@
-#include "V8ExecutorFactory.h"
-#include "InstanceManager.h"
 #include <cxxreact/PlatformBundleInfo.h>
 #include <jsi/V8Runtime.h>
 #include <react/jni/ReadableNativeMap.h>
 #include <react/jni/JSLoader.h>
+
+#include "V8ExecutorFactory.h"
+
+#include "InstanceManager.h"
 
 namespace facebook { namespace react { namespace jsi {
 
