@@ -1,10 +1,7 @@
 #include "V8ExecutorFactory.h"
-#include <folly/dynamic.h>
-#include <jsiexecutor/jsireact/JSIExecutor.h>
 #include <jsi/V8Runtime.h>
-#include "react/jni/JSLoader.h"
+#include <react/jni/JSLoader.h>
 #include <react/jni/JSLogging.h>
-#include <react/jni/ReadableNativeMap.h>
 
 namespace facebook { namespace react { namespace jsi {
 

@@ -1,12 +1,9 @@
-#include <cxxreact/PlatformBundleInfo.h>
-#include <folly/dynamic.h>
-#include <jsiexecutor/jsireact/JSIExecutor.h>
-#include <jsi/V8Runtime.h>
-#include "react/jni/JSLoader.h"
-#include <react/jni/JSLogging.h>
-#include "InstanceManager.h"
-#include <react/jni/ReadableNativeMap.h>
 #include "V8ExecutorFactory.h"
+#include "InstanceManager.h"
+#include <cxxreact/PlatformBundleInfo.h>
+#include <jsi/V8Runtime.h>
+#include <react/jni/ReadableNativeMap.h>
+#include <react/jni/JSLoader.h>
 
 namespace facebook { namespace react { namespace jsi {
 

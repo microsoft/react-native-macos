@@ -2,16 +2,11 @@
 //
 // This source code is licensed under the MIT license found in the
  // LICENSE file in the root directory of this source tree.
- 
-#include <fb/fbjni.h>
-#include <folly/Memory.h>
-#include <jsi/V8Runtime.h>
-#include <jsireact/JSIExecutor.h>
+
+#include "V8ExecutorFactory.h"
 #include <react/jni/JavaScriptExecutorHolder.h>
 #include <react/jni/JReactMarker.h>
-#include <react/jni/JSLogging.h>
 #include <react/jni/ReadableNativeMap.h>
-#include "V8ExecutorFactory.h"
 
 namespace facebook {
 namespace react {
