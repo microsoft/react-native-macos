@@ -6,7 +6,7 @@
 #include <react/jni/ReadableNativeMap.h>
 
 
-namespace facebook{ namespace react{ namespace jsi{
+namespace facebook { namespace react { namespace jsi {
 
 class V8ExecutorFactory : public JSExecutorFactory {
 public:

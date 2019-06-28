@@ -8,7 +8,7 @@
 #include <react/jni/ReadableNativeMap.h>
 #include "V8ExecutorFactory.h"
 
-namespace facebook { namespace react { namespace jsi{
+namespace facebook { namespace react { namespace jsi {
 
 struct DefaultInstanceCallback final : public InstanceCallback
 {

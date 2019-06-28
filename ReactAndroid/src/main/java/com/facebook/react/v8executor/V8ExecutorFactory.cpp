@@ -6,7 +6,7 @@
 #include <react/jni/JSLogging.h>
 #include <react/jni/ReadableNativeMap.h>
 
-namespace facebook{ namespace react{ namespace jsi{
+namespace facebook { namespace react { namespace jsi {
 
 std::unique_ptr<JSExecutor> V8ExecutorFactory::createJSExecutor(
       std::shared_ptr<ExecutorDelegate> delegate,

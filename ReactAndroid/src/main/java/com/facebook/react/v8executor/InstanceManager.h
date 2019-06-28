@@ -7,7 +7,7 @@
 #include <fb/fbjni.h>
 #include <folly/Memory.h>
 
-namespace facebook { namespace react { namespace jsi{
+namespace facebook { namespace react { namespace jsi {
 
 std::shared_ptr<Instance> CreateReactInstance(
 	AAssetManager* assetManager,
