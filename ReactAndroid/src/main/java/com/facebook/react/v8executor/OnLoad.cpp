@@ -2,7 +2,6 @@
 //
 // This source code is licensed under the MIT license found in the
  // LICENSE file in the root directory of this source tree.
-
 #include <fb/fbjni.h>
 #include <folly/Memory.h>
 #include <jsi/V8Runtime.h>
@@ -43,6 +42,7 @@ class V8ExecutorHolder
   friend HybridBase;
   using HybridBase::HybridBase;
 };
+
 } // namespace react
 } // namespace facebook
 

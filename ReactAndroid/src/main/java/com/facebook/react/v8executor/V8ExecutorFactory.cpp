@@ -8,9 +8,12 @@
 
 namespace facebook { namespace react { namespace jsi {
 
+V8ExecutorFactory::V8ExecutorFactory(folly::dynamic&& v8Config) :
+    m_v8Config(std::move(v8Config)) {}
+
 std::unique_ptr<JSExecutor> V8ExecutorFactory::createJSExecutor(
       std::shared_ptr<ExecutorDelegate> delegate,
-      std::shared_ptr<MessageQueueThread> jsQueue){
+      std::shared_ptr<MessageQueueThread> jsQueue) {
 
     auto logger = std::make_shared<JSIExecutor::Logger>([](const std::string& message, unsigned int logLevel) {
                     reactAndroidLoggingHook(message, logLevel);

@@ -10,8 +10,7 @@ namespace facebook { namespace react { namespace jsi {
 
 class V8ExecutorFactory : public JSExecutorFactory {
 public:
-  V8ExecutorFactory(folly::dynamic&& v8Config) :
-    m_v8Config(std::move(v8Config)) {}
+  V8ExecutorFactory(folly::dynamic&& v8Config);
 
   std::unique_ptr<JSExecutor> createJSExecutor(
       std::shared_ptr<ExecutorDelegate> delegate,
