@@ -45,7 +45,6 @@ private:
 
 }
 
-
 // This is not like JSCJavaScriptExecutor, which calls JSC directly.  This uses
 // JSIExecutor with V8Runtime.
 class V8ExecutorHolder
