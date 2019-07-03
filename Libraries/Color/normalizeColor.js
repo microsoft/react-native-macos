@@ -13,11 +13,11 @@
 
 const Platform = require('Platform'); // [TODO(macOS ISS#2323203)
 
-export type SemanticOrDynamicColorType = {
+export type NativeOrDynamicColorType = {
   semantic?: string,
   dynamic?: {
-    light: ?(string | number | SemanticOrDynamicColorType),
-    dark: ?(string | number | SemanticOrDynamicColorType),
+    light: ?(string | number | NativeOrDynamicColorType),
+    dark: ?(string | number | NativeOrDynamicColorType),
   },
 }; // ]TODO(macOS ISS#2323203)
 
@@ -25,9 +25,9 @@ function normalizeColor(
   color: ?(
     | string
     | number
-    | SemanticOrDynamicColorType
+    | NativeOrDynamicColorType
   ) /* TODO(macOS ISS#2323203) */,
-): ?(number | SemanticOrDynamicColorType) /* TODO(macOS ISS#2323203) */ {
+): ?(number | NativeOrDynamicColorType) /* TODO(macOS ISS#2323203) */ {
   const matchers = getMatchers();
   let match;
 
@@ -38,15 +38,16 @@ function normalizeColor(
     return null;
   }
 
-  if (typeof color === 'object' && color !== null && Platform.OS === 'macos') {
+  if (typeof color === 'object' && color !== null && 
+    (Platform.OS === 'macos' || Platform.OS === 'uwp')) {
     // [TODO(macOS ISS#2323203)
-    if ('semantic' in color) {
-      // a macos semantic color
+    if ('semantic' in color || 'windowsbrush' in color) {
+      // a macos semantic color or a XAML brush
       return color;
     } else if ('dynamic' in color && color.dynamic !== undefined) {
       // a dynamic, appearance aware color
       const dynamic = color.dynamic;
-      const dynamicColor: SemanticOrDynamicColorType = {
+      const dynamicColor: NativeOrDynamicColorType = {
         dynamic: {
           light: normalizeColor(dynamic.light),
           dark: normalizeColor(dynamic.dark),
