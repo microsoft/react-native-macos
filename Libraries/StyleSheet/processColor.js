@@ -42,7 +42,10 @@ function processColor(
       };
       return dynamicColor;
     }
-    return int32Color;
+    if ((Platform.OS === 'macos' && 'semantic' in int32Color) ||
+      (Platform.OS === 'uwp' && 'windowsbrush' in int32Color)) {
+      return int32Color;
+    }
   }
   if (typeof int32Color !== 'number') {
     return null;

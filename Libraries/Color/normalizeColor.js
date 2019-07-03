@@ -41,7 +41,8 @@ function normalizeColor(
   if (typeof color === 'object' && color !== null && 
     (Platform.OS === 'macos' || Platform.OS === 'uwp')) {
     // [TODO(macOS ISS#2323203)
-    if ('semantic' in color || 'windowsbrush' in color) {
+    if ((Platform.OS === 'macos' && 'semantic' in color) ||
+      (Platform.OS === 'uwp' && 'windowsbrush' in color)) {
       // a macos semantic color or a XAML brush
       return color;
     } else if ('dynamic' in color && color.dynamic !== undefined) {
