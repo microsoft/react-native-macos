@@ -30,7 +30,8 @@ function processColor(
 
   if (
     typeof int32Color === 'object' &&
-    (Platform.OS === 'uwp' || Platform.OS === 'macos') /* [TODO(macOS ISS#2323203) */
+    (Platform.OS === 'uwp' ||
+      Platform.OS === 'macos') /* [TODO(macOS ISS#2323203) */
   ) {
     if ('dynamic' in int32Color && int32Color.dynamic !== undefined) {
       const dynamic = int32Color.dynamic;
@@ -42,8 +43,10 @@ function processColor(
       };
       return dynamicColor;
     }
-    if ((Platform.OS === 'macos' && 'semantic' in int32Color) ||
-      (Platform.OS === 'uwp' && 'windowsbrush' in int32Color)) {
+    if (
+      (Platform.OS === 'macos' && 'semantic' in int32Color) ||
+      (Platform.OS === 'uwp' && 'windowsbrush' in int32Color)
+    ) {
       return int32Color;
     }
   }
