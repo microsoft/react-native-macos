@@ -13,6 +13,8 @@ import android.os.SystemClock;
 import com.facebook.soloader.SoLoader;
 import com.facebook.systrace.Systrace;
 
+import com.facebook.react.BuildConfig;
+
 public class ReactBridge {
   private static volatile long sLoadStartTime = 0;
   private static volatile long sLoadEndTime = 0;
@@ -30,8 +32,13 @@ public class ReactBridge {
     }
     sDidInit = true;
 
+    if(BuildConfig.JS_ENGINE_USED.equals("JSC")){
+      sUseJSC = true;
+    }
+
     sLoadStartTime = SystemClock.uptimeMillis();
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "ReactBridge.staticInit::load:reactnativejni");
+    ReactMarker.logMarker(ReactMarkerConstants.LOAD_REACT_NATIVE_SO_FILE_START);
 
     if (sUseJSC) {
       SoLoader.loadLibrary("icu_common");
@@ -48,6 +55,7 @@ public class ReactBridge {
     SoLoader.loadLibrary("fb");
     SoLoader.loadLibrary("yoga");
     SoLoader.loadLibrary("reactnativejni");
+    ReactMarker.logMarker(ReactMarkerConstants.LOAD_REACT_NATIVE_SO_FILE_END);
     Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
     sLoadEndTime = SystemClock.uptimeMillis();
   }
@@ -58,9 +66,5 @@ public class ReactBridge {
 
   public static long getLoadEndTime() {
     return sLoadEndTime;
-  }
-
-  public static void useJSC() {
-    sUseJSC = true;
   }
 }

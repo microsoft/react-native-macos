@@ -14,7 +14,7 @@ const Platform = require('Platform');
 const UIManagerProperties = require('UIManagerProperties');
 
 const defineLazyObjectProperty = require('defineLazyObjectProperty');
-const invariant = require('fbjs/lib/invariant');
+const invariant = require('invariant');
 
 const {UIManager} = NativeModules;
 const viewManagerConfigs = {};
@@ -59,10 +59,8 @@ UIManager.getViewManagerConfig = function(viewManagerName: string) {
 
   // If we're in the Chrome Debugger, let's not even try calling the sync
   // method.
-  if (__DEV__) {
-    if (!global.nativeCallSyncHook) {
-      return config;
-    }
+  if (!global.nativeCallSyncHook) {
+    return config;
   }
 
   if (UIManager.lazilyLoadView && !triedLoadingConfig.has(viewManagerName)) {
@@ -155,7 +153,7 @@ if (
   }
 }
 
-if (__DEV__) {
+if (!global.nativeCallSyncHook) {
   Object.keys(UIManager).forEach(viewManagerName => {
     if (!UIManagerProperties.includes(viewManagerName)) {
       if (!viewManagerConfigs[viewManagerName]) {
