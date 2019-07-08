@@ -509,7 +509,7 @@ RCT_CGSTRUCT_CONVERTER(CGAffineTransform, (@[
 
 // [TODO(macOS ISS#2323203)
 static NSString *const RCTFallback = @"fallback";
-static NSString *const RCTFallbackRGB = @"fallback-rgb";
+static NSString *const RCTFallbackARGB = @"fallback-argb";
 static NSString *const RCTSelector = @"selector";
 static NSString *const RCTIndex = @"index";
 
@@ -611,64 +611,64 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
       // https://developer.apple.com/documentation/uikit/uicolor/ui_element_colors
       // Label Colors
       @"labelColor": @{ // 13
-        RCTFallbackRGB: @(0xFF000000)
+        RCTFallbackARGB: @(0xFF000000)
       },
       @"secondaryLabelColor": @{ // 13
-        RCTFallbackRGB: @(0x993c3c43)
+        RCTFallbackARGB: @(0x993c3c43)
       },
       @"tertiaryLabelColor": @{ // 13
-        RCTFallbackRGB: @(0x4c3c3c43)
+        RCTFallbackARGB: @(0x4c3c3c43)
       },
       @"quaternaryLabelColor": @{ // 13
-        RCTFallbackRGB: @(0x2d3c3c43)
+        RCTFallbackARGB: @(0x2d3c3c43)
       },
       // Fill Colors
       @"systemFillColor": @{ // 13
-        RCTFallbackRGB: @(0x33787880)
+        RCTFallbackARGB: @(0x33787880)
       },
       @"secondarySystemFillColor": @{ // 13
-        RCTFallbackRGB: @(0x28787880)
+        RCTFallbackARGB: @(0x28787880)
       },
       @"tertiarySystemFillColor": @{ // 13
-        RCTFallbackRGB: @(0x1e767680)
+        RCTFallbackARGB: @(0x1e767680)
       },
       @"quaternarySystemFillColor": @{ // 13
-        RCTFallbackRGB: @(0x14747480)
+        RCTFallbackARGB: @(0x14747480)
       },
       // Text Colors
       @"placeholderTextColor": @{ // 13
-        RCTFallbackRGB: @(0x4c3c3c43)
+        RCTFallbackARGB: @(0x4c3c3c43)
       },
       // Standard Content Background Colors
       @"systemBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xFFffffff)
+        RCTFallbackARGB: @(0xFFffffff)
       },
       @"secondarySystemBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xFFf2f2f7)
+        RCTFallbackARGB: @(0xFFf2f2f7)
       },
       @"tertiarySystemBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xFFffffff)
+        RCTFallbackARGB: @(0xFFffffff)
       },
       // Grouped Content Background Colors
       @"systemGroupedBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xFFf2f2f7)
+        RCTFallbackARGB: @(0xFFf2f2f7)
       },
       @"secondarySystemGroupedBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xFFffffff)
+        RCTFallbackARGB: @(0xFFffffff)
       },
       @"tertiarySystemGroupedBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xFFf2f2f7)
+        RCTFallbackARGB: @(0xFFf2f2f7)
       },
       // Separator Colors
       @"separatorColor": @{ // 13
-        RCTFallbackRGB: @(0x493c3c43)
+        RCTFallbackARGB: @(0x493c3c43)
       },
       @"opaqueSeparatorColor": @{ // 13
-        RCTFallbackRGB: @(0xFFc6c6c8)
+        RCTFallbackARGB: @(0xFFc6c6c8)
       },
       // Link Color
       @"linkColor": @{ // 13
-        RCTFallbackRGB: @(0xFF007aff)
+        RCTFallbackARGB: @(0xFF007aff)
       },
       // Nonadaptable Colors
       @"darkTextColor": @{},
@@ -677,11 +677,11 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
       // Adaptable Colors
       @"systemBlueColor": @{},
       @"systemBrownColor": @{ // 13
-        RCTFallbackRGB: @(0xFFa2845e)
+        RCTFallbackARGB: @(0xFFa2845e)
       },
       @"systemGreenColor": @{},
       @"systemIndigoColor": @{ // 13
-        RCTFallbackRGB: @(0xFF5856d6)
+        RCTFallbackARGB: @(0xFF5856d6)
       },
       @"systemOrangeColor": @{},
       @"systemPinkColor": @{},
@@ -692,25 +692,25 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
       // Adaptable Gray Colors
       @"systemGrayColor": @{},
       @"systemGray2Color": @{ // 13
-        RCTFallbackRGB: @(0xFFaeaeb2)
+        RCTFallbackARGB: @(0xFFaeaeb2)
       },
       @"systemGray3Color": @{ // 13
-        RCTFallbackRGB: @(0xFFc7c7cc)
+        RCTFallbackARGB: @(0xFFc7c7cc)
       },
       @"systemGray4Color": @{ // 13
-        RCTFallbackRGB: @(0xFFd1d1d6)
+        RCTFallbackARGB: @(0xFFd1d1d6)
       },
       @"systemGray5Color": @{ // 13
-        RCTFallbackRGB: @(0xFFe5e5ea)
+        RCTFallbackARGB: @(0xFFe5e5ea)
       },
       @"systemGray6Color": @{ // 13
-        RCTFallbackRGB: @(0xFFf2f2f7)
+        RCTFallbackARGB: @(0xFFf2f2f7)
       },
 #endif
 #if DEBUG
       // The follow exist for Unit Tests
       @"unitTestFallbackColor": @{
-        RCTFallback: @"labelColor"
+        RCTFallback: @"gridColor"
       },
       @"unitTestFallbackColorIOS": @{
         RCTFallback: @"blueColor"
@@ -746,9 +746,9 @@ static UIColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
     }
     SEL selector = NSSelectorFromString(semanticColorSelector);
     if (![UIColor respondsToSelector:selector]) {
-      NSNumber *fallbackRGB = colorInfo[RCTFallbackRGB];
+      NSNumber *fallbackRGB = colorInfo[RCTFallbackARGB];
       if (fallbackRGB != nil) {
-        RCTAssert([fallbackRGB isKindOfClass:[NSNumber class]], @"fallback RGB is not a number");
+        RCTAssert([fallbackRGB isKindOfClass:[NSNumber class]], @"fallback ARGB is not a number");
         return [RCTConvert UIColor:fallbackRGB];
       }
       semanticColorSelector = colorInfo[RCTFallback];

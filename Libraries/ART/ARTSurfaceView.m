@@ -47,9 +47,9 @@
 
 - (void)drawRect:(CGRect)rect
 {
-// [TODO(macOS ISS#2323203)
+// [TODO(OSS Candidate ISS#2710739): for macOS and iOS dark mode
   [super drawRect:rect];
-// ]TODO(macOS ISS#2323203)
+// ]TODO(OSS Candidate ISS#2710739)
   CGContextRef context = UIGraphicsGetCurrentContext();
   for (ARTNode *node in self.subviews) {
     [node renderTo:context];
