@@ -43,9 +43,9 @@
 
 - (void)testFallbackColor
 {
-  id json = RCTJSONParse(@"{ \"semantic\": \"unitTestFallbackColor\" }", nil);
+  id json = RCTJSONParse(@"{ \"semantic\": \"unitTestFallbackColorIOS\" }", nil);
   UIColor *value = [RCTConvert UIColor:json];
-  XCTAssertEqualObjects(value, [UIColor systemBlueColor]);
+  XCTAssertEqualObjects(value, [UIColor blueColor]);
 }
 
 - (void)testDynamicColor
@@ -56,6 +56,7 @@
   UIColor *value = [RCTConvert UIColor:json];
   XCTAssertNotNil(value);
 
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
   if (@available(iOS 13.0, *)) {
     id savedTraitCollection = [UITraitCollection currentTraitCollection];
     
@@ -76,6 +77,7 @@
     
     [UITraitCollection setCurrentTraitCollection:savedTraitCollection];
   }
+#endif
 }
 
 - (void)testCompositeDynamicColor
@@ -84,6 +86,7 @@
   UIColor *value = [RCTConvert UIColor:json];
   XCTAssertNotNil(value);
 
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
   if (@available(iOS 13.0, *)) {
     id savedTraitCollection = [UITraitCollection currentTraitCollection];
     
@@ -109,6 +112,7 @@
     
     [UITraitCollection setCurrentTraitCollection:savedTraitCollection];
   }
+#endif
 }
 
 - (void)testGenerateFallbacks
@@ -116,60 +120,50 @@
   NSDictionary<NSString *, NSNumber*>* semanticColors = @{
     // https://developer.apple.com/documentation/uikit/uicolor/ui_element_colors
     // Label Colors
-    @"labelColor": @(0x000000FF),
-    @"secondaryLabelColor": @(0x3c3c4399),
-    @"tertiaryLabelColor": @(0x3c3c434c),
-    @"quaternaryLabelColor": @(0x3c3c432d),
+    @"labelColor": @(0xFF000000),
+    @"secondaryLabelColor": @(0x993c3c43),
+    @"tertiaryLabelColor": @(0x4c3c3c43),
+    @"quaternaryLabelColor": @(0x2d3c3c43),
     // Fill Colors
-    @"systemFillColor": @(0x78788033),
-    @"secondarySystemFillColor": @(0x78788028),
-    @"tertiarySystemFillColor": @(0x7676801e),
-    @"quaternarySystemFillColor": @(0x74748014),
+    @"systemFillColor": @(0x33787880),
+    @"secondarySystemFillColor": @(0x28787880),
+    @"tertiarySystemFillColor": @(0x1e767680),
+    @"quaternarySystemFillColor": @(0x14747480),
     // Text Colors
-    @"placeholderTextColor": @(0x3c3c434c),
+    @"placeholderTextColor": @(0x4c3c3c43),
     // Standard Content Background Colors
-    @"systemBackgroundColor": @(0xffffffFF),
-    @"secondarySystemBackgroundColor": @(0xf2f2f7FF),
-    @"tertiarySystemBackgroundColor": @(0xffffffFF),
+    @"systemBackgroundColor": @(0xFFffffff),
+    @"secondarySystemBackgroundColor": @(0xFFf2f2f7),
+    @"tertiarySystemBackgroundColor": @(0xFFffffff),
     // Grouped Content Background Colors
-    @"systemGroupedBackgroundColor": @(0xf2f2f7FF),
-    @"secondarySystemGroupedBackgroundColor": @(0xffffffFF),
-    @"tertiarySystemGroupedBackgroundColor": @(0xf2f2f7FF),
+    @"systemGroupedBackgroundColor": @(0xFFf2f2f7),
+    @"secondarySystemGroupedBackgroundColor": @(0xFFffffff),
+    @"tertiarySystemGroupedBackgroundColor": @(0xFFf2f2f7),
     // Separator Colors
-    @"separatorColor": @(0x3c3c4349),
-    @"opaqueSeparatorColor": @(0xc6c6c8FF),
+    @"separatorColor": @(0x493c3c43),
+    @"opaqueSeparatorColor": @(0xFFc6c6c8),
     // Link Color
-    @"linkColor": @(0x007affFF),
-    // Nonadaptable Colors
-    @"darkTextColor": @(0x000000FF),
-    @"lightTextColor": @(0xffffff99),
+    @"linkColor": @(0xFF007aff),
     // https://developer.apple.com/documentation/uikit/uicolor/standard_colors
     // Adaptable Colors
-    @"systemBlueColor": @(0x007affFF),
-    @"systemBrownColor": @(0xa2845eFF),
-    @"systemGreenColor": @(0x34c759FF),
-    @"systemIndigoColor": @(0x5856d6FF),
-    @"systemOrangeColor": @(0xff9500FF),
-    @"systemPinkColor": @(0xff2d55FF),
-    @"systemPurpleColor": @(0xaf52deFF),
-    @"systemRedColor": @(0xff3b30FF),
-    @"systemTealColor": @(0x5ac8faFF),
-    @"systemYellowColor": @(0xffcc00FF),
+    @"systemBrownColor": @(0xFFa2845e),
+    @"systemIndigoColor": @(0xFF5856d6),
     // Adaptable Gray Colors
-    @"systemGrayColor": @(0x8e8e93FF),
-    @"systemGray2Color": @(0xaeaeb2FF),
-    @"systemGray3Color": @(0xc7c7ccFF),
-    @"systemGray4Color": @(0xd1d1d6FF),
-    @"systemGray5Color": @(0xe5e5eaFF),
-    @"systemGray6Color": @(0xf2f2f7FF),
+    @"systemGray2Color": @(0xFFaeaeb2),
+    @"systemGray3Color": @(0xFFc7c7cc),
+    @"systemGray4Color": @(0xFFd1d1d6),
+    @"systemGray5Color": @(0xFFe5e5ea),
+    @"systemGray6Color": @(0xFFf2f2f7),
   };
   
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
   id savedTraitCollection = nil;
   if (@available(iOS 13.0, *)) {
     savedTraitCollection = [UITraitCollection currentTraitCollection];
     
     [UITraitCollection setCurrentTraitCollection:[UITraitCollection traitCollectionWithUserInterfaceStyle:UIUserInterfaceStyleLight]];
   }
+#endif
 
   for (NSString *semanticColor in semanticColors) {
     id json = RCTJSONParse([NSString stringWithFormat:@"{ \"semantic\": \"%@\" }", semanticColor], nil);
@@ -178,10 +172,10 @@
 
     NSNumber *fallback = [semanticColors objectForKey:semanticColor];
     NSUInteger rgbValue = [fallback unsignedIntegerValue];
-    NSUInteger red1 = ((rgbValue & 0xFF000000) >> 24);
-    NSUInteger green1 = ((rgbValue & 0x00FF0000) >> 16);
-    NSUInteger blue1 = ((rgbValue & 0x0000FF00) >> 8);
-    NSUInteger alpha1 = ((rgbValue & 0x000000FF) >> 0);
+    NSUInteger alpha1 = ((rgbValue & 0xFF000000) >> 24);
+    NSUInteger red1 = ((rgbValue & 0x00FF0000) >> 16);
+    NSUInteger green1 = ((rgbValue & 0x0000FF00) >> 8);
+    NSUInteger blue1 = ((rgbValue & 0x000000FF) >> 0);
 
     CGFloat rgba[4];
     RCTGetRGBAColorComponents([value CGColor], rgba);
@@ -196,9 +190,11 @@
     XCTAssertEqual(alpha1, alpha2);
   }
   
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
   if (@available(iOS 13.0, *)) {
     [UITraitCollection setCurrentTraitCollection:savedTraitCollection];
   }
+#endif
 }
 
 @end

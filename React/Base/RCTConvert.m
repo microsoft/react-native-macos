@@ -611,64 +611,64 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
       // https://developer.apple.com/documentation/uikit/uicolor/ui_element_colors
       // Label Colors
       @"labelColor": @{ // 13
-        RCTFallbackRGB: @(0x000000FF)
+        RCTFallbackRGB: @(0xFF000000)
       },
       @"secondaryLabelColor": @{ // 13
-        RCTFallbackRGB: @(0x3c3c4399)
+        RCTFallbackRGB: @(0x993c3c43)
       },
       @"tertiaryLabelColor": @{ // 13
-        RCTFallbackRGB: @(0x3c3c434c)
+        RCTFallbackRGB: @(0x4c3c3c43)
       },
       @"quaternaryLabelColor": @{ // 13
-        RCTFallbackRGB: @(0x3c3c432d)
+        RCTFallbackRGB: @(0x2d3c3c43)
       },
       // Fill Colors
       @"systemFillColor": @{ // 13
-        RCTFallbackRGB: @(0x78788033)
+        RCTFallbackRGB: @(0x33787880)
       },
       @"secondarySystemFillColor": @{ // 13
-        RCTFallbackRGB: @(0x78788028)
+        RCTFallbackRGB: @(0x28787880)
       },
       @"tertiarySystemFillColor": @{ // 13
-        RCTFallbackRGB: @(0x7676801e)
+        RCTFallbackRGB: @(0x1e767680)
       },
       @"quaternarySystemFillColor": @{ // 13
-        RCTFallbackRGB: @(0x74748014)
+        RCTFallbackRGB: @(0x14747480)
       },
       // Text Colors
       @"placeholderTextColor": @{ // 13
-        RCTFallbackRGB: @(0x3c3c434c)
+        RCTFallbackRGB: @(0x4c3c3c43)
       },
       // Standard Content Background Colors
       @"systemBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xffffffFF)
+        RCTFallbackRGB: @(0xFFffffff)
       },
       @"secondarySystemBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xf2f2f7FF)
+        RCTFallbackRGB: @(0xFFf2f2f7)
       },
       @"tertiarySystemBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xffffffFF)
+        RCTFallbackRGB: @(0xFFffffff)
       },
       // Grouped Content Background Colors
       @"systemGroupedBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xf2f2f7FF)
+        RCTFallbackRGB: @(0xFFf2f2f7)
       },
       @"secondarySystemGroupedBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xffffffFF)
+        RCTFallbackRGB: @(0xFFffffff)
       },
       @"tertiarySystemGroupedBackgroundColor": @{ // 13
-        RCTFallbackRGB: @(0xf2f2f7FF)
+        RCTFallbackRGB: @(0xFFf2f2f7)
       },
       // Separator Colors
       @"separatorColor": @{ // 13
-        RCTFallbackRGB: @(0x3c3c4349)
+        RCTFallbackRGB: @(0x493c3c43)
       },
       @"opaqueSeparatorColor": @{ // 13
-        RCTFallbackRGB: @(0xc6c6c8FF)
+        RCTFallbackRGB: @(0xFFc6c6c8)
       },
       // Link Color
       @"linkColor": @{ // 13
-        RCTFallbackRGB: @(0x007affFF)
+        RCTFallbackRGB: @(0xFF007aff)
       },
       // Nonadaptable Colors
       @"darkTextColor": @{},
@@ -677,11 +677,11 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
       // Adaptable Colors
       @"systemBlueColor": @{},
       @"systemBrownColor": @{ // 13
-        RCTFallbackRGB: @(0xa2845eFF)
+        RCTFallbackRGB: @(0xFFa2845e)
       },
       @"systemGreenColor": @{},
       @"systemIndigoColor": @{ // 13
-        RCTFallbackRGB: @(0x5856d6FF)
+        RCTFallbackRGB: @(0xFF5856d6)
       },
       @"systemOrangeColor": @{},
       @"systemPinkColor": @{},
@@ -692,25 +692,28 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
       // Adaptable Gray Colors
       @"systemGrayColor": @{},
       @"systemGray2Color": @{ // 13
-        RCTFallbackRGB: @(0xaeaeb2FF)
+        RCTFallbackRGB: @(0xFFaeaeb2)
       },
       @"systemGray3Color": @{ // 13
-        RCTFallbackRGB: @(0xc7c7ccFF)
+        RCTFallbackRGB: @(0xFFc7c7cc)
       },
       @"systemGray4Color": @{ // 13
-        RCTFallbackRGB: @(0xd1d1d6FF)
+        RCTFallbackRGB: @(0xFFd1d1d6)
       },
       @"systemGray5Color": @{ // 13
-        RCTFallbackRGB: @(0xe5e5eaFF)
+        RCTFallbackRGB: @(0xFFe5e5ea)
       },
       @"systemGray6Color": @{ // 13
-        RCTFallbackRGB: @(0xf2f2f7FF)
+        RCTFallbackRGB: @(0xFFf2f2f7)
       },
 #endif
 #if DEBUG
       // The follow exist for Unit Tests
       @"unitTestFallbackColor": @{
-        RCTFallback: @"systemBlueColor"
+        RCTFallback: @"labelColor"
+      },
+      @"unitTestFallbackColorIOS": @{
+        RCTFallback: @"blueColor"
       },
       @"unitTestFallbackColorEven": @{
         RCTSelector: @"unitTestFallbackColorEven",
