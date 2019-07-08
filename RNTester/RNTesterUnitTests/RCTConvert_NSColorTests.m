@@ -46,7 +46,7 @@
 {
   id json = RCTJSONParse(@"{ \"semantic\": \"unitTestFallbackColor\" }", nil);
   NSColor *value = [RCTConvert UIColor:json];
-  XCTAssertEqualObjects(value, [NSColor gridColor]);
+  XCTAssertEqualObjects(value, [NSColor systemBlueColor]);
 }
 
 - (void)testAlternatingColorEven
