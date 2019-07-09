@@ -28,7 +28,12 @@ import type {ViewStyleProp} from 'StyleSheet';
 import type {TVParallaxPropertiesType} from 'TVViewPropTypes';
 import type {PressEvent} from 'CoreEventTypes';
 
-const PRESS_RETENTION_OFFSET = {top: 20, left: 20, right: 20, bottom: 30};
+const PRESS_RETENTION_OFFSET = { top: 20, left: 20, right: 20, bottom: 30 };
+
+const handledNativeKeyboardEvents = [
+  { key: ' ' },
+  { key: 'Enter' },
+];
 
 type TVProps = $ReadOnly<{|
   hasTVPreferredFocus?: ?boolean,
@@ -41,6 +46,7 @@ type Props = $ReadOnly<{|
   activeOpacity?: ?number,
   style?: ?ViewStyleProp,
 |}>;
+
 
 /**
  * A wrapper for making views respond properly to touches.
@@ -277,9 +283,23 @@ const TouchableOpacity = ((createReactClass({
     return childStyle.opacity == null ? 1 : childStyle.opacity;
   },
 
+  _onKeyUp: function (ev) {
+    if (ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') {
+      this.touchableHandlePress(ev);
+    }
+  },
+
+  _onKeyDown: function (ev) {
+    if (ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') {
+      this.touchableHandleActivePressIn(ev)
+    }
+  },
+
   render: function() {
     return (
       <Animated.View
+        onKeyUp={this._onKeyUp}
+        onKeyDown={this._onKeyDown}
         accessible={this.props.accessible !== false}
         accessibilityLabel={this.props.accessibilityLabel}
         accessibilityHint={this.props.accessibilityHint} // TODO(OSS Candidate ISS#2710739)
@@ -338,6 +358,8 @@ const TouchableOpacity = ((createReactClass({
         onClick={this.touchableHandlePress} // TODO(android ISS)
         onMouseEnter={this.props.onMouseEnter} // [TODO(macOS ISS#2323203)
         onMouseLeave={this.props.onMouseLeave}
+        keyDownEvents={handledNativeKeyboardEvents}
+        keyUpEvents={handledNativeKeyboardEvents}
         onDragEnter={this.props.onDragEnter}
         onDragLeave={this.props.onDragLeave}
         onDrop={this.props.onDrop}

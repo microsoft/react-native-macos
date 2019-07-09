@@ -36,6 +36,11 @@ const DEFAULT_PROPS = {
   underlayColor: 'black',
 };
 
+const handledNativeKeyboardEvents = [
+  { key: ' ' },
+  { key: 'Enter' },
+];
+
 const PRESS_RETENTION_OFFSET = {top: 20, left: 20, right: 20, bottom: 30};
 
 type IOSProps = $ReadOnly<{|
@@ -361,7 +366,7 @@ const TouchableHighlight = ((createReactClass({
     this.props.onShowUnderlay && this.props.onShowUnderlay();
   },
 
-  _hideUnderlay: function() {
+  _hideUnderlay: function(ev: IKeyboardEvent) {
     /* $FlowFixMe(>=0.89.0 site=react_native_fb) This comment suppresses an
      * error found when Flow v0.89 was deployed. To see the error, delete this
      * comment and run Flow. */
@@ -391,10 +396,26 @@ const TouchableHighlight = ((createReactClass({
     );
   },
 
+  _onKeyUp: function (ev) {
+    if ((ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
+      !this.props.disabled) {
+        this.touchableHandlePress(ev);
+    }
+  },
+
+  _onKeyDown: function (ev) {
+    if ((ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
+      !this.props.disabled) {
+        this.touchableHandlePress(ev);
+    }
+  },
+
   render: function() {
     const child = React.Children.only(this.props.children);
     return (
       <View
+        onKeyUp={this._onKeyUp}
+        onKeyDown={this._onKeyDown}
         accessible={this.props.accessible !== false}
         accessibilityLabel={this.props.accessibilityLabel}
         accessibilityHint={this.props.accessibilityHint} // TODO(OSS Candidate ISS#2710739)
@@ -454,6 +475,8 @@ const TouchableHighlight = ((createReactClass({
         onClick={this.touchableHandlePress} // TODO(android ISS)
         onMouseEnter={this.props.onMouseEnter} // [TODO(macOS/win ISS#2323203)
         onMouseLeave={this.props.onMouseLeave}
+        keyDownEvents={handledNativeKeyboardEvents}
+        keyUpEvents={handledNativeKeyboardEvents}
         onDragEnter={this.props.onDragEnter}
         onDragLeave={this.props.onDragLeave}
         onDrop={this.props.onDrop}
