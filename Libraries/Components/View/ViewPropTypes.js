@@ -465,6 +465,20 @@ export type ViewProps = $ReadOnly<{|
   accessibilityStates?: ?AccessibilityStates,
 
   /**
+   * Indicates to accessibility services that the UI Component is within a set and has the given numbered position.
+   * 
+   * See https://github.com/ReactWindows/discussions-and-proposals/blob/harinik-accessibility/proposals/0000-accessibilityapis-lists.md
+   */
+  accessibilityPosInSet?: ?number,
+
+  /**
+   * Indicates to accessibility services that the UI Component is within a set with the given size.
+   * 
+   * See https://github.com/ReactWindows/discussions-and-proposals/blob/harinik-accessibility/proposals/0000-accessibilityapis-lists.md
+   */
+  accessibilitySetSize?: ?number,
+
+  /**
    * Used to locate this view in end-to-end tests.
    *
    * > This disables the 'layout-only view removal' optimization for this view!

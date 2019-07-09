@@ -92,6 +92,21 @@ module.exports = {
   accessibilityStates: PropTypes.arrayOf(
     PropTypes.oneOf(DeprecatedAccessibilityStates),
   ),
+
+  /**
+   * Indicates to accessibility services that the UI Component is within a set and has the given numbered position.
+   * 
+   * See https://github.com/ReactWindows/discussions-and-proposals/blob/harinik-accessibility/proposals/0000-accessibilityapis-lists.md
+   */
+  accessibilityPosInSet: PropTypes.number,
+
+  /**
+   * Indicates to accessibility services that the UI Component is within a set with the given size.
+   * 
+   * See https://github.com/ReactWindows/discussions-and-proposals/blob/harinik-accessibility/proposals/0000-accessibilityapis-lists.md
+   */
+  accessibilitySetSize: PropTypes.number,
+
   /**
    * Indicates to accessibility services whether the user should be notified
    * when this view changes. Works for Android API >= 19 only.
