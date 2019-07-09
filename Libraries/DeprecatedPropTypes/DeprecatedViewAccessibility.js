@@ -65,6 +65,8 @@ module.exports = {
     'tablist',
     'timer',
     'toolbar',
+    'list', // RNW-only
+    'listitem', // RNW-only
   ],
   // This must be kept in sync with the AccessibilityStatesMask in RCTViewManager.m
   DeprecatedAccessibilityStates: [

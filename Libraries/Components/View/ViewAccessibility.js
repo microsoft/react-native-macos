@@ -74,7 +74,9 @@ export type AccessibilityRole =
   | 'tab'
   | 'tablist'
   | 'timer'
-  | 'toolbar';
+  | 'toolbar'
+  | 'list' // RNW-only
+  | 'listitem'; // RNW-only
 
 export type AccessibilityState =
   | 'selected'
@@ -145,6 +147,8 @@ module.exports = {
     'tablist',
     'timer',
     'toolbar',
+    'list', // RNW-only
+    'listitem', // RNW-only
   ],
   AccessibilityStates: [
     'selected',
