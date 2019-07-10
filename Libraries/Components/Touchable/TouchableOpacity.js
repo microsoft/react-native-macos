@@ -30,7 +30,7 @@ import type {PressEvent} from 'CoreEventTypes';
 
 const PRESS_RETENTION_OFFSET = {top: 20, left: 20, right: 20, bottom: 30};
 
-const handledNativeKeyboardEvents = [{ key: ' ' }, { key: 'Enter' }];
+const handledNativeKeyboardEvents = [{key: ' '}, {key: 'Enter'}];
 
 type TVProps = $ReadOnly<{|
   hasTVPreferredFocus?: ?boolean,
@@ -279,17 +279,20 @@ const TouchableOpacity = ((createReactClass({
     return childStyle.opacity == null ? 1 : childStyle.opacity;
   },
 
-
-  _onKeyUp: function (ev) {
-      if ((ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
-    !this.props.disabled) {
+  _onKeyUp: function(ev) {
+    if (
+      (ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
+      !this.props.disabled
+    ) {
       this.touchableHandlePress();
     }
   },
 
-  _onKeyDown: function (ev) {
-      if ((ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
-    !this.props.disabled) {
+  _onKeyDown: function(ev) {
+    if (
+      (ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
+      !this.props.disabled
+    ) {
       this.touchableHandleActivePressIn();
     }
   },
@@ -362,11 +365,7 @@ const TouchableOpacity = ((createReactClass({
         onDragEnter={this.props.onDragEnter}
         onDragLeave={this.props.onDragLeave}
         onDrop={this.props.onDrop}
-        draggedTypes={this.props.draggedTypes} // ]TODO(macOS ISS#2323203)
-        /* $FlowFixMe(>=0.89.0 site=react_native_fb) This comment suppresses an
-         * error found when Flow v0.89 was deployed. To see the error, delete
-         * this comment and run Flow. */
-        onResponderTerminate={this.touchableHandleResponderTerminate}>
+        draggedTypes={this.props.draggedTypes}>
         {this.props.children}
         {Touchable.renderDebugView({
           color: 'cyan',

@@ -36,7 +36,7 @@ const DEFAULT_PROPS = {
   underlayColor: 'black',
 };
 
-const handledNativeKeyboardEvents = [{ key: ' ' }, { key: 'Enter' }];
+const handledNativeKeyboardEvents = [{key: ' '}, {key: 'Enter'}];
 
 const PRESS_RETENTION_OFFSET = {top: 20, left: 20, right: 20, bottom: 30};
 
@@ -393,16 +393,20 @@ const TouchableHighlight = ((createReactClass({
     );
   },
 
-  _onKeyUp: function (ev) {
-      if ((ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
-    !this.props.disabled) {
+  _onKeyUp: function(ev) {
+    if (
+      (ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
+      !this.props.disabled
+    ) {
       this.touchableHandlePress();
     }
   },
 
-  _onKeyDown: function (ev) {
-      if ((ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
-    !this.props.disabled) {
+  _onKeyDown: function(ev) {
+    if (
+      (ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
+      !this.props.disabled
+    ) {
       this.touchableHandleActivePressIn();
     }
   },
