@@ -219,7 +219,7 @@ Isolate *V8Executor::GetIsolate() {
 void V8Executor::TrySetJSEConfigFromEnv(){
   const char* localPath = getenv("V8_JSCACHE_PATH");
   if (localPath != NULL) {
-    if ( m_jseConfigParams == nullptr ) {
+    if ( m_jseConfigParams == nullptr ){
       LOGV("V8Executor.setCacheFromEnv V8_JSCACHE_PATH: %s", localPath);
       m_jseConfigParams = std::make_unique<facebook::react::JSEConfigParams>();
       m_jseConfigParams->cachePath = std::string(localPath);
@@ -264,7 +264,7 @@ V8Executor::V8Executor(std::shared_ptr<ExecutorDelegate> delegate,
   m_jscConfig(jscConfig),
   m_jseConfigParams(std::move(jseConfigParams)) {
   LOGV("V8Executor::V8Executor entry");
-  if ( m_jseConfigParams == nullptr ) {
+  if ( m_jseConfigParams == nullptr ){
     TrySetJSEConfigFromEnv();
   }
   m_jseLocalPath = "";
