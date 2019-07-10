@@ -366,7 +366,7 @@ const TouchableHighlight = ((createReactClass({
     this.props.onShowUnderlay && this.props.onShowUnderlay();
   },
 
-  _hideUnderlay: function(ev: IKeyboardEvent) {
+  _hideUnderlay: function() {
     /* $FlowFixMe(>=0.89.0 site=react_native_fb) This comment suppresses an
      * error found when Flow v0.89 was deployed. To see the error, delete this
      * comment and run Flow. */
