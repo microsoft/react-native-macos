@@ -30,7 +30,11 @@ import type {PressEvent} from 'CoreEventTypes';
 
 const PRESS_RETENTION_OFFSET = {top: 20, left: 20, right: 20, bottom: 30};
 
-const handledNativeKeyboardEvents = [{key: ' '}, {key: 'Enter'}];
+const handledNativeKeyboardEvents = [
+  {code: 'Space'},
+  {code: 'Enter'},
+  {code: 'GamepadA'},
+];
 
 type TVProps = $ReadOnly<{|
   hasTVPreferredFocus?: ?boolean,
@@ -281,7 +285,9 @@ const TouchableOpacity = ((createReactClass({
 
   _onKeyUp: function(ev) {
     if (
-      (ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
+      (ev.nativeEvent.code === ' ' ||
+        ev.nativeEvent.code === 'Enter' ||
+        ev.nativeEvent.code === 'GamepadA') &&
       !this.props.disabled
     ) {
       this.touchableHandlePress();
@@ -290,7 +296,9 @@ const TouchableOpacity = ((createReactClass({
 
   _onKeyDown: function(ev) {
     if (
-      (ev.nativeEvent.key === ' ' || ev.nativeEvent.key === 'Enter') &&
+      (ev.nativeEvent.code === ' ' ||
+        ev.nativeEvent.code === 'Enter' ||
+        ev.nativeEvent.code === 'GamepadA') &&
       !this.props.disabled
     ) {
       this.touchableHandleActivePressIn();
