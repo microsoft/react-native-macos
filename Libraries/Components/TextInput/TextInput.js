@@ -51,11 +51,6 @@ if (Platform.OS === 'android') {
   RCTSinglelineTextInputView = requireNativeComponent(
     'RCTSinglelineTextInputView',
   );
-} /* TODO[(windows ISS) */ else if (
-  Platform.OS === 'uwp' ||
-  Platform.OS === 'windesktop'
-) {
-  var RCTTextInput = requireNativeComponent('RCTTextInput'); // TODO](windows ISS)
 }
 
 const onlyMultiline = {
@@ -1047,9 +1042,6 @@ const TextInput = createReactClass({
         : this._renderIOSLegacy();
     } else if (Platform.OS === 'android') {
       textInput = this._renderAndroid();
-    } else if (Platform.OS === 'uwp' || Platform.OS === 'windesktop') {
-      // TODO(windows ISS)
-      return this._renderWindows(); // TODO(windows ISS)
     }
     return (
       <TextAncestor.Provider value={true}>{textInput}</TextAncestor.Provider>
