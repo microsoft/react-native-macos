@@ -128,9 +128,7 @@ class Button extends React.Component<ButtonProps> {
     const formattedTitle =
       Platform.OS === 'android' ? title.toUpperCase() : title;
     const Touchable =
-      Platform.OS === 'android'
-        ? TouchableNativeFeedback
-          : TouchableOpacity;
+      Platform.OS === 'android' ? TouchableNativeFeedback : TouchableOpacity;
     return (
       <Touchable
         accessibilityLabel={accessibilityLabel}
