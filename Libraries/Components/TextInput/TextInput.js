@@ -1269,20 +1269,6 @@ const TextInput = createReactClass({
     );
   },
 
-  _renderWindows: function() {
-    // [TODO(windows ISS)
-    var props = Object.assign({}, this.props);
-    props.style = [(styles: any).input, this.props.style];
-
-    return (
-      <RCTTextInput
-        ref={this._setNativeRef}
-        {...props}
-        text={this._getText()}
-      />
-    );
-  }, // ]TODO(windows ISS)
-
   _onFocus: function(event: FocusEvent) {
     // [TODO(android ISS)
     // Set the focused TextInput field info in TextInputState.
