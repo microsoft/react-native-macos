@@ -1631,6 +1631,9 @@
 		9FD21D6D224303D900E7F88E /* JSIDynamic.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = EDEBC6DC214B3F6800DD5AC8 /* JSIDynamic.h */; };
 		9FD21D6E224303D900E7F88E /* JSCRuntime.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = EDEBC6DE214B3F6800DD5AC8 /* JSCRuntime.h */; };
 		9FD21D6F224303D900E7F88E /* jsi.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = EDEBC6E1214B3F6800DD5AC8 /* jsi.h */; };
+    	4F56C93822167A4800DB9F3F /* jsilib.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F56C93722167A4800DB9F3F /* jsilib.h */; };
+		4F56C93922167A4D00DB9F3F /* jsilib.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 4F56C93722167A4800DB9F3F /* jsilib.h */; };
+		4F56C93A2216A3B700DB9F3F /* jsilib.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 4F56C93722167A4800DB9F3F /* jsilib.h */; };
 		9FD21D71224303D900E7F88E /* JSCRuntime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EDEBC6DD214B3F6800DD5AC8 /* JSCRuntime.cpp */; };
 		9FD21D72224303D900E7F88E /* jsi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EDEBC6DB214B3F6800DD5AC8 /* jsi.cpp */; };
 		9FD21D73224303D900E7F88E /* JSIDynamic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EDEBC6DA214B3F6800DD5AC8 /* JSIDynamic.cpp */; };
@@ -2611,6 +2614,7 @@
 				9FD21D6D224303D900E7F88E /* JSIDynamic.h in Copy Headers */,
 				9FD21D6E224303D900E7F88E /* JSCRuntime.h in Copy Headers */,
 				9FD21D6F224303D900E7F88E /* jsi.h in Copy Headers */,
+				4F56C93A2216A3B700DB9F3F /* jsilib.h in Copy Headers */,
 			);
 			name = "Copy Headers";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2660,6 +2664,7 @@
 				ED296FC7214C9B4B00B7C4FE /* instrumentation.h in Copy Headers */,
 				ED296FC6214C9B4400B7C4FE /* JSIDynamic.h in Copy Headers */,
 				ED296FC5214C9B3E00B7C4FE /* jsi-inl.h in Copy Headers */,
+				4F56C93A2216A3B700DB9F3F /* jsilib.h in Copy Headers */,
 			);
 			name = "Copy Headers";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2687,6 +2692,7 @@
 				EDEBC71D214B40F900DD5AC8 /* JSIDynamic.h in Copy Headers */,
 				EDEBC71E214B40F900DD5AC8 /* JSCRuntime.h in Copy Headers */,
 				EDEBC71F214B40F900DD5AC8 /* jsi.h in Copy Headers */,
+				4F56C93A2216A3B700DB9F3F /* jsilib.h in Copy Headers */,
 			);
 			name = "Copy Headers";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3169,6 +3175,7 @@
 		EDEBC6DF214B3F6800DD5AC8 /* BUCK */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = BUCK; sourceTree = "<group>"; };
 		EDEBC6E0214B3F6800DD5AC8 /* instrumentation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = instrumentation.h; path = jsi/instrumentation.h; sourceTree = "<group>"; };
 		EDEBC6E1214B3F6800DD5AC8 /* jsi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = jsi.h; path = jsi/jsi.h; sourceTree = "<group>"; };
+		4F56C93722167A4800DB9F3F /* jsilib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = jsilib.h;path = jsi/jsilib.h; sourceTree = "<group>"; };
 		EDEBC73B214B45A300DD5AC8 /* libjsiexecutor.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libjsiexecutor.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		EDEBC740214B463000DD5AC8 /* BUCK */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = BUCK; sourceTree = "<group>"; };
 		EDEBC750214B47E100DD5AC8 /* JSDeltaBundleClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JSDeltaBundleClient.cpp; sourceTree = "<group>"; };
@@ -4040,6 +4047,7 @@
 				EDEBC6DF214B3F6800DD5AC8 /* BUCK */,
 				EDEBC6E0214B3F6800DD5AC8 /* instrumentation.h */,
 				EDEBC6E1214B3F6800DD5AC8 /* jsi.h */,
+				4F56C93722167A4800DB9F3F /* jsilib.h */,
 			);
 			path = jsi;
 			sourceTree = "<group>";
@@ -4810,6 +4818,7 @@
 				9FD21D67224303D900E7F88E /* JSIDynamic.h in Headers */,
 				9FD21D68224303D900E7F88E /* jsi-inl.h in Headers */,
 				9FD21D69224303D900E7F88E /* instrumentation.h in Headers */,
+				4F56C93A2216A3B700DB9F3F /* jsilib.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4845,6 +4854,7 @@
 				ED296FC1214C9B0400B7C4FE /* JSCRuntime.h in Headers */,
 				ED296FC3214C9B0400B7C4FE /* instrumentation.h in Headers */,
 				ED296FC4214C9B0400B7C4FE /* jsi.h in Headers */,
+				4F56C93722167A4800DB9F3F /* jsilib.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4879,6 +4889,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EDEBC6E9214B3F6800DD5AC8 /* jsi.h in Headers */,
+				4F56C93722167A4800DB9F3F /* jsilib.h in Headers */,
 				EDEBC6E7214B3F6800DD5AC8 /* JSCRuntime.h in Headers */,
 				EDEBC6E5214B3F6800DD5AC8 /* JSIDynamic.h in Headers */,
 				EDEBC6E2214B3F6800DD5AC8 /* jsi-inl.h in Headers */,
