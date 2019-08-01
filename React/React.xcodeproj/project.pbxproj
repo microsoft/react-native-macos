@@ -4817,6 +4817,7 @@
 				9FD21D67224303D900E7F88E /* JSIDynamic.h in Headers */,
 				9FD21D68224303D900E7F88E /* jsi-inl.h in Headers */,
 				9FD21D69224303D900E7F88E /* instrumentation.h in Headers */,
+				4F56C93822167A4800DB9F3F /* jsilib.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
