@@ -88,7 +88,7 @@
   [super setReactPaddingInsets:reactPaddingInsets];
   // We apply `paddingInsets` as `backedTextInputView`'s `textContainerInsets` on mac.
   ((RCTUITextView*)self.backedTextInputView).textContainerInsets = reactPaddingInsets;
-  [self setNeedsLayout];
+  [self setNeedsLayout:YES];
 }
 
 - (void)setReactBorderInsets:(UIEdgeInsets)reactBorderInsets
@@ -96,7 +96,7 @@
   [super setReactBorderInsets:reactBorderInsets];
   // We apply `borderInsets` as `_scrollView` layout offset on mac.
   _scrollView.frame = UIEdgeInsetsInsetRect(self.frame, reactBorderInsets);
-  [self setNeedsLayout];
+  [self setNeedsLayout:YES];
 }
 #endif // ]TODO(macOS ISS#2323203)
 
