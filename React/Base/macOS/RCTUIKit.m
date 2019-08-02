@@ -323,12 +323,6 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   [super drawRect:rect];
 }
 
-- (void)layout
-{
-  if (self.window != nil) {
-    [self layoutSubviews];
-  }
-}
 
 - (BOOL)canBecomeFirstResponder
 {
@@ -370,16 +364,6 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 - (void)setNeedsLayout
 {
   self.needsLayout = YES;
-}
-
-- (void)layoutSubviews
-{
-  [super layout];
-}
-
-- (void)setNeedsDisplay
-{
-  self.needsDisplay = YES;
 }
 
 @synthesize clipsToBounds = _clipsToBounds;

@@ -87,11 +87,19 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder:(nonnull NSCoder *)aDecoder)
 
 #endif // ]TODO(macOS ISS#2323203)
 
+#if TARGET_OS_OSX // ISS:3532364
+- (void)layout
+{
+  [super layout];
+  [self updateAvailableSize];
+}
+#else // TARGET_OS_IOS
 - (void)layoutSubviews
 {
   [super layoutSubviews];
   [self updateAvailableSize];
 }
+#endif // TARGET_OS_OSX
 
 - (void)insertReactSubview:(RCTUIView *)subview atIndex:(NSInteger)atIndex // TODO(macOS ISS#3536887)
 {
