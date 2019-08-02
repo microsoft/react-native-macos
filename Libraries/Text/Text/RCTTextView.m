@@ -228,7 +228,7 @@
   return reactTag;
 }
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // ISS:3532364
 - (void)didMoveToWindow {
   [super didMoveToWindow];
   [self moveToWindowDisplay];
