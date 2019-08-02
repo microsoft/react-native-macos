@@ -601,10 +601,17 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   [self.backedTextInputView reactBlur];
 }
 
+#if !TARGET_OS_OSX // ISS:3532364
 - (void)didMoveToWindow
 {
   [self.backedTextInputView reactFocusIfNeeded];
 }
+#else
+- (void)viewDidMoveToWindow
+{
+  [self.backedTextInputView reactFocusIfNeeded];
+}
+#endif
 
 #pragma mark - Custom Input Accessory View
 
