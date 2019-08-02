@@ -563,9 +563,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
   }
 }
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
-#define didMoveToWindow viewDidMoveToWindow
-#endif
 #if TARGET_OS_OSX
 - (void)viewWillMoveToWindow:(NSWindow *)newWindow
 {
@@ -579,11 +576,18 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
   }
 }
 #endif // ]TODO(macOS ISS#2323203)
+
+#if !TARGET_OS_OSX // ISS:3532364
 - (void)didMoveToWindow
 {
   [super didMoveToWindow];
-
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+  [self coordinateImageLoadOnMoveToWindow];
+}
+#else
+- (void)viewDidMoveToWindow
+{
+  [super viewDidMoveToWindow];
+  
   if (!_subscribedToWindowBackingNotifications && self.window != nil) {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(windowDidChangeBackingProperties:)
@@ -591,7 +595,10 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
                                                object:self.window];
     _subscribedToWindowBackingNotifications = YES;
   }
-#endif // ]TODO(macOS ISS#2323203)
+}
+#endif
+
+- (void)coordinateImageLoadOnMoveToWindow {
   if (!self.window) {
     // Cancel loading the image if we've moved offscreen. In addition to helping
     // prioritise image requests that are actually on-screen, this removes

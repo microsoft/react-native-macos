@@ -367,8 +367,6 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 - (void)insertSubview:(NSView *)view atIndex:(NSInteger)index;
 
-- (void)didMoveToWindow;
-
 - (void)setNeedsLayout;
 
 // An override of an undocumented API that controls the layer's masksToBounds property

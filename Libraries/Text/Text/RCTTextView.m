@@ -228,10 +228,19 @@
   return reactTag;
 }
 
-- (void)didMoveToWindow
-{
+#if !TARGET_OS_OSX // ISS:3532364
+- (void)didMoveToWindow {
   [super didMoveToWindow];
+  [self moveToWindowDisplay];
+}
+#else
+- (void)viewDidMoveToWindow {
+  [super viewDidMoveToWindow];
+  [self moveToWindowDisplay];
+}
+#endif
 
+- (void)moveToWindowDisplay {
   if (!self.window) {
     self.layer.contents = nil;
     if (_highlightLayer) {

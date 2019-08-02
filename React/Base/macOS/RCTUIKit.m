@@ -256,11 +256,6 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   return [self canBecomeFirstResponder];
 }
 
-- (void)viewDidMoveToWindow
-{
-  [self didMoveToWindow];
-}
-
 - (BOOL)isFlipped
 {
   return YES;
@@ -354,11 +349,6 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   } else {
     [self addSubview:view positioned:NSWindowBelow relativeTo:subviews[index]];
   }
-}
-
-- (void)didMoveToWindow
-{
-  [super viewDidMoveToWindow];
 }
 
 - (void)setNeedsLayout
