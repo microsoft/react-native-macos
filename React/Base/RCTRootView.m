@@ -173,7 +173,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
   return fitSize;
 }
 
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // ISS:3532364
 - (void)layout
 {
   [super layout];
@@ -189,7 +189,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
                                          RCTRoundPixelValue(bounds.origin.y + ((bounds.size.height - loadingViewSize.height) / 2), scale)
                                          );
 }
-#else
+#else // TARGET_OS_IOS
 - (void)layoutSubviews
 {
   [super layoutSubviews];
@@ -200,7 +200,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
     CGRectGetMidY(self.bounds)
   };
 }
-#endif // TODO(macOS ISS#2323203)
+#endif // TARGET_OS_OSX
 
 - (UIViewController *)reactViewController
 {

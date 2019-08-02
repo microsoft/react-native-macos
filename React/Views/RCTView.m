@@ -559,19 +559,19 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:unused)
   }
 }
 
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // ISS:3532364
 - (void)layout
 {
   [super layout];
   [self removeClippedSubviewsIfNecessary];
 }
-#else // TODO(macOS ISS#2323203)
+#else // TARGET_OS_IOS
 - (void)layoutSubviews
 {
   [super layoutSubviews];
   [self removeClippedSubviewsIfNecessary];
 }
-#endif // TODO(macOS ISS#2323203)
+#endif // TARGET_OS_OSX
 
 - (void) removeClippedSubviewsIfNecessary {
   // TODO (#5906496): this a nasty performance drain, but necessary

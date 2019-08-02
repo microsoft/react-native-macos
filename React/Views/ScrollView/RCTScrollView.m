@@ -678,19 +678,19 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(RCTPlatformVie
   [_eventDispatcher.bridge.uiManager.observerCoordinator removeObserver:self];
 }
 
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // ISS:3532364
 - (void)layout
 {
   [super layout];
   [self commonLayoutImplementation];
 }
-#else
+#else // TARGET_OS_IOS
 - (void)layoutSubviews
 {
   [super layoutSubviews];
   [self commonLayoutImplementation];
 }
-#endif // TODO(macOS ISS#2323203)
+#endif // TARGET_OS_OSX
 
 - (void)commonLayoutImplementation {
   RCTAssert(self.subviews.count == 1, @"we should only have exactly one subview");

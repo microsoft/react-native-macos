@@ -142,11 +142,11 @@
   for (RCTUIView *view in descendantViews) { // TODO(macOS ISS#3536887)
     [self addSubview:view];
   }
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // ISS:3532364
   [self setNeedsDisplay:YES];
-#else
+#else // TARGET_OS_IOS
   [self setNeedsDisplay];
-#endif // TODO(macOS ISS#2323203)
+#endif // TARGET_OS_OSX
 }
 
 - (void)drawRect:(CGRect)rect
@@ -248,11 +248,11 @@
       _highlightLayer = nil;
     }
   } else if (_textStorage) {
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // ISS:3532364
     [self setNeedsDisplay:YES];
-#else
+#else // TARGET_OS_IOS
     [self setNeedsDisplay];
-#endif // TODO(macOS ISS#2323203)
+#endif // TARGET_OS_OSX
   }
 }
 

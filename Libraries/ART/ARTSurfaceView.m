@@ -51,11 +51,11 @@
 
 - (void)invalidate
 {
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // ISS:3532364
   [self setNeedsDisplay:YES];
 #else
   [self setNeedsDisplay];
-#endif // TODO(macOS ISS#2323203)
+#endif // ISS:3532364
 }
 
 - (void)drawRect:(CGRect)rect
