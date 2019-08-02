@@ -559,15 +559,25 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:unused)
   }
 }
 
+#if TARGET_OS_OSX // ISS:3532364
+- (void)layout
+{
+  [super layout];
+  [self removeClippedSubviewsIfNecessary];
+}
+#else // TARGET_OS_IOS
 - (void)layoutSubviews
 {
+  [super layoutSubviews];
+  [self removeClippedSubviewsIfNecessary];
+}
+#endif // TARGET_OS_OSX
+
+- (void) removeClippedSubviewsIfNecessary {
   // TODO (#5906496): this a nasty performance drain, but necessary
   // to prevent gaps appearing when the loading spinner disappears.
   // We might be able to fix this another way by triggering a call
   // to updateClippedSubviews manually after loading
-
-  [super layoutSubviews];
-
   if (_removeClippedSubviews) {
     [self updateClippedSubviews];
   }
