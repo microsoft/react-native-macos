@@ -43,7 +43,7 @@
   [super setReactPaddingInsets:reactPaddingInsets];
   // We apply `paddingInsets` as `backedTextInputView`'s `textContainerInsets` on mac.
   ((RCTUITextField*)self.backedTextInputView).textContainerInset = reactPaddingInsets;
-  [self setNeedsLayout];
+  [self setNeedsLayout:YES];
 }
 
 - (void)setReactBorderInsets:(UIEdgeInsets)reactBorderInsets
@@ -51,7 +51,7 @@
   [super setReactBorderInsets:reactBorderInsets];
   // We apply `borderInsets` as `backedTextInputView`'s layout offset on mac.
   ((RCTUITextField*)self.backedTextInputView).frame = UIEdgeInsetsInsetRect(self.bounds, reactBorderInsets);
-  [self setNeedsLayout];
+  [self setNeedsLayout:YES];
 }
 #endif // ]TODO(macOS ISS#2323203)
 

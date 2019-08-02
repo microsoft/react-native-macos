@@ -351,11 +351,6 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   }
 }
 
-- (void)setNeedsLayout
-{
-  self.needsLayout = YES;
-}
-
 @synthesize clipsToBounds = _clipsToBounds;
 
 @synthesize backgroundColor = _backgroundColor;
