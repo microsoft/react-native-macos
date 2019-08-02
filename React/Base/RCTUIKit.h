@@ -365,8 +365,6 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 - (void)insertSubview:(NSView *)view atIndex:(NSInteger)index;
 
-- (void)didMoveToWindow;
-
 - (void)setNeedsLayout;
 
 - (void)layoutSubviews;
