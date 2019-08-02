@@ -369,10 +369,6 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 - (void)setNeedsLayout;
 
-- (void)layoutSubviews;
-
-- (void)setNeedsDisplay;
-
 // An override of an undocumented API that controls the layer's masksToBounds property
 @property (nonatomic) BOOL clipsToBounds;
 @property (nonatomic, copy) NSColor *backgroundColor;

@@ -173,27 +173,34 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
   return fitSize;
 }
 
-- (void)layoutSubviews
+#if TARGET_OS_OSX // ISS:3532364
+- (void)layout
 {
-  [super layoutSubviews];
+  [super layout];
   _contentView.frame = self.bounds;
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
-  _loadingView.center = (CGPoint){
-    CGRectGetMidX(self.bounds),
-    CGRectGetMidY(self.bounds)
-  };
-#else // [TODO(macOS ISS#2323203)
+
   NSRect bounds = self.bounds;
   NSSize loadingViewSize = _loadingView.frame.size;
   CGFloat scale = self.window.backingScaleFactor;
   RCTAssert(scale != 0.0, @"Layout occurs before the view is in a window?");
 
   _loadingView.frameOrigin = NSMakePoint(
-    RCTRoundPixelValue(bounds.origin.x + ((bounds.size.width - loadingViewSize.width) / 2), scale),
-    RCTRoundPixelValue(bounds.origin.y + ((bounds.size.height - loadingViewSize.height) / 2), scale)
-  );
-#endif // ]TODO(macOS ISS#2323203)
+                                         RCTRoundPixelValue(bounds.origin.x + ((bounds.size.width - loadingViewSize.width) / 2), scale),
+                                         RCTRoundPixelValue(bounds.origin.y + ((bounds.size.height - loadingViewSize.height) / 2), scale)
+                                         );
 }
+#else // TARGET_OS_IOS
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  _contentView.frame = self.bounds;
+
+  _loadingView.center = (CGPoint){
+    CGRectGetMidX(self.bounds),
+    CGRectGetMidY(self.bounds)
+  };
+}
+#endif // TARGET_OS_OSX
 
 - (UIViewController *)reactViewController
 {
