@@ -122,11 +122,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder:(nonnull NSCoder *)aDecoder)
 
   _sizeFlexibility = sizeFlexibility;
 
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // ISS:3532364
   [self setNeedsLayout:YES];
-#else
+#else // !TARGET_OS_OSX
   [self setNeedsLayout];
-#endif // TODO(macOS ISS#2323203)
+#endif // TARGET_OS_OSX
 }
 
 - (CGSize)availableSize
