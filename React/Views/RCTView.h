@@ -43,7 +43,7 @@
 @property (nonatomic, assign) RCTPointerEvents pointerEvents;
 
 + (void)autoAdjustInsetsForView:(RCTUIView<RCTAutoInsetsProtocol> *)parentView
-                 withScrollView:(UIScrollView *)scrollView
+                 withScrollView:(RCTUIScrollView *)scrollView
                    updateOffset:(BOOL)updateOffset;
 
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)

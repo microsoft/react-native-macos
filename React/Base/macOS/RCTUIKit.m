@@ -400,9 +400,9 @@ static RCTUIView *UIViewCommonInit(RCTUIView *self)
 
 @end
 
-// UIScrollView
+// RCTUIScrollView
 
-@implementation UIScrollView
+@implementation RCTUIScrollView
 
 // UIScrollView properties missing from NSScrollView
 - (CGPoint)contentOffset

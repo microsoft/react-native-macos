@@ -61,6 +61,7 @@ UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
 // UIView
 #define RCTPlatformView         UIView
 #define RCTUIView UIView
+#define RCTUIScrollView UIScrollView
 
 UIKIT_STATIC_INLINE RCTPlatformView *UIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, UIEvent *event)
 {
@@ -395,7 +396,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 // UIScrollView
 
-@interface UIScrollView : NSScrollView
+@interface RCTUIScrollView : NSScrollView
 
 // UIScrollView properties missing in NSScrollView
 @property (nonatomic, assign) CGPoint contentOffset;

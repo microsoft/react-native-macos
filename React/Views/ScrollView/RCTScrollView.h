@@ -41,7 +41,7 @@
 /**
  * The underlying scrollView (TODO: can we remove this?)
  */
-@property (nonatomic, readonly) UIScrollView *scrollView;
+@property (nonatomic, readonly) RCTUIScrollView *scrollView;
 
 @property (nonatomic, assign) UIEdgeInsets contentInset;
 @property (nonatomic, assign) BOOL automaticallyAdjustContentInsets;

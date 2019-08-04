@@ -418,7 +418,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:unused)
 #pragma mark - Statics for dealing with layoutGuides
 
 + (void)autoAdjustInsetsForView:(RCTUIView<RCTAutoInsetsProtocol> *)parentView
-                 withScrollView:(UIScrollView *)scrollView
+                 withScrollView:(RCTUIScrollView *)scrollView
                    updateOffset:(BOOL)updateOffset
 {
   UIEdgeInsets baseInset = parentView.contentInset;

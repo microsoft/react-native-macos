@@ -160,7 +160,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
  */
 @interface RCTCustomScrollView :
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
-  UIScrollView
+  RCTUIScrollView
 #else
   UIScrollView<UIGestureRecognizerDelegate>
 #endif // ]TODO(macOS ISS#2323203)
