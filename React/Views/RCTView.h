@@ -15,7 +15,7 @@
 
 @class RCTView;
 
-@interface RCTView : UIView
+@interface RCTView : RCTUIView
 
 // [TODO(OSS Candidate ISS#2710739)
 - (BOOL)becomeFirstResponder;
@@ -42,7 +42,7 @@
  */
 @property (nonatomic, assign) RCTPointerEvents pointerEvents;
 
-+ (void)autoAdjustInsetsForView:(UIView<RCTAutoInsetsProtocol> *)parentView
++ (void)autoAdjustInsetsForView:(RCTUIView<RCTAutoInsetsProtocol> *)parentView
                  withScrollView:(UIScrollView *)scrollView
                    updateOffset:(BOOL)updateOffset;
 

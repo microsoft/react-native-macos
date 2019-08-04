@@ -30,7 +30,7 @@
  * efficiently since it will have already been computed by the off-main-thread
  * layout system.
  */
-@property (nonatomic, readonly) UIView *contentView;
+@property (nonatomic, readonly) RCTUIView *contentView;
 
 /**
  * If the `contentSize` is not specified (or is specified as {0, 0}, then the

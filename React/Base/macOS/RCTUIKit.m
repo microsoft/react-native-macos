@@ -201,11 +201,11 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
 
 // UIView
 
-@interface UIView ()
+@interface RCTUIView ()
 
 @end
 
-@implementation UIView
+@implementation RCTUIView
 {
 @private
   NSColor *_backgroundColor;
@@ -234,7 +234,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
   return keyPaths;
 }
 
-static UIView *UIViewCommonInit(UIView *self)
+static RCTUIView *UIViewCommonInit(RCTUIView *self)
 {
   if (self != nil) {
     self.wantsLayer = YES;

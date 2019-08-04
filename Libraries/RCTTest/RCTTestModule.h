@@ -28,7 +28,7 @@ typedef NS_ENUM(NSInteger, RCTTestStatus) {
 /**
  * This is the view to be snapshotted.
  */
-@property (nonatomic, strong) UIView *view;
+@property (nonatomic, strong) RCTUIView *view;
 
 /**
  * This is used to give meaningful names to snapshot image files.

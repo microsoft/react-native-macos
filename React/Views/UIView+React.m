@@ -164,13 +164,13 @@
 {
   // Check if sorting is required - in most cases it won't be.
   BOOL sortingRequired = NO;
-  for (UIView *subview in self.subviews) {
+  for (RCTUIView *subview in self.subviews) {
     if (subview.reactZIndex != 0) {
       sortingRequired = YES;
       break;
     }
   }
-  return sortingRequired ? [self.reactSubviews sortedArrayUsingComparator:^NSComparisonResult(UIView *a, UIView *b) {
+  return sortingRequired ? [self.reactSubviews sortedArrayUsingComparator:^NSComparisonResult(RCTUIView *a, RCTUIView *b) {
     if (a.reactZIndex > b.reactZIndex) {
       return NSOrderedDescending;
     } else {

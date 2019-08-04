@@ -24,7 +24,7 @@
 
 RCT_EXPORT_MODULE()
 
-- (UIView *)view
+- (RCTUIView *)view
 {
   RCTWebView *webView = [RCTWebView new];
   webView.delegate = self;

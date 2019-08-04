@@ -13,7 +13,7 @@
 
 RCT_EXPORT_MODULE()
 
-- (UIView *)view
+- (RCTUIView *)view
 {
   return [[RCTMultilineTextInputView alloc] initWithBridge:self.bridge];
 }

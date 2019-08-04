@@ -324,7 +324,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
  * In order to have this called, you must have delaysContentTouches set to NO
  * (which is the not the `UIKit` default).
  */
-- (BOOL)touchesShouldCancelInContentView:(__unused UIView *)view
+- (BOOL)touchesShouldCancelInContentView:(__unused RCTUIView *)view
 {
   //TODO: shouldn't this call super if _shouldDisableScrollInteraction returns NO?
   return ![self _shouldDisableScrollInteraction];
@@ -338,9 +338,9 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
  */
 - (void)setContentOffset:(CGPoint)contentOffset
 {
-  UIView *contentView = nil;
+  RCTUIView *contentView = nil;
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
-  contentView = (UIView *) self.documentView;	// NSScrollView's documentView must be of type UIView/RCTView
+  contentView = (RCTUIView *) self.documentView;	// NSScrollView's documentView must be of type UIView/RCTView
 #else
   contentView = [self contentView];
 #endif // ]TODO(macOS ISS#2323203)
@@ -455,7 +455,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
 {
   RCTEventDispatcher *_eventDispatcher;
   CGRect _prevFirstVisibleFrame;
-  __weak UIView *_firstVisibleView;
+  __weak RCTUIView *_firstVisibleView;
   RCTCustomScrollView *_scrollView;
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
   UIView *_contentView;
@@ -540,7 +540,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
   }
 }
 
-- (UIView *)contentView
+- (RCTUIView *)contentView
 {
   return _scrollView.documentView;
 }
@@ -591,7 +591,7 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(RCTPlatformVie
   // Does nothing
 }
 
-- (void)insertReactSubview:(UIView *)view atIndex:(NSInteger)atIndex
+- (void)insertReactSubview:(RCTUIView *)view atIndex:(NSInteger)atIndex
 {
   [super insertReactSubview:view atIndex:atIndex];
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
@@ -617,7 +617,7 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(RCTPlatformVie
 #endif // TODO(macOS ISS#2323203)
 }
 
-- (void)removeReactSubview:(UIView *)subview
+- (void)removeReactSubview:(RCTUIView *)subview
 {
   [super removeReactSubview:subview];
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
@@ -1272,13 +1272,13 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 - (void)uiManagerWillPerformMounting:(RCTUIManager *)manager
 {
   RCTAssertUIManagerQueue();
-  [manager prependUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+  [manager prependUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
     BOOL horz = [self isHorizontal:self->_scrollView];
     NSUInteger minIdx = [self->_maintainVisibleContentPosition[@"minIndexForVisible"] integerValue];
     for (NSUInteger ii = minIdx; ii < self.contentView.subviews.count; ++ii) { // TODO(OSS Candidate ISS#2710739) use property instead of ivar for mac
       // Find the first entirely visible view. This must be done after we update the content offset
       // or it will tend to grab rows that were made visible by the shift in position
-      UIView *subview = self.contentView.subviews[ii]; // TODO(OSS Candidate ISS#2710739) use property instead of ivar for mac
+      RCTUIView *subview = self.contentView.subviews[ii]; // TODO(OSS Candidate ISS#2710739) use property instead of ivar for mac
       if ((horz
            ? subview.frame.origin.x >= self->_scrollView.contentOffset.x
            : subview.frame.origin.y >= self->_scrollView.contentOffset.y) ||
@@ -1289,7 +1289,7 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
       }
     }
   }];
-  [manager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+  [manager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
     if (self->_maintainVisibleContentPosition == nil) {
       return; // The prop might have changed in the previous UIBlocks, so need to abort here.
     }

@@ -13,7 +13,7 @@
  * thread.
  */
 
-@interface ARTNode : UIView
+@interface ARTNode : RCTUIView
 
 @property (nonatomic, assign) CGFloat opacity;
 

@@ -24,7 +24,7 @@ RCT_EXPORT_MODULE()
   return shadowView;
 }
 
-- (UIView *)view
+- (RCTUIView *)view
 {
   return [[RCTSinglelineTextInputView alloc] initWithBridge:self.bridge];
 }

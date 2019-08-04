@@ -40,7 +40,7 @@
   NSMutableArray<NSMutableDictionary *> *_reactTouches;
   NSMutableArray<RCTPlatformView *> *_touchViews; // TODO(macOS ISS#2323203)
 
-  __weak UIView *_cachedRootView;
+  __weak RCTUIView *_cachedRootView;
 
   uint16_t _coalescingKey;
 #if TARGET_OS_OSX// [TODO(macOS ISS#2323203)
@@ -82,14 +82,14 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithTarget:(id)target action:(SEL)action
 RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
 #endif // ]TODO(macOS ISS#2323203)
 
-- (void)attachToView:(UIView *)view
+- (void)attachToView:(RCTUIView *)view
 {
   RCTAssert(self.view == nil, @"RCTTouchHandler already has attached view.");
 
   [view addGestureRecognizer:self];
 }
 
-- (void)detachFromView:(UIView *)view
+- (void)detachFromView:(RCTUIView *)view
 {
   RCTAssertParam(view);
   RCTAssert(self.view == view, @"RCTTouchHandler attached to another view.");
@@ -137,8 +137,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
     
     while (targetView) {
       BOOL isUserInteractionEnabled = NO;
-      if ([((UIView*)targetView) respondsToSelector:@selector(isUserInteractionEnabled)]) {
-        isUserInteractionEnabled = ((UIView*)targetView).isUserInteractionEnabled;
+      if ([((RCTUIView*)targetView) respondsToSelector:@selector(isUserInteractionEnabled)]) {
+        isUserInteractionEnabled = ((RCTUIView*)targetView).isUserInteractionEnabled;
       }
       if (targetView.reactTag && isUserInteractionEnabled) {
         break;
@@ -148,8 +148,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
 
     NSNumber *reactTag = [targetView reactTagAtPoint:touchLocation];
     BOOL isUserInteractionEnabled = NO;
-    if ([((UIView*)targetView) respondsToSelector:@selector(isUserInteractionEnabled)]) {
-      isUserInteractionEnabled = ((UIView*)targetView).isUserInteractionEnabled;
+    if ([((RCTUIView*)targetView) respondsToSelector:@selector(isUserInteractionEnabled)]) {
+      isUserInteractionEnabled = ((RCTUIView*)targetView).isUserInteractionEnabled;
     }
     if (!reactTag || !isUserInteractionEnabled) {
       continue;
@@ -355,7 +355,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
  */
 - (void)_cacheRootView
 {
-  UIView *rootView = self.view;
+  RCTUIView *rootView = self.view;
   while (rootView.superview && ![rootView isReactRootView] && ![rootView isKindOfClass:[RCTSurfaceView class]]) {
     rootView = rootView.superview;
   }

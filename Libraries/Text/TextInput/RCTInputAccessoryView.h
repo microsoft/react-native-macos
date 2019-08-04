@@ -10,7 +10,7 @@
 @class RCTBridge;
 @class RCTInputAccessoryViewContent;
 
-@interface RCTInputAccessoryView : UIView
+@interface RCTInputAccessoryView : RCTUIView
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge;
 

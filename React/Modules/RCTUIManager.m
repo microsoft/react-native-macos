@@ -107,7 +107,7 @@ RCT_EXPORT_MODULE()
   RCTExecuteOnMainQueue(^{
     RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways, @"UIManager invalidate", nil);
     for (NSNumber *rootViewTag in self->_rootViewTags) {
-      UIView *rootView = self->_viewRegistry[rootViewTag];
+      RCTUIView *rootView = self->_viewRegistry[rootViewTag];
       if ([rootView conformsToProtocol:@protocol(RCTInvalidating)]) {
         [(id<RCTInvalidating>)rootView invalidate];
       }
@@ -360,7 +360,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   });
 }
 
-- (void)setAvailableSize:(CGSize)availableSize forRootView:(UIView *)rootView
+- (void)setAvailableSize:(CGSize)availableSize forRootView:(RCTUIView *)rootView
 {
   RCTAssertMainQueue();
   [self _executeBlockWithShadowView:^(RCTShadowView *shadowView) {
@@ -377,7 +377,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   } forTag:rootView.reactTag];
 }
 
-- (void)setLocalData:(NSObject *)localData forView:(UIView *)view
+- (void)setLocalData:(NSObject *)localData forView:(RCTUIView *)view
 {
   RCTAssertMainQueue();
   [self _executeBlockWithShadowView:^(RCTShadowView *shadowView) {
@@ -390,22 +390,22 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
  * TODO(yuwang): implement the nativeID functionality in a more efficient way
  *               instead of searching the whole view tree
  */
-- (UIView *)viewForNativeID:(NSString *)nativeID withRootTag:(NSNumber *)rootTag
+- (RCTUIView *)viewForNativeID:(NSString *)nativeID withRootTag:(NSNumber *)rootTag
 {
   RCTAssertMainQueue();
-  UIView *view = [self viewForReactTag:rootTag];
+  RCTUIView *view = [self viewForReactTag:rootTag];
   return [self _lookupViewForNativeID:nativeID inView:view];
 }
 
-- (UIView *)_lookupViewForNativeID:(NSString *)nativeID inView:(UIView *)view
+- (RCTUIView *)_lookupViewForNativeID:(NSString *)nativeID inView:(RCTUIView *)view
 {
   RCTAssertMainQueue();
   if (view != nil && [nativeID isEqualToString:view.nativeID]) {
     return view;
   }
 
-  for (UIView *subview in view.subviews) {
-    UIView *targetView = [self _lookupViewForNativeID:nativeID inView:subview];
+  for (RCTUIView *subview in view.subviews) {
+    RCTUIView *targetView = [self _lookupViewForNativeID:nativeID inView:subview];
     if (targetView != nil) {
       return targetView;
     }
@@ -413,7 +413,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   return nil;
 }
 
-- (void)setSize:(CGSize)size forView:(UIView *)view
+- (void)setSize:(CGSize)size forView:(RCTUIView *)view
 {
   RCTAssertMainQueue();
   [self _executeBlockWithShadowView:^(RCTShadowView *shadowView) {
@@ -426,7 +426,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   } forTag:view.reactTag];
 }
 
-- (void)setIntrinsicContentSize:(CGSize)intrinsicContentSize forView:(UIView *)view
+- (void)setIntrinsicContentSize:(CGSize)intrinsicContentSize forView:(RCTUIView *)view
 {
   RCTAssertMainQueue();
   [self _executeBlockWithShadowView:^(RCTShadowView *shadowView) {
@@ -771,7 +771,7 @@ RCT_EXPORT_METHOD(removeSubviewsFromContainerWithID:(nonnull NSNumber *)containe
     // Disable user interaction while the view is animating
     // since the view is (conceptually) deleted and not supposed to be interactive.
     if ([removedChild respondsToSelector:@selector(setUserInteractionEnabled:)]) { // [TODO(macOS ISS#2323203)
-      ((UIView *)removedChild).userInteractionEnabled = NO;
+      ((RCTUIView *)removedChild).userInteractionEnabled = NO;
     }
 #if !TARGET_OS_OSX // ]TODO(macOS ISS#2323203)
     [originalSuperview insertSubview:removedChild atIndex:originalIndex];
@@ -1032,22 +1032,22 @@ RCT_EXPORT_METHOD(updateView:(nonnull NSNumber *)reactTag
 {
   RCTAssertMainQueue();
   RCTComponentData *componentData = _componentDataByName[viewName];
-  UIView *view = _viewRegistry[reactTag];
+  RCTUIView *view = _viewRegistry[reactTag];
   [componentData setProps:props forView:view];
 }
 
 RCT_EXPORT_METHOD(focus:(nonnull NSNumber *)reactTag)
 {
-  [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
-    UIView *newResponder = viewRegistry[reactTag];
+  [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
+    RCTUIView *newResponder = viewRegistry[reactTag];
     [newResponder reactFocus];
   }];
 }
 
 RCT_EXPORT_METHOD(blur:(nonnull NSNumber *)reactTag)
 {
-  [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry){
-    UIView *currentResponder = viewRegistry[reactTag];
+  [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry){
+    RCTUIView *currentResponder = viewRegistry[reactTag];
     [currentResponder reactBlur];
   }];
 }
@@ -1214,9 +1214,9 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand:(nonnull NSNumber *)reactTag
     [tags addObject:shadowView.reactTag];
   }
 
-  [self addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+  [self addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
     for (NSNumber *tag in tags) {
-      UIView<RCTComponent> *view = viewRegistry[tag];
+      RCTUIView<RCTComponent> *view = viewRegistry[tag];
       [view didUpdateReactSubviews];
     }
   }];
@@ -1239,9 +1239,9 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand:(nonnull NSNumber *)reactTag
     [tags setObject:props forKey:shadowView.reactTag];
   }
 
-  [self addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+  [self addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
     for (NSNumber *tag in tags) {
-      UIView<RCTComponent> *view = viewRegistry[tag];
+      RCTUIView<RCTComponent> *view = viewRegistry[tag];
       [view didSetProps:[tags objectForKey:tag]];
     }
   }];

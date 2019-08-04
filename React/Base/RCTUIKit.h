@@ -60,6 +60,7 @@ UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
 
 // UIView
 #define RCTPlatformView         UIView
+#define RCTUIView UIView
 
 UIKIT_STATIC_INLINE RCTPlatformView *UIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, UIEvent *event)
 {
@@ -353,7 +354,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 // UIView
 #define RCTPlatformView NSView
 
-@interface UIView : NSView
+@interface RCTUIView : NSView
 
 @property (nonatomic, readonly) BOOL canBecomeFirstResponder;
 - (BOOL)becomeFirstResponder;
@@ -416,7 +417,7 @@ NS_INLINE RCTPlatformView *UIViewHitTestWithEvent(RCTPlatformView *view, CGPoint
 
 BOOL UIViewSetClipsToBounds(RCTPlatformView *view);
 
-NS_INLINE void UIViewSetContentModeRedraw(UIView *view)
+NS_INLINE void UIViewSetContentModeRedraw(RCTPlatformView *view)
 {
   view.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
 }

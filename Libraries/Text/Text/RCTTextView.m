@@ -26,7 +26,7 @@
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
 #endif // TODO(macOS ISS#2323203)
 
-  NSArray<UIView *> *_Nullable _descendantViews;
+  NSArray<RCTUIView *> *_Nullable _descendantViews;
   NSTextStorage *_Nullable _textStorage;
   CGRect _contentFrame;
 }
@@ -113,7 +113,7 @@
 
 - (void)setTextStorage:(NSTextStorage *)textStorage
           contentFrame:(CGRect)contentFrame
-       descendantViews:(NSArray<UIView *> *)descendantViews
+       descendantViews:(NSArray<RCTUIView *> *)descendantViews
 {
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
   // On macOS when a large number of flex layouts are being performed, such
@@ -133,13 +133,13 @@
   _contentFrame = contentFrame;
 
   // FIXME: Optimize this.
-  for (UIView *view in _descendantViews) {
+  for (RCTUIView *view in _descendantViews) {
     [view removeFromSuperview];
   }
 
   _descendantViews = descendantViews;
 
-  for (UIView *view in descendantViews) {
+  for (RCTUIView *view in descendantViews) {
     [self addSubview:view];
   }
 
