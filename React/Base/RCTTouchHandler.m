@@ -535,7 +535,7 @@ static BOOL RCTAnyTouchesChanged(NSSet *touches) // [TODO(macOS ISS#2323203)
 {
   // We fail in favour of other external gesture recognizers.
   // iOS will ask `delegate`'s opinion about this gesture recognizer little bit later.
-  return !UIViewIsDescendantOfView(preventingGestureRecognizer.view, self.view); // TODO(macOS ISS#2323203)
+  return !RCTUIViewIsDescendantOfView(preventingGestureRecognizer.view, self.view); // TODO(macOS ISS#2323203)
 }
 
 - (void)reset

@@ -225,7 +225,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
   // the hierarchy on rare occasions.
   RCTPlatformView *JSResponder = [RCTUIManager JSResponder]; // TODO(macOS ISS#2323203)
   if (JSResponder && JSResponder != self.superview) {
-    BOOL superviewHasResponder = UIViewIsDescendantOfView(self, JSResponder); // TODO(macOS ISS#2323203)
+    BOOL superviewHasResponder = RCTUIViewIsDescendantOfView(self, JSResponder); // TODO(macOS ISS#2323203)
     return superviewHasResponder;
   }
   return NO;

@@ -1056,7 +1056,7 @@ RCT_EXPORT_METHOD(findSubviewIn:(nonnull NSNumber *)reactTag atPoint:(CGPoint)po
 {
   [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // TODO(macOS ISS#2323203)
     RCTPlatformView *view = viewRegistry[reactTag]; // TODO(macOS ISS#2323203)
-    RCTPlatformView *target = UIViewHitTestWithEvent(view, point, nil); // TODO(macOS ISS#2323203)
+    RCTPlatformView *target = RCTUIViewHitTestWithEvent(view, point, nil); // TODO(macOS ISS#2323203)
     CGRect frame = [target convertRect:target.bounds toView:view];
 
     while (target.reactTag == nil && target.superview != nil) {
@@ -1420,7 +1420,7 @@ RCT_EXPORT_METHOD(takeSnapshot:(id /* NSString or NSNumber */)target
       size = view.bounds.size;
     }
     UIGraphicsBeginImageContextWithOptions(size, NO, 0);
-    BOOL success = UIViewDrawViewHierarchyInRectAfterScreenUpdates(view, (CGRect){CGPointZero, size}, YES); // TODO(macOS ISS#2323203)
+    BOOL success = RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(view, (CGRect){CGPointZero, size}, YES); // TODO(macOS ISS#2323203)
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 

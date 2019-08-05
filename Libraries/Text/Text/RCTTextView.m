@@ -41,7 +41,7 @@
     self.accessibilityRole = NSAccessibilityStaticTextRole;
 #endif // ]TODO(macOS ISS#2323203)
     self.opaque = NO;
-    UIViewSetContentModeRedraw(self); // TODO(macOS ISS#2323203)
+    RCTUIViewSetContentModeRedraw(self); // TODO(macOS ISS#2323203)
   }
   return self;
 }

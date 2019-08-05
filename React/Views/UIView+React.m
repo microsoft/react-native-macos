@@ -61,7 +61,7 @@
 
 - (NSNumber *)reactTagAtPoint:(CGPoint)point
 {
-  RCTPlatformView *view = UIViewHitTestWithEvent(self, point, nil); // TODO(macOS ISS#2323203)
+  RCTPlatformView *view = RCTUIViewHitTestWithEvent(self, point, nil); // TODO(macOS ISS#2323203)
   while (view && !view.reactTag) {
     view = view.superview;
   }

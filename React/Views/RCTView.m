@@ -35,7 +35,7 @@
   // we do support clipsToBounds, so if that's enabled
   // we'll update the clipping
 
-  if (UIViewSetClipsToBounds(self) && self.subviews.count > 0) { // TODO(macOS ISS#2323203)
+  if (RCTUIViewSetClipsToBounds(self) && self.subviews.count > 0) { // TODO(macOS ISS#2323203)
     clipRect = [clipView convertRect:clipRect toView:self];
     clipRect = CGRectIntersection(clipRect, self.bounds);
     clipView = self;
@@ -57,7 +57,7 @@
   CGRect clipRect = self.bounds;
   // We will only look for a clipping view up the view hierarchy until we hit the root view.
   while (testView) {
-    if (UIViewSetClipsToBounds(testView)) { // TODO(macOS ISS#2323203)
+    if (RCTUIViewSetClipsToBounds(testView)) { // TODO(macOS ISS#2323203)
       if (clipView) {
         CGRect testRect = [clipView convertRect:clipRect toView:testView];
         if (!CGRectContainsRect(testView.bounds, testRect)) {
@@ -249,7 +249,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:unused)
 #else
       pointForHitTest = [subview convertPoint:point fromView:self];
 #endif
-      hitSubview = UIViewHitTestWithEvent(subview, pointForHitTest, event); // ]TODO(macOS ISS#2323203)
+      hitSubview = RCTUIViewHitTestWithEvent(subview, pointForHitTest, event); // ]TODO(macOS ISS#2323203)
       if (hitSubview != nil) {
         break;
       }
