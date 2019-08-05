@@ -25,7 +25,16 @@
 - (void)insertReactSubview:(UIView *)subview atIndex:(NSInteger)atIndex
 {
   [super insertReactSubview:subview atIndex:atIndex];
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+  NSArray<__kindof NSView *> *subviews = self.subviews;
+  if ((NSUInteger)index == subviews.count) {
+    [self addSubview:subview];
+  } else {
+    [self addSubview:subview positioned:NSWindowBelow relativeTo:subviews[atIndex]];
+  }
+#else
   [self insertSubview:subview atIndex:atIndex];
+#endif // TODO(macOS ISS#2323203)
   [self invalidate];
 }
 
@@ -42,11 +51,11 @@
 
 - (void)invalidate
 {
-#if TARGET_OS_OSX  // ISS:3532364
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
   [self setNeedsDisplay:YES];
-#else // TARGET_OS_IOS
+#else
   [self setNeedsDisplay];
-#endif // TARGET_OS_OSX
+#endif // TODO(macOS ISS#2323203)
 }
 
 - (void)drawRect:(CGRect)rect

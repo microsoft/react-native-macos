@@ -344,16 +344,6 @@ static UIView *UIViewCommonInit(UIView *self)
   return self.userInteractionEnabled ? NSPointInRect(NSPointFromCGPoint(point), self.bounds) : NO;
 }
 
-- (void)insertSubview:(NSView *)view atIndex:(NSInteger)index
-{
-  NSArray<__kindof NSView *> *subviews = self.subviews;
-  if ((NSUInteger)index == subviews.count) {
-    [self addSubview:view];
-  } else {
-    [self addSubview:view positioned:NSWindowBelow relativeTo:subviews[index]];
-  }
-}
-
 @synthesize clipsToBounds = _clipsToBounds;
 
 @synthesize backgroundColor = _backgroundColor;
