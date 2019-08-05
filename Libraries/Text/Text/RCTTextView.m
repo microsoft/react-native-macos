@@ -142,11 +142,11 @@
   for (RCTUIView *view in descendantViews) { // TODO(macOS ISS#3536887)
     [self addSubview:view];
   }
-#if TARGET_OS_OSX // ISS:3532364
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
   [self setNeedsDisplay:YES];
-#else // TARGET_OS_IOS
+#else
   [self setNeedsDisplay];
-#endif // TARGET_OS_OSX
+#endif // TODO(macOS ISS#2323203)
 }
 
 - (void)drawRect:(CGRect)rect
@@ -228,7 +228,7 @@
   return reactTag;
 }
 
-#if !TARGET_OS_OSX // ISS:3532364
+#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
 - (void)didMoveToWindow {
   [super didMoveToWindow];
   [self moveToWindowDisplay];
@@ -248,11 +248,11 @@
       _highlightLayer = nil;
     }
   } else if (_textStorage) {
-#if TARGET_OS_OSX // ISS:3532364
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
     [self setNeedsDisplay:YES];
-#else // TARGET_OS_IOS
+#else
     [self setNeedsDisplay];
-#endif // TARGET_OS_OSX
+#endif // TODO(macOS ISS#2323203)
   }
 }
 

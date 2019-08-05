@@ -87,19 +87,19 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder:(nonnull NSCoder *)aDecoder)
 
 #endif // ]TODO(macOS ISS#2323203)
 
-#if TARGET_OS_OSX // ISS:3532364
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
 - (void)layout
 {
   [super layout];
   [self updateAvailableSize];
 }
-#else // TARGET_OS_IOS
+#else
 - (void)layoutSubviews
 {
   [super layoutSubviews];
   [self updateAvailableSize];
 }
-#endif // TARGET_OS_OSX
+#endif // TODO(macOS ISS#2323203)
 
 - (void)insertReactSubview:(RCTUIView *)subview atIndex:(NSInteger)atIndex // TODO(macOS ISS#3536887)
 {
@@ -122,11 +122,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder:(nonnull NSCoder *)aDecoder)
 
   _sizeFlexibility = sizeFlexibility;
 
-#if TARGET_OS_OSX // ISS:3532364
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
   [self setNeedsLayout:YES];
-#else // !TARGET_OS_OSX
+#else
   [self setNeedsLayout];
-#endif // TARGET_OS_OSX
+#endif // TODO(macOS ISS#2323203)
 }
 
 - (CGSize)availableSize
