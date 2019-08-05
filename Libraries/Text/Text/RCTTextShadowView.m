@@ -85,16 +85,16 @@
    }
   ];
 
-  [_bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
+  [_bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) { // TODO(macOS ISS#3536887)
     RCTTextView *textView = (RCTTextView *)viewRegistry[tag];
     if (!textView) {
       return;
     }
 
-    NSMutableArray<RCTUIView *> *descendantViews =
+    NSMutableArray<RCTUIView *> *descendantViews = // TODO(macOS ISS#3536887)
       [NSMutableArray arrayWithCapacity:descendantViewTags.count];
     [descendantViewTags enumerateObjectsUsingBlock:^(NSNumber *_Nonnull descendantViewTag, NSUInteger index, BOOL *_Nonnull stop) {
-      RCTUIView *descendantView = viewRegistry[descendantViewTag];
+      RCTUIView *descendantView = viewRegistry[descendantViewTag]; // TODO(macOS ISS#3536887)
       if (!descendantView) {
         return;
       }

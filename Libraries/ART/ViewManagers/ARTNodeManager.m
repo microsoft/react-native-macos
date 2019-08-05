@@ -18,7 +18,7 @@ RCT_EXPORT_MODULE()
   return [ARTNode new];
 }
 
-- (RCTUIView *)view
+- (RCTUIView *)view // TODO(macOS ISS#3536887)
 {
   return [self node];
 }

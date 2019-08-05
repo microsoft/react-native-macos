@@ -201,11 +201,8 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
 
 // UIView
 
-@interface RCTUIView ()
 
-@end
-
-@implementation RCTUIView
+@implementation RCTUIView // TODO(macOS ISS#3536887)
 {
 @private
   NSColor *_backgroundColor;
@@ -402,7 +399,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 // RCTUIScrollView
 
-@implementation RCTUIScrollView
+@implementation RCTUIScrollView // TODO(macOS ISS#3536887)
 
 // UIScrollView properties missing from NSScrollView
 - (CGPoint)contentOffset

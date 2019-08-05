@@ -13,7 +13,7 @@
 
 RCT_EXPORT_MODULE()
 
-- (RCTUIView *)view
+- (RCTUIView *)view // TODO(macOS ISS#3536887)
 {
   return [ARTSurfaceView new];
 }

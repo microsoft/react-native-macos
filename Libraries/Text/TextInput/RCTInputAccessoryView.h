@@ -10,7 +10,7 @@
 @class RCTBridge;
 @class RCTInputAccessoryViewContent;
 
-@interface RCTInputAccessoryView : RCTUIView
+@interface RCTInputAccessoryView : RCTUIView // TODO(macOS ISS#3536887)
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge;
 

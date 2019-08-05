@@ -107,7 +107,7 @@ RCT_EXPORT_MODULE()
   RCTExecuteOnMainQueue(^{
     RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways, @"UIManager invalidate", nil);
     for (NSNumber *rootViewTag in self->_rootViewTags) {
-      RCTUIView *rootView = self->_viewRegistry[rootViewTag];
+      RCTUIView *rootView = self->_viewRegistry[rootViewTag]; // TODO(macOS ISS#3536887)
       if ([rootView conformsToProtocol:@protocol(RCTInvalidating)]) {
         [(id<RCTInvalidating>)rootView invalidate];
       }
@@ -360,7 +360,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   });
 }
 
-- (void)setAvailableSize:(CGSize)availableSize forRootView:(RCTUIView *)rootView
+- (void)setAvailableSize:(CGSize)availableSize forRootView:(RCTUIView *)rootView // TODO(macOS ISS#3536887)
 {
   RCTAssertMainQueue();
   [self _executeBlockWithShadowView:^(RCTShadowView *shadowView) {
@@ -377,7 +377,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   } forTag:rootView.reactTag];
 }
 
-- (void)setLocalData:(NSObject *)localData forView:(RCTUIView *)view
+- (void)setLocalData:(NSObject *)localData forView:(RCTUIView *)view // TODO(macOS ISS#3536887)
 {
   RCTAssertMainQueue();
   [self _executeBlockWithShadowView:^(RCTShadowView *shadowView) {
@@ -390,22 +390,22 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
  * TODO(yuwang): implement the nativeID functionality in a more efficient way
  *               instead of searching the whole view tree
  */
-- (RCTUIView *)viewForNativeID:(NSString *)nativeID withRootTag:(NSNumber *)rootTag
+- (RCTUIView *)viewForNativeID:(NSString *)nativeID withRootTag:(NSNumber *)rootTag // TODO(macOS ISS#3536887)
 {
   RCTAssertMainQueue();
-  RCTUIView *view = [self viewForReactTag:rootTag];
+  RCTUIView *view = [self viewForReactTag:rootTag]; // TODO(macOS ISS#3536887)
   return [self _lookupViewForNativeID:nativeID inView:view];
 }
 
-- (RCTUIView *)_lookupViewForNativeID:(NSString *)nativeID inView:(RCTUIView *)view
+- (RCTUIView *)_lookupViewForNativeID:(NSString *)nativeID inView:(RCTUIView *)view // TODO(macOS ISS#3536887)
 {
   RCTAssertMainQueue();
   if (view != nil && [nativeID isEqualToString:view.nativeID]) {
     return view;
   }
 
-  for (RCTUIView *subview in view.subviews) {
-    RCTUIView *targetView = [self _lookupViewForNativeID:nativeID inView:subview];
+  for (RCTUIView *subview in view.subviews) { // TODO(macOS ISS#3536887)
+    RCTUIView *targetView = [self _lookupViewForNativeID:nativeID inView:subview]; // TODO(macOS ISS#3536887)
     if (targetView != nil) {
       return targetView;
     }
@@ -413,7 +413,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   return nil;
 }
 
-- (void)setSize:(CGSize)size forView:(RCTUIView *)view
+- (void)setSize:(CGSize)size forView:(RCTUIView *)view // TODO(macOS ISS#3536887)
 {
   RCTAssertMainQueue();
   [self _executeBlockWithShadowView:^(RCTShadowView *shadowView) {
@@ -426,7 +426,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   } forTag:view.reactTag];
 }
 
-- (void)setIntrinsicContentSize:(CGSize)intrinsicContentSize forView:(RCTUIView *)view
+- (void)setIntrinsicContentSize:(CGSize)intrinsicContentSize forView:(RCTUIView *)view // TODO(macOS ISS#3536887)
 {
   RCTAssertMainQueue();
   [self _executeBlockWithShadowView:^(RCTShadowView *shadowView) {
@@ -771,7 +771,7 @@ RCT_EXPORT_METHOD(removeSubviewsFromContainerWithID:(nonnull NSNumber *)containe
     // Disable user interaction while the view is animating
     // since the view is (conceptually) deleted and not supposed to be interactive.
     if ([removedChild respondsToSelector:@selector(setUserInteractionEnabled:)]) { // [TODO(macOS ISS#2323203)
-      ((RCTUIView *)removedChild).userInteractionEnabled = NO;
+      ((RCTUIView *)removedChild).userInteractionEnabled = NO; // TODO(macOS ISS#3536887)
     }
 #if !TARGET_OS_OSX // ]TODO(macOS ISS#2323203)
     [originalSuperview insertSubview:removedChild atIndex:originalIndex];
@@ -1032,22 +1032,22 @@ RCT_EXPORT_METHOD(updateView:(nonnull NSNumber *)reactTag
 {
   RCTAssertMainQueue();
   RCTComponentData *componentData = _componentDataByName[viewName];
-  RCTUIView *view = _viewRegistry[reactTag];
+  RCTUIView *view = _viewRegistry[reactTag]; // TODO(macOS ISS#3536887)
   [componentData setProps:props forView:view];
 }
 
 RCT_EXPORT_METHOD(focus:(nonnull NSNumber *)reactTag)
 {
-  [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
-    RCTUIView *newResponder = viewRegistry[reactTag];
+  [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) { // TODO(macOS ISS#3536887)
+    RCTUIView *newResponder = viewRegistry[reactTag]; // TODO(macOS ISS#3536887)
     [newResponder reactFocus];
   }];
 }
 
 RCT_EXPORT_METHOD(blur:(nonnull NSNumber *)reactTag)
 {
-  [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry){
-    RCTUIView *currentResponder = viewRegistry[reactTag];
+  [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry){ // TODO(macOS ISS#3536887)
+    RCTUIView *currentResponder = viewRegistry[reactTag]; // TODO(macOS ISS#3536887)
     [currentResponder reactBlur];
   }];
 }
@@ -1056,7 +1056,7 @@ RCT_EXPORT_METHOD(findSubviewIn:(nonnull NSNumber *)reactTag atPoint:(CGPoint)po
 {
   [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // TODO(macOS ISS#2323203)
     RCTPlatformView *view = viewRegistry[reactTag]; // TODO(macOS ISS#2323203)
-    RCTPlatformView *target = RCTUIViewHitTestWithEvent(view, point, nil); // TODO(macOS ISS#2323203)
+    RCTPlatformView *target = RCTUIViewHitTestWithEvent(view, point, nil); // TODO(macOS ISS#2323203) and TODO(macOS ISS#3536887)
     CGRect frame = [target convertRect:target.bounds toView:view];
 
     while (target.reactTag == nil && target.superview != nil) {
@@ -1214,9 +1214,9 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand:(nonnull NSNumber *)reactTag
     [tags addObject:shadowView.reactTag];
   }
 
-  [self addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
+  [self addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) { // TODO(macOS ISS#3536887)
     for (NSNumber *tag in tags) {
-      RCTUIView<RCTComponent> *view = viewRegistry[tag];
+      RCTUIView<RCTComponent> *view = viewRegistry[tag]; // TODO(macOS ISS#3536887)
       [view didUpdateReactSubviews];
     }
   }];
@@ -1239,9 +1239,9 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand:(nonnull NSNumber *)reactTag
     [tags setObject:props forKey:shadowView.reactTag];
   }
 
-  [self addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
+  [self addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) { // TODO(macOS ISS#3536887)
     for (NSNumber *tag in tags) {
-      RCTUIView<RCTComponent> *view = viewRegistry[tag];
+      RCTUIView<RCTComponent> *view = viewRegistry[tag]; // TODO(macOS ISS#3536887)
       [view didSetProps:[tags objectForKey:tag]];
     }
   }];
@@ -1420,7 +1420,7 @@ RCT_EXPORT_METHOD(takeSnapshot:(id /* NSString or NSNumber */)target
       size = view.bounds.size;
     }
     UIGraphicsBeginImageContextWithOptions(size, NO, 0);
-    BOOL success = RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(view, (CGRect){CGPointZero, size}, YES); // TODO(macOS ISS#2323203)
+    BOOL success = RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(view, (CGRect){CGPointZero, size}, YES); // TODO(macOS ISS#2323203) and TODO(macOS ISS#3536887)
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 

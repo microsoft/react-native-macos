@@ -13,7 +13,7 @@
  * thread.
  */
 
-@interface ARTNode : RCTUIView
+@interface ARTNode : RCTUIView // TODO(macOS ISS#3536887)
 
 @property (nonatomic, assign) CGFloat opacity;
 
