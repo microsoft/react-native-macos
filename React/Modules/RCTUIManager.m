@@ -761,12 +761,6 @@ RCT_EXPORT_METHOD(removeSubviewsFromContainerWithID:(nonnull NSNumber *)containe
     // To do so, we have to memorize original `superview` (which can differ from `container`) and an index of removed view.
     RCTPlatformView *originalSuperview = removedChild.superview; // TODO(macOS ISS#2323203)
     NSUInteger originalIndex = [originalSuperview.subviews indexOfObjectIdenticalTo:removedChild];
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
-    NSView *nextLowerView = nil;
-    if (originalIndex > 0) {
-      nextLowerView = [originalSuperview.subviews objectAtIndex:originalIndex - 1];
-    }
-#endif // ]TODO(macOS ISS#2323203)
     [container removeReactSubview:removedChild];
     // Disable user interaction while the view is animating
     // since the view is (conceptually) deleted and not supposed to be interactive.
@@ -776,7 +770,12 @@ RCT_EXPORT_METHOD(removeSubviewsFromContainerWithID:(nonnull NSNumber *)containe
 #if !TARGET_OS_OSX // ]TODO(macOS ISS#2323203)
     [originalSuperview insertSubview:removedChild atIndex:originalIndex];
 #else // [TODO(macOS ISS#2323203)
-    [originalSuperview addSubview:removedChild positioned:nextLowerView == nil ? NSWindowBelow : NSWindowAbove relativeTo:nextLowerView];
+    NSArray<__kindof NSView *> *subviews = originalSuperview.subviews;
+    if ((NSUInteger)index == subviews.count) {
+      [originalSuperview addSubview:removedChild];
+    } else {
+      [originalSuperview addSubview:removedChild positioned:NSWindowBelow relativeTo:subviews[originalIndex]];
+    }
 #endif // ]TODO(macOS ISS#2323203)
     
     NSString *property = deletingLayoutAnimation.property;

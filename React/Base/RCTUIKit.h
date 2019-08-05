@@ -365,9 +365,6 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 - (NSView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
 
-- (void)insertSubview:(NSView *)view atIndex:(NSInteger)index;
-
-
 // An override of an undocumented API that controls the layer's masksToBounds property
 @property (nonatomic) BOOL clipsToBounds;
 @property (nonatomic, copy) NSColor *backgroundColor;

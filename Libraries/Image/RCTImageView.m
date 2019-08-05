@@ -577,7 +577,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
 }
 #endif // ]TODO(macOS ISS#2323203)
 
-#if !TARGET_OS_OSX // ISS:3532364
+#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
 - (void)didMoveToWindow
 {
   [super didMoveToWindow];
@@ -596,7 +596,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
     _subscribedToWindowBackingNotifications = YES;
   }
 }
-#endif
+#endif // TODO(macOS ISS#2323203)
 
 - (void)coordinateImageLoadOnMoveToWindow {
   if (!self.window) {
