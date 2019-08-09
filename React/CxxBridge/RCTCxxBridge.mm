@@ -1302,6 +1302,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithBundleURL:(__unused NSURL *)bundleUR
     [[NSNotificationCenter defaultCenter]
       postNotificationName:RCTJavaScriptWillStartExecutingNotification
       object:self->_parentBridge userInfo:@{@"bridge": self}];
+    // TODO(OSS Candidate ISS#2710739) - use local reactInstance, instance can be null'd while constructing NSDataBigString
     auto reactInstance = self->_reactInstance;
     if (isRAMBundle(script)) {
       [self->_performanceLogger markStartForTag:RCTPLRAMBundleLoad];
@@ -1315,7 +1316,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithBundleURL:(__unused NSURL *)bundleUR
                                             sourceUrlStr.UTF8String, !async);
       }
     } else if (reactInstance) {
-      // TODO(OSS Candidate ISS#2710739) - use local reactInstance, instance can be null'd while constructing NSDataBigString
       reactInstance->loadScriptFromString(std::make_unique<NSDataBigString>(script), 0,
                                                  sourceUrlStr.UTF8String, !async, ""); // TODO(OSS Candidate ISS#2710739)
     } else {
