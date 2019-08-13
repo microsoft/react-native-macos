@@ -199,7 +199,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
 // substantially different types
 //
 
-// UIView
+// RCTUIView
 
 
 @implementation RCTUIView // TODO(macOS ISS#3536887)
