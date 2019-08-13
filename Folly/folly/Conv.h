@@ -699,10 +699,11 @@ toAppend(
     case DoubleToStringConverter::FIXED:
       conv.ToFixed(value, int(numDigits), &builder);
       break;
-    default:
-      CHECK(mode == DoubleToStringConverter::PRECISION);
+    case DoubleToStringConverter::PRECISION:
       conv.ToPrecision(value, int(numDigits), &builder);
       break;
+    default:
+      std::abort();
   }
   const size_t length = size_t(builder.position());
   builder.Finalize();
