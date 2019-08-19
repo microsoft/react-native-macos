@@ -771,7 +771,7 @@ RCT_EXPORT_METHOD(removeSubviewsFromContainerWithID:(nonnull NSNumber *)containe
     [originalSuperview insertSubview:removedChild atIndex:originalIndex];
 #else // [TODO(macOS ISS#2323203)
     NSArray<__kindof NSView *> *subviews = originalSuperview.subviews;
-    if ((NSUInteger)index == subviews.count) {
+    if ((NSUInteger)originalIndex == subviews.count) {
       [originalSuperview addSubview:removedChild];
     } else {
       [originalSuperview addSubview:removedChild positioned:NSWindowBelow relativeTo:subviews[originalIndex]];

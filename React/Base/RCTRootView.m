@@ -315,14 +315,15 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 
   _contentView.passThroughTouches = _passThroughTouches;
 
+  NSUInteger index = 0;
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
-  [self insertSubview:_contentView atIndex:0];
+  [self insertSubview:_contentView atIndex:index];
 #else
   NSArray<__kindof NSView *> *subviews = self.subviews;
-  if ((NSUInteger)index == subviews.count) {
+  if (index == subviews.count) {
     [self addSubview:_contentView];
   } else {
-    [self addSubview:_contentView positioned:NSWindowBelow relativeTo:subviews[0]];
+    [self addSubview:_contentView positioned:NSWindowBelow relativeTo:subviews[index]];
   }
 #endif // TODO(macOS ISS#2323203)
 

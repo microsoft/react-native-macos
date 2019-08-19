@@ -16,7 +16,7 @@
   [super insertReactSubview:subview atIndex:atIndex];
 #if TARGET_OS_OSX // TODO(macOS ISS#2323203)
   NSArray<__kindof NSView *> *subviews = self.subviews;
-  if ((NSUInteger)index == subviews.count) {
+  if ((NSUInteger)atIndex == subviews.count) {
     [self addSubview:subview];
   } else {
     [self addSubview:subview positioned:NSWindowBelow relativeTo:subviews[atIndex]];
