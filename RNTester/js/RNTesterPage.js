@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
       },
       default: {
         backgroundColor: '#e9eaed',
-      }
+      },
     }),
     flex: 1,
   },

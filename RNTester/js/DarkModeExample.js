@@ -13,26 +13,156 @@
 const React = require('react');
 const ReactNative = require('react-native');
 const Platform = require('Platform');
-const {
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} = ReactNative;
+const {Image, StyleSheet, Text, View} = ReactNative;
 
-type State = {
-};
+type State = {};
 
-class DarkModeExample extends React.Component<{}, State> {
-  state: State = {
-  };
+class SemanticColorsExample extends React.Component<{}, State> {
+  state: State = {};
+
+  createTable() {
+    let colors = [];
+    if (Platform.OS === 'macos') {
+      colors = [
+        // https://developer.apple.com/documentation/appkit/nscolor/ui_element_colors
+        // Label Colors
+        'labelColor',
+        'secondaryLabelColor',
+        'tertiaryLabelColor',
+        'quaternaryLabelColor',
+        // Text Colors
+        'textColor',
+        'placeholderTextColor',
+        'selectedTextColor',
+        'textBackgroundColor',
+        'selectedTextBackgroundColor',
+        'keyboardFocusIndicatorColor',
+        'unemphasizedSelectedTextColor',
+        'unemphasizedSelectedTextBackgroundColor',
+        // Content Colors
+        'linkColor',
+        'separatorColor',
+        'selectedContentBackgroundColor',
+        'unemphasizedSelectedContentBackgroundColor',
+        // Menu Colors
+        'selectedMenuItemTextColor',
+        // Table Colors
+        'gridColor',
+        'headerTextColor',
+        'alternatingContentBackgroundColorEven',
+        'alternatingContentBackgroundColorOdd',
+        // Control Colors
+        'controlAccentColor',
+        'controlColor',
+        'controlBackgroundColor',
+        'controlTextColor',
+        'disabledControlTextColor',
+        'selectedControlColor',
+        'selectedControlTextColor',
+        'alternateSelectedControlTextColor',
+        'scrubberTexturedBackgroundColor',
+        // Window Colors
+        'windowBackgroundColor',
+        'windowFrameTextColor',
+        'underPageBackgroundColor',
+        // Highlights and Shadows
+        'findHighlightColor',
+        'highlightColor',
+        'shadowColor',
+        // https://developer.apple.com/documentation/appkit/nscolor/standard_colors
+        // Standard Colors
+        'systemBlueColor',
+        'systemBrownColor',
+        'systemGrayColor',
+        'systemGreenColor',
+        'systemOrangeColor',
+        'systemPinkColor',
+        'systemPurpleColor',
+        'systemRedColor',
+        'systemYellowColor',
+      ];
+    } else if (Platform.OS === 'ios') {
+      colors = [
+        // https://developer.apple.com/documentation/uikit/uicolor/ui_element_colors
+        // Label Colors
+        'labelColor',
+        'secondaryLabelColor',
+        'tertiaryLabelColor',
+        'quaternaryLabelColor',
+        // Fill Colors
+        'systemFillColor',
+        'secondarySystemFillColor',
+        'tertiarySystemFillColor',
+        'quaternarySystemFillColor',
+        // Text Colors
+        'placeholderTextColor',
+        // Standard Content Background Colors
+        'systemBackgroundColor',
+        'secondarySystemBackgroundColor',
+        'tertiarySystemBackgroundColor',
+        // Grouped Content Background Colors
+        'systemGroupedBackgroundColor',
+        'secondarySystemGroupedBackgroundColor',
+        'tertiarySystemGroupedBackgroundColor',
+        // Separator Colors
+        'separatorColor',
+        'opaqueSeparatorColor',
+        // Link Color
+        'linkColor',
+        // Nonadaptable Colors
+        'darkTextColor',
+        'lightTextColor',
+        // https://developer.apple.com/documentation/uikit/uicolor/standard_colors
+        // Adaptable Colors
+        'systemBlueColor',
+        'systemBrownColor',
+        'systemGreenColor',
+        'systemIndigoColor',
+        'systemOrangeColor',
+        'systemPinkColor',
+        'systemPurpleColor',
+        'systemRedColor',
+        'systemTealColor',
+        'systemYellowColor',
+        // Adaptable Gray Colors
+        'systemGrayColor',
+        'systemGray2Color',
+        'systemGray3Color',
+        'systemGray4Color',
+        'systemGray5Color',
+        'systemGray6Color',
+      ];
+    }
+
+    let table = [];
+    for (let color of colors) {
+      table.push(
+        <View style={{flex: 1, flexDirection: 'row'}} key={color}>
+          <Text
+            style={{
+              flex: 1,
+              alignItems: 'stretch',
+              color: {semantic: 'labelColor'},
+            }}>
+            {color}
+          </Text>
+          <View
+            style={{
+              flex: 0.25,
+              alignItems: 'stretch',
+              backgroundColor: {semantic: `${color}`},
+            }}
+          />
+        </View>,
+      );
+    }
+    return table;
+  }
 
   render() {
     return (
-      <View>
-        <Text>
-          Dark Mode Examples
-        </Text>
+      <View style={{flex: 1, flexDirection: 'column'}}>
+        {this.createTable()}
       </View>
     );
   }
@@ -40,16 +170,9 @@ class DarkModeExample extends React.Component<{}, State> {
 
 var styles = StyleSheet.create({
   textInput: {
-    ...Platform.select({
-      macos: {
-        color: {semantic: 'textColor'},
-        backgroundColor: {semantic: 'textBackgroundColor'},
-        borderColor: {semantic: 'gridColor'},
-      },
-      default: {
-        borderColor: '#0f0f0f',
-      },
-    }),
+    color: {semantic: 'labelColor'},
+    backgroundColor: {semantic: 'systemBackgroundColor'},
+    borderColor: {semantic: 'separatorColor'},
     borderWidth: StyleSheet.hairlineWidth,
     flex: 1,
     fontSize: 13,
@@ -58,12 +181,13 @@ var styles = StyleSheet.create({
 });
 
 exports.title = 'Dark Mode Example';
-exports.description = 'Examples that show how Dark Mode may be implemented in an app.';
+exports.description =
+  'Examples that show how Dark Mode may be implemented in an app.';
 exports.examples = [
   {
-    title: 'Dark Mode Example',
+    title: 'Semantic Colors',
     render: function(): React.Element<any> {
-      return <DarkModeExample />;
+      return <SemanticColorsExample />;
     },
   },
 ];
