@@ -137,7 +137,7 @@ class SemanticColorsExample extends React.Component<{}, State> {
     let table = [];
     for (let color of colors) {
       table.push(
-        <View style={{flex: 1, flexDirection: 'row'}} key={color}>
+        <View style={{flex: .75, flexDirection: 'row'}} key={color}>
           <Text
             style={{
               flex: 1,
@@ -180,7 +180,7 @@ var styles = StyleSheet.create({
   },
 });
 
-exports.title = 'Dark Mode Example';
+exports.title = 'Dark Mode';
 exports.description =
   'Examples that show how Dark Mode may be implemented in an app.';
 exports.examples = [

@@ -14,11 +14,6 @@ import type {RNTesterExample} from 'RNTesterTypes';
 
 const ComponentExamples: Array<RNTesterExample> = [
   {
-    key: 'DarkModeExample',
-    module: require('./DarkModeExample'),
-    supportsTVOS: true,
-  },
-  {
     key: 'ActivityIndicatorExample',
     module: require('./ActivityIndicatorExample'),
     supportsTVOS: true,
@@ -32,6 +27,11 @@ const ComponentExamples: Array<RNTesterExample> = [
     key: 'ButtonExample',
     module: require('./ButtonExample'),
     supportsTVOS: true,
+  },
+  {
+    key: 'DarkModeExample',
+    module: require('./DarkModeExample'),
+    supportsTVOS: false,
   },
   {
     key: 'DatePickerIOSExample',

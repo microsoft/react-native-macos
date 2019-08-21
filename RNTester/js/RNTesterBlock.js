@@ -49,6 +49,10 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     borderWidth: 0.5,
     ...Platform.select({
+      macos: {
+        borderColor: {semantic: 'separatorColor'},
+        backgroundColor: {semantic: 'windowBackgroundColor'},
+      },
       ios: {
         borderColor: {semantic: 'separatorColor'},
         backgroundColor: {semantic: 'tertiarySystemBackgroundColor'},
@@ -67,6 +71,10 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 3,
     borderTopRightRadius: 2.5,
     ...Platform.select({
+      macos: {
+        borderBottomColor: {semantic: 'separatorColor'},
+        backgroundColor: {semantic: 'controlBackgroundColor'},
+      },
       ios: {
         borderBottomColor: {semantic: 'separatorColor'},
         backgroundColor: {semantic: 'tertiarySystemBackgroundColor'},
@@ -81,6 +89,9 @@ const styles = StyleSheet.create({
   },
   titleText: {
     ...Platform.select({
+      macos: {
+        color: {semantic: 'labelColor'},
+      },
       ios: {
         color: {semantic: 'labelColor'},
       },
