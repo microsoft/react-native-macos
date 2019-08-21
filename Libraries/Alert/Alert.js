@@ -183,24 +183,24 @@ class AlertAndroid {
     };
 
     if (options) {
-      config = { ...config, cancelable: options.cancelable };
+      config = {...config, cancelable: options.cancelable};
     }
     // At most three buttons (neutral, negative, positive). Ignore rest.
     // The text 'OK' should be probably localized. iOS Alert does that in native.
     const validButtons: Buttons = buttons
       ? buttons.slice(0, 3)
-      : [{ text: 'OK' }];
+      : [{text: 'OK'}];
     const buttonPositive = validButtons.pop();
     const buttonNegative = validButtons.pop();
     const buttonNeutral = validButtons.pop();
     if (buttonNeutral) {
-      config = { ...config, buttonNeutral: buttonNeutral.text || '' };
+      config = {...config, buttonNeutral: buttonNeutral.text || ''};
     }
     if (buttonNegative) {
-      config = { ...config, buttonNegative: buttonNegative.text || '' };
+      config = {...config, buttonNegative: buttonNegative.text || ''};
     }
     if (buttonPositive) {
-      config = { ...config, buttonPositive: buttonPositive.text || '' };
+      config = {...config, buttonPositive: buttonPositive.text || ''};
     }
     NativeModules.DialogManagerAndroid.showAlert(
       config,
