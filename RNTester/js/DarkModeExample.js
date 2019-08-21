@@ -137,7 +137,7 @@ class SemanticColorsExample extends React.Component<{}, State> {
     let table = [];
     for (let color of colors) {
       table.push(
-        <View style={{flex: .75, flexDirection: 'row'}} key={color}>
+        <View style={{flex: 0.75, flexDirection: 'row'}} key={color}>
           <Text
             style={{
               flex: 1,
