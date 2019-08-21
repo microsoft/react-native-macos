@@ -13,7 +13,7 @@
 const React = require('react');
 const ReactNative = require('react-native');
 const Platform = require('Platform');
-const {Image, StyleSheet, Text, View} = ReactNative;
+const {Text, View} = ReactNative;
 
 type State = {};
 
@@ -167,18 +167,6 @@ class SemanticColorsExample extends React.Component<{}, State> {
     );
   }
 }
-
-var styles = StyleSheet.create({
-  textInput: {
-    color: {semantic: 'labelColor'},
-    backgroundColor: {semantic: 'systemBackgroundColor'},
-    borderColor: {semantic: 'separatorColor'},
-    borderWidth: StyleSheet.hairlineWidth,
-    flex: 1,
-    fontSize: 13,
-    padding: 4,
-  },
-});
 
 exports.title = 'Dark Mode';
 exports.description =

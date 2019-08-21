@@ -619,64 +619,64 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
 #else // TARGET_OS_IOS
       // https://developer.apple.com/documentation/uikit/uicolor/ui_element_colors
       // Label Colors
-      @"labelColor": @{ // 13
-        RCTFallbackARGB: @(0xFF000000)
+      @"labelColor": @{ // iOS 13.0
+        RCTFallbackARGB: @(0xFF000000) // fallback for iOS<=12: RGBA returned by this semantic color in light mode on iOS 13
       },
-      @"secondaryLabelColor": @{ // 13
+      @"secondaryLabelColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0x993c3c43)
       },
-      @"tertiaryLabelColor": @{ // 13
+      @"tertiaryLabelColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0x4c3c3c43)
       },
-      @"quaternaryLabelColor": @{ // 13
+      @"quaternaryLabelColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0x2d3c3c43)
       },
       // Fill Colors
-      @"systemFillColor": @{ // 13
+      @"systemFillColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0x33787880)
       },
-      @"secondarySystemFillColor": @{ // 13
+      @"secondarySystemFillColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0x28787880)
       },
-      @"tertiarySystemFillColor": @{ // 13
+      @"tertiarySystemFillColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0x1e767680)
       },
-      @"quaternarySystemFillColor": @{ // 13
+      @"quaternarySystemFillColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0x14747480)
       },
       // Text Colors
-      @"placeholderTextColor": @{ // 13
+      @"placeholderTextColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0x4c3c3c43)
       },
       // Standard Content Background Colors
-      @"systemBackgroundColor": @{ // 13
+      @"systemBackgroundColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFffffff)
       },
-      @"secondarySystemBackgroundColor": @{ // 13
+      @"secondarySystemBackgroundColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFf2f2f7)
       },
-      @"tertiarySystemBackgroundColor": @{ // 13
+      @"tertiarySystemBackgroundColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFffffff)
       },
       // Grouped Content Background Colors
-      @"systemGroupedBackgroundColor": @{ // 13
+      @"systemGroupedBackgroundColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFf2f2f7)
       },
-      @"secondarySystemGroupedBackgroundColor": @{ // 13
+      @"secondarySystemGroupedBackgroundColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFffffff)
       },
-      @"tertiarySystemGroupedBackgroundColor": @{ // 13
+      @"tertiarySystemGroupedBackgroundColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFf2f2f7)
       },
       // Separator Colors
-      @"separatorColor": @{ // 13
+      @"separatorColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0x493c3c43)
       },
-      @"opaqueSeparatorColor": @{ // 13
+      @"opaqueSeparatorColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFc6c6c8)
       },
       // Link Color
-      @"linkColor": @{ // 13
+      @"linkColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFF007aff)
       },
       // Nonadaptable Colors
@@ -685,11 +685,11 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
       // https://developer.apple.com/documentation/uikit/uicolor/standard_colors
       // Adaptable Colors
       @"systemBlueColor": @{},
-      @"systemBrownColor": @{ // 13
+      @"systemBrownColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFa2845e)
       },
       @"systemGreenColor": @{},
-      @"systemIndigoColor": @{ // 13
+      @"systemIndigoColor": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFF5856d6)
       },
       @"systemOrangeColor": @{},
@@ -700,19 +700,19 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
       @"systemYellowColor": @{},
       // Adaptable Gray Colors
       @"systemGrayColor": @{},
-      @"systemGray2Color": @{ // 13
+      @"systemGray2Color": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFaeaeb2)
       },
-      @"systemGray3Color": @{ // 13
+      @"systemGray3Color": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFc7c7cc)
       },
-      @"systemGray4Color": @{ // 13
+      @"systemGray4Color": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFd1d1d6)
       },
-      @"systemGray5Color": @{ // 13
+      @"systemGray5Color": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFe5e5ea)
       },
-      @"systemGray6Color": @{ // 13
+      @"systemGray6Color": @{ // iOS 13.0
         RCTFallbackARGB: @(0xFFf2f2f7)
       },
 #endif
@@ -740,7 +740,7 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
   return colorMap;
 }
 
-/** Returns an UIColor based on a semantic color name.
+/** Returns a UIColor based on a semantic color name.
  *  Returns nil if the semantic color name is invalid.
  */
 static UIColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
@@ -827,7 +827,7 @@ static NSString *RCTSemanticColorNames()
       NSString *semanticName = value;
       UIColor *color = RCTColorFromSemanticColorName(semanticName);
       if (color == nil) {
-        RCTLogConvertError(json, [@"an UIColor.  Expected one of the following values: " stringByAppendingString:RCTSemanticColorNames()]);
+        RCTLogConvertError(json, [@"a UIColor.  Expected one of the following values: " stringByAppendingString:RCTSemanticColorNames()]);
       }
       return color;
     } else if ((value = [dictionary objectForKey:@"dynamic"])) {
@@ -855,11 +855,11 @@ static NSString *RCTSemanticColorNames()
 #endif
 #endif
       } else {
-        RCTLogConvertError(json, @"an UIColor. Expected a mac dynamic appearance aware color.");
+        RCTLogConvertError(json, @"a UIColor. Expected a mac dynamic appearance aware color.");
         return nil;
       }
     } else {
-      RCTLogConvertError(json, @"an UIColor. Expected a mac semantic color or dynamic appearance aware color.");
+      RCTLogConvertError(json, @"a UIColor. Expected a mac semantic color or dynamic appearance aware color.");
       return nil;
     }
 // ]TODO(macOS ISS#2323203)
