@@ -107,9 +107,9 @@ class AlertIOS {
     if (typeof type === 'function') {
       console.warn(
         'You passed a callback function as the "type" argument to Alert.prompt(). React Native is ' +
-         'assuming  you want to use the deprecated Alert.prompt(title, defaultValue, buttons, callback) ' +
-         'signature. The current signature is Alert.prompt(title, message, callbackOrButtons, type, defaultValue, ' +
-         'keyboardType) and the old syntax will be removed in a future version.',
+          'assuming  you want to use the deprecated Alert.prompt(title, defaultValue, buttons, callback) ' +
+          'signature. The current signature is Alert.prompt(title, message, callbackOrButtons, type, defaultValue, ' +
+          'keyboardType) and the old syntax will be removed in a future version.',
       );
 
       const callback = type;
@@ -236,31 +236,31 @@ export class AlertWindowsOS {
     buttons?: Buttons,
     options?: Options,
   ): void {
-  const validButtons: Buttons = buttons
-    ? buttons.slice(0, 3)
-    : [{ text: 'OK' }];
-  const buttonPositive = validButtons.pop();
-  const buttonNegative = validButtons.pop();
-  const buttonNeutral = validButtons.pop();
+    const validButtons: Buttons = buttons
+      ? buttons.slice(0, 3)
+      : [{text: 'OK'}];
+    const buttonPositive = validButtons.pop();
+    const buttonNegative = validButtons.pop();
+    const buttonNeutral = validButtons.pop();
 
-  let args = {
-    title: title || '',
-    message: message || '',
-    buttonNeutral: buttonNeutral ? buttonNeutral.text : '',
-    buttonNegative: buttonNegative ? buttonNegative.text : '',
-    buttonPositive: buttonPositive ? buttonPositive.text : '',
-  };
+    let args = {
+      title: title || '',
+      message: message || '',
+      buttonNeutral: buttonNeutral ? buttonNeutral.text : '',
+      buttonNegative: buttonNegative ? buttonNegative.text : '',
+      buttonPositive: buttonPositive ? buttonPositive.text : '',
+    };
 
-  AlertWindows.showAlert(args, (actionResult) => {
-    if (actionResult === 'neutral') {
-      buttonNeutral && buttonNeutral.onPress && buttonNeutral.onPress();
-    } else if (actionResult === 'negative') {
-      buttonNegative && buttonNegative.onPress && buttonNegative.onPress();
-    } else if (actionResult === 'positive') {
-      buttonPositive && buttonPositive.onPress && buttonPositive.onPress();
-    }
-  });
-}
+    AlertWindows.showAlert(args, actionResult => {
+      if (actionResult === 'neutral') {
+        buttonNeutral && buttonNeutral.onPress && buttonNeutral.onPress();
+      } else if (actionResult === 'negative') {
+        buttonNegative && buttonNegative.onPress && buttonNegative.onPress();
+      } else if (actionResult === 'positive') {
+        buttonPositive && buttonPositive.onPress && buttonPositive.onPress();
+      }
+    });
+  }
 }
 
 module.exports = Alert;
