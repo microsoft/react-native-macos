@@ -12,6 +12,7 @@
 
 const AlertMacOS = require('AlertMacOS'); // TODO(macOS ISS#2323203)
 const NativeModules = require('NativeModules');
+const AlertWindowsOS = NativeModules.Alert;
 const RCTAlertManager = NativeModules.AlertManager;
 const Platform = require('Platform');
 
@@ -57,6 +58,8 @@ class Alert {
       AlertMacOS.alert(title, message, buttons); // TODO](macOS ISS#2323203)
     } else if (Platform.OS === 'android') {
       AlertAndroid.alert(title, message, buttons, options);
+    } else if (Platform.OS === 'windows') {
+      AlertWindows.alert(title, message, buttons);
     }
   }
 
@@ -104,9 +107,9 @@ class AlertIOS {
     if (typeof type === 'function') {
       console.warn(
         'You passed a callback function as the "type" argument to Alert.prompt(). React Native is ' +
-          'assuming  you want to use the deprecated Alert.prompt(title, defaultValue, buttons, callback) ' +
-          'signature. The current signature is Alert.prompt(title, message, callbackOrButtons, type, defaultValue, ' +
-          'keyboardType) and the old syntax will be removed in a future version.',
+        'assuming  you want to use the deprecated Alert.prompt(title, defaultValue, buttons, callback) ' +
+        'signature. The current signature is Alert.prompt(title, message, callbackOrButtons, type, defaultValue, ' +
+        'keyboardType) and the old syntax will be removed in a future version.',
       );
 
       const callback = type;
@@ -180,24 +183,24 @@ class AlertAndroid {
     };
 
     if (options) {
-      config = {...config, cancelable: options.cancelable};
+      config = { ...config, cancelable: options.cancelable };
     }
     // At most three buttons (neutral, negative, positive). Ignore rest.
     // The text 'OK' should be probably localized. iOS Alert does that in native.
     const validButtons: Buttons = buttons
       ? buttons.slice(0, 3)
-      : [{text: 'OK'}];
+      : [{ text: 'OK' }];
     const buttonPositive = validButtons.pop();
     const buttonNegative = validButtons.pop();
     const buttonNeutral = validButtons.pop();
     if (buttonNeutral) {
-      config = {...config, buttonNeutral: buttonNeutral.text || ''};
+      config = { ...config, buttonNeutral: buttonNeutral.text || '' };
     }
     if (buttonNegative) {
-      config = {...config, buttonNegative: buttonNegative.text || ''};
+      config = { ...config, buttonNegative: buttonNegative.text || '' };
     }
     if (buttonPositive) {
-      config = {...config, buttonPositive: buttonPositive.text || ''};
+      config = { ...config, buttonPositive: buttonPositive.text || '' };
     }
     NativeModules.DialogManagerAndroid.showAlert(
       config,
@@ -221,6 +224,40 @@ class AlertAndroid {
       },
     );
   }
+}
+
+export class AlertWindows {
+  static alert(
+    title: ?string,
+    message?: ?string,
+    buttons?: Buttons,
+    options?: Options,
+  ): void {
+  const validButtons: Buttons = buttons
+    ? buttons.slice(0, 3)
+    : [{ text: 'OK' }];
+  const buttonPositive = validButtons.pop();
+  const buttonNegative = validButtons.pop();
+  const buttonNeutral = validButtons.pop();
+
+  let args = {
+    title: title || '',
+    message: message || '',
+    buttonNeutral: buttonNeutral ? buttonNeutral.text : '',
+    buttonNegative: buttonNegative ? buttonNegative.text : '',
+    buttonPositive: buttonPositive ? buttonPositive.text : '',
+  };
+
+  AlertWindowsOS.showAlert(args, (actionResult) => {
+    if (actionResult === 'neutral') {
+      buttonNeutral && buttonNeutral.onPress && buttonNeutral.onPress();
+    } else if (actionResult === 'negative') {
+      buttonNegative && buttonNegative.onPress && buttonNegative.onPress();
+    } else if (actionResult === 'positive') {
+      buttonPositive && buttonPositive.onPress && buttonPositive.onPress();
+    }
+  });
+}
 }
 
 module.exports = Alert;
