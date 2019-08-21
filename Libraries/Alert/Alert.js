@@ -229,7 +229,7 @@ class AlertAndroid {
 /**
  * Wrapper around the Windows native module.
  */
-export class AlertWindowsOS {
+class AlertWindowsOS {
   static alert(
     title: ?string,
     message?: ?string,
