@@ -12,7 +12,7 @@
 
 const AlertMacOS = require('AlertMacOS'); // TODO(macOS ISS#2323203)
 const NativeModules = require('NativeModules');
-const AlertWindowsOS = NativeModules.Alert;
+const AlertWindows = NativeModules.AlertWindows;
 const RCTAlertManager = NativeModules.AlertManager;
 const Platform = require('Platform');
 
@@ -59,7 +59,7 @@ class Alert {
     } else if (Platform.OS === 'android') {
       AlertAndroid.alert(title, message, buttons, options);
     } else if (Platform.OS === 'windows') {
-      AlertWindows.alert(title, message, buttons);
+      AlertWindowsOS.alert(title, message, buttons);
     }
   }
 
@@ -107,9 +107,9 @@ class AlertIOS {
     if (typeof type === 'function') {
       console.warn(
         'You passed a callback function as the "type" argument to Alert.prompt(). React Native is ' +
-        'assuming  you want to use the deprecated Alert.prompt(title, defaultValue, buttons, callback) ' +
-        'signature. The current signature is Alert.prompt(title, message, callbackOrButtons, type, defaultValue, ' +
-        'keyboardType) and the old syntax will be removed in a future version.',
+         'assuming  you want to use the deprecated Alert.prompt(title, defaultValue, buttons, callback) ' +
+         'signature. The current signature is Alert.prompt(title, message, callbackOrButtons, type, defaultValue, ' +
+         'keyboardType) and the old syntax will be removed in a future version.',
       );
 
       const callback = type;
@@ -226,7 +226,10 @@ class AlertAndroid {
   }
 }
 
-export class AlertWindows {
+/**
+ * Wrapper around the Windows native module.
+ */
+export class AlertWindowsOS {
   static alert(
     title: ?string,
     message?: ?string,
@@ -248,7 +251,7 @@ export class AlertWindows {
     buttonPositive: buttonPositive ? buttonPositive.text : '',
   };
 
-  AlertWindowsOS.showAlert(args, (actionResult) => {
+  AlertWindows.showAlert(args, (actionResult) => {
     if (actionResult === 'neutral') {
       buttonNeutral && buttonNeutral.onPress && buttonNeutral.onPress();
     } else if (actionResult === 'negative') {
