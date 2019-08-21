@@ -743,10 +743,10 @@ static NSDictionary<NSString *, NSDictionary *>* RCTSemanticColorsMap()
 /** Returns a UIColor based on a semantic color name.
  *  Returns nil if the semantic color name is invalid.
  */
-static UIColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
+static RCTUIColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
 {
   NSDictionary<NSString *, NSDictionary *> *colorMap = RCTSemanticColorsMap();
-  UIColor *color = nil;
+  RCTUIColor *color = nil;
   NSDictionary<NSString *, id> *colorInfo = colorMap[semanticColorName];
   if (colorInfo) {
     NSString *semanticColorSelector = colorInfo[RCTSelector];
@@ -754,7 +754,7 @@ static UIColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
       semanticColorSelector = semanticColorName;
     }
     SEL selector = NSSelectorFromString(semanticColorSelector);
-    if (![UIColor respondsToSelector:selector]) {
+    if (![RCTUIColor respondsToSelector:selector]) {
       NSNumber *fallbackRGB = colorInfo[RCTFallbackARGB];
       if (fallbackRGB != nil) {
         RCTAssert([fallbackRGB isKindOfClass:[NSNumber class]], @"fallback ARGB is not a number");
@@ -763,12 +763,12 @@ static UIColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
       semanticColorSelector = colorInfo[RCTFallback];
       selector = NSSelectorFromString(semanticColorSelector);
     }
-    RCTAssert ([UIColor respondsToSelector:selector], @"UIColor does not respond to a semantic color selector.");
-    Class klass = [UIColor class];
+    RCTAssert ([RCTUIColor respondsToSelector:selector], @"RCTUIColor does not respond to a semantic color selector.");
+    Class klass = [RCTUIColor class];
     IMP imp = [klass methodForSelector:selector];
     id (*getSemanticColorObject)(id, SEL) = (void *)imp;
     id colorObject = getSemanticColorObject(klass, selector);
-    if ([colorObject isKindOfClass:[UIColor class]]) {
+    if ([colorObject isKindOfClass:[RCTUIColor class]]) {
       color = colorObject;
     } else if ([colorObject isKindOfClass:[NSArray class]]) {
       NSArray *colors = colorObject;
@@ -800,7 +800,7 @@ static NSString *RCTSemanticColorNames()
 }
 // ]TODO(macOS ISS#2323203)
 
-+ (UIColor *)UIColor:(id)json
++ (RCTUIColor *)UIColor:(id)json // TODO(OSS Candidate ISS#2710739)
 {
   if (!json) {
     return nil;
@@ -808,24 +808,24 @@ static NSString *RCTSemanticColorNames()
   if ([json isKindOfClass:[NSArray class]]) {
     NSArray *components = [self NSNumberArray:json];
     CGFloat alpha = components.count > 3 ? [self CGFloat:components[3]] : 1.0;
-    return [UIColor colorWithRed:[self CGFloat:components[0]]
-                           green:[self CGFloat:components[1]]
-                            blue:[self CGFloat:components[2]]
-                           alpha:alpha];
+    return [RCTUIColor colorWithRed:[self CGFloat:components[0]] // TODO(OSS Candidate ISS#2710739)
+                              green:[self CGFloat:components[1]]
+                               blue:[self CGFloat:components[2]]
+                              alpha:alpha];
   } else if ([json isKindOfClass:[NSNumber class]]) {
     NSUInteger argb = [self NSUInteger:json];
     CGFloat a = ((argb >> 24) & 0xFF) / 255.0;
     CGFloat r = ((argb >> 16) & 0xFF) / 255.0;
     CGFloat g = ((argb >> 8) & 0xFF) / 255.0;
     CGFloat b = (argb & 0xFF) / 255.0;
-    return [UIColor colorWithRed:r green:g blue:b alpha:a];
+    return [RCTUIColor colorWithRed:r green:g blue:b alpha:a]; // TODO(OSS Candidate ISS#2710739)
 // [TODO(macOS ISS#2323203)
   } else if ([json isKindOfClass:[NSDictionary class]]) {
     NSDictionary *dictionary = json;
     id value = nil;
     if ((value = [dictionary objectForKey:@"semantic"])) {
       NSString *semanticName = value;
-      UIColor *color = RCTColorFromSemanticColorName(semanticName);
+      RCTUIColor *color = RCTColorFromSemanticColorName(semanticName);
       if (color == nil) {
         RCTLogConvertError(json, [@"a UIColor.  Expected one of the following values: " stringByAppendingString:RCTSemanticColorNames()]);
       }
@@ -833,9 +833,9 @@ static NSString *RCTSemanticColorNames()
     } else if ((value = [dictionary objectForKey:@"dynamic"])) {
       NSDictionary *appearances = value;
       id light = [appearances objectForKey:@"light"];
-      UIColor *lightColor = [RCTConvert UIColor:light];
+      RCTUIColor *lightColor = [RCTConvert UIColor:light];
       id dark = [appearances objectForKey:@"dark"];
-      UIColor *darkColor = [RCTConvert UIColor:dark];
+      RCTUIColor *darkColor = [RCTConvert UIColor:dark];
       if (lightColor != nil && darkColor != nil) {
 #if TARGET_OS_OSX
         RCTDynamicColor *color = [[RCTDynamicColor alloc] initWithAquaColor:lightColor darkAquaColor:darkColor];
@@ -922,7 +922,7 @@ NSArray *RCTConvertArrayValue(SEL type, id json)
 
 RCT_ARRAY_CONVERTER(NSURL)
 RCT_ARRAY_CONVERTER(RCTFileURL)
-RCT_ARRAY_CONVERTER(UIColor)
+RCT_ARRAY_CONVERTER(RCTUIColor) // TODO(OSS Candidate ISS#2710739)
 
 /**
  * This macro is used for creating converter functions for directly

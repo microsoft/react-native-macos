@@ -103,7 +103,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS I
 
 @implementation RCTView
 {
-  UIColor *_backgroundColor;
+  RCTUIColor *_backgroundColor; // TODO(OSS Candidate ISS#2710739)
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
   NSTrackingArea *_trackingArea;
   BOOL _hasMouseOver;
@@ -616,12 +616,12 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:unused)
 
 #pragma mark - Borders
 
-- (UIColor *)backgroundColor
+- (RCTUIColor *)backgroundColor // TODO(OSS Candidate ISS#2710739)
 {
   return _backgroundColor;
 }
 
-- (void)setBackgroundColor:(UIColor *)backgroundColor
+- (void)setBackgroundColor:(RCTUIColor *)backgroundColor // TODO(OSS Candidate ISS#2710739)
 {
   if ([_backgroundColor isEqual:backgroundColor]) {
     return;
