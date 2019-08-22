@@ -37,6 +37,8 @@ function normalizeColorObject(
     };
     return dynamicColor;
   }
+
+  return null;
 }
 
 module.exports = normalizeColorObject;

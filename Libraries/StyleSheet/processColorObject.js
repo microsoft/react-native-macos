@@ -9,6 +9,7 @@
  */
 
 'use strict';
+
 import type {NativeOrDynamicColorType} from 'normalizeColor'; // ]TODO(macOS ISS#2323203)
 
 function processColorObject(
@@ -16,3 +17,5 @@ function processColorObject(
 ): ?NativeOrDynamicColorType /* TODO(macOS ISS#2323203) */ {
   return null;
 }
+
+module.exports = processColorObject;
