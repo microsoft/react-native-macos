@@ -12,7 +12,7 @@
 'use strict';
 
 const normalizeColorObject = require('normalizeColorObject');
-import type {NativeOrDynamicColorType} from 'normalizeColorObject'; 
+import type {NativeOrDynamicColorType} from 'normalizeColorObject';
 
 export {NativeOrDynamicColorType} from 'normalizeColorObject';
 
