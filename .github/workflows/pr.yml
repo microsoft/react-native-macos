@@ -11,7 +11,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-      submodules: true
+      with:
+        submodules: true
 
     - run: npm install
 
