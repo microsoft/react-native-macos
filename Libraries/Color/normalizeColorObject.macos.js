@@ -29,7 +29,7 @@ function normalizeColorObject(
   } else if ('dynamic' in color && color.dynamic !== undefined) {
     // a dynamic, appearance aware color
     const dynamic = color.dynamic;
-    const dynamicColor: NativeColorType = {
+    const dynamicColor: NativeOrDynamicColorType = {
       dynamic: {
         light: normalizeColor(dynamic.light),
         dark: normalizeColor(dynamic.dark),
