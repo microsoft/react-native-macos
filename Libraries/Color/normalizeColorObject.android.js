@@ -13,7 +13,7 @@
 export type NativeOrDynamicColorType = {};
 
 function normalizeColorObject(
-  color: ?NativeOrDynamicColorType,
+  color: NativeOrDynamicColorType,
 ): ?(number | NativeOrDynamicColorType) {
   return null;
 }

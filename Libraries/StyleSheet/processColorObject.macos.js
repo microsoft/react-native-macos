@@ -14,7 +14,7 @@ import type {NativeOrDynamicColorType} from 'normalizeColorObject';
 const processColor = require('processColor');
 
 function processColorObject(
-  color?: ?NativeOrDynamicColorType,
+  color: NativeOrDynamicColorType,
 ): ?NativeOrDynamicColorType {
   if ('dynamic' in color && color.dynamic !== undefined) {
     const dynamic = color.dynamic;

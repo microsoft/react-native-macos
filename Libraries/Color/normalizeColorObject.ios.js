@@ -21,7 +21,7 @@ export type NativeOrDynamicColorType = {
 };
 
 function normalizeColorObject(
-  color: ?NativeOrDynamicColorType,
+  color: NativeOrDynamicColorType,
 ): ?(number | NativeOrDynamicColorType) {
   if ('semantic' in color) {
     // a macos semantic color
