@@ -1,14 +1,12 @@
 name: CI
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
 
   AndroidRNPR:
     name: Android React Native PR
-
     runs-on: windows-2016
-    
     steps:
 
     - name: Skip NO CI
@@ -47,3 +45,26 @@ jobs:
     - run: nuget pack ReactAndroid/ReactAndroid.nuspec
 
     - run: gradlew.bat "clean"
+
+  ApplePR:
+    name: Apple React Native PR
+    runs-on: macOS-latest
+    strategy:
+      matrix:
+        slice: [
+          {packager_platform: ios, xcode_sdk: iphonesimulator, xcode_scheme: RNTester, xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 5s' },
+          {packager_platform: ios, xcode_sdk: appletvsimulator, xcode_scheme: RNTester-tvOS, xcode_destination: 'platform=tvOS Simulator,OS=latest,name=Apple TV' },
+          {packager_platform: macos, xcode_sdk: macosx, xcode_scheme: RNTester-macOS, xcode_destination: 'platform=macOS,arch=x86_64' }
+        ]
+
+    steps:
+
+    - name: Skip NO CI
+      if: contains( github.event.head_commit.message, '***NO_CI***')
+      run: exit 123
+
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - run: brew bundle
