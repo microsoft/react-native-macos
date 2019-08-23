@@ -14,8 +14,6 @@
 const normalizeColorObject = require('normalizeColorObject');
 import type {NativeOrDynamicColorType} from 'normalizeColorObject';
 
-export {NativeOrDynamicColorType} from 'normalizeColorObject';
-
 function normalizeColor(
   color: ?(
     | string

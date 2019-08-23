@@ -10,7 +10,7 @@
 
 'use strict';
 
-import type {NativeOrDynamicColorType} from 'normalizeColor';
+import type {NativeOrDynamicColorType} from 'normalizeColorObject';
 const processColor = require('processColor');
 
 function processColorObject(
