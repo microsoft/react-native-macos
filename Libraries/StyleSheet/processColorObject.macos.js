@@ -18,7 +18,7 @@ function processColorObject(
 ): ?NativeOrDynamicColorType {
   if ('dynamic' in color && color.dynamic !== undefined) {
     const dynamic = color.dynamic;
-    const dynamicColor = {
+    const dynamicColor: NativeOrDynamicColorType = {
       dynamic: {
         light: processColor(dynamic.light),
         dark: processColor(dynamic.dark),
