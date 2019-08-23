@@ -68,3 +68,48 @@ jobs:
         submodules: true
 
     - run: brew bundle
+
+    # The XCODE_10_DEVELOPER_DIR variable is defined in the Hosted Agents and is used by the Xcode@5 tasks.
+    # TODO Verify if the agents do not define this variable, so manually set it here if it is not defined.
+    - name: 'Ensure XCODE_10_DEVELOPER_DIR'
+      run: |
+        if [ -z $XCODE_10_DEVELOPER_DIR ]; then 
+          DIR='/Applications/Xcode_10.1.app/Contents/Developer/'
+          if [ ! -d $DIR ]; then
+            DIR='/Applications/Xcode.app/Contents/Developer/'
+          fi
+          if [ -d $DIR ]; then
+            echo "##[set-env name=XCODE_10_DEVELOPER_DIR;]$DIR"
+          else
+            (>&2 echo "No Xcode found.")
+          fi
+        fi
+      
+    # The DEVELOPER_DIR variable is used by xcodebuild to specify the version of Xcode to use.
+    # Set the variable here so that npm components and CMake build steps get the latest XCode version
+    # instead of whatever version is the default on the build agent.
+    - name: Set DEVELOPER_DIR
+      run: |
+        echo "##[set-env name=DEVELOPER_DIR;]$XCODE_10_DEVELOPER_DIR"
+
+    - name: Check XCode version
+      run: |
+        REQUIRED=10.1
+        VER=`xcodebuild -version | head -n1 | cut -d' ' -f2`
+        if (( $(echo "$VER >= $REQUIRED" | bc -l) )); then
+          echo "XCode version $VER is active."
+        else
+          (>&2 echo "Must have XCode $REQUIRED or later.")
+        fi
+
+    - run: npm install
+
+    - name: Setup packager and WebSocket test server
+      run: .ado/ado-test-setup.sh
+
+    - name: curl the packager
+      run: |
+        echo Preparing the packager for platform $PLATFORM
+        curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/IntegrationTests/IntegrationTestsApp.bundle?platform=${PLATFORM}&dev=true" -o /dev/null
+      env:
+        PLATFORM: ${{ matrix.slice.packager_platform }}
