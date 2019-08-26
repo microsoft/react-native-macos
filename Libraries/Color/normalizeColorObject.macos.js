@@ -7,7 +7,7 @@
  * @format
  * @flow
  */
-
+// [TODO(macOS ISS#2323203)
 'use strict';
 
 const normalizeColor = require('normalizeColor');
@@ -42,3 +42,4 @@ function normalizeColorObject(
 }
 
 module.exports = normalizeColorObject;
+// ]TODO(macOS ISS#2323203)

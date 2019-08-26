@@ -7,7 +7,7 @@
  * @format
  * @flow
  */
-
+// [TODO(macOS ISS#2323203)
 'use strict';
 
 export type NativeOrDynamicColorType = {};
@@ -19,3 +19,4 @@ function normalizeColorObject(
 }
 
 module.exports = normalizeColorObject;
+// ]TODO(macOS ISS#2323203)

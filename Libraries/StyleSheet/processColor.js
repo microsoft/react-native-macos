@@ -11,9 +11,9 @@
 'use strict';
 
 const Platform = require('Platform');
-const processColorObject = require('processColorObject');
+const processColorObject = require('processColorObject'); // TODO(macOS ISS#2323203)
 const normalizeColor = require('normalizeColor');
-import type {NativeOrDynamicColorType} from 'normalizeColorObject'; // ]TODO(macOS ISS#2323203)
+import type {NativeOrDynamicColorType} from 'normalizeColorObject'; // TODO(macOS ISS#2323203)
 
 /* eslint no-bitwise: 0 */
 function processColor(

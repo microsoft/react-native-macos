@@ -7,7 +7,7 @@
  * @format
  * @flow
  */
-
+// [TODO(macOS ISS#2323203)
 'use strict';
 
 import type {NativeOrDynamicColorType} from 'normalizeColorObject';
@@ -30,3 +30,4 @@ function processColorObject(
 }
 
 module.exports = processColorObject;
+// ]TODO(macOS ISS#2323203)
