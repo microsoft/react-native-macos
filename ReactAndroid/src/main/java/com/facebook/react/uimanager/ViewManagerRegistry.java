@@ -8,10 +8,12 @@
 package com.facebook.react.uimanager;
 
 import com.facebook.react.common.MapBuilder;
+import com.facebook.react.common.ReactConstants;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import android.util.Log;
 
 /**
  * Class that stores the mapping between native view name used in JS and the corresponding instance
@@ -24,6 +26,7 @@ public final class ViewManagerRegistry {
   private static Map<String, String> sComponentNames = new HashMap<>();
 
   static {
+    sComponentNames.put("Image", "RCTImageView");
     sComponentNames.put("ForwardRef(Image)", "RCTImageView");
     sComponentNames.put("Text", "RCTText");
     sComponentNames.put("TextInput", "AndroidTextInput");
@@ -71,6 +74,7 @@ public final class ViewManagerRegistry {
         return viewManager;
       }
     }
+    Log.w(ReactConstants.TAG, "No ViewManager defined for class: " + newClassName);
     throw new IllegalViewOperationException("No ViewManager defined for class " + newClassName);
   }
 }

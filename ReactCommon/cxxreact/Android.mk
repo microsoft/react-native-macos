@@ -11,7 +11,6 @@ LOCAL_MODULE := reactnative
 
 LOCAL_SRC_FILES := \
   CxxNativeModule.cpp \
-  fbsystrace.cpp \
   Instance.cpp \
   JSBigString.cpp \
   JSBundleType.cpp \
@@ -33,7 +32,7 @@ LOCAL_CFLAGS := \
 
 LOCAL_CFLAGS += -fexceptions -frtti -Wno-unused-lambda-capture -Wno-unused-variable
 
-LOCAL_STATIC_LIBRARIES := boost
+LOCAL_STATIC_LIBRARIES := boost jsi
 LOCAL_SHARED_LIBRARIES := libfb libfolly_json libglog 
 
 LOCAL_V8_FILES := \
@@ -52,6 +51,7 @@ include $(BUILD_STATIC_LIBRARY)
 $(call import-module,fb)
 $(call import-module,folly)
 $(call import-module,glog)
+$(call import-module,jsi)
 $(call import-module,jsinspector)
 $(call import-module,privatedata)
 ifeq ($(JS_ENGINE), V8)

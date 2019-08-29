@@ -28,8 +28,12 @@ function doPublish() {
   const tempPublishBranch = `publish-temp-${Date.now()}`;
   exec(`git checkout -b ${tempPublishBranch}`);
 
+  exec(`git config --global user.email "53619745+rnbot@users.noreply.github.com"`);
+  exec(`git config --global user.name "React-Native Build"`);
+  exec(`git remote set-url origin https://rnbot:${process.env.GIT_TOKEN}@github.com/microsoft/react-native.git`);
+
   exec(`git add ${pkgJsonPath}`);
-  exec(`git commit -m "Applying package update to ${releaseVersion}`);
+  exec(`git commit -m "Applying package update to ${releaseVersion} ***NO_CI***`);
   exec(`git tag v${releaseVersion}`);
   exec(`git push origin HEAD:${tempPublishBranch} --follow-tags --verbose`);
   exec(`git push origin tag v${releaseVersion}`);
@@ -43,28 +47,18 @@ function doPublish() {
     exec("git checkout ReactAndroid/gradle.properties");
   }
 
-  // Configure npm to publish to internal feed
-  const npmrcPath = path.resolve(__dirname, "../.npmrc");
-  const npmrcContents = `registry=https:${
-    process.env.publishnpmfeed
-  }/registry/\nalways-auth=true`;
-  console.log(`Creating ${npmrcPath} for publishing:`);
-  console.log(npmrcContents);
-  fs.writeFileSync(npmrcPath, npmrcContents);
-
-  exec(`npm publish${publishBranchName !== 'master' ? ` --tag ${publishBranchName}` : ''}`);
-  exec(`del ${npmrcPath}`);
-
   // Push tar to GitHub releases
   exec(`npm pack`);
 
-  const npmTarPath = path.resolve(
-    __dirname,
-    `../react-native-${releaseVersion}.tgz`
-  );
+  const npmTarFileName = `react-native-${releaseVersion}.tgz`;
+  const npmTarPath = path.resolve(__dirname, '..', npmTarFileName);
+  const finalTarPath = path.join(process.env.BUILD_STAGINGDIRECTORY, 'final', npmTarFileName);
+  console.log(`Copying tar file ${npmTarPath} to: ${finalTarPath}`)
+  fs.copyFileSync(npmTarPath, finalTarPath);
+
   const assetUpdateUrl = `https://uploads.github.com/repos/microsoft/react-native/releases/{id}/assets?name=react-native-${releaseVersion}.tgz`;
   const authHeader =
-    "Basic " + new Buffer(":" + process.env.githubToken).toString("base64");
+    "Basic " + new Buffer(":" + process.env.GIT_TOKEN).toString("base64");
   const userAgent = "Microsoft-React-Native-Release-Agent";
 
   let uploadReleaseAssetUrl = "";
@@ -93,6 +87,7 @@ function doPublish() {
         }
 
         console.log('Response: ' + body);
+
 
         exec(`del ${npmTarPath}`);
         exec(`git checkout ${publishBranchName}`);

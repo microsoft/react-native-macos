@@ -22,14 +22,14 @@
   return self;
 }
 
-- (void)insertReactSubview:(UIView *)subview atIndex:(NSInteger)atIndex
+- (void)insertReactSubview:(RCTUIView *)subview atIndex:(NSInteger)atIndex // TODO(macOS ISS#3536887)
 {
   [super insertReactSubview:subview atIndex:atIndex];
   [self insertSubview:subview atIndex:atIndex];
   [self invalidate];
 }
 
-- (void)removeReactSubview:(UIView *)subview
+- (void)removeReactSubview:(RCTUIView *)subview // TODO(macOS ISS#3536887)
 {
   [super removeReactSubview:subview];
   [self invalidate];
@@ -47,9 +47,9 @@
 
 - (void)drawRect:(CGRect)rect
 {
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+// [TODO(OSS Candidate ISS#2710739): for macOS and iOS dark mode
   [super drawRect:rect];
-#endif // ]TODO(macOS ISS#2323203)
+// ]TODO(OSS Candidate ISS#2710739)
   CGContextRef context = UIGraphicsGetCurrentContext();
   for (ARTNode *node in self.subviews) {
     [node renderTo:context];
