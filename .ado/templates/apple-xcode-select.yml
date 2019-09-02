@@ -6,7 +6,7 @@ steps:
   # The 'OE Mac Pool' agents do not define this variable, so manually set it here if it is not defined.
   - script: |
       if [ -z $XCODE_11_DEVELOPER_DIR ]; then 
-        DIR='/Applications/Xcode_11.0.app/Contents/Developer/'
+        DIR='/Applications/Xcode_11_beta.app/Contents/Developer/'
         if [ ! -d $DIR ]; then
           DIR='/Applications/Xcode.app/Contents/Developer/'
         fi
