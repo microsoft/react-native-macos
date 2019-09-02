@@ -15,7 +15,7 @@ jobs:
           packager_platform: 'ios'
           xcode_sdk: iphonesimulator
           xcode_scheme: 'RNTester'
-          xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 5s'
+          xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 8'
         tvos:
           packager_platform: 'ios'
           xcode_sdk: appletvsimulator
