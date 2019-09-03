@@ -20,7 +20,7 @@ lsof -i tcp:5555 | awk 'NR!=1 {print $2}' | xargs kill
 # EOF
 
 # clear packager cache
-rm -fr $TMPDIR/react-*
+rm -fr "$TMPDIR/react-*"
 
 # clear watchman state
 rm -rf /usr/local/var/run/watchman/*

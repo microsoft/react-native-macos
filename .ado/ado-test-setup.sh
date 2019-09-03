@@ -13,12 +13,12 @@ THIS_DIR=$PWD
 # Start the WebSocket test server
 # osascript -e "tell application \"Terminal\" to do script \"cd ${THIS_DIR}; export SERVERS_NO_WAIT=1; ./IntegrationTests/launchWebSocketServer.command\""
 
-COMMAND=$TMPDIR/launchPackager.command
-echo "cd ${THIS_DIR}; export SERVERS_NO_WAIT=1; ./scripts/launchPackager.command --reactNativePath ${THIS_DIR}" > $COMMAND
-chmod +x $COMMAND
-open $COMMAND
+COMMAND="$TMPDIR/launchPackager.command"
+echo "cd ${THIS_DIR}; export SERVERS_NO_WAIT=1; ./scripts/launchPackager.command --reactNativePath ${THIS_DIR}" > "$COMMAND"
+chmod +x "$COMMAND"
+open "$COMMAND"
 
-COMMAND=$TMPDIR/launchWebSocketServer.command
-echo "cd ${THIS_DIR}; export SERVERS_NO_WAIT=1; ./IntegrationTests/launchWebSocketServer.command" > $COMMAND
-chmod +x $COMMAND
-open $COMMAND
+COMMAND="$TMPDIR/launchWebSocketServer.command"
+echo "cd ${THIS_DIR}; export SERVERS_NO_WAIT=1; ./IntegrationTests/launchWebSocketServer.command" > "$COMMAND"
+chmod +x "$COMMAND"
+open "$COMMAND"
