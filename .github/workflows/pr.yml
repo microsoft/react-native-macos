@@ -48,7 +48,7 @@ jobs:
 
   ApplePR:
     name: Apple React Native PR
-    runs-on: macOS-10.13
+    runs-on: macOS-10.14
     strategy:
       matrix:
         slice: [
