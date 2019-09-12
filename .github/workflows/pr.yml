@@ -52,8 +52,8 @@ jobs:
     strategy:
       matrix:
         slice: [
-          {packager_platform: ios, xcode_sdk: iphonesimulator, xcode_scheme: RNTester, xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone\ 8' },
-          {packager_platform: ios, xcode_sdk: appletvsimulator, xcode_scheme: RNTester-tvOS, xcode_destination: 'platform=tvOS Simulator,OS=latest,name=Apple\ TV' },
+          {packager_platform: ios, xcode_sdk: iphonesimulator, xcode_scheme: RNTester, xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 8' },
+          {packager_platform: ios, xcode_sdk: appletvsimulator, xcode_scheme: RNTester-tvOS, xcode_destination: 'platform=tvOS Simulator,OS=latest,name=Apple TV' },
           {packager_platform: macos, xcode_sdk: macosx, xcode_scheme: RNTester-macOS, xcode_destination: 'platform=macOS,arch=x86_64' }
         ]
 
@@ -106,23 +106,23 @@ jobs:
 
     - run: yarn install
 
-    # - name: Setup packager and WebSocket test server
-    #   run: .ado/ado-test-setup.sh
+    - name: Setup packager and WebSocket test server
+      run: .ado/ado-test-setup.sh
 
-    # - name: curl the packager
-    #   run: |
-    #     echo Preparing the packager for platform $PLATFORM
-    #     curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/IntegrationTests/IntegrationTestsApp.bundle?platform=${PLATFORM}&dev=true" -o /dev/null
-    #   env:
-    #     PLATFORM: ${{ matrix.slice.packager_platform }}
+    - name: curl the packager
+      run: |
+        echo Preparing the packager for platform $PLATFORM
+        curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/IntegrationTests/IntegrationTestsApp.bundle?platform=${PLATFORM}&dev=true" -o /dev/null
+      env:
+        PLATFORM: ${{ matrix.slice.packager_platform }}
 
     - name: XCode build debug
       run: |
-        xcodebuild -sdk ${{ matrix.slice.xcode_sdk }} -configuration Debug -project RNTester/RNTester.xcodeproj -scheme ${{ matrix.slice.xcode_scheme }} build test -destination ${{ matrix.slice.xcode_destination }} ONLY_ACTIVE_ARCH=NO -verbose -UseModernBuildSystem=NO -derivedDataPath DerivedData CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=UBF8T346G9 | xcpretty -r junit --no-color
+        xcodebuild -sdk ${{ matrix.slice.xcode_sdk }} -configuration Debug -project RNTester/RNTester.xcodeproj -scheme ${{ matrix.slice.xcode_scheme }} build test -destination "${{ matrix.slice.xcode_destination }}" ONLY_ACTIVE_ARCH=NO -verbose -UseModernBuildSystem=NO -derivedDataPath DerivedData CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=UBF8T346G9 | xcpretty -r junit --no-color
 
     - name: XCode build debug
       run: |
-        xcodebuild -sdk ${{ matrix.slice.xcode_sdk }} -configuration Release -project RNTester/RNTester.xcodeproj -scheme ${{ matrix.slice.xcode_scheme }} build -destination ${{ matrix.slice.xcode_destination }} ONLY_ACTIVE_ARCH=NO -verbose -UseModernBuildSystem=NO -derivedDataPath DerivedData CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=UBF8T346G9 | xcpretty -r junit --no-color
+        xcodebuild -sdk ${{ matrix.slice.xcode_sdk }} -configuration Release -project RNTester/RNTester.xcodeproj -scheme ${{ matrix.slice.xcode_scheme }} build -destination "${{ matrix.slice.xcode_destination }}" ONLY_ACTIVE_ARCH=NO -verbose -UseModernBuildSystem=NO -derivedDataPath DerivedData CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=UBF8T346G9 | xcpretty -r junit --no-color
 
     - name: Cleanup packager and WebSocket test server
       run: .ado/ado-test-cleanup.sh
