@@ -52,9 +52,9 @@ jobs:
     strategy:
       matrix:
         slice: [
-          {packager_platform: ios, xcode_sdk: iphonesimulator, xcode_scheme: RNTester, xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 8' },
-          {packager_platform: ios, xcode_sdk: appletvsimulator, xcode_scheme: RNTester-tvOS, xcode_destination: 'platform=tvOS Simulator,OS=latest,name=Apple TV' },
-          {packager_platform: macos, xcode_sdk: macosx, xcode_scheme: RNTester-macOS, xcode_destination: 'platform=macOS,arch=x86_64' }
+          {xcode_sdk: iphonesimulator, xcode_scheme: RNTester, xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 8', packager_platform: ios},
+          {xcode_sdk: appletvsimulator, xcode_scheme: RNTester-tvOS, xcode_destination: 'platform=tvOS Simulator,OS=latest,name=Apple TV', packager_platform: ios},
+          {xcode_sdk: macosx, xcode_scheme: RNTester-macOS, xcode_destination: 'platform=macOS,arch=x86_64', packager_platform: macos}
         ]
 
     steps:
@@ -72,7 +72,6 @@ jobs:
     - run: brew link node@10 --overwrite --force
 
     # The XCODE_11_DEVELOPER_DIR variable is defined in the Hosted Agents and is used by the Xcode@5 tasks.
-    # TODO Verify if the agents do not define this variable, so manually set it here if it is not defined.
     - name: 'Ensure XCODE_11_DEVELOPER_DIR'
       run: |
         if [ -z $XCODE_11_DEVELOPER_DIR ]; then 
@@ -81,15 +80,13 @@ jobs:
             DIR='/Applications/Xcode.app/Contents/Developer/'
           fi
           if [ -d $DIR ]; then
-            echo "##vso[task.setvariable variable=XCODE_11_DEVELOPER_DIR;]$DIR"
+            echo "##[set-env name=XCODE_11_DEVELOPER_DIR;]$DIR"
           else
             (>&2 echo "No Xcode found.")
           fi
         fi
       
     # The DEVELOPER_DIR variable is used by xcodebuild to specify the version of Xcode to use.
-    # Set the variable here so that npm components and CMake build steps get the latest XCode version
-    # instead of whatever version is the default on the build agent.
     - name: Set DEVELOPER_DIR
       run: |
         echo "##[set-env name=DEVELOPER_DIR;]$XCODE_11_DEVELOPER_DIR"
@@ -111,16 +108,16 @@ jobs:
 
     - name: curl the packager
       run: |
-        echo Preparing the packager for platform $PLATFORM
+        echo "Preparing the packager for platform ${PLATFORM}"
         curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/IntegrationTests/IntegrationTestsApp.bundle?platform=${PLATFORM}&dev=true" -o /dev/null
       env:
         PLATFORM: ${{ matrix.slice.packager_platform }}
 
-    - name: XCode build debug
+    - name: XCode build and test Debug
       run: |
         xcodebuild -sdk ${{ matrix.slice.xcode_sdk }} -configuration Debug -project RNTester/RNTester.xcodeproj -scheme ${{ matrix.slice.xcode_scheme }} build test -destination "${{ matrix.slice.xcode_destination }}" ONLY_ACTIVE_ARCH=NO -verbose -UseModernBuildSystem=NO -derivedDataPath DerivedData CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=UBF8T346G9 | xcpretty -r junit --no-color
 
-    - name: XCode build debug
+    - name: XCode build Release
       run: |
         xcodebuild -sdk ${{ matrix.slice.xcode_sdk }} -configuration Release -project RNTester/RNTester.xcodeproj -scheme ${{ matrix.slice.xcode_scheme }} build -destination "${{ matrix.slice.xcode_destination }}" ONLY_ACTIVE_ARCH=NO -verbose -UseModernBuildSystem=NO -derivedDataPath DerivedData CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=UBF8T346G9 | xcpretty -r junit --no-color
 
