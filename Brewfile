@@ -1,2 +1,2 @@
-brew "node@10", link: true, overwrite: true
+brew "node@10"
 brew "watchman"
