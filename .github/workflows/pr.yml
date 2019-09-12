@@ -67,7 +67,7 @@ jobs:
       with:
         submodules: true
 
-    - run: sudo brew bundle
+    - run: brew bundle
 
     # The XCODE_11_DEVELOPER_DIR variable is defined in the Hosted Agents and is used by the Xcode@5 tasks.
     # TODO Verify if the agents do not define this variable, so manually set it here if it is not defined.
