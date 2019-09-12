@@ -118,9 +118,19 @@ jobs:
           script: node .ado/publish.js
         env:
           BUILD_STAGINGDIRECTORY: $(Build.StagingDirectory)
+          BUILD_SOURCEBRANCH: $(Build.SourceBranch)
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
       - task: PublishBuildArtifacts@1
         displayName: 'Publish final artifacts'
         inputs:
           PathtoPublish: '$(Build.StagingDirectory)\final'
           ArtifactName: 'ReactNative-Final'
+
+
+      - task: CmdLine@2
+        displayName: Update React-Native-Windows
+        inputs:
+          script: node .ado/updateRNW.js
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
