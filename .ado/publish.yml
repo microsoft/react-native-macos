@@ -111,6 +111,7 @@ jobs:
           command: pack
           packagesToPack: 'ReactAndroid/ReactAndroid.nuspec'
           packDestination: '$(Build.StagingDirectory)\final'
+          buildProperties: buildNumber=$(buildNumber);commitId=$(Build.SourceVersion)
 
       - task: CmdLine@2
         displayName: Do Publish
