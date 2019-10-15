@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the LICENSE
@@ -325,7 +325,8 @@ class RuntimeDecorator : public Base, private jsi::Instrumentation {
     return plain().instrumentation().getRecordedGCStats();
   }
 
-  Value getHeapInfo(bool includeExpensive) override {
+  std::unordered_map<std::string, int64_t> getHeapInfo(
+      bool includeExpensive) override {
     return plain().instrumentation().getHeapInfo(includeExpensive);
   }
 
@@ -334,8 +335,11 @@ class RuntimeDecorator : public Base, private jsi::Instrumentation {
   }
 
   bool createSnapshotToFile(const std::string& path, bool compact) override {
-    return const_cast<Plain&>(plain()).instrumentation().createSnapshotToFile(
-        path, compact);
+    return plain().instrumentation().createSnapshotToFile(path, compact);
+  }
+
+  bool createSnapshotToStream(std::ostream& os, bool compact) override {
+    return plain().instrumentation().createSnapshotToStream(os, compact);
   }
 
   void writeBridgeTrafficTraceToFile(
@@ -400,10 +404,7 @@ struct AfterCaller<T, decltype((void)&T::after)> {
 // RAII constructed before each call to the undecorated class; the
 // ctor is passed a single argument of type WithArg&.  Plain and Base
 // are used as in the base class.
-template <
-    typename With,
-    typename Plain = Runtime,
-    typename Base = Runtime>
+template <typename With, typename Plain = Runtime, typename Base = Runtime>
 class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
  public:
   using RD = RuntimeDecorator<Plain, Base>;

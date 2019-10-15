@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the LICENSE
@@ -51,7 +51,7 @@ class StringBuffer : public Buffer {
   std::string s_;
 };
 
-/// PreparedJavaScript is a base class repesenting JavaScript which is in a form
+/// PreparedJavaScript is a base class representing JavaScript which is in a form
 /// optimized for execution, in a runtime-specific way. Construct one via
 /// jsi::Runtime::prepareJavaScript().
 /// ** This is an experimental API that is subject to change. **
@@ -251,6 +251,10 @@ class Runtime {
   virtual String createStringFromAscii(const char* str, size_t length) = 0;
   virtual String createStringFromUtf8(const uint8_t* utf8, size_t length) = 0;
   virtual std::string utf8(const String&) = 0;
+
+  // \return a \c Value created from a utf8-encoded JSON string. The default
+  // implementation creates a \c String and invokes JSON.parse.
+  virtual Value createValueFromJsonUtf8(const uint8_t* json, size_t length);
 
   virtual Object createObject() = 0;
   virtual Object createObject(std::shared_ptr<HostObject> ho) = 0;
@@ -919,7 +923,7 @@ class Value {
         std::is_base_of<Symbol, T>::value ||
             std::is_base_of<String, T>::value ||
             std::is_base_of<Object, T>::value,
-        "Value cannot be implictly move-constructed from this type");
+        "Value cannot be implicitly move-constructed from this type");
     new (&data_.pointer) T(std::move(other));
   }
 
@@ -974,7 +978,9 @@ class Value {
 
   // \return a \c Value created from a utf8-encoded JSON string.
   static Value
-  createFromJsonUtf8(Runtime& runtime, const uint8_t* json, size_t length);
+  createFromJsonUtf8(Runtime& runtime, const uint8_t* json, size_t length) {
+    return runtime.createValueFromJsonUtf8(json, length);
+  }
 
   /// \return according to the SameValue algorithm see more here:
   //  https://www.ecma-international.org/ecma-262/5.1/#sec-11.9.4
