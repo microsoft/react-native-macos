@@ -37,7 +37,7 @@ public:
   std::shared_ptr<ModuleRegistry> getModuleRegistry() override {
     return m_registry;
   }
-  
+
   virtual bool isBatchActive() override {
     return m_batchHadNativeModuleCalls;
   }
@@ -88,12 +88,12 @@ NativeToJsBridge::NativeToJsBridge(
     std::shared_ptr<ExecutorDelegate> delegate, // TODO(OSS Candidate ISS#2710739)
     std::shared_ptr<ModuleRegistry> registry,
     std::shared_ptr<MessageQueueThread> jsQueue,
-    std::shared_ptr<InstanceCallback> callback)
+    std::shared_ptr<InstanceCallback> callback,
+    std::shared_ptr<JSEConfigParams> jseConfigParams)
     : m_destroyed(std::make_shared<bool>(false)),
       m_delegate(delegate ? delegate : (std::make_shared<JsToNativeBridge>(registry, callback))),
-      m_executor(jsExecutorFactory->createJSExecutor(m_delegate, jsQueue)),
-      m_executorMessageQueueThread(std::move(jsQueue)),
-      m_inspectable(m_executor->isInspectable()) {}
+      m_executor(jsExecutorFactory->createJSExecutor(m_delegate, jsQueue, std::move(jseConfigParams))),
+      m_executorMessageQueueThread(std::move(jsQueue)) {}
 
 // This must be called on the same thread on which the constructor was called.
 NativeToJsBridge::~NativeToJsBridge() {
@@ -239,7 +239,7 @@ void* NativeToJsBridge::getJavaScriptContext() {
 bool NativeToJsBridge::isInspectable() {
   return m_inspectable;
 }
-  
+
 bool NativeToJsBridge::isBatchActive() {
   return m_delegate->isBatchActive();
 }
