@@ -7,6 +7,7 @@
 
 package com.facebook.react.views.text;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,10 +43,12 @@ public class ReactFontManager {
 
   final private Map<String, FontFamily> mFontCache;
   final private Map<String, Typeface> mCustomTypefaceCache;
+  final private Map<String, Typeface> mFontFileNameTypefaceCache;
 
   private ReactFontManager() {
     mFontCache = new HashMap<>();
     mCustomTypefaceCache = new HashMap<>();
+    mFontFileNameTypefaceCache = new HashMap<>();
   }
 
   public static ReactFontManager getInstance() {
@@ -60,6 +63,21 @@ public class ReactFontManager {
     int style,
     AssetManager assetManager) {
     return getTypeface(fontFamilyName, style, 0, assetManager);
+  }
+
+  public @Nullable Typeface getTypeface(
+    String fontPath,
+    String fontFamilyName,
+    int style) {
+    String fileName = fontPath.substring(fontPath.lastIndexOf(File.separator) + 1);
+    Typeface typeface = mFontFileNameTypefaceCache.get(fileName);
+    if (typeface == null) {
+      typeface = createTypeface(fontPath, fontFamilyName, style);
+      if (typeface != null) {
+        mFontFileNameTypefaceCache.put(fileName, typeface);
+      }
+    }
+    return typeface;
   }
 
   public @Nullable Typeface getTypeface(
