@@ -8,7 +8,6 @@
 package com.facebook.react.views.text;
 
 import java.util.HashMap;
-import java.util.Pair;
 import java.util.Map;
 
 import android.content.Context;
