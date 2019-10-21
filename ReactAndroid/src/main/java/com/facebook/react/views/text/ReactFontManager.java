@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.util.Pair;
 import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
