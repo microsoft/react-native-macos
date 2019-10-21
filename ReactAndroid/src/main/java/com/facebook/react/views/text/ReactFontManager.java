@@ -42,7 +42,7 @@ public class ReactFontManager {
   private static ReactFontManager sReactFontManagerInstance;
 
   final private Map<String, FontFamily> mFontCache;
-  final private Map<Pair<String, int>, Typeface> mCustomTypefaceCache;
+  final private Map<Pair<String, Integer>, Typeface> mCustomTypefaceCache;
 
   private ReactFontManager() {
     mFontCache = new HashMap<>();
