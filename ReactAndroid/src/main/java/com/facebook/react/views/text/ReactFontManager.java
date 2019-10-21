@@ -8,6 +8,7 @@
 package com.facebook.react.views.text;
 
 import java.util.HashMap;
+import java.util.Pair;
 import java.util.Map;
 
 import android.content.Context;
@@ -41,7 +42,7 @@ public class ReactFontManager {
   private static ReactFontManager sReactFontManagerInstance;
 
   final private Map<String, FontFamily> mFontCache;
-  final private Map<String, Typeface> mCustomTypefaceCache;
+  final private Map<Pair<String, int>, Typeface> mCustomTypefaceCache;
 
   private ReactFontManager() {
     mFontCache = new HashMap<>();
@@ -67,12 +68,18 @@ public class ReactFontManager {
       int style,
       int weight,
       AssetManager assetManager) {
-    if(mCustomTypefaceCache.containsKey(fontFamilyName)) {
-      Typeface typeface = mCustomTypefaceCache.get(fontFamilyName);
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && weight >= 100 && weight <= 1000) {
-        return Typeface.create(typeface, weight, (style & Typeface.ITALIC) != 0);
+    Pair key = Pair.create(fontFamilyName, weight);
+    if(mCustomTypefaceCache.containsKey(key) {
+      return Typeface.create(mCustomTypefaceCache.get(key), style);
+    } else {
+      key = Pair.create(fontFamilyName, -1);
+      if(mCustomTypefaceCache.containsKey(key) {
+        Typeface typeface = mCustomTypefaceCache.get(key);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && weight >= 100 && weight <= 1000) {
+          return Typeface.create(typeface, weight, (style & Typeface.ITALIC) != 0);
+        }
+        return Typeface.create(typeface, style);
       }
-      return Typeface.create(typeface, style);
     }
 
     FontFamily fontFamily = mFontCache.get(fontFamilyName);
@@ -106,8 +113,28 @@ public class ReactFontManager {
     }
   }
 
-  public void addCustomFont(@NonNull String fontFamily, @NonNull Typeface font) {
-    mCustomTypefaceCache.put(fontFamily, font);
+/*
+   * This method allows you to load custom fonts from a custom Typeface object and register it as a specific 
+   * fontFamily and weight.  This can be used when fonts are delivered during runtime and cannot be included in
+   * the standard app resources.  Typeface's registered using a specific weight will take priority over ones
+   * registered without a specific weight.
+   *
+   * ReactFontManager.getInstance().addCustomFont("Srisakdi", 600, typeface);
+   */
+  public void addCustomFont(@NonNull String fontFamily, int weight, @NonNull Typeface typeface) {
+    mCustomTypefaceCache.put(Pair.create(fontFamily, weight), typeface);
+  }
+
+  /*
+   * This method allows you to load custom fonts from a custom Typeface object and register it as a specific 
+   * fontFamily.  This can be used when fonts are delivered during runtime and cannot be included in
+   * the standard app resources. Typeface's registered using a specific weight will take priority over ones
+   * registered without a specific weight.
+   *
+   * ReactFontManager.getInstance().addCustomFont("Srisakdi", typeface);
+   */
+  public void addCustomFont(@NonNull String fontFamily, @NonNull Typeface typeface) {
+    mCustomTypefaceCache.put(Pair.create(fontFamily, -1), typeface);
   }
 
   /**
