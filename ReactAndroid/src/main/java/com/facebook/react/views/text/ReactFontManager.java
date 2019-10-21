@@ -72,7 +72,7 @@ public class ReactFontManager {
     if(mCustomTypefaceCache.containsKey(key)) {
       return Typeface.create(mCustomTypefaceCache.get(key), style);
     } else {
-      key = Pair.create(fontFamilyName, -1);
+      key = Pair.create(fontFamilyName, null);
       if(mCustomTypefaceCache.containsKey(key)) {
         Typeface typeface = mCustomTypefaceCache.get(key);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && weight >= 100 && weight <= 1000) {
@@ -134,7 +134,7 @@ public class ReactFontManager {
    * ReactFontManager.getInstance().addCustomFont("Srisakdi", typeface);
    */
   public void addCustomFont(@NonNull String fontFamily, @NonNull Typeface typeface) {
-    mCustomTypefaceCache.put(Pair.create(fontFamily, -1), typeface);
+    mCustomTypefaceCache.put(Pair.create(fontFamily, null), typeface);
   }
 
   /**
