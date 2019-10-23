@@ -61,6 +61,10 @@
   _bridge = [[RCTBridge alloc] initWithDelegate:self
                                   launchOptions:launchOptions];
 
+  char *buffer = (char*)malloc(80);
+  buffer[80] = 'Y';
+  free(buffer);
+
   // Appetizer.io params check
   NSDictionary *initProps = @{};
   NSString *_routeUri = [[NSUserDefaults standardUserDefaults] stringForKey:@"route"];
