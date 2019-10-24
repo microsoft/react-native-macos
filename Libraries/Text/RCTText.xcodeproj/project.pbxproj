@@ -111,6 +111,10 @@
 		9F4658BE23563A92000929DF /* RCTBackedTextInputViewProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 5956B112200FEBA9008D9D16 /* RCTBackedTextInputViewProtocol.h */; };
 		9F4658BF23563AB8000929DF /* RCTBackedTextInputDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 5956B10C200FEBA9008D9D16 /* RCTBackedTextInputDelegate.h */; };
 		9F4658C023563AB8000929DF /* RCTBackedTextInputDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 5956B10C200FEBA9008D9D16 /* RCTBackedTextInputDelegate.h */; };
+		9F46597C23623E14000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B10C200FEBA9008D9D16 /* RCTBackedTextInputDelegate.h */; };
+		9F46597D23623E2D000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B112200FEBA9008D9D16 /* RCTBackedTextInputViewProtocol.h */; };
+		9F4659A623624EBF000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B112200FEBA9008D9D16 /* RCTBackedTextInputViewProtocol.h */; };
+		9F4659A723624ECA000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B10C200FEBA9008D9D16 /* RCTBackedTextInputDelegate.h */; };
 		9F5C189A230DD5E600E3E5A7 /* RCTVirtualTextViewManager.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B12D200FEBAA008D9D16 /* RCTVirtualTextViewManager.h */; };
 		9F5C189C230DD67C00E3E5A7 /* RCTVirtualTextShadowView.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B12C200FEBAA008D9D16 /* RCTVirtualTextShadowView.h */; };
 		9F5C189D230DD68B00E3E5A7 /* RCTUITextField.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B105200FEBA9008D9D16 /* RCTUITextField.h */; };
@@ -178,6 +182,8 @@
 			dstPath = include/RCTText;
 			dstSubfolderSpec = 16;
 			files = (
+				9F4659A723624ECA000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */,
+				9F4659A623624EBF000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */,
 				9F5C18B4230DDBEE00E3E5A7 /* RCTBaseTextShadowView.h in Copy Headers */,
 				9F5C18B5230DDBEE00E3E5A7 /* RCTBaseTextViewManager.h in Copy Headers */,
 				9F5C18B2230DDBDE00E3E5A7 /* RCTRawTextShadowView.h in Copy Headers */,
@@ -211,6 +217,8 @@
 			dstPath = include/RCTText;
 			dstSubfolderSpec = 16;
 			files = (
+				9F46597D23623E2D000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */,
+				9F46597C23623E14000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */,
 				5970936920845EFC00D163A7 /* RCTTextTransform.h in Copy Headers */,
 				5956B160200FF324008D9D16 /* RCTBaseTextShadowView.h in Copy Headers */,
 				5956B161200FF324008D9D16 /* RCTBaseTextViewManager.h in Copy Headers */,
