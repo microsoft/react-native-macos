@@ -107,10 +107,10 @@
 		8F2807C7202D2B6B005D65E6 /* RCTInputAccessoryViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F2807C1202D2B6A005D65E6 /* RCTInputAccessoryViewManager.m */; };
 		8F2807C8202D2B6B005D65E6 /* RCTInputAccessoryView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F2807C3202D2B6A005D65E6 /* RCTInputAccessoryView.m */; };
 		8F2807C9202D2B6B005D65E6 /* RCTInputAccessoryViewContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F2807C5202D2B6B005D65E6 /* RCTInputAccessoryViewContent.m */; };
-		9F46597C23623E14000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B10C200FEBA9008D9D16 /* RCTBackedTextInputDelegate.h */; };
-		9F46597D23623E2D000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B112200FEBA9008D9D16 /* RCTBackedTextInputViewProtocol.h */; };
-		9F4659A623624EBF000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B112200FEBA9008D9D16 /* RCTBackedTextInputViewProtocol.h */; };
-		9F4659A723624ECA000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B10C200FEBA9008D9D16 /* RCTBackedTextInputDelegate.h */; };
+		9F4659E2236262E9000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B10C200FEBA9008D9D16 /* RCTBackedTextInputDelegate.h */; };
+		9F4659E3236262E9000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B112200FEBA9008D9D16 /* RCTBackedTextInputViewProtocol.h */; };
+		9F4659E42362634A000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B10C200FEBA9008D9D16 /* RCTBackedTextInputDelegate.h */; };
+		9F4659E52362634A000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B112200FEBA9008D9D16 /* RCTBackedTextInputViewProtocol.h */; };
 		9F5C189A230DD5E600E3E5A7 /* RCTVirtualTextViewManager.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B12D200FEBAA008D9D16 /* RCTVirtualTextViewManager.h */; };
 		9F5C189C230DD67C00E3E5A7 /* RCTVirtualTextShadowView.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B12C200FEBAA008D9D16 /* RCTVirtualTextShadowView.h */; };
 		9F5C189D230DD68B00E3E5A7 /* RCTUITextField.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 5956B105200FEBA9008D9D16 /* RCTUITextField.h */; };
@@ -165,9 +165,11 @@
 		183496EA1F5DF07600C0A1B4 /* Copy Headers */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = include/React;
+			dstPath = include/RCTText;
 			dstSubfolderSpec = 16;
 			files = (
+				9F4659E2236262E9000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */,
+				9F4659E3236262E9000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */,
 			);
 			name = "Copy Headers";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -178,8 +180,6 @@
 			dstPath = include/RCTText;
 			dstSubfolderSpec = 16;
 			files = (
-				9F4659A723624ECA000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */,
-				9F4659A623624EBF000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */,
 				9F5C18B4230DDBEE00E3E5A7 /* RCTBaseTextShadowView.h in Copy Headers */,
 				9F5C18B5230DDBEE00E3E5A7 /* RCTBaseTextViewManager.h in Copy Headers */,
 				9F5C18B2230DDBDE00E3E5A7 /* RCTRawTextShadowView.h in Copy Headers */,
@@ -213,8 +213,6 @@
 			dstPath = include/RCTText;
 			dstSubfolderSpec = 16;
 			files = (
-				9F46597D23623E2D000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */,
-				9F46597C23623E14000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */,
 				5970936920845EFC00D163A7 /* RCTTextTransform.h in Copy Headers */,
 				5956B160200FF324008D9D16 /* RCTBaseTextShadowView.h in Copy Headers */,
 				5956B161200FF324008D9D16 /* RCTBaseTextViewManager.h in Copy Headers */,
@@ -285,6 +283,8 @@
 			dstPath = include/React;
 			dstSubfolderSpec = 16;
 			files = (
+				9F4659E42362634A000929DF /* RCTBackedTextInputDelegate.h in Copy Headers */,
+				9F4659E52362634A000929DF /* RCTBackedTextInputViewProtocol.h in Copy Headers */,
 			);
 			name = "Copy Headers";
 			runOnlyForDeploymentPostprocessing = 0;
