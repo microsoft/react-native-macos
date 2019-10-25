@@ -17,12 +17,6 @@
 
 @end
 
-/*
-TODO: There's a build failure on ADO Mac VMs where XCodeHelper lost Accessibility permission to control the computer. The issue is tracked here
-https://developercommunity.visualstudio.com/content/problem/788271/xcode-helper-not-configured-for-accessibility-on-m.html
-  To unblock Mac loop builds, we need to temporarily disable integration tests since they consistently fail without proper access. Once the ticket is resolved, we can uncomment the tests below.
- */
-/*
 @implementation RCTLoggingTests
 {
   RCTBridge *_bridge;
@@ -132,4 +126,3 @@ https://developercommunity.visualstudio.com/content/problem/788271/xcode-helper-
 }
 
 @end
-*/
