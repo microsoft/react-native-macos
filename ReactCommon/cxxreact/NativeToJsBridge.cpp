@@ -106,16 +106,14 @@ void NativeToJsBridge::loadApplication(
     std::unique_ptr<RAMBundleRegistry> bundleRegistry,
     std::unique_ptr<const JSBigString> startupScript,
     uint64_t bundleVersion, // TODO(OSS Candidate ISS#2710739)
-    std::string startupScriptSourceURL,
-    std::string&& bytecodeFileName) { // TODO(OSS Candidate ISS#2710739)
+    std::string startupScriptSourceURL) {
 
   runOnExecutorQueue(
       [this,
        bundleRegistryWrap=folly::makeMoveWrapper(std::move(bundleRegistry)),
        startupScript=folly::makeMoveWrapper(std::move(startupScript)),
        bundleVersion,
-       startupScriptSourceURL=std::move(startupScriptSourceURL),
-       bytecodeFileName=std::move(bytecodeFileName)]
+       startupScriptSourceURL=std::move(startupScriptSourceURL)]
         (JSExecutor* executor) mutable {
     auto bundleRegistry = bundleRegistryWrap.move();
     if (bundleRegistry) {
@@ -124,8 +122,7 @@ void NativeToJsBridge::loadApplication(
     try {
       executor->loadApplicationScript(std::move(*startupScript),
                                       bundleVersion, // TODO(OSS Candidate ISS#2710739)
-                                      std::move(startupScriptSourceURL),
-                                      std::move(bytecodeFileName)); // TODO(OSS Candidate ISS#2710739)
+                                      std::move(startupScriptSourceURL));
     } catch (...) {
       m_applicationScriptHasFailure = true;
       throw;
@@ -137,16 +134,14 @@ void NativeToJsBridge::loadApplicationSync(
     std::unique_ptr<RAMBundleRegistry> bundleRegistry,
     std::unique_ptr<const JSBigString> startupScript,
     uint64_t bundleVersion,
-    std::string startupScriptSourceURL,
-    std::string&& bytecodeFileName) {
+    std::string startupScriptSourceURL) {
   if (bundleRegistry) {
     m_executor->setBundleRegistry(std::move(bundleRegistry));
   }
   try {
     m_executor->loadApplicationScript(std::move(startupScript),
                                           bundleVersion, // TODO(OSS Candidate ISS#2710739)
-                                          std::move(startupScriptSourceURL),
-                                          std::move(bytecodeFileName)); // TODO(OSS Candidate ISS#2710739)
+                                          std::move(startupScriptSourceURL));
   } catch (...) {
     m_applicationScriptHasFailure = true;
     throw;
