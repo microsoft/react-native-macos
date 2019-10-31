@@ -559,13 +559,13 @@ if (global.nativeLoggingHook) {
         console[methodName] = function() {
           // TODO(T43930203): remove this special case once originalConsole.assert properly checks
           // the condition
-          // if (methodName === 'assert') {
-          //   if (!arguments[0]) {
-          //     originalConsole.assert(...arguments);
-          //   }
-          // } else {
+          if (methodName === 'assert') {
+            if (!arguments[0] && originalConsole.hasOwnProperty('assert')) {
+              originalConsole.assert(...arguments);
+            }
+          } else {
             originalConsole[methodName](...arguments);
-          // }
+          }
           reactNativeMethod.apply(console, arguments);
         };
       }
