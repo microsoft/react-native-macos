@@ -61,6 +61,8 @@
       "parallelizable" : true,
       "skippedTests" : [
         "RNTesterIntegrationTests\/testAccessibilityManagerTest",
+        "RNTesterIntegrationTests\/testAppEventsTest",
+        "RNTesterIntegrationTests\/testSyncMethodTest",
         "RNTesterIntegrationTests\/testWebSocketTest"
       ],
       "target" : {
