@@ -1,13 +1,6 @@
 {
   "configurations" : [
     {
-      "id" : "8505E0BC-7E4D-4320-A0AB-AA632872F9B6",
-      "name" : "Default",
-      "options" : {
-
-      }
-    },
-    {
       "id" : "37D31EEF-8FEF-4078-89E7-6BA48A640995",
       "name" : "Memory Checking",
       "options" : {
@@ -47,10 +40,6 @@
   "testTargets" : [
     {
       "parallelizable" : true,
-      "skippedTests" : [
-        "RCTModuleInitTests\/testCustomInitModuleInitializedAtBridgeStartup",
-        "RCTModuleInitTests\/testLazyInitModuleNotInitializedDuringBridgeInit"
-      ],
       "target" : {
         "containerPath" : "container:RNTester.xcodeproj",
         "identifier" : "004D289D1AAF61C70097A701",
@@ -60,10 +49,7 @@
     {
       "parallelizable" : true,
       "skippedTests" : [
-        "RNTesterIntegrationTests\/testAccessibilityManagerTest",
-        "RNTesterIntegrationTests\/testAppEventsTest",
-        "RNTesterIntegrationTests\/testSyncMethodTest",
-        "RNTesterIntegrationTests\/testWebSocketTest"
+        "RNTesterIntegrationTests\/testAccessibilityManagerTest"
       ],
       "target" : {
         "containerPath" : "container:RNTester.xcodeproj",
