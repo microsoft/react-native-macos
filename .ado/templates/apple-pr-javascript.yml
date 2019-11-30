@@ -1,0 +1,16 @@
+steps:
+  - script: 'brew bundle'
+
+  - script: brew link node@10 --overwrite --force
+
+  - template: apple-xcode-select.yml
+
+  - script: 'yarn install'
+
+  - script: 'yarn test-ci'
+
+  - script: 'yarn flow'
+
+  - script: 'yarn lint'
+
+  - script: 'yarn format-check'
