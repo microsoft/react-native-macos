@@ -893,12 +893,16 @@ class ScrollView extends React.Component<Props, State> {
         if (key === 'PAGE_UP') {
           this._handleScrollByKeyDown(event, {
             x: nativeEvent.contentOffset.x,
-            y: nativeEvent.contentOffset.y + -nativeEvent.layoutMeasurement.height,
+            y:
+              nativeEvent.contentOffset.y +
+              -nativeEvent.layoutMeasurement.height,
           });
         } else if (key === 'PAGE_DOWN') {
           this._handleScrollByKeyDown(event, {
             x: nativeEvent.contentOffset.x,
-            y: nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height,
+            y:
+              nativeEvent.contentOffset.y +
+              nativeEvent.layoutMeasurement.height,
           });
         } else if (key === 'LEFT_ARROW') {
           this._handleScrollByKeyDown(event, {
@@ -943,9 +947,11 @@ class ScrollView extends React.Component<Props, State> {
 
   _handleScrollByKeyDown = (event: ScrollEvent, newOffset) => {
     const maxX =
-      event.nativeEvent.contentSize.width - event.nativeEvent.layoutMeasurement.width;
+      event.nativeEvent.contentSize.width -
+      event.nativeEvent.layoutMeasurement.width;
     const maxY =
-      event.nativeEvent.contentSize.height - event.nativeEvent.layoutMeasurement.height;
+      event.nativeEvent.contentSize.height -
+      event.nativeEvent.layoutMeasurement.height;
     this.scrollTo({
       x: Math.max(0, Math.min(maxX, newOffset.x)),
       y: Math.max(0, Math.min(maxY, newOffset.y)),
