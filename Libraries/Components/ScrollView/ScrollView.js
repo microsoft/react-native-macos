@@ -882,57 +882,56 @@ class ScrollView extends React.Component<Props, State> {
   }
 
   // [TODO(macOS ISS#2323203)
-  _handleKeyDown = (e: ScrollEvent) => {
+  _handleKeyDown = (event: ScrollEvent) => {
     if (this.props.onScrollKeyDown) {
-      this.props.onScrollKeyDown(e);
+      this.props.onScrollKeyDown(event);
     } else {
-      const event = e.nativeEvent;
-      const key = event.key;
-      const kMinScrollOffset = 10;
-
       if (Platform.OS === 'macos') {
+        const nativeEvent = event.nativeEvent;
+        const key = nativeEvent.key;
+        const kMinScrollOffset = 10;
         if (key === 'PAGE_UP') {
-          this._handleScrollByKeyDown(e, {
-            x: event.contentOffset.x,
-            y: event.contentOffset.y + -event.layoutMeasurement.height,
+          this._handleScrollByKeyDown(event, {
+            x: nativeEvent.contentOffset.x,
+            y: nativeEvent.contentOffset.y + -nativeEvent.layoutMeasurement.height,
           });
         } else if (key === 'PAGE_DOWN') {
-          this._handleScrollByKeyDown(e, {
-            x: event.contentOffset.x,
-            y: event.contentOffset.y + event.layoutMeasurement.height,
+          this._handleScrollByKeyDown(event, {
+            x: nativeEvent.contentOffset.x,
+            y: nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height,
           });
         } else if (key === 'LEFT_ARROW') {
-          this._handleScrollByKeyDown(e, {
+          this._handleScrollByKeyDown(event, {
             x:
-              event.contentOffset.x +
+              nativeEvent.contentOffset.x +
               -(this.props.horizontalLineScroll !== undefined
                 ? this.props.horizontalLineScroll
                 : kMinScrollOffset),
-            y: event.contentOffset.y,
+            y: nativeEvent.contentOffset.y,
           });
         } else if (key === 'RIGHT_ARROW') {
-          this._handleScrollByKeyDown(e, {
+          this._handleScrollByKeyDown(event, {
             x:
-              event.contentOffset.x +
+              nativeEvent.contentOffset.x +
               (this.props.horizontalLineScroll !== undefined
                 ? this.props.horizontalLineScroll
                 : kMinScrollOffset),
-            y: event.contentOffset.y,
+            y: nativeEvent.contentOffset.y,
           });
         } else if (key === 'DOWN_ARROW') {
-          this._handleScrollByKeyDown(e, {
-            x: event.contentOffset.x,
+          this._handleScrollByKeyDown(event, {
+            x: nativeEvent.contentOffset.x,
             y:
-              event.contentOffset.y +
+              nativeEvent.contentOffset.y +
               (this.props.verticalLineScroll !== undefined
                 ? this.props.verticalLineScroll
                 : kMinScrollOffset),
           });
         } else if (key === 'UP_ARROW') {
-          this._handleScrollByKeyDown(e, {
-            x: event.contentOffset.x,
+          this._handleScrollByKeyDown(event, {
+            x: nativeEvent.contentOffset.x,
             y:
-              event.contentOffset.y +
+              nativeEvent.contentOffset.y +
               -(this.props.verticalLineScroll !== undefined
                 ? this.props.verticalLineScroll
                 : kMinScrollOffset),
@@ -942,11 +941,11 @@ class ScrollView extends React.Component<Props, State> {
     }
   };
 
-  _handleScrollByKeyDown = (e: ScrollEvent, newOffset) => {
+  _handleScrollByKeyDown = (event: ScrollEvent, newOffset) => {
     const maxX =
-      e.nativeEvent.contentSize.width - e.nativeEvent.layoutMeasurement.width;
+      event.nativeEvent.contentSize.width - event.nativeEvent.layoutMeasurement.width;
     const maxY =
-      e.nativeEvent.contentSize.height - e.nativeEvent.layoutMeasurement.height;
+      event.nativeEvent.contentSize.height - event.nativeEvent.layoutMeasurement.height;
     this.scrollTo({
       x: Math.max(0, Math.min(maxX, newOffset.x)),
       y: Math.max(0, Math.min(maxY, newOffset.y)),
