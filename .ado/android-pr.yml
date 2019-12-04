@@ -118,6 +118,7 @@ jobs:
           command: pack
           packagesToPack: 'ReactAndroid/ReactAndroid.nuspec'
           packDestination: '$(System.DefaultWorkingDirectory)'
+          buildProperties: buildNumber=$(buildNumber);commitId=$(Build.SourceVersion)
 
       - task: Gradle@1
         displayName: gradlew clean
