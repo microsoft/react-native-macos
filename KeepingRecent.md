@@ -1,7 +1,7 @@
 
 # Keeping Recent on Facebook's Changes
 
-We aim to keep this forked repository as up to date as possible with [Facebook's repository](https://github.com/facebook/react-native). This document explains guidelines and responsibilities for pulling in the newest changes.
+We aim to keep this forked repository as up to date as possible with [Facebook's repository](https://github.com/facebook/react-native). This document explains guidelines and responsibilities for pulling in the newest changes with the eventual goal of pushing all our changes back to Facebook and the React-Native-Community repos and deforking.
 
 ## Merging a New Version of React Native
 1. Create a reference to a remote to Facebook's repo
@@ -33,9 +33,8 @@ It's likely you'll want to push the initial merge up to github **with** the merg
 	* Why?
 		* This prevents merges from getting stuck in limbo where some platforms aren't done for multiple months and in the meantime we have to maintain two working branches. Faster we merge from start to finish, the exponentially less pain we incur.
 	* Platform owners
-		* Win32- acoates
-		* Android- acoates
-		* iOS- chrishog/tomun
-		* Mac- chrishog/tomun
+		* Win32- acoates-ms
+		* Android- acoates-ms
+		* iOS- HeyImChris/tom-un
+		* Mac- HeyImChris/tom-un
 * Make sure you're pulling in a **stable** [release candidate](https://facebook.github.io/react-native/versions).
-* Note that this *only* gets the newest RN version into [our fork](http://github.com/microsoft/react-native) which will then have to get pushed into downstream repositories such as [SDX-Platform](https://office.visualstudio.com/ISS/_git/sdx-platform) for its consumption. Because we have quite a few code changes in our fork, but not Facebook's master, you should expect some more changes to both downstream clients and [our fork](http://github.com/microsoft/react-native) to keep everything in working order.
