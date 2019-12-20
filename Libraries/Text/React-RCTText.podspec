@@ -32,4 +32,6 @@ Pod::Spec.new do |s|
   s.header_dir             = "React"
 
   s.dependency "React-Core", version
+
+  s.osx.exclude_files      = "TextInput/RCTInputAccessoryView*.{h,m}"
 end
