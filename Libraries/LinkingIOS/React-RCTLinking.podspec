@@ -32,4 +32,7 @@ Pod::Spec.new do |s|
   s.header_dir             = "React"
 
   s.dependency "React-Core", version
+
+  s.osx.exclude_files      = "RCTLinkingManager.m"
+  s.osx.source_files       = "macos/RCTLinkingManager.m"
 end
