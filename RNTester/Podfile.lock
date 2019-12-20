@@ -70,6 +70,9 @@ PODS:
     - React-Core (= 0.60.0-microsoft.31)
     - React-RCTNetwork (= 0.60.0-microsoft.31)
     - React-RCTWebSocket (= 0.60.0-microsoft.31)
+  - React-RCTCameraRoll (0.60.0-microsoft.31):
+    - React-Core (= 0.60.0-microsoft.31)
+    - React-RCTImage (= 0.60.0-microsoft.31)
   - React-RCTImage (0.60.0-microsoft.31):
     - React-Core (= 0.60.0-microsoft.31)
     - React-RCTNetwork (= 0.60.0-microsoft.31)
@@ -133,6 +136,7 @@ DEPENDENCIES:
   - React-RCTActionSheet (from `../Libraries/ActionSheetIOS`)
   - React-RCTAnimation (from `../Libraries/NativeAnimation`)
   - React-RCTBlob (from `../Libraries/Blob`)
+  - React-RCTCameraRoll (from `../Libraries/CameraRoll`)
   - React-RCTImage (from `../Libraries/Image`)
   - React-RCTLinking (from `../Libraries/LinkingIOS`)
   - React-RCTNetwork (from `../Libraries/Network`)
@@ -182,6 +186,8 @@ EXTERNAL SOURCES:
     :path: "../Libraries/NativeAnimation"
   React-RCTBlob:
     :path: "../Libraries/Blob"
+  React-RCTCameraRoll:
+    :path: "../Libraries/CameraRoll"
   React-RCTImage:
     :path: "../Libraries/Image"
   React-RCTLinking:
@@ -223,6 +229,7 @@ SPEC CHECKSUMS:
   React-RCTActionSheet: 189dcaa5f967c93e673d89d061e899d3217fd292
   React-RCTAnimation: c54c5b1b66723756f3a7b8b4979a226e6844fea3
   React-RCTBlob: d3f81fd28e166f932220873ca3ed8a1e63054694
+  React-RCTCameraRoll: 4052d0d3a3e0ecbf8adfc7e58f7a9a208768c4f6
   React-RCTImage: c1ffad410730573c327c227e4f8da45c9e8bc680
   React-RCTLinking: 3b6545fdce7ac1df7c29097204b551feb94b7c68
   React-RCTNetwork: 316be64bb95cf3fcf0fab5898b3ad5b89e09d8d2
@@ -235,6 +242,6 @@ SPEC CHECKSUMS:
   React-turbomodule-samples: 27cade951858959365b7c3a744b5907a098acb2d
   yoga: 18681a34e39bf843425427996d459c5e6f5d52b4
 
-PODFILE CHECKSUM: 167c0bf6d341e9be5df54eb5f7b3a00ff99ca43c
+PODFILE CHECKSUM: 677959aa322a0a559343b5810d7a39e759214b56
 
 COCOAPODS: 1.8.4
