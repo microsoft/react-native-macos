@@ -35,9 +35,21 @@ Pod::Spec.new do |s|
                              "Fabric/**/*",
                              "Inspector/**/*"
   s.ios.exclude_files      = "**/RCTTV*.*",
-# Microsoft CocoaPod Support
-														 "**/MacOS/*"
-# Microsoft CocoaPod Support
+# Microsoft CocoaPods Support
+                             "**/MacOS/*"
+  s.osx.exclude_files      = "Modules/RCTRedBoxExtraDataViewController.{h,m}",
+                             "Modules/RCTStatusBarManager.*",
+                             "UIUtils/*",
+                             "Profiler/{RCTFPSGraph,RCTPerfMonitor}.*",
+                             "Profiler/RCTProfileTrampoline-{arm,arm64,i386}.S",
+                             "Base/{RCTPlatform,RCTKeyCommands}.*",
+                             "Base/Surface/SurfaceHostingView/*",
+                             "Base/Surface/RCTSurface{,Delegate,Root*}.*",
+                             "Base/RCTTV*.*",
+                             "Base/RCTReloadCommand.*",
+                             "Views/{RCTModal*,RCTMasked*,RCTTV*,RCTRefreshControl*,RCTWrapperViewController}.*",
+                             "Views/SafeAreaView/*"
+# Microsoft CocoaPods Support
   s.tvos.exclude_files     = "Modules/RCTClipboard*",
                              "Views/RCTDatePicker*",
                              "Views/RCTPicker*",
