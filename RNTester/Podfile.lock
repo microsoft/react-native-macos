@@ -217,7 +217,7 @@ SPEC CHECKSUMS:
   glog: b3f6d74f3e2d33396addc0ee724d2b2b79fc3e00
   React: 74861516f70acbdca7b2548aa557bf8deee9698d
   React-ART: 08abf61755c11f2adbc78ae6e2f5b087a403a677
-  React-Core: 564a4df03142b62dc2be0c63ab199dadf21e788e
+  React-Core: aa142862b5ebdf94e003787e22417865e1c1016c
   React-cxxreact: 3e49ca16e0117d19b859450041c7fe4dc9296399
   React-DevSupport: 91d8812ad81fbfa8084b06e131e3d80087c665e9
   React-fishhook: 1a55e7b86dcab2d0e0db1268681365c3f5eefe0a
@@ -230,17 +230,17 @@ SPEC CHECKSUMS:
   React-RCTBlob: f4387573b7c109b6feed2f7b6453cf326854bfdc
   React-RCTCameraRoll: bb4e89e505fddd8a48c76db827e3e43b23b437e3
   React-RCTImage: 841010ce5a7a0eb96bc3f22659560a176a254fc9
-  React-RCTLinking: 1b42a8c34847bf8a5bc363db2ef78879f37c2639
+  React-RCTLinking: 4fe50097a4d8c9649b25fd6639257aa475530656
   React-RCTNetwork: b7bf49cc581752158e8aeee3e9aae83ab61fbcd0
-  React-RCTPushNotification: 4e2f1425df2135cc87e44402d07432a98a5637fb
+  React-RCTPushNotification: 79cbb2aaf51f65b94e844c876f462ec07be33ac5
   React-RCTSettings: 1ad264bf310d7cf7f2b29c94836b84e5a0ca1561
-  React-RCTText: fc8369e3ce7c9a474efc539d84b4f9bdc921bc0a
+  React-RCTText: 21e57ebc1cc19db1b74cf40280c3a0360f760dcb
   React-RCTVibration: d9a3da17bd5d3f4d8b57a40e3e7fb842f7e62694
   React-RCTWebSocket: 7bb0868fafa9e8ed961a8f87879e2d2bf7946b3d
   React-turbomodule-core: 970dd38c0e59a09b5919e0a097abdd099c4ae9a7
   React-turbomodule-samples: 4d9081847444fe313ac06bb6ec604c35e49ba8c7
   yoga: fb23117669f477b0f4b3849d6999414cba0c69b7
 
-PODFILE CHECKSUM: 536f6557721c0dbe581d706361d5f80217598546
+PODFILE CHECKSUM: bea89da68cd123089a0dc47c3aaaf6cfed3115d4
 
 COCOAPODS: 1.8.4
