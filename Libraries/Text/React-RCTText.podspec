@@ -33,5 +33,5 @@ Pod::Spec.new do |s|
 
   s.dependency "React-Core", version
 
-  s.osx.exclude_files      = "TextInput/RCTInputAccessoryView*.{h,m}"
+  s.osx.exclude_files      = "TextInput/RCTInputAccessory{,Shadow}View*.{h,m}"
 end
