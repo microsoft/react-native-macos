@@ -8,36 +8,14 @@
  * @flow
  */
 
-// TODO(macOS ISS#2323203): copy of AccessibilityInfo.ios.js
+// TODO(macOS ISS#2323203)
 
 'use strict';
 
-const NativeModules = require('../../BatchedBridge/NativeModules');
-const RCTDeviceEventEmitter = require('../../EventEmitter/RCTDeviceEventEmitter');
-const UIManager = require('../../ReactNative/UIManager');
-
-const RCTAccessibilityInfo = NativeModules.AccessibilityInfo;
-
-const REDUCE_MOTION_EVENT = 'reduceMotionDidChange';
-const TOUCH_EXPLORATION_EVENT = 'touchExplorationDidChange';
+const warning = require('fbjs/lib/warning');
 
 type ChangeEventName = $Keys<{
-  change: string,
-  reduceMotionChanged: string,
-  screenReaderChanged: string,
 }>;
-
-const _subscriptions = new Map();
-
-/**
- * Sometimes it's useful to know whether or not the device has a screen reader
- * that is currently active. The `AccessibilityInfo` API is designed for this
- * purpose. You can use it to query the current state of the screen reader as
- * well as to register to be notified when the state of the screen reader
- * changes.
- *
- * See http://facebook.github.io/react-native/docs/accessibilityinfo.html
- */
 
 const AccessibilityInfo = {
   /**
@@ -61,10 +39,11 @@ const AccessibilityInfo = {
     return Promise.resolve(false);
   },
 
+  /**
+   * Android and iOS only
+   */
   isReduceMotionEnabled: function(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      RCTAccessibilityInfo.isReduceMotionEnabled(resolve);
-    });
+    return Promise.resolve(false);
   },
 
   /**
@@ -74,10 +53,11 @@ const AccessibilityInfo = {
     return Promise.resolve(false);
   },
 
+  /**
+   * Android and iOS only
+   */
   isScreenReaderEnabled: function(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      RCTAccessibilityInfo.isTouchExplorationEnabled(resolve);
-    });
+    return Promise.resolve(false);
   },
 
   /**
@@ -93,37 +73,14 @@ const AccessibilityInfo = {
     eventName: ChangeEventName,
     handler: Function,
   ): void {
-    let listener;
-
-    if (eventName === 'change' || eventName === 'screenReaderChanged') {
-      listener = RCTDeviceEventEmitter.addListener(
-        TOUCH_EXPLORATION_EVENT,
-        enabled => {
-          handler(enabled);
-        },
-      );
-    } else if (eventName === 'reduceMotionChanged') {
-      listener = RCTDeviceEventEmitter.addListener(
-        REDUCE_MOTION_EVENT,
-        enabled => {
-          handler(enabled);
-        },
-      );
-    }
-
-    _subscriptions.set(handler, listener);
+    warning(false, 'AccessibilityInfo is not supported on this platform.');
   },
 
   removeEventListener: function(
     eventName: ChangeEventName,
     handler: Function,
   ): void {
-    const listener = _subscriptions.get(handler);
-    if (!listener) {
-      return;
-    }
-    listener.remove();
-    _subscriptions.delete(handler);
+    warning(false, 'AccessibilityInfo is not supported on this platform.');
   },
 
   /**
@@ -132,10 +89,7 @@ const AccessibilityInfo = {
    * See http://facebook.github.io/react-native/docs/accessibilityinfo.html#setaccessibilityfocus
    */
   setAccessibilityFocus: function(reactTag: number): void {
-    UIManager.sendAccessibilityEvent(
-      reactTag,
-      UIManager.AccessibilityEventTypes.typeViewFocused,
-    );
+    warning(false, 'AccessibilityInfo is not supported on this platform.');
   },
 
   /**
@@ -144,7 +98,7 @@ const AccessibilityInfo = {
    * See http://facebook.github.io/react-native/docs/accessibilityinfo.html#announceforaccessibility
    */
   announceForAccessibility: function(announcement: string): void {
-    RCTAccessibilityInfo.announceForAccessibility(announcement);
+    warning(false, 'AccessibilityInfo is not supported on this platform.');
   },
 };
 

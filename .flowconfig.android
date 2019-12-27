@@ -23,6 +23,9 @@
 ; Ignore polyfills
 .*/Libraries/polyfills/.*
 
+; Ignore metro.config.js
+<PROJECT_ROOT>/metro.config.js
+
 ; Ignore files that have a base platform file and an android file
 <PROJECT_ROOT>/Libraries/Image/Image.js
 <PROJECT_ROOT>/Libraries/Network/RCTNetworking.js

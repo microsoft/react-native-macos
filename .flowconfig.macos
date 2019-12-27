@@ -59,7 +59,7 @@ module.system.haste.use_name_reducers=true
 module.system.haste.name_reducers='^.*/\([a-zA-Z0-9$_.-]+\.js\(\.flow\)?\)$' -> '\1'
 # strip .js or .js.flow suffix
 module.system.haste.name_reducers='^\(.*\)\.js\(\.flow\)?$' -> '\1'
-# strip .ios suffix
+# strip .macos suffix
 module.system.haste.name_reducers='^\(.*\)\.macos$' -> '\1'
 module.system.haste.name_reducers='^\(.*\)\.ios$' -> '\1'
 module.system.haste.name_reducers='^\(.*\)\.android$' -> '\1'

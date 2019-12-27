@@ -19,6 +19,9 @@ steps:
   - script: 'yarn flow-check-macos'
     displayName: 'yarn flow-check-macos'
 
+  - script: 'yarn flow-check-android'
+    displayName: 'yarn flow-check-android'
+
   - script: 'yarn lint'
     displayName: 'yarn lint'
 
