@@ -14,8 +14,7 @@
 
 const warning = require('fbjs/lib/warning');
 
-type ChangeEventName = $Keys<{
-}>;
+type ChangeEventName = $Keys<{}>;
 
 const AccessibilityInfo = {
   /**

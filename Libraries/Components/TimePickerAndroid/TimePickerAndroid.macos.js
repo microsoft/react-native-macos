@@ -8,7 +8,7 @@
  * @flow strict-local
  */
 
-// TODO(macOS ISS#2323203): copy of TimePickerAndroid.ios.js
+// TODO(macOS ISS#2323203)
 
 'use strict';
 
