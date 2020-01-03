@@ -1,6 +1,7 @@
 [ignore]
 ; We fork some components by platform
 .*/*[.]ios.js
+; TODO(macOS ISS#2323203):
 .*/*[.]macos.js
 
 ; Ignore templates for 'react-native init'
@@ -23,7 +24,7 @@
 ; Ignore polyfills
 .*/Libraries/polyfills/.*
 
-; Ignore metro.config.js
+; TODO(macOS ISS#2323203): Ignore metro.config.js
 <PROJECT_ROOT>/metro.config.js
 
 ; Ignore files that have a base platform file and an android file
@@ -71,6 +72,7 @@ module.system.haste.name_reducers='^\(.*\)\.js\(\.flow\)?$' -> '\1'
 # strip .android suffix
 module.system.haste.name_reducers='^\(.*\)\.android$' -> '\1'
 module.system.haste.name_reducers='^\(.*\)\.ios$' -> '\1'
+# TODO(macOS ISS#2323203):
 module.system.haste.name_reducers='^\(.*\)\.macos$' -> '\1'
 module.system.haste.name_reducers='^\(.*\)\.native$' -> '\1'
 module.system.haste.paths.blacklist=.*/__tests__/.*

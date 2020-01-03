@@ -1,4 +1,5 @@
 [ignore]
+; TODO(macOS ISS#2323203)
 ; We fork some components by platform
 .*/*[.]ios.js
 .*/*[.]android.js
