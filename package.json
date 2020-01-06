@@ -1,6 +1,6 @@
 {
   "name": "react-native",
-  "version": "0.60.0-microsoft.23",
+  "version": "0.60.0-microsoft.35",
   "description": "[Microsoft Fork] A framework for building native apps using React",
   "license": "MIT",
   "repository": {
@@ -62,6 +62,7 @@
     "test-ci": "jest --maxWorkers=2 --ci --reporters=\"default\" --reporters=\"jest-junit\"",
     "flow": "flow",
     "flow-check-ios": "flow check",
+    "flow-check-macos": "flow check --flowconfig-name .flowconfig.macos",
     "flow-check-android": "flow check --flowconfig-name .flowconfig.android",
     "lint": "eslint .",
     "clang-format": "clang-format -i --glob=*/**/*.{h,cpp,m,mm}",
@@ -192,5 +193,8 @@
         "name": "iPhone 6s"
       }
     }
+  },
+  "beachball": {
+    "shouldPublish": false
   }
 }

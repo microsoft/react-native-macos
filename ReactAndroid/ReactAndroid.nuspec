@@ -2,10 +2,11 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>OfficeReact.Android</id>
-    <version>__BuildBuildNumber__</version>
+    <version>$buildNumber$</version>
     <description>Contains Android Implementation of React-Native</description>
     <authors>Microsoft</authors>
     <projectUrl>https://github.com/microsoft/react-native</projectUrl>
+    <repository type="git" url="https://github.com/microsoft/react-native.git" commit="$commitId$" />
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
   </metadata>
 
@@ -30,6 +31,11 @@
     <file src="build\react-ndk\all\armeabi-v7a\libglog_init.so" target="lib\droidarm"/>
     <file src="build\react-ndk\all\x86\libglog_init.so" target="lib\droidx86"/>
     <file src="build\react-ndk\all\arm64-v8a\libglog_init.so" target="lib\droidarm64"/>
+
+    <file src="build\react-ndk\all\x86_64\libjsinspector.so" target="lib\droidx64"/>
+    <file src="build\react-ndk\all\armeabi-v7a\libjsinspector.so" target="lib\droidarm"/>
+    <file src="build\react-ndk\all\x86\libjsinspector.so" target="lib\droidx86"/>
+    <file src="build\react-ndk\all\arm64-v8a\libjsinspector.so" target="lib\droidarm64"/>
 
     <file src="build\react-ndk\all\x86_64\libprivatedata.so" target="lib\droidx64"/>
     <file src="build\react-ndk\all\armeabi-v7a\libprivatedata.so" target="lib\droidarm"/>
@@ -76,6 +82,11 @@
     <file src="build\tmp\buildReactNdkLib\local\armeabi-v7a\libglog_init.so" target="lib\droidarm\unstripped"/>
     <file src="build\tmp\buildReactNdkLib\local\x86\libglog_init.so" target="lib\droidx86\unstripped"/>
     <file src="build\tmp\buildReactNdkLib\local\arm64-v8a\libglog_init.so" target="lib\droidarm64\unstripped"/>
+
+    <file src="build\tmp\buildReactNdkLib\local\x86_64\libjsinspector.so" target="lib\droidx64\unstripped"/>
+    <file src="build\tmp\buildReactNdkLib\local\armeabi-v7a\libjsinspector.so" target="lib\droidarm\unstripped"/>
+    <file src="build\tmp\buildReactNdkLib\local\x86\libjsinspector.so" target="lib\droidx86\unstripped"/>
+    <file src="build\tmp\buildReactNdkLib\local\arm64-v8a\libjsinspector.so" target="lib\droidarm64\unstripped"/>
 
     <file src="build\tmp\buildReactNdkLib\local\x86_64\libprivatedata.so" target="lib\droidx64\unstripped"/>
     <file src="build\tmp\buildReactNdkLib\local\armeabi-v7a\libprivatedata.so" target="lib\droidarm\unstripped"/>
