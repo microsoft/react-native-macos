@@ -1,3 +1,4 @@
+# TODO(macOS GH#214)
 Pod::Spec.new do |spec|
   spec.name = 'boost-for-react-native'
   spec.version = '1.63.0'

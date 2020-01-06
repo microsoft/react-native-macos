@@ -37,10 +37,12 @@ source 'https://cdn.cocoapods.org/'
 
 require_relative '../scripts/autolink-ios'
 
+# TODO(macOS GH#214)
 # Otherwise duplicate UUIDs are being generated between the iOS and macOS targets.
 # FIXME: https://github.com/microsoft/react-native/issues/210
 install! 'cocoapods', :deterministic_uuids => false
 
+# TODO(macOS GH#214)
 target 'RNTester' do
   platform :ios, '9.0'
   # Uncomment for Swift
@@ -63,6 +65,7 @@ target 'RNTester' do
   # use_react_native!(path: "..", turbo_modules_enabled: true, fabric_enabled: true)
 end
 
+# TODO(macOS GH#214)
 target 'RNTester-macOS' do
   platform :osx, '10.14'
   # Uncomment for Swift
