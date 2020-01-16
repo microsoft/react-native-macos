@@ -35,3 +35,7 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
 
 LOCAL_CFLAGS := -fexceptions -frtti -O3
 include $(BUILD_STATIC_LIBRARY)
+
+$(call import-module,v8base)
+$(call import-module,v8)
+$(call import-module,v8platform)

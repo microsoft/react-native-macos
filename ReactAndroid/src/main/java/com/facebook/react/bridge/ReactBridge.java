@@ -33,7 +33,6 @@ public class ReactBridge {
     SoLoader.loadLibrary("v8.cr");
 
     SoLoader.loadLibrary("glog_init");
-    SoLoader.loadLibrary("privatedata");
     SoLoader.loadLibrary("fb");
     SoLoader.loadLibrary("yoga");
     SoLoader.loadLibrary("reactnativejni");

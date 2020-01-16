@@ -17,17 +17,15 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)
 #   ./../ == react
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../..
 
-
 LOCAL_CFLAGS += -fexceptions -frtti -Wno-unused-lambda-capture
 
 LOCAL_LDLIBS += -landroid
 
 # The dynamic libraries (.so files) that this module depends on.
-
-LOCAL_SHARED_LIBRARIES := libfolly_json libfb libglog_init libyoga libprivatedata
+LOCAL_SHARED_LIBRARIES := libfolly_json libfb libglog_init libyoga
 
 # The static libraries (.a files) that this module depends on.
-LOCAL_STATIC_LIBRARIES := libreactnative jsi libjscallinvokerholder
+LOCAL_STATIC_LIBRARIES := libreactnative libjscallinvokerholder
 
 # Name of this module.
 #
@@ -37,7 +35,6 @@ LOCAL_MODULE := reactnativejni
 
 # Compile all local c++ files.
 LOCAL_SRC_FILES := $(wildcard *.cpp)
-LOCAL_STATIC_LIBRARIES += v8runtime
 
 # Build the files in this directory as a shared library
 include $(BUILD_SHARED_LIBRARY)
@@ -54,13 +51,11 @@ include $(BUILD_SHARED_LIBRARY)
 #   Whenever you encounter an include <dir>/<module-dir>/Android.mk, you
 #   tell andorid-ndk to compile the module in <dir>/<module-dir> according
 #   to the specification inside <dir>/<module-dir>/Android.mk.
-
-$(call import-module,cxxreact)
-$(call import-module,privatedata)
+$(call import-module,folly)
 $(call import-module,fb)
 $(call import-module,fbgloginit)
-$(call import-module,folly)
 $(call import-module,yogajni)
+$(call import-module,cxxreact)
 $(call import-module,jsi)
 $(call import-module,jsiexecutor)
 $(call import-module,jscallinvoker)
