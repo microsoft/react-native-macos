@@ -72,24 +72,6 @@ public class RNTesterApplication extends Application implements ReactApplication
         new MainReactPackage()
       );
     }
-
-    // Note : This enables V8 JSI based runtime .. We'll exclusively switch to this as default mode in near future.
-//    @Override
-//    public JavaScriptExecutorFactory getJavaScriptExecutorFactory() {
-//      ReactMarker.addListener(new RNTesterReactMarker());
-//      // We use the name of the device and the app for debugging & metrics
-//      String appName = getPackageName();
-//      String deviceName = getFriendlyDeviceName();
-//
-//      File jseDir = getApplicationContext().getDir("jse", Context.MODE_PRIVATE);
-//      File jsDataStore = new File(jseDir, JSE_CACHING_DIRECTORY_NAME);
-//      String jseCacheDirectoryPath = "";
-//      if ((jsDataStore.exists() && jsDataStore.isDirectory()) || jsDataStore.mkdirs()) {
-//        jseCacheDirectoryPath = jsDataStore.getAbsolutePath();
-//      }
-//
-//      return new V8ExecutorFactory(appName, deviceName, new V8ExecutorFactory.V8ConfigParams(jseCacheDirectoryPath, V8ExecutorFactory.V8ConfigParams.CacheType.CodeCache, false));
-//    }
   };
 
   @Override
