@@ -81,8 +81,15 @@ jobs:
           #verbosityPack: 'Detailed' # Options: quiet, normal, detailed
           #arguments: # Required when command == Custom
 
+      - task: CmdLine@2
+        displayName: Setup Build Dependencies
+        inputs:
+          script: .ado\setup_droid_deps.bat
+
       - task: Gradle@1
         displayName: gradlew installArchives
+        env:
+          REACT_NATIVE_DEPENDENCIES: $(System.DefaultWorkingDirectory)\build_deps
         inputs:
           gradleWrapperFile: gradlew
           # workingDirectory: src\react-native\
@@ -132,3 +139,14 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.StagingDirectory)\final'
           ArtifactName: 'ReactNative-Final'
+
+      - task: CmdLine@2
+        displayName: "Prepare package.json for npm publishing as react-native-macos"
+        inputs:
+          script: node .ado/renamePackageToMac.js
+
+      - task: Npm@1
+        displayName: "Publish react-native-macos to npmjs.org"
+        inputs:
+          command: 'publish'
+          publishEndpoint: 'npmjs'

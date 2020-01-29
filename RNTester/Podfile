@@ -1,10 +1,50 @@
-source 'https://cdn.cocoapods.org/'
+# [TODO(macOS GH#217)
+#
+# This monkey-patching of the CocoaPods Specification class will strip our MS versions from the specifications and
+# replace them with `1000.0.0`, which is the version that upstream always has set in `master`.
+module StripMSVersion
+  require 'cocoapods-core/specification'
+  Pod::Specification.prepend(self)
 
-platform :ios, '9.0'
+  def source=(source)
+    if source.is_a?(Hash) && source.has_key?(:tag)
+      super(source.merge(:tag => StripMSVersion.strip(source[:tag])))
+    else
+      super
+    end
+  end
+
+  def version=(version)
+    super(StripMSVersion.strip(version))
+  end
+
+  def dependency(dep, *args)
+    version, *other_version_requirements = args
+    super(dep, *[StripMSVersion.strip(version), *other_version_requirements].compact)
+  end
+
+  private
+
+  VERSION_REGEXP = /\d+\.\d+\.\d+-microsoft\.\d+/
+
+  def self.strip(version)
+    version && version.sub(VERSION_REGEXP, '1000.0.0')
+  end
+end
+# ]TODO(macOS GH#214)
+
+source 'https://cdn.cocoapods.org/'
 
 require_relative '../scripts/autolink-ios'
 
+# TODO(macOS GH#214)
+# Otherwise duplicate UUIDs are being generated between the iOS and macOS targets.
+# FIXME: https://github.com/microsoft/react-native/issues/210
+install! 'cocoapods', :deterministic_uuids => false
+
+# TODO(macOS GH#214)
 target 'RNTester' do
+  platform :ios, '9.0'
   # Uncomment for Swift
   # use_frameworks!
 
@@ -16,6 +56,28 @@ target 'RNTester' do
 
   # Additional Pods which aren't included in the default Podfile
   pod 'React-RCTCameraRoll', :path => '../Libraries/CameraRoll'
+  pod 'React-ART', :path => '../Libraries/ART'
+  pod 'React-RCTPushNotification', :path => '../Libraries/PushNotificationIOS'
+
+  # Additional Pods which are classed as unstable
+  #
+  # To use fabric: add `fabric_enabled` option to the use_react_native method above, like below
+  # use_react_native!(path: "..", turbo_modules_enabled: true, fabric_enabled: true)
+end
+
+# TODO(macOS GH#214)
+target 'RNTester-macOS' do
+  platform :osx, '10.14'
+  # Uncomment for Swift
+  # use_frameworks!
+
+  project 'RNTesterPods.xcodeproj'
+  
+  # Enable TurboModule
+  use_react_native!(path: "..", turbo_modules_enabled: true)
+  # pod 'React-turbomodule-samples', :path => '../ReactCommon/turbomodule/samples'
+
+  # Additional Pods which aren't included in the default Podfile
   pod 'React-ART', :path => '../Libraries/ART'
   pod 'React-RCTPushNotification', :path => '../Libraries/PushNotificationIOS'
 
