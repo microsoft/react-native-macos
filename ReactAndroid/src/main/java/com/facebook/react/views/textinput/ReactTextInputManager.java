@@ -857,7 +857,11 @@ public class ReactTextInputManager extends BaseViewManager<ReactEditText, Layout
               eventDispatcher.dispatchEvent(
                   new ReactTextInputFocusEvent(
                       editText.getId()));
+              // Show keyboard when a EditText view gains focus
+              editText.showSoftKeyboard();
             } else {
+              // Hide keyboard when a EditText view looses focus
+              editText.hideSoftKeyboard();
               eventDispatcher.dispatchEvent(
                   new ReactTextInputBlurEvent(
                       editText.getId()));
