@@ -88,15 +88,12 @@
 - (NSURL *)sourceURLForBridge:(__unused RCTBridge *)bridge
 {
   NSString *bundlePrefix = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"RN_BUNDLE_PREFIX"];
-  NSString *bundleRoot = [NSString stringWithFormat:@"%@RNTester/js/RNTesterApp.ios", bundlePrefix];  
-#if DEBUG
+  NSString *bundleRoot = [NSString stringWithFormat:@"%@RNTester/js/RNTesterApp.ios", bundlePrefix];
   NSURL *jsUrl = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:bundleRoot fallbackResource:nil];
+#if DEBUG
   [[RCTBundleURLProvider sharedSettings] setJsLocation:jsUrl.host];
-  return jsUrl;
-#else
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:bundleRoot
-                                                        fallbackResource:nil];
- #endif
+#endif
+ return jsUrl;
 }
 
 - (BOOL)application:(UIApplication *)app
