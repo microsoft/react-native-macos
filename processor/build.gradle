@@ -2,8 +2,10 @@ apply plugin: 'java'
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(dir: 'libs', include: ['*.aar'])
     compile 'com.squareup:javapoet:1.9.0'
     compile 'com.google.code.findbugs:jsr305:3.0.2'
+    compile 'com.facebook.fresco:fbcore:2.1.0'
 }
 
 // code to generate processor.jar in libs
