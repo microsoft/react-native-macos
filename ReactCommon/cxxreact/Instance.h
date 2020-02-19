@@ -34,20 +34,6 @@ struct InstanceCallback {
   virtual void decrementPendingJSCalls() {}
 };
 
-enum class CachingType {
-  NoCaching,
-  PartialCaching,
-  PartialCachingWithNoLazy,
-  FullCaching,
-  FullCachingWithNoLazy
-};
-
-struct JSEConfigParams {
-  std::string cachePath;
-  CachingType cacheType;
-  int loggingLevel;
-};
-
 class RN_EXPORT Instance {
 public:
   virtual ~Instance();
@@ -62,10 +48,8 @@ public:
 
   void setSourceURL(std::string sourceURL);
 
-  virtual void loadScriptFromString(
-      std::unique_ptr<const JSBigString> bundleString,
-      std::string bundleURL,
-      bool loadSynchronously);
+  void loadScriptFromString(std::unique_ptr<const JSBigString> string,
+                            std::string sourceURL, bool loadSynchronously);
   static bool isIndexedRAMBundle(const char *sourcePath);
   static bool isIndexedRAMBundle(std::unique_ptr<const JSBigString>* string);
   void loadRAMBundleFromString(std::unique_ptr<const JSBigString> script, const std::string& sourceURL);
@@ -84,7 +68,6 @@ public:
   void callJSFunction(std::string &&module, std::string &&method,
                       folly::dynamic &&params);
   void callJSCallback(uint64_t callbackId, folly::dynamic &&params);
-  virtual void setJSEConfigParams(std::shared_ptr<JSEConfigParams>&& jseConfigParams);
 
   // This method is experimental, and may be modified or removed.
   void registerBundle(uint32_t bundleId, const std::string& bundlePath);
@@ -105,17 +88,16 @@ public:
 
 private:
   void callNativeModules(folly::dynamic &&calls, bool isEndOfBatch);
-  virtual void loadApplication(std::unique_ptr<RAMBundleRegistry> bundleRegistry,
-                       std::unique_ptr<const JSBigString> bundle,
-                       std::string bundleURL);
-  virtual void loadApplicationSync(std::unique_ptr<RAMBundleRegistry> bundleRegistry,
-                           std::unique_ptr<const JSBigString> bundle,
-                           std::string bundleURL);
+  void loadApplication(std::unique_ptr<RAMBundleRegistry> bundleRegistry,
+                       std::unique_ptr<const JSBigString> startupScript,
+                       std::string startupScriptSourceURL);
+  void loadApplicationSync(std::unique_ptr<RAMBundleRegistry> bundleRegistry,
+                           std::unique_ptr<const JSBigString> startupScript,
+                           std::string startupScriptSourceURL);
 
   std::shared_ptr<InstanceCallback> callback_;
   std::unique_ptr<NativeToJsBridge> nativeToJsBridge_;
   std::shared_ptr<ModuleRegistry> moduleRegistry_;
-  std::shared_ptr<JSEConfigParams> jseConfigParams_;
 
   std::mutex m_syncMutex;
   std::condition_variable m_syncCV;

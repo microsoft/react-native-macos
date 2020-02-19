@@ -14,8 +14,6 @@
 #include <folly/portability/SysMman.h>
 #include <folly/ScopeGuard.h>
 
-#include <unistd.h> // ISS for `dup` that we don't pull in otherwise
-
 namespace facebook {
 namespace react {
 
