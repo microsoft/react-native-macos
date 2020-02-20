@@ -34,13 +34,27 @@ struct InstanceCallback {
   virtual void decrementPendingJSCalls() {}
 };
 
+enum class CachingType {
+  NoCaching,
+  PartialCaching,
+  PartialCachingWithNoLazy,
+  FullCaching,
+  FullCachingWithNoLazy
+};
+
+struct JSEConfigParams {
+  std::string cachePath;
+  CachingType cacheType;
+  int loggingLevel;
+};
+
 class RN_EXPORT Instance {
 public:
   virtual ~Instance();
 
-  virtual void setModuleRegistry(std::shared_ptr<ModuleRegistry> moduleRegistry);
+  void setModuleRegistry(std::shared_ptr<ModuleRegistry> moduleRegistry);
 
-  virtual void initializeBridge(std::unique_ptr<InstanceCallback> callback,
+  void initializeBridge(std::unique_ptr<InstanceCallback> callback,
                         std::shared_ptr<ExecutorDelegateFactory> edf, // if nullptr, will use default delegate (JsToNativeBridge) // TODO(OSS Candidate ISS#2710739)
                         std::shared_ptr<JSExecutorFactory> jsef,
                         std::shared_ptr<MessageQueueThread> jsQueue,
@@ -68,6 +82,7 @@ public:
   void callJSFunction(std::string &&module, std::string &&method,
                       folly::dynamic &&params);
   void callJSCallback(uint64_t callbackId, folly::dynamic &&params);
+  virtual void setJSEConfigParams(std::shared_ptr<JSEConfigParams>&& jseConfigParams);
 
   // This method is experimental, and may be modified or removed.
   void registerBundle(uint32_t bundleId, const std::string& bundlePath);
@@ -98,6 +113,7 @@ private:
   std::shared_ptr<InstanceCallback> callback_;
   std::unique_ptr<NativeToJsBridge> nativeToJsBridge_;
   std::shared_ptr<ModuleRegistry> moduleRegistry_;
+  std::shared_ptr<JSEConfigParams> jseConfigParams_;
 
   std::mutex m_syncMutex;
   std::condition_variable m_syncCV;

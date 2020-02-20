@@ -7,7 +7,7 @@
 
 package com.facebook.react.bridge;
 
-import com.facebook.common.logging.FLog;
+// import com.facebook.common.logging.FLog;
 import com.facebook.react.common.ReactConstants;
 import javax.annotation.Nullable;
 
@@ -82,7 +82,7 @@ public class DynamicFromObject implements Dynamic {
     if (mObject instanceof ReadableArray) {
       return ReadableType.Array;
     }
-    FLog.e(ReactConstants.TAG, "Unmapped object type " + mObject.getClass().getName());
+//    FLog.e(ReactConstants.TAG, "Unmapped object type " + mObject.getClass().getName());
     return ReadableType.Null;
   }
 }

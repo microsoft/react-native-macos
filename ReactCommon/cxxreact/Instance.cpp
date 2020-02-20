@@ -196,6 +196,10 @@ void Instance::callJSCallback(uint64_t callbackId, folly::dynamic &&params) {
   nativeToJsBridge_->invokeCallback((double)callbackId, std::move(params));
 }
 
+void Instance::setJSEConfigParams(std::shared_ptr<JSEConfigParams>&& jseConfigParams) {
+  jseConfigParams_ = std::move(jseConfigParams);
+}
+
 void Instance::registerBundle(uint32_t bundleId, const std::string& bundlePath) {
   nativeToJsBridge_->registerBundle(bundleId, bundlePath);
 }
