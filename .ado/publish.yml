@@ -86,6 +86,11 @@ jobs:
         inputs:
           script: .ado\setup_droid_deps.bat
 
+      - task: CmdLine@2
+        displayName: Apply Android specific patches for Office consumption
+        inputs:
+          script: android-patches\scripts\patch.bat
+
       - task: Gradle@1
         displayName: gradlew installArchives
         env:

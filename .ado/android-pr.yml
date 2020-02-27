@@ -80,6 +80,11 @@ jobs:
           script: .ado\setup_droid_deps.bat
 
       - task: CmdLine@2
+        displayName: Apply Android specific patches for Office consumption
+        inputs:
+          script: android-patches\scripts\patch.bat
+
+      - task: CmdLine@2
         displayName: Remove RNTesterApp.android.bundle
         inputs:
           script: del RNTesterApp.android.bundle

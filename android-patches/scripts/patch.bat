@@ -1,0 +1,1 @@
+node %~dp0\..\bundle\bundle.js patch %~dp0\..\.. BuildAndThirdPartyFixes DialogModule UIEditText UIScroll UITextFont Accessibility OfficeRNHost SecurityFixes V8Integration AnnotationProcessing  --patch-store %~dp0\..\patches-droid-office-grouped --log-folder %~dp0\..\..\android-patching-logs
