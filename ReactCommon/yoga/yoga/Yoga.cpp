@@ -1608,6 +1608,7 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
       : YGFloatMax(
             0, availableHeight - marginAxisColumn - paddingAndBorderAxisColumn);
 
+#ifdef YOGA_CALL_MEASURE_CALLBACK_ON_ALL_NODES
   // Measure the text under the current constraints.
   const YGSize measuredSize = node->measure(
       innerWidth,
@@ -1615,6 +1616,7 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
       innerHeight,
       heightMeasureMode,
       layoutContext);
+#endif
 
   if (widthMeasureMode == YGMeasureModeExactly &&
       heightMeasureMode == YGMeasureModeExactly) {
@@ -1636,6 +1638,17 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
             ownerWidth),
         YGDimensionHeight);
   } else {
+
+#ifndef YOGA_CALL_MEASURE_CALLBACK_ON_ALL_NODES
+  // Measure the text under the current constraints.
+  const YGSize measuredSize = node->measure(
+      innerWidth,
+      widthMeasureMode,
+      innerHeight,
+      heightMeasureMode,
+      layoutContext);
+#endif
+
     node->setLayoutMeasuredDimension(
         YGNodeBoundAxis(
             node,
