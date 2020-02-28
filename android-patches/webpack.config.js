@@ -21,10 +21,10 @@ module.exports = {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'bundle'),
   },
-  externals: [nodeExternals()],
-  node: {
-    global: false,
-    __filename: false,
-    __dirname: false,
-  },
+  // externals: [nodeExternals()],
+  // node: {
+  //   global: true,
+  //   __filename: false,
+  //   __dirname: false,
+  // },
 };
