@@ -2,18 +2,18 @@ import winston from 'winston';
 import fs_path from 'path'; // TODO
 
 // Suitable for developments.. may not be when running in the CI/Publish machines.
-const getLogDirectoryDev = () => {
-  const loggerSourcePath = __dirname;
-  const loggerParentDir = fs_path.resolve(loggerSourcePath, '..');
-  const logDirBase = fs_path.resolve(loggerParentDir, 'logs');
-  return fs_path.resolve(logDirBase, `${Date.now()}`);
-};
+// const getLogDirectoryDev = () => {
+//   const loggerSourcePath = __dirname;
+//   const loggerParentDir = fs_path.resolve(loggerSourcePath, '..');
+//   const logDirBase = fs_path.resolve(loggerParentDir, 'logs');
+//   return fs_path.resolve(logDirBase, `${Date.now()}`);
+// };
 
-const logDirectory = getLogDirectoryDev();
+// const logDirectory = getLogDirectoryDev();
 
 const logger = winston.createLogger({
   level: 'verbose',
-  defaultMeta: {service: 'user-service'},
+  defaultMeta: { service: 'user-service' },
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.json(),
@@ -21,7 +21,7 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
       handleExceptions: true,
-      level: 'error',
+      // level: 'error',
     }),
   ],
 });
@@ -29,20 +29,27 @@ const logger = winston.createLogger({
 function setLogFolder(logFolder: string) {
   // logFolder = fs_path.resolve(logFolder, `${Date.now()}`);
 
-  winston.add(
+  logger.add(
     new winston.transports.File({
       filename: 'error.log',
       level: 'error',
       dirname: logFolder,
     }),
   );
-  winston.add(
+  logger.add(
+    new winston.transports.File({
+      filename: 'warn.log',
+      level: 'warn',
+      dirname: logFolder,
+    }),
+  );
+  logger.add(
     new winston.transports.File({
       filename: `all.log`,
       dirname: logFolder,
     }),
   );
-  winston.exceptions.handle(
+  logger.exceptions.handle(
     new winston.transports.File({
       filename: 'exceptions.log',
       dirname: logFolder,
@@ -51,22 +58,25 @@ function setLogFolder(logFolder: string) {
 }
 
 function info(prefix: string, message: string) {
-  winston.info(`${prefix} - ${message}`);
+  error(prefix, message);
+  logger.info(`${prefix} - ${message}`);
 }
 
 function verbose(prefix: string, message: string) {
-  winston.verbose(`${prefix} - ${message}`);
+  error(prefix, message);
+  logger.verbose(`${prefix} - ${message}`);
 }
 
 const errors: string[] = [];
 function error(prefix: string, message: string) {
   const message2 = `${prefix} - ${message}`;
   errors.push(message2);
-  winston.error(message2);
+  logger.error(message2);
 }
 
 function warn(prefix: string, message: string) {
-  winston.warn(`${prefix} - ${message}`);
+  error(prefix, message);
+  logger.warn(`${prefix} - ${message}`);
 }
 
 function queryErrors(resultCallback: (error: string[]) => void) {
@@ -98,5 +108,5 @@ function queryErrors(resultCallback: (error: string[]) => void) {
   resultCallback(errors);
 }
 
-const log = {queryErrors, setLogFolder, error, warn, info, verbose};
-export {log};
+const log = { queryErrors, setLogFolder, error, warn, info, verbose };
+export { log };

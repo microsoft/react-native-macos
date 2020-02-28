@@ -6,10 +6,10 @@ import {
   copyFile,
   copyFileOverwrite,
 } from './fs_utils';
-import {log} from './logger';
-import {applyPatchTool, applyPatchEmbedded} from './patch_utils';
-import {isFileText, isFileBinary} from './file_type_utils';
-import {IPatchCommandOptions, PatchRepoFuncType} from './types';
+import { log } from './logger';
+import { applyPatchTool, applyPatchEmbedded } from './patch_utils';
+import { isFileText, isFileBinary } from './file_type_utils';
+import { IPatchCommandOptions, PatchRepoFuncType } from './types';
 
 function applyPatch(
   targetPath: string,
@@ -123,7 +123,11 @@ const patchRepo: PatchRepoFuncType = (
     // console.log('Directory: ' + path);
   };
 
+
+  log.error('PatchRepoBlah', `${patchNames} with ${patchNames.length} items.`);
+
   patchNames.forEach(patchName => {
+    log.error('PatchRepoBlah', `Processing ${patchName}.`);
     const patchNameDirAbsPath = resolvePath(options.patchStore, patchName);
     traverseDirectory(
       patchNameDirAbsPath,
@@ -132,6 +136,7 @@ const patchRepo: PatchRepoFuncType = (
       callbackDirectory,
       [],
     );
+    log.error('PatchRepoBlah', `Completed. ${patchName}.`);
   });
 };
 

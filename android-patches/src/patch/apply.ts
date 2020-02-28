@@ -1,14 +1,14 @@
 import fs from 'fs-extra';
-import {dirname} from 'path';
-import {ParsedPatchFile, FilePatch, Hunk} from './parse';
-import {assertNever} from './assertNever';
+import { dirname } from 'path';
+import { ParsedPatchFile, FilePatch, Hunk } from './parse';
+import { assertNever } from './assertNever';
 
-import {log} from '../logger';
+import { log } from '../logger';
 
 export const executeEffects = (
   effects: ParsedPatchFile,
   targetFilePathOverride: string, // Override the target path in the patch file.
-  {dryRun}: {dryRun: boolean},
+  { dryRun }: { dryRun: boolean },
 ) => {
   effects.forEach(eff => {
     switch (eff.type) {
@@ -47,15 +47,15 @@ export const executeEffects = (
         } else {
           const fileContents = eff.hunk
             ? eff.hunk.parts[0].lines.join('\n') +
-              (eff.hunk.parts[0].noNewlineAtEndOfFile ? '' : '\n')
+            (eff.hunk.parts[0].noNewlineAtEndOfFile ? '' : '\n')
             : '';
           fs.ensureDirSync(dirname(eff.path));
-          fs.writeFileSync(eff.path, fileContents, {mode: eff.mode});
+          fs.writeFileSync(eff.path, fileContents, { mode: eff.mode });
         }
         break;
       case 'patch':
         log.info('patch\\apply', 'Patches found.');
-        applyPatch(eff, targetFilePathOverride, {dryRun});
+        applyPatch(eff, targetFilePathOverride, { dryRun });
         break;
       case 'mode change':
         const currentMode = fs.statSync(eff.path).mode;
@@ -107,9 +107,9 @@ function linesAreEqual(a: string, b: string) {
  */
 
 function applyPatch(
-  {hunks, path}: FilePatch,
+  { hunks, path }: FilePatch,
   targetFilePathOverride: string,
-  {dryRun}: {dryRun: boolean},
+  { dryRun }: { dryRun: boolean },
 ): void {
   const effectiveTargetPath = targetFilePathOverride
     ? targetFilePathOverride
@@ -182,7 +182,7 @@ function applyPatch(
   }
 
   fs.ensureDirSync(dirname(targetFilePathOverride));
-  fs.writeFileSync(targetFilePathOverride, fileLines.join('\n'), {mode});
+  fs.writeFileSync(targetFilePathOverride, fileLines.join('\n'), { mode });
 }
 
 interface Push {
@@ -214,9 +214,20 @@ function evaluateHunk(
   let contextIndex = hunk.header.original.start - 1 + fuzzingOffset;
   // do bounds checks for index
   if (contextIndex < 0) {
+    log.error(
+      'evaluateHunk',
+      `Reason: contextIndex < 0; Hunk Details: ${hunkToString(hunk)}`,
+    );
     return null;
   }
   if (fileLines.length - contextIndex < hunk.header.original.length) {
+    log.error(
+      'evaluateHunk',
+      `Reason: fileLines.length - contextIndex < hunk.header.original.length; Hunk Details: ${hunkToString(
+        hunk,
+      )}`,
+    );
+
     return null;
   }
 
@@ -227,6 +238,12 @@ function evaluateHunk(
         for (const line of part.lines) {
           const originalLine = fileLines[contextIndex];
           if (!linesAreEqual(originalLine, line)) {
+            log.warn(
+              'evaluateHunk',
+              `Reason: Context/Deletion line mismatch; Expected: \"${line}\"; Actual: \"${originalLine}\";Hunk Details: ${hunkToString(
+                hunk,
+              )}`,
+            );
             return null;
           }
           contextIndex++;
@@ -256,7 +273,7 @@ function evaluateHunk(
           linesToInsert: part.lines,
         });
         if (part.noNewlineAtEndOfFile) {
-          result.push({type: 'pop'});
+          result.push({ type: 'pop' });
         }
         break;
       default:
