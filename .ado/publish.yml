@@ -28,6 +28,11 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
+      - task: CmdLine@2
+        displayName: Apply Android specific patches for Office consumption
+        inputs:
+          script: android-patches\scripts\patch.bat
+
       # Install NuGet v4.6.4+
       - task: NuGetToolInstaller@1
         inputs:
@@ -85,11 +90,6 @@ jobs:
         displayName: Setup Build Dependencies
         inputs:
           script: .ado\setup_droid_deps.bat
-
-      - task: CmdLine@2
-        displayName: Apply Android specific patches for Office consumption
-        inputs:
-          script: android-patches\scripts\patch.bat
 
       - task: Gradle@1
         displayName: gradlew installArchives

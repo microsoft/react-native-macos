@@ -22,6 +22,11 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: false # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
+      - task: CmdLine@2
+        displayName: Apply Android specific patches for Office consumption
+        inputs:
+          script: android-patches\scripts\patch.bat
+
       - task: UseNode@1
         inputs:
           version: '10.x'
@@ -30,7 +35,7 @@ jobs:
       - task: NuGetToolInstaller@1
         inputs:
           versionSpec: '>=4.6.4'
-
+         
       - task: CmdLine@2
         displayName: npm install
         inputs:
@@ -78,11 +83,6 @@ jobs:
         displayName: Setup Build Dependencies
         inputs:
           script: .ado\setup_droid_deps.bat
-
-      - task: CmdLine@2
-        displayName: Apply Android specific patches for Office consumption
-        inputs:
-          script: android-patches\scripts\patch.bat
 
       - task: CmdLine@2
         displayName: Remove RNTesterApp.android.bundle
