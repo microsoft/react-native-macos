@@ -238,7 +238,7 @@ function evaluateHunk(
         for (const line of part.lines) {
           const originalLine = fileLines[contextIndex];
           if (!linesAreEqual(originalLine, line)) {
-            log.warn(
+            log.error(
               'evaluateHunk',
               `Reason: Context/Deletion line mismatch; Expected: \"${line}\"; Actual: \"${originalLine}\";Hunk Details: ${hunkToString(
                 hunk,

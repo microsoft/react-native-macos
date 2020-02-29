@@ -123,11 +123,7 @@ const patchRepo: PatchRepoFuncType = (
     // console.log('Directory: ' + path);
   };
 
-
-  log.error('PatchRepoBlah', `${patchNames} with ${patchNames.length} items.`);
-
   patchNames.forEach(patchName => {
-    log.error('PatchRepoBlah', `Processing ${patchName}.`);
     const patchNameDirAbsPath = resolvePath(options.patchStore, patchName);
     traverseDirectory(
       patchNameDirAbsPath,
@@ -136,7 +132,6 @@ const patchRepo: PatchRepoFuncType = (
       callbackDirectory,
       [],
     );
-    log.error('PatchRepoBlah', `Completed. ${patchName}.`);
   });
 };
 
