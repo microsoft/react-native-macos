@@ -1,4 +1,4 @@
-import {assertNever} from './assertNever';
+import { assertNever } from './assertNever';
 
 export interface HunkHeader {
   original: {
@@ -146,7 +146,7 @@ const hunkLinetypes: {
 
 function parsePatchLines(
   lines: string[],
-  {supportLegacyDiffs}: {supportLegacyDiffs: boolean},
+  { supportLegacyDiffs }: { supportLegacyDiffs: boolean },
 ): FileDeets[] {
   const result: FileDeets[] = [];
   let currentFilePatch: FileDeets = emptyFilePatch();
@@ -281,7 +281,7 @@ function parsePatchLines(
 
   commitFilePatch();
 
-  for (const {hunks} of result) {
+  for (const { hunks } of result) {
     if (hunks) {
       for (const hunk of hunks) {
         verifyHunkIntegrity(hunk);
@@ -314,12 +314,12 @@ export function interpretParsedPatchFile(files: FileDeets[]): ParsedPatchFile {
     const type: PatchFilePart['type'] = renameFrom
       ? 'rename'
       : deletedFileMode
-      ? 'file deletion'
-      : newFileMode
-      ? 'file creation'
-      : hunks && hunks.length > 0
-      ? 'patch'
-      : 'mode change';
+        ? 'file deletion'
+        : newFileMode
+          ? 'file creation'
+          : hunks && hunks.length > 0
+            ? 'patch'
+            : 'mode change';
 
     let destinationFilePath: string | null = null;
     switch (type) {
@@ -406,13 +406,13 @@ function parseFileMode(mode: string): FileMode {
 }
 
 export function parsePatchFile(file: string): ParsedPatchFile {
-  const lines = file.split(/\n/g);
+  const lines = file.split(/\r?\n/g);
   if (lines[lines.length - 1] === '') {
     lines.pop();
   }
   try {
     return interpretParsedPatchFile(
-      parsePatchLines(lines, {supportLegacyDiffs: false}),
+      parsePatchLines(lines, { supportLegacyDiffs: false }),
     );
   } catch (e) {
     if (
@@ -420,7 +420,7 @@ export function parsePatchFile(file: string): ParsedPatchFile {
       e.message === 'hunk header integrity check failed'
     ) {
       return interpretParsedPatchFile(
-        parsePatchLines(lines, {supportLegacyDiffs: true}),
+        parsePatchLines(lines, { supportLegacyDiffs: true }),
       );
     }
     throw e;
@@ -431,7 +431,7 @@ export function verifyHunkIntegrity(hunk: Hunk) {
   // verify hunk integrity
   let originalLength = 0;
   let patchedLength = 0;
-  for (const {type, lines} of hunk.parts) {
+  for (const { type, lines } of hunk.parts) {
     switch (type) {
       case 'context':
         patchedLength += lines.length;

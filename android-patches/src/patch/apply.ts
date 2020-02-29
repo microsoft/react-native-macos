@@ -123,7 +123,7 @@ function applyPatch(
     mode = fs.statSync(targetFilePathOverride).mode;
   }
 
-  const fileLines: string[] = fileContents.split(/\n/);
+  const fileLines: string[] = fileContents.split(/\r?\n/);
 
   const result: Modificaiton[][] = [];
 
