@@ -216,19 +216,27 @@ function evaluateHunk(
   if (contextIndex < 0) {
     log.error(
       'evaluateHunk',
-      `Reason: contextIndex < 0; Hunk Details: ${hunkToString(hunk)}`,
+      `Reason: contextIndex < 0; Hunk Details: ${hunkToString(hunk)}; contextIndex: ${contextIndex}; fuzzingOffset:${fuzzingOffset}`,
     );
     return null;
+  } else {
+    log.error(
+      'evaluateHunk',
+      `Reason: contextIndex < 0; passed`);
   }
   if (fileLines.length - contextIndex < hunk.header.original.length) {
     log.error(
       'evaluateHunk',
       `Reason: fileLines.length - contextIndex < hunk.header.original.length; Hunk Details: ${hunkToString(
         hunk,
-      )}`,
+      )}; fileLines.length:${fileLines.length}; contextIndex: ${contextIndex}`,
     );
 
     return null;
+  } else {
+    log.error(
+      'evaluateHunk',
+      `Reason: fileLines.length - contextIndex < hunk.header.original.length; passed`);
   }
 
   for (const part of hunk.parts) {
