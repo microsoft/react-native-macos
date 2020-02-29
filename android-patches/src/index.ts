@@ -9,9 +9,10 @@ const onCompletion = () => {
   const errorsCallback = (errors: string[]) => {
     if (errors.length > 0) {
       process.exitCode = -1;
-      errors.forEach(error => {
-        process.stderr.write(error + '\n');
-      });
+      // Not needed as we configure winston to do this.
+      // errors.forEach(error => {
+      //   process.stderr.write(error + '\n');
+      // });
     }
   };
 

@@ -2,10 +2,9 @@ set PATCHES=BuildAndThirdPartyFixes DialogModule UIEditText UIScroll UITextFont 
 set PATCHSTORE=%~dp0\..\patches-droid-office-grouped
 set LOGFOLDER=%~dp0\..\logs
 
-set RUNFROMFORK=0
+set RUNFROMFORK=1
 if '%RUNFROMFORK%'=='1' (
-REM  set TARGETREPO=%~dp0\..\..
-  set TARGETREPO=D:\work\github\mgan-react-native
+  set TARGETREPO=%~dp0\..\..
 ) else (
   REM Custom dev.
   set TARGETREPO=D:\work\github\mgan-react-native

@@ -214,18 +214,18 @@ function evaluateHunk(
   let contextIndex = hunk.header.original.start - 1 + fuzzingOffset;
   // do bounds checks for index
   if (contextIndex < 0) {
-    log.error(
+    log.warn(
       'evaluateHunk',
       `Reason: contextIndex < 0; Hunk Details: ${hunkToString(hunk)}; contextIndex: ${contextIndex}; fuzzingOffset:${fuzzingOffset}`,
     );
     return null;
   } else {
-    log.error(
+    log.verbose(
       'evaluateHunk',
       `Reason: contextIndex < 0; passed`);
   }
   if (fileLines.length - contextIndex < hunk.header.original.length) {
-    log.error(
+    log.warn(
       'evaluateHunk',
       `Reason: fileLines.length - contextIndex < hunk.header.original.length; Hunk Details: ${hunkToString(
         hunk,
@@ -234,7 +234,7 @@ function evaluateHunk(
 
     return null;
   } else {
-    log.error(
+    log.verbose(
       'evaluateHunk',
       `Reason: fileLines.length - contextIndex < hunk.header.original.length; passed`);
   }
@@ -246,7 +246,7 @@ function evaluateHunk(
         for (const line of part.lines) {
           const originalLine = fileLines[contextIndex];
           if (!linesAreEqual(originalLine, line)) {
-            log.error(
+            log.warn(
               'evaluateHunk',
               `Reason: Context/Deletion line mismatch; Expected: \"${line}\"; Actual: \"${originalLine}\";Hunk Details: ${hunkToString(
                 hunk,
