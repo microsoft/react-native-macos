@@ -9,4 +9,10 @@
  
  # If APP_PLATFORM in Application.mk targets android-23 above, please comment this line.
  # NDK uses GNU style stderror_r() after API 23.
+@@ -94,4 +94,4 @@
  
+ $(call import-module,glog)
+ $(call import-module,double-conversion)
+-$(call import-module,boost)
++$(call import-module,boost)
+\ No newline at end of file

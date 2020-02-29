@@ -21,7 +21,7 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
       handleExceptions: true,
-      // level: 'error',
+      level: 'error',
     }),
   ],
 });
@@ -58,12 +58,12 @@ function setLogFolder(logFolder: string) {
 }
 
 function info(prefix: string, message: string) {
-  error(prefix, message);
+  // error(prefix, message);
   logger.info(`${prefix} - ${message}`);
 }
 
 function verbose(prefix: string, message: string) {
-  error(prefix, message);
+  // error(prefix, message);
   logger.verbose(`${prefix} - ${message}`);
 }
 
@@ -75,7 +75,7 @@ function error(prefix: string, message: string) {
 }
 
 function warn(prefix: string, message: string) {
-  error(prefix, message);
+  // error(prefix, message);
   logger.warn(`${prefix} - ${message}`);
 }
 

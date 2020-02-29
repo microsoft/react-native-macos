@@ -1,22 +1,24 @@
 import chalk from 'chalk';
-import {readFileSync} from 'fs-extra';
-import {relative, resolve} from 'path';
-import {normalize} from 'path';
+import { readFileSync } from 'fs-extra';
+import { relative, resolve } from 'path';
+import { normalize } from 'path';
 // import {PackageDetails} from '../PackageDetails';
-import {parsePatchFile, PatchFilePart} from './parse';
+import { parsePatchFile, PatchFilePart } from './parse';
+import { log } from '../logger';
 
 export function readPatch({
   patchFilePath,
 }: // packageDetails,
-// patchDir,
-{
-  patchFilePath: string;
-  // packageDetails: PackageDetails;
-  // patchDir: string;
-}): PatchFilePart[] {
+  // patchDir,
+  {
+    patchFilePath: string;
+    // packageDetails: PackageDetails;
+    // patchDir: string;
+  }): PatchFilePart[] {
   try {
     return parsePatchFile(readFileSync(patchFilePath).toString());
   } catch (e) {
+    log.error("patch/read", `the patch file ${patchFilePath} could not be parsed: ${e}. Hence exiting early without wasting CPU cycles.`);
     // const fixupSteps: string[] = [];
     // const relativePatchFilePath = normalize(
     //   relative(process.cwd(), patchFilePath),
