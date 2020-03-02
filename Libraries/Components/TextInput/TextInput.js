@@ -985,6 +985,14 @@ const TextInput = createReactClass({
     );
   },
 
+  /**
+   * Returns the native `TextView` node.
+   */
+  getTextViewHandle: function(): any {
+    // [TODO(OSS Candidate ISS#2710739)
+    return ReactNative.findNodeHandle(this._inputRef);
+  }, // ]TODO(OSS Candidate ISS#2710739)
+
   _inputRef: (undefined: any),
   _focusSubscription: (undefined: ?Function),
   _lastNativeText: (undefined: ?string),
