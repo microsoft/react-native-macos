@@ -36,14 +36,15 @@ RCTMessageThread::~RCTMessageThread() {
 
 // This is analogous to dispatch_async
 void RCTMessageThread::runAsync(std::function<void()> func) {
-  CFRunLoopPerformBlock(m_cfRunLoop, kCFRunLoopCommonModes, ^{
     // Cherry picked from https://github.com/facebook/react-native/pull/27395/files to fix autorelease pool memory growth
+  CFRunLoopPerformBlock(m_cfRunLoop, kCFRunLoopCommonModes, ^{
     // Create an autorelease pool each run loop to prevent memory footprint from growing too large, which can lead to performance problems.
     @autoreleasepool {
       func();
     }
-    CFRunLoopWakeUp(m_cfRunLoop);
   });
+  CFRunLoopWakeUp(m_cfRunLoop);
+}
 
 // This is analogous to dispatch_sync
 void RCTMessageThread::runSync(std::function<void()> func) {
