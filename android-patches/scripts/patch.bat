@@ -7,7 +7,7 @@ if '%RUNFROMFORK%'=='1' (
   set TARGETREPO=%~dp0\..\..
 ) else (
   REM Custom dev.
-  set TARGETREPO=D:\work\github\mgan-react-native
+  set TARGETREPO=E:\github\ms-react-native-forpatch
 )
 
 set RUNBUNDLE=1

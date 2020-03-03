@@ -6,10 +6,10 @@ import {
   copyFile,
   copyFileOverwrite,
 } from './fs_utils';
-import { log } from './logger';
-import { applyPatchTool, applyPatchEmbedded } from './patch_utils';
-import { isFileText, isFileBinary } from './file_type_utils';
-import { IPatchCommandOptions, PatchRepoFuncType } from './types';
+import {log} from './logger';
+import {applyPatchTool, applyPatchEmbedded} from './patch_utils';
+import {isFileText, isFileBinary} from './file_type_utils';
+import {IPatchCommandOptions, PatchRepoFuncType} from './types';
 
 function applyPatch(
   targetPath: string,
@@ -87,15 +87,14 @@ const patchRepo: PatchRepoFuncType = (
     };
 
     const callbackOnMiss = (missedPatchFileAbsPath: string) => {
-      log.warn(
-        'PatchRepo',
-        `File path with patches (${missedPatchFileAbsPath}) not found in the target repository.`,
-      );
-
       if (isFileBinary(patchFileAbsPath)) {
         // If patch file is binary, we copy anyways.
         copyFile(patchFileAbsPath, missedPatchFileAbsPath);
       } else {
+        log.warn(
+          'PatchRepo',
+          `File path with patches (${missedPatchFileAbsPath}) not found in the target repository. Assuming the patch is created with '--unidirectional-new-file' option.`,
+        );
         applyPatch(
           missedPatchFileAbsPath,
           patchFileAbsPath,

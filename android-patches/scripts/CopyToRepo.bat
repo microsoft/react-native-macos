@@ -1,7 +1,7 @@
 @if "%DEBUG%" == "" @echo off
 
 set SOURCEDIR=%~dp0\..
-set TARGETREPO=D:\work\github\mgan-react-native
+set TARGETREPO=E:\github\ms-react-native-forpatch
 set COPYDIST=1
 
 REM Copy bundle
