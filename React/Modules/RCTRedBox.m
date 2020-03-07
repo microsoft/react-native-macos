@@ -873,6 +873,7 @@ RCT_EXPORT_METHOD(dismiss)
 #else // ]TODO(macOS ISS#2323203)
     dispatch_async(dispatch_get_main_queue(), ^{
         [self->_window dismiss];
+        self->_window = nil; // TODO(OSS Candidate ISS#2710739): release _window now to ensure its UIKit ivars are dealloc'd on the main thread as the RCTRedBox can be dealloc'd on a background thread.
     });
 #endif // TODO(macOS ISS#2323203)
 }
