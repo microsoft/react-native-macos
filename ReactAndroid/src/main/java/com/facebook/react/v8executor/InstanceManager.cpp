@@ -55,7 +55,6 @@ std::shared_ptr<Instance> CreateReactInstance(
 
 	// Initialize bridge.
 	instance->initializeBridge(std::make_unique<DefaultInstanceCallback>(),
-		nullptr,
 		std::move(jsExecutorFactory),
 		std::move(jsQueue),
 		std::move(moduleRegistry));

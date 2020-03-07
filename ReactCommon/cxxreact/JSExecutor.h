@@ -20,21 +20,11 @@ namespace facebook {
 namespace react {
 
 class JSBigString;
-class ExecutorDelegate;
 class JSExecutor;
 class JSModulesUnbundle;
 class MessageQueueThread;
 class ModuleRegistry;
 class RAMBundleRegistry;
-struct InstanceCallback;
-
-class ExecutorDelegateFactory {
-public:
-  virtual std::unique_ptr<ExecutorDelegate> createExecutorDelegate(
-    std::shared_ptr<ModuleRegistry> registry,
-    std::shared_ptr<InstanceCallback> callback) = 0;
-  virtual ~ExecutorDelegateFactory() {}
-};
 
 // This interface describes the delegate interface required by
 // Executor implementations to call from JS into native code.
@@ -117,15 +107,6 @@ public:
   virtual std::string getDescription() = 0;
 
   virtual void handleMemoryPressure(__unused int pressureLevel) {}
-
-  /**
-   * Returns the current peak memory usage due to the JavaScript
-   * execution environment in bytes. If the JavaScript execution
-   * environment does not track this information, return -1.
-   */
-  virtual int64_t getPeakJsMemoryUsage() const noexcept { // ISS
-    return -1;
-  }
 
   virtual void destroy() {}
   virtual ~JSExecutor() {}
