@@ -296,8 +296,8 @@
 		1854FF5C1EF485C60008DADC /* SystraceSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3D92B0D51E03699D0018521A /* SystraceSection.h */; };
 		1854FF621EF487C00008DADC /* (null) in Headers */ = {isa = PBXBuildFile; };
 		18572B9F1EF32003007EAD54 /* RCTUIKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 6BF8B4B21EC550F500061E2F /* RCTUIKit.h */; };
-        18632C021EF495D40010A3BB /* libcxxreact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6B857F421EC51FCF00A9D063 /* libcxxreact.a */; };
-        18632C051EF495D40010A3BB /* libthird-party.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 188202A21EF48CF700C9B354 /* libthird-party.a */; };
+		18632C021EF495D40010A3BB /* libcxxreact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6B857F421EC51FCF00A9D063 /* libcxxreact.a */; };
+		18632C051EF495D40010A3BB /* libthird-party.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 188202A21EF48CF700C9B354 /* libthird-party.a */; };
 		18632C1A1EF49C9D0010A3BB /* CxxModule.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 3D92B0A71E03699D0018521A /* CxxModule.h */; };
 		18632C1B1EF49C9D0010A3BB /* CxxNativeModule.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 3D92B0A91E03699D0018521A /* CxxNativeModule.h */; };
 		18632C1C1EF49C9D0010A3BB /* JSExecutor.h in Copy Headers */ = {isa = PBXBuildFile; fileRef = 3D92B0AB1E03699D0018521A /* JSExecutor.h */; };
@@ -1618,7 +1618,7 @@
 		9FB7D34C224954A600F31D11 /* libjsinspector-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F2AC95E2239D788005C9C14 /* libjsinspector-macOS.a */; };
 		9FB7D34D224954B300F31D11 /* libjsi-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FD21D78224303D900E7F88E /* libjsi-macOS.a */; };
 		9FB7D34E224954CC00F31D11 /* libjsiexecutor-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FD21D94224305AA00E7F88E /* libjsiexecutor-macOS.a */; };
-        9FB7D34F224954EE00F31D11 /* libdouble-conversion.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1882027C1EF48B7E00C9B354 /* libdouble-conversion.a */; };
+		9FB7D34F224954EE00F31D11 /* libdouble-conversion.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1882027C1EF48B7E00C9B354 /* libdouble-conversion.a */; };
 		9FB7D3EB224ABDA400F31D11 /* RCTDatePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 133CAE8D1B8E5CFD00F6AD92 /* RCTDatePicker.m */; };
 		9FD21D65224303D900E7F88E /* jsi.h in Headers */ = {isa = PBXBuildFile; fileRef = EDEBC6E1214B3F6800DD5AC8 /* jsi.h */; };
 		9FD21D66224303D900E7F88E /* JSCRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = EDEBC6DE214B3F6800DD5AC8 /* JSCRuntime.h */; };
@@ -3185,11 +3185,11 @@
 			files = (
 				9F5C1991230F4F0400E3E5A7 /* libyoga.a in Frameworks */,
 				9FB7D34C224954A600F31D11 /* libjsinspector-macOS.a in Frameworks */,
-                18632C021EF495D40010A3BB /* libcxxreact.a in Frameworks */,
-                9FB7D34D224954B300F31D11 /* libjsi-macOS.a in Frameworks */,
-                9FB7D34E224954CC00F31D11 /* libjsiexecutor-macOS.a in Frameworks */,
-                9FB7D34F224954EE00F31D11 /* libdouble-conversion.a in Frameworks */,
-                18632C051EF495D40010A3BB /* libthird-party.a in Frameworks */,
+				18632C021EF495D40010A3BB /* libcxxreact.a in Frameworks */,
+				9FB7D34D224954B300F31D11 /* libjsi-macOS.a in Frameworks */,
+				9FB7D34E224954CC00F31D11 /* libjsiexecutor-macOS.a in Frameworks */,
+				9FB7D34F224954EE00F31D11 /* libdouble-conversion.a in Frameworks */,
+				18632C051EF495D40010A3BB /* libthird-party.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3944,9 +3944,9 @@
 		9F2AC95C2239D788005C9C14 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-              6B857F421EC51FCF00A9D063 /* libcxxreact.a */,
-              1882027C1EF48B7E00C9B354 /* libdouble-conversion.a */,
-              188202A21EF48CF700C9B354 /* libthird-party.a */,
+				6B857F421EC51FCF00A9D063 /* libcxxreact.a */,
+				1882027C1EF48B7E00C9B354 /* libdouble-conversion.a */,
+				188202A21EF48CF700C9B354 /* libthird-party.a */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
