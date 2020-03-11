@@ -1,21 +1,14 @@
 --- "E:\\github\\ms-react-native-minus\\Libraries\\Components\\TextInput\\TextInputState.js"	2020-02-27 14:39:42.367940200 -0800
 +++ "E:\\github\\ms-react-native-forpatch\\Libraries\\Components\\TextInput\\TextInputState.js"	2020-02-27 14:13:23.259748900 -0800
-@@ -36,9 +36,11 @@
+@@ -36,7 +36,6 @@
   */
  function focusTextInput(textFieldID: ?number) {
    if (currentlyFocusedID !== textFieldID && textFieldID !== null) {
 -    currentlyFocusedID = textFieldID;
--    if (Platform.OS === 'ios' ||
--      Platform.OS === 'macos' /* TODO(macOS ISS#2323203) */) {
-+    // TODO(android ISS) removed: currentlyFocusedID = textFieldID;
-+    if (
-+      Platform.OS === 'ios' ||
-+      Platform.OS === 'macos' /* TODO(macOS ISS#2323203) */
-+    ) {
-       UIManager.focus(textFieldID);
-     } else if (Platform.OS === 'android') {
-       UIManager.dispatchViewManagerCommand(
-@@ -74,6 +76,29 @@
+  if (
+    Platform.OS === 'ios' ||
+    Platform.OS === 'macos' /* TODO(macOS ISS#2323203) */
+@@ -76,6 +78,29 @@
      }
    }
  }
@@ -45,7 +38,7 @@
  function registerInput(textFieldID: number) {
    inputs.add(textFieldID);
  }
-@@ -88,6 +113,8 @@
+@@ -90,6 +115,8 @@
  
  module.exports = {
    currentlyFocusedField,
