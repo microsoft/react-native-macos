@@ -14,7 +14,7 @@ steps:
     displayName: Apply Android specific patches for Office consumption
     inputs:
       script: android-patches\scripts\patch.bat
-    condition: eq('${{ parameters.apply_office_patches }}', true)
+    condition: eq(${{ parameters.apply_office_patches }}, true)
 
   - script: 'yarn install'
     displayName: 'yarn install'
