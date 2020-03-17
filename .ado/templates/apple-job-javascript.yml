@@ -1,5 +1,5 @@
 parameters:
-  apply_office_patches: false
+  apply_office_patches: ''
 
 steps:
   - script: 'brew bundle'
@@ -10,7 +10,7 @@ steps:
 
   - template: apple-xcode-select.yml
 
-  - ${{ if eq(parameters.apply_office_patches, true) }}:
+  - ${{ if eq(parameters.apply_office_patches, 'true') }}:
     - task: CmdLine@2
       displayName: Apply Android specific patches for Office consumption
       inputs:

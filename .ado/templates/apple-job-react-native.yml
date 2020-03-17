@@ -6,7 +6,7 @@ parameters:
   xcode_actions_debug: ''
   xcode_actions_release: ''
   xcode_destination: ''
-  apply_office_patches: false
+  apply_office_patches: ''
 
 steps:
   # Clean DerivedData
@@ -23,7 +23,7 @@ steps:
   # Task Group: XCode select proper version
   - template: apple-xcode-select.yml
 
-  - ${{ if eq(parameters.apply_office_patches, true) }}:
+  - ${{ if eq(parameters.apply_office_patches, 'true') }}:
     - task: CmdLine@2
       displayName: Apply Android specific patches for Office consumption
       inputs:
