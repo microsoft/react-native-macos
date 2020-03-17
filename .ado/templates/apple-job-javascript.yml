@@ -10,11 +10,11 @@ steps:
 
   - template: apple-xcode-select.yml
 
-  - ${{ if eq(parameters.apply_office_patches, 'true') }}:
-    - task: CmdLine@2
-      displayName: Apply Android specific patches for Office consumption
-      inputs:
-        script: android-patches\scripts\patch.bat
+  - task: CmdLine@2
+    displayName: Apply Android specific patches for Office consumption
+    inputs:
+      script: android-patches\scripts\patch.bat
+    condition: and(succeeded(), eq('${{ parameters.apply_office_patches }}', 'true'))
 
   - script: 'yarn install'
     displayName: 'yarn install'
