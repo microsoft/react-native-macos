@@ -10,28 +10,6 @@ steps:
 
   - template: apple-xcode-select.yml
 
-  - script: echo ${{ parameters.apply_office_patches }}
-    name: echovar1
-
-  - script: echo "##vso[task.setvariable variable=myOutputVar;isOutput=true]this is the ${{ parameters.apply_office_patches }} value"
-    name: setvarStep
-
-  - script: echo $(setvarStep.myOutputVar)
-    name: echovar2
-
-  - script: echo "##vso[task.setvariable variable=myOutputVar;isOutput=true]this is the ${{ eq(parameters.apply_office_patches, true) }} value"
-    name: setvarStep3
-
-  - script: echo $(setvarStep3.myOutputVar)
-    name: echovar3
-
-  - script: echo "##vso[task.setvariable variable=myOutputVar;isOutput=true]this is the ${{ eq(parameters.apply_office_patches, 'true') }} value"
-    name: setvarStep4
-
-  - script: echo $(setvarStep4.myOutputVar)
-    name: echovar4
-
-
   - task: CmdLine@2
     displayName: Apply Android specific patches for Office consumption
     inputs:
