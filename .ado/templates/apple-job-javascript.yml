@@ -19,7 +19,7 @@ steps:
   - script: echo $(setvarStep.myOutputVar)
     name: echovar2
 
-  - script: echo "##vso[task.setvariable variable=myOutputVar2;isOutput=true]this is the ${{ eq(parameters.apply_office_patches, true) }} value"
+  - script: echo "##vso[task.setvariable variable=myOutputVar;isOutput=true]this is the ${{ eq(parameters.apply_office_patches, true) }} value"
     name: setvarStep3
 
   - script: echo $(setvarStep3.myOutputVar)
