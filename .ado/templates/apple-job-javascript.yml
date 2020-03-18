@@ -10,7 +10,7 @@ steps:
 
   - template: apple-xcode-select.yml
 
-  - template: templates/apple-droid-node-patching.yml
+  - template: apple-droid-node-patching.yml
     parameters:
       apply_office_patches: $(apply_office_patches)
 
