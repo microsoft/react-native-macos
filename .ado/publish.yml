@@ -28,10 +28,9 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
-      - task: CmdLine@2
-        displayName: Apply Android specific patches for Office consumption
-        inputs:
-          script: node $(System.DefaultWorkingDirectory)/android-patches/bundle/bundle.js patch $(System.DefaultWorkingDirectory) BuildAndThirdPartyFixes DialogModule UIEditText UIScroll UITextFont Accessibility OfficeRNHost SecurityFixes V8Integration AnnotationProcessing --patch-store $(System.DefaultWorkingDirectory)/android-patches/patches-droid-office-grouped --log-folder $(System.DefaultWorkingDirectory)/android-patches/logs --confirm true
+      - template: templates/apple-droid-node-patching.yml
+        parameters:
+          apply_office_patches: true
 
       # Install NuGet v4.6.4+
       - task: NuGetToolInstaller@1

@@ -89,10 +89,9 @@ jobs:
         inputs:
           script: del RNTesterApp.android.bundle
 
-      - task: CmdLine@2
-        displayName: Create RNTester bundle
-        inputs:
-          script: node cli.js bundle --entry-file .\RNTester\js\RNTesterApp.android.js --bundle-output RNTesterApp.android.bundle --platform android
+      - template: templates/apple-droid-node-patching.yml
+        parameters:
+          apply_office_patches: true
 
       - task: Gradle@1
         displayName: gradlew installArchives
