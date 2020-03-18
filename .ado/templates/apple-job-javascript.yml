@@ -1,8 +1,5 @@
 parameters:
-- name: apply_office_patches
-  displayName: 'Apply office patches ?'
-  type: boolean
-  default: false
+  apply_office_patches: ''
 
 steps:
   - script: 'brew bundle'
@@ -13,11 +10,29 @@ steps:
 
   - template: apple-xcode-select.yml
 
+  - script: echo ${{ parameters.apply_office_patches }}
+    name: echovar1
+
+  - script: echo $(parameters.apply_office_patches)
+    name: echovar2
+
+  - script: echo "##vso[task.setvariable variable=myOutputVar;isOutput=true]this is the $(parameters.apply_office_patches) value"
+    name: setvarStep1
+
+  - script: echo "##vso[task.setvariable variable=myOutputVar;isOutput=true]this is the ${{ parameters.apply_office_patches }} value"
+    name: setvarStep2
+
+  - script: echo $(setvarStep1.myOutputVar)
+    name: echovar5
+
+  - script: echo $(setvarStep2.myOutputVar)
+    name: echovar6
+
   - task: CmdLine@2
     displayName: Apply Android specific patches for Office consumption
     inputs:
       script: node $(System.DefaultWorkingDirectory)android-patches/bundle/bundle.js patch $(System.DefaultWorkingDirectory) BuildAndThirdPartyFixes DialogModule UIEditText UIScroll UITextFont Accessibility OfficeRNHost SecurityFixes V8Integration AnnotationProcessing --patch-store $(System.DefaultWorkingDirectory)android-patches/patches-droid-office-grouped --log-folder $(System.DefaultWorkingDirectory)android-patches/logs
-    condition: and(succeeded(), eq(${{ parameters.apply_office_patches }}, true))
+    condition: and(succeeded(), eq('${{ parameters.apply_office_patches }}', 'true'))
 
   - script: 'yarn install'
     displayName: 'yarn install'

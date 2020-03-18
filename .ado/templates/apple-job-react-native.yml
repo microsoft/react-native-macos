@@ -6,10 +6,7 @@ parameters:
 - xcode_actions_debug: ''
 - xcode_actions_release: ''
 - xcode_destination: ''
-- name: apply_office_patches
-  displayName: 'Apply office patches ?'
-  type: boolean
-  default: false
+- apply_office_patches: ''
 
 steps:
   # Clean DerivedData
@@ -30,7 +27,7 @@ steps:
     displayName: Apply Android specific patches for Office consumption
     inputs:
       script: node $(System.DefaultWorkingDirectory)android-patches/bundle/bundle.js patch $(System.DefaultWorkingDirectory) BuildAndThirdPartyFixes DialogModule UIEditText UIScroll UITextFont Accessibility OfficeRNHost SecurityFixes V8Integration AnnotationProcessing --patch-store $(System.DefaultWorkingDirectory)android-patches/patches-droid-office-grouped --log-folder $(System.DefaultWorkingDirectory)android-patches/logs
-    condition: and(succeeded(), eq(${{ parameters.apply_office_patches }}, true))
+    condition: and(succeeded(), eq('${{ parameters.apply_office_patches }}', 'true'))
 
   - task: CmdLine@2
     displayName: yarn install
