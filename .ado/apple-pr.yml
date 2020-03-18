@@ -15,7 +15,7 @@ jobs:
         office:
           apply_office_patches: 'true'
         public:
-          apply_office_patches: ''
+          apply_office_patches: 'false'
     pool:
       vmImage: macOS-10.14
       demands: ['xcode', 'sh', 'npm']
@@ -35,7 +35,7 @@ jobs:
           xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 8'
           xcode_actions_debug: 'build test'
           xcode_actions_release: 'build'
-          apply_office_patches: ''
+          apply_office_patches: 'false'
         # Microsoft- We don't use tvOS, so don't bother maintaining the infra
         # tvos:
         #   packager_platform: 'ios'
@@ -49,7 +49,7 @@ jobs:
           xcode_destination: 'platform=macOS,arch=x86_64'
           xcode_actions_debug: 'build test'
           xcode_actions_release: 'build'
-          apply_office_patches: ''
+          apply_office_patches: 'false'
         ios-office:
           packager_platform: 'ios'
           xcode_sdk: iphonesimulator
