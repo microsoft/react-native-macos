@@ -13,22 +13,22 @@ steps:
   - script: echo ${{ parameters.apply_office_patches }}
     name: echovar1
 
-  - script: echo eq(${{ parameters.apply_office_patches }}, true)
+  - script: echo ${{ eq(${{ parameters.apply_office_patches }}, true) }}
     name: echovar2
 
-  - script: echo eq(${{ parameters.apply_office_patches }}, 'true')
+  - script: echo ${{ eq(${{ parameters.apply_office_patches }}, 'true') }}
     name: echovar3
 
-  - script: echo eq(true, true)
+  - script: echo ${{ eq(true, true) }}
     name: echovar4
 
-  - script: echo eq('true', true)
+  - script: echo ${{ eq('true', true) }}
     name: echovar5
 
-  - script: echo eq('true', 'true')
+  - script: echo ${{ eq('true', 'true') }}
     name: echovar6
 
-  - script: echo and(succeeded(), eq('${{ parameters.apply_office_patches }}', true))
+  - script: ${{ echo and(succeeded(), eq('${{ parameters.apply_office_patches }}', true)) }}
     name: echovar8
 
   - task: CmdLine@2
