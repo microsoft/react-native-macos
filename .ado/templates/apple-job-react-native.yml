@@ -1,12 +1,12 @@
 parameters:
-- packager_platform: ''
-- xcode_sdk: ''
-- xcode_configuration: ''
-- xcode_scheme: ''
-- xcode_actions_debug: ''
-- xcode_actions_release: ''
-- xcode_destination: ''
-- apply_office_patches: ''
+  packager_platform: ''
+  xcode_sdk: ''
+  xcode_configuration: ''
+  xcode_scheme: ''
+  xcode_actions_debug: ''
+  xcode_actions_release: ''
+  xcode_destination: ''
+  apply_office_patches: ''
 
 steps:
   # Clean DerivedData
