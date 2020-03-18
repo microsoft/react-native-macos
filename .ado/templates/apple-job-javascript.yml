@@ -14,25 +14,25 @@ steps:
     name: echovar1
 
   - script: echo eq(${{ parameters.apply_office_patches }}, true)
-    name: echovar1
+    name: echovar2
 
   - script: echo eq(${{ parameters.apply_office_patches }}, 'true')
-    name: echovar1
+    name: echovar3
 
   - script: echo eq(true, true)
-    name: echovar1
+    name: echovar4
 
   - script: echo eq('true', true)
-    name: echovar1
+    name: echovar5
 
   - script: echo eq('true', 'true')
-    name: echovar1
+    name: echovar6
 
   - script: echo and(succeeded(), eq(${{ parameters.apply_office_patches }}, true))
-    name: echovar1
+    name: echovar7
 
   - script: echo and(succeeded(), eq('${{ parameters.apply_office_patches }}', true))
-    name: echovar1
+    name: echovar8
 
   - task: CmdLine@2
     displayName: Apply Android specific patches for Office consumption
