@@ -1,6 +1,7 @@
 import program from 'commander';
 import {log} from './logger';
 import fse from 'fs-extra';
+import fs_path from 'path';
 
 import {
   DiffReposFuncType,
@@ -87,10 +88,10 @@ export function initCli(
     'yarn.lock',
     'android',
     'node_modules',
-    'ReactAndroid\\build',
-    'ReactAndroid\\packages',
-    'RNTester\\android\\app\\build',
-    'processor\\build',
+    `ReactAndroid${fs_path.sep}build`,
+    `ReactAndroid${fs_path.sep}packages`,
+    `RNTester${fs_path.sep}android${fs_path.sep}app${fs_path.sep}build`,
+    `processor${fs_path.sep}build`,
     'local.properties',
   ];
 
@@ -183,6 +184,7 @@ export function initCli(
       false,
     )
     .option('--log-folder <path>', 'Log Folder')
+    .option('--confirm <skip>', 'Really confirm whether to proceed.') /*This is introduced as a Workaround to get over an ADO bug !!*/
     .action(
       (
         targetRepo: string,
@@ -190,7 +192,12 @@ export function initCli(
         cmdObject: IPatchCommandOptions,
       ) => {
         log.setLogFolder(cmdObject.logFolder);
-        patchRepoFunc(targetRepo, patchNames, cmdObject);
+        
+        if(cmdObject.confirm == 'true')
+          patchRepoFunc(targetRepo, patchNames, cmdObject);
+        else
+          log.warn('CLI', `Confirmation string not available: ${cmdObject.confirm}`);
+
         onCompletionFunc();
       },
     );

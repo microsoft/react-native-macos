@@ -93,7 +93,7 @@ export function traverseDirectory(
   blackListDirs: string[] = [],
   recursive: boolean = true,
 ) {
-  log.verbose('traverseDirectory', `Entering ${rootAbsPath}\\${relPath}`);
+  log.verbose('traverseDirectory', `Entering ${rootAbsPath}${fs_path.sep}${relPath}`);
   const path = resolvePath(rootAbsPath, relPath);
   if (isRegularFile(path)) {
     callbackFile(path, rootAbsPath);
@@ -101,19 +101,19 @@ export function traverseDirectory(
     const children = fs.readdirSync(path);
     children.forEach((childpath: string) => {
       const absChildPath = fs_path.resolve(path, childpath);
-      const relChildPath = relPath + '\\' + childpath;
+      const relChildPath = relPath + fs_path.sep + childpath;
 
       // Ignore the '.\' prefix when doing black list comparison
       if (
         blackListDirs.includes(
-          relChildPath.startsWith('.\\')
+          relChildPath.startsWith(`.${fs_path.sep}`)
             ? relChildPath.substr(2)
             : relChildPath,
         )
       ) {
         log.verbose(
           'traverseDirectory',
-          `Ignoring ${rootAbsPath}\\${relChildPath} as it's blacklisted.`,
+          `Ignoring ${rootAbsPath}${fs_path.sep}${relChildPath} as it's blacklisted.`,
         );
         return;
       }

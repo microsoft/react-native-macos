@@ -21,6 +21,7 @@ export interface IPatchCommandOptions extends ICommonOptions {
   patchExecutable: string;
   patchStore: string;
   reverse: boolean;
+  confirm: string;
 }
 
 export interface IPatchFileCommandOptions extends ICommonOptions {

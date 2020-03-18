@@ -11,37 +11,45 @@ import fs_path from 'path'; // TODO
 
 // const logDirectory = getLogDirectoryDev();
 
-winston.add(
-  new winston.transports.Console({
-    handleExceptions: true,
-    level: 'info',
-  }),
-);
+const logger = winston.createLogger({
+  level: 'verbose',
+  defaultMeta: { service: 'user-service' },
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json(),
+  ),
+  transports: [
+    new winston.transports.Console({
+      handleExceptions: true,
+      // level: 'error',
+    }),
+  ],
+});
 
 function setLogFolder(logFolder: string) {
   // logFolder = fs_path.resolve(logFolder, `${Date.now()}`);
 
-  winston.add(
+  logger.add(
     new winston.transports.File({
       filename: 'error.log',
       level: 'error',
       dirname: logFolder,
     }),
   );
-  winston.add(
+  logger.add(
     new winston.transports.File({
       filename: 'warn.log',
       level: 'warn',
       dirname: logFolder,
     }),
   );
-  winston.add(
+  logger.add(
     new winston.transports.File({
       filename: `all.log`,
       dirname: logFolder,
     }),
   );
-  winston.exceptions.handle(
+  logger.exceptions.handle(
     new winston.transports.File({
       filename: 'exceptions.log',
       dirname: logFolder,
@@ -51,24 +59,24 @@ function setLogFolder(logFolder: string) {
 
 function info(prefix: string, message: string) {
   // error(prefix, message);
-  winston.info(`${prefix} - ${message}`);
+  logger.info(`${prefix} - ${message}`);
 }
 
 function verbose(prefix: string, message: string) {
   // error(prefix, message);
-  winston.verbose(`${prefix} - ${message}`);
+  logger.verbose(`${prefix} - ${message}`);
 }
 
 const errors: string[] = [];
 function error(prefix: string, message: string) {
   const message2 = `${prefix} - ${message}`;
   errors.push(message2);
-  winston.error(message2);
+  logger.error(message2);
 }
 
 function warn(prefix: string, message: string) {
   // error(prefix, message);
-  winston.warn(`${prefix} - ${message}`);
+  logger.warn(`${prefix} - ${message}`);
 }
 
 function queryErrors(resultCallback: (error: string[]) => void) {
@@ -100,5 +108,5 @@ function queryErrors(resultCallback: (error: string[]) => void) {
   resultCallback(errors);
 }
 
-const log = {queryErrors, setLogFolder, error, warn, info, verbose};
-export {log};
+const log = { queryErrors, setLogFolder, error, warn, info, verbose };
+export { log };
