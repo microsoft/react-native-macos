@@ -1,5 +1,8 @@
 parameters:
-  apply_office_patches: ''
+- name: apply_office_patches
+  displayName: 'Apply office patches ?'
+  type: boolean
+  default: false
 
 steps:
   - script: 'brew bundle'
@@ -13,8 +16,8 @@ steps:
   - task: CmdLine@2
     displayName: Apply Android specific patches for Office consumption
     inputs:
-      script: android-patches\scripts\patch.bat
-    condition: and(succeeded(), eq('${{ parameters.apply_office_patches }}', 'true'))
+      script: node $(System.DefaultWorkingDirectory)android-patches/bundle/bundle.js patch $(System.DefaultWorkingDirectory) BuildAndThirdPartyFixes DialogModule UIEditText UIScroll UITextFont Accessibility OfficeRNHost SecurityFixes V8Integration AnnotationProcessing --patch-store $(System.DefaultWorkingDirectory)android-patches/patches-droid-office-grouped --log-folder $(System.DefaultWorkingDirectory)android-patches/logs
+    condition: and(succeeded(), eq(${{ parameters.apply_office_patches }}, true))
 
   - script: 'yarn install'
     displayName: 'yarn install'

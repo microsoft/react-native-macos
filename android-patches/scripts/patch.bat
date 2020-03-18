@@ -20,3 +20,8 @@ REM Make sure to npm install.
 
 echo "Applying patches .."
 node %SCRIPT% patch %TARGETREPO% %PATCHES% --patch-store %PATCHSTORE% --log-folder %LOGFOLDER%
+
+
+REM node /mnt/d/work/github/mgan-react-native/android-patches/bundle/bundle.js patch /mnt/d/work/github/mgan-react-native BuildAndThirdPartyFixes DialogModule UIEditText UIScroll UITextFont Accessibility OfficeRNHost SecurityFixes V8Integration AnnotationProcessing --patch-store /mnt/d/work/github/mgan-react-native/android-patches/patches-droid-office-grouped
+
+REM node $(System.DefaultWorkingDirectory)android-patches/bundle/bundle.js patch $(System.DefaultWorkingDirectory) BuildAndThirdPartyFixes DialogModule UIEditText UIScroll UITextFont Accessibility OfficeRNHost SecurityFixes V8Integration AnnotationProcessing --patch-store $(System.DefaultWorkingDirectory)android-patches/patches-droid-office-grouped --log-folder $(System.DefaultWorkingDirectory)android-patches/logs
