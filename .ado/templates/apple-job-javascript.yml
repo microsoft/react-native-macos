@@ -28,9 +28,6 @@ steps:
   - script: echo eq('true', 'true')
     name: echovar6
 
-  - script: echo and(succeeded(), eq(${{ parameters.apply_office_patches }}, true))
-    name: echovar7
-
   - script: echo and(succeeded(), eq('${{ parameters.apply_office_patches }}', true))
     name: echovar8
 
