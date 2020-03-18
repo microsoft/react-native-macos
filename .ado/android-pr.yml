@@ -22,10 +22,9 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: false # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
-      - task: CmdLine@2
-        displayName: Apply Android specific patches for Office consumption
-        inputs:
-          script: node $(System.DefaultWorkingDirectory)/android-patches/bundle/bundle.js patch $(System.DefaultWorkingDirectory) BuildAndThirdPartyFixes DialogModule UIEditText UIScroll UITextFont Accessibility OfficeRNHost SecurityFixes V8Integration AnnotationProcessing --patch-store $(System.DefaultWorkingDirectory)/android-patches/patches-droid-office-grouped --log-folder $(System.DefaultWorkingDirectory)/android-patches/logs --confirm true
+      - template: templates/apple-droid-node-patching.yml
+        parameters:
+          apply_office_patches: true
 
       - task: UseNode@1
         inputs:
@@ -89,9 +88,10 @@ jobs:
         inputs:
           script: del RNTesterApp.android.bundle
 
-      - template: templates/apple-droid-node-patching.yml
-        parameters:
-          apply_office_patches: true
+      - task: CmdLine@2
+        displayName: Create RNTester bundle
+        inputs:
+          script: node cli.js bundle --entry-file .\RNTester\js\RNTesterApp.android.js --bundle-output RNTesterApp.android.bundle --platform android
 
       - task: Gradle@1
         displayName: gradlew installArchives
