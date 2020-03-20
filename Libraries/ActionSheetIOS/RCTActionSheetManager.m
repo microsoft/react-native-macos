@@ -158,14 +158,21 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions:(NSDictionary *)options
     event = [view.window currentEvent];
   }
   if (event && view) {
-    origin = [view convertPoint:[event locationInWindow] fromView:nil];
-  } else if (view) {
-    origin = NSMakePoint(NSMidX(view.superview.frame), NSMidY(view.superview.frame));
+    // On a MacOS trackpad, soft taps are received as sysDefined event types. SysDefined event locations are relative to the screen so we have to convert those separately.
+    NSPoint eventLocationRelativeToWindow = NSZeroPoint;
+    if ([event type] == NSEventTypeSystemDefined) { // light tap event relative to screen
+      eventLocationRelativeToWindow = [[view window] convertRectFromScreen:NSMakeRect(event.locationInWindow.x, event.locationInWindow.y, 0, 0)].origin;
+    } else { // full click events are relative to the window
+      eventLocationRelativeToWindow = [event locationInWindow];
+    }
+    origin = [view convertPoint:eventLocationRelativeToWindow fromView:nil];
+  } else if (event) {
+    origin = event.locationInWindow; // NSMakePoint(NSMidX(view.superview.frame), NSMidY(view.superview.frame));
   } else {
     origin = [NSEvent mouseLocation];
   }
   
-  [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:origin inView:view.superview];
+  [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:origin inView:[view superview]];
 #endif // ]TODO(macOS ISS#2323203)
 }
 
