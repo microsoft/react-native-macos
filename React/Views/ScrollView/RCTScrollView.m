@@ -187,6 +187,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
     self.scrollEnabled = YES;
     self.hasHorizontalScroller = YES;
     self.hasVerticalScroller = YES;
+    self.autohidesScrollers = YES;
     self.panGestureRecognizer = [[NSPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleCustomPan:)];
 #else // ]TODO(macOS ISS#2323203)
     [self.panGestureRecognizer addTarget:self action:@selector(handleCustomPan:)];
@@ -760,6 +761,7 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(RCTPlatformVie
   if ([self window] == nil) {
     // Unregister for bounds change notifications
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSViewBoundsDidChangeNotification object:_scrollView.contentView];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSPreferredScrollerStyleDidChangeNotification object:nil];
   }
   else {
     // Register for bounds change notifications so we can track scrolling
@@ -767,6 +769,10 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(RCTPlatformVie
                                              selector:@selector(scrollViewDocumentViewBoundsDidChange:)
                                                  name:NSViewBoundsDidChangeNotification
                                                object:_scrollView.contentView];  // NSClipView
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(preferredScrollerStyleDidChange:)
+                                                 name:NSPreferredScrollerStyleDidChangeNotification
+                                               object:nil];
   }
   
   _notifyDidScroll = ([self window] != nil);
@@ -1425,6 +1431,19 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
       }
     }
   }
+}
+
+static NSString *RCTStringForScrollerStyle(NSScrollerStyle scrollerStyle) {
+  switch (scrollerStyle) {
+    case NSScrollerStyleLegacy:
+      return @"legacy";
+    case NSScrollerStyleOverlay:
+      return @"overlay";
+  }
+}
+
+- (void)preferredScrollerStyleDidChange:(__unused NSNotification *)notification {
+  RCT_SEND_SCROLL_EVENT(onPreferredScrollerStyleDidChange, (@{ @"preferredScrollerStyle": RCTStringForScrollerStyle([NSScroller preferredScrollerStyle])}));
 }
 #endif // ]TODO(macOS ISS#2323203)
 
