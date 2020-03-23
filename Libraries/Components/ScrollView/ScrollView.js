@@ -1113,7 +1113,7 @@ class ScrollView extends React.Component<Props, State> {
             ? false
             : this.props.removeClippedSubviews
         }
-        key={this.state.contentKey}
+        key={this.state.contentKey} // TODO(macOS ISS#2323203)
         collapsable={false}>
         {children}
       </ScrollContentContainerViewClass>
