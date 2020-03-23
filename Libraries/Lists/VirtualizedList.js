@@ -1106,7 +1106,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         : null;
     }
     const preferredScrollerStyleDidChangeHandler = this.props
-      .onPreferredScrollerStyleDidChange; // TODO(macOS ISS#2323203)
+      .onPreferredScrollerStyleDidChange; // ]TODO(macOS ISS#2323203)
     const onRefresh = props.onRefresh;
     if (this._isNestedWithSameOrientation()) {
       // $FlowFixMe - Typing ReactNativeComponent revealed errors
