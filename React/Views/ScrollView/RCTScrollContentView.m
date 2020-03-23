@@ -29,18 +29,16 @@
     // In such cases the content view layout must shrink accordingly otherwise
     // the contents will overflow causing the scroll indicators to appear unnecessarily.
     NSScrollView *platformScrollView = scrollView.scrollView;
-    CGFloat verticalScrollerWidth = 0;
-    CGFloat horizontalScrollerHeight = 0;
     if (platformScrollView.scrollerStyle == NSScrollerStyleLegacy) {
-      if (!platformScrollView.verticalScroller.isHidden) {
-        verticalScrollerWidth = platformScrollView.verticalScroller.frame.size.width;
+      NSScroller *verticalScroller = platformScrollView.verticalScroller;
+      if (!verticalScroller.isHidden) {
+        frame.size.width -= verticalScroller.frame.size.width;
       }
-      if (!platformScrollView.horizontalScroller.isHidden) {
-        horizontalScrollerHeight = platformScrollView.horizontalScroller.frame.size.height;
+      NSScroller *horizontalScroller = platformScrollView.horizontalScroller;
+      if (!horizontalScroller.isHidden) {
+        frame.size.height -= horizontalScroller.frame.size.height;
       }
     }
-    frame.size.width -= verticalScrollerWidth;
-    frame.size.height -= horizontalScrollerHeight;
   }
 #endif // ]TODO(macOS ISS#2323203)
 

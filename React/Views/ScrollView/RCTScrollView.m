@@ -757,24 +757,28 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(RCTPlatformVie
 - (void)viewDidMoveToWindow
 {
   [super viewDidMoveToWindow];
-  
+
+  NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
   if ([self window] == nil) {
     // Unregister for bounds change notifications
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSViewBoundsDidChangeNotification object:_scrollView.contentView];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSPreferredScrollerStyleDidChangeNotification object:nil];
-  }
-  else {
+    [defaultCenter removeObserver:self
+                             name:NSViewBoundsDidChangeNotification
+                           object:_scrollView.contentView];
+    [defaultCenter removeObserver:self
+                             name:NSPreferredScrollerStyleDidChangeNotification
+                           object:nil];
+  } else {
     // Register for bounds change notifications so we can track scrolling
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(scrollViewDocumentViewBoundsDidChange:)
-                                                 name:NSViewBoundsDidChangeNotification
-                                               object:_scrollView.contentView];  // NSClipView
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(preferredScrollerStyleDidChange:)
-                                                 name:NSPreferredScrollerStyleDidChangeNotification
-                                               object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(scrollViewDocumentViewBoundsDidChange:)
+                          name:NSViewBoundsDidChangeNotification
+                        object:_scrollView.contentView]; // NSClipView
+    [defaultCenter addObserver:self
+                      selector:@selector(preferredScrollerStyleDidChange:)
+                          name:NSPreferredScrollerStyleDidChangeNotification
+                        object:nil];
   }
-  
+
   _notifyDidScroll = ([self window] != nil);
 }
 #endif // ]TODO(macOS ISS#2323203)
