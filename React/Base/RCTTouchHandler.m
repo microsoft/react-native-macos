@@ -128,7 +128,9 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
 #else // [TODO(macOS ISS#2323203)
     CGPoint touchLocation = [self.view convertPoint:touch.locationInWindow fromView:nil];
     NSView *targetView = [self.view hitTest:touchLocation];
-    if ([targetView isKindOfClass:NSText.class]) {
+    if ([targetView isKindOfClass:[NSControl class]]) {
+      _shouldSendMouseUpOnSystemBehalf = [(NSControl*)targetView isEnabled];
+    } else if ([targetView isKindOfClass:[NSText class]]) {
       _shouldSendMouseUpOnSystemBehalf = [(NSText*)targetView isSelectable];
     } else {
       _shouldSendMouseUpOnSystemBehalf = NO;
