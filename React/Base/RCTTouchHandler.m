@@ -128,6 +128,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
 #else // [TODO(macOS ISS#2323203)
     CGPoint touchLocation = [self.view convertPoint:touch.locationInWindow fromView:nil];
     NSView *targetView = [self.view hitTest:touchLocation];
+    // Pair the mouse down events with mouse up events so our _nativeTouches cache doesn't get stale
     if ([targetView isKindOfClass:[NSControl class]]) {
       _shouldSendMouseUpOnSystemBehalf = [(NSControl*)targetView isEnabled];
     } else if ([targetView isKindOfClass:[NSText class]]) {
