@@ -89,7 +89,7 @@
 -          alertFragment.setCancelable(arguments.getBoolean(KEY_CANCELABLE));
 +      if(isUsingPlatformFragmentManager()) {
 +        PlatformAlertFragment platformAlertFragment = new PlatformAlertFragment(actionListener, arguments);
-+        if (mIsInForeground) {
++        if (mIsInForeground) { // isStateSaved not available in sdk v25 and lower
 +          if (arguments.containsKey(KEY_CANCELABLE)) {
 +            platformAlertFragment.setCancelable(arguments.getBoolean(KEY_CANCELABLE));
 +          }
