@@ -32,53 +32,28 @@ function copyProjectTemplateAndReplace(
     throw new Error('Need a project name');
   }
 
-  createDir(path.join(destPath, macOSDir));
-  createDir(path.join(destPath, macOSDir, newProjectName));
-  // createDir(path.join(destPath, macOSDir, newProjectName, bundleDir));
-//  createDir(path.join(destPath, macOSDir, newProjectName, 'BundleBuilder'));
+  const projectNameMacOS = newProjectName + '-macOS';
+  const projectNameIOS = newProjectName;
+  const xcodeProjName = newProjectName + '.xcodeproj';
 
-  const language = 'cpp';
-  const ns = 'CppNamespace';
-  const srcPath = path.join(srcRootPath, language);
-  const projectGuid = uuid.v4();
-  const packageGuid = uuid.v4();
-  const currentUser = username.sync(); // Gets the current username depending on the platform.
+  createDir(path.join(destPath, macOSDir));
+  createDir(path.join(destPath, macOSDir, projectNameIOS));
+  createDir(path.join(destPath, macOSDir, projectNameMacOS));
 
   const templateVars = {
-    '// clang-format off': '',
-    '// clang-format on': '',
-    '<%=ns%>': ns,
-    '<%=name%>': newProjectName,
-    '<%=projectGuid%>': projectGuid,
-    '<%=projectGuidUpper%>': projectGuid.toUpperCase(),
-    '<%=packageGuid%>': packageGuid,
-    '<%=currentUser%>': currentUser,
+    'HelloWorld': newProjectName,
   };
 
   [
+    { from: path.join(srcRootPath, 'macos/HelloWorld'), to: path.join(macOSDir, projectNameIOS) },
+    { from: path.join(srcRootPath, 'macos/HelloWorld-macOS'), to: path.join(macOSDir, projectNameMacOS) },
+    { from: path.join(srcRootPath, 'macos/HelloWorld.xcodeproj'), to: path.join(macOSDir, xcodeProjName) },
+  ].forEach((mapping) => copyAndReplaceAll(mapping.from, destPath, mapping.to, templateVars, options.overwrite));
+
+  [
     { from: path.join(srcRootPath, 'react-native.config.js'), to: 'react-native.config.js' },
-    { from: path.join(srcRootPath, 'metro.config.js'), to: 'metro.config.js' },
-    // { from: path.join(srcRootPath, '_gitignore'), to: path.join(macOSDir, '.gitignore') },
-    // { from: path.join(srcRootPath, 'b_gitignore'), to: path.join(macOSDir, newProjectName, bundleDir, '.gitignore') },
-  //  { from: path.join(srcRootPath, 'index.windows.bundle'), to: path.join(macOSDir, newProjectName, bundleDir, 'index.windows.bundle') },
-    // { from: path.join(srcPath, projDir, 'MyApp.sln'), to: path.join(macOSDir, newProjectName + '.sln') },
+    { from: path.join(srcRootPath, 'metro.config.macos.js'), to: 'metro.config.macos.js' },
   ].forEach((mapping) => copyAndReplaceWithChangedCallback(mapping.from, destPath, mapping.to, templateVars, options.overwrite));
-
-  if (language === 'cs') {
-    [
-      // { from: path.join(srcPath, projDir, 'MyApp.csproj'), to: path.join(macOSDir, newProjectName, newProjectName + '.csproj') },
-    ].forEach((mapping) => copyAndReplaceWithChangedCallback(mapping.from, destPath, mapping.to, templateVars, options.overwrite));
-  }
-  else {
-    [
-      // { from: path.join(srcPath, projDir, 'MyApp.vcxproj'), to: path.join(macOSDir, newProjectName, newProjectName + '.vcxproj') },
-      // { from: path.join(srcPath, projDir, 'MyApp.vcxproj.filters'), to: path.join(macOSDir, newProjectName, newProjectName + '.vcxproj.filters') },
-    ].forEach((mapping) => copyAndReplaceWithChangedCallback(mapping.from, destPath, mapping.to, templateVars, options.overwrite));
-  }
-
-  // TODO
-  // copyAndReplaceAll(path.join(srcPath, 'assets'), destPath, path.join(macOSDir, newProjectName, 'Assets'), templateVars, options.overwrite);
-  // copyAndReplaceAll(path.join(srcPath, 'src'), destPath, path.join(macOSDir, newProjectName), templateVars, options.overwrite);
 
   console.log(chalk.white.bold('To run your app on macOS:'));
   console.log(chalk.white('   react-native run-macos'));
@@ -89,9 +64,9 @@ function installDependencies(options) {
 
   /* TODO
   // Extract react-native peer dependency version
-  const vnextPackageJsonPath = path.join(cwd, 'node_modules', 'react-native-macos', 'package.json');
-  const vnextPackageJson = JSON.parse(fs.readFileSync(vnextPackageJsonPath, { encoding: 'UTF8' }));
-  let reactNativeVersion = vnextPackageJson.peerDependencies['react-native'];
+  const reactNativeMacOSPackageJsonPath = path.join(cwd, 'node_modules', 'react-native-macos', 'package.json');
+  const reactNativeMacOSPackageJson = JSON.parse(fs.readFileSync(reactNativeMacOSPackageJsonPath, { encoding: 'UTF8' }));
+  let reactNativeVersion = reactNativeMacOSPackageJson.peerDependencies['react-native'];
   const depDelim = ' || ';
   const delimIndex = reactNativeVersion.indexOf(depDelim);
   if (delimIndex !== -1) {
