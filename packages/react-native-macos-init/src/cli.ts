@@ -92,7 +92,7 @@ function errorOutOnUnsupportedVersionOfReactNative(rnVersion: string) {
   console.error(`Error: Unsupported version of react-native: ${chalk.cyan(
     rnVersion,
   )}
-react-native-macoss supports react-native versions ${chalk.cyan('>=0.60')}`);
+react-native-macos supports react-native versions ${chalk.cyan('>=0.60')}`);
   process.exit(EXITCODE_UNSUPPORTED_VERION_RN);
 }
 
