@@ -279,7 +279,7 @@ You can either downgrade your version of ${chalk.green(
         version,
       )}...`,
     );
-    // execSync(`${pkgmgr} "react-native-macos@${version}"`, execOptions);
+    // TODO execSync(`${pkgmgr} "react-native-macos@${version}"`, execOptions);
     execSync(`${pkgmgr} "file:///Users/tomun/Desktop/tom-un-react-native"`, execOptions);
     console.log(
       chalk.green(`react-native-macos@${version} successfully installed.`),

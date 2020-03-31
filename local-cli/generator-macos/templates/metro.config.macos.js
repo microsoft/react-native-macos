@@ -14,6 +14,6 @@ module.exports = {
       'react-native': rnmPath,
     },
     platforms: ['macos', 'ios', 'android'],
-    blacklistRE: blacklist([/node_modules\/react-native\/.*/])
+    blacklistRE: blacklist([/node_modules\/react-native\/.*/]),
   },
 };
