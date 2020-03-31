@@ -25,16 +25,13 @@
       "yargs": "^15.1.0"
     },
     "devDependencies": {
-      "@react-native-community/cli": "^2.6.0",
       "@types/chalk": "^2.2.0",
       "@types/prompts": "^2.0.3",
       "@types/semver": "^7.1.0",
       "@types/valid-url": "^1.0.2",
       "@types/yargs": "^15.0.3",
       "just-scripts": "^0.36.1",
-      "typescript": "3.5.3",
-      "username": "^5.1.0",
-      "uuid": "^3.3.2"
+      "typescript": "3.5.3"
      },
     "files": [
       "bin.js",

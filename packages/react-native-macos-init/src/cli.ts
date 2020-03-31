@@ -13,7 +13,6 @@ import * as validUrl from 'valid-url';
 import * as prompts from 'prompts';
 import * as findUp from 'find-up';
 import * as chalk from 'chalk';
-import generateMacOS from './generateMacOS';
 // @ts-ignore
 import * as Registry from 'npm-registry';
 
@@ -30,6 +29,7 @@ const argv = yargs.options({
     type: 'string',
     describe: 'The version of react-native-macos to use.',
   },
+  verbose: {type: 'boolean', describe: 'Enables logging.'},
   overwrite: {
     type: 'boolean',
     describe: 'Overwrite any existing files without prompting',
@@ -42,6 +42,12 @@ const EXITCODE_USER_CANCEL = 4;
 const EXITCODE_NO_REACTNATIVE_FOUND = 5;
 const EXITCODE_UNKNOWN_ERROR = 6;
 const EXITCODE_NO_PACKAGE_JSON = 7;
+
+function reactNativeMacOSGeneratePath() {
+  return require.resolve('react-native-macos/local-cli/generate-macos.js', {
+    paths: [process.cwd()],
+  });
+}
 
 function getReactNativeAppName() {
   console.log('Reading application name from package.json...');
@@ -203,7 +209,6 @@ function isProjectUsingYarn(cwd: string) {
 (async () => {
   try {
     const name = getReactNativeAppName();
-    const ns = argv.namespace || name;
     let version = argv.version;
 
     const reactNativeMacOSLatestVersion = await getLatestMatchingReactNativeMacOSVersion('latest');
@@ -274,12 +279,14 @@ You can either downgrade your version of ${chalk.green(
         version,
       )}...`,
     );
-    execSync(`${pkgmgr} "react-native-macos@${version}"`, execOptions);
+    // execSync(`${pkgmgr} "react-native-macos@${version}"`, execOptions);
+    execSync(`${pkgmgr} "file:///Users/tomun/Desktop/tom-un-react-native"`, execOptions);
     console.log(
       chalk.green(`react-native-macos@${version} successfully installed.`),
     );
 
-    generateMacOS(process.cwd(), name, ns, {
+    const generateMacOS = require(reactNativeMacOSGeneratePath());
+    generateMacOS(process.cwd(), name, {
       overwrite: argv.overwrite,
       verbose: argv.verbose,
     });
