@@ -1,11 +1,8 @@
 'use strict';
 const chalk = require('chalk');
 const path = require('path');
-const username = require('username');
-const uuid = require('uuid');
 const childProcess = require('child_process');
 const fs = require('fs');
-const os = require('os');
 const {
   createDir,
   copyAndReplaceAll,
@@ -62,27 +59,11 @@ function copyProjectTemplateAndReplace(
 function installDependencies(options) {
   const cwd = process.cwd();
 
-  /* TODO
-  // Extract react-native peer dependency version
-  const reactNativeMacOSPackageJsonPath = path.join(cwd, 'node_modules', 'react-native-macos', 'package.json');
-  const reactNativeMacOSPackageJson = JSON.parse(fs.readFileSync(reactNativeMacOSPackageJsonPath, { encoding: 'UTF8' }));
-  let reactNativeVersion = reactNativeMacOSPackageJson.peerDependencies['react-native'];
-  const depDelim = ' || ';
-  const delimIndex = reactNativeVersion.indexOf(depDelim);
-  if (delimIndex !== -1) {
-    reactNativeVersion = reactNativeVersion.slice(0, delimIndex);
-  }
-
-  console.log(chalk.green('Updating to compatible version of react-native:'));
-  console.log(chalk.white(`    ${reactNativeVersion}`));
-
-  // Patch package.json to have proper react-native version and install
+  // Patch package.json to have start:macos
   const projectPackageJsonPath = path.join(cwd, 'package.json');
   const projectPackageJson = JSON.parse(fs.readFileSync(projectPackageJsonPath, { encoding: 'UTF8' }));
-  projectPackageJson.scripts.start = 'react-native start';
-  projectPackageJson.dependencies['react-native'] = reactNativeVersion;
+  projectPackageJson.scripts['start:macos'] = 'node node_modules/react-native-macos/local-cli/cli.js start --use-react-native-macos';
   fs.writeFileSync(projectPackageJsonPath, JSON.stringify(projectPackageJson, null, 2));
-  */
 
   // Install dependencies using correct package manager
   const isYarn = fs.existsSync(path.join(cwd, 'yarn.lock'));
