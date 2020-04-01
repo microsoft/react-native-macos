@@ -27,7 +27,7 @@ const ReloadInstructions = Platform.select({
   // [TODO(macOS ISS#2323203)
   macos: () => (
     <Text>
-      Secondary click in your App window and choose{' '}
+      Secondary click in this window and choose{' '}
       <Text style={styles.highlight}>Reload</Text> to reload your app's code.
     </Text>
   ),

@@ -21,6 +21,10 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		146834051AC3E58100842450 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
 		383C5138243414A700CCBC30 /* libRCTImage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 38C1418523BBE33000902604 /* libRCTImage.a */; };
+		38A297E124350EDF003A4F76 /* libRCTActionSheet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 38C1417623BBE33000902604 /* libRCTActionSheet.a */; };
+		38A2981624350EE7003A4F76 /* libRCTBlob-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 38C1418023BBE33000902604 /* libRCTBlob-macOS.a */; };
+		38A2981724350EF9003A4F76 /* libRCTLinking-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 38C1418A23BBE33000902604 /* libRCTLinking-macOS.a */; };
+		38A2981824350F0F003A4F76 /* libRCTSettings-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 38C1419423BBE33000902604 /* libRCTSettings-macOS.a */; };
 		38C1421623BBE5B500902604 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 38C1421523BBE5B500902604 /* main.m */; };
 		38C1421823BBE65C00902604 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 38C1421723BBE65C00902604 /* AppDelegate.m */; };
 		38C1421C23BBE70D00902604 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 38C1421B23BBE70D00902604 /* ViewController.m */; };
@@ -474,10 +478,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				38A297E124350EDF003A4F76 /* libRCTActionSheet.a in Frameworks */,
 				38C1422523BBEC1D00902604 /* libRCTAnimation.a in Frameworks */,
-				38C1422423BBEB8300902604 /* libRCTText.a in Frameworks */,
+				38A2981624350EE7003A4F76 /* libRCTBlob-macOS.a in Frameworks */,
 				383C5138243414A700CCBC30 /* libRCTImage.a in Frameworks */,
+				38A2981724350EF9003A4F76 /* libRCTLinking-macOS.a in Frameworks */,
 				38C1422323BBEB6400902604 /* libRCTNetwork.a in Frameworks */,
+				38A2981824350F0F003A4F76 /* libRCTSettings-macOS.a in Frameworks */,
+				38C1422423BBEB8300902604 /* libRCTText.a in Frameworks */,
 				38C1422023BBE8E500902604 /* libRCTWebSocket.a in Frameworks */,
 				38C1421D23BBE79300902604 /* libReact.a in Frameworks */,
 				38C1421F23BBE7A000902604 /* JavaScriptCore.framework in Frameworks */,
@@ -605,13 +613,13 @@
 		38C141D223BBE3E600902604 /* HelloWorld-macOS */ = {
 			isa = PBXGroup;
 			children = (
+				38C1421923BBE66C00902604 /* AppDelegate.h */,
+				38C1421723BBE65C00902604 /* AppDelegate.m */,
 				38C141D123BBE33000902604 /* Info.plist */,
 				38C1421523BBE5B500902604 /* main.m */,
-				38C1421723BBE65C00902604 /* AppDelegate.m */,
-				38C1421923BBE66C00902604 /* AppDelegate.h */,
+				38C1422123BBE98D00902604 /* Main.storyboard */,
 				38C1421A23BBE70D00902604 /* ViewController.h */,
 				38C1421B23BBE70D00902604 /* ViewController.m */,
-				38C1422123BBE98D00902604 /* Main.storyboard */,
 			);
 			path = "HelloWorld-macOS";
 			sourceTree = "<group>";
@@ -712,7 +720,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				1990B95222398FC4009E5EA1 /* PBXTargetDependency */,
 			);
 			name = HelloWorld;
 			productName = "Hello World";
@@ -731,7 +738,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				38116A6F23BBED1000ACE311 /* PBXTargetDependency */,
 			);
 			name = "HelloWorld-macOS";
 			productName = "Hello World";

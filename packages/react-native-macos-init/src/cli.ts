@@ -24,15 +24,19 @@ const NPM_REGISTRY_URL = validUrl.isUri(npmConfReg)
   : 'http://registry.npmjs.org';
 const npm = new Registry({registry: NPM_REGISTRY_URL});
 
-const argv = yargs.options({
+const argv = yargs.version(false).options({
   version: {
     type: 'string',
-    describe: 'The version of react-native-macos to use.',
+    describe: 'The version of react-native-macos to use',
   },
-  verbose: {type: 'boolean', describe: 'Enables logging.'},
+  verbose: {type: 'boolean', describe: 'Enables logging'},
   overwrite: {
     type: 'boolean',
     describe: 'Overwrite any existing files without prompting',
+  },
+  prerelease: {
+    type: 'boolean',
+    describe: 'Install prerelease version without prompting',
   },
 }).argv;
 
@@ -255,16 +259,18 @@ You can either downgrade your version of ${chalk.green(
 `,
         );
 
-        const confirm = (await prompts({
-          type: 'confirm',
-          name: 'confirm',
-          message: `Do you wish to continue with ${chalk.green(
-            'react-native-macos',
-          )}@${chalk.cyan(reactNativeMacOSResolvedVersion)}?`,
-        })).confirm;
+        if (!argv.prerelease) {
+          const confirm = (await prompts({
+            type: 'confirm',
+            name: 'confirm',
+            message: `Do you wish to continue with ${chalk.green(
+              'react-native-macos',
+            )}@${chalk.cyan(reactNativeMacOSResolvedVersion)}?`,
+          })).confirm;
 
-        if (!confirm) {
-          process.exit(EXITCODE_USER_CANCEL);
+          if (!confirm) {
+            process.exit(EXITCODE_USER_CANCEL);
+          }
         }
       }
     }

@@ -32,10 +32,15 @@ function copyProjectTemplateAndReplace(
   const projectNameMacOS = newProjectName + '-macOS';
   const projectNameIOS = newProjectName;
   const xcodeProjName = newProjectName + '.xcodeproj';
+  const schemeNameMacOS = newProjectName + '-macOS.xcscheme';
+  const schemeNameIOS = newProjectName + '.xcscheme';
 
   createDir(path.join(destPath, macOSDir));
   createDir(path.join(destPath, macOSDir, projectNameIOS));
   createDir(path.join(destPath, macOSDir, projectNameMacOS));
+  createDir(path.join(destPath, macOSDir, xcodeProjName));
+  createDir(path.join(destPath, macOSDir, xcodeProjName, 'xcshareddata'));
+  createDir(path.join(destPath, macOSDir, xcodeProjName, 'xcshareddata/xcschemes'));
 
   const templateVars = {
     'HelloWorld': newProjectName,
@@ -45,6 +50,8 @@ function copyProjectTemplateAndReplace(
     { from: path.join(srcRootPath, 'macos/HelloWorld'), to: path.join(macOSDir, projectNameIOS) },
     { from: path.join(srcRootPath, 'macos/HelloWorld-macOS'), to: path.join(macOSDir, projectNameMacOS) },
     { from: path.join(srcRootPath, 'macos/HelloWorld.xcodeproj'), to: path.join(macOSDir, xcodeProjName) },
+    { from: path.join(srcRootPath, 'macos/xcschemes/HelloWorld-macOS.xcscheme'), to: path.join(macOSDir, xcodeProjName, 'xcshareddata/xcschemes', schemeNameMacOS) },
+    { from: path.join(srcRootPath, 'macos/xcschemes/HelloWorld.xcscheme'), to: path.join(macOSDir, xcodeProjName, 'xcshareddata/xcschemes', schemeNameIOS) },
   ].forEach((mapping) => copyAndReplaceAll(mapping.from, destPath, mapping.to, templateVars, options.overwrite));
 
   [
@@ -53,7 +60,9 @@ function copyProjectTemplateAndReplace(
   ].forEach((mapping) => copyAndReplaceWithChangedCallback(mapping.from, destPath, mapping.to, templateVars, options.overwrite));
 
   console.log(chalk.white.bold('To run your app on macOS:'));
-  console.log(chalk.white('   react-native run-macos'));
+  console.log(chalk.white(`   open ${macOSDir}/${xcodeProjName}`));
+  console.log(chalk.white('   yarn start:macos'));
+  console.log(chalk.white.bold(`In Xcode switch to the ${projectNameMacOS} scheme then click Run.`));
 }
 
 function installDependencies(options) {
