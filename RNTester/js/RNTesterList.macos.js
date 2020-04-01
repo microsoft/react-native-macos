@@ -74,7 +74,7 @@ const ComponentExamples: Array<RNTesterExample> = [
     module: require('./MaskedViewExample'),
     supportsTVOS: true,
   },
-/*  {
+  /*  {
     key: 'ModalExample',
     module: require('./ModalExample'),
     supportsTVOS: true,
@@ -94,7 +94,7 @@ const ComponentExamples: Array<RNTesterExample> = [
     module: require('./PickerExample'),
     supportsTVOS: false,
   },
-/*  {
+  /*  {
     key: 'PickerIOSExample',
     module: require('./PickerIOSExample'),
     supportsTVOS: false,
@@ -139,7 +139,7 @@ const ComponentExamples: Array<RNTesterExample> = [
     module: require('./SliderExample'),
     supportsTVOS: false,
   },
-/*  {  Depends on Modal which is not implemented for macOS
+  /*  {  Depends on Modal which is not implemented for macOS
     key: 'StatusBarExample',
     module: require('./StatusBarExample'),
     supportsTVOS: false,
@@ -322,7 +322,7 @@ const APIExamples: Array<RNTesterExample> = [
     module: require('./TransformExample'),
     supportsTVOS: true,
   },
-/*  {
+  /*  {
     key: 'TurboModuleExample',
     module: require('./TurboModuleExample'),
     supportsTVOS: false,
@@ -342,7 +342,7 @@ const APIExamples: Array<RNTesterExample> = [
     module: require('./WebSocketExample'),
     supportsTVOS: true,
   },
-/*  {
+  /*  {
     key: 'XHRExample',
     module: require('./XHRExample'),
     supportsTVOS: true,
