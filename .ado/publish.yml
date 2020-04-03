@@ -15,7 +15,7 @@ pr: none
 
 jobs:
   - job: RNGithubNpmJSPublish
-    displayName: React-Native GitHub Publish
+    displayName: React-Native GitHub Publish to npmjs.org
     pool:
       vmImage: vs2017-win2016
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
@@ -50,7 +50,7 @@ jobs:
           publishEndpoint: 'npmjs'
 
   - job: RNGithubOfficePublish
-    displayName: React-Native GitHub Publish
+    displayName: React-Native GitHub Publish to Office
     pool:
       vmImage: vs2017-win2016
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
