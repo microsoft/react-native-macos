@@ -64,11 +64,11 @@ jobs:
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
       - task: CmdLine@2
-        displayName: npm install
+        displayName: yarn install
         inputs:
           script: |
             cd packages/react-native-macos-init
-            npm install
+            yarn install
 
       - task: CmdLine@2
         displayName: "Publish react-native-macos-init to npmjs.org"
