@@ -71,6 +71,13 @@ jobs:
             yarn install
 
       - task: CmdLine@2
+        displayName: yarn build
+        inputs:
+          script: |
+            cd packages/react-native-macos-init
+            yarn build
+
+      - task: CmdLine@2
         displayName: "Publish react-native-macos-init to npmjs.org"
         inputs:
           script: |
