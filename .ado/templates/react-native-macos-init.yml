@@ -64,15 +64,11 @@ steps:
     displayName: Bump package version
     inputs:
       script: node .ado/bumpFileVersions.js
-    env:
-      BUILD_SOURCEBRANCH: $(Build.SourceBranch)
 
   - task: CmdLine@2
     displayName: "Prepare package.json for npm publishing as react-native-macos"
     inputs:
       script: node .ado/renamePackageToMac.js
-    env:
-      BUILD_SOURCEBRANCH: $(Build.SourceBranch)
 
   - script: |
       npm publish --registry http://localhost:4873
