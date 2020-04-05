@@ -2,6 +2,8 @@
 // @ts-check
 
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 function queryForServerStatus() {
 
@@ -12,6 +14,12 @@ function queryForServerStatus() {
     }
   }).on('error', err => {
     console.log(err.message);
+    try {
+      const logFile = fs.readFileSync(path.resolve(__dirname, 'verdaccio/console.log')).toString('utf8');
+      console.log('verdaccio console output: ' + logFile);
+    } catch (error) {
+      console.log('no verdaccio console output yet.');
+    }
     setTimeout(queryForServerStatus, 2000);
   });
 }
