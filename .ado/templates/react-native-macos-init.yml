@@ -61,17 +61,12 @@ steps:
     displayName: Add npm user to verdaccio
 
   - task: CmdLine@2
-    displayName: Bump package version (local react-native-macos)
-    inputs:
-      script: node .ado/bumpFileVersions.js
-
-  - task: CmdLine@2
     displayName: "Prepare package.json for npm publishing as react-native-macos"
     inputs:
       script: node .ado/renamePackageToMac.js
 
   - script: |
-      npm install --registry http://localhost:4873
+      npm publish --registry http://localhost:4873
     displayName: Publish react-native-macos to verdaccio
 
   - script: |
