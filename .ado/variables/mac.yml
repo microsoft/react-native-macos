@@ -1,0 +1,3 @@
+variables:
+  VmImage: macOS-10.14
+  Demands: ['xcode', 'sh', 'npm']
