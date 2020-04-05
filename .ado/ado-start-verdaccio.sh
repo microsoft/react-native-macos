@@ -5,7 +5,7 @@ set -ex
 
 THIS_DIR=$PWD
 
-COMMAND="$TMPDIR/launchWebSocketServer.command"
+COMMAND="$TMPDIR/launchVerdaccio.command"
 echo "cd ${THIS_DIR}; npx verdaccio --config ./.ado/verdaccio/config.yaml" > "$COMMAND"
 chmod +x "$COMMAND"
 open "$COMMAND"
