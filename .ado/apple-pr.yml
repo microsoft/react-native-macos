@@ -92,7 +92,7 @@ jobs:
     steps:
       - task: NodeTool@0
         inputs:
-          version: '10.x'
+          versionSpec: '10.x'
 
       - template: templates/react-native-macos-init.yml
         parameters:
