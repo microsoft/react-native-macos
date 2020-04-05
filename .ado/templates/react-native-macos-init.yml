@@ -29,6 +29,12 @@ steps:
         cd packages/react-native-macos-init
         yarn build
 
+  - task: CmdLine@2
+    displayName: Install Verdaccio
+    inputs:
+      script: |
+        npm install --global verdaccio
+
   - task: ShellScript@2
     displayName: Launch test npm server (verdaccio)
     inputs:
