@@ -35,6 +35,12 @@ steps:
       script: |
         npm install --global verdaccio
 
+  - task: CmdLine@2
+    displayName: Install n used by ado-start-verdaccio.sh
+    inputs:
+      script: |
+        npm install --global n
+
   - task: ShellScript@2
     displayName: Launch test npm server (verdaccio)
     inputs:
