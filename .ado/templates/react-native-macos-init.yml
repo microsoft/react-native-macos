@@ -94,6 +94,6 @@ steps:
     displayName: Apply macos template
     inputs:
       script: npx react-native-macos-init --version master --overwrite --prerelease
-      workingDirectory: $(Agent.BuildDirectory)\testcli
+      workingDirectory: $(Agent.BuildDirectory)/testcli
 
   # TODO: react-native run-macos and test when implemented
