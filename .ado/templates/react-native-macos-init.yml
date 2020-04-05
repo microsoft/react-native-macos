@@ -93,7 +93,7 @@ steps:
   - task: CmdLine@2
     displayName: Apply macos template
     inputs:
-      script: npx react-native-macos-init --version master --overwrite --prerelease
+      script: npx react-native-macos-init --version latest --overwrite --prerelease
       workingDirectory: $(Agent.BuildDirectory)/testcli
 
   # TODO: react-native run-macos and test when implemented
