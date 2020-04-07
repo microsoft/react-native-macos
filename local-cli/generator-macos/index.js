@@ -50,6 +50,7 @@ function copyProjectTemplateAndReplace(
   };
 
   [
+    { from: path.join(srcRootPath, macOSDir, 'Podfile'), to: path.join(macOSDir, 'Podfile') },
     { from: path.join(srcRootPath, srcDirPath(oldProjectName, 'iOS')), to: srcDirPath(newProjectName, 'iOS') },
     { from: path.join(srcRootPath, srcDirPath(oldProjectName, 'macOS')), to: srcDirPath(newProjectName, 'macOS') },
     { from: path.join(srcRootPath, pbxprojPath(oldProjectName)), to: pbxprojPath(newProjectName) },
@@ -66,7 +67,7 @@ function copyProjectTemplateAndReplace(
   ${chalk.blue(`Run instructions for ${chalk.bold('macOS')}`)}:
     • npx react-native run-macos
     ${chalk.dim('- or -')}
-    • Open ${xcodeprojPath(newProjectName)} in Xcode or run "xed -b ${macOSDir}"
+    • Open ${xcworkspacePath(newProjectName)} in Xcode or run "xed -b ${macOSDir}"
     • yarn start:macos
     • Hit the Run button
 `);
@@ -93,6 +94,13 @@ function srcDirPath(basename, platform) {
  */
 function xcodeprojPath(basename) {
   return path.join(macOSDir, basename + '.xcodeproj');
+}
+
+/**
+ * @param {string} basename
+ */
+function xcworkspacePath(basename) {
+  return path.join(macOSDir, basename + '.xcworkspace');
 }
 
 /**
