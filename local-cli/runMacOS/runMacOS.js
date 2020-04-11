@@ -33,10 +33,9 @@ function runMacOS(_, ctx, args) {
     );
   }
 
-  const inferredSchemeName = path.basename(
-    xcodeProject.name,
-    path.extname(xcodeProject.name),
-  );
+  const inferredSchemeName =
+    path.basename(xcodeProject.name, path.extname(xcodeProject.name)) +
+    '-macOS';
   const scheme = args.scheme || inferredSchemeName;
 
   logger.info(
@@ -61,14 +60,20 @@ async function run(xcodeProject, scheme, args) {
   const bundleID = child_process
     .execFileSync(
       '/usr/libexec/PlistBuddy',
-      ['-c', 'Print:CFBundleIdentifier', path.join(appPath, 'Info.plist')],
+      [
+        '-c',
+        'Print:CFBundleIdentifier',
+        path.join(appPath, 'Contents/Info.plist'),
+      ],
       {encoding: 'utf8'},
     )
     .trim();
 
-  logger.info(`Launching "${chalk.bold(bundleID)}"`);
+  logger.info(
+    `Launching app "${chalk.bold(bundleID)}" from "${chalk.bold(appPath)}"`,
+  );
 
-  // TODO
+  child_process.exec('open -b ' + bundleID + ' -a ' + appPath);
 }
 
 function buildProject(xcodeProject, scheme, args) {
@@ -80,8 +85,7 @@ function buildProject(xcodeProject, scheme, args) {
       args.configuration,
       '-scheme',
       scheme,
-      '-destination',
-      'macosx',
+      '-UseModernBuildSystem=NO',
     ];
     logger.info(
       `Building ${chalk.dim(
@@ -247,7 +251,7 @@ module.exports = {
       description:
         'Path relative to project root where the Xcode project ' +
         '(.xcodeproj) lives.',
-      default: 'ios',
+      default: 'macos',
     },
     {
       name: '--no-packager',
