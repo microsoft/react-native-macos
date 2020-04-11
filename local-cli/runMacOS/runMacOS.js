@@ -2,8 +2,8 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License.
  * @format
+ * @ts-check
  */
-// @ts-check
 'use strict';
 
 const child_process = require('child_process');
@@ -17,6 +17,11 @@ const {
   getDefaultUserTerminal,
 } = require('@react-native-community/cli-tools');
 
+/**
+ * @param {string[]} _
+ * @param {Object.<string, *>} ctx
+ * @param {{configuration: string, scheme?: string, projectPath: string, packager: boolean, verbose: boolean, port: number, terminal: string | undefined}} args
+ */
 function runMacOS(_, ctx, args) {
   if (!fs.existsSync(args.projectPath)) {
     throw new CLIError(
@@ -47,6 +52,11 @@ function runMacOS(_, ctx, args) {
   return run(xcodeProject, scheme, args);
 }
 
+/**
+ * @param {{name: string, isWorkspace: boolean}} xcodeProject
+ * @param {string} scheme
+ * @param {{configuration: string, scheme?: string, projectPath: string, packager: boolean, verbose: boolean, port: number, terminal: string | undefined}} args
+ */
 async function run(xcodeProject, scheme, args) {
   const appName = await buildProject(xcodeProject, scheme, args);
 
@@ -76,6 +86,11 @@ async function run(xcodeProject, scheme, args) {
   child_process.exec('open -b ' + bundleID + ' -a ' + appPath);
 }
 
+/**
+ * @param {{name: string, isWorkspace: boolean}} xcodeProject
+ * @param {string} scheme
+ * @param {{configuration: string, scheme?: string, projectPath: string, packager: boolean, verbose: boolean, port: number, terminal: string | undefined}} args
+ */
 function buildProject(xcodeProject, scheme, args) {
   return new Promise((resolve, reject) => {
     const xcodebuildArgs = [
@@ -149,6 +164,9 @@ function buildProject(xcodeProject, scheme, args) {
   });
 }
 
+/**
+ * @param {string} buildSettings
+ */
 function getTargetBuildDir(buildSettings) {
   const settings = JSON.parse(buildSettings);
 
@@ -163,6 +181,12 @@ function getTargetBuildDir(buildSettings) {
   return null;
 }
 
+/**
+ * @param {{name: string, isWorkspace: boolean}} xcodeProject
+ * @param {string} configuration
+ * @param {string} appName
+ * @param {string} scheme
+ */
 function getBuildPath(xcodeProject, configuration, appName, scheme) {
   const buildSettings = child_process.execFileSync(
     'xcodebuild',
@@ -188,6 +212,9 @@ function getBuildPath(xcodeProject, configuration, appName, scheme) {
   return `${targetBuildDir}/${appName}.app`;
 }
 
+/**
+ * @param {string} buildOutput
+ */
 function getProductName(buildOutput) {
   const productNameMatch = /export FULL_PRODUCT_NAME="?(.+).app"?$/m.exec(
     buildOutput,
@@ -206,6 +233,12 @@ function xcprettyAvailable() {
   return true;
 }
 
+/**
+ * @param {Object} args
+ * @param {boolean} args.packager
+ * @param {string|undefined} args.terminal
+ * @param {number} args.port
+ */
 function getProcessOptions({packager, terminal, port}) {
   if (packager) {
     return {
