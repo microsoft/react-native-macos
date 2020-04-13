@@ -60,11 +60,11 @@ const ComponentExamples: Array<RNTesterExample> = [
     module: require('./ImageExample'),
     supportsTVOS: true,
   },
-  /* iOS Only Component {
+  {
     key: 'InputAccessoryViewExample',
     module: require('./InputAccessoryViewExample'),
     supportsTVOS: true,
-  }, */
+  },
   {
     key: 'KeyboardAvoidingViewExample',
     module: require('./KeyboardAvoidingViewExample'),
@@ -162,7 +162,7 @@ const ComponentExamples: Array<RNTesterExample> = [
   },
   {
     key: 'TextInputExample',
-    module: require('./TextInputExample.macos'),
+    module: require('./TextInputExample.ios'),
     supportsTVOS: true,
   },
   {
