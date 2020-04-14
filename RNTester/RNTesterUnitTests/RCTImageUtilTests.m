@@ -10,7 +10,8 @@
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 
-#import <React/RCTImageUtils.h>
+// TODO Pods #import <React/RCTImageUtils.h>
+#import <RCTImage/RCTImageUtils.h>
 
 #define RCTAssertEqualPoints(a, b) { \
 XCTAssertEqual(a.x, b.x); \

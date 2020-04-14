@@ -8,7 +8,8 @@
 
 #import <XCTest/XCTest.h>
 
-#import <React/RCTAnimationUtils.h>
+// TODO Pods #import <React/RCTAnimationUtils.h>
+#import <RCTAnimation/RCTAnimationUtils.h>
 
 @interface RCTAnimationUtilsTests : XCTestCase
 

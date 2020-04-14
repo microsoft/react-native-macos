@@ -54,6 +54,16 @@
                ReferencedContainer = "container:RNTesterPods.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "38E0B2B524456B0700EF053A"
+               BuildableName = "RNTesterIntegrationTests.xctest"
+               BlueprintName = "RNTesterIntegrationTests"
+               ReferencedContainer = "container:RNTesterPods.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

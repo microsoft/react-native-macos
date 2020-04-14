@@ -75,11 +75,11 @@ target 'RNTesterUnitTests' do
   pod 'React-RCTTest', :path => "./RCTTest"
 end
 
-# target 'RNTesterIntegrationTests' do
-#   platform :ios, '9.0'
-#   pods()
-#   pod 'React-RCTTest', :path => "./RCTTest"
-# end
+target 'RNTesterIntegrationTests' do
+  platform :ios, '9.0'
+  pods()
+  pod 'React-RCTTest', :path => "./RCTTest"
+end
 
 # TODO(macOS GH#214)
 target 'RNTester-macOS' do
@@ -93,9 +93,8 @@ target 'RNTester-macOSUnitTests' do
   pod 'React-RCTTest', :path => "./RCTTest"
 end
 
-# target 'RNTester-macOSIntegrationTests' do
-#   platform :osx, '10.14'
-#   pods()
-#   pod 'React-RCTTest', :path => "./RCTTest"
-# end
-
+target 'RNTester-macOSIntegrationTests' do
+  platform :osx, '10.14'
+  pods()
+  pod 'React-RCTTest', :path => "./RCTTest"
+end

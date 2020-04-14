@@ -8,7 +8,8 @@
 
 #import <XCTest/XCTest.h>
 
-#import <React/RCTBlobManager.h>
+// TODO Pods #import <React/RCTBlobManager.h>
+#import <RCTBlob/RCTBlobManager.h>
 
 @interface RCTBlobManagerTests : XCTestCase
 

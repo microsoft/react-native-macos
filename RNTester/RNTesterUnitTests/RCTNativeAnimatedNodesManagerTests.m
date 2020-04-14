@@ -10,8 +10,10 @@
 
 #import <OCMock/OCMock.h>
 
-#import <React/RCTNativeAnimatedNodesManager.h>
-#import <React/RCTValueAnimatedNode.h>
+// TODO Pods #import <React/RCTNativeAnimatedNodesManager.h>
+// TODO Pods #import <React/RCTValueAnimatedNode.h>
+#import <RCTAnimation/RCTNativeAnimatedNodesManager.h>
+#import <RCTAnimation/RCTValueAnimatedNode.h>
 #import <React/RCTUIManager.h>
 #import <React/RCTPlatformDisplayLink.h>
 
@@ -20,6 +22,7 @@ static const NSTimeInterval FRAME_LENGTH = 1.0 / 60.0;
 @interface RCTFakeDisplayLink : RCTPlatformDisplayLink // TODO(macOS ISS#2323203)
 
 @end
+
 
 @implementation RCTFakeDisplayLink
 {

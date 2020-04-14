@@ -20,6 +20,20 @@
                ReferencedContainer = "container:RNTesterPods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "9F15346C233AB2C7006DFE44"
+               BuildableName = "RNTester-macOSUnitTests.xctest"
+               BlueprintName = "RNTester-macOSUnitTests"
+               ReferencedContainer = "container:RNTesterPods.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -59,18 +73,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9F153477233AB2C7006DFE44"
-               BuildableName = "RNTester-macOSIntegrationTestsTests.xctest"
-               BlueprintName = "RNTester-macOSIntegrationTestsTests"
-               ReferencedContainer = "container:RNTesterPods.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "9F15346C233AB2C7006DFE44"
-               BuildableName = "RNTester-macOSUnitTests.xctest"
-               BlueprintName = "RNTester-macOSUnitTests"
+               BuildableName = "RNTester-macOSIntegrationTests.xctest"
+               BlueprintName = "RNTester-macOSIntegrationTests"
                ReferencedContainer = "container:RNTesterPods.xcodeproj">
             </BuildableReference>
          </TestableReference>

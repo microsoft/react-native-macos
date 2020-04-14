@@ -8,6 +8,7 @@
 #import <React/RCTUIKit.h>
 #import <XCTest/XCTest.h>
 
+// TODO Pods #import <React/RCTTestRunner.h>
 #import <RCTTest/RCTTestRunner.h>
 
 #define RCT_TEST(name)                  \

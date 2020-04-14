@@ -8,7 +8,8 @@
 
 #import <XCTest/XCTest.h>
 
-#import <React/RCTTestRunner.h>
+// TODO Pods #import <React/RCTTestRunner.h>
+#import <RCTTest/RCTTestRunner.h>
 #import <React/RCTRootShadowView.h>
 #import <React/RCTShadowView.h>
 #import <React/RCTUIManager.h>

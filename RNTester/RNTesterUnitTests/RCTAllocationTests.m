@@ -9,7 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 
-#import <React/RCTTestRunner.h>
+// TODO Pods #import <React/RCTTestRunner.h>
+#import <RCTTest/RCTTestRunner.h>
 #import <React/RCTBridge+Private.h>
 #import <React/RCTBridge.h>
 #import <React/RCTModuleMethod.h>
