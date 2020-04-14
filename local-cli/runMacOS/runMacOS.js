@@ -109,7 +109,6 @@ function buildProject(xcodeProject, scheme, args) {
       args.configuration,
       '-scheme',
       scheme,
-      '-UseModernBuildSystem=NO',
     ];
     logger.info(
       `Building ${chalk.dim(
