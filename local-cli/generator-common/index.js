@@ -1,7 +1,7 @@
 // @ts-check
 
 const fs = require('fs');
-const chalk = require('chalk').default;
+const chalk = require('chalk');
 const path = require('path');
 const copyAndReplace = require('@react-native-community/cli/build/tools/copyAndReplace').default;
 const walk = require('@react-native-community/cli/build/tools/walk').default;

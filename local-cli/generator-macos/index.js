@@ -2,7 +2,7 @@
 
 'use strict';
 
-const chalk = require('chalk').default;
+const chalk = require('chalk');
 const path = require('path');
 const childProcess = require('child_process');
 const fs = require('fs');
@@ -65,6 +65,7 @@ function copyProjectTemplateAndReplace(
 
   console.log(`
   ${chalk.blue(`Run instructions for ${chalk.bold('macOS')}`)}:
+    • cd macos && pod install && cd ..
     • npx react-native run-macos
     ${chalk.dim('- or -')}
     • Open ${xcworkspacePath(newProjectName)} in Xcode or run "xed -b ${macOSDir}"
