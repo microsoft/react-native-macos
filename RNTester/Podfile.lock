@@ -84,6 +84,8 @@ PODS:
     - React-Core (= 1000.0.0)
   - React-RCTSettings (1000.0.0):
     - React-Core (= 1000.0.0)
+  - React-RCTTest (1000.0.0):
+    - React-Core (= 1000.0.0)
   - React-RCTText (1000.0.0):
     - React-Core (= 1000.0.0)
   - React-RCTVibration (1000.0.0):
@@ -143,6 +145,7 @@ DEPENDENCIES:
   - React-RCTNetwork (from `../Libraries/Network`)
   - React-RCTPushNotification (from `../Libraries/PushNotificationIOS`)
   - React-RCTSettings (from `../Libraries/Settings`)
+  - React-RCTTest (from `./RCTTest`)
   - React-RCTText (from `../Libraries/Text`)
   - React-RCTVibration (from `../Libraries/Vibration`)
   - React-RCTWebSocket (from `../Libraries/WebSocket`)
@@ -197,6 +200,8 @@ EXTERNAL SOURCES:
     :path: "../Libraries/PushNotificationIOS"
   React-RCTSettings:
     :path: "../Libraries/Settings"
+  React-RCTTest:
+    :path: "./RCTTest"
   React-RCTText:
     :path: "../Libraries/Text"
   React-RCTVibration:
@@ -234,6 +239,7 @@ SPEC CHECKSUMS:
   React-RCTNetwork: b7bf49cc581752158e8aeee3e9aae83ab61fbcd0
   React-RCTPushNotification: 79cbb2aaf51f65b94e844c876f462ec07be33ac5
   React-RCTSettings: 1ad264bf310d7cf7f2b29c94836b84e5a0ca1561
+  React-RCTTest: c3f98a9dc5cc0a2234c48f19f173c404901ff054
   React-RCTText: fc8369e3ce7c9a474efc539d84b4f9bdc921bc0a
   React-RCTVibration: d9a3da17bd5d3f4d8b57a40e3e7fb842f7e62694
   React-RCTWebSocket: 7bb0868fafa9e8ed961a8f87879e2d2bf7946b3d
@@ -241,6 +247,6 @@ SPEC CHECKSUMS:
   React-turbomodule-samples: 4d9081847444fe313ac06bb6ec604c35e49ba8c7
   yoga: fb23117669f477b0f4b3849d6999414cba0c69b7
 
-PODFILE CHECKSUM: 0b418aae85ecd3476677689ebd88a378a54d0825
+PODFILE CHECKSUM: 268c59f4c1314f34d96d65a4b52b80c99f964839
 
 COCOAPODS: 1.8.4

@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 
-#import <RCTTest/RCTTestRunner.h>
+#import <React/RCTTestRunner.h>
 #import <React/RCTBridge.h>
 #import <React/RCTDevMenu.h>
 

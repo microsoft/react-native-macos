@@ -10,7 +10,7 @@
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 
-#import <RCTImage/RCTImageUtils.h>
+#import <React/RCTImageUtils.h>
 
 #define RCTAssertEqualPoints(a, b) { \
 XCTAssertEqual(a.x, b.x); \

@@ -10,8 +10,8 @@
 
 #import <OCMock/OCMock.h>
 
-#import <RCTAnimation/RCTNativeAnimatedNodesManager.h>
-#import <RCTAnimation/RCTValueAnimatedNode.h>
+#import <React/RCTNativeAnimatedNodesManager.h>
+#import <React/RCTValueAnimatedNode.h>
 #import <React/RCTUIManager.h>
 #import <React/RCTPlatformDisplayLink.h>
 
