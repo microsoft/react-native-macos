@@ -157,11 +157,13 @@ const ComponentExamples: Array<RNTesterExample> = [
   },
   {
     key: 'TextExample',
+    /* $FlowFixMe allow macOS to share iOS test */
     module: require('./TextExample.ios'),
     supportsTVOS: true,
   },
   {
     key: 'TextInputExample',
+    /* $FlowFixMe allow macOS to share iOS test */
     module: require('./TextInputExample.ios'),
     supportsTVOS: true,
   },
