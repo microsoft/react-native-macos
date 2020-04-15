@@ -16,7 +16,7 @@
 @interface RCTInputAccessoryView()
 
 // Overriding `inputAccessoryView` to `readwrite`.
-@property (nonatomic, readwrite, retain) RCTUIView *inputAccessoryView;
+@property (nonatomic, readwrite, retain) RCTUIView *inputAccessoryView; // TODO(macOS ISS#2323203)
 
 @end
 
