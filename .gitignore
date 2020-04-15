@@ -41,6 +41,11 @@ buck-out
 /ReactAndroid/src/main/jni/prebuilt/lib/x86/
 /ReactAndroid/src/main/gen
 
+# Android Studio
+.project
+.settings
+.classpath
+
 # Watchman
 .watchmanconfig
 
@@ -51,7 +56,6 @@ local.properties
 *.iml
 /android/
 /ReactAndroid/packages/
-.settings/
 
 # Node
 node_modules
