@@ -9,8 +9,11 @@
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 
-// TODO Pods #import <React/RCTTestRunner.h>
+#if __has_include(<React/RCTTestRunner.h>) // TODO(macOS ISS#2323203)
+#import <React/RCTTestRunner.h>
+#else // [TODO(macOS ISS#2323203)
 #import <RCTTest/RCTTestRunner.h>
+#endif // ]TODO(macOS ISS#2323203)
 #import <React/RCTBridge+Private.h>
 #import <React/RCTBridge.h>
 #import <React/RCTModuleMethod.h>

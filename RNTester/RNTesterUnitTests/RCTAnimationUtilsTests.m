@@ -8,8 +8,11 @@
 
 #import <XCTest/XCTest.h>
 
-// TODO Pods #import <React/RCTAnimationUtils.h>
+#if __has_include(<React/RCTAnimationUtils.h>) // TODO(macOS ISS#2323203)
+#import <React/RCTAnimationUtils.h>
+#else // [TODO(macOS ISS#2323203)
 #import <RCTAnimation/RCTAnimationUtils.h>
+#endif // ]TODO(macOS ISS#2323203)
 
 @interface RCTAnimationUtilsTests : XCTestCase
 
