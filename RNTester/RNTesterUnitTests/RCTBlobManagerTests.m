@@ -8,11 +8,7 @@
 
 #import <XCTest/XCTest.h>
 
-#if __has_include(<React/RCTBlobManager.h>) // TODO(macOS ISS#2323203)
-#import <React/RCTBlobManager.h>
-#else // [TODO(macOS ISS#2323203)
 #import <RCTBlob/RCTBlobManager.h>
-#endif // ]TODO(macOS ISS#2323203)
 
 @interface RCTBlobManagerTests : XCTestCase
 

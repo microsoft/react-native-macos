@@ -10,13 +10,8 @@
 
 #import <OCMock/OCMock.h>
 
-#if __has_include(<React/RCTNativeAnimatedNodesManager.h>) // TODO(macOS ISS#2323203)
-#import <React/RCTNativeAnimatedNodesManager.h>
-#import <React/RCTValueAnimatedNode.h>
-#else // [TODO(macOS ISS#2323203)
 #import <RCTAnimation/RCTNativeAnimatedNodesManager.h>
 #import <RCTAnimation/RCTValueAnimatedNode.h>
-#endif // ]TODO(macOS ISS#2323203)
 #import <React/RCTUIManager.h>
 #import <React/RCTPlatformDisplayLink.h>
 

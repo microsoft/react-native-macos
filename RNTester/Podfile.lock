@@ -231,8 +231,8 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 9af31e4fb3c7157d6437d11a4686974ffd5310b7
   React-jsinspector: bd0f3d1d100ec90008bdceeecc3b2ccde15f349c
   React-RCTActionSheet: c3adb7754a32492fc5e0bcaf2395221006588b6b
-  React-RCTAnimation: ed93d0ae9533f117e0512738338c4c8479a8925e
-  React-RCTBlob: f4387573b7c109b6feed2f7b6453cf326854bfdc
+  React-RCTAnimation: ae01c6e813366aef34ebe182f007ca42365b5f47
+  React-RCTBlob: 4c36d6a42e2d2ad5deff4b2182ffcf4c6ff0c048
   React-RCTCameraRoll: 4c8233e7d0d3aee3448faaaa5df90f8168abaeed
   React-RCTImage: 841010ce5a7a0eb96bc3f22659560a176a254fc9
   React-RCTLinking: 4fe50097a4d8c9649b25fd6639257aa475530656
