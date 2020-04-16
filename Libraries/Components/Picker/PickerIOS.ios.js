@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     // The picker will conform to whatever width is given, but we do
     // have to set the component's height explicitly on the
     // surrounding view to ensure it gets rendered.
-    height: Platform.OS === 'ios' ? 216 : 27, // TODO(macOS ISS#2323203)
+    height: Platform.OS === 'ios' ? 216 : 25, // TODO(macOS ISS#2323203): NSComboBox in Storyboards is 25 points.
   },
 });
 
