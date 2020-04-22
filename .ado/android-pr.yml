@@ -74,6 +74,11 @@ jobs:
           #arguments: # Required when command == Custom
 
       - task: CmdLine@2
+        displayName: Setup Build Dependencies
+        inputs:
+          script: .ado\setup_droid_deps.bat
+
+      - task: CmdLine@2
         displayName: Remove RNTesterApp.android.bundle
         inputs:
           script: del RNTesterApp.android.bundle
@@ -193,7 +198,14 @@ jobs:
         continueOnError: true
 
       - task: CmdLine@2
+        displayName: Setup Build Dependencies
+        inputs:
+          script: sudo chmod +x .ado/setup_droid_deps.sh && sudo .ado/setup_droid_deps.sh
+
+      - task: CmdLine@2
         displayName: gradlew installArchives
+        env:
+          REACT_NATIVE_DEPENDENCIES: $(System.DefaultWorkingDirectory)\build_deps
         inputs:
           script: sudo ./gradlew installArchives -Pparam="excludeLibs"
         continueOnError: true
