@@ -156,7 +156,7 @@ jobs:
           #checkStyleRunAnalysis: false # Optional
           #findBugsRunAnalysis: false # Optional
           #pmdRunAnalysis: false # Optional
-  - job: AndroidRNPR-ndkr21
+  - job: AndroidRNPR_ndkr21
     displayName: Android React Native PR on NDK r21
     pool:
       vmImage: ubuntu-18.04
