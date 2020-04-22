@@ -163,7 +163,7 @@ jobs:
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
     steps:
-      - checkout: https://github.com/facebook/react-native.git
+      - checkout: github://facebook/react-native
         clean: true # whether to fetch clean each time
         # fetchDepth: 2 # the depth of commits to ask Git to fetch
         lfs: false # whether to download Git-LFS files
