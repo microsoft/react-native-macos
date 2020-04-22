@@ -100,10 +100,6 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
-      - template: templates/apple-droid-node-patching.yml
-        parameters:
-          apply_office_patches: true
-
       # Install NuGet v4.6.4+
       - task: NuGetToolInstaller@1
         inputs:
@@ -113,6 +109,10 @@ jobs:
         displayName: npm install
         inputs:
           script: npm install
+
+      - template: templates/apple-droid-node-patching.yml
+        parameters:
+          apply_office_patches: true
 
       - task: CmdLine@2
         displayName: Bump package version
@@ -211,6 +211,79 @@ jobs:
           githubApiToken: $(githubApiToken)
 
       - task: PublishBuildArtifacts@1
+        displayName: 'Publish final artifacts'
+        inputs:
+          PathtoPublish: '$(Build.StagingDirectory)\final'
+          ArtifactName: 'ReactNative-Final'
+
+  - job: RNGithubOfficePublish_ndkr21
+    displayName: React-Native GitHub Publish to Office with Android NDK r21
+    pool:
+      vmImage: ubuntu-18.04
+    timeoutInMinutes: 90 # how long to run the job before automatically cancelling
+    cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
+    steps:
+      - checkout: self # self represents the repo where the initial Pipelines YAML file was found
+        clean: true # whether to fetch clean each time
+        # fetchDepth: 2 # the depth of commits to ask Git to fetch
+        lfs: false # whether to download Git-LFS files
+        submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
+        persistCredentials: false # set to 'true' to leave the OAuth token in the Git config after the initial fetch
+      
+      # Install NuGet
+      - task: CmdLine@2
+        inputs:
+          script: mkdir $(System.DefaultWorkingDirectory)/nuget-bin/ && curl -o $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+        continueOnError: true
+
+      - task: UseNode@1
+        inputs:
+          version: '10.x'
+
+      - template: templates/apple-droid-node-patching.yml
+        parameters:
+          apply_office_patches: true
+
+      # This is currently required as the command task (strangely) always runs elevated .. 
+      # which makes all the files touched by the above patching step unreadable by following non-command tasks without sudo. 
+      # This makes all the files readable.
+      - task: CmdLine@2
+        displayName: chmod
+        inputs:
+          script: chmod -R +r .
+
+      - task: CmdLine@2
+        displayName: npm install
+        inputs:
+          script: npm install
+
+      - task: CmdLine@2
+        displayName: nuget restore
+        inputs:
+          script: mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe restore $(System.DefaultWorkingDirectory)/ReactAndroid/packages.config -PackagesDirectory  $(System.DefaultWorkingDirectory)/ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
+        continueOnError: true
+
+      - task: CmdLine@2
+        displayName: Setup Build Dependencies
+        inputs:
+          script: chmod +x .ado/setup_droid_deps.sh && .ado/setup_droid_deps.sh
+
+      - task: CmdLine@2
+        displayName: gradlew installArchives
+        inputs:
+          script: REACT_NATIVE_DEPENDENCIES=$(System.DefaultWorkingDirectory)/build_deps ./gradlew installArchives -Pparam="excludeLibs"
+        continueOnError: true
+
+      - template: templates\prep-android-nuget.yml
+
+      # Very similar to the default pack task .. but appends 'ndk21' to the nuget pack version
+      - task: CmdLine@2
+        displayName: 'NuGet pack'
+        inputs:
+          script: NDK=ndk`cat ${ANDROID_SDK_ROOT}/ndk-bundle/source.properties 2>&1 | grep Pkg.Revision | awk '{ print $3}' | awk -F. '{ print $1 }'`; mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe pack $(System.DefaultWorkingDirectory)/ReactAndroid/ReactAndroid.nuspec -OutputDirectory $(Build.StagingDirectory)\final -Properties buildNumber=$(buildNumber)-$NDK;commitId=$(Build.SourceVersion)
+        continueOnError: true
+
+     - task: PublishBuildArtifacts@1
         displayName: 'Publish final artifacts'
         inputs:
           PathtoPublish: '$(Build.StagingDirectory)\final'
