@@ -31,14 +31,39 @@ jobs:
           version: '10.x'
 
       # Install NuGet v4.6.4+
-      - task: NuGetToolInstaller@1
+      - task: CmdLine@1
         inputs:
-          versionSpec: '>=4.6.4'
+          script: sudo curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && alias nuget="mono /usr/local/bin/nuget.exe"
+        continueOnError: true
+
+      # Install NuGet v4.6.4+
+      - task: CmdLine@1
+        inputs:
+          script: curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && alias nuget="mono /usr/local/bin/nuget.exe"
+        continueOnError: true
+
+      # Install NuGet v4.6.4+
+      - task: CmdLine@1
+        inputs:
+          script: curl -o /var/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && alias nuget="mono /var/local/bin/nuget.exe"
+        continueOnError: true
 
       - task: CmdLine@2
         displayName: npm install
         inputs:
           script: npm install
+
+      - task: CmdLine@3
+        displayName: nuget restore
+        inputs:
+          script: nuget restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
+        continueOnError: true
+
+      - task: CmdLine@4
+        displayName: nuget restore
+        inputs:
+          script: mono /usr/local/bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
+        continueOnError: true
 
       - task: NuGetCommand@2
         displayName: NuGet restore
@@ -78,17 +103,12 @@ jobs:
           #verbosityPack: 'Detailed' # Options: quiet, normal, detailed
           #arguments: # Required when command == Custom
 
-      - task: CmdLine@2
-        displayName: Setup Build Dependencies
-        inputs:
-          script: .ado\setup_droid_deps.bat
-
-      - task: CmdLine@2
+      - task: CmdLine@4
         displayName: Remove RNTesterApp.android.bundle
         inputs:
           script: del RNTesterApp.android.bundle
 
-      - task: CmdLine@2
+      - task: CmdLine@5
         displayName: Create RNTester bundle
         inputs:
           script: node cli.js bundle --entry-file .\RNTester\js\RNTesterApp.android.js --bundle-output RNTesterApp.android.bundle --platform android
@@ -169,11 +189,15 @@ jobs:
         lfs: false # whether to download Git-LFS files
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: false # set to 'true' to leave the OAuth token in the Git config after the initial fetch
-
+      
       - task: CmdLine@2
         displayName: Verify NDK version
         inputs:
           script: cat ${ANDROID_SDK_ROOT}/ndk-bundle/source.properties 2>&1 | grep Pkg.Revision
+
+      - template: templates/apple-droid-node-patching.yml
+        parameters:
+          apply_office_patches: true
 
       - task: UseNode@1
         inputs:
