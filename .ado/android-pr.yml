@@ -173,18 +173,6 @@ jobs:
           script: sudo curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && alias nuget="mono /usr/local/bin/nuget.exe"
         continueOnError: true
 
-      # Install NuGet v4.6.4+
-      - task: CmdLine@2
-        inputs:
-          script: curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && alias nuget="mono /usr/local/bin/nuget.exe"
-        continueOnError: true
-
-      # Install NuGet v4.6.4+
-      - task: CmdLine@2
-        inputs:
-          script: curl -o /var/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && alias nuget="mono /var/local/bin/nuget.exe"
-        continueOnError: true
-
       - template: templates/apple-droid-node-patching.yml
         parameters:
           apply_office_patches: true
@@ -201,58 +189,8 @@ jobs:
       - task: CmdLine@2
         displayName: nuget restore
         inputs:
-          script: nuget restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
+          script: sudo mono /usr/local/bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
         continueOnError: true
-
-      - task: CmdLine@2
-        displayName: nuget restore
-        inputs:
-          script: mono /usr/local/bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
-        continueOnError: true
-
-      - task: CmdLine@2
-        displayName: nuget restore
-        inputs:
-          script: mono /var/local/bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
-        continueOnError: true
-
-      - task: NuGetCommand@2
-        displayName: NuGet restore
-        inputs:
-          command: restore
-          restoreSolution: ReactAndroid/packages.config
-          feedsToUse: config
-          #vstsFeed: # Required when feedsToUse == Select
-          #includeNuGetOrg: true # Required when feedsToUse == Select
-          nugetConfigPath: ReactAndroid/NuGet.Config
-          #externalFeedCredentials: # Optional
-          #noCache: false
-          #disableParallelProcessing: false
-          restoreDirectory: packages/
-          verbosityRestore: Detailed # Options: quiet, normal, detailed
-          #packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg' # Required when command == Push
-          #nuGetFeedType: 'internal' # Required when command == Push# Options: internal, external
-          #publishVstsFeed: # Required when command == Push && NuGetFeedType == Internal
-          #publishPackageMetadata: true # Optional
-          #allowPackageConflicts: # Optional
-          #publishFeedCredentials: # Required when command == Push && NuGetFeedType == External
-          #verbosityPush: 'Detailed' # Options: quiet, normal, detailed
-          #packagesToPack: '**/*.csproj' # Required when command == Pack
-          #configuration: '$(BuildConfiguration)' # Optional
-          #packDestination: '$(Build.ArtifactStagingDirectory)' # Optional
-          #versioningScheme: 'off' # Options: off, byPrereleaseNumber, byEnvVar, byBuildNumber
-          #includeReferencedProjects: false # Optional
-          #versionEnvVar: # Required when versioningScheme == ByEnvVar
-          #majorVersion: '1' # Required when versioningScheme == ByPrereleaseNumber
-          #minorVersion: '0' # Required when versioningScheme == ByPrereleaseNumber
-          #patchVersion: '0' # Required when versioningScheme == ByPrereleaseNumber
-          #packTimezone: 'utc' # Required when versioningScheme == ByPrereleaseNumber# Options: utc, local
-          #includeSymbols: false # Optional
-          #toolPackage: # Optional
-          #buildProperties: # Optional
-          #basePath: # Optional
-          #verbosityPack: 'Detailed' # Options: quiet, normal, detailed
-          #arguments: # Required when command == Custom
 
       - task: Gradle@1
         displayName: gradlew installArchives
