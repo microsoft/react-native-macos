@@ -168,19 +168,19 @@ jobs:
           script: cat ${ANDROID_SDK_ROOT}/ndk-bundle/source.properties 2>&1 | grep Pkg.Revision
 
                 # Install NuGet v4.6.4+
-      - task: CmdLine@1
+      - task: CmdLine@2
         inputs:
           script: sudo curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && alias nuget="mono /usr/local/bin/nuget.exe"
         continueOnError: true
 
       # Install NuGet v4.6.4+
-      - task: CmdLine@1
+      - task: CmdLine@2
         inputs:
           script: curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && alias nuget="mono /usr/local/bin/nuget.exe"
         continueOnError: true
 
       # Install NuGet v4.6.4+
-      - task: CmdLine@1
+      - task: CmdLine@2
         inputs:
           script: curl -o /var/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && alias nuget="mono /var/local/bin/nuget.exe"
         continueOnError: true
