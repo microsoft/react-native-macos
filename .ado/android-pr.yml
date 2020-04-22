@@ -53,13 +53,13 @@ jobs:
         inputs:
           script: npm install
 
-      - task: CmdLine@3
+      - task: CmdLine@2
         displayName: nuget restore
         inputs:
           script: nuget restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
         continueOnError: true
 
-      - task: CmdLine@4
+      - task: CmdLine@2
         displayName: nuget restore
         inputs:
           script: mono /usr/local/bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
@@ -103,12 +103,12 @@ jobs:
           #verbosityPack: 'Detailed' # Options: quiet, normal, detailed
           #arguments: # Required when command == Custom
 
-      - task: CmdLine@4
+      - task: CmdLine@2
         displayName: Remove RNTesterApp.android.bundle
         inputs:
           script: del RNTesterApp.android.bundle
 
-      - task: CmdLine@5
+      - task: CmdLine@2
         displayName: Create RNTester bundle
         inputs:
           script: node cli.js bundle --entry-file .\RNTester\js\RNTesterApp.android.js --bundle-output RNTesterApp.android.bundle --platform android
