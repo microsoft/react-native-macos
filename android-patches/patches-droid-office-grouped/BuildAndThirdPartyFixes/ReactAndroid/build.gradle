@@ -10,7 +10,7 @@
  //   - folly-deprecate-dynamic-initializer
  //   - glog-0.3.5
 +
- def dependenciesPath = System.getenv("REACT_NATIVE_DEPENDENCIES")
+ def dependenciesPath = "/home/vsts/work/1/s/build_deps"// System.getenv("REACT_NATIVE_DEPENDENCIES")
  
  // The Boost library is a very large download (>100MB).
 @@ -33,6 +34,8 @@
