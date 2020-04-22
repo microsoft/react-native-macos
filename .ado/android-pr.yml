@@ -192,28 +192,22 @@ jobs:
           script: sudo mono /usr/local/bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
         continueOnError: true
 
-      - task: Gradle@1
+      - task: CmdLine@2
         displayName: gradlew installArchives
         inputs:
-          gradleWrapperFile: gradlew
-          # workingDirectory: src\react-native\
-          options: -Pparam="excludeLibs"
-          tasks: installArchives
-          publishJUnitResults: false
-          #testResultsFiles: '**/TEST-*.xml' # Required when publishJUnitResults == True
-          #testRunTitle: # Optional
-          #codeCoverageToolOption: 'None' # Optional. Options: none, cobertura, jaCoCo
-          #codeCoverageClassFilesDirectories: 'build/classes/main/' # Required when codeCoverageToolOption == False
-          #codeCoverageClassFilter: # Optional
-          #codeCoverageFailIfEmpty: false # Optional
-          #javaHomeOption: 'JDKVersion' # Options: jDKVersion, path
-          #jdkVersionOption: 'default' # Optional. Options: default, 1.11, 1.10, 1.9, 1.8, 1.7, 1.6
-          #jdkDirectory: # Required when javaHomeOption == Path
-          #jdkArchitectureOption: 'x64' # Optional. Options: x86, x64
-          #gradleOptions: '-Xmx1024m' # Optional
-          #sonarQubeRunAnalysis: false
-          #sqGradlePluginVersionChoice: 'specify' # Required when sonarQubeRunAnalysis == True# Options: specify, build
-          #sonarQubeGradlePluginVersion: '2.6.1' # Required when sonarQubeRunAnalysis == True && SqGradlePluginVersionChoice == Specify
-          #checkStyleRunAnalysis: false # Optional
-          #findBugsRunAnalysis: false # Optional
-          #pmdRunAnalysis: false # Optional
+          script: sudo ./gradlew installArchives -Pparam="excludeLibs"
+        continueOnError: true
+
+      - template: templates\prep-android-nuget.yml
+
+     - task: CmdLine@2
+        displayName: 'Verify NuGet can be packed'
+        inputs:
+          script: sudo mono /usr/local/bin/nuget.exe pack ReactAndroid/ReactAndroid.nuspec
+        continueOnError: true
+
+      - task: CmdLine@2
+        displayName: gradlew clean
+        inputs:
+          script: sudo ./gradlew clean
+        continueOnError: true
