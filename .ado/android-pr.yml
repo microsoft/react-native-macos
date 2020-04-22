@@ -163,12 +163,10 @@ jobs:
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
     steps:
-      - checkout: github://facebook/react-native
-        clean: true # whether to fetch clean each time
-        # fetchDepth: 2 # the depth of commits to ask Git to fetch
-        lfs: false # whether to download Git-LFS files
-        submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
-        persistCredentials: false # set to 'true' to leave the OAuth token in the Git config after the initial fetch
+      - task: CmdLine@1
+        displayName: Checkout
+        inputs:
+          script: git clone https://github.com/facebook/react-native.git
 
       - task: UseNode@1
         inputs:
