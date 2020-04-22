@@ -200,7 +200,7 @@ jobs:
 
       - template: templates\prep-android-nuget.yml
 
-     - task: CmdLine@2
+      - task: CmdLine@2
         displayName: 'Verify NuGet can be packed'
         inputs:
           script: sudo mono /usr/local/bin/nuget.exe pack ReactAndroid/ReactAndroid.nuspec
