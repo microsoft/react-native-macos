@@ -19,7 +19,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 def customDownloadsDir = System.getenv("REACT_NATIVE_DOWNLOADS_DIR")
 def downloadsDir = customDownloadsDir ? new File(customDownloadsDir) : new File("$buildDir/downloads")
-def thirdPartyNdkDir = new File("$buildDir/third-party-ndk")
+def thirdPartyNdkDir = new File("$buildDir/third-party-ndk"); println("REACT_NATIVE_DEPENDENCIES: " + System.getenv("REACT_NATIVE_DEPENDENCIES"))
 
 // You need to have following folders in this directory:
 //   - boost_1_63_0
@@ -27,7 +27,6 @@ def thirdPartyNdkDir = new File("$buildDir/third-party-ndk")
 //   - folly-deprecate-dynamic-initializer
 //   - glog-0.3.5
 def dependenciesPath = System.getenv("REACT_NATIVE_DEPENDENCIES")
-println("REACT_NATIVE_DEPENDENCIES: " + System.getenv("REACT_NATIVE_DEPENDENCIES"))
 
 // The Boost library is a very large download (>100MB).
 // If Boost is already present on your system, define the REACT_NATIVE_BOOST_PATH env variable
