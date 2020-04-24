@@ -213,7 +213,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Verify NuGet can be packed'
         inputs:
-          script: sudo mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe pack $(System.DefaultWorkingDirectory)/ReactAndroid/ReactAndroid.nuspec
+          script: sudo mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe pack $(System.DefaultWorkingDirectory)/ReactAndroid/ReactAndroid.nuspec -Properties buildNumber=$(buildNumber);commitId=$(Build.SourceVersion)
         continueOnError: true
 
       - task: CmdLine@2
