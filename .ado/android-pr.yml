@@ -30,6 +30,11 @@ jobs:
         inputs:
           version: '10.x'
 
+      # Install NuGet v4.6.4+
+      - task: NuGetToolInstaller@1
+        inputs:
+          versionSpec: '>=4.6.4'
+
       - task: CmdLine@2
         displayName: npm install
         inputs:
