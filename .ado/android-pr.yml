@@ -192,6 +192,12 @@ jobs:
           apply_office_patches: true
 
       - task: CmdLine@2
+        displayName: chmod
+        inputs:
+          script: chmod -R 777 .
+
+
+      - task: CmdLine@2
         displayName: npm install
         inputs:
           script: npm install
