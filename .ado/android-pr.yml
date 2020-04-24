@@ -213,11 +213,11 @@ jobs:
       - task: CmdLine@2
         displayName: 'Verify NuGet can be packed'
         inputs:
-          script: mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe pack $(System.DefaultWorkingDirectory)/ReactAndroid/ReactAndroid.nuspec
+          script: sudo mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe pack $(System.DefaultWorkingDirectory)/ReactAndroid/ReactAndroid.nuspec
         continueOnError: true
 
       - task: CmdLine@2
         displayName: gradlew clean
         inputs:
-          script: ./gradlew clean
+          script: sudo ./gradlew clean
         continueOnError: true
