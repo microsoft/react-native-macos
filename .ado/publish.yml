@@ -277,14 +277,16 @@ jobs:
       - template: templates\prep-android-nuget.yml
 
       # Very similar to the default pack task .. but appends 'ndk21' to the nuget pack version
+      # Note: We are keeping the output directory different from default ask to avoid potential race condition in case the checkout is reused.
       - task: CmdLine@2
         displayName: 'NuGet pack'
         inputs:
-          script: NDK=ndk`cat ${ANDROID_SDK_ROOT}/ndk-bundle/source.properties 2>&1 | grep Pkg.Revision | awk '{ print $3}' | awk -F. '{ print $1 }'`; mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe pack $(System.DefaultWorkingDirectory)/ReactAndroid/ReactAndroid.nuspec -OutputDirectory $(Build.StagingDirectory)\final -Properties buildNumber=$(buildNumber)-$NDK;commitId=$(Build.SourceVersion)
+          script: OUTPUT_DIR=$(Build.StagingDirectory)\final-ndk21;NDK=ndk`cat ${ANDROID_SDK_ROOT}/ndk-bundle/source.properties 2>&1 | grep Pkg.Revision | awk '{ print $3}' | awk -F. '{ print $1 }'`; mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe pack $(System.DefaultWorkingDirectory)/ReactAndroid/ReactAndroid.nuspec -OutputDirectory $OUTPUT_DIR -Properties buildNumber=$(buildNumber)-$NDK;commitId=$(Build.SourceVersion)
         continueOnError: true
 
+      # Note: PathtoPublish should match $OUTPUT_DIR in the nuget pack task. 
       - task: PublishBuildArtifacts@1
         displayName: 'Publish final artifacts'
         inputs:
-          PathtoPublish: '$(Build.StagingDirectory)\final'
+          PathtoPublish: '$(Build.StagingDirectory)\final-ndk21'
           ArtifactName: 'ReactNative-Final'
