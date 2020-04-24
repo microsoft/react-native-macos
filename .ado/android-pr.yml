@@ -208,7 +208,7 @@ jobs:
           script: sudo REACT_NATIVE_DEPENDENCIES=$(System.DefaultWorkingDirectory)/build_deps ./gradlew installArchives -Pparam="excludeLibs"
         continueOnError: true
 
-      - template: templates\prep-android-nuget.yml
+      - template: templates\prep-android-nuget-linux.yml
 
       - task: CmdLine@2
         displayName: 'Verify NuGet can be packed'
