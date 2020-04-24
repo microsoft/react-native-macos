@@ -194,7 +194,7 @@ jobs:
       - task: CmdLine@2
         displayName: nuget restore
         inputs:
-          script: mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
+          script: sudo mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
         continueOnError: true
 
       - task: CmdLine@2
