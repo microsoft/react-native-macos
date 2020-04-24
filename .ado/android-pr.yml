@@ -175,7 +175,12 @@ jobs:
                 # Install NuGet v4.6.4+
       - task: CmdLine@2
         inputs:
-          script: sudo curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && alias nuget="mono /usr/local/bin/nuget.exe"
+          script: curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+        continueOnError: true
+
+      - task: CmdLine@2
+        inputs:
+          script: sudo curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
         continueOnError: true
 
       - template: templates/apple-droid-node-patching.yml
@@ -194,20 +199,18 @@ jobs:
       - task: CmdLine@2
         displayName: nuget restore
         inputs:
-          script: sudo mono /usr/local/bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
+          script: mono /usr/local/bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
         continueOnError: true
 
       - task: CmdLine@2
         displayName: Setup Build Dependencies
         inputs:
-          script: sudo chmod +x .ado/setup_droid_deps.sh && sudo .ado/setup_droid_deps.sh
+          script: chmod +x .ado/setup_droid_deps.sh && .ado/setup_droid_deps.sh
 
       - task: CmdLine@2
         displayName: gradlew installArchives
-        env:
-          REACT_NATIVE_DEPENDENCIES: $(System.DefaultWorkingDirectory)/build_deps
         inputs:
-          script: sudo REACT_NATIVE_DEPENDENCIES=$(System.DefaultWorkingDirectory)/build_deps ./gradlew installArchives -Pparam="excludeLibs"
+          script: REACT_NATIVE_DEPENDENCIES=$(System.DefaultWorkingDirectory)/build_deps ./gradlew installArchives -Pparam="excludeLibs"
         continueOnError: true
 
       - template: templates\prep-android-nuget.yml
@@ -215,11 +218,11 @@ jobs:
       - task: CmdLine@2
         displayName: 'Verify NuGet can be packed'
         inputs:
-          script: sudo mono /usr/local/bin/nuget.exe pack ReactAndroid/ReactAndroid.nuspec
+          script: mono /usr/local/bin/nuget.exe pack ReactAndroid/ReactAndroid.nuspec
         continueOnError: true
 
       - task: CmdLine@2
         displayName: gradlew clean
         inputs:
-          script: sudo ./gradlew clean
+          script: ./gradlew clean
         continueOnError: true
