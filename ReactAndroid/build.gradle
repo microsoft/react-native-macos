@@ -17,9 +17,9 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // We then copy both the downloaded code and our custom makefiles and headers into third-party-ndk.
 // After that we build native code from src/main/jni with module path pointing at third-party-ndk.
 
-def customDownloadsDir = System.getenv("REACT_NATIVE_DOWNLOADS_DIR")
+def customDownloadsDir = System.getenv("REACT_NATIVE_DOWNLOADS_DIR"); println("REACT_NATIVE_DEPENDENCIES: " + System.getenv("REACT_NATIVE_DEPENDENCIES"))
 def downloadsDir = customDownloadsDir ? new File(customDownloadsDir) : new File("$buildDir/downloads")
-def thirdPartyNdkDir = new File("$buildDir/third-party-ndk"); println("REACT_NATIVE_DEPENDENCIES: " + System.getenv("REACT_NATIVE_DEPENDENCIES"))
+def thirdPartyNdkDir = new File("$buildDir/third-party-ndk")
 
 // You need to have following folders in this directory:
 //   - boost_1_63_0
