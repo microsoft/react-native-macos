@@ -194,7 +194,7 @@ jobs:
       - task: CmdLine@2
         displayName: chmod
         inputs:
-          script: chmod -R 777 .
+          script: chmod -R +r .
 
 
       - task: CmdLine@2
