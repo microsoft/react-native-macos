@@ -175,7 +175,7 @@ jobs:
       # Install NuGet v4.6.4+
       - task: CmdLine@2
         inputs:
-          script: curl -o $(System.DefaultWorkingDirectory)/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+          script: mkdir $(System.DefaultWorkingDirectory)/nuget-bin/ && curl -o $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
         continueOnError: true
 
       - template: templates/apple-droid-node-patching.yml
@@ -194,7 +194,7 @@ jobs:
       - task: CmdLine@2
         displayName: nuget restore
         inputs:
-          script: mono $(System.DefaultWorkingDirectory)/bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
+          script: mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe restore ReactAndroid/packages.config -PackagesDirectory ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
         continueOnError: true
 
       - task: CmdLine@2
