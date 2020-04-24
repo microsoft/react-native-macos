@@ -207,7 +207,7 @@ jobs:
         env:
           REACT_NATIVE_DEPENDENCIES: $(System.DefaultWorkingDirectory)/build_deps
         inputs:
-          script: REACT_NATIVE_DEPENDENCIES=$(System.DefaultWorkingDirectory)/build_deps; sudo ./gradlew installArchives -Pparam="excludeLibs"
+          script: sudo REACT_NATIVE_DEPENDENCIES=$(System.DefaultWorkingDirectory)/build_deps ./gradlew installArchives -Pparam="excludeLibs"
         continueOnError: true
 
       - template: templates\prep-android-nuget.yml
