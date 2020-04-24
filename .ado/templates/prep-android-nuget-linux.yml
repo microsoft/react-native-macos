@@ -12,4 +12,4 @@ steps:
   - task: CmdLine@2
     displayName: Change pom file to always use version 1000
     inputs:
-      script: sudo pwsh -c "(Get-Content android\com\facebook\react\react-native\0.60.0\react-native-0.60.0.pom).replace('<version>0.60.0</version>', '<version>1000.0.0-master</version>') | Set-Content android\com\facebook\react\react-native\0.60.0\react-native-0.60.0.pom"
+      script: pwsh -c "(Get-Content android\com\facebook\react\react-native\0.60.0\react-native-0.60.0.pom).replace('<version>0.60.0</version>', '<version>1000.0.0-master</version>') | Set-Content android\com\facebook\react\react-native\0.60.0\react-native-0.60.0.pom"
