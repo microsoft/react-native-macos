@@ -12,6 +12,7 @@
 #import <React/RCTLog.h>
 
 NSString *const RCTTextAttributesIsHighlightedAttributeName = @"RCTTextAttributesIsHighlightedAttributeName";
+NSString *const RCTTextAttributesWebkitFontSmoothingAttributeName = @"RCTTextAttributesWebkitFontSmoothingAttributeName"; // TODO(OSS Candidate ISS#2710739)
 NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttributeName";
 
 @implementation RCTTextAttributes
@@ -56,6 +57,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   _fontVariant = textAttributes->_fontVariant ?: _fontVariant;
   _allowFontScaling = textAttributes->_allowFontScaling || _allowFontScaling;  // *
   _letterSpacing = !isnan(textAttributes->_letterSpacing) ? textAttributes->_letterSpacing : _letterSpacing;
+  _webkitFontSmoothing = textAttributes->_webkitFontSmoothing != RCTWebkitFontSmoothingAuto ? textAttributes->_webkitFontSmoothing : _webkitFontSmoothing;
 
   // Paragraph Styles
   _lineHeight = !isnan(textAttributes->_lineHeight) ? textAttributes->_lineHeight : _lineHeight;
@@ -183,6 +185,12 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     attributes[RCTTextAttributesIsHighlightedAttributeName] = @YES;
   }
 
+  // [TODO(macOS ISS#2323203)
+  if (_webkitFontSmoothing != RCTWebkitFontSmoothingAuto) {
+    attributes[RCTTextAttributesWebkitFontSmoothingAttributeName] = @(_webkitFontSmoothing);
+  }
+  // ]TODO(macOS ISS#2323203)
+
   if (_tag) {
     attributes[RCTTextAttributesTagAttributeName] = _tag;
   }
@@ -290,6 +298,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     RCTTextAttributesCompareObjects(_fontVariant) &&
     RCTTextAttributesCompareOthers(_allowFontScaling) &&
     RCTTextAttributesCompareFloats(_letterSpacing) &&
+    RCTTextAttributesCompareOthers(_webkitFontSmoothing) &&
     // Paragraph Styles
     RCTTextAttributesCompareFloats(_lineHeight) &&
     RCTTextAttributesCompareFloats(_alignment) &&

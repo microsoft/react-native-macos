@@ -458,6 +458,29 @@ exports.title = '<Text>';
 exports.description = 'Base component for rendering styled text.';
 exports.displayName = 'TextExample';
 exports.examples = [
+  // [TODO(OSS Candidate ISS#2710739)
+  {
+    title: 'Font Smoothing',
+    render: function(): React.Node {
+      return (
+        <View>
+          <Text style={{webkitFontSmoothing: 'auto'}}>
+            auto: This should be smooth
+          </Text>
+          <Text style={{webkitFontSmoothing: 'none'}}>
+            none: This should be rough
+          </Text>
+          <Text style={{webkitFontSmoothing: 'antialiased'}}>
+            subpixel: This should be antialiased
+          </Text>
+          <Text style={{webkitFontSmoothing: 'subpixel-antialiased'}}>
+            subpixel-antialiased: This should be subpixel antialiased
+          </Text>
+        </View>
+      );
+    },
+  },
+  // ]TODO(OSS Candidate ISS#2710739)
   {
     title: 'Wrap',
     render: function(): React.Node {

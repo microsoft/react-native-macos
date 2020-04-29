@@ -159,12 +159,35 @@
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
 
   NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
+  NSRange characterRange = [layoutManager characterRangeForGlyphRange:glyphRange
+                                                     actualGlyphRange:NULL];
+  // [TODO(OSS Candidate ISS#2710739)
+  [_textStorage enumerateAttribute:RCTTextAttributesWebkitFontSmoothingAttributeName
+                           inRange:characterRange
+                           options:0
+                        usingBlock:
+    ^(NSNumber *value, NSRange range, __unused BOOL *stop) {
+    RCTWebkitFontSmoothing smoothing = value.integerValue;
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    switch (smoothing) {
+      case RCTWebkitFontSmoothingAuto:
+        break;
+      case RCTWebkitFontSmoothingNone:
+        CGContextSetShouldAntialias(context, false);
+        break;
+      case RCTWebkitFontSmoothingAntialiased:
+        CGContextSetAllowsFontSmoothing(context, false);
+        CGContextSetShouldSmoothFonts(context, false);
+        break;
+      case RCTWebkitFontSmoothingSubpixelAntialiased:
+        break;
+    }
+  }];
+  // ]TODO(OSS Candidate ISS#2710739)
   [layoutManager drawBackgroundForGlyphRange:glyphRange atPoint:_contentFrame.origin];
   [layoutManager drawGlyphsForGlyphRange:glyphRange atPoint:_contentFrame.origin];
 
   __block UIBezierPath *highlightPath = nil;
-  NSRange characterRange = [layoutManager characterRangeForGlyphRange:glyphRange
-                                                     actualGlyphRange:NULL];
   [_textStorage enumerateAttribute:RCTTextAttributesIsHighlightedAttributeName
                            inRange:characterRange
                            options:0

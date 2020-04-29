@@ -327,6 +327,15 @@ RCT_ENUM_CONVERTER(RCTTextDecorationLineType, (@{
   @"underline line-through": @(RCTTextDecorationLineTypeUnderlineStrikethrough),
 }), RCTTextDecorationLineTypeNone, integerValue)
 
+// [TODO(OSS Candidate ISS#2710739)
+RCT_ENUM_CONVERTER(RCTWebkitFontSmoothing, (@{
+  @"auto": @(RCTWebkitFontSmoothingAuto),
+  @"none": @(RCTWebkitFontSmoothingNone),
+  @"antialiased": @(RCTWebkitFontSmoothingAntialiased),
+  @"subpixel-antialiased": @(RCTWebkitFontSmoothingSubpixelAntialiased),
+}), RCTWebkitFontSmoothingAuto, integerValue)
+// ]TODO(OSS Candidate ISS#2710739)
+
 RCT_ENUM_CONVERTER(NSWritingDirection, (@{
   @"auto": @(NSWritingDirectionNatural),
   @"ltr": @(NSWritingDirectionLeftToRight),

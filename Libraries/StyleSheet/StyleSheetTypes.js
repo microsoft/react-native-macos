@@ -602,6 +602,7 @@ export type ____TextStyle_Internal = $ReadOnly<{|
     | 'tabular-nums'
     | 'proportional-nums',
   >,
+  webkitFontSmoothing?: 'auto' | 'none' | 'antialiased' | 'subpixel', // TODO(OSS Candidate ISS#2710739)
   textShadowOffset?: $ReadOnly<{|
     width: number,
     height: number,
