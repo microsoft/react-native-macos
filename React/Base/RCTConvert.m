@@ -328,12 +328,12 @@ RCT_ENUM_CONVERTER(RCTTextDecorationLineType, (@{
 }), RCTTextDecorationLineTypeNone, integerValue)
 
 // [TODO(OSS Candidate ISS#2710739)
-RCT_ENUM_CONVERTER(RCTWebkitFontSmoothing, (@{
-  @"auto": @(RCTWebkitFontSmoothingAuto),
-  @"none": @(RCTWebkitFontSmoothingNone),
-  @"antialiased": @(RCTWebkitFontSmoothingAntialiased),
-  @"subpixel-antialiased": @(RCTWebkitFontSmoothingSubpixelAntialiased),
-}), RCTWebkitFontSmoothingAuto, integerValue)
+RCT_ENUM_CONVERTER(RCTFontSmoothing, (@{
+  @"auto": @(RCTFontSmoothingAuto),
+  @"none": @(RCTFontSmoothingNone),
+  @"antialiased": @(RCTFontSmoothingAntialiased),
+  @"subpixel-antialiased": @(RCTFontSmoothingSubpixelAntialiased),
+}), RCTFontSmoothingAuto, integerValue)
 // ]TODO(OSS Candidate ISS#2710739)
 
 RCT_ENUM_CONVERTER(NSWritingDirection, (@{

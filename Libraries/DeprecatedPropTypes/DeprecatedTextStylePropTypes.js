@@ -77,7 +77,7 @@ const DeprecatedTextStylePropTypes = {
   /** [TODO(OSS Candidate ISS#2710739)
    * @platform ios, macos
    */
-  webkitFontSmoothing: (ReactPropTypes.oneOf([
+  fontSmoothing: (ReactPropTypes.oneOf([
     'auto' /*default*/,
     'none',
     'antialiased',

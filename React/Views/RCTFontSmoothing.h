@@ -9,9 +9,9 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(NSInteger, RCTWebkitFontSmoothing) {
-  RCTWebkitFontSmoothingAuto = 0,
-  RCTWebkitFontSmoothingNone,
-  RCTWebkitFontSmoothingAntialiased,
-  RCTWebkitFontSmoothingSubpixelAntialiased,
+typedef NS_ENUM(NSInteger, RCTFontSmoothing) {
+  RCTFontSmoothingAuto = 0,
+  RCTFontSmoothingNone,
+  RCTFontSmoothingAntialiased,
+  RCTFontSmoothingSubpixelAntialiased,
 };

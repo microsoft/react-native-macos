@@ -464,17 +464,31 @@ exports.examples = [
     render: function(): React.Node {
       return (
         <View>
-          <Text style={{webkitFontSmoothing: 'auto'}}>
-            auto: This should be smooth
+          <Text>
+            <Text style={{fontWeight: 'bold'}}>auto: </Text>
+            <Text style={{fontSmoothing: 'auto'}}>
+              This will render using the global [RCTTextAttributes
+              fontSmoothingDefault] setting. The default is the same as
+              subpixel-antialiased if not explicitly set by the native app.
+            </Text>
           </Text>
-          <Text style={{webkitFontSmoothing: 'none'}}>
-            none: This should be rough
+          <Text>
+            <Text style={{fontWeight: 'bold'}}>none: </Text>
+            <Text style={{fontSmoothing: 'none'}}>
+              This will render with no antialiasing.
+            </Text>
           </Text>
-          <Text style={{webkitFontSmoothing: 'antialiased'}}>
-            subpixel: This should be antialiased
+          <Text>
+            <Text style={{fontWeight: 'bold'}}>antialiased: </Text>
+            <Text style={{fontSmoothing: 'antialiased'}}>
+              This will render with antialiasing.
+            </Text>
           </Text>
-          <Text style={{webkitFontSmoothing: 'subpixel-antialiased'}}>
-            subpixel-antialiased: This should be subpixel antialiased
+          <Text>
+            <Text style={{fontWeight: 'bold'}}>subpixel-antialiased: </Text>
+            <Text style={{fontSmoothing: 'subpixel-antialiased'}}>
+              This will render with subpixel antialiasing.
+            </Text>
           </Text>
         </View>
       );
