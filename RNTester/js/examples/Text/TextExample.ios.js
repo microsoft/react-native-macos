@@ -460,13 +460,13 @@ exports.displayName = 'TextExample';
 exports.examples = [
   // [TODO(OSS Candidate ISS#2710739)
   {
-    title: 'Font Smoothing',
+    title: 'Apple Font Smoothing',
     render: function(): React.Node {
       return (
         <View>
           <Text>
             <Text style={{fontWeight: 'bold'}}>auto: </Text>
-            <Text style={{fontSmoothing: 'auto'}}>
+            <Text style={{apple_fontSmoothing: 'auto'}}>
               This will render using the global [RCTTextAttributes
               fontSmoothingDefault] setting. The default is the same as
               subpixel-antialiased if not explicitly set by the native app.
@@ -474,19 +474,19 @@ exports.examples = [
           </Text>
           <Text>
             <Text style={{fontWeight: 'bold'}}>none: </Text>
-            <Text style={{fontSmoothing: 'none'}}>
+            <Text style={{apple_fontSmoothing: 'none'}}>
               This will render with no antialiasing.
             </Text>
           </Text>
           <Text>
             <Text style={{fontWeight: 'bold'}}>antialiased: </Text>
-            <Text style={{fontSmoothing: 'antialiased'}}>
+            <Text style={{apple_fontSmoothing: 'antialiased'}}>
               This will render with antialiasing.
             </Text>
           </Text>
           <Text>
             <Text style={{fontWeight: 'bold'}}>subpixel-antialiased: </Text>
-            <Text style={{fontSmoothing: 'subpixel-antialiased'}}>
+            <Text style={{apple_fontSmoothing: 'subpixel-antialiased'}}>
               This will render with subpixel antialiasing.
             </Text>
           </Text>

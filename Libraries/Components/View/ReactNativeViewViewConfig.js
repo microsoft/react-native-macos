@@ -270,7 +270,7 @@ const ReactNativeViewConfig = {
       fontStyle: true,
       fontVariant: true,
       fontWeight: true,
-      fontSmoothing: true, // TODO(OSS Candidate ISS#2710739)
+      apple_fontSmoothing: true, // TODO(OSS Candidate ISS#2710739)
       height: true,
       includeFontPadding: true,
       justifyContent: true,
