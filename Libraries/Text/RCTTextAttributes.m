@@ -57,7 +57,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   _fontVariant = textAttributes->_fontVariant ?: _fontVariant;
   _allowFontScaling = textAttributes->_allowFontScaling || _allowFontScaling;  // *
   _letterSpacing = !isnan(textAttributes->_letterSpacing) ? textAttributes->_letterSpacing : _letterSpacing;
-  _fontSmoothing = textAttributes->_fontSmoothing != RCTFontSmoothingAuto ? textAttributes->_fontSmoothing : _fontSmoothing;
+  _fontSmoothing = textAttributes->_fontSmoothing != RCTFontSmoothingAuto ? textAttributes->_fontSmoothing : _fontSmoothing; // TODO(OSS Candidate ISS#2710739)
 
   // Paragraph Styles
   _lineHeight = !isnan(textAttributes->_lineHeight) ? textAttributes->_lineHeight : _lineHeight;
@@ -298,7 +298,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     RCTTextAttributesCompareObjects(_fontVariant) &&
     RCTTextAttributesCompareOthers(_allowFontScaling) &&
     RCTTextAttributesCompareFloats(_letterSpacing) &&
-    RCTTextAttributesCompareOthers(_fontSmoothing) &&
+    RCTTextAttributesCompareOthers(_fontSmoothing) && // TODO(OSS Candidate ISS#2710739)
     // Paragraph Styles
     RCTTextAttributesCompareFloats(_lineHeight) &&
     RCTTextAttributesCompareFloats(_alignment) &&
@@ -318,6 +318,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     RCTTextAttributesCompareOthers(_textTransform);
 }
 
+// [TODO(OSS Candidate ISS#2710739)
 static RCTFontSmoothing _fontSmoothingDefault = RCTFontSmoothingAuto;
 
 + (RCTFontSmoothing)fontSmoothingDefault {
@@ -327,5 +328,6 @@ static RCTFontSmoothing _fontSmoothingDefault = RCTFontSmoothingAuto;
 + (void)setFontSmoothingDefault:(RCTFontSmoothing)fontSmoothingDefault {
   _fontSmoothingDefault = fontSmoothingDefault;
 }
+// ]TODO(OSS Candidate ISS#2710739)
 
 @end
