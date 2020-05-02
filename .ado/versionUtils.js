@@ -17,14 +17,14 @@ function gatherVersionInfo() {
     return {pkgJson, releaseVersion, branchVersionSuffix};
 }
 
-function updateVersionsInFiles(minorVersionPrefix) {
+function updateVersionsInFiles(patchVersionPrefix) {
 
     let {pkgJson, releaseVersion, branchVersionSuffix} = gatherVersionInfo();
   
     const versionStringRegEx = new RegExp(`(.*)(-${publishBranchName})?\\.([0-9]*)`);
     const versionGroups = versionStringRegEx.exec(releaseVersion);
     if (versionGroups) {
-      releaseVersion = versionGroups[1] + minorVersionPrefix + branchVersionSuffix + '.' + (parseInt(versionGroups[3]) + 1);
+      releaseVersion = versionGroups[1] + patchVersionPrefix + branchVersionSuffix + '.' + (parseInt(versionGroups[3]) + 1);
     } else {
       console.log("Invalid version to publish");
       process.exit(1);
