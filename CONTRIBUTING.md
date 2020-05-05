@@ -1,4 +1,4 @@
-# Contributing to microsoft/react-native
+# Contributing to microsoft/react-native-macos
 
 This document describes how to set up your development environment and contribute changes to the **microsoft/react-native-macos** project. This is a working fork of **facebook/react-native** where changes for supporting MacOS are being staged. 
 > **Note: This repository will be accepting PRs only specific to MacOS support. To contribute to React Native, please see [Contributing to react-native](https://github.com/facebook/react-native/blob/master/CONTRIBUTING.md)**
