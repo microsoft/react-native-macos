@@ -17,8 +17,8 @@ If you wish to contribute changes back to the **microsoft/react-native** reposit
 - Create the fork under your account. Your GitHub profile should now show **react-native** as one of your repositories.
 - Create a folder on your device and clone your fork of the **Microsoft** repository. e.g. `https://github.com/johndoe/react-native.git`. Notice how your GitHub username is in the repository location.
 
-```
-> git clone https://github.com/johndoe/react-native.git
+```bash
+git clone https://github.com/johndoe/react-native.git
 ```
 
 ### Setting up the upstream repository
@@ -27,8 +27,8 @@ Before starting to contribute changes, please setup your upstream repository to 
 
 - When you run `git remote -v`, you should see only your fork in the output list
 
-```
-> git remote -v
+```bash
+git remote -v
 
      origin  https://github.com/johndoe/react-native.git (fetch)
 
@@ -37,14 +37,14 @@ Before starting to contribute changes, please setup your upstream repository to 
 
 - Map the primary **react-native** repository as the upstream remote
 
-```
-> git remote add upstream https://github.com/microsoft/react-native.git
+```bash
+git remote add upstream https://github.com/microsoft/react-native.git
 ```
 
 - Now running `git remote -v` should show the upstream repository also
 
-```
-> git remote -v
+```bash
+git remote -v
 
      origin  https://github.com/johndoe/react-native.git (fetch)
      origin  https://github.com/johndoe/react-native.git (push)
@@ -68,21 +68,21 @@ If you are using the command line, you will want to make sure you have your bran
 
 From time to time, your fork will get out of sync with the upstream remote. Use the following commands to get the master branch of your fork up up to date.
 
-```
-> git fetch upstream
-> git checkout master
-> git pull upstream master
-> git push
+```bash
+git fetch upstream
+git checkout master
+git pull upstream master
+git push
 ```
 
 ### Merging upstream master into your current branch
 
 Use these commands instead if you would like to update your *current* branch in your fork from the upstream remote.
 
-```
-> git fetch upstream
-> git pull upstream master
-> git push
+```bash
+git fetch upstream
+git pull upstream master
+git push
 ```
 ## Contributing
 
@@ -90,7 +90,13 @@ Use these commands instead if you would like to update your *current* branch in 
 Now that your branch is set up and ready for commits, go ahead and fix the bug you are working on or make some small change that you want to check in. 
  
 ### Verify your changes
-Manually test your fix, and ensure that all tests are in a good state
+Manually test your fix by running RNTester. Run Unit Tests and Integration Tests in the RNTesterPods Xcode project. The following automated tests will be run as part of CI, you can also verify manually before submitting a PR.
+
+```bash
+yarn test # run jest tests on JavaScript
+yarn lint # run eslint on JavaScript
+yarn flow-check-macos # run Flow checks on JavaScript
+```
 
 ### Commit your changes
 
