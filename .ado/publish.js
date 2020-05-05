@@ -35,6 +35,15 @@ function doPublish() {
   exec(`git tag v${releaseVersion}`);
   exec(`git push origin HEAD:${tempPublishBranch} --follow-tags --verbose`);
   exec(`git push origin tag v${releaseVersion}`);
+
+  exec(`git checkout ${publishBranchName}`);
+  exec(`git pull origin ${publishBranchName}`);
+  exec(`git merge ${tempPublishBranch} --no-edit`);
+  exec(
+    `git push origin HEAD:${publishBranchName} --follow-tags --verbose`
+  );
+  exec(`git branch -d ${tempPublishBranch}`);
+  exec(`git push origin --delete -d ${tempPublishBranch}`);  
 }
 
 doPublish();
