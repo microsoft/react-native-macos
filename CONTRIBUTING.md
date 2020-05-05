@@ -1,6 +1,6 @@
 # Contributing to microsoft/react-native
 
-This document describes how to set up your development environment and contribute changes to the **microsoft/react-native** project. This is a working fork of **facebook/react-native** where changes for supporting MacOS are being staged. 
+This document describes how to set up your development environment and contribute changes to the **microsoft/react-native-macos** project. This is a working fork of **facebook/react-native** where changes for supporting MacOS are being staged. 
 > **Note: This repository will be accepting PRs only specific to MacOS support. To contribute to React Native, please see [Contributing to react-native](https://github.com/facebook/react-native/blob/master/CONTRIBUTING.md)**
 
 This document assumes basic working knowledge with Git and related tools. We are providing instructions specific to this project. You can either do this with the command prompt or with a combination of the command prompt and [**SourceTree**](https://www.sourcetreeapp.com/). 
@@ -9,36 +9,36 @@ This document assumes basic working knowledge with Git and related tools. We are
 
 ### Creating your own fork
 
-If you wish to contribute changes back to the **microsoft/react-native** repository, start by creating your own fork of the repository. This is essential. This will keep the number of branches on the main repository to a small count. There are lots of developers in this project and creating lots of branches on the main repository does not scale. In your own fork, you can create as many branches as you like.
+If you wish to contribute changes back to the **microsoft/react-native-macos** repository, start by creating your own fork of the repository. This is essential. This will keep the number of branches on the main repository to a small count. There are lots of developers in this project and creating lots of branches on the main repository does not scale. In your own fork, you can create as many branches as you like.
 
 - Navigate to **[GitHub](https://www.github.com)** with a browser and log in to your GitHub account. For the sake of this document, let's assume your username is **johndoe**.
-- Navigate to the **[microsoft/react-native](https://github.com/microsoft/react-native)** repository in the same browser session.
+- Navigate to the **[microsoft/react-native-macos](https://github.com/microsoft/react-native-macos)** repository in the same browser session.
 - Click on the **Fork** button at the top right corner of the page.
-- Create the fork under your account. Your GitHub profile should now show **react-native** as one of your repositories.
-- Create a folder on your device and clone your fork of the **Microsoft** repository. e.g. `https://github.com/johndoe/react-native.git`. Notice how your GitHub username is in the repository location.
+- Create the fork under your account. Your GitHub profile should now show **react-native-macos** as one of your repositories.
+- Create a folder on your device and clone your fork of the **Microsoft** repository. e.g. `https://github.com/johndoe/react-native-macos.git`. Notice how your GitHub username is in the repository location.
 
 ```bash
-git clone https://github.com/johndoe/react-native.git
+git clone https://github.com/johndoe/react-native-macos.git
 ```
 
 ### Setting up the upstream repository
 
-Before starting to contribute changes, please setup your upstream repository to the primary **microsoft/react-native** repository.
+Before starting to contribute changes, please setup your upstream repository to the primary **microsoft/react-native-macos** repository.
 
 - When you run `git remote -v`, you should see only your fork in the output list
 
 ```bash
 git remote -v
 
-     origin  https://github.com/johndoe/react-native.git (fetch)
+     origin  https://github.com/johndoe/react-native-macos.git (fetch)
 
-     origin  https://github.com/johndoe/react-native.git (push)
+     origin  https://github.com/johndoe/react-native-macos.git (push)
 ```
 
-- Map the primary **react-native** repository as the upstream remote
+- Map the primary **react-native-macos** repository as the upstream remote
 
 ```bash
-git remote add upstream https://github.com/microsoft/react-native.git
+git remote add upstream https://github.com/microsoft/react-native-macos.git
 ```
 
 - Now running `git remote -v` should show the upstream repository also
@@ -46,17 +46,17 @@ git remote add upstream https://github.com/microsoft/react-native.git
 ```bash
 git remote -v
 
-     origin  https://github.com/johndoe/react-native.git (fetch)
-     origin  https://github.com/johndoe/react-native.git (push)
-     upstream        https://github.com/microsoft/react-native.git (fetch)
-     upstream        https://github.com/microsoft/react-native.git (push)
+     origin  https://github.com/johndoe/react-native-macos.git (fetch)
+     origin  https://github.com/johndoe/react-native-macos.git (push)
+     upstream        https://github.com/microsoft/react-native-macos.git (fetch)
+     upstream        https://github.com/microsoft/react-native-macos.git (push)
 ```
 
 - At this point you are ready to start branching and contributing back changes.
 
 ### Setting up the branch
 
-For each bug or task you complete, it is recommended that you start with a fresh branch. If you have any lingering changes in your current branch that you want to save, go ahead and commit them. If you are just beginning, then you are good to go. On github, navigate to your repository which should be forked from microsoft/react-native as described in the above sections. Above the list of files is a dropdown that should say master. Use the dropdown to create a new branch and name is according to what you will be working on. (I.e. DropdownHighlight, CleanUpExamples, etc). Now you have created a new branch. 
+For each bug or task you complete, it is recommended that you start with a fresh branch. If you have any lingering changes in your current branch that you want to save, go ahead and commit them. If you are just beginning, then you are good to go. On github, navigate to your repository which should be forked from microsoft/react-native-macos as described in the above sections. Above the list of files is a dropdown that should say master. Use the dropdown to create a new branch and name is according to what you will be working on. (I.e. DropdownHighlight, CleanUpExamples, etc). Now you have created a new branch. 
 
 **SourceTree:**
 If you are using SourceTree you will want your branch to show up in SourceTree so you can commit changes to your branch. It takes time for it to show up automatically, so you can make it show by running `git remote update origin –prune` in your command prompt from the root. Once you see your new branch in SourceTree under Remotes on the left navigation pane, double click on your branch to check it out locally. A dialog will come up and the default settings should be fine, click Ok.  
