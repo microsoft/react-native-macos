@@ -22,7 +22,7 @@
 
 This repository is a working fork of **facebook/react-native** that adds support for the official React Native for macOS implementation from Microsoft. 
 
-You can read more about the macOS implementation in our website - [React Native for Windows and Mac](aka.ms/reactnativewindowsmac)
+You can read more about the macOS implementation in our website - [React Native for Windows and Mac](https://microsoft.github.io/react-native-windows/)
 
 ## Contents
 
