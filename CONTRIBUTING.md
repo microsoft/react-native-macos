@@ -1,7 +1,7 @@
 # Contributing to microsoft/react-native-macos
 
-This document describes how to set up your development environment and contribute changes to the **microsoft/react-native-macos** project. This is a working fork of **facebook/react-native** where changes for supporting MacOS are being staged. 
-> **Note: This repository will be accepting PRs only specific to MacOS support. To contribute to React Native, please see [Contributing to react-native](https://github.com/facebook/react-native/blob/master/CONTRIBUTING.md)**
+This document describes how to set up your development environment and contribute changes to the **microsoft/react-native-macos** project. This is a working fork of **facebook/react-native** where changes for supporting macOS are being staged. 
+> **Note: This repository will be accepting PRs only specific to macOS support. To contribute to React Native, please see [Contributing to react-native](https://github.com/facebook/react-native/blob/master/CONTRIBUTING.md)**
 
 This document assumes basic working knowledge with Git and related tools. We are providing instructions specific to this project. You can either do this with the command prompt or with a combination of the command prompt and [**SourceTree**](https://www.sourcetreeapp.com/). 
 
@@ -31,7 +31,6 @@ Before starting to contribute changes, please setup your upstream repository to 
 git remote -v
 
      origin  https://github.com/johndoe/react-native-macos.git (fetch)
-
      origin  https://github.com/johndoe/react-native-macos.git (push)
 ```
 
@@ -56,10 +55,10 @@ git remote -v
 
 ### Setting up the branch
 
-For each bug or task you complete, it is recommended that you start with a fresh branch. If you have any lingering changes in your current branch that you want to save, go ahead and commit them. If you are just beginning, then you are good to go. On github, navigate to your repository which should be forked from microsoft/react-native-macos as described in the above sections. Above the list of files is a dropdown that should say master. Use the dropdown to create a new branch and name is according to what you will be working on. (I.e. DropdownHighlight, CleanUpExamples, etc). Now you have created a new branch. 
+For each bug or task you complete, it is recommended that you start with a fresh branch. If you have any lingering changes in your current branch that you want to save, go ahead and commit them. If you are just beginning, then you are good to go. On github, navigate to your repository which should be forked from **microsoft/react-native-macos** as described in the above sections. Above the list of files is a dropdown that should say master. Use the dropdown to create a new branch and name is according to what you will be working on. (I.e. DropdownHighlight, CleanUpExamples, etc). Now you have created a new branch. 
 
 **SourceTree:**
-If you are using SourceTree you will want your branch to show up in SourceTree so you can commit changes to your branch. It takes time for it to show up automatically, so you can make it show by running `git remote update origin –prune` in your command prompt from the root. Once you see your new branch in SourceTree under Remotes on the left navigation pane, double click on your branch to check it out locally. A dialog will come up and the default settings should be fine, click Ok.  
+If you are using SourceTree you will want your branch to show up in SourceTree so you can commit changes to your branch. It takes time for it to show up automatically, so you can make it show by running `git pull --all` in your command prompt from the root. Once you see your new branch in SourceTree under Remotes on the left navigation pane, double click on your branch to check it out locally. A dialog will come up and the default settings should be fine, click Ok.  
 
 **Git Command Line**
 If you are using the command line, you will want to make sure you have your branch locally. It takes time for it to show up automatically, so you can make it show by running `git pull --all` in your command prompt from the root. Run `git branch -a` to see if your new branch shows up. Now you will want to check out your branch locally. You can do this with `git checkout -b branch-name`. Confirm you are now working out of the branch with `git branch`.
@@ -129,8 +128,8 @@ A bunch of tests will automatically kick off to verify your PR.  The tests marke
 
 Someone will also have to review your change before the change is allowed to be merged in. They may ask questions for more information or ask you to change things. Be sure to respond to their comments and push additional changes to the branch if they ask you to modify things before they sign off.
 
-Once you are happy with the changes, and want to merge them to the main **microsoft/react-native** project, create a pull request from your branch directly to "microsoft/react-native master".
+Once you are happy with the changes, and want to merge them to the main **microsoft/react-native-macos** project, create a pull request from your branch directly to **microsoft/react-native-macos master**.
 
-Members on the **microsoft/react-native** core team will help merge your changes.
+Members on the **microsoft/react-native-macos** core team will help merge your changes.
 
 Now you are done! Celebrate!
