@@ -26,11 +26,11 @@ You can read more about the macOS implementation in our website - [React Native 
 
 ## Contents
 
-- [Requirements](#-requirements)
-- [Getting Started](#-getting-started)
-- [Contributing](#-contributing)
-- [Documentation](#-documentation)
-- [License](#-license)
+- [Requirements](#requirements)
+- [Getting Started](#getting-started)
+- [Contributing](#contributing)
+- [Documentation](#documentation)
+- [License](#license)
 - [Code of Conduct](#code-of-conduct)
 
 ## Requirements
@@ -45,7 +45,7 @@ See the [Getting Started Guide](https://microsoft.github.io/react-native-windows
 ### Logging Issues
 Search the [existing issues](https://github.com/microsoft/react-native-macos/issues) and try to make sure your problem doesn’t already exist before opening a new issue. If your issue doesn't exist yet, try to make sure you provide as much information as possible to us so we can help you sooner. It’s helpful if you include information like:
 
-- The version of macOS, React Native, React Native macOS plugin where you ran into the issue.
+- The version of macOS, React Native, React Native macOS extension where you ran into the issue.
 - A stack trace and reduced repro case when possible.
 - Ensure the [appropriate template](https://github.com/microsoft/react-native-macos/issues/new/choose) is used when filing your issue(s).
 
@@ -66,7 +66,7 @@ See [Contributing guidelines](https://github.com/microsoft/react-native-macos/bl
 
 ## License
 
-The React Native for macOS plugin, including modifications to the original Facebook source code, and all newly contributed code is provided under the [MIT License](LICENSE). Portions of the React Native for macOS plugin derived from React Native are copyright Facebook.
+The React Native for macOS extension, including modifications to the original Facebook source code, and all newly contributed code is provided under the [MIT License](LICENSE). Portions of the React Native for macOS extension derived from React Native are copyright Facebook.
 
 ## Code of Conduct
 
