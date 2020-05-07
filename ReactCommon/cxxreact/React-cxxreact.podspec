@@ -40,4 +40,6 @@ Pod::Spec.new do |s|
   s.dependency "Folly", folly_version
   s.dependency "glog"
   s.dependency "React-jsinspector", version
+
+  s.osx.dependency "hermes" # TODO(macOS GH#214)
 end

@@ -343,6 +343,7 @@ DEPENDENCIES:
   - FlipperKit/SKIOSNetworkPlugin (~> 0.30.1)
   - Folly (from `../third-party-podspecs/Folly.podspec`)
   - glog (from `../third-party-podspecs/glog.podspec`)
+  - hermes (from `https://github.com/alloy/hermes.git`, commit `f9e7bdc495b033ccac2b4a838f0264f4846d2887`)
   - RCTRequired (from `../Libraries/RCTRequired`)
   - RCTTypeSafety (from `../Libraries/TypeSafety`)
   - React (from `../`)
@@ -398,6 +399,9 @@ EXTERNAL SOURCES:
     :podspec: "../third-party-podspecs/Folly.podspec"
   glog:
     :podspec: "../third-party-podspecs/glog.podspec"
+  hermes:
+    :commit: f9e7bdc495b033ccac2b4a838f0264f4846d2887
+    :git: https://github.com/alloy/hermes.git
   RCTRequired:
     :path: "../Libraries/RCTRequired"
   RCTTypeSafety:
@@ -444,6 +448,11 @@ EXTERNAL SOURCES:
     :path: "../ReactCommon"
   Yoga:
     :path: "../ReactCommon/yoga"
+
+CHECKOUT OPTIONS:
+  hermes:
+    :commit: f9e7bdc495b033ccac2b4a838f0264f4846d2887
+    :git: https://github.com/alloy/hermes.git
 
 SPEC CHECKSUMS:
   boost-for-react-native: a110407d9db2642fd2e1bcd7c5a51c81f2521dc9
