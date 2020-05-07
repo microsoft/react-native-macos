@@ -9,6 +9,7 @@
 
 #import "RCTUtils.h"
 
+#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
 RCTDimensions RCTGetDimensions(CGFloat fontScale)
 {
   UIScreen *mainScreen = UIScreen.mainScreen;
@@ -61,3 +62,44 @@ CGFloat RCTGetMultiplierForContentSizeCategory(UIContentSizeCategory category)
   double value = multipliers[category].doubleValue;
   return value > 0.0 ? value : 1.0;
 }
+
+#else // [TODO(macOS ISS#2323203)
+
+RCTDimensions RCTGetDimensions(RCTPlatformView *rootView) {
+  RCTDimensions dimensions = {
+    { 0, 0, 0, /*fontScale*/ 1 },
+    { 0, 0, 0, /*fontScale*/ 1 }
+  };
+  NSScreen *screen = nil;
+  NSWindow *window = nil;
+  if (rootView != nil) {
+    window = [rootView window];
+  } else {
+    // We don't have a root view so fall back to the app's key window
+    window = [NSApp keyWindow];
+  }
+
+  if (window != nil) {
+    screen = [window screen];
+    NSSize size = [window frame].size;
+    dimensions.window.width = size.width;
+    dimensions.window.height = size.height;
+    dimensions.window.scale = [window backingScaleFactor];
+  } else {
+    // We don't have a window yet so make something up
+    screen = [NSScreen mainScreen];
+    NSSize size = [screen frame].size;
+    dimensions.window.width = size.width;
+    dimensions.window.height = size.height;
+    dimensions.window.scale = [screen backingScaleFactor];
+  }
+
+  NSSize size = [screen frame].size;
+  dimensions.screen.width = size.width;
+  dimensions.screen.height = size.height;
+  dimensions.screen.scale = [screen backingScaleFactor];
+
+  return dimensions;
+}
+
+#endif // ]TODO(macOS ISS#2323203)
