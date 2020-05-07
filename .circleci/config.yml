@@ -620,20 +620,18 @@ workflows:
       # - test_android:
       #     requires:
       #       - setup_android
-      # ]TODO(macOS ISS#2323203)
-      - test_ios:
-          requires:
-            - setup_ios
-      - test_ios:
-          name: test_ios_frameworks
-          use_frameworks: true
-          requires:
-            - setup_ios
-      - test_ios_e2e:
-          requires:
-            - setup_ios
-            - test_js
-      # [TODO(macOS ISS#2323203): disable this test which is redundant to Azure Devops test and this fork is not configured to execute.
+      # - test_ios:
+      #     requires:
+      #       - setup_ios
+      # - test_ios:
+      #     name: test_ios_frameworks
+      #     use_frameworks: true
+      #     requires:
+      #       - setup_ios
+      # - test_ios_e2e:
+      #     requires:
+      #       - setup_ios
+      #       - test_js
       # - test_js:
       #     name: test_js_lts
       #     executor: nodelts
