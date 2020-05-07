@@ -617,10 +617,10 @@ workflows:
       #     requires:
       #       - setup_js
       #       - test_js
+      # - test_android:
+      #     requires:
+      #       - setup_android
       # ]TODO(macOS ISS#2323203)
-      - test_android:
-          requires:
-            - setup_android
       - test_ios:
           requires:
             - setup_ios
