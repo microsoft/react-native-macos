@@ -61,7 +61,7 @@ Pod::Spec.new do |s|
                                 "React/Inspector/**/*"
     ss.ios.exclude_files      = "React/**/RCTTV*.*",
 
-    # TODO(macOS GH#214)
+    # [TODO(macOS ISS#2323203)
                                 "**/MacOS/*"
     ss.osx.exclude_files      = "React/Modules/RCTRedBoxExtraDataViewController.{h,m}",
                                 "React/UIUtils/*",
@@ -72,6 +72,7 @@ Pod::Spec.new do |s|
                                 "React/Base/RCTReloadCommand.*",
                                 "React/Views/{RCTModal*,RCTMasked*,RCTTV*,RCTRefreshControl*,RCTWrapperViewController}.*",
                                 "React/Views/SafeAreaView/*"
+    # ]TODO(macOS ISS#2323203)
 
     ss.tvos.exclude_files     = "React/Modules/RCTClipboard*",
                                 "React/Views/RCTDatePicker*",
