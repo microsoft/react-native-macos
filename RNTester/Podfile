@@ -101,5 +101,16 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     puts target.name
+    if target.platform_name == :ios
+      target.build_configurations.each do |config|
+        archs = config.build_settings['ARCHS'];
+        if archs.nil?
+          archs = ['$(ARCHS_STANDARD)']
+        end
+        archs.push('arm64e');
+        config.build_settings['ARCHS'] = archs;
+        puts '  adding to ' + config.name + " ARCHS=" + archs.inspect
+      end
+    end
   end
 end
