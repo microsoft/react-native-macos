@@ -602,26 +602,18 @@ workflows:
           filters:
             branches:
               ignore: gh-pages
-      - setup:
-          name: setup_android
-          # [TODO(macOS ISS#2323203): disable this test which is redundant to Azure Devops test and this fork is not configured to execute.
-          branches:
-            ignore:
-              - /.*/
-          # ]TODO(macOS ISS#2323203)
-          checkout_type: android
-          executor: reactnativeandroid
-          filters:
-            branches:
-              ignore: gh-pages
-      - test_js:
-          # [TODO(macOS ISS#2323203): disable this test which is redundant to Azure Devops test and this fork is not configured to execute.
-          branches:
-            ignore:
-              - /.*/
-          # ]TODO(macOS ISS#2323203)
-          requires:
-            - setup_js
+      # [TODO(macOS ISS#2323203): disable this test which is redundant to Azure Devops test and this fork is not configured to execute.
+      # - setup:
+      #     name: setup_android
+      #     checkout_type: android
+      #     executor: reactnativeandroid
+      #     filters:
+      #       branches:
+      #         ignore: gh-pages
+      # - test_js:
+      #     requires:
+      #       - setup_js
+      # ]TODO(macOS ISS#2323203)
       - test_js_e2e:
           requires:
             - setup_js
@@ -641,25 +633,17 @@ workflows:
           requires:
             - setup_ios
             - test_js
-      - test_js:
-          name: test_js_lts
-          # [TODO(macOS ISS#2323203): disable this test which is redundant to Azure Devops test and this fork is not configured to execute.
-          branches:
-            ignore:
-              - /.*/
-          # ]TODO(macOS ISS#2323203)
-          executor: nodelts
-          requires:
-            - setup_js
-      - test_docker:
-          # [TODO(macOS ISS#2323203): disable this test which is redundant to Azure Devops test and this fork is not configured to execute.
-          branches:
-            ignore:
-              - /.*/
-          # ]TODO(macOS ISS#2323203)
-          filters:
-            branches:
-              ignore: gh-pages
+      # [TODO(macOS ISS#2323203): disable this test which is redundant to Azure Devops test and this fork is not configured to execute.
+      # - test_js:
+      #     name: test_js_lts
+      #     executor: nodelts
+      #     requires:
+      #       - setup_js
+      # - test_docker:
+      #     filters:
+      #       branches:
+      #         ignore: gh-pages
+      # ]TODO(macOS ISS#2323203)
   releases:
     jobs:
       - setup:
@@ -706,11 +690,8 @@ workflows:
               only: /^pull\/.*$/
 
       # Gather coverage
-      - js_coverage:
-          # [TODO(macOS ISS#2323203): disable this test which is redundant to Azure Devops test and this fork is not configured to execute.
-          branches:
-            ignore:
-              - /.*/
-          # ]TODO(macOS ISS#2323203)
-          requires:
-            - setup
+      # [TODO(macOS ISS#2323203): disable this test which is redundant to Azure Devops test and this fork is not configured to execute.
+      # - js_coverage:
+      #    requires:
+      #      - setup
+      # ]TODO(macOS ISS#2323203)
