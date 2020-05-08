@@ -42,6 +42,10 @@
 #import "RCTMessageThread.h"
 #import "RCTObjcExecutor.h"
 
+#if TARGET_OS_OSX
+#import <hermes/hermes.h>
+#endif
+
 #ifdef WITH_FBSYSTRACE
 #import <React/RCTFBSystrace.h>
 #endif
@@ -347,6 +351,9 @@ struct RCTInstanceCallback : public InstanceCallback {
       executorFactory = [cxxDelegate jsExecutorFactoryForBridge:self];
     }
     if (!executorFactory) {
+#if TARGET_OS_OSX
+      auto _runtime = facebook::hermes::makeHermesRuntime();
+#endif
       executorFactory = std::make_shared<JSCExecutorFactory>(nullptr);
     }
   } else {
