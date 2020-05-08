@@ -72,27 +72,27 @@ RCTDimensions RCTGetDimensions(RCTPlatformView *rootView) {
   };
   NSScreen *screen = nil;
   NSWindow *window = nil;
-  NSSize windowSize;
+  NSSize size;
   if (rootView != nil) {
     window = [rootView window];
-    windowSize = [rootView frame].size;
+    size = [rootView frame].size;
   } else {
     // We don't have a root view so fall back to the app's key window
     window = [NSApp keyWindow];
-    windowSize = [window frame].size;
+    size = [window frame].size;
   }
 
   if (window != nil) {
     screen = [window screen];
-    dimensions.window.width = windowSize.width;
-    dimensions.window.height = windowSize.height;
+    dimensions.window.width = size.width;
+    dimensions.window.height = size.height;
     dimensions.window.scale = [window backingScaleFactor];
   } else {
     // We don't have a window yet so make something up
     screen = [NSScreen mainScreen];
-    NSSize size = [screen frame].size;
-    dimensions.window.width = size.width;
-    dimensions.window.height = size.height;
+    NSSize screenSize = [screen frame].size;
+    dimensions.window.width = screenSize.width;
+    dimensions.window.height = screenSize.height;
     dimensions.window.scale = [screen backingScaleFactor];
   }
 
