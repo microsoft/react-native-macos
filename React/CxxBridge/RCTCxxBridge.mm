@@ -37,14 +37,18 @@
 #import <cxxreact/ReactMarker.h>
 #import <jsireact/JSIExecutor.h>
 
+#if TARGET_OS_OSX
+#define RCT_USE_HERMES 1
+#endif
+#if RCT_USE_HERMES
+#import "HermesExecutorFactory.h"
+#else
 #import "JSCExecutorFactory.h"
+#endif
+
 #import "NSDataBigString.h"
 #import "RCTMessageThread.h"
 #import "RCTObjcExecutor.h"
-
-#if TARGET_OS_OSX
-#import <hermes/hermes.h>
-#endif
 
 #ifdef WITH_FBSYSTRACE
 #import <React/RCTFBSystrace.h>
@@ -351,10 +355,11 @@ struct RCTInstanceCallback : public InstanceCallback {
       executorFactory = [cxxDelegate jsExecutorFactoryForBridge:self];
     }
     if (!executorFactory) {
-#if TARGET_OS_OSX
-      auto _runtime = facebook::hermes::makeHermesRuntime();
-#endif
+#if RCT_USE_HERMES
+      executorFactory = std::make_shared<HermesExecutorFactory>(nullptr);
+#else
       executorFactory = std::make_shared<JSCExecutorFactory>(nullptr);
+#endif
     }
   } else {
     id<RCTJavaScriptExecutor> objcExecutor = [self moduleForClass:self.executorClass];

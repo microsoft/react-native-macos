@@ -58,7 +58,7 @@ Pod::Spec.new do |s|
                                 "React/DevSupport/**/*",
                                 "React/Fabric/**/*",
                                 "React/Inspector/**/*"
-    ss.ios.exclude_files      = "React/**/RCTTV*.*",
+    ss.ios.exclude_files      = "React/**/RCTTV*.*", "React/CxxBridge/HermesExecutorFactory.*"
 
     # [TODO(macOS ISS#2323203)
                                 "**/MacOS/*"
