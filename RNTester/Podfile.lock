@@ -343,7 +343,7 @@ DEPENDENCIES:
   - FlipperKit/SKIOSNetworkPlugin (~> 0.30.1)
   - Folly (from `../third-party-podspecs/Folly.podspec`)
   - glog (from `../third-party-podspecs/glog.podspec`)
-  - hermes (from `https://github.com/alloy/hermes.git`, commit `4af03d10f76418a781b51e8434efeceee015ce5a`)
+  - "hermes (from `{:http=>\"https://github.com/alloy/hermes/releases/download/v0.2.1/hermes.zip\", :flatten=>true}`)"
   - RCTRequired (from `../Libraries/RCTRequired`)
   - RCTTypeSafety (from `../Libraries/TypeSafety`)
   - React (from `../`)
@@ -400,8 +400,8 @@ EXTERNAL SOURCES:
   glog:
     :podspec: "../third-party-podspecs/glog.podspec"
   hermes:
-    :commit: 4af03d10f76418a781b51e8434efeceee015ce5a
-    :git: https://github.com/alloy/hermes.git
+    :flatten: true
+    :http: https://github.com/alloy/hermes/releases/download/v0.2.1/hermes.zip
   RCTRequired:
     :path: "../Libraries/RCTRequired"
   RCTTypeSafety:
@@ -451,8 +451,8 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   hermes:
-    :commit: 4af03d10f76418a781b51e8434efeceee015ce5a
-    :git: https://github.com/alloy/hermes.git
+    :flatten: true
+    :http: https://github.com/alloy/hermes/releases/download/v0.2.1/hermes.zip
 
 SPEC CHECKSUMS:
   boost-for-react-native: a110407d9db2642fd2e1bcd7c5a51c81f2521dc9

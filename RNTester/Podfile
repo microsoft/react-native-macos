@@ -119,7 +119,7 @@ end
 target 'RNTester-macOS' do
   platform :osx, '10.14'
   # pod 'hermes', :git => 'https://github.com/alloy/hermes.git', :commit => '4af03d10f76418a781b51e8434efeceee015ce5a'
-  pod 'hermes', :http => 'https://github.com/alloy/hermes/releases/download/v0.2.1/hermes-macos-0.2.1.zip', :flatten => true
+  pod 'hermes', :http => 'https://github.com/alloy/hermes/releases/download/v0.2.1/hermes.zip', :flatten => true
   pods()
 end
 
