@@ -118,7 +118,7 @@ end
 
 target 'RNTester-macOS' do
   platform :osx, '10.14'
-  pod 'hermes', :git => 'https://github.com/alloy/hermes.git', :commit => '84108dac91a066eabbc41e0a5b5a197dd627d9d5'
+  pod 'hermes', :git => 'https://github.com/alloy/hermes.git', :commit => '4af03d10f76418a781b51e8434efeceee015ce5a'
   pods()
 end
 
