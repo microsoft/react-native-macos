@@ -9,6 +9,7 @@ trigger: none # will disable CI builds entirely
 pr:
 - master
 - 0.59-stable
+- 0.60-stable
 
 jobs:
   - job: JavaScriptRNPR

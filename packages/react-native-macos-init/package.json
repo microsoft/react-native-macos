@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": "https://github.com/microsoft/react-native-macos",
   "license": "MIT",
-  "private": false,
+  "private": true,
   "scripts": {
     "change": "beachball change",
     "check": "beachball check",
