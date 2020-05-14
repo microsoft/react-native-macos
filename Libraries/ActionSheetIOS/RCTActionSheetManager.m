@@ -160,7 +160,12 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions:(NSDictionary *)options
     // Display under the anchorview
     inView = view;
     CGRect bounds = [view bounds];
-    location = CGPointMake(NSMinX(bounds), NSMaxY(bounds));
+
+    if ([view userInterfaceLayoutDirection] == NSUserInterfaceLayoutDirectionRightToLeft) {
+      location = CGPointMake(NSMaxX(bounds), NSMaxY(bounds));
+    } else {
+      location = CGPointMake(NSMinX(bounds), NSMaxY(bounds));
+    }
   } else {
     // Display at mouse location if no anchorView provided
     location = [NSEvent mouseLocation];
