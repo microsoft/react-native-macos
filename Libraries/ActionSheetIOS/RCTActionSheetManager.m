@@ -168,14 +168,10 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions:(NSDictionary *)options
       eventLocationRelativeToWindow = eventLocationInWindow;
     }
     origin = [view convertPoint:eventLocationRelativeToWindow fromView:nil];
-  } else if (view) {
-    CGRect superviewFrame = [superview frame];
-    origin = NSMakePoint(NSMidX(superviewFrame), NSMidY(superviewFrame));
-  } else {
-    origin = [NSEvent mouseLocation];
+    [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:origin inView:superview];
+  } else { // Fallback to mouse location relative to window
+    [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:[NSEvent mouseLocation] inView:nil];
   }
-  
-  [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:origin inView:superview];
 #endif // ]TODO(macOS ISS#2323203)
 }
 
