@@ -149,29 +149,23 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions:(NSDictionary *)options
     item.target = self;
     [menu addItem:item];
   }
-  
-  NSPoint origin = NSZeroPoint;
-  NSEvent *event = nil;
+
   RCTPlatformView *view = nil;
   if (anchorViewTag) {
     view = [self.bridge.uiManager viewForReactTag:anchorViewTag];
-    event = [view.window currentEvent];
   }
-  NSView *superview = [view superview];
-  if (event && view) {
-    // On a macOS trackpad, soft taps are received as sysDefined event types. SysDefined event locations are relative to the screen so we have to convert those separately.
-    NSPoint eventLocationRelativeToWindow = NSZeroPoint;
-    CGPoint eventLocationInWindow = [event locationInWindow];
-    if ([event type] == NSEventTypeSystemDefined) { // light tap event relative to screen
-      eventLocationRelativeToWindow = [[view window] convertRectFromScreen:NSMakeRect(eventLocationInWindow.x, eventLocationInWindow.y, 0, 0)].origin;
-    } else { // full click events are relative to the window
-      eventLocationRelativeToWindow = eventLocationInWindow;
-    }
-    origin = [view convertPoint:eventLocationRelativeToWindow fromView:nil];
-    [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:origin inView:superview];
-  } else { // Fallback to mouse location relative to window
-    [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:[NSEvent mouseLocation] inView:nil];
+  CGPoint location = CGPointZero;
+  NSView *inView = nil;
+  if (view != nil) {
+    // Display under the anchorview
+    inView = [view superview];
+    CGRect frame = [view frame];
+    location = CGPointMake(frame.origin.x, frame.origin.y + frame.size.height);
+  } else {
+    // Display at mouse location if no anchorView provided
+    location = [NSEvent mouseLocation];
   }
+  [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:location inView:inView];
 #endif // ]TODO(macOS ISS#2323203)
 }
 
