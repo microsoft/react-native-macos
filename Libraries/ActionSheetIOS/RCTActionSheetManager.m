@@ -158,9 +158,9 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions:(NSDictionary *)options
   NSView *inView = nil;
   if (view != nil) {
     // Display under the anchorview
-    inView = [view superview];
-    CGRect frame = [view frame];
-    location = CGPointMake(frame.origin.x, frame.origin.y + frame.size.height);
+    inView = view;
+    CGRect bounds = [view bounds];
+    location = CGPointMake(NSMinX(bounds), NSMaxY(bounds));
   } else {
     // Display at mouse location if no anchorView provided
     location = [NSEvent mouseLocation];
