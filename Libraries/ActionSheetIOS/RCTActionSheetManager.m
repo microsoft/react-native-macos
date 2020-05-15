@@ -154,18 +154,15 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions:(NSDictionary *)options
   if (anchorViewTag) {
     view = [self.bridge.uiManager viewForReactTag:anchorViewTag];
   }
-  CGPoint location = CGPointZero;
+  NSPoint location = CGPointZero;
   NSView *inView = nil;
   if (view != nil) {
     // Display under the anchorview
     inView = view;
     CGRect bounds = [view bounds];
 
-    if ([view userInterfaceLayoutDirection] == NSUserInterfaceLayoutDirectionRightToLeft) {
-      location = CGPointMake(NSMaxX(bounds), NSMaxY(bounds));
-    } else {
-      location = CGPointMake(NSMinX(bounds), NSMaxY(bounds));
-    }
+    CGFloat originX = [view userInterfaceLayoutDirection] == NSUserInterfaceLayoutDirectionRightToLeft ? NSMaxX(bounds) : NSMinX(bounds);
+    location = NSMakePoint(originX, NSMaxY(bounds));
   } else {
     // Display at mouse location if no anchorView provided
     location = [NSEvent mouseLocation];
