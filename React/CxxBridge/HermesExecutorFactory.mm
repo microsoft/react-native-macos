@@ -1,3 +1,5 @@
+// TODO: Share code with the Android HermesExecutorFactory.cpp module.
+
 // Copyright 2004-present Facebook. All Rights Reserved.
 
 #include "HermesExecutorFactory.h"
@@ -16,8 +18,6 @@
 #include <hermes/inspector/chrome/Registration.h>
 #endif
 
-//#include "JSITracing.h"
-
 using namespace facebook::hermes;
 using namespace facebook::jsi;
 
@@ -25,12 +25,6 @@ namespace facebook {
 namespace react {
 
 namespace {
-
-std::unique_ptr<HermesRuntime> makeHermesRuntimeSystraced(
-    const ::hermes::vm::RuntimeConfig &runtimeConfig) {
-  SystraceSection s("HermesExecutorFactory::makeHermesRuntimeSystraced");
-  return hermes::makeHermesRuntime(runtimeConfig);
-}
 
 #ifdef HERMES_ENABLE_DEBUGGER
 
@@ -188,50 +182,46 @@ class DecoratedRuntime : public jsi::WithRuntimeDecorator<ReentrancyCheck> {
 std::unique_ptr<JSExecutor> HermesExecutorFactory::createJSExecutor(
     std::shared_ptr<ExecutorDelegate> delegate,
     std::shared_ptr<MessageQueueThread> jsQueue) {
-//  std::unique_ptr<HermesRuntime> hermesRuntime =
-//      makeHermesRuntimeSystraced(runtimeConfig_);
-//  HermesRuntime& hermesRuntimeRef = *hermesRuntime;
-//  auto decoratedRuntime = std::make_shared<DecoratedRuntime>(
-//      makeTracingHermesRuntime(std::move(hermesRuntime), runtimeConfig_),
-//      hermesRuntimeRef,
-//      jsQueue);
-//
-//  // So what do we have now?
-//  // DecoratedRuntime -> TracingRuntime -> HermesRuntime
-//  //
-//  // DecoratedRuntime is held by JSIExecutor.  When it gets used, it
-//  // will check that it's on the right thread, do any necessary trace
-//  // logging, then call the real HermesRuntime.  When it is destroyed,
-//  // it will shut down the debugger before the HermesRuntime is.  In
-//  // the normal case where tracing and debugging are not compiled in,
-//  // all that's left is the thread checking.
-//
-//  // Add js engine information to Error.prototype so in error reporting we
-//  // can send this information.
-//  auto errorPrototype =
-//      decoratedRuntime->global()
-//          .getPropertyAsObject(*decoratedRuntime, "Error")
-//          .getPropertyAsObject(*decoratedRuntime, "prototype");
-//  errorPrototype.setProperty(*decoratedRuntime, "jsEngine", "hermes");
-//
-//  return std::make_unique<HermesExecutor>(
-//      decoratedRuntime, delegate, jsQueue, timeoutInvoker_, runtimeInstaller_);
-  
-  auto installBindings = [runtimeInstaller=runtimeInstaller_](jsi::Runtime &runtime) {
-    react::Logger iosLoggingBinder = [](const std::string &message, unsigned int logLevel) {
-      _RCTLogJavaScriptInternal(
-        static_cast<RCTLogLevel>(logLevel),
-        [NSString stringWithUTF8String:message.c_str()]);
+  auto hermesRuntime = hermes::makeHermesRuntime(runtimeConfig_);
+  HermesRuntime& hermesRuntimeRef = *hermesRuntime;
+  auto decoratedRuntime = std::make_shared<DecoratedRuntime>(
+    std::move(hermesRuntime), hermesRuntimeRef, jsQueue);
+  // So what do we have now?
+  // DecoratedRuntime -> HermesRuntime
+  //
+  // DecoratedRuntime is held by JSIExecutor.  When it gets used, it
+  // will check that it's on the right thread, do any necessary trace
+  // logging, then call the real HermesRuntime.  When it is destroyed,
+  // it will shut down the debugger before the HermesRuntime is.  In
+  // the normal case where tracing and debugging are not compiled in,
+  // all that's left is the thread checking.
+
+  // Add js engine information to Error.prototype so in error reporting we
+  // can send this information.
+  auto errorPrototype =
+      decoratedRuntime->global()
+          .getPropertyAsObject(*decoratedRuntime, "Error")
+          .getPropertyAsObject(*decoratedRuntime, "prototype");
+  errorPrototype.setProperty(*decoratedRuntime, "jsEngine", "hermes");
+
+  // TODO: Share with JSCExecutorFactory.mm
+  auto installBindings =
+    [runtimeInstaller=runtimeInstaller_](jsi::Runtime &runtime) {
+      react::Logger iosLoggingBinder =
+        [](const std::string &message, unsigned int logLevel) {
+          _RCTLogJavaScriptInternal(
+            static_cast<RCTLogLevel>(logLevel),
+            [NSString stringWithUTF8String:message.c_str()]);
+        };
+      react::bindNativeLogger(runtime, iosLoggingBinder);
+      // Wrap over the original runtimeInstaller
+      if (runtimeInstaller) {
+        runtimeInstaller(runtime);
+      }
     };
-    react::bindNativeLogger(runtime, iosLoggingBinder);
-    // Wrap over the original runtimeInstaller
-    if (runtimeInstaller) {
-      runtimeInstaller(runtime);
-    }
-  };
-  
-  auto runtime = hermes::makeHermesRuntime(runtimeConfig_);
-  return std::make_unique<HermesExecutor>(std::move(runtime), delegate, jsQueue, timeoutInvoker_, std::move(installBindings));
+
+  return std::make_unique<HermesExecutor>(decoratedRuntime, delegate, jsQueue,
+    timeoutInvoker_, std::move(installBindings));
 }
 
 HermesExecutor::HermesExecutor(
