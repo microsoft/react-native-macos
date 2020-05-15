@@ -108,13 +108,15 @@ source "$REACT_NATIVE_DIR/scripts/node-binary.sh"
 
 [ -z "$BUNDLE_COMMAND" ] && BUNDLE_COMMAND="bundle"
 
+[ -z "$HERMES_PATH" ] && HERMES_PATH="$PROJECT_ROOT/RNTester/Pods/hermes/destroot/bin/hermes"
+
 if [[ -z "$BUNDLE_CONFIG" ]]; then
   CONFIG_ARG=""
 else
   CONFIG_ARG="--config $BUNDLE_CONFIG"
 fi
 
-BUNDLE_FILE="$DEST/main.jsbundle"
+BUNDLE_FILE="$CONFIGURATION_BUILD_DIR/main.jsbundle"
 
 case "$PLATFORM_NAME" in
   "macosx")
@@ -140,6 +142,9 @@ fi
   --assets-dest "$DEST" \
   $EXTRA_ARGS \
   $EXTRA_PACKAGER_ARGS
+
+# TODO: Emit source-map for release builds
+"$HERMES_PATH" -emit-binary -out "$DEST/main.jsbundle" "$BUNDLE_FILE"
 
 if [[ $DEV != true && ! -f "$BUNDLE_FILE" ]]; then
   echo "error: File $BUNDLE_FILE does not exist. This must be a bug with" >&2
