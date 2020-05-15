@@ -155,10 +155,8 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions:(NSDictionary *)options
     view = [self.bridge.uiManager viewForReactTag:anchorViewTag];
   }
   NSPoint location = CGPointZero;
-  NSView *inView = nil;
   if (view != nil) {
     // Display under the anchorview
-    inView = view;
     CGRect bounds = [view bounds];
 
     CGFloat originX = [view userInterfaceLayoutDirection] == NSUserInterfaceLayoutDirectionRightToLeft ? NSMaxX(bounds) : NSMinX(bounds);
@@ -167,7 +165,7 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions:(NSDictionary *)options
     // Display at mouse location if no anchorView provided
     location = [NSEvent mouseLocation];
   }
-  [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:location inView:inView];
+  [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:location inView:view];
 #endif // ]TODO(macOS ISS#2323203)
 }
 
