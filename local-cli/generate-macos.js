@@ -6,7 +6,7 @@ const {
   copyProjectTemplateAndReplace,
   installDependencies,
   installPods,
-  printFinishMessage
+  printFinishMessage,
 } = require('./generator-macos');
 
 /**

@@ -164,5 +164,5 @@ module.exports = {
   copyProjectTemplateAndReplace,
   installDependencies,
   installPods,
-  printFinishMessage
+  printFinishMessage,
 };
