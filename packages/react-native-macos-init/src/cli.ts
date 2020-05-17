@@ -297,11 +297,11 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
     if (reactNativeMacOSResolvedVersion !== reactNativeMacOSVersion) {
       console.log(`${reactNativeMacOSVersion ? 'Upgrading to' : 'Installing'} ${pkgLatest}…`);
 
-      const verbose = argv.verbose;
+      const { verbose } = argv;
       const pkgmgr = isProjectUsingYarn(process.cwd())
         ? `yarn add${verbose ? '' : ' -s'}`
         : `npm install --save${verbose ? '' : ' --silent'}`;
-      const execOptions = argv.verbose ? { stdio: 'inherit' as 'inherit' } : {};
+      const execOptions = verbose ? { stdio: 'inherit' as 'inherit' } : {};
       execSync(`${pkgmgr} "${MACOSPKG}@${version}"`, execOptions);
 
       console.log(`${pkgLatest} ${chalk.green('successfully installed!')}`);
