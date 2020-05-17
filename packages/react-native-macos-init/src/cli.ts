@@ -240,14 +240,15 @@ function printPkg(name: string, version?: string) {
  * Prints decorated version of console.error to the CLI
  */
 function printError(message: string, ...optionalParams: any[]) {
-  return console.error(chalk.red(chalk.bold(message)), ...optionalParams);
+  console.error(chalk.red(chalk.bold(message)), ...optionalParams);
 }
 
 (async () => {
   try {
-    const name = getReactNativeAppName();
+    const { overwrite, verbose } = argv;
     let version = argv.version;
 
+    const name = getReactNativeAppName();
     const reactNativeVersion = getReactNativeVersion();
     const reactNativeMacOSVersion = getReactNativeMacOSVersion();
     const reactNativeMacOSLatestVersion = await getLatestMatchingReactNativeMacOSVersion('latest');
@@ -304,7 +305,6 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
     if (reactNativeMacOSResolvedVersion !== reactNativeMacOSVersion) {
       console.log(`${reactNativeMacOSVersion ? 'Upgrading to' : 'Installing'} ${pkgLatest}…`);
 
-      const { verbose } = argv;
       const pkgmgr = isProjectUsingYarn(process.cwd())
         ? `yarn add${verbose ? '' : ' -s'}`
         : `npm install --save${verbose ? '' : ' --silent'}`;
@@ -318,8 +318,8 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
 
     const generateMacOS = require(reactNativeMacOSGeneratePath());
     generateMacOS(process.cwd(), name, {
-      overwrite: argv.overwrite,
-      verbose: argv.verbose,
+      overwrite,
+      verbose,
     });
   } catch (error) {
     printError(error.message, error);
