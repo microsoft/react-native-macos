@@ -75,7 +75,7 @@ function getReactNativeAppName() {
     }
   }
   if (!name) {
-    printError('Please specify name in package.json or app.json');
+    printError('Please specify name in package.json or app.json.');
   }
   return name;
 }
@@ -215,7 +215,7 @@ async function getLatestMatchingReactNativeMacOSVersion(
     return version;
   } catch (err) {
     printError(
-      `No version of ${MACOSPKG}@${versionSemVer} found!`,
+      `No version of ${printPkg(MACOSPKG, versionSemVer)} found!`,
     );
     process.exit(EXITCODE_NO_MATCHING_RNMACOS);
     return "";
@@ -237,7 +237,7 @@ function printPkg(name: string, version?: string) {
 }
 
 /**
- * Prints decorated version of console.error the CLI
+ * Prints decorated version of console.error to the CLI
  */
 function printError(message: string, ...optionalParams: any[]) {
   return console.error(chalk.red(chalk.bold(message)), ...optionalParams);
