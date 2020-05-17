@@ -61,7 +61,7 @@ function getReactNativeAppName() {
   const cwd = process.cwd();
   const pkgJsonPath = findUp.sync('package.json', {cwd});
   if (!pkgJsonPath) {
-    console.error(
+    printError(
       `Unable to find package.json. This should be run from within an existing ${RNPKG} app.`,
     );
     process.exit(EXITCODE_NO_PACKAGE_JSON);
@@ -75,7 +75,7 @@ function getReactNativeAppName() {
     }
   }
   if (!name) {
-    console.error('Please specify name in package.json or app.json');
+    printError('Please specify name in package.json or app.json');
   }
   return name;
 }
@@ -95,7 +95,7 @@ function getPackageVersion(
     }
   } catch (error) {
     if (exitOnError) {
-      console.error(
+      printError(
         `Must be run from a project that already depends on ${packageName}, and has ${packageName} installed.`,
       );
       process.exit(EXITCODE_NO_REACTNATIVE_FOUND);
@@ -112,7 +112,7 @@ function getReactNativeMacOSVersion() {
 }
 
 function errorOutOnUnsupportedVersionOfReactNative(rnVersion: string) {
-  console.error(`Unsupported version of ${RNPKG}: ${chalk.cyan(
+  printError(`Unsupported version of ${RNPKG}: ${chalk.cyan(
     rnVersion,
   )}
 ${MACOSPKG} supports ${RNPKG} versions ${chalk.cyan('>=0.60')}`);
@@ -214,7 +214,7 @@ async function getLatestMatchingReactNativeMacOSVersion(
     );
     return version;
   } catch (err) {
-    console.error(
+    printError(
       `No version of ${MACOSPKG}@${versionSemVer} found!`,
     );
     process.exit(EXITCODE_NO_MATCHING_RNMACOS);
@@ -234,6 +234,13 @@ function isProjectUsingYarn(cwd: string) {
  */
 function printPkg(name: string, version?: string) {
   return `${chalk.yellow(name)}${version ? `${chalk.grey('@')}${chalk.cyan(version)}` : ''}`;
+}
+
+/**
+ * Prints decorated version of console.error the CLI
+ */
+function printError(message: string, ...optionalParams: any[]) {
+  return console.error(chalk.red(chalk.bold(message)), ...optionalParams);
 }
 
 (async () => {
@@ -315,8 +322,7 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
       verbose: argv.verbose,
     });
   } catch (error) {
-    console.error(chalk.red(error.message));
-    console.error(error);
+    printError(error.message, error);
     process.exit(EXITCODE_UNKNOWN_ERROR);
   }
 })();
