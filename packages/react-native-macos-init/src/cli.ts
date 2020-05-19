@@ -4,8 +4,7 @@
  *
  * @format
  */
-import * as path from 'path';
-import * as util from 'util';
+
 import * as yargs from 'yargs';
 import * as fs from 'fs';
 import * as semver from 'semver';
@@ -16,9 +15,6 @@ import * as findUp from 'find-up';
 import * as chalk from 'chalk';
 // @ts-ignore
 import * as Registry from 'npm-registry';
-
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
 
 const npmConfReg = execSync('npm config get registry')
   .toString()
@@ -44,7 +40,6 @@ const argv = yargs.version(false).options({
   },
 }).argv;
 
-const MACOS_POD = '/macos/Pods/';
 const EXITCODE_NO_MATCHING_RNMACOS = 2;
 const EXITCODE_UNSUPPORTED_VERION_RN = 3;
 const EXITCODE_USER_CANCEL = 4;
@@ -208,26 +203,6 @@ async function getLatestMatchingReactNativeMacOSVersion(
   }
 }
 
-async function updateGitIgnore(cwd: string) {
-  try {
-    const gitIgnorePath = path.join(cwd, '.gitignore');
-
-    const gitIgnore = await readFile(gitIgnorePath)
-      .then(buf => buf.toString())
-      .catch(() => null);
-
-    if (!gitIgnore || !gitIgnore.split('\n').includes(MACOS_POD)) {
-      await writeFile(
-        gitIgnorePath,
-        gitIgnore ? `${gitIgnore}\n${MACOS_POD}` : MACOS_POD,
-      );
-      console.log(chalk.green(`updated .gitignore for macos projects`));
-    }
-  } catch (error) {
-    // ignore non-critical error
-  }
-}
-
 /**
  * Check if project is using Yarn (has `yarn.lock` in the tree)
  */
@@ -314,9 +289,6 @@ You can either downgrade your version of ${chalk.green(
     console.log(
       chalk.green(`react-native-macos@${version} successfully installed.`),
     );
-
-    // update Gitignore
-    updateGitIgnore(process.cwd());
 
     const generateMacOS = require(reactNativeMacOSGeneratePath());
     generateMacOS(process.cwd(), name, {
