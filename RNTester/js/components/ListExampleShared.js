@@ -283,7 +283,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerFooterContainer: {
-    backgroundColor: 'rgb(239, 239, 244)',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'controlBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: 'rgb(239, 239, 244)',
+    })
   },
   listEmpty: {
     alignItems: 'center',
@@ -309,7 +312,10 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     padding: 10,
-    backgroundColor: 'white',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'textBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: 'white',
+    })
   },
   selectedRow: {
     // [TODO(macOS ISS#2323203)
@@ -353,7 +359,10 @@ const styles = StyleSheet.create({
   }),
   stacked: {
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'textBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: 'white',
+    }),
     padding: 10,
   },
   thumb: {

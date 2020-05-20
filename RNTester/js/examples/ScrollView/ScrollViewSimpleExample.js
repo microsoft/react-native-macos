@@ -78,7 +78,10 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   itemWrapper: {
-    backgroundColor: '#dddddd',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'windowBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: '#ddd',
+    }),
     alignItems: 'center',
     borderRadius: 5,
     borderWidth: 5,

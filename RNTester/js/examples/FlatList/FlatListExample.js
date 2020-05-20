@@ -239,7 +239,10 @@ class FlatListExample extends React.PureComponent<Props, State> {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgb(239, 239, 244)',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'windowBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: 'rgb(239, 239, 244)',
+    }),
     flex: 1,
   },
   list: {

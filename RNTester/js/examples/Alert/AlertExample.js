@@ -147,7 +147,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   button: {
-    backgroundColor: '#eeeeee',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'controlBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: '#eee',
+    }),
     padding: 10,
   },
 });

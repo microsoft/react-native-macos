@@ -33,7 +33,10 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     height: 45,
     padding: 10,
-    backgroundColor: 'white',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'controlBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: '#fff',
+    }),
   },
   text: {
     fontSize: 19,

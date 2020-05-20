@@ -258,7 +258,7 @@ var styles = StyleSheet.create({
     marginBottom: 5,
   },
   button: {
-    backgroundColor: '#eeeeee',
+    backgroundColor: {semantic: 'controlBackgroundColor'},
     padding: 10,
   },
 });

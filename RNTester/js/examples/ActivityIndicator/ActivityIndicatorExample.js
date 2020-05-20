@@ -61,7 +61,10 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   gray: {
-    backgroundColor: '#cccccc',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'underPageBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: '#ccc',
+    }),
   },
   horizontal: {
     flexDirection: 'row',

@@ -316,7 +316,10 @@ const Button = ({label, onPress}) => (
 
 const styles = StyleSheet.create({
   scrollView: {
-    backgroundColor: '#eeeeee',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'windowBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: '#eee',
+    }),
     height: 300,
   },
   horizontalScrollView: {
@@ -341,7 +344,10 @@ const styles = StyleSheet.create({
   item: {
     margin: 5,
     padding: 5,
-    backgroundColor: '#cccccc',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'windowBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: '#ccc',
+    }),
     borderRadius: 3,
     minWidth: 96,
   },

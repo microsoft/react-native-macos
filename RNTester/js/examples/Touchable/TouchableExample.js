@@ -540,7 +540,10 @@ const styles = StyleSheet.create({
     margin: 10,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#f0f0f0',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'controlBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: '#f9f9f9',
+    }),
   },
   eventLogBox: {
     padding: 10,
@@ -548,14 +551,20 @@ const styles = StyleSheet.create({
     height: 120,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#f0f0f0',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'controlBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: '#f9f9f9',
+    }),
   },
   forceTouchBox: {
     padding: 10,
     margin: 10,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#f0f0f0',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Platform.select({
+      macos: {semantic: 'controlBackgroundColor'}, // TODO(macOS ISS#2323203)
+      default: '#f9f9f9',
+    }),
     alignItems: 'center',
   },
   textBlock: {

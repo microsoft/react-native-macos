@@ -170,7 +170,7 @@ var styles = StyleSheet.create({
   },
   headingContainer: {
     padding: 4,
-    backgroundColor: '#f6f7f8',
+    backgroundColor: {semantic: 'controlBackgroundColor'},
   },
   heading: {
     fontWeight: '500',
