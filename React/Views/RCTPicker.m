@@ -24,11 +24,11 @@
 {
   if ((self = [super initWithFrame:frame])) {
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
-    _font = [UIFont systemFontOfSize:21]; // TODO: selected title default should be 23.5
     _color = [RCTUIColor blackColor]; // TODO(OSS Candidate ISS#2710739)
+    _font = [UIFont systemFontOfSize:21]; // TODO: selected title default should be 23.5
 #else // [TODO(macOS ISS#2323203)
-    _font = [UIFont systemFontOfSize:13];
-    _color = [RCTUIColor labelColor];
+    _color = [NSColor labelColor];
+    _font = [NSFont systemFontOfSize:[NSFont systemFontSize]];
 #endif // ]TODO(macOS ISS#2323203)
     _selectedIndex = NSNotFound;
     _textAlign = NSTextAlignmentCenter;
