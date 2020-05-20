@@ -12,6 +12,7 @@
 const React = require('react');
 const {
   Alert,
+  Platform,
   StyleSheet,
   Text,
   TouchableHighlight,

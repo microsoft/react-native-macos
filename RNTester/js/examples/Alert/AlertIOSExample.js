@@ -14,6 +14,7 @@ const React = require('react');
 
 const {SimpleAlertExampleBlock} = require('./AlertExample');
 const {
+  Platform,
   StyleSheet,
   View,
   Text,

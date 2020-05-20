@@ -13,6 +13,7 @@
 const React = require('react');
 
 const {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,

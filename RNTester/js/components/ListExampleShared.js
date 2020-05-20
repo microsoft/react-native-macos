@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     backgroundColor: Platform.select({
       macos: {semantic: 'controlBackgroundColor'}, // TODO(macOS ISS#2323203)
       default: 'rgb(239, 239, 244)',
-    })
+    }),
   },
   listEmpty: {
     alignItems: 'center',
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     backgroundColor: Platform.select({
       macos: {semantic: 'textBackgroundColor'}, // TODO(macOS ISS#2323203)
       default: 'white',
-    })
+    }),
   },
   selectedRow: {
     // [TODO(macOS ISS#2323203)

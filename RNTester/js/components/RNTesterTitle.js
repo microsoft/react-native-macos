@@ -12,7 +12,7 @@
 
 const React = require('react');
 
-const {StyleSheet, Text, View} = require('react-native');
+const {Platform, StyleSheet, Text, View} = require('react-native');
 
 class RNTesterTitle extends React.Component<$FlowFixMeProps> {
   render(): React.Node {

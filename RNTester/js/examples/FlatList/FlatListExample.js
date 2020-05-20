@@ -29,7 +29,7 @@ const {
   pressItem,
   renderSmallSwitchOption,
 } = require('../../components/ListExampleShared');
-const {Alert, Animated, StyleSheet, View} = require('react-native');
+const {Alert, Animated, Platform, StyleSheet, View} = require('react-native');
 
 import type {Item} from '../../components/ListExampleShared';
 
