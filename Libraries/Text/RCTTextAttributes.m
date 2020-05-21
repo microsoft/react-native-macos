@@ -95,27 +95,27 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
         alignment = NSTextAlignmentRight;
       }
     }
-
+    
     paragraphStyle.alignment = alignment;
     isParagraphStyleUsed = YES;
   }
-
+  
   if (_baseWritingDirection != NSWritingDirectionNatural) {
     paragraphStyle.baseWritingDirection = _baseWritingDirection;
     isParagraphStyleUsed = YES;
   }
-
+  
   if (!isnan(_lineHeight)) {
     CGFloat lineHeight = _lineHeight * self.effectiveFontSizeMultiplier;
     paragraphStyle.minimumLineHeight = lineHeight;
     paragraphStyle.maximumLineHeight = lineHeight;
     isParagraphStyleUsed = YES;
   }
-
+  
   if (isParagraphStyleUsed) {
     return [paragraphStyle copy];
   }
-
+  
   return nil;
 }
 
@@ -133,13 +133,13 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   // Colors
   RCTUIColor *effectiveForegroundColor = self.effectiveForegroundColor; // TODO(OSS Candidate ISS#2710739)
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // [TODO(macOS ISS#2323203)
   if (_foregroundColor || !isnan(_opacity)) {
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
   }
 #else
   attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
-#endif // TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS ISS#2323203)
 
   if (_backgroundColor || !isnan(_opacity)) {
     attributes[NSBackgroundColorAttributeName] = self.effectiveBackgroundColor;
