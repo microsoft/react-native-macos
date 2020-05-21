@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   scrollView: {
     backgroundColor: Platform.select({
       macos: {semantic: 'windowBackgroundColor'}, // TODO(macOS ISS#2323203)
-      default: '#eee',
+      default: '#eeeeee',
     }),
     height: 300,
   },
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     padding: 5,
     backgroundColor: Platform.select({
       macos: {semantic: 'windowBackgroundColor'}, // TODO(macOS ISS#2323203)
-      default: '#ccc',
+      default: '#cccccc',
     }),
     borderRadius: 3,
     minWidth: 96,

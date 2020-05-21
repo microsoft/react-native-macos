@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   gray: {
     backgroundColor: Platform.select({
       macos: {semantic: 'underPageBackgroundColor'}, // TODO(macOS ISS#2323203)
-      default: '#ccc',
+      default: '#cccccc',
     }),
   },
   horizontal: {
