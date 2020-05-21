@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: Platform.select({
       macos: {semantic: 'controlBackgroundColor'}, // TODO(macOS ISS#2323203)
-      default: '#fff',
+      default: 'white',
     }),
   },
   text: {
