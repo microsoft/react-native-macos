@@ -142,7 +142,10 @@ class TouchableText extends React.Component<Props, State> {
         selectionColor: processColor(props.selectionColor),
       };
     }
-    if (Platform.OS === 'macos' && !props?.style?.color) {
+    if (
+      Platform.OS === 'macos' &&
+      (!props.style || (props.style && !props.style.color))
+    ) {
       props = {
         ...props,
         style: [props.style, {color: {semantic: 'labelColor'}}],
