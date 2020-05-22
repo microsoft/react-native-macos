@@ -16,6 +16,7 @@ const ReactNativeViewAttributes = require('../Components/View/ReactNativeViewAtt
 const TextAncestor = require('./TextAncestor');
 const Touchable = require('../Components/Touchable/Touchable');
 const UIManager = require('../ReactNative/UIManager');
+const Platform = require('../Utilities/Platform');
 
 const createReactNativeComponentClass = require('../Renderer/shims/createReactNativeComponentClass');
 const nullthrows = require('nullthrows');
@@ -139,6 +140,12 @@ class TouchableText extends React.Component<Props, State> {
       props = {
         ...props,
         selectionColor: processColor(props.selectionColor),
+      };
+    }
+    if (Platform.OS === 'macos' && !props?.style?.color) {
+      props = {
+        ...props,
+        style: [props.style, {color: {semantic: 'labelColor'}}],
       };
     }
     if (__DEV__) {

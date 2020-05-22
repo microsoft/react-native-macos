@@ -133,13 +133,9 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   // Colors
   RCTUIColor *effectiveForegroundColor = self.effectiveForegroundColor; // TODO(OSS Candidate ISS#2710739)
 
-#if !TARGET_OS_OSX // [TODO(macOS ISS#2323203)
   if (_foregroundColor || !isnan(_opacity)) {
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
   }
-#else
-  attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
-#endif // ]TODO(macOS ISS#2323203)
 
   if (_backgroundColor || !isnan(_opacity)) {
     attributes[NSBackgroundColorAttributeName] = self.effectiveBackgroundColor;
@@ -229,7 +225,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
 
 - (RCTUIColor *)effectiveForegroundColor // TODO(OSS Candidate ISS#2710739)
 {
-  RCTUIColor *effectiveForegroundColor = _foregroundColor ?: [RCTUIColor labelColor]; // TODO(OSS Candidate ISS#2710739)
+  RCTUIColor *effectiveForegroundColor = _foregroundColor ?: [RCTUIColor blackColor]; // TODO(OSS Candidate ISS#2710739)
 
   if (!isnan(_opacity)) {
     effectiveForegroundColor = [effectiveForegroundColor colorWithAlphaComponent:CGColorGetAlpha(effectiveForegroundColor.CGColor) * _opacity];
