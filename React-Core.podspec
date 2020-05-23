@@ -57,8 +57,9 @@ Pod::Spec.new do |s|
     ss.exclude_files          = "React/CoreModules/**/*",
                                 "React/DevSupport/**/*",
                                 "React/Fabric/**/*",
-                                "React/Inspector/**/*"
-    ss.ios.exclude_files      = "React/**/RCTTV*.*", "React/CxxBridge/HermesExecutorFactory.*"
+                                "React/Inspector/**/*",
+                                "React/CxxBridge/HermesExecutorFactory.*" # TODO(macOS GH#214)
+    ss.ios.exclude_files      = "React/**/RCTTV*.*"
 
     # [TODO(macOS ISS#2323203)
                                 "**/MacOS/*"
@@ -69,6 +70,7 @@ Pod::Spec.new do |s|
                                 "React/Views/{RCTModal*,RCTMasked*,RCTTV*,RCTWrapperViewController}.*",
                                 "React/Views/RefreshControl/*",
                                 "React/Views/SafeAreaView/*"
+    ss.osx.dependency "React-Core/Hermes"
     # ]TODO(macOS ISS#2323203)
 
     ss.tvos.exclude_files     = "React/Modules/RCTClipboard*",
@@ -79,6 +81,19 @@ Pod::Spec.new do |s|
                                 "React/Views/RCTSwitch*",
     ss.private_header_files   = "React/Cxx*/*.h"
   end
+
+  # [TODO(macOS GH#214)
+  s.subspec "Hermes" do |ss|
+    ss.platforms = { :osx => "10.14" }
+    ss.source_files = "React/CxxBridge/HermesExecutorFactory.*",
+                      "ReactCommon/hermes/inspector/*.{cpp,h}",
+                      "ReactCommon/hermes/inspector/chrome/*.{cpp,h}",
+                      "ReactCommon/hermes/inspector/detail/*.{cpp,h}"
+    ss.pod_target_xcconfig = { "GCC_PREPROCESSOR_DEFINITIONS" => "HERMES_ENABLE_DEBUGGER=1" }
+    ss.dependency "Folly/Futures"
+    ss.dependency "hermes", "~> 0.5.0"
+  end
+  # ]TODO(macOS GH#214)
 
   s.subspec "DevSupport" do |ss|
     ss.source_files = "React/DevSupport/*.{h,mm,m}",

@@ -118,8 +118,9 @@ end
 
 target 'RNTester-macOS' do
   platform :osx, '10.14'
-  # pod 'hermes', :git => 'https://github.com/alloy/hermes.git', :commit => '4af03d10f76418a781b51e8434efeceee015ce5a'
-  pod 'hermes', :http => 'https://github.com/alloy/hermes/releases/download/v0.2.1/hermes.zip', :flatten => true
+  # TODO: Point to actual release
+  pod 'hermes', :path => '/Users/eloy/Code/ReactNative/Hermes/src'
+  pod 'libevent', :podspec => "../third-party-podspecs/libevent.podspec"
   pods()
 end
 
