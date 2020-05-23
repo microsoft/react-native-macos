@@ -148,7 +148,7 @@ class TouchableText extends React.Component<Props, State> {
     ) {
       props = {
         ...props,
-        style: [props.style, {color: {semantic: 'labelColor'}}],
+        style: [{color: {semantic: 'labelColor'}}, props.style],
       };
     }
     if (__DEV__) {
