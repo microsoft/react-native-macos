@@ -890,6 +890,13 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x) {
   }
 }
 
+#if TARGET_OS_OSX // [TODO(macOS https://github.com/microsoft/react-native-macos/issues/399)
+- (void)setClipsToBounds:(BOOL)clipsToBounds {
+  [super setClipsToBounds:clipsToBounds];
+  self.layer.masksToBounds = clipsToBounds;
+}
+#endif
+
 - (void)displayLayer:(CALayer *)layer
 {
   if (CGSizeEqualToSize(layer.bounds.size, CGSizeZero)) {
