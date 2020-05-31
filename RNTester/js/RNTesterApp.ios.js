@@ -13,12 +13,6 @@
 const RNTesterActions = require('./utils/RNTesterActions');
 const RNTesterExampleContainer = require('./components/RNTesterExampleContainer');
 const RNTesterExampleList = require('./components/RNTesterExampleList');
-// [TODO(macOS ISS#2323203)
-const RNTesterList =
-  Platform.OS === 'macos'
-    ? require('./utils/RNTesterList.macos')
-    : require('./utils/RNTesterList.ios');
-// ]TODO(macOS ISS#2323203)
 const RNTesterNavigationReducer = require('./utils/RNTesterNavigationReducer');
 const React = require('react');
 const SnapshotViewIOS = require('./examples/Snapshot/SnapshotViewIOS.ios');
@@ -38,6 +32,14 @@ const {
   View,
   YellowBox,
 } = require('react-native');
+
+// [TODO(macOS ISS#2323203)
+const RNTesterList =
+  Platform.OS === 'macos'
+    ? /* $FlowFixMe allow iOS to list macOS file */
+      require('./utils/RNTesterList.macos')
+    : require('./utils/RNTesterList.ios');
+// ]TODO(macOS ISS#2323203)
 
 const {TestModule} = NativeModules; // TODO(OSS Candidate ISS#2710739)
 const requestAnimationFrame = require('fbjs/lib/requestAnimationFrame'); // TODO(OSS Candidate ISS#2710739)
