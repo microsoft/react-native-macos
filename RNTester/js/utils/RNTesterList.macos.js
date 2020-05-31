@@ -13,43 +13,43 @@
 /* $FlowFixMe allow macOS to share iOS file */
 const RNTesterListIOS = require('./RNTesterList.ios.js');
 
-const AlertMacOSExample = {
-  key: 'AlertMacOSExample',
-  module: require('../examples/Alert/AlertMacOSExample'),
-};
+const APIExamples = [
+  ...RNTesterListIOS.APIExamples.filter(
+    ex =>
+      !ex.key.includes('IOS') &&
+      ex.key !== 'OrientationChangeExample' &&
+      ex.key !== 'TVEventHandlerExample' &&
+      ex.key !== 'VibrationExample',
+  ),
+  {
+    key: 'AlertMacOSExample',
+    module: require('../examples/Alert/AlertMacOSExample'),
+  },
+];
 
-const DatePickerMacOSExample = {
-  key: 'DatePickerMacOSExample',
-  module: require('../examples/DatePicker/DatePickerMacOSExample'),
-};
+const ComponentExamples = [
+  ...RNTesterListIOS.ComponentExamples.filter(
+    ex =>
+      !ex.key.includes('IOS') &&
+      ex.key !== 'InputAccessoryViewExample' &&
+      ex.key !== 'KeyboardAvoidingViewExample' &&
+      ex.key !== 'StatusBarExample',
+  ),
+  {
+    key: 'DatePickerMacOSExample',
+    module: require('../examples/DatePicker/DatePickerMacOSExample'),
+  },
+];
 
-const Modules = RNTesterListIOS.Modules;
+const Modules = {};
 
-[AlertMacOSExample, DatePickerMacOSExample].forEach(Example => {
+APIExamples.concat(ComponentExamples).forEach(Example => {
   Modules[Example.key] = Example.module;
 });
 
 const RNTesterList = {
-  APIExamples: [
-    ...RNTesterListIOS.APIExamples.filter(
-      ex =>
-        !ex.key.includes('IOS') &&
-        ex.key !== 'OrientationChangeExample' &&
-        ex.key !== 'TVEventHandlerExample' &&
-        ex.key !== 'VibrationExample',
-    ),
-    AlertMacOSExample,
-  ],
-  ComponentExamples: [
-    ...RNTesterListIOS.ComponentExamples.filter(
-      ex =>
-        !ex.key.includes('IOS') &&
-        ex.key !== 'InputAccessoryViewExample' &&
-        ex.key !== 'KeyboardAvoidingViewExample' &&
-        ex.key !== 'StatusBarExample',
-    ),
-    DatePickerMacOSExample,
-  ],
+  APIExamples,
+  ComponentExamples,
   Modules,
 };
 
