@@ -39,12 +39,6 @@ const ComponentExamples: Array<RNTesterExample> = [
     module: require('../examples/DatePicker/DatePickerIOSExample'),
     supportsTVOS: false,
   },
-  // [TODO(macOS ISS#2323203)
-  {
-    key: 'DatePickerMacOSExample',
-    module: require('../examples/DatePicker/DatePickerMacOSExample'),
-    supportsTVOS: false,
-  }, // ]TODO(macOS ISS#2323203)
   {
     key: 'FlatListExample',
     module: require('../examples/FlatList/FlatListExample'),
@@ -220,12 +214,6 @@ const APIExamples: Array<RNTesterExample> = [
     module: require('../examples/Alert/AlertIOSExample'),
     supportsTVOS: true,
   },
-  // [TODO(macOS ISS#2323203)
-  {
-    key: 'AlertMacOSExample',
-    module: require('../examples/Alert/AlertMacOSExample'),
-    supportsTVOS: true,
-  }, // ]TODO(macOS ISS#2323203)
   {
     key: 'AnimatedExample',
     module: require('../examples/Animated/AnimatedExample'),

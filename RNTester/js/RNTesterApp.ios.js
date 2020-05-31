@@ -13,7 +13,12 @@
 const RNTesterActions = require('./utils/RNTesterActions');
 const RNTesterExampleContainer = require('./components/RNTesterExampleContainer');
 const RNTesterExampleList = require('./components/RNTesterExampleList');
-const RNTesterList = require('./utils/RNTesterList.ios');
+// [TODO(macOS ISS#2323203)
+const RNTesterList =
+  Platform.OS === 'macos'
+    ? require('./utils/RNTesterList.macos')
+    : require('./utils/RNTesterList.ios');
+// ]TODO(macOS ISS#2323203)
 const RNTesterNavigationReducer = require('./utils/RNTesterNavigationReducer');
 const React = require('react');
 const SnapshotViewIOS = require('./examples/Snapshot/SnapshotViewIOS.ios');
