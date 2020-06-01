@@ -51,6 +51,10 @@ jobs:
           publishEndpoint: 'npmjs'
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
+      # When using npm custom instead of npm publish, we need to ensure that auth still happens.
+      - task: npmAuthenticate@0
+        condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+
       - task: Npm@1
         displayName: "Publish stable react-native-macos to npmjs.org"
         inputs:
