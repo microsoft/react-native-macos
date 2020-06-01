@@ -52,6 +52,7 @@ function copyProjectTemplateAndReplace(
 
   [
     { from: path.join(srcRootPath, macOSDir, 'Podfile'), to: path.join(macOSDir, 'Podfile') },
+    { from: path.join(srcRootPath, macOSDir, '_gitignore'), to: path.join(macOSDir, '.gitignore') },
     { from: path.join(srcRootPath, srcDirPath(oldProjectName, 'iOS')), to: srcDirPath(newProjectName, 'iOS') },
     { from: path.join(srcRootPath, srcDirPath(oldProjectName, 'macOS')), to: srcDirPath(newProjectName, 'macOS') },
     { from: path.join(srcRootPath, pbxprojPath(oldProjectName)), to: pbxprojPath(newProjectName) },
@@ -66,16 +67,6 @@ function copyProjectTemplateAndReplace(
   [
     { from: path.join(srcRootPath, 'metro.config.macos.js'), to: 'metro.config.macos.js' },
   ].forEach((mapping) => copyAndReplaceWithChangedCallback(mapping.from, destPath, mapping.to, templateVars, options.overwrite));
-
-  console.log(`
-  ${chalk.blue(`Run instructions for ${chalk.bold('macOS')}`)}:
-    • cd macos && pod install && cd ..
-    • npx react-native run-macos
-    ${chalk.dim('- or -')}
-    • Open ${xcworkspacePath(newProjectName)} in Xcode or run "xed -b ${macOSDir}"
-    • yarn start:macos
-    • Hit the Run button
-`);
 }
 
 /**
@@ -153,7 +144,32 @@ function installDependencies(options) {
   childProcess.execSync(isYarn ? 'yarn' : 'npm i', execOptions);
 }
 
+/**
+ * @param {{ verbose?: boolean }=} options
+ */
+function installPods(options) {
+  const cwd = path.join(process.cwd(), macOSDir);
+  const quietFlag = options && options.verbose ? '' : '--quiet';
+  childProcess.execSync(`npx ${quietFlag} pod-install --non-interactive ${quietFlag}`, { stdio: 'inherit', cwd });
+}
+
+/**
+ * @param {string} newProjectName
+ */
+function printFinishMessage(newProjectName) {
+  console.log(`
+  ${chalk.blue(`Run instructions for ${chalk.bold('macOS')}`)}:
+    • npx react-native run-macos
+    ${chalk.dim('- or -')}
+    • Open ${xcworkspacePath(newProjectName)} in Xcode or run "xed -b ${macOSDir}"
+    • yarn start:macos
+    • Hit the Run button
+`);
+}
+
 module.exports = {
   copyProjectTemplateAndReplace,
   installDependencies,
+  installPods,
+  printFinishMessage,
 };
