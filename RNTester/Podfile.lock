@@ -360,7 +360,7 @@ DEPENDENCIES:
   - FlipperKit/SKIOSNetworkPlugin (~> 0.30.1)
   - Folly (from `../third-party-podspecs/Folly.podspec`)
   - glog (from `../third-party-podspecs/glog.podspec`)
-  - hermes (from `/Users/eloy/Code/ReactNative/Hermes/src`)
+  - "hermes (from `{:http=>\"https://github.com/alloy/hermes/releases/download/v0.5.0-macOS/hermes-v0.5.0.zip\"}`)"
   - libevent (from `../third-party-podspecs/libevent.podspec`)
   - RCTRequired (from `../Libraries/RCTRequired`)
   - RCTTypeSafety (from `../Libraries/TypeSafety`)
@@ -391,7 +391,7 @@ DEPENDENCIES:
   - Yoga (from `../ReactCommon/yoga`)
 
 SPEC REPOS:
-  https://cdn.cocoapods.org/:
+  trunk:
     - CocoaAsyncSocket
     - CocoaLibEvent
     - Flipper
@@ -418,7 +418,7 @@ EXTERNAL SOURCES:
   glog:
     :podspec: "../third-party-podspecs/glog.podspec"
   hermes:
-    :path: "/Users/eloy/Code/ReactNative/Hermes/src"
+    :http: https://github.com/alloy/hermes/releases/download/v0.5.0-macOS/hermes-v0.5.0.zip
   libevent:
     :podspec: "../third-party-podspecs/libevent.podspec"
   RCTRequired:
@@ -468,6 +468,10 @@ EXTERNAL SOURCES:
   Yoga:
     :path: "../ReactCommon/yoga"
 
+CHECKOUT OPTIONS:
+  hermes:
+    :http: https://github.com/alloy/hermes/releases/download/v0.5.0-macOS/hermes-v0.5.0.zip
+
 SPEC CHECKSUMS:
   boost-for-react-native: a110407d9db2642fd2e1bcd7c5a51c81f2521dc9
   CocoaAsyncSocket: eafaa68a7e0ec99ead0a7b35015e0bf25d2c8987
@@ -484,7 +488,7 @@ SPEC CHECKSUMS:
   FlipperKit: 88b7f0d0cf907ddc2137b85eeb7f3d4d8d9395c8
   Folly: ae1e11fb7b57cac65fa994a5c9da9b6f652d934b
   glog: b3f6d74f3e2d33396addc0ee724d2b2b79fc3e00
-  hermes: b40d67dcc166a3f569b323e2f16442f64f399045
+  hermes: c17c5906d0cb28e0e6d749924417735d129c7938
   libevent: 52af31075d5ade81f97298a56c0656a5618ccc23
   OpenSSL-Universal: 8b48cc0d10c1b2923617dfe5c178aa9ed2689355
   RCTRequired: 66250bf27479214eb5c530ca2d8c772ebe4d7e71
@@ -512,6 +516,6 @@ SPEC CHECKSUMS:
   Yoga: 3ed3c35bb7c41fa8f5056b767bc048539f6526ad
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 396995f9856998a561672293335bfd6d321ba9f7
+PODFILE CHECKSUM: ed659b200f815752413d649f3884bccfc6ff3818
 
 COCOAPODS: 1.9.1
