@@ -145,7 +145,13 @@ fi
 
 if [[ "$BUNDLE_PLATFORM" == "macos" && -f "$HERMES_PATH" ]]; then
   # TODO: Emit source-map for release builds
-  "$HERMES_PATH" -emit-binary -out "$DEST/main.jsbundle" "$BUNDLE_FILE"
+  EXTRA_COMPILER_ARGS=
+  if [[ $DEV == true ]]; then
+    EXTRA_COMPILER_ARGS=-Og
+  else
+    EXTRA_COMPILER_ARGS=-O
+  fi
+  "$HERMES_PATH" -emit-binary $EXTRA_COMPILER_ARGS -out "$DEST/main.jsbundle" "$BUNDLE_FILE"
 else
   mv "$BUNDLE_FILE" "$DEST/"
 fi
