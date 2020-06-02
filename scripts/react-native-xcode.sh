@@ -108,7 +108,7 @@ source "$REACT_NATIVE_DIR/scripts/node-binary.sh"
 
 [ -z "$BUNDLE_COMMAND" ] && BUNDLE_COMMAND="bundle"
 
-[ -z "$HERMES_PATH" ] && HERMES_PATH="$PROJECT_ROOT/RNTester/Pods/hermes/destroot/bin/hermes"
+[ -z "$HERMES_PATH" ] && HERMES_PATH="$PODS_ROOT/hermes/destroot/bin/hermes"
 
 if [[ -z "$BUNDLE_CONFIG" ]]; then
   CONFIG_ARG=""
@@ -143,8 +143,12 @@ fi
   $EXTRA_ARGS \
   $EXTRA_PACKAGER_ARGS
 
-# TODO: Emit source-map for release builds
-"$HERMES_PATH" -emit-binary -out "$DEST/main.jsbundle" "$BUNDLE_FILE"
+if [[ "$BUNDLE_PLATFORM" == "macos" && -f "$HERMES_PATH" ]]; then
+  # TODO: Emit source-map for release builds
+  "$HERMES_PATH" -emit-binary -out "$DEST/main.jsbundle" "$BUNDLE_FILE"
+else
+  mv "$BUNDLE_FILE" "$DEST/"
+fi
 
 if [[ $DEV != true && ! -f "$BUNDLE_FILE" ]]; then
   echo "error: File $BUNDLE_FILE does not exist. This must be a bug with" >&2

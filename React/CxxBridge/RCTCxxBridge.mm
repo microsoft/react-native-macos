@@ -37,7 +37,7 @@
 #import <cxxreact/ReactMarker.h>
 #import <jsireact/JSIExecutor.h>
 
-#if TARGET_OS_OSX
+#if TARGET_OS_OSX && __has_include(<hermes/hermes.h>)
 #define RCT_USE_HERMES 1
 #endif
 #if RCT_USE_HERMES
