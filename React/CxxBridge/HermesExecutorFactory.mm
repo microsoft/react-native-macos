@@ -11,8 +11,6 @@
 #include <hermes/hermes_tracing.h>
 #include <jsi/decorator.h>
 
-#import <React/RCTLog.h>
-
 #ifdef HERMES_ENABLE_DEBUGGER
 #include <hermes/inspector/RuntimeAdapter.h>
 #include <hermes/inspector/chrome/Registration.h>
@@ -204,24 +202,8 @@ std::unique_ptr<JSExecutor> HermesExecutorFactory::createJSExecutor(
           .getPropertyAsObject(*decoratedRuntime, "prototype");
   errorPrototype.setProperty(*decoratedRuntime, "jsEngine", "hermes");
 
-  // TODO: Share with JSCExecutorFactory.mm
-  auto installBindings =
-    [runtimeInstaller=runtimeInstaller_](jsi::Runtime &runtime) {
-      react::Logger iosLoggingBinder =
-        [](const std::string &message, unsigned int logLevel) {
-          _RCTLogJavaScriptInternal(
-            static_cast<RCTLogLevel>(logLevel),
-            [NSString stringWithUTF8String:message.c_str()]);
-        };
-      react::bindNativeLogger(runtime, iosLoggingBinder);
-      // Wrap over the original runtimeInstaller
-      if (runtimeInstaller) {
-        runtimeInstaller(runtime);
-      }
-    };
-
   return std::make_unique<HermesExecutor>(decoratedRuntime, delegate, jsQueue,
-    timeoutInvoker_, std::move(installBindings));
+    timeoutInvoker_, runtimeInstaller_);
 }
 
 HermesExecutor::HermesExecutor(

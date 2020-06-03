@@ -355,10 +355,20 @@ struct RCTInstanceCallback : public InstanceCallback {
       executorFactory = [cxxDelegate jsExecutorFactoryForBridge:self];
     }
     if (!executorFactory) {
+      auto installBindings =
+        [](facebook::jsi::Runtime &runtime) {
+          facebook::react::Logger iosLoggingBinder =
+            [](const std::string &message, unsigned int logLevel) {
+              _RCTLogJavaScriptInternal(
+                static_cast<RCTLogLevel>(logLevel),
+                [NSString stringWithUTF8String:message.c_str()]);
+            };
+          facebook::react::bindNativeLogger(runtime, iosLoggingBinder);
+        };
 #if RCT_USE_HERMES
-      executorFactory = std::make_shared<HermesExecutorFactory>(nullptr);
+      executorFactory = std::make_shared<HermesExecutorFactory>(installBindings);
 #else
-      executorFactory = std::make_shared<JSCExecutorFactory>(nullptr);
+      executorFactory = std::make_shared<JSCExecutorFactory>(installBindings);
 #endif
     }
   } else {
