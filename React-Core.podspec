@@ -85,13 +85,13 @@ Pod::Spec.new do |s|
   # [TODO(macOS GH#214)
   s.subspec "Hermes" do |ss|
     ss.platforms = { :osx => "10.14" }
-    ss.source_files = "React/CxxBridge/HermesExecutorFactory.*",
+    ss.source_files = "ReactCommon/hermes/executor/*.{cpp,h}",
                       "ReactCommon/hermes/inspector/*.{cpp,h}",
                       "ReactCommon/hermes/inspector/chrome/*.{cpp,h}",
                       "ReactCommon/hermes/inspector/detail/*.{cpp,h}"
     ss.pod_target_xcconfig = { "GCC_PREPROCESSOR_DEFINITIONS" => "HERMES_ENABLE_DEBUGGER=1" }
     ss.dependency "Folly/Futures"
-    ss.dependency "hermes", "~> 0.5.0"
+    ss.dependency "hermes", "~> 0.4.1"
   end
   # ]TODO(macOS GH#214)
 
