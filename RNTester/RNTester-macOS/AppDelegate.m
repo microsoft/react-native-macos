@@ -29,6 +29,8 @@ const NSString *kBundleNameJS = @"RNTesterApp";
 {
 	[super awakeFromNib];
 
+//  NSLog(@"*****KAK*****");
+//  RCTEnableTurboModule(YES);
 	_bridge = [[RCTBridge alloc] initWithDelegate:self
 																	launchOptions:nil];
 
@@ -74,7 +76,7 @@ const NSString *kBundleNameJS = @"RNTesterApp";
 # pragma mark - Push Notifications
 
 // Required for the remoteNotificationsRegistered event.
-- (void)application:(NSApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+- (void)application:(NSApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken;
 {
   [RCTPushNotificationManager didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
 }

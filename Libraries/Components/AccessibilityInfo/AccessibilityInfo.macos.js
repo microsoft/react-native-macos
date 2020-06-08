@@ -11,8 +11,10 @@
 // TODO(macOS ISS#2323203)
 'use strict';
 
-import NativeAccessibilityManager from './NativeAccessibilityManager';
-console.log("*****",NativeAccessibilityManager);
+const NativeModules = require('../../BatchedBridge/NativeModules.js');
+const AccessibilityManager = NativeModules.AccessibilityManager;
+// import NativeAccessibilityManager from './NativeAccessibilityManager';
+
 
 const warning = require('fbjs/lib/warning');
 
@@ -58,13 +60,11 @@ const AccessibilityInfo = {
    * Android and iOS only
    */
   isScreenReaderEnabled: function(): Promise<boolean> {
-    console.log("\n\n\n*********\n\n\n")
-    console.log(NativeAccessibilityManager)
-    console.log("\n\n\n*********\n\n\n")
+    console.log("*********", NativeModules)
     return Promise.resolve(false);
     // return new Promise((resolve, reject) => {
-    //   if (NativeAccessibilityManager) {
-    //     NativeAccessibilityManager.getCurrentVoiceOverState(resolve, reject);
+    //   if (AccessibilityManager) {
+    //     AccessibilityManager.getCurrentVoiceOverState(resolve, reject);
     //   } else {
     //     reject(reject);
     //   }

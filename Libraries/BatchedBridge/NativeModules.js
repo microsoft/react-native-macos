@@ -190,5 +190,5 @@ if (global.nativeModuleProxy) {
     },
   );
 }
-
+console.log("**** ",NativeModules);
 module.exports = NativeModules;
