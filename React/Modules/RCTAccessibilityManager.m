@@ -104,16 +104,12 @@ RCT_EXPORT_MODULE()
                                                object:nil];
 
     self.contentSizeCategory = RCTSharedApplication().preferredContentSizeCategory;
-    _isBoldTextEnabled = UIAccessibilityIsBoldTextEnabled(); //Not supported and I don't think it's a thing
-    _isGrayscaleEnabled = UIAccessibilityIsGrayscaleEnabled(); //Not supported but is a thing
-    _isInvertColorsEnabled = UIAccessibilityIsInvertColorsEnabled(); // https://developer.apple.com/documentation/appkit/nsworkspace/1644068-accessibilitydisplayshouldinvert?language=objc
-    _isReduceMotionEnabled = UIAccessibilityIsReduceMotionEnabled(); // https://developer.apple.com/documentation/appkit/nsworkspace/1644069-accessibilitydisplayshouldreduce?language=objc
-    _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled(); // https://developer.apple.com/documentation/appkit/nsworkspace/1533006-accessibilitydisplayshouldreduce?language=objc
-    _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning(); // https://developer.apple.com/documentation/appkit/nsworkspace/2880317-voiceoverenabled?language=objc
-  //Found in MacOS but not RN iOS
-  // https://developer.apple.com/documentation/appkit/nsworkspace/1526290-accessibilitydisplayshouldincrea?language=objc
-  // [Would be particularly good to enable] https://developer.apple.com/documentation/appkit/nsworkspace/2880322-switchcontrolenabled?language=objc
-  
+    _isBoldTextEnabled = UIAccessibilityIsBoldTextEnabled();
+    _isGrayscaleEnabled = UIAccessibilityIsGrayscaleEnabled();
+    _isInvertColorsEnabled = UIAccessibilityIsInvertColorsEnabled();
+    _isReduceMotionEnabled = UIAccessibilityIsReduceMotionEnabled();
+    _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled();
+    _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
   }
   return self;
 }
@@ -206,10 +202,6 @@ RCT_EXPORT_MODULE()
 #pragma clang diagnostic pop
   }
 }
-// [OG] https://developer.apple.com/documentation/uikit/uiaccessibilityvoiceoverstatuschanged?language=objc
-// [Closest example] https://developer.apple.com/documentation/appkit/nsworkspaceaccessibilitydisplayoptionsdidchangenotification?language=objc
-// [what it's used for] https://reactnative.dev/docs/accessibilityinfo#addeventlistener
-// I don't think there is a similar event that can trigger this.
 - (void)voiceVoiceOverStatusDidChange:(__unused NSNotification *)notification
 {
   BOOL newIsVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
@@ -351,76 +343,4 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
 }
 
 @end
-
-#else // TODO(macOS ISS#2323203)
-
-@implementation RCTAccessibilityManager
-@synthesize bridge = _bridge;
-
-RCT_EXPORT_MODULE()
-
-static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChangeContext;
-
-+ (BOOL)requiresMainQueueSetup
-{
-  return YES;
-}
-- (instancetype)init
-{
-  if (self = [super init]) {
-
-    [[NSWorkspace sharedWorkspace] addObserver:self
-              forKeyPath:@"voiceOverEnabled"
-                 options:(NSKeyValueObservingOptionNew |
-                          NSKeyValueObservingOptionOld)
-                 context:AccessibilityVoiceOverChangeContext];
-    _isVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
-  }
-  return self;
-}
-
-RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
-                  error:(__unused RCTResponseSenderBlock)error)
-{
-    BOOL isVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
-  callback(@[@(isVoiceOverEnabled)]);
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary *)change
-                       context:(void *)context {
- 
-    if (context == AccessibilityVoiceOverChangeContext) {
-          BOOL newIsVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
-          if (_isVoiceOverEnabled != newIsVoiceOverEnabled) {
-            _isVoiceOverEnabled = newIsVoiceOverEnabled;
-        #pragma clang diagnostic push
-        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            [_bridge.eventDispatcher sendDeviceEventWithName:@"screenReaderChanged"
-                                                        body:@(_isVoiceOverEnabled)];
-        #pragma clang diagnostic pop
-          }
-
-    } else {
-        // Any unrecognized context must belong to super
-        [super observeValueForKeyPath:keyPath
-                             ofObject:object
-                               change:change
-                               context:context];
-    }
-}
-//RCT_EXPORT_METHOD(setAccessibilityFocus:(nonnull NSNumber *)reactTag)
-//{
-//  dispatch_async(dispatch_get_main_queue(), ^{
-//    UIView *view = [self.bridge.uiManager viewForReactTag:reactTag];
-//    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, view);
-//  });
-//}
-
-@end
 #endif // TODO(macOS ISS#2323203)
-
-
-
-// AXUIElementSetAttributeValue  kAXFocusedAttribute
