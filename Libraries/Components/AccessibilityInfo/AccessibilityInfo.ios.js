@@ -15,7 +15,6 @@ const RCTDeviceEventEmitter = require('../../EventEmitter/RCTDeviceEventEmitter'
 
 import NativeAccessibilityManager from './NativeAccessibilityManager';
 
-
 const CHANGE_EVENT_NAME = {
   announcementFinished: 'announcementFinished',
   boldTextChanged: 'boldTextChanged',

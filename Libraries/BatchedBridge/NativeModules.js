@@ -190,4 +190,5 @@ if (global.nativeModuleProxy) {
     },
   );
 }
+
 module.exports = NativeModules;

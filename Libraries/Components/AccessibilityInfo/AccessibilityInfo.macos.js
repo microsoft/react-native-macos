@@ -9,6 +9,7 @@
  */
 
 // TODO(macOS ISS#2323203)
+
 'use strict';
 const NativeModules = require('../../BatchedBridge/NativeModules');
 const RCTDeviceEventEmitter = require('../../EventEmitter/RCTDeviceEventEmitter');
