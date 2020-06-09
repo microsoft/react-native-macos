@@ -358,17 +358,29 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
 
 RCT_EXPORT_MODULE()
 
+
 + (BOOL)requiresMainQueueSetup
 {
   return YES;
 }
-
-- (instancetype)init
+RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
+                  error:(__unused RCTResponseSenderBlock)error)
 {
-    if (self = [super init]) {
-        _isVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
-    }
-    return self;
+    BOOL isVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
+  callback(@[@(isVoiceOverEnabled)]);
 }
+
+//RCT_EXPORT_METHOD(setAccessibilityFocus:(nonnull NSNumber *)reactTag)
+//{
+//  dispatch_async(dispatch_get_main_queue(), ^{
+//    UIView *view = [self.bridge.uiManager viewForReactTag:reactTag];
+//    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, view);
+//  });
+//}
+
 @end
 #endif // TODO(macOS ISS#2323203)
+
+
+
+// AXUIElementSetAttributeValue  kAXFocusedAttribute

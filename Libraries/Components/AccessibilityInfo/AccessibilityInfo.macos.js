@@ -10,8 +10,7 @@
 
 // TODO(macOS ISS#2323203)
 'use strict';
-
-const NativeModules = require('../../BatchedBridge/NativeModules.js');
+const NativeModules = require('../../BatchedBridge/NativeModules');
 const AccessibilityManager = NativeModules.AccessibilityManager;
 // import NativeAccessibilityManager from './NativeAccessibilityManager';
 
@@ -60,15 +59,15 @@ const AccessibilityInfo = {
    * Android and iOS only
    */
   isScreenReaderEnabled: function(): Promise<boolean> {
-    console.log("*********", NativeModules)
-    return Promise.resolve(false);
-    // return new Promise((resolve, reject) => {
-    //   if (AccessibilityManager) {
-    //     AccessibilityManager.getCurrentVoiceOverState(resolve, reject);
-    //   } else {
-    //     reject(reject);
-    //   }
-    // });
+    console.log("*********", JSON.stringify(NativeModules))
+    // return Promise.resolve(false);
+    return new Promise((resolve, reject) => {
+      if (AccessibilityManager) {
+        AccessibilityManager.getCurrentVoiceOverState(resolve, reject);
+      } else {
+        reject(reject); 
+      }
+    });
   },
 
   /**
