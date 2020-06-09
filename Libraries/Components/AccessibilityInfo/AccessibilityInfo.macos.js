@@ -11,14 +11,22 @@
 // TODO(macOS ISS#2323203)
 'use strict';
 const NativeModules = require('../../BatchedBridge/NativeModules');
+const RCTDeviceEventEmitter = require('../../EventEmitter/RCTDeviceEventEmitter');
 const AccessibilityManager = NativeModules.AccessibilityManager;
 // import NativeAccessibilityManager from './NativeAccessibilityManager';
 
 
 const warning = require('fbjs/lib/warning');
 
-type ChangeEventName = $Keys<{}>;
+const CHANGE_EVENT_NAME = {
+  screenReaderChanged: 'screenReaderChanged',
+};
 
+type ChangeEventName = $Keys<{
+  screenReaderChanged: string,
+}>;
+
+const _subscriptions = new Map();
 const AccessibilityInfo = {
   /**
    * iOS only
@@ -82,15 +90,38 @@ const AccessibilityInfo = {
   addEventListener: function(
     eventName: ChangeEventName,
     handler: Function,
-  ): void {
-    warning(false, 'AccessibilityInfo is not supported on this platform.');
+  ): Object {
+    let listener;
+
+    if (eventName === 'change') {
+      listener = RCTDeviceEventEmitter.addListener(
+        CHANGE_EVENT_NAME.screenReaderChanged,
+        handler,
+      );
+    } else if (CHANGE_EVENT_NAME[eventName]) {
+      listener = RCTDeviceEventEmitter.addListener(eventName, handler);
+    }
+
+    _subscriptions.set(handler, listener);
+    return {
+      remove: AccessibilityInfo.removeEventListener.bind(
+        null,
+        eventName,
+        handler,
+      ),
+    };
   },
 
   removeEventListener: function(
     eventName: ChangeEventName,
     handler: Function,
   ): void {
-    warning(false, 'AccessibilityInfo is not supported on this platform.');
+    const listener = _subscriptions.get(handler);
+    if (!listener) {
+      return;
+    }
+    listener.remove();
+    _subscriptions.delete(handler);
   },
 
   /**

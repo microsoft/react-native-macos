@@ -355,14 +355,30 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
 #else // TODO(macOS ISS#2323203)
 
 @implementation RCTAccessibilityManager
+@synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE()
 
+static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChangeContext;
 
 + (BOOL)requiresMainQueueSetup
 {
   return YES;
 }
+- (instancetype)init
+{
+  if (self = [super init]) {
+
+    [[NSWorkspace sharedWorkspace] addObserver:self
+              forKeyPath:@"voiceOverEnabled"
+                 options:(NSKeyValueObservingOptionNew |
+                          NSKeyValueObservingOptionOld)
+                 context:AccessibilityVoiceOverChangeContext];
+    _isVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
+  }
+  return self;
+}
+
 RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
                   error:(__unused RCTResponseSenderBlock)error)
 {
@@ -370,6 +386,30 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
   callback(@[@(isVoiceOverEnabled)]);
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context {
+ 
+    if (context == AccessibilityVoiceOverChangeContext) {
+          BOOL newIsVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
+          if (_isVoiceOverEnabled != newIsVoiceOverEnabled) {
+            _isVoiceOverEnabled = newIsVoiceOverEnabled;
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            [_bridge.eventDispatcher sendDeviceEventWithName:@"screenReaderChanged"
+                                                        body:@(_isVoiceOverEnabled)];
+        #pragma clang diagnostic pop
+          }
+
+    } else {
+        // Any unrecognized context must belong to super
+        [super observeValueForKeyPath:keyPath
+                             ofObject:object
+                               change:change
+                               context:context];
+    }
+}
 //RCT_EXPORT_METHOD(setAccessibilityFocus:(nonnull NSNumber *)reactTag)
 //{
 //  dispatch_async(dispatch_get_main_queue(), ^{
