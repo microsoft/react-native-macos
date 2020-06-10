@@ -24,6 +24,7 @@ const CHANGE_EVENT_NAME = {
 };
 
 type ChangeEventName = $Keys<{
+  change: string,
   screenReaderChanged: string,
 }>;
 
