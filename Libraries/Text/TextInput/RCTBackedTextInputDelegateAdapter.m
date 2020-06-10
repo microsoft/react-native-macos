@@ -353,7 +353,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   BOOL commandHandled = NO;
   id<RCTBackedTextInputDelegate> textInputDelegate = [_backedTextInputView textInputDelegate];
   // enter/return
-  if (textInputDelegate.textInputShouldReturn && (commandSelector == @selector(insertNewline:) || commandSelector == @selector(insertNewlineIgnoringFieldEditor:))) {
+  if ((commandSelector == @selector(insertNewline:) || commandSelector == @selector(insertNewlineIgnoringFieldEditor:)) && textInputDelegate.textInputShouldReturn) {
     [_backedTextInputView.window makeFirstResponder:nil];
     commandHandled = YES;
     //backspace
