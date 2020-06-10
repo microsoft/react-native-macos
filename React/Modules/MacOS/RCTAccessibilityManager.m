@@ -25,7 +25,7 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
 
 + (BOOL)requiresMainQueueSetup 
 {
-  return YES;
+  return NO;
 }
 
 - (instancetype)init 
