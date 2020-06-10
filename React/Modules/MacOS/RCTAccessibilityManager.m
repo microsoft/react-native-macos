@@ -27,6 +27,7 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
 {
   return YES;
 }
+
 - (instancetype)init 
 {
   if (self = [super init]) {
