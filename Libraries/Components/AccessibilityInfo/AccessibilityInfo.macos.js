@@ -17,7 +17,6 @@ const RCTDeviceEventEmitter = require('../../EventEmitter/RCTDeviceEventEmitter'
 
 import NativeAccessibilityManager from './NativeAccessibilityManager';
 
-
 const warning = require('fbjs/lib/warning');
 
 const CHANGE_EVENT_NAME = {
@@ -73,7 +72,7 @@ const AccessibilityInfo = {
       if (NativeAccessibilityManager) {
         NativeAccessibilityManager.getCurrentVoiceOverState(resolve, reject);
       } else {
-        reject(reject); 
+        reject(reject);
       }
     });
   },

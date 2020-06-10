@@ -29,15 +29,21 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
 - (instancetype)init
 {
   if (self = [super init]) {
-
     [[NSWorkspace sharedWorkspace] addObserver:self
-              forKeyPath:@"voiceOverEnabled"
-                 options:(NSKeyValueObservingOptionNew |
-                          NSKeyValueObservingOptionOld)
-                 context:AccessibilityVoiceOverChangeContext];
+                                    forKeyPath:@"voiceOverEnabled"
+                                       options:(NSKeyValueObservingOptionNew |
+                                                NSKeyValueObservingOptionOld)
+                                       context:AccessibilityVoiceOverChangeContext];
     _isVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
   }
   return self;
+}
+
+- (void)dealloc
+{
+  [[NSWorkspace sharedWorkspace] removeObserver:self
+                                     forKeyPath:@"voiceOverEnabled"
+                                        context:AccessibilityVoiceOverChangeContext];
 }
 
 RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
@@ -71,3 +77,4 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
 }
 
 @end
+
