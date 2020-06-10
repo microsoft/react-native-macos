@@ -108,6 +108,7 @@ static RCTUIColor *defaultPlaceholderTextColor()
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
     self.bordered = NO;
     self.accessibilityRole = NSAccessibilityTextFieldRole;
+    self.backgroundColor = [NSColor clearColor];
 #endif // ]TODO(macOS ISS#2323203)
 
     _textInputDelegateAdapter = [[RCTBackedTextFieldDelegateAdapter alloc] initWithTextField:self];
