@@ -66,7 +66,12 @@ const AccessibilityInfo = {
   },
 
   /**
-   * Android and iOS only
+   * Query whether a screen reader is currently enabled.
+   *
+   * Returns a promise which resolves to a boolean.
+   * The result is `true` when a screen reader is enabled and `false` otherwise.
+   *
+   * See http://facebook.github.io/react-native/docs/accessibilityinfo.html#isScreenReaderEnabled
    */
   isScreenReaderEnabled: function(): Promise<boolean> {
     return new Promise((resolve, reject) => {
