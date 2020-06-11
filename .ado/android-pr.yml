@@ -111,7 +111,7 @@ jobs:
       - task: Gradle@1
         displayName: gradlew installArchives
         env:
-          ANDROID_NDK=c:\android_ndk_symlink__
+          ANDROID_NDK: c:\android_ndk_symlink__
 #          REACT_NATIVE_DEPENDENCIES: $(System.DefaultWorkingDirectory)\build_deps
         inputs:
           gradleWrapperFile: gradlew
