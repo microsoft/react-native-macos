@@ -350,26 +350,3 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
 
 @end
 
-<<<<<<< HEAD
-#else // TODO(macOS ISS#2323203)
-
-@implementation RCTAccessibilityManager
-
-RCT_EXPORT_MODULE()
-
-+ (BOOL)requiresMainQueueSetup
-{
-  return YES;
-}
-
-- (instancetype)init
-{
-    if (self = [super init]) {
-        _isVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
-    }
-    return self;
-}
-@end
-#endif // TODO(macOS ISS#2323203)
-=======
->>>>>>> 929b57cb0adabd1d95fa1b3c0b54647275634900
