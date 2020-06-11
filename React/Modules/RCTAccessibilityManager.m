@@ -15,8 +15,6 @@
 
 NSString *const RCTAccessibilityManagerDidUpdateMultiplierNotification = @"RCTAccessibilityManagerDidUpdateMultiplierNotification";
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
-
 static NSString *UIKitCategoryFromJSCategory(NSString *JSCategory)
 {
   static NSDictionary *map = nil;
@@ -352,6 +350,7 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
 
 @end
 
+<<<<<<< HEAD
 #else // TODO(macOS ISS#2323203)
 
 @implementation RCTAccessibilityManager
@@ -372,3 +371,5 @@ RCT_EXPORT_MODULE()
 }
 @end
 #endif // TODO(macOS ISS#2323203)
+=======
+>>>>>>> 929b57cb0adabd1d95fa1b3c0b54647275634900
