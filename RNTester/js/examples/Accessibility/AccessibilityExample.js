@@ -581,14 +581,8 @@ class SetAccessibilityFocus extends React.Component<{}> {
     this.focusRef = React.createRef();
     return (
       <View>
-        <Button
-          onPress={this._handleOnPress}
-          title="Set Accessibility Focus"
-        />
-        <Text 
-          ref = {this.focusRef}
-          accessible={true}
-        >
+        <Button onPress={this._handleOnPress} title="Set Accessibility Focus" />
+        <Text ref={this.focusRef} accessible={true}>
           Move focus here on button press.
         </Text>
       </View>
