@@ -200,6 +200,7 @@ RCT_EXPORT_MODULE()
 #pragma clang diagnostic pop
   }
 }
+
 - (void)voiceVoiceOverStatusDidChange:(__unused NSNotification *)notification
 {
   BOOL newIsVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
@@ -341,3 +342,4 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
 }
 
 @end
+
