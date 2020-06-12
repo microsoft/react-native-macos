@@ -9,6 +9,7 @@
  */
 
 // TODO(macOS ISS#2323203)
+
 'use strict';
 
 const Promise = require('../../Promise');
