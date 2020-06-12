@@ -137,7 +137,7 @@ const AccessibilityInfo = {
   setAccessibilityFocus: function(reactTag: number): void {
     if (NativeAccessibilityManager) {
       NativeAccessibilityManager.setAccessibilityFocus(reactTag);
-    };
+    }
   },
 
   /**

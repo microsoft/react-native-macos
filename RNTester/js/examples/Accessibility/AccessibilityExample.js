@@ -576,7 +576,7 @@ class SetAccessibilityFocus extends React.Component<{}> {
       const reactTag = findNodeHandle(this.focusRef.current);
       AccessibilityInfo.setAccessibilityFocus(reactTag);
     }
-  }
+  };
   render() {
     this.focusRef = React.createRef();
     return (
