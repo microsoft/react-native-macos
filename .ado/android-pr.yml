@@ -25,7 +25,7 @@ jobs:
 
       - task: UseNode@1
         inputs:
-          version: '10.x'
+          version: '12.x'
 
       - template: templates/apple-droid-node-patching.yml
         parameters:

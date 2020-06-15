@@ -64,6 +64,10 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
+      - task: UseNode@1
+        inputs:
+          version: '12.x'
+
       - template: templates/apple-droid-node-patching.yml
         parameters:
           apply_office_patches: true
