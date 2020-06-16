@@ -107,21 +107,17 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
   BOOL newInvertColorsEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldInvertColors];
   BOOL newReduceMotionEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
   BOOL newReduceTransparencyEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
-    NSLog(@"DisplayOptionsChange");
   if (_isInvertColorsEnabled != newInvertColorsEnabled) {
     _isInvertColorsEnabled = newInvertColorsEnabled;
-    NSLog(@"invert");
     [_bridge.eventDispatcher sendDeviceEventWithName:@"invertColorsChanged"
                                                 body:@(_isInvertColorsEnabled)];
   }
   if (_isReduceMotionEnabled != newReduceMotionEnabled) {
-    NSLog(@"motion");
     _isReduceMotionEnabled = newReduceMotionEnabled;
     [_bridge.eventDispatcher sendDeviceEventWithName:@"reduceMotionChanged"
                                                 body:@(_isReduceMotionEnabled)];
   }
   if (_isReduceTransparencyEnabled != newReduceTransparencyEnabled) {
-    NSLog(@"transparent");
     _isReduceTransparencyEnabled = newReduceTransparencyEnabled;
     [_bridge.eventDispatcher sendDeviceEventWithName:@"reduceTransparencyChanged"
                                                 body:@(_isReduceTransparencyEnabled)];
