@@ -14,7 +14,6 @@ const Promise = require('../../Promise');
 const RCTDeviceEventEmitter = require('../../EventEmitter/RCTDeviceEventEmitter');
 
 import NativeAccessibilityManager from './NativeAccessibilityManager';
-console.log("*****",NativeAccessibilityManager.getCurrentVoiceOverState);
 
 
 const CHANGE_EVENT_NAME = {
