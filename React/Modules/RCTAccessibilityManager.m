@@ -108,7 +108,6 @@ RCT_EXPORT_MODULE()
     _isReduceMotionEnabled = UIAccessibilityIsReduceMotionEnabled();
     _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled();
     _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
-
   }
   return self;
 }
@@ -201,7 +200,6 @@ RCT_EXPORT_MODULE()
 #pragma clang diagnostic pop
   }
 }
-
 
 - (void)voiceVoiceOverStatusDidChange:(__unused NSNotification *)notification
 {
