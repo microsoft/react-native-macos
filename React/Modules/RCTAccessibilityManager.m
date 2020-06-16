@@ -189,6 +189,20 @@ RCT_EXPORT_MODULE()
   }
 }
 
+- (void)reduceTransparencyStatusDidChange:(__unused NSNotification *)notification
+{
+  BOOL newReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled();
+  if (_isReduceTransparencyEnabled != newReduceTransparencyEnabled) {
+    _isReduceTransparencyEnabled = newReduceTransparencyEnabled;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    [_bridge.eventDispatcher sendDeviceEventWithName:@"reduceTransparencyChanged"
+                                                body:@(_isReduceTransparencyEnabled)];
+#pragma clang diagnostic pop
+  }
+}
+
+
 - (void)voiceVoiceOverStatusDidChange:(__unused NSNotification *)notification
 {
   BOOL newIsVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
