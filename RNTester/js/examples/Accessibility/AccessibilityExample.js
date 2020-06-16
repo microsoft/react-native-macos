@@ -512,7 +512,7 @@ class AccessibilityActionsExample extends React.Component {
     );
   }
 }
-class ScreenReaderStatusExample extends React.Component<{}> {
+class DisplayOptionsStatusExample extends React.Component<{}> {
   state = {
     screenReaderEnabled: false,
   };
@@ -672,9 +672,9 @@ exports.examples = [
     },
   },
   {
-    title: 'Check if the screen reader is enabled',
-    render(): React.Element<typeof ScreenReaderStatusExample> {
-      return <ScreenReaderStatusExample />;
+    title: 'Check if the display options are enabled',
+    render(): React.Element<typeof DisplayOptionsStatusExample> {
+      return <DisplayOptionsStatusExample />;
     },
   },
   {
