@@ -32,7 +32,7 @@ function doPublish() {
   exec(`git config --global user.name "React-Native Bot"`);
 
   exec(`git add ${pkgJsonPath}`);
-  exec(`git commit -m "Applying package update to ${releaseVersion} ***NO_CI***`);
+  exec(`git commit -m "Applying package update to ${releaseVersion} ***NO_CI***"`);
   exec(`git tag v${releaseVersion}`);
   exec(`git push origin HEAD:${tempPublishBranch} --follow-tags --verbose`);
   exec(`git push origin tag v${releaseVersion}`);
