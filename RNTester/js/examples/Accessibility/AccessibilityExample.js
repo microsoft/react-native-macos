@@ -519,10 +519,40 @@ class ScreenReaderStatusExample extends React.Component<{}> {
 
   componentDidMount() {
     AccessibilityInfo.addEventListener(
-      'change',
+      'invertColorsChanged',
+      this._handleInvertColorsToggled,
+    );
+    AccessibilityInfo.isInvertColorsEnabled().done(isEnabled => {
+      this.setState({
+        invertColorsEnabled: isEnabled,
+      });
+    });
+
+    AccessibilityInfo.addEventListener(
+      'reduceMotionChanged',
+      this._handleReduceMotionToggled,
+    );
+    AccessibilityInfo.isReduceMotionEnabled().done(isEnabled => {
+      this.setState({
+        reduceMotionEnabled: isEnabled,
+      });
+    });
+
+    AccessibilityInfo.addEventListener(
+      'reduceTransparencyChanged',
+      this._handleReduceTransparencyToggled,
+    );
+    AccessibilityInfo.isReduceTransparencyEnabled().done(isEnabled => {
+      this.setState({
+        reduceTransparencyEnabled: isEnabled,
+      });
+    });
+    
+    AccessibilityInfo.addEventListener(
+      'screenReaderChanged',
       this._handleScreenReaderToggled,
     );
-    AccessibilityInfo.fetch().done(isEnabled => {
+    AccessibilityInfo.isScreenReaderEnabled().done(isEnabled => {
       this.setState({
         screenReaderEnabled: isEnabled,
       });
@@ -531,24 +561,74 @@ class ScreenReaderStatusExample extends React.Component<{}> {
 
   componentWillUnmount() {
     AccessibilityInfo.removeEventListener(
-      'change',
+      'invertColorsChanged',
+      this._handleInvertColorsToggled,
+    );
+    AccessibilityInfo.removeEventListener(
+      'reduceMotionChanged',
+      this._handleReduceMotionToggled,
+    );
+    AccessibilityInfo.removeEventListener(
+      'reduceTransparencyChanged',
+      this._handleReduceTransparencyToggled,
+    );
+    AccessibilityInfo.removeEventListener(
+      'screenReaderChanged',
       this._handleScreenReaderToggled,
     );
   }
 
-  _handleScreenReaderToggled = isEnabled => {
+  _handleInvertColorsToggled = isEnabled => {
     this.setState({
-      screenReaderEnabled: isEnabled,
+      invertColorsEnabled: isEnabled,
     });
   };
+
+  _handleReduceMotionToggled = isEnabled => {
+    this.setState({
+      reduceMotionEnabled: isEnabled,
+    });
+  };
+
+  _handleReduceTransparencyToggled = isEnabled => {
+    this.setState({
+      reduceTransparencyEnabled: isEnabled,
+    });
+  };
+
+  _handleScreenReaderToggled = isEnabled => {
+      this.setState({
+        screenReaderEnabled: isEnabled,
+      });
+    };
 
   render() {
     return (
       <View>
-        <Text>
-          The screen reader is{' '}
-          {this.state.screenReaderEnabled ? 'enabled' : 'disabled'}.
-        </Text>
+        <View>
+          <Text>
+            Invert colors is{' '}
+            {this.state.invertColorsEnabled ? 'enabled' : 'disabled'}.
+          </Text>
+        </View>
+        <View>
+          <Text>
+            Reduce motion is{' '}
+            {this.state.reduceMotionEnabled ? 'enabled' : 'disabled'}.
+          </Text>
+        </View>
+        <View>
+          <Text>
+            Reduce transparency is{' '}
+            {this.state.reduceTransparencyEnabled ? 'enabled' : 'disabled'}.
+          </Text>
+        </View>
+        <View>
+          <Text>
+            The screen reader is{' '}
+            {this.state.screenReaderEnabled ? 'enabled' : 'disabled'}.
+          </Text>
+        </View>
       </View>
     );
   }

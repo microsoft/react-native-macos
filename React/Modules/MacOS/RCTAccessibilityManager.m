@@ -35,7 +35,15 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
                                     forKeyPath:@"voiceOverEnabled"
                                        options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld)
                                        context:AccessibilityVoiceOverChangeContext];
+    [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self
+                                             selector:@selector(AccessibilityDisplayOptionsChange:)
+                                                 name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
+                                               object:nil];
+    _isInvertColorsEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldInvertColors];
+    _isReduceMotionEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
+    _isReduceTransparencyEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
     _isVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
+    
   }
   return self;
 }
@@ -45,6 +53,24 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
   [[NSWorkspace sharedWorkspace] removeObserver:self
                                      forKeyPath:@"voiceOverEnabled"
                                         context:AccessibilityVoiceOverChangeContext];
+}
+
+RCT_EXPORT_METHOD(getCurrentInvertColorsState:(RCTResponseSenderBlock)callback
+                  error:(__unused RCTResponseSenderBlock)error)
+{
+  callback(@[@(_isInvertColorsEnabled)]);
+}
+
+RCT_EXPORT_METHOD(getCurrentReduceMotionState:(RCTResponseSenderBlock)callback
+                  error:(__unused RCTResponseSenderBlock)error)
+{
+  callback(@[@(_isReduceMotionEnabled)]);
+}
+
+RCT_EXPORT_METHOD(getCurrentReduceTransparencyState:(RCTResponseSenderBlock)callback
+                  error:(__unused RCTResponseSenderBlock)error)
+{
+  callback(@[@(_isReduceTransparencyEnabled)]);
 }
 
 RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
@@ -73,6 +99,32 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
                          ofObject:object
                            change:change
                           context:context];
+  }
+}
+
+- (void)AccessibilityDisplayOptionsChange:(NSNotification *)notification
+{
+  BOOL newInvertColorsEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldInvertColors];
+  BOOL newReduceMotionEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
+  BOOL newReduceTransparencyEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
+    NSLog(@"DisplayOptionsChange");
+  if (_isInvertColorsEnabled != newInvertColorsEnabled) {
+    _isInvertColorsEnabled = newInvertColorsEnabled;
+    NSLog(@"invert");
+    [_bridge.eventDispatcher sendDeviceEventWithName:@"invertColorsChanged"
+                                                body:@(_isInvertColorsEnabled)];
+  }
+  if (_isReduceMotionEnabled != newReduceMotionEnabled) {
+    NSLog(@"motion");
+    _isReduceMotionEnabled = newReduceMotionEnabled;
+    [_bridge.eventDispatcher sendDeviceEventWithName:@"reduceMotionChanged"
+                                                body:@(_isReduceMotionEnabled)];
+  }
+  if (_isReduceTransparencyEnabled != newReduceTransparencyEnabled) {
+    NSLog(@"transparent");
+    _isReduceTransparencyEnabled = newReduceTransparencyEnabled;
+    [_bridge.eventDispatcher sendDeviceEventWithName:@"reduceTransparencyChanged"
+                                                body:@(_isReduceTransparencyEnabled)];
   }
 }
 
