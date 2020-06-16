@@ -97,7 +97,10 @@ const AccessibilityInfo = {
   isReduceTransparencyEnabled: function(): Promise<boolean> {
     return new Promise((resolve, reject) => {
       if (NativeAccessibilityManager) {
-        NativeAccessibilityManager.getCurrentReduceTransparencyState(resolve, reject);
+        NativeAccessibilityManager.getCurrentReduceTransparencyState(
+          resolve,
+          reject,
+        );
       } else {
         reject(reject);
       }

@@ -547,7 +547,7 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
         reduceTransparencyEnabled: isEnabled,
       });
     });
-    
+
     AccessibilityInfo.addEventListener(
       'screenReaderChanged',
       this._handleScreenReaderToggled,
@@ -597,10 +597,10 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
   };
 
   _handleScreenReaderToggled = isEnabled => {
-      this.setState({
-        screenReaderEnabled: isEnabled,
-      });
-    };
+    this.setState({
+      screenReaderEnabled: isEnabled,
+    });
+  };
 
   render() {
     return (
