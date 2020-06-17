@@ -36,7 +36,7 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
                                        options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld)
                                        context:AccessibilityVoiceOverChangeContext];
     [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self
-                                             selector:@selector(AccessibilityDisplayOptionsChange:)
+                                             selector:@selector(accessibilityDisplayOptionsChange:)
                                                  name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
                                                object:nil];
     _isInvertColorsEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldInvertColors];
@@ -103,7 +103,7 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
   }
 }
 
-- (void)AccessibilityDisplayOptionsChange:(NSNotification *)notification
+- (void)accessibilityDisplayOptionsChange:(NSNotification *)notification
 {
   BOOL newInvertColorsEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldInvertColors];
   BOOL newReduceMotionEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
