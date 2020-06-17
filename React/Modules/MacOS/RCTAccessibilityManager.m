@@ -53,7 +53,7 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
   [[NSWorkspace sharedWorkspace] removeObserver:self
                                      forKeyPath:@"voiceOverEnabled"
                                         context:AccessibilityVoiceOverChangeContext];
-//    [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self]; 
+   [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self]; 
 }
 
 RCT_EXPORT_METHOD(getCurrentInvertColorsState:(RCTResponseSenderBlock)callback
