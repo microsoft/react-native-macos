@@ -512,11 +512,50 @@ class AccessibilityActionsExample extends React.Component {
     );
   }
 }
-// [TODO(OSS Candidate ISS#2710739)
-class DisplayOptionsStatusExample extends React.Component<{}> {
+class ScreenReaderStatusExample extends React.Component<{}> {
   state = {
     screenReaderEnabled: false,
   };
+
+  componentDidMount() {
+    AccessibilityInfo.addEventListener(
+      'change',
+      this._handleScreenReaderToggled,
+    );
+    AccessibilityInfo.fetch().done(isEnabled => {
+      this.setState({
+        screenReaderEnabled: isEnabled,
+      });
+    });
+  }
+
+  componentWillUnmount() {
+    AccessibilityInfo.removeEventListener(
+      'change',
+      this._handleScreenReaderToggled,
+    );
+  }
+
+  _handleScreenReaderToggled = isEnabled => {
+    this.setState({
+      screenReaderEnabled: isEnabled,
+    });
+  };
+
+  render() {
+    return (
+      <View>
+        <Text>
+          The screen reader is{' '}
+          {this.state.screenReaderEnabled ? 'enabled' : 'disabled'}.
+        </Text>
+      </View>
+    );
+  }
+}
+// [TODO(OSS Candidate ISS#2710739)
+class DisplayOptionsStatusExample extends React.Component<{}> {
+  state = {};
 
   componentDidMount() {
     AccessibilityInfo.addEventListener(
@@ -548,16 +587,6 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
         reduceTransparencyEnabled: isEnabled,
       });
     });
-
-    AccessibilityInfo.addEventListener(
-      'screenReaderChanged',
-      this._handleScreenReaderToggled,
-    );
-    AccessibilityInfo.isScreenReaderEnabled().done(isEnabled => {
-      this.setState({
-        screenReaderEnabled: isEnabled,
-      });
-    });
   }
 
   componentWillUnmount() {
@@ -572,10 +601,6 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
     AccessibilityInfo.removeEventListener(
       'reduceTransparencyChanged',
       this._handleReduceTransparencyToggled,
-    );
-    AccessibilityInfo.removeEventListener(
-      'screenReaderChanged',
-      this._handleScreenReaderToggled,
     );
   }
 
@@ -597,11 +622,6 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
     });
   };
 
-  _handleScreenReaderToggled = isEnabled => {
-    this.setState({
-      screenReaderEnabled: isEnabled,
-    });
-  };
 
   render() {
     return (
@@ -622,12 +642,6 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
           <Text>
             Reduce transparency is{' '}
             {this.state.reduceTransparencyEnabled ? 'enabled' : 'disabled'}.
-          </Text>
-        </View>
-        <View>
-          <Text>
-            The screen reader is{' '}
-            {this.state.screenReaderEnabled ? 'enabled' : 'disabled'}.
           </Text>
         </View>
       </View>
@@ -670,6 +684,12 @@ exports.examples = [
     title: 'Accessibility action examples',
     render(): React.Element<typeof AccessibilityActionsExample> {
       return <AccessibilityActionsExample />;
+    },
+  },
+  {
+    title: 'Check if the screen reader is enabled',
+    render(): React.Element<typeof ScreenReaderStatusExample> {
+      return <ScreenReaderStatusExample />;
     },
   },
   // [TODO(OSS Candidate ISS#2710739)
