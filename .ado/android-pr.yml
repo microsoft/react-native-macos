@@ -77,7 +77,7 @@ jobs:
       - task: CmdLine@2
         displayName: gradlew installArchives
         inputs:
-          script: REACT_NATIVE_DEPENDENCIES=$(System.DefaultWorkingDirectory)/build_deps ./gradlew installArchives -Pparam="excludeLibs"
+          script: ./gradlew installArchives -Pparam="excludeLibs"
 
       - template: templates\prep-android-nuget.yml
 
