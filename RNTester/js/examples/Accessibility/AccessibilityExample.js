@@ -512,6 +512,7 @@ class AccessibilityActionsExample extends React.Component {
     );
   }
 }
+// [TODO(OSS Candidate ISS#2710739)
 class DisplayOptionsStatusExample extends React.Component<{}> {
   state = {
     screenReaderEnabled: false,
@@ -633,7 +634,7 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
     );
   }
 }
-
+// ]TODO(OSS Candidate ISS#2710739)
 class AnnounceForAccessibility extends React.Component<{}> {
   _handleOnPress = () =>
     AccessibilityInfo.announceForAccessibility('Announcement Test');
@@ -671,12 +672,14 @@ exports.examples = [
       return <AccessibilityActionsExample />;
     },
   },
+  // [TODO(OSS Candidate ISS#2710739)
   {
     title: 'Check if the display options are enabled',
     render(): React.Element<typeof DisplayOptionsStatusExample> {
       return <DisplayOptionsStatusExample />;
     },
   },
+  // ]TODO(OSS Candidate ISS#2710739)
   {
     title: 'Check if the screen reader announces',
     render(): React.Element<typeof AnnounceForAccessibility> {
