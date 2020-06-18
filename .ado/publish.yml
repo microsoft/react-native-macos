@@ -152,12 +152,6 @@ jobs:
           script: node .ado/bumpOfficeFileVersions.js
 
       - task: CmdLine@2
-        displayName: nuget restore
-        inputs:
-          script: mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe restore $(System.DefaultWorkingDirectory)/ReactAndroid/packages.config -PackagesDirectory  $(System.DefaultWorkingDirectory)/ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
-        continueOnError: true
-
-      - task: CmdLine@2
         displayName: gradlew installArchives
         inputs:
           script: ./gradlew installArchives -Pparam="excludeLibs"

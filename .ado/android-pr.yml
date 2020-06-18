@@ -60,11 +60,6 @@ jobs:
           script: npm install
 
       - task: CmdLine@2
-        displayName: nuget restore
-        inputs:
-          script: mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe restore $(System.DefaultWorkingDirectory)/ReactAndroid/packages.config -PackagesDirectory  $(System.DefaultWorkingDirectory)/ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
-
-      - task: CmdLine@2
         displayName: Remove RNTesterApp.android.bundle
         inputs:
           script: rm -f RNTesterApp.android.bundle
