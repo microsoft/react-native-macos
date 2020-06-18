@@ -622,7 +622,6 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
     });
   };
 
-
   render() {
     return (
       <View>
