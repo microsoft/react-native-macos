@@ -11,15 +11,10 @@
 // TODO(macOS ISS#2323203)
 'use strict';
 
-<<<<<<< HEAD
-import NativeAccessibilityManager from './NativeAccessibilityManager';
-console.log("*****",NativeAccessibilityManager);
-=======
 const Promise = require('../../Promise');
 const RCTDeviceEventEmitter = require('../../EventEmitter/RCTDeviceEventEmitter');
 
 import NativeAccessibilityManager from './NativeAccessibilityManager';
->>>>>>> 929b57cb0adabd1d95fa1b3c0b54647275634900
 
 const warning = require('fbjs/lib/warning');
 
@@ -78,19 +73,6 @@ const AccessibilityInfo = {
    * See http://facebook.github.io/react-native/docs/accessibilityinfo.html#isScreenReaderEnabled
    */
   isScreenReaderEnabled: function(): Promise<boolean> {
-<<<<<<< HEAD
-    console.log("\n\n\n*********\n\n\n")
-    console.log(NativeAccessibilityManager)
-    console.log("\n\n\n*********\n\n\n")
-    return Promise.resolve(false);
-    // return new Promise((resolve, reject) => {
-    //   if (NativeAccessibilityManager) {
-    //     NativeAccessibilityManager.getCurrentVoiceOverState(resolve, reject);
-    //   } else {
-    //     reject(reject);
-    //   }
-    // });
-=======
     return new Promise((resolve, reject) => {
       if (NativeAccessibilityManager) {
         NativeAccessibilityManager.getCurrentVoiceOverState(resolve, reject);
@@ -98,7 +80,6 @@ const AccessibilityInfo = {
         reject(reject);
       }
     });
->>>>>>> 929b57cb0adabd1d95fa1b3c0b54647275634900
   },
 
   /**
