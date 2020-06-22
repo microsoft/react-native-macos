@@ -119,7 +119,8 @@ end
 target 'RNTester-macOS' do
   platform :osx, '10.14'
   # TODO: Point to actual release
-  pod 'hermes', :http => 'https://github.com/alloy/hermes/releases/download/v0.4.1-macOS/hermes-v0.4.1.zip'
+  pod 'hermes', :http => 'https://github.com/alloy/hermes/releases/download/v0.4.1-macOS/hermes-v0.4.1.zip',
+                :sha256 => 'd33c7eafded94d8113a3bb74f56aef3ec1cd3df513e99df7fa3c7c34b867d379'
   pod 'libevent', :podspec => "../third-party-podspecs/libevent.podspec"
   pods()
 end
