@@ -102,12 +102,12 @@ RCT_EXPORT_MODULE()
                                                object:nil];
 
     self.contentSizeCategory = RCTSharedApplication().preferredContentSizeCategory;
-    _isBoldTextEnabled = UIAccessibilityIsBoldTextEnabled(); 
+    _isBoldTextEnabled = UIAccessibilityIsBoldTextEnabled();
     _isGrayscaleEnabled = UIAccessibilityIsGrayscaleEnabled();
     _isInvertColorsEnabled = UIAccessibilityIsInvertColorsEnabled();
-    _isReduceMotionEnabled = UIAccessibilityIsReduceMotionEnabled(); 
-    _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled(); 
-    _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning(); 
+    _isReduceMotionEnabled = UIAccessibilityIsReduceMotionEnabled();
+    _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled();
+    _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
   }
   return self;
 }
@@ -200,6 +200,7 @@ RCT_EXPORT_MODULE()
 #pragma clang diagnostic pop
   }
 }
+
 - (void)voiceVoiceOverStatusDidChange:(__unused NSNotification *)notification
 {
   BOOL newIsVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
