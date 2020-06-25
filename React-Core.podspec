@@ -70,7 +70,6 @@ Pod::Spec.new do |s|
                                 "React/Views/{RCTModal*,RCTMasked*,RCTTV*,RCTWrapperViewController}.*",
                                 "React/Views/RefreshControl/*",
                                 "React/Views/SafeAreaView/*"
-    ss.osx.dependency "React-Core/Hermes"
     # ]TODO(macOS ISS#2323203)
 
     ss.tvos.exclude_files     = "React/Modules/RCTClipboard*",
