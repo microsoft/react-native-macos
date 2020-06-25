@@ -46,8 +46,10 @@ function doPublish(fakeMode) {
       throw "The final artefact to be published is missing.";
   } else {
     console.log(`Successfully published.`)
+    
+    // TODO:: Uncomment before merging the PR.
+    // fs.copyFileSync(npmTarPath, finalTarPath);
   }
-  // fs.copyFileSync(npmTarPath, finalTarPath);
 }
 
 var args = process.argv.slice(2);
