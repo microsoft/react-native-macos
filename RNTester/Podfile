@@ -47,11 +47,10 @@ if ENV['USE_FRAMEWORKS'] == '1'
   use_frameworks!
 end
 
-def pods()
+def pods(options = {})
   project 'RNTesterPods.xcodeproj'
 
-  # Enable TurboModule
-  use_react_native!(path: "..")
+  use_react_native!(options.merge(path: ".."))
   pod 'ReactCommon/turbomodule/samples', :path => '../ReactCommon'
 
   # Additional Pods which aren't included in the default Podfile
@@ -118,12 +117,7 @@ end
 
 target 'RNTester-macOS' do
   platform :osx, '10.14'
-  # TODO: Point to actual release
-  pod 'React-Core/Hermes', :path => '../'
-  pod 'hermes', :http => 'https://github.com/alloy/hermes/releases/download/v0.4.1-macOS/hermes-v0.4.1.zip',
-                :sha256 => 'd33c7eafded94d8113a3bb74f56aef3ec1cd3df513e99df7fa3c7c34b867d379'
-  pod 'libevent', :podspec => "../third-party-podspecs/libevent.podspec"
-  pods()
+  pods(:hermes_enabled => true)
 end
 
 target 'RNTesterUnitTests' do
