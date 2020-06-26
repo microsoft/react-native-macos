@@ -597,7 +597,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
 #pragma mark - Accessibility
 
-- (RCTUIView *)reactAccessibilityElement // TODO(macOS ISS#3536887)
+- (id)reactAccessibilityElement // TODO(macOS ISS#3536887)
 {
   return self.backedTextInputView;
 }

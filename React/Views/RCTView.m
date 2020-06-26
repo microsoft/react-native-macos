@@ -392,7 +392,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:unused)
   return CGRectContainsPoint(hitFrame, point);
 }
 
-- (RCTPlatformView *)reactAccessibilityElement // TODO(macOS ISS#2323203)
+- (id)reactAccessibilityElement // TODO(macOS ISS#2323203)
 {
   return self;
 }
