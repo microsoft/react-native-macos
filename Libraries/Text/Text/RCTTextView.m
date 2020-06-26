@@ -282,6 +282,17 @@
   return _textStorage.string;
 }
 
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+- (NSString *)accessibilityValue
+{
+  NSString *superAccessibilityLabel = [super accessibilityLabel];
+  if (superAccessibilityLabel) {
+    return superAccessibilityLabel;
+  }
+  return _textStorage.string;
+}
+#endif // TODO(macOS ISS#2323203)
+
 #pragma mark - Context Menu
 
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
