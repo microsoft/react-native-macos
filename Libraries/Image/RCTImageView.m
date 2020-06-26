@@ -619,6 +619,10 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   [self reloadImage];
 }
   
+- (id)reactAccessibilityElement
+{
+  return _imageView.cell;
+}
 - (NSColor *)tintColor
 {
   NSColor *tintColor = nil;
