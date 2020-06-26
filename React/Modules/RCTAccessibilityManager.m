@@ -107,7 +107,7 @@ RCT_EXPORT_MODULE()
     _isInvertColorsEnabled = UIAccessibilityIsInvertColorsEnabled();
     _isReduceMotionEnabled = UIAccessibilityIsReduceMotionEnabled();
     _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled();
-    _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning(); 
+    _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
   }
   return self;
 }
