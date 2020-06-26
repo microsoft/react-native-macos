@@ -342,3 +342,4 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
 }
 
 @end
+

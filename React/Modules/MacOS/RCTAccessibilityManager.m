@@ -35,7 +35,7 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
                                     forKeyPath:@"voiceOverEnabled"
                                        options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld)
                                        context:AccessibilityVoiceOverChangeContext];
-    [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self
+     [[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self
                                              selector:@selector(accessibilityDisplayOptionsChange:)
                                                  name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
                                                object:nil];
