@@ -286,7 +286,7 @@
 
 - (void)setAccessibilityLabel:(NSString *)label
 {
-  _accessibilityLabel = label;
+  _accessibilityLabel = [copy label];
 }
 
 - (NSString *)accessibilityValue
