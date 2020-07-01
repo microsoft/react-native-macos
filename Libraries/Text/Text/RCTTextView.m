@@ -294,10 +294,6 @@
   if(_accessibilityLabel){
     return _accessibilityLabel;
   }
-  NSString *superAccessibilityLabel = [super accessibilityLabel];
-  if (superAccessibilityLabel) {
-    return superAccessibilityLabel;
-  }
   return _textStorage.string;
 }
 #else
