@@ -26,6 +26,8 @@
   CAShapeLayer *_highlightLayer;
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
+#else
+  NSString * _accessibilityLabel;
 #endif // TODO(macOS ISS#2323203)
 
   NSArray<RCTUIView *> *_Nullable _descendantViews; // TODO(macOS ISS#3536887)
@@ -273,17 +275,33 @@
 
 #pragma mark - Accessibility
 
-- (NSString *)accessibilityLabel
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+
+// This code is here to cover for a mismatch in the what Labels and Values mean in RN vs in Text components on MacOS
+// In MacOS a text element will always read its Value, but will only read it's Label if it's value is set
+// In RN (iOS & Android) a text element will only read it's Value if it has no Label, and will always read its Label
+// This code replicates the expected RN behavior in MacOS by: 
+// 1) Setting the Value = the RN Label if one exists and setting it equal to the text's contents otherwise.
+// 2) Making sure that its Label is always nil, so that it doesn't read out the label twice.
+
+- (void)setAccessibilityLabel:(NSString *)label
 {
+  _accessibilityLabel = label;
+}
+
+- (NSString *)accessibilityValue
+  {
+  if(_accessibilityLabel){
+    return _accessibilityLabel;
+  }
   NSString *superAccessibilityLabel = [super accessibilityLabel];
   if (superAccessibilityLabel) {
     return superAccessibilityLabel;
   }
   return _textStorage.string;
 }
-
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
-- (NSString *)accessibilityValue
+#else
+- (NSString *)accessibilityLabel
 {
   NSString *superAccessibilityLabel = [super accessibilityLabel];
   if (superAccessibilityLabel) {
