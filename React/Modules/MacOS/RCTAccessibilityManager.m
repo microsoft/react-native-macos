@@ -56,6 +56,17 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
   [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self]; 
 }
 
+RCT_EXPORT_METHOD(announceForAccessibility:(NSString *)announcement)
+{
+    NSAccessibilityPostNotificationWithUserInfo(
+                                                    NSApp,
+                                                    NSAccessibilityAnnouncementRequestedNotification,
+                                                    @{NSAccessibilityAnnouncementKey : announcement,
+                                                      NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
+                                                    }
+                                                );
+}
+
 RCT_EXPORT_METHOD(getCurrentInvertColorsState:(RCTResponseSenderBlock)callback
                   error:(__unused RCTResponseSenderBlock)error)
 {
