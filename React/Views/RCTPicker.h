@@ -18,7 +18,7 @@
 @property (nonatomic, assign) NSInteger selectedIndex;
 
 @property (nonatomic, strong) RCTUIColor *color; // TODO(OSS Candidate ISS#2710739)
-@property (nonatomic, strong) UIFont *font;
+@property (nonatomic, strong) UIFont *fontStyle;
 @property (nonatomic, assign) NSTextAlignment textAlign;
 
 @property (nonatomic, copy) RCTBubblingEventBlock onChange;
