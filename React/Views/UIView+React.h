@@ -113,7 +113,7 @@
  * transparent in favour of some subview.
  * Defaults to `self`.
  */
-@property (nonatomic, readonly) id reactAccessibilityElement; // TODO(macOS ISS#2323203)
+@property (nonatomic, readonly) RCTPlatformView *reactAccessibilityElement; // TODO(macOS ISS#2323203)
 
 /**
  * Accessibility properties

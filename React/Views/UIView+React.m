@@ -326,7 +326,7 @@
 
 #pragma mark - Accessibility
 
-- (id)reactAccessibilityElement // TODO(macOS ISS#2323203)
+- (RCTPlatformView *)reactAccessibilityElement // TODO(macOS ISS#2323203)
 {
   return self;
 }
