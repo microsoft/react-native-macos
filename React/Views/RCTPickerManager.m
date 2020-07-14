@@ -27,19 +27,19 @@ RCT_EXPORT_VIEW_PROPERTY(color, UIColor)
 RCT_EXPORT_VIEW_PROPERTY(textAlign, NSTextAlignment)
 RCT_CUSTOM_VIEW_PROPERTY(fontSize, NSNumber, RCTPicker)
 {
-  view.fontStyle = [RCTFont updateFont:view.fontStyle withSize:json ?: @(defaultView.fontStyle.pointSize)];
+  view.font = [RCTFont updateFont:view.font withSize:json ?: @(defaultView.font.pointSize)];
 }
 RCT_CUSTOM_VIEW_PROPERTY(fontWeight, NSString, __unused RCTPicker)
 {
-  view.fontStyle = [RCTFont updateFont:view.fontStyle withWeight:json]; // defaults to normal
+  view.font = [RCTFont updateFont:view.font withWeight:json]; // defaults to normal
 }
 RCT_CUSTOM_VIEW_PROPERTY(fontStyle, NSString, __unused RCTPicker)
 {
-  view.fontStyle = [RCTFont updateFont:view.fontStyle withStyle:json]; // defaults to normal
+  view.font = [RCTFont updateFont:view.font withStyle:json]; // defaults to normal
 }
 RCT_CUSTOM_VIEW_PROPERTY(fontFamily, NSString, RCTPicker)
 {
-  view.fontStyle = [RCTFont updateFont:view.fontStyle withFamily:json ?: defaultView.fontStyle.familyName];
+  view.font = [RCTFont updateFont:view.font withFamily:json ?: defaultView.font.familyName];
 }
 
 @end

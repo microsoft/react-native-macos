@@ -25,10 +25,10 @@
   if ((self = [super initWithFrame:frame])) {
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
     _color = [RCTUIColor blackColor]; // TODO(OSS Candidate ISS#2710739)
-    _fontStyle = [UIFont systemFontOfSize:21]; // TODO: selected title default should be 23.5
+    _font = [UIFont systemFontOfSize:21]; // TODO: selected title default should be 23.5
 #else // [TODO(macOS ISS#2323203)
     _color = [NSColor labelColor];
-    _fontStyle = [NSFont systemFontOfSize:[NSFont systemFontSize]];
+    [self setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
 #endif // ]TODO(macOS ISS#2323203)
     _selectedIndex = NSNotFound;
     _textAlign = NSTextAlignmentCenter;
@@ -64,7 +64,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
     NSMutableDictionary *mutableItem = item.mutableCopy;
     NSAttributedString *attrString = [[NSAttributedString alloc] initWithString:[RCTConvert NSString:item[@"label"]]
                                                                      attributes:@{NSForegroundColorAttributeName : [RCTConvert UIColor:item[@"textColor"]] ?: _color,
-                                                                                  NSFontAttributeName: _fontStyle,
+                                                                                  NSFontAttributeName: [self font] /* Use the font prop instead of the ivar so it's compatible on iOS and macOS TODO(OSS Candidate ISS#2710739) */,
                                                                                   NSParagraphStyleAttributeName: paragraphStyle}];
     NSSize size = attrString.size;
     if (size.height > maxHeight) {
@@ -124,7 +124,7 @@ numberOfRowsInComponent:(__unused NSInteger)component
 }
 
 - (CGFloat)pickerView:(__unused UIPickerView *)pickerView rowHeightForComponent:(NSInteger)__unused component {
-  return _fontStyle.pointSize + 19;
+  return _font.pointSize + 19;
 }
 
 - (UIView *)pickerView:(UIPickerView *)pickerView
@@ -142,7 +142,7 @@ numberOfRowsInComponent:(__unused NSInteger)component
     }];
   }
 
-  label.font = _fontStyle;
+  label.font = _font;
 
   label.textColor = [RCTConvert UIColor:_items[row][@"textColor"]] ?: _color;
 
