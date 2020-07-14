@@ -26,9 +26,9 @@
   CAShapeLayer *_highlightLayer;
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
-#else
+#else // [TODO(macOS ISS#2323203)
   NSString * _accessibilityLabel;
-#endif // TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS ISS#2323203)
 
   NSArray<RCTUIView *> *_Nullable _descendantViews; // TODO(macOS ISS#3536887)
   NSTextStorage *_Nullable _textStorage;
@@ -275,28 +275,28 @@
 
 #pragma mark - Accessibility
 
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 
-// This code is here to cover for a mismatch in the what Labels and Values mean in RN vs in Text components on MacOS
-// In MacOS a text element will always read its Value, but will only read it's Label if it's value is set
-// In RN (iOS & Android) a text element will only read it's Value if it has no Label, and will always read its Label
-// This code replicates the expected RN behavior in MacOS by: 
-// 1) Setting the Value = the RN Label if one exists and setting it equal to the text's contents otherwise.
-// 2) Making sure that its Label is always nil, so that it doesn't read out the label twice.
+// This code is here to cover for a mismatch in the what accessibilityLabels and accessibilityValues mean in iOS versus macOS.
+// In macOS a text element will always read its accessibilityValue, but will only read it's accessibilityLabel if it's value is set.
+// In iOS a text element will only read it's accessibilityValue if it has no accessibilityLabel, and will always read its accessibilityLabel.
+// This code replicates the expected behavior in macOS by:
+// 1) Setting the accessibilityValue = the react-native accessibilityLabel prop if one exists and setting it equal to the text's contents otherwise.
+// 2) Making sure that its accessibilityLabel is always nil, so that it doesn't read out the label twice.
 
 - (void)setAccessibilityLabel:(NSString *)label
 {
-  _accessibilityLabel = [copy label];
+  _accessibilityLabel = [label copy];
 }
 
 - (NSString *)accessibilityValue
-  {
-  if(_accessibilityLabel){
+{
+  if (_accessibilityLabel) {
     return _accessibilityLabel;
   }
   return _textStorage.string;
 }
-#else
+#else // ]TODO(macOS ISS#2323203)
 - (NSString *)accessibilityLabel
 {
   NSString *superAccessibilityLabel = [super accessibilityLabel];
