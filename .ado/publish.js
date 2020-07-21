@@ -59,7 +59,7 @@ function doPublish(fakeMode) {
   console.log(`Copying tar file ${npmTarPath} to: ${finalTarPath}`)
   
   if(fakeMode) {
-    if (!fs.existsSync(finalTarPath))
+    if (!fs.existsSync(npmTarPath))
       throw "The final artefact to be published is missing.";
   } else {
     fs.copyFileSync(npmTarPath, finalTarPath);
