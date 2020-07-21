@@ -101,8 +101,8 @@ function doPublish(fakeMode) {
 
         console.log('Response: ' + body);
 
-
-        exec(`del ${npmTarPath}`);
+        fs.unlinkSync(npmTarPath);
+        
         exec(`git checkout ${publishBranchName}`);
         exec(`git pull origin ${publishBranchName}`);
         exec(`git merge ${tempPublishBranch} --no-edit`);
