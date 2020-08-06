@@ -345,6 +345,20 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         this._footerLength -
         this._scrollMetrics.visibleLength,
     );
+    
+    if (this._scrollRef == null) {
+      return;
+    }
+
+    if (this._scrollRef.scrollTo == null) {
+      console.warn(
+        'No scrollTo method provided. This may be because you have two nested ' +
+          'VirtualizedLists with the same orientation, or because you are ' +
+          'using a custom component that does not implement scrollTo.',
+      );
+      return;
+    }
+    
     /* $FlowFixMe(>=0.53.0 site=react_native_fb,react_native_oss) This comment
      * suppresses an error when upgrading Flow's support for React. To see the
      * error delete this comment and run Flow. */
@@ -395,6 +409,20 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           (viewPosition || 0) *
             (this._scrollMetrics.visibleLength - frame.length),
       ) - (viewOffset || 0);
+    
+    if (this._scrollRef == null) {
+      return;
+    }
+
+    if (this._scrollRef.scrollTo == null) {
+      console.warn(
+        'No scrollTo method provided. This may be because you have two nested ' +
+          'VirtualizedLists with the same orientation, or because you are ' +
+          'using a custom component that does not implement scrollTo.',
+      );
+      return;
+    }
+    
     /* $FlowFixMe(>=0.53.0 site=react_native_fb,react_native_oss) This comment
      * suppresses an error when upgrading Flow's support for React. To see the
      * error delete this comment and run Flow. */
@@ -433,6 +461,20 @@ class VirtualizedList extends React.PureComponent<Props, State> {
    */
   scrollToOffset(params: {animated?: ?boolean, offset: number}) {
     const {animated, offset} = params;
+    
+    if (this._scrollRef == null) {
+      return;
+    }
+
+    if (this._scrollRef.scrollTo == null) {
+      console.warn(
+        'No scrollTo method provided. This may be because you have two nested ' +
+          'VirtualizedLists with the same orientation, or because you are ' +
+          'using a custom component that does not implement scrollTo.',
+      );
+      return;
+    }
+    
     /* $FlowFixMe(>=0.53.0 site=react_native_fb,react_native_oss) This comment
      * suppresses an error when upgrading Flow's support for React. To see the
      * error delete this comment and run Flow. */
