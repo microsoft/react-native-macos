@@ -2,6 +2,9 @@ parameters:
   apply_office_patches: ''
 
 steps:
+  - script: 'brew update'
+    displayName: 'brew update'
+
   - script: 'brew bundle'
     displayName: 'brew bundle'
 
