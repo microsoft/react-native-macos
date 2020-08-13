@@ -16,7 +16,7 @@
 #import "RCTModuleData.h"
 #import "RCTProfile.h"
 
-#if TARGET_OS_OSX // TODO(macOS, https://github.com/microsoft/react-native-macos/issues/533)
+#if TARGET_OS_OSX // TODO(macOS GH#533)
 // To compile in Xcode 12 beta 4 on macOS, we need to explicitly pull in the framework to get the definition for CACurrentMediaTime()
 #import <QuartzCore/QuartzCore.h>
 #endif // TODO(macOS, https://github.com/microsoft/react-native-macos/issues/533)

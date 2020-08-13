@@ -18,8 +18,10 @@
 @property (nonatomic, assign) NSInteger selectedIndex;
 
 @property (nonatomic, strong) RCTUIColor *color; // TODO(OSS Candidate ISS#2710739)
-@property (nonatomic, strong) UIFont *font;
-@property (nonatomic, assign) NSTextAlignment textAlign;
+#if !TARGET_OS_OSX // [TODO(macOS GH#533) // NSControl defines font prop for macOS, but iOS superviews don't
+ @property (nonatomic, strong) UIFont *font;
+ #endif // ]TODO(macOS GH#533)
+ @property (nonatomic, assign) NSTextAlignment textAlign;
 
 @property (nonatomic, copy) RCTBubblingEventBlock onChange;
 
