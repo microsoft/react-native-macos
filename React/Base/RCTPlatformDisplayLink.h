@@ -9,8 +9,8 @@
 
 #include <TargetConditionals.h>
 
+#import <QuartzCore/CADisplayLink.h> // TODO GH#533, we need to explicitly pull in the framework to get the definition for CACurrentMediaTime()
 #if !TARGET_OS_OSX
-#import <QuartzCore/CADisplayLink.h>
 #define RCTPlatformDisplayLink CADisplayLink
 #else
 
