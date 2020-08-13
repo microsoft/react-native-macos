@@ -20,7 +20,7 @@ function exec(command) {
   }
 }
 
-function doPublish() {
+function doPublish(fakeMode) {
   console.log(`Target branch to publish to: ${publishBranchName}`);
 
   const {releaseVersion, branchVersionSuffix} = gatherVersionInfo()
@@ -32,15 +32,19 @@ function doPublish() {
   exec(`git config --global user.name "React-Native Bot"`);
 
   exec(`git add ${pkgJsonPath}`);
-  exec(`git commit -m "Applying package update to ${releaseVersion} ***NO_CI***`);
+  exec(`git commit -m "Applying package update to ${releaseVersion} ***NO_CI***"`);
   exec(`git tag v${releaseVersion}`);
-  exec(`git push origin HEAD:${tempPublishBranch} --follow-tags --verbose`);
-  exec(`git push origin tag v${releaseVersion}`);
+  
+  // Don't push the new tags on the PR jobs.
+  if(!fakeMode) {
+    exec(`git push origin HEAD:${tempPublishBranch} --follow-tags --verbose`);
+    exec(`git push origin tag v${releaseVersion}`);
+  }
 
   const onlyTagSource = !!branchVersionSuffix;
   if (!onlyTagSource) {
     // -------- Generating Android Artifacts with JavaDoc
-    exec("gradlew installArchives");
+    exec(path.join(process.env.BUILD_SOURCESDIRECTORY,"gradlew") + " installArchives");
 
     // undo uncommenting javadoc setting
     exec("git checkout ReactAndroid/gradle.properties");
@@ -53,7 +57,17 @@ function doPublish() {
   const npmTarPath = path.resolve(__dirname, '..', npmTarFileName);
   const finalTarPath = path.join(process.env.BUILD_STAGINGDIRECTORY, 'final', npmTarFileName);
   console.log(`Copying tar file ${npmTarPath} to: ${finalTarPath}`)
-  fs.copyFileSync(npmTarPath, finalTarPath);
+  
+  if(fakeMode) {
+    if (!fs.existsSync(npmTarPath))
+      throw "The final artefact to be published is missing.";
+  } else {
+    fs.copyFileSync(npmTarPath, finalTarPath);
+  }
+
+  // Early return on PR jobs.
+  if (fakeMode)
+    return;
 
   const assetUpdateUrl = `https://uploads.github.com/repos/microsoft/react-native/releases/{id}/assets?name=react-native-${releaseVersion}.tgz`;
   const authHeader =
@@ -87,8 +101,8 @@ function doPublish() {
 
         console.log('Response: ' + body);
 
+        fs.unlinkSync(npmTarPath);
 
-        exec(`del ${npmTarPath}`);
         exec(`git checkout ${publishBranchName}`);
         exec(`git pull origin ${publishBranchName}`);
         exec(`git merge ${tempPublishBranch} --no-edit`);
@@ -152,4 +166,10 @@ function doPublish() {
   );
 }
 
-doPublish();
+var args = process.argv.slice(2);
+
+let fakeMode = false;
+if (args.length > 0 && args[0] === '--fake')
+  fakeMode = true;
+
+doPublish(fakeMode);

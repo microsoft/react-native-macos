@@ -5,6 +5,7 @@ trigger:
   batch: true
   branches:
     include:
+      - 0.60-stable
       - master
       - fabric
   paths:
@@ -14,82 +15,58 @@ trigger:
 pr: none
 
 jobs:
-  - job: RNGithubNpmJSPublish
-    displayName: React-Native GitHub Publish to npmjs.org
-    pool:
-      vmImage: vs2017-win2016
-    timeoutInMinutes: 90 # how long to run the job before automatically cancelling
-    cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
-    steps:
-      - checkout: self # self represents the repo where the initial Pipelines YAML file was found
-        clean: true # whether to fetch clean each time
-        # fetchDepth: 2 # the depth of commits to ask Git to fetch
-        lfs: false # whether to download Git-LFS files
-        submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
-        persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
+  # - job: RNGithubNpmJSPublish
+  #   displayName: React-Native GitHub Publish to npmjs.org
+  #   pool:
+  #     vmImage: vs2017-win2016
+  #   timeoutInMinutes: 90 # how long to run the job before automatically cancelling
+  #   cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
+  #   steps:
+  #     - checkout: self # self represents the repo where the initial Pipelines YAML file was found
+  #       clean: true # whether to fetch clean each time
+  #       # fetchDepth: 2 # the depth of commits to ask Git to fetch
+  #       lfs: false # whether to download Git-LFS files
+  #       submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
+  #       persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
-      - task: CmdLine@2
-        displayName: npm install
-        inputs:
-          script: npm install
+  #     - task: CmdLine@2
+  #       displayName: npm install
+  #       inputs:
+  #         script: npm install
 
-      - task: CmdLine@2
-        displayName: Bump package version
-        inputs:
-          script: node .ado/bumpFileVersions.js
+  #     - task: CmdLine@2
+  #       displayName: Bump package version
+  #       inputs:
+  #         script: node .ado/bumpFileVersions.js
 
-      - task: CmdLine@2
-        displayName: "Prepare package.json for npm publishing as react-native-macos"
-        inputs:
-          script: node .ado/renamePackageToMac.js
+  #     - task: CmdLine@2
+  #       displayName: "Prepare package.json for npm publishing as react-native-macos"
+  #       inputs:
+  #         script: node .ado/renamePackageToMac.js
 
-      - task: Npm@1
-        displayName: "Publish react-native-macos to npmjs.org"
-        inputs:
-          command: 'publish'
-          publishEndpoint: 'npmjs'
+  #     - task: Npm@1
+  #       displayName: "Publish latest react-native-macos to npmjs.org"
+  #       inputs:
+  #         command: 'publish'
+  #         publishEndpoint: 'npmjs'
+  #       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
-  - job: RNMacOSInitNpmJSPublish
-    displayName: react-native-macos-init Publish to npmjs.org
-    pool:
-      vmImage: vs2017-win2016
-    timeoutInMinutes: 90 # how long to run the job before automatically cancelling
-    cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
-    steps:
-      - checkout: self # self represents the repo where the initial Pipelines YAML file was found
-        clean: true # whether to fetch clean each time
-        # fetchDepth: 2 # the depth of commits to ask Git to fetch
-        lfs: false # whether to download Git-LFS files
-        submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
-        persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
+  #     # When using npm custom instead of npm publish, we need to ensure that auth still happens.
+  #     - task: npmAuthenticate@0
+  #       condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
 
-      - template: templates/configure-git.yml
-
-      - task: CmdLine@2
-        displayName: yarn install
-        inputs:
-          script: |
-            cd packages/react-native-macos-init
-            yarn install
-
-      - task: CmdLine@2
-        displayName: yarn build
-        inputs:
-          script: |
-            cd packages/react-native-macos-init
-            yarn build
-
-      - task: CmdLine@2
-        displayName: "Publish react-native-macos-init to npmjs.org"
-        inputs:
-          script: |
-            cd packages/react-native-macos-init
-            npx --no-install beachball publish --branch origin/$(Build.SourceBranchName) -n $(npmAuthToken) -yes -m "applying package updates ***NO_CI***" --access public
+  #     - task: Npm@1
+  #       displayName: "Publish stable react-native-macos to npmjs.org"
+  #       inputs:
+  #         command: 'custom'
+  #         customCommand: publish --tag $(Build.SourceBranchName)
+  #         publishEndpoint: 'npmjs'
+  #       condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
 
   - job: RNGithubOfficePublish
     displayName: React-Native GitHub Publish to Office
     pool:
-      vmImage: vs2017-win2016
+      vmImage: ubuntu-latest
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
     steps:
@@ -99,15 +76,28 @@ jobs:
         lfs: false # whether to download Git-LFS files
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
+
+      - task: UseNode@1
+        inputs:
+          version: '12.x'
 
       - template: templates/apple-droid-node-patching.yml
         parameters:
           apply_office_patches: true
 
-      # Install NuGet v4.6.4+
-      - task: NuGetToolInstaller@1
+      # This is currently required as the command task (strangely) always runs elevated .. 
+      # which makes all the files touched by the above patching step unreadable by following non-command tasks without sudo. 
+      # This makes all the files readable.
+      - task: CmdLine@2
+        displayName: chmod
         inputs:
-          versionSpec: '>=4.6.4'
+          script: chmod -R +r .
+
+      # Install NuGet
+      - task: CmdLine@2
+        inputs:
+          script: mkdir $(System.DefaultWorkingDirectory)/nuget-bin/ && curl -o $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+        continueOnError: true
 
       - task: CmdLine@2
         displayName: npm install
@@ -119,86 +109,29 @@ jobs:
         inputs:
           script: node .ado/bumpFileVersions.js
 
-      - task: NuGetCommand@2
-        displayName: NuGet restore
+      - task: CmdLine@2
+        displayName: nuget restore
         inputs:
-          command: restore
-          restoreSolution: ReactAndroid/packages.config
-          feedsToUse: config
-          #vstsFeed: # Required when feedsToUse == Select
-          #includeNuGetOrg: true # Required when feedsToUse == Select
-          nugetConfigPath: ReactAndroid/NuGet.Config
-          #externalFeedCredentials: # Optional
-          #noCache: false
-          #disableParallelProcessing: false
-          restoreDirectory: packages/
-          verbosityRestore: Detailed # Options: quiet, normal, detailed
-          #packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg' # Required when command == Push
-          #nuGetFeedType: 'internal' # Required when command == Push# Options: internal, external
-          #publishVstsFeed: # Required when command == Push && NuGetFeedType == Internal
-          #publishPackageMetadata: true # Optional
-          #allowPackageConflicts: # Optional
-          #publishFeedCredentials: # Required when command == Push && NuGetFeedType == External
-          #verbosityPush: 'Detailed' # Options: quiet, normal, detailed
-          #packagesToPack: '**/*.csproj' # Required when command == Pack
-          #configuration: '$(BuildConfiguration)' # Optional
-          #packDestination: '$(Build.ArtifactStagingDirectory)' # Optional
-          #versioningScheme: 'off' # Options: off, byPrereleaseNumber, byEnvVar, byBuildNumber
-          #includeReferencedProjects: false # Optional
-          #versionEnvVar: # Required when versioningScheme == ByEnvVar
-          #majorVersion: '1' # Required when versioningScheme == ByPrereleaseNumber
-          #minorVersion: '0' # Required when versioningScheme == ByPrereleaseNumber
-          #patchVersion: '0' # Required when versioningScheme == ByPrereleaseNumber
-          #packTimezone: 'utc' # Required when versioningScheme == ByPrereleaseNumber# Options: utc, local
-          #includeSymbols: false # Optional
-          #toolPackage: # Optional
-          #buildProperties: # Optional
-          #basePath: # Optional
-          #verbosityPack: 'Detailed' # Options: quiet, normal, detailed
-          #arguments: # Required when command == Custom
+          script: mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe restore $(System.DefaultWorkingDirectory)/ReactAndroid/packages.config -PackagesDirectory  $(System.DefaultWorkingDirectory)/ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
+        continueOnError: true
 
       - task: CmdLine@2
         displayName: Setup Build Dependencies
         inputs:
-          script: .ado\setup_droid_deps.bat
+          script: chmod +x .ado/setup_droid_deps.sh && .ado/setup_droid_deps.sh
 
-      - task: Gradle@1
+      - task: CmdLine@2
         displayName: gradlew installArchives
-        env:
-          REACT_NATIVE_DEPENDENCIES: $(System.DefaultWorkingDirectory)\build_deps
         inputs:
-          gradleWrapperFile: gradlew
-          # workingDirectory: src\react-native\
-          options: -Pparam="excludeLibs"
-          tasks: installArchives
-          publishJUnitResults: false
-          #testResultsFiles: '**/TEST-*.xml' # Required when publishJUnitResults == True
-          #testRunTitle: # Optional
-          #codeCoverageToolOption: 'None' # Optional. Options: none, cobertura, jaCoCo
-          #codeCoverageClassFilesDirectories: 'build/classes/main/' # Required when codeCoverageToolOption == False
-          #codeCoverageClassFilter: # Optional
-          #codeCoverageFailIfEmpty: false # Optional
-          #javaHomeOption: 'JDKVersion' # Options: jDKVersion, path
-          #jdkVersionOption: 'default' # Optional. Options: default, 1.11, 1.10, 1.9, 1.8, 1.7, 1.6
-          #jdkDirectory: # Required when javaHomeOption == Path
-          #jdkArchitectureOption: 'x64' # Optional. Options: x86, x64
-          #gradleOptions: '-Xmx1024m' # Optional
-          #sonarQubeRunAnalysis: false
-          #sqGradlePluginVersionChoice: 'specify' # Required when sonarQubeRunAnalysis == True# Options: specify, build
-          #sonarQubeGradlePluginVersion: '2.6.1' # Required when sonarQubeRunAnalysis == True && SqGradlePluginVersionChoice == Specify
-          #checkStyleRunAnalysis: false # Optional
-          #findBugsRunAnalysis: false # Optional
-          #pmdRunAnalysis: false # Optional
+          script: REACT_NATIVE_DEPENDENCIES=$(System.DefaultWorkingDirectory)/build_deps ./gradlew installArchives -Pparam="excludeLibs"
 
       - template: templates\prep-android-nuget.yml
 
-      - task: NuGetCommand@2
+      # Very similar to the default pack task .. but appends 'ndk21b' to the nuget pack version
+      - task: CmdLine@2
         displayName: 'NuGet pack'
         inputs:
-          command: pack
-          packagesToPack: 'ReactAndroid/ReactAndroid.nuspec'
-          packDestination: '$(Build.StagingDirectory)\final'
-          buildProperties: buildNumber=$(buildNumber);commitId=$(Build.SourceVersion)
+          script: OUTPUT_DIR=$(Build.StagingDirectory)/final;NDK=ndk`cat ${ANDROID_SDK_ROOT}/ndk-bundle/source.properties 2>&1 | grep Pkg.Revision | awk '{ print $3}' | awk -F. '{ print $1 }'`; mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe pack $(System.DefaultWorkingDirectory)/ReactAndroid/ReactAndroid.nuspec -OutputDirectory $OUTPUT_DIR -Properties buildNumber=$(buildNumber)-$NDK;commitId=$(Build.SourceVersion)
 
       - task: CmdLine@2
         displayName: Do Publish
@@ -206,6 +139,7 @@ jobs:
           script: node .ado/publish.js
         env:
           BUILD_STAGINGDIRECTORY: $(Build.StagingDirectory)
+          BUILD_SOURCESDIRECTORY: $(Build.SourcesDirectory)
           BUILD_SOURCEBRANCH: $(Build.SourceBranch)
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           githubApiToken: $(githubApiToken)
@@ -213,5 +147,5 @@ jobs:
       - task: PublishBuildArtifacts@1
         displayName: 'Publish final artifacts'
         inputs:
-          PathtoPublish: '$(Build.StagingDirectory)\final'
-          ArtifactName: 'ReactNative-Final'
+          PathtoPublish: '$(Build.StagingDirectory)/final'
+          ArtifactName: 'ReactNative-Final' 
