@@ -441,7 +441,7 @@ RCT_EXPORT_METHOD(show)
 {
   RCTDevSettings *devSettings = _bridge.devSettings; // TODO(OSS Candidate ISS#2710739)
   if ([devSettings isDevModeEnabled] &&
-      [devSettings isShakeToShowDevMenuEnabled]) {
+      [devSettings isSecondaryClickToShowDevMenuEnabled]) {
     NSMenu *menu = nil;
     if (_bridge) {
       NSString *desc = _bridge.bridgeDescription;
@@ -478,6 +478,11 @@ RCT_EXPORT_METHOD(show)
   NSMenuItem *menuItem = (NSMenuItem *)sender;
   RCTDevMenuItem *item = (RCTDevMenuItem *)[menuItem representedObject];
   [item callHandler];
+}
+
+- (void)setSecondaryClickToShow:(BOOL)secondaryClickToShow
+{
+  _bridge.devSettings.isSecondaryClickToShowDevMenuEnabled = secondaryClickToShow;
 }
 
 #else // ]TODO(macOS ISS#2323203)
