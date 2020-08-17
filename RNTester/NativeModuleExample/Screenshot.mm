@@ -39,7 +39,7 @@ public:
             runtime,
             [](facebook::jsi::Runtime& runtime, std::shared_ptr<facebook::react::Promise> promise)
             {
-              promise->reject("Not Implemented!");
+              promise->reject("takeScreenshot is not yet implemented!");
             }
           );
         }
