@@ -26,8 +26,7 @@ const {
 // const ScreenshotManager = NativeModules.ScreenshotManager;
 
 export interface ScreenshotManagerSpec extends TurboModule {
-  +getConstants: () => {||};
-  takeSnapshot(id: string): Promise<string>;
+  takeScreenshot(id: string, options:{[key:string]:string}): Promise<string>;
 }
 
 const ScreenshotManager = TurboModuleRegistry.get<ScreenshotManagerSpec>('ScreenshotManager');

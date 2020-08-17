@@ -8,9 +8,7 @@
 #import "Screenshot.h"
 #import <React/RCTUIManager.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
-
-#include <ReactCommon/TurboModule.h>
-
+#import <ReactCommon/TurboModuleUtils.h>
 class ScreenshotManagerTurboModule : public facebook::react::TurboModule
 {
 public:
@@ -27,7 +25,25 @@ public:
     auto key = propName.utf8(runtime);
     if (key == "takeScreenshot")
     {
-      throw "Not Implemented!";
+      return facebook::jsi::Function::createFromHostFunction(
+        runtime,
+        propName,
+        0,
+        [](
+          facebook::jsi::Runtime& runtime,
+          const facebook::jsi::Value& thisVal,
+          const facebook::jsi::Value *args,
+          size_t count)
+        {
+          return facebook::react::createPromiseAsJSIValue(
+            runtime,
+            [](facebook::jsi::Runtime& runtime, std::shared_ptr<facebook::react::Promise> promise)
+            {
+              promise->reject("Not Implemented!");
+            }
+          );
+        }
+      );
     }
     else
     {
