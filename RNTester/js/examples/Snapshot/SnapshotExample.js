@@ -10,16 +10,27 @@
 
 'use strict';
 
+import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
+import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
+
 const React = require('react');
 const {
   Alert,
   Image,
-  NativeModules,
+  // NativeModules,
   StyleSheet,
   Text,
   View,
 } = require('react-native');
-const ScreenshotManager = NativeModules.ScreenshotManager;
+
+// const ScreenshotManager = NativeModules.ScreenshotManager;
+
+export interface ScreenshotManagerSpec extends TurboModule {
+  +getConstants: () => {||};
+  takeSnapshot(id: string): Promise<string>;
+}
+
+const ScreenshotManager = TurboModuleRegistry.get<ScreenshotManagerSpec>('ScreenshotManager');
 
 class ScreenshotExample extends React.Component<{...}, $FlowFixMeState> {
   state = {

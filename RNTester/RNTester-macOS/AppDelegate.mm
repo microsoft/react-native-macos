@@ -22,6 +22,7 @@ NSString *kBundleNameJS = @"RNTesterApp";
 
 @interface AppDelegate () <RCTCxxBridgeDelegate, NSUserNotificationCenterDelegate>
 {
+  ScreenshotManagerTurboModuleManagerDelegate* _turboModuleManagerDelegate;
   RCTTurboModuleManager *_turboModuleManager;
 }
 @end
@@ -88,14 +89,14 @@ NSString *kBundleNameJS = @"RNTesterApp";
     }
     __typeof(self) strongSelf = weakSelf;
     if (strongSelf) {
-      id<RCTTurboModuleManagerDelegate> delegate = [
+      strongSelf->_turboModuleManagerDelegate = [
         [ScreenshotManagerTurboModuleManagerDelegate alloc]
         init
       ];
       strongSelf->_turboModuleManager = [
         [RCTTurboModuleManager alloc]
         initWithBridge:bridge
-        delegate:delegate
+        delegate:strongSelf->_turboModuleManagerDelegate
       ];
       [strongSelf->_turboModuleManager installJSBindingWithRuntime:&runtime];
     }
