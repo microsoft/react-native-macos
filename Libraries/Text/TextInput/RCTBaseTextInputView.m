@@ -375,7 +375,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeFocus
                                  reactTag:self.reactTag
-                                     text:self.backedTextInputView.attributedText.string
+                                     text:[self.backedTextInputView.attributedText.string copy] // [TODO(macOS Candidate ISS#2710739)
                                       key:nil
                                eventCount:_nativeEventCount];
 }
@@ -389,13 +389,13 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 {
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeEnd
                                  reactTag:self.reactTag
-                                     text:self.backedTextInputView.attributedText.string
+                                     text:[self.backedTextInputView.attributedText.string copy] // [TODO(macOS Candidate ISS#2710739)
                                       key:nil
                                eventCount:_nativeEventCount];
 
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeBlur
                                  reactTag:self.reactTag
-                                     text:self.backedTextInputView.attributedText.string
+                                     text:[self.backedTextInputView.attributedText.string copy] // [TODO(macOS Candidate ISS#2710739)
                                       key:nil
                                eventCount:_nativeEventCount];
 }
@@ -407,11 +407,17 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   // `onSubmitEditing` is called when "Submit" button
   // (the blue key on onscreen keyboard) did pressed
   // (no connection to any specific "submitting" process).
-  [_eventDispatcher sendTextEventWithType:RCTTextEventTypeSubmit
-                                 reactTag:self.reactTag
-                                     text:self.backedTextInputView.attributedText.string
-                                      key:nil
-                               eventCount:_nativeEventCount];
+#if TARGET_OS_OSX // [TODO(macOS Candidate ISS#2710739)
+  if (_blurOnSubmit) {
+#endif // ]TODO(macOS Candidate ISS#2710739)
+    [_eventDispatcher sendTextEventWithType:RCTTextEventTypeSubmit
+                                   reactTag:self.reactTag
+                                       text:[self.backedTextInputView.attributedText.string copy] // [TODO(macOS Candidate ISS#2710739)
+                                        key:nil
+                                 eventCount:_nativeEventCount];
+#if TARGET_OS_OSX // [TODO(macOS Candidate ISS#2710739)
+  }
+#endif // ]TODO(macOS Candidate ISS#2710739)
 
   return _blurOnSubmit;
 }
@@ -469,7 +475,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
     }
   }
 
-  NSString *previousText = backedTextInputView.attributedText.string ?: @"";
+  NSString *previousText = [backedTextInputView.attributedText.string copy] ?: @""; // TODO(OSS Candidate ISS#2710739)
 
   if (range.location + range.length > backedTextInputView.attributedText.string.length) {
     _predictedText = backedTextInputView.attributedText.string;
@@ -516,7 +522,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
   if (_onChange) {
     _onChange(@{
-       @"text": self.attributedText.string,
+       @"text": [self.attributedText.string copy], // [TODO(macOS Candidate ISS#2710739)
        @"target": self.reactTag,
        @"eventCount": @(_nativeEventCount),
     });
