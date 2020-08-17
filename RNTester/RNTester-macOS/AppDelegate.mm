@@ -8,21 +8,22 @@
 
 #import "AppDelegate.h"
 
+#import <React/JSCExecutorFactory.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTCxxBridgeDelegate.h>
 #import <React/RCTLinkingManager.h>
 #import <React/RCTPushNotificationManager.h>
 #import <React/RCTTextAttributes.h>
+#import <ReactCommon/TurboModule.h>
 #import "../NativeModuleExample/Screenshot.h"
-
-#include <ReactCommon/TurboModule.h>
-#include <cxxreact/JSExecutor.h>
 
 NSString *kBundleNameJS = @"RNTesterApp";
 
 @interface AppDelegate () <RCTCxxBridgeDelegate, NSUserNotificationCenterDelegate>
-
+{
+  RCTTurboModuleManager *_turboModuleManager;
+}
 @end
 
 @implementation AppDelegate
@@ -87,7 +88,15 @@ NSString *kBundleNameJS = @"RNTesterApp";
     }
     __typeof(self) strongSelf = weakSelf;
     if (strongSelf) {
-      strongSelf->_turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridge:bridge delegate:strongSelf];
+      id<RCTTurboModuleManagerDelegate> delegate = [
+        [ScreenshotManagerTurboModuleManagerDelegate alloc]
+        init
+      ];
+      strongSelf->_turboModuleManager = [
+        [RCTTurboModuleManager alloc]
+        initWithBridge:bridge
+        delegate:delegate
+      ];
       [strongSelf->_turboModuleManager installJSBindingWithRuntime:&runtime];
     }
   });
