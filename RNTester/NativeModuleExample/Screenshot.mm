@@ -7,8 +7,10 @@
 
 #import "Screenshot.h"
 #import <React/RCTUIManager.h>
+#import <React/RCTUtils.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <ReactCommon/TurboModuleUtils.h>
+
 class ScreenshotManagerTurboModule : public facebook::react::TurboModule
 {
 public:
@@ -40,6 +42,54 @@ public:
             [](facebook::jsi::Runtime& runtime, std::shared_ptr<facebook::react::Promise> promise)
             {
               promise->reject("takeScreenshot is not yet implemented!");
+              return;
+              // ignore arguments, assume to be ('window', {format: 'jpeg', quality: 0.8})
+            
+              // find the key window
+              NSWindow* keyWindow;
+              for (NSWindow* window in NSApp.windows) {
+                if (window.keyWindow) {
+                  keyWindow = window;
+                  break;
+                }
+              }
+              if (!keyWindow)
+              {
+                promise->reject("Failed to find the key window!");
+              }
+
+              // take a snapshot of the key window
+              CGWindowID windowID = (CGWindowID)[keyWindow windowNumber];
+              CGWindowImageOption imageOptions = kCGWindowImageDefault;
+              CGWindowListOption listOptions = kCGWindowListOptionIncludingWindow;
+              CGRect imageBounds = CGRectNull;
+              CGImageRef windowImage = CGWindowListCreateImage(
+                imageBounds,
+                listOptions,
+                windowID,
+                imageOptions);
+              NSImage* image = [[NSImage alloc] initWithCGImage:windowImage size:[keyWindow frame].size];
+            
+              // save to a temp file
+              NSError *error = nil;
+              NSString *tempFilePath = RCTTempFilePath(@"jpeg", &error);
+              NSData* imageData = [image TIFFRepresentation];
+              NSBitmapImageRep* imageRep = [NSBitmapImageRep imageRepWithData:imageData];
+              NSDictionary* imageProps =
+                [NSDictionary
+                dictionaryWithObject:@0.8
+                forKey:NSImageCompressionFactor
+                ];
+              imageData = [imageRep representationUsingType:NSBitmapImageFileTypeJPEG properties:imageProps];
+              [imageData writeToFile:tempFilePath atomically:NO];
+            
+              promise->resolve(facebook::jsi::Value(
+                runtime,
+                facebook::jsi::String::createFromUtf8(
+                  runtime,
+                  std::string([tempFilePath UTF8String])
+                  )
+                ));
             }
           );
         }
