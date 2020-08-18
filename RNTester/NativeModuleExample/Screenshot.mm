@@ -63,6 +63,7 @@ public:
     const facebook::jsi::PropNameID& propName
   ) override
   {
+    auto jsInvoker = jsInvoker_;
     auto key = propName.utf8(runtime);
     if (key == "takeScreenshot")
     {
@@ -70,7 +71,7 @@ public:
         runtime,
         propName,
         0,
-        [](
+        [jsInvoker](
           facebook::jsi::Runtime& runtime,
           const facebook::jsi::Value& thisVal,
           const facebook::jsi::Value *args,
@@ -78,20 +79,23 @@ public:
         {
           return facebook::react::createPromiseAsJSIValue(
             runtime,
-            [](facebook::jsi::Runtime& runtime, std::shared_ptr<facebook::react::Promise> promise)
+            [jsInvoker](facebook::jsi::Runtime& runtime, std::shared_ptr<facebook::react::Promise> promise)
             {
-              promise->reject("takeScreenshot is not yet implemented!");
-              return;
               // ignore arguments, assume to be ('window', {format: 'jpeg', quality: 0.8})
 
-              NSString* tempFilePath = SaveScreenshotToTempFile();
-              promise->resolve(facebook::jsi::Value(
-                runtime,
-                facebook::jsi::String::createFromUtf8(
-                  runtime,
-                  std::string([tempFilePath UTF8String])
-                  )
-                ));
+              dispatch_async(dispatch_get_main_queue(), ^{
+                NSString* tempFilePath = SaveScreenshotToTempFile();
+                jsInvoker->invokeAsync([tempFilePath, &runtime, promise]()
+                {
+                  promise->resolve(facebook::jsi::Value(
+                    runtime,
+                    facebook::jsi::String::createFromUtf8(
+                      runtime,
+                      std::string([tempFilePath UTF8String])
+                      )
+                    ));
+                });
+              });
             }
           );
         }
