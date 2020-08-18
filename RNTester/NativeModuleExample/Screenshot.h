@@ -19,6 +19,3 @@
   jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker;
 
 @end
-
-@interface ScreenshotManager : RCTViewManager
-@end
