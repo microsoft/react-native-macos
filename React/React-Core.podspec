@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
   s.osx.exclude_files      = "Modules/RCTRedBoxExtraDataViewController.{h,m}",
                              "UIUtils/*",
                              "Profiler/{RCTFPSGraph,RCTPerfMonitor}.*",
-                             "Profiler/RCTProfileTrampoline-{arm,arm64,i386}.S",
+                             "Profiler/RCTProfileTrampoline-{arm,i386}.S",
                              "Base/RCTKeyCommands.*",
                              "Base/RCTPlatform.m",
                              "Base/Surface/SurfaceHostingView/*",
