@@ -21,6 +21,9 @@ steps:
   - script: 'brew bundle'
     displayName: 'brew bundle'
 
+  - script: sudo chown -R $(whoami) /usr/local/*
+    displayName: 'fix node permissions'
+
   - script: brew link node@12 --overwrite --force
     displayName: 'ensure node 12'
 
