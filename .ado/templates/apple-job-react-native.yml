@@ -22,6 +22,7 @@ steps:
     displayName: 'brew bundle'
 
   - script: brew link node@12 --overwrite --force
+    displayName: 'ensure node 12'
 
   # Task Group: XCode select proper version
   - template: apple-xcode-select.yml
