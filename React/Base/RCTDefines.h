@@ -69,11 +69,11 @@
 #define RCT_IF_DEV(...)
 #endif
 
-#if !TARGET_OS_OSX
+#if !TARGET_OS_OSX // TODO [GH #533]
 #ifndef RCT_PROFILE
 #define RCT_PROFILE RCT_DEV
 #endif
-#endif // !TARGET_OS_OSX
+#endif // !TARGET_OS_OSX TODO [GH #533]
 
 /**
  * Add the default Metro packager port number
