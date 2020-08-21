@@ -14,7 +14,7 @@ import type {TurboModule} from '../../Libraries/TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../Libraries/TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  takeScreenshot(id: string, options:{[key:string]:string}): Promise<string>;
+  takeScreenshot(id: string, options:{[key:string]:string | number | boolean}): Promise<string>;
 }
 
-export const NativeModule = (TurboModuleRegistry.get<Spec>('ScreenshotManager'): ?Spec);
+export const NativeModule = (TurboModuleRegistry.get<Spec>('ScreenshotManager'): Spec);
