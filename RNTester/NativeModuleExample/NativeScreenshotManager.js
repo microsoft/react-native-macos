@@ -17,4 +17,4 @@ export interface Spec extends TurboModule {
   takeScreenshot(id: string, options:{[key:string]:string}): Promise<string>;
 }
 
-export const NativeModule = TurboModuleRegistry.get<Spec>('ScreenshotManager');
+export const NativeModule = (TurboModuleRegistry.get<Spec>('ScreenshotManager'): ?Spec);

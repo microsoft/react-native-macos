@@ -22,7 +22,7 @@ NSString *kBundleNameJS = @"RNTesterApp";
 
 @interface AppDelegate () <RCTCxxBridgeDelegate, NSUserNotificationCenterDelegate>
 {
-  ScreenshotManagerTurboModuleManagerDelegate* _turboModuleManagerDelegate;
+  ScreenshotManagerTurboModuleManagerDelegate *_turboModuleManagerDelegate;
   RCTTurboModuleManager *_turboModuleManager;
 }
 @end
