@@ -11,9 +11,9 @@
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <ReactCommon/TurboModuleUtils.h>
 
-static NSString* SaveScreenshotToTempFile()
+static NSImage* TakeScreenshot()
 {
-   // find the key window
+  // find the key window
   NSWindow* keyWindow;
   for (NSWindow* window in NSApp.windows) {
     if (window.keyWindow) {
@@ -33,7 +33,12 @@ static NSString* SaveScreenshotToTempFile()
     windowID,
     imageOptions);
   NSImage* image = [[NSImage alloc] initWithCGImage:windowImage size:[keyWindow frame].size];
+  
+  return image;
+}
 
+static NSString* SaveScreenshotToTempFile(NSImage* image)
+{
   // save to a temp file
   NSError *error = nil;
   NSString *tempFilePath = RCTTempFilePath(@"jpeg", &error);
@@ -84,9 +89,10 @@ public:
               // ignore arguments, assume to be ('window', {format: 'jpeg', quality: 0.8})
 
               dispatch_async(dispatch_get_main_queue(), ^{
-                NSString* tempFilePath = SaveScreenshotToTempFile();
-                jsInvoker->invokeAsync([tempFilePath, &runtime, promise]()
+                NSImage* screenshotImage = TakeScreenshot();
+                jsInvoker->invokeAsync([screenshotImage, &runtime, promise]()
                 {
+                  NSString* tempFilePath = SaveScreenshotToTempFile(screenshotImage);
                   promise->resolve(facebook::jsi::Value(
                     runtime,
                     facebook::jsi::String::createFromUtf8(
