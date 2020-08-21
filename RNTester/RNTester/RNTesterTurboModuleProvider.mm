@@ -11,7 +11,7 @@
 #import <ReactCommon/SampleTurboCxxModule.h>
 #import <ReactCommon/RCTSampleTurboModule.h>
 
-// NOTE: This entire file should be codegen'ed
+// NOTE: This entire file should be codegen'ed.
 
 namespace facebook {
 namespace react {

@@ -89,15 +89,9 @@ NSString *kBundleNameJS = @"RNTesterApp";
     }
     __typeof(self) strongSelf = weakSelf;
     if (strongSelf) {
-      strongSelf->_turboModuleManagerDelegate = [
-        [ScreenshotManagerTurboModuleManagerDelegate alloc]
-        init
-      ];
-      strongSelf->_turboModuleManager = [
-        [RCTTurboModuleManager alloc]
-        initWithBridge:bridge
-        delegate:strongSelf->_turboModuleManagerDelegate
-      ];
+      strongSelf->_turboModuleManagerDelegate = [ScreenshotManagerTurboModuleManagerDelegate new];
+      strongSelf->_turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridge:bridge
+                                                                             delegate:strongSelf->_turboModuleManagerDelegate];
       [strongSelf->_turboModuleManager installJSBindingWithRuntime:&runtime];
     }
   });

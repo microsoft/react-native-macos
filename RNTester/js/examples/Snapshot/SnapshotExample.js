@@ -37,6 +37,7 @@ class ScreenshotExample extends React.Component<{...}, $FlowFixMeState> {
     );
   }
 
+  // TODO(macOS ISS#2323203): alert needs two string arguments, passing an error results in crashing
   takeScreenshot = () => {
     ScreenshotManager.takeScreenshot('window', {format: 'jpeg', quality: 0.8}) // See UIManager.js for options
       .then(uri => this.setState({uri}))
