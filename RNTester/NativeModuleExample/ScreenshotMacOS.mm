@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import "Screenshot.h"
+#import "ScreenshotMacOS.h"
 #import <React/RCTUIManager.h>
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTTurboModuleManager.h>

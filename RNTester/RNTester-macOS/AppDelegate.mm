@@ -16,7 +16,7 @@
 #import <React/RCTPushNotificationManager.h>
 #import <React/RCTTextAttributes.h>
 #import <ReactCommon/TurboModule.h>
-#import "../NativeModuleExample/Screenshot.h"
+#import "../NativeModuleExample/ScreenshotMacOS.h"
 
 NSString *kBundleNameJS = @"RNTesterApp";
 
