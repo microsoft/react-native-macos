@@ -15,7 +15,12 @@ import * as TurboModuleRegistry from '../../Libraries/TurboModule/TurboModuleReg
 
 export interface Spec extends TurboModule {
   +getConstants: () => {||};
-  takeScreenshot(id: string, options:{format:string, quality?:number}): Promise<string>;
+  takeScreenshot(
+    id: string,
+    options: {format: string, quality?: number},
+  ): Promise<string>;
 }
 
-export const NativeModule = (TurboModuleRegistry.get<Spec>('ScreenshotManager'): ?Spec);
+export const NativeModule = (TurboModuleRegistry.get<Spec>(
+  'ScreenshotManager',
+): ?Spec);
