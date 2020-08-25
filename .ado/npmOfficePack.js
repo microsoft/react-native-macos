@@ -27,7 +27,9 @@ function doPublish(fakeMode) {
   const onlyTagSource = !!branchVersionSuffix;
   if (!onlyTagSource) {
     // -------- Generating Android Artifacts with JavaDoc
-    exec(path.join(process.env.BUILD_SOURCESDIRECTORY, "gradlew") + " installArchives");
+    const depsEnvPrefix = "REACT_NATIVE_DEPENDENCIES=" + path.join(process.env.BUILD_SOURCESDIRECTORY, "build_deps");
+    const gradleCommand = path.join(process.env.BUILD_SOURCESDIRECTORY, "gradlew") + " installArchives";
+    exec( depsEnvPrefix + " " + gradleCommand );
 
     // undo uncommenting javadoc setting
     exec("git checkout ReactAndroid/gradle.properties");
@@ -38,7 +40,13 @@ function doPublish(fakeMode) {
 
   const npmTarFileName = `react-native-${releaseVersion}.tgz`;
   const npmTarPath = path.resolve(__dirname, '..', npmTarFileName);
-  const finalTarPath = path.join(process.env.BUILD_STAGINGDIRECTORY, 'final', npmTarFileName);
+  const finalTarDir = path.join(process.env.BUILD_STAGINGDIRECTORY, 'final');
+  const finalTarPath = path.join(finalTarDir, npmTarFileName);
+
+  if (!fs.existsSync(finalTarDir)) {
+    fs.mkdirSync(finalTarDir);
+  }
+
   console.log(`Copying tar file ${npmTarPath} to: ${finalTarPath}`)
   
   if(fakeMode) {
