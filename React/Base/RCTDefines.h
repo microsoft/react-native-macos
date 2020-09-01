@@ -69,7 +69,7 @@
 #define RCT_IF_DEV(...)
 #endif
 
-#if !TARGET_OS_OSX // TODO [GH #533] Turn off for iOS as well so we don't break App Store guidelines
+#if 0 // TODO [GH #533] The swizzling done under RCT_PROFILE puts us at high risk of app store rejection
 #ifndef RCT_PROFILE
 #define RCT_PROFILE RCT_DEV
 #endif
