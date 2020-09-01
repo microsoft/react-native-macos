@@ -43,6 +43,9 @@ jobs:
         inputs:
           command: 'publish'
           publishEndpoint: 'npmjs'
+          script: |
+            node scripts/bump-oss-version.js --nightly
+            npm publish --tag nightly
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
       - task: Npm@1
