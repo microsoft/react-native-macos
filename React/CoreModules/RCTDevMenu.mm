@@ -494,8 +494,7 @@ RCT_EXPORT_METHOD(show)
 - (NSMenu *)menu
 {
   NSMenu *menu = nil;
-  if ([devSettings isDevModeEnabled] &&
-      [devSettings isSecondaryClickToShowDevMenuEnabled]) {
+  if ([_bridge.devSettings isSecondaryClickToShowDevMenuEnabled]) {
     NSMenu *menu = nil;
     if (_bridge) {
       NSString *desc = _bridge.bridgeDescription;
