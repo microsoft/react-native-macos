@@ -13,8 +13,9 @@ trigger:
 
 pr: none
 
+# It is expected that a `latestStableBranch` variable is set in the pipeline's settings:
+# https://dev.azure.com/ms/react-native/_apps/hub/ms.vss-build-web.ci-designer-hub?pipelineId=221
 variables:
-  latestStableBranch: 0.62-stable
   ${{ if eq(variables['Build.SourceBranchName'], variables['latestStableBranch']) }}:
     npmDistTag: latest
   ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
