@@ -19,9 +19,9 @@ variables:
   ${{ if eq(variables['Build.SourceBranchName'], variables['latestStableBranch']) }}:
     npmDistTag: latest
   ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-    npmDistTag: nightly
+    npmDistTag: canary
   ${{ if and(ne(variables['Build.SourceBranchName'], 'master'), ne(variables['Build.SourceBranchName'], variables['latestStableBranch'])) }}:
-    npmDistTag: ${{variables['Build.SourceBranchName']}}
+    npmDistTag: v${{variables['Build.SourceBranchName']}}
 
 jobs:
   - job: RNGithubNpmJSPublish
@@ -50,7 +50,7 @@ jobs:
         condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
 
       - task: CmdLine@2
-        displayName: Bump nightly package version
+        displayName: Bump canary package version
         inputs:
           script: node scripts/bump-oss-version.js --nightly
         condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
