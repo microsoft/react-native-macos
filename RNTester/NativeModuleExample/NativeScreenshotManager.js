@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -15,14 +15,12 @@ import * as TurboModuleRegistry from '../../Libraries/TurboModule/TurboModuleReg
 
 export interface Spec extends TurboModule {
   +getConstants: () => {||};
-  takeSnapshot(id: string): Promise<string>;
+  takeScreenshot(
+    id: string,
+    options: {format: string, quality?: number},
+  ): Promise<string>;
 }
 
-const NativeModule = TurboModuleRegistry.get<Spec>('ScreenshotManager');
-
-export function takeSnapshot(id: string): Promise<string> {
-  if (NativeModule != null) {
-    return NativeModule.takeSnapshot(id);
-  }
-  return Promise.reject();
-}
+export const NativeModule = (TurboModuleRegistry.get<Spec>(
+  'ScreenshotManager',
+): ?Spec);

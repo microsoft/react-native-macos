@@ -15,14 +15,19 @@ import * as TurboModuleRegistry from '../../TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
   +reload: () => void;
+  +reloadWithReason?: (reason: string) => void;
+  +onFastRefresh?: () => void;
   +setHotLoadingEnabled: (isHotLoadingEnabled: boolean) => void;
   +setIsDebuggingRemotely: (isDebuggingRemotelyEnabled: boolean) => void;
-  +setLiveReloadEnabled: (isLiveReloadEnabled: boolean) => void;
   +setProfilingEnabled: (isProfilingEnabled: boolean) => void;
   +toggleElementInspector: () => void;
+  +addMenuItem: (title: string) => void;
 
   // iOS only.
   +setIsShakeToShowDevMenuEnabled: (enabled: boolean) => void;
+
+  // macOS only.
+  +setIsSecondaryClickToShowDevMenuEnabled: (enabled: boolean) => void; // TODO(macOS ISS#2323203)
 }
 
 export default (TurboModuleRegistry.getEnforcing<Spec>('DevSettings'): Spec);
