@@ -1,6 +1,6 @@
 --- "E:\\github\\react-native-v62.2\\ReactAndroid\\ReactAndroid.nuspec"	1969-12-31 16:00:00.000000000 -0800
 +++ "E:\\github\\msrn-62\\ReactAndroid\\ReactAndroid.nuspec"	2020-05-20 21:13:29.624582800 -0700
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,140 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 +  <metadata>
@@ -44,6 +44,11 @@
 +    <file src="build\react-ndk\all\armeabi-v7a\libjsinspector.so" target="lib\droidarm"/>
 +    <file src="build\react-ndk\all\x86\libjsinspector.so" target="lib\droidx86"/>
 +    <file src="build\react-ndk\all\arm64-v8a\libjsinspector.so" target="lib\droidarm64"/>
++
++    <file src="build\react-ndk\all\x86_64\libreactnativeblob.so" target="lib\droidx64"/>
++    <file src="build\react-ndk\all\armeabi-v7a\libreactnativeblob.so" target="lib\droidarm"/>
++    <file src="build\react-ndk\all\x86\libreactnativeblob.so" target="lib\droidx86"/>
++    <file src="build\react-ndk\all\arm64-v8a\libreactnativeblob.so" target="lib\droidarm64"/>
 +
 +    <file src="build\react-ndk\all\x86_64\libreactnativejni.so" target="lib\droidx64"/>
 +    <file src="build\react-ndk\all\armeabi-v7a\libreactnativejni.so" target="lib\droidarm"/>
@@ -95,6 +100,11 @@
 +    <file src="build\tmp\buildReactNdkLib\local\armeabi-v7a\libjsinspector.so" target="lib\droidarm\unstripped"/>
 +    <file src="build\tmp\buildReactNdkLib\local\x86\libjsinspector.so" target="lib\droidx86\unstripped"/>
 +    <file src="build\tmp\buildReactNdkLib\local\arm64-v8a\libjsinspector.so" target="lib\droidarm64\unstripped"/>
++
++    <file src="build\tmp\buildReactNdkLib\local\x86_64\libreactnativeblob.so" target="lib\droidx64\unstripped"/>
++    <file src="build\tmp\buildReactNdkLib\local\armeabi-v7a\libreactnativeblob.so" target="lib\droidarm\unstripped"/>
++    <file src="build\tmp\buildReactNdkLib\local\x86\libreactnativeblob.so" target="lib\droidx86\unstripped"/>
++    <file src="build\tmp\buildReactNdkLib\local\arm64-v8a\libreactnativeblob.so" target="lib\droidarm64\unstripped"/>
 +
 +    <file src="build\tmp\buildReactNdkLib\local\x86_64\libreactnativejni.so" target="lib\droidx64\unstripped"/>
 +    <file src="build\tmp\buildReactNdkLib\local\armeabi-v7a\libreactnativejni.so" target="lib\droidarm\unstripped"/>
