@@ -60,19 +60,19 @@ jobs:
           script: node scripts/bump-oss-version.js --nightly
         condition: eq(variables['Build.SourceBranchName'], 'master')
 
-      - script: npm publish --tag $(npmDistTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
+      - script: npm publish --dry-run --tag $(npmDistTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
         displayName: Publish react-native-macos to npmjs.org
 
-      - task: CmdLine@2
-        displayName: 'Tag published release'
-        inputs:
-          script: node .ado/gitTagRelease.js
-        env:
-          BUILD_STAGINGDIRECTORY: $(Build.StagingDirectory)
-          BUILD_SOURCEBRANCH: $(Build.SourceBranch)
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          githubApiToken: $(githubApiToken)
-        condition: ne(variables['Build.SourceBranchName'], 'master')
+      # - task: CmdLine@2
+      #   displayName: 'Tag published release'
+      #   inputs:
+      #     script: node .ado/gitTagRelease.js
+      #   env:
+      #     BUILD_STAGINGDIRECTORY: $(Build.StagingDirectory)
+      #     BUILD_SOURCEBRANCH: $(Build.SourceBranch)
+      #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      #     githubApiToken: $(githubApiToken)
+      #   condition: ne(variables['Build.SourceBranchName'], 'master')
 
 
   - job: RNMacOSInitNpmJSPublish
