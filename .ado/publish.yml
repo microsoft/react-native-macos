@@ -13,19 +13,14 @@ trigger:
 
 pr: none
 
-parameters:
-  # It is expected that a `latestStableBranch` variable is set in the pipeline's settings:
-  # https://dev.azure.com/ms/react-native/_apps/hub/ms.vss-build-web.ci-designer-hub?pipelineId=221
-  - name: latestStableBranch
-    displayName: Name of the branch that should currently receive the 'latest' npm dist-tag
-    type: string
-
+# It is expected that a `latestStableBranch` variable is set in the pipeline's settings:
+# https://dev.azure.com/ms/react-native/_apps/hub/ms.vss-build-web.ci-designer-hub?pipelineId=221
 variables:
-  ${{ if eq('0.62-stable', parameters.latestStableBranch) }}:
+  ${{ if eq('0.62-stable', variables.latestStableBranch) }}:
     npmDistTag: latest
   ${{ if eq('0.62-stable', 'master') }}:
     npmDistTag: canary
-  ${{ if and(ne('0.62-stable', 'master'), ne('0.62-stable', parameters.latestStableBranch)) }}:
+  ${{ if and(ne('0.62-stable', 'master'), ne('0.62-stable', variables.latestStableBranch)) }}:
     npmDistTag: v${{variables['Build.SourceBranchName']}}
 
 jobs:
@@ -46,7 +41,7 @@ jobs:
       - task: CmdLine@2
         displayName: Test conditional variable setting
         inputs:
-          script: echo ${{variables.npmDistTag}}
+          script: echo ${{variables.latestStableBranch}} && echo ${{variables.npmDistTag}}
 
       # - task: CmdLine@2
       #   displayName: npm install
