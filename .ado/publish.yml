@@ -15,9 +15,9 @@ pr: none
 
 # It is expected that a `latestStableBranch` variable is set in the pipeline's settings:
 # https://dev.azure.com/ms/react-native/_apps/hub/ms.vss-build-web.ci-designer-hub?pipelineId=221
-variables:
+# variables:
   # latestStableBranch: $(latestStableBranch)
-  npmDistTag: ""
+  # npmDistTag: ""
 
 jobs:
   - job: RNGithubNpmJSPublish
@@ -49,7 +49,7 @@ jobs:
       - task: CmdLine@2
         displayName: Test conditional variable setting
         inputs:
-          script: echo ${{variables.latestStableBranch}} && echo ${{variables.npmDistTag}}
+          script: echo $(npmDistTag)
 
       # - task: CmdLine@2
       #   displayName: npm install
