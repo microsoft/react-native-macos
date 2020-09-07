@@ -42,7 +42,7 @@ jobs:
       - task: CmdLine@2
         displayName: Test conditional variable setting
         inputs:
-          script: echo ${{variables.latestStableBranch}} && echo ${{variables.npmDistTag}}
+          script: echo ${{variables.latestStableBranchExanded}} && echo ${{variables.npmDistTag}}
 
       # - task: CmdLine@2
       #   displayName: npm install
