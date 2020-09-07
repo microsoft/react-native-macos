@@ -16,11 +16,11 @@ pr: none
 # It is expected that a `latestStableBranch` variable is set in the pipeline's settings:
 # https://dev.azure.com/ms/react-native/_apps/hub/ms.vss-build-web.ci-designer-hub?pipelineId=221
 variables:
-  ${{ if eq(variables['Build.SourceBranchName'], $(latestStableBranch)) }}:
+  ${{ if eq('0.62-stable', $(latestStableBranch)) }}:
     npmDistTag: latest
-  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+  ${{ if eq('0.62-stable', 'master') }}:
     npmDistTag: canary
-  ${{ if and(ne(variables['Build.SourceBranchName'], 'master'), ne(variables['Build.SourceBranchName'], $(latestStableBranch))) }}:
+  ${{ if and(ne('0.62-stable', 'master'), ne('0.62-stable', $(latestStableBranch))) }}:
     npmDistTag: v${{variables['Build.SourceBranchName']}}
 
 jobs:
@@ -39,35 +39,40 @@ jobs:
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
       - task: CmdLine@2
-        displayName: npm install
+        displayName: Test conditional variable setting
         inputs:
-          script: npm install
+          script: echo ${{variables.npmDistTag}}
 
-      - task: CmdLine@2
-        displayName: Bump stable package version
-        inputs:
-          script: node .ado/bumpFileVersions.js
-        condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
+      # - task: CmdLine@2
+      #   displayName: npm install
+      #   inputs:
+      #     script: npm install
 
-      - task: CmdLine@2
-        displayName: Bump canary package version
-        inputs:
-          script: node scripts/bump-oss-version.js --nightly
-        condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+      # - task: CmdLine@2
+      #   displayName: Bump stable package version
+      #   inputs:
+      #     script: node .ado/bumpFileVersions.js
+      #   condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
 
-      - script: npm publish --tag ${{variables.npmDistTag}} --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
-        displayName: Publish ${{variables.npmDistTag}} react-native-macos to npmjs.org
+      # - task: CmdLine@2
+      #   displayName: Bump canary package version
+      #   inputs:
+      #     script: node scripts/bump-oss-version.js --nightly
+      #   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
 
-      - task: CmdLine@2
-        displayName: 'Tag published release'
-        inputs:
-          script: node .ado/gitTagRelease.js
-        env:
-          BUILD_STAGINGDIRECTORY: $(Build.StagingDirectory)
-          BUILD_SOURCEBRANCH: $(Build.SourceBranch)
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          githubApiToken: $(githubApiToken)
-        condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
+      # - script: npm publish --tag ${{variables.npmDistTag}} --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
+      #   displayName: Publish ${{variables.npmDistTag}} react-native-macos to npmjs.org
+
+      # - task: CmdLine@2
+      #   displayName: 'Tag published release'
+      #   inputs:
+      #     script: node .ado/gitTagRelease.js
+      #   env:
+      #     BUILD_STAGINGDIRECTORY: $(Build.StagingDirectory)
+      #     BUILD_SOURCEBRANCH: $(Build.SourceBranch)
+      #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      #     githubApiToken: $(githubApiToken)
+      #   condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
 
 
   - job: RNMacOSInitNpmJSPublish
@@ -113,6 +118,7 @@ jobs:
       vmImage: ubuntu-18.04
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
+    condition: eq(True, False)
     steps:
       - checkout: self # self represents the repo where the initial Pipelines YAML file was found
         clean: true # whether to fetch clean each time
