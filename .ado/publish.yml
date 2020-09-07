@@ -17,6 +17,7 @@ pr: none
 # https://dev.azure.com/ms/react-native/_apps/hub/ms.vss-build-web.ci-designer-hub?pipelineId=221
 variables:
   latestStableBranch: $(latestStableBranch)
+  npmDistTag: ""
 
 jobs:
   - job: RNGithubNpmJSPublish
@@ -34,21 +35,21 @@ jobs:
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
       - script: echo '##vso[task.setvariable variable=npmDistTag]latest'
-        displayName: "Set the buildVersion as mavenVersion if the Build.SourceBranch = 'refs/heads/master' "
+        displayName: Set dist-tag to latest
         condition: eq('0.62-stable', variables.latestStableBranch)
 
       - script: echo '##vso[task.setvariable variable=npmDistTag]canary'
-        displayName: "Set the buildVersion as mavenVersion if the Build.SourceBranch = 'refs/heads/master' "
+        displayName: Set dist-tag to canary
         condition: eq('0.62-stable', 'master')
 
       - script: echo '##vso[task.setvariable variable=npmDistTag]v${{variables['Build.SourceBranchName']}}'
-        displayName: "Set the buildVersion as mavenVersion if the Build.SourceBranch = 'refs/heads/master' "
+        displayName: Set dist-tag to v${{variables['Build.SourceBranchName']}}
         condition: and(ne('0.62-stable', 'master'), ne('0.62-stable', variables.latestStableBranch))
 
       - task: CmdLine@2
         displayName: Test conditional variable setting
         inputs:
-          script: echo ${{variables.npmDistTag}}
+          script: echo ${{variables.latestStableBranch}} && echo ${{variables.npmDistTag}}
 
       # - task: CmdLine@2
       #   displayName: npm install
