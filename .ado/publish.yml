@@ -1,3 +1,6 @@
+# It is expected that a `latestStableBranch` variable is set in the pipeline's settings:
+# https://dev.azure.com/ms/react-native/_apps/hub/ms.vss-build-web.ci-designer-hub?pipelineId=221
+
 # This file defines the build steps to publish a release
 name: $(Date:yyyyMMdd).$(Rev:.r)
 
@@ -12,12 +15,6 @@ trigger:
       - package.json
 
 pr: none
-
-# It is expected that a `latestStableBranch` variable is set in the pipeline's settings:
-# https://dev.azure.com/ms/react-native/_apps/hub/ms.vss-build-web.ci-designer-hub?pipelineId=221
-# variables:
-  # latestStableBranch: $(latestStableBranch)
-  # npmDistTag: ""
 
 jobs:
   - job: RNGithubNpmJSPublish
@@ -43,13 +40,20 @@ jobs:
         condition: eq('0.62-stable', 'master')
 
       - script: echo '##vso[task.setvariable variable=npmDistTag]v${{variables['Build.SourceBranchName']}}'
-        displayName: Set dist-tag to v${{variables['Build.SourceBranchName']}}
+        displayName: Set dist-tag to stable
         condition: and(ne('0.62-stable', 'master'), ne('0.62-stable', variables.latestStableBranch))
 
       - task: CmdLine@2
-        displayName: Test conditional variable setting
+        displayName: Test canary conditional variable setting
         inputs:
           script: echo $(npmDistTag)
+        condition: eq($(npmDistTag), 'canary')
+
+      - task: CmdLine@2
+        displayName: Test stable conditional variable setting
+        inputs:
+          script: echo $(npmDistTag)
+        condition: ne($(npmDistTag), 'canary')
 
       # - task: CmdLine@2
       #   displayName: npm install
