@@ -33,7 +33,7 @@ jobs:
 
       - script: exit 1
         displayName: Validate variables
-        condition: ne(variables.latestStableBranch, "")
+        condition: ne(variables.latestStableBranch, Null)
 
       - script: echo '##vso[task.setvariable variable=npmDistTag]latest'
         displayName: Set dist-tag to latest
