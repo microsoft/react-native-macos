@@ -32,6 +32,11 @@ module.exports = {
       projectConfig: android.projectConfig,
       dependencyConfig: android.dependencyConfig,
     },
+    macos: {
+      npmPackageName: isReactNativeMacOS
+        ? 'react-native-macos'
+        : 'react-native',
+    },
   },
   /**
    * Used when running RNTester (with React Native from source)
