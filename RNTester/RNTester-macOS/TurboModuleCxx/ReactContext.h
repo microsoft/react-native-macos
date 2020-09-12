@@ -72,7 +72,7 @@ struct ReactContext {
     m_handle.EmitJSEvent(eventEmitterName, eventName, MakeJSValueArgWriter(std::forward<TArgs>(args)...));
   }
 
-#ifndef CORE_ABI
+#if !defined(CORE_ABI) && !defined(__APPLE__)
   // Dispatch eventName event to the view.
   // args are either function arguments or a single lambda with 'IJSValueWriter const&' argument.
   template <class... TArgs>
