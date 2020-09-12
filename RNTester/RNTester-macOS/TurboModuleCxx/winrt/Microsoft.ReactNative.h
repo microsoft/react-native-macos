@@ -93,6 +93,13 @@ inline const take_ownership_from_abi_t take_ownership_from_abi;
 
 }
 
+namespace winrt::param
+{
+
+using hstring = winrt::hstring;
+
+}
+
 #define WINRT_TO_MAC_MAKE_WINRT_INTERFACE(NAME)\
   NAME() = default;\
   NAME(const NAME&) = default;\
@@ -268,7 +275,7 @@ struct IReactDispatcher
 
 struct ReactDispatcherHelper
 {
-  static IReactDispatcher CreateSerialDispatcher()
+  static IReactDispatcher CreateSerialDispatcher() noexcept
   {
     VerifyElseCrash(false);
   }
@@ -314,6 +321,38 @@ struct IReactPropertyName
   IReactPropertyNamespace Namespace() const noexcept { return get_itf()->Namespace(); }
   
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPropertyName);
+};
+
+struct IReactPropertyBag
+{
+  struct Itf : Windows::Foundation::IInspectable::Itf
+  {
+  };
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPropertyBag);
+};
+
+struct ReactPropertyBagHelper
+{
+  static IReactPropertyNamespace GlobalNamespace() noexcept
+  {
+    VerifyElseCrash(false);
+  }
+  
+  static IReactPropertyNamespace GetNamespace(const hstring& namespaceName) noexcept
+  {
+    VerifyElseCrash(false);
+  }
+  
+  static IReactPropertyName GetName(IReactPropertyNamespace ns, const hstring& localName) noexcept
+  {
+    VerifyElseCrash(false);
+  }
+  
+  static IReactPropertyBag CreatePropertyBag()
+  {
+    VerifyElseCrash(false);
+  }
 };
                  
 }
