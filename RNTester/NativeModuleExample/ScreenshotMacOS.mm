@@ -14,6 +14,7 @@
 #import <JSValueWriter.h>
 #import <ModuleRegistration.h>
 #import <ReactContext.h>
+#import <ReactPromise.h>
 
 static NSImage* TakeScreenshot()
 {

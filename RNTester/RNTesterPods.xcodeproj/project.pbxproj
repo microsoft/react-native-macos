@@ -75,6 +75,7 @@
 		B21F0FC3250D35A8004A26F2 /* JSValueTreeReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B21F0FC1250D35A8004A26F2 /* JSValueTreeReader.cpp */; };
 		B21F0FC4250D35A8004A26F2 /* JSValueTreeWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B21F0FC2250D35A8004A26F2 /* JSValueTreeWriter.cpp */; };
 		B21F0FCA250D4195004A26F2 /* ModuleRegistration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B21F0FC8250D4195004A26F2 /* ModuleRegistration.cpp */; };
+		B2CEBEB8250D898600D92658 /* ReactPromise.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B2CEBEB7250D898600D92658 /* ReactPromise.cpp */; };
 		B2F2040A24E76D7600863BE1 /* ScreenshotMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = B2F2040924E76D7600863BE1 /* ScreenshotMacOS.mm */; };
 		CDFF3988A89A5269C488653F /* libPods-iosDeviceBuild.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 287A4762E82517B7FACCE7D3 /* libPods-iosDeviceBuild.a */; };
 		E59A0FBD0170A092274A6207 /* libPods-RNTesterUnitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72247071A1BF06D54F0FECC7 /* libPods-RNTesterUnitTests.a */; };
@@ -255,6 +256,9 @@
 		B21F0FCE250D6D85004A26F2 /* ReactNonAbiValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactNonAbiValue.h; path = TurboModuleCxx/ReactNonAbiValue.h; sourceTree = "<group>"; };
 		B21F0FCF250D6D85004A26F2 /* ReactNotificationService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactNotificationService.h; path = TurboModuleCxx/ReactNotificationService.h; sourceTree = "<group>"; };
 		B21F0FD0250D6D85004A26F2 /* ReactContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactContext.h; path = TurboModuleCxx/ReactContext.h; sourceTree = "<group>"; };
+		B2CEBEB5250D898600D92658 /* ReactPromise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactPromise.h; path = TurboModuleCxx/ReactPromise.h; sourceTree = "<group>"; };
+		B2CEBEB6250D898600D92658 /* ReactError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactError.h; path = TurboModuleCxx/ReactError.h; sourceTree = "<group>"; };
+		B2CEBEB7250D898600D92658 /* ReactPromise.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ReactPromise.cpp; path = TurboModuleCxx/ReactPromise.cpp; sourceTree = "<group>"; };
 		B2F2040824E76D7600863BE1 /* ScreenshotMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ScreenshotMacOS.h; path = NativeModuleExample/ScreenshotMacOS.h; sourceTree = SOURCE_ROOT; };
 		B2F2040924E76D7600863BE1 /* ScreenshotMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ScreenshotMacOS.mm; path = NativeModuleExample/ScreenshotMacOS.mm; sourceTree = SOURCE_ROOT; };
 		C81D39A606858D29861E5930 /* Pods-iosSimulatorBuild.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosSimulatorBuild.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iosSimulatorBuild/Pods-iosSimulatorBuild.debug.xcconfig"; sourceTree = "<group>"; };
@@ -596,6 +600,9 @@
 		B20EF9F6250D22000039DCD8 /* TurboModuleCxx */ = {
 			isa = PBXGroup;
 			children = (
+				B2CEBEB6250D898600D92658 /* ReactError.h */,
+				B2CEBEB7250D898600D92658 /* ReactPromise.cpp */,
+				B2CEBEB5250D898600D92658 /* ReactPromise.h */,
 				B21F0FD0250D6D85004A26F2 /* ReactContext.h */,
 				B21F0FCC250D6D85004A26F2 /* ReactDispatcher.h */,
 				B21F0FCB250D6D85004A26F2 /* ReactHandleHelper.h */,
@@ -1325,6 +1332,7 @@
 				B2F2040A24E76D7600863BE1 /* ScreenshotMacOS.mm in Sources */,
 				5101985A23AD9F5B00118BF1 /* ViewController.m in Sources */,
 				9F153467233AB2C7006DFE44 /* main.m in Sources */,
+				B2CEBEB8250D898600D92658 /* ReactPromise.cpp in Sources */,
 				B21F0FCA250D4195004A26F2 /* ModuleRegistration.cpp in Sources */,
 				38CB64352445042D009035CC /* RNTesterTurboModuleProvider.mm in Sources */,
 				B21F0FC3250D35A8004A26F2 /* JSValueTreeReader.cpp in Sources */,

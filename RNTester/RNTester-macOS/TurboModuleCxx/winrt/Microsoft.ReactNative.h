@@ -231,6 +231,12 @@ struct IJSValueWriter : Windows::Foundation::IInspectable
   void WriteArrayBegin() const noexcept { get_itf()->WriteArrayBegin(); }
   void WriteArrayEnd() const noexcept { get_itf()->WriteArrayEnd(); }
   
+  void WriteString(const wchar_t* value) const noexcept
+  {
+    auto str = std::wstring(value);
+    WriteString(str);
+  }
+  
   void WriteString(const std::wstring_view &value) const noexcept
   {
     auto str = std::wstring(value.cbegin(), value.cend());
@@ -473,6 +479,44 @@ struct IReactContext : Windows::Foundation::IInspectable
   void EmitJSEvent(const hstring& eventEmitterName, const hstring& eventName, JSValueArgWriter paramsArgWriter) const noexcept { return get_itf()->EmitJSEvent(eventEmitterName, eventName, paramsArgWriter); }
   
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactContext)
+};
+
+// IReactModuleBuilder.idl
+
+using InitializerDelegate = std::function<void(IReactContext)>;
+
+enum class MethodReturnType
+{
+  Void,
+  Callback,
+  TwoCallbacks,
+  Promise,
+};
+
+using MethodResultCallback = std::function<void(IJSValueWriter)>;
+
+using MethodDelegate = std::function<void(IJSValueReader, IJSValueWriter, MethodResultCallback, MethodResultCallback)>;
+
+using SyncMethodDelegate = std::function<void(IJSValueReader, IJSValueWriter)>;
+
+using ConstantProviderDelegate = std::function<void(IJSValueWriter)>;
+
+struct IReactModuleBuilder : Windows::Foundation::IInspectable
+{
+  struct Itf : Windows::Foundation::IInspectable::Itf
+  {
+    virtual void AddInitializer(InitializerDelegate initializer) noexcept = 0;
+    virtual void AddConstantProvider(ConstantProviderDelegate constantProvider) noexcept = 0;
+    virtual void AddMethod(const hstring& name, MethodReturnType returnType, MethodDelegate method) noexcept = 0;
+    virtual void AddSyncMethod(const hstring& name, SyncMethodDelegate method) noexcept = 0;
+  };
+
+  void AddInitializer(InitializerDelegate initializer) const noexcept { return get_itf()->AddInitializer(initializer); }
+  void AddConstantProvider(ConstantProviderDelegate constantProvider) const noexcept { return get_itf()->AddConstantProvider(constantProvider); }
+  void AddMethod(const hstring& name, MethodReturnType returnType, MethodDelegate method) const noexcept { return get_itf()->AddMethod(name, returnType, method); }
+  void AddSyncMethod(const hstring& name, SyncMethodDelegate method) const noexcept { return get_itf()->AddSyncMethod(name, method); }
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactModuleBuilder)
 };
                  
 }
