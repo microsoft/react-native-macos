@@ -71,6 +71,7 @@
 		9F153461233AB2C7006DFE44 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9F153460233AB2C7006DFE44 /* Assets.xcassets */; };
 		9F153467233AB2C7006DFE44 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F153466233AB2C7006DFE44 /* main.m */; };
 		A13DC98BDCE5EE508FFA7BE7 /* libPods-RNTester-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A355204268D03CF69ABC11D /* libPods-RNTester-macOS.a */; };
+		B20EF9FC250D22480039DCD8 /* JSValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B20EF9FA250D22480039DCD8 /* JSValue.cpp */; };
 		B2F2040A24E76D7600863BE1 /* ScreenshotMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = B2F2040924E76D7600863BE1 /* ScreenshotMacOS.mm */; };
 		CDFF3988A89A5269C488653F /* libPods-iosDeviceBuild.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 287A4762E82517B7FACCE7D3 /* libPods-iosDeviceBuild.a */; };
 		E59A0FBD0170A092274A6207 /* libPods-RNTesterUnitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72247071A1BF06D54F0FECC7 /* libPods-RNTesterUnitTests.a */; };
@@ -231,6 +232,10 @@
 		9F15347C233AB2C7006DFE44 /* RNTesterIntegrationTests_macOS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNTesterIntegrationTests_macOS.m; sourceTree = "<group>"; };
 		9F15347E233AB2C7006DFE44 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A112BDF7485AEF790F6D3E26 /* Pods-iosDeviceBuild.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosDeviceBuild.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iosDeviceBuild/Pods-iosDeviceBuild.debug.xcconfig"; sourceTree = "<group>"; };
+		B20EF9F9250D22470039DCD8 /* JSValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JSValue.h; path = TurboModuleCxx/JSValue.h; sourceTree = "<group>"; };
+		B20EF9FA250D22480039DCD8 /* JSValue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JSValue.cpp; path = TurboModuleCxx/JSValue.cpp; sourceTree = "<group>"; };
+		B20EF9FB250D22480039DCD8 /* pch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pch.h; path = TurboModuleCxx/pch.h; sourceTree = "<group>"; };
+		B20EF9FF250D226F0039DCD8 /* Microsoft.ReactNative.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Microsoft.ReactNative.h; path = TurboModuleCxx/winrt/Microsoft.ReactNative.h; sourceTree = "<group>"; };
 		B2F2040824E76D7600863BE1 /* ScreenshotMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ScreenshotMacOS.h; path = NativeModuleExample/ScreenshotMacOS.h; sourceTree = SOURCE_ROOT; };
 		B2F2040924E76D7600863BE1 /* ScreenshotMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ScreenshotMacOS.mm; path = NativeModuleExample/ScreenshotMacOS.mm; sourceTree = SOURCE_ROOT; };
 		C81D39A606858D29861E5930 /* Pods-iosSimulatorBuild.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosSimulatorBuild.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iosSimulatorBuild/Pods-iosSimulatorBuild.debug.xcconfig"; sourceTree = "<group>"; };
@@ -535,6 +540,7 @@
 		9F15345C233AB2C4006DFE44 /* RNTester-macOS */ = {
 			isa = PBXGroup;
 			children = (
+				B20EF9F6250D22000039DCD8 /* TurboModuleCxx */,
 				B2F2040824E76D7600863BE1 /* ScreenshotMacOS.h */,
 				B2F2040924E76D7600863BE1 /* ScreenshotMacOS.mm */,
 				5101985523AD9EE600118BF1 /* Main.storyboard */,
@@ -566,6 +572,25 @@
 				9F15347E233AB2C7006DFE44 /* Info.plist */,
 			);
 			path = "RNTester-macOSIntegrationTests";
+			sourceTree = "<group>";
+		};
+		B20EF9F6250D22000039DCD8 /* TurboModuleCxx */ = {
+			isa = PBXGroup;
+			children = (
+				B20EF9FE250D225A0039DCD8 /* winrt */,
+				B20EF9FA250D22480039DCD8 /* JSValue.cpp */,
+				B20EF9F9250D22470039DCD8 /* JSValue.h */,
+				B20EF9FB250D22480039DCD8 /* pch.h */,
+			);
+			name = TurboModuleCxx;
+			sourceTree = "<group>";
+		};
+		B20EF9FE250D225A0039DCD8 /* winrt */ = {
+			isa = PBXGroup;
+			children = (
+				B20EF9FF250D226F0039DCD8 /* Microsoft.ReactNative.h */,
+			);
+			name = winrt;
 			sourceTree = "<group>";
 		};
 		E7DB20A022B2BA84005AC45F /* RNTesterUnitTests */ = {
@@ -1268,6 +1293,7 @@
 				38CB64352445042D009035CC /* RNTesterTurboModuleProvider.mm in Sources */,
 				9F15345F233AB2C4006DFE44 /* AppDelegate.mm in Sources */,
 				38B2630C2444F628006AB4D5 /* FlexibleSizeExampleView.m in Sources */,
+				B20EF9FC250D22480039DCD8 /* JSValue.cpp in Sources */,
 				38B2630B2444F5EB006AB4D5 /* UpdatePropertiesExampleView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
