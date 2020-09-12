@@ -8,14 +8,14 @@
 //     windows: vntext/Microsoft.ReactNative.Cxx
 //     macOS:   RNTester/RNTester-macOS/TurboModuleCxx
 // You are required to commit exactly the same content to both repo
-// It will be eventually moved to a shared repo
+// A decision will be made in the near future to prevent from duplicating files
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 #ifndef MICROSOFT_REACTNATIVE_REACTCONTEXT
 #define MICROSOFT_REACTNATIVE_REACTCONTEXT
 
-#ifndef CORE_ABI
+#if !defined(CORE_ABI) && !defined(__APPLE__)
 #include <CppWinRTIncludes.h>
 #endif
 #include <string_view>
