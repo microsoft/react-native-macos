@@ -85,7 +85,7 @@ typename TClass::InterfaceHolder make(TArgs&& ...args)
 template<typename TClass, typename TInterface>
 TClass* get_self(const TInterface& itf)
 {
-  return dynamic_cast<TClass*>(itf.winrt_get_impl());
+  return dynamic_cast<TClass*>(itf.get_itf());
 }
 
 struct take_ownership_from_abi_t{};
@@ -100,9 +100,11 @@ inline const take_ownership_from_abi_t take_ownership_from_abi;
   NAME& operator=(const NAME&) = default;\
   NAME& operator=(NAME&&) = default;\
   NAME(const std::shared_ptr<Itf>& itf):m_itf(itf){}\
-  Itf* winrt_get_impl() const noexcept { return m_itf.get(); }\
   operator bool() const noexcept { return m_itf.get() != nullptr; }\
 private:\
+  template<typename TClass, typename TInterface>\
+  friend TClass* ::winrt::get_self(const TInterface& itf);\
+  Itf* get_itf() const noexcept { return m_itf.get(); }\
   std::shared_ptr<Itf> m_itf\
 
 namespace winrt::Windows::Foundation
@@ -154,13 +156,13 @@ struct IJSValueReader
     virtual double GetDouble() noexcept = 0;
   };
   
-  JSValueType ValueType() const noexcept { return m_itf->ValueType(); }
-  bool GetNextObjectProperty(hstring &propertyName) const noexcept { return m_itf->GetNextObjectProperty(propertyName); }
-  bool GetNextArrayItem() const noexcept { return m_itf->GetNextArrayItem(); }
-  hstring GetString() const noexcept { return m_itf->GetString(); }
-  bool GetBoolean() const noexcept { return m_itf->GetBoolean(); }
-  int64_t GetInt64() const noexcept { return m_itf->GetInt64(); }
-  double GetDouble() const noexcept { return m_itf->GetDouble(); }
+  JSValueType ValueType() const noexcept { return get_itf()->ValueType(); }
+  bool GetNextObjectProperty(hstring &propertyName) const noexcept { return get_itf()->GetNextObjectProperty(propertyName); }
+  bool GetNextArrayItem() const noexcept { return get_itf()->GetNextArrayItem(); }
+  hstring GetString() const noexcept { return get_itf()->GetString(); }
+  bool GetBoolean() const noexcept { return get_itf()->GetBoolean(); }
+  int64_t GetInt64() const noexcept { return get_itf()->GetInt64(); }
+  double GetDouble() const noexcept { return get_itf()->GetDouble(); }
   
   bool GetNextObjectProperty(const std::wstring_view &propertyName) const noexcept
   {
@@ -189,16 +191,16 @@ struct IJSValueWriter
     virtual void WriteArrayEnd() noexcept = 0;
   };
 
-  void WriteNull() const noexcept { m_itf->WriteNull(); }
-  void WriteBoolean(bool value) const noexcept { m_itf->WriteBoolean(value); }
-  void WriteInt64(int64_t value) const noexcept { m_itf->WriteInt64(value); }
-  void WriteDouble(double value) const noexcept { m_itf->WriteDouble(value); }
-  void WriteString(const winrt::hstring &value) const noexcept { m_itf->WriteString(value); }
-  void WriteObjectBegin() const noexcept { m_itf->WriteObjectBegin(); }
-  void WritePropertyName(const winrt::hstring &name) const noexcept { m_itf->WritePropertyName(name); }
-  void WriteObjectEnd() const noexcept { m_itf->WriteObjectEnd(); }
-  void WriteArrayBegin() const noexcept { m_itf->WriteArrayBegin(); }
-  void WriteArrayEnd() const noexcept { m_itf->WriteArrayEnd(); }
+  void WriteNull() const noexcept { get_itf()->WriteNull(); }
+  void WriteBoolean(bool value) const noexcept { get_itf()->WriteBoolean(value); }
+  void WriteInt64(int64_t value) const noexcept { get_itf()->WriteInt64(value); }
+  void WriteDouble(double value) const noexcept { get_itf()->WriteDouble(value); }
+  void WriteString(const winrt::hstring &value) const noexcept { get_itf()->WriteString(value); }
+  void WriteObjectBegin() const noexcept { get_itf()->WriteObjectBegin(); }
+  void WritePropertyName(const winrt::hstring &name) const noexcept { get_itf()->WritePropertyName(name); }
+  void WriteObjectEnd() const noexcept { get_itf()->WriteObjectEnd(); }
+  void WriteArrayBegin() const noexcept { get_itf()->WriteArrayBegin(); }
+  void WriteArrayEnd() const noexcept { get_itf()->WriteArrayEnd(); }
   
   void WriteString(const std::wstring_view &value) const noexcept
   {
@@ -230,7 +232,7 @@ struct IReactPackageBuilder
     virtual void AddModule(const hstring& moduleName, ReactModuleProvider moduleProvider) noexcept = 0;
   };
   
-  void AddModule(const hstring& moduleName, const ReactModuleProvider& moduleProvider) const noexcept { m_itf->AddModule(moduleName, moduleProvider); }
+  void AddModule(const hstring& moduleName, const ReactModuleProvider& moduleProvider) const noexcept { get_itf()->AddModule(moduleName, moduleProvider); }
   
   void AddModule(const wchar_t* moduleName, const ReactModuleProvider& moduleProvider) const noexcept
   {
@@ -258,8 +260,8 @@ struct IReactDispatcher
     virtual void Post(ReactDispatcherCallback callback) noexcept = 0;
   };
   
-  bool HasThreadAccess() const noexcept { return m_itf->HasThreadAccess(); }
-  void Post(const ReactDispatcherCallback& callback) const noexcept { return m_itf->Post(callback); }
+  bool HasThreadAccess() const noexcept { return get_itf()->HasThreadAccess(); }
+  void Post(const ReactDispatcherCallback& callback) const noexcept { return get_itf()->Post(callback); }
   
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactDispatcher);
 };
@@ -281,9 +283,37 @@ struct IReactNonAbiValue
     virtual int64_t GetPtr() noexcept = 0;
   };
   
-  int64_t GetPtr() const noexcept { return m_itf->GetPtr(); }
+  int64_t GetPtr() const noexcept { return get_itf()->GetPtr(); }
   
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactNonAbiValue);
+};
+
+// IReactPropertyBag.idl
+
+struct IReactPropertyNamespace
+{
+  struct Itf : Windows::Foundation::IInspectable::Itf
+  {
+    virtual hstring NamespaceName() noexcept = 0;
+  };
+  
+  hstring NamespaceName() const noexcept { return get_itf()->NamespaceName(); }
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPropertyNamespace);
+};
+
+struct IReactPropertyName
+{
+  struct Itf : Windows::Foundation::IInspectable::Itf
+  {
+    virtual hstring LocaleName() noexcept = 0;
+    virtual IReactPropertyNamespace Namespace() noexcept = 0;
+  };
+  
+  hstring LocaleName() const noexcept { return get_itf()->LocaleName(); }
+  IReactPropertyNamespace Namespace() const noexcept { return get_itf()->Namespace(); }
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPropertyName);
 };
                  
 }
