@@ -102,17 +102,17 @@ using hstring = winrt::hstring;
 
 #define WINRT_TO_MAC_MAKE_WINRT_INTERFACE(NAME)\
   NAME() = default;\
+  NAME(std::nullptr_t){}\
   NAME(const NAME&) = default;\
   NAME(NAME&&) = default;\
   NAME& operator=(const NAME&) = default;\
   NAME& operator=(NAME&&) = default;\
-  NAME(const std::shared_ptr<Itf>& itf):m_itf(itf){}\
+  NAME(const std::shared_ptr<Itf>& itf):IInspectable(itf){}\
   operator bool() const noexcept { return m_itf.get() != nullptr; }\
 private:\
   template<typename TClass, typename TInterface>\
   friend TClass* ::winrt::get_self(const TInterface& itf);\
-  Itf* get_itf() const noexcept { return m_itf.get(); }\
-  std::shared_ptr<Itf> m_itf\
+  Itf* get_itf() const noexcept { return static_cast<Itf*>(m_itf.get()); }\
 
 namespace winrt::Windows::Foundation
 {
@@ -125,10 +125,29 @@ struct IInspectable
   };
   
   IInspectable() noexcept = default;
+  IInspectable(std::nullptr_t) noexcept {}
+  IInspectable(const IInspectable&) noexcept = default;
+  IInspectable(IInspectable&&) noexcept = default;
+  IInspectable& operator=(const IInspectable&) noexcept = default;
+  IInspectable& operator=(IInspectable&&) noexcept = default;
   
   IInspectable(void*, take_ownership_from_abi_t) noexcept
   {
     VerifyElseCrash(false);
+  }
+  
+  template<typename TInterface>
+  TInterface try_as() const noexcept
+  {
+    return dynamic_pointer_cast<typename TInterface::Itf>(m_itf);
+  }
+  
+protected:
+  std::shared_ptr<Itf> m_itf;
+  
+  IInspectable(const std::shared_ptr<Itf>& itf) noexcept
+    : m_itf(itf)
+  {
   }
 };
 
@@ -150,7 +169,7 @@ enum class JSValueType
   Double,
 };
 
-struct IJSValueReader
+struct IJSValueReader : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
@@ -177,12 +196,12 @@ struct IJSValueReader
     return GetNextObjectProperty(str);
   }
   
-  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IJSValueReader);
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IJSValueReader)
 };
 
 // IJSValueWriter.idl
 
-struct IJSValueWriter
+struct IJSValueWriter : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
@@ -221,7 +240,7 @@ struct IJSValueWriter
     WritePropertyName(str);
   }
   
-  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IJSValueWriter);
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IJSValueWriter)
 };
 
 using JSValueArgWriter = std::function<void(const IJSValueWriter&)>;
@@ -232,7 +251,7 @@ struct IReactPackageBuilder;
 
 using ReactModuleProvider = std::function<void(const IReactPackageBuilder&)>;
 
-struct IReactPackageBuilder
+struct IReactPackageBuilder : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
@@ -252,14 +271,14 @@ struct IReactPackageBuilder
     AddModule(str, moduleProvider);
   }
   
-  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPackageBuilder);
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPackageBuilder)
 };
 
 // IReactDispatcher.idl
 
 using ReactDispatcherCallback = std::function<void()>;
 
-struct IReactDispatcher
+struct IReactDispatcher : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
@@ -269,8 +288,8 @@ struct IReactDispatcher
   
   bool HasThreadAccess() const noexcept { return get_itf()->HasThreadAccess(); }
   void Post(const ReactDispatcherCallback& callback) const noexcept { return get_itf()->Post(callback); }
-  
-  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactDispatcher);
+
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactDispatcher)
 };
 
 struct ReactDispatcherHelper
@@ -283,7 +302,7 @@ struct ReactDispatcherHelper
 
 // IReactNonAbiValue.idl
 
-struct IReactNonAbiValue
+struct IReactNonAbiValue : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
@@ -292,12 +311,12 @@ struct IReactNonAbiValue
   
   int64_t GetPtr() const noexcept { return get_itf()->GetPtr(); }
   
-  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactNonAbiValue);
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactNonAbiValue)
 };
 
 // IReactPropertyBag.idl
 
-struct IReactPropertyNamespace
+struct IReactPropertyNamespace : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
@@ -306,24 +325,24 @@ struct IReactPropertyNamespace
   
   hstring NamespaceName() const noexcept { return get_itf()->NamespaceName(); }
   
-  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPropertyNamespace);
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPropertyNamespace)
 };
 
-struct IReactPropertyName
+struct IReactPropertyName : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
-    virtual hstring LocaleName() noexcept = 0;
+    virtual hstring LocalName() noexcept = 0;
     virtual IReactPropertyNamespace Namespace() noexcept = 0;
   };
   
-  hstring LocaleName() const noexcept { return get_itf()->LocaleName(); }
+  hstring LocalName() const noexcept { return get_itf()->LocalName(); }
   IReactPropertyNamespace Namespace() const noexcept { return get_itf()->Namespace(); }
   
-  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPropertyName);
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPropertyName)
 };
 
-struct IReactPropertyBag
+struct IReactPropertyBag : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
