@@ -450,5 +450,29 @@ struct ReactNotificationServiceHelper
     VerifyElseCrash(false);
   }
 };
+
+// IReactContext.idl
+
+struct IReactContext : Windows::Foundation::IInspectable
+{
+  struct Itf : Windows::Foundation::IInspectable::Itf
+  {
+    virtual IReactPropertyBag Properties() noexcept = 0;
+    virtual IReactNotificationService Notifications() noexcept = 0;
+    virtual IReactDispatcher UIDispatcher() noexcept = 0;
+    virtual IReactDispatcher JSDispatcher() noexcept = 0;
+    virtual void CallJSFunction(const hstring& moduleName, const hstring& methodName, JSValueArgWriter paramsArgWriter) noexcept = 0;
+    virtual void EmitJSEvent(const hstring& eventEmitterName, const hstring& eventName, JSValueArgWriter paramsArgWriter) noexcept = 0;
+  };
+
+  IReactPropertyBag Properties() const noexcept { return get_itf()->Properties(); }
+  IReactNotificationService Notifications() const noexcept { return get_itf()->Notifications(); }
+  IReactDispatcher UIDispatcher() const noexcept { return get_itf()->UIDispatcher(); }
+  IReactDispatcher JSDispatcher() const noexcept { return get_itf()->JSDispatcher(); }
+  void CallJSFunction(const hstring& moduleName, const hstring& methodName, JSValueArgWriter paramsArgWriter) const noexcept { return get_itf()->CallJSFunction(moduleName, methodName, paramsArgWriter); }
+  void EmitJSEvent(const hstring& eventEmitterName, const hstring& eventName, JSValueArgWriter paramsArgWriter) const noexcept { return get_itf()->EmitJSEvent(eventEmitterName, eventName, paramsArgWriter); }
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactContext)
+};
                  
 }
