@@ -284,7 +284,13 @@ constexpr void ValidateCoroutineArg() noexcept {
   if constexpr (std::is_same_v<TResult, fire_and_forget>) {
     static_assert(
         !std::is_reference_v<TArg> && !std::is_pointer_v<TArg>,
-        "Coroutine parameter must be passed by value for safe access: " __FUNCSIG__);
+        "Coroutine parameter must be passed by value for safe access: "
+#ifdef __APPLE__
+        __PRETTY_FUNCTION__
+#else
+        __FUNCSIG__
+#endif
+        );
   }
 }
 
@@ -1019,9 +1025,9 @@ struct ReactMethodVerifier {
     return verifier.m_result;
   }
 
-  template <class TMember, class TAttribute, int I>
+  template <class TMember, class TAttribute, int I2>
   constexpr void
-  Visit([[maybe_unused]] TMember member, ReactAttributeId<I> /*attributeId*/, TAttribute /*attributeInfo*/) noexcept {
+  Visit([[maybe_unused]] TMember member, ReactAttributeId<I2> /*attributeId*/, TAttribute /*attributeInfo*/) noexcept {
     m_result = ModuleMethodInfo<TMember>::template Match<TMethodSpec>();
   }
 
@@ -1037,9 +1043,9 @@ struct ReactSyncMethodVerifier {
     return verifier.m_result;
   }
 
-  template <class TMember, class TAttribute, int I>
+  template <class TMember, class TAttribute, int I2>
   constexpr void
-  Visit([[maybe_unused]] TMember member, ReactAttributeId<I> /*attributeId*/, TAttribute /*attributeInfo*/) noexcept {
+  Visit([[maybe_unused]] TMember member, ReactAttributeId<I2> /*attributeId*/, TAttribute /*attributeInfo*/) noexcept {
     m_result = ModuleSyncMethodInfo<TMember>::template Match<TMethodSpec>();
   }
 
