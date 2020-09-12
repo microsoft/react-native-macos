@@ -3,30 +3,67 @@
 #include <string>
 #include <locale>
 #include <codecvt>
+#include <cwchar>
 #include <memory>
 #include <map>
 #include <vector>
 #include <type_traits>
 #include <cmath>
+#include <functional>
+
+inline int64_t _wcstoi64(const wchar_t* str, wchar_t** str_end, int base)
+{
+  return std::wcstol(str, str_end, base);
+}
+
+namespace std
+{
+
+inline std::wstring operator+(const wchar_t* a, const std::wstring_view& b)
+{
+  return a + std::wstring(b.cbegin(), b.cend());
+}
+
+}
 
 namespace winrt
 {
 
-using hstring = std::string;
+using hstring = std::wstring;
 
 inline hstring to_hstring(const std::string& s)
 {
-  return s;
+  return std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>().from_bytes(s);
+}
+
+inline hstring to_hstring(const char* s)
+{
+  return std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>().from_bytes(s);
+}
+
+inline hstring to_hstring(const std::string_view& w)
+{
+  return to_hstring(std::string(w.cbegin(), w.cend()));
 }
 
 inline hstring to_hstring(const std::wstring& s)
 {
-  return std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>().to_bytes(s);
+  return s;
+}
+
+inline hstring to_hstring(const wchar_t* s)
+{
+  return s;
+}
+
+inline hstring to_hstring(const std::wstring_view& w)
+{
+  return to_hstring(std::wstring(w.cbegin(), w.cend()));
 }
 
 inline std::string to_string(const hstring& s)
 {
-  return s;
+  return std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>().to_bytes(s);
 }
 
 template<typename TClass, typename TInterface>
@@ -66,6 +103,8 @@ namespace winrt::Microsoft::ReactNative
 private:\
   std::shared_ptr<Itf> m_itf\
 
+// IJSValueReader.idl
+
 enum class JSValueType
 {
   Null,
@@ -98,8 +137,16 @@ struct IJSValueReader
   int64_t GetInt64() const noexcept { return m_itf->GetInt64(); }
   double GetDouble() const noexcept { return m_itf->GetDouble(); }
   
+  bool GetNextObjectProperty(const std::wstring_view &propertyName) const noexcept
+  {
+    auto str = std::wstring(propertyName.cbegin(), propertyName.cend());
+    return GetNextObjectProperty(str);
+  }
+  
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IJSValueReader);
 };
+
+// IJSValueWriter.idl
 
 struct IJSValueWriter
 {
@@ -128,7 +175,21 @@ struct IJSValueWriter
   void WriteArrayBegin() const noexcept { m_itf->WriteArrayBegin(); }
   void WriteArrayEnd() const noexcept { m_itf->WriteArrayEnd(); }
   
+  void WriteString(const std::wstring_view &value) const noexcept
+  {
+    auto str = std::wstring(value.cbegin(), value.cend());
+    WriteString(str);
+  }
+  
+  void WritePropertyName(const std::wstring_view &name) const noexcept
+  {
+    auto str = std::wstring(name.cbegin(), name.cend());
+    WritePropertyName(str);
+  }
+  
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IJSValueWriter);
 };
+
+using JSValueArgWriter = std::function<void(const IJSValueWriter&)>;
                  
 }

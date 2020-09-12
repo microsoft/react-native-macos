@@ -10,7 +10,8 @@
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <ReactCommon/TurboModuleUtils.h>
-#import <JSValue.h>
+#import <JSValueReader.h>
+#import <JSValueWriter.h>
 
 static NSImage* TakeScreenshot()
 {
