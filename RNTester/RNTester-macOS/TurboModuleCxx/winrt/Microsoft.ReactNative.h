@@ -102,9 +102,9 @@ using JSValueArgWriter = std::function<void(const IJSValueWriter&)>;
 
 // IReactPackageBuilder.idl
 
-struct IReactPackageBuilder;
+struct IReactModuleBuilder;
 
-using ReactModuleProvider = std::function<void(const IReactPackageBuilder&)>;
+using ReactModuleProvider = std::function<void(const IReactModuleBuilder&)>;
 
 struct IReactPackageBuilder : Windows::Foundation::IInspectable
 {
@@ -137,7 +137,7 @@ struct IReactDispatcher : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
-    virtual bool HasThreadAccess() noexcept = 0;
+    virtual bool HasThreadAccess() const noexcept = 0;
     virtual void Post(ReactDispatcherCallback callback) noexcept = 0;
   };
   
@@ -161,7 +161,7 @@ struct IReactNonAbiValue : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
-    virtual int64_t GetPtr() noexcept = 0;
+    virtual int64_t GetPtr() const noexcept = 0;
   };
   
   int64_t GetPtr() const noexcept { return get_itf()->GetPtr(); }
@@ -177,7 +177,7 @@ struct IReactPropertyNamespace : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
-    virtual hstring NamespaceName() noexcept = 0;
+    virtual hstring NamespaceName() const noexcept = 0;
   };
   
   hstring NamespaceName() const noexcept { return get_itf()->NamespaceName(); }
@@ -189,8 +189,8 @@ struct IReactPropertyName : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
-    virtual hstring LocalName() noexcept = 0;
-    virtual IReactPropertyNamespace Namespace() noexcept = 0;
+    virtual hstring LocalName() const noexcept = 0;
+    virtual IReactPropertyNamespace Namespace() const noexcept = 0;
   };
   
   hstring LocalName() const noexcept { return get_itf()->LocalName(); }
@@ -238,15 +238,15 @@ struct ReactPropertyBagHelper
   }
 };
 
-// IReactDispatcher.idl
+// IReactNotificationService.idl
 
 struct IReactNotificationSubscription : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
-    virtual IReactPropertyName NotificationName() noexcept = 0;
-    virtual IReactDispatcher Dispatcher() noexcept = 0;
-    virtual bool IsSubscribed() noexcept = 0;
+    virtual IReactPropertyName NotificationName() const noexcept = 0;
+    virtual IReactDispatcher Dispatcher() const noexcept = 0;
+    virtual bool IsSubscribed() const noexcept = 0;
     virtual void Unsubscribe() noexcept = 0;
   };
 
@@ -262,8 +262,8 @@ struct IReactNotificationArgs : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
-    virtual IReactNotificationSubscription Subscription() noexcept = 0;
-    virtual IInspectable Data() noexcept = 0;
+    virtual IReactNotificationSubscription Subscription() const noexcept = 0;
+    virtual IInspectable Data() const noexcept = 0;
   };
 
   IReactNotificationSubscription Subscription() const noexcept { return get_itf()->Subscription(); }
@@ -309,10 +309,10 @@ struct IReactContext : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
-    virtual IReactPropertyBag Properties() noexcept = 0;
-    virtual IReactNotificationService Notifications() noexcept = 0;
-    virtual IReactDispatcher UIDispatcher() noexcept = 0;
-    virtual IReactDispatcher JSDispatcher() noexcept = 0;
+    virtual IReactPropertyBag Properties() const noexcept = 0;
+    virtual IReactNotificationService Notifications() const noexcept = 0;
+    virtual IReactDispatcher UIDispatcher() const noexcept = 0;
+    virtual IReactDispatcher JSDispatcher() const noexcept = 0;
     virtual void CallJSFunction(const hstring& moduleName, const hstring& methodName, JSValueArgWriter paramsArgWriter) noexcept = 0;
     virtual void EmitJSEvent(const hstring& eventEmitterName, const hstring& eventName, JSValueArgWriter paramsArgWriter) noexcept = 0;
   };
@@ -361,6 +361,18 @@ struct IReactModuleBuilder : Windows::Foundation::IInspectable
   void AddConstantProvider(ConstantProviderDelegate constantProvider) const noexcept { return get_itf()->AddConstantProvider(constantProvider); }
   void AddMethod(const hstring& name, MethodReturnType returnType, MethodDelegate method) const noexcept { return get_itf()->AddMethod(name, returnType, method); }
   void AddSyncMethod(const hstring& name, SyncMethodDelegate method) const noexcept { return get_itf()->AddSyncMethod(name, method); }
+  
+  void AddMethod(const std::wstring_view& name, MethodReturnType returnType, MethodDelegate method) const noexcept
+  {
+    auto str = std::wstring(name.cbegin(), name.cend());
+    return get_itf()->AddMethod(str, returnType, method);
+  }
+  
+  void AddSyncMethod(const std::wstring_view& name, SyncMethodDelegate method) const noexcept
+  {
+    auto str = std::wstring(name.cbegin(), name.cend());
+    return get_itf()->AddSyncMethod(str, method);
+  }
   
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactModuleBuilder)
 };

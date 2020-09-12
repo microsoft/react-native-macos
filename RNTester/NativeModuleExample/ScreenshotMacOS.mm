@@ -115,6 +115,32 @@ public:
   }
 };
 
+REACT_STRUCT(ScreenshotArguments)
+struct ScreenshotArguments
+{
+};
+
+REACT_MODULE(ScreenshotManagerCxx, L"ScreenshotManager")
+struct ScreenshotManagerCxx
+{
+  REACT_INIT(Initialize)
+  void Initialize(const winrt::Microsoft::ReactNative::ReactContext&) noexcept
+  {
+    // to be implemented
+  }
+  
+  REACT_METHOD(TakeScreenshot, L"takeScreenshot")
+  void TakeScreenshot(
+                      std::string,
+                      ScreenshotArguments&&,
+                      winrt::Microsoft::ReactNative::ReactPromise<std::string> result
+                      ) noexcept
+  {
+    // to be implemented
+    result.Reject(L"Not implemented!");
+  }
+};
+
 @implementation ScreenshotManagerTurboModuleManagerDelegate
 
 - (std::shared_ptr<facebook::react::TurboModule>)
