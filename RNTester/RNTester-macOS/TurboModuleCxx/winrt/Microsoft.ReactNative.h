@@ -88,6 +88,9 @@ TClass* get_self(const TInterface& itf)
   return dynamic_cast<TClass*>(itf.winrt_get_impl());
 }
 
+struct take_ownership_from_abi_t{};
+inline const take_ownership_from_abi_t take_ownership_from_abi;
+
 }
 
 #define WINRT_TO_MAC_MAKE_WINRT_INTERFACE(NAME)\
@@ -98,11 +101,11 @@ TClass* get_self(const TInterface& itf)
   NAME& operator=(NAME&&) = default;\
   NAME(const std::shared_ptr<Itf>& itf):m_itf(itf){}\
   Itf* winrt_get_impl() const noexcept { return m_itf.get(); }\
-  operator bool() const noexcept { return m_itf; }\
+  operator bool() const noexcept { return m_itf.get() != nullptr; }\
 private:\
   std::shared_ptr<Itf> m_itf\
 
-namespace Windows::Foundation
+namespace winrt::Windows::Foundation
 {
 
 struct IInspectable
@@ -111,6 +114,13 @@ struct IInspectable
   {
     virtual ~Itf() = default;
   };
+  
+  IInspectable() noexcept = default;
+  
+  IInspectable(void*, take_ownership_from_abi_t) noexcept
+  {
+    VerifyElseCrash(false);
+  }
 };
 
 }
