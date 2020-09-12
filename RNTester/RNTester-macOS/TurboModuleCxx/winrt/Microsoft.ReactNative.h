@@ -7,18 +7,11 @@
 #include <type_traits>
 #include <cmath>
 
-namespace std
-{
-template<class T, class ...Args> inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
-template<class T> inline constexpr bool is_default_constructible_v = is_default_constructible<T>::value;
-template<class T> inline constexpr bool is_integral_v = is_integral<T>::value;
-template<class T, class U> inline constexpr bool is_convertible_v = is_convertible<T, U>::value;
-template<class T, class U> inline constexpr bool is_same_v = is_same<T, U>::value;
-}
-
 namespace winrt
 {
 using hstring = std::string;
+inline hstring to_hstring(const std::string& s) { return s; }
+inline std::string to_string(const hstring& s) { return s; }
 }
 
 namespace winrt::Microsoft::ReactNative
@@ -58,12 +51,13 @@ struct IJSValueReader
     virtual double GetDouble() noexcept = 0;
   };
   
-  bool GetNextObjectProperty(hstring &propertyName) noexcept { return m_itf->GetNextObjectProperty(propertyName); }
-  bool GetNextArrayItem() noexcept { return m_itf->GetNextArrayItem(); }
-  hstring GetString() noexcept { return m_itf->GetString(); }
-  bool GetBoolean() noexcept { return m_itf->GetBoolean(); }
-  int64_t GetInt64() noexcept { return m_itf->GetInt64(); }
-  double GetDouble() noexcept { return m_itf->GetDouble(); }
+  JSValueType ValueType() const noexcept { return m_itf->ValueType(); }
+  bool GetNextObjectProperty(hstring &propertyName) const noexcept { return m_itf->GetNextObjectProperty(propertyName); }
+  bool GetNextArrayItem() const noexcept { return m_itf->GetNextArrayItem(); }
+  hstring GetString() const noexcept { return m_itf->GetString(); }
+  bool GetBoolean() const noexcept { return m_itf->GetBoolean(); }
+  int64_t GetInt64() const noexcept { return m_itf->GetInt64(); }
+  double GetDouble() const noexcept { return m_itf->GetDouble(); }
   
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IJSValueReader);
 };
@@ -84,16 +78,16 @@ struct IJSValueWriter
     virtual void WriteArrayEnd() noexcept = 0;
   };
 
-  void WriteNull() noexcept { m_itf->WriteNull(); }
-  void WriteBoolean(bool value) noexcept { m_itf->WriteBoolean(value); }
-  void WriteInt64(int64_t value) noexcept { m_itf->WriteInt64(value); }
-  void WriteDouble(double value) noexcept { m_itf->WriteDouble(value); }
-  void WriteString(const winrt::hstring &value) noexcept { m_itf->WriteString(value); }
-  void WriteObjectBegin() noexcept { m_itf->WriteObjectBegin(); }
-  void WritePropertyName(const winrt::hstring &name) noexcept { m_itf->WritePropertyName(name); }
-  void WriteObjectEnd() noexcept { m_itf->WriteObjectEnd(); }
-  void WriteArrayBegin() noexcept { m_itf->WriteArrayBegin(); }
-  void WriteArrayEnd() noexcept { m_itf->WriteArrayEnd(); }
+  void WriteNull() const noexcept { m_itf->WriteNull(); }
+  void WriteBoolean(bool value) const noexcept { m_itf->WriteBoolean(value); }
+  void WriteInt64(int64_t value) const noexcept { m_itf->WriteInt64(value); }
+  void WriteDouble(double value) const noexcept { m_itf->WriteDouble(value); }
+  void WriteString(const winrt::hstring &value) const noexcept { m_itf->WriteString(value); }
+  void WriteObjectBegin() const noexcept { m_itf->WriteObjectBegin(); }
+  void WritePropertyName(const winrt::hstring &name) const noexcept { m_itf->WritePropertyName(name); }
+  void WriteObjectEnd() const noexcept { m_itf->WriteObjectEnd(); }
+  void WriteArrayBegin() const noexcept { m_itf->WriteArrayBegin(); }
+  void WriteArrayEnd() const noexcept { m_itf->WriteArrayEnd(); }
   
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IJSValueWriter);
 };
