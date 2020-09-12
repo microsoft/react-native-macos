@@ -259,6 +259,7 @@
 		B2CEBEB5250D898600D92658 /* ReactPromise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactPromise.h; path = TurboModuleCxx/ReactPromise.h; sourceTree = "<group>"; };
 		B2CEBEB6250D898600D92658 /* ReactError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactError.h; path = TurboModuleCxx/ReactError.h; sourceTree = "<group>"; };
 		B2CEBEB7250D898600D92658 /* ReactPromise.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ReactPromise.cpp; path = TurboModuleCxx/ReactPromise.cpp; sourceTree = "<group>"; };
+		B2CEBEB9250D8C8C00D92658 /* NativeModules.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NativeModules.h; path = TurboModuleCxx/NativeModules.h; sourceTree = "<group>"; };
 		B2F2040824E76D7600863BE1 /* ScreenshotMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ScreenshotMacOS.h; path = NativeModuleExample/ScreenshotMacOS.h; sourceTree = SOURCE_ROOT; };
 		B2F2040924E76D7600863BE1 /* ScreenshotMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ScreenshotMacOS.mm; path = NativeModuleExample/ScreenshotMacOS.mm; sourceTree = SOURCE_ROOT; };
 		C81D39A606858D29861E5930 /* Pods-iosSimulatorBuild.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosSimulatorBuild.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iosSimulatorBuild/Pods-iosSimulatorBuild.debug.xcconfig"; sourceTree = "<group>"; };
@@ -600,6 +601,7 @@
 		B20EF9F6250D22000039DCD8 /* TurboModuleCxx */ = {
 			isa = PBXGroup;
 			children = (
+				B2CEBEB9250D8C8C00D92658 /* NativeModules.h */,
 				B2CEBEB6250D898600D92658 /* ReactError.h */,
 				B2CEBEB7250D898600D92658 /* ReactPromise.cpp */,
 				B2CEBEB5250D898600D92658 /* ReactPromise.h */,
