@@ -13,6 +13,7 @@
 #import <JSValueReader.h>
 #import <JSValueWriter.h>
 #import <ModuleRegistration.h>
+#import <ReactContext.h>
 
 static NSImage* TakeScreenshot()
 {
