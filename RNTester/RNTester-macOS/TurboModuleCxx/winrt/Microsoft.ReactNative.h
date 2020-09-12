@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <locale>
+#include <codecvt>
 #include <memory>
 #include <map>
 #include <vector>
@@ -9,9 +11,45 @@
 
 namespace winrt
 {
+
 using hstring = std::string;
-inline hstring to_hstring(const std::string& s) { return s; }
-inline std::string to_string(const hstring& s) { return s; }
+
+inline hstring to_hstring(const std::string& s)
+{
+  return s;
+}
+
+inline hstring to_hstring(const std::wstring& s)
+{
+  return std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>().to_bytes(s);
+}
+
+inline std::string to_string(const hstring& s)
+{
+  return s;
+}
+
+template<typename TClass, typename TInterface>
+struct implements : TInterface::Itf
+{
+  using InterfaceHolder = TInterface;
+};
+
+template<typename TClass, typename ...TArgs>
+typename TClass::InterfaceHolder make(TArgs&& ...args)
+{
+  using TIH = typename TClass::InterfaceHolder;
+  auto obj = std::make_shared<TClass>(std::forward<TArgs>(args)...);
+  std::shared_ptr<typename TIH::Itf> ptr(obj);
+  return TIH(obj);
+}
+
+template<typename TClass, typename TInterface>
+TClass* get_self(const TInterface& itf)
+{
+  return dynamic_cast<TClass*>(itf.winrt_get_impl());
+}
+
 }
 
 namespace winrt::Microsoft::ReactNative
@@ -24,6 +62,7 @@ namespace winrt::Microsoft::ReactNative
   NAME& operator=(const NAME&) = default;\
   NAME& operator=(NAME&&) = default;\
   NAME(const std::shared_ptr<Itf>& itf):m_itf(itf){}\
+  Itf* winrt_get_impl() const noexcept { return m_itf.get(); }\
 private:\
   std::shared_ptr<Itf> m_itf\
 
