@@ -91,6 +91,9 @@ TClass* get_self(const TInterface& itf)
 struct take_ownership_from_abi_t{};
 inline const take_ownership_from_abi_t take_ownership_from_abi;
 
+struct auto_revoke_t{};
+inline const auto_revoke_t auto_revoke;
+
 }
 
 namespace winrt::param
@@ -108,7 +111,6 @@ using hstring = winrt::hstring;
   NAME& operator=(const NAME&) = default;\
   NAME& operator=(NAME&&) = default;\
   NAME(const std::shared_ptr<Itf>& itf):IInspectable(itf){}\
-  operator bool() const noexcept { return m_itf.get() != nullptr; }\
 private:\
   template<typename TClass, typename TInterface>\
   friend TClass* ::winrt::get_self(const TInterface& itf);\
@@ -130,6 +132,7 @@ struct IInspectable
   IInspectable(IInspectable&&) noexcept = default;
   IInspectable& operator=(const IInspectable&) noexcept = default;
   IInspectable& operator=(IInspectable&&) noexcept = default;
+  operator bool() const noexcept { return m_itf.get() != nullptr; }
   
   IInspectable(void*, take_ownership_from_abi_t) noexcept
   {
@@ -316,6 +319,8 @@ struct IReactNonAbiValue : Windows::Foundation::IInspectable
 
 // IReactPropertyBag.idl
 
+using ReactCreatePropertyValue = std::function<Windows::Foundation::IInspectable()>;
+
 struct IReactPropertyNamespace : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
@@ -346,9 +351,16 @@ struct IReactPropertyBag : Windows::Foundation::IInspectable
 {
   struct Itf : Windows::Foundation::IInspectable::Itf
   {
+    virtual IInspectable Get(IReactPropertyName name) noexcept = 0;
+    virtual IInspectable GetOrCreate(IReactPropertyName name, ReactCreatePropertyValue createValue) noexcept = 0;
+    virtual IInspectable Set(IReactPropertyName name, IInspectable value) noexcept = 0;
   };
+
+  IInspectable Get(IReactPropertyName name) const noexcept { return get_itf()->Get(name); }
+  IInspectable GetOrCreate(IReactPropertyName name, const ReactCreatePropertyValue& createValue) const noexcept { return get_itf()->GetOrCreate(name, createValue); }
+  IInspectable Set(IReactPropertyName name, IInspectable value) const noexcept { return get_itf()->Set(name, value); }
   
-  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPropertyBag);
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPropertyBag)
 };
 
 struct ReactPropertyBagHelper
@@ -369,6 +381,71 @@ struct ReactPropertyBagHelper
   }
   
   static IReactPropertyBag CreatePropertyBag()
+  {
+    VerifyElseCrash(false);
+  }
+};
+
+// IReactDispatcher.idl
+
+struct IReactNotificationSubscription : Windows::Foundation::IInspectable
+{
+  struct Itf : Windows::Foundation::IInspectable::Itf
+  {
+    virtual IReactPropertyName NotificationName() noexcept = 0;
+    virtual IReactDispatcher Dispatcher() noexcept = 0;
+    virtual bool IsSubscribed() noexcept = 0;
+    virtual void Unsubscribe() noexcept = 0;
+  };
+
+  IReactPropertyName NotificationName() const noexcept { return get_itf()->NotificationName(); }
+  IReactDispatcher Dispatcher() const noexcept { return get_itf()->Dispatcher(); }
+  bool IsSubscribed() const noexcept { return get_itf()->IsSubscribed(); }
+  void Unsubscribe() const noexcept { return get_itf()->Unsubscribe(); }
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactNotificationSubscription)
+};
+
+struct IReactNotificationArgs : Windows::Foundation::IInspectable
+{
+  struct Itf : Windows::Foundation::IInspectable::Itf
+  {
+    virtual IReactNotificationSubscription Subscription() noexcept = 0;
+    virtual IInspectable Data() noexcept = 0;
+  };
+
+  IReactNotificationSubscription Subscription() const noexcept { return get_itf()->Subscription(); }
+  IInspectable Data() const noexcept { return get_itf()->Data(); }
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactNotificationArgs)
+};
+
+using ReactNotificationHandler = std::function<void(Windows::Foundation::IInspectable, IReactNotificationArgs)>;
+
+struct IReactNotificationService : Windows::Foundation::IInspectable
+{
+  struct Itf : Windows::Foundation::IInspectable::Itf
+  {
+    virtual IReactNotificationSubscription Subscribe(IReactPropertyName notificationName, IReactDispatcher dispatcher, ReactNotificationHandler handler) noexcept = 0;
+    virtual void SendNotification(IReactPropertyName notificationName, IInspectable sender, IInspectable data) noexcept = 0;
+  };
+
+  IReactNotificationSubscription Subscribe(IReactPropertyName notificationName, IReactDispatcher dispatcher, const ReactNotificationHandler& handler) const noexcept
+  {
+    return get_itf()->Subscribe(notificationName, dispatcher, handler);
+  }
+  
+  void SendNotification(IReactPropertyName notificationName, IInspectable sender, IInspectable data) const noexcept
+  {
+    return get_itf()->SendNotification(notificationName, sender, data);
+  }
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactNotificationService)
+};
+
+struct ReactNotificationServiceHelper
+{
+  static IReactNotificationService CreateNotificationService()
   {
     VerifyElseCrash(false);
   }
