@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <cmath>
 #include <functional>
+#include "../Crash.h"
 
 inline int64_t _wcstoi64(const wchar_t* str, wchar_t** str_end, int base)
 {
@@ -89,9 +90,6 @@ TClass* get_self(const TInterface& itf)
 
 }
 
-namespace winrt::Microsoft::ReactNative
-{
-
 #define WINRT_TO_MAC_MAKE_WINRT_INTERFACE(NAME)\
   NAME() = default;\
   NAME(const NAME&) = default;\
@@ -100,8 +98,25 @@ namespace winrt::Microsoft::ReactNative
   NAME& operator=(NAME&&) = default;\
   NAME(const std::shared_ptr<Itf>& itf):m_itf(itf){}\
   Itf* winrt_get_impl() const noexcept { return m_itf.get(); }\
+  operator bool() const noexcept { return m_itf; }\
 private:\
   std::shared_ptr<Itf> m_itf\
+
+namespace Windows::Foundation
+{
+
+struct IInspectable
+{
+  struct Itf
+  {
+    virtual ~Itf() = default;
+  };
+};
+
+}
+
+namespace winrt::Microsoft::ReactNative
+{
 
 // IJSValueReader.idl
 
@@ -118,7 +133,7 @@ enum class JSValueType
 
 struct IJSValueReader
 {
-  struct Itf
+  struct Itf : Windows::Foundation::IInspectable::Itf
   {
     virtual JSValueType ValueType() noexcept = 0;
     virtual bool GetNextObjectProperty(hstring &propertyName) noexcept = 0;
@@ -150,7 +165,7 @@ struct IJSValueReader
 
 struct IJSValueWriter
 {
-  struct Itf
+  struct Itf : Windows::Foundation::IInspectable::Itf
   {
     virtual void WriteNull() noexcept = 0;
     virtual void WriteBoolean(bool value) noexcept = 0;
@@ -200,7 +215,7 @@ using ReactModuleProvider = std::function<void(const IReactPackageBuilder&)>;
 
 struct IReactPackageBuilder
 {
-  struct Itf
+  struct Itf : Windows::Foundation::IInspectable::Itf
   {
     virtual void AddModule(const hstring& moduleName, ReactModuleProvider moduleProvider) noexcept = 0;
   };
@@ -219,6 +234,46 @@ struct IReactPackageBuilder
   }
   
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPackageBuilder);
+};
+
+// IReactDispatcher.idl
+
+using ReactDispatcherCallback = std::function<void()>;
+
+struct IReactDispatcher
+{
+  struct Itf : Windows::Foundation::IInspectable::Itf
+  {
+    virtual bool HasThreadAccess() noexcept = 0;
+    virtual void Post(ReactDispatcherCallback callback) noexcept = 0;
+  };
+  
+  bool HasThreadAccess() const noexcept { return m_itf->HasThreadAccess(); }
+  void Post(const ReactDispatcherCallback& callback) const noexcept { return m_itf->Post(callback); }
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactDispatcher);
+};
+
+struct ReactDispatcherHelper
+{
+  static IReactDispatcher CreateSerialDispatcher()
+  {
+    VerifyElseCrash(false);
+  }
+};
+
+// IReactNonAbiValue.idl
+
+struct IReactNonAbiValue
+{
+  struct Itf : Windows::Foundation::IInspectable::Itf
+  {
+    virtual int64_t GetPtr() noexcept = 0;
+  };
+  
+  int64_t GetPtr() const noexcept { return m_itf->GetPtr(); }
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactNonAbiValue);
 };
                  
 }
