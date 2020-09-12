@@ -191,5 +191,34 @@ struct IJSValueWriter
 };
 
 using JSValueArgWriter = std::function<void(const IJSValueWriter&)>;
+
+// IReactPackageBuilder.idl
+
+struct IReactPackageBuilder;
+
+using ReactModuleProvider = std::function<void(const IReactPackageBuilder&)>;
+
+struct IReactPackageBuilder
+{
+  struct Itf
+  {
+    virtual void AddModule(const hstring& moduleName, ReactModuleProvider moduleProvider) noexcept = 0;
+  };
+  
+  void AddModule(const hstring& moduleName, const ReactModuleProvider& moduleProvider) const noexcept { m_itf->AddModule(moduleName, moduleProvider); }
+  
+  void AddModule(const wchar_t* moduleName, const ReactModuleProvider& moduleProvider) const noexcept
+  {
+    AddModule(moduleName, moduleProvider);
+  }
+  
+  void AddModule(const std::wstring_view& moduleName, const ReactModuleProvider& moduleProvider) const noexcept
+  {
+    auto str = std::wstring(moduleName.cbegin(), moduleName.cend());
+    AddModule(str, moduleProvider);
+  }
+  
+  WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactPackageBuilder);
+};
                  
 }
