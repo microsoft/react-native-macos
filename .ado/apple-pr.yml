@@ -11,6 +11,7 @@ pr:
     include:
       - master
       - 0.59-stable
+      - 0.62-stable
   paths:
     exclude:
       - '*.md'
