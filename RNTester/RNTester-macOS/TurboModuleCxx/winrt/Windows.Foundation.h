@@ -144,7 +144,7 @@ struct IInspectable
   template<typename TInterface>
   TInterface try_as() const noexcept
   {
-    return dynamic_pointer_cast<typename TInterface::Itf>(m_itf);
+    return std::dynamic_pointer_cast<typename TInterface::Itf>(m_itf);
   }
   
 protected:
