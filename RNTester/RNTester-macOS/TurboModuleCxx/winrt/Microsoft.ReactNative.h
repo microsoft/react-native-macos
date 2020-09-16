@@ -104,7 +104,7 @@ using JSValueArgWriter = std::function<void(const IJSValueWriter&)>;
 
 struct IReactModuleBuilder;
 
-using ReactModuleProvider = std::function<void(const IReactModuleBuilder&)>;
+using ReactModuleProvider = std::function<Windows::Foundation::IInspectable(const IReactModuleBuilder&)>;
 
 struct IReactPackageBuilder : Windows::Foundation::IInspectable
 {
