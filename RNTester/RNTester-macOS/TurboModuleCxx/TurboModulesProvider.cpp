@@ -7,9 +7,13 @@
 #include "pch.h"
 #include "TurboModulesProvider.h"
 #include <ReactCommon/TurboModuleUtils.h>
-#include <crash/verifyElseCrash.h>
 #include "JsiReader.h"
 #include "JsiWriter.h"
+#ifdef __APPLE__
+#include "Crash.h"
+#else
+#include <crash/verifyElseCrash.h>
+#endif
 
 using namespace winrt;
 using namespace Windows::Foundation;
