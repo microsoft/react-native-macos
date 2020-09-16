@@ -6,7 +6,11 @@
 
 #include "pch.h"
 #include "JsiReader.h"
+#ifdef __APPLE__
+#include "Crash.h"
+#else
 #include <crash/verifyElseCrash.h>
+#endif
 
 namespace winrt::Microsoft::ReactNative {
 
