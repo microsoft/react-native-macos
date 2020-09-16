@@ -5,6 +5,12 @@
 namespace winrt::Microsoft::ReactNative
 {
 
+template <typename T>
+decltype(auto) ReadOptional(std::optional<T> &opt)
+{
+  return opt.__get();
+}
+
 // IJSValueReader.idl
 
 enum class JSValueType
