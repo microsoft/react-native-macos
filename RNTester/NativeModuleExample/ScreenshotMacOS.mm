@@ -134,12 +134,11 @@ struct ScreenshotManagerCxx
   void TakeScreenshot(
                       std::string,
                       ScreenshotArguments&&,
-                      const std::function<void(std::string)>& resolve,
-                      const std::function<void(std::string)>& reject
+                      winrt::Microsoft::ReactNative::ReactPromise<std::string> result
                       ) noexcept
   {
     // to be implemented
-    reject("Not implemented!");
+    result.Reject(L"Not implemented!");
   }
 };
 
