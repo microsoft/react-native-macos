@@ -265,6 +265,7 @@
 		B234FCC62512574800B788C9 /* JsiWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JsiWriter.cpp; path = TurboModuleCxx/JsiWriter.cpp; sourceTree = "<group>"; };
 		B234FCC925125D6800B788C9 /* TurboModulesProvider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TurboModulesProvider.cpp; path = TurboModuleCxx/TurboModulesProvider.cpp; sourceTree = "<group>"; };
 		B234FCCA25125D6800B788C9 /* TurboModulesProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TurboModulesProvider.h; path = TurboModuleCxx/TurboModulesProvider.h; sourceTree = "<group>"; };
+		B234FCCC25125F4000B788C9 /* TurboModuleRegistry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TurboModuleRegistry.h; path = TurboModuleCxx/TurboModuleRegistry.h; sourceTree = "<group>"; };
 		B2CEBEB5250D898600D92658 /* ReactPromise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactPromise.h; path = TurboModuleCxx/ReactPromise.h; sourceTree = "<group>"; };
 		B2CEBEB6250D898600D92658 /* ReactError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactError.h; path = TurboModuleCxx/ReactError.h; sourceTree = "<group>"; };
 		B2CEBEB7250D898600D92658 /* ReactPromise.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ReactPromise.cpp; path = TurboModuleCxx/ReactPromise.cpp; sourceTree = "<group>"; };
@@ -611,6 +612,7 @@
 		B20EF9F6250D22000039DCD8 /* TurboModuleCxx */ = {
 			isa = PBXGroup;
 			children = (
+				B234FCCC25125F4000B788C9 /* TurboModuleRegistry.h */,
 				B234FCC925125D6800B788C9 /* TurboModulesProvider.cpp */,
 				B234FCCA25125D6800B788C9 /* TurboModulesProvider.h */,
 				B234FCC32512574700B788C9 /* JsiReader.cpp */,
