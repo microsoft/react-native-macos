@@ -77,6 +77,7 @@
 		B21F0FCA250D4195004A26F2 /* ModuleRegistration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B21F0FC8250D4195004A26F2 /* ModuleRegistration.cpp */; };
 		B234FCC72512574800B788C9 /* JsiReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B234FCC32512574700B788C9 /* JsiReader.cpp */; };
 		B234FCC82512574800B788C9 /* JsiWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B234FCC62512574800B788C9 /* JsiWriter.cpp */; };
+		B234FCCB25125D6800B788C9 /* TurboModulesProvider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B234FCC925125D6800B788C9 /* TurboModulesProvider.cpp */; };
 		B2CEBEB8250D898600D92658 /* ReactPromise.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B2CEBEB7250D898600D92658 /* ReactPromise.cpp */; };
 		B2F2040A24E76D7600863BE1 /* ScreenshotMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = B2F2040924E76D7600863BE1 /* ScreenshotMacOS.mm */; };
 		CDFF3988A89A5269C488653F /* libPods-iosDeviceBuild.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 287A4762E82517B7FACCE7D3 /* libPods-iosDeviceBuild.a */; };
@@ -262,6 +263,8 @@
 		B234FCC42512574700B788C9 /* JsiReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JsiReader.h; path = TurboModuleCxx/JsiReader.h; sourceTree = "<group>"; };
 		B234FCC52512574800B788C9 /* JsiWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JsiWriter.h; path = TurboModuleCxx/JsiWriter.h; sourceTree = "<group>"; };
 		B234FCC62512574800B788C9 /* JsiWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JsiWriter.cpp; path = TurboModuleCxx/JsiWriter.cpp; sourceTree = "<group>"; };
+		B234FCC925125D6800B788C9 /* TurboModulesProvider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TurboModulesProvider.cpp; path = TurboModuleCxx/TurboModulesProvider.cpp; sourceTree = "<group>"; };
+		B234FCCA25125D6800B788C9 /* TurboModulesProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TurboModulesProvider.h; path = TurboModuleCxx/TurboModulesProvider.h; sourceTree = "<group>"; };
 		B2CEBEB5250D898600D92658 /* ReactPromise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactPromise.h; path = TurboModuleCxx/ReactPromise.h; sourceTree = "<group>"; };
 		B2CEBEB6250D898600D92658 /* ReactError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReactError.h; path = TurboModuleCxx/ReactError.h; sourceTree = "<group>"; };
 		B2CEBEB7250D898600D92658 /* ReactPromise.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ReactPromise.cpp; path = TurboModuleCxx/ReactPromise.cpp; sourceTree = "<group>"; };
@@ -608,6 +611,8 @@
 		B20EF9F6250D22000039DCD8 /* TurboModuleCxx */ = {
 			isa = PBXGroup;
 			children = (
+				B234FCC925125D6800B788C9 /* TurboModulesProvider.cpp */,
+				B234FCCA25125D6800B788C9 /* TurboModulesProvider.h */,
 				B234FCC32512574700B788C9 /* JsiReader.cpp */,
 				B234FCC42512574700B788C9 /* JsiReader.h */,
 				B234FCC62512574800B788C9 /* JsiWriter.cpp */,
@@ -1353,6 +1358,7 @@
 				B21F0FC3250D35A8004A26F2 /* JSValueTreeReader.cpp in Sources */,
 				B21F0FC4250D35A8004A26F2 /* JSValueTreeWriter.cpp in Sources */,
 				9F15345F233AB2C4006DFE44 /* AppDelegate.mm in Sources */,
+				B234FCCB25125D6800B788C9 /* TurboModulesProvider.cpp in Sources */,
 				38B2630C2444F628006AB4D5 /* FlexibleSizeExampleView.m in Sources */,
 				B234FCC82512574800B788C9 /* JsiWriter.cpp in Sources */,
 				B20EF9FC250D22480039DCD8 /* JSValue.cpp in Sources */,
