@@ -85,7 +85,7 @@ struct ScreenshotManagerCxx
       _reactContext.JSDispatcher().Post([screenshotImage, result]()
       {
         NSString* tempFilePath = SaveScreenshotToTempFile(screenshotImage);
-        result.Resolve(std::string([tempFilePath UTF8String]));
+        result.Resolve([tempFilePath UTF8String]);
       });
     });
   }
