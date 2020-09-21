@@ -155,10 +155,7 @@ struct IReactDispatcher : Windows::Foundation::IInspectable
 
 struct ReactDispatcherHelper
 {
-  static IReactDispatcher CreateSerialDispatcher() noexcept
-  {
-    VerifyElseCrash(false);
-  }
+  static IReactDispatcher CreateSerialDispatcher() noexcept;
 };
 
 // IReactNonAbiValue.idl
@@ -223,25 +220,10 @@ struct IReactPropertyBag : Windows::Foundation::IInspectable
 
 struct ReactPropertyBagHelper
 {
-  static IReactPropertyNamespace GlobalNamespace() noexcept
-  {
-    VerifyElseCrash(false);
-  }
-  
-  static IReactPropertyNamespace GetNamespace(const hstring& namespaceName) noexcept
-  {
-    VerifyElseCrash(false);
-  }
-  
-  static IReactPropertyName GetName(IReactPropertyNamespace ns, const hstring& localName) noexcept
-  {
-    VerifyElseCrash(false);
-  }
-  
-  static IReactPropertyBag CreatePropertyBag()
-  {
-    VerifyElseCrash(false);
-  }
+  static IReactPropertyNamespace GlobalNamespace() noexcept;
+  static IReactPropertyNamespace GetNamespace(const hstring& namespaceName) noexcept;
+  static IReactPropertyName GetName(IReactPropertyNamespace ns, const hstring& localName) noexcept;
+  static IReactPropertyBag CreatePropertyBag() noexcept;
 };
 
 // IReactNotificationService.idl
@@ -303,10 +285,7 @@ struct IReactNotificationService : Windows::Foundation::IInspectable
 
 struct ReactNotificationServiceHelper
 {
-  static IReactNotificationService CreateNotificationService()
-  {
-    VerifyElseCrash(false);
-  }
+  static IReactNotificationService CreateNotificationService() noexcept;
 };
 
 // IReactContext.idl
