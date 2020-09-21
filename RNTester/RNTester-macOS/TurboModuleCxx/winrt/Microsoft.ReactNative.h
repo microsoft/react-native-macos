@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Windows.Foundation.h"
+#include <ReactCommon/TurboModuleUtils.h>
 
 namespace winrt::Microsoft::ReactNative
 {
@@ -361,5 +362,9 @@ struct IReactModuleBuilder : Windows::Foundation::IInspectable
   
   WINRT_TO_MAC_MAKE_WINRT_INTERFACE(IReactModuleBuilder)
 };
+
+// MacOS Helper Functions
+
+extern IReactContext CreateMacOSReactContext(const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker) noexcept;
                  
 }

@@ -142,46 +142,6 @@ struct ScreenshotManagerCxx
   }
 };
 
-// winrt code will be move to another files once it is properly implemented
-
-namespace winrt::Microsoft::ReactNative
-{
-
-struct MacOSReactContext : implements<MacOSReactContext, IReactContext>
-{
-  IReactPropertyBag Properties() const noexcept
-  {
-    VerifyElseCrash(false);
-  }
-  
-  IReactNotificationService Notifications() const noexcept
-  {
-    VerifyElseCrash(false);
-  }
-  
-  IReactDispatcher UIDispatcher() const noexcept
-  {
-    VerifyElseCrash(false);
-  }
-  
-  IReactDispatcher JSDispatcher() const noexcept
-  {
-    VerifyElseCrash(false);
-  }
-  
-  void CallJSFunction(const hstring& moduleName, const hstring& methodName, const JSValueArgWriter& paramsArgWriter) noexcept
-  {
-    VerifyElseCrash(false);
-  }
-  
-  void EmitJSEvent(const hstring& eventEmitterName, const hstring& eventName, const JSValueArgWriter& paramsArgWriter) noexcept
-  {
-    VerifyElseCrash(false);
-  }
-};
-
-}
-
 @implementation ScreenshotManagerTurboModuleManagerDelegate {
   std::shared_ptr<winrt::Microsoft::ReactNative::TurboModulesProvider> provider;
   winrt::Microsoft::ReactNative::IReactContext reactContext;
@@ -194,7 +154,7 @@ struct MacOSReactContext : implements<MacOSReactContext, IReactContext>
   if (!provider)
   {
     provider = std::make_shared<winrt::Microsoft::ReactNative::TurboModulesProvider>();
-    reactContext = winrt::make<winrt::Microsoft::ReactNative::MacOSReactContext>();
+    reactContext = winrt::Microsoft::ReactNative::CreateMacOSReactContext(jsInvoker);
     provider->SetReactContext(reactContext);
     
     provider->AddModuleProvider(
