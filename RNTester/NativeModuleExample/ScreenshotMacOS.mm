@@ -9,7 +9,6 @@
 #import <React/RCTUIManager.h>
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
-#import <ReactCommon/TurboModuleUtils.h>
 #import <NativeModules.h>
 #import <TurboModulesProvider.h>
 

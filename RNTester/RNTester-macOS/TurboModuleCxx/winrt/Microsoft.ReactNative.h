@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Windows.Foundation.h"
-#include <ReactCommon/TurboModuleUtils.h>
+#include <ReactCommon/CallInvoker.h>
 
 namespace winrt::Microsoft::ReactNative
 {
