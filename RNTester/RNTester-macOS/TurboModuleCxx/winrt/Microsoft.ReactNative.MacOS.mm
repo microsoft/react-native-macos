@@ -12,8 +12,9 @@ struct MacOSUIDispatcher : implements<MacOSUIDispatcher, IReactDispatcher>
   }
   void Post(const ReactDispatcherCallback& callback) noexcept
   {
+    auto copy = callback;
     dispatch_async(dispatch_get_main_queue(), ^{
-      callback();
+      copy();
     });
   }
 };
