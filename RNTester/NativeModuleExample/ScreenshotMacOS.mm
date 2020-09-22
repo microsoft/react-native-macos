@@ -34,6 +34,7 @@ static NSImage* TakeScreenshotAsImage()
     windowID,
     imageOptions);
   NSImage* image = [[NSImage alloc] initWithCGImage:windowImage size:[keyWindow frame].size];
+  CGImageRelease(windowImage);
   
   return image;
 }
