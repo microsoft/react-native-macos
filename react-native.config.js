@@ -6,6 +6,7 @@
  *
  * @format
  */
+
 'use strict';
 
 const ios = require('@react-native-community/cli-platform-ios');
@@ -30,6 +31,42 @@ module.exports = {
       linkConfig: android.linkConfig,
       projectConfig: android.projectConfig,
       dependencyConfig: android.dependencyConfig,
+    },
+    macos: {
+      linkConfig: () => {
+        return {
+          isInstalled: (
+            _projectConfig /*ProjectConfig*/,
+            _package /*string*/,
+            _dependencyConfig /*DependencyConfig*/,
+          ) => false /*boolean*/,
+          register: (
+            _package /*string*/,
+            _dependencyConfig /*DependencyConfig*/,
+            _obj /*Object*/,
+            _projectConfig /*ProjectConfig*/,
+          ) => {},
+          unregister: (
+            _package /*string*/,
+            _dependencyConfig /*DependencyConfig*/,
+            _projectConfig /*ProjectConfig*/,
+            _dependencyConfigs /*Array<DependencyConfig>*/,
+          ) => {},
+          copyAssets: (
+            _assets /*string[]*/,
+            _projectConfig /*ProjectConfig*/,
+          ) => {},
+          unlinkAssets: (
+            _assets /*string[]*/,
+            _projectConfig /*ProjectConfig*/,
+          ) => {},
+        };
+      },
+      projectConfig: () => null,
+      dependencyConfig: () => null,
+      npmPackageName: isReactNativeMacOS
+        ? 'react-native-macos'
+        : 'react-native',
     },
   },
   /**

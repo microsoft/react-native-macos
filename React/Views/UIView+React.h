@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -118,10 +118,10 @@
 /**
  * Accessibility properties
  */
-@property (nonatomic, copy) NSString *accessibilityRole;
-@property (nonatomic, copy) NSArray <NSString *> *accessibilityStates;
+@property (nonatomic, copy) NSString *accessibilityRoleInternal; // TODO(OSS Candidate ISS#2710739): renamed so it doesn't conflict with -[NSAccessibility accessibilityRole].
 @property (nonatomic, copy) NSDictionary<NSString *, id> *accessibilityState;
 @property (nonatomic, copy) NSArray <NSDictionary *> *accessibilityActions;
+@property (nonatomic, copy) NSDictionary *accessibilityValueInternal;
 
 /**
  * Used in debugging to get a description of the view hierarchy rooted at

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -357,22 +357,36 @@ RCT_ENUM_CONVERTER(UITextFieldViewMode, (@{
   @"always": @(UITextFieldViewModeAlways),
 }), UITextFieldViewModeNever, integerValue)
 
-RCT_ENUM_CONVERTER(UIKeyboardType, (@{
-  @"default": @(UIKeyboardTypeDefault),
-  @"ascii-capable": @(UIKeyboardTypeASCIICapable),
-  @"numbers-and-punctuation": @(UIKeyboardTypeNumbersAndPunctuation),
-  @"url": @(UIKeyboardTypeURL),
-  @"number-pad": @(UIKeyboardTypeNumberPad),
-  @"phone-pad": @(UIKeyboardTypePhonePad),
-  @"name-phone-pad": @(UIKeyboardTypeNamePhonePad),
-  @"email-address": @(UIKeyboardTypeEmailAddress),
-  @"decimal-pad": @(UIKeyboardTypeDecimalPad),
-  @"twitter": @(UIKeyboardTypeTwitter),
-  @"web-search": @(UIKeyboardTypeWebSearch),
-  @"ascii-capable-number-pad": @(UIKeyboardTypeASCIICapableNumberPad),
-  // Added for Android compatibility
-  @"numeric": @(UIKeyboardTypeDecimalPad),
-}), UIKeyboardTypeDefault, integerValue)
++ (UIKeyboardType)UIKeyboardType:(id)json RCT_DYNAMIC
+{
+  static NSDictionary<NSString *, NSNumber *> *mapping;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    NSMutableDictionary<NSString *, NSNumber *> *temporaryMapping = [NSMutableDictionary dictionaryWithDictionary:@{
+          @"default": @(UIKeyboardTypeDefault),
+          @"ascii-capable": @(UIKeyboardTypeASCIICapable),
+          @"numbers-and-punctuation": @(UIKeyboardTypeNumbersAndPunctuation),
+          @"url": @(UIKeyboardTypeURL),
+          @"number-pad": @(UIKeyboardTypeNumberPad),
+          @"phone-pad": @(UIKeyboardTypePhonePad),
+          @"name-phone-pad": @(UIKeyboardTypeNamePhonePad),
+          @"email-address": @(UIKeyboardTypeEmailAddress),
+          @"decimal-pad": @(UIKeyboardTypeDecimalPad),
+          @"twitter": @(UIKeyboardTypeTwitter),
+          @"web-search": @(UIKeyboardTypeWebSearch),
+          // Added for Android compatibility
+          @"numeric": @(UIKeyboardTypeDecimalPad),
+        }];
+    // TODO: T56867629
+    if (@available(iOS 10.0, tvOS 10.0, *)) {
+      temporaryMapping[@"ascii-capable-number-pad"] = @(UIKeyboardTypeASCIICapableNumberPad);
+    }
+    mapping = temporaryMapping;
+  });
+  
+  UIKeyboardType type = RCTConvertEnumValue("UIKeyboardType", mapping, @(UIKeyboardTypeDefault), json).integerValue;
+  return type;
+}
 
 #if !TARGET_OS_TV
 RCT_MULTI_ENUM_CONVERTER(UIDataDetectorTypes, (@{
@@ -1131,22 +1145,50 @@ RCT_ENUM_CONVERTER(RCTAnimationType, (@{
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 + (NSString*)accessibilityRoleFromTrait:(NSString*)trait
 {
-  // a subset of iOS accessibilityTraits map to macOS accessiblityRoles:
-  if ([trait isEqualToString:@"button"]) {
-    return NSAccessibilityButtonRole;
-  } else if ([trait isEqualToString:@"text"]) {
-    return NSAccessibilityStaticTextRole;
-  } else if ([trait isEqualToString:@"link"]) {
-    return NSAccessibilityLinkRole;
-  } else if ([trait isEqualToString:@"image"]) {
-    return NSAccessibilityImageRole;
-    // a set of RN accessibilityTraits are macOS specific accessiblity roles:
-  }	else if ([trait isEqualToString:@"group"]) {
-    return NSAccessibilityGroupRole;
-  } else if ([trait isEqualToString:@"list"]) {
-    return NSAccessibilityListRole;
+  static NSDictionary<NSString *, NSString *> *traitOrRoleToAccessibilityRole;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    traitOrRoleToAccessibilityRole = @{
+      // from https://reactnative.dev/docs/accessibility#accessibilityrole
+      @"adjustable": NSAccessibilitySliderRole,
+      @"alert": NSAccessibilityStaticTextRole, // no exact match on macOS
+      @"button": NSAccessibilityButtonRole, // also a legacy iOS accessibilityTraits
+      @"checkbox": NSAccessibilityCheckBoxRole,
+      @"combobox": NSAccessibilityComboBoxRole,
+      @"header": NSAccessibilityStaticTextRole, // no exact match on macOS
+      @"image": NSAccessibilityImageRole, // also a legacy iOS accessibilityTraits
+      @"imagebutton": NSAccessibilityButtonRole, // no exact match on macOS
+      @"keyboardkey": NSAccessibilityButtonRole, // no exact match on macOS
+      @"link": NSAccessibilityLinkRole, // also a legacy iOS accessibilityTraits
+      @"menu": NSAccessibilityMenuRole,
+      @"menubar": NSAccessibilityMenuBarRole,
+      @"menuitem": NSAccessibilityMenuBarItemRole,
+      @"none": NSAccessibilityUnknownRole,
+      @"progressbar": NSAccessibilityProgressIndicatorRole,
+      @"radio": NSAccessibilityRadioButtonRole,
+      @"radiogroup": NSAccessibilityRadioGroupRole,
+      @"scrollbar": NSAccessibilityScrollBarRole,
+      @"search": NSAccessibilityTextFieldRole, // no exact match on macOS
+      @"spinbutton": NSAccessibilityIncrementorRole,
+      @"summary": NSAccessibilityStaticTextRole, // no exact match on macOS
+      @"switch": NSAccessibilityCheckBoxRole, // no exact match on macOS
+      @"tab": NSAccessibilityButtonRole, // no exact match on macOS
+      @"tablist": NSAccessibilityTabGroupRole,
+      @"text": NSAccessibilityStaticTextRole, // also a legacy iOS accessibilityTraits
+      @"timer": NSAccessibilityStaticTextRole, // no exact match on macOS
+      @"toolbar": NSAccessibilityToolbarRole,
+      // Roles/traits that are macOS specific and are used by some of the core components (Lists):
+      @"disclosure": NSAccessibilityDisclosureTriangleRole,
+      @"group": NSAccessibilityGroupRole,
+      @"list": NSAccessibilityListRole,
+    };
+  });
+
+  NSString *role = [traitOrRoleToAccessibilityRole valueForKey:trait];
+  if (role == nil) {
+    role = NSAccessibilityUnknownRole;
   }
-  return NSAccessibilityUnknownRole;
+  return role;
 }
 
 + (NSString *)accessibilityRoleFromTraits:(id)json

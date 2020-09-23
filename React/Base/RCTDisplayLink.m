@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -15,6 +15,11 @@
 #import "RCTFrameUpdate.h"
 #import "RCTModuleData.h"
 #import "RCTProfile.h"
+
+#if TARGET_OS_OSX // TODO(macOS, https://github.com/microsoft/react-native-macos/issues/533)
+// To compile in Xcode 12 beta 4 on macOS, we need to explicitly pull in the framework to get the definition for CACurrentMediaTime()
+#import <Quartz/Quartz.h>
+#endif // TODO(macOS, https://github.com/microsoft/react-native-macos/issues/533)
 
 #define RCTAssertRunLoop() \
   RCTAssert(_runLoop == [NSRunLoop currentRunLoop], \
@@ -88,6 +93,11 @@
   [_jsDisplayLink addToRunLoop:runLoop forMode:NSRunLoopCommonModes];
 }
 
+- (void)dealloc
+{
+  [self invalidate];
+}
+
 - (void)invalidate
 {
   [_jsDisplayLink invalidate];
@@ -113,12 +123,15 @@
   for (RCTModuleData *moduleData in _frameUpdateObservers) {
     id<RCTFrameUpdateObserver> observer = (id<RCTFrameUpdateObserver>)moduleData.instance;
     if (!observer.paused) {
-      RCTProfileBeginFlowEvent();
-
-      [self dispatchBlock:^{
-        RCTProfileEndFlowEvent();
+      if (moduleData.methodQueue) {
+        RCTProfileBeginFlowEvent();
+        [self dispatchBlock:^{
+          RCTProfileEndFlowEvent();
+          [observer didUpdateFrame:frameUpdate];
+        } queue:moduleData.methodQueue];
+      } else {
         [observer didUpdateFrame:frameUpdate];
-      } queue:moduleData.methodQueue];
+      }
     }
   }
 

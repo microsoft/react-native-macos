@@ -27,37 +27,7 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: false # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
-      - task: UseNode@1
-        inputs:
-          version: '12.x'
-
-      - template: templates/apple-droid-node-patching.yml
-        parameters:
-          apply_office_patches: true
-
-      # Install NuGet
-      - task: CmdLine@2
-        inputs:
-          script: mkdir $(System.DefaultWorkingDirectory)/nuget-bin/ && curl -o $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
-
-
-      # This is currently required as the command task (strangely) always runs elevated .. 
-      # which makes all the files touched by the above patching step unreadable by following non-command tasks without sudo. 
-      # This makes all the files readable.
-      - task: CmdLine@2
-        displayName: chmod
-        inputs:
-          script: chmod -R +r .
-
-      - task: CmdLine@2
-        displayName: "Rename package to react-native"
-        inputs:
-          script: node .ado/renamePackageForOffice.js
-
-      - task: CmdLine@2
-        displayName: npm install
-        inputs:
-          script: npm install
+      - template: templates/android-build-office.yml
 
       - task: CmdLine@2
         displayName: Remove RNTesterApp.android.bundle
@@ -72,7 +42,7 @@ jobs:
       - task: CmdLine@2
         displayName: gradlew installArchives
         inputs:
-          script: ./gradlew installArchives -Pparam="excludeLibs"
+          script: REACT_NATIVE_DEPENDENCIES=$(System.DefaultWorkingDirectory)/build_deps ./gradlew installArchives -Pparam="excludeLibs"
 
       - template: templates\prep-android-nuget.yml
 
@@ -81,6 +51,9 @@ jobs:
         displayName: 'Verify NuGet can be packed'
         inputs:
           script: NDK=ndk`cat ${ANDROID_SDK_ROOT}/ndk-bundle/source.properties 2>&1 | grep Pkg.Revision | awk '{ print $3}' | awk -F. '{ print $1 }'`; mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe pack $(System.DefaultWorkingDirectory)/ReactAndroid/ReactAndroid.nuspec -OutputDirectory $(System.DefaultWorkingDirectory) -Properties buildNumber=$(buildNumber)-$NDK;commitId=$(Build.SourceVersion)
+
+      - script: '[ -f $(System.DefaultWorkingDirectory)/*.nupkg ]'
+        displayName: Verify that NuGet was actually created
 
       - task: CmdLine@2
         displayName: 'Npm pack'
