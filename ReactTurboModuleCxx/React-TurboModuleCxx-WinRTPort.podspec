@@ -23,8 +23,7 @@ Pod::Spec.new do |s|
   s.source_files           = "WinRTPort/*.{h,cpp,mm}"
   s.library                = "stdc++"
   s.pod_target_xcconfig    = { "USE_HEADERMAP" => "YES",
-                               "CLANG_CXX_LANGUAGE_STANDARD" => "c++17" ,
-                               "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/Headers/Private/React-callinvoker\"" }
+                               "CLANG_CXX_LANGUAGE_STANDARD" => "c++17" }
   s.header_dir             = "winrt"
 
   s.dependency "React-callinvoker", version

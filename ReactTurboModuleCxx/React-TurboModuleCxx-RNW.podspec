@@ -28,8 +28,7 @@ Pod::Spec.new do |s|
                              "vnext/Microsoft.ReactNative.Cxx/NativeModules.h"
   s.library                = "stdc++"
   s.pod_target_xcconfig    = { "USE_HEADERMAP" => "YES",
-                               "CLANG_CXX_LANGUAGE_STANDARD" => "c++17" ,
-                               "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/RCT-Folly\"" "\"$(PODS_ROOT)/Headers/Private/React-callinvoker\"" "\"$(PODS_ROOT)/Headers/Private/ReactCommon\"" }
+                               "CLANG_CXX_LANGUAGE_STANDARD" => "c++17" }
 
   s.dependency "RCT-Folly", folly_version
   s.dependency "React-callinvoker", version
