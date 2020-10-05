@@ -24,4 +24,6 @@ Pod::Spec.new do |s|
 
   s.dependency "React-callinvoker", version
   s.dependency "ReactCommon/turbomodule/core", version
+  s.dependency "React-TurboModuleCxx-WinRTShared", version
+  s.dependency "React-TurboModuleCxx-WinRTPort", version
 end
