@@ -20,7 +20,12 @@ Pod::Spec.new do |s|
   s.source_files           = "vnext/Shared/TurboModuleRegistry.h",
                              "vnext/Microsoft.ReactNative/JsiReader.{h,cpp}",
                              "vnext/Microsoft.ReactNative/JsiWriter.{h,cpp}",
-                             "vnext/Microsoft.ReactNative/TurboModulesProvider.{h,cpp}"
+                             "vnext/Microsoft.ReactNative/TurboModulesProvider.{h,cpp}",
+                             "vnext/Microsoft.ReactNative.Cxx/JSValue*.{h,cpp}",
+                             "vnext/Microsoft.ReactNative.Cxx/Module*.{h,cpp}",
+                             "vnext/Microsoft.ReactNative.Cxx/React*.{h,cpp}",
+                             "vnext/Microsoft.ReactNative.Cxx/StructInfo.h",
+                             "vnext/Microsoft.ReactNative.Cxx/NativeModules.h"
   s.library                = "stdc++"
   s.pod_target_xcconfig    = { "USE_HEADERMAP" => "YES",
                                "CLANG_CXX_LANGUAGE_STANDARD" => "c++17" ,
