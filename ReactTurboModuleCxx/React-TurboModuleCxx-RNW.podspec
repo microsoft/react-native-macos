@@ -12,11 +12,11 @@ Pod::Spec.new do |s|
   s.author                 = "Microsoft Corporation"
   s.platforms              = { :ios => "10.0", :tvos => "10.0", :osx => "10.13" }
   s.source                 = { :git => 'https://github.com/microsoft/react-native-windows.git',
-                               :commit => "1f0f5371fc96ad42971a6dc1cee8f530d178d5d2" }
+                               :commit => "d9077991441889ddaa18a8af6a2cc8514ca7714d" }
   s.source_files           = "vnext/Shared/TurboModuleRegistry.h",
-                             "vnext/Microsoft.React/JsiReader.{h,cpp}",
-                             "vnext/Microsoft.React/JsiWriter.{h,cpp}",
-                             "vnext/Microsoft.React/TurboModulesProvider.{h,cpp}"
+                             "vnext/Microsoft.ReactNative/JsiReader.{h,cpp}",
+                             "vnext/Microsoft.ReactNative/JsiWriter.{h,cpp}",
+                             "vnext/Microsoft.ReactNative/TurboModulesProvider.{h,cpp}"
   s.library                = "stdc++"
   s.pod_target_xcconfig    = { "USE_HEADERMAP" => "YES",
                                "CLANG_CXX_LANGUAGE_STANDARD" => "c++17" ,
