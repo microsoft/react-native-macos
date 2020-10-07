@@ -17,6 +17,21 @@
 
 static NSString *const kOpenURLNotification = @"RCTOpenURLNotification";
 
+#if TARGET_OS_OSX // TODO: https://github.com/microsoft/react-native-macos/issues/632
+NSString *const RCTOpenURLNotification = @"RCTOpenURLNotification";
+
+static NSString *initialURL = nil;
+static BOOL moduleInitalized = NO;
+
+static void postNotificationWithURL(NSString *url, id sender)
+{
+  NSDictionary<NSString *, id> *payload = @{@"url": url};
+  [[NSNotificationCenter defaultCenter] postNotificationName:RCTOpenURLNotification
+                                                        object:sender
+                                                      userInfo:payload];
+}
+#endif // TODO: https://github.com/microsoft/react-native-macos/issues/632
+
 static void postNotificationWithURL(NSURL *URL, id sender)
 {
   NSDictionary<NSString *, id> *payload = @{@"url": URL.absoluteString};
@@ -55,6 +70,7 @@ RCT_EXPORT_MODULE()
   return @[@"url"];
 }
 
+#if !TARGET_OS_OSX // TODO: https://github.com/microsoft/react-native-macos/issues/632
 + (BOOL)application:(UIApplication *)app
             openURL:(NSURL *)URL
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
@@ -62,6 +78,21 @@ RCT_EXPORT_MODULE()
   postNotificationWithURL(URL, self);
   return YES;
 }
+#else
++ (void)getUrlEventHandler:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
+{
+    // extract url value from the event
+    NSString* url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+
+    // If the application was launched via URL, this handler will be called before
+    // the module is initialized by the bridge. Store the initial URL, becase we are not listening to the notification yet.
+    if (!moduleInitalized && initialURL == nil) {
+        initialURL = url;
+    }
+
+    postNotificationWithURL(url, self);
+}
+#endif // TODO: https://github.com/microsoft/react-native-macos/issues/632
 
 // Corresponding api deprecated in iOS 9
 + (BOOL)application:(UIApplication *)application
@@ -92,13 +123,31 @@ continueUserActivity:(NSUserActivity *)userActivity
 
 - (void)handleOpenURLNotification:(NSNotification *)notification
 {
+#if !TARGET_OS_OSX // TODO: https://github.com/microsoft/react-native-macos/issues/632
+  // foreground top level window, need to grab it like this, because [NSApp mainWindow] returns nil when the app is hidden
+  // and another app is maximized
+  [NSApp activateIgnoringOtherApps:YES];
+  NSWindow *lastWindow = [[NSApp windows] lastObject];
+  [lastWindow makeKeyAndOrderFront:nil];
+
+  [self sendEventWithName:@"url" body:notification.userInfo[@"url"]];
+#else
   [self sendEventWithName:@"url" body:notification.userInfo];
+#endif // TODO: https://github.com/microsoft/react-native-macos/issues/632
 }
 
 RCT_EXPORT_METHOD(openURL:(NSURL *)URL
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
+#if TARGET_OS_OSX // TODO: https://github.com/microsoft/react-native-macos/issues/632
+  BOOL result = [[NSWorkspace sharedWorkspace] openURL:URL];
+  if (result) {
+      resolve(@YES);
+  } else {
+      reject(RCTErrorUnspecified, [NSString stringWithFormat:@"Unable to open URL: %@", URL], nil);
+  }
+#else
   if (@available(iOS 10.0, *)) {
     [RCTSharedApplication() openURL:URL options:@{} completionHandler:^(BOOL success) {
       if (success) {
@@ -140,13 +189,16 @@ RCT_EXPORT_METHOD(openURL:(NSURL *)URL
     }
 #endif
   }
-
+#endif // !TARGET_OS_OSX
 }
 
 RCT_EXPORT_METHOD(canOpenURL:(NSURL *)URL
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(__unused RCTPromiseRejectBlock)reject)
 {
+#if TARGET_OS_OSX // TODO: https://github.com/microsoft/react-native-macos/issues/632
+  resolve(@YES);
+#else
   if (RCTRunningInAppExtension()) {
     // Technically Today widgets can open urls, but supporting that would require
     // a reference to the NSExtensionContext
@@ -171,11 +223,15 @@ RCT_EXPORT_METHOD(canOpenURL:(NSURL *)URL
   } else {
     resolve(@NO);
   }
+#endif // TODO: https://github.com/microsoft/react-native-macos/issues/632
 }
 
 RCT_EXPORT_METHOD(getInitialURL:(RCTPromiseResolveBlock)resolve
                   reject:(__unused RCTPromiseRejectBlock)reject)
 {
+#if TARGET_OS_OSX // TODO: https://github.com/microsoft/react-native-macos/issues/632
+    resolve(RCTNullIfNil(initialURL));
+#else
   NSURL *initialURL = nil;
   if (self.bridge.launchOptions[UIApplicationLaunchOptionsURLKey]) {
     initialURL = self.bridge.launchOptions[UIApplicationLaunchOptionsURLKey];
@@ -187,11 +243,13 @@ RCT_EXPORT_METHOD(getInitialURL:(RCTPromiseResolveBlock)resolve
     }
   }
   resolve(RCTNullIfNil(initialURL.absoluteString));
+#endif // !TARGET_OS_OSX
 }
 
 RCT_EXPORT_METHOD(openSettings:(RCTPromiseResolveBlock)resolve
                   reject:(__unused RCTPromiseRejectBlock)reject)
 {
+#if !TARGET_OS_OSX // TODO: https://github.com/microsoft/react-native-macos/issues/632
   NSURL *url = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
   if (@available(iOS 10.0, *)) {
     [RCTSharedApplication() openURL:url options:@{} completionHandler:^(BOOL success) {
@@ -212,6 +270,7 @@ RCT_EXPORT_METHOD(openSettings:(RCTPromiseResolveBlock)resolve
    }
 #endif
   }
+#endif // !TARGET_OS_OSX
 }
 
 RCT_EXPORT_METHOD(sendIntent:(NSString *)action
