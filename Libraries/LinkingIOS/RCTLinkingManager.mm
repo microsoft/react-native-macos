@@ -189,7 +189,7 @@ RCT_EXPORT_METHOD(openURL:(NSURL *)URL
     }
 #endif
   }
-#endif // !TARGET_OS_OSX
+#endif // TODO: https://github.com/microsoft/react-native-macos/issues/632
 }
 
 RCT_EXPORT_METHOD(canOpenURL:(NSURL *)URL
@@ -243,7 +243,7 @@ RCT_EXPORT_METHOD(getInitialURL:(RCTPromiseResolveBlock)resolve
     }
   }
   resolve(RCTNullIfNil(initialURL.absoluteString));
-#endif // !TARGET_OS_OSX
+#endif // TODO: https://github.com/microsoft/react-native-macos/issues/632
 }
 
 RCT_EXPORT_METHOD(openSettings:(RCTPromiseResolveBlock)resolve
@@ -270,7 +270,7 @@ RCT_EXPORT_METHOD(openSettings:(RCTPromiseResolveBlock)resolve
    }
 #endif
   }
-#endif // !TARGET_OS_OSX
+#endif // TODO: https://github.com/microsoft/react-native-macos/issues/632
 }
 
 RCT_EXPORT_METHOD(sendIntent:(NSString *)action
