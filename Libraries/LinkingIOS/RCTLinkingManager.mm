@@ -123,7 +123,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 
 - (void)handleOpenURLNotification:(NSNotification *)notification
 {
-#if !TARGET_OS_OSX // TODO: https://github.com/microsoft/react-native-macos/issues/632
+#if TARGET_OS_OSX // TODO: https://github.com/microsoft/react-native-macos/issues/632
   // foreground top level window, need to grab it like this, because [NSApp mainWindow] returns nil when the app is hidden
   // and another app is maximized
   [NSApp activateIgnoringOtherApps:YES];
