@@ -131,13 +131,34 @@
 
 - (void)hide
 {
+  if (NSApp.modalWindow == self) {
+    [NSApp stopModal];
+  }
   [self close];
 }
 
 - (void)show
 {
-  [NSApp activateIgnoringOtherApps:YES];
-  [self makeKeyAndOrderFront:nil];
+  if (!RCTRunningInTestEnvironment()) {
+    // Run the modal loop outside of the dispatch queue because it is not reentrant.
+    [self performSelectorOnMainThread:@selector(_showModal) withObject:nil waitUntilDone:NO];
+  }
+  else {
+    [NSApp activateIgnoringOtherApps:YES];
+    [self makeKeyAndOrderFront:nil];
+  }
+}
+
+- (void)_showModal
+{
+  NSModalSession session = [NSApp beginModalSessionForWindow:self];
+
+  while ([NSApp runModalSession:session] == NSModalResponseContinue) {
+    // Spin the runloop so that the main dispatch queue is processed.
+    [[NSRunLoop currentRunLoop] limitDateForMode:NSDefaultRunLoopMode];
+  }
+
+  [NSApp endModalSession:session];
 }
 
 @end
