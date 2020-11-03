@@ -59,7 +59,7 @@
   return self;
 }
 
-- (void)dealloc
+- (void)hide
 {
   [RCTSharedApplication().delegate.window makeKeyWindow];
 }
@@ -108,9 +108,12 @@
   NSRect maximumFrame = minimumFrame;
 
   if ((self = [self initWithContentRect:minimumFrame
-                              styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskResizable
+                              styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskResizable
                                 backing:NSBackingStoreBuffered
                                   defer:YES])) {
+    // The instance already gets released when we `nil` it from the `-[RCTLogBox hide]` method.
+    self.releasedWhenClosed = NO;
+
     _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
 
     [_surface start];
@@ -126,10 +129,10 @@
   return self;
 }
 
-//- (void)dealloc
-//{
-//  [RCTSharedApplication().delegate.window makeKeyWindow];
-//}
+- (void)hide
+{
+  [self close];
+}
 
 - (void)show
 {
@@ -183,6 +186,7 @@ RCT_EXPORT_METHOD(hide)
       if (!strongSelf) {
         return;
       }
+      [strongSelf->_window hide];
       strongSelf->_window = nil;
     });
   }
