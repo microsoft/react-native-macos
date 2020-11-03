@@ -111,9 +111,6 @@
                               styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskResizable
                                 backing:NSBackingStoreBuffered
                                   defer:YES])) {
-    // The instance already gets released when we `nil` it from the `-[RCTLogBox hide]` method.
-    self.releasedWhenClosed = NO;
-
     _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
 
     [_surface start];
@@ -134,7 +131,7 @@
   if (NSApp.modalWindow == self) {
     [NSApp stopModal];
   }
-  [self close];
+  [self orderOut:nil];
 }
 
 - (void)show
