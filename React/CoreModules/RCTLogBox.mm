@@ -97,23 +97,17 @@
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge
 {
-//  NSRect minimumFrame = NSMakeRect(0, 0, 500, 500);
-//  // TODO: Figure out why we actually need to specify a max size.
-//  NSRect maximumFrame = NSMakeRect(0, 0, CGFLOAT_MAX, CGFLOAT_MAX);
-//  for (NSScreen *screen in [NSScreen screens]) {
-//    maximumFrame = NSIntersectionRect(maximumFrame, (NSRect){ NSZeroPoint, screen.visibleFrame.size });
-//  }
-
   NSRect minimumFrame = NSMakeRect(0, 0, 600, 800);
   NSRect maximumFrame = minimumFrame;
 
   if ((self = [self initWithContentRect:minimumFrame
-                              styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskResizable
+                              styleMask:NSWindowStyleMaskTitled
                                 backing:NSBackingStoreBuffered
                                   defer:YES])) {
     _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
 
     [_surface start];
+    // TODO: It is not entirely clear to me why there needs to be a range. For now we'll use a fixed size.
     [_surface setMinimumSize:minimumFrame.size maximumSize:maximumFrame.size];
 
     if (![_surface synchronouslyWaitForStage:RCTSurfaceStageSurfaceDidInitialMounting timeout:1]) {
