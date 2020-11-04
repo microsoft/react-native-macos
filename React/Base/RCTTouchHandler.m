@@ -136,7 +136,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
     } else {
       _shouldSendMouseUpOnSystemBehalf = NO;
     }
-    touchLocation = [targetView convertPoint:touchLocation fromView:self.view];
+    touchLocation = [targetView convertPoint:touchLocation fromView:self.view.superview];
     
     while (targetView) {
       BOOL isUserInteractionEnabled = NO;
