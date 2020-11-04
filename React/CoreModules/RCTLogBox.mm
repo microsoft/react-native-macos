@@ -74,20 +74,6 @@
 
 #else // [TODO(macOS ISS#2323203)
 
-@interface _RCTLogBoxView : NSView
-@end
-
-@implementation _RCTLogBoxView
-- (BOOL)isFlipped
-{
-  return YES;
-}
-- (NSView *)hitTest:(NSPoint)point
-{
-  return self.subviews[0];
-}
-@end
-
 @interface RCTLogBoxWindow : NSWindow
 @end
 
@@ -97,18 +83,15 @@
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge
 {
-  NSRect minimumFrame = NSMakeRect(0, 0, 600, 800);
-  NSRect maximumFrame = minimumFrame;
-
-  if ((self = [self initWithContentRect:minimumFrame
+  NSRect bounds = NSMakeRect(0, 0, 600, 800);
+  if ((self = [self initWithContentRect:bounds
                               styleMask:NSWindowStyleMaskTitled
                                 backing:NSBackingStoreBuffered
                                   defer:YES])) {
     _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
 
     [_surface start];
-    // TODO: It is not entirely clear to me why there needs to be a range. For now we'll use a fixed size.
-    [_surface setMinimumSize:minimumFrame.size maximumSize:maximumFrame.size];
+    [_surface setSize:bounds.size];
 
     if (![_surface synchronouslyWaitForStage:RCTSurfaceStageSurfaceDidInitialMounting timeout:1]) {
       RCTLogInfo(@"Failed to mount LogBox within 1s");
