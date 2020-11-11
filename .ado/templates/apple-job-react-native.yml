@@ -14,10 +14,6 @@ steps:
       rm -rf $(Build.Repository.LocalPath)/DerivedData
     displayName: 'Clean DerivedData'
 
-  # Install the required components specified in the Brewfile file.
-  - script: 'brew update'
-    displayName: 'brew update'
-
   - script: 'brew bundle'
     displayName: 'brew bundle'
 
@@ -30,6 +26,10 @@ steps:
 
   # Task Group: Xcode select proper version
   - template: apple-xcode-select.yml
+
+  - template: apple-droid-node-patching.yml
+    parameters:
+      apply_office_patches: $(apply_office_patches)
 
   - task: CmdLine@2
     displayName: yarn install
