@@ -5,7 +5,6 @@ exports[`TouchableHighlight renders correctly 1`] = `
   focusable={true}
   accessible={true}
   enableFocusRing={true}
-  focusable={false}
   onClick={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}

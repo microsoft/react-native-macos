@@ -324,7 +324,7 @@ class TouchableHighlight extends React.Component<Props, State> {
         nextFocusLeft={this.props.nextFocusLeft}
         nextFocusRight={this.props.nextFocusRight}
         nextFocusUp={this.props.nextFocusUp}
-        // [macOS We need to reconcile between focusable and acceptsKeyboardFocus
+        // [macOS #656 We need to reconcile between focusable and acceptsKeyboardFocus
         // (e.g. if one is explicitly disabled, we shouldn't implicitly enable the
         // other on the underlying view). Prefer passing acceptsKeyboardFocus if
         // passed explicitly to preserve original behavior, and trigger view warnings.

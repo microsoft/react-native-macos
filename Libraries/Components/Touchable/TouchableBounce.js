@@ -168,7 +168,7 @@ class TouchableBounce extends React.Component<Props, State> {
         nativeID={this.props.nativeID}
         testID={this.props.testID}
         hitSlop={this.props.hitSlop}
-        // [macOS We need to reconcile between focusable and acceptsKeyboardFocus
+        // [macOS #656 We need to reconcile between focusable and acceptsKeyboardFocus
         // (e.g. if one is explicitly disabled, we shouldn't implicitly enable the
         // other on the underlying view). Prefer passing acceptsKeyboardFocus if
         // passed explicitly to preserve original behavior, and trigger view warnings.
