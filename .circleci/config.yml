@@ -652,6 +652,15 @@ workflows:
             branches:
               # TODO(macOS ISS#2323203): disable this test which is redundant to Azure Devops test and in the fork it fails because of Microsoft's V8 upgrade to Android
               ignore: /.*/
+      - test_windows:
+          filters:
+            branches:
+              # [TODO(macOS ISS#2323203): disable this test which requires a CCI plan.
+              # ignore: gh-pages
+              ignore: /.*/
+              # ]TODO(macOS ISS#2323203)
+          run_disabled_tests: false
+
   releases:
     jobs:
       - setup:

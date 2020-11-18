@@ -16,7 +16,7 @@ steps:
 
   - template: apple-node-setup.yml
 
-  # Task Group: XCode select proper version
+  # Task Group: Xcode select proper version
   - template: apple-xcode-select.yml
 
   - template: apple-droid-node-patching.yml
