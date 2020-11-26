@@ -135,6 +135,10 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) RCTDirectEventBlock onDragEnter;
 @property (nonatomic, copy) RCTDirectEventBlock onDragLeave;
 @property (nonatomic, copy) RCTDirectEventBlock onDrop;
+
+// Keyboarding events
+@property (nonatomic, copy) RCTBubblingEventBlock onKeyDown;
+@property (nonatomic, copy) RCTBubblingEventBlock onKeyUp;
 #endif // ]TODO(macOS ISS#2323203)
 
 /**

@@ -152,6 +152,13 @@ export type FocusEvent = SyntheticEvent<
   |}>,
 >;
 
+export type KeyEvent = SyntheticEvent<
+  $ReadOnly<{|
+    characters: string,
+    modifier: number,
+  |}>,
+>;
+
 export type MouseEvent = SyntheticEvent<
   $ReadOnly<{|
     clientX: number,
