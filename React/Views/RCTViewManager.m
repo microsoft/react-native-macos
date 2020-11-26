@@ -112,6 +112,8 @@ RCT_EXPORT_MODULE()
     @"change",
     @"focus",
     @"blur",
+    @"keyDown",
+    @"keyUp",
     @"submitEditing",
     @"endEditing",
     @"keyPress",
@@ -452,6 +454,8 @@ RCT_EXPORT_VIEW_PROPERTY(onDragEnter, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDrop, RCTDirectEventBlock)
 #endif // ]TODO(macOS ISS#2323203)
+RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTBubblingEventBlock) // macOS keyboard events
+RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTBubblingEventBlock) // macOS keyboard events
 
 #pragma mark - ShadowView properties
 

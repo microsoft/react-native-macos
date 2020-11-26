@@ -165,6 +165,16 @@ class TouchableOpacity extends React.Component<Props, State> {
           this.props.onFocus(event);
         }
       },
+      onKeyDown: event => {
+        if (this.props.onKeyDown != null) {
+          this.props.onKeyDown(event);
+        }
+      },
+      onKeyUp: event => {
+        if (this.props.onKeyUp != null) {
+          this.props.onKeyUp(event);
+        }
+      },
       onLongPress: this.props.onLongPress,
       onPress: this.props.onPress,
       onPressIn: event => {
@@ -268,6 +278,8 @@ class TouchableOpacity extends React.Component<Props, State> {
         onDrop={this.props.onDrop}
         onFocus={this.props.onFocus}
         onBlur={this.props.onBlur}
+        onKeyDown={this.props.onKeyDown}
+        onKeyUp={this.props.onKeyUp}
         draggedTypes={this.props.draggedTypes} // ]TODO(macOS ISS#2323203)
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>

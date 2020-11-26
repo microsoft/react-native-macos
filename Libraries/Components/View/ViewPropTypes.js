@@ -18,6 +18,7 @@ import type {
   Layout,
   LayoutEvent,
   ScrollEvent, // TODO(macOS ISS#2323203)
+  KeyEvent,
 } from '../../Types/CoreEventTypes';
 import type {EdgeInsetsProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {Node} from 'react';
@@ -41,6 +42,8 @@ export type ViewLayoutEvent = LayoutEvent;
 type BubblingEventProps = $ReadOnly<{|
   onBlur?: ?(event: BlurEvent) => mixed,
   onFocus?: ?(event: FocusEvent) => mixed,
+  onKeyDown?: ?(event: KeyEvent) => mixed,
+  onKeyUp?: ?(event: KeyEvent) => mixed,
 |}>;
 
 type DirectEventProps = $ReadOnly<{|

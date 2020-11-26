@@ -17,6 +17,7 @@ import {normalizeRect, type RectOrSize} from '../StyleSheet/Rect';
 import type {
   BlurEvent,
   FocusEvent,
+  KeyEvent,
   PressEvent,
   MouseEvent,
 } from '../Types/CoreEventTypes';
@@ -93,6 +94,10 @@ export type PressabilityConfig = $ReadOnly<{|
    */
   onFocus?: ?(event: FocusEvent) => mixed,
 
+  onKeyDown?: ?(event: KeyEvent) => mixed,
+
+  onKeyUp?: ?(event: KeyEvent) => mixed,
+  
   /**
    * Called when the hover is activated to provide visual feedback.
    */
@@ -156,6 +161,8 @@ export type EventHandlers = $ReadOnly<{|
   onBlur: (event: BlurEvent) => void,
   onClick: (event: PressEvent) => void,
   onFocus: (event: FocusEvent) => void,
+  onKeyDown: (event: KeyDown) => void,
+  onKeyUp: (event: KeyDown) => void,
   onMouseEnter?: (event: MouseEvent) => void,
   onMouseLeave?: (event: MouseEvent) => void,
   onResponderGrant: (event: PressEvent) => void,
@@ -442,6 +449,21 @@ export default class Pressability {
         const {onFocus} = this._config;
         if (onFocus != null) {
           onFocus(event);
+        }
+      },
+    };
+    
+    const keyEventHandlers = {
+      onKeyDown: (event: KeyEvent): void => {
+        const {onKeyDown} = this._config;
+        if (onKeyDown != null) {
+          onKeyDown(event);
+        }
+      },
+      onKeyUp: (event: KeyEvent): void => {
+        const {onKeyUp} = this._config;
+        if (onKeyUp != null) {
+          onKeyUp(event);
         }
       },
     };

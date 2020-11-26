@@ -45,6 +45,18 @@ const ReactNativeViewConfig = {
         captured: 'onFocusCapture',
       },
     },
+    topKeyUp: {
+      phasedRegistrationNames: {
+        bubbled: 'onKeyUp',
+        captured: 'onKeyUpCapture',
+      },
+    },
+    topKeyDown: {
+      phasedRegistrationNames: {
+        bubbled: 'onKeyDown',
+        captured: 'onKeyDownCapture',
+      },
+    },
     topKeyPress: {
       phasedRegistrationNames: {
         bubbled: 'onKeyPress',

@@ -26,6 +26,7 @@ import type {EdgeInsetsProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {
   BlurEvent,
   FocusEvent,
+  KeyEvent,
   LayoutEvent,
   PressEvent,
   MouseEvent, // TODO(macOS ISS#2323203)
@@ -64,6 +65,8 @@ type Props = $ReadOnly<{|
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
   onBlur?: ?(event: BlurEvent) => mixed,
   onFocus?: ?(event: FocusEvent) => mixed,
+  onKeyDown?: ?(event: KeyEvent) => mixed,
+  onKeyUp?: ?(event: KeyEvent) => mixed,
   onLayout?: ?(event: LayoutEvent) => mixed,
   onLongPress?: ?(event: PressEvent) => mixed,
   onPress?: ?(event: PressEvent) => mixed,
@@ -105,6 +108,8 @@ const PASSTHROUGH_PROPS = [
   'onAccessibilityAction',
   'onBlur',
   'onFocus',
+  'onKeyDown',
+  'onKeyUp',
   'onLayout',
   'onMouseEnter', // [TODO(macOS ISS#2323203)
   'onMouseLeave',
@@ -213,6 +218,8 @@ function createPressabilityConfig(props: Props): PressabilityConfig {
     android_disableSound: props.touchSoundDisabled,
     onBlur: props.onBlur,
     onFocus: props.onFocus,
+    onKeyDown: props.onKeyDown,
+    onKeyUp: props.onKeyUp,
     onLongPress: props.onLongPress,
     onPress: props.onPress,
     onPressIn: props.onPressIn,

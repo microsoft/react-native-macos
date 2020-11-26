@@ -16,6 +16,7 @@
 #import "RCTRootContentView.h" // TODO(macOS ISS#2323203)
 #import "RCTUtils.h"
 #import "UIView+React.h"
+#import "RCTViewKeyboardEvent.h"
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 #import "RCTTextView.h"
 #endif // ]TODO(macOS ISS#2323203)
@@ -1562,5 +1563,29 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   return YES;
 }
 #endif // ]TODO(macOS ISS#2323203)
+
+#pragma mark - Keyboard Events
+
+#if TARGET_OS_OSX // TODO: add iOS keyboard event handling
+- (void)keyDown:(NSEvent *)event {
+  if (!self.onKeyDown) {
+    [super keyDown:event];
+    return;
+  }
+
+  RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyDownEventWithReactTag:self.reactTag characters:event.characters modifier:event.modifierFlags];
+  [_eventDispatcher sendEvent:keyboardEvent];
+}
+
+- (void)keyUp:(NSEvent *)event {
+  if (!self.onKeyUp) {
+    [super keyUp:event];
+    return;
+  }
+  
+  RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyUpEventWithReactTag:self.reactTag characters:event.characters modifier:event.modifierFlags];
+  [_eventDispatcher sendEvent:keyboardEvent];
+}
+#endif // TARGET_OS_OSX
 
 @end

@@ -20,7 +20,7 @@ const View = require('./View/View');
 
 const invariant = require('invariant');
 
-import type {PressEvent} from '../Types/CoreEventTypes';
+import type {PressEvent, KeyEvent} from '../Types/CoreEventTypes';
 import type {FocusEvent, BlurEvent} from './TextInput/TextInput'; // TODO(OSS Candidate ISS#2710739)
 import type {ColorValue} from '../StyleSheet/StyleSheetTypes';
 
@@ -113,6 +113,17 @@ type ButtonProps = $ReadOnly<{|
    * Handler to be called when the button loses key focus
    */
   onFocus?: ?(e: FocusEvent) => void,
+  
+  /**
+   * Handler to be called when a key down press is detected
+   */
+  onKeyDown?: ?(e: KeyEvent) => void,
+
+   /**
+   * Handler to be called when a key up press is detected
+   */
+  onKeyUp?: ?(e: KeyEvent) => void,
+
   // ]TODO(OSS Candidate ISS#2710739)
 |}>;
 
@@ -163,6 +174,8 @@ class Button extends React.Component<ButtonProps> {
       testID,
       onFocus, // TODO(OSS Candidate ISS#2710739)
       onBlur, // TODO(OSS Candidate ISS#2710739)
+      onKeyDown,
+      onKeyUp,
     } = this.props;
     const buttonStyles = [styles.button];
     const textStyles = [styles.text];
@@ -207,6 +220,8 @@ class Button extends React.Component<ButtonProps> {
         onPress={onPress}
         onFocus={onFocus} // TODO(OSS Candidate ISS#2710739)
         onBlur={onBlur} // TODO(OSS Candidate ISS#2710739)
+        onKeyDown={onKeyDown}
+        onKeyUp={onKeyUp}
         touchSoundDisabled={touchSoundDisabled}>
         <View style={buttonStyles}>
           <Text style={textStyles} disabled={disabled}>
