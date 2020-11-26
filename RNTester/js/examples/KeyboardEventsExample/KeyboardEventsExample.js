@@ -46,7 +46,7 @@ class KeyEventExample extends React.Component<{}, State> {
           Key events are called when a component detects a key press.
         </Text>
         <View>
-          {// Only test View on MacOS, since canBecomeFirstResponder is false on all iOS, therefore we can't focus
+          {
           Platform.OS === 'macos' ? (
             <View
               acceptsKeyboardFocus={true}
