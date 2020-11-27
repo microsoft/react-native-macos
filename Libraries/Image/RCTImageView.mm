@@ -47,7 +47,9 @@ static NSImage *RCTFillImagePreservingAspectRatio(NSImage *originalImage, NSSize
   }
 
   NSSize originalImageSize = originalImage.size;
-  if (NSEqualSizes(originalImageSize, NSZeroSize) || [[originalImage representations] count] == 0) {
+  if (NSEqualSizes(originalImageSize, NSZeroSize) ||
+      NSEqualSizes(originalImageSize, targetSize) ||
+      [[originalImage representations] count] == 0) {
     return originalImage;
   }
 
@@ -146,7 +148,11 @@ static NSDictionary *onLoadParamsForSource(RCTImageSource *source)
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
     self.wantsLayer = YES;
 #endif
-#if !TARGET_OS_OSX
+    _imageView = [[RCTUIImageViewAnimated alloc] init];
+    _imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self addSubview:_imageView];
+
+#if !TARGET_OS_OSX // [TODO(macOS ISS#2323203)
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
                selector:@selector(clearImageIfDetached)
@@ -156,10 +162,16 @@ static NSDictionary *onLoadParamsForSource(RCTImageSource *source)
                selector:@selector(clearImageIfDetached)
                    name:UIApplicationDidEnterBackgroundNotification
                  object:nil];
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
+    if (@available(iOS 13.0, *)) {
+      [center addObserver:self
+                 selector:@selector(clearImageIfDetached)
+
+                     name:UISceneDidEnterBackgroundNotification
+                   object:nil];
+    }
 #endif
-    _imageView = [[RCTUIImageViewAnimated alloc] init];
-    _imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self addSubview:_imageView];
+#endif // ]TODO(macOS ISS#2323203)
   }
   return self;
 }
@@ -430,18 +442,20 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
     id<RCTImageLoaderWithAttributionProtocol> imageLoader = [_bridge moduleForName:@"ImageLoader"
                                                              lazilyLoadIfNecessary:YES];
-    _reloadImageCancellationBlock = [imageLoader loadImageWithURLRequest:source.request
-                                                                    size:imageSize
-                                                                   scale:imageScale
-                                                                 clipped:NO
-                                                              resizeMode:_resizeMode
-                                                             attribution:{
-                                                                         .nativeViewTag = [self.reactTag intValue],
-                                                                         .surfaceId = [self.rootTag intValue],
-                                                                         }
-                                                           progressBlock:progressHandler
-                                                        partialLoadBlock:partialLoadHandler
-                                                         completionBlock:completionHandler];
+    RCTImageURLLoaderRequest *loaderRequest = [imageLoader loadImageWithURLRequest:source.request
+                                                                              size:imageSize
+                                                                             scale:imageScale
+                                                                           clipped:NO
+                                                                        resizeMode:_resizeMode
+                                                                          priority:RCTImageLoaderPriorityImmediate
+                                                                       attribution:{
+                                                                                   .nativeViewTag = [self.reactTag intValue],
+                                                                                   .surfaceId = [self.rootTag intValue],
+                                                                                   }
+                                                                     progressBlock:progressHandler
+                                                                  partialLoadBlock:partialLoadHandler
+                                                                   completionBlock:completionHandler];
+    _reloadImageCancellationBlock = loaderRequest.cancellationBlock;
   } else {
     [self clearImage];
   }

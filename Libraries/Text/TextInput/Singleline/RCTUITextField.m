@@ -9,14 +9,19 @@
 
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
-
 #import <React/RCTBackedTextInputDelegateAdapter.h>
 #import <React/RCTBackedTextInputDelegate.h> // TODO(OSS Candidate ISS#2710739)
 #import <React/RCTTextAttributes.h>
 
 
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+
+#if RCT_SUBCLASS_SECURETEXTFIELD
+#define RCTUITextFieldCell RCTUISecureTextFieldCell
+@interface RCTUISecureTextFieldCell : NSSecureTextFieldCell
+#else
 @interface RCTUITextFieldCell : NSTextFieldCell
+#endif
 
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
 @property (nonatomic, getter=isAutomaticTextReplacementEnabled) BOOL automaticTextReplacementEnabled;
@@ -75,19 +80,17 @@
 @end
 #endif // ]TODO(macOS ISS#2323203)
 
+#ifdef RCT_SUBCLASS_SECURETEXTFIELD
+@implementation RCTUISecureTextField {
+#else
 @implementation RCTUITextField {
+#endif
   RCTBackedTextFieldDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
 }
 
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 @dynamic delegate;
-
-static RCTUIColor *defaultPlaceholderTextColor()
-{
-  return [NSColor placeholderTextColor];
-}
-
 #endif // ]TODO(macOS ISS#2323203)
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -107,6 +110,7 @@ static RCTUIColor *defaultPlaceholderTextColor()
 #endif // ]TODO(macOS ISS#2323203)
 
     _textInputDelegateAdapter = [[RCTBackedTextFieldDelegateAdapter alloc] initWithTextField:self];
+    _scrollEnabled = YES;
   }
 
   return self;
@@ -238,6 +242,10 @@ static RCTUIColor *defaultPlaceholderTextColor()
 
 - (void)setDefaultTextAttributes:(NSDictionary<NSAttributedStringKey, id> *)defaultTextAttributes
 {
+  if ([_defaultTextAttributes isEqualToDictionary:defaultTextAttributes]) {
+    return;
+  }
+
   _defaultTextAttributes = defaultTextAttributes;
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
   [super setDefaultTextAttributes:defaultTextAttributes];
@@ -282,16 +290,6 @@ static RCTUIColor *defaultPlaceholderTextColor()
 
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
 
-- (void)setScrollEnabled:(BOOL)enabled
-{
-  // Do noting, compatible with multiline textinput
-}
-
-- (BOOL)scrollEnabled
-{
-  return NO;
-}
-
 - (void)setSecureTextEntry:(BOOL)secureTextEntry
 {
   if (self.secureTextEntry == secureTextEntry) {
@@ -317,14 +315,17 @@ static RCTUIColor *defaultPlaceholderTextColor()
 {
   NSMutableDictionary<NSAttributedStringKey, id> *textAttributes = [_defaultTextAttributes mutableCopy] ?: [NSMutableDictionary new];
 
-  if (self.placeholderColor) {
-    [textAttributes setValue:self.placeholderColor forKey:NSForegroundColorAttributeName];
+  // [TODO(OSS Candidate ISS#2710739)
+  if (@available(iOS 13.0, *)) {
+    [textAttributes setValue:self.placeholderColor ?: [RCTUIColor placeholderTextColor]
+                      forKey:NSForegroundColorAttributeName];
   } else {
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
-    [textAttributes setValue:defaultPlaceholderTextColor() forKey:NSForegroundColorAttributeName];
-#else
-    [textAttributes removeObjectForKey:NSForegroundColorAttributeName];
-#endif // ]TODO(macOS ISS#2323203)
+  // ]TODO(OSS Candidate ISS#2710739)
+    if (self.placeholderColor) {
+      [textAttributes setValue:self.placeholderColor forKey:NSForegroundColorAttributeName];
+    } else {
+      [textAttributes removeObjectForKey:NSForegroundColorAttributeName];
+    }
   }
 
   return textAttributes;
@@ -369,16 +370,6 @@ static RCTUIColor *defaultPlaceholderTextColor()
 #else // [TODO(macOS ISS#2323203)
   
 #pragma mark - NSTextViewDelegate methods
-
-- (void)setScrollEnabled:(BOOL)enabled
-{
-  // Do noting, compatible with multiline textinput
-}
-
-- (BOOL)scrollEnabled
-{
-  return NO;
-}
 
 - (void)textDidChange:(NSNotification *)notification
 {

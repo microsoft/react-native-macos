@@ -10,12 +10,14 @@
 
 'use strict';
 
-import Pressability from '../../Pressability/Pressability.js';
-import {PressabilityDebugView} from '../../Pressability/PressabilityDebug.js';
-import StyleSheet, {type ViewStyleProp} from '../../StyleSheet/StyleSheet.js';
-import type {ColorValue} from '../../StyleSheet/StyleSheetTypes.js';
-import TVTouchable from './TVTouchable.js';
-import typeof TouchableWithoutFeedback from './TouchableWithoutFeedback.js';
+import Pressability, {
+  type PressabilityConfig,
+} from '../../Pressability/Pressability';
+import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
+import StyleSheet, {type ViewStyleProp} from '../../StyleSheet/StyleSheet';
+import type {ColorValue} from '../../StyleSheet/StyleSheetTypes';
+import TVTouchable from './TVTouchable';
+import typeof TouchableWithoutFeedback from './TouchableWithoutFeedback';
 import Platform from '../../Utilities/Platform';
 import View from '../../Components/View/View';
 import * as React from 'react';
@@ -159,21 +161,22 @@ class TouchableHighlight extends React.Component<Props, State> {
   _tvTouchable: ?TVTouchable;
 
   state: State = {
-    pressability: new Pressability({
-      getHitSlop: () => this.props.hitSlop,
-      getLongPressDelayMS: () => {
-        if (this.props.delayLongPress != null) {
-          const maybeNumber = this.props.delayLongPress;
-          if (typeof maybeNumber === 'number') {
-            return maybeNumber;
-          }
-        }
-        return 500;
-      },
-      getPressDelayMS: () => this.props.delayPressIn,
-      getPressOutDelayMS: () => this.props.delayPressOut,
-      getPressRectOffset: () => this.props.pressRetentionOffset,
-      getTouchSoundDisabled: () => this.props.touchSoundDisabled,
+    pressability: new Pressability(this._createPressabilityConfig()),
+    extraStyles:
+      this.props.testOnly_pressed === true ? this._createExtraStyles() : null,
+  };
+
+  _createPressabilityConfig(): PressabilityConfig {
+    return {
+      cancelable: !this.props.rejectResponderTermination,
+      disabled: this.props.disabled,
+      hitSlop: this.props.hitSlop,
+      delayLongPress: this.props.delayLongPress,
+      delayPressIn: this.props.delayPressIn,
+      delayPressOut: this.props.delayPressOut,
+      minPressDuration: 0,
+      pressRectOffset: this.props.pressRetentionOffset,
+      android_disableSound: this.props.touchSoundDisabled,
       onBlur: event => {
         if (Platform.isTV) {
           this._hideUnderlay();
@@ -227,13 +230,8 @@ class TouchableHighlight extends React.Component<Props, State> {
           this.props.onPressOut(event);
         }
       },
-      onResponderTerminationRequest: () =>
-        !this.props.rejectResponderTermination,
-      onStartShouldSetResponder: () => !this.props.disabled,
-    }),
-    extraStyles:
-      this.props.testOnly_pressed === true ? this._createExtraStyles() : null,
-  };
+    };
+  }
 
   _createExtraStyles(): ExtraStyles {
     return {
@@ -309,11 +307,9 @@ class TouchableHighlight extends React.Component<Props, State> {
         accessibilityLiveRegion={this.props.accessibilityLiveRegion}
         accessibilityViewIsModal={this.props.accessibilityViewIsModal}
         accessibilityElementsHidden={this.props.accessibilityElementsHidden}
-        acceptsKeyboardFocus={
-          (this.props.acceptsKeyboardFocus === undefined ||
-            this.props.acceptsKeyboardFocus === true) &&
-          !this.props.disabled
-        } // TODO(macOS/win ISS#2323203)
+        acceptsFirstMouse={
+          this.props.acceptsFirstMouse !== false && !this.props.disabled
+        } // TODO(macOS ISS#2323203)
         enableFocusRing={
           (this.props.enableFocusRing === undefined ||
             this.props.enableFocusRing === true) &&
@@ -331,9 +327,22 @@ class TouchableHighlight extends React.Component<Props, State> {
         nextFocusLeft={this.props.nextFocusLeft}
         nextFocusRight={this.props.nextFocusRight}
         nextFocusUp={this.props.nextFocusUp}
-        focusable={
-          this.props.focusable !== false && this.props.onPress !== undefined
-        }
+        // [macOS #656 We need to reconcile between focusable and acceptsKeyboardFocus
+        // (e.g. if one is explicitly disabled, we shouldn't implicitly enable the
+        // other on the underlying view). Prefer passing acceptsKeyboardFocus if
+        // passed explicitly to preserve original behavior, and trigger view warnings.
+        {...(this.props.acceptsKeyboardFocus !== undefined
+          ? {
+              acceptsKeyboardFocus:
+                this.props.acceptsKeyboardFocus === true &&
+                !this.props.disabled,
+            }
+          : {
+              focusable:
+                this.props.focusable !== false &&
+                this.props.onPress !== undefined,
+            })}
+        // macOS]
         tooltip={this.props.tooltip} // TODO(macOS/win ISS#2323203)
         onMouseEnter={this.props.onMouseEnter} // [TODO(macOS/win ISS#2323203)
         onMouseLeave={this.props.onMouseLeave}
@@ -382,6 +391,10 @@ class TouchableHighlight extends React.Component<Props, State> {
         },
       });
     }
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    this.state.pressability.configure(this._createPressabilityConfig());
   }
 
   componentWillUnmount(): void {

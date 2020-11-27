@@ -2,7 +2,7 @@
 
 exports[`TouchableHighlight renders correctly 1`] = `
 <View
-  acceptsKeyboardFocus={true}
+  acceptsFirstMouse={true}
   accessible={true}
   enableFocusRing={true}
   focusable={false}

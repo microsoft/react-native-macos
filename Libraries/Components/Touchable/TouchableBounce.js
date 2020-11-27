@@ -10,11 +10,13 @@
 
 'use strict';
 
-import Pressability from '../../Pressability/Pressability.js';
-import {PressabilityDebugView} from '../../Pressability/PressabilityDebug.js';
-import type {ViewStyleProp} from '../../StyleSheet/StyleSheet.js';
-import TVTouchable from './TVTouchable.js';
-import typeof TouchableWithoutFeedback from './TouchableWithoutFeedback.js';
+import Pressability, {
+  type PressabilityConfig,
+} from '../../Pressability/Pressability';
+import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
+import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
+import TVTouchable from './TVTouchable';
+import typeof TouchableWithoutFeedback from './TouchableWithoutFeedback';
 import {Animated, Platform} from 'react-native';
 import * as React from 'react';
 
@@ -39,21 +41,21 @@ class TouchableBounce extends React.Component<Props, State> {
   _tvTouchable: ?TVTouchable;
 
   state: State = {
-    pressability: new Pressability({
-      getHitSlop: () => this.props.hitSlop,
-      getLongPressDelayMS: () => {
-        if (this.props.delayLongPress != null) {
-          const maybeNumber = this.props.delayLongPress;
-          if (typeof maybeNumber === 'number') {
-            return maybeNumber;
-          }
-        }
-        return 500;
-      },
-      getPressDelayMS: () => this.props.delayPressIn,
-      getPressOutDelayMS: () => this.props.delayPressOut,
-      getPressRectOffset: () => this.props.pressRetentionOffset,
-      getTouchSoundDisabled: () => this.props.touchSoundDisabled,
+    pressability: new Pressability(this._createPressabilityConfig()),
+    scale: new Animated.Value(1),
+  };
+
+  _createPressabilityConfig(): PressabilityConfig {
+    return {
+      cancelable: !this.props.rejectResponderTermination,
+      disabled: this.props.disabled,
+      hitSlop: this.props.hitSlop,
+      delayLongPress: this.props.delayLongPress,
+      delayPressIn: this.props.delayPressIn,
+      delayPressOut: this.props.delayPressOut,
+      minPressDuration: 0,
+      pressRectOffset: this.props.pressRetentionOffset,
+      android_disableSound: this.props.touchSoundDisabled,
       onBlur: event => {
         if (Platform.isTV) {
           this._bounceTo(1, 0.4, 0);
@@ -115,12 +117,8 @@ class TouchableBounce extends React.Component<Props, State> {
           this.props.onPressOut(event);
         }
       },
-      onResponderTerminationRequest: () =>
-        !this.props.rejectResponderTermination,
-      onStartShouldSetResponder: () => !this.props.disabled,
-    }),
-    scale: new Animated.Value(1),
-  };
+    };
+  }
 
   _bounceTo(
     toValue: number,
@@ -162,11 +160,9 @@ class TouchableBounce extends React.Component<Props, State> {
         accessibilityLiveRegion={this.props.accessibilityLiveRegion}
         accessibilityViewIsModal={this.props.accessibilityViewIsModal}
         accessibilityElementsHidden={this.props.accessibilityElementsHidden}
-        acceptsKeyboardFocus={
-          (this.props.acceptsKeyboardFocus === undefined ||
-            this.props.acceptsKeyboardFocus === true) &&
-          !this.props.disabled
-        } // TODO(macOS/win ISS#2323203)
+        acceptsFirstMouse={
+          this.props.acceptsFirstMouse !== false && !this.props.disabled
+        } // TODO(macOS ISS#2323203)
         enableFocusRing={
           (this.props.enableFocusRing === undefined ||
             this.props.enableFocusRing === true) &&
@@ -175,11 +171,23 @@ class TouchableBounce extends React.Component<Props, State> {
         nativeID={this.props.nativeID}
         testID={this.props.testID}
         hitSlop={this.props.hitSlop}
-        focusable={
-          this.props.focusable !== false &&
-          this.props.onPress !== undefined &&
-          !this.props.disabled
-        }
+        // [macOS #656 We need to reconcile between focusable and acceptsKeyboardFocus
+        // (e.g. if one is explicitly disabled, we shouldn't implicitly enable the
+        // other on the underlying view). Prefer passing acceptsKeyboardFocus if
+        // passed explicitly to preserve original behavior, and trigger view warnings.
+        {...(this.props.acceptsKeyboardFocus !== undefined
+          ? {
+              acceptsKeyboardFocus:
+                this.props.acceptsKeyboardFocus === true &&
+                !this.props.disabled,
+            }
+          : {
+              focusable:
+                this.props.focusable !== false &&
+                this.props.onPress !== undefined &&
+                !this.props.disabled,
+            })}
+        // macOS]
         tooltip={this.props.tooltip} // TODO(macOS/win ISS#2323203)
         onMouseEnter={this.props.onMouseEnter} // [TODO(macOS ISS#2323203)
         onMouseLeave={this.props.onMouseLeave}
@@ -220,6 +228,10 @@ class TouchableBounce extends React.Component<Props, State> {
         },
       });
     }
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    this.state.pressability.configure(this._createPressabilityConfig());
   }
 
   componentWillUnmount(): void {

@@ -2,12 +2,13 @@
 
 exports[`TextInput tests should render as expected: should deep render when mocked (please verify output manually) 1`] = `
 <RCTSinglelineTextInputView
-  acceptsKeyboardFocus={true}
+  acceptsFirstMouse={true}
   accessible={true}
   allowFontScaling={true}
   enableFocusRing={true}
   focusable={true}
   forwardedRef={null}
+  mostRecentEventCount={0}
   onBlur={[Function]}
   onChange={[Function]}
   onClick={[Function]}
@@ -30,12 +31,13 @@ exports[`TextInput tests should render as expected: should deep render when mock
 
 exports[`TextInput tests should render as expected: should deep render when not mocked (please verify output manually) 1`] = `
 <RCTSinglelineTextInputView
-  acceptsKeyboardFocus={true}
+  acceptsFirstMouse={true}
   accessible={true}
   allowFontScaling={true}
   enableFocusRing={true}
   focusable={true}
   forwardedRef={null}
+  mostRecentEventCount={0}
   onBlur={[Function]}
   onChange={[Function]}
   onClick={[Function]}

@@ -56,7 +56,14 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
     self.backgroundColor = [RCTUIColor clearColor]; // TODO(macOS ISS#2323203)
     self.textColor = [RCTUIColor blackColor]; // TODO(macOS ISS#2323203)
     // This line actually removes 5pt (default value) left and right padding in UITextView.
+#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
     self.textContainer.lineFragmentPadding = 0;
+#else
+    // macOS has a bug where setting this to 0 will cause the scroll view to scroll to top when
+    // inserting a newline at the bottom of a NSTextView when it has more rows than can be displayed
+    // on screen.
+    self.textContainer.lineFragmentPadding = 1;
+#endif
 #if !TARGET_OS_OSX && !TARGET_OS_TV // TODO(macOS ISS#2323203)
     self.scrollsToTop = NO;
 #endif
@@ -165,6 +172,10 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
 
 - (void)setDefaultTextAttributes:(NSDictionary<NSAttributedStringKey, id> *)defaultTextAttributes
 {
+  if ([_defaultTextAttributes isEqualToDictionary:defaultTextAttributes]) {
+    return;
+  }
+
   _defaultTextAttributes = defaultTextAttributes;
   self.typingAttributes = defaultTextAttributes;
   [self _updatePlaceholder];
@@ -331,6 +342,19 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
 }
 
 #endif // ]TODO(macOS ISS#2323203)
+
+- (void)selectAll:(id)sender
+{
+  [super selectAll:sender];
+
+#if !TARGET_OS_OSX // TODO(macOS ISS#2323203) For `selectTextOnFocus` prop, which isn't supported on macOS atm.
+  // `selectAll:` does not work for UITextView when it's being called inside UITextView's delegate methods.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    UITextRange *selectionRange = [self textRangeFromPosition:self.beginningOfDocument toPosition:self.endOfDocument];
+    [self setSelectedTextRange:selectionRange notifyDelegate:NO];
+  });
+#endif
+}
 
 #pragma mark - Layout
 

@@ -16,6 +16,7 @@ const React = require('react');
 
 const {
   Platform,
+  PlatformColor,
   SectionList,
   StyleSheet,
   Text,
@@ -68,7 +69,7 @@ class RowComponent extends React.PureComponent<{
               onShowUnderlay={this.props.onShowUnderlay}
               onHideUnderlay={this.props.onHideUnderlay}
               onAccessibilityAction={this._onPress} // TODO(macOS ISS#2323203)
-              acceptsKeyboardFocus={false} // TODO(macOS ISS#2323203)
+              focusable={false} // TODO(macOS ISS#2323203)
               onPress={this._onPress}>
               <View
                 style={[
@@ -157,7 +158,7 @@ class RNTesterExampleList extends React.Component<Props, $FlowFixMeState> {
                     sections={filteredSections}
                     renderItem={this._renderItem}
                     keyboardShouldPersistTaps="handled"
-                    acceptsKeyboardFocus={true} // TODO(macOS ISS#2323203)
+                    focusable={true} // TODO(macOS ISS#2323203)
                     onSelectionEntered={this._handleOnSelectionEntered} // TODO(macOS ISS#2323203)
                     enableSelectionOnKeyPress={true} // TODO(macOS ISS#2323203)
                     automaticallyAdjustContentInsets={false}
@@ -252,10 +253,10 @@ const styles = StyleSheet.create({
     ...Platform.select({
       // [TODO(macOS ISS#2323203)
       macos: {
-        backgroundColor: {semantic: 'controlBackgroundColor'},
+        backgroundColor: PlatformColor('controlBackgroundColor'),
       },
       ios: {
-        backgroundColor: {semantic: 'systemBackgroundColor'},
+        backgroundColor: PlatformColor('systemBackgroundColor'),
       },
       default: {
         // ]TODO(macOS ISS#2323203)
@@ -270,13 +271,13 @@ const styles = StyleSheet.create({
         backgroundColor: {
           semantic: 'unemphasizedSelectedContentBackgroundColor',
         },
-        color: {semantic: 'headerTextColor'},
+        color: PlatformColor('headerTextColor'),
       },
       ios: {
         backgroundColor: {
           semantic: 'systemGroupedBackgroundColor',
         },
-        color: {semantic: 'secondaryLabelColor'},
+        color: PlatformColor('secondaryLabelColor'),
       },
       default: {
         // ]TODO(macOS ISS#2323203)
@@ -292,10 +293,10 @@ const styles = StyleSheet.create({
     ...Platform.select({
       // [TODO(macOS ISS#2323203)
       macos: {
-        backgroundColor: {semantic: 'controlBackgroundColor'},
+        backgroundColor: PlatformColor('controlBackgroundColor'),
       },
       ios: {
-        backgroundColor: {semantic: 'secondarySystemGroupedBackgroundColor'},
+        backgroundColor: PlatformColor('secondarySystemGroupedBackgroundColor'),
       },
       default: {
         // ]TODO(macOS ISS#2323203)
@@ -319,10 +320,10 @@ const styles = StyleSheet.create({
     ...Platform.select({
       // [TODO(macOS ISS#2323203)
       macos: {
-        backgroundColor: {semantic: 'separatorColor'},
+        backgroundColor: PlatformColor('separatorColor'),
       },
       ios: {
-        backgroundColor: {semantic: 'separatorColor'},
+        backgroundColor: PlatformColor('separatorColor'),
       },
       default: {
         // ]TODO(macOS ISS#2323203)
@@ -336,8 +337,8 @@ const styles = StyleSheet.create({
   },
   sectionListContentContainer: Platform.select({
     // [TODO(macOS ISS#2323203)
-    macos: {backgroundColor: {semantic: 'separatorColor'}},
-    ios: {backgroundColor: {semantic: 'separatorColor'}},
+    macos: {backgroundColor: PlatformColor('separatorColor')},
+    ios: {backgroundColor: PlatformColor('separatorColor')},
     default: {backgroundColor: 'white'},
   }), // ]TODO(macOS ISS#2323203)
   rowTitleText: {
@@ -346,10 +347,10 @@ const styles = StyleSheet.create({
     ...Platform.select({
       // [TODO(macOS ISS#2323203)
       macos: {
-        color: {semantic: 'controlTextColor'},
+        color: PlatformColor('controlTextColor'),
       },
       ios: {
-        color: {semantic: 'labelColor'},
+        color: PlatformColor('labelColor'),
       },
       default: {
         // ]TODO(macOS ISS#2323203)

@@ -15,7 +15,7 @@ DEST=$CONFIGURATION_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH
 # Enables iOS devices to get the IP address of the machine running Metro
 if [[ "$CONFIGURATION" = *Debug* && ! "$PLATFORM_NAME" == *simulator ]]; then
   IP=$(ipconfig getifaddr en0)
-  if [ -z "$IP" ]; then
+  if [[ -z "$IP" || -n "`ifconfig $value | grep 'baseT'`" ]]; then
     IP=$(ipconfig getifaddr en1)
   fi
   if [ -z "$IP" ]; then
@@ -132,11 +132,6 @@ esac
 USE_HERMES=
 if [[ "$BUNDLE_PLATFORM" == "macos" && -f "$HERMES_PATH" ]]; then
   USE_HERMES=true
-fi
-
-EXTRA_ARGS=
-if [ -d "$PROJECT_ROOT/node_modules/react-native-macos" ]; then
-  EXTRA_ARGS=--use-react-native-macos
 fi
 
 EMIT_SOURCEMAP=

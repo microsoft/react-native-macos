@@ -1,5 +1,5 @@
---- /home/mganandraj/code/rn-macos-fb62merge-fresh/ReactAndroid/src/main/java/com/facebook/react/views/view/ReactViewManager.java	2020-08-17 18:05:31.686674971 -0700
-+++ /home/mganandraj/code/rn-macos-fb62merge/ReactAndroid/src/main/java/com/facebook/react/views/view/ReactViewManager.java	2020-08-17 16:24:38.654706790 -0700
+--- "E:\\github\\rnm-63-fresh\\ReactAndroid\\src\\main\\java\\com\\facebook\\react\\views\\view\\ReactViewManager.java"	2020-10-27 20:26:16.993188900 -0700
++++ "E:\\github\\rnm-63\\ReactAndroid\\src\\main\\java\\com\\facebook\\react\\views\\view\\ReactViewManager.java"	2020-10-13 21:46:27.236639400 -0700
 @@ -48,8 +48,13 @@
      Spacing.START,
      Spacing.END,
@@ -16,7 +16,7 @@
    private static final String HOTSPOT_UPDATE_KEY = "hotspotUpdate";
  
    @ReactProp(name = "accessible")
-@@ -120,6 +125,35 @@
+@@ -120,6 +125,36 @@
      }
    }
  
@@ -28,7 +28,7 @@
 +        "topOnFocusChange",
 +        MapBuilder.of(
 +          "phasedRegistrationNames",
-+          MapBuilder.of("bubbled", "onFocusChange")))
++          MapBuilder.of("bubbled", "onFocusChange","captured", "onFocusChangeCapture")))
 +      .build();
 +  }
 +
@@ -49,10 +49,11 @@
 +    );
 +  }
 +
++
    @ReactProp(name = "borderStyle")
    public void setBorderStyle(ReactViewGroup view, @Nullable String borderStyle) {
      view.setBorderStyle(borderStyle);
-@@ -285,7 +319,7 @@
+@@ -285,7 +320,7 @@
  
    @Override
    public Map<String, Integer> getCommandsMap() {
@@ -61,7 +62,7 @@
    }
  
    @Override
-@@ -301,6 +335,16 @@
+@@ -301,6 +336,16 @@
            handleSetPressed(root, args);
            break;
          }
@@ -78,7 +79,7 @@
      }
    }
  
-@@ -317,6 +361,16 @@
+@@ -317,6 +362,16 @@
            handleSetPressed(root, args);
            break;
          }

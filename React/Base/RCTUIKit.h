@@ -270,6 +270,9 @@ void UIGraphicsEndImageContext(void);
 // semantically equivalent types
 //
 
+// UIAccessibility.h/NSAccessibility.h
+@compatibility_alias UIAccessibilityCustomAction NSAccessibilityCustomAction;
+
 // UIColor.h/NSColor.h
 #define RCTUIColor NSColor
 
@@ -387,10 +390,15 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 @property (nonatomic) CGAffineTransform transform;
 
 /**
+ * Specifies whether the view should receive the mouse down event when the
+ * containing window is in the background.
+ */
+@property (nonatomic, assign) BOOL acceptsFirstMouse;
+/**
  * Specifies whether the view participates in the key view loop as user tabs through different controls
  * This is equivalent to acceptsFirstResponder on mac OS.
  */
-@property (nonatomic, assign) BOOL acceptsKeyboardFocus;
+@property (nonatomic, assign) BOOL focusable;
 /**
  * Specifies whether focus ring should be drawn when the view has the first responder status.
  */
