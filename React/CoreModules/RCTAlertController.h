@@ -7,7 +7,7 @@
 
 #import <React/RCTUIKit.h> // TODO(macOS ISS#2323203)
 
-@interface RCTAlertController : UIViewController // : UIAlertController
+@interface RCTAlertController : UIAlertController
 
 #if !TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 - (void)show:(BOOL)animated completion:(void (^)(void))completion;

@@ -172,6 +172,9 @@ UIKIT_STATIC_INLINE CGFloat UIFontLineHeight(UIFont *font)
 // UIInterface.h/NSUserInterfaceLayout.h
 #define UIUserInterfaceLayoutDirection NSUserInterfaceLayoutDirection
 
+// UIAlertController.h/NSViewController.h
+#define UIAlertController NSViewController
+
 //
 // semantically equivalent enums
 //

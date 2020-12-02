@@ -13,11 +13,13 @@
 
 #if !TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 @property (nonatomic, strong) UIWindow *alertWindow;
+#endif // ]TODO(macOS ISS#2323203)
 
 @end
 
 @implementation RCTAlertController
 
+#if !TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 - (UIWindow *)alertWindow
 {
   if (_alertWindow == nil) {
