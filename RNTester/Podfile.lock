@@ -530,7 +530,7 @@ SPEC CHECKSUMS:
   FlipperKit: ab353d41aea8aae2ea6daaf813e67496642f3d7d
   glog: 1cb7c408c781ae8f35bbababe459b45e3dee4ec1
   hermes: 12d049af0d8e8379c5b3b54ffb1919d670045bdc
-  libevent: ee9265726a1fc599dea382964fa304378affaa5f
+  libevent: d721abced7738e428c291489465953c9263d78f9
   OpenSSL-Universal: 8b48cc0d10c1b2923617dfe5c178aa9ed2689355
   RCT-Folly: 1347093ffe75e152d846f7e45a3ef901b60021aa
   RCTRequired: 5b6e3555bf3e4de31f5f9eec6765cb1e1c3f8588
