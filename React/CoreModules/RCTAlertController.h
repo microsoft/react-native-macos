@@ -7,7 +7,9 @@
 
 #import <React/RCTUIKit.h> // TODO(macOS ISS#2323203)
 
-#define UIAlertController NSViewController // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#define UIAlertController NSViewController
+#endif // ]TODO(macOS ISS#2323203)
 
 @interface RCTAlertController : UIAlertController
 
