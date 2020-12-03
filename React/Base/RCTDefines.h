@@ -43,7 +43,7 @@
 #define RCT_DEV 1
 #else
 // Dev Mode is now enabled or disabled at runtime via the -[RCTDevSettings isDevModeEnabled] property
-#define RCT_DEV 1
+#define RCT_DEV 0
 #endif
 #endif
 

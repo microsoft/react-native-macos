@@ -138,15 +138,21 @@ RCT_EXPORT_MODULE()
 
 - (instancetype)init
 {
+  BOOL devModeEnabled = NO; // Default to OFF unless explicitly set at runtime otherwise
+#if DEBUG // [TODO(OSS Candidate ISS#2710739)
+  devModeEnabled = YES;
+#endif // ]TODO(OSS Candidate ISS#2710739)
+
   // default behavior is to use NSUserDefaults
   NSDictionary *defaultValues = @{
-#if DEBUG // [TODO(OSS Candidate ISS#2710739)
-    kRCTDevSettingDevModeEnabled: @YES,
-#endif // ]TODO(OSS Candidate ISS#2710739)
+    kRCTDevSettingDevModeEnabled: devModeEnabled ? @YES : @NO, // TODO(macOS ISS#2323203)
     kRCTDevSettingShakeToShowDevMenu : @YES,
     kRCTDevSettingHotLoadingEnabled : @YES,
     kRCTDevSettingSecondClickToShowDevMenu: @YES, // TODO(macOS ISS#2323203)
   };
+  // Explicitly go through our setter to update any dependent information
+  [self setDevModeEnabled:devModeEnabled];
+
   RCTDevSettingsUserDefaultsDataSource *dataSource =
       [[RCTDevSettingsUserDefaultsDataSource alloc] initWithDefaultValues:defaultValues];
   return [self initWithDataSource:dataSource];
@@ -241,6 +247,8 @@ RCT_EXPORT_MODULE()
 // [TODO(OSS Candidate ISS#2710739)
 RCT_EXPORT_METHOD(setDevModeEnabled:(BOOL)enabled)
 {
+#undef RCT_DEV
+#define RCT_DEV enabled // redfine the macro at runtime
   [self _updateSettingWithValue:@(enabled) forKey:kRCTDevSettingDevModeEnabled];
 }
 
