@@ -2,6 +2,8 @@ storage: ./storage
 auth:
   htpasswd:
     file: ./htpasswd
+listen:
+  - 0.0.0.0:4873
 uplinks:
   npmjs:
     url: https://registry.npmjs.org/
