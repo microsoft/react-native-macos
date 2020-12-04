@@ -7,7 +7,7 @@ const path = require('path');
 
 function queryForServerStatus() {
 
-  http.get('http://localhost:4873', res => {
+  http.get('http://0.0.0.0:4873', res => {
     console.log(`Server status: ${res.statusCode}`);
     if (res.statusCode != 200) {
       setTimeout(queryForServerStatus, 2000);
