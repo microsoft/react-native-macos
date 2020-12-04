@@ -52,9 +52,9 @@ steps:
       npm set registry http://0.0.0.0:4873
     displayName: Modify default npm config to point to local verdaccio server
 
-  - script: |
-      node .ado/waitForVerdaccio.js
-    displayName: Wait for verdaccio server to boot
+  # - script: |
+  #     node .ado/waitForVerdaccio.js
+  #   displayName: Wait for verdaccio server to boot
 
   - script: |
       node .ado/npmAddUser.js user pass mail@nomail.com http://0.0.0.0:4873
