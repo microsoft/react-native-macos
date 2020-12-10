@@ -17,6 +17,10 @@ const {Button, PlatformColor, StyleSheet, Text, View } = ReactNative;
 
 import { KeyEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 
+type State = {
+  eventStream: string,
+};
+
 class KeyEventExample extends React.Component<{}, State> {
   state: State = {
     eventStream: '',
@@ -51,12 +55,16 @@ class KeyEventExample extends React.Component<{}, State> {
             <View
               acceptsKeyboardFocus={true}
               enableFocusRing={true}
+              validKeysDown={["a", "b", "c"]}
               onKeyDown={this.onKeyDownEvent}
+              validKeysDown={["d", "e", "f"]}
               onKeyUp={this.onKeyUpEvent}
               >
               <Button 
                 title={'Test button'}
+                validKeysDown={["g", "h", "i"]}
                 onKeyDown={this.onKeyDownEvent}
+                validKeysDown={["j", "k", "l"]}
                 onKeyUp={this.onKeyUpEvent}
               >
               </Button>
@@ -69,7 +77,7 @@ class KeyEventExample extends React.Component<{}, State> {
   }
 }
 
-var styles = StyleSheet.create({
+const styles = StyleSheet.create({
   textInput: {
     ...Platform.select({
       macos: {

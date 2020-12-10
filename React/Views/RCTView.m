@@ -1572,25 +1572,30 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 
 #pragma mark - Keyboard Events
 
-#if TARGET_OS_OSX // TODO: add iOS keyboard event handling
+#if TARGET_OS_OSX
 - (void)keyDown:(NSEvent *)event {
-  if (!self.onKeyDown) {
+  if (self.onKeyDown != nil) {
     [super keyDown:event];
     return;
   }
 
-  RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyDownEventWithReactTag:self.reactTag characters:event.characters modifier:event.modifierFlags];
-  [_eventDispatcher sendEvent:keyboardEvent];
+  // only post events for keys we care about
+  if ([[self validKeysDown] containsObject:event.characters]) {
+    RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyDownEventWithReactTag:self.reactTag characters:event.characters modifier:event.modifierFlags];
+    [_eventDispatcher sendEvent:keyboardEvent];
+  }
 }
 
 - (void)keyUp:(NSEvent *)event {
-  if (!self.onKeyUp) {
+  if (self.onKeyUp != nil) {
     [super keyUp:event];
     return;
   }
-  
-  RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyUpEventWithReactTag:self.reactTag characters:event.characters modifier:event.modifierFlags];
-  [_eventDispatcher sendEvent:keyboardEvent];
+
+  if ([[self validKeysUp] containsObject:event.characters]) {
+    RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyUpEventWithReactTag:self.reactTag characters:event.characters modifier:event.modifierFlags];
+    [_eventDispatcher sendEvent:keyboardEvent];
+  }
 }
 #endif // TARGET_OS_OSX
 
