@@ -139,6 +139,8 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 // Keyboarding events
 @property (nonatomic, copy) RCTBubblingEventBlock onKeyDown;
 @property (nonatomic, copy) RCTBubblingEventBlock onKeyUp;
+@property (nonatomic, copy) NSArray<NSString*> *validKeysDown;
+@property (nonatomic, copy) NSArray<NSString*> *validKeysUp;
 #endif // ]TODO(macOS ISS#2323203)
 
 /**

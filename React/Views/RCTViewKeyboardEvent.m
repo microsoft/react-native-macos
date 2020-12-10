@@ -10,7 +10,7 @@
 
 @implementation RCTViewKeyboardEvent
 
-+ (instancetype)keyDownEventWithReactTag:(NSNumber *)reactTag characters:(NSString*)characters modifier:(NSUInteger)modifier {
++ (instancetype)keyDownEventWithReactTag:(NSNumber *)reactTag characters:(NSString *)characters modifier:(NSUInteger)modifier {
   RCTViewKeyboardEvent *event = [[self alloc] initWithName:@"keyDown"
                                                   viewTag:reactTag
                                                      body:@{ @"characters" : characters,
@@ -18,7 +18,7 @@
   return event;
 }
 
-+ (instancetype)keyUpEventWithReactTag:(NSNumber *)reactTag characters:(NSString*)characters modifier:(NSUInteger)modifier {
++ (instancetype)keyUpEventWithReactTag:(NSNumber *)reactTag characters:(NSString *)characters modifier:(NSUInteger)modifier {
   RCTViewKeyboardEvent *event = [[self alloc] initWithName:@"keyUp"
                                                   viewTag:reactTag
                                                      body:@{ @"characters" : characters,

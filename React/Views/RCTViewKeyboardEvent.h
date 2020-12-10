@@ -8,7 +8,7 @@
 
 @interface RCTViewKeyboardEvent : RCTComponentEvent
 
-+ (instancetype)keyDownEventWithReactTag:(NSNumber *)reactTag characters:(NSString*)characters modifier:(NSUInteger)modifier;
-+ (instancetype)keyUpEventWithReactTag:(NSNumber *)reactTag characters:(NSString*)characters modifier:(NSUInteger)modifier;
++ (instancetype)keyDownEventWithReactTag:(NSNumber *)reactTag characters:(NSString *)characters modifier:(NSUInteger)modifier;
++ (instancetype)keyUpEventWithReactTag:(NSNumber *)reactTag characters:(NSString *)characters modifier:(NSUInteger)modifier;
 
 @end
