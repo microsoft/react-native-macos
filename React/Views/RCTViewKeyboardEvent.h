@@ -8,7 +8,33 @@
 
 @interface RCTViewKeyboardEvent : RCTComponentEvent
 
-+ (instancetype)keyDownEventWithReactTag:(NSNumber *)reactTag characters:(NSString *)characters modifier:(NSUInteger)modifier;
-+ (instancetype)keyUpEventWithReactTag:(NSNumber *)reactTag characters:(NSString *)characters modifier:(NSUInteger)modifier;
++ (instancetype)keyDownEventWithReactTag:(NSNumber *)reactTag
+                             capsLockKey:(BOOL)capsLockKey
+                                shiftKey:(BOOL)shiftKey
+                              controlKey:(BOOL)controlKey
+                               optionKey:(BOOL)optionKey
+                              commandKey:(BOOL)commandKey
+                           numericPadKey:(BOOL)numericPadKey
+                                 helpKey:(BOOL)helpKey
+                             functionKey:(BOOL)functionKey
+                            leftArrowKey:(BOOL)leftArrowKey
+                           rightArrowKey:(BOOL)rightArrowKey
+                              upArrowKey:(BOOL)upArrowKey
+                            downArrowKey:(BOOL)downArrowKey
+                                     key:(NSString*)key;
 
++ (instancetype)keyUpEventWithReactTag:(NSNumber *)reactTag
+                           capsLockKey:(BOOL)capsLockKey
+                              shiftKey:(BOOL)shiftKey
+                            controlKey:(BOOL)controlKey
+                             optionKey:(BOOL)optionKey
+                            commandKey:(BOOL)commandKey
+                         numericPadKey:(BOOL)numericPadKey
+                               helpKey:(BOOL)helpKey
+                           functionKey:(BOOL)functionKey
+                          leftArrowKey:(BOOL)leftArrowKey
+                         rightArrowKey:(BOOL)rightArrowKey
+                            upArrowKey:(BOOL)upArrowKey
+                          downArrowKey:(BOOL)downArrowKey
+                                   key:(NSString*)key;
 @end

@@ -154,8 +154,21 @@ export type FocusEvent = SyntheticEvent<
 
 export type KeyEvent = SyntheticEvent<
   $ReadOnly<{|
-    characters: string,
-    modifier: number,
+    // Modifier keys
+    capsLockKey: boolean,
+    shiftKey: boolean,
+    controlKey: boolean,
+    optionKey: boolean,
+    commandKey: boolean,
+    numericPadKey: boolean,
+    helpKey: boolean,
+    functionKey: boolean,
+    // Key options
+    leftArrowKey: boolean,
+    rightArrowKey: boolean,
+    upArrowKey: boolean,
+    downArrowKey: boolean,
+    key: string,
   |}>,
 >;
 
