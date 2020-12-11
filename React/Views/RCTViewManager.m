@@ -470,11 +470,6 @@ RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTBubblingEventBlock) // macOS keyboard event
 RCT_EXPORT_VIEW_PROPERTY(validKeysDown, NSArray<NSString*>)
 RCT_EXPORT_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>)
 #endif // ]TODO(macOS ISS#2323203)
-RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTBubblingEventBlock) // macOS keyboard events
-RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTBubblingEventBlock) // macOS keyboard events
-RCT_EXPORT_VIEW_PROPERTY(validKeysDown, NSArray<NSString*>)
-RCT_EXPORT_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>)
-#endif // ]TODO(macOS ISS#2323203)
 
 #pragma mark - ShadowView properties
 
