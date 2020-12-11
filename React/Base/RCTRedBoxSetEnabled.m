@@ -20,5 +20,9 @@ void RCTRedBoxSetEnabled(BOOL enabled)
 
 BOOL RCTRedBoxGetEnabled()
 {
+#if DEBUG // TODO(macOS ISS#2323203)
   return redBoxEnabled;
+#else
+  return NO; // RCT_DEV is on for debug & release builds in the react-native-macos fork, so we can disable release build redboxing here
+#endif // TODO(macOS ISS#2323203)
 }
