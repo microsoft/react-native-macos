@@ -107,7 +107,7 @@ RCT_EXPORT_MODULE()
       self->_label.textAlignment = NSTextAlignmentCenter;
 #elif TARGET_OS_OSX // [TODO(macOS ISS#2323203)
       NSRect screenFrame = [NSScreen mainScreen].visibleFrame;
-      self->_window = [[NSPanel alloc] initWithContentRect:NSMakeRect(screenFrame.origin.x + round((screenFrame.size.width - 375) / 2), screenFrame.size.height - 19 - 1, 375, 19)
+      self->_window = [[NSPanel alloc] initWithContentRect:NSMakeRect(screenFrame.origin.x + round((screenFrame.size.width - 375) / 2), screenFrame.size.height - 20, 375, 19)
                                                  styleMask:NSWindowStyleMaskBorderless
                                                    backing:NSBackingStoreBuffered
                                                      defer:YES];
