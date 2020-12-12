@@ -103,16 +103,16 @@ export type PressabilityConfig = $ReadOnly<{|
    * Called after a key up event is detected.
    */
   onKeyUp?: ?(event: KeyEvent) => mixed,
- 
+
   /*
    * Array of keys to receive key down events for
-   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow",
    */
   validKeysDown?: ?Array<string>,
 
   /*
    * Array of keys to receive key up events for
-   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow",
    */
   validKeysUp?: ?Array<string>,
 
@@ -470,7 +470,7 @@ export default class Pressability {
         }
       },
     };
-    
+
     const keyEventHandlers = {
       onKeyDown: (event: KeyEvent): void => {
         const {onKeyDown} = this._config;

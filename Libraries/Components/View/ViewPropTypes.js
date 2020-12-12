@@ -35,7 +35,7 @@ import type {
 // [TODO(macOS ISS#2323203)
 import type {DraggedTypesType} from '../View/DraggedType';
 //$FlowFixMe
-import { array } from 'yargs';
+import {array} from 'yargs';
 // ]TODO(macOS ISS#2323203)
 
 export type ViewLayout = Layout;
@@ -606,13 +606,13 @@ export type ViewProps = $ReadOnly<{|
 
   /*
    * Array of keys to receive key down events for
-   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow",
    */
   validKeysDown?: ?array<string>,
-  
+
   /*
    * Array of keys to receive key up events for
-   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow",
    */
   validKeysUp?: ?array<string>,
 

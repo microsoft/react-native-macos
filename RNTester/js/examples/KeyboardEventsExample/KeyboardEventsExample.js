@@ -13,9 +13,9 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {Button, PlatformColor, StyleSheet, Text, View } = ReactNative;
+const {Button, PlatformColor, StyleSheet, Text, View} = ReactNative;
 
-import type { KeyEvent } from 'react-native/Libraries/Types/CoreEventTypes';
+import type {KeyEvent} from 'react-native/Libraries/Types/CoreEventTypes';
 
 type State = {
   eventStream: string,
@@ -29,47 +29,43 @@ class KeyEventExample extends React.Component<{}, State> {
   };
 
   onKeyDownEvent: (e: KeyEvent) => void = (e: KeyEvent) => {
-    console.log('received view key down event\n', e.nativeEvent['key']);
-    this.setState({characters: e.nativeEvent.key})
+    console.log('received view key down event\n', e.nativeEvent.key);
+    this.setState({characters: e.nativeEvent.key});
     this.setState(prevState => ({
-      eventStream: prevState.eventStream + prevState.characters + '\nKey Down: '
+      eventStream:
+        prevState.eventStream + prevState.characters + '\nKey Down: ',
     }));
   };
-  
+
   onKeyUpEvent: (e: KeyEvent) => void = (e: KeyEvent) => {
-    console.log('received key up event\n', e.nativeEvent['key']);
-    this.setState({characters: e.nativeEvent.key})
+    console.log('received key up event\n', e.nativeEvent.key);
+    this.setState({characters: e.nativeEvent.key});
     this.setState(prevState => ({
-      eventStream: prevState.eventStream + prevState.characters + '\nKey Up: '
+      eventStream: prevState.eventStream + prevState.characters + '\nKey Up: ',
     }));
   };
 
   render() {
     return (
       <View>
-        <Text>
-          Key events are called when a component detects a key press.
-        </Text>
+        <Text>Key events are called when a component detects a key press.</Text>
         <View>
-          {
-          Platform.OS === 'macos' ? (
+          {Platform.OS === 'macos' ? (
             <View
               acceptsKeyboardFocus={true}
               enableFocusRing={true}
-              validKeysDown={["a", "b", "rightArrow"]}
+              validKeysDown={['a', 'b', 'rightArrow']}
               onKeyDown={this.onKeyDownEvent}
-              validKeysUp={["c", "d", "leftArrow"]}
-              onKeyUp={this.onKeyUpEvent}
-              >
-              <Button 
+              validKeysUp={['c', 'd', 'leftArrow']}
+              onKeyUp={this.onKeyUpEvent}>
+              <Button
                 title={'Test button'}
-                validKeysDown={["g", "h", "i"]}
+                validKeysDown={['g', 'h', 'i']}
                 onKeyDown={this.onKeyDownEvent}
-                validKeysUp={["j", "k", "l"]}
+                validKeysUp={['j', 'k', 'l']}
                 onKeyUp={this.onKeyUpEvent}
                 onPress={() => {}}
-              >
-              </Button>
+              />
             </View>
           ) : null}
           <Text>{'Events: ' + this.state.eventStream + '\n\n'}</Text>

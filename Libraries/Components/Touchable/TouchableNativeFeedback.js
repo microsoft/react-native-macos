@@ -81,16 +81,16 @@ type Props = $ReadOnly<{|
    * TV next focus up (see documentation for the View component).
    */
   nextFocusUp?: ?number,
-  
+
   /*
    * Array of keys to receive key down events for
-   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow",
    */
   validKeysDown?: ?Array<string>,
-  
+
   /*
    * Array of keys to receive key up events for
-   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow",
    */
   validKeysUp?: ?Array<string>,
 

@@ -113,26 +113,26 @@ type ButtonProps = $ReadOnly<{|
    * Handler to be called when the button loses key focus
    */
   onFocus?: ?(e: FocusEvent) => void,
-  
+
   /**
    * Handler to be called when a key down press is detected
    */
   onKeyDown?: ?(e: KeyEvent) => void,
 
-   /**
+  /**
    * Handler to be called when a key up press is detected
    */
   onKeyUp?: ?(e: KeyEvent) => void,
 
   /*
    * Array of keys to receive key down events for
-   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow",
    */
   validKeysDown?: ?Array<string>,
 
   /*
    * Array of keys to receive key up events for
-   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow",
    */
   validKeysUp?: ?Array<string>,
   // ]TODO(OSS Candidate ISS#2710739)
