@@ -15,10 +15,11 @@ const ReactNative = require('react-native');
 import {Platform} from 'react-native';
 const {Button, PlatformColor, StyleSheet, Text, View } = ReactNative;
 
-import { KeyEvent } from 'react-native/Libraries/Types/CoreEventTypes';
+import type { KeyEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 
 type State = {
   eventStream: string,
+  characters: string,
 };
 
 class KeyEventExample extends React.Component<{}, State> {
@@ -66,11 +67,12 @@ class KeyEventExample extends React.Component<{}, State> {
                 onKeyDown={this.onKeyDownEvent}
                 validKeysUp={["j", "k", "l"]}
                 onKeyUp={this.onKeyUpEvent}
+                onPress={() => {}}
               >
               </Button>
             </View>
           ) : null}
-          <Text>{'Events: ' + this.state.eventStream + JSON.stringify(this.state.characters) + '\n\n'}</Text>
+          <Text>{'Events: ' + this.state.eventStream + '\n\n'}</Text>
         </View>
       </View>
     );

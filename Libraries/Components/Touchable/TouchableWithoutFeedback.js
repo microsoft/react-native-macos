@@ -68,7 +68,7 @@ type Props = $ReadOnly<{|
   onKeyDown?: ?(event: KeyEvent) => mixed,
   onKeyUp?: ?(event: KeyEvent) => mixed,
   validKeysDown?: ?Array<string>,
-  validKeysDown?: ?Array<string>,
+  validKeysUp?: ?Array<string>,
   onLayout?: ?(event: LayoutEvent) => mixed,
   onLongPress?: ?(event: PressEvent) => mixed,
   onPress?: ?(event: PressEvent) => mixed,

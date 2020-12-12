@@ -81,6 +81,18 @@ type Props = $ReadOnly<{|
    * TV next focus up (see documentation for the View component).
    */
   nextFocusUp?: ?number,
+  
+  /*
+   * Array of keys to receive key down events for
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   */
+  validKeysDown?: ?Array<string>,
+  
+  /*
+   * Array of keys to receive key up events for
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   */
+  validKeysUp?: ?Array<string>,
 
   /**
    * Set to true to add the ripple effect to the foreground of the view, instead
@@ -297,6 +309,8 @@ class TouchableNativeFeedback extends React.Component<Props, State> {
         nextFocusUp: this.props.nextFocusUp,
         onLayout: this.props.onLayout,
         testID: this.props.testID,
+        validKeysDown: this.props.validKeysDown,
+        validKeysUp: this.props.validKeysUp,
       },
       ...children,
     );

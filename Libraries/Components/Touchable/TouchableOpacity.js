@@ -40,6 +40,17 @@ type Props = $ReadOnly<{|
   style?: ?ViewStyleProp,
 
   hostRef: React.Ref<typeof Animated.View>,
+  /*
+   * Array of keys to receive key down events for
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   */
+  validKeysDown?: ?Array<string>,
+  
+  /*
+   * Array of keys to receive key up events for
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   */
+  validKeysUp?: ?Array<string>,
 |}>;
 
 type State = $ReadOnly<{|

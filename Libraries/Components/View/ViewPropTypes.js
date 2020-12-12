@@ -34,6 +34,8 @@ import type {
 
 // [TODO(macOS ISS#2323203)
 import type {DraggedTypesType} from '../View/DraggedType';
+//$FlowFixMe
+import { array } from 'yargs';
 // ]TODO(macOS ISS#2323203)
 
 export type ViewLayout = Layout;
@@ -601,6 +603,18 @@ export type ViewProps = $ReadOnly<{|
    * Specifies whether focus ring should be drawn when the view has the first responder status.
    */
   enableFocusRing?: ?boolean, // TODO(macOS ISS#2323203)
+
+  /*
+   * Array of keys to receive key down events for
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   */
+  validKeysDown?: ?array<string>,
+  
+  /*
+   * Array of keys to receive key up events for
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   */
+  validKeysUp?: ?array<string>,
 
   /**
    * Enables Dran'n'Drop Support for certain types of dragged types

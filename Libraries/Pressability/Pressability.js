@@ -108,13 +108,13 @@ export type PressabilityConfig = $ReadOnly<{|
    * Array of keys to receive key down events for
    * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
    */
-  validKeysDown?: ?array<string>,
+  validKeysDown?: ?Array<string>,
 
   /*
    * Array of keys to receive key up events for
    * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
    */
-  validKeysUp?: ?array<string>,
+  validKeysUp?: ?Array<string>,
 
   /**
    * Called when the hover is activated to provide visual feedback.
@@ -179,8 +179,8 @@ export type EventHandlers = $ReadOnly<{|
   onBlur: (event: BlurEvent) => void,
   onClick: (event: PressEvent) => void,
   onFocus: (event: FocusEvent) => void,
-  onKeyDown: (event: KeyDown) => void,
-  onKeyUp: (event: KeyDown) => void,
+  onKeyDown: (event: KeyEvent) => void,
+  onKeyUp: (event: KeyEvent) => void,
   onMouseEnter?: (event: MouseEvent) => void,
   onMouseLeave?: (event: MouseEvent) => void,
   onResponderGrant: (event: PressEvent) => void,
@@ -642,6 +642,7 @@ export default class Pressability {
       ...focusEventHandlers,
       ...responderEventHandlers,
       ...mouseEventHandlers,
+      ...keyEventHandlers,
     };
   }
 
