@@ -22,8 +22,8 @@
                             leftArrowKey:(BOOL)leftArrowKey
                            rightArrowKey:(BOOL)rightArrowKey
                               upArrowKey:(BOOL)upArrowKey
-                             downrrowKey:(BOOL)downArrowKey
-                                     key:(NSString*)key {
+                            downArrowKey:(BOOL)downArrowKey
+                                     key:(NSString *)key {
   RCTViewKeyboardEvent *event = [[self alloc] initWithName:@"keyDown"
                                                   viewTag:reactTag
                                                      body:@{ @"capsLockKey" : @(capsLockKey),
@@ -42,20 +42,20 @@
   return event;
 }
 
-+ (instancetype)keyUpEventWithReactTag:(NSNumber *)reactTag
-                           capsLockKey:(BOOL)capsLockKey
-                              shiftKey:(BOOL)shiftKey
-                            controlKey:(BOOL)controlKey
-                             optionKey:(BOOL)optionKey
-                            commandKey:(BOOL)commandKey
-                         numericPadKey:(BOOL)numericPadKey
-                               helpKey:(BOOL)helpKey
-                           functionKey:(BOOL)functionKey
-                          leftArrowKey:(BOOL)leftArrowKey
-                         rightArrowKey:(BOOL)rightArrowKey
-                            upArrowKey:(BOOL)upArrowKey
-                           downrrowKey:(BOOL)downArrowKey
-                                   key:(NSString*)key {
++(instancetype)keyUpEventWithReactTag:(NSNumber *)reactTag
+                          capsLockKey:(BOOL)capsLockKey
+                             shiftKey:(BOOL)shiftKey
+                           controlKey:(BOOL)controlKey
+                            optionKey:(BOOL)optionKey
+                           commandKey:(BOOL)commandKey
+                        numericPadKey:(BOOL)numericPadKey
+                              helpKey:(BOOL)helpKey
+                          functionKey:(BOOL)functionKey
+                         leftArrowKey:(BOOL)leftArrowKey
+                        rightArrowKey:(BOOL)rightArrowKey
+                           upArrowKey:(BOOL)upArrowKey
+                         downArrowKey:(BOOL)downArrowKey
+                                  key:(NSString *)key {
   RCTViewKeyboardEvent *event = [[self alloc] initWithName:@"keyUp"
                                                   viewTag:reactTag
                                                      body:@{ @"capsLockKey" : @(capsLockKey),

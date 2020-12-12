@@ -7,7 +7,6 @@
 #import <React/RCTComponentEvent.h>
 
 @interface RCTViewKeyboardEvent : RCTComponentEvent
-
 + (instancetype)keyDownEventWithReactTag:(NSNumber *)reactTag
                              capsLockKey:(BOOL)capsLockKey
                                 shiftKey:(BOOL)shiftKey
@@ -20,7 +19,7 @@
                             leftArrowKey:(BOOL)leftArrowKey
                            rightArrowKey:(BOOL)rightArrowKey
                               upArrowKey:(BOOL)upArrowKey
-                            downArrowKey:(BOOL)downArrowKey
+                             downArrowKey:(BOOL)downArrowKey
                                      key:(NSString*)key;
 
 + (instancetype)keyUpEventWithReactTag:(NSNumber *)reactTag

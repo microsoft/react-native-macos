@@ -124,6 +124,17 @@ type ButtonProps = $ReadOnly<{|
    */
   onKeyUp?: ?(e: KeyEvent) => void,
 
+  /*
+   * Array of keys to receive key down events for
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   */
+  validKeysDown?: ?Array<string>,
+
+  /*
+   * Array of keys to receive key up events for
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow", 
+   */
+  validKeysUp?: ?Array<string>,
   // ]TODO(OSS Candidate ISS#2710739)
 |}>;
 
@@ -175,6 +186,8 @@ class Button extends React.Component<ButtonProps> {
       onFocus, // TODO(OSS Candidate ISS#2710739)
       onBlur, // TODO(OSS Candidate ISS#2710739)
       onKeyDown,
+      validKeysDown,
+      validKeysUp,
       onKeyUp,
     } = this.props;
     const buttonStyles = [styles.button];
@@ -222,6 +235,8 @@ class Button extends React.Component<ButtonProps> {
         onBlur={onBlur} // TODO(OSS Candidate ISS#2710739)
         onKeyDown={onKeyDown}
         onKeyUp={onKeyUp}
+        validKeysDown={validKeysDown}
+        validKeysUp={validKeysUp}
         touchSoundDisabled={touchSoundDisabled}>
         <View style={buttonStyles}>
           <Text style={textStyles} disabled={disabled}>

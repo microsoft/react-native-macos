@@ -28,7 +28,7 @@ class KeyEventExample extends React.Component<{}, State> {
   };
 
   onKeyDownEvent: (e: KeyEvent) => void = (e: KeyEvent) => {
-    console.log('received view key down event\n', e.nativeEvent['characters']);
+    console.log('received view key down event\n', e.nativeEvent['key']);
     this.setState({characters: e.nativeEvent.key})
     this.setState(prevState => ({
       eventStream: prevState.eventStream + prevState.characters + '\nKey Down: '
@@ -36,7 +36,7 @@ class KeyEventExample extends React.Component<{}, State> {
   };
   
   onKeyUpEvent: (e: KeyEvent) => void = (e: KeyEvent) => {
-    console.log('received key up event\n', e.nativeEvent['characters']);
+    console.log('received key up event\n', e.nativeEvent['key']);
     this.setState({characters: e.nativeEvent.key})
     this.setState(prevState => ({
       eventStream: prevState.eventStream + prevState.characters + '\nKey Up: '
@@ -57,7 +57,7 @@ class KeyEventExample extends React.Component<{}, State> {
               enableFocusRing={true}
               validKeysDown={["a", "b", "rightArrow"]}
               onKeyDown={this.onKeyDownEvent}
-              validKeysUp={["d", "e", "leftArrow"]}
+              validKeysUp={["c", "d", "leftArrow"]}
               onKeyUp={this.onKeyUpEvent}
               >
               <Button 

@@ -355,6 +355,8 @@ const ReactNativeViewConfig = {
       : {process: require('../../StyleSheet/processTransform')}): any),
     translateX: true,
     translateY: true,
+    validKeysDown: true,
+    validKeysUp: true,
     width: true,
     zIndex: true,
   },

@@ -1629,7 +1629,7 @@ const NSString *downArrowPressKey = @"downArrow";
   RCTViewKeyboardEvent *keyboardEvent = nil;
   // only post events for keys we care about
   if (downPress) {
-    if ([self keyIsValid:key validKeys:[self validKeysDown]]) {
+    if ([self keyIsValid:key left:leftArrowKey right:rightArrowKey up:upArrowKey down:downArrowKey validKeys:[self validKeysDown]]) {
       keyboardEvent = [RCTViewKeyboardEvent keyDownEventWithReactTag:self.reactTag
                                                          capsLockKey:capsLockKey
                                                             shiftKey:shiftKey
@@ -1646,7 +1646,7 @@ const NSString *downArrowPressKey = @"downArrow";
                                                                  key:key];
     }
   } else {
-    if ([self keyIsValid:key validKeys:[self validKeysUp]]) {
+    if ([self keyIsValid:key left:leftArrowKey right:rightArrowKey up:upArrowKey down:downArrowKey validKeys:[self validKeysUp]]) {
       keyboardEvent = [RCTViewKeyboardEvent keyUpEventWithReactTag:self.reactTag
                                                        capsLockKey:capsLockKey
                                                           shiftKey:shiftKey
@@ -1667,10 +1667,10 @@ const NSString *downArrowPressKey = @"downArrow";
 }
 
 // check if the user typed key matches a key we need to send an event for
-- (BOOL)keyIsValid:(NSString*)key validKeys:(NSArray<NSString*>*)validKeys {
+- (BOOL)keyIsValid:(NSString*)key left:(BOOL)leftArrowPressed right:(BOOL)rightArrowPressed up:(BOOL)UpArrowPressed down:(BOOL)downArrowPressed validKeys:(NSArray<NSString*>*)validKeys {
   BOOL keyIsValid = NO;
   
-  if ([validKeys containsObject:key] || [validKeys containsObject:leftArrowPressKey] || [validKeys containsObject:rightArrowPressKey] || [validKeys containsObject:upArrowPressKey] || [validKeys containsObject:downArrowPressKey]) {
+  if ([validKeys containsObject:key] || ([validKeys containsObject:leftArrowPressKey] && leftArrowPressed) || ([validKeys containsObject:rightArrowPressKey] && rightArrowPressed) || ([validKeys containsObject:upArrowPressKey] && UpArrowPressed) || ([validKeys containsObject:downArrowPressKey] && downArrowPressed)) {
     keyIsValid = YES;
   }
   
@@ -1678,7 +1678,7 @@ const NSString *downArrowPressKey = @"downArrow";
 }
 
 - (void)keyDown:(NSEvent *)event {
-  if (self.onKeyDown != nil) {
+  if (self.onKeyDown == nil) {
     [super keyDown:event];
     return;
   }
@@ -1692,7 +1692,7 @@ const NSString *downArrowPressKey = @"downArrow";
 }
 
 - (void)keyUp:(NSEvent *)event {
-  if (self.onKeyUp != nil) {
+  if (self.onKeyUp == nil) {
     [super keyUp:event];
     return;
   }
