@@ -19,7 +19,7 @@
                             leftArrowKey:(BOOL)leftArrowKey
                            rightArrowKey:(BOOL)rightArrowKey
                               upArrowKey:(BOOL)upArrowKey
-                             downArrowKey:(BOOL)downArrowKey
+                            downArrowKey:(BOOL)downArrowKey
                                      key:(NSString*)key;
 
 + (instancetype)keyUpEventWithReactTag:(NSNumber *)reactTag
