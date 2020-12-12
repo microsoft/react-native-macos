@@ -105,6 +105,8 @@ export type _InternalReactNativeComponentClass<Props> = Class<
 export type NativeMethods = {
   blur(): void,
   focus(): void,
+  onKeyDown(): void,
+  onKeyUp(): void,
   measure(callback: MeasureOnSuccessCallback): void,
   measureInWindow(callback: MeasureInWindowOnSuccessCallback): void,
   measureLayout(

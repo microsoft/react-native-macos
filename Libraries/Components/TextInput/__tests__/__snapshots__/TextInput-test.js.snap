@@ -12,6 +12,8 @@ exports[`TextInput tests should render as expected: should deep render when mock
   onChange={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -40,6 +42,8 @@ exports[`TextInput tests should render as expected: should deep render when not 
   onChange={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}

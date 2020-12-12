@@ -44,6 +44,18 @@ const ReactNativeViewConfig = {
         captured: 'onFocusCapture',
       },
     },
+    topKeyUp: {
+      phasedRegistrationNames: {
+        bubbled: 'onKeyUp',
+        captured: 'onKeyUpCapture',
+      },
+    },
+    topKeyDown: {
+      phasedRegistrationNames: {
+        bubbled: 'onKeyDown',
+        captured: 'onKeyDownCapture',
+      },
+    },
     topKeyPress: {
       phasedRegistrationNames: {
         bubbled: 'onKeyPress',
@@ -338,6 +350,8 @@ const ReactNativeViewConfig = {
     transform: {diff: require('../../Utilities/differ/matricesDiffer')},
     translateX: true,
     translateY: true,
+    validKeysDown: true,
+    validKeysUp: true,
     width: true,
     zIndex: true,
   },

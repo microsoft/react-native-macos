@@ -24,6 +24,7 @@ import type {EdgeInsetsProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {
   BlurEvent,
   FocusEvent,
+  KeyEvent,
   LayoutEvent,
   PressEvent,
   MouseEvent, // TODO(macOS ISS#2323203)
@@ -62,6 +63,10 @@ type Props = $ReadOnly<{|
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
   onBlur?: ?(event: BlurEvent) => mixed,
   onFocus?: ?(event: FocusEvent) => mixed,
+  onKeyDown?: ?(event: KeyEvent) => mixed,
+  onKeyUp?: ?(event: KeyEvent) => mixed,
+  validKeysDown?: ?Array<string>,
+  validKeysUp?: ?Array<string>,
   onLayout?: ?(event: LayoutEvent) => mixed,
   onLongPress?: ?(event: PressEvent) => mixed,
   onPress?: ?(event: PressEvent) => mixed,
@@ -103,6 +108,10 @@ const PASSTHROUGH_PROPS = [
   'onAccessibilityAction',
   'onBlur',
   'onFocus',
+  'onKeyDown',
+  'onKeyUp',
+  'validKeysDown',
+  'validKeysUp',
   'onLayout',
   'onMouseEnter', // [TODO(macOS ISS#2323203)
   'onMouseLeave',
@@ -240,6 +249,30 @@ class TouchableWithoutFeedback extends React.Component<Props, State> {
     }
     this.state.pressability.reset();
   }
+}
+
+function createPressabilityConfig(props: Props): PressabilityConfig {
+  return {
+    cancelable: !props.rejectResponderTermination,
+    disabled: props.disabled,
+    hitSlop: props.hitSlop,
+    delayLongPress: props.delayLongPress,
+    delayPressIn: props.delayPressIn,
+    delayPressOut: props.delayPressOut,
+    minPressDuration: 0,
+    pressRectOffset: props.pressRetentionOffset,
+    android_disableSound: props.touchSoundDisabled,
+    onBlur: props.onBlur,
+    onFocus: props.onFocus,
+    onKeyDown: props.onKeyDown,
+    onKeyUp: props.onKeyUp,
+    validKeysDown: props.validKeysDown,
+    validKeysUp: props.validKeysUp,
+    onLongPress: props.onLongPress,
+    onPress: props.onPress,
+    onPressIn: props.onPressIn,
+    onPressOut: props.onPressOut,
+  };
 }
 
 module.exports = TouchableWithoutFeedback;

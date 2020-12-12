@@ -38,6 +38,17 @@ type Props = $ReadOnly<{|
   style?: ?ViewStyleProp,
 
   hostRef: React.Ref<typeof Animated.View>,
+  /*
+   * Array of keys to receive key down events for
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow",
+   */
+  validKeysDown?: ?Array<string>,
+
+  /*
+   * Array of keys to receive key up events for
+   * For arrow keys, add "leftArrow", "rightArrow", "upArrow", "downArrow",
+   */
+  validKeysUp?: ?Array<string>,
 |}>;
 
 type State = $ReadOnly<{|
@@ -164,16 +175,20 @@ class TouchableOpacity extends React.Component<Props, State> {
           this.props.onFocus(event);
         }
       },
-      onLongPress: event => {
-        if (this.props.onLongPress != null) {
-          this.props.onLongPress(event);
+      onKeyDown: event => {
+        if (this.props.onKeyDown != null) {
+          this.props.onKeyDown(event);
         }
       },
-      onPress: event => {
-        if (this.props.onPress != null) {
-          this.props.onPress(event);
+      onKeyUp: event => {
+        if (this.props.onKeyUp != null) {
+          this.props.onKeyUp(event);
         }
       },
+      validKeysDown: this.props.validKeysDown,
+      validKeysUp: this.props.validKeysUp,
+      onLongPress: this.props.onLongPress,
+      onPress: this.props.onPress,
       onPressIn: event => {
         this._opacityActive(
           event.dispatchConfig.registrationName === 'onResponderGrant'
@@ -278,6 +293,10 @@ class TouchableOpacity extends React.Component<Props, State> {
         onDrop={this.props.onDrop}
         onFocus={this.props.onFocus}
         onBlur={this.props.onBlur}
+        onKeyDown={this.props.onKeyDown}
+        onKeyUp={this.props.onKeyUp}
+        validKeysDown={this.props.validKeysDown}
+        validKeysUp={this.props.validKeysUp}
         draggedTypes={this.props.draggedTypes} // ]TODO(macOS ISS#2323203)
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
