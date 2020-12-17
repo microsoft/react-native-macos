@@ -175,6 +175,11 @@ class TouchableOpacity extends React.Component<Props, State> {
           this.props.onFocus(event);
         }
       },
+      onLongPress: event => {
+        if (this.props.onLongPress != null) {
+          this.props.onLongPress(event);
+        }
+      },
       onKeyDown: event => {
         if (this.props.onKeyDown != null) {
           this.props.onKeyDown(event);
@@ -185,10 +190,13 @@ class TouchableOpacity extends React.Component<Props, State> {
           this.props.onKeyUp(event);
         }
       },
+      onPress: event => {
+        if (this.props.onPress != null) {
+          this.props.onPress(event);
+        }
+      },
       validKeysDown: this.props.validKeysDown,
       validKeysUp: this.props.validKeysUp,
-      onLongPress: this.props.onLongPress,
-      onPress: this.props.onPress,
       onPressIn: event => {
         this._opacityActive(
           event.dispatchConfig.registrationName === 'onResponderGrant'
