@@ -10,7 +10,9 @@
 
 'use strict';
 
-import Pressability from '../../Pressability/Pressability.js';
+import Pressability, {
+  type PressabilityConfig,
+} from '../../Pressability/Pressability.js';
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug.js';
 import TVTouchable from './TVTouchable.js';
 import type {
@@ -253,25 +255,48 @@ class TouchableWithoutFeedback extends React.Component<Props, State> {
 
 function createPressabilityConfig(props: Props): PressabilityConfig {
   return {
-    cancelable: !props.rejectResponderTermination,
-    disabled: props.disabled,
-    hitSlop: props.hitSlop,
-    delayLongPress: props.delayLongPress,
-    delayPressIn: props.delayPressIn,
-    delayPressOut: props.delayPressOut,
-    minPressDuration: 0,
-    pressRectOffset: props.pressRetentionOffset,
-    android_disableSound: props.touchSoundDisabled,
-    onBlur: props.onBlur,
-    onFocus: props.onFocus,
-    onKeyDown: props.onKeyDown,
-    onKeyUp: props.onKeyUp,
+    onBlur: event => {
+      if (props.onBlur) {
+        props.onBlur(event);
+      }
+    },
+    onFocus: event => {
+      if (props.onFocus) {
+        props.onFocus(event);
+      }
+    },
+    onKeyDown: event => {
+      if (props.onKeyDown) {
+        props.onKeyDown(event);
+      }
+    },
+    onKeyUp: event => {
+      if (props.onKeyUp) {
+        props.onKeyUp(event);
+      }
+    },
     validKeysDown: props.validKeysDown,
     validKeysUp: props.validKeysUp,
-    onLongPress: props.onLongPress,
-    onPress: props.onPress,
-    onPressIn: props.onPressIn,
-    onPressOut: props.onPressOut,
+    onLongPress: event => {
+      if (props.onLongPress) {
+        props.onLongPress(event);
+      }
+    },
+    onPress: event => {
+      if (props.onPress) {
+        props.onPress(event);
+      }
+    },
+    onPressIn: event => {
+      if (props.onPressIn) {
+        props.onPressIn(event);
+      }
+    },
+    onPressOut: event => {
+      if (props.onPressOut) {
+        props.onPressOut(event);
+      }
+    },
   };
 }
 

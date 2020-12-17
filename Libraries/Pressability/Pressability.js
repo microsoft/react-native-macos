@@ -81,12 +81,12 @@ export type PressabilityConfig = $ReadOnly<{|
   /*
    * Called after a key down event is detected.
    */
-  onKeyDown?: ?(event: KeyEvent) => mixed,
+  onKeyDown?: ?(event: KeyEvent) => void,
 
   /*
    * Called after a key up event is detected.
    */
-  onKeyUp?: ?(event: KeyEvent) => mixed,
+  onKeyUp?: ?(event: KeyEvent) => void,
 
   /*
    * Array of keys to receive key down events for
