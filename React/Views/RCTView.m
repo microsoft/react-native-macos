@@ -1685,7 +1685,7 @@ const NSString *downArrowPressKey = @"downArrow";
 
   RCTViewKeyboardEvent *keyboardEvent = [self keyboardEvent:event downPress:YES];
   if (keyboardEvent != nil) {
-    [_eventDispatcher sendEvent:[self keyboardEvent:event downPress:YES]];
+    [_eventDispatcher sendEvent:keyboardEvent];
   } else {
     [super keyDown:event];
   }
@@ -1701,7 +1701,7 @@ const NSString *downArrowPressKey = @"downArrow";
   if (keyboardEvent != nil) {
     [_eventDispatcher sendEvent:keyboardEvent];
   } else {
-    [super keyDown:event];
+    [super keyUp:event];
   }
 }
 #endif // TARGET_OS_OSX

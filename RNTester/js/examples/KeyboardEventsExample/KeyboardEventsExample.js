@@ -33,7 +33,7 @@ class KeyEventExample extends React.Component<{}, State> {
     this.setState({characters: e.nativeEvent.key});
     this.setState(prevState => ({
       eventStream:
-        prevState.eventStream + prevState.characters + '\nKey Down: ',
+        prevState.eventStream + '\nKey Down: ' + prevState.characters,
     }));
   };
 
@@ -41,7 +41,7 @@ class KeyEventExample extends React.Component<{}, State> {
     console.log('received key up event\n', e.nativeEvent.key);
     this.setState({characters: e.nativeEvent.key});
     this.setState(prevState => ({
-      eventStream: prevState.eventStream + prevState.characters + '\nKey Up: ',
+      eventStream: prevState.eventStream + '\nKey Up: ' + prevState.characters,
     }));
   };
 
