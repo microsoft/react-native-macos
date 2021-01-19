@@ -54,13 +54,13 @@ class KeyEventExample extends React.Component<{}, State> {
             <View
               acceptsKeyboardFocus={true}
               enableFocusRing={true}
-              validKeysDown={['a', 'b', 'rightArrow']}
+              validKeysDown={['a', 'b', 'x', 'rightArrow']}
               onKeyDown={this.onKeyDownEvent}
               validKeysUp={['c', 'd', 'leftArrow']}
               onKeyUp={this.onKeyUpEvent}>
               <Button
                 title={'Test button'}
-                validKeysDown={['g', 'h', 'i']}
+                validKeysDown={['g', 'h', 'i', 'x']}
                 onKeyDown={this.onKeyDownEvent}
                 validKeysUp={['j', 'k', 'l']}
                 onKeyUp={this.onKeyUpEvent}
