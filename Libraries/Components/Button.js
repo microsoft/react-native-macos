@@ -111,7 +111,7 @@ type ButtonProps = $ReadOnly<{|
    */
   accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
-  
+
   /**
    * If true, disable all interactions for this component.
    */
@@ -242,7 +242,7 @@ class Button extends React.Component<ButtonProps> {
       <Touchable
         accessibilityLabel={accessibilityLabel}
         accessibilityHint={accessibilityHint} // TODO(OSS Candidate ISS#2710739)
-        accessibilityRole={accessibilityRole || "button"} // TODO(OSS Candidate ISS#2710739)
+        accessibilityRole={accessibilityRole || 'button'} // TODO(OSS Candidate ISS#2710739)
         accessibilityState={accessibilityState}
         accessibilityActions={accessibilityActions}
         onAccessibilityAction={onAccessibilityAction}
