@@ -435,12 +435,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     if (_onAccessibilityAction != nil && accessibilityActionsNameMap[@"decrement"]) {
       isAllowed = YES;
     }
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
   } else if (selector == @selector(accessibilityPerformShowMenu)) {
     if (_onAccessibilityAction != nil && accessibilityActionsNameMap[@"showMenu"]) {
       isAllowed = YES;
     }
-#endif
+#endif // ]TODO(macOS ISS#2323203)
   } else {
     isAllowed = YES;
   }
