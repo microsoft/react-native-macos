@@ -12,15 +12,17 @@
 
 const React = require('react');
 const ReactNative = require('react-native');
-import {Platform} from 'react-native';
 const {Button, Text, View} = ReactNative;
 
-class AccessibilityShowMenu extends React.Component {
+import {Platform} from 'react-native';
+import type {AccessibilityActionEvent} from 'react-native/Libraries/Components/View/ViewAccessibility';
+
+class AccessibilityShowMenu extends React.Component<{}> {
   onClick: () => void = () => {
     console.log('received click event\n');
   };
 
-  onAccessibilityAction: e => void = e => {
+  onAccessibilityAction: (e: AccessibilityActionEvent) => void = e => {
     if (e.nativeEvent.actionName === 'showMenu') {
       console.log('received accessibility show event\n');
     }
