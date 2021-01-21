@@ -428,11 +428,32 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:unused)
     if (_onAccessibilityAction != nil && accessibilityActionsNameMap[@"decrement"]) {
       isAllowed = YES;
     }
+#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+  } else if (selector == @selector(accessibilityPerformShowMenu)) {
+    if (_onAccessibilityAction != nil && accessibilityActionsNameMap[@"showMenu"]) {
+      isAllowed = YES;
+    }
+#endif // ]TODO(macOS ISS#2323203)
   } else {
     isAllowed = YES;
   }
   return isAllowed;
 }
+
+// This override currently serves as a workaround to avoid the generic "action 1"
+// description for show menu
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
+- (NSString *)accessibilityActionDescription:(NSString *)action {
+	NSString *actionDescription = nil;
+	if ([action isEqualToString:NSAccessibilityPressAction] || [action isEqualToString:NSAccessibilityShowMenuAction]) {
+		actionDescription = NSAccessibilityActionDescription(action);
+	} else {
+		actionDescription = [super accessibilityActionDescription:action];
+	}
+	return actionDescription;
+}
+#pragma clang dianostic pop
 
 - (BOOL)isAccessibilityEnabled {
   BOOL isAccessibilityEnabled = YES;
@@ -668,6 +689,13 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:unused)
 - (BOOL)accessibilityPerformDecrement
 {
   return [self performAccessibilityAction:@"decrement"];
+}
+#endif // ]TODO(macOS ISS#2323203)
+
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+- (BOOL)accessibilityPerformShowMenu
+{
+  return [self performAccessibilityAction:@"showMenu"];
 }
 #endif // ]TODO(macOS ISS#2323203)
 
@@ -1711,7 +1739,7 @@ const NSString *downArrowPressKey = @"downArrow";
 
   RCTViewKeyboardEvent *keyboardEvent = [self keyboardEvent:event downPress:YES];
   if (keyboardEvent != nil) {
-    [_eventDispatcher sendEvent:[self keyboardEvent:event downPress:YES]];
+    [_eventDispatcher sendEvent:keyboardEvent];
   } else {
     [super keyDown:event];
   }
@@ -1727,7 +1755,7 @@ const NSString *downArrowPressKey = @"downArrow";
   if (keyboardEvent != nil) {
     [_eventDispatcher sendEvent:keyboardEvent];
   } else {
-    [super keyDown:event];
+    [super keyUp:event];
   }
 }
 #endif // TARGET_OS_OSX

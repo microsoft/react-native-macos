@@ -1181,6 +1181,8 @@ RCT_ENUM_CONVERTER(RCTAnimationType, (@{
       @"disclosure": NSAccessibilityDisclosureTriangleRole,
       @"group": NSAccessibilityGroupRole,
       @"list": NSAccessibilityListRole,
+      @"popupbutton": NSAccessibilityPopUpButtonRole,
+      @"menubutton": NSAccessibilityMenuButtonRole,
     };
   });
 
