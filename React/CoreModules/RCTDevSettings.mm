@@ -502,6 +502,8 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
 
 @implementation RCTDevSettings
 
+RCT_EXPORT_MODULE()
+
 - (instancetype)initWithDataSource:(id<RCTDevSettingsDataSource>)dataSource
 {
   return [super init];
