@@ -28,6 +28,11 @@
  */
 - (id)settingForKey:(NSString *)key;
 
+/**
+ * Returns all keys that are overridden
+ */
+- (NSArray<NSString *> *)overridenKeys;
+
 @end
 
 @interface RCTDevSettings : RCTEventEmitter

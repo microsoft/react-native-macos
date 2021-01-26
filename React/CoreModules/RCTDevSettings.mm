@@ -103,6 +103,11 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
   return _settings[key];
 }
 
+- (NSArray<NSString *> *)overridenKeys
+{
+  return [_settings allKeys];
+}
+
 - (void)_reloadWithDefaults:(NSDictionary *)defaultValues
 {
   NSDictionary *existingSettings = [_userDefaults objectForKey:kRCTDevSettingsUserDefaultsKey];
