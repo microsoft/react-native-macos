@@ -103,10 +103,12 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
   return _settings[key];
 }
 
+// [TODO(macOS ISS#2323203)
 - (NSArray<NSString *> *)overridenKeys
 {
   return [_settings allKeys];
 }
+// ]TODO(macOS ISS#2323203)
 
 - (void)_reloadWithDefaults:(NSDictionary *)defaultValues
 {
@@ -507,7 +509,7 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
 
 @implementation RCTDevSettings
 
-RCT_EXPORT_MODULE()
+RCT_EXPORT_MODULE()	// TODO(macOS ISS#2323203)
 
 - (instancetype)initWithDataSource:(id<RCTDevSettingsDataSource>)dataSource
 {

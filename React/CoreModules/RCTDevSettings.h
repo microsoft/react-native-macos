@@ -28,10 +28,12 @@
  */
 - (id)settingForKey:(NSString *)key;
 
+// [TODO(macOS ISS#2323203)
 /**
  * Returns all keys that are overridden
  */
 - (NSArray<NSString *> *)overridenKeys;
+// ]TODO(macOS ISS#2323203)
 
 @end
 
