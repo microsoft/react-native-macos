@@ -11,12 +11,15 @@
 'use strict';
 
 const React = require('react');
-const {Button, Text} = require('react-native');
+const {Button, Image, Text} = require('react-native');
+const image = {
+  uri: 'https://www.facebook.com/favicon.ico',
+};
 
 exports.displayName = 'TooltipExample';
 exports.framework = 'React';
 exports.title = 'Tooltip';
-exports.description = 'Examples that show how tooltip works in various components.';
+exports.description = 'Examples that showcase tooltip in various components.';
 
 exports.examples = [
   {
@@ -40,6 +43,13 @@ exports.examples = [
           Simple text string to showcase tooltip.
         </Text>
       );
+    },
+  },
+  {
+    title: 'Image',
+    description: ('Image to showcase tooltip.': string),
+    render: function(): React.Node {
+      return <Image source={image} style={{width:38, height: 38}} tooltip={"Facebook logo"}/>;
     },
   },
 ];
