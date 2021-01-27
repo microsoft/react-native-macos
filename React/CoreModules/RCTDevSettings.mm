@@ -482,7 +482,7 @@ RCT_EXPORT_METHOD(addMenuItem:(NSString *)title)
 
 @implementation RCTDevSettings
 
-RCT_EXPORT_MODULE()	// TODO(macOS ISS#2323203)
+RCT_EXPORT_MODULE()
 
 - (instancetype)initWithDataSource:(id<RCTDevSettingsDataSource>)dataSource
 {
