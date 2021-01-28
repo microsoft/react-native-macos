@@ -11,7 +11,26 @@
 'use strict';
 
 const React = require('react');
-const {Button, Image, Slider, Text, View} = require('react-native');
+const {Button, Image, Slider, StyleSheet, Text, TextInput, View} = require('react-native');
+
+const styles = StyleSheet.create({
+  image: {
+    width: 38,
+    height: 38,
+  },
+  textInput: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#0f0f0f',
+    flex: 1,
+    fontSize: 13,
+    padding: 4,
+  },
+  view: {
+    backgroundColor: '#3CE8DA',
+    padding: 10,
+  },
+});
+
 const image = {
   uri: 'https://www.facebook.com/favicon.ico',
 };
@@ -60,14 +79,14 @@ exports.examples = [
     title: 'Image',
     description: ('Image to showcase tooltip.': string),
     render: function(): React.Node {
-      return <Image source={image} style={{width:38, height: 38}} tooltip={"Facebook logo"}/>;
+      return <Image source={image} style={styles.image} tooltip={"Facebook logo"}/>;
     },
   },
   {
     title: 'View',
     description: ('Background color view to showcase tooltip.': string),
     render: function(): React.Node {
-      return <View style={{backgroundColor: '#3CE8DA', padding: 10}} tooltip={"Turquoise"}/>;
+      return <View style={styles.view} tooltip={"Turquoise"}/>;
     },
   },
   {
@@ -75,6 +94,17 @@ exports.examples = [
     description: ('Tooltip displays the current value.': string),
     render(): React.Element<any> {
       return <SliderExample />;
+    },
+  },
+  {
+    title: 'TextInput',
+    render: function(): React.Node {
+      return (
+        <TextInput
+          style={styles.textInput}
+          tooltip={"Name"}
+        />
+      );
     },
   },
 ];
