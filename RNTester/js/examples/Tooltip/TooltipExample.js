@@ -11,7 +11,15 @@
 'use strict';
 
 const React = require('react');
-const {Button, Image, Slider, StyleSheet, Text, TextInput, View} = require('react-native');
+const {
+  Button,
+  Image,
+  Slider,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} = require('react-native');
 
 const styles = StyleSheet.create({
   image: {
@@ -41,7 +49,11 @@ function SliderExample(props: React.ElementConfig<typeof Slider>) {
   return (
     <View>
       <Text>{value.toFixed(3)}</Text>
-      <Slider {...props} onValueChange={newValue => setValue(newValue)} tooltip={value.toFixed(3)}/>
+      <Slider
+        {...props}
+        onValueChange={newValue => setValue(newValue)}
+        tooltip={value.toFixed(3)}
+      />
     </View>
   );
 }
@@ -57,11 +69,11 @@ exports.examples = [
     description: ('Simple button to showcase tooltip.': string),
     render: function(): React.Node {
       return (
-          <Button
-            title="Hover me"
-            onPress={() => {}}
-            tooltip={"Button tooltip"}
-          />
+        <Button
+          title="Hover me"
+          onPress={() => {}}
+          tooltip={'Button tooltip'}
+        />
       );
     },
   },
@@ -70,7 +82,7 @@ exports.examples = [
     description: ('Simple text string to showcase tooltip.': string),
     render: function(): React.Node {
       return (
-        <Text tooltip={"Text tooltip"}>
+        <Text tooltip={'Text tooltip'}>
           Simple text string to showcase tooltip.
         </Text>
       );
@@ -80,7 +92,9 @@ exports.examples = [
     title: 'Image',
     description: ('Image to showcase tooltip.': string),
     render: function(): React.Node {
-      return <Image source={image} style={styles.image} tooltip={"Facebook logo"}/>;
+      return (
+        <Image source={image} style={styles.image} tooltip={'Facebook logo'} />
+      );
     },
   },
   {
@@ -100,12 +114,7 @@ exports.examples = [
   {
     title: 'TextInput',
     render: function(): React.Node {
-      return (
-        <TextInput
-          style={styles.textInput}
-          tooltip={"Name"}
-        />
-      );
+      return <TextInput style={styles.textInput} tooltip={'Name'} />;
     },
   },
 ];
