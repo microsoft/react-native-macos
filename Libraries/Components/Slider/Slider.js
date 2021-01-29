@@ -135,7 +135,7 @@ type Props = $ReadOnly<{|
   /**
    * Specifies the tooltip.
    */
-  tooltip?: ?string,  
+  tooltip?: ?string,
 |}>;
 
 /**
