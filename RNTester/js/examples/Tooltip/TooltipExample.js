@@ -101,7 +101,7 @@ exports.examples = [
     title: 'View',
     description: ('Background color view to showcase tooltip.': string),
     render: function(): React.Node {
-      return <View style={styles.view} tooltip={"Turquoise"}/>;
+      return <View style={styles.view} tooltip={'Turquoise'} />;
     },
   },
   {

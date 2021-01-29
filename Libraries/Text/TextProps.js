@@ -191,7 +191,7 @@ export type TextProps = $ReadOnly<{|
   /**
    * macOS Only
    */
-  
+
   /**
    * Specifies the Tooltip for the button view
    */

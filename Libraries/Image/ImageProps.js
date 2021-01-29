@@ -171,8 +171,8 @@ export type ImageProps = {|
 
   src?: empty,
   children?: empty,
-  
-   /**
+
+  /**
    * Specifies the Tooltip for the view
    */
   tooltip?: ?string,
