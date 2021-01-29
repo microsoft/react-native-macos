@@ -694,6 +694,10 @@ export type Props = $ReadOnly<{|
   forwardedRef?: ?ReactRefSetter<
     React.ElementRef<HostComponent<mixed>> & ImperativeMethods,
   >,
+  /*
+   * Specifies the tooltip.
+   */
+  tooltip?: ?string,
 |}>;
 
 type ImperativeMethods = $ReadOnly<{|
