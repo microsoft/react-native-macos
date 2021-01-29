@@ -59,6 +59,7 @@ exports.examples = [
       return (
           <Button
             title="Hover me"
+            onPress={() => {}}
             tooltip={"Button tooltip"}
           />
       );
