@@ -10,7 +10,8 @@ pr:
   branches:
     include:
       - master
-      - 0.59-stable
+      - 0.62-stable
+      - 0.63-stable
   paths:
     exclude:
       - '*.md'
@@ -31,6 +32,8 @@ jobs:
       - template: templates/apple-job-javascript.yml
         parameters:
             apply_office_patches: $(apply_office_patches)
+            slice_name: 'Xcode_12_2'
+            xcode_version: '/Applications/Xcode_12.2.app'
 
   - job: AppleRNPR
     displayName: Apple React Native PR
@@ -84,6 +87,8 @@ jobs:
           xcode_actions_release: $(xcode_actions_release)
           xcode_destination: $(xcode_destination)
           apply_office_patches: $(apply_office_patches)
+          slice_name: 'Xcode_12_2'
+          xcode_version: '/Applications/Xcode_12.2.app'
 
   - job: CliInit
     displayName: Verify react-native-macos-init
