@@ -1601,10 +1601,10 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 #pragma mark - Keyboard Events
 
 #if TARGET_OS_OSX
-const NSString *leftArrowPressKey = @"ArrowLeft";
-const NSString *rightArrowPressKey = @"ArrowRight";
-const NSString *upArrowPressKey = @"ArrowUp";
-const NSString *downArrowPressKey = @"ArrowDown";
+NSString* const leftArrowPressKey = @"ArrowLeft";
+NSString* const rightArrowPressKey = @"ArrowRight";
+NSString* const upArrowPressKey = @"ArrowUp";
+NSString* const downArrowPressKey = @"ArrowDown";
 
 - (RCTViewKeyboardEvent*)keyboardEvent:(NSEvent*)event downPress:(BOOL)downPress {
   // modifiers
@@ -1719,7 +1719,15 @@ const NSString *downArrowPressKey = @"ArrowDown";
     keyToReturn = @"Esc";
   } else if (enterKeyValidityCheck) {
     keyToReturn = @"Enter";
-  } else if (![validKeys containsObject:key] && !leftArrowValidityCheck && !rightArrowValidityCheck && !upArrowValidityCheck && !downArrowValidityCheck) {
+  } else if (leftArrowValidityCheck) {
+    keyToReturn = leftArrowPressKey;
+  } else if (rightArrowValidityCheck) {
+    keyToReturn = rightArrowPressKey;
+  } else if (upArrowValidityCheck) {
+    keyToReturn = upArrowPressKey;
+  } else if (downArrowValidityCheck) {
+    keyToReturn = downArrowPressKey;
+  } else if (![validKeys containsObject:key]) {
     keyToReturn = nil;
   }
   
