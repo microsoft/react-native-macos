@@ -89,12 +89,12 @@ static NSUInteger RCTDeviceFreeMemory() {
     return;
   }
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX
+  super.image = image;
+#else // TODO(macOS ISS#2323203)
   [self stop];
-#endif // TODO(macOS ISS#2323203)
-
   [self resetAnimatedImage];
-
+  
   if ([image respondsToSelector:@selector(animatedImageFrameAtIndex:)]) {
     NSUInteger animatedImageFrameCount = ((UIImage<RCTAnimatedImage> *)image).animatedImageFrameCount;
     // In case frame count is 0, there is no reason to continue.
@@ -116,19 +116,18 @@ static NSUInteger RCTDeviceFreeMemory() {
     self.frameBuffer[@(self.currentFrameIndex)] = self.currentFrame;
     dispatch_semaphore_signal(self.lock);
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
     // Calculate max buffer size
     [self calculateMaxBufferCount];
 
     if ([self paused]) {
       [self start];
     }
-#endif // TODO(macOS ISS#2323203)
-
+    
     [self.layer setNeedsDisplay];
   } else {
     super.image = image;
   }
+#endif // TODO(macOS ISS#2323203)
 }
 
 #pragma mark - Private
