@@ -144,6 +144,13 @@ jobs:
 
       - template: templates\prep-android-nuget.yml
 
+      # Enumerate and download all dependencies ..
+      - task: CmdLine@2
+        displayName: 'Verify Dependencies can be enumerated'
+        inputs:
+          script: python android-patches\scripts\downloadDependencies.py $(Build.SourcesDirectory)
+
+
       # Very similar to the default pack task .. but appends 'ndk21b' to the nuget pack version
       - task: CmdLine@2
         displayName: 'NuGet pack'
