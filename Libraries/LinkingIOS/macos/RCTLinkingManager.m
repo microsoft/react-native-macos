@@ -106,3 +106,7 @@ RCT_EXPORT_METHOD(getInitialURL:(RCTPromiseResolveBlock)resolve
     resolve(RCTNullIfNil(initialURL));
 }
 @end
+
+Class RCTLinkingManagerCls(void) {
+  return RCTLinkingManager.class;
+}
