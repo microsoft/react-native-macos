@@ -6,7 +6,7 @@ import shutil
 from subprocess import Popen, PIPE, STDOUT
 import sys
 import wget
-import urllib2
+from urllib.request import urlopen
 import glob
 import zipfile
 import time
@@ -64,7 +64,7 @@ def list_dependencies(react_native_dir, output_file_path):
 
     logging.debug("desired_jdk:" + desired_jdk)
     
-    gradle_command = "gradlew.bat :ReactAndroid:dependencies --configuration api"
+    gradle_command = "./gradlew :ReactAndroid:dependencies --configuration api"
     with open(output_file_path, "w+") as output_file:
         try:
             process = Popen(shlex.split(gradle_command), stdout=output_file, stderr=PIPE, env=env)
@@ -153,7 +153,7 @@ def try_download_dependency(download_dir, relative_url, file_type, dependency, r
     download_url = repo_url + relative_url
     
     try:
-        html_source = urllib2.urlopen(download_url).read()
+        html_source = urlopen(download_url).read()
         soup = BeautifulSoup(html_source, "html.parser")
         for link in soup.find_all('a'):
             if file_type in link['href']:
@@ -333,8 +333,8 @@ def get_dependency_node_dep_list_from_pom(pom_file_path):
 
         if(scope is None or scope.text in ['compile', 'runtime']):
             if scope is not None:
-                print "[" + scope.text + "]" 
-            print groupId.text + ":" + artifactId.text + ":" + version.text
+                logging.info("[" + scope.text + "]")
+            logging.info(groupId.text + ":" + artifactId.text + ":" + version.text)
             dependency_dependency_list.append(":".join([groupId.text, artifactId.text, version.text]))
 
     return dependency_dependency_list
@@ -375,8 +375,8 @@ def get_parent_node_dep_list_from_pom(pom_file_path):
 
         if(scope is None or scope.text in ['compile', 'runtime']):
             if scope is not None:
-                print "[" + scope.text + "]" 
-            print groupId.text + ":" + artifactId.text + ":" + version.text
+                logging.info("[" + scope.text + "]")
+            logging.info(groupId.text + ":" + artifactId.text + ":" + version.text)
             parent_dependency_list.append(":".join([groupId.text, artifactId.text, version.text]))
 
     # pom_file_content = open(pom_file_path, "r").read()
@@ -409,18 +409,18 @@ def copy_deps_from_local_sdk(target_dir, relative_dir):
                     maven directory structure of dependency
     """
 
-    nugetcache_path = os.environ['NugetMachineInstallRoot']
-    if not os.path.exists(nugetcache_path):
-        logging.info("Nuget cache does not exist. Continuing.")
-        return False
+#    nugetcache_path = os.environ['NugetMachineInstallRoot']
+#    if not os.path.exists(nugetcache_path):
+#        logging.info("Nuget cache does not exist. Continuing.")
+#        return False
 
-    desired_sdk_path = os.path.join(nugetcache_path, desired_sdk)
-    if not os.path.exists(desired_sdk_path):
-        logging.info("Desired android sdk " + desired_sdk + " not found in nuget cache. Continuing.")
-        return False
+#    desired_sdk_path = os.path.join(nugetcache_path, desired_sdk)
+#    if not os.path.exists(desired_sdk_path):
+#        logging.info("Desired android sdk " + desired_sdk + " not found in nuget cache. Continuing.")
+#        return False
 
     source_dir = os.path.join(
-        desired_sdk_path, "extras", "android", "m2repository")
+        desired_sdk, "extras", "android", "m2repository")
     source_dir = os.path.join(source_dir, relative_dir)
     if not os.path.exists(source_dir):
         logging.info("Dependecy not present in nuget cache android sdk. Continuing.")
@@ -478,11 +478,11 @@ def main():
     with open(packageJsonFile) as packageJsonText:
         packageJson = json.load(packageJsonText)
         if(packageJson[u'name'] != u'react-native' and packageJson[u'name'] != u'react-native-macos'):
-            print "Not a valid RN repo path!"
+            logging.info("Not a valid RN repo path!")
             exit(-1)
 
     if (not os.path.join(react_native_dir, "ReactAndroid", "build.gradle")):
-        print "Not a valid RN repo path!"
+        logging.info("Not a valid RN repo path!")
         exit(-1)
    
     dependency_dir_root = os.path.join(react_native_dir, "android", "dependencies")
@@ -491,6 +491,9 @@ def main():
     dependency_dir_hermes = os.path.join(dependency_dir_root, "hermes")
     dependency_list_file_path = os.path.join(dependency_dir_root, "gradle_dependencies.txt")
     log_file_path = os.path.join(react_native_dir, "android", "log_" + time.strftime("%Y%m%d-%H%M%S") + ".txt" )
+
+    if(not os.path.exists(os.path.join(react_native_dir, "android"))):
+        os.mkdir(os.path.join(react_native_dir, "android"))
 
     logging.basicConfig(level = logging.DEBUG, filename = log_file_path)
     logging.info("react_native_dir: " + react_native_dir)
