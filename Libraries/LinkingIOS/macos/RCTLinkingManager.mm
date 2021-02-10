@@ -9,6 +9,8 @@
 
 #import "RCTLinkingManager.h"
 
+#import <FBReactNativeSpec/FBReactNativeSpec.h>
+
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTUtils.h>
