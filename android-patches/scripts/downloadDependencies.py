@@ -532,5 +532,9 @@ def main():
  
     # Copy log file into the dependency root folder.
     shutil.copy(log_file_path, os.path.join(dependency_dir_root))
+
+    with open(log_file_path, "r") as fin:
+        print(fin.read())
+
 if __name__ == '__main__':
     main()
