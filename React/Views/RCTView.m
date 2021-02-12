@@ -1717,6 +1717,7 @@ NSString* const downArrowPressKey = @"ArrowDown";
 
   // Allow the flexibility of defining special keys in multiple ways
   BOOL enterKeyValidityCheck = [key isEqualToString:@"\r"] && ([validKeys containsObject:@"Enter"] || [validKeys containsObject:@"\r"]);
+  BOOL tabKeyValidityCheck = tabKeyPressed && ([validKeys containsObject:@"Tab"]); // tab has to be checked via a key code so we can't just use the key itself here
   BOOL escapeKeyValidityCheck = escapeKeyPressed && ([validKeys containsObject:@"Esc"] || [validKeys containsObject:@"Escape"]); // escape has to be checked via a key code so we can't just use the key itself here
   BOOL leftArrowValidityCheck = [validKeys containsObject:leftArrowPressKey] && leftArrowPressed;
   BOOL rightArrowValidityCheck = [validKeys containsObject:rightArrowPressKey] && rightArrowPressed;
