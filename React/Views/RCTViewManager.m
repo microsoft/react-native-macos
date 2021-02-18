@@ -495,6 +495,14 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
     view.validKeysUp = [RCTConvert NSArray:json];
   }
 }
+
+// Key-View loop management
+RCT_EXPORT_VIEW_PROPERTY(canBecomeViewKey, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(needsPanelToBecomeKey, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(nextKeyView, RCTView)
+RCT_EXPORT_VIEW_PROPERTY(nextValidKeyView, RCTView)
+RCT_EXPORT_VIEW_PROPERTY(previousKeyView, RCTView)
+RCT_EXPORT_VIEW_PROPERTY(previousValidKeyView, RCTView)
 #endif // ]TODO(macOS ISS#2323203)
 
 #pragma mark - ShadowView properties
