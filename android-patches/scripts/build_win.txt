@@ -1,0 +1,36 @@
+# android-build-office.yml
+
+# apple-droid-node-patching.yml
+node ./android-patches/bundle/bundle.js patch . Build OfficeRNHost V8 Focus --patch-store ./android-patches/patches --log-folder ./android-patches/logs --confirm true
+
+# Update package.json name to 'react-native'
+node .ado/renamePackageForOffice.js
+
+npm install
+
+"E:\Office\dev\otools\bin\NuGet.exe" restore ./ReactAndroid/packages.config -PackagesDirectory  ./ReactAndroid/packages/ -Verbosity Detailed -NonInteractive
+
+.ado\setup_droid_deps.bat
+# set REACT_NATIVE_BOOST_PATH=E:\github\react-native-macos\build_deps
+# set REACT_NATIVE_DEPENDENCIES=E:\github\react-native-macos\build_deps
+
+node .ado/bumpOfficeFileVersions.js
+
+# set REACT_NATIVE_DEPENDENCIES=./build_deps
+
+set ANDROID_SDK_ROOT=e:\\nugetcache\\androidsdk.29.0.1
+set ANDROID_NDK=e:\\nugetcache\\androidndk.21.0.16
+set JAVA_HOME=e:\\nugetcache\\jdk.1.8.3\\x64
+
+.\gradlew installArchives -Pparam="excludeLibs"
+
+# prep-android-nuget.yml
+
+$lines = Get-Content package.json | Where {$_ -match '^\s*"version":.*'} 
+$npmVersion = $lines.Trim().Split()[1].Trim('",');
+echo "##vso[task.setvariable variable=buildNumber]$npmVersion"
+
+# Enumerate dependencies.
+python android-patches\scripts\downloadDependencies.py
+
+"E:\Office\dev\otools\bin\NuGet.exe" pack ./ReactAndroid/ReactAndroid.nuspec -OutputDirectory ./final -Properties buildNumber=0.62.22-microsoft.0-ndk21;commitId=0fcddbd37c5d27eb2ae1ab1b5955febf4adba4e3

@@ -13,3 +13,6 @@ node ./android-patches/bundle/bundle.js diff . ../rnm-63-fresh --patch-name Offi
 node ./android-patches/bundle/bundle.js diff . ../rnm-63-fresh --patch-name Focus --whitelist-dirs ReactAndroid\src\main\java\com\facebook\react\views\view\,Libraries\Components\View\ReactNativeViewViewConfigAndroid.js
 
 node ./android-patches/bundle/bundle.js diff . ../rnm-63-fresh --patch-name Build --whitelist-dirs ReactAndroid\build.gradle,ReactAndroid\gradle.properties,ReactAndroid\NuGet.Config,ReactAndroid\packages.config,ReactAndroid\ReactAndroid.nuspec,ReactAndroid\src\main\jni\third-party\boost\Android.mk
+
+
+node ./android-patches/bundle/bundle.js diff . ../react-native-macos-fresh --patch-name NuSpec --whitelist-dirs ReactAndroid\ReactAndroid.nuspec
