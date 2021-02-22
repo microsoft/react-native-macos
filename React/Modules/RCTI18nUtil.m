@@ -15,7 +15,7 @@
 {
   static RCTI18nUtil *sharedInstance;
   static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{git s
+  dispatch_once(&onceToken, ^{
     sharedInstance = [self new];
     [sharedInstance swapLeftAndRightInRTL:true];
   });
