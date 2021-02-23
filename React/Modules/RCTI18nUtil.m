@@ -18,7 +18,7 @@
   dispatch_once(&onceToken, ^{
     sharedInstance = [self new];
     [sharedInstance swapLeftAndRightInRTL:true];
-    [sharedIntance allowRTL:true];
+    [sharedInstance allowRTL:true];
   });
 
   return sharedInstance;
