@@ -141,6 +141,10 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) RCTDirectEventBlock onKeyUp;
 @property (nonatomic, copy) NSArray<NSString*> *validKeysDown;
 @property (nonatomic, copy) NSArray<NSString*> *validKeysUp;
+
+// Key-View loop
+@property (nonatomic, copy) RCTView *nextKeyView;
+@property (nonatomic, copy) RCTView *previousKeyView;
 #endif // ]TODO(macOS ISS#2323203)
 
 /**

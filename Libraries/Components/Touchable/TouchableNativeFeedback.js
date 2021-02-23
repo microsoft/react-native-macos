@@ -26,6 +26,7 @@ import * as React from 'react';
 import invariant from 'invariant';
 
 import type {ProcessedColorValue} from '../../StyleSheet/processColor';
+import { RCTView } from '../View/ReactNativeViewAttributes';
 
 type Props = $ReadOnly<{|
   ...React.ElementConfig<TouchableWithoutFeedback>,
@@ -93,6 +94,9 @@ type Props = $ReadOnly<{|
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?Array<string>,
+  
+  nextKeyView?: RCTView,
+  previousKeyView?: RCTView,
 
   /**
    * Set to true to add the ripple effect to the foreground of the view, instead
@@ -311,6 +315,8 @@ class TouchableNativeFeedback extends React.Component<Props, State> {
         testID: this.props.testID,
         validKeysDown: this.props.validKeysDown,
         validKeysUp: this.props.validKeysUp,
+        nextKeyView: this.props.nextKeyView,
+        previousKeyView: this.props.previousKeyView,
       },
       ...children,
     );

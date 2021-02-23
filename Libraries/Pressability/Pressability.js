@@ -115,6 +115,9 @@ export type PressabilityConfig = $ReadOnly<{|
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?Array<string>,
+  
+  nextKeyView?: RCTView,
+  previousKeyView?: RCTView,
 
   /**
    * Called when the hover is activated to provide visual feedback.

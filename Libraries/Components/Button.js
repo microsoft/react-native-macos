@@ -28,6 +28,7 @@ import type {
   AccessibilityActionInfo,
   AccessibilityRole,
 } from './View/ViewAccessibility';
+import { RCTView } from './View/ReactNativeViewAttributes';
 
 type ButtonProps = $ReadOnly<{|
   /**
@@ -142,7 +143,7 @@ type ButtonProps = $ReadOnly<{|
    * Handler to be called when a key up press is detected
    */
   onKeyUp?: ?(e: KeyEvent) => void,
-
+  
   /*
    * Array of keys to receive key down events for
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
@@ -154,6 +155,10 @@ type ButtonProps = $ReadOnly<{|
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?Array<string>,
+  
+  nextKeyView?: ?RCTView,
+  previousKeyView?: ?RCTView,
+  
   /*
    * Specifies the Tooltip for the view
    */
@@ -212,9 +217,11 @@ class Button extends React.Component<ButtonProps> {
       onFocus, // TODO(OSS Candidate ISS#2710739)
       onBlur, // TODO(OSS Candidate ISS#2710739)
       onKeyDown,
+      onKeyUp,
       validKeysDown,
       validKeysUp,
-      onKeyUp,
+      nextKeyView,
+      previousKeyView,
       tooltip,
     } = this.props;
     const buttonStyles = [styles.button];
@@ -266,6 +273,8 @@ class Button extends React.Component<ButtonProps> {
         onKeyUp={onKeyUp}
         validKeysDown={validKeysDown}
         validKeysUp={validKeysUp}
+        nextKeyView={nextKeyView}
+        previousKeyView={previousKeyView}
         tooltip={tooltip}
         touchSoundDisabled={touchSoundDisabled}>
         <View style={buttonStyles}>

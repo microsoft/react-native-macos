@@ -40,6 +40,7 @@ import type {DraggedTypesType} from '../View/DraggedType';
 import Platform from '../../Utilities/Platform';
 import View from '../../Components/View/View';
 import * as React from 'react';
+import { RCTView } from '../View/ReactNativeViewAttributes';
 
 type Props = $ReadOnly<{|
   accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
@@ -69,6 +70,8 @@ type Props = $ReadOnly<{|
   onKeyUp?: ?(event: KeyEvent) => mixed,
   validKeysDown?: ?Array<string>,
   validKeysUp?: ?Array<string>,
+  nextKeyView?: RCTView,
+  previousKeyView?: RCTView,
   onLayout?: ?(event: LayoutEvent) => mixed,
   onLongPress?: ?(event: PressEvent) => mixed,
   onPress?: ?(event: PressEvent) => mixed,
@@ -115,6 +118,8 @@ const PASSTHROUGH_PROPS = [
   'onKeyUp',
   'validKeysDown',
   'validKeysUp',
+  'nextKeyView',
+  'previousKeyView',
   'onLayout',
   'onMouseEnter', // [TODO(macOS ISS#2323203)
   'onMouseLeave',
@@ -240,6 +245,8 @@ function createPressabilityConfig(props: Props): PressabilityConfig {
     onKeyUp: props.onKeyUp,
     validKeysDown: props.validKeysDown,
     validKeysUp: props.validKeysUp,
+    nextKeyView: props.nextKeyView,
+    previousKeyView: props.previousKeyView,
     onLongPress: props.onLongPress,
     onPress: props.onPress,
     onPressIn: props.onPressIn,
