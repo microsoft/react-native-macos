@@ -520,8 +520,8 @@ SPEC CHECKSUMS:
   CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
   CocoaLibEvent: 2fab71b8bd46dd33ddb959f7928ec5909f838e3f
   DoubleConversion: 56a44bcfd14ab2ff66f5a146b2e875eb4b69b19b
-  FBLazyVector: 40b765309be5521f30a205a37b3f6c2f38365dd0
-  FBReactNativeSpec: 3611035286061d996c0c6a70ffeba04860062078
+  FBLazyVector: 33306016e21286a3ebf05b2e74758ecb51b487cb
+  FBReactNativeSpec: eba7c1b592e557c3d328af72fcd04fa5ad9dc732
   Flipper: be611d4b742d8c87fbae2ca5f44603a02539e365
   Flipper-DoubleConversion: 38631e41ef4f9b12861c67d17cb5518d06badc41
   Flipper-Folly: c12092ea368353b58e992843a990a3225d4533c3
@@ -534,32 +534,32 @@ SPEC CHECKSUMS:
   libevent: ee9265726a1fc599dea382964fa304378affaa5f
   OpenSSL-Universal: 8b48cc0d10c1b2923617dfe5c178aa9ed2689355
   RCT-Folly: 1347093ffe75e152d846f7e45a3ef901b60021aa
-  RCTRequired: 70a28634e31c9af9f860d93b115f8ac7b005056e
-  RCTTypeSafety: 06642df20f9fca9eeb09874c8377ab351af1305d
-  React: e7b2d1d9a7a5c34d4ed6d0208e7960c784078bb8
-  React-ART: e3210b729ed4d81dbb6d74c92c4572a0e6c50710
-  React-callinvoker: d77ddfc9f1d5f964b75627ca195b5e827c96cb1c
-  React-Core: 6e82fb4acd797c5933525f86d3f33f7d27669355
-  React-CoreModules: 865ac74fe7df7020bb423d1be3717ec0dd60f519
-  React-cxxreact: 0bf0829bbf34d0872bbf45f7507e08f3cde5dc2a
-  React-jsi: c8a67cd9dd3c3278a560897eaa48d1b149eaec77
-  React-jsiexecutor: 92a55e9edd1f99d122d4156e2523f659db1bc464
-  React-jsinspector: 27797ddc8e29b9a65ce09a2d3675faead504271f
-  React-RCTActionSheet: 4a7bd0a3b64480fdf76a1ff13b701a7ee977b1d6
-  React-RCTAnimation: c425a9fd50f0815676a6a6ade591566e4aaac47e
-  React-RCTBlob: c3d7ddaea3355313dfaf632b0ea8013c4eb2bb99
-  React-RCTImage: 5df8e7d8c04aedd57e5d87d919c68d0f3fbe6c6f
-  React-RCTLinking: c4a6eb0cc4c3e08cfa125af846299fc0859ee367
-  React-RCTNetwork: c7aaea30843f3c915ce46d5d389ae30c1f1f974f
-  React-RCTPushNotification: a28c34a9a2cd4395413b6466ee3fd492637d4464
-  React-RCTSettings: baf2012545edd0094ee4178e9fd31f5048e6684c
-  React-RCTTest: 681e98cf0dcc8707867c4b7d0ec546eeb396ba6f
-  React-RCTText: 68b151ec656615ebc6ae467fc616ecacd74f85fe
-  React-RCTVibration: b687fbd3a469e46691ab5d9f17b46f2197ed99c8
-  React-TurboModuleCxx-RNW: 2b20d9836f968b774f0ccc74bdf49c97c84e4e05
-  React-TurboModuleCxx-WinRTPort: 301982e7497cc5aecbf87dc6740e089296db47d9
-  ReactCommon: 6f0f031ba1dc018f2bb23a2c97b0f40532498a03
-  Yoga: b788f6c2e74199129021d9ac340e7fadc7b2ecc7
+  RCTRequired: c1be2a438c43a3bbaae1c648944e74f09bf7b6df
+  RCTTypeSafety: 8a51d44eafbc4d6b845f4bf158973cb15017af4a
+  React: cd84a8114f257b60d426051214bb220e01f31853
+  React-ART: dc713fc5e6fc9d91111ac8dcc36f423edaf726db
+  React-callinvoker: 22c4350c8d512f0c4d28c652de164d261790eee3
+  React-Core: 301a9137b800e78e100804b201a2751eba784396
+  React-CoreModules: 1f63ebf5afc57f1182c29d071f1d0b36729d3c1e
+  React-cxxreact: 4d4c317d32055a60063d6788962df6d8e5e959a9
+  React-jsi: 5130ca982064487449da1e916815a2ab17c8b5f0
+  React-jsiexecutor: fbc8b1046ca4a8a9b5fc1e92e506a96e22600f5f
+  React-jsinspector: dbed1bb565004515d7470a54673da99cd36d6ac8
+  React-RCTActionSheet: 8d7d186c02a07c96ff8b4193c39c829003d5e401
+  React-RCTAnimation: 769775382fcb0fd801bc0e8c4ba69b112b605e97
+  React-RCTBlob: c0e2dba349e77aa3ccbc99b1c61f0f8ba53b6add
+  React-RCTImage: d1424690347182fd14183d471fb756542b9645b8
+  React-RCTLinking: f8d483d3e8e4bcc2749e67d5f68b8006dfe5eb3d
+  React-RCTNetwork: 7d4f1caaae3b87a9c3e924eeea4805a3bcaf9144
+  React-RCTPushNotification: 03dc947964f5c2a3c53389e7c386b5b8bcef2b17
+  React-RCTSettings: 6be17236bffccbcfa3a57dd961b7682998a92a11
+  React-RCTTest: 0de4043839e8b9782e9ca4c3ecaf7c6dace48027
+  React-RCTText: efcbbf74281e0c42f0c7737c8cc0f148b3cf8983
+  React-RCTVibration: 45f0a1b6780752f516bf81717cfdf901896e93a7
+  React-TurboModuleCxx-RNW: 4da8eb44b10ab3c5bbab9fcb0a8ae415c20ea3c9
+  React-TurboModuleCxx-WinRTPort: 723f549e1b886bae14bf16b6ef8420aef0d3f190
+  ReactCommon: 24aa1f1de935591060e0730148c0d85da7567214
+  Yoga: e009ba9e81fe6c0b4067e62295faa522982b3860
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
 PODFILE CHECKSUM: 18ca7d3b0e7db79041574a8bb6200b9e1c2d5359
