@@ -118,6 +118,10 @@ export type PressabilityConfig = $ReadOnly<{|
   
   nextKeyView?: RCTView,
   previousKeyView?: RCTView,
+  nextValidKeyView?: RCTView,
+  previousValidKeyView?: RCTView,
+  needsPanelToBecomeKey?: boolean,
+  canBecomeKeyView?: boolean,
 
   /**
    * Called when the hover is activated to provide visual feedback.

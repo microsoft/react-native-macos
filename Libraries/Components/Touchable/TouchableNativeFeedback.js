@@ -95,8 +95,38 @@ type Props = $ReadOnly<{|
    */
   validKeysUp?: ?Array<string>,
   
-  nextKeyView?: RCTView,
-  previousKeyView?: RCTView,
+  /**
+   * Specifies whether the view can become key view
+   */
+  canBecomeKeyView?: ?boolean, // TODO(macOS ISS#2323203)
+
+  /**
+   * A Boolean value indicating whether the view needs its panel to become the 
+   * key window before it can handle keyboard input and navigation.
+   */
+  needsPanelToBecomeKey?: ?boolean, // TODO(macOS ISS#2323203)
+  
+  /**
+  * The view object that follows the current view in the key view loop.
+  */
+  nextKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
+  
+  /**
+  * The closest view object in the key view loop that follows the current 
+  * view in the key view loop and accepts first responder status.
+  */
+  nextValidKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
+ 
+  /**
+  * The view object preceding the current view in the key view loop.
+  */
+  previousKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
+ 
+  /**
+  * The closest view object in the key view loop that precedes the current 
+  * view and accepts first responder status.
+  */
+  previousValidKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
 
   /**
    * Set to true to add the ripple effect to the foreground of the view, instead
@@ -317,6 +347,10 @@ class TouchableNativeFeedback extends React.Component<Props, State> {
         validKeysUp: this.props.validKeysUp,
         nextKeyView: this.props.nextKeyView,
         previousKeyView: this.props.previousKeyView,
+        nextValidKeyView: this.props.nextValidKeyView,
+        previousValidKeyView: this.props.previousValidKeyView,
+        canBecomeKeyView: this.canBecomeKeyView,
+        needsPanelToBecomeKey: this.needsPanelToBecomeKey,
       },
       ...children,
     );

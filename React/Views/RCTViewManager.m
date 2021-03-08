@@ -497,7 +497,7 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
 }
 
 // Key-View loop management
-RCT_EXPORT_VIEW_PROPERTY(canBecomeViewKey, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(canBecomeKeyView, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(needsPanelToBecomeKey, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(nextKeyView, RCTView)
 RCT_EXPORT_VIEW_PROPERTY(nextValidKeyView, RCTView)

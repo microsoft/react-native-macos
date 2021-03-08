@@ -24,30 +24,35 @@ class KeyViewLoopExample extends React.Component<{}, State> {
         <View>
           {Platform.OS === 'macos' ? (
             <View
-              acceptsKeyboardFocus={true}
+              focusable={true}
               enableFocusRing={true}>
               <Button
+                focusable={true}
                 title={'First'}
                 onPress={() => {}}
                 ref='first_button'
                 // nextKeyView={}
               />
               <Button
+                focusable={true}
                 title={'Third'}
                 onPress={() => {}}
                 ref='third_button'
               />
               <Button
+                focusable={true}
                 title={'Second'}
                 onPress={() => {}}
                 ref='second_button'
               />
               <Button
+                focusable={true}
                 title={'Fifth'}
                 onPress={() => {}}
                 ref='fifth_button'
               />
               <Button
+                focusable={true}
                 title={'Fourth'}
                 onPress={() => {}}
                 ref='fourth_button'
