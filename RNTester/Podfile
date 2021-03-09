@@ -48,18 +48,18 @@ target 'RNTesterIntegrationTests' do
 end
 
 target 'RNTester-macOS' do
-  platform :osx, '10.15'
+  platform :osx, '10.14'
   pods(:hermes_enabled => true)
 end
 
 target 'RNTester-macOSUnitTests' do
-  platform :osx, '10.15'
+  platform :osx, '10.14'
   pods()
   pod 'React-RCTTest', :path => "./RCTTest"
 end
 
 target 'RNTester-macOSIntegrationTests' do
-  platform :osx, '10.15'
+  platform :osx, '10.14'
   pods()
   pod 'React-RCTTest', :path => "./RCTTest"
 end
@@ -76,7 +76,7 @@ target 'iosSimulatorBuild' do
 end
 
 target 'macOSBuild' do
-  platform :osx, '10.15'
+  platform :osx, '10.14'
   pods()
 end
 # ]TODO(macOS ISS#2323203)
