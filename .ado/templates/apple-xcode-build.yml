@@ -10,7 +10,7 @@ parameters:
 
 steps:
   - task: Xcode@5
-    displayName: 'XCode ${{ parameters.xcode_actions }} ${{ parameters.xcode_configuration }} ${{ parameters.xcode_sdk }} ${{ parameters.xcode_scheme }}'
+    displayName: 'Xcode ${{ parameters.xcode_actions }} ${{ parameters.xcode_configuration }} ${{ parameters.xcode_sdk }} ${{ parameters.xcode_scheme }}'
     inputs:
       actions: '${{ parameters.xcode_actions }}'
       configuration: ${{ parameters.xcode_configuration }}
