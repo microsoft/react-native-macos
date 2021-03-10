@@ -223,7 +223,7 @@ try {
       // TODO: Get target OS and simulator from .tests.env
       tryExecNTimes(
         () => {
-          let destination = 'platform=iOS Simulator,name=iPhone 11,OS=13.3';
+          let destination = 'platform=iOS Simulator,name=iPhone 13,OS=13.3';
           let sdk = 'iphonesimulator';
           let scheme = 'HelloWorld';
 
