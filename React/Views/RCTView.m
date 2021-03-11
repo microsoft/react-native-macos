@@ -1355,6 +1355,11 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   CGColorRelease(_borderEndColor);
 }
 
+//- (RCTView *)nextKeyView
+//{
+//	return [super nextKeyView];
+//}
+
 #pragma mark Focus ring // [TODO(macOS ISS#2323203)
 
 #if TARGET_OS_OSX

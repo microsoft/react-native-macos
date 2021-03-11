@@ -18,44 +18,48 @@ const {Button, PlatformColor, StyleSheet, Text, View} = ReactNative;
 class KeyViewLoopExample extends React.Component<{}, State> {
 
   render() {
+    // var firstButtonRef = useRef(null);
+
     return (
       <View>
-        <Text>Key-view loops allow custom control of keyboard accessibility to navigate between controls.</Text>
+        <Text>
+          Key-view loops allow custom control of keyboard accessibility to
+          navigate between controls.
+        </Text>
         <View>
           {Platform.OS === 'macos' ? (
-            <View
-              focusable={true}
-              enableFocusRing={true}>
+            <View focusable={true} enableFocusRing={true}>
               <Button
                 focusable={true}
                 title={'First'}
                 onPress={() => {}}
-                ref='first_button'
-                // nextKeyView={}
+                ref={this.firstButtonRef}
+                nextKeyView={this.thirdButtonRef}
               />
               <Button
                 focusable={true}
                 title={'Third'}
                 onPress={() => {}}
-                ref='third_button'
+                ref={this.thirdButtonRef}
+                nextKeyView={this.firstButtonRef}
               />
               <Button
                 focusable={true}
                 title={'Second'}
                 onPress={() => {}}
-                ref='second_button'
+                // ref='second_button'
               />
               <Button
                 focusable={true}
                 title={'Fifth'}
                 onPress={() => {}}
-                ref='fifth_button'
+                // ref='fifth_button'
               />
               <Button
                 focusable={true}
                 title={'Fourth'}
                 onPress={() => {}}
-                ref='fourth_button'
+                // ref='fourth_button'
               />
             </View>
           ) : null}
