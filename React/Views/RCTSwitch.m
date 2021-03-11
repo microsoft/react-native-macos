@@ -7,11 +7,14 @@
 
 #import "RCTSwitch.h"
 
+<<<<<<< HEAD
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 #import <QuartzCore/QuartzCore.h>
 #endif // ]TODO(macOS ISS#2323203)
 
 #import "RCTEventDispatcher.h"
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 #import "UIView+React.h"
 
 @implementation RCTSwitch

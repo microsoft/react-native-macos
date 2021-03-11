@@ -91,9 +91,15 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
   NSArray<NSString *> *buttons = RCTConvertOptionalVecToArray(options.options(), ^id(NSString *element) {
     return element;
   });
+  NSArray<NSNumber *> *disabledButtonIndices;
   NSInteger cancelButtonIndex =
       options.cancelButtonIndex() ? [RCTConvert NSInteger:@(*options.cancelButtonIndex())] : -1;
   NSArray<NSNumber *> *destructiveButtonIndices;
+  if (options.disabledButtonIndices()) {
+    disabledButtonIndices = RCTConvertVecToArray(*options.disabledButtonIndices(), ^id(double element) {
+      return @(element);
+    });
+  }
   if (options.destructiveButtonIndices()) {
     destructiveButtonIndices = RCTConvertVecToArray(*options.destructiveButtonIndices(), ^id(double element) {
       return @(element);
@@ -120,6 +126,7 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
       @"destructiveButtonIndices" : destructiveButtonIndices,
       @"anchor" : anchor,
       @"tintColor" : tintColor,
+      @"disabledButtonIndices" : disabledButtonIndices,
     });
     return;
   }
@@ -153,6 +160,17 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
                                                       }]];
 
     index++;
+  }
+
+  if (disabledButtonIndices) {
+    for (NSNumber *disabledButtonIndex in disabledButtonIndices) {
+      if ([disabledButtonIndex integerValue] < buttons.count) {
+        [alertController.actions[[disabledButtonIndex integerValue]] setEnabled:false];
+      } else {
+        RCTLogError(@"Index %@ from `disabledButtonIndices` is out of bounds. Maximum index value is %@.", @([disabledButtonIndex integerValue]), @(buttons.count - 1));
+        return;
+      }
+    }
   }
 
   alertController.view.tintColor = tintColor;
@@ -315,6 +333,7 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
 #endif // ]TODO(macOS ISS#2323203)
 }
 
+<<<<<<< HEAD
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 
 #pragma mark - NSSharingServicePickerDelegate methods
@@ -369,8 +388,11 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
 - (std::shared_ptr<TurboModule>)getTurboModuleWithJsInvoker:(std::shared_ptr<CallInvoker>)jsInvoker
                                               nativeInvoker:(std::shared_ptr<CallInvoker>)nativeInvoker
                                                  perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+=======
+- (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 {
-  return std::make_shared<NativeActionSheetManagerSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<NativeActionSheetManagerSpecJSI>(params);
 }
 
 @end

@@ -11,8 +11,12 @@
 'use strict';
 
 import type {BubblingEventHandler, WithDefault} from '../../Types/CodegenTypes';
+<<<<<<< HEAD
 import type {ColorValue} from '../../StyleSheet/StyleSheetTypes';
 import type {ProcessedColorValue} from '../../StyleSheet/processColor'; // TODO(macOS ISS#2323203)
+=======
+import type {ColorValue} from '../../StyleSheet/StyleSheet';
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 import type {ViewProps} from '../View/ViewPropTypes';
 import * as React from 'react';
 
@@ -55,5 +59,5 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
 
 export default (codegenNativeComponent<NativeProps>('Switch', {
   paperComponentName: 'RCTSwitch',
-  excludedPlatform: 'android',
+  excludedPlatforms: ['android'],
 }): ComponentType);

@@ -9,7 +9,6 @@
 
 #import <React/RCTUIManager.h>
 #import "RCTBridge.h"
-#import "RCTEventDispatcher.h"
 #import "RCTSwitch.h"
 #import "UIView+React.h"
 
@@ -51,12 +50,16 @@ RCT_EXPORT_METHOD(setValue : (nonnull NSNumber *)viewTag toValue : (BOOL)value)
     if ([view isKindOfClass:[RCTSwitch class]]) {
       [(RCTSwitch *)view setOn:value animated:NO];
     } else {
+<<<<<<< HEAD
       RCTUIView *subview = view.subviews.firstObject;
       if ([subview isKindOfClass:[RCTSwitch class]]) {
         [(RCTSwitch *)subview setOn:value animated:NO];
       } else {
         RCTLogError(@"view type must be UISwitch");
       }
+=======
+      RCTLogError(@"view type must be UISwitch");
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
     }
   }];
 }

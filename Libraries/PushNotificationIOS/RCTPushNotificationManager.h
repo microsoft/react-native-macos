@@ -15,8 +15,12 @@ extern NSString *const RCTRemoteNotificationReceived;
 typedef void (^RCTRemoteNotificationCallback)(UIBackgroundFetchResult result);
 #endif // TODO(macOS ISS#2323203)
 
+<<<<<<< HEAD
 #if !TARGET_OS_TV && !TARGET_OS_UIKITFORMAC
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+=======
+#if !TARGET_OS_UIKITFORMAC
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 + (void)didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings;
 #endif // TODO(macOS ISS#2323203)
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken;

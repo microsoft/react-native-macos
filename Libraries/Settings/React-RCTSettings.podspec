@@ -27,7 +27,11 @@ Pod::Spec.new do |s|
   s.documentation_url      = "https://reactnative.dev/docs/settings"
   s.license                = package["license"]
   s.author                 = "Facebook, Inc. and its affiliates"
+<<<<<<< HEAD
   s.platforms              = { :ios => "10.0", :tvos => "10.0", :osx => "10.13" } # TODO(macOS GH#214)
+=======
+  s.platforms              = { :ios => "10.0" }
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   s.compiler_flags         = folly_compiler_flags + ' -Wno-nullability-completeness'
   s.source                 = source
   s.source_files           = "*.{m,mm}"

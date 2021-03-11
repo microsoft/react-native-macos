@@ -15,9 +15,13 @@
 #import "RCTBridge+Private.h"
 #import "RCTBridge.h"
 #import "RCTConstants.h"
+<<<<<<< HEAD
 #import "RCTDevSettings.h" // TODO(OSS Candidate ISS#2710739)
 #import "RCTEventDispatcher.h"
 // TODO(OSS Candidate ISS#2710739): remove #import "RCTKeyCommands.h"
+=======
+#import "RCTKeyCommands.h"
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 #import "RCTLog.h"
 #import "RCTPerformanceLogger.h"
 #import "RCTProfile.h"
@@ -30,6 +34,7 @@
 #import "RCTView.h"
 #import "UIView+React.h"
 
+<<<<<<< HEAD
 #if TARGET_OS_TV
 #import "RCTTVNavigationEventEmitter.h"
 #import "RCTTVRemoteHandler.h"
@@ -43,6 +48,8 @@
 #define RCT_LAYOUT_THROTTLE 0.25
 #endif // ]TODO(macOS ISS#2323203)
 
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 NSString *const RCTContentDidAppearNotification = @"RCTContentDidAppearNotification";
 
 @interface RCTUIManager (RCTRootView)
@@ -109,13 +116,6 @@ NSString *const RCTContentDidAppearNotification = @"RCTContentDidAppearNotificat
                                                  name:RCTContentDidAppearNotification
                                                object:self];
 
-#if TARGET_OS_TV
-    self.tvRemoteHandler = [RCTTVRemoteHandler new];
-    for (NSString *key in [self.tvRemoteHandler.tvRemoteGestureRecognizers allKeys]) {
-      [self addGestureRecognizer:self.tvRemoteHandler.tvRemoteGestureRecognizers[key]];
-    }
-#endif
-
     [self showLoadingView];
 
     // Immediately schedule the application to be started.
@@ -140,16 +140,6 @@ NSString *const RCTContentDidAppearNotification = @"RCTContentDidAppearNotificat
 
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
-
-#if TARGET_OS_TV
-- (UIView *)preferredFocusedView
-{
-  if (self.reactPreferredFocusedView) {
-    return self.reactPreferredFocusedView;
-  }
-  return [super preferredFocusedView];
-}
-#endif
 
 #pragma mark - passThroughTouches
 

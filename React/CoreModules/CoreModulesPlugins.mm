@@ -43,11 +43,16 @@ Class RCTCoreModulesClassProvider(const char *name) {
     {"RedBox", RCTRedBoxCls},
 #if !TARGET_OS_OSX // TODO(macOS) = Do we need these?
     {"LogBox", RCTLogBoxCls},
+<<<<<<< HEAD
 #endif // TODO(macOS)
     {"TVNavigationEventEmitter", RCTTVNavigationEventEmitterCls},
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
     {"WebSocketExecutor", RCTWebSocketExecutorCls},
     {"WebSocketModule", RCTWebSocketModuleCls},
     {"DevLoadingView", RCTDevLoadingViewCls},
+    {"DevSplitBundleLoader", RCTDevSplitBundleLoaderCls},
+    {"EventDispatcher", RCTEventDispatcherCls},
   };
 
   auto p = sCoreModuleClassMap.find(name);

@@ -31,6 +31,7 @@ RCTMessageThread::RCTMessageThread(NSRunLoop *runLoop, RCTJavaScriptCompleteBloc
 
 RCTMessageThread::~RCTMessageThread()
 {
+  RCTAssert(m_shutdown, @"RCTMessageThread: quitSynchronous() not called before destructor");
   CFRelease(m_cfRunLoop);
 }
 
@@ -76,10 +77,15 @@ void RCTMessageThread::runOnQueue(std::function<void()> &&func)
   if (m_shutdown) {
     return;
   }
+<<<<<<< HEAD
 
   auto sharedThis = shared_from_this(); // TODO(OSS Candidate ISS#2710739): `this` can be deleted before the RunLoop executes the block as revealed by ASAN test runs.
   runAsync([sharedThis, func = std::make_shared<std::function<void()>>(std::move(func))] {
     if (sharedThis->m_shutdown == false) {
+=======
+  runAsync([sharedThis = shared_from_this(), func = std::make_shared<std::function<void()>>(std::move(func))] {
+    if (!sharedThis->m_shutdown) {
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
       sharedThis->tryFunc(*func);
     }
   });
@@ -90,9 +96,14 @@ void RCTMessageThread::runOnQueueSync(std::function<void()> &&func)
   if (m_shutdown) {
     return;
   }
+<<<<<<< HEAD
   auto sharedThis = shared_from_this(); // TODO(OSS Candidate ISS#2710739): `this` can be deleted before the RunLoop executes the block as revealed by ASAN test runs.
   runSync([sharedThis, func = std::move(func)] {
     if (sharedThis->m_shutdown == false) {
+=======
+  runSync([sharedThis = shared_from_this(), func = std::move(func)] {
+    if (!sharedThis->m_shutdown) {
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
       sharedThis->tryFunc(func);
     }
   });

@@ -90,8 +90,12 @@ export type PressEvent = ResponderSyntheticEvent<
     altKey?: ?boolean, // TODO(macOS ISS#2323203)
     button?: ?number, // TODO(macOS ISS#2323203)
     changedTouches: $ReadOnlyArray<$PropertyType<PressEvent, 'nativeEvent'>>,
+<<<<<<< HEAD
     ctrlKey?: ?boolean, // TODO(macOS ISS#2323203)
     force: number,
+=======
+    force?: number,
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
     identifier: number,
     locationX: number,
     locationY: number,

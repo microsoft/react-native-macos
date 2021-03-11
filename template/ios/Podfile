@@ -6,7 +6,15 @@ platform :ios, '10.0'
 target 'HelloWorld' do
   config = use_native_modules!
 
+<<<<<<< HEAD
   use_react_native!(:path => config["reactNativePath"])
+=======
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # to enable hermes on iOS, change `false` to `true` and then install pods
+    :hermes_enabled => false
+  )
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
   target 'HelloWorldTests' do
     inherit! :complete
@@ -16,18 +24,10 @@ target 'HelloWorld' do
   # Enables Flipper.
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
-  # you should disable these next few lines.
-  use_flipper!
+  # you should disable the next line.
+  use_flipper!()
+
   post_install do |installer|
-    flipper_post_install(installer)
-  end
-end
-
-target 'HelloWorld-tvOS' do
-  # Pods for HelloWorld-tvOS
-
-  target 'HelloWorld-tvOSTests' do
-    inherit! :search_paths
-    # Pods for testing
+    react_native_post_install(installer)
   end
 end

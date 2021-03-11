@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <memory>
 #import <string>
 
 #import <Foundation/Foundation.h>
@@ -15,7 +16,12 @@
 namespace facebook {
 namespace react {
 
+<<<<<<< HEAD
 class RCTMessageThread : public MessageQueueThread, public std::enable_shared_from_this<RCTMessageThread> { // TODO(OSS Candidate ISS#2710739)
+=======
+class RCTMessageThread : public MessageQueueThread,
+                         public std::enable_shared_from_this<RCTMessageThread> {
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
  public:
   RCTMessageThread(NSRunLoop *runLoop, RCTJavaScriptCompleteBlock errorBlock);
   ~RCTMessageThread() override;

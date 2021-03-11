@@ -14,10 +14,12 @@ DEST=$CONFIGURATION_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH
 
 # Enables iOS devices to get the IP address of the machine running Metro
 if [[ "$CONFIGURATION" = *Debug* && ! "$PLATFORM_NAME" == *simulator ]]; then
-  IP=$(ipconfig getifaddr en0)
-  if [[ -z "$IP" || -n "`ifconfig $value | grep 'baseT'`" ]]; then
-    IP=$(ipconfig getifaddr en1)
-  fi
+  for num in 0 1 2 3 4 5 6 7 8; do
+    IP=$(ipconfig getifaddr en${num})
+    if [ ! -z "$IP" ]; then
+      break
+    fi
+  done
   if [ -z "$IP" ]; then
     IP=$(ifconfig | grep 'inet ' | grep -v ' 127.' | grep -v ' 169.254.' |cut -d\   -f2  | awk 'NR==1{print $1}')
   fi
@@ -62,14 +64,12 @@ PROJECT_ROOT=${PROJECT_ROOT:-"$REACT_NATIVE_DIR/../.."}
 
 cd "$PROJECT_ROOT" || exit
 
-# Define NVM_DIR and source the nvm.sh setup script
-[ -z "$NVM_DIR" ] && export NVM_DIR="$HOME/.nvm"
-
 # Define entry file
 if [[ "$ENTRY_FILE" ]]; then
   # Use ENTRY_FILE defined by user
   :
 elif [[ -s "index.ios.js" ]]; then
+<<<<<<< HEAD
    ENTRY_FILE=${1:-index.ios.js}
 elif [[ -s "index.macos.js" ]]; then
    ENTRY_FILE=${1:-index.macos.js}
@@ -88,19 +88,41 @@ if [[ -x "$HOME/.nodenv/bin/nodenv" ]]; then
   eval "$("$HOME/.nodenv/bin/nodenv" init -)"
 elif [[ -x "$(command -v brew)" && -x "$(brew --prefix nodenv)/bin/nodenv" ]]; then
   eval "$("$(brew --prefix nodenv)/bin/nodenv" init -)"
+=======
+  ENTRY_FILE=${1:-index.ios.js}
+else
+  ENTRY_FILE=${1:-index.js}
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 fi
 
-# Set up the ndenv of anyenv if preset
-if [[ ! -x node && -d ${HOME}/.anyenv/bin ]]; then
-  export PATH=${HOME}/.anyenv/bin:${PATH}
-  if [[ "$(anyenv envs | grep -c ndenv )" -eq 1 ]]; then
-    eval "$(anyenv init -)"
-  fi
+if [[ $DEV != true && ! -f "$ENTRY_FILE" ]]; then
+  echo "error: Entry file $ENTRY_FILE does not exist. If you use another file as your entry point, pass ENTRY_FILE=myindex.js" >&2
+  exit 2
 fi
 
+<<<<<<< HEAD
+=======
+# find node path
+source "$REACT_NATIVE_DIR/scripts/find-node.sh"
+
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 # check and assign NODE_BINARY env
 # shellcheck source=/dev/null
 source "$REACT_NATIVE_DIR/scripts/node-binary.sh"
+
+[ -z "$HERMES_CLI_PATH" ] && HERMES_CLI_PATH="$PODS_ROOT/hermes-engine/destroot/bin/hermesc"
+
+if [[ -z "$USE_HERMES" && -f "$HERMES_CLI_PATH" ]]; then
+  echo "Enabling Hermes byte-code compilation. Disable with USE_HERMES=false if needed."
+  USE_HERMES=true
+fi
+
+if [[ $USE_HERMES == true && ! -f "$HERMES_CLI_PATH" ]]; then
+  echo "error: USE_HERMES is set to true but the hermesc binary could not be " \
+       "found at ${HERMES_CLI_PATH}. Perhaps you need to run pod install or otherwise " \
+       "point the HERMES_CLI_PATH variable to your custom location." >&2
+  exit 2
+fi
 
 [ -z "$NODE_ARGS" ] && export NODE_ARGS=""
 
@@ -108,8 +130,11 @@ source "$REACT_NATIVE_DIR/scripts/node-binary.sh"
 
 [ -z "$BUNDLE_COMMAND" ] && BUNDLE_COMMAND="bundle"
 
+<<<<<<< HEAD
 [ -z "$HERMES_PATH" ] && HERMES_PATH="$PROJECT_ROOT/node_modules/hermes-engine-darwin/destroot/bin/hermesc"
 
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 [ -z "$COMPOSE_SOURCEMAP_PATH" ] && COMPOSE_SOURCEMAP_PATH="$REACT_NATIVE_DIR/scripts/compose-source-maps.js"
 
 if [[ -z "$BUNDLE_CONFIG" ]]; then
@@ -120,6 +145,11 @@ fi
 
 BUNDLE_FILE="$CONFIGURATION_BUILD_DIR/main.jsbundle"
 
+<<<<<<< HEAD
+=======
+EXTRA_ARGS=
+
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 case "$PLATFORM_NAME" in
   "macosx")
     BUNDLE_PLATFORM="macos"
@@ -129,11 +159,14 @@ case "$PLATFORM_NAME" in
     ;;
 esac
 
+<<<<<<< HEAD
 USE_HERMES=
 if [[ "$BUNDLE_PLATFORM" == "macos" && -f "$HERMES_PATH" ]]; then
   USE_HERMES=true
 fi
 
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 EMIT_SOURCEMAP=
 if [[ ! -z "$SOURCEMAP_FILE" ]]; then
   EMIT_SOURCEMAP=true
@@ -161,7 +194,11 @@ fi
   $EXTRA_PACKAGER_ARGS
 
 if [[ $USE_HERMES != true ]]; then
+<<<<<<< HEAD
   mv "$BUNDLE_FILE" "$DEST/"
+=======
+  cp "$BUNDLE_FILE" "$DEST/"
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   BUNDLE_FILE="$DEST/main.jsbundle"
 else
   EXTRA_COMPILER_ARGS=
@@ -173,6 +210,7 @@ else
   if [[ $EMIT_SOURCEMAP == true ]]; then
     EXTRA_COMPILER_ARGS="$EXTRA_COMPILER_ARGS -output-source-map"
   fi
+<<<<<<< HEAD
   HBC_FILE="$CONFIGURATION_BUILD_DIR/$(basename $BUNDLE_FILE)"
   "$HERMES_PATH" -emit-binary $EXTRA_COMPILER_ARGS -out "$HBC_FILE" "$BUNDLE_FILE"
   mv "$HBC_FILE" "$DEST/"
@@ -181,6 +219,14 @@ else
     HBC_SOURCEMAP_FILE="$HBC_FILE.map"
     "$NODE_BINARY" "$COMPOSE_SOURCEMAP_PATH" "$PACKAGER_SOURCEMAP_FILE" "$HBC_SOURCEMAP_FILE" -o "$SOURCEMAP_FILE"
   fi
+=======
+  "$HERMES_CLI_PATH" -emit-binary $EXTRA_COMPILER_ARGS -out "$DEST/main.jsbundle" "$BUNDLE_FILE" 
+  if [[ $EMIT_SOURCEMAP == true ]]; then
+    HBC_SOURCEMAP_FILE="$BUNDLE_FILE.map"
+    "$NODE_BINARY" "$COMPOSE_SOURCEMAP_PATH" "$PACKAGER_SOURCEMAP_FILE" "$HBC_SOURCEMAP_FILE" -o "$SOURCEMAP_FILE"
+  fi
+  BUNDLE_FILE="$DEST/main.jsbundle"
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 fi
 
 if [[ $DEV != true && ! -f "$BUNDLE_FILE" ]]; then

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /**
+=======
+/*
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -35,7 +39,11 @@ RCT_EXPORT_MODULE();
 - (void)modalDismissed:(NSNumber *)modalID
 {
   if (_shouldEmit) {
+<<<<<<< HEAD
     [self sendEventWithName:@"modalDismissed" body:@{ @"modalID": modalID }];
+=======
+    [self sendEventWithName:@"modalDismissed" body:@{@"modalID" : modalID}];
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   }
 }
 

@@ -9,7 +9,7 @@
 
 #import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
-#import <React/RCTEventDispatcher.h>
+#import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTUIManager.h>
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
@@ -22,9 +22,13 @@
 
 @implementation RCTBaseTextInputView {
   __weak RCTBridge *_bridge;
-  __weak RCTEventDispatcher *_eventDispatcher;
+  __weak id<RCTEventDispatcherProtocol> _eventDispatcher;
   BOOL _hasInputAccesoryView;
+<<<<<<< HEAD
   // TODO(OSS Candidate ISS#2710739): remove explicit _predictedText ivar declaration
+=======
+  NSString *_Nullable _predictedText;
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   BOOL _didMoveToWindow;
 }
 
@@ -67,10 +71,21 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
 - (void)enforceTextAttributesIfNeeded
 {
+<<<<<<< HEAD
   if (![self ignoresTextAttributes]) { // TODO(OSS Candidate ISS#2710739)
     id<RCTBackedTextInputViewProtocol> backedTextInputView = self.backedTextInputView;
     backedTextInputView.defaultTextAttributes = [_textAttributes effectiveTextAttributes];
   } // TODO(OSS Candidate ISS#2710739)
+=======
+  id<RCTBackedTextInputViewProtocol> backedTextInputView = self.backedTextInputView;
+
+  NSDictionary<NSAttributedStringKey,id> *textAttributes = [[_textAttributes effectiveTextAttributes] mutableCopy];
+  if ([textAttributes valueForKey:NSForegroundColorAttributeName] == nil) {
+      [textAttributes setValue:[UIColor blackColor] forKey:NSForegroundColorAttributeName];
+  }
+
+  backedTextInputView.defaultTextAttributes = textAttributes;
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 }
 
 - (void)setReactPaddingInsets:(UIEdgeInsets)reactPaddingInsets
@@ -235,7 +250,10 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 - (void)setSelectionStart:(NSInteger)start
              selectionEnd:(NSInteger)end
 {
+<<<<<<< HEAD
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   UITextPosition *startPosition = [self.backedTextInputView positionFromPosition:self.backedTextInputView.beginningOfDocument
                                                                           offset:start];
   UITextPosition *endPosition = [self.backedTextInputView positionFromPosition:self.backedTextInputView.beginningOfDocument
@@ -285,7 +303,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
                           };
 
       #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
-        if (@available(iOS 11.0, tvOS 11.0, *)) {
+        if (@available(iOS 11.0, *)) {
           NSDictionary<NSString *, NSString *> * iOS11extras = @{@"username": UITextContentTypeUsername,
                                                                   @"password": UITextContentTypePassword};
 
@@ -297,7 +315,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
       #endif
 
       #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 120000 /* __IPHONE_12_0 */
-        if (@available(iOS 12.0, tvOS 12.0, *)) {
+        if (@available(iOS 12.0, *)) {
           NSDictionary<NSString *, NSString *> * iOS12extras = @{@"newPassword": UITextContentTypeNewPassword,
                                                                   @"oneTimeCode": UITextContentTypeOneTimeCode};
 
@@ -344,6 +362,18 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 }
 #endif // TODO(macOS ISS#2323203)
 
+- (void)setShowSoftInputOnFocus:(BOOL)showSoftInputOnFocus
+{
+  (void)_showSoftInputOnFocus;
+  if (showSoftInputOnFocus) {
+    // Resets to default keyboard.
+    self.backedTextInputView.inputView = nil;
+  } else {
+    // Hides keyboard, but keeps blinking cursor.
+    self.backedTextInputView.inputView = [[UIView alloc] init];
+  }
+}
+
 #pragma mark - RCTBackedTextInputDelegate
 
 - (BOOL)textInputShouldBeginEditing
@@ -363,7 +393,11 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeFocus
                                  reactTag:self.reactTag
+<<<<<<< HEAD
                                      text:[self.backedTextInputView.attributedText.string copy] // [TODO(macOS Candidate ISS#2710739)
+=======
+                                     text:[self.backedTextInputView.attributedText.string copy]
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
                                       key:nil
                                eventCount:_nativeEventCount];
 }
@@ -377,13 +411,21 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 {
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeEnd
                                  reactTag:self.reactTag
+<<<<<<< HEAD
                                      text:[self.backedTextInputView.attributedText.string copy] // [TODO(macOS Candidate ISS#2710739)
+=======
+                                     text:[self.backedTextInputView.attributedText.string copy]
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
                                       key:nil
                                eventCount:_nativeEventCount];
 
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeBlur
                                  reactTag:self.reactTag
+<<<<<<< HEAD
                                      text:[self.backedTextInputView.attributedText.string copy] // [TODO(macOS Candidate ISS#2710739)
+=======
+                                     text:[self.backedTextInputView.attributedText.string copy]
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
                                       key:nil
                                eventCount:_nativeEventCount];
 }
@@ -395,6 +437,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   // `onSubmitEditing` is called when "Submit" button
   // (the blue key on onscreen keyboard) did pressed
   // (no connection to any specific "submitting" process).
+<<<<<<< HEAD
 #if TARGET_OS_OSX // [TODO(macOS Candidate ISS#2710739)
   if (_blurOnSubmit) {
 #endif // ]TODO(macOS Candidate ISS#2710739)
@@ -406,6 +449,13 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 #if TARGET_OS_OSX // [TODO(macOS Candidate ISS#2710739)
   }
 #endif // ]TODO(macOS Candidate ISS#2710739)
+=======
+  [_eventDispatcher sendTextEventWithType:RCTTextEventTypeSubmit
+                                 reactTag:self.reactTag
+                                     text:[self.backedTextInputView.attributedText.string copy]
+                                      key:nil
+                               eventCount:_nativeEventCount];
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
   return _blurOnSubmit;
 }
@@ -463,7 +513,11 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
     }
   }
 
+<<<<<<< HEAD
   NSString *previousText = [backedTextInputView.attributedText.string copy] ?: @""; // TODO(OSS Candidate ISS#2710739)
+=======
+  NSString *previousText = [backedTextInputView.attributedText.string copy] ?: @"";
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
   if (range.location + range.length > backedTextInputView.attributedText.string.length) {
     _predictedText = backedTextInputView.attributedText.string;
@@ -510,7 +564,11 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
   if (_onChange) {
     _onChange(@{
+<<<<<<< HEAD
        @"text": [self.attributedText.string copy], // [TODO(macOS Candidate ISS#2710739)
+=======
+       @"text": [self.attributedText.string copy],
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
        @"target": self.reactTag,
        @"eventCount": @(_nativeEventCount),
     });
@@ -626,7 +684,10 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
 - (void)setCustomInputAccessoryViewWithNativeID:(NSString *)nativeID
 {
+<<<<<<< HEAD
   #if !TARGET_OS_TV && !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   __weak RCTBaseTextInputView *weakSelf = self;
   [_bridge.uiManager rootViewForReactTag:self.reactTag withCompletion:^(UIView *rootView) {
     RCTBaseTextInputView *strongSelf = weakSelf;
@@ -639,20 +700,24 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
       }
     }
   }];
+<<<<<<< HEAD
   #endif /* !TARGET_OS_TV && !TARGET_OS_OSX TODO(macOS ISS#2323203) */
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 }
 
 - (void)setDefaultInputAccessoryView
 {
+<<<<<<< HEAD
   #if !TARGET_OS_TV && !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   UIView<RCTBackedTextInputViewProtocol> *textInputView = self.backedTextInputView;
   UIKeyboardType keyboardType = textInputView.keyboardType;
 
   // These keyboard types (all are number pads) don't have a "Done" button by default,
   // so we create an `inputAccessoryView` with this button for them.
-  BOOL shouldHaveInputAccesoryView;
-  if (@available(iOS 10.0, *)) {
-      shouldHaveInputAccesoryView =
+  BOOL shouldHaveInputAccesoryView =
       (
        keyboardType == UIKeyboardTypeNumberPad ||
        keyboardType == UIKeyboardTypePhonePad ||
@@ -660,15 +725,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
        keyboardType == UIKeyboardTypeASCIICapableNumberPad
       ) &&
       textInputView.returnKeyType == UIReturnKeyDone;
-  } else {
-      shouldHaveInputAccesoryView =
-      (
-       keyboardType == UIKeyboardTypeNumberPad ||
-       keyboardType == UIKeyboardTypePhonePad ||
-       keyboardType == UIKeyboardTypeDecimalPad
-      ) &&
-      textInputView.returnKeyType == UIReturnKeyDone;
-  }
 
   if (_hasInputAccesoryView == shouldHaveInputAccesoryView) {
     return;
@@ -694,7 +750,10 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
     textInputView.inputAccessoryView = nil;
   }
   [self reloadInputViewsIfNecessary];
+<<<<<<< HEAD
   #endif /* !TARGET_OS_TV && !TARGET_OS_OSX TODO(macOS ISS#2323203) */
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 }
 
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)

@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   s.homepage               = "https://reactnative.dev/"
   s.license                = package["license"]
   s.author                 = "Facebook, Inc. and its affiliates"
-  s.platforms              = { :ios => "10.0", :tvos => "10.0" }
+  s.platforms              = { :ios => "10.0" }
   s.source                 = source
   s.source_files           = "Fabric/**/*.{c,h,m,mm,S,cpp}"
   s.exclude_files          = "**/tests/*",
@@ -45,4 +45,12 @@ Pod::Spec.new do |s|
   s.dependency "React-Fabric", version
   s.dependency "React-RCTImage", version
   s.dependency "RCT-Folly/Fabric", folly_version
+<<<<<<< HEAD
+=======
+
+  s.test_spec 'Tests' do |test_spec|
+    test_spec.source_files = "Tests/**/*.{mm}"
+    test_spec.framework = "XCTest"
+  end
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 end

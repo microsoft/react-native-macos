@@ -12,7 +12,7 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTBridge+Private.h>
 #import <React/RCTBridgeModule.h>
-#import <React/RCTEventDispatcher.h>
+#import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTLog.h>
 #import <React/RCTProfile.h>
 #import <React/RCTReloadCommand.h>
@@ -220,6 +220,7 @@ RCT_EXPORT_MODULE()
 
 - (void)invalidate
 {
+  [super invalidate];
 #if ENABLE_PACKAGER_CONNECTION
   [[RCTPackagerConnection sharedPackagerConnection] removeHandler:_reloadToken];
 #endif
@@ -240,7 +241,7 @@ RCT_EXPORT_MODULE()
   return [[self dataSource] settingForKey:key]; // TODO(OSS Candidate ISS#2710739): protect against race conditions where another thread changes the _dataSource
 }
 
-- (BOOL)isNuclideDebuggingAvailable
+- (BOOL)isDeviceDebuggingAvailable
 {
 #if RCT_ENABLE_INSPECTOR
   return self.bridge.isInspectable;
@@ -445,12 +446,13 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
 #endif
 }
 
-- (void)setupHotModuleReloadClientIfApplicableForURL:(NSURL *)bundleURL
+- (void)setupHMRClientWithBundleURL:(NSURL *)bundleURL
 {
-  if (bundleURL && !bundleURL.fileURL) { // isHotLoadingAvailable check
+  if (bundleURL && !bundleURL.fileURL) {
     NSString *const path = [bundleURL.path substringFromIndex:1]; // Strip initial slash.
     NSString *const host = bundleURL.host;
     NSNumber *const port = bundleURL.port;
+<<<<<<< HEAD
     // TODO(macOS ISS#2323203) - we could perhaps infer the platform from the bundleURL's query parameters, instead of hardcoding
     if (self.bridge) {
       [self.bridge enqueueJSCall:@"HMRClient"
@@ -459,6 +461,30 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
                       completion:NULL];
     } else {
       self.invokeJS(@"HMRClient", @"setup", @[ kRCTPlatformName, path, host, RCTNullIfNil(port), @(YES) ]); // TODO(macOS ISS#2323203)
+=======
+    BOOL isHotLoadingEnabled = self.isHotLoadingEnabled;
+    if (self.bridge) {
+      [self.bridge enqueueJSCall:@"HMRClient"
+                          method:@"setup"
+                            args:@[ @"ios", path, host, RCTNullIfNil(port), @(isHotLoadingEnabled) ]
+                      completion:NULL];
+    } else {
+      self.invokeJS(@"HMRClient", @"setup", @[ @"ios", path, host, RCTNullIfNil(port), @(isHotLoadingEnabled) ]);
+    }
+  }
+}
+
+- (void)setupHMRClientWithAdditionalBundleURL:(NSURL *)bundleURL
+{
+  if (bundleURL && !bundleURL.fileURL) { // isHotLoadingAvailable check
+    if (self.bridge) {
+      [self.bridge enqueueJSCall:@"HMRClient"
+                          method:@"registerBundle"
+                            args:@[ [bundleURL absoluteString] ]
+                      completion:NULL];
+    } else {
+      self.invokeJS(@"HMRClient", @"registerBundle", @[ [bundleURL absoluteString] ]);
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
     }
   }
 }
@@ -496,12 +522,10 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
   });
 }
 
-- (std::shared_ptr<facebook::react::TurboModule>)
-    getTurboModuleWithJsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-                  nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
-                     perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<facebook::react::NativeDevSettingsSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<facebook::react::NativeDevSettingsSpecJSI>(params);
 }
 
 @end
@@ -556,7 +580,10 @@ RCT_EXPORT_MODULE()	// TODO(macOS ISS#2323203)
 - (void)toggleElementInspector
 {
 }
-- (void)setupHotModuleReloadClientIfApplicableForURL:(NSURL *)bundleURL
+- (void)setupHMRClientWithBundleURL:(NSURL *)bundleURL
+{
+}
+- (void)setupHMRClientWithAdditionalBundleURL:(NSURL *)bundleURL
 {
 }
 - (void)addMenuItem:(NSString *)title
@@ -566,12 +593,10 @@ RCT_EXPORT_MODULE()	// TODO(macOS ISS#2323203)
 {
 }
 
-- (std::shared_ptr<facebook::react::TurboModule>)
-    getTurboModuleWithJsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-                  nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
-                     perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<facebook::react::NativeDevSettingsSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<facebook::react::NativeDevSettingsSpecJSI>(params);
 }
 
 @end

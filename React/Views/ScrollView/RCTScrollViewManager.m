@@ -12,6 +12,7 @@
 #import "RCTShadowView.h"
 #import "RCTUIManager.h"
 
+<<<<<<< HEAD
 @interface RCTScrollView (Private)
 
 - (NSArray<NSDictionary *> *)calculateChildFramesData;
@@ -19,6 +20,8 @@
 @end
 
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 @implementation RCTConvert (UIScrollView)
 
 RCT_ENUM_CONVERTER(
@@ -86,11 +89,17 @@ RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(keyboardDismissMode, UIScrollViewKeyboardDismis
 RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(maximumZoomScale, CGFloat) // TODO(macOS ISS#2323203)
 RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(minimumZoomScale, CGFloat) // TODO(macOS ISS#2323203)
 RCT_EXPORT_VIEW_PROPERTY(scrollEnabled, BOOL)
+<<<<<<< HEAD
 #if !TARGET_OS_TV
 RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(pagingEnabled, BOOL) // TODO(macOS ISS#2323203)
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(pinchGestureEnabled, scrollView.pinchGestureEnabled, BOOL) // TODO(macOS ISS#2323203)
 RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(scrollsToTop, BOOL) // TODO(macOS ISS#2323203)
 #endif
+=======
+RCT_EXPORT_VIEW_PROPERTY(pagingEnabled, BOOL)
+RCT_REMAP_VIEW_PROPERTY(pinchGestureEnabled, scrollView.pinchGestureEnabled, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(scrollsToTop, BOOL)
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 RCT_EXPORT_VIEW_PROPERTY(showsHorizontalScrollIndicator, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(showsVerticalScrollIndicator, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(scrollEventThrottle, NSTimeInterval)
@@ -111,9 +120,12 @@ RCT_EXPORT_VIEW_PROPERTY(onScrollToTop, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onScrollEndDrag, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMomentumScrollBegin, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMomentumScrollEnd, RCTDirectEventBlock)
+<<<<<<< HEAD
 RCT_EXPORT_VIEW_PROPERTY(DEPRECATED_sendUpdatedChildFrames, BOOL)
 RCT_EXPORT_OSX_VIEW_PROPERTY(onScrollKeyDown, RCTDirectEventBlock) // TODO(macOS ISS#2323203)
 RCT_EXPORT_OSX_VIEW_PROPERTY(onPreferredScrollerStyleDidChange, RCTDirectEventBlock) // TODO(macOS ISS#2323203)
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 RCT_EXPORT_VIEW_PROPERTY(inverted, BOOL)
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
 RCT_EXPORT_VIEW_PROPERTY(contentInsetAdjustmentBehavior, UIScrollViewContentInsetAdjustmentBehavior)
@@ -142,23 +154,6 @@ RCT_EXPORT_METHOD(getContentSize : (nonnull NSNumber *)reactTag callback : (RCTR
 
         CGSize size = view.scrollView.contentSize;
         callback(@[ @{@"width" : @(size.width), @"height" : @(size.height)} ]);
-      }];
-}
-
-RCT_EXPORT_METHOD(calculateChildFrames : (nonnull NSNumber *)reactTag callback : (RCTResponseSenderBlock)callback)
-{
-  [self.bridge.uiManager
-      addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTScrollView *> *viewRegistry) {
-        RCTScrollView *view = viewRegistry[reactTag];
-        if (!view || ![view isKindOfClass:[RCTScrollView class]]) {
-          RCTLogError(@"Cannot find RCTScrollView with tag #%@", reactTag);
-          return;
-        }
-
-        NSArray<NSDictionary *> *childFrames = [view calculateChildFramesData];
-        if (childFrames) {
-          callback(@[ childFrames ]);
-        }
       }];
 }
 

@@ -8,11 +8,14 @@
 #import "RCTStatusBarManager.h"
 #import "CoreModulesPlugins.h"
 
-#import <React/RCTEventDispatcher.h>
+#import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
 
+<<<<<<< HEAD
 #if !TARGET_OS_TV && !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 
 @implementation RCTConvert (UIStatusBar)
@@ -58,14 +61,15 @@ RCT_ENUM_CONVERTER(
     integerValue);
 
 @end
+<<<<<<< HEAD
 #endif
 
 #if !TARGET_OS_TV && !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 @interface RCTStatusBarManager () <NativeStatusBarManagerIOSSpec>
 @end
-
-#endif
 
 @implementation RCTStatusBarManager
 
@@ -94,8 +98,11 @@ RCT_EXPORT_MODULE()
   return @[ @"statusBarFrameDidChange", @"statusBarFrameWillChange" ];
 }
 
+<<<<<<< HEAD
 #if !TARGET_OS_TV && !TARGET_OS_OSX // TODO(macOS ISS#2323203)
 
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 - (void)startObserving
 {
   NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
@@ -185,10 +192,15 @@ RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible)
 
 - (facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants>)getConstants
 {
-  return facebook::react::typedConstants<JS::NativeStatusBarManagerIOS::Constants>({
-      .HEIGHT = RCTSharedApplication().statusBarFrame.size.height,
-      .DEFAULT_BACKGROUND_COLOR = folly::none,
+  __block facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> constants;
+  RCTUnsafeExecuteOnMainQueueSync(^{
+    constants = facebook::react::typedConstants<JS::NativeStatusBarManagerIOS::Constants>({
+        .HEIGHT = RCTSharedApplication().statusBarFrame.size.height,
+        .DEFAULT_BACKGROUND_COLOR = folly::none,
+    });
   });
+
+  return constants;
 }
 
 - (facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants>)constantsToExport
@@ -196,16 +208,11 @@ RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible)
   return (facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants>)[self getConstants];
 }
 
-- (std::shared_ptr<facebook::react::TurboModule>)
-    getTurboModuleWithJsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-                  nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
-                     perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<facebook::react::NativeStatusBarManagerIOSSpecJSI>(
-      self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<facebook::react::NativeStatusBarManagerIOSSpecJSI>(params);
 }
-
-#endif // TARGET_OS_TV
 
 @end
 

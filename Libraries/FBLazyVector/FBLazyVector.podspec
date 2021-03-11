@@ -23,7 +23,11 @@ Pod::Spec.new do |s|
   s.homepage               = "https://reactnative.dev/"
   s.license                = package["license"]
   s.author                 = "Facebook, Inc. and its affiliates"
+<<<<<<< HEAD
   s.platforms              = { :ios => "10.0", :tvos => "10.0", :osx => "10.13" } # TODO(macOS ISS#2323203)
+=======
+  s.platforms              = { :ios => "10.0" }
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   s.source                 = source
   s.source_files           = "**/*.{c,h,m,mm,cpp}"
   s.header_dir             = "FBLazyVector"

@@ -112,15 +112,33 @@ In SourceTree, click on commit in the top left. This won't actually do anything 
 **Git Command Line**
 To stage files using the command line, you need to run `git add MyFileOne.tsx` for each file. You can also look up how to add all files with changes under a directory. Next you will want to commit changes with `git commit –m "This change updates the padding in the dropdown"`
 
+<<<<<<< HEAD
 You can commit multiple times until you are ready to make a pull request. You should keep the message short since it will not be used in the bug notes and is just for keeping track of the multiple commits in one pull request. 
  
 ### Provide changelog information
 Run `yarn change` in the root of the repo.
+=======
+Code-level contributions to React Native generally come in the form of [pull requests](https://help.github.com/en/articles/about-pull-requests). These are done by forking the repo and making changes locally. Directly in the repo, there is the [`rn-tester` app](/packages/rn-tester) that you can install on your device (or simulators) and use to test the changes you're making to React Native sources.
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 ### Create a Pull Request
 
+<<<<<<< HEAD
 **SourceTree:**
 In SourceTree click Push.
+=======
+1. Fork the React Native repository and create your branch from `master`.
+2. Make the desired changes to React Native sources. Use the `packages/rn-tester` app to test them out.
+3. If you've added code that should be tested, add tests.
+4. If you've changed APIs, update the documentation, which lives in [another repo](https://github.com/facebook/react-native-website/).
+5. Ensure the test suite passes, either locally or on CI once you opened a pull request.
+6. Make sure your code lints (for example via `yarn lint --fix`).
+7. Push the changes to your fork.
+8. Create a pull request to the React Native repository.
+9. Review and address comments on your pull request.
+    1. A bot may comment with suggestions. Generally we ask you to resolve these first before a maintainer will review your code.
+10. If you haven't already, please complete the [Contributor License Agreement](https://github.com/facebook/react-native/wiki/Contributor-License-Agreement) ("CLA"). **[Complete your CLA here.](https://code.facebook.com/cla)**
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 **Git Command Line**
 Run `git push`. 

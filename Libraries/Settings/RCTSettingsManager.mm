@@ -10,7 +10,7 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
-#import <React/RCTEventDispatcher.h>
+#import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTUtils.h>
 
 #import "RCTSettingsPlugins.h"
@@ -117,6 +117,7 @@ RCT_EXPORT_METHOD(deleteValues:(NSArray<NSString *> *)keys)
   _ignoringUpdates = NO;
 }
 
+<<<<<<< HEAD
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 /**
  * Enable or disable monitoring of changes to NSUserDefaults
@@ -146,8 +147,11 @@ RCT_EXPORT_METHOD(setIsMonitoringEnabled:(BOOL)isEnabled)
     getTurboModuleWithJsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
                   nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
                      perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+=======
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 {
-  return std::make_shared<facebook::react::NativeSettingsManagerSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<facebook::react::NativeSettingsManagerSpecJSI>(params);
 }
 
 @end

@@ -21,7 +21,11 @@ import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativ
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 import type {HostComponent} from 'react-native/Libraries/Renderer/shims/ReactNativeTypes';
 
+<<<<<<< HEAD
 import type {ProcessedColorValue} from '../../StyleSheet/processColor'; // TODO(macOS ISS#2323203)
+=======
+import type {ColorValue} from '../../StyleSheet/StyleSheet';
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 import type {ViewProps} from '../View/ViewPropTypes';
 
 type SwitchChangeEvent = $ReadOnly<{|

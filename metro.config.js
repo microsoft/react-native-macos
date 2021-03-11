@@ -21,7 +21,12 @@ const config = {
     getPolyfills,
   },
   resolver: {
+<<<<<<< HEAD
     platforms: ['ios', 'macos', 'android'],
+=======
+    // $FlowFixMe[signature-verification-failure] Can't infer RegExp type.
+    blacklistRE: /buck-out/,
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
     extraNodeModules: {
       'react-native': __dirname,
     },

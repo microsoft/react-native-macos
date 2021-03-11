@@ -5,17 +5,19 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+<<<<<<< HEAD
 #import <React/RCTUIKit.h> // TODO(macOS ISS#2323203)
+=======
+#import <UIKit/UIKit.h>
+#import "RCTLogBoxView.h"
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
-#import <React/RCTBridge.h>
-#import <React/RCTBridgeModule.h>
-#import <React/RCTErrorCustomizer.h>
+@interface RCTLogBox : NSObject
 
-@class RCTJSStackFrame;
+#if RCT_DEV_MENU
 
-@interface RCTLogBox : NSObject <RCTBridgeModule>
+- (void)setRCTLogBoxView:(RCTLogBoxView *)view;
 
-- (void)show;
-- (void)hide;
+#endif
 
 @end

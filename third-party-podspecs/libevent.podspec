@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+=======
+# Copyright (c) Facebook, Inc. and its affiliates.
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 # Because libevent is also relied on by Flipper and *with* OpenSSL bindings,
 # building it as a prebuilt binary may lead to hard to satisfy permutations, if
 # we'd ever try to build this for other Apple platforms besides macOS. Therefore
@@ -544,6 +552,7 @@ Pod::Spec.new do |spec|
   spec.homepage        = "https://libevent.org"
   spec.license         = { :type => "BSD 3-Clause", :file => "LICENSE" }
   spec.author          = "Niels Provos and Nick Mathewson"
+<<<<<<< HEAD
   spec.platforms       = { :osx => "10.13" }
   spec.source          = { :git => "https://github.com/libevent/libevent.git", :tag => "release-#{spec.version}-stable" }
   spec.default_subspec = "core"
@@ -567,4 +576,19 @@ Pod::Spec.new do |spec|
     ss.private_header_files = "*-{internal,private}.h"
     ss.public_header_files = "include/*.h"
   end
+=======
+  spec.platforms       = { :osx => "10.13", :ios => "10.0" }
+  spec.source          = { :git => "https://github.com/libevent/libevent.git", :tag => "release-#{spec.version}-stable" }
+  spec.prepare_command = "touch evconfig-private.h; echo -e #{Shellwords.escape(CONFIG_WITHOUT_OPENSSL)} > include/event2/event-config.h"
+  spec.source_files =
+    "include/*.h", "*-{internal,private}.h",
+    "buffer.c", "bufferevent.c", "bufferevent_filter.c", "bufferevent_pair.c", "bufferevent_ratelim.c", "bufferevent_sock.c",
+    "event.c", "evmap.c", "evthread.c", "evutil.c", "evutil_rand.c", "evutil_time.c",
+    "kqueue.c", "listener.c", "log.c", "poll.c", "select.c", "signal.c", "strlcpy.c", "watch.c",
+    "evdns.c", "event_tagging.c", "evrpc.c", "http.c"
+  spec.private_header_files = "*-{internal,private}.h"
+  spec.public_header_files = "include/*.h"
+  spec.preserve_paths = "include/event2/*.h"
+  spec.xcconfig = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/include/\"" }
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 end

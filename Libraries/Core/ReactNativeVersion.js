@@ -6,12 +6,22 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+<<<<<<< HEAD
  * @flow
+=======
+ * @flow strict
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
  */
 
 exports.version = {
   major: 0,
+<<<<<<< HEAD
   minor: 63,
   patch: 3,
   prerelease: null,
+=======
+  minor: 64,
+  patch: 0,
+  prerelease: 'rc.4',
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 };

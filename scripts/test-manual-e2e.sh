@@ -51,23 +51,33 @@ info "and then press any key."
 info ""
 read -n 1
 
-./gradlew :RNTester:android:app:installJscDebug || error "Couldn't build RNTester Android"
+./gradlew :packages:rn-tester:android:app:installJscDebug || error "Couldn't build RNTester Android"
 
 info "Press any key to run RNTester in an already running Android emulator/device"
 info ""
 read -n 1
 adb shell am start -n com.facebook.react.uiapp/.RNTesterActivity
 
+<<<<<<< HEAD
 
 success "Installing CocoaPods dependencies"
 rm -rf RNTester/Pods
 (cd RNTester && pod install)
+=======
+success "Installing CocoaPods dependencies"
+rm -rf packages/rn-tester/Pods
+(cd packages/rn-tester && pod install)
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 info "Press any key to open the workspace in Xcode, then build and test manually."
 info ""
 read -n 1
 
+<<<<<<< HEAD
 open "RNTester/RNTesterPods.xcworkspace"
+=======
+open "packages/rn-tester/RNTesterPods.xcworkspace"
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 info "When done testing RNTester app on iOS and Android press any key to continue."
 info ""

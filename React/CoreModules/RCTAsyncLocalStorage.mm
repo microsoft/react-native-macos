@@ -76,6 +76,7 @@ static NSString *RCTGetStorageDirectory()
   static NSString *storageDirectory = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
+<<<<<<< HEAD
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
     // iOS and tvOS to use Caches folder.
     // Don't use NSDocumentsDirectory otherwise the RCTAsyncLocalStorage_V1 will appear in apps that
@@ -100,6 +101,9 @@ static NSString *RCTGetStorageDirectory()
     }
 // ]TODO(macOS ISS#2323203)
 #endif
+=======
+    storageDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
     storageDirectory = [storageDirectory stringByAppendingPathComponent:RCTStorageDirectory];
   });
   return storageDirectory;
@@ -186,7 +190,7 @@ static NSDictionary *RCTDeleteStorageDirectory()
 
 #pragma mark - RCTAsyncLocalStorage
 
-@interface RCTAsyncLocalStorage () <NativeAsyncStorageSpec>
+@interface RCTAsyncLocalStorage () <NativeAsyncLocalStorageSpec>
 @end
 
 @implementation RCTAsyncLocalStorage {
@@ -251,10 +255,6 @@ RCT_EXPORT_MODULE()
 - (NSDictionary *)_ensureSetup
 {
   RCTAssertThread(RCTGetMethodQueue(), @"Must be executed on storage thread");
-
-#if TARGET_OS_TV
-  RCTLogWarn(@"Persistent storage is not supported on tvOS, your data may be removed at any point.");
-#endif
 
   NSError *error = nil;
   if (!RCTHasCreatedStorageDirectory) {
@@ -480,12 +480,10 @@ RCT_EXPORT_METHOD(getAllKeys : (RCTResponseSenderBlock)callback)
   }
 }
 
-- (std::shared_ptr<facebook::react::TurboModule>)
-    getTurboModuleWithJsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-                  nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
-                     perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<facebook::react::NativeAsyncStorageSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<facebook::react::NativeAsyncLocalStorageSpecJSI>(params);
 }
 
 @end

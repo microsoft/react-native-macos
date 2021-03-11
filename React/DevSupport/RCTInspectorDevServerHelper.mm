@@ -17,8 +17,16 @@
 
 static NSString *const kDebuggerMsgDisable = @"{ \"id\":1,\"method\":\"Debugger.disable\" }";
 
-static NSString *getServerHost(NSURL *bundleURL, NSNumber *port)
+static NSString *getServerHost(NSURL *bundleURL)
 {
+  NSNumber *port = @8081;
+  NSString *portStr = [[[NSProcessInfo processInfo] environment] objectForKey:@"RCT_METRO_PORT"];
+  if (portStr && [portStr length] > 0) {
+    port = [NSNumber numberWithInt:[portStr intValue]];
+  }
+  if ([bundleURL port]) {
+    port = [bundleURL port];
+  }
   NSString *host = [bundleURL host];
   if (!host) {
     host = @"localhost";
@@ -34,12 +42,15 @@ static NSString *getServerHost(NSURL *bundleURL, NSNumber *port)
 
 static NSURL *getInspectorDeviceUrl(NSURL *bundleURL)
 {
+<<<<<<< HEAD
   NSNumber *inspectorProxyPort = @8081;
   NSString *inspectorProxyPortStr = [[[NSProcessInfo processInfo] environment] objectForKey:@"RCT_METRO_PORT"];
   if (inspectorProxyPortStr && [inspectorProxyPortStr length] > 0) {
     inspectorProxyPort = [NSNumber numberWithInt:[inspectorProxyPortStr intValue]];
   }
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   NSString *escapedDeviceName = [[[UIDevice currentDevice] name]
       stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLQueryAllowedCharacterSet];
 #else // [TODO(macOS ISS#2323203)
@@ -48,11 +59,14 @@ static NSURL *getInspectorDeviceUrl(NSURL *bundleURL)
   NSString *escapedAppName = [[[NSBundle mainBundle] bundleIdentifier]
       stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLQueryAllowedCharacterSet];
   return [NSURL URLWithString:[NSString stringWithFormat:@"http://%@/inspector/device?name=%@&app=%@",
-                                                         getServerHost(bundleURL, inspectorProxyPort),
+                                                         getServerHost(bundleURL),
                                                          escapedDeviceName,
                                                          escapedAppName]];
 }
-
+static NSURL *getOpenUrlEndpoint(NSURL *bundleURL)
+{
+  return [NSURL URLWithString:[NSString stringWithFormat:@"http://%@/open-url", getServerHost(bundleURL)]];
+}
 @implementation RCTInspectorDevServerHelper
 
 RCT_NOT_IMPLEMENTED(-(instancetype)init)
@@ -64,6 +78,27 @@ static void sendEventToAllConnections(NSString *event)
   for (NSString *socketId in socketConnections) {
     [socketConnections[socketId] sendEventToAllConnections:event];
   }
+}
+
++ (void)openURL:(NSString *)url withBundleURL:(NSURL *)bundleURL withErrorMessage:(NSString *)errorMessage
+{
+  NSURL *endpoint = getOpenUrlEndpoint(bundleURL);
+
+  NSDictionary *jsonBodyDict = @{@"url" : url};
+  NSData *jsonBodyData = [NSJSONSerialization dataWithJSONObject:jsonBodyDict options:kNilOptions error:nil];
+
+  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:endpoint];
+  [request setHTTPMethod:@"POST"];
+  [request setHTTPBody:jsonBodyData];
+
+  [[[NSURLSession sharedSession]
+      dataTaskWithRequest:request
+        completionHandler:^(
+            __unused NSData *_Nullable data, __unused NSURLResponse *_Nullable response, NSError *_Nullable error) {
+          if (error != nullptr) {
+            RCTLogWarn(@"%@", errorMessage);
+          }
+        }] resume];
 }
 
 + (void)disableDebugger

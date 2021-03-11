@@ -5,14 +5,18 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @flow
+ * @flow strict-local
  */
 
 'use strict';
 
 const AppContainer = require('../ReactNative/AppContainer');
 const I18nManager = require('../ReactNative/I18nManager');
+<<<<<<< HEAD
 const NativeEventEmitter = require('../EventEmitter/NativeEventEmitter');
+=======
+import NativeEventEmitter from '../EventEmitter/NativeEventEmitter';
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 import NativeModalManager from './NativeModalManager';
 const Platform = require('../Utilities/Platform');
 const React = require('react');
@@ -21,9 +25,13 @@ const ScrollView = require('../Components/ScrollView/ScrollView');
 const StyleSheet = require('../StyleSheet/StyleSheet');
 const View = require('../Components/View/View');
 
+const {RootTagContext} = require('../ReactNative/RootTag');
+
 import type {ViewProps} from '../Components/View/ViewPropTypes';
+import {VirtualizedListContextResetter} from '../Lists/VirtualizedListContext.js';
+import type {RootTag} from '../ReactNative/RootTag';
 import type {DirectEventHandler} from '../Types/CodegenTypes';
-import type EmitterSubscription from '../vendor/emitter/EmitterSubscription';
+import {type EventSubscription} from '../vendor/emitter/EventEmitter';
 import RCTModalHostView from './RCTModalHostViewNativeComponent';
 
 const ModalEventEmitter =
@@ -155,12 +163,10 @@ class Modal extends React.Component<Props> {
     hardwareAccelerated: false,
   };
 
-  static contextTypes: any | {|rootTag: React$PropType$Primitive<number>|} = {
-    rootTag: PropTypes.number,
-  };
+  static contextType: React.Context<RootTag> = RootTagContext;
 
   _identifier: number;
-  _eventSubscription: ?EmitterSubscription;
+  _eventSubscription: ?EventSubscription;
 
   constructor(props: Props) {
     super(props);
@@ -168,18 +174,17 @@ class Modal extends React.Component<Props> {
     this._identifier = uniqueModalIdentifier++;
   }
 
-  static childContextTypes:
-    | any
-    | {|virtualizedList: React$PropType$Primitive<any>|} = {
-    virtualizedList: PropTypes.object,
-  };
-
-  getChildContext(): {|virtualizedList: null|} {
-    // Reset the context so VirtualizedList doesn't get confused by nesting
-    // in the React tree that doesn't reflect the native component hierarchy.
-    return {
-      virtualizedList: null,
-    };
+  componentDidMount() {
+    if (ModalEventEmitter) {
+      this._eventSubscription = ModalEventEmitter.addListener(
+        'modalDismissed',
+        event => {
+          if (event.modalID === this._identifier && this.props.onDismiss) {
+            this.props.onDismiss();
+          }
+        },
+      );
+    }
   }
 
   componentDidMount() {
@@ -209,12 +214,10 @@ class Modal extends React.Component<Props> {
     if (
       props.presentationStyle &&
       props.presentationStyle !== 'overFullScreen' &&
-      props.transparent
+      props.transparent === true
     ) {
       console.warn(
-        `Modal with '${
-          props.presentationStyle
-        }' presentation style and 'transparent' value is not supported.`,
+        `Modal with '${props.presentationStyle}' presentation style and 'transparent' value is not supported.`,
       );
     }
   }
@@ -225,7 +228,8 @@ class Modal extends React.Component<Props> {
     }
 
     const containerStyles = {
-      backgroundColor: this.props.transparent ? 'transparent' : 'white',
+      backgroundColor:
+        this.props.transparent === true ? 'transparent' : 'white',
     };
 
     let animationType = this.props.animationType || 'none';
@@ -233,15 +237,13 @@ class Modal extends React.Component<Props> {
     let presentationStyle = this.props.presentationStyle;
     if (!presentationStyle) {
       presentationStyle = 'fullScreen';
-      if (this.props.transparent) {
+      if (this.props.transparent === true) {
         presentationStyle = 'overFullScreen';
       }
     }
 
     const innerChildren = __DEV__ ? (
-      <AppContainer rootTag={this.context.rootTag}>
-        {this.props.children}
-      </AppContainer>
+      <AppContainer rootTag={this.context}>{this.props.children}</AppContainer>
     ) : (
       this.props.children
     );
@@ -260,11 +262,15 @@ class Modal extends React.Component<Props> {
         onStartShouldSetResponder={this._shouldSetResponder}
         supportedOrientations={this.props.supportedOrientations}
         onOrientationChange={this.props.onOrientationChange}>
-        <ScrollView.Context.Provider value={null}>
-          <View style={[styles.container, containerStyles]}>
-            {innerChildren}
-          </View>
-        </ScrollView.Context.Provider>
+        <VirtualizedListContextResetter>
+          <ScrollView.Context.Provider value={null}>
+            <View
+              style={[styles.container, containerStyles]}
+              collapsable={false}>
+              {innerChildren}
+            </View>
+          </ScrollView.Context.Provider>
+        </VirtualizedListContextResetter>
       </RCTModalHostView>
     );
   }

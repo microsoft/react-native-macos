@@ -21,7 +21,6 @@ folly_version = '2020.01.13.00'
 boost_compiler_flags = '-Wno-documentation'
 
 header_subspecs = {
-  'ARTHeaders'                  => 'Libraries/ART/**/*.h',
   'CoreModulesHeaders'          => 'React/CoreModules/**/*.h',
   'RCTActionSheetHeaders'       => 'Libraries/ActionSheetIOS/*.h',
   'RCTAnimationHeaders'         => 'Libraries/NativeAnimation/{Drivers/*,Nodes/*,*}.{h}',
@@ -42,7 +41,11 @@ Pod::Spec.new do |s|
   s.homepage               = "https://reactnative.dev/"
   s.license                = package["license"]
   s.author                 = "Facebook, Inc. and its affiliates"
+<<<<<<< HEAD
   s.platforms              = { :ios => "10.0", :tvos => "10.0", :osx => "10.13" } # TODO(macOS ISS#2323203)
+=======
+  s.platforms              = { :ios => "10.0" }
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   s.source                 = source
   s.resource_bundle        = { "AccessibilityResources" => ["React/AccessibilityResources/*.lproj"]}
   s.compiler_flags         = folly_compiler_flags + ' ' + boost_compiler_flags
@@ -58,6 +61,7 @@ Pod::Spec.new do |s|
     ss.exclude_files          = "React/CoreModules/**/*",
                                 "React/DevSupport/**/*",
                                 "React/Fabric/**/*",
+<<<<<<< HEAD
                                 "React/Inspector/**/*",
                                 "React/CxxBridge/HermesExecutorFactory.*" # TODO(macOS GH#214)
     ss.ios.exclude_files      = "React/**/RCTTV*.*",
@@ -87,15 +91,30 @@ Pod::Spec.new do |s|
   # [TODO(macOS GH#214)
   s.subspec "Hermes" do |ss|
     ss.platforms = { :osx => "10.13" }
+=======
+                                "React/FBReactNativeSpec/**/*",
+                                "React/Tests/**/*",
+                                "React/Inspector/**/*"
+    ss.private_header_files   = "React/Cxx*/*.h"
+  end
+
+  s.subspec "Hermes" do |ss|
+    ss.platforms = { :osx => "10.14", :ios => "10.0" }
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
     ss.source_files = "ReactCommon/hermes/executor/*.{cpp,h}",
                       "ReactCommon/hermes/inspector/*.{cpp,h}",
                       "ReactCommon/hermes/inspector/chrome/*.{cpp,h}",
                       "ReactCommon/hermes/inspector/detail/*.{cpp,h}"
     ss.pod_target_xcconfig = { "GCC_PREPROCESSOR_DEFINITIONS" => "HERMES_ENABLE_DEBUGGER=1" }
     ss.dependency "RCT-Folly/Futures"
+<<<<<<< HEAD
     ss.dependency "hermes", "~> 0.5.0"
   end
   # ]TODO(macOS GH#214)
+=======
+    ss.dependency "hermes-engine"
+  end
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
   s.subspec "DevSupport" do |ss|
     ss.source_files = "React/DevSupport/*.{h,mm,m}",
@@ -122,6 +141,7 @@ Pod::Spec.new do |s|
 
   s.dependency "RCT-Folly", folly_version
   s.dependency "React-cxxreact", version
+  s.dependency "React-perflogger", version
   s.dependency "React-jsi", version
   s.dependency "React-jsiexecutor", version
   s.dependency "Yoga"

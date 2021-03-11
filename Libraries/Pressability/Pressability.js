@@ -443,6 +443,10 @@ export default class Pressability {
     this._cancelLongPressDelayTimeout();
     this._cancelPressDelayTimeout();
     this._cancelPressOutDelayTimeout();
+
+    // Ensure that, if any async event handlers are fired after unmount
+    // due to a race, we don't call any configured callbacks.
+    this._config = Object.freeze({});
   }
 
   /**
@@ -607,6 +611,7 @@ export default class Pressability {
                     this._config.delayHoverIn,
                   );
                   if (delayHoverIn > 0) {
+                    event.persist();
                     this._hoverInDelayTimeout = setTimeout(() => {
                       onHoverIn(event);
                     }, delayHoverIn);
@@ -627,6 +632,7 @@ export default class Pressability {
                     this._config.delayHoverOut,
                   );
                   if (delayHoverOut > 0) {
+                    event.persist();
                     this._hoverInDelayTimeout = setTimeout(() => {
                       onHoverOut(event);
                     }, delayHoverOut);
@@ -714,6 +720,11 @@ export default class Pressability {
     }
 
     if (isPressInSignal(prevState) && signal === 'RESPONDER_RELEASE') {
+      // If we never activated (due to delays), activate and deactivate now.
+      if (!isNextActive && !isPrevActive) {
+        this._activate(event);
+        this._deactivate(event);
+      }
       const {onLongPress, onPress, android_disableSound} = this._config;
       if (onPress != null) {
         const isPressCanceledByLongPress =
@@ -721,11 +732,6 @@ export default class Pressability {
           prevState === 'RESPONDER_ACTIVE_LONG_PRESS_IN' &&
           this._shouldLongPressCancelPress();
         if (!isPressCanceledByLongPress) {
-          // If we never activated (due to delays), activate and deactivate now.
-          if (!isNextActive && !isPrevActive) {
-            this._activate(event);
-            this._deactivate(event);
-          }
           if (Platform.OS === 'android' && android_disableSound !== true) {
             SoundManager.playTouchSound();
           }
@@ -764,6 +770,7 @@ export default class Pressability {
         normalizeDelay(this._config.delayPressOut),
       );
       if (delayPressOut > 0) {
+        event.persist();
         this._pressOutDelayTimeout = setTimeout(() => {
           onPressOut(event);
         }, delayPressOut);

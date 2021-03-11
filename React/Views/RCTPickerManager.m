@@ -55,7 +55,11 @@ RCT_EXPORT_METHOD(setNativeSelectedIndex : (nonnull NSNumber *)viewTag toIndex :
       // This component is used in Fabric through LegacyInteropLayer.
       // `RCTPicker` view is subview of `RCTLegacyViewManagerInteropComponentView`.
       // `viewTag` passed as parameter to this method is tag of the `RCTLegacyViewManagerInteropComponentView`.
+<<<<<<< HEAD
       RCTPlatformView *subview = view.subviews.firstObject; // TODO(macOS ISS#2323203)
+=======
+      UIView *subview = [uiManager viewForReactTag:viewTag].subviews.firstObject;
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
       if ([subview isKindOfClass:[RCTPicker class]]) {
         [(RCTPicker *)subview setSelectedIndex:index.integerValue];
       } else {

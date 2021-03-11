@@ -14,7 +14,6 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
-#import <React/RCTEventDispatcher.h>
 #import <React/RCTUtils.h>
 
 #import "RCTPushNotificationPlugins.h"
@@ -27,7 +26,7 @@ static NSString *const kRemoteNotificationRegistrationFailed = @"RemoteNotificat
 
 static NSString *const kErrorUnableToRequestPermissions = @"E_UNABLE_TO_REQUEST_PERMISSIONS";
 
-#if !TARGET_OS_TV
+#if !TARGET_OS_UIKITFORMAC
 @implementation RCTConvert (NSCalendarUnit)
 
 RCT_ENUM_CONVERTER(NSCalendarUnit,
@@ -120,11 +119,15 @@ RCT_ENUM_CONVERTER(UIBackgroundFetchResult, (@{
 #else
 @interface RCTPushNotificationManager () <NativePushNotificationManagerIOS>
 @end
-#endif //TARGET_OS_TV / TARGET_OS_UIKITFORMAC
+#endif // TARGET_OS_UIKITFORMAC
 
 @implementation RCTPushNotificationManager
 
+<<<<<<< HEAD
 #if !TARGET_OS_TV && !TARGET_OS_UIKITFORMAC && !TARGET_OS_OSX
+=======
+#if !TARGET_OS_UIKITFORMAC
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 static NSDictionary *RCTFormatLocalNotification(UILocalNotification *notification)
 {
@@ -169,6 +172,7 @@ static NSDictionary *RCTFormatUNNotification(UNNotification *notification)
   return formattedNotification;
 }
 
+<<<<<<< HEAD
 #endif //TARGET_OS_TV / TARGET_OS_UIKITFORMAC
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 
@@ -190,6 +194,9 @@ static NSDictionary *RCTFormatUserNotification(NSUserNotification *notification)
   return formattedUserNotification;
 }
 #endif // ]TODO(macOS ISS#2323203)
+=======
+#endif // TARGET_OS_UIKITFORMAC
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 RCT_EXPORT_MODULE()
 
@@ -198,7 +205,7 @@ RCT_EXPORT_MODULE()
   return dispatch_get_main_queue();
 }
 
-#if !TARGET_OS_TV && !TARGET_OS_UIKITFORMAC
+#if !TARGET_OS_UIKITFORMAC
 - (void)startObserving
 {
   [[NSNotificationCenter defaultCenter] addObserver:self
@@ -662,7 +669,7 @@ RCT_EXPORT_METHOD(getDeliveredNotifications:(RCTResponseSenderBlock)callback)
 #endif // ]TODO(macOS ISS#2323203)
 }
 
-#else //TARGET_OS_TV / TARGET_OS_UIKITFORMAC
+#else // TARGET_OS_UIKITFORMAC
 
 RCT_EXPORT_METHOD(onFinishRemoteNotification:(NSString *)notificationId fetchResult:(NSString *)fetchResult)
 {
@@ -747,14 +754,11 @@ RCT_EXPORT_METHOD(getDeliveredNotifications:(RCTResponseSenderBlock)callback)
   return @[];
 }
 
-#endif //TARGET_OS_TV / TARGET_OS_UIKITFORMAC
+#endif // TARGET_OS_UIKITFORMAC
 
-- (std::shared_ptr<facebook::react::TurboModule>)
-    getTurboModuleWithJsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-                  nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
-                     perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<facebook::react::NativePushNotificationManagerIOSSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<facebook::react::NativePushNotificationManagerIOSSpecJSI>(params);
 }
 
 @end

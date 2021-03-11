@@ -42,7 +42,9 @@ RCT_EXTERN void RCTUnsafeExecuteOnMainQueueSync(dispatch_block_t block);
 
 // Get screen metrics in a thread-safe way
 RCT_EXTERN CGFloat RCTScreenScale(void);
+RCT_EXTERN CGFloat RCTFontSizeMultiplier(void);
 RCT_EXTERN CGSize RCTScreenSize(void);
+RCT_EXTERN CGSize RCTViewportSize(void);
 
 // Round float coordinates to nearest whole screen pixel (not point)
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
@@ -59,8 +61,14 @@ RCT_EXTERN CGFloat RCTFloorPixelValue(CGFloat value, CGFloat scale);
 RCT_EXTERN CGSize RCTSizeInPixels(CGSize pointSize, CGFloat scale);
 
 // Method swizzling
+<<<<<<< HEAD
 RCT_EXTERN IMP RCTSwapClassMethods(Class cls, SEL original, SEL replacement); // TODO(OSS Candidate ISS#2710739)
 RCT_EXTERN IMP RCTSwapInstanceMethods(Class cls, SEL original, SEL replacement); // TODO(OSS Candidate ISS#2710739)
+=======
+RCT_EXTERN void RCTSwapClassMethods(Class cls, SEL original, SEL replacement);
+RCT_EXTERN void RCTSwapInstanceMethods(Class cls, SEL original, SEL replacement);
+RCT_EXTERN void RCTSwapInstanceMethodWithBlock(Class cls, SEL original, id replacementBlock, SEL replacementSelector);
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 // Module subclass support
 RCT_EXTERN BOOL RCTClassOverridesClassMethod(Class cls, SEL selector);
@@ -104,6 +112,9 @@ RCT_EXTERN BOOL RCTForceTouchAvailable(void);
 
 // Create an NSError in the RCTErrorDomain
 RCT_EXTERN NSError *RCTErrorWithMessage(NSString *message);
+
+// Creates an NSError from given an NSException
+RCT_EXTERN NSError *RCTErrorWithNSException(NSException *exception);
 
 // Convert nil values to NSNull, and vice-versa
 #define RCTNullIfNil(value) ((value) ?: (id)kCFNull)

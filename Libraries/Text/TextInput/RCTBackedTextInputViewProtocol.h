@@ -42,7 +42,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
 @property (nonatomic, strong, nullable) UIView *inputAccessoryView;
+<<<<<<< HEAD
 #endif // TODO(macOS ISS#2323203)
+=======
+@property (nonatomic, strong, nullable) UIView *inputView;
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 @property (nonatomic, weak, nullable) id<RCTBackedTextInputDelegate> textInputDelegate;
 @property (nonatomic, readonly) CGSize contentSize;
 @property (nonatomic, strong, nullable) NSDictionary<NSAttributedStringKey,id> *defaultTextAttributes;
@@ -54,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UITextFieldViewMode clearButtonMode;
 #endif // TODO(macOS ISS#2323203)
 @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
+@property (nonatomic, strong, nullable) NSString *inputAccessoryViewID;
 
 // This protocol disallows direct access to `selectedTextRange` property because
 // unwise usage of it can break the `delegate` behavior. So, we always have to

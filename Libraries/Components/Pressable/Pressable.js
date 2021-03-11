@@ -25,6 +25,7 @@ import type {
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
 import {normalizeRect, type RectOrSize} from '../../StyleSheet/Rect';
+<<<<<<< HEAD
 import type {ColorValue} from '../../StyleSheet/StyleSheetTypes';
 import type {
   LayoutEvent,
@@ -32,6 +33,9 @@ import type {
   PressEvent,
 } from '../../Types/CoreEventTypes';
 import type {DraggedTypesType} from '../View/DraggedType'; // TODO(macOS ISS#2323203)
+=======
+import type {LayoutEvent, PressEvent} from '../../Types/CoreEventTypes';
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 import View from '../View/View';
 
 type ViewStyleProp = $ElementType<React.ElementConfig<typeof View>, 'style'>;
@@ -137,6 +141,7 @@ type Props = $ReadOnly<{|
    */
   testOnly_pressed?: ?boolean,
 
+<<<<<<< HEAD
   // [TODO(macOS ISS#2323203)
   acceptsFirstMouse?: ?boolean,
   enableFocusRing?: ?boolean,
@@ -148,6 +153,12 @@ type Props = $ReadOnly<{|
   onDrop?: (event: MouseEvent) => void,
   draggedTypes?: ?DraggedTypesType,
   // ]TODO(macOS ISS#2323203)
+=======
+  /**
+   * Duration to wait after press down before calling `onPressIn`.
+   */
+  unstable_pressDelay?: ?number,
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 |}>;
 
 /**
@@ -172,6 +183,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
     pressRetentionOffset,
     style,
     testOnly_pressed,
+    unstable_pressDelay,
     ...restProps
   } = props;
 
@@ -184,6 +196,14 @@ function Pressable(props: Props, forwardedRef): React.Node {
 
   const hitSlop = normalizeRect(props.hitSlop);
 
+  const restPropsWithDefaults: React.ElementConfig<typeof View> = {
+    ...restProps,
+    ...android_rippleConfig?.viewProps,
+    accessible: accessible !== false,
+    focusable: focusable !== false,
+    hitSlop,
+  };
+
   const config = useMemo(
     () => ({
       disabled,
@@ -191,6 +211,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
       pressRectOffset: pressRetentionOffset,
       android_disableSound,
       delayLongPress,
+      delayPressIn: unstable_pressDelay,
       onLongPress,
       onPress,
       onPressIn(event: PressEvent): void {
@@ -225,22 +246,27 @@ function Pressable(props: Props, forwardedRef): React.Node {
       onPressOut,
       pressRetentionOffset,
       setPressed,
+      unstable_pressDelay,
     ],
   );
   const eventHandlers = usePressability(config);
 
   return (
     <View
-      {...restProps}
+      {...restPropsWithDefaults}
       {...eventHandlers}
+<<<<<<< HEAD
       {...android_rippleConfig?.viewProps}
       acceptsFirstMouse={acceptsFirstMouse !== false && !disabled} // [TODO(macOS ISS#2323203)
       enableFocusRing={enableFocusRing !== false && !disabled} // ]TODO(macOS ISS#2323203)
       accessible={accessible !== false}
       focusable={focusable !== false}
       hitSlop={hitSlop}
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
       ref={viewRef}
-      style={typeof style === 'function' ? style({pressed}) : style}>
+      style={typeof style === 'function' ? style({pressed}) : style}
+      collapsable={false}>
       {typeof children === 'function' ? children({pressed}) : children}
       {__DEV__ ? <PressabilityDebugView color="red" hitSlop={hitSlop} /> : null}
     </View>

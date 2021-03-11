@@ -12,7 +12,12 @@
 namespace facebook {
 namespace react {
 
+<<<<<<< HEAD
 JSIExecutor::RuntimeInstaller RCTJSIExecutorRuntimeInstaller(JSIExecutor::RuntimeInstaller runtimeInstallerToWrap) {
+=======
+JSIExecutor::RuntimeInstaller RCTJSIExecutorRuntimeInstaller(JSIExecutor::RuntimeInstaller runtimeInstallerToWrap)
+{
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   return [runtimeInstaller = runtimeInstallerToWrap](jsi::Runtime &runtime) {
     Logger iosLoggingBinder = [](const std::string &message, unsigned int logLevel) {
       _RCTLogJavaScriptInternal(static_cast<RCTLogLevel>(logLevel), [NSString stringWithUTF8String:message.c_str()]);

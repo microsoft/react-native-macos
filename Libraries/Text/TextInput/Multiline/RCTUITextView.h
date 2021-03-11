@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 // it's declared here only to conform to the interface.
 @property (nonatomic, assign) BOOL caretHidden;
 
+<<<<<<< HEAD
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 @property (nonatomic, assign) BOOL scrollEnabled;
 @property (nonatomic, strong, nullable) RCTUIColor *selectionColor; // TODO(OSS Candidate ISS#2710739)
@@ -54,6 +55,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSAttributedString *attributedText;
 - (NSSize)sizeThatFits:(NSSize)size;
 #endif // ]TODO(macOS ISS#2323203)
+=======
+@property (nonatomic, strong, nullable) NSString *inputAccessoryViewID;
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 @end
 

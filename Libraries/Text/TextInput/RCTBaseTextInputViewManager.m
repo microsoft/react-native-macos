@@ -56,8 +56,14 @@ RCT_REMAP_VIEW_PROPERTY(scrollEnabled, backedTextInputView.scrollEnabled, BOOL)
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(secureTextEntry, backedTextInputView.secureTextEntry, BOOL) // TODO(macOS ISS#2323203)
 RCT_EXPORT_VIEW_PROPERTY(autoFocus, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(blurOnSubmit, BOOL)
+<<<<<<< HEAD
 RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(clearTextOnFocus, BOOL) // TODO(macOS ISS#2323203)
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(keyboardType, backedTextInputView.keyboardType, UIKeyboardType) // TODO(macOS ISS#2323203)
+=======
+RCT_EXPORT_VIEW_PROPERTY(clearTextOnFocus, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(keyboardType, UIKeyboardType)
+RCT_EXPORT_VIEW_PROPERTY(showSoftInputOnFocus, BOOL)
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 RCT_EXPORT_VIEW_PROPERTY(maxLength, NSNumber)
 RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(selectTextOnFocus, BOOL) // TODO(macOS ISS#2323203)
 RCT_EXPORT_VIEW_PROPERTY(selection, RCTTextSelection)

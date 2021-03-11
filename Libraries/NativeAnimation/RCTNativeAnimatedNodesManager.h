@@ -8,19 +8,28 @@
 #import <Foundation/Foundation.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTUIManager.h>
+<<<<<<< HEAD
 #import <React/RCTPlatformDisplayLink.h> // TODO(macOS ISS#2323203)
+=======
+#import <React/RCTSurfacePresenterStub.h>
+#import <React/RCTEventDispatcherProtocol.h>
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 @protocol RCTValueAnimatedNodeObserver;
 
 @interface RCTNativeAnimatedNodesManager : NSObject
 
-- (nonnull instancetype)initWithBridge:(nonnull RCTBridge *)bridge;
+- (nonnull instancetype)initWithBridge:(nonnull RCTBridge *)bridge
+                      surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter;
 
 - (void)updateAnimations;
 
 - (void)stepAnimations:(nonnull RCTPlatformDisplayLink *)displaylink; // TODO(macOS ISS#2323203)
 
 - (BOOL)isNodeManagedByFabric:(nonnull NSNumber *)tag;
+
+- (void)getValue:(nonnull NSNumber *)nodeTag
+        saveCallback:(nullable RCTResponseSenderBlock)saveCallback;
 
 // graph
 

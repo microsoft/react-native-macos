@@ -22,6 +22,7 @@
 #import "RCTDefines.h"
 #import "RCTLog.h"
 #import "RCTModuleData.h"
+#import "RCTReloadCommand.h"
 #import "RCTUIManager.h"
 #import "RCTUIManagerUtils.h"
 #import "RCTUtils.h"
@@ -381,7 +382,7 @@ void RCTProfileUnhookModules(RCTBridge *bridge)
 
 + (void)reload
 {
-  [RCTProfilingBridge() reloadWithReason:@"Profiling controls"];
+  RCTTriggerReloadCommandListeners(@"Profiling controls");
 }
 
 + (void)toggle:(UIButton *)target
@@ -395,7 +396,6 @@ void RCTProfileUnhookModules(RCTBridge *bridge)
     RCTProfileEnd(RCTProfilingBridge(), ^(NSString *result) {
       NSString *outFile = [NSTemporaryDirectory() stringByAppendingString:@"tmp_trace.json"];
       [result writeToFile:outFile atomically:YES encoding:NSUTF8StringEncoding error:nil];
-#if !TARGET_OS_TV
       UIActivityViewController *activityViewController =
           [[UIActivityViewController alloc] initWithActivityItems:@[ [NSURL fileURLWithPath:outFile] ]
                                             applicationActivities:nil];
@@ -412,7 +412,6 @@ void RCTProfileUnhookModules(RCTBridge *bridge)
                                                                                       animated:YES
                                                                                     completion:nil];
       });
-#endif
     });
   } else {
     RCTProfileInit(RCTProfilingBridge());
@@ -754,6 +753,7 @@ void RCTProfileSendResult(RCTBridge *bridge, NSString *route, NSData *data)
               NSString *message = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
 
               if (message.length) {
+<<<<<<< HEAD
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
                 NSAlert *alert = [NSAlert new];
                 alert.messageText = @"Profile";
@@ -761,6 +761,8 @@ void RCTProfileSendResult(RCTBridge *bridge, NSString *route, NSData *data)
                 [alert addButtonWithTitle:@"OK"];
                 [alert runModal];
 #elif !TARGET_OS_TV // ]TODO(macOS ISS#2323203)
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
                 dispatch_async(dispatch_get_main_queue(), ^{
                   UIAlertController *alertController =
                       [UIAlertController alertControllerWithTitle:@"Profile"
@@ -771,7 +773,6 @@ void RCTProfileSendResult(RCTBridge *bridge, NSString *route, NSData *data)
                                                                     handler:nil]];
                   [RCTPresentedViewController() presentViewController:alertController animated:YES completion:nil];
                 });
-#endif
               }
             }
           }];

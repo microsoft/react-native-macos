@@ -5,14 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import "RCTEventDispatcher.h"
-
-#import "RCTAssert.h"
-#import "RCTBridge+Private.h"
-#import "RCTBridge.h"
-#import "RCTComponentEvent.h"
-#import "RCTProfile.h"
-#import "RCTUtils.h"
+#import "RCTEventDispatcherProtocol.h"
 
 const NSInteger RCTTextUpdateLagWarningThreshold = 3;
 
@@ -27,6 +20,7 @@ NSString *RCTNormalizeInputEventName(NSString *eventName)
   return eventName;
 }
 
+<<<<<<< HEAD
 static NSNumber *RCTGetEventID(NSNumber *viewTag, NSString *eventName, uint16_t coalescingKey)
 {
   return @(viewTag.intValue | (((uint64_t)eventName.hash & 0xFFFF) << 32) | (((uint64_t)coalescingKey) << 48));
@@ -212,11 +206,13 @@ RCT_EXPORT_MODULE()
 
 @end
 
+=======
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 @implementation RCTBridge (RCTEventDispatcher)
 
-- (RCTEventDispatcher *)eventDispatcher
+- (id<RCTEventDispatcherProtocol>)eventDispatcher
 {
-  return [self moduleForClass:[RCTEventDispatcher class]];
+  return [self moduleForName:@"EventDispatcher" lazilyLoadIfNecessary:YES];
 }
 
 @end

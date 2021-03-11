@@ -26,6 +26,7 @@ export interface Spec extends TurboModule {
       +anchor?: ?number,
       +tintColor?: ?ProcessedColorValue, // TODO(macOS ISS#2323203)
       +userInterfaceStyle?: ?string,
+      +disabledButtonIndices?: Array<number>,
     |},
     callback: (buttonIndex: number) => void,
   ) => void;

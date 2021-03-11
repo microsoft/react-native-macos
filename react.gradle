@@ -30,7 +30,11 @@ def detectCliPath(config) {
     }
 
     def cliPath = ["node", "-e", "console.log(require('react-native/cli').bin);"].execute([], projectDir).text.trim()
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
     if (cliPath) {
         return cliPath
     } else if (new File("${projectDir}/../../node_modules/react-native/cli.js").exists()) {
@@ -301,6 +305,11 @@ afterEvaluate {
 
             enabled(currentBundleTask.enabled)
         }
+
+        // mergeResources task runs before the bundle file is copied to the intermediate asset directory from Android plugin 4.1+.
+        // This ensures to copy the bundle file before mergeResources task starts
+        def mergeResourcesTask = tasks.findByName("merge${targetName}Resources")
+        mergeResourcesTask.dependsOn(currentAssetsCopyTask)
 
         packageTask.dependsOn(currentAssetsCopyTask)
         if (buildPreBundleTask != null) {

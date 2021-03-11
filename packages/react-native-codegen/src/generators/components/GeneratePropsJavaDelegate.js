@@ -55,7 +55,8 @@ const propSetterTemplate = `
 `;
 
 const commandsTemplate = `
-  public void receiveCommand(::_INTERFACE_CLASSNAME_::<T> viewManager, T view, String commandName, ReadableArray args) {
+  @Override
+  public void receiveCommand(T view, String commandName, ReadableArray args) {
     switch (commandName) {
       ::_COMMAND_CASES_::
     }
@@ -82,14 +83,10 @@ function getJavaValueForProp(
           : `"${typeAnnotation.default}"`;
       return `value == null ? ${defaultValueString} : (String) value`;
     case 'Int32TypeAnnotation':
-      return `value == null ? ${
-        typeAnnotation.default
-      } : ((Double) value).intValue()`;
+      return `value == null ? ${typeAnnotation.default} : ((Double) value).intValue()`;
     case 'DoubleTypeAnnotation':
       if (prop.optional) {
-        return `value == null ? ${
-          typeAnnotation.default
-        }f : ((Double) value).doubleValue()`;
+        return `value == null ? ${typeAnnotation.default}f : ((Double) value).doubleValue()`;
       } else {
         return 'value == null ? Double.NaN : ((Double) value).doubleValue()';
       }
@@ -97,13 +94,11 @@ function getJavaValueForProp(
       if (typeAnnotation.default === null) {
         return 'value == null ? null : ((Double) value).floatValue()';
       } else if (prop.optional) {
-        return `value == null ? ${
-          typeAnnotation.default
-        }f : ((Double) value).floatValue()`;
+        return `value == null ? ${typeAnnotation.default}f : ((Double) value).floatValue()`;
       } else {
         return 'value == null ? Float.NaN : ((Double) value).floatValue()';
       }
-    case 'NativePrimitiveTypeAnnotation':
+    case 'ReservedPropTypeAnnotation':
       switch (typeAnnotation.name) {
         case 'ColorPrimitive':
           return 'ColorPropConverter.getColor(value, view.getContext())';
@@ -115,7 +110,7 @@ function getJavaValueForProp(
           return '(ReadableMap) value';
         default:
           (typeAnnotation.name: empty);
-          throw new Error('Received unknown NativePrimitiveTypeAnnotation');
+          throw new Error('Received unknown ReservedPropTypeAnnotation');
       }
     case 'ArrayTypeAnnotation': {
       return '(ReadableArray) value';
@@ -126,9 +121,7 @@ function getJavaValueForProp(
     case 'StringEnumTypeAnnotation':
       return '(String) value';
     case 'Int32EnumTypeAnnotation':
-      return `value == null ? ${
-        typeAnnotation.default
-      } : ((Double) value).intValue()`;
+      return `value == null ? ${typeAnnotation.default} : ((Double) value).intValue()`;
     default:
       (typeAnnotation: empty);
       throw new Error('Received invalid typeAnnotation');
@@ -161,7 +154,17 @@ function generatePropCasesString(
 }
 
 function getCommandArgJavaType(param, index) {
-  switch (param.typeAnnotation.type) {
+  const {typeAnnotation} = param;
+
+  switch (typeAnnotation.type) {
+    case 'ReservedFunctionValueTypeAnnotation':
+      switch (typeAnnotation.name) {
+        case 'RootTag':
+          return `args.getDouble(${index})`;
+        default:
+          (typeAnnotation.name: empty);
+          throw new Error(`Receieved invalid type: ${typeAnnotation.name}`);
+      }
     case 'BooleanTypeAnnotation':
       return `args.getBoolean(${index})`;
     case 'DoubleTypeAnnotation':
@@ -173,8 +176,8 @@ function getCommandArgJavaType(param, index) {
     case 'StringTypeAnnotation':
       return `args.getString(${index})`;
     default:
-      (param.typeAnnotation.type: empty);
-      throw new Error('Receieved invalid typeAnnotation');
+      (typeAnnotation.type: empty);
+      throw new Error(`Receieved invalid type: ${typeAnnotation.type}`);
   }
 }
 
@@ -196,7 +199,7 @@ function generateCommandCasesString(
   const commandMethods = component.commands
     .map(command => {
       return `case "${command.name}":
-        viewManager.${toSafeJavaString(
+        mViewManager.${toSafeJavaString(
           command.name,
           false,
         )}(${getCommandArguments(command)});
@@ -260,10 +263,16 @@ module.exports = {
     libraryName: string,
     schema: SchemaType,
     moduleSpecName: string,
+    packageName?: string,
   ): FilesOutput {
     const files = new Map();
     Object.keys(schema.modules).forEach(moduleName => {
-      const components = schema.modules[moduleName].components;
+      const module = schema.modules[moduleName];
+      if (module.type !== 'Component') {
+        return;
+      }
+
+      const {components} = module;
       // No components in this module
       if (components == null) {
         return;
@@ -272,7 +281,10 @@ module.exports = {
       return Object.keys(components)
         .filter(componentName => {
           const component = components[componentName];
-          return component.excludedPlatform !== 'android';
+          return !(
+            component.excludedPlatforms &&
+            component.excludedPlatforms.includes('android')
+          );
         })
         .forEach(componentName => {
           const component = components[componentName];

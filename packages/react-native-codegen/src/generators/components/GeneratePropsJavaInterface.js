@@ -72,7 +72,7 @@ function getJavaValueForProp(prop: PropTypeShape, imports): string {
       } else {
         return 'float value';
       }
-    case 'NativePrimitiveTypeAnnotation':
+    case 'ReservedPropTypeAnnotation':
       switch (typeAnnotation.name) {
         case 'ColorPrimitive':
           addNullable(imports);
@@ -88,7 +88,7 @@ function getJavaValueForProp(prop: PropTypeShape, imports): string {
           return '@Nullable ReadableMap value';
         default:
           (typeAnnotation.name: empty);
-          throw new Error('Received unknown NativePrimitiveTypeAnnotation');
+          throw new Error('Received unknown ReservedPropTypeAnnotation');
       }
     case 'ArrayTypeAnnotation': {
       addNullable(imports);
@@ -125,7 +125,17 @@ function generatePropsString(component: ComponentShape, imports) {
 }
 
 function getCommandArgJavaType(param) {
-  switch (param.typeAnnotation.type) {
+  const {typeAnnotation} = param;
+
+  switch (typeAnnotation.type) {
+    case 'ReservedFunctionValueTypeAnnotation':
+      switch (typeAnnotation.name) {
+        case 'RootTag':
+          return 'double';
+        default:
+          (typeAnnotation.name: empty);
+          throw new Error(`Receieved invalid type: ${typeAnnotation.name}`);
+      }
     case 'BooleanTypeAnnotation':
       return 'boolean';
     case 'DoubleTypeAnnotation':
@@ -137,7 +147,7 @@ function getCommandArgJavaType(param) {
     case 'StringTypeAnnotation':
       return 'String';
     default:
-      (param.typeAnnotation.type: empty);
+      (typeAnnotation.type: empty);
       throw new Error('Receieved invalid typeAnnotation');
   }
 }
@@ -199,10 +209,17 @@ module.exports = {
     libraryName: string,
     schema: SchemaType,
     moduleSpecName: string,
+    packageName?: string,
   ): FilesOutput {
     const files = new Map();
     Object.keys(schema.modules).forEach(moduleName => {
-      const components = schema.modules[moduleName].components;
+      const module = schema.modules[moduleName];
+      if (module.type !== 'Component') {
+        return;
+      }
+
+      const {components} = module;
+
       // No components in this module
       if (components == null) {
         return;
@@ -211,7 +228,10 @@ module.exports = {
       return Object.keys(components)
         .filter(componentName => {
           const component = components[componentName];
-          return component.excludedPlatform !== 'android';
+          return !(
+            component.excludedPlatforms &&
+            component.excludedPlatforms.includes('android')
+          );
         })
         .forEach(componentName => {
           const component = components[componentName];

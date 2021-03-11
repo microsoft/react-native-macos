@@ -4,7 +4,11 @@ exports[`<Pressable /> should render as expected: should deep render when mocked
 <View
   acceptsFirstMouse={true}
   accessible={true}
+<<<<<<< HEAD
   enableFocusRing={true}
+=======
+  collapsable={false}
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   focusable={true}
   onBlur={[Function]}
   onClick={[Function]}
@@ -26,7 +30,11 @@ exports[`<Pressable /> should render as expected: should deep render when not mo
 <View
   acceptsFirstMouse={true}
   accessible={true}
+<<<<<<< HEAD
   enableFocusRing={true}
+=======
+  collapsable={false}
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
   focusable={true}
   onBlur={[Function]}
   onClick={[Function]}

@@ -13,7 +13,6 @@
 #import "RCTBackedTextInputViewProtocol.h"
 
 @class RCTBridge;
-@class RCTEventDispatcher;
 @class RCTTextAttributes;
 @class RCTTextSelection;
 
@@ -57,7 +56,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *inputAccessoryViewID;
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
 @property (nonatomic, assign) UIKeyboardType keyboardType;
+<<<<<<< HEAD
 #endif // TODO(macOS ISS#2323203)
+=======
+@property (nonatomic, assign) BOOL showSoftInputOnFocus;
+>>>>>>> 1aa4f47e2f119c447b4de42808653df080d95fe9
 
 /**
  Sets selection intext input if both start and end are within range of the text input.
