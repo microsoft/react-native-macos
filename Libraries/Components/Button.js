@@ -170,24 +170,18 @@ type ButtonProps = $ReadOnly<{|
   /**
   * The view object that follows the current view in the key view loop.
   */
-  nextKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
-  
-  /**
-  * The closest view object in the key view loop that follows the current 
-  * view in the key view loop and accepts first responder status.
-  */
-  nextValidKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
+  nextKeyViewTest?: ?number, // TODO(macOS ISS#2323203)
  
   /**
   * The view object preceding the current view in the key view loop.
   */
-  previousKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
+  // previousKeyView?: ?number, // TODO(macOS ISS#2323203)
  
   /**
   * The closest view object in the key view loop that precedes the current 
   * view and accepts first responder status.
   */
-  previousValidKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
+  previousValidKeyView?: ?number, // TODO(macOS ISS#2323203)
   
   /*
    * Specifies the Tooltip for the view
@@ -250,8 +244,8 @@ class Button extends React.Component<ButtonProps> {
       onKeyUp,
       validKeysDown,
       validKeysUp,
-      nextKeyView,
-      previousKeyView,
+      nextKeyViewTest,
+      // previousKeyView,
       nextValidKeyView,
       previousValidKeyView,
       canBecomeKeyView,
@@ -307,10 +301,8 @@ class Button extends React.Component<ButtonProps> {
         onKeyUp={onKeyUp}
         validKeysDown={validKeysDown}
         validKeysUp={validKeysUp}
-        nextKeyView={nextKeyView}
-        previousKeyView={previousKeyView}
-        nextValidKeyView={nextValidKeyView}
-        previousValidKeyView={previousValidKeyView}
+        nextKeyViewTest={nextKeyViewTest}
+        // previousKeyView={previousKeyView}
         canBecomeKeyView={canBecomeKeyView}
         needsPanelToBecomeKey={needsPanelToBecomeKey}
         tooltip={tooltip}

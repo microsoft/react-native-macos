@@ -613,24 +613,13 @@ export type ViewProps = $ReadOnly<{|
   /**
   * The view object that follows the current view in the key view loop.
   */
-  nextKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
-  
-  /**
-  * The closest view object in the key view loop that follows the current 
-  * view in the key view loop and accepts first responder status.
-  */
-  nextValidKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
+  nextKeyViewTest?: ?number, // TODO(macOS ISS#2323203)
  
   /**
   * The view object preceding the current view in the key view loop.
   */
-  previousKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
- 
-  /**
-  * The closest view object in the key view loop that precedes the current 
-  * view and accepts first responder status.
-  */
-  previousValidKeyView?: ?RCTView, // TODO(macOS ISS#2323203)
+  // previousKeyView?: ?number, // TODO(macOS ISS#2323203)
+
 
   /**
    * Specifies whether focus ring should be drawn when the view has the first responder status.

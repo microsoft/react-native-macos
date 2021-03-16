@@ -116,10 +116,8 @@ export type PressabilityConfig = $ReadOnly<{|
    */
   validKeysUp?: ?Array<string>,
   
-  nextKeyView?: RCTView,
-  previousKeyView?: RCTView,
-  nextValidKeyView?: RCTView,
-  previousValidKeyView?: RCTView,
+  nextKeyViewTest?: number,
+  // previousKeyView?: number,
   needsPanelToBecomeKey?: boolean,
   canBecomeKeyView?: boolean,
 

@@ -13,7 +13,7 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {Button, PlatformColor, StyleSheet, Text, View} = ReactNative;
+const {Button, PlatformColor, StyleSheet, Text, View, findNodeHandle} = ReactNative;
 
 class KeyViewLoopExample extends React.Component<{}, State> {
 
@@ -33,21 +33,26 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 focusable={true}
                 title={'First'}
                 onPress={() => {}}
-                ref={this.firstButtonRef}
-                nextKeyView={this.thirdButtonRef}
+                ref='fist_button'
+                // mextKeyView='third_button'
+                // nextKeyViewTest={findNodeHandle(this.refs['third_button'])}
               />
               <Button
                 focusable={true}
                 title={'Third'}
                 onPress={() => {}}
-                ref={this.thirdButtonRef}
-                nextKeyView={this.firstButtonRef}
+                // ref={this.thirdButtonRef}
+                // nextKeyViewTest={this.firstButtonRef}
+                ref='third_button'
+                // nextKeyViewTest='first_button'
+
               />
               <Button
                 focusable={true}
                 title={'Second'}
                 onPress={() => {}}
-                // ref='second_button'
+                ref='second_button'
+                // nextKeyViewTest='third_button'
               />
               <Button
                 focusable={true}

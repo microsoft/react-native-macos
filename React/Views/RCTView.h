@@ -143,10 +143,8 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) NSArray<NSString*> *validKeysUp;
 
 // Key-View loop
-@property (nonatomic, copy) RCTView *nextKeyView;
-@property (nonatomic, copy) RCTView *previousKeyView;
-@property (nonatomic, copy) RCTView *nextValidKeyView;
-@property (nonatomic, copy) RCTView *previousValidKeyView;
+@property (nonatomic, copy) NSNumber *nextKeyViewTest;
+// @property (nonatomic, copy) NSNumber *previousKeyView;
 @property (nonatomic, assign) BOOL *needsPanelToBecomeKey;
 @property (nonatomic, assign) BOOL *canBecomeKeyView;
 #endif // ]TODO(macOS ISS#2323203)

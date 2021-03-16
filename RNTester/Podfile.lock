@@ -520,8 +520,8 @@ SPEC CHECKSUMS:
   CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
   CocoaLibEvent: 2fab71b8bd46dd33ddb959f7928ec5909f838e3f
   DoubleConversion: 56a44bcfd14ab2ff66f5a146b2e875eb4b69b19b
-  FBLazyVector: 82118d7d9e402f778470d400397b17055e225e18
-  FBReactNativeSpec: 05aa0decc4f922dc304dbb59a540f12432dba833
+  FBLazyVector: b73307d31fb4e76283a68e41af420475b198bc05
+  FBReactNativeSpec: 33f3a88abfb7d86da35e39bba4d3d7ad581d04b9
   Flipper: be611d4b742d8c87fbae2ca5f44603a02539e365
   Flipper-DoubleConversion: 38631e41ef4f9b12861c67d17cb5518d06badc41
   Flipper-Folly: c12092ea368353b58e992843a990a3225d4533c3
@@ -534,32 +534,32 @@ SPEC CHECKSUMS:
   libevent: ee9265726a1fc599dea382964fa304378affaa5f
   OpenSSL-Universal: 8b48cc0d10c1b2923617dfe5c178aa9ed2689355
   RCT-Folly: 1347093ffe75e152d846f7e45a3ef901b60021aa
-  RCTRequired: 47ae5f4c7d80717a8264e50f16682ac344db4217
-  RCTTypeSafety: 2df8fc09c2ce57c6b3d999da1598aaf5826a0829
-  React: 2f1140532c98af3dd78a19c3e6f78859d3de5884
-  React-ART: 2443097743631ab39042c38f168f82bcf947b5cc
-  React-callinvoker: ba884ad46ba4e25ee13764b4ee5faabbe57f8a83
-  React-Core: c78f71d22e86818b700fc7aedb1f96320f86fa1a
-  React-CoreModules: 45ded69e1b5e6cde732d7c393167d46fd5240288
-  React-cxxreact: 7613e7bd3b73f2c57a87809498f2d2a6f4051c62
-  React-jsi: 14d030c8a03d243ed6e429d3dd1d87932d1b34d9
-  React-jsiexecutor: b037299a1bcf20b896107553643fb2e42f2aa499
-  React-jsinspector: db627cbcc269e45afeb97f63989e022b6c47824c
-  React-RCTActionSheet: 85ed086d4109410cedadbbdb1f60abac7c20e3f2
-  React-RCTAnimation: 16981e766fb01a3feeb1fcee73c40444bc274ac9
-  React-RCTBlob: 85677f6a1334535002f87ef0d9f42b98cd00c1cf
-  React-RCTImage: 977b4ff9a99ff48f490b9d8e6310c1f36156a0ff
-  React-RCTLinking: 61f731f51ddb2a532aedc0d8c1cd415cebe65819
-  React-RCTNetwork: 00a44cb9a74ee1c46cfd336392b24a71c53d4d2d
-  React-RCTPushNotification: a881c94895cb018637d235cfb3252bb1ff2070d2
-  React-RCTSettings: 8d3c181cbdfc70c45249e52af12d3e300f195ab5
-  React-RCTTest: 0a372baeec50138403375ff1ec41d307c7493449
-  React-RCTText: 4b9f83be92177187984eab2af6118dfa0699c31b
-  React-RCTVibration: 7f83dac6d8745099829b52d961950119ef637b6f
+  RCTRequired: 9fa64678e09e4678ce1abe31dc919103404dbf0a
+  RCTTypeSafety: 4a6438faf92bf05e282a71961479f52e2b230f84
+  React: cfce1bb75ce92178d97bc83329ee28ad0ba79f03
+  React-ART: 59baf2eedfeb5efbf038d49bffc2c3f8d21287de
+  React-callinvoker: 17c050a5da2ef1f12c6e95999fbe4cd14588ff13
+  React-Core: ae927af6864d83819880a89dee430101fbbd5551
+  React-CoreModules: 5c2f29c9fe7e2afe00c178e967fb92a557523aff
+  React-cxxreact: 48cee16c84b62b5010595505e748df825a849ee9
+  React-jsi: 4e20ec8bc97904fc5392e6c35778521ae9786251
+  React-jsiexecutor: 04222686633e0b382b456c955b67146e65a37d96
+  React-jsinspector: e31b66d3512ca90fc7d58ff07fe9f274b6104e1b
+  React-RCTActionSheet: 146e665f24cc99fa538237e0a85790d979d85b23
+  React-RCTAnimation: e1894e41c58b0fbe054266ac8dc89c56ceb3056f
+  React-RCTBlob: 001a9a5c7dd603e6e1ffb10d323df653169babd4
+  React-RCTImage: 0a361e6437b5bb021d5806e42b0a0ddec85bec03
+  React-RCTLinking: f6aaba0d4ae6753e1d676f832a960566f7a14d8e
+  React-RCTNetwork: 023266f30bc995b91a955851dc48768b5dcd5e34
+  React-RCTPushNotification: 201738b5923b7f8dfcb8fff944132f112d6b464d
+  React-RCTSettings: 7aec3c4989715c126a0ba5ce71209fceba8d6b2c
+  React-RCTTest: 03b2b09bfa886f7f09a16f7c542c09266695952e
+  React-RCTText: 70c292bcb3cfd1e30000aded74b4b2314d4843ac
+  React-RCTVibration: db52e91af3fc1b4c9d1f1564471e8374b3425a86
   React-TurboModuleCxx-RNW: 2b20d9836f968b774f0ccc74bdf49c97c84e4e05
-  React-TurboModuleCxx-WinRTPort: 8d1aff4a79e167ed1339291acbea740201e846f6
-  ReactCommon: eade3682069a39363f6716ca70148050e45bb4e2
-  Yoga: 5c2f53a5b2bc4127c68c56e1e51d4e68d8d54402
+  React-TurboModuleCxx-WinRTPort: a60dade3bb33f9ddc3360cca108f7223065c3d8d
+  ReactCommon: 85d11fc0c27b11b00d4a0696487b1902e71dcd66
+  Yoga: 9786f5fa19c7267a0419927391b48112c6475303
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
 PODFILE CHECKSUM: 18ca7d3b0e7db79041574a8bb6200b9e1c2d5359
