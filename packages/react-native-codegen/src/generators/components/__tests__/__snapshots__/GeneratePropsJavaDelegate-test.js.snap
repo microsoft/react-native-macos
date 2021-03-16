@@ -266,6 +266,9 @@ public class CommandNativeComponentManagerDelegate<T extends View, U extends Bas
 
   public void receiveCommand(CommandNativeComponentManagerInterface<T> viewManager, T view, String commandName, ReadableArray args) {
     switch (commandName) {
+      case \\"handleRootTag\\":
+        viewManager.handleRootTag(view, args.getDouble(0));
+        break;
       case \\"hotspotUpdate\\":
         viewManager.hotspotUpdate(view, args.getInt(0), args.getInt(1));
         break;
@@ -438,6 +441,8 @@ public class InterfaceOnlyComponentManagerDelegate<T extends View, U extends Bas
 `;
 
 exports[`GeneratePropsJavaDelegate can generate fixture EXCLUDE_ANDROID 1`] = `Map {}`;
+
+exports[`GeneratePropsJavaDelegate can generate fixture EXCLUDE_ANDROID_IOS 1`] = `Map {}`;
 
 exports[`GeneratePropsJavaDelegate can generate fixture FLOAT_PROPS 1`] = `
 Map {

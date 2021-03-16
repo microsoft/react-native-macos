@@ -13,7 +13,6 @@
 import typeof AccessibilityInfo from './Libraries/Components/AccessibilityInfo/AccessibilityInfo';
 import typeof ActivityIndicator from './Libraries/Components/ActivityIndicator/ActivityIndicator';
 import typeof Button from './Libraries/Components/Button';
-import typeof CheckBox from './Libraries/Components/CheckBox/CheckBox';
 import typeof DatePickerIOS from './Libraries/Components/DatePicker/DatePickerIOS';
 import typeof DatePickerMacOS from './Libraries/Components/DatePickerMacOS/DatePickerMacOS'; // TODO(macOS ISS#2323203)
 import typeof DrawerLayoutAndroid from './Libraries/Components/DrawerAndroid/DrawerLayoutAndroid';
@@ -100,7 +99,7 @@ import typeof {PlatformColor} from './Libraries/StyleSheet/PlatformColorValueTyp
 import typeof {DynamicColorIOS} from './Libraries/StyleSheet/PlatformColorValueTypesIOS';
 import typeof {DynamicColorMacOS} from './Libraries/StyleSheet/PlatformColorValueTypesMacOS'; // TODO(macOS ISS#2323203)
 import typeof {ColorAndroid} from './Libraries/StyleSheet/PlatformColorValueTypesAndroid';
-import typeof RootTagContext from './Libraries/ReactNative/RootTagContext';
+import typeof {RootTagContext} from './Libraries/ReactNative/RootTag';
 import typeof DeprecatedColorPropType from './Libraries/DeprecatedPropTypes/DeprecatedColorPropType';
 import typeof DeprecatedEdgeInsetsPropType from './Libraries/DeprecatedPropTypes/DeprecatedEdgeInsetsPropType';
 import typeof DeprecatedPointPropType from './Libraries/DeprecatedPropTypes/DeprecatedPointPropType';
@@ -123,15 +122,6 @@ module.exports = {
   },
   get Button(): Button {
     return require('./Libraries/Components/Button');
-  },
-  get CheckBox(): CheckBox {
-    warnOnce(
-      'checkBox-moved',
-      'CheckBox has been extracted from react-native core and will be removed in a future release. ' +
-        "It can now be installed and imported from '@react-native-community/checkbox' instead of 'react-native'. " +
-        'See https://github.com/react-native-community/react-native-checkbox',
-    );
-    return require('./Libraries/Components/CheckBox/CheckBox');
   },
   get DatePickerIOS(): DatePickerIOS {
     warnOnce(
@@ -500,17 +490,13 @@ module.exports = {
     return require('./Libraries/StyleSheet/PlatformColorValueTypesMacOS')
       .DynamicColorMacOS;
   },
-  get ColorAndroid(): ColorAndroid {
-    return require('./Libraries/StyleSheet/PlatformColorValueTypesAndroid')
-      .ColorAndroid;
-  },
   get requireNativeComponent(): <T>(
     uiViewClassName: string,
   ) => HostComponent<T> {
     return require('./Libraries/ReactNative/requireNativeComponent');
   },
   get unstable_RootTagContext(): RootTagContext {
-    return require('./Libraries/ReactNative/RootTagContext');
+    return require('./Libraries/ReactNative/RootTag').RootTagContext;
   },
   get unstable_enableLogBox(): () => void {
     return () =>
@@ -674,6 +660,19 @@ if (__DEV__) {
         'ViewPagerAndroid has been removed from React Native. ' +
           "It can now be installed and imported from '@react-native-community/viewpager' instead of 'react-native'. " +
           'See https://github.com/react-native-community/react-native-viewpager',
+      );
+    },
+  });
+
+  // $FlowFixMe This is intentional: Flow will error when attempting to access CheckBox.
+  Object.defineProperty(module.exports, 'CheckBox', {
+    configurable: true,
+    get() {
+      invariant(
+        false,
+        'CheckBox has been removed from React Native. ' +
+          "It can now be installed and imported from '@react-native-community/checkbox' instead of 'react-native'. " +
+          'See https://github.com/react-native-community/react-native-checkbox',
       );
     },
   });

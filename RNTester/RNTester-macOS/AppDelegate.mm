@@ -60,15 +60,6 @@ NSString *kBundleNameJS = @"RNTesterApp";
 - (void)applicationWillFinishLaunching:(NSNotification *)__unused aNotification
 {
   [NSUserNotificationCenter defaultUserNotificationCenter].delegate = self;
-  
-	// initialize the url event listeners for Linking module
-	// note that you will need to add a URL type to your app’s info.plist
-	// this sample registers the rntester scheme
-	[[NSAppleEventManager sharedAppleEventManager] setEventHandler:[RCTLinkingManager class]
-                                                     andSelector:@selector(getUrlEventHandler:withReplyEvent:)
-                                                   forEventClass:kInternetEventClass
-                                                      andEventID:kAEGetURL];
-
 }
 
 -(IBAction)newDocument:(id)__unused sender

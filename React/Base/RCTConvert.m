@@ -851,12 +851,14 @@ static NSDictionary<NSString *, NSDictionary *> *RCTSemanticColorsMap()
     static NSString *const RCTColorSuffix = @"Color";
     NSMutableDictionary<NSString *, NSDictionary *> *aliases = [NSMutableDictionary new];
     for (NSString *objcSelector in map) {
-      RCTAssert([objcSelector hasSuffix:RCTColorSuffix], @"A selector in the color map did not end with the suffix Color.");
+      RCTAssert(
+          [objcSelector hasSuffix:RCTColorSuffix], @"A selector in the color map did not end with the suffix Color.");
       NSMutableDictionary *entry = [map[objcSelector] mutableCopy];
-      if ([entry objectForKey:RCTSelector] == nil) {
-        entry[RCTSelector] = objcSelector;
-      }
+#if !TARGET_OS_OSX // TODO(macOS ISS#2323203) macOS presets some selectors if we're remapping a deprecated value
+      RCTAssert([entry objectForKey:RCTSelector] == nil, @"Entry should not already have an RCTSelector");
+#endif // !TARGET_OS_OSX // TODO(macOS ISS#2323203)
       NSString *swiftSelector = [objcSelector substringToIndex:[objcSelector length] - [RCTColorSuffix length]];
+      entry[RCTSelector] = objcSelector;
       aliases[swiftSelector] = entry;
     }
     [map addEntriesFromDictionary:aliases];

@@ -39,8 +39,8 @@ extern NSString *const kRCTPlatformName; // TODO(macOS ISS#2323203)
  */
 - (NSString *)packagerServerHost;
 
-#if RCT_DEV
-- (BOOL)isPackagerRunning:(NSString *)host;
+#if RCT_DEV_MENU
++ (BOOL)isPackagerRunning:(NSString *)host;
 #endif
 
 /**

@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "387847EA2456320C0035033A"
-               BuildableName = "libmacOSBuild.a"
+               BuildableName = "libRNTester.a"
                BlueprintName = "macOSBuild"
                ReferencedContainer = "container:RNTesterPods.xcodeproj">
             </BuildableReference>
@@ -51,7 +51,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "387847EA2456320C0035033A"
-            BuildableName = "libmacOSBuild.a"
+            BuildableName = "libRNTester.a"
             BlueprintName = "macOSBuild"
             ReferencedContainer = "container:RNTesterPods.xcodeproj">
          </BuildableReference>

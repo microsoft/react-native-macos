@@ -7,12 +7,17 @@
 
 package com.facebook.react.views.scroll;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.view.FocusFinder;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -50,6 +55,8 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
   private static final String CONTENT_OFFSET_LEFT = "contentOffsetLeft";
   private static final String CONTENT_OFFSET_TOP = "contentOffsetTop";
 
+  private static final int UNSET_CONTENT_OFFSET = -1;
+
   private final OnScrollDispatchHelper mOnScrollDispatchHelper = new OnScrollDispatchHelper();
   private final @Nullable OverScroller mScroller;
   private final VelocityHelper mVelocityHelper = new VelocityHelper();
@@ -76,7 +83,13 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
   private boolean mSnapToEnd = true;
   private ReactViewBackgroundManager mReactBackgroundManager;
   private boolean mPagedArrowScrolling = false;
+  private int pendingContentOffsetX = UNSET_CONTENT_OFFSET;
+  private int pendingContentOffsetY = UNSET_CONTENT_OFFSET;
   private @Nullable StateWrapper mStateWrapper;
+
+  private @Nullable ValueAnimator mScrollAnimator;
+  private int mFinalAnimatedPositionScrollX = 0;
+  private int mFinalAnimatedPositionScrollY = 0;
 
   private final Rect mTempRect = new Rect();
 
@@ -224,7 +237,13 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
   @Override
   protected void onLayout(boolean changed, int l, int t, int r, int b) {
     // Call with the present values in order to re-layout if necessary
-    reactScrollTo(getScrollX(), getScrollY());
+    // If a "pending" value has been set, we restore that value.
+    // That value gets cleared by reactScrollTo.
+    int scrollToX =
+        pendingContentOffsetX != UNSET_CONTENT_OFFSET ? pendingContentOffsetX : getScrollX();
+    int scrollToY =
+        pendingContentOffsetY != UNSET_CONTENT_OFFSET ? pendingContentOffsetY : getScrollY();
+    reactScrollTo(scrollToX, scrollToY);
   }
 
   /**
@@ -638,6 +657,20 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
         ReactHorizontalScrollView.this, mPostTouchRunnable, ReactScrollViewHelper.MOMENTUM_DELAY);
   }
 
+  /** Get current X position or position after current animation finishes, if any. */
+  private int getPostAnimationScrollX() {
+    return mScrollAnimator != null && mScrollAnimator.isRunning()
+        ? mFinalAnimatedPositionScrollX
+        : getScrollX();
+  }
+
+  /** Get current X position or position after current animation finishes, if any. */
+  private int getPostAnimationScrollY() {
+    return mScrollAnimator != null && mScrollAnimator.isRunning()
+        ? mFinalAnimatedPositionScrollY
+        : getScrollY();
+  }
+
   private int predictFinalScrollPosition(int velocityX) {
     // ScrollView can *only* scroll for 250ms when using smoothScrollTo and there's
     // no way to customize the scroll duration. So, we create a temporary OverScroller
@@ -649,8 +682,8 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
     int maximumOffset = Math.max(0, computeHorizontalScrollRange() - getWidth());
     int width = getWidth() - ViewCompat.getPaddingStart(this) - ViewCompat.getPaddingEnd(this);
     scroller.fling(
-        getScrollX(), // startX
-        getScrollY(), // startY
+        getPostAnimationScrollX(), // startX
+        getPostAnimationScrollY(), // startY
         velocityX, // velocityX
         0, // velocityY
         0, // minX
@@ -664,13 +697,13 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
   }
 
   /**
-   * This will smooth scroll us to the nearest snap offset point It currently just looks at where
+   * This will smooth scroll us to the nearest snap offset point. It currently just looks at where
    * the content is and slides to the nearest point. It is intended to be run after we are done
    * scrolling, and handling any momentum scrolling.
    */
   private void smoothScrollAndSnap(int velocity) {
     double interval = (double) getSnapInterval();
-    double currentOffset = (double) getScrollX();
+    double currentOffset = (double) (getPostAnimationScrollX());
     double targetOffset = (double) predictFinalScrollPosition(velocity);
 
     int previousPage = (int) Math.floor(currentOffset / interval);
@@ -904,8 +937,56 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
    * scroll view and state. Calling raw `smoothScrollTo` doesn't update state.
    */
   public void reactSmoothScrollTo(int x, int y) {
-    smoothScrollTo(x, y);
+    // `smoothScrollTo` contains some logic that, if called multiple times in a short amount of
+    // time, will treat all calls as part of the same animation and will not lengthen the duration
+    // of the animation. This means that, for example, if the user is scrolling rapidly, multiple
+    // pages could be considered part of one animation, causing some page animations to be animated
+    // very rapidly - looking like they're not animated at all.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+      if (mScrollAnimator != null) {
+        mScrollAnimator.cancel();
+      }
+
+      mFinalAnimatedPositionScrollX = x;
+      mFinalAnimatedPositionScrollY = y;
+      PropertyValuesHolder scrollX = PropertyValuesHolder.ofInt("scrollX", getScrollX(), x);
+      PropertyValuesHolder scrollY = PropertyValuesHolder.ofInt("scrollY", getScrollY(), y);
+      mScrollAnimator = ObjectAnimator.ofPropertyValuesHolder(scrollX, scrollY);
+      mScrollAnimator.setDuration(
+          ReactScrollViewHelper.getDefaultScrollAnimationDuration(getContext()));
+      mScrollAnimator.addUpdateListener(
+          new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+              int scrollValueX = (Integer) valueAnimator.getAnimatedValue("scrollX");
+              int scrollValueY = (Integer) valueAnimator.getAnimatedValue("scrollY");
+              ReactHorizontalScrollView.this.scrollTo(scrollValueX, scrollValueY);
+            }
+          });
+      mScrollAnimator.addListener(
+          new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {}
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+              mFinalAnimatedPositionScrollX = -1;
+              mFinalAnimatedPositionScrollY = -1;
+              mScrollAnimator = null;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {}
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {}
+          });
+      mScrollAnimator.start();
+    } else {
+      smoothScrollTo(x, y);
+    }
     updateStateOnScroll(x, y);
+    setPendingContentOffsets(x, y);
   }
 
   /**
@@ -917,6 +998,25 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
   public void reactScrollTo(int x, int y) {
     scrollTo(x, y);
     updateStateOnScroll(x, y);
+    setPendingContentOffsets(x, y);
+  }
+
+  /**
+   * If contentOffset is set before the View has been laid out, store the values and set them when
+   * `onLayout` is called.
+   *
+   * @param x
+   * @param y
+   */
+  private void setPendingContentOffsets(int x, int y) {
+    View child = getChildAt(0);
+    if (child != null && child.getWidth() != 0 && child.getHeight() != 0) {
+      pendingContentOffsetX = UNSET_CONTENT_OFFSET;
+      pendingContentOffsetY = UNSET_CONTENT_OFFSET;
+    } else {
+      pendingContentOffsetX = x;
+      pendingContentOffsetY = y;
+    }
   }
 
   public void updateState(@Nullable StateWrapper stateWrapper) {

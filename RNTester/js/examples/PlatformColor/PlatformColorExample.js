@@ -13,15 +13,7 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import Platform from '../../../../Libraries/Utilities/Platform';
-const {
-  ColorAndroid,
-  DynamicColorIOS,
-  DynamicColorMacOS,
-  PlatformColor,
-  StyleSheet,
-  Text,
-  View,
-} = ReactNative;
+const {DynamicColorIOS, DynamicColorMacOS, PlatformColor, StyleSheet, Text, View} = ReactNative;
 
 function PlatformColorsExample() {
   function createTable() {
@@ -302,24 +294,6 @@ function DynamicColorsExample() {
   );
 }
 
-function AndroidColorsExample() {
-  return Platform.OS === 'android' ? (
-    <View style={styles.column}>
-      <View style={styles.row}>
-        <Text style={styles.labelCell}>ColorAndroid('?attr/colorAccent')</Text>
-        <View
-          style={{
-            ...styles.colorCell,
-            backgroundColor: ColorAndroid('?attr/colorAccent'),
-          }}
-        />
-      </View>
-    </View>
-  ) : (
-    <Text style={styles.labelCell}>Not applicable on this platform</Text>
-  );
-}
-
 function VariantColorsExample() {
   return (
     <View style={styles.column}>
@@ -328,7 +302,7 @@ function VariantColorsExample() {
           {// [TODO(OSS Candidate ISS#2710739)
           Platform.select({
             ios: "DynamicColorIOS({light: 'red', dark: 'blue'})",
-            android: "ColorAndroid('?attr/colorAccent')",
+            android: "PlatformColor('?attr/colorAccent')",
             macos: "DynamicColorMacOS({light: 'red', dark: 'blue'})",
           })
           // ]TODO(OSS Candidate ISS#2710739)
@@ -344,7 +318,7 @@ function VariantColorsExample() {
                 Platform.OS === 'macos'
                 ? DynamicColorMacOS({light: 'red', dark: 'blue'})
                 : // ]TODO(macOS ISS#2323203)
-                  ColorAndroid('?attr/colorAccent'),
+                  PlatformColor('?attr/colorAccent'),
           }}
         />
       </View>
@@ -384,12 +358,6 @@ exports.examples = [
     title: 'Dynamic Colors', // TODO(OSS Candidate ISS#2710739)
     render(): React.Element<any> {
       return <DynamicColorsExample />;
-    },
-  },
-  {
-    title: 'Android Colors',
-    render(): React.Element<any> {
-      return <AndroidColorsExample />;
     },
   },
   {

@@ -363,14 +363,12 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
     return ![self->_excludedActivities containsObject:service];
   }]];
 }
-  
+
 #endif // ]TODO(macOS ISS#2323203)
   
-- (std::shared_ptr<TurboModule>)getTurboModuleWithJsInvoker:(std::shared_ptr<CallInvoker>)jsInvoker
-                                              nativeInvoker:(std::shared_ptr<CallInvoker>)nativeInvoker
-                                                 perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<NativeActionSheetManagerSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<NativeActionSheetManagerSpecJSI>(params);
 }
 
 @end
