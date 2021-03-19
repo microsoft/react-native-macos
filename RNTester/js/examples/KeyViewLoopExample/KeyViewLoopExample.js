@@ -13,13 +13,16 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {Button, PlatformColor, StyleSheet, Text, View, findNodeHandle} = ReactNative;
+const {Button, PlatformColor, StyleSheet, Text, View, findNodeHandle, AccessibilityInfo} = ReactNative;
 
 class KeyViewLoopExample extends React.Component<{}, State> {
 
-  render() {
-    // var firstButtonRef = useRef(null);
 
+  firstButtonRef = React.createRef();
+  secondButtonRef = React.createRef();
+  thirdButtonRef = React.createRef();
+
+  render() {
     return (
       <View>
         <Text>
@@ -33,28 +36,33 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 focusable={true}
                 title={'First'}
                 onPress={() => {}}
-                ref='fist_button'
+                ref={this.firstButtonRef}
                 // mextKeyView='third_button'
-                // nextKeyViewTest={findNodeHandle(this.refs['third_button'])}
+                // nextKeyViewTest={findNodeHandle(secondButtonRef.current)}
+                onBlur={() => {
+                  console.log("firstButtonTag: " + findNodeHandle(this.firstButtonRef.current));
+                  console.log("secondButtonTag: " + findNodeHandle(this.secondButtonRef.current));
+                  console.log("thirdButtonTag: " + findNodeHandle(this.thirdButtonRef.current));
+                  const reactTag = findNodeHandle(this.secondButtonRef.current);
+                  AccessibilityInfo.setAccessibilityFocus(reactTag);
+                  // this.secondButtonRef.current.focus();
+                }}
               />
               <Button
-                focusable={true}
+                // focusable={true}
                 title={'Third'}
                 onPress={() => {}}
-                // ref={this.thirdButtonRef}
-                // nextKeyViewTest={this.firstButtonRef}
-                ref='third_button'
-                // nextKeyViewTest='first_button'
-
+                ref={this.secondButtonRef}
+                // nextKeyViewTest={firstButtonRef}
               />
               <Button
-                focusable={true}
+                // focusable={true}
                 title={'Second'}
                 onPress={() => {}}
-                ref='second_button'
-                // nextKeyViewTest='third_button'
+                ref={this.thirdButtonRef}
+                // nextKeyViewTest={thirdButtonRef}
               />
-              <Button
+              {/* <Button
                 focusable={true}
                 title={'Fifth'}
                 onPress={() => {}}
@@ -65,7 +73,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 title={'Fourth'}
                 onPress={() => {}}
                 // ref='fourth_button'
-              />
+              /> */}
             </View>
           ) : null}
         </View>

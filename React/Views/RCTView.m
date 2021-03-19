@@ -1772,6 +1772,12 @@ if (tabKeyValidityCheck) {
     [super keyUp:event];
   }
 }
+
+- (void)setNextKeyViewTest:(id)nextKeyViewTest {
+//    _eventDispatcher.bridge.
+    NSLog(@"%@", nextKeyViewTest);
+}
+
 #endif // TARGET_OS_OSX
 
 @end
