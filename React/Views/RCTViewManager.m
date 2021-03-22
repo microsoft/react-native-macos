@@ -142,6 +142,12 @@ RCT_EXPORT_METHOD(blur : (nonnull NSNumber *)viewTag)
 }
 #endif // ]TODO(macOS ISS#2323203)
 
+#if TARGET_OS_OSX // [TODO()
+
+
+
+#endif // ]TODO()
+
 #pragma mark - View properties
 
 #if TARGET_OS_TV
@@ -499,12 +505,13 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
 // Key-View loop management
 RCT_EXPORT_VIEW_PROPERTY(canBecomeKeyView, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(needsPanelToBecomeKey, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(nextKeyViewTest, float)
-//RCT_CUSTOM_VIEW_PROPERTY(previousKeyView, float, RCTView)
+//RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTest, NSNumber, RCTView)
 //{
-//    RCTView *view = [_bridge.uiManager viewforReactTag:nextKeyViewTest];
-//    [view becomeFirstResponder];
-//    NSLog(@"%@", nextKeyViewTest);
+//  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
+//      NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
+//      RCTUIView *nextKeyView = viewRegistry[nextKeyViewTag];
+//      [view setNextKeyView:nextKeyView];
+//  }];
 //}
 #endif // ]TODO(macOS ISS#2323203)
 
