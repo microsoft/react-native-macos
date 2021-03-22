@@ -500,7 +500,12 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
 RCT_EXPORT_VIEW_PROPERTY(canBecomeKeyView, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(needsPanelToBecomeKey, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(nextKeyViewTest, float)
-//RCT_EXPORT_VIEW_PROPERTY(previousKeyView, float)
+//RCT_CUSTOM_VIEW_PROPERTY(previousKeyView, float, RCTView)
+//{
+//    RCTView *view = [_bridge.uiManager viewforReactTag:nextKeyViewTest];
+//    [view becomeFirstResponder];
+//    NSLog(@"%@", nextKeyViewTest);
+//}
 #endif // ]TODO(macOS ISS#2323203)
 
 #pragma mark - ShadowView properties

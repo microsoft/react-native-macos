@@ -1773,10 +1773,11 @@ if (tabKeyValidityCheck) {
   }
 }
 
-- (void)setNextKeyViewTest:(id)nextKeyViewTest {
-//    _eventDispatcher.bridge.
-    NSLog(@"%@", nextKeyViewTest);
-}
+//- (void)setNextKeyViewTest:(id)nextKeyViewTest {
+//    RCTView *view = [_bridge.uiManager viewforReactTag:nextKeyViewTest];
+//    [view becomeFirstResponder];
+//    NSLog(@"%@", nextKeyViewTest);
+//}
 
 #endif // TARGET_OS_OSX
 

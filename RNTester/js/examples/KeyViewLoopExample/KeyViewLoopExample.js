@@ -13,7 +13,7 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {Button, PlatformColor, StyleSheet, Text, View, findNodeHandle, AccessibilityInfo} = ReactNative;
+const {Button, PlatformColor, StyleSheet, Text, View, findNodeHandle, AccessibilityInfo, UIManager} = ReactNative;
 
 class KeyViewLoopExample extends React.Component<{}, State> {
 
@@ -40,27 +40,34 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 // mextKeyView='third_button'
                 // nextKeyViewTest={findNodeHandle(secondButtonRef.current)}
                 onBlur={() => {
-                  console.log("firstButtonTag: " + findNodeHandle(this.firstButtonRef.current));
-                  console.log("secondButtonTag: " + findNodeHandle(this.secondButtonRef.current));
-                  console.log("thirdButtonTag: " + findNodeHandle(this.thirdButtonRef.current));
+                  console.log("First Button Blur!")
                   const reactTag = findNodeHandle(this.secondButtonRef.current);
-                  AccessibilityInfo.setAccessibilityFocus(reactTag);
-                  // this.secondButtonRef.current.focus();
+                  UIManager.focus(reactTag);
                 }}
               />
               <Button
                 // focusable={true}
                 title={'Third'}
                 onPress={() => {}}
-                ref={this.secondButtonRef}
+                ref={this.thirdButtonRef}
                 // nextKeyViewTest={firstButtonRef}
+                onBlur={() => {
+                  console.log("Third Button Blur!")
+                  const reactTag = findNodeHandle(this.firstButtonRef.current);
+                  // UIManager.focus(reactTag);
+                }}
               />
               <Button
                 // focusable={true}
                 title={'Second'}
                 onPress={() => {}}
-                ref={this.thirdButtonRef}
+                ref={this.secondButtonRef}
                 // nextKeyViewTest={thirdButtonRef}
+                onBlur={() => {                
+                  console.log("Second Button Blur!")  
+                  const reactTag = findNodeHandle(this.thirdButtonRef.current);
+                  UIManager.focus(reactTag);
+                }}
               />
               {/* <Button
                 focusable={true}
