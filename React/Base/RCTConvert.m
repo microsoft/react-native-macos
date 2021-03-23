@@ -969,7 +969,7 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
 }
 // ]TODO(macOS blah)
 
-+ (RCTUIColor *)UIColor:(id)json // TODO(OSS Candidate ISS#2710739)t
++ (RCTUIColor *)UIColor:(id)json // TODO(OSS Candidate ISS#2710739)
 {
   if (!json) {
     return nil;
