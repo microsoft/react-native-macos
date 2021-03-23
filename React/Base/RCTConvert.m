@@ -990,7 +990,6 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
     return [RCTUIColor colorWithRed:r green:g blue:b alpha:a]; // TODO(OSS Candidate ISS#2710739)
 // [TODO(macOS ISS#2323203)
   } else if ([json isKindOfClass:[NSDictionary class]]) {
-//-----------------------------------------------------------------------------------------------------
     NSDictionary *dictionary = json;
     NSLog(@"%@", dictionary);
     id value = nil;
@@ -1015,13 +1014,11 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
               [@"a UIColor.  Expected one of the following values: " stringByAppendingString:RCTSemanticColorNames()]);
         }
         return color;
-//          return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
       } else if ([value isKindOfClass:[NSArray class]]) {
         for (id name in value) {
           RCTUIColor *color = RCTColorFromSemanticColorName(name);
           if (color != nil) {
             return color;
-//              return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
           }
         }
         RCTLogConvertError(
@@ -1043,7 +1040,6 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
 #if TARGET_OS_OSX
         RCTDynamicColor *color = [[RCTDynamicColor alloc] initWithAquaColor:lightColor darkAquaColor:darkColor];
         return color;
-//          return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
 #else
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
         if (@available(iOS 13.0, *)) {
