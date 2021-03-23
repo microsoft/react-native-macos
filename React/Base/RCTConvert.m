@@ -994,12 +994,17 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
     NSDictionary *dictionary = json;
     NSLog(@"%@", dictionary);
     id value = nil;
-    id effectString = [dictionary objectForKey:@"effect"];
-    if (effectString) {
-        NSLog(@"%@", json);
-        NSLog(@"%@", effectString);
-        
+    id effectString = nil;
+
+    if ((effectString = [dictionary objectForKey:@"effect"])) {
+        if (effectString) {
+            NSLog(@"%@", json);
+            NSLog(@"%@", effectString);
+        }
+        id baseColor = [dictionary objectForKey:@"color"];
+        return RCTColorWithSystemEffect([RCTConvert NSColor:baseColor], (NSString *)effectString);
     }
+      
     if ((value = [dictionary objectForKey:@"semantic"])) {
       if ([value isKindOfClass:[NSString class]]) {
         NSString *semanticName = value;
@@ -1009,14 +1014,14 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
               json,
               [@"a UIColor.  Expected one of the following values: " stringByAppendingString:RCTSemanticColorNames()]);
         }
-//        return color;
-          return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
+        return color;
+//          return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
       } else if ([value isKindOfClass:[NSArray class]]) {
         for (id name in value) {
           RCTUIColor *color = RCTColorFromSemanticColorName(name);
           if (color != nil) {
-//            return color;
-              return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
+            return color;
+//              return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
           }
         }
         RCTLogConvertError(
@@ -1037,8 +1042,8 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
       if (lightColor != nil && darkColor != nil) {
 #if TARGET_OS_OSX
         RCTDynamicColor *color = [[RCTDynamicColor alloc] initWithAquaColor:lightColor darkAquaColor:darkColor];
-//        return color;
-          return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
+        return color;
+//          return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
 #else
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
         if (@available(iOS 13.0, *)) {
