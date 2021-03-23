@@ -991,19 +991,18 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
 // [TODO(macOS ISS#2323203)
   } else if ([json isKindOfClass:[NSDictionary class]]) {
     NSDictionary *dictionary = json;
-    NSLog(@"%@", dictionary);
-    id value = nil;
+// [TODO(macOS blah)
     id effectString = nil;
-
     if ((effectString = [dictionary objectForKey:@"effect"])) {
-        if (effectString) {
-            NSLog(@"%@", json);
-            NSLog(@"%@", effectString);
-        }
-        id baseColor = [dictionary objectForKey:@"color"];
-        return RCTColorWithSystemEffect([RCTConvert NSColor:baseColor], (NSString *)effectString);
+      if (effectString) {
+          NSLog(@"%@", json);
+          NSLog(@"%@", effectString);
+      }
+      id baseColor = [dictionary objectForKey:@"color"];
+      return RCTColorWithSystemEffect([RCTConvert NSColor:baseColor], (NSString *)effectString);
     }
-      
+// ]TODO(macOS blah)
+    id value = nil;
     if ((value = [dictionary objectForKey:@"semantic"])) {
       if ([value isKindOfClass:[NSString class]]) {
         NSString *semanticName = value;
@@ -1066,7 +1065,6 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
     }
 // ]TODO(macOS ISS#2323203)
   } else {
-//-----------------------------------------------------------------------------------------------------
     RCTLogConvertError(json, @"a UIColor. Did you forget to call processColor() on the JS side?");
     return nil;
   }
