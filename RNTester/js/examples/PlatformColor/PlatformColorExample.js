@@ -15,6 +15,7 @@ const ReactNative = require('react-native');
 import Platform from '../../../../Libraries/Utilities/Platform';
 const {
   ColorAndroid,
+  ColorWithMacOSEffect,
   DynamicColorIOS,
   DynamicColorMacOS,
   PlatformColor,
@@ -352,6 +353,51 @@ function VariantColorsExample() {
   );
 }
 
+function ColorWithMacOSEffectExample() {
+  function createTable() {
+    let colors = [
+      {label: 'gray', color: 'gray'},
+      {
+        label: "ColorWithMacOSEffect('gray', 'none')",
+        color: ColorWithMacOSEffect('gray', 'none'),
+      },
+      {
+        label: "ColorWithMacOSEffect('gray', 'pressed')",
+        color: ColorWithMacOSEffect('gray', 'pressed'),
+      },
+      {
+        label: "ColorWithMacOSEffect('gray', 'deepPressed')",
+        color: ColorWithMacOSEffect('gray', 'deepPressed'),
+      },
+      {
+        label: "ColorWithMacOSEffect('gray', 'disabled')",
+        color: ColorWithMacOSEffect('gray', 'disabled'),
+      },
+      {
+        label: "ColorWithMacOSEffect('gray', 'rollover')",
+        color: ColorWithMacOSEffect('gray', 'rollover'),
+      },
+    ];
+
+    let table = [];
+    for (let color of colors) {
+      table.push(
+        <View style={styles.row} key={color.label}>
+          <Text style={styles.labelCell}>{color.label}</Text>
+          <View
+            style={{
+              ...styles.colorCell,
+              backgroundColor: color.color,
+            }}
+          />
+        </View>,
+      );
+    }
+    return table;
+  }
+  return <View style={styles.column}>{createTable()}</View>;
+}
+
 const styles = StyleSheet.create({
   column: {flex: 1, flexDirection: 'column'},
   row: {flex: 0.75, flexDirection: 'row'},
@@ -368,34 +414,40 @@ exports.title = 'PlatformColor';
 exports.description =
   'Examples that show how PlatformColors may be used in an app.';
 exports.examples = [
+  // {
+  //   title: 'Platform Colors',
+  //   render(): React.Element<any> {
+  //     return <PlatformColorsExample />;
+  //   },
+  // },
+  // {
+  //   title: 'Fallback Colors',
+  //   render(): React.Element<any> {
+  //     return <FallbackColorsExample />;
+  //   },
+  // },
+  // {
+  //   title: 'Dynamic Colors', // TODO(OSS Candidate ISS#2710739)
+  //   render(): React.Element<any> {
+  //     return <DynamicColorsExample />;
+  //   },
+  // },
+  // {
+  //   title: 'Android Colors',
+  //   render(): React.Element<any> {
+  //     return <AndroidColorsExample />;
+  //   },
+  // },
+  // {
+  //   title: 'Variant Colors',
+  //   render(): React.Element<any> {
+  //     return <VariantColorsExample />;
+  //   },
+  // },
   {
-    title: 'Platform Colors',
+    title: 'Color With macOS Effect',
     render(): React.Element<any> {
-      return <PlatformColorsExample />;
-    },
-  },
-  {
-    title: 'Fallback Colors',
-    render(): React.Element<any> {
-      return <FallbackColorsExample />;
-    },
-  },
-  {
-    title: 'Dynamic Colors', // TODO(OSS Candidate ISS#2710739)
-    render(): React.Element<any> {
-      return <DynamicColorsExample />;
-    },
-  },
-  {
-    title: 'Android Colors',
-    render(): React.Element<any> {
-      return <AndroidColorsExample />;
-    },
-  },
-  {
-    title: 'Variant Colors',
-    render(): React.Element<any> {
-      return <VariantColorsExample />;
+      return <ColorWithMacOSEffectExample />;
     },
   },
 ];

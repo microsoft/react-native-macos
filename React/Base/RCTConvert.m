@@ -951,7 +951,25 @@ static NSString *RCTSemanticColorNames()
 }
 // ]TODO(macOS ISS#2323203)
 
-+ (RCTUIColor *)UIColor:(id)json // TODO(OSS Candidate ISS#2710739)
+// [TODO(macOS blah)
+static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString) {
+    NSColor *colorWithEffect = color;
+    if (effectString != nil) {
+        if ([effectString isEqualToString:@"pressed"]) {
+            colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectPressed];
+        } else if ([effectString isEqualToString:@"deepPressed"]) {
+            colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectDeepPressed];
+        } else if ([effectString isEqualToString:@"disabled"]) {
+            colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectDisabled];
+        } else if ([effectString isEqualToString:@"rollover"]) {
+            colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectRollover];
+        }
+    }
+    return colorWithEffect;
+}
+// ]TODO(macOS blah)
+
++ (RCTUIColor *)UIColor:(id)json // TODO(OSS Candidate ISS#2710739)t
 {
   if (!json) {
     return nil;
@@ -972,8 +990,16 @@ static NSString *RCTSemanticColorNames()
     return [RCTUIColor colorWithRed:r green:g blue:b alpha:a]; // TODO(OSS Candidate ISS#2710739)
 // [TODO(macOS ISS#2323203)
   } else if ([json isKindOfClass:[NSDictionary class]]) {
+//-----------------------------------------------------------------------------------------------------
     NSDictionary *dictionary = json;
+    NSLog(@"%@", dictionary);
     id value = nil;
+    id effectString = [dictionary objectForKey:@"effect"];
+    if (effectString) {
+        NSLog(@"%@", json);
+        NSLog(@"%@", effectString);
+        
+    }
     if ((value = [dictionary objectForKey:@"semantic"])) {
       if ([value isKindOfClass:[NSString class]]) {
         NSString *semanticName = value;
@@ -983,12 +1009,14 @@ static NSString *RCTSemanticColorNames()
               json,
               [@"a UIColor.  Expected one of the following values: " stringByAppendingString:RCTSemanticColorNames()]);
         }
-        return color;
+//        return color;
+          return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
       } else if ([value isKindOfClass:[NSArray class]]) {
         for (id name in value) {
           RCTUIColor *color = RCTColorFromSemanticColorName(name);
           if (color != nil) {
-            return color;
+//            return color;
+              return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
           }
         }
         RCTLogConvertError(
@@ -1009,7 +1037,8 @@ static NSString *RCTSemanticColorNames()
       if (lightColor != nil && darkColor != nil) {
 #if TARGET_OS_OSX
         RCTDynamicColor *color = [[RCTDynamicColor alloc] initWithAquaColor:lightColor darkAquaColor:darkColor];
-        return color;
+//        return color;
+          return RCTColorWithSystemEffect(color, effectString); // [TODO(macOS blah]
 #else
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
         if (@available(iOS 13.0, *)) {
@@ -1036,6 +1065,7 @@ static NSString *RCTSemanticColorNames()
     }
 // ]TODO(macOS ISS#2323203)
   } else {
+//-----------------------------------------------------------------------------------------------------
     RCTLogConvertError(json, @"a UIColor. Did you forget to call processColor() on the JS side?");
     return nil;
   }

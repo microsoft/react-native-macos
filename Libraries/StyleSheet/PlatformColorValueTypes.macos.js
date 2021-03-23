@@ -19,11 +19,33 @@ export opaque type NativeColorValue = {
     light: ?(ColorValue | ProcessedColorValue),
     dark: ?(ColorValue | ProcessedColorValue),
   },
+  effect?: ?NativeMacOSEffectPrivate
 };
 
 export const PlatformColor = (...names: Array<string>): ColorValue => {
   return {semantic: names};
 };
+
+// [TODO(macOS blah)
+export type NativeMacOSEffectPrivate =
+  | 'none'
+  | 'pressed'
+  | 'deepPressed'
+  | 'disabled'
+  | 'rollover';
+
+export const ColorWithMacOSEffectPrivate = (
+  color: ColorValue,
+  effect: NativeMacOSEffectPrivate,
+): ColorValue => {
+  let colorObject = {
+    color,
+    effect,
+  };
+  console.log(colorObject);
+  return colorObject;
+};
+// ]TODO(macOS blah)
 
 export type DynamicColorMacOSTuplePrivate = {
   light: ColorValue,

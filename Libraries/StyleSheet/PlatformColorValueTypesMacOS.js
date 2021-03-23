@@ -23,3 +23,19 @@ export const DynamicColorMacOS = (
   throw new Error('DynamicColorMacOS is not available on this platform.');
 };
 // ]TODO(macOS ISS#2323203)
+
+// [TODO(macOS blah)
+export type NativeMacOSEffect =
+  | 'none'
+  | 'pressed'
+  | 'deepPressed'
+  | 'disabled'
+  | 'rollover';
+
+export const ColorWithMacOSEffect = (
+  color: ColorValue,
+  effect: NativeMacOSEffect,
+): ColorValue => {
+  throw new Error('ColorWithMacOSEffect is not available on this platform.');
+};
+// ]TODO(macos blah)
