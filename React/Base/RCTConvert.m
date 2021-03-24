@@ -1050,11 +1050,10 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
       }
 // [TODO(macOS blah)
     } else if((value = [dictionary objectForKey:@"colorWithSystemEffect"])) {
-        NSLog(@"%@", json);
         NSDictionary *colorWithSystemEffect = value;
-        id baseColor = [dictionary objectForKey:@"baseColor"];
+        id baseColor = [colorWithSystemEffect objectForKey:@"baseColor"];
         id effectString = [colorWithSystemEffect objectForKey:@"systemEffect"];
-        return RCTColorWithSystemEffect(baseColor, (NSString *)effectString);
+        return RCTColorWithSystemEffect([RCTConvert UIColor:baseColor], (NSString *) effectString);
 // ]TODO(macOS blah)
     } else {
       RCTLogConvertError(json, @"a UIColor. Expected a semantic color or dynamic appearance aware color.");
