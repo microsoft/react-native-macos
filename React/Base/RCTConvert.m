@@ -956,6 +956,8 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
     NSColor *colorWithEffect = color;
     if (effectString != nil) {
         if ([effectString isEqualToString:@"pressed"]) {
+            colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectNone];
+        } else if ([effectString isEqualToString:@"pressed"]) {
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectPressed];
         } else if ([effectString isEqualToString:@"deepPressed"]) {
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectDeepPressed];
@@ -965,6 +967,7 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectRollover];
         }
     }
+    NSLog(@"%@", colorWithEffect);
     return colorWithEffect;
 }
 // ]TODO(macOS blah)
