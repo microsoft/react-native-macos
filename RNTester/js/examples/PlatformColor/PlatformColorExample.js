@@ -417,6 +417,50 @@ function ColorWithMacOSEffectExample() {
           'rollover',
         ),
       },
+      {
+        label: "DynamicColorMacOS({light: 'red', dark: 'blue'})",
+        color: DynamicColorMacOS({light: 'red', dark: 'blue'}),
+      },
+      {
+        label:
+          "ColorWithMacOSEffect(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'none')",
+        color: ColorWithMacOSEffect(
+          DynamicColorMacOS({light: 'red', dark: 'blue'}),
+          'none',
+        ),
+      },
+      {
+        label:
+          "ColorWithMacOSEffect(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'pressed')",
+        color: ColorWithMacOSEffect(
+          DynamicColorMacOS({light: 'red', dark: 'blue'}),
+          'pressed',
+        ),
+      },
+      {
+        label:
+          "ColorWithMacOSEffect(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'deepPressed')",
+        color: ColorWithMacOSEffect(
+          DynamicColorMacOS({light: 'red', dark: 'blue'}),
+          'deepPressed',
+        ),
+      },
+      {
+        label:
+          "ColorWithMacOSEffect(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'disabled')",
+        color: ColorWithMacOSEffect(
+          DynamicColorMacOS({light: 'red', dark: 'blue'}),
+          'disabled',
+        ),
+      },
+      {
+        label:
+          "ColorWithMacOSEffect(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'rollover')",
+        color: ColorWithMacOSEffect(
+          DynamicColorMacOS({light: 'red', dark: 'blue'}),
+          'rollover',
+        ),
+      },
     ];
 
     let table = [];
