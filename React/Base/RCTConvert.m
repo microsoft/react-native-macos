@@ -955,7 +955,7 @@ static NSString *RCTSemanticColorNames()
 static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString) {
     NSColor *colorWithEffect = color;
     if (effectString != nil) {
-        if ([effectString isEqualToString:@"pressed"]) {
+        if ([effectString isEqualToString:@"none"]) {
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectNone];
         } else if ([effectString isEqualToString:@"pressed"]) {
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectPressed];
