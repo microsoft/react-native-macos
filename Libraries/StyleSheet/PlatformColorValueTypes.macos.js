@@ -19,7 +19,10 @@ export opaque type NativeColorValue = {
     light: ?(ColorValue | ProcessedColorValue),
     dark: ?(ColorValue | ProcessedColorValue),
   },
-  effect?: ?NativeMacOSEffectPrivate
+  colorWithSystemEffect?: {
+    baseColor: ?(ColorValue | ProcessedColorValue),
+    systemEffect: NativeMacOSEffectPrivate,
+  }
 };
 
 export const PlatformColor = (...names: Array<string>): ColorValue => {
@@ -38,9 +41,13 @@ export const ColorWithMacOSEffectPrivate = (
   color: ColorValue,
   effect: NativeMacOSEffectPrivate,
 ): ColorValue => {
-  let colorObject = {
-    color,
-    effect,
+  const processColor = require('./processColor');
+  const baseColor = processColor(color);
+  const colorObject: NativeColorValue = {
+    colorWithSystemEffect: {
+      baseColor: baseColor,
+      systemEffect: effect,
+    },
   };
   console.log(colorObject);
   return colorObject;
@@ -76,8 +83,20 @@ export const normalizeColorObject = (
       },
     };
     return dynamicColor;
+  } else if (
+    'colorWithSystemEffect' in color &&
+    color.colorWithSystemEffect != null
+  ) {
+    const processColor = require('./processColor');
+    const colorWithSystemEffect = color.colorWithSystemEffect;
+    const colorObject: NativeColorValue = {
+      colorWithSystemEffect: {
+        baseColor: processColor(colorWithSystemEffect.baseColor),
+        systemEffect: colorWithSystemEffect.systemEffect,
+      },
+    };
+    return colorObject;
   }
-
   return null;
 };
 
@@ -94,6 +113,19 @@ export const processColorObject = (
       },
     };
     return dynamicColor;
+  } else if (
+    'colorWithSystemEffect' in color &&
+    color.colorWithSystemEffect != null
+  ) {
+    const processColor = require('./processColor');
+    const colorWithSystemEffect = color.colorWithSystemEffect;
+    const colorObject: NativeColorValue = {
+      colorWithSystemEffect: {
+        baseColor: processColor(colorWithSystemEffect.baseColor),
+        systemEffect: colorWithSystemEffect.systemEffect,
+      },
+    };
+    return colorObject;
   }
   return color;
 };

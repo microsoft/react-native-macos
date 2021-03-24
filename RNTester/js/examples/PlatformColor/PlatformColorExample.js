@@ -377,6 +377,46 @@ function ColorWithMacOSEffectExample() {
         label: "ColorWithMacOSEffect('gray', 'rollover')",
         color: ColorWithMacOSEffect('gray', 'rollover'),
       },
+      {
+        label: "PlatformColor('systemBlueColor')",
+        color: PlatformColor('systemBlueColor'),
+      },
+      {
+        label: "ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'none')",
+        color: ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'none'),
+      },
+      {
+        label:
+          "ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'pressed')",
+        color: ColorWithMacOSEffect(
+          PlatformColor('systemBlueColor'),
+          'pressed',
+        ),
+      },
+      {
+        label:
+          "ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'deepPressed')",
+        color: ColorWithMacOSEffect(
+          PlatformColor('systemBlueColor'),
+          'deepPressed',
+        ),
+      },
+      {
+        label:
+          "ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'disabled')",
+        color: ColorWithMacOSEffect(
+          PlatformColor('systemBlueColor'),
+          'disabled',
+        ),
+      },
+      {
+        label:
+          "ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'rollover')",
+        color: ColorWithMacOSEffect(
+          PlatformColor('systemBlueColor'),
+          'rollover',
+        ),
+      },
     ];
 
     let table = [];
