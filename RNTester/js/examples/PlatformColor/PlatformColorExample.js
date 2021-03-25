@@ -482,7 +482,11 @@ function ColorWithSystemEffectMacOSExample() {
     }
     return table;
   }
-  return <View style={styles.column}>{createTable()}</View>;
+  return Platform.OS === 'macos' ? (
+    <View style={styles.column}>{createTable()}</View>
+  ) : (
+    <Text style={styles.labelCell}>Not applicable on this platform</Text>
+  );
 }
 
 const styles = StyleSheet.create({
