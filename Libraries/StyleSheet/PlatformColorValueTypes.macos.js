@@ -21,7 +21,7 @@ export opaque type NativeColorValue = {
   },
   colorWithSystemEffect?: {
     baseColor: ?(ColorValue | ProcessedColorValue),
-    systemEffect: NativeMacOSEffectPrivate,
+    systemEffect: SystemEffectMacOSPrivate,
   }
 };
 
@@ -30,16 +30,16 @@ export const PlatformColor = (...names: Array<string>): ColorValue => {
 };
 
 // [TODO(macOS blah)
-export type NativeMacOSEffectPrivate =
+export type SystemEffectMacOSPrivate =
   | 'none'
   | 'pressed'
   | 'deepPressed'
   | 'disabled'
   | 'rollover';
 
-export const ColorWithMacOSEffectPrivate = (
+export const ColorWithSystemEffectMacOSPrivate = (
   color: ColorValue,
-  effect: NativeMacOSEffectPrivate,
+  effect: SystemEffectMacOSPrivate,
 ): ColorValue => {
   const processColor = require('./processColor');
   const baseColor = processColor(color);

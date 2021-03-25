@@ -15,7 +15,7 @@ const ReactNative = require('react-native');
 import Platform from '../../../../Libraries/Utilities/Platform';
 const {
   ColorAndroid,
-  ColorWithMacOSEffect,
+  ColorWithSystemEffectMacOS,
   DynamicColorIOS,
   DynamicColorMacOS,
   PlatformColor,
@@ -353,114 +353,114 @@ function VariantColorsExample() {
   );
 }
 
-function ColorWithMacOSEffectExample() {
+function ColorWithSystemEffectMacOSExample() {
   function createTable() {
     let colors = [
       {label: 'gray', color: 'gray'},
       {
-        label: "ColorWithMacOSEffect('gray', 'none')",
-        color: ColorWithMacOSEffect('gray', 'none'),
+        label: "ColorWithSystemEffectMacOS('gray', 'none')",
+        color: ColorWithSystemEffectMacOS('gray', 'none'),
       },
-      {
-        label: "ColorWithMacOSEffect('gray', 'pressed')",
-        color: ColorWithMacOSEffect('gray', 'pressed'),
-      },
-      {
-        label: "ColorWithMacOSEffect('gray', 'deepPressed')",
-        color: ColorWithMacOSEffect('gray', 'deepPressed'),
-      },
-      {
-        label: "ColorWithMacOSEffect('gray', 'disabled')",
-        color: ColorWithMacOSEffect('gray', 'disabled'),
-      },
-      {
-        label: "ColorWithMacOSEffect('gray', 'rollover')",
-        color: ColorWithMacOSEffect('gray', 'rollover'),
-      },
-      {
-        label: "PlatformColor('systemBlueColor')",
-        color: PlatformColor('systemBlueColor'),
-      },
-      {
-        label: "ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'none')",
-        color: ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'none'),
-      },
-      {
-        label:
-          "ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'pressed')",
-        color: ColorWithMacOSEffect(
-          PlatformColor('systemBlueColor'),
-          'pressed',
-        ),
-      },
-      {
-        label:
-          "ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'deepPressed')",
-        color: ColorWithMacOSEffect(
-          PlatformColor('systemBlueColor'),
-          'deepPressed',
-        ),
-      },
-      {
-        label:
-          "ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'disabled')",
-        color: ColorWithMacOSEffect(
-          PlatformColor('systemBlueColor'),
-          'disabled',
-        ),
-      },
-      {
-        label:
-          "ColorWithMacOSEffect(PlatformColor('systemBlueColor'), 'rollover')",
-        color: ColorWithMacOSEffect(
-          PlatformColor('systemBlueColor'),
-          'rollover',
-        ),
-      },
-      {
-        label: "DynamicColorMacOS({light: 'red', dark: 'blue'})",
-        color: DynamicColorMacOS({light: 'red', dark: 'blue'}),
-      },
-      {
-        label:
-          "ColorWithMacOSEffect(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'none')",
-        color: ColorWithMacOSEffect(
-          DynamicColorMacOS({light: 'red', dark: 'blue'}),
-          'none',
-        ),
-      },
-      {
-        label:
-          "ColorWithMacOSEffect(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'pressed')",
-        color: ColorWithMacOSEffect(
-          DynamicColorMacOS({light: 'red', dark: 'blue'}),
-          'pressed',
-        ),
-      },
-      {
-        label:
-          "ColorWithMacOSEffect(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'deepPressed')",
-        color: ColorWithMacOSEffect(
-          DynamicColorMacOS({light: 'red', dark: 'blue'}),
-          'deepPressed',
-        ),
-      },
-      {
-        label:
-          "ColorWithMacOSEffect(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'disabled')",
-        color: ColorWithMacOSEffect(
-          DynamicColorMacOS({light: 'red', dark: 'blue'}),
-          'disabled',
-        ),
-      },
-      {
-        label:
-          "ColorWithMacOSEffect(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'rollover')",
-        color: ColorWithMacOSEffect(
-          DynamicColorMacOS({light: 'red', dark: 'blue'}),
-          'rollover',
-        ),
-      },
+      // {
+      //   label: "ColorWithSystemEffectMacOS('gray', 'pressed')",
+      //   color: ColorWithSystemEffectMacOS('gray', 'pressed'),
+      // },
+      // {
+      //   label: "ColorWithSystemEffectMacOS('gray', 'deepPressed')",
+      //   color: ColorWithSystemEffectMacOS('gray', 'deepPressed'),
+      // },
+      // {
+      //   label: "ColorWithSystemEffectMacOS('gray', 'disabled')",
+      //   color: ColorWithSystemEffectMacOS('gray', 'disabled'),
+      // },
+      // {
+      //   label: "ColorWithSystemEffectMacOS('gray', 'rollover')",
+      //   color: ColorWithSystemEffectMacOS('gray', 'rollover'),
+      // },
+      // {
+      //   label: "PlatformColor('systemBlueColor')",
+      //   color: PlatformColor('systemBlueColor'),
+      // },
+      // {
+      //   label: "ColorWithSystemEffectMacOS(PlatformColor('systemBlueColor'), 'none')",
+      //   color: ColorWithSystemEffectMacOS(PlatformColor('systemBlueColor'), 'none'),
+      // },
+      // {
+      //   label:
+      //     "ColorWithSystemEffectMacOS(PlatformColor('systemBlueColor'), 'pressed')",
+      //   color: ColorWithSystemEffectMacOS(
+      //     PlatformColor('systemBlueColor'),
+      //     'pressed',
+      //   ),
+      // },
+      // {
+      //   label:
+      //     "ColorWithSystemEffectMacOS(PlatformColor('systemBlueColor'), 'deepPressed')",
+      //   color: ColorWithSystemEffectMacOS(
+      //     PlatformColor('systemBlueColor'),
+      //     'deepPressed',
+      //   ),
+      // },
+      // {
+      //   label:
+      //     "ColorWithSystemEffectMacOS(PlatformColor('systemBlueColor'), 'disabled')",
+      //   color: ColorWithSystemEffectMacOS(
+      //     PlatformColor('systemBlueColor'),
+      //     'disabled',
+      //   ),
+      // },
+      // {
+      //   label:
+      //     "ColorWithSystemEffectMacOS(PlatformColor('systemBlueColor'), 'rollover')",
+      //   color: ColorWithSystemEffectMacOS(
+      //     PlatformColor('systemBlueColor'),
+      //     'rollover',
+      //   ),
+      // },
+      // {
+      //   label: "DynamicColorMacOS({light: 'red', dark: 'blue'})",
+      //   color: DynamicColorMacOS({light: 'red', dark: 'blue'}),
+      // },
+      // {
+      //   label:
+      //     "ColorWithSystemEffectMacOS(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'none')",
+      //   color: ColorWithSystemEffectMacOS(
+      //     DynamicColorMacOS({light: 'red', dark: 'blue'}),
+      //     'none',
+      //   ),
+      // },
+      // {
+      //   label:
+      //     "ColorWithSystemEffectMacOS(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'pressed')",
+      //   color: ColorWithSystemEffectMacOS(
+      //     DynamicColorMacOS({light: 'red', dark: 'blue'}),
+      //     'pressed',
+      //   ),
+      // },
+      // {
+      //   label:
+      //     "ColorWithSystemEffectMacOS(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'deepPressed')",
+      //   color: ColorWithSystemEffectMacOS(
+      //     DynamicColorMacOS({light: 'red', dark: 'blue'}),
+      //     'deepPressed',
+      //   ),
+      // },
+      // {
+      //   label:
+      //     "ColorWithSystemEffectMacOS(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'disabled')",
+      //   color: ColorWithSystemEffectMacOS(
+      //     DynamicColorMacOS({light: 'red', dark: 'blue'}),
+      //     'disabled',
+      //   ),
+      // },
+      // {
+      //   label:
+      //     "ColorWithSystemEffectMacOS(DynamicColorMacOS({light: 'red', dark: 'blue'}), 'rollover')",
+      //   color: ColorWithSystemEffectMacOS(
+      //     DynamicColorMacOS({light: 'red', dark: 'blue'}),
+      //     'rollover',
+      //   ),
+      // },
     ];
 
     let table = [];
@@ -531,7 +531,7 @@ exports.examples = [
   {
     title: 'Color With macOS Effect',
     render(): React.Element<any> {
-      return <ColorWithMacOSEffectExample />;
+      return <ColorWithSystemEffectMacOSExample />;
     },
   },
 ];

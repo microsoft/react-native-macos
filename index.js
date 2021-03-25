@@ -99,7 +99,7 @@ import typeof processColor from './Libraries/StyleSheet/processColor';
 import typeof {PlatformColor} from './Libraries/StyleSheet/PlatformColorValueTypes';
 import typeof {DynamicColorIOS} from './Libraries/StyleSheet/PlatformColorValueTypesIOS';
 import typeof {DynamicColorMacOS} from './Libraries/StyleSheet/PlatformColorValueTypesMacOS'; // TODO(macOS ISS#2323203)
-import typeof {ColorWithMacOSEffect} from './Libraries/StyleSheet/PlatformColorValueTypesMacOS'; // TODOD(macOS blah)
+import typeof {ColorWithSystemEffectMacOS} from './Libraries/StyleSheet/PlatformColorValueTypesMacOS'; // TODOD(macOS blah)
 import typeof {ColorAndroid} from './Libraries/StyleSheet/PlatformColorValueTypesAndroid';
 import typeof RootTagContext from './Libraries/ReactNative/RootTagContext';
 import typeof DeprecatedColorPropType from './Libraries/DeprecatedPropTypes/DeprecatedColorPropType';
@@ -501,9 +501,9 @@ module.exports = {
     return require('./Libraries/StyleSheet/PlatformColorValueTypesMacOS')
       .DynamicColorMacOS;
   },
-  get ColorWithMacOSEffect(): ColorWithMacOSEffect {
+  get ColorWithSystemEffectMacOS(): ColorWithSystemEffectMacOS {
     return require('./Libraries/StyleSheet/PlatformColorValueTypesMacOS')
-      .ColorWithMacOSEffect;
+      .ColorWithSystemEffectMacOS;
   },
   get ColorAndroid(): ColorAndroid {
     return require('./Libraries/StyleSheet/PlatformColorValueTypesAndroid')

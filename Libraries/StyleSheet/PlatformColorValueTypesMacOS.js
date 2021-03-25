@@ -25,17 +25,17 @@ export const DynamicColorMacOS = (
 // ]TODO(macOS ISS#2323203)
 
 // [TODO(macOS blah)
-export type NativeMacOSEffect =
+export type SystemEffectMacOS =
   | 'none'
   | 'pressed'
   | 'deepPressed'
   | 'disabled'
   | 'rollover';
 
-export const ColorWithMacOSEffect = (
+export const ColorWithSystemEffectMacOS = (
   color: ColorValue,
-  effect: NativeMacOSEffect,
+  effect: SystemEffectMacOS,
 ): ColorValue => {
-  throw new Error('ColorWithMacOSEffect is not available on this platform.');
+  throw new Error('ColorWithSystemEffectMacOS is not available on this platform.');
 };
 // ]TODO(macos blah)
