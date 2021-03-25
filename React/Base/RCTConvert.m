@@ -952,6 +952,7 @@ static NSString *RCTSemanticColorNames()
 // ]TODO(macOS ISS#2323203)
 
 // [TODO(macOS GH#750)
+#if TARGET_OS_OSX
 static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectString) {
     NSColor *colorWithEffect = color;
     if (systemEffectString != nil) {
@@ -969,6 +970,7 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
     }
     return colorWithEffect;
 }
+#endif //TARGET_OS_OSX
 // ]TODO(macOS GH#750)
 
 + (RCTUIColor *)UIColor:(id)json // TODO(OSS Candidate ISS#2710739)
