@@ -532,7 +532,7 @@ exports.examples = [
     },
   },
   {
-    title: 'Color With macOS Effect',
+    title: 'Color With System Effect macOS',
     render(): React.Element<any> {
       return <ColorWithSystemEffectMacOSExample />;
     },
