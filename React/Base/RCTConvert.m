@@ -952,18 +952,18 @@ static NSString *RCTSemanticColorNames()
 // ]TODO(macOS ISS#2323203)
 
 // [TODO(macOS blah)
-static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString) {
+static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectString) {
     NSColor *colorWithEffect = color;
-    if (effectString != nil) {
-        if ([effectString isEqualToString:@"none"]) {
+    if (systemEffectString != nil) {
+        if ([systemEffectString isEqualToString:@"none"]) {
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectNone];
-        } else if ([effectString isEqualToString:@"pressed"]) {
+        } else if ([systemEffectString isEqualToString:@"pressed"]) {
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectPressed];
-        } else if ([effectString isEqualToString:@"deepPressed"]) {
+        } else if ([systemEffectString isEqualToString:@"deepPressed"]) {
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectDeepPressed];
-        } else if ([effectString isEqualToString:@"disabled"]) {
+        } else if ([systemEffectString isEqualToString:@"disabled"]) {
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectDisabled];
-        } else if ([effectString isEqualToString:@"rollover"]) {
+        } else if ([systemEffectString isEqualToString:@"rollover"]) {
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectRollover];
         }
     }
@@ -1054,8 +1054,8 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
     } else if((value = [dictionary objectForKey:@"colorWithSystemEffect"])) {
         NSDictionary *colorWithSystemEffect = value;
         id baseColor = [colorWithSystemEffect objectForKey:@"baseColor"];
-        id effectString = [colorWithSystemEffect objectForKey:@"systemEffect"];
-        return RCTColorWithSystemEffect([RCTConvert UIColor:baseColor], (NSString *) effectString);
+        id systemEffectString = [colorWithSystemEffect objectForKey:@"systemEffect"];
+        return RCTColorWithSystemEffect([RCTConvert UIColor:baseColor], (NSString *) systemEffectString);
 // ]TODO(macOS blah)
     } else {
       RCTLogConvertError(json, @"a UIColor. Expected a semantic color or dynamic appearance aware color.");
