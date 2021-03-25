@@ -501,7 +501,7 @@ module.exports = {
   get DynamicColorMacOS(): DynamicColorMacOS {
     return require('./Libraries/StyleSheet/PlatformColorValueTypesMacOS')
       .DynamicColorMacOS;
-  },   // [TODO(macOS ISS#2323203)
+  }, // [TODO(macOS ISS#2323203)
   // [TODO(macOS GH#750)
   get ColorWithSystemEffectMacOS(): ColorWithSystemEffectMacOS {
     return require('./Libraries/StyleSheet/PlatformColorValueTypesMacOS')
