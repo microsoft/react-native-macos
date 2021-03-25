@@ -22,7 +22,7 @@ export opaque type NativeColorValue = {
   colorWithSystemEffect?: {
     baseColor: ?(ColorValue | ProcessedColorValue),
     systemEffect: SystemEffectMacOSPrivate,
-  }
+  },
 };
 
 export const PlatformColor = (...names: Array<string>): ColorValue => {

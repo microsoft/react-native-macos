@@ -383,7 +383,8 @@ function ColorWithSystemEffectMacOSExample() {
         color: PlatformColor('systemBlueColor'),
       },
       {
-        label: "ColorWithSystemEffectMacOS(PlatformColor('systemBlueColor'), 'none')",
+        label:
+          "ColorWithSystemEffectMacOS(PlatformColor('systemBlueColor'), 'none')",
         color: ColorWithSystemEffectMacOS(
           PlatformColor('systemBlueColor'),
           'none',
