@@ -951,7 +951,7 @@ static NSString *RCTSemanticColorNames()
 }
 // ]TODO(macOS ISS#2323203)
 
-// [TODO(macOS blah)
+// [TODO(macOS GH#750)
 static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectString) {
     NSColor *colorWithEffect = color;
     if (systemEffectString != nil) {
@@ -969,7 +969,7 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
     }
     return colorWithEffect;
 }
-// ]TODO(macOS blah)
+// ]TODO(macOS GH#750)
 
 + (RCTUIColor *)UIColor:(id)json // TODO(OSS Candidate ISS#2710739)
 {
@@ -1050,13 +1050,13 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
         RCTLogConvertError(json, @"a UIColor. Expected a dynamic appearance aware color.");
         return nil;
       }
-// [TODO(macOS blah)
+// [TODO(macOS GH#750)
     } else if((value = [dictionary objectForKey:@"colorWithSystemEffect"])) {
         NSDictionary *colorWithSystemEffect = value;
         id baseColor = [colorWithSystemEffect objectForKey:@"baseColor"];
         id systemEffectString = [colorWithSystemEffect objectForKey:@"systemEffect"];
         return RCTColorWithSystemEffect([RCTConvert UIColor:baseColor], (NSString *) systemEffectString);
-// ]TODO(macOS blah)
+// ]TODO(macOS GH#750)
     } else {
       RCTLogConvertError(json, @"a UIColor. Expected a semantic color or dynamic appearance aware color.");
       return nil;

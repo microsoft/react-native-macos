@@ -24,7 +24,7 @@ export const DynamicColorMacOS = (
 };
 // ]TODO(macOS ISS#2323203)
 
-// [TODO(macOS blah)
+// [TODO(macOS GH#750)
 export type SystemEffectMacOS =
   | 'none'
   | 'pressed'
@@ -38,4 +38,4 @@ export const ColorWithSystemEffectMacOS = (
 ): ColorValue => {
   throw new Error('ColorWithSystemEffectMacOS is not available on this platform.');
 };
-// ]TODO(macos blah)
+// ]TODO(macos GH#750)
