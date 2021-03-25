@@ -498,36 +498,36 @@ exports.title = 'PlatformColor';
 exports.description =
   'Examples that show how PlatformColors may be used in an app.';
 exports.examples = [
-  // {
-  //   title: 'Platform Colors',
-  //   render(): React.Element<any> {
-  //     return <PlatformColorsExample />;
-  //   },
-  // },
-  // {
-  //   title: 'Fallback Colors',
-  //   render(): React.Element<any> {
-  //     return <FallbackColorsExample />;
-  //   },
-  // },
-  // {
-  //   title: 'Dynamic Colors', // TODO(OSS Candidate ISS#2710739)
-  //   render(): React.Element<any> {
-  //     return <DynamicColorsExample />;
-  //   },
-  // },
-  // {
-  //   title: 'Android Colors',
-  //   render(): React.Element<any> {
-  //     return <AndroidColorsExample />;
-  //   },
-  // },
-  // {
-  //   title: 'Variant Colors',
-  //   render(): React.Element<any> {
-  //     return <VariantColorsExample />;
-  //   },
-  // },
+  {
+    title: 'Platform Colors',
+    render(): React.Element<any> {
+      return <PlatformColorsExample />;
+    },
+  },
+  {
+    title: 'Fallback Colors',
+    render(): React.Element<any> {
+      return <FallbackColorsExample />;
+    },
+  },
+  {
+    title: 'Dynamic Colors', // TODO(OSS Candidate ISS#2710739)
+    render(): React.Element<any> {
+      return <DynamicColorsExample />;
+    },
+  },
+  {
+    title: 'Android Colors',
+    render(): React.Element<any> {
+      return <AndroidColorsExample />;
+    },
+  },
+  {
+    title: 'Variant Colors',
+    render(): React.Element<any> {
+      return <VariantColorsExample />;
+    },
+  },
   {
     title: 'Color With macOS Effect',
     render(): React.Element<any> {

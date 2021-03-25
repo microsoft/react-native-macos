@@ -178,7 +178,9 @@ RCT_FORWARD_PROPERTY(localizedColorNameComponent, NSString *)
 
 - (NSColor *)colorWithSystemEffect:(NSColorSystemEffect)systemEffect NS_AVAILABLE_MAC(10_14)
 {
-  return [[self effectiveColor] colorWithSystemEffect:systemEffect];
+    NSColor *aquaColor = [_aquaColor colorWithSystemEffect:systemEffect];
+    NSColor *darkAquaColor = [_darkAquaColor colorWithSystemEffect:systemEffect];
+    return [[RCTDynamicColor alloc] initWithAquaColor:aquaColor darkAquaColor:darkAquaColor];
 }
 
 - (NSUInteger)hash

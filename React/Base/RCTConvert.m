@@ -967,7 +967,6 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *effectString)
             colorWithEffect = [color colorWithSystemEffect:NSColorSystemEffectRollover];
         }
     }
-    NSLog(@"%@", colorWithEffect);
     return colorWithEffect;
 }
 // ]TODO(macOS blah)
