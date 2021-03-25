@@ -41,11 +41,9 @@ export const ColorWithSystemEffectMacOSPrivate = (
   color: ColorValue,
   effect: SystemEffectMacOSPrivate,
 ): ColorValue => {
-  const processColor = require('./processColor');
-  const baseColor = processColor(color);
   return {
     colorWithSystemEffect: {
-      baseColor: baseColor,
+      baseColor: color,
       systemEffect: effect,
     },
   };
