@@ -29,7 +29,6 @@ export const PlatformColor = (...names: Array<string>): ColorValue => {
   return {semantic: names};
 };
 
-// [TODO(macOS GH#750)
 export type SystemEffectMacOSPrivate =
   | 'none'
   | 'pressed'
@@ -48,7 +47,6 @@ export const ColorWithSystemEffectMacOSPrivate = (
     },
   };
 };
-// ]TODO(macOS GH#750)
 
 export type DynamicColorMacOSTuplePrivate = {
   light: ColorValue,

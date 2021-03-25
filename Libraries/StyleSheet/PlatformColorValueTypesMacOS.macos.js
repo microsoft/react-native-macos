@@ -23,9 +23,7 @@ export const DynamicColorMacOS = (
 ): ColorValue => {
   return DynamicColorMacOSPrivate({light: tuple.light, dark: tuple.dark});
 };
-// ]TODO(macOS ISS#2323203)
 
-// [TODO(macOS GH#750)
 export type SystemEffectMacOS =
   | 'none'
   | 'pressed'
@@ -39,4 +37,4 @@ export const ColorWithSystemEffectMacOS = (
 ): ColorValue => {
   return ColorWithSystemEffectMacOSPrivate(color, effect);
 };
-// ]TODO(macos GH#750)
+// ]TODO(macOS ISS#2323203)

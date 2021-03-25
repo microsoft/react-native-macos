@@ -15,7 +15,7 @@ const ReactNative = require('react-native');
 import Platform from '../../../../Libraries/Utilities/Platform';
 const {
   ColorAndroid,
-  ColorWithSystemEffectMacOS,
+  ColorWithSystemEffectMacOS, // TODO(macOS GH#750)
   DynamicColorIOS,
   DynamicColorMacOS,
   PlatformColor,
@@ -353,6 +353,7 @@ function VariantColorsExample() {
   );
 }
 
+// [TODO(macOS GH#750)
 function ColorWithSystemEffectMacOSExample() {
   function createTable() {
     let colors = [
@@ -488,6 +489,7 @@ function ColorWithSystemEffectMacOSExample() {
     <Text style={styles.labelCell}>Not applicable on this platform</Text>
   );
 }
+// ]TODO(macOS GH#750)
 
 const styles = StyleSheet.create({
   column: {flex: 1, flexDirection: 'column'},
@@ -535,10 +537,11 @@ exports.examples = [
       return <VariantColorsExample />;
     },
   },
+// [TODO(macOS GH#750)
   {
     title: 'Color With System Effect macOS',
     render(): React.Element<any> {
       return <ColorWithSystemEffectMacOSExample />;
-    },
+    }, // ]TODO(macOS GH#750)
   },
 ];
