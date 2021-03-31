@@ -572,6 +572,11 @@ static BOOL RCTAnyTouchesChanged(NSSet *touches) // [TODO(macOS GH#774)
 }
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
+- (void)cancelTouchWithEvent:(NSEvent*)event
+{
+  [self interactionsCancelled:[NSSet setWithObject:event] withEvent:event];
+}
+
 - (void)willShowMenuWithEvent:(NSEvent*)event
 {
   if (event.type == NSEventTypeRightMouseDown) {
