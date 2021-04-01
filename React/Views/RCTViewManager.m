@@ -505,14 +505,17 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
 // Key-View loop management
 RCT_EXPORT_VIEW_PROPERTY(canBecomeKeyView, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(needsPanelToBecomeKey, BOOL)
-//RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTest, NSNumber, RCTView)
-//{
-//  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
-//      NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
-//      RCTUIView *nextKeyView = viewRegistry[nextKeyViewTag];
-//      [view setNextKeyView:nextKeyView];
-//  }];
-//}
+RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTest, NSNumber, RCTView)
+{
+    RCTExecuteOnUIManagerQueue(^{
+        [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
+            NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
+            RCTUIView *nextKeyView = viewRegistry[nextKeyViewTag];
+            NSLog(@"%@", nextKeyViewTag);
+            [view setNextKeyView:nextKeyView];
+        }];
+    });
+}
 #endif // ]TODO(macOS ISS#2323203)
 
 #pragma mark - ShadowView properties
