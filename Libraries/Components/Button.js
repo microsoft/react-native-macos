@@ -175,14 +175,8 @@ type ButtonProps = $ReadOnly<{|
   /**
   * The view object preceding the current view in the key view loop.
   */
-  // previousKeyView?: ?number, // TODO(macOS ISS#2323203)
- 
-  /**
-  * The closest view object in the key view loop that precedes the current 
-  * view and accepts first responder status.
-  */
-  previousValidKeyView?: ?number, // TODO(macOS ISS#2323203)
-  
+  previousKeyView?: ?number, // TODO(macOS ISS#2323203)
+
   /*
    * Specifies the Tooltip for the view
    */

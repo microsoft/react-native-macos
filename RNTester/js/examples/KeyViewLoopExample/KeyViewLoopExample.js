@@ -13,31 +13,38 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {Button, Text, View, findNodeHandle, UIManager} = ReactNative;
+const {Button, Text, View} = ReactNative;
 
 class KeyViewLoopExample extends React.Component<{}, State> {
   firstButtonRef = React.createRef();
   secondButtonRef = React.createRef();
   thirdButtonRef = React.createRef();
 
-  // [Tue Mar 30 2021 09:05:08.409]  ERROR
-  // Warning: KeyViewLoopExample is accessing findNodeHandle inside its render(). √
-  // render() should be a pure function of props and state. It should never access something that requires stale data from the previous render, such as refs.
-  //  Move this logic to componentDidMount and componentDidUpdate instead.
+  componentDidUpdate() {
+    console.log('componentDidUpdate');
+  }
+
+  componentDidMount() {
+    console.log('componentDidMount');
+    if (this.firstButtonRef) {
+      this.firstButtonRef.setNativeProps({
+        nextKeyViewTest: this.secondButtonRef,
+      });
+    }
+    if (this.secondButtonRef) {
+      this.secondButtonRef.setNativeProps({
+        nextKeyViewTest: this.thirdButtonRef,
+      });
+    }
+    if (this.thirdButtonRef) {
+      this.thirdButtonRef.setNativeProps({
+        nextKeyViewTest: this.firstButtonRef,
+      });
+    }
+  }
 
   render() {
-    // this.firstButtonRef.viewRef.current.setNativeProps({
-    //   nextKeyViewTest: this.secondButtonRef,
-    // });
-
-    // this.secondButtonRef.viewRef.current.setNativeProps({
-    //   nextKeyViewTest: this.thirdButtonRef,
-    // });
-
-    // this.thirdButtonRef.viewRef.current.setNativeProps({
-    //   nextKeyViewTest: this.firstButtonRef,
-    // });
-
+    console.log('render');
     return (
       <View>
         <Text>
@@ -52,11 +59,18 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 title={'First'}
                 onPress={() => {}}
                 ref={this.firstButtonRef}
-                // nextKeyViewTest={findNodeHandle(this.secondButtonRef.current)}
+                nativeID={'firstButton'}
+                // ref={firstButtonRef => {
+                //   console.log('setting first button ref')
+                //   this.firstButtonRef = firstButtonRef;
+                // }}
+                nextKeyViewTest={this.secondButtonRef}
+                // nextKeyViewTest={'secondButton'}
+
                 onBlur={() => {
                   console.log('First Button Blur!');
-                  const reactTag = findNodeHandle(this.secondButtonRef.current);
-                  UIManager.focus(reactTag);
+                  // const reactTag = findNodeHandle(this.secondButtonRef.current);
+                  // UIManager.focus(reactTag);
                 }}
               />
               <Button
@@ -64,11 +78,16 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 title={'Third'}
                 onPress={() => {}}
                 ref={this.thirdButtonRef}
+                nativeID={'thirdButton'}
+                // ref={thirdButtonRef => {
+                //   console.log('setting third button ref')
+                //   this.thirdButtonRef = thirdButtonRef;
+                // }}
                 // nextKeyViewTest={findNodeHandle(this.firstButtonRef.current)}
                 onBlur={() => {
                   console.log('Third Button Blur!');
-                  const reactTag = findNodeHandle(this.firstButtonRef.current);
-                  UIManager.focus(reactTag);
+                  // const reactTag = findNodeHandle(this.firstButtonRef.current);
+                  // UIManager.focus(reactTag);
                 }}
               />
               <Button
@@ -76,11 +95,17 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 title={'Second'}
                 onPress={() => {}}
                 ref={this.secondButtonRef}
+                nativeID={'secondButton'}
+                // ref={secondButtonRef => {
+                //   console.log('setting second button ref')
+                //   this.secondButtonRef = secondButtonRef;
+                // }}
                 // nextKeyViewTest={findNodeHandle(this.thirdButtonRef.current)}
+
                 onBlur={() => {
                   console.log('Second Button Blur!');
-                  const reactTag = findNodeHandle(this.thirdButtonRef.current);
-                  UIManager.focus(reactTag);
+                  // const reactTag = findNodeHandle(this.thirdButtonRef.current);
+                  // UIManager.focus(reactTag);
                 }}
               />
               {/* <Button
