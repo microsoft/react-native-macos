@@ -13,7 +13,7 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {Button, Text, View} = ReactNative;
+const {Button, Text, View, findNodeHandle} = ReactNative;
 
 class KeyViewLoopExample extends React.Component<{}, State> {
   firstButtonRef = React.createRef();
@@ -27,9 +27,12 @@ class KeyViewLoopExample extends React.Component<{}, State> {
   componentDidMount() {
     console.log('componentDidMount');
     if (this.firstButtonRef) {
-      this.firstButtonRef.setNativeProps({
-        nextKeyViewTest: this.secondButtonRef,
-      });
+      // this.firstButtonRef.setNativeProps({
+      //   nextKeyViewTest: this.secondButtonRef,
+      // });
+      this.firstButtonRef.nextKeyViewTest = findNodeHandle(
+        this.secondButtonRef.current,
+      );
     }
     if (this.secondButtonRef) {
       this.secondButtonRef.setNativeProps({
@@ -58,15 +61,13 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 focusable={true}
                 title={'First'}
                 onPress={() => {}}
+                // nativeID={'firstButton'}
                 ref={this.firstButtonRef}
-                nativeID={'firstButton'}
                 // ref={firstButtonRef => {
                 //   console.log('setting first button ref')
                 //   this.firstButtonRef = firstButtonRef;
                 // }}
                 nextKeyViewTest={this.secondButtonRef}
-                // nextKeyViewTest={'secondButton'}
-
                 onBlur={() => {
                   console.log('First Button Blur!');
                   // const reactTag = findNodeHandle(this.secondButtonRef.current);
@@ -77,8 +78,8 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 focusable={true}
                 title={'Third'}
                 onPress={() => {}}
+                // nativeID={'thirdButton'}
                 ref={this.thirdButtonRef}
-                nativeID={'thirdButton'}
                 // ref={thirdButtonRef => {
                 //   console.log('setting third button ref')
                 //   this.thirdButtonRef = thirdButtonRef;
@@ -94,14 +95,13 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 focusable={true}
                 title={'Second'}
                 onPress={() => {}}
-                ref={this.secondButtonRef}
                 nativeID={'secondButton'}
+                ref={this.secondButtonRef}
                 // ref={secondButtonRef => {
                 //   console.log('setting second button ref')
                 //   this.secondButtonRef = secondButtonRef;
                 // }}
                 // nextKeyViewTest={findNodeHandle(this.thirdButtonRef.current)}
-
                 onBlur={() => {
                   console.log('Second Button Blur!');
                   // const reactTag = findNodeHandle(this.thirdButtonRef.current);

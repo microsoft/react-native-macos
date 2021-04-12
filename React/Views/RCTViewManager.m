@@ -525,9 +525,11 @@ RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTest, NSNumber, RCTView)
     RCTExecuteOnUIManagerQueue(^{
         [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
             NSLog(@"SAAD %@", json);
-//            NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
-//            RCTUIView *nextKeyView = viewRegistry[nextKeyViewTag];
-//            [view setNextKeyView:nextKeyView];
+            NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
+            RCTUIView *nextKeyView = viewRegistry[nextKeyViewTag];
+            if (nextKeyView) {
+                [view setNextKeyView:nextKeyView];
+            }
         }];
     });
 }
