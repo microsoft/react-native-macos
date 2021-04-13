@@ -13,7 +13,7 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {Button, Text, View, findNodeHandle} = ReactNative;
+const {Button, Text, View, UIManager, findNodeHandle} = ReactNative;
 
 class KeyViewLoopExample extends React.Component<{}, State> {
   firstButtonRef = React.createRef();
@@ -24,27 +24,17 @@ class KeyViewLoopExample extends React.Component<{}, State> {
     console.log('componentDidUpdate');
   }
 
-  componentDidMount() {
-    console.log('componentDidMount');
-    if (this.firstButtonRef) {
-      // this.firstButtonRef.setNativeProps({
-      //   nextKeyViewTest: this.secondButtonRef,
-      // });
-      this.firstButtonRef.nextKeyViewTest = findNodeHandle(
-        this.secondButtonRef.current,
-      );
-    }
-    if (this.secondButtonRef) {
-      this.secondButtonRef.setNativeProps({
-        nextKeyViewTest: this.thirdButtonRef,
-      });
-    }
-    if (this.thirdButtonRef) {
-      this.thirdButtonRef.setNativeProps({
-        nextKeyViewTest: this.firstButtonRef,
-      });
-    }
-  }
+  // componentDidMount() {
+  //   this.firstButtonRef.current.setNativeProps({
+  //     nextKeyViewTest: findNodeHandle(this.secondButtonRef.current),
+  //   });
+  //   this.secondButtonRef.current.setNativeProps({
+  //     nextKeyViewTest: findNodeHandle(this.thirdButtonRef.current),
+  //   });
+  //   this.thirdButtonRef.current.setNativeProps({
+  //     nextKeyViewTest: findNodeHandle(this.firstButtonRef.current),
+  //   });
+  // }
 
   render() {
     console.log('render');
@@ -57,69 +47,51 @@ class KeyViewLoopExample extends React.Component<{}, State> {
         <View>
           {Platform.OS === 'macos' ? (
             <View focusable={true} enableFocusRing={true}>
-              <Button
+              <View
+                style={{height: 100, width: 100, margin: 20}}
                 focusable={true}
-                title={'First'}
-                onPress={() => {}}
-                // nativeID={'firstButton'}
+                enableFocusRing={true}
                 ref={this.firstButtonRef}
-                // ref={firstButtonRef => {
-                //   console.log('setting first button ref')
-                //   this.firstButtonRef = firstButtonRef;
-                // }}
-                nextKeyViewTest={this.secondButtonRef}
-                onBlur={() => {
-                  console.log('First Button Blur!');
-                  // const reactTag = findNodeHandle(this.secondButtonRef.current);
-                  // UIManager.focus(reactTag);
-                }}
-              />
-              <Button
+                onFocus={() => {
+                  console.log('First View Focus!');
+                  this.firstButtonRef.current.setNativeProps({
+                    nextKeyViewTest: findNodeHandle(
+                      this.secondButtonRef.current,
+                    ),
+                  });
+                }}>
+                <Text>First View</Text>
+              </View>
+              <View
+                style={{height: 100, width: 100, margin: 20}}
                 focusable={true}
-                title={'Third'}
-                onPress={() => {}}
-                // nativeID={'thirdButton'}
+                enableFocusRing={true}
                 ref={this.thirdButtonRef}
-                // ref={thirdButtonRef => {
-                //   console.log('setting third button ref')
-                //   this.thirdButtonRef = thirdButtonRef;
-                // }}
-                // nextKeyViewTest={findNodeHandle(this.firstButtonRef.current)}
-                onBlur={() => {
-                  console.log('Third Button Blur!');
-                  // const reactTag = findNodeHandle(this.firstButtonRef.current);
-                  // UIManager.focus(reactTag);
-                }}
-              />
-              <Button
+                onFocus={() => {
+                  console.log('Third View Focus!');
+                  this.thirdButtonRef.current.setNativeProps({
+                    nextKeyViewTest: findNodeHandle(
+                      this.firstButtonRef.current,
+                    ),
+                  });
+                }}>
+                <Text>Third View</Text>
+              </View>
+              <View
+                style={{height: 100, width: 100, margin: 20}}
                 focusable={true}
-                title={'Second'}
-                onPress={() => {}}
-                nativeID={'secondButton'}
+                enableFocusRing={true}
                 ref={this.secondButtonRef}
-                // ref={secondButtonRef => {
-                //   console.log('setting second button ref')
-                //   this.secondButtonRef = secondButtonRef;
-                // }}
-                // nextKeyViewTest={findNodeHandle(this.thirdButtonRef.current)}
-                onBlur={() => {
-                  console.log('Second Button Blur!');
-                  // const reactTag = findNodeHandle(this.thirdButtonRef.current);
-                  // UIManager.focus(reactTag);
-                }}
-              />
-              {/* <Button
-                focusable={true}
-                title={'Fifth'}
-                onPress={() => {}}
-                // ref='fifth_button'
-              />
-              <Button
-                focusable={true}
-                title={'Fourth'}
-                onPress={() => {}}
-                // ref='fourth_button'
-              /> */}
+                onFocus={() => {
+                  console.log('Second View Focus!');
+                  this.secondButtonRef.current.setNativeProps({
+                    nextKeyViewTest: findNodeHandle(
+                      this.thirdButtonRef.current,
+                    ),
+                  });
+                }}>
+                <Text>Second View</Text>
+              </View>
             </View>
           ) : null}
         </View>

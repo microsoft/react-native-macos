@@ -505,26 +505,11 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
 // Key-View loop management
 RCT_EXPORT_VIEW_PROPERTY(canBecomeKeyView, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(needsPanelToBecomeKey, BOOL)
-//RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTest, NSString, RCTView)
-//{
-//
-//    RCTUIManager *uiManager = [[self bridge] uiManager];
-//    [uiManager rootViewForReactTag:view.reactTag withCompletion:^(NSView *rootView) {
-//        if (rootView) {
-//            NSString *nextKeyViewNativeID = [RCTConvert NSString:json];
-//            NSView *nextKeyView = [uiManager viewForNativeID:nextKeyViewNativeID withRootTag:[rootView reactTag]];
-//            NSLog(@"SAAD %@", json);
-//            NSLog(@"SAAD %@", nextKeyView);
-//            [view setNextKeyView:nextKeyView];
-//        }
-//    }];
-//}
 
 RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTest, NSNumber, RCTView)
 {
     RCTExecuteOnUIManagerQueue(^{
         [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
-            NSLog(@"SAAD %@", json);
             NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
             RCTUIView *nextKeyView = viewRegistry[nextKeyViewTag];
             if (nextKeyView) {
@@ -534,19 +519,6 @@ RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTest, NSNumber, RCTView)
     });
 }
 #endif // ]TODO(macOS ISS#2323203)
-
-
-//[_bridge.uiManager rootViewForReactTag:self.reactTag withCompletion:^(UIView *rootView) {
-//  RCTBaseTextInputView *strongSelf = weakSelf;
-//  if (rootView) {
-//    UIView *accessoryView = [strongSelf->_bridge.uiManager viewForNativeID:nativeID
-//                                                               withRootTag:rootView.reactTag];
-//    if (accessoryView && [accessoryView isKindOfClass:[RCTInputAccessoryView class]]) {
-//      strongSelf.backedTextInputView.inputAccessoryView = ((RCTInputAccessoryView *)accessoryView).inputAccessoryView;
-//      [strongSelf reloadInputViewsIfNecessary];
-//    }
-//  }
-//}];
 
 
 #pragma mark - ShadowView properties
