@@ -20,21 +20,18 @@ class KeyViewLoopExample extends React.Component<{}, State> {
   secondButtonRef = React.createRef();
   thirdButtonRef = React.createRef();
 
-  componentDidUpdate() {
-    console.log('componentDidUpdate');
+  componentDidMount() {
+    console.log('componentDidMount');
+    this.firstButtonRef.current.setNativeProps({
+      nextKeyViewTest: findNodeHandle(this.secondButtonRef.current),
+    });
+    this.secondButtonRef.current.setNativeProps({
+      nextKeyViewTest: findNodeHandle(this.thirdButtonRef.current),
+    });
+    this.thirdButtonRef.current.setNativeProps({
+      nextKeyViewTest: findNodeHandle(this.firstButtonRef.current),
+    });
   }
-
-  // componentDidMount() {
-  //   this.firstButtonRef.current.setNativeProps({
-  //     nextKeyViewTest: findNodeHandle(this.secondButtonRef.current),
-  //   });
-  //   this.secondButtonRef.current.setNativeProps({
-  //     nextKeyViewTest: findNodeHandle(this.thirdButtonRef.current),
-  //   });
-  //   this.thirdButtonRef.current.setNativeProps({
-  //     nextKeyViewTest: findNodeHandle(this.firstButtonRef.current),
-  //   });
-  // }
 
   render() {
     console.log('render');
@@ -54,11 +51,6 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 ref={this.firstButtonRef}
                 onFocus={() => {
                   console.log('First View Focus!');
-                  this.firstButtonRef.current.setNativeProps({
-                    nextKeyViewTest: findNodeHandle(
-                      this.secondButtonRef.current,
-                    ),
-                  });
                 }}>
                 <Text>First View</Text>
               </View>
@@ -69,11 +61,6 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 ref={this.thirdButtonRef}
                 onFocus={() => {
                   console.log('Third View Focus!');
-                  this.thirdButtonRef.current.setNativeProps({
-                    nextKeyViewTest: findNodeHandle(
-                      this.firstButtonRef.current,
-                    ),
-                  });
                 }}>
                 <Text>Third View</Text>
               </View>
@@ -84,11 +71,6 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 ref={this.secondButtonRef}
                 onFocus={() => {
                   console.log('Second View Focus!');
-                  this.secondButtonRef.current.setNativeProps({
-                    nextKeyViewTest: findNodeHandle(
-                      this.thirdButtonRef.current,
-                    ),
-                  });
                 }}>
                 <Text>Second View</Text>
               </View>
