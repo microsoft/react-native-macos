@@ -46,6 +46,7 @@
 #import "JSCExecutorFactory.h"
 #endif
 #import "RCTJSIExecutorRuntimeInstaller.h"
+#import <React-Core/React/RCTRuntimeInitializeStateNotifier.h> // TODO(OSS Candidate ISS#2710739)- needed to sequence the runtime initialization and bundle loading properly to avoid crashing
 
 #import "NSDataBigString.h"
 #import "RCTMessageThread.h"
@@ -203,6 +204,7 @@ struct RCTInstanceCallback : public InstanceCallback {
 
   // Necessary for searching in TurboModuleRegistry
   id<RCTTurboModuleLookupDelegate> _turboModuleLookupDelegate;
+  dispatch_group_t prepareBridge;
 }
 
 @synthesize bridgeDescription = _bridgeDescription;
@@ -332,8 +334,6 @@ struct RCTInstanceCallback : public InstanceCallback {
 #endif
   [_jsThread start];
 
-  dispatch_group_t prepareBridge = dispatch_group_create();
-
   [_performanceLogger markStartForTag:RCTPLNativeModuleInit];
 
   [self registerExtraModules];
@@ -372,17 +372,24 @@ struct RCTInstanceCallback : public InstanceCallback {
     }));
   }
 
+  // TODO(OSS Candidate ISS#2710739) runtime initialization sequencing
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(runtimeInitializationDidEnd:) name:(NSString*)RCTRuntimeInitializationEndNotificationName object:nil];
+  
+  prepareBridge = dispatch_group_create();
+  dispatch_group_enter(prepareBridge);
   // Dispatch the instance initialization as soon as the initial module metadata has
   // been collected (see initModules)
-  dispatch_group_enter(prepareBridge);
   [self ensureOnJavaScriptThread:^{
     [weakSelf _initializeBridge:executorFactory];
-    dispatch_group_leave(prepareBridge);
+    dispatch_group_leave(self->prepareBridge);
   }];
+}
 
-  // Load the source asynchronously, then store it for later execution.
-  dispatch_group_enter(prepareBridge);
+- (void)runtimeInitializationDidEnd:(NSEvent*)event {
+  __weak RCTCxxBridge *weakSelf = self;
   __block NSData *sourceCode;
+
+  dispatch_group_enter(prepareBridge);
   [self
       loadSource:^(NSError *error, RCTSource *source) {
         if (error) {
@@ -390,7 +397,7 @@ struct RCTInstanceCallback : public InstanceCallback {
         }
 
         sourceCode = source.data;
-        dispatch_group_leave(prepareBridge);
+        dispatch_group_leave(self->prepareBridge);
       }
       onProgress:^(RCTLoadingProgress *progressData) {
 #if (RCT_DEV | RCT_ENABLE_LOADING_VIEW) && __has_include(<React/RCTDevLoadingViewProtocol.h>)
@@ -402,7 +409,7 @@ struct RCTInstanceCallback : public InstanceCallback {
           [loadingView updateProgress:progressData];
         } // ]TODO(OSS Candidate ISS#2710739)
 #endif
-      }];
+  }];
 
   // Wait for both the modules and source code to have finished loading
   dispatch_group_notify(prepareBridge, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
