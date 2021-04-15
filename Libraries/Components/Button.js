@@ -240,8 +240,6 @@ class Button extends React.Component<ButtonProps> {
       validKeysUp,
       nextKeyViewTest,
       // previousKeyView,
-      nextValidKeyView,
-      previousValidKeyView,
       canBecomeKeyView,
       needsPanelToBecomeKey,
       tooltip,

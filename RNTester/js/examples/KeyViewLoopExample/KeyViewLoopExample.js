@@ -13,28 +13,33 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {Button, Text, View, UIManager, findNodeHandle} = ReactNative;
+const {Text, View, Button, findNodeHandle} = ReactNative;
 
 class KeyViewLoopExample extends React.Component<{}, State> {
-  firstButtonRef = React.createRef();
-  secondButtonRef = React.createRef();
-  thirdButtonRef = React.createRef();
+  constructor() {
+    super();
+    this.firstViewRef = React.createRef();
+    this.secondViewRef = React.createRef();
+    this.thirdViewRef = React.createRef();
+    this.fourthButtonRef = React.createRef();
+  }
 
   componentDidMount() {
-    console.log('componentDidMount');
-    this.firstButtonRef.current.setNativeProps({
-      nextKeyViewTest: findNodeHandle(this.secondButtonRef.current),
+    this.firstViewRef.current.setNativeProps({
+      nextKeyViewTest: findNodeHandle(this.secondViewRef.current),
     });
-    this.secondButtonRef.current.setNativeProps({
-      nextKeyViewTest: findNodeHandle(this.thirdButtonRef.current),
+    this.secondViewRef.current.setNativeProps({
+      nextKeyViewTest: findNodeHandle(this.thirdViewRef.current),
     });
-    this.thirdButtonRef.current.setNativeProps({
-      nextKeyViewTest: findNodeHandle(this.firstButtonRef.current),
+    this.thirdViewRef.current.setNativeProps({
+      nextKeyViewTest: findNodeHandle(this.fourthButtonRef.current),
     });
+    this.fourthButtonRef.current.nextKeyViewTest = findNodeHandle(
+      this.firstViewRef.current,
+    );
   }
 
   render() {
-    console.log('render');
     return (
       <View>
         <Text>
@@ -48,32 +53,32 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 style={{height: 100, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
-                ref={this.firstButtonRef}
                 onFocus={() => {
                   console.log('First View Focus!');
-                }}>
+                }}
+                ref={this.firstViewRef}>
                 <Text>First View</Text>
               </View>
               <View
                 style={{height: 100, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
-                ref={this.thirdButtonRef}
-                onFocus={() => {
-                  console.log('Third View Focus!');
-                }}>
+                ref={this.thirdViewRef}>
                 <Text>Third View</Text>
               </View>
               <View
                 style={{height: 100, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
-                ref={this.secondButtonRef}
-                onFocus={() => {
-                  console.log('Second View Focus!');
-                }}>
+                ref={this.secondViewRef}>
                 <Text>Second View</Text>
               </View>
+              <Button
+                title="Fourth Button"
+                focusable={true}
+                // enableFocusRing={true}
+                ref={this.fourthButtonRef}
+              />
             </View>
           ) : null}
         </View>
