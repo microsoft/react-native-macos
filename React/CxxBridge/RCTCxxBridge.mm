@@ -158,6 +158,8 @@ static void registerPerformanceLoggerHooks(RCTPerformanceLogger *performanceLogg
   };
 }
 
+static BOOL runtimeIsInitialized;
+
 @interface RCTCxxBridge ()
 
 @property (nonatomic, weak, readonly) RCTBridge *parentBridge;
@@ -383,9 +385,14 @@ struct RCTInstanceCallback : public InstanceCallback {
     [weakSelf _initializeBridge:executorFactory];
     dispatch_group_leave(self->prepareBridge);
   }];
+  
+  if (runtimeIsInitialized) {
+    [self runtimeInitializationDidEnd:nil];
+  }
 }
 
 - (void)runtimeInitializationDidEnd:(NSEvent*)event {
+  runtimeIsInitialized = YES;
   __weak RCTCxxBridge *weakSelf = self;
   __block NSData *sourceCode;
 
