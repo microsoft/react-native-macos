@@ -1,5 +1,5 @@
 //
-//  RCTRuntimeInitializeStateNotifier.m
+//  RCTRuntimeInitializeStateNotifier.mm
 //
 // TODO(OSS Candidate ISS#2710739)
 
