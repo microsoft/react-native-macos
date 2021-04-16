@@ -386,12 +386,17 @@ struct RCTInstanceCallback : public InstanceCallback {
     dispatch_group_leave(self->prepareBridge);
   }];
   
+  // TODO(OSS Candidate ISS#2710739): We can call this multiple times but as long as we've set up the runtime once, we should be all set to continue
   if (runtimeIsInitialized) {
     [self runtimeInitializationDidEnd:nil];
   }
 }
 
+#if TARGET_OS_OSX // TODO(OSS Candidate ISS#2710739)
 - (void)runtimeInitializationDidEnd:(NSEvent*)event {
+#else
+- (void)runtimeInitializationDidEnd:(UIEvent*)event {
+#endif // TARGET_OS_OSX
   runtimeIsInitialized = YES;
   __weak RCTCxxBridge *weakSelf = self;
   __block NSData *sourceCode;
