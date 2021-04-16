@@ -158,8 +158,6 @@ static void registerPerformanceLoggerHooks(RCTPerformanceLogger *performanceLogg
   };
 }
 
-static BOOL runtimeIsInitialized;
-
 @interface RCTCxxBridge ()
 
 @property (nonatomic, weak, readonly) RCTBridge *parentBridge;
