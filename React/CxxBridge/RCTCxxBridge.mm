@@ -206,7 +206,7 @@ struct RCTInstanceCallback : public InstanceCallback {
 
   // Necessary for searching in TurboModuleRegistry
   id<RCTTurboModuleLookupDelegate> _turboModuleLookupDelegate;
-  dispatch_group_t prepareBridge;
+  dispatch_group_t _prepareBridge;
 }
 
 @synthesize bridgeDescription = _bridgeDescription;
@@ -340,7 +340,7 @@ struct RCTInstanceCallback : public InstanceCallback {
 
   [self registerExtraModules];
   // Initialize all native modules that cannot be loaded lazily
-  (void)[self _initializeModules:RCTGetModuleClasses() withDispatchGroup:prepareBridge lazilyDiscovered:NO];
+  (void)[self _initializeModules:RCTGetModuleClasses() withDispatchGroup:_prepareBridge lazilyDiscovered:NO];
   [self registerExtraLazyModules];
 
   [_performanceLogger markStopForTag:RCTPLNativeModuleInit];
@@ -375,33 +375,29 @@ struct RCTInstanceCallback : public InstanceCallback {
   }
 
   // TODO(OSS Candidate ISS#2710739) runtime initialization sequencing
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(runtimeInitializationDidEnd:) name:(NSString*)RCTRuntimeInitializationEndNotificationName object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(runtimeInitializationDidEnd) name:RCTRuntimeInitializationEndNotificationName object:nil];
   
-  prepareBridge = dispatch_group_create();
-  dispatch_group_enter(prepareBridge);
+  _prepareBridge = dispatch_group_create();
+  dispatch_group_enter(_prepareBridge);
   // Dispatch the instance initialization as soon as the initial module metadata has
   // been collected (see initModules)
   [self ensureOnJavaScriptThread:^{
     [weakSelf _initializeBridge:executorFactory];
-    dispatch_group_leave(self->prepareBridge);
+    dispatch_group_leave(self->_prepareBridge);
   }];
   
   // TODO(OSS Candidate ISS#2710739): We can call this multiple times but as long as we've set up the runtime once, we should be all set to continue
   if (runtimeIsInitialized) {
-    [self runtimeInitializationDidEnd:nil];
+    [self runtimeInitializationDidEnd];
   }
 }
 
-#if TARGET_OS_OSX // TODO(OSS Candidate ISS#2710739)
-- (void)runtimeInitializationDidEnd:(NSEvent*)event {
-#else
-- (void)runtimeInitializationDidEnd:(UIEvent*)event {
-#endif // TARGET_OS_OSX
+- (void)runtimeInitializationDidEnd {
   runtimeIsInitialized = YES;
   __weak RCTCxxBridge *weakSelf = self;
   __block NSData *sourceCode;
 
-  dispatch_group_enter(prepareBridge);
+  dispatch_group_enter(_prepareBridge);
   [self
       loadSource:^(NSError *error, RCTSource *source) {
         if (error) {
@@ -409,7 +405,7 @@ struct RCTInstanceCallback : public InstanceCallback {
         }
 
         sourceCode = source.data;
-        dispatch_group_leave(self->prepareBridge);
+        dispatch_group_leave(self->_prepareBridge);
       }
       onProgress:^(RCTLoadingProgress *progressData) {
 #if (RCT_DEV | RCT_ENABLE_LOADING_VIEW) && __has_include(<React/RCTDevLoadingViewProtocol.h>)
@@ -424,7 +420,7 @@ struct RCTInstanceCallback : public InstanceCallback {
   }];
 
   // Wait for both the modules and source code to have finished loading
-  dispatch_group_notify(prepareBridge, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
+  dispatch_group_notify(_prepareBridge, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
     RCTCxxBridge *strongSelf = weakSelf;
     if (sourceCode && strongSelf.loading) {
       [strongSelf executeSourceCode:sourceCode sync:NO];
