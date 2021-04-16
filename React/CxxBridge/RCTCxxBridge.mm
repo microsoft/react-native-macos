@@ -158,8 +158,6 @@ static void registerPerformanceLoggerHooks(RCTPerformanceLogger *performanceLogg
   };
 }
 
-static BOOL runtimeIsInitialized;
-
 @interface RCTCxxBridge ()
 
 @property (nonatomic, weak, readonly) RCTBridge *parentBridge;
@@ -185,6 +183,7 @@ struct RCTInstanceCallback : public InstanceCallback {
 @implementation RCTCxxBridge {
   BOOL _didInvalidate;
   BOOL _moduleRegistryCreated;
+  BOOL _runtimeIsInitialized;
 
   NSMutableArray<RCTPendingCall> *_pendingCalls;
   std::atomic<NSInteger> _pendingCount;
@@ -387,13 +386,13 @@ struct RCTInstanceCallback : public InstanceCallback {
   }];
   
   // TODO(OSS Candidate ISS#2710739): We can call this multiple times but as long as we've set up the runtime once, we should be all set to continue
-  if (runtimeIsInitialized) {
+  if (_runtimeIsInitialized) {
     [self runtimeInitializationDidEnd];
   }
 }
 
 - (void)runtimeInitializationDidEnd {
-  runtimeIsInitialized = YES;
+  _runtimeIsInitialized = YES;
   __weak RCTCxxBridge *weakSelf = self;
   __block NSData *sourceCode;
 
