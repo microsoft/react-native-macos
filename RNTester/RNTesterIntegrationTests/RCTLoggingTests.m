@@ -62,11 +62,7 @@
 
 - (void)testLogging
 {
-  // First console log call will fire after 2.0 sec, to allow for any initial log messages
-  // that might come in (seeing this in tvOS)
-  [_bridge enqueueJSCall:@"LoggingTestModule.logToConsoleAfterWait" args:@[@"Invoking console.log",@2000]];
-  // Spin native layer for 1.9 sec
-  [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.9]];
+  [_bridge enqueueJSCall:@"LoggingTestModule.logToConsoleAfterWait" args:@[@"Invoking console.log",@0]];
   // Now set the log function to signal the semaphore
   RCTSetLogFunction(^(RCTLogLevel level, RCTLogSource source, __unused NSString *fileName, __unused NSNumber *lineNumber, NSString *message) {
     if (source == RCTLogSourceJavaScript) {
