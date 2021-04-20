@@ -13,33 +13,24 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {Text, View, Button, findNodeHandle} = ReactNative;
+const {
+  Text,
+  View,
+  Button,
+  TextInput,
+  StyleSheet,
+  findNodeHandle,
+  Image,
+} = ReactNative;
 
 class KeyViewLoopExample extends React.Component<{}, State> {
-  constructor() {
-    super();
-    this.firstViewRef = React.createRef();
-    this.secondViewRef = React.createRef();
-    this.thirdViewRef = React.createRef();
-    this.fourthButtonRef = React.createRef();
-  }
-
-  componentDidMount() {
-    this.firstViewRef.current.setNativeProps({
-      nextKeyViewTest: findNodeHandle(this.secondViewRef.current),
-    });
-    this.secondViewRef.current.setNativeProps({
-      nextKeyViewTest: findNodeHandle(this.thirdViewRef.current),
-    });
-    this.thirdViewRef.current.setNativeProps({
-      nextKeyViewTest: findNodeHandle(this.fourthButtonRef.current),
-    });
-    this.fourthButtonRef.current.nextKeyViewTest = findNodeHandle(
-      this.firstViewRef.current,
-    );
-  }
-
   render() {
+    const firstKeyViewID = 'firstKeyView';
+    const secondKeyViewID = 'secondKeyView';
+    const thirdKeyViewID = 'thirdKeuView';
+    const fourthKeyViewID = 'fourthKeyView';
+    const notAKeyViewID = 'notAKeyViewID';
+
     return (
       <View>
         <Text>
@@ -48,40 +39,137 @@ class KeyViewLoopExample extends React.Component<{}, State> {
         </Text>
         <View>
           {Platform.OS === 'macos' ? (
-            <View focusable={true} enableFocusRing={true}>
+            <View>
               <View
                 style={{height: 100, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
-                onFocus={() => {
-                  console.log('First View Focus!');
-                }}
-                ref={this.firstViewRef}>
+                nativeID={firstKeyViewID}
+                nextKeyViewID={secondKeyViewID}>
                 <Text>First View</Text>
               </View>
               <View
                 style={{height: 100, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
-                ref={this.thirdViewRef}>
+                nativeID={thirdKeyViewID}
+                nextKeyViewID={fourthKeyViewID}>
                 <Text>Third View</Text>
               </View>
               <View
                 style={{height: 100, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
-                ref={this.secondViewRef}>
+                nativeID={secondKeyViewID}
+                nextKeyViewID={thirdKeyViewID}>
                 <Text>Second View</Text>
               </View>
-              <Button
-                title="Fourth Button"
+              <Image
+                style={{height: 100, width: 100, margin: 20}}
                 focusable={true}
-                // enableFocusRing={true}
-                ref={this.fourthButtonRef}
+                enableFocusRing={true}
+                nativeID={fourthKeyViewID}
+                nextKeyViewID={notAKeyViewID}
+                source={{
+                  uri: 'https://reactnative.dev/img/tiny_logo.png',
+                }}
+              />
+              <Button
+                title="Button cannot be a key view"
+                focusable={true}
+                enableFocusRing={true}
+                nativeID={notAKeyViewID}
+                nextKeyViewID={firstKeyViewID}
               />
             </View>
           ) : null}
         </View>
+      </View>
+    );
+  }
+}
+class FocusTrapExample extends React.Component<{}, {}> {
+  render() {
+    const nextKeyViewID = 'inputView4';
+    return (
+      <View>
+        <Text>Focus trap example.</Text>
+        <TextInput placeholder={'Focusable 1'} style={styles.textInput} />
+        <TextInput placeholder={'Focusable 2'} style={styles.textInput} />
+        <TextInput placeholder={'Focusable 3'} style={styles.textInput} />
+        <Text>Begin focus trap:</Text>
+        <TextInput
+          nativeID={nextKeyViewID}
+          placeholder={'Focusable 4'}
+          style={styles.textInput}
+        />
+        <TextInput placeholder={'Focusable 5'} style={styles.textInput} />
+        <TextInput
+          nextKeyViewID={nextKeyViewID}
+          placeholder={'Focusable 6'}
+          style={styles.textInput}
+        />
+        <Text>End focus trap:</Text>
+        <TextInput placeholder={'Focusable 7'} style={styles.textInput} />
+        <TextInput placeholder={'Focusable 8'} style={styles.textInput} />
+      </View>
+    );
+  }
+}
+
+var styles = StyleSheet.create({
+  textInput: {
+    ...Platform.select({
+      macos: {
+        color: {semantic: 'textColor'},
+        backgroundColor: {semantic: 'textBackgroundColor'},
+        borderColor: {semantic: 'gridColor'},
+      },
+      default: {
+        borderColor: '#0f0f0f',
+      },
+    }),
+    borderWidth: StyleSheet.hairlineWidth,
+    flex: 1,
+    fontSize: 13,
+    padding: 4,
+  },
+});
+
+class FocusTrapWithRefsExample extends React.Component<{}, {}> {
+  constructor() {
+    super();
+    this.firstKeyViewRef = React.createRef();
+    this.lastKeyViewRef = React.createRef();
+  }
+
+  componentDidMount() {
+    this.lastKeyViewRef.current.nextKeyViewTest = findNodeHandle(
+      this.firstKeyViewRef.current,
+    );
+  }
+  render() {
+    return (
+      <View>
+        <Text>Focus trap with Refs example.</Text>
+        <TextInput placeholder={'Focusable 1'} style={styles.textInput} />
+        <TextInput placeholder={'Focusable 2'} style={styles.textInput} />
+        <TextInput placeholder={'Focusable 3'} style={styles.textInput} />
+        <Text>Begin focus trap:</Text>
+        <TextInput
+          ref={this.firstKeyViewRef}
+          placeholder={'Focusable 4'}
+          style={styles.textInput}
+        />
+        <TextInput placeholder={'Focusable 5'} style={styles.textInput} />
+        <TextInput
+          ref={this.lastKeyViewRef}
+          placeholder={'Focusable 6'}
+          style={styles.textInput}
+        />
+        <Text>End focus trap:</Text>
+        <TextInput placeholder={'Focusable 7'} style={styles.textInput} />
+        <TextInput placeholder={'Focusable 8'} style={styles.textInput} />
       </View>
     );
   }
@@ -94,6 +182,12 @@ exports.examples = [
     title: 'KeyViewLoopExample',
     render: function(): React.Element<any> {
       return <KeyViewLoopExample />;
+    },
+  },
+  {
+    title: 'FocusTrapExample',
+    render: function(): React.Element<any> {
+      return <FocusTrapExample />;
     },
   },
 ];

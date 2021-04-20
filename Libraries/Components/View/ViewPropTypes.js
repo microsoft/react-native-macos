@@ -598,7 +598,7 @@ export type ViewProps = $ReadOnly<{|
    * through different controls.
    */
   acceptsKeyboardFocus?: ?boolean, // TODO(macOS ISS#2323203)
-  
+
   /**
    * Specifies whether the view can become key view
    */
@@ -609,15 +609,20 @@ export type ViewProps = $ReadOnly<{|
    * key window before it can handle keyboard input and navigation.
    */
   needsPanelToBecomeKey?: ?boolean, // TODO(macOS ISS#2323203)
-  
+
   /**
-  * The view object that follows the current view in the key view loop.
-  */
+   * The view object that follows the current view in the key view loop.
+   */
+  nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
+
+  /**
+   * The view object that follows the current view in the key view loop.
+   */
   nextKeyViewTest?: ?number, // TODO(macOS ISS#2323203)
- 
+
   /**
-  * The view object preceding the current view in the key view loop.
-  */
+   * The view object preceding the current view in the key view loop.
+   */
   // previousKeyView?: ?number, // TODO(macOS ISS#2323203)
 
 

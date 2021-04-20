@@ -14,6 +14,7 @@
 #import "RCTEventDispatcher.h"
 #import "RCTLog.h"
 #import "RCTShadowView.h"
+#import "RCTSinglelineTextInputView.h"
 #import "RCTUIManager.h"
 #import "RCTUIManagerUtils.h"
 #import "RCTUtils.h"
@@ -503,6 +504,28 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
 }
 
 // Key-View loop management
+
+RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewID, NSString, RCTView)
+{
+  __weak RCTViewManager *weakSelf = self;
+  [_bridge.uiManager rootViewForReactTag:view.reactTag withCompletion:^(NSView *rootView) {
+    RCTViewManager *strongSelf = weakSelf;
+    if (rootView) {
+      NSView *nextKeyView = [strongSelf->_bridge.uiManager viewForNativeID:json
+                                                               withRootTag:rootView.reactTag];
+      if (nextKeyView) {
+        NSView *targetView = view;
+        // TextInput is weird
+        if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
+            targetView = [[view subviews] firstObject];
+            nextKeyView = [[nextKeyView subviews] firstObject];
+        }
+        [targetView setNextKeyView:nextKeyView];
+      }
+    }
+  }];
+}
+
 RCT_EXPORT_VIEW_PROPERTY(canBecomeKeyView, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(needsPanelToBecomeKey, BOOL)
 

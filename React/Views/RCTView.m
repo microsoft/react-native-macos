@@ -127,6 +127,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS I
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
   NSTrackingArea *_trackingArea;
   BOOL _hasMouseOver;
+  NSView *_nextKeyView;
 #endif // ]TODO(macOS ISS#2323203)
   NSMutableDictionary<NSString *, NSDictionary *> *accessibilityActionsNameMap;
   NSMutableDictionary<NSString *, NSDictionary *> *accessibilityActionsLabelMap;
@@ -1773,11 +1774,16 @@ if (tabKeyValidityCheck) {
   }
 }
 
-//- (void)setNextKeyViewTest:(id)nextKeyViewTest {
-//    RCTView *view = [_bridge.uiManager viewforReactTag:nextKeyViewTest];
-//    [view becomeFirstResponder];
-//    NSLog(@"%@", nextKeyViewTest);
-//}
+- (void)setNextKeyView:(NSView *)nextKeyView {
+  _nextKeyView = nextKeyView;
+}
+
+- (NSView *)nextKeyView {
+  if (_nextKeyView) {
+    return _nextKeyView;
+  }
+  return [super nextKeyView];
+}
 
 #endif // TARGET_OS_OSX
 
