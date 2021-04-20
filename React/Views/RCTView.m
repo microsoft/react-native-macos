@@ -1784,7 +1784,6 @@ if (tabKeyValidityCheck) {
   }
   return [super nextKeyView];
 }
-
 #endif // TARGET_OS_OSX
 
 @end

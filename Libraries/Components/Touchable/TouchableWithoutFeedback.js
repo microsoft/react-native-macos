@@ -40,7 +40,6 @@ import type {DraggedTypesType} from '../View/DraggedType';
 import Platform from '../../Utilities/Platform';
 import View from '../../Components/View/View';
 import * as React from 'react';
-import { RCTView } from '../View/ReactNativeViewAttributes';
 
 type Props = $ReadOnly<{|
   accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,

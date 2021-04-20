@@ -26,7 +26,6 @@ import * as React from 'react';
 import invariant from 'invariant';
 
 import type {ProcessedColorValue} from '../../StyleSheet/processColor';
-import { RCTView } from '../View/ReactNativeViewAttributes';
 
 type Props = $ReadOnly<{|
   ...React.ElementConfig<TouchableWithoutFeedback>,

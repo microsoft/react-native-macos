@@ -81,7 +81,7 @@ static YGSize RCTWrapperShadowViewMeasure(YGNodeRef node, float width, YGMeasure
 
     dispatch_async(dispatch_get_main_queue(), ^{
       RCTUIManager *uiManager = bridge.uiManager;
-      RCTWrapperView *view = (RCTWrapperView *)[uiManager viewForReactTag:reactTag]; //SAAD Look here
+      RCTWrapperView *view = (RCTWrapperView *)[uiManager viewForReactTag:reactTag];
       measureBlock = view.measureBlock;
 
       dispatch_semaphore_signal(semaphore);

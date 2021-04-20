@@ -620,6 +620,7 @@ export type ViewProps = $ReadOnly<{|
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?array<string>,
+
   /**
    * Enables Dran'n'Drop Support for certain types of dragged types
    *

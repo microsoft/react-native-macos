@@ -497,8 +497,6 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
   }
 }
 
-// Key-View loop management
-
 RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewID, NSString, RCTView)
 {
   __weak RCTViewManager *weakSelf = self;
