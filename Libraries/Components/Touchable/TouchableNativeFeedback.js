@@ -94,22 +94,11 @@ type Props = $ReadOnly<{|
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?Array<string>,
-  
-  /**
-   * Specifies whether the view can become key view
-   */
-  canBecomeKeyView?: ?boolean, // TODO(macOS ISS#2323203)
 
-  /**
-   * A Boolean value indicating whether the view needs its panel to become the 
-   * key window before it can handle keyboard input and navigation.
-   */
-  needsPanelToBecomeKey?: ?boolean, // TODO(macOS ISS#2323203)
-  
   /**
   * The view object that follows the current view in the key view loop.
   */
-  nextKeyViewTest?: ?number, // TODO(macOS ISS#2323203)
+  nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
  
   /**
   * The view object preceding the current view in the key view loop.
@@ -333,10 +322,7 @@ class TouchableNativeFeedback extends React.Component<Props, State> {
         testID: this.props.testID,
         validKeysDown: this.props.validKeysDown,
         validKeysUp: this.props.validKeysUp,
-        nextKeyViewTest: this.props.nextKeyView,
-        // previousKeyView: this.props.previousKeyView,
-        canBecomeKeyView: this.canBecomeKeyView,
-        needsPanelToBecomeKey: this.needsPanelToBecomeKey,
+        nextKeyViewID: this.props.nextKeyViewID,
       },
       ...children,
     );

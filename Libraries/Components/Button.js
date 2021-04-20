@@ -155,27 +155,11 @@ type ButtonProps = $ReadOnly<{|
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?Array<string>,
-  
-  /**
-   * Specifies whether the view can become key view
-   */
-  canBecomeKeyView?: ?boolean, // TODO(macOS ISS#2323203)
 
   /**
-   * A Boolean value indicating whether the view needs its panel to become the 
-   * key window before it can handle keyboard input and navigation.
+   * The view object that follows the current view in the key view loop.
    */
-  needsPanelToBecomeKey?: ?boolean, // TODO(macOS ISS#2323203)
-  
-  /**
-  * The view object that follows the current view in the key view loop.
-  */
-  nextKeyViewTest?: ?number, // TODO(macOS ISS#2323203)
- 
-  /**
-  * The view object preceding the current view in the key view loop.
-  */
-  previousKeyView?: ?number, // TODO(macOS ISS#2323203)
+  nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
 
   /*
    * Specifies the Tooltip for the view
@@ -238,10 +222,7 @@ class Button extends React.Component<ButtonProps> {
       onKeyUp,
       validKeysDown,
       validKeysUp,
-      nextKeyViewTest,
-      // previousKeyView,
-      canBecomeKeyView,
-      needsPanelToBecomeKey,
+      nextKeyViewID, // TODO(OSS Candidate GH#~~~)
       tooltip,
     } = this.props;
     const buttonStyles = [styles.button];
@@ -293,10 +274,7 @@ class Button extends React.Component<ButtonProps> {
         onKeyUp={onKeyUp}
         validKeysDown={validKeysDown}
         validKeysUp={validKeysUp}
-        nextKeyViewTest={nextKeyViewTest}
-        // previousKeyView={previousKeyView}
-        canBecomeKeyView={canBecomeKeyView}
-        needsPanelToBecomeKey={needsPanelToBecomeKey}
+        nextKeyViewID={nextKeyViewID}
         tooltip={tooltip}
         touchSoundDisabled={touchSoundDisabled}>
         <View style={buttonStyles}>

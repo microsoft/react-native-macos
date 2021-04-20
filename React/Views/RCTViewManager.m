@@ -515,9 +515,12 @@ RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewID, NSString, RCTView)
                                                                withRootTag:rootView.reactTag];
       if (nextKeyView) {
         NSView *targetView = view;
-        // TextInput is weird
+        // The TextInput component is implemented as a RCTUITextField wrapped by a RCTSinglelineTextInputView,
+        // so we need to get the first subview to properly transfer focus
         if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
             targetView = [[view subviews] firstObject];
+        }
+        if ([nextKeyView isKindOfClass:[RCTSinglelineTextInputView class]]) {
             nextKeyView = [[nextKeyView subviews] firstObject];
         }
         [targetView setNextKeyView:nextKeyView];
@@ -526,21 +529,6 @@ RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewID, NSString, RCTView)
   }];
 }
 
-RCT_EXPORT_VIEW_PROPERTY(canBecomeKeyView, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(needsPanelToBecomeKey, BOOL)
-
-RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTest, NSNumber, RCTView)
-{
-    RCTExecuteOnUIManagerQueue(^{
-        [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
-            NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
-            RCTUIView *nextKeyView = viewRegistry[nextKeyViewTag];
-            if (nextKeyView) {
-                [view setNextKeyView:nextKeyView];
-            }
-        }];
-    });
-}
 #endif // ]TODO(macOS ISS#2323203)
 
 

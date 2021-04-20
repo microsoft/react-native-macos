@@ -51,27 +51,11 @@ type Props = $ReadOnly<{|
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?Array<string>,
-  
-  /**
-   * Specifies whether the view can become key view
-   */
-  canBecomeKeyView?: ?boolean, // TODO(macOS ISS#2323203)
 
   /**
-   * A Boolean value indicating whether the view needs its panel to become the 
-   * key window before it can handle keyboard input and navigation.
+   * The view object that follows the current view in the key view loop.
    */
-  needsPanelToBecomeKey?: ?boolean, // TODO(macOS ISS#2323203)
-  
-  /**
-  * The view object that follows the current view in the key view loop.
-  */
-  nextKeyViewTest?: ?number, // TODO(macOS ISS#2323203)
- 
-  /**
-  * The view object preceding the current view in the key view loop.
-  */
-  // previousKeyView?: ?number, // TODO(macOS ISS#2323203)
+  nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
 |}>;
 
 type State = $ReadOnly<{|
@@ -209,10 +193,7 @@ class TouchableOpacity extends React.Component<Props, State> {
       },
       validKeysDown: this.props.validKeysDown,
       validKeysUp: this.props.validKeysUp,
-      nextKeyViewTest: this.props.nextKeyViewTest,
-      // previousKeyView: this.props.previousKeyView,
-      canBecomeKeyView: this.props.canBecomeKeyView,
-      needsPanelToBecomeKey: this.props.needsPanelToBecomeKey,
+      nextKeyViewID: this.props.nextKeyViewID,
       onLongPress: this.props.onLongPress,
       onPress: this.props.onPress,
       onPressIn: event => {
@@ -331,10 +312,7 @@ class TouchableOpacity extends React.Component<Props, State> {
         onKeyUp={this.props.onKeyUp}
         validKeysDown={this.props.validKeysDown}
         validKeysUp={this.props.validKeysUp}
-        nextKeyViewTest={this.props.nextKeyViewTest}
-        // previousKeyView={this.props.previousKeyView}
-        canBecomeKeyView={this.props.canBecomeKeyView}
-        needsPanelToBecomeKey={this.props.needsPanelToBecomeKey}
+        nextKeyViewID={this.props.nextKeyViewID}
         draggedTypes={this.props.draggedTypes} // ]TODO(macOS ISS#2323203)
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>

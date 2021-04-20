@@ -41,7 +41,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
           {Platform.OS === 'macos' ? (
             <View>
               <View
-                style={{height: 100, width: 100, margin: 20}}
+                style={{height: 20, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
                 nativeID={firstKeyViewID}
@@ -49,7 +49,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 <Text>First View</Text>
               </View>
               <View
-                style={{height: 100, width: 100, margin: 20}}
+                style={{height: 20, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
                 nativeID={thirdKeyViewID}
@@ -57,7 +57,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 <Text>Third View</Text>
               </View>
               <View
-                style={{height: 100, width: 100, margin: 20}}
+                style={{height: 20, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
                 nativeID={secondKeyViewID}
@@ -79,7 +79,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 focusable={true}
                 enableFocusRing={true}
                 nativeID={notAKeyViewID}
-                nextKeyViewID={firstKeyViewID}
+                // nextKeyViewID={firstKeyViewID}
               />
             </View>
           ) : null}
@@ -135,45 +135,6 @@ var styles = StyleSheet.create({
     padding: 4,
   },
 });
-
-class FocusTrapWithRefsExample extends React.Component<{}, {}> {
-  constructor() {
-    super();
-    this.firstKeyViewRef = React.createRef();
-    this.lastKeyViewRef = React.createRef();
-  }
-
-  componentDidMount() {
-    this.lastKeyViewRef.current.nextKeyViewTest = findNodeHandle(
-      this.firstKeyViewRef.current,
-    );
-  }
-  render() {
-    return (
-      <View>
-        <Text>Focus trap with Refs example.</Text>
-        <TextInput placeholder={'Focusable 1'} style={styles.textInput} />
-        <TextInput placeholder={'Focusable 2'} style={styles.textInput} />
-        <TextInput placeholder={'Focusable 3'} style={styles.textInput} />
-        <Text>Begin focus trap:</Text>
-        <TextInput
-          ref={this.firstKeyViewRef}
-          placeholder={'Focusable 4'}
-          style={styles.textInput}
-        />
-        <TextInput placeholder={'Focusable 5'} style={styles.textInput} />
-        <TextInput
-          ref={this.lastKeyViewRef}
-          placeholder={'Focusable 6'}
-          style={styles.textInput}
-        />
-        <Text>End focus trap:</Text>
-        <TextInput placeholder={'Focusable 7'} style={styles.textInput} />
-        <TextInput placeholder={'Focusable 8'} style={styles.textInput} />
-      </View>
-    );
-  }
-}
 
 exports.title = 'Key View Loop';
 exports.description = 'Examples that show how key-view loops can be used.';
