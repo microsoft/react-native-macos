@@ -429,7 +429,7 @@
   return self;
 }
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203) //SAAD Look here
+#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
 - (BOOL)canBecomeKeyView
 {
   return [self focusable];

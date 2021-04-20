@@ -99,11 +99,6 @@ type Props = $ReadOnly<{|
   * The view object that follows the current view in the key view loop.
   */
   nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
- 
-  /**
-  * The view object preceding the current view in the key view loop.
-  */
-  // previousKeyView?: ?number, // TODO(macOS ISS#2323203)
 
   /**
    * Set to true to add the ripple effect to the foreground of the view, instead

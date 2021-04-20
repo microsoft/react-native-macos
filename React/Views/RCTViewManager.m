@@ -143,12 +143,6 @@ RCT_EXPORT_METHOD(blur : (nonnull NSNumber *)viewTag)
 }
 #endif // ]TODO(macOS ISS#2323203)
 
-#if TARGET_OS_OSX // [TODO()
-
-
-
-#endif // ]TODO()
-
 #pragma mark - View properties
 
 #if TARGET_OS_TV
@@ -530,7 +524,6 @@ RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewID, NSString, RCTView)
 }
 
 #endif // ]TODO(macOS ISS#2323203)
-
 
 #pragma mark - ShadowView properties
 

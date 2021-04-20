@@ -28,7 +28,6 @@ import type {
   AccessibilityActionInfo,
   AccessibilityRole,
 } from './View/ViewAccessibility';
-import { RCTView } from './View/ReactNativeViewAttributes';
 
 type ButtonProps = $ReadOnly<{|
   /**
@@ -143,7 +142,7 @@ type ButtonProps = $ReadOnly<{|
    * Handler to be called when a key up press is detected
    */
   onKeyUp?: ?(e: KeyEvent) => void,
-  
+
   /*
    * Array of keys to receive key down events for
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
