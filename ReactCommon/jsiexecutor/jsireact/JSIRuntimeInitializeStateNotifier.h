@@ -1,7 +1,7 @@
 //
- //  JSIRuntimeInitializeStateNotifier.h
- //
- // TODO(OSS Candidate ISS#2710739)
+//  JSIRuntimeInitializeStateNotifier.h
+//
+// TODO(OSS Candidate ISS#2710739)
 
 #define JSIRuntimeInitializationEndNotificationName @"JSIRuntimeInitializationEndNotificationName"
  
