@@ -1,5 +1,5 @@
 //
-//  JSIRuntimeInitializeStateNotifier.mm
+//  JSIRuntimeInitializeStateNotifier.m
 //
 // TODO(OSS Candidate ISS#2710739)
 
