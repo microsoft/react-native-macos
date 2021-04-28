@@ -27,7 +27,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
   render() {
     const firstKeyViewID = 'firstKeyView';
     const secondKeyViewID = 'secondKeyView';
-    const thirdKeyViewID = 'thirdKeuView';
+    const thirdKeyViewID = 'thirdKeyView';
     const fourthKeyViewID = 'fourthKeyView';
     const notAKeyViewID = 'notAKeyViewID';
 
@@ -145,10 +145,10 @@ exports.examples = [
       return <KeyViewLoopExample />;
     },
   },
-  {
-    title: 'FocusTrapExample',
-    render: function(): React.Element<any> {
-      return <FocusTrapExample />;
-    },
-  },
+  // {
+  //   title: 'FocusTrapExample',
+  //   render: function(): React.Element<any> {
+  //     return <FocusTrapExample />;
+  //   },
+  // },
 ];

@@ -619,6 +619,7 @@ static void RCTUIViewCalculateKeyViewLoopInternal(RCTPlatformView *root, NSMutab
 
 NSArray *RCTUIViewCalculateKeyViewLoop(RCTPlatformView *root)
 {
+  NSLog(@"SAAD Recalculating keyview loop");
   NSMutableArray *keyViewLoop = [NSMutableArray array];
   RCTUIViewCalculateKeyViewLoopInternal(root, keyViewLoop);
   // Avoid returning self-referential single-link loops

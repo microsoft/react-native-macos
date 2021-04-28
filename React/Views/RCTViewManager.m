@@ -503,10 +503,10 @@ RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewID, NSString, RCTView)
   [_bridge.uiManager rootViewForReactTag:view.reactTag withCompletion:^(NSView *rootView) {
     RCTViewManager *strongSelf = weakSelf;
     if (rootView) {
-      NSView *nextKeyView = [strongSelf->_bridge.uiManager viewForNativeID:json
-                                                               withRootTag:rootView.reactTag];
-      if (nextKeyView) {
-        NSView *targetView = view;
+      RCTView *nextKeyView = [strongSelf->_bridge.uiManager viewForNativeID:json
+                                                               withRootTag:[rootView reactTag]];
+        if (nextKeyView) {
+        RCTView *targetView = view;
         // The TextInput component is implemented as a RCTUITextField wrapped by a RCTSinglelineTextInputView,
         // so we need to get the first subview to properly transfer focus
         if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
