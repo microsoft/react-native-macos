@@ -99,7 +99,10 @@
 }
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
-
+- (void)setCursor:(RCTCursor)cursor
+{
+    // This is required because the RCTTextViewManager inherits from RCTViewManager which has a cursor prop.
+}
 #endif // ]TODO(macOS GH#774)
 
 #if DEBUG // TODO(macOS GH#774) description is a debug-only feature

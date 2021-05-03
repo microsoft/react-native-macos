@@ -6,7 +6,6 @@
  */
 
 #import <React/RCTVirtualTextViewManager.h>
-
 #import <React/RCTVirtualTextShadowView.h>
 
 @implementation RCTVirtualTextViewManager
