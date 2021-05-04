@@ -127,7 +127,6 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS I
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
   NSTrackingArea *_trackingArea;
   BOOL _hasMouseOver;
-  __weak NSView *_nextKeyView;
 #endif // ]TODO(macOS ISS#2323203)
   NSMutableDictionary<NSString *, NSDictionary *> *accessibilityActionsNameMap;
   NSMutableDictionary<NSString *, NSDictionary *> *accessibilityActionsLabelMap;
@@ -890,6 +889,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     }
   }
 }
+
+//- (void)insertReactSubview:(NSView *)subview atIndex:(NSInteger)atIndex
+//{
+//    
+//}
 
 - (void)setRemoveClippedSubviews:(BOOL)removeClippedSubviews
 {
@@ -1774,15 +1778,12 @@ if (tabKeyValidityCheck) {
   }
 }
 
-- (void)setNextKeyView:(__weak NSView *)nextKeyView {
-  _nextKeyView = nextKeyView;
-//    [super setNextKeyView:nextKeyView];
+
+- (void)setNextKeyView:(NSView *)nextKeyView {
+    [super setNextKeyView:nextKeyView];
 }
 
-- (__weak NSView *)nextKeyView {
-  if (_nextKeyView) {
-      return _nextKeyView;
-  }
+- (NSView *)nextKeyView {
   return [super nextKeyView];
 }
 #endif // TARGET_OS_OSX

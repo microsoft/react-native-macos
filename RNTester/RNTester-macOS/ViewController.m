@@ -17,7 +17,7 @@
 {
   [super viewDidLoad];
   
-  [[[self view] window] setAutorecalculatesKeyViewLoop:NO];
+//  [[[self view] window] setAutorecalculatesKeyViewLoop:NO];
   
   RCTBridge *bridge = ((AppDelegate *)[NSApp delegate]).bridge;
   RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge

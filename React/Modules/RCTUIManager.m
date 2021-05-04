@@ -1192,6 +1192,20 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand
   [self flushUIBlocksWithCompletion:^{
     [self->_observerCoordinator uiManagerDidPerformMounting:self];
   }];
+
+#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+    RCTExecuteOnMainQueue(^{
+        for (NSNumber *reactTag in self->_rootViewTags) {
+          RCTView *view = [self viewForReactTag:reactTag];
+          if ([view nextKeyViewID] != nil) {
+            RCTUIView *nextKeyView = [self viewForNativeID:[view nextKeyViewID] withRootTag:[view rootTag]];
+            [view setNextKeyView:nextKeyView];
+          }
+        }
+    });
+
+#endif
+    
 }
 
 - (void)flushUIBlocksWithCompletion:(void (^)(void))completion

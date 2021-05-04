@@ -149,4 +149,6 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) RCTBubblingEventBlock onFocus;
 @property (nonatomic, copy) RCTBubblingEventBlock onBlur;
 
+@property (nonatomic, assign) NSString *nextKeyViewID;
+
 @end

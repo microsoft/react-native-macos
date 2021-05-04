@@ -499,11 +499,13 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
 
 RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewID, NSString, RCTView)
 {
+  [view setNextKeyViewID:json];
+
   __weak RCTViewManager *weakSelf = self;
   [_bridge.uiManager rootViewForReactTag:view.reactTag withCompletion:^(NSView *rootView) {
     RCTViewManager *strongSelf = weakSelf;
     if (rootView) {
-      RCTView *nextKeyView = [strongSelf->_bridge.uiManager viewForNativeID:json
+      RCTUIView *nextKeyView = [strongSelf->_bridge.uiManager viewForNativeID:json
                                                                withRootTag:[rootView reactTag]];
         if (nextKeyView) {
         RCTView *targetView = view;
