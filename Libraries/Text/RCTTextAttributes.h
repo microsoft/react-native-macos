@@ -59,6 +59,10 @@ extern NSString *const RCTTextAttributesTagAttributeName;
 @property (nonatomic, assign) UIUserInterfaceLayoutDirection layoutDirection;
 @property (nonatomic, assign) RCTTextTransform textTransform;
 
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+@property (nonatomic, copy, nullable) NSString *href;
+#endif // ]TODO(macOS GH#774)
+
 #pragma mark - Inheritance
 
 - (void)applyTextAttributes:(RCTTextAttributes *)textAttributes;

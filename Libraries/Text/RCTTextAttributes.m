@@ -93,6 +93,10 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   _tag = textAttributes->_tag ?: _tag;
   _layoutDirection = textAttributes->_layoutDirection != UIUserInterfaceLayoutDirectionLeftToRight ? textAttributes->_layoutDirection : _layoutDirection;
   _textTransform = textAttributes->_textTransform != RCTTextTransformUndefined ? textAttributes->_textTransform : _textTransform;
+
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  _href = textAttributes->_href ?: _href;
+#endif // ]TODO(macOS GH#774)
 }
 
 - (NSParagraphStyle *)effectiveParagraphStyle
@@ -209,6 +213,11 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     attributes[RCTTextAttributesTagAttributeName] = _tag;
   }
 
+#if TARGET_OS_OSX // TODO(macOS GH#774)
+  if (_href) {
+    attributes[NSLinkAttributeName] = [RCTConvert NSURL:_href];
+  }
+#endif // TODO(macOS GH#774)
   return [attributes copy];
 }
 

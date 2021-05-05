@@ -1246,3 +1246,37 @@ exports.examples = [
     },
   },
 ];
+// [TODO(macOS GH#774)
+if (Platform.OS === 'macos') {
+  exports.examples.push(
+    {
+      title: 'Hyperlink',
+      render: function (): React.Node {
+        return (
+          <Text
+            style={{textDecorationLine: 'underline', color: 'red'}}
+            href="https://reactnative.dev"
+            selectable={true}>
+            This text is a hyperlink.
+          </Text>
+        );
+      },
+    },
+    {
+      title: 'Hyperlink in nested TextView',
+      render: function (): React.Node {
+        return (
+          <Text selectable={true}>
+            This is regular text.{' '}
+            <Text
+              style={{textDecorationLine: 'underline', color: 'blue'}}
+              href="https://github.com/microsoft/react-native-macos">
+              This text is hyperlink.
+            </Text>
+          </Text>
+        );
+      },
+    },
+  );
+}
+// ]TODO(macOS GH#774)

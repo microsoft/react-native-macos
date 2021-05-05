@@ -200,12 +200,18 @@ export type TextProps = $ReadOnly<{|
    */
   suppressHighlighting?: ?boolean,
 
-  /**
-   * macOS Only
-   */
-
+  // [TODO(macOS GH#774)
   /**
    * Specifies the Tooltip for the button view
+   * @platform macos
    */
   tooltip?: ?string,
+
+  /**
+   * Specifies a URL so the text behaves like a hyperlink (clicking
+   * it will open the URL.
+   * @platform macos
+   */
+  href?: ?string,
+  // ]TODO(macOS GH#774)
 |}>;

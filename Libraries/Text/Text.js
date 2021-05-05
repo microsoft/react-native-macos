@@ -8,6 +8,7 @@
  * @format
  */
 
+import Linking from '../Linking/Linking'; // [TODO(macOS GH#774)]
 import * as PressabilityDebug from '../Pressability/PressabilityDebug';
 import usePressability from '../Pressability/usePressability';
 import StyleSheet from '../StyleSheet/StyleSheet';
@@ -31,6 +32,7 @@ const Text: React.AbstractComponent<
     accessible,
     allowFontScaling,
     ellipsizeMode,
+    href, // [TODO(macOS GH#774)]
     onLongPress,
     onPress,
     onPressIn,
@@ -49,7 +51,8 @@ const Text: React.AbstractComponent<
   const [isHighlighted, setHighlighted] = useState(false);
 
   const isPressable =
-    (onPress != null ||
+    (props.href != null || // [TODO(macOS GH#774)]
+      onPress != null ||
       onLongPress != null ||
       onStartShouldSetResponder != null) &&
     restProps.disabled !== true;
@@ -62,7 +65,18 @@ const Text: React.AbstractComponent<
             disabled: !isPressable,
             pressRectOffset: pressRetentionOffset,
             onLongPress,
-            onPress,
+            // [TODO(macOS GH#774)]
+            onPress(event) {
+              onPress?.(event);
+              if (
+                href != null &&
+                !event.isDefaultPrevented() &&
+                event.nativeEvent.button === 0
+              ) {
+                Linking.openURL(href);
+              }
+            },
+            // ]TODO(macOS GH#774)]
             onPressIn(event) {
               setHighlighted(!suppressHighlighting);
               onPressIn?.(event);
@@ -77,6 +91,7 @@ const Text: React.AbstractComponent<
           }
         : null,
     [
+      href, // [TODO(macOS GH#774)]
       initialized,
       isPressable,
       pressRetentionOffset,
@@ -140,6 +155,11 @@ const Text: React.AbstractComponent<
       : processColor(restProps.selectionColor);
 
   let style = restProps.style;
+  if (href != null) {
+    style = StyleSheet.compose(restProps.style, {
+      cursor: 'pointer',
+    });
+  }
   if (__DEV__) {
     if (PressabilityDebug.isEnabled() && onPress != null) {
       style = StyleSheet.compose(restProps.style, {
@@ -162,6 +182,7 @@ const Text: React.AbstractComponent<
     <NativeVirtualText
       {...restProps}
       {...eventHandlersForText}
+      href={href} // [TODO(macOS GH#774)]
       isHighlighted={isHighlighted}
       isPressable={isPressable}
       numberOfLines={numberOfLines}

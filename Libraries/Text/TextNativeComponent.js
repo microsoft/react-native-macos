@@ -46,6 +46,7 @@ export const NativeText: HostComponent<NativeTextProps> =
       dataDetectorType: true,
       android_hyphenationFrequency: true,
       tooltip: true, // [TODO(macOS GH#774)]
+      href: true, // [TODO(macOS GH#774)]
     },
     directEventTypes: {
       topTextLayout: {
@@ -67,6 +68,7 @@ export const NativeVirtualText: HostComponent<NativeTextProps> =
           isHighlighted: true,
           isPressable: true,
           maxFontSizeMultiplier: true,
+          href: true, // [TODO(macOS GH#774)]
         },
         uiViewClassName: 'RCTVirtualText',
       })): any);

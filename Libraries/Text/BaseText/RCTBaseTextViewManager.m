@@ -55,4 +55,8 @@ RCT_REMAP_SHADOW_PROPERTY(textShadowColor, textAttributes.textShadowColor, UICol
 RCT_REMAP_SHADOW_PROPERTY(isHighlighted, textAttributes.isHighlighted, BOOL)
 RCT_REMAP_SHADOW_PROPERTY(textTransform, textAttributes.textTransform, RCTTextTransform)
 
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+RCT_REMAP_SHADOW_PROPERTY(href, textAttributes.href, NSString)
+#endif // ]TODO(macOS GH#774)
+
 @end
