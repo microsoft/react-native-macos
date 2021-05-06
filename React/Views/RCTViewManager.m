@@ -112,8 +112,6 @@ RCT_EXPORT_MODULE()
     @"change",
     @"focus",
     @"blur",
-    @"keyDown",
-    @"keyUp",
     @"submitEditing",
     @"endEditing",
     @"keyPress",
@@ -125,6 +123,24 @@ RCT_EXPORT_MODULE()
     @"touchEnd",
   ];
 }
+
+#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+RCT_EXPORT_METHOD(focus : (nonnull NSNumber *)viewTag)
+{
+  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
+    RCTUIView *view = viewRegistry[viewTag];
+    [view reactFocus];
+  }];
+}
+
+RCT_EXPORT_METHOD(blur : (nonnull NSNumber *)viewTag)
+{
+  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
+    RCTUIView *view = viewRegistry[viewTag];
+    [view reactBlur];
+  }];
+}
+#endif // ]TODO(macOS ISS#2323203)
 
 #pragma mark - View properties
 
@@ -465,8 +481,8 @@ RCT_EXPORT_VIEW_PROPERTY(onMouseLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragEnter, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDrop, RCTDirectEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTBubblingEventBlock) // macOS keyboard events
-RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTBubblingEventBlock) // macOS keyboard events
+RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTDirectEventBlock) // macOS keyboard events
+RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTDirectEventBlock) // macOS keyboard events
 RCT_CUSTOM_VIEW_PROPERTY(validKeysDown, NSArray<NSString*>, RCTView)
 {
   if ([view respondsToSelector:@selector(setValidKeysDown:)]) {

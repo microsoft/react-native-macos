@@ -103,6 +103,13 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
   return _settings[key];
 }
 
+// [TODO(macOS ISS#2323203)
+- (NSArray<NSString *> *)overridenKeys
+{
+  return [_settings allKeys];
+}
+// ]TODO(macOS ISS#2323203)
+
 - (void)_reloadWithDefaults:(NSDictionary *)defaultValues
 {
   NSDictionary *existingSettings = [_userDefaults objectForKey:kRCTDevSettingsUserDefaultsKey];
@@ -112,7 +119,11 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
       _settings[key] = defaultValues[key];
     }
   }
-  [_userDefaults setObject:_settings forKey:kRCTDevSettingsUserDefaultsKey];
+
+  // TODO(macOS ISS#2323203): protect against race conditions where another thread holds a mutext trying to set this at the same time
+  RCTExecuteOnMainQueue(^{
+    [self->_userDefaults setObject:self->_settings forKey:kRCTDevSettingsUserDefaultsKey];
+  });
 }
 
 @end
@@ -501,6 +512,8 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
 @end
 
 @implementation RCTDevSettings
+
+RCT_EXPORT_MODULE()	// TODO(macOS ISS#2323203)
 
 - (instancetype)initWithDataSource:(id<RCTDevSettingsDataSource>)dataSource
 {
