@@ -145,10 +145,10 @@ exports.examples = [
       return <KeyViewLoopExample />;
     },
   },
-  // {
-  //   title: 'FocusTrapExample',
-  //   render: function(): React.Element<any> {
-  //     return <FocusTrapExample />;
-  //   },
-  // },
+  {
+    title: 'FocusTrapExample',
+    render: function(): React.Element<any> {
+      return <FocusTrapExample />;
+    },
+  },
 ];

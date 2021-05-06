@@ -68,6 +68,18 @@ static NSString *RCTNativeIDRegistryKey(NSString *nativeID, NSNumber *rootTag)
 NSString *const RCTUIManagerWillUpdateViewsDueToContentSizeMultiplierChangeNotification =
     @"RCTUIManagerWillUpdateViewsDueToContentSizeMultiplierChangeNotification";
 
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+static NSArray<NSView *> *RCTGetAllSubviews(NSView *view)
+{
+	NSMutableArray *allSubviews = [NSMutableArray arrayWithObject:view];
+	NSArray *subviews = [view subviews];
+	for (NSView *view in subviews) {
+		[allSubviews addObjectsFromArray:RCTGetAllSubviews(view)];
+	}
+	return [allSubviews copy];
+}
+#endif
+
 @implementation RCTUIManager {
   // Root views are only mutated on the shadow queue
   NSMutableSet<NSNumber *> *_rootViewTags;
@@ -1194,13 +1206,20 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand
   }];
 
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
-    RCTExecuteOnMainQueue(^{
-        for (NSNumber *reactTag in self->_rootViewTags) {
-          RCTView *view = [self viewForReactTag:reactTag];
-          if ([view nextKeyViewID] != nil) {
-            RCTUIView *nextKeyView = [self viewForNativeID:[view nextKeyViewID] withRootTag:[view rootTag]];
-            [view setNextKeyView:nextKeyView];
-          }
+	RCTExecuteOnMainQueue(^{
+		for (NSNumber *reactTag in self->_rootViewTags) {
+			NSView *view = [self viewForReactTag:reactTag];
+			
+			NSArray *subviews = RCTGetAllSubviews(view);
+			
+			for (RCTView *view in subviews) {
+				if ([view isKindOfClass:[RCTView class]]) {
+					if ([view nextKeyViewID] != nil) {
+						RCTUIView *nextKeyView = [self viewForNativeID:[view nextKeyViewID] withRootTag:[view rootTag]];
+						[view setNextKeyView:nextKeyView];
+					}
+				}
+			}
         }
     });
 
