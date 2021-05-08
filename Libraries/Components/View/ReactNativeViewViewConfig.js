@@ -352,6 +352,7 @@ const ReactNativeViewConfig = {
     validKeysDown: true,
     validKeysUp: true,
     nextKeyViewID: true,
+    nextKeyViewRef: true,
     width: true,
     zIndex: true,
   },

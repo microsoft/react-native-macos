@@ -44,6 +44,8 @@
 #import "UIView+React.h"
 #import "RCTDeviceInfo.h" // TODO(macOS ISS#2323203)
 
+#import "React/RCTSinglelineTextInputView.h"
+
 #import <React/RCTUIKit.h>
 
 void RCTTraverseViewNodes(id<RCTComponent> view, void (^block)(id<RCTComponent>)) // TODO(OSS Candidate ISS#2710739)
@@ -1105,6 +1107,39 @@ RCT_EXPORT_METHOD(blur : (nonnull NSNumber *)reactTag)
   }];
 }
 
+RCT_EXPORT_METHOD(setNextKeyView
+                  : (nonnull NSNumber *)reactTag
+                  : (nonnull NSNumber *)nextKeyViewTag)
+{
+    RCTExecuteOnMainQueue(^{
+        NSView *view = [self viewForReactTag:reactTag];
+        NSView *nextKeyView = [self viewForReactTag:nextKeyViewTag];
+        
+        if (nextKeyView) {
+            NSView *targetView = view;
+            // The TextInput component is implemented as a RCTUITextField wrapped by a RCTSinglelineTextInputView,
+            // so we need to get the first subview to properly transfer focus
+            if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
+                targetView = [[view subviews] firstObject];
+            }
+            if ([nextKeyView isKindOfClass:[RCTSinglelineTextInputView class]]) {
+                nextKeyView = [[nextKeyView subviews] firstObject];
+            }
+            [targetView setNextKeyView:nextKeyView];
+        }
+    });
+}
+
+RCT_EXPORT_METHOD(recalculateKeyViewLoop
+                  : (nonnull NSNumber *)reactTag)
+{
+    RCTExecuteOnMainQueue(^{
+        NSView *view = [self viewForReactTag:reactTag];
+        [[view window] recalculateKeyViewLoop];
+    });
+}
+
+
 RCT_EXPORT_METHOD(findSubviewIn
                   : (nonnull NSNumber *)reactTag atPoint
                   : (CGPoint)point callback
@@ -1205,25 +1240,24 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand
     [self->_observerCoordinator uiManagerDidPerformMounting:self];
   }];
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
-	RCTExecuteOnMainQueue(^{
-		for (NSNumber *reactTag in self->_rootViewTags) {
-			NSView *view = [self viewForReactTag:reactTag];
-			
-			NSArray *subviews = RCTGetAllSubviews(view);
-			
-			for (RCTView *view in subviews) {
-				if ([view isKindOfClass:[RCTView class]]) {
-					if ([view nextKeyViewID] != nil) {
-						RCTUIView *nextKeyView = [self viewForNativeID:[view nextKeyViewID] withRootTag:[view rootTag]];
-						[view setNextKeyView:nextKeyView];
-					}
-				}
-			}
-        }
-    });
-
-#endif
+//#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+//	RCTExecuteOnMainQueue(^{
+//		for (NSNumber *reactTag in self->_rootViewTags) {
+//			NSView *view = [self viewForReactTag:reactTag];
+//			
+//			NSArray *subviews = RCTGetAllSubviews(view);
+//			
+//			for (RCTView *view in subviews) {
+//				if ([view isKindOfClass:[RCTView class]]) {
+//                    if ([view nextKeyViewID] != nil) {
+//						RCTUIView *nextKeyView = [self viewForNativeID:[view nextKeyViewID] withRootTag:[view rootTag]];
+//						[view setNextKeyView:nextKeyView];
+//					}
+//				}
+//			}
+//        }
+//    });
+//#endif
     
 }
 

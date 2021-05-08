@@ -70,6 +70,7 @@ type Props = $ReadOnly<{|
   validKeysDown?: ?Array<string>,
   validKeysUp?: ?Array<string>,
   nextKeyViewID?: ?string,
+  nextKeyViewRef?: ?number,
   onLayout?: ?(event: LayoutEvent) => mixed,
   onLongPress?: ?(event: PressEvent) => mixed,
   onPress?: ?(event: PressEvent) => mixed,
@@ -117,6 +118,7 @@ const PASSTHROUGH_PROPS = [
   'validKeysDown',
   'validKeysUp',
   'nextKeyViewID',
+  'nextKeyViewRef',
   'onLayout',
   'onMouseEnter', // [TODO(macOS ISS#2323203)
   'onMouseLeave',
@@ -243,6 +245,7 @@ function createPressabilityConfig(props: Props): PressabilityConfig {
     validKeysDown: props.validKeysDown,
     validKeysUp: props.validKeysUp,
     nextKeyViewID: props.nextKeyViewID,
+    nextKeyViewRef: props.nextKeyViewRef,
     onLongPress: props.onLongPress,
     onPress: props.onPress,
     onPressIn: props.onPressIn,

@@ -52,6 +52,7 @@ const ReactNativeViewViewConfigMacOS = {
     validKeysDown: true,
     validKeysUp: true,
     nextKeyViewID: true,
+    nextKeyViewRef: true,
     onMouseEnter: true,
     onMouseLeave: true,
     tooltip: true,

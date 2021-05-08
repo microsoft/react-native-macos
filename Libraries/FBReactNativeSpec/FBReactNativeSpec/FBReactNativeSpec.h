@@ -2759,6 +2759,9 @@ namespace JS {
                 error:(RCTResponseSenderBlock)error
               success:(RCTResponseSenderBlock)success;
 - (void)dismissPopupMenu;
+- (void)setNextKeyView:(NSNumber *)reactTag
+                      :(NSNumber *)nextKeyViewTag;
+- (void)recalculateKeyViewLoop:(NSNumber *)reactTag;
 - (facebook::react::ModuleConstants<JS::NativeUIManager::Constants::Builder>)constantsToExport;
 - (facebook::react::ModuleConstants<JS::NativeUIManager::Constants::Builder>)getConstants;
 

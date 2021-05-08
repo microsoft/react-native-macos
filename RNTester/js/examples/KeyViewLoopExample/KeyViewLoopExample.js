@@ -29,7 +29,6 @@ class KeyViewLoopExample extends React.Component<{}, State> {
     const secondKeyViewID = 'secondKeyView';
     const thirdKeyViewID = 'thirdKeyView';
     const fourthKeyViewID = 'fourthKeyView';
-    const notAKeyViewID = 'notAKeyViewID';
 
     return (
       <View>
@@ -69,17 +68,9 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 focusable={true}
                 enableFocusRing={true}
                 nativeID={fourthKeyViewID}
-                nextKeyViewID={notAKeyViewID}
                 source={{
                   uri: 'https://reactnative.dev/img/tiny_logo.png',
                 }}
-              />
-              <Button
-                title="Button cannot be a key view"
-                focusable={true}
-                enableFocusRing={true}
-                nativeID={notAKeyViewID}
-                // nextKeyViewID={firstKeyViewID}
               />
             </View>
           ) : null}
@@ -136,19 +127,174 @@ var styles = StyleSheet.create({
   },
 });
 
+class KeyViewLoopRefExample extends React.Component<{}, State> {
+  firstButtonRef = React.createRef();
+  secondButtonRef = React.createRef();
+  thirdButtonRef = React.createRef();
+
+  componentDidMount() {
+    console.log('componentDidMount');
+
+    this.firstButtonRef.current.setNativeProps({
+      nextKeyViewRef: findNodeHandle(this.secondButtonRef.current),
+    });
+    this.secondButtonRef.current.setNativeProps({
+      nextKeyViewRef: findNodeHandle(this.thirdButtonRef.current),
+    });
+    this.thirdButtonRef.current.setNativeProps({
+      nextKeyViewRef: findNodeHandle(this.firstButtonRef.current),
+    });
+  }
+
+  render() {
+    console.log('render');
+    return (
+      <View>
+        <Text>
+          Key-view loops allow custom control of keyboard accessibility to
+          navigate between controls.
+        </Text>
+        <View>
+          {Platform.OS === 'macos' ? (
+            <View>
+              <View
+                style={{height: 100, width: 100, margin: 20}}
+                focusable={true}
+                enableFocusRing={true}
+                ref={this.firstButtonRef}
+                onFocus={() => {
+                  console.log('First View Focus!');
+                }}>
+                <Text>First View</Text>
+              </View>
+              <View
+                style={{height: 100, width: 100, margin: 20}}
+                focusable={true}
+                enableFocusRing={true}
+                ref={this.thirdButtonRef}
+                onFocus={() => {
+                  console.log('Third View Focus!');
+                }}>
+                <Text>Third View</Text>
+              </View>
+              <View
+                style={{height: 100, width: 100, margin: 20}}
+                focusable={true}
+                enableFocusRing={true}
+                ref={this.secondButtonRef}
+                onFocus={() => {
+                  console.log('Second View Focus!');
+                }}>
+                <Text>Second View</Text>
+              </View>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+}
+
+class KeyViewLoopViewManagerExample extends React.Component<{}, State> {
+  firstButtonRef = React.createRef();
+  secondButtonRef = React.createRef();
+  thirdButtonRef = React.createRef();
+
+  componentDidMount() {
+    console.log('componentDidMount');
+
+    this.firstButtonRef.current.setNativeProps({
+      nextKeyViewRef: findNodeHandle(this.secondButtonRef.current),
+    });
+    this.secondButtonRef.current.setNativeProps({
+      nextKeyViewRef: findNodeHandle(this.thirdButtonRef.current),
+    });
+    this.thirdButtonRef.current.setNativeProps({
+      nextKeyViewRef: findNodeHandle(this.firstButtonRef.current),
+    });
+
+    if (this.firstButtonRef && this.firstButtonRef.current) {
+      // console.log("focus")
+      // this.firstButtonRef.current.focus();
+      // this.firstButtonRef.current.recalculateKeyViewLoop();
+    }
+  }
+
+  render() {
+    console.log('render');
+    return (
+      <View>
+        <Text>
+          Key-view loops allow custom control of keyboard accessibility to
+          navigate between controls.
+        </Text>
+        <View>
+          {Platform.OS === 'macos' ? (
+            <View>
+              <View
+                style={{height: 100, width: 100, margin: 20}}
+                focusable={true}
+                enableFocusRing={true}
+                ref={this.firstButtonRef}
+                onFocus={() => {
+                  console.log('First View Focus!');
+                }}>
+                <Text>First View</Text>
+              </View>
+              <View
+                style={{height: 100, width: 100, margin: 20}}
+                focusable={true}
+                enableFocusRing={true}
+                ref={this.thirdButtonRef}
+                onFocus={() => {
+                  console.log('Third View Focus!');
+                }}>
+                <Text>Third View</Text>
+              </View>
+              <View
+                style={{height: 100, width: 100, margin: 20}}
+                focusable={true}
+                enableFocusRing={true}
+                ref={this.secondButtonRef}
+                onFocus={() => {
+                  console.log('Second View Focus!');
+                  this.secondButtonRef.current.recalculateKeyViewLoop();
+                }}>
+                <Text>Second View</Text>
+              </View>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+}
+
 exports.title = 'Key View Loop';
 exports.description = 'Examples that show how key-view loops can be used.';
 exports.examples = [
   {
-    title: 'KeyViewLoopExample',
+    title: 'KeyViewLoopViewManagerExample',
     render: function(): React.Element<any> {
-      return <KeyViewLoopExample />;
+      return <KeyViewLoopViewManagerExample />;
     },
   },
-  {
-    title: 'FocusTrapExample',
-    render: function(): React.Element<any> {
-      return <FocusTrapExample />;
-    },
-  },
+  // {
+  //   title: 'KeyViewLoopRefExample',
+  //   render: function(): React.Element<any> {
+  //     return <KeyViewLoopRefExample />;
+  //   },
+  // },
+  // {
+  //   title: 'KeyViewLoopExample',
+  //   render: function(): React.Element<any> {
+  //     return <KeyViewLoopExample />;
+  //   },
+  // },
+  // {
+  //   title: 'FocusTrapExample',
+  //   render: function(): React.Element<any> {
+  //     return <FocusTrapExample />;
+  //   },
+  // },
 ];

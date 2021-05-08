@@ -90,6 +90,8 @@ export type NativeMethods = {
     onFail?: () => void,
   ): void,
   setNativeProps(nativeProps: Object): void,
+  setNextKeyView(nextKeyView: number): void,
+  recalculateKeyViewLoop(): void,
   ...
 };
 

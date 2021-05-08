@@ -1777,15 +1777,6 @@ if (tabKeyValidityCheck) {
     [super keyUp:event];
   }
 }
-
-
-- (void)setNextKeyView:(NSView *)nextKeyView {
-    [super setNextKeyView:nextKeyView];
-}
-
-- (NSView *)nextKeyView {
-  return [super nextKeyView];
-}
 #endif // TARGET_OS_OSX
 
 @end

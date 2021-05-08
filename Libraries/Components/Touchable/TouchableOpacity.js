@@ -53,9 +53,14 @@ type Props = $ReadOnly<{|
   validKeysUp?: ?Array<string>,
 
   /**
-   * The view object that follows the current view in the key view loop.
+   * The NativeID of the view that follows the current view in the key view loop.
    */
-  nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
+   nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
+
+  /**
+   * The ref of the view that follows the current view in the key view loop.
+   */
+  nextKeyViewRef?: ?number, // TODO(macOS ISS#2323203)
 |}>;
 
 type State = $ReadOnly<{|
@@ -194,6 +199,7 @@ class TouchableOpacity extends React.Component<Props, State> {
       validKeysDown: this.props.validKeysDown,
       validKeysUp: this.props.validKeysUp,
       nextKeyViewID: this.props.nextKeyViewID,
+      nextKeyViewRef: this.props.nextKeyViewRef,
       onLongPress: this.props.onLongPress,
       onPress: this.props.onPress,
       onPressIn: event => {
@@ -313,6 +319,7 @@ class TouchableOpacity extends React.Component<Props, State> {
         validKeysDown={this.props.validKeysDown}
         validKeysUp={this.props.validKeysUp}
         nextKeyViewID={this.props.nextKeyViewID}
+        nextKeyViewRef={this.props.nextKeyViewRef}
         draggedTypes={this.props.draggedTypes} // ]TODO(macOS ISS#2323203)
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
