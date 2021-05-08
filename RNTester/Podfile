@@ -13,7 +13,7 @@ if ENV['USE_FRAMEWORKS'] == '1'
   use_frameworks!
 end
 
-def pods(options = {})
+def pods(o tions = {})
   project 'RNTesterPods.xcodeproj'
 
   # Enable TurboModule
@@ -34,7 +34,7 @@ end
 
 target 'RNTester' do
   pods()
-  # use_flipper!
+  use_flipper!
 end
 
 target 'RNTesterUnitTests' do
@@ -81,6 +81,6 @@ target 'macOSBuild' do
 end
 # ]TODO(macOS ISS#2323203)
 
-# post_install do |installer|
-#   flipper_post_install(installer)
-#end
+post_install do |installer|
+  flipper_post_install(installer)
+end

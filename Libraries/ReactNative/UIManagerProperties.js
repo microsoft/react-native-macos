@@ -63,6 +63,4 @@ module.exports = [
   'genericBubblingEventTypes',
   'genericDirectEventTypes',
   'lazilyLoadView',
-  'setNextKeyView',
-  'recalculateKeyViewLoop',
 ];

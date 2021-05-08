@@ -87,9 +87,6 @@
 #endif
   RCTBackedTextFieldDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
-//    __weak NSView *_nextKeyView;
-#endif // ]TODO(macOS ISS#2323203)
 }
 
 #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
@@ -447,18 +444,6 @@
   }
   return isFirstResponder;
 }
-
-//- (void)setNextKeyView:(NSView *)nextKeyView {
-//  _nextKeyView = nextKeyView;
-//}
-//
-//- (__weak NSView *)nextKeyView {
-//        if (_nextKeyView) {
-//    return _nextKeyView;
-//  }
-//  return [super nextKeyView];
-//}
-
 #endif // ]TODO(macOS ISS#2323203)
 	
 #if !TARGET_OS_OSX // TODO(macOS ISS#2323203)

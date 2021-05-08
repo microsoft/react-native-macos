@@ -117,10 +117,6 @@ export interface Spec extends TurboModule {
     success: (event: string, selected?: number) => void,
   ) => void;
   +dismissPopupMenu: () => void;
-
-  // //macOS only
-  +setNextKeyView: (reactTag: ?number, nextKeyViewTag: ?number) => void;
-  +recalculateKeyViewLoop: (reactTag: ?number) => void;
 }
 
 export default (TurboModuleRegistry.getEnforcing<Spec>('UIManager'): Spec);
