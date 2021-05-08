@@ -890,11 +890,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
   }
 }
 
-//- (void)insertReactSubview:(NSView *)subview atIndex:(NSInteger)atIndex
-//{
-//    
-//}
-
 - (void)setRemoveClippedSubviews:(BOOL)removeClippedSubviews
 {
   if (!removeClippedSubviews && _removeClippedSubviews) {

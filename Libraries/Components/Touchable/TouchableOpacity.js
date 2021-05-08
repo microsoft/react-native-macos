@@ -55,7 +55,7 @@ type Props = $ReadOnly<{|
   /**
    * The NativeID of the view that follows the current view in the key view loop.
    */
-   nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
+  nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
 
   /**
    * The ref of the view that follows the current view in the key view loop.

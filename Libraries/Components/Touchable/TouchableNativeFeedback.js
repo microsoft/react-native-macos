@@ -95,9 +95,14 @@ type Props = $ReadOnly<{|
   validKeysUp?: ?Array<string>,
 
   /**
-  * The view object that follows the current view in the key view loop.
-  */
+   * The view object that follows the current view in the key view loop.
+   */
   nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
+
+  /**
+   * The ref of the view that follows the current view in the key view loop.
+   */
+  nextKeyViewRef?: ?number, // TODO(macOS ISS#2323203)
 
   /**
    * Set to true to add the ripple effect to the foreground of the view, instead
@@ -317,6 +322,7 @@ class TouchableNativeFeedback extends React.Component<Props, State> {
         validKeysDown: this.props.validKeysDown,
         validKeysUp: this.props.validKeysUp,
         nextKeyViewID: this.props.nextKeyViewID,
+        nextKeyViewRef: this.props.nextKeyViewRef,
       },
       ...children,
     );

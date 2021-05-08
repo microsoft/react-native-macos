@@ -13,7 +13,7 @@ if ENV['USE_FRAMEWORKS'] == '1'
   use_frameworks!
 end
 
-def pods(o tions = {})
+def pods(options = {})
   project 'RNTesterPods.xcodeproj'
 
   # Enable TurboModule
