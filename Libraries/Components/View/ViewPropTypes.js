@@ -602,7 +602,7 @@ export type ViewProps = $ReadOnly<{|
   /**
    * The react tag of the view that follows the current view in the key view loop.
    */
-  nextKeyViewTag?: ?number, // TODO(macOS ISS#2323203)
+  nextKeyViewTag?: ?number, // TODO(macOS GH#768)
 
   /**
    * Specifies whether focus ring should be drawn when the view has the first responder status.

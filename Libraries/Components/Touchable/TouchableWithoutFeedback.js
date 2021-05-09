@@ -116,7 +116,7 @@ const PASSTHROUGH_PROPS = [
   'onKeyUp',
   'validKeysDown',
   'validKeysUp',
-  'nextKeyViewTag',
+  'nextKeyViewTag', // TODO(macOS GH#768)
   'onLayout',
   'onMouseEnter', // [TODO(macOS ISS#2323203)
   'onMouseLeave',

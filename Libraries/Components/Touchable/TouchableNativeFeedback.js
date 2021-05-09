@@ -97,7 +97,7 @@ type Props = $ReadOnly<{|
   /**
    * The react tag of the view that follows the current view in the key view loop.
    */
-  nextKeyViewTag?: ?number, // TODO(macOS ISS#2323203)
+  nextKeyViewTag?: ?number, // TODO(macOS GH#768)
 
   /**
    * Set to true to add the ripple effect to the foreground of the view, instead

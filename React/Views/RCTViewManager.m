@@ -496,7 +496,7 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
     view.validKeysUp = [RCTConvert NSArray:json];
   }
 }
-
+// [TODO(macOS GH#768)
 RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTag, NSNumber, RCTView)
 {
     NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
@@ -527,7 +527,7 @@ RCT_EXPORT_METHOD(recalculateKeyViewLoop: (nonnull NSNumber *)reactTag)
         [[view window] recalculateKeyViewLoop];
     }];
 }
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#768)
 
 #pragma mark - ShadowView properties
 

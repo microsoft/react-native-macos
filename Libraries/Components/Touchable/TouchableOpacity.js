@@ -55,7 +55,7 @@ type Props = $ReadOnly<{|
   /**
    * The react tag of the view that follows the current view in the key view loop.
    */
-  nextKeyViewTag?: ?number, // TODO(macOS ISS#2323203)
+  nextKeyViewTag?: ?number, // TODO(macOS GH#768)
 |}>;
 
 type State = $ReadOnly<{|
@@ -312,7 +312,7 @@ class TouchableOpacity extends React.Component<Props, State> {
         onKeyUp={this.props.onKeyUp}
         validKeysDown={this.props.validKeysDown}
         validKeysUp={this.props.validKeysUp}
-        nextKeyViewTag={this.props.nextKeyViewTag}
+        nextKeyViewTag={this.props.nextKeyViewTag} // TODO(macOS GH#768)
         draggedTypes={this.props.draggedTypes} // ]TODO(macOS ISS#2323203)
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
