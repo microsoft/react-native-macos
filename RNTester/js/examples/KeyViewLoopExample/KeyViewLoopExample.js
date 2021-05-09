@@ -133,11 +133,8 @@ var styles = StyleSheet.create({
   },
 });
 
-
-
 exports.title = 'Key View Loop';
-exports.description =
-  'Examples that show how key-view loops can be used.';
+exports.description = 'Examples that show how key-view loops can be used.';
 exports.examples = [
   {
     title: 'Key View Loop Example',
