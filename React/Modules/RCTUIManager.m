@@ -43,6 +43,7 @@
 #import "RCTViewManager.h"
 #import "UIView+React.h"
 #import "RCTDeviceInfo.h" // TODO(macOS ISS#2323203)
+#import "RCTUIKit.h" // TODO(macOS GH#~~)
 
 #import <React/RCTUIKit.h>
 

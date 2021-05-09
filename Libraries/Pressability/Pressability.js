@@ -117,14 +117,9 @@ export type PressabilityConfig = $ReadOnly<{|
   validKeysUp?: ?Array<string>,
 
   /**
-   * The NativeID of the view that follows the current view in the key view loop.
+   * The react tag of the view that follows the current view in the key view loop.
    */
-  nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
-
-  /**
-   * The ref of the view that follows the current view in the key view loop.
-   */
-  nextKeyViewRef?: ?number, // TODO(macOS ISS#2323203)
+  nextKeyViewTag?: ?number, // TODO(macOS GH#~~)
 
   /**
    * Called when the hover is activated to provide visual feedback.

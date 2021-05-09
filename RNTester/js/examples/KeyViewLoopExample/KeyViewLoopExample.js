@@ -21,15 +21,25 @@ const {
   StyleSheet,
   findNodeHandle,
   Image,
+  UIManager,
 } = ReactNative;
 
 class KeyViewLoopExample extends React.Component<{}, State> {
-  render() {
-    const firstKeyViewID = 'firstKeyView';
-    const secondKeyViewID = 'secondKeyView';
-    const thirdKeyViewID = 'thirdKeyView';
-    const fourthKeyViewID = 'fourthKeyView';
+  firstViewRef = React.createRef();
+  secondViewRef = React.createRef();
+  thirdViewRef = React.createRef();
+  fourthViewRef = React.createRef();
 
+  recalculateKeyViewLoop = () => {
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      UIManager.getViewManagerConfig('RCTView').Commands.recalculateKeyViewLoop,
+      [],
+    );
+  };
+
+  render() {
+    console.log('render');
     return (
       <View>
         <Text>
@@ -43,34 +53,42 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 style={{height: 20, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
-                nativeID={firstKeyViewID}
-                nextKeyViewID={secondKeyViewID}>
+                ref={this.firstViewRef}
+                onFocus={() => {
+                  this.firstViewRef.current.setNativeProps({
+                    nextKeyViewTag: findNodeHandle(this.secondViewRef.current),
+                  });
+                }}>
                 <Text>First View</Text>
               </View>
               <View
                 style={{height: 20, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
-                nativeID={thirdKeyViewID}
-                nextKeyViewID={fourthKeyViewID}>
+                ref={this.thirdViewRef}
+                onFocus={() => {
+                  this.thirdViewRef.current.setNativeProps({
+                    nextKeyViewTag: findNodeHandle(this.fourthViewRef.current),
+                  });
+                }}>
                 <Text>Third View</Text>
               </View>
               <View
                 style={{height: 20, width: 100, margin: 20}}
                 focusable={true}
                 enableFocusRing={true}
-                nativeID={secondKeyViewID}
-                nextKeyViewID={thirdKeyViewID}>
+                ref={this.secondViewRef}
+                onFocus={() => {
+                  this.secondViewRef.current.setNativeProps({
+                    nextKeyViewTag: findNodeHandle(this.thirdViewRef.current),
+                  });
+                }}>
                 <Text>Second View</Text>
               </View>
-              <Image
-                style={{height: 100, width: 100, margin: 20}}
-                focusable={true}
-                enableFocusRing={true}
-                nativeID={fourthKeyViewID}
-                source={{
-                  uri: 'https://reactnative.dev/img/tiny_logo.png',
-                }}
+              <Button
+                title={'Fourth View'}
+                ref={this.fourthViewRef}
+                onPress={() => {}}
               />
             </View>
           ) : null}
@@ -80,8 +98,9 @@ class KeyViewLoopExample extends React.Component<{}, State> {
   }
 }
 class FocusTrapExample extends React.Component<{}, {}> {
+  trapZoneBeginRef = React.createRef();
+  trapZoneEndRef = React.createRef();
   render() {
-    const nextKeyViewID = 'inputView4';
     return (
       <View>
         <Text>Focus trap example.</Text>
@@ -90,13 +109,18 @@ class FocusTrapExample extends React.Component<{}, {}> {
         <TextInput placeholder={'Focusable 3'} style={styles.textInput} />
         <Text>Begin focus trap:</Text>
         <TextInput
-          nativeID={nextKeyViewID}
+          ref={this.trapZoneBeginRef}
           placeholder={'Focusable 4'}
           style={styles.textInput}
         />
         <TextInput placeholder={'Focusable 5'} style={styles.textInput} />
         <TextInput
-          nextKeyViewID={nextKeyViewID}
+          ref={this.trapZoneEndRef}
+          onFocus={() => {
+            this.trapZoneEndRef.current.setNativeProps({
+              nextKeyViewTag: findNodeHandle(this.trapZoneBeginRef.current),
+            });
+          }}
           placeholder={'Focusable 6'}
           style={styles.textInput}
         />
@@ -127,174 +151,22 @@ var styles = StyleSheet.create({
   },
 });
 
-class KeyViewLoopRefExample extends React.Component<{}, State> {
-  firstButtonRef = React.createRef();
-  secondButtonRef = React.createRef();
-  thirdButtonRef = React.createRef();
 
-  componentDidMount() {
-    console.log('componentDidMount');
-
-    this.firstButtonRef.current.setNativeProps({
-      nextKeyViewRef: findNodeHandle(this.secondButtonRef.current),
-    });
-    this.secondButtonRef.current.setNativeProps({
-      nextKeyViewRef: findNodeHandle(this.thirdButtonRef.current),
-    });
-    this.thirdButtonRef.current.setNativeProps({
-      nextKeyViewRef: findNodeHandle(this.firstButtonRef.current),
-    });
-  }
-
-  render() {
-    console.log('render');
-    return (
-      <View>
-        <Text>
-          Key-view loops allow custom control of keyboard accessibility to
-          navigate between controls.
-        </Text>
-        <View>
-          {Platform.OS === 'macos' ? (
-            <View>
-              <View
-                style={{height: 100, width: 100, margin: 20}}
-                focusable={true}
-                enableFocusRing={true}
-                ref={this.firstButtonRef}
-                onFocus={() => {
-                  console.log('First View Focus!');
-                }}>
-                <Text>First View</Text>
-              </View>
-              <View
-                style={{height: 100, width: 100, margin: 20}}
-                focusable={true}
-                enableFocusRing={true}
-                ref={this.thirdButtonRef}
-                onFocus={() => {
-                  console.log('Third View Focus!');
-                }}>
-                <Text>Third View</Text>
-              </View>
-              <View
-                style={{height: 100, width: 100, margin: 20}}
-                focusable={true}
-                enableFocusRing={true}
-                ref={this.secondButtonRef}
-                onFocus={() => {
-                  console.log('Second View Focus!');
-                }}>
-                <Text>Second View</Text>
-              </View>
-            </View>
-          ) : null}
-        </View>
-      </View>
-    );
-  }
-}
-
-class KeyViewLoopViewManagerExample extends React.Component<{}, State> {
-  firstButtonRef = React.createRef();
-  secondButtonRef = React.createRef();
-  thirdButtonRef = React.createRef();
-
-  componentDidMount() {
-    console.log('componentDidMount');
-
-    this.firstButtonRef.current.setNativeProps({
-      nextKeyViewRef: findNodeHandle(this.secondButtonRef.current),
-    });
-    this.secondButtonRef.current.setNativeProps({
-      nextKeyViewRef: findNodeHandle(this.thirdButtonRef.current),
-    });
-    this.thirdButtonRef.current.setNativeProps({
-      nextKeyViewRef: findNodeHandle(this.firstButtonRef.current),
-    });
-
-    if (this.firstButtonRef && this.firstButtonRef.current) {
-      // console.log("focus")
-      // this.firstButtonRef.current.focus();
-      // this.firstButtonRef.current.recalculateKeyViewLoop();
-    }
-  }
-
-  render() {
-    console.log('render');
-    return (
-      <View>
-        <Text>
-          Key-view loops allow custom control of keyboard accessibility to
-          navigate between controls.
-        </Text>
-        <View>
-          {Platform.OS === 'macos' ? (
-            <View>
-              <View
-                style={{height: 100, width: 100, margin: 20}}
-                focusable={true}
-                enableFocusRing={true}
-                ref={this.firstButtonRef}
-                onFocus={() => {
-                  console.log('First View Focus!');
-                }}>
-                <Text>First View</Text>
-              </View>
-              <View
-                style={{height: 100, width: 100, margin: 20}}
-                focusable={true}
-                enableFocusRing={true}
-                ref={this.thirdButtonRef}
-                onFocus={() => {
-                  console.log('Third View Focus!');
-                }}>
-                <Text>Third View</Text>
-              </View>
-              <View
-                style={{height: 100, width: 100, margin: 20}}
-                focusable={true}
-                enableFocusRing={true}
-                ref={this.secondButtonRef}
-                onFocus={() => {
-                  console.log('Second View Focus!');
-                  this.secondButtonRef.current.recalculateKeyViewLoop();
-                }}>
-                <Text>Second View</Text>
-              </View>
-            </View>
-          ) : null}
-        </View>
-      </View>
-    );
-  }
-}
 
 exports.title = 'Key View Loop';
-exports.description = 'Examples that show how key-view loops can be used.';
+exports.description =
+  'Examples that show how key-view loops can be used.';
 exports.examples = [
   {
-    title: 'KeyViewLoopViewManagerExample',
+    title: 'KeyViewLoopExample',
     render: function(): React.Element<any> {
-      return <KeyViewLoopViewManagerExample />;
+      return <KeyViewLoopExample />;
     },
   },
-  // {
-  //   title: 'KeyViewLoopRefExample',
-  //   render: function(): React.Element<any> {
-  //     return <KeyViewLoopRefExample />;
-  //   },
-  // },
-  // {
-  //   title: 'KeyViewLoopExample',
-  //   render: function(): React.Element<any> {
-  //     return <KeyViewLoopExample />;
-  //   },
-  // },
-  // {
-  //   title: 'FocusTrapExample',
-  //   render: function(): React.Element<any> {
-  //     return <FocusTrapExample />;
-  //   },
-  // },
+  {
+    title: 'FocusTrapExample',
+    render: function(): React.Element<any> {
+      return <FocusTrapExample />;
+    },
+  },
 ];

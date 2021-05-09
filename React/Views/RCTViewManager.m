@@ -497,62 +497,36 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
   }
 }
 
-RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewID, NSString, RCTView)
+RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTag, NSNumber, RCTView)
 {
-    [view setNextKeyViewID:[RCTConvert NSString:json]];
+    NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
     
-    
-  __weak RCTViewManager *weakSelf = self;
-  [_bridge.uiManager rootViewForReactTag:view.reactTag withCompletion:^(NSView *rootView) {
-    RCTViewManager *strongSelf = weakSelf;
-    if (rootView) {
-      RCTUIView *nextKeyView = [strongSelf->_bridge.uiManager viewForNativeID:json
-                                                               withRootTag:[rootView reactTag]];
-        if (nextKeyView) {
-        RCTView *targetView = view;
-        // The TextInput component is implemented as a RCTUITextField wrapped by a RCTSinglelineTextInputView,
-        // so we need to get the first subview to properly transfer focus
-        if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
-            targetView = [[view subviews] firstObject];
-        }
-        if ([nextKeyView isKindOfClass:[RCTSinglelineTextInputView class]]) {
-            nextKeyView = [[nextKeyView subviews] firstObject];
-        }
-        [targetView setNextKeyView:nextKeyView];
-      }
-    }
-  }];
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewRef, NSNumber, RCTView)
-{
-     RCTExecuteOnMainQueue(^{
-         NSView *nextKeyView = [self->_bridge.uiManager viewForReactTag:json];
-         
-         if (nextKeyView) {
-             NSView *targetView = view;
-             // The TextInput component is implemented as a RCTUITextField wrapped by a RCTSinglelineTextInputView,
-             // so we need to get the first subview to properly transfer focus
-             if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
-                 targetView = [[view subviews] firstObject];
-             }
-             if ([nextKeyView isKindOfClass:[RCTSinglelineTextInputView class]]) {
-                 nextKeyView = [[nextKeyView subviews] firstObject];
-             }
-             [targetView setNextKeyView:nextKeyView];
+    RCTUIManager *uiManager = [[self bridge] uiManager];
+    NSView *nextKeyView = [uiManager viewForReactTag:nextKeyViewTag];
+     if (nextKeyView) {
+         NSView *targetView = view;
+         // The TextInput component is implemented as a RCTUITextField wrapped by a RCTSinglelineTextInputView,
+         // so we need to get the first subview to properly transfer focus
+         if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
+             targetView = [[view subviews] firstObject];
          }
-     });
+         if ([nextKeyView isKindOfClass:[RCTSinglelineTextInputView class]]) {
+             nextKeyView = [[nextKeyView subviews] firstObject];
+         }
+         [targetView setNextKeyView:nextKeyView];
+     }
 }
 
-RCT_EXPORT_METHOD(recalculateKeyViewLoop
-                  : (nonnull NSNumber *)reactTag)
+RCT_EXPORT_METHOD(recalculateKeyViewLoop: (nonnull NSNumber *)reactTag)
 {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
       RCTUIView *view = viewRegistry[reactTag];
-      [[view window] recalculateKeyViewLoop];
+        if (!view) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+        }
+        [[view window] recalculateKeyViewLoop];
     }];
 }
-
 #endif // ]TODO(macOS ISS#2323203)
 
 #pragma mark - ShadowView properties

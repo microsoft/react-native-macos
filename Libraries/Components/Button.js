@@ -156,14 +156,9 @@ type ButtonProps = $ReadOnly<{|
   validKeysUp?: ?Array<string>,
 
   /**
-   * The NativeID of the view that follows the current view in the key view loop.
+   * The react tag of the view that follows the current view in the key view loop.
    */
-  nextKeyViewID?: ?string, // TODO(macOS ISS#2323203)
-
-  /**
-   * The ref of the view that follows the current view in the key view loop.
-   */
-  nextKeyViewRef?: ?number, // TODO(macOS ISS#2323203)
+  nextKeyViewTag?: ?number, // TODO(macOS ISS#2323203)
 
   /*
    * Specifies the Tooltip for the view
@@ -226,8 +221,7 @@ class Button extends React.Component<ButtonProps> {
       onKeyUp,
       validKeysDown,
       validKeysUp,
-      nextKeyViewID, // TODO(OSS Candidate GH#~~~)
-      nextKeyViewRef, // TODO(OSS Candidate GH#~~~)
+      nextKeyViewTag, // TODO(OSS Candidate GH#~~~)
       tooltip,
     } = this.props;
     const buttonStyles = [styles.button];
@@ -279,8 +273,7 @@ class Button extends React.Component<ButtonProps> {
         onKeyUp={onKeyUp}
         validKeysDown={validKeysDown}
         validKeysUp={validKeysUp}
-        nextKeyViewID={nextKeyViewID}
-        nextKeyViewRef={nextKeyViewRef}
+        nextKeyViewTag={nextKeyViewTag}
         tooltip={tooltip}
         touchSoundDisabled={touchSoundDisabled}>
         <View style={buttonStyles}>
