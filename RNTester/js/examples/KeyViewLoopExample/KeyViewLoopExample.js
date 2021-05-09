@@ -13,17 +13,9 @@
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {
-  Text,
-  View,
-  Button,
-  TextInput,
-  StyleSheet,
-  findNodeHandle,
-  UIManager,
-} = ReactNative;
+const {Text, View, Button, TextInput, StyleSheet, findNodeHandle} = ReactNative;
 
-class KeyViewLoopExample extends React.Component<{}, State> {
+class KeyViewLoopExample extends React.Component<{}> {
   firstViewRef = React.createRef();
   secondViewRef = React.createRef();
   thirdViewRef = React.createRef();
@@ -45,7 +37,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 enableFocusRing={true}
                 ref={this.firstViewRef}
                 onFocus={() => {
-                  this.firstViewRef.current.setNativeProps({
+                  this.firstViewRef.current?.setNativeProps({
                     nextKeyViewTag: findNodeHandle(this.secondViewRef.current),
                   });
                 }}>
@@ -57,7 +49,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 enableFocusRing={true}
                 ref={this.thirdViewRef}
                 onFocus={() => {
-                  this.thirdViewRef.current.setNativeProps({
+                  this.thirdViewRef.current?.setNativeProps({
                     nextKeyViewTag: findNodeHandle(this.fourthViewRef.current),
                   });
                 }}>
@@ -69,7 +61,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
                 enableFocusRing={true}
                 ref={this.secondViewRef}
                 onFocus={() => {
-                  this.secondViewRef.current.setNativeProps({
+                  this.secondViewRef.current?.setNativeProps({
                     nextKeyViewTag: findNodeHandle(this.thirdViewRef.current),
                   });
                 }}>
@@ -87,7 +79,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
     );
   }
 }
-class FocusTrapExample extends React.Component<{}, {}> {
+class FocusTrapExample extends React.Component<{}> {
   trapZoneBeginRef = React.createRef();
   trapZoneEndRef = React.createRef();
   render() {
@@ -107,7 +99,7 @@ class FocusTrapExample extends React.Component<{}, {}> {
         <TextInput
           ref={this.trapZoneEndRef}
           onFocus={() => {
-            this.trapZoneEndRef.current.setNativeProps({
+            this.trapZoneEndRef.current?.setNativeProps({
               nextKeyViewTag: findNodeHandle(this.trapZoneBeginRef.current),
             });
           }}
