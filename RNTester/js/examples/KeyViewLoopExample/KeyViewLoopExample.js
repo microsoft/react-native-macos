@@ -20,7 +20,6 @@ const {
   TextInput,
   StyleSheet,
   findNodeHandle,
-  Image,
   UIManager,
 } = ReactNative;
 
@@ -30,16 +29,7 @@ class KeyViewLoopExample extends React.Component<{}, State> {
   thirdViewRef = React.createRef();
   fourthViewRef = React.createRef();
 
-  recalculateKeyViewLoop = () => {
-    UIManager.dispatchViewManagerCommand(
-      findNodeHandle(this),
-      UIManager.getViewManagerConfig('RCTView').Commands.recalculateKeyViewLoop,
-      [],
-    );
-  };
-
   render() {
-    console.log('render');
     return (
       <View>
         <Text>
@@ -158,13 +148,13 @@ exports.description =
   'Examples that show how key-view loops can be used.';
 exports.examples = [
   {
-    title: 'KeyViewLoopExample',
+    title: 'Key View Loop Example',
     render: function(): React.Element<any> {
       return <KeyViewLoopExample />;
     },
   },
   {
-    title: 'FocusTrapExample',
+    title: 'Focus Trap Example',
     render: function(): React.Element<any> {
       return <FocusTrapExample />;
     },
