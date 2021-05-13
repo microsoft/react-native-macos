@@ -267,7 +267,7 @@ const SliderWithRef: React.AbstractComponent<
 let styles;
 if (
   Platform.OS === 'ios' ||
-  Platform.OS === 'macos' /* TODO(macOS ISS#2323203) */
+  Platform.OS === 'macos' /* TODO(macOS GH#774) */
 ) {
   styles = StyleSheet.create({
     slider: {
