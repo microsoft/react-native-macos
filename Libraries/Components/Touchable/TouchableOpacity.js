@@ -246,8 +246,8 @@ class TouchableOpacity extends React.Component<Props, State> {
     const {
       onBlur,
       onFocus,
-      onMouseEnter, // [TODO(macOS/win ISS#2323203)
-      onMouseLeave, // ]TODO(macOS/win ISS#2323203)
+      onMouseEnter, // [TODO(macOS/win GH#774)
+      onMouseLeave, // ]TODO(macOS/win GH#774)
       ...eventHandlersWithoutBlurAndFocus
     } = this.state.pressability.getEventHandlers();
 
@@ -267,12 +267,12 @@ class TouchableOpacity extends React.Component<Props, State> {
         accessibilityElementsHidden={this.props.accessibilityElementsHidden}
         acceptsFirstMouse={
           this.props.acceptsFirstMouse !== false && !this.props.disabled
-        } // TODO(macOS ISS#2323203)
+        } // TODO(macOS GH#774)
         enableFocusRing={
           (this.props.enableFocusRing === undefined ||
             this.props.enableFocusRing === true) &&
           !this.props.disabled
-        } // TODO(macOS ISS#2323203)
+        } // TODO(macOS GH#774)
         style={[this.props.style, {opacity: this.state.anim}]}
         nativeID={this.props.nativeID}
         testID={this.props.testID}
@@ -300,8 +300,8 @@ class TouchableOpacity extends React.Component<Props, State> {
                 this.props.onPress !== undefined,
             })}
         // macOS]
-        tooltip={this.props.tooltip} // TODO(macOS/win ISS#2323203)
-        onMouseEnter={this.props.onMouseEnter} // [TODO(macOS ISS#2323203)
+        tooltip={this.props.tooltip} // TODO(macOS/win GH#774)
+        onMouseEnter={this.props.onMouseEnter} // [TODO(macOS GH#774)
         onMouseLeave={this.props.onMouseLeave}
         onDragEnter={this.props.onDragEnter}
         onDragLeave={this.props.onDragLeave}
@@ -312,8 +312,8 @@ class TouchableOpacity extends React.Component<Props, State> {
         onKeyUp={this.props.onKeyUp}
         validKeysDown={this.props.validKeysDown}
         validKeysUp={this.props.validKeysUp}
+        draggedTypes={this.props.draggedTypes} // ]TODO(macOS GH#774)
         nextKeyViewTag={this.props.nextKeyViewTag} // TODO(macOS GH#768)
-        draggedTypes={this.props.draggedTypes} // ]TODO(macOS ISS#2323203)
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
         {this.props.children}

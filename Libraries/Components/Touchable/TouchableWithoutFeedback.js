@@ -29,13 +29,13 @@ import type {
   KeyEvent,
   LayoutEvent,
   PressEvent,
-  MouseEvent, // TODO(macOS ISS#2323203)
+  MouseEvent, // TODO(macOS GH#774)
 } from '../../Types/CoreEventTypes';
 
-// [TODO(macOS ISS#2323203)
+// [TODO(macOS GH#774)
 const {DraggedTypes} = require('../View/DraggedType');
 import type {DraggedTypesType} from '../View/DraggedType';
-// ]TODO(macOS ISS#2323203)
+// ]TODO(macOS GH#774)
 
 import Platform from '../../Utilities/Platform';
 import View from '../../Components/View/View';
@@ -75,7 +75,7 @@ type Props = $ReadOnly<{|
   onPress?: ?(event: PressEvent) => mixed,
   onPressIn?: ?(event: PressEvent) => mixed,
   onPressOut?: ?(event: PressEvent) => mixed,
-  acceptsFirstMouse?: ?boolean, // [TODO(macOS ISS#2323203)
+  acceptsFirstMouse?: ?boolean, // [TODO(macOS GH#774)
   acceptsKeyboardFocus?: ?boolean,
   enableFocusRing?: ?boolean,
   tooltip?: ?string,
@@ -84,7 +84,7 @@ type Props = $ReadOnly<{|
   onDragEnter?: (event: MouseEvent) => void,
   onDragLeave?: (event: MouseEvent) => void,
   onDrop?: (event: MouseEvent) => void,
-  draggedTypes?: ?DraggedTypesType, // ]TODO(macOS ISS#2323203)
+  draggedTypes?: ?DraggedTypesType, // ]TODO(macOS GH#774)
   pressRetentionOffset?: ?EdgeInsetsProp,
   rejectResponderTermination?: ?boolean,
   testID?: ?string,
@@ -118,13 +118,13 @@ const PASSTHROUGH_PROPS = [
   'validKeysUp',
   'nextKeyViewTag', // TODO(macOS GH#768)
   'onLayout',
-  'onMouseEnter', // [TODO(macOS ISS#2323203)
+  'onMouseEnter', // [TODO(macOS GH#774)
   'onMouseLeave',
   'onDragEnter',
   'onDragLeave',
   'onDrop',
   'draggedTypes',
-  'tooltip', // ]TODO(macOS ISS#2323203)
+  'tooltip', // ]TODO(macOS GH#774)
   'testID',
 ];
 
@@ -151,8 +151,8 @@ class TouchableWithoutFeedback extends React.Component<Props, State> {
     const {
       onBlur,
       onFocus,
-      onMouseEnter, // [TODO(macOS/win ISS#2323203)
-      onMouseLeave, // ]TODO(macOS/win ISS#2323203)
+      onMouseEnter, // [TODO(macOS/win GH#774)
+      onMouseLeave, // ]TODO(macOS/win GH#774)
       ...eventHandlersWithoutBlurAndFocus
     } = this.state.pressability.getEventHandlers();
 
@@ -160,7 +160,7 @@ class TouchableWithoutFeedback extends React.Component<Props, State> {
       ...eventHandlersWithoutBlurAndFocus,
       accessible: this.props.accessible !== false,
       acceptsFirstMouse:
-        this.props.acceptsFirstMouse !== false && !this.props.disabled, // [TODO(macOS ISS#2323203)
+        this.props.acceptsFirstMouse !== false && !this.props.disabled, // [TODO(macOS GH#774)
       // [macOS #656 We need to reconcile between focusable and acceptsKeyboardFocus
       // (e.g. if one is explicitly disabled, we shouldn't implicitly enable the
       // other on the underlying view). Prefer passing acceptsKeyboardFocus if
@@ -177,7 +177,7 @@ class TouchableWithoutFeedback extends React.Component<Props, State> {
           }),
       // macOS]
       enableFocusRing:
-        this.props.enableFocusRing !== false && !this.props.disabled, // ]TODO(macOS ISS#2323203)
+        this.props.enableFocusRing !== false && !this.props.disabled, // ]TODO(macOS GH#774)
     };
     for (const prop of PASSTHROUGH_PROPS) {
       if (this.props[prop] !== undefined) {
