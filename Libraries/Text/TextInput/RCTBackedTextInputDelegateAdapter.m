@@ -412,6 +412,14 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
       [_backedTextInputView.window makeFirstResponder:nil];
       commandHandled = YES;
     }
+    // tab
+  } else if (commandSelector == @selector(insertTab:) ) {
+    [_backedTextInputView.window selectNextKeyView:nil];
+    commandHandled = YES;
+    // shift-tab
+  } else if (commandSelector == @selector(insertBacktab:)) {
+    [_backedTextInputView.window selectPreviousKeyView:nil];
+    commandHandled = YES;
     //backspace
   } else if (commandSelector == @selector(deleteBackward:)) {
     commandHandled = textInputDelegate != nil && ![textInputDelegate textInputShouldHandleDeleteBackward:_backedTextInputView];
