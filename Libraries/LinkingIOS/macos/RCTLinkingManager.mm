@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO(macOS ISS#2323203)
+// TODO(macOS GH#774)
 
 #import "RCTLinkingManager.h"
 
@@ -82,7 +82,7 @@ RCT_EXPORT_MODULE()
     NSWindow *lastWindow = [[NSApp windows] lastObject];
     [lastWindow makeKeyAndOrderFront:nil];
 
-    [self sendEventWithName:@"url" body:notification.userInfo[@"url"]];
+    [self sendEventWithName:@"url" body:notification.userInfo];
 }
 
 RCT_EXPORT_METHOD(openURL:(NSURL *)URL

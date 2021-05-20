@@ -14,10 +14,10 @@
 //   limitations under the License.
 //
 
-#import <TargetConditionals.h> // [TODO(macOS ISS#2323203)
+#import <TargetConditionals.h> // [TODO(macOS GH#774)
 #if !TARGET_OS_OSX
 #import <Endian.h>
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 #import <React/RCTSRWebSocket.h>
 
 #import <Availability.h>
@@ -530,7 +530,14 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
 - (void)_connect
 {
   if (!_scheduledRunloops.count) {
-    [self scheduleInRunLoop:[NSRunLoop RCTSR_networkRunLoop] forMode:NSDefaultRunLoopMode];
+    // [TODO(macOS ISS#2323203): `scheduleInRunLoop:forMode:` takes in a non-null run loop parameter so let's be safe and verify that
+    NSRunLoop *runLoop = [NSRunLoop RCTSR_networkRunLoop];
+    if (runLoop != nil) {
+      [self scheduleInRunLoop:runLoop forMode:NSDefaultRunLoopMode];
+    } else {
+      RCTSRLog(@"Failed connecting to RCTSR_networkRunLoop");
+    }
+    // ]TODO(macOS ISS#2323203)
   }
 
   [_outputStream open];
