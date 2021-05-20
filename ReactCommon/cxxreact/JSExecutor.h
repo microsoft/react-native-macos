@@ -60,14 +60,9 @@ class JSExecutorFactory {
 class RN_EXPORT JSExecutor {
  public:
   /**
-   * Prepares the JS runtime for React Native by installing global variables.
-   * Called once before any JS is evaluated.
-   */
-  virtual void initializeRuntime() = 0;
-  /**
    * Execute an application script bundle in the JS context.
    */
-  virtual void loadBundle(
+  virtual void loadApplicationScript(
       std::unique_ptr<const JSBigString> script,
       std::string sourceURL) = 0;
 

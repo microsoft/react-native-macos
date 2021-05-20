@@ -47,8 +47,6 @@ class RN_EXPORT Instance {
       std::shared_ptr<MessageQueueThread> jsQueue,
       std::shared_ptr<ModuleRegistry> moduleRegistry);
 
-  void initializeRuntime();
-
   void setSourceURL(std::string sourceURL);
 
   void loadScriptFromString(
@@ -131,11 +129,11 @@ class RN_EXPORT Instance {
 
  private:
   void callNativeModules(folly::dynamic &&calls, bool isEndOfBatch);
-  void loadBundle(
+  void loadApplication(
       std::unique_ptr<RAMBundleRegistry> bundleRegistry,
       std::unique_ptr<const JSBigString> startupScript,
       std::string startupScriptSourceURL);
-  void loadBundleSync(
+  void loadApplicationSync(
       std::unique_ptr<RAMBundleRegistry> bundleRegistry,
       std::unique_ptr<const JSBigString> startupScript,
       std::string startupScriptSourceURL);
