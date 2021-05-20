@@ -1370,7 +1370,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithBundleURL
     } else if (reactInstance) {
       reactInstance->loadScriptFromString(std::make_unique<NSDataBigString>(script), sourceUrlStr.UTF8String, !async);
     } else {
-      std::string methodName = async ? "loadBundle" : "loadBundleSync";
+      std::string methodName = async ? "loadApplicationScript" : "loadApplicationScriptSync";
       throw std::logic_error("Attempt to call " + methodName + ": on uninitialized bridge");
     }
   }];
