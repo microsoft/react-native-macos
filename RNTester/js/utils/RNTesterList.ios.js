@@ -60,7 +60,7 @@ const ComponentExamples: Array<RNTesterExample> = [
     key: 'Key-View Accessibility Looping',
     module: require('../examples/KeyViewLoopExample/KeyViewLoopExample'),
     supportsTVOS: false,
-  }, // ]TODO(OSS Candidate ISS#2710739)
+  }, // ]TODO(OSS Candidate GH#768)
   {
     key: 'AccessibilityShowMenu',
     module: require('../examples/AccessibilityShowMenu/AccessibilityShowMenu'),

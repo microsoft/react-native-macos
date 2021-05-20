@@ -14,7 +14,7 @@
 #import "RCTEventDispatcher.h"
 #import "RCTLog.h"
 #import "RCTShadowView.h"
-#import "RCTSinglelineTextInputView.h"
+#import "RCTSinglelineTextInputView.h" // TODO(macOS GH#768)
 #import "RCTUIManager.h"
 #import "RCTUIManagerUtils.h"
 #import "RCTUtils.h"
@@ -500,33 +500,33 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
 #if TARGET_OS_OSX // [TODO(macOS GH#768)
 RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTag, NSNumber, RCTView)
 {
-    NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
-    
-    RCTUIManager *uiManager = [[self bridge] uiManager];
-    NSView *nextKeyView = [uiManager viewForReactTag:nextKeyViewTag];
-     if (nextKeyView) {
-         NSView *targetView = view;
-         // The TextInput component is implemented as a RCTUITextField wrapped by a RCTSinglelineTextInputView,
-         // so we need to get the first subview to properly transfer focus
-         if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
-             targetView = [[view subviews] firstObject];
-         }
-         if ([nextKeyView isKindOfClass:[RCTSinglelineTextInputView class]]) {
-             nextKeyView = [[nextKeyView subviews] firstObject];
-         }
-         [targetView setNextKeyView:nextKeyView];
-     }
+  NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
+
+  RCTUIManager *uiManager = [[self bridge] uiManager];
+  NSView *nextKeyView = [uiManager viewForReactTag:nextKeyViewTag];
+    if (nextKeyView) {
+      NSView *targetView = view;
+      // The TextInput component is implemented as a RCTUITextField wrapped by a RCTSinglelineTextInputView,
+      // so we need to get the first subview to properly transfer focus
+      if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
+        targetView = [[view subviews] firstObject];
+      }
+      if ([nextKeyView isKindOfClass:[RCTSinglelineTextInputView class]]) {
+        nextKeyView = [[nextKeyView subviews] firstObject];
+      }
+      [targetView setNextKeyView:nextKeyView];
+    }
 }
 
 RCT_EXPORT_METHOD(recalculateKeyViewLoop: (nonnull NSNumber *)reactTag)
 {
-    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
-      RCTUIView *view = viewRegistry[reactTag];
-        if (!view) {
-            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
-        }
-        [[view window] recalculateKeyViewLoop];
-    }];
+  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
+    RCTUIView *view = viewRegistry[reactTag];
+    if (!view) {
+        RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+    }
+    [[view window] recalculateKeyViewLoop];
+  }];
 }
 #endif // ]TODO(macOS GH#768)
 
