@@ -523,7 +523,7 @@ RCT_EXPORT_METHOD(recalculateKeyViewLoop: (nonnull NSNumber *)reactTag)
   [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
     RCTUIView *view = viewRegistry[reactTag];
     if (!view) {
-        RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+      RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
     }
     [[view window] recalculateKeyViewLoop];
   }];
