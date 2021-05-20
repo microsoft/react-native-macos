@@ -497,7 +497,7 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
   }
 }
 #endif // ]TODO(macOS GH#774)
-// [TODO(macOS GH#768)
+#if TARGET_OS_OSX // [TODO(macOS GH#768)
 RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTag, NSNumber, RCTView)
 {
     NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];

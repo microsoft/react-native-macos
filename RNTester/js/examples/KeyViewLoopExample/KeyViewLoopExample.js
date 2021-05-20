@@ -32,7 +32,7 @@ class KeyViewLoopExample extends React.Component<{}> {
           {Platform.OS === 'macos' ? (
             <View>
               <View
-                style={{height: 20, width: 100, margin: 20}}
+                style={styles.keyView}
                 focusable={true}
                 enableFocusRing={true}
                 ref={this.firstViewRef}
@@ -44,7 +44,7 @@ class KeyViewLoopExample extends React.Component<{}> {
                 <Text>First View</Text>
               </View>
               <View
-                style={{height: 20, width: 100, margin: 20}}
+                style={styles.keyView}
                 focusable={true}
                 enableFocusRing={true}
                 ref={this.thirdViewRef}
@@ -56,7 +56,7 @@ class KeyViewLoopExample extends React.Component<{}> {
                 <Text>Third View</Text>
               </View>
               <View
-                style={{height: 20, width: 100, margin: 20}}
+                style={styles.keyView}
                 focusable={true}
                 enableFocusRing={true}
                 ref={this.secondViewRef}
@@ -68,7 +68,7 @@ class KeyViewLoopExample extends React.Component<{}> {
                 <Text>Second View</Text>
               </View>
               <Button
-                title={'Fourth View'}
+                title={'Button cannot set nextKeyViewTag'}
                 ref={this.fourthViewRef}
                 onPress={() => {}}
               />
@@ -131,6 +131,11 @@ var styles = StyleSheet.create({
     fontSize: 13,
     padding: 4,
   },
+  keyView: {
+    height: 20,
+    width: 100,
+    margin: 20,
+  }
 });
 
 exports.title = 'Key View Loop';
