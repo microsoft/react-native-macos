@@ -51,11 +51,6 @@ type Props = $ReadOnly<{|
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?Array<string>,
-
-  /**
-   * The react tag of the view that follows the current view in the key view loop.
-   */
-  nextKeyViewTag?: ?number, // TODO(macOS GH#768)
 |}>;
 
 type State = $ReadOnly<{|
@@ -193,7 +188,6 @@ class TouchableOpacity extends React.Component<Props, State> {
       },
       validKeysDown: this.props.validKeysDown,
       validKeysUp: this.props.validKeysUp,
-      nextKeyViewTag: this.props.nextKeyViewTag,
       onLongPress: this.props.onLongPress,
       onPress: this.props.onPress,
       onPressIn: event => {
@@ -313,7 +307,6 @@ class TouchableOpacity extends React.Component<Props, State> {
         validKeysDown={this.props.validKeysDown}
         validKeysUp={this.props.validKeysUp}
         draggedTypes={this.props.draggedTypes} // ]TODO(macOS GH#774)
-        nextKeyViewTag={this.props.nextKeyViewTag} // TODO(macOS GH#768)
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
         {this.props.children}
