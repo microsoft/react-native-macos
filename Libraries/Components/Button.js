@@ -154,6 +154,7 @@ type ButtonProps = $ReadOnly<{|
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?Array<string>,
+  // ]TODO(OSS Candidate ISS#2710739)
 |}>;
 
 /**
