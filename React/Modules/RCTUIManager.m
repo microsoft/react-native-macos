@@ -42,7 +42,8 @@
 #import "RCTView.h"
 #import "RCTViewManager.h"
 #import "UIView+React.h"
-#import "RCTDeviceInfo.h" // TODO(macOS ISS#2323203)
+#import "RCTUIKit.h" // TODO(macOS GH#768)
+#import "RCTDeviceInfo.h" // TODO(macOS GH#774)
 
 #import <React/RCTUIKit.h>
 

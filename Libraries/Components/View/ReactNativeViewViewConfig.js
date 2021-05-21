@@ -346,6 +346,7 @@ const ReactNativeViewConfig = {
     translateY: true,
     validKeysDown: true,
     validKeysUp: true,
+    nextKeyViewTag: true, // TODO(macOS GH#768)
     width: true,
     zIndex: true,
   },
