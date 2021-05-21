@@ -135,7 +135,7 @@ var styles = StyleSheet.create({
     height: 20,
     width: 100,
     margin: 20,
-  }
+  },
 });
 
 exports.title = 'Key View Loop';
