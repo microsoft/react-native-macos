@@ -34,12 +34,12 @@ const ComponentExamples: Array<RNTesterExample> = [
     module: require('../examples/DatePicker/DatePickerIOSExample'),
     supportsTVOS: false,
   },
-  // [TODO(macOS ISS#2323203)
+  // [TODO(macOS GH#774)
   {
     key: 'DatePickerMacOSExample',
     module: require('../examples/DatePicker/DatePickerMacOSExample'),
     supportsTVOS: false,
-  }, // ]TODO(macOS ISS#2323203)
+  }, // ]TODO(macOS GH#774)
   {
     key: 'FlatListExample',
     module: require('../examples/FlatList/FlatListExample'),
@@ -56,6 +56,11 @@ const ComponentExamples: Array<RNTesterExample> = [
     module: require('../examples/KeyboardEventsExample/KeyboardEventsExample'),
     supportsTVOS: false,
   }, // ]TODO(OSS Candidate ISS#2710739)
+  {
+    key: 'Key-View Accessibility Looping',
+    module: require('../examples/KeyViewLoopExample/KeyViewLoopExample'),
+    supportsTVOS: false,
+  }, // ]TODO(OSS Candidate GH#768)
   {
     key: 'AccessibilityShowMenu',
     module: require('../examples/AccessibilityShowMenu/AccessibilityShowMenu'),
@@ -186,13 +191,13 @@ const ComponentExamples: Array<RNTesterExample> = [
   },
   {
     key: 'TextExample',
-    /* $FlowFixMe TODO(macOS ISS#2323203): allow macOS to share iOS test */
+    /* $FlowFixMe TODO(macOS GH#774): allow macOS to share iOS test */
     module: require('../examples/Text/TextExample.ios'),
     supportsTVOS: true,
   },
   {
     key: 'TextInputExample',
-    /* $FlowFixMe TODO(macOS ISS#2323203): allow macOS to share iOS test */
+    /* $FlowFixMe TODO(macOS GH#774): allow macOS to share iOS test */
     module: require('../examples/TextInput/TextInputExample.ios'),
     supportsTVOS: true,
   },
@@ -239,12 +244,12 @@ const APIExamples: Array<RNTesterExample> = [
     module: require('../examples/Alert/AlertIOSExample'),
     supportsTVOS: true,
   },
-  // [TODO(macOS ISS#2323203)
+  // [TODO(macOS GH#774)
   {
     key: 'AlertMacOSExample',
     module: require('../examples/Alert/AlertMacOSExample'),
     supportsTVOS: true,
-  }, // ]TODO(macOS ISS#2323203)
+  }, // ]TODO(macOS GH#774)
   {
     key: 'AnimatedExample',
     module: require('../examples/Animated/AnimatedExample'),

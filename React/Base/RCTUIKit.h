@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO(macOS ISS#2323203)
+// TODO(macOS GH#774)
 
 #include <TargetConditionals.h>
 
@@ -448,10 +448,6 @@ NS_INLINE BOOL RCTUIViewIsDescendantOfView(RCTPlatformView *view, RCTPlatformVie
 {
   return [view isDescendantOf:parent];
 }
-
-NSArray *RCTUIViewCalculateKeyViewLoop(RCTPlatformView *root);
-
-BOOL RCTUIViewHasDescendantPassingPredicate(RCTPlatformView *root, BOOL (^predicate)(RCTPlatformView *view));
 
 NS_INLINE NSValue *NSValueWithCGRect(CGRect rect)
 {

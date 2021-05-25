@@ -8,7 +8,7 @@
  * @format
  */
 
-// TODO(macOS ISS#2323203)
+// TODO(macOS GH#774)
 
 'use strict';
 
@@ -51,6 +51,7 @@ const ReactNativeViewViewConfigMacOS = {
     onKeyUp: true,
     validKeysDown: true,
     validKeysUp: true,
+    nextKeyViewTag: true, // TODO(macOS GH#768)
     onMouseEnter: true,
     onMouseLeave: true,
     tooltip: true,

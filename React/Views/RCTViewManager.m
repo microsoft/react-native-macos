@@ -14,6 +14,7 @@
 #import "RCTEventDispatcher.h"
 #import "RCTLog.h"
 #import "RCTShadowView.h"
+#import "RCTSinglelineTextInputView.h" // TODO(macOS GH#768)
 #import "RCTUIManager.h"
 #import "RCTUIManagerUtils.h"
 #import "RCTUtils.h"
@@ -24,7 +25,7 @@
 #import "RCTTVView.h"
 #endif
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 @implementation RCTConvert (UIAccessibilityTraits)
 
 RCT_MULTI_ENUM_CONVERTER(
@@ -49,12 +50,12 @@ RCT_MULTI_ENUM_CONVERTER(
       @"adjustable" : @(UIAccessibilityTraitAdjustable),
       @"allowsDirectInteraction" : @(UIAccessibilityTraitAllowsDirectInteraction),
       @"pageTurn" : @(UIAccessibilityTraitCausesPageTurn),
-      // [TODO(macOS ISS#2323203):
+      // [TODO(macOS GH#774):
       // a set of RN accessibilityTraits are macOS specific accessiblity roles and map to nothing on iOS:
       @"disclosure" : @(UIAccessibilityTraitNone),
       @"group" : @(UIAccessibilityTraitNone),
       @"list" : @(UIAccessibilityTraitNone),
-      // ]TODO(macOS ISS#2323203)
+      // ]TODO(macOS GH#774)
       @"alert" : @(UIAccessibilityTraitNone),
       @"checkbox" : @(UIAccessibilityTraitNone),
       @"combobox" : @(UIAccessibilityTraitNone),
@@ -76,7 +77,7 @@ RCT_MULTI_ENUM_CONVERTER(
     unsignedLongLongValue)
 
 @end
-#endif // TODO(macOS ISS#2323203)
+#endif // TODO(macOS GH#774)
 
 @implementation RCTViewManager
 
@@ -89,7 +90,7 @@ RCT_EXPORT_MODULE()
   return RCTGetUIManagerQueue();
 }
 
-- (RCTPlatformView *)view // TODO(macOS ISS#2323203)
+- (RCTPlatformView *)view // TODO(macOS GH#774)
 {
 #if TARGET_OS_TV
   return [RCTTVView new];
@@ -124,7 +125,7 @@ RCT_EXPORT_MODULE()
   ];
 }
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 RCT_EXPORT_METHOD(focus : (nonnull NSNumber *)viewTag)
 {
   [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
@@ -140,7 +141,7 @@ RCT_EXPORT_METHOD(blur : (nonnull NSNumber *)viewTag)
     [view reactBlur];
   }];
 }
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 #pragma mark - View properties
 
@@ -152,32 +153,32 @@ RCT_EXPORT_VIEW_PROPERTY(tvParallaxProperties, NSDictionary)
 #endif
 
 // Accessibility related properties
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(accessible, reactAccessibilityElement.isAccessibilityElement, BOOL)
-#else // [TODO(macOS ISS#2323203)
+#else // [TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(accessible, reactAccessibilityElement.accessibilityElement, BOOL)
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(accessibilityActions, reactAccessibilityElement.accessibilityActions, NSDictionaryArray)
 RCT_REMAP_VIEW_PROPERTY(accessibilityLabel, reactAccessibilityElement.accessibilityLabel, NSString)
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(accessibilityHint, reactAccessibilityElement.accessibilityHint, NSString)
-#else // [TODO(macOS ISS#2323203)
+#else // [TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(accessibilityHint, reactAccessibilityElement.accessibilityHelp, NSString)
-#endif // TODO(macOS ISS#2323203)
+#endif // TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(accessibilityValue, reactAccessibilityElement.accessibilityValueInternal, NSDictionary)
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(accessibilityViewIsModal, reactAccessibilityElement.accessibilityViewIsModal, BOOL)
 RCT_REMAP_VIEW_PROPERTY(accessibilityElementsHidden, reactAccessibilityElement.accessibilityElementsHidden, BOOL)
 RCT_REMAP_VIEW_PROPERTY(
     accessibilityIgnoresInvertColors,
     reactAccessibilityElement.shouldAccessibilityIgnoresInvertColors,
     BOOL)
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(onAccessibilityAction, reactAccessibilityElement.onAccessibilityAction, RCTDirectEventBlock)
 RCT_REMAP_VIEW_PROPERTY(onAccessibilityTap, reactAccessibilityElement.onAccessibilityTap, RCTDirectEventBlock)
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(onMagicTap, reactAccessibilityElement.onMagicTap, RCTDirectEventBlock)
-#else // [TODO(macOS ISS#2323203): accessibilityTraits is gone in react-native and deprecated in react-native-macos, use accessibilityRole instead
+#else // [TODO(macOS GH#774): accessibilityTraits is gone in react-native and deprecated in react-native-macos, use accessibilityRole instead
 RCT_CUSTOM_VIEW_PROPERTY(accessibilityTraits, NSString, RCTView)
 {
   if (json) {
@@ -186,17 +187,17 @@ RCT_CUSTOM_VIEW_PROPERTY(accessibilityTraits, NSString, RCTView)
     view.accessibilityRole = defaultView.accessibilityRole;
   }
 }
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(onAccessibilityEscape, reactAccessibilityElement.onAccessibilityEscape, RCTDirectEventBlock)
 RCT_REMAP_VIEW_PROPERTY(testID, reactAccessibilityElement.accessibilityIdentifier, NSString)
 
 RCT_EXPORT_VIEW_PROPERTY(backgroundColor, UIColor)
 RCT_REMAP_VIEW_PROPERTY(backfaceVisibility, layer.doubleSided, css_backface_visibility_t)
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(opacity, alpha, CGFloat)
-#else // [TODO(macOS ISS#2323203)
+#else // [TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(opacity, alphaValue, CGFloat)
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(shadowColor, layer.shadowColor, CGColor)
 RCT_REMAP_VIEW_PROPERTY(shadowOffset, layer.shadowOffset, CGSize)
 RCT_REMAP_VIEW_PROPERTY(shadowOpacity, layer.shadowOpacity, float)
@@ -210,31 +211,31 @@ RCT_CUSTOM_VIEW_PROPERTY(overflow, YGOverflow, RCTView)
     view.clipsToBounds = defaultView.clipsToBounds;
   }
 }
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 RCT_CUSTOM_VIEW_PROPERTY(shouldRasterizeIOS, BOOL, RCTView)
 {
   view.layer.shouldRasterize = json ? [RCTConvert BOOL:json] : defaultView.layer.shouldRasterize;
   view.layer.rasterizationScale =
       view.layer.shouldRasterize ? [UIScreen mainScreen].scale : defaultView.layer.rasterizationScale;
 }
-#endif // TODO(macOS ISS#2323203)
+#endif // TODO(macOS GH#774)
 
 RCT_CUSTOM_VIEW_PROPERTY(transform, CATransform3D, RCTView)
 {
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   view.layer.transform = json ? [RCTConvert CATransform3D:json] : defaultView.layer.transform;
   // Enable edge antialiasing in perspective transforms
   view.layer.allowsEdgeAntialiasing = !(view.layer.transform.m34 == 0.0f);
-#elif TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#elif TARGET_OS_OSX // [TODO(macOS GH#774)
   view.layer.sublayerTransform = json ? [RCTConvert CATransform3D:json] : defaultView.layer.sublayerTransform;
   // TODO: Improve this by enabling edge antialiasing only for transforms with rotation or skewing
   view.layer.edgeAntialiasingMask = !CATransform3DIsIdentity(view.layer.sublayerTransform) ? kCALayerLeftEdge | kCALayerRightEdge | kCALayerBottomEdge | kCALayerTopEdge : 0;
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(accessibilityRole, UIAccessibilityTraits, RCTView)
 {
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   const UIAccessibilityTraits AccessibilityRolesMask = UIAccessibilityTraitNone | UIAccessibilityTraitButton |
       UIAccessibilityTraitLink | UIAccessibilityTraitSearchField | UIAccessibilityTraitImage |
       UIAccessibilityTraitKeyboardKey | UIAccessibilityTraitStaticText | UIAccessibilityTraitAdjustable |
@@ -249,13 +250,13 @@ RCT_CUSTOM_VIEW_PROPERTY(accessibilityRole, UIAccessibilityTraits, RCTView)
     NSString *role = json ? [RCTConvert NSString:json] : @"";
     view.reactAccessibilityElement.accessibilityRoleInternal = role; // TODO(OSS Candidate ISS#2710739): renamed prop so it doesn't conflict with -[NSAccessibility accessibilityRole].
   }
-#else // [TODO(macOS ISS#2323203)
+#else // [TODO(macOS GH#774)
   if (json) {
     view.reactAccessibilityElement.accessibilityRole = [RCTConvert accessibilityRoleFromTraits:json];
   } else {
     view.reactAccessibilityElement.accessibilityRole = defaultView.accessibilityRole;
   }
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(accessibilityState, NSDictionary, RCTView)
@@ -267,7 +268,7 @@ RCT_CUSTOM_VIEW_PROPERTY(accessibilityState, NSDictionary, RCTView)
     return;
   }
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   const UIAccessibilityTraits AccessibilityStatesMask = UIAccessibilityTraitNotEnabled | UIAccessibilityTraitSelected;
   view.reactAccessibilityElement.accessibilityTraits =
       view.reactAccessibilityElement.accessibilityTraits & ~AccessibilityStatesMask;
@@ -285,7 +286,7 @@ RCT_CUSTOM_VIEW_PROPERTY(accessibilityState, NSDictionary, RCTView)
       newState[s] = val;
     }
   }
-#else // [TODO(macOS ISS#2323203)
+#else // [TODO(macOS GH#774)
   for (NSString *s in state) {
     id val = [state objectForKey:s];
     if (val == nil) {
@@ -293,7 +294,7 @@ RCT_CUSTOM_VIEW_PROPERTY(accessibilityState, NSDictionary, RCTView)
     }
     newState[s] = val;
   }
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
   if (newState.count > 0) {
     view.reactAccessibilityElement.accessibilityState = newState;
   } else {
@@ -383,7 +384,7 @@ RCT_CUSTOM_VIEW_PROPERTY(hitSlop, UIEdgeInsets, RCTView)
   }
 }
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 // macOS properties
 RCT_CUSTOM_VIEW_PROPERTY(acceptsFirstMouse, BOOL, RCTView)
 {
@@ -422,7 +423,7 @@ RCT_CUSTOM_VIEW_PROPERTY(draggedTypes, NSArray<NSPasteboardType>*, RCTView)
   [view registerForDraggedTypes:types];
 }
 
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 #define RCT_VIEW_BORDER_PROPERTY(SIDE)                                                               \
   RCT_CUSTOM_VIEW_PROPERTY(border##SIDE##Width, float, RCTView)                                      \
@@ -471,7 +472,7 @@ RCT_EXPORT_VIEW_PROPERTY(onBlur, RCTBubblingEventBlock)
 // ]TODO(OSS Candidate ISS#2710739)
 
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 #pragma mark - macOS properties
 
 RCT_EXPORT_VIEW_PROPERTY(onDoubleClick, RCTDirectEventBlock)
@@ -495,7 +496,39 @@ RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
     view.validKeysUp = [RCTConvert NSArray:json];
   }
 }
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
+#if TARGET_OS_OSX // [TODO(macOS GH#768)
+RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTag, NSNumber, RCTView)
+{
+  NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
+
+  RCTUIManager *uiManager = [[self bridge] uiManager];
+  NSView *nextKeyView = [uiManager viewForReactTag:nextKeyViewTag];
+    if (nextKeyView) {
+      NSView *targetView = view;
+      // The TextInput component is implemented as a RCTUITextField wrapped by a RCTSinglelineTextInputView,
+      // so we need to get the first subview to properly transfer focus
+      if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
+        targetView = [[view subviews] firstObject];
+      }
+      if ([nextKeyView isKindOfClass:[RCTSinglelineTextInputView class]]) {
+        nextKeyView = [[nextKeyView subviews] firstObject];
+      }
+      [targetView setNextKeyView:nextKeyView];
+    }
+}
+
+RCT_EXPORT_METHOD(recalculateKeyViewLoop: (nonnull NSNumber *)reactTag)
+{
+  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
+    RCTUIView *view = viewRegistry[reactTag];
+    if (!view) {
+      RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+    }
+    [[view window] recalculateKeyViewLoop];
+  }];
+}
+#endif // ]TODO(macOS GH#768)
 
 #pragma mark - ShadowView properties
 
