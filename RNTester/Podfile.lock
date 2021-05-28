@@ -492,8 +492,8 @@ SPEC CHECKSUMS:
   CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
   CocoaLibEvent: 2fab71b8bd46dd33ddb959f7928ec5909f838e3f
   DoubleConversion: 56a44bcfd14ab2ff66f5a146b2e875eb4b69b19b
-  FBLazyVector: 8405b4b9c7257c892b60daf9fafc0b7f3876a55e
-  FBReactNativeSpec: ab13be13215c27498cc901ad3a00c82abf313dfe
+  FBLazyVector: bc5ce150e5f4749f5f01d37799f15c27e1e6954a
+  FBReactNativeSpec: a0c81b3a79e747f9adfd098603d1a4b29ce9ce06
   Flipper: be611d4b742d8c87fbae2ca5f44603a02539e365
   Flipper-DoubleConversion: 38631e41ef4f9b12861c67d17cb5518d06badc41
   Flipper-Folly: c12092ea368353b58e992843a990a3225d4533c3
@@ -504,32 +504,32 @@ SPEC CHECKSUMS:
   glog: 1cb7c408c781ae8f35bbababe459b45e3dee4ec1
   OpenSSL-Universal: 8b48cc0d10c1b2923617dfe5c178aa9ed2689355
   RCT-Folly: 1347093ffe75e152d846f7e45a3ef901b60021aa
-  RCTRequired: 568bc0eea9dd6602f9b9ad105a4215dc911efb65
-  RCTTypeSafety: 5e2982a92f3ecbdca9541b1da0b98afe47e85233
-  React: b32910b5fb983100b5517e38755223a1b91e04b5
-  React-ART: c394cc0b3cb5c0b7c07115af62631a03bd06b3ee
-  React-callinvoker: 82a54e74abadef928f7b5032803394b3c5bbb149
-  React-Core: 0458388d50fc4d5703fd2f6a47ef06c676f1016e
-  React-CoreModules: b499b3b6a9413508fc8d000496426598445c7c74
-  React-cxxreact: 6df0ad1b65bf75508ebabe3cc4304ac0b5cef296
-  React-jsi: 79db41866a7c5962cf28f7d077133ac9c5f61975
-  React-jsiexecutor: c4e2b6b350676b9448ae4fe274ec58d60c29cb14
-  React-jsinspector: 13572a00cd57218a3f1cbb9f060a3d5d335fe87a
-  React-RCTActionSheet: f9778050feb2341db812bf998397eddc04516bb7
-  React-RCTAnimation: 578f8e164037306edd7ee4e3be9a7a30be1ebb6f
-  React-RCTBlob: 63046db388c6c2c9dd567698d8ecfaeccfb1f629
-  React-RCTImage: ef69d5cf9a60b720245159b61de7f21871e9925a
-  React-RCTLinking: 80c048a195eba746888cec6b94db9c29ee1bc34e
-  React-RCTNetwork: b6c287f8584d8ab4fffaf7eb0d6170a3b36decde
-  React-RCTPushNotification: e9e615bdb374aeb841715eae478d0d77dbebbf03
-  React-RCTSettings: 075f7ef146fbd4895825bddb9f832a67b2ab44db
-  React-RCTTest: e88586fb8e6ee502296f0e187a31a4ec05ee6dc1
-  React-RCTText: d84e15ae30367f658799342c0d2223e42df53492
-  React-RCTVibration: fde06bd6bfe3fce632c71f69bcf5ee507329bbaf
-  React-TurboModuleCxx-RNW: d90105d7046d6b7fe148c9c88fb3366e2128abd9
-  React-TurboModuleCxx-WinRTPort: 4501960883540ccb7b43ac70e0059d9225f48ae5
-  ReactCommon: 5b7ad3fb6c8758f6de7afeb530a7c876d5da85b4
-  Yoga: c5e47cd7f9d7075844e38605fc341754cc7b97a3
+  RCTRequired: d384d06f7e53728a53805be0caaf22a93fcde73a
+  RCTTypeSafety: 5e8c2f0a47235842a6f337f8e3fb185180d84ac2
+  React: 18243df9102151ea132f439ea47ddfb9788e63c7
+  React-ART: 154dc27c84916c491f0eb89aa1a79305fa2e99e6
+  React-callinvoker: a3dfac3d6e6a8b83a93493dd279d3c6fb2edb419
+  React-Core: c2e49caa4fcf01f490b3e1b276a6c026b515dcee
+  React-CoreModules: b460bbc3f043214690d9a17f5dd5e03eff31126b
+  React-cxxreact: 41106ebea02f25ce640f420a971b7728d79e5d26
+  React-jsi: 4ebe6a54d45ba9a5338095def75ac3beaf3ed7d3
+  React-jsiexecutor: 4a44e1a5e1738fd0439726640d0cabaabcb3d128
+  React-jsinspector: 907d9d65b09befdba89a6591adef95b3a4410cb3
+  React-RCTActionSheet: 9b222cc72c0bdbbd44bd0c398232d3ca20ccd420
+  React-RCTAnimation: 8d4428f176f38b2971e5398ce107c2f7efa98432
+  React-RCTBlob: 318d4effcfcdd3fd32b04c8fa5ec6b0da775feae
+  React-RCTImage: f77fafd8cbbd30a4cf4d4456dc8bcc2f90eec0cc
+  React-RCTLinking: 87f6cd391ea3ecfe2da3b6f04e4854adc0ea49c9
+  React-RCTNetwork: 102d90bddc6e2ab4219fb0a3f89caef41bc1ec8e
+  React-RCTPushNotification: 33e82afd091b57346fae543f58b6e50888f9b5fb
+  React-RCTSettings: 044f86e429aa090c93889ddeef91a13e71b9e640
+  React-RCTTest: e2b466e0b7cbf86f7e2b31e0022794cea35dd7e5
+  React-RCTText: 39df635fcdb466b241d0a10628c4eb6fb4f67105
+  React-RCTVibration: f71776f50d657b3ab995760294c2a583704f488f
+  React-TurboModuleCxx-RNW: 18bb71af41fe34c8b12a56bef60aae7ee32b0817
+  React-TurboModuleCxx-WinRTPort: 2240282b245810a346372e696882500001be27dd
+  ReactCommon: ae64bcd07d789b2712c5cc99cefb2a5cdcc393e7
+  Yoga: fd91a8b9c1ea7169c8987bc11af13e376112097a
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
 PODFILE CHECKSUM: 5778caa6b51e058eeab6b9d1c539074c087ef830
