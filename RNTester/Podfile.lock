@@ -491,7 +491,7 @@ SPEC CHECKSUMS:
   boost-for-react-native: a110407d9db2642fd2e1bcd7c5a51c81f2521dc9
   CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
   CocoaLibEvent: 2fab71b8bd46dd33ddb959f7928ec5909f838e3f
-  DoubleConversion: 2b45d0f8e156a5b02354c8a4062de64d41ccb4e0
+  DoubleConversion: 56a44bcfd14ab2ff66f5a146b2e875eb4b69b19b
   FBLazyVector: 2c61fa5bb40f109661132467985e92dc82a42a86
   FBReactNativeSpec: 43030f7c35d64a82441fd58f884c624e2ebfe73e
   Flipper: be611d4b742d8c87fbae2ca5f44603a02539e365
@@ -503,7 +503,7 @@ SPEC CHECKSUMS:
   FlipperKit: ab353d41aea8aae2ea6daaf813e67496642f3d7d
   glog: 789873d01e4b200777d0a09bc23d548446758699
   OpenSSL-Universal: 8b48cc0d10c1b2923617dfe5c178aa9ed2689355
-  RCT-Folly: 55d0039b24e192081ec0b2257f7bd9f42e382fb7
+  RCT-Folly: 1347093ffe75e152d846f7e45a3ef901b60021aa
   RCTRequired: 4733072aa17330c25dab102cfe9147e0ac1b83f5
   RCTTypeSafety: a3803a169bc913f3f683ecc3793177cfa37d0389
   React: 35507a996dba5f44e737d6fced05bb40f3bb37e4
