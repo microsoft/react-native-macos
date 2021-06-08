@@ -46,7 +46,8 @@ const UIView = {
   onKeyUp: true,
   validKeysDown: true,
   validKeysUp: true,
-  draggedTypes: true, // ]TODO(macOS ISS#2323203)
+  draggedTypes: true, // ]TODO(macOS GH#774)
+  nextKeyViewTag: true, // TODO(macOS GH#768)
   style: ReactNativeStyleAttributes,
 };
 

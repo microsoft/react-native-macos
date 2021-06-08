@@ -7,7 +7,6 @@
 
 #include "jsireact/JSIExecutor.h"
 #include "RCTRuntimeInitializeStateNotifier-C-Interface.h" // TODO(OSS Candidate ISS#2710739)- needed to sequence the runtime initialization and bundle loading properly to avoid crashing
-
 #include <cxxreact/JSBigString.h>
 #include <cxxreact/ModuleRegistry.h>
 #include <cxxreact/ReactMarker.h>
@@ -78,8 +77,13 @@ JSIExecutor::JSIExecutor(
       *runtime, "__jsiExecutorDescription", runtime->description());
 }
 
-void JSIExecutor::initializeRuntime() {
-  SystraceSection s("JSIExecutor::initializeRuntime");
+void JSIExecutor::loadApplicationScript(
+    std::unique_ptr<const JSBigString> script,
+    std::string sourceURL) {
+  SystraceSection s("JSIExecutor::loadApplicationScript");
+
+  // TODO: check for and use precompiled HBC
+
   runtime_->global().setProperty(
       *runtime_,
       "nativeModuleProxy",
@@ -147,12 +151,10 @@ void JSIExecutor::initializeRuntime() {
   }
 }
 
-void JSIExecutor::loadBundle(
-    std::unique_ptr<const JSBigString> script,
-    std::string sourceURL) {
-  SystraceSection s("JSIExecutor::loadBundle");
-
-  // TODO: check for and use precompiled HBC
+  // TODO(OSS Candidate ISS#2710739)- send a notification that the global variables are set so we can then proceed with bundle loading (which depends on these and will crash if that thread finishes before they are set)
+  #if TARGET_OS_MAC // includes iOS and osx, excludes Android
+    NotifyRuntimeInitializationEnd();
+  #endif // TARGET_OS_MAC
 
   bool hasLogger(ReactMarker::logTaggedMarker);
   std::string scriptName = simpleBasename(sourceURL);
@@ -164,6 +166,7 @@ void JSIExecutor::loadBundle(
       std::make_unique<BigStringBuffer>(std::move(script)), sourceURL);
   flush();
   if (hasLogger) {
+    ReactMarker::logMarker(ReactMarker::CREATE_REACT_CONTEXT_STOP);
     ReactMarker::logTaggedMarker(
         ReactMarker::RUN_JS_BUNDLE_STOP, scriptName.c_str());
   }

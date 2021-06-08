@@ -32,7 +32,7 @@ class RAMBundleRegistry;
 // executors and their threads.  All functions here can be called from
 // any thread.
 //
-// Except for loadBundleSync(), all void methods will queue
+// Except for loadApplicationScriptSync(), all void methods will queue
 // work to run on the jsQueue passed to the ctor, and return
 // immediately.
 class NativeToJsBridge {
@@ -64,20 +64,15 @@ class NativeToJsBridge {
   void invokeCallback(double callbackId, folly::dynamic &&args);
 
   /**
-   * Sets global variables in the JS Context.
-   */
-  void initializeRuntime();
-
-  /**
    * Starts the JS application.  If bundleRegistry is non-null, then it is
    * used to fetch JavaScript modules as individual scripts.
    * Otherwise, the script is assumed to include all the modules.
    */
-  void loadBundle(
+  void loadApplication(
       std::unique_ptr<RAMBundleRegistry> bundleRegistry,
       std::unique_ptr<const JSBigString> startupCode,
       std::string sourceURL);
-  void loadBundleSync(
+  void loadApplicationSync(
       std::unique_ptr<RAMBundleRegistry> bundleRegistry,
       std::unique_ptr<const JSBigString> startupCode,
       std::string sourceURL);
