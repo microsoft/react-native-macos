@@ -413,7 +413,7 @@ struct RCTInstanceCallback : public InstanceCallback {
       [strongSelf executeSourceCode:sourceCode sync:NO];
     }
   });
- RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
+  RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
 }
 
 //- (void)runtimeInitializationDidEnd {
