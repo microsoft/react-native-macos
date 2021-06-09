@@ -374,31 +374,17 @@ struct RCTInstanceCallback : public InstanceCallback {
       }
     }));
   }
-
-  // TODO(OSS Candidate ISS#2710739) runtime initialization sequencing
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(runtimeInitializationDidEnd) name:RCTRuntimeInitializationEndNotificationName object:nil];
-  
-  // _prepareBridge = dispatch_group_create();
-  // dispatch_group_enter(_prepareBridge);
   // Dispatch the instance initialization as soon as the initial module metadata has
   // been collected (see initModules)
+  dispatch_group_enter(_prepareBridge);
   [self ensureOnJavaScriptThread:^{
     [weakSelf _initializeBridge:executorFactory];
-    // dispatch_group_leave(self->_prepareBridge);
+    dispatch_group_leave(_prepareBridge);
   }];
-  
-  // TODO(OSS Candidate ISS#2710739): We can call this multiple times but as long as we've set up the runtime once, we should be all set to continue
-  // if (_runtimeIsInitialized) {
-    [self runtimeInitializationDidEnd];
-  // }
-}
 
-- (void)runtimeInitializationDidEnd {
-  _runtimeIsInitialized = YES;
-  __weak RCTCxxBridge *weakSelf = self;
-  __block NSData *sourceCode;
-
+  // Load the source asynchronously, then store it for later execution.
   dispatch_group_enter(_prepareBridge);
+  __block NSData *sourceCode;
   [self
       loadSource:^(NSError *error, RCTSource *source) {
         if (error) {
@@ -406,29 +392,34 @@ struct RCTInstanceCallback : public InstanceCallback {
         }
 
         sourceCode = source.data;
-        dispatch_group_leave(self->_prepareBridge);
+        dispatch_group_leave(_prepareBridge);
       }
       onProgress:^(RCTLoadingProgress *progressData) {
 #if (RCT_DEV | RCT_ENABLE_LOADING_VIEW) && __has_include(<React/RCTDevLoadingViewProtocol.h>)
-        // [TODO(OSS Candidate ISS#2710739)
-        // Note: RCTDevLoadingView should have been loaded at this point, so no need to allow lazy loading.
-        if ([weakSelf isValid] && [[weakSelf devSettings] isDevModeEnabled]) {
-          id<RCTDevLoadingViewProtocol> loadingView = [weakSelf moduleForName:@"DevLoadingView"
-                                                        lazilyLoadIfNecessary:YES];
+       // [TODO(OSS Candidate ISS#2710739)
+       // Note: RCTDevLoadingView should have been loaded at this point, so no need to allow lazy loading.
+       if ([weakSelf isValid] && [[weakSelf devSettings] isDevModeEnabled]) {
+         id<RCTDevLoadingViewProtocol> loadingView = [weakSelf moduleForName:@"DevLoadingView"
+                                                       lazilyLoadIfNecessary:YES];
           [loadingView updateProgress:progressData];
         } // ]TODO(OSS Candidate ISS#2710739)
 #endif
-  }];
+      }];
 
   // Wait for both the modules and source code to have finished loading
   dispatch_group_notify(_prepareBridge, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
     RCTCxxBridge *strongSelf = weakSelf;
     if (sourceCode && strongSelf.loading) {
       [strongSelf executeSourceCode:sourceCode sync:NO];
-    }
-  });
-  RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
+   }
+ });
+ RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
 }
+
+//- (void)runtimeInitializationDidEnd {
+//  _runtimeIsInitialized = YES;
+//  __weak RCTCxxBridge *weakSelf = self;
+//}
 
 - (void)loadSource:(RCTSourceLoadBlock)_onSourceLoad onProgress:(RCTSourceLoadProgressBlock)onProgress
 {
