@@ -396,11 +396,11 @@ struct RCTInstanceCallback : public InstanceCallback {
       }
       onProgress:^(RCTLoadingProgress *progressData) {
 #if (RCT_DEV | RCT_ENABLE_LOADING_VIEW) && __has_include(<React/RCTDevLoadingViewProtocol.h>)
-       // [TODO(OSS Candidate ISS#2710739)
-       // Note: RCTDevLoadingView should have been loaded at this point, so no need to allow lazy loading.
-       if ([weakSelf isValid] && [[weakSelf devSettings] isDevModeEnabled]) {
-         id<RCTDevLoadingViewProtocol> loadingView = [weakSelf moduleForName:@"DevLoadingView"
-                                                       lazilyLoadIfNecessary:YES];
+      // [TODO(OSS Candidate ISS#2710739)
+      // Note: RCTDevLoadingView should have been loaded at this point, so no need to allow lazy loading.
+      if ([weakSelf isValid] && [[weakSelf devSettings] isDevModeEnabled]) {
+        id<RCTDevLoadingViewProtocol> loadingView = [weakSelf moduleForName:@"DevLoadingView"
+                                                      lazilyLoadIfNecessary:YES];
           [loadingView updateProgress:progressData];
         } // ]TODO(OSS Candidate ISS#2710739)
 #endif
@@ -411,8 +411,8 @@ struct RCTInstanceCallback : public InstanceCallback {
     RCTCxxBridge *strongSelf = weakSelf;
     if (sourceCode && strongSelf.loading) {
       [strongSelf executeSourceCode:sourceCode sync:NO];
-   }
- });
+    }
+  });
  RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
 }
 
