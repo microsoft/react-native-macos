@@ -143,15 +143,6 @@ void JSIExecutor::loadApplicationScript(
   }
 
   // TODO(OSS Candidate ISS#2710739)- send a notification that the global variables are set so we can then proceed with bundle loading (which depends on these and will crash if that thread finishes before they are set)
-  NotifyRuntimeInitializationEnd();
-
-  bool hasLogger(ReactMarker::logTaggedMarker);
-  if (hasLogger) {
-    ReactMarker::logMarker(ReactMarker::CREATE_REACT_CONTEXT_STOP);
-  }
-}
-
-  // TODO(OSS Candidate ISS#2710739)- send a notification that the global variables are set so we can then proceed with bundle loading (which depends on these and will crash if that thread finishes before they are set)
   #if TARGET_OS_MAC // includes iOS and osx, excludes Android
     NotifyRuntimeInitializationEnd();
   #endif // TARGET_OS_MAC
