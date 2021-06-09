@@ -259,6 +259,8 @@ struct RCTInstanceCallback : public InstanceCallback {
     _moduleDataByName = [NSMutableDictionary new];
     _moduleClassesByID = [NSMutableArray new];
     _moduleDataByID = [NSMutableArray new];
+      
+    _prepareBridge = dispatch_group_create();
 
     [RCTBridge setCurrentBridge:self];
   }
@@ -376,19 +378,19 @@ struct RCTInstanceCallback : public InstanceCallback {
   // TODO(OSS Candidate ISS#2710739) runtime initialization sequencing
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(runtimeInitializationDidEnd) name:RCTRuntimeInitializationEndNotificationName object:nil];
   
-  _prepareBridge = dispatch_group_create();
-  dispatch_group_enter(_prepareBridge);
+  // _prepareBridge = dispatch_group_create();
+  // dispatch_group_enter(_prepareBridge);
   // Dispatch the instance initialization as soon as the initial module metadata has
   // been collected (see initModules)
   [self ensureOnJavaScriptThread:^{
     [weakSelf _initializeBridge:executorFactory];
-    dispatch_group_leave(self->_prepareBridge);
+    // dispatch_group_leave(self->_prepareBridge);
   }];
   
   // TODO(OSS Candidate ISS#2710739): We can call this multiple times but as long as we've set up the runtime once, we should be all set to continue
-  if (_runtimeIsInitialized) {
+  // if (_runtimeIsInitialized) {
     [self runtimeInitializationDidEnd];
-  }
+  // }
 }
 
 - (void)runtimeInitializationDidEnd {
