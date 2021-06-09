@@ -8,6 +8,8 @@
 #include <atomic>
 #include <future>
 
+#include "RCTRuntimeInitializeStateNotifier-C-Interface.h" // TODO(OSS Candidate ISS#2710739)- needed to sequence the runtime initialization and bundle loading properly to avoid crashing
+
 #import <React/RCTAssert.h>
 #import <React/RCTBridge+Private.h>
 #import <React/RCTBridge.h>
@@ -374,14 +376,27 @@ struct RCTInstanceCallback : public InstanceCallback {
       }
     }));
   }
+
+  // TODO(OSS Candidate ISS#2710739) runtime initialization sequencing
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(runtimeInitializationDidEnd) name:RCTRuntimeInitializationEndNotificationName object:nil];
+
   // Dispatch the instance initialization as soon as the initial module metadata has
   // been collected (see initModules)
   dispatch_group_enter(_prepareBridge);
   [self ensureOnJavaScriptThread:^{
     [weakSelf _initializeBridge:executorFactory];
-    dispatch_group_leave(_prepareBridge);
+    dispatch_group_leave(self->_prepareBridge);
+    NotifyRuntimeInitializationEnd();
   }];
+}
 
+- (void)runtimeInitializationDidEnd {
+  if (_runtimeIsInitialized) {
+    return;
+  }
+  _runtimeIsInitialized = YES;
+  __weak RCTCxxBridge *weakSelf = self;
+  
   // Load the source asynchronously, then store it for later execution.
   dispatch_group_enter(_prepareBridge);
   __block NSData *sourceCode;
@@ -392,7 +407,7 @@ struct RCTInstanceCallback : public InstanceCallback {
         }
 
         sourceCode = source.data;
-        dispatch_group_leave(_prepareBridge);
+        dispatch_group_leave(self->_prepareBridge);
       }
       onProgress:^(RCTLoadingProgress *progressData) {
 #if (RCT_DEV | RCT_ENABLE_LOADING_VIEW) && __has_include(<React/RCTDevLoadingViewProtocol.h>)
@@ -415,11 +430,6 @@ struct RCTInstanceCallback : public InstanceCallback {
   });
   RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
 }
-
-//- (void)runtimeInitializationDidEnd {
-//  _runtimeIsInitialized = YES;
-//  __weak RCTCxxBridge *weakSelf = self;
-//}
 
 - (void)loadSource:(RCTSourceLoadBlock)_onSourceLoad onProgress:(RCTSourceLoadProgressBlock)onProgress
 {
