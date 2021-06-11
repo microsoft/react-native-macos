@@ -31,7 +31,7 @@ Pod::Spec.new do |s|
                                "CLANG_CXX_LANGUAGE_STANDARD" => "c++17" }
 
   s.dependency "RCT-Folly", folly_version
-  s.dependency "React-callinvoker", version
+  s.dependency "ReactCommon/callinvoker", version
   s.dependency "ReactCommon/turbomodule/core", version
   s.dependency "React-TurboModuleCxx-WinRTPort", version
 end

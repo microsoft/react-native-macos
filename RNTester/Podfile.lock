@@ -40,7 +40,7 @@ PODS:
     - React-RCTVibration (= 0.63.32)
   - React-ART (0.63.32):
     - React-Core/ARTHeaders (= 0.63.32)
-  - React-callinvoker (0.63.32)
+  - ReactCommon/callinvoker (0.63.32)
   - React-Core (0.63.32):
     - glog
     - RCT-Folly (= 2020.01.13.00)
@@ -183,7 +183,7 @@ PODS:
     - DoubleConversion
     - glog
     - RCT-Folly (= 2020.01.13.00)
-    - React-callinvoker (= 0.63.32)
+    - ReactCommon/callinvoker (= 0.63.32)
     - React-jsinspector (= 0.63.32)
   - React-jsi (0.63.32):
     - boost-for-react-native (= 1.63.0)
@@ -269,7 +269,7 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.63.32)
   - React-TurboModuleCxx-RNW (0.63.32):
     - RCT-Folly (= 2020.01.13.00)
-    - React-callinvoker (= 0.63.32)
+    - ReactCommon/callinvoker (= 0.63.32)
     - React-TurboModuleCxx-WinRTPort (= 0.63.32)
     - ReactCommon/turbomodule/core (= 0.63.32)
   - React-TurboModuleCxx-WinRTPort (0.63.32):
@@ -277,13 +277,13 @@ PODS:
     - React-TurboModuleCxx-WinRTPort/WinRT (= 0.63.32)
   - React-TurboModuleCxx-WinRTPort/Shared (0.63.32)
   - React-TurboModuleCxx-WinRTPort/WinRT (0.63.32):
-    - React-callinvoker (= 0.63.32)
+    - ReactCommon/callinvoker (= 0.63.32)
     - React-TurboModuleCxx-WinRTPort/Shared (= 0.63.32)
   - ReactCommon/turbomodule/core (0.63.32):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2020.01.13.00)
-    - React-callinvoker (= 0.63.32)
+    - ReactCommon/callinvoker (= 0.63.32)
     - React-Core (= 0.63.32)
     - React-cxxreact (= 0.63.32)
     - React-jsi (= 0.63.32)
@@ -291,7 +291,7 @@ PODS:
     - DoubleConversion
     - glog
     - RCT-Folly (= 2020.01.13.00)
-    - React-callinvoker (= 0.63.32)
+    - ReactCommon/callinvoker (= 0.63.32)
     - React-Core (= 0.63.32)
     - React-cxxreact (= 0.63.32)
     - React-jsi (= 0.63.32)
@@ -309,7 +309,7 @@ DEPENDENCIES:
   - RCTTypeSafety (from `../Libraries/TypeSafety`)
   - React (from `../`)
   - React-ART (from `../Libraries/ART`)
-  - React-callinvoker (from `../ReactCommon/callinvoker`)
+  - ReactCommon/callinvoker (from `../ReactCommon`)
   - React-Core (from `../`)
   - React-Core/DevSupport (from `../`)
   - React-Core/RCTWebSocket (from `../`)
@@ -356,8 +356,8 @@ EXTERNAL SOURCES:
     :path: "../"
   React-ART:
     :path: "../Libraries/ART"
-  React-callinvoker:
-    :path: "../ReactCommon/callinvoker"
+  ReactCommon/callinvoker:
+    :path: "../ReactCommon"
   React-Core:
     :path: "../"
   React-CoreModules:
@@ -412,7 +412,7 @@ SPEC CHECKSUMS:
   RCTTypeSafety: 9b9d0e720c7e0db01c4335c07293b0762db823ad
   React: 51ff14afee47ba093fc9170f763b7e5ee361c4f0
   React-ART: 105074a113c9f5c04fcf27a941951f5fbd902dfc
-  React-callinvoker: 81976a8b4c2f36e2845f918850b8b8b3977067dc
+  ReactCommon/callinvoker: 81976a8b4c2f36e2845f918850b8b8b3977067dc
   React-Core: 229cee3de04ee6f3eb9a2f1c314cafd057c2410e
   React-CoreModules: ddae027941fade9957154006bab7397a0917de1f
   React-cxxreact: fa7d783de6749ac4486dbd52bc275c0b107e3147
