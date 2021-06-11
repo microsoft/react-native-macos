@@ -44,7 +44,7 @@ def use_react_native! (options={})
   pod 'React-jsi', :path => "#{prefix}/ReactCommon/jsi"
   pod 'React-jsiexecutor', :path => "#{prefix}/ReactCommon/jsiexecutor"
   pod 'React-jsinspector', :path => "#{prefix}/ReactCommon/jsinspector"
-  pod 'React-callinvoker', :path => "#{prefix}/ReactCommon/callinvoker"
+  pod 'ReactCommon/callinvoker', :path => "#{prefix}/ReactCommon"
   pod 'ReactCommon/turbomodule/core', :path => "#{prefix}/ReactCommon"
   pod 'Yoga', :path => "#{prefix}/ReactCommon/yoga", :modular_headers => true
 

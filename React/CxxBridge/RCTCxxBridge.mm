@@ -227,11 +227,6 @@ struct RCTInstanceCallback : public InstanceCallback {
 }
 // ]TODO(OSS Candidate ISS#2710739)
 
-- (std::shared_ptr<CallInvoker>)jsCallInvoker
-{
-  return _reactInstance ? _reactInstance->getJSCallInvoker() : nullptr;
-}
-
 - (BOOL)isInspectable
 {
   return _reactInstance ? _reactInstance->isInspectable() : NO;
@@ -1473,10 +1468,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithBundleURL
   __weak __typeof(self) weakSelf = self;
   [self _runAfterLoad:^{
     __strong __typeof(self) strongSelf = weakSelf;
-
-    if (std::shared_ptr<CallInvoker> jsInvoker = strongSelf.jsCallInvoker) {
-      jsInvoker->invokeAsync(std::move(retainedFunc));
+    if (strongSelf->_reactInstance == nullptr) {
+      return;
     }
+    strongSelf->_reactInstance->invokeAsync(std::move(retainedFunc));
   }];
 }
 

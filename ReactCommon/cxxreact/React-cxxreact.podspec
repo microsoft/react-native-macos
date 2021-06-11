@@ -40,5 +40,4 @@ Pod::Spec.new do |s|
   s.dependency "RCT-Folly", folly_version
   s.dependency "glog"
   s.dependency "React-jsinspector", version
-  s.dependency "React-callinvoker", version
 end

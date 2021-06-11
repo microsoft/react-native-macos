@@ -47,15 +47,8 @@ void Instance::initializeBridge(
   callback_ = std::move(callback);
   moduleRegistry_ = std::move(moduleRegistry);
   jsQueue->runOnQueueSync([this, &jsef, jsQueue]() mutable {
-    nativeToJsBridge_ = std::make_shared<NativeToJsBridge>(
+    nativeToJsBridge_ = std::make_unique<NativeToJsBridge>(
         jsef.get(), moduleRegistry_, jsQueue, callback_);
-
-    /**
-     * After NativeToJsBridge is created, the jsi::Runtime should exist.
-     * Also, the JS message queue thread exists. So, it's safe to
-     * schedule all queued up js Calls.
-     */
-    jsCallInvoker_->setNativeToJsBridgeAndFlushCalls(nativeToJsBridge_);
 
     std::lock_guard<std::mutex> lock(m_syncMutex);
     m_syncReady = true;
@@ -223,66 +216,12 @@ void Instance::handleMemoryPressure(int pressureLevel) {
   nativeToJsBridge_->handleMemoryPressure(pressureLevel);
 }
 
-std::shared_ptr<CallInvoker> Instance::getJSCallInvoker() {
-  return std::static_pointer_cast<CallInvoker>(jsCallInvoker_);
-}
-
-std::shared_ptr<CallInvoker> Instance::getDecoratedNativeCallInvoker(
-    std::shared_ptr<CallInvoker> nativeInvoker) {
-  return nativeToJsBridge_->getDecoratedNativeCallInvoker(nativeInvoker);
-}
-
-void Instance::JSCallInvoker::setNativeToJsBridgeAndFlushCalls(
-    std::weak_ptr<NativeToJsBridge> nativeToJsBridge) {
-  std::lock_guard<std::mutex> guard(m_mutex);
-
-  m_shouldBuffer = false;
-  m_nativeToJsBridge = nativeToJsBridge;
-  while (m_workBuffer.size() > 0) {
-    scheduleAsync(std::move(m_workBuffer.front()));
-    m_workBuffer.pop_front();
-  }
-}
-
-void Instance::JSCallInvoker::invokeSync(std::function<void()> &&work) {
-  // TODO: Replace JS Callinvoker with RuntimeExecutor.
-  throw std::runtime_error(
-      "Synchronous native -> JS calls are currently not supported.");
-}
-
-void Instance::JSCallInvoker::invokeAsync(std::function<void()> &&work) {
-  std::lock_guard<std::mutex> guard(m_mutex);
-
-  /**
-   * Why is is necessary to queue up async work?
-   *
-   * 1. TurboModuleManager must be created synchronously after the Instance,
-   *    before we load the source code. This is when the NativeModule system
-   *    is initialized. RCTDevLoadingView shows bundle download progress.
-   * 2. TurboModuleManager requires a JS CallInvoker.
-   * 3. The JS CallInvoker requires the NativeToJsBridge, which is created on
-   *    the JS thread in Instance::initializeBridge.
-   *
-   * Therefore, although we don't call invokeAsync before the JS bundle is
-   * executed, this buffering is implemented anyways to ensure that work
-   * isn't discarded.
-   */
-  if (m_shouldBuffer) {
-    m_workBuffer.push_back(std::move(work));
-    return;
-  }
-
-  scheduleAsync(std::move(work));
-}
-
-void Instance::JSCallInvoker::scheduleAsync(std::function<void()> &&work) {
-  if (auto strongNativeToJsBridge = m_nativeToJsBridge.lock()) {
-    strongNativeToJsBridge->runOnExecutorQueue(
-        [work = std::move(work)](JSExecutor *executor) {
-          work();
-          executor->flush();
-        });
-  }
+void Instance::invokeAsync(std::function<void()> &&func) {
+  nativeToJsBridge_->runOnExecutorQueue(
+      [func = std::move(func)](JSExecutor *executor) {
+        func();
+        executor->flush();
+      });
 }
 
 } // namespace react
