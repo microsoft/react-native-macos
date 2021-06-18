@@ -34,7 +34,7 @@ end
 
 target 'RNTester' do
   pods()
-  use_flipper!
+  # use_flipper! # TODO: GH#774 disable flipper
 end
 
 target 'RNTesterUnitTests' do
@@ -82,7 +82,7 @@ end
 # ]TODO(macOS ISS#2323203)
 
 post_install do |installer|
-  flipper_post_install(installer)
+  # flipper_post_install(installer) # TODO: GH#774 disable flipper
   installer.pods_project.targets.each do |target|
     # [TODO(macOS ISS#2323203): the internal Microsoft build pipeline needs iOS arm64e slices
     if target.platform_name == :ios
