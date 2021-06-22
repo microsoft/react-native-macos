@@ -127,6 +127,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS I
   id<RCTEventDispatcherProtocol> _eventDispatcher; // TODO(OSS Candidate ISS#2710739)
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
   NSTrackingArea *_trackingArea;
+  BOOL _hasClipViewBoundsObserver;
   BOOL _hasMouseOver;
 #endif // ]TODO(macOS GH#774)
   NSMutableDictionary<NSString *, NSDictionary *> *accessibilityActionsNameMap;
@@ -716,24 +717,47 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 #endif // TODO(macOS GH#774)
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
+- (void)setOnMouseEnter:(RCTDirectEventBlock)onMouseEnter
+{
+  _onMouseEnter = onMouseEnter;
+  [self updateBoundsObserverIfNecessary];
+}
+
+- (void)setOnMouseLeave:(RCTDirectEventBlock)onMouseLeave
+{
+  _onMouseLeave = onMouseLeave;
+  [self updateBoundsObserverIfNecessary];
+}
+
 - (void)viewDidMoveToWindow
+{
+  [self updateBoundsObserverIfNecessary];
+  [super viewDidMoveToWindow];
+}
+
+- (void)updateBoundsObserverIfNecessary
 {
   // Subscribe to view bounds changed notification so that the view can be notified when a
   // scroll event occurs either due to trackpad/gesture based scrolling or a scrollwheel event
   // both of which would not cause the mouseExited to be invoked.
 
-  if ([self window] == nil) {
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:NSViewBoundsDidChangeNotification
-                                                  object:nil];
+  if (_hasClipViewBoundsObserver) {
+    if ((!_onMouseEnter && !_onMouseLeave) || !self.window) {
+      _hasClipViewBoundsObserver = NO;
+      [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                      name:NSViewBoundsDidChangeNotification
+                                                    object:nil];
+    }
+  } else if ((_onMouseEnter || _onMouseLeave) && self.window) {
+    NSClipView *clipView = self.enclosingScrollView.contentView;
+    if (clipView) {
+      _hasClipViewBoundsObserver = YES;
+      [[NSNotificationCenter defaultCenter] addObserver:self
+                                              selector:@selector(viewBoundsChanged:)
+                                                  name:NSViewBoundsDidChangeNotification
+                                                object:clipView];
+    }
   }
-  else if ([[self enclosingScrollView] contentView] != nil) {
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(viewBoundsChanged:)
-                                                 name:NSViewBoundsDidChangeNotification
-                                               object:[[self enclosingScrollView] contentView]];
-  }
-  [super viewDidMoveToWindow];
 }
 
 - (void)viewBoundsChanged:(NSNotification*)__unused inNotif
