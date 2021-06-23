@@ -201,10 +201,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   if (_renderingMode != image.renderingMode) {
     image = [image imageWithRenderingMode:_renderingMode];
   }
-#else // [TODO(macOS GH#774)
-  if ((_renderingMode == UIImageRenderingModeAlwaysTemplate) != [image isTemplate]) {
-    [image setTemplate:(_renderingMode == UIImageRenderingModeAlwaysTemplate)];
-  }
 #endif // ]TODO(macOS GH#774)
 
   if (_resizeMode == RCTResizeModeRepeat) {
@@ -227,6 +223,12 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
     image.resizingMode = NSImageResizingModeStretch;
 #endif // ]TODO(macOS GH#774)
   }
+
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  if ((_renderingMode == UIImageRenderingModeAlwaysTemplate) != [image isTemplate]) {
+    [image setTemplate:(_renderingMode == UIImageRenderingModeAlwaysTemplate)];
+  }
+#endif // ]TODO(macOS GH#774)
 
   // Apply trilinear filtering to smooth out mis-sized images
   _imageView.layer.minificationFilter = kCAFilterTrilinear;
