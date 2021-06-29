@@ -113,7 +113,8 @@
 
   if (shouldForward) {
     NSView *contentView = self.window.contentView;
-    NSPoint point = [contentView convertPoint:event.locationInWindow fromView:nil];
+    // -[NSView hitTest:] takes coordinates in a view's superview coordinate system.
+    NSPoint point = [contentView.superview convertPoint:event.locationInWindow fromView:nil];
 
     // Start selection if we're still selectable and hit-testable.
     if (self.selectable && [contentView hitTest:point] == self) {
