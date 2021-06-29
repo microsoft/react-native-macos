@@ -594,9 +594,7 @@ struct RCTInstanceCallback : public InstanceCallback {
   // This can only be false if the bridge was invalidated before startup completed
   if (_reactInstance) {
 #if RCT_DEV
-    if ([[self devSettings] isDevModeEnabled]) { // TODO(OSS Candidate ISS#2710739)
       executorFactory = std::make_shared<GetDescAdapter>(self, executorFactory);
-    } // TODO(OSS Candidate ISS#2710739)
 #endif
 
     [self _initializeBridgeLocked:executorFactory];
