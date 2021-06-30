@@ -606,19 +606,6 @@ if (__DEV__) {
     },
   });
 
-  // $FlowFixMe This is intentional: Flow will error when attempting to access CameraRoll.
-  Object.defineProperty(module.exports, 'CameraRoll', {
-    configurable: true,
-    get() {
-      invariant(
-        false,
-        'CameraRoll has been removed from React Native. ' +
-          "It can now be installed and imported from '@react-native-community/cameraroll' instead of 'react-native'. " +
-          'See https://github.com/react-native-community/react-native-cameraroll',
-      );
-    },
-  });
-
   // $FlowFixMe This is intentional: Flow will error when attempting to access ImageStore.
   Object.defineProperty(module.exports, 'ImageStore', {
     configurable: true,
