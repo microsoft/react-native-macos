@@ -99,7 +99,6 @@ import typeof {PlatformColor} from './Libraries/StyleSheet/PlatformColorValueTyp
 import typeof {DynamicColorIOS} from './Libraries/StyleSheet/PlatformColorValueTypesIOS';
 import typeof {DynamicColorMacOS} from './Libraries/StyleSheet/PlatformColorValueTypesMacOS'; // TODO(macOS GH#774)
 import typeof {ColorWithSystemEffectMacOS} from './Libraries/StyleSheet/PlatformColorValueTypesMacOS'; // TODO(macOS GH#750)
-import typeof {ColorAndroid} from './Libraries/StyleSheet/PlatformColorValueTypesAndroid';
 import typeof RootTagContext from './Libraries/ReactNative/RootTagContext';
 import typeof DeprecatedColorPropType from './Libraries/DeprecatedPropTypes/DeprecatedColorPropType';
 import typeof DeprecatedEdgeInsetsPropType from './Libraries/DeprecatedPropTypes/DeprecatedEdgeInsetsPropType';
@@ -497,10 +496,6 @@ module.exports = {
     return require('./Libraries/StyleSheet/PlatformColorValueTypesMacOS')
       .ColorWithSystemEffectMacOS;
   }, // ]TODO(macOS GH#750)
-  get ColorAndroid(): ColorAndroid {
-    return require('./Libraries/StyleSheet/PlatformColorValueTypesAndroid')
-      .ColorAndroid;
-  },
   get requireNativeComponent(): <T>(
     uiViewClassName: string,
   ) => HostComponent<T> {
