@@ -25,7 +25,6 @@ import type {
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
 import {normalizeRect, type RectOrSize} from '../../StyleSheet/Rect';
-import type {ColorValue} from '../../StyleSheet/StyleSheetTypes';
 import type {
   LayoutEvent,
   MouseEvent, // TODO(macOS GH#774)
