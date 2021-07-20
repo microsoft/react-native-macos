@@ -14,7 +14,7 @@ const React = require('react');
 const ReactNative = require('react-native');
 import Platform from '../../../../Libraries/Utilities/Platform';
 const {
-  ColorWithSystemEffectMacOS,
+  ColorWithSystemEffectMacOS, // TODO(macOS GH#750)
   DynamicColorIOS,
   DynamicColorMacOS,
   PlatformColor,
@@ -321,10 +321,7 @@ function VariantColorsExample() {
             backgroundColor:
               Platform.OS === 'ios'
                 ? DynamicColorIOS({light: 'red', dark: 'blue'})
-                : // [TODO(macOS GH#774)
-                Platform.OS === 'macos'
-                ? DynamicColorMacOS({light: 'red', dark: 'blue'})
-                : PlatformColor('?attr/colorAccent'),
+                : DynamicColorMacOS({light: 'red', dark: 'blue'}), // [TODO(macOS GH#774)
           }}
         />
       </View>
