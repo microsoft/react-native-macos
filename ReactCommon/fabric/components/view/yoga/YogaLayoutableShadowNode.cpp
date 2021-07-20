@@ -6,11 +6,6 @@
  */
 
 #include "YogaLayoutableShadowNode.h"
-
-#include <algorithm>
-#include <limits>
-#include <memory>
-
 #include <react/components/view/ViewProps.h>
 #include <react/components/view/conversions.h>
 #include <react/core/LayoutConstraints.h>
@@ -18,7 +13,9 @@
 #include <react/debug/DebugStringConvertibleItem.h>
 #include <react/debug/SystraceSection.h>
 #include <yoga/Yoga.h>
-#include <iostream>
+#include <algorithm>
+#include <limits>
+#include <memory>
 
 namespace facebook {
 namespace react {
@@ -54,6 +51,10 @@ YogaLayoutableShadowNode::YogaLayoutableShadowNode(
       yogaConfig_(nullptr),
       yogaNode_(&initializeYogaConfig(yogaConfig_)) {
   yogaNode_.setContext(this);
+
+  // Newly created node must be `dirty` just becasue it is new.
+  // This is not a default for `YGNode`.
+  yogaNode_.setDirty(true);
 
   updateYogaProps();
   updateYogaChildren();
@@ -141,8 +142,6 @@ void YogaLayoutableShadowNode::appendChildYogaNode(
     return;
   }
 
-  yogaNode_.setDirty(true);
-
   auto yogaNodeRawPtr = &yogaNode_;
   auto childYogaNodeRawPtr = &child.yogaNode_;
   auto childNodePtr = const_cast<YogaLayoutableShadowNode *>(&child);
@@ -175,11 +174,15 @@ void YogaLayoutableShadowNode::updateYogaChildren() {
   // Optimization:
   // If the new list of child nodes consists of clean nodes, and if their styles
   // are identical to styles of old children, we don't dirty the node.
-  bool isClean = !yogaNode_.getDirtied() &&
-      children.size() == yogaNode_.getChildren().size();
+  bool isClean =
+      !yogaNode_.isDirty() && children.size() == yogaNode_.getChildren().size();
   auto oldChildren = isClean ? yogaNode_.getChildren() : YGVector{};
 
   yogaNode_.setChildren({});
+
+  // We might undo this later at the end of the method if we can infer that
+  // dirting is not necessary here.
+  yogaNode_.setDirty(true);
 
   auto i = int{0};
   for (auto const &child : children) {
@@ -322,8 +325,9 @@ YogaLayoutableShadowNode &YogaLayoutableShadowNode::cloneAndReplaceChild(
     int suggestedIndex) {
   auto clonedChildShadowNode = child.clone({});
   replaceChild(child, clonedChildShadowNode, suggestedIndex);
-
-  return static_cast<YogaLayoutableShadowNode &>(*clonedChildShadowNode);
+  auto &node = static_cast<YogaLayoutableShadowNode &>(*clonedChildShadowNode);
+  node.yogaNode_.setDirty(true);
+  return node;
 }
 
 #pragma mark - Yoga Connectors
@@ -390,10 +394,29 @@ YGSize YogaLayoutableShadowNode::yogaNodeMeasureCallbackConnector(
                 yogaFloatFromFloat(size.height)};
 }
 
+#ifdef RN_DEBUG_YOGA_LOGGER
+static int YogaLog(
+    const YGConfigRef config,
+    const YGNodeRef node,
+    YGLogLevel level,
+    const char *format,
+    va_list args) {
+  int result = vsnprintf(NULL, 0, format, args);
+  std::vector<char> buffer(1 + result);
+  vsnprintf(buffer.data(), buffer.size(), format, args);
+  LOG(INFO) << "RNYogaLogger " << buffer.data();
+  return result;
+}
+#endif
+
 YGConfig &YogaLayoutableShadowNode::initializeYogaConfig(YGConfig &config) {
   config.setCloneNodeCallback(
       YogaLayoutableShadowNode::yogaNodeCloneCallbackConnector);
   config.useLegacyStretchBehaviour = true;
+#ifdef RN_DEBUG_YOGA_LOGGER
+  config.printTree = true;
+  config.setLogger(&YogaLog);
+#endif
   return config;
 }
 
@@ -450,7 +473,7 @@ void YogaLayoutableShadowNode::swapLeftAndRightInYogaStyleProps(
 
   if (yogaStyle.margin()[YGEdgeRight] != YGValueUndefined) {
     yogaStyle.margin()[YGEdgeEnd] = margin[YGEdgeRight];
-    yogaStyle.margin()[YGEdgeLeft] = YGValueUndefined;
+    yogaStyle.margin()[YGEdgeRight] = YGValueUndefined;
   }
 
   shadowNode.yogaNode_.setStyle(yogaStyle);
