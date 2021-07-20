@@ -311,14 +311,28 @@ public class TextLayoutManager {
             ? layout.getLineCount()
             : Math.min(maximumNumberOfLines, layout.getLineCount());
 
-    int calculatedHeight = layout.getLineBottom(calculatedLineCount - 1);
     // Instead of using `layout.getWidth()` (which may yield a significantly larger width for
     // text that is wrapping), compute width using the longest line.
-    int calculatedWidth = 0;
-    for (int lineIndex = 0; lineIndex < calculatedLineCount; lineIndex++) {
-      float lineWidth = layout.getLineWidth(lineIndex);
-      if (lineWidth > calculatedWidth) {
-        calculatedWidth = (int) Math.ceil(lineWidth);
+    float calculatedWidth = 0;
+    if (widthYogaMeasureMode == YogaMeasureMode.EXACTLY) {
+      calculatedWidth = width;
+    } else {
+      for (int lineIndex = 0; lineIndex < calculatedLineCount; lineIndex++) {
+        float lineWidth = layout.getLineWidth(lineIndex);
+        if (lineWidth > calculatedWidth) {
+          calculatedWidth = lineWidth;
+        }
+      }
+      if (widthYogaMeasureMode == YogaMeasureMode.AT_MOST && calculatedWidth > width) {
+        calculatedWidth = width;
+      }
+    }
+
+    float calculatedHeight = height;
+    if (heightYogaMeasureMode != YogaMeasureMode.EXACTLY) {
+      calculatedHeight = layout.getLineBottom(calculatedLineCount - 1);
+      if (heightYogaMeasureMode == YogaMeasureMode.AT_MOST && calculatedHeight > height) {
+        calculatedHeight = height;
       }
     }
 
@@ -342,12 +356,12 @@ public class TextLayoutManager {
         // thing to be truncated.
         if (!(isLineTruncated && start >= layout.getLineStart(line) + layout.getEllipsisStart(line))
             || start >= layout.getLineEnd(line)) {
-          int placeholderWidth = placeholder.getWidth();
-          int placeholderHeight = placeholder.getHeight();
+          float placeholderWidth = placeholder.getWidth();
+          float placeholderHeight = placeholder.getHeight();
           // Calculate if the direction of the placeholder character is Right-To-Left.
           boolean isRtlChar = layout.isRtlCharAt(start);
           boolean isRtlParagraph = layout.getParagraphDirection(line) == Layout.DIR_RIGHT_TO_LEFT;
-          int placeholderLeftPosition;
+          float placeholderLeftPosition;
           // There's a bug on Samsung devices where calling getPrimaryHorizontal on
           // the last offset in the layout will result in an endless loop. Work around
           // this bug by avoiding getPrimaryHorizontal in that case.
@@ -356,8 +370,8 @@ public class TextLayoutManager {
                 isRtlParagraph
                     // Equivalent to `layout.getLineLeft(line)` but `getLineLeft` returns incorrect
                     // values when the paragraph is RTL and `setSingleLine(true)`.
-                    ? calculatedWidth - (int) layout.getLineWidth(line)
-                    : (int) layout.getLineRight(line) - placeholderWidth;
+                    ? calculatedWidth - layout.getLineWidth(line)
+                    : layout.getLineRight(line) - placeholderWidth;
           } else {
             // The direction of the paragraph may not be exactly the direction the string is heading
             // in at the
@@ -367,8 +381,8 @@ public class TextLayoutManager {
             boolean characterAndParagraphDirectionMatch = isRtlParagraph == isRtlChar;
             placeholderLeftPosition =
                 characterAndParagraphDirectionMatch
-                    ? (int) layout.getPrimaryHorizontal(start)
-                    : (int) layout.getSecondaryHorizontal(start);
+                    ? layout.getPrimaryHorizontal(start)
+                    : layout.getSecondaryHorizontal(start);
             if (isRtlParagraph) {
               // Adjust `placeholderLeftPosition` to work around an Android bug.
               // The bug is when the paragraph is RTL and `setSingleLine(true)`, some layout
@@ -379,21 +393,21 @@ public class TextLayoutManager {
               // The result is equivalent to bugless versions of
               // `getPrimaryHorizontal`/`getSecondaryHorizontal`.
               placeholderLeftPosition =
-                  calculatedWidth - ((int) layout.getLineRight(line) - placeholderLeftPosition);
+                  calculatedWidth - (layout.getLineRight(line) - placeholderLeftPosition);
             }
             if (isRtlChar) {
               placeholderLeftPosition -= placeholderWidth;
             }
           }
           // Vertically align the inline view to the baseline of the line of text.
-          int placeholderTopPosition = layout.getLineBaseline(line) - placeholderHeight;
+          float placeholderTopPosition = layout.getLineBaseline(line) - placeholderHeight;
           int attachmentPosition = attachmentIndex * 2;
 
           // The attachment array returns the positions of each of the attachments as
           attachmentsPositions[attachmentPosition] =
-              (int) PixelUtil.toSPFromPixel(placeholderTopPosition);
+              (int) Math.ceil(PixelUtil.toSPFromPixel(placeholderTopPosition));
           attachmentsPositions[attachmentPosition + 1] =
-              (int) PixelUtil.toSPFromPixel(placeholderLeftPosition);
+              (int) Math.ceil(PixelUtil.toSPFromPixel(placeholderLeftPosition));
           attachmentIndex++;
         }
       }
