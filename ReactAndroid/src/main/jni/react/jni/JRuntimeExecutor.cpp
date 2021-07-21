@@ -5,21 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "ImageState.h"
+#include "JRuntimeExecutor.h"
 
 namespace facebook {
 namespace react {
 
-ImageSource ImageState::getImageSource() const {
-  return imageSource_;
-}
+JRuntimeExecutor::JRuntimeExecutor(RuntimeExecutor runtimeExecutor)
+    : runtimeExecutor_(runtimeExecutor) {}
 
-ImageRequest const &ImageState::getImageRequest() const {
-  return *imageRequest_;
-}
-
-Float ImageState::getBlurRadius() const {
-  return blurRadius_;
+RuntimeExecutor JRuntimeExecutor::get() {
+  return runtimeExecutor_;
 }
 
 } // namespace react

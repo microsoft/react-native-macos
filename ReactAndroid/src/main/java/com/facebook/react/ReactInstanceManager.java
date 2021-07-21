@@ -470,7 +470,9 @@ public class ReactInstanceManager {
     } else {
       DeviceEventManagerModule deviceEventManagerModule =
           reactContext.getNativeModule(DeviceEventManagerModule.class);
-      deviceEventManagerModule.emitHardwareBackPressed();
+      if (deviceEventManagerModule != null) {
+        deviceEventManagerModule.emitHardwareBackPressed();
+      }
     }
   }
 
@@ -497,7 +499,9 @@ public class ReactInstanceManager {
               || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action))) {
         DeviceEventManagerModule deviceEventManagerModule =
             currentContext.getNativeModule(DeviceEventManagerModule.class);
-        deviceEventManagerModule.emitNewIntentReceived(uri);
+        if (deviceEventManagerModule != null) {
+          deviceEventManagerModule.emitNewIntentReceived(uri);
+        }
       }
       currentContext.onNewIntent(mCurrentActivity, intent);
     }
@@ -775,9 +779,12 @@ public class ReactInstanceManager {
 
     ReactContext currentReactContext = getCurrentReactContext();
     if (currentReactContext != null) {
-      currentReactContext
-          .getNativeModule(AppearanceModule.class)
-          .onConfigurationChanged(updatedContext);
+      AppearanceModule appearanceModule =
+          currentReactContext.getNativeModule(AppearanceModule.class);
+
+      if (appearanceModule != null) {
+        appearanceModule.onConfigurationChanged(updatedContext);
+      }
     }
   }
 
@@ -1245,32 +1252,38 @@ public class ReactInstanceManager {
 
     reactContext.initializeWithInstance(catalystInstance);
 
-    // TODO(T46487253): Remove after task is closed
-    FLog.e(
-        ReactConstants.TAG,
-        "ReactInstanceManager.createReactContext: mJSIModulePackage "
-            + (mJSIModulePackage != null ? "not null" : "null"));
+    if (ReactFeatureFlags.enableTurboModuleDebugLogs) {
+      // TODO(T46487253): Remove after task is closed
+      FLog.e(
+          ReactConstants.TAG,
+          "ReactInstanceManager.createReactContext: mJSIModulePackage "
+              + (mJSIModulePackage != null ? "not null" : "null"));
+    }
 
     if (mJSIModulePackage != null) {
       catalystInstance.addJSIModules(
           mJSIModulePackage.getJSIModules(
               reactContext, catalystInstance.getJavaScriptContextHolder()));
 
-      // TODO(T46487253): Remove after task is closed
-      FLog.e(
-          ReactConstants.TAG,
-          "ReactInstanceManager.createReactContext: ReactFeatureFlags.useTurboModules == "
-              + (ReactFeatureFlags.useTurboModules == false ? "false" : "true"));
+      if (ReactFeatureFlags.enableTurboModuleDebugLogs) {
+        // TODO(T46487253): Remove after task is closed
+        FLog.e(
+            ReactConstants.TAG,
+            "ReactInstanceManager.createReactContext: ReactFeatureFlags.useTurboModules == "
+                + (ReactFeatureFlags.useTurboModules == false ? "false" : "true"));
+      }
 
       if (ReactFeatureFlags.useTurboModules) {
         JSIModule turboModuleManager =
             catalystInstance.getJSIModule(JSIModuleType.TurboModuleManager);
 
-        // TODO(T46487253): Remove after task is closed
-        FLog.e(
-            ReactConstants.TAG,
-            "ReactInstanceManager.createReactContext: TurboModuleManager "
-                + (turboModuleManager == null ? "not created" : "created"));
+        if (ReactFeatureFlags.enableTurboModuleDebugLogs) {
+          // TODO(T46487253): Remove after task is closed
+          FLog.e(
+              ReactConstants.TAG,
+              "ReactInstanceManager.createReactContext: TurboModuleManager "
+                  + (turboModuleManager == null ? "not created" : "created"));
+        }
 
         catalystInstance.setTurboModuleManager(turboModuleManager);
 
