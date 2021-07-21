@@ -114,6 +114,9 @@ static NSDictionary *onLoadParamsForSource(RCTImageSource *source)
   // Weak reference back to the bridge, for image loading
   __weak RCTBridge *_bridge;
 
+  // Weak reference back to the active image loader.
+  __weak id<RCTImageLoaderWithAttributionProtocol> _imageLoader;
+
   // The image source that's currently displayed
   RCTImageSource *_imageSource;
 
@@ -438,11 +441,13 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
       [weakSelf imageLoaderLoadedImage:loadedImage error:error forImageSource:source partial:NO];
     };
 
-    id<RCTImageLoaderWithAttributionProtocol> imageLoader = [_bridge moduleForName:@"ImageLoader"
-                                                             lazilyLoadIfNecessary:YES];
-    RCTImageURLLoaderRequest *loaderRequest = [imageLoader loadImageWithURLRequest:source.request
-                                                                              size:imageSize
-                                                                             scale:imageScale
+    if (!_imageLoader) {
+      _imageLoader = [_bridge moduleForName:@"ImageLoader" lazilyLoadIfNecessary:YES];
+    }
+
+    RCTImageURLLoaderRequest *loaderRequest = [_imageLoader loadImageWithURLRequest:source.request
+                                                                               size:imageSize
+                                                                              scale:imageScale
                                                                            clipped:NO
                                                                         resizeMode:_resizeMode
                                                                           priority:RCTImageLoaderPriorityImmediate
@@ -653,9 +658,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 #endif // ]TODO(macOS GH#774)
 
 - (void)dealloc {
-  id<RCTImageLoaderWithAttributionProtocol> imageLoader = [_bridge moduleForName:@"ImageLoader"
-                                                           lazilyLoadIfNecessary:YES];
-  [imageLoader trackURLImageDidDestroy:_loaderRequest];
+  [_imageLoader trackURLImageDidDestroy:_loaderRequest];
 }
 
 @end
