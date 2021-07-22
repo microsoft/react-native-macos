@@ -43,6 +43,7 @@ rn_xplat_cxx_library(
         "-Wno-inconsistent-missing-override",
     ],
     fbandroid_allow_jni_merging = True,
+    labels = ["supermodule:android/default/public.react_native.infra"],
     platforms = ANDROID,
     preprocessor_flags = [
         "-DLOG_TAG=\"ReactNativeJNI\"",
@@ -56,7 +57,7 @@ rn_xplat_cxx_library(
     deps = ([
         "//xplat/third-party/linker_lib:android",
         "//xplat/third-party/linker_lib:atomic",
-        "//xplat/third-party/glog:glog",
+        "//third-party/glog:glog",
         "//xplat/folly:molly",
         "//fbandroid/xplat/fbgloginit:fbgloginit",
         "//xplat/fbsystrace:fbsystrace",
