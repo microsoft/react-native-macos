@@ -50,6 +50,14 @@ function getInlineMethodSignature(
 ): string {
   const {typeAnnotation} = property;
   switch (typeAnnotation.type) {
+    case 'ReservedFunctionValueTypeAnnotation':
+      switch (typeAnnotation.name) {
+        case 'RootTag':
+          return `double ${property.name}() const;`;
+        default:
+          (typeAnnotation.name: empty);
+          throw new Error(`Unknown prop type, found: ${typeAnnotation.name}"`);
+      }
     case 'StringTypeAnnotation':
       return `NSString *${property.name}() const;`;
     case 'NumberTypeAnnotation':
@@ -66,9 +74,7 @@ function getInlineMethodSignature(
     case 'AnyTypeAnnotation':
       return `id<NSObject> ${property.name}() const;`;
     case 'ArrayTypeAnnotation':
-      return `facebook::react::LazyVector<id<NSObject>> ${
-        property.name
-      }() const;`;
+      return `facebook::react::LazyVector<id<NSObject>> ${property.name}() const;`;
     case 'FunctionTypeAnnotation':
     default:
       throw new Error(`Unknown prop type, found: ${typeAnnotation.type}"`);
@@ -81,6 +87,16 @@ function getInlineMethodImplementation(
 ): string {
   const {typeAnnotation} = property;
   switch (typeAnnotation.type) {
+    case 'ReservedFunctionValueTypeAnnotation':
+      switch (typeAnnotation.name) {
+        case 'RootTag':
+          return inlineTemplate
+            .replace(/::_RETURN_TYPE_::/, 'double ')
+            .replace(/::_RETURN_VALUE_::/, 'RCTBridgingToDouble(p)');
+        default:
+          (typeAnnotation.name: empty);
+          throw new Error(`Unknown prop type, found: ${typeAnnotation.name}"`);
+      }
     case 'StringTypeAnnotation':
       return inlineTemplate
         .replace(/::_RETURN_TYPE_::/, 'NSString *')

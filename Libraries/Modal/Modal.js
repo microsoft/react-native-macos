@@ -212,9 +212,7 @@ class Modal extends React.Component<Props> {
       props.transparent
     ) {
       console.warn(
-        `Modal with '${
-          props.presentationStyle
-        }' presentation style and 'transparent' value is not supported.`,
+        `Modal with '${props.presentationStyle}' presentation style and 'transparent' value is not supported.`,
       );
     }
   }
@@ -261,7 +259,7 @@ class Modal extends React.Component<Props> {
         supportedOrientations={this.props.supportedOrientations}
         onOrientationChange={this.props.onOrientationChange}>
         <ScrollView.Context.Provider value={null}>
-          <View style={[styles.container, containerStyles]}>
+          <View style={[styles.container, containerStyles]} collapsable={false}>
             {innerChildren}
           </View>
         </ScrollView.Context.Provider>
