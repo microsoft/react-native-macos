@@ -22,6 +22,7 @@
 #import <React/RCTUtils.h>
 
 #import <objc/runtime.h>
+#import <OSLog/OSLog.h> // TODO:(macOS GH#774) for console logging RedBoxes
 
 #import "CoreModulesPlugins.h"
 
@@ -29,7 +30,7 @@
 
 @class RCTRedBoxWindow;
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO:(macOS GH#774)
 @interface UIButton (RCTRedBox)
 
 @property (nonatomic) RCTRedBoxButtonPressHandler rct_handler;
@@ -968,6 +969,10 @@ RCT_EXPORT_MODULE()
 
     RCTErrorInfo *errorInfo = [[RCTErrorInfo alloc] initWithErrorMessage:message stack:stack];
     errorInfo = [self _customizeError:errorInfo];
+    
+    // TODO:(macOS GH#774) Explicitly log the error message to the Apple Console so production logs can be retrieved
+    os_log_error(OS_LOG_DEFAULT, "React-Native RedBox Error Message:\n%@ \nReact-Native RedBox Stack:\n%@", errorInfo.errorMessage, errorInfo.stack);
+
     [self->_window showErrorMessage:errorInfo.errorMessage
                           withStack:errorInfo.stack
                            isUpdate:isUpdate
