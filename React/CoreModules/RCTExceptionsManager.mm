@@ -15,6 +15,9 @@
 #import <React/RCTReloadCommand.h>
 #import <React/RCTRootView.h>
 
+#import "RCTJSStackFrame.h" // TODO:(macOS GH#774) used for logging stack frames
+#import <OSLog/OSLog.h> // TODO:(macOS GH#774) for console logging RedBoxes
+
 #import "CoreModulesPlugins.h"
 
 @interface RCTExceptionsManager () <NativeExceptionsManagerSpec>
@@ -98,6 +101,10 @@ RCT_EXPORT_METHOD(updateExceptionMessage
                   : (NSArray<NSDictionary *> *)stack exceptionId
                   : (double)exceptionId)
 {
+  // TODO:(macOS GH#774) Explicitly log the error message so it's visible via "usr/bin/log show" so production logs of the crash can be retrieved
+  NSArray<RCTJSStackFrame *> * stackFrames = [RCTJSStackFrame stackFramesWithDictionaries:stack];
+  os_log_error(OS_LOG_DEFAULT, "React-Native Error Message:\n%@ \nReact-Native Stack:\n%@", message, [stackFrames description]);
+
   [_bridge.redBox updateErrorMessage:message withStack:stack errorCookie:((int)exceptionId)];
 
   if (_delegate && [_delegate respondsToSelector:@selector(updateJSExceptionWithMessage:stack:exceptionId:)]) {
