@@ -968,7 +968,6 @@ RCT_EXPORT_MODULE()
 
     RCTErrorInfo *errorInfo = [[RCTErrorInfo alloc] initWithErrorMessage:message stack:stack];
     errorInfo = [self _customizeError:errorInfo];
-
     [self->_window showErrorMessage:errorInfo.errorMessage
                           withStack:errorInfo.stack
                            isUpdate:isUpdate
