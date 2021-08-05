@@ -29,7 +29,7 @@
 
 @class RCTRedBoxWindow;
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO:(macOS GH#774)
 @interface UIButton (RCTRedBox)
 
 @property (nonatomic) RCTRedBoxButtonPressHandler rct_handler;
