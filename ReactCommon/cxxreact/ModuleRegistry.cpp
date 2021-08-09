@@ -7,6 +7,7 @@
 
 #include "ModuleRegistry.h"
 
+#include <ReactCommon/NativeModulePerfLogger.h>
 #include <glog/logging.h>
 
 #include "NativeModule.h"
@@ -99,14 +100,44 @@ folly::Optional<ModuleConfig> ModuleRegistry::getConfig(
 
   if (it == modulesByName_.end()) {
     if (unknownModules_.find(name) != unknownModules_.end()) {
+      NativeModulePerfLogger::getInstance().moduleJSRequireBeginningFail(
+          name.c_str());
+      NativeModulePerfLogger::getInstance().moduleJSRequireEndingStart(
+          name.c_str());
       return folly::none;
     }
-    if (!moduleNotFoundCallback_ || !moduleNotFoundCallback_(name) ||
-        (it = modulesByName_.find(name)) == modulesByName_.end()) {
+
+    if (!moduleNotFoundCallback_) {
+      unknownModules_.insert(name);
+      NativeModulePerfLogger::getInstance().moduleJSRequireBeginningFail(
+          name.c_str());
+      NativeModulePerfLogger::getInstance().moduleJSRequireEndingStart(
+          name.c_str());
+      return folly::none;
+    }
+
+    NativeModulePerfLogger::getInstance().moduleJSRequireBeginningEnd(
+        name.c_str());
+
+    bool wasModuleLazilyLoaded = moduleNotFoundCallback_(name);
+    it = modulesByName_.find(name);
+
+    bool wasModuleRegisteredWithRegistry =
+        wasModuleLazilyLoaded && it != modulesByName_.end();
+
+    if (!wasModuleRegisteredWithRegistry) {
+      NativeModulePerfLogger::getInstance().moduleJSRequireEndingStart(
+          name.c_str());
       unknownModules_.insert(name);
       return folly::none;
     }
+  } else {
+    NativeModulePerfLogger::getInstance().moduleJSRequireBeginningEnd(
+        name.c_str());
   }
+
+  // If we've gotten this far, then we've signaled moduleJSRequireBeginningEnd
+
   size_t index = it->second;
 
   CHECK(index < modules_.size());
@@ -118,6 +149,12 @@ folly::Optional<ModuleConfig> ModuleRegistry::getConfig(
 
   {
     SystraceSection s_("ModuleRegistry::getConstants", "module", name);
+    /**
+     * In the case that there are constants, we'll initialize the NativeModule,
+     * and signal moduleJSRequireEndingStart. Otherwise, we'll simply signal the
+     * event. The Module will be initialized when we invoke one of its
+     * NativeModule methods.
+     */
     config.push_back(module->getConstants());
   }
 
@@ -156,6 +193,26 @@ folly::Optional<ModuleConfig> ModuleRegistry::getConfig(
   } else {
     return ModuleConfig{index, config};
   }
+}
+
+std::string ModuleRegistry::getModuleName(unsigned int moduleId) {
+  if (moduleId >= modules_.size()) {
+    throw std::runtime_error(folly::to<std::string>(
+        "moduleId ", moduleId, " out of range [0..", modules_.size(), ")"));
+  }
+
+  return modules_[moduleId]->getName();
+}
+
+std::string ModuleRegistry::getModuleSyncMethodName(
+    unsigned int moduleId,
+    unsigned int methodId) {
+  if (moduleId >= modules_.size()) {
+    throw std::runtime_error(folly::to<std::string>(
+        "moduleId ", moduleId, " out of range [0..", modules_.size(), ")"));
+  }
+
+  return modules_[moduleId]->getSyncMethodName(methodId);
 }
 
 void ModuleRegistry::callNativeMethod(

@@ -29,8 +29,13 @@ Scheduler::Scheduler(
       schedulerToolbox.contextContainer
           ->at<std::shared_ptr<const ReactNativeConfig>>("ReactNativeConfig");
 
+  // Creating a container for future `EventDispatcher` instance.
+  eventDispatcher_ =
+      std::make_shared<better::optional<EventDispatcher const>>();
+
   auto uiManager = std::make_shared<UIManager>();
   auto eventOwnerBox = std::make_shared<EventBeat::OwnerBox>();
+  eventOwnerBox->owner = eventDispatcher_;
 
   auto eventPipe = [uiManager](
                        jsi::Runtime &runtime,
@@ -47,20 +52,24 @@ Scheduler::Scheduler(
     uiManager->updateState(stateUpdate);
   };
 
-  eventDispatcher_ = std::make_shared<EventDispatcher>(
+  // Creating an `EventDispatcher` instance inside the already allocated
+  // container (inside the optional).
+  eventDispatcher_->emplace(
       eventPipe,
       statePipe,
       schedulerToolbox.synchronousEventBeatFactory,
       schedulerToolbox.asynchronousEventBeatFactory,
       eventOwnerBox);
 
-  eventOwnerBox->owner = eventDispatcher_;
+  // Casting to `std::shared_ptr<EventDispatcher const>`.
+  auto eventDispatcher =
+      EventDispatcher::Shared{eventDispatcher_, &eventDispatcher_->value()};
 
   componentDescriptorRegistry_ = schedulerToolbox.componentRegistryFactory(
-      eventDispatcher_, schedulerToolbox.contextContainer);
+      eventDispatcher, schedulerToolbox.contextContainer);
 
   rootComponentDescriptor_ = std::make_unique<const RootComponentDescriptor>(
-      ComponentDescriptorParameters{eventDispatcher_, nullptr, nullptr});
+      ComponentDescriptorParameters{eventDispatcher, nullptr, nullptr});
 
   uiManager->setDelegate(this);
   uiManager->setComponentDescriptorRegistry(componentDescriptorRegistry_);
@@ -109,10 +118,10 @@ Scheduler::~Scheduler() {
       });
 
   assert(
-      surfaceIds.size() == 0 &&
+      surfaceIds.empty() &&
       "Scheduler was destroyed with outstanding Surfaces.");
 
-  if (surfaceIds.size() == 0) {
+  if (surfaceIds.empty()) {
     return;
   }
 
@@ -168,7 +177,7 @@ void Scheduler::renderTemplateToSurface(
     const std::string &uiTemplate) {
   SystraceSection s("Scheduler::renderTemplateToSurface");
   try {
-    if (uiTemplate.size() == 0) {
+    if (uiTemplate.empty()) {
       return;
     }
     NativeModuleRegistry nMR;

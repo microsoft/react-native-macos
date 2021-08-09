@@ -132,11 +132,7 @@ NSString *kBundleNameJS = @"RNTesterApp";
   return _turboModulesProvider->getModule(name, jsInvoker);
 }
 
-- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
-                                                       instance:(id<RCTTurboModule>)instance
-                                                      jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-                                                      nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
-                                                      perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params
 {
   return nullptr;
 }

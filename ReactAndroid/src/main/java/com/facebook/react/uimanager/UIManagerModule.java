@@ -13,9 +13,7 @@ import static com.facebook.react.uimanager.common.UIManagerType.DEFAULT;
 import static com.facebook.react.uimanager.common.UIManagerType.FABRIC;
 
 import android.content.ComponentCallbacks2;
-import android.content.Context;
 import android.content.res.Configuration;
-import android.media.AudioManager;
 import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.collection.ArrayMap;
@@ -285,7 +283,8 @@ public class UIManagerModule extends ReactContextBaseJavaModule
    * Helper method to pre-compute the constants for a view manager. This method ensures that we
    * don't block for getting the constants for view managers during TTI
    *
-   * @param viewManagerNames
+   * @deprecated this method will not be available in FabricUIManager class.
+   * @param viewManagerNames {@link List<String>} names of ViewManagers
    */
   @Deprecated
   public void preComputeConstantsForViewManager(List<String> viewManagerNames) {
@@ -570,7 +569,7 @@ public class UIManagerModule extends ReactContextBaseJavaModule
    * This resolves to a simple {@link #manageChildren} call, but React doesn't have enough info in
    * JS to formulate it itself.
    *
-   * @deprecated This method will not be available in Fabric UIManager.
+   * @deprecated This method will not be available in Fabric UIManager class.
    */
   @ReactMethod
   @Deprecated
@@ -580,10 +579,10 @@ public class UIManagerModule extends ReactContextBaseJavaModule
 
   /**
    * Method which takes a container tag and then releases all subviews for that container upon
-   * receipt. TODO: The method name is incorrect and will be renamed, #6033872
+   * receipt.
    *
    * @param containerTag the tag of the container for which the subviews must be removed
-   * @deprecated This method will not be available in Fabric UIManager.
+   * @deprecated This method will not be available in Fabric UIManager class.
    */
   @ReactMethod
   @Deprecated
@@ -633,7 +632,7 @@ public class UIManagerModule extends ReactContextBaseJavaModule
    * window which can cause unexpected results when measuring relative to things like ScrollViews
    * that can have offset content on the screen.
    *
-   * @deprecated This method will not be part of Fabric.
+   * @deprecated this method will not be available in FabricUIManager class.
    */
   @ReactMethod
   @Deprecated
@@ -666,7 +665,7 @@ public class UIManagerModule extends ReactContextBaseJavaModule
   /**
    * Check if the first shadow node is the descendant of the second shadow node
    *
-   * @deprecated This method will not be part of Fabric.
+   * @deprecated this method will not be available in FabricUIManager class.
    */
   @ReactMethod
   @Deprecated
@@ -715,17 +714,6 @@ public class UIManagerModule extends ReactContextBaseJavaModule
   @Override
   public void dispatchCommand(int reactTag, String commandId, @Nullable ReadableArray commandArgs) {
     mUIImplementation.dispatchViewManagerCommand(reactTag, commandId, commandArgs);
-  }
-
-  /** @deprecated use {@link SoundManager#playTouchSound()} instead. */
-  @ReactMethod
-  @Deprecated
-  public void playTouchSound() {
-    AudioManager audioManager =
-        (AudioManager) getReactApplicationContext().getSystemService(Context.AUDIO_SERVICE);
-    if (audioManager != null) {
-      audioManager.playSoundEffect(AudioManager.FX_KEY_CLICK);
-    }
   }
 
   /**

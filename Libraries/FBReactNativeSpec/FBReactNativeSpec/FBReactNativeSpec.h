@@ -2542,7 +2542,6 @@ namespace JS {
 
 - (NSDictionary *)getConstantsForViewManager:(NSString *)viewManagerName;
 - (NSArray<NSString *> *)getDefaultEventTypes;
-- (void)playTouchSound;
 - (NSDictionary *)lazilyLoadView:(NSString *)name;
 - (void)createView:(NSNumber *)reactTag
           viewName:(NSString *)viewName
