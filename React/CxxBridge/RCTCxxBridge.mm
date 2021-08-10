@@ -28,7 +28,6 @@
 #import <React/RCTReloadCommand.h>
 #import <React/RCTUtils.h>
 #import <React/RCTBundleURLProvider.h> // TODO(macOS GH#774)
-#import <ReactCommon/NativeModulePerfLogger.h>
 #import <cxxreact/CxxNativeModule.h>
 #import <cxxreact/Instance.h>
 #import <cxxreact/JSBundleType.h>
@@ -37,6 +36,7 @@
 #import <cxxreact/RAMBundleRegistry.h>
 #import <cxxreact/ReactMarker.h>
 #import <jsireact/JSIExecutor.h>
+#import <reactperflogger/NativeModulePerfLogger.h>
 
 #if TARGET_OS_OSX && __has_include(<hermes/hermes.h>)
 #define RCT_USE_HERMES 1

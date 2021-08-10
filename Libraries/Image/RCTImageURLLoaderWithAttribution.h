@@ -70,6 +70,11 @@ struct ImageURLLoaderAttribution {
 - (void)trackURLImageVisibilityForRequest:(RCTImageURLLoaderRequest *)loaderRequest imageView:(RCTUIView *)imageView; // TODO(macOS GH#774)
 
 /**
+ * Image instrumentation - notify that the request was cancelled.
+ */
+- (void)trackURLImageRequestDidCancel:(RCTImageURLLoaderRequest *)loaderRequest;
+
+/**
  * Image instrumentation - notify that the native image view was destroyed.
  */
 - (void)trackURLImageDidDestroy:(RCTImageURLLoaderRequest *)loaderRequest;

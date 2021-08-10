@@ -30,5 +30,5 @@ Pod::Spec.new do |s|
   s.platforms              = { :ios => "10.0", :tvos => "10.0", :osx => "10.14" } # TODO(macOS GH#774)
   s.source                 = source
   s.source_files           = "**/*.{cpp,h}"
-  s.header_dir             = "ReactCommon"
+  s.header_dir             = "reactperflogger"
 end
