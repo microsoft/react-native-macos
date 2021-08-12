@@ -36,7 +36,7 @@
 #import <cxxreact/RAMBundleRegistry.h>
 #import <cxxreact/ReactMarker.h>
 #import <jsireact/JSIExecutor.h>
-#import <reactperflogger/NativeModulePerfLogger.h>
+#import <reactperflogger/BridgeNativeModulePerfLogger.h>
 
 #if TARGET_OS_OSX && __has_include(<hermes/hermes.h>)
 #define RCT_USE_HERMES 1
@@ -689,9 +689,9 @@ struct RCTInstanceCallback : public InstanceCallback {
     // Instantiate moduleData
     // TODO #13258411: can we defer this until config generation?
     int32_t moduleDataId = getUniqueId();
-    NativeModulePerfLogger::getInstance().moduleDataCreateStart([moduleName UTF8String], moduleDataId);
+    BridgeNativeModulePerfLogger::moduleDataCreateStart([moduleName UTF8String], moduleDataId);
     moduleData = [[RCTModuleData alloc] initWithModuleClass:moduleClass bridge:self];
-    NativeModulePerfLogger::getInstance().moduleDataCreateEnd([moduleName UTF8String], moduleDataId);
+    BridgeNativeModulePerfLogger::moduleDataCreateEnd([moduleName UTF8String], moduleDataId);
 
     _moduleDataByName[moduleName] = moduleData;
     [_moduleClassesByID addObject:moduleClass];
@@ -752,9 +752,9 @@ struct RCTInstanceCallback : public InstanceCallback {
 
     // Instantiate moduleData container
     int32_t moduleDataId = getUniqueId();
-    NativeModulePerfLogger::getInstance().moduleDataCreateStart([moduleName UTF8String], moduleDataId);
+    BridgeNativeModulePerfLogger::moduleDataCreateStart([moduleName UTF8String], moduleDataId);
     RCTModuleData *moduleData = [[RCTModuleData alloc] initWithModuleInstance:module bridge:self];
-    NativeModulePerfLogger::getInstance().moduleDataCreateEnd([moduleName UTF8String], moduleDataId);
+    BridgeNativeModulePerfLogger::moduleDataCreateEnd([moduleName UTF8String], moduleDataId);
 
     _moduleDataByName[moduleName] = moduleData;
     [_moduleClassesByID addObject:moduleClass];
@@ -803,9 +803,9 @@ struct RCTInstanceCallback : public InstanceCallback {
       }
 
       int32_t moduleDataId = getUniqueId();
-      NativeModulePerfLogger::getInstance().moduleDataCreateStart([moduleName UTF8String], moduleDataId);
+      BridgeNativeModulePerfLogger::moduleDataCreateStart([moduleName UTF8String], moduleDataId);
       moduleData = [[RCTModuleData alloc] initWithModuleClass:moduleClass bridge:self];
-      NativeModulePerfLogger::getInstance().moduleDataCreateEnd([moduleName UTF8String], moduleDataId);
+      BridgeNativeModulePerfLogger::moduleDataCreateEnd([moduleName UTF8String], moduleDataId);
 
       _moduleDataByName[moduleName] = moduleData;
       [_moduleClassesByID addObject:moduleClass];

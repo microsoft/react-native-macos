@@ -113,6 +113,8 @@ TEST_F(LayoutableShadowNodeTest, relativeLayoutMetrics) {
   // A is a parent to B, A has origin {10, 10}, B has origin {10, 10}.
   // B's relative origin to A should be {10, 10}.
   // D19447900 has more about the issue.
+  EXPECT_EQ(relativeLayoutMetrics.frame.size.width, 100);
+  EXPECT_EQ(relativeLayoutMetrics.frame.size.height, 200);
   EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 10);
   EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 20);
 }
@@ -131,9 +133,10 @@ TEST_F(LayoutableShadowNodeTest, relativeLayoutMetricsOnTransformedNode) {
 
   EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 35);
   EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 70);
-
   EXPECT_EQ(relativeLayoutMetrics.frame.size.width, 50);
   EXPECT_EQ(relativeLayoutMetrics.frame.size.height, 100);
+
+  nodeAA_->_transform = Transform::Identity();
 }
 
 TEST_F(LayoutableShadowNodeTest, relativeLayoutMetricsOnTransformedParent) {
@@ -159,6 +162,8 @@ TEST_F(LayoutableShadowNodeTest, relativeLayoutMetricsOnTransformedParent) {
 
   EXPECT_EQ(relativeLayoutMetrics.frame.size.width, 25);
   EXPECT_EQ(relativeLayoutMetrics.frame.size.height, 25);
+
+  nodeAAA_->_transform = Transform::Identity();
 }
 
 TEST_F(LayoutableShadowNodeTest, relativeLayoutMetricsOnSameNode) {
@@ -173,6 +178,23 @@ TEST_F(LayoutableShadowNodeTest, relativeLayoutMetricsOnSameNode) {
   EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 0);
   EXPECT_EQ(relativeLayoutMetrics.frame.size.width, 100);
   EXPECT_EQ(relativeLayoutMetrics.frame.size.height, 200);
+}
+
+TEST_F(LayoutableShadowNodeTest, relativeLayoutMetricsOnSameTransformedNode) {
+  auto layoutMetrics = EmptyLayoutMetrics;
+  layoutMetrics.frame.origin = {10, 20};
+  layoutMetrics.frame.size = {100, 200};
+  nodeA_->setLayoutMetrics(layoutMetrics);
+  nodeA_->_transform = Transform::Scale(2, 2, 1);
+
+  auto relativeLayoutMetrics = nodeA_->getRelativeLayoutMetrics(*nodeA_, {});
+
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 0);
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 0);
+  EXPECT_EQ(relativeLayoutMetrics.frame.size.width, 200);
+  EXPECT_EQ(relativeLayoutMetrics.frame.size.height, 400);
+
+  nodeA_->_transform = Transform::Identity();
 }
 
 TEST_F(LayoutableShadowNodeTest, relativeLayourMetricsOnClonedNode) {

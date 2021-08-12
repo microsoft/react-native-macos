@@ -213,27 +213,22 @@ LayoutMetrics UIManager::getRelativeLayoutMetrics(
               true);
         });
   } else {
+    // It is possible for JavaScript (or other callers) to have a reference
+    // to a previous version of ShadowNodes, but we enforce that
+    // metrics are only calculated on most recently committed versions.
     owningAncestorShadowNode = getNewestCloneOfShadowNode(*ancestorShadowNode);
     ancestorShadowNode = owningAncestorShadowNode.get();
   }
 
-  // Get latest version of both the ShadowNode and its ancestor.
-  // It is possible for JS (or other callers) to have a reference
-  // to a previous version of ShadowNodes, but we enforce that
-  // metrics are only calculated on most recently committed versions.
-  auto newestShadowNode = getNewestCloneOfShadowNode(shadowNode);
-
-  auto layoutableShadowNode =
-      traitCast<LayoutableShadowNode const *>(newestShadowNode.get());
   auto layoutableAncestorShadowNode =
       traitCast<LayoutableShadowNode const *>(ancestorShadowNode);
 
-  if (!layoutableShadowNode || !layoutableAncestorShadowNode) {
+  if (!layoutableAncestorShadowNode) {
     return EmptyLayoutMetrics;
   }
 
-  return layoutableShadowNode->getRelativeLayoutMetrics(
-      *layoutableAncestorShadowNode, policy);
+  return LayoutableShadowNode::computeRelativeLayoutMetrics(
+      shadowNode.getFamily(), *layoutableAncestorShadowNode, policy);
 }
 
 void UIManager::updateState(StateUpdate const &stateUpdate) const {
@@ -273,9 +268,15 @@ void UIManager::dispatchCommand(
 }
 
 void UIManager::configureNextLayoutAnimation(
-    const folly::dynamic config,
+    RawValue const &config,
     SharedEventTarget successCallback,
-    SharedEventTarget errorCallback) const {}
+    SharedEventTarget errorCallback) const {
+  if (animationDelegate_) {
+    animationDelegate_->uiManagerDidConfigureNextLayoutAnimation(
+        config, successCallback, errorCallback);
+  }
+}
+
 void UIManager::setComponentDescriptorRegistry(
     const SharedComponentDescriptorRegistry &componentDescriptorRegistry) {
   componentDescriptorRegistry_ = componentDescriptorRegistry;
@@ -312,6 +313,23 @@ void UIManager::shadowTreeDidFinishTransaction(
 
   if (delegate_) {
     delegate_->uiManagerDidFinishTransaction(mountingCoordinator);
+  }
+}
+
+#pragma mark - UIManagerAnimationDelegate
+
+void UIManager::setAnimationDelegate(
+    UIManagerAnimationDelegate *delegate) const {
+  animationDelegate_ = delegate;
+}
+
+void UIManager::animationTick() {
+  if (animationDelegate_ != nullptr &&
+      animationDelegate_->shouldAnimateFrame()) {
+    shadowTreeRegistry_.enumerate(
+        [&](ShadowTree const &shadowTree, bool &stop) {
+          shadowTree.notifyDelegatesOfUpdates();
+        });
   }
 }
 
