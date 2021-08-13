@@ -34,6 +34,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.UIManager;
+import com.facebook.react.bridge.UIManagerListener;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
@@ -42,6 +43,7 @@ import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.uimanager.common.ViewUtil;
 import com.facebook.react.uimanager.debug.NotThreadSafeViewHierarchyUpdateDebugListener;
 import com.facebook.react.uimanager.events.EventDispatcher;
+import com.facebook.react.uimanager.events.EventDispatcherImpl;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.facebook.systrace.Systrace;
 import com.facebook.systrace.SystraceMessage;
@@ -117,6 +119,7 @@ public class UIManagerModule extends ReactContextBaseJavaModule
   private final UIImplementation mUIImplementation;
   private final MemoryTrimCallback mMemoryTrimCallback = new MemoryTrimCallback();
   private final List<UIManagerModuleListener> mListeners = new ArrayList<>();
+  private final List<UIManagerListener> mUIManagerListeners = new ArrayList<>();
   private @Nullable Map<String, WritableMap> mViewManagerConstantsCache;
   private volatile int mViewManagerConstantsCacheSize;
 
@@ -154,7 +157,7 @@ public class UIManagerModule extends ReactContextBaseJavaModule
       int minTimeLeftInFrameForNonBatchedOperationMs) {
     super(reactContext);
     DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(reactContext);
-    mEventDispatcher = new EventDispatcher(reactContext);
+    mEventDispatcher = new EventDispatcherImpl(reactContext);
     mModuleConstants = createConstants(viewManagerResolver);
     mCustomDirectEvents = UIManagerModuleConstants.getDirectEventTypeConstants();
     mViewManagerRegistry = new ViewManagerRegistry(viewManagerResolver);
@@ -176,7 +179,7 @@ public class UIManagerModule extends ReactContextBaseJavaModule
       int minTimeLeftInFrameForNonBatchedOperationMs) {
     super(reactContext);
     DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(reactContext);
-    mEventDispatcher = new EventDispatcher(reactContext);
+    mEventDispatcher = new EventDispatcherImpl(reactContext);
     mCustomDirectEvents = MapBuilder.newHashMap();
     mModuleConstants = createConstants(viewManagersList, null, mCustomDirectEvents);
     mViewManagerRegistry = new ViewManagerRegistry(viewManagersList);
@@ -793,6 +796,9 @@ public class UIManagerModule extends ReactContextBaseJavaModule
     for (UIManagerModuleListener listener : mListeners) {
       listener.willDispatchViewUpdates(this);
     }
+    for (UIManagerListener listener : mUIManagerListeners) {
+      listener.willDispatchViewUpdates(this);
+    }
     try {
       mUIImplementation.dispatchViewUpdates(batchId);
     } finally {
@@ -850,12 +856,22 @@ public class UIManagerModule extends ReactContextBaseJavaModule
     mUIImplementation.prependUIBlock(block);
   }
 
+  @Deprecated
   public void addUIManagerListener(UIManagerModuleListener listener) {
     mListeners.add(listener);
   }
 
+  @Deprecated
   public void removeUIManagerListener(UIManagerModuleListener listener) {
     mListeners.remove(listener);
+  }
+
+  public void addUIManagerEventListener(UIManagerListener listener) {
+    mUIManagerListeners.add(listener);
+  }
+
+  public void removeUIManagerEventListener(UIManagerListener listener) {
+    mUIManagerListeners.remove(listener);
   }
 
   /**

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/components/art/Element.h>
+#include <react/components/art/ARTElement.h>
 #include <react/components/art/primitives.h>
 #include <react/graphics/Geometry.h>
 #include <functional>
@@ -19,23 +19,26 @@ namespace react {
 /*
  * Simple, cross-platfrom, React-specific implementation of ART Group element
  */
-class Group : public Element {
+class ARTGroup : public ARTElement {
  public:
-  using Shared = std::shared_ptr<const Group>;
-  Group(
+  using Shared = std::shared_ptr<const ARTElement>;
+  ARTGroup(
       Float opacity,
       std::vector<Float> transform,
-      Element::ListOfShared elements,
+      ARTGroup::ListOfShared elements,
       std::vector<Float> clipping)
-      : Element(ARTElement::Group, opacity, transform),
+      : ARTElement(ARTElementType::Group, opacity, transform),
         elements(elements),
         clipping(clipping){};
-  Group() = default;
-  virtual ~Group(){};
+  ARTGroup() = default;
+  virtual ~ARTGroup(){};
 
-  Element::ListOfShared elements{};
+  ARTElement::ListOfShared elements{};
 
   std::vector<Float> clipping{};
+
+  bool operator==(const ARTElement &rhs) const override;
+  bool operator!=(const ARTElement &rhs) const override;
 
 #ifdef ANDROID
   folly::dynamic getDynamic() const override;

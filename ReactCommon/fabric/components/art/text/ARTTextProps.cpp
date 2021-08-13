@@ -33,7 +33,8 @@ ARTTextProps::ARTTextProps(
           convertRawProp(rawProps, "strokeCap", sourceProps.strokeCap, {1})),
       strokeJoin(
           convertRawProp(rawProps, "strokeJoin", sourceProps.strokeJoin, {1})),
-      aligment(convertRawProp(rawProps, "aligment", sourceProps.aligment, {0})),
+      alignment(
+          convertRawProp(rawProps, "alignment", sourceProps.alignment, {})),
       frame(convertRawProp(rawProps, "frame", sourceProps.frame, {})){};
 
 #pragma mark - DebugStringConvertible

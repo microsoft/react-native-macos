@@ -7,16 +7,27 @@
 
 #include "ARTTextShadowNode.h"
 #include <Glog/logging.h>
-#include <react/components/art/Text.h>
+#include <react/components/art/ARTText.h>
 
 namespace facebook {
 namespace react {
 
 extern const char ARTTextComponentName[] = "ARTText";
 
-Element::Shared ARTTextShadowNode::getElement() const {
-  // TODO add support for Text
-  return std::make_shared<Shape>();
+ARTElement::Shared ARTTextShadowNode::getARTElement() const {
+  auto props = getConcreteProps();
+  return std::make_shared<ARTText>(
+      props.opacity,
+      props.transform,
+      props.d,
+      props.stroke,
+      props.strokeDash,
+      props.fill,
+      props.strokeWidth,
+      props.strokeCap,
+      props.strokeJoin,
+      props.alignment,
+      props.frame);
 }
 
 } // namespace react

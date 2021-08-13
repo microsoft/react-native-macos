@@ -28,7 +28,7 @@ Content const &ARTSurfaceViewShadowNode::getContent() const {
     return content_.value();
   }
   ensureUnsealed();
-  auto elements = Element::ListOfShared{};
+  auto elements = ARTElement::ListOfShared{};
   ARTBaseShadowNode::buildElements(*this, elements);
   content_ = Content{elements};
   return content_.value();
@@ -36,14 +36,10 @@ Content const &ARTSurfaceViewShadowNode::getContent() const {
 
 void ARTSurfaceViewShadowNode::updateStateIfNeeded(Content const &content) {
   ensureUnsealed();
-
-  // TODO T64130144: Compare to make sure it is needed.
-  //   auto &state = getStateData();
-  //   if (state.attributedString == content.attributedString &&
-  //       state.layoutManager == textLayoutManager_) {
-  //     return;
-  //   }
-
+  auto &state = getStateData();
+  if (content.elements == state.elements) {
+    return;
+  }
   setStateData(ARTSurfaceViewState{content.elements});
 }
 

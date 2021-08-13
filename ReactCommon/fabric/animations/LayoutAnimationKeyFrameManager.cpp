@@ -73,7 +73,8 @@ static better::optional<AnimationProperty> parseAnimationProperty(
 
 static better::optional<AnimationConfig> parseAnimationConfig(
     folly::dynamic const &config,
-    double defaultDuration) {
+    double defaultDuration,
+    bool parsePropertyType) {
   if (config.empty() || !config.isObject()) {
     return better::optional<AnimationConfig>(
         AnimationConfig{AnimationType::Linear,
@@ -84,7 +85,11 @@ static better::optional<AnimationConfig> parseAnimationConfig(
                         0});
   }
 
-  folly::dynamic const &animationTypeParam = config["type"];
+  auto const typeIt = config.find("type");
+  if (typeIt == config.items().end()) {
+    return {};
+  }
+  auto const animationTypeParam = typeIt->second;
   if (animationTypeParam.empty() || !animationTypeParam.isString()) {
     return {};
   }
@@ -93,14 +98,22 @@ static better::optional<AnimationConfig> parseAnimationConfig(
     return {};
   }
 
-  folly::dynamic const &animationPropertyParam = config["property"];
-  if (animationPropertyParam.empty() || !animationPropertyParam.isString()) {
-    return {};
-  }
-  const auto animationProperty =
-      parseAnimationProperty(animationPropertyParam.asString());
-  if (!animationProperty) {
-    return {};
+  AnimationProperty animationProperty = AnimationProperty::NotApplicable;
+  if (parsePropertyType) {
+    auto const propertyIt = config.find("property");
+    if (propertyIt == config.items().end()) {
+      return {};
+    }
+    auto const animationPropertyParam = propertyIt->second;
+    if (animationPropertyParam.empty() || !animationPropertyParam.isString()) {
+      return {};
+    }
+    const auto animationPropertyParsed =
+        parseAnimationProperty(animationPropertyParam.asString());
+    if (!animationPropertyParsed) {
+      return {};
+    }
+    animationProperty = *animationPropertyParsed;
   }
 
   double duration = defaultDuration;
@@ -146,7 +159,7 @@ static better::optional<AnimationConfig> parseAnimationConfig(
   }
 
   return better::optional<AnimationConfig>(AnimationConfig{*animationType,
-                                                           *animationProperty,
+                                                           animationProperty,
                                                            duration,
                                                            delay,
                                                            springDamping,
@@ -166,17 +179,20 @@ static better::optional<LayoutAnimationConfig> parseLayoutAnimationConfig(
   }
   const double duration = durationIt->second.asDouble();
 
-  const auto createConfig = parseAnimationConfig(config["create"], duration);
+  const auto createConfig =
+      parseAnimationConfig(config["create"], duration, true);
   if (!createConfig) {
     return {};
   }
 
-  const auto updateConfig = parseAnimationConfig(config["update"], duration);
+  const auto updateConfig =
+      parseAnimationConfig(config["update"], duration, false);
   if (!updateConfig) {
     return {};
   }
 
-  const auto deleteConfig = parseAnimationConfig(config["delete"], duration);
+  const auto deleteConfig =
+      parseAnimationConfig(config["delete"], duration, true);
   if (!deleteConfig) {
     return {};
   }
@@ -294,6 +310,10 @@ void LayoutAnimationKeyFrameManager::adjustDelayedMutationIndicesForMutation(
   bool isRemoveMutation = mutation.type == ShadowViewMutation::Type::Remove;
   bool isInsertMutation = mutation.type == ShadowViewMutation::Type::Insert;
   assert(isRemoveMutation || isInsertMutation);
+
+  if (mutatedViewIsVirtual(mutation)) {
+    return;
+  }
 
   for (auto &inflightAnimation : inflightAnimations_) {
     if (inflightAnimation.surfaceId != surfaceId) {
@@ -675,7 +695,8 @@ LayoutAnimationKeyFrameManager::pullTransaction(
               for (const auto &otherMutation : mutations) {
                 if (otherMutation.type == ShadowViewMutation::Type::Insert &&
                     otherMutation.parentShadowView.tag == parentTag) {
-                  if (otherMutation.index <= adjustedIndex) {
+                  if (otherMutation.index <= adjustedIndex &&
+                      !mutatedViewIsVirtual(otherMutation)) {
                     adjustedIndex++;
                   }
                 }
@@ -843,6 +864,22 @@ LayoutAnimationKeyFrameManager::pullTransaction(
   // TODO: fill in telemetry
   return MountingTransaction{
       surfaceId, transactionNumber, std::move(mutations), {}};
+}
+
+bool LayoutAnimationKeyFrameManager::mutatedViewIsVirtual(
+    ShadowViewMutation const &mutation) const {
+  bool viewIsVirtual = false;
+
+  // TODO: extract this into an Android platform-specific class
+  // Explanation: for "Insert" mutations, oldChildShadowView is always empty.
+  //              for "Remove" mutations, newChildShadowView is always empty.
+#ifdef ANDROID
+  viewIsVirtual =
+      mutation.newChildShadowView.layoutMetrics == EmptyLayoutMetrics &&
+      mutation.oldChildShadowView.layoutMetrics == EmptyLayoutMetrics;
+#endif
+
+  return viewIsVirtual;
 }
 
 ComponentDescriptor const &
