@@ -17,6 +17,7 @@ import static com.facebook.react.fabric.mounting.LayoutMetricsConversions.getYog
 import static com.facebook.react.uimanager.common.UIManagerType.FABRIC;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.SystemClock;
 import android.view.View;
 import androidx.annotation.AnyThread;
@@ -41,6 +42,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.RetryableMountingLayerException;
 import com.facebook.react.bridge.UIManager;
+import com.facebook.react.bridge.UIManagerListener;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.config.ReactFeatureFlags;
@@ -62,7 +64,6 @@ import com.facebook.react.fabric.mounting.mountitems.RemoveMountItem;
 import com.facebook.react.fabric.mounting.mountitems.SendAccessibilityEvent;
 import com.facebook.react.fabric.mounting.mountitems.UpdateEventEmitterMountItem;
 import com.facebook.react.fabric.mounting.mountitems.UpdateLayoutMountItem;
-import com.facebook.react.fabric.mounting.mountitems.UpdateLocalDataMountItem;
 import com.facebook.react.fabric.mounting.mountitems.UpdatePaddingMountItem;
 import com.facebook.react.fabric.mounting.mountitems.UpdatePropsMountItem;
 import com.facebook.react.fabric.mounting.mountitems.UpdateStateMountItem;
@@ -82,6 +83,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @SuppressLint("MissingNativeLoadLibrary")
 public class FabricUIManager implements UIManager, LifecycleEventListener {
@@ -123,6 +125,9 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
   @NonNull
   private List<DispatchCommandMountItem> mViewCommandMountItems = new ArrayList<>();
 
+  @NonNull
+  private final CopyOnWriteArrayList<UIManagerListener> mListeners = new CopyOnWriteArrayList<>();
+
   @GuardedBy("mMountItemsLock")
   @NonNull
   private List<MountItem> mMountItems = new ArrayList<>();
@@ -141,6 +146,8 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
    * Catalyst instance is being destroyed, we should cease all operation here.
    */
   private volatile boolean mDestroyed = false;
+
+  private boolean mDriveCxxAnimations = false;
 
   private long mRunStartTime = 0l;
   private long mBatchedExecutionTime = 0l;
@@ -195,6 +202,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     return rootTag;
   }
 
+  @Override
   @AnyThread
   @ThreadConfined(ANY)
   public <T extends View> int startSurface(
@@ -204,8 +212,9 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
       int widthMeasureSpec,
       int heightMeasureSpec) {
     final int rootTag = ReactRootViewTagGenerator.getNextRootViewTag();
+    Context context = rootView.getContext();
     ThemedReactContext reactContext =
-        new ThemedReactContext(mReactApplicationContext, rootView.getContext(), moduleName);
+        new ThemedReactContext(mReactApplicationContext, context, moduleName);
     if (ENABLE_FABRIC_LOGS) {
       FLog.d(TAG, "Starting surface for module: %s and reactTag: %d", moduleName, rootTag);
     }
@@ -219,8 +228,8 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
         getMaxSize(widthMeasureSpec),
         getMinSize(heightMeasureSpec),
         getMaxSize(heightMeasureSpec),
-        I18nUtil.getInstance().isRTL(rootView.getContext()),
-        I18nUtil.getInstance().doLeftAndRightSwapInRTL(rootView.getContext()));
+        I18nUtil.getInstance().isRTL(context),
+        I18nUtil.getInstance().doLeftAndRightSwapInRTL(context));
     return rootTag;
   }
 
@@ -396,14 +405,6 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
   @SuppressWarnings("unused")
   @AnyThread
   @ThreadConfined(ANY)
-  private MountItem updateLocalDataMountItem(int reactTag, ReadableMap newLocalData) {
-    return new UpdateLocalDataMountItem(reactTag, newLocalData);
-  }
-
-  @DoNotStrip
-  @SuppressWarnings("unused")
-  @AnyThread
-  @ThreadConfined(ANY)
   private MountItem updateStateMountItem(int reactTag, @Nullable Object stateWrapper) {
     return new UpdateStateMountItem(reactTag, (StateWrapper) stateWrapper);
   }
@@ -461,7 +462,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
       float maxWidth,
       float minHeight,
       float maxHeight,
-      @Nullable int[] attachmentsPositions) {
+      @Nullable float[] attachmentsPositions) {
     ReactContext context =
         rootTag < 0 ? mReactApplicationContext : mReactContextForRootTag.get(rootTag);
     return mMountingManager.measure(
@@ -504,6 +505,14 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     }
   }
 
+  public void addUIManagerEventListener(UIManagerListener listener) {
+    mListeners.add(listener);
+  }
+
+  public void removeUIManagerEventListener(UIManagerListener listener) {
+    mListeners.remove(listener);
+  }
+
   /**
    * This method enqueues UI operations directly to the UI thread. This might change in the future
    * to enforce execution order using {@link ReactChoreographer#CallbackType}.
@@ -522,7 +531,6 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
       long layoutEndTime,
       long finishTransactionStartTime,
       long finishTransactionEndTime) {
-    // TODO T31905686: support multithreading
     // When Binding.cpp calls scheduleMountItems during a commit phase, it always calls with
     // a BatchMountItem. No other sites call into this with a BatchMountItem, and Binding.cpp only
     // calls scheduleMountItems with a BatchMountItem.
@@ -584,6 +592,10 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     // to execute anything out-of-order.
     if (mInDispatch) {
       return;
+    }
+
+    for (UIManagerListener listener : mListeners) {
+      listener.willDispatchMountItems();
     }
 
     final boolean didDispatchItems;
@@ -758,7 +770,30 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
             FLog.d(TAG, "dispatchMountItems: Executing mountItem: " + m);
           }
         }
-        mountItem.execute(mMountingManager);
+
+        // TODO: if early ViewCommand dispatch ships 100% as a feature, this can be removed.
+        // This try/catch catches Retryable errors that can only be thrown by ViewCommands, which
+        // won't be executed here in Early Dispatch mode.
+        try {
+          mountItem.execute(mMountingManager);
+        } catch (RetryableMountingLayerException e) {
+          // It's very common for commands to be executed on views that no longer exist - for
+          // example, a blur event on TextInput being fired because of a navigation event away
+          // from the current screen. If the exception is marked as Retryable, we log a soft
+          // exception but never crash in debug.
+          // It's not clear that logging this is even useful, because these events are very
+          // common, mundane, and there's not much we can do about them currently.
+          if (mountItem instanceof DispatchCommandMountItem) {
+            ReactSoftException.logSoftException(
+                TAG,
+                new ReactNoCrashSoftException(
+                    "Caught exception executing retryable mounting layer instruction: "
+                        + mountItem.toString(),
+                    e));
+          } else {
+            throw e;
+          }
+        }
       }
       mBatchedExecutionTime += SystemClock.uptimeMillis() - batchedExecutionStartTime;
     }
@@ -775,6 +810,10 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     // dispatchPreMountItems cannot be reentrant, but we want to prevent dispatchMountItems from
     // reentering during dispatchPreMountItems
     mInDispatch = true;
+
+    for (UIManagerListener listener : mListeners) {
+      listener.willDispatchPreMountItems();
+    }
 
     try {
       while (true) {
@@ -823,12 +862,6 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     if (reactContext != null) {
       isRTL = I18nUtil.getInstance().isRTL(reactContext);
       doLeftAndRightSwapInRTL = I18nUtil.getInstance().doLeftAndRightSwapInRTL(reactContext);
-    } else {
-      // TODO T65116569: analyze why this happens
-      ReactSoftException.logSoftException(
-          TAG,
-          new IllegalStateException(
-              "updateRootLayoutSpecs called before ReactContext set for tag: " + rootTag));
     }
 
     mBinding.setConstraints(
@@ -957,6 +990,20 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     // TODO T31905686: Remove this method and add support for multi-threading performance counters
   }
 
+  // Called from Binding.cpp
+  @DoNotStrip
+  @AnyThread
+  public void onAnimationStarted() {
+    mDriveCxxAnimations = true;
+  }
+
+  // Called from Binding.cpp
+  @DoNotStrip
+  @AnyThread
+  public void onAllAnimationsComplete() {
+    mDriveCxxAnimations = false;
+  }
+
   @Override
   public Map<String, Long> getPerformanceCounters() {
     HashMap<String, Long> performanceCounters = new HashMap<>();
@@ -992,11 +1039,18 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
         return;
       }
 
+      // Drive any animations from C++.
+      // There is a race condition here between getting/setting
+      // `mDriveCxxAnimations` which shouldn't matter; it's safe to call
+      // the mBinding method, unless mBinding has gone away.
+      if (mDriveCxxAnimations && mBinding != null) {
+        mBinding.driveCxxAnimations();
+      }
+
       try {
         dispatchPreMountItems(frameTimeNanos);
 
         tryDispatchMountItems();
-
       } catch (Exception ex) {
         FLog.e(TAG, "Exception thrown when executing UIFrameGuarded", ex);
         stop();

@@ -39,9 +39,7 @@ extern NSString *const kRCTPlatformName; // TODO(macOS GH#774)
  */
 - (NSString *)packagerServerHost;
 
-#if RCT_DEV
-- (BOOL)isPackagerRunning:(NSString *)host;
-#endif
++ (BOOL)isPackagerRunning:(NSString *)host;
 
 /**
  * Returns the jsBundleURL for a given bundle entrypoint and

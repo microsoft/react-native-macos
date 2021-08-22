@@ -108,13 +108,26 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
         dynamic_cast<ConcreteProps const *>(props.get()) &&
             "Provided `props` has an incompatible type.");
 
-    if (rawProps.isEmpty()) {
-      return props ? props : ShadowNodeT::defaultSharedProps();
+    // Optimization:
+    // Quite often nodes are constructed with default/empty props: the base
+    // `props` object is `null` (there no base because it's not cloning) and the
+    // `rawProps` is empty. In this case, we can return the default props object
+    // of a concrete type entirely bypassing parsing.
+    if (!props && rawProps.isEmpty()) {
+      return ShadowNodeT::defaultSharedProps();
     }
 
     rawProps.parse(rawPropsParser_);
 
     return ShadowNodeT::Props(rawProps, props);
+  };
+
+  virtual SharedProps interpolateProps(
+      float animationProgress,
+      const SharedProps &props,
+      const SharedProps &newProps) const override {
+    // By default, this does nothing.
+    return cloneProps(newProps, {});
   };
 
   virtual State::Shared createInitialState(
@@ -128,7 +141,7 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
     return std::make_shared<ConcreteState>(
         std::make_shared<ConcreteStateData const>(
             ConcreteShadowNode::initialStateData(
-                fragment, family->getSurfaceId(), *this)),
+                fragment, ShadowNodeFamilyFragment::build(*family), *this)),
         family);
   }
 

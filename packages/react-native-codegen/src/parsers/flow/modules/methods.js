@@ -11,7 +11,7 @@
 'use strict';
 
 import type {
-  MethodTypeShape,
+  NativeModuleMethodTypeShape,
   FunctionTypeAnnotationParam,
   FunctionTypeAnnotationReturn,
   FunctionTypeAnnotationParamTypeAnnotation,
@@ -67,6 +67,11 @@ function getElementTypeForArrayOrObject(
       : typeAnnotation.type;
 
   switch (type) {
+    case 'RootTag':
+      return {
+        type: 'ReservedFunctionValueTypeAnnotation',
+        name: 'RootTag',
+      };
     case 'Array':
     case '$ReadOnlyArray':
       if (
@@ -137,6 +142,7 @@ function getElementTypeForArrayOrObject(
     case 'UnionTypeAnnotation':
       return undefined;
     default:
+      // TODO T67565166: Generic objects are not type safe and should be disallowed in the schema.
       return {
         type: 'GenericObjectTypeAnnotation',
       };
@@ -168,6 +174,15 @@ function getTypeAnnotationForParam(
       : typeAnnotation.type;
 
   switch (type) {
+    case 'RootTag':
+      return {
+        name: paramName,
+        nullable,
+        typeAnnotation: {
+          type: 'ReservedFunctionValueTypeAnnotation',
+          name: 'RootTag',
+        },
+      };
     case 'Array':
     case '$ReadOnlyArray':
       if (
@@ -300,6 +315,12 @@ function getReturnTypeAnnotation(
       : typeAnnotation.type;
 
   switch (type) {
+    case 'RootTag':
+      return {
+        nullable,
+        type: 'ReservedFunctionValueTypeAnnotation',
+        name: 'RootTag',
+      };
     case 'Promise':
       if (
         typeAnnotation.typeParameters &&
@@ -401,14 +422,12 @@ function getReturnTypeAnnotation(
 function buildMethodSchema(
   property: MethodAST,
   types: TypeMap,
-): MethodTypeShape {
+): NativeModuleMethodTypeShape {
   const name: string = property.key.name;
   const value = getValueFromTypes(property.value, types);
   if (value.type !== 'FunctionTypeAnnotation') {
     throw new Error(
-      `Only methods are supported as module properties. Found ${
-        value.type
-      } in ${property.key.name}`,
+      `Only methods are supported as module properties. Found ${value.type} in ${property.key.name}`,
     );
   }
   const params = value.params.map(param =>
@@ -434,7 +453,7 @@ function buildMethodSchema(
 function getMethods(
   typeDefinition: $ReadOnlyArray<MethodAST>,
   types: TypeMap,
-): $ReadOnlyArray<MethodTypeShape> {
+): $ReadOnlyArray<NativeModuleMethodTypeShape> {
   return typeDefinition
     .filter(property => property.type === 'ObjectTypeProperty')
     .map(property => buildMethodSchema(property, types))

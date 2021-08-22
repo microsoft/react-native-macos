@@ -31,7 +31,7 @@ void RCTOverrideAppearancePreference(NSString *const colorSchemeOverride)
 }
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
-static NSString *RCTColorSchemePreference(UITraitCollection *traitCollection)
+NSString *RCTColorSchemePreference(UITraitCollection *traitCollection)
 {
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && defined(__IPHONE_13_0) && \
     __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0
@@ -64,7 +64,7 @@ static NSString *RCTColorSchemePreference(UITraitCollection *traitCollection)
   return RCTAppearanceColorSchemeLight;
 }
 #else // [TODO(macOS GH#774)
-static NSString *RCTColorSchemePreference(NSAppearance *appearance)
+NSString *RCTColorSchemePreference(NSAppearance *appearance)
 {
   if (@available(macOS 10.14, *)) {
     static NSDictionary *appearances;
@@ -111,11 +111,9 @@ RCT_EXPORT_MODULE(Appearance)
   return dispatch_get_main_queue();
 }
 
-- (std::shared_ptr<TurboModule>)getTurboModuleWithJsInvoker:(std::shared_ptr<CallInvoker>)jsInvoker
-                                              nativeInvoker:(std::shared_ptr<CallInvoker>)nativeInvoker
-                                                 perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<NativeAppearanceSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<NativeAppearanceSpecJSI>(params);
 }
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774): on macOS don't lazy init _currentColorScheme because [NSAppearance currentAppearance] cannot be executed on background thread.

@@ -23,6 +23,9 @@ public class ReactFeatureFlags {
    */
   public static volatile boolean useTurboModules = false;
 
+  /** Should we output debug logs to debug the TurboModule infra? */
+  public static volatile boolean enableTurboModuleDebugLogs = false;
+
   /*
    * This feature flag enables logs for Fabric
    */
@@ -34,6 +37,13 @@ public class ReactFeatureFlags {
    * ...$$PropsSetter} class will be used instead.
    */
   public static boolean useViewManagerDelegates = false;
+
+  /**
+   * Should this application use a {@link com.facebook.react.uimanager.ViewManagerDelegate} (if
+   * provided) to execute the view commands. If {@code false}, then {@code receiveCommand} method
+   * inside view manager will be called instead.
+   */
+  public static boolean useViewManagerDelegatesForCommands = false;
 
   /**
    * Should this application use Catalyst Teardown V2? This is an experiment to use a V2 of the
@@ -73,4 +83,10 @@ public class ReactFeatureFlags {
    * remove this when bug is fixed
    */
   public static boolean enableTransitionLayoutOnlyViewCleanup = false;
+
+  /** Feature flag to configure eager initialization of Fabric */
+  public static boolean eagerInitializeFabric = false;
+
+  /** Feature flag to configure initialization of Fabric surfaces. */
+  public static boolean enableFabricStartSurfaceWithLayoutMetrics = true;
 }

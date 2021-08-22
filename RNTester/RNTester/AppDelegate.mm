@@ -31,7 +31,10 @@
 
 #ifdef RN_FABRIC_ENABLED
 #import <React/RCTSurfacePresenter.h>
+#import <React/RCTSurfacePresenterBridgeAdapter.h>
 #import <React/RCTFabricSurfaceHostingProxyRootView.h>
+
+#import <react/config/ReactNativeConfig.h>
 #endif
 
   
@@ -55,7 +58,9 @@
 @interface AppDelegate() <RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate>{
 
 #ifdef RN_FABRIC_ENABLED
-  RCTSurfacePresenter *_surfacePresenter;
+  RCTSurfacePresenterBridgeAdapter *_bridgeAdapter;
+  std::shared_ptr<const facebook::react::ReactNativeConfig> _reactNativeConfig;
+  facebook::react::ContextContainer::Shared _contextContainer;
 #endif
 
   RCTTurboModuleManager *_turboModuleManager;
@@ -85,14 +90,15 @@
   }
 
 #ifdef RN_FABRIC_ENABLED
-  _surfacePresenter = [[RCTSurfacePresenter alloc] initWithBridge:_bridge
-                                                           config:nil
-                                                      imageLoader:RCTTurboModuleEnabled() ?
-                                                                  [_bridge moduleForName:@"RCTImageLoader"
-                                                                  lazilyLoadIfNecessary:YES] : nil
-                                                  runtimeExecutor:nullptr];
+  _contextContainer = std::make_shared<facebook::react::ContextContainer const>();
+  _reactNativeConfig = std::make_shared<facebook::react::EmptyReactNativeConfig const>();
 
-  _bridge.surfacePresenter = _surfacePresenter;
+  _contextContainer->insert("ReactNativeConfig", _reactNativeConfig);
+
+  _bridgeAdapter = [[RCTSurfacePresenterBridgeAdapter alloc] initWithBridge:_bridge
+                                                           contextContainer:_contextContainer];
+
+  _bridge.surfacePresenter = _bridgeAdapter.surfacePresenter;
 
   UIView *rootView = [[RCTFabricSurfaceHostingProxyRootView alloc] initWithBridge:_bridge moduleName:@"RNTesterApp" initialProperties:initProps];
 #else
@@ -155,6 +161,15 @@
   _turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridge:bridge
                                                              delegate:self
                                                             jsInvoker:bridge.jsCallInvoker];
+
+#if RCT_DEV
+  /**
+   * Eagerly initialize RCTDevMenu so CMD + d, CMD + i, and CMD + r work.
+   * This is a stop gap until we have a system to eagerly init Turbo Modules.
+   */
+  [_turboModuleManager moduleForName:"RCTDevMenu"];
+#endif
+
   __weak __typeof(self) weakSelf = self;
   return std::make_unique<facebook::react::JSCExecutorFactory>(
     facebook::react::RCTJSIExecutorRuntimeInstaller([weakSelf, bridge](facebook::jsi::Runtime &runtime) {
@@ -183,12 +198,9 @@
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
-                                                       instance:(id<RCTTurboModule>)instance
-                                                      jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-                                                      nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
-                                                      perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+                                                       initParams:(const facebook::react::ObjCTurboModule::InitParams &)params
 {
-  return facebook::react::RNTesterTurboModuleProvider(name, instance, jsInvoker, nativeInvoker, perfLogger);
+  return facebook::react::RNTesterTurboModuleProvider(name, params);
 }
 
 - (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass

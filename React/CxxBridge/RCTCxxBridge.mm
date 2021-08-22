@@ -36,6 +36,7 @@
 #import <cxxreact/RAMBundleRegistry.h>
 #import <cxxreact/ReactMarker.h>
 #import <jsireact/JSIExecutor.h>
+#import <reactperflogger/BridgeNativeModulePerfLogger.h>
 
 #if TARGET_OS_OSX && __has_include(<hermes/hermes.h>)
 #define RCT_USE_HERMES 1
@@ -77,6 +78,12 @@ typedef NS_ENUM(NSUInteger, RCTBridgeFields) {
 };
 
 namespace {
+
+int32_t getUniqueId()
+{
+  static std::atomic<int32_t> counter{0};
+  return counter++;
+}
 
 class GetDescAdapter : public JSExecutorFactory {
  public:
@@ -514,6 +521,11 @@ struct RCTInstanceCallback : public InstanceCallback {
   }
 
   // Module may not be loaded yet, so attempt to force load it here.
+  // Do this only if the bridge is still valid.
+  if (_didInvalidate) {
+    return nil;
+  }
+
   const BOOL result = [self.delegate respondsToSelector:@selector(bridge:didNotFindModule:)] &&
       [self.delegate bridge:self didNotFindModule:moduleName];
   if (result) {
@@ -676,7 +688,10 @@ struct RCTInstanceCallback : public InstanceCallback {
 
     // Instantiate moduleData
     // TODO #13258411: can we defer this until config generation?
+    int32_t moduleDataId = getUniqueId();
+    BridgeNativeModulePerfLogger::moduleDataCreateStart([moduleName UTF8String], moduleDataId);
     moduleData = [[RCTModuleData alloc] initWithModuleClass:moduleClass bridge:self];
+    BridgeNativeModulePerfLogger::moduleDataCreateEnd([moduleName UTF8String], moduleDataId);
 
     _moduleDataByName[moduleName] = moduleData;
     [_moduleClassesByID addObject:moduleClass];
@@ -736,7 +751,11 @@ struct RCTInstanceCallback : public InstanceCallback {
     }
 
     // Instantiate moduleData container
+    int32_t moduleDataId = getUniqueId();
+    BridgeNativeModulePerfLogger::moduleDataCreateStart([moduleName UTF8String], moduleDataId);
     RCTModuleData *moduleData = [[RCTModuleData alloc] initWithModuleInstance:module bridge:self];
+    BridgeNativeModulePerfLogger::moduleDataCreateEnd([moduleName UTF8String], moduleDataId);
+
     _moduleDataByName[moduleName] = moduleData;
     [_moduleClassesByID addObject:moduleClass];
     [_moduleDataByID addObject:moduleData];
@@ -783,7 +802,10 @@ struct RCTInstanceCallback : public InstanceCallback {
         }
       }
 
+      int32_t moduleDataId = getUniqueId();
+      BridgeNativeModulePerfLogger::moduleDataCreateStart([moduleName UTF8String], moduleDataId);
       moduleData = [[RCTModuleData alloc] initWithModuleClass:moduleClass bridge:self];
+      BridgeNativeModulePerfLogger::moduleDataCreateEnd([moduleName UTF8String], moduleDataId);
 
       _moduleDataByName[moduleName] = moduleData;
       [_moduleClassesByID addObject:moduleClass];

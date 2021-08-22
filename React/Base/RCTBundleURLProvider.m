@@ -76,8 +76,8 @@ static NSURL *serverRootWithHostPort(NSString *hostPort)
                         stringWithFormat:@"http://%@:%lu/", hostPort, (unsigned long)kRCTBundleURLProviderDefaultPort]];
 }
 
-#if RCT_DEV
-- (BOOL)isPackagerRunning:(NSString *)host
+#if RCT_DEV_MENU
++ (BOOL)isPackagerRunning:(NSString *)host
 {
   NSURL *url = [serverRootWithHostPort(host) URLByAppendingPathComponent:@"status"];
 
@@ -111,10 +111,15 @@ static NSURL *serverRootWithHostPort(NSString *hostPort)
   });
 
   NSString *host = ipGuess ?: @"localhost";
-  if ([self isPackagerRunning:host]) {
+  if ([RCTBundleURLProvider isPackagerRunning:host]) {
     return host;
   }
   return nil;
+}
+#else
++ (BOOL)isPackagerRunning:(NSString *)host
+{
+  return false;
 }
 #endif
 
@@ -194,6 +199,10 @@ static NSURL *serverRootWithHostPort(NSString *hostPort)
                                                kRCTPlatformName, // TODO(macOS GH#774)
                                                enableDev ? @"true" : @"false",
                                                enableMinification ? @"true" : @"false"];
+  NSString *bundleID = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleIdentifierKey];
+  if (bundleID) {
+    query = [NSString stringWithFormat:@"%@&app=%@", query, bundleID];
+  }
   return [[self class] resourceURLForResourcePath:path packagerHost:packagerHost query:query];
 }
 

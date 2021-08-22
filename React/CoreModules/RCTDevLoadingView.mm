@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
+#import <React/RCTAppearance.h>
 #import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTDefines.h>
@@ -39,6 +40,8 @@ using namespace facebook::react;
   NSTextField *_label;
 #endif // ]TODO(macOS GH#774)
   NSDate *_showDate;
+  BOOL _hiding;
+  dispatch_block_t _initialMessageBlock;
 }
 
 @synthesize bridge = _bridge;
@@ -73,9 +76,54 @@ RCT_EXPORT_MODULE()
   }
 }
 
+- (void)clearInitialMessageDelay
+{
+  if (self->_initialMessageBlock != nil) {
+    dispatch_block_cancel(self->_initialMessageBlock);
+    self->_initialMessageBlock = nil;
+  }
+}
+
+- (void)showInitialMessageDelayed:(void (^)())initialMessage
+{
+  self->_initialMessageBlock = dispatch_block_create(static_cast<dispatch_block_flags_t>(0), initialMessage);
+
+  // We delay the initial loading message to prevent flashing it
+  // when loading progress starts quickly. To do that, we
+  // schedule the message to be shown in a block, and cancel
+  // the block later when the progress starts coming in.
+  // If the progress beats this timer, this message is not shown.
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), self->_initialMessageBlock);
+}
+
+#if 0 // TODO(macOS GH#774)
+// Blocked out because -[(NS|UI)Color getHue:saturation:brightness:alpha:] has
+// different return values on macOS and iOS.
+// The call to dimColor: was removed with f0dfd35108dd3f092d46b65e77560c35477bf6ba,
+// and we don't use it anywhere else, so we should probably remove this upstream too.
+- (RCTUIColor *)dimColor:(RCTUIColor *)c
+{
+  // Given a color, return a slightly lighter or darker color for dim effect.
+  CGFloat h, s, b, a;
+  if ([c getHue:&h saturation:&s brightness:&b alpha:&a])
+    return [RCTUIColor colorWithHue:h saturation:s brightness:b < 0.5 ? b * 1.25 : b * 0.75 alpha:a];
+  return nil;
+}
+#endif // TODO(macOS GH#774)
+
+- (NSString *)getTextForHost
+{
+  if (self->_bridge.bundleURL == nil || self->_bridge.bundleURL.fileURL) {
+    return @"React Native";
+  }
+
+  return [NSString stringWithFormat:@"%@:%@", self->_bridge.bundleURL.host, self->_bridge.bundleURL.port];
+}
+
 - (void)showMessage:(NSString *)message color:(RCTUIColor *)color backgroundColor:(RCTUIColor *)backgroundColor // TODO(OSS Candidate ISS#2710739)
 {
-  if (!RCTDevLoadingViewGetEnabled()) {
+  if (!RCTDevLoadingViewGetEnabled() || self->_hiding) {
     return;
   }
 
@@ -88,18 +136,16 @@ RCT_EXPORT_MODULE()
       if (@available(iOS 11.0, *)) {
         UIWindow *window = RCTSharedApplication().keyWindow;
         self->_window =
-            [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, screenSize.width, window.safeAreaInsets.top + 30)];
-        self->_label = [[UILabel alloc] initWithFrame:CGRectMake(0, window.safeAreaInsets.top, screenSize.width, 30)];
+            [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, screenSize.width, window.safeAreaInsets.top + 10)];
+        self->_label =
+            [[UILabel alloc] initWithFrame:CGRectMake(0, window.safeAreaInsets.top - 10, screenSize.width, 20)];
       } else {
-        self->_window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, screenSize.width, 22)];
+        self->_window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, screenSize.width, 20)];
         self->_label = [[UILabel alloc] initWithFrame:self->_window.bounds];
       }
       [self->_window addSubview:self->_label];
-#if TARGET_OS_TV
-      self->_window.windowLevel = UIWindowLevelNormal + 1;
-#else
+
       self->_window.windowLevel = UIWindowLevelStatusBar + 1;
-#endif
       // set a root VC so rotation is supported
       self->_window.rootViewController = [UIViewController new];
 
@@ -129,6 +175,7 @@ RCT_EXPORT_MODULE()
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
     self->_label.text = message;
     self->_label.textColor = color;
+
     self->_window.backgroundColor = backgroundColor;
     self->_window.hidden = NO;
 #else // [TODO(macOS GH#774)
@@ -162,7 +209,11 @@ RCT_EXPORT_METHOD(hide)
     return;
   }
 
+  // Cancel the initial message block so it doesn't display later and get stuck.
+  [self clearInitialMessageDelay];
+
   dispatch_async(dispatch_get_main_queue(), ^{
+    self->_hiding = true;
     const NSTimeInterval MIN_PRESENTED_TIME = 0.6;
     NSTimeInterval presentedTime = [[NSDate date] timeIntervalSinceDate:self->_showDate];
     NSTimeInterval delay = MAX(0, MIN_PRESENTED_TIME - presentedTime);
@@ -178,6 +229,7 @@ RCT_EXPORT_METHOD(hide)
           self->_window.frame = windowFrame;
           self->_window.hidden = YES;
           self->_window = nil;
+          self->_hiding = false;
         }];
 #elif TARGET_OS_OSX // [TODO(macOS GH#774)
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -192,26 +244,67 @@ RCT_EXPORT_METHOD(hide)
   });
 }
 
-- (void)showWithURL:(NSURL *)URL
+- (void)showProgressMessage:(NSString *)message
 {
-  RCTUIColor *color; // TODO(macOS GH#774)
-  RCTUIColor *backgroundColor; // TODO(macOS GH#774)
-  NSString *message;
-  if (URL.fileURL) {
-    // If dev mode is not enabled, we don't want to show this kind of notification
-#if !RCT_DEV
+  if (self->_window != nil) {
+    // This is an optimization. Since the progress can come in quickly,
+    // we want to do the minimum amount of work to update the UI,
+    // which is to only update the label text.
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
+    self->_label.text = message;
+#else // [TODO(macOS GH#774)
+    self->_label.stringValue = message;
+#endif // ]TODO(macOS GH#774)
     return;
-#endif
-    color = [RCTUIColor whiteColor]; //TODO(OSS Candidate ISS#2710739) UIColor -> RCTUIColor
-    backgroundColor = [RCTUIColor blackColor]; // TODO(OSS Candidate ISS#2710739)
-    message = [NSString stringWithFormat:@"Connect to %@ to develop JavaScript.", RCT_PACKAGER_NAME];
-  } else {
-    color = [RCTUIColor whiteColor]; // TODO(OSS Candidate ISS#2710739)
-    backgroundColor = [RCTUIColor colorWithHue:1. / 3 saturation:1 brightness:.35 alpha:1]; // TODO(OSS Candidate ISS#2710739)
-    message = [NSString stringWithFormat:@"Loading from %@:%@...", URL.host, URL.port];
+  }
+
+  RCTUIColor *color = [RCTUIColor whiteColor]; // TODO(macOS GH#774)
+  RCTUIColor *backgroundColor = [RCTUIColor colorWithHue:105 saturation:0 brightness:.25 alpha:1]; // TODO(macOS GH#774)
+
+  if ([self isDarkModeEnabled]) {
+    color = [RCTUIColor colorWithHue:208 saturation:0.03 brightness:.14 alpha:1]; // TODO(macOS GH#774)
+    backgroundColor = [RCTUIColor colorWithHue:0 saturation:0 brightness:0.98 alpha:1]; // TODO(macOS GH#774)
   }
 
   [self showMessage:message color:color backgroundColor:backgroundColor];
+}
+
+- (void)showOfflineMessage
+{
+  RCTUIColor *color = [RCTUIColor whiteColor]; // TODO(macOS GH#774)
+  RCTUIColor *backgroundColor = [RCTUIColor blackColor]; // TODO(macOS GH#774)
+
+  if ([self isDarkModeEnabled]) {
+    color = [RCTUIColor blackColor]; // TODO(macOS GH#774)
+    backgroundColor = [RCTUIColor whiteColor]; // TODO(macOS GH#774)
+  }
+
+  NSString *message = [NSString stringWithFormat:@"Connect to %@ to develop JavaScript.", RCT_PACKAGER_NAME];
+  [self showMessage:message color:color backgroundColor:backgroundColor];
+}
+
+- (BOOL)isDarkModeEnabled
+{
+  // We pass nil here to match the behavior of the native module.
+  // If we were to pass a view, then it's possible that this native
+  // banner would have a different color than the JavaScript banner
+  // (which always passes nil). This would result in an inconsistent UI.
+  return [RCTColorSchemePreference(nil) isEqualToString:@"dark"];
+}
+- (void)showWithURL:(NSURL *)URL
+{
+  if (URL.fileURL) {
+    // If dev mode is not enabled, we don't want to show this kind of notification.
+#if !RCT_DEV
+    return;
+#endif
+    [self showOfflineMessage];
+  } else {
+    [self showInitialMessageDelayed:^{
+      NSString *message = [NSString stringWithFormat:@"Loading from %@\u2026", RCT_PACKAGER_NAME];
+      [self showProgressMessage:message];
+    }];
+  }
 }
 
 - (void)updateProgress:(RCTLoadingProgress *)progress
@@ -219,20 +312,18 @@ RCT_EXPORT_METHOD(hide)
   if (!progress) {
     return;
   }
+
+  // Cancel the initial message block so it's not flashed before progress.
+  [self clearInitialMessageDelay];
+
   dispatch_async(dispatch_get_main_queue(), ^{
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
-    self->_label.text = [progress description];
-#else // [TODO(macOS GH#774)
-    self->_label.stringValue = [progress description];
-#endif // ]TODO(macOS GH#774)
+    [self showProgressMessage:[progress description]];
   });
 }
 
-- (std::shared_ptr<TurboModule>)getTurboModuleWithJsInvoker:(std::shared_ptr<CallInvoker>)jsInvoker
-                                              nativeInvoker:(std::shared_ptr<CallInvoker>)nativeInvoker
-                                                 perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<NativeDevLoadingViewSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<NativeDevLoadingViewSpecJSI>(params);
 }
 
 @end
@@ -263,11 +354,9 @@ RCT_EXPORT_METHOD(hide)
 - (void)hide
 {
 }
-- (std::shared_ptr<TurboModule>)getTurboModuleWithJsInvoker:(std::shared_ptr<CallInvoker>)jsInvoker
-                                              nativeInvoker:(std::shared_ptr<CallInvoker>)nativeInvoker
-                                                 perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<NativeDevLoadingViewSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<NativeDevLoadingViewSpecJSI>(params);
 }
 
 @end

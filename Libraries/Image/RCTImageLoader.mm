@@ -856,6 +856,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
     return;
   }
 
+  // This delegate method is Fabric-only
   id<RCTImageURLLoader> loadHandler = [self imageURLLoaderForURL:loaderRequest.imageURL];
   if ([loadHandler respondsToSelector:@selector(trackURLImageContentDidSetForRequest:)]) {
     [(id<RCTImageURLLoaderWithAttribution>)loadHandler trackURLImageContentDidSetForRequest:loaderRequest];
@@ -874,11 +875,24 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
   }
 }
 
+- (void)trackURLImageRequestDidDestroy:(RCTImageURLLoaderRequest *)loaderRequest
+{
+  if (!loaderRequest) {
+    return;
+  }
+
+  id<RCTImageURLLoader> loadHandler = [self imageURLLoaderForURL:loaderRequest.imageURL];
+  if ([loadHandler respondsToSelector:@selector(trackURLImageRequestDidDestroy:)]) {
+    [(id<RCTImageURLLoaderWithAttribution>)loadHandler trackURLImageRequestDidDestroy:loaderRequest];
+  }
+}
+
 - (void)trackURLImageDidDestroy:(RCTImageURLLoaderRequest *)loaderRequest
 {
   if (!loaderRequest) {
     return;
   }
+
   id<RCTImageURLLoader> loadHandler = [self imageURLLoaderForURL:loaderRequest.imageURL];
   if ([loadHandler respondsToSelector:@selector(trackURLImageDidDestroy:)]) {
     [(id<RCTImageURLLoaderWithAttribution>)loadHandler trackURLImageDidDestroy:loaderRequest];
@@ -1172,12 +1186,9 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
   }
 }
 
-- (std::shared_ptr<facebook::react::TurboModule>)
-    getTurboModuleWithJsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-                  nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
-                     perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<facebook::react::NativeImageLoaderIOSSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<facebook::react::NativeImageLoaderIOSSpecJSI>(params);
 }
 
 RCT_EXPORT_METHOD(getSize:(NSString *)uri resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)

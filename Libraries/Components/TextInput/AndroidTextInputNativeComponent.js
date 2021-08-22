@@ -21,7 +21,7 @@ import type {
 } from '../../Types/CodegenTypes';
 import type {HostComponent} from '../../Renderer/shims/ReactNativeTypes';
 import type {TextStyleProp, ViewStyleProp} from '../../StyleSheet/StyleSheet';
-import type {ColorValue} from '../../StyleSheet/StyleSheetTypes';
+import type {ColorValue} from '../../StyleSheet/StyleSheet';
 import requireNativeComponent from '../../ReactNative/requireNativeComponent';
 import codegenNativeCommands from '../../Utilities/codegenNativeCommands';
 import type {TextInputNativeCommands} from './TextInputNativeCommands';
@@ -183,7 +183,6 @@ export type NativeProps = $ReadOnly<{|
   /**
    * When `false`, it will prevent the soft keyboard from showing when the field is focused.
    * Defaults to `true`.
-   * @platform android
    */
   showSoftInputOnFocus?: ?boolean,
 

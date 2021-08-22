@@ -69,7 +69,13 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 {
   if (![self ignoresTextAttributes]) { // TODO(OSS Candidate ISS#2710739)
     id<RCTBackedTextInputViewProtocol> backedTextInputView = self.backedTextInputView;
-    backedTextInputView.defaultTextAttributes = [_textAttributes effectiveTextAttributes];
+
+    NSDictionary<NSAttributedStringKey,id> *textAttributes = [[_textAttributes effectiveTextAttributes] mutableCopy];
+    if ([textAttributes valueForKey:NSForegroundColorAttributeName] == nil) {
+        [textAttributes setValue:[RCTUIColor blackColor] forKey:NSForegroundColorAttributeName]; // TODO(macOS GH#774)
+    }
+
+    backedTextInputView.defaultTextAttributes = textAttributes;
   } // TODO(OSS Candidate ISS#2710739)
 }
 
@@ -340,6 +346,18 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
     if (textInputView.isFirstResponder) {
       [textInputView reloadInputViews];
     }
+  }
+}
+
+- (void)setShowSoftInputOnFocus:(BOOL)showSoftInputOnFocus
+{
+  (void)_showSoftInputOnFocus;
+  if (showSoftInputOnFocus) {
+    // Resets to default keyboard.
+    self.backedTextInputView.inputView = nil;
+  } else {
+    // Hides keyboard, but keeps blinking cursor.
+    self.backedTextInputView.inputView = [[UIView alloc] init];
   }
 }
 #endif // TODO(macOS GH#774)

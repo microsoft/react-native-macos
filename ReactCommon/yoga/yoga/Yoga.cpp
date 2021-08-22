@@ -249,9 +249,6 @@ YOGA_EXPORT YGNodeRef YGNodeClone(YGNodeRef oldNode) {
 static YGConfigRef YGConfigClone(const YGConfig& oldConfig) {
   const YGConfigRef config = new YGConfig(oldConfig);
   YGAssert(config != nullptr, "Could not allocate memory for config");
-  if (config == nullptr) {
-    abort();
-  }
   gConfigInstanceCount++;
   return config;
 }
@@ -1663,8 +1660,8 @@ static void YGNodeAbsoluteLayoutChild(
 
 static void YGNodeWithMeasureFuncSetMeasuredDimensions(
     const YGNodeRef node,
-    const float availableWidth,
-    const float availableHeight,
+    float availableWidth,
+    float availableHeight,
     const YGMeasureMode widthMeasureMode,
     const YGMeasureMode heightMeasureMode,
     const float ownerWidth,
@@ -1676,6 +1673,13 @@ static void YGNodeWithMeasureFuncSetMeasuredDimensions(
       node,
       node->hasMeasureFunc(),
       "Expected node to have custom measure function");
+
+  if (widthMeasureMode == YGMeasureModeUndefined) {
+    availableWidth = YGUndefined;
+  }
+  if (heightMeasureMode == YGMeasureModeUndefined) {
+    availableHeight = YGUndefined;
+  }
 
   const float paddingAndBorderAxisRow =
       YGNodePaddingAndBorderForAxis(node, YGFlexDirectionRow, ownerWidth);
@@ -3657,8 +3661,8 @@ static inline bool YGMeasureModeNewMeasureSizeIsStricterAndStillValid(
 }
 
 YOGA_EXPORT float YGRoundValueToPixelGrid(
-    const float value,
-    const float pointScaleFactor,
+    const double value,
+    const double pointScaleFactor,
     const bool forceCeil,
     const bool forceFloor) {
   double scaledValue = ((double) value) * pointScaleFactor;
@@ -3814,8 +3818,10 @@ bool YGLayoutNodeInternal(
   if (needToVisitNode) {
     // Invalidate the cached results.
     layout->nextCachedMeasurementsIndex = 0;
-    layout->cachedLayout.widthMeasureMode = (YGMeasureMode) -1;
-    layout->cachedLayout.heightMeasureMode = (YGMeasureMode) -1;
+    layout->cachedLayout.availableWidth = -1;
+    layout->cachedLayout.availableHeight = -1;
+    layout->cachedLayout.widthMeasureMode = YGMeasureModeUndefined;
+    layout->cachedLayout.heightMeasureMode = YGMeasureModeUndefined;
     layout->cachedLayout.computedWidth = -1;
     layout->cachedLayout.computedHeight = -1;
   }
@@ -4072,24 +4078,24 @@ YOGA_EXPORT void YGConfigSetPointScaleFactor(
 
 static void YGRoundToPixelGrid(
     const YGNodeRef node,
-    const float pointScaleFactor,
-    const float absoluteLeft,
-    const float absoluteTop) {
+    const double pointScaleFactor,
+    const double absoluteLeft,
+    const double absoluteTop) {
   if (pointScaleFactor == 0.0f) {
     return;
   }
 
-  const float nodeLeft = node->getLayout().position[YGEdgeLeft];
-  const float nodeTop = node->getLayout().position[YGEdgeTop];
+  const double nodeLeft = node->getLayout().position[YGEdgeLeft];
+  const double nodeTop = node->getLayout().position[YGEdgeTop];
 
-  const float nodeWidth = node->getLayout().dimensions[YGDimensionWidth];
-  const float nodeHeight = node->getLayout().dimensions[YGDimensionHeight];
+  const double nodeWidth = node->getLayout().dimensions[YGDimensionWidth];
+  const double nodeHeight = node->getLayout().dimensions[YGDimensionHeight];
 
-  const float absoluteNodeLeft = absoluteLeft + nodeLeft;
-  const float absoluteNodeTop = absoluteTop + nodeTop;
+  const double absoluteNodeLeft = absoluteLeft + nodeLeft;
+  const double absoluteNodeTop = absoluteTop + nodeTop;
 
-  const float absoluteNodeRight = absoluteNodeLeft + nodeWidth;
-  const float absoluteNodeBottom = absoluteNodeTop + nodeHeight;
+  const double absoluteNodeRight = absoluteNodeLeft + nodeWidth;
+  const double absoluteNodeBottom = absoluteNodeTop + nodeHeight;
 
   // If a node has a custom measure function we never want to round down its
   // size as this could lead to unwanted text truncation.
@@ -4332,6 +4338,7 @@ YOGA_EXPORT void YGConfigSetShouldDiffLayoutWithoutLegacyStretchBehaviour(
 void YGAssert(const bool condition, const char* message) {
   if (!condition) {
     Log::log(YGNodeRef{nullptr}, YGLogLevelFatal, nullptr, "%s\n", message);
+    throwLogicalErrorWithMessage(message);
   }
 }
 
@@ -4341,6 +4348,7 @@ void YGAssertWithNode(
     const char* message) {
   if (!condition) {
     Log::log(node, YGLogLevelFatal, nullptr, "%s\n", message);
+    throwLogicalErrorWithMessage(message);
   }
 }
 
@@ -4350,6 +4358,7 @@ void YGAssertWithConfig(
     const char* message) {
   if (!condition) {
     Log::log(config, YGLogLevelFatal, nullptr, "%s\n", message);
+    throwLogicalErrorWithMessage(message);
   }
 }
 
