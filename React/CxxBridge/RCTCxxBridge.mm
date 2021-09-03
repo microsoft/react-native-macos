@@ -208,8 +208,8 @@ struct RCTInstanceCallback : public InstanceCallback {
   // This is uniquely owned, but weak_ptr is used.
   std::shared_ptr<Instance> _reactInstance;
 
-  // Necessary for searching in TurboModuleRegistry
-  id<RCTTurboModuleLookupDelegate> _turboModuleLookupDelegate;
+  // Necessary for searching in TurboModules in TurboModuleManager
+  id<RCTTurboModuleRegistry> _turboModuleRegistry;
 }
 
 @synthesize bridgeDescription = _bridgeDescription;
@@ -217,9 +217,9 @@ struct RCTInstanceCallback : public InstanceCallback {
 @synthesize performanceLogger = _performanceLogger;
 @synthesize valid = _valid;
 
-- (void)setRCTTurboModuleLookupDelegate:(id<RCTTurboModuleLookupDelegate>)turboModuleLookupDelegate
+- (void)setRCTTurboModuleRegistry:(id<RCTTurboModuleRegistry>)turboModuleRegistry
 {
-  _turboModuleLookupDelegate = turboModuleLookupDelegate;
+  _turboModuleRegistry = turboModuleRegistry;
 }
 
 - (std::shared_ptr<MessageQueueThread>)jsMessageThread
@@ -265,8 +265,22 @@ struct RCTInstanceCallback : public InstanceCallback {
     _moduleDataByID = [NSMutableArray new];
 
     [RCTBridge setCurrentBridge:self];
+
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleMemoryWarning)
+                                                 name:UIApplicationDidReceiveMemoryWarningNotification
+                                               object:nil];
+#endif // TODO(macOS GH#774)
   }
   return self;
+}
+
+- (void)dealloc
+{
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+#endif // TODO(macOS GH#774)
 }
 
 + (void)runRunLoop
@@ -299,6 +313,20 @@ struct RCTInstanceCallback : public InstanceCallback {
   NSError *error = tryAndReturnError(block);
   if (error) {
     [self handleError:error];
+  }
+}
+
+- (void)handleMemoryWarning
+{
+  if (!_valid || !_loading) {
+    return;
+  }
+
+  // We need to hold a local retaining pointer to react instance
+  // in case if some other tread resets it.
+  auto reactInstance = _reactInstance;
+  if (reactInstance) {
+    reactInstance->handleMemoryPressure(15 /* TRIM_MEMORY_RUNNING_CRITICAL */);
   }
 }
 
@@ -377,6 +405,27 @@ struct RCTInstanceCallback : public InstanceCallback {
         [weakSelf handleError:error];
       }
     }));
+  }
+
+  /**
+   * id<RCTCxxBridgeDelegate> jsExecutorFactory may create and assign an id<RCTTurboModuleRegistry> object to
+   * RCTCxxBridge If id<RCTTurboModuleRegistry> is assigned by this time, eagerly initialize all TurboModules
+   */
+  if (_turboModuleRegistry && RCTTurboModuleEagerInitEnabled()) {
+    for (NSString *moduleName in [_turboModuleRegistry eagerInitModuleNames]) {
+      [_turboModuleRegistry moduleForName:[moduleName UTF8String]];
+    }
+
+    for (NSString *moduleName in [_turboModuleRegistry eagerInitMainQueueModuleNames]) {
+      if (RCTIsMainQueue()) {
+        [_turboModuleRegistry moduleForName:[moduleName UTF8String]];
+      } else {
+        id<RCTTurboModuleRegistry> turboModuleRegistry = _turboModuleRegistry;
+        dispatch_group_async(prepareBridge, dispatch_get_main_queue(), ^{
+          [turboModuleRegistry moduleForName:[moduleName UTF8String]];
+        });
+      }
+    }
   }
 
   // Dispatch the instance initialization as soon as the initial module metadata has
@@ -495,10 +544,10 @@ struct RCTInstanceCallback : public InstanceCallback {
 
 - (id)moduleForName:(NSString *)moduleName lazilyLoadIfNecessary:(BOOL)lazilyLoad
 {
-  if (RCTTurboModuleEnabled() && _turboModuleLookupDelegate) {
+  if (RCTTurboModuleEnabled() && _turboModuleRegistry) {
     const char *moduleNameCStr = [moduleName UTF8String];
-    if (lazilyLoad || [_turboModuleLookupDelegate moduleIsInitialized:moduleNameCStr]) {
-      id<RCTTurboModule> module = [_turboModuleLookupDelegate moduleForName:moduleNameCStr warnOnLookupFailure:NO];
+    if (lazilyLoad || [_turboModuleRegistry moduleIsInitialized:moduleNameCStr]) {
+      id<RCTTurboModule> module = [_turboModuleRegistry moduleForName:moduleNameCStr warnOnLookupFailure:NO];
       if (module != nil) {
         return module;
       }
@@ -552,8 +601,8 @@ struct RCTInstanceCallback : public InstanceCallback {
     return YES;
   }
 
-  if (_turboModuleLookupDelegate) {
-    return [_turboModuleLookupDelegate moduleIsInitialized:[moduleName UTF8String]];
+  if (_turboModuleRegistry) {
+    return [_turboModuleRegistry moduleIsInitialized:[moduleName UTF8String]];
   }
 
   return NO;
@@ -911,7 +960,9 @@ struct RCTInstanceCallback : public InstanceCallback {
         if (self.valid && ![moduleData.moduleClass isSubclassOfClass:[RCTCxxModule class]]) {
           [self->_performanceLogger appendStartForTag:RCTPLNativeModuleMainThread];
           (void)[moduleData instance];
-          [moduleData gatherConstants];
+          if (!RCTIsMainQueueExecutionOfConstantsToExportDisabled()) {
+            [moduleData gatherConstants];
+          }
           [self->_performanceLogger appendStopForTag:RCTPLNativeModuleMainThread];
         }
       };
@@ -969,9 +1020,49 @@ struct RCTInstanceCallback : public InstanceCallback {
   }
 
   if (self.devSettings.isDevModeEnabled) { // TODO(OSS Candidate ISS#2710739)
-    [self.devSettings setupHotModuleReloadClientIfApplicableForURL:self.bundleURL];
+    [self.devSettings setupHMRClientWithBundleURL:self.bundleURL];
   }
 }
+
+#if RCT_DEV_MENU
+- (void)loadAndExecuteSplitBundleURL:(NSURL *)bundleURL
+                             onError:(RCTLoadAndExecuteErrorBlock)onError
+                          onComplete:(dispatch_block_t)onComplete
+{
+  __weak __typeof(self) weakSelf = self;
+  [RCTJavaScriptLoader loadBundleAtURL:bundleURL
+      onProgress:^(RCTLoadingProgress *progressData) {
+#if (RCT_DEV_MENU | RCT_ENABLE_LOADING_VIEW) && __has_include(<React/RCTDevLoadingViewProtocol.h>)
+        id<RCTDevLoadingViewProtocol> loadingView = [weakSelf moduleForName:@"DevLoadingView"
+                                                      lazilyLoadIfNecessary:YES];
+        [loadingView updateProgress:progressData];
+#endif
+      }
+      onComplete:^(NSError *error, RCTSource *source) {
+        if (error) {
+          onError(error);
+          return;
+        }
+
+        [self enqueueApplicationScript:source.data
+                                   url:source.url
+                            onComplete:^{
+                              [[NSNotificationCenter defaultCenter]
+                                  postNotificationName:RCTAdditionalJavaScriptDidLoadNotification
+                                                object:self->_parentBridge
+                                              userInfo:@{@"bridge" : self}];
+                              [self.devSettings setupHMRClientWithAdditionalBundleURL:source.url];
+                              onComplete();
+                            }];
+      }];
+}
+#else
+- (void)loadAndExecuteSplitBundleURL:(NSURL *)bundleURL
+                             onError:(RCTLoadAndExecuteErrorBlock)onError
+                          onComplete:(dispatch_block_t)onComplete
+{
+}
+#endif
 
 - (void)handleError:(NSError *)error
 {
@@ -1378,7 +1469,15 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithBundleURL
     // hold a local reference to reactInstance in case a parallel thread
     // resets it between null check and usage
     auto reactInstance = self->_reactInstance;
-    if (isRAMBundle(script)) {
+    if (reactInstance && RCTIsBytecodeBundle(script)) {
+      UInt32 offset = 8;
+      while (offset < script.length) {
+        UInt32 fileLength = RCTReadUInt32LE(script, offset);
+        NSData *unit = [script subdataWithRange:NSMakeRange(offset + 4, fileLength)];
+        reactInstance->loadScriptFromString(std::make_unique<NSDataBigString>(unit), sourceUrlStr.UTF8String, false);
+        offset += ((fileLength + RCT_BYTECODE_ALIGNMENT - 1) & ~(RCT_BYTECODE_ALIGNMENT - 1)) + 4;
+      }
+    } else if (isRAMBundle(script)) {
       [self->_performanceLogger markStartForTag:RCTPLRAMBundleLoad];
       auto ramBundle = std::make_unique<JSIndexedRAMBundle>(sourceUrlStr.UTF8String);
       std::unique_ptr<const JSBigString> scriptStr = ramBundle->getStartupCode();

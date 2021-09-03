@@ -21,11 +21,14 @@ const ScrollView = require('../Components/ScrollView/ScrollView');
 const StyleSheet = require('../StyleSheet/StyleSheet');
 const View = require('../Components/View/View');
 
+const {RootTagContext} = require('../ReactNative/RootTag');
+
 import type {ViewProps} from '../Components/View/ViewPropTypes';
-import type {DirectEventHandler} from '../Types/CodegenTypes';
-import type EmitterSubscription from '../vendor/emitter/EmitterSubscription';
-import RCTModalHostView from './RCTModalHostViewNativeComponent';
 import {VirtualizedListContextResetter} from '../Lists/VirtualizedListContext.js';
+import type {RootTag} from '../ReactNative/RootTag';
+import type {DirectEventHandler} from '../Types/CodegenTypes';
+import {type EventSubscription} from '../vendor/emitter/EventEmitter';
+import RCTModalHostView from './RCTModalHostViewNativeComponent';
 
 const ModalEventEmitter =
   Platform.OS === 'ios' && NativeModalManager != null
@@ -156,12 +159,10 @@ class Modal extends React.Component<Props> {
     hardwareAccelerated: false,
   };
 
-  static contextTypes: any | {|rootTag: React$PropType$Primitive<number>|} = {
-    rootTag: PropTypes.number,
-  };
+  static contextType: React.Context<RootTag> = RootTagContext;
 
   _identifier: number;
-  _eventSubscription: ?EmitterSubscription;
+  _eventSubscription: ?EventSubscription;
 
   constructor(props: Props) {
     super(props);
@@ -224,9 +225,7 @@ class Modal extends React.Component<Props> {
     }
 
     const innerChildren = __DEV__ ? (
-      <AppContainer rootTag={this.context.rootTag}>
-        {this.props.children}
-      </AppContainer>
+      <AppContainer rootTag={this.context}>{this.props.children}</AppContainer>
     ) : (
       this.props.children
     );
