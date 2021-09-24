@@ -305,11 +305,6 @@ const APIExamples: Array<RNTesterExample> = [
     supportsTVOS: true,
   },
   {
-    key: 'Focus Ring',
-    module: require('../examples/FocusRing/FocusRingExample'),
-    supportsTVOS: false,
-  },
-  {
     key: 'LayoutAnimationExample',
     module: require('../examples/Layout/LayoutAnimationExample'),
     supportsTVOS: true,
