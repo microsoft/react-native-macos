@@ -1,4 +1,4 @@
 variables:
-  VmImage: macOS-10.15
+  VmImage: macOS-11.0
   slice_name: 'Xcode_12_5'
   xcode_version: '/Applications/Xcode_12.5.app'
