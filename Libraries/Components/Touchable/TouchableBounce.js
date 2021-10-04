@@ -182,10 +182,7 @@ class TouchableBounce extends React.Component<Props, State> {
                 !this.props.disabled,
             }
           : {
-              focusable:
-                this.props.focusable !== false &&
-                this.props.onPress !== undefined &&
-                !this.props.disabled,
+              focusable: this.props.focusable !== false && !this.props.disabled,
             })}
         // macOS]
         tooltip={this.props.tooltip} // TODO(macOS/win ISS#2323203)
