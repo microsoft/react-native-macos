@@ -14,13 +14,19 @@ body:
       label: Environment
       description: |
         Please fill in all the relevant fields by running these commands in terminal.
-      value: |
         1. `react-native -v`:
         3. `npm ls react-native-macos`:
         4. `node -v`:
         5. `npm -v`:
         6. `yarn --version`<!-- (if you use Yarn) -->:
         7. `xcodebuild -version`:
+      value: |
+        react-native -v:
+        npm ls react-native-macos:
+        node -v:
+        npm -v:
+        yarn --version:
+        xcodebuild -version:
       render: markdown
   - type: textarea
     validations:
@@ -60,14 +66,14 @@ body:
         Please share a project that reproduces the issue.
         There are three ways to do it:
 
-        * See if the issue is already reproducable within the RNTester app.
+        - See if the issue is already reproducable within the RNTester app.
           If the issue pertains to a particular Component or API, try the corresponding
           test page in RNTester. 
 
-        * Create a new app using https://snack.expo.io/ and try to reproduce the issue in it.
+        - Create a new app using https://snack.expo.io/ and try to reproduce the issue in it.
           This is useful if you roughly know where the problem is, or can’t share the real code.
 
-        * Or, copy your app and remove things until you’re left with the minimal reproducible demo.
+        - Or, copy your app and remove things until you’re left with the minimal reproducible demo.
           This is useful for finding the root cause. You may then optionally create a Snack.
 
         This is a good guide to creating bug demos: https://stackoverflow.com/help/mcve

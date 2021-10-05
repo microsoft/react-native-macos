@@ -1,13 +1,15 @@
-name: React Native for macOS feature request 2
+name: React Native for macOS feature request
 description: Suggest a new feature or idea
 title: Your feature request
-labels: [Proposal]
+labels: [Proposal, enhancement]
 body:
   - type: markdown
     attributes:
       value: |
-        This is a template for new feature or API proposals for React Native for macOS. Use this to submit new API/component requests or behavior updates that are specific to macOS-only. For feature requests to React Native, go [here](https://github.com/react-native-community/discussions-and-proposals) instead. For feature requests to React Native for Windows (or) Desktop features in general, go [here](https://github.com/microsoft/react-native-windows/issues/new/choose).
-        
+        This is a template for new feature or API proposals for React Native for macOS. Use this to submit new API/component requests or behavior updates that are specific to macOS-only.
+        - For feature requests to React Native, go [here](https://github.com/react-native-community/discussions-and-proposals) instead.
+        - For feature requests to React Native for Windows (or) Desktop features in general, go [here](https://github.com/microsoft/react-native-windows/issues/new/choose).
+  
         Your issue will be triaged by the team according to [this process](https://github.com/microsoft/react-native-macos/wiki/Triage-Process).
   - type: textarea
     validations:

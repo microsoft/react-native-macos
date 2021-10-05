@@ -1,4 +1,4 @@
-name: React Native for macOS Community Module support request 2
+name: React Native for macOS Community Module support request
 description: Suggest that React Native for macOS support be added to a community module
 title: Support react-native-foo
 labels: [Extensions, enhancement]
@@ -26,7 +26,7 @@ body:
   - type: input
     attributes:
       label: Target Version
-      placeholder: "0.65"
+      placeholder: "0.63"
   - type: input
     attributes:
       label: Existing issue url
