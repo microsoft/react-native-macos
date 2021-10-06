@@ -434,7 +434,6 @@ RCT_ENUM_CONVERTER(
   return type;
 }
 
-#if !TARGET_OS_TV
 RCT_MULTI_ENUM_CONVERTER(
     UIDataDetectorTypes,
     (@{
@@ -448,7 +447,6 @@ RCT_MULTI_ENUM_CONVERTER(
     UIDataDetectorTypePhoneNumber,
     unsignedLongLongValue)
 
-#if WEBKIT_IOS_10_APIS_AVAILABLE
 RCT_MULTI_ENUM_CONVERTER(
     WKDataDetectorTypes,
     (@{
@@ -464,9 +462,6 @@ RCT_MULTI_ENUM_CONVERTER(
     }),
     WKDataDetectorTypePhoneNumber,
     unsignedLongLongValue)
-#endif // WEBKIT_IOS_10_APIS_AVAILABLE
-
-#endif // !TARGET_OS_TV
 
 RCT_ENUM_CONVERTER(
     UIKeyboardAppearance,
@@ -520,7 +515,6 @@ RCT_ENUM_CONVERTER(
     UIViewContentModeScaleAspectFill,
     integerValue)
 
-#if !TARGET_OS_TV
 RCT_ENUM_CONVERTER(
     UIBarStyle,
     (@{
@@ -531,7 +525,6 @@ RCT_ENUM_CONVERTER(
     }),
     UIBarStyleDefault,
     integerValue)
-#endif
 #else // [TODO(macOS GH#774)
 RCT_MULTI_ENUM_CONVERTER(NSTextCheckingTypes, (@{
   @"ortography": @(NSTextCheckingTypeOrthography),
@@ -1320,7 +1313,11 @@ RCT_ENUM_CONVERTER(
 
 RCT_ENUM_CONVERTER(
     YGPositionType,
-    (@{@"absolute" : @(YGPositionTypeAbsolute), @"relative" : @(YGPositionTypeRelative)}),
+    (@{
+      @"static" : @(YGPositionTypeStatic),
+      @"absolute" : @(YGPositionTypeAbsolute),
+      @"relative" : @(YGPositionTypeRelative)
+    }),
     YGPositionTypeRelative,
     intValue)
 

@@ -274,6 +274,8 @@ namespace JS {
 @end
 @protocol NativeAnimatedModuleSpec <RCTBridgeModule, RCTTurboModule>
 
+- (void)startOperationBatch;
+- (void)finishOperationBatch;
 - (void)createAnimatedNode:(double)tag
                     config:(NSDictionary *)config;
 - (void)getValue:(double)tag
@@ -320,6 +322,93 @@ namespace facebook {
     class JSI_EXPORT NativeAnimatedModuleSpecJSI : public ObjCTurboModule {
     public:
       NativeAnimatedModuleSpecJSI(const ObjCTurboModule::InitParams &params);
+
+    };
+  } // namespace react
+} // namespace facebook
+
+namespace JS {
+  namespace NativeAnimatedTurboModule {
+    struct EndResult {
+      bool finished() const;
+
+      EndResult(NSDictionary *const v) : _v(v) {}
+    private:
+      NSDictionary *_v;
+    };
+  }
+}
+
+@interface RCTCxxConvert (NativeAnimatedTurboModule_EndResult)
++ (RCTManagedPointer *)JS_NativeAnimatedTurboModule_EndResult:(id)json;
+@end
+
+namespace JS {
+  namespace NativeAnimatedTurboModule {
+    struct EventMapping {
+      facebook::react::LazyVector<NSString *> nativeEventPath() const;
+      folly::Optional<double> animatedValueTag() const;
+
+      EventMapping(NSDictionary *const v) : _v(v) {}
+    private:
+      NSDictionary *_v;
+    };
+  }
+}
+
+@interface RCTCxxConvert (NativeAnimatedTurboModule_EventMapping)
++ (RCTManagedPointer *)JS_NativeAnimatedTurboModule_EventMapping:(id)json;
+@end
+@protocol NativeAnimatedTurboModuleSpec <RCTBridgeModule, RCTTurboModule>
+
+- (void)startOperationBatch;
+- (void)finishOperationBatch;
+- (void)createAnimatedNode:(double)tag
+                    config:(NSDictionary *)config;
+- (void)getValue:(double)tag
+saveValueCallback:(RCTResponseSenderBlock)saveValueCallback;
+- (void)startListeningToAnimatedNodeValue:(double)tag;
+- (void)stopListeningToAnimatedNodeValue:(double)tag;
+- (void)connectAnimatedNodes:(double)parentTag
+                    childTag:(double)childTag;
+- (void)disconnectAnimatedNodes:(double)parentTag
+                       childTag:(double)childTag;
+- (void)startAnimatingNode:(double)animationId
+                   nodeTag:(double)nodeTag
+                    config:(NSDictionary *)config
+               endCallback:(RCTResponseSenderBlock)endCallback;
+- (void)stopAnimation:(double)animationId;
+- (void)setAnimatedNodeValue:(double)nodeTag
+                       value:(double)value;
+- (void)setAnimatedNodeOffset:(double)nodeTag
+                       offset:(double)offset;
+- (void)flattenAnimatedNodeOffset:(double)nodeTag;
+- (void)extractAnimatedNodeOffset:(double)nodeTag;
+- (void)connectAnimatedNodeToView:(double)nodeTag
+                          viewTag:(double)viewTag;
+- (void)disconnectAnimatedNodeFromView:(double)nodeTag
+                               viewTag:(double)viewTag;
+- (void)restoreDefaultValues:(double)nodeTag;
+- (void)dropAnimatedNode:(double)tag;
+- (void)addAnimatedEventToView:(double)viewTag
+                     eventName:(NSString *)eventName
+                  eventMapping:(JS::NativeAnimatedTurboModule::EventMapping &)eventMapping;
+- (void)removeAnimatedEventFromView:(double)viewTag
+                          eventName:(NSString *)eventName
+                    animatedNodeTag:(double)animatedNodeTag;
+- (void)addListener:(NSString *)eventName;
+- (void)removeListeners:(double)count;
+
+@end
+namespace facebook {
+  namespace react {
+    /**
+     * ObjC++ class for module 'AnimatedTurboModule'
+     */
+
+    class JSI_EXPORT NativeAnimatedTurboModuleSpecJSI : public ObjCTurboModule {
+    public:
+      NativeAnimatedTurboModuleSpecJSI(const ObjCTurboModule::InitParams &params);
 
     };
   } // namespace react
@@ -1441,9 +1530,45 @@ namespace facebook {
     };
   } // namespace react
 } // namespace facebook
+@protocol NativeImageStoreAndroidSpec <RCTBridgeModule, RCTTurboModule>
+
+- (void)getBase64ForTag:(NSString *)uri
+        successCallback:(RCTResponseSenderBlock)successCallback
+          errorCallback:(RCTResponseSenderBlock)errorCallback;
+
+@end
+namespace facebook {
+  namespace react {
+    /**
+     * ObjC++ class for module 'ImageStoreAndroid'
+     */
+
+    class JSI_EXPORT NativeImageStoreAndroidSpecJSI : public ObjCTurboModule {
+    public:
+      NativeImageStoreAndroidSpecJSI(const ObjCTurboModule::InitParams &params);
+
+    };
+  } // namespace react
+} // namespace facebook
 
 namespace JS {
-  namespace NativeImageStore {
+  namespace NativeImageStoreIOS {
+    struct SpecGetBase64ForTagErrorCallbackError {
+      NSString *message() const;
+
+      SpecGetBase64ForTagErrorCallbackError(NSDictionary *const v) : _v(v) {}
+    private:
+      NSDictionary *_v;
+    };
+  }
+}
+
+@interface RCTCxxConvert (NativeImageStoreIOS_SpecGetBase64ForTagErrorCallbackError)
++ (RCTManagedPointer *)JS_NativeImageStoreIOS_SpecGetBase64ForTagErrorCallbackError:(id)json;
+@end
+
+namespace JS {
+  namespace NativeImageStoreIOS {
     struct SpecAddImageFromBase64ErrorCallbackError {
       NSString *message() const;
 
@@ -1454,10 +1579,10 @@ namespace JS {
   }
 }
 
-@interface RCTCxxConvert (NativeImageStore_SpecAddImageFromBase64ErrorCallbackError)
-+ (RCTManagedPointer *)JS_NativeImageStore_SpecAddImageFromBase64ErrorCallbackError:(id)json;
+@interface RCTCxxConvert (NativeImageStoreIOS_SpecAddImageFromBase64ErrorCallbackError)
++ (RCTManagedPointer *)JS_NativeImageStoreIOS_SpecAddImageFromBase64ErrorCallbackError:(id)json;
 @end
-@protocol NativeImageStoreSpec <RCTBridgeModule, RCTTurboModule>
+@protocol NativeImageStoreIOSSpec <RCTBridgeModule, RCTTurboModule>
 
 - (void)getBase64ForTag:(NSString *)uri
         successCallback:(RCTResponseSenderBlock)successCallback
@@ -1473,12 +1598,12 @@ namespace JS {
 namespace facebook {
   namespace react {
     /**
-     * ObjC++ class for module 'ImageStore'
+     * ObjC++ class for module 'ImageStoreIOS'
      */
 
-    class JSI_EXPORT NativeImageStoreSpecJSI : public ObjCTurboModule {
+    class JSI_EXPORT NativeImageStoreIOSSpecJSI : public ObjCTurboModule {
     public:
-      NativeImageStoreSpecJSI(const ObjCTurboModule::InitParams &params);
+      NativeImageStoreIOSSpecJSI(const ObjCTurboModule::InitParams &params);
 
     };
   } // namespace react
@@ -1832,6 +1957,8 @@ namespace JS {
           RCTRequired<NSString *> Model;
           NSString *ServerHost;
           RCTRequired<NSString *> uiMode;
+          RCTRequired<NSString *> Brand;
+          RCTRequired<NSString *> Manufacturer;
         };
 
         /** Initialize with a set of values */
@@ -2878,6 +3005,21 @@ inline folly::Optional<double> JS::NativeAnimatedModule::EventMapping::animatedV
   id const p = _v[@"animatedValueTag"];
   return RCTBridgingToOptionalDouble(p);
 }
+inline bool JS::NativeAnimatedTurboModule::EndResult::finished() const
+{
+  id const p = _v[@"finished"];
+  return RCTBridgingToBool(p);
+}
+inline facebook::react::LazyVector<NSString *> JS::NativeAnimatedTurboModule::EventMapping::nativeEventPath() const
+{
+  id const p = _v[@"nativeEventPath"];
+  return RCTBridgingToVec(p, ^NSString *(id itemValue_0) { return RCTBridgingToString(itemValue_0); });
+}
+inline folly::Optional<double> JS::NativeAnimatedTurboModule::EventMapping::animatedValueTag() const
+{
+  id const p = _v[@"animatedValueTag"];
+  return RCTBridgingToOptionalDouble(p);
+}
 inline NSString *JS::NativeAppState::SpecGetCurrentAppStateSuccessAppState::app_state() const
 {
   id const p = _v[@"app_state"];
@@ -3209,7 +3351,12 @@ inline bool JS::NativeImagePickerIOS::SpecOpenSelectDialogConfig::showVideos() c
   id const p = _v[@"showVideos"];
   return RCTBridgingToBool(p);
 }
-inline NSString *JS::NativeImageStore::SpecAddImageFromBase64ErrorCallbackError::message() const
+inline NSString *JS::NativeImageStoreIOS::SpecGetBase64ForTagErrorCallbackError::message() const
+{
+  id const p = _v[@"message"];
+  return RCTBridgingToString(p);
+}
+inline NSString *JS::NativeImageStoreIOS::SpecAddImageFromBase64ErrorCallbackError::message() const
 {
   id const p = _v[@"message"];
   return RCTBridgingToString(p);
@@ -3310,6 +3457,10 @@ inline JS::NativePlatformConstantsAndroid::Constants::Builder::Builder(const Inp
   d[@"ServerHost"] = ServerHost;
   auto uiMode = i.uiMode.get();
   d[@"uiMode"] = uiMode;
+  auto Brand = i.Brand.get();
+  d[@"Brand"] = Brand;
+  auto Manufacturer = i.Manufacturer.get();
+  d[@"Manufacturer"] = Manufacturer;
   return d;
 }) {}
 inline JS::NativePlatformConstantsAndroid::Constants::Builder::Builder(Constants i) : _factory(^{

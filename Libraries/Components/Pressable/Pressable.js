@@ -137,6 +137,11 @@ type Props = $ReadOnly<{|
    */
   testOnly_pressed?: ?boolean,
 
+  /**
+   * Duration to wait after press down before calling `onPressIn`.
+   */
+  unstable_pressDelay?: ?number,
+
   // [TODO(macOS GH#774)
   acceptsFirstMouse?: ?boolean,
   enableFocusRing?: ?boolean,
@@ -172,6 +177,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
     pressRetentionOffset,
     style,
     testOnly_pressed,
+    unstable_pressDelay,
     ...restProps
   } = props;
 
@@ -184,6 +190,16 @@ function Pressable(props: Props, forwardedRef): React.Node {
 
   const hitSlop = normalizeRect(props.hitSlop);
 
+  const restPropsWithDefaults: React.ElementConfig<typeof View> = {
+    ...restProps,
+    ...android_rippleConfig?.viewProps,
+    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [TODO(macOS GH#774)
+    enableFocusRing: enableFocusRing !== false && !disabled,
+    accessible: accessible !== false,
+    focusable: focusable !== false && !disabled, // ]TODO(macOS GH#774)
+    hitSlop,
+  };
+
   const config = useMemo(
     () => ({
       disabled,
@@ -191,6 +207,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
       pressRectOffset: pressRetentionOffset,
       android_disableSound,
       delayLongPress,
+      delayPressIn: unstable_pressDelay,
       onLongPress,
       onPress,
       onPressIn(event: PressEvent): void {
@@ -225,20 +242,15 @@ function Pressable(props: Props, forwardedRef): React.Node {
       onPressOut,
       pressRetentionOffset,
       setPressed,
+      unstable_pressDelay,
     ],
   );
   const eventHandlers = usePressability(config);
 
   return (
     <View
-      {...restProps}
+      {...restPropsWithDefaults}
       {...eventHandlers}
-      {...android_rippleConfig?.viewProps}
-      acceptsFirstMouse={acceptsFirstMouse !== false && !disabled} // [TODO(macOS GH#774)
-      enableFocusRing={enableFocusRing !== false && !disabled} // ]TODO(macOS GH#774)
-      accessible={accessible !== false}
-      focusable={focusable !== false}
-      hitSlop={hitSlop}
       ref={viewRef}
       style={typeof style === 'function' ? style({pressed}) : style}
       collapsable={false}>

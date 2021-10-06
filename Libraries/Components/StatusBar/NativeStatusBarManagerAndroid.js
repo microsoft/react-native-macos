@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow strict-local
+ * @flow strict
  * @format
  */
 
@@ -12,14 +12,13 @@
 
 import type {TurboModule} from '../../TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../TurboModule/TurboModuleRegistry';
-import type {ProcessedColorValue} from '../../StyleSheet/processColor'; // TODO(macOS GH#774)
 
 export interface Spec extends TurboModule {
   +getConstants: () => {|
     +HEIGHT: number,
     +DEFAULT_BACKGROUND_COLOR: number,
   |};
-  +setColor: (color: ProcessedColorValue, animated: boolean) => void; // TODO(macOS GH#774)
+  +setColor: (color: number, animated: boolean) => void; // TODO(macOS GH#774)
   +setTranslucent: (translucent: boolean) => void;
 
   /**
@@ -27,6 +26,7 @@ export interface Spec extends TurboModule {
    *    - 'default'
    *    - 'dark-content'
    */
+  // eslint-disable-next-line @react-native/codegen/react-native-modules
   +setStyle: (statusBarStyle?: ?string) => void;
   +setHidden: (hidden: boolean) => void;
 }

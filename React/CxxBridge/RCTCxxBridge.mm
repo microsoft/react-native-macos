@@ -392,11 +392,11 @@ struct RCTInstanceCallback : public InstanceCallback {
     }
     if (!executorFactory) {
       auto installBindings = RCTJSIExecutorRuntimeInstaller(nullptr);
- #if RCT_USE_HERMES
+#if RCT_USE_HERMES
       executorFactory = std::make_shared<HermesExecutorFactory>(installBindings);
- #else
+#else
       executorFactory = std::make_shared<JSCExecutorFactory>(installBindings);
- #endif
+#endif
     }
   } else {
     id<RCTJavaScriptExecutor> objcExecutor = [self moduleForClass:self.executorClass];
@@ -1047,10 +1047,6 @@ struct RCTInstanceCallback : public InstanceCallback {
         [self enqueueApplicationScript:source.data
                                    url:source.url
                             onComplete:^{
-                              [[NSNotificationCenter defaultCenter]
-                                  postNotificationName:RCTAdditionalJavaScriptDidLoadNotification
-                                                object:self->_parentBridge
-                                              userInfo:@{@"bridge" : self}];
                               [self.devSettings setupHMRClientWithAdditionalBundleURL:source.url];
                               onComplete();
                             }];
@@ -1141,26 +1137,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithBundleURL
  */
 - (void)setUp
 {
-}
-
-- (void)reload
-{
-  if (!_valid) {
-    RCTLogWarn(
-        @"Attempting to reload bridge before it's valid: %@. Try restarting the development server if connected.",
-        self);
-  }
-  RCTTriggerReloadCommandListeners(@"Unknown from cxx bridge");
-}
-
-- (void)reloadWithReason:(NSString *)reason
-{
-  if (!_valid) {
-    RCTLogWarn(
-        @"Attempting to reload bridge before it's valid: %@. Try restarting the development server if connected.",
-        self);
-  }
-  RCTTriggerReloadCommandListeners(reason);
 }
 
 - (Class)executorClass

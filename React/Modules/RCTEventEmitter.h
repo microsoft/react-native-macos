@@ -12,10 +12,9 @@
  * RCTEventEmitter is an abstract base class to be used for modules that emit
  * events to be observed by JS.
  */
-@interface RCTEventEmitter : NSObject <RCTBridgeModule, RCTJSInvokerModule>
+@interface RCTEventEmitter : NSObject <RCTBridgeModule, RCTJSInvokerModule, RCTInvalidating>
 
 @property (nonatomic, weak) RCTBridge * _Nullable bridge; // TODO(macOS GH#774)
-@property (nonatomic, copy, nonnull) void (^invokeJS)(NSString * _Nullable module, NSString * _Nullable method, NSArray * _Nullable args); // TODO(macOS GH#774)
 
 /**
  * Override this method to return an array of supported event names. Attempting
@@ -37,6 +36,8 @@
  */
 - (void)startObserving;
 - (void)stopObserving;
+
+- (void)invalidate NS_REQUIRES_SUPER;
 
 - (void)addListener:(NSString *_Nullable)eventName; // TODO(macOS GH#774)
 - (void)removeListeners:(double)count;

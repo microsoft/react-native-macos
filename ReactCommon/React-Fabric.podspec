@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   s.homepage               = "https://reactnative.dev/"
   s.license                = package["license"]
   s.author                 = "Facebook, Inc. and its affiliates"
-  s.platforms              = { :ios => "10.0", :tvos => "10.0" }
+  s.platforms              = { :ios => "10.0" }
   s.source                 = source
   s.prepare_command        = File.read("../scripts/generate-rncore.sh")
   s.source_files           = "dummyFile.cpp"
@@ -102,7 +102,7 @@ Pod::Spec.new do |s|
       sss.source_files         = "fabric/components/legacyviewmanagerinterop/**/*.{m,mm,cpp,h}"
       sss.exclude_files        = "**/tests/*"
       sss.header_dir           = "react/components/legacyviewmanagerinterop"
-      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/Folly\" \"$(PODS_ROOT)/Headers/Private/React-Core\"" }
+      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/RCT-Folly\" \"$(PODS_ROOT)/Headers/Private/React-Core\"" }
     end
 
     ss.subspec "modal" do |sss|
@@ -140,7 +140,7 @@ Pod::Spec.new do |s|
       sss.source_files         = "fabric/components/safeareaview/**/*.{m,mm,cpp,h}"
       sss.exclude_files        = "**/tests/*"
       sss.header_dir           = "react/components/safeareaview"
-      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/Folly\"" }
+      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/RCT-Folly\"" }
     end
 
     ss.subspec "scrollview" do |sss|
@@ -177,7 +177,7 @@ Pod::Spec.new do |s|
       sss.source_files         = "fabric/components/textinput/iostextinput/**/*.{m,mm,cpp,h}"
       sss.exclude_files        = "**/tests/*"
       sss.header_dir           = "react/components/iostextinput"
-      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/Folly\"" }
+      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/RCT-Folly\"" }
     end
 
     ss.subspec "unimplementedview" do |sss|
@@ -186,7 +186,7 @@ Pod::Spec.new do |s|
       sss.source_files         = "fabric/components/unimplementedview/**/*.{m,mm,cpp,h}"
       sss.exclude_files        = "**/tests/*"
       sss.header_dir           = "react/components/unimplementedview"
-      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/Folly\"" }
+      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/RCT-Folly\"" }
     end
 
     ss.subspec "view" do |sss|
