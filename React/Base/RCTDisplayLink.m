@@ -96,6 +96,13 @@
 
 - (void)invalidate
 {
+  // ensure observer callbacks do not hold a reference to weak self via pauseCallback
+  for (RCTModuleData *moduleData in _frameUpdateObservers) {
+    id<RCTFrameUpdateObserver> observer = (id<RCTFrameUpdateObserver>)moduleData.instance;
+    [observer setPauseCallback:nil];
+  }
+  [_frameUpdateObservers removeAllObjects];	// just to be explicit
+
   [_jsDisplayLink invalidate];
 }
 
@@ -146,14 +153,13 @@
   BOOL pauseDisplayLink = YES;
   for (RCTModuleData *moduleData in _frameUpdateObservers) {
     id<RCTFrameUpdateObserver> observer = (id<RCTFrameUpdateObserver>)moduleData.instance;
-    BOOL validObserverProtocol = [observer conformsToProtocol:@protocol(RCTFrameUpdateObserver)]; // [TODO: GH#774- add protocol check before accessing data
-    RCTAssert(validObserverProtocol, @"Observer does not conform to necessary protocol (RCTFrameUpdateObserver)");
-    if (validObserverProtocol && !observer.paused) { // TODO: GH#774- add protocol check before accessing data]
+    if (!observer.paused) {
       pauseDisplayLink = NO;
       break;
     }
   }
 
+  // Update the state of display link (call start/stop)
   _jsDisplayLink.paused = pauseDisplayLink;
 }
 
