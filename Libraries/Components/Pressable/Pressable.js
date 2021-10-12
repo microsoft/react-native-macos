@@ -174,6 +174,8 @@ function Pressable(props: Props, forwardedRef): React.Node {
     onPress,
     onPressIn,
     onPressOut,
+    onMouseEnter,
+    onMouseLeave,
     pressRetentionOffset,
     style,
     testOnly_pressed,
@@ -210,6 +212,8 @@ function Pressable(props: Props, forwardedRef): React.Node {
       delayPressIn: unstable_pressDelay,
       onLongPress,
       onPress,
+      onHoverIn: onMouseEnter,
+      onHoverOut: onMouseLeave,
       onPressIn(event: PressEvent): void {
         if (android_rippleConfig != null) {
           android_rippleConfig.onPressIn(event);
@@ -240,6 +244,8 @@ function Pressable(props: Props, forwardedRef): React.Node {
       onPress,
       onPressIn,
       onPressOut,
+      onMouseEnter,
+      onMouseLeave,
       pressRetentionOffset,
       setPressed,
       unstable_pressDelay,
