@@ -99,9 +99,9 @@ function PressableFeedbackEvents() {
           testID="pressable_feedback_events_button"
           accessibilityLabel="pressable feedback events"
           accessibilityRole="button"
-          onPress={() => appendEvent('press')}
           onMouseEnter={() => appendEvent('mouseEnter')} // [TODO(macOS GH#774)
           onMouseLeave={() => appendEvent('mouseLeave')} // ]TODO(macOS GH#774)
+          onPress={() => appendEvent('press')}
           onPressIn={() => appendEvent('pressIn')}
           onPressOut={() => appendEvent('pressOut')}
           onLongPress={() => appendEvent('longPress')}>
