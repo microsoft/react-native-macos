@@ -8,8 +8,6 @@
  * @format
  */
 
-'use strict';
-
 import type {TurboModule} from '../TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../TurboModule/TurboModuleRegistry';
 import type {DefaultInputsArray} from './AlertMacOS'; // TODO(macOS GH#774)
@@ -32,7 +30,6 @@ export type Args = {|
 
 export interface Spec extends TurboModule {
   +alertWithArgs: (
-    // eslint-disable-next-line @react-native/codegen/react-native-modules
     args: Args,
     callback: (id: number, value: string) => void,
   ) => void;

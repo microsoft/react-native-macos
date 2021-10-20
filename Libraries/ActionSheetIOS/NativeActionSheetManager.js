@@ -8,8 +8,6 @@
  * @format
  */
 
-'use strict';
-
 import type {TurboModule} from '../TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../TurboModule/TurboModuleRegistry';
 import type {ProcessedColorValue} from '../StyleSheet/processColor'; // TODO(macOS GH#774)
@@ -32,6 +30,7 @@ export interface Spec extends TurboModule {
       +anchor?: ?number,
       +tintColor?: ?ProcessedColorValue, // TODO(macOS GH#774)
       +userInterfaceStyle?: ?string,
+      +disabledButtonIndices?: Array<number>,
     |},
     callback: (buttonIndex: number) => void,
   ) => void;

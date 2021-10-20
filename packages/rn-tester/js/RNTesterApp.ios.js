@@ -8,16 +8,14 @@
  * @flow
  */
 
-'use strict';
-
 import {AppRegistry, NativeModules, Platform, View} from 'react-native'; // TODO(OSS Candidate ISS#2710739): everything but AppRegistry
 import React from 'react';
 
 import SnapshotViewIOS from './examples/Snapshot/SnapshotViewIOS.ios';
-import RNTesterExampleContainer from './components/RNTesterExampleContainer';
+import RNTesterModuleContainer from './components/RNTesterModuleContainer';
 import RNTesterList from './utils/RNTesterList';
 import RNTesterApp from './RNTesterAppShared';
-import type {RNTesterExample} from './types/RNTesterTypes';
+import type {RNTesterModuleInfo} from './types/RNTesterTypes';
 
 const {TestModule} = NativeModules; // TODO(OSS Candidate ISS#2710739)
 const requestAnimationFrame = require('fbjs/lib/requestAnimationFrame'); // TODO(OSS Candidate ISS#2710739)
@@ -31,15 +29,18 @@ AppRegistry.registerComponent('RootViewSizeFlexibilityExampleApp', () =>
 AppRegistry.registerComponent('RNTesterApp', () => RNTesterApp);
 
 // Register suitable examples for snapshot tests
-RNTesterList.ComponentExamples.concat(RNTesterList.APIExamples).forEach(
-  (Example: RNTesterExample) => {
+RNTesterList.Components.concat(RNTesterList.APIs).forEach(
+  (Example: RNTesterModuleInfo) => {
     const ExampleModule = Example.module;
     if (ExampleModule.displayName) {
       class Snapshotter extends React.Component<{...}> {
         render() {
           return (
             <SnapshotViewIOS>
-              <RNTesterExampleContainer module={ExampleModule} />
+              <RNTesterModuleContainer
+                module={ExampleModule}
+                onExampleCardPress={() => {}}
+              />
             </SnapshotViewIOS>
           );
         }

@@ -8,8 +8,6 @@
  * @format
  */
 
-'use strict';
-
 import * as React from 'react';
 import {useMemo, useState, useRef, useImperativeHandle} from 'react';
 import useAndroidRippleForView, {
@@ -60,6 +58,12 @@ type Props = $ReadOnly<{|
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
 
   /**
+   * Whether a press gesture can be interrupted by a parent gesture such as a
+   * scroll event. Defaults to true.
+   */
+  cancelable?: ?boolean,
+
+  /**
    * Either children or a render prop that receives a boolean reflecting whether
    * the component is currently pressed.
    */
@@ -89,27 +93,27 @@ type Props = $ReadOnly<{|
   /**
    * Called when this view's layout changes.
    */
-  onLayout?: ?(event: LayoutEvent) => void,
+  onLayout?: ?(event: LayoutEvent) => mixed,
 
   /**
    * Called when a long-tap gesture is detected.
    */
-  onLongPress?: ?(event: PressEvent) => void,
+  onLongPress?: ?(event: PressEvent) => mixed,
 
   /**
    * Called when a single tap gesture is detected.
    */
-  onPress?: ?(event: PressEvent) => void,
+  onPress?: ?(event: PressEvent) => mixed,
 
   /**
    * Called when a touch is engaged before `onPress`.
    */
-  onPressIn?: ?(event: PressEvent) => void,
+  onPressIn?: ?(event: PressEvent) => mixed,
 
   /**
    * Called when a touch is released before `onPress`.
    */
-  onPressOut?: ?(event: PressEvent) => void,
+  onPressOut?: ?(event: PressEvent) => mixed,
 
   /**
    * Either view styles or a function that receives a boolean reflecting whether
@@ -166,6 +170,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
     accessible,
     android_disableSound,
     android_ripple,
+    cancelable,
     children,
     delayLongPress,
     disabled,
@@ -192,6 +197,11 @@ function Pressable(props: Props, forwardedRef): React.Node {
 
   const hitSlop = normalizeRect(props.hitSlop);
 
+  const accessibilityState =
+    disabled != null
+      ? {...props.accessibilityState, disabled}
+      : props.accessibilityState;
+
   const restPropsWithDefaults: React.ElementConfig<typeof View> = {
     ...restProps,
     ...android_rippleConfig?.viewProps,
@@ -199,11 +209,13 @@ function Pressable(props: Props, forwardedRef): React.Node {
     enableFocusRing: enableFocusRing !== false && !disabled,
     accessible: accessible !== false,
     focusable: focusable !== false && !disabled, // ]TODO(macOS GH#774)
+    accessibilityState,
     hitSlop,
   };
 
   const config = useMemo(
     () => ({
+      cancelable,
       disabled,
       hitSlop,
       pressRectOffset: pressRetentionOffset,
@@ -237,6 +249,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
     [
       android_disableSound,
       android_rippleConfig,
+      cancelable,
       delayLongPress,
       disabled,
       hitSlop,

@@ -11,46 +11,46 @@ NSString *const RCTUserInterfaceStyleDidChangeNotification = @"RCTUserInterfaceS
 NSString *const RCTUserInterfaceStyleDidChangeNotificationTraitCollectionKey = @"traitCollection";
 
 /*
- * On-demand view mounting
+ * Preemptive View Allocation
  */
-static BOOL RCTExperimentOnDemandViewMounting = NO;
+static BOOL RCTExperimentPreemptiveViewAllocationDisabled = NO;
 
-BOOL RCTExperimentGetOnDemandViewMounting()
+BOOL RCTExperimentGetPreemptiveViewAllocationDisabled()
 {
-  return RCTExperimentOnDemandViewMounting;
+  return RCTExperimentPreemptiveViewAllocationDisabled;
 }
 
-void RCTExperimentSetOnDemandViewMounting(BOOL value)
+void RCTExperimentSetPreemptiveViewAllocationDisabled(BOOL value)
 {
-  RCTExperimentOnDemandViewMounting = value;
+  RCTExperimentPreemptiveViewAllocationDisabled = value;
 }
 
 /*
- * Sync performance flag
+ * Initial maximum surface size
  */
-static BOOL RCTExperimentSyncPerformanceFlag = NO;
+static BOOL RCTInitialMaxSizeEnabled = NO;
 
-BOOL RCTExperimentGetSyncPerformanceFlag()
+BOOL RCTGetInitialMaxSizeEnabled()
 {
-  return RCTExperimentSyncPerformanceFlag;
+  return RCTInitialMaxSizeEnabled;
 }
 
-void RCTExperimentSetSyncPerformanceFlag(BOOL value)
+void RCTSetInitialMaxSizeEnabled(BOOL value)
 {
-  RCTExperimentSyncPerformanceFlag = value;
+  RCTInitialMaxSizeEnabled = value;
 }
 
 /*
- * Optimized hit-testing
+ * Remove clipped subviews
  */
-static BOOL RCTExperimentOptimizedHitTesting = NO;
+static BOOL RCTRemoveClippedSubviewsEnabled = NO;
 
-BOOL RCTExperimentGetOptimizedHitTesting()
+BOOL RCTGetRemoveClippedSubviewsEnabled(void)
 {
-  return RCTExperimentOptimizedHitTesting;
+  return RCTRemoveClippedSubviewsEnabled;
 }
 
-void RCTExperimentSetOptimizedHitTesting(BOOL value)
+void RCTSetRemoveClippedSubviewsEnabled(BOOL value)
 {
-  RCTExperimentOptimizedHitTesting = value;
+  RCTRemoveClippedSubviewsEnabled = value;
 }
