@@ -38,7 +38,7 @@ end
 
 target 'RNTester' do
   pods()
-  use_flipper!
+  use_flipper!({ 'Flipper' => '0.95.0' }) # TODO(macOS GH#774): We need a later version of flipper than 0.54.0 to support Xcode 13
 end
 
 target 'RNTesterUnitTests' do
