@@ -30,7 +30,6 @@ import type {
 } from '../../Types/CoreEventTypes';
 
 // [TODO(macOS GH#774)
-const {DraggedTypes} = require('../View/DraggedType');
 import type {DraggedTypesType} from '../View/DraggedType';
 // ]TODO(macOS GH#774)
 import View from '../../Components/View/View';
