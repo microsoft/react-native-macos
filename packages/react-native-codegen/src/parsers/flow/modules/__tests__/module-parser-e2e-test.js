@@ -10,15 +10,20 @@
 
 import type {
   ReservedFunctionValueTypeName,
+  NativeModuleReturnTypeAnnotation,
+  NativeModuleBaseTypeAnnotation,
   NativeModuleSchema,
+  NativeModuleParamTypeAnnotation,
 } from '../../../../CodegenSchema';
+
 const {parseString} = require('../../index.js');
+const {unwrapNullable} = require('../utils');
 const {
-  FlowGenericNotTypeParameterizedParserError,
-  UnrecognizedFlowTypeAnnotationParserError,
-  UnrecognizedFlowGenericParserError,
-  UnnamedFunctionTypeAnnotationParamError,
-} = require('../errors.js');
+  UnsupportedFlowGenericParserError,
+  UnsupportedFlowTypeAnnotationParserError,
+  UnnamedFunctionParamParserError,
+  IncorrectlyParameterizedFlowGenericParserError,
+} = require('../errors');
 const invariant = require('invariant');
 
 type PrimitiveTypeAnnotationType =
@@ -42,7 +47,7 @@ const RESERVED_FUNCTION_VALUE_TYPE_NAME: $ReadOnlyArray<ReservedFunctionValueTyp
   'RootTag',
 ];
 
-const MODULE_NAME = 'Foo';
+const MODULE_NAME = 'NativeFoo';
 
 const TYPE_ALIAS_DECLARATIONS = `
 type Animal = {|
@@ -58,14 +63,16 @@ function expectAnimalTypeAliasToExist(module: NativeModuleSchema) {
   expect(animalAlias).not.toBe(null);
   invariant(animalAlias != null, '');
   expect(animalAlias.type).toBe('ObjectTypeAnnotation');
-  expect(animalAlias.nullable).toBe(false);
   expect(animalAlias.properties.length).toBe(1);
   expect(animalAlias.properties[0].name).toBe('name');
   expect(animalAlias.properties[0].optional).toBe(false);
-  expect(animalAlias.properties[0].typeAnnotation.type).toBe(
-    'StringTypeAnnotation',
+
+  const [typeAnnotation, nullable] = unwrapNullable(
+    animalAlias.properties[0].typeAnnotation,
   );
-  expect(animalAlias.properties[0].typeAnnotation.nullable).toBe(false);
+
+  expect(typeAnnotation.type).toBe('StringTypeAnnotation');
+  expect(nullable).toBe(false);
 }
 
 describe('Flow Module Parser', () => {
@@ -81,12 +88,7 @@ describe('Flow Module Parser', () => {
           export default TurboModuleRegistry.get<Spec>('Foo');
         `);
 
-      expect(parser).toThrow(
-        new UnrecognizedFlowTypeAnnotationParserError(
-          MODULE_NAME,
-          'AnyTypeAnnotation',
-        ),
-      );
+      expect(parser).toThrow(UnsupportedFlowTypeAnnotationParserError);
     });
 
     it('should fail parsing when a function param type is unamed', () => {
@@ -100,9 +102,7 @@ describe('Flow Module Parser', () => {
           export default TurboModuleRegistry.get<Spec>('Foo');
         `);
 
-      expect(parser).toThrow(
-        new UnnamedFunctionTypeAnnotationParamError(MODULE_NAME),
-      );
+      expect(parser).toThrow(UnnamedFunctionParamParserError);
     });
 
     [
@@ -133,7 +133,10 @@ describe('Flow Module Parser', () => {
         return `${paramName}: ${paramType}`;
       }
 
-      function parseParamType(paramName: string, paramType: string) {
+      function parseParamType(
+        paramName: string,
+        paramType: string,
+      ): [NativeModuleParamTypeAnnotation, NativeModuleSchema] {
         const module = parseModule(`
           import type {TurboModule} from 'RCTExport';
           import * as TurboModuleRegistry from 'TurboModuleRegistry';
@@ -146,14 +149,20 @@ describe('Flow Module Parser', () => {
           export default TurboModuleRegistry.get<Spec>('Foo');
         `);
 
-        expect(module.properties[0]).not.toBe(null);
-        const param = module.properties[0].typeAnnotation.params[0];
+        expect(module.spec.properties[0]).not.toBe(null);
+        const param = unwrapNullable(
+          module.spec.properties[0].typeAnnotation,
+        )[0].params[0];
         expect(param).not.toBe(null);
         expect(param.name).toBe(paramName);
         expect(param.optional).toBe(optional);
-        expect(param.typeAnnotation.nullable).toBe(nullable);
+        const [
+          paramTypeAnnotation,
+          isParamTypeAnnotationNullable,
+        ] = unwrapNullable(param.typeAnnotation);
+        expect(isParamTypeAnnotationNullable).toBe(nullable);
 
-        return [param, module];
+        return [paramTypeAnnotation, module];
       }
 
       describe(
@@ -167,22 +176,22 @@ describe('Flow Module Parser', () => {
         () => {
           it(`should not parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter of type 'Function'`, () => {
             expect(() => parseParamType('arg', 'Function')).toThrow(
-              new UnrecognizedFlowGenericParserError(MODULE_NAME, 'Function'),
+              UnsupportedFlowGenericParserError,
             );
           });
 
           describe('Primitive types', () => {
             PRIMITIVES.forEach(([FLOW_TYPE, PARSED_TYPE_NAME]) => {
               it(`should parse methods that have ${PARAM_TYPE_DESCRIPTION} primitive parameter of type '${FLOW_TYPE}'`, () => {
-                const [param] = parseParamType('arg', FLOW_TYPE);
-                expect(param.typeAnnotation.type).toBe(PARSED_TYPE_NAME);
+                const [paramTypeAnnotation] = parseParamType('arg', FLOW_TYPE);
+                expect(paramTypeAnnotation.type).toBe(PARSED_TYPE_NAME);
               });
             });
           });
 
           it(`should parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter of type 'Object'`, () => {
-            const [param] = parseParamType('arg', 'Object');
-            expect(param.typeAnnotation.type).toBe(
+            const [paramTypeAnnotation] = parseParamType('arg', 'Object');
+            expect(paramTypeAnnotation.type).toBe(
               'GenericObjectTypeAnnotation',
             );
           });
@@ -190,18 +199,18 @@ describe('Flow Module Parser', () => {
           describe('Reserved Types', () => {
             RESERVED_FUNCTION_VALUE_TYPE_NAME.forEach(FLOW_TYPE => {
               it(`should parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter of reserved type '${FLOW_TYPE}'`, () => {
-                const [param] = parseParamType('arg', FLOW_TYPE);
+                const [paramTypeAnnotation] = parseParamType('arg', FLOW_TYPE);
 
-                expect(param.typeAnnotation.type).toBe(
+                expect(paramTypeAnnotation.type).toBe(
                   'ReservedFunctionValueTypeAnnotation',
                 );
                 invariant(
-                  param.typeAnnotation.type ===
+                  paramTypeAnnotation.type ===
                     'ReservedFunctionValueTypeAnnotation',
                   'Param must be a Reserved type',
                 );
 
-                expect(param.typeAnnotation.name).toBe(FLOW_TYPE);
+                expect(paramTypeAnnotation.name).toBe(FLOW_TYPE);
               });
             });
           });
@@ -209,31 +218,32 @@ describe('Flow Module Parser', () => {
           describe('Array Types', () => {
             it(`should not parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter of type 'Array'`, () => {
               expect(() => parseParamType('arg', 'Array')).toThrow(
-                new FlowGenericNotTypeParameterizedParserError(
-                  MODULE_NAME,
-                  'Array',
-                ),
+                IncorrectlyParameterizedFlowGenericParserError,
               );
             });
 
             function parseParamArrayElementType(
               paramName: string,
               paramType: string,
-            ) {
-              const [param, module] = parseParamType(
+            ): [NativeModuleBaseTypeAnnotation, NativeModuleSchema] {
+              const [paramTypeAnnotation, module] = parseParamType(
                 paramName,
                 `Array<${paramType}>`,
               );
 
-              expect(param.typeAnnotation.type).toBe('ArrayTypeAnnotation');
-              invariant(
-                param.typeAnnotation.type === 'ArrayTypeAnnotation',
-                '',
-              );
+              expect(paramTypeAnnotation.type).toBe('ArrayTypeAnnotation');
+              invariant(paramTypeAnnotation.type === 'ArrayTypeAnnotation', '');
 
-              expect(param.typeAnnotation.elementType).not.toBe(null);
-              invariant(param.typeAnnotation.elementType != null, '');
-              return [param.typeAnnotation.elementType, module];
+              expect(paramTypeAnnotation.elementType).not.toBe(null);
+              invariant(paramTypeAnnotation.elementType != null, '');
+              const [
+                elementType,
+                isElementTypeNullable,
+              ] = unwrapNullable<NativeModuleBaseTypeAnnotation>(
+                paramTypeAnnotation.elementType,
+              );
+              expect(isElementTypeNullable).toBe(false);
+              return [elementType, module];
             }
 
             // TODO: Do we support nullable element types?
@@ -304,35 +314,44 @@ describe('Flow Module Parser', () => {
               expect(properties[0]).not.toBe(null);
               expect(properties[0].name).toBe('foo');
               expect(properties[0].typeAnnotation).not.toBe(null);
-              expect(properties[0].typeAnnotation?.type).toBe(
-                'StringTypeAnnotation',
+
+              const [typeAnnotation, isPropertyNullable] = unwrapNullable(
+                properties[0].typeAnnotation,
               );
-              expect(properties[0].typeAnnotation?.nullable).toBe(true);
+
+              expect(typeAnnotation.type).toBe('StringTypeAnnotation');
+              expect(isPropertyNullable).toBe(true);
               expect(properties[0].optional).toBe(false);
             });
           });
 
           it(`should parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter type of some type alias`, () => {
-            const [param, module] = parseParamType('arg', 'Animal');
-            expect(param.typeAnnotation.type).toBe('TypeAliasTypeAnnotation');
+            const [paramTypeAnnotation, module] = parseParamType(
+              'arg',
+              'Animal',
+            );
+            expect(paramTypeAnnotation.type).toBe('TypeAliasTypeAnnotation');
             invariant(
-              param.typeAnnotation.type === 'TypeAliasTypeAnnotation',
+              paramTypeAnnotation.type === 'TypeAliasTypeAnnotation',
               '',
             );
 
-            expect(param.typeAnnotation.name).toBe('Animal');
+            expect(paramTypeAnnotation.name).toBe('Animal');
             expectAnimalTypeAliasToExist(module);
           });
 
           it(`should parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter type of some type alias that points to another type alias`, () => {
-            const [param, module] = parseParamType('arg', 'AnimalPointer');
-            expect(param.typeAnnotation.type).toBe('TypeAliasTypeAnnotation');
+            const [paramTypeAnnotation, module] = parseParamType(
+              'arg',
+              'AnimalPointer',
+            );
+            expect(paramTypeAnnotation.type).toBe('TypeAliasTypeAnnotation');
             invariant(
-              param.typeAnnotation.type === 'TypeAliasTypeAnnotation',
+              paramTypeAnnotation.type === 'TypeAliasTypeAnnotation',
               '',
             );
 
-            expect(param.typeAnnotation.name).toBe('Animal');
+            expect(paramTypeAnnotation.name).toBe('Animal');
             expectAnimalTypeAliasToExist(module);
           });
 
@@ -353,19 +372,25 @@ describe('Flow Module Parser', () => {
               export default TurboModuleRegistry.get<Spec>('Foo');
             `);
 
-            expect(module.properties[0]).not.toBe(null);
-            const param = module.properties[0].typeAnnotation.params[0];
+            expect(module.spec.properties[0]).not.toBe(null);
+            const param = unwrapNullable(
+              module.spec.properties[0].typeAnnotation,
+            )[0].params[0];
             expect(param.name).toBe('arg');
             expect(param.optional).toBe(optional);
 
             // The TypeAliasAnnotation is called Animal, and is nullable
-            expect(param.typeAnnotation.type).toBe('TypeAliasTypeAnnotation');
+            const [
+              paramTypeAnnotation,
+              isParamTypeAnnotationNullable,
+            ] = unwrapNullable(param.typeAnnotation);
+            expect(paramTypeAnnotation.type).toBe('TypeAliasTypeAnnotation');
             invariant(
-              param.typeAnnotation.type === 'TypeAliasTypeAnnotation',
+              paramTypeAnnotation.type === 'TypeAliasTypeAnnotation',
               '',
             );
-            expect(param.typeAnnotation.name).toBe('Animal');
-            expect(param.typeAnnotation.nullable).toBe(true);
+            expect(paramTypeAnnotation.name).toBe('Animal');
+            expect(isParamTypeAnnotationNullable).toBe(true);
 
             // The Animal type alias RHS is valid, and non-null
             expectAnimalTypeAliasToExist(module);
@@ -402,19 +427,26 @@ describe('Flow Module Parser', () => {
             function parseParamTypeObjectLiteralProp(
               propName: string,
               propType: string,
-            ) {
-              const [param, module] = parseParamType(
+            ): [
+              $ReadOnly<{
+                name: string,
+                optional: boolean,
+                typeAnnotation: NativeModuleBaseTypeAnnotation,
+              }>,
+              NativeModuleSchema,
+            ] {
+              const [paramTypeAnnotation, module] = parseParamType(
                 'arg',
                 `{|${annotateProp(propName, propType)}|}`,
               );
 
-              expect(param.typeAnnotation.type).toBe('ObjectTypeAnnotation');
+              expect(paramTypeAnnotation.type).toBe('ObjectTypeAnnotation');
               invariant(
-                param.typeAnnotation.type === 'ObjectTypeAnnotation',
+                paramTypeAnnotation.type === 'ObjectTypeAnnotation',
                 '',
               );
 
-              const {properties} = param.typeAnnotation;
+              const {properties} = paramTypeAnnotation;
 
               expect(properties).not.toBe(null);
               invariant(properties != null, '');
@@ -422,16 +454,19 @@ describe('Flow Module Parser', () => {
               expect(properties.length).toBe(1);
               expect(properties[0].name).toBe(propName);
               expect(properties[0].optional).toBe(isPropOptional);
-              expect(properties[0].typeAnnotation).not.toBe(null);
-              expect(properties[0].typeAnnotation.nullable).toBe(
-                isPropNullable,
-              );
-              invariant(properties[0].typeAnnotation != null, '');
+
+              const [
+                propertyTypeAnnotation,
+                isPropertyTypeAnnotationNullable,
+              ] = unwrapNullable(properties[0].typeAnnotation);
+
+              expect(propertyTypeAnnotation).not.toBe(null);
+              expect(isPropertyTypeAnnotationNullable).toBe(isPropNullable);
 
               return [
                 {
                   ...properties[0],
-                  typeAnnotation: properties[0].typeAnnotation,
+                  typeAnnotation: propertyTypeAnnotation,
                 },
                 module,
               ];
@@ -493,18 +528,13 @@ describe('Flow Module Parser', () => {
                   it(`should not parse methods that have ${PARAM_TYPE_DESCRIPTION} parameter type of an object literal with ${PROP_TYPE_DESCRIPTION} prop of type 'Array`, () => {
                     expect(() =>
                       parseParamTypeObjectLiteralProp('prop', 'Array'),
-                    ).toThrow(
-                      new FlowGenericNotTypeParameterizedParserError(
-                        MODULE_NAME,
-                        'Array',
-                      ),
-                    );
+                    ).toThrow(IncorrectlyParameterizedFlowGenericParserError);
                   });
 
                   function parseArrayElementType(
                     propName: string,
                     arrayElementType: string,
-                  ) {
+                  ): [NativeModuleBaseTypeAnnotation, NativeModuleSchema] {
                     const [property, module] = parseParamTypeObjectLiteralProp(
                       'propName',
                       `Array<${arrayElementType}>`,
@@ -517,9 +547,21 @@ describe('Flow Module Parser', () => {
                       '',
                     );
 
-                    const {elementType} = property.typeAnnotation;
-                    expect(elementType).not.toBe(null);
-                    invariant(elementType != null, '');
+                    const {
+                      elementType: nullableElementType,
+                    } = property.typeAnnotation;
+                    expect(nullableElementType).not.toBe(null);
+                    invariant(nullableElementType != null, '');
+
+                    const [
+                      elementType,
+                      isElementTypeNullable,
+                    ] = unwrapNullable<NativeModuleBaseTypeAnnotation>(
+                      nullableElementType,
+                    );
+
+                    expect(isElementTypeNullable).toBe(false);
+
                     return [elementType, module];
                   }
 
@@ -595,10 +637,16 @@ describe('Flow Module Parser', () => {
                     expect(properties[0]).not.toBe(null);
                     expect(properties[0].name).toBe('foo');
                     expect(properties[0].typeAnnotation).not.toBe(null);
-                    expect(properties[0].typeAnnotation?.type).toBe(
+
+                    const [
+                      propertyTypeAnnotation,
+                      isPropertyTypeAnnotationNullable,
+                    ] = unwrapNullable(properties[0].typeAnnotation);
+
+                    expect(propertyTypeAnnotation.type).toBe(
                       'StringTypeAnnotation',
                     );
-                    expect(properties[0].typeAnnotation?.nullable).toBe(true);
+                    expect(isPropertyTypeAnnotationNullable).toBe(true);
                     expect(properties[0].optional).toBe(false);
                   });
                 });
@@ -623,11 +671,16 @@ describe('Flow Module Parser', () => {
 
                   expect(properties[0]).not.toBe(null);
                   expect(properties[0].name).toBe('foo');
-                  expect(properties[0].typeAnnotation).not.toBe(null);
-                  expect(properties[0].typeAnnotation?.type).toBe(
+
+                  const [
+                    propertyTypeAnnotation,
+                    isPropertyTypeAnnotationNullable,
+                  ] = unwrapNullable(properties[0].typeAnnotation);
+
+                  expect(propertyTypeAnnotation.type).toBe(
                     'StringTypeAnnotation',
                   );
-                  expect(properties[0].typeAnnotation?.nullable).toBe(true);
+                  expect(isPropertyTypeAnnotationNullable).toBe(true);
                   expect(properties[0].optional).toBe(false);
                 });
 
@@ -667,11 +720,20 @@ describe('Flow Module Parser', () => {
         export default TurboModuleRegistry.get<Spec>('Foo');
       `);
 
-      expect(module.properties[0]).not.toBe(null);
-      const {returnTypeAnnotation} = module.properties[0].typeAnnotation;
-      expect(returnTypeAnnotation).not.toBe(null);
+      expect(module.spec.properties[0]).not.toBe(null);
+
+      const [
+        functionTypeAnnotation,
+        isFunctionTypeAnnotationNullable,
+      ] = unwrapNullable(module.spec.properties[0].typeAnnotation);
+      expect(isFunctionTypeAnnotationNullable).toBe(false);
+
+      const [
+        returnTypeAnnotation,
+        isReturnTypeAnnotationNullable,
+      ] = unwrapNullable(functionTypeAnnotation.returnTypeAnnotation);
       expect(returnTypeAnnotation.type).toBe('VoidTypeAnnotation');
-      expect(returnTypeAnnotation.nullable).toBe(false);
+      expect(isReturnTypeAnnotationNullable).toBe(false);
     });
 
     [true, false].forEach(IS_RETURN_TYPE_NULLABLE => {
@@ -681,7 +743,9 @@ describe('Flow Module Parser', () => {
       const annotateRet = retType =>
         IS_RETURN_TYPE_NULLABLE ? `?${retType}` : retType;
 
-      function parseReturnType(flowType: string) {
+      function parseReturnType(
+        flowType: string,
+      ): [NativeModuleReturnTypeAnnotation, NativeModuleSchema] {
         const module = parseModule(`
           import type {TurboModule} from 'RCTExport';
           import * as TurboModuleRegistry from 'TurboModuleRegistry';
@@ -694,10 +758,19 @@ describe('Flow Module Parser', () => {
           export default TurboModuleRegistry.get<Spec>('Foo');
         `);
 
-        expect(module.properties[0]).not.toBe(null);
-        const {returnTypeAnnotation} = module.properties[0].typeAnnotation;
-        expect(returnTypeAnnotation).not.toBe(null);
-        expect(returnTypeAnnotation.nullable).toBe(IS_RETURN_TYPE_NULLABLE);
+        expect(module.spec.properties[0]).not.toBe(null);
+        const [
+          functionTypeAnnotation,
+          isFunctionTypeAnnotationNullable,
+        ] = unwrapNullable(module.spec.properties[0].typeAnnotation);
+        expect(isFunctionTypeAnnotationNullable).toBe(false);
+
+        const [
+          returnTypeAnnotation,
+          isReturnTypeAnnotationNullable,
+        ] = unwrapNullable(functionTypeAnnotation.returnTypeAnnotation);
+        expect(isReturnTypeAnnotationNullable).toBe(IS_RETURN_TYPE_NULLABLE);
+
         return [returnTypeAnnotation, module];
       }
 
@@ -742,14 +815,13 @@ describe('Flow Module Parser', () => {
           describe('Array Types', () => {
             it(`should not parse methods that have ${RETURN_TYPE_DESCRIPTION} return of type 'Array'`, () => {
               expect(() => parseReturnType('Array')).toThrow(
-                new FlowGenericNotTypeParameterizedParserError(
-                  MODULE_NAME,
-                  'Array',
-                ),
+                IncorrectlyParameterizedFlowGenericParserError,
               );
             });
 
-            function parseArrayElementReturnType(flowType: string) {
+            function parseArrayElementReturnType(
+              flowType: string,
+            ): [NativeModuleBaseTypeAnnotation, NativeModuleSchema] {
               const [returnTypeAnnotation, module] = parseReturnType(
                 'Array' + (flowType != null ? `<${flowType}>` : ''),
               );
@@ -759,10 +831,19 @@ describe('Flow Module Parser', () => {
                 '',
               );
 
-              const {elementType} = returnTypeAnnotation;
+              const arrayTypeAnnotation = returnTypeAnnotation;
+
+              const {elementType} = arrayTypeAnnotation;
               expect(elementType).not.toBe(null);
               invariant(elementType != null, '');
-              return [elementType, module];
+
+              const [
+                elementTypeAnnotation,
+                isElementTypeAnnotation,
+              ] = unwrapNullable<NativeModuleBaseTypeAnnotation>(elementType);
+              expect(isElementTypeAnnotation).toBe(false);
+
+              return [elementTypeAnnotation, module];
             }
 
             // TODO: Do we support nullable element types?
@@ -824,10 +905,14 @@ describe('Flow Module Parser', () => {
               expect(properties[0]).not.toBe(null);
               expect(properties[0].name).toBe('foo');
               expect(properties[0].typeAnnotation).not.toBe(null);
-              expect(properties[0].typeAnnotation?.type).toBe(
-                'StringTypeAnnotation',
-              );
-              expect(properties[0].typeAnnotation?.nullable).toBe(true);
+
+              const [
+                propertyTypeAnnotation,
+                isPropertyTypeAnnotationNullable,
+              ] = unwrapNullable(properties[0].typeAnnotation);
+
+              expect(propertyTypeAnnotation.type).toBe('StringTypeAnnotation');
+              expect(isPropertyTypeAnnotationNullable).toBe(true);
               expect(properties[0].optional).toBe(false);
             });
           });
@@ -845,7 +930,7 @@ describe('Flow Module Parser', () => {
 
           it(`should not parse methods that have ${RETURN_TYPE_DESCRIPTION} return of type 'Function'`, () => {
             expect(() => parseReturnType('Function')).toThrow(
-              new UnrecognizedFlowGenericParserError(MODULE_NAME, 'Function'),
+              UnsupportedFlowGenericParserError,
             );
           });
 
@@ -903,7 +988,14 @@ describe('Flow Module Parser', () => {
               function parseObjectLiteralReturnTypeProp(
                 propName: string,
                 propType: string,
-              ) {
+              ): [
+                $ReadOnly<{
+                  name: string,
+                  optional: boolean,
+                  typeAnnotation: NativeModuleBaseTypeAnnotation,
+                }>,
+                NativeModuleSchema,
+              ] {
                 const [returnTypeAnnotation, module] = parseReturnType(
                   `{|${annotateProp(propName, propType)}|}`,
                 );
@@ -923,13 +1015,18 @@ describe('Flow Module Parser', () => {
                 const property = properties[0];
                 expect(property.name).toBe(propName);
                 expect(property.optional).toBe(optional);
-                expect(property.typeAnnotation).not.toBe(null);
-                expect(property.typeAnnotation?.nullable).toBe(nullable);
-                invariant(property.typeAnnotation != null, '');
+
+                const [
+                  propertyTypeAnnotation,
+                  isPropertyTypeAnnotationNullable,
+                ] = unwrapNullable(property.typeAnnotation);
+
+                expect(propertyTypeAnnotation).not.toBe(null);
+                expect(isPropertyTypeAnnotationNullable).toBe(nullable);
                 return [
                   {
                     ...property,
-                    typeAnnotation: property.typeAnnotation,
+                    typeAnnotation: propertyTypeAnnotation,
                   },
                   module,
                 ];
@@ -999,18 +1096,13 @@ describe('Flow Module Parser', () => {
                     it(`should not parse methods that have ${RETURN_TYPE_DESCRIPTION} return type of an object literal with ${PROP_TYPE_DESCRIPTION} prop of type 'Array`, () => {
                       expect(() =>
                         parseObjectLiteralReturnTypeProp('prop', 'Array'),
-                      ).toThrow(
-                        new FlowGenericNotTypeParameterizedParserError(
-                          MODULE_NAME,
-                          'Array',
-                        ),
-                      );
+                      ).toThrow(IncorrectlyParameterizedFlowGenericParserError);
                     });
 
                     function parseArrayElementType(
                       propName: string,
                       arrayElementType: string,
-                    ) {
+                    ): [NativeModuleBaseTypeAnnotation, NativeModuleSchema] {
                       const [
                         property,
                         module,
@@ -1027,9 +1119,20 @@ describe('Flow Module Parser', () => {
                         '',
                       );
 
-                      const {elementType} = property.typeAnnotation;
-                      expect(elementType).not.toBe(null);
-                      invariant(elementType != null, '');
+                      const {
+                        elementType: nullableElementType,
+                      } = property.typeAnnotation;
+                      expect(nullableElementType).not.toBe(null);
+                      invariant(nullableElementType != null, '');
+
+                      const [
+                        elementType,
+                        isElementTypeNullable,
+                      ] = unwrapNullable<NativeModuleBaseTypeAnnotation>(
+                        nullableElementType,
+                      );
+                      expect(isElementTypeNullable).toBe(false);
+
                       return [elementType, module];
                     }
 
@@ -1105,13 +1208,15 @@ describe('Flow Module Parser', () => {
                       expect(properties[0].name).toBe('foo');
                       expect(properties[0].optional).toBe(false);
 
-                      expect(properties[0].typeAnnotation).not.toBe(null);
-                      invariant(properties[0].typeAnnotation != null, '');
+                      const [
+                        propertyTypeAnnotation,
+                        isPropertyTypeAnnotationNullable,
+                      ] = unwrapNullable(properties[0].typeAnnotation);
 
-                      expect(properties[0].typeAnnotation.type).toBe(
+                      expect(propertyTypeAnnotation.type).toBe(
                         'StringTypeAnnotation',
                       );
-                      expect(properties[0].typeAnnotation.nullable).toBe(true);
+                      expect(isPropertyTypeAnnotationNullable).toBe(true);
                     });
                   });
 
@@ -1138,13 +1243,15 @@ describe('Flow Module Parser', () => {
                     expect(properties[0].name).toBe('foo');
                     expect(properties[0].optional).toBe(false);
 
-                    expect(properties[0].typeAnnotation).not.toBe(null);
-                    invariant(properties[0].typeAnnotation != null, '');
+                    const [
+                      propertyTypeAnnotation,
+                      isPropertyTypeAnnotationNullable,
+                    ] = unwrapNullable(properties[0].typeAnnotation);
 
-                    expect(properties[0].typeAnnotation.type).toBe(
+                    expect(propertyTypeAnnotation.type).toBe(
                       'StringTypeAnnotation',
                     );
-                    expect(properties[0].typeAnnotation.nullable).toBe(true);
+                    expect(isPropertyTypeAnnotationNullable).toBe(true);
                   });
 
                   it(`should parse methods that have ${RETURN_TYPE_DESCRIPTION} return type of an object literal with ${PROP_TYPE_DESCRIPTION} prop of some type alias`, () => {
@@ -1176,11 +1283,11 @@ describe('Flow Module Parser', () => {
 });
 
 function parseModule(source) {
-  const schema = parseString(source, `Native${MODULE_NAME}.js`);
-  const {nativeModules} = schema.modules.NativeFoo;
+  const schema = parseString(source, `${MODULE_NAME}.js`);
+  const module = schema.modules.NativeFoo;
   invariant(
-    nativeModules,
+    module.type === 'NativeModule',
     "'nativeModules' in Spec NativeFoo shouldn't be null",
   );
-  return nativeModules.Foo;
+  return module;
 }

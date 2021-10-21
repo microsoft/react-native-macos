@@ -170,6 +170,8 @@ function Pressable(props: Props, forwardedRef): React.Node {
     delayLongPress,
     disabled,
     focusable,
+    onMouseEnter, // [TODO(macOS GH#774)
+    onMouseLeave, // ]TODO(macOS GH#774)
     onLongPress,
     onPress,
     onPressIn,
@@ -194,9 +196,9 @@ function Pressable(props: Props, forwardedRef): React.Node {
     ...restProps,
     ...android_rippleConfig?.viewProps,
     acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [TODO(macOS GH#774)
-    enableFocusRing: enableFocusRing !== false && !disabled, // ]TODO(macOS GH#774)
+    enableFocusRing: enableFocusRing !== false && !disabled,
     accessible: accessible !== false,
-    focusable: focusable !== false,
+    focusable: focusable !== false && !disabled, // ]TODO(macOS GH#774)
     hitSlop,
   };
 
@@ -208,6 +210,8 @@ function Pressable(props: Props, forwardedRef): React.Node {
       android_disableSound,
       delayLongPress,
       delayPressIn: unstable_pressDelay,
+      onHoverIn: onMouseEnter, // [TODO(macOS GH#774)
+      onHoverOut: onMouseLeave, // ]TODO(macOS GH#774)
       onLongPress,
       onPress,
       onPressIn(event: PressEvent): void {
@@ -236,6 +240,8 @@ function Pressable(props: Props, forwardedRef): React.Node {
       delayLongPress,
       disabled,
       hitSlop,
+      onMouseEnter, // [TODO(macOS GH#774)
+      onMouseLeave, // ]TODO(macOS GH#774)
       onLongPress,
       onPress,
       onPressIn,

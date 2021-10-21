@@ -14,6 +14,7 @@ import type {
   NativeModuleMethodParamSchema,
   NativeModuleReturnTypeAnnotation,
   NativeModulePropertySchema,
+  Nullable,
 } from '../../../CodegenSchema';
 
 import type {AliasResolver} from '../Utils';
@@ -21,6 +22,10 @@ import type {AliasResolver} from '../Utils';
 const invariant = require('invariant');
 const {StructCollector} = require('./StructCollector');
 const {capitalize, getNamespacedStructName} = require('./Utils');
+const {
+  wrapNullable,
+  unwrapNullable,
+} = require('../../../parsers/flow/modules/utils');
 
 const ProtocolMethodTemplate = ({
   returnObjCType,
@@ -55,19 +60,18 @@ export type MethodSerializationOutput = $ReadOnly<{|
 |}>;
 
 function serializeMethod(
-  moduleName: string,
+  hasteModuleName: string,
   property: NativeModulePropertySchema,
   structCollector: StructCollector,
   resolveAlias: AliasResolver,
 ): $ReadOnlyArray<MethodSerializationOutput> {
-  const {
-    name: methodName,
-    typeAnnotation: {params, returnTypeAnnotation},
-  } = property;
+  const {name: methodName, typeAnnotation: nullableTypeAnnotation} = property;
+  const [propertyTypeAnnotation] = unwrapNullable(nullableTypeAnnotation);
+  const {params} = propertyTypeAnnotation;
 
   if (methodName === 'getConstants') {
     return serializeConstantsProtocolMethods(
-      moduleName,
+      hasteModuleName,
       property,
       structCollector,
       resolveAlias,
@@ -80,7 +84,7 @@ function serializeMethod(
   params.forEach((param, index) => {
     const structName = getParamStructName(methodName, param);
     const {objCType, isStruct} = getParamObjCType(
-      moduleName,
+      hasteModuleName,
       methodName,
       param,
       structName,
@@ -95,6 +99,12 @@ function serializeMethod(
     }
   });
 
+  // Unwrap returnTypeAnnotation, so we check if the return type is Promise
+  // TODO(T76719514): Disallow nullable PromiseTypeAnnotations
+  const [returnTypeAnnotation] = unwrapNullable(
+    propertyTypeAnnotation.returnTypeAnnotation,
+  );
+
   if (returnTypeAnnotation.type === 'PromiseTypeAnnotation') {
     methodParams.push(
       {paramName: 'resolve', objCType: 'RCTPromiseResolveBlock'},
@@ -105,7 +115,10 @@ function serializeMethod(
   /**
    * Build Protocol Method
    **/
-  const returnObjCType = getReturnObjCType(methodName, returnTypeAnnotation);
+  const returnObjCType = getReturnObjCType(
+    methodName,
+    propertyTypeAnnotation.returnTypeAnnotation,
+  );
   const paddingMax = `- (${returnObjCType})${methodName}`.length;
 
   const objCParams = methodParams.reduce(
@@ -155,28 +168,28 @@ function getParamStructName(
   methodName: string,
   param: NativeModuleMethodParamSchema,
 ): string {
-  if (param.typeAnnotation.type === 'TypeAliasTypeAnnotation') {
-    return param.typeAnnotation.name;
+  const [typeAnnotation] = unwrapNullable(param.typeAnnotation);
+  if (typeAnnotation.type === 'TypeAliasTypeAnnotation') {
+    return typeAnnotation.name;
   }
 
   return `Spec${capitalize(methodName)}${capitalize(param.name)}`;
 }
 
 function getParamObjCType(
-  moduleName: string,
+  hasteModuleName: string,
   methodName: string,
   param: NativeModuleMethodParamSchema,
   structName: string,
   structCollector: StructCollector,
   resolveAlias: AliasResolver,
 ): $ReadOnly<{|objCType: string, isStruct: boolean|}> {
-  const {name: paramName, typeAnnotation} = param;
-  const notRequired = param.optional || typeAnnotation.nullable;
+  const {name: paramName, typeAnnotation: nullableTypeAnnotation} = param;
+  const [typeAnnotation, nullable] = unwrapNullable(nullableTypeAnnotation);
+  const notRequired = param.optional || nullable;
 
   function wrapIntoNullableIfNeeded(generatedType: string) {
-    return typeAnnotation.nullable
-      ? `${generatedType} _Nullable`
-      : generatedType;
+    return nullable ? `${generatedType} _Nullable` : generatedType;
   }
 
   const isStruct = (objCType: string) => ({
@@ -209,11 +222,13 @@ function getParamObjCType(
     }
   }
 
-  const structTypeAnnotation = structCollector.process(
-    structName,
-    'REGULAR',
-    resolveAlias,
-    typeAnnotation,
+  const [structTypeAnnotation] = unwrapNullable(
+    structCollector.process(
+      structName,
+      'REGULAR',
+      resolveAlias,
+      wrapNullable(nullable, typeAnnotation),
+    ),
   );
 
   invariant(
@@ -227,7 +242,8 @@ function getParamObjCType(
        * TODO(T73943261): Support nullable object literals and aliases?
        */
       return isStruct(
-        getNamespacedStructName(moduleName, structTypeAnnotation.name) + ' &',
+        getNamespacedStructName(hasteModuleName, structTypeAnnotation.name) +
+          ' &',
       );
     }
     case 'ReservedFunctionValueTypeAnnotation':
@@ -264,12 +280,12 @@ function getParamObjCType(
 
 function getReturnObjCType(
   methodName: string,
-  typeAnnotation: NativeModuleReturnTypeAnnotation,
+  nullableTypeAnnotation: Nullable<NativeModuleReturnTypeAnnotation>,
 ) {
+  const [typeAnnotation, nullable] = unwrapNullable(nullableTypeAnnotation);
+
   function wrapIntoNullableIfNeeded(generatedType: string) {
-    return typeAnnotation.nullable
-      ? `${generatedType} _Nullable`
-      : generatedType;
+    return nullable ? `${generatedType} _Nullable` : generatedType;
   }
 
   switch (typeAnnotation.type) {
@@ -328,8 +344,9 @@ function getReturnObjCType(
 
 function getReturnJSType(
   methodName: string,
-  typeAnnotation: NativeModuleReturnTypeAnnotation,
+  nullableTypeAnnotation: Nullable<NativeModuleReturnTypeAnnotation>,
 ): ReturnJSType {
+  const [typeAnnotation] = unwrapNullable(nullableTypeAnnotation);
   switch (typeAnnotation.type) {
     case 'VoidTypeAnnotation':
       return 'VoidKind';
@@ -366,21 +383,22 @@ function getReturnJSType(
 }
 
 function serializeConstantsProtocolMethods(
-  moduleName: string,
+  hasteModuleName: string,
   property: NativeModulePropertySchema,
   structCollector: StructCollector,
   resolveAlias: AliasResolver,
 ): $ReadOnlyArray<MethodSerializationOutput> {
-  if (property.typeAnnotation.params.length !== 0) {
+  const [propertyTypeAnnotation] = unwrapNullable(property.typeAnnotation);
+  if (propertyTypeAnnotation.params.length !== 0) {
     throw new Error(
-      `${moduleName}.getConstants() may only accept 0 arguments.`,
+      `${hasteModuleName}.getConstants() may only accept 0 arguments.`,
     );
   }
 
-  const {returnTypeAnnotation} = property.typeAnnotation;
+  const {returnTypeAnnotation} = propertyTypeAnnotation;
   if (returnTypeAnnotation.type !== 'ObjectTypeAnnotation') {
     throw new Error(
-      `${moduleName}.getConstants() may only return an object literal: {|...|}.`,
+      `${hasteModuleName}.getConstants() may only return an object literal: {|...|}.`,
     );
   }
 
@@ -400,7 +418,7 @@ function serializeConstantsProtocolMethods(
     "Unable to generate C++ struct from module's getConstants() method return type.",
   );
 
-  const returnObjCType = `facebook::react::ModuleConstants<JS::Native${moduleName}::Constants::Builder>`;
+  const returnObjCType = `facebook::react::ModuleConstants<JS::${hasteModuleName}::Constants::Builder>`;
 
   return ['constantsToExport', 'getConstants'].map<MethodSerializationOutput>(
     methodName => {

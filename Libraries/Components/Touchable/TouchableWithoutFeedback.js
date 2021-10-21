@@ -32,11 +32,9 @@ import type {
 } from '../../Types/CoreEventTypes';
 
 // [TODO(macOS GH#774)
-const {DraggedTypes} = require('../View/DraggedType');
 import type {DraggedTypesType} from '../View/DraggedType';
 // ]TODO(macOS GH#774)
 
-import Platform from '../../Utilities/Platform';
 import View from '../../Components/View/View';
 import * as React from 'react';
 
@@ -166,9 +164,7 @@ class TouchableWithoutFeedback extends React.Component<Props, State> {
               this.props.acceptsKeyboardFocus === true && !this.props.disabled,
           }
         : {
-            focusable:
-              this.props.focusable !== false &&
-              this.props.onPress !== undefined,
+            focusable: this.props.focusable !== false && !this.props.disabled,
           }),
       // macOS]
       enableFocusRing:
