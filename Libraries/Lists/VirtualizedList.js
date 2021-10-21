@@ -56,7 +56,7 @@ export type Separators = {
 export type RenderItemProps<ItemT> = {
   item: ItemT,
   index: number,
-  isSelected: ?boolean, // TODO(macOS GH#774)
+  // isSelected: ?boolean, // TODO(macOS GH#774) // TODO(macOS add back selection support for 66 merge)
   separators: Separators,
   ...
 };
@@ -75,11 +75,12 @@ type ViewabilityHelperCallbackTuple = {
   ...
 };
 
+ // TODO(macOS add back selection support for 66 merge)
 // [TODO(macOS GH#774)
-export type SelectedRowIndexPathType = {
-  sectionIndex: number,
-  rowIndex: number,
-}; // ]TODO(macOS GH#774)
+// export type SelectedRowIndexPathType = {
+//   sectionIndex: number,
+//   rowIndex: number,
+// }; // ]TODO(macOS GH#774)
 
 type RequiredProps = {|
   /**
@@ -882,7 +883,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           index={ii}
           inversionStyle={inversionStyle}
           item={item}
-          isSelected={this.state.selectedRowIndex === ii ? true : false} // TODO(macOS GH#774)
+          // isSelected={this.state.selectedRowIndex === ii ? true : false} // TODO(macOS GH#774) // TODO(macOS add back selection support for 66 merge)
           key={key}
           prevCellKey={prevCellKey}
           onUpdateSeparators={this._onUpdateSeparators}
@@ -2067,7 +2068,7 @@ type CellRendererProps = {
   horizontal: ?boolean,
   index: number,
   inversionStyle: ViewStyleProp,
-  isSelected: ?boolean, // TODO(macOS GH#774)
+  // isSelected: ?boolean, // TODO(macOS GH#774) // TODO(macOS add back selection support for 66 merge)
   item: Item,
   // This is extracted by ScrollViewStickyHeader
   onLayout: (event: Object) => void,
@@ -2162,7 +2163,7 @@ class CellRenderer extends React.Component<
     ListItemComponent,
     item,
     index,
-    isSelected /* TODO(macOS GH#774 */,
+    // isSelected /* TODO(macOS GH#774 */, // TODO(macOS add back selection support for 66 merge)
   ) {
     if (renderItem && ListItemComponent) {
       console.warn(
@@ -2189,7 +2190,7 @@ class CellRenderer extends React.Component<
       return renderItem({
         item,
         index,
-        isSelected, // TODO(macOS GH#774)
+        // isSelected, // TODO(macOS GH#774) // TODO(macOS add back selection support for 66 merge)
         separators: this._separators,
       });
     }
