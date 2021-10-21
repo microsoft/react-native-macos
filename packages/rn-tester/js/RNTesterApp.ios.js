@@ -18,7 +18,6 @@ import RNTesterApp from './RNTesterAppShared';
 import type {RNTesterModuleInfo} from './types/RNTesterTypes';
 
 const {TestModule} = NativeModules; // TODO(OSS Candidate ISS#2710739)
-const requestAnimationFrame = require('fbjs/lib/requestAnimationFrame'); // TODO(OSS Candidate ISS#2710739)
 
 AppRegistry.registerComponent('SetPropertiesExampleApp', () =>
   require('./examples/SetPropertiesExample/SetPropertiesExampleApp'),

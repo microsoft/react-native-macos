@@ -523,8 +523,8 @@ SPEC CHECKSUMS:
   boost-for-react-native: d5ad1140010aa8cb622323a781ecbeab4425d19a
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: 8dfb8e6a364e688caa15f66896caee7845035144
-  FBLazyVector: 1a783d012089461257297626529bda78ade1a370
-  FBReactNativeSpec: ef532c1cab28184e26412ee9ae6457d187a65b93
+  FBLazyVector: 8676ba4dbede2c049ffe806f147cac0d9ba6638f
+  FBReactNativeSpec: 83f7cb5c8d3d2b0b732ddaaab2abc39376cd2617
   Flipper: 30e8eeeed6abdc98edaf32af0cda2f198be4b733
   Flipper-Boost-iOSX: fd1e2b8cbef7e662a122412d7ac5f5bea715403c
   Flipper-DoubleConversion: 57ffbe81ef95306cc9e69c4aa3aeeeeb58a6a28c
@@ -539,32 +539,32 @@ SPEC CHECKSUMS:
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   OpenSSL-Universal: 1aa4f6a6ee7256b83db99ec1ccdaa80d10f9af9b
   RCT-Folly: 1870fc2f6c34038cae3556a1af98f979f2ce63d9
-  RCTRequired: 421454d8b170f819964919bf2d6a155bc5480fce
-  RCTTypeSafety: 2f7437453b7daa9aba020f98b9ed95ac73aba859
-  React: b34b4bb1a88d44affc6b34d6196ab6159c977de0
-  React-callinvoker: 9d7d70726dc09391e23ee4c3ac357eedb6957d18
-  React-Core: cb21de89fee0f618dad610fb8cfc7d28992e381d
-  React-CoreModules: 135df25bee1dfe9f1913b078f22abe3d7ff7e9f6
-  React-cxxreact: 943399f6b9fddf1fb164421d47c8639447c1840c
-  React-jsi: 812293dea2d49d57cd81deb3941c36465cabdf24
-  React-jsiexecutor: 9b23ff9a09417dcd4f585fa7b7ab253e1764c168
-  React-jsinspector: ec381817f9c81fbbb31b02790c5c0c7f11fb6510
-  React-logger: d09e4671c0c119b9f8d9836ab63ba4f84176fc6f
-  React-perflogger: 314676d4d33716991c547bf888115574420c40be
-  React-RCTActionSheet: 1939ed444de9694eb417f443021622b1804c67ae
-  React-RCTAnimation: 97930c37fd824244cb3971fa894b58c775426aa5
-  React-RCTBlob: 68d7ee11f296f00f586b6c31d89999d34fa7391b
-  React-RCTImage: 9228f5fd6c4ef20eebda5a5bfaf90980af1bf3a9
-  React-RCTLinking: 2512d56af7389bc2bc7f1321dfee96ddb8449263
-  React-RCTNetwork: 553ff9d35f2711d8ea417e2541596d0751c7bfd6
-  React-RCTPushNotification: 5089daa8a657d128f49cef10afd0bf75fcde6e59
-  React-RCTSettings: 6e0cc2062bcc983834035721eb7fcb0e38f58772
-  React-RCTTest: 5374a8de5ad3f12a6887f60fa499291878d1052f
-  React-RCTText: 061833d4176ae281cf8c72ab4636ccee7fe38ba2
-  React-RCTVibration: 96acfa621df7cc40ac1323f75972b9ed39e13241
-  React-runtimeexecutor: 8403e761765794662ebff29df2944e5ee3bc30f9
-  ReactCommon: 5c73c2588942db689f0fa6a378491d9408c72a1d
-  Yoga: 8886d8cf78c80d3df6bf88eb2afdc0172b9a422e
+  RCTRequired: acb3b662f1ae34914ed1ab9245f62abcc7a259cb
+  RCTTypeSafety: b40b772c795a60ad1e90459edf712e9efba74a4e
+  React: 50efdd6443be480ea997e368e3e994e9d51854c5
+  React-callinvoker: fa40e2857537d112560a828e35a79bcd6c65b855
+  React-Core: 1a2db3037385fec951b95b0bb6b1395ecd6f8f3d
+  React-CoreModules: 8d6b4ff95347e178e10514779637599bed1ed24e
+  React-cxxreact: 10830ed5e0745f38b6bbd8086fa435cd0f366c6d
+  React-jsi: c3927aec1af28ee003fdf847b7aa536320737c7a
+  React-jsiexecutor: 046cc11dc4cb2db78ec9db624112eda5bf8a5949
+  React-jsinspector: 96e97a435686e0fc6c1385a19ce7f4841e52fd23
+  React-logger: 82ecb58cc9b1af9c009c76e9b9d5549f17d0caf0
+  React-perflogger: ab8fb59489d1aa298bda2bfa5bc0e3be426f244b
+  React-RCTActionSheet: 8c050d6ace4545459f1e7e259b128eb384e4d97d
+  React-RCTAnimation: 076ab34c81fe58e2fe5f9a0a2ebd1374bcf5e6cb
+  React-RCTBlob: 5a8624d541a3169b6d41afa628f13e8eaeb4c546
+  React-RCTImage: de33a348f2bce33725ecd1a385398c8b6faec7c1
+  React-RCTLinking: cbd754b28810522b61b2c4b1d5c327c991b4c25b
+  React-RCTNetwork: ede6cf7e876543be21274f70579df1daf3acb290
+  React-RCTPushNotification: 7af46064c3092b73f479d2c7b95eea56fb451329
+  React-RCTSettings: 945c5ba4382a7602b7a9efa8607384220dbf6238
+  React-RCTTest: ce52cf6bc07230508b45cdb6a9a1f606240da574
+  React-RCTText: 83a3aea8b91e810899a26169a8f10141009964d9
+  React-RCTVibration: efaaa7c3300632f9102632a4dfab1306c86131da
+  React-runtimeexecutor: b557467332c37253d76d54f786db115a069e3418
+  ReactCommon: dcb97177023177bca5b1547f23dda4c3902f1ecc
+  Yoga: 8b76e4b2964a200ffcc9342a95a6b209b3b4abeb
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
 PODFILE CHECKSUM: 996bfa282f5ca1900414c0e267589e9cbefbe3c4

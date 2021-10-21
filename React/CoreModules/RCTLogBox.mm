@@ -52,10 +52,10 @@ RCT_EXPORT_METHOD(show)
       if (strongSelf->_bridge) {
         if (strongSelf->_bridge.valid) {
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
-          strongSelf->_window = [[RCTLogBoxView alloc] initWithFrame:[UIScreen mainScreen].bounds // TODO(macOS GH#774) Renamed from _view to _window
+          strongSelf->_window = [[RCTLogBoxWindow alloc] initWithFrame:[UIScreen mainScreen].bounds // TODO(macOS GH#774) Renamed from _view to _window
                                                             bridge:strongSelf->_bridge];
 #else // [TODO(macOS GH#774)
-          strongSelf->_window = [[RCTLogBoxView alloc] initWithBridge:self->_bridge]; // TODO(macOS GH#774) Renamed from _view to _window
+          strongSelf->_window = [[RCTLogBoxWindow alloc] initWithBridge:self->_bridge]; // TODO(macOS GH#774) Renamed from _view to _window
 #endif // ]TODO(macOS GH#774)
           [strongSelf->_window show]; // TODO(macOS GH#774) Renamed from _view to _window
         }

@@ -142,7 +142,6 @@ type ButtonProps = $ReadOnly<{|
   /**
    * Accessibility action handlers
    */
-  accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
 
   /**
@@ -320,10 +319,6 @@ class Button extends React.Component<ButtonProps> {
   render(): React.Node {
     const {
       accessibilityLabel,
-      accessibilityHint, // TODO(OSS Candidate ISS#2710739)
-      accessibilityRole, // TODO(OSS Candidate ISS#2710739)
-      accessibilityActions, // TODO(OSS Candidate ISS#2710739)
-      onAccessibilityAction, // TODO(OSS Candidate ISS#2710739)
       color,
       onPress,
       touchSoundDisabled,
@@ -344,6 +339,8 @@ class Button extends React.Component<ButtonProps> {
       tooltip,
       accessible,
       accessibilityActions,
+      accessibilityHint, // TODO(OSS Candidate ISS#2710739)
+      accessibilityRole, // TODO(OSS Candidate ISS#2710739)
       onAccessibilityAction,
     } = this.props;
     const buttonStyles = [styles.button];
@@ -392,7 +389,6 @@ class Button extends React.Component<ButtonProps> {
         accessibilityHint={accessibilityHint} // TODO(OSS Candidate ISS#2710739)
         accessibilityRole={accessibilityRole || 'button'} // TODO(OSS Candidate ISS#2710739)
         accessibilityState={accessibilityState}
-        accessibilityActions={accessibilityActions}
         onAccessibilityAction={onAccessibilityAction}
         hasTVPreferredFocus={hasTVPreferredFocus}
         nextFocusDown={nextFocusDown}

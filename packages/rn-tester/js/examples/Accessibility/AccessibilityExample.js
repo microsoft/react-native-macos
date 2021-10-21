@@ -17,7 +17,6 @@ const {
   Button,
   findNodeHandle,
   Image,
-  StyleSheet,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
