@@ -57,6 +57,7 @@ Pod::Spec.new do |s|
     ss.exclude_files          = "React/CoreModules/**/*",
                                 "React/DevSupport/**/*",
                                 "React/Fabric/**/*",
+                                "React/FBReactNativeSpec/**/*",
                                 "React/Inspector/**/*",
                                 "React/Tests/**/*",
                                 "React/CxxBridge/HermesExecutorFactory.*" # TODO(macOS GH#214)

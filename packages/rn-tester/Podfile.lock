@@ -1,7 +1,6 @@
 PODS:
   - boost-for-react-native (1.63.0)
-  - CocoaAsyncSocket (7.6.4)
-  - CocoaLibEvent (1.0.0)
+  - CocoaAsyncSocket (7.6.5)
   - DoubleConversion (1.1.6)
   - FBLazyVector (1000.0.0)
   - FBReactNativeSpec (1000.0.0):
@@ -11,56 +10,55 @@ PODS:
     - React-Core (= 1000.0.0)
     - React-jsi (= 1000.0.0)
     - ReactCommon/turbomodule/core (= 1000.0.0)
-  - Flipper (0.54.0):
-    - Flipper-Folly (~> 2.2)
-    - Flipper-RSocket (~> 1.1)
+  - Flipper (0.75.1):
+    - Flipper-Folly (~> 2.5)
+    - Flipper-RSocket (~> 1.3)
   - Flipper-DoubleConversion (1.1.7)
-  - Flipper-Folly (2.3.0):
+  - Flipper-Folly (2.5.1):
     - boost-for-react-native
-    - CocoaLibEvent (~> 1.0)
     - Flipper-DoubleConversion
     - Flipper-Glog
-    - OpenSSL-Universal (= 1.0.2.20)
+    - libevent (~> 2.1.12)
+    - OpenSSL-Universal (= 1.1.180)
   - Flipper-Glog (0.3.6)
   - Flipper-PeerTalk (0.0.4)
-  - Flipper-RSocket (1.1.0):
-    - Flipper-Folly (~> 2.2)
-  - FlipperKit (0.54.0):
-    - FlipperKit/Core (= 0.54.0)
-  - FlipperKit/Core (0.54.0):
-    - Flipper (~> 0.54.0)
+  - Flipper-RSocket (1.3.0):
+    - Flipper-Folly (~> 2.5)
+  - FlipperKit (0.75.1):
+    - FlipperKit/Core (= 0.75.1)
+  - FlipperKit/Core (0.75.1):
+    - Flipper (~> 0.75.1)
     - FlipperKit/CppBridge
     - FlipperKit/FBCxxFollyDynamicConvert
     - FlipperKit/FBDefines
     - FlipperKit/FKPortForwarding
-  - FlipperKit/CppBridge (0.54.0):
-    - Flipper (~> 0.54.0)
-  - FlipperKit/FBCxxFollyDynamicConvert (0.54.0):
-    - Flipper-Folly (~> 2.2)
-  - FlipperKit/FBDefines (0.54.0)
-  - FlipperKit/FKPortForwarding (0.54.0):
+  - FlipperKit/CppBridge (0.75.1):
+    - Flipper (~> 0.75.1)
+  - FlipperKit/FBCxxFollyDynamicConvert (0.75.1):
+    - Flipper-Folly (~> 2.5)
+  - FlipperKit/FBDefines (0.75.1)
+  - FlipperKit/FKPortForwarding (0.75.1):
     - CocoaAsyncSocket (~> 7.6)
     - Flipper-PeerTalk (~> 0.0.4)
-  - FlipperKit/FlipperKitHighlightOverlay (0.54.0)
-  - FlipperKit/FlipperKitLayoutPlugin (0.54.0):
+  - FlipperKit/FlipperKitHighlightOverlay (0.75.1)
+  - FlipperKit/FlipperKitLayoutPlugin (0.75.1):
     - FlipperKit/Core
     - FlipperKit/FlipperKitHighlightOverlay
     - FlipperKit/FlipperKitLayoutTextSearchable
     - YogaKit (~> 1.18)
-  - FlipperKit/FlipperKitLayoutTextSearchable (0.54.0)
-  - FlipperKit/FlipperKitNetworkPlugin (0.54.0):
+  - FlipperKit/FlipperKitLayoutTextSearchable (0.75.1)
+  - FlipperKit/FlipperKitNetworkPlugin (0.75.1):
     - FlipperKit/Core
-  - FlipperKit/FlipperKitReactPlugin (0.54.0):
+  - FlipperKit/FlipperKitReactPlugin (0.75.1):
     - FlipperKit/Core
-  - FlipperKit/FlipperKitUserDefaultsPlugin (0.54.0):
+  - FlipperKit/FlipperKitUserDefaultsPlugin (0.75.1):
     - FlipperKit/Core
-  - FlipperKit/SKIOSNetworkPlugin (0.54.0):
+  - FlipperKit/SKIOSNetworkPlugin (0.75.1):
     - FlipperKit/Core
     - FlipperKit/FlipperKitNetworkPlugin
   - glog (0.3.5)
-  - OpenSSL-Universal (1.0.2.20):
-    - OpenSSL-Universal/Static (= 1.0.2.20)
-  - OpenSSL-Universal/Static (1.0.2.20)
+  - libevent (2.1.12)
+  - OpenSSL-Universal (1.1.180)
   - RCT-Folly (2020.01.13.00):
     - boost-for-react-native
     - DoubleConversion
@@ -370,26 +368,26 @@ DEPENDENCIES:
   - boost-for-react-native (from `../../third-party-podspecs/boost-for-react-native.podspec`)
   - DoubleConversion (from `../../third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../../Libraries/FBLazyVector`)
-  - FBReactNativeSpec (from `../../Libraries/FBReactNativeSpec`)
-  - Flipper (~> 0.54.0)
+  - FBReactNativeSpec (from `../../React/FBReactNativeSpec`)
+  - Flipper (~> 0.75.1)
   - Flipper-DoubleConversion (= 1.1.7)
-  - Flipper-Folly (~> 2.2)
+  - Flipper-Folly (~> 2.5)
   - Flipper-Glog (= 0.3.6)
   - Flipper-PeerTalk (~> 0.0.4)
-  - Flipper-RSocket (~> 1.1)
-  - FlipperKit (~> 0.54.0)
-  - FlipperKit/Core (~> 0.54.0)
-  - FlipperKit/CppBridge (~> 0.54.0)
-  - FlipperKit/FBCxxFollyDynamicConvert (~> 0.54.0)
-  - FlipperKit/FBDefines (~> 0.54.0)
-  - FlipperKit/FKPortForwarding (~> 0.54.0)
-  - FlipperKit/FlipperKitHighlightOverlay (~> 0.54.0)
-  - FlipperKit/FlipperKitLayoutPlugin (~> 0.54.0)
-  - FlipperKit/FlipperKitLayoutTextSearchable (~> 0.54.0)
-  - FlipperKit/FlipperKitNetworkPlugin (~> 0.54.0)
-  - FlipperKit/FlipperKitReactPlugin (~> 0.54.0)
-  - FlipperKit/FlipperKitUserDefaultsPlugin (~> 0.54.0)
-  - FlipperKit/SKIOSNetworkPlugin (~> 0.54.0)
+  - Flipper-RSocket (~> 1.3)
+  - FlipperKit (~> 0.75.1)
+  - FlipperKit/Core (~> 0.75.1)
+  - FlipperKit/CppBridge (~> 0.75.1)
+  - FlipperKit/FBCxxFollyDynamicConvert (~> 0.75.1)
+  - FlipperKit/FBDefines (~> 0.75.1)
+  - FlipperKit/FKPortForwarding (~> 0.75.1)
+  - FlipperKit/FlipperKitHighlightOverlay (~> 0.75.1)
+  - FlipperKit/FlipperKitLayoutPlugin (~> 0.75.1)
+  - FlipperKit/FlipperKitLayoutTextSearchable (~> 0.75.1)
+  - FlipperKit/FlipperKitNetworkPlugin (~> 0.75.1)
+  - FlipperKit/FlipperKitReactPlugin (~> 0.75.1)
+  - FlipperKit/FlipperKitUserDefaultsPlugin (~> 0.75.1)
+  - FlipperKit/SKIOSNetworkPlugin (~> 0.75.1)
   - glog (from `../../third-party-podspecs/glog.podspec`)
   - RCT-Folly (from `../../third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../../Libraries/RCTRequired`)
@@ -426,7 +424,6 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - CocoaAsyncSocket
-    - CocoaLibEvent
     - Flipper
     - Flipper-DoubleConversion
     - Flipper-Folly
@@ -434,6 +431,7 @@ SPEC REPOS:
     - Flipper-PeerTalk
     - Flipper-RSocket
     - FlipperKit
+    - libevent
     - OpenSSL-Universal
     - YogaKit
 
@@ -445,7 +443,7 @@ EXTERNAL SOURCES:
   FBLazyVector:
     :path: "../../Libraries/FBLazyVector"
   FBReactNativeSpec:
-    :path: "../../Libraries/FBReactNativeSpec"
+    :path: "../../React/FBReactNativeSpec"
   glog:
     :podspec: "../../third-party-podspecs/glog.podspec"
   RCT-Folly:
@@ -507,50 +505,50 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost-for-react-native: d5ad1140010aa8cb622323a781ecbeab4425d19a
-  CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
-  CocoaLibEvent: 2fab71b8bd46dd33ddb959f7928ec5909f838e3f
+  CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: 0ea4559a49682230337df966e735d6cc7760108e
-  FBLazyVector: 14e7b4e6c9c09633c79b3dddde4cba45569fea76
-  FBReactNativeSpec: dfa2770e94bf680f2fee8cda63901afa0a0787ad
-  Flipper: be611d4b742d8c87fbae2ca5f44603a02539e365
+  FBLazyVector: b9692db60e44a6c3c4b57ca785cee7dfae058c4a
+  FBReactNativeSpec: dc3beb06e0d52a463ff4cda2ba4a7879b2d51e23
+  Flipper: d3da1aa199aad94455ae725e9f3aa43f3ec17021
   Flipper-DoubleConversion: 38631e41ef4f9b12861c67d17cb5518d06badc41
-  Flipper-Folly: e4493b013c02d9347d5e0cb4d128680239f6c78a
+  Flipper-Folly: f7a3caafbd74bda4827954fd7a6e000e36355489
   Flipper-Glog: 1dfd6abf1e922806c52ceb8701a3599a79a200a6
   Flipper-PeerTalk: 116d8f857dc6ef55c7a5a75ea3ceaafe878aadc9
-  Flipper-RSocket: 64e7431a55835eb953b0bf984ef3b90ae9fdddd7
-  FlipperKit: ab353d41aea8aae2ea6daaf813e67496642f3d7d
+  Flipper-RSocket: 602921fee03edacf18f5d6f3d3594ba477f456e5
+  FlipperKit: 8a20b5c5fcf9436cac58551dc049867247f64b00
   glog: 0dc7efada961c0793012970b60faebbd58b0decb
-  OpenSSL-Universal: ff34003318d5e1163e9529b08470708e389ffcdd
+  libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
+  OpenSSL-Universal: 1aa4f6a6ee7256b83db99ec1ccdaa80d10f9af9b
   RCT-Folly: b3998425a8ee9f695f57a204dc494534246f0fe9
-  RCTRequired: d28dcc768a71b25d214494c27608101dc4f7d707
-  RCTTypeSafety: 518c5887c6b2b23e04646c90aa1fe4556f263b0a
-  React: b1500f4d757b25ad5ac3227cebe084ae4aa4793a
-  React-callinvoker: d1a56b35721302b2725dd4b9a50fffc87dc81ceb
-  React-Core: 03b6d0444e20145d195aafe5159297c9312bc969
-  React-CoreModules: 34ae76716e862bdc84ee0b8afc7b0e36e6505788
-  React-cxxreact: ec1a2b9f15fa2669bed9a46fce5359e233a0031f
-  React-jsi: 52cb4fcf12b0bb80236c4866b8e62185255f2235
-  React-jsiexecutor: 84b4f70402b7f69ad10a2315564f23cd490597d5
-  React-jsinspector: 62c4a52d0daa8c594390f6988f8f08ce593d745c
-  React-perflogger: 51476926a1841aa2cc2c545e1e33d86dc1e869bf
-  React-RCTActionSheet: d3d1b11a35578b5e7be7453bdf5a224d3f0b7f72
-  React-RCTAnimation: a63ad22a4aa24e2f609645fdcbe039a5ae5a5cd9
-  React-RCTBlob: 1add0e5aa8a0c35d70b46e8e6cb5c43991415e4f
-  React-RCTImage: da44b8e58093bc6d8a1625fcb23edf294c65cf8b
-  React-RCTLinking: de9796811c894130cb410240ebc5676f3d50e4bf
-  React-RCTNetwork: 066b692e13378418fcd8031e60ab5a9f56db8130
-  React-RCTPushNotification: 693739ee5cc8ea9760adcb9e59b2726ab8f307d7
-  React-RCTSettings: 7b777f919fc8684380c83e901b794de6e8e51e3f
-  React-RCTTest: 681ca7eaf37156503b3c7e8cfe9ac772281be16f
-  React-RCTText: 77c64dea2b7609713a99f52388e1c7490d0b2c65
-  React-RCTVibration: 725068ad9e070e7146033a52400baa660e826d8e
-  React-runtimeexecutor: cb47fe74317bca915a298502ac2c4df2cadd0a61
+  RCTRequired: e8cf583ebf10ef9e1c2c0c2720a8a37c5eb1f6c7
+  RCTTypeSafety: 18390ff6f97d877853fc7d0bf97f4116860b7da8
+  React: 211ae88e6d5a58a643afa9c527f28615cebbe1c3
+  React-callinvoker: e88d70c4690b47dba3114f71790a577b2ad82c88
+  React-Core: 820246b8b56b1984a35190110e21e0859d2efeba
+  React-CoreModules: 59e5d23926fa8ae71c54f097518edf2f2d340c5f
+  React-cxxreact: 48fa6c8ac4c2287ec8524177c526e353592bc5e9
+  React-jsi: f2e0b635237991838014c91788e19b76f230d217
+  React-jsiexecutor: b7765b82c85ad2a6354a663f0ecf16eb8ddcd6f8
+  React-jsinspector: dd673f80efca56335d4de1b07f29e593fc6598ea
+  React-perflogger: eafffa1d1ad162bb5c7592b354994b8b9b179a33
+  React-RCTActionSheet: 9160b784e63193c04cf8680143935c9635975691
+  React-RCTAnimation: 8a170c7a2308dc5134d7f51e8544b0734e0b6666
+  React-RCTBlob: 652b5be372578f53c7f03f46eb2a7631f0bd4377
+  React-RCTImage: ba69644710cc3f5e744778f7ca25a1fe7e3a15ab
+  React-RCTLinking: 323b5031a78b63ee5259c4ac4dd85d9bff4a5a4a
+  React-RCTNetwork: 50e111e13051d8204185c07abc4117476b96e8d5
+  React-RCTPushNotification: 74fc53d13ae678a632846eecd930573df465c6fe
+  React-RCTSettings: c304f67fac139f3059e05c0dcdcc9a77c636d5ad
+  React-RCTTest: 141007064e1c4c12d386c5d27eea21799afaff6d
+  React-RCTText: b877fc710423c8cee28b853c0e209c89a0028a59
+  React-RCTVibration: d5a2475403d85fde1f54d0bec96f5b7248c6048d
+  React-runtimeexecutor: e080fd15321a69c4aedbdbb088e9fc26a8a76a4c
   React-TurboModuleCxx-RNW: 12172bdbaaf052406ec571465243fad4b2eb2702
-  React-TurboModuleCxx-WinRTPort: 5cf1bcd21548ce84a1d7c323dcd580725dd41dd0
-  ReactCommon: e48e018067c1c8589450005ee42493adbeaee9a6
-  Yoga: 93b58f5ccd925cdba10136f40abba130e4005087
+  React-TurboModuleCxx-WinRTPort: 8ea1c78fa305e20a0af7db668a37eb201252b1ef
+  ReactCommon: 71f11103ce93b7fee59631b485db592312cdfa79
+  Yoga: f21683aff0d913edb043b69f72dbe4dd46210191
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 096cbc796e89167c003b0c49186597432f0fb5e8
+PODFILE CHECKSUM: fc89892d7bd92e5bb34cedc778a0e7fff4c0da86
 
 COCOAPODS: 1.10.1
