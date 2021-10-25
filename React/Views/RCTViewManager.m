@@ -11,7 +11,6 @@
 #import "RCTBridge.h"
 #import "RCTConvert+Transform.h"
 #import "RCTConvert.h"
-#import "RCTEventDispatcher.h"
 #import "RCTLog.h"
 #import "RCTShadowView.h"
 #import "RCTSinglelineTextInputView.h" // TODO(macOS GH#768)
@@ -20,10 +19,6 @@
 #import "RCTUtils.h"
 #import "RCTView.h"
 #import "UIView+React.h"
-
-#if TARGET_OS_TV
-#import "RCTTVView.h"
-#endif
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
 @implementation RCTConvert (UIAccessibilityTraits)
@@ -92,11 +87,7 @@ RCT_EXPORT_MODULE()
 
 - (RCTPlatformView *)view // TODO(macOS GH#774)
 {
-#if TARGET_OS_TV
-  return [RCTTVView new];
-#else
   return [[RCTView alloc] initWithEventDispatcher:self.bridge.eventDispatcher]; // TODO(OSS Candidate ISS#2710739)
-#endif
 }
 
 - (RCTShadowView *)shadowView
@@ -144,13 +135,6 @@ RCT_EXPORT_METHOD(blur : (nonnull NSNumber *)viewTag)
 #endif // ]TODO(macOS GH#774)
 
 #pragma mark - View properties
-
-#if TARGET_OS_TV
-// TODO: Delete props for Apple TV.
-RCT_EXPORT_VIEW_PROPERTY(isTVSelectable, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(hasTVPreferredFocus, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(tvParallaxProperties, NSDictionary)
-#endif
 
 // Accessibility related properties
 #if !TARGET_OS_OSX // TODO(macOS GH#774)

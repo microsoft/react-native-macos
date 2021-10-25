@@ -20,9 +20,9 @@
 #import "UIView+React.h"
 
 
-#if !TARGET_OS_TV && !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 #import "RCTRefreshControl.h"
-#endif
+#endif // TODO(macOS GH#774)
 
 /**
  * Include a custom scroll view subclass because we want to limit certain
@@ -37,11 +37,10 @@
 #endif // ]TODO(macOS GH#774)
 
 @property (nonatomic, assign) BOOL centerContent;
-#if !TARGET_OS_TV && !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 @property (nonatomic, strong) UIView<RCTCustomRefreshContolProtocol> *customRefreshControl;
 @property (nonatomic, assign) BOOL pinchGestureEnabled;
-#endif
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#else // [TODO(macOS GH#774)
 + (BOOL)isCompatibleWithResponsiveScrolling;
 @property (nonatomic, assign, getter=isScrollEnabled) BOOL scrollEnabled;
 @property (nonatomic, strong) NSPanGestureRecognizer *panGestureRecognizer;
@@ -69,9 +68,9 @@
     }
 #endif
 
-#if !TARGET_OS_TV && !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
     _pinchGestureEnabled = YES;
-#endif
+#endif // TODO(macOS GH#774)
   }
   return self;
 }
@@ -296,14 +295,24 @@
   }
 }
 
-#if !TARGET_OS_TV && !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 - (void)setCustomRefreshControl:(UIView<RCTCustomRefreshContolProtocol> *)refreshControl
 {
   if (_customRefreshControl) {
     [_customRefreshControl removeFromSuperview];
   }
   _customRefreshControl = refreshControl;
-  [self addSubview:_customRefreshControl];
+  // We have to set this because we can't always guarantee the
+  // `RCTCustomRefreshContolProtocol`'s superview will always be of class
+  // `UIScrollView` like we were previously
+  if ([_customRefreshControl respondsToSelector:@selector(setScrollView:)]) {
+    _customRefreshControl.scrollView = self;
+  }
+  if ([refreshControl isKindOfClass:UIRefreshControl.class]) {
+    self.refreshControl = (UIRefreshControl *)refreshControl;
+  } else {
+    [self addSubview:_customRefreshControl];
+  }
 }
 
 - (void)setPinchGestureEnabled:(BOOL)pinchGestureEnabled
@@ -319,7 +328,7 @@
   // in the setter gets overridden when the view loads.
   self.pinchGestureRecognizer.enabled = _pinchGestureEnabled;
 }
-#endif // TARGET_OS_TV
+#endif // TODO(macOS GH#774)
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (BOOL)canBecomeFirstResponder
@@ -361,7 +370,7 @@
 @end
 
 @implementation RCTScrollView {
-  RCTEventDispatcher *_eventDispatcher;
+  id<RCTEventDispatcherProtocol> _eventDispatcher;
   CGRect _prevFirstVisibleFrame;
   __weak RCTUIView *_firstVisibleView; // TODO(macOS ISS#3536887)
   RCTCustomScrollView *_scrollView;
@@ -380,7 +389,7 @@
   NSHashTable *_scrollListeners;
 }
 
-- (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
+- (instancetype)initWithEventDispatcher:(id<RCTEventDispatcherProtocol>)eventDispatcher
 {
   RCTAssertParam(eventDispatcher);
 
@@ -512,15 +521,12 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
 
   _scrollView.documentView = view;
 #else // ]TODO(macOS GH#774)
-#if !TARGET_OS_TV
   if ([view conformsToProtocol:@protocol(RCTCustomRefreshContolProtocol)]) {
     [_scrollView setCustomRefreshControl:(UIView<RCTCustomRefreshContolProtocol> *)view];
     if (![view isKindOfClass:[UIRefreshControl class]] && [view conformsToProtocol:@protocol(UIScrollViewDelegate)]) {
       [self addScrollListener:(UIView<UIScrollViewDelegate> *)view];
     }
-  } else
-#endif
-  {
+  } else {
     RCTAssert(
         _contentView == nil,
         @"RCTScrollView may only contain a single subview, the already set subview looks like: %@",
@@ -539,16 +545,13 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
   _scrollView.documentView = nil;
   _contentSize = CGSizeZero;
 #else // ]TODO(macOS GH#774)
-#if !TARGET_OS_TV
   if ([subview conformsToProtocol:@protocol(RCTCustomRefreshContolProtocol)]) {
     [_scrollView setCustomRefreshControl:nil];
     if (![subview isKindOfClass:[UIRefreshControl class]] &&
         [subview conformsToProtocol:@protocol(UIScrollViewDelegate)]) {
       [self removeScrollListener:(UIView<UIScrollViewDelegate> *)subview];
     }
-  } else
-#endif
-  {
+  } else {
     RCTAssert(_contentView == subview, @"Attempted to remove non-existent subview");
     _contentView = nil;
   }
@@ -602,7 +605,7 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
 #if !TARGET_OS_TV && !TARGET_OS_OSX // TODO(macOS GH#774)
   // Adjust the refresh control frame if the scrollview layout changes.
   UIView<RCTCustomRefreshContolProtocol> *refreshControl = _scrollView.customRefreshControl;
-  if (refreshControl && refreshControl.isRefreshing) {
+  if (refreshControl && refreshControl.isRefreshing && ![refreshControl isKindOfClass:UIRefreshControl.class]) {
     refreshControl.frame =
         (CGRect){_scrollView.contentOffset, {_scrollView.frame.size.width, refreshControl.frame.size.height}};
   }
@@ -1339,10 +1342,8 @@ RCT_SET_AND_PRESERVE_OFFSET(setMinimumZoomScale, minimumZoomScale, CGFloat)
 #endif // TODO(macOS GH#774)
 RCT_SET_AND_PRESERVE_OFFSET(setScrollEnabled, isScrollEnabled, BOOL)
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
-#if !TARGET_OS_TV
 RCT_SET_AND_PRESERVE_OFFSET(setPagingEnabled, isPagingEnabled, BOOL)
 RCT_SET_AND_PRESERVE_OFFSET(setScrollsToTop, scrollsToTop, BOOL)
-#endif
 #endif // TODO(macOS GH#774)
 RCT_SET_AND_PRESERVE_OFFSET(setShowsHorizontalScrollIndicator, showsHorizontalScrollIndicator, BOOL)
 RCT_SET_AND_PRESERVE_OFFSET(setShowsVerticalScrollIndicator, showsVerticalScrollIndicator, BOOL)
@@ -1388,9 +1389,7 @@ RCT_SET_AND_PRESERVE_OFFSET(setScrollIndicatorInsets, scrollIndicatorInsets, UIE
 
 @end
 
-@implementation RCTEventDispatcher (RCTScrollView)
-
-- (void)sendFakeScrollEvent:(NSNumber *)reactTag
+void RCTSendFakeScrollEvent(id<RCTEventDispatcherProtocol> eventDispatcher, NSNumber *reactTag)
 {
   // Use the selector here in case the onScroll block property is ever renamed
   NSString *eventName = NSStringFromSelector(@selector(onScroll));
@@ -1403,7 +1402,5 @@ RCT_SET_AND_PRESERVE_OFFSET(setScrollIndicatorInsets, scrollIndicatorInsets, UIE
                                                           scrollViewZoomScale:0
                                                                      userData:nil
                                                                 coalescingKey:0];
-  [self sendEvent:fakeScrollEvent];
+  [eventDispatcher sendEvent:fakeScrollEvent];
 }
-
-@end

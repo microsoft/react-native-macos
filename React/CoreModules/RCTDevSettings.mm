@@ -12,7 +12,7 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTBridge+Private.h>
 #import <React/RCTBridgeModule.h>
-#import <React/RCTEventDispatcher.h>
+#import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTLog.h>
 #import <React/RCTProfile.h>
 #import <React/RCTReloadCommand.h>
@@ -220,6 +220,7 @@ RCT_EXPORT_MODULE()
 
 - (void)invalidate
 {
+  [super invalidate];
 #if ENABLE_PACKAGER_CONNECTION
   [[RCTPackagerConnection sharedPackagerConnection] removeHandler:_reloadToken];
 #endif
@@ -447,18 +448,19 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
 
 - (void)setupHMRClientWithBundleURL:(NSURL *)bundleURL
 {
-  if (bundleURL && !bundleURL.fileURL) { // isHotLoadingAvailable check
+  if (bundleURL && !bundleURL.fileURL) {
     NSString *const path = [bundleURL.path substringFromIndex:1]; // Strip initial slash.
     NSString *const host = bundleURL.host;
     NSNumber *const port = bundleURL.port;
+    BOOL isHotLoadingEnabled = self.isHotLoadingEnabled;
     // TODO(macOS GH#774) - we could perhaps infer the platform from the bundleURL's query parameters, instead of hardcoding
     if (self.bridge) {
       [self.bridge enqueueJSCall:@"HMRClient"
                           method:@"setup"
-                            args:@[ kRCTPlatformName, path, host, RCTNullIfNil(port), @(YES) ] // TODO(macOS GH#774)
+                            args:@[ kRCTPlatformName, path, host, RCTNullIfNil(port), @(isHotLoadingEnabled) ] // TODO(macOS GH#774)
                       completion:NULL];
     } else {
-      self.invokeJS(@"HMRClient", @"setup", @[ kRCTPlatformName, path, host, RCTNullIfNil(port), @(YES) ]); // TODO(macOS GH#774)
+      self.invokeJS(@"HMRClient", @"setup", @[ kRCTPlatformName, path, host, RCTNullIfNil(port), @(isHotLoadingEnabled) ]); // TODO(macOS GH#774)
     }
   }
 }

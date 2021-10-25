@@ -48,9 +48,9 @@ jobs:
         condition: and(ne(variables['Build.SourceBranchName'], 'master'), ne(variables['Build.SourceBranchName'], variables.latestStableBranch))
 
       - task: CmdLine@2
-        displayName: npm install
+        displayName: yarn install
         inputs:
-          script: npm install
+          script: yarn install --frozen-lockfile
 
       - task: CmdLine@2
         displayName: Bump stable package version
@@ -143,6 +143,13 @@ jobs:
           script: REACT_NATIVE_BOOST_PATH=$(System.DefaultWorkingDirectory)/build_deps ./gradlew installArchives -Pparam="excludeLibs"
 
       - template: templates\prep-android-nuget.yml
+
+      # Enumerate and download all dependencies ..
+      - task: CmdLine@2
+        displayName: 'Verify Dependencies can be enumerated'
+        inputs:
+          script: sudo apt-get install python3-pip && sudo apt-get install python3-setuptools && pip3 install BeautifulSoup4 && pip3 install wheel && pip3 install wget && python3 android-patches/scripts/downloadDependencies.py $(Build.SourcesDirectory) && tree $(Build.SourcesDirectory)/android
+
 
       # Very similar to the default pack task .. but appends 'ndk21b' to the nuget pack version
       - task: CmdLine@2
