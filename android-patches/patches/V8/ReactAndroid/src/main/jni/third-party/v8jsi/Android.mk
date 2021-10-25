@@ -1,5 +1,5 @@
---- "E:\\github\\rnm-63-fresh\\ReactAndroid\\src\\main\\jni\\third-party\\v8jsi\\Android.mk"	1969-12-31 16:00:00.000000000 -0800
-+++ "E:\\github\\rnm-63\\ReactAndroid\\src\\main\\jni\\third-party\\v8jsi\\Android.mk"	2020-10-10 23:55:24.716175200 -0700
+--- /dev/null	2021-10-25 12:29:33.000000000 -0700
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-Ge4Sm3/merge/V8/ReactAndroid/src/main/jni/third-party/v8jsi/Android.mk	2021-10-25 12:22:45.000000000 -0700
 @@ -0,0 +1,17 @@
 +LOCAL_PATH:= $(call my-dir)
 +include $(CLEAR_VARS)

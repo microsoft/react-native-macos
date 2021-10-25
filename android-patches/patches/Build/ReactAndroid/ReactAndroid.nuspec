@@ -1,5 +1,5 @@
---- "E:\\gh\\react-native-macos2\\ReactAndroid\\ReactAndroid.nuspec"	1969-12-31 16:00:00.000000000 -0800
-+++ "E:\\gh\\react-native-macos\\ReactAndroid\\ReactAndroid.nuspec"	2021-10-12 19:48:38.934480100 -0700
+--- /dev/null	2021-10-25 12:29:33.000000000 -0700
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-Ge4Sm3/merge/Build/ReactAndroid/ReactAndroid.nuspec	2021-10-25 12:22:45.000000000 -0700
 @@ -0,0 +1,200 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">

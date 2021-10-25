@@ -1,5 +1,5 @@
---- "E:\\github\\rnm-63-fresh\\ReactAndroid\\build.gradle"	2020-10-27 20:26:16.652167500 -0700
-+++ "E:\\github\\rnm-63\\ReactAndroid\\build.gradle"	2020-10-13 22:03:22.833541000 -0700
+--- ./ReactAndroid/build.gradle	2021-10-19 18:12:12.000000000 -0700
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-Ge4Sm3/merge/Build/ReactAndroid/build.gradle	2021-10-25 12:22:45.000000000 -0700
 @@ -43,6 +43,8 @@
  // and the build will use that.
  def boostPath = dependenciesPath ?: System.getenv("REACT_NATIVE_BOOST_PATH")
@@ -47,14 +47,14 @@
  task downloadGlog(dependsOn: createNativeDepsDirectories, type: Download) {
      src("https://github.com/google/glog/archive/v${GLOG_VERSION}.tar.gz")
      onlyIfNewer(true)
-@@ -303,7 +324,7 @@
+@@ -300,7 +321,7 @@
  }
  
  def buildReactNdkLib = tasks.register("buildReactNdkLib", Exec) {
 -    dependsOn(prepareJSC, prepareHermes, prepareBoost, prepareDoubleConversion, prepareFolly, prepareGlog, extractAARHeaders, extractJNIFiles)
 +    dependsOn(prepareJSC, prepareHermes, prepareV8, prepareBoost, prepareDoubleConversion, prepareFolly, prepareGlog, extractAARHeaders, extractJNIFiles)
      dependsOn("generateCodegenArtifactsFromSchema");
-
+ 
      inputs.dir("$projectDir/../ReactCommon")
 @@ -314,6 +335,7 @@
              "NDK_OUT=" + temporaryDir,
@@ -72,7 +72,7 @@
              "REACT_COMMON_DIR=$projectDir/../ReactCommon",
              "-C", file("src/main/jni/react/jni").absolutePath,
              "clean")
-@@ -341,10 +364,16 @@
+@@ -340,10 +363,16 @@
  
  def packageReactNdkLibs = tasks.register("packageReactNdkLibs", Copy) {
      dependsOn(buildReactNdkLib)

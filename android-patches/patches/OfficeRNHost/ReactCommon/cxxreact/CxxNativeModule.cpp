@@ -1,6 +1,6 @@
---- "E:\\github\\rnm-63-fresh\\ReactCommon\\cxxreact\\CxxNativeModule.cpp"	2020-10-27 20:26:17.181166900 -0700
-+++ "E:\\github\\rnm-63\\ReactCommon\\cxxreact\\CxxNativeModule.cpp"	2020-10-13 21:55:00.437153500 -0700
-@@ -209,5 +209,18 @@
+--- ./ReactCommon/cxxreact/CxxNativeModule.cpp	2021-10-06 16:05:18.000000000 -0700
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-Ge4Sm3/merge/OfficeRNHost/ReactCommon/cxxreact/CxxNativeModule.cpp	2021-10-25 12:22:45.000000000 -0700
+@@ -221,5 +221,18 @@
    }
  }
  

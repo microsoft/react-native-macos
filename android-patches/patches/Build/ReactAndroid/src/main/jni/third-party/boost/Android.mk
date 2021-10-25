@@ -1,5 +1,5 @@
---- "E:\\github\\rnm-63-fresh\\ReactAndroid\\src\\main\\jni\\third-party\\boost\\Android.mk"	2020-10-27 20:26:17.038172200 -0700
-+++ "E:\\github\\rnm-63\\ReactAndroid\\src\\main\\jni\\third-party\\boost\\Android.mk"	2020-10-13 21:52:15.163202200 -0700
+--- ./ReactAndroid/src/main/jni/third-party/boost/Android.mk	2021-10-06 16:05:18.000000000 -0700
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-Ge4Sm3/merge/Build/ReactAndroid/src/main/jni/third-party/boost/Android.mk	2021-10-25 12:22:45.000000000 -0700
 @@ -1,8 +1,8 @@
  LOCAL_PATH:= $(call my-dir)
  include $(CLEAR_VARS)

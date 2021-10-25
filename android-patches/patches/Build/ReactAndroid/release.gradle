@@ -1,9 +1,9 @@
---- /home/mganandraj/github/rnm-64-vanilla/ReactAndroid/release.gradle	2021-10-11 17:51:44.286455263 -0700
-+++ /home/mganandraj/github/rnm-64/ReactAndroid/release.gradle	2021-10-07 16:35:28.636536900 -0700
+--- ./ReactAndroid/release.gradle	2021-10-21 22:26:33.000000000 -0700
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-Ge4Sm3/merge/Build/ReactAndroid/release.gradle	2021-10-25 12:26:02.000000000 -0700
 @@ -74,6 +74,7 @@
  afterEvaluate { project ->
  
-     task androidJavadoc(type: Javadoc) {
+     task androidJavadoc(type: Javadoc, dependsOn: generateReleaseBuildConfig) {
 +        failOnError false
          source = android.sourceSets.main.java.srcDirs
          classpath += files(android.bootClasspath)
