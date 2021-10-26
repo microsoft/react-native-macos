@@ -47,9 +47,25 @@ function updateVersionsInFiles(patchVersionPrefix) {
     return {releaseVersion, branchVersionSuffix};
 }
 
+function removePrivateFlag() {
+  let {pkgJson} = gatherVersionInfo();
+  delete pkgJson.private;
+  fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2));
+  console.log(`Updating package.json to NOT be marked private`);
+}
+
+function addPrivateFlag() {
+  let {pkgJson} = gatherVersionInfo();
+  pkgJson.private = true;
+  fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2));
+  console.log(`Updating package.json to be marked private`);
+}
+
 module.exports = {
     gatherVersionInfo,
     publishBranchName,
     pkgJsonPath,
+    removePrivateFlag,
+    addPrivateFlag,
     updateVersionsInFiles
 }
