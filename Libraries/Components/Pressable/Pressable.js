@@ -25,13 +25,11 @@ import type {
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
 import {normalizeRect, type RectOrSize} from '../../StyleSheet/Rect';
-import type {ColorValue} from '../../StyleSheet/StyleSheet';
 import type {
   LayoutEvent,
-  MouseEvent, // TODO(macOS GH#774)
+  MouseEvent,
   PressEvent,
 } from '../../Types/CoreEventTypes';
-import type {DraggedTypesType} from '../View/DraggedType'; // TODO(macOS GH#774)
 import View from '../View/View';
 
 type ViewStyleProp = $ElementType<React.ElementConfig<typeof View>, 'style'>;
@@ -66,6 +64,16 @@ type Props = $ReadOnly<{|
   children: React.Node | ((state: StateCallbackType) => React.Node),
 
   /**
+   * Duration to wait after hover in before calling `onHoverIn`.
+   */
+  delayHoverIn?: ?number,
+
+  /**
+   * Duration to wait after hover out before calling `onHoverOut`.
+   */
+  delayHoverOut?: ?number,
+
+  /**
    * Duration (in milliseconds) from `onPressIn` before `onLongPress` is called.
    */
   delayLongPress?: ?number,
@@ -90,6 +98,16 @@ type Props = $ReadOnly<{|
    * Called when this view's layout changes.
    */
   onLayout?: ?(event: LayoutEvent) => void,
+
+  /**
+   * Called when the hover is activated to provide visual feedback.
+   */
+  onHoverIn?: ?(event: MouseEvent) => mixed,
+
+  /**
+   * Called when the hover is deactivated to undo visual feedback.
+   */
+  onHoverOut?: ?(event: MouseEvent) => mixed,
 
   /**
    * Called when a long-tap gesture is detected.
@@ -167,11 +185,13 @@ function Pressable(props: Props, forwardedRef): React.Node {
     android_disableSound,
     android_ripple,
     children,
+    delayHoverIn,
+    delayHoverOut,
     delayLongPress,
     disabled,
     focusable,
-    onMouseEnter, // [TODO(macOS GH#774)
-    onMouseLeave, // ]TODO(macOS GH#774)
+    onHoverIn,
+    onHoverOut,
     onLongPress,
     onPress,
     onPressIn,
@@ -208,10 +228,12 @@ function Pressable(props: Props, forwardedRef): React.Node {
       hitSlop,
       pressRectOffset: pressRetentionOffset,
       android_disableSound,
+      delayHoverIn,
+      delayHoverOut,
       delayLongPress,
       delayPressIn: unstable_pressDelay,
-      onHoverIn: onMouseEnter, // [TODO(macOS GH#774)
-      onHoverOut: onMouseLeave, // ]TODO(macOS GH#774)
+      onHoverIn,
+      onHoverOut,
       onLongPress,
       onPress,
       onPressIn(event: PressEvent): void {
@@ -237,11 +259,13 @@ function Pressable(props: Props, forwardedRef): React.Node {
     [
       android_disableSound,
       android_rippleConfig,
+      delayHoverIn,
+      delayHoverOut,
       delayLongPress,
       disabled,
       hitSlop,
-      onMouseEnter, // [TODO(macOS GH#774)
-      onMouseLeave, // ]TODO(macOS GH#774)
+      onHoverIn,
+      onHoverOut,
       onLongPress,
       onPress,
       onPressIn,
