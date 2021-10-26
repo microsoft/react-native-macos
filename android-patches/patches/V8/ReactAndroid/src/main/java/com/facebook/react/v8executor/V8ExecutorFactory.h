@@ -1,5 +1,5 @@
---- "E:\\github\\rnm-63-fresh\\ReactAndroid\\src\\main\\java\\com\\facebook\\react\\v8executor\\V8ExecutorFactory.h"	1969-12-31 16:00:00.000000000 -0800
-+++ "E:\\github\\rnm-63\\ReactAndroid\\src\\main\\java\\com\\facebook\\react\\v8executor\\V8ExecutorFactory.h"	2020-10-13 21:39:46.729978100 -0700
+--- /dev/null	2021-10-25 12:29:33.000000000 -0700
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-Ge4Sm3/merge/V8/ReactAndroid/src/main/java/com/facebook/react/v8executor/V8ExecutorFactory.h	2021-10-25 12:22:45.000000000 -0700
 @@ -0,0 +1,17 @@
 +#include <folly/dynamic.h>
 +#include <jsiexecutor/jsireact/JSIExecutor.h>

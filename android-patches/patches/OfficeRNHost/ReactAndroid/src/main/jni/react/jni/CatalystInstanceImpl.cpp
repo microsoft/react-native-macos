@@ -1,5 +1,5 @@
---- "E:\\github\\rnm-63-fresh\\ReactAndroid\\src\\main\\jni\\react\\jni\\CatalystInstanceImpl.cpp"	2020-10-27 20:26:17.024172000 -0700
-+++ "E:\\github\\rnm-63\\ReactAndroid\\src\\main\\jni\\react\\jni\\CatalystInstanceImpl.cpp"	2020-10-13 21:50:14.117742800 -0700
+--- ./ReactAndroid/src/main/jni/react/jni/CatalystInstanceImpl.cpp	2021-10-12 18:36:58.000000000 -0700
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-Ge4Sm3/merge/OfficeRNHost/ReactAndroid/src/main/jni/react/jni/CatalystInstanceImpl.cpp	2021-10-25 12:22:45.000000000 -0700
 @@ -95,6 +95,7 @@
  void CatalystInstanceImpl::registerNatives() {
    registerHybrid({
@@ -11,7 +11,7 @@
 @@ -127,26 +128,39 @@
            CatalystInstanceImpl::handleMemoryPressure),
        makeNativeMethod(
-           "getRuntimeExecutor", CatalystInstanceImpl::getRuntimeExecutor),           
+           "getRuntimeExecutor", CatalystInstanceImpl::getRuntimeExecutor),
 +      makeNativeMethod("getPointerOfInstancePointer", CatalystInstanceImpl::getPointerOfInstancePointer)
    });
  

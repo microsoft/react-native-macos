@@ -1,8 +1,6 @@
-diff --git a/ReactAndroid/src/main/jni/react/jni/Android.mk b/ReactAndroid/src/main/jni/react/jni/Android.mk
-index 38a51019e..7425e65a5 100644
---- a/ReactAndroid/src/main/jni/react/jni/Android.mk
-+++ b/ReactAndroid/src/main/jni/react/jni/Android.mk
-@@ -128,6 +128,7 @@ $(call import-module,callinvoker)
+--- ./ReactAndroid/src/main/jni/react/jni/Android.mk	2021-10-19 18:12:12.000000000 -0700
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-Ge4Sm3/merge/V8/ReactAndroid/src/main/jni/react/jni/Android.mk	2021-10-25 12:22:45.000000000 -0700
+@@ -128,6 +128,7 @@
  $(call import-module,reactperflogger)
  $(call import-module,hermes)
  $(call import-module,runtimeexecutor)
@@ -10,8 +8,10 @@ index 38a51019e..7425e65a5 100644
  $(call import-module,react/nativemodule/core)
  
  include $(REACT_SRC_DIR)/reactperflogger/jni/Android.mk
-@@ -148,3 +149,4 @@ include $(REACT_SRC_DIR)/jscexecutor/Android.mk
+@@ -148,5 +149,6 @@
  include $(REACT_SRC_DIR)/../hermes/reactexecutor/Android.mk
  include $(REACT_SRC_DIR)/../hermes/instrumentation/Android.mk
  include $(REACT_SRC_DIR)/modules/blob/jni/Android.mk
 +include $(REACT_SRC_DIR)/v8executor/Android.mk
+ 
+ include $(REACT_GENERATED_SRC_DIR)/codegen/jni/Android.mk

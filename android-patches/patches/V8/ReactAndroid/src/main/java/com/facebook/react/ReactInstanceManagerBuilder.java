@@ -1,5 +1,5 @@
---- "E:\\gh\\react-native-macos2\\ReactAndroid\\src\\main\\java\\com\\facebook\\react\\ReactInstanceManagerBuilder.java"	2021-10-12 13:33:12.881732000 -0700
-+++ "E:\\gh\\react-native-macos\\ReactAndroid\\src\\main\\java\\com\\facebook\\react\\ReactInstanceManagerBuilder.java"	2021-10-12 13:26:43.722189600 -0700
+--- ./ReactAndroid/src/main/java/com/facebook/react/ReactInstanceManagerBuilder.java	2021-10-06 16:05:18.000000000 -0700
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-Ge4Sm3/merge/V8/ReactAndroid/src/main/java/com/facebook/react/ReactInstanceManagerBuilder.java	2021-10-25 12:22:45.000000000 -0700
 @@ -26,6 +26,7 @@
  import com.facebook.react.devsupport.interfaces.DevBundleDownloadListener;
  import com.facebook.react.devsupport.interfaces.DevSupportManager;
