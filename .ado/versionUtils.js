@@ -47,25 +47,29 @@ function updateVersionsInFiles(patchVersionPrefix) {
     return {releaseVersion, branchVersionSuffix};
 }
 
-function removePrivateFlag() {
+
+const workspaceJsonPath = path.resolve(require('os').tmpdir(), 'rnpkg.json');
+
+function removeWorkspaceConfig() {
   let {pkgJson} = gatherVersionInfo();
+  fs.writeFileSync(workspaceJsonPath, JSON.stringify(pkgJson, null, 2));
   delete pkgJson.private;
+  delete pkgJson.workspaces;
   fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2));
-  console.log(`Updating package.json to NOT be marked private`);
+  console.log(`Removing workspace config from package.json to prepare to publish.`);
 }
 
-function addPrivateFlag() {
-  let {pkgJson} = gatherVersionInfo();
-  pkgJson.private = true;
+function restoreWorkspaceConfig() {
+  let pkgJson = JSON.parse(fs.readFileSync(workspaceJsonPath, "utf8"));
   fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2));
-  console.log(`Updating package.json to be marked private`);
+  console.log(`Restoring workspace config from package.json`);
 }
 
 module.exports = {
     gatherVersionInfo,
     publishBranchName,
     pkgJsonPath,
-    removePrivateFlag,
-    addPrivateFlag,
+    removeWorkspaceConfig,
+    restoreWorkspaceConfig,
     updateVersionsInFiles
 }

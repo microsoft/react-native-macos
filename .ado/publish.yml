@@ -66,18 +66,18 @@ jobs:
 
       # Publish will fail if package.json is marked as private
       - task: CmdLine@2
-        displayName: Unmark package.json private flag
+        displayName: Remove workspace config from package.json
         inputs:
-          script: node .ado/removePrivate.js
+          script: node .ado/removeWorkspaceConfig.js
 
       - script: npm publish --tag $(npmDistTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
         displayName: Publish react-native-macos to npmjs.org
 
       # Put the private flag back so that the removal does not get committed by the tag release step
       - task: CmdLine@2
-        displayName: Restore package.json private flag
+        displayName: Restore package.json workspace config
         inputs:
-          script: node .ado/markPrivate.js
+          script: node .ado/restoreWorkspaceConfig.js
 
       - task: CmdLine@2
         displayName: 'Tag published release'
