@@ -29,6 +29,11 @@ let argv = yargs
     type: 'boolean',
     default: false,
   })
+  .option('p', { // [MacOS: Used during RNM's publish pipelines
+    alias: 'rnmpublish',
+    type: 'boolean',
+    default: false,
+  })
   .option('n', {
     alias: 'nightly',
     type: 'boolean',
@@ -36,7 +41,10 @@ let argv = yargs
   }).argv;
 
 const nightlyBuild = argv.nightly;
+// Nightly builds don't need an update as main will already be up-to-date.
+const updatePodfileLock = !nightlyBuild;
 const ci = argv.ci;
+const rnmpublish = argv.rnmpublish;
 
 let version, branch;
 if (nightlyBuild) {
@@ -133,8 +141,10 @@ fs.writeFileSync(
 
 let packageJson = JSON.parse(cat('package.json'));
 packageJson.version = version;
-delete packageJson.workspaces;
-delete packageJson.private;
+if (!rnmpublish) {
+  delete packageJson.workspaces;
+  delete packageJson.private;
+}
 fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2), 'utf-8');
 
 // Change ReactAndroid/gradle.properties
@@ -153,6 +163,15 @@ if (
 // Change react-native version in the template's package.json
 exec(`node scripts/set-rn-template-version.js ${version}`);
 
+if (updatePodfileLock) {
+  echo('Updating RNTester Podfile.lock...')
+  if (exec('source scripts/update_podfile_lock.sh && update_pods').code) {
+    echo('Failed to update RNTester Podfile.lock.');
+    echo('Fix the issue, revert and try again.');
+    exit(1);
+  }
+}
+
 // Verify that files changed, we just do a git diff and check how many times version is added across files
 let numberOfChangedLinesWithNewVersion = exec(
   `git diff -U0 | grep '^[+]' | grep -c ${version} `,
@@ -161,7 +180,7 @@ let numberOfChangedLinesWithNewVersion = exec(
 
 // Release builds should commit the version bumps, and create tags.
 // Nightly builds do not need to do that.
-if (!nightlyBuild) {
+if (!nightlyBuild && !rnmpublish) {
   if (+numberOfChangedLinesWithNewVersion !== 3) {
     echo(
       'Failed to update all the files. package.json and gradle.properties must have versions in them',
