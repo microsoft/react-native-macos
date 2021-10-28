@@ -22,14 +22,14 @@ validate_env () {
     exit 1
   fi
 
-  COCOAPODS_VERSION=$(pod --version)
-  if [[ "$COCOAPODS_VERSION" != "$REQUIRED_COCOAPODS_VERSION" ]];
-  then
-    echo "You must have CocoaPods $REQUIRED_COCOAPODS_VERSION installed; you have $COCOAPODS_VERSION."
-    echo "Installing via gem is recommended:"
-    echo "  sudo gem install cocoapods -v $REQUIRED_COCOAPODS_VERSION"
-    exit 1
-  fi
+#   COCOAPODS_VERSION=$(pod --version)
+#   if [[ "$COCOAPODS_VERSION" != "$REQUIRED_COCOAPODS_VERSION" ]];
+#   then
+#     echo "You must have CocoaPods $REQUIRED_COCOAPODS_VERSION installed; you have $COCOAPODS_VERSION."
+#     echo "Installing via gem is recommended:"
+#     echo "  sudo gem install cocoapods -v $REQUIRED_COCOAPODS_VERSION"
+#     exit 1
+#   fi
 }
 
 update_pods () {
