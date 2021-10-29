@@ -6,8 +6,7 @@ on:
       - master
   pull_request:
 jobs:
-  consume:
-    name: "Consume react-native-macos"
+  react-native-test-app:
     runs-on: macos-latest
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     steps:
@@ -15,50 +14,55 @@ jobs:
         uses: actions/setup-node@v2.4.1
         with:
           node-version: 14
-      - name: Checkout
+      - name: Checkout react-native-macos
+        uses: actions/checkout@v2
+      - name: Checkout react-native-test-app
         uses: actions/checkout@v2
         with:
           repository: microsoft/react-native-test-app
-      - name: Cache /.yarn/cache
+          path: react-native-test-app
+      - name: Cache /react-native-test-app/.yarn/cache
         uses: actions/cache@v2
         with:
-          path: .yarn/cache
-          key: ${{ hashFiles('yarn.lock') }}
+          path: react-native-test-app/.yarn/cache
+          key: ${{ hashFiles('react-native-test-app/yarn.lock') }}
       - name: Modify react-native-test-app dependencies
         run: |
           cat package.json |
             jq '.devDependencies["react"] = "17.0.1"' |
             jq '.devDependencies["react-native"] = "^0.64"' |
-            jq '.devDependencies["react-native-macos"] = "microsoft/react-native-macos#${{ github.sha }}"' |
+            jq '.devDependencies["react-native-macos"] = "../"' |
             jq 'del(.devDependencies["@react-native-community/cli"])' |
             jq 'del(.devDependencies["@react-native-community/cli-platform-android"])' |
             jq 'del(.devDependencies["@react-native-community/cli-platform-ios"])' |
             jq 'del(.devDependencies["react-native-windows"])' > .package.json
           mv .package.json package.json
           cat package.json | jq .devDependencies
+        working-directory: react-native-test-app
       - name: Modify example app dependencies
         run: |
           cat package.json |
             jq '.devDependencies["react"] = "17.0.1"' |
             jq '.devDependencies["react-native"] = "^0.64"' |
-            jq '.devDependencies["react-native-macos"] = "microsoft/react-native-macos#${{ github.sha }}"' |
+            jq '.devDependencies["react-native-macos"] = "../../"' |
             jq 'del(.devDependencies["react-native-windows"])' > .package.json
           mv .package.json package.json
           cat package.json | jq .devDependencies
-        working-directory: example
+        working-directory: react-native-test-app/example
       - name: Install
         run: |
           yarn --no-immutable
+        working-directory: react-native-test-app
       - name: Build
         run: |
           set -eo pipefail
           yarn build:macos || yarn build:macos
           pod install --project-directory=macos
           ../scripts/xcodebuild.sh macos/Example.xcworkspace build
-        working-directory: example
+        working-directory: react-native-test-app/example
       - name: Build ARM
         run: |
           set -eo pipefail
           ../scripts/xcodebuild.sh macos/Example.xcworkspace clean
           ../scripts/xcodebuild.sh macos/Example.xcworkspace build ARCHS=arm64
-        working-directory: example
+        working-directory: react-native-test-app/example
