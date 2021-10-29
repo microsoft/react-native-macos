@@ -7,7 +7,7 @@ on:
   pull_request:
 jobs:
   react-native-test-app:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     steps:
       - name: Set up Node.js
@@ -53,7 +53,7 @@ jobs:
         run: |
           yarn --no-immutable
         working-directory: react-native-test-app
-      - name: Build
+      - name: Build Intel
         run: |
           set -eo pipefail
           yarn build:macos || yarn build:macos
