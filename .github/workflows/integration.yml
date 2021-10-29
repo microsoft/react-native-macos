@@ -29,7 +29,7 @@ jobs:
           cat package.json |
             jq '.devDependencies["react"] = "17.0.1"' |
             jq '.devDependencies["react-native"] = "^0.64"' |
-            jq '.devDependencies["react-native-macos"] = "microsoft/react-native-macos#${{ env.GITHUB_SHA }}"' |
+            jq '.devDependencies["react-native-macos"] = "microsoft/react-native-macos#${{ github.sha }}"' |
             jq 'del(.devDependencies["@react-native-community/cli"])' |
             jq 'del(.devDependencies["@react-native-community/cli-platform-android"])' |
             jq 'del(.devDependencies["@react-native-community/cli-platform-ios"])' |
@@ -41,7 +41,7 @@ jobs:
           cat package.json |
             jq '.devDependencies["react"] = "17.0.1"' |
             jq '.devDependencies["react-native"] = "^0.64"' |
-            jq '.devDependencies["react-native-macos"] = "microsoft/react-native-macos#${{ env.GITHUB_SHA }}"' |
+            jq '.devDependencies["react-native-macos"] = "microsoft/react-native-macos#${{ github.sha }}"' |
             jq 'del(.devDependencies["react-native-windows"])' > .package.json
           mv .package.json package.json
           cat package.json | jq .devDependencies
