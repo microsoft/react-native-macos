@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - master
+      - '*-stable'
   pull_request:
 jobs:
   react-native-test-app:
