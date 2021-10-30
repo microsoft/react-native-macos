@@ -17,6 +17,7 @@
  * All you have to do is push changes to remote and CI will make a new build.
  */
 const fs = require('fs');
+const path = require('path');
 const {cat, echo, exec, exit, sed} = require('shelljs');
 const yargs = require('yargs');
 
@@ -41,8 +42,6 @@ let argv = yargs
   }).argv;
 
 const nightlyBuild = argv.nightly;
-// Nightly builds don't need an update as main will already be up-to-date.
-const updatePodfileLock = !nightlyBuild;
 const ci = argv.ci;
 const rnmpublish = argv.rnmpublish;
 
@@ -55,7 +54,9 @@ if (nightlyBuild) {
 } else {
   // Check we are in release branch, e.g. 0.33-stable
   if (process.env.BUILD_SOURCEBRANCH) {
+    console.log(`BUILD_SOURCEBRANCH: ${process.env.BUILD_SOURCEBRANCH}`)
     branch = process.env.BUILD_SOURCEBRANCH.match(/refs\/heads\/(.*)/)[1];
+    console.log(`Identified branch: ${branch}`)
   } else {
     branch = exec('git symbolic-ref --short HEAD', {
       silent: true,
@@ -166,15 +167,6 @@ if (
 
 // Change react-native version in the template's package.json
 exec(`node scripts/set-rn-template-version.js ${version}`);
-
-if (updatePodfileLock) {
-  echo('Updating RNTester Podfile.lock...')
-  if (exec('source scripts/update_podfile_lock.sh && update_pods').code) {
-    echo('Failed to update RNTester Podfile.lock.');
-    echo('Fix the issue, revert and try again.');
-    exit(1);
-  }
-}
 
 // Verify that files changed, we just do a git diff and check how many times version is added across files
 let numberOfChangedLinesWithNewVersion = exec(
