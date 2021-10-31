@@ -17,22 +17,20 @@ jobs:
           node-version: 14
       - name: Checkout react-native-macos
         uses: actions/checkout@v2
+      - name: Pack react-native-macos
+        run: |
+          npm pack
       - name: Checkout react-native-test-app
         uses: actions/checkout@v2
         with:
           repository: microsoft/react-native-test-app
           path: react-native-test-app
-      - name: Cache /react-native-test-app/.yarn/cache
-        uses: actions/cache@v2
-        with:
-          path: react-native-test-app/.yarn/cache
-          key: ${{ hashFiles('react-native-test-app/yarn.lock') }}
       - name: Modify react-native-test-app dependencies
         run: |
           cat package.json |
             jq '.devDependencies["react"] = "17.0.1"' |
             jq '.devDependencies["react-native"] = "^0.64"' |
-            jq '.devDependencies["react-native-macos"] = "../"' |
+            jq '.devDependencies["react-native-macos"] = "../react-native-macos-1000.0.0.tgz"' |
             jq 'del(.devDependencies["@react-native-community/cli"])' |
             jq 'del(.devDependencies["@react-native-community/cli-platform-android"])' |
             jq 'del(.devDependencies["@react-native-community/cli-platform-ios"])' |
@@ -45,7 +43,7 @@ jobs:
           cat package.json |
             jq '.devDependencies["react"] = "17.0.1"' |
             jq '.devDependencies["react-native"] = "^0.64"' |
-            jq '.devDependencies["react-native-macos"] = "../../"' |
+            jq '.devDependencies["react-native-macos"] = "../../react-native-macos-1000.0.0.tgz"' |
             jq 'del(.devDependencies["react-native-windows"])' > .package.json
           mv .package.json package.json
           cat package.json | jq .devDependencies
