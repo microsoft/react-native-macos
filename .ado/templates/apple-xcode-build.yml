@@ -21,7 +21,7 @@ steps:
       signingOption: auto
       packageApp: false
       teamId: '$(XCodeSigningMicrosoftTeamID)'
-      args: '-destination "${{ parameters.xcode_destination }}" ONLY_ACTIVE_ARCH=YES -verbose -derivedDataPath DerivedData ${{ parameters.xcode_extraArgs }}'
+      args: '-destination "${{ parameters.xcode_destination }}" ONLY_ACTIVE_ARCH=YES -verbose -derivedDataPath DerivedData ${{ parameters.xcode_extraArgs }} UseModernBuildSystem=NO'
       exportPath: '$(agent.builddirectory)/output/${{ parameters.xcode_sdk }}/${{ parameters.xcode_configuration }}'
       useXcpretty: ${{ parameters.xcode_useXcpretty }}
       publishJUnitResults: ${{ parameters.xcode_useXcpretty }}
