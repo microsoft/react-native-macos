@@ -71,7 +71,7 @@ RCT_EXPORT_MODULE()
                                                name:RCTJavaScriptDidFailToLoadNotification
                                              object:nil];
 
-  if ([[bridge devSettings] isDevModeEnabled] && bridge.loading) { // TODO(OSS Candidate ISS#2710739)
+  if (bridge.loading) {
     [self showWithURL:bridge.bundleURL];
   }
 }
