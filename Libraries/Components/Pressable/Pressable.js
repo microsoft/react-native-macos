@@ -25,11 +25,13 @@ import type {
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
 import {normalizeRect, type RectOrSize} from '../../StyleSheet/Rect';
+import type {ColorValue} from '../../StyleSheet/StyleSheetTypes';
 import type {
   LayoutEvent,
   MouseEvent,
   PressEvent,
 } from '../../Types/CoreEventTypes';
+import type {DraggedTypesType} from '../View/DraggedType'; // TODO(macOS ISS#2323203)
 import View from '../View/View';
 
 type ViewStyleProp = $ElementType<React.ElementConfig<typeof View>, 'style'>;
