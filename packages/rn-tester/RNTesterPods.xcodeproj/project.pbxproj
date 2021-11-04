@@ -687,7 +687,6 @@
 				68CD48B71D2BCB2C007E06A9 /* Build JS Bundle */,
 				5CF0FD27207FC6EC00C13D65 /* Start Metro */,
 				8BA2D8960038381F0B753726 /* [CP] Copy Pods Resources */,
-				F8B44FD8BF97AF6CF6F4CAE7 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1343,23 +1342,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RNTester-macOSUnitTests/Pods-RNTester-macOSUnitTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		F8B44FD8BF97AF6CF6F4CAE7 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RNTester/Pods-RNTester-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RNTester/Pods-RNTester-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RNTester/Pods-RNTester-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
