@@ -215,7 +215,6 @@ function Pressable(props: Props, forwardedRef): React.Node {
       delayHoverIn,
       delayHoverOut,
       delayLongPress,
-      delayPressIn: unstable_pressDelay,
       onHoverIn,
       onHoverOut,
       onLongPress,
