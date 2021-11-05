@@ -39,6 +39,15 @@ let argv = yargs
     alias: 'nightly',
     type: 'boolean',
     default: false,
+  })
+  .option('v', {
+    alias: 'to-version',
+    type: 'string',
+  })
+  .option('l', {
+    alias: 'latest',
+    type: 'boolean',
+    default: false,
   }).argv;
 
 const nightlyBuild = argv.nightly;
@@ -206,8 +215,9 @@ if (!nightlyBuild && !rnmpublish) {
   let remote = argv.remote;
   exec(`git push ${remote} v${version}`);
 
-  // Tag latest if doing stable release
-  if (prerelease == null) {
+  // Tag latest if doing stable release.
+  // This will also tag npm release as `latest`
+  if (prerelease == null && argv.latest) {
     exec('git tag -d latest');
     exec(`git push ${remote} :latest`);
     exec('git tag latest');
