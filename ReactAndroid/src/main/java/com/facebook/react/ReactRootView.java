@@ -382,8 +382,10 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
       mJSModuleName = moduleName;
       mAppProperties = initialProperties;
       mInitialUITemplate = initialUITemplate;
-
+      
       mReactInstanceManager.createReactContextInBackground();
+      attachToReactInstanceManager();
+      
 
     } finally {
       Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
