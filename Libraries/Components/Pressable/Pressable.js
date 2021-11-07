@@ -30,6 +30,7 @@ import type {
   MouseEvent,
   PressEvent,
 } from '../../Types/CoreEventTypes';
+import type {DraggedTypesType} from '../View/DraggedType'; // TODO(macOS GH#774)
 import View from '../View/View';
 
 type ViewStyleProp = $ElementType<React.ElementConfig<typeof View>, 'style'>;
