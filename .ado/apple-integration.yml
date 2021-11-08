@@ -28,8 +28,8 @@ jobs:
     timeoutInMinutes: 60
     cancelTimeoutInMinutes: 5
     steps:
-      - template: apple-node-setup.yml
-      - template: apple-xcode-select.yml
+      - template: templates/apple-node-setup.yml
+      - template: templates/apple-xcode-select.yml
         parameters:
           slice_name: $(slice_name)
           xcode_version: $(xcode_version)
