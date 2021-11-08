@@ -1,7 +1,7 @@
 {
   "name": "react-native-macos",
   "private": true,
-  "version": "0.64.3",
+  "version": "0.64.8",
   "bin": "./cli.js",
   "description": "[Microsoft Fork] A framework for building native apps using React",
   "license": "MIT",
@@ -95,9 +95,9 @@
   },
   "dependencies": {
     "@jest/create-cache-key-function": "^26.5.0",
-    "@react-native-community/cli": "^5.0.1-alpha.0",
-    "@react-native-community/cli-platform-android": "^5.0.1-alpha.0",
-    "@react-native-community/cli-platform-ios": "^5.0.1-alpha.0",
+    "@react-native-community/cli": "^5.0.1-alpha.1",
+    "@react-native-community/cli-platform-android": "^5.0.1-alpha.1",
+    "@react-native-community/cli-platform-ios": "^5.0.1-alpha.1",
     "@react-native/assets": "1.0.0",
     "@react-native/normalize-color": "1.0.0",
     "@react-native/polyfills": "1.0.0",

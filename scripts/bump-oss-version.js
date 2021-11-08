@@ -53,7 +53,7 @@ if (nightlyBuild) {
   version = `0.0.0-${currentCommit.slice(0, 9)}`;
 } else {
   // Check we are in release branch, e.g. 0.33-stable
-  if (process.env.BUILD_SOURCEBRANCH) {
+  if (!ci && process.env.BUILD_SOURCEBRANCH) {
     console.log(`BUILD_SOURCEBRANCH: ${process.env.BUILD_SOURCEBRANCH}`)
     branch = process.env.BUILD_SOURCEBRANCH.match(/refs\/heads\/(.*)/)[1];
     console.log(`Identified branch: ${branch}`)
