@@ -11,7 +11,7 @@ orbs:
 #        DEFAULTS
 # -------------------------
 defaults: &defaults
-  working_directory: ~/react-native
+  working_directory: ~/react-native-macos
   environment:
     - GIT_COMMIT_DESC: git log --format=oneline -n 1 $CIRCLE_SHA1
     # The public github tokens are publicly visible by design
