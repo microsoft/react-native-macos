@@ -34,8 +34,8 @@ jobs:
           slice_name: $(slice_name)
           xcode_version: $(xcode_version)
       - bash: |
-          echo "##vso[task.setvariable variable=package_version]$(cat package.json | jq .version | awk '{ print substr($0, 2, length($0) - 1) }')"
-          echo 'react-native-macos@$(package_version)'
+          echo "##vso[task.setvariable variable=package_version]$(cat package.json | jq .version | awk '{ print substr($0, 2, length($0) - 2) }')"
+          echo "react-native-macos@$(package_version)"
         displayName: 'Determine react-native-macos version'
       - bash: |
           npm pack
