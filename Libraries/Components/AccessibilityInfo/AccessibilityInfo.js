@@ -119,9 +119,9 @@ const AccessibilityInfo = {
   /**
    * macOS only
    */
-     isHighContrastEnabled: function(): Promise<boolean> {
-      return Promise.resolve(false);
-    },
+  isHighContrastEnabled: function(): Promise<boolean> {
+    return Promise.resolve(false);
+  },
 
   /**
    * Query whether inverted colors are currently enabled.

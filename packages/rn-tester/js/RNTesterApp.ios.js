@@ -60,7 +60,7 @@ RNTesterList.Components.concat(RNTesterList.APIs).forEach(
       }
 
       render() {
-        return <RNTesterExampleContainer module={ExampleModule} />;
+        return <RNTesterModuleContainer module={ExampleModule} />;
       }
     }
 

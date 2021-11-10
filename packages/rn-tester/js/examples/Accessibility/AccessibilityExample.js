@@ -20,6 +20,7 @@ const {
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  View,
   Alert,
   StyleSheet,
   Slider,

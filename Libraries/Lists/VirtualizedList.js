@@ -75,7 +75,7 @@ type ViewabilityHelperCallbackTuple = {
   ...
 };
 
- // TODO(macOS add back selection support for 66 merge)
+// TODO(macOS add back selection support for 66 merge)
 // [TODO(macOS GH#774)
 // export type SelectedRowIndexPathType = {
 //   sectionIndex: number,
@@ -1346,9 +1346,10 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         // $FlowFixMe Invalid prop usage
         <ScrollView
           {...props}
-          onScrollKeyDown={keyEventHandler} // TODO(macOS GH#774) 
-          onPreferredScrollerStyleDidChange={ // TODO(macOS GH#774) 
-            preferredScrollerStyleDidChangeHandler // TODO(macOS GH#774) 
+          onScrollKeyDown={keyEventHandler} // TODO(macOS GH#774)
+          onPreferredScrollerStyleDidChange={
+            // TODO(macOS GH#774)
+            preferredScrollerStyleDidChangeHandler // TODO(macOS GH#774)
           }
         />
       );

@@ -145,7 +145,10 @@ export type ScrollToLocationParamsType = {|
   viewPosition?: number,
 |};
 
-type State = {childProps: VirtualizedListProps, /*TODO(macOS GH#774)*/ /*selectedRowIndexPath: SelectedRowIndexPathType, */ ...};
+type State = {
+  childProps: VirtualizedListProps /*TODO(macOS GH#774)*/ /*selectedRowIndexPath: SelectedRowIndexPathType, */,
+  ...
+};
 
 /**
  * Right now this just flattens everything into one list and uses VirtualizedList under the
@@ -235,7 +238,7 @@ class VirtualizedSectionList<
         ref={this._captureRef}
       />
     );
-    }
+  }
 
   // TODO(macOS add back selection support for 66 merge)
   // [TODO(macOS GH#774)
@@ -340,7 +343,6 @@ class VirtualizedSectionList<
   //     }
   //   }
   // }; // ]TODO(macOS GH#774)
-    
 
   _getItem(
     props: Props<SectionT>,
@@ -500,7 +502,7 @@ class VirtualizedSectionList<
     item: Item,
     index: number,
     ...
-  }) => {    
+  }) => {
     const info = this._subExtractor(index);
     if (!info) {
       return null;

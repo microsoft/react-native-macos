@@ -149,12 +149,12 @@ class TouchableWithoutFeedback extends React.Component<Props, State> {
       ...eventHandlersWithoutBlurAndFocus,
       accessible: this.props.accessible !== false,
       accessibilityState:
-      this.props.disabled != null
-        ? {
-            ...this.props.accessibilityState,
-            disabled: this.props.disabled,
-          }
-        : this.props.accessibilityState,
+        this.props.disabled != null
+          ? {
+              ...this.props.accessibilityState,
+              disabled: this.props.disabled,
+            }
+          : this.props.accessibilityState,
       focusable:
         this.props.focusable !== false && this.props.onPress !== undefined,
       acceptsFirstMouse:

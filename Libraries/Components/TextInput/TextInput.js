@@ -744,8 +744,8 @@ export type Props = $ReadOnly<{|
    */
   style?: ?TextStyleProp,
 
-   // [ TODO(macOS GH#774)
-   /*
+  // [ TODO(macOS GH#774)
+  /*
    * Specifies the tooltip.
    */
   tooltip?: ?string, // TODO(macOS GH#774) ]
@@ -1139,7 +1139,10 @@ function InternalTextInput(props: Props): React.Node {
       onPressIn: props.onPressIn,
       onPressOut: props.onPressOut,
       cancelable:
-        Platform.OS === 'ios' || Platform.OS === 'macos' /* TODO(macOS GH#774) */ ? !props.rejectResponderTermination : null,
+        Platform.OS === 'ios' ||
+        Platform.OS === 'macos' /* TODO(macOS GH#774) */
+          ? !props.rejectResponderTermination
+          : null,
     }),
     [
       props.editable,

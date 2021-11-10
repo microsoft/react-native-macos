@@ -198,10 +198,10 @@ type ButtonProps = $ReadOnly<{|
   /**
    * Accessibility props.
    */
-   accessible?: ?boolean,
-   accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
-   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
-   accessibilityState?: ?AccessibilityState,
+  accessible?: ?boolean,
+  accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
+  onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
+  accessibilityState?: ?AccessibilityState,
 |}>;
 
 /**
@@ -389,7 +389,6 @@ class Button extends React.Component<ButtonProps> {
         accessibilityHint={accessibilityHint} // TODO(OSS Candidate ISS#2710739)
         accessibilityRole={accessibilityRole || 'button'} // TODO(OSS Candidate ISS#2710739)
         accessibilityState={accessibilityState}
-        onAccessibilityAction={onAccessibilityAction}
         hasTVPreferredFocus={hasTVPreferredFocus}
         nextFocusDown={nextFocusDown}
         nextFocusForward={nextFocusForward}
