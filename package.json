@@ -86,6 +86,10 @@
     "test-ios": "./scripts/objc-test.sh test",
     "postinstall": "node scripts/postInstall.js"
   },
+  "workspaces": [
+    "packages/!(eslint-config-react-native-community)",
+    "repo-config"
+  ],
   "peerDependencies": {
     "react": "17.0.2"
   },
