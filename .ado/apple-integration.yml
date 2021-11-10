@@ -35,6 +35,7 @@ jobs:
           xcode_version: $(xcode_version)
       - bash: |
           echo "##vso[task.setvariable variable=package_version]$(cat package.json | jq .version | awk '{ print substr($0, 2, length($0) - 2) }')"
+          echo "##vso[task.setvariable variable=react_version]$(cat package.json | jq .peerDependencies.react)"
         displayName: 'Determine react-native-macos version'
       - bash: |
           npm pack
@@ -45,12 +46,12 @@ jobs:
       - bash: |
           set -eo pipefail
           cat package.json |
-            jq '.devDependencies["react"] = "17.0.1"' |
-            jq '.devDependencies["react-native"] = "^0.64"' |
+            jq '.devDependencies["react"] = $(react_version)' |
             jq '.devDependencies["react-native-macos"] = "../react-native-macos-$(package_version).tgz"' |
             jq 'del(.devDependencies["@react-native-community/cli"])' |
             jq 'del(.devDependencies["@react-native-community/cli-platform-android"])' |
             jq 'del(.devDependencies["@react-native-community/cli-platform-ios"])' |
+            jq 'del(.devDependencies["react-native"])' |
             jq 'del(.devDependencies["react-native-windows"])' > .package.json
           mv .package.json package.json
           cat package.json | jq .devDependencies
@@ -59,9 +60,9 @@ jobs:
       - bash: |
           set -eo pipefail
           cat package.json |
-            jq '.devDependencies["react"] = "17.0.1"' |
-            jq '.devDependencies["react-native"] = "^0.64"' |
+            jq '.devDependencies["react"] = $(react_version)' |
             jq '.devDependencies["react-native-macos"] = "../../react-native-macos-$(package_version).tgz"' |
+            jq 'del(.devDependencies["react-native"])' |
             jq 'del(.devDependencies["react-native-windows"])' > .package.json
           mv .package.json package.json
           cat package.json | jq .devDependencies
