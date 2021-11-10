@@ -198,10 +198,10 @@ type ButtonProps = $ReadOnly<{|
   /**
    * Accessibility props.
    */
-   accessible?: ?boolean,
-   accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
-   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
-   accessibilityState?: ?AccessibilityState,
+  accessible?: ?boolean,
+  accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
+  onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
+  accessibilityState?: ?AccessibilityState,
 |}>;
 
 /**
