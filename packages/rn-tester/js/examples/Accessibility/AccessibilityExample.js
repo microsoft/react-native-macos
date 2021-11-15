@@ -961,9 +961,16 @@ class EnabledExamples extends React.Component<{}> {
   }
 }
 // [TODO(OSS Candidate ISS#2710739)
-class DisplayOptionsStatusExample extends React.Component<{}> {
-  state = {};
-
+type DisplayOptionsStatusExampleState = {
+  highContrastEnabled: boolean,
+  invertColorsEnabled: boolean,
+  reduceMotionEnabled: boolean,
+  reduceTransparencyEnabled: boolean,
+};
+class DisplayOptionsStatusExample extends React.Component<
+  {},
+  DisplayOptionsStatusExampleState,
+> {
   componentDidMount() {
     AccessibilityInfo.addEventListener(
       'highContrastChanged',
@@ -1049,7 +1056,7 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
     });
   };
 
-  render() {
+  render(): React.Node {
     return (
       <View>
         <View>
@@ -1141,26 +1148,6 @@ class EnabledExample extends React.Component<
           title={this.state.isEnabled ? 'disable' : 'enable'}
           onPress={this._handleToggled}
         />
-      </View>
-    );
-  }
-}
-
-class SetAccessibilityFocus extends React.Component<{}> {
-  _handleOnPress = () => {
-    if (findNodeHandle(this.focusRef.current)) {
-      const reactTag = findNodeHandle(this.focusRef.current);
-      AccessibilityInfo.setAccessibilityFocus(reactTag);
-    }
-  };
-  render() {
-    this.focusRef = React.createRef();
-    return (
-      <View>
-        <Button onPress={this._handleOnPress} title="Set Accessibility Focus" />
-        <Text ref={this.focusRef} accessible={true}>
-          Move focus here on button press.
-        </Text>
       </View>
     );
   }

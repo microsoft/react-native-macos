@@ -11,7 +11,7 @@
 const Platform = require('../Utilities/Platform'); // TODO(macOS GH#774)
 import invariant from 'invariant';
 import type {ViewToken} from './ViewabilityHelper';
-// import type {SelectedRowIndexPathType} from './VirtualizedList'; // TODO(macOS GH#774)
+import type {SelectedRowIndexPathType} from './VirtualizedList'; // TODO(macOS GH#774)
 import type {ScrollEvent} from '../Types/CoreEventTypes'; // TODO(macOS GH#774)
 import {keyExtractor as defaultKeyExtractor} from './VirtualizeUtils';
 import {View, VirtualizedList} from 'react-native';
@@ -65,7 +65,7 @@ type OptionalProps<SectionT: SectionBase<any>> = {|
   renderItem?: (info: {
     item: Item,
     index: number,
-    // isSelected?: boolean, // TODO(macOS GH#774)
+    isSelected?: boolean, // TODO(macOS GH#774)
     section: SectionT,
     separators: {
       highlight: () => void,
@@ -146,7 +146,8 @@ export type ScrollToLocationParamsType = {|
 |};
 
 type State = {
-  childProps: VirtualizedListProps /*TODO(macOS GH#774)*/ /*selectedRowIndexPath: SelectedRowIndexPathType, */,
+  childProps: VirtualizedListProps,
+  selectedRowIndexPath: SelectedRowIndexPathType, // TODO(macOS GH#774)
   ...
 };
 
@@ -233,116 +234,116 @@ class VirtualizedSectionList<
             ? this._onViewableItemsChanged
             : undefined
         }
-        // selectedRowIndexPath={{sectionIndex: 0, rowIndex: -1}} // TODO(macOS GH#774) // TODO(macOS add back selection support for 66 merge)
-        // {...this.state.selectedRowIndexPath} // TODO(macOS GH#774) // TODO(macOS add back selection support for 66 merge)
+        {...this.state.selectedRowIndexPath} // TODO(macOS GH#774)
         ref={this._captureRef}
       />
     );
   }
 
-  // TODO(macOS add back selection support for 66 merge)
   // [TODO(macOS GH#774)
-  // _selectRowAboveIndexPath = rowIndexPath => {
-  //   let sectionIndex = rowIndexPath.sectionIndex;
-  //   if (sectionIndex >= this.props.sections.length) {
-  //     return rowIndexPath;
-  //   }
+  _selectRowAboveIndexPath = rowIndexPath => {
+    let sectionIndex = rowIndexPath.sectionIndex;
+    if (sectionIndex >= this.props.sections.length) {
+      return rowIndexPath;
+    }
 
-  //   let row = rowIndexPath.rowIndex;
-  //   let rowAbove = row - 1;
+    let row = rowIndexPath.rowIndex;
+    let rowAbove = row - 1;
 
-  //   if (rowAbove < 0) {
-  //     if (sectionIndex > 0) {
-  //       sectionIndex = sectionIndex - 1;
-  //       rowAbove = Math.max(
-  //         0,
-  //         this.props.sections[sectionIndex].data.length - 1,
-  //       );
-  //     } else {
-  //       rowAbove = row;
-  //     }
-  //   }
-  //   const nextIndexPath = {sectionIndex: sectionIndex, rowIndex: rowAbove};
-  //   this.setState(state => {
-  //     return {selectedRowIndexPath: nextIndexPath};
-  //   });
-  //   return nextIndexPath;
-  // };
+    if (rowAbove < 0) {
+      if (sectionIndex > 0) {
+        sectionIndex = sectionIndex - 1;
+        rowAbove = Math.max(
+          0,
+          this.props.sections[sectionIndex].data.length - 1,
+        );
+      } else {
+        rowAbove = row;
+      }
+    }
+    const nextIndexPath = {sectionIndex: sectionIndex, rowIndex: rowAbove};
+    this.setState(state => {
+      return {selectedRowIndexPath: nextIndexPath};
+    });
+    return nextIndexPath;
+  };
 
-  // _selectRowBelowIndexPath = rowIndexPath => {
-  //   let sectionIndex = rowIndexPath.sectionIndex;
-  //   if (sectionIndex >= this.props.sections.length) {
-  //     return rowIndexPath;
-  //   }
+  _selectRowBelowIndexPath = rowIndexPath => {
+    let sectionIndex = rowIndexPath.sectionIndex;
+    if (sectionIndex >= this.props.sections.length) {
+      return rowIndexPath;
+    }
 
-  //   const count = this.props.sections[sectionIndex].data.length;
-  //   let row = rowIndexPath.rowIndex;
-  //   let rowBelow = row + 1;
+    const count = this.props.sections[sectionIndex].data.length;
+    let row = rowIndexPath.rowIndex;
+    let rowBelow = row + 1;
 
-  //   if (rowBelow > count - 1) {
-  //     if (sectionIndex < this.props.sections.length - 1) {
-  //       sectionIndex = sectionIndex + 1;
-  //       rowBelow = 0;
-  //     } else {
-  //       rowBelow = row;
-  //     }
-  //   }
-  //   const nextIndexPath = {sectionIndex: sectionIndex, rowIndex: rowBelow};
-  //   this.setState(state => {
-  //     return {selectedRowIndexPath: nextIndexPath};
-  //   });
-  //   return nextIndexPath;
-  // };
+    if (rowBelow > count - 1) {
+      if (sectionIndex < this.props.sections.length - 1) {
+        sectionIndex = sectionIndex + 1;
+        rowBelow = 0;
+      } else {
+        rowBelow = row;
+      }
+    }
+    const nextIndexPath = {sectionIndex: sectionIndex, rowIndex: rowBelow};
+    this.setState(state => {
+      return {selectedRowIndexPath: nextIndexPath};
+    });
+    return nextIndexPath;
+  };
 
-  // _ensureItemAtIndexPathIsVisible = rowIndexPath => {
-  //   let index = rowIndexPath.rowIndex + 1;
-  //   for (let ii = 0; ii < rowIndexPath.sectionIndex; ii++) {
-  //     index += this.props.sections[ii].data.length + 2;
-  //   }
-  //   this._listRef.ensureItemAtIndexIsVisible(index);
-  // };
+  _ensureItemAtIndexPathIsVisible = rowIndexPath => {
+    if (this._listRef) {
+      let index = rowIndexPath.rowIndex + 1;
+      for (let ii = 0; ii < rowIndexPath.sectionIndex; ii++) {
+        index += this.props.sections[ii].data.length + 2;
+      }
+      this._listRef.ensureItemAtIndexIsVisible(index);
+    }
+  };
 
-  // _handleKeyDown = (e: ScrollEvent) => {
-  //   if (Platform.OS === 'macos') {
-  //     const event = e.nativeEvent;
-  //     const key = event.key;
-  //     let prevIndexPath = </typeof>this.state.selectedRowIndexPath;
-  //     let nextIndexPath = null;
-  //     const sectionIndex = </SectionT>this.state.selectedRowIndexPath.sectionIndex;
-  //     const rowIndex = </any>this.state.selectedRowIndexPath.rowIndex;
+  _handleKeyDown = (e: ScrollEvent) => {
+    if (Platform.OS === 'macos') {
+      const event = e.nativeEvent;
+      const key = event.key;
+      let prevIndexPath = this.state.selectedRowIndexPath;
+      let nextIndexPath = null;
+      const sectionIndex = this.state.selectedRowIndexPath.sectionIndex;
+      const rowIndex = this.state.selectedRowIndexPath.rowIndex;
 
-  //     if (key === 'DOWN_ARROW') {
-  //       nextIndexPath = this._selectRowBelowIndexPath(prevIndexPath);
-  //       this._ensureItemAtIndexPathIsVisible(nextIndexPath);
+      if (key === 'DOWN_ARROW') {
+        nextIndexPath = this._selectRowBelowIndexPath(prevIndexPath);
+        this._ensureItemAtIndexPathIsVisible(nextIndexPath);
 
-  //       if (this.props.onSelectionChanged) {
-  //         const item = this.props.sections[sectionIndex].data[rowIndex];
-  //         this.props.onSelectionChanged({
-  //           previousSelection: prevIndexPath,
-  //           newSelection: nextIndexPath,
-  //           item: item,
-  //         });
-  //       }
-  //     } else if (key === 'UP_ARROW') {
-  //       nextIndexPath = this._selectRowAboveIndexPath(prevIndexPath);
-  //       this._ensureItemAtIndexPathIsVisible(nextIndexPath);
+        if (this.props.onSelectionChanged) {
+          const item = this.props.sections[sectionIndex].data[rowIndex];
+          this.props.onSelectionChanged({
+            previousSelection: prevIndexPath,
+            newSelection: nextIndexPath,
+            item: item,
+          });
+        }
+      } else if (key === 'UP_ARROW') {
+        nextIndexPath = this._selectRowAboveIndexPath(prevIndexPath);
+        this._ensureItemAtIndexPathIsVisible(nextIndexPath);
 
-  //       if (this.props.onSelectionChanged) {
-  //         const item = this.props.sections[sectionIndex].data[rowIndex];
-  //         this.props.onSelectionChanged({
-  //           previousSelection: prevIndexPath,
-  //           newSelection: nextIndexPath,
-  //           item: item,
-  //         });
-  //       }
-  //     } else if (key === 'ENTER') {
-  //       if (this.props.onSelectionEntered) {
-  //         const item = this.props.sections[sectionIndex].data[rowIndex];
-  //         this.props.onSelectionEntered(item);
-  //       }
-  //     }
-  //   }
-  // }; // ]TODO(macOS GH#774)
+        if (this.props.onSelectionChanged) {
+          const item = this.props.sections[sectionIndex].data[rowIndex];
+          this.props.onSelectionChanged({
+            previousSelection: prevIndexPath,
+            newSelection: nextIndexPath,
+            item: item,
+          });
+        }
+      } else if (key === 'ENTER') {
+        if (this.props.onSelectionEntered) {
+          const item = this.props.sections[sectionIndex].data[rowIndex];
+          this.props.onSelectionEntered(item);
+        }
+      }
+    }
+  }; // ]TODO(macOS GH#774)
 
   _getItem(
     props: Props<SectionT>,
@@ -476,23 +477,22 @@ class VirtualizedSectionList<
     }
   };
 
-  // TODO(macOS add back selection support for 66 merge)
   // [TODO(macOS GH#774)
-  // _isItemSelected = (item: Item): boolean => {
-  //   let isSelected = false;
-  //   if (this.state.selectedRowIndexPath) {
-  //     const selection = this.state.selectedRowIndexPath;
-  //     const sections = this.props.sections;
-  //     if (sections && selection.sectionIndex < sections.length) {
-  //       const section = sections[selection.sectionIndex];
-  //       if (selection.rowIndex < section.data.length) {
-  //         const selectedItem = section.data[selection.rowIndex];
-  //         isSelected = item === selectedItem;
-  //       }
-  //     }
-  //   }
-  // return isSelected;
-  // };
+  _isItemSelected = (item: Item): boolean => {
+    let isSelected = false;
+    if (this.state.selectedRowIndexPath) {
+      const selection = this.state.selectedRowIndexPath;
+      const sections = this.props.sections;
+      if (sections && selection.sectionIndex < sections.length) {
+        const section = sections[selection.sectionIndex];
+        if (selection.rowIndex < section.data.length) {
+          const selectedItem = section.data[selection.rowIndex];
+          isSelected = item === selectedItem;
+        }
+      }
+    }
+    return isSelected;
+  };
   // ]TODO(macOS GH#774)
 
   _renderItem = (listItemCount: number) => ({
@@ -533,7 +533,7 @@ class VirtualizedSectionList<
           }
           cellKey={info.key}
           index={infoIndex}
-          // isSelected={this._isItemSelected(item)} // TODO(macOS GH#774) // TODO(macOS add back selection support for 66 merge)
+          isSelected={this._isItemSelected(item)} // TODO(macOS GH#774)
           item={item}
           leadingItem={info.leadingItem}
           leadingSection={info.leadingSection}
@@ -631,7 +631,7 @@ type ItemWithSeparatorProps = $ReadOnly<{|
   cellKey: string,
   index: number,
   item: Item,
-  // isSelected: boolean, // TODO(macOS GH#774) // TODO(macOS add back selection support for 66 merge)
+  isSelected: boolean, // TODO(macOS GH#774)
   setSelfHighlightCallback: (
     cellKey: string,
     updateFn: ?(boolean) => void,
@@ -659,6 +659,7 @@ function ItemWithSeparator(props: ItemWithSeparatorProps): React.Node {
     setSelfUpdatePropsCallback,
     updatePropsFor,
     item,
+    isSelected, // TODO(macOS GH#774)
     index,
     section,
     inverted,
@@ -735,7 +736,7 @@ function ItemWithSeparator(props: ItemWithSeparatorProps): React.Node {
   const element = props.renderItem({
     item,
     index,
-    // isSelected, // TODO(macOS GH#774) // TODO(macOS add back selection support for 66 merge)
+    isSelected, // TODO(macOS GH#774)
     section,
     separators,
   });

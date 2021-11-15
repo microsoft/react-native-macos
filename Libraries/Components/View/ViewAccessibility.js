@@ -47,6 +47,7 @@ export type AccessibilityRole =
   | 'tabbar'
   | 'tablist'
   | 'timer'
+  | 'list'
   | 'toolbar'
   | 'popupbutton'
   | 'menubutton'; // TODO(macOS GH#774)

@@ -30,6 +30,7 @@ type AccessibilityEventDefinitionsIOS = {
 
 type AccessibilityEventDefinitions = {
   ...AccessibilityEventDefinitionsIOS,
+  highContrastChanged: [boolean], // TODO(macOS GH#774) - highContrastChanged is used on macOS
   change: [boolean], // screenReaderChanged
   reduceMotionChanged: [boolean],
   screenReaderChanged: [boolean],

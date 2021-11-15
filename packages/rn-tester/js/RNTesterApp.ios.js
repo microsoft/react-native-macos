@@ -75,8 +75,8 @@ RNTesterList.Components.concat(RNTesterList.APIs).forEach(
 // [TODO(OSS Candidate ISS#2710739)
 class EnumerateExamplePages extends React.Component<{}> {
   render() {
-    RNTesterList.ComponentExamples.concat(RNTesterList.APIExamples).forEach(
-      (Example: RNTesterExample) => {
+    RNTesterList.Components.concat(RNTesterList.APIs).forEach(
+      (Example: RNTesterModuleInfo) => {
         let skipTest = false;
         if ('skipTest' in Example) {
           const platforms = Example.skipTest;
