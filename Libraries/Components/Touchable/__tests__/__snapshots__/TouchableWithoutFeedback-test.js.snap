@@ -2,9 +2,13 @@
 
 exports[`TouchableWithoutFeedback renders correctly 1`] = `
 <Text
+  acceptsFirstMouse={true}
   accessible={true}
-  focusable={false}
+  enableFocusRing={true}
+  focusable={true}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -18,14 +22,18 @@ exports[`TouchableWithoutFeedback renders correctly 1`] = `
 
 exports[`TouchableWithoutFeedback with disabled state should be disabled when disabled is true 1`] = `
 <View
+  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "disabled": true,
     }
   }
   accessible={true}
+  enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -37,14 +45,18 @@ exports[`TouchableWithoutFeedback with disabled state should be disabled when di
 
 exports[`TouchableWithoutFeedback with disabled state should be disabled when disabled is true and accessibilityState is empty 1`] = `
 <View
+  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "disabled": true,
     }
   }
   accessible={true}
+  enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -56,14 +68,18 @@ exports[`TouchableWithoutFeedback with disabled state should be disabled when di
 
 exports[`TouchableWithoutFeedback with disabled state should disable button when accessibilityState is disabled 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityState={
     Object {
       "disabled": true,
     }
   }
   accessible={true}
-  focusable={false}
+  enableFocusRing={true}
+  focusable={true}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -75,6 +91,7 @@ exports[`TouchableWithoutFeedback with disabled state should disable button when
 
 exports[`TouchableWithoutFeedback with disabled state should keep accessibilityState when disabled is true 1`] = `
 <View
+  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "checked": true,
@@ -82,8 +99,11 @@ exports[`TouchableWithoutFeedback with disabled state should keep accessibilityS
     }
   }
   accessible={true}
+  enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -95,14 +115,18 @@ exports[`TouchableWithoutFeedback with disabled state should keep accessibilityS
 
 exports[`TouchableWithoutFeedback with disabled state should overwrite accessibilityState with value of disabled prop 1`] = `
 <View
+  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "disabled": true,
     }
   }
   accessible={true}
+  enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}

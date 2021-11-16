@@ -70,7 +70,6 @@ exports[`VirtualizedSectionList handles nested lists 1`] = `
         onScroll={[Function]}
         onScrollBeginDrag={[Function]}
         onScrollEndDrag={[Function]}
-        onScrollKeyDown={null}
         renderItem={[Function]}
         rowIndex={-1}
         scrollEventThrottle={50}
@@ -644,8 +643,11 @@ exports[`VirtualizedSectionList handles separators correctly 4`] = `
   onScroll={[Function]}
   onScrollBeginDrag={[Function]}
   onScrollEndDrag={[Function]}
+  onScrollKeyDown={null}
   renderItem={[Function]}
+  rowIndex={-1}
   scrollEventThrottle={50}
+  sectionIndex={0}
   stickyHeaderIndices={Array []}
 >
   <View>

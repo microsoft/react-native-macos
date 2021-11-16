@@ -1,26 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`TouchableWithoutFeedback renders correctly 1`] = `
-<Text
-  accessible={true}
-  focusable={false}
-  onClick={[Function]}
-  onResponderGrant={[Function]}
-  onResponderMove={[Function]}
-  onResponderRelease={[Function]}
-  onResponderTerminate={[Function]}
-  onResponderTerminationRequest={[Function]}
-  onStartShouldSetResponder={[Function]}
->
-  Touchable
-</Text>
-`;
-
 exports[`<TouchableNativeFeedback /> should render as expected 1`] = `
 <View
   accessible={true}
   focusable={false}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -30,16 +16,18 @@ exports[`<TouchableNativeFeedback /> should render as expected 1`] = `
 />
 `;
 
-exports[`<TouchableNativeFeedback disabled={true}> should be disabled when disabled is true 1`] = `
+exports[`<TouchableNativeFeedback disabled={false} accessibilityState={{disabled:true}}> should overwrite accessibilityState with value of disabled prop 1`] = `
 <View
   accessibilityState={
     Object {
-      "disabled": true,
+      "disabled": false,
     }
   }
   accessible={true}
   focusable={false}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -59,6 +47,8 @@ exports[`<TouchableNativeFeedback disabled={true} accessibilityState={{}}> shoul
   accessible={true}
   focusable={false}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -79,6 +69,8 @@ exports[`<TouchableNativeFeedback disabled={true} accessibilityState={{checked: 
   accessible={true}
   focusable={false}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -98,6 +90,8 @@ exports[`<TouchableNativeFeedback disabled={true} accessibilityState={{disabled:
   accessible={true}
   focusable={false}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -107,16 +101,18 @@ exports[`<TouchableNativeFeedback disabled={true} accessibilityState={{disabled:
 />
 `;
 
-exports[`<TouchableNativeFeedback disabled={false} accessibilityState={{disabled:true}}> should overwrite accessibilityState with value of disabled prop 1`] = `
+exports[`<TouchableNativeFeedback disabled={true}> should be disabled when disabled is true 1`] = `
 <View
   accessibilityState={
     Object {
-      "disabled": false,
+      "disabled": true,
     }
   }
   accessible={true}
   focusable={false}
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -124,4 +120,22 @@ exports[`<TouchableNativeFeedback disabled={false} accessibilityState={{disabled
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
 />
+`;
+
+exports[`TouchableWithoutFeedback renders correctly 1`] = `
+<Text
+  accessible={true}
+  focusable={false}
+  onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+>
+  Touchable
+</Text>
 `;

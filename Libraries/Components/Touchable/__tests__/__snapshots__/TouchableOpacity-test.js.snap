@@ -2,11 +2,15 @@
 
 exports[`TouchableOpacity renders correctly 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessible={true}
   collapsable={false}
-  focusable={false}
+  enableFocusRing={true}
+  focusable={true}
   nativeID="animatedComponent"
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -27,6 +31,7 @@ exports[`TouchableOpacity renders correctly 1`] = `
 
 exports[`TouchableOpacity renders in disabled state when a disabled prop is passed 1`] = `
 <View
+  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "disabled": true,
@@ -34,9 +39,12 @@ exports[`TouchableOpacity renders in disabled state when a disabled prop is pass
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={false}
   focusable={false}
   nativeID="animatedComponent"
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -57,6 +65,7 @@ exports[`TouchableOpacity renders in disabled state when a disabled prop is pass
 
 exports[`TouchableOpacity renders in disabled state when a key disabled in accessibilityState is passed 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityState={
     Object {
       "disabled": true,
@@ -64,9 +73,12 @@ exports[`TouchableOpacity renders in disabled state when a key disabled in acces
   }
   accessible={true}
   collapsable={false}
-  focusable={false}
+  enableFocusRing={true}
+  focusable={true}
   nativeID="animatedComponent"
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
