@@ -10,10 +10,14 @@
 
 import * as React from 'react';
 
+// TODO(macOS GH#774) - useful since RNTesterModuleExample.platform can either be
+// one of these strings or an array of said strings
+type RNTesterPlatform = 'ios' | 'android' | 'macos';
+
 export type RNTesterModuleExample = $ReadOnly<{|
   name?: string,
   title: string,
-  platform?: 'ios' | 'android' | 'macos', // TODO(OSS Candidate ISS#2710739)
+  platform?: RNTesterPlatform | Array<RNTesterPlatform>, // TODO(OSS Candidate ISS#2710739)
   description?: string,
   expect?: string,
   render: () => React.Node,
