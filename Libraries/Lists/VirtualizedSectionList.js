@@ -145,9 +145,9 @@ export type ScrollToLocationParamsType = {|
   viewPosition?: number,
 |};
 
+// TODO(macOS GH#774)
 type State = {
-  childProps: VirtualizedListProps,
-  selectedRowIndexPath: SelectedRowIndexPathType, // TODO(macOS GH#774)
+  selectedRowIndexPath: SelectedRowIndexPathType,
   ...
 };
 
@@ -185,6 +185,14 @@ class VirtualizedSectionList<
 
   getListRef(): ?React.ElementRef<typeof VirtualizedList> {
     return this._listRef;
+  }
+
+  // TODO(macOS GH#774)
+  constructor(props: Props<SectionT>, context: Object) {
+    super(props, context);
+    this.state = {
+      selectedRowIndexPath: {sectionIndex: 0, rowIndex: -1},
+    };
   }
 
   render(): React.Node {
