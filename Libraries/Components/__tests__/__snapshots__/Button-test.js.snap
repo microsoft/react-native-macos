@@ -2,6 +2,7 @@
 
 exports[`<Button /> should be disabled and it should set accessibilityState to disabled when disabled={true} 1`] = `
 <View
+  acceptsFirstMouse={false}
   accessibilityRole="button"
   accessibilityState={
     Object {
@@ -10,9 +11,12 @@ exports[`<Button /> should be disabled and it should set accessibilityState to d
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={false}
   focusable={false}
   nativeID="animatedComponent"
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -57,6 +61,7 @@ exports[`<Button /> should be disabled and it should set accessibilityState to d
 
 exports[`<Button /> should be disabled when disabled is empty and accessibilityState={{disabled: true}} 1`] = `
 <View
+  acceptsFirstMouse={false}
   accessibilityRole="button"
   accessibilityState={
     Object {
@@ -65,9 +70,12 @@ exports[`<Button /> should be disabled when disabled is empty and accessibilityS
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={false}
   focusable={false}
   nativeID="animatedComponent"
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -112,6 +120,7 @@ exports[`<Button /> should be disabled when disabled is empty and accessibilityS
 
 exports[`<Button /> should be disabled when disabled={true} and accessibilityState={{disabled: true}} 1`] = `
 <View
+  acceptsFirstMouse={false}
   accessibilityRole="button"
   accessibilityState={
     Object {
@@ -120,9 +129,12 @@ exports[`<Button /> should be disabled when disabled={true} and accessibilitySta
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={false}
   focusable={false}
   nativeID="animatedComponent"
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -167,6 +179,7 @@ exports[`<Button /> should be disabled when disabled={true} and accessibilitySta
 
 exports[`<Button /> should not be disabled when disabled={false} and accessibilityState={{disabled: false}} 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityRole="button"
   accessibilityState={
     Object {
@@ -175,9 +188,12 @@ exports[`<Button /> should not be disabled when disabled={false} and accessibili
   }
   accessible={true}
   collapsable={false}
-  focusable={false}
+  enableFocusRing={true}
+  focusable={true}
   nativeID="animatedComponent"
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -218,6 +234,7 @@ exports[`<Button /> should not be disabled when disabled={false} and accessibili
 
 exports[`<Button /> should not be disabled when disabled={false} and accessibilityState={{disabled: true}} 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityRole="button"
   accessibilityState={
     Object {
@@ -226,9 +243,12 @@ exports[`<Button /> should not be disabled when disabled={false} and accessibili
   }
   accessible={true}
   collapsable={false}
-  focusable={false}
+  enableFocusRing={true}
+  focusable={true}
   nativeID="animatedComponent"
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -269,6 +289,7 @@ exports[`<Button /> should not be disabled when disabled={false} and accessibili
 
 exports[`<Button /> should overwrite accessibilityState with value of disabled prop 1`] = `
 <View
+  acceptsFirstMouse={false}
   accessibilityRole="button"
   accessibilityState={
     Object {
@@ -277,9 +298,12 @@ exports[`<Button /> should overwrite accessibilityState with value of disabled p
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={false}
   focusable={false}
   nativeID="animatedComponent"
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -324,12 +348,16 @@ exports[`<Button /> should overwrite accessibilityState with value of disabled p
 
 exports[`<Button /> should render as expected 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityRole="button"
   accessible={true}
   collapsable={false}
-  focusable={false}
+  enableFocusRing={true}
+  focusable={true}
   nativeID="animatedComponent"
   onClick={[Function]}
+  onKeyDown={[Function]}
+  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
