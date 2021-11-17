@@ -962,15 +962,22 @@ class EnabledExamples extends React.Component<{}> {
 }
 // [TODO(OSS Candidate ISS#2710739)
 type DisplayOptionsStatusExampleState = {
-  highContrastEnabled: boolean,
-  invertColorsEnabled: boolean,
-  reduceMotionEnabled: boolean,
-  reduceTransparencyEnabled: boolean,
+  highContrastEnabled?: boolean,
+  invertColorsEnabled?: boolean,
+  reduceMotionEnabled?: boolean,
+  reduceTransparencyEnabled?: boolean,
 };
 class DisplayOptionsStatusExample extends React.Component<
   {},
   DisplayOptionsStatusExampleState,
 > {
+  state: DisplayOptionsStatusExampleState = {
+    highContrastEnabled: undefined,
+    invertColorsEnabled: undefined,
+    reduceMotionEnabled: undefined,
+    reduceTransparencyEnabled: undefined,
+  };
+
   componentDidMount() {
     AccessibilityInfo.addEventListener(
       'highContrastChanged',
@@ -1056,31 +1063,40 @@ class DisplayOptionsStatusExample extends React.Component<
     });
   };
 
+  // TODO(macOS GH#774) - slight refactoring to allow state to handle undefined values
+  _statusString = isEnabled => {
+    if (isEnabled !== undefined) {
+      return isEnabled ? 'enabled' : 'disabled';
+    } else {
+      return 'unknown';
+    }
+  };
+
   render(): React.Node {
     return (
       <View>
         <View>
           <Text>
             High contrast is{' '}
-            {this.state.highContrastEnabled ? 'enabled' : 'disabled'}.
+            {this._statusString(this.state.highContrastEnabled)}.
           </Text>
         </View>
         <View>
           <Text>
             Invert colors is{' '}
-            {this.state.invertColorsEnabled ? 'enabled' : 'disabled'}.
+            {this._statusString(this.state.invertColorsEnabled)}.
           </Text>
         </View>
         <View>
           <Text>
             Reduce motion is{' '}
-            {this.state.reduceMotionEnabled ? 'enabled' : 'disabled'}.
+            {this._statusString(this.state.reduceMotionEnabled)}.
           </Text>
         </View>
         <View>
           <Text>
             Reduce transparency is{' '}
-            {this.state.reduceTransparencyEnabled ? 'enabled' : 'disabled'}.
+            {this._statusString(this.state.reduceTransparencyEnabled)}.
           </Text>
         </View>
       </View>
