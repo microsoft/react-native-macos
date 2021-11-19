@@ -56,7 +56,12 @@ const spring = function(
   return {
     ...emptyAnimation,
     start: (callback?: ?EndCallback): void => {
-      anyValue.setValue(config.toValue);
+      // TODO(macOS GH#774) - setValue can't handle AnimatedNodes
+      if (config.toValue instanceof AnimatedNode) {
+        anyValue.setValue(config.toValue.__getValue());
+      } else {
+        anyValue.setValue(config.toValue);
+      }
       callback && callback({finished: true});
     },
   };
