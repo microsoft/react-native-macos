@@ -128,7 +128,7 @@
     "react": "17.0.1"
   },
   "resolutions": {
-    "**/**/fsevents": "^1.2.9"
+    "**/**/fsevents": "^2.0.0"
   },
   "detox": {
     "test-runner": "jest",
