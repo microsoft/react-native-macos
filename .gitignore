@@ -109,7 +109,7 @@ package-lock.json
 !/packages/rn-tester/Pods/__offline_mirrors__
 
 # react-native-codegen
-/Libraries/FBReactNativeSpec/FBReactNativeSpec
+# /Libraries/FBReactNativeSpec/FBReactNativeSpec  # TODO: macOS to fix m1 build failures
 /packages/react-native-codegen/lib
 /ReactCommon/fabric/components/rncore/
 /schema-rncore.json
