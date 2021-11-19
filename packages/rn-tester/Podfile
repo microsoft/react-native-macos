@@ -38,7 +38,7 @@ end
 
 target 'RNTester' do
   pods()
-  use_flipper!
+  use_flipper!({ 'Flipper-Folly' => '2.5.3', 'Flipper' => '0.87.0', 'Flipper-RSocket' => '1.3.1' }) # TODO(macOS GH#774): pull in versions of flipper compatible with M1 machines
 end
 
 target 'RNTesterUnitTests' do
@@ -103,4 +103,9 @@ end
 
 post_install do |installer|
   flipper_post_install(installer)
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings["ONLY_ACTIVE_ARCH"] = "NO"
+    end
+  end
 end

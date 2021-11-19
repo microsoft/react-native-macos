@@ -127,6 +127,9 @@
     "flow-bin": "^0.137.0",
     "react": "17.0.1"
   },
+  "resolutions": {
+    "**/**/fsevents": "^1.2.9"
+  },
   "detox": {
     "test-runner": "jest",
     "runner-config": "packages/rn-tester/e2e/config.json",
