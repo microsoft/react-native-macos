@@ -115,7 +115,7 @@ if (dryRunBuild) {
 // For stable, pre-release releases, we manually call bump-oss-version on release branch
 if (nightlyBuild || dryRunBuild) {
   if (
-    exec(`node scripts/bump-oss-version.js --nightly ${releaseVersion}`).code
+    exec(`node scripts/set-rn-version.js --to-version ${releaseVersion}`).code
   ) {
     echo('Failed to bump version number');
     exit(1);
