@@ -165,6 +165,11 @@ if [[ $EMIT_SOURCEMAP == true ]]; then
   EXTRA_ARGS="$EXTRA_ARGS --sourcemap-output $PACKAGER_SOURCEMAP_FILE"
 fi
 
+# Hermes doesn't require JS minification.
+if [[ $USE_HERMES == true && $DEV == false ]]; then
+  EXTRA_ARGS="$EXTRA_ARGS --minify false"
+fi
+
 "$NODE_BINARY" $NODE_ARGS "$CLI_PATH" $BUNDLE_COMMAND \
   $CONFIG_ARG \
   --entry-file "$ENTRY_FILE" \
