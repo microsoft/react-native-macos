@@ -199,7 +199,7 @@ RCT_EXPORT_METHOD(alertWithArgs : (JS::NativeAlertManager::NativeArgs &)args cal
   [_alertControllers addObject:alertController];
 
   dispatch_async(dispatch_get_main_queue(), ^{
-    [RCTPresentedViewController() presentViewController:alertController animated:animated completion:completion]; // [TODO(macOS GH#774) When using Scenes, we must present the alert from a view controller associated with a window in the Scene
+    [alertController show:YES completion:nil];
   });
 #else // [TODO(macOS GH#774)
   
