@@ -173,11 +173,11 @@ NSDictionary *RCTExportedDimensions(RCTPlatformView *rootView)
   // Report the event across the bridge.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
     [[moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"didUpdateDimensions"
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
                                                                          body:RCTExportedDimensions(moduleRegistry)];
 #else // [TODO(macOS GH#774)
-    [bridge.eventDispatcher sendDeviceEventWithName:@"didUpdateDimensions" body:RCTExportedDimensions(nil)];
+                                                                         body:RCTExportedDimensions(nil)];
 #endif // ]TODO(macOS GH#774)
 #pragma clang diagnostic pop
   });

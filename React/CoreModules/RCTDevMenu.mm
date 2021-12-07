@@ -190,7 +190,7 @@ RCT_EXPORT_MODULE()
 - (void)showOnShake
 {
   if ([((RCTDevSettings *)[_moduleRegistry moduleForName:"DevSettings"]) isShakeToShowDevMenuEnabled]) {
-    for (UIWindow *window in [RCTSharedApplication() windows]) {
+    for (RCTPlatformWindow *window in [RCTSharedApplication() windows]) {
       NSString *recursiveDescription = [window valueForKey:@"recursiveDescription"];
       if ([recursiveDescription containsString:@"RCTView"]) {
         [self show];

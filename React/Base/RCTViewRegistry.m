@@ -26,9 +26,9 @@
   _bridgelessComponentViewProvider = bridgelessComponentViewProvider;
 }
 
-- (UIView *)viewForReactTag:(NSNumber *)reactTag
+- (RCTPlatformView *)viewForReactTag:(NSNumber *)reactTag // TODO(macOS GH#774)
 {
-  UIView *view = nil;
+  RCTPlatformView *view = nil; // TODO(macOS GH#774)
 
   RCTBridge *bridge = _bridge;
   if (bridge) {

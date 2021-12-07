@@ -7,9 +7,7 @@
 
 #import <React/RCTPushNotificationManager.h>
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
 #import <UserNotifications/UserNotifications.h>
-#endif // TODO(macOS GH#774)
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTBridge.h>

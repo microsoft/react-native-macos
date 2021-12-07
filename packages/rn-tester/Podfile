@@ -31,8 +31,8 @@ def pods(options = {})
   # Additional Pods which aren't included in the default Podfile
   pod 'React-RCTPushNotification', :path => "#{prefix_path}/Libraries/PushNotificationIOS"
   pod 'Yoga', :path => "#{prefix_path}/ReactCommon/yoga", :modular_headers => true
-  # pod 'React-TurboModuleCxx-WinRTPort', :path => "#{prefix_path}/ReactTurboModuleCxx" # TODO(macOS GH#774)
-  # pod 'React-TurboModuleCxx-RNW', :podspec => "#{prefix_path}/ReactTurboModuleCxx/React-TurboModuleCxx-RNW.podspec" # TODO(macOS GH#774)
+  pod 'React-TurboModuleCxx-WinRTPort', :path => "#{prefix_path}/ReactTurboModuleCxx" # TODO(macOS GH#774)
+  pod 'React-TurboModuleCxx-RNW', :podspec => "#{prefix_path}/ReactTurboModuleCxx/React-TurboModuleCxx-RNW.podspec" # TODO(macOS GH#774)
   # Additional Pods which are classed as unstable
 end
 

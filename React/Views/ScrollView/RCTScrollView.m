@@ -542,7 +542,6 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
   [super removeReactSubview:subview];
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
   _scrollView.documentView = nil;
-  _contentSize = CGSizeZero;
 #else // ]TODO(macOS GH#774)
   if ([subview conformsToProtocol:@protocol(RCTCustomRefreshContolProtocol)]) {
     [_scrollView setCustomRefreshControl:nil];
