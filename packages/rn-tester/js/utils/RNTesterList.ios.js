@@ -152,7 +152,8 @@ const Components: Array<RNTesterModuleInfo> = [
   },
   {
     key: 'ScrollViewIndicatorInsetsExample',
-    module: require('../examples/ScrollView/ScrollViewIndicatorInsetsExample'),
+    /* $FlowFixMe TODO(macOS GH#774): allow macOS to share iOS test */
+    module: require('../examples/ScrollView/ScrollViewIndicatorInsetsExample.ios'),
   },
   {
     key: 'SectionListIndex',
