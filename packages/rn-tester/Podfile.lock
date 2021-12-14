@@ -349,6 +349,19 @@ PODS:
     - ReactCommon/turbomodule/core (= 1000.0.0)
   - React-runtimeexecutor (1000.0.0):
     - React-jsi (= 1000.0.0)
+  - React-TurboModuleCxx-RNW (1000.0.0):
+    - RCT-Folly (= 2021.06.28.00-v2)
+    - React-callinvoker (= 1000.0.0)
+    - React-TurboModuleCxx-WinRTPort (= 1000.0.0)
+    - ReactCommon/turbomodule/core (= 1000.0.0)
+  - React-TurboModuleCxx-WinRTPort (1000.0.0):
+    - React-TurboModuleCxx-WinRTPort/Shared (= 1000.0.0)
+    - React-TurboModuleCxx-WinRTPort/WinRT (= 1000.0.0)
+  - React-TurboModuleCxx-WinRTPort/Shared (1000.0.0)
+  - React-TurboModuleCxx-WinRTPort/WinRT (1000.0.0):
+    - RCT-Folly (= 2021.06.28.00-v2)
+    - React-callinvoker (= 1000.0.0)
+    - React-TurboModuleCxx-WinRTPort/Shared (= 1000.0.0)
   - ReactCommon/turbomodule/core (1000.0.0):
     - DoubleConversion
     - glog
@@ -429,6 +442,8 @@ DEPENDENCIES:
   - React-RCTText (from `../../Libraries/Text`)
   - React-RCTVibration (from `../../Libraries/Vibration`)
   - React-runtimeexecutor (from `../../ReactCommon/runtimeexecutor`)
+  - React-TurboModuleCxx-RNW (from `../../ReactTurboModuleCxx/React-TurboModuleCxx-RNW.podspec`)
+  - React-TurboModuleCxx-WinRTPort (from `../../ReactTurboModuleCxx`)
   - ReactCommon/turbomodule/core (from `../../ReactCommon`)
   - ReactCommon/turbomodule/samples (from `../../ReactCommon`)
   - Yoga (from `../../ReactCommon/yoga`)
@@ -513,6 +528,10 @@ EXTERNAL SOURCES:
     :path: "../../Libraries/Vibration"
   React-runtimeexecutor:
     :path: "../../ReactCommon/runtimeexecutor"
+  React-TurboModuleCxx-RNW:
+    :podspec: "../../ReactTurboModuleCxx/React-TurboModuleCxx-RNW.podspec"
+  React-TurboModuleCxx-WinRTPort:
+    :path: "../../ReactTurboModuleCxx"
   ReactCommon:
     :path: "../../ReactCommon"
   Yoga:
@@ -523,8 +542,8 @@ SPEC CHECKSUMS:
   boost-for-react-native: d5ad1140010aa8cb622323a781ecbeab4425d19a
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: 8dfb8e6a364e688caa15f66896caee7845035144
-  FBLazyVector: 8676ba4dbede2c049ffe806f147cac0d9ba6638f
-  FBReactNativeSpec: 83f7cb5c8d3d2b0b732ddaaab2abc39376cd2617
+  FBLazyVector: 187bf8acbd55cfe4d402068907de2c5359a33085
+  FBReactNativeSpec: 465aecd88b1e5117eec7194d1f5ccf6b2ae3a364
   Flipper: 30e8eeeed6abdc98edaf32af0cda2f198be4b733
   Flipper-Boost-iOSX: fd1e2b8cbef7e662a122412d7ac5f5bea715403c
   Flipper-DoubleConversion: 57ffbe81ef95306cc9e69c4aa3aeeeeb58a6a28c
@@ -539,34 +558,36 @@ SPEC CHECKSUMS:
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   OpenSSL-Universal: 1aa4f6a6ee7256b83db99ec1ccdaa80d10f9af9b
   RCT-Folly: 1870fc2f6c34038cae3556a1af98f979f2ce63d9
-  RCTRequired: acb3b662f1ae34914ed1ab9245f62abcc7a259cb
-  RCTTypeSafety: b40b772c795a60ad1e90459edf712e9efba74a4e
-  React: 50efdd6443be480ea997e368e3e994e9d51854c5
-  React-callinvoker: fa40e2857537d112560a828e35a79bcd6c65b855
-  React-Core: 1a2db3037385fec951b95b0bb6b1395ecd6f8f3d
-  React-CoreModules: 8d6b4ff95347e178e10514779637599bed1ed24e
-  React-cxxreact: 10830ed5e0745f38b6bbd8086fa435cd0f366c6d
-  React-jsi: c3927aec1af28ee003fdf847b7aa536320737c7a
-  React-jsiexecutor: 046cc11dc4cb2db78ec9db624112eda5bf8a5949
-  React-jsinspector: 96e97a435686e0fc6c1385a19ce7f4841e52fd23
-  React-logger: 82ecb58cc9b1af9c009c76e9b9d5549f17d0caf0
-  React-perflogger: ab8fb59489d1aa298bda2bfa5bc0e3be426f244b
-  React-RCTActionSheet: 8c050d6ace4545459f1e7e259b128eb384e4d97d
-  React-RCTAnimation: 076ab34c81fe58e2fe5f9a0a2ebd1374bcf5e6cb
-  React-RCTBlob: 5a8624d541a3169b6d41afa628f13e8eaeb4c546
-  React-RCTImage: de33a348f2bce33725ecd1a385398c8b6faec7c1
-  React-RCTLinking: cbd754b28810522b61b2c4b1d5c327c991b4c25b
-  React-RCTNetwork: ede6cf7e876543be21274f70579df1daf3acb290
-  React-RCTPushNotification: 7af46064c3092b73f479d2c7b95eea56fb451329
-  React-RCTSettings: 945c5ba4382a7602b7a9efa8607384220dbf6238
-  React-RCTTest: ce52cf6bc07230508b45cdb6a9a1f606240da574
-  React-RCTText: 83a3aea8b91e810899a26169a8f10141009964d9
-  React-RCTVibration: efaaa7c3300632f9102632a4dfab1306c86131da
-  React-runtimeexecutor: b557467332c37253d76d54f786db115a069e3418
-  ReactCommon: dcb97177023177bca5b1547f23dda4c3902f1ecc
-  Yoga: 8b76e4b2964a200ffcc9342a95a6b209b3b4abeb
+  RCTRequired: caa65fbd1ec96dcdeaf44ff3223701af930a9e88
+  RCTTypeSafety: 80bf80c62bacdf955bac75cf0e56440aaf29bfeb
+  React: cf735a1d5323c38c19bdd8c906cbe1f3eb801265
+  React-callinvoker: aa2a8f688276d994382300ea8a79b64eb0a1384b
+  React-Core: 2e7b5f3528f41ab6b0845aa45994c3ddf6671d55
+  React-CoreModules: cee02273151cc75f7b56dcfd5ae62cce7b37292f
+  React-cxxreact: db4d569a160b07eb4e749f0ec76f9a9a77160f5e
+  React-jsi: 3154732689c09d51bdacfa20b791238dcc9370cb
+  React-jsiexecutor: 965373b791a22096a3b95e691d325a7fca033228
+  React-jsinspector: 9ff76bf9885b70dd37e6a6b88031e32fb8289c46
+  React-logger: 5e27139944f0b9c41cbf7ee09f9d3dce944123c7
+  React-perflogger: 0be7d39bd1622fcdecaa4b0411c5fb289011cbb1
+  React-RCTActionSheet: 34f9abd13f26fc1e0428733249119939a85f82de
+  React-RCTAnimation: a93cf10daeef41d6eb9cefb24c0f4d44f0566fc9
+  React-RCTBlob: 26aa95e2d86b4ec5a9a12557f88fd76a9d153681
+  React-RCTImage: 2f0983b329ed3b39c683185c42afb39bb7a024da
+  React-RCTLinking: 04750b3852d32bddf28cb0df216e6f6e8a34d1ad
+  React-RCTNetwork: 0665601c8d4ce1e565a3408dcb4fb5ae07653f4f
+  React-RCTPushNotification: 4217a09f9f050dd2576d656bacd967937c92d3d9
+  React-RCTSettings: 8ae9f10375c41008b7f07972f0e792fab604f83b
+  React-RCTTest: 714b1715ff2273ff5d14f66a031f752aac3bbf48
+  React-RCTText: fa790c643b00bb1a19c1187491337a5700306753
+  React-RCTVibration: 10f8abade8d20fe9c0fefc9533bb5e9acc9f9af0
+  React-runtimeexecutor: dbe57c917a0dffe48cf2e4f87575bce64ccfea98
+  React-TurboModuleCxx-RNW: 84be9c2264b05327ba1133dcf1c8e67a4c238a57
+  React-TurboModuleCxx-WinRTPort: ef2b75da81e8206a130edc5d5ab6d1f2ac07ade0
+  ReactCommon: 2a7af4e5b8af603f48db222a1f4dfcfe43565db9
+  Yoga: 32f441f48ee15309b355d44cc510b850b2e70fcc
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 996bfa282f5ca1900414c0e267589e9cbefbe3c4
+PODFILE CHECKSUM: d8714a4573a1359d5bff89b4221daaba80d2652c
 
-COCOAPODS: 1.10.2
+COCOAPODS: 1.11.2

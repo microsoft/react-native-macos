@@ -1000,7 +1000,7 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
     if ((value = [dictionary objectForKey:@"semantic"])) {
       if ([value isKindOfClass:[NSString class]]) {
         NSString *semanticName = value;
-        RCTUIColor *color = [UIColor colorNamed:semanticName]; // TODO(macOS GH#750)
+        RCTUIColor *color = [RCTUIColor colorNamed:semanticName]; // TODO(macOS GH#750)
         if (color != nil) {
           return color;
         }
@@ -1013,7 +1013,7 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
         return color;
       } else if ([value isKindOfClass:[NSArray class]]) {
         for (id name in value) {
-          RCTUIColor *color = [UIColor colorNamed:name]; // TODO(macOS GH#750)
+          RCTUIColor *color = [RCTUIColor colorNamed:name]; // TODO(macOS GH#750)
           if (color != nil) {
             return color;
           }

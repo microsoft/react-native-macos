@@ -6,7 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <React/RCTDefines.h>
 
@@ -444,7 +444,7 @@ typedef NSURL * (^RCTBridgelessBundleURLGetter)(void);
 @property NSURL *bundleURL;
 @end
 
-typedef UIView * (^RCTBridgelessComponentViewProvider)(NSNumber *);
+typedef RCTPlatformView * (^RCTBridgelessComponentViewProvider)(NSNumber *); // TODO(macOS GH#774)
 
 /**
  * A class that allows NativeModules to query for views, given React Tags.
@@ -453,7 +453,7 @@ typedef UIView * (^RCTBridgelessComponentViewProvider)(NSNumber *);
 - (void)setBridge:(RCTBridge *)bridge;
 - (void)setBridgelessComponentViewProvider:(RCTBridgelessComponentViewProvider)bridgelessComponentViewProvider;
 
-- (UIView *)viewForReactTag:(NSNumber *)reactTag;
+- (RCTPlatformView *)viewForReactTag:(NSNumber *)reactTag; // TODO(macOS GH#774)
 @end
 
 typedef void (^RCTBridgelessJSModuleMethodInvoker)(

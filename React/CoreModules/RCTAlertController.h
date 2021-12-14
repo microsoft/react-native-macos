@@ -15,7 +15,7 @@
 
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
 - (void)show:(BOOL)animated completion:(void (^)(void))completion;
-#endif // ]TODO(macOS GH#774)
 - (void)hide;
+#endif // ]TODO(macOS GH#774)
 
 @end

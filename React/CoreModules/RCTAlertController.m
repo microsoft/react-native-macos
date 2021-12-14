@@ -35,11 +35,11 @@
   [self.alertWindow makeKeyAndVisible];
   [self.alertWindow.rootViewController presentViewController:self animated:animated completion:completion];
 }
-#endif // ]TODO(macOS GH#774)
 
 - (void)hide
 {
   _alertWindow = nil;
 }
+#endif // ]TODO(macOS GH#774)
 
 @end
