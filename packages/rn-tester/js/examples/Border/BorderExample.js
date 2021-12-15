@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   border15: {
     borderWidth: 10,
     borderColor: PlatformColor(
-      'systemGray4',
+      'systemGray', // TODO(macOS GH#774)
       '@android:color/holo_orange_dark',
     ),
   },

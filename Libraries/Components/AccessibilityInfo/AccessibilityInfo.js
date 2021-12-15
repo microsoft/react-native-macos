@@ -15,7 +15,7 @@ import Platform from '../../Utilities/Platform';
 import type EventEmitter from '../../vendor/emitter/EventEmitter';
 import type {EventSubscription} from '../../vendor/emitter/EventEmitter';
 import NativeAccessibilityInfoAndroid from './NativeAccessibilityInfo';
-import NativeAccessibilityManagerIOS from './NativeAccessibilityManager';
+import NativeAccessibilityManagerApple from './NativeAccessibilityManager';
 import legacySendAccessibilityEvent from './legacySendAccessibilityEvent';
 import type {ElementRef} from 'react';
 
@@ -51,6 +51,7 @@ const EventNames: Map<$Keys<AccessibilityEventDefinitions>, string> =
         ['boldTextChanged', 'boldTextChanged'],
         ['change', 'screenReaderChanged'],
         ['grayscaleChanged', 'grayscaleChanged'],
+        ['highContrastChanged', 'highContrastChanged'],
         ['invertColorsChanged', 'invertColorsChanged'],
         ['reduceMotionChanged', 'reduceMotionChanged'],
         ['reduceTransparencyChanged', 'reduceTransparencyChanged'],
@@ -80,8 +81,8 @@ const AccessibilityInfo = {
       return Promise.resolve(false);
     } else {
       return new Promise((resolve, reject) => {
-        if (NativeAccessibilityManagerIOS != null) {
-          NativeAccessibilityManagerIOS.getCurrentBoldTextState(
+        if (NativeAccessibilityManagerApple != null) {
+          NativeAccessibilityManagerApple.getCurrentBoldTextState(
             resolve,
             reject,
           );
@@ -105,8 +106,8 @@ const AccessibilityInfo = {
       return Promise.resolve(false);
     } else {
       return new Promise((resolve, reject) => {
-        if (NativeAccessibilityManagerIOS != null) {
-          NativeAccessibilityManagerIOS.getCurrentGrayscaleState(
+        if (NativeAccessibilityManagerApple != null) {
+          NativeAccessibilityManagerApple.getCurrentGrayscaleState(
             resolve,
             reject,
           );
@@ -121,7 +122,20 @@ const AccessibilityInfo = {
    * macOS only
    */
   isHighContrastEnabled: function(): Promise<boolean> {
-    return Promise.resolve(false);
+    if (Platform.OS === 'macos') {
+      return new Promise((resolve, reject) => {
+        if (NativeAccessibilityManagerApple) {
+          NativeAccessibilityManagerApple.getCurrentHighContrastState(
+            resolve,
+            reject,
+          );
+        } else {
+          reject(reject);
+        }
+      });
+    } else {
+      return Promise.resolve(false);
+    }
   },
 
   /**
@@ -137,8 +151,8 @@ const AccessibilityInfo = {
       return Promise.resolve(false);
     } else {
       return new Promise((resolve, reject) => {
-        if (NativeAccessibilityManagerIOS != null) {
-          NativeAccessibilityManagerIOS.getCurrentInvertColorsState(
+        if (NativeAccessibilityManagerApple != null) {
+          NativeAccessibilityManagerApple.getCurrentInvertColorsState(
             resolve,
             reject,
           );
@@ -166,8 +180,8 @@ const AccessibilityInfo = {
           reject(null);
         }
       } else {
-        if (NativeAccessibilityManagerIOS != null) {
-          NativeAccessibilityManagerIOS.getCurrentReduceMotionState(
+        if (NativeAccessibilityManagerApple != null) {
+          NativeAccessibilityManagerApple.getCurrentReduceMotionState(
             resolve,
             reject,
           );
@@ -191,8 +205,8 @@ const AccessibilityInfo = {
       return Promise.resolve(false);
     } else {
       return new Promise((resolve, reject) => {
-        if (NativeAccessibilityManagerIOS != null) {
-          NativeAccessibilityManagerIOS.getCurrentReduceTransparencyState(
+        if (NativeAccessibilityManagerApple != null) {
+          NativeAccessibilityManagerApple.getCurrentReduceTransparencyState(
             resolve,
             reject,
           );
@@ -220,8 +234,8 @@ const AccessibilityInfo = {
           reject(null);
         }
       } else {
-        if (NativeAccessibilityManagerIOS != null) {
-          NativeAccessibilityManagerIOS.getCurrentVoiceOverState(
+        if (NativeAccessibilityManagerApple != null) {
+          NativeAccessibilityManagerApple.getCurrentVoiceOverState(
             resolve,
             reject,
           );
@@ -309,7 +323,7 @@ const AccessibilityInfo = {
     if (Platform.OS === 'android') {
       NativeAccessibilityInfoAndroid?.announceForAccessibility(announcement);
     } else {
-      NativeAccessibilityManagerIOS?.announceForAccessibility(announcement);
+      NativeAccessibilityManagerApple?.announceForAccessibility(announcement);
     }
   },
 
