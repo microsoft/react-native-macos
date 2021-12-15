@@ -125,7 +125,10 @@ const AccessibilityInfo = {
     if (Platform.OS === 'macos') {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerApple) {
-          NativeAccessibilityManagerApple.getCurrentHighContrastState(resolve, reject);
+          NativeAccessibilityManagerApple.getCurrentHighContrastState(
+            resolve,
+            reject,
+          );
         } else {
           reject(reject);
         }
