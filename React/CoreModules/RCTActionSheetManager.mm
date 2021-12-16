@@ -113,13 +113,13 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
 
   if (controller == nil) {
     RCTLogError(@"Tried to display action sheet but there is no application window. options: %@", @{ /*  // [ TODO(macOS GH#774): nil check our dict values before inserting them or we may crash */
-      @"title" : title ?: [NSNull new],
-      @"message" : message ?: [NSNull new],
-      @"options" : buttons ?: [NSNull new],
+      @"title" : title ?: [NSNull null],
+      @"message" : message ?: [NSNull null],
+      @"options" : buttons ?: [NSNull null],
       @"cancelButtonIndex" : @(cancelButtonIndex),
-      @"destructiveButtonIndices" : destructiveButtonIndices ?: [NSNull new],
-      @"anchor" : anchor ?: [NSNull new],
-      @"tintColor" : tintColor ?: [NSNull new],
+      @"destructiveButtonIndices" : destructiveButtonIndices ?: [NSNull null],
+      @"anchor" : anchor ?: [NSNull null],
+      @"tintColor" : tintColor ?: [NSNull null],
     }); /*  // TODO(macOS GH#774): nil check our dict values before inserting them or we may crash ] */
     return;
   }
