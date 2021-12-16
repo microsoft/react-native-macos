@@ -112,15 +112,15 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
   UIColor *tintColor = [RCTConvert UIColor:options.tintColor() ? @(*options.tintColor()) : nil];
 
   if (controller == nil) {
-    RCTLogError(@"Tried to display action sheet but there is no application window. options: %@", @{
-      @"title" : title,
-      @"message" : message,
-      @"options" : buttons,
+    RCTLogError(@"Tried to display action sheet but there is no application window. options: %@", @{ /*  // [ TODO(macOS GH#774): nil check our dict values before inserting them or we may crash */
+      @"title" : title ?: [NSNull new],
+      @"message" : message ?: [NSNull new],
+      @"options" : buttons ?: [NSNull new],
       @"cancelButtonIndex" : @(cancelButtonIndex),
-      @"destructiveButtonIndices" : destructiveButtonIndices,
-      @"anchor" : anchor,
-      @"tintColor" : tintColor,
-    });
+      @"destructiveButtonIndices" : destructiveButtonIndices ?: [NSNull new],
+      @"anchor" : anchor ?: [NSNull new],
+      @"tintColor" : tintColor ?: [NSNull new],
+    }); /*  // TODO(macOS GH#774): nil check our dict values before inserting them or we may crash ] */
     return;
   }
 #endif // TODO(macOS GH#774)
