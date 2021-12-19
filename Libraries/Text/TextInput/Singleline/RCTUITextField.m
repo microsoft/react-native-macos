@@ -212,6 +212,24 @@
 {
   return ((RCTUITextFieldCell*)self.cell).font;
 }
+    
+@synthesize enableFocusRing = _enableFocusRing;
+
+- (BOOL)enableFocusRing {
+  return _enableFocusRing;
+}
+
+- (void)setEnableFocusRing:(BOOL)enableFocusRing {
+  if (_enableFocusRing != enableFocusRing) {
+    _enableFocusRing = enableFocusRing;
+  }
+
+  if (enableFocusRing) {
+    [self setFocusRingType:NSFocusRingTypeDefault];
+  } else {
+    [self setFocusRingType:NSFocusRingTypeNone];
+  }
+}
 
 #endif // ]TODO(macOS GH#774)
 
@@ -304,24 +322,6 @@
   NSAttributedString *originalText = [self.attributedText copy];
   self.attributedText = [NSAttributedString new];
   self.attributedText = originalText;
-}
-
-@synthesize enableFocusRing = _enableFocusRing;
-
-- (BOOL)enableFocusRing {
-  return _enableFocusRing;
-}
-
-- (void)setEnableFocusRing:(BOOL)enableFocusRing {
-  if (_enableFocusRing != enableFocusRing) {
-    _enableFocusRing = enableFocusRing;
-  }
-
-  if (enableFocusRing) {
-    [self setFocusRingType:NSFocusRingTypeDefault];
-  } else {
-    [self setFocusRingType:NSFocusRingTypeNone];
-  }
 }
 
 
