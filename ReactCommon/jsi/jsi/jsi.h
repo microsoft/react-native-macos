@@ -937,7 +937,9 @@ class JSI_EXPORT Value {
             std::is_base_of<String, T>::value ||
             std::is_base_of<Object, T>::value,
         "Value cannot be implicitly move-constructed from this type");
+#ifndef __clang_analyzer__
     new (&data_.pointer) T(std::move(other));
+#endif // __clang_analyzer__
   }
 
   /// Value("foo") will treat foo as a bool.  This makes doing that a
