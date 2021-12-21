@@ -212,12 +212,6 @@
 {
   return ((RCTUITextFieldCell*)self.cell).font;
 }
-    
-@synthesize enableFocusRing = _enableFocusRing;
-
-- (BOOL)enableFocusRing {
-  return _enableFocusRing;
-}
 
 - (void)setEnableFocusRing:(BOOL)enableFocusRing {
   if (_enableFocusRing != enableFocusRing) {
@@ -323,7 +317,6 @@
   self.attributedText = [NSAttributedString new];
   self.attributedText = originalText;
 }
-
 
 #endif // ]TODO(macOS GH#774)
 
