@@ -15,7 +15,7 @@ const React = require('react');
 const {
   Image,
   LayoutAnimation,
-  Platform,
+  Platform, // TODO(macOS GH#774)
   StyleSheet,
   Text,
   View,
