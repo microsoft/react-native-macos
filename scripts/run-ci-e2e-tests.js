@@ -280,7 +280,7 @@ try {
       exitCode = 1;
       throw Error(exitCode);
     }
-    // [TODO(macOS GH#774)
+    // [TODO(macOS GH#949)
     // Comment out failing test to unblock CI
     // It seems It's running the flow checks against react-native-macos 0.63 instead of what is in the repo causing a failure
     // describe('Test: Flow check');
