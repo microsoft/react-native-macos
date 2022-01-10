@@ -144,12 +144,15 @@ let Image = (props: ImagePropsType, forwardedRef) => {
     );
   }
 
+  const accessibilityRole = props.accessibilityRole || 'image';
+
   return (
     <ImageAnalyticsTagContext.Consumer>
       {analyticTag => {
         return (
           <ImageViewNativeComponent
             {...props}
+            accessibilityRole={accessibilityRole}
             ref={forwardedRef}
             style={style}
             // $FlowFixMe[incompatible-type]
