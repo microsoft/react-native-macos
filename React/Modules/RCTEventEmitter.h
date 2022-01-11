@@ -17,7 +17,7 @@
 @property (nonatomic, weak) RCTModuleRegistry *moduleRegistry;
 @property (nonatomic, weak) RCTViewRegistry *viewRegistry_DEPRECATED;
 
-- (instancetype)initWithDisabledObservation;
+- (instancetype _Nullable)initWithDisabledObservation; // TODO(macOS GH#774)
 
 /**
  * Override this method to return an array of supported event names. Attempting

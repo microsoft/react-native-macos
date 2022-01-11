@@ -29,6 +29,11 @@ let argv = yargs
     type: 'boolean',
     default: false,
   })
+  .option('p', { // [MacOS: Used during RNM's publish pipelines
+    alias: 'rnmpublish',
+    type: 'boolean',
+    default: false,
+  })
   .option('n', {
     alias: 'nightly',
     type: 'boolean',
@@ -37,6 +42,7 @@ let argv = yargs
 
 const nightlyBuild = argv.nightly;
 const ci = argv.ci;
+const rnmpublish = argv.rnmpublish;
 
 let version, branch;
 if (nightlyBuild) {
@@ -45,10 +51,15 @@ if (nightlyBuild) {
   }).stdout.trim();
   version = `0.0.0-${currentCommit.slice(0, 9)}`;
 } else {
-  // Check we are in release branch, e.g. 0.33-stable
-  branch = exec('git symbolic-ref --short HEAD', {
-    silent: true,
-  }).stdout.trim();
+  if (!ci && process.env.BUILD_SOURCEBRANCH) {
+    console.log(`BUILD_SOURCEBRANCH: ${process.env.BUILD_SOURCEBRANCH}`)
+    branch = process.env.BUILD_SOURCEBRANCH.match(/refs\/heads\/(.*)/)[1];
+    console.log(`Identified branch: ${branch}`)
+  } else {
+    branch = exec('git symbolic-ref --short HEAD', {
+      silent: true,
+    }).stdout.trim();
+  }
 
   if (!ci && branch.indexOf('-stable') === -1) {
     echo('You must be in 0.XX-stable branch to bump a version');
