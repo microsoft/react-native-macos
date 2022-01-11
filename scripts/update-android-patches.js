@@ -60,7 +60,7 @@ function traverseDirectory(rootAbsolutePath, rootRelativePath, callbackFile) {
  */
 function execSync(command) {
     if (printCommands) {
-        console.log(chalk.gray("$ " + command));
+        console.log(chalk.gray("$ ".concat(command)));
     }
     return child_process.execSync(command, { maxBuffer: maxBuffer });
 }
@@ -73,7 +73,7 @@ function execSync(command) {
 function spawnSync(command, args, outputFile) {
     if (args === void 0) { args = []; }
     if (printCommands) {
-        console.log(chalk.gray("$ " + command + " " + args.join(' ')));
+        console.log(chalk.gray("$ ".concat(command, " ").concat(args.join(' '))));
     }
     var result = child_process.spawnSync(command, args, { encoding: 'buffer', maxBuffer: maxBuffer });
     if (outputFile !== undefined) {
@@ -87,7 +87,7 @@ function makeMerges(cleanCommitPoint, patchNames) {
     // Verify the commit point
     var result = spawnSync('git', ['cat-file', '-t', cleanCommitPoint]);
     if (result.stdout.toString().trim() !== 'commit') {
-        console.error("Error: " + cleanCommitPoint + " is not a commit");
+        console.error("Error: ".concat(cleanCommitPoint, " is not a commit"));
         process.exit(2);
     }
     var tempDir = fs.mkdtempSync(path.resolve(os.tmpdir(), 'update-'));
@@ -96,30 +96,30 @@ function makeMerges(cleanCommitPoint, patchNames) {
     var mergeResultDir = path.resolve(tempDir, 'merge');
     // Ensure these directories exist
     [prePatchDir, postPatchDir, mergeResultDir].forEach(function (dir) { return fs.mkdirSync(dir); });
-    console.log(chalk.cyan("Merge results can be found in " + tempDir));
+    console.log(chalk.cyan("Merge results can be found in ".concat(tempDir)));
     var filesWithConflicts = [];
     patchNames.forEach(function (patchName) {
         var patchFolder = path.resolve(patchAbsoluteFolder, patchName);
         traverseDirectory(patchFolder, '.', function (absolutePath, relativePath) {
             // Extract the version of the file at the clean commit point
             var prePatchFile = path.resolve(prePatchDir, patchName, relativePath);
-            execSync("mkdir -p `dirname " + prePatchFile + "`");
-            var gitObject = cleanCommitPoint + ":" + relativePath;
+            execSync("mkdir -p `dirname ".concat(prePatchFile, "`"));
+            var gitObject = "".concat(cleanCommitPoint, ":").concat(relativePath);
             var fileExists = spawnSync('git', ['cat-file', '-e', gitObject]).status === 0;
             if (fileExists) {
-                execSync("git cat-file -p " + gitObject + " > " + prePatchFile);
+                execSync("git cat-file -p ".concat(gitObject, " > ").concat(prePatchFile));
             }
             else {
-                execSync("touch " + prePatchFile);
+                execSync("touch ".concat(prePatchFile));
             }
             // Apply the patch
             var postPatchFile = path.resolve(postPatchDir, patchName, relativePath);
-            execSync("mkdir -p `dirname " + postPatchFile + "`");
+            execSync("mkdir -p `dirname ".concat(postPatchFile, "`"));
             // Note: absolutePath is the patch file itself
-            execSync("patch -u -F 3 " + prePatchFile + " " + absolutePath + " -o " + postPatchFile);
+            execSync("patch -u -F ".concat(patchFuzzFactor, " ").concat(prePatchFile, " ").concat(absolutePath, " -o ").concat(postPatchFile));
             // Now, perform a three-way merge
             var mergeResultFile = path.resolve(mergeResultDir, patchName, relativePath);
-            execSync("mkdir -p `dirname " + mergeResultFile + "`");
+            execSync("mkdir -p `dirname ".concat(mergeResultFile, "`"));
             // Note: relativePath will take us to HEAD's version of the file
             // If it doesn't exist, treat it as empty
             var relativePathOrDevNull = fs.existsSync(relativePath) ? relativePath : '/dev/null';
@@ -131,7 +131,7 @@ function makeMerges(cleanCommitPoint, patchNames) {
     });
     if (filesWithConflicts.length > 0) {
         console.log(chalk.yellow('Conflicts found in these files:'));
-        filesWithConflicts.forEach(function (file) { return console.log("  " + file); });
+        filesWithConflicts.forEach(function (file) { return console.log("  ".concat(file)); });
         console.log(chalk.yellow('Open the folder above, resolve conflicts as needed, and then run updatePatches.'));
     }
     else {
@@ -148,7 +148,7 @@ function updatePatches(updateFolder, patchNames) {
             var patchDestination = path.resolve(patchDestinationFolder, relativePath);
             // The [ $? -eq 1 ] part at the end prevents an error from being thrown
             // if `diff` returns exit code 1 (i.e., the files are different and we generated a diff successfully)
-            execSync("diff -u " + relativePathOrDevNull + " " + mergedFile + " > " + patchDestination + " || [ $? -eq 1 ]");
+            execSync("diff -u ".concat(relativePathOrDevNull, " ").concat(mergedFile, " > ").concat(patchDestination, " || [ $? -eq 1 ]"));
         });
     });
 }

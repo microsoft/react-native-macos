@@ -138,7 +138,7 @@ function makeMerges(cleanCommitPoint: string, patchNames: string[]) {
       const postPatchFile = path.resolve(postPatchDir, patchName, relativePath);
       execSync(`mkdir -p \`dirname ${postPatchFile}\``);
       // Note: absolutePath is the patch file itself
-      execSync(`patch -u -F 3 ${prePatchFile} ${absolutePath} -o ${postPatchFile}`);
+      execSync(`patch -u -F ${patchFuzzFactor} ${prePatchFile} ${absolutePath} -o ${postPatchFile}`);
 
       // Now, perform a three-way merge
       const mergeResultFile = path.resolve(mergeResultDir, patchName, relativePath);
