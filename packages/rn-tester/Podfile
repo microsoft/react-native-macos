@@ -8,8 +8,7 @@ platform :ios, '11.0'
 # FIXME: https://github.com/microsoft/react-native/issues/210
 install! 'cocoapods', :deterministic_uuids => false
 
-# USE_FRAMEWORKS = ENV['USE_FRAMEWORKS'] == '1'
-USE_FRAMEWORKS = 0 # USE_FRAMEWORKS is not compatible with Flipper
+USE_FRAMEWORKS = ENV['USE_FRAMEWORKS'] == '1'
 
 if USE_FRAMEWORKS
   puts "Installing pods with use_frameworks!"
