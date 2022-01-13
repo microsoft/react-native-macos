@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
   s.homepage               = "https://reactnative.dev/"
   s.license                = package["license"]
   s.author                 = "Facebook, Inc. and its affiliates"
-  s.platforms              = { :ios => "11.0", :osx => "10.14" } # TODO(macOS GH#774)
+  s.platforms              = { :ios => "11.0", :osx => "10.15" } # TODO(macOS GH#774)
   s.source                 = source
   s.resource_bundle        = { "AccessibilityResources" => ["React/AccessibilityResources/*.lproj"]}
   s.compiler_flags         = folly_compiler_flags + ' ' + boost_compiler_flags
@@ -78,7 +78,7 @@ Pod::Spec.new do |s|
   end
 
   s.subspec "Hermes" do |ss|
-    ss.platforms = { :osx => "10.14" }
+    ss.platforms = { :osx => "10.15" }
     ss.source_files = "ReactCommon/hermes/executor/*.{cpp,h}",
                       "ReactCommon/hermes/inspector/*.{cpp,h}",
                       "ReactCommon/hermes/inspector/chrome/*.{cpp,h}",
