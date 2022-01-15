@@ -29,13 +29,4 @@ const config = {
   transformer: {},
 };
 
-// In scripts/run-ci-e2e-tests.js this file gets copied to a new app, in which
-// case these settings do not apply.
-if (!process.env.REACT_NATIVE_RUNNING_E2E_TESTS) {
-  const InitializeCore = require.resolve('./Libraries/Core/InitializeCore');
-  const AssetRegistry = require.resolve('./Libraries/Image/AssetRegistry');
-  config.serializer.getModulesRunBeforeMainModule = () => [InitializeCore];
-  config.transformer.assetRegistryPath = AssetRegistry;
-}
-
 module.exports = config;

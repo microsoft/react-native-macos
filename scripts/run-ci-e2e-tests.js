@@ -100,10 +100,6 @@ try {
   mv('_flowconfig', '.flowconfig');
   mv('_watchmanconfig', '.watchmanconfig');
 
-  // [TODO(macOS GH#774)
-  process.env.REACT_NATIVE_RUNNING_E2E_TESTS = 'true';
-  // ]TODO(macOS GH#774)
-
   describe('Install React Native package');
   exec(`npm install ${REACT_NATIVE_PACKAGE}`);
 
@@ -280,16 +276,12 @@ try {
       exitCode = 1;
       throw Error(exitCode);
     }
-    // [TODO(macOS GH#949)
-    // Comment out failing test to unblock CI
-    // It seems It's running the flow checks against react-native-macos 0.63 instead of what is in the repo causing a failure
-    // describe('Test: Flow check');
-    // if (exec(`${ROOT}/node_modules/.bin/flow check`).code) {
-    //   echo('Flow check failed.');
-    //   exitCode = 1;
-    //   throw Error(exitCode);
-    // }
-    // ]TODO(macOS GH#949)
+    describe('Test: Flow check');
+    if (exec(`${ROOT}/node_modules/.bin/flow check`).code) {
+      echo('Flow check failed.');
+      exitCode = 1;
+      throw Error(exitCode);
+    }
   }
   exitCode = 0;
 } finally {
