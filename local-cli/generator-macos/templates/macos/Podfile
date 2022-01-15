@@ -11,7 +11,7 @@ target 'HelloWorld-macOS' do
   )
 
 
-  target 'HelloWorldTests' do
+  target 'HelloWorldTests-macOS' do
     inherit! :complete
     # Pods for testing
   end
@@ -21,11 +21,6 @@ target 'HelloWorld-macOS' do
   # Note that if you have use_frameworks! enabled, Flipper will not work and
   # you should disable the next line.
   use_flipper!()
-
-  post_install do |installer|
-    react_native_post_install(installer)
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
-  end
 
   # Pods specifically for macOS target
 end
@@ -40,7 +35,7 @@ target 'HelloWorld-iOS' do
     :hermes_enabled => false
   )
 
-  target 'HelloWorldTests' do
+  target 'HelloWorldTests-iOS' do
     inherit! :complete
     # Pods for testing
   end
@@ -51,10 +46,10 @@ target 'HelloWorld-iOS' do
   # you should disable the next line.
   use_flipper!()
 
-  post_install do |installer|
-    react_native_post_install(installer)
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
-  end
-
   # Pods specifically for iOS target
+end
+
+post_install do |installer|
+  react_native_post_install(installer)
+  __apply_Xcode_12_5_M1_post_install_workaround(installer)
 end
