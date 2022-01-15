@@ -30,7 +30,7 @@ import type {
   // [TODO(macOS GH#774)
   FocusEvent,
   BlurEvent,
-  KeyEvent, 
+  KeyEvent,
   // ]TODO(macOS GH#774)
 } from '../../Types/CoreEventTypes';
 import type {DraggedTypesType} from '../View/DraggedType'; // TODO(macOS GH#774)
