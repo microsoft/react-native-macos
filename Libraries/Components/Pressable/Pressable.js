@@ -159,6 +159,18 @@ type Props = $ReadOnly<{|
    * Called after a key up event is detected.
    */
   onKeyUp?: ?(event: KeyEvent) => mixed,
+
+  /**
+   * Array of keys to receive key down events for
+   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+   */
+  validKeysDown?: ?Array<string>,
+
+  /**
+   * Array of keys to receive key up events for
+   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+   */
+  validKeysUp?: ?Array<string>,
   // ]TODO(macOS GH#774)
 
   /**
