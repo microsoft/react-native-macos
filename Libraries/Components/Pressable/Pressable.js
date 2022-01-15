@@ -27,6 +27,11 @@ import type {
   LayoutEvent,
   MouseEvent,
   PressEvent,
+  // [TODO(macOS GH#774)
+  FocusEvent,
+  BlurEvent,
+  KeyEvent, 
+  // ]TODO(macOS GH#774)
 } from '../../Types/CoreEventTypes';
 import type {DraggedTypesType} from '../View/DraggedType'; // TODO(macOS GH#774)
 import View from '../View/View';
@@ -134,6 +139,28 @@ type Props = $ReadOnly<{|
    */
   onPressOut?: ?(event: PressEvent) => mixed,
 
+  // [TODO(macOS GH#774)
+  /**
+   * Called after the element is focused.
+   */
+  onFocus?: ?(event: FocusEvent) => mixed,
+
+  /**
+   * Called after the element loses focus.
+   */
+  onBlur?: ?(event: BlurEvent) => mixed,
+
+  /**
+   * Called after a key down event is detected.
+   */
+  onKeyDown?: ?(event: KeyEvent) => mixed,
+
+  /**
+   * Called after a key up event is detected.
+   */
+  onKeyUp?: ?(event: KeyEvent) => mixed,
+  // ]TODO(macOS GH#774)
+
   /**
    * Either view styles or a function that receives a boolean reflecting whether
    * the component is currently pressed and returns view styles.
@@ -200,6 +227,12 @@ function Pressable(props: Props, forwardedRef): React.Node {
     onPress,
     onPressIn,
     onPressOut,
+    // [TODO(macOS GH#774)
+    onFocus,
+    onBlur,
+    onKeyDown,
+    onKeyUp,
+    // ]TODO(macOS GH#774)
     pressRetentionOffset,
     style,
     testOnly_pressed,
@@ -266,6 +299,12 @@ function Pressable(props: Props, forwardedRef): React.Node {
           onPressOut(event);
         }
       },
+      // [TODO(macOS GH#774)
+      onFocus,
+      onBlur,
+      onKeyDown,
+      onKeyUp,
+      // ]TODO(macOS GH#774)
     }),
     [
       android_disableSound,
@@ -282,6 +321,12 @@ function Pressable(props: Props, forwardedRef): React.Node {
       onPress,
       onPressIn,
       onPressOut,
+      // [TODO(macOS GH#774)
+      onFocus,
+      onBlur,
+      onKeyDown,
+      onKeyUp,
+      // ]TODO(macOS GH#774)
       pressRetentionOffset,
       setPressed,
       unstable_pressDelay,
