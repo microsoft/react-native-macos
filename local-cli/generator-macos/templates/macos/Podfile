@@ -3,18 +3,12 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 
 target 'HelloWorld-macOS' do
   platform :macos, '10.15'
-  use_native_modules!
+  config = use_native_modules!
   use_react_native!(
-    :path => '../node_modules/react-native-macos',
+    :path => config[:reactNativePath],
     # to enable hermes on iOS, change `false` to `true` and then install pods
     :hermes_enabled => false
   )
-
-
-  target 'HelloWorldTests-macOS' do
-    inherit! :complete
-    # Pods for testing
-  end
 
   # Enables Flipper.
   #
@@ -27,18 +21,12 @@ end
 
 target 'HelloWorld-iOS' do
   platform :ios, '11.0'
-  use_native_modules!
-
+  config = use_native_modules!
   use_react_native!(
-    :path => '../node_modules/react-native-macos',
+    :path => config[:reactNativePath],
     # to enable hermes on iOS, change `false` to `true` and then install pods
     :hermes_enabled => false
   )
-
-  target 'HelloWorldTests-iOS' do
-    inherit! :complete
-    # Pods for testing
-  end
 
   # Enables Flipper.
   #
