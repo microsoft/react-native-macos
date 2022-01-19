@@ -42,6 +42,7 @@ export const NativeText: HostComponent<NativeTextProps> = (createReactNativeComp
       onTextLayout: true,
       onInlineViewLayout: true,
       dataDetectorType: true,
+      tooltip: true, // [TODO(macOS GH#774)]
     },
     directEventTypes: {
       topTextLayout: {
