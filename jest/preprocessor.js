@@ -13,11 +13,8 @@
 'use strict';
 
 const babelRegisterOnly = require('metro-babel-register');
-const nullthrows = require('nullthrows');
-const createCacheKeyFunction = require('@jest/create-cache-key-function')
-  .default;
-const t = require('@babel/types');
-const {statements} = require('@babel/template').default;
+const createCacheKeyFunction =
+  require('@jest/create-cache-key-function').default;
 
 const importDefault = '__importDefault__';
 const importAll = '__importAll__';

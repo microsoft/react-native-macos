@@ -19,6 +19,7 @@
 const fs = require('fs');
 const {cat, echo, exec, exit, sed} = require('shelljs');
 const yargs = require('yargs');
+const {parseVersion} = require('./version-utils');
 
 let argv = yargs
   .option('r', {
@@ -38,28 +39,33 @@ let argv = yargs
     alias: 'nightly',
     type: 'boolean',
     default: false,
+  })
+  .option('v', {
+    alias: 'to-version',
+    type: 'string',
+  })
+  .option('l', {
+    alias: 'latest',
+    type: 'boolean',
+    default: false,
   }).argv;
 
 const nightlyBuild = argv.nightly;
-const ci = argv.ci;
-const rnmpublish = argv.rnmpublish;
+const version = argv.toVersion;
 
-let version, branch;
-if (nightlyBuild) {
-  const currentCommit = exec('git rev-parse HEAD', {
+if (!version) {
+  echo(
+    'You must specify a version using -v',
+  );
+  exit(1);
+}
+
+let branch;
+if (!nightlyBuild) {
+  // Check we are in release branch, e.g. 0.33-stable
+  branch = exec('git symbolic-ref --short HEAD', {
     silent: true,
   }).stdout.trim();
-  version = `0.0.0-${currentCommit.slice(0, 9)}`;
-} else {
-  if (!ci && process.env.BUILD_SOURCEBRANCH) {
-    console.log(`BUILD_SOURCEBRANCH: ${process.env.BUILD_SOURCEBRANCH}`)
-    branch = process.env.BUILD_SOURCEBRANCH.match(/refs\/heads\/(.*)/)[1];
-    console.log(`Identified branch: ${branch}`)
-  } else {
-    branch = exec('git symbolic-ref --short HEAD', {
-      silent: true,
-    }).stdout.trim();
-  }
 
   if (!ci && branch.indexOf('-stable') === -1) {
     echo('You must be in 0.XX-stable branch to bump a version');
@@ -71,24 +77,24 @@ if (nightlyBuild) {
 
   // - check that argument version matches branch
   // e.g. 0.33.1 or 0.33.0-rc4
-  version = argv._[0];
-  if (!version || version.indexOf(versionMajor) !== 0) {
+  if (version.indexOf(versionMajor) !== 0) {
     echo(
-      `You must pass a tag like 0.${versionMajor}.[X]-rc[Y] to bump a version`,
+      `You must specify a version tag like 0.${versionMajor}.[X]-rc[Y] to bump a version`,
     );
     exit(1);
   }
 }
 
-// Generate version files to detect mismatches between JS and native.
-let match = version.match(/^(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/);
-if (!match) {
-  echo(
-    `You must pass a correctly formatted version; couldn't parse ${version}`,
-  );
+let major,
+  minor,
+  patch,
+  prerelease = -1;
+try {
+  ({major, minor, patch, prerelease} = parseVersion(version));
+} catch (e) {
+  echo(e.message);
   exit(1);
 }
-let [, major, minor, patch, prerelease] = match;
 
 fs.writeFileSync(
   'ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/ReactNativeVersion.java',
@@ -191,7 +197,7 @@ if (!nightlyBuild) {
     exit(1);
   }
 
-  // Update Podfile.lock only on release builds, not nightly.
+  // Update Podfile.lock only on release builds, not nightlies.
   // Nightly builds don't need it as the main branch will already be up-to-date.
   echo('Updating RNTester Podfile.lock...');
   if (exec('source scripts/update_podfile_lock.sh && update_pods').code) {
@@ -220,8 +226,9 @@ if (!nightlyBuild) {
   let remote = argv.remote;
   exec(`git push ${remote} v${version}`);
 
-  // Tag latest if doing stable release
-  if (version.indexOf('rc') === -1) {
+  // Tag latest if doing stable release.
+  // This will also tag npm release as `latest`
+  if (prerelease == null && argv.latest) {
     exec('git tag -d latest');
     exec(`git push ${remote} :latest`);
     exec('git tag latest');

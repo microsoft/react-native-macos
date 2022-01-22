@@ -23,10 +23,9 @@ import type {KeyEvent} from '../Types/CoreEventTypes'; // TODO(OSS Candidate ISS
 import type {FocusEvent, BlurEvent} from './TextInput/TextInput'; // TODO(OSS Candidate ISS#2710739)
 
 import type {
+  AccessibilityState,
   AccessibilityActionEvent,
   AccessibilityActionInfo,
-  AccessibilityRole,
-  AccessibilityState,
 } from './View/ViewAccessibility';
 import type {PressEvent} from '../Types/CoreEventTypes';
 
