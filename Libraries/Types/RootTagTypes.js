@@ -8,4 +8,4 @@
  * @format
  */
 
- export type {RootTag} from '../ReactNative/RootTag';
+export type {RootTag} from '../ReactNative/RootTag';

@@ -26,6 +26,7 @@ import type {
   AccessibilityState,
   AccessibilityActionEvent,
   AccessibilityActionInfo,
+  AccessibilityRole,
 } from './View/ViewAccessibility';
 import type {PressEvent} from '../Types/CoreEventTypes';
 
