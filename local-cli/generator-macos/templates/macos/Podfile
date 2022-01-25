@@ -6,7 +6,7 @@ target 'HelloWorld-macOS' do
   use_native_modules!
   use_react_native!(
     :path => '../node_modules/react-native-macos',
-    # to enable hermes on iOS, change `false` to `true` and then install pods
+    # to enable hermes on macOS, change `false` to `true` and then install pods
     :hermes_enabled => false
   )
 
