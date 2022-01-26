@@ -325,7 +325,7 @@ TEST_F(RuntimeSchedulerTest, scheduleWork) {
 
   EXPECT_FALSE(wasCalled);
 
-  EXPECT_FALSE(runtimeScheduler_->getShouldYield());
+  EXPECT_TRUE(runtimeScheduler_->getShouldYield());
 
   EXPECT_EQ(stubQueue_->size(), 1);
 
