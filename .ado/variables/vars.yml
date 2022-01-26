@@ -1,6 +1,5 @@
 variables:
   VmImageApple: macOS-11
-  VmImageWindows: windows-2019
   VmImageUbuntu: ubuntu-20.04
   slice_name: 'Xcode_13_1'
   xcode_version: '/Applications/Xcode_13.1.app'
