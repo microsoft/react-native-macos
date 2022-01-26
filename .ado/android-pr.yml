@@ -12,6 +12,9 @@ pr:
     exclude:
       - '*.md'
 
+variables:
+  - template: variables/vars.yml
+
 jobs:
   - job: AndroidRNPR
     displayName: Android React Native PR
