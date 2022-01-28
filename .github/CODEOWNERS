@@ -2,7 +2,7 @@
 # the repo. Unless a later match takes precedence,
 # the global will be requested for
 # review when someone opens a pull request.
-* @HeyImChris @acoates-ms @Saadnajmi @amgleitman
+* @microsoft/apple-rn-team
 
 # React Android specific ones
 /ReactAndroid/ @mganandraj
