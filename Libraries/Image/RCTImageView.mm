@@ -644,23 +644,17 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   
 - (RCTPlatformView *)reactAccessibilityElement
 {
-  return (RCTPlatformView *)_imageView.cell;
+  return _imageView;
 }
 
 - (NSColor *)tintColor
 {
-  NSColor *tintColor = nil;
-  if (@available(macOS 10.14, *)) {
-    tintColor = _imageView.contentTintColor;
-  }
-  return tintColor;
+  return _imageView.contentTintColor;
 }
 
 - (void)setTintColor:(NSColor *)tintColor
 {
-  if (@available(macOS 10.14, *)) {
-    _imageView.contentTintColor = tintColor;
-  }
+  _imageView.contentTintColor = tintColor;
 }
 #endif // ]TODO(macOS GH#774)
 
