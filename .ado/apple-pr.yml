@@ -42,7 +42,7 @@ jobs:
           packager_platform: 'ios'
           xcode_sdk: iphonesimulator
           xcode_scheme: 'RNTester'
-          xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 8'
+          xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 12'
           xcode_actions_debug: 'build test'
           xcode_actions_release: 'build'
           apply_office_patches: 'false'
@@ -58,7 +58,7 @@ jobs:
           packager_platform: 'ios'
           xcode_sdk: iphonesimulator
           xcode_scheme: 'RNTester'
-          xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 8'
+          xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 12'
           xcode_actions_debug: 'build test'
           xcode_actions_release: 'build'
           apply_office_patches: 'true'
