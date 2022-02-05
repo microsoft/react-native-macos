@@ -32,10 +32,10 @@
 
 - (void)show:(BOOL)animated completion:(void (^)(void))completion
 {
+  // [TODO(macOS GH#774)
   // Call self.alertWindow to ensure that it gets populated
   UIWindow *alertWindow = self.alertWindow;
 
-  // [TODO(macOS GH#774)
   // If the window is tracked by our application then it will show the alert
   if ([[[UIApplication sharedApplication] windows] containsObject:alertWindow]) {
     // On iOS 14, makeKeyAndVisible should only be called if alertWindow is tracked by the application.
