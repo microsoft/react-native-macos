@@ -13,6 +13,7 @@ import type {ViewProps} from './ViewPropTypes';
 import ViewNativeComponent from './ViewNativeComponent';
 import TextAncestor from '../../Text/TextAncestor';
 import * as React from 'react';
+import invariant from 'invariant'; // TODO(macOS GH#774)
 
 export type Props = ViewProps;
 
@@ -27,6 +28,13 @@ const View: React.AbstractComponent<
   ViewProps,
   React.ElementRef<typeof ViewNativeComponent>,
 > = React.forwardRef((props: ViewProps, forwardedRef) => {
+  // [TODO(macOS GH#774)
+  invariant(
+    // $FlowFixMe Wanting to catch untyped usages
+    props.acceptsKeyboardFocus === undefined,
+    'Support for the "acceptsKeyboardFocus" property has been removed in favor of "focusable"',
+  );
+  // TODO(macOS GH#774)]
   return (
     <TextAncestor.Provider value={false}>
       <ViewNativeComponent {...props} ref={forwardedRef} />
