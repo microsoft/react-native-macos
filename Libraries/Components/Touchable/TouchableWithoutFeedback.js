@@ -69,6 +69,7 @@ type Props = $ReadOnly<{|
   onPressIn?: ?(event: PressEvent) => mixed,
   onPressOut?: ?(event: PressEvent) => mixed,
   // [TODO(macOS GH#774)
+  acceptsFirstMouse?: ?boolean,
   enableFocusRing?: ?boolean,
   tooltip?: ?string,
   onMouseEnter?: (event: MouseEvent) => void,
