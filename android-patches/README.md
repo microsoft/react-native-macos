@@ -26,7 +26,7 @@ Splitting this up clarifies how the patching command works:
 * `--log-folder ./android-patches/logs`
   * Folder for logs
 * `--confirm true`
-  * Flag stating that yes, I want to run it (??)
+  * Flag stating that yes, I want to run it
 
 ## The patching tool
 
