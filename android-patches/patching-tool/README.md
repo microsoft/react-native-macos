@@ -1,24 +1,9 @@
-This is out of data .. TBD.
+⚠️ work in progress to clean up this folder ⚠️
 
-#### For command line options, try
+## Warning
 
-> node_modules\.bin\ts-node.cmd src\index.ts --help
+You should not be touching this code directly.
 
-###### For detailed options on each commands,
+Most up-to-date of this lives in https://github.com/mganandraj/office-android-patches
 
-> node_modules\.bin\ts-node.cmd src\index.ts diff --help
-> node_modules\.bin\ts-node.cmd src\index.ts patch --help
-
-##### Examples
-
-###### To create diff-patches
-
-> ts-node.cmd src\index.ts diff e:\github\ms-react-native-forpatch e:\github\fb-react-native-forpatch-base
-
-###### To apply diff-patches
-
-> node_modules\.bin\ts-node.cmd src\index.ts patch E:\github\fb-rn-p BuildAndThirdPartyFixes V8Integration --patch-store E:\github\office-android-patches\patches-droid-office-grouped
-
-###### To reverse-patch the dirty fork
-
-> node_modules\.bin\ts-node src\index.ts patch E:\github\ms-react-native-forpatch BuildAndThirdPartyFixes --patch-store E:\github\office-android-patches\patches-droid-office-grouped --reverse
+If you need to generate a new version of the tool, do it so in that separate repo THEN replace the content of `/bundle` folder with the new one.
