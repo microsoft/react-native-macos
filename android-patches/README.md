@@ -30,6 +30,10 @@ Splitting this up clarifies how the patching command works:
 
 ## The patching tool
 
-As you can see from above, we use the tool directly via a generated `bundle.js`. This is because the tool itself was a fork of [`patch-package`](https://github.com/ds300/patch-package) that underwent a series of changes.
+As you can see from above, we use the tool directly via a generated `bundle.js`. This is because the tool itself was a fork of [`patch-package`](https://github.com/ds300/patch-package) that underwent a series of changes ([more details here](https://github.com/microsoft/react-native-macos/pull/254#issuecomment-592594790)).
 
 You can find more details about this tool in `./patching-tool/README.md`.
+
+## How to create a new patch
+
+*To Be Added*
