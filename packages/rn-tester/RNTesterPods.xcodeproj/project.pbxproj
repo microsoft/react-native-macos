@@ -104,6 +104,7 @@
 		E7DB20EB22B2BAA6005AC45F /* RCTConvert_YGValueTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20CE22B2BAA5005AC45F /* RCTConvert_YGValueTests.m */; };
 		E7DB20EC22B2BAA6005AC45F /* RCTMultipartStreamReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20CF22B2BAA5005AC45F /* RCTMultipartStreamReaderTests.m */; };
 		E7DB20ED22B2BAA6005AC45F /* RCTURLUtilsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20D022B2BAA5005AC45F /* RCTURLUtilsTests.m */; };
+		E7DB20EE22B2BAA6005AC45F /* RCTViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20E022B2BAA5005AC45F /* RCTViewTests.m */; };
 		E7DB216222B2F3EC005AC45F /* RNTesterTestModule.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB215D22B2F3EC005AC45F /* RNTesterTestModule.m */; };
 		E7DB216322B2F3EC005AC45F /* RCTLoggingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB215E22B2F3EC005AC45F /* RCTLoggingTests.m */; };
 		E7DB216422B2F3EC005AC45F /* RCTUIManagerScenarioTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB215F22B2F3EC005AC45F /* RCTUIManagerScenarioTests.m */; };
@@ -191,7 +192,6 @@
 		387847D1245631D80035033A /* libiosDeviceBuild.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libiosDeviceBuild.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		387847DE245631F50035033A /* libiosSimulatorBuild.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libiosSimulatorBuild.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		387847EB2456320C0035033A /* libmacOSBuild.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libmacOSBuild.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		38A9381B244532460025DABB /* libOCMock.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libOCMock.a; sourceTree = "<group>"; };
 		38BB7CB524455C4100803CDE /* libPods-RNTester-macOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libPods-RNTester-macOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		38C8AC1E246611E500BA7FAA /* RNTesterLoadAllPages.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNTesterLoadAllPages.m; sourceTree = "<group>"; };
 		3CD3706443F2188E09CBF2D2 /* Pods-RNTesterIntegrationTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTesterIntegrationTests.debug.xcconfig"; path = "Target Support Files/Pods-RNTesterIntegrationTests/Pods-RNTesterIntegrationTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -276,6 +276,7 @@
 		E7DB20CE22B2BAA5005AC45F /* RCTConvert_YGValueTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTConvert_YGValueTests.m; sourceTree = "<group>"; };
 		E7DB20CF22B2BAA5005AC45F /* RCTMultipartStreamReaderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTMultipartStreamReaderTests.m; sourceTree = "<group>"; };
 		E7DB20D022B2BAA5005AC45F /* RCTURLUtilsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTURLUtilsTests.m; sourceTree = "<group>"; };
+		E7DB20E022B2BAA5005AC45F /* RCTViewTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTViewTests.m; sourceTree = "<group>"; };
 		E7DB20F022B2BD53005AC45F /* libDoubleConversion.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libDoubleConversion.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7DB20F222B2BD53005AC45F /* libFolly.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libFolly.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7DB20F422B2BD53005AC45F /* libglog.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libglog.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -620,7 +621,7 @@
 				E7DB20BF22B2BAA4005AC45F /* RCTUIManagerTests.m */,
 				E7DB20C122B2BAA4005AC45F /* RCTUnicodeDecodeTests.m */,
 				E7DB20D022B2BAA5005AC45F /* RCTURLUtilsTests.m */,
-				38A9381B244532460025DABB /* libOCMock.a */,
+				E7DB20E022B2BAA5005AC45F /* RCTViewTests.m */,
 				E7DB20B322B2BAA4005AC45F /* RNTesterUnitTestsBundle.js */,
 			);
 			path = RNTesterUnitTests;
@@ -1419,6 +1420,7 @@
 				E7DB20E822B2BAA6005AC45F /* RCTModuleMethodTests.mm in Sources */,
 				E7DB20E222B2BAA6005AC45F /* RCTGzipTests.m in Sources */,
 				E7DB20ED22B2BAA6005AC45F /* RCTURLUtilsTests.m in Sources */,
+				E7DB20EE22B2BAA6005AC45F /* RCTViewTests.m in Sources */,
 				E7DB20D322B2BAA6005AC45F /* RCTBlobManagerTests.m in Sources */,
 				E7DB20DC22B2BAA6005AC45F /* RCTUIManagerTests.m in Sources */,
 				E7DB20E322B2BAA6005AC45F /* RCTAllocationTests.m in Sources */,

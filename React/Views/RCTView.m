@@ -8,6 +8,7 @@
 #import "RCTView.h"
 
 #import <QuartzCore/QuartzCore.h>
+#import <React/RCTMockDef.h>
 
 #import "RCTAutoInsetsProtocol.h"
 #import "RCTBorderDrawing.h"
@@ -21,6 +22,9 @@
 #if TARGET_OS_OSX // [macOS
 #import "RCTTextView.h"
 #endif // macOS]
+
+RCT_MOCK_DEF(RCTView, RCTContentInsets);
+#define RCTContentInsets RCT_MOCK_USE(RCTView, RCTContentInsets)
 
 #if !TARGET_OS_OSX // [macOS]
 UIAccessibilityTraits const SwitchAccessibilityTrait = 0x20000000000001;
