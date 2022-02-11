@@ -73,3 +73,7 @@ The React Native for macOS extension, including modifications to the original Fa
 ## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+[docs]: https://reactnative.dev/docs/getting-started
+[r-docs]: https://reactjs.org/docs/getting-started.html
+[repo-website]: https://github.com/facebook/react-native-website
