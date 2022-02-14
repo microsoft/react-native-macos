@@ -29,17 +29,20 @@ NSSharingServicePickerDelegate
 , NativeActionSheetManagerSpec>
 @end
 
-@implementation RCTActionSheetManager {
-  // Use NSMapTable, as UIAlertViews do not implement <NSCopying>
-  // which is required for NSDictionary keys
-  NSMapTable *_callbacks;
+@implementation RCTActionSheetManager 
 #if TARGET_OS_OSX // [macOS
+{
+  /**
+   * Github#1640: This code has been heavily refactored for iOS and _callbacks was removed. 
+   * Keep it around for macOS till the macOS implementation is refactored to match.
+   */
+  NSMapTable *_callbacks;
   NSArray<NSSharingService*> *_excludedActivities;
   NSString *_sharingSubject;
   RCTResponseSenderBlock _failureCallback;
   RCTResponseSenderBlock _successCallback;
-#endif // macOS]
 }
+#endif // macOS]
 
 RCT_EXPORT_MODULE()
 
@@ -83,10 +86,6 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
     return;
   }
 #endif // [macOS]
-
-  if (!_callbacks) {
-    _callbacks = [NSMapTable strongToStrongObjectsMapTable];
-  }
 
   NSString *title = options.title();
 #if !TARGET_OS_OSX // [macOS]
