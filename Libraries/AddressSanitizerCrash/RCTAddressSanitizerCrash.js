@@ -8,19 +8,18 @@
  * @flow
  */
 
- 'use strict';
- import type {HostComponent} from '../Renderer/shims/ReactNativeTypes';
- import type {ViewProps} from '../Components/View/ViewPropTypes';
+'use strict';
+import type {HostComponent} from '../Renderer/shims/ReactNativeTypes';
+import type {ViewProps} from '../Components/View/ViewPropTypes';
 
- const {requireNativeComponent} = require('react-native');
- 
- type NativeProps = $ReadOnly<{|
+const {requireNativeComponent} = require('react-native');
+
+type NativeProps = $ReadOnly<{|
   ...ViewProps,
 |}>;
 
- const RCTAddressSanitizerCrash: HostComponent<NativeProps> = requireNativeComponent<NativeProps>(
-   'RCTAddressSanitizerCrash',
- );
- 
- module.exports = RCTAddressSanitizerCrash;
- 
+const RCTAddressSanitizerCrash: HostComponent<NativeProps> = requireNativeComponent<NativeProps>(
+  'RCTAddressSanitizerCrash',
+);
+
+module.exports = RCTAddressSanitizerCrash;
