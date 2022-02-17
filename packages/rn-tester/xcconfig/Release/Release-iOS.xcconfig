@@ -1,0 +1,6 @@
+//
+//  Debug.xcconfig
+//  RNTesterPods
+//
+
+#include "../Pods/Target Support Files/Pods-RNTester/Pods-RNTester.release.xcconfig"
