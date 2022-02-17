@@ -3,7 +3,7 @@
 //  RNTesterPods
 //
 
-#include "../Pods/Target Support Files/Pods-RNTesterIntegrationTests/Pods-RNTesterIntegrationTests.release.xcconfig"
+#include "../../Pods/Target Support Files/Pods-RNTesterIntegrationTests/Pods-RNTesterIntegrationTests.release.xcconfig"
 
 CLANG_STATIC_ANALYZER_MODE[sdk=iphonesimulator*] = deep
 // Required security settings for production code (do not override at target/project level, with the possible

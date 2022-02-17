@@ -3,7 +3,7 @@
 //  RNTesterPods
 //
 
-#include "../Pods/Target Support Files/Pods-RNTester-macOSIntegrationTests/Pods-RNTester-macOSIntegrationTests.release.xcconfig"
+#include "../../Pods/Target Support Files/Pods-RNTester-macOSIntegrationTests/Pods-RNTester-macOSIntegrationTests.release.xcconfig"
 
 CLANG_STATIC_ANALYZER_MODE = deep
 // Required security settings for production code (do not override at target/project level, with the possible

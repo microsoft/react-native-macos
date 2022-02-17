@@ -3,4 +3,4 @@
 //  RNTesterPods
 //
 
-#include "../Pods/Target Support Files/Pods-RNTester-macOS/Pods-RNTester-macOS.release.xcconfig"
+#include "../../Pods/Target Support Files/Pods-RNTester-macOS/Pods-RNTester-macOS.release.xcconfig"
