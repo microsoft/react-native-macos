@@ -322,12 +322,3 @@ void RCTLogNewArchitectureValidation(RCTNotAllowedValidation type, id context, N
 
   RCTLogInfo(@"%@", validationMessage(type, context, extra));
 }
-
-void RCTLogNotAllowedForNewArchitecture(id context, NSString *extra)
-{
-  if (!newArchitectureViolationReporting) {
-    return;
-  }
-
-  RCTLogInfo(@"%@", getNewArchitectureViolationMessage(context, extra));
-}
