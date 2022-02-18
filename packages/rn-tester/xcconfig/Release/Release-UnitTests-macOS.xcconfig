@@ -5,6 +5,9 @@
 
 #include "../../Pods/Target Support Files/Pods-RNTester-macOSUnitTests/Pods-RNTester-macOSUnitTests.release.xcconfig"
 
+ENABLE_ADDRESS_SANITIZER = NO
+
+RUN_CLANG_STATIC_ANALYZER = YES
 CLANG_STATIC_ANALYZER_MODE = deep
 // Required security settings for production code (do not override at target/project level, with the possible
 // exception of legacy test code)
