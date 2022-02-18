@@ -24,3 +24,18 @@ void RCTSetDispatchW3CPointerEvents(BOOL value)
 {
   RCTDispatchW3CPointerEvents = value;
 }
+
+/*
+ * Preemptive View Allocation
+ */
+static BOOL RCTInteropLayerKeepViewHierarchy = NO;
+
+BOOL RCTGetInteropLayerKeepViewHierarchy()
+{
+  return RCTInteropLayerKeepViewHierarchy;
+}
+
+void RCTSetInteropLayerKeepViewHierarchy(BOOL value)
+{
+  RCTInteropLayerKeepViewHierarchy = value;
+}
