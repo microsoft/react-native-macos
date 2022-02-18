@@ -45,7 +45,7 @@ static NSInteger RCTImageBytesForImage(UIImage *image)
 #if !TARGET_OS_OSX // [macOS] no .scale prop on NSImage
   imageScale = image.scale;
 #endif // [macOS]
-  NSInteger singleImageBytes = image.size.width * image.size.height * imageScale * imageScale * 4;
+  NSInteger singleImageBytes = (NSInteger)(image.size.width * image.size.height * image.scale * image.scale * 4);
 #if !TARGET_OS_OSX // [macOS]
   return image.images ? image.images.count * singleImageBytes : singleImageBytes;
 #else // [macOS
@@ -661,7 +661,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
   });
 
   return [[RCTImageURLLoaderRequest alloc] initWithRequestId:requestId imageURL:request.URL cancellationBlock:^{
-    BOOL alreadyCancelled = atomic_fetch_or(cancelled.get(), 1);
+    BOOL alreadyCancelled = atomic_fetch_or(cancelled.get(), 1) ? YES : NO;
     if (alreadyCancelled) {
       return;
     }
@@ -801,7 +801,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
   __block dispatch_block_t cancelLoad = nil;
   __block NSLock *cancelLoadLock = [NSLock new];
   dispatch_block_t cancellationBlock = ^{
-    BOOL alreadyCancelled = atomic_fetch_or(cancelled.get(), 1);
+    BOOL alreadyCancelled = atomic_fetch_or(cancelled.get(), 1) ? YES : NO;
     if (alreadyCancelled) {
       return;
     }
@@ -951,7 +951,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
   } else {
     dispatch_block_t decodeBlock = ^{
       // Calculate the size, in bytes, that the decompressed image will require
-      NSInteger decodedImageBytes = (size.width * scale) * (size.height * scale) * 4;
+      NSInteger decodedImageBytes = (NSInteger)((size.width * scale) * (size.height * scale) * 4);
 
       // Mark these bytes as in-use
       self->_activeBytes += decodedImageBytes;

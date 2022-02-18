@@ -115,7 +115,7 @@ RCT_ENUM_CONVERTER(UIBackgroundFetchResult, (@{
 
 @end
 #else
-@interface RCTPushNotificationManager () <NativePushNotificationManagerIOS>
+@interface RCTPushNotificationManager () <NativePushNotificationManagerIOSSpec>
 @end
 #endif // TARGET_OS_UIKITFORMAC
 
