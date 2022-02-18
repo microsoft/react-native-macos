@@ -1039,28 +1039,28 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
       RCTUIColor *highContrastDarkColor = [RCTConvert UIColor:highContrastDark]; // TODO(macOS GH#750)
       if (lightColor != nil && darkColor != nil) {
 #if TARGET_OS_OSX
-				NSColor *color = [NSColor colorWithName:nil dynamicProvider:^NSColor * _Nonnull(NSAppearance * _Nonnull appearance) {
-					NSMutableArray<NSAppearanceName> *appearances = [NSMutableArray arrayWithArray:@[NSAppearanceNameAqua,NSAppearanceNameDarkAqua]];
-					if (highContrastLightColor != nil) {
-						[appearances addObject:NSAppearanceNameAccessibilityHighContrastAqua];
-					}
-					if (highContrastDarkColor != nil) {
-						[appearances addObject:NSAppearanceNameAccessibilityHighContrastDarkAqua];
-					}
-					NSAppearanceName bestMatchingAppearance = [appearance bestMatchFromAppearancesWithNames:appearances];
-					if (bestMatchingAppearance == NSAppearanceNameAqua) {
-						return lightColor;
-					} else if (bestMatchingAppearance == NSAppearanceNameDarkAqua) {
-						return darkColor;
-					} else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastAqua) {
-						return highContrastLightColor;
-					} else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastDarkAqua) {
-						return highContrastDarkColor;
-					} else {
-						RCTLogConvertError(json, @"a UIColor. Expected a dynamic appearance aware color.");
-						return lightColor;
-					}
-				}];
+        NSColor *color = [NSColor colorWithName:nil dynamicProvider:^NSColor * _Nonnull(NSAppearance * _Nonnull appearance) {
+          NSMutableArray<NSAppearanceName> *appearances = [NSMutableArray arrayWithArray:@[NSAppearanceNameAqua,NSAppearanceNameDarkAqua]];
+          if (highContrastLightColor != nil) {
+            [appearances addObject:NSAppearanceNameAccessibilityHighContrastAqua];
+          }
+          if (highContrastDarkColor != nil) {
+            [appearances addObject:NSAppearanceNameAccessibilityHighContrastDarkAqua];
+          }
+          NSAppearanceName bestMatchingAppearance = [appearance bestMatchFromAppearancesWithNames:appearances];
+          if (bestMatchingAppearance == NSAppearanceNameAqua) {
+            return lightColor;
+          } else if (bestMatchingAppearance == NSAppearanceNameDarkAqua) {
+            return darkColor;
+          } else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastAqua) {
+            return highContrastLightColor;
+          } else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastDarkAqua) {
+            return highContrastDarkColor;
+          } else {
+            RCTLogConvertError(json, @"an NSColorColor. Could not resolve current appearance. Defaulting to light.");
+            return lightColor;
+          }
+        }];
         return color;
 #else
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
