@@ -257,6 +257,11 @@ const APIExamples: Array<RNTesterExample> = [
     supportsTVOS: false,
   },
   {
+    key: 'ASANCrashExample',
+    module: require('../examples/ASAN/ASANCrashExample'),
+    supportsTVOS: false,
+  },
+  {
     key: 'DevSettings',
     module: require('../examples/DevSettings/DevSettingsExample'),
   },

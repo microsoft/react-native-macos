@@ -73,7 +73,13 @@
 		9F15345F233AB2C4006DFE44 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F15345E233AB2C4006DFE44 /* AppDelegate.mm */; };
 		9F153461233AB2C7006DFE44 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9F153460233AB2C7006DFE44 /* Assets.xcassets */; };
 		9F153467233AB2C7006DFE44 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F153466233AB2C7006DFE44 /* main.m */; };
-		A13DC98BDCE5EE508FFA7BE7 /* libPods-RNTester-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A355204268D03CF69ABC11D /* libPods-RNTester-macOS.a */; };
+		9F29408627A99ACE00AB150A /* Debug-iOS.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9F29408327A999D200AB150A /* Debug-iOS.xcconfig */; };
+		9F29408727A99ACE00AB150A /* Debug-iOS.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9F29408327A999D200AB150A /* Debug-iOS.xcconfig */; };
+		9F29408827A99ACF00AB150A /* Debug-iOS.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9F29408327A999D200AB150A /* Debug-iOS.xcconfig */; };
+		9F29408927A99AD000AB150A /* Debug-iOS.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9F29408327A999D200AB150A /* Debug-iOS.xcconfig */; };
+		9F29408A27A99AD300AB150A /* Debug-iOS.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9F29408327A999D200AB150A /* Debug-iOS.xcconfig */; };
+		9F29408B27A99AD400AB150A /* Debug-iOS.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9F29408327A999D200AB150A /* Debug-iOS.xcconfig */; };
+		AFC757F10008B167B9DCFD43 /* libPods-iosDeviceBuild.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDE8ED7D8FB17AFA3F66FF96 /* libPods-iosDeviceBuild.a */; };
 		B2F2040A24E76D7600863BE1 /* ScreenshotMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = B2F2040924E76D7600863BE1 /* ScreenshotMacOS.mm */; };
 		CDFF3988A89A5269C488653F /* libPods-iosDeviceBuild.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 287A4762E82517B7FACCE7D3 /* libPods-iosDeviceBuild.a */; };
 		E59A0FBD0170A092274A6207 /* libPods-RNTesterUnitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72247071A1BF06D54F0FECC7 /* libPods-RNTesterUnitTests.a */; };
@@ -243,7 +249,24 @@
 		9F153478233AB2C7006DFE44 /* RNTester-macOSIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "RNTester-macOSIntegrationTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F15347C233AB2C7006DFE44 /* RNTesterIntegrationTests_macOS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNTesterIntegrationTests_macOS.m; sourceTree = "<group>"; };
 		9F15347E233AB2C7006DFE44 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A112BDF7485AEF790F6D3E26 /* Pods-iosDeviceBuild.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosDeviceBuild.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iosDeviceBuild/Pods-iosDeviceBuild.debug.xcconfig"; sourceTree = "<group>"; };
+		9F29408327A999D200AB150A /* Debug-iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Debug-iOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D86927B313CA005F40CC /* Debug-macOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Debug-macOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D86E27BDB80C005F40CC /* Debug_UnitTests-iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Debug_UnitTests-iOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D86F27BDB826005F40CC /* Debug_IntegrationTests-iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Debug_IntegrationTests-iOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D87027BDB840005F40CC /* Debug-UnitTests-macOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Debug-UnitTests-macOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D87127BDB84C005F40CC /* Debug-IntegrationTests-macOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Debug-IntegrationTests-macOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D87A27BDFFCD005F40CC /* Release-macOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Release-macOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D87B27BDFFCD005F40CC /* Release-iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Release-iOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D87C27BDFFCD005F40CC /* Release-IntegrationTests-macOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Release-IntegrationTests-macOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D87D27BDFFCD005F40CC /* Release-UnitTests-macOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Release-UnitTests-macOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D87E27BDFFCD005F40CC /* Release_UnitTests-iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Release_UnitTests-iOS.xcconfig"; sourceTree = "<group>"; };
+		9F44D87F27BDFFCD005F40CC /* Release_IntegrationTests-iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Release_IntegrationTests-iOS.xcconfig"; sourceTree = "<group>"; };
+		A3D174930AD75B12F47289E6 /* libPods-RNTester-macOSIntegrationTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester-macOSIntegrationTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A84904C6079328ECC03280D1 /* libPods-RNTesterIntegrationTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTesterIntegrationTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB0102C840930F7AC64C3D36 /* libPods-RNTesterUnitTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTesterUnitTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		ABC5325C94F71908317C26A8 /* Pods-macOSBuild.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-macOSBuild.debug.xcconfig"; path = "Target Support Files/Pods-macOSBuild/Pods-macOSBuild.debug.xcconfig"; sourceTree = "<group>"; };
+		AC6DB4C70AE6C558CFE78E9D /* Pods-iosDeviceBuild.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosDeviceBuild.release.xcconfig"; path = "Target Support Files/Pods-iosDeviceBuild/Pods-iosDeviceBuild.release.xcconfig"; sourceTree = "<group>"; };
+		AFC451B51B7D6F0C1CAD0C18 /* Pods-RNTester-macOSIntegrationTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester-macOSIntegrationTests.debug.xcconfig"; path = "Target Support Files/Pods-RNTester-macOSIntegrationTests/Pods-RNTester-macOSIntegrationTests.debug.xcconfig"; sourceTree = "<group>"; };
 		B2F2040824E76D7600863BE1 /* ScreenshotMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ScreenshotMacOS.h; path = NativeModuleExample/ScreenshotMacOS.h; sourceTree = SOURCE_ROOT; };
 		B2F2040924E76D7600863BE1 /* ScreenshotMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ScreenshotMacOS.mm; path = NativeModuleExample/ScreenshotMacOS.mm; sourceTree = SOURCE_ROOT; };
 		B5C8E567A4E6281113811CB1 /* libPods-RNTester.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -525,6 +548,7 @@
 				9F15345C233AB2C4006DFE44 /* RNTester-macOS */,
 				9F153470233AB2C7006DFE44 /* RNTester-macOSUnitTests */,
 				9F15347B233AB2C7006DFE44 /* RNTester-macOSIntegrationTests */,
+				9F29408C27A99BC600AB150A /* xcconfig */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2DE7E7D81FB2A4F3009E225D /* Frameworks */,
 				571A4A20844C3BA40A3D302B /* Pods */,
@@ -585,6 +609,66 @@
 				9F15347E233AB2C7006DFE44 /* Info.plist */,
 			);
 			path = "RNTester-macOSIntegrationTests";
+			sourceTree = "<group>";
+		};
+		9F29408C27A99BC600AB150A /* xcconfig */ = {
+			isa = PBXGroup;
+			children = (
+				9F44D87227BDFFA0005F40CC /* Debug */,
+				9F44D87327BDFFA6005F40CC /* Release */,
+			);
+			path = xcconfig;
+			sourceTree = "<group>";
+		};
+		9F44D87227BDFFA0005F40CC /* Debug */ = {
+			isa = PBXGroup;
+			children = (
+				9F29408327A999D200AB150A /* Debug-iOS.xcconfig */,
+				9F44D86E27BDB80C005F40CC /* Debug_UnitTests-iOS.xcconfig */,
+				9F44D86F27BDB826005F40CC /* Debug_IntegrationTests-iOS.xcconfig */,
+				9F44D86927B313CA005F40CC /* Debug-macOS.xcconfig */,
+				9F44D87027BDB840005F40CC /* Debug-UnitTests-macOS.xcconfig */,
+				9F44D87127BDB84C005F40CC /* Debug-IntegrationTests-macOS.xcconfig */,
+			);
+			path = Debug;
+			sourceTree = "<group>";
+		};
+		9F44D87327BDFFA6005F40CC /* Release */ = {
+			isa = PBXGroup;
+			children = (
+				9F44D87B27BDFFCD005F40CC /* Release-iOS.xcconfig */,
+				9F44D87E27BDFFCD005F40CC /* Release_UnitTests-iOS.xcconfig */,
+				9F44D87F27BDFFCD005F40CC /* Release_IntegrationTests-iOS.xcconfig */,
+				9F44D87A27BDFFCD005F40CC /* Release-macOS.xcconfig */,
+				9F44D87D27BDFFCD005F40CC /* Release-UnitTests-macOS.xcconfig */,
+				9F44D87C27BDFFCD005F40CC /* Release-IntegrationTests-macOS.xcconfig */,
+			);
+			path = Release;
+			sourceTree = "<group>";
+		};
+		E23BD6487B06BD71F1A86914 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				6D3E7ECE8F9BEC26E5786555 /* Pods-RNTester.debug.xcconfig */,
+				3DC317D3EE16C63CD9243667 /* Pods-RNTester.release.xcconfig */,
+				3CD3706443F2188E09CBF2D2 /* Pods-RNTesterIntegrationTests.debug.xcconfig */,
+				E88C98CC10E157202A961408 /* Pods-RNTesterIntegrationTests.release.xcconfig */,
+				C38CB0C2095A8FFDE13321E5 /* Pods-RNTesterUnitTests.debug.xcconfig */,
+				8735BC063632C9712E25C7D9 /* Pods-RNTesterUnitTests.release.xcconfig */,
+				E9CE1968E72EB97B674E80A4 /* Pods-RNTester-macOS.debug.xcconfig */,
+				604873ABF80DC3EE97E87CCF /* Pods-RNTester-macOS.release.xcconfig */,
+				AFC451B51B7D6F0C1CAD0C18 /* Pods-RNTester-macOSIntegrationTests.debug.xcconfig */,
+				27E7277560D64734B4F0E7D9 /* Pods-RNTester-macOSIntegrationTests.release.xcconfig */,
+				87D5D06CD6060D32601A10DD /* Pods-RNTester-macOSUnitTests.debug.xcconfig */,
+				821937C864FDA0F3C485B4A6 /* Pods-RNTester-macOSUnitTests.release.xcconfig */,
+				1ECF206BF13260815AAC95EA /* Pods-iosDeviceBuild.debug.xcconfig */,
+				AC6DB4C70AE6C558CFE78E9D /* Pods-iosDeviceBuild.release.xcconfig */,
+				FEC7DFC73F5A7055398F11B6 /* Pods-iosSimulatorBuild.debug.xcconfig */,
+				50AD031542320BFA83630EDE /* Pods-iosSimulatorBuild.release.xcconfig */,
+				ABC5325C94F71908317C26A8 /* Pods-macOSBuild.debug.xcconfig */,
+				F7DC249273A51CC8A56ED858 /* Pods-macOSBuild.release.xcconfig */,
+			);
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		E7DB20A022B2BA84005AC45F /* RNTesterUnitTests */ = {
@@ -922,6 +1006,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F29408B27A99AD400AB150A /* Debug-iOS.xcconfig in Resources */,
 				2DDEF0101F84BF7B00DBDF73 /* Images.xcassets in Resources */,
 				8145AE06241172D900A3F8DA /* LaunchScreen.storyboard in Resources */,
 				3D2AFAF51D646CF80089D1A3 /* legacy_image@2x.png in Resources */,
@@ -932,6 +1017,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F29408A27A99AD300AB150A /* Debug-iOS.xcconfig in Resources */,
 				5101985B23ADA00B00118BF1 /* legacy_image@2x.png in Resources */,
 				9F153461233AB2C7006DFE44 /* Assets.xcassets in Resources */,
 				5101985723AD9EE600118BF1 /* Main.storyboard in Resources */,
@@ -942,6 +1028,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F29408827A99ACF00AB150A /* Debug-iOS.xcconfig in Resources */,
 				3811324724550A8F009E988D /* RNTesterUnitTestsBundle.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -950,6 +1037,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F29408927A99AD000AB150A /* Debug-iOS.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -957,6 +1045,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F29408627A99ACE00AB150A /* Debug-iOS.xcconfig in Resources */,
 				E7DB20DA22B2BAA6005AC45F /* RNTesterUnitTestsBundle.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -965,6 +1054,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F29408727A99ACE00AB150A /* Debug-iOS.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1557,7 +1647,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 98233960D1D6A1977D1C7EAF /* Pods-RNTester.debug.xcconfig */;
+			baseConfigurationReference = 9F29408327A999D200AB150A /* Debug-iOS.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = RNTester/RNTester.entitlements;
@@ -1603,7 +1693,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5BEC8567F3741044B6A5EFC5 /* Pods-RNTester.release.xcconfig */;
+			baseConfigurationReference = 9F44D87B27BDFFCD005F40CC /* Release-iOS.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1822,7 +1912,7 @@
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "arm64 ";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "arm64";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -1906,7 +1996,7 @@
 				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "arm64 ";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "arm64";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_TREAT_INCOMPATIBLE_POINTER_TYPE_WARNINGS_AS_ERRORS = YES;
@@ -1948,7 +2038,7 @@
 		};
 		9F15347F233AB2C7006DFE44 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2BE07A0C310D8A03C00D6F07 /* Pods-RNTester-macOS.debug.xcconfig */;
+			baseConfigurationReference = 9F44D86927B313CA005F40CC /* Debug-macOS.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1988,7 +2078,7 @@
 		};
 		9F153480233AB2C7006DFE44 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9AED879F1A9397646A861A9F /* Pods-RNTester-macOS.release.xcconfig */;
+			baseConfigurationReference = 9F44D87A27BDFFCD005F40CC /* Release-macOS.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -2028,7 +2118,7 @@
 		};
 		9F153481233AB2C7006DFE44 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 406E6935B300A29BA57EE1B0 /* Pods-RNTester-macOSUnitTests.debug.xcconfig */;
+			baseConfigurationReference = 9F44D87027BDB840005F40CC /* Debug-UnitTests-macOS.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2064,7 +2154,7 @@
 		};
 		9F153482233AB2C7006DFE44 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9EAC9B16F3BA65B8E1511E5E /* Pods-RNTester-macOSUnitTests.release.xcconfig */;
+			baseConfigurationReference = 9F44D87D27BDFFCD005F40CC /* Release-UnitTests-macOS.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2100,7 +2190,7 @@
 		};
 		9F153483233AB2C7006DFE44 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3CCA44B8467CB06ACED8E0E9 /* Pods-RNTester-macOSIntegrationTests.debug.xcconfig */;
+			baseConfigurationReference = 9F44D87127BDB84C005F40CC /* Debug-IntegrationTests-macOS.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2138,7 +2228,7 @@
 		};
 		9F153484233AB2C7006DFE44 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0BFED72B21FBD987A97E30B9 /* Pods-RNTester-macOSIntegrationTests.release.xcconfig */;
+			baseConfigurationReference = 9F44D87C27BDFFCD005F40CC /* Release-IntegrationTests-macOS.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2171,7 +2261,7 @@
 		};
 		E7DB20A722B2BA84005AC45F /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34028D6B10F47E490042EB27 /* Pods-RNTesterUnitTests.debug.xcconfig */;
+			baseConfigurationReference = 9F44D86E27BDB80C005F40CC /* Debug_UnitTests-iOS.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2207,7 +2297,7 @@
 		};
 		E7DB20A822B2BA84005AC45F /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E9618482EC8608D4872A6E28 /* Pods-RNTesterUnitTests.release.xcconfig */;
+			baseConfigurationReference = 9F44D87E27BDFFCD005F40CC /* Release_UnitTests-iOS.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2243,7 +2333,7 @@
 		};
 		E7DB215B22B2F332005AC45F /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 972A459EE6CF8CC63531A088 /* Pods-RNTesterIntegrationTests.debug.xcconfig */;
+			baseConfigurationReference = 9F44D86F27BDB826005F40CC /* Debug_IntegrationTests-iOS.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
@@ -2281,7 +2371,7 @@
 		};
 		E7DB215C22B2F332005AC45F /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7D51F73F0DA20287418D98BD /* Pods-RNTesterIntegrationTests.release.xcconfig */;
+			baseConfigurationReference = 9F44D87F27BDFFCD005F40CC /* Release_IntegrationTests-iOS.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
