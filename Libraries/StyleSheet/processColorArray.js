@@ -10,13 +10,25 @@
 
 'use strict';
 
-const processColor = require('./processColor');
-import type {NativeOrDynamicColorType} from '../Color/NativeOrDynamicColorType'; // TODO(macOS ISS#2323203)
+import type {ColorValue} from './StyleSheet';
+import processColor, {type ProcessedColorValue} from './processColor';
+
+const TRANSPARENT = 0; // rgba(0, 0, 0, 0)
 
 function processColorArray(
-  colors: ?Array<string>,
-): ?Array<?(number | NativeOrDynamicColorType)> {
-  return colors == null ? null : colors.map(processColor);
+  colors: ?$ReadOnlyArray<ColorValue>,
+): ?$ReadOnlyArray<ProcessedColorValue> {
+  return colors == null ? null : colors.map(processColorElement);
+}
+
+function processColorElement(color: ColorValue): ProcessedColorValue {
+  const value = processColor(color);
+  // For invalid colors, fallback to transparent.
+  if (value == null) {
+    console.error('Invalid value in color array:', color);
+    return TRANSPARENT;
+  }
+  return value;
 }
 
 module.exports = processColorArray;

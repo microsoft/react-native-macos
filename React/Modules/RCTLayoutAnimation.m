@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -11,11 +11,11 @@
 
 @implementation RCTLayoutAnimation
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 static UIViewAnimationCurve _currentKeyboardAnimationCurve;
-#endif // TODO(macOS ISS#2323203)
+#endif // TODO(macOS GH#774)
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 static UIViewAnimationOptions UIViewAnimationOptionsFromRCTAnimationType(RCTAnimationType type)
 {
   switch (type) {
@@ -35,7 +35,7 @@ static UIViewAnimationOptions UIViewAnimationOptionsFromRCTAnimationType(RCTAnim
       return UIViewAnimationOptionCurveEaseInOut;
   }
 }
-#elif TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#elif TARGET_OS_OSX // [TODO(macOS GH#774)
 static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType type)
 {
   switch (type) {
@@ -52,16 +52,15 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
       return kCAMediaTimingFunctionDefault;
   }
 }
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 // Use a custom initialization function rather than implementing `+initialize` so that we can control
 // when the initialization code runs. `+initialize` runs immediately before the first message is sent
 // to the class which may be too late for us. By this time, we may have missed some
 // `UIKeyboardWillChangeFrameNotification`s.
 + (void)initializeStatics
 {
-#if !TARGET_OS_TV
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -69,17 +68,14 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
                                                  name:UIKeyboardWillChangeFrameNotification
                                                object:nil];
   });
-#endif
 }
 
 + (void)keyboardWillChangeFrame:(NSNotification *)notification
 {
-#if !TARGET_OS_TV
   NSDictionary *userInfo = notification.userInfo;
   _currentKeyboardAnimationCurve = [userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
-#endif
 }
-#endif // TODO(macOS ISS#2323203)
+#endif // TODO(macOS GH#774)
 
 - (instancetype)initWithDuration:(NSTimeInterval)duration
                            delay:(NSTimeInterval)delay
@@ -100,8 +96,7 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
   return self;
 }
 
-- (instancetype)initWithDuration:(NSTimeInterval)duration
-                          config:(NSDictionary *)config
+- (instancetype)initWithDuration:(NSTimeInterval)duration config:(NSDictionary *)config
 {
   if (!config) {
     return nil;
@@ -123,21 +118,20 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
     }
 
     _animationType = [RCTConvert RCTAnimationType:config[@"type"]];
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
     if (_animationType == RCTAnimationTypeSpring) {
       _springDamping = [RCTConvert CGFloat:config[@"springDamping"]];
       _initialVelocity = [RCTConvert CGFloat:config[@"initialVelocity"]];
     }
-#endif // TODO(macOS ISS#2323203)
+#endif // TODO(macOS GH#774)
   }
 
   return self;
 }
 
-- (void)performAnimations:(void (^)(void))animations
-      withCompletionBlock:(void (^)(BOOL completed))completionBlock
+- (void)performAnimations:(void (^)(void))animations withCompletionBlock:(void (^)(BOOL completed))completionBlock
 {
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   if (_animationType == RCTAnimationTypeSpring) {
     [UIView animateWithDuration:_duration
                           delay:_delay
@@ -148,8 +142,7 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
                      completion:completionBlock];
   } else {
     UIViewAnimationOptions options =
-      UIViewAnimationOptionBeginFromCurrentState |
-      UIViewAnimationOptionsFromRCTAnimationType(_animationType);
+        UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionsFromRCTAnimationType(_animationType);
 
     [UIView animateWithDuration:_duration
                           delay:_delay
@@ -157,7 +150,7 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
                      animations:animations
                      completion:completionBlock];
   }
-#elif TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#elif TARGET_OS_OSX // [TODO(macOS GH#774)
   NSString *timingFunctionName = CAMediaTimingFunctionNameFromRCTAnimationType(_animationType);
   
   CAMediaTimingFunction *timingFunction = [CAMediaTimingFunction functionWithName:timingFunctionName];
@@ -167,6 +160,7 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
     [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
       context.duration = duration;
       context.timingFunction = timingFunction;
+      context.allowsImplicitAnimation = YES;
       
       if (animations != nil) {
         animations();
@@ -185,24 +179,30 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
     dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(_delay * NSEC_PER_SEC));
     dispatch_after(time, dispatch_get_main_queue(), runAnimationGroup);
   }
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 }
 
 - (BOOL)isEqual:(RCTLayoutAnimation *)animation
 {
-  return
-    _duration == animation.duration &&
-    _delay == animation.delay &&
-    (_property == animation.property || [_property isEqualToString:animation.property]) &&
-    _springDamping == animation.springDamping &&
-    _initialVelocity == animation.initialVelocity &&
-    _animationType == animation.animationType;
+  return _duration == animation.duration && _delay == animation.delay &&
+      (_property == animation.property || [_property isEqualToString:animation.property]) &&
+      _springDamping == animation.springDamping && _initialVelocity == animation.initialVelocity &&
+      _animationType == animation.animationType;
 }
 
 - (NSString *)description
 {
-  return [NSString stringWithFormat:@"<%@: %p; duration: %f; delay: %f; property: %@; springDamping: %f; initialVelocity: %f; animationType: %li;>",
-          NSStringFromClass([self class]), self, _duration, _delay, _property, _springDamping, _initialVelocity, (long)_animationType];
+  return [NSString
+      stringWithFormat:
+          @"<%@: %p; duration: %f; delay: %f; property: %@; springDamping: %f; initialVelocity: %f; animationType: %li;>",
+          NSStringFromClass([self class]),
+          self,
+          _duration,
+          _delay,
+          _property,
+          _springDamping,
+          _initialVelocity,
+          (long)_animationType];
 }
 
 @end

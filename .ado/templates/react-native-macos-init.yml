@@ -9,6 +9,8 @@ steps:
     submodules: false # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
     persistCredentials: false # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
+  - template: apple-node-setup.yml
+
   # First do a build of the local package, since we point the cli at the local files, it needs to be pre-built
   - task: CmdLine@2
     displayName: yarn install (local react-native-macos)
@@ -20,7 +22,7 @@ steps:
     inputs:
       script: |
         cd packages/react-native-macos-init
-        yarn install
+        yarn install --frozen-lockfile
 
   - task: CmdLine@2
     displayName: yarn build (local react-native-macos-init)
@@ -34,12 +36,6 @@ steps:
     inputs:
       script: |
         npm install --global verdaccio
-
-  - task: CmdLine@2
-    displayName: Install n used by ado-start-verdaccio.sh
-    inputs:
-      script: |
-        npm install --global n
 
   - task: ShellScript@2
     displayName: Launch test npm server (verdaccio)
@@ -63,11 +59,23 @@ steps:
   - task: CmdLine@2
     displayName: Bump package version
     inputs:
-      script: node .ado/bumpFileVersions.js
+      script: node scripts/bump-oss-version.js --nightly -v 0.0.1000
+
+  # Publish will fail if package.json is marked as private
+  - task: CmdLine@2
+    displayName: Remove workspace config from package.json
+    inputs:
+      script: node .ado/removeWorkspaceConfig.js
 
   - script: |
       npm publish --registry http://localhost:4873
     displayName: Publish react-native-macos to verdaccio
+
+  # Put the private flag back
+  - task: CmdLine@2
+    displayName: Restore package.json workspace config
+    inputs:
+      script: node .ado/restoreWorkspaceConfig.js
 
   - script: |
       npx beachball publish --branch origin/$(System.PullRequest.TargetBranch) --no-push --registry http://localhost:4873 --yes --access public

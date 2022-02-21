@@ -1,0 +1,95 @@
+--- ./ReactAndroid/build.gradle	2022-01-11 17:41:28.000000000 -0800
++++ /var/folders/vs/8_b205053dddbcv7btj0w0v80000gn/T/update-1h8V3n/merge/Build/ReactAndroid/build.gradle	2022-01-12 15:51:37.000000000 -0800
+@@ -39,6 +39,8 @@
+ // and the build will use that.
+ def boostPath = dependenciesPath ?: System.getenv("REACT_NATIVE_BOOST_PATH")
+ 
++def V8Path = 'packages/ReactNative.V8JSI.Android.7.0.276.32-v1'
++
+ // Setup build type for NDK, supported values: {debug, release}
+ def nativeBuildType = System.getenv("NATIVE_BUILD_TYPE") ?: "release"
+ 
+@@ -89,11 +91,22 @@
+     dest(new File(downloadsDir, "folly-${FOLLY_VERSION}.tar.gz"))
+ }
+ 
++def follyReplaceContent = '''
++  ssize_t r;
++  do {
++    r = open(name, flags, mode);
++  } while (r == -1 && errno == EINTR);
++  return r;
++'''
++
+ task prepareFolly(dependsOn: dependenciesPath ? [] : [downloadFolly], type: Copy) {
+     from(dependenciesPath ?: tarTree(downloadFolly.dest))
+     from("src/main/jni/third-party/folly/Android.mk")
+     include("folly-${FOLLY_VERSION}/folly/**/*", "Android.mk")
+     eachFile { fname -> fname.path = (fname.path - "folly-${FOLLY_VERSION}/") }
++    // Fixes problem with Folly failing to build on certain systems. See
++    // https://github.com/facebook/react-native/issues/28298
++    filter { line -> line.replaceAll('return int\\(wrapNoInt\\(open, name, flags, mode\\)\\);', follyReplaceContent) }
+     includeEmptyDirs = false
+     into("$thirdPartyNdkDir/folly")
+ }
+@@ -161,6 +174,14 @@
+     into "$thirdPartyNdkDir/hermes"
+ }
+ 
++task prepareV8() {
++    copy {
++        from "src/main/jni/third-party/v8jsi/"
++        include("*.mk")
++        into "$thirdPartyNdkDir/v8jsi"
++    }
++}
++
+ task downloadGlog(dependsOn: createNativeDepsDirectories, type: Download) {
+     src("https://github.com/google/glog/archive/v${GLOG_VERSION}.tar.gz")
+     onlyIfNewer(true)
+@@ -354,7 +375,7 @@
+ }
+ 
+ def buildReactNdkLib = tasks.register("buildReactNdkLib", Exec) {
+-    dependsOn(prepareJSC, prepareHermes, prepareBoost, prepareDoubleConversion, prepareFmt, prepareFolly, prepareGlog, prepareLibevent, extractAARHeaders, extractJNIFiles)
++    dependsOn(prepareJSC, prepareHermes, prepareV8, prepareBoost, prepareDoubleConversion, prepareFmt, prepareFolly, prepareGlog, prepareLibevent, extractAARHeaders, extractJNIFiles)
+     dependsOn("generateCodegenArtifactsFromSchema");
+ 
+     inputs.dir("$projectDir/../ReactCommon")
+@@ -370,6 +391,7 @@
+             "NDK_OUT=" + temporaryDir,
+             "NDK_LIBS_OUT=$buildDir/react-ndk/all",
+             "THIRD_PARTY_NDK_DIR=$thirdPartyNdkDir",
++            "V8_NUGET_DIR=$projectDir/$V8Path",
+             "REACT_COMMON_DIR=$projectDir/../ReactCommon",
+             "REACT_GENERATED_SRC_DIR=$buildDir/generated/source",
+             "REACT_SRC_DIR=$projectDir/src/main/java/com/facebook/react",
+@@ -384,6 +406,7 @@
+     commandLine(getNdkBuildFullPath(),
+             "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
+             "THIRD_PARTY_NDK_DIR=$thirdPartyNdkDir",
++            "V8_NUGET_DIR=$projectDir/$V8Path",
+             "REACT_COMMON_DIR=$projectDir/../ReactCommon",
+             "-C", file("src/main/jni/react/jni").absolutePath,
+             "clean")
+@@ -395,10 +418,16 @@
+ 
+ def packageReactNdkLibs = tasks.register("packageReactNdkLibs", Copy) {
+     dependsOn(buildReactNdkLib)
+-    from("$buildDir/react-ndk/all")
+-    into("$buildDir/react-ndk/exported")
+-    exclude("**/libjsc.so")
+-    exclude("**/libhermes.so")
++    from "$buildDir/react-ndk/all"
++    from("$thirdPartyNdkDir/jsc/jni")
++    into "$buildDir/react-ndk/exported"
++
++    if(project.hasProperty('param') ? project.property('param').equals("excludeLibs") : false) {
++        exclude '**/*.so'
++    } else {
++        exclude '**/libjsc.so'
++        exclude("**/libhermes.so")
++    }
+ }
+ 
+ def packageReactNdkLibsForBuck = tasks.register("packageReactNdkLibsForBuck", Copy) {

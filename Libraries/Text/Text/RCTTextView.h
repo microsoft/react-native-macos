@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -6,12 +6,15 @@
  */
 
 #import <React/RCTComponent.h>
+#import <React/RCTEventDispatcher.h> // TODO(OSS Candidate ISS#2710739)
 
-#import <React/RCTUIKit.h> // TODO(macOS ISS#2323203)
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface RCTTextView : RCTUIView // TODO(macOS ISS#3536887)
+
+- (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher; // TODO(OSS Candidate ISS#2710739)
 
 @property (nonatomic, assign) BOOL selectable;
 

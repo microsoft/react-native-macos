@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -26,13 +26,13 @@ const DebugInstructions: () => Node = Platform.select({
       Native debug menu.
     </Text>
   ),
-  // [TODO(macOS ISS#2323203)
+  // [TODO(macOS GH#774)
   macos: () => (
     <Text>
       Secondary click in this window to open the React Native debug menu.
     </Text>
   ),
-  // ]TODO(macOS ISS#2323203)
+  // ]TODO(macOS GH#774)
   default: () => (
     <Text>
       Press <Text style={styles.highlight}>Cmd or Ctrl + M</Text> or{' '}

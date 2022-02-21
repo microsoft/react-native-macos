@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO(macOS ISS#2323203)
+// TODO(macOS GH#774)
 
 #include <TargetConditionals.h>
 
@@ -62,6 +62,8 @@ UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
 #define RCTPlatformView         UIView
 #define RCTUIView UIView // TODO(macOS ISS#3536887)
 #define RCTUIScrollView UIScrollView // TODO(macOS ISS#3536887)
+
+#define RCTPlatformWindow UIWindow
 
 UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, UIEvent *event)
 {
@@ -270,6 +272,9 @@ void UIGraphicsEndImageContext(void);
 // semantically equivalent types
 //
 
+// UIAccessibility.h/NSAccessibility.h
+@compatibility_alias UIAccessibilityCustomAction NSAccessibilityCustomAction;
+
 // UIColor.h/NSColor.h
 #define RCTUIColor NSColor
 
@@ -322,6 +327,9 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 // UIImage
 @compatibility_alias UIImage NSImage;
 
+#ifdef __cplusplus
+extern "C"
+#endif
 CGFloat UIImageGetScale(NSImage *image);
 
 CGImageRef UIImageGetCGImageRef(NSImage *image);
@@ -355,6 +363,8 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 // UIView
 #define RCTPlatformView NSView
 
+#define RCTPlatformWindow NSWindow
+
 @interface RCTUIView : NSView // TODO(macOS ISS#3536887)
 
 @property (nonatomic, readonly) BOOL canBecomeFirstResponder;
@@ -384,10 +394,15 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 @property (nonatomic) CGAffineTransform transform;
 
 /**
+ * Specifies whether the view should receive the mouse down event when the
+ * containing window is in the background.
+ */
+@property (nonatomic, assign) BOOL acceptsFirstMouse;
+/**
  * Specifies whether the view participates in the key view loop as user tabs through different controls
  * This is equivalent to acceptsFirstResponder on mac OS.
  */
-@property (nonatomic, assign) BOOL acceptsKeyboardFocus;
+@property (nonatomic, assign) BOOL focusable;
 /**
  * Specifies whether focus ring should be drawn when the view has the first responder status.
  */
@@ -437,10 +452,6 @@ NS_INLINE BOOL RCTUIViewIsDescendantOfView(RCTPlatformView *view, RCTPlatformVie
 {
   return [view isDescendantOf:parent];
 }
-
-NSArray *RCTUIViewCalculateKeyViewLoop(RCTPlatformView *root);
-
-BOOL RCTUIViewHasDescendantPassingPredicate(RCTPlatformView *root, BOOL (^predicate)(RCTPlatformView *view));
 
 NS_INLINE NSValue *NSValueWithCGRect(CGRect rect)
 {

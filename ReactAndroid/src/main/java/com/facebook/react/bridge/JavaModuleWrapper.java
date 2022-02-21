@@ -1,9 +1,10 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
- * <p>This source code is licensed under the MIT license found in the LICENSE file in the root
- * directory of this source tree.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  */
+
 package com.facebook.react.bridge;
 
 import static com.facebook.react.bridge.ReactMarkerConstants.CONVERT_CONSTANTS_END;
@@ -14,6 +15,7 @@ import static com.facebook.systrace.Systrace.TRACE_TAG_REACT_JAVA_BRIDGE;
 
 import androidx.annotation.Nullable;
 import com.facebook.proguard.annotations.DoNotStrip;
+import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.systrace.Systrace;
 import com.facebook.systrace.SystraceMessage;
 import java.lang.reflect.Method;
@@ -42,6 +44,7 @@ public class JavaModuleWrapper {
   private final ModuleHolder mModuleHolder;
   private final ArrayList<NativeModule.NativeMethod> mMethods;
   private final ArrayList<MethodDescriptor> mDescs;
+  private static final String TAG = JavaModuleWrapper.class.getSimpleName();
 
   public JavaModuleWrapper(JSInstance jsInstance, ModuleHolder moduleHolder) {
     mJSInstance = jsInstance;
@@ -112,6 +115,17 @@ public class JavaModuleWrapper {
 
   @DoNotStrip
   public @Nullable NativeMap getConstants() {
+    if (ReactFeatureFlags.warnOnLegacyNativeModuleSystemUse) {
+      ReactSoftExceptionLogger.logSoftException(
+          TAG,
+          new ReactNoCrashSoftException(
+              "Calling getConstants() on Java NativeModule (name = \""
+                  + mModuleHolder.getName()
+                  + "\", className = "
+                  + mModuleHolder.getClassName()
+                  + ")."));
+    }
+
     if (!mModuleHolder.getHasConstants()) {
       return null;
     }
@@ -143,8 +157,32 @@ public class JavaModuleWrapper {
 
   @DoNotStrip
   public void invoke(int methodId, ReadableNativeArray parameters) {
+    if (ReactFeatureFlags.warnOnLegacyNativeModuleSystemUse) {
+      ReactSoftExceptionLogger.logSoftException(
+          TAG,
+          new ReactNoCrashSoftException(
+              "Calling method on Java NativeModule (name = \""
+                  + mModuleHolder.getName()
+                  + "\", className = "
+                  + mModuleHolder.getClassName()
+                  + ")."));
+    }
+
     if (mMethods == null || methodId >= mMethods.size()) {
       return;
+    }
+
+    if (ReactFeatureFlags.warnOnLegacyNativeModuleSystemUse) {
+      ReactSoftExceptionLogger.logSoftException(
+          TAG,
+          new ReactNoCrashSoftException(
+              "Calling "
+                  + mDescs.get(methodId).name
+                  + "() on Java NativeModule (name = \""
+                  + mModuleHolder.getName()
+                  + "\", className = "
+                  + mModuleHolder.getClassName()
+                  + ")."));
     }
 
     mMethods.get(methodId).invoke(mJSInstance, parameters);

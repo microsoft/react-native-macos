@@ -1,9 +1,10 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
- * <p>This source code is licensed under the MIT license found in the LICENSE file in the root
- * directory of this source tree.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  */
+
 package com.facebook.react.packagerconnection;
 
 import android.os.Handler;
@@ -47,7 +48,9 @@ public final class ReconnectingWebSocket extends WebSocketListener {
   private @Nullable ConnectionCallback mConnectionCallback;
 
   public ReconnectingWebSocket(
-      String url, MessageCallback messageCallback, ConnectionCallback connectionCallback) {
+      String url,
+      @Nullable MessageCallback messageCallback,
+      @Nullable ConnectionCallback connectionCallback) {
     super();
     mUrl = url;
     mMessageCallback = messageCallback;

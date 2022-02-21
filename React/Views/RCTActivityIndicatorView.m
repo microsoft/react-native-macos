@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -7,23 +7,23 @@
 
 #import "RCTActivityIndicatorView.h"
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 #import <QuartzCore/QuartzCore.h>
 
 @interface RCTActivityIndicatorView ()
 @property (nonatomic, readwrite, getter=isAnimating) BOOL animating;
 @end
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 @implementation RCTActivityIndicatorView {
 }
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if ((self = [super initWithFrame:frame])) {
     self.displayedWhenStopped = NO;
-    self.style = NSProgressIndicatorSpinningStyle;
+    self.style = NSProgressIndicatorStyleSpinning;
   }
   return self;
 }
@@ -82,7 +82,7 @@
   [super updateLayer];
   if (_color != nil) {
     CGFloat r, g, b, a;
-    [[_color colorUsingColorSpaceName:NSCalibratedRGBColorSpace] getRed:&r green:&g blue:&b alpha:&a];
+    [[_color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]] getRed:&r green:&g blue:&b alpha:&a];
 
     CIFilter *colorPoly = [CIFilter filterWithName:@"CIColorPolynomial"];
     [colorPoly setDefaults];
@@ -110,14 +110,14 @@
   return !self.displayedWhenStopped;
 }
 
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 - (void)setHidden:(BOOL)hidden
 {
   if ([self hidesWhenStopped] && ![self isAnimating]) {
-    [super setHidden: YES];
+    [super setHidden:YES];
   } else {
-    [super setHidden: hidden];
+    [super setHidden:hidden];
   }
 }
 

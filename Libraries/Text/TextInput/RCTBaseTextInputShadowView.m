@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -45,6 +45,16 @@
 - (BOOL)isYogaLeafNode
 {
   return YES;
+}
+
+- (void)didSetProps:(NSArray<NSString *> *)changedProps
+{
+  [super didSetProps:changedProps];
+
+  // `backgroundColor` and `opacity` are being applied directly to a UIView,
+  // therefore we need to exclude them from base `textAttributes`.
+  self.textAttributes.backgroundColor = nil;
+  self.textAttributes.opacity = NAN;
 }
 
 - (void)layoutSubviewsWithContext:(RCTLayoutContext)layoutContext
@@ -230,13 +240,13 @@
   CGSize size = [_layoutManager usedRectForTextContainer:_textContainer].size;
 
   return (CGSize){
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
     MAX(minimumSize.width, MIN(RCTCeilPixelValue(size.width), maximumSize.width)),
     MAX(minimumSize.height, MIN(RCTCeilPixelValue(size.height), maximumSize.height))
-#else // [TODO(macOS ISS#2323203)
+#else // [TODO(macOS GH#774)
     MAX(minimumSize.width, MIN(RCTCeilPixelValue(size.width, [self scale]), maximumSize.width)),
     MAX(minimumSize.height, MIN(RCTCeilPixelValue(size.height, [self scale]), maximumSize.height))
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
   };
 }
 

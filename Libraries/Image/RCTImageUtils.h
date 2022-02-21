@@ -3,10 +3,9 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
- *
  */
 
-#import <React/RCTUIKit.h> // TODO(macOS ISS#2323203)
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <React/RCTDefines.h>
 #import <React/RCTResizeMode.h>
@@ -94,6 +93,6 @@ RCT_EXTERN BOOL RCTImageHasAlpha(CGImageRef image);
 /*
  * Return YES if image has an alpha component
  */
-RCT_EXTERN BOOL RCTUIImageHasAlpha(UIImage *image); // TODO(macOS ISS#2323203)
+RCT_EXTERN BOOL RCTUIImageHasAlpha(UIImage *image); // TODO(macOS GH#774)
 
 NS_ASSUME_NONNULL_END

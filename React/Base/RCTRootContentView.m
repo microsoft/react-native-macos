@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -8,7 +8,7 @@
 #import "RCTRootContentView.h"
 
 #import "RCTBridge.h"
-#import "RCTDeviceInfo.h" // TODO(macOS ISS#2323203)
+#import "RCTDeviceInfo.h" // TODO(macOS GH#774)
 #import "RCTPerformanceLogger.h"
 #import "RCTRootView.h"
 #import "RCTRootViewInternal.h"
@@ -17,11 +17,11 @@
 #import "UIView+React.h"
 
 @implementation RCTRootContentView
-{ // [TODO(macOS ISS#2323203)
+{ // [TODO(macOS GH#774)
 #if TARGET_OS_OSX
   BOOL _subscribedToWindowNotifications;
 #endif
-} // ]TODO(macOS ISS#2323203)
+} // ]TODO(macOS GH#774)
 
 - (instancetype)initWithFrame:(CGRect)frame
                        bridge:(RCTBridge *)bridge
@@ -35,18 +35,18 @@
     _touchHandler = [[RCTTouchHandler alloc] initWithBridge:_bridge];
     [_touchHandler attachToView:self];
     [_bridge.uiManager registerRootView:self];
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
     self.postsFrameChangedNotifications = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sendFrameChangedEvent:) name:NSViewFrameDidChangeNotification object:self];
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
   }
   return self;
 }
 
-RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame:(CGRect)frame)
-RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder:(nonnull NSCoder *)aDecoder)
+RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
+RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (nonnull NSCoder *)aDecoder)
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (void)dealloc
 {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -85,7 +85,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder:(nonnull NSCoder *)aDecoder)
 #pragma clang diagnostic pop
 }
 
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 - (void)layoutSubviews
 {
@@ -100,8 +100,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder:(nonnull NSCoder *)aDecoder)
   dispatch_async(dispatch_get_main_queue(), ^{
     if (!self->_contentHasAppeared) {
       self->_contentHasAppeared = YES;
-      [[NSNotificationCenter defaultCenter] postNotificationName:RCTContentDidAppearNotification
-                                                          object:self.superview];
+      [[NSNotificationCenter defaultCenter] postNotificationName:RCTContentDidAppearNotification object:self.superview];
     }
   });
 }
@@ -121,8 +120,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder:(nonnull NSCoder *)aDecoder)
   CGSize size = self.bounds.size;
   return CGSizeMake(
       _sizeFlexibility & RCTRootViewSizeFlexibilityWidth ? INFINITY : size.width,
-      _sizeFlexibility & RCTRootViewSizeFlexibilityHeight ? INFINITY : size.height
-    );
+      _sizeFlexibility & RCTRootViewSizeFlexibilityHeight ? INFINITY : size.height);
 }
 
 - (void)updateAvailableSize
@@ -152,7 +150,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder:(nonnull NSCoder *)aDecoder)
 
     [_bridge enqueueJSCall:@"AppRegistry"
                     method:@"unmountApplicationComponentAtRootTag"
-                      args:@[self.reactTag]
+                      args:@[ self.reactTag ]
                 completion:NULL];
   }
 }

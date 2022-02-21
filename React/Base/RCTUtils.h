@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -9,7 +9,7 @@
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
-#import <React/RCTUIKit.h> // TODO(macOS ISS#2323203)
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <React/RCTAssert.h>
 #import <React/RCTDefines.h>
@@ -42,18 +42,20 @@ RCT_EXTERN void RCTUnsafeExecuteOnMainQueueSync(dispatch_block_t block);
 
 // Get screen metrics in a thread-safe way
 RCT_EXTERN CGFloat RCTScreenScale(void);
+RCT_EXTERN CGFloat RCTFontSizeMultiplier(void);
 RCT_EXTERN CGSize RCTScreenSize(void);
+RCT_EXTERN CGSize RCTViewportSize(void);
 
 // Round float coordinates to nearest whole screen pixel (not point)
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 RCT_EXTERN CGFloat RCTRoundPixelValue(CGFloat value);
 RCT_EXTERN CGFloat RCTCeilPixelValue(CGFloat value);
 RCT_EXTERN CGFloat RCTFloorPixelValue(CGFloat value);
-#else // [TODO(macOS ISS#2323203)
+#else // [TODO(macOS GH#774)
 RCT_EXTERN CGFloat RCTRoundPixelValue(CGFloat value, CGFloat scale);
 RCT_EXTERN CGFloat RCTCeilPixelValue(CGFloat value, CGFloat scale);
 RCT_EXTERN CGFloat RCTFloorPixelValue(CGFloat value, CGFloat scale);
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 // Convert a size in points to pixels, rounded up to the nearest integral size
 RCT_EXTERN CGSize RCTSizeInPixels(CGSize pointSize, CGFloat scale);
@@ -61,16 +63,20 @@ RCT_EXTERN CGSize RCTSizeInPixels(CGSize pointSize, CGFloat scale);
 // Method swizzling
 RCT_EXTERN IMP RCTSwapClassMethods(Class cls, SEL original, SEL replacement); // TODO(OSS Candidate ISS#2710739)
 RCT_EXTERN IMP RCTSwapInstanceMethods(Class cls, SEL original, SEL replacement); // TODO(OSS Candidate ISS#2710739)
+RCT_EXTERN void RCTSwapInstanceMethodWithBlock(Class cls, SEL original, id replacementBlock, SEL replacementSelector);
 
 // Module subclass support
 RCT_EXTERN BOOL RCTClassOverridesClassMethod(Class cls, SEL selector);
 RCT_EXTERN BOOL RCTClassOverridesInstanceMethod(Class cls, SEL selector);
 
 // Creates a standardized error object to return in callbacks
-RCT_EXTERN NSDictionary<NSString *, id> *RCTMakeError(NSString *message, id __nullable toStringify, NSDictionary<NSString *, id> *__nullable extraData);
-RCT_EXTERN NSDictionary<NSString *, id> *RCTMakeAndLogError(NSString *message, id __nullable toStringify, NSDictionary<NSString *, id> *__nullable extraData);
+RCT_EXTERN NSDictionary<NSString *, id>
+    *RCTMakeError(NSString *message, id __nullable toStringify, NSDictionary<NSString *, id> *__nullable extraData);
+RCT_EXTERN NSDictionary<NSString *, id> *
+RCTMakeAndLogError(NSString *message, id __nullable toStringify, NSDictionary<NSString *, id> *__nullable extraData);
 RCT_EXTERN NSDictionary<NSString *, id> *RCTJSErrorFromNSError(NSError *error);
-RCT_EXTERN NSDictionary<NSString *, id> *RCTJSErrorFromCodeMessageAndNSError(NSString *code, NSString *message, NSError *__nullable error);
+RCT_EXTERN NSDictionary<NSString *, id>
+    *RCTJSErrorFromCodeMessageAndNSError(NSString *code, NSString *message, NSError *__nullable error);
 
 // The default error code to use as the `code` property for callback error objects
 RCT_EXTERN NSString *const RCTErrorUnspecified;
@@ -78,15 +84,15 @@ RCT_EXTERN NSString *const RCTErrorUnspecified;
 // Returns YES if React is running in a test environment
 RCT_EXTERN BOOL RCTRunningInTestEnvironment(void);
 
-#if !TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
 // Returns YES if React is running in an iOS App Extension
 RCT_EXTERN BOOL RCTRunningInAppExtension(void);
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 // Returns the shared UIApplication instance, or nil if running in an App Extension
 RCT_EXTERN UIApplication *__nullable RCTSharedApplication(void);
 
-#if !TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
 // Returns the current main window, useful if you need to access the root view
 // or view controller
 RCT_EXTERN UIWindow *__nullable RCTKeyWindow(void);
@@ -97,15 +103,21 @@ RCT_EXTERN UIViewController *__nullable RCTPresentedViewController(void);
 
 // Does this device support force touch (aka 3D Touch)?
 RCT_EXTERN BOOL RCTForceTouchAvailable(void);
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 // Create an NSError in the RCTErrorDomain
 RCT_EXTERN NSError *RCTErrorWithMessage(NSString *message);
 
+// Creates an NSError from given an NSException
+RCT_EXTERN NSError *RCTErrorWithNSException(NSException *exception);
+
 // Convert nil values to NSNull, and vice-versa
-#define RCTNullIfNil(value) (value ?: (id)kCFNull)
-#define RCTNilIfNull(value) \
-  ({ __typeof__(value) t = (value); (id)t == (id)kCFNull ? (__typeof(value))nil : t; })
+#define RCTNullIfNil(value) ((value) ?: (id)kCFNull)
+#define RCTNilIfNull(value)                           \
+  ({                                                  \
+    __typeof__(value) t = (value);                    \
+    (id) t == (id)kCFNull ? (__typeof(value))nil : t; \
+  })
 
 // Convert NaN or infinite values to zero, as these aren't JSON-safe
 RCT_EXTERN double RCTZeroIfNaN(double value);
@@ -152,28 +164,38 @@ RCT_EXTERN UIImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL);
 RCT_EXTERN NSString *__nullable RCTTempFilePath(NSString *__nullable extension, NSError **error);
 
 // Get RGBA components of CGColor
-RCT_EXTERN void RCTGetRGBAColorComponents(CGColorRef color, CGFloat rgba[_Nonnull 4]); // TODO(OSS Candidate ISS#2710739)
+RCT_EXTERN void RCTGetRGBAColorComponents(CGColorRef color, CGFloat rgba[_Nonnull 4]);
 
 // Converts a CGColor to a hex string
 RCT_EXTERN NSString *RCTColorToHexString(CGColorRef color);
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 // Get standard localized string (if it exists)
 RCT_EXTERN NSString *RCTUIKitLocalizedString(NSString *string);
-#endif // TODO(macOS ISS#2323203)
+#endif // TODO(macOS GH#774)
+
+// Get a human readable type string from an NSObject. For example NSString becomes string
+RCT_EXTERN NSString *RCTHumanReadableType(NSObject *obj);
 
 // Get a human readable type string from an NSObject. For example NSString becomes string
 RCT_EXTERN NSString *RCTHumanReadableType(NSObject *obj);
 
 // URL manipulation
 RCT_EXTERN NSString *__nullable RCTGetURLQueryParam(NSURL *__nullable URL, NSString *param);
-RCT_EXTERN NSURL *__nullable RCTURLByReplacingQueryParam(NSURL *__nullable URL, NSString *param, NSString *__nullable value);
+RCT_EXTERN NSURL *__nullable
+RCTURLByReplacingQueryParam(NSURL *__nullable URL, NSString *param, NSString *__nullable value);
 
 // Given a string, drop common RN prefixes (RCT, RK, etc.)
 RCT_EXTERN NSString *RCTDropReactPrefixes(NSString *s);
 
 RCT_EXTERN BOOL RCTUIManagerTypeForTagIsFabric(NSNumber *reactTag);
 
-RCT_EXTERN BOOL RCTValidateTypeOfViewCommandArgument(NSObject *obj, id expectedClass, NSString const * expectedType, NSString const *componentName, NSString const * commandName, NSString const * argPos);
+RCT_EXTERN BOOL RCTValidateTypeOfViewCommandArgument(
+    NSObject *obj,
+    id expectedClass,
+    NSString const *expectedType,
+    NSString const *componentName,
+    NSString const *commandName,
+    NSString const *argPos);
 
 NS_ASSUME_NONNULL_END

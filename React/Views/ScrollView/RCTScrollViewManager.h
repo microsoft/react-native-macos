@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -8,13 +8,13 @@
 #import <React/RCTConvert.h>
 #import <React/RCTViewManager.h>
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 @interface RCTConvert (UIScrollView)
 
 + (UIScrollViewKeyboardDismissMode)UIScrollViewKeyboardDismissMode:(id)json;
 
 @end
-#endif // TODO(macOS ISS#2323203)
+#endif // TODO(macOS GH#774)
 
 @interface RCTScrollViewManager : RCTViewManager
 

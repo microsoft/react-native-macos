@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -6,7 +6,7 @@
  */
 
 #import <QuartzCore/QuartzCore.h>
-#import <React/RCTUIKit.h> // TODO(macOS ISS#2323203)
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <React/RCTAnimationType.h>
 #import <React/RCTBorderStyle.h>
@@ -16,7 +16,7 @@
 #import <React/RCTTextDecorationLineType.h>
 #import <React/RCTFontSmoothing.h> // TODO(OSS Candidate ISS#2710739)
 #import <yoga/Yoga.h>
-#if TARGET_OS_IPHONE && WEBKIT_IOS_10_APIS_AVAILABLE
+#if TARGET_OS_IPHONE
 #import <WebKit/WebKit.h>
 #endif
 
@@ -65,7 +65,7 @@ typedef NSURL RCTFileURL;
 + (NSTextAlignment)NSTextAlignment:(id)json;
 + (NSUnderlineStyle)NSUnderlineStyle:(id)json;
 + (NSWritingDirection)NSWritingDirection:(id)json;
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 + (UITextAutocapitalizationType)UITextAutocapitalizationType:(id)json;
 + (UITextFieldViewMode)UITextFieldViewMode:(id)json;
 + (UIKeyboardType)UIKeyboardType:(id)json;
@@ -75,19 +75,19 @@ typedef NSURL RCTFileURL;
 + (UIDataDetectorTypes)UIDataDetectorTypes:(id)json;
 #endif
 
-#if TARGET_OS_IPHONE && WEBKIT_IOS_10_APIS_AVAILABLE
-+ (WKDataDetectorTypes)WKDataDetectorTypes:(id)json;
+#if TARGET_OS_IPHONE
++ (WKDataDetectorTypes)WKDataDetectorTypes:(id)json API_AVAILABLE(ios(10.0));
 #endif
 
 + (UIViewContentMode)UIViewContentMode:(id)json;
 #if !TARGET_OS_TV
 + (UIBarStyle)UIBarStyle:(id)json;
 #endif
-#endif // TODO(macOS ISS#2323203)
+#endif // TODO(macOS GH#774)
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 + (NSTextCheckingTypes)NSTextCheckingTypes:(id)json;
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 + (CGFloat)CGFloat:(id)json;
 + (CGPoint)CGPoint:(id)json;
@@ -114,9 +114,9 @@ typedef NSURL RCTFileURL;
 + (NSArray<RCTFileURL *> *)RCTFileURLArray:(id)json;
 + (NSArray<NSNumber *> *)NSNumberArray:(id)json;
 + (NSArray<RCTUIColor *> *)UIColorArray:(id)json; // TODO(OSS Candidate ISS#2710739)
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 + (NSArray<NSPasteboardType> *)NSPasteboardTypeArray:(id)json;
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 typedef NSArray CGColorArray;
 + (CGColorArray *)CGColorArray:(id)json;
@@ -144,9 +144,9 @@ typedef BOOL css_backface_visibility_t;
 + (RCTTextDecorationLineType)RCTTextDecorationLineType:(id)json;
 + (RCTFontSmoothing)RCTFontSmoothing:(id)json; // TODO(OSS Candidate ISS#2710739)
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 + (NSString *)accessibilityRoleFromTraits:(id)json;
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 @end
 
 @interface RCTConvert (Deprecated)
@@ -185,35 +185,32 @@ RCT_EXTERN NSArray *RCTConvertArrayValue(SEL, id);
  * avoid repeating the same boilerplate for every error message.
  */
 #define RCTLogConvertError(json, typeName) \
-RCTLogError(@"JSON value '%@' of type %@ cannot be converted to %@", \
-json, [json classForCoder], typeName)
+  RCTLogError(@"JSON value '%@' of type %@ cannot be converted to %@", json, [json classForCoder], typeName)
 
 /**
  * This macro is used for creating simple converter functions that just call
  * the specified getter method on the json value.
  */
-#define RCT_CONVERTER(type, name, getter) \
-RCT_CUSTOM_CONVERTER(type, name, [json getter])
+#define RCT_CONVERTER(type, name, getter) RCT_CUSTOM_CONVERTER(type, name, [json getter])
 
 /**
  * This macro is used for creating converter functions with arbitrary logic.
  */
 #define RCT_CUSTOM_CONVERTER(type, name, code) \
-+ (type)name:(id)json RCT_DYNAMIC              \
-{                                              \
-  if (!RCT_DEBUG) {                            \
-    return code;                               \
-  } else {                                     \
-    @try {                                     \
+  +(type)name : (id)json RCT_DYNAMIC           \
+  {                                            \
+    if (!RCT_DEBUG) {                          \
       return code;                             \
+    } else {                                   \
+      @try {                                   \
+        return code;                           \
+      } @catch (__unused NSException * e) {    \
+        RCTLogConvertError(json, @ #type);     \
+        json = nil;                            \
+        return code;                           \
+      }                                        \
     }                                          \
-    @catch (__unused NSException *e) {         \
-      RCTLogConvertError(json, @#type);        \
-      json = nil;                              \
-      return code;                             \
-    }                                          \
-  }                                            \
-}
+  }
 
 /**
  * This macro is similar to RCT_CONVERTER, but specifically geared towards
@@ -221,7 +218,7 @@ RCT_CUSTOM_CONVERTER(type, name, [json getter])
  * detailed error reporting if an invalid value is passed in.
  */
 #define RCT_NUMBER_CONVERTER(type, getter) \
-RCT_CUSTOM_CONVERTER(type, type, [RCT_DEBUG ? [self NSNumber:json] : json getter])
+  RCT_CUSTOM_CONVERTER(type, type, [RCT_DEBUG ? [self NSNumber:json] : json getter])
 
 /**
  * When using RCT_ENUM_CONVERTER in ObjC, the compiler is OK with us returning
@@ -237,41 +234,41 @@ RCT_CUSTOM_CONVERTER(type, type, [RCT_DEBUG ? [self NSNumber:json] : json getter
 /**
  * This macro is used for creating converters for enum types.
  */
-#define RCT_ENUM_CONVERTER(type, values, default, getter) \
-+ (type)type:(id)json RCT_DYNAMIC                         \
-{                                                         \
-  static NSDictionary *mapping;                           \
-  static dispatch_once_t onceToken;                       \
-  dispatch_once(&onceToken, ^{                            \
-    mapping = values;                                     \
-  });                                                     \
-  return _RCT_CAST(type, [RCTConvertEnumValue(#type, mapping, @(default), json) getter]); \
-}
+#define RCT_ENUM_CONVERTER(type, values, default, getter)                                   \
+  +(type)type : (id)json RCT_DYNAMIC                                                        \
+  {                                                                                         \
+    static NSDictionary *mapping;                                                           \
+    static dispatch_once_t onceToken;                                                       \
+    dispatch_once(&onceToken, ^{                                                            \
+      mapping = values;                                                                     \
+    });                                                                                     \
+    return _RCT_CAST(type, [RCTConvertEnumValue(#type, mapping, @(default), json) getter]); \
+  }
 
 /**
  * This macro is used for creating converters for enum types for
  * multiple enum values combined with | operator
  */
-#define RCT_MULTI_ENUM_CONVERTER(type, values, default, getter) \
-+ (type)type:(id)json RCT_DYNAMIC                         \
-{                                                         \
-  static NSDictionary *mapping;                           \
-  static dispatch_once_t onceToken;                       \
-  dispatch_once(&onceToken, ^{                            \
-    mapping = values;                                     \
-  });                                                     \
-  return _RCT_CAST(type, [RCTConvertMultiEnumValue(#type, mapping, @(default), json) getter]); \
-}
+#define RCT_MULTI_ENUM_CONVERTER(type, values, default, getter)                                  \
+  +(type)type : (id)json RCT_DYNAMIC                                                             \
+  {                                                                                              \
+    static NSDictionary *mapping;                                                                \
+    static dispatch_once_t onceToken;                                                            \
+    dispatch_once(&onceToken, ^{                                                                 \
+      mapping = values;                                                                          \
+    });                                                                                          \
+    return _RCT_CAST(type, [RCTConvertMultiEnumValue(#type, mapping, @(default), json) getter]); \
+  }
 
 /**
  * This macro is used for creating explicitly-named converter functions
  * for typed arrays.
  */
-#define RCT_ARRAY_CONVERTER_NAMED(type, name)          \
-+ (NSArray<type *> *)name##Array:(id)json RCT_DYNAMIC  \
-{                                                      \
-  return RCTConvertArrayValue(@selector(name:), json); \
-}
+#define RCT_ARRAY_CONVERTER_NAMED(type, name)            \
+  +(NSArray<type *> *)name##Array : (id)json RCT_DYNAMIC \
+  {                                                      \
+    return RCTConvertArrayValue(@selector(name:), json); \
+  }
 
 /**
  * This macro is used for creating converter functions for typed arrays.

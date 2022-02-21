@@ -1,7 +1,7 @@
 [ignore]
 ; We fork some components by platform
 .*/*[.]ios.js
-; TODO(macOS ISS#2323203):
+; TODO(macOS GH#774):
 .*/*[.]macos.js
 
 ; Ignore templates for 'react-native init'
@@ -13,21 +13,8 @@
 ; Ignore "BUCK" generated dirs
 <PROJECT_ROOT>/\.buckd/
 
-; TODO(macOS ISS#2323203): Ignore metro.config.js
+; TODO(macOS GH#774): Ignore metro.config.js
 <PROJECT_ROOT>/metro.config.js
-
-; Ignore files that have a base platform file and an android file
-<PROJECT_ROOT>/Libraries/Image/Image.js
-<PROJECT_ROOT>/Libraries/Network/RCTNetworking.js
-<PROJECT_ROOT>/Libraries/Utilities/HMRLoadingView.js
-<PROJECT_ROOT>/Libraries/Components/Touchable/TouchableNativeFeedback.js
-
-; Ignore rn-cli.config.js
-<PROJECT_ROOT>/rn-cli.config.js
-
-; These should not be required directly
-; require from fbjs/lib instead: require('fbjs/lib/warning')
-.*/node_modules/warning/.*
 
 ; Flow doesn't support platforms
 .*/Libraries/Utilities/LoadingView.js
@@ -37,27 +24,33 @@
 
 [include]
 
+[declarations]
+.*/node_modules/.*
+
 [libs]
-Libraries/react-native/react-native-interface.js
+interface.js
 flow/
 
 [options]
 emoji=true
 
-esproposal.optional_chaining=enable
-esproposal.nullish_coalescing=enable
+exact_by_default=true
+indexed_access=false
+
+format.bracket_spacing=false
 
 module.file_ext=.js
 module.file_ext=.json
 module.file_ext=.android.js
 
-# TODO(macOS ISS#2323203):
+# TODO(macOS GH#774):
 module.system.haste.name_reducers='^\(.*\)\.macos$' -> '\1'
+
 munge_underscores=true
 
-module.name_mapper='^react-native$' -> '<PROJECT_ROOT>/Libraries/react-native/react-native-implementation'
+module.name_mapper='^react-native$' -> '<PROJECT_ROOT>/index.js'
 module.name_mapper='^react-native/\(.*\)$' -> '<PROJECT_ROOT>/\1'
-module.name_mapper='^[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\)$' -> '<PROJECT_ROOT>/Libraries/Image/RelativeImageStub'
+module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\)$' -> '<PROJECT_ROOT>/Libraries/Image/RelativeImageStub'
 
 suppress_type=$FlowIssue
 suppress_type=$FlowFixMe
@@ -65,22 +58,16 @@ suppress_type=$FlowFixMeProps
 suppress_type=$FlowFixMeState
 suppress_type=$FlowFixMeEmpty
 
-suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(<VERSION>\\)? *\\(site=[a-z,_]*react_native\\(_android\\)?_\\(oss\\|fb\\)[a-z,_]*\\)?)\\)
-suppress_comment=\\(.\\|\n\\)*\\$FlowIssue\\((\\(<VERSION>\\)? *\\(site=[a-z,_]*react_native\\(_android\\)?_\\(oss\\|fb\\)[a-z,_]*\\)?)\\)?:? #[0-9]+
-suppress_comment=\\(.\\|\n\\)*\\$FlowExpectedError
-
 [lints]
 sketchy-null-number=warn
 sketchy-null-mixed=warn
 sketchy-number=warn
 untyped-type-import=warn
 nonstrict-import=warn
-deprecated-type=warn
+deprecated-type=error
 unsafe-getters-setters=warn
-inexact-spread=warn
 unnecessary-invariant=warn
 signature-verification-failure=warn
-deprecated-utility=error
 
 [strict]
 deprecated-type
@@ -92,4 +79,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.105.0
+^0.158.0

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -12,38 +12,44 @@
 #import "RCTShadowView.h"
 #import "RCTUIManager.h"
 
-@interface RCTScrollView (Private)
-
-- (NSArray<NSDictionary *> *)calculateChildFramesData;
-
-@end
-
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 @implementation RCTConvert (UIScrollView)
 
-RCT_ENUM_CONVERTER(UIScrollViewKeyboardDismissMode, (@{
-  @"none": @(UIScrollViewKeyboardDismissModeNone),
-  @"on-drag": @(UIScrollViewKeyboardDismissModeOnDrag),
-  @"interactive": @(UIScrollViewKeyboardDismissModeInteractive),
-  // Backwards compatibility
-  @"onDrag": @(UIScrollViewKeyboardDismissModeOnDrag),
-}), UIScrollViewKeyboardDismissModeNone, integerValue)
+RCT_ENUM_CONVERTER(
+    UIScrollViewKeyboardDismissMode,
+    (@{
+      @"none" : @(UIScrollViewKeyboardDismissModeNone),
+      @"on-drag" : @(UIScrollViewKeyboardDismissModeOnDrag),
+      @"interactive" : @(UIScrollViewKeyboardDismissModeInteractive),
+      // Backwards compatibility
+      @"onDrag" : @(UIScrollViewKeyboardDismissModeOnDrag),
+    }),
+    UIScrollViewKeyboardDismissModeNone,
+    integerValue)
 
-RCT_ENUM_CONVERTER(UIScrollViewIndicatorStyle, (@{
-  @"default": @(UIScrollViewIndicatorStyleDefault),
-  @"black": @(UIScrollViewIndicatorStyleBlack),
-  @"white": @(UIScrollViewIndicatorStyleWhite),
-}), UIScrollViewIndicatorStyleDefault, integerValue)
+RCT_ENUM_CONVERTER(
+    UIScrollViewIndicatorStyle,
+    (@{
+      @"default" : @(UIScrollViewIndicatorStyleDefault),
+      @"black" : @(UIScrollViewIndicatorStyleBlack),
+      @"white" : @(UIScrollViewIndicatorStyleWhite),
+    }),
+    UIScrollViewIndicatorStyleDefault,
+    integerValue)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability-new"
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
-RCT_ENUM_CONVERTER(UIScrollViewContentInsetAdjustmentBehavior, (@{
-  @"automatic": @(UIScrollViewContentInsetAdjustmentAutomatic),
-  @"scrollableAxes": @(UIScrollViewContentInsetAdjustmentScrollableAxes),
-  @"never": @(UIScrollViewContentInsetAdjustmentNever),
-  @"always": @(UIScrollViewContentInsetAdjustmentAlways),
-}), UIScrollViewContentInsetAdjustmentNever, integerValue)
+RCT_ENUM_CONVERTER(
+    UIScrollViewContentInsetAdjustmentBehavior,
+    (@{
+      @"automatic" : @(UIScrollViewContentInsetAdjustmentAutomatic),
+      @"scrollableAxes" : @(UIScrollViewContentInsetAdjustmentScrollableAxes),
+      @"never" : @(UIScrollViewContentInsetAdjustmentNever),
+      @"always" : @(UIScrollViewContentInsetAdjustmentAlways),
+    }),
+    UIScrollViewContentInsetAdjustmentNever,
+    integerValue)
 #endif
 #pragma clang diagnostic pop
 
@@ -54,31 +60,29 @@ RCT_ENUM_CONVERTER(UIScrollViewContentInsetAdjustmentBehavior, (@{
 
 RCT_EXPORT_MODULE()
 
-- (RCTPlatformView *)view // TODO(macOS ISS#2323203)
+- (RCTPlatformView *)view // TODO(macOS GH#774)
 {
   return [[RCTScrollView alloc] initWithEventDispatcher:self.bridge.eventDispatcher];
 }
 
 RCT_EXPORT_VIEW_PROPERTY(alwaysBounceHorizontal, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(alwaysBounceVertical, BOOL)
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(bounces, BOOL) // TODO(macOS ISS#2323203)
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(bouncesZoom, BOOL) // TODO(macOS ISS#2323203)
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(canCancelContentTouches, BOOL) // TODO(macOS ISS#2323203)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(bounces, BOOL) // TODO(macOS GH#774)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(bouncesZoom, BOOL) // TODO(macOS GH#774)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(canCancelContentTouches, BOOL) // TODO(macOS GH#774)
 RCT_EXPORT_VIEW_PROPERTY(centerContent, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(maintainVisibleContentPosition, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(automaticallyAdjustContentInsets, BOOL)
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(decelerationRate, CGFloat) // TODO(macOS ISS#2323203)
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(directionalLockEnabled, BOOL) // TODO(macOS ISS#2323203)
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(indicatorStyle, UIScrollViewIndicatorStyle) // TODO(macOS ISS#2323203)
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(keyboardDismissMode, UIScrollViewKeyboardDismissMode) // TODO(macOS ISS#2323203)
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(maximumZoomScale, CGFloat) // TODO(macOS ISS#2323203)
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(minimumZoomScale, CGFloat) // TODO(macOS ISS#2323203)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(decelerationRate, CGFloat) // TODO(macOS GH#774)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(directionalLockEnabled, BOOL) // TODO(macOS GH#774)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(indicatorStyle, UIScrollViewIndicatorStyle) // TODO(macOS GH#774)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(keyboardDismissMode, UIScrollViewKeyboardDismissMode) // TODO(macOS GH#774)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(maximumZoomScale, CGFloat) // TODO(macOS GH#774)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(minimumZoomScale, CGFloat) // TODO(macOS GH#774)
 RCT_EXPORT_VIEW_PROPERTY(scrollEnabled, BOOL)
-#if !TARGET_OS_TV
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(pagingEnabled, BOOL) // TODO(macOS ISS#2323203)
-RCT_REMAP_NOT_OSX_VIEW_PROPERTY(pinchGestureEnabled, scrollView.pinchGestureEnabled, BOOL) // TODO(macOS ISS#2323203)
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(scrollsToTop, BOOL) // TODO(macOS ISS#2323203)
-#endif
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(pagingEnabled, BOOL) // TODO(macOS GH#774)
+RCT_REMAP_NOT_OSX_VIEW_PROPERTY(pinchGestureEnabled, scrollView.pinchGestureEnabled, BOOL) // TODO(macOS GH#774)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(scrollsToTop, BOOL) // TODO(macOS GH#774)
 RCT_EXPORT_VIEW_PROPERTY(showsHorizontalScrollIndicator, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(showsVerticalScrollIndicator, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(scrollEventThrottle, NSTimeInterval)
@@ -99,9 +103,12 @@ RCT_EXPORT_VIEW_PROPERTY(onScrollToTop, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onScrollEndDrag, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMomentumScrollBegin, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMomentumScrollEnd, RCTDirectEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(DEPRECATED_sendUpdatedChildFrames, BOOL)
-RCT_EXPORT_OSX_VIEW_PROPERTY(onScrollKeyDown, RCTDirectEventBlock) // TODO(macOS ISS#2323203)
-RCT_EXPORT_OSX_VIEW_PROPERTY(onPreferredScrollerStyleDidChange, RCTDirectEventBlock) // TODO(macOS ISS#2323203)
+RCT_EXPORT_OSX_VIEW_PROPERTY(onScrollKeyDown, RCTDirectEventBlock) // TODO(macOS GH#774)
+RCT_EXPORT_OSX_VIEW_PROPERTY(onPreferredScrollerStyleDidChange, RCTDirectEventBlock) // TODO(macOS GH#774)
+RCT_EXPORT_VIEW_PROPERTY(inverted, BOOL)
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000 /* __IPHONE_13_0 */
+RCT_EXPORT_VIEW_PROPERTY(automaticallyAdjustsScrollIndicatorInsets, BOOL)
+#endif
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
 RCT_EXPORT_VIEW_PROPERTY(contentInsetAdjustmentBehavior, UIScrollViewContentInsetAdjustmentBehavior)
 #endif
@@ -111,111 +118,94 @@ RCT_EXPORT_VIEW_PROPERTY(contentInsetAdjustmentBehavior, UIScrollViewContentInse
 // is set to from js we want to clip drawing or not. This piece of code ensures
 // that css-layout is always treating the contents of a scroll container as
 // overflow: 'scroll'.
-RCT_CUSTOM_SHADOW_PROPERTY(overflow, YGOverflow, RCTShadowView) {
-#pragma unused (json)
+RCT_CUSTOM_SHADOW_PROPERTY(overflow, YGOverflow, RCTShadowView)
+{
+#pragma unused(json)
   view.overflow = YGOverflowScroll;
 }
 
-RCT_EXPORT_METHOD(getContentSize:(nonnull NSNumber *)reactTag
-                  callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(getContentSize : (nonnull NSNumber *)reactTag callback : (RCTResponseSenderBlock)callback)
 {
-  [self.bridge.uiManager addUIBlock:
-   ^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTScrollView *> *viewRegistry) {
+  [self.bridge.uiManager
+      addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTScrollView *> *viewRegistry) {
+        RCTScrollView *view = viewRegistry[reactTag];
+        if (!view || ![view isKindOfClass:[RCTScrollView class]]) {
+          RCTLogError(@"Cannot find RCTScrollView with tag #%@", reactTag);
+          return;
+        }
 
-    RCTScrollView *view = viewRegistry[reactTag];
-    if (!view || ![view isKindOfClass:[RCTScrollView class]]) {
-      RCTLogError(@"Cannot find RCTScrollView with tag #%@", reactTag);
-      return;
-    }
-
-    CGSize size = view.scrollView.contentSize;
-    callback(@[@{
-      @"width" : @(size.width),
-      @"height" : @(size.height)
-    }]);
-  }];
+        CGSize size = view.scrollView.contentSize;
+        callback(@[ @{@"width" : @(size.width), @"height" : @(size.height)} ]);
+      }];
 }
 
-RCT_EXPORT_METHOD(calculateChildFrames:(nonnull NSNumber *)reactTag
-                  callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(scrollTo
+                  : (nonnull NSNumber *)reactTag offsetX
+                  : (CGFloat)x offsetY
+                  : (CGFloat)y animated
+                  : (BOOL)animated)
 {
-  [self.bridge.uiManager addUIBlock:
-   ^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTScrollView *> *viewRegistry) {
-
-    RCTScrollView *view = viewRegistry[reactTag];
-    if (!view || ![view isKindOfClass:[RCTScrollView class]]) {
-      RCTLogError(@"Cannot find RCTScrollView with tag #%@", reactTag);
-      return;
-    }
-
-    NSArray<NSDictionary *> *childFrames = [view calculateChildFramesData];
-    if (childFrames) {
-      callback(@[childFrames]);
-    }
-  }];
+  [self.bridge.uiManager
+      addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) { // TODO(macOS ISS#3536887)
+        RCTUIView *view = viewRegistry[reactTag]; // TODO(macOS ISS#3536887)
+        if ([view conformsToProtocol:@protocol(RCTScrollableProtocol)]) {
+          [(id<RCTScrollableProtocol>)view scrollToOffset:(CGPoint){x, y} animated:animated];
+        } else {
+          RCTLogError(
+              @"tried to scrollTo: on non-RCTScrollableProtocol view %@ "
+               "with tag #%@",
+              view,
+              reactTag);
+        }
+      }];
 }
 
-RCT_EXPORT_METHOD(scrollTo:(nonnull NSNumber *)reactTag
-                  offsetX:(CGFloat)x
-                  offsetY:(CGFloat)y
-                  animated:(BOOL)animated)
+RCT_EXPORT_METHOD(scrollToEnd : (nonnull NSNumber *)reactTag animated : (BOOL)animated)
 {
-  [self.bridge.uiManager addUIBlock:
-   ^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry){ // TODO(macOS ISS#3536887)
-    RCTUIView *view = viewRegistry[reactTag]; // TODO(macOS ISS#3536887)
-    if ([view conformsToProtocol:@protocol(RCTScrollableProtocol)]) {
-      [(id<RCTScrollableProtocol>)view scrollToOffset:(CGPoint){x, y} animated:animated];
-    } else {
-      RCTLogError(@"tried to scrollTo: on non-RCTScrollableProtocol view %@ "
-                  "with tag #%@", view, reactTag);
-    }
-  }];
+  [self.bridge.uiManager
+      addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) { // TODO(macOS ISS#3536887)
+        RCTUIView *view = viewRegistry[reactTag]; // TODO(macOS ISS#3536887)
+        if ([view conformsToProtocol:@protocol(RCTScrollableProtocol)]) {
+          [(id<RCTScrollableProtocol>)view scrollToEnd:animated];
+        } else {
+          RCTLogError(
+              @"tried to scrollTo: on non-RCTScrollableProtocol view %@ "
+               "with tag #%@",
+              view,
+              reactTag);
+        }
+      }];
 }
 
-RCT_EXPORT_METHOD(scrollToEnd:(nonnull NSNumber *)reactTag
-                  animated:(BOOL)animated)
+RCT_EXPORT_METHOD(zoomToRect : (nonnull NSNumber *)reactTag withRect : (CGRect)rect animated : (BOOL)animated)
 {
-  [self.bridge.uiManager addUIBlock:
-   ^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry){ // TODO(macOS ISS#3536887)
-     RCTUIView *view = viewRegistry[reactTag]; // TODO(macOS ISS#3536887)
-     if ([view conformsToProtocol:@protocol(RCTScrollableProtocol)]) {
-       [(id<RCTScrollableProtocol>)view scrollToEnd:animated];
-     } else {
-       RCTLogError(@"tried to scrollTo: on non-RCTScrollableProtocol view %@ "
-                   "with tag #%@", view, reactTag);
-     }
-   }];
+  [self.bridge.uiManager
+      addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) { // TODO(macOS ISS#3536887)
+        RCTUIView *view = viewRegistry[reactTag]; // TODO(macOS ISS#3536887)
+        if ([view conformsToProtocol:@protocol(RCTScrollableProtocol)]) {
+          [(id<RCTScrollableProtocol>)view zoomToRect:rect animated:animated];
+        } else {
+          RCTLogError(
+              @"tried to zoomToRect: on non-RCTScrollableProtocol view %@ "
+               "with tag #%@",
+              view,
+              reactTag);
+        }
+      }];
 }
 
-RCT_EXPORT_METHOD(zoomToRect:(nonnull NSNumber *)reactTag
-                  withRect:(CGRect)rect
-                  animated:(BOOL)animated)
+RCT_EXPORT_METHOD(flashScrollIndicators : (nonnull NSNumber *)reactTag)
 {
-  [self.bridge.uiManager addUIBlock:
-   ^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry){ // TODO(macOS ISS#3536887)
-    RCTUIView *view = viewRegistry[reactTag]; // TODO(macOS ISS#3536887)
-    if ([view conformsToProtocol:@protocol(RCTScrollableProtocol)]) {
-      [(id<RCTScrollableProtocol>)view zoomToRect:rect animated:animated];
-    } else {
-      RCTLogError(@"tried to zoomToRect: on non-RCTScrollableProtocol view %@ "
-                  "with tag #%@", view, reactTag);
-    }
-  }];
-}
+  [self.bridge.uiManager
+      addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTScrollView *> *viewRegistry) {
+        RCTScrollView *view = viewRegistry[reactTag];
+        if (!view || ![view isKindOfClass:[RCTScrollView class]]) {
+          RCTLogError(@"Cannot find RCTScrollView with tag #%@", reactTag);
+          return;
+        }
 
-RCT_EXPORT_METHOD(flashScrollIndicators:(nonnull NSNumber *)reactTag)
-{
-  [self.bridge.uiManager addUIBlock:
-   ^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTScrollView *> *viewRegistry){
-
-     RCTScrollView *view = viewRegistry[reactTag];
-     if (!view || ![view isKindOfClass:[RCTScrollView class]]) {
-       RCTLogError(@"Cannot find RCTScrollView with tag #%@", reactTag);
-       return;
-     }
-
-     [view flashScrollIndicators]; // TODO(macOS ISS#2323203)
-   }];
+        [view flashScrollIndicators]; // TODO(macOS GH#774)
+      }];
 }
 
 @end

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -6,7 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "RCTPlatformDisplayLink.h" // TODO(macOS ISS#2323203)
+#import "RCTPlatformDisplayLink.h" // TODO(macOS GH#774)
 
 /**
  * Interface containing the information about the last screen refresh.

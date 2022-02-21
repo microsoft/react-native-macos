@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @flow
+ * @flow strict-local
  */
 
 'use strict';
@@ -13,7 +13,7 @@
 const React = require('react');
 const ReactNative = require('react-native');
 const {Image, LayoutAnimation, StyleSheet, Text, View} = ReactNative;
-const {Platform} = ReactNative; // TODO(macOS ISS#2323203)
+const {Platform} = ReactNative; // TODO(macOS GH#774)
 const {TestModule} = ReactNative.NativeModules;
 
 import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
@@ -39,6 +39,7 @@ type State = {
   viewLayout?: Layout,
   viewStyle?: ViewStyleProp,
   containerStyle?: ViewStyleProp,
+  ...
 };
 
 class LayoutEventsTest extends React.Component<Props, State> {
@@ -53,8 +54,8 @@ class LayoutEventsTest extends React.Component<Props, State> {
   animateViewLayout() {
     debug('animateViewLayout invoked');
     LayoutAnimation.configureNext(
-      Platform.OS === 'macos' // [TODO(macOS ISS#2323203)
-        ? LayoutAnimation.Presets.easeInEaseOut // ]TODO(macOS ISS#2323203)
+      Platform.OS === 'macos' // [TODO(macOS GH#774)
+        ? LayoutAnimation.Presets.easeInEaseOut // ]TODO(macOS GH#774)
         : LayoutAnimation.Presets.spring,
       () => {
         debug('animateViewLayout done');
@@ -202,4 +203,5 @@ const styles = StyleSheet.create({
   },
 });
 
+LayoutEventsTest.displayName = 'LayoutEventsTest';
 module.exports = LayoutEventsTest;

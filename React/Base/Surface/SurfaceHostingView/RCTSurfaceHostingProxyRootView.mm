@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -19,7 +19,8 @@
 #import "RCTSurface.h"
 #import "UIView+React.h"
 
-static RCTSurfaceSizeMeasureMode convertToSurfaceSizeMeasureMode(RCTRootViewSizeFlexibility sizeFlexibility) {
+static RCTSurfaceSizeMeasureMode convertToSurfaceSizeMeasureMode(RCTRootViewSizeFlexibility sizeFlexibility)
+{
   switch (sizeFlexibility) {
     case RCTRootViewSizeFlexibilityWidthAndHeight:
       return RCTSurfaceSizeMeasureModeWidthUndefined | RCTSurfaceSizeMeasureModeHeightUndefined;
@@ -32,7 +33,8 @@ static RCTSurfaceSizeMeasureMode convertToSurfaceSizeMeasureMode(RCTRootViewSize
   }
 }
 
-static RCTRootViewSizeFlexibility convertToRootViewSizeFlexibility(RCTSurfaceSizeMeasureMode sizeMeasureMode) {
+static RCTRootViewSizeFlexibility convertToRootViewSizeFlexibility(RCTSurfaceSizeMeasureMode sizeMeasureMode)
+{
   switch (sizeMeasureMode) {
     case RCTSurfaceSizeMeasureModeWidthUndefined | RCTSurfaceSizeMeasureModeHeightUndefined:
       return RCTRootViewSizeFlexibilityWidthAndHeight;
@@ -59,6 +61,7 @@ static RCTRootViewSizeFlexibility convertToRootViewSizeFlexibility(RCTSurfaceSiz
   RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways, @"-[RCTSurfaceHostingProxyRootView init]", nil);
 
   _bridge = bridge;
+  _minimumSize = CGSizeZero;
 
   if (!bridge.isLoading) {
     [bridge.performanceLogger markStartForTag:RCTPLTTI];
@@ -67,10 +70,13 @@ static RCTRootViewSizeFlexibility convertToRootViewSizeFlexibility(RCTSurfaceSiz
   // `RCTRootViewSizeFlexibilityNone` is the RCTRootView's default.
   RCTSurfaceSizeMeasureMode sizeMeasureMode = convertToSurfaceSizeMeasureMode(RCTRootViewSizeFlexibilityNone);
 
-  RCTSurface *surface = [[self class] createSurfaceWithBridge:bridge moduleName:moduleName initialProperties:initialProperties];
+  id<RCTSurfaceProtocol> surface = [[self class] createSurfaceWithBridge:bridge
+                                                              moduleName:moduleName
+                                                       initialProperties:initialProperties];
   [surface start];
   if (self = [super initWithSurface:surface sizeMeasureMode:sizeMeasureMode]) {
-    self.backgroundColor = [RCTUIColor whiteColor]; // TODO(macOS ISS#2323203)
+    self.backgroundColor = [RCTUIColor whiteColor]; // TODO(macOS GH#774)
+    // Nothing specific to do.
   }
 
   RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
@@ -83,24 +89,22 @@ static RCTRootViewSizeFlexibility convertToRootViewSizeFlexibility(RCTSurfaceSiz
                 initialProperties:(NSDictionary *)initialProperties
                     launchOptions:(NSDictionary *)launchOptions
 {
-  RCTBridge *bridge = [[RCTBridge alloc] initWithBundleURL:bundleURL
-                                            moduleProvider:nil
-                                             launchOptions:launchOptions];
+  RCTBridge *bridge = [[RCTBridge alloc] initWithBundleURL:bundleURL moduleProvider:nil launchOptions:launchOptions];
 
   return [self initWithBridge:bridge moduleName:moduleName initialProperties:initialProperties];
 }
 
-RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
-RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
+RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
+RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
-# pragma mark proxy methods to RCTSurfaceHostingView
+#pragma mark proxy methods to RCTSurfaceHostingView
 
 - (NSString *)moduleName
 {
   return super.surface.moduleName;
 }
 
-- (RCTUIView *)contentView // TODO(macOS ISS#2323203)
+- (RCTUIView *)contentView // TODO(macOS GH#774)
 {
   return self;
 }
@@ -130,14 +134,15 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
   [super.surface setProperties:appProperties];
 }
 
-- (RCTUIView *)loadingView // TODO(macOS ISS#2323203)
+- (RCTUIView *)loadingView // TODO(macOS GH#774)
 {
   return super.activityIndicatorViewFactory ? super.activityIndicatorViewFactory() : nil;
 }
 
-- (void)setLoadingView:(RCTUIView *)loadingView // TODO(macOS ISS#2323203)
+- (void)setLoadingView:(RCTUIView *)loadingView // TODO(macOS GH#774)
 {
-  super.activityIndicatorViewFactory = ^RCTUIView *(void) { // TODO(macOS ISS#2323203)
+  super.activityIndicatorViewFactory = ^RCTUIView *(void) // TODO(macOS GH#774)
+  {
     return loadingView;
   };
 }
@@ -150,8 +155,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
   if (RCTSurfaceStageIsRunning(stage)) {
     [_bridge.performanceLogger markStopForTag:RCTPLTTI];
     dispatch_async(dispatch_get_main_queue(), ^{
-      [[NSNotificationCenter defaultCenter] postNotificationName:RCTContentDidAppearNotification
-                                                          object:self];
+      [[NSNotificationCenter defaultCenter] postNotificationName:RCTContentDidAppearNotification object:self];
     });
   }
 }
@@ -170,6 +174,15 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
   return _reactViewController ?: [super reactViewController];
 }
 
+- (void)setMinimumSize:(CGSize)minimumSize
+{
+  if (!CGSizeEqualToSize(minimumSize, CGSizeZero)) {
+    // TODO (T93859532): Investigate implementation for this.
+    RCTLogError(@"RCTSurfaceHostingProxyRootView does not support changing the deprecated minimumSize");
+  }
+  _minimumSize = CGSizeZero;
+}
+
 #pragma mark unsupported
 
 - (void)cancelTouches
@@ -178,4 +191,3 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 }
 
 @end
-

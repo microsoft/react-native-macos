@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -7,7 +7,7 @@
 
 #import <React/RCTFrameAnimation.h>
 
-#import <React/RCTUIKit.h> // TODO(macOS ISS#2323203)
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <React/RCTConvert.h>
 #import <React/RCTDefines.h>
@@ -40,7 +40,7 @@
 - (instancetype)initWithId:(NSNumber *)animationId
                     config:(NSDictionary *)config
                    forNode:(RCTValueAnimatedNode *)valueNode
-                  callBack:(nullable RCTResponseSenderBlock)callback;
+                  callBack:(nullable RCTResponseSenderBlock)callback
 {
   if ((self = [super init])) {
     _animationId = animationId;

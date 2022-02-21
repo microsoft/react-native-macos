@@ -8,12 +8,13 @@
  * @format
  */
 
-'use strict';
+import * as React from 'react';
+import type {HostComponent} from '../Renderer/shims/ReactNativeTypes';
 
 export type SyntheticEvent<T> = $ReadOnly<{|
   bubbles: ?boolean,
   cancelable: ?boolean,
-  currentTarget: number,
+  currentTarget: number | React.ElementRef<HostComponent<mixed>>,
   defaultPrevented: ?boolean,
   dispatchConfig: $ReadOnly<{|
     registrationName: string,
@@ -26,7 +27,7 @@ export type SyntheticEvent<T> = $ReadOnly<{|
   isTrusted: ?boolean,
   nativeEvent: T,
   persist: () => void,
-  target: ?number,
+  target: ?number | React.ElementRef<HostComponent<mixed>>,
   timeStamp: number,
   type: ?string,
 |}>;
@@ -84,18 +85,18 @@ export type TextLayoutEvent = SyntheticEvent<
 
 export type PressEvent = ResponderSyntheticEvent<
   $ReadOnly<{|
-    altKey: ?boolean, // TODO(macOS ISS#2323203)
-    button: ?number, // TODO(macOS ISS#2323203)
+    altKey?: ?boolean, // TODO(macOS GH#774)
+    button?: ?number, // TODO(macOS GH#774)
     changedTouches: $ReadOnlyArray<$PropertyType<PressEvent, 'nativeEvent'>>,
-    ctrlKey: ?boolean, // TODO(macOS ISS#2323203)
-    force: number,
+    ctrlKey?: ?boolean, // TODO(macOS GH#774)
+    force?: number,
     identifier: number,
     locationX: number,
     locationY: number,
-    metaKey: ?boolean, // TODO(macOS ISS#2323203)
+    metaKey?: ?boolean, // TODO(macOS GH#774)
     pageX: number,
     pageY: number,
-    shiftKey: ?boolean, // TODO(macOS ISS#2323203)
+    shiftKey?: ?boolean, // TODO(macOS GH#774)
     target: ?number,
     timestamp: number,
     touches: $ReadOnlyArray<$PropertyType<PressEvent, 'nativeEvent'>>,
@@ -132,7 +133,49 @@ export type ScrollEvent = SyntheticEvent<
     |}>,
     zoomScale?: number,
     responderIgnoreScroll?: boolean,
-    key?: string, // TODO(macOS ISS#2323203)
-    preferredScrollerStyle?: string, // TODO(macOS ISS#2323203)
+    key?: string, // TODO(macOS GH#774)
+    preferredScrollerStyle?: string, // TODO(macOS GH#774)
+  |}>,
+>;
+
+export type BlurEvent = SyntheticEvent<
+  $ReadOnly<{|
+    target: number,
+  |}>,
+>;
+
+export type FocusEvent = SyntheticEvent<
+  $ReadOnly<{|
+    target: number,
+  |}>,
+>;
+
+export type KeyEvent = SyntheticEvent<
+  $ReadOnly<{|
+    // Modifier keys
+    capsLockKey: boolean,
+    shiftKey: boolean,
+    ctrlKey: boolean,
+    altKey: boolean,
+    metaKey: boolean,
+    numericPadKey: boolean,
+    helpKey: boolean,
+    functionKey: boolean,
+    // Key options
+    ArrowLeft: boolean,
+    ArrowRight: boolean,
+    ArrowUp: boolean,
+    ArrowDown: boolean,
+    key: string,
+  |}>,
+>;
+
+export type MouseEvent = SyntheticEvent<
+  $ReadOnly<{|
+    clientX: number,
+    clientY: number,
+    pageX: number,
+    pageY: number,
+    timestamp: number,
   |}>,
 >;

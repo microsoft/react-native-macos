@@ -5,26 +5,30 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @flow
+ * @flow strict
  */
 
-// TODO(macOS ISS#2323203) Copied from Platform.ios.js
+// TODO(macOS GH#774) Copied from Platform.ios.js
 
 'use strict';
 
 import NativePlatformConstantsMacOS from './NativePlatformConstantsMacOS';
 
-export type PlatformSelectSpec<D, I> = {
+export type PlatformSelectSpec<D, N, I> = {
   default?: D,
+  native?: N,
   macos?: I,
+  ...
 };
 
 const Platform = {
   __constants: null,
   OS: 'macos',
-  get Version(): $FlowFixMe {
+  // $FlowFixMe[unsafe-getters-setters]
+  get Version(): string {
     return this.constants.osVersion;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get constants(): {|
     isTesting: boolean,
     osVersion: string,
@@ -41,17 +45,26 @@ const Platform = {
     }
     return this.__constants;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get isTV(): boolean {
     return false;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get isTesting(): boolean {
     if (__DEV__) {
       return this.constants.isTesting;
     }
     return false;
   },
-  select: <D, I>(spec: PlatformSelectSpec<D, I>): D | I =>
-    'macos' in spec ? spec.macos : spec.default,
+  select: <D, N, I>(spec: PlatformSelectSpec<D, N, I>): D | N | I =>
+    'macos' in spec
+      ? // $FlowFixMe[incompatible-return]
+        spec.macos
+      : 'native' in spec
+      ? // $FlowFixMe[incompatible-return]
+        spec.native
+      : // $FlowFixMe[incompatible-return]
+        spec.default,
 };
 
 module.exports = Platform;

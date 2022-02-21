@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -7,7 +7,6 @@
 
 #import <React/RCTTextViewManager.h>
 
-#import <React/RCTAccessibilityManager.h>
 #import <React/RCTShadowView+Layout.h>
 #import <React/RCTShadowView.h>
 #import <React/RCTUIManager.h>
@@ -44,30 +43,27 @@ RCT_EXPORT_VIEW_PROPERTY(selectable, BOOL)
 
   [bridge.uiManager.observerCoordinator addObserver:self];
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(handleDidUpdateMultiplierNotification)
-                                               name:RCTAccessibilityManagerDidUpdateMultiplierNotification
-                                             object:bridge.accessibilityManager];
-#endif // TODO(macOS ISS#2323203)
-}
-
-- (void)dealloc
-{
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
+                                               name:@"RCTAccessibilityManagerDidUpdateMultiplierNotification"
+                                             object:[bridge moduleForName:@"AccessibilityManager"
+                                                    lazilyLoadIfNecessary:YES]];
+#endif // TODO(macOS GH#774)
 }
 
 - (RCTUIView *)view // TODO(macOS ISS#3536887)
 {
-  return [RCTTextView new];
+  return [[RCTTextView alloc] initWithEventDispatcher:self.bridge.eventDispatcher]; // TODO(OSS Candidate ISS#2710739)
 }
 
 - (RCTShadowView *)shadowView
 {
   RCTTextShadowView *shadowView = [[RCTTextShadowView alloc] initWithBridge:self.bridge];
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
-  shadowView.textAttributes.fontSizeMultiplier = self.bridge.accessibilityManager.multiplier;
-#endif // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
+  shadowView.textAttributes.fontSizeMultiplier = [[[self.bridge moduleForName:@"AccessibilityManager"]
+                                                   valueForKey:@"multiplier"] floatValue];
+#endif // TODO(macOS GH#774)
   [_shadowViews addObject:shadowView];
   return shadowView;
 }
@@ -85,7 +81,8 @@ RCT_EXPORT_VIEW_PROPERTY(selectable, BOOL)
 
 - (void)handleDidUpdateMultiplierNotification
 {
-  CGFloat fontSizeMultiplier = self.bridge.accessibilityManager.multiplier;
+  CGFloat fontSizeMultiplier = [[[self.bridge moduleForName:@"AccessibilityManager"]
+                                 valueForKey:@"multiplier"] floatValue];
 
   NSHashTable<RCTTextShadowView *> *shadowViews = _shadowViews;
   RCTExecuteOnUIManagerQueue(^{

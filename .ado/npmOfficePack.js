@@ -4,7 +4,7 @@
 const fs = require("fs");
 const path = require("path");
 const execSync = require("child_process").execSync;
-const {pkgJsonPath, publishBranchName, gatherVersionInfo} = require('./versionUtils');
+const {publishBranchName, gatherVersionInfo} = require('./versionUtils');
 
 function exec(command) {
   try {
@@ -19,7 +19,7 @@ function exec(command) {
   }
 }
 
-function doPublish() {
+function doPublish(fakeMode) {
   console.log(`Target branch to publish to: ${publishBranchName}`);
 
   const {releaseVersion, branchVersionSuffix} = gatherVersionInfo()
@@ -27,7 +27,9 @@ function doPublish() {
   const onlyTagSource = !!branchVersionSuffix;
   if (!onlyTagSource) {
     // -------- Generating Android Artifacts with JavaDoc
-    exec("gradlew installArchives");
+    const depsEnvPrefix = "REACT_NATIVE_BOOST_PATH=" + path.join(process.env.BUILD_SOURCESDIRECTORY, "build_deps");
+    const gradleCommand = path.join(process.env.BUILD_SOURCESDIRECTORY, "gradlew") + " installArchives -Pparam=\"excludeLibs\"";
+    exec( depsEnvPrefix + " " + gradleCommand );
 
     // undo uncommenting javadoc setting
     exec("git checkout ReactAndroid/gradle.properties");
@@ -38,9 +40,27 @@ function doPublish() {
 
   const npmTarFileName = `react-native-${releaseVersion}.tgz`;
   const npmTarPath = path.resolve(__dirname, '..', npmTarFileName);
-  const finalTarPath = path.join(process.env.BUILD_STAGINGDIRECTORY, 'final', npmTarFileName);
+  const finalTarDir = path.join(process.env.BUILD_STAGINGDIRECTORY, 'final');
+  const finalTarPath = path.join(finalTarDir, npmTarFileName);
+
+  if (!fs.existsSync(finalTarDir)) {
+    fs.mkdirSync(finalTarDir);
+  }
+
   console.log(`Copying tar file ${npmTarPath} to: ${finalTarPath}`)
-  fs.copyFileSync(npmTarPath, finalTarPath);
+  
+  if(fakeMode) {
+    if (!fs.existsSync(npmTarPath))
+      throw "The final artifact to be published is missing.";
+  } else {
+    fs.copyFileSync(npmTarPath, finalTarPath);
+  }
 }
 
-doPublish();
+var args = process.argv.slice(2);
+
+let fakeMode = false;
+if (args.length > 0 && args[0] === '--fake')
+  fakeMode = true;
+
+doPublish(fakeMode);

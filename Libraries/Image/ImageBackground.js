@@ -7,6 +7,7 @@
  * @flow
  * @format
  */
+
 'use strict';
 
 const Image = require('./Image');
@@ -26,7 +27,7 @@ const View = require('../Components/View/View');
  *     return (
  *       <ImageBackground
  *         style={{width: 50, height: 50}}
- *         source={{uri: 'https://facebook.github.io/react-native/img/opengraph.png'}}
+ *         source={{uri: 'https://reactnative.dev/img/opengraph.png'}}
  *       >
  *         <Text>React</Text>
  *       </ImageBackground>
@@ -73,8 +74,8 @@ class ImageBackground extends React.Component<$FlowFixMeProps> {
               // So, we have to proxy/reapply these styles explicitly for actual <Image> component.
               // This workaround should be removed after implementing proper support of
               // intrinsic content size of the <Image>.
-              width: style.width,
-              height: style.height,
+              width: style?.width,
+              height: style?.height,
             },
             imageStyle,
           ]}

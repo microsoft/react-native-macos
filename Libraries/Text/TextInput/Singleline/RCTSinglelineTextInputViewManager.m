@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -28,5 +28,7 @@ RCT_EXPORT_MODULE()
 {
   return [[RCTSinglelineTextInputView alloc] initWithBridge:self.bridge];
 }
+
+RCT_REMAP_OSX_VIEW_PROPERTY(secureTextEntry, useSecureTextField, BOOL) // TODO(macOS GH#774)
 
 @end

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -6,7 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <React/RCTUIKit.h> // TODO(macOS ISS#2323203)
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <React/RCTAssert.h>
 #import <React/RCTDefines.h>
@@ -96,8 +96,9 @@ RCT_EXTERN void RCTUnsafeExecuteOnUIManagerQueueSync(dispatch_block_t block);
 /**
  * Convenience macro for asserting that we're running on UIManager queue.
  */
-#define RCTAssertUIManagerQueue() RCTAssert(RCTIsUIManagerQueue() || RCTIsPseudoUIManagerQueue(), \
-@"This function must be called on the UIManager queue")
+#define RCTAssertUIManagerQueue() \
+  RCTAssert(                      \
+      RCTIsUIManagerQueue() || RCTIsPseudoUIManagerQueue(), @"This function must be called on the UIManager queue")
 
 /**
  * Returns new unique root view tag.

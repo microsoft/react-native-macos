@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -11,22 +11,26 @@
  * RCTEventEmitter is an abstract base class to be used for modules that emit
  * events to be observed by JS.
  */
-@interface RCTEventEmitter : NSObject <RCTBridgeModule>
+@interface RCTEventEmitter : NSObject <RCTBridgeModule, RCTInvalidating>
 
-@property (nonatomic, weak) RCTBridge *bridge;
+@property (nonatomic, weak) RCTBridge * _Nullable bridge; // TODO(macOS GH#774)
+@property (nonatomic, weak) RCTModuleRegistry * _Nullable moduleRegistry; // TODO(macOS GH#774)
+@property (nonatomic, weak) RCTViewRegistry * _Nullable viewRegistry_DEPRECATED; // TODO(macOS GH#774)
+
+- (instancetype _Nullable)initWithDisabledObservation; // TODO(macOS GH#774)
 
 /**
  * Override this method to return an array of supported event names. Attempting
  * to observe or send an event that isn't included in this list will result in
  * an error.
  */
-- (NSArray<NSString *> *)supportedEvents;
+- (NSArray<NSString *> *_Nullable)supportedEvents; // TODO(macOS GH#774)
 
 /**
  * Send an event that does not relate to a specific view, e.g. a navigation
  * or data update notification.
  */
-- (void)sendEventWithName:(NSString *)name body:(id)body;
+- (void)sendEventWithName:(NSString *_Nullable)name body:(id _Nullable )body; // TODO(macOS GH#774)
 
 /**
  * These methods will be called when the first observer is added and when the
@@ -36,7 +40,9 @@
 - (void)startObserving;
 - (void)stopObserving;
 
-- (void)addListener:(NSString *)eventName;
+- (void)invalidate NS_REQUIRES_SUPER;
+
+- (void)addListener:(NSString *_Nullable)eventName; // TODO(macOS GH#774)
 - (void)removeListeners:(double)count;
 
 @end

@@ -1,18 +1,16 @@
 parameters:
   apply_office_patches: ''
+  slice_name: ''
+  xcode_version: ''
 
 steps:
-  - script: 'brew bundle'
-    displayName: 'brew bundle'
+  - template: apple-node-setup.yml
 
-  - script: brew link node@10 --overwrite --force
-    displayName: 'ensure node 10'
-
+  # Task Group: Xcode select proper version
   - template: apple-xcode-select.yml
-
-  - template: apple-droid-node-patching.yml
     parameters:
-      apply_office_patches: $(apply_office_patches)
+      slice_name: ${{ parameters.slice_name }}
+      xcode_version: ${{ parameters.xcode_version }}
 
   - script: 'yarn install'
     displayName: 'yarn install'

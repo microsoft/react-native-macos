@@ -8,16 +8,17 @@
  * @format
  */
 
-'use strict';
+import type {ViewConfig} from '../../Renderer/shims/ReactNativeTypes';
 import ReactNativeViewViewConfigAndroid from './ReactNativeViewViewConfigAndroid';
-import ReactNativeViewViewConfigMacOS from './ReactNativeViewViewConfigMacOS'; // TODO(macOS ISS#2323203)
+import ReactNativeViewViewConfigMacOS from './ReactNativeViewViewConfigMacOS'; // TODO(macOS GH#774)
+import {Platform} from 'react-native';
 
-const ReactNativeViewConfig = {
+const ReactNativeViewConfig: ViewConfig = {
   uiViewClassName: 'RCTView',
   baseModuleName: null,
   Manager: 'ViewManager',
-  Commands: ({}: $TEMPORARY$object<{||}>),
-  Constants: ({}: $TEMPORARY$object<{||}>),
+  Commands: {},
+  Constants: {},
   bubblingEventTypes: {
     ...ReactNativeViewViewConfigAndroid.bubblingEventTypes,
     topBlur: {
@@ -89,7 +90,7 @@ const ReactNativeViewConfig = {
   },
   directEventTypes: {
     ...ReactNativeViewViewConfigAndroid.directEventTypes,
-    ...ReactNativeViewViewConfigMacOS.directEventTypes, // TODO(macOS ISS#2323203)
+    ...ReactNativeViewViewConfigMacOS.directEventTypes, // TODO(macOS GH#774)
     topAccessibilityAction: {
       registrationName: 'onAccessibilityAction',
     },
@@ -105,6 +106,12 @@ const ReactNativeViewConfig = {
     topMagicTap: {
       registrationName: 'onMagicTap',
     },
+    topKeyUp: {
+      registrationName: 'onKeyUp',
+    },
+    topKeyDown: {
+      registrationName: 'onKeyDown',
+    },
     // Events for react-native-gesture-handler (T45765076)
     // Remove once this library can handle JS View Configs
     onGestureHandlerEvent: {
@@ -116,7 +123,7 @@ const ReactNativeViewConfig = {
   },
   validAttributes: {
     ...ReactNativeViewViewConfigAndroid.validAttributes,
-    ...ReactNativeViewViewConfigMacOS.validAttributes, // TODO(macOS ISS#2323203)
+    ...ReactNativeViewViewConfigMacOS.validAttributes, // TODO(macOS GH#774)
     accessibilityActions: true,
     accessibilityElementsHidden: true,
     accessibilityHint: true,
@@ -124,8 +131,9 @@ const ReactNativeViewConfig = {
     accessibilityLabel: true,
     accessibilityLiveRegion: true,
     accessibilityRole: true,
-    accessibilityStates: true,
+    accessibilityStates: true, // TODO: Can be removed after next release
     accessibilityState: true,
+    accessibilityValue: true,
     accessibilityViewIsModal: true,
     accessible: true,
     alignContent: true,
@@ -172,7 +180,7 @@ const ReactNativeViewConfig = {
     flexShrink: true,
     flexWrap: true,
     height: true,
-    hitSlop: {diff: (require('../../Utilities/differ/insetsDiffer'): any)},
+    hitSlop: {diff: require('../../Utilities/differ/insetsDiffer')},
     importantForAccessibility: true,
     justifyContent: true,
     left: true,
@@ -324,7 +332,10 @@ const ReactNativeViewConfig = {
       textTransform: true,
       tintColor: {process: require('../../StyleSheet/processColor')},
       top: true,
-      transform: {diff: require('../../Utilities/differ/matricesDiffer')},
+      transform:
+        Platform.OS === 'ios' || Platform.OS === 'macos' // TODO(macOS GH#774)
+          ? {diff: require('../../Utilities/differ/matricesDiffer')}
+          : {process: require('../../StyleSheet/processTransform')},
       transformMatrix: true,
       translateX: true,
       translateY: true,
@@ -334,9 +345,15 @@ const ReactNativeViewConfig = {
     },
     testID: true,
     top: true,
-    transform: {diff: require('../../Utilities/differ/matricesDiffer')},
+    transform:
+      Platform.OS === 'ios' || Platform.OS === 'macos' // TODO(macOS GH#774)
+        ? {diff: require('../../Utilities/differ/matricesDiffer')}
+        : {process: require('../../StyleSheet/processTransform')},
     translateX: true,
     translateY: true,
+    validKeysDown: true,
+    validKeysUp: true,
+    nextKeyViewTag: true, // TODO(macOS GH#768)
     width: true,
     zIndex: true,
   },

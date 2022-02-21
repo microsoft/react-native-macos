@@ -1,9 +1,10 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
- * <p>This source code is licensed under the MIT license found in the LICENSE file in the root
- * directory of this source tree.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  */
+
 package com.facebook.react.bridge;
 
 import static org.mockito.Mockito.mock;
@@ -51,6 +52,7 @@ public class ReactTestHelper {
     when(reactInstance.getReactQueueConfiguration()).thenReturn(ReactQueueConfiguration);
     when(reactInstance.getNativeModule(UIManagerModule.class))
         .thenReturn(mock(UIManagerModule.class));
+    when(reactInstance.isDestroyed()).thenReturn(false);
 
     return reactInstance;
   }

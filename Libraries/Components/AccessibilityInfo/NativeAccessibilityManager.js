@@ -8,8 +8,6 @@
  * @format
  */
 
-'use strict';
-
 import type {TurboModule} from '../../TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../TurboModule/TurboModuleRegistry';
 
@@ -22,6 +20,12 @@ export interface Spec extends TurboModule {
     onSuccess: (isGrayscaleEnabled: boolean) => void,
     onError: (error: Object) => void,
   ) => void;
+  // [TODO(macOS GH#774)
+  +getCurrentHighContrastState: (
+    onSuccess: (isHighContrastEnabled: boolean) => void,
+    onError: (error: Object) => void,
+  ) => void;
+  // ]TODO(macOS GH#774)
   +getCurrentInvertColorsState: (
     onSuccess: (isInvertColorsEnabled: boolean) => void,
     onError: (error: Object) => void,
@@ -38,7 +42,7 @@ export interface Spec extends TurboModule {
     onSuccess: (isScreenReaderEnabled: boolean) => void,
     onError: (error: Object) => void,
   ) => void;
-  +setAccessibilityContentSizeMultipliers: (JSMultiipliers: {|
+  +setAccessibilityContentSizeMultipliers: (JSMultipliers: {|
     +extraSmall?: ?number,
     +small?: ?number,
     +medium?: ?number,

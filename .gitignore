@@ -26,19 +26,26 @@ project.xcworkspace/*
 
 # Gradle
 /build/
-/RNTester/android/app/build/
-/RNTester/android/app/gradle/
-/RNTester/android/app/gradlew
-/RNTester/android/app/gradlew.bat
+/packages/react-native-codegen/android/build/
+/packages/react-native-gradle-plugin/build/
+/packages/rn-tester/android/app/.cxx/
+/packages/rn-tester/android/app/build/
+/packages/rn-tester/android/app/gradle/
+/packages/rn-tester/android/app/gradlew
+/packages/rn-tester/android/app/gradlew.bat
 /ReactAndroid/build/
+/ReactAndroid/gradle/
+/ReactAndroid/gradlew
+/ReactAndroid/gradlew.bat
 /build_deps/
 /ReactAndroid/packages/
 
 # Buck
 .buckd
 buck-out
-/ReactAndroid/src/main/jni/prebuilt/lib/armeabi-v7a/
-/ReactAndroid/src/main/jni/prebuilt/lib/x86/
+/.lsp.buckd
+/.lsp-buck-out
+/ReactAndroid/src/main/jni/prebuilt/lib/
 /ReactAndroid/src/main/gen
 
 # Android Studio
@@ -74,6 +81,7 @@ package-lock.json
 /coverage
 /third-party
 /packages/*
+!/packages/rn-tester
 !/packages/react-native-macos-init/
 
 # Root dir shouldn't have Xcode project
@@ -81,29 +89,34 @@ package-lock.json
 
 # ReactCommon subdir shouldn't have Xcode project
 /ReactCommon/**/*.xcodeproj
-RNTester/build
+/packages/rn-tester/build
+/packages/rn-tester/android/app/build/*
+
+# Libs that shouldn't have Xcode project
+/Libraries/FBLazyVector/**/*.xcodeproj
+/Libraries/RCTRequired/**/*.xcodeproj
+/React/CoreModules/**/*.xcodeproj
+/React/FBReactNativeSpec/**/*.xcodeproj
+/packages/react-native-codegen/**/*.xcodeproj
 
 # CocoaPods
 /template/ios/Pods/
 /template/ios/Podfile.lock
-/RNTester/Gemfile.lock
+/packages/rn-tester/Gemfile.lock
 
 # Ignore RNTester specific Pods, but keep the __offline_mirrors__ here.
-RNTester/Pods/*
-!RNTester/Pods/__offline_mirrors
+/packages/rn-tester/Pods/*
+!/packages/rn-tester/Pods/__offline_mirrors__
 
-# NuGet
-*.nupkg
+# react-native-codegen
+/React/FBReactNativeSpec/FBReactNativeSpec
+/packages/react-native-codegen/lib
+/ReactCommon/react/renderer/components/rncore/
+/packages/rn-tester/NativeModuleExample/ScreenshotManagerSpec*
 
-#vscode
-.vscode/*
+# Visual studio
+.vscode
+.vs
 
-# Javadocs and copy of third party ndks created by build.
-ReactAndroid/bin/
-
-# Projects files created by build
-**/.project
-
-# binary files generated during ReactAndroid build.
-RNTester/android/app/bin/
-processor/bin/
+# Android memory profiler files
+*.hprof

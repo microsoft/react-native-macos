@@ -11,10 +11,8 @@ IF EXIST %BUILD_DEPS_DIR% (
 
 mkdir %BUILD_DEPS_DIR%
 
-mklink /D /J %BUILD_DEPS_DIR%\boost ReactAndroid\packages\boost.1.68.0.0\lib\native\include\boost
-mklink /D /J %BUILD_DEPS_DIR%\double-conversion double-conversion\double-conversion
-mklink /D /J %BUILD_DEPS_DIR%\Folly Folly\
-mklink /D /J %BUILD_DEPS_DIR%\glog glog
+mkdir %BUILD_DEPS_DIR%\boost_1_68_0
+mklink /D /J %BUILD_DEPS_DIR%\boost_1_68_0\boost ReactAndroid\packages\boost.1.68.0.0\lib\native\include\boost
 
 REM When setting up locally, set the environement variable as follows.
-REM set REACT_NATIVE_DEPENDENCIES=%CD%\%BUILD_DEPS_DIR%
+REM set REACT_NATIVE_BOOST_PATH=%CD%\%BUILD_DEPS_DIR%

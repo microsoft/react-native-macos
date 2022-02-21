@@ -8,10 +8,12 @@
  * @flow strict-local
  */
 
-'use strict';
-
 import type {ViewProps} from './ViewPropTypes';
-import type {ViewNativeComponentType} from './ViewNativeComponent';
+
+import ViewNativeComponent from './ViewNativeComponent';
+import TextAncestor from '../../Text/TextAncestor';
+import * as React from 'react';
+import invariant from 'invariant'; // TODO(macOS GH#774)
 
 export type Props = ViewProps;
 
@@ -20,7 +22,26 @@ export type Props = ViewProps;
  * supports layout with flexbox, style, some touch handling, and accessibility
  * controls.
  *
- * @see http://facebook.github.io/react-native/docs/view.html
+ * @see https://reactnative.dev/docs/view.html
  */
-module.exports = (require('./ViewNativeComponent')
-  .default: ViewNativeComponentType);
+const View: React.AbstractComponent<
+  ViewProps,
+  React.ElementRef<typeof ViewNativeComponent>,
+> = React.forwardRef((props: ViewProps, forwardedRef) => {
+  // [TODO(macOS GH#774)
+  invariant(
+    // $FlowFixMe Wanting to catch untyped usages
+    props.acceptsKeyboardFocus === undefined,
+    'Support for the "acceptsKeyboardFocus" property has been removed in favor of "focusable"',
+  );
+  // TODO(macOS GH#774)]
+  return (
+    <TextAncestor.Provider value={false}>
+      <ViewNativeComponent {...props} ref={forwardedRef} />
+    </TextAncestor.Provider>
+  );
+});
+
+View.displayName = 'View';
+
+module.exports = View;

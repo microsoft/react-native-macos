@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -9,11 +9,15 @@
 
 #import <React/RCTBridge.h>
 
-#import <React/RCTUITextField.h>
+#include <React/RCTUITextField.h>
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#include <React/RCTUISecureTextField.h>
+#endif // ]TODO(macOS GH#774)
 
 @implementation RCTSinglelineTextInputView
 {
   RCTUITextField *_backedTextInputView;
+  BOOL _useSecureTextField; // TODO(macOS GH#774)
 }
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge
@@ -37,7 +41,7 @@
   return _backedTextInputView;
 }
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (void)setReactPaddingInsets:(UIEdgeInsets)reactPaddingInsets
 {
   [super setReactPaddingInsets:reactPaddingInsets];
@@ -53,6 +57,43 @@
   ((RCTUITextField*)self.backedTextInputView).frame = UIEdgeInsetsInsetRect(self.bounds, reactBorderInsets);
   [self setNeedsLayout];
 }
-#endif // ]TODO(macOS ISS#2323203)
+
+- (void)setUseSecureTextField:(BOOL)useSecureTextField {
+  if (_useSecureTextField != useSecureTextField) {
+    _useSecureTextField = useSecureTextField;
+    RCTUITextField *previousTextField = _backedTextInputView;
+    if (useSecureTextField) {
+      _backedTextInputView = [[RCTUISecureTextField alloc] initWithFrame:self.bounds];
+    } else {
+      _backedTextInputView = [[RCTUITextField alloc] initWithFrame:self.bounds];
+    }
+    _backedTextInputView.accessibilityElement = previousTextField.accessibilityElement;
+    _backedTextInputView.accessibilityHelp = previousTextField.accessibilityHelp;
+    _backedTextInputView.accessibilityIdentifier = previousTextField.accessibilityIdentifier;
+    _backedTextInputView.accessibilityLabel = previousTextField.accessibilityLabel;
+    _backedTextInputView.accessibilityRole = previousTextField.accessibilityRole;
+    _backedTextInputView.caretHidden = previousTextField.caretHidden;
+    _backedTextInputView.contextMenuHidden = previousTextField.contextMenuHidden;
+    _backedTextInputView.defaultTextAttributes = previousTextField.defaultTextAttributes;
+    _backedTextInputView.editable = previousTextField.editable;
+    _backedTextInputView.placeholder = previousTextField.placeholder;
+    _backedTextInputView.placeholderColor = previousTextField.placeholderColor;
+    _backedTextInputView.selectionColor = previousTextField.selectionColor;
+    _backedTextInputView.textAlignment = previousTextField.textAlignment;
+    _backedTextInputView.textContainerInset = previousTextField.textContainerInset;
+    _backedTextInputView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    _backedTextInputView.textInputDelegate = self;
+    _backedTextInputView.text = previousTextField.text;
+    [self replaceSubview:previousTextField with:_backedTextInputView];
+  }
+}
+
+- (void)setEnableFocusRing:(BOOL)enableFocusRing {
+  [super setEnableFocusRing:enableFocusRing];
+  if ([_backedTextInputView respondsToSelector:@selector(setEnableFocusRing:)]) {
+    [_backedTextInputView setEnableFocusRing:enableFocusRing];
+  }
+}
+#endif // ]TODO(macOS GH#774)
 
 @end

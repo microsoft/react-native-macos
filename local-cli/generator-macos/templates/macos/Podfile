@@ -1,48 +1,32 @@
+require_relative '../node_modules/react-native-macos/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-abstract_target 'Shared' do
-  # Pods for HelloWorld
-  pod 'FBLazyVector', :path => '../node_modules/react-native-macos/Libraries/FBLazyVector'
-  pod 'FBReactNativeSpec', :path => '../node_modules/react-native-macos/Libraries/FBReactNativeSpec'
-  pod 'RCTRequired', :path => '../node_modules/react-native-macos/Libraries/RCTRequired'
-  pod 'RCTTypeSafety', :path => '../node_modules/react-native-macos/Libraries/TypeSafety'
-  pod 'React', :path => '../node_modules/react-native-macos/'
-  pod 'React-Core', :path => '../node_modules/react-native-macos/'
-  pod 'React-CoreModules', :path => '../node_modules/react-native-macos/React/CoreModules'
-  pod 'React-Core/DevSupport', :path => '../node_modules/react-native-macos/'
-  pod 'React-RCTActionSheet', :path => '../node_modules/react-native-macos/Libraries/ActionSheetIOS'
-  pod 'React-RCTAnimation', :path => '../node_modules/react-native-macos/Libraries/NativeAnimation'
-  pod 'React-RCTBlob', :path => '../node_modules/react-native-macos/Libraries/Blob'
-  pod 'React-RCTImage', :path => '../node_modules/react-native-macos/Libraries/Image'
-  pod 'React-RCTLinking', :path => '../node_modules/react-native-macos/Libraries/LinkingIOS'
-  pod 'React-RCTNetwork', :path => '../node_modules/react-native-macos/Libraries/Network'
-  pod 'React-RCTSettings', :path => '../node_modules/react-native-macos/Libraries/Settings'
-  pod 'React-RCTText', :path => '../node_modules/react-native-macos/Libraries/Text'
-  pod 'React-RCTVibration', :path => '../node_modules/react-native-macos/Libraries/Vibration'
-  pod 'React-Core/RCTWebSocket', :path => '../node_modules/react-native-macos/'
+target 'HelloWorld-macOS' do
+  platform :macos, '10.15'
+  use_native_modules!
+  use_react_native!(
+    :path => '../node_modules/react-native-macos',
+    # to enable hermes on macOS, change `false` to `true` and then install pods
+    :hermes_enabled => false
+  )
 
-  pod 'React-cxxreact', :path => '../node_modules/react-native-macos/ReactCommon/cxxreact'
-  pod 'React-jsi', :path => '../node_modules/react-native-macos/ReactCommon/jsi'
-  pod 'React-jsiexecutor', :path => '../node_modules/react-native-macos/ReactCommon/jsiexecutor'
-  pod 'React-jsinspector', :path => '../node_modules/react-native-macos/ReactCommon/jsinspector'
-  pod 'ReactCommon/jscallinvoker', :path => '../node_modules/react-native-macos/ReactCommon'
-  pod 'ReactCommon/turbomodule/core', :path => '../node_modules/react-native-macos/ReactCommon'
-  pod 'Yoga', :path => '../node_modules/react-native-macos/ReactCommon/yoga'
+  # Pods specifically for macOS target
+end
 
-  pod 'boost-for-react-native', :podspec => '../node_modules/react-native-macos/third-party-podspecs/boost-for-react-native.podspec'
-  pod 'DoubleConversion', :podspec => '../node_modules/react-native-macos/third-party-podspecs/DoubleConversion.podspec'
-  pod 'glog', :podspec => '../node_modules/react-native-macos/third-party-podspecs/glog.podspec'
-  pod 'Folly', :podspec => '../node_modules/react-native-macos/third-party-podspecs/Folly.podspec'
+target 'HelloWorld-iOS' do
+  platform :ios, '11'
+  use_native_modules!
+  use_react_native!(:path => '../node_modules/react-native-macos')
 
-  target 'HelloWorld-macOS' do
-    platform :macos, '10.14'
-    use_native_modules!
-    # Pods specifically for macOS target
+  # Enables Flipper.
+  #
+  # Note that if you have use_frameworks! enabled, Flipper will not work and
+  # you should disable these next few lines.
+  use_flipper!
+
+  post_install do |installer|
+    react_native_post_install(installer)
+    __apply_Xcode_12_5_M1_post_install_workaround(installer)
   end
-
-  target 'HelloWorld-iOS' do
-    platform :ios, '9'
-    use_native_modules!
-    # Pods specifically for iOS target
-  end
+  # Pods specifically for iOS target
 end

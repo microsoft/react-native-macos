@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -31,6 +31,13 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     _textShadowRadius = NAN;
     _opacity = NAN;
     _textTransform = RCTTextTransformUndefined;
+    // [TODO(OSS Candidate ISS#2710739)
+    if (@available(iOS 13.0, *)) {
+      _foregroundColor = [RCTUIColor labelColor];
+    } else {
+      _foregroundColor = [RCTUIColor blackColor];
+    }
+    // ]TODO(OSS Candidate ISS#2710739)
   }
 
   return self;
@@ -185,11 +192,11 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     attributes[RCTTextAttributesIsHighlightedAttributeName] = @YES;
   }
 
-  // [TODO(macOS ISS#2323203)
+  // [TODO(macOS GH#774)
   if (_fontSmoothing != RCTFontSmoothingAuto) {
     attributes[RCTTextAttributesFontSmoothingAttributeName] = @(_fontSmoothing);
   }
-  // ]TODO(macOS ISS#2323203)
+  // ]TODO(macOS GH#774)
 
   if (_tag) {
     attributes[RCTTextAttributesTagAttributeName] = _tag;

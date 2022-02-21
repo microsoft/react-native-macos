@@ -2,15 +2,15 @@
 name: $(Date:yyyyMMdd).$(Rev:.r)
 
 variables:
-  - template: variables/mac.yml
+  - template: variables/vars.yml
 
 trigger: none # will disable CI builds entirely
 
 pr:
   branches:
     include:
-      - master
-      - 0.59-stable
+      - main
+      - '*-stable'
   paths:
     exclude:
       - '*.md'
@@ -25,12 +25,14 @@ jobs:
         public:
           apply_office_patches: 'false'
     pool:
-      vmImage: $(VmImage)
+      vmImage: $(VmImageApple)
       demands: ['xcode', 'sh', 'npm']
     steps:
       - template: templates/apple-job-javascript.yml
         parameters:
             apply_office_patches: $(apply_office_patches)
+            slice_name: $(slice_name)
+            xcode_version: $(xcode_version)
 
   - job: AppleRNPR
     displayName: Apple React Native PR
@@ -40,7 +42,7 @@ jobs:
           packager_platform: 'ios'
           xcode_sdk: iphonesimulator
           xcode_scheme: 'RNTester'
-          xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 8'
+          xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 12'
           xcode_actions_debug: 'build test'
           xcode_actions_release: 'build'
           apply_office_patches: 'false'
@@ -56,7 +58,7 @@ jobs:
           packager_platform: 'ios'
           xcode_sdk: iphonesimulator
           xcode_scheme: 'RNTester'
-          xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 8'
+          xcode_destination: 'platform=iOS Simulator,OS=latest,name=iPhone 12'
           xcode_actions_debug: 'build test'
           xcode_actions_release: 'build'
           apply_office_patches: 'true'
@@ -69,7 +71,7 @@ jobs:
           xcode_actions_release: 'build'
           apply_office_patches: 'true'
     pool:
-      vmImage: $(VmImage)
+      vmImage: $(VmImageApple)
       demands: ['xcode', 'sh', 'npm']
     timeoutInMinutes: 60 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
@@ -84,6 +86,8 @@ jobs:
           xcode_actions_release: $(xcode_actions_release)
           xcode_destination: $(xcode_destination)
           apply_office_patches: $(apply_office_patches)
+          slice_name: $(slice_name)
+          xcode_version: $(xcode_version)
 
   - job: CliInit
     displayName: Verify react-native-macos-init
@@ -92,13 +96,9 @@ jobs:
         MacDebug:
           configuration: Debug
     pool:
-      vmImage: $(VmImage)
+      vmImage: $(VmImageApple)
       demands: ['xcode', 'sh', 'npm']
     steps:
-      - task: UseNode@1
-        inputs:
-          version: '10.x'
-
       - template: templates/react-native-macos-init.yml
         parameters:
           configuration: $(configuration)

@@ -16,15 +16,44 @@
 #import <string>
 #import <unordered_map>
 
-static std::unordered_map<std::string, Class (*)(void)> sCoreModuleClassMap = {
-  {"ExceptionsManager", RCTExceptionsManagerCls},
-{"ImageLoader", RCTImageLoaderCls},
-{"PlatformConstants", RCTPlatformCls},
-};
-
 Class RCTCoreModulesClassProvider(const char *name) {
-  auto p = sCoreModuleClassMap.find(name);
-  if (p != sCoreModuleClassMap.end()) {
+  // Intentionally leak to avoid crashing after static destructors are run.
+  static const auto sCoreModuleClassMap = new const std::unordered_map<std::string, Class (*)(void)>{
+#if !TARGET_OS_OSX // TODO(macOS) = Do we need these?
+    {"AccessibilityManager", RCTAccessibilityManagerCls},
+    {"Appearance", RCTAppearanceCls},
+#endif // TODO(macOS)
+    {"DeviceInfo", RCTDeviceInfoCls},
+    {"ExceptionsManager", RCTExceptionsManagerCls},
+    {"PlatformConstants", RCTPlatformCls},
+    {"Clipboard", RCTClipboardCls},
+    {"I18nManager", RCTI18nManagerCls},
+    {"SourceCode", RCTSourceCodeCls},
+    {"ActionSheetManager", RCTActionSheetManagerCls},
+    {"AlertManager", RCTAlertManagerCls},
+    {"AsyncLocalStorage", RCTAsyncLocalStorageCls},
+    {"Timing", RCTTimingCls},
+    {"StatusBarManager", RCTStatusBarManagerCls},
+    {"KeyboardObserver", RCTKeyboardObserverCls},
+    {"AppState", RCTAppStateCls},
+#if !TARGET_OS_OSX // TODO(macOS) = Do we need these?
+    {"PerfMonitor", RCTPerfMonitorCls},
+#endif // TODO(macOS)
+    {"DevMenu", RCTDevMenuCls},
+    {"DevSettings", RCTDevSettingsCls},
+    {"RedBox", RCTRedBoxCls},
+#if !TARGET_OS_OSX // TODO(macOS) = Do we need these?
+    {"LogBox", RCTLogBoxCls},
+#endif // TODO(macOS)
+    {"WebSocketExecutor", RCTWebSocketExecutorCls},
+    {"WebSocketModule", RCTWebSocketModuleCls},
+    {"DevLoadingView", RCTDevLoadingViewCls},
+    {"DevSplitBundleLoader", RCTDevSplitBundleLoaderCls},
+    {"EventDispatcher", RCTEventDispatcherCls},
+  };
+
+  auto p = sCoreModuleClassMap->find(name);
+  if (p != sCoreModuleClassMap->end()) {
     auto classFunc = p->second;
     return classFunc();
   }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -8,34 +8,31 @@
 #import "RCTSliderManager.h"
 
 #import "RCTBridge.h"
-#import "RCTEventDispatcher.h"
 #import "RCTSlider.h"
 #import "UIView+React.h"
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 @interface RCTSliderManager () <RCTSliderDelegate>
 @end
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 @implementation RCTSliderManager
 
 RCT_EXPORT_MODULE()
 
-- (RCTPlatformView *)view // TODO(macOS ISS#2323203)
+- (RCTPlatformView *)view // TODO(macOS GH#774)
 {
   RCTSlider *slider = [RCTSlider new];
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
-  [slider addTarget:self action:@selector(sliderValueChanged:)
-   forControlEvents:UIControlEventValueChanged];
-  [slider addTarget:self action:@selector(sliderTouchEnd:)
-   forControlEvents:(UIControlEventTouchUpInside |
-                     UIControlEventTouchUpOutside |
-                     UIControlEventTouchCancel)];
-#else // [TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
+  [slider addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
+  [slider addTarget:self
+                action:@selector(sliderTouchEnd:)
+      forControlEvents:(UIControlEventTouchUpInside | UIControlEventTouchUpOutside | UIControlEventTouchCancel)];
+#else // [TODO(macOS GH#774)
   slider.delegate = self;
   slider.target = self;
   slider.action = @selector(sliderValueChanged:);
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
   
   return slider;
 }
@@ -44,15 +41,11 @@ static void RCTSendSliderEvent(RCTSlider *sender, BOOL continuous)
 {
   float value = sender.value;
 
-  if (sender.step > 0 &&
-      sender.step <= (sender.maximumValue - sender.minimumValue)) {
-
+  if (sender.step > 0 && sender.step <= (sender.maximumValue - sender.minimumValue)) {
     value =
-      MAX(sender.minimumValue,
-        MIN(sender.maximumValue,
-          sender.minimumValue + round((sender.value - sender.minimumValue) / sender.step) * sender.step
-        )
-      );
+        MAX(sender.minimumValue,
+            MIN(sender.maximumValue,
+                sender.minimumValue + round((sender.value - sender.minimumValue) / sender.step) * sender.step));
 
     [sender setValue:value animated:YES];
   }
@@ -60,13 +53,13 @@ static void RCTSendSliderEvent(RCTSlider *sender, BOOL continuous)
   if (continuous) {
     if (sender.onValueChange && sender.lastValue != value) {
       sender.onValueChange(@{
-        @"value": @(value),
+        @"value" : @(value),
       });
     }
   } else {
     if (sender.onSlidingComplete) {
       sender.onSlidingComplete(@{
-        @"value": @(value),
+        @"value" : @(value),
       });
     }
   }
@@ -84,14 +77,14 @@ static void RCTSendSliderEvent(RCTSlider *sender, BOOL continuous)
   RCTSendSliderEvent(sender, NO);
 }
 
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (void)slider:(id)slider didPress:(BOOL)press
 {
   if (!press) {
     RCTSendSliderEvent(slider, NO);
   }
 }
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 RCT_EXPORT_VIEW_PROPERTY(value, float);
 RCT_EXPORT_VIEW_PROPERTY(step, float);
@@ -104,7 +97,7 @@ RCT_EXPORT_VIEW_PROPERTY(minimumTrackTintColor, UIColor);
 RCT_EXPORT_VIEW_PROPERTY(maximumTrackTintColor, UIColor);
 RCT_EXPORT_VIEW_PROPERTY(onValueChange, RCTBubblingEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onSlidingComplete, RCTDirectEventBlock);
-RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(thumbTintColor, UIColor); // TODO(macOS ISS#2323203)
+RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(thumbTintColor, UIColor); // TODO(macOS GH#774)
 RCT_EXPORT_VIEW_PROPERTY(thumbImage, UIImage);
 RCT_CUSTOM_VIEW_PROPERTY(disabled, BOOL, RCTSlider)
 {

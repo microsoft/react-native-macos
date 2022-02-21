@@ -9,13 +9,12 @@
  * @jsdoc
  */
 
-// TODO(macOS ISS#2323203)
+// TODO(macOS GH#774)
 
 'use strict';
 
 import type {AlertType, AlertButtonStyle} from './Alert';
-
-var RCTAlertManager = require('../BatchedBridge/NativeModules').AlertManager;
+import RCTAlertManager from './RCTAlertManager';
 
 /**
  * Array or buttons
@@ -36,6 +35,7 @@ export type ButtonsArray = Array<{
    * An Alert button style
    */
   style?: AlertButtonStyle,
+  ...
 }>;
 
 /**

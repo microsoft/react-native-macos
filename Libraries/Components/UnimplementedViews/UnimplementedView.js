@@ -7,10 +7,10 @@
  * @flow strict-local
  * @format
  */
-'use strict';
 
-const React = require('react');
-const StyleSheet = require('../../StyleSheet/StyleSheet');
+'use strict';
+import * as React from 'react';
+import StyleSheet from '../../StyleSheet/StyleSheet';
 
 /**
  * Common implementation for a simple stubbed view. Simply applies the view's styles to the inner
