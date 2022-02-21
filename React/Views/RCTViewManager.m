@@ -215,17 +215,6 @@ RCT_CUSTOM_VIEW_PROPERTY(shouldRasterizeIOS, BOOL, RCTView)
 
 RCT_CUSTOM_VIEW_PROPERTY(transform, CATransform3D, RCTView)
 {
-  CATransform3D transform = json ? [RCTConvert CATransform3D:json] : defaultView.layer.transform;
-  view.transform3D = transform;
-  view.layer.transform = transform;
-  // Enable edge antialiasing in perspective transforms
-  view.layer.allowsEdgeAntialiasing = !(view.layer.transform.m34 == 0.0f);
-#endif // ]TODO(macOS GH#774)
-  [view setNeedsDisplay];
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(transform, CATransform3D, RCTView)
-{
 #if TARGET_OS_OSX // [TODO(macOS GH#460)
   CATransform3D transform = json ? [RCTConvert CATransform3D:json] : defaultView.layer.transform;
   view.transform3D = transform;
