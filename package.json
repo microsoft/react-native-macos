@@ -53,6 +53,7 @@
     "scripts/react_native_pods.rb",
     "scripts/react-native-xcode.sh",
     "scripts/update-ruby.sh",
+    "sdks/hermes/utils/build",
     "template.config.js",
     "template",
     "third-party-podspecs",
