@@ -569,6 +569,15 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 - (BOOL)textInputShouldHandleDeleteForward:(__unused id)sender {
   return YES;
 }
+
+- (void)textInputDidCancel {
+	[_eventDispatcher sendTextEventWithType:RCTTextEventTypeEnd
+																 reactTag:self.reactTag
+																		 text:[self.backedTextInputView.attributedText.string copy]
+																			key:nil
+															 eventCount:_nativeEventCount];
+	[]
+}
 #endif // ]TODO(macOS GH#774)
 
 - (void)updateLocalData
