@@ -32,7 +32,8 @@ class ViewProps : public YogaStylableProps, public AccessibilityProps {
   ViewProps(
       const PropsParserContext &context,
       ViewProps const &sourceProps,
-      RawProps const &rawProps);
+      RawProps const &rawProps,
+      bool shouldSetRawProps = true);
 
 #pragma mark - Props
 
