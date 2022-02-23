@@ -49,17 +49,17 @@ Now we can move to:
 1. Within the `react-native-macos` local clone, create a reference to a remote to Meta's repo *(if not already present)*
     1. `git remote add meta https://github.com/facebook/react-native.git`
     2. `git pull meta`
-2. Create a branch to work in. Below is for merging in Facebook's React Native 0.68 version.
+2. Create a branch to work in:
     1. `git branch meta68merge`
     2. `git checkout meta68merge`
 3. Pull the new contents at the merge point we want, meaning the hash commit we found earlier `git fetch meta 8aa87814f62e42741ebb01994796625473c1310f`
 4. Do the merge at the point we want `git merge 8aa87814f62e42741ebb01994796625473c1310f`
 
-It's likely that the `git merge` command will cause in the order of 100s of merge conflicts: that's expected! Push the initial merge up to github **with** the merge conflicts. This makes it easier for other people to see where the errors are and help fix their platforms quickly.
+It's likely that the `git merge` command will cause in the order of 100s of merge conflicts: that's expected! Push the initial merge up to github **with** the merge conflicts, and open a draft PR. This makes it easier for other people to see where the errors are and help fix their platforms quickly.
 
 Now, the work is to address all the conflicts and make sure to keep the custom macos code around, without breaking anything. Good luck - this is the hardest part of working on this repo.
 
-Once the work in the `meta68merge` branch is completed, a PR against `react-native-macos`'s `main` branch needs to be created. This PR must be merged **WITHOUT SQUASHING IT** in order to avoid messing up with the git history and reduce the likeliness of merge conflicts.
+Once the work in the `meta68merge` branch is completed, the PR must be merged **WITHOUT SQUASHING IT** in order to avoid messing up with the git history and reduce the likeliness of merge conflicts.
 
 Once this sync PR has been merged, a stable branch can be created: `git branch 0.68-stable` and we can move to (B).
 
@@ -72,6 +72,8 @@ Once we have created a `0.68-stable` branch in our fork, it's time to "fast forw
 
 Once this is all done, we can finally start looking into making releases. For it, refer [to the dedicated doc](./Releases.md).
 
+Note: This step might happen multiple times during the lifespan of the 0.XX release cycle, given that upstream will also produce a few patch releases per each minor. If we are very closely up-to-date with upstream, we might want to consider mimicking the cherry-picks that happen upstream instead of making a whole merge/PR process. But it will be a case-by-case scenario consideration.
+
 ## (C) adding new changes and fixes in the fork
 
 Because this fork adds new feature (the entire `macos` platform support) and other custom fixes, the general rule of thumb to follow is the following:
@@ -83,6 +85,6 @@ Because this fork adds new feature (the entire `macos` platform support) and oth
 
 ## (D) doing a local commit against a `0.XX-stable` branch
 
-In some (hopefully) **rare** scenarios, you might have to do an hotfix on the `0.XX-stable` branch - when that happens, consider doing as a separate PR the same fix against `main` branch if necessary.
+In some (hopefully) **rare** scenarios, you might have to do an hotfix on the `0.XX-stable` branch directly - when this happens, consider doing a separate PR the same fix against `main` branch, if necessary.
 
-There's no automatic syncing between `main` and a `0.XX-stable` branch, and we strongly suggest not doing merges between the two to avoid the problems with the git history and merge conflicts mentioned previously.
+There's no automatic syncing between `main` and a `0.XX-stable` branch, and we strongly suggest not doing merges between stable<->main to avoid the problems with the git history and merge conflicts mentioned previously.
