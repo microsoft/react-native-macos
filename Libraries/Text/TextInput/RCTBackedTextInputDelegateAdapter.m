@@ -187,7 +187,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)fieldEditor doCommandBySelector:(SEL)commandSelector
 {
-	id<RCTBackedTextInputDelegate> textInputDelegate = [_backedTextInputView textInputDelegate];
+  id<RCTBackedTextInputDelegate> textInputDelegate = [_backedTextInputView textInputDelegate];
   BOOL commandHandled = NO;
   // enter/return
   if (commandSelector == @selector(insertNewline:) || commandSelector == @selector(insertNewlineIgnoringFieldEditor:)) {
@@ -214,14 +214,14 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     //paste
   } else if (commandSelector == @selector(paste:)) {
     _backedTextInputView.textWasPasted = YES;
-		//escape
+    //escape
   } else if (commandSelector == @selector(cancelOperation:)) {
     [textInputDelegate textInputDidCancel];
     [[_backedTextInputView window] makeFirstResponder:nil];
     commandHandled = YES;
 }
 
-	return commandHandled;
+  return commandHandled;
 }
 
 - (void)textFieldBeginEditing:(NSTextField *)textField
@@ -417,12 +417,12 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     //deleteForward
   } else if (commandSelector == @selector(deleteForward:)) {
     commandHandled = textInputDelegate != nil && ![textInputDelegate textInputShouldHandleDeleteForward:_backedTextInputView];
-		//escape
-	} else if (commandSelector == @selector(cancelOperation:)) {
-		[textInputDelegate textInputDidCancel];
-		[_backedTextInputView.window makeFirstResponder:nil];
-		commandHandled = YES;
-		
+    //escape
+  } else if (commandSelector == @selector(cancelOperation:)) {
+    [textInputDelegate textInputDidCancel];
+    [_backedTextInputView.window makeFirstResponder:nil];
+    commandHandled = YES;
+    
   }
 
   return commandHandled;

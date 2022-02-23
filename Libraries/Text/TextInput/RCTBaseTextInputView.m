@@ -571,12 +571,12 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 }
 
 - (void)textInputDidCancel {
-	[_eventDispatcher sendTextEventWithType:RCTTextEventTypeKeyPress
-																 reactTag:self.reactTag
-																		 text:nil
-																			key:@"Escape"
-															 eventCount:_nativeEventCount];
-	[self textInputDidEndEditing];
+  [_eventDispatcher sendTextEventWithType:RCTTextEventTypeKeyPress
+                                 reactTag:self.reactTag
+                                     text:nil
+                                      key:@"Escape"
+                               eventCount:_nativeEventCount];
+  [self textInputDidEndEditing];
 }
 #endif // ]TODO(macOS GH#774)
 
