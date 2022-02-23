@@ -62,14 +62,27 @@ Now, the work is to address all the conflicts and make sure to keep the custom m
 Once the work in the `meta68merge` branch is completed, a PR against `react-native-macos`'s `main` branch needs to be created. This PR must be merged **WITHOUT SQUASHING IT** in order to avoid messing up with the git history and reduce the likeliness of merge conflicts.
 
 Once this sync PR has been merged, a stable branch can be created: `git branch 0.68-stable` and we can move to (B).
+
 ## (B) syncing a `0.XX-stable` branch to its upstream counterpart
 
-add me
+Once we have created a `0.68-stable` branch in our fork, it's time to "fast forward" it against its upstream counterpart. This procedure is basically the same as described above (making a new branch against `0.68-stable` and all), with two minor differences:
+
+1. we will use the latest commit on the `0.68-stable` [branch upstream](https://github.com/facebook/react-native/commits/0.68-stable) as hash reference for the `git fetch meta` and `git merge` commands.
+2. we can safely merge squash the PR with this sync back into `0.68-stable`
+
+Once this is all done, we can finally start looking into making releases. For it, refer [to the dedicated doc](./Releases.md).
 
 ## (C) adding new changes and fixes in the fork
 
-add me
+Because this fork adds new feature (the entire `macos` platform support) and other custom fixes, the general rule of thumb to follow is the following:
+
+1. make all the new changes as PRs against `react-native-macos`'s `main` branch
+2. once the fix has been merge-squashed into `main`, it can be safely cherry picked to the stable branch. If you have the auth to do so, you don't need to open a PR to do so but you can simply use the command `git cherry-pick <commit-of-hash-on-main>`
+
+*(sidenote, if the fix you want to introduce is about the Android side of this project, please refer to the `android-patches` [README](./../android-patches/README.md))*
 
 ## (D) doing a local commit against a `0.XX-stable` branch
 
-add me
+In some (hopefully) **rare** scenarios, you might have to do an hotfix on the `0.XX-stable` branch - when that happens, consider doing as a separate PR the same fix against `main` branch if necessary.
+
+There's no automatic syncing between `main` and a `0.XX-stable` branch, and we strongly suggest not doing merges between the two to avoid the problems with the git history and merge conflicts mentioned previously.
