@@ -49,9 +49,7 @@ Now we can move to:
 1. Within the `react-native-macos` local clone, create a reference to a remote to Meta's repo *(if not already present)*
     1. `git remote add meta https://github.com/facebook/react-native.git`
     2. `git pull meta`
-2. Create a branch to work in:
-    1. `git branch meta68merge`
-    2. `git checkout meta68merge`
+2. Create a branch to work in: `git checkout -b meta68merge`
 3. Pull the new contents at the merge point we want, meaning the hash commit we found earlier `git fetch meta 8aa87814f62e42741ebb01994796625473c1310f`
 4. Do the merge at the point we want `git merge 8aa87814f62e42741ebb01994796625473c1310f`
 
