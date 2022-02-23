@@ -136,9 +136,6 @@ class RewriteExampleInvalidCharacters extends React.Component<
           onChangeText={text => {
             this.setState({text: text.replace(/\s/g, '')});
           }}
-          onKeyPress={ev => {
-            console.log(ev.nativeEvent.key);
-          }}
           style={styles.default}
           value={this.state.text}
         />
@@ -285,10 +282,9 @@ class TextEventsExample extends React.Component<{...}, $FlowFixMeState> {
           onSubmitEditing={event =>
             this.updateText('onSubmitEditing text: ' + event.nativeEvent.text)
           }
-          onKeyPress={event => {
-            console.log(event.nativeEvent.key);
-            this.updateText('onKeyPress key: ' + event.nativeEvent.key);
-          }}
+          onKeyPress={event =>
+            this.updateText('onKeyPress key: ' + event.nativeEvent.key)
+          }
           style={styles.singleLine}
         />
         <Text style={styles.eventLabel}>
@@ -481,9 +477,6 @@ module.exports = ([
       return (
         <TextInput
           autoFocus={true}
-          onKeyPress={ev => {
-            console.log(ev.nativeEvent.key);
-          }}
           style={styles.default}
           accessibilityLabel="I am the accessibility label for text input"
         />

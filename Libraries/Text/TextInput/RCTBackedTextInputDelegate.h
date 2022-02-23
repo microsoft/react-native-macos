@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (BOOL)textInputShouldHandleDeleteForward:(id<RCTBackedTextInputViewProtocol>)sender; // Return `YES` to have the deleteForward event handled normally. Return `NO` to disallow it and handle it yourself.
 
-- (void)textInputDidCancel; 
+- (void)textInputDidCancel;  // Handle `Escape` key press.
 #endif // ]TODO(macOS GH#774)
 
 @optional

@@ -214,12 +214,11 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     //paste
   } else if (commandSelector == @selector(paste:)) {
     _backedTextInputView.textWasPasted = YES;
-	} else if (commandSelector == @selector(cancelOperation:)) {
-		[textInputDelegate textInputDidCancel];
-		[[_backedTextInputView window] makeFirstResponder:nil];
-		[self textFieldDidEndEditing:_backedTextInputView];
-		
-		commandHandled = YES;
+		//escape
+  } else if (commandSelector == @selector(cancelOperation:)) {
+    [textInputDelegate textInputDidCancel];
+    [[_backedTextInputView window] makeFirstResponder:nil];
+    commandHandled = YES;
 }
 
 	return commandHandled;
@@ -422,7 +421,6 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
 	} else if (commandSelector == @selector(cancelOperation:)) {
 		[textInputDelegate textInputDidCancel];
 		[_backedTextInputView.window makeFirstResponder:nil];
-		[textInputDelegate textInputDidEndEditing];
 		commandHandled = YES;
 		
   }
