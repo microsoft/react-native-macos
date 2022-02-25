@@ -162,7 +162,9 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS I
     _borderBottomEndRadius = -1;
     _borderStyle = RCTBorderStyleSolid;
     _hitTestEdgeInsets = UIEdgeInsetsZero;
+#if TARGET_OS_OSX // TODO(macOS GH#774)
     _transform3D = CATransform3DIdentity;
+#endif // TODO(macOS GH#774)
 
     _backgroundColor = super.backgroundColor;
   }
