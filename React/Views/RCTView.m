@@ -1172,17 +1172,19 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   backgroundColor = _backgroundColor.CGColor;
 #endif
 
-  #if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
-  CATransform3D transform = self.transform3D;
-  if (layer.anchorPoint.x == 0 && layer.anchorPoint.y == 0 && !CATransform3DEqualToTransform(transform, CATransform3DIdentity)) {
+#if TARGET_OS_OSX // [TODO(macOS GH#1035)
+  CATransform3D transform = [self transform3D];
+  CGPoint anchorPoint = [layer anchorPoint];
+  if (CGPointEqualToPoint(anchorPoint, CGPointZero) && !CATransform3DEqualToTransform(transform, CATransform3DIdentity)) {
+    // https://developer.apple.com/documentation/quartzcore/calayer/1410817-anchorpoint
     // This compensates for the fact that layer.anchorPoint is {0, 0} instead of {0.5, 0.5} on macOS for some reason.
     CATransform3D originAdjust = CATransform3DTranslate(CATransform3DIdentity, self.frame.size.width / 2, self.frame.size.height / 2, 0);
     transform = CATransform3DConcat(CATransform3DConcat(CATransform3DInvert(originAdjust), transform), originAdjust);
     // Enable edge antialiasing in perspective transforms
-    layer.allowsEdgeAntialiasing = !(transform.m34 == 0.0f);
+    [layer setAllowsEdgeAntialiasing:!(transform.m34 == 0.0f)];
   }
-  layer.transform = transform;
-  #endif // ]TODO(macOS ISS#2323203)
+  [layer setTransform:transform];
+#endif // ]TODO(macOS GH#1035)
   if (useIOSBorderRendering) {
     layer.cornerRadius = cornerRadii.topLeft;
     layer.borderColor = borderColors.left;

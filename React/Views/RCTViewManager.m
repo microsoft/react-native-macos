@@ -217,7 +217,7 @@ RCT_CUSTOM_VIEW_PROPERTY(transform, CATransform3D, RCTView)
 {
 #if TARGET_OS_OSX // [TODO(macOS GH#460)
   CATransform3D transform = json ? [RCTConvert CATransform3D:json] : defaultView.layer.transform;
-  view.transform3D = transform;
+  [view setTransform3D:transform];
   [view setNeedsDisplay];
 #else  // ]TODO(macOS GH#460)]
   view.layer.transform = json ? [RCTConvert CATransform3D:json] : defaultView.layer.transform;
