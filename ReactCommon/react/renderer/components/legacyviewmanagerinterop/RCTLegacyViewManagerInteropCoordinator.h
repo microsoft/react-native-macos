@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <React/RCTUIKit.h> // [macOS]
+#import <React/RCTBridgeModuleDecorator.h>
 #include <folly/dynamic.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -18,7 +19,9 @@ typedef void (^InterceptorBlock)(std::string eventName, folly::dynamic event);
 
 @interface RCTLegacyViewManagerInteropCoordinator : NSObject
 
-- (instancetype)initWithComponentData:(RCTComponentData *)componentData bridge:(RCTBridge *)bridge;
+- (instancetype)initWithComponentData:(RCTComponentData *)componentData
+                               bridge:(RCTBridge *)bridge
+                bridgelessInteropData:(RCTBridgeModuleDecorator *)bridgelessInteropData;
 
 - (RCTUIView *)createPaperViewWithTag:(NSInteger)tag; // [macOS]
 
