@@ -437,6 +437,8 @@ typedef NSURL * (^RCTBridgelessBundleURLGetter)(void);
 
 typedef RCTPlatformView * (^RCTBridgelessComponentViewProvider)(NSNumber *); // [macOS]
 
+typedef void (^RCTViewRegistryUIBlock)(RCTViewRegistry *viewRegistry);
+
 /**
  * A class that allows NativeModules to query for views, given React Tags.
  */
@@ -444,7 +446,8 @@ typedef RCTPlatformView * (^RCTBridgelessComponentViewProvider)(NSNumber *); // 
 - (void)setBridge:(RCTBridge *)bridge;
 - (void)setBridgelessComponentViewProvider:(RCTBridgelessComponentViewProvider)bridgelessComponentViewProvider;
 
-- (RCTPlatformView *)viewForReactTag:(NSNumber *)reactTag; // [macOS]
+- (RCTPlatformView *)viewForReactTag:(NSNumber *)reactTag;
+- (void)addUIBlock:(RCTViewRegistryUIBlock)block;
 @end
 
 typedef void (^RCTBridgelessJSModuleMethodInvoker)(
