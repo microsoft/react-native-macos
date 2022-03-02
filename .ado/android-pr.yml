@@ -18,8 +18,7 @@ variables:
 jobs:
   - job: AndroidRNPR
     displayName: Android React Native PR
-    pool:
-      vmImage: $(VmImageUbuntu)
+    pool: $(PoolUbuntu)
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
     steps:
@@ -35,12 +34,12 @@ jobs:
       - task: CmdLine@2
         displayName: Remove RNTesterApp.android.bundle
         inputs:
-          script: rm -f RNTesterApp.android.bundle
+          script: rm -f ./packages/rn-tester/js/RNTesterApp.android.bundle
 
       - task: CmdLine@2
         displayName: Create RNTester bundle
         inputs:
-          script: node cli.js bundle --entry-file ./packages/rn-tester/js/RNTesterApp.android.js --bundle-output RNTesterApp.android.bundle --platform android
+          script: node cli.js bundle --entry-file ./packages/rn-tester/js/RNTesterApp.android.js --bundle-output ./packages/rn-tester/js/RNTesterApp.android.bundle --platform android
 
       - task: CmdLine@2
         displayName: gradlew installArchives
@@ -52,7 +51,7 @@ jobs:
         inputs:
           script: REACT_NATIVE_BOOST_PATH=$(System.DefaultWorkingDirectory)/build_deps ./gradlew :packages:rn-tester:android:app:assemble
 
-      - template: templates\prep-android-nuget.yml
+      - template: templates/prep-android-nuget.yml
 
       # Verify depenendencies can be enumerated and downloaded ..
       - task: CmdLine@2

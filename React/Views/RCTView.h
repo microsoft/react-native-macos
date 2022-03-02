@@ -9,7 +9,7 @@
 
 #import <React/RCTBorderStyle.h>
 #import <React/RCTComponent.h>
-#import <React/RCTEventDispatcher.h> // TODO(OSS Candidate ISS#2710739)
+#import <React/RCTEventDispatcherProtocol.h> // TODO(OSS Candidate ISS#2710739)
 #import <React/RCTPointerEvents.h>
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
@@ -23,7 +23,7 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @interface RCTView : RCTUIView // TODO(macOS ISS#3536887)
 
 // [TODO(OSS Candidate ISS#2710739)
-- (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher;
+- (instancetype)initWithEventDispatcher:(id<RCTEventDispatcherProtocol>)eventDispatcher;
 
 - (BOOL)becomeFirstResponder;
 - (BOOL)resignFirstResponder;
@@ -128,6 +128,9 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 /**
  * macOS Properties
  */
+
+@property (nonatomic, assign) CATransform3D transform3D;
+
 @property (nonatomic, copy) RCTDirectEventBlock onDoubleClick;
 @property (nonatomic, copy) RCTDirectEventBlock onClick;
 @property (nonatomic, copy) RCTDirectEventBlock onMouseEnter;
