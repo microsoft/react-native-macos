@@ -1,0 +1,21 @@
+{
+  "name": "yaml-to-script",
+  "version": "1.0.0",
+  "description": "Generates a script that can be run locally to replicate the steps performed in an ADO PR pipeline.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^17.0.21",
+    "commander": "^9.0.0",
+    "js-yaml": "^4.1.0",
+    "readline-sync": "^1.4.10"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.5"
+  }
+}
