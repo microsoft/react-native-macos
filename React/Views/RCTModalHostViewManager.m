@@ -124,6 +124,6 @@ RCT_EXPORT_VIEW_PROPERTY(visible, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onRequestClose, RCTDirectEventBlock)
 
 // Fabric only
-RCT_EXPORT_VIEW_PROPERTY(onDismiss, RCTBubblingEventBlock) // TODO(macOS GH#774) onDismiss is a bubbling event
+RCT_EXPORT_VIEW_PROPERTY(onDismiss, RCTDirectEventBlock)
 
 @end
