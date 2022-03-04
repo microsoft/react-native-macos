@@ -74,8 +74,8 @@ class ViewProps : public YogaStylableProps, public AccessibilityProps {
 
 #ifdef ANDROID
 
-  butter::optional<NativeDrawable> nativeBackground{};
-  butter::optional<NativeDrawable> nativeForeground{};
+  std::optional<NativeDrawable> nativeBackground{};
+  std::optional<NativeDrawable> nativeForeground{};
 
   bool focusable{false};
   bool hasTVPreferredFocus{false};

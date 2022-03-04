@@ -635,7 +635,7 @@ static inline void fromRawValue(
             NativeDrawable::Ripple{
                 .color = color != map.end() && color->second.hasType<int32_t>()
                     ? (int32_t)color->second
-                    : butter::optional<int32_t>{},
+                    : std::optional<int32_t>{},
                 .borderless = borderless != map.end() &&
                         borderless->second.hasType<bool>()
                     ? (bool)borderless->second
@@ -643,7 +643,7 @@ static inline void fromRawValue(
                 .rippleRadius = rippleRadius != map.end() &&
                         rippleRadius->second.hasType<Float>()
                     ? (Float)rippleRadius->second
-                    : butter::optional<Float>{},
+                    : std::optional<Float>{},
             },
     };
   } else {

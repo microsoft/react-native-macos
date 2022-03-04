@@ -237,9 +237,9 @@ struct NativeDrawable {
   };
 
   struct Ripple {
-    butter::optional<int32_t> color{};
+    std::optional<int32_t> color{};
     bool borderless{false};
-    butter::optional<Float> rippleRadius{};
+    std::optional<Float> rippleRadius{};
 
     bool operator==(const Ripple &rhs) const {
       return std::tie(this->color, this->borderless, this->rippleRadius) ==
