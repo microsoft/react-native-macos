@@ -200,6 +200,7 @@ type ButtonProps = $ReadOnly<{|
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
   accessibilityState?: ?AccessibilityState,
   accessibilityHint?: ?string,
+  accessibilityLanguage?: ?Stringish,
 |}>;
 
 /**
@@ -338,6 +339,7 @@ class Button extends React.Component<ButtonProps> {
       accessible,
       accessibilityActions,
       accessibilityHint,
+      accessibilityLanguage,
       accessibilityRole, // [macOS]
       onAccessibilityAction,
     } = this.props;
@@ -382,6 +384,7 @@ class Button extends React.Component<ButtonProps> {
         onAccessibilityAction={onAccessibilityAction}
         accessibilityLabel={accessibilityLabel}
         accessibilityHint={accessibilityHint}
+        accessibilityLanguage={accessibilityLanguage}
         accessibilityRole={accessibilityRole || 'button'} // [macOS]
         accessibilityState={accessibilityState}
         hasTVPreferredFocus={hasTVPreferredFocus}

@@ -164,6 +164,9 @@ RCT_REMAP_VIEW_PROPERTY(accessibilityHint, reactAccessibilityElement.accessibili
 #else // [macOS
 RCT_REMAP_VIEW_PROPERTY(accessibilityHint, reactAccessibilityElement.accessibilityHelp, NSString)
 #endif // macOS]
+#if !TARGET_OS_OSX // [macOS]
+RCT_REMAP_VIEW_PROPERTY(accessibilityLanguage, reactAccessibilityElement.accessibilityLanguage, NSString)
+#endif // macOS]
 RCT_REMAP_VIEW_PROPERTY(accessibilityValue, reactAccessibilityElement.accessibilityValueInternal, NSDictionary)
 #if !TARGET_OS_OSX // [macOS]
 RCT_REMAP_VIEW_PROPERTY(accessibilityViewIsModal, reactAccessibilityElement.accessibilityViewIsModal, BOOL)
