@@ -81,7 +81,7 @@ static CVReturn RCTPlatformDisplayLinkCallBack(__unused CVDisplayLinkRef display
   }
 
   _modes = @[mode].mutableCopy;
-  os_unfair_lock_lock(&_lock);
+  os_unfair_lock_unlock(&_lock);
   CVReturn ret = CVDisplayLinkCreateWithActiveCGDisplays(&_displayLink);
   if (ret != kCVReturnSuccess) {
     ret = CVDisplayLinkCreateWithCGDisplay(CGMainDisplayID(), &_displayLink);
