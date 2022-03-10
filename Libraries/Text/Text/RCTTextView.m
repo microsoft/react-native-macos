@@ -99,6 +99,7 @@
 }
 #endif // ]TODO(macOS GH#774)
 
+#if DEBUG // TODO(macOS GH#774) description is a debug-only feature
 - (NSString *)description
 {
   NSString *superDescription = super.description;
@@ -106,6 +107,7 @@
   NSString *replacement = [NSString stringWithFormat:@"; reactTag: %@; text: %@", self.reactTag, _textStorage.string];
   return [superDescription stringByReplacingCharactersInRange:semicolonRange withString:replacement];
 }
+#endif // TODO(macOS GH#774)
 
 - (void)setSelectable:(BOOL)selectable
 {

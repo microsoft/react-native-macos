@@ -708,6 +708,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 }
 #endif // ]TODO(macOS GH#774)
 
+#if DEBUG // TODO(macOS GH#774) description is a debug-only feature
 - (NSString *)description
 {
   NSString *superDescription = super.description;
@@ -719,6 +720,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     return [superDescription stringByReplacingCharactersInRange:semicolonRange withString:replacement];
   } // TODO(macOS GH#774)
 }
+#endif // TODO(macOS GH#774)
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (void)viewDidMoveToWindow

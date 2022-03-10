@@ -2326,7 +2326,7 @@ inline facebook::react::LazyVector<JS::NativeExceptionsManager::StackFrame> JS::
 }
 inline double JS::NativeExceptionsManager::ExceptionData::id_() const
 {
-  id const p = _v[@"id_"];
+  id const p = _v[@"id"];
   return RCTBridgingToDouble(p);
 }
 inline bool JS::NativeExceptionsManager::ExceptionData::isFatal() const
