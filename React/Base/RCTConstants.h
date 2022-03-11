@@ -15,9 +15,3 @@ RCT_EXTERN NSString *const RCTUserInterfaceStyleDidChangeNotificationTraitCollec
  */
 RCT_EXTERN BOOL RCTGetDispatchW3CPointerEvents(void);
 RCT_EXTERN void RCTSetDispatchW3CPointerEvents(BOOL value);
-
-/*
- * Interop layer keep view hierarchy.
- */
-RCT_EXTERN BOOL RCTGetInteropLayerKeepViewHierarchy(void);
-RCT_EXTERN void RCTSetInteropLayerKeepViewHierarchy(BOOL value);
