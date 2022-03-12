@@ -27,6 +27,9 @@ UIActionSheetDelegate
 NSSharingServicePickerDelegate
 #endif // macOS]
 , NativeActionSheetManagerSpec>
+
+@property (nonatomic, strong) NSMutableArray<UIAlertController *> *alertControllers;
+
 @end
 
 @implementation RCTActionSheetManager 
@@ -43,6 +46,20 @@ NSSharingServicePickerDelegate
   RCTResponseSenderBlock _successCallback;
 }
 #endif // macOS]
+
+- (instancetype)init
+{
+  self = [super init];
+  if (self) {
+    _alertControllers = [NSMutableArray new];
+  }
+  return self;
+}
+
++ (BOOL)requiresMainQueueSetup
+{
+  return NO;
+}
 
 RCT_EXPORT_MODULE()
 
@@ -171,6 +188,7 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
                                                          handler:^(__unused UIAlertAction *action) {
                                                            if (!callbackInvoked) {
                                                              callbackInvoked = true;
+                                                             [self->_alertControllers removeObject:alertController];
                                                              callback(@[ @(localIndex) ]);
                                                            }
                                                          }];
@@ -212,6 +230,7 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
   }
 #endif
 
+  [_alertControllers addObject:alertController];
   [self presentViewController:alertController onParentViewController:controller anchorViewTag:anchorViewTag];
 
 #else // [macOS
@@ -247,6 +266,17 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
   }
   [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:location inView:view];
 #endif // macOS]
+}
+
+RCT_EXPORT_METHOD(dismissActionSheet)
+{
+  if (_alertControllers.count == 0) {
+    RCTLogWarn(@"Unable to dismiss action sheet");
+  }
+
+  id _alertController = [_alertControllers lastObject];
+  [_alertController dismissViewControllerAnimated:YES completion:nil];
+  [_alertControllers removeLastObject];
 }
 
 RCT_EXPORT_METHOD(showShareActionSheetWithOptions
