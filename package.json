@@ -129,7 +129,7 @@
     "react-native-codegen": "^0.0.17"
   },
   "devDependencies": {
-    "flow-bin": "^0.172.0",
+    "flow-bin": "^0.173.0",
     "react": "17.0.2"
   },
   "beachball": {
