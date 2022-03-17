@@ -61,7 +61,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E7DB209E22B2BA84005AC45F"
-               BuildableName = "RNTesterUnitTests.xctest"
+               BuildableName = "RNTesterUnitTests"
                BlueprintName = "RNTesterUnitTests"
                ReferencedContainer = "container:RNTesterPods.xcodeproj">
             </BuildableReference>

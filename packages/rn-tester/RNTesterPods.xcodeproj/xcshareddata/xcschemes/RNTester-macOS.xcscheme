@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9F15345A233AB2C4006DFE44"
-               BuildableName = "RNTester-macOS.app"
+               BuildableName = "RNTester-macOS"
                BlueprintName = "RNTester-macOS"
                ReferencedContainer = "container:RNTesterPods.xcodeproj">
             </BuildableReference>
@@ -29,7 +29,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9F15346C233AB2C7006DFE44"
-               BuildableName = "RNTester-macOSUnitTests.xctest"
+               BuildableName = "RNTester-macOSUnitTests"
                BlueprintName = "RNTester-macOSUnitTests"
                ReferencedContainer = "container:RNTesterPods.xcodeproj">
             </BuildableReference>
@@ -47,7 +47,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9F15345A233AB2C4006DFE44"
-            BuildableName = "RNTester-macOS.app"
+            BuildableName = "RNTester-macOS"
             BlueprintName = "RNTester-macOS"
             ReferencedContainer = "container:RNTesterPods.xcodeproj">
          </BuildableReference>
@@ -65,7 +65,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9F15346C233AB2C7006DFE44"
-               BuildableName = "RNTester-macOSUnitTests.xctest"
+               BuildableName = "RNTester-macOSUnitTests"
                BlueprintName = "RNTester-macOSUnitTests"
                ReferencedContainer = "container:RNTesterPods.xcodeproj">
             </BuildableReference>
@@ -75,7 +75,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9F153477233AB2C7006DFE44"
-               BuildableName = "RNTester-macOSIntegrationTests.xctest"
+               BuildableName = "RNTester-macOSIntegrationTests"
                BlueprintName = "RNTester-macOSIntegrationTests"
                ReferencedContainer = "container:RNTesterPods.xcodeproj">
             </BuildableReference>
@@ -97,7 +97,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9F15345A233AB2C4006DFE44"
-            BuildableName = "RNTester-macOS.app"
+            BuildableName = "RNTester-macOS"
             BlueprintName = "RNTester-macOS"
             ReferencedContainer = "container:RNTesterPods.xcodeproj">
          </BuildableReference>
@@ -114,7 +114,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9F15345A233AB2C4006DFE44"
-            BuildableName = "RNTester-macOS.app"
+            BuildableName = "RNTester-macOS"
             BlueprintName = "RNTester-macOS"
             ReferencedContainer = "container:RNTesterPods.xcodeproj">
          </BuildableReference>
