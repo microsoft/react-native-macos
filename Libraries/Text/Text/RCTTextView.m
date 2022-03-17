@@ -101,10 +101,10 @@
 
 - (NSString *)description
 {
-  NSString *superDescription = super.description;
-  NSRange semicolonRange = [superDescription rangeOfString:@";"];
-  NSString *replacement = [NSString stringWithFormat:@"; reactTag: %@; text: %@", self.reactTag, _textStorage.string];
-  return [superDescription stringByReplacingCharactersInRange:semicolonRange withString:replacement];
+  // [TODO(macOS GH#774): we shouldn't make assumptions on what super's description is. Just append additional content.
+  NSString *stringToAppend = [NSString stringWithFormat:@" reactTag: %@; text: %@", self.reactTag, _textStorage.string];
+  return [[super description] stringByAppendingString:stringToAppend];
+  // TODO(macOS GH#774)]
 }
 
 - (void)setSelectable:(BOOL)selectable

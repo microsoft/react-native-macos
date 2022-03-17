@@ -710,14 +710,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 
 - (NSString *)description
 {
-  NSString *superDescription = super.description;
-  NSRange semicolonRange = [superDescription rangeOfString:@";"];
-  if (semicolonRange.location == NSNotFound) { // [TODO(macOS GH#774)
-    return [[superDescription substringToIndex:superDescription.length - 1] stringByAppendingFormat:@"; reactTag: %@; frame = %@; layer = %@>", self.reactTag, NSStringFromCGRect(self.frame), self.layer];
-  } else { // ]TODO(macOS GH#774)
-    NSString *replacement = [NSString stringWithFormat:@"; reactTag: %@;", self.reactTag];
-    return [superDescription stringByReplacingCharactersInRange:semicolonRange withString:replacement];
-  } // TODO(macOS GH#774)
+  // TODO(macOS GH#774): we shouldn't make assumptions on what super's description is. Just append additional content.
+  return [[super description] stringByAppendingFormat:@" reactTag: %@; frame = %@; layer = %@", self.reactTag, NSStringFromCGRect(self.frame), self.layer];
 }
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
