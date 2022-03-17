@@ -121,8 +121,9 @@ NSDictionary *RCTExportedDimensions(RCTPlatformView *rootView)
 #if !TARGET_OS_OSX // [macOS]
   RCTDimensions dimensions;
   if (moduleRegistry) {
-    dimensions = RCTGetDimensions(
-        ((RCTAccessibilityManager *)[moduleRegistry moduleForName:"AccessibilityManager"]).multiplier ?: 1.0);
+    RCTAccessibilityManager *accessibilityManager =
+        (RCTAccessibilityManager *)[moduleRegistry moduleForName:"AccessibilityManager"];
+    dimensions = RCTGetDimensions(accessibilityManager ? accessibilityManager.multiplier : 1.0);
   } else {
     RCTAssert(false, @"ModuleRegistry must be set to properly init dimensions.");
   }
