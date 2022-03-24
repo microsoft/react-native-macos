@@ -36,6 +36,7 @@ import type {
   ViewabilityConfigCallbackPair,
 } from './ViewabilityHelper';
 import type {KeyEvent} from '../Types/CoreEventTypes'; // [macOS]
+import type {LayoutEvent} from '../Types/CoreEventTypes';
 import {
   VirtualizedListCellContextProvider,
   VirtualizedListContext,
@@ -916,8 +917,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           } // macOS]
           key={key}
           prevCellKey={prevCellKey}
+          onCellLayout={this._onCellLayout}
           onUpdateSeparators={this._onUpdateSeparators}
-          onLayout={e => this._onCellLayout(e, key, ii)}
           onUnmount={this._onCellUnmount}
           parentProps={this.props}
           ref={ref => {
@@ -1402,7 +1403,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       );
     }
   };
-  _onCellLayout(e, cellKey, index) {
+
+  _onCellLayout = (e: LayoutEvent, cellKey: string, index: number): void => {
     const layout = e.nativeEvent.layout;
     const next = {
       offset: this._selectOffset(layout),
@@ -1435,7 +1437,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
 
     this._computeBlankness();
     this._updateViewableItems(this.props.data);
-  }
+  };
 
   _onCellUnmount = (cellKey: string) => {
     const curr = this._frames[cellKey];
@@ -1514,7 +1516,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     }
   }
 
-  _onLayout = (e: Object) => {
+  _onLayout = (e: LayoutEvent) => {
     if (this._isNestedWithSameOrientation()) {
       // Need to adjust our scroll metrics to be relative to our containing
       // VirtualizedList before we can make claims about list item viewability
@@ -1529,7 +1531,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     this._maybeCallOnEndReached();
   };
 
-  _onLayoutEmpty = e => {
+  _onLayoutEmpty = (e: LayoutEvent) => {
     this.props.onLayout && this.props.onLayout(e);
   };
 
@@ -1537,12 +1539,12 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     return this._getCellKey() + '-footer';
   }
 
-  _onLayoutFooter = e => {
+  _onLayoutFooter = (e: LayoutEvent) => {
     this._triggerRemeasureForChildListsInCell(this._getFooterCellKey());
     this._footerLength = this._selectLength(e.nativeEvent.layout);
   };
 
-  _onLayoutHeader = e => {
+  _onLayoutHeader = (e: LayoutEvent) => {
     this._headerLength = this._selectLength(e.nativeEvent.layout);
   };
 
@@ -2104,7 +2106,7 @@ type CellRendererProps = {
   isSelected: ?boolean, // [macOS]
   item: Item,
   // This is extracted by ScrollViewStickyHeader
-  onLayout: (event: Object) => void,
+  onCellLayout: (event: Object, cellKey: string, index: number) => void,
   onUnmount: (cellKey: string) => void,
   onUpdateSeparators: (cellKeys: Array<?string>, props: Object) => void,
   parentProps: {
@@ -2191,13 +2193,16 @@ class CellRenderer extends React.Component<
     this.props.onUnmount(this.props.cellKey);
   }
 
-  _renderElement(
-    renderItem,
-    ListItemComponent,
-    item,
-    index,
-    isSelected, // [macOS]
-  ) {
+  _onLayout = (nativeEvent: LayoutEvent): void => {
+    this.props.onCellLayout &&
+      this.props.onCellLayout(
+        nativeEvent,
+        this.props.cellKey,
+        this.props.index,
+      );
+  };
+
+  _renderElement(renderItem, ListItemComponent, item, index, isSelected) { // [macOS]
     if (renderItem && ListItemComponent) {
       console.warn(
         'VirtualizedList: Both ListItemComponent and renderItem props are present. ListItemComponent will take' +
@@ -2260,9 +2265,10 @@ class CellRenderer extends React.Component<
       /* $FlowFixMe[prop-missing] (>=0.68.0 site=react_native_fb) This comment
        * suppresses an error found when Flow v0.68 was deployed. To see the
        * error delete this comment and run Flow. */
-      getItemLayout && !parentProps.debug && !fillRateHelper.enabled()
+      (getItemLayout && !parentProps.debug && !fillRateHelper.enabled()) ||
+      !this.props.onCellLayout
         ? undefined
-        : this.props.onLayout;
+        : this._onLayout;
     // NOTE: that when this is a sticky header, `onLayout` will get automatically extracted and
     // called explicitly by `ScrollViewStickyHeader`.
     const itemSeparator = ItemSeparatorComponent && (
