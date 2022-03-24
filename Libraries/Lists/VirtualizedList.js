@@ -882,12 +882,17 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     const {
       CellRendererComponent,
       ItemSeparatorComponent,
+      ListHeaderComponent,
+      ListItemComponent,
       data,
+      debug,
       getItem,
       getItemCount,
+      getItemLayout,
       horizontal,
+      renderItem,
     } = this.props;
-    const stickyOffset = this.props.ListHeaderComponent ? 1 : 0;
+    const stickyOffset = ListHeaderComponent ? 1 : 0;
     const end = getItemCount(data) - 1;
     let prevCellKey;
     last = Math.min(end, last);
@@ -902,8 +907,11 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         <CellRenderer
           CellRendererComponent={CellRendererComponent}
           ItemSeparatorComponent={ii < end ? ItemSeparatorComponent : undefined}
+          ListItemComponent={ListItemComponent}
           cellKey={key}
+          debug={debug}
           fillRateHelper={this._fillRateHelper}
+          getItemLayout={getItemLayout}
           horizontal={horizontal}
           index={ii}
           inversionStyle={inversionStyle}
@@ -920,10 +928,10 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           onCellLayout={this._onCellLayout}
           onUpdateSeparators={this._onUpdateSeparators}
           onUnmount={this._onCellUnmount}
-          parentProps={this.props}
           ref={ref => {
             this._cellRefs[key] = ref;
           }}
+          renderItem={renderItem}
         />,
       );
       prevCellKey = key;
@@ -2098,8 +2106,19 @@ type CellRendererProps = {
   ItemSeparatorComponent: ?React.ComponentType<
     any | {highlighted: boolean, leadingItem: ?Item},
   >,
+  ListItemComponent?: ?(React.ComponentType<any> | React.Element<any>),
   cellKey: string,
+  debug?: ?boolean,
   fillRateHelper: FillRateHelper,
+  getItemLayout?: (
+    data: any,
+    index: number,
+  ) => {
+    length: number,
+    offset: number,
+    index: number,
+    ...
+  },
   horizontal: ?boolean,
   index: number,
   inversionStyle: ViewStyleProp,
@@ -2109,22 +2128,8 @@ type CellRendererProps = {
   onCellLayout: (event: Object, cellKey: string, index: number) => void,
   onUnmount: (cellKey: string) => void,
   onUpdateSeparators: (cellKeys: Array<?string>, props: Object) => void,
-  parentProps: {
-    // e.g. height, y,
-    getItemLayout?: (
-      data: any,
-      index: number,
-    ) => {
-      length: number,
-      offset: number,
-      index: number,
-      ...
-    },
-    renderItem?: ?RenderItemType<Item>,
-    ListItemComponent?: ?(React.ComponentType<any> | React.Element<any>),
-    ...
-  },
   prevCellKey: ?string,
+  renderItem?: ?RenderItemType<Item>,
   ...
 };
 
@@ -2244,15 +2249,17 @@ class CellRenderer extends React.Component<
     const {
       CellRendererComponent,
       ItemSeparatorComponent,
+      ListItemComponent,
+      debug,
       fillRateHelper,
+      getItemLayout,
       horizontal,
       item,
       index,
       inversionStyle,
       isSelected, // [macOS]
-      parentProps,
+      renderItem,
     } = this.props;
-    const {renderItem, getItemLayout, ListItemComponent} = parentProps;
     const element = this._renderElement(
       renderItem,
       ListItemComponent,
@@ -2262,10 +2269,7 @@ class CellRenderer extends React.Component<
     );
 
     const onLayout =
-      /* $FlowFixMe[prop-missing] (>=0.68.0 site=react_native_fb) This comment
-       * suppresses an error found when Flow v0.68 was deployed. To see the
-       * error delete this comment and run Flow. */
-      (getItemLayout && !parentProps.debug && !fillRateHelper.enabled()) ||
+      (getItemLayout && !debug && !fillRateHelper.enabled()) ||
       !this.props.onCellLayout
         ? undefined
         : this._onLayout;
