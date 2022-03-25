@@ -47,6 +47,18 @@
 
     [self createRootViewController:rootView];
   }
+
+  self.windowLevel = UIWindowLevelStatusBar - 1;
+  self.backgroundColor = [UIColor clearColor];
+
+  _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
+  [_surface start];
+
+  if (![_surface synchronouslyWaitForStage:RCTSurfaceStageSurfaceDidInitialMounting timeout:1]) {
+    RCTLogInfo(@"Failed to mount LogBox within 1s");
+  }
+  [self createRootViewController:(UIView *)_surface.view];
+
   return self;
 }
 
