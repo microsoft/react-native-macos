@@ -22,6 +22,9 @@
 ; Ignore everything in android-patches
 <PROJECT_ROOT>/android-patches/.*
 
+; Ignore intentional malformed file in package.json
+.*/node_modules/resolve/test/resolver/malformed_package_json/package.json
+
 [untyped]
 .*/node_modules/@react-native-community/cli/.*/.*
 

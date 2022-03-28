@@ -14,6 +14,9 @@ node_modules/react-native/Libraries/polyfills/.*
 ; TODO(macOS GH#774): Ignore metro.config.js
 <PROJECT_ROOT>/metro.config.js
 
+; Ignore intentional malformed file in package.json
+.*/node_modules/resolve/test/resolver/malformed_package_json/package.json
+
 [untyped]
 .*/node_modules/@react-native-community/cli/.*/.*
 
