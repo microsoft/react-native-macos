@@ -337,8 +337,8 @@ jobs:
           name: "Run Tests: JavaScript Tests"
           command: node ./scripts/run-ci-javascript-tests.js --maxWorkers 2
       # TODO(macOS GH#949): Disable this failing test
-      # - run_e2e:
-      #     platform: js
+      - run_e2e:
+          platform: js
 
       # Optionally, run disabled tests
       - when:
@@ -825,11 +825,11 @@ workflows:
       #     requires:
       #       - setup_ios
       # TODO(macOS GH#949): Disable this failing test
-      # - test_js:
-      #     name: test_js_prev_lts
-      #     executor: nodeprevlts
-      #     requires:
-      #       - setup_js
+      - test_js:
+          name: test_js_prev_lts
+          executor: nodeprevlts
+          requires:
+            - setup_js
       - test_docker:
           filters:
             branches:
