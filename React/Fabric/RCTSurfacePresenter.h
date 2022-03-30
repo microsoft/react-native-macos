@@ -62,6 +62,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (id<RCTSurfaceProtocol>)createFabricSurfaceForModuleName:(NSString *)moduleName
                                          initialProperties:(NSDictionary *)initialProperties;
 
+/*
+ * Allow callers to initialize a new fabric surface without adding Fabric as a Buck dependency.
+ */
+- (id<RCTSurfaceProtocol>)createFabricSurfaceForModuleName:(NSString *)moduleName
+                                         initialProperties:(NSDictionary *)initialProperties;
+
 - (nullable RCTFabricSurface *)surfaceForRootTag:(ReactTag)rootTag;
 
 - (BOOL)synchronouslyUpdateViewOnUIThread:(NSNumber *)reactTag props:(NSDictionary *)props;
