@@ -74,7 +74,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
     [bridge.eventDispatcher sendEvent:scrollEvent];
   } else {
     NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:scrollEvent, @"event", nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"RCTNotifyEventDispatcherObserversOfEvent_DEPRECATED"
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"RCTSendEventToLegacyEventDispatcher"
                                                         object:nil
                                                       userInfo:userInfo];
   }
