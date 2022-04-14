@@ -124,6 +124,16 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
  */
 @property (nonatomic, assign) UIEdgeInsets hitTestEdgeInsets;
 
+/**
+ * (Experimental and unused for Paper) Pointer event handlers.
+ */
+@property (nonatomic, assign) RCTBubblingEventBlock onPointerCancel;
+@property (nonatomic, assign) RCTBubblingEventBlock onPointerDown;
+@property (nonatomic, assign) RCTBubblingEventBlock onPointerMove2;
+@property (nonatomic, assign) RCTBubblingEventBlock onPointerUp;
+@property (nonatomic, assign) RCTCapturingEventBlock onPointerEnter2;
+@property (nonatomic, assign) RCTCapturingEventBlock onPointerLeave2;
+
 #if TARGET_OS_OSX // [macOS
 /**
  * macOS Properties
@@ -151,12 +161,11 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, assign) CGFloat shadowOpacity;
 @property (nonatomic, assign) CGFloat shadowRadius;
 @property (nonatomic, assign) CGSize shadowOffset;
-#endif // macOS]
 
 /**
  * Common Focus Properties
  */
 @property (nonatomic, copy) RCTBubblingEventBlock onFocus;
 @property (nonatomic, copy) RCTBubblingEventBlock onBlur;
-
+#endif // macOS]
 @end
