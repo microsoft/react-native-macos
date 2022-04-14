@@ -624,6 +624,14 @@ const PlatformBaseViewConfig: PartialViewConfigWithoutName =
             onTouchEnd: true,
             onTouchCancel: true,
 
+            // Pointer events
+            onPointerUp: true,
+            onPointerDown: true,
+            onPointerCancel: true,
+            onPointerEnter2: true,
+            onPointerMove2: true,
+            onPointerLeave2: true,
+
             // [macOS
             // $FlowFixMe: Flow doesn't like these nested spreads
             ...(Platform.OS === 'macos' && {
