@@ -12,6 +12,8 @@
 
 import type {RNTesterModuleInfo} from '../types/RNTesterTypes';
 
+import ReactNativeFeatureFlags from 'react-native/Libraries/ReactNative/ReactNativeFeatureFlags';
+
 const Components: Array<RNTesterModuleInfo> = [
   {
     key: 'ActivityIndicatorExample',
@@ -283,11 +285,6 @@ const APIs: Array<RNTesterModuleInfo> = [
     supportsTVOS: false,
   },
   {
-    key: 'W3C PointerEvents',
-    category: 'Experimental',
-    module: require('../examples/Experimental/W3CPointerEventsExample').default,
-  },
-  {
     key: 'LayoutAnimationExample',
     module: require('../examples/Layout/LayoutAnimationExample'),
     supportsTVOS: true,
@@ -391,6 +388,14 @@ const APIs: Array<RNTesterModuleInfo> = [
     supportsTVOS: true,
   },
 ];
+
+if (ReactNativeFeatureFlags.shouldEmitW3CPointerEvents()) {
+  APIs.push({
+    key: 'W3C PointerEvents',
+    category: 'Experimental',
+    module: require('../examples/Experimental/W3CPointerEventsExample').default,
+  });
+}
 
 const Modules: {...} = {};
 
