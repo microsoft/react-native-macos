@@ -1722,6 +1722,8 @@ static RCTPlatformView *_jsResponder; // [macOS]
 
 + (RCTPlatformView *)JSResponder // [macOS]
 {
+  RCTErrorNewArchitectureValidation(
+      RCTNotAllowedInAppWideFabric, @"RCTUIManager", @"Please migrate this legacy surface to Fabric.");
   return _jsResponder;
 }
 
