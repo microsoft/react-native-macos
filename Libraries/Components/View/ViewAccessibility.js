@@ -43,8 +43,7 @@ export type AccessibilityRole =
   | 'tablist'
   | 'timer'
   | 'list'
-  | 'grid'
-  | 'toolbar'
+  | 'toolbar';
   | 'menubutton'; // [macOS]
 
 // the info associated with an accessibility action
