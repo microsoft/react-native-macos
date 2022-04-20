@@ -13,6 +13,7 @@ const FillRateHelper = require('./FillRateHelper');
 const Platform = require('../Utilities/Platform'); // [macOS]
 const ReactNative = require('../Renderer/shims/ReactNative');
 const RefreshControl = require('../Components/RefreshControl/RefreshControl');
+const Platform = require('../Utilities/Platform');
 const ScrollView = require('../Components/ScrollView/ScrollView');
 const StyleSheet = require('../StyleSheet/StyleSheet');
 const View = require('../Components/View/View');
@@ -54,11 +55,21 @@ export type Separators = {
   ...
 };
 
+export type AccessibilityCollectionItem = {
+  itemIndex: number,
+  rowIndex: number,
+  rowSpan: number,
+  columnIndex: number,
+  columnSpan: number,
+  heading: boolean,
+};
+
 export type RenderItemProps<ItemT> = {
   item: ItemT,
   index: number,
   isSelected: ?boolean, // [macOS]
   separators: Separators,
+  accessibilityCollectionItem: AccessibilityCollectionItem,
   ...
 };
 
@@ -93,9 +104,19 @@ type RequiredProps = {|
    */
   getItem: (data: any, index: number) => ?Item,
   /**
-   * Determines how many items are in the data blob.
+   * Determines how many items (rows) are in the data blob.
    */
   getItemCount: (data: any) => number,
+  /**
+   * Determines how many cells are in the data blob
+   * see https://bit.ly/35RKX7H
+   */
+  getCellsInItemCount?: (data: any) => number,
+  /**
+   * The number of columns used in FlatList.
+   * The default of 1 is used in other components to calculate the accessibilityCollection prop.
+   */
+  numColumns?: ?number,
 |};
 type OptionalProps = {|
   renderItem?: ?RenderItemType<Item>,
@@ -359,6 +380,10 @@ type Props = {|
   ...RequiredProps,
   ...OptionalProps,
 |};
+
+function numColumnsOrDefault(numColumns: ?number) {
+  return numColumns ?? 1;
+}
 
 let _usedIndexForKey = false;
 let _keylessItemComponentName: string = '';
@@ -1338,6 +1363,17 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     );
   }
 
+  _getCellsInItemCount = props => {
+    const {getCellsInItemCount, data} = props;
+    if (getCellsInItemCount) {
+      return getCellsInItemCount(data);
+    }
+    if (Array.isArray(data)) {
+      return data.length;
+    }
+    return 0;
+  };
+
   _defaultRenderScrollComponent = props => {
     // [macOS
     const preferredScrollerStyleDidChangeHandler =
@@ -1362,7 +1398,21 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       onKeyDown: this._handleKeyDown,
     };
     // macOS]
+    const {getItemCount, data} = props;
     const onRefresh = props.onRefresh;
+    const numColumns = numColumnsOrDefault(props.numColumns);
+    const accessibilityRole = Platform.select({
+      android: numColumns > 1 ? 'grid' : 'list',
+    });
+    const rowCount = getItemCount(data);
+    const accessibilityCollection = {
+      // over-ride _getCellsInItemCount to handle Objects or other data formats
+      // see https://bit.ly/35RKX7H
+      itemCount: this._getCellsInItemCount(props),
+      rowCount,
+      columnCount: numColumns,
+      hierarchical: false,
+    };
     if (this._isNestedWithSameOrientation()) {
       // $FlowFixMe[prop-missing] - Typing ReactNativeComponent revealed errors
       return <View {...props} />;
@@ -1383,6 +1433,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
             preferredScrollerStyleDidChangeHandler
           } // macOS]
           {...props}
+          accessibilityRole={accessibilityRole}
+          accessibilityCollection={accessibilityCollection}
           refreshControl={
             props.refreshControl == null ? (
               <RefreshControl
@@ -1398,7 +1450,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       );
     } else {
       return (
-        // $FlowFixMe Invalid prop usage
+        // $FlowFixMe[prop-missing] Invalid prop usage
         <ScrollView
           // [macOS
           {...(props.enableSelectionOnKeyPress && keyboardNavigationProps)}
@@ -1407,6 +1459,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
             preferredScrollerStyleDidChangeHandler
           } // macOS]
           {...props}
+          accessibilityRole={accessibilityRole}
+          accessibilityCollection={accessibilityCollection}
         />
       );
     }
@@ -2231,11 +2285,20 @@ class CellRenderer extends React.Component<
     }
 
     if (renderItem) {
+      const accessibilityCollectionItem = {
+        itemIndex: index,
+        rowIndex: index,
+        rowSpan: 1,
+        columnIndex: 0,
+        columnSpan: 1,
+        heading: false,
+      };
       return renderItem({
         item,
         index,
         isSelected, // [macOS]
         separators: this._separators,
+        accessibilityCollectionItem,
       });
     }
 

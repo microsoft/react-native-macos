@@ -13,6 +13,7 @@ import invariant from 'invariant';
 import type {ViewToken} from './ViewabilityHelper';
 import type {SelectedRowIndexPathType} from './VirtualizedList'; // [macOS]
 import type {KeyEvent} from '../Types/CoreEventTypes'; // [macOS]
+import type {AccessibilityCollectionItem} from './VirtualizedList';
 import {keyExtractor as defaultKeyExtractor} from './VirtualizeUtils';
 import {View, VirtualizedList} from 'react-native';
 import * as React from 'react';
@@ -508,7 +509,16 @@ class VirtualizedSectionList<
 
   _renderItem =
     (listItemCount: number) =>
-    ({item, index}: {item: Item, index: number, ...}) => {
+    ({
+      item,
+      index,
+      accessibilityCollectionItem,
+    }: {
+      item: Item,
+      index: number,
+      accessibilityCollectionItem: AccessibilityCollectionItem,
+      ...
+    }) => {
       const info = this._subExtractor(index);
       if (!info) {
         return null;
@@ -537,6 +547,7 @@ class VirtualizedSectionList<
             LeadingSeparatorComponent={
               infoIndex === 0 ? this.props.SectionSeparatorComponent : undefined
             }
+            accessibilityCollectionItem={accessibilityCollectionItem}
             cellKey={info.key}
             index={infoIndex}
             isSelected={this._isItemSelected(item)} // [macOS]
@@ -651,6 +662,7 @@ type ItemWithSeparatorProps = $ReadOnly<{|
   updatePropsFor: (prevCellKey: string, value: Object) => void,
   renderItem: Function,
   inverted: boolean,
+  accessibilityCollectionItem: AccessibilityCollectionItem,
 |}>;
 
 function ItemWithSeparator(props: ItemWithSeparatorProps): React.Node {
@@ -669,6 +681,7 @@ function ItemWithSeparator(props: ItemWithSeparatorProps): React.Node {
     index,
     section,
     inverted,
+    accessibilityCollectionItem,
   } = props;
 
   const [leadingSeparatorHiglighted, setLeadingSeparatorHighlighted] =
@@ -743,6 +756,7 @@ function ItemWithSeparator(props: ItemWithSeparatorProps): React.Node {
     isSelected, // [macOS]
     section,
     separators,
+    accessibilityCollectionItem,
   });
   const leadingSeparator = LeadingSeparatorComponent != null && (
     <LeadingSeparatorComponent

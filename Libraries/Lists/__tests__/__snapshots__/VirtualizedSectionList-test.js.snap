@@ -2,6 +2,14 @@
 
 exports[`VirtualizedSectionList handles nested lists 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "hierarchical": false,
+      "itemCount": 1,
+      "rowCount": 4,
+    }
+  }
   data={
     Array [
       Object {
@@ -106,6 +114,14 @@ exports[`VirtualizedSectionList handles nested lists 1`] = `
       style={null}
     >
       <RCTScrollView
+        accessibilityCollection={
+          Object {
+            "columnCount": 1,
+            "hierarchical": false,
+            "itemCount": 1,
+            "rowCount": 4,
+          }
+        }
         data={
           Array [
             Object {
@@ -204,6 +220,14 @@ exports[`VirtualizedSectionList handles nested lists 1`] = `
 
 exports[`VirtualizedSectionList handles separators correctly 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "hierarchical": false,
+      "itemCount": 1,
+      "rowCount": 5,
+    }
+  }
   data={
     Array [
       Object {
@@ -339,6 +363,14 @@ exports[`VirtualizedSectionList handles separators correctly 1`] = `
 
 exports[`VirtualizedSectionList handles separators correctly 2`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "hierarchical": false,
+      "itemCount": 1,
+      "rowCount": 5,
+    }
+  }
   data={
     Array [
       Object {
@@ -474,6 +506,14 @@ exports[`VirtualizedSectionList handles separators correctly 2`] = `
 
 exports[`VirtualizedSectionList handles separators correctly 3`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "hierarchical": false,
+      "itemCount": 1,
+      "rowCount": 5,
+    }
+  }
   data={
     Array [
       Object {
@@ -610,6 +650,14 @@ exports[`VirtualizedSectionList handles separators correctly 3`] = `
 
 exports[`VirtualizedSectionList handles separators correctly 4`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "hierarchical": false,
+      "itemCount": 1,
+      "rowCount": 5,
+    }
+  }
   data={
     Array [
       Object {
@@ -749,6 +797,14 @@ exports[`VirtualizedSectionList renders all the bells and whistles 1`] = `
   ListEmptyComponent={[Function]}
   ListFooterComponent={[Function]}
   ListHeaderComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "hierarchical": false,
+      "itemCount": 1,
+      "rowCount": 7,
+    }
+  }
   data={
     Array [
       Object {
@@ -992,6 +1048,14 @@ exports[`VirtualizedSectionList renders all the bells and whistles 1`] = `
 
 exports[`VirtualizedSectionList renders empty list 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "hierarchical": false,
+      "itemCount": 0,
+      "rowCount": 0,
+    }
+  }
   data={Array []}
   getItem={[Function]}
   getItemCount={[Function]}
@@ -1018,6 +1082,14 @@ exports[`VirtualizedSectionList renders empty list with empty component 1`] = `
   ListEmptyComponent={[Function]}
   ListFooterComponent={[Function]}
   ListHeaderComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "hierarchical": false,
+      "itemCount": 0,
+      "rowCount": 0,
+    }
+  }
   data={Array []}
   getItem={[Function]}
   getItemCount={[Function]}
@@ -1054,6 +1126,14 @@ exports[`VirtualizedSectionList renders empty list with empty component 1`] = `
 exports[`VirtualizedSectionList renders list with empty component 1`] = `
 <RCTScrollView
   ListEmptyComponent={[Function]}
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "hierarchical": false,
+      "itemCount": 1,
+      "rowCount": 3,
+    }
+  }
   data={
     Array [
       Object {
@@ -1105,6 +1185,14 @@ exports[`VirtualizedSectionList renders list with empty component 1`] = `
 
 exports[`VirtualizedSectionList renders simple list 1`] = `
 <RCTScrollView
+  accessibilityCollection={
+    Object {
+      "columnCount": 1,
+      "hierarchical": false,
+      "itemCount": 1,
+      "rowCount": 5,
+    }
+  }
   data={
     Array [
       Object {

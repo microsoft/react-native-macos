@@ -312,19 +312,22 @@ class FlatListExample extends React.PureComponent<Props, State> {
       /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb)
        * This comment suppresses an error found when Flow v0.111 was deployed.
        * To see the error, delete this comment and run Flow. */
-      [flatListPropKey]: props => {
-        const {item, separators, isSelected} = props; // [macOS]
+      [flatListPropKey]: ({item, separators, accessibilityCollectionItem, isSelected}) => {  // [macOS]
         return (
-          <ItemComponent
-            item={item}
-            horizontal={this.state.horizontal}
-            fixedHeight={this.state.fixedHeight}
-            onPress={this._onPressCallback()}
-            onShowUnderlay={separators.highlight}
-            onHideUnderlay={separators.unhighlight}
-            textSelectable={this.state.textSelectable}
-            isSelected={isSelected} // [macOS]
-          />
+          <View
+            importantForAccessibility="yes"
+            accessibilityCollectionItem={accessibilityCollectionItem}>
+            <ItemComponent
+              item={item}
+              horizontal={this.state.horizontal}
+              fixedHeight={this.state.fixedHeight}
+              onPress={this._onPressCallback()}
+              onShowUnderlay={separators.highlight}
+              onHideUnderlay={separators.unhighlight}
+              textSelectable={this.state.textSelectable}
+              isSelected={isSelected} // [macOS]
+            />
+          </View>
         );
       },
     };
