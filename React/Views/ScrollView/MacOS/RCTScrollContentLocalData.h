@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) CGFloat verticalScrollerWidth;
 
 - (instancetype)initWithVerticalScrollerWidth:(CGFloat)verticalScrollerWidth
-										 horizontalScrollerHeight:(CGFloat)horizontalScrollerHeight;
+                     horizontalScrollerHeight:(CGFloat)horizontalScrollerHeight;
 
 @end
 
