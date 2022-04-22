@@ -61,7 +61,7 @@
       _hasHorizontalScroller = nextHasHorizontalScroller;
       _hasVerticalScroller = nextHasVerticalScroller;
 
-      CGFloat horizontalScrollerHeight = _hasHorizontalScroller ? NSWidth([[platformScrollView horizontalScroller] frame]) : 0;
+      CGFloat horizontalScrollerHeight = _hasHorizontalScroller ? NSHeight([[platformScrollView horizontalScroller] frame]) : 0;
       CGFloat verticalScrollerWidth = _hasVerticalScroller ? NSWidth([[platformScrollView verticalScroller] frame]) : 0;
 
       RCTScrollContentLocalData *localData =
