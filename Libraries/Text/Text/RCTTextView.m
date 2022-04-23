@@ -55,6 +55,8 @@
     self.accessibilityTraits |= UIAccessibilityTraitStaticText;
 #else // [TODO(macOS GH#774)
     self.accessibilityRole = NSAccessibilityStaticTextRole;
+    // Fix blurry text on non-retina displays.
+    self.canDrawSubviewsIntoLayer = YES;
 #endif // ]TODO(macOS GH#774)
     self.opaque = NO;
     RCTUIViewSetContentModeRedraw(self); // TODO(macOS GH#774) and TODO(macOS ISS#3536887)
@@ -99,19 +101,15 @@
 }
 #endif // ]TODO(macOS GH#774)
 
+#if DEBUG // TODO(macOS GH#774) description is a debug-only feature
 - (NSString *)description
 {
-  NSString *superDescription = super.description;
-  NSRange semicolonRange = [superDescription rangeOfString:@";"];
-  NSString *replacement = [NSString stringWithFormat:@"; reactTag: %@; text: %@", self.reactTag, _textStorage.string];
-  // [TODO(macOS GH#774): super.description isn't guaranteed to have a semicolon in it on macOS
-  if (semicolonRange.location == NSNotFound) {
-    return [superDescription stringByAppendingString:replacement];
-  } else {
-    return [superDescription stringByReplacingCharactersInRange:semicolonRange withString:replacement];
-  }
+  // [TODO(macOS GH#774): we shouldn't make assumptions on what super's description is. Just append additional content.
+  NSString *stringToAppend = [NSString stringWithFormat:@" reactTag: %@; text: %@", self.reactTag, _textStorage.string];
+  return [[super description] stringByAppendingString:stringToAppend];
   // TODO(macOS GH#774)]
 }
+#endif // TODO(macOS GH#774)
 
 - (void)setSelectable:(BOOL)selectable
 {
