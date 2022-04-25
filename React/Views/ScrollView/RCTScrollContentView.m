@@ -21,14 +21,14 @@
 
 - (void)reactSetFrame:(CGRect)frame
 {
+  [super reactSetFrame:frame];
+
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
   RCTScrollView *scrollView = (RCTScrollView *)self.superview.superview;
 #else // [TODO(macOS GH#774)
   // macOS also has a NSClipView in its hierarchy
   RCTScrollView *scrollView = (RCTScrollView *)self.superview.superview.superview;
 #endif // ]TODO(macOS GH#774)
-
-  [super reactSetFrame:frame];
 
   if (!scrollView) {
     return;
@@ -54,7 +54,7 @@
            horizontalScrollerHeight:verticalScrollerWidth];
     [[[scrollView bridge] uiManager] setLocalData:localData forView:self];
   }
-}
 #endif // ]TODO(macOS GH#774)
+}
 
 @end
