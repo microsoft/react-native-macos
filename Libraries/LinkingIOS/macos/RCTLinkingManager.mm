@@ -19,7 +19,7 @@
 
 NSString *const RCTOpenURLNotification = @"RCTOpenURLNotification";
 
-static NSString *initialURL = nil;
+static NSURL *initialURL = nil;
 static BOOL moduleInitalized = NO;
 static BOOL alwaysForegroundLastWindow = YES;
 
@@ -71,13 +71,14 @@ RCT_EXPORT_MODULE()
     // extract url value from the event
     NSString* url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
 
-    // If the application was launched via URL, this handler will be called before
-    // the module is initialized by the bridge. Store the initial URL, becase we are not listening to the notification yet.
-    if (!moduleInitalized && initialURL == nil) {
-        initialURL = url;
-    }
-
     postNotificationWithURL(url, self);
+}
+
++ (void)setInitialUrl:(NSURL *)url
+{
+    // If the application was launched via URL, the app wouldn't have started listening for URLs yet.
+    // So we instead store the URL to be retrieved by getInitialURL.
+    initialURL = url;
 }
 
 - (void)handleOpenURLNotification:(NSNotification *)notification
@@ -114,7 +115,7 @@ RCT_EXPORT_METHOD(canOpenURL:(NSURL *)URL
 RCT_EXPORT_METHOD(getInitialURL:(RCTPromiseResolveBlock)resolve
                   reject:(__unused RCTPromiseRejectBlock)reject)
 {
-    resolve(RCTNullIfNil(initialURL));
+    resolve(RCTNullIfNil(initialURL.absoluteString));
 }
 @end
 
