@@ -493,7 +493,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
   if (range.location + range.length > backedTextInputView.attributedText.string.length) {
     _predictedText = backedTextInputView.attributedText.string;
-  } else {
+  } else if (text != nil) { // TODO(macOS GH#774): -[NSString stringByReplacingCharactersInRange:withString:] doesn't like when the replacement string is nil
     _predictedText = [backedTextInputView.attributedText.string stringByReplacingCharactersInRange:range withString:text];
   }
 
@@ -568,6 +568,15 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (BOOL)textInputShouldHandleDeleteForward:(__unused id)sender {
   return YES;
+}
+
+- (void)textInputDidCancel {
+  [_eventDispatcher sendTextEventWithType:RCTTextEventTypeKeyPress
+                                 reactTag:self.reactTag
+                                     text:nil
+                                      key:@"Escape"
+                               eventCount:_nativeEventCount];
+  [self textInputDidEndEditing];
 }
 #endif // ]TODO(macOS GH#774)
 

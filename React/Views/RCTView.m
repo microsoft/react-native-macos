@@ -162,6 +162,9 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS I
     _borderBottomEndRadius = -1;
     _borderStyle = RCTBorderStyleSolid;
     _hitTestEdgeInsets = UIEdgeInsetsZero;
+#if TARGET_OS_OSX // TODO(macOS GH#774)
+    _transform3D = CATransform3DIdentity;
+#endif // TODO(macOS GH#774)
 
     _backgroundColor = super.backgroundColor;
   }
@@ -708,6 +711,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 }
 #endif // ]TODO(macOS GH#774)
 
+#if DEBUG // TODO(macOS GH#774) description is a debug-only feature
 - (NSString *)description
 {
   NSString *superDescription = super.description;
@@ -719,6 +723,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     return [superDescription stringByReplacingCharactersInRange:semicolonRange withString:replacement];
   } // TODO(macOS GH#774)
 }
+#endif // TODO(macOS GH#774)
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (void)viewDidMoveToWindow
@@ -1169,6 +1174,19 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   backgroundColor = _backgroundColor.CGColor;
 #endif
 
+#if TARGET_OS_OSX // [TODO(macOS GH#1035)
+  CATransform3D transform = [self transform3D];
+  CGPoint anchorPoint = [layer anchorPoint];
+  if (CGPointEqualToPoint(anchorPoint, CGPointZero) && !CATransform3DEqualToTransform(transform, CATransform3DIdentity)) {
+    // https://developer.apple.com/documentation/quartzcore/calayer/1410817-anchorpoint
+    // This compensates for the fact that layer.anchorPoint is {0, 0} instead of {0.5, 0.5} on macOS for some reason.
+    CATransform3D originAdjust = CATransform3DTranslate(CATransform3DIdentity, self.frame.size.width / 2, self.frame.size.height / 2, 0);
+    transform = CATransform3DConcat(CATransform3DConcat(CATransform3DInvert(originAdjust), transform), originAdjust);
+    // Enable edge antialiasing in perspective transforms
+    [layer setAllowsEdgeAntialiasing:!(transform.m34 == 0.0f)];
+  }
+  [layer setTransform:transform];
+#endif // ]TODO(macOS GH#1035)
   if (useIOSBorderRendering) {
     layer.cornerRadius = cornerRadii.topLeft;
     layer.borderColor = borderColors.left;
@@ -1391,19 +1409,6 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 - (BOOL)acceptsFirstResponder
 {
   return ([self focusable] && [NSApp isFullKeyboardAccessEnabled]) || [super acceptsFirstResponder];
-}
-
-- (BOOL)performKeyEquivalent:(NSEvent *)theEvent
-{
-  if (self.onClick != nil &&
-      [self focusable] &&
-      [[self window] firstResponder] == self) {
-    if ([[theEvent characters] isEqualToString:@" "] || [[theEvent characters] isEqualToString:@"\r"]) {
-      self.onClick(nil);
-      return YES;
-    }
-  }
-  return [super performKeyEquivalent:theEvent];
 }
 
 - (void)updateTrackingAreas

@@ -120,3 +120,6 @@ package-lock.json
 
 # Android memory profiler files
 *.hprof
+
+#SBom generation
+_manifest

@@ -160,7 +160,7 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
 
 - (void)startObserving
 {
-  if (@available(macOS 10.14, iOS 13.0, *)) { // TODO(macOS GH#774)
+  if (@available(iOS 13.0, *)) {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(appearanceChanged:)
                                                  name:RCTUserInterfaceStyleDidChangeNotification
@@ -170,7 +170,7 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
 
 - (void)stopObserving
 {
-  if (@available(macOS 10.14, iOS 13.0, *)) { // TODO(macOS GH#774)
+  if (@available(iOS 13.0, *)) {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
   }
 }

@@ -1,0 +1,13 @@
+diff --git a/package.json b/package.json
+index 6fc4c801f1..3ad2acfd1c 100644
+--- a/package.json
++++ b/package.json
+@@ -106,7 +106,7 @@
+     "anser": "^1.4.9",
+     "base64-js": "^1.1.2",
+     "event-target-shim": "^5.0.1",
+-    "hermes-engine": "~0.9.0",
++    "hermes-engine": "~0.11.0",
+     "invariant": "^2.2.4",
+     "jsc-android": "^250230.2.1",
+     "metro-babel-register": "0.66.2",
