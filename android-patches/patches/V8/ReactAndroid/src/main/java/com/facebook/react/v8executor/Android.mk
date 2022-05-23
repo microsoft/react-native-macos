@@ -19,7 +19,7 @@ index 0000000000..8e28a3ddfd
 +
 +LOCAL_C_INCLUDES := $(LOCAL_PATH) $(THIRD_PARTY_NDK_DIR)/..
 +
-+LOCAL_CFLAGS += -fvisibility=hidden -fexceptions -frtti
++LOCAL_CFLAGS += -fvisibility=hidden -ffunction-sections -fdata-sections -fexceptions -frtti
 +
 +LOCAL_STATIC_LIBRARIES := libjsi libjsireact
 +LOCAL_SHARED_LIBRARIES := libfolly_json libfb libfbjni libreactnativejni v8jsi
