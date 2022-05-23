@@ -66,29 +66,24 @@ NSString *RCTColorSchemePreference(UITraitCollection *traitCollection)
 #else // [TODO(macOS GH#774)
 NSString *RCTColorSchemePreference(NSAppearance *appearance)
 {
-  if (@available(macOS 10.14, *)) {
-    static NSDictionary *appearances;
-    static dispatch_once_t onceToken;
+  static NSDictionary *appearances;
+  static dispatch_once_t onceToken;
 
-    dispatch_once(&onceToken, ^{
-      appearances = @{
-                      NSAppearanceNameAqua: RCTAppearanceColorSchemeLight,
-                      NSAppearanceNameDarkAqua: RCTAppearanceColorSchemeDark
-                      };
-    });
+  dispatch_once(&onceToken, ^{
+    appearances = @{
+                    NSAppearanceNameAqua: RCTAppearanceColorSchemeLight,
+                    NSAppearanceNameDarkAqua: RCTAppearanceColorSchemeDark
+                    };
+  });
 
-    if (!sAppearancePreferenceEnabled) {
-      // Return the default if the app doesn't allow different color schemes.
-      return RCTAppearanceColorSchemeLight;
-    }
-
-    appearance = appearance ?: [NSApp effectiveAppearance];
-    NSAppearanceName appearanceName = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
-    return appearances[appearanceName] ?: RCTAppearanceColorSchemeLight;
+  if (!sAppearancePreferenceEnabled) {
+    // Return the default if the app doesn't allow different color schemes.
+    return RCTAppearanceColorSchemeLight;
   }
 
-  // Default to light on older OS version - same behavior as Android.
-  return RCTAppearanceColorSchemeLight;
+  appearance = appearance ?: [NSApp effectiveAppearance];
+  NSAppearanceName appearanceName = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+  return appearances[appearanceName] ?: RCTAppearanceColorSchemeLight;
 }
 #endif // ]TODO(macOS GH#774)
 
