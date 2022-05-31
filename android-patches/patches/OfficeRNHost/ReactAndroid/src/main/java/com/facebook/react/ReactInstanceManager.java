@@ -8,15 +8,15 @@
  import com.facebook.react.bridge.CatalystInstanceImpl;
  import com.facebook.react.bridge.JSBundleLoader;
  import com.facebook.react.bridge.JSIModulePackage;
-@@ -182,6 +183,7 @@
-   private final @Nullable JSIModulePackage mJSIModulePackage;
+@@ -186,6 +187,7 @@
    private final @Nullable ReactPackageTurboModuleManagerDelegate.Builder mTMMDelegateBuilder;
    private List<ViewManager> mViewManagers;
+   private boolean mUseFallbackBundle = false;
 +  private @Nullable CatalystInstanceEventListener mCatalystInstanceEventListener;
  
    private class ReactContextInitParams {
      private final JavaScriptExecutorFactory mJsExecutorFactory;
-@@ -202,6 +204,15 @@
+@@ -206,6 +208,15 @@
      }
    }
  
@@ -32,7 +32,7 @@
    /** Creates a builder that is capable of creating an instance of {@link ReactInstanceManager}. */
    public static ReactInstanceManagerBuilder builder() {
      return new ReactInstanceManagerBuilder();
-@@ -1292,7 +1303,8 @@
+@@ -1333,7 +1344,8 @@
              .setJSExecutor(jsExecutor)
              .setRegistry(nativeModuleRegistry)
              .setJSBundleLoader(jsBundleLoader)

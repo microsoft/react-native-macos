@@ -57,13 +57,14 @@ class ItemComponent extends React.PureComponent<{
   onPress: (key: string) => void,
   onShowUnderlay?: () => void,
   onHideUnderlay?: () => void,
+  textSelectable?: ?boolean,
   ...
 }> {
   _onPress = () => {
     this.props.onPress(this.props.item.key);
   };
   render(): React.Node {
-    const {fixedHeight, horizontal, item} = this.props;
+    const {fixedHeight, horizontal, item, textSelectable} = this.props;
     const itemHash = Math.abs(hashCode(item.title));
     const imgSource = THUMB_URLS[itemHash % THUMB_URLS.length];
     return (
@@ -71,17 +72,21 @@ class ItemComponent extends React.PureComponent<{
         onPress={this._onPress}
         onShowUnderlay={this.props.onShowUnderlay}
         onHideUnderlay={this.props.onHideUnderlay}
-        style={horizontal ? styles.horizItem : styles.item}>
+        style={horizontal ? styles.horizItem : styles.item}
+      >
         <View
           style={[
             styles.row,
             horizontal && {width: HORIZ_WIDTH},
             fixedHeight && {height: ITEM_HEIGHT},
-          ]}>
+          ]}
+        >
           {!item.noImage && <Image style={styles.thumb} source={imgSource} />}
           <Text
             style={styles.text}
-            numberOfLines={horizontal || fixedHeight ? 3 : undefined}>
+            selectable={textSelectable}
+            numberOfLines={horizontal || fixedHeight ? 3 : undefined}
+          >
             {item.title} - {item.text}
           </Text>
         </View>

@@ -22,15 +22,6 @@ info() {
     echo -e "$BLUE""$*""$ENDCOLOR"
 }
 
-PACKAGE_VERSION=$(cat package.json \
-  | grep version \
-  | head -1 \
-  | awk -F: '{ print $2 }' \
-  | sed 's/[",]//g' \
-  | tr -d '[[:space:]]')
-
-success "Preparing version $PACKAGE_VERSION"
-
 repo_root=$(pwd)
 
 rm -rf android
@@ -71,7 +62,7 @@ read -r -n 1
 success "About to test iOS JSC... "
 success "Installing CocoaPods dependencies..."
 rm -rf packages/rn-tester/Pods
-(cd packages/rn-tester && pod install)
+(cd packages/rn-tester && bundle exec pod install)
 
 info "Press any key to open the workspace in Xcode, then build and test manually."
 info ""
@@ -85,7 +76,7 @@ read -r -n 1
 success "About to test iOS Hermes... "
 success "Installing CocoaPods dependencies..."
 rm -rf packages/rn-tester/Pods
-(cd packages/rn-tester && USE_HERMES=1 pod install)
+(cd packages/rn-tester && USE_HERMES=1 bundle exec pod install)
 
 info "Press any key to open the workspace in Xcode, then build and test manually."
 info ""
@@ -100,6 +91,17 @@ read -r -n 1
 success "Killing packager"
 lsof -i :8081 | grep LISTEN
 lsof -i :8081 | grep LISTEN | /usr/bin/awk '{print $2}' | xargs kill
+
+# Testing the template app
+
+PACKAGE_VERSION=$(cat package.json \
+  | grep version \
+  | head -1 \
+  | awk -F: '{ print $2 }' \
+  | sed 's/[",]//g' \
+  | tr -d '[[:space:]]')
+
+success "Preparing version $PACKAGE_VERSION"
 
 npm pack
 
@@ -151,4 +153,4 @@ open "/tmp/${project_name}/ios/${project_name}.xcworkspace"
 cd "$repo_root" || exit
 
 info "Next steps:"
-info "   - https://github.com/facebook/react-native/blob/HEAD/Releases.md"
+info "https://github.com/facebook/react-native/wiki/Release-Process"

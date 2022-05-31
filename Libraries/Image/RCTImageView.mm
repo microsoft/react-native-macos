@@ -149,7 +149,7 @@ static NSDictionary *onLoadParamsForSource(RCTImageSource *source)
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
     self.wantsLayer = YES;
 #endif
-    _imageView = [[RCTUIImageViewAnimated alloc] init];
+    _imageView = [RCTUIImageViewAnimated new];
     _imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self addSubview:_imageView];
 
@@ -335,6 +335,10 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
   [_imageLoader trackURLImageRequestDidDestroy:_loaderRequest];
   _loaderRequest = nil;
+  
+  if (!self.image) {
+    self.image = _defaultImage;
+  }
 }
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)

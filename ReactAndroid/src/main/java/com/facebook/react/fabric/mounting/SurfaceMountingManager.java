@@ -76,13 +76,15 @@ public class SurfaceMountingManager {
       @NonNull JSResponderHandler jsResponderHandler,
       @NonNull ViewManagerRegistry viewManagerRegistry,
       @NonNull RootViewManager rootViewManager,
-      @NonNull MountItemExecutor mountItemExecutor) {
+      @NonNull MountItemExecutor mountItemExecutor,
+      @NonNull ThemedReactContext reactContext) {
     mSurfaceId = surfaceId;
 
     mJSResponderHandler = jsResponderHandler;
     mViewManagerRegistry = viewManagerRegistry;
     mRootViewManager = rootViewManager;
     mMountItemExecutor = mountItemExecutor;
+    mThemedReactContext = reactContext;
   }
 
   public boolean isStopped() {
@@ -910,10 +912,6 @@ public class SurfaceMountingManager {
     // We treat this as a perf problem and not a logical error. View Preallocation or unexpected
     // changes to Differ or C++ Binding could cause some redundant Create instructions.
     if (getNullableViewState(reactTag) != null) {
-      ReactSoftExceptionLogger.logSoftException(
-          TAG,
-          new IllegalStateException(
-              "Cannot Preallocate view with tag [" + reactTag + "], already exists."));
       return;
     }
 
@@ -961,6 +959,25 @@ public class SurfaceMountingManager {
       throw new IllegalStateException("Unable to find ViewManager for view: " + viewState);
     }
     return (ViewGroupManager<ViewGroup>) viewState.mViewManager;
+  }
+
+  public void printSurfaceState() {
+    FLog.e(TAG, "Views created for surface {%d}:", getSurfaceId());
+    for (ViewState viewState : mTagToViewState.values()) {
+      String viewManagerName =
+          viewState.mViewManager != null ? viewState.mViewManager.getName() : null;
+      @Nullable View view = viewState.mView;
+      @Nullable View parent = view != null ? (View) view.getParent() : null;
+      @Nullable Integer parentTag = parent != null ? parent.getId() : null;
+
+      FLog.e(
+          TAG,
+          "<%s id=%d parentTag=%s isRoot=%b />",
+          viewManagerName,
+          viewState.mReactTag,
+          parentTag,
+          viewState.mIsRoot);
+    }
   }
 
   /**

@@ -128,20 +128,23 @@ class AdjustingFontSize extends React.Component<
         <Text
           ellipsizeMode="tail"
           numberOfLines={1}
-          style={{fontSize: 36, marginVertical: 6}}>
+          style={{fontSize: 36, marginVertical: 6}}
+        >
           Truncated text is baaaaad.
         </Text>
         <Text
           numberOfLines={1}
           adjustsFontSizeToFit={true}
-          style={{fontSize: 40, marginVertical: 6}}>
+          style={{fontSize: 40, marginVertical: 6}}
+        >
           Shrinking to fit available space is much better!
         </Text>
 
         <Text
           adjustsFontSizeToFit={true}
           numberOfLines={1}
-          style={{fontSize: 30, marginVertical: 6}}>
+          style={{fontSize: 30, marginVertical: 6}}
+        >
           {'Add text to me to watch me shrink!' + ' ' + this.state.dynamicText}
         </Text>
 
@@ -149,7 +152,8 @@ class AdjustingFontSize extends React.Component<
           adjustsFontSizeToFit={true}
           numberOfLines={4}
           android_hyphenationFrequency="normal"
-          style={{fontSize: 20, marginVertical: 6}}>
+          style={{fontSize: 20, marginVertical: 6}}
+        >
           {'Multiline text component shrinking is supported, watch as this reeeeaaaally loooooong teeeeeeext grooooows and then shriiiinks as you add text to me! ioahsdia soady auydoa aoisyd aosdy ' +
             ' ' +
             this.state.dynamicText}
@@ -157,7 +161,8 @@ class AdjustingFontSize extends React.Component<
 
         <Text
           adjustsFontSizeToFit={true}
-          style={{fontSize: 20, marginVertical: 6, maxHeight: 50}}>
+          style={{fontSize: 20, marginVertical: 6, maxHeight: 50}}
+        >
           {'Text limited by height, watch as this reeeeaaaally loooooong teeeeeeext grooooows and then shriiiinks as you add text to me! ioahsdia soady auydoa aoisyd aosdy ' +
             ' ' +
             this.state.dynamicText}
@@ -166,7 +171,8 @@ class AdjustingFontSize extends React.Component<
         <Text
           adjustsFontSizeToFit={true}
           numberOfLines={1}
-          style={{marginVertical: 6}}>
+          style={{marginVertical: 6}}
+        >
           <Text style={{fontSize: 14}}>
             {'Differently sized nested elements will shrink together. '}
           </Text>
@@ -181,7 +187,8 @@ class AdjustingFontSize extends React.Component<
             justifyContent: 'space-around',
             marginTop: 5,
             marginVertical: 6,
-          }}>
+          }}
+        >
           <Text style={{backgroundColor: '#ffaaaa'}} onPress={this.reset}>
             Reset
           </Text>
@@ -216,23 +223,15 @@ class TextExample extends React.Component<{...}> {
         <RNTesterBlock title="Hyphenation">
           <Text android_hyphenationFrequency="normal">
             <Text style={{color: 'red'}}>Normal: </Text>
-            WillHaveAnHyphenWhenBreakingForNewLine
+            WillHaveAHyphenWhenBreakingForNewLine
           </Text>
           <Text android_hyphenationFrequency="none">
             <Text style={{color: 'red'}}>None: </Text>
-            WillNotHaveAnHyphenWhenBreakingForNewLine
+            WillNotHaveAHyphenWhenBreakingForNewLine
           </Text>
           <Text android_hyphenationFrequency="full">
             <Text style={{color: 'red'}}>Full: </Text>
-            WillHaveAnHyphenWhenBreakingForNewLine
-          </Text>
-          <Text android_hyphenationFrequency="high">
-            <Text style={{color: 'red'}}>High: </Text>
-            WillHaveAnHyphenWhenBreakingForNewLine
-          </Text>
-          <Text android_hyphenationFrequency="balanced">
-            <Text style={{color: 'red'}}>Balanced: </Text>
-            WillHaveAnHyphenWhenBreakingForNewLine
+            WillHaveAHyphenWhenBreakingForNewLine
           </Text>
         </RNTesterBlock>
         <RNTesterBlock title="Padding">
@@ -272,19 +271,22 @@ class TextExample extends React.Component<{...}> {
                   fontFamily: 'sans-serif',
                   fontStyle: 'italic',
                   fontWeight: 'bold',
-                }}>
+                }}
+              >
                 Roboto Bold Italic
               </Text>
               <Text style={{fontFamily: 'sans-serif-light'}}>Roboto Light</Text>
               <Text
-                style={{fontFamily: 'sans-serif-light', fontStyle: 'italic'}}>
+                style={{fontFamily: 'sans-serif-light', fontStyle: 'italic'}}
+              >
                 Roboto Light Italic
               </Text>
               <Text style={{fontFamily: 'sans-serif-thin'}}>
                 Roboto Thin (After 4.2)
               </Text>
               <Text
-                style={{fontFamily: 'sans-serif-thin', fontStyle: 'italic'}}>
+                style={{fontFamily: 'sans-serif-thin', fontStyle: 'italic'}}
+              >
                 Roboto Thin Italic (After 4.2)
               </Text>
               <Text style={{fontFamily: 'sans-serif-condensed'}}>
@@ -294,14 +296,16 @@ class TextExample extends React.Component<{...}> {
                 style={{
                   fontFamily: 'sans-serif-condensed',
                   fontStyle: 'italic',
-                }}>
+                }}
+              >
                 Roboto Condensed Italic
               </Text>
               <Text
                 style={{
                   fontFamily: 'sans-serif-condensed',
                   fontWeight: 'bold',
-                }}>
+                }}
+              >
                 Roboto Condensed Bold
               </Text>
               <Text
@@ -309,14 +313,16 @@ class TextExample extends React.Component<{...}> {
                   fontFamily: 'sans-serif-condensed',
                   fontStyle: 'italic',
                   fontWeight: 'bold',
-                }}>
+                }}
+              >
                 Roboto Condensed Bold Italic
               </Text>
               <Text style={{fontFamily: 'sans-serif-medium'}}>
                 Roboto Medium (After 5.0)
               </Text>
               <Text
-                style={{fontFamily: 'sans-serif-medium', fontStyle: 'italic'}}>
+                style={{fontFamily: 'sans-serif-medium', fontStyle: 'italic'}}
+              >
                 Roboto Medium Italic (After 5.0)
               </Text>
             </View>
@@ -331,7 +337,8 @@ class TextExample extends React.Component<{...}> {
                   fontFamily: 'notoserif',
                   fontStyle: 'italic',
                   fontWeight: 'bold',
-                }}>
+                }}
+              >
                 NotoSerif Bold Italic
               </Text>
               <Text style={{fontFamily: 'notoserif', fontStyle: 'italic'}}>
@@ -341,28 +348,32 @@ class TextExample extends React.Component<{...}> {
                 style={{
                   fontFamily: 'Rubik',
                   fontWeight: 'normal',
-                }}>
+                }}
+              >
                 Rubik Regular
               </Text>
               <Text
                 style={{
                   fontFamily: 'Rubik',
                   fontWeight: '300',
-                }}>
+                }}
+              >
                 Rubik Light
               </Text>
               <Text
                 style={{
                   fontFamily: 'Rubik',
                   fontWeight: '700',
-                }}>
+                }}
+              >
                 Rubik Bold
               </Text>
               <Text
                 style={{
                   fontFamily: 'Rubik',
                   fontWeight: '500',
-                }}>
+                }}
+              >
                 Rubik Medium
               </Text>
               <Text
@@ -370,7 +381,8 @@ class TextExample extends React.Component<{...}> {
                   fontFamily: 'Rubik',
                   fontStyle: 'italic',
                   fontWeight: '500',
-                }}>
+                }}
+              >
                 Rubik Medium Italic
               </Text>
             </View>
@@ -414,7 +426,8 @@ class TextExample extends React.Component<{...}> {
             style={{
               textDecorationLine: 'line-through',
               textDecorationStyle: 'solid',
-            }}>
+            }}
+          >
             Solid line-through
           </Text>
           <Text style={{textDecorationLine: 'underline line-through'}}>
@@ -455,15 +468,18 @@ class TextExample extends React.Component<{...}> {
             </Text>
             <Text
               style={{fontWeight: 'bold'}}
-              onPress={() => console.log('2nd')}>
+              onPress={() => console.log('2nd')}
+            >
               (and bold
               <Text
                 style={{fontStyle: 'italic', fontSize: 11, color: '#527fe4'}}
-                onPress={() => console.log('3rd')}>
+                onPress={() => console.log('3rd')}
+              >
                 (and tiny bold italic blue
                 <Text
                   style={{fontWeight: 'normal', fontStyle: 'normal'}}
-                  onPress={() => console.log('4th')}>
+                  onPress={() => console.log('4th')}
+                >
                   (and tiny normal blue)
                 </Text>
                 )
@@ -474,11 +490,13 @@ class TextExample extends React.Component<{...}> {
           </Text>
           <Text
             style={{fontFamily: 'serif'}}
-            onPress={() => console.log('1st')}>
+            onPress={() => console.log('1st')}
+          >
             (Serif
             <Text
               style={{fontStyle: 'italic', fontWeight: 'bold'}}
-              onPress={() => console.log('2nd')}>
+              onPress={() => console.log('2nd')}
+            >
               (Serif Bold Italic
               <Text
                 style={{
@@ -486,15 +504,18 @@ class TextExample extends React.Component<{...}> {
                   fontStyle: 'normal',
                   fontWeight: 'normal',
                 }}
-                onPress={() => console.log('3rd')}>
+                onPress={() => console.log('3rd')}
+              >
                 (Monospace Normal
                 <Text
                   style={{fontFamily: 'sans-serif', fontWeight: 'bold'}}
-                  onPress={() => console.log('4th')}>
+                  onPress={() => console.log('4th')}
+                >
                   (Sans-Serif Bold
                   <Text
                     style={{fontWeight: 'normal'}}
-                    onPress={() => console.log('5th')}>
+                    onPress={() => console.log('5th')}
+                  >
                     (and Sans-Serif Normal)
                   </Text>
                   )
@@ -583,7 +604,8 @@ class TextExample extends React.Component<{...}> {
                   letterSpacing: 2,
                   backgroundColor: 'fuchsia',
                   marginTop: 5,
-                }}>
+                }}
+              >
                 With size and background color
               </Text>
             </View>
@@ -595,7 +617,8 @@ class TextExample extends React.Component<{...}> {
                 letterSpacing: 3,
                 backgroundColor: '#dddddd',
                 marginTop: 5,
-              }}>
+              }}
+            >
               [letterSpacing = 3]
               <Text style={{letterSpacing: 0, backgroundColor: '#bbbbbb'}}>
                 [Nested letterSpacing = 0]
@@ -650,7 +673,8 @@ class TextExample extends React.Component<{...}> {
             style={[
               styles.backgroundColorText,
               {top: -70, backgroundColor: 'transparent'},
-            ]}>
+            ]}
+          >
             {"containerBackgroundColor: 'transparent' + backgroundColor wash"}
           </Text>
         </RNTesterBlock>
@@ -723,7 +747,8 @@ class TextExample extends React.Component<{...}> {
               textShadowOffset: {width: 2, height: 2},
               textShadowRadius: 1,
               textShadowColor: '#00cccc',
-            }}>
+            }}
+          >
             Demo text shadow
           </Text>
         </RNTesterBlock>
@@ -747,14 +772,16 @@ class TextExample extends React.Component<{...}> {
             style={{
               fontFamily: 'Roboto',
               fontVariant: ['oldstyle-nums'],
-            }}>
+            }}
+          >
             Old Style nums 0123456789{'\n'}
           </Text>
           <Text
             style={{
               fontFamily: 'Roboto',
               fontVariant: ['lining-nums'],
-            }}>
+            }}
+          >
             Lining nums 0123456789{'\n'}
           </Text>
           <Text style={{fontVariant: ['tabular-nums']}}>
@@ -774,7 +801,8 @@ class TextExample extends React.Component<{...}> {
               flexDirection: 'row',
               justifyContent: 'space-around',
               marginBottom: 10,
-            }}>
+            }}
+          >
             <View style={{alignItems: 'center'}}>
               <Text style={styles.includeFontPaddingText}>Ey</Text>
               <Text>Default</Text>
@@ -784,7 +812,8 @@ class TextExample extends React.Component<{...}> {
                 style={[
                   styles.includeFontPaddingText,
                   {includeFontPadding: false, marginLeft: 10},
-                ]}>
+                ]}
+              >
                 Ey
               </Text>
               <Text>includeFontPadding: false</Text>
@@ -854,7 +883,8 @@ class TextExample extends React.Component<{...}> {
               lineHeight: 32,
               letterSpacing: 2,
               alignSelf: 'flex-start',
-            }}>
+            }}
+          >
             Works with other text styles
           </Text>
         </RNTesterBlock>
@@ -892,6 +922,64 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 });
+
+function TextBaseLineLayoutExample(props: {}): React.Node {
+  const texts = [];
+  for (let i = 9; i >= 0; i--) {
+    texts.push(
+      <Text
+        key={i}
+        style={{fontSize: 8 + i * 5, maxWidth: 20, backgroundColor: '#eee'}}
+      >
+        {i}
+      </Text>,
+    );
+  }
+
+  const marker = (
+    <View style={{width: 20, height: 20, backgroundColor: 'gray'}} />
+  );
+  const subtitleStyle = {fontSize: 16, marginTop: 8, fontWeight: 'bold'};
+
+  return (
+    <View>
+      <Text style={subtitleStyle}>{'Nested <Text/>s:'}</Text>
+      <View style={{flexDirection: 'row', alignItems: 'baseline'}}>
+        {marker}
+        <Text>{texts}</Text>
+        {marker}
+      </View>
+
+      <Text style={subtitleStyle}>{'Array of <Text/>s in <View>:'}</Text>
+      <View style={{flexDirection: 'row', alignItems: 'baseline'}}>
+        {marker}
+        {texts}
+        {marker}
+      </View>
+
+      <Text style={subtitleStyle}>{'Interleaving <View> and <Text>:'}</Text>
+      <View style={{flexDirection: 'row', alignItems: 'baseline'}}>
+        {marker}
+        <Text selectable={true}>
+          Some text.
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'baseline',
+              backgroundColor: '#eee',
+            }}
+          >
+            {marker}
+            <Text>Text inside View.</Text>
+            {marker}
+          </View>
+        </Text>
+        {marker}
+      </View>
+    </View>
+  );
+}
+
 exports.title = 'Text';
 exports.documentationURL = 'https://reactnative.dev/docs/text';
 exports.category = 'Basic';
@@ -901,6 +989,12 @@ exports.examples = [
     title: 'Basic text',
     render: function(): React.Element<typeof TextExample> {
       return <TextExample />;
+    },
+  },
+  {
+    title: "Text `alignItems: 'baseline'` style",
+    render: function(): React.Node {
+      return <TextBaseLineLayoutExample />;
     },
   },
 ];

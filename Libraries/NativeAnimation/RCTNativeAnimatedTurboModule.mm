@@ -9,12 +9,13 @@
 #import <RCTTypeSafety/RCTConvertHelpers.h>
 #import <React/RCTNativeAnimatedTurboModule.h>
 #import <React/RCTNativeAnimatedNodesManager.h>
+#import <React/RCTInitializing.h>
 
 #import "RCTAnimationPlugins.h"
 
 typedef void (^AnimatedOperation)(RCTNativeAnimatedNodesManager *nodesManager);
 
-@interface RCTNativeAnimatedTurboModule() <NativeAnimatedModuleSpec>
+@interface RCTNativeAnimatedTurboModule() <NativeAnimatedModuleSpec, RCTInitializing>
 @end
 
 @implementation RCTNativeAnimatedTurboModule
@@ -161,6 +162,10 @@ RCT_EXPORT_METHOD(setAnimatedNodeValue:(double)nodeTag
   [self addOperationBlock:^(RCTNativeAnimatedNodesManager *nodesManager) {
     [nodesManager setAnimatedNodeValue:[NSNumber numberWithDouble:nodeTag] value:[NSNumber numberWithDouble:value]];
   }];
+  // In Bridge, flushing of native animations is done from RCTCxxBridge batchDidComplete().
+  // Since RCTCxxBridge doesn't exist in Bridgeless, and components are not remounted in Fabric for native animations,
+  // flush here for changes in Animated.Value for Animated.event.
+  [self flushOperationQueues];
 }
 
 RCT_EXPORT_METHOD(setAnimatedNodeOffset:(double)nodeTag

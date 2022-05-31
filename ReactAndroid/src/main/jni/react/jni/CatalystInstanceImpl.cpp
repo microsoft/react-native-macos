@@ -27,11 +27,15 @@
 #include <fbjni/ByteBuffer.h>
 #include <folly/dynamic.h>
 #include <glog/logging.h>
+#include <react/renderer/runtimescheduler/RuntimeScheduler.h>
+#include <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
+#include <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 
 #include <logger/react_native_log.h>
 
 #include "CxxModuleWrapper.h"
 #include "JNativeRunnable.h"
+#include "JReactCxxErrorHandler.h"
 #include "JReactSoftExceptionLogger.h"
 #include "JavaScriptExecutorHolder.h"
 #include "JniJSModulesUnbundle.h"
@@ -89,12 +93,21 @@ class JInstanceCallback : public InstanceCallback {
 } // namespace
 
 jni::local_ref<CatalystInstanceImpl::jhybriddata>
-CatalystInstanceImpl::initHybrid(jni::alias_ref<jclass>) {
-  return makeCxxInstance();
+CatalystInstanceImpl::initHybrid(
+    jni::alias_ref<jclass>,
+    bool enableRuntimeScheduler,
+    bool enableRuntimeSchedulerInTurboModule) {
+  return makeCxxInstance(
+      enableRuntimeScheduler, enableRuntimeSchedulerInTurboModule);
 }
 
-CatalystInstanceImpl::CatalystInstanceImpl()
-    : instance_(std::make_unique<Instance>()) {}
+CatalystInstanceImpl::CatalystInstanceImpl(
+    bool enableRuntimeScheduler,
+    bool enableRuntimeSchedulerInTurboModule)
+    : instance_(std::make_unique<Instance>()),
+      enableRuntimeScheduler_(enableRuntimeScheduler),
+      enableRuntimeSchedulerInTurboModule_(
+          enableRuntimeScheduler && enableRuntimeSchedulerInTurboModule) {}
 
 void CatalystInstanceImpl::warnOnLegacyNativeModuleSystemUse() {
   CxxNativeModule::setShouldWarnOnUse(true);
@@ -136,6 +149,8 @@ void CatalystInstanceImpl::registerNatives() {
       makeNativeMethod(
           "getRuntimeExecutor", CatalystInstanceImpl::getRuntimeExecutor),
       makeNativeMethod(
+          "getRuntimeScheduler", CatalystInstanceImpl::getRuntimeScheduler),
+      makeNativeMethod(
           "warnOnLegacyNativeModuleSystemUse",
           CatalystInstanceImpl::warnOnLegacyNativeModuleSystemUse),
   });
@@ -155,6 +170,7 @@ void log(ReactNativeLogLevel level, const char *message) {
       break;
     case ReactNativeLogLevelError:
       LOG(ERROR) << message;
+      JReactCxxErrorHandler::handleError(message);
       break;
     case ReactNativeLogLevelFatal:
       LOG(FATAL) << message;
@@ -338,10 +354,18 @@ void CatalystInstanceImpl::handleMemoryPressure(int pressureLevel) {
 jni::alias_ref<CallInvokerHolder::javaobject>
 CatalystInstanceImpl::getJSCallInvokerHolder() {
   if (!jsCallInvokerHolder_) {
-    jsCallInvokerHolder_ = jni::make_global(
-        CallInvokerHolder::newObjectCxxArgs(instance_->getJSCallInvoker()));
+    if (enableRuntimeSchedulerInTurboModule_) {
+      auto runtimeScheduler = getRuntimeScheduler();
+      auto runtimeSchedulerCallInvoker =
+          std::make_shared<RuntimeSchedulerCallInvoker>(
+              runtimeScheduler->cthis()->get());
+      jsCallInvokerHolder_ = jni::make_global(
+          CallInvokerHolder::newObjectCxxArgs(runtimeSchedulerCallInvoker));
+    } else {
+      jsCallInvokerHolder_ = jni::make_global(
+          CallInvokerHolder::newObjectCxxArgs(instance_->getJSCallInvoker()));
+    }
   }
-
   return jsCallInvokerHolder_;
 }
 
@@ -384,6 +408,24 @@ CatalystInstanceImpl::getRuntimeExecutor() {
         JRuntimeExecutor::newObjectCxxArgs(instance_->getRuntimeExecutor()));
   }
   return runtimeExecutor_;
+}
+
+jni::alias_ref<JRuntimeScheduler::javaobject>
+CatalystInstanceImpl::getRuntimeScheduler() {
+  if (enableRuntimeScheduler_ && !runtimeScheduler_) {
+    auto runtimeExecutor = instance_->getRuntimeExecutor();
+    auto runtimeScheduler = std::make_shared<RuntimeScheduler>(runtimeExecutor);
+
+    runtimeScheduler_ =
+        jni::make_global(JRuntimeScheduler::newObjectCxxArgs(runtimeScheduler));
+
+    runtimeExecutor([runtimeScheduler](jsi::Runtime &runtime) {
+      RuntimeSchedulerBinding::createAndInstallIfNeeded(
+          runtime, runtimeScheduler);
+    });
+  }
+
+  return runtimeScheduler_;
 }
 
 } // namespace react

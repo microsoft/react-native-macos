@@ -81,11 +81,8 @@ NSString *RCTColorSchemePreference(NSAppearance *appearance)
     return RCTAppearanceColorSchemeLight;
   }
 
-	if (@available(macOS 11.0, *)) {
-		appearance = appearance ?: [NSAppearance currentDrawingAppearance];
-	} else {
-		appearance = appearance ?: [NSAppearance currentAppearance];
-	}
+  appearance = appearance ?: [NSApp effectiveAppearance];
+
   NSAppearanceName appearanceName = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
   return appearances[appearanceName] ?: RCTAppearanceColorSchemeLight;
 }
@@ -115,7 +112,7 @@ RCT_EXPORT_MODULE(Appearance)
   return std::make_shared<NativeAppearanceSpecJSI>(params);
 }
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774): on macOS don't lazy init _currentColorScheme because [NSAppearance currentAppearance] cannot be executed on background thread.
+#if TARGET_OS_OSX // [TODO(macOS GH#774): on macOS don't lazy init _currentColorScheme because [NSApp effectiveAppearance] cannot be executed on background thread.
 - (instancetype)init
 {
   if (self = [super init]) {
@@ -128,7 +125,9 @@ RCT_EXPORT_MODULE(Appearance)
 RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
 {
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
-  _currentColorScheme = RCTColorSchemePreference(nil);
+  if (_currentColorScheme == nil) {
+    _currentColorScheme = RCTColorSchemePreference(nil);
+  }
 #endif // ]TODO(macOS GH#774)
   return _currentColorScheme;
 }

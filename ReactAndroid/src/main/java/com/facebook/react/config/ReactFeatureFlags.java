@@ -26,6 +26,12 @@ public class ReactFeatureFlags {
   public static volatile boolean useTurboModules = false;
 
   /**
+   * Should this application use the new (Fabric) Renderer? If yes, all rendering in this app will
+   * use Fabric instead of the legacy renderer.
+   */
+  public static volatile boolean enableFabricRenderer = false;
+
+  /**
    * After TurboModules and Fabric are enabled, we need to ensure that the legacy NativeModule isn't
    * isn't used. So, turn this flag on to trigger warnings whenever the legacy NativeModule system
    * is used.
@@ -66,6 +72,8 @@ public class ReactFeatureFlags {
 
   public static boolean enableRuntimeScheduler = false;
 
+  public static boolean enableRuntimeSchedulerInTurboModule = false;
+
   /** Enables a more aggressive cleanup during destruction of ReactContext */
   public static boolean enableReactContextCleanupFix = false;
 
@@ -89,4 +97,15 @@ public class ReactFeatureFlags {
   public static boolean enableLockFreeEventDispatcher = false;
 
   public static boolean enableAggressiveEventEmitterCleanup = false;
+
+  public static boolean insertZReorderBarriersOnViewGroupChildren = true;
+
+  public static boolean enableScrollViewSnapToAlignmentProp = true;
+
+  public static boolean useDispatchUniqueForCoalescableEvents = false;
+
+  public static boolean useUpdatedTouchPreprocessing = false;
+
+  /** TODO: T103427072 Delete ReactFeatureFlags.enableNestedTextOnPressEventFix */
+  public static boolean enableNestedTextOnPressEventFix = true;
 }

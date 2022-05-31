@@ -41,7 +41,6 @@
     "scripts/compose-source-maps.js",
     "scripts/find-node.sh",
     "scripts/fixmacscripts.sh",
-    "scripts/generate-specs.sh",
     "scripts/generate-specs-cli.js",
     "scripts/ios-configure-glog.sh",
     "scripts/launchPackager.bat",
@@ -50,6 +49,7 @@
     "scripts/packager.sh",
     "scripts/react_native_pods.rb",
     "scripts/react-native-xcode.sh",
+    "scripts/update-ruby.sh",
     "template.config.js",
     "template",
     "third-party-podspecs",
@@ -98,16 +98,16 @@
     "@react-native-community/cli-platform-android": "^6.0.0",
     "@react-native-community/cli-platform-ios": "^6.0.0",
     "@react-native/assets": "1.0.0",
-    "@react-native/normalize-color": "1.0.0",
+    "@react-native/normalize-color": "2.0.0",
     "@react-native/polyfills": "2.0.0",
     "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "base64-js": "^1.1.2",
+    "deprecated-react-native-prop-types": "^2.3.0",
     "event-target-shim": "^5.0.1",
     "hermes-engine": "~0.9.0",
     "invariant": "^2.2.4",
     "jsc-android": "^250230.2.1",
-    "metro-babel-register": "0.66.2",
     "metro-react-native-babel-transformer": "0.66.2",
     "metro-runtime": "0.66.2",
     "metro-source-map": "0.66.2",
@@ -115,8 +115,8 @@
     "pretty-format": "^26.5.2",
     "promise": "^8.0.3",
     "prop-types": "^15.7.2",
-    "react-devtools-core": "^4.13.0",
-    "react-native-codegen": "^0.0.7",
+    "react-devtools-core": "4.21.0",
+    "react-native-codegen": "^0.0.8",
     "react-refresh": "^0.4.0",
     "regenerator-runtime": "^0.13.2",
     "scheduler": "^0.20.2",
@@ -153,12 +153,12 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-react-native": "^3.11.0",
     "eslint-plugin-relay": "1.8.1",
-    "flow-bin": "^0.158.0",
+    "flow-bin": "^0.163.0",
     "jest": "^26.6.3",
     "jest-junit": "^10.0.0",
     "jscodeshift": "^0.11.0",
     "metro-babel-register": "0.66.2",
-    "metro-transform-plugins": "^0.66.0",
+    "metro-transform-plugins": "^0.66.2",
     "mkdirp": "^0.5.1",
     "prettier": "1.19.1",
     "react": "17.0.2",
@@ -211,10 +211,32 @@
   },
   "resolutions": {
     "async": "^3.2.2",
-    "es5-ext": "0.10.53"
+    "es5-ext": "0.10.53",
+    "workspace-tools": "^0.18.4"
   },
   "_justification": {
     "async": "Versions of async prior to 3.2.2 are vulnerable to prototype pollution",
-    "es5-ext": "Packages after 0.10.54 and at the moment up until 0.10.59 contain a protest message. A policy prevents us from using packages with protestware, therefore downgrading to the latest release without the message."
+    "es5-ext": "Packages after 0.10.54 and at the moment up until 0.10.59 contain a protest message. A policy prevents us from using packages with protestware, therefore downgrading to the latest release without the message.",
+    "workspace-tools": "Versions prior to 0.18.4 are vulnerable to command injection and prototype pollution attacks"
+  },
+  "codegenConfig": {
+    "libraries": [
+      {
+        "name": "FBReactNativeSpec",
+        "ios": {
+          "_outputDir": "React/FBReactNativeSpec"
+        },
+        "android": {},
+        "jsSrcsDir": "Libraries"
+      },
+      {
+        "name": "rncore",
+        "ios": {
+          "_outputDir": "ReactCommon"
+        },
+        "android": {},
+        "jsSrcsDir": "Libraries"
+      }
+    ]
   }
 }

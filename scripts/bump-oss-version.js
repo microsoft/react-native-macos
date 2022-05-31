@@ -49,10 +49,17 @@
      alias: 'latest',
      type: 'boolean',
      default: false,
+   })
+   .option('S', { // [TODO(macOS GH#1148): Remove this option once version bumping scripts have been refactored
+     alias: 'skip-update-ruby',
+     type: 'boolean',
+     default: false, // ]TODO(macOS GH#1148)
    }).argv;
 
  const autogenerateVersionNumber = argv.autogenerateVersionNumber;
  const nightlyBuild = argv.nightly;
+ // Nightly builds don't need an update as main will already be up-to-date.
+ const updatePodfileLock = !nightlyBuild;
  let version = argv.toVersion;
 
  if (!version) {
@@ -63,9 +70,7 @@
      }).stdout.trim();
      version = `0.0.0-${currentCommit.slice(0, 9)}`;
    } else {
-     echo(
-       'You must specify a version using -v',
-     );
+     echo('You must specify a version using -v');
      exit(1);
    }
  }
@@ -168,12 +173,15 @@
  packageJson.version = version;
 
  // [MacOS - We do this seperately in a non-destructive way as part of our publish steps
-//  delete packageJson.workspaces;
+//  packageJson.workspaces = packageJson.workspaces.filter(w => w === 'repo-config');
 //  delete packageJson.private;
 
  // Copy dependencies over from repo-config/package.json
 //  const repoConfigJson = JSON.parse(cat('repo-config/package.json'));
-//  packageJson.devDependencies = {...packageJson.devDependencies, ...repoConfigJson.dependencies};
+//  packageJson.devDependencies = {
+//    ...packageJson.devDependencies,
+//    ...repoConfigJson.dependencies,
+//  };
 // macOS]
  fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2), 'utf-8');
 
@@ -193,6 +201,15 @@
  // Change react-native version in the template's package.json
  exec(`node scripts/set-rn-template-version.js ${version}`);
 
+ if (updatePodfileLock) {
+   echo('Updating RNTester Podfile.lock...');
+   if (exec('source scripts/update_podfile_lock.sh && update_pods').code) {
+     echo('Failed to update RNTester Podfile.lock.');
+     echo('Fix the issue, revert and try again.');
+     exit(1);
+   }
+ }
+
  // Verify that files changed, we just do a git diff and check how many times version is added across files
  const filesToValidate = [
    'package.json',
@@ -203,6 +220,12 @@
    `git diff -U0 ${filesToValidate.join(' ')}| grep '^[+]' | grep -c ${version} `,
    {silent: true},
  ).stdout.trim();
+
+ // Make sure to update ruby version
+ if (!argv.skipUpdateRuby && exec('scripts/update-ruby.sh').code) { // TODO(macOS GH#1148)
+   echo('Failed to update Ruby version');
+   exit(1);
+ }
 
  // Release builds should commit the version bumps, and create tags.
  // Nightly builds do not need to do that.
