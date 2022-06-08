@@ -93,8 +93,8 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
     _runtimeExecutor = runtimeExecutor;
     _contextContainer = contextContainer;
 
-    _surfaceRegistry = [[RCTSurfaceRegistry alloc] init];
-    _mountingManager = [[RCTMountingManager alloc] init];
+    _surfaceRegistry = [RCTSurfaceRegistry new];
+    _mountingManager = [RCTMountingManager new];
     _mountingManager.contextContainer = contextContainer;
     _mountingManager.delegate = self;
 
@@ -255,10 +255,6 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
 
   if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:preemptive_view_allocation_disabled_ios")) {
     RCTExperimentSetPreemptiveViewAllocationDisabled(YES);
-  }
-
-  if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:enable_remove_clipped_subviews_ios")) {
-    RCTSetRemoveClippedSubviewsEnabled(YES);
   }
 
   auto componentRegistryFactory =

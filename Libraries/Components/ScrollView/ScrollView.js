@@ -703,7 +703,7 @@ type ScrollViewComponentStatics = $ReadOnly<{|
  * view from becoming the responder.
  *
  *
- * `<ScrollView>` vs [`<FlatList>`](https://reactnative.dev/docs/flatlist.html) - which one to use?
+ * `<ScrollView>` vs [`<FlatList>`](https://reactnative.dev/docs/flatlist) - which one to use?
  *
  * `ScrollView` simply renders all its react child components at once. That
  * makes it very easy to understand and use.
@@ -1749,7 +1749,8 @@ class ScrollView extends React.Component<Props, State> {
               scrollAnimatedValue={this._scrollAnimatedValue}
               inverted={this.props.invertStickyHeaders}
               hiddenOnScroll={this.props.stickyHeaderHiddenOnScroll}
-              scrollViewHeight={this.state.layoutHeight}>
+              scrollViewHeight={this.state.layoutHeight}
+            >
               {child}
             </StickyHeaderComponent>
           );
@@ -1760,7 +1761,8 @@ class ScrollView extends React.Component<Props, State> {
     }
     children = (
       <ScrollViewContext.Provider
-        value={this.props.horizontal === true ? HORIZONTAL : VERTICAL}>
+        value={this.props.horizontal === true ? HORIZONTAL : VERTICAL}
+      >
         {children}
       </ScrollViewContext.Provider>
     );
@@ -1781,7 +1783,8 @@ class ScrollView extends React.Component<Props, State> {
             : this.props.removeClippedSubviews
         }
         key={this.state.contentKey} // TODO(macOS GH#774)
-        collapsable={false}>
+        collapsable={false}
+      >
         {children}
       </NativeDirectionalScrollContentView>
     );
@@ -1889,7 +1892,8 @@ class ScrollView extends React.Component<Props, State> {
           <NativeDirectionalScrollView
             {...props}
             style={StyleSheet.compose(baseStyle, inner)}
-            ref={this._setNativeRef}>
+            ref={this._setNativeRef}
+          >
             {contentContainer}
           </NativeDirectionalScrollView>,
         );

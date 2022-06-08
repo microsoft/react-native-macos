@@ -90,7 +90,8 @@ function LogBoxInspectorStackFrames(props: Props): React.Node {
           }
           status={props.log.symbolicated.status}
         />
-      }>
+      }
+    >
       {props.log.symbolicated.status !== 'COMPLETE' && (
         <View style={stackStyles.hintBox}>
           <Text style={stackStyles.hintText}>
@@ -132,7 +133,9 @@ function StackFrameList(props) {
   );
 }
 
-function StackFrameFooter(props) {
+function StackFrameFooter(
+  props: $TEMPORARY$object<{message: string, onPress: () => void}>,
+) {
   return (
     <View style={stackStyles.collapseContainer}>
       <LogBoxButton
@@ -141,7 +144,8 @@ function StackFrameFooter(props) {
           pressed: LogBoxStyle.getBackgroundColor(1),
         }}
         onPress={props.onPress}
-        style={stackStyles.collapseButton}>
+        style={stackStyles.collapseButton}
+      >
         <Text style={stackStyles.collapse}>{props.message}</Text>
       </LogBoxButton>
     </View>

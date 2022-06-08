@@ -27,10 +27,10 @@ LOCAL_CFLAGS += -fexceptions -frtti -Wno-unused-lambda-capture
 LOCAL_LDLIBS += -landroid
 
 # The dynamic libraries (.so files) that this module depends on.
-LOCAL_SHARED_LIBRARIES := libfolly_json libfb libfbjni libglog_init libyoga libreact_render_runtimescheduler
+LOCAL_SHARED_LIBRARIES := libfolly_json libfb libfbjni libglog_init libyoga libreact_render_runtimescheduler libruntimeexecutor
 
 # The static libraries (.a files) that this module depends on.
-LOCAL_STATIC_LIBRARIES := libreactnative libcallinvokerholder libruntimeexecutor
+LOCAL_STATIC_LIBRARIES := libreactnative libcallinvokerholder
 
 # Name of this module.
 #
@@ -77,10 +77,10 @@ LOCAL_CFLAGS += -fexceptions -frtti -Wno-unused-lambda-capture
 LOCAL_LDLIBS += -landroid
 
 # The dynamic libraries (.so files) that this module depends on.
-LOCAL_SHARED_LIBRARIES := libreactnativeutilsjni libfolly_json libfb libfbjni libglog_init libyoga logger libreact_render_runtimescheduler
+LOCAL_SHARED_LIBRARIES := libreactnativeutilsjni libfolly_json libfb libfbjni libglog_init libyoga logger libreact_render_runtimescheduler libruntimeexecutor
 
 # The static libraries (.a files) that this module depends on.
-LOCAL_STATIC_LIBRARIES := libreactnative libruntimeexecutor libcallinvokerholder
+LOCAL_STATIC_LIBRARIES := libreactnative libcallinvokerholder
 
 # Name of this module.
 #
@@ -89,7 +89,7 @@ LOCAL_STATIC_LIBRARIES := libreactnative libruntimeexecutor libcallinvokerholder
 LOCAL_MODULE := reactnativejni
 
 # Compile all local c++ files.
-LOCAL_SRC_FILES := $(wildcard *.cpp)
+LOCAL_SRC_FILES := $(wildcard $(LOCAL_PATH)/*.cpp)
 
 ifeq ($(APP_OPTIM),debug)
   # Keep symbols by overriding the strip command invoked by ndk-build.

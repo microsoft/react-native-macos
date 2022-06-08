@@ -193,8 +193,7 @@ using namespace facebook::react;
     needsInvalidateLayer = YES;
   }
 
-  if (RCTGetRemoveClippedSubviewsEnabled() &&
-      oldViewProps.removeClippedSubviews != newViewProps.removeClippedSubviews) {
+  if (oldViewProps.removeClippedSubviews != newViewProps.removeClippedSubviews) {
     _removeClippedSubviews = newViewProps.removeClippedSubviews;
     if (_removeClippedSubviews && self.subviews.count > 0) {
       _reactSubviews = [NSMutableArray arrayWithArray:self.subviews];
@@ -578,7 +577,7 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
     layer.backgroundColor = _backgroundColor.CGColor;
   } else {
     if (!_borderLayer) {
-      _borderLayer = [[CALayer alloc] init];
+      _borderLayer = [CALayer new];
       _borderLayer.zPosition = -1024.0f;
       _borderLayer.frame = layer.bounds;
       _borderLayer.magnificationFilter = kCAFilterNearest;

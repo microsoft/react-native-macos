@@ -13,13 +13,12 @@
 
 const combine = require('./combine-js-to-schema');
 const fs = require('fs');
-// $FlowFixMe[untyped-import] glob is untyped
 const glob = require('glob');
 const path = require('path');
 
 const [outfile, ...fileList] = process.argv.slice(2);
 
-function filterJSFile(file) {
+function filterJSFile(file: string) {
   return (
     /^(Native.+|.+NativeComponent)/.test(path.basename(file)) &&
     // NativeUIManager will be deprecated by Fabric UIManager.

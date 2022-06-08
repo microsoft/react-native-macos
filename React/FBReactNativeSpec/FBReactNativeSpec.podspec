@@ -33,13 +33,14 @@ Pod::Spec.new do |s|
   s.platforms              = { :ios => "11.0", :osx => "10.15" } # TODO(macOS GH#774)
   s.compiler_flags         = folly_compiler_flags + ' -Wno-nullability-completeness'
   s.source                 = source
-  s.source_files           = "**/FBReactNativeSpec*.{h,mm}"
+  # This podspec is used to trigger the codegen, and built files are generated in a different location.
+  # We don't want this pod to actually include any files.
   s.header_dir             = "FBReactNativeSpec"
 
   s.pod_target_xcconfig    = {
                                "USE_HEADERMAP" => "YES",
                                "CLANG_CXX_LANGUAGE_STANDARD" => "c++14",
-                               "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/React/FBReactNativeSpec\" \"$(PODS_ROOT)/RCT-Folly\""
+                               "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/RCT-Folly\""
                              }
 
   s.dependency "RCT-Folly", folly_version
@@ -54,6 +55,5 @@ Pod::Spec.new do |s|
     :js_srcs_dir => "#{react_native_path}/Libraries",
     :library_name => "FBReactNativeSpec",
     :library_type => "modules",
-    :output_dir => "#{react_native_path}/React/FBReactNativeSpec/FBReactNativeSpec"
   })
 end

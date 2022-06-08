@@ -44,6 +44,7 @@ import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.common.annotations.VisibleForTesting;
+import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.react.modules.appregistry.AppRegistry;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.deviceinfo.DeviceInfoModule;
@@ -184,15 +185,8 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
   }
 
   @Override
-  public void onChildStartedNativeGesture(MotionEvent androidEvent) {
-    if (mReactInstanceManager == null
-        || !mIsAttachedToInstance
-        || mReactInstanceManager.getCurrentReactContext() == null) {
-      FLog.w(TAG, "Unable to dispatch touch to JS as the catalyst instance has not been attached");
-      return;
-    }
-    if (mJSTouchDispatcher == null) {
-      FLog.w(TAG, "Unable to dispatch touch to JS before the dispatcher is available");
+  public void onChildStartedNativeGesture(MotionEvent ev) {
+    if (!isDispatcherReady()) {
       return;
     }
     ReactContext reactContext = mReactInstanceManager.getCurrentReactContext();
@@ -200,8 +194,42 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
 
     if (uiManager != null) {
       EventDispatcher eventDispatcher = uiManager.getEventDispatcher();
-      mJSTouchDispatcher.onChildStartedNativeGesture(androidEvent, eventDispatcher);
+      mJSTouchDispatcher.onChildStartedNativeGesture(ev, eventDispatcher);
     }
+  }
+
+  @Override
+  public void onChildStartedNativeGesture(View childView, MotionEvent ev) {
+    onChildStartedNativeGesture(ev);
+  }
+
+  @Override
+  public void onChildEndedNativeGesture(View childView, MotionEvent ev) {
+    if (!isDispatcherReady()) {
+      return;
+    }
+    ReactContext reactContext = mReactInstanceManager.getCurrentReactContext();
+    UIManager uiManager = UIManagerHelper.getUIManager(reactContext, getUIManagerType());
+
+    if (uiManager != null) {
+      EventDispatcher eventDispatcher = uiManager.getEventDispatcher();
+      mJSTouchDispatcher.onChildEndedNativeGesture(ev, eventDispatcher);
+    }
+  }
+
+  private boolean isDispatcherReady() {
+    if (mReactInstanceManager == null
+        || !mIsAttachedToInstance
+        || mReactInstanceManager.getCurrentReactContext() == null) {
+      FLog.w(TAG, "Unable to dispatch touch to JS as the catalyst instance has not been attached");
+      return false;
+    }
+    if (mJSTouchDispatcher == null) {
+      FLog.w(TAG, "Unable to dispatch touch to JS before the dispatcher is available");
+      return false;
+    }
+
+    return true;
   }
 
   @Override
@@ -412,7 +440,11 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
       mInitialUITemplate = initialUITemplate;
 
       mReactInstanceManager.createReactContextInBackground();
-
+      // if in this experiment, we initialize the root earlier in startReactApplication
+      // instead of waiting for the initial measure
+      if (ReactFeatureFlags.enableEagerRootViewAttachment) {
+        attachToReactInstanceManager();
+      }
     } finally {
       Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
     }

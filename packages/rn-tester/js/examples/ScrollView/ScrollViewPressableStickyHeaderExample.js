@@ -28,20 +28,22 @@ function StickyHeader() {
         margin: 10,
         width: 500,
         height: 100,
-      }}>
+      }}
+    >
       <Pressable
         style={{flex: 1}}
         onPress={() => {
           setBackgroundColor(backgroundColor === 'blue' ? 'yellow' : 'blue');
         }}
-        testID="pressable_header">
+        testID="pressable_header"
+      >
         <Text>Press to change color</Text>
       </Pressable>
     </View>
   );
 }
 
-function renderComponent1(i) {
+function renderComponent1(i: number) {
   return (
     <View
       key={i}
@@ -64,7 +66,8 @@ export default function ScrollViewPressableStickyHeaderExample(): React.Node {
         style={{flex: 1}}
         stickyHeaderIndices={[0]}
         showsVerticalScrollIndicator={false}
-        testID="scroll_pressable_sticky_header">
+        testID="scroll_pressable_sticky_header"
+      >
         <StickyHeader />
         {components}
       </ScrollView>

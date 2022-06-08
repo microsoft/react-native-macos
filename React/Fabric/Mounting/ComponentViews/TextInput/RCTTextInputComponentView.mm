@@ -67,7 +67,7 @@ using namespace facebook::react;
     _props = defaultProps;
     auto &props = *defaultProps;
 
-    _backedTextInputView = props.traits.multiline ? [[RCTUITextView alloc] init] : [[RCTUITextField alloc] init];
+    _backedTextInputView = props.traits.multiline ? [RCTUITextView new] : [RCTUITextField new];
     _backedTextInputView.textInputDelegate = self;
     _ignoreNextTextInputCall = NO;
     _comingFromJS = NO;
@@ -394,6 +394,15 @@ using namespace facebook::react;
   }
 }
 
+#pragma mark - RCTBackedTextInputDelegate (UIScrollViewDelegate)
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+  if (_eventEmitter) {
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onScroll([self _textInputMetrics]);
+  }
+}
+
 #pragma mark - Native Commands
 
 - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args
@@ -420,7 +429,7 @@ using namespace facebook::react;
     return;
   }
   _comingFromJS = YES;
-  if (![value isEqualToString:_backedTextInputView.attributedText.string]) {
+  if (value && ![value isEqualToString:_backedTextInputView.attributedText.string]) {
     NSAttributedString *attributedString =
         [[NSAttributedString alloc] initWithString:value attributes:_backedTextInputView.defaultTextAttributes];
     [self _setAttributedString:attributedString];
@@ -465,7 +474,7 @@ using namespace facebook::react;
   }
 
   if (shouldHaveInputAccesoryView) {
-    UIToolbar *toolbarView = [[UIToolbar alloc] init];
+    UIToolbar *toolbarView = [UIToolbar new];
     [toolbarView sizeToFit];
     UIBarButtonItem *flexibleSpace =
         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
@@ -499,6 +508,22 @@ using namespace facebook::react;
   metrics.text = RCTStringFromNSString(_backedTextInputView.attributedText.string);
   metrics.selectionRange = [self _selectionRange];
   metrics.eventCount = _mostRecentEventCount;
+
+  CGPoint contentOffset = _backedTextInputView.contentOffset;
+  metrics.contentOffset = {contentOffset.x, contentOffset.y};
+
+  UIEdgeInsets contentInset = _backedTextInputView.contentInset;
+  metrics.contentInset = {contentInset.left, contentInset.top, contentInset.right, contentInset.bottom};
+
+  CGSize contentSize = _backedTextInputView.contentSize;
+  metrics.contentSize = {contentSize.width, contentSize.height};
+
+  CGSize layoutMeasurement = _backedTextInputView.bounds.size;
+  metrics.layoutMeasurement = {layoutMeasurement.width, layoutMeasurement.height};
+
+  CGFloat zoomScale = _backedTextInputView.zoomScale;
+  metrics.zoomScale = zoomScale;
+
   return metrics;
 }
 
@@ -565,8 +590,7 @@ using namespace facebook::react;
 - (void)_setMultiline:(BOOL)multiline
 {
   [_backedTextInputView removeFromSuperview];
-  UIView<RCTBackedTextInputViewProtocol> *backedTextInputView =
-      multiline ? [[RCTUITextView alloc] init] : [[RCTUITextField alloc] init];
+  UIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new];
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
   _backedTextInputView = backedTextInputView;

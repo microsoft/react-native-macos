@@ -80,6 +80,9 @@ public class ReactFeatureFlags {
   /** Feature flag to configure eager initialization of MapBuffer So file */
   public static boolean enableEagerInitializeMapBufferSoFile = false;
 
+  /** Feature flag to configure eager attachment of the root view/initialisation of the JS code */
+  public static boolean enableEagerRootViewAttachment = false;
+
   private static boolean mapBufferSerializationEnabled = false;
 
   /** Enables or disables MapBuffer Serialization */
@@ -105,4 +108,7 @@ public class ReactFeatureFlags {
   public static boolean useDispatchUniqueForCoalescableEvents = false;
 
   public static boolean useUpdatedTouchPreprocessing = false;
+
+  /** TODO: T103427072 Delete ReactFeatureFlags.enableNestedTextOnPressEventFix */
+  public static boolean enableNestedTextOnPressEventFix = true;
 }

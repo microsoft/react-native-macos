@@ -27,7 +27,8 @@ function ExampleRow({children}: ExampleRowProps) {
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 10,
-      }}>
+      }}
+    >
       {children}
     </View>
   );
@@ -238,7 +239,29 @@ class OnChangeExample extends React.Component<{...}, $FlowFixMeState> {
   render() {
     return (
       <View>
-        <Switch onChange={() => alert('OnChange Called')} />
+        <Switch
+          onChange={() => {
+            // eslint-disable-next-line no-alert
+            alert('OnChange Called');
+          }}
+        />
+      </View>
+    );
+  }
+}
+
+class ContainerBackgroundColorStyleExample extends React.Component<
+  {...},
+  $FlowFixMeState,
+> {
+  render() {
+    return (
+      <View>
+        <Switch
+          style={{backgroundColor: 'blue'}}
+          thumbColor="white"
+          value={true}
+        />
       </View>
     );
   }
@@ -289,6 +312,12 @@ exports.examples = [
     title: 'OnChange receives the change event as an argument',
     render(): React.Element<any> {
       return <OnChangeExample />;
+    },
+  },
+  {
+    title: "The container's background color can be set",
+    render(): React.Element<any> {
+      return <ContainerBackgroundColorStyleExample />;
     },
   },
 ];

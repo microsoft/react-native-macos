@@ -21,5 +21,16 @@
     "connect": "^3.6.5",
     "detox": "18.10.0",
     "ws": "^6.1.4"
+  },
+  "codegenConfig": {
+    "libraries": [
+      {
+        "name": "ScreenshotManagerSpec",
+        "type": "modules",
+        "ios": {},
+        "android": {},
+        "jsSrcsDir": "NativeModuleExample"
+      }
+    ]
   }
 }

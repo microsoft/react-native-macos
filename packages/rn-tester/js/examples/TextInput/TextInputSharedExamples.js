@@ -185,49 +185,51 @@ class RewriteInvalidCharactersAndClearExample extends React.Component<
 }
 
 class BlurOnSubmitExample extends React.Component<{...}> {
-  focusNextField = nextField => {
-    this.refs[nextField].focus();
-  };
+  ref1 = React.createRef();
+  ref2 = React.createRef();
+  ref3 = React.createRef();
+  ref4 = React.createRef();
+  ref5 = React.createRef();
 
   render() {
     return (
       <View>
         <TextInput
-          ref="1"
+          ref={this.ref1}
           style={styles.singleLine}
           placeholder="blurOnSubmit = false"
           returnKeyType="next"
           blurOnSubmit={false}
-          onSubmitEditing={() => this.focusNextField('2')}
+          onSubmitEditing={() => this.ref2.current?.focus()}
         />
         <TextInput
-          ref="2"
+          ref={this.ref2}
           style={styles.singleLine}
           keyboardType="email-address"
           placeholder="blurOnSubmit = false"
           returnKeyType="next"
           blurOnSubmit={false}
-          onSubmitEditing={() => this.focusNextField('3')}
+          onSubmitEditing={() => this.ref3.current?.focus()}
         />
         <TextInput
-          ref="3"
+          ref={this.ref3}
           style={styles.singleLine}
           keyboardType="url"
           placeholder="blurOnSubmit = false"
           returnKeyType="next"
           blurOnSubmit={false}
-          onSubmitEditing={() => this.focusNextField('4')}
+          onSubmitEditing={() => this.ref4.current?.focus()}
         />
         <TextInput
-          ref="4"
+          ref={this.ref4}
           style={styles.singleLine}
           keyboardType="numeric"
           placeholder="blurOnSubmit = false"
           blurOnSubmit={false}
-          onSubmitEditing={() => this.focusNextField('5')}
+          onSubmitEditing={() => this.ref5.current?.focus()}
         />
         <TextInput
-          ref="5"
+          ref={this.ref5}
           style={styles.singleLine}
           keyboardType="numbers-and-punctuation"
           placeholder="blurOnSubmit = true"
@@ -327,9 +329,7 @@ class TokenizedTextExample extends React.Component<
         index = 1;
       }
       parts.push(_text.substr(0, index));
-      // $FlowFixMe[incompatible-use]
       parts.push(token[0]);
-      // $FlowFixMe[incompatible-use]
       index = index + token[0].length;
       _text = _text.slice(index);
     }
@@ -356,7 +356,8 @@ class TokenizedTextExample extends React.Component<
           style={styles.multiline}
           onChangeText={text => {
             this.setState({text});
-          }}>
+          }}
+        >
           <Text>{parts}</Text>
         </TextInput>
       </View>
@@ -443,13 +444,15 @@ class SelectionExample extends React.Component<
           <Text
             testID={`${this.props.testID}-cursor-start`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
-            onPress={this.placeAt.bind(this, 0)}>
+            onPress={this.placeAt.bind(this, 0)}
+          >
             Place at Start (0, 0)
           </Text>
           <Text
             testID={`${this.props.testID}-cursor-end`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
-            onPress={this.placeAt.bind(this, length)}>
+            onPress={this.placeAt.bind(this, length)}
+          >
             Place at End ({length}, {length})
           </Text>
           {/* $FlowFixMe[method-unbinding] added when improving typing for this
@@ -458,7 +461,8 @@ class SelectionExample extends React.Component<
           <Text
             testID={`${this.props.testID}-select-all`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
-            onPress={this.select.bind(this, 0, length)}>
+            onPress={this.select.bind(this, 0, length)}
+          >
             Select All
           </Text>
           {/* $FlowFixMe[method-unbinding] added when improving typing for this
