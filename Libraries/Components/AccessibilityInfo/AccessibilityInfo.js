@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -368,6 +368,34 @@ const AccessibilityInfo = {
       NativeAccessibilityInfoAndroid?.announceForAccessibility(announcement);
     } else {
       NativeAccessibilityManagerApple?.announceForAccessibility(announcement);
+    }
+  },
+
+  /**
+   * Post a string to be announced by the screen reader.
+   * - `announcement`: The string announced by the screen reader.
+   * - `options`: An object that configures the reading options.
+   *   - `queue`: The announcement will be queued behind existing announcements. iOS only.
+   */
+  announceForAccessibilityWithOptions(
+    announcement: string,
+    options: {queue?: boolean},
+  ): void {
+    if (Platform.OS === 'android') {
+      NativeAccessibilityInfoAndroid?.announceForAccessibility(announcement);
+    } else {
+      // [TODO(GH#774) NativeAccessibilityManagerIOS -> NativeAccessibilityManagerApple
+      if (
+        NativeAccessibilityManagerApple?.announceForAccessibilityWithOptions
+      ) {
+        NativeAccessibilityManagerApple?.announceForAccessibilityWithOptions(
+          announcement,
+          options,
+        );
+      } else {
+        NativeAccessibilityManagerApple?.announceForAccessibility(announcement);
+      }
+      // ]TODO(macOS GH#774)
     }
   },
 

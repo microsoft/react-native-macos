@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -60,6 +60,8 @@ export default function verifyComponentAttributeEquivalence(
   }
 }
 
+// Return the different key-value pairs of the right object, by iterating through the keys in the left object
+// Note it won't return a difference where a key is missing in the left but exists the right.
 export function lefthandObjectDiff(leftObj: Object, rightObj: Object): Object {
   const differentKeys = {};
 

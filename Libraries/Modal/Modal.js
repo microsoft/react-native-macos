@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -15,7 +15,6 @@ import NativeEventEmitter from '../EventEmitter/NativeEventEmitter';
 import NativeModalManager from './NativeModalManager';
 const Platform = require('../Utilities/Platform');
 const React = require('react');
-const PropTypes = require('prop-types');
 const ScrollView = require('../Components/ScrollView/ScrollView');
 const StyleSheet = require('../StyleSheet/StyleSheet');
 const View = require('../Components/View/View');

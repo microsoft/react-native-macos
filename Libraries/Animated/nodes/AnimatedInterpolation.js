@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -18,6 +18,8 @@ const NativeAnimatedHelper = require('../NativeAnimatedHelper');
 
 const invariant = require('invariant');
 const normalizeColor = require('../../StyleSheet/normalizeColor');
+
+import type {PlatformConfig} from '../AnimatedPlatformConfig';
 
 type ExtrapolateType = 'extend' | 'identity' | 'clamp';
 
@@ -317,9 +319,9 @@ class AnimatedInterpolation extends AnimatedWithChildren {
     this._interpolation = createInterpolation(config);
   }
 
-  __makeNative() {
-    this._parent.__makeNative();
-    super.__makeNative();
+  __makeNative(platformConfig: ?PlatformConfig) {
+    this._parent.__makeNative(platformConfig);
+    super.__makeNative(platformConfig);
   }
 
   __getValue(): number | string {

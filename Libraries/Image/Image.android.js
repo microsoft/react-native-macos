@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -106,7 +106,7 @@ async function queryCache(
   return await NativeImageLoaderAndroid.queryCache(urls);
 }
 
-type ImageComponentStatics = $ReadOnly<{|
+export type ImageComponentStatics = $ReadOnly<{|
   getSize: typeof getSize,
   getSizeWithHeaders: typeof getSizeWithHeaders,
   prefetch: typeof prefetch,
@@ -198,13 +198,22 @@ let Image = (props: ImagePropsType, forwardedRef) => {
             : nativeProps;
         return (
           <TextAncestor.Consumer>
-            {hasTextAncestor =>
-              hasTextAncestor ? (
-                <TextInlineImageNativeComponent {...nativePropsWithAnalytics} />
-              ) : (
-                <ImageViewNativeComponent {...nativePropsWithAnalytics} />
-              )
-            }
+            {hasTextAncestor => {
+              if (hasTextAncestor) {
+                let src = Array.isArray(sources) ? sources : [sources];
+                return (
+                  <TextInlineImageNativeComponent
+                    style={style}
+                    resizeMode={props.resizeMode}
+                    headers={nativeProps.headers}
+                    src={src}
+                    ref={forwardedRef}
+                  />
+                );
+              }
+
+              return <ImageViewNativeComponent {...nativePropsWithAnalytics} />;
+            }}
           </TextAncestor.Consumer>
         );
       }}

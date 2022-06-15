@@ -82,7 +82,9 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v4-yarn-cache-{{ arch }}-{{ checksum "yarn.lock" }}
+            - v5-yarn-cache-{{ .Environment.CIRCLE_JOB }}-{{ arch }}-{{ checksum "yarn.lock" }}
+            - v5-yarn-cache-{{ .Environment.CIRCLE_JOB }}-{{ arch }}
+            - v5-yarn-cache-{{ .Environment.CIRCLE_JOB }}
       - run:
           name: "Yarn: Install Dependencies"
           command: |
@@ -94,13 +96,7 @@ commands:
       - save_cache:
           paths:
             - ~/.cache/yarn
-          key: v4-yarn-cache-{{ arch }}-{{ checksum "yarn.lock" }}
-
-  build_codegen:
-    steps:
-      - run:
-          name: "Codegen: Build react-native-codegen package"
-          command: cd packages/react-native-codegen && yarn build
+          key: v5-yarn-cache-{{ .Environment.CIRCLE_JOB }}-{{ arch }}-{{ checksum "yarn.lock" }}
 
   install_buck_tooling:
     steps:
@@ -246,7 +242,7 @@ jobs:
           command: |
             curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
             apt update && apt install -y shellcheck jq
-            apt-get install openssl ca-certificates
+            apt-get -y install openssl ca-certificates
             update-ca-certificates
             curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
             apt update && apt install -y shellcheck jq
@@ -363,10 +359,6 @@ jobs:
         description: Specifies whether unit tests should run.
         type: boolean
         default: false
-      run_detox_tests:
-        description: Specifies whether Detox e2e tests should run.
-        type: boolean
-        default: false
       run_disabled_tests:
         description: Specifies whether disabled tests should run. Set this to true to debug failing tests.
         type: boolean
@@ -378,7 +370,6 @@ jobs:
       - setup_artifacts
       - setup_ruby
       - run_yarn
-      - build_codegen
 
       - run: |
           cd packages/rn-tester
@@ -447,13 +438,6 @@ jobs:
             - run:
                 name: "Run Tests: iOS Unit and Integration Tests"
                 command: yarn test-ios
-      # Runs iOS Detox e2e tests
-      - when:
-          condition: << parameters.run_detox_tests >>
-          steps:
-            - run:
-                name: "Run Tests: Detox iOS End-to-End Tests"
-                command: yarn run build-ios-e2e && yarn run test-ios-e2e
 
       # Optionally, run disabled tests
       - when:
@@ -597,7 +581,8 @@ jobs:
           name: Setup the Android Template
           command: |
             cd template
-            sed -i 's/1000\.0\.0/file\:\.\./g' package.json
+            # We replace the "react-native" dependency version with file:.. so we use it from source.
+            sed -i 's/\"react-native\"\:.*/\"react-native\"\: \"file\:\.\.\"/g' package.json
             npm install
             # react-native-community/cli is needed as the Android template is referencing a .gradle file inside it.
             npm i @react-native-community/cli
@@ -676,7 +661,6 @@ jobs:
       - ANDROID_BUILD_VERSION: 31
       - ANDROID_TOOLS_VERSION: 31.0.0
       - GRADLE_OPTS: -Dorg.gradle.daemon=false
-      - NDK_VERSION: 21.4.7075529
     steps:
       - checkout
 
@@ -722,7 +706,6 @@ jobs:
             sdkmanager "build-tools;%ANDROID_TOOLS_VERSION%"
             sdkmanager "add-ons;addon-google_apis-google-23"
             sdkmanager "extras;android;m2repository"
-            sdkmanager "ndk;%NDK_VERSION%"
 
       # -------------------------
       # Run Tests
@@ -773,6 +756,25 @@ jobs:
   # -------------------------
   #      JOBS: Releases
   # -------------------------
+  prepare_package_for_release:
+    parameters:
+      version:
+        type: string
+      latest:
+        type: boolean
+        default: false
+    executor: reactnativeios
+    steps:
+      - checkout
+      - run_yarn
+      - add_ssh_keys:
+          fingerprints:
+            - "1c:98:e0:3a:52:79:95:29:12:cd:b4:87:5b:41:e2:bb"
+      - run:
+          name: "Set new react-native version and commit changes"
+          command: |
+            node ./scripts/prepare-package-for-release.js -v << parameters.version >> -l << parameters.latest >>
+
   build_npm_package:
     parameters:
       publish_npm_args:
@@ -855,13 +857,35 @@ jobs:
           command: |
             echo "Nightly build run"
 
+
+# -------------------------
+#        PIPELINE PARAMETERS
+# -------------------------
+parameters:
+  run_package_release_workflow_only:
+    default: false
+    type: boolean
+
+  release_latest:
+    default: false
+    type: boolean
+
+  release_version:
+    default: "9999"
+    type: string
+
 # -------------------------
 #        WORK FLOWS
+#
+#  When creating a new workflow, make sure to include condition `unless: << pipeline.parameters.run_package_release_workflow_only >>`
+#  It's setup this way so we can trigger a release via a POST
+#  See limitations: https://support.circleci.com/hc/en-us/articles/360050351292-How-to-trigger-a-workflow-via-CircleCI-API-v2
 # -------------------------
 workflows:
   version: 2
 
   tests:
+    unless: << pipeline.parameters.run_package_release_workflow_only >>
     jobs:
       - build_npm_package:
           # Build a release package on every untagged commit, but do not publish to npm.
@@ -871,7 +895,6 @@ workflows:
               only:
                 - main
                 - /^pull\/.*$/
-                - /^(\d+)\.(\d+)-stable$/
       - test_js:
           run_disabled_tests: false
           filters:
@@ -918,15 +941,6 @@ workflows:
       #     use_hermes: true
       #     use_frameworks: true
       #     run_unit_tests: true
-      # DISABLED: Detox tests need to be fixed
-      # - test_ios:
-      #     name: test_ios_detox
-      #     run_detox_tests: true
-      # DISABLED: USE_FRAMEWORKS=1 not supported by Flipper
-      # - test_ios:
-      #     name: test_ios_detox_frameworks
-      #     use_frameworks: true
-      #     run_detox_tests: true
       # TODO(macOS GH#949): Disable this failing test
       # - test_js:
       #     name: test_js_prev_lts
@@ -948,12 +962,27 @@ workflows:
               # ]TODO(macOS GH#774)
           run_disabled_tests: false
 
-  releases:
+  # This workflow should only be triggered by release script
+  package_release:
+    when: << pipeline.parameters.run_package_release_workflow_only >>
     jobs:
+      # This job will trigger publish_release workflow
+      - prepare_package_for_release:
+          name: prepare_package_for_release
+          version: << pipeline.parameters.release_version >>
+          latest : << pipeline.parameters.release_latest >>
+
+  publish_release:
+    unless: << pipeline.parameters.run_package_release_workflow_only >>
+    jobs:
+      # This job will trigger when a version tag is pushed (by package_release)
       - build_npm_package:
           name: build_and_publish_npm_package
           context: react-native-bot
           publish_npm_args: --release
+          # CircleCI filters are OR-ed, with all branches triggering by default and tags excluded by default
+          # CircleCI env-vars are only set with the branch OR tag that triggered the job, not both.
+          # In this case, CIRCLE_BRANCH is unset, but CIRCLE_TAG is set
           filters:
             # Both of the following conditions must be included!
             # Ignore any commit on any branch by default.
@@ -964,6 +993,7 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*(\-rc(\.[0-9]+)?)?/
 
   analysis:
+    unless: << pipeline.parameters.run_package_release_workflow_only >>
     jobs:
       # Run lints on every commit other than those to the gh-pages branch
       - analyze_code:
@@ -985,6 +1015,7 @@ workflows:
               ignore: /.*/
           # ]TODO(macOS GH#774)
   nightly:
+    unless: << pipeline.parameters.run_package_release_workflow_only >>
     triggers:
       - schedule:
           cron: "0 20 * * *"

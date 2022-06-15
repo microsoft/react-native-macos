@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -31,7 +31,6 @@ class ScrollViewAnimatedExample extends Component<{...}> {
     Animated.timing(this._scrollViewPos, {
       toValue: 100,
       duration: 10000,
-      // $FlowFixMe[method-unbinding]
       easing: Easing.linear,
       useNativeDriver: true,
     }).start();

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -7,9 +7,46 @@
  * @format
  */
 
-const {parseVersion} = require('../version-utils');
+const {
+  parseVersion,
+  isTaggedLatest,
+  isReleaseBranch,
+} = require('../version-utils');
+
+let execResult = null;
+jest.mock('shelljs', () => ({
+  exec: () => {
+    return {
+      stdout: execResult,
+    };
+  },
+}));
 
 describe('version-utils', () => {
+  describe('isReleaseBranch', () => {
+    it('should identify as release branch', () => {
+      expect(isReleaseBranch('v0.66-stable')).toBe(true);
+      expect(isReleaseBranch('0.66-stable')).toBe(true);
+      expect(isReleaseBranch('made-up-stuff-stable')).toBe(true);
+    });
+    it('should not identify as release branch', () => {
+      expect(isReleaseBranch('main')).toBe(false);
+      expect(isReleaseBranch('pull/32659')).toBe(false);
+    });
+  });
+  describe('isTaggedLatest', () => {
+    it('it should identify commit as tagged `latest`', () => {
+      execResult = '6c19dc3266b84f47a076b647a1c93b3c3b69d2c5\n';
+      expect(isTaggedLatest('6c19dc3266b84f47a076b647a1c93b3c3b69d2c5')).toBe(
+        true,
+      );
+    });
+    it('it should not identify commit as tagged `latest`', () => {
+      execResult = '6c19dc3266b84f47a076b647a1c93b3c3b69d2c5\n';
+      expect(isTaggedLatest('6c19dc3266b8')).toBe(false);
+    });
+  });
+
   describe('parseVersion', () => {
     it('should throw error if invalid match', () => {
       function testInvalidVersion() {

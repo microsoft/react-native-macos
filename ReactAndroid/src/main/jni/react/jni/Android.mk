@@ -1,4 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 #
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
@@ -27,7 +27,14 @@ LOCAL_CFLAGS += -fexceptions -frtti -Wno-unused-lambda-capture
 LOCAL_LDLIBS += -landroid
 
 # The dynamic libraries (.so files) that this module depends on.
-LOCAL_SHARED_LIBRARIES := libfolly_json libfb libfbjni libglog_init libyoga libreact_render_runtimescheduler libruntimeexecutor
+LOCAL_SHARED_LIBRARIES := \
+  libfb \
+  libfbjni \
+  libfolly_json \
+  libglog_init \
+  libreact_render_runtimescheduler \
+  libruntimeexecutor \
+  libyoga
 
 # The static libraries (.a files) that this module depends on.
 LOCAL_STATIC_LIBRARIES := libreactnative libcallinvokerholder
@@ -77,7 +84,16 @@ LOCAL_CFLAGS += -fexceptions -frtti -Wno-unused-lambda-capture
 LOCAL_LDLIBS += -landroid
 
 # The dynamic libraries (.so files) that this module depends on.
-LOCAL_SHARED_LIBRARIES := libreactnativeutilsjni libfolly_json libfb libfbjni libglog_init libyoga logger libreact_render_runtimescheduler libruntimeexecutor
+LOCAL_SHARED_LIBRARIES := \
+  libfb \
+  libfbjni \
+  libfolly_json \
+  libglog_init \
+  libreact_render_runtimescheduler \
+  libreactnativeutilsjni \
+  libruntimeexecutor \
+  libyoga \
+  logger
 
 # The static libraries (.a files) that this module depends on.
 LOCAL_STATIC_LIBRARIES := libreactnative libcallinvokerholder
@@ -114,7 +130,7 @@ include $(BUILD_SHARED_LIBRARY)
 #   Whenever you encounter an include <dir>/<module-dir>/Android.mk, you
 #   tell andorid-ndk to compile the module in <dir>/<module-dir> according
 #   to the specification inside <dir>/<module-dir>/Android.mk.
-$(call import-module,better)
+$(call import-module,butter)
 $(call import-module,folly)
 $(call import-module,fb)
 $(call import-module,fbjni)

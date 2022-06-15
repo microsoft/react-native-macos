@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -201,6 +201,24 @@ class AccessibilityExample extends React.Component<{}> {
             accessibilityHint="Accessibility hint."
           >
             <Text>Accessible view with label, hint, role, and state</Text>
+          </View>
+        </RNTesterBlock>
+
+        <RNTesterBlock title="TextInput with accessibilityLabelledBy attribute">
+          <View>
+            <Text nativeID="formLabel1">Mail Address</Text>
+            <TextInput
+              accessibilityLabel="input test1"
+              accessibilityLabelledBy="formLabel1"
+              style={styles.default}
+            />
+            <Text nativeID="formLabel2">First Name</Text>
+            <TextInput
+              accessibilityLabel="input test2"
+              accessibilityLabelledBy={['formLabel2', 'formLabel3']}
+              style={styles.default}
+              value="Foo"
+            />
           </View>
         </RNTesterBlock>
       </View>
@@ -906,10 +924,65 @@ class FakeSliderExample extends React.Component<{}, FakeSliderExampleState> {
 
 class AnnounceForAccessibility extends React.Component<{}> {
   _handleOnPress = () =>
-    AccessibilityInfo.announceForAccessibility('Announcement Test');
+    setTimeout(
+      () => AccessibilityInfo.announceForAccessibility('Announcement Test'),
+      1000,
+    );
+
+  _handleOnPressQueued = () =>
+    setTimeout(
+      () =>
+        AccessibilityInfo.announceForAccessibilityWithOptions(
+          'Queued Announcement Test',
+          {queue: true},
+        ),
+      1000,
+    );
+
+  _handleOnPressQueueMultiple = () => {
+    setTimeout(
+      () =>
+        AccessibilityInfo.announceForAccessibilityWithOptions(
+          'First Queued Announcement Test',
+          {queue: true},
+        ),
+      1000,
+    );
+    setTimeout(
+      () =>
+        AccessibilityInfo.announceForAccessibilityWithOptions(
+          'Second Queued Announcement Test',
+          {queue: true},
+        ),
+      1100,
+    );
+    setTimeout(
+      () =>
+        AccessibilityInfo.announceForAccessibilityWithOptions(
+          'Third Queued Announcement Test',
+          {queue: true},
+        ),
+      1200,
+    );
+  };
 
   render(): React.Node {
-    return (
+    return Platform.OS === 'ios' ? (
+      <View>
+        <Button
+          onPress={this._handleOnPress}
+          title="Announce for Accessibility Immediately"
+        />
+        <Button
+          onPress={this._handleOnPressQueued}
+          title="Announce for Accessibility Queued"
+        />
+        <Button
+          onPress={this._handleOnPressQueueMultiple}
+          title="Announce for Accessibility Queue Multiple"
+        />
+      </View>
+    ) : (
       <View>
         <Button
           onPress={this._handleOnPress}
@@ -1101,7 +1174,7 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
         <DisplayOptionStatusExample
           optionName={'Screen Reader'}
           optionChecker={AccessibilityInfo.isScreenReaderEnabled}
-          notification={'reduceMotionChanged'}
+          notification={'screenReaderChanged'}
         />
         {isAndroid ? null : (
           <>
