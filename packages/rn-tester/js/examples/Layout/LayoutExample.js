@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -79,10 +79,8 @@ class LayoutExample extends React.Component<$FlowFixMeProps> {
             {fiveColoredCircles}
           </CircleBlock>
           <View
-            style={[
-              styles.overlay,
-              {position: 'absolute', top: 15, left: 160},
-            ]}>
+            style={[styles.overlay, {position: 'absolute', top: 15, left: 160}]}
+          >
             <Text>{'top: 15, left: 160'}</Text>
           </View>
         </RNTesterBlock>

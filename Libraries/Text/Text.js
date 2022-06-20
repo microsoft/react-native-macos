@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,7 +8,6 @@
  * @format
  */
 
-import DeprecatedTextPropTypes from '../DeprecatedPropTypes/DeprecatedTextPropTypes';
 import * as PressabilityDebug from '../Pressability/PressabilityDebug';
 import usePressability from '../Pressability/usePressability';
 import StyleSheet from '../StyleSheet/StyleSheet';
@@ -18,12 +17,11 @@ import {NativeText, NativeVirtualText} from './TextNativeComponent';
 import {type TextProps} from './TextProps';
 import * as React from 'react';
 import {useContext, useMemo, useState} from 'react';
-import invariant from 'invariant';
 
 /**
  * Text is the fundamental component for displaying text.
  *
- * @see https://reactnative.dev/docs/text.html
+ * @see https://reactnative.dev/docs/text
  */
 const Text: React.AbstractComponent<
   TextProps,
@@ -164,6 +162,7 @@ const Text: React.AbstractComponent<
       {...restProps}
       {...eventHandlersForText}
       isHighlighted={isHighlighted}
+      isPressable={isPressable}
       numberOfLines={numberOfLines}
       selectionColor={selectionColor}
       style={style}
@@ -189,8 +188,11 @@ const Text: React.AbstractComponent<
 
 Text.displayName = 'Text';
 
-// TODO: Delete this.
-Text.propTypes = DeprecatedTextPropTypes;
+/**
+ * Switch to `deprecated-react-native-prop-types` for compatibility with future
+ * releases. This is deprecated and will be removed in the future.
+ */
+Text.propTypes = require('deprecated-react-native-prop-types').TextPropTypes;
 
 /**
  * Returns false until the first time `newValue` is true, after which this will
@@ -205,8 +207,4 @@ function useLazyInitialization(newValue: boolean): boolean {
   return oldValue;
 }
 
-// $FlowFixMe[incompatible-cast] - No good way to type a React.AbstractComponent with statics.
-module.exports = (Text: typeof Text &
-  $ReadOnly<{
-    propTypes: typeof DeprecatedTextPropTypes,
-  }>);
+module.exports = Text;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -30,21 +30,17 @@
     _heightConstraint = [_safeAreaContainer.heightAnchor constraintEqualToConstant:0];
     _heightConstraint.active = YES;
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
-    if (@available(iOS 11.0, *)) {
-      [_safeAreaContainer.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor].active = YES;
-      [_safeAreaContainer.topAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor].active = YES;
-      [_safeAreaContainer.leadingAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.leadingAnchor].active = YES;
-      [_safeAreaContainer.trailingAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.trailingAnchor].active = YES;
-    } else {
-#endif // TODO(macOS GH#774)
-      [_safeAreaContainer.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
-      [_safeAreaContainer.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-      [_safeAreaContainer.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
-      [_safeAreaContainer.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
-    }
-#endif // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+    [_safeAreaContainer.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor].active = YES;
+    [_safeAreaContainer.topAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor].active = YES;
+    [_safeAreaContainer.leadingAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.leadingAnchor].active = YES;
+    [_safeAreaContainer.trailingAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.trailingAnchor].active = YES;
+#else // TODO(macOS GH#774)
+    [_safeAreaContainer.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
+    [_safeAreaContainer.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
+    [_safeAreaContainer.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
+    [_safeAreaContainer.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
+#endif // ]TODO(macOS GH#774)
   }
   return self;
 }

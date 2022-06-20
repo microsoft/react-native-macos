@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -51,7 +51,7 @@ static void testShadowNodeTreeLifeCycleLayoutAnimations(
   auto entropy = seed == 0 ? Entropy() : Entropy(seed);
 
   auto eventDispatcher = EventDispatcher::Shared{};
-  auto contextContainer = std::make_shared<ContextContainer>();
+  auto contextContainer = std::make_shared<ContextContainer const>();
   auto componentDescriptorParameters =
       ComponentDescriptorParameters{eventDispatcher, contextContainer, nullptr};
   auto viewComponentDescriptor =
@@ -65,7 +65,7 @@ static void testShadowNodeTreeLifeCycleLayoutAnimations(
 
   // Create a RuntimeExecutor
   RuntimeExecutor runtimeExecutor =
-      [](std::function<void(jsi::Runtime & runtime)> fn) {};
+      [](std::function<void(jsi::Runtime &)> const &) {};
 
   // Create component descriptor registry for animation driver
   auto providerRegistry =
@@ -77,8 +77,8 @@ static void testShadowNodeTreeLifeCycleLayoutAnimations(
       concreteComponentDescriptorProvider<ViewComponentDescriptor>());
 
   // Create Animation Driver
-  auto animationDriver =
-      std::make_shared<LayoutAnimationDriver>(runtimeExecutor, nullptr);
+  auto animationDriver = std::make_shared<LayoutAnimationDriver>(
+      runtimeExecutor, contextContainer, nullptr);
   animationDriver->setComponentDescriptorRegistry(componentDescriptorRegistry);
 
   // Mock animation timers

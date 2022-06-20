@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -151,7 +151,8 @@ class LayoutEventsTest extends React.Component<Props, State> {
             this._view = ref;
           }}
           onLayout={this.onViewLayout}
-          style={viewStyle}>
+          style={viewStyle}
+        >
           <Image
             ref={ref => {
               this._img = ref;
@@ -165,7 +166,8 @@ class LayoutEventsTest extends React.Component<Props, State> {
               this._txt = ref;
             }}
             onLayout={this.onTextLayout}
-            style={styles.text}>
+            style={styles.text}
+          >
             A simple piece of text.{this.state.extraText}
           </Text>
           <Text>

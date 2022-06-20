@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -16,6 +16,7 @@
 #import "RCTInspectorDevServerHelper.h"
 #endif
 #import "RCTDevLoadingViewProtocol.h"
+#import "RCTJSThread.h"
 #import "RCTLog.h"
 #import "RCTModuleData.h"
 #import "RCTPerformanceLogger.h"
@@ -150,6 +151,30 @@ void RCTSetTurboModuleCleanupMode(RCTTurboModuleCleanupMode mode)
   turboModuleCleanupMode = mode;
 }
 
+// Turn off TurboModule delegate locking
+static BOOL turboModuleManagerDelegateLockingDisabled = YES;
+BOOL RCTTurboModuleManagerDelegateLockingDisabled(void)
+{
+  return turboModuleManagerDelegateLockingDisabled;
+}
+
+void RCTDisableTurboModuleManagerDelegateLocking(BOOL disabled)
+{
+  turboModuleManagerDelegateLockingDisabled = disabled;
+}
+
+// Turn off TurboModule delegate locking
+static BOOL viewConfigEventValidAttributesDisabled = NO;
+BOOL RCTViewConfigEventValidAttributesDisabled(void)
+{
+  return viewConfigEventValidAttributesDisabled;
+}
+
+void RCTDisableViewConfigEventValidAttributes(BOOL disabled)
+{
+  viewConfigEventValidAttributesDisabled = disabled;
+}
+
 @interface RCTBridge () <RCTReloadListener>
 @end
 
@@ -157,15 +182,9 @@ void RCTSetTurboModuleCleanupMode(RCTTurboModuleCleanupMode mode)
   NSURL *_delegateBundleURL;
 }
 
-dispatch_queue_t RCTJSThread;
-
 + (void)initialize
 {
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    // Set up JS thread
-    RCTJSThread = (id)kCFNull;
-  });
+  _RCTInitializeJSThreadConstantInternal();
 }
 
 static RCTBridge *RCTCurrentBridgeInstance = nil;
@@ -256,6 +275,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
     self->_launchOptions = nil;
     [self setUp];
   });
+}
+
+- (RCTModuleRegistry *)moduleRegistry
+{
+  return self.batchedBridge.moduleRegistry;
 }
 
 - (NSArray<Class> *)moduleClasses

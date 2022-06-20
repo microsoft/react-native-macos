@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -37,7 +37,8 @@ class AnExScroll extends React.Component<$FlowFixMeProps, any> {
           )}
           contentContainerStyle={{flex: 1, padding: 10}}
           pagingEnabled={true}
-          horizontal={true}>
+          horizontal={true}
+        >
           <View style={[styles.page, {width}]}>
             <Image style={{width: 180, height: 180}} source={HAWK_PIC} />
             <Text style={styles.text}>

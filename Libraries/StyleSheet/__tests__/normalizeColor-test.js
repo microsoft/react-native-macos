@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -13,13 +13,11 @@
 const {OS} = require('../../Utilities/Platform');
 const normalizeColor = require('../normalizeColor');
 
-it('forwards calls to @react-native/normalize-color/base', () => {
-  jest
-    .resetModules()
-    .mock('@react-native/normalize-color/base', () => jest.fn());
+it('forwards calls to @react-native/normalize-color', () => {
+  jest.resetModules().mock('@react-native/normalize-color', () => jest.fn());
 
   expect(require('../normalizeColor')('#abc')).not.toBe(null);
-  expect(require('@react-native/normalize-color/base')).toBeCalled();
+  expect(require('@react-native/normalize-color')).toBeCalled();
 });
 
 describe('iOS', () => {

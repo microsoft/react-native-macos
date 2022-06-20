@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -67,7 +67,8 @@ function LogBoxInspectorCodeFrame(props: Props): React.Node {
           style={styles.button}
           onPress={() => {
             openFileInEditor(codeFrame.fileName, codeFrame.location?.row ?? 0);
-          }}>
+          }}
+        >
           <Text style={styles.fileText}>
             {getFileName()}
             {getLocation()}
@@ -93,7 +94,8 @@ function AppInfo() {
           : 'transparent',
       }}
       style={appInfoStyles.buildButton}
-      onPress={appInfo.onPress}>
+      onPress={appInfo.onPress}
+    >
       <Text style={appInfoStyles.text}>
         {appInfo.appVersion} ({appInfo.engine})
       </Text>

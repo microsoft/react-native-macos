@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -288,19 +288,9 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
                           @"streetAddressLine2": UITextContentTypeStreetAddressLine2,
                           @"sublocality": UITextContentTypeSublocality,
                           @"telephoneNumber": UITextContentTypeTelephoneNumber,
+                          @"username": UITextContentTypeUsername,
+                          @"password": UITextContentTypePassword,
                           };
-
-      #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
-        if (@available(iOS 11.0, *)) {
-          NSDictionary<NSString *, NSString *> * iOS11extras = @{@"username": UITextContentTypeUsername,
-                                                                  @"password": UITextContentTypePassword};
-
-          NSMutableDictionary<NSString *, NSString *> * iOS11baseMap = [contentTypeMap mutableCopy];
-          [iOS11baseMap addEntriesFromDictionary:iOS11extras];
-
-          contentTypeMap = [iOS11baseMap copy];
-        }
-      #endif
 
       #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 120000 /* __IPHONE_12_0 */
         if (@available(iOS 12.0, *)) {
@@ -357,7 +347,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
     self.backedTextInputView.inputView = nil;
   } else {
     // Hides keyboard, but keeps blinking cursor.
-    self.backedTextInputView.inputView = [[UIView alloc] init];
+    self.backedTextInputView.inputView = [UIView new];
   }
 }
 #endif // TODO(macOS GH#774)
@@ -701,7 +691,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   _hasInputAccesoryView = shouldHaveInputAccesoryView;
 
   if (shouldHaveInputAccesoryView) {
-    UIToolbar *toolbarView = [[UIToolbar alloc] init];
+    UIToolbar *toolbarView = [UIToolbar new];
     [toolbarView sizeToFit];
     UIBarButtonItem *flexibleSpace =
       [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace

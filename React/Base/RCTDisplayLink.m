@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -67,7 +67,9 @@
       [weakSelf updateJSDisplayLinkState];
     } else {
       CFRunLoopPerformBlock(cfRunLoop, kCFRunLoopDefaultMode, ^{
-        [weakSelf updateJSDisplayLinkState];
+        @autoreleasepool {
+          [weakSelf updateJSDisplayLinkState];
+        }
       });
       CFRunLoopWakeUp(cfRunLoop);
     }
@@ -78,7 +80,9 @@
   // start receiving updates anyway.
   if (![observer isPaused] && _runLoop) {
     CFRunLoopPerformBlock([_runLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
-      [self updateJSDisplayLinkState];
+      @autoreleasepool {
+        [self updateJSDisplayLinkState];
+      }
     });
   }
 }

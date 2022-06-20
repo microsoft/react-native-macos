@@ -26,7 +26,6 @@ project.xcworkspace/*
 
 # Gradle
 /build/
-/packages/react-native-codegen/android/build/
 /packages/react-native-gradle-plugin/build/
 /packages/rn-tester/android/app/.cxx/
 /packages/rn-tester/android/app/build/
@@ -34,6 +33,7 @@ project.xcworkspace/*
 /packages/rn-tester/android/app/gradlew
 /packages/rn-tester/android/app/gradlew.bat
 /ReactAndroid/build/
+/ReactAndroid/.cxx/
 /ReactAndroid/gradle/
 /ReactAndroid/gradlew
 /ReactAndroid/gradlew.bat
@@ -99,7 +99,12 @@ package-lock.json
 /React/FBReactNativeSpec/**/*.xcodeproj
 /packages/react-native-codegen/**/*.xcodeproj
 
-# CocoaPods
+# Ruby Gems (Bundler)
+/vendor
+/template/vendor
+
+# iOS / CocoaPods
+/template/ios/build/
 /template/ios/Pods/
 /template/ios/Podfile.lock
 /packages/rn-tester/Gemfile.lock
@@ -113,6 +118,7 @@ package-lock.json
 /packages/react-native-codegen/lib
 /ReactCommon/react/renderer/components/rncore/
 /packages/rn-tester/NativeModuleExample/ScreenshotManagerSpec*
+/packages/rn-tester/NativeModuleExample/react/renderer/components/ScreenshotManagerSpec/
 
 # Visual studio
 .vscode

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -7,14 +7,15 @@
 
 #import "RCTView.h"
 
+#import <QuartzCore/QuartzCore.h> // TODO(macOS GH#774) - import needed on macOS to prevent compiler error on invocation of CAShapeLayer further down
+
 #import "RCTAutoInsetsProtocol.h"
 #import "RCTBorderDrawing.h"
 #import "RCTFocusChangeEvent.h" // TODO(OSS Candidate ISS#2710739)
-#import "RCTConvert.h"
 #import "RCTI18nUtil.h"
 #import "RCTLog.h"
 #import "RCTRootContentView.h" // TODO(macOS GH#774)
-#import "RCTUtils.h"
+#import "RCTViewUtils.h"
 #import "UIView+React.h"
 #import "RCTViewKeyboardEvent.h"
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
@@ -299,8 +300,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     return nil;
   }
 
-  accessibilityActionsNameMap = [[NSMutableDictionary alloc] init];
-  accessibilityActionsLabelMap = [[NSMutableDictionary alloc] init];
+  accessibilityActionsNameMap = [NSMutableDictionary new];
+  accessibilityActionsLabelMap = [NSMutableDictionary new];
   NSMutableArray *actions = [NSMutableArray array];
   for (NSDictionary *action in self.accessibilityActions) {
     if (action[@"name"]) {
@@ -344,12 +345,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 
     if (bundle) {
       NSURL *url = [bundle URLForResource:@"Localizable" withExtension:@"strings"];
-      if (@available(iOS 11.0, *)) {
-        rolesAndStatesDescription = [NSDictionary dictionaryWithContentsOfURL:url error:nil];
-      } else {
-        // Fallback on earlier versions
-        rolesAndStatesDescription = [NSDictionary dictionaryWithContentsOfURL:url];
-      }
+      rolesAndStatesDescription = [NSDictionary dictionaryWithContentsOfURL:url error:nil];
     }
     if (rolesAndStatesDescription == nil) {
       // Falling back to hardcoded English list.
@@ -792,7 +788,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
   if (parentView.automaticallyAdjustContentInsets) {
-    UIEdgeInsets autoInset = [self contentInsetsForView:parentView];
+    UIEdgeInsets autoInset = RCTContentInsets(parentView);
     baseInset.top += autoInset.top;
     baseInset.bottom += autoInset.bottom;
     baseInset.left += autoInset.left;
@@ -814,20 +810,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     }
   }
 }
-
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
-+ (UIEdgeInsets)contentInsetsForView:(UIView *)view
-{
-  while (view) {
-    UIViewController *controller = view.reactViewController;
-    if (controller) {
-      return controller.view.safeAreaInsets;
-    }
-    view = view.superview;
-  }
-  return UIEdgeInsetsZero;
-}
-#endif // TODO(macOS GH#774)
 
 #pragma mark - View Unmounting
 
@@ -1461,7 +1443,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
     return;
   }
   
-  NSMutableDictionary *body = [[NSMutableDictionary alloc] init];
+  NSMutableDictionary *body = [NSMutableDictionary new];
   
   if (modifierFlags & NSEventModifierFlagShift) {
     body[@"shiftKey"] = @YES;

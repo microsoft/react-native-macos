@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -29,7 +29,9 @@
   NSURL *scriptURL;
   if (getenv("CI_USE_PACKAGER")) {
     NSString *bundlePrefix = [[[NSBundle mainBundle] infoDictionary] valueForKey:@"RN_BUNDLE_PREFIX"];
-    if (bundlePrefix == nil) { // [TODO(macOS GH#774) There's a convoluted crash if the bundler prefix is null, meaning the RN_BUNDLE_PREFIX wasn't set. New platforms won't have this set and don't need it to run, so default to a reasonable fallback.
+    if (bundlePrefix == nil) { // [TODO(macOS GH#774) There's a convoluted crash if the bundler prefix is null, meaning
+                               // the RN_BUNDLE_PREFIX wasn't set. New platforms won't have this set and don't need it
+                               // to run, so default to a reasonable fallback.
       bundlePrefix = @"";
     } // TODO(macOS GH#774)]
     NSString *app = @"IntegrationTests/IntegrationTestsApp";

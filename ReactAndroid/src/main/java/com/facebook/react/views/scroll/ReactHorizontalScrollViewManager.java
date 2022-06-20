@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -16,6 +16,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.uimanager.DisplayMetricsHolder;
 import com.facebook.react.uimanager.PixelUtil;
+import com.facebook.react.uimanager.PointerEvents;
 import com.facebook.react.uimanager.ReactClippingViewGroupHelper;
 import com.facebook.react.uimanager.ReactStylesDiffMap;
 import com.facebook.react.uimanager.Spacing;
@@ -100,6 +101,11 @@ public class ReactHorizontalScrollViewManager extends ViewGroupManager<ReactHori
     // snapToInterval needs to be exposed as a float because of the Javascript interface.
     DisplayMetrics screenDisplayMetrics = DisplayMetricsHolder.getScreenDisplayMetrics();
     view.setSnapInterval((int) (snapToInterval * screenDisplayMetrics.density));
+  }
+
+  @ReactProp(name = "snapToAlignment")
+  public void setSnapToAlignment(ReactHorizontalScrollView view, String alignment) {
+    view.setSnapToAlignment(ReactScrollViewHelper.parseSnapToAlignment(alignment));
   }
 
   @ReactProp(name = "snapToOffsets")
@@ -315,5 +321,10 @@ public class ReactHorizontalScrollViewManager extends ViewGroupManager<ReactHori
     } else {
       view.scrollTo(0, 0);
     }
+  }
+
+  @ReactProp(name = ViewProps.POINTER_EVENTS)
+  public void setPointerEvents(ReactHorizontalScrollView view, @Nullable String pointerEventsStr) {
+    view.setPointerEvents(PointerEvents.parsePointerEvents(pointerEventsStr));
   }
 }

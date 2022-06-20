@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -64,19 +64,15 @@ public class ReactFeatureFlags {
   /** This feature flag enables logs for Fabric */
   public static boolean enableFabricLogs = false;
 
-  /** Feature flag to configure eager initialization of Fabric */
-  public static boolean eagerInitializeFabric = false;
-
   /** Enables Static ViewConfig in RN Android native code. */
   public static boolean enableExperimentalStaticViewConfigs = false;
 
   public static boolean enableRuntimeScheduler = false;
 
-  /** Enables a more aggressive cleanup during destruction of ReactContext */
-  public static boolean enableReactContextCleanupFix = false;
+  public static boolean enableRuntimeSchedulerInTurboModule = false;
 
-  /** Feature flag to configure eager initialization of MapBuffer So file */
-  public static boolean enableEagerInitializeMapBufferSoFile = false;
+  /** Feature flag to configure eager attachment of the root view/initialisation of the JS code */
+  public static boolean enableEagerRootViewAttachment = false;
 
   private static boolean mapBufferSerializationEnabled = false;
 
@@ -89,10 +85,26 @@ public class ReactFeatureFlags {
     return mapBufferSerializationEnabled;
   }
 
-  /** Enables Fabric for LogBox */
-  public static boolean enableFabricInLogBox = false;
+  /** Feature Flag to use overflowInset values provided by Yoga */
+  private static boolean useOverflowInset = false;
+
+  public static void setUseOverflowInset(boolean enabled) {
+    useOverflowInset = enabled;
+  }
+
+  public static boolean doesUseOverflowInset() {
+    return useOverflowInset;
+  }
 
   public static boolean enableLockFreeEventDispatcher = false;
 
   public static boolean enableAggressiveEventEmitterCleanup = false;
+
+  public static boolean insertZReorderBarriersOnViewGroupChildren = true;
+
+  /** TODO: T103427072 Delete ReactFeatureFlags.enableNestedTextOnPressEventFix */
+  public static boolean enableNestedTextOnPressEventFix = true;
+
+  /** TODO: T107492383 Delete this flag. Enables postprocessor for rounded corners for Image */
+  public static boolean enableRoundedCornerPostprocessing = false;
 }

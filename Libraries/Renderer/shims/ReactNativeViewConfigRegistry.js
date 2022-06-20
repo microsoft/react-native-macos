@@ -4,14 +4,12 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
+ * @noformat
  * @flow strict-local
- * @generated SignedSource<<5b2da3e92f44ee2684113b45af052f5d>>
+ * @generated SignedSource<<a81ed33269e71024fedad145e843fab0>>
  *
  * This file was sync'd from the facebook/react repository.
  */
-
-/* eslint-disable react-internal/invariant-args */
 
 'use strict';
 

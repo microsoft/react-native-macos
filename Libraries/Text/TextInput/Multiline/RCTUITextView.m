@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -297,16 +297,18 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
   _textWasPasted = YES;
 }
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+// Turn off scroll animation to fix flaky scrolling.
+// This is only necessary for iOS <= 13.
+// TODO(macOS GH#774) - we may not need to check for !TARGET_OS_OSX if __IPHONE_OS_VERSION_MAX_ALLOWED is defined,
+// but it shouldn't hurt to do so for clarity's sake.
+#if !TARGET_OS_OSX && defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED < 140000
 - (void)setContentOffset:(CGPoint)contentOffset animated:(__unused BOOL)animated
 {
-  // Turning off scroll animation.
-  // This fixes the problem also known as "flaky scrolling".
   [super setContentOffset:contentOffset animated:NO];
 }
-#endif // [TODO(macOS GH#774)
+#endif
 
-#if TARGET_OS_OSX
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 
 #pragma mark - Placeholder
 
@@ -328,7 +330,7 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
     if (attributedPlaceholderString) {
       NSTextStorage *textStorage = [[NSTextStorage alloc] initWithAttributedString:attributedPlaceholderString];
       NSTextContainer *textContainer = [[NSTextContainer alloc] initWithContainerSize:self.textContainer.containerSize];
-      NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
+      NSLayoutManager *layoutManager = [NSLayoutManager new];
       
       textContainer.lineFragmentPadding = self.textContainer.lineFragmentPadding;
       [layoutManager addTextContainer:textContainer];

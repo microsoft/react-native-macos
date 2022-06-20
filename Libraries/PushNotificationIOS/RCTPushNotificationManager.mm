@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -88,7 +88,7 @@ RCT_ENUM_CONVERTER(NSCalendarUnit,
   
   NSCalendarUnit calendarUnit = [RCTConvert NSCalendarUnit:details[@"repeatInterval"]];
   if (calendarUnit > 0) {
-    NSDateComponents *dateComponents = [[NSDateComponents alloc] init];
+    NSDateComponents *dateComponents = [NSDateComponents new];
     [dateComponents setValue:1 forComponent:calendarUnit];
     notification.deliveryRepeatInterval = dateComponents;
   }
@@ -142,7 +142,6 @@ static NSDictionary *RCTFormatLocalNotification(UILocalNotification *notificatio
   return formattedLocalNotification;
 }
 
-API_AVAILABLE(ios(10.0))
 static NSDictionary *RCTFormatUNNotification(UNNotification *notification)
 {
   NSMutableDictionary *formattedNotification = [NSMutableDictionary dictionary];

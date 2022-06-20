@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -387,8 +387,8 @@ function windowSizeOrDefault(windowSize: ?number) {
 }
 
 /**
- * Base implementation for the more convenient [`<FlatList>`](https://reactnative.dev/docs/flatlist.html)
- * and [`<SectionList>`](https://reactnative.dev/docs/sectionlist.html) components, which are also better
+ * Base implementation for the more convenient [`<FlatList>`](https://reactnative.dev/docs/flatlist)
+ * and [`<SectionList>`](https://reactnative.dev/docs/sectionlist) components, which are also better
  * documented. In general, this should only really be used if you need more flexibility than
  * `FlatList` provides, e.g. for use with immutable data instead of plain arrays.
  *
@@ -760,12 +760,14 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           onViewableItemsChanged: pair.onViewableItemsChanged,
         }),
       );
-    } else if (this.props.onViewableItemsChanged) {
-      this._viewabilityTuples.push({
-        viewabilityHelper: new ViewabilityHelper(this.props.viewabilityConfig),
-        // $FlowFixMe[incompatible-call]
-        onViewableItemsChanged: this.props.onViewableItemsChanged,
-      });
+    } else {
+      const {onViewableItemsChanged, viewabilityConfig} = this.props;
+      if (onViewableItemsChanged) {
+        this._viewabilityTuples.push({
+          viewabilityHelper: new ViewabilityHelper(viewabilityConfig),
+          onViewableItemsChanged: onViewableItemsChanged,
+        });
+      }
     }
 
     let initialState = {
@@ -974,13 +976,15 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       cells.push(
         <VirtualizedListCellContextProvider
           cellKey={this._getCellKey() + '-header'}
-          key="$header">
+          key="$header"
+        >
           <View
             onLayout={this._onLayoutHeader}
             style={StyleSheet.compose(
               inversionStyle,
               this.props.ListHeaderComponentStyle,
-            )}>
+            )}
+          >
             {
               // $FlowFixMe[incompatible-type] - Typing ReactNativeComponent revealed errors
               element
@@ -1119,13 +1123,15 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       cells.push(
         <VirtualizedListCellContextProvider
           cellKey={this._getFooterCellKey()}
-          key="$footer">
+          key="$footer"
+        >
           <View
             onLayout={this._onLayoutFooter}
             style={StyleSheet.compose(
               inversionStyle,
               this.props.ListFooterComponentStyle,
-            )}>
+            )}
+          >
             {
               // $FlowFixMe[incompatible-type] - Typing ReactNativeComponent revealed errors
               element
@@ -1170,7 +1176,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           registerAsNestedChild: this._registerAsNestedChild,
           unregisterAsNestedChild: this._unregisterAsNestedChild,
           debugInfo: this._getDebugInfo(),
-        }}>
+        }}
+      >
         {React.cloneElement(
           (
             this.props.renderScrollComponent ||
@@ -1967,7 +1974,6 @@ class VirtualizedList extends React.PureComponent<Props, State> {
             }
           }
           if (someChildHasMore) {
-            // $FlowFixMe[incompatible-use]
             newState.last = ii;
             break;
           }
@@ -2253,7 +2259,8 @@ class CellRenderer extends React.Component<
       <CellRendererComponent
         {...this.props}
         style={cellStyle}
-        onLayout={onLayout}>
+        onLayout={onLayout}
+      >
         {element}
         {itemSeparator}
       </CellRendererComponent>

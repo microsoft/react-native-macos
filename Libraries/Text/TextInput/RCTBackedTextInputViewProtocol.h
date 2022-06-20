@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -56,6 +56,10 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // TODO(macOS GH#774)
 @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
 @property (nonatomic, strong, nullable) NSString *inputAccessoryViewID;
+@property (nonatomic, assign, readonly) CGFloat zoomScale;
+@property (nonatomic, assign, readonly) CGPoint contentOffset;
+@property (nonatomic, assign, readonly) UIEdgeInsets contentInset;
+
 
 // This protocol disallows direct access to `selectedTextRange` property because
 // unwise usage of it can break the `delegate` behavior. So, we always have to

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -232,8 +232,7 @@ RCT_EXPORT_MODULE()
 - (void)setDefaultJSBundle
 {
   [[RCTBundleURLProvider sharedSettings] resetToDefaults];
-  self->_bundleManager.bundleURL = [[RCTBundleURLProvider sharedSettings] jsBundleURLForFallbackResource:nil
-                                                                                       fallbackExtension:nil];
+  self->_bundleManager.bundleURL = [[RCTBundleURLProvider sharedSettings] jsBundleURLForFallbackExtension:nil];
   RCTTriggerReloadCommandListeners(@"Dev menu - reset to default");
 }
 
@@ -297,10 +296,10 @@ RCT_EXPORT_MODULE()
           addObject:[RCTDevMenuItem
                         buttonItemWithTitle:@"Debugger Unavailable"
                                     handler:^{
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
                                       NSString *message = RCTTurboModuleEnabled()
                                           ? @"Debugging with Chrome is not supported when TurboModules are enabled."
                                           : @"Include the RCTWebSocket library to enable JavaScript debugging.";
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
                                       UIAlertController *alertController =
                                           [UIAlertController alertControllerWithTitle:@"Debugger Unavailable"
                                                                               message:message
@@ -318,11 +317,11 @@ RCT_EXPORT_MODULE()
                                                                                  animated:YES
                                                                                completion:NULL];
 #else // [TODO(macOS GH#774)
-                                      NSAlert *alert = [[NSAlert alloc] init];
-                                      [alert setMessageText:@"Remote JS Debugger Unavailable"];
-                                      [alert setInformativeText:@"You need to include the RCTWebSocket library to enable remote JS debugging"];
+                                      NSAlert *alert = [NSAlert new];
+                                      [alert setMessageText:@"Debugger Unavailable"];
+                                      [alert setInformativeText:message];
                                       [alert addButtonWithTitle:@"OK"];
-                                      [alert setAlertStyle:NSWarningAlertStyle];
+                                      [alert setAlertStyle:NSAlertStyleWarning];
                                       [alert beginSheetModalForWindow:[NSApp keyWindow] completionHandler:nil];
 #endif // ]TODO(macOS GH#774)
                                     }]];
@@ -382,7 +381,7 @@ RCT_EXPORT_MODULE()
                                                     [weakSelf setDefaultJSBundle];
                                                     return;
                                                   }
-                                                  NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+                                                  NSNumberFormatter *formatter = [NSNumberFormatter new];
                                                   formatter.numberStyle = NSNumberFormatterDecimalStyle;
                                                   NSNumber *portNumber =
                                                       [formatter numberFromString:portTextField.text];
@@ -395,8 +394,7 @@ RCT_EXPORT_MODULE()
                                                     [bundleManager resetBundleURL];
                                                   } else {
                                                     bundleManager.bundleURL = [[RCTBundleURLProvider sharedSettings]
-                                                        jsBundleURLForBundleRoot:bundleRoot
-                                                                fallbackResource:nil];
+                                                        jsBundleURLForBundleRoot:bundleRoot];
                                                   }
 
                                                   RCTTriggerReloadCommandListeners(@"Dev menu - apply changes");
@@ -413,7 +411,7 @@ RCT_EXPORT_MODULE()
                                                                         }]];
                       [RCTPresentedViewController() presentViewController:alertController animated:YES completion:NULL];
 #else // [TODO(macOS GH#774)
-                      NSAlert *alert = [[NSAlert alloc] init];
+                      NSAlert *alert = [NSAlert new];
                       [alert setMessageText:@"Change packager location"];
                       [alert setInformativeText:@"Input packager IP, port and entrypoint"];
                       [alert addButtonWithTitle:@"Use bundled JS"];
@@ -483,11 +481,11 @@ RCT_EXPORT_METHOD(show)
       }
       NSString *title = [NSString stringWithFormat:@"React Native: Development\n(%@)", desc];
 
-      menu = [[NSMenu alloc] init];
+      menu = [NSMenu new];
 
       NSMutableAttributedString *attributedTitle = [[NSMutableAttributedString alloc]initWithString:title];
       [attributedTitle setAttributes: @{ NSFontAttributeName : [NSFont menuFontOfSize:0] } range: NSMakeRange(0, [attributedTitle length])];
-      NSMenuItem *titleItem = [[NSMenuItem alloc] init];
+      NSMenuItem *titleItem = [NSMenuItem new];
       [titleItem setAttributedTitle:attributedTitle];
       [menu addItem:titleItem];
 

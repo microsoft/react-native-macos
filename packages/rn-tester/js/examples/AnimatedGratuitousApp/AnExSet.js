@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -52,7 +52,8 @@ class AnExSet extends React.Component<Object, any> {
       <View style={styles.container}>
         <Animated.View
           style={[styles.header, {backgroundColor}]}
-          {...this.state.dismissResponder.panHandlers}>
+          {...this.state.dismissResponder.panHandlers}
+        >
           <Text style={[styles.text, styles.headerText]}>{this.props.id}</Text>
         </Animated.View>
         {this.props.isActive && (

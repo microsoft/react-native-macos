@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -184,7 +184,8 @@ class SecureEntryExample extends React.Component<$FlowFixMeProps, any> {
           style={{
             flex: 1,
             flexDirection: 'row',
-          }}>
+          }}
+        >
           <TextInput
             style={styles.default}
             defaultValue="cde"
@@ -385,7 +386,8 @@ exports.examples = ([
             <TextInput
               style={styles.default}
               multiline={true}
-              value="(value property)">
+              value="(value property)"
+            >
               (first raw text node)
               <Text style={{color: 'red'}}>(internal raw text node)</Text>
               (last raw text node)
@@ -719,7 +721,8 @@ exports.examples = ([
               paddingTop: 0,
               backgroundColor: '#eeeeee',
               color: 'blue',
-            }}>
+            }}
+          >
             <Text style={{fontSize: 30, color: 'green'}}>huge</Text>
             generic generic generic
             <Text style={{fontSize: 6, color: 'red'}}>

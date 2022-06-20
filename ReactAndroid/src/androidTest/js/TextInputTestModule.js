@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -70,13 +70,13 @@ class TokenizedTextExample extends React.Component {
     return (
       <View>
         <TextInput
-          ref="tokenizedInput"
           testID="tokenizedInput"
           multiline={true}
           style={styles.multiline}
           onChangeText={text => {
             this.setState({text});
-          }}>
+          }}
+        >
           <Text>{parts}</Text>
         </TextInput>
       </View>
@@ -86,7 +86,7 @@ class TokenizedTextExample extends React.Component {
 
 class TextInputTestApp extends React.Component {
   componentDidMount() {
-    app = this;
+    app = this; // eslint-disable-line consistent-this
   }
 
   handleOnSubmitEditing = record => {
@@ -118,30 +118,25 @@ class TextInputTestApp extends React.Component {
           testID="textInput2"
         />
         <TextInput
-          ref="textInput3"
           style={styles.textInput}
           defaultValue="Hello, World"
           testID="textInput3"
         />
         <TextInput
-          ref="textInput4"
           style={[styles.textInput, styles.textInputColor]}
           testID="textInput4"
         />
         <TextInput
-          ref="textInput5"
           style={[styles.textInput, styles.textInputColor]}
           defaultValue=""
           testID="textInput5"
         />
         <TextInput
-          ref="textInput6"
           style={[styles.textInput, styles.textInputColor]}
           defaultValue="Text"
           testID="textInput6"
         />
         <TextInput
-          ref="onSubmitTextInput"
           onSubmitEditing={this.handleOnSubmitEditing.bind(this, 'onSubmit')}
           defaultValue=""
           testID="onSubmitTextInput"

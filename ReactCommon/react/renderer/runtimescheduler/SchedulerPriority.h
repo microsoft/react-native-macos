@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,10 +8,10 @@
 #pragma once
 
 #include <react/debug/react_native_assert.h>
-#include <react/renderer/core/PropsParserContext.h>
 #include <chrono>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 enum class SchedulerPriority : int {
   ImmediatePriority = 1,
@@ -61,4 +61,21 @@ static inline std::chrono::milliseconds timeoutForSchedulerPriority(
   }
 }
 
-} // namespace facebook::react
+static inline std::string debugValueForSchedulerPriority(
+    SchedulerPriority schedulerPriority) {
+  switch (schedulerPriority) {
+    case SchedulerPriority::ImmediatePriority:
+      return "SchedulerPriority::ImmediatePriority";
+    case SchedulerPriority::UserBlockingPriority:
+      return "SchedulerPriority::UserBlockingPriority";
+    case SchedulerPriority::NormalPriority:
+      return "SchedulerPriority::NormalPriority";
+    case SchedulerPriority::LowPriority:
+      return "SchedulerPriority::LowPriority";
+    case SchedulerPriority::IdlePriority:
+      return "SchedulerPriority::IdlePriority";
+  }
+}
+
+} // namespace react
+} // namespace facebook

@@ -3,9 +3,8 @@ require_relative '../../scripts/react_native_pods'
 source 'https://cdn.cocoapods.org/'
 platform :ios, '11.0'
 
-# TODO(macOS GH#214)
-# Otherwise duplicate UUIDs are being generated between the iOS and macOS targets.
-# FIXME: https://github.com/microsoft/react-native/issues/210
+# Temporary solution to suppress duplicated GUID error.
+# Can be removed once we move to generate files outside pod install.
 install! 'cocoapods', :deterministic_uuids => false
 
 USE_FRAMEWORKS = ENV['USE_FRAMEWORKS'] == '1'
@@ -22,6 +21,7 @@ end
 def pods(options = {})
   project 'RNTesterPods.xcodeproj'
 
+  # [TODO(macOS GH#774) - don't enable Fabric on RNTester by default until it works on macOS
   fabric_enabled = false
 
   # To use fabric: set the environment variable `USE_FABRIC` to 1, like below
@@ -33,9 +33,26 @@ def pods(options = {})
     puts "Building RNTester with Fabric enabled."
     fabric_enabled = true
   end
+  # ]TODO(macOS GH#774)
+
+  # TODO(macOS GH#774) - uncomment once Fabric works on macOS
+  # puts "Building RNTester with Fabric #{fabric_enabled ? "enabled" : "disabled"}."
+  # fabric_enabled = true
 
   prefix_path = "../.."
-  use_react_native!(path: prefix_path, fabric_enabled: fabric_enabled, hermes_enabled: ENV['USE_HERMES'] == '1')
+
+  if ENV['USE_CODEGEN_DISCOVERY'] == '1'
+    # Custom fabric component is only supported when using codegen discovery.
+    pod 'MyNativeView', :path => "NativeComponentExample"
+  end
+
+  use_react_native!(
+    path: prefix_path,
+    fabric_enabled: fabric_enabled,
+    hermes_enabled: ENV['USE_HERMES'] == '1',
+    app_path: "#{Dir.pwd}",
+    config_file_dir: "#{Dir.pwd}/node_modules",
+  )
   pod 'ReactCommon/turbomodule/samples', :path => "#{prefix_path}/ReactCommon"
 
   # Additional Pods which aren't included in the default Podfile
@@ -44,6 +61,9 @@ def pods(options = {})
   pod 'React-TurboModuleCxx-WinRTPort', :path => "#{prefix_path}/ReactTurboModuleCxx" # TODO(macOS GH#774)
   pod 'React-TurboModuleCxx-RNW', :podspec => "#{prefix_path}/ReactTurboModuleCxx/React-TurboModuleCxx-RNW.podspec" # TODO(macOS GH#774)
   # Additional Pods which are classed as unstable
+
+  # RNTester native modules and components
+  pod 'ScreenshotManager', :path => "NativeModuleExample"
 end
 
 target 'RNTester' do
