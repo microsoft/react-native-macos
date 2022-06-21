@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -100,7 +100,8 @@ function MovingBoxView({useNativeDriver}: {useNativeDriver: boolean}) {
         <RNTesterButton onPress={onReset}>Reset</RNTesterButton>
         <RNTesterButton
           testID="move-right-button"
-          onPress={() => moveTo(containerWidth - boxSize)}>
+          onPress={() => moveTo(containerWidth - boxSize)}
+        >
           {'->'}
         </RNTesterButton>
       </View>

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -78,7 +78,8 @@ describe('<TouchableNativeFeedback disabled={true} accessibilityState={{checked:
       ReactTestRenderer.create(
         <TouchableNativeFeedback
           disabled={true}
-          accessibilityState={{checked: true}}>
+          accessibilityState={{checked: true}}
+        >
           <View />
         </TouchableNativeFeedback>,
       ),
@@ -92,7 +93,8 @@ describe('<TouchableNativeFeedback disabled={true} accessibilityState={{disabled
       ReactTestRenderer.create(
         <TouchableNativeFeedback
           disabled={true}
-          accessibilityState={{disabled: false}}>
+          accessibilityState={{disabled: false}}
+        >
           <View />
         </TouchableNativeFeedback>,
       ),
@@ -106,7 +108,8 @@ describe('<TouchableNativeFeedback disabled={false} accessibilityState={{disable
       ReactTestRenderer.create(
         <TouchableNativeFeedback
           disabled={false}
-          accessibilityState={{disabled: true}}>
+          accessibilityState={{disabled: true}}
+        >
           <View />
         </TouchableNativeFeedback>,
       ),

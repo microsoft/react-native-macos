@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -36,7 +36,6 @@ function LogBoxInspectorSourceMapStatus(props: Props): React.Node {
         const animation = Animated.loop(
           Animated.timing(animated, {
             duration: 2000,
-            // $FlowFixMe[method-unbinding]
             easing: Easing.linear,
             toValue: 1,
             useNativeDriver: true,
@@ -96,7 +95,8 @@ function LogBoxInspectorSourceMapStatus(props: Props): React.Node {
       }}
       hitSlop={{bottom: 8, left: 8, right: 8, top: 8}}
       onPress={props.onPress}
-      style={styles.root}>
+      style={styles.root}
+    >
       <Animated.Image
         source={image}
         style={[

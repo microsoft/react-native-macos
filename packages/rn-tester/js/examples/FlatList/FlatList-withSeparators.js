@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -29,7 +29,8 @@ const Separator = (defaultColor, highlightColor) => ({
       style={[
         styles.separator,
         {backgroundColor: highlighted ? highlightColor : defaultColor},
-      ]}>
+      ]}
+    >
       <Text style={styles.separtorText}>{text}</Text>
     </View>
   );

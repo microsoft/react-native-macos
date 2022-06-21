@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -16,9 +16,10 @@
 #import <string>
 #import <unordered_map>
 
-Class RCTTestClassProvider(const char *name) {
+Class RCTTestClassProvider(const char *name)
+{
   static std::unordered_map<std::string, Class (*)(void)> sCoreModuleClassMap = {
-    {"TestModule", RCTTestModuleCls},
+      {"TestModule", RCTTestModuleCls},
   };
 
   auto p = sCoreModuleClassMap.find(name);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -21,7 +21,8 @@ describe('LogBoxButton', () => {
         backgroundColor={{
           default: 'black',
           pressed: 'red',
-        }}>
+        }}
+      >
         <Text>Press me</Text>
       </LogBoxButton>,
     );
@@ -37,7 +38,8 @@ describe('LogBoxButton', () => {
           pressed: 'red',
         }}
         hitSlop={{}}
-        onPress={() => {}}>
+        onPress={() => {}}
+      >
         <Text>Press me</Text>
       </LogBoxButton>,
     );

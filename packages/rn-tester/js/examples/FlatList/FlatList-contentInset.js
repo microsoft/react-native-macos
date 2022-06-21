@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -42,10 +42,8 @@ export function FlatList_contentInset(): React.Node {
   return (
     <>
       <View
-        style={[
-          styles.titleContainer,
-          {height: exampleProps.contentInset.top},
-        ]}>
+        style={[styles.titleContainer, {height: exampleProps.contentInset.top}]}
+      >
         <Text style={styles.titleText}>Menu</Text>
       </View>
       <BaseFlatListExample

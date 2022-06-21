@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -72,18 +72,21 @@ class ItemComponent extends React.PureComponent<{
         onPress={this._onPress}
         onShowUnderlay={this.props.onShowUnderlay}
         onHideUnderlay={this.props.onHideUnderlay}
-        style={horizontal ? styles.horizItem : styles.item}>
+        style={horizontal ? styles.horizItem : styles.item}
+      >
         <View
           style={[
             styles.row,
             horizontal && {width: HORIZ_WIDTH},
             fixedHeight && {height: ITEM_HEIGHT},
-          ]}>
+          ]}
+        >
           {!item.noImage && <Image style={styles.thumb} source={imgSource} />}
           <Text
             style={styles.text}
             selectable={textSelectable}
-            numberOfLines={horizontal || fixedHeight ? 3 : undefined}>
+            numberOfLines={horizontal || fixedHeight ? 3 : undefined}
+          >
             {item.title} - {item.text}
           </Text>
         </View>

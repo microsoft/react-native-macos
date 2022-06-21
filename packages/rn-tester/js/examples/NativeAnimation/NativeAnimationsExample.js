@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -63,7 +63,7 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
             {this.props.children(this.state.native)}
           </View>
           <View>
-            <Text>JavaScript:</Text>
+            <Text>JavaScript{':'}</Text>
           </View>
           <View style={styles.row}>{this.props.children(this.state.js)}</View>
         </View>
@@ -259,14 +259,16 @@ class EventExample extends React.Component<{...}, $FlowFixMeState> {
           onScroll={Animated.event(
             [{nativeEvent: {contentOffset: {x: this.state.anim}}}],
             {useNativeDriver: true},
-          )}>
+          )}
+        >
           <View
             style={{
               width: 600,
               backgroundColor: '#eee',
               justifyContent: 'center',
               paddingLeft: 100,
-            }}>
+            }}
+          >
             <Text>Scroll me sideways!</Text>
           </View>
         </Animated.ScrollView>
@@ -341,7 +343,7 @@ class TrackingExample extends React.Component<
             {this.renderBlock(this.state.native, this.state.toNative)}
           </View>
           <View>
-            <Text>JavaScript:</Text>
+            <Text>JavaScript{':'}</Text>
           </View>
           <View style={styles.row}>
             {this.renderBlock(this.state.js, this.state.toJS)}
@@ -641,7 +643,8 @@ exports.examples = [
         <Tester
           type="decay"
           config={{velocity: 0.5}}
-          reverseConfig={{velocity: -0.5}}>
+          reverseConfig={{velocity: -0.5}}
+        >
           {anim => (
             <Animated.View
               style={[

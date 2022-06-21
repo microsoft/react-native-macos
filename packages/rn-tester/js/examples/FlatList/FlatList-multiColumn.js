@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -9,6 +9,8 @@
  */
 
 'use strict';
+
+import type {RenderItemProps} from 'react-native/Libraries/Lists/VirtualizedList';
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 const RNTesterPage = require('../../components/RNTesterPage');
 const React = require('react');
@@ -54,7 +56,7 @@ class MultiColumnExample extends React.PureComponent<
   _onChangeFilterText = filterText => {
     this.setState(() => ({filterText}));
   };
-  _onChangeNumColumns = numColumns => {
+  _onChangeNumColumns = (numColumns: mixed) => {
     this.setState(() => ({numColumns: Number(numColumns)}));
   };
 
@@ -63,14 +65,15 @@ class MultiColumnExample extends React.PureComponent<
 
   render(): React.Node {
     const filterRegex = new RegExp(String(this.state.filterText), 'i');
-    const filter = item =>
+    const filter = (item: any | Item) =>
       filterRegex.test(item.text) || filterRegex.test(item.title);
     const filteredData = this.state.data.filter(filter);
     return (
       <RNTesterPage
         title={this.props.navigator ? null : '<FlatList> - MultiColumn'}
         noSpacer={true}
-        noScroll={true}>
+        noScroll={true}
+      >
         <View style={styles.searchRow}>
           <View style={styles.row}>
             <PlainInput
@@ -138,7 +141,7 @@ class MultiColumnExample extends React.PureComponent<
       getItemLayout(data, index).length + 2 * (CARD_MARGIN + BORDER_WIDTH);
     return {length, offset: length * index, index};
   }
-  _renderItemComponent = ({item}) => {
+  _renderItemComponent = ({item}: RenderItemProps<any | Item>) => {
     return (
       <View style={styles.card}>
         <ItemComponent

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -22,7 +22,7 @@
   CGContextBeginTransparencyLayer(context, NULL);
   [image drawInRect:CGRectMake(0, 0, image.size.width, image.size.height)];
   CGContextSetBlendMode(context, kCGBlendModeDifference);
-  CGContextSetFillColorWithColor(context,[RCTUIColor whiteColor].CGColor); // TODO(macOS ISS#3536887)
+  CGContextSetFillColorWithColor(context, [RCTUIColor whiteColor].CGColor); // TODO(macOS ISS#3536887)
   CGContextFillRect(context, CGRectMake(0, 0, self.size.width, self.size.height));
   CGContextEndTransparencyLayer(context);
   UIImage *returnImage = UIGraphicsGetImageFromCurrentImageContext();

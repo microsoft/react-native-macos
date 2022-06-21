@@ -36,12 +36,11 @@ executors:
   reactnativeandroid:
     <<: *defaults
     docker:
-      - image: reactnativecommunity/react-native-android:4.0
+      - image: reactnativecommunity/react-native-android:5.2
     resource_class: "large"
     environment:
       - TERM: "dumb"
       - ADB_INSTALL_TIMEOUT: 10
-      - _JAVA_OPTIONS: "-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
       - GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-XX:+HeapDumpOnOutOfMemoryError"'
       - BUILD_THREADS: 2
       # Repeated here, as the environment key in this executor will overwrite the one in defaults
@@ -83,7 +82,9 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v4-yarn-cache-{{ arch }}-{{ checksum "yarn.lock" }}
+            - v5-yarn-cache-{{ .Environment.CIRCLE_JOB }}-{{ arch }}-{{ checksum "yarn.lock" }}
+            - v5-yarn-cache-{{ .Environment.CIRCLE_JOB }}-{{ arch }}
+            - v5-yarn-cache-{{ .Environment.CIRCLE_JOB }}
       - run:
           name: "Yarn: Install Dependencies"
           command: |
@@ -95,7 +96,7 @@ commands:
       - save_cache:
           paths:
             - ~/.cache/yarn
-          key: v4-yarn-cache-{{ arch }}-{{ checksum "yarn.lock" }}
+          key: v5-yarn-cache-{{ .Environment.CIRCLE_JOB }}-{{ arch }}-{{ checksum "yarn.lock" }}
 
   install_buck_tooling:
     steps:
@@ -171,7 +172,7 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v1-gradle-{{ checksum "ReactAndroid/build.gradle" }}-{{ checksum "scripts/circleci/gradle_download_deps.sh" }}
+            - v1-gradle-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "ReactAndroid/gradle.properties" }}
       - run:
           name: Download Dependencies Using Gradle
           command: ./scripts/circleci/gradle_download_deps.sh
@@ -180,7 +181,7 @@ commands:
             - ~/.gradle
             - ReactAndroid/build/downloads
             - ReactAndroid/build/third-party-ndk
-          key: v1-gradle-{{ checksum "ReactAndroid/build.gradle" }}-{{ checksum "scripts/circleci/gradle_download_deps.sh" }}
+          key: v1-gradle-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "ReactAndroid/gradle.properties" }}
 
   download_buck_dependencies:
     steps:
@@ -214,7 +215,7 @@ commands:
       - install_github_bot_deps
       - run:
           name: Report size of RNTester.app (analysis-bot)
-          command: GITHUB_TOKEN="$PUBLIC_ANALYSISBOT_GITHUB_TOKEN_A""$PUBLIC_ANALYSISBOT_GITHUB_TOKEN_B" scripts/circleci/report-bundle-size.sh << parameters.platform >>
+          command: GITHUB_TOKEN="$PUBLIC_ANALYSISBOT_GITHUB_TOKEN_A""$PUBLIC_ANALYSISBOT_GITHUB_TOKEN_B" scripts/circleci/report-bundle-size.sh << parameters.platform >> || true
 
 # -------------------------
 #          JOBS
@@ -241,7 +242,7 @@ jobs:
           command: |
             curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
             apt update && apt install -y shellcheck jq
-            apt-get install openssl ca-certificates
+            apt-get -y install openssl ca-certificates
             update-ca-certificates
             curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
             apt update && apt install -y shellcheck jq
@@ -358,10 +359,6 @@ jobs:
         description: Specifies whether unit tests should run.
         type: boolean
         default: false
-      run_detox_tests:
-        description: Specifies whether Detox e2e tests should run.
-        type: boolean
-        default: false
       run_disabled_tests:
         description: Specifies whether disabled tests should run. Set this to true to debug failing tests.
         type: boolean
@@ -441,13 +438,6 @@ jobs:
             - run:
                 name: "Run Tests: iOS Unit and Integration Tests"
                 command: yarn test-ios
-      # Runs iOS Detox e2e tests
-      - when:
-          condition: << parameters.run_detox_tests >>
-          steps:
-            - run:
-                name: "Run Tests: Detox iOS End-to-End Tests"
-                command: yarn run build-ios-e2e && yarn run test-ios-e2e
 
       # Optionally, run disabled tests
       - when:
@@ -522,7 +512,7 @@ jobs:
       - run:
           name: Compile Native Libs for Unit and Integration Tests
           command: ./gradlew :ReactAndroid:packageReactNdkLibsForBuck -Pjobs=$BUILD_THREADS
-          no_output_timeout: 6m
+          no_output_timeout: 30m
 
       # Build JavaScript Bundle for instrumentation tests
       - run:
@@ -591,7 +581,8 @@ jobs:
           name: Setup the Android Template
           command: |
             cd template
-            sed -i 's/1000\.0\.0/file\:\.\./g' package.json
+            # We replace the "react-native" dependency version with file:.. so we use it from source.
+            sed -i 's/\"react-native\"\:.*/\"react-native\"\: \"file\:\.\.\"/g' package.json
             npm install
             # react-native-community/cli is needed as the Android template is referencing a .gradle file inside it.
             npm i @react-native-community/cli
@@ -622,6 +613,39 @@ jobs:
             yarn run docker-build-android
 
   # -------------------------
+  #    JOBS: Test iOS Template
+  # -------------------------
+  test_ios_template:
+    executor: reactnativeios
+    environment:
+      - PROJECT_NAME: "iOSTemplateProject"
+
+    steps:
+      - checkout
+      - run_yarn
+      - attach_workspace:
+          at: .
+
+      - run:
+          name: Create iOS template project
+          command: |
+            REPO_ROOT=$(pwd)
+            PACKAGE=$(cat build/react-native-package-version)
+            PATH_TO_PACKAGE="$REPO_ROOT/build/$PACKAGE"
+            node ./scripts/set-rn-template-version.js "file:$PATH_TO_PACKAGE"
+            mkdir -p ~/tmp
+            cd ~/tmp
+            node "$REPO_ROOT/cli.js" init "$PROJECT_NAME" --template "$REPO_ROOT"
+
+      - run:
+          name: Build template project
+          command: |
+            xcodebuild build \
+              -workspace ~/tmp/$PROJECT_NAME/ios/$PROJECT_NAME.xcworkspace \
+              -scheme $PROJECT_NAME \
+              -sdk iphonesimulator
+
+  # -------------------------
   #    JOBS: Windows
   # -------------------------
   test_windows:
@@ -634,10 +658,9 @@ jobs:
     environment:
       - ANDROID_HOME: "C:\\Android\\android-sdk"
       - ANDROID_NDK: "C:\\Android\\android-sdk\\ndk\\20.1.5948944"
-      - ANDROID_BUILD_VERSION: 30
-      - ANDROID_TOOLS_VERSION: 30.0.2
+      - ANDROID_BUILD_VERSION: 31
+      - ANDROID_TOOLS_VERSION: 31.0.0
       - GRADLE_OPTS: -Dorg.gradle.daemon=false
-      - NDK_VERSION: 21.4.7075529
     steps:
       - checkout
 
@@ -683,7 +706,6 @@ jobs:
             sdkmanager "build-tools;%ANDROID_TOOLS_VERSION%"
             sdkmanager "add-ons;addon-google_apis-google-23"
             sdkmanager "extras;android;m2repository"
-            sdkmanager "ndk;%NDK_VERSION%"
 
       # -------------------------
       # Run Tests
@@ -734,6 +756,25 @@ jobs:
   # -------------------------
   #      JOBS: Releases
   # -------------------------
+  prepare_package_for_release:
+    parameters:
+      version:
+        type: string
+      latest:
+        type: boolean
+        default: false
+    executor: reactnativeios
+    steps:
+      - checkout
+      - run_yarn
+      - add_ssh_keys:
+          fingerprints:
+            - "1c:98:e0:3a:52:79:95:29:12:cd:b4:87:5b:41:e2:bb"
+      - run:
+          name: "Set new react-native version and commit changes"
+          command: |
+            node ./scripts/prepare-package-for-release.js -v << parameters.version >> -l << parameters.latest >>
+
   build_npm_package:
     parameters:
       publish_npm_args:
@@ -774,9 +815,15 @@ jobs:
                   mkdir -p build
                   FILENAME=$(npm pack)
                   mv $FILENAME build/
+                  echo $FILENAME > build/react-native-package-version
             - store_artifacts:
                 path: ~/react-native/build/
                 destination: build
+            - persist_to_workspace:
+                root: .
+                paths:
+                  - build/*
+
       - when:
           condition:
             matches: { pattern: '^pull\/.*$', value: << pipeline.git.branch >> }
@@ -784,7 +831,19 @@ jobs:
             - install_github_bot_deps
             - run:
                 name: Post link to PR build artifacts (pull-bot)
-                command: GITHUB_TOKEN="$PUBLIC_PULLBOT_GITHUB_TOKEN_A""$PUBLIC_PULLBOT_GITHUB_TOKEN_B" scripts/circleci/post-artifacts-link.sh
+                command: GITHUB_TOKEN="$PUBLIC_PULLBOT_GITHUB_TOKEN_A""$PUBLIC_PULLBOT_GITHUB_TOKEN_B" scripts/circleci/post-artifacts-link.sh || true
+
+      - when:
+          condition:
+            equal: [ --release, << parameters.publish_npm_args >> ]
+          steps:
+            - run:
+                name: Update rn-diff-purge to generate upgrade-support diff
+                command: |
+                  curl -X POST https://api.github.com/repos/react-native-community/rn-diff-purge/dispatches \
+                    -H "Accept: application/vnd.github.v3+json" \
+                    -u "$PAT_USERNAME:$PAT_TOKEN" \
+                    -d "{\"event_type\": \"publish\", \"client_payload\": { \"version\": \"${CIRCLE_TAG:1}\" }}"
 
   # -------------------------
   #    JOBS: Nightly
@@ -798,14 +857,44 @@ jobs:
           command: |
             echo "Nightly build run"
 
+
+# -------------------------
+#        PIPELINE PARAMETERS
+# -------------------------
+parameters:
+  run_package_release_workflow_only:
+    default: false
+    type: boolean
+
+  release_latest:
+    default: false
+    type: boolean
+
+  release_version:
+    default: "9999"
+    type: string
+
 # -------------------------
 #        WORK FLOWS
+#
+#  When creating a new workflow, make sure to include condition `unless: << pipeline.parameters.run_package_release_workflow_only >>`
+#  It's setup this way so we can trigger a release via a POST
+#  See limitations: https://support.circleci.com/hc/en-us/articles/360050351292-How-to-trigger-a-workflow-via-CircleCI-API-v2
 # -------------------------
 workflows:
   version: 2
 
   tests:
+    unless: << pipeline.parameters.run_package_release_workflow_only >>
     jobs:
+      - build_npm_package:
+          # Build a release package on every untagged commit, but do not publish to npm.
+          publish_npm_args: --dry-run
+          filters:
+            branches:
+              only:
+                - main
+                - /^pull\/.*$/
       - test_js:
           run_disabled_tests: false
           filters:
@@ -822,6 +911,12 @@ workflows:
             branches:
               # TODO(macOS GH#774): disable this test which is redundant to Azure Devops test and it requires a CCI plan with resource-class:large.
               ignore: /.*/
+      - test_ios_template:
+          requires:
+            - build_npm_package
+          filters:
+            branches:
+              ignore: gh-pages
       - test_ios:
           name: test_ios_unit_jsc
           run_unit_tests: true
@@ -846,15 +941,6 @@ workflows:
       #     use_hermes: true
       #     use_frameworks: true
       #     run_unit_tests: true
-      # DISABLED: Detox tests need to be fixed
-      # - test_ios:
-      #     name: test_ios_detox
-      #     run_detox_tests: true
-      # DISABLED: USE_FRAMEWORKS=1 not supported by Flipper
-      # - test_ios:
-      #     name: test_ios_detox_frameworks
-      #     use_frameworks: true
-      #     run_detox_tests: true
       # TODO(macOS GH#949): Disable this failing test
       # - test_js:
       #     name: test_js_prev_lts
@@ -876,11 +962,27 @@ workflows:
               # ]TODO(macOS GH#774)
           run_disabled_tests: false
 
-  releases:
+  # This workflow should only be triggered by release script
+  package_release:
+    when: << pipeline.parameters.run_package_release_workflow_only >>
     jobs:
+      # This job will trigger publish_release workflow
+      - prepare_package_for_release:
+          name: prepare_package_for_release
+          version: << pipeline.parameters.release_version >>
+          latest : << pipeline.parameters.release_latest >>
+
+  publish_release:
+    unless: << pipeline.parameters.run_package_release_workflow_only >>
+    jobs:
+      # This job will trigger when a version tag is pushed (by package_release)
       - build_npm_package:
           name: build_and_publish_npm_package
+          context: react-native-bot
           publish_npm_args: --release
+          # CircleCI filters are OR-ed, with all branches triggering by default and tags excluded by default
+          # CircleCI env-vars are only set with the branch OR tag that triggered the job, not both.
+          # In this case, CIRCLE_BRANCH is unset, but CIRCLE_TAG is set
           filters:
             # Both of the following conditions must be included!
             # Ignore any commit on any branch by default.
@@ -889,19 +991,9 @@ workflows:
             # Only act on version tags.
             tags:
               only: /v[0-9]+(\.[0-9]+)*(\-rc(\.[0-9]+)?)?/
-      - build_npm_package:
-          # Build a release package on every untagged commit, but do not publish to npm.
-          publish_npm_args: --dry-run
-          filters:
-            branches:
-              only:
-                - main
-                - /^pull\/.*$/
-                - /^(\d+)\.(\d+)-stable$/
-            tags:
-              ignore: /v[0-9]+(\.[0-9]+)*(\-rc(\.[0-9]+)?)?/
 
   analysis:
+    unless: << pipeline.parameters.run_package_release_workflow_only >>
     jobs:
       # Run lints on every commit other than those to the gh-pages branch
       - analyze_code:
@@ -923,6 +1015,7 @@ workflows:
               ignore: /.*/
           # ]TODO(macOS GH#774)
   nightly:
+    unless: << pipeline.parameters.run_package_release_workflow_only >>
     triggers:
       - schedule:
           cron: "0 20 * * *"

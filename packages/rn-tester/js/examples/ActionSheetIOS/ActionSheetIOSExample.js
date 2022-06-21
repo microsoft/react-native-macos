@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -17,10 +17,9 @@ const {
   Text,
   View,
   Alert,
-  NativeModules,
   findNodeHandle,
 } = require('react-native');
-const ScreenshotManager = NativeModules.ScreenshotManager;
+const ScreenshotManager = require('../../../NativeModuleExample/NativeScreenshotManager');
 
 const BUTTONS = ['Option 0', 'Option 1', 'Option 2', 'Delete', 'Cancel'];
 const DESTRUCTIVE_INDEX = 3;
@@ -148,7 +147,8 @@ class ActionSheetAnchorExample extends React.Component<
           <Text
             onPress={this.showActionSheet}
             style={style.button}
-            ref={this.anchorRef}>
+            ref={this.anchorRef}
+          >
             HERE
           </Text>
         </View>
@@ -311,7 +311,8 @@ class ShareScreenshotAnchorExample extends React.Component<
           <Text
             onPress={this.showShareActionSheet}
             style={style.button}
-            ref={this.anchorRef}>
+            ref={this.anchorRef}
+          >
             HERE
           </Text>
         </View>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -330,7 +330,7 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
     if (attributedPlaceholderString) {
       NSTextStorage *textStorage = [[NSTextStorage alloc] initWithAttributedString:attributedPlaceholderString];
       NSTextContainer *textContainer = [[NSTextContainer alloc] initWithContainerSize:self.textContainer.containerSize];
-      NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
+      NSLayoutManager *layoutManager = [NSLayoutManager new];
       
       textContainer.lineFragmentPadding = self.textContainer.lineFragmentPadding;
       [layoutManager addTextContainer:textContainer];

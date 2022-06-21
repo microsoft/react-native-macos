@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -93,7 +93,8 @@ private fun detectCliPath(
 
   error(
       "Couldn't determine CLI location. " +
-          "Please set `project.react.cliPath` to the path of the react-native cli.js")
+          "Please set `project.react.cliPath` to the path of the react-native cli.js file. " +
+          "This file typically resides in `node_modules/react-native/cli.js`")
 }
 
 // Make sure not to inspect the Hermes config unless we need it,
@@ -120,5 +121,5 @@ private fun getHermesOSBin(): String {
 internal fun projectPathToLibraryName(projectPath: String): String =
     projectPath
         .split(':', '-', '_', '.')
-        .joinToString("") { it.capitalize(Locale.ROOT) }
+        .joinToString("") { token -> token.replaceFirstChar { it.uppercase() } }
         .plus("Spec")

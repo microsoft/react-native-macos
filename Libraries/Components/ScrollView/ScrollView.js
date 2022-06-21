@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -161,6 +161,7 @@ export type ScrollViewImperativeMethods = $ReadOnly<{|
   >,
 |}>;
 
+export type DecelerationRateType = 'fast' | 'normal' | number;
 export type ScrollResponderType = ScrollViewImperativeMethods;
 
 type IOSProps = $ReadOnly<{|
@@ -171,6 +172,12 @@ type IOSProps = $ReadOnly<{|
    * @platform ios
    */
   automaticallyAdjustContentInsets?: ?boolean,
+  /**
+   * Controls whether the ScrollView should automatically adjust it's contentInset
+   * and scrollViewInsets when the Keyboard changes it's size. The default value is false.
+   * @platform ios
+   */
+  automaticallyAdjustKeyboardInsets?: ?boolean,
   /**
    * Controls whether iOS should automatically adjust the scroll indicator
    * insets. The default value is true. Available on iOS 13 and later.
@@ -481,7 +488,7 @@ export type Props = $ReadOnly<{|
    *   - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
    *   - `'fast'`: 0.99 on iOS, 0.9 on Android
    */
-  decelerationRate?: ?('fast' | 'normal' | number),
+  decelerationRate?: ?DecelerationRateType,
   /**
    * When true, the scroll view's children are arranged horizontally in a row
    * instead of vertically in a column. The default value is false.
@@ -703,7 +710,7 @@ type ScrollViewComponentStatics = $ReadOnly<{|
  * view from becoming the responder.
  *
  *
- * `<ScrollView>` vs [`<FlatList>`](https://reactnative.dev/docs/flatlist.html) - which one to use?
+ * `<ScrollView>` vs [`<FlatList>`](https://reactnative.dev/docs/flatlist) - which one to use?
  *
  * `ScrollView` simply renders all its react child components at once. That
  * makes it very easy to understand and use.
@@ -1749,7 +1756,8 @@ class ScrollView extends React.Component<Props, State> {
               scrollAnimatedValue={this._scrollAnimatedValue}
               inverted={this.props.invertStickyHeaders}
               hiddenOnScroll={this.props.stickyHeaderHiddenOnScroll}
-              scrollViewHeight={this.state.layoutHeight}>
+              scrollViewHeight={this.state.layoutHeight}
+            >
               {child}
             </StickyHeaderComponent>
           );
@@ -1760,7 +1768,8 @@ class ScrollView extends React.Component<Props, State> {
     }
     children = (
       <ScrollViewContext.Provider
-        value={this.props.horizontal === true ? HORIZONTAL : VERTICAL}>
+        value={this.props.horizontal === true ? HORIZONTAL : VERTICAL}
+      >
         {children}
       </ScrollViewContext.Provider>
     );
@@ -1781,7 +1790,8 @@ class ScrollView extends React.Component<Props, State> {
             : this.props.removeClippedSubviews
         }
         key={this.state.contentKey} // TODO(macOS GH#774)
-        collapsable={false}>
+        collapsable={false}
+      >
         {children}
       </NativeDirectionalScrollContentView>
     );
@@ -1889,7 +1899,8 @@ class ScrollView extends React.Component<Props, State> {
           <NativeDirectionalScrollView
             {...props}
             style={StyleSheet.compose(baseStyle, inner)}
-            ref={this._setNativeRef}>
+            ref={this._setNativeRef}
+          >
             {contentContainer}
           </NativeDirectionalScrollView>,
         );

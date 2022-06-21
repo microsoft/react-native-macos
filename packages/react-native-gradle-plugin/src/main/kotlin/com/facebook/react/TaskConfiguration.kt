@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -27,8 +27,7 @@ private const val REACT_GROUP = "react"
 
 @Suppress("SpreadOperator")
 internal fun Project.configureReactTasks(variant: BaseVariant, config: ReactExtension) {
-  val targetName = variant.name.capitalize(Locale.ROOT)
-  val isRelease = variant.isRelease
+  val targetName = variant.name.replaceFirstChar { it.uppercase() }
   val targetPath = variant.dirName
 
   // React js bundle directories
@@ -50,7 +49,7 @@ internal fun Project.configureReactTasks(variant: BaseVariant, config: ReactExte
   val execCommand = nodeExecutableAndArgs + cliPath
   val enableHermes = config.enableHermesForVariant(variant)
   val cleanup = config.deleteDebugFilesForVariant(variant)
-  val bundleEnabled = variant.checkBundleEnabled(config)
+  val bundleEnabled = config.bundleForVariant(variant)
 
   val bundleTask =
       tasks.register("createBundle${targetName}JsAndAssets", BundleJsAndAssetsTask::class.java) {
@@ -64,7 +63,7 @@ internal fun Project.configureReactTasks(variant: BaseVariant, config: ReactExte
             }
         it.execCommand = execCommand
         it.bundleCommand = config.bundleCommand.get()
-        it.devEnabled = !(variant.name in config.devDisabledInVariants.get() || isRelease)
+        it.devEnabled = !config.disableDevForVariant(variant)
         it.entryFile = detectedEntryFile(config)
 
         val extraArgs = mutableListOf<String>()
@@ -165,23 +164,23 @@ internal fun Project.configureReactTasks(variant: BaseVariant, config: ReactExte
   packageTask.configure {
     if (config.enableVmCleanup.get()) {
       val libDir = "$buildDir/intermediates/transforms/"
-      val targetVariant = ".*/transforms/[^/]*/$targetPath/.*".toRegex()
+      val targetVariant = ".*/transforms/[^/]*/${variant.name}/.*".toRegex()
       it.doFirst { cleanupVMFiles(libDir, targetVariant, enableHermes, cleanup) }
     }
   }
 
   stripDebugSymbolsTask?.configure {
     if (config.enableVmCleanup.get()) {
-      val libDir = "$buildDir/intermediates/stripped_native_libs/${targetPath}/out/lib/"
-      val targetVariant = ".*/stripped_native_libs/$targetPath/out/lib/.*".toRegex()
+      val libDir = "$buildDir/intermediates/stripped_native_libs/${variant.name}/out/lib/"
+      val targetVariant = ".*/stripped_native_libs/${variant.name}/out/lib/.*".toRegex()
       it.doLast { cleanupVMFiles(libDir, targetVariant, enableHermes, cleanup) }
     }
   }
 
   mergeNativeLibsTask?.configure {
     if (config.enableVmCleanup.get()) {
-      val libDir = "$buildDir/intermediates/merged_native_libs/${targetPath}/out/lib/"
-      val targetVariant = ".*/merged_native_libs/$targetPath/out/lib/.*".toRegex()
+      val libDir = "$buildDir/intermediates/merged_native_libs/${variant.name}/out/lib/"
+      val targetVariant = ".*/merged_native_libs/${variant.name}/out/lib/.*".toRegex()
       it.doLast { cleanupVMFiles(libDir, targetVariant, enableHermes, cleanup) }
     }
   }
@@ -232,22 +231,15 @@ private fun Project.cleanupVMFiles(
 
       if (cleanup) {
         // Reduce size by deleting the debugger/inspector
-        it.include("**/libhermes-inspector.so")
         it.include("**/libhermes-executor-debug.so")
-        it.include("**/libhermes-executor-common-debug.so")
       } else {
         // Release libs take precedence and must be removed
         // to allow debugging
         it.include("**/libhermes-executor-release.so")
-        it.include("**/libhermes-executor-common-release.so")
       }
     } else {
       // For JSC, delete all the libhermes* files
       it.include("**/libhermes*.so")
-      // Delete the libjscexecutor from release build
-      if (cleanup) {
-        it.include("**/libjscexecutor.so")
-      }
     }
   }
       .visit { visit ->
@@ -258,17 +250,5 @@ private fun Project.cleanupVMFiles(
       }
 }
 
-private fun BaseVariant.checkBundleEnabled(config: ReactExtension): Boolean {
-  if (config.bundleIn.getting(name).isPresent) {
-    return config.bundleIn.getting(name).get()
-  }
-
-  if (config.bundleIn.getting(buildType.name).isPresent) {
-    return config.bundleIn.getting(buildType.name).get()
-  }
-
-  return isRelease
-}
-
 internal val BaseVariant.isRelease: Boolean
-  get() = name.toLowerCase(Locale.ROOT).contains("release")
+  get() = name.lowercase().contains("release")

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -45,7 +45,8 @@ export default function RNTOption(props: Props): React.Node {
       onPress={props.onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
-      testID={props.testID}>
+      testID={props.testID}
+    >
       <View
         style={[
           styles.container,
@@ -58,7 +59,8 @@ export default function RNTOption(props: Props): React.Node {
               ]
             : null,
           props.style,
-        ]}>
+        ]}
+      >
         <Text style={styles.label}>{props.label}</Text>
       </View>
     </Pressable>

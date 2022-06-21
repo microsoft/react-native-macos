@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -7,6 +7,8 @@
  * @flow strict-local
  * @format
  */
+
+/* eslint-disable no-alert */
 
 import * as React from 'react';
 import {Modal, Platform, StyleSheet, Switch, Text, View} from 'react-native';
@@ -84,13 +86,12 @@ function ModalPresentation() {
         supportedOrientations={supportedOrientations[supportedOrientationKey]}
         onOrientationChange={onOrientationChange}
         onDismiss={onDismiss}
-        onShow={onShow}>
+        onShow={onShow}
+      >
         <View style={[styles.modalContainer, modalBackgroundStyle]}>
           <View
-            style={[
-              styles.modalInnerContainer,
-              innerContainerTransparentStyle,
-            ]}>
+            style={[styles.modalInnerContainer, innerContainerTransparentStyle]}
+          >
             <Text>
               This modal was presented with animationType: '{animationType}'
             </Text>
