@@ -1189,23 +1189,24 @@ class ScrollView extends React.Component<Props, State> {
       this.props.onScrollKeyDown(event);
     } else {
       if (Platform.OS === 'macos') {
+        console.log('ScrollView onScrollKeyDown');
         const nativeEvent = event.nativeEvent;
         const key = nativeEvent.key;
         const kMinScrollOffset = 10;
         if (key === 'PAGE_UP') {
-          this._handleScrollByKeyDown(event, {
-            x: nativeEvent.contentOffset.x,
-            y:
-              nativeEvent.contentOffset.y +
-              -nativeEvent.layoutMeasurement.height,
-          });
+          // this._handleScrollByKeyDown(event, {
+          //   x: nativeEvent.contentOffset.x,
+          //   y:
+          //     nativeEvent.contentOffset.y +
+          //     -nativeEvent.layoutMeasurement.height,
+          // });
         } else if (key === 'PAGE_DOWN') {
-          this._handleScrollByKeyDown(event, {
-            x: nativeEvent.contentOffset.x,
-            y:
-              nativeEvent.contentOffset.y +
-              nativeEvent.layoutMeasurement.height,
-          });
+          // this._handleScrollByKeyDown(event, {
+          //   x: nativeEvent.contentOffset.x,
+          //   y:
+          //     nativeEvent.contentOffset.y +
+          //     nativeEvent.layoutMeasurement.height,
+          // });
         } else if (key === 'LEFT_ARROW') {
           this._handleScrollByKeyDown(event, {
             x:

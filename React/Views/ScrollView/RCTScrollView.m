@@ -1265,11 +1265,11 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
     case 36:
       return @"ENTER";
 
-    case 116:
-      return @"PAGE_UP";
-
-    case 121:
-      return @"PAGE_DOWN";
+//    case 116:
+//      return @"PAGE_UP";
+//
+//    case 121:
+//      return @"PAGE_DOWN";
 
     case 123:
       return @"LEFT_ARROW";
@@ -1289,12 +1289,14 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 - (void)keyDown:(UIEvent*)theEvent
 {
   // Don't emit a scroll event if tab was pressed while the scrollview is first responder
-  if (self == [[self window] firstResponder] &&
-      theEvent.keyCode != 48) {
+  if (!(self == [[self window] firstResponder] && theEvent.keyCode == 48)) {
     NSString *keyCommand = [self keyCommandFromKeyCode:theEvent.keyCode];
-    RCT_SEND_SCROLL_EVENT(onScrollKeyDown, (@{ @"key": keyCommand}));
-	} else {
-    [super keyDown:theEvent];
+		if (![keyCommand isEqual: @""]) {
+			RCT_SEND_SCROLL_EVENT(onScrollKeyDown, (@{ @"key": keyCommand}));
+		} else {
+			[super keyDown:theEvent];
+		}
+	}
 
     // AX: if a tab key was pressed and the first responder is currently clipped by the scroll view,
     // automatically scroll to make the view visible to make it navigable via keyboard.
@@ -1308,8 +1310,17 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
         [[_scrollView documentView] scrollRectToVisible:visibleRect];
       }
     }
-  }
+//  }
 }
+
+//// Always send the event to JS
+//- (void)keyDown:(UIEvent*)theEvent
+//{
+//		NSLog(self == [[self window] firstResponder] ? @"firstResponder YES": @"firstResponder NO");
+//		NSString *keyCommand = [self keyCommandFromKeyCode:theEvent.keyCode];
+//		RCT_SEND_SCROLL_EVENT(onScrollKeyDown, (@{ @"key": keyCommand}));
+//		[super keyDown:theEvent];
+//}
 
 static NSString *RCTStringForScrollerStyle(NSScrollerStyle scrollerStyle) {
   switch (scrollerStyle) {

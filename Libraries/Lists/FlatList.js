@@ -644,6 +644,7 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
     return (
       <VirtualizedList
         {...restProps}
+        enableSelectionOnKeyPress={true}
         getItem={this._getItem}
         getItemCount={this._getItemCount}
         keyExtractor={this._keyExtractor}
