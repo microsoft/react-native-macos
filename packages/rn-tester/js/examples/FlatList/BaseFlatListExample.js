@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 
 import * as React from 'react';
+import {reduce} from '../../../../../Libraries/ReactNative/UIManagerProperties';
 
 const DATA = [
   'Pizza',
@@ -34,9 +35,20 @@ const DATA = [
   'Ice Cream',
 ];
 
-const Item = ({item, separators}: RenderItemProps<string>) => {
+const Item = ({item, selected, separators}: RenderItemProps<string>) => {
+  const itemRef = React.useRef(null);
+  console.log('Saad RenderItem');
+
+  React.useEffect(() => {
+    console.log('Saad useEffect called');
+    if (selected) {
+      itemRef.current.focus();
+    }
+  }, [selected]);
+
   return (
     <Pressable
+      ref={itemRef}
       onPressIn={() => {
         separators.highlight();
       }}

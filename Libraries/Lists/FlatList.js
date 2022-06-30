@@ -579,7 +579,7 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
   }
 
   _renderer = () => {
-    const {ListItemComponent, renderItem, columnWrapperStyle} = this.props;
+    const {ListItemComponent, renderItem, columnWrapperStyle,} = this.props;
     const numColumns = numColumnsOrDefault(this.props.numColumns);
 
     let virtualizedListRenderKey = ListItemComponent
@@ -587,6 +587,7 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
       : 'renderItem';
 
     const renderer = (props): React.Node => {
+      console.log('Flatlist renderer props: ' + props.isSelected);
       if (ListItemComponent) {
         // $FlowFixMe[not-a-component] Component isn't valid
         // $FlowFixMe[incompatible-type-arg] Component isn't valid
@@ -594,6 +595,7 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
         return <ListItemComponent {...props} />;
       } else if (renderItem) {
         // $FlowFixMe[incompatible-call]
+        console.log('Flatlist renderItem: ' + props.isSelected);
         return renderItem(props);
       } else {
         return null;

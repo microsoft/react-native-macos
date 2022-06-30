@@ -58,27 +58,50 @@ class ItemComponent extends React.PureComponent<{
   onShowUnderlay?: () => void,
   onHideUnderlay?: () => void,
   textSelectable?: ?boolean,
+  isSelected: ?Boolean, // TODO
   ...
 }> {
+
+  constructor(props) {
+    super(props);
+    console.log('Saad Constructor called');
+    this.itemRef = React.createRef();
+  }
   _onPress = () => {
     this.props.onPress(this.props.item.key);
   };
+
   render(): React.Node {
-    const {fixedHeight, horizontal, item, textSelectable} = this.props;
+    const {
+      fixedHeight,
+      horizontal,
+      item,
+      textSelectable,
+      isSelected,
+    } = this.props;
     const itemHash = Math.abs(hashCode(item.title));
     const imgSource = THUMB_URLS[itemHash % THUMB_URLS.length];
+
+    console.log('ListExampleShared ListItemComponent: ' + isSelected);
+    if (this.props.isSelected) {
+      console.log('I am selected');
+      this.itemRef.current.focus();
+    }
+
     return (
       <TouchableHighlight
         onPress={this._onPress}
         onShowUnderlay={this.props.onShowUnderlay}
         onHideUnderlay={this.props.onHideUnderlay}
         style={horizontal ? styles.horizItem : styles.item}
+        ref={this.itemRef}
       >
         <View
           style={[
             styles.row,
             horizontal && {width: HORIZ_WIDTH},
             fixedHeight && {height: ITEM_HEIGHT},
+            isSelected && {backgroundColor: 'blue'},
           ]}
         >
           {!item.noImage && <Image style={styles.thumb} source={imgSource} />}
@@ -87,7 +110,7 @@ class ItemComponent extends React.PureComponent<{
             selectable={textSelectable}
             numberOfLines={horizontal || fixedHeight ? 3 : undefined}
           >
-            {item.title} - {item.text}
+            {item.title} - {'Saad'} - {item.text}
           </Text>
         </View>
       </TouchableHighlight>

@@ -2192,6 +2192,7 @@ class CellRenderer extends React.Component<
       return React.createElement(ListItemComponent, {
         item,
         index,
+        isSelected,
         separators: this._separators,
       });
     }
@@ -2224,6 +2225,7 @@ class CellRenderer extends React.Component<
       parentProps,
     } = this.props;
     const {renderItem, getItemLayout, ListItemComponent} = parentProps;
+    // console.log('CellRenderer render, isSelected: ' + isSelected);
     const element = this._renderElement(
       renderItem,
       ListItemComponent,
@@ -2278,7 +2280,7 @@ class CellRenderer extends React.Component<
     ) : (
       <CellRendererComponent
         {...this.props}
-        style={cellStyle}
+        style={isSelected ? cellStyleSelected : cellStyle}
         onLayout={onLayout}
       >
         {element}

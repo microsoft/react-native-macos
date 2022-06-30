@@ -272,6 +272,8 @@ class FlatListExample extends React.PureComponent<Props, State> {
       ? 'ListItemComponent'
       : 'renderItem';
 
+      console.log('Saad flatlist, which: ' + flatListPropKey);
+
     return {
       renderItem: undefined,
       /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb)
@@ -287,6 +289,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
             onShowUnderlay={separators.highlight}
             onHideUnderlay={separators.unhighlight}
             textSelectable={this.state.textSelectable}
+            isSelected={this.state.isSelected}
           />
         );
       },
