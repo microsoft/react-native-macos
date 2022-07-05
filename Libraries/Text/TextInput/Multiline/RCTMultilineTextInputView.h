@@ -11,6 +11,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCTMultilineTextInputView : RCTBaseTextInputView
 
+#if TARGET_OS_OSX
+@property (nonatomic, assign) BOOL scrollEnabled;
+#endif
+
 @end
 
 NS_ASSUME_NONNULL_END

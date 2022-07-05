@@ -89,6 +89,16 @@
   _scrollView.frame = UIEdgeInsetsInsetRect(self.bounds, reactBorderInsets);
   [self setNeedsLayout];
 }
+
+- (void)setScrollEnabled:(BOOL)scrollEnabled
+{
+  _scrollView.scrollEnabled = scrollEnabled;
+}
+
+- (BOOL)scrollEnabled
+{
+  return _scrollView.scrollEnabled;
+}
 #endif // ]TODO(macOS GH#774)
 
 #pragma mark - UIScrollViewDelegate

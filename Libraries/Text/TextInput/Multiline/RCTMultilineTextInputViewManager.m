@@ -21,5 +21,6 @@ RCT_EXPORT_MODULE()
 
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(dataDetectorTypes, backedTextInputView.dataDetectorTypes, UIDataDetectorTypes) // TODO(macOS GH#774)
 RCT_REMAP_OSX_VIEW_PROPERTY(dataDetectorTypes, backedTextInputView.enabledTextCheckingTypes, NSTextCheckingTypes) // TODO(macOS GH#774)
+RCT_EXPORT_VIEW_PROPERTY(scrollEnabled, BOOL)
 
 @end
