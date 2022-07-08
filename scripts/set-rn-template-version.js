@@ -22,7 +22,7 @@ if (!version) {
 const jsonPath = path.join(__dirname, '../template/package.json');
 
 let templatePackageJson = require(jsonPath);
-templatePackageJson.dependencies['react-native'] = version;
+templatePackageJson.dependencies['react-native-macos'] = version; // TODO(macOS GH#774)
 fs.writeFileSync(
   jsonPath,
   JSON.stringify(templatePackageJson, null, 2) + '\n',
