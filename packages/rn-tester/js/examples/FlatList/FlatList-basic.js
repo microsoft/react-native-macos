@@ -233,7 +233,23 @@ class FlatListExample extends React.PureComponent<Props, State> {
             refreshing={false}
             contentContainerStyle={styles.list}
             viewabilityConfig={VIEWABILITY_CONFIG}
-            {...flatListItemRendererProps}
+            renderItem={props => {
+              const ref = React.createRef(null);
+              if (props.isSelected) {
+                ref?.current?.focus();
+              }
+              return (
+                <View
+                  ref={ref}
+                  style={{
+                    height: 10,
+                    backgroundColor: props.isSelected ? 'green' : 'red',
+                  }}
+                  focusable
+                />
+              );
+            }}
+            // {...flatListItemRendererProps}
           />
         </View>
       </RNTesterPage>
@@ -267,12 +283,13 @@ class FlatListExample extends React.PureComponent<Props, State> {
     return onPressAction;
   };
   _onRefresh = () => Alert.alert('onRefresh: nothing to refresh :P');
-  _renderItemComponent = () => {
+  _renderItemComponent = props => {
     const flatListPropKey = this.state.useFlatListItemComponent
       ? 'ListItemComponent'
       : 'renderItem';
 
-      console.log('Saad flatlist, which: ' + flatListPropKey);
+    console.log('Saad flatlist, which: ' + flatListPropKey);
+    console.log(JSON.stringify(this.props, null, 2));
 
     return {
       renderItem: undefined,

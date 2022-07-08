@@ -64,7 +64,7 @@ class ItemComponent extends React.PureComponent<{
 
   constructor(props) {
     super(props);
-    console.log('Saad Constructor called');
+    // console.log('Saad Constructor called');
     this.itemRef = React.createRef();
   }
   _onPress = () => {
@@ -82,8 +82,8 @@ class ItemComponent extends React.PureComponent<{
     const itemHash = Math.abs(hashCode(item.title));
     const imgSource = THUMB_URLS[itemHash % THUMB_URLS.length];
 
-    console.log('ListExampleShared ListItemComponent: ' + isSelected);
-    if (this.props.isSelected) {
+    if (isSelected) {
+      console.log('ListExampleShared ListItemComponent: ' + isSelected);
       console.log('I am selected');
       this.itemRef.current.focus();
     }
