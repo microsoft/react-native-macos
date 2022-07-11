@@ -533,7 +533,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 - (void)scrollWheel:(NSEvent *)theEvent
 {
-  if (self.scrollEnabled == NO) {
+  if (self.isScrollEnabled == NO) {
     [[self nextResponder] scrollWheel:theEvent];
     return;
   }

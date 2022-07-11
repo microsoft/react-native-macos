@@ -612,6 +612,12 @@ exports.examples = ([
             style={styles.multiline}
           />
           <TextInput
+            placeholder="multiline text input with scroll disabled"
+            multiline={true}
+            scrollEnabled={false}
+            style={styles.multiline}
+          />
+          <TextInput
             defaultValue="uneditable multiline text input with phone number detection: 88888888."
             editable={false}
             multiline={true}

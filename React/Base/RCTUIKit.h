@@ -425,7 +425,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 @property (nonatomic, assign) CGFloat zoomScale;
 @property (nonatomic, assign) BOOL alwaysBounceHorizontal;
 @property (nonatomic, assign) BOOL alwaysBounceVertical;
-@property (nonatomic, assign) BOOL scrollEnabled;
+@property (nonatomic, assign, getter=isScrollEnabled) BOOL scrollEnabled;
 
 @end
 

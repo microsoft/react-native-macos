@@ -97,7 +97,7 @@
 
 - (BOOL)scrollEnabled
 {
-  return _scrollView.scrollEnabled;
+  return _scrollView.isScrollEnabled;
 }
 #endif // ]TODO(macOS GH#774)
 
