@@ -233,23 +233,23 @@ class FlatListExample extends React.PureComponent<Props, State> {
             refreshing={false}
             contentContainerStyle={styles.list}
             viewabilityConfig={VIEWABILITY_CONFIG}
-            renderItem={props => {
-              const ref = React.createRef(null);
-              if (props.isSelected) {
-                ref?.current?.focus();
-              }
-              return (
-                <View
-                  ref={ref}
-                  style={{
-                    height: 10,
-                    backgroundColor: props.isSelected ? 'green' : 'red',
-                  }}
-                  focusable
-                />
-              );
-            }}
-            // {...flatListItemRendererProps}
+            // renderItem={props => {
+            //   const ref = React.createRef(null);
+            //   if (props.isSelected) {
+            //     ref?.current?.focus();
+            //   }
+            //   return (
+            //     <View
+            //       ref={ref}
+            //       style={{
+            //         height: 10,
+            //         backgroundColor: props.isSelected ? 'green' : 'red',
+            //       }}
+            //       focusable
+            //     />
+            //   );
+            // }}
+            {...flatListItemRendererProps}
           />
         </View>
       </RNTesterPage>
@@ -296,7 +296,8 @@ class FlatListExample extends React.PureComponent<Props, State> {
       /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb)
        * This comment suppresses an error found when Flow v0.111 was deployed.
        * To see the error, delete this comment and run Flow. */
-      [flatListPropKey]: ({item, separators}) => {
+      [flatListPropKey]: (props) => {
+        const {item, separators, isSelected} = props;
         return (
           <ItemComponent
             item={item}
@@ -306,7 +307,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
             onShowUnderlay={separators.highlight}
             onHideUnderlay={separators.unhighlight}
             textSelectable={this.state.textSelectable}
-            isSelected={this.state.isSelected}
+            isSelected={isSelected}
           />
         );
       },

@@ -1517,6 +1517,13 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     return rowAbove;
   };
 
+  _selectRowAtIndex = rowIndex => {
+    this.setState(state => {
+      return {selectedRowIndex: rowIndex};
+    });
+    return rowIndex;
+  };
+
   _selectRowBelowIndex = rowIndex => {
     if (this.props.getItemCount) {
       const {data} = this.props;
@@ -1576,6 +1583,46 @@ class VirtualizedList extends React.PureComponent<Props, State> {
               });
             }
           }
+        } else if (key === 'OPTION_DOWN') {
+          console.log(this.state.last);
+          newIndex = this._selectRowAtIndex(this.state.last);
+          this.ensureItemAtIndexIsVisible(newIndex);
+
+          if (prevIndex !== newIndex) {
+            const item = getItem(data, newIndex);
+            if (this.props.onSelectionChanged) {
+              this.props.onSelectionChanged({
+                previousSelection: prevIndex,
+                newSelection: newIndex,
+                item: item,
+              });
+            }
+          }
+        } else if (key === 'OPTION_UP') {
+          this.scrollToIndex({
+            animated: false,
+            index: 0,
+          });
+          newIndex = this._selectRowAtIndex(0);
+          // this.ensureItemAtIndexIsVisible(newIndex);
+
+          if (prevIndex !== newIndex) {
+            const item = getItem(data, newIndex);
+            if (this.props.onSelectionChanged) {
+              this.props.onSelectionChanged({
+                previousSelection: prevIndex,
+                newSelection: newIndex,
+                item: item,
+              });
+            }
+          }
+        } else if (key === 'HOME') {
+          this.scrollToIndex({
+            animated: false,
+            index: 0,
+          });
+        } else if (key === 'END') {
+          this.scrollToEnd();
         } else if (key === 'ENTER') {
           if (this.props.onSelectionEntered) {
             const item = getItem(data, prevIndex);
@@ -2121,6 +2168,10 @@ class CellRenderer extends React.Component<
       leadingItem: this.props.item,
     },
   };
+  constructor(props) {
+    super(props);
+    this.ref = React.createRef();
+  }
 
   static getDerivedStateFromProps(
     props: CellRendererProps,
@@ -2254,16 +2305,17 @@ class CellRenderer extends React.Component<
       ? [styles.row, inversionStyle]
       : inversionStyle;
 
-    const cellStyleSelected = [
-      cellStyle,
-      {backgroundColor: 'blue', padding: 10},
-    ];
+    // const cellStyleSelected = [
+    //   cellStyle,
+    //   {backgroundColor: 'blue', padding: 10},
+    // ];
     const result = !CellRendererComponent ? (
       /* $FlowFixMe[incompatible-type-arg] (>=0.89.0 site=react_native_fb) *
         This comment suppresses an error found when Flow v0.89 was deployed. *
         To see the error, delete this comment and run Flow. */
       <View
-        style={isSelected ? cellStyleSelected : cellStyle}
+        // style={isSelected ? cellStyleSelected : cellStyle}
+        style={cellStyle}
         onLayout={onLayout}
         // validKeysDown={['ArrowUp', 'ArrowDown']}
         // onKeyDown={(ev: Any) => {
@@ -2280,7 +2332,8 @@ class CellRenderer extends React.Component<
     ) : (
       <CellRendererComponent
         {...this.props}
-        style={isSelected ? cellStyleSelected : cellStyle}
+        // style={isSelected ? cellStyleSelected : cellStyle}
+        style={cellStyle}
         onLayout={onLayout}
       >
         {element}

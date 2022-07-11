@@ -1258,18 +1258,26 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 
-- (NSString*)keyCommandFromKeyCode:(NSInteger)keyCode
+- (NSString*)keyCommandFromKeyCode:(NSInteger)keyCode modifierFlags:(NSEventModifierFlags)modifierFlags
 {
+	//115 = Home
+	//119 = End
   switch (keyCode)
   {
     case 36:
       return @"ENTER";
 
-//    case 116:
-//      return @"PAGE_UP";
-//
-//    case 121:
-//      return @"PAGE_DOWN";
+    case 115:
+      return @"HOME";
+
+    case 116:
+      return @"PAGE_UP";
+
+    case 119:
+      return @"END";
+
+    case 121:
+      return @"PAGE_DOWN";
 
     case 123:
       return @"LEFT_ARROW";
@@ -1278,10 +1286,18 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
       return @"RIGHT_ARROW";
 
     case 125:
-      return @"DOWN_ARROW";
+			if (modifierFlags & NSEventModifierFlagOption) {
+				return @"OPTION_DOWN";
+			} else {
+				return @"DOWN_ARROW";
+			}
 
     case 126:
-      return @"UP_ARROW";
+			if (modifierFlags & NSEventModifierFlagOption) {
+				return @"OPTION_UP";
+			} else {
+				return @"UP_ARROW";
+			}
   }
   return @"";
 }
@@ -1290,7 +1306,7 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 {
   // Don't emit a scroll event if tab was pressed while the scrollview is first responder
   if (!(self == [[self window] firstResponder] && theEvent.keyCode == 48)) {
-    NSString *keyCommand = [self keyCommandFromKeyCode:theEvent.keyCode];
+    NSString *keyCommand = [self keyCommandFromKeyCode:theEvent.keyCode modifierFlags:theEvent.modifierFlags];
 		if (![keyCommand isEqual: @""]) {
 			RCT_SEND_SCROLL_EVENT(onScrollKeyDown, (@{ @"key": keyCommand}));
 		} else {

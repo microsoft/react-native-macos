@@ -61,7 +61,6 @@ class ItemComponent extends React.PureComponent<{
   isSelected: ?Boolean, // TODO
   ...
 }> {
-
   constructor(props) {
     super(props);
     // console.log('Saad Constructor called');
@@ -84,8 +83,7 @@ class ItemComponent extends React.PureComponent<{
 
     if (isSelected) {
       console.log('ListExampleShared ListItemComponent: ' + isSelected);
-      console.log('I am selected');
-      this.itemRef.current.focus();
+      this.itemRef?.current?.focus();
     }
 
     return (
@@ -101,7 +99,6 @@ class ItemComponent extends React.PureComponent<{
             styles.row,
             horizontal && {width: HORIZ_WIDTH},
             fixedHeight && {height: ITEM_HEIGHT},
-            isSelected && {backgroundColor: 'blue'},
           ]}
         >
           {!item.noImage && <Image style={styles.thumb} source={imgSource} />}

@@ -602,7 +602,6 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
             'Flatlist renderItem: ' + props.index + ', ' + props.isSelected,
           );
         }
-        console.log('Flatlist, props sent to renderItem: ' + JSON.stringify(props, null, 2));
         return renderItem(props);
       } else {
         return null;
