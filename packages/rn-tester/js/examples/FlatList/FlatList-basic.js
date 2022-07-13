@@ -233,22 +233,6 @@ class FlatListExample extends React.PureComponent<Props, State> {
             refreshing={false}
             contentContainerStyle={styles.list}
             viewabilityConfig={VIEWABILITY_CONFIG}
-            // renderItem={props => {
-            //   const ref = React.createRef(null);
-            //   if (props.isSelected) {
-            //     ref?.current?.focus();
-            //   }
-            //   return (
-            //     <View
-            //       ref={ref}
-            //       style={{
-            //         height: 10,
-            //         backgroundColor: props.isSelected ? 'green' : 'red',
-            //       }}
-            //       focusable
-            //     />
-            //   );
-            // }}
             {...flatListItemRendererProps}
           />
         </View>

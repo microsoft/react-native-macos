@@ -1189,7 +1189,6 @@ class ScrollView extends React.Component<Props, State> {
       this.props.onScrollKeyDown(event);
     } else {
       if (Platform.OS === 'macos') {
-        console.log('ScrollView onScrollKeyDown');
         const nativeEvent = event.nativeEvent;
         const key = nativeEvent.key;
         const kMinScrollOffset = 10;

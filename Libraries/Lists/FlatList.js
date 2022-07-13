@@ -587,21 +587,13 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
       : 'renderItem';
 
     const renderer = (props): React.Node => {
-      // if (props.isSelected) {
-      //   console.log('Flatlist renderer props: ' + props.isSelected);
-      // }
       if (ListItemComponent) {
         // $FlowFixMe[not-a-component] Component isn't valid
         // $FlowFixMe[incompatible-type-arg] Component isn't valid
         // $FlowFixMe[incompatible-return] Component isn't valid
         return <ListItemComponent {...props} />;
       } else if (renderItem) {
-        // // $FlowFixMe[incompatible-call]
-        // if (props.isSelected) {
-        //   console.log(
-        //     'Flatlist renderItem: ' + props.index + ', ' + props.isSelected,
-        //   );
-        // }
+        // $FlowFixMe[incompatible-call]
         return renderItem(props);
       } else {
         return null;
@@ -612,7 +604,6 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
       /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb)
        * This comment suppresses an error found when Flow v0.111 was deployed.
        * To see the error, delete this comment and run Flow. */
-      // eslint-disable-next-line react/no-unstable-nested-components
       [virtualizedListRenderKey]: (info: RenderItemProps<ItemT>) => {
         if (numColumns > 1) {
           const {item, index} = info;

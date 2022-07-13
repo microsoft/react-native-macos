@@ -586,16 +586,9 @@ class VirtualizedList extends React.PureComponent<Props, State> {
 
     if (frameEnd > visEnd) {
       const newOffset = Math.min(contentLength, visTop + (frameEnd - visEnd));
-      // console.log(
-      //   `ensureItemAtIndexIsVisible, frameEnd: ${frameEnd} > visEnd ${visEnd}, newOffset: ${newOffset}`,
-      // );
       this.scrollToOffset({offset: newOffset});
     } else if (frame.offset < visTop) {
       const newOffset = Math.min(frame.offset, visTop - frame.length);
-      // console.log(
-      //   `ensureItemAtIndexIsVisible, frame.offset: ${frame.offset} < visTop: ${visTop}, newOffset: ${newOffset}`,
-      // );
-
       this.scrollToOffset({offset: newOffset});
     }
   }
@@ -1320,9 +1313,6 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         ? this._handleKeyDown
         : null;
     }
-    let validKeysDown = this.props.enableSelectionOnKeyPress
-      ? ['ArrowUp, ArrowDown']
-      : [];
     const preferredScrollerStyleDidChangeHandler = this.props
       .onPreferredScrollerStyleDidChange; // ]TODO(macOS GH#774)
     const onRefresh = props.onRefresh;
@@ -1553,7 +1543,6 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         // $FlowFixMe Cannot get e.nativeEvent because property nativeEvent is missing in Event
         const event = e.nativeEvent;
         const key = event.key;
-        console.log('Virtualized List, handleKeyDown: ' + key);
 
         let prevIndex = -1;
         let newIndex = -1;
@@ -2275,7 +2264,6 @@ class CellRenderer extends React.Component<
       parentProps,
     } = this.props;
     const {renderItem, getItemLayout, ListItemComponent} = parentProps;
-    // console.log('CellRenderer render, isSelected: ' + isSelected);
     const element = this._renderElement(
       renderItem,
       ListItemComponent,
@@ -2312,26 +2300,13 @@ class CellRenderer extends React.Component<
       /* $FlowFixMe[incompatible-type-arg] (>=0.89.0 site=react_native_fb) *
         This comment suppresses an error found when Flow v0.89 was deployed. *
         To see the error, delete this comment and run Flow. */
-      <View
-        // style={isSelected ? cellStyleSelected : cellStyle}
-        style={cellStyle}
-        onLayout={onLayout}
-        // validKeysDown={['ArrowUp', 'ArrowDown']}
-        // onKeyDown={(ev: Any) => {
-        //   if (ev.nativeEvent.ArrowUp && ev.nativeEvent.altKey) {
-        //     console.log('Option+Up');
-        //   } else if (ev.nativeEvent.ArrowDown && ev.nativeEvent.altKey) {
-        //     console.log('Option+Down');
-        //   }
-        // }}
-      >
+      <View style={cellStyle} onLayout={onLayout}>
         {element}
         {itemSeparator}
       </View>
     ) : (
       <CellRendererComponent
         {...this.props}
-        // style={isSelected ? cellStyleSelected : cellStyle}
         style={cellStyle}
         onLayout={onLayout}
       >

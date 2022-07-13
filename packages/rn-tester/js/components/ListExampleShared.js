@@ -107,7 +107,7 @@ class ItemComponent extends React.PureComponent<{
             selectable={textSelectable}
             numberOfLines={horizontal || fixedHeight ? 3 : undefined}
           >
-            {item.title} - {'Saad'} - {item.text}
+            {item.title} - {item.text}
           </Text>
         </View>
       </TouchableHighlight>

@@ -19,7 +19,6 @@ import {
 } from 'react-native';
 
 import * as React from 'react';
-import {reduce} from '../../../../../Libraries/ReactNative/UIManagerProperties';
 
 const DATA = [
   'Pizza',

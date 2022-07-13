@@ -1312,29 +1312,19 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 		}
 	}
 
-    // AX: if a tab key was pressed and the first responder is currently clipped by the scroll view,
-    // automatically scroll to make the view visible to make it navigable via keyboard.
-    if ([theEvent keyCode] == 48) {  //tab key
-      id firstResponder = [[self window] firstResponder];
-      if ([firstResponder isKindOfClass:[NSView class]] &&
-          [firstResponder isDescendantOf:[_scrollView documentView]]) {
-        NSView *view = (NSView*)firstResponder;
-        NSRect visibleRect = ([view superview] == [_scrollView documentView]) ? NSInsetRect(view.frame, -1, -1) :
-                              [view convertRect:view.frame toView:_scrollView.documentView];
-        [[_scrollView documentView] scrollRectToVisible:visibleRect];
-      }
+  // AX: if a tab key was pressed and the first responder is currently clipped by the scroll view,
+  // automatically scroll to make the view visible to make it navigable via keyboard.
+  if ([theEvent keyCode] == 48) {  //tab key
+    id firstResponder = [[self window] firstResponder];
+    if ([firstResponder isKindOfClass:[NSView class]] &&
+        [firstResponder isDescendantOf:[_scrollView documentView]]) {
+      NSView *view = (NSView*)firstResponder;
+      NSRect visibleRect = ([view superview] == [_scrollView documentView]) ? NSInsetRect(view.frame, -1, -1) :
+                            [view convertRect:view.frame toView:_scrollView.documentView];
+      [[_scrollView documentView] scrollRectToVisible:visibleRect];
     }
-//  }
+  }
 }
-
-//// Always send the event to JS
-//- (void)keyDown:(UIEvent*)theEvent
-//{
-//		NSLog(self == [[self window] firstResponder] ? @"firstResponder YES": @"firstResponder NO");
-//		NSString *keyCommand = [self keyCommandFromKeyCode:theEvent.keyCode];
-//		RCT_SEND_SCROLL_EVENT(onScrollKeyDown, (@{ @"key": keyCommand}));
-//		[super keyDown:theEvent];
-//}
 
 static NSString *RCTStringForScrollerStyle(NSScrollerStyle scrollerStyle) {
   switch (scrollerStyle) {
