@@ -2156,10 +2156,6 @@ class CellRenderer extends React.Component<
       leadingItem: this.props.item,
     },
   };
-  constructor(props) {
-    super(props);
-    this.ref = React.createRef();
-  }
 
   static getDerivedStateFromProps(
     props: CellRendererProps,
@@ -2292,10 +2288,6 @@ class CellRenderer extends React.Component<
       ? [styles.row, inversionStyle]
       : inversionStyle;
 
-    // const cellStyleSelected = [
-    //   cellStyle,
-    //   {backgroundColor: 'blue', padding: 10},
-    // ];
     const result = !CellRendererComponent ? (
       /* $FlowFixMe[incompatible-type-arg] (>=0.89.0 site=react_native_fb) *
         This comment suppresses an error found when Flow v0.89 was deployed. *

@@ -34,20 +34,9 @@ const DATA = [
   'Ice Cream',
 ];
 
-const Item = ({item, selected, separators}: RenderItemProps<string>) => {
-  const itemRef = React.useRef(null);
-  console.log('Saad RenderItem');
-
-  React.useEffect(() => {
-    console.log('Saad useEffect called');
-    if (selected) {
-      itemRef.current.focus();
-    }
-  }, [selected]);
-
+const Item = ({item, separators}: RenderItemProps<string>) => {
   return (
     <Pressable
-      ref={itemRef}
       onPressIn={() => {
         separators.highlight();
       }}
