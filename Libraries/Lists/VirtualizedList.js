@@ -586,9 +586,16 @@ class VirtualizedList extends React.PureComponent<Props, State> {
 
     if (frameEnd > visEnd) {
       const newOffset = Math.min(contentLength, visTop + (frameEnd - visEnd));
+      // console.log(
+      //   `ensureItemAtIndexIsVisible, frameEnd: ${frameEnd} > visEnd ${visEnd}, newOffset: ${newOffset}`,
+      // );
       this.scrollToOffset({offset: newOffset});
     } else if (frame.offset < visTop) {
-      const newOffset = Math.max(0, visTop - frame.length);
+      const newOffset = Math.min(frame.offset, visTop - frame.length);
+      // console.log(
+      //   `ensureItemAtIndexIsVisible, frame.offset: ${frame.offset} < visTop: ${visTop}, newOffset: ${newOffset}`,
+      // );
+
       this.scrollToOffset({offset: newOffset});
     }
   }
@@ -1314,8 +1321,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         : null;
     }
     let validKeysDown = this.props.enableSelectionOnKeyPress
-        ? ['ArrowUp, ArrowDown']
-        : []
+      ? ['ArrowUp, ArrowDown']
+      : [];
     const preferredScrollerStyleDidChangeHandler = this.props
       .onPreferredScrollerStyleDidChange; // ]TODO(macOS GH#774)
     const onRefresh = props.onRefresh;
@@ -1584,7 +1591,6 @@ class VirtualizedList extends React.PureComponent<Props, State> {
             }
           }
         } else if (key === 'OPTION_DOWN') {
-          console.log(this.state.last);
           newIndex = this._selectRowAtIndex(this.state.last);
           this.ensureItemAtIndexIsVisible(newIndex);
 
@@ -1599,12 +1605,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
             }
           }
         } else if (key === 'OPTION_UP') {
-          this.scrollToIndex({
-            animated: false,
-            index: 0,
-          });
           newIndex = this._selectRowAtIndex(0);
-          // this.ensureItemAtIndexIsVisible(newIndex);
+          this.ensureItemAtIndexIsVisible(newIndex);
 
           if (prevIndex !== newIndex) {
             const item = getItem(data, newIndex);
@@ -1618,11 +1620,11 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           }
         } else if (key === 'HOME') {
           this.scrollToIndex({
-            animated: false,
+            animated: true,
             index: 0,
           });
         } else if (key === 'END') {
-          this.scrollToEnd();
+          this.scrollToEnd({animated: true});
         } else if (key === 'ENTER') {
           if (this.props.onSelectionEntered) {
             const item = getItem(data, prevIndex);

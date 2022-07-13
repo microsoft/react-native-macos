@@ -587,21 +587,21 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
       : 'renderItem';
 
     const renderer = (props): React.Node => {
-      if (props.isSelected) {
-        console.log('Flatlist renderer props: ' + props.isSelected);
-      }
+      // if (props.isSelected) {
+      //   console.log('Flatlist renderer props: ' + props.isSelected);
+      // }
       if (ListItemComponent) {
         // $FlowFixMe[not-a-component] Component isn't valid
         // $FlowFixMe[incompatible-type-arg] Component isn't valid
         // $FlowFixMe[incompatible-return] Component isn't valid
         return <ListItemComponent {...props} />;
       } else if (renderItem) {
-        // $FlowFixMe[incompatible-call]
-        if (props.isSelected) {
-          console.log(
-            'Flatlist renderItem: ' + props.index + ', ' + props.isSelected,
-          );
-        }
+        // // $FlowFixMe[incompatible-call]
+        // if (props.isSelected) {
+        //   console.log(
+        //     'Flatlist renderItem: ' + props.index + ', ' + props.isSelected,
+        //   );
+        // }
         return renderItem(props);
       } else {
         return null;
