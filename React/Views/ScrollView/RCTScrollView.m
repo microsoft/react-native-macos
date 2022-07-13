@@ -1260,8 +1260,6 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 
 - (NSString*)keyCommandFromKeyCode:(NSInteger)keyCode modifierFlags:(NSEventModifierFlags)modifierFlags
 {
-	//115 = Home
-	//119 = End
   switch (keyCode)
   {
     case 36:
