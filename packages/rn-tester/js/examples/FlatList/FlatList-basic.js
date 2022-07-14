@@ -183,6 +183,13 @@ class FlatListExample extends React.PureComponent<Props, State> {
                 this.state.useFlatListItemComponent,
                 this._setBooleanValue('useFlatListItemComponent'),
               )}
+              {/* [TODO(macOS GH#774)  */}
+              {renderSmallSwitchOption(
+                'Keyboard Navigation',
+                this.state.enableSelectionOnKeyPress,
+                this._setBooleanValue('enableSelectionOnKeyPress'),
+              )}
+              {/* TODO(macOS GH#774)] */}
               {Platform.OS === 'android' && (
                 <View>
                   <TextInput
@@ -202,6 +209,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
           </View>
           <SeparatorComponent />
           <Animated.FlatList
+            enableSelectionOnKeyPress={this.state.enableSelectionOnKeyPress} // TODO(macOS GH#774)
             fadingEdgeLength={this.state.fadingEdgeLength}
             ItemSeparatorComponent={ItemSeparatorComponent}
             ListHeaderComponent={<HeaderComponent />}
