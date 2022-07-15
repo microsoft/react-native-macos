@@ -280,9 +280,6 @@ class FlatListExample extends React.PureComponent<Props, State> {
       ? 'ListItemComponent'
       : 'renderItem';
 
-    console.log('Saad flatlist, which: ' + flatListPropKey);
-    console.log(JSON.stringify(this.props, null, 2));
-
     return {
       renderItem: undefined,
       /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb)

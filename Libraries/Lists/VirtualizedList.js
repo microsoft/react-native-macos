@@ -2157,6 +2157,11 @@ class CellRenderer extends React.Component<
     },
   };
 
+  constructor(props) {
+    super(props);
+    this.ref = React.createRef();
+  }
+
   static getDerivedStateFromProps(
     props: CellRendererProps,
     prevState: CellRendererState,
@@ -2203,6 +2208,12 @@ class CellRenderer extends React.Component<
     this.props.onUnmount(this.props.cellKey);
   }
 
+  // [TODO(macOS GH#774)
+  componentDidUpdate() {
+    if (this.props.isSelected) {
+      this.ref?.current.focus();
+    }
+  } // TODO(macOS GH#774)]
   _renderElement(
     renderItem,
     ListItemComponent,
@@ -2288,16 +2299,22 @@ class CellRenderer extends React.Component<
       ? [styles.row, inversionStyle]
       : inversionStyle;
 
+    // [TODO(macOS GH#774)]
     const result = !CellRendererComponent ? (
       /* $FlowFixMe[incompatible-type-arg] (>=0.89.0 site=react_native_fb) *
         This comment suppresses an error found when Flow v0.89 was deployed. *
         To see the error, delete this comment and run Flow. */
-      <View style={cellStyle} onLayout={onLayout}>
+      <View
+        style={cellStyle}
+        onLayout={onLayout}
+        ref={this.ref /* TODO(macOS GH#774) */}
+      >
         {element}
         {itemSeparator}
       </View>
     ) : (
       <CellRendererComponent
+        ref={this.ref} // TODO(macOS GH#774)
         {...this.props}
         style={cellStyle}
         onLayout={onLayout}
@@ -2306,6 +2323,7 @@ class CellRenderer extends React.Component<
         {itemSeparator}
       </CellRendererComponent>
     );
+    // TODO(macOS GH#774)]
 
     return (
       <VirtualizedListCellContextProvider cellKey={this.props.cellKey}>

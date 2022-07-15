@@ -58,39 +58,21 @@ class ItemComponent extends React.PureComponent<{
   onShowUnderlay?: () => void,
   onHideUnderlay?: () => void,
   textSelectable?: ?boolean,
-  isSelected: ?Boolean, // TODO
   ...
 }> {
-  constructor(props) {
-    super(props);  
-    this.itemRef = React.createRef();
-  }
   _onPress = () => {
     this.props.onPress(this.props.item.key);
   };
-
   render(): React.Node {
-    const {
-      fixedHeight,
-      horizontal,
-      item,
-      textSelectable,
-      isSelected,
-    } = this.props;
+    const {fixedHeight, horizontal, item, textSelectable} = this.props;
     const itemHash = Math.abs(hashCode(item.title));
     const imgSource = THUMB_URLS[itemHash % THUMB_URLS.length];
-
-    if (isSelected) {
-      this.itemRef?.current?.focus();
-    }
-
     return (
       <TouchableHighlight
         onPress={this._onPress}
         onShowUnderlay={this.props.onShowUnderlay}
         onHideUnderlay={this.props.onHideUnderlay}
         style={horizontal ? styles.horizItem : styles.item}
-        ref={this.itemRef}
       >
         <View
           style={[
