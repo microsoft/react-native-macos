@@ -363,14 +363,14 @@ const styles = StyleSheet.create({
   text: {
     flex: 1,
   },
-  // TODO
+  // [TODO(macOS GH#774)
   selectedItem: {
     backgroundColor: PlatformColor('selectedControlColor'),
   },
   selectedItemText: {
     color: PlatformColor('selectedControlTextColor'),
   },
-  // TODO
+  // [TODO(macOS GH#774)]
 });
 
 module.exports = {
