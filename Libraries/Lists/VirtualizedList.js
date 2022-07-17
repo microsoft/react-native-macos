@@ -884,7 +884,13 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           index={ii}
           inversionStyle={inversionStyle}
           item={item}
-          isSelected={this.state.selectedRowIndex === ii ? true : false} // TODO(macOS GH#774)
+          // [TODO(macOS GH#774)
+          isSelected={
+            this.props.enableSelectionOnKeyPress &&
+            this.state.selectedRowIndex === ii
+              ? true
+              : false
+          } // TODO(macOS GH#774)]
           key={key}
           prevCellKey={prevCellKey}
           onUpdateSeparators={this._onUpdateSeparators}
@@ -1330,10 +1336,10 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         // $FlowFixMe[prop-missing] Invalid prop usage
         <ScrollView
           {...props}
-          onScrollKeyDown={keyEventHandler} // TODO(macOS GH#774)
+          onScrollKeyDown={keyEventHandler} // [TODO(macOS GH#774)
           onPreferredScrollerStyleDidChange={
             preferredScrollerStyleDidChangeHandler
-          } // TODO(macOS GH#774)
+          } // TODO(macOS GH#774)]
           refreshControl={
             props.refreshControl == null ? (
               <RefreshControl
@@ -2157,11 +2163,6 @@ class CellRenderer extends React.Component<
     },
   };
 
-  constructor(props) {
-    super(props);
-    this.ref = React.createRef();
-  }
-
   static getDerivedStateFromProps(
     props: CellRendererProps,
     prevState: CellRendererState,
@@ -2208,12 +2209,6 @@ class CellRenderer extends React.Component<
     this.props.onUnmount(this.props.cellKey);
   }
 
-  // [TODO(macOS GH#774)
-  componentDidUpdate() {
-    if (this.props.isSelected) {
-      this.ref?.current.focus();
-    }
-  } // TODO(macOS GH#774)]
   _renderElement(
     renderItem,
     ListItemComponent,
@@ -2298,23 +2293,16 @@ class CellRenderer extends React.Component<
       : horizontal
       ? [styles.row, inversionStyle]
       : inversionStyle;
-
-    // [TODO(macOS GH#774)]
     const result = !CellRendererComponent ? (
       /* $FlowFixMe[incompatible-type-arg] (>=0.89.0 site=react_native_fb) *
         This comment suppresses an error found when Flow v0.89 was deployed. *
         To see the error, delete this comment and run Flow. */
-      <View
-        style={cellStyle}
-        onLayout={onLayout}
-        ref={this.ref /* TODO(macOS GH#774) */}
-      >
+      <View style={cellStyle} onLayout={onLayout}>
         {element}
         {itemSeparator}
       </View>
     ) : (
       <CellRendererComponent
-        ref={this.ref} // TODO(macOS GH#774)
         {...this.props}
         style={cellStyle}
         onLayout={onLayout}

@@ -22,6 +22,7 @@ const {
   Text,
   TextInput,
   View,
+  PlatformColor, // TODO(macOS GH#774)
 } = require('react-native');
 
 export type Item = {
@@ -64,7 +65,13 @@ class ItemComponent extends React.PureComponent<{
     this.props.onPress(this.props.item.key);
   };
   render(): React.Node {
-    const {fixedHeight, horizontal, item, textSelectable} = this.props;
+    const { // [TODO(macOS GH#774)
+      fixedHeight,
+      horizontal,
+      item,
+      textSelectable,
+      isSelected,
+    } = this.props; // TODO(macOS GH#774)]
     const itemHash = Math.abs(hashCode(item.title));
     const imgSource = THUMB_URLS[itemHash % THUMB_URLS.length];
     return (
@@ -79,11 +86,12 @@ class ItemComponent extends React.PureComponent<{
             styles.row,
             horizontal && {width: HORIZ_WIDTH},
             fixedHeight && {height: ITEM_HEIGHT},
+            isSelected && styles.selectedItem, // TODO(macOS GH#774)
           ]}
         >
           {!item.noImage && <Image style={styles.thumb} source={imgSource} />}
           <Text
-            style={styles.text}
+            style={[styles.text, isSelected && styles.selectedItemText]} // TODO(macOS GH#774)
             selectable={textSelectable}
             numberOfLines={horizontal || fixedHeight ? 3 : undefined}
           >
@@ -355,6 +363,14 @@ const styles = StyleSheet.create({
   text: {
     flex: 1,
   },
+  // TODO
+  selectedItem: {
+    backgroundColor: PlatformColor('selectedControlColor'),
+  },
+  selectedItemText: {
+    color: PlatformColor('selectedControlTextColor'),
+  },
+  // TODO
 });
 
 module.exports = {
