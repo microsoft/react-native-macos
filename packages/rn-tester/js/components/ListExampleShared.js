@@ -59,13 +59,15 @@ class ItemComponent extends React.PureComponent<{
   onShowUnderlay?: () => void,
   onHideUnderlay?: () => void,
   textSelectable?: ?boolean,
+  isSelected?: ?Boolean, // TODO(macOS GH#774)
   ...
 }> {
   _onPress = () => {
     this.props.onPress(this.props.item.key);
   };
   render(): React.Node {
-    const { // [TODO(macOS GH#774)
+    // [TODO(macOS GH#774)
+    const {
       fixedHeight,
       horizontal,
       item,

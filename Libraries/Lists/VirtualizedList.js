@@ -1614,7 +1614,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
             }
           }
         } else if (key === 'HOME') {
-          this._scrollRef.scrollTo({x: 0, y: 0});
+          this.scrollToOffset({animated: true, offset: 0});
         } else if (key === 'END') {
           this.scrollToEnd({animated: true});
         } else if (key === 'ENTER') {
