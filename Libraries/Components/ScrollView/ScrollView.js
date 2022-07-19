@@ -1212,7 +1212,7 @@ class ScrollView extends React.Component<Props, State> {
           this.scrollToEnd({animated: true});
         }
       }
-    } 
+    }
   };
 
   _handleScrollByKeyDown = (event: ScrollEvent, newOffset) => {

@@ -884,7 +884,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           index={ii}
           inversionStyle={inversionStyle}
           item={item}
-          isSelected={ // [TODO(macOS GH#774)
+          // [TODO(macOS GH#774)
+          isSelected={
             this.props.enableSelectionOnKeyPress &&
             this.state.selectedRowIndex === ii
               ? true
