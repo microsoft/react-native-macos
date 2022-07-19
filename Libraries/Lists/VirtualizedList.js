@@ -884,8 +884,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           index={ii}
           inversionStyle={inversionStyle}
           item={item}
-          // [TODO(macOS GH#774)
-          isSelected={
+          isSelected={ // [TODO(macOS GH#774)
             this.props.enableSelectionOnKeyPress &&
             this.state.selectedRowIndex === ii
               ? true
@@ -1336,7 +1335,11 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         // $FlowFixMe[prop-missing] Invalid prop usage
         <ScrollView
           {...props}
-          onScrollKeyDown={keyEventHandler} // [TODO(macOS GH#774)
+          // [TODO(macOS GH#774)
+          focusable={props.enableSelectionOnKeyPress}
+          onFocus={this._onFocus}
+          onBlur={this._onBlur}
+          onScrollKeyDown={keyEventHandler}
           onPreferredScrollerStyleDidChange={
             preferredScrollerStyleDidChangeHandler
           } // TODO(macOS GH#774)]
@@ -1358,11 +1361,11 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         // $FlowFixMe Invalid prop usage
         <ScrollView
           {...props}
-          onScrollKeyDown={keyEventHandler} // TODO(macOS GH#774)
+          focusable={props.enableSelectionOnKeyPress} // [TODO(macOS GH#774)
+          onScrollKeyDown={keyEventHandler}
           onPreferredScrollerStyleDidChange={
-            // TODO(macOS GH#774)
-            preferredScrollerStyleDidChangeHandler // TODO(macOS GH#774)
-          }
+            preferredScrollerStyleDidChangeHandler
+          } // TODO(macOS GH#774)]
         />
       );
     }

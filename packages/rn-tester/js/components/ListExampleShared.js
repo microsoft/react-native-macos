@@ -367,10 +367,12 @@ const styles = StyleSheet.create({
   },
   // [TODO(macOS GH#774)
   selectedItem: {
-    backgroundColor: PlatformColor('selectedControlColor'),
+    backgroundColor: PlatformColor('selectedContentBackgroundColor'),
   },
   selectedItemText: {
-    color: PlatformColor('selectedControlTextColor'),
+    // This was the closest UI Element color that looked right...
+    // https://developer.apple.com/documentation/appkit/nscolor/ui_element_colors
+    color: PlatformColor('selectedMenuItemTextColor'),
   },
   // [TODO(macOS GH#774)]
 });
