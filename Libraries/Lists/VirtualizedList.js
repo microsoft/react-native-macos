@@ -1337,9 +1337,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         <ScrollView
           {...props}
           // [TODO(macOS GH#774)
-          focusable={props.enableSelectionOnKeyPress}
-          onFocus={this._onFocus}
-          onBlur={this._onBlur}
+          focusable={props.enableSelectionOnKeyPress ?? false}
           onScrollKeyDown={keyEventHandler}
           onPreferredScrollerStyleDidChange={
             preferredScrollerStyleDidChangeHandler
@@ -1362,7 +1360,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         // $FlowFixMe Invalid prop usage
         <ScrollView
           {...props}
-          focusable={props.enableSelectionOnKeyPress} // [TODO(macOS GH#774)
+          focusable={props.enableSelectionOnKeyPress ?? false} // [TODO(macOS GH#774)
           onScrollKeyDown={keyEventHandler}
           onPreferredScrollerStyleDidChange={
             preferredScrollerStyleDidChangeHandler
