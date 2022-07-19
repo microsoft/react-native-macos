@@ -67,13 +67,8 @@ class ItemComponent extends React.PureComponent<{
   };
   render(): React.Node {
     // [TODO(macOS GH#774)
-    const {
-      fixedHeight,
-      horizontal,
-      item,
-      textSelectable,
-      isSelected,
-    } = this.props; // TODO(macOS GH#774)]
+    const {fixedHeight, horizontal, item, textSelectable, isSelected} =
+      this.props; // TODO(macOS GH#774)]
     const itemHash = Math.abs(hashCode(item.title));
     const imgSource = THUMB_URLS[itemHash % THUMB_URLS.length];
     return (
@@ -88,8 +83,7 @@ class ItemComponent extends React.PureComponent<{
             horizontal && {width: HORIZ_WIDTH},
             fixedHeight && {height: ITEM_HEIGHT},
             isSelected && styles.selectedItem, // TODO(macOS GH#774)
-          ]}
-        >
+          ]}>
           {!item.noImage && <Image style={styles.thumb} source={imgSource} />}
           <Text
             style={[styles.text, isSelected && styles.selectedItemText]} // TODO(macOS GH#774)
