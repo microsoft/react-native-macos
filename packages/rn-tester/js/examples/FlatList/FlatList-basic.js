@@ -277,7 +277,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
     return onPressAction;
   };
   _onRefresh = () => Alert.alert('onRefresh: nothing to refresh :P');
-  _renderItemComponent = props => {
+  _renderItemComponent = () => {
     const flatListPropKey = this.state.useFlatListItemComponent
       ? 'ListItemComponent'
       : 'renderItem';
