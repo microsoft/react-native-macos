@@ -425,6 +425,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 @property (nonatomic, assign) CGFloat zoomScale;
 @property (nonatomic, assign) BOOL alwaysBounceHorizontal;
 @property (nonatomic, assign) BOOL alwaysBounceVertical;
+// macOS specific properties
 @property (nonatomic, assign) BOOL enableFocusRing;
 
 @end
