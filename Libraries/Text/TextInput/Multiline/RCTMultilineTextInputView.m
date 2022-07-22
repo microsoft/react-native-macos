@@ -48,6 +48,8 @@
 #else // [TODO(macOS GH#774)
     _scrollView.documentView = _backedTextInputView;
     _scrollView.contentView.postsBoundsChangedNotifications = YES;
+    // NSTextView has no focus ring by default so let's use the standard Aqua focus ring.
+    _scrollView.focusRingType = NSFocusRingTypeExterior;
     [self addSubview:_scrollView];
     
     // a register for those notifications on the content view.
