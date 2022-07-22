@@ -88,14 +88,12 @@ class ItemComponent extends React.PureComponent<{
             horizontal && {width: HORIZ_WIDTH},
             fixedHeight && {height: ITEM_HEIGHT},
             isSelected && styles.selectedItem, // TODO(macOS GH#774)
-          ]}
-        >
+          ]}>
           {!item.noImage && <Image style={styles.thumb} source={imgSource} />}
           <Text
             style={[styles.text, isSelected && styles.selectedItemText]} // TODO(macOS GH#774)
             selectable={textSelectable}
-            numberOfLines={horizontal || fixedHeight ? 3 : undefined}
-          >
+            numberOfLines={horizontal || fixedHeight ? 3 : undefined}>
             {item.title} - {item.text}
           </Text>
         </View>
