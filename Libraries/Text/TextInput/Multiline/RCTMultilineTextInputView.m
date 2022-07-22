@@ -48,8 +48,8 @@
 #else // [TODO(macOS GH#774)
     _scrollView.documentView = _backedTextInputView;
     _scrollView.contentView.postsBoundsChangedNotifications = YES;
-    // NSTextView has no focus ring by default so let's use the standard Aqua focus ring.
-    _scrollView.focusRingType = NSFocusRingTypeExterior;
+    // Enable focus ring by default
+    _scrollView.enableFocusRing = YES;
     [self addSubview:_scrollView];
     
     // a register for those notifications on the content view.
@@ -91,6 +91,14 @@
   _scrollView.frame = UIEdgeInsetsInsetRect(self.bounds, reactBorderInsets);
   [self setNeedsLayout];
 }
+
+- (void)setEnableFocusRing:(BOOL)enableFocusRing {
+  [super setEnableFocusRing:enableFocusRing];
+  if ([_scrollView respondsToSelector:@selector(setEnableFocusRing:)]) {
+    [_scrollView setEnableFocusRing:YES];
+  }
+}
+
 #endif // ]TODO(macOS GH#774)
 
 #pragma mark - UIScrollViewDelegate
