@@ -37,7 +37,6 @@ Pod::Spec.new do |s|
 # [TODO(macOS GH#774)
   s.osx.dependency "React-TurboModuleCxx-RNW"
   s.osx.pod_target_xcconfig = { "USE_HEADERMAP" => "YES",
-                                "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost-for-react-native\"",
                                 "CLANG_CXX_LANGUAGE_STANDARD" => "c++17" }
 # ]TODO(macOS GH#774)
 
