@@ -1620,6 +1620,9 @@ NSString* const downArrowPressKey = @"ArrowDown";
   BOOL tabKeyPressed = NO;
   BOOL escapeKeyPressed = NO;
   NSString *key = event.charactersIgnoringModifiers;
+  if ([key length] == 0) {
+        return nil;
+  }
   unichar const code = [key characterAtIndex:0];
 
   // detect arrow key presses
