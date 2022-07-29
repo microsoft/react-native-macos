@@ -8,6 +8,11 @@ steps:
     inputs:
       script: printenv
 
+  - task: CmdLine@2
+    displayName: print installed ndks
+    inputs:
+      script: dir $ANDROID_SDK_ROOT/ndk
+
   - template: apple-droid-node-patching.yml
     parameters:
       apply_office_patches: true
