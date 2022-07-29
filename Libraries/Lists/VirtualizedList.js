@@ -588,7 +588,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       const newOffset = Math.min(contentLength, visTop + (frameEnd - visEnd));
       this.scrollToOffset({offset: newOffset});
     } else if (frame.offset < visTop) {
-      const newOffset = Math.min(frame.offset, visTop - frame.length);
+      const newOffset = Math.max(0, visTop - frame.length);
       this.scrollToOffset({offset: newOffset});
     }
   }
@@ -882,13 +882,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           index={ii}
           inversionStyle={inversionStyle}
           item={item}
-          // [TODO(macOS GH#774)
-          isSelected={
-            this.props.enableSelectionOnKeyPress &&
-            this.state.selectedRowIndex === ii
-              ? true
-              : false
-          } // TODO(macOS GH#774)]
+          isSelected={this.state.selectedRowIndex === ii ? true : false} // TODO(macOS GH#774)
           key={key}
           prevCellKey={prevCellKey}
           onUpdateSeparators={this._onUpdateSeparators}
@@ -1329,12 +1323,10 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         // $FlowFixMe[prop-missing] Invalid prop usage
         <ScrollView
           {...props}
-          // [TODO(macOS GH#774)
-          {...(props.enableSelectionOnKeyPress && {focusable: true})}
-          onScrollKeyDown={keyEventHandler}
+          onScrollKeyDown={keyEventHandler} // TODO(macOS GH#774)
           onPreferredScrollerStyleDidChange={
             preferredScrollerStyleDidChangeHandler
-          } // TODO(macOS GH#774)]
+          } // TODO(macOS GH#774)
           refreshControl={
             props.refreshControl == null ? (
               <RefreshControl
@@ -1353,11 +1345,11 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         // $FlowFixMe Invalid prop usage
         <ScrollView
           {...props}
-          {...(props.enableSelectionOnKeyPress && {focusable: true})} // [TODO(macOS GH#774)
-          onScrollKeyDown={keyEventHandler}
+          onScrollKeyDown={keyEventHandler} // TODO(macOS GH#774)
           onPreferredScrollerStyleDidChange={
-            preferredScrollerStyleDidChangeHandler
-          } // TODO(macOS GH#774)]
+            // TODO(macOS GH#774)
+            preferredScrollerStyleDidChangeHandler // TODO(macOS GH#774)
+          }
         />
       );
     }
@@ -1515,13 +1507,6 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     return rowAbove;
   };
 
-  _selectRowAtIndex = rowIndex => {
-    this.setState(state => {
-      return {selectedRowIndex: rowIndex};
-    });
-    return rowIndex;
-  };
-
   _selectRowBelowIndex = rowIndex => {
     if (this.props.getItemCount) {
       const {data} = this.props;
@@ -1536,14 +1521,14 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     }
   };
 
-  _handleKeyDown = (event: ScrollEvent) => {
+  _handleKeyDown = (e: ScrollEvent) => {
     if (this.props.onScrollKeyDown) {
-      this.props.onScrollKeyDown(event);
+      this.props.onScrollKeyDown(e);
     } else {
       if (Platform.OS === 'macos') {
         // $FlowFixMe Cannot get e.nativeEvent because property nativeEvent is missing in Event
-        const nativeEvent = event.nativeEvent;
-        const key = nativeEvent.key;
+        const event = e.nativeEvent;
+        const key = event.key;
 
         let prevIndex = -1;
         let newIndex = -1;
@@ -1551,63 +1536,43 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           prevIndex = this.state.selectedRowIndex;
         }
 
-        // const {data, getItem} = this.props;
-        if (key === 'UP_ARROW') {
-          newIndex = this._selectRowAboveIndex(prevIndex);
-          this._handleSelectionChange(prevIndex, newIndex);
-        } else if (key === 'DOWN_ARROW') {
+        const {data, getItem} = this.props;
+        if (key === 'DOWN_ARROW') {
           newIndex = this._selectRowBelowIndex(prevIndex);
-          this._handleSelectionChange(prevIndex, newIndex);
+          this.ensureItemAtIndexIsVisible(newIndex);
+
+          if (prevIndex !== newIndex) {
+            const item = getItem(data, newIndex);
+            if (this.props.onSelectionChanged) {
+              this.props.onSelectionChanged({
+                previousSelection: prevIndex,
+                newSelection: newIndex,
+                item: item,
+              });
+            }
+          }
+        } else if (key === 'UP_ARROW') {
+          newIndex = this._selectRowAboveIndex(prevIndex);
+          this.ensureItemAtIndexIsVisible(newIndex);
+
+          if (prevIndex !== newIndex) {
+            const item = getItem(data, newIndex);
+            if (this.props.onSelectionChanged) {
+              this.props.onSelectionChanged({
+                previousSelection: prevIndex,
+                newSelection: newIndex,
+                item: item,
+              });
+            }
+          }
         } else if (key === 'ENTER') {
           if (this.props.onSelectionEntered) {
-            const item = this.props.getItem(this.props.data, prevIndex);
+            const item = getItem(data, prevIndex);
             if (this.props.onSelectionEntered) {
               this.props.onSelectionEntered(item);
             }
           }
-        } else if (key === 'OPTION_UP') {
-          newIndex = this._selectRowAtIndex(0);
-          this._handleSelectionChange(prevIndex, newIndex);
-        } else if (key === 'OPTION_DOWN') {
-          newIndex = this._selectRowAtIndex(this.state.last);
-          this._handleSelectionChange(prevIndex, newIndex);
-        } else if (key === 'PAGE_UP') {
-          const maxY =
-            event.nativeEvent.contentSize.height -
-            event.nativeEvent.layoutMeasurement.height;
-          const newOffset = Math.min(
-            maxY,
-            nativeEvent.contentOffset.y + -nativeEvent.layoutMeasurement.height,
-          );
-          this.scrollToOffset({animated: true, offset: newOffset});
-        } else if (key === 'PAGE_DOWN') {
-          const maxY =
-            event.nativeEvent.contentSize.height -
-            event.nativeEvent.layoutMeasurement.height;
-          const newOffset = Math.min(
-            maxY,
-            nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height,
-          );
-          this.scrollToOffset({animated: true, offset: newOffset});
-        } else if (key === 'HOME') {
-          this.scrollToOffset({animated: true, offset: 0});
-        } else if (key === 'END') {
-          this.scrollToEnd({animated: true});
         }
-      }
-    }
-  };
-
-  _handleSelectionChange = (prevIndex, newIndex) => {
-    this.ensureItemAtIndexIsVisible(newIndex);
-    if (prevIndex !== newIndex) {
-      const item = this.props.getItem(this.props.data, newIndex);
-      if (this.props.onSelectionChanged) {
-        this.props.onSelectionChanged({
-          previousSelection: prevIndex,
-          newSelection: newIndex,
-          item: item,
-        });
       }
     }
   };
@@ -2217,7 +2182,6 @@ class CellRenderer extends React.Component<
       return React.createElement(ListItemComponent, {
         item,
         index,
-        isSelected,
         separators: this._separators,
       });
     }
@@ -2294,7 +2258,6 @@ class CellRenderer extends React.Component<
         {itemSeparator}
       </CellRendererComponent>
     );
-    // TODO(macOS GH#774)]
 
     return (
       <VirtualizedListCellContextProvider cellKey={this.props.cellKey}>
