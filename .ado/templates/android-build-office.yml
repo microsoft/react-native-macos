@@ -81,6 +81,11 @@ steps:
     inputs:
       script: REACT_NATIVE_BOOST_PATH=$(System.DefaultWorkingDirectory)/build_deps ./gradlew installArchives -Pparam="excludeLibs"
 
+  - task: CmdLine@2
+    displayName: print sdk directory
+    inputs:
+      script: dir $ANDROID_SDK_ROOT
+
   # We have separate tasks to build rn-tester for debug and release due to a regression upstream. See https://github.com/facebook/react-native/issues/34168.
   - task: CmdLine@2
     displayName: Build rn-tester debug
