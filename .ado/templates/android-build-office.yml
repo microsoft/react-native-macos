@@ -2,6 +2,11 @@ steps:
   - task: UseNode@1
     inputs:
       version: '16.x'
+  
+  - task: CmdLine@2
+    displayName: print env
+    inputs:
+      script: printenv
 
   - template: apple-droid-node-patching.yml
     parameters:
