@@ -1,9 +1,6 @@
-diff --git a/ReactAndroid/src/main/java/com/facebook/react/v8executor/V8Executor.java b/ReactAndroid/src/main/java/com/facebook/react/v8executor/V8Executor.java
-new file mode 100644
-index 0000000000..c28186d613
---- /dev/null
-+++ b/ReactAndroid/src/main/java/com/facebook/react/v8executor/V8Executor.java
-@@ -0,0 +1,32 @@
+--- "C:\\github\\react-native\\ReactAndroid\\src\\main\\java\\com\\facebook\\react\\v8executor\\V8Executor.java"	1970-01-01 05:30:00.000000000 +0530
++++ "C:\\github\\react-native-macos\\ReactAndroid\\src\\main\\java\\com\\facebook\\react\\v8executor\\V8Executor.java"	2022-08-05 12:38:10.946736100 +0530
+@@ -0,0 +1,36 @@
 +/**
 + * Copyright (c) 2015-present, Facebook, Inc.
 + *
@@ -22,6 +19,10 @@ index 0000000000..c28186d613
 +@DoNotStrip
 +/* package */ class V8Executor extends JavaScriptExecutor {
 +  static {
++    loadLibrary();
++  }
++
++  public static void loadLibrary() throws UnsatisfiedLinkError {
 +    SoLoader.loadLibrary("v8executor");
 +  }
 +
