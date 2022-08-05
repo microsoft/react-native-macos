@@ -1,7 +1,6 @@
 load("//tools/build_defs:fb_native_wrapper.bzl", "fb_native")
-load("//tools/build_defs/apple:config_utils_defs.bzl", "STATIC_LIBRARY_APPLETVOS_CONFIG", "fbobjc_configs")
 load("//tools/build_defs/apple:fb_apple_test.bzl", "fb_apple_test")
-load("//tools/build_defs/apple:flag_defs.bzl", "get_base_appletvos_flags", "get_objc_arc_preprocessor_flags", "get_preprocessor_flags_for_build_mode", "get_static_library_ios_flags")
+load("//tools/build_defs/apple:flag_defs.bzl", "get_objc_arc_preprocessor_flags", "get_preprocessor_flags_for_build_mode", "get_static_library_ios_flags")
 load("//tools/build_defs/apple/plugins:plugin_defs.bzl", "plugin")
 load("//tools/build_defs/oss:metro_defs.bzl", "rn_library")
 load(
@@ -18,6 +17,7 @@ load(
     "RCT_IMAGE_URL_LOADER_SOCKET",
     "RCT_URL_REQUEST_HANDLER_SOCKET",
     "YOGA_CXX_TARGET",
+    "get_react_native_ios_target_sdk_version",
     "react_fabric_component_plugin_provider",
     "react_module_plugin_providers",
     "react_native_root_target",
@@ -184,8 +184,6 @@ rn_xplat_cxx_library2(
         prefix = "React",
     ),
     apple_sdks = (IOS, APPLETVOS),
-    appletvos_configs = fbobjc_configs(STATIC_LIBRARY_APPLETVOS_CONFIG),
-    appletvos_inherited_buck_flags = get_base_appletvos_flags(),
     contacts = ["oncall+react_native@xmail.facebook.com"],
     fbobjc_enable_exceptions = True,
     frameworks = [
@@ -196,6 +194,32 @@ rn_xplat_cxx_library2(
     visibility = ["PUBLIC"],
     deps = [
         "//xplat/folly:molly",
+    ],
+)
+
+rn_xplat_cxx_library2(
+    name = "RCTCxxLogUtils",
+    srcs = glob([
+        "React/CxxLogUtils/*.mm",
+    ]),
+    header_namespace = "",
+    exported_headers = subdir_glob(
+        [
+            (
+                "React/CxxLogUtils",
+                "*.h",
+            ),
+        ],
+        prefix = "React",
+    ),
+    contacts = ["oncall+react_native@xmail.facebook.com"],
+    fbobjc_enable_exceptions = True,
+    labels = ["supermodule:xplat/default/public.react_native.infra"],
+    preprocessor_flags = get_objc_arc_preprocessor_flags() + get_preprocessor_flags_for_build_mode(),
+    visibility = ["PUBLIC"],
+    deps = [
+        "//xplat/js/react-native-github:ReactInternal",
+        react_native_xplat_target("logger:logger"),
     ],
 )
 
@@ -247,6 +271,7 @@ REACT_PUBLIC_HEADERS = {
     "React/RCTInvalidating.h": RCTBASE_PATH + "RCTInvalidating.h",
     "React/RCTJSScriptLoaderModule.h": RCTBASE_PATH + "RCTJSScriptLoaderModule.h",
     "React/RCTJSStackFrame.h": RCTBASE_PATH + "RCTJSStackFrame.h",
+    "React/RCTJSThread.h": RCTBASE_PATH + "RCTJSThread.h",
     "React/RCTJavaScriptExecutor.h": RCTBASE_PATH + "RCTJavaScriptExecutor.h",
     "React/RCTJavaScriptLoader.h": RCTBASE_PATH + "RCTJavaScriptLoader.h",
     "React/RCTKeyCommands.h": RCTBASE_PATH + "RCTKeyCommands.h",
@@ -255,6 +280,7 @@ REACT_PUBLIC_HEADERS = {
     "React/RCTLayoutAnimationGroup.h": RCTMODULES_PATH + "RCTLayoutAnimationGroup.h",
     "React/RCTLog.h": RCTBASE_PATH + "RCTLog.h",
     "React/RCTManagedPointer.h": RCTBASE_PATH + "RCTManagedPointer.h",
+    "React/RCTMockDef.h": RCTBASE_PATH + "RCTMockDef.h",
     "React/RCTModalHostViewController.h": RCTVIEWS_PATH + "RCTModalHostViewController.h",
     "React/RCTModalHostViewManager.h": RCTVIEWS_PATH + "RCTModalHostViewManager.h",
     "React/RCTModalManager.h": RCTVIEWS_PATH + "RCTModalManager.h",
@@ -262,9 +288,11 @@ REACT_PUBLIC_HEADERS = {
     "React/RCTModuleMethod.h": RCTBASE_PATH + "RCTModuleMethod.h",
     "React/RCTMultipartStreamReader.h": RCTBASE_PATH + "RCTMultipartStreamReader.h",
     "React/RCTNullability.h": RCTBASE_PATH + "RCTNullability.h",
+    "React/RCTPLTag.h": RCTBASE_PATH + "RCTPLTag.h",
     "React/RCTPackagerClient.h": RCTDEVSUPPORT_PATH + "RCTPackagerClient.h",
     "React/RCTPackagerConnection.h": RCTDEVSUPPORT_PATH + "RCTPackagerConnection.h",
     "React/RCTPerformanceLogger.h": RCTBASE_PATH + "RCTPerformanceLogger.h",
+    "React/RCTPerformanceLoggerLabels.h": RCTBASE_PATH + "RCTPerformanceLoggerLabels.h",
     "React/RCTPointerEvents.h": RCTVIEWS_PATH + "RCTPointerEvents.h",
     "React/RCTProfile.h": "React/Profiler/RCTProfile.h",
     "React/RCTPushNotificationManager.h": RCTLIB_PATH + "PushNotificationIOS/RCTPushNotificationManager.h",
@@ -309,6 +337,7 @@ REACT_PUBLIC_HEADERS = {
     "React/RCTVersion.h": RCTBASE_PATH + "RCTVersion.h",
     "React/RCTView.h": RCTVIEWS_PATH + "RCTView.h",
     "React/RCTViewManager.h": RCTVIEWS_PATH + "RCTViewManager.h",
+    "React/RCTViewUtils.h": RCTVIEWS_PATH + "RCTViewUtils.h",
     "React/RCTWeakProxy.h": RCTBASE_PATH + "RCTWeakProxy.h",
     "React/RCTWeakViewHolder.h": RCTVIEWS_PATH + "RCTWeakViewHolder.h",
     "React/RCTWrapperViewController.h": RCTVIEWS_PATH + "RCTWrapperViewController.h",
@@ -411,6 +440,7 @@ rn_xplat_cxx_library2(
         "//xplat/js/react-native-github/ReactCommon/react/nativemodule/core:",
         "//xplat/js/react-native-github/ReactCommon/react/nativemodule/samples:",
         "//xplat/js/react-native-github/packages/rn-tester:",
+        "//xplat/rtc/manul/...",
     ],
     deps = [
         YOGA_CXX_TARGET,
@@ -441,7 +471,6 @@ rn_xplat_cxx_library2(
         "React/RCTComponentViewRegistry.h": "React/Fabric/Mounting/RCTComponentViewRegistry.h",
         "React/RCTFabricSurface.h": "React/Fabric/Surface/RCTFabricSurface.h",
         "React/RCTFabricSurfaceHostingProxyRootView.h": "React/Fabric/Surface/RCTFabricSurfaceHostingProxyRootView.h",
-        "React/RCTFabricSurfaceHostingView.h": "React/Fabric/Surface/RCTFabricSurfaceHostingView.h",
         "React/RCTGenericDelegateSplitter.h": "React/Fabric/Utils/RCTGenericDelegateSplitter.h",
         "React/RCTLegacyViewManagerInteropComponentView.h": "React/Fabric/Mounting/ComponentViews/LegacyViewManagerInterop/RCTLegacyViewManagerInteropComponentView.h",
         "React/RCTLocalizationProvider.h": "React/Fabric/RCTLocalizationProvider.h",
@@ -468,7 +497,7 @@ rn_xplat_cxx_library2(
     ],
     contacts = ["oncall+react_native@xmail.facebook.com"],
     fbobjc_enable_exceptions = True,
-    fbobjc_target_sdk_version = "11.0",
+    fbobjc_target_sdk_version = get_react_native_ios_target_sdk_version(),
     frameworks = [
         "$SDKROOT/System/Library/Frameworks/Foundation.framework",
         "$SDKROOT/System/Library/Frameworks/QuartzCore.framework",
@@ -507,6 +536,7 @@ rn_xplat_cxx_library2(
         ":RCTFabricComponentViewsBase",
         "//fbobjc/Libraries/FBReactKit/RCTFabricComponent/RCTFabricComponentPlugin:RCTFabricComponentPlugin",
         "//xplat/js/react-native-github:RCTCxxBridge",
+        "//xplat/js/react-native-github:RCTCxxLogUtils",
         "//xplat/js/react-native-github:RCTCxxUtils",
         "//xplat/js/react-native-github:RCTImage",
         "//xplat/js/react-native-github:RCTPushNotification",
@@ -551,6 +581,7 @@ rn_apple_library(
         ],
     ),
     autoglob = False,
+    complete_nullability = True,
     contacts = ["oncall+react_native@xmail.facebook.com"],
     extension_api_only = True,
     frameworks = [
@@ -687,18 +718,17 @@ rn_library(
         ],
     ),
     labels = ["supermodule:xplat/default/public.react_native.core"],
-    skip_processors = True,  # Don't anticipate routes or fbicon here
     visibility = ["PUBLIC"],
     deps = [
         "//xplat/js:node_modules__abort_19controller",
         "//xplat/js:node_modules__anser",
         "//xplat/js:node_modules__base64_19js",
+        "//xplat/js:node_modules__deprecated_19react_19native_19prop_19types",
         "//xplat/js:node_modules__event_19target_19shim",
         "//xplat/js:node_modules__invariant",
         "//xplat/js:node_modules__nullthrows",
         "//xplat/js:node_modules__pretty_19format",
         "//xplat/js:node_modules__promise",
-        "//xplat/js:node_modules__prop_19types",
         "//xplat/js:node_modules__react_19devtools_19core",
         "//xplat/js:node_modules__react_19refresh",
         "//xplat/js:node_modules__react_19shallow_19renderer",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -125,26 +125,30 @@ static RCTReconnectingWebSocket *socketForLocation(NSString *const serverHostPor
   _requestRegistrations.clear();
 }
 
-- (void)bundleURLSettingsChanged
+- (void)reconnect:(NSString *)packagerServerHostPort
 {
   std::lock_guard<std::mutex> l(_mutex);
   if (_socket == nil) {
     return; // already stopped
   }
 
-  NSString *const serverHostPort = [[RCTBundleURLProvider sharedSettings] packagerServerHostPort];
   NSString *const serverScheme = [[RCTBundleURLProvider sharedSettings] packagerScheme];
-  if ([serverHostPort isEqual:_serverHostPortForSocket] && [serverScheme isEqual:_serverSchemeForSocket]) {
+  if ([packagerServerHostPort isEqual:_serverHostPortForSocket] && [serverScheme isEqual:_serverSchemeForSocket]) {
     return; // unchanged
   }
 
   _socket.delegate = nil;
   [_socket stop];
-  _serverHostPortForSocket = serverHostPort;
+  _serverHostPortForSocket = packagerServerHostPort;
   _serverSchemeForSocket = serverScheme;
-  _socket = socketForLocation(serverHostPort, serverScheme);
+  _socket = socketForLocation(packagerServerHostPort, serverScheme);
   _socket.delegate = self;
   [_socket start];
+}
+
+- (void)bundleURLSettingsChanged
+{
+  [self reconnect:[[RCTBundleURLProvider sharedSettings] packagerServerHostPort]];
 }
 
 - (RCTHandlerToken)addNotificationHandler:(RCTNotificationHandler)handler

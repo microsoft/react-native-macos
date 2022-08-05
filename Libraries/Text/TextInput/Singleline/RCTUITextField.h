@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -43,6 +43,9 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // ]TODO(macOS GH#774)
 @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
 @property (nonatomic, strong, nullable) NSString *inputAccessoryViewID;
+@property (nonatomic, assign, readonly) CGFloat zoomScale;
+@property (nonatomic, assign, readonly) CGPoint contentOffset;
+@property (nonatomic, assign, readonly) UIEdgeInsets contentInset;
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 @property (nonatomic, copy, nullable) NSString *text;
@@ -51,6 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTextAlignment textAlignment;
 @property (nonatomic, getter=isAutomaticTextReplacementEnabled) BOOL automaticTextReplacementEnabled;
 @property (nonatomic, getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled;
+@property (nonatomic, getter=isContinuousSpellCheckingEnabled) BOOL continuousSpellCheckingEnabled;
+@property (nonatomic, getter=isGrammarCheckingEnabled) BOOL grammarCheckingEnabled;
 @property (nonatomic, assign) BOOL enableFocusRing;
 @property (nonatomic, strong, nullable) RCTUIColor *selectionColor;
 @property (weak, nullable) id<RCTUITextFieldDelegate> delegate;

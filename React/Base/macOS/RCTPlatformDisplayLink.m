@@ -35,7 +35,7 @@
 
 + (RCTPlatformDisplayLink *)displayLinkWithTarget:(id)target selector:(SEL)sel
 {
-  RCTPlatformDisplayLink *displayLink = [[self.class alloc] init];
+  RCTPlatformDisplayLink *displayLink = [self.class new];
   displayLink->_target = target;
   displayLink->_selector = sel;
   return displayLink;
@@ -51,7 +51,9 @@ static CVReturn RCTPlatformDisplayLinkCallBack(__unused CVDisplayLinkRef display
     if (rctDisplayLink->_runLoop != nil) {
       CFRunLoopRef cfRunLoop = [rctDisplayLink->_runLoop getCFRunLoop];
       CFRunLoopPerformBlock(cfRunLoop, (__bridge CFArrayRef)rctDisplayLink->_modes, ^{
-        [rctDisplayLink tick];
+        @autoreleasepool {
+          [rctDisplayLink tick];
+        }
       });
       CFRunLoopWakeUp(cfRunLoop);
     }

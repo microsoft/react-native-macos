@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -22,6 +22,7 @@ const {
   Text,
   TextInput,
   View,
+  PlatformColor, // TODO(macOS GH#774)
 } = require('react-native');
 
 export type Item = {
@@ -57,13 +58,22 @@ class ItemComponent extends React.PureComponent<{
   onPress: (key: string) => void,
   onShowUnderlay?: () => void,
   onHideUnderlay?: () => void,
+  textSelectable?: ?boolean,
+  isSelected?: ?Boolean, // TODO(macOS GH#774)
   ...
 }> {
   _onPress = () => {
     this.props.onPress(this.props.item.key);
   };
   render(): React.Node {
-    const {fixedHeight, horizontal, item} = this.props;
+    // [TODO(macOS GH#774)
+    const {
+      fixedHeight,
+      horizontal,
+      item,
+      textSelectable,
+      isSelected,
+    } = this.props; // TODO(macOS GH#774)]
     const itemHash = Math.abs(hashCode(item.title));
     const imgSource = THUMB_URLS[itemHash % THUMB_URLS.length];
     return (
@@ -71,17 +81,22 @@ class ItemComponent extends React.PureComponent<{
         onPress={this._onPress}
         onShowUnderlay={this.props.onShowUnderlay}
         onHideUnderlay={this.props.onHideUnderlay}
-        style={horizontal ? styles.horizItem : styles.item}>
+        style={horizontal ? styles.horizItem : styles.item}
+      >
         <View
           style={[
             styles.row,
             horizontal && {width: HORIZ_WIDTH},
             fixedHeight && {height: ITEM_HEIGHT},
-          ]}>
+            isSelected && styles.selectedItem, // TODO(macOS GH#774)
+          ]}
+        >
           {!item.noImage && <Image style={styles.thumb} source={imgSource} />}
           <Text
-            style={styles.text}
-            numberOfLines={horizontal || fixedHeight ? 3 : undefined}>
+            style={[styles.text, isSelected && styles.selectedItemText]} // TODO(macOS GH#774)
+            selectable={textSelectable}
+            numberOfLines={horizontal || fixedHeight ? 3 : undefined}
+          >
             {item.title} - {item.text}
           </Text>
         </View>
@@ -350,6 +365,16 @@ const styles = StyleSheet.create({
   text: {
     flex: 1,
   },
+  // [TODO(macOS GH#774)
+  selectedItem: {
+    backgroundColor: PlatformColor('selectedContentBackgroundColor'),
+  },
+  selectedItemText: {
+    // This was the closest UI Element color that looked right...
+    // https://developer.apple.com/documentation/appkit/nscolor/ui_element_colors
+    color: PlatformColor('selectedMenuItemTextColor'),
+  },
+  // [TODO(macOS GH#774)]
 });
 
 module.exports = {

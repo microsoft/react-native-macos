@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -128,16 +128,11 @@ RCT_EXPORT_MODULE()
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
       CGSize screenSize = [UIScreen mainScreen].bounds.size;
 
-      if (@available(iOS 11.0, *)) {
-        UIWindow *window = RCTSharedApplication().keyWindow;
-        self->_window =
-            [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, screenSize.width, window.safeAreaInsets.top + 10)];
-        self->_label =
-            [[UILabel alloc] initWithFrame:CGRectMake(0, window.safeAreaInsets.top - 10, screenSize.width, 20)];
-      } else {
-        self->_window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, screenSize.width, 20)];
-        self->_label = [[UILabel alloc] initWithFrame:self->_window.bounds];
-      }
+      UIWindow *window = RCTSharedApplication().keyWindow;
+      self->_window =
+          [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, screenSize.width, window.safeAreaInsets.top + 10)];
+      self->_label =
+          [[UILabel alloc] initWithFrame:CGRectMake(0, window.safeAreaInsets.top - 10, screenSize.width, 20)];
       [self->_window addSubview:self->_label];
 
       self->_window.windowLevel = UIWindowLevelStatusBar + 1;
@@ -231,7 +226,7 @@ RCT_EXPORT_METHOD(hide)
       [NSAnimationContext runAnimationGroup:^(__unused NSAnimationContext *context) {
         self->_window.animator.alphaValue = 0.0;
       } completionHandler:^{
-        [self->_window orderFront:self];
+        [self->_window close];
         self->_window = nil;
       }];
     });

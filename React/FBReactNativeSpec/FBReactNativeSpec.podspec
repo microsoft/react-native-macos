@@ -1,4 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 #
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
@@ -33,13 +33,14 @@ Pod::Spec.new do |s|
   s.platforms              = { :ios => "11.0", :osx => "10.15" } # TODO(macOS GH#774)
   s.compiler_flags         = folly_compiler_flags + ' -Wno-nullability-completeness'
   s.source                 = source
-  s.source_files           = "**/*.{c,h,m,mm,cpp}"
+  # This podspec is used to trigger the codegen, and built files are generated in a different location.
+  # We don't want this pod to actually include any files.
   s.header_dir             = "FBReactNativeSpec"
 
   s.pod_target_xcconfig    = {
                                "USE_HEADERMAP" => "YES",
                                "CLANG_CXX_LANGUAGE_STANDARD" => "c++14",
-                               "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/React/FBReactNativeSpec\" \"$(PODS_ROOT)/RCT-Folly\""
+                               "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/RCT-Folly\""
                              }
 
   s.dependency "RCT-Folly", folly_version
@@ -53,9 +54,6 @@ Pod::Spec.new do |s|
     :react_native_path => react_native_path,
     :js_srcs_dir => "#{react_native_path}/Libraries",
     :library_name => "FBReactNativeSpec",
-    :output_dir => "#{react_native_path}/React/FBReactNativeSpec",
-    :component_library_name => "rncore",
-    # TODO: component_output_dir should be programmatically specified, and may change with use_frameworks! support.
-    :component_output_dir => "#{react_native_path}/ReactCommon/react/renderer/components/"
+    :library_type => "modules",
   })
 end

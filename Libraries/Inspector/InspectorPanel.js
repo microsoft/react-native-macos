@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -124,7 +124,8 @@ class InspectorPanelButton extends React.Component<InspectorPanelButtonProps> {
     return (
       <TouchableHighlight
         onPress={() => this.props.onClick(!this.props.pressed)}
-        style={[styles.button, this.props.pressed && styles.buttonPressed]}>
+        style={[styles.button, this.props.pressed && styles.buttonPressed]}
+      >
         <Text style={styles.buttonText}>{this.props.title}</Text>
       </TouchableHighlight>
     );

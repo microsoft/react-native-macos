@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -46,11 +46,10 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
     _placeholderView.numberOfLines = 0;
     [self addSubview:_placeholderView];
 #else // [TODO(macOS GH#774)
-    NSTextCheckingTypes checkingTypes = 0;
-    self.enabledTextCheckingTypes = checkingTypes;
     self.insertionPointColor = [NSColor selectedControlColor];
     // Fix blurry text on non-retina displays.
     self.canDrawSubviewsIntoLayer = YES;
+    self.allowsUndo = YES;
 #endif // ]TODO(macOS GH#774)
 
     _textInputDelegateAdapter = [[RCTBackedTextViewDelegateAdapter alloc] initWithTextView:self];
@@ -185,6 +184,18 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
 
   return success;
 }
+
+- (BOOL)resignFirstResponder
+{
+  BOOL success = [super resignFirstResponder];
+
+  if (success) {
+    // Break undo coalescing when losing focus.
+    [self breakUndoCoalescing];
+  }
+
+  return success;
+}
 #endif // ]TODO(macOS GH#774)
 
 - (void)setDefaultTextAttributes:(NSDictionary<NSAttributedStringKey, id> *)defaultTextAttributes
@@ -247,6 +258,9 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
   }
 #else // [TODO(macOS GH#774)
   if (![self.textStorage isEqualTo:attributedText.string]) {
+    // Break undo coalescing when the text is changed by JS (e.g. autocomplete).
+    [self breakUndoCoalescing];
+
     if (attributedText != nil) {
       [self.textStorage setAttributedString:attributedText];
     } else {
@@ -297,16 +311,18 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
   _textWasPasted = YES;
 }
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+// Turn off scroll animation to fix flaky scrolling.
+// This is only necessary for iOS <= 13.
+// TODO(macOS GH#774) - we may not need to check for !TARGET_OS_OSX if __IPHONE_OS_VERSION_MAX_ALLOWED is defined,
+// but it shouldn't hurt to do so for clarity's sake.
+#if !TARGET_OS_OSX && defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED < 140000
 - (void)setContentOffset:(CGPoint)contentOffset animated:(__unused BOOL)animated
 {
-  // Turning off scroll animation.
-  // This fixes the problem also known as "flaky scrolling".
   [super setContentOffset:contentOffset animated:NO];
 }
-#endif // [TODO(macOS GH#774)
+#endif
 
-#if TARGET_OS_OSX
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 
 #pragma mark - Placeholder
 
@@ -328,7 +344,7 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
     if (attributedPlaceholderString) {
       NSTextStorage *textStorage = [[NSTextStorage alloc] initWithAttributedString:attributedPlaceholderString];
       NSTextContainer *textContainer = [[NSTextContainer alloc] initWithContainerSize:self.textContainer.containerSize];
-      NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
+      NSLayoutManager *layoutManager = [NSLayoutManager new];
       
       textContainer.lineFragmentPadding = self.textContainer.lineFragmentPadding;
       [layoutManager addTextContainer:textContainer];

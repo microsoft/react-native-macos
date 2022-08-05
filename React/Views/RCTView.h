@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -17,8 +17,6 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 #endif // TODO(macOS GH#774)
 
 @protocol RCTAutoInsetsProtocol;
-
-@class RCTView;
 
 @interface RCTView : RCTUIView // TODO(macOS ISS#3536887)
 
@@ -47,13 +45,6 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 + (void)autoAdjustInsetsForView:(RCTUIView<RCTAutoInsetsProtocol> *)parentView // TODO(macOS ISS#3536887)
                  withScrollView:(RCTUIScrollView *)scrollView // TODO(macOS ISS#3536887) and TODO(macOS ISS#3536887)
                    updateOffset:(BOOL)updateOffset;
-
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
-/**
- * Find the first view controller whose view, or any subview is the specified view.
- */
-+ (UIEdgeInsets)contentInsetsForView:(UIView *)curView;
-#endif // TODO(macOS GH#774)
 
 /**
  * Layout direction of the view.

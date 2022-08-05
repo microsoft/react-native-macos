@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -354,6 +354,8 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
     return name;
   }
 
+// Re-enable componentViewName_DO_NOT_USE_THIS_IS_BROKEN once macOS uses Fabric
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
   __block RCTPlatformView *view; // TODO(macOS GH#774)
   RCTUnsafeExecuteOnMainQueueSync(^{
     view = self->_viewRegistry[reactTag];
@@ -367,6 +369,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   }
 
 #pragma clang diagnostic pop
+#endif // ]TODO(macOS GH#774)
   return nil;
 }
 
@@ -409,21 +412,34 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
 - (void)setAvailableSize:(CGSize)availableSize forRootView:(RCTUIView *)rootView // TODO(macOS ISS#3536887)
 {
   RCTAssertMainQueue();
-  [self
-      _executeBlockWithShadowView:^(RCTShadowView *shadowView) {
-        RCTAssert(
-            [shadowView isKindOfClass:[RCTRootShadowView class]], @"Located shadow view is actually not root view.");
 
-        RCTRootShadowView *rootShadowView = (RCTRootShadowView *)shadowView;
+  void (^block)(RCTShadowView *) = ^(RCTShadowView *shadowView) {
+    RCTAssert(
+        [shadowView isKindOfClass:[RCTRootShadowView class]], @"Located shadow view is actually not root view.");
 
-        if (CGSizeEqualToSize(availableSize, rootShadowView.availableSize)) {
-          return;
-        }
+    RCTRootShadowView *rootShadowView = (RCTRootShadowView *)shadowView;
 
-        rootShadowView.availableSize = availableSize;
-        [self setNeedsLayout];
-      }
-                           forTag:rootView.reactTag];
+    if (CGSizeEqualToSize(availableSize, rootShadowView.availableSize)) {
+      return;
+    }
+
+    rootShadowView.availableSize = availableSize;
+    [self setNeedsLayout];
+  };
+
+#if TARGET_OS_OSX // [TODO(macOS GH#744)
+  if (rootView.inLiveResize) {
+    NSNumber* tag = rootView.reactTag;
+    // Synchronously relayout to prevent "tearing" when resizing windows.
+    // Still run block asynchronously below so it "wins" after any in-flight layout.
+    RCTUnsafeExecuteOnUIManagerQueueSync(^{
+      RCTShadowView *shadowView = self->_shadowViewRegistry[tag];
+      block(shadowView);
+    });
+  }
+#endif // ]TODO(macOS GH#744)
+
+  [self _executeBlockWithShadowView:block forTag:rootView.reactTag];
 }
 
 - (void)setLocalData:(NSObject *)localData forView:(RCTUIView *)view // TODO(macOS ISS#3536887)
@@ -1135,6 +1151,8 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand
   RCTShadowView *shadowView = _shadowViewRegistry[reactTag];
   RCTComponentData *componentData = _componentDataByName[shadowView.viewName];
 
+// Re-enable componentViewName_DO_NOT_USE_THIS_IS_BROKEN once macOS uses Fabric
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
   // Achtung! Achtung!
   // This is a remarkably hacky and ugly workaround.
   // We need this only temporary for some testing. We need this hack until Fabric fully implements command-execution
@@ -1152,6 +1170,7 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand
     }
   }
 #pragma clang diagnostic pop
+#endif // ]TODO(macOS GH#774)
 
   Class managerClass = componentData.managerClass;
   RCTModuleData *moduleData = [_bridge moduleDataForName:RCTBridgeModuleNameForClass(managerClass)];
@@ -1501,6 +1520,7 @@ RCT_EXPORT_METHOD(clearJSResponder)
 static NSMutableDictionary<NSString *, id> *moduleConstantsForComponent(
     NSMutableDictionary<NSString *, NSDictionary *> *directEvents,
     NSMutableDictionary<NSString *, NSDictionary *> *bubblingEvents,
+    NSMutableDictionary<NSString *, NSString *> *registrationCache, // TODO(macOS GH#774)
     RCTComponentData *componentData)
 {
   NSMutableDictionary<NSString *, id> *moduleConstants = [NSMutableDictionary new];
@@ -1520,6 +1540,8 @@ static NSMutableDictionary<NSString *, id> *moduleConstantsForComponent(
   moduleConstants[@"bubblingEventTypes"] = bubblingEventTypes;
   moduleConstants[@"directEventTypes"] = directEventTypes;
 
+  NSString *componentName = [componentData name]; // TODO(macOS GH#774)
+
   // Add direct events
   for (NSString *eventName in viewConfig[@"directEvents"]) {
     if (!directEvents[eventName]) {
@@ -1530,11 +1552,13 @@ static NSMutableDictionary<NSString *, id> *moduleConstantsForComponent(
     directEventTypes[eventName] = directEvents[eventName];
     if (RCT_DEBUG && bubblingEvents[eventName]) {
       RCTLogError(
-          @"Component '%@' re-registered bubbling event '%@' as a "
+          @"Component '%@' re-registered bubbling event '%@' (originally registered by '%@') as a "
            "direct event",
-          componentData.name,
-          eventName);
+          componentName,
+          eventName,
+          registrationCache[eventName] ?: @"<unknown>"); // TODO(macOS GH#774)
     }
+    registrationCache[eventName] = componentName; // TODO(macOS GH#774)
   }
 
   // Add bubbling events
@@ -1551,11 +1575,13 @@ static NSMutableDictionary<NSString *, id> *moduleConstantsForComponent(
     bubblingEventTypes[eventName] = bubblingEvents[eventName];
     if (RCT_DEBUG && directEvents[eventName]) {
       RCTLogError(
-          @"Component '%@' re-registered direct event '%@' as a "
+          @"Component '%@' re-registered direct event '%@' (originally registered by '%@') as a "
            "bubbling event",
-          componentData.name,
-          eventName);
+          componentName,
+          eventName,
+          registrationCache[eventName] ?: @"<unknown>"); // TODO(macOS GH#774)
     }
+    registrationCache[eventName] = componentName; // TODO(macOS GH#774)
   }
 
   return moduleConstants;
@@ -1571,12 +1597,13 @@ static NSMutableDictionary<NSString *, id> *moduleConstantsForComponent(
   NSMutableDictionary<NSString *, NSDictionary *> *constants = [NSMutableDictionary new];
   NSMutableDictionary<NSString *, NSDictionary *> *directEvents = [NSMutableDictionary new];
   NSMutableDictionary<NSString *, NSDictionary *> *bubblingEvents = [NSMutableDictionary new];
+  NSMutableDictionary<NSString *, NSString *> *registrationCache = [NSMutableDictionary new]; // TODO(macOS GH#774)
 
   [_componentDataByName
       enumerateKeysAndObjectsUsingBlock:^(NSString *name, RCTComponentData *componentData, __unused BOOL *stop) {
         RCTAssert(!constants[name], @"UIManager already has constants for %@", componentData.name);
         NSMutableDictionary<NSString *, id> *moduleConstants =
-            moduleConstantsForComponent(directEvents, bubblingEvents, componentData);
+            moduleConstantsForComponent(directEvents, bubblingEvents, registrationCache, componentData); // TODO(macOS GH#774)
         constants[name] = moduleConstants;
       }];
 
@@ -1621,10 +1648,11 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(lazilyLoadView : (NSString *)name)
                                                                             bridge:self.bridge
                                                                    eventDispatcher:self.bridge.eventDispatcher];
   _componentDataByName[componentData.name] = componentData;
-  NSMutableDictionary *directEvents = [NSMutableDictionary new];
-  NSMutableDictionary *bubblingEvents = [NSMutableDictionary new];
+  NSMutableDictionary<NSString *, NSDictionary *> *directEvents = [NSMutableDictionary new];
+  NSMutableDictionary<NSString *, NSDictionary *> *bubblingEvents = [NSMutableDictionary new];
+  NSMutableDictionary<NSString *, NSString *> *registrationCache = [NSMutableDictionary new]; // TODO(macOS GH#774)
   NSMutableDictionary<NSString *, id> *moduleConstants =
-      moduleConstantsForComponent(directEvents, bubblingEvents, componentData);
+      moduleConstantsForComponent(directEvents, bubblingEvents, registrationCache, componentData); // TODO(macOS GH#774)
   return @{
     @"viewConfig" : moduleConstants,
   };

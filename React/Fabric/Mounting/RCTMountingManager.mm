@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -7,9 +7,10 @@
 
 #import "RCTMountingManager.h"
 
-#import <better/map.h>
+#import <butter/map.h>
 
 #import <React/RCTAssert.h>
+#import <React/RCTComponent.h>
 #import <React/RCTFollyConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
@@ -25,6 +26,18 @@
 #import "RCTMountingTransactionObserverCoordinator.h"
 
 using namespace facebook::react;
+
+static SurfaceId RCTSurfaceIdForView(UIView *view)
+{
+  do {
+    if (RCTIsReactRootView(@(view.tag))) {
+      return view.tag;
+    }
+    view = view.superview;
+  } while (view != nil);
+
+  return -1;
+}
 
 static void RCTPerformMountInstructions(
     ShadowViewMutationList const &mutations,
@@ -142,7 +155,7 @@ static void RCTPerformMountInstructions(
 - (instancetype)init
 {
   if (self = [super init]) {
-    _componentViewRegistry = [[RCTComponentViewRegistry alloc] init];
+    _componentViewRegistry = [RCTComponentViewRegistry new];
   }
 
   return self;
@@ -282,9 +295,10 @@ static void RCTPerformMountInstructions(
 {
   RCTAssertMainQueue();
   UIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag];
+  SurfaceId surfaceId = RCTSurfaceIdForView(componentView);
   SharedProps oldProps = [componentView props];
   SharedProps newProps = componentDescriptor.cloneProps(
-      PropsParserContext{-1, *_contextContainer.get()}, oldProps, RawProps(convertIdToFollyDynamic(props)));
+      PropsParserContext{surfaceId, *_contextContainer.get()}, oldProps, RawProps(convertIdToFollyDynamic(props)));
 
   NSSet<NSString *> *propKeys = componentView.propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN ?: [NSSet new];
   propKeys = [propKeys setByAddingObjectsFromArray:props.allKeys];

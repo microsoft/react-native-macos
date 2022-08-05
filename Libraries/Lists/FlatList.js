@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -368,6 +368,19 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
       this._listRef.flashScrollIndicators();
     }
   }
+
+  // [TODO(macOS GH#750)
+  /**
+   * Move selection to the specified index
+   *
+   * @platform macos
+   */
+  selectRowAtIndex(index: number) {
+    if (this._listRef) {
+      this._listRef.selectRowAtIndex(index);
+    }
+  }
+  // ]TODO(macOS GH#750)
 
   /**
    * Provides a handle to the underlying scroll responder.

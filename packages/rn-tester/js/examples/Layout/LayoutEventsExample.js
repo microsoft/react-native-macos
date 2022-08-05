@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -102,9 +102,8 @@ class LayoutEventExample extends React.Component<Props, State> {
             Press here to change layout.
           </Text>
         </Text>
-        <View ref="view" onLayout={this.onViewLayout} style={viewStyle}>
+        <View onLayout={this.onViewLayout} style={viewStyle}>
           <Image
-            ref="img"
             onLayout={this.onImageLayout}
             style={styles.image}
             source={{
@@ -119,7 +118,7 @@ class LayoutEventExample extends React.Component<Props, State> {
              */
             JSON.stringify(this.state.viewLayout, null, '  ') + '\n\n'}
           </Text>
-          <Text ref="txt" onLayout={this.onTextLayout} style={styles.text}>
+          <Text onLayout={this.onTextLayout} style={styles.text}>
             A simple piece of text.{this.state.extraText}
           </Text>
           <Text>

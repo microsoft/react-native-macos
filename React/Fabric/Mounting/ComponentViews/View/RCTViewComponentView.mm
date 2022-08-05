@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -28,6 +28,8 @@ using namespace facebook::react;
   NSMutableArray<UIView *> *_reactSubviews;
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
 }
+
+@synthesize removeClippedSubviews = _removeClippedSubviews;
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -187,12 +189,11 @@ using namespace facebook::react;
   // `opacity`
   if (oldViewProps.opacity != newViewProps.opacity &&
       ![_propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN containsObject:@"opacity"]) {
-    self.layer.opacity = (CGFloat)newViewProps.opacity;
+    self.layer.opacity = (float)newViewProps.opacity;
     needsInvalidateLayer = YES;
   }
 
-  if (RCTGetRemoveClippedSubviewsEnabled() &&
-      oldViewProps.removeClippedSubviews != newViewProps.removeClippedSubviews) {
+  if (oldViewProps.removeClippedSubviews != newViewProps.removeClippedSubviews) {
     _removeClippedSubviews = newViewProps.removeClippedSubviews;
     if (_removeClippedSubviews && self.subviews.count > 0) {
       _reactSubviews = [NSMutableArray arrayWithArray:self.subviews];
@@ -226,7 +227,7 @@ using namespace facebook::react;
 
   // `shadowOpacity`
   if (oldViewProps.shadowOpacity != newViewProps.shadowOpacity) {
-    self.layer.shadowOpacity = (CGFloat)newViewProps.shadowOpacity;
+    self.layer.shadowOpacity = (float)newViewProps.shadowOpacity;
     needsInvalidateLayer = YES;
   }
 
@@ -329,11 +330,7 @@ using namespace facebook::react;
 
   // `accessibilityIgnoresInvertColors`
   if (oldViewProps.accessibilityIgnoresInvertColors != newViewProps.accessibilityIgnoresInvertColors) {
-#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
-    if (@available(iOS 11.0, *)) {
-      self.accessibilityIgnoresInvertColors = newViewProps.accessibilityIgnoresInvertColors;
-    }
-#endif
+    self.accessibilityIgnoresInvertColors = newViewProps.accessibilityIgnoresInvertColors;
   }
 
   // `accessibilityValue`
@@ -420,7 +417,7 @@ using namespace facebook::react;
     self.layer.transform = RCTCATransform3DFromTransformMatrix(props.transform);
   }
   if ([_propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN containsObject:@"opacity"]) {
-    self.layer.opacity = (CGFloat)props.opacity;
+    self.layer.opacity = (float)props.opacity;
   }
 
   _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = nil;
@@ -580,7 +577,7 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
     layer.backgroundColor = _backgroundColor.CGColor;
   } else {
     if (!_borderLayer) {
-      _borderLayer = [[CALayer alloc] init];
+      _borderLayer = [CALayer new];
       _borderLayer.zPosition = -1024.0f;
       _borderLayer.frame = layer.bounds;
       _borderLayer.magnificationFilter = kCAFilterNearest;

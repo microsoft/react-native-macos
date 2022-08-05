@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -185,49 +185,51 @@ class RewriteInvalidCharactersAndClearExample extends React.Component<
 }
 
 class BlurOnSubmitExample extends React.Component<{...}> {
-  focusNextField = nextField => {
-    this.refs[nextField].focus();
-  };
+  ref1 = React.createRef();
+  ref2 = React.createRef();
+  ref3 = React.createRef();
+  ref4 = React.createRef();
+  ref5 = React.createRef();
 
   render() {
     return (
       <View>
         <TextInput
-          ref="1"
+          ref={this.ref1}
           style={styles.singleLine}
           placeholder="blurOnSubmit = false"
           returnKeyType="next"
           blurOnSubmit={false}
-          onSubmitEditing={() => this.focusNextField('2')}
+          onSubmitEditing={() => this.ref2.current?.focus()}
         />
         <TextInput
-          ref="2"
+          ref={this.ref2}
           style={styles.singleLine}
           keyboardType="email-address"
           placeholder="blurOnSubmit = false"
           returnKeyType="next"
           blurOnSubmit={false}
-          onSubmitEditing={() => this.focusNextField('3')}
+          onSubmitEditing={() => this.ref3.current?.focus()}
         />
         <TextInput
-          ref="3"
+          ref={this.ref3}
           style={styles.singleLine}
           keyboardType="url"
           placeholder="blurOnSubmit = false"
           returnKeyType="next"
           blurOnSubmit={false}
-          onSubmitEditing={() => this.focusNextField('4')}
+          onSubmitEditing={() => this.ref4.current?.focus()}
         />
         <TextInput
-          ref="4"
+          ref={this.ref4}
           style={styles.singleLine}
           keyboardType="numeric"
           placeholder="blurOnSubmit = false"
           blurOnSubmit={false}
-          onSubmitEditing={() => this.focusNextField('5')}
+          onSubmitEditing={() => this.ref5.current?.focus()}
         />
         <TextInput
-          ref="5"
+          ref={this.ref5}
           style={styles.singleLine}
           keyboardType="numbers-and-punctuation"
           placeholder="blurOnSubmit = true"
@@ -327,9 +329,7 @@ class TokenizedTextExample extends React.Component<
         index = 1;
       }
       parts.push(_text.substr(0, index));
-      // $FlowFixMe[incompatible-use]
       parts.push(token[0]);
-      // $FlowFixMe[incompatible-use]
       index = index + token[0].length;
       _text = _text.slice(index);
     }
@@ -356,7 +356,8 @@ class TokenizedTextExample extends React.Component<
           style={styles.multiline}
           onChangeText={text => {
             this.setState({text});
-          }}>
+          }}
+        >
           <Text>{parts}</Text>
         </TextInput>
       </View>
@@ -377,7 +378,7 @@ class SelectionExample extends React.Component<
   $FlowFixMeProps,
   SelectionExampleState,
 > {
-  _textInput: any;
+  _textInput: React.ElementRef<typeof TextInput> | null = null;
 
   constructor(props) {
     super(props);
@@ -397,8 +398,11 @@ class SelectionExample extends React.Component<
   }
 
   select(start, end) {
-    this._textInput.focus();
+    this._textInput?.focus();
     this.setState({selection: {start, end}});
+    if (this.props.imperative) {
+      this._textInput?.setSelection(start, end);
+    }
   }
 
   selectRandom() {
@@ -430,7 +434,7 @@ class SelectionExample extends React.Component<
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onSelectionChange={this.onSelectionChange.bind(this)}
             ref={textInput => (this._textInput = textInput)}
-            selection={this.state.selection}
+            selection={this.props.imperative ? undefined : this.state.selection}
             style={this.props.style}
             value={this.state.value}
           />
@@ -443,13 +447,15 @@ class SelectionExample extends React.Component<
           <Text
             testID={`${this.props.testID}-cursor-start`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
-            onPress={this.placeAt.bind(this, 0)}>
+            onPress={this.placeAt.bind(this, 0)}
+          >
             Place at Start (0, 0)
           </Text>
           <Text
             testID={`${this.props.testID}-cursor-end`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
-            onPress={this.placeAt.bind(this, length)}>
+            onPress={this.placeAt.bind(this, length)}
+          >
             Place at End ({length}, {length})
           </Text>
           {/* $FlowFixMe[method-unbinding] added when improving typing for this
@@ -458,7 +464,8 @@ class SelectionExample extends React.Component<
           <Text
             testID={`${this.props.testID}-select-all`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
-            onPress={this.select.bind(this, 0, length)}>
+            onPress={this.select.bind(this, 0, length)}
+          >
             Select All
           </Text>
           {/* $FlowFixMe[method-unbinding] added when improving typing for this
@@ -669,6 +676,29 @@ module.exports = ([
             multiline
             style={styles.multiline}
             value={'multiline text selection\ncan also be changed'}
+          />
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Text selection & cursor placement (imperative)',
+    name: 'cursorPlacementImperative',
+    render: function(): React.Node {
+      return (
+        <View>
+          <SelectionExample
+            testID="singlelineImperative"
+            style={styles.default}
+            value="text selection can be changed imperatively"
+            imperative={true}
+          />
+          <SelectionExample
+            testID="multilineImperative"
+            multiline
+            style={styles.multiline}
+            value={'multiline text selection\ncan also be changed imperatively'}
+            imperative={true}
           />
         </View>
       );

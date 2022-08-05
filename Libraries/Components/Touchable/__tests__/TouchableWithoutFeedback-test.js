@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -60,7 +60,8 @@ describe('TouchableWithoutFeedback with disabled state', () => {
       ReactTestRenderer.create(
         <TouchableWithoutFeedback
           disabled={true}
-          accessibilityState={{checked: true}}>
+          accessibilityState={{checked: true}}
+        >
           <View />
         </TouchableWithoutFeedback>,
       ),
@@ -72,7 +73,8 @@ describe('TouchableWithoutFeedback with disabled state', () => {
       ReactTestRenderer.create(
         <TouchableWithoutFeedback
           disabled={true}
-          accessibilityState={{disabled: false}}>
+          accessibilityState={{disabled: false}}
+        >
           <View />
         </TouchableWithoutFeedback>,
       ),

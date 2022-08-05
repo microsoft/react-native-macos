@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -76,6 +76,7 @@ import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.queue.ReactQueueConfigurationSpec;
 import com.facebook.react.common.LifecycleState;
 import com.facebook.react.common.ReactConstants;
+import com.facebook.react.common.SurfaceDelegateFactory;
 import com.facebook.react.common.annotations.VisibleForTesting;
 import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.react.devsupport.DevSupportManagerFactory;
@@ -92,7 +93,6 @@ import com.facebook.react.modules.core.ReactChoreographer;
 import com.facebook.react.modules.debug.interfaces.DeveloperSettings;
 import com.facebook.react.modules.fabric.ReactFabric;
 import com.facebook.react.packagerconnection.RequestHandler;
-import com.facebook.react.runtimescheduler.RuntimeSchedulerManager;
 import com.facebook.react.surface.ReactStage;
 import com.facebook.react.turbomodule.core.TurboModuleManager;
 import com.facebook.react.turbomodule.core.TurboModuleManagerDelegate;
@@ -138,15 +138,17 @@ import java.util.Set;
 public class ReactInstanceManager {
 
   private static final String TAG = ReactInstanceManager.class.getSimpleName();
-  /** Listener interface for react instance events. */
-  public interface ReactInstanceEventListener {
 
-    /**
-     * Called when the react context is initialized (all modules registered). Always called on the
-     * UI thread.
-     */
-    void onReactContextInitialized(ReactContext context);
-  }
+  /**
+   * Listener interface for react instance events. This class extends {@Link
+   * com.facebook.react.ReactInstanceEventListener} as a mitigation for both bridgeless and OSS
+   * compatibility: We create a separate ReactInstanceEventListener class to remove dependency on
+   * ReactInstanceManager which is a bridge-specific class, but in the mean time we have to keep
+   * ReactInstanceManager.ReactInstanceEventListener so OSS won't break.
+   */
+  @Deprecated
+  public interface ReactInstanceEventListener
+      extends com.facebook.react.ReactInstanceEventListener {}
 
   private final Set<ReactRoot> mAttachedReactRoots =
       Collections.synchronizedSet(new HashSet<ReactRoot>());
@@ -167,15 +169,16 @@ public class ReactInstanceManager {
   private final boolean mUseDeveloperSupport;
   private final boolean mRequireActivity;
   private @Nullable ComponentNameResolverManager mComponentNameResolverManager;
-  private @Nullable RuntimeSchedulerManager mRuntimeSchedulerManager;
   private final @Nullable NotThreadSafeBridgeIdleDebugListener mBridgeIdleDebugListener;
   private final Object mReactContextLock = new Object();
   private @Nullable volatile ReactContext mCurrentReactContext;
   private final Context mApplicationContext;
   private @Nullable @ThreadConfined(UI) DefaultHardwareBackBtnHandler mDefaultBackButtonImpl;
   private @Nullable Activity mCurrentActivity;
-  private final Collection<ReactInstanceEventListener> mReactInstanceEventListeners =
-      Collections.synchronizedList(new ArrayList<ReactInstanceEventListener>());
+  private final Collection<com.facebook.react.ReactInstanceEventListener>
+      mReactInstanceEventListeners =
+          Collections.synchronizedList(
+              new ArrayList<com.facebook.react.ReactInstanceEventListener>());
   // Identifies whether the instance manager is or soon will be initialized (on background thread)
   private volatile boolean mHasStartedCreatingInitialContext = false;
   // Identifies whether the instance manager destroy function is in process,
@@ -186,6 +189,7 @@ public class ReactInstanceManager {
   private final @Nullable JSIModulePackage mJSIModulePackage;
   private final @Nullable ReactPackageTurboModuleManagerDelegate.Builder mTMMDelegateBuilder;
   private List<ViewManager> mViewManagers;
+  private boolean mUseFallbackBundle = false;
 
   private class ReactContextInitParams {
     private final JavaScriptExecutorFactory mJsExecutorFactory;
@@ -220,6 +224,7 @@ public class ReactInstanceManager {
       @Nullable String jsMainModulePath,
       List<ReactPackage> packages,
       boolean useDeveloperSupport,
+      DevSupportManagerFactory devSupportManagerFactory,
       boolean requireActivity,
       @Nullable NotThreadSafeBridgeIdleDebugListener bridgeIdleDebugListener,
       LifecycleState initialLifecycleState,
@@ -232,7 +237,8 @@ public class ReactInstanceManager {
       int minTimeLeftInFrameForNonBatchedOperationMs,
       @Nullable JSIModulePackage jsiModulePackage,
       @Nullable Map<String, RequestHandler> customPackagerCommandHandlers,
-      @Nullable ReactPackageTurboModuleManagerDelegate.Builder tmmDelegateBuilder) {
+      @Nullable ReactPackageTurboModuleManagerDelegate.Builder tmmDelegateBuilder,
+      @Nullable SurfaceDelegateFactory surfaceDelegateFactory) {
     FLog.d(TAG, "ReactInstanceManager.ctor()");
     initializeSoLoaderIfNecessary(applicationContext);
 
@@ -251,7 +257,7 @@ public class ReactInstanceManager {
     Systrace.beginSection(
         Systrace.TRACE_TAG_REACT_JAVA_BRIDGE, "ReactInstanceManager.initDevSupportManager");
     mDevSupportManager =
-        DevSupportManagerFactory.create(
+        devSupportManagerFactory.create(
             applicationContext,
             createDevHelperInterface(),
             mJSMainModulePath,
@@ -259,7 +265,8 @@ public class ReactInstanceManager {
             redBoxHandler,
             devBundleDownloadListener,
             minNumShakes,
-            customPackagerCommandHandlers);
+            customPackagerCommandHandlers,
+            surfaceDelegateFactory);
     Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
     mBridgeIdleDebugListener = bridgeIdleDebugListener;
     mLifecycleState = initialLifecycleState;
@@ -329,7 +336,7 @@ public class ReactInstanceManager {
         Activity currentActivity = getCurrentActivity();
         if (currentActivity != null) {
           ReactRootView rootView = new ReactRootView(currentActivity);
-          rootView.setIsFabric(ReactFeatureFlags.enableFabricInLogBox);
+          rootView.setIsFabric(ReactFeatureFlags.enableFabricRenderer);
           rootView.startReactApplication(ReactInstanceManager.this, appKey, null);
           return rootView;
         }
@@ -350,6 +357,10 @@ public class ReactInstanceManager {
         }
       }
     };
+  }
+
+  public synchronized void setUseFallbackBundle(boolean useFallbackBundle) {
+    mUseFallbackBundle = useFallbackBundle;
   }
 
   private JavaScriptExecutorFactory getJSExecutorFactory() {
@@ -454,7 +465,8 @@ public class ReactInstanceManager {
                           if (packagerIsRunning) {
                             mDevSupportManager.handleReloadJS();
                           } else if (mDevSupportManager.hasUpToDateJSBundleInCache()
-                              && !devSettings.isRemoteJSDebugEnabled()) {
+                              && !devSettings.isRemoteJSDebugEnabled()
+                              && !mUseFallbackBundle) {
                             // If there is a up-to-date bundle downloaded from server,
                             // with remote JS debugging disabled, always use that.
                             onJSBundleLoadedFromServer();
@@ -759,7 +771,6 @@ public class ReactInstanceManager {
       mViewManagerNames = null;
     }
     mComponentNameResolverManager = null;
-    mRuntimeSchedulerManager = null;
     FLog.d(ReactConstants.TAG, "ReactInstanceManager has been destroyed");
   }
 
@@ -994,12 +1005,14 @@ public class ReactInstanceManager {
   }
 
   /** Add a listener to be notified of react instance events. */
-  public void addReactInstanceEventListener(ReactInstanceEventListener listener) {
+  public void addReactInstanceEventListener(
+      com.facebook.react.ReactInstanceEventListener listener) {
     mReactInstanceEventListeners.add(listener);
   }
 
   /** Remove a listener previously added with {@link #addReactInstanceEventListener}. */
-  public void removeReactInstanceEventListener(ReactInstanceEventListener listener) {
+  public void removeReactInstanceEventListener(
+      com.facebook.react.ReactInstanceEventListener listener) {
     mReactInstanceEventListeners.remove(listener);
   }
 
@@ -1090,14 +1103,22 @@ public class ReactInstanceManager {
                 // create
                 mHasStartedCreatingInitialContext = true;
 
+                final ReactApplicationContext reactApplicationContext;
                 try {
                   Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
                   ReactMarker.logMarker(VM_INIT);
-                  final ReactApplicationContext reactApplicationContext =
+                  reactApplicationContext =
                       createReactContext(
                           initParams.getJsExecutorFactory().create(),
                           initParams.getJsBundleLoader());
-
+                } catch (Exception e) {
+                  // Reset state and bail out. This lets us try again later.
+                  mHasStartedCreatingInitialContext = false;
+                  mCreateReactContextThread = null;
+                  mDevSupportManager.handleException(e);
+                  return;
+                }
+                try {
                   mCreateReactContextThread = null;
                   ReactMarker.logMarker(PRE_SETUP_REACT_CONTEXT_START);
                   final Runnable maybeRecreateReactContextRunnable =
@@ -1170,16 +1191,16 @@ public class ReactInstanceManager {
 
     // There is a race condition here - `finalListeners` can contain null entries
     // See usage below for more details.
-    ReactInstanceEventListener[] listeners =
-        new ReactInstanceEventListener[mReactInstanceEventListeners.size()];
-    final ReactInstanceEventListener[] finalListeners =
+    com.facebook.react.ReactInstanceEventListener[] listeners =
+        new com.facebook.react.ReactInstanceEventListener[mReactInstanceEventListeners.size()];
+    final com.facebook.react.ReactInstanceEventListener[] finalListeners =
         mReactInstanceEventListeners.toArray(listeners);
 
     UiThreadUtil.runOnUiThread(
         new Runnable() {
           @Override
           public void run() {
-            for (ReactInstanceEventListener listener : finalListeners) {
+            for (com.facebook.react.ReactInstanceEventListener listener : finalListeners) {
               // Sometimes this listener is null - probably due to race
               // condition between allocating listeners with a certain
               // size, and getting a `final` version of the array on
@@ -1222,7 +1243,8 @@ public class ReactInstanceManager {
     // If we can't get a UIManager something has probably gone horribly wrong
     if (uiManager == null) {
       throw new IllegalStateException(
-          "Unable to attach a rootView to ReactInstance when UIManager is not properly initialized.");
+          "Unable to attach a rootView to ReactInstance when UIManager is not properly"
+              + " initialized.");
     }
 
     @Nullable Bundle initialProperties = reactRoot.getAppProperties();
@@ -1368,7 +1390,7 @@ public class ReactInstanceManager {
           mJSIModulePackage.getJSIModules(
               reactContext, catalystInstance.getJavaScriptContextHolder()));
     }
-    if (ReactFeatureFlags.eagerInitializeFabric) {
+    if (ReactFeatureFlags.enableFabricRenderer) {
       catalystInstance.getJSIModule(JSIModuleType.UIManager);
     }
     if (mBridgeIdleDebugListener != null) {
@@ -1393,9 +1415,6 @@ public class ReactInstanceManager {
                 }
               });
       catalystInstance.setGlobalVariable("__fbStaticViewConfig", "true");
-    }
-    if (ReactFeatureFlags.enableRuntimeScheduler) {
-      mRuntimeSchedulerManager = new RuntimeSchedulerManager(catalystInstance.getRuntimeExecutor());
     }
 
     ReactMarker.logMarker(ReactMarkerConstants.PRE_RUN_JS_BUNDLE_START);

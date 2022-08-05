@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -12,7 +12,6 @@
 
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
-#include <react/renderer/core/Constants.h>
 #include <react/renderer/core/EventQueueProcessor.h>
 #include <react/renderer/core/LayoutContext.h>
 #include <react/renderer/debug/SystraceSection.h>
@@ -32,7 +31,7 @@ namespace facebook {
 namespace react {
 
 Scheduler::Scheduler(
-    SchedulerToolbox schedulerToolbox,
+    SchedulerToolbox const &schedulerToolbox,
     UIManagerAnimationDelegate *animationDelegate,
     SchedulerDelegate *delegate) {
   runtimeExecutor_ = schedulerToolbox.runtimeExecutor;
@@ -44,7 +43,7 @@ Scheduler::Scheduler(
 
   // Creating a container for future `EventDispatcher` instance.
   eventDispatcher_ =
-      std::make_shared<better::optional<EventDispatcher const>>();
+      std::make_shared<butter::optional<EventDispatcher const>>();
 
   auto uiManager = std::make_shared<UIManager>(
       runtimeExecutor_, schedulerToolbox.backgroundExecutor, contextContainer_);
@@ -87,12 +86,11 @@ Scheduler::Scheduler(
   uiManager->setDelegate(this);
   uiManager->setComponentDescriptorRegistry(componentDescriptorRegistry_);
 
-  runtimeExecutor_([uiManager,
-                    runtimeExecutor = runtimeExecutor_](jsi::Runtime &runtime) {
-    auto uiManagerBinding =
-        UIManagerBinding::createAndInstallIfNeeded(runtime, runtimeExecutor);
-    uiManagerBinding->attach(uiManager);
-  });
+  runtimeExecutor_(
+      [uiManager, runtimeExecutor = runtimeExecutor_](jsi::Runtime &runtime) {
+        UIManagerBinding::createAndInstallIfNeeded(
+            runtime, runtimeExecutor, uiManager);
+      });
 
   auto componentDescriptorRegistryKey =
       "ComponentDescriptorRegistry_DO_NOT_USE_PRETTY_PLEASE";
@@ -106,7 +104,7 @@ Scheduler::Scheduler(
   commitHooks_ = schedulerToolbox.commitHooks;
   uiManager_ = uiManager;
 
-  for (auto commitHook : commitHooks_) {
+  for (auto const &commitHook : commitHooks_) {
     uiManager->registerCommitHook(*commitHook);
   }
 
@@ -119,8 +117,6 @@ Scheduler::Scheduler(
 #ifdef ANDROID
   removeOutstandingSurfacesOnDestruction_ = reactNativeConfig_->getBool(
       "react_fabric:remove_outstanding_surfaces_on_destruction_android");
-  Constants::setPropsForwardingEnabled(reactNativeConfig_->getBool(
-      "react_fabric:enable_props_forwarding_android"));
 #else
   removeOutstandingSurfacesOnDestruction_ = reactNativeConfig_->getBool(
       "react_fabric:remove_outstanding_surfaces_on_destruction_ios");
@@ -131,7 +127,7 @@ Scheduler::~Scheduler() {
   LOG(WARNING) << "Scheduler::~Scheduler() was called (address: " << this
                << ").";
 
-  for (auto commitHook : commitHooks_) {
+  for (auto const &commitHook : commitHooks_) {
     uiManager_->unregisterCommitHook(*commitHook);
   }
 
@@ -146,7 +142,7 @@ Scheduler::~Scheduler() {
   // Then, let's verify that the requirement was satisfied.
   auto surfaceIds = std::vector<SurfaceId>{};
   uiManager_->getShadowTreeRegistry().enumerate(
-      [&](ShadowTree const &shadowTree, bool &stop) {
+      [&surfaceIds](ShadowTree const &shadowTree) {
         surfaceIds.push_back(shadowTree.getSurfaceId());
       });
 
@@ -190,7 +186,7 @@ void Scheduler::registerSurface(
 }
 
 InspectorData Scheduler::getInspectorDataForInstance(
-    SharedEventEmitter eventEmitter) const noexcept {
+    EventEmitter const &eventEmitter) const noexcept {
   return executeSynchronouslyOnSameThread_CAN_DEADLOCK<InspectorData>(
       runtimeExecutor_, [=](jsi::Runtime &runtime) -> InspectorData {
         auto uiManagerBinding = UIManagerBinding::getBinding(runtime);
@@ -210,10 +206,10 @@ InspectorData Scheduler::getInspectorDataForInstance(
         // TODO T97216348: remove folly::dynamic from InspectorData struct
         result.props = dynamic["props"];
         auto hierarchy = dynamic["hierarchy"];
-        for (size_t i = 0; i < hierarchy.size(); i++) {
-          auto viewHierarchyValue = hierarchy[i]["name"];
+        for (auto &i : hierarchy) {
+          auto viewHierarchyValue = i["name"];
           if (!viewHierarchyValue.isNull()) {
-            result.hierarchy.push_back(viewHierarchyValue.c_str());
+            result.hierarchy.emplace_back(viewHierarchyValue.c_str());
           }
         }
         return result;
@@ -318,7 +314,7 @@ void Scheduler::uiManagerDidCloneShadowNode(
 void Scheduler::uiManagerDidDispatchCommand(
     const ShadowNode::Shared &shadowNode,
     std::string const &commandName,
-    folly::dynamic const args) {
+    folly::dynamic const &args) {
   SystraceSection s("Scheduler::uiManagerDispatchCommand");
 
   if (delegate_) {

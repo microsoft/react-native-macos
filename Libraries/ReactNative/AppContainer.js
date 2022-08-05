@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -96,7 +96,8 @@ class AppContainer extends React.Component<Props, State> {
         style={styles.appContainer}
         ref={ref => {
           this._mainRef = ref;
-        }}>
+        }}
+      >
         {this.props.children}
       </View>
     );
@@ -109,7 +110,8 @@ class AppContainer extends React.Component<Props, State> {
           fabric={this.props.fabric === true}
           showArchitectureIndicator={
             this.props.showArchitectureIndicator === true
-          }>
+          }
+        >
           {innerView}
         </Wrapper>
       );

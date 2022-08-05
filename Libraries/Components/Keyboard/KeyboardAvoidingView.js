@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -22,7 +22,7 @@ import type {
   ViewLayout,
   ViewLayoutEvent,
 } from '../View/ViewPropTypes';
-import type {KeyboardEvent} from './Keyboard';
+import type {KeyboardEvent, KeyboardEventCoordinates} from './Keyboard';
 
 type Props = $ReadOnly<{|
   ...ViewProps,
@@ -71,7 +71,7 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
     this.viewRef = React.createRef();
   }
 
-  _relativeKeyboardHeight(keyboardFrame): number {
+  _relativeKeyboardHeight(keyboardFrame: KeyboardEventCoordinates): number {
     const frame = this._frame;
     if (!frame || !keyboardFrame) {
       return 0;
@@ -87,7 +87,7 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
 
   _onKeyboardChange = (event: ?KeyboardEvent) => {
     this._keyboardEvent = event;
-    this._updateBottomIfNecesarry();
+    this._updateBottomIfNecessary();
   };
 
   _onLayout = (event: ViewLayoutEvent) => {
@@ -99,11 +99,15 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
     }
 
     if (wasFrameNull) {
-      this._updateBottomIfNecesarry();
+      this._updateBottomIfNecessary();
+    }
+
+    if (this.props.onLayout) {
+      this.props.onLayout(event);
     }
   };
 
-  _updateBottomIfNecesarry = () => {
+  _updateBottomIfNecessary = () => {
     if (this._keyboardEvent == null) {
       this.setState({bottom: 0});
       return;
@@ -157,6 +161,7 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
       // eslint-disable-next-line no-unused-vars
       keyboardVerticalOffset = 0,
       style,
+      onLayout,
       ...props
     } = this.props;
     const bottomHeight = enabled === true ? this.state.bottom : 0;
@@ -178,7 +183,8 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
             ref={this.viewRef}
             style={StyleSheet.compose(style, heightStyle)}
             onLayout={this._onLayout}
-            {...props}>
+            {...props}
+          >
             {children}
           </View>
         );
@@ -189,11 +195,13 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
             ref={this.viewRef}
             style={style}
             onLayout={this._onLayout}
-            {...props}>
+            {...props}
+          >
             <View
               style={StyleSheet.compose(contentContainerStyle, {
                 bottom: bottomHeight,
-              })}>
+              })}
+            >
               {children}
             </View>
           </View>
@@ -205,7 +213,8 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
             ref={this.viewRef}
             style={StyleSheet.compose(style, {paddingBottom: bottomHeight})}
             onLayout={this._onLayout}
-            {...props}>
+            {...props}
+          >
             {children}
           </View>
         );
@@ -216,7 +225,8 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
             ref={this.viewRef}
             onLayout={this._onLayout}
             style={style}
-            {...props}>
+            {...props}
+          >
             {children}
           </View>
         );

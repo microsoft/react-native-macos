@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -651,6 +651,19 @@ export default class Pressability {
    * and stores the new state. Validates the transition as well.
    */
   _receiveSignal(signal: TouchSignal, event: PressEvent): void {
+    // Especially on iOS, not all events have timestamps associated.
+    // For telemetry purposes, this doesn't matter too much, as long as *some* do.
+    // Since the native timestamp is integral for logging telemetry, just skip
+    // events if they don't have a timestamp attached.
+    if (event.nativeEvent.timestamp != null) {
+      PressabilityPerformanceEventEmitter.emitEvent(() => {
+        return {
+          signal,
+          nativeTimestamp: event.nativeEvent.timestamp,
+        };
+      });
+    }
+
     const prevState = this._touchState;
     const nextState = Transitions[prevState]?.[signal];
     if (this._responderID == null && signal === 'RESPONDER_RELEASE') {
@@ -666,20 +679,6 @@ export default class Pressability {
         : '<<host component>>',
     );
     if (prevState !== nextState) {
-      // Especially on iOS, not all events have timestamps associated.
-      // For telemetry purposes, this doesn't matter too much, as long as *some* do.
-      // Since the native timestamp is integral for logging telemetry, just skip
-      // events if they don't have a timestamp attached.
-      if (event.nativeEvent.timestamp != null) {
-        PressabilityPerformanceEventEmitter.emitEvent(() => {
-          return {
-            signal,
-            nativeTimestamp: event.nativeEvent.timestamp,
-            touchDelayMs: Date.now() - event.nativeEvent.timestamp,
-          };
-        });
-      }
-
       this._performTransitionSideEffects(prevState, nextState, signal, event);
       this._touchState = nextState;
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -36,8 +36,8 @@ const Components: Array<RNTesterModuleInfo> = [
     module: require('../examples/DatePicker/DatePickerMacOSExample'),
   }, // ]TODO(macOS GH#774)
   {
-    key: 'FlatListExample',
-    module: require('../examples/FlatList/FlatListExample'),
+    key: 'FlatListExampleIndex',
+    module: require('../examples/FlatList/FlatListExampleIndex').default,
     category: 'ListView',
     supportsTVOS: true,
   },
@@ -58,21 +58,6 @@ const Components: Array<RNTesterModuleInfo> = [
     key: 'AccessibilityShowMenu',
     module: require('../examples/AccessibilityShowMenu/AccessibilityShowMenu'),
   }, // ]TODO(OSS Candidate ISS#2710739)
-  {
-    key: 'FlatList-withSeparators',
-    module: require('../examples/FlatList/FlatList-withSeparators'),
-    category: 'ListView',
-  },
-  {
-    key: 'FlatList-onViewableItemsChanged',
-    module: require('../examples/FlatList/FlatList-onViewableItemsChanged'),
-    category: 'ListView',
-  },
-  {
-    key: 'FlatList-onEndReached',
-    module: require('../examples/FlatList/FlatList-onEndReached'),
-    category: 'ListView',
-  },
   {
     key: 'ImageExample',
     module: require('../examples/Image/ImageExample'),
@@ -106,11 +91,6 @@ const Components: Array<RNTesterModuleInfo> = [
   {
     key: 'ModalExample',
     module: require('../examples/Modal/ModalExample'),
-    supportsTVOS: true,
-  },
-  {
-    key: 'MultiColumnExample',
-    module: require('../examples/MultiColumn/MultiColumnExample'),
     supportsTVOS: true,
   },
   {
@@ -212,6 +192,14 @@ const Components: Array<RNTesterModuleInfo> = [
     category: 'Basic',
     supportsTVOS: true,
   },
+  /* [TODO(macOS GH#774) - NewArchitectureExample depends on Fabric, which we don't have on macOS yet
+  {
+    key: 'NewArchitectureExample',
+    category: 'UI',
+    module: require('../examples/NewArchitecture/NewArchitectureExample'),
+    supportsTVOS: false,
+  },
+  ]TODO(macOS GH#774) */
 ];
 
 const APIs: Array<RNTesterModuleInfo> = [

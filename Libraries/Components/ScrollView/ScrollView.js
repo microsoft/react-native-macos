@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -161,6 +161,7 @@ export type ScrollViewImperativeMethods = $ReadOnly<{|
   >,
 |}>;
 
+export type DecelerationRateType = 'fast' | 'normal' | number;
 export type ScrollResponderType = ScrollViewImperativeMethods;
 
 type IOSProps = $ReadOnly<{|
@@ -171,6 +172,12 @@ type IOSProps = $ReadOnly<{|
    * @platform ios
    */
   automaticallyAdjustContentInsets?: ?boolean,
+  /**
+   * Controls whether the ScrollView should automatically adjust it's contentInset
+   * and scrollViewInsets when the Keyboard changes it's size. The default value is false.
+   * @platform ios
+   */
+  automaticallyAdjustKeyboardInsets?: ?boolean,
   /**
    * Controls whether iOS should automatically adjust the scroll indicator
    * insets. The default value is true. Available on iOS 13 and later.
@@ -347,17 +354,6 @@ type IOSProps = $ReadOnly<{|
    */
   showsHorizontalScrollIndicator?: ?boolean,
   /**
-   * When `snapToInterval` is set, `snapToAlignment` will define the relationship
-   * of the snapping to the scroll view.
-   *
-   *   - `'start'` (the default) will align the snap at the left (horizontal) or top (vertical)
-   *   - `'center'` will align the snap in the center
-   *   - `'end'` will align the snap at the right (horizontal) or bottom (vertical)
-   *
-   * @platform ios
-   */
-  snapToAlignment?: ?('start' | 'center' | 'end'),
-  /**
    * The current scale of the scroll view content. The default value is 1.0.
    * @platform ios
    */
@@ -492,7 +488,7 @@ export type Props = $ReadOnly<{|
    *   - `'normal'`: 0.998 on iOS, 0.985 on Android (the default)
    *   - `'fast'`: 0.99 on iOS, 0.9 on Android
    */
-  decelerationRate?: ?('fast' | 'normal' | number),
+  decelerationRate?: ?DecelerationRateType,
   /**
    * When true, the scroll view's children are arranged horizontally in a row
    * instead of vertically in a column. The default value is false.
@@ -612,6 +608,15 @@ export type Props = $ReadOnly<{|
    */
   StickyHeaderComponent?: StickyHeaderComponentType,
   /**
+   * When `snapToInterval` is set, `snapToAlignment` will define the relationship
+   * of the snapping to the scroll view.
+   *
+   *   - `'start'` (the default) will align the snap at the left (horizontal) or top (vertical)
+   *   - `'center'` will align the snap in the center
+   *   - `'end'` will align the snap at the right (horizontal) or bottom (vertical)
+   */
+  snapToAlignment?: ?('start' | 'center' | 'end'),
+  /**
    * When set, causes the scroll view to stop at multiples of the value of
    * `snapToInterval`. This can be used for paginating through children
    * that have lengths smaller than the scroll view. Typically used in
@@ -705,7 +710,7 @@ type ScrollViewComponentStatics = $ReadOnly<{|
  * view from becoming the responder.
  *
  *
- * `<ScrollView>` vs [`<FlatList>`](https://reactnative.dev/docs/flatlist.html) - which one to use?
+ * `<ScrollView>` vs [`<FlatList>`](https://reactnative.dev/docs/flatlist) - which one to use?
  *
  * `ScrollView` simply renders all its react child components at once. That
  * makes it very easy to understand and use.
@@ -1049,7 +1054,11 @@ class ScrollView extends React.Component<Props, State> {
     |},
     animated?: boolean, // deprecated, put this inside the rect argument instead
   ) => {
-    invariant(Platform.OS === 'ios', 'zoomToRect is not implemented');
+    invariant(
+      // [TODO(macOS GH#774)
+      Platform.OS === 'ios' || Platform.OS === 'macos',
+      'zoomToRect is not implemented',
+    ); // TODO [(macOS GH#774)
     if ('animated' in rect) {
       this._animated = rect.animated;
       delete rect.animated;
@@ -1201,42 +1210,10 @@ class ScrollView extends React.Component<Props, State> {
               nativeEvent.contentOffset.y +
               nativeEvent.layoutMeasurement.height,
           });
-        } else if (key === 'LEFT_ARROW') {
-          this._handleScrollByKeyDown(event, {
-            x:
-              nativeEvent.contentOffset.x +
-              -(this.props.horizontalLineScroll !== undefined
-                ? this.props.horizontalLineScroll
-                : kMinScrollOffset),
-            y: nativeEvent.contentOffset.y,
-          });
-        } else if (key === 'RIGHT_ARROW') {
-          this._handleScrollByKeyDown(event, {
-            x:
-              nativeEvent.contentOffset.x +
-              (this.props.horizontalLineScroll !== undefined
-                ? this.props.horizontalLineScroll
-                : kMinScrollOffset),
-            y: nativeEvent.contentOffset.y,
-          });
-        } else if (key === 'DOWN_ARROW') {
-          this._handleScrollByKeyDown(event, {
-            x: nativeEvent.contentOffset.x,
-            y:
-              nativeEvent.contentOffset.y +
-              (this.props.verticalLineScroll !== undefined
-                ? this.props.verticalLineScroll
-                : kMinScrollOffset),
-          });
-        } else if (key === 'UP_ARROW') {
-          this._handleScrollByKeyDown(event, {
-            x: nativeEvent.contentOffset.x,
-            y:
-              nativeEvent.contentOffset.y +
-              -(this.props.verticalLineScroll !== undefined
-                ? this.props.verticalLineScroll
-                : kMinScrollOffset),
-          });
+        } else if (key === 'HOME') {
+          this.scrollTo({x: 0, y: 0});
+        } else if (key === 'END') {
+          this.scrollToEnd({animated: true});
         }
       }
     }
@@ -1273,11 +1250,6 @@ class ScrollView extends React.Component<Props, State> {
             "cause frame drops, use a bigger number if you don't need as " +
             'much precision.',
         );
-      }
-    }
-    if (Platform.OS === 'android') {
-      if (this.props.keyboardDismissMode === 'on-drag' && this._isTouching) {
-        dismissKeyboard();
       }
     }
     this._observedScrollSinceBecomingResponder = true;
@@ -1396,6 +1368,14 @@ class ScrollView extends React.Component<Props, State> {
    */
   _handleScrollBeginDrag: (e: ScrollEvent) => void = (e: ScrollEvent) => {
     FrameRateLogger.beginScroll(); // TODO: track all scrolls after implementing onScrollEndAnimation
+
+    if (
+      Platform.OS === 'android' &&
+      this.props.keyboardDismissMode === 'on-drag'
+    ) {
+      dismissKeyboard();
+    }
+
     this.props.onScrollBeginDrag && this.props.onScrollBeginDrag(e);
   };
 
@@ -1748,7 +1728,8 @@ class ScrollView extends React.Component<Props, State> {
               scrollAnimatedValue={this._scrollAnimatedValue}
               inverted={this.props.invertStickyHeaders}
               hiddenOnScroll={this.props.stickyHeaderHiddenOnScroll}
-              scrollViewHeight={this.state.layoutHeight}>
+              scrollViewHeight={this.state.layoutHeight}
+            >
               {child}
             </StickyHeaderComponent>
           );
@@ -1759,7 +1740,8 @@ class ScrollView extends React.Component<Props, State> {
     }
     children = (
       <ScrollViewContext.Provider
-        value={this.props.horizontal === true ? HORIZONTAL : VERTICAL}>
+        value={this.props.horizontal === true ? HORIZONTAL : VERTICAL}
+      >
         {children}
       </ScrollViewContext.Provider>
     );
@@ -1780,7 +1762,8 @@ class ScrollView extends React.Component<Props, State> {
             : this.props.removeClippedSubviews
         }
         key={this.state.contentKey} // TODO(macOS GH#774)
-        collapsable={false}>
+        collapsable={false}
+      >
         {children}
       </NativeDirectionalScrollContentView>
     );
@@ -1888,7 +1871,8 @@ class ScrollView extends React.Component<Props, State> {
           <NativeDirectionalScrollView
             {...props}
             style={StyleSheet.compose(baseStyle, inner)}
-            ref={this._setNativeRef}>
+            ref={this._setNativeRef}
+          >
             {contentContainer}
           </NativeDirectionalScrollView>,
         );

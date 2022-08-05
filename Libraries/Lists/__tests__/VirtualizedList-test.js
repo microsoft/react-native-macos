@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -362,7 +362,7 @@ describe('VirtualizedList', () => {
     const layout = {width: 300, height: 600};
     let data = Array(20)
       .fill()
-      .map((_, key) => ({key: String(key)}));
+      .map((_, index) => ({key: `key-${index}`}));
     const onEndReached = jest.fn();
     const props = {
       data,

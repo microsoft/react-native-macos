@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -53,7 +53,50 @@ class ScrollViewSimpleExample extends React.Component<{...}> {
         key={'scrollViewSnap'}
         horizontal
         snapToInterval={210.0}
-        pagingEnabled>
+        pagingEnabled
+      >
+        {this.makeItems(NUM_ITEMS, [
+          styles.itemWrapper,
+          styles.horizontalItemWrapper,
+          styles.horizontalPagingItemWrapper,
+        ])}
+      </ScrollView>,
+    );
+    items.push(
+      <ScrollView
+        key={'scrollViewSnapStart'}
+        horizontal
+        snapToAlignment={'start'}
+        pagingEnabled
+      >
+        {this.makeItems(NUM_ITEMS, [
+          styles.itemWrapper,
+          styles.horizontalItemWrapper,
+          styles.horizontalPagingItemWrapper,
+        ])}
+      </ScrollView>,
+    );
+    items.push(
+      <ScrollView
+        key={'scrollViewSnapCenter'}
+        horizontal
+        snapToAlignment={'center'}
+        pagingEnabled
+      >
+        {this.makeItems(NUM_ITEMS, [
+          styles.itemWrapper,
+          styles.horizontalItemWrapper,
+          styles.horizontalPagingItemWrapper,
+        ])}
+      </ScrollView>,
+    );
+    items.push(
+      <ScrollView
+        key={'scrollViewSnapEnd'}
+        horizontal
+        snapToAlignment={'end'}
+        pagingEnabled
+      >
         {this.makeItems(NUM_ITEMS, [
           styles.itemWrapper,
           styles.horizontalItemWrapper,

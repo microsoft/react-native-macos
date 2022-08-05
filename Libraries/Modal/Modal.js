@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -15,7 +15,6 @@ import NativeEventEmitter from '../EventEmitter/NativeEventEmitter';
 import NativeModalManager from './NativeModalManager';
 const Platform = require('../Utilities/Platform');
 const React = require('react');
-const PropTypes = require('prop-types');
 const ScrollView = require('../Components/ScrollView/ScrollView');
 const StyleSheet = require('../StyleSheet/StyleSheet');
 const View = require('../Components/View/View');
@@ -45,7 +44,7 @@ const ModalEventEmitter =
 /**
  * The Modal component is a simple way to present content above an enclosing view.
  *
- * See https://reactnative.dev/docs/modal.html
+ * See https://reactnative.dev/docs/modal
  */
 
 // In order to route onDismiss callbacks, we need to uniquely identifier each
@@ -64,14 +63,14 @@ export type Props = $ReadOnly<{|
   /**
    * The `animationType` prop controls how the modal animates.
    *
-   * See https://reactnative.dev/docs/modal.html#animationtype
+   * See https://reactnative.dev/docs/modal#animationtype
    */
   animationType?: ?('none' | 'slide' | 'fade'),
 
   /**
    * The `presentationStyle` prop controls how the modal appears.
    *
-   * See https://reactnative.dev/docs/modal.html#presentationstyle
+   * See https://reactnative.dev/docs/modal#presentationstyle
    */
   presentationStyle?: ?(
     | 'fullScreen'
@@ -84,7 +83,7 @@ export type Props = $ReadOnly<{|
    * The `transparent` prop determines whether your modal will fill the
    * entire view.
    *
-   * See https://reactnative.dev/docs/modal.html#transparent
+   * See https://reactnative.dev/docs/modal#transparent
    */
   transparent?: ?boolean,
 
@@ -92,7 +91,7 @@ export type Props = $ReadOnly<{|
    * The `statusBarTranslucent` prop determines whether your modal should go under
    * the system statusbar.
    *
-   * See https://reactnative.dev/docs/modal.html#transparent
+   * See https://reactnative.dev/docs/modal#transparent
    */
   statusBarTranslucent?: ?boolean,
 
@@ -102,14 +101,14 @@ export type Props = $ReadOnly<{|
    *
    * This prop works only on Android.
    *
-   * See https://reactnative.dev/docs/modal.html#hardwareaccelerated
+   * See https://reactnative.dev/docs/modal#hardwareaccelerated
    */
   hardwareAccelerated?: ?boolean,
 
   /**
    * The `visible` prop determines whether your modal is visible.
    *
-   * See https://reactnative.dev/docs/modal.html#visible
+   * See https://reactnative.dev/docs/modal#visible
    */
   visible?: ?boolean,
 
@@ -119,7 +118,7 @@ export type Props = $ReadOnly<{|
    *
    * This is required on Apple TV and Android.
    *
-   * See https://reactnative.dev/docs/modal.html#onrequestclose
+   * See https://reactnative.dev/docs/modal#onrequestclose
    */
   onRequestClose?: ?DirectEventHandler<null>,
 
@@ -127,7 +126,7 @@ export type Props = $ReadOnly<{|
    * The `onShow` prop allows passing a function that will be called once the
    * modal has been shown.
    *
-   * See https://reactnative.dev/docs/modal.html#onshow
+   * See https://reactnative.dev/docs/modal#onshow
    */
   onShow?: ?DirectEventHandler<null>,
 
@@ -135,14 +134,14 @@ export type Props = $ReadOnly<{|
    * The `onDismiss` prop allows passing a function that will be called once
    * the modal has been dismissed.
    *
-   * See https://reactnative.dev/docs/modal.html#ondismiss
+   * See https://reactnative.dev/docs/modal#ondismiss
    */
   onDismiss?: ?() => mixed,
 
   /**
    * The `supportedOrientations` prop allows the modal to be rotated to any of the specified orientations.
    *
-   * See https://reactnative.dev/docs/modal.html#supportedorientations
+   * See https://reactnative.dev/docs/modal#supportedorientations
    */
   supportedOrientations?: ?$ReadOnlyArray<
     | 'portrait'
@@ -155,7 +154,7 @@ export type Props = $ReadOnly<{|
   /**
    * The `onOrientationChange` callback is called when the orientation changes while the modal is being displayed.
    *
-   * See https://reactnative.dev/docs/modal.html#onorientationchange
+   * See https://reactnative.dev/docs/modal#onorientationchange
    */
   onOrientationChange?: ?DirectEventHandler<OrientationChangeEvent>,
 |}>;
@@ -265,12 +264,15 @@ class Modal extends React.Component<Props> {
         // $FlowFixMe[method-unbinding] added when improving typing for this parameters
         onStartShouldSetResponder={this._shouldSetResponder}
         supportedOrientations={this.props.supportedOrientations}
-        onOrientationChange={this.props.onOrientationChange}>
+        onOrientationChange={this.props.onOrientationChange}
+        testID={this.props.testID}
+      >
         <VirtualizedListContextResetter>
           <ScrollView.Context.Provider value={null}>
             <View
               style={[styles.container, containerStyles]}
-              collapsable={false}>
+              collapsable={false}
+            >
               {innerChildren}
             </View>
           </ScrollView.Context.Provider>

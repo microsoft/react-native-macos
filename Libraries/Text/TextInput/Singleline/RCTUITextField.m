@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -26,6 +26,8 @@
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
 @property (nonatomic, getter=isAutomaticTextReplacementEnabled) BOOL automaticTextReplacementEnabled;
 @property (nonatomic, getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled;
+@property (nonatomic, getter=isContinuousSpellCheckingEnabled) BOOL continuousSpellCheckingEnabled;
+@property (nonatomic, getter=isGrammarCheckingEnabled) BOOL grammarCheckingEnabled;
 @property (nonatomic, strong, nullable) RCTUIColor *selectionColor;
 
 @end
@@ -70,6 +72,8 @@
   NSTextView *fieldEditor = (NSTextView *)[super setUpFieldEditorAttributes:textObj];
   fieldEditor.automaticSpellingCorrectionEnabled = self.isAutomaticSpellingCorrectionEnabled;
   fieldEditor.automaticTextReplacementEnabled = self.isAutomaticTextReplacementEnabled;
+  fieldEditor.continuousSpellCheckingEnabled = self.isContinuousSpellCheckingEnabled;
+  fieldEditor.grammarCheckingEnabled = self.isGrammarCheckingEnabled;
   NSMutableDictionary *selectTextAttributes = fieldEditor.selectedTextAttributes.mutableCopy;
   selectTextAttributes[NSBackgroundColorAttributeName] = self.selectionColor ?: [NSColor selectedControlColor];
 	fieldEditor.selectedTextAttributes = selectTextAttributes;
@@ -105,7 +109,6 @@
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
     [self setBordered:NO];
     [self setAllowsEditingTextAttributes:YES];
-    [self setAccessibilityRole:NSAccessibilityTextFieldRole];
     [self setBackgroundColor:[NSColor clearColor]];
 #endif // ]TODO(macOS GH#774)
 
@@ -127,7 +130,11 @@
 
 #pragma mark - Accessibility
 
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
 - (void)setIsAccessibilityElement:(BOOL)isAccessibilityElement
+#else
+- (void)setAccessibilityElement:(BOOL)isAccessibilityElement
+#endif // ]TODO(macOS GH#774)
 {
   // UITextField is accessible by default (some nested views are) and disabling that is not supported.
   // On iOS accessible elements cannot be nested, therefore enabling accessibility for some container view
@@ -191,6 +198,26 @@
 - (BOOL)isAutomaticSpellingCorrectionEnabled
 {
   return ((RCTUITextFieldCell*)self.cell).isAutomaticSpellingCorrectionEnabled;
+}
+
+- (void)setContinuousSpellCheckingEnabled:(BOOL)continuousSpellCheckingEnabled
+{
+  ((RCTUITextFieldCell*)self.cell).continuousSpellCheckingEnabled = continuousSpellCheckingEnabled;
+}
+
+- (BOOL)isContinuousSpellCheckingEnabled
+{
+  return ((RCTUITextFieldCell*)self.cell).isContinuousSpellCheckingEnabled;
+}
+
+- (void)setGrammarCheckingEnabled:(BOOL)grammarCheckingEnabled
+{
+  ((RCTUITextFieldCell*)self.cell).grammarCheckingEnabled = grammarCheckingEnabled;
+}
+
+- (BOOL)isGrammarCheckingEnabled
+{
+  return ((RCTUITextFieldCell*)self.cell).isGrammarCheckingEnabled;
 }
 
 - (void)setSelectionColor:(RCTUIColor *)selectionColor // TODO(OSS Candidate ISS#2710739)

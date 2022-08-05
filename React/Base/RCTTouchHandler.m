@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -41,10 +41,6 @@
 
   __weak RCTUIView *_cachedRootView; // TODO(macOS GH#774)
 
-  // See Touch.h and usage. This gives us a time-basis for a monotonic
-  // clock that acts like a timestamp of milliseconds elapsed since UNIX epoch.
-  NSTimeInterval _unixEpochBasisTime;
-
   uint16_t _coalescingKey;
 #if TARGET_OS_OSX// [TODO(macOS GH#774)
   BOOL _shouldSendMouseUpOnSystemBehalf;
@@ -61,9 +57,6 @@
     _nativeTouches = [NSMutableOrderedSet new];
     _reactTouches = [NSMutableArray new];
     _touchViews = [NSMutableArray new];
-
-    // Get a UNIX epoch basis time:
-    _unixEpochBasisTime = [[NSDate date] timeIntervalSince1970] - [NSProcessInfo processInfo].systemUptime;
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
     // `cancelsTouchesInView` and `delaysTouches*` are needed in order to be used as a top level
@@ -136,6 +129,10 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
     // The assumption here is that a RCTUIView/RCTSurfaceView will always have a superview.
     CGPoint touchLocation = [self.view.superview convertPoint:touch.locationInWindow fromView:nil];
     NSView *targetView = [self.view hitTest:touchLocation];
+    // Don't record clicks on scrollbars.
+    if ([targetView isKindOfClass:[NSScroller class]]) {
+      continue;
+    }
     // Pair the mouse down events with mouse up events so our _nativeTouches cache doesn't get stale
     if ([targetView isKindOfClass:[NSControl class]]) {
       _shouldSendMouseUpOnSystemBehalf = [(NSControl*)targetView isEnabled];
@@ -228,7 +225,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
   NSEvent *nativeTouch = _nativeTouches[touchIndex];
   CGPoint location = nativeTouch.locationInWindow;
   CGPoint rootViewLocation = CGPointMake(location.x, CGRectGetHeight(self.view.window.frame) - location.y);
-  CGPoint touchViewLocation = rootViewLocation;
+  NSView *touchView = _touchViews[touchIndex];
+  CGPoint touchViewLocation = [touchView convertPoint:location fromView:nil];
 #endif // ]TODO(macOS GH#774)
 
   NSMutableDictionary *reactTouch = _reactTouches[touchIndex];
@@ -236,7 +234,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
   reactTouch[@"pageY"] = @(RCTSanitizeNaNValue(rootViewLocation.y, @"touchEvent.pageY"));
   reactTouch[@"locationX"] = @(RCTSanitizeNaNValue(touchViewLocation.x, @"touchEvent.locationX"));
   reactTouch[@"locationY"] = @(RCTSanitizeNaNValue(touchViewLocation.y, @"touchEvent.locationY"));
-  reactTouch[@"timestamp"] = @((_unixEpochBasisTime + nativeTouch.timestamp) * 1000); // in ms, for JS
+  reactTouch[@"timestamp"] = @(nativeTouch.timestamp * 1000); // in ms, for JS
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
   // TODO: force for a 'normal' touch is usually 1.0;
@@ -400,6 +398,11 @@ static BOOL RCTAnyTouchesChanged(NSSet *touches) // [TODO(macOS GH#774)
   // "start" has to record new touches *before* extracting the event.
   // "end"/"cancel" needs to remove the touch *after* extracting the event.
   [self _recordNewTouches:touches];
+
+  // [TODO(macOS GH#774) - Filter out touches that were ignored.
+  touches = [touches objectsPassingTest:^(id touch, BOOL *stop) {
+    return [_nativeTouches containsObject:touch];
+  }]; // ]TODO(macOS GH#774)
 
   [self _updateAndDispatchTouches:touches eventName:@"touchStart"];
 

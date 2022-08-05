@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -110,9 +110,11 @@ jest
       getNativeRef: jest.fn(),
     }),
   )
-  .mock('../Libraries/Modal/Modal', () =>
-    mockComponent('../Libraries/Modal/Modal'),
-  )
+  .mock('../Libraries/Modal/Modal', () => {
+    const baseComponent = mockComponent('../Libraries/Modal/Modal');
+    const mockModal = jest.requireActual('./mockModal');
+    return mockModal(baseComponent);
+  })
   .mock('../Libraries/Components/View/View', () =>
     mockComponent('../Libraries/Components/View/View', MockNativeMethods),
   )
@@ -121,6 +123,7 @@ jest
     default: {
       addEventListener: jest.fn(),
       announceForAccessibility: jest.fn(),
+      isAccessibilityServiceEnabled: jest.fn(),
       isBoldTextEnabled: jest.fn(),
       isGrayscaleEnabled: jest.fn(),
       isInvertColorsEnabled: jest.fn(),

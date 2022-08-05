@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -28,6 +28,10 @@
 
     _backedTextInputView = [[RCTUITextField alloc] initWithFrame:self.bounds];
     _backedTextInputView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+    _backedTextInputView.cell.scrollable = YES;
+    _backedTextInputView.cell.usesSingleLineMode = YES;
+#endif // ]TODO(macOS GH#774)
     _backedTextInputView.textInputDelegate = self;
 
     [self addSubview:_backedTextInputView];

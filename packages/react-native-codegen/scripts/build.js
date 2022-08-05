@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -92,7 +92,7 @@ function buildFile(file, silent) {
     );
     fs.writeFileSync(destPath, transformed);
     const source = fs.readFileSync(file).toString('utf-8');
-    if (/\@flow/.test(source)) {
+    if (/@flow/.test(source)) {
       fs.createReadStream(file).pipe(fs.createWriteStream(destPath + '.flow'));
     }
     silent ||
