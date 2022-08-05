@@ -17,7 +17,7 @@
 +import com.facebook.soloader.SoLoader;
 +
 +@DoNotStrip
-+/* package */ class V8Executor extends JavaScriptExecutor {
++public class V8Executor extends JavaScriptExecutor {
 +  static {
 +    loadLibrary();
 +  }

@@ -13,7 +13,7 @@
      } else if (jsInterpreter == JSInterpreter.HERMES) {
        HermesExecutor.loadLibrary();
        return new HermesExecutorFactory();
-+    } else if(mJSEngine == JSInterpreter.V8) {
++    } else if(jsInterpreter == JSInterpreter.V8) {
 +      V8Executor.loadLibrary();
 +      return new V8ExecutorFactory(appName, deviceName);
      } else {
