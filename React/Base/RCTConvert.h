@@ -11,10 +11,10 @@
 #import <React/RCTAnimationType.h>
 #import <React/RCTBorderStyle.h>
 #import <React/RCTDefines.h>
+#import <React/RCTFontSmoothing.h> // TODO(OSS Candidate ISS#2710739)
 #import <React/RCTLog.h>
 #import <React/RCTPointerEvents.h>
 #import <React/RCTTextDecorationLineType.h>
-#import <React/RCTFontSmoothing.h> // TODO(OSS Candidate ISS#2710739)
 #import <yoga/Yoga.h>
 #if TARGET_OS_IPHONE
 #import <WebKit/WebKit.h>

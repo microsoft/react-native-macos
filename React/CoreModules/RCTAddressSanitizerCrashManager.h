@@ -4,8 +4,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTUIKit.h>
 #import <React/RCTBridge.h>
+#import <React/RCTUIKit.h>
 
 @interface RCTAddressSanitizerCrashManager : NSObject <RCTBridgeModule>
 

@@ -7,15 +7,15 @@
 
 #import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
-#import <React/RCTTextDecorationLineType.h>
 #import <React/RCTFontSmoothing.h> // TODO(OSS Candidate ISS#2710739)
+#import <React/RCTTextDecorationLineType.h>
 
 #import "RCTTextTransform.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const RCTTextAttributesIsHighlightedAttributeName;
-extern NSString *const RCTTextAttributesFontSmoothingAttributeName;  // TODO(OSS Candidate ISS#2710739)
+extern NSString *const RCTTextAttributesFontSmoothingAttributeName; // TODO(OSS Candidate ISS#2710739)
 extern NSString *const RCTTextAttributesTagAttributeName;
 
 /**

@@ -10,7 +10,8 @@
 #import <React/RCTComponentEvent.h>
 
 /**
- * Represents a focus change event meaning that a view that can become first responder has become or resigned being first responder.
+ * Represents a focus change event meaning that a view that can become first responder has become or resigned being
+ * first responder.
  */
 @interface RCTFocusChangeEvent : RCTComponentEvent
 

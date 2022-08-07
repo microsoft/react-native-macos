@@ -26,7 +26,7 @@ UIKIT_STATIC_INLINE CGFloat UIImageGetScale(UIImage *image)
 
 UIKIT_STATIC_INLINE CGImageRef UIImageGetCGImageRef(UIImage *image)
 {
-	return image.CGImage;
+  return image.CGImage;
 }
 
 UIKIT_STATIC_INLINE UIImage *UIImageWithContentsOfFile(NSString *filePath)
@@ -59,7 +59,7 @@ UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
 //
 
 // UIView
-#define RCTPlatformView         UIView
+#define RCTPlatformView UIView
 #define RCTUIView UIView // TODO(macOS ISS#3536887)
 #define RCTUIScrollView UIScrollView // TODO(macOS ISS#3536887)
 
@@ -80,7 +80,8 @@ UIKIT_STATIC_INLINE void RCTUIViewSetContentModeRedraw(UIView *view)
   view.contentMode = UIViewContentModeRedraw;
 }
 
-UIKIT_STATIC_INLINE BOOL RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(RCTPlatformView *view, CGRect rect, BOOL afterUpdates)
+UIKIT_STATIC_INLINE BOOL
+RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(RCTPlatformView *view, CGRect rect, BOOL afterUpdates)
 {
   return [view drawViewHierarchyInRect:rect afterScreenUpdates:afterUpdates];
 }
@@ -130,46 +131,46 @@ UIKIT_STATIC_INLINE CGFloat UIFontLineHeight(UIFont *font)
 //
 
 // UIApplication.h/NSApplication.h
-#define UIApplicationDidBecomeActiveNotification      NSApplicationDidBecomeActiveNotification
-#define UIApplicationDidEnterBackgroundNotification   NSApplicationDidHideNotification
-#define UIApplicationDidFinishLaunchingNotification   NSApplicationDidFinishLaunchingNotification
-#define UIApplicationWillResignActiveNotification     NSApplicationWillResignActiveNotification
-#define UIApplicationWillEnterForegroundNotification  NSApplicationWillUnhideNotification  
+#define UIApplicationDidBecomeActiveNotification NSApplicationDidBecomeActiveNotification
+#define UIApplicationDidEnterBackgroundNotification NSApplicationDidHideNotification
+#define UIApplicationDidFinishLaunchingNotification NSApplicationDidFinishLaunchingNotification
+#define UIApplicationWillResignActiveNotification NSApplicationWillResignActiveNotification
+#define UIApplicationWillEnterForegroundNotification NSApplicationWillUnhideNotification
 
 // UIFontDescriptor.h/NSFontDescriptor.h
-#define UIFontDescriptorFamilyAttribute          NSFontFamilyAttribute;
-#define UIFontDescriptorNameAttribute            NSFontNameAttribute;
-#define UIFontDescriptorFaceAttribute            NSFontFaceAttribute;
-#define UIFontDescriptorSizeAttribute            NSFontSizeAttribute
+#define UIFontDescriptorFamilyAttribute NSFontFamilyAttribute;
+#define UIFontDescriptorNameAttribute NSFontNameAttribute;
+#define UIFontDescriptorFaceAttribute NSFontFaceAttribute;
+#define UIFontDescriptorSizeAttribute NSFontSizeAttribute
 
-#define UIFontDescriptorTraitsAttribute          NSFontTraitsAttribute
+#define UIFontDescriptorTraitsAttribute NSFontTraitsAttribute
 #define UIFontDescriptorFeatureSettingsAttribute NSFontFeatureSettingsAttribute
 
-#define UIFontSymbolicTrait                      NSFontSymbolicTrait
-#define UIFontWeightTrait                        NSFontWeightTrait
-#define UIFontFeatureTypeIdentifierKey           NSFontFeatureTypeIdentifierKey
-#define UIFontFeatureSelectorIdentifierKey       NSFontFeatureSelectorIdentifierKey
+#define UIFontSymbolicTrait NSFontSymbolicTrait
+#define UIFontWeightTrait NSFontWeightTrait
+#define UIFontFeatureTypeIdentifierKey NSFontFeatureTypeIdentifierKey
+#define UIFontFeatureSelectorIdentifierKey NSFontFeatureSelectorIdentifierKey
 
-#define UIFontWeightUltraLight                   NSFontWeightUltraLight
-#define UIFontWeightThin                         NSFontWeightThin
-#define UIFontWeightLight                        NSFontWeightLight
-#define UIFontWeightRegular                      NSFontWeightRegular
-#define UIFontWeightMedium                       NSFontWeightMedium
-#define UIFontWeightSemibold                     NSFontWeightSemibold
-#define UIFontWeightBold                         NSFontWeightBold
-#define UIFontWeightHeavy                        NSFontWeightHeavy
-#define UIFontWeightBlack                        NSFontWeightBlack
+#define UIFontWeightUltraLight NSFontWeightUltraLight
+#define UIFontWeightThin NSFontWeightThin
+#define UIFontWeightLight NSFontWeightLight
+#define UIFontWeightRegular NSFontWeightRegular
+#define UIFontWeightMedium NSFontWeightMedium
+#define UIFontWeightSemibold NSFontWeightSemibold
+#define UIFontWeightBold NSFontWeightBold
+#define UIFontWeightHeavy NSFontWeightHeavy
+#define UIFontWeightBlack NSFontWeightBlack
 
 // RCTActivityIndicatorView.h
 #define UIActivityIndicatorView NSProgressIndicator
-
 
 // UIGeometry.h/NSGeometry.h
 #define UIEdgeInsetsZero NSEdgeInsetsZero
 
 // UIView.h/NSLayoutConstraint.h
 #define UIViewNoIntrinsicMetric -1
-// NSViewNoIntrinsicMetric is defined to -1 but is only available on macOS 10.11 and higher.  On previous versions it was NSViewNoInstrinsicMetric (misspelled) and also defined to -1.
+// NSViewNoIntrinsicMetric is defined to -1 but is only available on macOS 10.11 and higher.  On previous versions it
+// was NSViewNoInstrinsicMetric (misspelled) and also defined to -1.
 
 // UIInterface.h/NSUserInterfaceLayout.h
 #define UIUserInterfaceLayoutDirection NSUserInterfaceLayoutDirection
@@ -179,51 +180,46 @@ UIKIT_STATIC_INLINE CGFloat UIFontLineHeight(UIFont *font)
 //
 
 // UIGestureRecognizer.h/NSGestureRecognizer.h
-enum
-{
-  UIGestureRecognizerStatePossible    = NSGestureRecognizerStatePossible,
-  UIGestureRecognizerStateBegan       = NSGestureRecognizerStateBegan,
-  UIGestureRecognizerStateChanged     = NSGestureRecognizerStateChanged,
-  UIGestureRecognizerStateEnded       = NSGestureRecognizerStateEnded,
-  UIGestureRecognizerStateCancelled   = NSGestureRecognizerStateCancelled,
-  UIGestureRecognizerStateFailed      = NSGestureRecognizerStateFailed,
-  UIGestureRecognizerStateRecognized  = NSGestureRecognizerStateRecognized,
+enum {
+  UIGestureRecognizerStatePossible = NSGestureRecognizerStatePossible,
+  UIGestureRecognizerStateBegan = NSGestureRecognizerStateBegan,
+  UIGestureRecognizerStateChanged = NSGestureRecognizerStateChanged,
+  UIGestureRecognizerStateEnded = NSGestureRecognizerStateEnded,
+  UIGestureRecognizerStateCancelled = NSGestureRecognizerStateCancelled,
+  UIGestureRecognizerStateFailed = NSGestureRecognizerStateFailed,
+  UIGestureRecognizerStateRecognized = NSGestureRecognizerStateRecognized,
 };
 
 // UIFontDescriptor.h/NSFontDescriptor.h
-enum
-{
-  UIFontDescriptorTraitItalic    = NSFontItalicTrait,
-  UIFontDescriptorTraitBold      = NSFontBoldTrait,
+enum {
+  UIFontDescriptorTraitItalic = NSFontItalicTrait,
+  UIFontDescriptorTraitBold = NSFontBoldTrait,
   UIFontDescriptorTraitCondensed = NSFontCondensedTrait,
 };
 
 // UIView.h/NSView.h
-enum : NSUInteger
-{
-  UIViewAutoresizingNone                 = NSViewNotSizable,
-  UIViewAutoresizingFlexibleLeftMargin   = NSViewMinXMargin,
-  UIViewAutoresizingFlexibleWidth        = NSViewWidthSizable,
-  UIViewAutoresizingFlexibleRightMargin  = NSViewMaxXMargin,
-  UIViewAutoresizingFlexibleTopMargin    = NSViewMinYMargin,
-  UIViewAutoresizingFlexibleHeight       = NSViewHeightSizable,
+enum : NSUInteger {
+  UIViewAutoresizingNone = NSViewNotSizable,
+  UIViewAutoresizingFlexibleLeftMargin = NSViewMinXMargin,
+  UIViewAutoresizingFlexibleWidth = NSViewWidthSizable,
+  UIViewAutoresizingFlexibleRightMargin = NSViewMaxXMargin,
+  UIViewAutoresizingFlexibleTopMargin = NSViewMinYMargin,
+  UIViewAutoresizingFlexibleHeight = NSViewHeightSizable,
   UIViewAutoresizingFlexibleBottomMargin = NSViewMaxYMargin,
 };
 
 // UIView/NSView.h
-enum : NSInteger
-{
+enum : NSInteger {
   UIViewContentModeScaleAspectFill = NSViewLayerContentsPlacementScaleProportionallyToFill,
-  UIViewContentModeScaleAspectFit  = NSViewLayerContentsPlacementScaleProportionallyToFit,
-  UIViewContentModeScaleToFill     = NSViewLayerContentsPlacementScaleAxesIndependently,
-  UIViewContentModeCenter          = NSViewLayerContentsPlacementCenter,
+  UIViewContentModeScaleAspectFit = NSViewLayerContentsPlacementScaleProportionallyToFit,
+  UIViewContentModeScaleToFill = NSViewLayerContentsPlacementScaleAxesIndependently,
+  UIViewContentModeCenter = NSViewLayerContentsPlacementCenter,
 };
 
 // UIInterface.h/NSUserInterfaceLayout.h
-enum : NSInteger
-{
-	UIUserInterfaceLayoutDirectionLeftToRight = NSUserInterfaceLayoutDirectionLeftToRight,
-	UIUserInterfaceLayoutDirectionRightToLeft = NSUserInterfaceLayoutDirectionRightToLeft,
+enum : NSInteger {
+  UIUserInterfaceLayoutDirectionLeftToRight = NSUserInterfaceLayoutDirectionLeftToRight,
+  UIUserInterfaceLayoutDirectionRightToLeft = NSUserInterfaceLayoutDirectionRightToLeft,
 };
 
 // RCTActivityIndicatorView.h
@@ -232,7 +228,6 @@ typedef NS_ENUM(NSInteger, UIActivityIndicatorViewStyle) {
   UIActivityIndicatorViewStyleWhite
 };
 
-
 //
 // semantically equivalent functions
 //
@@ -240,26 +235,26 @@ typedef NS_ENUM(NSInteger, UIActivityIndicatorViewStyle) {
 // UIGeometry.h/NSGeometry.h
 NS_INLINE CGRect UIEdgeInsetsInsetRect(CGRect rect, NSEdgeInsets insets)
 {
-	rect.origin.x    += insets.left;
-	rect.origin.y    += insets.top;
-	rect.size.width  -= (insets.left + insets.right);
-	rect.size.height -= (insets.top  + insets.bottom);
-	return rect;
+  rect.origin.x += insets.left;
+  rect.origin.y += insets.top;
+  rect.size.width -= (insets.left + insets.right);
+  rect.size.height -= (insets.top + insets.bottom);
+  return rect;
 }
 
 NS_INLINE BOOL UIEdgeInsetsEqualToEdgeInsets(NSEdgeInsets insets1, NSEdgeInsets insets2)
 {
-	return NSEdgeInsetsEqual(insets1, insets2);
+  return NSEdgeInsetsEqual(insets1, insets2);
 }
 
 NS_INLINE NSString *NSStringFromCGSize(CGSize size)
 {
-	return NSStringFromSize(NSSizeFromCGSize(size));
+  return NSStringFromSize(NSSizeFromCGSize(size));
 }
 
 NS_INLINE NSString *NSStringFromCGRect(CGRect rect)
 {
-	return NSStringFromRect(NSRectFromCGRect(rect));
+  return NSStringFromRect(NSRectFromCGRect(rect));
 }
 
 // UIGraphics.h
@@ -296,7 +291,8 @@ NS_INLINE CGFloat UIFontLineHeight(NSFont *font)
 }
 
 // UIFontDescriptor.h/NSFontDescriptor.h
-// Both NSFontDescriptor and UIFontDescriptor are toll-free bridged to CTFontDescriptorRef so we'll assume they're semantically equivalent
+// Both NSFontDescriptor and UIFontDescriptor are toll-free bridged to CTFontDescriptorRef so we'll assume they're
+// semantically equivalent
 @compatibility_alias UIFontDescriptor NSFontDescriptor;
 typedef NSFontSymbolicTraits UIFontDescriptorSymbolicTraits;
 typedef NSFontWeight UIFontWeight;
@@ -330,7 +326,8 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 #ifdef __cplusplus
 extern "C"
 #endif
-CGFloat UIImageGetScale(NSImage *image);
+    CGFloat
+    UIImageGetScale(NSImage *image);
 
 CGImageRef UIImageGetCGImageRef(NSImage *image);
 
@@ -369,7 +366,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 @property (nonatomic, readonly) BOOL canBecomeFirstResponder;
 - (BOOL)becomeFirstResponder;
-@property(nonatomic, readonly) BOOL isFirstResponder;
+@property (nonatomic, readonly) BOOL isFirstResponder;
 
 @property (nonatomic, getter=isUserInteractionEnabled) BOOL userInteractionEnabled;
 
@@ -408,7 +405,6 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
  */
 @property (nonatomic, assign) BOOL enableFocusRing;
 
-
 @end
 
 // UIScrollView
@@ -442,10 +438,11 @@ NS_INLINE void RCTUIViewSetContentModeRedraw(RCTPlatformView *view)
   view.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
 }
 
-NS_INLINE BOOL RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(RCTPlatformView *view, CGRect rect, __unused BOOL afterUpdates)
+NS_INLINE BOOL
+RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(RCTPlatformView *view, CGRect rect, __unused BOOL afterUpdates)
 {
   RCTAssert(afterUpdates, @"We're redrawing the view so it will necessarily include the latest changes.");
-  (void) afterUpdates;
+  (void)afterUpdates;
   [view displayRectIgnoringOpacity:NSRectToCGRect(rect)];
   return YES;
 }

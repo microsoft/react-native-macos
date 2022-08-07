@@ -11,7 +11,8 @@
 
 // remove clipped subviews implementation
 - (void)react_remountAllSubviews;
-- (void)react_updateClippedSubviewsWithClipRect:(CGRect)clipRect relativeToView:(RCTPlatformView *)clipView; // TODO(macOS GH#774)
+- (void)react_updateClippedSubviewsWithClipRect:(CGRect)clipRect
+                                 relativeToView:(RCTPlatformView *)clipView; // TODO(macOS GH#774)
 - (RCTPlatformView *)react_findClipView; // TODO(macOS GH#774)
 
 @end

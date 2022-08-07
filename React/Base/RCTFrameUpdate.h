@@ -23,7 +23,8 @@
  */
 @property (nonatomic, readonly) NSTimeInterval deltaTime;
 
-- (instancetype)initWithDisplayLink:(RCTPlatformDisplayLink *)displayLink NS_DESIGNATED_INITIALIZER; // TODO(OSS Candidate ISS#2710739)
+- (instancetype)initWithDisplayLink:(RCTPlatformDisplayLink *)displayLink
+    NS_DESIGNATED_INITIALIZER; // TODO(OSS Candidate ISS#2710739)
 
 @end
 

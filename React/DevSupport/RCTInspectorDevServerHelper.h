@@ -6,9 +6,9 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 #import <React/RCTDefines.h>
 #import <React/RCTInspectorPackagerConnection.h>
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #if RCT_DEV
 

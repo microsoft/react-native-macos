@@ -17,10 +17,10 @@
 
 @interface RCTScrollView : RCTView <
 #if TARGET_OS_IPHONE // [TODO(macOS GH#774)
-	UIScrollViewDelegate,
+                               UIScrollViewDelegate,
 #endif
-	RCTScrollableProtocol, RCTAutoInsetsProtocol
-> // ]TODO(macOS GH#774)
+                               RCTScrollableProtocol,
+                               RCTAutoInsetsProtocol> // ]TODO(macOS GH#774)
 
 - (instancetype)initWithEventDispatcher:(id<RCTEventDispatcherProtocol>)eventDispatcher NS_DESIGNATED_INITIALIZER;
 

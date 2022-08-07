@@ -13,15 +13,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 typedef enum UITextAutocorrectionType : NSInteger {
-    UITextAutocorrectionTypeDefault,
-    UITextAutocorrectionTypeNo,
-    UITextAutocorrectionTypeYes,
+  UITextAutocorrectionTypeDefault,
+  UITextAutocorrectionTypeNo,
+  UITextAutocorrectionTypeYes,
 } UITextAutocorrectionType;
 
 typedef enum UITextSpellCheckingType : NSInteger {
-    UITextSpellCheckingTypeDefault,
-    UITextSpellCheckingTypeNo,
-    UITextSpellCheckingTypeYes,
+  UITextSpellCheckingTypeDefault,
+  UITextSpellCheckingTypeNo,
+  UITextSpellCheckingTypeYes,
 } UITextSpellCheckingType;
 #endif // ]TODO(macOS GH#774)]
 

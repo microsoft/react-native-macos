@@ -27,8 +27,8 @@ NS_INLINE BOOL RCTTextSelectionEqual(NSRange range1, NSRange range2)
 //
 
 // UITextView.h/NSTextView.h
-#define UITextViewTextDidChangeNotification   NSTextDidChangeNotification
-#define UITextFieldTextDidChangeNotification  NSControlTextDidChangeNotification
+#define UITextViewTextDidChangeNotification NSTextDidChangeNotification
+#define UITextFieldTextDidChangeNotification NSControlTextDidChangeNotification
 
 //
 // functionally equivalent types

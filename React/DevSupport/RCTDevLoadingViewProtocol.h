@@ -11,7 +11,9 @@
 
 @protocol RCTDevLoadingViewProtocol <NSObject>
 + (void)setEnabled:(BOOL)enabled;
-- (void)showMessage:(NSString *)message color:(RCTUIColor *)color backgroundColor:(RCTUIColor *)backgroundColor; // TODO(OSS Candidate ISS#2710739)
+- (void)showMessage:(NSString *)message
+              color:(RCTUIColor *)color
+    backgroundColor:(RCTUIColor *)backgroundColor; // TODO(OSS Candidate ISS#2710739)
 - (void)showWithURL:(NSURL *)URL;
 - (void)updateProgress:(RCTLoadingProgress *)progress;
 - (void)hide;

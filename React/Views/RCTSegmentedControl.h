@@ -16,7 +16,7 @@
 #endif // ]TODO(macOS GH#774)
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
-@property (nonatomic, assign, getter = isMomentary) BOOL momentary;
+@property (nonatomic, assign, getter=isMomentary) BOOL momentary;
 #endif // ]TODO(macOS GH#774)
 
 @property (nonatomic, copy) NSArray<NSString *> *values;

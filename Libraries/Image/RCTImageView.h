@@ -10,12 +10,12 @@
 #import <UIKit/UIKit.h>
 #else // [TODO(macOS GH#774)
 typedef NS_ENUM(NSInteger, UIImageRenderingMode) {
-    UIImageRenderingModeAlwaysOriginal,
-    UIImageRenderingModeAlwaysTemplate,
+  UIImageRenderingModeAlwaysOriginal,
+  UIImageRenderingModeAlwaysTemplate,
 };
 #endif // ]TODO(macOS GH#774)
-#import <React/RCTView.h>
 #import <React/RCTResizeMode.h>
+#import <React/RCTView.h>
 
 @class RCTBridge;
 @class RCTImageSource;

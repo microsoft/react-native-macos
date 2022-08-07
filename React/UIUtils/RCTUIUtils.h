@@ -23,9 +23,11 @@ typedef struct {
 } RCTDimensions;
 extern __attribute__((visibility("default")))
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
-RCTDimensions RCTGetDimensions(CGFloat fontScale);
+RCTDimensions
+RCTGetDimensions(CGFloat fontScale);
 #else // [TODO(macOS GH#774)
-RCTDimensions RCTGetDimensions(RCTPlatformView *rootView);
+RCTDimensions
+RCTGetDimensions(RCTPlatformView *rootView);
 #endif // ]TODO(macOS GH#774)
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)

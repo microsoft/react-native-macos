@@ -31,7 +31,10 @@
 RCT_EXTERN_C_BEGIN
 
 void RCTAppSetupPrepareApp(UIApplication *application);
-RCTUIView *RCTAppSetupDefaultRootView(RCTBridge *bridge, NSString *moduleName, NSDictionary *initialProperties); // TODO(macOS GH#774)
+RCTUIView *RCTAppSetupDefaultRootView(
+    RCTBridge *bridge,
+    NSString *moduleName,
+    NSDictionary *initialProperties); // TODO(macOS GH#774)
 
 RCT_EXTERN_C_END
 

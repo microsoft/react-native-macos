@@ -13,9 +13,9 @@
  */
 @interface RCTEventEmitter : NSObject <RCTBridgeModule, RCTInvalidating>
 
-@property (nonatomic, weak) RCTBridge * _Nullable bridge; // TODO(macOS GH#774)
-@property (nonatomic, weak) RCTModuleRegistry * _Nullable moduleRegistry; // TODO(macOS GH#774)
-@property (nonatomic, weak) RCTViewRegistry * _Nullable viewRegistry_DEPRECATED; // TODO(macOS GH#774)
+@property (nonatomic, weak) RCTBridge *_Nullable bridge; // TODO(macOS GH#774)
+@property (nonatomic, weak) RCTModuleRegistry *_Nullable moduleRegistry; // TODO(macOS GH#774)
+@property (nonatomic, weak) RCTViewRegistry *_Nullable viewRegistry_DEPRECATED; // TODO(macOS GH#774)
 
 - (instancetype _Nullable)initWithDisabledObservation; // TODO(macOS GH#774)
 
@@ -30,7 +30,7 @@
  * Send an event that does not relate to a specific view, e.g. a navigation
  * or data update notification.
  */
-- (void)sendEventWithName:(NSString *_Nullable)name body:(id _Nullable )body; // TODO(macOS GH#774)
+- (void)sendEventWithName:(NSString *_Nullable)name body:(id _Nullable)body; // TODO(macOS GH#774)
 
 /**
  * These methods will be called when the first observer is added and when the

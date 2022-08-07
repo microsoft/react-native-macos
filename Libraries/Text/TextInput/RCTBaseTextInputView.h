@@ -26,10 +26,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithCoder:(NSCoder *)decoder NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 
-@property (nonatomic, readonly) RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView; // TODO(macOS ISS#3536887)
+@property (nonatomic, readonly)
+    RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView; // TODO(macOS ISS#3536887)
 
 /**
- Whether this text input ignores the `textAttributes` property. Defaults to `NO`. If set to `YES`, the value of `textAttributes` will be ignored in favor of standard text input behavior.
+ Whether this text input ignores the `textAttributes` property. Defaults to `NO`. If set to `YES`, the value of
+ `textAttributes` will be ignored in favor of standard text input behavior.
  */
 @property (nonatomic) BOOL ignoresTextAttributes; // TODO(OSS Candidate ISS#2710739)
 @property (nonatomic, strong, nullable) RCTTextAttributes *textAttributes;
@@ -63,8 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Sets selection intext input if both start and end are within range of the text input.
  **/
-- (void)setSelectionStart:(NSInteger)start
-             selectionEnd:(NSInteger)end;
+- (void)setSelectionStart:(NSInteger)start selectionEnd:(NSInteger)end;
 
 @end
 

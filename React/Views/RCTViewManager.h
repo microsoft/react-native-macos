@@ -19,7 +19,9 @@
 @class RCTSparseArray;
 @class RCTUIManager;
 
-typedef void (^RCTViewManagerUIBlock)(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry); // TODO(macOS GH#774)
+typedef void (^RCTViewManagerUIBlock)(
+    RCTUIManager *uiManager,
+    NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry); // TODO(macOS GH#774)
 
 @interface RCTViewManager : NSObject <RCTBridgeModule>
 
@@ -84,17 +86,13 @@ typedef void (^RCTViewManagerUIBlock)(RCTUIManager *uiManager, NSDictionary<NSNu
  * These macros allow properties to only be mapped in OSX
  */
 #define RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(name, type)
-#define RCT_EXPORT_OSX_VIEW_PROPERTY(name, type) \
-RCT_EXPORT_VIEW_PROPERTY(name, type)
+#define RCT_EXPORT_OSX_VIEW_PROPERTY(name, type) RCT_EXPORT_VIEW_PROPERTY(name, type)
 #define RCT_REMAP_NOT_OSX_VIEW_PROPERTY(name, keyPath, type)
-#define RCT_REMAP_OSX_VIEW_PROPERTY(name, keyPath, type) \
-RCT_REMAP_VIEW_PROPERTY(name, keyPath, type)
+#define RCT_REMAP_OSX_VIEW_PROPERTY(name, keyPath, type) RCT_REMAP_VIEW_PROPERTY(name, keyPath, type)
 #else
-#define RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(name, type) \
-RCT_EXPORT_VIEW_PROPERTY(name, type)
+#define RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(name, type) RCT_EXPORT_VIEW_PROPERTY(name, type)
 #define RCT_EXPORT_OSX_VIEW_PROPERTY(name, type)
-#define RCT_REMAP_NOT_OSX_VIEW_PROPERTY(name, keyPath, type) \
-RCT_REMAP_VIEW_PROPERTY(name, keyPath, type)
+#define RCT_REMAP_NOT_OSX_VIEW_PROPERTY(name, keyPath, type) RCT_REMAP_VIEW_PROPERTY(name, keyPath, type)
 #define RCT_REMAP_OSX_VIEW_PROPERTY(name, keyPath, type)
 #endif // ]TODO(macOS GH#774)
 

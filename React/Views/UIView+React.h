@@ -19,7 +19,8 @@
  */
 - (NSArray<RCTPlatformView *> *)reactSubviews NS_REQUIRES_SUPER; // TODO(macOS GH#774)
 - (RCTPlatformView *)reactSuperview NS_REQUIRES_SUPER; // TODO(macOS GH#774)
-- (void)insertReactSubview:(RCTPlatformView *)subview atIndex:(NSInteger)atIndex NS_REQUIRES_SUPER; // TODO(macOS GH#774)
+- (void)insertReactSubview:(RCTPlatformView *)subview
+                   atIndex:(NSInteger)atIndex NS_REQUIRES_SUPER; // TODO(macOS GH#774)
 - (void)removeReactSubview:(RCTPlatformView *)subview NS_REQUIRES_SUPER; // TODO(macOS GH#774)
 
 /**
@@ -118,7 +119,9 @@
 /**
  * Accessibility properties
  */
-@property (nonatomic, copy) NSString *accessibilityRoleInternal; // TODO(OSS Candidate ISS#2710739): renamed so it doesn't conflict with -[NSAccessibility accessibilityRole].
+@property (nonatomic, copy)
+    NSString *accessibilityRoleInternal; // TODO(OSS Candidate ISS#2710739): renamed so it doesn't conflict with
+                                         // -[NSAccessibility accessibilityRole].
 @property (nonatomic, copy) NSDictionary<NSString *, id> *accessibilityState;
 @property (nonatomic, copy) NSArray<NSDictionary *> *accessibilityActions;
 @property (nonatomic, copy) NSDictionary *accessibilityValueInternal;

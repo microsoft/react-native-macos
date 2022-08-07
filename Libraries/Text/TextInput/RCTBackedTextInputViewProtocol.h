@@ -11,7 +11,9 @@
 NS_ASSUME_NONNULL_BEGIN
 @protocol RCTUITextFieldDelegate <NSTextFieldDelegate>
 @optional
-- (BOOL)textField:(NSTextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;   // return NO to not change text
+- (BOOL)textField:(NSTextField *)textField
+    shouldChangeCharactersInRange:(NSRange)range
+                replacementString:(NSString *)string; // return NO to not change text
 - (void)textFieldBeginEditing:(NSTextField *)textField;
 - (void)textFieldDidChange:(NSTextField *)textField;
 - (void)textFieldEndEditing:(NSTextField *)textField;
@@ -46,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // TODO(macOS GH#774)
 @property (nonatomic, weak, nullable) id<RCTBackedTextInputDelegate> textInputDelegate;
 @property (nonatomic, readonly) CGSize contentSize;
-@property (nonatomic, strong, nullable) NSDictionary<NSAttributedStringKey,id> *defaultTextAttributes;
+@property (nonatomic, strong, nullable) NSDictionary<NSAttributedStringKey, id> *defaultTextAttributes;
 @property (nonatomic, assign) BOOL contextMenuHidden;
 @property (nonatomic, assign, getter=isEditable) BOOL editable;
 @property (nonatomic, assign) BOOL caretHidden;
@@ -59,7 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) CGFloat zoomScale;
 @property (nonatomic, assign, readonly) CGPoint contentOffset;
 @property (nonatomic, assign, readonly) UIEdgeInsets contentInset;
-
 
 // This protocol disallows direct access to `selectedTextRange` property because
 // unwise usage of it can break the `delegate` behavior. So, we always have to

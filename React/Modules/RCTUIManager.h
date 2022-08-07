@@ -124,7 +124,8 @@ void RCTTraverseViewNodes(id<RCTComponent> view, void (^block)(id<RCTComponent>)
  * @param completion the completion block that will hand over the rootView, if any.
  *
  */
-- (void)rootViewForReactTag:(NSNumber *)reactTag withCompletion:(void (^)(RCTPlatformView *view))completion; // TODO(macOS GH#774)
+- (void)rootViewForReactTag:(NSNumber *)reactTag
+             withCompletion:(void (^)(RCTPlatformView *view))completion; // TODO(macOS GH#774)
 
 /**
  * Finds a view that is tagged with nativeID as its nativeID prop

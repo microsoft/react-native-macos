@@ -6,10 +6,10 @@
  */
 #pragma once
 
+#include <yoga/YGEnums.h>
 #include <cstddef>
 #include <limits>
 #include <type_traits>
-#include <yoga/YGEnums.h>
 
 namespace facebook {
 namespace yoga {
@@ -40,8 +40,12 @@ struct BitTraits {};
 template <typename U>
 struct BitTraits<U> {
   // Base cases
-  static constexpr size_t width(size_t) { return 0; }
-  static constexpr size_t shift(size_t) { return 0; }
+  static constexpr size_t width(size_t) {
+    return 0;
+  }
+  static constexpr size_t shift(size_t) {
+    return 0;
+  }
 };
 
 template <typename U, typename T, typename... Ts>
@@ -108,20 +112,20 @@ class Bitfield {
 
   Storage storage_ = 0;
 
-public:
+ public:
   template <size_t Idx>
   class Ref {
-    Bitfield& bitfield_;
+    Bitfield &bitfield_;
 
-  public:
-    Ref(Bitfield& bitfield) : bitfield_(bitfield) {}
-    Ref& operator=(TypeAt<Idx> value) {
+   public:
+    Ref(Bitfield &bitfield) : bitfield_(bitfield) {}
+    Ref &operator=(TypeAt<Idx> value) {
       bitfield_.storage_ = (bitfield_.storage_ & ~BitTraits::mask(Idx)) |
           ((value << BitTraits::shift(Idx)) & BitTraits::mask(Idx));
       return *this;
     }
     operator TypeAt<Idx>() const {
-      return const_cast<const Bitfield&>(bitfield_).at<Idx>();
+      return const_cast<const Bitfield &>(bitfield_).at<Idx>();
     }
   };
 

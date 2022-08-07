@@ -12,6 +12,6 @@
 @interface RCTUIImageViewAnimated : NSImageView
 #else // ]TODO(macOS GH#774)
 @interface RCTUIImageViewAnimated : UIImageView
-#endif  // TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 
 @end

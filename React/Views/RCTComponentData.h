@@ -34,7 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
                               bridge:(RCTBridge *)bridge
                      eventDispatcher:(id<RCTEventDispatcherProtocol>)eventDispatcher NS_DESIGNATED_INITIALIZER;
 
-- (RCTPlatformView *)createViewWithTag:(nullable NSNumber *)tag rootTag:(nullable NSNumber *)rootTag; // TODO(macOS GH#774)
+- (RCTPlatformView *)createViewWithTag:(nullable NSNumber *)tag
+                               rootTag:(nullable NSNumber *)rootTag; // TODO(macOS GH#774)
 - (RCTShadowView *)createShadowViewWithTag:(NSNumber *)tag;
 - (void)setProps:(NSDictionary<NSString *, id> *)props forView:(id<RCTComponent>)view;
 - (void)setProps:(NSDictionary<NSString *, id> *)props forShadowView:(RCTShadowView *)shadowView;
