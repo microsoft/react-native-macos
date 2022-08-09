@@ -474,6 +474,8 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
     _scrollView.drawsBackground = NO;
     _scrollView.postsBoundsChangedNotifications = YES;
+    _scrollView.accessibilityElement = YES;
+    _scrollView.accessibilityRole = NSAccessibilityTableRole;
 #else // ]TODO(macOS GH#774)
     _scrollView.delegate = self;
     _scrollView.delaysContentTouches = NO;
