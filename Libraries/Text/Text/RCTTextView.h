@@ -17,9 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher; // TODO(OSS Candidate ISS#2710739)
 
 @property (nonatomic, assign) BOOL selectable;
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 @property (nonatomic, strong) NSArray<NSMenuItem *> *additionalMenuItems;
-#endif // TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
 - (void)setTextStorage:(NSTextStorage *)textStorage
           contentFrame:(CGRect)contentFrame

@@ -22,13 +22,14 @@
 
 #import <QuartzCore/QuartzCore.h> // TODO(macOS GH#774)
 
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 #import <React/RCTRootContentView.h>
 #import <React/RCTTouchHandler.h>
 
 @interface RCTTextView () <NSTextViewDelegate>
 @end
 #endif
+// ]TODO(macOS GH#774)
 
 @implementation RCTTextView
 {
@@ -204,13 +205,13 @@
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTUIView *> *)descendantViews // TODO(macOS ISS#3536887)
 {
+  _contentFrame = contentFrame;
+
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
   _textStorage = textStorage;
 #endif // ]TODO(macOS GH#774)
 
-  _contentFrame = contentFrame;
-
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
   NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
 
@@ -231,7 +232,7 @@
   _textView.maxSize = contentFrame.size;
   _textView.frame = contentFrame;
   _textView.textStorage.attributedString = textStorage;
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
 
   // FIXME: Optimize this.
   for (RCTUIView *view in _descendantViews) { // TODO(macOS ISS#3536887)
@@ -250,15 +251,14 @@
 - (void)drawRect:(CGRect)rect
 {
   [super drawRect:rect];
-
-#if TARGET_OS_OSX // [TODO(macOS ISS#2323203)
-  return;
-#endif // ]TODO(macOS ISS#2323203)
-
+  
   if (!_textStorage) {
     return;
   }
 
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  return;
+#endif // ]TODO(macOS GH#774)
 
   NSLayoutManager *layoutManager = _textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
@@ -475,10 +475,10 @@
 {
   _textView.selectedRange = NSMakeRange(NSNotFound, 0);
 }
-
 #endif // ]TODO(macOS GH#774)
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)- (BOOL)canBecomeFirstResponder
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+- (BOOL)canBecomeFirstResponder
 {
   return _selectable;
 }
