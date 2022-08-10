@@ -666,6 +666,7 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
           _removeClippedSubviews,
         )}
         {...this._renderer()}
+        accessibilityRole="table" // Inherit NSAccessibilityTable protocols
       />
     );
   }
