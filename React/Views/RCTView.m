@@ -373,6 +373,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
         @"expanded" : @"expanded",
         @"collapsed" : @"collapsed",
         @"mixed" : @"mixed",
+        @"table" : @"table",
       };
     }
   });
