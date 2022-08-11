@@ -55,7 +55,7 @@
     [[[scrollView bridge] uiManager] setLocalData:localData forView:self];
   }
 
-  if ([self accessibilityRole] == NSAccessibilityTableRole) {
+  if ([platformScrollView accessibilityRole] == NSAccessibilityTableRole) {
       NSMutableArray *subViews = [[NSMutableArray alloc] initWithCapacity:[[self subviews] count]];
       for (NSView *view in [self subviews]) {
           if ([view isKindOfClass:[RCTView class]]) {
