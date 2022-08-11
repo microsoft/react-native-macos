@@ -54,15 +54,18 @@
            horizontalScrollerHeight:verticalScrollerWidth];
     [[[scrollView bridge] uiManager] setLocalData:localData forView:self];
   }
-    
-  NSMutableArray *subViews = [[NSMutableArray alloc] initWithCapacity:[[self subviews] count]];
-  for (NSView *view in [self subviews]) {
-      if ([view isKindOfClass:[RCTView class]]) {
-        [subViews addObject:view];
+
+  if ([self accessibilityRole] == NSAccessibilityTableRole) {
+      NSMutableArray *subViews = [[NSMutableArray alloc] initWithCapacity:[[self subviews] count]];
+      for (NSView *view in [self subviews]) {
+          if ([view isKindOfClass:[RCTView class]]) {
+            [subViews addObject:view];
+          }
       }
+
+      [platformScrollView setAccessibilityRows:subViews];
   }
 
-  [platformScrollView setAccessibilityRows:subViews];
 #endif // ]TODO(macOS GH#774)
 }
 
