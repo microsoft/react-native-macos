@@ -552,9 +552,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
 - (void)setAccessibilityRole:(NSAccessibilityRole)accessibilityRole
 {
-    if (@available(macOS 10.10, *)) {
-        [_scrollView setAccessibilityRole:accessibilityRole];
-    }
+  [_scrollView setAccessibilityRole:accessibilityRole];
 }
 #endif // ]TODO(macOS GH#774)
 
