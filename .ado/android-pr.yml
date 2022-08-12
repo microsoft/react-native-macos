@@ -18,7 +18,7 @@ variables:
 jobs:
   - job: AndroidRNPR
     displayName: Android React Native PR
-    pool: $(PoolUbuntu)
+    pool: cxe-ubuntu-20-04-large
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
     steps:
@@ -28,6 +28,8 @@ jobs:
         lfs: false # whether to download Git-LFS files
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: false # set to 'true' to leave the OAuth token in the Git config after the initial fetch
+
+      - template: templates/android-build-office-setup.yml
 
       - template: templates/android-build-office.yml
 
