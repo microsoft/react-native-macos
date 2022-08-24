@@ -253,7 +253,7 @@ function main(appRootDir, outputPath) {
       // ...then generate native code artifacts.
       // [TODO(macOS GH#774) - use execFileSync to help keep shell commands clean
       const libraryTypeArg = library.config.type
-        ? ['--libraryType' ,library.config.type]
+        ? ['--libraryType', library.config.type]
         : null; // ]TODO(macOS GH#774)
       fs.mkdirSync(pathToTempOutputDir, {recursive: true});
       // [TODO(macOS GH#774) - use execFileSync to help keep shell commands clean
@@ -273,7 +273,11 @@ function main(appRootDir, outputPath) {
       // Finally, copy artifacts to the final output directory.
       fs.mkdirSync(pathToOutputDirIOS, {recursive: true});
       // [TODO(macOS GH#774) - use execFileSync to help keep shell commands clean
-      execFileSync('cp', ['-R', `${pathToTempOutputDir}/`, pathToOutputDirIOS]); // ]TODO(macOS GH#774)
+      execFileSync('cp', [
+        '-R',
+        path.join(pathToTempOutputDir, '/'),
+        pathToOutputDirIOS,
+      ]); // ]TODO(macOS GH#774)
       console.log(`[Codegen] Generated artifacts: ${pathToOutputDirIOS}`);
 
       // Filter the react native core library out.
