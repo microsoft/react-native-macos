@@ -157,6 +157,12 @@ type OptionalProps = {|
    * `getItemLayout` to be implemented.
    */
   initialScrollIndex?: ?number,
+  // [TODO(macOS GH#774)
+  /**
+   * The initially selected row, if `enableSelectionOnKeyPress` is set.
+   */
+  initialSelectedIndex?: ?number,
+  // ]TODO(macOS GH#774)
   /**
    * Reverses the direction of scroll. Uses scale transforms of -1.
    */
@@ -794,7 +800,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           (this.props.initialScrollIndex || 0) +
             initialNumToRenderOrDefault(this.props.initialNumToRender),
         ) - 1,
-      selectedRowIndex: 0, // TODO(macOS GH#774)
+      selectedRowIndex: this.props.initialSelectedIndex || -1, // TODO(macOS GH#774)
     };
 
     if (this._isNestedWithSameOrientation()) {
@@ -857,7 +863,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       ),
       last: Math.max(0, Math.min(prevState.last, getItemCount(data) - 1)),
       selectedRowIndex: Math.max(
-        0,
+        -1, // Used to indicate no row is selected
         Math.min(prevState.selectedRowIndex, getItemCount(data)),
       ), // TODO(macOS GH#774)
     };
@@ -1526,10 +1532,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
   _selectRowAtIndex = rowIndex => {
     const prevIndex = this.state.selectedRowIndex;
     const newIndex = rowIndex;
-
-    this.setState(state => {
-      return {selectedRowIndex: newIndex};
-    });
+    this.setState({selectedRowIndex: newIndex});
 
     this.ensureItemAtIndexIsVisible(newIndex);
     if (prevIndex !== newIndex) {
@@ -1567,7 +1570,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       const key = nativeEvent.key;
 
       let selectedIndex = -1;
-      if ('selectedRowIndex' in this.state) {
+      if (this.state.selectedRowIndex >= 0) {
         selectedIndex = this.state.selectedRowIndex;
       }
 
