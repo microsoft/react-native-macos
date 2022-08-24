@@ -1263,6 +1263,7 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
   }];
 }
 
+// [TODO(macOS GH#774)
 #pragma mark - Keyboard Events
 
 #if TARGET_OS_OSX
@@ -1328,7 +1329,8 @@ static NSString *RCTStringForScrollerStyle(NSScrollerStyle scrollerStyle) {
 - (void)preferredScrollerStyleDidChange:(__unused NSNotification *)notification {
   RCT_SEND_SCROLL_EVENT(onPreferredScrollerStyleDidChange, (@{ @"preferredScrollerStyle": RCTStringForScrollerStyle([NSScroller preferredScrollerStyle])}));
 }
-#endif // ]TODO(macOS GH#774)
+#endif
+// ]TODO(macOS GH#774)
 
 // Note: setting several properties of UIScrollView has the effect of
 // resetting its contentOffset to {0, 0}. To prevent this, we generate
