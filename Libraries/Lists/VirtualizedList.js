@@ -588,6 +588,23 @@ class VirtualizedList extends React.PureComponent<Props, State> {
   }
 
   // [TODO(macOS GH#774)
+  ensureItemAtIndexIsVisible(rowIndex: number) {
+    const frame = this._getFrameMetricsApprox(rowIndex);
+    const visTop = this._scrollMetrics.offset;
+    const visLen = this._scrollMetrics.visibleLength;
+    const visEnd = visTop + visLen;
+    const contentLength = this._scrollMetrics.contentLength;
+    const frameEnd = frame.offset + frame.length;
+
+    if (frameEnd > visEnd) {
+      const newOffset = Math.min(contentLength, visTop + (frameEnd - visEnd));
+      this.scrollToOffset({offset: newOffset});
+    } else if (frame.offset < visTop) {
+      const newOffset = Math.min(frame.offset, visTop - frame.length);
+      this.scrollToOffset({offset: newOffset});
+    }
+  }
+
   selectRowAtIndex(rowIndex: number) {
     this._selectRowAtIndex(rowIndex);
   }
@@ -1506,23 +1523,6 @@ class VirtualizedList extends React.PureComponent<Props, State> {
   };
 
   // [TODO(macOS GH#774)
-  _ensureItemAtIndexIsVisible(rowIndex: number) {
-    const frame = this._getFrameMetricsApprox(rowIndex);
-    const visTop = this._scrollMetrics.offset;
-    const visLen = this._scrollMetrics.visibleLength;
-    const visEnd = visTop + visLen;
-    const contentLength = this._scrollMetrics.contentLength;
-    const frameEnd = frame.offset + frame.length;
-
-    if (frameEnd > visEnd) {
-      const newOffset = Math.min(contentLength, visTop + (frameEnd - visEnd));
-      this.scrollToOffset({offset: newOffset});
-    } else if (frame.offset < visTop) {
-      const newOffset = Math.min(frame.offset, visTop - frame.length);
-      this.scrollToOffset({offset: newOffset});
-    }
-  }
-
   _selectRowAtIndex = rowIndex => {
     const prevIndex = this.state.selectedRowIndex;
     const newIndex = rowIndex;
@@ -1531,7 +1531,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       return {selectedRowIndex: newIndex};
     });
 
-    this._ensureItemAtIndexIsVisible(newIndex);
+    this.ensureItemAtIndexIsVisible(newIndex);
     if (prevIndex !== newIndex) {
       const item = this.props.getItem(this.props.data, newIndex);
       if (this.props.onSelectionChanged) {
