@@ -1329,8 +1329,8 @@ class VirtualizedList extends React.PureComponent<Props, State> {
 
   _defaultRenderScrollComponent = props => {
     // [TODO(macOS GH#774)
-    const preferredScrollerStyleDidChangeHandler =
-      this.props.onPreferredScrollerStyleDidChange;
+    const preferredScrollerStyleDidChangeHandler = this.props
+      .onPreferredScrollerStyleDidChange;
 
     const keyboardNavigationProps = {
       focusable: true,
