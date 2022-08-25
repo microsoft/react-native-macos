@@ -67,7 +67,7 @@ type OptionalProps<ItemT> = {|
    */
   columnWrapperStyle?: ViewStyleProp,
   // [TODO(macOS GH#774)
-  /** 
+  /**
    * Allows you to 'select' a row using arrow keys. The selected row will have the prop `isSelected`
    * passed in as true to it's renderItem / ListItemComponent. You can also imperatively select a row
    * using the `selectRowAtIndex` method. You can set the initially selected row using the
