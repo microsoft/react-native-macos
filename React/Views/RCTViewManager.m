@@ -193,7 +193,7 @@ RCT_REMAP_VIEW_PROPERTY(opacity, alpha, CGFloat)
 RCT_REMAP_VIEW_PROPERTY(opacity, alphaValue, CGFloat)
 #endif // ]TODO(macOS GH#774)
 
-#if TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(shadowColor, layer.shadowColor, CGColor)
 RCT_REMAP_VIEW_PROPERTY(shadowOffset, layer.shadowOffset, CGSize)
 RCT_REMAP_VIEW_PROPERTY(shadowOpacity, layer.shadowOpacity, float)
