@@ -1731,7 +1731,6 @@ class ScrollView extends React.Component<Props, State> {
       // Override the onContentSizeChange from props, since this event can
       // bubble up from TextInputs
       onContentSizeChange: null,
-      onScrollKeyDown: this._handleKeyDown, // TODO(macOS GH#774)
       onPreferredScrollerStyleDidChange:
         this._handlePreferredScrollerStyleDidChange, // TODO(macOS GH#774)
       onLayout: this._handleLayout,
