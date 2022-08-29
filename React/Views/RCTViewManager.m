@@ -21,6 +21,10 @@
 #import "RCTView.h"
 #import "UIView+React.h"
 
+#if TARGET_OS_OSX  // TODO(macOS GH#774)
+#import "RCTCursor.h"
+#endif  // TODO(macOS GH774)
+
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
 @implementation RCTConvert (UIAccessibilityTraits)
 
@@ -472,6 +476,7 @@ RCT_EXPORT_VIEW_PROPERTY(onBlur, RCTBubblingEventBlock)
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 #pragma mark - macOS properties
 
+RCT_EXPORT_VIEW_PROPERTY(cursor, RCTCursor)
 RCT_EXPORT_VIEW_PROPERTY(onDoubleClick, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onClick, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMouseEnter, RCTDirectEventBlock)
@@ -481,18 +486,8 @@ RCT_EXPORT_VIEW_PROPERTY(onDragLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDrop, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTDirectEventBlock) // macOS keyboard events
 RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTDirectEventBlock) // macOS keyboard events
-RCT_CUSTOM_VIEW_PROPERTY(validKeysDown, NSArray<NSString*>, RCTView)
-{
-  if ([view respondsToSelector:@selector(setValidKeysDown:)]) {
-    view.validKeysDown = [RCTConvert NSArray:json];
-  }
-}
-RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
-{
-  if ([view respondsToSelector:@selector(setValidKeysUp:)]) {
-    view.validKeysUp = [RCTConvert NSArray:json];
-  }
-}
+RCT_EXPORT_VIEW_PROPERTY(validKeysDown, NSArray<NSString*>)
+RCT_EXPORT_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>)
 #endif // ]TODO(macOS GH#774)
 #if TARGET_OS_OSX // [TODO(macOS GH#768)
 RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTag, NSNumber, RCTView)
