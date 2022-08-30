@@ -91,6 +91,8 @@
 - (void)reactAddControllerToClosestParent:(UIViewController *)controller;
 #endif // TODO(macOS GH#774)
 
+- (void)reactViewDidMoveToWindow;
+
 /**
  * Focus manipulation.
  */

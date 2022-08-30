@@ -267,18 +267,15 @@
 }
 #endif // TODO(macOS GH#774)
 
+- (void)reactViewDidMoveToWindow
+{
+	[self reactFocusIfNeeded];
+}
+
 /**
  * Focus manipulation.
  */
-- (BOOL)reactIsFocusNeeded
-{
-  return [(NSNumber *)objc_getAssociatedObject(self, @selector(reactIsFocusNeeded)) boolValue];
-}
-
-- (void)setReactIsFocusNeeded:(BOOL)isFocusNeeded
-{
-  objc_setAssociatedObject(self, @selector(reactIsFocusNeeded), @(isFocusNeeded), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
+static __weak RCTPlatformView *_pendingFocusView;
 
 - (void)reactFocus
 {
@@ -287,19 +284,21 @@
 #else
 	if (![self becomeFirstResponder]) {
 #endif // TODO(macOS GH#774)]
-		self.reactIsFocusNeeded = YES;
-	}
+    _pendingFocusView = self;
+  } else {
+    _pendingFocusView = nil;
+  }
 }
 
 - (void)reactFocusIfNeeded
 {
-	if (self.reactIsFocusNeeded) {
+	if ([self isEqual:_pendingFocusView]) {
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 		if ([[self window] makeFirstResponder:self]) {
 #else
 		if ([self becomeFirstResponder]) {
 #endif // TODO(macOS GH#774)]
-			self.reactIsFocusNeeded = NO;
+			_pendingFocusView = nil;
 		}
 	}
 }
@@ -313,6 +312,10 @@
 #else
   [self resignFirstResponder];
 #endif // TODO(macOS GH#774)]
+
+  if ([self isEqual:_pendingFocusView]) {
+    _pendingFocusView = nil;
+  }
 }
 
 #pragma mark - Layout
