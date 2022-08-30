@@ -139,10 +139,10 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 25,
     color: 'white',
-    shadowRadius: 3,
-    shadowColor: 'black',
-    shadowOpacity: 1,
-    shadowOffset: {height: 1},
+    textShadowRadius: 3,
+    textShadowColor: 'black',
+    textShadowOpacity: 1,
+    textShadowOffset: {height: 1},
   },
 });
 
