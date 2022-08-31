@@ -63,7 +63,11 @@ type State = {|
   fadingEdgeLength: number,
   onPressDisabled: boolean,
   textSelectable: boolean,
-  enableSelectionOnKeyPress: boolean, // TODO(macOS GH#774)
+  // [TODO(macOS GH#774)
+  enableSelectionOnKeyPress: boolean,
+  focusable: boolean,
+  enableFocusRing: boolean,
+  // ]TODO(macOS GH#774)
 |};
 
 class FlatListExample extends React.PureComponent<Props, State> {
