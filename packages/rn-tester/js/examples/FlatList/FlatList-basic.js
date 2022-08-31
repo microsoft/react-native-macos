@@ -198,13 +198,13 @@ class FlatListExample extends React.PureComponent<Props, State> {
               {Platform.OS === 'macos' &&
                 renderSmallSwitchOption(
                   'Focuasble',
-                  this.state.enableSelectionOnKeyPress,
+                  this.state.focusable,
                   this._setBooleanValue('focusable'),
                 )}
               {Platform.OS === 'macos' &&
                 renderSmallSwitchOption(
                   'Focus Ring',
-                  this.state.enableSelectionOnKeyPress,
+                  this.state.enableFocusRing,
                   this._setBooleanValue('enableFocusRing'),
                 )}
               {/* TODO(macOS GH#774)] */}
