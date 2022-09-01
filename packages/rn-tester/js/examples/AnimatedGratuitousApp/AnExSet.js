@@ -140,9 +140,8 @@ const styles = StyleSheet.create({
     fontSize: 25,
     color: 'white',
     textShadowRadius: 3,
-    textShadowColor: 'black',
-    textShadowOpacity: 1,
-    textShadowOffset: {height: 1},
+    textShadowColor: 'rgba(0, 0, 0, 1.0)',
+    textShadowOffset: {height: 1, width: 0},
   },
 });
 
