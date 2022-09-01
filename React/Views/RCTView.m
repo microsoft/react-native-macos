@@ -750,7 +750,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
                                                object:[[self enclosingScrollView] contentView]];
   }
 
-  [self reactViewDidMoveToWindow];
+  [self reactViewDidMoveToWindow]; // TODO(macOS)
 
   [super viewDidMoveToWindow];
 }

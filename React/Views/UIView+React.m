@@ -267,15 +267,17 @@
 }
 #endif // TODO(macOS GH#774)
 
+// [TODO(macOS)
 - (void)reactViewDidMoveToWindow
 {
 	[self reactFocusIfNeeded];
 }
+// TODO(macOS)]
 
 /**
  * Focus manipulation.
  */
-static __weak RCTPlatformView *_pendingFocusView;
+static __weak RCTPlatformView *_pendingFocusView; // TODO(macOS)
 
 - (void)reactFocus
 {
@@ -284,10 +286,12 @@ static __weak RCTPlatformView *_pendingFocusView;
 #else
 	if (![self becomeFirstResponder]) {
 #endif // TODO(macOS GH#774)]
+// [TODO(macOS)
     _pendingFocusView = self;
   } else {
     _pendingFocusView = nil;
   }
+// TODO(macOS)]
 }
 
 - (void)reactFocusIfNeeded
@@ -298,7 +302,7 @@ static __weak RCTPlatformView *_pendingFocusView;
 #else
 		if ([self becomeFirstResponder]) {
 #endif // TODO(macOS GH#774)]
-			_pendingFocusView = nil;
+			_pendingFocusView = nil; // TODO(macOS)
 		}
 	}
 }
@@ -313,9 +317,11 @@ static __weak RCTPlatformView *_pendingFocusView;
   [self resignFirstResponder];
 #endif // TODO(macOS GH#774)]
 
+// [TODO(macOS)
   if ([self isEqual:_pendingFocusView]) {
     _pendingFocusView = nil;
   }
+// TODO(macOS)]
 }
 
 #pragma mark - Layout
