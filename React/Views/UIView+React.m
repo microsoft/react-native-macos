@@ -267,17 +267,17 @@
 }
 #endif // TODO(macOS GH#774)
 
-// [TODO(macOS)
+// [TODO(macOS GH#1412)
 - (void)reactViewDidMoveToWindow
 {
 	[self reactFocusIfNeeded];
 }
-// TODO(macOS)]
+// TODO(macOS GH#1412)]
 
 /**
  * Focus manipulation.
  */
-static __weak RCTPlatformView *_pendingFocusView; // TODO(macOS)
+static __weak RCTPlatformView *_pendingFocusView; // TODO(macOS GH#1412)
 
 - (void)reactFocus
 {
@@ -286,23 +286,23 @@ static __weak RCTPlatformView *_pendingFocusView; // TODO(macOS)
 #else
 	if (![self becomeFirstResponder]) {
 #endif // TODO(macOS GH#774)]
-// [TODO(macOS)
+// [TODO(macOS GH#1412)
     _pendingFocusView = self;
   } else {
     _pendingFocusView = nil;
   }
-// TODO(macOS)]
+// TODO(macOS GH#1412)]
 }
 
 - (void)reactFocusIfNeeded
 {
-	if ([self isEqual:_pendingFocusView]) {
+	if ([self isEqual:_pendingFocusView]) { // TODO(macOS GH#1412)
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 		if ([[self window] makeFirstResponder:self]) {
 #else
 		if ([self becomeFirstResponder]) {
 #endif // TODO(macOS GH#774)]
-			_pendingFocusView = nil; // TODO(macOS)
+			_pendingFocusView = nil; // TODO(macOS GH#1412)
 		}
 	}
 }
@@ -317,11 +317,11 @@ static __weak RCTPlatformView *_pendingFocusView; // TODO(macOS)
   [self resignFirstResponder];
 #endif // TODO(macOS GH#774)]
 
-// [TODO(macOS)
+// [TODO(macOS GH#1412)
   if ([self isEqual:_pendingFocusView]) {
     _pendingFocusView = nil;
   }
-// TODO(macOS)]
+// TODO(macOS GH#1412)]
 }
 
 #pragma mark - Layout
