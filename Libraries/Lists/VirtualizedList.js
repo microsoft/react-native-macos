@@ -800,7 +800,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
           (this.props.initialScrollIndex || 0) +
             initialNumToRenderOrDefault(this.props.initialNumToRender),
         ) - 1,
-      selectedRowIndex: this.props.initialSelectedIndex || -1, // TODO(macOS GH#774)
+      selectedRowIndex: this.props.initialSelectedIndex ?? -1, // TODO(macOS GH#774)
     };
 
     if (this._isNestedWithSameOrientation()) {
@@ -1351,12 +1351,12 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       return (
         // $FlowFixMe[prop-missing] Invalid prop usage
         <ScrollView
-          {...props}
           // [TODO(macOS GH#774)
           {...(props.enableSelectionOnKeyPress && keyboardNavigationProps)}
           onPreferredScrollerStyleDidChange={
             preferredScrollerStyleDidChangeHandler
           } // TODO(macOS GH#774)]
+          {...props}
           refreshControl={
             props.refreshControl == null ? (
               <RefreshControl
@@ -1374,12 +1374,12 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       return (
         // $FlowFixMe Invalid prop usage
         <ScrollView
-          {...props}
           // [TODO(macOS GH#774)
           {...(props.enableSelectionOnKeyPress && keyboardNavigationProps)}
           onPreferredScrollerStyleDidChange={
             preferredScrollerStyleDidChangeHandler
           } // TODO(macOS GH#774)]
+          {...props}
         />
       );
     }
