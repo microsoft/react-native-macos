@@ -789,6 +789,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
                                                  name:NSViewBoundsDidChangeNotification
                                                object:[[self enclosingScrollView] contentView]];
   }
+
+  [self reactViewDidMoveToWindow]; // TODO(macOS GH#1412)
+
   [super viewDidMoveToWindow];
 }
 
