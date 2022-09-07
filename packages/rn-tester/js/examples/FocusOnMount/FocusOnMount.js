@@ -7,7 +7,7 @@
  * @format
  * @flow
  */
-// [TODO(GH #1412)
+// [TODO(macOS GH #1412)
 'use strict';
 
 const React = require('react');
@@ -51,4 +51,4 @@ exports.examples = [
     },
   },
 ];
-// TODO(GH #1412)]
+// TODO(macOS GH #1412)]
