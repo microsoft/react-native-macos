@@ -165,6 +165,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS I
     _hitTestEdgeInsets = UIEdgeInsetsZero;
 #if TARGET_OS_OSX // TODO(macOS GH#774)
     _transform3D = CATransform3DIdentity;
+    _shadowColor = nil;
 #endif // TODO(macOS GH#774)
 
     _backgroundColor = super.backgroundColor;
@@ -716,20 +717,49 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 #endif // TODO(macOS GH#774)
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
-// Workaround AppKit issue with directly manipulating the view layer's shadow.
-- (NSShadow*)shadow
+- (void)setShadowColor:(NSColor *)shadowColor
 {
-  CALayer *layer = self.layer;
-  NSShadow *shadow = nil;
+    if (_shadowColor != shadowColor)
+    {
+        _shadowColor = shadowColor;
+        [self didUpdateShadow];
+    }
+}
 
-  if (layer.shadowColor != nil && layer.shadowOpacity > 0) {
-    shadow = [NSShadow new];
+- (void)setShadowOffset:(CGSize)shadowOffset
+{
+    if (!CGSizeEqualToSize(_shadowOffset, shadowOffset))
+    {
+        _shadowOffset = shadowOffset;
+        [self didUpdateShadow];
+    }
+}
 
-    shadow.shadowColor = [[NSColor colorWithCGColor:layer.shadowColor] colorWithAlphaComponent:layer.shadowOpacity];
-    shadow.shadowOffset = layer.shadowOffset;
-    shadow.shadowBlurRadius = layer.shadowRadius;
-  }
-  return shadow;
+- (void)setShadowOpacity:(CGFloat)shadowOpacity
+{
+    if (_shadowOpacity != shadowOpacity)
+    {
+        _shadowOpacity = shadowOpacity;
+        [self didUpdateShadow];
+    }
+}
+
+- (void)setShadowRadius:(CGFloat)shadowRadius
+{
+    if (_shadowRadius != shadowRadius)
+    {
+        _shadowRadius = shadowRadius;
+        [self didUpdateShadow];
+    }
+}
+
+-(void)didUpdateShadow
+{
+    NSShadow *shadow = [NSShadow new];
+    shadow.shadowColor = [[self shadowColor] colorWithAlphaComponent:[self shadowOpacity]];
+    shadow.shadowOffset = [self shadowOffset];
+    shadow.shadowBlurRadius = [self shadowRadius];
+    [self setShadow:shadow];
 }
 
 - (void)viewDidMoveToWindow
@@ -749,6 +779,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
                                                  name:NSViewBoundsDidChangeNotification
                                                object:[[self enclosingScrollView] contentView]];
   }
+
+  [self reactViewDidMoveToWindow]; // TODO(macOS GH#1412)
+
   [super viewDidMoveToWindow];
 }
 
@@ -758,16 +791,16 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
   // the mouseExited: event does not get called on the view where mouseEntered: was previously called.
   // This creates an unnatural pairing of mouse enter and exit events and can cause problems.
   // We therefore explicitly check for this here and handle them by calling the appropriate callbacks.
-  
+
   if (!_hasMouseOver && self.onMouseEnter)
   {
     NSPoint locationInWindow = [[self window] mouseLocationOutsideOfEventStream];
     NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
-    
+
     if (NSPointInRect(locationInView, [self bounds]))
     {
       _hasMouseOver = YES;
-      
+
       [self sendMouseEventWithBlock:self.onMouseEnter
                        locationInfo:[self locationInfoFromDraggingLocation:locationInWindow]
                       modifierFlags:0
@@ -778,11 +811,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
   {
     NSPoint locationInWindow = [[self window] mouseLocationOutsideOfEventStream];
     NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
-    
+
     if (!NSPointInRect(locationInView, [self bounds]))
     {
       _hasMouseOver = NO;
-      
+
       [self sendMouseEventWithBlock:self.onMouseLeave
                        locationInfo:[self locationInfoFromDraggingLocation:locationInWindow]
                       modifierFlags:0
@@ -1381,6 +1414,15 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 #pragma mark - macOS Event Handler
 
 #if TARGET_OS_OSX
+- (void)resetCursorRects
+{
+  [self discardCursorRects];
+  NSCursor *cursor = [RCTConvert NSCursor:self.cursor];
+  if (cursor) {
+    [self addCursorRect:self.bounds cursor:cursor];
+  }
+}
+
 - (void)setOnDoubleClick:(RCTDirectEventBlock)block
 {
   if (_onDoubleClick != block) {
@@ -1408,7 +1450,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   if (_trackingArea) {
     [self removeTrackingArea:_trackingArea];
   }
-  
+
   if (self.onMouseEnter || self.onMouseLeave) {
     _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
                                                  options:NSTrackingActiveAlways|NSTrackingMouseEnteredAndExited
@@ -1416,7 +1458,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
                                                 userInfo:nil];
     [self addTrackingArea:_trackingArea];
   }
-  
+
   [super updateTrackingAreas];
 }
 
@@ -1442,7 +1484,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 {
   NSPoint locationInWindow = event.locationInWindow;
   NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
-  
+
   return @{@"screenX": @(locationInWindow.x),
            @"screenY": @(locationInWindow.y),
            @"clientX": @(locationInView.x),
@@ -1473,15 +1515,15 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   if (modifierFlags & NSEventModifierFlagCommand) {
     body[@"metaKey"] = @YES;
   }
-  
+
   if (locationInfo) {
     [body addEntriesFromDictionary:locationInfo];
   }
-  
+
   if (additionalData) {
     [body addEntriesFromDictionary:additionalData];
   }
-  
+
   block(body);
 }
 
@@ -1511,7 +1553,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
           MIMETypeString = (__bridge_transfer NSString *)MIMEType;
         }
       }
-      
+
       NSNumber *fileSizeValue = nil;
       NSError *fileSizeError = nil;
       BOOL success = [fileURL getResourceValue:&fileSizeValue
@@ -1523,11 +1565,11 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
                          @"uri": RCTNullIfNil(fileURL.absoluteString),
                          @"size": success ? fileSizeValue : (id)kCFNull
                          }];
-      
+
       [items addObject:@{@"kind": @"file",
                          @"type": RCTNullIfNil(MIMETypeString),
                          }];
-      
+
       [types addObject:RCTNullIfNil(MIMETypeString)];
     }
   }
@@ -1540,7 +1582,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 - (NSDictionary*)locationInfoFromDraggingLocation:(NSPoint)locationInWindow
 {
   NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
-  
+
   return @{@"screenX": @(locationInWindow.x),
            @"screenY": @(locationInWindow.y),
            @"clientX": @(locationInView.x),
@@ -1552,7 +1594,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 {
   NSPasteboard *pboard = sender.draggingPasteboard;
   NSDragOperation sourceDragMask = sender.draggingSourceOperationMask;
-  
+
   [self sendMouseEventWithBlock:self.onDragEnter
                    locationInfo:[self locationInfoFromDraggingLocation:sender.draggingLocation]
                   modifierFlags:0

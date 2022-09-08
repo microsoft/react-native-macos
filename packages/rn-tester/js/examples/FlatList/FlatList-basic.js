@@ -63,7 +63,11 @@ type State = {|
   fadingEdgeLength: number,
   onPressDisabled: boolean,
   textSelectable: boolean,
-  enableSelectionOnKeyPress: boolean, // TODO(macOS GH#774)
+  // [TODO(macOS GH#774)
+  enableSelectionOnKeyPress: boolean,
+  focusable: boolean,
+  enableFocusRing: boolean,
+  // ]TODO(macOS GH#774)
 |};
 
 class FlatListExample extends React.PureComponent<Props, State> {
@@ -81,7 +85,11 @@ class FlatListExample extends React.PureComponent<Props, State> {
     fadingEdgeLength: 0,
     onPressDisabled: false,
     textSelectable: true,
-    enableSelectionOnKeyPress: false, //  TODO(macOS GH#774)
+    //  [TODO(macOS GH#774)
+    enableSelectionOnKeyPress: false,
+    focusable: true,
+    enableFocusRing: true,
+    //  ]TODO(macOS GH#774)
   };
 
   _onChangeFilterText = filterText => {
@@ -185,11 +193,24 @@ class FlatListExample extends React.PureComponent<Props, State> {
                 this._setBooleanValue('useFlatListItemComponent'),
               )}
               {/* [TODO(macOS GH#774)  */}
-              {renderSmallSwitchOption(
-                'Keyboard Navigation',
-                this.state.enableSelectionOnKeyPress,
-                this._setBooleanValue('enableSelectionOnKeyPress'),
-              )}
+              {Platform.OS === 'macos' &&
+                renderSmallSwitchOption(
+                  'Keyboard Navigation',
+                  this.state.enableSelectionOnKeyPress,
+                  this._setBooleanValue('enableSelectionOnKeyPress'),
+                )}
+              {Platform.OS === 'macos' &&
+                renderSmallSwitchOption(
+                  'Focuasble',
+                  this.state.focusable,
+                  this._setBooleanValue('focusable'),
+                )}
+              {Platform.OS === 'macos' &&
+                renderSmallSwitchOption(
+                  'Focus Ring',
+                  this.state.enableFocusRing,
+                  this._setBooleanValue('enableFocusRing'),
+                )}
               {/* TODO(macOS GH#774)] */}
               {Platform.OS === 'android' && (
                 <View>
@@ -210,7 +231,12 @@ class FlatListExample extends React.PureComponent<Props, State> {
           </View>
           <SeparatorComponent />
           <Animated.FlatList
-            enableSelectionOnKeyPress={this.state.enableSelectionOnKeyPress} // TODO(macOS GH#774)
+            // [TODO(macOS GH#774)
+            enableSelectionOnKeyPress={this.state.enableSelectionOnKeyPress}
+            initialSelectedIndex={0}
+            focusable={this.state.focusable}
+            enableFocusRing={this.state.enableFocusRing}
+            // ]TODO(macOS GH#774)
             fadingEdgeLength={this.state.fadingEdgeLength}
             ItemSeparatorComponent={ItemSeparatorComponent}
             ListHeaderComponent={<HeaderComponent />}

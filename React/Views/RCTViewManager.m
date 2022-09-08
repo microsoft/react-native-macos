@@ -21,6 +21,10 @@
 #import "RCTView.h"
 #import "UIView+React.h"
 
+#if TARGET_OS_OSX  // TODO(macOS GH#774)
+#import "RCTCursor.h"
+#endif  // TODO(macOS GH774)
+
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
 @implementation RCTConvert (UIAccessibilityTraits)
 
@@ -192,10 +196,19 @@ RCT_REMAP_VIEW_PROPERTY(opacity, alpha, CGFloat)
 #else // [TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(opacity, alphaValue, CGFloat)
 #endif // ]TODO(macOS GH#774)
+
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 RCT_REMAP_VIEW_PROPERTY(shadowColor, layer.shadowColor, CGColor)
 RCT_REMAP_VIEW_PROPERTY(shadowOffset, layer.shadowOffset, CGSize)
 RCT_REMAP_VIEW_PROPERTY(shadowOpacity, layer.shadowOpacity, float)
 RCT_REMAP_VIEW_PROPERTY(shadowRadius, layer.shadowRadius, CGFloat)
+#else // [TODO(macOS GH#774)
+RCT_EXPORT_VIEW_PROPERTY(shadowColor, NSColor)
+RCT_EXPORT_VIEW_PROPERTY(shadowOffset, CGSize)
+RCT_EXPORT_VIEW_PROPERTY(shadowOpacity, CGFloat)
+RCT_EXPORT_VIEW_PROPERTY(shadowRadius, CGFloat)
+#endif // ]TODO(macOS GH#774)
+
 RCT_REMAP_VIEW_PROPERTY(needsOffscreenAlphaCompositing, layer.allowsGroupOpacity, BOOL)
 RCT_CUSTOM_VIEW_PROPERTY(overflow, YGOverflow, RCTView)
 {
@@ -472,6 +485,7 @@ RCT_EXPORT_VIEW_PROPERTY(onBlur, RCTBubblingEventBlock)
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 #pragma mark - macOS properties
 
+RCT_EXPORT_VIEW_PROPERTY(cursor, RCTCursor)
 RCT_EXPORT_VIEW_PROPERTY(onDoubleClick, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onClick, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMouseEnter, RCTDirectEventBlock)
@@ -481,18 +495,8 @@ RCT_EXPORT_VIEW_PROPERTY(onDragLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDrop, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTDirectEventBlock) // macOS keyboard events
 RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTDirectEventBlock) // macOS keyboard events
-RCT_CUSTOM_VIEW_PROPERTY(validKeysDown, NSArray<NSString*>, RCTView)
-{
-  if ([view respondsToSelector:@selector(setValidKeysDown:)]) {
-    view.validKeysDown = [RCTConvert NSArray:json];
-  }
-}
-RCT_CUSTOM_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>, RCTView)
-{
-  if ([view respondsToSelector:@selector(setValidKeysUp:)]) {
-    view.validKeysUp = [RCTConvert NSArray:json];
-  }
-}
+RCT_EXPORT_VIEW_PROPERTY(validKeysDown, NSArray<NSString*>)
+RCT_EXPORT_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>)
 #endif // ]TODO(macOS GH#774)
 #if TARGET_OS_OSX // [TODO(macOS GH#768)
 RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTag, NSNumber, RCTView)
