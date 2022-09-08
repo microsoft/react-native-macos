@@ -46,7 +46,7 @@ exports.description = 'Example for focusing a component on mount';
 exports.examples = [
   {
     title: 'FocusOnMountExample',
-    render: function (): React.Element<any> {
+    render: function(): React.Element<any> {
       return <FocusOnMountExample />;
     },
   },
