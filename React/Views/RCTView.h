@@ -31,6 +31,7 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 - (BOOL)resignFirstResponder;
 
 #if TARGET_OS_OSX
+- (NSDictionary*)dataTransferInfoFromPasteboard:(NSPasteboard*)pasteboard;
 - (BOOL)handleKeyboardEvent:(NSEvent *)event;
 #endif
 // ]TODO(OSS Candidate ISS#2710739)
@@ -144,6 +145,12 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) RCTDirectEventBlock onKeyUp;
 @property (nonatomic, copy) NSArray<NSString*> *validKeysDown;
 @property (nonatomic, copy) NSArray<NSString*> *validKeysUp;
+
+// Shadow Properties
+@property (nonatomic, strong) NSColor *shadowColor;
+@property (nonatomic, assign) CGFloat shadowOpacity;
+@property (nonatomic, assign) CGFloat shadowRadius;
+@property (nonatomic, assign) CGSize shadowOffset;
 #endif // ]TODO(macOS GH#774)
 
 /**

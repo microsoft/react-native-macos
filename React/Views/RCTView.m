@@ -165,6 +165,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS I
     _hitTestEdgeInsets = UIEdgeInsetsZero;
 #if TARGET_OS_OSX // TODO(macOS GH#774)
     _transform3D = CATransform3DIdentity;
+    _shadowColor = nil;
 #endif // TODO(macOS GH#774)
 
     _backgroundColor = super.backgroundColor;
@@ -716,20 +717,49 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 #endif // TODO(macOS GH#774)
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
-// Workaround AppKit issue with directly manipulating the view layer's shadow.
-- (NSShadow*)shadow
+- (void)setShadowColor:(NSColor *)shadowColor
 {
-  CALayer *layer = self.layer;
-  NSShadow *shadow = nil;
+    if (_shadowColor != shadowColor)
+    {
+        _shadowColor = shadowColor;
+        [self didUpdateShadow];
+    }
+}
 
-  if (layer.shadowColor != nil && layer.shadowOpacity > 0) {
-    shadow = [NSShadow new];
+- (void)setShadowOffset:(CGSize)shadowOffset
+{
+    if (!CGSizeEqualToSize(_shadowOffset, shadowOffset))
+    {
+        _shadowOffset = shadowOffset;
+        [self didUpdateShadow];
+    }
+}
 
-    shadow.shadowColor = [[NSColor colorWithCGColor:layer.shadowColor] colorWithAlphaComponent:layer.shadowOpacity];
-    shadow.shadowOffset = layer.shadowOffset;
-    shadow.shadowBlurRadius = layer.shadowRadius;
-  }
-  return shadow;
+- (void)setShadowOpacity:(CGFloat)shadowOpacity
+{
+    if (_shadowOpacity != shadowOpacity)
+    {
+        _shadowOpacity = shadowOpacity;
+        [self didUpdateShadow];
+    }
+}
+
+- (void)setShadowRadius:(CGFloat)shadowRadius
+{
+    if (_shadowRadius != shadowRadius)
+    {
+        _shadowRadius = shadowRadius;
+        [self didUpdateShadow];
+    }
+}
+
+-(void)didUpdateShadow
+{
+    NSShadow *shadow = [NSShadow new];
+    shadow.shadowColor = [[self shadowColor] colorWithAlphaComponent:[self shadowOpacity]];
+    shadow.shadowOffset = [self shadowOffset];
+    shadow.shadowBlurRadius = [self shadowRadius];
+    [self setShadow:shadow];
 }
 
 - (void)viewDidMoveToWindow
@@ -749,6 +779,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
                                                  name:NSViewBoundsDidChangeNotification
                                                object:[[self enclosingScrollView] contentView]];
   }
+
+  [self reactViewDidMoveToWindow]; // TODO(macOS GH#1412)
+
   [super viewDidMoveToWindow];
 }
 
@@ -1494,13 +1527,9 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   block(body);
 }
 
-- (NSDictionary*)dataTransferInfoFromPastboard:(NSPasteboard*)pastboard
+- (NSDictionary*)dataTransferInfoFromPasteboard:(NSPasteboard*)pasteboard
 {
-  if (![pastboard.types containsObject:NSFilenamesPboardType]) {
-    return @{};
-  }
-  
-  NSArray *fileNames = [pastboard propertyListForType:NSFilenamesPboardType];
+  NSArray *fileNames = [pasteboard propertyListForType:NSFilenamesPboardType] ?: @[];
   NSMutableArray *files = [[NSMutableArray alloc] initWithCapacity:fileNames.count];
   NSMutableArray *items = [[NSMutableArray alloc] initWithCapacity:fileNames.count];
   NSMutableArray *types = [[NSMutableArray alloc] initWithCapacity:fileNames.count];
@@ -1526,11 +1555,21 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
       BOOL success = [fileURL getResourceValue:&fileSizeValue
                                         forKey:NSURLFileSizeKey
                                          error:&fileSizeError];
-      
+
+      NSNumber *width = nil;
+      NSNumber *height = nil;
+      if ([MIMETypeString hasPrefix:@"image/"]) {
+        NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
+        width = @(image.size.width);
+        height = @(image.size.height);
+      }
+
       [files addObject:@{@"name": RCTNullIfNil(fileURL.lastPathComponent),
                          @"type": RCTNullIfNil(MIMETypeString),
-                         @"uri": RCTNullIfNil(fileURL.absoluteString),
-                         @"size": success ? fileSizeValue : (id)kCFNull
+                         @"uri": RCTNullIfNil(fileURL.path),
+                         @"size": success ? fileSizeValue : (id)kCFNull,
+                         @"width": RCTNullIfNil(width),
+                         @"height": RCTNullIfNil(height)
                          }];
 
       [items addObject:@{@"kind": @"file",
@@ -1540,7 +1579,27 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
       [types addObject:RCTNullIfNil(MIMETypeString)];
     }
   }
-  
+
+  NSPasteboardType imageType = [pasteboard availableTypeFromArray:@[NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  if (imageType && fileNames.count == 0) {
+    NSString *MIMETypeString = imageType == NSPasteboardTypePNG ? @"image/png" : @"image/tiff";
+    NSData *imageData = [pasteboard dataForType:imageType];
+    NSImage *image = [[NSImage alloc] initWithData:imageData];
+
+    [files addObject:@{@"type": RCTNullIfNil(MIMETypeString),
+                       @"uri": RCTDataURL(MIMETypeString, imageData).absoluteString,
+                       @"size": @(imageData.length),
+                       @"width": @(image.size.width),
+                       @"height": @(image.size.height),
+                      }];
+
+    [items addObject:@{@"kind": @"image",
+                       @"type": RCTNullIfNil(MIMETypeString),
+                      }];
+
+    [types addObject:RCTNullIfNil(MIMETypeString)];
+  }
+
   return @{@"dataTransfer": @{@"files": files,
                               @"items": items,
                               @"types": types}};
@@ -1565,9 +1624,9 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   [self sendMouseEventWithBlock:self.onDragEnter
                    locationInfo:[self locationInfoFromDraggingLocation:sender.draggingLocation]
                   modifierFlags:0
-                 additionalData:[self dataTransferInfoFromPastboard:pboard]];
-  
-  if ([pboard.types containsObject:NSFilenamesPboardType]) {
+                 additionalData:[self dataTransferInfoFromPasteboard:pboard]];
+
+  if ([pboard availableTypeFromArray:self.registeredDraggedTypes]) {
     if (sourceDragMask & NSDragOperationLink) {
       return NSDragOperationLink;
     } else if (sourceDragMask & NSDragOperationCopy) {
@@ -1582,7 +1641,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   [self sendMouseEventWithBlock:self.onDragLeave
                    locationInfo:[self locationInfoFromDraggingLocation:sender.draggingLocation]
                   modifierFlags:0
-                 additionalData:[self dataTransferInfoFromPastboard:sender.draggingPasteboard]];
+                 additionalData:[self dataTransferInfoFromPasteboard:sender.draggingPasteboard]];
 }
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
@@ -1590,7 +1649,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   [self sendMouseEventWithBlock:self.onDrop
                    locationInfo:[self locationInfoFromDraggingLocation:sender.draggingLocation]
                   modifierFlags:0
-                 additionalData:[self dataTransferInfoFromPastboard:[sender draggingPasteboard]]];
+                 additionalData:[self dataTransferInfoFromPasteboard:sender.draggingPasteboard]];
   return YES;
 }
 #endif // ]TODO(macOS GH#774)
