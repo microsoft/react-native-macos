@@ -18,12 +18,18 @@ const {
   Text,
   TextInput,
   View,
+  Image, // TODO(macOS GH#774)
+  Platform, // TODO(macOS GH#774)
   StyleSheet,
   Slider,
   Switch,
   Alert,
 } = require('react-native');
-import type {KeyboardType} from 'react-native/Libraries/Components/TextInput/TextInput';
+import type {
+  KeyboardType,
+  SettingChangeEvent,
+  PasteEvent,
+} from 'react-native/Libraries/Components/TextInput/TextInput'; // [TODO(macOS GH#774)
 
 const TextInputSharedExamples = require('./TextInputSharedExamples.js');
 
@@ -184,8 +190,7 @@ class SecureEntryExample extends React.Component<$FlowFixMeProps, any> {
           style={{
             flex: 1,
             flexDirection: 'row',
-          }}
-        >
+          }}>
           <TextInput
             style={styles.default}
             defaultValue="cde"
@@ -324,6 +329,117 @@ const styles = StyleSheet.create({
   },
 });
 
+// [TODO(macOS GH#774)
+function AutoCorrectSpellCheckGrammarCheckCallbacks(): React.Node {
+  const [enableAutoCorrect, setEnableAutoCorrect] = React.useState(false);
+  const [enableSpellSpeck, setEnableSpellSpeck] = React.useState(false);
+  const [enableGrammarCheck, setEnableGrammarCheck] = React.useState(false);
+  return (
+    <>
+      <Text>
+        enableAutoCorrect: {enableAutoCorrect ? 'enabled' : 'disabled'}
+      </Text>
+      <Text>enableSpellSpeck: {enableSpellSpeck ? 'enabled' : 'disabled'}</Text>
+      <Text>
+        enableGrammarCheck: {enableGrammarCheck ? 'enabled' : 'disabled'}
+      </Text>
+      <TextInput
+        autoCorrect={enableAutoCorrect}
+        style={{padding: 10, marginTop: 10}}
+        multiline={true}
+        onAutoCorrectChange={(event: SettingChangeEvent) =>
+          setEnableAutoCorrect(event.nativeEvent.enabled)
+        }
+        onSpellCheckChange={(event: SettingChangeEvent) =>
+          setEnableSpellSpeck(event.nativeEvent.enabled)
+        }
+        onGrammarCheckChange={(event: SettingChangeEvent) =>
+          setEnableGrammarCheck(event.nativeEvent.enabled)
+        }
+      />
+    </>
+  );
+}
+
+function OnDragEnterOnDragLeaveOnDrop(): React.Node {
+  const [log, setLog] = React.useState([]);
+  const appendLog = (line: string) => {
+    const limit = 6;
+    let newLog = log.slice(0, limit - 1);
+    newLog.unshift(line);
+    setLog(newLog);
+  };
+  return (
+    <>
+      <TextInput
+        multiline={false}
+        draggedTypes={'fileUrl'}
+        onDragEnter={e => appendLog('SinglelineEnter')}
+        onDragLeave={e => appendLog('SinglelineLeave')}
+        onDrop={e => appendLog('SinglelineDrop')}
+        style={styles.multiline}
+        placeholder="SINGLE LINE with onDragEnter|Leave() and onDrop()"
+      />
+      <TextInput
+        multiline={true}
+        draggedTypes={'fileUrl'}
+        onDragEnter={e => appendLog('MultilineEnter')}
+        onDragLeave={e => appendLog('MultilineLeave')}
+        onDrop={e => appendLog('MultilineDrop')}
+        style={styles.multiline}
+        placeholder="MULTI LINE with onDragEnter|Leave() and onDrop()"
+      />
+      <Text style={{height: 120}}>{log.join('\n')}</Text>
+      <TextInput
+        multiline={false}
+        style={styles.multiline}
+        placeholder="SINGLE LINE w/o onDragEnter|Leave() and onDrop()"
+      />
+      <TextInput
+        multiline={true}
+        style={styles.multiline}
+        placeholder="MULTI LINE w/o onDragEnter|Leave() and onDrop()"
+      />
+    </>
+  );
+}
+
+function OnPaste(): React.Node {
+  const [log, setLog] = React.useState([]);
+  const appendLog = (line: string) => {
+    const limit = 3;
+    let newLog = log.slice(0, limit - 1);
+    newLog.unshift(line);
+    setLog(newLog);
+  };
+  const [imageUri, setImageUri] = React.useState('');
+  return (
+    <>
+      <TextInput
+        multiline={true}
+        style={styles.multiline}
+        onPaste={(e: PasteEvent) => {
+          appendLog(JSON.stringify(e.nativeEvent.dataTransfer.types));
+          setImageUri(e.nativeEvent.dataTransfer.files[0].uri);
+        }}
+        placeholder="MULTI LINE with onPaste() for PNG and TIFF images"
+      />
+      <Text style={{height: 30}}>{log.join('\n')}</Text>
+      <Image
+        source={{uri: imageUri}}
+        style={{
+          width: 128,
+          height: 128,
+          margin: 4,
+          borderWidth: 1,
+          borderColor: 'white',
+        }}
+      />
+    </>
+  );
+}
+// ]TODO(macOS GH#774)
+
 exports.displayName = (undefined: ?string);
 exports.title = 'TextInput';
 exports.documentationURL = 'https://reactnative.dev/docs/textinput';
@@ -333,13 +449,13 @@ exports.examples = ([
   ...TextInputSharedExamples,
   {
     title: 'Live Re-Write (ひ -> 日)',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return <RewriteExampleKana />;
     },
   },
   {
     title: 'Keyboard Input Accessory View',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <TextInputAccessoryViewChangeTextExample />
@@ -350,7 +466,7 @@ exports.examples = ([
   },
   {
     title: "Default Input Accessory View with returnKeyType = 'done'",
-    render: function(): React.Node {
+    render: function (): React.Node {
       const keyboardTypesWithDoneButton = [
         'number-pad',
         'phone-pad',
@@ -372,7 +488,7 @@ exports.examples = ([
   },
   {
     title: 'Nested content and `value` property',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <WithLabel label="singleline">
@@ -386,8 +502,7 @@ exports.examples = ([
             <TextInput
               style={styles.default}
               multiline={true}
-              value="(value property)"
-            >
+              value="(value property)">
               (first raw text node)
               <Text style={{color: 'red'}}>(internal raw text node)</Text>
               (last raw text node)
@@ -399,7 +514,7 @@ exports.examples = ([
   },
   {
     title: 'Keyboard appearance',
-    render: function(): React.Node {
+    render: function (): React.Node {
       const keyboardAppearance = ['default', 'light', 'dark'];
       const examples = keyboardAppearance.map(type => {
         return (
@@ -413,7 +528,7 @@ exports.examples = ([
   },
   {
     title: 'Return key types',
-    render: function(): React.Node {
+    render: function (): React.Node {
       const returnKeyTypes = [
         'default',
         'go',
@@ -439,7 +554,7 @@ exports.examples = ([
   },
   {
     title: 'Enable return key automatically',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <WithLabel label="true">
@@ -454,13 +569,13 @@ exports.examples = ([
   },
   {
     title: 'Secure text entry',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return <SecureEntryExample />;
     },
   },
   {
     title: 'Colored input text',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <TextInput
@@ -477,7 +592,7 @@ exports.examples = ([
   },
   {
     title: 'Colored highlight/cursor for text input',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <TextInput
@@ -496,7 +611,7 @@ exports.examples = ([
   },
   {
     title: 'Clear button mode',
-    render: function(): React.Node {
+    render: function (): React.Node {
       const clearButtonModes = [
         'never',
         'while-editing',
@@ -519,7 +634,7 @@ exports.examples = ([
   },
   {
     title: 'Clear and select',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <WithLabel label="clearTextOnFocus">
@@ -562,7 +677,7 @@ exports.examples = ([
   },
   {
     title: 'Multiline blur on submit',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <TextInput
@@ -581,7 +696,7 @@ exports.examples = ([
   },
   {
     title: 'Multiline',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <TextInput
@@ -624,7 +739,7 @@ exports.examples = ([
   },
   {
     title: 'TextInput Intrinsic Size',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <Text>Singleline TextInput</Text>
@@ -691,7 +806,7 @@ exports.examples = ([
   },
   {
     title: 'Auto-expanding',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <TextInput
@@ -708,7 +823,7 @@ exports.examples = ([
   },
   {
     title: 'Auto-expanding',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <AutogrowingTextInputExample
@@ -721,8 +836,7 @@ exports.examples = ([
               paddingTop: 0,
               backgroundColor: '#eeeeee',
               color: 'blue',
-            }}
-          >
+            }}>
             <Text style={{fontSize: 30, color: 'green'}}>huge</Text>
             generic generic generic
             <Text style={{fontSize: 6, color: 'red'}}>
@@ -740,7 +854,7 @@ exports.examples = ([
   },
   {
     title: 'TextInput maxLength',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <WithLabel label="maxLength: 5">
@@ -773,7 +887,7 @@ exports.examples = ([
   },
   {
     title: 'Text Content Type',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <WithLabel label="emailAddress">
@@ -788,7 +902,7 @@ exports.examples = ([
   },
   {
     title: 'TextInput Placeholder Styles',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <WithLabel label="letterSpacing: 10 lineHeight: 20 textAlign: 'center'">
@@ -810,7 +924,7 @@ exports.examples = ([
   },
   {
     title: 'showSoftInputOnFocus',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <WithLabel label="showSoftInputOnFocus: false">
@@ -821,3 +935,29 @@ exports.examples = ([
     },
   },
 ]: Array<RNTesterModuleExample>);
+// [TODO(macOS GH#774)
+if (Platform.OS === 'macos') {
+  exports.examples.push(
+    {
+      title:
+        'AutoCorrect, spellCheck and grammarCheck callbacks - Multiline Textfield',
+      render: function (): React.Node {
+        return <AutoCorrectSpellCheckGrammarCheckCallbacks />;
+      },
+    },
+    {
+      title:
+        'onDragEnter, onDragLeave and onDrop - Single- & MultiLineTextInput',
+      render: function (): React.Node {
+        return <OnDragEnterOnDragLeaveOnDrop />;
+      },
+    },
+    {
+      title: 'onPaste - MultiLineTextInput',
+      render: function (): React.Node {
+        return <OnPaste />;
+      },
+    },
+  );
+}
+// ]TODO(macOS GH#774)

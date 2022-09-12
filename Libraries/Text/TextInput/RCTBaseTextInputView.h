@@ -39,9 +39,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) RCTDirectEventBlock onContentSizeChange;
 @property (nonatomic, copy, nullable) RCTDirectEventBlock onSelectionChange;
 @property (nonatomic, copy, nullable) RCTDirectEventBlock onChange;
+@property (nonatomic, copy, nullable) RCTDirectEventBlock onPaste; // TODO(OSS Candidate GH#774)
 @property (nonatomic, copy, nullable) RCTDirectEventBlock onChangeSync;
 @property (nonatomic, copy, nullable) RCTDirectEventBlock onTextInput;
 @property (nonatomic, copy, nullable) RCTDirectEventBlock onScroll;
+#if TARGET_OS_OSX // TODO(macOS GH#774)
+@property (nonatomic, copy, nullable) RCTBubblingEventBlock onAutoCorrectChange;
+@property (nonatomic, copy, nullable) RCTBubblingEventBlock onSpellCheckChange;
+@property (nonatomic, copy, nullable) RCTBubblingEventBlock onGrammarCheckChange;
+#endif // TODO(macOS GH#774)
 
 @property (nonatomic, assign) NSInteger mostRecentEventCount;
 @property (nonatomic, assign, readonly) NSInteger nativeEventCount;

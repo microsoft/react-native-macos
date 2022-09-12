@@ -67,13 +67,8 @@ class ItemComponent extends React.PureComponent<{
   };
   render(): React.Node {
     // [TODO(macOS GH#774)
-    const {
-      fixedHeight,
-      horizontal,
-      item,
-      textSelectable,
-      isSelected,
-    } = this.props; // TODO(macOS GH#774)]
+    const {fixedHeight, horizontal, item, textSelectable, isSelected} =
+      this.props; // TODO(macOS GH#774)]
     const itemHash = Math.abs(hashCode(item.title));
     const imgSource = THUMB_URLS[itemHash % THUMB_URLS.length];
     return (
@@ -81,22 +76,19 @@ class ItemComponent extends React.PureComponent<{
         onPress={this._onPress}
         onShowUnderlay={this.props.onShowUnderlay}
         onHideUnderlay={this.props.onHideUnderlay}
-        style={horizontal ? styles.horizItem : styles.item}
-      >
+        style={horizontal ? styles.horizItem : styles.item}>
         <View
           style={[
             styles.row,
             horizontal && {width: HORIZ_WIDTH},
             fixedHeight && {height: ITEM_HEIGHT},
             isSelected && styles.selectedItem, // TODO(macOS GH#774)
-          ]}
-        >
+          ]}>
           {!item.noImage && <Image style={styles.thumb} source={imgSource} />}
           <Text
             style={[styles.text, isSelected && styles.selectedItemText]} // TODO(macOS GH#774)
             selectable={textSelectable}
-            numberOfLines={horizontal || fixedHeight ? 3 : undefined}
-          >
+            numberOfLines={horizontal || fixedHeight ? 3 : undefined}>
             {item.title} - {item.text}
           </Text>
         </View>
@@ -367,12 +359,18 @@ const styles = StyleSheet.create({
   },
   // [TODO(macOS GH#774)
   selectedItem: {
-    backgroundColor: PlatformColor('selectedContentBackgroundColor'),
+    backgroundColor: Platform.select({
+      macos: PlatformColor('selectedContentBackgroundColor'),
+      default: 'blue',
+    }),
   },
   selectedItemText: {
     // This was the closest UI Element color that looked right...
     // https://developer.apple.com/documentation/appkit/nscolor/ui_element_colors
-    color: PlatformColor('selectedMenuItemTextColor'),
+    color: Platform.select({
+      macos: PlatformColor('selectedMenuItemTextColor'),
+      default: 'white',
+    }),
   },
   // [TODO(macOS GH#774)]
 });

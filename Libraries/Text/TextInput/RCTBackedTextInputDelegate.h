@@ -22,6 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)textInputShouldReturn; // May be called right before `textInputShouldEndEditing` if "Return" button was pressed.
 - (void)textInputDidReturn;
 
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+- (void)automaticSpellingCorrectionDidChange:(BOOL)enabled;
+- (void)continuousSpellCheckingDidChange:(BOOL)enabled;
+- (void)grammarCheckingDidChange:(BOOL)enabled;
+#endif // ]TODO(macOS GH#774)
+
 /*
  * Called before any change in the TextInput. The delegate has the opportunity to change the replacement string or reject the change completely.
  * To change the replacement, return the changed version of the `text`.
@@ -36,8 +42,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)textInputShouldHandleDeleteBackward:(id<RCTBackedTextInputViewProtocol>)sender; // Return `YES` to have the deleteBackward event handled normally. Return `NO` to disallow it and handle it yourself. TODO(OSS Candidate ISS#2710739)
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (BOOL)textInputShouldHandleDeleteForward:(id<RCTBackedTextInputViewProtocol>)sender; // Return `YES` to have the deleteForward event handled normally. Return `NO` to disallow it and handle it yourself.
-
+- (BOOL)textInputShouldHandleKeyEvent:(NSEvent *)event; // Return `YES` to have the key event handled normally. Return `NO` to disallow it and handle it yourself.
+- (BOOL)hasValidKeyDownOrValidKeyUp:(NSString *)key;
+- (NSDragOperation)textInputDraggingEntered:(id<NSDraggingInfo>)draggingInfo;
+- (void)textInputDraggingExited:(id<NSDraggingInfo>)draggingInfo;
+- (BOOL)textInputShouldHandleDragOperation:(id<NSDraggingInfo>)draggingInfo;
 - (void)textInputDidCancel;  // Handle `Escape` key press.
+- (BOOL)textInputShouldHandlePaste:(id<RCTBackedTextInputViewProtocol>)sender; // Return `YES` to have the paste event handled normally. Return `NO` to disallow it and handle it yourself.
 #endif // ]TODO(macOS GH#774)
 
 @optional

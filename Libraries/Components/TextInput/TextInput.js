@@ -46,20 +46,20 @@ let RCTMultilineTextInputNativeCommands;
 
 if (Platform.OS === 'android') {
   AndroidTextInput = require('./AndroidTextInputNativeComponent').default;
-  AndroidTextInputCommands = require('./AndroidTextInputNativeComponent')
-    .Commands;
+  AndroidTextInputCommands =
+    require('./AndroidTextInputNativeComponent').Commands;
 } else if (
   Platform.OS === 'ios' ||
   Platform.OS === 'macos' /* TODO(macOS GH#774) */
 ) {
-  RCTSinglelineTextInputView = require('./RCTSingelineTextInputNativeComponent')
-    .default;
-  RCTSinglelineTextInputNativeCommands = require('./RCTSingelineTextInputNativeComponent')
-    .Commands;
-  RCTMultilineTextInputView = require('./RCTMultilineTextInputNativeComponent')
-    .default;
-  RCTMultilineTextInputNativeCommands = require('./RCTMultilineTextInputNativeComponent')
-    .Commands;
+  RCTSinglelineTextInputView =
+    require('./RCTSingelineTextInputNativeComponent').default;
+  RCTSinglelineTextInputNativeCommands =
+    require('./RCTSingelineTextInputNativeComponent').Commands;
+  RCTMultilineTextInputView =
+    require('./RCTMultilineTextInputNativeComponent').default;
+  RCTMultilineTextInputNativeCommands =
+    require('./RCTMultilineTextInputNativeComponent').Commands;
 }
 
 export type ChangeEvent = SyntheticEvent<
@@ -129,6 +129,33 @@ export type EditingEvent = SyntheticEvent<
     target: number,
   |}>,
 >;
+
+// macOS-only // [TODO(macOS GH#774)
+export type SettingChangeEvent = SyntheticEvent<
+  $ReadOnly<{|
+    enabled: boolean,
+  |}>,
+>;
+
+export type PasteEvent = SyntheticEvent<
+  $ReadOnly<{|
+    dataTransfer: {|
+      files: $ReadOnlyArray<{|
+        height: number,
+        size: number,
+        type: string,
+        uri: string,
+        width: number,
+      |}>,
+      items: $ReadOnlyArray<{|
+        kind: string,
+        type: string,
+      |}>,
+      types: $ReadOnlyArray<string>,
+    |},
+  |}>,
+>;
+// ]TODO(macOS GH#774)
 
 type DataDetectorTypesType =
   // iOS+macOS
@@ -306,7 +333,7 @@ type IOSProps = $ReadOnly<{|
   // [TODO(macOS GH#774)
   /**
    * If `false`, disables grammar-check.
-   * @platform macOS
+   * @platform macos
    */
   grammarCheck?: ?boolean,
   // ]TODO(macOS GH#774)
@@ -637,6 +664,38 @@ export type Props = $ReadOnly<{|
    */
   onChangeText?: ?(text: string) => mixed,
 
+  // [TODO(macOS GH#774)
+  /**
+   * Callback that is called when the text input's autoCorrect setting changes.
+   * This will be called with
+   * `{ nativeEvent: { enabled } }`.
+   * Does only work with 'multiline={true}'.
+   *
+   * @platform macos
+   */
+  onAutoCorrectChange?: ?(e: SettingChangeEvent) => mixed,
+
+  /**
+   * Callback that is called when the text input's spellCheck setting changes.
+   * This will be called with
+   * `{ nativeEvent: { enabled } }`.
+   * Does only work with 'multiline={true}'.
+   *
+   * @platform macos
+   */
+  onSpellCheckChange?: ?(e: SettingChangeEvent) => mixed,
+
+  /**
+   * Callback that is called when the text input's grammarCheck setting changes.
+   * This will be called with
+   * `{ nativeEvent: { enabled } }`.
+   * Does only work with 'multiline={true}'.
+   *
+   * @platform macos
+   */
+  onGrammarCheckChange?: ?(e: SettingChangeEvent) => mixed,
+  // ]TODO(macOS GH#774)
+
   /**
    * DANGER: this API is not stable and will change in the future.
    *
@@ -700,6 +759,13 @@ export type Props = $ReadOnly<{|
    * Called when a touch is released.
    */
   onPressOut?: ?(event: PressEvent) => mixed,
+
+  /**
+   * Fired when a supported element is pasted
+   *
+   * @platform macos
+   */
+  onPaste?: (event: PasteEvent) => void, // TODO(macOS GH#774)
 
   /**
    * Callback that is called when the text input selection is changed.
@@ -1294,6 +1360,8 @@ function InternalTextInput(props: Props): React.Node {
         onChangeSync={useOnChangeSync === true ? _onChangeSync : null}
         onContentSizeChange={props.onContentSizeChange}
         onFocus={_onFocus}
+        onKeyDown={props.onKeyDown} // TODO(macOS GH#774)
+        onKeyUp={props.onKeyUp} // TODO(macOS GH#774)
         onScroll={_onScroll}
         onSelectionChange={_onSelectionChange}
         onSelectionChangeShouldSetResponder={emptyFunctionThatReturnsTrue}
@@ -1386,7 +1454,8 @@ const ExportedForwardRef: React.AbstractComponent<
   );
 });
 
-ExportedForwardRef.propTypes = require('deprecated-react-native-prop-types').TextInputPropTypes;
+ExportedForwardRef.propTypes =
+  require('deprecated-react-native-prop-types').TextInputPropTypes;
 
 // $FlowFixMe[prop-missing]
 ExportedForwardRef.State = {
