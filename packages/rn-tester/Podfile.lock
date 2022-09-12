@@ -1,6 +1,5 @@
 PODS:
   - boost (1.76.0)
-  - boost-for-react-native (1.63.0)
   - CocoaAsyncSocket (7.6.5)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.68.44)
@@ -404,7 +403,6 @@ PODS:
 
 DEPENDENCIES:
   - boost (from `../../third-party-podspecs/boost.podspec`)
-  - boost-for-react-native (from `../../third-party-podspecs/boost-for-react-native.podspec`)
   - DoubleConversion (from `../../third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../../Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../../React/FBReactNativeSpec`)
@@ -487,8 +485,6 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   boost:
     :podspec: "../../third-party-podspecs/boost.podspec"
-  boost-for-react-native:
-    :podspec: "../../third-party-podspecs/boost-for-react-native.podspec"
   DoubleConversion:
     :podspec: "../../third-party-podspecs/DoubleConversion.podspec"
   FBLazyVector:
@@ -562,7 +558,6 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost: 613e39eac4239cc72b15421247b5ab05361266a2
-  boost-for-react-native: 8f7c9ecfe357664c072ffbe2432569667cbf1f1b
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: ed15e075aa758ac0e4c1f8b830bd4e4d40d669e8
   FBLazyVector: 5e3a5fcfde8511debb4f95264986a8c63f49d03a
@@ -606,10 +601,10 @@ SPEC CHECKSUMS:
   React-RCTText: a3d0700143c50bd62ece73aca523433b23492ef7
   React-RCTVibration: 8baeace58672df45939cc99431964ceb09c97118
   React-runtimeexecutor: b3487150849699a6c771bfb1d26121f0f1feba5f
-  React-TurboModuleCxx-RNW: f31a1c090bea0429ed6c57a2826738eae632df08
-  React-TurboModuleCxx-WinRTPort: 1d05288612f38976d898570dd74fb62a13592016
+  React-TurboModuleCxx-RNW: 7865a14b5d6f25c9873c78afc6b9ce038e61c88f
+  React-TurboModuleCxx-WinRTPort: a7fbcc51dccbd962844571af0dce4390118bf64e
   ReactCommon: 9929ea9d7b5437074c33caa89899b11eaffccd1c
-  ScreenshotManager: e6d64b9235992fa6cdf931a8fa4e149241595911
+  ScreenshotManager: a2479ac2273d34c8c2c1e4b8e33fe46fb2f0fb60
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Yoga: 95587167f85a392e1906a571d9ed09e500087e88
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
