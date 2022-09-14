@@ -22,15 +22,6 @@
 
 #import <QuartzCore/QuartzCore.h> // TODO(macOS GH#774)
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
-#import <React/RCTRootContentView.h>
-#import <React/RCTTouchHandler.h>
-
-@interface RCTTextView () <NSTextViewDelegate>
-@end
-#endif
-// ]TODO(macOS GH#774)
-
 @implementation RCTTextView
 {
   CAShapeLayer *_highlightLayer;
@@ -38,7 +29,6 @@
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
 #else // [TODO(macOS GH#774)
   NSString * _accessibilityLabel;
-  NSTextView *_textView;
 #endif // ]TODO(macOS GH#774)
 
   RCTEventDispatcher *_eventDispatcher; // TODO(OSS Candidate ISS#2710739)
@@ -67,16 +57,6 @@
     self.accessibilityRole = NSAccessibilityStaticTextRole;
     // Fix blurry text on non-retina displays.
     self.canDrawSubviewsIntoLayer = YES;
-    // The NSTextView is responsible for drawing text and managing selection.
-    _textView = [[NSTextView alloc] initWithFrame:self.bounds];
-    _textView.delegate = self;
-    _textView.drawsBackground = NO;
-    _textView.editable = NO;
-    _textView.selectable = NO;
-    _textView.verticallyResizable = NO;
-    _textView.layoutManager.usesFontLeading = NO;
-    _textStorage = _textView.textStorage;
-    [self addSubview:_textView];
 #endif // ]TODO(macOS GH#774)
     self.opaque = NO;
     RCTUIViewSetContentModeRedraw(self); // TODO(macOS GH#774) and TODO(macOS ISS#3536887)
@@ -85,74 +65,39 @@
 }
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
-- (NSView *)hitTest:(NSPoint)point
+- (void)dealloc
 {
-  // We will forward mouse events to the NSTextView ourselves.
-  NSView *hitView = [super hitTest:point];
-  return (hitView && hitView == _textView) ? self : hitView;
+  [self removeAllTextStorageLayoutManagers];
 }
 
-- (void)mouseDown:(NSEvent *)event
+- (void)removeAllTextStorageLayoutManagers
 {
-  if (!self.selectable) {
-    [super mouseDown:event];
-    return;
+  // On macOS AppKit can throw an uncaught exception
+  // (-[NSConcretePointerArray pointerAtIndex:]: attempt to access pointer at index ...)
+  // during the dealloc of NSLayoutManager.  The _textStorage and its
+  // associated NSLayoutManager dealloc later in an autorelease pool.
+  // Manually removing the layout managers from _textStorage prior to release
+  // works around this issue in AppKit.
+  NSArray<NSLayoutManager *> *managers = [[_textStorage layoutManagers] copy];
+  for (NSLayoutManager *manager in managers) {
+    [_textStorage removeLayoutManager:manager];
   }
+}
 
-  // Double/triple-clicks should be forwarded to the NSTextView.
-  BOOL shouldForward = event.clickCount > 1;
+- (BOOL)canBecomeKeyView
+{
+	// RCTText should not get any keyboard focus unless its `selectable` prop is true
+	return _selectable;
+}
 
-  if (!shouldForward) {
-    // Peek at next event to know if a selection should begin.
-    NSEvent *nextEvent = [self.window nextEventMatchingMask:NSLeftMouseUpMask | NSLeftMouseDraggedMask
-                                                  untilDate:[NSDate distantFuture]
-                                                     inMode:NSEventTrackingRunLoopMode
-                                                    dequeue:NO];
-    shouldForward = nextEvent.type == NSLeftMouseDragged;
-  }
-
-  if (shouldForward) {
-    NSView *contentView = self.window.contentView;
-    // -[NSView hitTest:] takes coordinates in a view's superview coordinate system.
-    NSPoint point = [contentView.superview convertPoint:event.locationInWindow fromView:nil];
-
-    // Start selection if we're still selectable and hit-testable.
-    if (self.selectable && [contentView hitTest:point] == self) {
-      [self.touchHandler cancelTouchWithEvent:event];
-      [self.window makeFirstResponder:_textView];
-      [_textView mouseDown:event];
-    }
-  } else {
-    // Clear selection for single clicks.
-    _textView.selectedRange = NSMakeRange(NSNotFound, 0);
+- (void)drawFocusRingMask {
+  if ([self enableFocusRing]) {
+    NSRectFill([self bounds]);
   }
 }
 
 - (NSRect)focusRingMaskBounds {
   return [self bounds];
-}
-
-- (void)rightMouseDown:(NSEvent *)event
-{
-  if (!self.selectable) {
-    [super rightMouseDown:event];
-    return;
-  }
-
-  [_textView rightMouseDown:event];
-}
-
-- (RCTTouchHandler *)touchHandler
-{
-  NSView *rootView = self.superview;
-  while (rootView != nil) {
-    if ([rootView isKindOfClass:[RCTRootContentView class]]) {
-      return [(RCTRootContentView*)rootView touchHandler];
-    }
-    rootView = rootView.superview;
-  }
-
-  return nil;
 }
 #endif // ]TODO(macOS GH#774)
 
@@ -181,8 +126,6 @@
   else {
     [self disableContextMenu];
   }
-#else
-  _textView.selectable = _selectable;
 #endif // TODO(macOS GH#774)
 }
 
@@ -206,34 +149,12 @@
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTUIView *> *)descendantViews // TODO(macOS ISS#3536887)
 {
-  _contentFrame = contentFrame;
-
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
+  [self removeAllTextStorageLayoutManagers];
+#endif // ]TODO(macOS GH#774)
+
   _textStorage = textStorage;
-#endif // ]TODO(macOS GH#774)
-
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
-  NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
-  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
-
-  [_textView replaceTextContainer:textContainer];
-
-  // On macOS AppKit can throw an uncaught exception
-  // (-[NSConcretePointerArray pointerAtIndex:]: attempt to access pointer at index ...)
-  // during the dealloc of NSLayoutManager.  The textStorage and its
-  // associated NSLayoutManager dealloc later in an autorelease pool.
-  // Manually removing the layout managers from textStorage prior to release
-  // works around this issue in AppKit.
-  NSArray<NSLayoutManager *> *managers = [[textStorage layoutManagers] copy];
-  for (NSLayoutManager *manager in managers) {
-    [textStorage removeLayoutManager:manager];
-  }
-
-  _textView.minSize = contentFrame.size;
-  _textView.maxSize = contentFrame.size;
-  _textView.frame = contentFrame;
-  _textView.textStorage.attributedString = textStorage;
-#endif // ]TODO(macOS GH#774)
+  _contentFrame = contentFrame;
 
   // FIXME: Optimize this.
   for (RCTUIView *view in _descendantViews) { // TODO(macOS ISS#3536887)
@@ -252,14 +173,10 @@
 - (void)drawRect:(CGRect)rect
 {
   [super drawRect:rect];
-  
   if (!_textStorage) {
     return;
   }
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
-  return;
-#endif // ]TODO(macOS GH#774)
 
   NSLayoutManager *layoutManager = _textStorage.layoutManagers.firstObject;
   NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
@@ -459,31 +376,71 @@
 }
 #else // [TODO(macOS GH#774)
 
-- (NSMenu *)textView:(NSTextView *)view menu:(NSMenu *)menu forEvent:(NSEvent *)event atIndex:(NSUInteger)charIndex {
-  if (_additionalMenuItems.count > 0) {
-    [menu insertItem:[NSMenuItem separatorItem] atIndex:0];
-    for (NSMenuItem* item in [_additionalMenuItems reverseObjectEnumerator]) {
-      [menu insertItem:item atIndex:0];
+- (void)rightMouseDown:(NSEvent *)event
+{
+  if (_selectable == NO) {
+    [super rightMouseDown:event];
+    return;
+  }
+  NSText *fieldEditor = [self.window fieldEditor:YES forObject:self];
+  NSMenu *fieldEditorMenu = [fieldEditor menuForEvent:event];
+
+  RCTAssert(fieldEditorMenu, @"Unable to obtain fieldEditor's context menu");
+
+  if (fieldEditorMenu) {
+    NSMenu *menu = [[NSMenu alloc] initWithTitle:@""];
+
+    for (NSMenuItem *fieldEditorMenuItem in fieldEditorMenu.itemArray) {
+      if (fieldEditorMenuItem.action == @selector(copy:)) {
+        NSMenuItem *item = [fieldEditorMenuItem copy];
+
+        item.target = self;
+        [menu addItem:item];
+
+        break;
+      }
+    }
+
+    RCTAssert(menu.numberOfItems > 0, @"Unable to create context menu with \"Copy\" item");
+
+    if (menu.numberOfItems > 0) {
+      [NSMenu popUpContextMenu:menu withEvent:event forView:self];
     }
   }
-
-  [self.touchHandler willShowMenuWithEvent:event];
-
-  return menu;
 }
 
-- (void)textDidEndEditing:(NSNotification *)notification
+- (BOOL)becomeFirstResponder
 {
-  _textView.selectedRange = NSMakeRange(NSNotFound, 0);
+  if (![super becomeFirstResponder]) {
+    return NO;
+  }
+
+  // If we've gained focus, notify listeners
+  [_eventDispatcher sendEvent:[RCTFocusChangeEvent focusEventWithReactTag:self.reactTag]];
+
+  return YES;
 }
+
+- (BOOL)resignFirstResponder
+{
+  if (![super resignFirstResponder]) {
+    return NO;
+  }
+
+  // If we've lost focus, notify listeners
+  [_eventDispatcher sendEvent:[RCTFocusChangeEvent blurEventWithReactTag:self.reactTag]];
+
+  return YES;
+}
+
 #endif // ]TODO(macOS GH#774)
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
 - (BOOL)canBecomeFirstResponder
 {
   return _selectable;
 }
 
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
   if (_selectable && action == @selector(copy:)) {
@@ -513,7 +470,6 @@
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
   pasteboard.items = @[item];
 #elif TARGET_OS_OSX // TODO(macOS GH#774)
-  [_textView copy:sender];
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   [pasteboard clearContents];
   [pasteboard writeObjects:[NSArray arrayWithObjects:attributedText.string, rtf, nil]];
