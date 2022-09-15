@@ -359,6 +359,26 @@
 }
 #endif // TODO(macOS GH#774)
 
+# pragma mark - Selection
+
+#if TARGET_OS_OSX // TODO(macOS GH#774)
+- (void)textDidEndEditing:(NSNotification *)notification
+{
+  _textView.selectedRange = NSMakeRange(NSNotFound, 0);
+}
+
+- (void)drawFocusRingMask
+{
+  if ([self enableFocusRing]) {
+    NSRectFill([self bounds]);
+  }
+}
+
+- (NSRect)focusRingMaskBounds {
+  return [self bounds];
+}
+#endif
+
 #pragma mark - Context Menu
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
@@ -471,11 +491,6 @@
 {
   // RCTText should not get any keyboard focus unless its `selectable` prop is true
   return _selectable;
-}
-
-- (void)textDidEndEditing:(NSNotification *)notification
-{
-  _textView.selectedRange = NSMakeRange(NSNotFound, 0);
 }
 #endif // TODO(macOS GH#774)
 
