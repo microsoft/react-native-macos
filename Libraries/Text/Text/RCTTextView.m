@@ -186,7 +186,7 @@
   [super drawRect:rect];
 
   // For iOS, UITextView api is not used for legacy performance reasons. A custom draw implementation is used instead.
-  // On dekstop, we use NSTextView to access api's for arbitrary selection, custom cursors etc...
+  // On desktop, we use NSTextView to access api's for arbitrary selection, custom cursors etc...
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
   return;
 #endif // ]TODO(macOS GH#774)
@@ -489,7 +489,7 @@
 
 - (BOOL)canBecomeKeyView
 {
-  // RCTText should not get any keyboard focus unless its `selectable` prop is true
+  // RCTTextView should not get any keyboard focus unless its `selectable` prop is true
   return _selectable;
 }
 #endif // TODO(macOS GH#774)
