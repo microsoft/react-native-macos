@@ -1442,7 +1442,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 
 - (BOOL)acceptsFirstResponder
 {
-  return ([self focusable] && [NSApp isFullKeyboardAccessEnabled]) || [super acceptsFirstResponder];
+  return [self focusable] || [super acceptsFirstResponder];
 }
 
 - (void)updateTrackingAreas
