@@ -551,15 +551,6 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   self.verticalScrollElasticity = alwaysBounceVertical ? NSScrollElasticityAllowed : NSScrollElasticityNone;
 }
 
-- (void)scrollWheel:(NSEvent *)theEvent
-{
-  if (self.isScrollEnabled == NO) {
-    [[self nextResponder] scrollWheel:theEvent];
-    return;
-  }
-  
-  [super scrollWheel:theEvent];
-}
 
 @end
 
@@ -576,3 +567,26 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 
   return clipsToBounds;
 }
+
+@implementation RCTClipView
+
+- (instancetype)initWithFrame:(NSRect)frameRect
+{
+   if (self = [super initWithFrame:frameRect]) {
+    self.constrainScrolling = NO;
+    self.drawsBackground = NO;
+  }
+  
+  return self;
+}
+
+- (NSRect)constrainBoundsRect:(NSRect)proposedBounds
+{
+  if (self.constrainScrolling) {
+    return NSMakeRect(0, 0, 0, 0);
+  }
+  
+  return [super constrainBoundsRect:proposedBounds];
+}
+
+@end

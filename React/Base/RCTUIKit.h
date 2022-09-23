@@ -431,6 +431,13 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 @end
 
+@interface RCTClipView : NSClipView // [TODO(macOS GH#774)
+
+@property (nonatomic, assign) BOOL constrainScrolling;
+
+@end // ]TODO(macOS GH#774)
+
+
 NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *event)
 {
   return [view hitTest:point];

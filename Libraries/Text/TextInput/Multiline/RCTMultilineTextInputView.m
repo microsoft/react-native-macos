@@ -15,6 +15,7 @@
 {
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
   RCTUIScrollView *_scrollView;
+  RCTClipView *_clipView;
 #endif // ]TODO(macOS GH#774)
   RCTUITextView *_backedTextInputView;
 }
@@ -35,6 +36,9 @@
     _scrollView.hasHorizontalRuler = NO;
     _scrollView.hasVerticalRuler = NO;
     _scrollView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    
+    _clipView = [[RCTClipView alloc] initWithFrame:_scrollView.frame];
+    [_scrollView setContentView:_clipView];
     
     _backedTextInputView.verticallyResizable = YES;
     _backedTextInputView.horizontallyResizable = YES;
@@ -107,7 +111,13 @@
 
 - (void)setScrollEnabled:(BOOL)scrollEnabled
 {
-  _scrollView.scrollEnabled = scrollEnabled;
+  if (scrollEnabled) {
+    _scrollView.scrollEnabled = YES;
+    [_clipView setConstrainScrolling:NO];
+  } else {
+    _scrollView.scrollEnabled = NO;
+    [_clipView setConstrainScrolling:YES];
+  }
 }
 
 - (BOOL)scrollEnabled
@@ -122,9 +132,6 @@
 - (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // TODO(macOS ISS#3536887)
 {
   RCTDirectEventBlock onScroll = self.onScroll;
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
-  [_scrollView setHasVerticalScroller:YES];
-#endif // ]TODO(macOS GH#774)
   if (onScroll) {
     CGPoint contentOffset = scrollView.contentOffset;
     CGSize contentSize = scrollView.contentSize;
