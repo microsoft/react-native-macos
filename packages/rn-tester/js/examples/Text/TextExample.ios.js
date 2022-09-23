@@ -715,6 +715,28 @@ exports.examples = [
     },
   },
   {
+    title: 'Focusable',
+    render: function (): React.Node {
+      return (
+        <View>
+          <Text focusable={true}>
+            This text is <Text style={{fontWeight: 'bold'}}>not selectable</Text> yet <Text style={{fontWeight: 'bold'}}>focusable</Text> with a visible focus ring
+          </Text>
+          <Text selectable={true} focusable={true} style={{marginTop: 5}}>
+            This text is <Text style={{fontWeight: 'bold'}}>selectable</Text> and <Text style={{fontWeight: 'bold'}}>focusable</Text> with a visible focus ring
+          </Text>
+          <Text selectable={true} focusable={true} enableFocusRing={false} style={{marginTop: 5}}>
+            This text is <Text style={{fontWeight: 'bold'}}>selectable</Text> and <Text style={{fontWeight: 'bold'}}>focusable</Text> without a visible focus ring (CMD-C to copy contents)
+          </Text>
+          <Text selectable={true} focusable={false} style={{marginTop: 5}}>
+            This text is <Text style={{fontWeight: 'bold'}}>selectable</Text> and not focusable
+          </Text>
+          <TextInput placeholder="Empty TextInput for debugging focused text views" style={{marginTop: 5}} />
+        </View>
+      );
+    },
+  },
+  {
     title: 'Text Decoration',
     render: function (): React.Node {
       return (

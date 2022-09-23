@@ -22,10 +22,26 @@
 
 #import <QuartzCore/QuartzCore.h> // TODO(macOS GH#774)
 
-#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+
+// We are managing the key view loop using the RCTTextView.
+// Disable key view for backed NSTextView so we don't get double focus.
+@interface RCTUnfocusableTextView : NSTextView
+@end
+
+@implementation RCTUnfocusableTextView
+
+- (BOOL)canBecomeKeyView
+{
+  return NO;
+}
+
+@end
+
 @interface RCTTextView () <NSTextViewDelegate>
 @end
-#endif
+
+#endif // ]TODO(macOS GH#774)
 
 @implementation RCTTextView
 {
@@ -64,7 +80,7 @@
     // Fix blurry text on non-retina displays.
     self.canDrawSubviewsIntoLayer = YES;
     // The NSTextView is responsible for drawing text and managing selection.
-    _textView = [[NSTextView alloc] initWithFrame:self.bounds];
+    _textView = [[RCTUnfocusableTextView alloc] initWithFrame:self.bounds];
     _textView.delegate = self;
     _textView.usesFontPanel = NO;
     _textView.drawsBackground = NO;
@@ -104,7 +120,7 @@
 
   _selectable = selectable;
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
   if (_selectable) {
     [self enableContextMenu];
   }
@@ -113,7 +129,10 @@
   }
 #else
   _textView.selectable = _selectable;
-#endif // TODO(macOS GH#774)
+  if (_selectable) {
+    [self setFocusable:YES];
+  }
+#endif // ]TODO(macOS GH#774)
 }
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
@@ -359,26 +378,6 @@
 }
 #endif // TODO(macOS GH#774)
 
-# pragma mark - Selection
-
-#if TARGET_OS_OSX // TODO(macOS GH#774)
-- (void)textDidEndEditing:(NSNotification *)notification
-{
-  _textView.selectedRange = NSMakeRange(NSNotFound, 0);
-}
-
-- (void)drawFocusRingMask
-{
-  if ([self enableFocusRing]) {
-    NSRectFill([self bounds]);
-  }
-}
-
-- (NSRect)focusRingMaskBounds {
-  return [self bounds];
-}
-#endif
-
 #pragma mark - Context Menu
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
@@ -448,6 +447,15 @@
 }
 #endif // ]TODO(macOS GH#774)
 
+#pragma mark - Selection
+
+#if TARGET_OS_OSX // TODO(macOS GH#774)
+- (void)textDidEndEditing:(NSNotification *)notification
+{
+  _textView.selectedRange = NSMakeRange(NSNotFound, 0);
+}
+#endif // TODO(macOS GH#774)
+
 #pragma mark - Responder chain
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
@@ -455,16 +463,22 @@
 {
   return _selectable;
 }
-
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
+#else
+- (BOOL)canBecomeKeyView
 {
-  if (_selectable && action == @selector(copy:)) {
-    return YES;
-  }
-
-  return [self.nextResponder canPerformAction:action withSender:sender];
+  return self.focusable;
 }
-# else
+
+- (void)drawFocusRingMask {
+  if (self.focusable && self.enableFocusRing) {
+    NSRectFill([self bounds]);
+  }
+}
+
+- (NSRect)focusRingMaskBounds {
+  return [self bounds];
+}
+
 - (BOOL)becomeFirstResponder
 {
   if (![super becomeFirstResponder]) {
@@ -479,18 +493,28 @@
 
 - (BOOL)resignFirstResponder
 {
-  // Don't relinquish first responder while selecting text.
+  //  Don't relinquish first responder while selecting text.
   if (_selectable && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
     return NO;
   }
-
+  
   return [super resignFirstResponder];
 }
 
-- (BOOL)canBecomeKeyView
+- (BOOL)canBecomeFirstResponder
 {
-  // RCTTextView should not get any keyboard focus unless its `selectable` prop is true
-  return _selectable;
+  return self.focusable;
+}
+#endif
+
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{
+  if (_selectable && action == @selector(copy:)) {
+    return YES;
+  }
+
+  return [self.nextResponder canPerformAction:action withSender:sender];
 }
 #endif // TODO(macOS GH#774)
 
@@ -516,6 +540,7 @@
   pasteboard.items = @[item];
 #elif TARGET_OS_OSX // TODO(macOS GH#774)
   [_textView copy:sender];
+
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   [pasteboard clearContents];
   [pasteboard writeObjects:[NSArray arrayWithObjects:attributedText.string, rtf, nil]];

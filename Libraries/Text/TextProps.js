@@ -208,4 +208,16 @@ export type TextProps = $ReadOnly<{|
    * Specifies the Tooltip for the button view
    */
   tooltip?: ?string,
+
+  /**
+   * When `true`, indicates that the text can be focused in key view loop
+   * By default, any Text with `selectable={true}` will be focusable
+   */
+  focusable?: ?boolean,
+
+  /**
+   * Specifies whether focus ring should be drawn when the view has the first responder status.
+   * Only works with `selectable={true} focusable={true}`
+   */
+  enableFocusRing?: ?boolean, // TODO(macOS GH#774)
 |}>;
