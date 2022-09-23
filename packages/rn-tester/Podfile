@@ -41,10 +41,12 @@ def pods(options = {})
 
   prefix_path = "../.."
 
-  if ENV['USE_CODEGEN_DISCOVERY'] == '1'
-    # Custom fabric component is only supported when using codegen discovery.
-    pod 'MyNativeView', :path => "NativeComponentExample"
-  end
+  # [TODO(macOS GH#774) - don't enable Fabric on RNTester by default until it works on macOS
+  # if ENV['USE_CODEGEN_DISCOVERY'] == '1'
+  #   # Custom fabric component is only supported when using codegen discovery.
+  #   pod 'MyNativeView', :path => "NativeComponentExample"
+  # end
+  # ]TODO(macOS GH#774)
 
   use_react_native!(
     path: prefix_path,
@@ -76,6 +78,7 @@ end
 target 'RNTesterUnitTests' do
   pods()
   pod 'React-RCTTest', :path => "./RCTTest"
+  pod 'OCMock', '~> 3.9.1'
 end
 
 target 'RNTesterIntegrationTests' do
@@ -85,13 +88,14 @@ end
 
 target 'RNTester-macOS' do
   platform :osx, '10.15'
-  pods(:hermes_enabled => false)
+  pods()
 end
 
 target 'RNTester-macOSUnitTests' do
   platform :osx, '10.15'
   pods()
   pod 'React-RCTTest', :path => "./RCTTest"
+  pod 'OCMock', '~> 3.9.1'
 end
 
 target 'RNTester-macOSIntegrationTests' do
@@ -99,23 +103,6 @@ target 'RNTester-macOSIntegrationTests' do
   pods()
   pod 'React-RCTTest', :path => "./RCTTest"
 end
-
-# [TODO(macOS GH#774): these are special targets used by the internal Microsoft build pipeline
-target 'iosDeviceBuild' do
-  platform :ios, '11.0'
-  pods()
-end
-
-target 'iosSimulatorBuild' do
-  platform :ios, '11.0'
-  pods()
-end
-
-target 'macOSBuild' do
-  platform :osx, '10.15'
-  pods()
-end
-# ]TODO(macOS GH#774)
 
 post_install do |installer|
   react_native_post_install(installer)

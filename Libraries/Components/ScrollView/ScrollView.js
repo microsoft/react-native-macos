@@ -500,6 +500,10 @@ export type Props = $ReadOnly<{|
    */
   invertStickyHeaders?: ?boolean,
   /**
+   * Reverses the direction of scroll. Uses native inversion on macOS and scale transforms of -1 elsewhere
+   */
+  inverted?: ?boolean, // TODO(macOS GH#774)
+  /**
    * Determines whether the keyboard gets dismissed in response to a drag.
    *
    * *Cross platform*
@@ -743,10 +747,8 @@ class ScrollView extends React.Component<Props, State> {
 
   _scrollAnimatedValue: AnimatedImplementation.Value;
   _scrollAnimatedValueAttachment: ?{detach: () => void, ...} = null;
-  _stickyHeaderRefs: Map<
-    string,
-    React.ElementRef<StickyHeaderComponentType>,
-  > = new Map();
+  _stickyHeaderRefs: Map<string, React.ElementRef<StickyHeaderComponentType>> =
+    new Map();
   _headerLayoutYs: Map<string, number> = new Map();
 
   _keyboardWillOpenTo: ?KeyboardEvent = null;
@@ -868,7 +870,8 @@ class ScrollView extends React.Component<Props, State> {
         ref.scrollToEnd = this.scrollToEnd;
         ref.flashScrollIndicators = this.flashScrollIndicators;
         ref.scrollResponderZoomTo = this.scrollResponderZoomTo;
-        ref.scrollResponderScrollNativeHandleToKeyboard = this.scrollResponderScrollNativeHandleToKeyboard;
+        ref.scrollResponderScrollNativeHandleToKeyboard =
+          this.scrollResponderScrollNativeHandleToKeyboard;
       }
     },
   });
@@ -1054,7 +1057,11 @@ class ScrollView extends React.Component<Props, State> {
     |},
     animated?: boolean, // deprecated, put this inside the rect argument instead
   ) => {
-    invariant(Platform.OS === 'ios', 'zoomToRect is not implemented');
+    invariant(
+      // [TODO(macOS GH#774)
+      Platform.OS === 'ios' || Platform.OS === 'macos',
+      'zoomToRect is not implemented',
+    ); // TODO [(macOS GH#774)
     if ('animated' in rect) {
       this._animated = rect.animated;
       delete rect.animated;
@@ -1138,11 +1145,12 @@ class ScrollView extends React.Component<Props, State> {
       this.props.stickyHeaderIndices &&
       this.props.stickyHeaderIndices.length > 0
     ) {
-      this._scrollAnimatedValueAttachment = AnimatedImplementation.attachNativeEvent(
-        this._scrollViewRef,
-        'onScroll',
-        [{nativeEvent: {contentOffset: {y: this._scrollAnimatedValue}}}],
-      );
+      this._scrollAnimatedValueAttachment =
+        AnimatedImplementation.attachNativeEvent(
+          this._scrollViewRef,
+          'onScroll',
+          [{nativeEvent: {contentOffset: {y: this._scrollAnimatedValue}}}],
+        );
     }
   }
 
@@ -1184,83 +1192,12 @@ class ScrollView extends React.Component<Props, State> {
   }
 
   // [TODO(macOS GH#774)
-  _handleKeyDown = (event: ScrollEvent) => {
-    if (this.props.onScrollKeyDown) {
-      this.props.onScrollKeyDown(event);
-    } else {
-      if (Platform.OS === 'macos') {
-        const nativeEvent = event.nativeEvent;
-        const key = nativeEvent.key;
-        const kMinScrollOffset = 10;
-        if (key === 'PAGE_UP') {
-          this._handleScrollByKeyDown(event, {
-            x: nativeEvent.contentOffset.x,
-            y:
-              nativeEvent.contentOffset.y +
-              -nativeEvent.layoutMeasurement.height,
-          });
-        } else if (key === 'PAGE_DOWN') {
-          this._handleScrollByKeyDown(event, {
-            x: nativeEvent.contentOffset.x,
-            y:
-              nativeEvent.contentOffset.y +
-              nativeEvent.layoutMeasurement.height,
-          });
-        } else if (key === 'LEFT_ARROW') {
-          this._handleScrollByKeyDown(event, {
-            x:
-              nativeEvent.contentOffset.x +
-              -(this.props.horizontalLineScroll !== undefined
-                ? this.props.horizontalLineScroll
-                : kMinScrollOffset),
-            y: nativeEvent.contentOffset.y,
-          });
-        } else if (key === 'RIGHT_ARROW') {
-          this._handleScrollByKeyDown(event, {
-            x:
-              nativeEvent.contentOffset.x +
-              (this.props.horizontalLineScroll !== undefined
-                ? this.props.horizontalLineScroll
-                : kMinScrollOffset),
-            y: nativeEvent.contentOffset.y,
-          });
-        } else if (key === 'DOWN_ARROW') {
-          this._handleScrollByKeyDown(event, {
-            x: nativeEvent.contentOffset.x,
-            y:
-              nativeEvent.contentOffset.y +
-              (this.props.verticalLineScroll !== undefined
-                ? this.props.verticalLineScroll
-                : kMinScrollOffset),
-          });
-        } else if (key === 'UP_ARROW') {
-          this._handleScrollByKeyDown(event, {
-            x: nativeEvent.contentOffset.x,
-            y:
-              nativeEvent.contentOffset.y +
-              -(this.props.verticalLineScroll !== undefined
-                ? this.props.verticalLineScroll
-                : kMinScrollOffset),
-          });
-        }
-      }
-    }
-  };
-
-  _handleScrollByKeyDown = (event: ScrollEvent, newOffset) => {
-    const maxX =
-      event.nativeEvent.contentSize.width -
-      event.nativeEvent.layoutMeasurement.width;
-    const maxY =
-      event.nativeEvent.contentSize.height -
-      event.nativeEvent.layoutMeasurement.height;
-    this.scrollTo({
-      x: Math.max(0, Math.min(maxX, newOffset.x)),
-      y: Math.max(0, Math.min(maxY, newOffset.y)),
-    });
-  };
-
   _handlePreferredScrollerStyleDidChange = (event: ScrollEvent) => {
+    this.setState({contentKey: this.state.contentKey + 1});
+  }; // ]TODO(macOS GH#774)
+
+  // [TODO(macOS GH#774)
+  _handleInvertedDidChange = () => {
     this.setState({contentKey: this.state.contentKey + 1});
   }; // ]TODO(macOS GH#774)
 
@@ -1756,8 +1693,7 @@ class ScrollView extends React.Component<Props, State> {
               scrollAnimatedValue={this._scrollAnimatedValue}
               inverted={this.props.invertStickyHeaders}
               hiddenOnScroll={this.props.stickyHeaderHiddenOnScroll}
-              scrollViewHeight={this.state.layoutHeight}
-            >
+              scrollViewHeight={this.state.layoutHeight}>
               {child}
             </StickyHeaderComponent>
           );
@@ -1768,8 +1704,7 @@ class ScrollView extends React.Component<Props, State> {
     }
     children = (
       <ScrollViewContext.Provider
-        value={this.props.horizontal === true ? HORIZONTAL : VERTICAL}
-      >
+        value={this.props.horizontal === true ? HORIZONTAL : VERTICAL}>
         {children}
       </ScrollViewContext.Provider>
     );
@@ -1790,8 +1725,8 @@ class ScrollView extends React.Component<Props, State> {
             : this.props.removeClippedSubviews
         }
         key={this.state.contentKey} // TODO(macOS GH#774)
-        collapsable={false}
-      >
+        inverted={this.props.inverted} // TODO(macOS GH#774)
+        collapsable={false}>
         {children}
       </NativeDirectionalScrollContentView>
     );
@@ -1818,9 +1753,9 @@ class ScrollView extends React.Component<Props, State> {
       // Override the onContentSizeChange from props, since this event can
       // bubble up from TextInputs
       onContentSizeChange: null,
-      onScrollKeyDown: this._handleKeyDown, // TODO(macOS GH#774)
-      onPreferredScrollerStyleDidChange: this
-        ._handlePreferredScrollerStyleDidChange, // TODO(macOS GH#774)
+      onInvertedDidChange: this._handleInvertedDidChange, // TODO macOS GH#774
+      onPreferredScrollerStyleDidChange:
+        this._handlePreferredScrollerStyleDidChange, // TODO(macOS GH#774)
       onLayout: this._handleLayout,
       onMomentumScrollBegin: this._handleMomentumScrollBegin,
       onMomentumScrollEnd: this._handleMomentumScrollEnd,
@@ -1832,8 +1767,8 @@ class ScrollView extends React.Component<Props, State> {
       onScrollEndDrag: this._handleScrollEndDrag,
       onScrollShouldSetResponder: this._handleScrollShouldSetResponder,
       onStartShouldSetResponder: this._handleStartShouldSetResponder,
-      onStartShouldSetResponderCapture: this
-        ._handleStartShouldSetResponderCapture,
+      onStartShouldSetResponderCapture:
+        this._handleStartShouldSetResponderCapture,
       onTouchEnd: this._handleTouchEnd,
       onTouchMove: this._handleTouchMove,
       onTouchStart: this._handleTouchStart,
@@ -1899,8 +1834,7 @@ class ScrollView extends React.Component<Props, State> {
           <NativeDirectionalScrollView
             {...props}
             style={StyleSheet.compose(baseStyle, inner)}
-            ref={this._setNativeRef}
-          >
+            ref={this._setNativeRef}>
             {contentContainer}
           </NativeDirectionalScrollView>,
         );

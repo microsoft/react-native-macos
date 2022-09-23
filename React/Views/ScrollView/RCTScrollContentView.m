@@ -18,6 +18,12 @@
 #import "RCTScrollView.h"
 
 @implementation RCTScrollContentView
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+- (BOOL)isFlipped
+{
+  return !self.inverted;
+}
+#endif // ]TODO(macOS GH#774)
 
 - (void)reactSetFrame:(CGRect)frame
 {
@@ -54,6 +60,18 @@
            horizontalScrollerHeight:verticalScrollerWidth];
     [[[scrollView bridge] uiManager] setLocalData:localData forView:self];
   }
+
+  if ([platformScrollView accessibilityRole] == NSAccessibilityTableRole) {
+      NSMutableArray *subViews = [[NSMutableArray alloc] initWithCapacity:[[self subviews] count]];
+      for (NSView *view in [self subviews]) {
+          if ([view isKindOfClass:[RCTView class]]) {
+            [subViews addObject:view];
+          }
+      }
+
+      [platformScrollView setAccessibilityRows:subViews];
+  }
+
 #endif // ]TODO(macOS GH#774)
 }
 

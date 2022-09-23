@@ -63,6 +63,11 @@ type State = {|
   fadingEdgeLength: number,
   onPressDisabled: boolean,
   textSelectable: boolean,
+  // [TODO(macOS GH#774)
+  enableSelectionOnKeyPress: boolean,
+  focusable: boolean,
+  enableFocusRing: boolean,
+  // ]TODO(macOS GH#774)
 |};
 
 class FlatListExample extends React.PureComponent<Props, State> {
@@ -80,6 +85,11 @@ class FlatListExample extends React.PureComponent<Props, State> {
     fadingEdgeLength: 0,
     onPressDisabled: false,
     textSelectable: true,
+    //  [TODO(macOS GH#774)
+    enableSelectionOnKeyPress: false,
+    focusable: true,
+    enableFocusRing: true,
+    //  ]TODO(macOS GH#774)
   };
 
   _onChangeFilterText = filterText => {
@@ -117,8 +127,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
       <RNTesterPage
         noSpacer={true}
         noScroll={true}
-        title="Simple list of items"
-      >
+        title="Simple list of items">
         <View style={styles.container}>
           <View style={styles.searchRow}>
             <View style={styles.options}>
@@ -183,6 +192,26 @@ class FlatListExample extends React.PureComponent<Props, State> {
                 this.state.useFlatListItemComponent,
                 this._setBooleanValue('useFlatListItemComponent'),
               )}
+              {/* [TODO(macOS GH#774)  */}
+              {Platform.OS === 'macos' &&
+                renderSmallSwitchOption(
+                  'Keyboard Navigation',
+                  this.state.enableSelectionOnKeyPress,
+                  this._setBooleanValue('enableSelectionOnKeyPress'),
+                )}
+              {Platform.OS === 'macos' &&
+                renderSmallSwitchOption(
+                  'Focuasble',
+                  this.state.focusable,
+                  this._setBooleanValue('focusable'),
+                )}
+              {Platform.OS === 'macos' &&
+                renderSmallSwitchOption(
+                  'Focus Ring',
+                  this.state.enableFocusRing,
+                  this._setBooleanValue('enableFocusRing'),
+                )}
+              {/* TODO(macOS GH#774)] */}
               {Platform.OS === 'android' && (
                 <View>
                   <TextInput
@@ -202,6 +231,12 @@ class FlatListExample extends React.PureComponent<Props, State> {
           </View>
           <SeparatorComponent />
           <Animated.FlatList
+            // [TODO(macOS GH#774)
+            enableSelectionOnKeyPress={this.state.enableSelectionOnKeyPress}
+            initialSelectedIndex={0}
+            focusable={this.state.focusable}
+            enableFocusRing={this.state.enableFocusRing}
+            // ]TODO(macOS GH#774)
             fadingEdgeLength={this.state.fadingEdgeLength}
             ItemSeparatorComponent={ItemSeparatorComponent}
             ListHeaderComponent={<HeaderComponent />}
@@ -277,7 +312,8 @@ class FlatListExample extends React.PureComponent<Props, State> {
       /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb)
        * This comment suppresses an error found when Flow v0.111 was deployed.
        * To see the error, delete this comment and run Flow. */
-      [flatListPropKey]: ({item, separators}) => {
+      [flatListPropKey]: props => {
+        const {item, separators, isSelected} = props; // TODO(macOS GH#774)
         return (
           <ItemComponent
             item={item}
@@ -287,6 +323,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
             onShowUnderlay={separators.highlight}
             onHideUnderlay={separators.unhighlight}
             textSelectable={this.state.textSelectable}
+            isSelected={isSelected} // TODO(macOS GH#774)
           />
         );
       },
@@ -317,6 +354,10 @@ class FlatListExample extends React.PureComponent<Props, State> {
   _pressItem = (key: string) => {
     this._listRef && this._listRef.recordInteraction();
     const index = Number(key);
+    // [TODO(macOS GH#774)
+    if (this.state.enableSelectionOnKeyPress) {
+      this._listRef && this._listRef.selectRowAtIndex(index);
+    } // ]TODO(macOS GH#774)
     const itemState = pressItem(this.state.data[index]);
     this.setState(state => ({
       ...state,

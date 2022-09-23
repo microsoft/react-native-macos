@@ -26,6 +26,8 @@
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
 @property (nonatomic, getter=isAutomaticTextReplacementEnabled) BOOL automaticTextReplacementEnabled;
 @property (nonatomic, getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled;
+@property (nonatomic, getter=isContinuousSpellCheckingEnabled) BOOL continuousSpellCheckingEnabled;
+@property (nonatomic, getter=isGrammarCheckingEnabled) BOOL grammarCheckingEnabled;
 @property (nonatomic, strong, nullable) RCTUIColor *selectionColor;
 
 @end
@@ -70,10 +72,11 @@
   NSTextView *fieldEditor = (NSTextView *)[super setUpFieldEditorAttributes:textObj];
   fieldEditor.automaticSpellingCorrectionEnabled = self.isAutomaticSpellingCorrectionEnabled;
   fieldEditor.automaticTextReplacementEnabled = self.isAutomaticTextReplacementEnabled;
+  fieldEditor.continuousSpellCheckingEnabled = self.isContinuousSpellCheckingEnabled;
+  fieldEditor.grammarCheckingEnabled = self.isGrammarCheckingEnabled;
   NSMutableDictionary *selectTextAttributes = fieldEditor.selectedTextAttributes.mutableCopy;
   selectTextAttributes[NSBackgroundColorAttributeName] = self.selectionColor ?: [NSColor selectedControlColor];
 	fieldEditor.selectedTextAttributes = selectTextAttributes;
-  fieldEditor.insertionPointColor = self.selectionColor ?: [RCTUIColor selectedControlColor];
   return fieldEditor;
 }
 
@@ -105,7 +108,6 @@
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
     [self setBordered:NO];
     [self setAllowsEditingTextAttributes:YES];
-    [self setAccessibilityRole:NSAccessibilityTextFieldRole];
     [self setBackgroundColor:[NSColor clearColor]];
 #endif // ]TODO(macOS GH#774)
 
@@ -125,9 +127,20 @@
 #endif // ]TODO(macOS GH#774)
 }
 
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+- (BOOL)hasMarkedText
+{
+  return ((NSTextView *)self.currentEditor).hasMarkedText;
+}
+#endif // ]TODO(macOS GH#774)
+  
 #pragma mark - Accessibility
 
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
 - (void)setIsAccessibilityElement:(BOOL)isAccessibilityElement
+#else
+- (void)setAccessibilityElement:(BOOL)isAccessibilityElement
+#endif // ]TODO(macOS GH#774)
 {
   // UITextField is accessible by default (some nested views are) and disabling that is not supported.
   // On iOS accessible elements cannot be nested, therefore enabling accessibility for some container view
@@ -138,11 +151,27 @@
 
 - (void)setTextContainerInset:(UIEdgeInsets)textContainerInset
 {
+  if (UIEdgeInsetsEqualToEdgeInsets(textContainerInset, _textContainerInset)) {
+    return;
+  }
+
   _textContainerInset = textContainerInset;
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
   [self setNeedsLayout];
 #else // [TODO(macOS GH#774)
   ((RCTUITextFieldCell*)self.cell).textContainerInset = _textContainerInset;
+
+  if (self.currentEditor) {
+    NSRange selectedRange = self.currentEditor.selectedRange;
+
+    // Relocate the NSTextView without changing the selection.
+    [self.cell selectWithFrame:self.bounds
+                        inView:self
+                        editor:self.currentEditor
+                      delegate:self
+                         start:selectedRange.location
+                        length:selectedRange.length];
+  }
 #endif // ]TODO(macOS GH#774)
 }
 
@@ -191,6 +220,26 @@
 - (BOOL)isAutomaticSpellingCorrectionEnabled
 {
   return ((RCTUITextFieldCell*)self.cell).isAutomaticSpellingCorrectionEnabled;
+}
+
+- (void)setContinuousSpellCheckingEnabled:(BOOL)continuousSpellCheckingEnabled
+{
+  ((RCTUITextFieldCell*)self.cell).continuousSpellCheckingEnabled = continuousSpellCheckingEnabled;
+}
+
+- (BOOL)isContinuousSpellCheckingEnabled
+{
+  return ((RCTUITextFieldCell*)self.cell).isContinuousSpellCheckingEnabled;
+}
+
+- (void)setGrammarCheckingEnabled:(BOOL)grammarCheckingEnabled
+{
+  ((RCTUITextFieldCell*)self.cell).grammarCheckingEnabled = grammarCheckingEnabled;
+}
+
+- (BOOL)isGrammarCheckingEnabled
+{
+  return ((RCTUITextFieldCell*)self.cell).isGrammarCheckingEnabled;
 }
 
 - (void)setSelectionColor:(RCTUIColor *)selectionColor // TODO(OSS Candidate ISS#2710739)
@@ -456,6 +505,17 @@
   }
   return isFirstResponder;
 }
+
+- (BOOL)performKeyEquivalent:(NSEvent *)event
+{
+  // The currentEditor is NSText for historical reasons, but documented to be NSTextView.
+  NSTextView *currentEditor = (NSTextView *)self.currentEditor;
+  // The currentEditor is non-nil when focused and hasMarkedText means an IME is open.
+  if (currentEditor && !currentEditor.hasMarkedText && ![self.textInputDelegate textInputShouldHandleKeyEvent:event]) {
+    return YES; // Don't send currentEditor the keydown event.
+  }
+  return [super performKeyEquivalent:event];
+}
 #endif // ]TODO(macOS GH#774)
 	
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
@@ -535,6 +595,12 @@
   id<RCTBackedTextInputDelegate> textInputDelegate = [self textInputDelegate];
   if ([textInputDelegate textInputShouldHandleDeleteBackward:self]) {
     [super deleteBackward];
+  }
+}
+#else
+- (void)keyUp:(NSEvent *)event {
+  if ([self.textInputDelegate textInputShouldHandleKeyEvent:event]) {
+    [super keyUp:event];
   }
 }
 #endif // ]TODO(OSS Candidate ISS#2710739)

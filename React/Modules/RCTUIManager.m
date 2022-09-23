@@ -332,12 +332,13 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   _viewRegistry[reactTag] = rootView;
 
   // Register shadow view
+  RCTRootShadowView *shadowView = [RCTRootShadowView new]; // TODO(macOS GH#774) - do this early to prevent RCTI18nUtil deadlock
+
   RCTExecuteOnUIManagerQueue(^{
     if (!self->_viewRegistry) {
       return;
     }
 
-    RCTRootShadowView *shadowView = [RCTRootShadowView new];
     shadowView.availableSize = availableSize;
     shadowView.reactTag = reactTag;
     shadowView.viewName = NSStringFromClass([rootView class]);
@@ -354,6 +355,8 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
     return name;
   }
 
+// Re-enable componentViewName_DO_NOT_USE_THIS_IS_BROKEN once macOS uses Fabric
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
   __block RCTPlatformView *view; // TODO(macOS GH#774)
   RCTUnsafeExecuteOnMainQueueSync(^{
     view = self->_viewRegistry[reactTag];
@@ -367,6 +370,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   }
 
 #pragma clang diagnostic pop
+#endif // ]TODO(macOS GH#774)
   return nil;
 }
 
@@ -409,21 +413,34 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
 - (void)setAvailableSize:(CGSize)availableSize forRootView:(RCTUIView *)rootView // TODO(macOS ISS#3536887)
 {
   RCTAssertMainQueue();
-  [self
-      _executeBlockWithShadowView:^(RCTShadowView *shadowView) {
-        RCTAssert(
-            [shadowView isKindOfClass:[RCTRootShadowView class]], @"Located shadow view is actually not root view.");
 
-        RCTRootShadowView *rootShadowView = (RCTRootShadowView *)shadowView;
+  void (^block)(RCTShadowView *) = ^(RCTShadowView *shadowView) {
+    RCTAssert(
+        [shadowView isKindOfClass:[RCTRootShadowView class]], @"Located shadow view is actually not root view.");
 
-        if (CGSizeEqualToSize(availableSize, rootShadowView.availableSize)) {
-          return;
-        }
+    RCTRootShadowView *rootShadowView = (RCTRootShadowView *)shadowView;
 
-        rootShadowView.availableSize = availableSize;
-        [self setNeedsLayout];
-      }
-                           forTag:rootView.reactTag];
+    if (CGSizeEqualToSize(availableSize, rootShadowView.availableSize)) {
+      return;
+    }
+
+    rootShadowView.availableSize = availableSize;
+    [self setNeedsLayout];
+  };
+
+#if TARGET_OS_OSX // [TODO(macOS GH#744)
+  if (rootView.inLiveResize) {
+    NSNumber* tag = rootView.reactTag;
+    // Synchronously relayout to prevent "tearing" when resizing windows.
+    // Still run block asynchronously below so it "wins" after any in-flight layout.
+    RCTUnsafeExecuteOnUIManagerQueueSync(^{
+      RCTShadowView *shadowView = self->_shadowViewRegistry[tag];
+      block(shadowView);
+    });
+  }
+#endif // ]TODO(macOS GH#744)
+
+  [self _executeBlockWithShadowView:block forTag:rootView.reactTag];
 }
 
 - (void)setLocalData:(NSObject *)localData forView:(RCTUIView *)view // TODO(macOS ISS#3536887)
@@ -1135,6 +1152,8 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand
   RCTShadowView *shadowView = _shadowViewRegistry[reactTag];
   RCTComponentData *componentData = _componentDataByName[shadowView.viewName];
 
+// Re-enable componentViewName_DO_NOT_USE_THIS_IS_BROKEN once macOS uses Fabric
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
   // Achtung! Achtung!
   // This is a remarkably hacky and ugly workaround.
   // We need this only temporary for some testing. We need this hack until Fabric fully implements command-execution
@@ -1152,6 +1171,7 @@ RCT_EXPORT_METHOD(dispatchViewManagerCommand
     }
   }
 #pragma clang diagnostic pop
+#endif // ]TODO(macOS GH#774)
 
   Class managerClass = componentData.managerClass;
   RCTModuleData *moduleData = [_bridge moduleDataForName:RCTBridgeModuleNameForClass(managerClass)];

@@ -213,11 +213,18 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     }
     //paste
   } else if (commandSelector == @selector(paste:)) {
-    _backedTextInputView.textWasPasted = YES;
+    id<RCTBackedTextInputDelegate> textInputDelegate = [_backedTextInputView textInputDelegate];
+    if (textInputDelegate != nil && ![textInputDelegate textInputShouldHandlePaste:_backedTextInputView]) {
+      commandHandled = YES;
+    } else {
+      _backedTextInputView.textWasPasted = YES;
+    }
     //escape
   } else if (commandSelector == @selector(cancelOperation:)) {
     [textInputDelegate textInputDidCancel];
-    [[_backedTextInputView window] makeFirstResponder:nil];
+    if (![textInputDelegate hasValidKeyDownOrValidKeyUp:@"Escape"]) {
+      [[_backedTextInputView window] makeFirstResponder:nil];
+    }
     commandHandled = YES;
 }
 
@@ -263,6 +270,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   UITextRange *_previousSelectedTextRange;
 #else // [TODO(macOS GH#774)
   NSRange _previousSelectedTextRange;
+  NSUndoManager *_undoManager;
 #endif // ]TODO(macOS GH#774)
 }
 
@@ -420,12 +428,21 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     //escape
   } else if (commandSelector == @selector(cancelOperation:)) {
     [textInputDelegate textInputDidCancel];
-    [_backedTextInputView.window makeFirstResponder:nil];
+    if (![textInputDelegate hasValidKeyDownOrValidKeyUp:@"Escape"]) {
+      [[_backedTextInputView window] makeFirstResponder:nil];
+    }
     commandHandled = YES;
     
   }
 
   return commandHandled;
+}
+
+- (NSUndoManager *)undoManagerForTextView:(NSTextView *)textView {
+  if (!_undoManager) {
+    _undoManager = [NSUndoManager new];
+  }
+  return _undoManager;
 }
 
 #endif // ]TODO(macOS GH#774)

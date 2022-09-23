@@ -52,8 +52,7 @@ class AnExSet extends React.Component<Object, any> {
       <View style={styles.container}>
         <Animated.View
           style={[styles.header, {backgroundColor}]}
-          {...this.state.dismissResponder.panHandlers}
-        >
+          {...this.state.dismissResponder.panHandlers}>
           <Text style={[styles.text, styles.headerText]}>{this.props.id}</Text>
         </Animated.View>
         {this.props.isActive && (
@@ -140,10 +139,11 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 25,
     color: 'white',
-    shadowRadius: 3,
-    shadowColor: 'black',
-    shadowOpacity: 1,
-    shadowOffset: {height: 1},
+    // [TODO(macOS GH#1409)
+    textShadowRadius: 3,
+    textShadowColor: 'rgba(0, 0, 0, 1.0)',
+    textShadowOffset: {height: 1, width: 0},
+    // ]TODO(macOS GH#1409)
   },
 });
 

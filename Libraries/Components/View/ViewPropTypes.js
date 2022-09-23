@@ -71,16 +71,16 @@ type DirectEventProps = $ReadOnly<{|
   onDoubleClick?: ?(event: SyntheticEvent<{}>) => mixed, // TODO(macOS GH#774)
 
   /**
+   * This event is fired when the scrollView's inverted property changes.
+   * @platform macos
+   */
+  onInvertedDidChange?: ?() => mixed, // TODO(macOS GH#774)
+
+  /**
    * This event is fired when the system's preferred scroller style changes.
    * The `preferredScrollerStyle` key will be `legacy` or `overlay`.
    */
   onPreferredScrollerStyleDidChange?: ?(event: ScrollEvent) => mixed, // TODO(macOS GH#774)
-
-  /**
-   * When `focusable` is true, the system will try to invoke this function
-   * when the user performs accessibility key down gesture.
-   */
-  onScrollKeyDown?: ?(event: ScrollEvent) => mixed, // TODO(macOS GH#774)
 
   /**
    * Invoked on mount and layout changes with:
@@ -420,6 +420,10 @@ type IOSViewProps = $ReadOnly<{|
    * See https://reactnative.dev/docs/view#accessibilityElementsHidden
    */
   accessibilityElementsHidden?: ?boolean,
+  /**
+   * Reverses the direction of scroll. Uses native inversion on macOS and scale transforms of -1 elsewhere
+   */
+  inverted?: ?boolean, // TODO(macOS GH#774)
 
   onDoubleClick?: ?(event: SyntheticEvent<{}>) => mixed, // TODO(macOS GH#774)
 

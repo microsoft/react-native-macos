@@ -1233,9 +1233,12 @@ RCT_JSON_ARRAY_CONVERTER(NSNumber)
   }
   
   if ([type isEqualToString:@"fileUrl"]) {
-    return @[NSFilenamesPboardType];
+    return @[NSPasteboardTypeFileURL];
+  } else if ([type isEqualToString:@"image"]) {
+    return @[NSPasteboardTypePNG, NSPasteboardTypeTIFF];
+  } else if ([type isEqualToString:@"string"]) {
+    return @[NSPasteboardTypeString];
   }
-  
   return @[];
 }
 
@@ -1244,11 +1247,11 @@ RCT_JSON_ARRAY_CONVERTER(NSNumber)
   if ([json isKindOfClass:[NSString class]]) {
     return [RCTConvert NSPasteboardType:json];
   } else if ([json isKindOfClass:[NSArray class]]) {
-    NSMutableArray *mutablePastboardTypes = [NSMutableArray new];
+    NSMutableArray *mutablePasteboardTypes = [NSMutableArray new];
     for (NSString *type in json) {
-      [mutablePastboardTypes addObjectsFromArray:[RCTConvert NSPasteboardType:type]];
-      return mutablePastboardTypes.copy;
+      [mutablePasteboardTypes addObjectsFromArray:[RCTConvert NSPasteboardType:type]];
     }
+    return mutablePasteboardTypes.copy;
   }
   return @[];
 }
@@ -1461,6 +1464,7 @@ RCT_ENUM_CONVERTER(
       @"list": NSAccessibilityListRole,
       @"popupbutton": NSAccessibilityPopUpButtonRole,
       @"menubutton": NSAccessibilityMenuButtonRole,
+      @"table": NSAccessibilityTableRole,
     };
   });
 

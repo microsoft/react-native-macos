@@ -66,6 +66,24 @@ type OptionalProps<ItemT> = {|
    * Optional custom style for multi-item rows generated when numColumns > 1.
    */
   columnWrapperStyle?: ViewStyleProp,
+  // [TODO(macOS GH#774)
+  /**
+   * Allows you to 'select' a row using arrow keys. The selected row will have the prop `isSelected`
+   * passed in as true to it's renderItem / ListItemComponent. You can also imperatively select a row
+   * using the `selectRowAtIndex` method. You can set the initially selected row using the
+   * `initialSelectedIndex` prop.
+   * Keyboard Behavior:
+   * - ArrowUp: Select row above current selected row
+   * - ArrowDown: Select row below current selected row
+   * - Option+ArrowUp: Select the first row
+   * - Opton+ArrowDown: Select the last 'realized' row
+   * - Home: Scroll to top of list
+   * - End: Scroll to end of list
+   *
+   * @platform macos
+   */
+  enableSelectionOnKeyPress?: ?boolean,
+  // ]TODO(macOS GH#774)
   /**
    * A marker property for telling the list to re-render (since it implements `PureComponent`). If
    * any of your `renderItem`, Header, Footer, etc. functions depend on anything outside of the
@@ -111,8 +129,14 @@ type OptionalProps<ItemT> = {|
    * `getItemLayout` to be implemented.
    */
   initialScrollIndex?: ?number,
+  // [TODO(macOS GH#774)
   /**
-   * Reverses the direction of scroll. Uses scale transforms of -1.
+   * The initially selected row, if `enableSelectionOnKeyPress` is set.
+   */
+  initialSelectedIndex?: ?number,
+  // ]TODO(macOS GH#774)
+  /**
+   * Reverses the direction of scroll. Uses native inversion on macOS and scale transforms of -1 elsewhere
    */
   inverted?: ?boolean,
   /**
@@ -369,6 +393,19 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
     }
   }
 
+  // [TODO(macOS GH#750)
+  /**
+   * Move selection to the specified index
+   *
+   * @platform macos
+   */
+  selectRowAtIndex(index: number) {
+    if (this._listRef) {
+      this._listRef.selectRowAtIndex(index);
+    }
+  }
+  // ]TODO(macOS GH#750)
+
   /**
    * Provides a handle to the underlying scroll responder.
    */
@@ -407,14 +444,13 @@ class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
     super(props);
     this._checkProps(this.props);
     if (this.props.viewabilityConfigCallbackPairs) {
-      this._virtualizedListPairs = this.props.viewabilityConfigCallbackPairs.map(
-        pair => ({
+      this._virtualizedListPairs =
+        this.props.viewabilityConfigCallbackPairs.map(pair => ({
           viewabilityConfig: pair.viewabilityConfig,
           onViewableItemsChanged: this._createOnViewableItemsChanged(
             pair.onViewableItemsChanged,
           ),
-        }),
-      );
+        }));
     } else if (this.props.onViewableItemsChanged) {
       this._virtualizedListPairs.push({
         /* $FlowFixMe[incompatible-call] (>=0.63.0 site=react_native_fb) This

@@ -267,44 +267,61 @@
 }
 #endif // TODO(macOS GH#774)
 
+// [TODO(macOS GH#1412)
+- (void)reactViewDidMoveToWindow
+{
+	[self reactFocusIfNeeded];
+}
+// TODO(macOS GH#1412)]
+
 /**
  * Focus manipulation.
  */
-- (BOOL)reactIsFocusNeeded
-{
-  return [(NSNumber *)objc_getAssociatedObject(self, @selector(reactIsFocusNeeded)) boolValue];
-}
-
-- (void)setReactIsFocusNeeded:(BOOL)isFocusNeeded
-{
-  objc_setAssociatedObject(self, @selector(reactIsFocusNeeded), @(isFocusNeeded), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
+static __weak RCTPlatformView *_pendingFocusView; // TODO(macOS GH#1412)
 
 - (void)reactFocus
 {
-  if (![self becomeFirstResponder]) {
-    self.reactIsFocusNeeded = YES;
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+	if (![[self window] makeFirstResponder:self]) {
+#else
+	if (![self becomeFirstResponder]) {
+#endif // TODO(macOS GH#774)]
+// [TODO(macOS GH#1412)
+    _pendingFocusView = self;
+  } else {
+    _pendingFocusView = nil;
   }
+// TODO(macOS GH#1412)]
 }
 
 - (void)reactFocusIfNeeded
 {
-  if (self.reactIsFocusNeeded) {
-    if ([self becomeFirstResponder]) {
-      self.reactIsFocusNeeded = NO;
-    }
-  }
+	if ([self isEqual:_pendingFocusView]) { // TODO(macOS GH#1412)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+		if ([[self window] makeFirstResponder:self]) {
+#else
+		if ([self becomeFirstResponder]) {
+#endif // TODO(macOS GH#774)]
+			_pendingFocusView = nil; // TODO(macOS GH#1412)
+		}
+	}
 }
 
 - (void)reactBlur
 {
-#if TARGET_OS_OSX // TODO(macOS GH#774)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
   if (self == [[self window] firstResponder]) {
     [[self window] makeFirstResponder:[[self window] nextResponder]];
   }
 #else
   [self resignFirstResponder];
-#endif
+#endif // TODO(macOS GH#774)]
+
+// [TODO(macOS GH#1412)
+  if ([self isEqual:_pendingFocusView]) {
+    _pendingFocusView = nil;
+  }
+// TODO(macOS GH#1412)]
 }
 
 #pragma mark - Layout

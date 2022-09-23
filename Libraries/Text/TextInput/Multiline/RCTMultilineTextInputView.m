@@ -48,6 +48,8 @@
 #else // [TODO(macOS GH#774)
     _scrollView.documentView = _backedTextInputView;
     _scrollView.contentView.postsBoundsChangedNotifications = YES;
+    // Enable focus ring by default
+    _scrollView.enableFocusRing = YES;
     [self addSubview:_scrollView];
     
     // a register for those notifications on the content view.
@@ -90,6 +92,19 @@
   [self setNeedsLayout];
 }
 
+- (void)setEnableFocusRing:(BOOL)enableFocusRing 
+{
+  [super setEnableFocusRing:enableFocusRing];
+  if ([_scrollView respondsToSelector:@selector(setEnableFocusRing:)]) {
+    [_scrollView setEnableFocusRing:enableFocusRing];
+  }
+}
+
+- (void)setReadablePasteBoardTypes:(NSArray<NSPasteboardType> *)readablePasteboardTypes 
+{
+  [_backedTextInputView setReadablePasteBoardTypes:readablePasteboardTypes];
+}
+
 - (void)setScrollEnabled:(BOOL)scrollEnabled
 {
   _scrollView.scrollEnabled = scrollEnabled;
@@ -99,6 +114,7 @@
 {
   return _scrollView.isScrollEnabled;
 }
+
 #endif // ]TODO(macOS GH#774)
 
 #pragma mark - UIScrollViewDelegate
@@ -106,7 +122,9 @@
 - (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // TODO(macOS ISS#3536887)
 {
   RCTDirectEventBlock onScroll = self.onScroll;
-
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  [_scrollView setHasVerticalScroller:YES];
+#endif // ]TODO(macOS GH#774)
   if (onScroll) {
     CGPoint contentOffset = scrollView.contentOffset;
     CGSize contentSize = scrollView.contentSize;

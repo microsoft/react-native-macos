@@ -10,6 +10,7 @@
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
 #import <UIKit/UIGestureRecognizerSubclass.h>
 #endif // ]TODO(macOS GH#774)
+#import <React/RCTUITextField.h> // TODO(macOS GH#774)
 
 #import "RCTAssert.h"
 #import "RCTBridge.h"
@@ -129,11 +130,18 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
     // The assumption here is that a RCTUIView/RCTSurfaceView will always have a superview.
     CGPoint touchLocation = [self.view.superview convertPoint:touch.locationInWindow fromView:nil];
     NSView *targetView = [self.view hitTest:touchLocation];
+    // Don't record clicks on scrollbars.
+    if ([targetView isKindOfClass:[NSScroller class]]) {
+      continue;
+    }
     // Pair the mouse down events with mouse up events so our _nativeTouches cache doesn't get stale
     if ([targetView isKindOfClass:[NSControl class]]) {
       _shouldSendMouseUpOnSystemBehalf = [(NSControl*)targetView isEnabled];
     } else if ([targetView isKindOfClass:[NSText class]]) {
       _shouldSendMouseUpOnSystemBehalf = [(NSText*)targetView isSelectable];
+    }
+    else if ([targetView.superview isKindOfClass:[RCTUITextField class]]) {
+      _shouldSendMouseUpOnSystemBehalf = [(RCTUITextField*)targetView.superview isSelectable];
     } else {
       _shouldSendMouseUpOnSystemBehalf = NO;
     }
@@ -221,7 +229,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
   NSEvent *nativeTouch = _nativeTouches[touchIndex];
   CGPoint location = nativeTouch.locationInWindow;
   CGPoint rootViewLocation = CGPointMake(location.x, CGRectGetHeight(self.view.window.frame) - location.y);
-  CGPoint touchViewLocation = rootViewLocation;
+  NSView *touchView = _touchViews[touchIndex];
+  CGPoint touchViewLocation = [touchView convertPoint:location fromView:nil];
 #endif // ]TODO(macOS GH#774)
 
   NSMutableDictionary *reactTouch = _reactTouches[touchIndex];
@@ -393,6 +402,11 @@ static BOOL RCTAnyTouchesChanged(NSSet *touches) // [TODO(macOS GH#774)
   // "start" has to record new touches *before* extracting the event.
   // "end"/"cancel" needs to remove the touch *after* extracting the event.
   [self _recordNewTouches:touches];
+
+  // [TODO(macOS GH#774) - Filter out touches that were ignored.
+  touches = [touches objectsPassingTest:^(id touch, BOOL *stop) {
+    return [_nativeTouches containsObject:touch];
+  }]; // ]TODO(macOS GH#774)
 
   [self _updateAndDispatchTouches:touches eventName:@"touchStart"];
 

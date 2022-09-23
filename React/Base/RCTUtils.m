@@ -21,6 +21,8 @@
 #import "RCTAssert.h"
 #import "RCTLog.h"
 
+static const NSUInteger RCTMaxCachableImageCount = 100;
+
 NSString *const RCTErrorUnspecified = @"EUNSPECIFIED";
 
 // Returns the Path of Home directory
@@ -829,11 +831,29 @@ UIImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL)
   return RCTImageFromLocalAssetURL(bundleImageUrl);
 }
 
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+static NSCache<NSURL *, UIImage *> *RCTLocalImageCache()
+{
+  static NSCache *imageCache;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    imageCache = [NSCache new];
+    imageCache.countLimit = RCTMaxCachableImageCount;
+  });
+  return imageCache;
+}
+#endif // ]TODO(macOS GH#774)
+
 UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
 {
   NSString *imageName = RCTBundlePathForURL(imageURL);
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
   NSURL *bundleImageURL = nil;
+
+  UIImage *cachedImage = [RCTLocalImageCache() objectForKey:imageURL];
+  if (cachedImage) {
+    return cachedImage;
+  }
 #endif // ]TODO(macOS GH#774)
 
   NSBundle *bundle = nil;
@@ -885,9 +905,12 @@ UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
       }
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
       image = [UIImage imageWithContentsOfFile:filePath];
-#else // TODO(macOS GH#774)
-      image = [[NSImage alloc] initWithContentsOfFile:filePath]; // TODO(macOS GH#774)
-#endif // TODO(macOS GH#774)
+#else // [TODO(macOS GH#774)
+      // macOS keeps file handles in open state for lifetime of image if "initWithContentsOfFile:" is used with path inside app bundle
+      // Workaround is to load file in data and then convert data to image
+      NSData *data = [NSData dataWithContentsOfFile:filePath];
+      image = [[NSImage alloc] initWithData:data];
+#endif // ]TODO(macOS GH#774)
     }
   }
 
@@ -911,6 +934,13 @@ UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
       }
     }
   }
+
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  if (image) {
+    [RCTLocalImageCache() setObject:image forKey:imageURL];
+  }
+#endif // ]TODO(macOS GH#774)
+
   return image;
 }
 

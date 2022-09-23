@@ -423,6 +423,13 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   }
 }
 
+// We purposely don't use RCTCursor for the parameter type here because it would introduce an import cycle:
+// RCTUIKit > RCTCursor > RCTConvert > RCTUIKit
+- (void)setCursor:(NSInteger)cursor
+{
+  // This method is required to be defined due to [RCTVirtualTextViewManager view] returning a RCTUIView.
+}
+
 @end
 
 // RCTUIScrollView
@@ -436,6 +443,19 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   }
   
   return self;
+}
+
+- (void)setEnableFocusRing:(BOOL)enableFocusRing {
+  if (_enableFocusRing != enableFocusRing) {
+    _enableFocusRing = enableFocusRing;
+  }
+
+  if (enableFocusRing) {
+    // NSTextView has no focus ring by default so let's use the standard Aqua focus ring.
+    [self setFocusRingType:NSFocusRingTypeExterior];
+  } else {
+    [self setFocusRingType:NSFocusRingTypeNone];
+  }
 }
 
 // UIScrollView properties missing from NSScrollView

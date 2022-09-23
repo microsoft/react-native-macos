@@ -126,7 +126,7 @@ jobs:
 
   - job: RNMacOSInitNpmJSPublish
     displayName: react-native-macos-init Publish to npmjs.org
-    pool: Azure-Pipelines-EO-Ubuntu20.04-Office
+    pool: cxeiss-ubuntu-20-04-large
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
     condition: eq(variables['Build.SourceBranchName'], 'main')
@@ -147,7 +147,7 @@ jobs:
         inputs:
           script: |
             cd packages/react-native-macos-init
-            yarn install
+            yarn install --frozen-lockfile
 
       - task: CmdLine@2
         displayName: yarn build
@@ -181,8 +181,8 @@ jobs:
 
   - job: RNGithubOfficePublish
     displayName: React-Native GitHub Publish to Office
-    pool: Azure-Pipelines-EO-Ubuntu20.04-Office
-    timeoutInMinutes: 90 # how long to run the job before automatically cancelling
+    pool: cxeiss-ubuntu-20-04-large
+    timeoutInMinutes: 120 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
     condition: contains(variables['Build.SourceBranchName'], '-stable')
     dependsOn:
@@ -195,7 +195,7 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
-      - template: templates/android-build-office.yml
+      - template: templates/android-build-office-setup.yml
 
       - task: CmdLine@2
         displayName: Bump package version
@@ -208,18 +208,14 @@ jobs:
         inputs:
           script: node .ado/removeWorkspaceConfig.js
 
-      - template: templates/prep-android-nuget.yml
+      - template: templates/android-build-office.yml
 
       # Enumerate and download all dependencies ..
       - template: templates/download-android-dependencies.yml
         parameters:
           artifact_feed: Office
 
-      # Very similar to the default pack task .. but appends 'ndk21b' to the nuget pack version
-      - task: CmdLine@2
-        displayName: 'NuGet pack'
-        inputs:
-          script: NDK=ndk`cat ${ANDROID_SDK_ROOT}/ndk-bundle/source.properties 2>&1 | grep Pkg.Revision | awk '{ print $3}' | awk -F. '{ print $1 }'`; mono $(System.DefaultWorkingDirectory)/nuget-bin/nuget.exe pack $(System.DefaultWorkingDirectory)/ReactAndroid/ReactAndroid.nuspec -OutputDirectory $(Build.StagingDirectory)/final -Properties buildNumber=$(buildNumber)-$NDK;commitId=$(Build.SourceVersion)
+      - template: templates/android-nuget-pack.yml
 
       - task: CmdLine@2
         displayName: 'Npm pack'
