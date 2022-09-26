@@ -742,12 +742,14 @@ exports.examples = ([
             multiline={true}
             style={styles.multiline}
           />
+          {/* [TODO(macOS GH#774) */}
           <TextInput
             placeholder="multiline text input with scroll disabled"
             multiline={true}
             scrollEnabled={false}
             style={styles.multiline}
           />
+          {/* [TODO(macOS GH#774) */}
           <TextInput
             defaultValue="uneditable multiline text input with phone number detection: 88888888."
             editable={false}
