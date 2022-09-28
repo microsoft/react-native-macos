@@ -21,6 +21,9 @@
 #endif // TODO(macOS GH#774)
   RCTBackedTextViewDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  NSArray<NSPasteboardType> *_readablePasteboardTypes;
+#endif // TODO(macOS GH#774)
 }
 
 static UIFont *defaultPlaceholderFont()
@@ -175,6 +178,11 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
 - (void)setText:(NSString *)text
 {
   self.string = text;
+}
+
+- (void)setReadablePasteBoardTypes:(NSArray<NSPasteboardType> *)readablePasteboardTypes
+{
+  _readablePasteboardTypes = readablePasteboardTypes;
 }
 
 - (void)setTypingAttributes:(__unused NSDictionary *)typingAttributes
@@ -344,9 +352,7 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
 }
 - (NSArray *)readablePasteboardTypes
 {
-  NSArray *types = [super readablePasteboardTypes];
-  // TODO: Optionally support files/images with a prop
-  return [types arrayByAddingObjectsFromArray:@[NSFilenamesPboardType, NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  return _readablePasteboardTypes ? _readablePasteboardTypes : [super readablePasteboardTypes];
 }
 
 #endif // ]TODO(macOS GH#774)
@@ -555,9 +561,18 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
 }
 #else
 - (void)keyDown:(NSEvent *)event {
-  // If hasMarkedText is true then an IME is open, so don't send event to JS.
-  if (self.hasMarkedText || [self.textInputDelegate textInputShouldHandleKeyEvent:event]) {
+  // If has marked text, handle by native and return
+  // Do this check before textInputShouldHandleKeyEvent as that one attempts to send the event to JS
+  if (self.hasMarkedText) {
     [super keyDown:event];
+    return;
+  }
+
+  // textInputShouldHandleKeyEvent represents if native should handle the event instead of JS.
+  // textInputShouldHandleKeyEvent also sends keyDown event to JS internally, so we only call this once  
+  if ([self.textInputDelegate textInputShouldHandleKeyEvent:event]) {
+    [super keyDown:event];
+    [self.textInputDelegate submitOnKeyDownIfNeeded:event];
   }
 }
 

@@ -304,6 +304,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Cochin',
     height: 60,
   },
+  singleLine: {
+    fontSize: 16,
+  },
   singlelinePlaceholderStyles: {
     letterSpacing: 10,
     textAlign: 'center',
@@ -424,7 +427,18 @@ function OnPaste(): React.Node {
           appendLog(JSON.stringify(e.nativeEvent.dataTransfer.types));
           setImageUri(e.nativeEvent.dataTransfer.files[0].uri);
         }}
-        placeholder="MULTI LINE with onPaste() for PNG and TIFF images"
+        pastedTypes={['string']}
+        placeholder="MULTI LINE with onPaste() text from clipboard"
+      />
+      <TextInput
+        multiline={true}
+        style={styles.multiline}
+        onPaste={(e: PasteEvent) => {
+          appendLog(JSON.stringify(e.nativeEvent.dataTransfer.types));
+          setImageUri(e.nativeEvent.dataTransfer.files[0].uri);
+        }}
+        pastedTypes={['fileUrl', 'image', 'string']}
+        placeholder="MULTI LINE with onPaste() for PNG/TIFF images from clipboard or fileUrl (via Finder) and text from clipboard"
       />
       <Text style={{height: 30}}>{log.join('\n')}</Text>
       <Image
@@ -945,6 +959,42 @@ if (Platform.OS === 'macos') {
         'AutoCorrect, spellCheck and grammarCheck callbacks - Multiline Textfield',
       render: function (): React.Node {
         return <AutoCorrectSpellCheckGrammarCheckCallbacks />;
+      },
+    },
+    {
+      title: 'Clear text on submit - Multiline Textfield',
+      render: function (): React.Node {
+        return (
+          <View>
+            <Text>Default submit key (Enter):</Text>
+            <TextInput
+              multiline={true}
+              clearTextOnSubmit={true}
+              style={styles.multiline}
+            />
+            <Text>Custom submit key (Enter): - same as above</Text>
+            <TextInput
+              multiline={true}
+              clearTextOnSubmit={true}
+              style={styles.multiline}
+              submitKeyEvents={[{key: 'Enter'}]}
+            />
+            <Text>Custom submit key (CMD + Enter):</Text>
+            <TextInput
+              multiline={true}
+              clearTextOnSubmit={true}
+              style={styles.multiline}
+              submitKeyEvents={[{key: 'Enter', metaKey: true}]}
+            />
+            <Text>Custom submit key (Shift + Enter):</Text>
+            <TextInput
+              multiline={true}
+              clearTextOnSubmit={true}
+              style={styles.multiline}
+              submitKeyEvents={[{key: 'Enter', shiftKey: true}]}
+            />
+          </View>
+        );
       },
     },
     {

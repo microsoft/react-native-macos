@@ -353,6 +353,51 @@ type IOSProps = $ReadOnly<{|
   textContentType?: ?TextContentType,
 |}>;
 
+// [TODO(macOS GH#774)
+export type SubmitKeyEvent = $ReadOnly<{|
+  key: string,
+  altKey?: ?boolean,
+  ctrlKey?: ?boolean,
+  metaKey?: ?boolean,
+  shiftKey?: ?boolean,
+  functionKey?: ?boolean,
+|}>;
+
+type MacOSProps = $ReadOnly<{|
+  /**
+   * If `true`, clears the text field synchronously before `onSubmitEditing` is emitted.
+   * @platform macos
+   */
+  clearTextOnSubmit?: ?boolean,
+
+  /**
+   * Fired when a supported element is pasted
+   *
+   * @platform macos
+   */
+  onPaste?: (event: PasteEvent) => void,
+
+  /**
+   * Enables Paste support for certain types of pasted types
+   *
+   * Possible values for `pastedTypes` are:
+   *
+   * - `'fileUrl'`
+   * - `'image'`
+   * - `'string'`
+   *
+   * @platform macos
+   */
+  pastedTypes?: PastedTypesType,
+
+  /**
+   * Configures keys that can be used to submit editing for the TextInput. Defaults to 'Enter' key.
+   * @platform macos
+   */
+  submitKeyEvents?: ?$ReadOnlyArray<SubmitKeyEvent>,
+|}>;
+// ]TODO(macOS GH#774)
+
 type AndroidProps = $ReadOnly<{|
   /**
    * Specifies autocomplete hints for the system, so it can provide autofill. On Android, the system will always attempt to offer autofill by using heuristics to identify the type of content.
@@ -512,9 +557,13 @@ type AndroidProps = $ReadOnly<{|
   underlineColorAndroid?: ?ColorValue,
 |}>;
 
+export type PasteType = 'fileUrl' | 'image' | 'string'; // TODO(macOS GH#774)
+export type PastedTypesType = PasteType | $ReadOnlyArray<PasteType>; // TODO(macOS GH#774)
+
 export type Props = $ReadOnly<{|
   ...$Diff<ViewProps, $ReadOnly<{|style: ?ViewStyleProp|}>>,
   ...IOSProps,
+  ...MacOSProps, // TODO(macOS GH#774)
   ...AndroidProps,
 
   /**
@@ -759,13 +808,6 @@ export type Props = $ReadOnly<{|
    * Called when a touch is released.
    */
   onPressOut?: ?(event: PressEvent) => mixed,
-
-  /**
-   * Fired when a supported element is pasted
-   *
-   * @platform macos
-   */
-  onPaste?: (event: PasteEvent) => void, // TODO(macOS GH#774)
 
   /**
    * Callback that is called when the text input selection is changed.
