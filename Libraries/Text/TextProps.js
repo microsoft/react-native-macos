@@ -211,13 +211,13 @@ export type TextProps = $ReadOnly<{|
 
   /**
    * When `true`, indicates that the text can be focused in key view loop
-   * By default, any Text with `selectable={true}` will be focusable
+   * By default, when `selectable={true}` the text view will be focusable unless disabled
    */
   focusable?: ?boolean,
 
   /**
    * Specifies whether focus ring should be drawn when the view has the first responder status.
-   * Only works with `selectable={true} focusable={true}`
+   * Only works when `focusable={true}`
    */
   enableFocusRing?: ?boolean, // TODO(macOS GH#774)
 |}>;

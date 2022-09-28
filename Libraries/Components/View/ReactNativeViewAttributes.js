@@ -35,9 +35,9 @@ const UIView = {
   needsOffscreenAlphaCompositing: true,
   style: ReactNativeStyleAttributes,
   // [TODO(macOS GH#774)
-  focusable: true,
   acceptsFirstMouse: true,
   enableFocusRing: true,
+  focusable: true,
   onMouseEnter: true,
   onMouseLeave: true,
   onDragEnter: true,
