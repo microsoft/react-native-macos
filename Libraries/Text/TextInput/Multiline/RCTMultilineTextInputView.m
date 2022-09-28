@@ -112,9 +112,8 @@
     return NO;
   }
 
-  CGSize textViewSize = [_backedTextInputView intrinsicContentSize];
-  NSLog(@"content size: %@", NSStringFromCGSize(textViewSize));
   // Hide vertical scrollbar if attributed text overflows view
+  CGSize textViewSize = [_backedTextInputView intrinsicContentSize];
   NSClipView *clipView = (NSClipView *)_scrollView.contentView;
   if (textViewSize.height > clipView.bounds.size.height) {
     return YES;
