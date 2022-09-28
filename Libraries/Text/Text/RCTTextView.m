@@ -449,12 +449,12 @@
 
 #pragma mark - Selection
 
-#if TARGET_OS_OSX // TODO(macOS GH#774)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
 - (void)textDidEndEditing:(NSNotification *)notification
 {
   _textView.selectedRange = NSMakeRange(NSNotFound, 0);
 }
-#endif // TODO(macOS GH#774)
+#endif // ]TODO(macOS GH#774)
 
 #pragma mark - Responder chain
 
