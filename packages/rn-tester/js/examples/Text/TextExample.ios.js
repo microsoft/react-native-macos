@@ -714,6 +714,7 @@ exports.examples = [
       );
     },
   },
+  // [TODO(macOS GH#774)
   {
     title: 'Focusable',
     render: function (): React.Node {
@@ -736,6 +737,7 @@ exports.examples = [
       );
     },
   },
+  // [TODO(macOS GH#774)
   {
     title: 'Text Decoration',
     render: function (): React.Node {
@@ -1007,32 +1009,6 @@ exports.examples = [
           <Text style={{marginTop: 20}}>
             No maximum lines specified, no matter how much I write here. If I
             keep writing, it{"'"}ll just keep going and going.
-          </Text>
-        </View>
-      );
-    },
-  },
-  {
-    title: 'Text highlighting (tap the link to see highlight)',
-    render: function (): React.Node {
-      return (
-        <View>
-          <Text>
-            Lorem ipsum dolor sit amet,{' '}
-            <Text
-              suppressHighlighting={false}
-              style={{
-                backgroundColor: 'white',
-                textDecorationLine: 'underline',
-                color: 'blue',
-              }}
-              onPress={() => null}>
-              consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-              labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-              nostrud
-            </Text>{' '}
-            exercitation ullamco laboris nisi ut aliquip ex ea commodo
-            consequat.
           </Text>
         </View>
       );
