@@ -35,6 +35,7 @@ export const NativeText: HostComponent<NativeTextProps> =
       ellipsizeMode: true,
       focusable: true,
       allowFontScaling: true,
+      dynamicTypeRamp: true,
       maxFontSizeMultiplier: true,
       disabled: true,
       selectable: true,
