@@ -187,6 +187,23 @@ export type TextProps = $ReadOnly<{|
   adjustsFontSizeToFit?: ?boolean,
 
   /**
+   * The Dynamic Text scale ramp to apply to this element on iOS.
+   */
+  dynamicTypeRamp?: ?(
+    | 'caption2'
+    | 'caption1'
+    | 'footnote'
+    | 'subheadline'
+    | 'callout'
+    | 'body'
+    | 'headline'
+    | 'title3'
+    | 'title2'
+    | 'title1'
+    | 'largeTitle'
+  ),
+
+  /**
    * Smallest possible scale a font can reach.
    *
    * See https://reactnative.dev/docs/text#minimumfontscale
@@ -208,4 +225,16 @@ export type TextProps = $ReadOnly<{|
    * Specifies the Tooltip for the button view
    */
   tooltip?: ?string,
+
+  /**
+   * When `true`, indicates that the text can be focused in key view loop
+   * By default, when `selectable={true}` the text view will be focusable unless disabled
+   */
+  focusable?: ?boolean,
+
+  /**
+   * Specifies whether focus ring should be drawn when the view has the first responder status.
+   * Only works when `focusable={true}`
+   */
+  enableFocusRing?: ?boolean, // TODO(macOS GH#774)
 |}>;
