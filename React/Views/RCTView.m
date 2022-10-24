@@ -1440,9 +1440,13 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   }
 }
 
+- (BOOL) canBecomeKeyView {
+	return ([self focusable] && [NSApp isFullKeyboardAccessEnabled]) || [super canBecomeKeyView];
+}
+
 - (BOOL)acceptsFirstResponder
 {
-  return [self focusable] || [super acceptsFirstResponder];
+	return [self focusable] || [super acceptsFirstResponder];
 }
 
 - (void)updateTrackingAreas
