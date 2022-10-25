@@ -1440,8 +1440,9 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   }
 }
 
-- (BOOL) canBecomeKeyView {
-	return ([self focusable] && [NSApp isFullKeyboardAccessEnabled]) || [super canBecomeKeyView];
+- (BOOL) needsPanelToBecomeKey {
+	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default. 
+	return false;
 }
 
 - (BOOL)acceptsFirstResponder
