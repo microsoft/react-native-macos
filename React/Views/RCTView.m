@@ -180,7 +180,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 {
   if (_reactLayoutDirection != layoutDirection) {
     _reactLayoutDirection = layoutDirection;
-    [self.layer setNeedsDisplay];
+    [self.layer setPDisplay];
   }
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
@@ -1440,7 +1440,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   }
 }
 
-- (BOOL) needsPanelToBecomeKey {
+- (BOOL)needsPanelToBecomeKey {
 	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default. 
 	return false;
 }
