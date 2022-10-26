@@ -1335,14 +1335,14 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     const invertedDidChange = this.props.onInvertedDidChange;
 
     const isFirstRowSelected = this.state.selectedRowIndex === this.state.first;
-    const isLasttRowSelected = this.state.selectedRowIndex === this.state.last;
+    const isLastRowSelected = this.state.selectedRowIndex === this.state.last;
 
     // Don't pass in ArrowUp/ArrowDown at the top/bottom of the list so that keyboard event can bubble
     let _validKeysDown = ['Home', 'End'];
     if (!isFirstRowSelected) {
       _validKeysDown.push('ArrowUp');
     }
-    if (!isLasttRowSelected) {
+    if (!isLastRowSelected) {
       _validKeysDown.push('ArrowDown');
     }
 
