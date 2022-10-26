@@ -180,7 +180,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 {
   if (_reactLayoutDirection != layoutDirection) {
     _reactLayoutDirection = layoutDirection;
-    [self.layer setPDisplay];
+    [self.layer setNeedsDisplay];
   }
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
