@@ -1431,7 +1431,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   }
 }
 
-- (BOOL) needsPanelToBecomeKey {
+- (BOOL)needsPanelToBecomeKey {
 	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default. 
 	return false;
 }
