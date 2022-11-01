@@ -751,6 +751,12 @@ exports.examples = ([
           />
           {/* [TODO(macOS GH#774) */}
           <TextInput
+            placeholder="multiline text input with vertical scrollbar hidden"
+            multiline={true}
+            style={styles.multiline}
+            hideVerticalScrollIndicator={true}
+          />
+          <TextInput
             defaultValue="uneditable multiline text input with phone number detection: 88888888."
             editable={false}
             multiline={true}

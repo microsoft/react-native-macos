@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL scrollEnabled;
 
 - (void)setReadablePasteBoardTypes:(NSArray<NSPasteboardType> *)readablePasteboardTypes;
-
+@property (nonatomic, assign) BOOL hideVerticalScrollIndicator;
 #endif // ]TODO(macOS GH#774)
 
 @end

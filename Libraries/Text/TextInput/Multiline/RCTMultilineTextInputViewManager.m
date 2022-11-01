@@ -25,6 +25,7 @@ RCT_REMAP_OSX_VIEW_PROPERTY(dataDetectorTypes, backedTextInputView.enabledTextCh
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 RCT_EXPORT_VIEW_PROPERTY(scrollEnabled, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(hideVerticalScrollIndicator, BOOL)
 RCT_CUSTOM_VIEW_PROPERTY(pastedTypes, NSArray<NSPasteboardType>*, RCTUITextView)
 {
   NSArray<NSPasteboardType> *types = json ? [RCTConvert NSPasteboardTypeArray:json] : nil;
