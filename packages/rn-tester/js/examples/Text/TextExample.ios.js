@@ -1317,7 +1317,7 @@ exports.examples = [
     },
   },
   {
-    title: 'Cursor virtual text',
+    title: 'Cursor nested (virtual) text',
     render: function(): React.Node {
       return (
         <View>
