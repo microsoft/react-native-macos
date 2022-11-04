@@ -1331,21 +1331,9 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     const preferredScrollerStyleDidChangeHandler =
       this.props.onPreferredScrollerStyleDidChange;
 
-    const isFirstRowSelected = this.state.selectedRowIndex === this.state.first;
-    const isLastRowSelected = this.state.selectedRowIndex === this.state.last;
-
-    // Don't pass in ArrowUp/ArrowDown at the top/bottom of the list so that keyboard event can bubble
-    let _validKeysDown = ['Home', 'End'];
-    if (!isFirstRowSelected) {
-      _validKeysDown.push('ArrowUp');
-    }
-    if (!isLastRowSelected) {
-      _validKeysDown.push('ArrowDown');
-    }
-
     const keyboardNavigationProps = {
       focusable: true,
-      validKeysDown: _validKeysDown,
+      validKeysDown: ['ArrowUp', 'ArrowDown', 'Home', 'End'],
       onKeyDown: this._handleKeyDown,
     };
     // ]TODO(macOS GH#774)
