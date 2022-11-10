@@ -727,8 +727,10 @@ exports.examples = [
             focus ring
           </Text>
           <Text selectable={true} focusable={true} style={{marginTop: 5}}>
-            This text is <Text style={{fontWeight: 'bold'}}>selectable</Text> and
-            <Text style={{fontWeight: 'bold'}}> focusable</Text> with a visible focus ring
+            This text is <Text style={{fontWeight: 'bold'}}>selectable</Text>{' '}
+            and
+            <Text style={{fontWeight: 'bold'}}> focusable</Text> with a visible
+            focus ring
           </Text>
           <Text
             selectable={true}
