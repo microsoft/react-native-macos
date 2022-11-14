@@ -1306,7 +1306,7 @@ exports.examples = [
   // [TODO(macOS GH#774)
   {
     title: 'Cursor',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <Text style={{cursor: 'pointer'}} selectable={true}>
@@ -1318,11 +1318,14 @@ exports.examples = [
   },
   {
     title: 'Cursor nested (virtual) text',
-    render: function(): React.Node {
+    render: function (): React.Node {
       return (
         <View>
           <Text selectable={true}>
-            This text has regular cursor. <Text style={{cursor: 'pointer'}}>This text has pointer cursor.</Text>
+            This text has regular cursor.{' '}
+            <Text style={{cursor: 'pointer'}}>
+              This text has pointer cursor.
+            </Text>
           </Text>
         </View>
       );
