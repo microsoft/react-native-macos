@@ -333,21 +333,6 @@
 #endif // TODO(macOS GH#774)
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
-- (BOOL)canBecomeFirstResponder
-{
-	return YES;
-}
-
-- (BOOL)becomeFirstResponder
-{
-	return YES;
-}
-
-- (BOOL)resignFirstResponder
-{
-	return YES;
-}
-
 - (void)setAccessibilityLabel:(NSString *)accessibilityLabel
 {
   [super setAccessibilityLabel:accessibilityLabel];
@@ -530,21 +515,6 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (RCTUIView *)contentView // TODO(macOS ISS#3536887)
 {
   return _scrollView.documentView;
-}
-
-- (BOOL)canBecomeFirstResponder
-{
-  return [_scrollView canBecomeFirstResponder];
-}
-
-- (BOOL)becomeFirstResponder
-{
-  return [_scrollView becomeFirstResponder];
-}
-
-- (BOOL)resignFirstResponder
-{
-  return [_scrollView resignFirstResponder];
 }
 
 - (void)setAccessibilityLabel:(NSString *)accessibilityLabel
