@@ -383,8 +383,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)decoder)
       [self.backedTextInputView selectAll:nil];
     }
   } else {
-    NSRange clearedRange = NSMakeRange(self.backedTextInputView.attributedText.length, 0);
-    [self.backedTextInputView setSelectedTextRange:clearedRange notifyDelegate:YES];
+    [self.backedTextInputView setSelectedTextRange:NSMakeRange(NSNotFound, 0) notifyDelegate:NO];
   }
 
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeFocus
