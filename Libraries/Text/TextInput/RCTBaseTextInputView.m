@@ -382,8 +382,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)decoder)
     if ([self.backedTextInputView respondsToSelector:@selector(selectAll:)]) {
       [self.backedTextInputView selectAll:nil];
     }
-  } else {
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
+  } else {
     [self.backedTextInputView setSelectedTextRange:NSMakeRange(NSNotFound, 0) notifyDelegate:NO];
 #endif // ]TODO(macOS GH#774)
   }
