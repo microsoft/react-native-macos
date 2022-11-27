@@ -8,7 +8,7 @@
  * @format
  */
 
-// TODO(macOS ISS#2323203)
+// TODO(macOS GH#774)
 
 'use strict';
 
@@ -35,10 +35,11 @@ const ReactNativeViewViewConfigMacOS = {
     },
   },
   validAttributes: {
-    acceptsKeyboardFocus: true,
+    acceptsFirstMouse: true,
     accessibilityTraits: true,
     draggedTypes: true,
     enableFocusRing: true,
+    nextKeyViewTag: true,
     onBlur: true,
     onClick: true,
     onDoubleClick: true,
@@ -46,9 +47,13 @@ const ReactNativeViewViewConfigMacOS = {
     onDragLeave: true,
     onDrop: true,
     onFocus: true,
+    onKeyDown: true,
+    onKeyUp: true,
     onMouseEnter: true,
     onMouseLeave: true,
     tooltip: true,
+    validKeysDown: true,
+    validKeysUp: true,
   },
 };
 

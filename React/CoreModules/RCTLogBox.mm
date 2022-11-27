@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -9,141 +9,20 @@
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTBridge.h>
-#import <React/RCTConvert.h>
-#import <React/RCTDefines.h>
-#import <React/RCTErrorInfo.h>
-#import <React/RCTEventDispatcher.h>
-#import <React/RCTJSStackFrame.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTLog.h>
 #import <React/RCTRedBoxSetEnabled.h>
-#import <React/RCTReloadCommand.h>
-#import <React/RCTRootView.h>
 #import <React/RCTSurface.h>
-#import <React/RCTUtils.h>
-
-#import <objc/runtime.h>
-
 #import "CoreModulesPlugins.h"
 
 #if RCT_DEV_MENU
 
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
-@interface RCTLogBoxWindow : UIWindow // TODO(OSS Candidate ISS#2710739) Renamed from RCTLogBoxView to RCTLogBoxWindow
-@end
-
-@implementation RCTLogBoxWindow {
-  RCTSurface *_surface;
-}
-
-- (instancetype)initWithBridge:(RCTBridge *)bridge // TODO(OSS Candidate ISS#2710739) Dropped `frame` parameter to make it compatible with NSWindow based version
-{
-  CGRect frame = [UIScreen mainScreen].bounds;
-  if ((self = [super initWithFrame:frame])) {
-    self.windowLevel = UIWindowLevelStatusBar - 1;
-    self.backgroundColor = [UIColor clearColor];
-
-    _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
-
-    [_surface start];
-    [_surface setSize:frame.size];
-
-    if (![_surface synchronouslyWaitForStage:RCTSurfaceStageSurfaceDidInitialMounting timeout:1]) {
-      RCTLogInfo(@"Failed to mount LogBox within 1s");
-    }
-
-    UIViewController *_rootViewController = [UIViewController new];
-    _rootViewController.view = (UIView *)_surface.view;
-    _rootViewController.view.backgroundColor = [UIColor clearColor];
-    _rootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
-    self.rootViewController = _rootViewController;
-  }
-  return self;
-}
-
-- (void)hide
-{
-  [RCTSharedApplication().delegate.window makeKeyWindow];
-}
-
-- (void)show
-{
-  [self becomeFirstResponder];
-  [self makeKeyAndVisible];
-}
-
-@end
-
-#else // [TODO(macOS ISS#2323203)
-
-@interface RCTLogBoxWindow : NSWindow
-@end
-
-@implementation RCTLogBoxWindow {
-  RCTSurface *_surface;
-}
-
-- (instancetype)initWithBridge:(RCTBridge *)bridge
-{
-  NSRect bounds = NSMakeRect(0, 0, 600, 800);
-  if ((self = [self initWithContentRect:bounds
-                              styleMask:NSWindowStyleMaskTitled
-                                backing:NSBackingStoreBuffered
-                                  defer:YES])) {
-    _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
-
-    [_surface start];
-    [_surface setSize:bounds.size];
-
-    if (![_surface synchronouslyWaitForStage:RCTSurfaceStageSurfaceDidInitialMounting timeout:1]) {
-      RCTLogInfo(@"Failed to mount LogBox within 1s");
-    }
-
-    self.contentView = (NSView *)_surface.view;
-    self.contentView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-  }
-  return self;
-}
-
-- (void)hide
-{
-  if (NSApp.modalWindow == self) {
-    [NSApp stopModal];
-  }
-  [self orderOut:nil];
-}
-
-- (void)show
-{
-  if (!RCTRunningInTestEnvironment()) {
-    // Run the modal loop outside of the dispatch queue because it is not reentrant.
-    [self performSelectorOnMainThread:@selector(_showModal) withObject:nil waitUntilDone:NO];
-  }
-  else {
-    [NSApp activateIgnoringOtherApps:YES];
-    [self makeKeyAndOrderFront:nil];
-  }
-}
-
-- (void)_showModal
-{
-  NSModalSession session = [NSApp beginModalSessionForWindow:self];
-
-  while ([NSApp runModalSession:session] == NSModalResponseContinue) {
-    // Spin the runloop so that the main dispatch queue is processed.
-    [[NSRunLoop currentRunLoop] limitDateForMode:NSDefaultRunLoopMode];
-  }
-
-  [NSApp endModalSession:session];
-}
-
-@end
-
-#endif // ]TODO(macOS ISS#2323203)
-
-@interface RCTLogBox () <NativeLogBoxSpec>
+@interface RCTLogBox () <NativeLogBoxSpec, RCTBridgeModule>
 @end
 
 @implementation RCTLogBox {
-  RCTLogBoxWindow *_window; // TODO(OSS Candidate ISS#2710739) Renamed from _view to _window
+  RCTLogBoxView *_view;
+  __weak id<RCTSurfacePresenterStub> _bridgelessSurfacePresenter;
 }
 
 @synthesize bridge = _bridge;
@@ -155,6 +34,11 @@ RCT_EXPORT_MODULE()
   return YES;
 }
 
+- (void)setSurfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
+{
+  _bridgelessSurfacePresenter = surfacePresenter;
+}
+
 RCT_EXPORT_METHOD(show)
 {
   if (RCTRedBoxGetEnabled()) {
@@ -164,10 +48,37 @@ RCT_EXPORT_METHOD(show)
       if (!strongSelf) {
         return;
       }
-      if (!strongSelf->_window) {
-        strongSelf->_window = [[RCTLogBoxWindow alloc] initWithBridge:self->_bridge];
+
+      if (strongSelf->_view) {
+        [strongSelf->_view show];
+        return;
       }
-      [strongSelf->_window show];
+
+      if (strongSelf->_bridgelessSurfacePresenter) {
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+        strongSelf->_view = [[RCTLogBoxView alloc] initWithFrame:RCTKeyWindow().frame
+                                                surfacePresenter:strongSelf->_bridgelessSurfacePresenter];
+#else
+        strongSelf->_view = [[RCTLogBoxView alloc] initWithSurfacePresenter:strongSelf->_bridgelessSurfacePresenter]; // TODO(macOS GH#774)
+#endif // ]TODO(macOS GH#774)
+      } else if (strongSelf->_bridge && strongSelf->_bridge.valid) {
+        if (strongSelf->_bridge.surfacePresenter) {
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)          
+          strongSelf->_view = [[RCTLogBoxView alloc] initWithFrame:RCTKeyWindow().frame
+                                                  surfacePresenter:strongSelf->_bridge.surfacePresenter];
+#else // TODO(macOS GH#774)
+          strongSelf->_view = [[RCTLogBoxView alloc] initWithSurfacePresenter:strongSelf->_bridge.surfacePresenter]; // TODO(macOS GH#774)
+#endif // ]TODO(macOS GH#774)
+        } else {
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)                   
+          strongSelf->_view = [[RCTLogBoxView alloc] initWithWindow:RCTKeyWindow() bridge:strongSelf->_bridge];
+#else // TODO(macOS GH#774)
+          strongSelf->_view = [[RCTLogBoxView alloc] initWithBridge:self->_bridge]; // TODO(macOS GH#774)
+#endif // ]TODO(macOS GH#774)
+        }
+      }
+
+      [strongSelf->_view show];
     });
   }
 }
@@ -181,18 +92,21 @@ RCT_EXPORT_METHOD(hide)
       if (!strongSelf) {
         return;
       }
-      [strongSelf->_window hide];
-      strongSelf->_window = nil;
+      [strongSelf->_view setHidden:YES];
+      strongSelf->_view = nil;
     });
   }
 }
 
-- (std::shared_ptr<facebook::react::TurboModule>)
-    getTurboModuleWithJsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-                  nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
-                     perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<facebook::react::NativeLogBoxSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<facebook::react::NativeLogBoxSpecJSI>(params);
+}
+
+- (void)setRCTLogBoxView:(RCTLogBoxView *)view
+{
+  self->_view = view;
 }
 
 @end
@@ -219,12 +133,10 @@ RCT_EXPORT_METHOD(hide)
   // noop
 }
 
-- (std::shared_ptr<facebook::react::TurboModule>)
-    getTurboModuleWithJsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-                  nativeInvoker:(std::shared_ptr<facebook::react::CallInvoker>)nativeInvoker
-                     perfLogger:(id<RCTTurboModulePerformanceLogger>)perfLogger
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
 {
-  return std::make_shared<facebook::react::NativeLogBoxSpecJSI>(self, jsInvoker, nativeInvoker, perfLogger);
+  return std::make_shared<facebook::react::NativeLogBoxSpecJSI>(params);
 }
 @end
 

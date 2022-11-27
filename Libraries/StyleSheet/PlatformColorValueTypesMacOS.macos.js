@@ -7,20 +7,44 @@
  * @format
  * @flow strict-local
  */
-// [TODO(macOS ISS#2323203)
+// [TODO(macOS GH#774)
 'use strict';
 
-import type {ColorValue} from './StyleSheetTypes';
-import {DynamicColorMacOSPrivate} from './PlatformColorValueTypes';
+import type {ColorValue} from './StyleSheet';
+import {
+  DynamicColorMacOSPrivate,
+  ColorWithSystemEffectMacOSPrivate,
+} from './PlatformColorValueTypes';
 
 export type DynamicColorMacOSTuple = {
   light: ColorValue,
   dark: ColorValue,
+  highContrastLight?: ColorValue,
+  highContrastDark?: ColorValue,
 };
 
 export const DynamicColorMacOS = (
   tuple: DynamicColorMacOSTuple,
 ): ColorValue => {
-  return DynamicColorMacOSPrivate({light: tuple.light, dark: tuple.dark});
+  return DynamicColorMacOSPrivate({
+    light: tuple.light,
+    dark: tuple.dark,
+    highContrastLight: tuple.highContrastLight,
+    highContrastDark: tuple.highContrastDark,
+  });
 };
-// ]TODO(macOS ISS#2323203)
+
+export type SystemEffectMacOS =
+  | 'none'
+  | 'pressed'
+  | 'deepPressed'
+  | 'disabled'
+  | 'rollover';
+
+export const ColorWithSystemEffectMacOS = (
+  color: ColorValue,
+  effect: SystemEffectMacOS,
+): ColorValue => {
+  return ColorWithSystemEffectMacOSPrivate(color, effect);
+};
+// ]TODO(macOS GH#774)

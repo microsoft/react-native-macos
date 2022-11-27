@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -225,7 +225,19 @@
 
   if (!_textStorage) {
     _textContainer = [NSTextContainer new];
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
     _textContainer.lineFragmentPadding = 0.0; // Note, the default value is 5.
+#else
+    // macOS has a bug in multiline where setting the real text view's lineFragmentPadding to 0 will
+    // cause the scroll view to scroll to top when inserting a newline at the bottom of
+    // a NSTextView when it has more rows than can be displayed on screen. The shadow needs to match
+    // the NSTextView that it is tracking.
+    if (_maximumNumberOfLines != 1) {
+      _textContainer.lineFragmentPadding = 1;
+    } else {
+      _textContainer.lineFragmentPadding = 0.0; // Note, the default value is 5.
+    }
+#endif // ]TODO(macOS GH#774)
     _layoutManager = [NSLayoutManager new];
     [_layoutManager addTextContainer:_textContainer];
     _textStorage = [NSTextStorage new];
@@ -240,13 +252,13 @@
   CGSize size = [_layoutManager usedRectForTextContainer:_textContainer].size;
 
   return (CGSize){
-#if !TARGET_OS_OSX // TODO(macOS ISS#2323203)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
     MAX(minimumSize.width, MIN(RCTCeilPixelValue(size.width), maximumSize.width)),
     MAX(minimumSize.height, MIN(RCTCeilPixelValue(size.height), maximumSize.height))
-#else // [TODO(macOS ISS#2323203)
+#else // [TODO(macOS GH#774)
     MAX(minimumSize.width, MIN(RCTCeilPixelValue(size.width, [self scale]), maximumSize.width)),
     MAX(minimumSize.height, MIN(RCTCeilPixelValue(size.height, [self scale]), maximumSize.height))
-#endif // ]TODO(macOS ISS#2323203)
+#endif // ]TODO(macOS GH#774)
   };
 }
 

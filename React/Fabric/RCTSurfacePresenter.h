@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -10,14 +10,16 @@
 #import <React/RCTPrimitives.h>
 #import <React/RCTSurfacePresenterStub.h>
 #import <React/RCTSurfaceStage.h>
+#import <ReactCommon/RuntimeExecutor.h>
+#import <react/renderer/scheduler/SurfaceHandler.h>
 #import <react/utils/ContextContainer.h>
-#import <react/utils/RuntimeExecutor.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class RCTFabricSurface;
 @class RCTImageLoader;
 @class RCTMountingManager;
+@class RCTScheduler;
 
 /**
  * Coordinates presenting of React Native Surfaces and represents application
@@ -45,34 +47,38 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCTSurfacePresenter (Surface) <RCTSurfacePresenterStub>
 
-/**
+/*
  * Surface uses these methods to register itself in the Presenter.
  */
 - (void)registerSurface:(RCTFabricSurface *)surface;
 - (void)unregisterSurface:(RCTFabricSurface *)surface;
-- (void)setProps:(NSDictionary *)props surface:(RCTFabricSurface *)surface;
+
+@property (readonly) RCTMountingManager *mountingManager;
+@property (readonly, nullable) RCTScheduler *scheduler;
+
+/*
+ * Allow callers to initialize a new fabric surface without adding Fabric as a Buck dependency.
+ */
+- (id<RCTSurfaceProtocol>)createFabricSurfaceForModuleName:(NSString *)moduleName
+                                         initialProperties:(NSDictionary *)initialProperties;
 
 - (nullable RCTFabricSurface *)surfaceForRootTag:(ReactTag)rootTag;
 
-/**
- * Measures the Surface with given constraints.
- */
-- (CGSize)sizeThatFitsMinimumSize:(CGSize)minimumSize
-                      maximumSize:(CGSize)maximumSize
-                          surface:(RCTFabricSurface *)surface;
-
-/**
- * Sets `minimumSize` and `maximumSize` layout constraints for the Surface.
- */
-- (void)setMinimumSize:(CGSize)minimumSize maximumSize:(CGSize)maximumSize surface:(RCTFabricSurface *)surface;
-
 - (BOOL)synchronouslyUpdateViewOnUIThread:(NSNumber *)reactTag props:(NSDictionary *)props;
 
-- (BOOL)synchronouslyWaitSurface:(RCTFabricSurface *)surface timeout:(NSTimeInterval)timeout;
+- (void)setupAnimationDriverWithSurfaceHandler:(facebook::react::SurfaceHandler const &)surfaceHandler;
 
+/*
+ * Deprecated.
+ * Use `RCTMountingTransactionObserverCoordinator` instead.
+ */
 - (void)addObserver:(id<RCTSurfacePresenterObserver>)observer;
-
 - (void)removeObserver:(id<RCTSurfacePresenterObserver>)observer;
+
+/*
+ * Please do not use this, this will be deleted soon.
+ */
+- (nullable UIView *)findComponentViewWithTag_DO_NOT_USE_DEPRECATED:(NSInteger)tag;
 
 @end
 

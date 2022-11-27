@@ -23,12 +23,12 @@ RCT_EXPORT_MODULE()
 
 static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChangeContext;
 
-+ (BOOL)requiresMainQueueSetup 
++ (BOOL)requiresMainQueueSetup
 {
-  return NO;
+  return YES;
 }
 
-- (instancetype)init 
+- (instancetype)init
 {
   if (self = [super init]) {
     [[NSWorkspace sharedWorkspace] addObserver:self
@@ -39,11 +39,11 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
                                              selector:@selector(accessibilityDisplayOptionsChange:)
                                                  name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
                                                object:nil];
+    _isHighContrastEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldIncreaseContrast];
     _isInvertColorsEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldInvertColors];
     _isReduceMotionEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
     _isReduceTransparencyEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
     _isVoiceOverEnabled = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
-    
   }
   return self;
 }
@@ -53,7 +53,6 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
   [[NSWorkspace sharedWorkspace] removeObserver:self
                                      forKeyPath:@"voiceOverEnabled"
                                         context:AccessibilityVoiceOverChangeContext];
-  [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self]; 
 }
 
 RCT_EXPORT_METHOD(announceForAccessibility:(NSString *)announcement)
@@ -65,6 +64,12 @@ RCT_EXPORT_METHOD(announceForAccessibility:(NSString *)announcement)
                                                       NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
                                                     }
                                                 );
+}
+
+RCT_EXPORT_METHOD(getCurrentHighContrastState:(RCTResponseSenderBlock)callback
+                  error:(__unused RCTResponseSenderBlock)error)
+{
+  callback(@[@(_isHighContrastEnabled)]);
 }
 
 RCT_EXPORT_METHOD(getCurrentInvertColorsState:(RCTResponseSenderBlock)callback
@@ -94,9 +99,10 @@ RCT_EXPORT_METHOD(getCurrentVoiceOverState:(RCTResponseSenderBlock)callback
 
 RCT_EXPORT_METHOD(setAccessibilityFocus:(nonnull NSNumber *)reactTag)
 {
-   dispatch_async(dispatch_get_main_queue(), ^{
+  dispatch_async(dispatch_get_main_queue(), ^{
     NSView *view = [self.bridge.uiManager viewForReactTag:reactTag];
     [[view window] makeFirstResponder:view];
+    NSAccessibilityPostNotification(view, NSAccessibilityLayoutChangedNotification);
   });
 }
 
@@ -124,9 +130,16 @@ RCT_EXPORT_METHOD(setAccessibilityFocus:(nonnull NSNumber *)reactTag)
 
 - (void)accessibilityDisplayOptionsChange:(NSNotification *)notification
 {
+  BOOL newHighContrastEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldIncreaseContrast];
   BOOL newInvertColorsEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldInvertColors];
   BOOL newReduceMotionEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
   BOOL newReduceTransparencyEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
+
+  if (_isHighContrastEnabled != newHighContrastEnabled) {
+    _isHighContrastEnabled = newHighContrastEnabled;
+    [_bridge.eventDispatcher sendDeviceEventWithName:@"highContrastChanged"
+                                                body:@(_isHighContrastEnabled)];
+  }
   if (_isInvertColorsEnabled != newInvertColorsEnabled) {
     _isInvertColorsEnabled = newInvertColorsEnabled;
     [_bridge.eventDispatcher sendDeviceEventWithName:@"invertColorsChanged"

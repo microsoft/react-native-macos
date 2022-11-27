@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -13,6 +13,8 @@
 @implementation RCTScrollContentViewManager
 
 RCT_EXPORT_MODULE()
+
+RCT_EXPORT_OSX_VIEW_PROPERTY(inverted, BOOL) // TODO(macOS GH#774)
 
 - (RCTScrollContentView *)view
 {

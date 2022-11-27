@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,14 +8,11 @@
  * @format
  */
 
-'use strict';
-
 import Pressability, {
   type PressabilityConfig,
 } from '../../Pressability/Pressability';
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
-import TVTouchable from './TVTouchable';
 import typeof TouchableWithoutFeedback from './TouchableWithoutFeedback';
 import {Animated, Platform} from 'react-native';
 import * as React from 'react';
@@ -38,8 +35,6 @@ type State = $ReadOnly<{|
 |}>;
 
 class TouchableBounce extends React.Component<Props, State> {
-  _tvTouchable: ?TVTouchable;
-
   state: State = {
     pressability: new Pressability(this._createPressabilityConfig()),
     scale: new Animated.Value(1),
@@ -72,11 +67,7 @@ class TouchableBounce extends React.Component<Props, State> {
           this.props.onFocus(event);
         }
       },
-      onLongPress: event => {
-        if (this.props.onLongPress != null) {
-          this.props.onLongPress(event);
-        }
-      },
+      onLongPress: this.props.onLongPress,
       onPress: event => {
         const {onPressAnimationComplete, onPressWithCompletion} = this.props;
         const releaseBounciness = this.props.releaseBounciness ?? 10;
@@ -140,8 +131,8 @@ class TouchableBounce extends React.Component<Props, State> {
     const {
       onBlur,
       onFocus,
-      onMouseEnter, // [TODO(macOS/win ISS#2323203)
-      onMouseLeave, // ]TODO(macOS/win ISS#2323203)
+      onMouseEnter, // [TODO(macOS/win GH#774)
+      onMouseLeave, // ]TODO(macOS/win GH#774)
       ...eventHandlersWithoutBlurAndFocus
     } = this.state.pressability.getEventHandlers();
 
@@ -160,33 +151,29 @@ class TouchableBounce extends React.Component<Props, State> {
         accessibilityLiveRegion={this.props.accessibilityLiveRegion}
         accessibilityViewIsModal={this.props.accessibilityViewIsModal}
         accessibilityElementsHidden={this.props.accessibilityElementsHidden}
-        acceptsKeyboardFocus={
-          (this.props.acceptsKeyboardFocus === undefined ||
-            this.props.acceptsKeyboardFocus === true) &&
-          !this.props.disabled
-        } // TODO(macOS/win ISS#2323203)
+        nativeID={this.props.nativeID}
+        testID={this.props.testID}
+        hitSlop={this.props.hitSlop}
+        // [TODO(macOS GH#774)
+        acceptsFirstMouse={
+          this.props.acceptsFirstMouse !== false && !this.props.disabled
+        }
         enableFocusRing={
           (this.props.enableFocusRing === undefined ||
             this.props.enableFocusRing === true) &&
           !this.props.disabled
-        } // TODO(macOS/win ISS#2323203)
-        nativeID={this.props.nativeID}
-        testID={this.props.testID}
-        hitSlop={this.props.hitSlop}
-        focusable={
-          this.props.focusable !== false &&
-          this.props.onPress !== undefined &&
-          !this.props.disabled
         }
-        tooltip={this.props.tooltip} // TODO(macOS/win ISS#2323203)
-        onMouseEnter={this.props.onMouseEnter} // [TODO(macOS ISS#2323203)
+        focusable={this.props.focusable !== false && !this.props.disabled}
+        tooltip={this.props.tooltip}
+        onMouseEnter={this.props.onMouseEnter}
         onMouseLeave={this.props.onMouseLeave}
         onDragEnter={this.props.onDragEnter}
         onDragLeave={this.props.onDragLeave}
         onDrop={this.props.onDrop}
         onFocus={this.props.onFocus}
         onBlur={this.props.onBlur}
-        draggedTypes={this.props.draggedTypes} // ]TODO(macOS ISS#2323203)
+        draggedTypes={this.props.draggedTypes}
+        // ]TODO(macOS GH#774)
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
         {this.props.children}
@@ -197,43 +184,15 @@ class TouchableBounce extends React.Component<Props, State> {
     );
   }
 
-  componentDidMount(): void {
-    if (Platform.isTV) {
-      this._tvTouchable = new TVTouchable(this, {
-        getDisabled: () => this.props.disabled === true,
-        onBlur: event => {
-          if (this.props.onBlur != null) {
-            this.props.onBlur(event);
-          }
-        },
-        onFocus: event => {
-          if (this.props.onFocus != null) {
-            this.props.onFocus(event);
-          }
-        },
-        onPress: event => {
-          if (this.props.onPress != null) {
-            this.props.onPress(event);
-          }
-        },
-      });
-    }
-  }
-
   componentDidUpdate(prevProps: Props, prevState: State) {
     this.state.pressability.configure(this._createPressabilityConfig());
   }
 
   componentWillUnmount(): void {
-    if (Platform.isTV) {
-      if (this._tvTouchable != null) {
-        this._tvTouchable.destroy();
-      }
-    }
     this.state.pressability.reset();
   }
 }
 
 module.exports = (React.forwardRef((props, hostRef) => (
   <TouchableBounce {...props} hostRef={hostRef} />
-)): React.ComponentType<$ReadOnly<$Diff<Props, {|hostRef: mixed|}>>>);
+)): React.AbstractComponent<$ReadOnly<$Diff<Props, {|hostRef: mixed|}>>>);

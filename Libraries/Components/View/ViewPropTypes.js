@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -17,7 +17,8 @@ import type {
   PressEvent,
   Layout,
   LayoutEvent,
-  ScrollEvent, // TODO(macOS ISS#2323203)
+  ScrollEvent, // TODO(macOS GH#774)
+  KeyEvent,
 } from '../../Types/CoreEventTypes';
 import type {EdgeInsetsProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {Node} from 'react';
@@ -31,9 +32,11 @@ import type {
   AccessibilityNodeInfoProp, // TODO(android ISS)
 } from './ViewAccessibility';
 
-// [TODO(macOS ISS#2323203)
+// [TODO(macOS GH#774)
 import type {DraggedTypesType} from '../View/DraggedType';
-// ]TODO(macOS ISS#2323203)
+//$FlowFixMe
+import {array} from 'yargs';
+// ]TODO(macOS GH#774)
 
 export type ViewLayout = Layout;
 export type ViewLayoutEvent = LayoutEvent;
@@ -41,6 +44,8 @@ export type ViewLayoutEvent = LayoutEvent;
 type BubblingEventProps = $ReadOnly<{|
   onBlur?: ?(event: BlurEvent) => mixed,
   onFocus?: ?(event: FocusEvent) => mixed,
+  onKeyDown?: ?(event: KeyEvent) => mixed,
+  onKeyUp?: ?(event: KeyEvent) => mixed,
 |}>;
 
 type DirectEventProps = $ReadOnly<{|
@@ -55,7 +60,7 @@ type DirectEventProps = $ReadOnly<{|
    * When `accessible` is true, the system will try to invoke this function
    * when the user performs accessibility tap gesture.
    *
-   * See https://reactnative.dev/docs/view.html#onaccessibilitytap
+   * See https://reactnative.dev/docs/view#onaccessibilitytap
    */
   onAccessibilityTap?: ?() => mixed,
 
@@ -63,19 +68,19 @@ type DirectEventProps = $ReadOnly<{|
    * When `accessible` is true, the system will try to invoke this function
    * when the user performs accessibility double click gesture.
    */
-  onDoubleClick?: ?(event: SyntheticEvent<{}>) => mixed, // TODO(macOS ISS#2323203)
+  onDoubleClick?: ?(event: SyntheticEvent<{}>) => mixed, // TODO(macOS GH#774)
+
+  /**
+   * This event is fired when the scrollView's inverted property changes.
+   * @platform macos
+   */
+  onInvertedDidChange?: ?() => mixed, // TODO(macOS GH#774)
 
   /**
    * This event is fired when the system's preferred scroller style changes.
    * The `preferredScrollerStyle` key will be `legacy` or `overlay`.
    */
-  onPreferredScrollerStyleDidChange?: ?(event: ScrollEvent) => mixed, // TODO(macOS ISS#2323203)
-
-  /**
-   * When `acceptsKeyboardFocus` is true, the system will try to invoke this function
-   * when the user performs accessibility key down gesture.
-   */
-  onScrollKeyDown?: ?(event: ScrollEvent) => mixed, // TODO(macOS ISS#2323203)
+  onPreferredScrollerStyleDidChange?: ?(event: ScrollEvent) => mixed, // TODO(macOS GH#774)
 
   /**
    * Invoked on mount and layout changes with:
@@ -86,7 +91,7 @@ type DirectEventProps = $ReadOnly<{|
    * the new layout may not yet be reflected on the screen at the time the
    * event is received, especially if a layout animation is in progress.
    *
-   * See https://reactnative.dev/docs/view.html#onlayout
+   * See https://reactnative.dev/docs/view#onlayout
    */
   onLayout?: ?(event: LayoutEvent) => mixed,
 
@@ -94,7 +99,7 @@ type DirectEventProps = $ReadOnly<{|
    * When `accessible` is `true`, the system will invoke this function when the
    * user performs the magic tap gesture.
    *
-   * See https://reactnative.dev/docs/view.html#onmagictap
+   * See https://reactnative.dev/docs/view#onmagictap
    */
   onMagicTap?: ?() => mixed,
 
@@ -102,7 +107,7 @@ type DirectEventProps = $ReadOnly<{|
    * When `accessible` is `true`, the system will invoke this function when the
    * user performs the escape gesture.
    *
-   * See https://reactnative.dev/docs/view.html#onaccessibilityescape
+   * See https://reactnative.dev/docs/view#onaccessibilityescape
    */
   onAccessibilityEscape?: ?() => mixed,
 |}>;
@@ -136,7 +141,7 @@ type GestureResponderEventProps = $ReadOnly<{|
    * `View.props.onMoveShouldSetResponder: (event) => [true | false]`, where
    * `event` is a synthetic touch event as described above.
    *
-   * See https://reactnative.dev/docs/view.html#onmoveshouldsetresponder
+   * See https://reactnative.dev/docs/view#onmoveshouldsetresponder
    */
   onMoveShouldSetResponder?: ?(e: PressEvent) => boolean,
 
@@ -147,7 +152,7 @@ type GestureResponderEventProps = $ReadOnly<{|
    * `View.props.onMoveShouldSetResponderCapture: (event) => [true | false]`,
    * where `event` is a synthetic touch event as described above.
    *
-   * See https://reactnative.dev/docs/view.html#onMoveShouldsetrespondercapture
+   * See https://reactnative.dev/docs/view#onMoveShouldsetrespondercapture
    */
   onMoveShouldSetResponderCapture?: ?(e: PressEvent) => boolean,
 
@@ -161,7 +166,7 @@ type GestureResponderEventProps = $ReadOnly<{|
    * PanResponder includes a note `// TODO: t7467124 investigate if this can be removed` that
    * should help fixing this return type.
    *
-   * See https://reactnative.dev/docs/view.html#onrespondergrant
+   * See https://reactnative.dev/docs/view#onrespondergrant
    */
   onResponderGrant?: ?(e: PressEvent) => void | boolean,
 
@@ -171,7 +176,7 @@ type GestureResponderEventProps = $ReadOnly<{|
    * `View.props.onResponderMove: (event) => {}`, where `event` is a synthetic
    * touch event as described above.
    *
-   * See https://reactnative.dev/docs/view.html#onrespondermove
+   * See https://reactnative.dev/docs/view#onrespondermove
    */
   onResponderMove?: ?(e: PressEvent) => void,
 
@@ -182,7 +187,7 @@ type GestureResponderEventProps = $ReadOnly<{|
    * `View.props.onResponderReject: (event) => {}`, where `event` is a
    * synthetic touch event as described above.
    *
-   * See https://reactnative.dev/docs/view.html#onresponderreject
+   * See https://reactnative.dev/docs/view#onresponderreject
    */
   onResponderReject?: ?(e: PressEvent) => void,
 
@@ -192,7 +197,7 @@ type GestureResponderEventProps = $ReadOnly<{|
    * `View.props.onResponderRelease: (event) => {}`, where `event` is a
    * synthetic touch event as described above.
    *
-   * See https://reactnative.dev/docs/view.html#onresponderrelease
+   * See https://reactnative.dev/docs/view#onresponderrelease
    */
   onResponderRelease?: ?(e: PressEvent) => void,
 
@@ -208,7 +213,7 @@ type GestureResponderEventProps = $ReadOnly<{|
    * `View.props.onResponderTerminate: (event) => {}`, where `event` is a
    * synthetic touch event as described above.
    *
-   * See https://reactnative.dev/docs/view.html#onresponderterminate
+   * See https://reactnative.dev/docs/view#onresponderterminate
    */
   onResponderTerminate?: ?(e: PressEvent) => void,
 
@@ -219,7 +224,7 @@ type GestureResponderEventProps = $ReadOnly<{|
    * `View.props.onResponderTerminationRequest: (event) => {}`, where `event`
    * is a synthetic touch event as described above.
    *
-   * See https://reactnative.dev/docs/view.html#onresponderterminationrequest
+   * See https://reactnative.dev/docs/view#onresponderterminationrequest
    */
   onResponderTerminationRequest?: ?(e: PressEvent) => boolean,
 
@@ -229,7 +234,7 @@ type GestureResponderEventProps = $ReadOnly<{|
    * `View.props.onStartShouldSetResponder: (event) => [true | false]`, where
    * `event` is a synthetic touch event as described above.
    *
-   * See https://reactnative.dev/docs/view.html#onstartshouldsetresponder
+   * See https://reactnative.dev/docs/view#onstartshouldsetresponder
    */
   onStartShouldSetResponder?: ?(e: PressEvent) => boolean,
 
@@ -240,7 +245,7 @@ type GestureResponderEventProps = $ReadOnly<{|
    * `View.props.onStartShouldSetResponderCapture: (event) => [true | false]`,
    * where `event` is a synthetic touch event as described above.
    *
-   * See https://reactnative.dev/docs/view.html#onstartshouldsetrespondercapture
+   * See https://reactnative.dev/docs/view#onstartshouldsetrespondercapture
    */
   onStartShouldSetResponderCapture?: ?(e: PressEvent) => boolean,
 |}>;
@@ -269,21 +274,9 @@ type AndroidViewProps = $ReadOnly<{|
    *
    * @platform android
    *
-   * See https://reactnative.dev/docs/view.html#rendertohardwaretextureandroid
+   * See https://reactnative.dev/docs/view#rendertohardwaretextureandroid
    */
   renderToHardwareTextureAndroid?: ?boolean,
-
-  /**
-   * Views that are only used to layout their children or otherwise don't draw
-   * anything may be automatically removed from the native hierarchy as an
-   * optimization. Set this property to `false` to disable this optimization and
-   * ensure that this `View` exists in the native view hierarchy.
-   *
-   * @platform android
-   *
-   * See https://reactnative.dev/docs/view.html#collapsable
-   */
-  collapsable?: ?boolean,
 
   /**
    * Whether this `View` needs to rendered offscreen and composited with an
@@ -291,7 +284,7 @@ type AndroidViewProps = $ReadOnly<{|
    *
    * @platform android
    *
-   * See https://reactnative.dev/docs/view.html#needsoffscreenalphacompositing
+   * See https://reactnative.dev/docs/view#needsoffscreenalphacompositing
    */
   needsOffscreenAlphaCompositing?: ?boolean,
 
@@ -318,7 +311,7 @@ type AndroidViewProps = $ReadOnly<{|
    *
    * @platform android
    *
-   * See https://reactnative.dev/docs/view.html#accessibilityliveregion
+   * See https://reactnative.dev/docs/view#accessibilityliveregion
    */
   accessibilityLiveRegion?: ?('none' | 'polite' | 'assertive'),
 
@@ -336,7 +329,7 @@ type AndroidViewProps = $ReadOnly<{|
    *
    * @platform android
    *
-   * See https://reactnative.dev/docs/view.html#importantforaccessibility
+   * See https://reactnative.dev/docs/view#importantforaccessibility
    */
   importantForAccessibility?: ?('auto' | 'yes' | 'no' | 'no-hide-descendants'),
 
@@ -414,7 +407,7 @@ type IOSViewProps = $ReadOnly<{|
    *
    * @platform ios
    *
-   * See https://reactnative.dev/docs/view.html#accessibilityviewismodal
+   * See https://reactnative.dev/docs/view#accessibilityviewismodal
    */
   accessibilityViewIsModal?: ?boolean,
 
@@ -424,11 +417,15 @@ type IOSViewProps = $ReadOnly<{|
    *
    * @platform ios
    *
-   * See https://reactnative.dev/docs/view.html#accessibilityElementsHidden
+   * See https://reactnative.dev/docs/view#accessibilityElementsHidden
    */
   accessibilityElementsHidden?: ?boolean,
+  /**
+   * Reverses the direction of scroll. Uses native inversion on macOS and scale transforms of -1 elsewhere
+   */
+  inverted?: ?boolean, // TODO(macOS GH#774)
 
-  onDoubleClick?: ?(event: SyntheticEvent<{}>) => mixed, // TODO(macOS ISS#2323203)
+  onDoubleClick?: ?(event: SyntheticEvent<{}>) => mixed, // TODO(macOS GH#774)
 
   /**
    * When `accessible` is true, the system will try to invoke this function
@@ -442,7 +439,7 @@ type IOSViewProps = $ReadOnly<{|
    * When `accessible` is `true`, the system will invoke this function when the
    * user performs the magic tap gesture.
    *
-   * See https://reactnative.dev/docs/view.html#shouldrasterizeios
+   * See https://reactnative.dev/docs/view#shouldrasterizeios
    */
   shouldRasterizeIOS?: ?boolean,
 |}>;
@@ -463,7 +460,7 @@ export type ViewProps = $ReadOnly<{|
    * When `true`, indicates that the view is an accessibility element.
    * By default, all the touchable elements are accessible.
    *
-   * See https://reactnative.dev/docs/view.html#accessible
+   * See https://reactnative.dev/docs/view#accessible
    */
   accessible?: ?boolean,
 
@@ -472,7 +469,7 @@ export type ViewProps = $ReadOnly<{|
    * with the element. By default, the label is constructed by traversing all
    * the children and accumulating all the `Text` nodes separated by space.
    *
-   * See https://reactnative.dev/docs/view.html#accessibilitylabel
+   * See https://reactnative.dev/docs/view#accessibilitylabel
    */
   accessibilityLabel?: ?Stringish,
 
@@ -482,7 +479,7 @@ export type ViewProps = $ReadOnly<{|
    * accessibility label.
    *
    *
-   * See https://reactnative.dev/docs/view.html#accessibilityHint
+   * See https://reactnative.dev/docs/view#accessibilityHint
    */
   accessibilityHint?: ?Stringish,
 
@@ -504,11 +501,31 @@ export type ViewProps = $ReadOnly<{|
   accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
 
   /**
+   * Specifies the nativeID of the associated label text. When the assistive technology focuses on the component with this props, the text is read aloud.
+   *
+   * @platform android
+   */
+  accessibilityLabelledBy?: ?string | ?Array<string>,
+
+  /**
+   * Views that are only used to layout their children or otherwise don't draw
+   * anything may be automatically removed from the native hierarchy as an
+   * optimization. Set this property to `false` to disable this optimization and
+   * ensure that this `View` exists in the native view hierarchy.
+   *
+   * @platform android
+   * In Fabric, this prop is used in ios as well.
+   *
+   * See https://reactnative.dev/docs/view#collapsable
+   */
+  collapsable?: ?boolean,
+
+  /**
    * Used to locate this view in end-to-end tests.
    *
    * > This disables the 'layout-only view removal' optimization for this view!
    *
-   * See https://reactnative.dev/docs/view.html#testid
+   * See https://reactnative.dev/docs/view#testid
    */
   testID?: ?string,
 
@@ -517,7 +534,7 @@ export type ViewProps = $ReadOnly<{|
    *
    * > This disables the 'layout-only view removal' optimization for this view!
    *
-   * See https://reactnative.dev/docs/view.html#nativeid
+   * See https://reactnative.dev/docs/view#nativeid
    */
   nativeID?: ?string,
 
@@ -530,14 +547,14 @@ export type ViewProps = $ReadOnly<{|
    * > of sibling views always takes precedence if a touch hits two overlapping
    * > views.
    *
-   * See https://reactnative.dev/docs/view.html#hitslop
+   * See https://reactnative.dev/docs/view#hitslop
    */
   hitSlop?: ?EdgeInsetsProp,
 
   /**
    * Controls whether the `View` can be the target of touch events.
    *
-   * See https://reactnative.dev/docs/view.html#pointerevents
+   * See https://reactnative.dev/docs/view#pointerevents
    */
   pointerEvents?: ?('auto' | 'box-none' | 'box-only' | 'none'),
 
@@ -549,7 +566,7 @@ export type ViewProps = $ReadOnly<{|
    * subviews must also have `overflow: hidden`, as should the containing view
    * (or one of its superviews).
    *
-   * See https://reactnative.dev/docs/view.html#removeclippedsubviews
+   * See https://reactnative.dev/docs/view#removeclippedsubviews
    */
   removeClippedSubviews?: ?boolean,
 
@@ -558,38 +575,57 @@ export type ViewProps = $ReadOnly<{|
    *
    * @platform macos
    */
-  onDragEnter?: (event: MouseEvent) => void, // TODO(macOS ISS#2323203)
+  onDragEnter?: (event: MouseEvent) => void, // TODO(macOS GH#774)
 
   /**
    * Fired when a dragged element leaves a valid drop target
    *
    * @platform macos
    */
-  onDragLeave?: (event: MouseEvent) => void, // TODO(macOS ISS#2323203)
+  onDragLeave?: (event: MouseEvent) => void, // TODO(macOS GH#774)
 
   /**
    * Fired when an element is dropped on a valid drop target
    *
    * @platform macos
    */
-  onDrop?: (event: MouseEvent) => void, // TODO(macOS ISS#2323203)
+  onDrop?: (event: MouseEvent) => void, // TODO(macOS GH#774)
 
   /**
    * Specifies the Tooltip for the view
    * @platform macos
    */
-  tooltip?: ?string, // TODO(macOS ISS#2323203)
+  tooltip?: ?string, // TODO(macOS GH#774)
 
   /**
-   * Specifies whether the view participates in the key view loop as user tabs
-   * through different controls.
+   * Specifies whether the view should receive the mouse down event when the
+   * containing window is in the background.
+   *
+   * @platform macos
    */
-  acceptsKeyboardFocus?: ?boolean, // TODO(macOS ISS#2323203)
+  acceptsFirstMouse?: ?boolean, // TODO(macOS GH#774)
+
+  /**
+   * The react tag of the view that follows the current view in the key view loop.
+   */
+  nextKeyViewTag?: ?number, // TODO(macOS GH#768)
 
   /**
    * Specifies whether focus ring should be drawn when the view has the first responder status.
    */
-  enableFocusRing?: ?boolean, // TODO(macOS ISS#2323203)
+  enableFocusRing?: ?boolean, // TODO(macOS GH#774)
+
+  /*
+   * Array of keys to receive key down events for
+   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+   */
+  validKeysDown?: ?Array<string>,
+
+  /*
+   * Array of keys to receive key up events for
+   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+   */
+  validKeysUp?: ?Array<string>,
 
   /**
    * Enables Dran'n'Drop Support for certain types of dragged types
@@ -600,5 +636,5 @@ export type ViewProps = $ReadOnly<{|
    *
    * @platform macos
    */
-  draggedTypes?: ?DraggedTypesType, // TODO(macOS ISS#2323203)
+  draggedTypes?: ?DraggedTypesType, // TODO(macOS GH#774)
 |}>;

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO(macOS ISS#2323203)
+// TODO(macOS GH#774)
 
 #include <TargetConditionals.h>
 
@@ -63,6 +63,8 @@ UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
 #define RCTUIView UIView // TODO(macOS ISS#3536887)
 #define RCTUIScrollView UIScrollView // TODO(macOS ISS#3536887)
 
+#define RCTPlatformWindow UIWindow
+
 UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, UIEvent *event)
 {
   return [view hitTest:point withEvent:event];
@@ -76,11 +78,6 @@ UIKIT_STATIC_INLINE BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 UIKIT_STATIC_INLINE void RCTUIViewSetContentModeRedraw(UIView *view)
 {
   view.contentMode = UIViewContentModeRedraw;
-}
-
-UIKIT_STATIC_INLINE BOOL RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(RCTPlatformView *view, CGRect rect, BOOL afterUpdates)
-{
-  return [view drawViewHierarchyInRect:rect afterScreenUpdates:afterUpdates];
 }
 
 UIKIT_STATIC_INLINE BOOL RCTUIViewIsDescendantOfView(RCTPlatformView *view, RCTPlatformView *parent)
@@ -361,6 +358,8 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 // UIView
 #define RCTPlatformView NSView
 
+#define RCTPlatformWindow NSWindow
+
 @interface RCTUIView : NSView // TODO(macOS ISS#3536887)
 
 @property (nonatomic, readonly) BOOL canBecomeFirstResponder;
@@ -390,10 +389,15 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 @property (nonatomic) CGAffineTransform transform;
 
 /**
+ * Specifies whether the view should receive the mouse down event when the
+ * containing window is in the background.
+ */
+@property (nonatomic, assign) BOOL acceptsFirstMouse;
+/**
  * Specifies whether the view participates in the key view loop as user tabs through different controls
  * This is equivalent to acceptsFirstResponder on mac OS.
  */
-@property (nonatomic, assign) BOOL acceptsKeyboardFocus;
+@property (nonatomic, assign) BOOL focusable;
 /**
  * Specifies whether focus ring should be drawn when the view has the first responder status.
  */
@@ -416,8 +420,18 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 @property (nonatomic, assign) CGFloat zoomScale;
 @property (nonatomic, assign) BOOL alwaysBounceHorizontal;
 @property (nonatomic, assign) BOOL alwaysBounceVertical;
+// macOS specific properties
+@property (nonatomic, assign) BOOL enableFocusRing;
+@property (nonatomic, assign, getter=isScrollEnabled) BOOL scrollEnabled;
 
 @end
+
+@interface RCTClipView : NSClipView // [TODO(macOS GH#774)
+
+@property (nonatomic, assign) BOOL constrainScrolling;
+
+@end // ]TODO(macOS GH#774)
+
 
 NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *event)
 {
@@ -431,22 +445,10 @@ NS_INLINE void RCTUIViewSetContentModeRedraw(RCTPlatformView *view)
   view.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
 }
 
-NS_INLINE BOOL RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(RCTPlatformView *view, CGRect rect, __unused BOOL afterUpdates)
-{
-  RCTAssert(afterUpdates, @"We're redrawing the view so it will necessarily include the latest changes.");
-  (void) afterUpdates;
-  [view displayRectIgnoringOpacity:NSRectToCGRect(rect)];
-  return YES;
-}
-
 NS_INLINE BOOL RCTUIViewIsDescendantOfView(RCTPlatformView *view, RCTPlatformView *parent)
 {
   return [view isDescendantOf:parent];
 }
-
-NSArray *RCTUIViewCalculateKeyViewLoop(RCTPlatformView *root);
-
-BOOL RCTUIViewHasDescendantPassingPredicate(RCTPlatformView *root, BOOL (^predicate)(RCTPlatformView *view));
 
 NS_INLINE NSValue *NSValueWithCGRect(CGRect rect)
 {

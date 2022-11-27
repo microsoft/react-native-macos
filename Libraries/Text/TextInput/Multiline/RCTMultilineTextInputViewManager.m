@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -7,6 +7,7 @@
 
 #import <React/RCTMultilineTextInputViewManager.h>
 #import <React/RCTMultilineTextInputView.h>
+#import <React/RCTUITextView.h> // TODO(macOS GH#774)
 
 @implementation RCTMultilineTextInputViewManager
 
@@ -19,9 +20,19 @@ RCT_EXPORT_MODULE()
 
 #pragma mark - Multiline <TextInput> (aka TextView) specific properties
 
-#if !TARGET_OS_TV
-RCT_REMAP_NOT_OSX_VIEW_PROPERTY(dataDetectorTypes, backedTextInputView.dataDetectorTypes, UIDataDetectorTypes) // TODO(macOS ISS#2323203)
-RCT_REMAP_OSX_VIEW_PROPERTY(dataDetectorTypes, backedTextInputView.enabledTextCheckingTypes, NSTextCheckingTypes) // TODO(macOS ISS#2323203)
-#endif
+RCT_REMAP_NOT_OSX_VIEW_PROPERTY(dataDetectorTypes, backedTextInputView.dataDetectorTypes, UIDataDetectorTypes) // TODO(macOS GH#774)
+RCT_REMAP_OSX_VIEW_PROPERTY(dataDetectorTypes, backedTextInputView.enabledTextCheckingTypes, NSTextCheckingTypes) // TODO(macOS GH#774)
+
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+RCT_EXPORT_VIEW_PROPERTY(scrollEnabled, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(hideVerticalScrollIndicator, BOOL)
+RCT_CUSTOM_VIEW_PROPERTY(pastedTypes, NSArray<NSPasteboardType>*, RCTUITextView)
+{
+  NSArray<NSPasteboardType> *types = json ? [RCTConvert NSPasteboardTypeArray:json] : nil;
+  if ([view respondsToSelector:@selector(setReadablePasteBoardTypes:)]) {
+    [view setReadablePasteBoardTypes: types];
+  }
+}
+#endif // ]TODO(macOS GH#774)
 
 @end

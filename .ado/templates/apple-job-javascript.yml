@@ -1,28 +1,24 @@
 parameters:
   apply_office_patches: ''
+  slice_name: ''
+  xcode_version: ''
 
 steps:
-  - script: 'brew bundle'
-    displayName: 'brew bundle'
+  - template: apple-node-setup.yml
 
-  # Brew can't access user data for node
-  - script: sudo chown -R $(whoami) /usr/local/*
-    displayName: 'fix node permissions'
-
-  - script: brew link node@12 --overwrite --force
-    displayName: 'ensure node 12'
-
+  # Task Group: Xcode select proper version
   - template: apple-xcode-select.yml
-
-  - template: apple-droid-node-patching.yml
     parameters:
-      apply_office_patches: $(apply_office_patches)
-
-  - script: 'yarn install'
-    displayName: 'yarn install'
+      slice_name: ${{ parameters.slice_name }}
+      xcode_version: ${{ parameters.xcode_version }}
 
   - task: CmdLine@2
-    displayName: yarn test-ci
+    displayName: yarn install
+    inputs:
+      script: yarn install --frozen-lockfile
+
+  - task: CmdLine@2
+    displayName: yarn test-ci [test]
     inputs:
       script: 'yarn test-ci'
   
