@@ -31,7 +31,7 @@
 {
   if (self = [super initWithFrame:frame]) {
     // We set the default behavior to "never" so that iOS
-    // doesn't do weird things to UIScrollView insets automatically
+    // doesn't do weird things to RCTUIScrollView insets automatically
     // and keeps it as an opt-in behavior.
     self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
 
@@ -130,7 +130,7 @@
 
 #pragma mark - UIScrollViewDelegate
 
-- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView
+- (void)scrollViewWillEndDragging:(RCTUIScrollView *)scrollView
                      withVelocity:(CGPoint)velocity
               targetContentOffset:(inout CGPoint *)targetContentOffset
 {
@@ -259,7 +259,7 @@
 
 #pragma mark -
 
-- (BOOL)isHorizontal:(UIScrollView *)scrollView
+- (BOOL)isHorizontal:(RCTUIScrollView *)scrollView
 {
   return scrollView.contentSize.width > self.frame.size.width;
 }
