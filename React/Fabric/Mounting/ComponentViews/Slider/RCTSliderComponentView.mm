@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import "React/RCTSlider.h"
 #import "RCTSliderComponentView.h"
 
 #import <React/RCTConversions.h>
@@ -23,7 +24,7 @@ using namespace facebook::react;
 @end
 
 @implementation RCTSliderComponentView {
-  UISlider *_sliderView;
+  RCTSlider *_sliderView;
   float _previousValue;
 
   UIImage *_trackImage;
@@ -48,7 +49,7 @@ using namespace facebook::react;
     static const auto defaultProps = std::make_shared<const SliderProps>();
     _props = defaultProps;
 
-    _sliderView = [[UISlider alloc] initWithFrame:self.bounds];
+    _sliderView = [[RCTSlider alloc] initWithFrame:self.bounds];
 
     [_sliderView addTarget:self action:@selector(onChange:) forControlEvents:UIControlEventValueChanged];
     [_sliderView addTarget:self
@@ -284,17 +285,17 @@ using namespace facebook::react;
   [_sliderView setThumbImage:thumbImage forState:UIControlStateNormal];
 }
 
-- (void)onChange:(UISlider *)sender
+- (void)onChange:(RCTSlider *)sender
 {
   [self onChange:sender withContinuous:YES];
 }
 
-- (void)sliderTouchEnd:(UISlider *)sender
+- (void)sliderTouchEnd:(RCTSlider *)sender
 {
   [self onChange:sender withContinuous:NO];
 }
 
-- (void)onChange:(UISlider *)sender withContinuous:(BOOL)continuous
+- (void)onChange:(RCTSlider *)sender withContinuous:(BOOL)continuous
 {
   float value = sender.value;
 
