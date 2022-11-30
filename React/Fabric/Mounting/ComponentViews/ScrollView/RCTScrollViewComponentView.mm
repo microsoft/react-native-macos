@@ -529,6 +529,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 
   std::static_pointer_cast<ScrollViewEventEmitter const>(_eventEmitter)->onScrollBeginDrag([self _scrollViewMetrics]);
 }
+
 - (void)scrollViewDidEndZooming:(RCTUIScrollView *)scrollView withView:(nullable UIView *)view atScale:(CGFloat)scale // TODO(macOS GH#774)
 {
   [self _forceDispatchNextScrollEvent];
