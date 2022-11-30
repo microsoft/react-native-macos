@@ -56,7 +56,7 @@ static UIScrollViewIndicatorStyle RCTUIScrollViewIndicatorStyleFromProps(ScrollV
 // This is just a workaround to allow animations based on onScroll event.
 // This is only used to animate sticky headers in ScrollViews, and only the contentOffset and tag is used.
 // TODO: T116850910 [Fabric][iOS] Make Fabric not use legacy RCTEventDispatcher for native-driven AnimatedEvents
-static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NSInteger tag)
+static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NSInteger tag) // TODO(macOS GH#774)
 {
   static uint16_t coalescingKey = 0;
   RCTScrollEvent *scrollEvent = [[RCTScrollEvent alloc] initWithEventName:@"onScroll"
@@ -416,7 +416,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
   return ![self _shouldDisableScrollInteraction];
 }
 
-- (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView
+- (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   if (!_isUserTriggeredScrolling) {
     [self _updateStateWithContentOffset];
@@ -435,24 +435,24 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
   [self _remountChildrenIfNeeded];
 }
 
-- (void)scrollViewDidZoom:(RCTUIScrollView *)scrollView
+- (void)scrollViewDidZoom:(RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   [self scrollViewDidScroll:scrollView];
 }
 
-- (BOOL)scrollViewShouldScrollToTop:(RCTUIScrollView *)scrollView
+- (BOOL)scrollViewShouldScrollToTop:(RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   _isUserTriggeredScrolling = YES;
   return YES;
 }
 
-- (void)scrollViewDidScrollToTop:(RCTUIScrollView *)scrollView
+- (void)scrollViewDidScrollToTop:(RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   _isUserTriggeredScrolling = NO;
   [self _updateStateWithContentOffset];
 }
 
-- (void)scrollViewWillBeginDragging:(RCTUIScrollView *)scrollView
+- (void)scrollViewWillBeginDragging:(RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   [self _forceDispatchNextScrollEvent];
 
@@ -464,7 +464,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
   _isUserTriggeredScrolling = YES;
 }
 
-- (void)scrollViewDidEndDragging:(RCTUIScrollView *)scrollView willDecelerate:(BOOL)decelerate
+- (void)scrollViewDidEndDragging:(RCTUIScrollView *)scrollView willDecelerate:(BOOL)decelerate // TODO(macOS GH#774)
 {
   [self _forceDispatchNextScrollEvent];
 
@@ -476,7 +476,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
   [self _updateStateWithContentOffset];
 }
 
-- (void)scrollViewWillBeginDecelerating:(RCTUIScrollView *)scrollView
+- (void)scrollViewWillBeginDecelerating:(RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   [self _forceDispatchNextScrollEvent];
 
@@ -488,7 +488,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
       ->onMomentumScrollBegin([self _scrollViewMetrics]);
 }
 
-- (void)scrollViewDidEndDecelerating:(RCTUIScrollView *)scrollView
+- (void)scrollViewDidEndDecelerating:(RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   [self _forceDispatchNextScrollEvent];
 
@@ -501,12 +501,12 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
   _isUserTriggeredScrolling = NO;
 }
 
-- (void)scrollViewDidEndScrollingAnimation:(RCTUIScrollView *)scrollView
+- (void)scrollViewDidEndScrollingAnimation:(RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   [self _handleFinishedScrolling:scrollView];
 }
 
-- (void)_handleFinishedScrolling:(RCTUIScrollView *)scrollView
+- (void)_handleFinishedScrolling:(RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   [self _forceDispatchNextScrollEvent];
   [self scrollViewDidScroll:scrollView];
@@ -519,7 +519,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
   [self _updateStateWithContentOffset];
 }
 
-- (void)scrollViewWillBeginZooming:(RCTUIScrollView *)scrollView withView:(nullable UIView *)view
+- (void)scrollViewWillBeginZooming:(RCTUIScrollView *)scrollView withView:(nullable UIView *)view // TODO(macOS GH#774)
 {
   [self _forceDispatchNextScrollEvent];
 
@@ -529,7 +529,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 
   std::static_pointer_cast<ScrollViewEventEmitter const>(_eventEmitter)->onScrollBeginDrag([self _scrollViewMetrics]);
 }
-- (void)scrollViewDidEndZooming:(RCTUIScrollView *)scrollView withView:(nullable UIView *)view atScale:(CGFloat)scale
+- (void)scrollViewDidEndZooming:(RCTUIScrollView *)scrollView withView:(nullable UIView *)view atScale:(CGFloat)scale // TODO(macOS GH#774)
 {
   [self _forceDispatchNextScrollEvent];
 
@@ -541,7 +541,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
   [self _updateStateWithContentOffset];
 }
 
-- (UIView *)viewForZoomingInScrollView:(__unused RCTUIScrollView *)scrollView
+- (UIView *)viewForZoomingInScrollView:(__unused RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   return _containerView;
 }
