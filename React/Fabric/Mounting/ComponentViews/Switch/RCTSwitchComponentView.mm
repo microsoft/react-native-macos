@@ -15,7 +15,7 @@
 #import <react/renderer/components/rncore/RCTComponentViewHelpers.h>
 
 #import "RCTFabricComponentsPlugins.h"
-#import "React/RCTSwitch.h"
+#import "React/RCTSwitch.h" // TODO(macOS GH#774)
 
 using namespace facebook::react;
 
@@ -23,7 +23,7 @@ using namespace facebook::react;
 @end
 
 @implementation RCTSwitchComponentView {
-  RCTSwitch *_switchView;
+  RCTSwitch *_switchView; // TODO(macOS GH#774)
   BOOL _isInitialValueSet;
 }
 
@@ -33,7 +33,7 @@ using namespace facebook::react;
     static const auto defaultProps = std::make_shared<const SwitchProps>();
     _props = defaultProps;
 
-    _switchView = [[RCTSwitch alloc] initWithFrame:self.bounds];
+    _switchView = [[RCTSwitch alloc] initWithFrame:self.bounds]; // TODO(macOS GH#774)
 
     [_switchView addTarget:self action:@selector(onChange:) forControlEvents:UIControlEventValueChanged];
 
@@ -91,7 +91,7 @@ using namespace facebook::react;
   [super updateProps:props oldProps:oldProps];
 }
 
-- (void)onChange:(RCTSwitch *)sender
+- (void)onChange:(RCTSwitch *)sender // TODO(macOS GH#774)
 {
   const auto &props = *std::static_pointer_cast<const SwitchProps>(_props);
   if (props.value == sender.on) {
