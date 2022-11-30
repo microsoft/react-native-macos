@@ -99,12 +99,12 @@ static void UpdateActiveTouchWithUITouch(
   }
 }
 
-static ActiveTouch CreateTouchWithUITouch(UITouch *uiTouch, RCTUIView *rootComponentView, CGPoint rootViewOriginOffset)
+static ActiveTouch CreateTouchWithUITouch(UITouch *uiTouch, RCTUIView *rootComponentView, CGPoint rootViewOriginOffset) // TODO(macOS GH#774)
 {
   ActiveTouch activeTouch = {};
 
   // Find closest Fabric-managed touchable view
-  RCTUIView *componentView = uiTouch.view;
+  RCTUIView *componentView = uiTouch.view; // TODO(macOS GH#774)
   while (componentView) {
     if ([componentView respondsToSelector:@selector(touchEventEmitterAtPoint:)]) {
       activeTouch.eventEmitter = [(id<RCTTouchableComponentViewProtocol>)componentView
@@ -164,7 +164,7 @@ struct PointerHasher {
   /*
    * We hold the view weakly to prevent a retain cycle.
    */
-  __weak RCTUIView *_rootComponentView;
+  __weak RCTUIView *_rootComponentView; // TODO(macOS GH#774)
   IdentifierPool<11> _identifierPool;
 }
 
@@ -187,7 +187,7 @@ struct PointerHasher {
 
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)action)
 
-- (void)attachToView:(RCTUIView *)view
+- (void)attachToView:(RCTUIView *)view // TODO(macOS GH#774)
 {
   RCTAssert(self.view == nil, @"RCTTouchHandler already has attached view.");
 
@@ -195,7 +195,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   _rootComponentView = view;
 }
 
-- (void)detachFromView:(RCTUIView *)view
+- (void)detachFromView:(RCTUIView *)view // TODO(macOS GH#774)
 {
   RCTAssertParam(view);
   RCTAssert(self.view == view, @"RCTTouchHandler attached to another view.");
