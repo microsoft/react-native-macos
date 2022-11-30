@@ -171,10 +171,10 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
                                           initialProperties:initialProperties];
 }
 
-- (RCTUIView *)findComponentViewWithTag_DO_NOT_USE_DEPRECATED:(NSInteger)tag
+- (RCTUIView *)findComponentViewWithTag_DO_NOT_USE_DEPRECATED:(NSInteger)tag // TODO(macOS GH#774)
 {
   RCTUIView<RCTComponentViewProtocol> *componentView =
-      [_mountingManager.componentViewRegistry findComponentViewWithTag:tag];
+      [_mountingManager.componentViewRegistry findComponentViewWithTag:tag]; // TODO(macOS GH#774)
   return componentView;
 }
 
@@ -187,7 +187,7 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
 
   ReactTag tag = [reactTag integerValue];
   RCTUIView<RCTComponentViewProtocol> *componentView =
-      [_mountingManager.componentViewRegistry findComponentViewWithTag:tag];
+      [_mountingManager.componentViewRegistry findComponentViewWithTag:tag]; // TODO(macOS GH#774)
   if (componentView == nil) {
     return NO; // This view probably isn't managed by Fabric
   }

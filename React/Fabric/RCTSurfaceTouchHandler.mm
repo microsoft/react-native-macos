@@ -60,7 +60,7 @@ struct ActiveTouch {
   /*
    * A component view on which the touch was begun.
    */
-  __strong RCTUIView<RCTComponentViewProtocol> *componentView = nil;
+  __strong RCTUIView<RCTComponentViewProtocol> *componentView = nil; // TODO(macOS GH#774)
 
   struct Hasher {
     size_t operator()(const ActiveTouch &activeTouch) const
@@ -81,7 +81,7 @@ static void UpdateActiveTouchWithUITouch(
     ActiveTouch &activeTouch,
     UITouch *uiTouch,
     RCTUIView *rootComponentView,
-    CGPoint rootViewOriginOffset)
+    CGPoint rootViewOriginOffset) // TODO(macOS GH#774)
 {
   CGPoint offsetPoint = [uiTouch locationInView:activeTouch.componentView];
   CGPoint screenPoint = [uiTouch locationInView:uiTouch.window];

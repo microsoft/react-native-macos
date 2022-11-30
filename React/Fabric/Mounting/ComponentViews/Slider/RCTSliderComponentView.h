@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * RCTUIView class for root <Slider> component.
+ * UIView class for root <Slider> component.
  */
 @interface RCTSliderComponentView : RCTViewComponentView
 

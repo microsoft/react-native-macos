@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * RCTUIView class for root <Image> component.
+ * UIView class for root <Image> component.
  */
 @interface RCTImageComponentView : RCTViewComponentView <RCTImageResponseDelegate> {
  @protected

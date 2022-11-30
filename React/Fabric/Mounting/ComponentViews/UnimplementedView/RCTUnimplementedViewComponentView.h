@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /*
- * RCTUIView class for all kinds of <UnimplementedView> components.
+ * UIView class for all kinds of <UnimplementedView> components.
  */
 @interface RCTUnimplementedViewComponentView : RCTViewComponentView
 

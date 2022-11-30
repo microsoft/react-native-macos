@@ -20,7 +20,7 @@ static NSAttributedString *RCTSanitizeAttributedString(NSAttributedString *attri
 
 void RCTCopyBackedTextInput(
     RCTUIView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput)
+    RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput) // TODO(macOS GH#774)
 {
   toTextInput.attributedText = RCTSanitizeAttributedString(fromTextInput.attributedText);
   toTextInput.placeholder = fromTextInput.placeholder;

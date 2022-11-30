@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
  * The primary goals of the RCTSurface are:
  *  * ability to measure and layout the surface in a thread-safe
  *    and synchronous manner;
- *  * ability to create a RCTUIView instance on demand (later);
+ *  * ability to create a UIView instance on demand (later);
  *  * ability to communicate the current stage of the surface granularly.
  */
 @interface RCTFabricSurface : NSObject <RCTSurfaceProtocol>

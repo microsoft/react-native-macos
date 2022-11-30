@@ -26,14 +26,14 @@ using namespace facebook::react;
   RCTTextLayoutManager *_layoutManager;
   ParagraphAttributes _paragraphAttributes;
   CGRect _frame;
-  __weak RCTUIView *_view;
+  __weak RCTUIView *_view; // TODO(macOS GH#774)
 }
 
 - (instancetype)initWithString:(facebook::react::AttributedString)attributedString
                  layoutManager:(RCTTextLayoutManager *)layoutManager
            paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                          frame:(CGRect)frame
-                          view:(RCTUIView *)view
+                          view:(RCTUIView *)view // TODO(macOS GH#774)
 {
   if (self = [super init]) {
     _attributedString = attributedString;

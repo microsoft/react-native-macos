@@ -29,7 +29,7 @@
 
 using namespace facebook::react;
 
-static SurfaceId RCTSurfaceIdForView(RCTUIView *view)
+static SurfaceId RCTSurfaceIdForView(RCTUIView *view) // TODO(macOS GH#774)
 {
   do {
     if (RCTIsReactRootView(@(view.tag))) {
@@ -81,7 +81,7 @@ static void RCTPerformMountInstructions(
         auto &newChildViewDescriptor = [registry componentViewDescriptorWithTag:newChildShadowView.tag];
         auto &parentViewDescriptor = [registry componentViewDescriptorWithTag:parentShadowView.tag];
 
-        RCTUIView<RCTComponentViewProtocol> *newChildComponentView = newChildViewDescriptor.view;
+        RCTUIView<RCTComponentViewProtocol> *newChildComponentView = newChildViewDescriptor.view; // TODO(macOS GH#774)
 
         RCTAssert(newChildShadowView.props, @"`newChildShadowView.props` must not be null.");
 
@@ -109,7 +109,7 @@ static void RCTPerformMountInstructions(
         auto &oldChildShadowView = mutation.oldChildShadowView;
         auto &newChildShadowView = mutation.newChildShadowView;
         auto &newChildViewDescriptor = [registry componentViewDescriptorWithTag:newChildShadowView.tag];
-        RCTUIView<RCTComponentViewProtocol> *newChildComponentView = newChildViewDescriptor.view;
+        RCTUIView<RCTComponentViewProtocol> *newChildComponentView = newChildViewDescriptor.view; // TODO(macOS GH#774)
 
         auto mask = RNComponentViewUpdateMask{};
 
@@ -168,7 +168,7 @@ static void RCTPerformMountInstructions(
   _contextContainer = contextContainer;
 }
 
-- (void)attachSurfaceToView:(RCTUIView *)view surfaceId:(SurfaceId)surfaceId
+- (void)attachSurfaceToView:(RCTUIView *)view surfaceId:(SurfaceId)surfaceId // TODO(macOS GH#774)
 {
   RCTAssertMainQueue();
 
@@ -179,7 +179,7 @@ static void RCTPerformMountInstructions(
   [view addSubview:rootViewDescriptor.view];
 }
 
-- (void)detachSurfaceFromView:(RCTUIView *)view surfaceId:(SurfaceId)surfaceId
+- (void)detachSurfaceFromView:(RCTUIView *)view surfaceId:(SurfaceId)surfaceId // TODO(macOS GH#774)
 {
   RCTAssertMainQueue();
   RCTComponentViewDescriptor rootViewDescriptor = [_componentViewRegistry componentViewDescriptorWithTag:surfaceId];
@@ -288,7 +288,7 @@ static void RCTPerformMountInstructions(
   ReactTag reactTag = shadowView.tag;
   RCTExecuteOnMainQueue(^{
     RCTUIView<RCTComponentViewProtocol> *componentView =
-        [self->_componentViewRegistry findComponentViewWithTag:reactTag];
+        [self->_componentViewRegistry findComponentViewWithTag:reactTag]; // TODO(macOS GH#774)
     [componentView setIsJSResponder:isJSResponder];
   });
 }
@@ -298,7 +298,7 @@ static void RCTPerformMountInstructions(
                       componentDescriptor:(const ComponentDescriptor &)componentDescriptor
 {
   RCTAssertMainQueue();
-  RCTUIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag];
+  RCTUIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag]; // TODO(macOS GH#774)
   SurfaceId surfaceId = RCTSurfaceIdForView(componentView);
   Props::Shared oldProps = [componentView props];
   Props::Shared newProps = componentDescriptor.cloneProps(
@@ -332,14 +332,14 @@ static void RCTPerformMountInstructions(
                                           args:(NSArray *)args
 {
   RCTAssertMainQueue();
-  RCTUIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag];
+  RCTUIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag]; // TODO(macOS GH#774)
   [componentView handleCommand:commandName args:args];
 }
 
 - (void)synchronouslyDispatchAccessbilityEventOnUIThread:(ReactTag)reactTag eventType:(NSString *)eventType
 {
   if ([@"focus" isEqualToString:eventType]) {
-    RCTUIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag];
+    RCTUIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag]; // TODO(macOS GH#774)
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, componentView);
   }
 }

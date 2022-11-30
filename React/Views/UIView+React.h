@@ -29,7 +29,7 @@
 
 /**
  * Determines whether or not a view should ignore inverted colors or not. Used to set
- * RCTUIView property accessibilityIgnoresInvertColors in iOS 11+.
+ * UIView property accessibilityIgnoresInvertColors in iOS 11+.
  */
 @property (nonatomic, assign) BOOL shouldAccessibilityIgnoresInvertColors;
 

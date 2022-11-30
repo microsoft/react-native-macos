@@ -30,7 +30,7 @@ using namespace facebook::react;
 
 @implementation RCTTextInputComponentView {
   TextInputShadowNode::ConcreteState::Shared _state;
-  RCTUIView<RCTBackedTextInputViewProtocol> *_backedTextInputView;
+  RCTUIView<RCTBackedTextInputViewProtocol> *_backedTextInputView; // TODO(macOS GH#774)
   NSUInteger _mostRecentEventCount;
   NSAttributedString *_lastStringStateWasUpdatedWith;
 
@@ -58,7 +58,7 @@ using namespace facebook::react;
   BOOL _didMoveToWindow;
 }
 
-#pragma mark - RCTUIView overrides
+#pragma mark - UIView overrides
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -603,7 +603,7 @@ using namespace facebook::react;
 - (void)_setMultiline:(BOOL)multiline
 {
   [_backedTextInputView removeFromSuperview];
-  RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new];
+  RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new]; // TODO(macOS GH#774)
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
   _backedTextInputView = backedTextInputView;

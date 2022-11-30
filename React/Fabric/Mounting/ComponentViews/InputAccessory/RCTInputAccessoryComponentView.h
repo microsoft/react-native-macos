@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * RCTUIView class for root <InputAccessoryView> component.
+ * UIView class for root <InputAccessoryView> component.
  */
 @interface RCTInputAccessoryComponentView : RCTViewComponentView
 

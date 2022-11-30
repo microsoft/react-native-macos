@@ -9,7 +9,7 @@
 #import <React/RCTViewComponentView.h>
 
 /**
- * RCTUIView class for root <ModalHostView> component.
+ * UIView class for root <ModalHostView> component.
  */
 @interface RCTModalHostViewComponentView : RCTViewComponentView <RCTMountingTransactionObserving>
 
