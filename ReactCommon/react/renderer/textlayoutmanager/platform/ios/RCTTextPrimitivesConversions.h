@@ -71,24 +71,24 @@ inline static NSUnderlineStyle RCTNSUnderlineStyleFromTextDecorationStyle(TextDe
   }
 }
 
-inline static RCTUIColor *RCTUIColorFromSharedColor(const SharedColor &sharedColor)
+inline static RCTUIColor *RCTUIColorFromSharedColor(const SharedColor &sharedColor) // TODO(macOS GH#774)
 {
   if (!sharedColor) {
     return nil;
   }
 
   if (*facebook::react::clearColor() == *sharedColor) {
-    return [RCTUIColor clearColor];
+    return [RCTUIColor clearColor]; // TODO(macOS GH#774)
   }
 
   if (*facebook::react::blackColor() == *sharedColor) {
-    return [RCTUIColor blackColor];
+    return [RCTUIColor blackColor]; // TODO(macOS GH#774)
   }
 
   if (*facebook::react::whiteColor() == *sharedColor) {
-    return [RCTUIColor whiteColor];
+    return [RCTUIColor whiteColor]; // TODO(macOS GH#774)
   }
 
   auto components = facebook::react::colorComponentsFromColor(sharedColor);
-  return [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha];
+  return [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha]; // TODO(macOS GH#774)
 }

@@ -83,9 +83,9 @@ inline static CGFloat RCTEffectiveFontSizeMultiplierFromTextAttributes(const Tex
       : 1.0;
 }
 
-inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const TextAttributes &textAttributes)
+inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const TextAttributes &textAttributes) // TODO(macOS GH#774)
 {
-  RCTUIColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ?: [RCTUIColor blackColor];
+  RCTUIColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ?: [RCTUIColor blackColor]; // TODO(macOS GH#774)
 
   if (!isnan(textAttributes.opacity)) {
     effectiveForegroundColor = [effectiveForegroundColor
@@ -95,16 +95,16 @@ inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const Te
   return effectiveForegroundColor;
 }
 
-inline static RCTUIColor *RCTEffectiveBackgroundColorFromTextAttributes(const TextAttributes &textAttributes)
+inline static RCTUIColor *RCTEffectiveBackgroundColorFromTextAttributes(const TextAttributes &textAttributes) // TODO(macOS GH#774)
 {
-  RCTUIColor *effectiveBackgroundColor = RCTUIColorFromSharedColor(textAttributes.backgroundColor);
+  RCTUIColor *effectiveBackgroundColor = RCTUIColorFromSharedColor(textAttributes.backgroundColor); // TODO(macOS GH#774)
 
   if (effectiveBackgroundColor && !isnan(textAttributes.opacity)) {
     effectiveBackgroundColor = [effectiveBackgroundColor
         colorWithAlphaComponent:CGColorGetAlpha(effectiveBackgroundColor.CGColor) * textAttributes.opacity];
   }
 
-  return effectiveBackgroundColor ?: [RCTUIColor clearColor];
+  return effectiveBackgroundColor ?: [RCTUIColor clearColor]; // TODO(macOS GH#774)
 }
 
 NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(TextAttributes const &textAttributes)
@@ -118,7 +118,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
   }
 
   // Colors
-  RCTUIColor *effectiveForegroundColor = RCTEffectiveForegroundColorFromTextAttributes(textAttributes);
+  RCTUIColor *effectiveForegroundColor = RCTEffectiveForegroundColorFromTextAttributes(textAttributes); // TODO(macOS GH#774)
 
   if (textAttributes.foregroundColor || !isnan(textAttributes.opacity)) {
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
@@ -174,7 +174,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
     NSUnderlineStyle style = RCTNSUnderlineStyleFromTextDecorationStyle(
         textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid));
 
-    RCTUIColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor);
+    RCTUIColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor); // TODO(macOS GH#774)
 
     // Underline
     if (textDecorationLineType == TextDecorationLineType::Underline ||
@@ -203,7 +203,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
     NSShadow *shadow = [NSShadow new];
     shadow.shadowOffset = CGSize{textShadowOffset.width, textShadowOffset.height};
     shadow.shadowBlurRadius = textAttributes.textShadowRadius;
-    shadow.shadowColor = RCTUIColorFromSharedColor(textAttributes.textShadowColor);
+    shadow.shadowColor = RCTUIColorFromSharedColor(textAttributes.textShadowColor); // TODO(macOS GH#774)
     attributes[NSShadowAttributeName] = shadow;
   }
 

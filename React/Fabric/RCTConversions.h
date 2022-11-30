@@ -35,32 +35,32 @@ inline std::string RCTStringFromNSString(NSString *string)
   return std::string{string.UTF8String ?: ""};
 }
 
-inline RCTUIColor *_Nullable RCTUIColorFromSharedColor(facebook::react::SharedColor const &sharedColor)
+inline RCTUIColor *_Nullable RCTUIColorFromSharedColor(facebook::react::SharedColor const &sharedColor) // TODO(macOS GH#774)
 {
   if (!sharedColor) {
     return nil;
   }
 
   if (*facebook::react::clearColor() == *sharedColor) {
-    return [RCTUIColor clearColor];
+    return [RCTUIColor clearColor]; // TODO(macOS GH#774)
   }
 
   if (*facebook::react::blackColor() == *sharedColor) {
-    return [RCTUIColor blackColor];
+    return [RCTUIColor blackColor]; // TODO(macOS GH#774)
   }
 
   if (*facebook::react::whiteColor() == *sharedColor) {
-    return [RCTUIColor whiteColor];
+    return [RCTUIColor whiteColor]; // TODO(macOS GH#774)
   }
 
   auto components = facebook::react::colorComponentsFromColor(sharedColor);
-  return [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha];
+  return [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha]; // TODO(macOS GH#774)
 }
 
 inline CF_RETURNS_RETAINED CGColorRef
 RCTCreateCGColorRefFromSharedColor(const facebook::react::SharedColor &sharedColor)
 {
-  return CGColorRetain(RCTUIColorFromSharedColor(sharedColor).CGColor);
+  return CGColorRetain(RCTUIColorFromSharedColor(sharedColor).CGColor); // TODO(macOS GH#774)
 }
 
 inline CGPoint RCTCGPointFromPoint(const facebook::react::Point &point)
