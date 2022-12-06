@@ -42,7 +42,7 @@
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
 @optional
-@property (nonatomic, weak) RCTUIScrollView *scrollView;
+@property (nonatomic, weak) UIScrollView *scrollView;
 #endif // TODO(macOS GH#774)
 
 @end
