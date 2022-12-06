@@ -8,12 +8,12 @@ steps:
         $npmVersion = $lines.Trim().Split()[1].Trim('",');
         echo "##vso[task.setvariable variable=buildNumber]$npmVersion"
 
-  # Very similar to the default pack task .. but appends 'ndk21b' to the nuget pack version
+  # Create nuspec and the library dependency map
   - task: CmdLine@2
     displayName: 'ElfRead'
     workingDirectory: $(System.DefaultWorkingDirectory)/android-patches/tools/ElfRead
     inputs:
-      script: .\gradlew run --args="--rnRootArg $(System.DefaultWorkingDirectory) --tmpPathArg $(Agent.TempDirectory)"
+      script: ./gradlew run --args="--rnRootArg $(System.DefaultWorkingDirectory) --tmpPathArg $(Agent.TempDirectory)"
 
   # Very similar to the default pack task .. but appends 'ndk21b' to the nuget pack version
   - task: CmdLine@2
