@@ -42,6 +42,8 @@ struct InstanceCallback {
 class RN_EXPORT Instance {
  public:
   ~Instance();
+
+  void setModuleRegistry(std::shared_ptr<ModuleRegistry> moduleRegistry);
   void initializeBridge(
       std::unique_ptr<InstanceCallback> callback,
       std::shared_ptr<JSExecutorFactory> jsef,

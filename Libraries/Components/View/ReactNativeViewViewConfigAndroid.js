@@ -19,6 +19,12 @@ const ReactNativeViewViewConfigAndroid = {
         captured: 'onSelectCapture',
       },
     },
+    topOnFocusChange: {
+      phasedRegistrationNames: {
+      bubbled: 'onFocusChange',
+      captured: 'onFocusChangeCapture',
+      },
+    },
     topAssetDidLoad: {
       phasedRegistrationNames: {
         bubbled: 'onAssetDidLoad',

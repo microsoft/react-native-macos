@@ -118,4 +118,9 @@ public class DevSettingsModule extends NativeDevSettingsSpec {
   public void removeListeners(double count) {
     // iOS only
   }
+
+  @Override
+  public void setIsSecondaryClickToShowDevMenuEnabled(boolean enabled) {
+    // macOS only.
+  }
 }

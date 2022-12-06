@@ -14,8 +14,6 @@
 
 #include <folly/dynamic.h>
 
-using namespace std::placeholders;
-
 namespace facebook {
 namespace react {
 

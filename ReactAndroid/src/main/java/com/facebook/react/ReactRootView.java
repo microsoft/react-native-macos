@@ -446,16 +446,12 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
       mInitialUITemplate = initialUITemplate;
 
       mReactInstanceManager.createReactContextInBackground();
-      // if in this experiment, we initialize the root earlier in startReactApplication
-      // instead of waiting for the initial measure
-      if (ReactFeatureFlags.enableEagerRootViewAttachment) {
-        if (!mWasMeasured) {
-          // Ideally, those values will be used by default, but we only update them here to scope
-          // this change to `enableEagerRootViewAttachment` experiment.
-          setSurfaceConstraintsToScreenSize();
-        }
-        attachToReactInstanceManager();
+      if (!mWasMeasured) {
+        // Ideally, those values will be used by default, but we only update them here to scope
+        // this change to `enableEagerRootViewAttachment` experiment.
+        setSurfaceConstraintsToScreenSize();
       }
+      attachToReactInstanceManager();
     } finally {
       Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
     }

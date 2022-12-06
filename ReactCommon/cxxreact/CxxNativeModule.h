@@ -48,6 +48,12 @@ class RN_EXPORT CxxNativeModule : public NativeModule {
       unsigned int hookId,
       folly::dynamic &&args) override;
 
+  // Adding this factory method so that Office Android can delay load binary reactnativejni
+  static std::unique_ptr<CxxNativeModule> Make(std::weak_ptr<Instance> instance,
+                                               std::string name,
+                                               xplat::module::CxxModule::Provider provider,
+                                               std::shared_ptr<MessageQueueThread> messageQueueThread);
+
   static void setShouldWarnOnUse(bool value);
 
  private:
