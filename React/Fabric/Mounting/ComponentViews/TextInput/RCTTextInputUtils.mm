@@ -243,4 +243,4 @@ UITextInputPasswordRules *RCTUITextInputPasswordRulesFromString(std::string cons
 {
   return [UITextInputPasswordRules passwordRulesWithDescriptor:RCTNSStringFromStringNilIfEmpty(passwordRules)];
 }
-#endif
+#endif // ]TODO(macOS GH#774)
