@@ -551,42 +551,22 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   self.verticalScrollElasticity = alwaysBounceVertical ? NSScrollElasticityAllowed : NSScrollElasticityNone;
 }
 
-
 @end
 
-BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
-{
-  // NSViews are always clipped to bounds
-  BOOL clipsToBounds = YES;
+// RCTUILabel
 
-  // But see if UIView overrides that behavior
-  if ([view respondsToSelector:@selector(clipsToBounds)])
-  {
-    clipsToBounds = [(id)view clipsToBounds];
-  }
-
-  return clipsToBounds;
-}
-
-@implementation RCTClipView
+@implementation RCTUILabel {}
 
 - (instancetype)initWithFrame:(NSRect)frameRect
 {
-   if (self = [super initWithFrame:frameRect]) {
-    self.constrainScrolling = NO;
-    self.drawsBackground = NO;
+  if (self = [super initWithFrame:frameRect]) {
+    [self setBezeled:NO];
+    [self setDrawsBackground:NO];
+    [self setEditable:NO];
+    [self setSelectable:NO];
   }
   
   return self;
-}
-
-- (NSRect)constrainBoundsRect:(NSRect)proposedBounds
-{
-  if (self.constrainScrolling) {
-    return NSMakeRect(0, 0, 0, 0);
-  }
-  
-  return [super constrainBoundsRect:proposedBounds];
 }
 
 @end

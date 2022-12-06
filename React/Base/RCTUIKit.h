@@ -432,7 +432,6 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 @end // ]TODO(macOS GH#774)
 
-
 NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *event)
 {
   return [view hitTest:point];
@@ -473,9 +472,20 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 // fabric component types
 //
 
+// RCTUISlider
+
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
 #define RCTUISlider UISlider
 #else
 @interface RCTUISlider : NSSlider
+@end
+#endif // ]TODO(macOS GH#774)
+
+// RCTUILabel
+
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#define RCTUILabel UILabel
+#else
+@interface RCTUILabel : NSTextField
 @end
 #endif // ]TODO(macOS GH#774)
