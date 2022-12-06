@@ -203,7 +203,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
     NSShadow *shadow = [NSShadow new];
     shadow.shadowOffset = CGSize{textShadowOffset.width, textShadowOffset.height};
     shadow.shadowBlurRadius = textAttributes.textShadowRadius;
-    shadow.shadowColor = RCTUIColorFromSharedColor(textAttributes.textShadowColor); // TODO(macOS GH#774)
+    shadow.shadowColor = RCTUIColorFromSharedColor(textAttributes.textShadowColor);
     attributes[NSShadowAttributeName] = shadow;
   }
 

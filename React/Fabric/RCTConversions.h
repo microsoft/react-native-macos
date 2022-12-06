@@ -60,7 +60,7 @@ inline RCTUIColor *_Nullable RCTUIColorFromSharedColor(facebook::react::SharedCo
 inline CF_RETURNS_RETAINED CGColorRef
 RCTCreateCGColorRefFromSharedColor(const facebook::react::SharedColor &sharedColor)
 {
-  return CGColorRetain(RCTUIColorFromSharedColor(sharedColor).CGColor); // TODO(macOS GH#774)
+  return CGColorRetain(RCTUIColorFromSharedColor(sharedColor).CGColor);
 }
 
 inline CGPoint RCTCGPointFromPoint(const facebook::react::Point &point)
