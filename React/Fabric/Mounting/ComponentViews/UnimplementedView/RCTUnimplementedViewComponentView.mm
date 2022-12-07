@@ -31,13 +31,17 @@ using namespace facebook::react;
     _props = defaultProps;
 
     _label = [[RCTUILabel alloc] initWithFrame:self.bounds]; // TODO(macOS GH#774)
-    _label.backgroundColor = [RCTUIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.3];
+    _label.backgroundColor = [RCTUIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.3]; // TODO(macOS GH#774)
     _label.lineBreakMode = NSLineBreakByCharWrapping;
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
     _label.numberOfLines = 0;
+#endif // ]TODO(macOS GH#774)
     _label.textAlignment = NSTextAlignmentCenter;
     _label.textColor = [RCTUIColor whiteColor]; // TODO(macOS GH#774)
     _label.allowsDefaultTighteningForTruncation = YES;
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
     _label.adjustsFontSizeToFitWidth = YES;
+#endif // ]TODO(macOS GH#774)
 
     self.contentView = _label;
   }
