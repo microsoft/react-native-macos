@@ -432,6 +432,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 @end // ]TODO(macOS GH#774)
 
+
 NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *event)
 {
   return [view hitTest:point];
