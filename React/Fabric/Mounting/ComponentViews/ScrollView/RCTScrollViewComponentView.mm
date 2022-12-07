@@ -334,10 +334,12 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
   [((RCTEnhancedScrollView *)_scrollView) preserveContentOffsetWithBlock:block];
 }
 
+- (void)mountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // TODO(macOS GH#774)
 {
   [_containerView insertSubview:childComponentView atIndex:index];
 }
 
+- (void)unmountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // TODO(macOS GH#774)
 {
   [childComponentView removeFromSuperview];
 }
@@ -348,9 +350,11 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
  */
 - (BOOL)_shouldDisableScrollInteraction
 {
+  RCTUIView *ancestorView = self.superview;  // TODO(macOS GH#774)
 
   while (ancestorView) {
     if ([ancestorView respondsToSelector:@selector(isJSResponder)]) {
+      BOOL isJSResponder = ((RCTUIView<RCTComponentViewProtocol> *)ancestorView).isJSResponder; // TODO(macOS GH#774)
       if (isJSResponder) {
         return YES;
       }
@@ -405,6 +409,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 
 #pragma mark - UIScrollViewDelegate
 
+- (BOOL)touchesShouldCancelInContentView:(__unused RCTUIView *)view // TODO(macOS GH#774)
 {
   // Historically, `UIScrollView`s in React Native do not cancel touches
   // started on `UIControl`-based views (as normal iOS `UIScrollView`s do).
@@ -605,6 +610,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 
 #pragma mark - Child views mounting
 
+- (void)updateClippedSubviewsWithClipRect:(CGRect)clipRect relativeToView:(RCTUIView *)clipView // TODO(macOS GH#774)
 {
   // Do nothing. ScrollView manages its subview clipping individually in `_remountChildren`.
 }
