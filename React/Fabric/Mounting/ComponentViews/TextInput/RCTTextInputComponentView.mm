@@ -30,7 +30,7 @@ using namespace facebook::react;
 
 @implementation RCTTextInputComponentView {
   TextInputShadowNode::ConcreteState::Shared _state;
-  UIView<RCTBackedTextInputViewProtocol> *_backedTextInputView;
+  RCTUIView<RCTBackedTextInputViewProtocol> *_backedTextInputView; // TODO(macOS GH#774)
   NSUInteger _mostRecentEventCount;
   NSAttributedString *_lastStringStateWasUpdatedWith;
 
@@ -409,7 +409,7 @@ using namespace facebook::react;
 
 #pragma mark - RCTBackedTextInputDelegate (UIScrollViewDelegate)
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+- (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // TODO(macOS GH#774)
 {
   if (_eventEmitter) {
     std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onScroll([self _textInputMetrics]);
@@ -603,7 +603,7 @@ using namespace facebook::react;
 - (void)_setMultiline:(BOOL)multiline
 {
   [_backedTextInputView removeFromSuperview];
-  UIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new];
+  RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new]; // TODO(macOS GH#774)
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
   _backedTextInputView = backedTextInputView;
