@@ -35,15 +35,21 @@ using namespace facebook::react;
     _label.lineBreakMode = NSLineBreakByCharWrapping;
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
     _label.numberOfLines = 0;
-#endif // ]TODO(macOS GH#774)
     _label.textAlignment = NSTextAlignmentCenter;
+#else
+    _label.alignment = NSTextAlignmentCenter;
+#endif // ]TODO(macOS GH#774)
     _label.textColor = [RCTUIColor whiteColor]; // TODO(macOS GH#774)
     _label.allowsDefaultTighteningForTruncation = YES;
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
     _label.adjustsFontSizeToFitWidth = YES;
 #endif // ]TODO(macOS GH#774)
 
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
     self.contentView = _label;
+#else
+    [self.contentView addSubview:_label];
+#endif // ]TODO(macOS GH#774)
   }
 
   return self;

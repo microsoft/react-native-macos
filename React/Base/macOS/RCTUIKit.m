@@ -564,6 +564,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     [self setDrawsBackground:NO];
     [self setEditable:NO];
     [self setSelectable:NO];
+    [self setWantsLayer:YES];
   }
   
   return self;
