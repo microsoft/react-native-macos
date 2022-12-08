@@ -585,6 +585,7 @@ using namespace facebook::react;
                                                 toPosition:selectedTextRange.end];
   return AttributedString::Range{(int)start, (int)(end - start)};
 #else
+  // [Fabric] Placeholder till we implement selection in Fabric
   return AttributedString::Range({0, 1});
 #endif // ]TODO(macOS GH#774)
 }
