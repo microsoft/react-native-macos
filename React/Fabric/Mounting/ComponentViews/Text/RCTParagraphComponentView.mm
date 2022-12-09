@@ -151,6 +151,7 @@ using namespace facebook::react;
   return NO;
 }
 
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
 - (NSArray *)accessibilityElements
 {
   auto const &paragraphProps = *std::static_pointer_cast<ParagraphProps const>(_props);
@@ -186,6 +187,7 @@ using namespace facebook::react;
 {
   return [super accessibilityTraits] | UIAccessibilityTraitStaticText;
 }
+#endif // ]TODO(macOS GH#774)
 
 #pragma mark - RCTTouchableComponentViewProtocol
 
