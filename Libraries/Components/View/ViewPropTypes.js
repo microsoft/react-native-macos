@@ -62,7 +62,7 @@ type DirectEventProps = $ReadOnly<{|
   onAccessibilityTap?: ?() => mixed,
 
   // [TODO(macOS GH#774)
-  /** 
+  /**
    * When `accessible` is true, the system will try to invoke this function
    * when the user performs accessibility double click gesture.
    */
@@ -472,7 +472,7 @@ type MacOSViewProps = $ReadOnly<{|
    *
    * @platform macos
    */
-  draggedTypes?: ?DraggedTypesType, 
+  draggedTypes?: ?DraggedTypesType,
 
   /**
    * Reverses the direction of scroll. Uses native inversion on macOS and scale transforms of -1 elsewhere
