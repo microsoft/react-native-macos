@@ -79,9 +79,6 @@ def use_react_native! (options={})
   pod 'boost', :podspec => "#{prefix}/third-party-podspecs/boost.podspec"
   pod 'RCT-Folly', :podspec => "#{prefix}/third-party-podspecs/RCT-Folly.podspec"
 
-  # TODO(macOS GH#214)
-  pod 'boost-for-react-native', :podspec => "#{prefix}/third-party-podspecs/boost-for-react-native.podspec"
-
   if ENV['USE_CODEGEN_DISCOVERY'] == '1'
     app_path = options[:app_path]
     config_file_dir = options[:config_file_dir]
@@ -355,7 +352,7 @@ def get_react_codegen_spec(options={})
     'homepage' => 'https://facebook.com/',
     'license' => 'Unlicense',
     'authors' => 'Facebook',
-    'compiler_flags'  => "#{folly_compiler_flags} #{boost_compiler_flags} -Wno-nullability-completeness",
+    'compiler_flags'  => "#{folly_compiler_flags} #{boost_compiler_flags} -Wno-nullability-completeness -std=c++17",
     'source' => { :git => '' },
     'header_mappings_dir' => './',
     'platforms' => {

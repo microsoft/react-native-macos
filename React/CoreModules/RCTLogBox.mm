@@ -13,7 +13,6 @@
 #import <React/RCTLog.h>
 #import <React/RCTRedBoxSetEnabled.h>
 #import <React/RCTSurface.h>
-
 #import "CoreModulesPlugins.h"
 
 #if RCT_DEV_MENU
@@ -22,7 +21,8 @@
 @end
 
 @implementation RCTLogBox {
-  RCTLogBoxWindow *_window; // TODO(macOS GH#774) Renamed from _view to _window
+  RCTLogBoxView *_view;
+  __weak id<RCTSurfacePresenterStub> _bridgelessSurfacePresenter;
 }
 
 @synthesize bridge = _bridge;
@@ -32,6 +32,11 @@ RCT_EXPORT_MODULE()
 + (BOOL)requiresMainQueueSetup
 {
   return YES;
+}
+
+- (void)setSurfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
+{
+  _bridgelessSurfacePresenter = surfacePresenter;
 }
 
 RCT_EXPORT_METHOD(show)
@@ -44,25 +49,36 @@ RCT_EXPORT_METHOD(show)
         return;
       }
 
-      if (strongSelf->_window) { // TODO(macOS GH#774) Renamed from _view to _window
-        [strongSelf->_window show]; // TODO(macOS GH#774) Renamed from _view to _window
+      if (strongSelf->_view) {
+        [strongSelf->_view show];
         return;
       }
 
-      if (strongSelf->_bridge) {
-        if (strongSelf->_bridge.valid) {
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
-          strongSelf->_window = [[RCTLogBoxWindow alloc] initWithFrame:[UIScreen mainScreen].bounds // TODO(macOS GH#774) Renamed from _view to _window
-                                                            bridge:strongSelf->_bridge];
-#else // [TODO(macOS GH#774)
-          strongSelf->_window = [[RCTLogBoxWindow alloc] initWithBridge:self->_bridge]; // TODO(macOS GH#774) Renamed from _view to _window
+      if (strongSelf->_bridgelessSurfacePresenter) {
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+        strongSelf->_view = [[RCTLogBoxView alloc] initWithFrame:RCTKeyWindow().frame
+                                                surfacePresenter:strongSelf->_bridgelessSurfacePresenter];
+#else
+        strongSelf->_view = [[RCTLogBoxView alloc] initWithSurfacePresenter:strongSelf->_bridgelessSurfacePresenter]; // TODO(macOS GH#774)
 #endif // ]TODO(macOS GH#774)
-          [strongSelf->_window show]; // TODO(macOS GH#774) Renamed from _view to _window
+      } else if (strongSelf->_bridge && strongSelf->_bridge.valid) {
+        if (strongSelf->_bridge.surfacePresenter) {
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)          
+          strongSelf->_view = [[RCTLogBoxView alloc] initWithFrame:RCTKeyWindow().frame
+                                                  surfacePresenter:strongSelf->_bridge.surfacePresenter];
+#else // TODO(macOS GH#774)
+          strongSelf->_view = [[RCTLogBoxView alloc] initWithSurfacePresenter:strongSelf->_bridge.surfacePresenter]; // TODO(macOS GH#774)
+#endif // ]TODO(macOS GH#774)
+        } else {
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)                   
+          strongSelf->_view = [[RCTLogBoxView alloc] initWithWindow:RCTKeyWindow() bridge:strongSelf->_bridge];
+#else // TODO(macOS GH#774)
+          strongSelf->_view = [[RCTLogBoxView alloc] initWithBridge:self->_bridge]; // TODO(macOS GH#774)
+#endif // ]TODO(macOS GH#774)
         }
-      } else {
-        NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:strongSelf, @"logbox", nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"CreateLogBoxSurface" object:nil userInfo:userInfo];
       }
+
+      [strongSelf->_view show];
     });
   }
 }
@@ -76,8 +92,8 @@ RCT_EXPORT_METHOD(hide)
       if (!strongSelf) {
         return;
       }
-      [strongSelf->_window hide]; // TODO(macOS GH#774) setHidden: -> hide
-      strongSelf->_window = nil;
+      [strongSelf->_view setHidden:YES];
+      strongSelf->_view = nil;
     });
   }
 }
@@ -88,9 +104,9 @@ RCT_EXPORT_METHOD(hide)
   return std::make_shared<facebook::react::NativeLogBoxSpecJSI>(params);
 }
 
-- (void)setRCTLogBoxWindow:(RCTLogBoxWindow *)window // TODO(macOS GH#774) Renamed from _view to _window
+- (void)setRCTLogBoxView:(RCTLogBoxView *)view
 {
-  self->_window = window;
+  self->_view = view;
 }
 
 @end

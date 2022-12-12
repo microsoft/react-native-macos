@@ -5,8 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "MountingTransactionMetadata.h"
+#import <React/RCTAnimatedNode.h>
 
-namespace facebook {
-namespace react {} // namespace react
-} // namespace facebook
+@interface RCTColorAnimatedNode : RCTAnimatedNode
+
+@property (nonatomic, assign) int32_t color;
+
+@end

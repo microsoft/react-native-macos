@@ -11,6 +11,10 @@
 #import <React/RCTFont.h>
 #import <React/RCTLog.h>
 
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#import <React/RCTCursor.h>
+#endif // ]TODO(macOS GH#774)
+
 NSString *const RCTTextAttributesIsHighlightedAttributeName = @"RCTTextAttributesIsHighlightedAttributeName";
 NSString *const RCTTextAttributesFontSmoothingAttributeName = @"RCTTextAttributesFontSmoothingAttributeName"; // TODO(OSS Candidate ISS#2710739)
 NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttributeName";
@@ -45,6 +49,9 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     // [TODO(macOS GH#774)
     _foregroundColor = [RCTTextAttributes defaultForegroundColor];
     // ]TODO(macOS GH#774)
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+    _cursor = RCTCursorAuto;
+#endif // ]TODO(macOS GH#774)
   }
 
   return self;
@@ -70,6 +77,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   _fontStyle = textAttributes->_fontStyle ?: _fontStyle;
   _fontVariant = textAttributes->_fontVariant ?: _fontVariant;
   _allowFontScaling = textAttributes->_allowFontScaling || _allowFontScaling;  // *
+  _dynamicTypeRamp = textAttributes->_dynamicTypeRamp != RCTDynamicTypeRampUndefined ? textAttributes->_dynamicTypeRamp : _dynamicTypeRamp; // TODO(macOS GH#774)
   _letterSpacing = !isnan(textAttributes->_letterSpacing) ? textAttributes->_letterSpacing : _letterSpacing;
   _fontSmoothing = textAttributes->_fontSmoothing != RCTFontSmoothingAuto ? textAttributes->_fontSmoothing : _fontSmoothing; // TODO(OSS Candidate ISS#2710739)
 
@@ -93,6 +101,10 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   _tag = textAttributes->_tag ?: _tag;
   _layoutDirection = textAttributes->_layoutDirection != UIUserInterfaceLayoutDirectionLeftToRight ? textAttributes->_layoutDirection : _layoutDirection;
   _textTransform = textAttributes->_textTransform != RCTTextTransformUndefined ? textAttributes->_textTransform : _textTransform;
+
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  _cursor = textAttributes->_cursor != RCTCursorAuto ? textAttributes->_cursor : _cursor;
+#endif // ]TODO(macOS GH#774)
 }
 
 - (NSParagraphStyle *)effectiveParagraphStyle
@@ -209,6 +221,12 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     attributes[RCTTextAttributesTagAttributeName] = _tag;
   }
 
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  if (_cursor != RCTCursorAuto) {
+    attributes[NSCursorAttributeName] = [RCTConvert NSCursor:_cursor];
+  }
+#endif // ]TODO(macOS GH#774)
+
   return [attributes copy];
 }
 
@@ -230,6 +248,13 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
 
   if (fontScalingEnabled) {
     CGFloat fontSizeMultiplier = !isnan(_fontSizeMultiplier) ? _fontSizeMultiplier : 1.0;
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+    if (_dynamicTypeRamp != RCTDynamicTypeRampUndefined) {
+      UIFontMetrics *fontMetrics = RCTUIFontMetricsForDynamicTypeRamp(_dynamicTypeRamp);
+      CGFloat baseSize = RCTBaseSizeForDynamicTypeRamp(_dynamicTypeRamp);
+      fontSizeMultiplier = [fontMetrics scaledValueForValue:baseSize] / baseSize;
+    }
+#endif // ]TODO(macOS GH#774)
     CGFloat maxFontSizeMultiplier = !isnan(_maxFontSizeMultiplier) ? _maxFontSizeMultiplier : 0.0;
     return maxFontSizeMultiplier >= 1.0 ? fminf(maxFontSizeMultiplier, fontSizeMultiplier) : fontSizeMultiplier;
   } else {
@@ -328,6 +353,7 @@ static NSString *capitalizeText(NSString *text)
     RCTTextAttributesCompareObjects(_fontStyle) &&
     RCTTextAttributesCompareObjects(_fontVariant) &&
     RCTTextAttributesCompareOthers(_allowFontScaling) &&
+    RCTTextAttributesCompareOthers(_dynamicTypeRamp) && // TODO(macOS GH#774)
     RCTTextAttributesCompareFloats(_letterSpacing) &&
     RCTTextAttributesCompareOthers(_fontSmoothing) && // TODO(OSS Candidate ISS#2710739)
     // Paragraph Styles

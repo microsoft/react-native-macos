@@ -714,6 +714,46 @@ exports.examples = [
       );
     },
   },
+  // [TODO(macOS GH#774)
+  {
+    title: 'Focusable',
+    render: function (): React.Node {
+      return (
+        <View>
+          <Text focusable={true}>
+            This text is
+            <Text style={{fontWeight: 'bold'}}> not selectable</Text> yet
+            <Text style={{fontWeight: 'bold'}}> focusable</Text> with a visible
+            focus ring
+          </Text>
+          <Text selectable={true} focusable={true} style={{marginTop: 5}}>
+            This text is <Text style={{fontWeight: 'bold'}}>selectable</Text>{' '}
+            and
+            <Text style={{fontWeight: 'bold'}}> focusable</Text> with a visible
+            focus ring
+          </Text>
+          <Text
+            selectable={true}
+            focusable={true}
+            enableFocusRing={false}
+            style={{marginTop: 5}}>
+            This text is <Text style={{fontWeight: 'bold'}}>selectable</Text>{' '}
+            and <Text style={{fontWeight: 'bold'}}>focusable</Text> without a
+            visible focus ring (CMD-C to copy contents)
+          </Text>
+          <Text selectable={true} focusable={false} style={{marginTop: 5}}>
+            This text is <Text style={{fontWeight: 'bold'}}>selectable</Text>{' '}
+            and not focusable
+          </Text>
+          <TextInput
+            placeholder="Empty TextInput for debugging focused text views"
+            style={{marginTop: 5}}
+          />
+        </View>
+      );
+    },
+  },
+  // [TODO(macOS GH#774)
   {
     title: 'Text Decoration',
     render: function (): React.Node {
@@ -991,32 +1031,6 @@ exports.examples = [
     },
   },
   {
-    title: 'Text highlighting (tap the link to see highlight)',
-    render: function (): React.Node {
-      return (
-        <View>
-          <Text>
-            Lorem ipsum dolor sit amet,{' '}
-            <Text
-              suppressHighlighting={false}
-              style={{
-                backgroundColor: 'white',
-                textDecorationLine: 'underline',
-                color: 'blue',
-              }}
-              onPress={() => null}>
-              consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-              labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-              nostrud
-            </Text>{' '}
-            exercitation ullamco laboris nisi ut aliquip ex ea commodo
-            consequat.
-          </Text>
-        </View>
-      );
-    },
-  },
-  {
     title: 'allowFontScaling attribute',
     render: function (): React.Node {
       return (
@@ -1245,4 +1259,78 @@ exports.examples = [
       );
     },
   },
+  {
+    title: 'Dynamic Text sizing (iOS only)',
+    render: function (): React.Node {
+      const boldStyle = {fontWeight: 'bold'};
+      const boxStyle = {
+        borderWidth: 1,
+        padding: 8,
+        margin: 8,
+      };
+      return (
+        <View style={{marginTop: 10, marginBottom: 10}}>
+          <Text>
+            Adjust text size in Accessibility settings and watch how the font
+            sizes change relative to each other.
+          </Text>
+          <View style={boxStyle}>
+            <Text style={boldStyle}>With `dynamicTypeRamp`:</Text>
+            <Text style={{fontSize: 34}} dynamicTypeRamp="largeTitle">
+              Large Title
+            </Text>
+            <Text style={{fontSize: 28}} dynamicTypeRamp="title1">
+              Title
+            </Text>
+            <Text style={{fontSize: 22}} dynamicTypeRamp="title2">
+              Title 2
+            </Text>
+            <Text style={{fontSize: 20}} dynamicTypeRamp="title3">
+              Title 3
+            </Text>
+            <Text style={{fontSize: 17}} dynamicTypeRamp="body">
+              Body
+            </Text>
+          </View>
+          <View style={boxStyle}>
+            <Text style={boldStyle}>Without `dynamicTypeRamp`:</Text>
+            <Text style={{fontSize: 34}}>Large Title</Text>
+            <Text style={{fontSize: 28}}>Title</Text>
+            <Text style={{fontSize: 22}}>Title 2</Text>
+            <Text style={{fontSize: 20}}>Title 3</Text>
+            <Text style={{fontSize: 17}}>Body</Text>
+          </View>
+        </View>
+      );
+    },
+  },
+  // [TODO(macOS GH#774)
+  {
+    title: 'Cursor',
+    render: function (): React.Node {
+      return (
+        <View>
+          <Text style={{cursor: 'pointer'}} selectable={true}>
+            This text has pointer cursor.
+          </Text>
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Cursor nested (virtual) text',
+    render: function (): React.Node {
+      return (
+        <View>
+          <Text selectable={true}>
+            This text has regular cursor.{' '}
+            <Text style={{cursor: 'pointer'}}>
+              This text has pointer cursor.
+            </Text>
+          </Text>
+        </View>
+      );
+    },
+  },
+  // ]TODO(macOS GH#774)
 ];

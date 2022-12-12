@@ -9,10 +9,11 @@
 
 #import <React/RCTLog.h>
 #import <React/RCTSurface.h>
+#import <React/RCTSurfaceHostingView.h>
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
 
-@implementation RCTLogBoxWindow { // TODO(macOS GH#774) Renamed from _view to _window
+@implementation RCTLogBoxView {
   RCTSurface *_surface;
 }
 
@@ -34,35 +35,53 @@
   self.rootViewController = _rootViewController;
 }
 
-- (instancetype)initWithFrame:(CGRect)frame bridge:(RCTBridge *)bridge
+- (instancetype)initWithFrame:(CGRect)frame surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
 {
-  if ((self = [super initWithFrame:frame])) {
-    self.windowLevel = UIWindowLevelStatusBar - 1;
-    self.backgroundColor = [UIColor clearColor];
+  if (self = [super initWithFrame:frame]) {
+    id<RCTSurfaceProtocol> surface = [surfacePresenter createFabricSurfaceForModuleName:@"LogBox"
+                                                                      initialProperties:@{}];
+    [surface start];
+    RCTSurfaceHostingView *rootView = [[RCTSurfaceHostingView alloc]
+        initWithSurface:surface
+        sizeMeasureMode:RCTSurfaceSizeMeasureModeWidthExact | RCTSurfaceSizeMeasureModeHeightExact];
 
-    _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
-
-    [_surface start];
-    [_surface setSize:frame.size];
-
-    if (![_surface synchronouslyWaitForStage:RCTSurfaceStageSurfaceDidInitialMounting timeout:1]) {
-      RCTLogInfo(@"Failed to mount LogBox within 1s");
-    }
-
-    [self createRootViewController:(UIView *)_surface.view];
+    [self createRootViewController:rootView];
   }
   return self;
+}
+
+- (instancetype)initWithWindow:(UIWindow *)window bridge:(RCTBridge *)bridge
+{
+  if (@available(iOS 13.0, *)) {
+    self = [super initWithWindowScene:window.windowScene];
+  } else {
+    self = [super initWithFrame:window.frame];
+  }
+
+  self.windowLevel = UIWindowLevelStatusBar - 1;
+  self.backgroundColor = [UIColor clearColor];
+
+  _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
+  [_surface start];
+
+  if (![_surface synchronouslyWaitForStage:RCTSurfaceStageSurfaceDidInitialMounting timeout:1]) {
+    RCTLogInfo(@"Failed to mount LogBox within 1s");
+  }
+  [self createRootViewController:(UIView *)_surface.view];
+
+  return self;
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  [_surface setSize:self.frame.size];
 }
 
 - (void)dealloc
 {
   [RCTSharedApplication().delegate.window makeKeyWindow];
 }
-
-- (void)hide // [TODO(macOS GH#774)
-{
-  [self setHidden:YES];
-} // ]TODO(macOS GH#774)
 
 - (void)show
 {
@@ -74,8 +93,28 @@
 
 #else // [TODO(macOS GH#774)
 
-@implementation RCTLogBoxWindow { // TODO(macOS GH#774) Renamed from _view to _window
+@implementation RCTLogBoxView {
   RCTSurface *_surface;
+}
+
+- (instancetype)initWithSurfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
+{
+  NSRect bounds = NSMakeRect(0, 0, 600, 800);
+  if ((self = [self initWithContentRect:bounds
+                                styleMask:NSWindowStyleMaskTitled
+                                  backing:NSBackingStoreBuffered
+                                    defer:YES])) {
+    id<RCTSurfaceProtocol> surface = [surfacePresenter createFabricSurfaceForModuleName:@"LogBox"
+                                                                        initialProperties:@{}];
+    [surface start];
+    RCTSurfaceHostingView *rootView = [[RCTSurfaceHostingView alloc]
+        initWithSurface:surface
+        sizeMeasureMode:RCTSurfaceSizeMeasureModeWidthExact | RCTSurfaceSizeMeasureModeHeightExact];    
+      
+    self.contentView = rootView;
+    self.contentView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+  }
+  return self;
 }
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge
@@ -100,13 +139,15 @@
   return self;
 }
 
-- (void)hide
+- (void)setHidden:(BOOL)hidden // [TODO(macOS GH#774)
 {
-  if (NSApp.modalWindow == self) {
-    [NSApp stopModal];
+  if (hidden) {
+    if (NSApp.modalWindow == self) {
+      [NSApp stopModal];
+    }
+    [self orderOut:nil];
   }
-  [self orderOut:nil];
-}
+} // ]TODO(macOS GH#774)
 
 - (void)show
 {

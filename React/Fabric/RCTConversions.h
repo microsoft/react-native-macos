@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <react/renderer/components/view/AccessibilityPrimitives.h>
 #import <react/renderer/components/view/primitives.h>
@@ -35,26 +35,26 @@ inline std::string RCTStringFromNSString(NSString *string)
   return std::string{string.UTF8String ?: ""};
 }
 
-inline UIColor *_Nullable RCTUIColorFromSharedColor(facebook::react::SharedColor const &sharedColor)
+inline RCTUIColor *_Nullable RCTUIColorFromSharedColor(facebook::react::SharedColor const &sharedColor) // TODO(macOS GH#774)
 {
   if (!sharedColor) {
     return nil;
   }
 
   if (*facebook::react::clearColor() == *sharedColor) {
-    return [UIColor clearColor];
+    return [RCTUIColor clearColor]; // TODO(macOS GH#774)
   }
 
   if (*facebook::react::blackColor() == *sharedColor) {
-    return [UIColor blackColor];
+    return [RCTUIColor blackColor]; // TODO(macOS GH#774)
   }
 
   if (*facebook::react::whiteColor() == *sharedColor) {
-    return [UIColor whiteColor];
+    return [RCTUIColor whiteColor]; // TODO(macOS GH#774)
   }
 
   auto components = facebook::react::colorComponentsFromColor(sharedColor);
-  return [UIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha];
+  return [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha]; // TODO(macOS GH#774)
 }
 
 inline CF_RETURNS_RETAINED CGColorRef
@@ -173,9 +173,17 @@ inline facebook::react::Point RCTPointFromCGPoint(const CGPoint &point)
   return {point.x, point.y};
 }
 
+inline facebook::react::Float RCTFloatFromCGFloat(CGFloat value)
+{
+  if (value == CGFLOAT_MAX) {
+    return std::numeric_limits<facebook::react::Float>::infinity();
+  }
+  return value;
+}
+
 inline facebook::react::Size RCTSizeFromCGSize(const CGSize &size)
 {
-  return {size.width, size.height};
+  return {RCTFloatFromCGFloat(size.width), RCTFloatFromCGFloat(size.height)};
 }
 
 inline facebook::react::Rect RCTRectFromCGRect(const CGRect &rect)

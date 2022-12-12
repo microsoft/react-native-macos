@@ -46,6 +46,11 @@ const Components: Array<RNTesterModuleInfo> = [
     key: 'FocusEvents',
     module: require('../examples/FocusEventsExample/FocusEventsExample'),
   }, // ]TODO(OSS Candidate ISS#2710739)
+  // [TODO(macOS GH #1412)
+  {
+    key: 'FocusOnMount',
+    module: require('../examples/FocusOnMount/FocusOnMount'),
+  }, // ]TODO(macOS GH #1412)
   {
     key: 'KeyboardEvents',
     module: require('../examples/KeyboardEventsExample/KeyboardEventsExample'),
@@ -225,11 +230,6 @@ const APIs: Array<RNTesterModuleInfo> = [
     category: 'iOS',
     supportsTVOS: true,
   },
-  // [TODO(macOS GH#774)
-  {
-    key: 'AlertMacOSExample',
-    module: require('../examples/Alert/AlertMacOSExample'),
-  }, // ]TODO(macOS GH#774)
   {
     key: 'AnimatedIndex',
     module: require('../examples/Animated/AnimatedIndex').default,

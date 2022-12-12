@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <React/RCTPrimitives.h>
 #import <React/RCTSurfacePresenterStub.h>
@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class RCTFabricSurface;
 @class RCTImageLoader;
 @class RCTMountingManager;
+@class RCTScheduler;
 
 /**
  * Coordinates presenting of React Native Surfaces and represents application
@@ -53,6 +54,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)unregisterSurface:(RCTFabricSurface *)surface;
 
 @property (readonly) RCTMountingManager *mountingManager;
+@property (readonly, nullable) RCTScheduler *scheduler;
+
+/*
+ * Allow callers to initialize a new fabric surface without adding Fabric as a Buck dependency.
+ */
+- (id<RCTSurfaceProtocol>)createFabricSurfaceForModuleName:(NSString *)moduleName
+                                         initialProperties:(NSDictionary *)initialProperties;
 
 - (nullable RCTFabricSurface *)surfaceForRootTag:(ReactTag)rootTag;
 
@@ -70,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*
  * Please do not use this, this will be deleted soon.
  */
-- (nullable UIView *)findComponentViewWithTag_DO_NOT_USE_DEPRECATED:(NSInteger)tag;
+- (nullable RCTUIView *)findComponentViewWithTag_DO_NOT_USE_DEPRECATED:(NSInteger)tag; // TODO(macOS GH#774)
 
 @end
 

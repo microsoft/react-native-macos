@@ -6,11 +6,14 @@
  */
 
 #import <React/RCTUIKit.h> // TODO(macOS GH#774)
-
 #import <React/RCTTextDecorationLineType.h>
-#import <React/RCTFontSmoothing.h> // TODO(OSS Candidate ISS#2710739)
-
+#import <React/RCTDynamicTypeRamp.h> // TODO(macOS GH#774)
+#import <React/RCTFontSmoothing.h> // TODO(macOS GH#774)
 #import "RCTTextTransform.h"
+
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#import <React/RCTCursor.h>
+#endif // ]TODO(macOS GH#774)
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,6 +41,7 @@ extern NSString *const RCTTextAttributesTagAttributeName;
 @property (nonatomic, copy, nullable) NSString *fontStyle;
 @property (nonatomic, copy, nullable) NSArray<NSString *> *fontVariant;
 @property (nonatomic, assign) BOOL allowFontScaling;
+@property (nonatomic, assign) RCTDynamicTypeRamp dynamicTypeRamp; // TODO(macOS GH#774)
 @property (nonatomic, assign) CGFloat letterSpacing;
 @property (nonatomic, assign) RCTFontSmoothing fontSmoothing; // TODO(OSS Candidate ISS#2710739)
 @property (class, nonatomic, assign) RCTFontSmoothing fontSmoothingDefault; // TODO(OSS Candidate ISS#2710739)
@@ -58,6 +62,10 @@ extern NSString *const RCTTextAttributesTagAttributeName;
 @property (nonatomic, strong, nullable) NSNumber *tag;
 @property (nonatomic, assign) UIUserInterfaceLayoutDirection layoutDirection;
 @property (nonatomic, assign) RCTTextTransform textTransform;
+
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+@property (nonatomic, assign) RCTCursor cursor;
+#endif // ]TODO(macOS GH#774)
 
 #pragma mark - Inheritance
 

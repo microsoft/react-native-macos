@@ -9,8 +9,6 @@
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
 #import <MobileCoreServices/UTCoreTypes.h>
-#else
-#import <Quartz/Quartz.h> // TODO(macOS GH#774) for CATiledLayer
 #endif // TODO(macOS GH#774)
 
 #import <React/RCTAssert.h> // TODO(macOS GH#774)
@@ -20,7 +18,28 @@
 
 #import <React/RCTTextShadowView.h>
 
-#import <QuartzCore/QuartzCore.h> // TODO(macOS GH#774)
+#import <QuartzCore/QuartzCore.h>
+
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+
+// We are managing the key view loop using the RCTTextView.
+// Disable key view for backed NSTextView so we don't get double focus.
+@interface RCTUnfocusableTextView : NSTextView
+@end
+
+@implementation RCTUnfocusableTextView
+
+- (BOOL)canBecomeKeyView
+{
+  return NO;
+}
+
+@end
+
+@interface RCTTextView () <NSTextViewDelegate>
+@end
+
+#endif // ]TODO(macOS GH#774)
 
 @implementation RCTTextView
 {
@@ -29,6 +48,7 @@
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
 #else // [TODO(macOS GH#774)
   NSString * _accessibilityLabel;
+  NSTextView *_textView;
 #endif // ]TODO(macOS GH#774)
 
   RCTEventDispatcher *_eventDispatcher; // TODO(OSS Candidate ISS#2710739)
@@ -57,49 +77,24 @@
     self.accessibilityRole = NSAccessibilityStaticTextRole;
     // Fix blurry text on non-retina displays.
     self.canDrawSubviewsIntoLayer = YES;
+    // The NSTextView is responsible for drawing text and managing selection.
+    _textView = [[RCTUnfocusableTextView alloc] initWithFrame:self.bounds];
+    _textView.delegate = self;
+    _textView.usesFontPanel = NO;
+    _textView.drawsBackground = NO;
+    _textView.linkTextAttributes = @{};
+    _textView.editable = NO;
+    _textView.selectable = NO;
+    _textView.verticallyResizable = NO;
+    _textView.layoutManager.usesFontLeading = NO;
+    _textStorage = _textView.textStorage;
+    [self addSubview:_textView];
 #endif // ]TODO(macOS GH#774)
     self.opaque = NO;
     RCTUIViewSetContentModeRedraw(self); // TODO(macOS GH#774) and TODO(macOS ISS#3536887)
   }
   return self;
 }
-
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
-- (void)dealloc
-{
-  [self removeAllTextStorageLayoutManagers];
-}
-
-- (void)removeAllTextStorageLayoutManagers
-{
-  // On macOS AppKit can throw an uncaught exception
-  // (-[NSConcretePointerArray pointerAtIndex:]: attempt to access pointer at index ...)
-  // during the dealloc of NSLayoutManager.  The _textStorage and its
-  // associated NSLayoutManager dealloc later in an autorelease pool.
-  // Manually removing the layout managers from _textStorage prior to release
-  // works around this issue in AppKit.
-  NSArray<NSLayoutManager *> *managers = [[_textStorage layoutManagers] copy];
-  for (NSLayoutManager *manager in managers) {
-    [_textStorage removeLayoutManager:manager];
-  }
-}
-
-- (BOOL)canBecomeKeyView
-{
-	// RCTText should not get any keyboard focus unless its `selectable` prop is true
-	return _selectable;
-}
-
-- (void)drawFocusRingMask {
-  if ([self enableFocusRing]) {
-    NSRectFill([self bounds]);
-  }
-}
-
-- (NSRect)focusRingMaskBounds {
-  return [self bounds];
-}
-#endif // ]TODO(macOS GH#774)
 
 #if DEBUG // TODO(macOS GH#774) description is a debug-only feature
 - (NSString *)description
@@ -119,14 +114,19 @@
 
   _selectable = selectable;
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
   if (_selectable) {
     [self enableContextMenu];
   }
   else {
     [self disableContextMenu];
   }
-#endif // TODO(macOS GH#774)
+#else
+  _textView.selectable = _selectable;
+  if (_selectable) {
+    [self setFocusable:YES];
+  }
+#endif // ]TODO(macOS GH#774)
 }
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
@@ -149,12 +149,36 @@
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTUIView *> *)descendantViews // TODO(macOS ISS#3536887)
 {
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
-  [self removeAllTextStorageLayoutManagers];
+  // This lets the textView own its text storage on macOS
+  // We update and replace the text container `_textView.textStorage.attributedString` when text/layout changes
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+  _textStorage = textStorage;
 #endif // ]TODO(macOS GH#774)
 
-  _textStorage = textStorage;
   _contentFrame = contentFrame;
+
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
+  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+
+  [_textView replaceTextContainer:textContainer];
+
+  // On macOS AppKit can throw an uncaught exception
+  // (-[NSConcretePointerArray pointerAtIndex:]: attempt to access pointer at index ...)
+  // during the dealloc of NSLayoutManager.  The textStorage and its
+  // associated NSLayoutManager dealloc later in an autorelease pool.
+  // Manually removing the layout managers from textStorage prior to release
+  // works around this issue in AppKit.
+  NSArray<NSLayoutManager *> *managers = [[textStorage layoutManagers] copy];
+  for (NSLayoutManager *manager in managers) {
+    [textStorage removeLayoutManager:manager];
+  }
+
+  _textView.minSize = contentFrame.size;
+  _textView.maxSize = contentFrame.size;
+  _textView.frame = contentFrame;
+  _textView.textStorage.attributedString = textStorage;
+#endif // ]TODO(macOS GH#774)
 
   // FIXME: Optimize this.
   for (RCTUIView *view in _descendantViews) { // TODO(macOS ISS#3536887)
@@ -173,6 +197,13 @@
 - (void)drawRect:(CGRect)rect
 {
   [super drawRect:rect];
+
+  // For iOS, UITextView api is not used for legacy performance reasons. A custom draw implementation is used instead.
+  // On desktop, we use NSTextView to access api's for arbitrary selection, custom cursors etc...
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  return;
+#endif // ]TODO(macOS GH#774)
+
   if (!_textStorage) {
     return;
   }
@@ -408,6 +439,39 @@
     }
   }
 }
+#endif // ]TODO(macOS GH#774)
+
+#pragma mark - Selection
+
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+- (void)textDidEndEditing:(NSNotification *)notification
+{
+  _textView.selectedRange = NSMakeRange(NSNotFound, 0);
+}
+#endif // ]TODO(macOS GH#774)
+
+#pragma mark - Responder chain
+
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
+- (BOOL)canBecomeFirstResponder
+{
+  return _selectable;
+}
+#else
+- (BOOL)canBecomeKeyView
+{
+  return self.focusable;
+}
+
+- (void)drawFocusRingMask {
+  if (self.focusable && self.enableFocusRing) {
+    NSRectFill([self bounds]);
+  }
+}
+
+- (NSRect)focusRingMaskBounds {
+  return [self bounds];
+}
 
 - (BOOL)becomeFirstResponder
 {
@@ -423,22 +487,19 @@
 
 - (BOOL)resignFirstResponder
 {
-  if (![super resignFirstResponder]) {
+  //  Don't relinquish first responder while selecting text.
+  if (_selectable && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
     return NO;
   }
-
-  // If we've lost focus, notify listeners
-  [_eventDispatcher sendEvent:[RCTFocusChangeEvent blurEventWithReactTag:self.reactTag]];
-
-  return YES;
+  
+  return [super resignFirstResponder];
 }
-
-#endif // ]TODO(macOS GH#774)
 
 - (BOOL)canBecomeFirstResponder
 {
-  return _selectable;
+  return self.focusable;
 }
+#endif
 
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
@@ -451,6 +512,8 @@
 }
 #endif // TODO(macOS GH#774)
 
+#pragma mark - Copy/Paste
+
 - (void)copy:(id)sender
 {
   NSAttributedString *attributedText = _textStorage;
@@ -458,7 +521,7 @@
   NSData *rtf = [attributedText dataFromRange:NSMakeRange(0, attributedText.length)
                            documentAttributes:@{NSDocumentTypeDocumentAttribute: NSRTFDTextDocumentType}
                                         error:nil];
-#if TARGET_OS_IPHONE // TODO(macOS GH#774)
+#if TARGET_OS_IPHONE // [TODO(macOS GH#774)
   NSMutableDictionary *item = [NSMutableDictionary new]; // TODO(macOS GH#774)
 
   if (rtf) {
@@ -469,11 +532,13 @@
 
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
   pasteboard.items = @[item];
-#elif TARGET_OS_OSX // TODO(macOS GH#774)
+#elif TARGET_OS_OSX
+  [_textView copy:sender];
+
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   [pasteboard clearContents];
-  [pasteboard writeObjects:[NSArray arrayWithObjects:attributedText.string, rtf, nil]];
-#endif // TODO(macOS GH#774)
+  [pasteboard setData:rtf forType:NSPasteboardTypeRTFD];
+#endif // ]TODO(macOS GH#774)
 }
 
 @end

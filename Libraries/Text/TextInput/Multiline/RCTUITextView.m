@@ -21,6 +21,9 @@
 #endif // TODO(macOS GH#774)
   RCTBackedTextViewDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  NSArray<NSPasteboardType> *_readablePasteboardTypes;
+#endif // TODO(macOS GH#774)
 }
 
 static UIFont *defaultPlaceholderFont()
@@ -177,6 +180,11 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
   self.string = text;
 }
 
+- (void)setReadablePasteBoardTypes:(NSArray<NSPasteboardType> *)readablePasteboardTypes
+{
+  _readablePasteboardTypes = readablePasteboardTypes;
+}
+
 - (void)setTypingAttributes:(__unused NSDictionary *)typingAttributes
 {
   // Prevent NSTextView from changing its own typing attributes out from under us.
@@ -320,12 +328,45 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
 {
   return [super selectedRange];
 }
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)draggingInfo
+{
+  NSDragOperation dragOperation = [self.textInputDelegate textInputDraggingEntered:draggingInfo];
+  NSDragOperation superOperation = [super draggingEntered:draggingInfo];
+  // The delegate's operation should take precedence.
+  return dragOperation != NSDragOperationNone ? dragOperation : superOperation;
+}
+
+- (void)draggingExited:(id<NSDraggingInfo>)draggingInfo
+{
+  [self.textInputDelegate textInputDraggingExited:draggingInfo];
+  [super draggingExited:draggingInfo];
+}
+
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)draggingInfo
+{
+  if ([self.textInputDelegate textInputShouldHandleDragOperation:draggingInfo]) {
+    return [super performDragOperation:draggingInfo];
+  }
+  return YES;
+}
+- (NSArray *)readablePasteboardTypes
+{
+  return _readablePasteboardTypes ? _readablePasteboardTypes : [super readablePasteboardTypes];
+}
+
 #endif // ]TODO(macOS GH#774)
 
 - (void)paste:(id)sender
 {
-  [super paste:sender];
-  _textWasPasted = YES;
+#if TARGET_OS_OSX // TODO(macOS GH#774)
+  if ([self.textInputDelegate textInputShouldHandlePaste:self]) {
+#endif
+    [super paste:sender];
+    _textWasPasted = YES;
+#if TARGET_OS_OSX // TODO(macOS GH#774)
+  }
+#endif
 }
 
 // Turn off scroll animation to fix flaky scrolling.
@@ -383,6 +424,10 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
   // UI/NSTextField do NOT have textContainerInset properties
   _textContainerInsets = textContainerInsets;
   super.textContainerInset = NSMakeSize(MIN(textContainerInsets.left, textContainerInsets.right), MIN(textContainerInsets.top, textContainerInsets.bottom));
+
+  if (self.shouldDrawInsertionPoint) {
+    [self updateInsertionPointStateAndRestartTimer:NO];
+  }
 }
 
 #endif // ]TODO(macOS GH#774)
@@ -512,6 +557,28 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
   id<RCTBackedTextInputDelegate> textInputDelegate = [self textInputDelegate];
   if ([textInputDelegate textInputShouldHandleDeleteBackward:self]) {
     [super deleteBackward];
+  }
+}
+#else
+- (void)keyDown:(NSEvent *)event {
+  // If has marked text, handle by native and return
+  // Do this check before textInputShouldHandleKeyEvent as that one attempts to send the event to JS
+  if (self.hasMarkedText) {
+    [super keyDown:event];
+    return;
+  }
+
+  // textInputShouldHandleKeyEvent represents if native should handle the event instead of JS.
+  // textInputShouldHandleKeyEvent also sends keyDown event to JS internally, so we only call this once  
+  if ([self.textInputDelegate textInputShouldHandleKeyEvent:event]) {
+    [super keyDown:event];
+    [self.textInputDelegate submitOnKeyDownIfNeeded:event];
+  }
+}
+
+- (void)keyUp:(NSEvent *)event {
+  if ([self.textInputDelegate textInputShouldHandleKeyEvent:event]) {
+    [super keyUp:event];
   }
 }
 #endif // ]TODO(OSS Candidate ISS#2710739)

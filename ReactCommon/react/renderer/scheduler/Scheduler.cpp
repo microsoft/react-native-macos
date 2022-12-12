@@ -42,8 +42,7 @@ Scheduler::Scheduler(
           "ReactNativeConfig");
 
   // Creating a container for future `EventDispatcher` instance.
-  eventDispatcher_ =
-      std::make_shared<butter::optional<EventDispatcher const>>();
+  eventDispatcher_ = std::make_shared<std::optional<EventDispatcher const>>();
 
   auto uiManager = std::make_shared<UIManager>(
       runtimeExecutor_, schedulerToolbox.backgroundExecutor, contextContainer_);
@@ -349,6 +348,24 @@ void Scheduler::uiManagerDidSetIsJSResponder(
 
 ContextContainer::Shared Scheduler::getContextContainer() const {
   return contextContainer_;
+}
+
+std::shared_ptr<UIManager> Scheduler::getUIManager() const {
+  return uiManager_;
+}
+
+void Scheduler::addEventListener(
+    const std::shared_ptr<EventListener const> &listener) {
+  if (eventDispatcher_->has_value()) {
+    eventDispatcher_->value().addListener(listener);
+  }
+}
+
+void Scheduler::removeEventListener(
+    const std::shared_ptr<EventListener const> &listener) {
+  if (eventDispatcher_->has_value()) {
+    eventDispatcher_->value().removeListener(listener);
+  }
 }
 
 } // namespace react

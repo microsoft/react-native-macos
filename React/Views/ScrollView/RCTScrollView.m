@@ -45,6 +45,7 @@
 @property (nonatomic, assign) BOOL pinchGestureEnabled;
 #else // [TODO(macOS GH#774)
 + (BOOL)isCompatibleWithResponsiveScrolling;
+@property (nonatomic, assign, getter=isInverted) BOOL inverted;
 @property (nonatomic, assign, getter=isScrollEnabled) BOOL scrollEnabled;
 @property (nonatomic, strong) NSPanGestureRecognizer *panGestureRecognizer;
 #endif // ]TODO(macOS GH#774)
@@ -108,9 +109,14 @@
   return YES;
 }
 
+- (BOOL)isFlipped
+{
+  return !self.inverted;
+}
+
 - (void)scrollWheel:(NSEvent *)theEvent
 {
-  if (!self.scrollEnabled) {
+  if (!self.isScrollEnabled) {
     [[self nextResponder] scrollWheel:theEvent];
     return;
   }
@@ -333,21 +339,6 @@
 #endif // TODO(macOS GH#774)
 
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
-- (BOOL)canBecomeFirstResponder
-{
-	return YES;
-}
-
-- (BOOL)becomeFirstResponder
-{
-	return YES;
-}
-
-- (BOOL)resignFirstResponder
-{
-	return YES;
-}
-
 - (void)setAccessibilityLabel:(NSString *)accessibilityLabel
 {
   [super setAccessibilityLabel:accessibilityLabel];
@@ -532,21 +523,6 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   return _scrollView.documentView;
 }
 
-- (BOOL)canBecomeFirstResponder
-{
-  return [_scrollView canBecomeFirstResponder];
-}
-
-- (BOOL)becomeFirstResponder
-{
-  return [_scrollView becomeFirstResponder];
-}
-
-- (BOOL)resignFirstResponder
-{
-  return [_scrollView resignFirstResponder];
-}
-
 - (void)setAccessibilityLabel:(NSString *)accessibilityLabel
 {
   [_scrollView setAccessibilityLabel:accessibilityLabel];
@@ -555,6 +531,15 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)setAccessibilityRole:(NSAccessibilityRole)accessibilityRole
 {
   [_scrollView setAccessibilityRole:accessibilityRole];
+}
+
+- (void)setInverted:(BOOL)inverted
+{
+  BOOL changed = _inverted != inverted;
+  _inverted = inverted;  
+  if (changed && _onInvertedDidChange) {
+    _onInvertedDidChange(@{});
+  }
 }
 #endif // ]TODO(macOS GH#774)
 

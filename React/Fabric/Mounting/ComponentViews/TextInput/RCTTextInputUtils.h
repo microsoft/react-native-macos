@@ -5,19 +5,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+
+#import <optional>
 
 #import <React/RCTBackedTextInputViewProtocol.h>
-#import <butter/optional.h>
 #import <react/renderer/components/iostextinput/primitives.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 void RCTCopyBackedTextInput(
-    UIView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    UIView<RCTBackedTextInputViewProtocol> *toTextInput);
+    RCTUIView<RCTBackedTextInputViewProtocol> *fromTextInput,
+    RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput); // TODO(macOS GH#774)
 
-UITextAutocorrectionType RCTUITextAutocorrectionTypeFromOptionalBool(facebook::butter::optional<bool> autoCorrect);
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
+UITextAutocorrectionType RCTUITextAutocorrectionTypeFromOptionalBool(std::optional<bool> autoCorrect);
 
 UITextAutocapitalizationType RCTUITextAutocapitalizationTypeFromAutocapitalizationType(
     facebook::react::AutocapitalizationType autocapitalizationType);
@@ -25,7 +27,7 @@ UITextAutocapitalizationType RCTUITextAutocapitalizationTypeFromAutocapitalizati
 UIKeyboardAppearance RCTUIKeyboardAppearanceFromKeyboardAppearance(
     facebook::react::KeyboardAppearance keyboardAppearance);
 
-UITextSpellCheckingType RCTUITextSpellCheckingTypeFromOptionalBool(facebook::butter::optional<bool> spellCheck);
+UITextSpellCheckingType RCTUITextSpellCheckingTypeFromOptionalBool(std::optional<bool> spellCheck);
 
 UITextFieldViewMode RCTUITextFieldViewModeFromTextInputAccessoryVisibilityMode(
     facebook::react::TextInputAccessoryVisibilityMode mode);
@@ -39,5 +41,6 @@ UITextContentType RCTUITextContentTypeFromString(std::string const &contentType)
 
 API_AVAILABLE(ios(12.0))
 UITextInputPasswordRules *RCTUITextInputPasswordRulesFromString(std::string const &passwordRules);
+#endif // ]TODO(macOS GH#774)
 
 NS_ASSUME_NONNULL_END

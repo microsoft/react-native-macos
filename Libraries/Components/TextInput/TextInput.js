@@ -135,7 +135,27 @@ export type SettingChangeEvent = SyntheticEvent<
   $ReadOnly<{|
     enabled: boolean,
   |}>,
->; // ]TODO(macOS GH#774)
+>;
+
+export type PasteEvent = SyntheticEvent<
+  $ReadOnly<{|
+    dataTransfer: {|
+      files: $ReadOnlyArray<{|
+        height: number,
+        size: number,
+        type: string,
+        uri: string,
+        width: number,
+      |}>,
+      items: $ReadOnlyArray<{|
+        kind: string,
+        type: string,
+      |}>,
+      types: $ReadOnlyArray<string>,
+    |},
+  |}>,
+>;
+// ]TODO(macOS GH#774)
 
 type DataDetectorTypesType =
   // iOS+macOS
@@ -312,6 +332,13 @@ type IOSProps = $ReadOnly<{|
 
   // [TODO(macOS GH#774)
   /**
+   * If `true`, hide vertical scrollbar on the underlying multiline scrollview
+   * The default value is `false`.
+   * @platform macos
+   */
+  hideVerticalScrollIndicator?: ?boolean,
+
+  /**
    * If `false`, disables grammar-check.
    * @platform macos
    */
@@ -332,6 +359,51 @@ type IOSProps = $ReadOnly<{|
    */
   textContentType?: ?TextContentType,
 |}>;
+
+// [TODO(macOS GH#774)
+export type SubmitKeyEvent = $ReadOnly<{|
+  key: string,
+  altKey?: ?boolean,
+  ctrlKey?: ?boolean,
+  metaKey?: ?boolean,
+  shiftKey?: ?boolean,
+  functionKey?: ?boolean,
+|}>;
+
+type MacOSProps = $ReadOnly<{|
+  /**
+   * If `true`, clears the text field synchronously before `onSubmitEditing` is emitted.
+   * @platform macos
+   */
+  clearTextOnSubmit?: ?boolean,
+
+  /**
+   * Fired when a supported element is pasted
+   *
+   * @platform macos
+   */
+  onPaste?: (event: PasteEvent) => void,
+
+  /**
+   * Enables Paste support for certain types of pasted types
+   *
+   * Possible values for `pastedTypes` are:
+   *
+   * - `'fileUrl'`
+   * - `'image'`
+   * - `'string'`
+   *
+   * @platform macos
+   */
+  pastedTypes?: PastedTypesType,
+
+  /**
+   * Configures keys that can be used to submit editing for the TextInput. Defaults to 'Enter' key.
+   * @platform macos
+   */
+  submitKeyEvents?: ?$ReadOnlyArray<SubmitKeyEvent>,
+|}>;
+// ]TODO(macOS GH#774)
 
 type AndroidProps = $ReadOnly<{|
   /**
@@ -492,9 +564,13 @@ type AndroidProps = $ReadOnly<{|
   underlineColorAndroid?: ?ColorValue,
 |}>;
 
+export type PasteType = 'fileUrl' | 'image' | 'string'; // TODO(macOS GH#774)
+export type PastedTypesType = PasteType | $ReadOnlyArray<PasteType>; // TODO(macOS GH#774)
+
 export type Props = $ReadOnly<{|
   ...$Diff<ViewProps, $ReadOnly<{|style: ?ViewStyleProp|}>>,
   ...IOSProps,
+  ...MacOSProps, // TODO(macOS GH#774)
   ...AndroidProps,
 
   /**
@@ -1333,6 +1409,8 @@ function InternalTextInput(props: Props): React.Node {
         onChangeSync={useOnChangeSync === true ? _onChangeSync : null}
         onContentSizeChange={props.onContentSizeChange}
         onFocus={_onFocus}
+        onKeyDown={props.onKeyDown} // TODO(macOS GH#774)
+        onKeyUp={props.onKeyUp} // TODO(macOS GH#774)
         onScroll={_onScroll}
         onSelectionChange={_onSelectionChange}
         onSelectionChangeShouldSetResponder={emptyFunctionThatReturnsTrue}

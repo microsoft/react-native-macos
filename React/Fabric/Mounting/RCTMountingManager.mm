@@ -7,6 +7,7 @@
 
 #import "RCTMountingManager.h"
 
+#import <QuartzCore/QuartzCore.h>
 #import <butter/map.h>
 
 #import <React/RCTAssert.h>
@@ -14,6 +15,7 @@
 #import <React/RCTFollyConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
+#import <react/config/ReactNativeConfig.h>
 #import <react/renderer/components/root/RootShadowNode.h>
 #import <react/renderer/core/LayoutableShadowNode.h>
 #import <react/renderer/core/RawProps.h>
@@ -27,7 +29,7 @@
 
 using namespace facebook::react;
 
-static SurfaceId RCTSurfaceIdForView(UIView *view)
+static SurfaceId RCTSurfaceIdForView(RCTUIView *view) // TODO(macOS GH#774)
 {
   do {
     if (RCTIsReactRootView(@(view.tag))) {
@@ -79,7 +81,7 @@ static void RCTPerformMountInstructions(
         auto &newChildViewDescriptor = [registry componentViewDescriptorWithTag:newChildShadowView.tag];
         auto &parentViewDescriptor = [registry componentViewDescriptorWithTag:parentShadowView.tag];
 
-        UIView<RCTComponentViewProtocol> *newChildComponentView = newChildViewDescriptor.view;
+        RCTUIView<RCTComponentViewProtocol> *newChildComponentView = newChildViewDescriptor.view; // TODO(macOS GH#774)
 
         RCTAssert(newChildShadowView.props, @"`newChildShadowView.props` must not be null.");
 
@@ -107,7 +109,7 @@ static void RCTPerformMountInstructions(
         auto &oldChildShadowView = mutation.oldChildShadowView;
         auto &newChildShadowView = mutation.newChildShadowView;
         auto &newChildViewDescriptor = [registry componentViewDescriptorWithTag:newChildShadowView.tag];
-        UIView<RCTComponentViewProtocol> *newChildComponentView = newChildViewDescriptor.view;
+        RCTUIView<RCTComponentViewProtocol> *newChildComponentView = newChildViewDescriptor.view; // TODO(macOS GH#774)
 
         auto mask = RNComponentViewUpdateMask{};
 
@@ -166,7 +168,7 @@ static void RCTPerformMountInstructions(
   _contextContainer = contextContainer;
 }
 
-- (void)attachSurfaceToView:(UIView *)view surfaceId:(SurfaceId)surfaceId
+- (void)attachSurfaceToView:(RCTUIView *)view surfaceId:(SurfaceId)surfaceId // TODO(macOS GH#774)
 {
   RCTAssertMainQueue();
 
@@ -177,7 +179,7 @@ static void RCTPerformMountInstructions(
   [view addSubview:rootViewDescriptor.view];
 }
 
-- (void)detachSurfaceFromView:(UIView *)view surfaceId:(SurfaceId)surfaceId
+- (void)detachSurfaceFromView:(RCTUIView *)view surfaceId:(SurfaceId)surfaceId // TODO(macOS GH#774)
 {
   RCTAssertMainQueue();
   RCTComponentViewDescriptor rootViewDescriptor = [_componentViewRegistry componentViewDescriptorWithTag:surfaceId];
@@ -265,26 +267,28 @@ static void RCTPerformMountInstructions(
   auto surfaceId = mountingCoordinator->getSurfaceId();
 
   mountingCoordinator->getTelemetryController().pullTransaction(
-      [&](MountingTransactionMetadata metadata) {
+      [&](MountingTransaction const &transaction, SurfaceTelemetry const &surfaceTelemetry) {
         [self.delegate mountingManager:self willMountComponentsWithRootTag:surfaceId];
-        _observerCoordinator.notifyObserversMountingTransactionWillMount(metadata);
+        _observerCoordinator.notifyObserversMountingTransactionWillMount(transaction, surfaceTelemetry);
       },
-      [&](ShadowViewMutationList const &mutations) {
-        RCTPerformMountInstructions(mutations, _componentViewRegistry, _observerCoordinator, surfaceId);
+      [&](MountingTransaction const &transaction, SurfaceTelemetry const &surfaceTelemetry) {
+        RCTPerformMountInstructions(
+            transaction.getMutations(), _componentViewRegistry, _observerCoordinator, surfaceId);
       },
-      [&](MountingTransactionMetadata metadata) {
-        _observerCoordinator.notifyObserversMountingTransactionDidMount(metadata);
+      [&](MountingTransaction const &transaction, SurfaceTelemetry const &surfaceTelemetry) {
+        _observerCoordinator.notifyObserversMountingTransactionDidMount(transaction, surfaceTelemetry);
         [self.delegate mountingManager:self didMountComponentsWithRootTag:surfaceId];
       });
 }
 
 - (void)setIsJSResponder:(BOOL)isJSResponder
     blockNativeResponder:(BOOL)blockNativeResponder
-           forShadowView:(facebook::react::ShadowView)shadowView
+           forShadowView:(facebook::react::ShadowView const &)shadowView
 {
+  ReactTag reactTag = shadowView.tag;
   RCTExecuteOnMainQueue(^{
-    UIView<RCTComponentViewProtocol> *componentView =
-        [self->_componentViewRegistry findComponentViewWithTag:shadowView.tag];
+    RCTUIView<RCTComponentViewProtocol> *componentView =
+        [self->_componentViewRegistry findComponentViewWithTag:reactTag]; // TODO(macOS GH#774)
     [componentView setIsJSResponder:isJSResponder];
   });
 }
@@ -294,10 +298,10 @@ static void RCTPerformMountInstructions(
                       componentDescriptor:(const ComponentDescriptor &)componentDescriptor
 {
   RCTAssertMainQueue();
-  UIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag];
+  RCTUIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag]; // TODO(macOS GH#774)
   SurfaceId surfaceId = RCTSurfaceIdForView(componentView);
-  SharedProps oldProps = [componentView props];
-  SharedProps newProps = componentDescriptor.cloneProps(
+  Props::Shared oldProps = [componentView props];
+  Props::Shared newProps = componentDescriptor.cloneProps(
       PropsParserContext{surfaceId, *_contextContainer.get()}, oldProps, RawProps(convertIdToFollyDynamic(props)));
 
   NSSet<NSString *> *propKeys = componentView.propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN ?: [NSSet new];
@@ -316,6 +320,11 @@ static void RCTPerformMountInstructions(
   if (props[@"opacity"] && componentView.layer.opacity != (float)newViewProps.opacity) {
     componentView.layer.opacity = newViewProps.opacity;
   }
+
+  auto reactNativeConfig = _contextContainer->at<std::shared_ptr<ReactNativeConfig const>>("ReactNativeConfig");
+  if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:finalize_updates_on_synchronous_update_view_ios")) {
+    [componentView finalizeUpdates:RNComponentViewUpdateMaskProps];
+  }
 }
 
 - (void)synchronouslyDispatchCommandOnUIThread:(ReactTag)reactTag
@@ -323,14 +332,14 @@ static void RCTPerformMountInstructions(
                                           args:(NSArray *)args
 {
   RCTAssertMainQueue();
-  UIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag];
+  RCTUIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag]; // TODO(macOS GH#774)
   [componentView handleCommand:commandName args:args];
 }
 
 - (void)synchronouslyDispatchAccessbilityEventOnUIThread:(ReactTag)reactTag eventType:(NSString *)eventType
 {
   if ([@"focus" isEqualToString:eventType]) {
-    UIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag];
+    RCTUIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag]; // TODO(macOS GH#774)
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, componentView);
   }
 }

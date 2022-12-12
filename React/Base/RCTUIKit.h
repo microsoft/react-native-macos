@@ -80,11 +80,6 @@ UIKIT_STATIC_INLINE void RCTUIViewSetContentModeRedraw(UIView *view)
   view.contentMode = UIViewContentModeRedraw;
 }
 
-UIKIT_STATIC_INLINE BOOL RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(RCTPlatformView *view, CGRect rect, BOOL afterUpdates)
-{
-  return [view drawViewHierarchyInRect:rect afterScreenUpdates:afterUpdates];
-}
-
 UIKIT_STATIC_INLINE BOOL RCTUIViewIsDescendantOfView(RCTPlatformView *view, RCTPlatformView *parent)
 {
   return [view isDescendantOfView:parent];
@@ -427,8 +422,16 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 @property (nonatomic, assign) BOOL alwaysBounceVertical;
 // macOS specific properties
 @property (nonatomic, assign) BOOL enableFocusRing;
+@property (nonatomic, assign, getter=isScrollEnabled) BOOL scrollEnabled;
 
 @end
+
+@interface RCTClipView : NSClipView // [TODO(macOS GH#774)
+
+@property (nonatomic, assign) BOOL constrainScrolling;
+
+@end // ]TODO(macOS GH#774)
+
 
 NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *event)
 {
@@ -440,14 +443,6 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view);
 NS_INLINE void RCTUIViewSetContentModeRedraw(RCTPlatformView *view)
 {
   view.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
-}
-
-NS_INLINE BOOL RCTUIViewDrawViewHierarchyInRectAfterScreenUpdates(RCTPlatformView *view, CGRect rect, __unused BOOL afterUpdates)
-{
-  RCTAssert(afterUpdates, @"We're redrawing the view so it will necessarily include the latest changes.");
-  (void) afterUpdates;
-  [view displayRectIgnoringOpacity:NSRectToCGRect(rect)];
-  return YES;
 }
 
 NS_INLINE BOOL RCTUIViewIsDescendantOfView(RCTPlatformView *view, RCTPlatformView *parent)
@@ -473,3 +468,25 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 }
 
 #endif // ] TARGET_OS_OSX
+
+//
+// fabric component types
+//
+
+// RCTUISlider
+
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#define RCTUISlider UISlider
+#else
+@interface RCTUISlider : NSSlider
+@end
+#endif // ]TODO(macOS GH#774)
+
+// RCTUILabel
+
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#define RCTUILabel UILabel
+#else
+@interface RCTUILabel : NSTextField
+@end
+#endif // ]TODO(macOS GH#774)

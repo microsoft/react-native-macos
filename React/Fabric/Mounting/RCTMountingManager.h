@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <React/RCTMountingManagerDelegate.h>
 #import <React/RCTPrimitives.h>
@@ -36,12 +36,12 @@ NS_ASSUME_NONNULL_BEGIN
  * influence the intrinsic size of the view and cannot be measured using UIView/UIKit layout API.
  * Must be called on the main thead.
  */
-- (void)attachSurfaceToView:(UIView *)view surfaceId:(facebook::react::SurfaceId)surfaceId;
+- (void)attachSurfaceToView:(RCTUIView *)view surfaceId:(facebook::react::SurfaceId)surfaceId; // TODO(macOS GH#774)
 
 /**
  * Stops designating the view as a rendering viewport of a React Native surface.
  */
-- (void)detachSurfaceFromView:(UIView *)view surfaceId:(facebook::react::SurfaceId)surfaceId;
+- (void)detachSurfaceFromView:(RCTUIView *)view surfaceId:(facebook::react::SurfaceId)surfaceId; // TODO(macOS GH#774)
 
 /**
  * Schedule a mounting transaction to be performed on the main thread.
@@ -63,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setIsJSResponder:(BOOL)isJSResponder
     blockNativeResponder:(BOOL)blockNativeResponder
-           forShadowView:(facebook::react::ShadowView)shadowView;
+           forShadowView:(facebook::react::ShadowView const &)shadowView;
 
 - (void)synchronouslyUpdateViewOnUIThread:(ReactTag)reactTag
                              changedProps:(NSDictionary *)props

@@ -979,11 +979,13 @@ class VirtualizedList extends React.PureComponent<Props, State> {
       this.props;
     const {data, horizontal} = this.props;
     const isVirtualizationDisabled = this._isVirtualizationDisabled();
-    const inversionStyle = this.props.inverted
-      ? horizontalOrDefault(this.props.horizontal)
-        ? styles.horizontallyInverted
-        : styles.verticallyInverted
-      : null;
+    // macOS natively supports inverted lists, thus not needing an inversion style
+    const inversionStyle =
+      this.props.inverted && Platform.OS !== 'macos' // TODO(macOS GH#774)
+        ? horizontalOrDefault(this.props.horizontal)
+          ? styles.horizontallyInverted
+          : styles.verticallyInverted
+        : null;
     const cells = [];
     const stickyIndicesFromProps = new Set(this.props.stickyHeaderIndices);
     const stickyHeaderIndices = [];
@@ -1330,10 +1332,23 @@ class VirtualizedList extends React.PureComponent<Props, State> {
     // [TODO(macOS GH#774)
     const preferredScrollerStyleDidChangeHandler =
       this.props.onPreferredScrollerStyleDidChange;
+    const invertedDidChange = this.props.onInvertedDidChange;
+
+    const isFirstRowSelected = this.state.selectedRowIndex === this.state.first;
+    const isLastRowSelected = this.state.selectedRowIndex === this.state.last;
+
+    // Don't pass in ArrowUp/ArrowDown at the top/bottom of the list so that keyboard event can bubble
+    let _validKeysDown = ['Home', 'End'];
+    if (!isFirstRowSelected) {
+      _validKeysDown.push('ArrowUp');
+    }
+    if (!isLastRowSelected) {
+      _validKeysDown.push('ArrowDown');
+    }
 
     const keyboardNavigationProps = {
       focusable: true,
-      validKeysDown: ['ArrowUp', 'ArrowDown', 'Home', 'End'],
+      validKeysDown: _validKeysDown,
       onKeyDown: this._handleKeyDown,
     };
     // ]TODO(macOS GH#774)
@@ -1353,6 +1368,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         <ScrollView
           // [TODO(macOS GH#774)
           {...(props.enableSelectionOnKeyPress && keyboardNavigationProps)}
+          onInvertedDidChange={invertedDidChange}
           onPreferredScrollerStyleDidChange={
             preferredScrollerStyleDidChangeHandler
           } // TODO(macOS GH#774)]
@@ -1376,6 +1392,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
         <ScrollView
           // [TODO(macOS GH#774)
           {...(props.enableSelectionOnKeyPress && keyboardNavigationProps)}
+          onInvertedDidChange={invertedDidChange}
           onPreferredScrollerStyleDidChange={
             preferredScrollerStyleDidChangeHandler
           } // TODO(macOS GH#774)]

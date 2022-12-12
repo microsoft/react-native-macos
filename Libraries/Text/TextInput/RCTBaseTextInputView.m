@@ -14,10 +14,12 @@
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
 
+#import <React/RCTViewKeyboardEvent.h> // TODO(macOS GH#774)
 #import <React/RCTInputAccessoryView.h>
 #import <React/RCTInputAccessoryViewContent.h>
 #import <React/RCTTextAttributes.h>
 #import <React/RCTTextSelection.h>
+#import <React/RCTUITextView.h> // TODO(macOS GH#774)
 #import "../RCTTextUIKit.h" // TODO(macOS GH#774)
 
 @implementation RCTBaseTextInputView {
@@ -32,7 +34,7 @@
 {
   RCTAssertParam(bridge);
 
-  if (self = [super initWithFrame:CGRectZero]) {
+  if (self = [super initWithEventDispatcher:bridge.eventDispatcher]) { // TODO(OSS Candidate GH#774)
     _bridge = bridge;
     _eventDispatcher = bridge.eventDispatcher;
   }
@@ -42,7 +44,6 @@
 
 RCT_NOT_IMPLEMENTED(- (instancetype)init)
 RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)decoder)
-RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
 - (RCTUIView<RCTBackedTextInputViewProtocol> *)backedTextInputView // TODO(macOS ISS#3536887)
 {
@@ -429,6 +430,46 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
     _onGrammarCheckChange(@{@"enabled": [NSNumber numberWithBool:enabled]});
   }
 }
+
+- (void)submitOnKeyDownIfNeeded:(NSEvent *)event
+{
+  NSDictionary *currentKeyboardEvent = [RCTViewKeyboardEvent bodyFromEvent:event];
+  // Enter is the default clearTextOnSubmit key
+  BOOL shouldSubmit = NO;
+  if (!_submitKeyEvents) {
+    shouldSubmit = [currentKeyboardEvent[@"key"] isEqualToString:@"Enter"]
+      && ![currentKeyboardEvent[@"altKey"] boolValue]
+      && ![currentKeyboardEvent[@"shiftKey"] boolValue]
+      && ![currentKeyboardEvent[@"ctrlKey"] boolValue]
+      && ![currentKeyboardEvent[@"metaKey"] boolValue]
+      && ![currentKeyboardEvent[@"functionKey"] boolValue]; // Default clearTextOnSubmit key
+  } else {
+    for (NSDictionary *submitKeyEvent in _submitKeyEvents) {
+      if (
+        [submitKeyEvent[@"key"] isEqualToString:currentKeyboardEvent[@"key"]] &&
+        [submitKeyEvent[@"altKey"] boolValue] == [currentKeyboardEvent[@"altKey"] boolValue] &&
+        [submitKeyEvent[@"shiftKey"] boolValue] == [currentKeyboardEvent[@"shiftKey"] boolValue] &&
+        [submitKeyEvent[@"ctrlKey"] boolValue]== [currentKeyboardEvent[@"ctrlKey"] boolValue] &&
+        [submitKeyEvent[@"metaKey"] boolValue]== [currentKeyboardEvent[@"metaKey"] boolValue] &&
+        [submitKeyEvent[@"functionKey"] boolValue]== [currentKeyboardEvent[@"functionKey"] boolValue]
+      ) {
+        shouldSubmit = YES;
+        break;
+      }
+    }
+  }
+  
+  if (shouldSubmit) {
+    if (_onSubmitEditing) {
+      _onSubmitEditing(@{});
+    }
+
+    if (_clearTextOnSubmit) {
+      self.backedTextInputView.attributedText = [NSAttributedString new];
+      [self.backedTextInputView.textInputDelegate textInputDidChange];
+    }
+  }
+}
 #endif // ]TODO(macOS GH#774)
 
 - (BOOL)textInputShouldReturn
@@ -595,6 +636,35 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   return YES;
 }
 
+- (BOOL)hasValidKeyDownOrValidKeyUp:(NSString *)key {
+  return [self.validKeysDown containsObject:key] || [self.validKeysUp containsObject:key];
+}
+
+- (NSDragOperation)textInputDraggingEntered:(id<NSDraggingInfo>)draggingInfo
+{
+  if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    return [self draggingEntered:draggingInfo];
+  }
+  return NSDragOperationNone;
+}
+
+- (void)textInputDraggingExited:(id<NSDraggingInfo>)draggingInfo
+{
+  if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    [self draggingExited:draggingInfo];
+  }
+}
+
+- (BOOL)textInputShouldHandleDragOperation:(id<NSDraggingInfo>)draggingInfo
+{
+  if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    [self performDragOperation:draggingInfo];
+    return NO;
+  }
+
+  return YES;
+}
+
 - (void)textInputDidCancel {
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeKeyPress
                                  reactTag:self.reactTag
@@ -602,6 +672,25 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
                                       key:@"Escape"
                                eventCount:_nativeEventCount];
   [self textInputDidEndEditing];
+}
+
+- (BOOL)textInputShouldHandleKeyEvent:(NSEvent *)event {
+  return ![self handleKeyboardEvent:event];
+}
+
+- (BOOL)textInputShouldHandlePaste:(__unused id)sender
+{
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  NSPasteboardType fileType = [pasteboard availableTypeFromArray:@[NSFilenamesPboardType, NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  NSArray<NSPasteboardType>* pastedTypes = ((RCTUITextView*) self.backedTextInputView).readablePasteboardTypes;
+      
+  // If there's a fileType that is of interest, notify JS. Also blocks notifying JS if it's a text paste
+  if (_onPaste && fileType != nil && [pastedTypes containsObject:fileType]) {
+    _onPaste([self dataTransferInfoFromPasteboard:pasteboard]);
+  }
+
+  // Only allow pasting text.
+  return fileType == nil;
 }
 #endif // ]TODO(macOS GH#774)
 

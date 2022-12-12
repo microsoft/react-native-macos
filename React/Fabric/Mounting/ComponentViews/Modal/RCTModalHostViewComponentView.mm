@@ -21,6 +21,7 @@
 
 using namespace facebook::react;
 
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
 static UIInterfaceOrientationMask supportedOrientationsMask(ModalHostViewSupportedOrientationsMask mask)
 {
   UIInterfaceOrientationMask supportedOrientations = 0;
@@ -93,6 +94,7 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
       : ModalHostViewEventEmitter::OnOrientationChangeOrientation::Landscape;
   return {orientation};
 }
+#endif // ]TODO(macOS GH#774)
 
 @interface RCTModalHostViewComponentView () <RCTFabricModalHostViewControllerDelegate>
 
@@ -104,9 +106,10 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
   BOOL _shouldAnimatePresentation;
   BOOL _shouldPresent;
   BOOL _isPresented;
-  UIView *_modalContentsSnapshot;
+  RCTUIView *_modalContentsSnapshot; // TODO(macOS GH#774)
 }
 
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
@@ -165,7 +168,7 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
     _isPresented = NO;
     // To animate dismissal of view controller, snapshot of
     // view hierarchy needs to be added to the UIViewController.
-    UIView *snapshot = _modalContentsSnapshot;
+    RCTUIView *snapshot = _modalContentsSnapshot; // TODO(macOS GH#774)
     [self.viewController.view addSubview:snapshot];
 
     [self dismissViewController:self.viewController
@@ -192,7 +195,8 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
 
 #pragma mark - RCTMountingTransactionObserving
 
-- (void)mountingTransactionWillMountWithMetadata:(MountingTransactionMetadata const &)metadata
+- (void)mountingTransactionWillMount:(MountingTransaction const &)transaction
+                withSurfaceTelemetry:(facebook::react::SurfaceTelemetry const &)surfaceTelemetry
 {
   _modalContentsSnapshot = [self.viewController.view snapshotViewAfterScreenUpdates:NO];
 }
@@ -268,15 +272,16 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
   _state = std::static_pointer_cast<const ModalHostViewShadowNode::ConcreteState>(state);
 }
 
-- (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
+- (void)mountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // TODO(macOS GH#774)
 {
   [self.viewController.view insertSubview:childComponentView atIndex:index];
 }
 
-- (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
+- (void)unmountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // TODO(macOS GH#774)
 {
   [childComponentView removeFromSuperview];
 }
+#endif // ]TODO(macOS GH#774)
 
 @end
 

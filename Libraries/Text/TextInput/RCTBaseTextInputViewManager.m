@@ -53,7 +53,6 @@ RCT_REMAP_NOT_OSX_VIEW_PROPERTY(spellCheck, backedTextInputView.spellCheckingTyp
 RCT_REMAP_OSX_VIEW_PROPERTY(spellCheck, backedTextInputView.continuousSpellCheckingEnabled, BOOL) // TODO(macOS GH#774)
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(caretHidden, backedTextInputView.caretHidden, BOOL) // TODO(macOS GH#774)
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(clearButtonMode, backedTextInputView.clearButtonMode, UITextFieldViewMode) // TODO(macOS GH#774)
-RCT_REMAP_VIEW_PROPERTY(scrollEnabled, backedTextInputView.scrollEnabled, BOOL)
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(secureTextEntry, backedTextInputView.secureTextEntry, BOOL) // TODO(macOS GH#774)
 RCT_EXPORT_VIEW_PROPERTY(autoFocus, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(blurOnSubmit, BOOL)
@@ -71,12 +70,18 @@ RCT_EXPORT_VIEW_PROPERTY(passwordRules, NSString)
 RCT_EXPORT_VIEW_PROPERTY(onAutoCorrectChange, RCTBubblingEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onSpellCheckChange, RCTBubblingEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onGrammarCheckChange, RCTBubblingEventBlock);
+
+// Specifically for clearing text on enter key press
+RCT_EXPORT_VIEW_PROPERTY(clearTextOnSubmit, BOOL);
+RCT_EXPORT_VIEW_PROPERTY(onSubmitEditing, RCTBubblingEventBlock);
+RCT_EXPORT_VIEW_PROPERTY(submitKeyEvents, NSArray<NSDictionary *>);
 #endif // TODO(macOS GH#774)
 
 RCT_EXPORT_VIEW_PROPERTY(onChange, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onKeyPressSync, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onChangeSync, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onSelectionChange, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onPaste, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onTextInput, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onScroll, RCTDirectEventBlock)
 

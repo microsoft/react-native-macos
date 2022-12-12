@@ -62,13 +62,13 @@ inline static UIFont *RCTEffectiveFontFromTextAttributes(const TextAttributes &t
   RCTFontProperties fontProperties;
   fontProperties.family = fontFamily;
   fontProperties.size = textAttributes.fontSize;
-  fontProperties.style = textAttributes.fontStyle.hasValue()
+  fontProperties.style = textAttributes.fontStyle.has_value()
       ? RCTFontStyleFromFontStyle(textAttributes.fontStyle.value())
       : RCTFontStyleUndefined;
-  fontProperties.variant = textAttributes.fontVariant.hasValue()
+  fontProperties.variant = textAttributes.fontVariant.has_value()
       ? RCTFontVariantFromFontVariant(textAttributes.fontVariant.value())
       : RCTFontVariantUndefined;
-  fontProperties.weight = textAttributes.fontWeight.hasValue()
+  fontProperties.weight = textAttributes.fontWeight.has_value()
       ? RCTUIFontWeightFromInteger((NSInteger)textAttributes.fontWeight.value())
       : NAN;
   fontProperties.sizeMultiplier = textAttributes.fontSizeMultiplier;
@@ -83,9 +83,9 @@ inline static CGFloat RCTEffectiveFontSizeMultiplierFromTextAttributes(const Tex
       : 1.0;
 }
 
-inline static UIColor *RCTEffectiveForegroundColorFromTextAttributes(const TextAttributes &textAttributes)
+inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const TextAttributes &textAttributes) // TODO(macOS GH#774)
 {
-  UIColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ?: [UIColor blackColor];
+  RCTUIColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ?: [RCTUIColor blackColor]; // TODO(macOS GH#774)
 
   if (!isnan(textAttributes.opacity)) {
     effectiveForegroundColor = [effectiveForegroundColor
@@ -95,16 +95,16 @@ inline static UIColor *RCTEffectiveForegroundColorFromTextAttributes(const TextA
   return effectiveForegroundColor;
 }
 
-inline static UIColor *RCTEffectiveBackgroundColorFromTextAttributes(const TextAttributes &textAttributes)
+inline static RCTUIColor *RCTEffectiveBackgroundColorFromTextAttributes(const TextAttributes &textAttributes) // TODO(macOS GH#774)
 {
-  UIColor *effectiveBackgroundColor = RCTUIColorFromSharedColor(textAttributes.backgroundColor);
+  RCTUIColor *effectiveBackgroundColor = RCTUIColorFromSharedColor(textAttributes.backgroundColor); // TODO(macOS GH#774)
 
   if (effectiveBackgroundColor && !isnan(textAttributes.opacity)) {
     effectiveBackgroundColor = [effectiveBackgroundColor
         colorWithAlphaComponent:CGColorGetAlpha(effectiveBackgroundColor.CGColor) * textAttributes.opacity];
   }
 
-  return effectiveBackgroundColor ?: [UIColor clearColor];
+  return effectiveBackgroundColor ?: [RCTUIColor clearColor]; // TODO(macOS GH#774)
 }
 
 NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(TextAttributes const &textAttributes)
@@ -118,7 +118,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
   }
 
   // Colors
-  UIColor *effectiveForegroundColor = RCTEffectiveForegroundColorFromTextAttributes(textAttributes);
+  RCTUIColor *effectiveForegroundColor = RCTEffectiveForegroundColorFromTextAttributes(textAttributes); // TODO(macOS GH#774)
 
   if (textAttributes.foregroundColor || !isnan(textAttributes.opacity)) {
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
@@ -136,7 +136,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
   // Paragraph Style
   NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
   BOOL isParagraphStyleUsed = NO;
-  if (textAttributes.alignment.hasValue()) {
+  if (textAttributes.alignment.has_value()) {
     TextAlignment textAlignment = textAttributes.alignment.value_or(TextAlignment::Natural);
     if (textAttributes.layoutDirection.value_or(LayoutDirection::LeftToRight) == LayoutDirection::RightToLeft) {
       if (textAlignment == TextAlignment::Right) {
@@ -150,7 +150,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
     isParagraphStyleUsed = YES;
   }
 
-  if (textAttributes.baseWritingDirection.hasValue()) {
+  if (textAttributes.baseWritingDirection.has_value()) {
     paragraphStyle.baseWritingDirection =
         RCTNSWritingDirectionFromWritingDirection(textAttributes.baseWritingDirection.value());
     isParagraphStyleUsed = YES;
@@ -174,7 +174,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
     NSUnderlineStyle style = RCTNSUnderlineStyleFromTextDecorationStyle(
         textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid));
 
-    UIColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor);
+    RCTUIColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor); // TODO(macOS GH#774)
 
     // Underline
     if (textDecorationLineType == TextDecorationLineType::Underline ||
@@ -198,7 +198,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
   }
 
   // Shadow
-  if (textAttributes.textShadowOffset.hasValue()) {
+  if (textAttributes.textShadowOffset.has_value()) {
     auto textShadowOffset = textAttributes.textShadowOffset.value();
     NSShadow *shadow = [NSShadow new];
     shadow.shadowOffset = CGSize{textShadowOffset.width, textShadowOffset.height};
@@ -212,7 +212,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
     attributes[RCTAttributedStringIsHighlightedAttributeName] = @YES;
   }
 
-  if (textAttributes.accessibilityRole.hasValue()) {
+  if (textAttributes.accessibilityRole.has_value()) {
     auto accessibilityRole = textAttributes.accessibilityRole.value();
     switch (accessibilityRole) {
       case AccessibilityRole::None:
@@ -334,7 +334,7 @@ NSAttributedString *RCTNSAttributedStringFromAttributedString(const AttributedSt
     } else {
       NSString *string = [NSString stringWithCString:fragment.string.c_str() encoding:NSUTF8StringEncoding];
 
-      if (fragment.textAttributes.textTransform.hasValue()) {
+      if (fragment.textAttributes.textTransform.has_value()) {
         auto textTransform = fragment.textAttributes.textTransform.value();
         string = RCTNSStringFromStringApplyingTextTransform(string, textTransform);
       }
