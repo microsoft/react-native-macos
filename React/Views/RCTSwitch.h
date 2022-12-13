@@ -11,9 +11,7 @@
 
 @interface RCTSwitch : RCTUISwitch
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
 @property (nonatomic, assign) BOOL wasOn;
-#endif // TODO(macOS GH#774)
 @property (nonatomic, copy) RCTBubblingEventBlock onChange;
 
 @end

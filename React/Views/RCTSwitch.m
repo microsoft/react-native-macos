@@ -11,12 +11,10 @@
 
 @implementation RCTSwitch
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
 - (void)setOn:(BOOL)on animated:(BOOL)animated
 {
   _wasOn = on;
   [super setOn:on animated:animated];
 }
-#endif // TODO(macOS GH#774)
 
 @end
