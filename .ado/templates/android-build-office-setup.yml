@@ -3,10 +3,6 @@ steps:
     inputs:
       version: '16.x'
 
-  - template: apple-droid-node-patching.yml
-    parameters:
-      apply_office_patches: true
-
   # Install NuGet
   - task: CmdLine@2
     displayName: Install NuGet
