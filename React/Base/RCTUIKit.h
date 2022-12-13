@@ -487,7 +487,7 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
 #define RCTUIActivityIndicatorView UIActivityIndicatorView
 #else
-@interface RCTUIActivityIndicatorView : UIActivityIndicatorView
+@interface RCTUIActivityIndicatorView : NSProgressIndicator
 
 @property (nonatomic, assign) UIActivityIndicatorViewStyle activityIndicatorViewStyle;
 @property (nonatomic, assign) BOOL hidesWhenStopped;
@@ -496,6 +496,9 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 
 - (void)startAnimating;
 - (void)stopAnimating;
+
+@end
+#endif // ]TODO(macOS GH#774)
 
 // RCTUISwitch
 
