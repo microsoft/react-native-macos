@@ -497,5 +497,10 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 #define RCTUISwitch UISwitch
 #else
 @interface RCTUISwitch : NSSwitch
+
+@property (nonatomic, assign) BOOL on;
+
+- (void)setOn:(BOOL)on animated:(BOOL)animated;
+
 @end
 #endif // ]TODO(macOS GH#774)

@@ -17,24 +17,6 @@
   _wasOn = on;
   [super setOn:on animated:animated];
 }
-#else // [TODO(macOS GH#774)
-- (void)setOn:(BOOL)on animated:(BOOL)animated {
-  self.state = on ? NSControlStateValueOn : NSControlStateValueOff;
-}
-#endif // ]TODO(macOS GH#774)
-
-#if TARGET_OS_OSX
-
-- (BOOL)on
-{
-  return self.state == NSControlStateValueOn;
-}
-
-- (void)setOn:(BOOL)on
-{
-  self.state = on ? NSControlStateValueOn : NSControlStateValueOff;
-}
-
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 
 @end
