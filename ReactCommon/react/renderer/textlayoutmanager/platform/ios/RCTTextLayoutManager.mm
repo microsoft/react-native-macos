@@ -60,7 +60,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
   size = (CGSize){RCTCeilPixelValue(size.width), RCTCeilPixelValue(size.height)};
 #else
-  CGFloat scale = [[NSScreen mainScreen] backingScaleFactor];;
+  CGFloat scale = [[NSScreen mainScreen] backingScaleFactor];
   size = (CGSize){RCTCeilPixelValue(size.width, scale), RCTCeilPixelValue(size.height, scale)};
 #endif // ]TODO(macOS GH#774)
 
