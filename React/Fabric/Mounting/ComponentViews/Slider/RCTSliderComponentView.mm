@@ -248,8 +248,8 @@ using namespace facebook::react;
   _trackImage = trackImage;
   _minimumTrackImage = nil;
   _maximumTrackImage = nil;
-  CGFloat width = trackImage.size.width / 2;
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
+  CGFloat width = trackImage.size.width / 2;
   UIImage *minimumTrackImage = [trackImage resizableImageWithCapInsets:(UIEdgeInsets){0, width, 0, width}
                                                           resizingMode:UIImageResizingModeStretch];
   UIImage *maximumTrackImage = [trackImage resizableImageWithCapInsets:(UIEdgeInsets){0, width, 0, width}

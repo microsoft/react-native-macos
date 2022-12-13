@@ -479,6 +479,16 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 #define RCTUISlider UISlider
 #else
 @interface RCTUISlider : NSSlider
+
+@property (nonatomic, readonly) BOOL pressed;
+@property (nonatomic, assign) float value;
+@property (nonatomic, assign) float minimumValue;
+@property (nonatomic, assign) float maximumValue;
+@property (nonatomic, strong) NSColor *minimumTrackTintColor;
+@property (nonatomic, strong) NSColor *maximumTrackTintColor;
+
+- (void)setValue:(float)value animated:(BOOL)animated;
+
 @end
 #endif // ]TODO(macOS GH#774)
 
