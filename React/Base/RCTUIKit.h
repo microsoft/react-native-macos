@@ -480,6 +480,24 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 #else
 @interface RCTUISlider : NSSlider
 @end
+#endif // ]TODO(macOS GH#774)n
+
+// RCTUILabel
+
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#define RCTUILabel UILabel
+#else
+@interface RCTUILabel : NSTextField
+@end
+#endif // ]TODO(macOS GH#774)
+
+// RCTUISwitch
+
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#define RCTUISwitch UISwitch
+#else
+@interface RCTUISwitch : NSSwitch
+@end
 #endif // ]TODO(macOS GH#774)
 
 // RCTUIActivityIndicatorView
@@ -497,32 +515,5 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 - (void)startAnimating;
 - (void)stopAnimating;
 
-@end
-#endif // ]TODO(macOS GH#774)
-
-// RCTUISwitch
-
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
-#define RCTUISwitch UISwitch
-#else
-@interface RCTUISwitch : NSSwitch
-@end
-#endif // ]TODO(macOS GH#774)
-
-// RCTUILabel
-
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
-#define RCTUILabel UILabel
-#else
-@interface RCTUILabel : NSTextField
-@end
-#endif // ]TODO(macOS GH#774)
-
-// RCTUISwitch
-
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
-#define RCTUISwitch UISwitch
-#else
-@interface RCTUISwitch : NSSwitch
 @end
 #endif // ]TODO(macOS GH#774)
