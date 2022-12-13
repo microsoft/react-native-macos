@@ -6,5 +6,4 @@
 
 # React Android specific ones
 /ReactAndroid/ @microsoft/rnandroid
-/android-patches/ @microsoft/rnandroid
 /.ado/**/*droid* @microsoft/rnandroid
