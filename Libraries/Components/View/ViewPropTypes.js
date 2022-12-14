@@ -29,6 +29,7 @@ import type {
   AccessibilityValue,
   AccessibilityActionEvent,
   AccessibilityActionInfo,
+  AccessibilityNodeInfoProp, // TODO(android ISS)
 } from './ViewAccessibility';
 
 // [TODO(macOS GH#774)
@@ -298,6 +299,13 @@ type AndroidViewProps = $ReadOnly<{|
   accessibilityLiveRegion?: ?('none' | 'polite' | 'assertive'),
 
   /**
+   * fired when the view focus changes (gain->lose or lose->gain)
+   *
+   * @platform android
+   */
+  onFocusChange?: ?(event: SyntheticEvent<{}>) => mixed, // TODO(android ISS)
+
+  /**
    * Controls how view is important for accessibility which is if it
    * fires accessibility events and if it is reported to accessibility services
    * that query the screen. Works for Android only.
@@ -307,6 +315,8 @@ type AndroidViewProps = $ReadOnly<{|
    * See https://reactnative.dev/docs/view#importantforaccessibility
    */
   importantForAccessibility?: ?('auto' | 'yes' | 'no' | 'no-hide-descendants'),
+
+  accessibilityNodeInfo?: AccessibilityNodeInfoProp, // TODO(android ISS)
 
   /**
    * Whether to force the Android TV focus engine to move focus to this view.
