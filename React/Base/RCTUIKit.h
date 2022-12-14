@@ -494,7 +494,7 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 // RCTUISwitch
 
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
-#define RCTUISwitch UISwitch
+typedef RCTUISwitch UISwitch
 #else
 @interface RCTUISwitch : NSSwitch
 
