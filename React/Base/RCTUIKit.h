@@ -476,7 +476,7 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 // RCTUISlider
 
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
-#define RCTUISlider UISlider
+typedef UISlider RCTUISlider;
 #else
 @interface RCTUISlider : NSSlider
 
@@ -490,7 +490,7 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 - (void)setValue:(float)value animated:(BOOL)animated;
 
 @end
-#endif // ]TODO(macOS GH#774)n
+#endif // ]TODO(macOS GH#774)
 
 // RCTUILabel
 
