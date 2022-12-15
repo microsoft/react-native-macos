@@ -363,7 +363,7 @@ type AndroidViewProps = $ReadOnly<{|
   /**
    * Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
    *
-   * @platform android
+   * @platform android macos
    */
   focusable?: boolean,
 
@@ -453,28 +453,34 @@ type MacOSViewProps = $ReadOnly<{|
 
   /**
    * The react tag of the view that follows the current view in the key view loop.
+   *
+   * @platform macos
    */
   nextKeyViewTag?: ?number,
 
   /**
    * Specifies whether focus ring should be drawn when the view has the first responder status.
+   *
+   * @platform macos
    */
   enableFocusRing?: ?boolean,
 
-  /*
+  /**
    * Array of keys to receive key down events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+   *
+   * @platform macos
    */
   validKeysDown?: ?Array<string>,
 
-  /*
+  /**
    * Array of keys to receive key up events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+   *
+   * @platform macos
    */
   validKeysUp?: ?Array<string>,
 
   /**
-   * Enables Dran'n'Drop Support for certain types of dragged types
+   * Enables Drag'n'Drop Support for certain types of dragged types
    *
    * Possible values for `draggedTypes` are:
    *
@@ -486,6 +492,8 @@ type MacOSViewProps = $ReadOnly<{|
 
   /**
    * Reverses the direction of scroll. Uses native inversion on macOS and scale transforms of -1 elsewhere
+   *
+   * @platform macos
    */
   inverted?: ?boolean,
 
