@@ -578,7 +578,7 @@ static BOOL RCTAnyTouchesChanged(NSSet *touches) // [TODO(macOS GH#774)
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
   
 + (instancetype)touchHandlerForEvent:(NSEvent *)event {
-  // // The window's frame view must be used for hit testing against `locationInWindow`
+  // The window's frame view must be used for hit testing against `locationInWindow`
   NSView *hitView = [event.window.contentView.superview hitTest:event.locationInWindow];
   return [self touchHandlerForView:hitView];
 }
