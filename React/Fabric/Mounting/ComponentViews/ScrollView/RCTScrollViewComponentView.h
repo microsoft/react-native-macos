@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <React/RCTDefines.h>
 #import <React/RCTGenericDelegateSplitter.h>
@@ -28,19 +28,19 @@ NS_ASSUME_NONNULL_BEGIN
 /*
  * Finds and returns the closet RCTScrollViewComponentView component to the given view
  */
-+ (nullable RCTScrollViewComponentView *)findScrollViewComponentViewForView:(UIView *)view;
++ (nullable RCTScrollViewComponentView *)findScrollViewComponentViewForView:(RCTUIView *)view; // TODO(macOS GH#774)
 
 /*
  * Returns an actual UIScrollView that this component uses under the hood.
  */
-@property (nonatomic, strong, readonly) UIScrollView *scrollView;
+@property (nonatomic, strong, readonly) RCTUIScrollView *scrollView; // TODO(macOS GH#774)
 
 /*
  * Returns the subview of the scroll view that the component uses to mount all subcomponents into. That's useful to
  * separate component views from auxiliary views to be able to reliably implement pull-to-refresh- and RTL-related
  * functionality.
  */
-@property (nonatomic, strong, readonly) UIView *containerView;
+@property (nonatomic, strong, readonly) RCTUIView *containerView; // TODO(macOS GH#774)
 
 /*
  * Returns a delegate splitter that can be used to subscribe for UIScrollView delegate.

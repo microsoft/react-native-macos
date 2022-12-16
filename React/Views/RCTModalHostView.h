@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <React/RCTInvalidating.h>
 #import <React/RCTModalHostViewManager.h>
@@ -16,7 +16,7 @@
 
 @protocol RCTModalHostViewInteractor;
 
-@interface RCTModalHostView : UIView <RCTInvalidating, UIAdaptivePresentationControllerDelegate>
+@interface RCTModalHostView : RCTUIView <RCTInvalidating, UIAdaptivePresentationControllerDelegate> // TODO(macOS GH#774)
 
 @property (nonatomic, copy) NSString *animationType;
 @property (nonatomic, assign) UIModalPresentationStyle presentationStyle;

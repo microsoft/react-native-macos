@@ -590,3 +590,41 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 }
 
 @end
+
+// RCTUILabel
+
+@implementation RCTUILabel {} // [TODO(macOS GH#774)
+
+- (instancetype)initWithFrame:(NSRect)frameRect
+{
+  if (self = [super initWithFrame:frameRect]) {
+    [self setBezeled:NO];
+    [self setDrawsBackground:NO];
+    [self setEditable:NO];
+    [self setSelectable:NO];
+    [self setWantsLayer:YES];
+  }
+  
+  return self;
+}
+
+@end  // ]TODO(macOS GH#774)
+
+@implementation RCTUISwitch
+
+- (BOOL)isOn
+{
+	return self.state == NSControlStateValueOn;
+}
+
+- (void)setOn:(BOOL)on
+{
+	self.state = on ? NSControlStateValueOn : NSControlStateValueOff;
+}
+
+- (void)setOn:(BOOL)on animated:(BOOL)animated {
+	self.state = on ? NSControlStateValueOn : NSControlStateValueOff;
+}
+
+
+@end
