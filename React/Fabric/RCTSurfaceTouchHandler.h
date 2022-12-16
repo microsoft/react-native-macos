@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
  * Attaches (and detaches) a view to the touch handler.
  * The receiver does not retain the provided view.
  */
-- (void)attachToView:(UIView *)view;
-- (void)detachFromView:(UIView *)view;
+- (void)attachToView:(RCTUIView *)view; // TODO(macOS GH#774)
+- (void)detachFromView:(RCTUIView *)view; // TODO(macOS GH#774)
 
 /*
  * Offset of the attached view relative to the root component in points.
