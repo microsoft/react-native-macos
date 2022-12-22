@@ -40,7 +40,7 @@ using namespace facebook::react;
     _reactSubviews = [NSMutableArray new];
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
     self.multipleTouchEnabled = YES;
-#endif
+#endif // TODO(macOS GH#774)
   }
   return self;
 }
@@ -250,10 +250,9 @@ using namespace facebook::react;
     self.layer.shouldRasterize = newViewProps.shouldRasterize;
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
     self.layer.rasterizationScale = newViewProps.shouldRasterize ? [UIScreen mainScreen].scale : 1.0;
-#else
-    // TODO - Update to work w/ Fabric
+#else // [TODO(macOS GH#774)
     self.layer.rasterizationScale = 1.0;
-#endif
+#endif // ]TODO(macOS GH#774)
   }
 
   // `pointerEvents`
@@ -359,7 +358,7 @@ using namespace facebook::react;
       self.accessibilityElement.accessibilityValue = nil;
     }
   }
-#endif
+#endif // TODO(macOS GH#774)
 
   // `testId`
   if (oldViewProps.testId != newViewProps.testId) {
