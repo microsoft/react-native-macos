@@ -692,9 +692,9 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
     offset.x = self.contentSize.width - _scrollView.frame.size.width - offset.x;
   }
 
-#if !TARGET_OS_OSX // ]TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   [_scrollView setContentOffset:offset animated:animated];
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 
   if (!animated) {
     // When not animated, the expected workflow in ``scrollViewDidEndScrollingAnimation`` after scrolling is not going
@@ -707,7 +707,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 {
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
   [_scrollView zoomToRect:rect animated:animated];
-#endif
+#endif // TODO(macOS GH#774)
 }
 
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
