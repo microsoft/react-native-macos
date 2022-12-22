@@ -140,7 +140,7 @@ using namespace facebook::react;
   if (oldSliderProps.thumbTintColor != newSliderProps.thumbTintColor) {
     _sliderView.thumbTintColor = RCTUIColorFromSharedColor(newSliderProps.thumbTintColor);
   }
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 
   // `minimumTrackTintColor`
   if (oldSliderProps.minimumTrackTintColor != newSliderProps.minimumTrackTintColor) {
@@ -262,7 +262,7 @@ using namespace facebook::react;
 
   _trackImage = nil;
   _minimumTrackImage = minimumTrackImage;
-#if !TARGET_OS_OSX // ]TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   _minimumTrackImage =
       [_minimumTrackImage resizableImageWithCapInsets:(UIEdgeInsets){0, _minimumTrackImage.size.width, 0, 0}
                                          resizingMode:UIImageResizingModeStretch];
