@@ -9,9 +9,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 @interface RCTAccessibilityElement : UIAccessibilityElement
-#else
+#else // [TODO(macOS GH#774)
 @interface RCTAccessibilityElement : NSAccessibilityElement
 #endif // ]TODO(macOS GH#774)
 

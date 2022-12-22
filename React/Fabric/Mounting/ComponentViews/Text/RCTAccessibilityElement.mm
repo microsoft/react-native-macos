@@ -9,7 +9,7 @@
 
 @implementation RCTAccessibilityElement
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 - (CGRect)accessibilityFrame
 {
   RCTUIView *container = (RCTUIView *)self.accessibilityContainer; // TODO(macOS GH#774)
@@ -19,6 +19,6 @@
     return UIAccessibilityConvertFrameToScreenCoordinates(_frame, container);
   }
 }
-#endif // [TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 
 @end
