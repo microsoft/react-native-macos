@@ -11,18 +11,18 @@
 #import <React/RCTAutoInsetsProtocol.h>
 
 @interface RCTEnhancedScrollView () <
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
     UIScrollViewDelegate
-#else
+#else // [TODO(macOS GH#774)
     RCTScrollableProtocol, RCTAutoInsetsProtocol
-#endif
-> // ]TODO(macOS GH#774)
+#endif // ]TODO(macOS GH#774)
+>
 @end
 
 @implementation RCTEnhancedScrollView {
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   __weak id<UIScrollViewDelegate> _publicDelegate;
-#else
+#else // [TODO(macOS GH#774)
   __weak id<RCTScrollableProtocol, RCTAutoInsetsProtocol> _publicDelegate;
 #endif // ]TODO(macOS GH#774)
   BOOL _isSetContentOffsetDisabled;
@@ -42,7 +42,7 @@
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
     // We set the default behavior to "never" so that iOS
     // doesn't do weird things to UIScrollView insets automatically
     // and keeps it as an opt-in behavior.
@@ -58,7 +58,7 @@
       [weakSelf setPrivateDelegate:delegate];
     }];
     [_delegateSplitter addDelegate:self];
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
   }
 
   return self;
@@ -102,7 +102,7 @@
       RCTSanitizeNaNValue(contentOffset.y, @"scrollView.contentOffset.y"));
 }
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 - (BOOL)touchesShouldCancelInContentView:(RCTUIView *)view // TODO(macOS GH#774)
 {
   if ([_overridingDelegate respondsToSelector:@selector(touchesShouldCancelInContentView:)]) {
@@ -143,7 +143,7 @@
   }
 }
 
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 
 #pragma mark - UIScrollViewDelegate
 
