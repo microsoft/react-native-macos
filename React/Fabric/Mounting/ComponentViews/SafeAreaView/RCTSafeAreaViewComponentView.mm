@@ -38,14 +38,14 @@ using namespace facebook::react;
   return UIEdgeInsetsZero;
 }
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 - (void)safeAreaInsetsDidChange
 {
   [super safeAreaInsetsDidChange];
 
   [self _updateStateIfNecessary];
 }
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 
 - (void)_updateStateIfNecessary
 {
@@ -54,12 +54,12 @@ using namespace facebook::react;
   }
 
   UIEdgeInsets insets = [self _safeAreaInsets];
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   insets.left = RCTRoundPixelValue(insets.left);
   insets.top = RCTRoundPixelValue(insets.top);
   insets.right = RCTRoundPixelValue(insets.right);
   insets.bottom = RCTRoundPixelValue(insets.bottom);
-#else
+#else // [TODO(macOS GH#774)
   CGFloat scale = [[NSScreen mainScreen] backingScaleFactor];;
   insets.left = RCTRoundPixelValue(insets.left, scale);
   insets.top = RCTRoundPixelValue(insets.top, scale);
