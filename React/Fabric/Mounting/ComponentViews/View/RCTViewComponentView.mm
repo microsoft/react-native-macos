@@ -711,7 +711,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS G
       return @"0";
     }
   }
-#endif
+#endif // TODO(macOS GH#774)
 
   // Handle states which haven't already been handled.
   if (props.accessibilityState.checked == AccessibilityState::Checked) {
