@@ -109,7 +109,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 + (RCTScrollViewComponentView *_Nullable)findScrollViewComponentViewForView:(RCTUIView *)view // TODO(macOS GH#774)
 {
   do {
-    view = (RCTUIView *)view.superview;
+    view = (RCTUIView *)view.superview; // TODO(macOS GH#774)
   } while (view != nil && ![view isKindOfClass:[RCTScrollViewComponentView class]]);
   return (RCTScrollViewComponentView *)view;
 }
@@ -281,7 +281,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
     scrollView.snapToOffsets = snapToOffsets;
   }
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
   if (@available(iOS 13.0, *)) {
     if (oldScrollViewProps.automaticallyAdjustsScrollIndicatorInsets !=
         newScrollViewProps.automaticallyAdjustsScrollIndicatorInsets) {
@@ -304,15 +304,15 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
     }
     _shouldUpdateContentInsetAdjustmentBehavior = NO;
   }
-#endif
+#endif // ]TODO(macOS GH#774)
     
   MAP_SCROLL_VIEW_PROP(disableIntervalMomentum);
   MAP_SCROLL_VIEW_PROP(snapToInterval);
 
   if (oldScrollViewProps.keyboardDismissMode != newScrollViewProps.keyboardDismissMode) {
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
     scrollView.keyboardDismissMode = RCTUIKeyboardDismissModeFromProps(newScrollViewProps);
-#endif
+#endif // ]TODO(macOS GH#774)
   }
 
   [super updateProps:props oldProps:oldProps];
@@ -455,11 +455,9 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
     if (_eventEmitter) {
       std::static_pointer_cast<ScrollViewEventEmitter const>(_eventEmitter)->onScroll([self _scrollViewMetrics]);
     }
-    // Once Fabric implements proper NativeAnimationDriver, this should be removed.
-    // This is just a workaround to allow animations based on onScroll event.
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
     RCTSendScrollEventForNativeAnimations_DEPRECATED(scrollView, self.tag);
-#endif
+#endif // ]TODO(macOS GH#774)
   }
 
   [self _remountChildrenIfNeeded];
@@ -593,9 +591,9 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 
 - (void)flashScrollIndicators
 {
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // ]TODO(macOS GH#774)
   [_scrollView flashScrollIndicators];
-#endif
+#endif // ]TODO(macOS GH#774)
 }
 
 - (void)scrollTo:(double)x y:(double)y animated:(BOOL)animated
@@ -663,10 +661,10 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 
 - (void)_remountChildren
 {
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
   [_scrollView updateClippedSubviewsWithClipRect:CGRectInset(_scrollView.bounds, -kClippingLeeway, -kClippingLeeway)
                                   relativeToView:_scrollView];
-#endif
+#endif // ]TODO(macOS GH#774)
 }
 
 #pragma mark - RCTScrollableProtocol
@@ -694,9 +692,9 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
     offset.x = self.contentSize.width - _scrollView.frame.size.width - offset.x;
   }
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // ]TODO(macOS GH#774)
   [_scrollView setContentOffset:offset animated:animated];
-#endif
+#endif // ]TODO(macOS GH#774)
 
   if (!animated) {
     // When not animated, the expected workflow in ``scrollViewDidEndScrollingAnimation`` after scrolling is not going
@@ -712,7 +710,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 #endif
 }
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
 - (void)addScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener
 {
   [self.scrollViewDelegateSplitter addDelegate:scrollListener];
@@ -722,7 +720,7 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 {
   [self.scrollViewDelegateSplitter removeDelegate:scrollListener];
 }
-#endif
+#endif // ]TODO(macOS GH#774)
 
 @end
 

@@ -42,7 +42,6 @@
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-  // TODO - Fabric: Enable Delegate Splitter
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
     // We set the default behavior to "never" so that iOS
     // doesn't do weird things to UIScrollView insets automatically
