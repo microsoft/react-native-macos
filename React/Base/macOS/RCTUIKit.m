@@ -619,4 +619,23 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
   return self;
 }
 
-@end  // ]TODO(macOS GH#774)
+@end // ]TODO(macOS GH#774)
+
+@implementation RCTUISwitch
+
+- (BOOL)isOn
+{
+	return self.state == NSControlStateValueOn;
+}
+
+- (void)setOn:(BOOL)on
+{
+	self.state = on ? NSControlStateValueOn : NSControlStateValueOff;
+}
+
+- (void)setOn:(BOOL)on animated:(BOOL)animated {
+	self.state = on ? NSControlStateValueOn : NSControlStateValueOff;
+}
+
+
+@end
