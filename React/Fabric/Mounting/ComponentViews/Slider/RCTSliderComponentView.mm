@@ -50,12 +50,12 @@ using namespace facebook::react;
 
     _sliderView = [[RCTUISlider alloc] initWithFrame:self.bounds]; // TODO(macOS GH#774)
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
     [_sliderView addTarget:self action:@selector(onChange:) forControlEvents:UIControlEventValueChanged];
     [_sliderView addTarget:self
                     action:@selector(sliderTouchEnd:)
           forControlEvents:(UIControlEventTouchUpInside | UIControlEventTouchUpOutside | UIControlEventTouchCancel)];
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 
     _sliderView.value = (float)defaultProps->value;
 
@@ -64,12 +64,7 @@ using namespace facebook::react;
     _maximumTrackImageResponseObserverProxy = RCTImageResponseObserverProxy(self);
     _thumbImageResponseObserverProxy = RCTImageResponseObserverProxy(self);
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
     self.contentView = _sliderView;
-#else
-//    self.contentView = [RCTUISlider new];
-    [self.contentView addSubview:_sliderView];    
-#endif // ]TODO(macOS GH#774)
   }
 
   return self;
@@ -86,7 +81,7 @@ using namespace facebook::react;
   self.maximumTrackImageCoordinator = nullptr;
   self.thumbImageCoordinator = nullptr;
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   // Tint colors will be taken care of when props are set again - we just
   // need to make sure that image properties are reset here
   [_sliderView setMinimumTrackImage:nil forState:UIControlStateNormal];
@@ -95,7 +90,7 @@ using namespace facebook::react;
   if (_thumbImage) {
     [_sliderView setThumbImage:nil forState:UIControlStateNormal];
   }
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 
   _trackImage = nil;
   _minimumTrackImage = nil;
@@ -248,7 +243,7 @@ using namespace facebook::react;
   _trackImage = trackImage;
   _minimumTrackImage = nil;
   _maximumTrackImage = nil;
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   CGFloat width = trackImage.size.width / 2;
   UIImage *minimumTrackImage = [trackImage resizableImageWithCapInsets:(UIEdgeInsets){0, width, 0, width}
                                                           resizingMode:UIImageResizingModeStretch];
@@ -256,7 +251,7 @@ using namespace facebook::react;
                                                           resizingMode:UIImageResizingModeStretch];
   [_sliderView setMinimumTrackImage:minimumTrackImage forState:UIControlStateNormal];
   [_sliderView setMaximumTrackImage:maximumTrackImage forState:UIControlStateNormal];
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 }
 
 - (void)setMinimumTrackImage:(UIImage *)minimumTrackImage
@@ -267,12 +262,12 @@ using namespace facebook::react;
 
   _trackImage = nil;
   _minimumTrackImage = minimumTrackImage;
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // ]TODO(macOS GH#774)
   _minimumTrackImage =
       [_minimumTrackImage resizableImageWithCapInsets:(UIEdgeInsets){0, _minimumTrackImage.size.width, 0, 0}
                                          resizingMode:UIImageResizingModeStretch];
   [_sliderView setMinimumTrackImage:_minimumTrackImage forState:UIControlStateNormal];
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 }
 
 - (void)setMaximumTrackImage:(UIImage *)maximumTrackImage
@@ -283,12 +278,12 @@ using namespace facebook::react;
 
   _trackImage = nil;
   _maximumTrackImage = maximumTrackImage;
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   _maximumTrackImage =
       [_maximumTrackImage resizableImageWithCapInsets:(UIEdgeInsets){0, 0, 0, _maximumTrackImage.size.width}
                                          resizingMode:UIImageResizingModeStretch];
   [_sliderView setMaximumTrackImage:_maximumTrackImage forState:UIControlStateNormal];
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 }
 
 - (void)setThumbImage:(UIImage *)thumbImage
@@ -298,9 +293,9 @@ using namespace facebook::react;
   }
 
   _thumbImage = thumbImage;
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   [_sliderView setThumbImage:thumbImage forState:UIControlStateNormal];
-#endif // ]TODO(macOS GH#774)
+#endif // TODO(macOS GH#774)
 }
 
 - (void)onChange:(RCTUISlider *)sender // TODO(macOS GH#774)
