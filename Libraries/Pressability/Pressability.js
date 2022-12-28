@@ -649,7 +649,7 @@ export default class Pressability {
         if (
           (event.nativeEvent.code === 'Space' ||
             event.nativeEvent.code === 'Enter') &&
-          event.defaultPrevented != true &&
+          event.defaultPrevented != true
         ) {
           const {onPressOut, onPress} = this._config;
           // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
