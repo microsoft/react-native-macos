@@ -440,13 +440,13 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
 {
   [super selectAll:sender];
 
-#if !TARGET_OS_OSX
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   // `selectAll:` does not work for UITextView when it's being called inside UITextView's delegate methods.
   dispatch_async(dispatch_get_main_queue(), ^{
     UITextRange *selectionRange = [self textRangeFromPosition:self.beginningOfDocument toPosition:self.endOfDocument];
     [self setSelectedTextRange:selectionRange notifyDelegate:NO];
   });
-#endif
+#endif // TODO(macOS GH#774)
 }
 
 #pragma mark - Layout
