@@ -623,16 +623,41 @@ export default class Pressability {
 
     // [TODO(macOS GH#774)
     const keyboardEventHandlers = {
-      onKeyDown: (event: KeyEvent): void => {
-        const {onKeyDown} = this._config;
-        if (onKeyDown != null) {
-          onKeyDown(event);
-        }
-      },
+      /** 
+       * Keyboard events are only sent to JS if validKeysUp / validKeysDown is specified.
+       * Let's only implement default handling of onKeyUp / onKeyDown if we aren't passed in validKeysUp / validKeysDown.
+       */
+      validKeysDown: this._config.validKeysDown ?? ['Space', 'Enter'],
       onKeyUp: (event: KeyEvent): void => {
         const {onKeyUp} = this._config;
-        if (onKeyUp != null) {
-          onKeyUp(event);
+        onKeyUp && onKeyUp(event);
+
+        if (
+          (event.nativeEvent.code === 'Space' ||
+            event.nativeEvent.code === 'Enter') &&
+          event.defaultPrevented != true
+        ) {
+          const {onPressOut, onPress} = this._config;
+          // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+          onPressOut && onPressOut(event);
+        }
+      },
+      onKeyDown: (event: KeyEvent): void => {
+        const {onKeyDown} = this._config;
+        onKeyDown && onKeyDown(event);
+
+        if (
+          (event.nativeEvent.code === 'Space' ||
+            event.nativeEvent.code === 'Enter') &&
+          event.defaultPrevented != true &&
+        ) {
+          const {onPressOut, onPress} = this._config;
+          // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+          onPressOut && onPressOut(event);
+
+          // macOS natively tends to perform actions on keyDown rather than keyUp
+          // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+          onPress && onPress(event);
         }
       },
     };
