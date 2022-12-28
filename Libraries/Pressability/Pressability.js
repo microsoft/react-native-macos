@@ -653,7 +653,7 @@ export default class Pressability {
         ) {
           const {onPressOut, onPress} = this._config;
           // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
-          onPressOut && onPressOut(event);
+          onPressIn && onPressIn(event);
 
           // macOS natively tends to perform actions on keyDown rather than keyUp
           // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
