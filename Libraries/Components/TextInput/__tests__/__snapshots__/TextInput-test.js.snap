@@ -26,6 +26,12 @@ exports[`TextInput tests should render as expected: should deep render when mock
   selection={null}
   text=""
   underlineColorAndroid="transparent"
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
+  }
 />
 `;
 
@@ -55,6 +61,12 @@ exports[`TextInput tests should render as expected: should deep render when not 
   selection={null}
   text=""
   underlineColorAndroid="transparent"
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
+  }
 />
 `;
 

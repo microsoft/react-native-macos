@@ -16,6 +16,12 @@ exports[`TouchableHighlight renders correctly 1`] = `
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={Object {}}
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
+  }
 >
   <Text>
     Touchable
@@ -43,6 +49,12 @@ exports[`TouchableHighlight with disabled state should be disabled when disabled
   onResponderTerminate={[Function]}
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
+  }
 >
   <View />
 </View>
@@ -68,6 +80,12 @@ exports[`TouchableHighlight with disabled state should be disabled when disabled
   onResponderTerminate={[Function]}
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
+  }
 >
   <View />
 </View>
@@ -93,6 +111,12 @@ exports[`TouchableHighlight with disabled state should disable button when acces
   onResponderTerminate={[Function]}
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
+  }
 >
   <View />
 </View>
@@ -119,6 +143,12 @@ exports[`TouchableHighlight with disabled state should keep accessibilityState w
   onResponderTerminate={[Function]}
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
+  }
 >
   <View />
 </View>
@@ -144,6 +174,12 @@ exports[`TouchableHighlight with disabled state should overwrite accessibilitySt
   onResponderTerminate={[Function]}
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
+  }
 >
   <View />
 </View>

@@ -21,6 +21,12 @@ exports[`TouchableOpacity renders correctly 1`] = `
       "opacity": 1,
     }
   }
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
+  }
 >
   <Text>
     Touchable
@@ -54,6 +60,12 @@ exports[`TouchableOpacity renders in disabled state when a disabled prop is pass
       "opacity": 1,
     }
   }
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
+  }
 >
   <Text>
     Touchable
@@ -86,6 +98,12 @@ exports[`TouchableOpacity renders in disabled state when a key disabled in acces
     Object {
       "opacity": 1,
     }
+  }
+  validKeysDown={
+    Array [
+      "Space",
+      "Enter",
+    ]
   }
 >
   <Text>
