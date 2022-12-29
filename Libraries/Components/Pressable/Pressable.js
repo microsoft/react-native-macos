@@ -221,8 +221,6 @@ type Props = $ReadOnly<{|
  */
 function Pressable(props: Props, forwardedRef): React.Node {
   const {
-    acceptsFirstMouse, // [TODO(macOS GH#774)
-    enableFocusRing, // ]TODO(macOS GH#774)
     accessible,
     android_disableSound,
     android_ripple,
@@ -240,10 +238,13 @@ function Pressable(props: Props, forwardedRef): React.Node {
     onPressIn,
     onPressOut,
     // [TODO(macOS GH#774)
+    acceptsFirstMouse,
+    enableFocusRing,
     onFocus,
     onBlur,
     onKeyDown,
     onKeyUp,
+    validKeysDown,
     // ]TODO(macOS GH#774)
     pressRetentionOffset,
     style,
@@ -269,12 +270,15 @@ function Pressable(props: Props, forwardedRef): React.Node {
   const restPropsWithDefaults: React.ElementConfig<typeof View> = {
     ...restProps,
     ...android_rippleConfig?.viewProps,
-    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [TODO(macOS GH#774)
-    enableFocusRing: enableFocusRing !== false && !disabled,
-    accessible: accessible !== false,
-    focusable: focusable !== false && !disabled, // ]TODO(macOS GH#774)
     accessibilityState,
     hitSlop,
+    // [TODO(macOS GH#774)
+    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled,
+    enableFocusRing: enableFocusRing !== false && !disabled,
+    accessible: accessible !== false,
+    focusable: focusable !== false && !disabled,
+    validKeysDown: validKeysDown ?? ['Space', 'Enter'],
+    // ]TODO(macOS GH#774)
   };
 
   const config = useMemo(

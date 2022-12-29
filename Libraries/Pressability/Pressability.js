@@ -623,21 +623,16 @@ export default class Pressability {
 
     // [TODO(macOS GH#774)
     const keyboardEventHandlers = {
-      /** 
-       * Keyboard events are only sent to JS if validKeysUp / validKeysDown is specified.
-       * Let's only implement default handling of onKeyUp / onKeyDown if we aren't passed in validKeysUp / validKeysDown.
-       */
-      validKeysDown: this._config.validKeysDown ?? ['Space', 'Enter'],
       onKeyUp: (event: KeyEvent): void => {
         const {onKeyUp} = this._config;
         onKeyUp && onKeyUp(event);
 
         if (
-          (event.nativeEvent.code === 'Space' ||
-            event.nativeEvent.code === 'Enter') &&
-          event.defaultPrevented != true
+          (event.nativeEvent.key === 'Space' ||
+            event.nativeEvent.key === 'Enter') &&
+          event.defaultPrevented !== true
         ) {
-          const {onPressOut, onPress} = this._config;
+          const {onPressOut} = this._config;
           // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
           onPressOut && onPressOut(event);
         }
@@ -647,11 +642,11 @@ export default class Pressability {
         onKeyDown && onKeyDown(event);
 
         if (
-          (event.nativeEvent.code === 'Space' ||
-            event.nativeEvent.code === 'Enter') &&
-          event.defaultPrevented != true
+          (event.nativeEvent.key === 'Space' ||
+            event.nativeEvent.key === 'Enter') &&
+          event.defaultPrevented !== true
         ) {
-          const {onPressOut, onPress} = this._config;
+          const {onPressIn, onPress} = this._config;
           // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
           onPressIn && onPressIn(event);
 
