@@ -14,6 +14,14 @@
 
 const ReactNativeViewViewConfigMacOS = {
   uiViewClassName: 'RCTView',
+  bubblingEventTypes: {
+    topKeyUp: {
+      registrationName: 'onKeyUp',
+    },
+    topKeyDown: {
+      registrationName: 'onKeyDown',
+    },
+  },
   directEventTypes: {
     topDoubleClick: {
       registrationName: 'onDoubleClick',
@@ -40,20 +48,11 @@ const ReactNativeViewViewConfigMacOS = {
     draggedTypes: true,
     enableFocusRing: true,
     nextKeyViewTag: true,
-    onBlur: true,
-    onClick: true,
-    onDoubleClick: true,
-    onDragEnter: true,
-    onDragLeave: true,
-    onDrop: true,
-    onFocus: true,
-    onKeyDown: true,
-    onKeyUp: true,
-    onMouseEnter: true,
-    onMouseLeave: true,
     tooltip: true,
     validKeysDown: true,
     validKeysUp: true,
+    keyDownEvents: true,
+    keyUpEvents: true
   },
 };
 

@@ -13,7 +13,8 @@ import type {ViewProps} from './ViewPropTypes';
 import ViewNativeComponent from './ViewNativeComponent';
 import TextAncestor from '../../Text/TextAncestor';
 import * as React from 'react';
-import invariant from 'invariant'; // TODO(macOS GH#774)
+import invariant from 'invariant'; // [macOS]
+import type {KeyEvent} from '../../Types/CoreEventTypes'; // [macOS]
 
 export type Props = ViewProps;
 
@@ -28,9 +29,48 @@ const View: React.AbstractComponent<
   ViewProps,
   React.ElementRef<typeof ViewNativeComponent>,
 > = React.forwardRef((props: ViewProps, forwardedRef) => {
+  // [macOS
+  const {onKeyDown, onKeyUp, validKeysDown, validKeysUp} = props;
+
+  invariant(
+    // $FlowFixMe Wanting to catch untyped usages
+    validKeysDown === undefined,
+    'Support for the "acceptsKeyboardFocus" property has been deprecated in favor of "keyDownEvents"',
+  );
+
+  invariant(
+    // $FlowFixMe Wanting to catch untyped usages
+    validKeysUp === undefined,
+    'Support for the "acceptsKeyboardFocus" property has been removed in favor of "keyUpEvents"',
+  );
+
+  // To support the deprecated validKeysDown prop, suppress bubbling if it is defined
+  const onKeyDownWithLegacyBehavior = (e: KeyEvent) => {
+    if (validKeysDown) {
+      e.stopPropogation();
+    }
+    onKeyDown?.();
+  };
+
+  // To support the deprecated validKeysUp prop, suppress bubbling if it is defined
+  const onKeyUpWithLegacyBehavior = (e: KeyEvent) => {
+    if (validKeysUp) {
+      e.stopPropogation();
+    }
+    onKeyUp?.();
+  };
+  // macOS]
+
   return (
     <TextAncestor.Provider value={false}>
-      <ViewNativeComponent {...props} ref={forwardedRef} />
+      {/* [macOS */}
+      <ViewNativeComponent
+        {...props}
+        ref={forwardedRef}
+        {...(onKeyDown && {keyDown: onKeyDownWithLegacyBehavior})}
+        {...(onKeyUp && {keyUp: onKeyUpWithLegacyBehavior})}
+      />
+      {/* macOS] */}
     </TextAncestor.Provider>
   );
 });

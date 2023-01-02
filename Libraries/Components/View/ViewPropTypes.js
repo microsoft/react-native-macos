@@ -41,8 +41,6 @@ export type ViewLayoutEvent = LayoutEvent;
 type BubblingEventProps = $ReadOnly<{|
   onBlur?: ?(event: BlurEvent) => mixed,
   onFocus?: ?(event: FocusEvent) => mixed,
-  onKeyDown?: ?(event: KeyEvent) => mixed, // TODO(macOS GH#774)
-  onKeyUp?: ?(event: KeyEvent) => mixed, // TODO(macOS GH#774)
 |}>;
 
 type DirectEventProps = $ReadOnly<{|
@@ -405,7 +403,64 @@ type IOSViewProps = $ReadOnly<{|
 |}>;
 
 // [TODO(macOS GH#774)
+type HandledKeyboardEvent = $ReadOnly<{|
+  altKey?: ?boolean,
+  ctrlKey?: ?boolean,
+  metaKey?: ?boolean,
+  shiftKey?: ?boolean,
+  code: string,
+  handledEventPhase?: number,
+|}>;
+
 type MacOSViewProps = $ReadOnly<{|
+  /**
+   * Fired when a key is pressed. If validKeysDown is set, only those keys will fire this event.
+   *
+   * @platform macos
+   */
+  onKeyDown?: ?(e: KeyEvent) => void,
+
+  /**
+   * Array of keyboard events whose natiev handling should be supressed. Use with `onKeyDown`
+   * to handle a keyboard event purely in JS.
+   *
+   * @platform macos
+   */
+  keyDownEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
+
+  /**
+   * @deprecated use `keyDownEvents` instead.
+   * Array of keys to receive key down events for.
+   * If undefined, all keyboard events will fire `onKeyUp`.
+   *
+   * @platform macos
+   */
+  validKeysDown?: ?Array<string>,
+
+  /**
+   * Fired when a key is pressed. If validKeysDown is set, only those keys will fire this event.
+   *
+   * @platform macos
+   */
+  onKeyUp?: ?(e: KeyEvent) => void,
+
+  /**
+   * Array of keyboard events whose natiev handling should be supressed. Use with `onUp`
+   * to handle a keyboard event purely in JS.
+   *
+   * @platform macos
+   */
+  keyUpEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
+
+  /**
+   * @deprecated use `keyUpEvents` instead.
+   * Array of keys to receive key up events for.
+   * If undefined, all keyboard events will fire `onKeyUp`
+   *
+   * @platform macos
+   */
+  validKeysUp?: ?Array<string>,
+
   /**
    * Fired when a dragged element enters a valid drop target
    *
@@ -454,20 +509,6 @@ type MacOSViewProps = $ReadOnly<{|
    * @platform macos
    */
   enableFocusRing?: ?boolean,
-
-  /**
-   * Array of keys to receive key down events for
-   *
-   * @platform macos
-   */
-  validKeysDown?: ?Array<string>,
-
-  /**
-   * Array of keys to receive key up events for
-   *
-   * @platform macos
-   */
-  validKeysUp?: ?Array<string>,
 
   /**
    * Enables Drag'n'Drop Support for certain types of dragged types

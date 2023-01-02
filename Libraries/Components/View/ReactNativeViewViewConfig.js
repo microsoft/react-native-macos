@@ -21,6 +21,7 @@ const ReactNativeViewConfig: ViewConfig = {
   Constants: {},
   bubblingEventTypes: {
     ...ReactNativeViewViewConfigAndroid.bubblingEventTypes,
+    ...ReactNativeViewViewConfigMacOS.bubblingEventTypes, // [macOS]
     topBlur: {
       phasedRegistrationNames: {
         bubbled: 'onBlur',
@@ -105,12 +106,6 @@ const ReactNativeViewConfig: ViewConfig = {
     },
     topMagicTap: {
       registrationName: 'onMagicTap',
-    },
-    topKeyUp: {
-      registrationName: 'onKeyUp',
-    },
-    topKeyDown: {
-      registrationName: 'onKeyDown',
     },
     topPointerEnter: {
       registrationName: 'pointerenter',

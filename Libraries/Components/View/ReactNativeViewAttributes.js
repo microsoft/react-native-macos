@@ -47,6 +47,8 @@ const UIView = {
   onKeyUp: true,
   validKeysDown: true,
   validKeysUp: true,
+  keyDownEvents: true,
+  keyUpEvents: true,
   draggedTypes: true,
   nextKeyViewTag: true,
   // ]TODO(macOS GH#774)

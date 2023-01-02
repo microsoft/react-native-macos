@@ -65,7 +65,8 @@
   return key;
 }
 
-// Keyboard mappings are aligned cross-platform as much as possible as per this doc https://github.com/microsoft/react-native-windows/blob/master/vnext/proposals/active/keyboard-reconcile-desktop.md
+// Keyboard mappings are aligned cross-platform as much as possible as per this doc
+// https://github.com/microsoft/react-native-windows/blob/master/vnext/proposals/active/keyboard-reconcile-desktop.md
 + (instancetype)keyEventFromEvent:(NSEvent *)event reactTag:(NSNumber *)reactTag
 {
   // Ignore "dead keys" (key press that waits for another key to make a character)

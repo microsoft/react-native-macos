@@ -141,10 +141,12 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) RCTDirectEventBlock onDrop;
 
 // Keyboarding events
-@property (nonatomic, copy) RCTDirectEventBlock onKeyDown;
-@property (nonatomic, copy) RCTDirectEventBlock onKeyUp;
-@property (nonatomic, copy) NSArray<NSString*> *validKeysDown;
-@property (nonatomic, copy) NSArray<NSString*> *validKeysUp;
+@property (nonatomic, copy) RCTBubblingEventBlock onKeyDown;
+@property (nonatomic, copy) RCTBubblingEventBlock onKeyUp;
+@property (nonatomic, copy) NSArray<NSString *> *validKeysDown;
+@property (nonatomic, copy) NSArray<NSString *> *validKeysUp;
+@property (nonatomic, copy) NSArray<RCTHandledKeyboardEvent> *keyDownEvents;
+@property (nonatomic, copy) NSArray<RCTHandledKeyboardEvent> *keyUpEvents;
 
 // Shadow Properties
 @property (nonatomic, strong) NSColor *shadowColor;

@@ -151,24 +151,50 @@ type Props = $ReadOnly<{|
   onBlur?: ?(event: BlurEvent) => mixed,
 
   /**
-   * Called after a key down event is detected.
+   * Fired when a key is pressed. If validKeysDown is set, only those keys will fire this event.
+   *
+   * @platform macos
    */
-  onKeyDown?: ?(event: KeyEvent) => mixed,
+  onKeyDown?: ?(e: KeyEvent) => void,
 
   /**
-   * Called after a key up event is detected.
+   * Array of keyboard events whose natiev handling should be supressed. Use with `onKeyDown`
+   * to handle a keyboard event purely in JS.
+   *
+   * @platform macos
    */
-  onKeyUp?: ?(event: KeyEvent) => mixed,
+  keyDownEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
 
   /**
-   * Array of keys to receive key down events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+   * @deprecated use `keyDownEvents` instead.
+   * Array of keys to receive key down events for.
+   * If undefined, all keyboard events will fire `onKeyUp`.
+   *
+   * @platform macos
    */
   validKeysDown?: ?Array<string>,
 
   /**
-   * Array of keys to receive key up events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+   * Fired when a key is pressed. If validKeysDown is set, only those keys will fire this event.
+   *
+   * @platform macos
+   */
+  onKeyUp?: ?(e: KeyEvent) => void,
+
+  /**
+   * Array of keyboard events whose natiev handling should be supressed. Use with `onUp`
+   * to handle a keyboard event purely in JS.
+   *
+   * @platform macos
+   */
+  keyUpEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
+
+  /**
+   * @deprecated use `keyUpEvents` instead.
+   * Array of keys to receive key up events for.
+   * If undefined, all keyboard events will fire `onKeyUp`
+   *
+   * @platform macos
    */
   validKeysUp?: ?Array<string>,
   // ]TODO(macOS GH#774)
