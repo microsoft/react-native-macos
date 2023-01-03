@@ -15,6 +15,8 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 //
 // functionally equivalent types
 //
@@ -116,9 +118,13 @@ UIKIT_STATIC_INLINE CGFloat UIFontLineHeight(UIFont *font)
   return [font lineHeight];
 }
 
+NS_ASSUME_NONNULL_END
+
 #else // TARGET_OS_OSX [
 
 #import <AppKit/AppKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 //
 // semantically equivalent constants
@@ -466,6 +472,8 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
   [value getValue:&rect];
   return rect;
 }
+
+NS_ASSUME_NONNULL_END
 
 #endif // ] TARGET_OS_OSX
 
