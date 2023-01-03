@@ -481,6 +481,8 @@ NS_ASSUME_NONNULL_END
 // fabric component types
 //
 
+NS_ASSUME_NONNULL_BEGIN
+
 // RCTUISlider
 
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
@@ -529,4 +531,7 @@ typedef UISwitch RCTUISwitch;
 - (void)stopAnimating;
 
 @end
+
+NS_ASSUME_NONNULL_END
+
 #endif // ]TODO(macOS GH#774)
