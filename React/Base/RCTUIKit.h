@@ -507,9 +507,11 @@ typedef UISwitch RCTUISwitch;
 @interface RCTUISwitch : NSSwitch
 
 @property (nonatomic, assign, getter=isOn) BOOL on;
+NS_ASSUME_NONNULL_BEGIN
 
 - (void)setOn:(BOOL)on animated:(BOOL)animated;
 
+NS_ASSUME_NONNULL_END
 @end
 #endif // ]TODO(macOS GH#774)
 
@@ -519,7 +521,7 @@ typedef UISwitch RCTUISwitch;
 #define RCTUIActivityIndicatorView UIActivityIndicatorView
 #else
 @interface RCTUIActivityIndicatorView : NSProgressIndicator
-
+NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UIActivityIndicatorViewStyle activityIndicatorViewStyle;
 @property (nonatomic, assign) BOOL hidesWhenStopped;
 @property (nullable, readwrite, nonatomic, strong) RCTUIColor *color;
@@ -527,7 +529,7 @@ typedef UISwitch RCTUISwitch;
 
 - (void)startAnimating;
 - (void)stopAnimating;
-
+NS_ASSUME_NONNULL_END
 @end
 
 #endif // ]TODO(macOS GH#774)
