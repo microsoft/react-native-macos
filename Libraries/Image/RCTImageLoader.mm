@@ -22,7 +22,6 @@
 #import <React/RCTLog.h>
 #import <React/RCTNetworking.h>
 #import <React/RCTUtils.h>
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import "RCTImagePlugins.h"
 
@@ -54,20 +53,37 @@ static NSInteger RCTImageBytesForImage(UIImage *image)
 #endif // [TODO(macOS GH#774)
 }
 
-#if TARGET_OS_OSX
+#if TARGET_OS_OSX // [TODO(macOS GH#774)
+
+/**
+ *  We can't depend on RCTUIKit here, bcause this file's podspec (React-RCTImage) doesn't take a dependency on RCTUIKit's pod `React-Core`
+ *  Let's just copy the methods we want to shim here
+ */
+
 static NSData *NSImageDataForFileType(NSImage *image, NSBitmapImageFileType fileType, NSDictionary<NSString *, id> *properties)
 {
   RCTAssert(image.representations.count == 1, @"Expected only a single representation since UIImage only supports one.");
 
   NSBitmapImageRep *imageRep = (NSBitmapImageRep *)image.representations.firstObject;
   if (![imageRep isKindOfClass:[NSBitmapImageRep class]]) {
-    RCTAssert([imageRep isKindOfClass:[NSBitmapImageRep class]], @"We need an NSBitmapImageRep to create an image.");
-    return nil;
+	RCTAssert([imageRep isKindOfClass:[NSBitmapImageRep class]], @"We need an NSBitmapImageRep to create an image.");
+	return nil;
   }
 
   return [imageRep representationUsingType:fileType properties:properties];
 }
-#endif // TARGET_OS_OSX
+
+
+NSData *UIImagePNGRepresentation(NSImage *image) {
+  return NSImageDataForFileType(image, NSBitmapImageFileTypePNG, @{});
+}
+
+NSData *UIImageJPEGRepresentation(NSImage *image, CGFloat compressionQuality) {
+  return NSImageDataForFileType(image,
+								NSBitmapImageFileTypeJPEG,
+								@{NSImageCompressionFactor: @(1.0)});
+}
+#endif // ]TODO(macOS GH#774)
 
 static uint64_t monotonicTimeGetCurrentNanoseconds(void)
 {
