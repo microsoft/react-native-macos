@@ -56,8 +56,8 @@ static NSInteger RCTImageBytesForImage(UIImage *image)
 #if TARGET_OS_OSX // [TODO(macOS GH#774)
 
 /**
- *  We can't depend on RCTUIKit here, bcause this file's podspec (React-RCTImage) doesn't take a dependency on RCTUIKit's pod `React-Core`
- *  Let's just copy the methods we want to shim here
+ * Github #1611 - We can't depend on RCTUIKit here, because this file's podspec (React-RCTImage) doesn't
+ * take a dependency on RCTUIKit's pod `React-Core`. Let's just copy the methods we want to shim here
  */
 
 static NSData *NSImageDataForFileType(NSImage *image, NSBitmapImageFileType fileType, NSDictionary<NSString *, id> *properties)
