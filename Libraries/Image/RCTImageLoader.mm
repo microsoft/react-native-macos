@@ -80,8 +80,8 @@ NSData *UIImagePNGRepresentation(NSImage *image) {
 
 NSData *UIImageJPEGRepresentation(NSImage *image, CGFloat compressionQuality) {
   return NSImageDataForFileType(image,
-								NSBitmapImageFileTypeJPEG,
-								@{NSImageCompressionFactor: @(compressionQuality)});
+                                NSBitmapImageFileTypeJPEG,
+                                @{NSImageCompressionFactor: @(compressionQuality)});
 }
 #endif // ]TODO(macOS GH#774)
 
