@@ -66,8 +66,8 @@ static NSData *NSImageDataForFileType(NSImage *image, NSBitmapImageFileType file
 
   NSBitmapImageRep *imageRep = (NSBitmapImageRep *)image.representations.firstObject;
   if (![imageRep isKindOfClass:[NSBitmapImageRep class]]) {
-	RCTAssert([imageRep isKindOfClass:[NSBitmapImageRep class]], @"We need an NSBitmapImageRep to create an image.");
-	return nil;
+    RCTAssert([imageRep isKindOfClass:[NSBitmapImageRep class]], @"We need an NSBitmapImageRep to create an image.");
+    return nil;
   }
 
   return [imageRep representationUsingType:fileType properties:properties];
