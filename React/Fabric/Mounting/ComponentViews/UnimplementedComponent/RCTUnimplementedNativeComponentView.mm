@@ -14,7 +14,7 @@
 using namespace facebook::react;
 
 @implementation RCTUnimplementedNativeComponentView {
-  UILabel *_label;
+  RCTUILabel *_label; // TODO(macOS GH#774)
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -24,13 +24,15 @@ using namespace facebook::react;
     _props = defaultProps;
 
     CGRect bounds = self.bounds;
-    _label = [[UILabel alloc] initWithFrame:bounds];
-    _label.backgroundColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.3];
+    _label = [[RCTUILabel alloc] initWithFrame:bounds];  // TODO(macOS GH#774)
+    _label.backgroundColor = [RCTUIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.3];
+#if !TARGET_OS_OSX // [TODO(macOS GH#774)
     _label.layoutMargins = UIEdgeInsetsMake(12, 12, 12, 12);
+#endif // ]TODO(macOS GH#774)
     _label.lineBreakMode = NSLineBreakByWordWrapping;
     _label.numberOfLines = 0;
     _label.textAlignment = NSTextAlignmentCenter;
-    _label.textColor = [UIColor whiteColor];
+    _label.textColor = [RCTUIColor whiteColor]; // TODO(macOS GH#774)
 
     self.contentView = _label;
   }

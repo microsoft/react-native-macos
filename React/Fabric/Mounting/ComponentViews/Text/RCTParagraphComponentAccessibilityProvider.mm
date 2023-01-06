@@ -21,19 +21,21 @@
 using namespace facebook::react;
 
 @implementation RCTParagraphComponentAccessibilityProvider {
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   NSMutableArray<UIAccessibilityElement *> *_accessibilityElements;
+#endif // TODO(macOS GH#774)
   AttributedString _attributedString;
   RCTTextLayoutManager *_layoutManager;
   ParagraphAttributes _paragraphAttributes;
   CGRect _frame;
-  __weak UIView *_view;
+  __weak RCTUIView *_view; // TODO(macOS GH#774)
 }
 
 - (instancetype)initWithString:(facebook::react::AttributedString)attributedString
                  layoutManager:(RCTTextLayoutManager *)layoutManager
            paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                          frame:(CGRect)frame
-                          view:(UIView *)view
+                          view:(RCTUIView *)view // TODO(macOS GH#774)
 {
   if (self = [super init]) {
     _attributedString = attributedString;
@@ -45,6 +47,7 @@ using namespace facebook::react;
   return self;
 }
 
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 - (NSArray<UIAccessibilityElement *> *)accessibilityElements
 {
   if (_accessibilityElements) {
@@ -171,6 +174,7 @@ using namespace facebook::react;
   _accessibilityElements = elements;
   return _accessibilityElements;
 }
+#endif // TODO(macOS GH#774)
 
 - (BOOL)isUpToDate:(facebook::react::AttributedString)currentAttributedString
 {

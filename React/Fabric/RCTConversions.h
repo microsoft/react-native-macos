@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // TODO(macOS GH#774)
 
 #import <react/renderer/components/view/AccessibilityPrimitives.h>
 #import <react/renderer/components/view/primitives.h>
@@ -35,26 +35,26 @@ inline std::string RCTStringFromNSString(NSString *string)
   return std::string{string.UTF8String ?: ""};
 }
 
-inline UIColor *_Nullable RCTUIColorFromSharedColor(facebook::react::SharedColor const &sharedColor)
+inline RCTUIColor *_Nullable RCTUIColorFromSharedColor(facebook::react::SharedColor const &sharedColor) // TODO(macOS GH#774)
 {
   if (!sharedColor) {
     return nil;
   }
 
   if (*facebook::react::clearColor() == *sharedColor) {
-    return [UIColor clearColor];
+    return [RCTUIColor clearColor]; // TODO(macOS GH#774)
   }
 
   if (*facebook::react::blackColor() == *sharedColor) {
-    return [UIColor blackColor];
+    return [RCTUIColor blackColor]; // TODO(macOS GH#774)
   }
 
   if (*facebook::react::whiteColor() == *sharedColor) {
-    return [UIColor whiteColor];
+    return [RCTUIColor whiteColor]; // TODO(macOS GH#774)
   }
 
   auto components = facebook::react::colorComponentsFromColor(sharedColor);
-  return [UIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha];
+  return [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha]; // TODO(macOS GH#774)
 }
 
 inline CF_RETURNS_RETAINED CGColorRef
@@ -83,6 +83,7 @@ inline UIEdgeInsets RCTUIEdgeInsetsFromEdgeInsets(const facebook::react::EdgeIns
   return {edgeInsets.top, edgeInsets.left, edgeInsets.bottom, edgeInsets.right};
 }
 
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
 UIAccessibilityTraits const AccessibilityTraitSwitch = 0x20000000000001;
 
 inline UIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
@@ -146,6 +147,7 @@ inline UIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
   }
   return result;
 };
+#endif // TODO(macOS GH#774)
 
 inline CATransform3D RCTCATransform3DFromTransformMatrix(const facebook::react::Transform &transformMatrix)
 {
