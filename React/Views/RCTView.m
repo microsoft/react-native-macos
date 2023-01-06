@@ -1667,12 +1667,15 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   NSArray<NSString *> *validKeys = keyDown ? self.validKeysDown : self.validKeysUp;
   NSString *key = [RCTViewKeyboardEvent keyFromEvent:event];
 
-  // If the view is focusable always allow enter/return and spacebar key events
-  if (!(self.focusable && [@[@"Enter", @" "] containsObject:key])) {
-      // Only post events for keys we care about
-      if (![validKeys containsObject:key]) {
-          return nil;
-      }
+  // If the view is focusable and the component didn't explicity set the validKeysDown or Up,
+  // allow enter/return and spacebar key events to mimic the behavior of native controls.
+  if (self.focusable && validKeys == nil) {
+      validKeys = @[@"Enter", @" "];
+  }
+
+  // Only post events for keys we care about
+  if (![validKeys containsObject:key]) {
+      return nil;
   }
 
   return [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
