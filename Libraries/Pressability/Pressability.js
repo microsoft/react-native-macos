@@ -624,15 +624,31 @@ export default class Pressability {
     // [TODO(macOS GH#774)
     const keyboardEventHandlers = {
       onKeyDown: (event: KeyEvent): void => {
-        const {onKeyDown} = this._config;
+        const {onKeyDown, onPressIn, onPress} = this._config;
         if (onKeyDown != null) {
           onKeyDown(event);
         }
+        // Pressables on macOS should respond to the enter/return and spacebar keys.
+        // The keyDown event triggers a press event as well as the pressIn effect mimicking a native control behavior.
+        if (
+          event.nativeEvent.key === 'Enter' ||
+          event.nativeEvent.key === ' '
+        ) {
+          onPress && onPress(event);
+          onPressIn && onPressIn(event);
+        }
       },
       onKeyUp: (event: KeyEvent): void => {
-        const {onKeyUp} = this._config;
+        const {onKeyUp, onPressOut} = this._config;
         if (onKeyUp != null) {
           onKeyUp(event);
+        }
+        // The keyUp event triggers the pressOut effect.
+        if (
+          event.nativeEvent.key === 'Enter' ||
+          event.nativeEvent.key === ' '
+        ) {
+          onPressOut && onPressOut(event);
         }
       },
     };
