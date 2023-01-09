@@ -67,7 +67,7 @@ UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
 
 #define RCTPlatformWindow UIWindow
 
-UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, UIEvent *event)
+UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
   return [view hitTest:point withEvent:event];
 }
@@ -443,7 +443,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 @end // ]TODO(macOS GH#774)
 
 
-NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *event)
+NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
   return [view hitTest:point];
 }
@@ -491,7 +491,7 @@ NS_ASSUME_NONNULL_END
 typedef UISlider RCTUISlider;
 #else
 @interface RCTUISlider : NSSlider
-
+NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL pressed;
 @property (nonatomic, assign) float value;
 @property (nonatomic, assign) float minimumValue;
@@ -500,14 +500,14 @@ typedef UISlider RCTUISlider;
 @property (nonatomic, strong) NSColor *maximumTrackTintColor;
 
 - (void)setValue:(float)value animated:(BOOL)animated;
-
+NS_ASSUME_NONNULL_END
 @end
 #endif // ]TODO(macOS GH#774)
 
 // RCTUILabel
 
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
-#define RCTUILabel UILabel
+typedef UILabel RCTUILabel;
 #else
 @interface RCTUILabel : NSTextField
 @end
@@ -519,9 +519,8 @@ typedef UISlider RCTUISlider;
 typedef UISwitch RCTUISwitch;
 #else
 @interface RCTUISwitch : NSSwitch
-
-@property (nonatomic, assign, getter=isOn) BOOL on;
 NS_ASSUME_NONNULL_BEGIN
+@property (nonatomic, assign, getter=isOn) BOOL on;
 
 - (void)setOn:(BOOL)on animated:(BOOL)animated;
 
@@ -532,7 +531,7 @@ NS_ASSUME_NONNULL_END
 // RCTUIActivityIndicatorView
 
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
-#define RCTUIActivityIndicatorView UIActivityIndicatorView
+typedef UIActivityIndicatorView RCTUIActivityIndicatorView;
 #else
 @interface RCTUIActivityIndicatorView : NSProgressIndicator
 NS_ASSUME_NONNULL_BEGIN
