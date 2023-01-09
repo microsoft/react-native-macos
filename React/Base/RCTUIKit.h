@@ -212,8 +212,7 @@ enum : NSUInteger
 };
 
 // UIView/NSView.h
-enum : NSInteger
-{
+typedef NS_ENUM(NSInteger, UIViewContentMode) {
   UIViewContentModeScaleAspectFill = NSViewLayerContentsPlacementScaleProportionallyToFill,
   UIViewContentModeScaleAspectFit  = NSViewLayerContentsPlacementScaleProportionallyToFit,
   UIViewContentModeScaleToFill     = NSViewLayerContentsPlacementScaleAxesIndependently,
@@ -327,6 +326,11 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 
 // UIImage
 @compatibility_alias UIImage NSImage;
+
+typedef NS_ENUM(NSInteger, UIImageRenderingMode) {
+    UIImageRenderingModeAlwaysOriginal,
+    UIImageRenderingModeAlwaysTemplate,
+};
 
 #ifdef __cplusplus
 extern "C"
@@ -484,9 +488,19 @@ NS_ASSUME_NONNULL_END
 // RCTUISlider
 
 #if !TARGET_OS_OSX // [TODO(macOS GH#774)
-#define RCTUISlider UISlider
+typedef UISlider RCTUISlider;
 #else
 @interface RCTUISlider : NSSlider
+
+@property (nonatomic, readonly) BOOL pressed;
+@property (nonatomic, assign) float value;
+@property (nonatomic, assign) float minimumValue;
+@property (nonatomic, assign) float maximumValue;
+@property (nonatomic, strong) NSColor *minimumTrackTintColor;
+@property (nonatomic, strong) NSColor *maximumTrackTintColor;
+
+- (void)setValue:(float)value animated:(BOOL)animated;
+
 @end
 #endif // ]TODO(macOS GH#774)
 
