@@ -13,7 +13,7 @@
 ; Ignore "BUCK" generated dirs
 <PROJECT_ROOT>/\.buckd/
 
-; [macOS Ignore metro.config.js
+; [macOS] Ignore metro.config.js
 <PROJECT_ROOT>/metro.config.js
 
 ; Flow doesn't support platforms

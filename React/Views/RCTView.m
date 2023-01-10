@@ -1004,7 +1004,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 
 #pragma mark - Borders
 
-- (RCTUIColor *)backgroundColor // macOS RCTUIColor
+- (RCTUIColor *)backgroundColor // [macOS] RCTUIColor
 {
   return _backgroundColor;
 }

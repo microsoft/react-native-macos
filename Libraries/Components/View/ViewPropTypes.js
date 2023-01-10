@@ -30,10 +30,7 @@ import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
 } from './ViewAccessibility';
-
-// [macOS
-import type {DraggedTypesType} from '../View/DraggedType';
-// macOS]
+import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
 
 export type ViewLayout = Layout;
 export type ViewLayoutEvent = LayoutEvent;

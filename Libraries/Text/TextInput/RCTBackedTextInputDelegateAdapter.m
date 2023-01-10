@@ -466,7 +466,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return;
   }
 
-  _previousSelectedTextRange = [_backedTextInputView selectedTextRange]; // macOS setter not defined for mac
+  _previousSelectedTextRange = [_backedTextInputView selectedTextRange]; // [macOS]
   [_backedTextInputView.textInputDelegate textInputDidChangeSelection];
 }
 

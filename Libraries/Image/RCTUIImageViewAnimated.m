@@ -44,9 +44,9 @@ static NSUInteger RCTDeviceFreeMemory() {
 @property (nonatomic, strong) NSOperationQueue *fetchQueue;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
 @property (nonatomic, assign) CGFloat animatedImageScale;
-#if !TARGET_OS_OSX // [macOS
+#if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, strong) CADisplayLink *displayLink;
-#endif // macOS]
+#endif // [macOS]
 
 @end
 

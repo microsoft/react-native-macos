@@ -454,10 +454,11 @@ const styles = StyleSheet.create({
     ios: {
       color: '#cdcdcd',
     },
+    // [macOS
     macos: {
-      // [macOS
       color: '#cdcdcd',
-    }, // macOS]
+    },
+    // macOS]
     android: {
       color: '#a1a1a1',
     },

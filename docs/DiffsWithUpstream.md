@@ -91,7 +91,7 @@ Here, we used single line diff tags to show that the code inside the tags is the
   ...macOS only code
 #endif // macOS]
 ```
-This case is a mix of the earlier two cases. We use a single line tag for the starting if tag to show that the first block of iOS only code is the original code from React Native. Then, we use block tags with the else/endif to show that the macOS code is an addition by Raect Native macOS.
+This case is a mix of the earlier two cases. We use a single line tag for the starting if tag to show that the first block of iOS only code is the original code from React Native. Then, we use block tags with the else/endif to show that the macOS code is an addition by React Native macOS.
 
 
 

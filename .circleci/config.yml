@@ -1013,7 +1013,7 @@ workflows:
           filters:
             branches:
               ignore: /.*/
-          # [macOS]
+          # macOS]
   nightly:
     unless: << pipeline.parameters.run_package_release_workflow_only >>
     triggers:

@@ -46,9 +46,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     _textShadowRadius = NAN;
     _opacity = NAN;
     _textTransform = RCTTextTransformUndefined;
-    // [macOS
-    _foregroundColor = [RCTTextAttributes defaultForegroundColor];
-    // macOS]
+    _foregroundColor = [RCTTextAttributes defaultForegroundColor]; // [macOS]
 #if TARGET_OS_OSX // [macOS
     _cursor = RCTCursorAuto;
 #endif // macOS]

@@ -185,7 +185,7 @@ function main(appRootDir, outputPath) {
         console.log(
           '\n\n[Codegen] >>>>> Building react-native-codegen package',
         );
-        // [macOS - use execFileSync to help keep shell commands clean
+        // [macOS use execFileSync to help keep shell commands clean
         execFileSync('yarn', ['install'], {
           cwd: codegenCliPath,
           stdio: 'inherit',

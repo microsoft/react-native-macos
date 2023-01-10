@@ -8,7 +8,7 @@
  * @flow strict
  */
 
-// macOS Copied from Platform.ios.js
+// [macOS] Copied from Platform.ios.js
 
 'use strict';
 

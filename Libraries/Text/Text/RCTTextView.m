@@ -96,7 +96,7 @@
   return self;
 }
 
-#if DEBUG // [macOS description is a debug-only feature
+#if DEBUG // [macOS] description is a debug-only feature
 - (NSString *)description
 {
   // [macOS we shouldn't make assumptions on what super's description is. Just append additional content.
@@ -104,7 +104,7 @@
   return [[super description] stringByAppendingString:stringToAppend];
   // macOS]
 }
-#endif // macOS]
+#endif // [macOS]
 
 - (void)setSelectable:(BOOL)selectable
 {
@@ -521,7 +521,7 @@
   NSData *rtf = [attributedText dataFromRange:NSMakeRange(0, attributedText.length)
                            documentAttributes:@{NSDocumentTypeDocumentAttribute: NSRTFDTextDocumentType}
                                         error:nil];
-#if TARGET_OS_IPHONE // [macOS
+#if !TARGET_OS_OSX // [macOS]
   NSMutableDictionary *item = [NSMutableDictionary new]; // [macOS]
 
   if (rtf) {
@@ -532,7 +532,7 @@
 
   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
   pasteboard.items = @[item];
-#elif TARGET_OS_OSX // [macOS]
+#else // [macOS
   [_textView copy:sender];
 
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];

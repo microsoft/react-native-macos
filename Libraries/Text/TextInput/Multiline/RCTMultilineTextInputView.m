@@ -30,7 +30,7 @@
     _backedTextInputView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 #if TARGET_OS_OSX // [macOS
     self.hideVerticalScrollIndicator = NO;
-    _scrollView = [[RCTUIScrollView alloc] initWithFrame:self.bounds]; // [macOS]
+    _scrollView = [[RCTUIScrollView alloc] initWithFrame:self.bounds];
     _scrollView.backgroundColor = [RCTUIColor clearColor];
     _scrollView.drawsBackground = NO;
     _scrollView.borderType = NSNoBorder;

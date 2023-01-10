@@ -242,12 +242,12 @@
   return ((RCTUITextFieldCell*)self.cell).isGrammarCheckingEnabled;
 }
 
-- (void)setSelectionColor:(RCTUIColor *)selectionColor // [macOS]
+- (void)setSelectionColor:(RCTUIColor *)selectionColor
 {
   ((RCTUITextFieldCell*)self.cell).selectionColor = selectionColor;
 }
 
-- (RCTUIColor*)selectionColor // [macOS]
+- (RCTUIColor*)selectionColor
 {
   return ((RCTUITextFieldCell*)self.cell).selectionColor;
 }
@@ -290,10 +290,10 @@
 {
 #if !TARGET_OS_OSX // [macOS]
   return super.placeholder;
-#else // [macOS
+#else
   return self.placeholderAttributedString.string ?: self.placeholderString;
-#endif // macOS]
-}
+#endif
+} // macOS]
 
 - (void)setPlaceholderColor:(RCTUIColor *)placeholderColor // [macOS]
 {

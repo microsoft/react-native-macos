@@ -59,7 +59,7 @@ RCT_EXPORT_METHOD(show)
         strongSelf->_view = [[RCTLogBoxView alloc] initWithFrame:RCTKeyWindow().frame
                                                 surfacePresenter:strongSelf->_bridgelessSurfacePresenter];
 #else // [macOS
-        strongSelf->_view = [[RCTLogBoxView alloc] initWithSurfacePresenter:strongSelf->_bridgelessSurfacePresenter]; // [macOS]
+        strongSelf->_view = [[RCTLogBoxView alloc] initWithSurfacePresenter:strongSelf->_bridgelessSurfacePresenter];
 #endif // macOS]
       } else if (strongSelf->_bridge && strongSelf->_bridge.valid) {
         if (strongSelf->_bridge.surfacePresenter) {
@@ -67,13 +67,13 @@ RCT_EXPORT_METHOD(show)
           strongSelf->_view = [[RCTLogBoxView alloc] initWithFrame:RCTKeyWindow().frame
                                                   surfacePresenter:strongSelf->_bridge.surfacePresenter];
 #else // [macOS
-          strongSelf->_view = [[RCTLogBoxView alloc] initWithSurfacePresenter:strongSelf->_bridge.surfacePresenter]; // [macOS]
+          strongSelf->_view = [[RCTLogBoxView alloc] initWithSurfacePresenter:strongSelf->_bridge.surfacePresenter];
 #endif // macOS]
         } else {
 #if !TARGET_OS_OSX // [macOS]               
           strongSelf->_view = [[RCTLogBoxView alloc] initWithWindow:RCTKeyWindow() bridge:strongSelf->_bridge];
 #else // [macOS
-          strongSelf->_view = [[RCTLogBoxView alloc] initWithBridge:self->_bridge]; // [macOS]
+          strongSelf->_view = [[RCTLogBoxView alloc] initWithBridge:self->_bridge];
 #endif // macOS]
         }
       }
