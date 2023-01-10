@@ -395,7 +395,6 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 // An override of an undocumented API that controls the layer's masksToBounds property
 @property (nonatomic) BOOL clipsToBounds;
 @property (nonatomic, copy) NSColor *backgroundColor;
-@property (nonatomic, readwrite, getter=isOpaque) BOOL opaque;
 @property (nonatomic) CGAffineTransform transform;
 
 /**

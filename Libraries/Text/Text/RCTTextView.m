@@ -73,6 +73,7 @@
 #if !TARGET_OS_OSX // TODO(macOS GH#774)
     self.isAccessibilityElement = YES;
     self.accessibilityTraits |= UIAccessibilityTraitStaticText;
+    self.opaque = NO;
 #else // [TODO(macOS GH#774)
     self.accessibilityRole = NSAccessibilityStaticTextRole;
     // Fix blurry text on non-retina displays.
@@ -90,7 +91,6 @@
     _textStorage = _textView.textStorage;
     [self addSubview:_textView];
 #endif // ]TODO(macOS GH#774)
-    self.opaque = NO;
     RCTUIViewSetContentModeRedraw(self); // TODO(macOS GH#774) and TODO(macOS ISS#3536887)
   }
   return self;
