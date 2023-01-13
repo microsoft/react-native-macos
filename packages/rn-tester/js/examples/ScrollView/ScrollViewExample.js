@@ -259,6 +259,13 @@ const examples = ([
       return <ScrollIndicatorExample />;
     },
   },
+  {
+    title: '<ScrollView> SnapTo Options\n',
+    description: 'Adjust properties of snapping to the scroll view.',
+    render: function (): React.Node {
+      return <SnapToOptions />;
+    },
+  },
 ]: Array<RNTesterModuleExample>);
 
 if (Platform.OS === 'ios') {
