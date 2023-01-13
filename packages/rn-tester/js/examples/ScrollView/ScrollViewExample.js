@@ -550,7 +550,6 @@ const InvertedContentExample = () => {
 
 const ScrollIndicatorVerticalExample = () => {
   const [scrollIndicatorInsets, setScrollIndicatorInsets] = useState(null);
-    useState(true);
   const [showsVerticallScrollIndic, setShowsVerticalScrollIndic] =
     useState(true);
   return (
