@@ -45,7 +45,7 @@ static NSInteger RCTImageBytesForImage(UIImage *image)
 #if !TARGET_OS_OSX // [macOS] no .scale prop on NSImage
   imageScale = image.scale;
 #endif // [macOS]
-  NSInteger singleImageBytes = (NSInteger)(image.size.width * image.size.height * image.scale * image.scale * 4);
+  NSInteger singleImageBytes = (NSInteger)(image.size.width * image.size.height * imageScale * imageScale * 4);
 #if !TARGET_OS_OSX // [macOS]
   return image.images ? image.images.count * singleImageBytes : singleImageBytes;
 #else // [macOS
