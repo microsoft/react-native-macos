@@ -30,15 +30,13 @@ export default function MyNativeView(props: {}): React.Node {
   const ref = useRef<React.ElementRef<MyNativeViewType> | null>(null);
   const [opacity, setOpacity] = useState(1.0);
   // [macOS Use this "hack" to only render this example if Fabric is enabled and allow CI to pass
-  const [isFabric, setFabric] = useState(false);
-  const onLayout = React.useCallback(
-    ev => {
-      setFabric(
-        Boolean(ev.currentTarget._internalInstanceHandle?.stateNode?.canonical),
-      );
-    },
-    [setFabric],
-  );
+  // Fabric Detection
+  const isFabric =
+    !!(
+      // An internal transform mangles variables with leading "_" as private.
+      // $FlowFixMe
+      ref._internalInstanceHandle?.stateNode?.canonical
+    );
   if (isFabric) {
     return null;
   }
@@ -46,7 +44,7 @@ export default function MyNativeView(props: {}): React.Node {
 
   // [macOS
   return (
-    <View onLayout={onLayout} style={{flex: 1}}>
+    <View style={{flex: 1}}>
       {isFabric && (
         <>
           <RNTMyNativeView ref={ref} style={{flex: 1}} opacity={opacity} />
