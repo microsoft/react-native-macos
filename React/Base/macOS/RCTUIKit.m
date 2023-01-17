@@ -5,9 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO(macOS GH#774)
+// [macOS]
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h>
 
 #import <React/RCTAssert.h>
 
@@ -131,7 +131,7 @@ NSData *UIImagePNGRepresentation(NSImage *image) {
 NSData *UIImageJPEGRepresentation(NSImage *image, CGFloat compressionQuality) {
   return NSImageDataForFileType(image,
                                 NSBitmapImageFileTypeJPEG,
-                                @{NSImageCompressionFactor: @(1.0)});
+                                @{NSImageCompressionFactor: @(compressionQuality)});
 }
 
 // UIBezierPath
@@ -202,12 +202,11 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
 // UIView
 
 
-@implementation RCTUIView // TODO(macOS ISS#3536887)
+@implementation RCTUIView
 {
 @private
   NSColor *_backgroundColor;
   BOOL _clipsToBounds;
-  BOOL _opaque;
   BOOL _userInteractionEnabled;
 }
 
@@ -285,11 +284,6 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 - (BOOL)isFlipped
 {
   return YES;
-}
-
-- (BOOL)isOpaque
-{
-  return _opaque;
 }
 
 - (CGFloat)alpha
@@ -434,7 +428,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 // RCTUIScrollView
 
-@implementation RCTUIScrollView // TODO(macOS ISS#3536887)
+@implementation RCTUIScrollView
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -551,7 +545,6 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   self.verticalScrollElasticity = alwaysBounceVertical ? NSScrollElasticityAllowed : NSScrollElasticityNone;
 }
 
-
 @end
 
 BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
@@ -591,9 +584,21 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 
 @end
 
+// RCTUISlider
+
+@implementation RCTUISlider {}
+
+- (void)setValue:(float)value animated:(__unused BOOL)animated
+{
+  self.animator.floatValue = value;
+}
+
+@end
+
+
 // RCTUILabel
 
-@implementation RCTUILabel {} // [TODO(macOS GH#774)
+@implementation RCTUILabel {}
 
 - (instancetype)initWithFrame:(NSRect)frameRect
 {
@@ -608,7 +613,7 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
   return self;
 }
 
-@end  // ]TODO(macOS GH#774)
+@end
 
 @implementation RCTUISwitch
 

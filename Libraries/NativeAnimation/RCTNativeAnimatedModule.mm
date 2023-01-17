@@ -96,6 +96,14 @@ RCT_EXPORT_METHOD(createAnimatedNode:(double)tag
   }];
 }
 
+RCT_EXPORT_METHOD(updateAnimatedNodeConfig:(double)tag
+                  config:(NSDictionary<NSString *, id> *)config)
+{
+  [self addOperationBlock:^(RCTNativeAnimatedNodesManager *nodesManager) {
+    [nodesManager updateAnimatedNodeConfig:[NSNumber numberWithDouble:tag] config:config];
+  }];
+}
+
 RCT_EXPORT_METHOD(connectAnimatedNodes:(double)parentTag
                   childTag:(double)childTag)
 {
@@ -329,12 +337,12 @@ RCT_EXPORT_METHOD(getValue:(double)nodeTag saveValueCallback:(RCTResponseSenderB
   _preOperations = [NSMutableArray new];
   _operations = [NSMutableArray new];
 
-  [uiManager prependUIBlock:^(__unused RCTUIManager *manager, __unused NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // TODO(macOS ISS#3536887)
+  [uiManager prependUIBlock:^(__unused RCTUIManager *manager, __unused NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
     for (AnimatedOperation operation in preOperations) {
       operation(self->_nodesManager);
     }
   }];
-  [uiManager addUIBlock:^(__unused RCTUIManager *manager, __unused NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // TODO(macOS ISS#3536887)
+  [uiManager addUIBlock:^(__unused RCTUIManager *manager, __unused NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
     for (AnimatedOperation operation in operations) {
       operation(self->_nodesManager);
     }

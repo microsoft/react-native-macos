@@ -53,7 +53,7 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
   // there will be only one driver per mapping so all code code should be optimized around that.
   NSMutableDictionary<NSString *, NSMutableArray<RCTEventAnimation *> *> *_eventDrivers;
   NSMutableSet<id<RCTAnimationDriver>> *_activeAnimations;
-  RCTPlatformDisplayLink *_displayLink; // TODO(macOS GH#774)
+  RCTPlatformDisplayLink *_displayLink; // [macOS]
 }
 
 - (instancetype)initWithBridge:(nullable RCTBridge *)bridge surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter;
@@ -261,6 +261,12 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
     saveCallback(@[@(valueNode.value)]);
 }
 
+- (void)updateAnimatedNodeConfig:(NSNumber *)tag
+                    config:(NSDictionary<NSString *, id> *)config
+{
+  // TODO (T111179606): Support platform colors for color animations
+}
+
 #pragma mark -- Drivers
 
 - (void)startAnimatingNode:(NSNumber *)animationId
@@ -431,7 +437,7 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
 - (void)startAnimationLoopIfNeeded
 {
   if (!_displayLink && _activeAnimations.count > 0) {
-    _displayLink = [RCTPlatformDisplayLink displayLinkWithTarget:self selector:@selector(stepAnimations:)]; // TODO(macOS GH#774)
+    _displayLink = [RCTPlatformDisplayLink displayLinkWithTarget:self selector:@selector(stepAnimations:)]; // [macOS]
     [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
   }
 }
@@ -451,7 +457,7 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
   }
 }
 
-- (void)stepAnimations:(RCTPlatformDisplayLink *)displaylink // TODO(macOS GH#774)
+- (void)stepAnimations:(RCTPlatformDisplayLink *)displaylink // [macOS]
 {
   NSTimeInterval time = displaylink.timestamp;
   for (id<RCTAnimationDriver> animationDriver in _activeAnimations) {

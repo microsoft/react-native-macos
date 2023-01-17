@@ -48,10 +48,7 @@ if (Platform.OS === 'android') {
   AndroidTextInput = require('./AndroidTextInputNativeComponent').default;
   AndroidTextInputCommands =
     require('./AndroidTextInputNativeComponent').Commands;
-} else if (
-  Platform.OS === 'ios' ||
-  Platform.OS === 'macos' /* TODO(macOS GH#774) */
-) {
+} else if (Platform.OS === 'ios' || Platform.OS === 'macos' /* [macOS] */) {
   RCTSinglelineTextInputView =
     require('./RCTSingelineTextInputNativeComponent').default;
   RCTSinglelineTextInputNativeCommands =
@@ -130,7 +127,7 @@ export type EditingEvent = SyntheticEvent<
   |}>,
 >;
 
-// macOS-only // [TODO(macOS GH#774)
+// [macOS macOS-only
 export type SettingChangeEvent = SyntheticEvent<
   $ReadOnly<{|
     enabled: boolean,
@@ -155,7 +152,7 @@ export type PasteEvent = SyntheticEvent<
     |},
   |}>,
 >;
-// ]TODO(macOS GH#774)
+// macOS]
 
 type DataDetectorTypesType =
   // iOS+macOS
@@ -166,7 +163,7 @@ type DataDetectorTypesType =
   // iOS-only
   | 'none'
   | 'all'
-  // macOS-only // [TODO(macOS GH#774)
+  // [macOS macOS-only
   | 'ortography'
   | 'spelling'
   | 'grammar'
@@ -175,7 +172,7 @@ type DataDetectorTypesType =
   | 'replacement'
   | 'correction'
   | 'regularExpression'
-  | 'transitInformation'; // ]TODO(macOS GH#774)
+  | 'transitInformation'; // macOS]
 
 export type KeyboardType =
   // Cross Platform
@@ -330,21 +327,6 @@ type IOSProps = $ReadOnly<{|
    */
   scrollEnabled?: ?boolean,
 
-  // [TODO(macOS GH#774)
-  /**
-   * If `true`, hide vertical scrollbar on the underlying multiline scrollview
-   * The default value is `false`.
-   * @platform macos
-   */
-  hideVerticalScrollIndicator?: ?boolean,
-
-  /**
-   * If `false`, disables grammar-check.
-   * @platform macos
-   */
-  grammarCheck?: ?boolean,
-  // ]TODO(macOS GH#774)
-
   /**
    * If `false`, disables spell-check style (i.e. red underlines).
    * The default value is inherited from `autoCorrect`.
@@ -360,7 +342,7 @@ type IOSProps = $ReadOnly<{|
   textContentType?: ?TextContentType,
 |}>;
 
-// [TODO(macOS GH#774)
+// [macOS
 export type SubmitKeyEvent = $ReadOnly<{|
   key: string,
   altKey?: ?boolean,
@@ -373,9 +355,25 @@ export type SubmitKeyEvent = $ReadOnly<{|
 type MacOSProps = $ReadOnly<{|
   /**
    * If `true`, clears the text field synchronously before `onSubmitEditing` is emitted.
+   *
    * @platform macos
    */
   clearTextOnSubmit?: ?boolean,
+
+  /**
+   * If `false`, disables grammar-check.
+   *
+   * @platform macos
+   */
+  grammarCheck?: ?boolean,
+
+  /**
+   * If `true`, hide vertical scrollbar on the underlying multiline scrollview
+   * The default value is `false`.
+   *
+   * @platform macos
+   */
+  hideVerticalScrollIndicator?: ?boolean,
 
   /**
    * Fired when a supported element is pasted
@@ -383,6 +381,36 @@ type MacOSProps = $ReadOnly<{|
    * @platform macos
    */
   onPaste?: (event: PasteEvent) => void,
+
+  /**
+   * Callback that is called when the text input's autoCorrect setting changes.
+   * This will be called with
+   * `{ nativeEvent: { enabled } }`.
+   * Does only work with 'multiline={true}'.
+   *
+   * @platform macos
+   */
+  onAutoCorrectChange?: ?(e: SettingChangeEvent) => mixed,
+
+  /**
+   * Callback that is called when the text input's spellCheck setting changes.
+   * This will be called with
+   * `{ nativeEvent: { enabled } }`.
+   * Does only work with 'multiline={true}'.
+   *
+   * @platform macos
+   */
+  onSpellCheckChange?: ?(e: SettingChangeEvent) => mixed,
+
+  /**
+   * Callback that is called when the text input's grammarCheck setting changes.
+   * This will be called with
+   * `{ nativeEvent: { enabled } }`.
+   * Does only work with 'multiline={true}'.
+   *
+   * @platform macos
+   */
+  onGrammarCheckChange?: ?(e: SettingChangeEvent) => mixed,
 
   /**
    * Enables Paste support for certain types of pasted types
@@ -402,8 +430,15 @@ type MacOSProps = $ReadOnly<{|
    * @platform macos
    */
   submitKeyEvents?: ?$ReadOnlyArray<SubmitKeyEvent>,
+
+  /**
+   * Specifies the tooltip.
+   *
+   * @platform macos
+   */
+  tooltip?: ?string,
 |}>;
-// ]TODO(macOS GH#774)
+// macOS]
 
 type AndroidProps = $ReadOnly<{|
   /**
@@ -564,13 +599,13 @@ type AndroidProps = $ReadOnly<{|
   underlineColorAndroid?: ?ColorValue,
 |}>;
 
-export type PasteType = 'fileUrl' | 'image' | 'string'; // TODO(macOS GH#774)
-export type PastedTypesType = PasteType | $ReadOnlyArray<PasteType>; // TODO(macOS GH#774)
+export type PasteType = 'fileUrl' | 'image' | 'string'; // [macOS]
+export type PastedTypesType = PasteType | $ReadOnlyArray<PasteType>; // [macOS]
 
 export type Props = $ReadOnly<{|
   ...$Diff<ViewProps, $ReadOnly<{|style: ?ViewStyleProp|}>>,
   ...IOSProps,
-  ...MacOSProps, // TODO(macOS GH#774)
+  ...MacOSProps, // [macOS]
   ...AndroidProps,
 
   /**
@@ -719,38 +754,6 @@ export type Props = $ReadOnly<{|
    * Changed text is passed as an argument to the callback handler.
    */
   onChangeText?: ?(text: string) => mixed,
-
-  // [TODO(macOS GH#774)
-  /**
-   * Callback that is called when the text input's autoCorrect setting changes.
-   * This will be called with
-   * `{ nativeEvent: { enabled } }`.
-   * Does only work with 'multiline={true}'.
-   *
-   * @platform macos
-   */
-  onAutoCorrectChange?: ?(e: SettingChangeEvent) => mixed,
-
-  /**
-   * Callback that is called when the text input's spellCheck setting changes.
-   * This will be called with
-   * `{ nativeEvent: { enabled } }`.
-   * Does only work with 'multiline={true}'.
-   *
-   * @platform macos
-   */
-  onSpellCheckChange?: ?(e: SettingChangeEvent) => mixed,
-
-  /**
-   * Callback that is called when the text input's grammarCheck setting changes.
-   * This will be called with
-   * `{ nativeEvent: { enabled } }`.
-   * Does only work with 'multiline={true}'.
-   *
-   * @platform macos
-   */
-  onGrammarCheckChange?: ?(e: SettingChangeEvent) => mixed,
-  // ]TODO(macOS GH#774)
 
   /**
    * DANGER: this API is not stable and will change in the future.
@@ -923,12 +926,6 @@ export type Props = $ReadOnly<{|
    * [Styles](docs/style.html)
    */
   style?: ?TextStyleProp,
-
-  // [ TODO(macOS GH#774)
-  /*
-   * Specifies the tooltip.
-   */
-  tooltip?: ?string, // TODO(macOS GH#774) ]
 
   /**
    * The value to show for the text input. `TextInput` is a controlled
@@ -1353,8 +1350,7 @@ function InternalTextInput(props: Props): React.Node {
       onPressIn: props.onPressIn,
       onPressOut: props.onPressOut,
       cancelable:
-        Platform.OS === 'ios' ||
-        Platform.OS === 'macos' /* TODO(macOS GH#774) */
+        Platform.OS === 'ios' || Platform.OS === 'macos' /* [macOS] */
           ? !props.rejectResponderTermination
           : null,
     }),
@@ -1409,8 +1405,8 @@ function InternalTextInput(props: Props): React.Node {
         onChangeSync={useOnChangeSync === true ? _onChangeSync : null}
         onContentSizeChange={props.onContentSizeChange}
         onFocus={_onFocus}
-        onKeyDown={props.onKeyDown} // TODO(macOS GH#774)
-        onKeyUp={props.onKeyUp} // TODO(macOS GH#774)
+        onKeyDown={props.onKeyDown} // [macOS]
+        onKeyUp={props.onKeyUp} // [macOS]
         onScroll={_onScroll}
         onSelectionChange={_onSelectionChange}
         onSelectionChangeShouldSetResponder={emptyFunctionThatReturnsTrue}
@@ -1502,9 +1498,6 @@ const ExportedForwardRef: React.AbstractComponent<
     />
   );
 });
-
-ExportedForwardRef.propTypes =
-  require('deprecated-react-native-prop-types').TextInputPropTypes;
 
 // $FlowFixMe[prop-missing]
 ExportedForwardRef.State = {

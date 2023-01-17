@@ -5,21 +5,23 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <React/RCTComponent.h>
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+NS_ASSUME_NONNULL_BEGIN
+
+#if TARGET_OS_OSX // [macOS
 @protocol RCTSliderDelegate;
-#endif
+#endif // macOS]
 
-#if !TARGET_OS_OSX // ]TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTSlider : UISlider
-#else // [TODO(macOS GH#774)
+#else // [macOS
 @interface RCTSlider : NSSlider
-#endif
+#endif // macOS]
 
-#if TARGET_OS_OSX
+#if TARGET_OS_OSX // [macOS
 @property (nonatomic, weak) id<RCTSliderDelegate> delegate;
 @property (nonatomic, readonly) BOOL pressed;
 @property (nonatomic, assign) float value;
@@ -28,7 +30,7 @@
 @property (nonatomic, strong) NSColor *minimumTrackTintColor;
 @property (nonatomic, strong) NSColor *maximumTrackTintColor;
 - (void)setValue:(float)value animated:(BOOL)animated;
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
 @property (nonatomic, copy) RCTBubblingEventBlock onValueChange;
 @property (nonatomic, copy) RCTDirectEventBlock onSlidingComplete;
@@ -44,9 +46,11 @@
 
 @end
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
 @protocol RCTSliderDelegate <NSObject>
 @optional
 - (void)slider:(RCTSlider *)slider didPress:(BOOL)press;
 @end
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
+
+NS_ASSUME_NONNULL_END

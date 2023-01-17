@@ -11,24 +11,6 @@
 
 @end
 
-// We need this ugly runtime check because [streamTask captureStreams] below fails on iOS version
-// earlier than 9.0. Unfortunately none of the proper ways of checking worked:
-//
-// - NSURLSessionStreamTask class is available and is not Null on iOS 8
-// - [[NSURLSessionStreamTask new] respondsToSelector:@selector(captureStreams)] is always NO
-// - The instance we get in URLSession:dataTask:didBecomeStreamTask: is of __NSCFURLLocalStreamTaskFromDataTask
-//   and it responds to captureStreams on iOS 9+ but doesn't on iOS 8. Which means we can't get direct access
-//   to the streams on iOS 8 and at that point it's too late to change the behavior back to dataTask
-// - The compile-time #ifdef's can't be used because an app compiled for iOS8 can still run on iOS9
-
-static BOOL isStreamTaskSupported() {
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
-  return [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){9,0,0}];
-#else // [TODO(macOS GH#774)
-  return [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10,11,0}];
-#endif // ]TODO(macOS GH#774)
-}
-
 @implementation RCTMultipartDataTask {
   NSURL *_url;
   RCTMultipartDataTaskCallback _partHandler;
@@ -116,7 +98,7 @@ static BOOL isStreamTaskSupported() {
   [_data appendData:data];
 }
 
-#pragma clang diagnostic push // TODO(OSS Candidate ISS#2710739)
+#pragma clang diagnostic push // [macOS]
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 - (void)URLSession:(__unused NSURLSession *)session
                dataTask:(__unused NSURLSessionDataTask *)dataTask
@@ -126,7 +108,7 @@ static BOOL isStreamTaskSupported() {
   [streamTask captureStreams];
 }
 
-#pragma clang diagnostic push // TODO(OSS Candidate ISS#2710739)
+#pragma clang diagnostic push // [macOS]
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 - (void)URLSession:(__unused NSURLSession *)session
               streamTask:(__unused NSURLSessionStreamTask *)streamTask

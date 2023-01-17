@@ -17,10 +17,10 @@ import type {
   PressEvent,
   Layout,
   LayoutEvent,
-  ScrollEvent, // TODO(macOS GH#774)
-  KeyEvent, // TODO(macOS GH#774)
+  ScrollEvent, // [macOS]
+  KeyEvent, // [macOS]
 } from '../../Types/CoreEventTypes';
-import type {EdgeInsetsProp} from '../../StyleSheet/EdgeInsetsPropType';
+import type {EdgeInsetsOrSizeProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {Node} from 'react';
 import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import type {
@@ -30,10 +30,7 @@ import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
 } from './ViewAccessibility';
-
-// [TODO(macOS GH#774)
-import type {DraggedTypesType} from '../View/DraggedType';
-// ]TODO(macOS GH#774)
+import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
 
 export type ViewLayout = Layout;
 export type ViewLayoutEvent = LayoutEvent;
@@ -41,8 +38,8 @@ export type ViewLayoutEvent = LayoutEvent;
 type BubblingEventProps = $ReadOnly<{|
   onBlur?: ?(event: BlurEvent) => mixed,
   onFocus?: ?(event: FocusEvent) => mixed,
-  onKeyDown?: ?(event: KeyEvent) => mixed, // TODO(macOS GH#774)
-  onKeyUp?: ?(event: KeyEvent) => mixed, // TODO(macOS GH#774)
+  onKeyDown?: ?(event: KeyEvent) => mixed, // [macOS]
+  onKeyUp?: ?(event: KeyEvent) => mixed, // [macOS]
 |}>;
 
 type DirectEventProps = $ReadOnly<{|
@@ -61,7 +58,7 @@ type DirectEventProps = $ReadOnly<{|
    */
   onAccessibilityTap?: ?() => mixed,
 
-  // [TODO(macOS GH#774)
+  // [macOS
   /**
    * When `accessible` is true, the system will try to invoke this function
    * when the user performs accessibility double click gesture.
@@ -79,7 +76,7 @@ type DirectEventProps = $ReadOnly<{|
    * The `preferredScrollerStyle` key will be `legacy` or `overlay`.
    */
   onPreferredScrollerStyleDidChange?: ?(event: ScrollEvent) => mixed,
-  // ]TODO(macOS GH#774)
+  // macOS]
 
   /**
    * Invoked on mount and layout changes with:
@@ -404,7 +401,7 @@ type IOSViewProps = $ReadOnly<{|
   shouldRasterizeIOS?: ?boolean,
 |}>;
 
-// [TODO(macOS GH#774)
+// [macOS
 type MacOSViewProps = $ReadOnly<{|
   /**
    * Fired when a dragged element enters a valid drop target
@@ -440,13 +437,6 @@ type MacOSViewProps = $ReadOnly<{|
    * @platform macos
    */
   acceptsFirstMouse?: ?boolean,
-
-  /**
-   * The react tag of the view that follows the current view in the key view loop.
-   *
-   * @platform macos
-   */
-  nextKeyViewTag?: ?number,
 
   /**
    * Specifies whether focus ring should be drawn when the view has the first responder status.
@@ -489,7 +479,7 @@ type MacOSViewProps = $ReadOnly<{|
 
   onDoubleClick?: ?(event: SyntheticEvent<{}>) => mixed,
 |}>;
-// ]TODO(macOS GH#774)
+// macOS]
 
 export type ViewProps = $ReadOnly<{|
   ...BubblingEventProps,
@@ -499,7 +489,7 @@ export type ViewProps = $ReadOnly<{|
   ...TouchEventProps,
   ...AndroidViewProps,
   ...IOSViewProps,
-  ...MacOSViewProps, // TODO(macOS GH#774)
+  ...MacOSViewProps, // [macOS]
 
   children?: Node,
   style?: ?ViewStyleProp,
@@ -597,7 +587,7 @@ export type ViewProps = $ReadOnly<{|
    *
    * See https://reactnative.dev/docs/view#hitslop
    */
-  hitSlop?: ?EdgeInsetsProp,
+  hitSlop?: ?EdgeInsetsOrSizeProp,
 
   /**
    * Controls whether the `View` can be the target of touch events.

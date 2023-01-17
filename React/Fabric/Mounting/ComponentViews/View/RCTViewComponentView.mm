@@ -21,12 +21,12 @@
 using namespace facebook::react;
 
 @implementation RCTViewComponentView {
-  RCTUIColor *_backgroundColor; // TODO(macOS GH#774)
+  RCTUIColor *_backgroundColor; // [macOS]
   CALayer *_borderLayer;
   BOOL _needsInvalidateLayer;
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
-  NSMutableArray<RCTUIView *> *_reactSubviews; // TODO(macOS GH#774)
+  NSMutableArray<RCTUIView *> *_reactSubviews; // [macOS]
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
 }
 
@@ -38,7 +38,9 @@ using namespace facebook::react;
     static auto const defaultProps = std::make_shared<ViewProps const>();
     _props = defaultProps;
     _reactSubviews = [NSMutableArray new];
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
     self.multipleTouchEnabled = YES;
+#endif // TODO(macOS GH#774)
   }
   return self;
 }
@@ -48,7 +50,7 @@ using namespace facebook::react;
   return _props;
 }
 
-- (void)setContentView:(RCTUIView *)contentView // TODO(macOS GH#774)
+- (void)setContentView:(RCTUIView *)contentView // [macOS]
 {
   if (_contentView) {
     [_contentView removeFromSuperview];
@@ -71,12 +73,12 @@ using namespace facebook::react;
   return CGRectContainsPoint(hitFrame, point);
 }
 
-- (RCTUIColor *)backgroundColor // TODO(macOS GH#774)
+- (RCTUIColor *)backgroundColor // [macOS]
 {
   return _backgroundColor;
 }
 
-- (void)setBackgroundColor:(RCTUIColor *)backgroundColor // TODO(macOS GH#774)
+- (void)setBackgroundColor:(RCTUIColor *)backgroundColor // [macOS]
 {
   _backgroundColor = backgroundColor;
 }
@@ -92,7 +94,7 @@ using namespace facebook::react;
   return concreteComponentDescriptorProvider<ViewComponentDescriptor>();
 }
 
-- (void)mountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // TODO(macOS GH#774)
+- (void)mountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // [macOS]
 {
   RCTAssert(
       childComponentView.superview == nil,
@@ -109,7 +111,7 @@ using namespace facebook::react;
   }
 }
 
-- (void)unmountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // TODO(macOS GH#774)
+- (void)unmountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // [macOS]
 {
   if (_removeClippedSubviews) {
     [_reactSubviews removeObjectAtIndex:index];
@@ -133,7 +135,7 @@ using namespace facebook::react;
   [childComponentView removeFromSuperview];
 }
 
-- (void)updateClippedSubviewsWithClipRect:(CGRect)clipRect relativeToView:(RCTUIView *)clipView // TODO(macOS GH#774)
+- (void)updateClippedSubviewsWithClipRect:(CGRect)clipRect relativeToView:(RCTUIView *)clipView // [macOS]
 {
   if (!_removeClippedSubviews) {
     // Use default behavior if unmounting is disabled
@@ -154,7 +156,7 @@ using namespace facebook::react;
   clipRect = [clipView convertRect:clipRect toView:self];
 
   // Mount / unmount views
-  for (RCTUIView *view in _reactSubviews) { // TODO(macOS GH#774)
+  for (RCTUIView *view in _reactSubviews) { // [macOS]
     if (CGRectIntersectsRect(clipRect, view.frame)) {
       // View is at least partially visible, so remount it if unmounted
       [self addSubview:view];
@@ -203,13 +205,13 @@ using namespace facebook::react;
 
   // `backgroundColor`
   if (oldViewProps.backgroundColor != newViewProps.backgroundColor) {
-    self.backgroundColor = RCTUIColorFromSharedColor(newViewProps.backgroundColor); // TODO(macOS GH#774)
+    self.backgroundColor = RCTUIColorFromSharedColor(newViewProps.backgroundColor); // [macOS]
     needsInvalidateLayer = YES;
   }
 
   // `foregroundColor`
   if (oldViewProps.foregroundColor != newViewProps.foregroundColor) {
-    self.foregroundColor = RCTUIColorFromSharedColor(newViewProps.foregroundColor); // TODO(macOS GH#774)
+    self.foregroundColor = RCTUIColorFromSharedColor(newViewProps.foregroundColor); // [macOS]
   }
 
   // `shadowColor`
@@ -246,7 +248,11 @@ using namespace facebook::react;
   // `shouldRasterize`
   if (oldViewProps.shouldRasterize != newViewProps.shouldRasterize) {
     self.layer.shouldRasterize = newViewProps.shouldRasterize;
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
     self.layer.rasterizationScale = newViewProps.shouldRasterize ? [UIScreen mainScreen].scale : 1.0;
+#else // [TODO(macOS GH#774)
+    self.layer.rasterizationScale = 1.0;
+#endif // ]TODO(macOS GH#774)
   }
 
   // `pointerEvents`
@@ -287,6 +293,7 @@ using namespace facebook::react;
     self.nativeId = RCTNSStringFromStringNilIfEmpty(newViewProps.nativeId);
   }
 
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   // `accessible`
   if (oldViewProps.accessible != newViewProps.accessible) {
     self.accessibilityElement.isAccessibilityElement = newViewProps.accessible;
@@ -351,6 +358,7 @@ using namespace facebook::react;
       self.accessibilityElement.accessibilityValue = nil;
     }
   }
+#endif // TODO(macOS GH#774)
 
   // `testId`
   if (oldViewProps.testId != newViewProps.testId) {
@@ -438,7 +446,7 @@ using namespace facebook::react;
   return _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
 }
 
-- (RCTUIView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event // TODO(macOS GH#774)
+- (RCTUIView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
 {
   // This is a classic textbook implementation of `hitTest:` with a couple of improvements:
   //   * It does not stop algorithm if some touch is outside the view
@@ -460,8 +468,8 @@ using namespace facebook::react;
     return nil;
   }
 
-  for (RCTUIView *subview in [self.subviews reverseObjectEnumerator]) { // TODO(macOS GH#774)
-    RCTUIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event]; // TODO(macOS GH#774)
+  for (RCTUIView *subview in [self.subviews reverseObjectEnumerator]) { // [macOS]
+    RCTUIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event]; // [macOS]
     if (hitView) {
       return hitView;
     }
@@ -470,7 +478,7 @@ using namespace facebook::react;
   return isPointInside ? self : nil;
 }
 
-- (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event // TODO(macOS GH#774)
+- (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
 {
   switch (_props->pointerEvents) {
     case PointerEventsMode::Auto:
@@ -480,7 +488,7 @@ using namespace facebook::react;
     case PointerEventsMode::BoxOnly:
       return [self pointInside:point withEvent:event] ? self : nil;
     case PointerEventsMode::BoxNone:
-      RCTUIView *view = [self betterHitTest:point withEvent:event]; // TODO(macOS GH#774)
+      RCTUIView *view = [self betterHitTest:point withEvent:event]; // [macOS]
       return view != self ? view : nil;
   }
 }
@@ -592,12 +600,12 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
 
     RCTBorderColors borderColors = RCTCreateRCTBorderColorsFromBorderColors(borderMetrics.borderColors);
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
   CGFloat scaleFactor = self.window.backingScaleFactor;
 #else
   // On iOS setting the scaleFactor to 0.0 will default to the device's native scale factor.
   CGFloat scaleFactor = 0.0;
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
     UIImage *image = RCTGetBorderImage(
         RCTBorderStyleFromBorderStyle(borderMetrics.borderStyles.left),
         layer.bounds.size,
@@ -606,7 +614,7 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
         borderColors,
         _backgroundColor.CGColor,
         self.clipsToBounds,
-        scaleFactor); // TODO(macOS GH#774)
+        scaleFactor); // [macOS]
 
     RCTReleaseRCTBorderColors(borderColors);
 
@@ -662,10 +670,10 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
   return self;
 }
 
-static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS GH#774)
+static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 {
   NSMutableString *result = [NSMutableString stringWithString:@""];
-  for (RCTUIView *subview in view.subviews) { // TODO(macOS GH#774)
+  for (RCTUIView *subview in view.subviews) { // [macOS]
     NSString *label = subview.accessibilityLabel;
     if (!label) {
       label = RCTRecursiveAccessibilityLabel(subview);
@@ -695,6 +703,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS G
   auto const &props = *std::static_pointer_cast<ViewProps const>(_props);
 
   // Handle Switch.
+#if !TARGET_OS_OSX // TODO(macOS GH#774)
   if ((self.accessibilityTraits & AccessibilityTraitSwitch) == AccessibilityTraitSwitch) {
     if (props.accessibilityState.checked == AccessibilityState::Checked) {
       return @"1";
@@ -702,6 +711,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // TODO(macOS G
       return @"0";
     }
   }
+#endif // TODO(macOS GH#774)
 
   // Handle states which haven't already been handled.
   if (props.accessibilityState.checked == AccessibilityState::Checked) {

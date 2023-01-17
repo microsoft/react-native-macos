@@ -10,9 +10,9 @@
 
 'use strict';
 
-import {
-  type EventSubscription,
-  type IEventEmitter,
+import type {
+  EventSubscription,
+  IEventEmitter,
 } from '../vendor/emitter/EventEmitter';
 import Platform from '../Utilities/Platform';
 import RCTDeviceEventEmitter from './RCTDeviceEventEmitter';
@@ -41,10 +41,7 @@ export default class NativeEventEmitter<TEventToArgsMap: {...}>
   _nativeModule: ?NativeModule;
 
   constructor(nativeModule: ?NativeModule) {
-    if (
-      Platform.OS === 'ios' ||
-      Platform.OS === 'macos' /* TODO(macOS GH#774) */
-    ) {
+    if (Platform.OS === 'ios' || Platform.OS === 'macos' /* [macOS] */) {
       invariant(
         nativeModule != null,
         '`new NativeEventEmitter()` requires a non-null argument.',

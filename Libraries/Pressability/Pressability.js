@@ -621,12 +621,25 @@ export default class Pressability {
             },
           };
 
-    // [TODO(macOS GH#774)
+    // [macOS
     const keyboardEventHandlers = {
       onKeyDown: (event: KeyEvent): void => {
         const {onKeyDown} = this._config;
         if (onKeyDown != null) {
           onKeyDown(event);
+        }
+        // Pressables on macOS should respond to the enter/return and spacebar keys.
+        // The keyDown event triggers a press event as well as the pressIn effect mimicking a native control behavior.
+        if (
+          (event.nativeEvent.key === 'Enter' ||
+            event.nativeEvent.key === ' ') &&
+          event.defaultPrevented !== true
+        ) {
+          const {onPress, onPressIn} = this._config;
+          // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+          onPressIn && onPressIn(event);
+          // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+          onPress && onPress(event);
         }
       },
       onKeyUp: (event: KeyEvent): void => {
@@ -634,15 +647,25 @@ export default class Pressability {
         if (onKeyUp != null) {
           onKeyUp(event);
         }
+        // The keyUp event triggers the pressOut effect.
+        if (
+          (event.nativeEvent.key === 'Enter' ||
+            event.nativeEvent.key === ' ') &&
+          event.defaultPrevented !== true
+        ) {
+          const {onPressOut} = this._config;
+          // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+          onPressOut && onPressOut(event);
+        }
       },
     };
-    // ]TODO(macOS GH#774)
+    // macOS]
 
     return {
       ...focusEventHandlers,
       ...responderEventHandlers,
       ...mouseEventHandlers,
-      ...keyboardEventHandlers, // [TODO(macOS GH#774)]
+      ...keyboardEventHandlers, // [macOS]
     };
   }
 

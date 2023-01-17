@@ -90,6 +90,18 @@ const API = {
       NativeAnimatedModule.createAnimatedNode(tag, config),
     );
   },
+  updateAnimatedNodeConfig: function (
+    tag: number,
+    config: AnimatedNodeConfig,
+  ): void {
+    invariant(NativeAnimatedModule, 'Native animated module is not available');
+    if (typeof NativeAnimatedModule.updateAnimatedNodeConfig === 'function') {
+      API.queueOperation(() =>
+        // $FlowIgnore[not-a-function] - checked above
+        NativeAnimatedModule.updateAnimatedNodeConfig(tag, config),
+      );
+    }
+  },
   startListeningToAnimatedNodeValue: function (tag: number) {
     invariant(NativeAnimatedModule, 'Native animated module is not available');
     API.queueOperation(() =>
@@ -403,7 +415,7 @@ module.exports = {
       nativeEventEmitter = new NativeEventEmitter(
         // T88715063: NativeEventEmitter only used this parameter on iOS. Now it uses it on all platforms, so this code was modified automatically to preserve its behavior
         // If you want to use the native module on other platforms, please remove this condition and test its behavior
-        Platform.OS !== 'ios' && Platform.OS !== 'macos' // TODO(macOS GH#774): Also use this parameter on macOS
+        Platform.OS !== 'ios' && Platform.OS !== 'macos' // [macOS] Also use this parameter on macOS
           ? null
           : NativeAnimatedModule,
       );
