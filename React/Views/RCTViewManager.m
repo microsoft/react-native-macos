@@ -14,7 +14,6 @@
 #import "RCTConvert.h"
 #import "RCTLog.h"
 #import "RCTShadowView.h"
-#import "RCTSinglelineTextInputView.h" // [macOS]
 #import "RCTUIManager.h"
 #import "RCTUIManagerUtils.h"
 #import "RCTUtils.h"
@@ -498,36 +497,6 @@ RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTDirectEventBlock) // macOS keyboard event
 RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTDirectEventBlock) // macOS keyboard events
 RCT_EXPORT_VIEW_PROPERTY(validKeysDown, NSArray<NSString*>)
 RCT_EXPORT_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>)
-RCT_CUSTOM_VIEW_PROPERTY(nextKeyViewTag, NSNumber, RCTView)
-{
-  NSNumber *nextKeyViewTag = [RCTConvert NSNumber:json];
-
-  RCTUIManager *uiManager = [[self bridge] uiManager];
-  NSView *nextKeyView = [uiManager viewForReactTag:nextKeyViewTag];
-    if (nextKeyView) {
-      NSView *targetView = view;
-      // The TextInput component is implemented as a RCTUITextField wrapped by a RCTSinglelineTextInputView,
-      // so we need to get the first subview to properly transfer focus
-      if ([targetView isKindOfClass:[RCTSinglelineTextInputView class]]) {
-        targetView = [[view subviews] firstObject];
-      }
-      if ([nextKeyView isKindOfClass:[RCTSinglelineTextInputView class]]) {
-        nextKeyView = [[nextKeyView subviews] firstObject];
-      }
-      [targetView setNextKeyView:nextKeyView];
-    }
-}
-
-RCT_EXPORT_METHOD(recalculateKeyViewLoop: (nonnull NSNumber *)reactTag)
-{
-  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) {
-    RCTUIView *view = viewRegistry[reactTag];
-    if (!view) {
-      RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
-    }
-    [[view window] recalculateKeyViewLoop];
-  }];
-}
 #endif // macOS]
 
 #pragma mark - ShadowView properties
@@ -594,5 +563,30 @@ RCT_EXPORT_SHADOW_PROPERTY(display, YGDisplay)
 RCT_EXPORT_SHADOW_PROPERTY(onLayout, RCTDirectEventBlock)
 
 RCT_EXPORT_SHADOW_PROPERTY(direction, YGDirection)
+
+// The events below define the properties that are not used by native directly, but required in the view config for new
+// renderer to function.
+// They can be deleted after Static View Configs are rolled out.
+
+// PanResponder handlers
+RCT_CUSTOM_VIEW_PROPERTY(onMoveShouldSetResponder, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onMoveShouldSetResponderCapture, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onStartShouldSetResponder, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onStartShouldSetResponderCapture, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onResponderGrant, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onResponderReject, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onResponderStart, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onResponderEnd, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onResponderRelease, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onResponderMove, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onResponderTerminate, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onResponderTerminationRequest, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onShouldBlockNativeResponder, BOOL, RCTView) {}
+
+// Touch events
+RCT_CUSTOM_VIEW_PROPERTY(onTouchStart, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onTouchMove, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onTouchEnd, BOOL, RCTView) {}
+RCT_CUSTOM_VIEW_PROPERTY(onTouchCancel, BOOL, RCTView) {}
 
 @end

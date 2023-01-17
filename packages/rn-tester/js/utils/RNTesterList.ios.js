@@ -57,10 +57,6 @@ const Components: Array<RNTesterModuleInfo> = [
     module: require('../examples/KeyboardEventsExample/KeyboardEventsExample'),
   },
   {
-    key: 'Key-View Accessibility Looping',
-    module: require('../examples/KeyViewLoopExample/KeyViewLoopExample'),
-  },
-  {
     key: 'AccessibilityShowMenu',
     module: require('../examples/AccessibilityShowMenu/AccessibilityShowMenu'),
   }, // macOS]
@@ -194,14 +190,12 @@ const Components: Array<RNTesterModuleInfo> = [
     category: 'Basic',
     supportsTVOS: true,
   },
-  /* [macOS NewArchitectureExample depends on Fabric, which we don't have on macOS yet
   {
     key: 'NewArchitectureExample',
     category: 'UI',
     module: require('../examples/NewArchitecture/NewArchitectureExample'),
     supportsTVOS: false,
   },
-  macOS] */
 ];
 
 const APIs: Array<RNTesterModuleInfo> = [
