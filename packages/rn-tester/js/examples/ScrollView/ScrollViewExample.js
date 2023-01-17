@@ -253,6 +253,13 @@ const examples = ([
     },
   },
   {
+    title: '<ScrollView> Scroll Indicator\n',
+    description: 'Adjust properties of the scroll indicator.',
+    render: function (): React.Node {
+      return <ScrollIndicatorExample />;
+    },
+  },
+  {
     title: '<ScrollView> SnapTo Options\n',
     description: 'Adjust properties of snapping to the scroll view.',
     render: function (): React.Node {
@@ -484,32 +491,16 @@ if (Platform.OS === 'ios') {
 }
 exports.examples = examples;
 
-// [macOS
+// TODO [(macOS GH#774)
 if (Platform.OS === 'macos') {
-  examples.push(
-    {
-      title: '<ScrollView> (inverted = true/false)\n',
-      description:
-        "You can display <ScrollView>'s child components in inverted order",
-      render: function (): React.Node {
-        return <InvertedContentExample />;
-      },
+  examples.push({
+    title: '<ScrollView> (inverted = true/false)\n',
+    description:
+      "You can display <ScrollView>'s child components in inverted order",
+    render: function (): React.Node {
+      return <InvertedContentExample />;
     },
-    {
-      title: '<ScrollView> Vertical Scroll Indicator\n',
-      description: 'Adjust properties of the vertical scroll indicator.',
-      render: function (): React.Node {
-        return <ScrollIndicatorVerticalExample />;
-      },
-    },
-    {
-      title: '<ScrollView> Horizontal Scroll Indicator\n',
-      description: 'Adjust properties of the horizontal scroll indicator.',
-      render: function (): React.Node {
-        return <ScrollIndicatorHorizontalExample />;
-      },
-    },
-  );
+  });
 }
 
 const InvertedContentExample = () => {
@@ -540,95 +531,7 @@ const InvertedContentExample = () => {
     </>
   );
 };
-
-const ScrollIndicatorVerticalExample = () => {
-  const [scrollIndicatorInsets, setScrollIndicatorInsets] = useState(null);
-  const [showsVerticallScrollIndic, setShowsVerticalScrollIndic] =
-    useState(true);
-  return (
-    <View>
-      <ScrollView
-        style={[styles.scrollView, {height: 200}]}
-        contentInset={{top: 10, bottom: 10, left: 10, right: 10}}
-        scrollIndicatorInsets={scrollIndicatorInsets}
-        showsVerticalScrollIndicator={showsVerticallScrollIndic}
-        nestedScrollEnabled>
-        {ITEMS.map(createItemRow)}
-      </ScrollView>
-      <Button
-        label={
-          scrollIndicatorInsets == null
-            ? 'setScrollIndicatorInsets'
-            : 'Reset scrollIndicatorInsets'
-        }
-        onPress={() =>
-          scrollIndicatorInsets == null
-            ? setScrollIndicatorInsets({
-                top: 0,
-                left: 0,
-                bottom: 0,
-                right: 0,
-              })
-            : setScrollIndicatorInsets(null)
-        }
-      />
-      <Button
-        label={
-          'showsVerticalScrollIndicator: ' +
-          showsVerticallScrollIndic.toString()
-        }
-        onPress={() => setShowsVerticalScrollIndic(!showsVerticallScrollIndic)}
-      />
-    </View>
-  );
-};
-
-const ScrollIndicatorHorizontalExample = () => {
-  const [scrollIndicatorInsets, setScrollIndicatorInsets] = useState(null);
-  const [showsHorizontalScrollIndic, setShowsHorizontalScrollIndic] =
-    useState(true);
-  return (
-    <View>
-      <ScrollView
-        horizontal
-        style={[styles.scrollView, {height: 100}]}
-        contentInset={{top: 10, bottom: 10, left: 10, right: 10}}
-        scrollIndicatorInsets={scrollIndicatorInsets}
-        showsHorizontalScrollIndicator={showsHorizontalScrollIndic}
-        nestedScrollEnabled>
-        {ITEMS.map(createItemRow)}
-      </ScrollView>
-      <Button
-        label={
-          scrollIndicatorInsets == null
-            ? 'setScrollIndicatorInsets'
-            : 'Reset scrollIndicatorInsets'
-        }
-        onPress={() =>
-          scrollIndicatorInsets == null
-            ? setScrollIndicatorInsets({
-                top: 0,
-                left: 0,
-                bottom: 0,
-                right: 0,
-              })
-            : setScrollIndicatorInsets(null)
-        }
-      />
-      <Button
-        label={
-          'showsHorizontalScrollIndicator: ' +
-          showsHorizontalScrollIndic.toString()
-        }
-        onPress={() =>
-          setShowsHorizontalScrollIndic(!showsHorizontalScrollIndic)
-        }
-      />
-    </View>
-  );
-};
-
-// macOS]
+// ]TODO(macOS GH#774)
 
 const AndroidScrollBarOptions = () => {
   const [persistentScrollBar, setPersistentScrollBar] = useState(false);
@@ -792,6 +695,60 @@ const ScrollToOptions = () => {
       <Button
         label={'scrollsToTop: ' + scrollsToTop.toString()}
         onPress={() => setScrollsToTop(!scrollsToTop)}
+      />
+    </View>
+  );
+};
+
+const ScrollIndicatorExample = () => {
+  const [scrollIndicatorInsets, setScrollIndicatorInsets] = useState(null);
+  const [showsHorizontalScrollIndic, setShowsHorizontalScrollIndic] =
+    useState(true);
+  const [showsVerticallScrollIndic, setShowsVerticalScrollIndic] =
+    useState(true);
+  return (
+    <View>
+      <ScrollView
+        style={[styles.scrollView, {height: 200}]}
+        contentInset={{top: 10, bottom: 10, left: 10, right: 10}}
+        scrollIndicatorInsets={scrollIndicatorInsets}
+        showsHorizontalScrollIndicator={showsHorizontalScrollIndic}
+        showsVerticalScrollIndicator={showsVerticallScrollIndic}
+        nestedScrollEnabled>
+        {ITEMS.map(createItemRow)}
+      </ScrollView>
+      <Button
+        label={
+          scrollIndicatorInsets == null
+            ? 'setScrollIndicatorInsets'
+            : 'Reset scrollIndicatorInsets'
+        }
+        onPress={() =>
+          scrollIndicatorInsets == null
+            ? setScrollIndicatorInsets({
+                top: 10,
+                left: 10,
+                bottom: 10,
+                right: 10,
+              })
+            : setScrollIndicatorInsets(null)
+        }
+      />
+      <Button
+        label={
+          'showsHorizontalScrollIndicator: ' +
+          showsHorizontalScrollIndic.toString()
+        }
+        onPress={() =>
+          setShowsHorizontalScrollIndic(!showsHorizontalScrollIndic)
+        }
+      />
+      <Button
+        label={
+          'showsVerticalScrollIndicator: ' +
+          showsVerticallScrollIndic.toString()
+        }
+        onPress={() => setShowsVerticalScrollIndic(!showsVerticallScrollIndic)}
       />
     </View>
   );
