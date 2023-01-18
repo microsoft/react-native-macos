@@ -481,11 +481,11 @@ export type Props = $ReadOnly<{|
    */
   horizontal?: ?boolean,
   /**
-   * When true, the scroll view's inidicator style is an overlay
-   * that does not take up content view space
-   * https://developer.apple.com/documentation/appkit/nsscrollerstyle/nsscrollerstyleoverlay
+   * When true, the scroll view's indicator is shown in an overlay. // [macOS
+   * This does does not take up any content view space.
+   * https://developer.apple.com/documentation/appkit/nsscrollerstyle/nsscrollerstyleoverlay // macOS]
    */
-  hasOverlayStyleIndicator?: ?boolean,
+  hasOverlayStyleIndicator?: ?boolean, // [macOS]
   /**
    * If sticky headers should stick at the bottom instead of the top of the
    * ScrollView. This is usually used with inverted ScrollViews.
