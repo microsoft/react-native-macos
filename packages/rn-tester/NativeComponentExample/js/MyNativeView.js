@@ -29,6 +29,22 @@ const colors = [
 export default function MyNativeView(props: {}): React.Node {
   const ref = useRef<React.ElementRef<MyNativeViewType> | null>(null);
   const [opacity, setOpacity] = useState(1.0);
+  const [isFabric, setIsFabric] = useState<boolean>(false);
+
+  const callbackRef = (ref: React.ElementRef<typeof View> | null): void => {
+    if (ref == null) {
+      return;
+    }
+    // Avoid dot notation because at Meta, private properties are obfuscated.
+    // $FlowFixMe[prop-missing]
+    const _internalInstanceHandler = ref['_internalInstanceHandle']; // eslint-disable-line dot-notation
+    setIsFabric(Boolean(_internalInstanceHandler?.stateNode?.canonical));
+  };
+
+  if (!isFabric) {
+    return <View ref={callbackRef} />
+  }
+
   return (
     <View style={{flex: 1}}>
       <RNTMyNativeView ref={ref} style={{flex: 1}} opacity={opacity} />
