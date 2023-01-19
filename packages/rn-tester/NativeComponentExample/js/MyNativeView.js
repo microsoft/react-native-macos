@@ -29,8 +29,10 @@ const colors = [
 export default function MyNativeView(props: {}): React.Node {
   const ref = useRef<React.ElementRef<MyNativeViewType> | null>(null);
   const [opacity, setOpacity] = useState(1.0);
-  const [isFabric, setIsFabric] = useState<boolean>(false);
 
+  // [macOS Use this "hack" to only render this example if Fabric is enabled and allow CI to pass
+  // Fabric Detection
+  const [isFabric, setIsFabric] = useState<boolean>(false);
   const callbackRef = (ref: React.ElementRef<typeof View> | null): void => {
     if (ref == null) {
       return;
@@ -42,8 +44,9 @@ export default function MyNativeView(props: {}): React.Node {
   };
 
   if (!isFabric) {
-    return <View ref={callbackRef} />
+    return <View ref={callbackRef} />;
   }
+  // macOS]
 
   return (
     <View style={{flex: 1}}>
