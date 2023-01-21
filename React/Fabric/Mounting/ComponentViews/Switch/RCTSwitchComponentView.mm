@@ -36,7 +36,7 @@ using namespace facebook::react;
 
 #if !TARGET_OS_OSX // [macOS]
     [_switchView addTarget:self action:@selector(onChange:) forControlEvents:UIControlEventValueChanged];
-#endif
+#endif // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
     self.contentView = _switchView;
@@ -94,7 +94,7 @@ using namespace facebook::react;
   if (oldSwitchProps.thumbTintColor != newSwitchProps.thumbTintColor) {
     _switchView.thumbTintColor = RCTUIColorFromSharedColor(newSwitchProps.thumbTintColor);
   }
-#endif
+#endif // [macOS]
 
   [super updateProps:props oldProps:oldProps];
 }
