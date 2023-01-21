@@ -268,7 +268,7 @@ using namespace facebook::react;
   return paragraphProps.isSelectable;
 }
 
-#if !TARGET_OS_OSX  
+#if !TARGET_OS_OSX
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
   auto const &paragraphProps = *std::static_pointer_cast<ParagraphProps const>(_props);
