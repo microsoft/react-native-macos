@@ -316,7 +316,6 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 // These types have the same purpose but may differ semantically. Use with care!
 
 #define UIEvent NSEvent
-#define RCTUITouch NSEvent
 
 // UIGestureRecognizer
 #define UIGestureRecognizer NSGestureRecognizer
