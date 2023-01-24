@@ -29,7 +29,7 @@ using namespace facebook::react;
   if (self = [super initWithFrame:frame]) {
     static auto const defaultProps = std::make_shared<UnimplementedViewProps const>();
     _props = defaultProps;
-    
+
     _label = [[RCTUILabel alloc] initWithFrame:self.bounds];
     _label.backgroundColor = [RCTUIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.3];
     _label.lineBreakMode = NSLineBreakByCharWrapping;
