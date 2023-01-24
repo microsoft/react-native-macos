@@ -64,8 +64,8 @@ UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
 #define RCTPlatformView UIView
 #define RCTUIView UIView
 #define RCTUIScrollView UIScrollView
-
 #define RCTPlatformWindow UIWindow
+#define RCTUITouch UITouch // [macOS]
 
 UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
@@ -485,8 +485,7 @@ NS_ASSUME_NONNULL_END
 //
 
 // RCTUITouch
-
-#define RCTUITouch NSTouch // [macOS]
+#define RCTUITouch NSEvent // [macOS]
 
 // RCTUISlider
 
