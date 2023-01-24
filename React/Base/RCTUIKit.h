@@ -315,6 +315,7 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 // These types have the same purpose but may differ semantically. Use with care!
 
 #define UIEvent NSEvent
+#define RCTUITouch NSEvent
 
 // UIGestureRecognizer
 #define UIGestureRecognizer NSGestureRecognizer
@@ -508,6 +509,11 @@ NS_ASSUME_NONNULL_END
 typedef UILabel RCTUILabel;
 #else
 @interface RCTUILabel : NSTextField
+NS_ASSUME_NONNULL_BEGIN
+@property(nonatomic, copy) NSString* _Nullable text;
+@property(nonatomic, assign) NSInteger numberOfLines;
+@property(nonatomic, assign) NSTextAlignment textAlignment;
+NS_ASSUME_NONNULL_END
 @end
 #endif
 
