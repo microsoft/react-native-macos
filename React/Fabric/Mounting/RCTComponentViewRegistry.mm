@@ -89,6 +89,7 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
   componentViewDescriptor.view.tag = tag;
 #else // [macOS
   componentViewDescriptor.tag = tag;
+  componentViewDescriptor.view.reactTag = @(tag);
 #endif // macOS]
   auto it = _registry.insert({tag, componentViewDescriptor});
   return it.first->second;
@@ -108,6 +109,7 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
   componentViewDescriptor.view.tag = 0;
 #else // [macOS
   componentViewDescriptor.tag = 0;
+  componentViewDescriptor.view.reactTag = @0;
 #endif // macOS]
   [self _enqueueComponentViewWithComponentHandle:componentHandle componentViewDescriptor:componentViewDescriptor];
 }
