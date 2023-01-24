@@ -102,7 +102,7 @@ static void UpdateActiveTouchWithUITouch(
 #endif // [macOS]
 }
 
-static ActiveTouch CreateTouchWithUITouch(UITouch *uiTouch, RCTUIView *rootComponentView, CGPoint rootViewOriginOffset) // [macOS]
+static ActiveTouch CreateTouchWithUITouch(RCTUITouch *uiTouch, RCTUIView *rootComponentView, CGPoint rootViewOriginOffset) // [macOS]
 {
   ActiveTouch activeTouch = {};
 

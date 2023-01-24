@@ -484,7 +484,9 @@ NS_ASSUME_NONNULL_END
 // fabric component types
 //
 
-#define RCTUITouch UITouch // [macOS]
+// RCTUITouch
+
+#define RCTUITouch NSTouch // [macOS]
 
 // RCTUISlider
 
