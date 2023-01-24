@@ -15,6 +15,7 @@
 #import <React/RCTAssert.h>
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTConversions.h>
+#import <React/RCTUtils.h>
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
 #import <react/renderer/components/view/ViewProps.h>
@@ -633,7 +634,7 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
         _borderLayer.contentsScale = image.scale;
 #else // [macOS
         _borderLayer.contents = [image layerContentsForContentsScale:scaleFactor];
-        _borderLayer.contentsScale = [[NSScreen mainScreen] backingScaleFactor];
+        _borderLayer.contentsScale = RCTScreenScale();
 #endif // macOS]
 
       BOOL isResizable = !UIEdgeInsetsEqualToEdgeInsets(image.capInsets, UIEdgeInsetsZero);
