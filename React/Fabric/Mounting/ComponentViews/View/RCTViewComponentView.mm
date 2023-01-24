@@ -6,7 +6,6 @@
  */
 
 #import "RCTViewComponentView.h"
-#import <QuartzCore/QuartzCore.h> // [macOS] - prevent compiler error on invocation of CAShapeLayer
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <QuartzCore/QuartzCore.h>
