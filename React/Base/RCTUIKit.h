@@ -61,7 +61,7 @@ UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
 //
 
 // UIView
-#define RCTPlatformView         UIView
+#define RCTPlatformView UIView
 #define RCTUIView UIView
 #define RCTUIScrollView UIScrollView
 
@@ -483,6 +483,8 @@ NS_ASSUME_NONNULL_END
 //
 // fabric component types
 //
+
+#define RCTUITouch UITouch // [macOS]
 
 // RCTUISlider
 
