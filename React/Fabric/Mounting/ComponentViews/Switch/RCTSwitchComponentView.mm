@@ -82,17 +82,17 @@ using namespace facebook::react;
 #if !TARGET_OS_OSX // [macOS]
   // `tintColor`
   if (oldSwitchProps.tintColor != newSwitchProps.tintColor) {
-    _switchView.tintColor = RCTUIColorFromSharedColor(newSwitchProps.tintColor);
+    _switchView.tintColor = RCTUIColorFromSharedColor(newSwitchProps.tintColor); // [macOS]
   }
 
   // `onTintColor
   if (oldSwitchProps.onTintColor != newSwitchProps.onTintColor) {
-    _switchView.onTintColor = RCTUIColorFromSharedColor(newSwitchProps.onTintColor);
+    _switchView.onTintColor = RCTUIColorFromSharedColor(newSwitchProps.onTintColor); // [macOS]
   }
 
   // `thumbTintColor`
   if (oldSwitchProps.thumbTintColor != newSwitchProps.thumbTintColor) {
-    _switchView.thumbTintColor = RCTUIColorFromSharedColor(newSwitchProps.thumbTintColor);
+    _switchView.thumbTintColor = RCTUIColorFromSharedColor(newSwitchProps.thumbTintColor); // [macOS]
   }
 #endif // [macOS]
 
