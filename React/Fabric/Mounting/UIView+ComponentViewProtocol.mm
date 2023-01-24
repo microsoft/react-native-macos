@@ -103,7 +103,11 @@ using namespace facebook::react;
     } else {
       // Note: Changing `frame` when `layer.transform` is not the `identity transform` is undefined behavior.
       // Therefore, we must use `center` and `bounds`.
+#if !TARGET_OS_OSX // [macOS]
       self.center = CGPoint{CGRectGetMidX(frame), CGRectGetMidY(frame)};
+#else // [macOS
+      self.frame = frame;
+#endif // macOS]
       self.bounds = CGRect{CGPointZero, frame.size};
     }
   }
