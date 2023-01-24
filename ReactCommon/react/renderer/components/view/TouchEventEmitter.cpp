@@ -26,6 +26,11 @@ static void setTouchPayloadOnObject(
   object.setProperty(runtime, "target", touch.target);
   object.setProperty(runtime, "timestamp", touch.timestamp * 1000);
   object.setProperty(runtime, "force", touch.force);
+  object.setProperty(runtime, "button", touch.button);
+  object.setProperty(runtime, "altKey", touch.altKey);
+  object.setProperty(runtime, "ctrlKey", touch.ctrlKey);
+  object.setProperty(runtime, "shiftKey", touch.shiftKey);
+  object.setProperty(runtime, "metaKey", touch.metaKey);
 }
 
 static jsi::Value touchesPayload(
