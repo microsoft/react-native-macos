@@ -40,7 +40,9 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
       // Calling this a bit later, when the main thread is probably idle while JavaScript thread is busy.
+#if !TARGET_OS_OSX // [macOS]
       [self preallocateViewComponents];
+#endif // [macOS]
     });
   }
 
@@ -83,7 +85,11 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
       @"RCTComponentViewRegistry: Attempt to dequeue already registered component.");
 
   auto componentViewDescriptor = [self _dequeueComponentViewWithComponentHandle:componentHandle];
+#if !TARGET_OS_OSX // [macOS]
   componentViewDescriptor.view.tag = tag;
+#else // [macOS
+  componentViewDescriptor.tag = tag;
+#endif // macOS]
   auto it = _registry.insert({tag, componentViewDescriptor});
   return it.first->second;
 }
@@ -98,7 +104,11 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
       _registry.find(tag) != _registry.end(), @"RCTComponentViewRegistry: Attempt to enqueue unregistered component.");
 
   _registry.erase(tag);
+#if !TARGET_OS_OSX // [macOS]
   componentViewDescriptor.view.tag = 0;
+#else // [macOS
+  componentViewDescriptor.tag = 0;
+#endif // macOS]
   [self _enqueueComponentViewWithComponentHandle:componentHandle componentViewDescriptor:componentViewDescriptor];
 }
 
