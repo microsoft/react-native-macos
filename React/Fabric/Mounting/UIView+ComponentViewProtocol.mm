@@ -154,12 +154,12 @@ using namespace facebook::react;
   // Default implementation does nothing.
 }
 
-- (NSNumber *)reactTag // [macOS]
+- (NSNumber *)reactTag
 {
   return objc_getAssociatedObject(self, _cmd);
 }
 
-- (void)setReactTag:(NSNumber *)reactTag // [macOS]
+- (void)setReactTag:(NSNumber *)reactTag
 {
   objc_setAssociatedObject(self, @selector(reactTag), reactTag, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }

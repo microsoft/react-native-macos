@@ -56,6 +56,7 @@ struct Touch {
    */
   Float timestamp;
 
+  // [macOS
   /*
    * The button indicating which pointer is used.
    */
@@ -80,7 +81,8 @@ struct Touch {
    * A flag indicating if the meta key is pressed.
    */
   bool metaKey;
-
+  // macOS]
+  
   /*
    * The particular implementation of `Hasher` and (especially) `Comparator`
    * make sense only when `Touch` object is used as a *key* in indexed

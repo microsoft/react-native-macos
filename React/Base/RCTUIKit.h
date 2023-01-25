@@ -414,7 +414,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 /**
  * The z-index of the view.
  */
-@property (nonatomic, assign) NSInteger reactZIndex; // [macOS]
+@property (nonatomic, assign) NSInteger reactZIndex;
 
 @end
 

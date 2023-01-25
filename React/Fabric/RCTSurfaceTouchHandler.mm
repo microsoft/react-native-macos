@@ -137,7 +137,7 @@ static ActiveTouch CreateTouchWithUITouch(RCTUITouch *uiTouch, RCTUIView *rootCo
   RCTUIView *componentView = uiTouch.view; // [macOS]
 #else // [macOS
   CGPoint touchLocation = [rootComponentView.superview convertPoint:uiTouch.locationInWindow fromView:nil];
-  RCTUIView *componentView = (RCTUIView *) [rootComponentView hitTest:touchLocation];
+  RCTUIView *componentView = (RCTUIView *) [rootComponentView hitTest:touchLocation]; // [macOS]
 #endif // macOS]
   while (componentView) {
 #if !TARGET_OS_OSX // [macOS]
@@ -163,11 +163,10 @@ static ActiveTouch CreateTouchWithUITouch(RCTUITouch *uiTouch, RCTUIView *rootCo
   return activeTouch;
 }
 
-#if !TARGET_OS_OSX // [macOS
-
-static BOOL AllTouchesAreCancelledOrEnded(NSSet<RCTUITouch *> *touches)
+#if !TARGET_OS_OSX // [macOS]
+static BOOL AllTouchesAreCancelledOrEnded(NSSet<RCTUITouch *> *touches) // [macOS]
 {
-  for (RCTUITouch *touch in touches) {
+  for (RCTUITouch *touch in touches) { // [macOS]
     if (touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseMoved || touch.phase == UITouchPhaseStationary) {
       return NO;
     }
@@ -175,17 +174,16 @@ static BOOL AllTouchesAreCancelledOrEnded(NSSet<RCTUITouch *> *touches)
   return YES;
 }
 
-static BOOL AnyTouchesChanged(NSSet<RCTUITouch *> *touches)
+static BOOL AnyTouchesChanged(NSSet<RCTUITouch *> *touches) // [macOS]
 {
-  for (RCTUITouch *touch in touches) {
+  for (RCTUITouch *touch in touches) { // [macOS]
     if (touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseMoved) {
       return YES;
     }
   }
   return NO;
 }
-
-#endif // macOS]
+#endif // [macOS]
 
 /**
  * Surprisingly, `__unsafe_unretained id` pointers are not regular pointers
@@ -257,9 +255,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   _rootComponentView = nil;
 }
 
-- (void)_registerTouches:(NSSet<RCTUITouch *> *)touches
+- (void)_registerTouches:(NSSet<RCTUITouch *> *)touches // [macOS]
 {
-  for (RCTUITouch *touch in touches) {
+  for (RCTUITouch *touch in touches) { // [macOS]
     auto activeTouch = CreateTouchWithUITouch(touch, _rootComponentView, _viewOriginOffset);
     activeTouch.touch.identifier = _identifierPool.dequeue();
 #if !TARGET_OS_OSX // [macOS]
@@ -270,9 +268,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   }
 }
 
-- (void)_updateTouches:(NSSet<RCTUITouch *> *)touches
+- (void)_updateTouches:(NSSet<RCTUITouch *> *)touches // [macOS]
 {
-  for (RCTUITouch *touch in touches) {
+  for (RCTUITouch *touch in touches) { // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     auto iterator = _activeTouches.find(touch);
 #else // [macOS
@@ -287,9 +285,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   }
 }
 
-- (void)_unregisterTouches:(NSSet<RCTUITouch *> *)touches
+- (void)_unregisterTouches:(NSSet<RCTUITouch *> *)touches // [macOS]
 {
-  for (RCTUITouch *touch in touches) {
+  for (RCTUITouch *touch in touches) { // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     auto iterator = _activeTouches.find(touch);
 #else // [macOS
@@ -309,7 +307,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   }
 }
 
-- (std::vector<ActiveTouch>)_activeTouchesFromTouches:(NSSet<RCTUITouch *> *)touches
+- (std::vector<ActiveTouch>)_activeTouchesFromTouches:(NSSet<RCTUITouch *> *)touches // [macOS]
 {
   std::vector<ActiveTouch> activeTouches;
   activeTouches.reserve(touches.count);
@@ -389,7 +387,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 
 #if !TARGET_OS_OSX // [macOS]
 
-- (void)touchesBegan:(NSSet<RCTUITouch *> *)touches withEvent:(UIEvent *)event
+- (void)touchesBegan:(NSSet<RCTUITouch *> *)touches withEvent:(UIEvent *)event // [macOS]
 {
   [super touchesBegan:touches withEvent:event];
 
