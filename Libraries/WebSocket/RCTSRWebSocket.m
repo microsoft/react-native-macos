@@ -506,7 +506,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
     CFReadStreamSetProperty(readStream, kCFStreamPropertySOCKSProxy, proxySettings);
     CFWriteStreamSetProperty(writeStream, kCFStreamPropertySOCKSProxy, proxySettings);
   }
-  // ]macOS
+  // macOS]
 
   _outputStream = CFBridgingRelease(writeStream);
   _inputStream = CFBridgingRelease(readStream);
