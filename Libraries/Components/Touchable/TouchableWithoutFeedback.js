@@ -105,8 +105,8 @@ const PASSTHROUGH_PROPS = [
   'onAccessibilityAction',
   'onBlur',
   'onFocus',
-  'onKeyDown',
-  'onKeyUp',
+  // 'onKeyDown', // [macOS]
+  // 'onKeyUp', // [macOS]
   'validKeysDown',
   'validKeysUp',
   'onLayout',
