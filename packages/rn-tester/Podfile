@@ -8,6 +8,7 @@ platform :ios, '11.0'
 install! 'cocoapods', :deterministic_uuids => false
 
 USE_FRAMEWORKS = ENV['USE_FRAMEWORKS'] == '1'
+USE_FLIPPER = ENV['USE_FRAMEWORKS'] == '1'
 
 if USE_FRAMEWORKS
   puts "Installing pods with use_frameworks!"
@@ -16,6 +17,10 @@ end
 
 if ENV['USE_HERMES'] == '1'
   puts "Using Hermes engine"
+end
+
+if USE_FLIPPER
+  puts "Using Flipper"
 end
 
 def pods(options = {})
@@ -77,6 +82,9 @@ end
 target 'RNTester-macOS' do
   platform :osx, '10.15'
   pods()
+  if USE_FLIPPER
+    use_flipper!
+  end
 end
 
 target 'RNTester-macOSUnitTests' do

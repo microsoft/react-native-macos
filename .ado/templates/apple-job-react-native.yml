@@ -9,6 +9,7 @@ parameters:
   xcode_version: ''
   use_fabric: ''
   use_hermes: ''
+  use_flipper: ''
 
 steps:
   - script: |
@@ -37,6 +38,7 @@ steps:
     env:
       USE_FABRIC: $(use_fabric)
       USE_HERMES: $(use_hermes)
+      USE_FLIPPER: $(use_flipper)
 
   - task: ShellScript@2
     displayName: 'Setup packager and WebSocket test server'
