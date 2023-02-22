@@ -8,6 +8,7 @@ parameters:
   slice_name: ''
   xcode_version: ''
   use_fabric: ''
+  use_hermes: ''
 
 steps:
   - script: |
@@ -35,6 +36,7 @@ steps:
         pod install
     env:
       USE_FABRIC: $(use_fabric)
+      USE_HERMES: $(use_hermes)
 
   - task: ShellScript@2
     displayName: 'Setup packager and WebSocket test server'
