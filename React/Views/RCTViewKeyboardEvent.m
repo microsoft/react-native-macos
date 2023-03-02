@@ -8,9 +8,10 @@
 #import "RCTViewKeyboardEvent.h"
 #import <React/RCTAssert.h>
 
+#if TARGET_OS_OSX // TODO(macOS GH#774)
+
 @implementation RCTViewKeyboardEvent
 
-#if TARGET_OS_OSX // TODO(macOS GH#774)
 + (NSDictionary *)bodyFromEvent:(NSEvent *)event
 {
   NSString *key = [self keyFromEvent:event];
@@ -78,6 +79,48 @@
                             viewTag:reactTag
                                body:[self bodyFromEvent:event]];
 }
-#endif // TODO(macOS GH#774)
+
++ (BOOL)matches:(RCTHandledKeyboardEvent *)event
+{
+    if ([[self key] isEqualToString:[event key]] &&
+        [self capsLockKey] == [event capsLockKey] &&
+        [self shiftKey] == [event shiftKey] &&
+        [self ctrlKey] == [event ctrlKey] &&
+        [self altKey] == [event altKey] &&
+        [self metaKey] == [event metaKey] &&
+        [self helpKey] == [event helpKey] &&
+        [self functionKey] == [event functionKey])
+    {
+        return YES;
+    }
+    return NO;
+}
 
 @end
+
+@implementation RCTConvert (RCTViewKeyboardEvent)
+
++ (RCTHandledKeyboardEvent *)RCTHandledKeyboardEvent:(id)json
+{
+    if (!json) {
+      return nil;
+    }
+    RCTHandledKeyboardEvent *event = [RCTHandledKeyboardEvent new];
+    
+    [event setKey:json[@"key"]];
+    [event setCapsLockKey:json[@"capsLockKey"]];
+    [event setShiftKey:json[@"shiftKey"]];
+    [event setCtrlKey:json[@"ctrlKey"]];
+    [event setAltKey:json[@"altKey"]];
+    [event setMetaKey:json[@"metaKey"]];
+    [event setNumericPadKey:json[@"numericPadKey"]];
+    [event setHelpKey:json[@"helpKey"]];
+    [event setFunctionKey:json[@"functionKey"]];
+    
+    return event;
+}
+
+
+@end
+
+#endif // TODO(macOS GH#774)

@@ -1703,7 +1703,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 
     BOOL shouldSuppressNativeHandling = NO;
     for (RCTHandledKeyboardEvent *handledEvent in handledKeyEvents) {
-      if ([keyEvent matchesHandledEvent:handledEvent]) {
+      if ([keyEvent matches:handledEvent]) {
         shouldSuppressNativeHandling = YES;
         break;
       }
