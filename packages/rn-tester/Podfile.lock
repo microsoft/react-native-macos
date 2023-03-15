@@ -123,6 +123,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/CoreModulesHeaders (0.68.66):
     - glog
@@ -132,6 +133,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/Default (0.68.66):
     - glog
@@ -140,6 +142,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/DevSupport (0.68.66):
     - glog
@@ -151,6 +154,7 @@ PODS:
     - React-jsiexecutor (= 0.68.66)
     - React-jsinspector (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTActionSheetHeaders (0.68.66):
     - glog
@@ -160,6 +164,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTAnimationHeaders (0.68.66):
     - glog
@@ -169,6 +174,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTBlobHeaders (0.68.66):
     - glog
@@ -178,6 +184,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTImageHeaders (0.68.66):
     - glog
@@ -187,6 +194,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTLinkingHeaders (0.68.66):
     - glog
@@ -196,6 +204,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTNetworkHeaders (0.68.66):
     - glog
@@ -205,6 +214,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTPushNotificationHeaders (0.68.66):
     - glog
@@ -214,6 +224,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTSettingsHeaders (0.68.66):
     - glog
@@ -223,6 +234,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTTextHeaders (0.68.66):
     - glog
@@ -232,6 +244,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTVibrationHeaders (0.68.66):
     - glog
@@ -241,6 +254,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-Core/RCTWebSocket (0.68.66):
     - glog
@@ -250,6 +264,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-jsiexecutor (= 0.68.66)
     - React-perflogger (= 0.68.66)
+    - SocketRocket (= 0.6.0)
     - Yoga
   - React-CoreModules (0.68.66):
     - RCT-Folly (= 2021.06.28.00-v2)
@@ -259,6 +274,7 @@ PODS:
     - React-jsi (= 0.68.66)
     - React-RCTImage (= 0.68.66)
     - ReactCommon/turbomodule/core (= 0.68.66)
+    - SocketRocket (= 0.6.0)
   - React-cxxreact (0.68.66):
     - boost (= 1.76.0)
     - DoubleConversion
@@ -581,8 +597,8 @@ SPEC CHECKSUMS:
   React: d7b4979fb798eb256b1731de746654b988bd26d1
   React-callinvoker: df042fbe7a272b3da48953143b9d3f47af539a3c
   React-Codegen: 6c9e0915b99ec945658119545646f807d6f29039
-  React-Core: c438a92177b6ea11eca3ef369e31fe0023373ce4
-  React-CoreModules: 56b1ce6033a7788aa09b9ac8540764060400a366
+  React-Core: 581b1b7a5d85a8f647a618877dc22732c9635c0b
+  React-CoreModules: 92cc8b624d34a6b3dc6bd58b29553ca5fa713b6b
   React-cxxreact: 88c6440f2ae6b7098cb754d94b891ad8ebc6b7e0
   React-jsi: 5f8c4cc6913b1d8a7099551d6dc184d375bd922a
   React-jsiexecutor: 77985718d9a89c6b7f547372420c5608d7f7ccab
