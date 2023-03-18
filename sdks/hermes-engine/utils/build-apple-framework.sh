@@ -52,7 +52,7 @@ function build_host_hermesc {
 
 # Utility function to configure an Apple framework
 function configure_apple_framework {
-  local build_cli_tools enable_bitcode enable_debugger
+  local build_cli_tools enable_bitcode enable_debugger cmake_build_type
 
   if [[ $1 == iphoneos || $1 == catalyst ]]; then
     enable_bitcode="true"
@@ -68,6 +68,13 @@ function configure_apple_framework {
     enable_debugger="true"
   else
     enable_debugger="false"
+  fi
+  if [[ $BUILD_TYPE == "Debug" ]]; then
+    # JS developers aren't VM developers.
+    # Therefore we're passing as build type Release, to provide a faster build.
+    cmake_build_type="Release"
+  else
+    cmake_build_type="MinSizeRel"
   fi
 
   pushd "$HERMES_PATH" > /dev/null || exit 1
@@ -88,7 +95,7 @@ function configure_apple_framework {
       -DJSI_DIR="$JSI_PATH" \
       -DHERMES_RELEASE_VERSION="for RN $(get_release_version)" \
       -DCMAKE_INSTALL_PREFIX:PATH=../destroot \
-      -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+      -DCMAKE_BUILD_TYPE="$cmake_build_type"
     popd > /dev/null || exit 1
 }
 
@@ -122,11 +129,21 @@ function create_universal_framework {
   echo "Creating universal framework for platforms: ${platforms[*]}"
 
   for i in "${!platforms[@]}"; do
-    local hermes_framework_path="${platforms[$i]}/hermes.framework"
+    local platform="${platforms[$i]}"
+    local hermes_framework_path="${platform}/hermes.framework"
+    local dSYM_path="$hermes_framework_path"
+    local dSYM_base_path="$HERMES_PATH/destroot/Library/Frameworks"
+
+    # If the dSYM rename has failed, the dSYM are generated as 0.dSYM
+    # (Apple default name) rather then hermes.framework.dSYM.
+    if [[ -e "$dSYM_base_path/${platform}/0.dSYM" ]]; then
+      dSYM_path="${platform}/0"
+    fi
+
     args+="-framework $hermes_framework_path "
 
     # Path to dSYM must be absolute
-    args+="-debug-symbols $HERMES_PATH/destroot/Library/Frameworks/$hermes_framework_path.dSYM "
+    args+="-debug-symbols $dSYM_base_path/$dSYM_path.dSYM "
   done
 
   mkdir -p universal

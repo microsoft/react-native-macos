@@ -9,13 +9,8 @@
 #import <React/RCTBridgeDelegate.h>
 #import <React/RCTUIKit.h> // [macOS]
 
-#if RCT_NEW_ARCH_ENABLED
-// When the new architecture is enabled, the RCTAppDelegate imports some additional headers
-#import <React/RCTCxxBridgeDelegate.h>
-#import <React/RCTSurfacePresenterBridgeAdapter.h>
-#import <ReactCommon/RCTTurboModuleManager.h>
-
-#endif
+@class RCTSurfacePresenterBridgeAdapter;
+@class RCTTurboModuleManager;
 
 /**
  * The RCTAppDelegate is an utility class that implements some base configurations for all the React Native apps.
@@ -63,6 +58,7 @@
 @property (nonatomic, strong) RCTPlatformWindow *window; // [macOS]
 @property (nonatomic, strong) RCTBridge *bridge;
 @property (nonatomic, strong) NSString *moduleName;
+@property (nonatomic, strong) NSDictionary *initialProps;
 
 /**
  * It creates a `RCTBridge` using a delegate and some launch options.
@@ -101,22 +97,11 @@
  */
 - (UIViewController *)createRootViewController;
 
-@end
-
 #if RCT_NEW_ARCH_ENABLED
-/// Extension that makes the RCTAppDelegate conform to New Architecture delegates
-@interface RCTAppDelegate () <RCTTurboModuleManagerDelegate, RCTCxxBridgeDelegate>
 
 /// The TurboModule manager
 @property (nonatomic, strong) RCTTurboModuleManager *turboModuleManager;
 @property (nonatomic, strong) RCTSurfacePresenterBridgeAdapter *bridgeAdapter;
-
-/// This method controls whether the `concurrentRoot` feature of React18 is turned on or off.
-///
-/// @see: https://reactjs.org/blog/2022/03/29/react-v18.html
-/// @note: This requires to be rendering on Fabric (i.e. on the New Architecture).
-/// @return: `true` if the `concurrentRoot` feature is enabled. Otherwise, it returns `false`.
-- (BOOL)concurrentRootEnabled;
 
 /// This method controls whether the `turboModules` feature of the New Architecture is turned on or off.
 ///
@@ -129,5 +114,6 @@
 /// @return: `true` if the Fabric Renderer is enabled. Otherwise, it returns `false`.
 - (BOOL)fabricEnabled;
 
-@end
 #endif
+
+@end

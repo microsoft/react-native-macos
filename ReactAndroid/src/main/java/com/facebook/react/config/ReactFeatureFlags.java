@@ -25,6 +25,9 @@ public class ReactFeatureFlags {
    */
   public static volatile boolean useTurboModules = false;
 
+  /** In Bridgeless mode, should legacy NativeModules use the TurboModule system? */
+  public static volatile boolean unstable_useTurboModuleInterop = false;
+
   /**
    * Should this application use the new (Fabric) Renderer? If yes, all rendering in this app will
    * use Fabric instead of the legacy renderer.
@@ -42,6 +45,9 @@ public class ReactFeatureFlags {
    */
   public static volatile boolean enableBridgelessArchitectureSoftExceptions = false;
 
+  /** Does the bridgeless architecture use the new create/reload/destroy routines */
+  public static volatile boolean enableBridgelessArchitectureNewCreateReloadDestroy = false;
+
   /**
    * After TurboModules and Fabric are enabled, we need to ensure that the legacy NativeModule isn't
    * isn't used. So, turn this flag on to trigger warnings whenever the legacy NativeModule system
@@ -51,26 +57,6 @@ public class ReactFeatureFlags {
 
   /** Should we dispatch TurboModule methods with promise returns to the NativeModules thread? */
   public static volatile boolean enableTurboModulePromiseAsyncDispatch = false;
-
-  /**
-   * Experiment:
-   *
-   * <p>Bridge and Bridgeless mode can run concurrently. This means that there can be two
-   * TurboModule systems alive at the same time.
-   *
-   * <p>The TurboModule system stores all JS callbacks in a global LongLivedObjectCollection. This
-   * collection is cleared when the JS VM is torn down. Implication: Tearing down the bridge JSVM
-   * invalidates the bridgeless JSVM's callbacks, and vice versa.
-   *
-   * <p>useGlobalCallbackCleanupScopeUsingRetainJSCallback => Use a retainJSCallbacks lambda to
-   * store jsi::Functions into the global LongLivedObjectCollection
-   *
-   * <p>useTurboModuleManagerCallbackCleanupScope => Use a retainJSCallbacks labmda to store
-   * jsi::Functions into a LongLivedObjectCollection owned by the TurboModuleManager
-   */
-  public static boolean useGlobalCallbackCleanupScopeUsingRetainJSCallback = false;
-
-  public static boolean useTurboModuleManagerCallbackCleanupScope = false;
 
   /** This feature flag enables logs for Fabric */
   public static boolean enableFabricLogs = false;
@@ -83,9 +69,6 @@ public class ReactFeatureFlags {
 
   /** Enables or disables calculation of Transformed Frames */
   public static boolean calculateTransformedFramesEnabled = false;
-
-  /** Feature Flag to use overflowInset values provided by Yoga */
-  public static boolean useOverflowInset = false;
 
   public static boolean dispatchPointerEvents = false;
 
@@ -121,6 +104,27 @@ public class ReactFeatureFlags {
   /** Temporary flag to allow execution of mount items up to 15ms earlier than normal. */
   public static boolean enableEarlyScheduledMountItemExecution = false;
 
-  // TODO (T136375139): Remove this once finish testing
-  public static boolean enableAtomicRegisterSegment = false;
+  /**
+   * Allow closing the small gap that appears between paths when drawing a rounded View with a
+   * border.
+   */
+  public static boolean enableCloseVisibleGapBetweenPaths = true;
+
+  /**
+   * Allow fix in layout animation to drop delete...create mutations which could cause missing view
+   * state in Fabric SurfaceMountingManager.
+   */
+  public static boolean reduceDeleteCreateMutationLayoutAnimation = true;
+
+  /**
+   * Allow fix to drop delete...create mutations which could cause missing view state in Fabric
+   * SurfaceMountingManager.
+   */
+  public static boolean reduceDeleteCreateMutation = false;
+
+  /**
+   * Use JSI NativeState API to store references to native objects rather than the more expensive
+   * HostObject pattern
+   */
+  public static boolean useNativeState = false;
 }

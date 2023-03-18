@@ -204,6 +204,7 @@ import type {
   ColorArrayValue,
   PointValue,
   EdgeInsetsValue,
+  DimensionValue,
 } from 'StyleSheetTypes';
 import type {ViewProps} from 'ViewPropTypes';
 import type {HostComponent} from 'react-native';
@@ -302,6 +303,13 @@ export interface ModuleProps extends ViewProps {
   insets_optional_key?: EdgeInsetsValue;
   insets_optional_value: EdgeInsetsValue | null | undefined;
   insets_optional_both?: EdgeInsetsValue | null | undefined;
+
+
+  // DimensionValue props
+  dimension_required: DimensionValue;
+  dimension_optional_key?: DimensionValue;
+  dimension_optional_value: DimensionValue | null | undefined;
+  dimension_optional_both?: DimensionValue | null | undefined;
 }
 
 export default codegenNativeComponent<ModuleProps>(
@@ -330,6 +338,7 @@ import type {
   ColorArrayValue,
   PointValue,
   EdgeInsetsValue,
+  DimensionValue,
 } from 'StyleSheetTypes';
 import type {ViewProps} from 'ViewPropTypes';
 import type {HostComponent} from 'react-native';
@@ -403,6 +412,12 @@ export interface ModuleProps extends ViewProps {
   array_insets_optional_value: ReadonlyArray<EdgeInsetsValue> | null | undefined;
   array_insets_optional_both?: ReadonlyArray<EdgeInsetsValue> | null | undefined;
 
+  // DimensionValue props
+  array_dimension_required: ReadonlyArray<DimensionValue>;
+  array_dimension_optional_key?: ReadonlyArray<DimensionValue>;
+  array_dimension_optional_value: ReadonlyArray<DimensionValue> | null | undefined;
+  array_dimension_optional_both?: ReadonlyArray<DimensionValue> | null | undefined;
+
   // Object props
   array_object_required: ReadonlyArray<Readonly<{prop: string}>>;
   array_object_optional_key?: ReadonlyArray<Readonly<{prop: string}>>;
@@ -452,6 +467,13 @@ export interface ModuleProps extends ViewProps {
   array_of_array_of_object_required_in_file: ReadonlyArray<
     ReadonlyArray<ObjectType>
   >;
+
+  // Nested array of array of object types (with spread)
+  array_of_array_of_object_required_with_spread: ReadonlyArray<
+    ReadonlyArray<
+      Readonly<ObjectType & {}>,
+    >,
+  >,
 }
 
 export default codegenNativeComponent<ModuleProps>(
@@ -584,6 +606,9 @@ export interface ModuleProps extends ViewProps {
 
   // Nested array of array of object types (in file)
   array_of_array_of_object_required_in_file: readonly ObjectType[][];
+
+  // Nested array of array of object types (with spread)
+  array_of_array_of_object_required_with_spread: readonly Readonly<ObjectType & {}>[][];
 }
 
 export default codegenNativeComponent<ModuleProps>(
@@ -612,6 +637,7 @@ import type {
   ColorArrayValue,
   PointValue,
   EdgeInsetsValue,
+  DimensionValue,
 } from 'StyleSheetTypes';
 import type {ViewProps} from 'ViewPropTypes';
 import type {HostComponent} from 'react-native';
@@ -676,6 +702,12 @@ export interface ModuleProps extends ViewProps {
   insets_optional_key: Readonly<{prop?: EdgeInsetsValue}>;
   insets_optional_value: Readonly<{prop: EdgeInsetsValue | null | undefined}>;
   insets_optional_both: Readonly<{prop?: EdgeInsetsValue | null | undefined}>;
+
+  // DimensionValue props
+  dimension_required: Readonly<{prop: DimensionValue}>;
+  dimension_optional_key: Readonly<{prop?: DimensionValue}>;
+  dimension_optional_value: Readonly<{prop: DimensionValue | null | undefined}>;
+  dimension_optional_both: Readonly<{prop?: DimensionValue | null | undefined}>;
 
   // Nested object props
   object_required: Readonly<{prop: Readonly<{nestedProp: string}>}>;
@@ -971,13 +1003,13 @@ type NativeType = HostComponent<ModuleProps>;
  interface NativeCommands {
    readonly handleRootTag: (viewRef: React.ElementRef<NativeType>, rootTag: RootTag) => void;
    readonly hotspotUpdate: (viewRef: React.ElementRef<NativeType>, x: Int32, y: Int32) => void;
-   readonly scrollTo: (
+   scrollTo(
      viewRef: React.ElementRef<NativeType>,
      x: Float,
      y: Int32,
      z: Double,
      animated: boolean,
-   ) => void;
+   ): void;
  }
 
  export const Commands = codegenNativeCommands<NativeCommands>({

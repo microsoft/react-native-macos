@@ -146,7 +146,7 @@ def rn_xplat_cxx_library(
         **kwargs
     )
 
-rn_xplat_cxx_library2 = rn_xplat_cxx_library
+rn_apple_xplat_cxx_library = rn_xplat_cxx_library
 
 # Example: react_native_target('java/com/facebook/react/common:common')
 def react_native_target(path):
@@ -401,6 +401,7 @@ def fb_apple_library(*args, **kwargs):
     _ = kwargs.pop("plugins", [])
     _ = kwargs.pop("complete_nullability", False)
     _ = kwargs.pop("plugins_header", "")
+    _ = kwargs.pop("disable_infer_precompiled_header", False)
 
     native.apple_library(*args, **kwargs)
 
@@ -421,6 +422,10 @@ def react_module_plugin_providers(*args, **kwargs):
     return []
 
 def react_fabric_component_plugin_provider(name, native_class_func):
+    return None
+
+# C++ TurboModule plugins support (stubbed)
+def react_cxx_module_plugin_provider(name, function):
     return None
 
 HERMES_BYTECODE_VERSION = -1

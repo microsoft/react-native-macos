@@ -13,14 +13,14 @@
 export interface AlertButton {
   text?: string | undefined;
   onPress?: ((value?: string) => void) | undefined;
-  isPreferred?: boolean;
+  isPreferred?: boolean | undefined;
   style?: 'default' | 'cancel' | 'destructive' | undefined;
 }
 
 interface AlertOptions {
   /** @platform android */
   cancelable?: boolean | undefined;
-  userInterfaceStyle?: 'unspecified' | 'light' | 'dark';
+  userInterfaceStyle?: 'unspecified' | 'light' | 'dark' | undefined;
   /** @platform android */
   onDismiss?: (() => void) | undefined;
 }
@@ -33,8 +33,8 @@ interface AlertOptions {
  * button will be an 'OK' button.
  *
  * This is an API that works both on iOS and Android and can show static
- * alerts. To show an alert that prompts the user to enter some information,
- * see `AlertIOS`; entering text in an alert is common on iOS only.
+ * alerts. On iOS, you can show an alert that prompts the user to enter
+ * some information.
  *
  * ## iOS
  *
@@ -77,6 +77,7 @@ export interface AlertStatic {
     type?: AlertType,
     defaultValue?: string,
     keyboardType?: string,
+    options?: AlertOptions,
   ) => void;
 }
 

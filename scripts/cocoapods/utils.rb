@@ -54,14 +54,10 @@ class ReactNativePodsUtils
     end
 
     def self.exclude_i386_architecture_while_using_hermes(installer)
-        projects = installer.aggregate_targets
-            .map{ |t| t.user_project }
-            .uniq{ |p| p.path }
-            .push(installer.pods_project)
-
+        projects = self.extract_projects(installer)
 
         # Hermes does not support `i386` architecture
-        excluded_archs_default = ReactNativePodsUtils.has_pod(installer, 'hermes-engine') ? "i386" : ""
+        excluded_archs_default = self.has_pod(installer, 'hermes-engine') ? "i386" : ""
 
         projects.each do |project|
             project.build_configurations.each do |config|
@@ -74,10 +70,7 @@ class ReactNativePodsUtils
 
     def self.set_node_modules_user_settings(installer, react_native_path)
         Pod::UI.puts("Setting REACT_NATIVE build settings")
-        projects = installer.aggregate_targets
-            .map{ |t| t.user_project }
-            .uniq{ |p| p.path }
-            .push(installer.pods_project)
+        projects = self.extract_projects(installer)
 
         projects.each do |project|
             project.build_configurations.each do |config|
@@ -89,33 +82,18 @@ class ReactNativePodsUtils
     end
 
     def self.fix_library_search_paths(installer)
-        projects = installer.aggregate_targets
-            .map{ |t| t.user_project }
-            .uniq{ |p| p.path }
-            .push(installer.pods_project)
+        projects = self.extract_projects(installer)
 
         projects.each do |project|
             project.build_configurations.each do |config|
-                ReactNativePodsUtils.fix_library_search_path(config)
+                self.fix_library_search_path(config)
             end
             project.native_targets.each do |target|
                 target.build_configurations.each do |config|
-                    ReactNativePodsUtils.fix_library_search_path(config)
+                    self.fix_library_search_path(config)
                 end
             end
             project.save()
-        end
-    end
-
-    def self.fix_react_bridging_header_search_paths(installer)
-        installer.target_installation_results.pod_target_installation_results
-            .each do |pod_name, target_installation_result|
-                target_installation_result.native_target.build_configurations.each do |config|
-                    # For third party modules who have React-bridging dependency to search correct headers
-                    config.build_settings['HEADER_SEARCH_PATHS'] ||= '$(inherited) '
-                    config.build_settings['HEADER_SEARCH_PATHS'] << '"$(PODS_ROOT)/Headers/Private/React-bridging/react/bridging" '
-                    config.build_settings['HEADER_SEARCH_PATHS'] << '"$(PODS_CONFIGURATION_BUILD_DIR)/React-bridging/react_bridging.framework/Headers" '
-            end
         end
     end
 
@@ -143,6 +121,15 @@ class ReactNativePodsUtils
         end
     end
 
+    def self.apply_flags_for_fabric(installer, fabric_enabled: false)
+        fabric_flag = "-DRN_FABRIC_ENABLED"
+        if fabric_enabled
+            self.add_compiler_flag_to_project(installer, fabric_flag)
+        else
+            self.remove_compiler_flag_from_project(installer, fabric_flag)
+        end
+    end
+
     private
 
     def self.fix_library_search_path(config)
@@ -166,13 +153,270 @@ class ReactNativePodsUtils
         end
     end
 
-    def self.create_xcode_env_if_missing
+    def self.create_xcode_env_if_missing(file_manager: File)
         relative_path = Pod::Config.instance.installation_root.relative_path_from(Pathname.pwd)
-        file_path = File.join(relative_path, '.xcode.env')
-        if File.exist?(file_path)
+        file_path = file_manager.join(relative_path, '.xcode.env')
+        if file_manager.exist?(file_path)
             return
         end
 
         system("echo 'export NODE_BINARY=$(command -v node)' > #{file_path}")
+    end
+
+    # It examines the target_definition property and sets the appropriate value for
+    # ENV['USE_FRAMEWORKS'] variable.
+    #
+    # - parameter target_definition: The current target definition
+    def self.detect_use_frameworks(target_definition)
+        if ENV['USE_FRAMEWORKS'] != nil
+            return
+        end
+
+        framework_build_type = target_definition.build_type.to_s
+
+        Pod::UI.puts("Framework build type is #{framework_build_type}")
+
+        if framework_build_type === "static framework"
+            ENV['USE_FRAMEWORKS'] = 'static'
+        elsif framework_build_type === "dynamic framework"
+            ENV['USE_FRAMEWORKS'] = 'dynamic'
+        else
+            ENV['USE_FRAMEWORKS'] = nil
+        end
+    end
+
+    def self.update_search_paths(installer)
+        return if ENV['USE_FRAMEWORKS'] == nil
+
+        projects = self.extract_projects(installer)
+
+        projects.each do |project|
+            project.build_configurations.each do |config|
+
+                header_search_paths = config.build_settings["HEADER_SEARCH_PATHS"] ||= "$(inherited)"
+
+                header_search_paths = self.add_search_path_if_not_included(header_search_paths, "${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers")
+                header_search_paths = self.add_search_path_if_not_included(header_search_paths, "${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core")
+                header_search_paths = self.add_search_path_if_not_included(header_search_paths, "${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios")
+                header_search_paths = self.add_search_path_if_not_included(header_search_paths, "${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers")
+                header_search_paths = self.add_search_path_if_not_included(header_search_paths, "${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios")
+
+                config.build_settings["HEADER_SEARCH_PATHS"] = header_search_paths
+            end
+
+            project.save()
+        end
+
+        installer.target_installation_results.pod_target_installation_results.each do |pod_name, target_installation_result|
+            if self.react_native_pods.include?(pod_name) || pod_name.include?("Pod") || pod_name.include?("Tests")
+                next
+            end
+
+            self.set_rctfolly_search_paths(target_installation_result)
+            self.set_codegen_search_paths(target_installation_result)
+            self.set_reactcommon_searchpaths(target_installation_result)
+            self.set_rctfabric_search_paths(target_installation_result)
+            self.set_imagemanager_search_path(target_installation_result)
+        end
+    end
+
+    def self.enable_hermes_profiler(installer, enable_hermes_profiler: false)
+        return if !enable_hermes_profiler
+
+        Pod::UI.puts "[Hermes Profiler] Enable Hermes Sample profiler"
+        self.add_compiler_flag_to_pods(installer, "-DRCT_REMOTE_PROFILE=1", configuration: "Release")
+    end
+
+    # ========= #
+    # Utilities #
+    # ========= #
+
+    def self.extract_projects(installer)
+        return installer.aggregate_targets
+            .map{ |t| t.user_project }
+            .uniq{ |p| p.path }
+            .push(installer.pods_project)
+    end
+
+    def self.add_compiler_flag_to_project(installer, flag, configuration: nil)
+        projects = self.extract_projects(installer)
+
+        projects.each do |project|
+            project.build_configurations.each do |config|
+                self.set_flag_in_config(config, flag, configuration: configuration)
+            end
+            project.save()
+        end
+    end
+
+    def self.remove_compiler_flag_from_project(installer, flag, configuration: nil)
+        projects = self.extract_projects(installer)
+
+        projects.each do |project|
+            project.build_configurations.each do |config|
+                self.remove_flag_in_config(config, flag, configuration: configuration)
+            end
+            project.save()
+        end
+    end
+
+    def self.add_compiler_flag_to_pods(installer, flag, configuration: nil)
+        installer.target_installation_results.pod_target_installation_results.each do |pod_name, target_installation_result|
+            target_installation_result.native_target.build_configurations.each do |config|
+                self.set_flag_in_config(config, flag, configuration: configuration)
+            end
+        end
+    end
+
+    def self.set_flag_in_config(config, flag, configuration: nil)
+        if configuration == nil || config.name == configuration
+            self.add_flag_for_key(config, flag, "OTHER_CFLAGS")
+            self.add_flag_for_key(config, flag, "OTHER_CPLUSPLUSFLAGS")
+        end
+    end
+
+    def self.remove_flag_in_config(config, flag, configuration: nil)
+        if configuration == nil || config.name == configuration
+            self.remove_flag_for_key(config, flag, "OTHER_CFLAGS")
+            self.remove_flag_for_key(config, flag, "OTHER_CPLUSPLUSFLAGS")
+        end
+    end
+
+
+    def self.add_flag_for_key(config, flag, key)
+        current_setting = config.build_settings[key] ? config.build_settings[key] : "$(inherited)"
+
+        if current_setting.kind_of?(Array)
+            current_setting = current_setting
+            .map { |s| s.gsub('"', '') }
+            .map { |s| s.gsub('\"', '') }
+            .join(" ")
+        end
+
+        if !current_setting.include?(flag)
+            current_setting = "#{current_setting} #{flag}"
+        end
+
+        config.build_settings[key] = current_setting
+    end
+
+    def self.remove_flag_for_key(config, flag, key)
+        current_setting = config.build_settings[key] ? config.build_settings[key] : "$(inherited)"
+
+        if current_setting.kind_of?(Array)
+            current_setting = current_setting
+            .map { |s| s.gsub('"', '') }
+            .map { |s| s.gsub('\"', '') }
+            .join(" ")
+        end
+
+        if current_setting.include?(flag)
+            current_setting.slice! flag
+        end
+
+        config.build_settings[key] = current_setting
+    end
+
+    def self.add_search_path_if_not_included(current_search_paths, new_search_path)
+        if !current_search_paths.include?(new_search_path)
+            current_search_paths << " #{new_search_path}"
+        end
+        return current_search_paths
+    end
+
+    def self.update_header_paths_if_depends_on(target_installation_result, dependency_name, header_paths)
+        depends_on_framework = target_installation_result.native_target.dependencies.any? { |d| d.name == dependency_name }
+        if depends_on_framework
+            target_installation_result.native_target.build_configurations.each do |config|
+                header_search_path = config.build_settings["HEADER_SEARCH_PATHS"] != nil ? config.build_settings["HEADER_SEARCH_PATHS"] : "$(inherited)"
+                header_paths.each { |header| header_search_path = ReactNativePodsUtils.add_search_path_if_not_included(header_search_path, header) }
+                config.build_settings["HEADER_SEARCH_PATHS"] = header_search_path
+            end
+        end
+    end
+
+    def self.set_rctfolly_search_paths(target_installation_result)
+        ReactNativePodsUtils.update_header_paths_if_depends_on(target_installation_result, "RCT-Folly", [
+            "\"$(PODS_ROOT)/RCT-Folly\"",
+            "\"$(PODS_ROOT)/DoubleConversion\"",
+            "\"$(PODS_ROOT)/boost\""
+        ])
+    end
+
+    def self.set_codegen_search_paths(target_installation_result)
+        ReactNativePodsUtils.update_header_paths_if_depends_on(target_installation_result, "React-Codegen", [
+            "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Codegen/React_Codegen.framework/Headers\"",
+        ])
+    end
+
+    def self.set_reactcommon_searchpaths(target_installation_result)
+        ReactNativePodsUtils.update_header_paths_if_depends_on(target_installation_result, "ReactCommon", [
+            "\"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers\"",
+            "\"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core\"",
+        ])
+
+    end
+
+    def self.set_rctfabric_search_paths(target_installation_result)
+        ReactNativePodsUtils.update_header_paths_if_depends_on(target_installation_result, "React-RCTFabric", [
+            "\"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTFabric/RCTFabric.framework/Headers\"",
+            "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers\"",
+            "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Graphics/React_graphics.framework/Headers\"",
+            "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\"",
+        ])
+    end
+
+    def self.set_imagemanager_search_path(target_installation_result)
+        ReactNativePodsUtils.update_header_paths_if_depends_on(target_installation_result, "React-ImageManager", [
+            "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/imagemanager/platform/ios\""
+        ])
+    end
+
+    def self.react_native_pods
+        return [
+            "DoubleConversion",
+            "FBLazyVector",
+            "RCT-Folly",
+            "RCTRequired",
+            "RCTTypeSafety",
+            "React",
+            "React-Codegen",
+            "React-Core",
+            "React-CoreModules",
+            "React-Fabric",
+            "React-ImageManager",
+            "React-RCTActionSheet",
+            "React-RCTAnimation",
+            "React-RCTAppDelegate",
+            "React-RCTBlob",
+            "React-RCTFabric",
+            "React-RCTImage",
+            "React-RCTLinking",
+            "React-RCTNetwork",
+            "React-RCTPushNotification",
+            "React-RCTSettings",
+            "React-RCTText",
+            "React-RCTTest",
+            "React-RCTVibration",
+            "React-callinvoker",
+            "React-cxxreact",
+            "React-graphics",
+            "React-jsc",
+            "React-jsi",
+            "React-jsiexecutor",
+            "React-jsinspector",
+            "React-logger",
+            "React-perflogger",
+            "React-rncore",
+            "React-runtimeexecutor",
+            "ReactCommon",
+            "Yoga",
+            "boost",
+            "fmt",
+            "glog",
+            "hermes-engine",
+            "libevent",
+            "React-hermes",
+        ]
     end
 end

@@ -27,6 +27,23 @@ export interface TextPropsIOS {
   adjustsFontSizeToFit?: boolean | undefined;
 
   /**
+   * The Dynamic Type scale ramp to apply to this element on iOS.
+   */
+  dynamicTypeRamp?:
+    | 'caption2'
+    | 'caption1'
+    | 'footnote'
+    | 'subheadline'
+    | 'callout'
+    | 'body'
+    | 'headline'
+    | 'title3'
+    | 'title2'
+    | 'title1'
+    | 'largeTitle'
+    | undefined;
+
+  /**
    * Specifies smallest possible scale a font can reach when adjustsFontSizeToFit is enabled. (values 0.01-1.0).
    */
   minimumFontScale?: number | undefined;
@@ -90,7 +107,7 @@ export interface TextProps
    */
   allowFontScaling?: boolean | undefined;
 
-  children?: React.ReactNode;
+  children?: React.ReactNode | undefined;
 
   /**
    * This can be one of the following values:

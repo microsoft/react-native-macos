@@ -7,11 +7,10 @@
 
 #pragma once
 
-#include "CppComponentRegistry.h"
 #include "FabricMountingManager.h"
 
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 
 #include <fbjni/fbjni.h>
 #include <react/jni/JRuntimeExecutor.h>
@@ -66,8 +65,7 @@ class Binding : public jni::HybridClass<Binding>,
       jni::alias_ref<jobject> javaUIManager,
       EventBeatManager *eventBeatManager,
       ComponentFactory *componentsRegistry,
-      jni::alias_ref<jobject> reactNativeConfig,
-      CppComponentRegistry *cppComponentRegistry);
+      jni::alias_ref<jobject> reactNativeConfig);
 
   void startSurface(
       jint surfaceId,
@@ -96,7 +94,7 @@ class Binding : public jni::HybridClass<Binding>,
   void unregisterSurface(SurfaceHandlerBinding *surfaceHandler);
 
   void schedulerDidFinishTransaction(
-      MountingCoordinator::Shared const &mountingCoordinator) override;
+      MountingCoordinator::Shared mountingCoordinator) override;
 
   void schedulerDidRequestPreliminaryViewAllocation(
       const SurfaceId surfaceId,
@@ -125,7 +123,7 @@ class Binding : public jni::HybridClass<Binding>,
   void uninstallFabricUIManager();
 
   // Private member variables
-  butter::shared_mutex installMutex_;
+  std::shared_mutex installMutex_;
   std::shared_ptr<FabricMountingManager> mountingManager_;
   std::shared_ptr<Scheduler> scheduler_;
 
@@ -141,15 +139,12 @@ class Binding : public jni::HybridClass<Binding>,
   BackgroundExecutor backgroundExecutor_;
 
   butter::map<SurfaceId, SurfaceHandler> surfaceHandlerRegistry_{};
-  butter::shared_mutex
+  std::shared_mutex
       surfaceHandlerRegistryMutex_; // Protects `surfaceHandlerRegistry_`.
 
   float pointScaleFactor_ = 1;
 
   std::shared_ptr<const ReactNativeConfig> reactNativeConfig_{nullptr};
-  std::shared_ptr<const facebook::react::CppComponentRegistry>
-      sharedCppComponentRegistry_{nullptr};
-  bool disablePreallocateViews_{false};
   bool enableFabricLogs_{false};
 };
 

@@ -16,17 +16,14 @@ import com.facebook.react.bridge.WindowFocusChangeListener;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.LifecycleState;
 import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-@ReactModule(name = AppStateModule.NAME)
+@ReactModule(name = NativeAppStateSpec.NAME)
 public class AppStateModule extends NativeAppStateSpec
     implements LifecycleEventListener, WindowFocusChangeListener {
   public static final String TAG = AppStateModule.class.getSimpleName();
-
-  public static final String NAME = "AppState";
 
   public static final String APP_STATE_ACTIVE = "active";
   public static final String APP_STATE_BACKGROUND = "background";
@@ -43,11 +40,6 @@ public class AppStateModule extends NativeAppStateSpec
         (reactContext.getLifecycleState() == LifecycleState.RESUMED
             ? APP_STATE_ACTIVE
             : APP_STATE_BACKGROUND);
-  }
-
-  @Override
-  public String getName() {
-    return NAME;
   }
 
   @Override
@@ -103,7 +95,7 @@ public class AppStateModule extends NativeAppStateSpec
     if (!reactApplicationContext.hasActiveReactInstance()) {
       return;
     }
-    reactApplicationContext.getJSModule(RCTDeviceEventEmitter.class).emit(eventName, data);
+    reactApplicationContext.emitDeviceEvent(eventName, data);
   }
 
   private void sendAppStateChangeEvent() {
@@ -124,9 +116,6 @@ public class AppStateModule extends NativeAppStateSpec
   public void invalidate() {
     super.invalidate();
 
-    ReactApplicationContext applicationContext = getReactApplicationContextIfActiveOrWarn();
-    if (applicationContext != null) {
-      applicationContext.removeLifecycleEventListener(this);
-    }
+    getReactApplicationContext().removeLifecycleEventListener(this);
   }
 }

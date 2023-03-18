@@ -25,20 +25,14 @@ struct JTurboModule : jni::JavaClass<JTurboModule> {
       "Lcom/facebook/react/turbomodule/core/interfaces/TurboModule;";
 };
 
-using JSCallbackRetainer = std::function<std::weak_ptr<CallbackWrapper>(
-    jsi::Function &&callback,
-    jsi::Runtime &runtime,
-    const std::shared_ptr<CallInvoker> &jsInvoker)>;
-
 class JSI_EXPORT JavaTurboModule : public TurboModule {
  public:
   // TODO(T65603471): Should we unify this with a Fabric abstraction?
   struct InitParams {
     std::string moduleName;
-    jni::alias_ref<JTurboModule> instance;
+    jni::alias_ref<jobject> instance;
     std::shared_ptr<CallInvoker> jsInvoker;
     std::shared_ptr<CallInvoker> nativeInvoker;
-    JSCallbackRetainer retainJSCallback;
   };
 
   JavaTurboModule(const InitParams &params);
@@ -54,9 +48,9 @@ class JSI_EXPORT JavaTurboModule : public TurboModule {
       jmethodID &cachedMethodID);
 
  private:
-  jni::global_ref<JTurboModule> instance_;
+  // instance_ can be of type JTurboModule, or JNativeModule
+  jni::global_ref<jobject> instance_;
   std::shared_ptr<CallInvoker> nativeInvoker_;
-  JSCallbackRetainer retainJSCallback_;
 };
 
 } // namespace react

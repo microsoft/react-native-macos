@@ -7,16 +7,14 @@
 
 #pragma once
 
-#include <folly/Optional.h>
+#include <react/renderer/components/text/BaseTextShadowNode.h>
 #include <react/renderer/components/text/ParagraphEventEmitter.h>
+#include <react/renderer/components/text/ParagraphLayoutManager.h>
 #include <react/renderer/components/text/ParagraphProps.h>
 #include <react/renderer/components/text/ParagraphState.h>
-#include <react/renderer/components/text/TextShadowNode.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/renderer/core/ConcreteShadowNode.h>
 #include <react/renderer/core/LayoutContext.h>
 #include <react/renderer/core/ShadowNode.h>
-#include <react/renderer/textlayoutmanager/TextLayoutManager.h>
 
 namespace facebook {
 namespace react {
@@ -96,8 +94,6 @@ class ParagraphShadowNode final : public ConcreteViewShadowNode<
    * `TextLayoutManager`) if needed.
    */
   void updateStateIfNeeded(Content const &content);
-
-  std::shared_ptr<TextLayoutManager const> textLayoutManager_;
 
   /*
    * Cached content of the subtree started from the node.

@@ -92,9 +92,8 @@ export type TextProps = $ReadOnly<{|
   'aria-selected'?: ?boolean,
 
   /**
-   * Reperesents the nativeID of the associated label text. When the assistive technology focuses on the component with this props, the text is read aloud.
-   *
-   * @platform android
+   * Represents the nativeID of the associated label text. When the assistive technology focuses on the component with this props, the text is read aloud.
+   * This prop is listed for cross-platform reasons and has no real effect on Android or iOS.
    */
   'aria-labelledby'?: ?string,
 
@@ -230,7 +229,7 @@ export type TextProps = $ReadOnly<{|
   adjustsFontSizeToFit?: ?boolean,
 
   /**
-   * The Dynamic Text scale ramp to apply to this element on iOS.
+   * The Dynamic Type scale ramp to apply to this element on iOS.
    */
   dynamicTypeRamp?: ?(
     | 'caption2'

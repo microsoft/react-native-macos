@@ -24,17 +24,14 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 /**
  * Module that monitors and provides information about the state of Touch Exploration service on the
  * device. For API >= 19.
  */
-@ReactModule(name = AccessibilityInfoModule.NAME)
+@ReactModule(name = NativeAccessibilityInfoSpec.NAME)
 public class AccessibilityInfoModule extends NativeAccessibilityInfoSpec
     implements LifecycleEventListener {
-
-  public static final String NAME = "AccessibilityInfo";
 
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   private class ReactTouchExplorationStateChangeListener
@@ -101,11 +98,6 @@ public class AccessibilityInfoModule extends NativeAccessibilityInfoSpec
     mAccessibilityServiceChangeListener = new ReactAccessibilityServiceChangeListener();
   }
 
-  @Override
-  public String getName() {
-    return "AccessibilityInfo";
-  }
-
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   private boolean getIsReduceMotionEnabledValue() {
     String value =
@@ -137,9 +129,7 @@ public class AccessibilityInfoModule extends NativeAccessibilityInfoSpec
 
       ReactApplicationContext reactApplicationContext = getReactApplicationContextIfActiveOrWarn();
       if (reactApplicationContext != null) {
-        reactApplicationContext
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-            .emit(REDUCE_MOTION_EVENT_NAME, mReduceMotionEnabled);
+        reactApplicationContext.emitDeviceEvent(REDUCE_MOTION_EVENT_NAME, mReduceMotionEnabled);
       }
     }
   }
@@ -151,8 +141,7 @@ public class AccessibilityInfoModule extends NativeAccessibilityInfoSpec
       ReactApplicationContext reactApplicationContext = getReactApplicationContextIfActiveOrWarn();
       if (reactApplicationContext != null) {
         getReactApplicationContext()
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-            .emit(TOUCH_EXPLORATION_EVENT_NAME, mTouchExplorationEnabled);
+            .emitDeviceEvent(TOUCH_EXPLORATION_EVENT_NAME, mTouchExplorationEnabled);
       }
     }
   }
@@ -164,8 +153,7 @@ public class AccessibilityInfoModule extends NativeAccessibilityInfoSpec
       ReactApplicationContext reactApplicationContext = getReactApplicationContextIfActiveOrWarn();
       if (reactApplicationContext != null) {
         getReactApplicationContext()
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-            .emit(ACCESSIBILITY_SERVICE_EVENT_NAME, mAccessibilityServiceEnabled);
+            .emitDeviceEvent(ACCESSIBILITY_SERVICE_EVENT_NAME, mAccessibilityServiceEnabled);
       }
     }
   }
@@ -206,12 +194,8 @@ public class AccessibilityInfoModule extends NativeAccessibilityInfoSpec
 
   @Override
   public void invalidate() {
+    getReactApplicationContext().removeLifecycleEventListener(this);
     super.invalidate();
-
-    ReactApplicationContext applicationContext = getReactApplicationContextIfActiveOrWarn();
-    if (applicationContext != null) {
-      applicationContext.removeLifecycleEventListener(this);
-    }
   }
 
   @Override

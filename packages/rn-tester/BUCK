@@ -1,3 +1,4 @@
+load("@fbsource//tools/build_defs:glob_defs.bzl", "subdir_glob")
 load("@fbsource//xplat/hermes/defs:hermes.bzl", "HERMES_BYTECODE_VERSION")
 load("//tools/build_defs:fb_native_wrapper.bzl", "fb_native")
 load("//tools/build_defs:fb_xplat_platform_specific_rule.bzl", "fb_xplat_platform_specific_rule")
@@ -10,6 +11,7 @@ load("//tools/build_defs/apple:flag_defs.bzl", "get_objc_arc_preprocessor_flags"
 load("//tools/build_defs/oss:metro_defs.bzl", "rn_library")
 load(
     "//tools/build_defs/oss:rn_defs.bzl",
+    "ANDROID",
     "APPLE",
     "YOGA_APPLE_TARGET",
     "js_library_glob",
@@ -17,8 +19,9 @@ load(
     "react_fabric_component_plugin_provider",
     "react_module_plugin_providers",
     "rn_apple_library",
+    "rn_apple_xplat_cxx_library",
     "rn_extra_build_flags",
-    "rn_xplat_cxx_library2",
+    "rn_xplat_cxx_library",
 )
 load("//tools/build_defs/third_party:yarn_defs.bzl", "yarn_workspace")
 
@@ -49,6 +52,7 @@ rn_library(
     srcs = js_library_glob(
         [
             "js",
+            "NativeCxxModuleExample",
             "NativeModuleExample",
             "NativeComponentExample",
             "RCTTest",
@@ -61,13 +65,17 @@ rn_library(
         ],
     ),
     codegen_components = True,
+    codegen_modules = True,
     labels = [
         "pfh:ReactNative_CommonInfrastructurePlaceholder",
     ],
     native_component_spec_name = "AppSpecs",
+    native_module_android_package_name = "com.facebook.fbreact.specs",
+    native_module_spec_name = "AppSpecs",
     skip_processors = True,
     visibility = ["PUBLIC"],
     deps = [
+        "//xplat/js:node_modules__flow_19enums_19runtime",
         "//xplat/js:node_modules__nullthrows",
         "//xplat/js/RKJSModules/Libraries/Core:Core",
         "//xplat/js/RKJSModules/vendor/react:react",
@@ -165,6 +173,9 @@ fb_apple_test(
         "UIKit",
     ],
     info_plist = "//xplat/configurations/buck/common_info_plists:ApplicationTest-Info.plist",
+    # There are some flavor dependencies in the call chain that prevent this target from building correctly
+    # using Buck2
+    labels = ["opt-out-buck2-runs"],
     preprocessor_flags = get_objc_arc_preprocessor_flags() + get_preprocessor_flags_for_build_mode(),
     test_host_app = "//fbobjc/Configurations/Buck/CommonTestHost:CommonTestHost",
     visibility = [
@@ -202,7 +213,7 @@ fb_xplat_resource(
     ],
 )
 
-rn_xplat_cxx_library2(
+rn_apple_xplat_cxx_library(
     name = "RNTesterBundleBinary",
     srcs = ["//xplat/configurations/buck/apple/common_files:dummy.c"],
     deps = [":RNTesterBundleAssetCatalog"],
@@ -283,7 +294,7 @@ rn_apple_library(
     ],
 )
 
-rn_xplat_cxx_library2(
+rn_apple_xplat_cxx_library(
     name = "NativeComponentExample",
     plugins_only = True,
     srcs = glob(
@@ -317,5 +328,26 @@ rn_xplat_cxx_library2(
     deps = [
         ":generated_components-AppSpecs",
         "//xplat/js/react-native-github:RCTFabricComponentViewsBase",
+    ],
+)
+
+rn_xplat_cxx_library(
+    name = "NativeCxxModuleExample",
+    srcs = glob(["NativeCxxModuleExample/*.cpp"]),
+    header_namespace = "",
+    exported_headers = subdir_glob(
+        [
+            ("NativeCxxModuleExample", "*.h"),
+        ],
+        prefix = "NativeCxxModuleExample",
+    ),
+    fbandroid_compiler_flags = [
+        "-fexceptions",
+        "-frtti",
+    ],
+    platforms = (ANDROID, APPLE),
+    visibility = ["PUBLIC"],
+    deps = [
+        ":AppSpecsJSI",
     ],
 )

@@ -15,7 +15,7 @@ import type {
   AccessibilityState,
   AccessibilityValue,
 } from '../../Components/View/ViewAccessibility';
-import type {EdgeInsetsProp} from '../../StyleSheet/EdgeInsetsPropType';
+import type {EdgeInsetsOrSizeProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {
   BlurEvent,
   FocusEvent,
@@ -73,7 +73,7 @@ type Props = $ReadOnly<{|
   delayPressOut?: ?number,
   disabled?: ?boolean,
   focusable?: ?boolean,
-  hitSlop?: ?EdgeInsetsProp,
+  hitSlop?: ?EdgeInsetsOrSizeProp,
   id?: string,
   importantForAccessibility?: ?('auto' | 'yes' | 'no' | 'no-hide-descendants'),
   nativeID?: ?string,
@@ -100,7 +100,7 @@ type Props = $ReadOnly<{|
   validKeysDown?: ?Array<string>,
   validKeysUp?: ?Array<string>,
   // macOS]
-  pressRetentionOffset?: ?EdgeInsetsProp,
+  pressRetentionOffset?: ?EdgeInsetsOrSizeProp,
   rejectResponderTermination?: ?boolean,
   testID?: ?string,
   touchSoundDisabled?: ?boolean,
@@ -151,8 +151,8 @@ class TouchableWithoutFeedback extends React.Component<Props, State> {
   };
 
   render(): React.Node {
-    const element = React.Children.only(this.props.children);
-    const children = [element.props.children];
+    const element = React.Children.only<$FlowFixMe>(this.props.children);
+    const children: Array<React.Node> = [element.props.children];
     const ariaLive = this.props['aria-live'];
 
     if (__DEV__) {

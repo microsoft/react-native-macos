@@ -13,16 +13,7 @@
 #include <react/renderer/graphics/RectangleCorners.h>
 #include <react/renderer/graphics/RectangleEdges.h>
 #include <react/renderer/graphics/Size.h>
+#include <react/renderer/graphics/Vector.h>
 
-namespace facebook {
-namespace react {
-
-struct Vector {
-  Float x{0};
-  Float y{0};
-  Float z{0};
-  Float w{0};
-};
-
-} // namespace react
-} // namespace facebook
+#warning \
+    "The Geometry.h file is deprecated and will be removed in the next version of React Native. Please update your #include and #import statements to use the specific files. For example, if you imported Geometry.h to use Float.h, replase the #include <react/renderer/graphics/Geometry.h> with #include <react/renderer/graphics/Float.h>"

@@ -11,6 +11,7 @@
 #include <jsi/jsi.h>
 
 #include <ReactCommon/RuntimeExecutor.h>
+#include <shared_mutex>
 
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
 #include <react/renderer/core/RawValue.h>
@@ -103,8 +104,8 @@ class UIManager final : public ShadowTreeDelegate {
 #pragma mark - ShadowTreeDelegate
 
   void shadowTreeDidFinishTransaction(
-      ShadowTree const &shadowTree,
-      MountingCoordinator::Shared const &mountingCoordinator) const override;
+      MountingCoordinator::Shared mountingCoordinator,
+      bool mountSynchronously) const override;
 
   RootShadowNode::Unshared shadowTreeWillCommit(
       ShadowTree const &shadowTree,
@@ -162,9 +163,21 @@ class UIManager final : public ShadowTreeDelegate {
       std::string const &commandName,
       folly::dynamic const &args) const;
 
+  void setNativeProps_DEPRECATED(
+      ShadowNode::Shared const &shadowNode,
+      RawProps const &rawProps) const;
+
   void sendAccessibilityEvent(
       const ShadowNode::Shared &shadowNode,
       std::string const &eventType);
+
+  /*
+   * Iterates over all shadow nodes which are parts of all registered surfaces
+   * and find the one that has given `tag`. Returns `nullptr` if the node wasn't
+   * found. This is a temporary workaround that should not be used in any core
+   * functionality.
+   */
+  ShadowNode::Shared findShadowNodeByTag_DEPRECATED(Tag tag) const;
 
   ShadowTreeRegistry const &getShadowTreeRegistry() const;
 
@@ -191,7 +204,7 @@ class UIManager final : public ShadowTreeDelegate {
   BackgroundExecutor const backgroundExecutor_{};
   ContextContainer::Shared contextContainer_;
 
-  mutable butter::shared_mutex commitHookMutex_;
+  mutable std::shared_mutex commitHookMutex_;
   mutable std::vector<UIManagerCommitHook const *> commitHooks_;
 
   std::unique_ptr<LeakChecker> leakChecker_;

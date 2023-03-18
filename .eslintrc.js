@@ -16,7 +16,7 @@ require('eslint-plugin-lint').load(path.join(__dirname, 'tools/eslint/rules'));
 module.exports = {
   root: true,
 
-  extends: ['@react-native-community'],
+  extends: ['@react-native'],
 
   plugins: ['@react-native/eslint-plugin-specs', 'lint'],
 
@@ -38,7 +38,7 @@ module.exports = {
     {
       files: ['Libraries/**/*.js'],
       rules: {
-        '@react-native-community/platform-colors': 2,
+        '@react-native/platform-colors': 2,
         '@react-native/specs/react-native-modules': 2,
         'lint/no-haste-imports': 2,
         'lint/no-react-native-imports': 2,
@@ -89,6 +89,16 @@ module.exports = {
         '@typescript-eslint/no-shadow': 'off',
         'no-self-compare': 'off',
         'react/self-closing-comp': 'off',
+      },
+    },
+    {
+      files: ['**/*.d.ts'],
+      plugins: ['redundant-undefined'],
+      rules: {
+        'redundant-undefined/redundant-undefined': [
+          'error',
+          {followExactOptionalPropertyTypes: true},
+        ],
       },
     },
   ],

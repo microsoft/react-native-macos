@@ -9,7 +9,9 @@ package com.facebook.react.shell;
 
 import androidx.annotation.Nullable;
 import com.facebook.react.TurboReactPackage;
+import com.facebook.react.ViewManagerOnDemandReactPackage;
 import com.facebook.react.animated.NativeAnimatedModule;
+import com.facebook.react.bridge.ModuleSpec;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.module.annotations.ReactModule;
@@ -23,6 +25,7 @@ import com.facebook.react.modules.blob.BlobModule;
 import com.facebook.react.modules.blob.FileReaderModule;
 import com.facebook.react.modules.camera.ImageStoreManager;
 import com.facebook.react.modules.clipboard.ClipboardModule;
+import com.facebook.react.modules.devtoolssettings.DevToolsSettingsManagerModule;
 import com.facebook.react.modules.dialog.DialogModule;
 import com.facebook.react.modules.fresco.FrescoModule;
 import com.facebook.react.modules.i18nmanager.I18nManagerModule;
@@ -37,6 +40,7 @@ import com.facebook.react.modules.toast.ToastModule;
 import com.facebook.react.modules.vibration.VibrationModule;
 import com.facebook.react.modules.websocket.WebSocketModule;
 import com.facebook.react.turbomodule.core.interfaces.TurboModule;
+import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.ViewManager;
 import com.facebook.react.views.drawer.ReactDrawerLayoutManager;
 import com.facebook.react.views.image.ReactImageManager;
@@ -45,7 +49,6 @@ import com.facebook.react.views.progressbar.ReactProgressBarViewManager;
 import com.facebook.react.views.scroll.ReactHorizontalScrollContainerViewManager;
 import com.facebook.react.views.scroll.ReactHorizontalScrollViewManager;
 import com.facebook.react.views.scroll.ReactScrollViewManager;
-import com.facebook.react.views.slider.ReactSliderManager;
 import com.facebook.react.views.swiperefresh.SwipeRefreshLayoutManager;
 import com.facebook.react.views.switchview.ReactSwitchManager;
 import com.facebook.react.views.text.ReactRawTextManager;
@@ -56,9 +59,11 @@ import com.facebook.react.views.textinput.ReactTextInputManager;
 import com.facebook.react.views.unimplementedview.ReactUnimplementedViewManager;
 import com.facebook.react.views.view.ReactViewManager;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Provider;
 
 /** Package defining basic modules and view managers. */
 @ReactModuleList(
@@ -85,9 +90,10 @@ import java.util.Map;
       VibrationModule.class,
       WebSocketModule.class,
     })
-public class MainReactPackage extends TurboReactPackage {
+public class MainReactPackage extends TurboReactPackage implements ViewManagerOnDemandReactPackage {
 
   private MainPackageConfig mConfig;
+  private @Nullable Map<String, ModuleSpec> mViewManagers;
 
   public MainReactPackage() {}
 
@@ -141,6 +147,8 @@ public class MainReactPackage extends TurboReactPackage {
         return new VibrationModule(context);
       case WebSocketModule.NAME:
         return new WebSocketModule(context);
+      case DevToolsSettingsManagerModule.NAME:
+        return new DevToolsSettingsManagerModule(context);
       default:
         return null;
     }
@@ -155,7 +163,6 @@ public class MainReactPackage extends TurboReactPackage {
     viewManagers.add(new ReactHorizontalScrollContainerViewManager());
     viewManagers.add(new ReactProgressBarViewManager());
     viewManagers.add(new ReactScrollViewManager());
-    viewManagers.add(new ReactSliderManager());
     viewManagers.add(new ReactSwitchManager());
     viewManagers.add(new SwipeRefreshLayoutManager());
 
@@ -174,6 +181,181 @@ public class MainReactPackage extends TurboReactPackage {
     return viewManagers;
   }
 
+  private static void appendMap(
+      Map<String, ModuleSpec> map, String name, Provider<? extends NativeModule> provider) {
+    map.put(name, ModuleSpec.viewManagerSpec(provider));
+  }
+
+  /** @return a map of view managers that should be registered with {@link UIManagerModule} */
+  public Map<String, ModuleSpec> getViewManagersMap(final ReactApplicationContext reactContext) {
+    if (mViewManagers == null) {
+      Map<String, ModuleSpec> viewManagers = new HashMap<>();
+      appendMap(
+          viewManagers,
+          ReactDrawerLayoutManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactDrawerLayoutManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactHorizontalScrollViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactHorizontalScrollViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactHorizontalScrollContainerViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactHorizontalScrollContainerViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactProgressBarViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactProgressBarViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactScrollViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactScrollViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactSwitchManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactSwitchManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          SwipeRefreshLayoutManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new SwipeRefreshLayoutManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          FrescoBasedReactTextInlineImageViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new FrescoBasedReactTextInlineImageViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactImageManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactImageManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactModalHostManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactModalHostManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactRawTextManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactRawTextManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactTextInputManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactTextInputManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactTextViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactTextViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactVirtualTextViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactVirtualTextViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactUnimplementedViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactUnimplementedViewManager();
+            }
+          });
+      mViewManagers = viewManagers;
+    }
+    return mViewManagers;
+  }
+
+  @Override
+  public List<ModuleSpec> getViewManagers(ReactApplicationContext reactContext) {
+    return new ArrayList<>(getViewManagersMap(reactContext).values());
+  }
+
+  @Override
+  public Collection<String> getViewManagerNames(ReactApplicationContext reactContext) {
+    return getViewManagersMap(reactContext).keySet();
+  }
+
+  @Override
+  public @Nullable ViewManager createViewManager(
+      ReactApplicationContext reactContext, String viewManagerName) {
+    ModuleSpec spec = getViewManagersMap(reactContext).get(viewManagerName);
+    return spec != null ? (ViewManager) spec.getProvider().get() : null;
+  }
+
   @Override
   public ReactModuleInfoProvider getReactModuleInfoProvider() {
     try {
@@ -181,7 +363,8 @@ public class MainReactPackage extends TurboReactPackage {
           Class.forName("com.facebook.react.shell.MainReactPackage$$ReactModuleInfoProvider");
       return (ReactModuleInfoProvider) reactModuleInfoProviderClass.newInstance();
     } catch (ClassNotFoundException e) {
-      // In OSS case, the annotation processor does not run. We fall back on creating this byhand
+      // In the OSS case, the annotation processor does not run. We fall back to creating this by
+      // hand
       Class<? extends NativeModule>[] moduleList =
           new Class[] {
             AccessibilityInfoModule.class,
@@ -199,6 +382,7 @@ public class MainReactPackage extends TurboReactPackage {
             NativeAnimatedModule.class,
             NetworkingModule.class,
             PermissionsModule.class,
+            DevToolsSettingsManagerModule.class,
             ShareModule.class,
             StatusBarModule.class,
             SoundManagerModule.class,

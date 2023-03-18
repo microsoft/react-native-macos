@@ -44,7 +44,7 @@ struct RectangleEdges {
 };
 
 template <typename T>
-constexpr RectangleEdges<T> const RectangleEdges<T>::ZERO = {};
+RectangleEdges<T> const RectangleEdges<T>::ZERO = {};
 
 template <typename T>
 RectangleEdges<T> operator+(
@@ -81,6 +81,16 @@ inline Rect insetBy(Rect const &rect, EdgeInsets const &insets) noexcept {
       {rect.origin.x + insets.left, rect.origin.y + insets.top},
       {rect.size.width - insets.left - insets.right,
        rect.size.height - insets.top - insets.bottom}};
+}
+
+/*
+ * Adjusts a rectangle by the given edge outsets.
+ */
+inline Rect outsetBy(Rect const &rect, EdgeInsets const &outsets) noexcept {
+  return Rect{
+      {rect.origin.x - outsets.left, rect.origin.y - outsets.top},
+      {rect.size.width + outsets.left + outsets.right,
+       rect.size.height + outsets.top + outsets.bottom}};
 }
 
 } // namespace react

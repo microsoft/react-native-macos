@@ -17,7 +17,6 @@
 #import <react/renderer/components/text/ParagraphState.h>
 #import <react/renderer/components/text/RawTextComponentDescriptor.h>
 #import <react/renderer/components/text/TextComponentDescriptor.h>
-#import <react/renderer/graphics/Geometry.h>
 #import <react/renderer/textlayoutmanager/RCTAttributedTextUtils.h>
 #import <react/renderer/textlayoutmanager/RCTTextLayoutManager.h>
 #import <react/renderer/textlayoutmanager/TextLayoutManager.h>
@@ -126,11 +125,8 @@ using namespace facebook::react;
     return;
   }
 
-  auto textLayoutManager = _state->getData().layoutManager.lock();
-
-  if (!textLayoutManager) {
-    return;
-  }
+  auto textLayoutManager = _state->getData().paragraphLayoutManager.getTextLayoutManager();
+  auto nsTextStorage = _state->getData().paragraphLayoutManager.getHostTextStorage();
 
   RCTTextLayoutManager *nativeTextLayoutManager =
       (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
@@ -139,7 +135,8 @@ using namespace facebook::react;
 
   [nativeTextLayoutManager drawAttributedString:_state->getData().attributedString
                             paragraphAttributes:_paragraphAttributes
-                                          frame:frame];
+                                          frame:frame
+                                    textStorage:unwrapManagedObject(nsTextStorage)];
 }
 
 #pragma mark - Accessibility
@@ -172,18 +169,15 @@ using namespace facebook::react;
   auto &data = _state->getData();
 
   if (![_accessibilityProvider isUpToDate:data.attributedString]) {
-    auto textLayoutManager = data.layoutManager.lock();
-    if (textLayoutManager) {
-      RCTTextLayoutManager *nativeTextLayoutManager =
-          (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
-      CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
-      _accessibilityProvider =
-          [[RCTParagraphComponentAccessibilityProvider alloc] initWithString:data.attributedString
-                                                               layoutManager:nativeTextLayoutManager
-                                                         paragraphAttributes:data.paragraphAttributes
-                                                                       frame:frame
-                                                                        view:self];
-    }
+    auto textLayoutManager = data.paragraphLayoutManager.getTextLayoutManager();
+    RCTTextLayoutManager *nativeTextLayoutManager =
+        (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
+    CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+    _accessibilityProvider = [[RCTParagraphComponentAccessibilityProvider alloc] initWithString:data.attributedString
+                                                                                  layoutManager:nativeTextLayoutManager
+                                                                            paragraphAttributes:data.paragraphAttributes
+                                                                                          frame:frame
+                                                                                           view:self];
   }
 
   return _accessibilityProvider.accessibilityElements;
@@ -203,11 +197,7 @@ using namespace facebook::react;
     return _eventEmitter;
   }
 
-  auto textLayoutManager = _state->getData().layoutManager.lock();
-
-  if (!textLayoutManager) {
-    return _eventEmitter;
-  }
+  auto textLayoutManager = _state->getData().paragraphLayoutManager.getTextLayoutManager();
 
   RCTTextLayoutManager *nativeTextLayoutManager =
       (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());

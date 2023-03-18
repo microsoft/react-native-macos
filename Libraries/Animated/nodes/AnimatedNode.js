@@ -12,7 +12,6 @@
 
 import type {PlatformConfig} from '../AnimatedPlatformConfig';
 
-import ReactNativeFeatureFlags from '../../ReactNative/ReactNativeFeatureFlags';
 import NativeAnimatedHelper from '../NativeAnimatedHelper';
 import invariant from 'invariant';
 
@@ -30,9 +29,7 @@ export default class AnimatedNode {
   __nativeAnimatedValueListener: ?any;
   __attach(): void {}
   __detach(): void {
-    if (ReactNativeFeatureFlags.removeListenersOnDetach()) {
-      this.removeAllListeners();
-    }
+    this.removeAllListeners();
     if (this.__isNative && this.__nativeTag != null) {
       NativeAnimatedHelper.API.dropAnimatedNode(this.__nativeTag);
       this.__nativeTag = undefined;
@@ -44,7 +41,7 @@ export default class AnimatedNode {
   }
   __addChild(child: AnimatedNode) {}
   __removeChild(child: AnimatedNode) {}
-  __getChildren(): Array<AnimatedNode> {
+  __getChildren(): $ReadOnlyArray<AnimatedNode> {
     return [];
   }
 
@@ -186,6 +183,7 @@ export default class AnimatedNode {
       'This JS animated node type cannot be used as native animated node',
     );
   }
+
   toJSON(): any {
     return this.__getValue();
   }

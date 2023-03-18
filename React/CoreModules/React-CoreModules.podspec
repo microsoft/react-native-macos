@@ -18,6 +18,19 @@ end
 
 folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -Wno-comma -Wno-shorten-64-to-32'
 folly_version = '2021.07.22.00'
+socket_rocket_version = '0.6.0'
+
+header_search_paths = [
+  "\"$(PODS_TARGET_SRCROOT)/React/CoreModules\"",
+  "\"$(PODS_ROOT)/RCT-Folly\"",
+  "\"${PODS_ROOT}/Headers/Public/React-Codegen/react/renderer/components\"",
+  "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Codegen/React_Codegen.framework/Headers\""
+]
+
+if ENV['USE_FRAMEWORKS']
+  header_search_paths.append("\"$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple/React_NativeModulesApple.framework/Headers\"")
+  header_search_paths.append("\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core\"")
+end
 
 Pod::Spec.new do |s|
   s.name                   = "React-CoreModules"
@@ -25,7 +38,7 @@ Pod::Spec.new do |s|
   s.summary                = "-"  # TODO
   s.homepage               = "https://reactnative.dev/"
   s.license                = package["license"]
-  s.author                 = "Facebook, Inc. and its affiliates"
+  s.author                 = "Meta Platforms, Inc. and its affiliates"
   s.platforms              = { :ios => "12.4", :osx => "10.15" } # [macOS]
   s.compiler_flags         = folly_compiler_flags + ' -Wno-nullability-completeness'
   s.source                 = source
@@ -38,7 +51,7 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig    = {
                                "USE_HEADERMAP" => "YES",
                                "CLANG_CXX_LANGUAGE_STANDARD" => "c++17",
-                               "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/React/CoreModules\" \"$(PODS_ROOT)/RCT-Folly\" \"${PODS_ROOT}/Headers/Public/React-Codegen/react/renderer/components\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-Codegen/React_Codegen.framework/Headers\""
+                               "HEADER_SEARCH_PATHS" => header_search_paths.join(" ")
                              }
 
   s.dependency "React-Codegen", version
@@ -48,4 +61,6 @@ Pod::Spec.new do |s|
   s.dependency "React-RCTImage", version
   s.dependency "ReactCommon/turbomodule/core", version
   s.dependency "React-jsi", version
+  s.dependency 'React-RCTBlob'
+  s.dependency "SocketRocket", socket_rocket_version
 end

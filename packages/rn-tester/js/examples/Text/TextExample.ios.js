@@ -453,7 +453,7 @@ class TextRenderInfoExample extends React.Component<
                 this.setState({textMetrics: lines[lines.length - 1]});
               }
             }}>
-            {new Array(this.state.numberOfTextBlocks)
+            {new Array<string>(this.state.numberOfTextBlocks)
               .fill('A tiny block of text.')
               .join(' ')}
           </Text>
@@ -638,6 +638,9 @@ exports.examples = [
               fontWeight: 'bold',
             }}>
             Verdana bold
+          </Text>
+          <Text style={{fontFamily: 'Unknown Font Family'}}>
+            Unknown Font Family
           </Text>
         </View>
       );
@@ -1297,22 +1300,8 @@ exports.examples = [
       );
     },
   },
-  // [macOS
   {
-    title: 'Text components inheriting color from parent',
-    render: function (): React.Node {
-      return (
-        <View style={{marginTop: 10, marginBottom: 10}}>
-          <Text style={{color: 'red'}}>
-            Outer&nbsp;
-            <Text>Inner</Text>
-          </Text>
-        </View>
-      );
-    },
-  },
-  {
-    title: 'Dynamic Text sizing (iOS only)',
+    title: 'Dynamic Type (iOS only)',
     render: function (): React.Node {
       const boldStyle = {fontWeight: 'bold'};
       const boxStyle = {
@@ -1352,6 +1341,20 @@ exports.examples = [
             <Text style={{fontSize: 20}}>Title 3</Text>
             <Text style={{fontSize: 17}}>Body</Text>
           </View>
+        </View>
+      );
+    },
+  },
+  // [macOS
+  {
+    title: 'Text components inheriting color from parent',
+    render: function (): React.Node {
+      return (
+        <View style={{marginTop: 10, marginBottom: 10}}>
+          <Text style={{color: 'red'}}>
+            Outer&nbsp;
+            <Text>Inner</Text>
+          </Text>
         </View>
       );
     },

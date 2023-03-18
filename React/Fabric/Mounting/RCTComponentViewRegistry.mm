@@ -11,12 +11,13 @@
 #import <React/RCTAssert.h>
 #import <React/RCTConstants.h>
 
-#import "RCTImageComponentView.h"
-#import "RCTParagraphComponentView.h"
-#import "RCTViewComponentView.h"
+#import <React/RCTImageComponentView.h>
+#import <React/RCTParagraphComponentView.h>
+#import <React/RCTViewComponentView.h>
 
 #import <butter/map.h>
 
+using namespace facebook;
 using namespace facebook::react;
 
 const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;

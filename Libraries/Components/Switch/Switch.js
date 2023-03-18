@@ -157,10 +157,12 @@ const SwitchWithForwardedRef: React.AbstractComponent<
 
   const ref = useMergeRefs(nativeSwitchRef, forwardedRef);
 
-  const [native, setNative] = React.useState({value: null});
+  const [native, setNative] = React.useState({value: (null: ?boolean)});
 
   const handleChange = (event: SwitchChangeEvent) => {
+    // $FlowFixMe[unused-promise]
     onChange?.(event);
+    // $FlowFixMe[unused-promise]
     onValueChange?.(event.nativeEvent.value);
     setNative({value: event.nativeEvent.value});
   };

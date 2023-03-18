@@ -18,7 +18,6 @@
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/core/ShadowNodeFragment.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
-#include <react/renderer/graphics/Geometry.h>
 #include <react/renderer/graphics/Transform.h>
 
 namespace facebook {
@@ -43,6 +42,7 @@ class LayoutableShadowNode : public ShadowNode {
       ShadowNodeFragment const &fragment);
 
   static ShadowNodeTraits BaseTraits();
+  static ShadowNodeTraits::Trait IdentifierTrait();
 
   struct LayoutInspectingPolicy {
     bool includeTransform{true};
@@ -164,30 +164,6 @@ class LayoutableShadowNode : public ShadowNode {
 
   LayoutMetrics layoutMetrics_;
 };
-
-template <>
-inline LayoutableShadowNode const &traitCast<LayoutableShadowNode const &>(
-    ShadowNode const &shadowNode) {
-  bool castable =
-      shadowNode.getTraits().check(ShadowNodeTraits::Trait::LayoutableKind);
-  react_native_assert(castable);
-  (void)castable;
-  return static_cast<LayoutableShadowNode const &>(shadowNode);
-}
-
-template <>
-inline LayoutableShadowNode const *traitCast<LayoutableShadowNode const *>(
-    ShadowNode const *shadowNode) {
-  if (!shadowNode) {
-    return nullptr;
-  }
-  bool castable =
-      shadowNode->getTraits().check(ShadowNodeTraits::Trait::LayoutableKind);
-  if (!castable) {
-    return nullptr;
-  }
-  return static_cast<LayoutableShadowNode const *>(shadowNode);
-}
 
 } // namespace react
 } // namespace facebook

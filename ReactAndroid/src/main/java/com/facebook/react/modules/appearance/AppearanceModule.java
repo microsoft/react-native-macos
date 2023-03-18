@@ -11,18 +11,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import com.facebook.fbreact.specs.NativeAppearanceSpec;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
 
 /** Module that exposes the user's preferred color scheme. */
-@ReactModule(name = AppearanceModule.NAME)
+@ReactModule(name = NativeAppearanceSpec.NAME)
 public class AppearanceModule extends NativeAppearanceSpec {
-
-  public static final String NAME = "Appearance";
 
   private static final String APPEARANCE_CHANGED_EVENT_NAME = "appearanceChanged";
 
@@ -69,8 +67,14 @@ public class AppearanceModule extends NativeAppearanceSpec {
   }
 
   @Override
-  public String getName() {
-    return NAME;
+  public void setColorScheme(String style) {
+    if (style.equals("dark")) {
+      AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+    } else if (style.equals("light")) {
+      AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+    } else if (style.equals("unspecified")) {
+      AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+    }
   }
 
   @Override
@@ -115,9 +119,7 @@ public class AppearanceModule extends NativeAppearanceSpec {
     ReactApplicationContext reactApplicationContext = getReactApplicationContextIfActiveOrWarn();
 
     if (reactApplicationContext != null) {
-      reactApplicationContext
-          .getJSModule(RCTDeviceEventEmitter.class)
-          .emit(APPEARANCE_CHANGED_EVENT_NAME, appearancePreferences);
+      reactApplicationContext.emitDeviceEvent(APPEARANCE_CHANGED_EVENT_NAME, appearancePreferences);
     }
   }
 }

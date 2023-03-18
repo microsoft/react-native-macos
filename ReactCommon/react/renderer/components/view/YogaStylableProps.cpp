@@ -28,7 +28,11 @@ YogaStylableProps::YogaStylableProps(
       yogaStyle(
           CoreFeatures::enablePropIteratorSetter
               ? sourceProps.yogaStyle
-              : convertRawProp(context, rawProps, sourceProps.yogaStyle)){};
+              : convertRawProp(context, rawProps, sourceProps.yogaStyle)) {
+  if (!CoreFeatures::enablePropIteratorSetter) {
+    convertRawPropAliases(context, sourceProps, rawProps);
+  }
+};
 
 template <typename T>
 static inline T const getFieldValue(
@@ -44,10 +48,10 @@ static inline T const getFieldValue(
   return defaultValue;
 }
 
-#define REBUILD_FIELD_SWITCH_CASE2(field, fieldName)                     \
-  case CONSTEXPR_RAW_PROPS_KEY_HASH(fieldName): {                        \
-    yogaStyle.field() = getFieldValue(context, value, defaults.field()); \
-    return;                                                              \
+#define REBUILD_FIELD_SWITCH_CASE2(field, fieldName)                       \
+  case CONSTEXPR_RAW_PROPS_KEY_HASH(fieldName): {                          \
+    yogaStyle.field() = getFieldValue(context, value, ygDefaults.field()); \
+    return;                                                                \
   }
 
 // @lint-ignore CLANGTIDY cppcoreguidelines-macro-usage
@@ -57,7 +61,7 @@ static inline T const getFieldValue(
 #define REBUILD_YG_FIELD_SWITCH_CASE_INDEXED(field, index, fieldName) \
   case CONSTEXPR_RAW_PROPS_KEY_HASH(fieldName): {                     \
     yogaStyle.field()[index] =                                        \
-        getFieldValue(context, value, defaults.field()[index]);       \
+        getFieldValue(context, value, ygDefaults.field()[index]);     \
     return;                                                           \
   }
 
@@ -100,7 +104,7 @@ void YogaStylableProps::setProp(
     RawPropsPropNameHash hash,
     const char *propName,
     RawValue const &value) {
-  static const auto defaults = YGStyle{};
+  static const auto ygDefaults = YGStyle{};
 
   Props::setProp(context, hash, propName, value);
 
@@ -128,6 +132,29 @@ void YogaStylableProps::setProp(
     REBUILD_FIELD_YG_EDGES(margin, "margin", "");
     REBUILD_FIELD_YG_EDGES(padding, "padding", "");
     REBUILD_FIELD_YG_EDGES(border, "border", "Width");
+
+    static const auto defaults = YogaStylableProps{};
+
+    // Aliases
+    RAW_SET_PROP_SWITCH_CASE(inset, "inset");
+    RAW_SET_PROP_SWITCH_CASE(insetBlock, "insetBlock");
+    RAW_SET_PROP_SWITCH_CASE(insetBlockEnd, "insetBlockEnd");
+    RAW_SET_PROP_SWITCH_CASE(insetBlockStart, "insetBlockStart");
+    RAW_SET_PROP_SWITCH_CASE(insetInline, "insetInline");
+    RAW_SET_PROP_SWITCH_CASE(insetInlineEnd, "insetInlineEnd");
+    RAW_SET_PROP_SWITCH_CASE(insetInlineStart, "insetInlineStart");
+    RAW_SET_PROP_SWITCH_CASE(marginInline, "marginInline");
+    RAW_SET_PROP_SWITCH_CASE(marginInlineStart, "marginInlineStart");
+    RAW_SET_PROP_SWITCH_CASE(marginInlineEnd, "marginInlineEnd");
+    RAW_SET_PROP_SWITCH_CASE(marginBlock, "marginBlock");
+    RAW_SET_PROP_SWITCH_CASE(marginBlockStart, "marginBlockStart");
+    RAW_SET_PROP_SWITCH_CASE(marginBlockEnd, "marginBlockEnd");
+    RAW_SET_PROP_SWITCH_CASE(paddingInline, "paddingInline");
+    RAW_SET_PROP_SWITCH_CASE(paddingInlineStart, "paddingInlineStart");
+    RAW_SET_PROP_SWITCH_CASE(paddingInlineEnd, "paddingInlineEnd");
+    RAW_SET_PROP_SWITCH_CASE(paddingBlock, "paddingBlock");
+    RAW_SET_PROP_SWITCH_CASE(paddingBlockStart, "paddingBlockStart");
+    RAW_SET_PROP_SWITCH_CASE(paddingBlockEnd, "paddingBlockEnd");
   }
 }
 
@@ -210,5 +237,126 @@ SharedDebugStringConvertibleList YogaStylableProps::getDebugProps() const {
   };
 }
 #endif
+
+void YogaStylableProps::convertRawPropAliases(
+    const PropsParserContext &context,
+    YogaStylableProps const &sourceProps,
+    RawProps const &rawProps) {
+  inset = convertRawProp(
+      context,
+      rawProps,
+      "inset",
+      sourceProps.inset,
+      CompactValue::ofUndefined());
+  insetBlock = convertRawProp(
+      context,
+      rawProps,
+      "insetBlock",
+      sourceProps.insetBlock,
+      CompactValue::ofUndefined());
+  insetBlockEnd = convertRawProp(
+      context,
+      rawProps,
+      "insetBlockEnd",
+      sourceProps.insetBlockEnd,
+      CompactValue::ofUndefined());
+  insetBlockStart = convertRawProp(
+      context,
+      rawProps,
+      "insetBlockStart",
+      sourceProps.insetBlockStart,
+      CompactValue::ofUndefined());
+  insetInline = convertRawProp(
+      context,
+      rawProps,
+      "insetInline",
+      sourceProps.insetInline,
+      CompactValue::ofUndefined());
+  insetInlineEnd = convertRawProp(
+      context,
+      rawProps,
+      "insetInlineEnd",
+      sourceProps.insetInlineEnd,
+      CompactValue::ofUndefined());
+  insetInlineStart = convertRawProp(
+      context,
+      rawProps,
+      "insetInlineStart",
+      sourceProps.insetInlineStart,
+      CompactValue::ofUndefined());
+  marginInline = convertRawProp(
+      context,
+      rawProps,
+      "marginInline",
+      sourceProps.marginInline,
+      CompactValue::ofUndefined());
+  marginInlineStart = convertRawProp(
+      context,
+      rawProps,
+      "marginInlineStart",
+      sourceProps.marginInlineStart,
+      CompactValue::ofUndefined());
+  marginInlineEnd = convertRawProp(
+      context,
+      rawProps,
+      "marginInlineEnd",
+      sourceProps.marginInlineEnd,
+      CompactValue::ofUndefined());
+  marginBlock = convertRawProp(
+      context,
+      rawProps,
+      "marginBlock",
+      sourceProps.marginBlock,
+      CompactValue::ofUndefined());
+  marginBlockStart = convertRawProp(
+      context,
+      rawProps,
+      "marginBlockStart",
+      sourceProps.marginBlockStart,
+      CompactValue::ofUndefined());
+  marginBlockEnd = convertRawProp(
+      context,
+      rawProps,
+      "marginBlockEnd",
+      sourceProps.marginBlockEnd,
+      CompactValue::ofUndefined());
+
+  paddingInline = convertRawProp(
+      context,
+      rawProps,
+      "paddingInline",
+      sourceProps.paddingInline,
+      CompactValue::ofUndefined());
+  paddingInlineStart = convertRawProp(
+      context,
+      rawProps,
+      "paddingInlineStart",
+      sourceProps.paddingInlineStart,
+      CompactValue::ofUndefined());
+  paddingInlineEnd = convertRawProp(
+      context,
+      rawProps,
+      "paddingInlineEnd",
+      sourceProps.paddingInlineEnd,
+      CompactValue::ofUndefined());
+  paddingBlock = convertRawProp(
+      context,
+      rawProps,
+      "paddingBlock",
+      sourceProps.paddingBlock,
+      CompactValue::ofUndefined());
+  paddingBlockStart = convertRawProp(
+      context,
+      rawProps,
+      "paddingBlockStart",
+      sourceProps.paddingBlockStart,
+      CompactValue::ofUndefined());
+  paddingBlockEnd = convertRawProp(
+      context,
+      rawProps,
+      "paddingBlockEnd",
+      sourceProps.paddingBlockEnd,
+      CompactValue::ofUndefined());
+}
 
 } // namespace facebook::react

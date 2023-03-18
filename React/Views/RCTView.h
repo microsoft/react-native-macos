@@ -92,17 +92,24 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, assign) CGFloat borderBottomRightRadius;
 @property (nonatomic, assign) CGFloat borderBottomStartRadius;
 @property (nonatomic, assign) CGFloat borderBottomEndRadius;
+@property (nonatomic, assign) CGFloat borderEndEndRadius;
+@property (nonatomic, assign) CGFloat borderEndStartRadius;
+@property (nonatomic, assign) CGFloat borderStartEndRadius;
+@property (nonatomic, assign) CGFloat borderStartStartRadius;
 
 /**
  * Border colors (actually retained).
  */
-@property (nonatomic, strong) RCTUIColor *borderTopColor;
-@property (nonatomic, strong) RCTUIColor *borderRightColor;
-@property (nonatomic, strong) RCTUIColor *borderBottomColor;
-@property (nonatomic, strong) RCTUIColor *borderLeftColor;
-@property (nonatomic, strong) RCTUIColor *borderStartColor;
-@property (nonatomic, strong) RCTUIColor *borderEndColor;
-@property (nonatomic, strong) RCTUIColor *borderColor;
+@property (nonatomic, strong) UIColor *borderTopColor;
+@property (nonatomic, strong) UIColor *borderRightColor;
+@property (nonatomic, strong) UIColor *borderBottomColor;
+@property (nonatomic, strong) UIColor *borderLeftColor;
+@property (nonatomic, strong) UIColor *borderStartColor;
+@property (nonatomic, strong) UIColor *borderEndColor;
+@property (nonatomic, strong) UIColor *borderColor;
+@property (nonatomic, strong) UIColor *borderBlockColor;
+@property (nonatomic, strong) UIColor *borderBlockEndColor;
+@property (nonatomic, strong) UIColor *borderBlockStartColor;
 
 /**
  * Border widths.
@@ -114,6 +121,10 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, assign) CGFloat borderStartWidth;
 @property (nonatomic, assign) CGFloat borderEndWidth;
 @property (nonatomic, assign) CGFloat borderWidth;
+// TODO: Implement logical border width logic
+@property (nonatomic, assign) CGFloat borderBlockWidth;
+@property (nonatomic, assign) CGFloat borderBlockEndWidth;
+@property (nonatomic, assign) CGFloat borderBlockStartWidth;
 
 /**
  * Border curve.

@@ -8,8 +8,8 @@
 #pragma once
 
 #include <memory>
+#include <shared_mutex>
 
-#include <butter/mutex.h>
 #include <butter/small_vector.h>
 
 #include <react/renderer/core/EventEmitter.h>
@@ -86,6 +86,13 @@ class ShadowNodeFamily final {
   void dispatchRawState(StateUpdate &&stateUpdate, EventPriority priority)
       const;
 
+  /*
+   * Holds currently applied native props. `nullptr` if setNativeProps API is
+   * not used. It is used to backport setNativeProps API from the old
+   * architecture and will be removed in the future.
+   */
+  mutable std::unique_ptr<folly::dynamic> nativeProps_DEPRECATED;
+
  private:
   friend ShadowNode;
   friend ShadowNodeFamilyFragment;
@@ -101,7 +108,7 @@ class ShadowNodeFamily final {
 
   EventDispatcher::Weak eventDispatcher_;
   mutable std::shared_ptr<State const> mostRecentState_;
-  mutable butter::shared_mutex mutex_;
+  mutable std::shared_mutex mutex_;
 
   /*
    * Deprecated.

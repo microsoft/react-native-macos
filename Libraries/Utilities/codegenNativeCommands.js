@@ -18,7 +18,9 @@ function codegenNativeCommands<T: interface {}>(options: Options<$Keys<T>>): T {
   const commandObj: {[$Keys<T>]: (...$ReadOnlyArray<mixed>) => void} = {};
 
   options.supportedCommands.forEach(command => {
+    // $FlowFixMe[missing-local-annot]
     commandObj[command] = (ref, ...args) => {
+      // $FlowFixMe[incompatible-call]
       dispatchCommand(ref, command, args);
     };
   });

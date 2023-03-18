@@ -41,7 +41,7 @@
 
 @property (nonatomic, assign) BOOL centerContent;
 #if !TARGET_OS_OSX // [macOS]
-@property (nonatomic, strong) UIView<RCTCustomRefreshContolProtocol> *customRefreshControl;
+@property (nonatomic, strong) UIView<RCTCustomRefreshControlProtocol> *customRefreshControl;
 @property (nonatomic, assign) BOOL pinchGestureEnabled;
 #else // [macOS
 + (BOOL)isCompatibleWithResponsiveScrolling;
@@ -304,14 +304,14 @@
 }
 
 #if !TARGET_OS_OSX // [macOS]
-- (void)setCustomRefreshControl:(UIView<RCTCustomRefreshContolProtocol> *)refreshControl
+- (void)setCustomRefreshControl:(UIView<RCTCustomRefreshControlProtocol> *)refreshControl
 {
   if (_customRefreshControl) {
     [_customRefreshControl removeFromSuperview];
   }
   _customRefreshControl = refreshControl;
   // We have to set this because we can't always guarantee the
-  // `RCTCustomRefreshContolProtocol`'s superview will always be of class
+  // `RCTCustomRefreshControlProtocol`'s superview will always be of class
   // `UIScrollView` like we were previously
   if ([_customRefreshControl respondsToSelector:@selector(setScrollView:)]) {
     _customRefreshControl.scrollView = self;
@@ -438,6 +438,16 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     newContentOffset.y += contentDiff;
   } else {
     newContentOffset.y -= contentDiff;
+  }
+
+  if (@available(iOS 14.0, *)) {
+    // On iOS when Prefer Cross-Fade Transitions is enabled, the keyboard position
+    // & height is reported differently (0 instead of Y position value matching height of frame)
+    // Fixes similar issue we saw with https://github.com/facebook/react-native/pull/34503
+    if (UIAccessibilityPrefersCrossFadeTransitions() && endFrame.size.height == 0) {
+      newContentOffset.y = 0;
+      newEdgeInsets.bottom = 0;
+    }
   }
 
   [UIView animateWithDuration:duration
@@ -582,8 +592,8 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
 {
   [super insertReactSubview:view atIndex:atIndex];
 #if !TARGET_OS_OSX // [macOS]
-  if ([view conformsToProtocol:@protocol(RCTCustomRefreshContolProtocol)]) {
-    [_scrollView setCustomRefreshControl:(UIView<RCTCustomRefreshContolProtocol> *)view];
+  if ([view conformsToProtocol:@protocol(RCTCustomRefreshControlProtocol)]) {
+    [_scrollView setCustomRefreshControl:(UIView<RCTCustomRefreshControlProtocol> *)view];
     if (![view isKindOfClass:[UIRefreshControl class]] && [view conformsToProtocol:@protocol(UIScrollViewDelegate)]) {
       [self addScrollListener:(UIView<UIScrollViewDelegate> *)view];
     }
@@ -606,10 +616,8 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
 - (void)removeReactSubview:(RCTUIView *)subview // [macOS]
 {
   [super removeReactSubview:subview];
-#if TARGET_OS_OSX // [macOS
-  _scrollView.documentView = nil;
-#else // [macOS
-  if ([subview conformsToProtocol:@protocol(RCTCustomRefreshContolProtocol)]) {
+#if !TARGET_OS_OSX // [macOS]
+  if ([subview conformsToProtocol:@protocol(RCTCustomRefreshControlProtocol)]) {
     [_scrollView setCustomRefreshControl:nil];
     if (![subview isKindOfClass:[UIRefreshControl class]] &&
         [subview conformsToProtocol:@protocol(UIScrollViewDelegate)]) {
@@ -619,6 +627,8 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
     RCTAssert(_contentView == subview, @"Attempted to remove non-existent subview");
     _contentView = nil;
   }
+#else // [macOS
+  _scrollView.documentView = nil;
 #endif // macOS]
 }
 
@@ -671,7 +681,7 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
 
 #if !TARGET_OS_TV && !TARGET_OS_OSX // [macOS]
   // Adjust the refresh control frame if the scrollview layout changes.
-  UIView<RCTCustomRefreshContolProtocol> *refreshControl = _scrollView.customRefreshControl;
+  UIView<RCTCustomRefreshControlProtocol> *refreshControl = _scrollView.customRefreshControl;
   if (refreshControl && refreshControl.isRefreshing && ![refreshControl isKindOfClass:UIRefreshControl.class]) {
     refreshControl.frame =
         (CGRect){_scrollView.contentOffset, {_scrollView.frame.size.width, refreshControl.frame.size.height}};

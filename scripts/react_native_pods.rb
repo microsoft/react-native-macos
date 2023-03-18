@@ -51,6 +51,7 @@ end
 # - flipper_configuration: The configuration to use for flipper.
 # - app_path: path to the React Native app. Required by the New Architecture.
 # - config_file_dir: directory of the `package.json` file, required by the New Architecture.
+# - ios_folder: the folder where the iOS code base lives. For a template app, it is `ios`, the default. For RNTester, it is `.`.
 def use_react_native! (
   path: "../node_modules/react-native",
   fabric_enabled: false,
@@ -59,14 +60,25 @@ def use_react_native! (
   hermes_enabled: ENV['USE_HERMES'] && ENV['USE_HERMES'] == '0' ? false : true,
   flipper_configuration: FlipperConfiguration.disabled,
   app_path: '..',
-  config_file_dir: '')
+  config_file_dir: '',
+  ios_folder: 'ios'
+)
 
-  CodegenUtils.clean_up_build_folder(app_path, $CODEGEN_OUTPUT_DIR)
+  # Set the app_path as env variable so the podspecs can access it.
+  ENV['APP_PATH'] = app_path
+  ENV['REACT_NATIVE_PATH'] = path
+
+  # Current target definition is provided by Cocoapods and it refers to the target
+  # that has invoked the `use_react_native!` function.
+  ReactNativePodsUtils.detect_use_frameworks(current_target_definition)
+
+  CodegenUtils.clean_up_build_folder(path, app_path, ios_folder, $CODEGEN_OUTPUT_DIR)
 
   # We are relying on this flag also in third parties libraries to proper install dependencies.
   # Better to rely and enable this environment flag if the new architecture is turned on using flags.
   ENV['RCT_NEW_ARCH_ENABLED'] = new_arch_enabled ? "1" : "0"
   fabric_enabled = fabric_enabled || new_arch_enabled
+  ENV['RCT_FABRIC_ENABLED'] = fabric_enabled ? "1" : "0"
   ENV['USE_HERMES'] = hermes_enabled ? "1" : "0"
 
   prefix = path
@@ -75,7 +87,7 @@ def use_react_native! (
 
   # The Pods which should be included in all projects
   pod 'FBLazyVector', :path => "#{prefix}/Libraries/FBLazyVector"
-  pod 'FBReactNativeSpec', :path => "#{prefix}/React/FBReactNativeSpec"
+  pod 'FBReactNativeSpec', :path => "#{prefix}/React/FBReactNativeSpec" if !new_arch_enabled
   pod 'RCTRequired', :path => "#{prefix}/Libraries/RCTRequired"
   pod 'RCTTypeSafety', :path => "#{prefix}/Libraries/TypeSafety", :modular_headers => true
   pod 'React', :path => "#{prefix}/"
@@ -92,8 +104,7 @@ def use_react_native! (
   pod 'React-RCTText', :path => "#{prefix}/Libraries/Text"
   pod 'React-RCTVibration', :path => "#{prefix}/Libraries/Vibration"
   pod 'React-Core/RCTWebSocket', :path => "#{prefix}/"
-
-  pod 'React-bridging', :path => "#{prefix}/ReactCommon"
+  pod 'React-rncore', :path => "#{prefix}/ReactCommon"
   pod 'React-cxxreact', :path => "#{prefix}/ReactCommon/cxxreact"
 
   if hermes_enabled
@@ -101,7 +112,7 @@ def use_react_native! (
   else
     setup_jsc!(:react_native_path => prefix, :fabric_enabled => fabric_enabled)
   end
-  pod 'React-jsidynamic', :path => "#{prefix}/ReactCommon/jsi"
+
   pod 'React-jsiexecutor', :path => "#{prefix}/ReactCommon/jsiexecutor"
   pod 'React-jsinspector', :path => "#{prefix}/ReactCommon/jsinspector"
 
@@ -110,6 +121,7 @@ def use_react_native! (
   pod 'React-perflogger', :path => "#{prefix}/ReactCommon/reactperflogger"
   pod 'React-logger', :path => "#{prefix}/ReactCommon/logger"
   pod 'ReactCommon/turbomodule/core', :path => "#{prefix}/ReactCommon", :modular_headers => true
+  pod 'React-NativeModulesApple', :path => "#{prefix}/ReactCommon/react/nativemodule/core/platform/ios", :modular_headers => true
   pod 'Yoga', :path => "#{prefix}/ReactCommon/yoga", :modular_headers => true
 
   pod 'DoubleConversion', :podspec => "#{prefix}/third-party-podspecs/DoubleConversion.podspec"
@@ -133,8 +145,8 @@ def use_react_native! (
   pod 'React-Codegen', :path => $CODEGEN_OUTPUT_DIR, :modular_headers => true
 
   if fabric_enabled
-    checkAndGenerateEmptyThirdPartyProvider!(prefix, new_arch_enabled, $CODEGEN_OUTPUT_DIR)
-    setup_fabric!(:react_native_path => prefix)
+    checkAndGenerateEmptyThirdPartyProvider!(prefix, new_arch_enabled)
+    setup_fabric!(:react_native_path => prefix, new_arch_enabled: new_arch_enabled)
   else
     relative_installation_root = Pod::Config.instance.installation_root.relative_path_from(Pathname.pwd)
     build_codegen!(prefix, relative_installation_root)
@@ -197,7 +209,13 @@ end
 # - installer: the Cocoapod object that allows to customize the project.
 # - react_native_path: path to React Native.
 # - mac_catalyst_enabled: whether we are running the Pod on a Mac Catalyst project or not.
-def react_native_post_install(installer, react_native_path = "../node_modules/react-native", mac_catalyst_enabled: false)
+# - enable_hermes_profiler: whether the hermes profiler should be turned on in Release mode
+def react_native_post_install(
+  installer, react_native_path = "../node_modules/react-native",
+  mac_catalyst_enabled: false,
+  enable_hermes_profiler: false
+)
+  enable_hermes_profiler = enable_hermes_profiler || ENV["ENABLE_HERMES_PROFILER"] == "1"
   ReactNativePodsUtils.turn_off_resource_bundle_react_core(installer)
 
   ReactNativePodsUtils.apply_mac_catalyst_patches(installer) if mac_catalyst_enabled
@@ -206,20 +224,19 @@ def react_native_post_install(installer, react_native_path = "../node_modules/re
     flipper_post_install(installer)
   end
 
-  if ReactNativePodsUtils.has_pod(installer, 'hermes-engine') && ENV['HERMES_BUILD_FROM_SOURCE'] == "1"
-    add_copy_hermes_framework_script_phase(installer, react_native_path)
-  else
-    remove_copy_hermes_framework_script_phase(installer, react_native_path)
-  end
+  fabric_enabled = ReactNativePodsUtils.has_pod(installer, 'React-Fabric')
 
   ReactNativePodsUtils.exclude_i386_architecture_while_using_hermes(installer)
   ReactNativePodsUtils.fix_library_search_paths(installer)
-  ReactNativePodsUtils.fix_react_bridging_header_search_paths(installer)
+  ReactNativePodsUtils.update_search_paths(installer)
   ReactNativePodsUtils.set_node_modules_user_settings(installer, react_native_path)
+  ReactNativePodsUtils.apply_flags_for_fabric(installer, fabric_enabled: fabric_enabled)
+  ReactNativePodsUtils.enable_hermes_profiler(installer, enable_hermes_profiler: enable_hermes_profiler)
 
   NewArchitectureHelper.set_clang_cxx_language_standard_if_needed(installer)
   is_new_arch_enabled = ENV['RCT_NEW_ARCH_ENABLED'] == "1"
   NewArchitectureHelper.modify_flags_for_new_architecture(installer, is_new_arch_enabled)
+
 
   Pod::UI.puts "Pod install took #{Time.now.to_i - $START_TIME} [s] to run".green
 end
@@ -311,9 +328,9 @@ def use_react_native_codegen!(spec, options={})
     # The final generated files will be created when this script is invoked at Xcode build time.
     :script => get_script_phases_no_codegen_discovery(
       react_native_path: react_native_path,
-      codegen_output_dir: $CODEGEN_OUTPUT_DIR,
-      codegen_module_dir: $CODEGEN_MODULE_DIR,
-      codegen_component_dir: $CODEGEN_COMPONENT_DIR,
+      codegen_output_dir: output_dir,
+      codegen_module_dir: output_dir_module,
+      codegen_component_dir: output_dir_component,
       library_name: library_name,
       library_type: library_type,
       js_srcs_pattern: js_srcs_pattern,

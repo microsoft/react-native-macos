@@ -166,6 +166,10 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     _borderBottomRightRadius = -1;
     _borderBottomStartRadius = -1;
     _borderBottomEndRadius = -1;
+    _borderEndEndRadius = -1;
+    _borderEndStartRadius = -1;
+    _borderStartEndRadius = -1;
+    _borderStartStartRadius = -1;
     _borderCurve = RCTBorderCurveCircular;
     _borderStyle = RCTBorderStyleSolid;
     _hitTestEdgeInsets = UIEdgeInsetsZero;
@@ -271,7 +275,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     case RCTPointerEventsBoxNone:
       return hitSubview;
     default:
-      RCTLogError(@"Invalid pointer-events specified %lld on %@", (long long)_pointerEvents, self);
+      RCTLogInfo(@"Invalid pointer-events specified %lld on %@", (long long)_pointerEvents, self);
       return hitSubview ?: hitView;
   }
 }
@@ -708,8 +712,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 #if DEBUG // [macOS description is a debug-only feature
 - (NSString *)description
 {
-  // [macOS] we shouldn't make assumptions on what super's description is. Just append additional content.
-  return [[super description] stringByAppendingFormat:@" reactTag: %@; frame = %@; layer = %@", self.reactTag, NSStringFromCGRect(self.frame), self.layer];
+  return [[super description] stringByAppendingFormat:@" reactTag: %@; frame = %@; layer = %@",
+                                                      self.reactTag,
+                                                      NSStringFromCGRect(self.frame),
+                                                      self.layer];
 }
 #endif // macOS]
 
@@ -1064,11 +1070,16 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   CGFloat bottomLeftRadius;
   CGFloat bottomRightRadius;
 
+  const CGFloat logicalTopStartRadius = RCTDefaultIfNegativeTo(_borderStartStartRadius, _borderTopStartRadius);
+  const CGFloat logicalTopEndRadius = RCTDefaultIfNegativeTo(_borderStartEndRadius, _borderTopEndRadius);
+  const CGFloat logicalBottomStartRadius = RCTDefaultIfNegativeTo(_borderEndStartRadius, _borderBottomStartRadius);
+  const CGFloat logicalBottomEndRadius = RCTDefaultIfNegativeTo(_borderEndEndRadius, _borderBottomEndRadius);
+
   if ([[RCTI18nUtil sharedInstance] doLeftAndRightSwapInRTL]) {
-    const CGFloat topStartRadius = RCTDefaultIfNegativeTo(_borderTopLeftRadius, _borderTopStartRadius);
-    const CGFloat topEndRadius = RCTDefaultIfNegativeTo(_borderTopRightRadius, _borderTopEndRadius);
-    const CGFloat bottomStartRadius = RCTDefaultIfNegativeTo(_borderBottomLeftRadius, _borderBottomStartRadius);
-    const CGFloat bottomEndRadius = RCTDefaultIfNegativeTo(_borderBottomRightRadius, _borderBottomEndRadius);
+    const CGFloat topStartRadius = RCTDefaultIfNegativeTo(_borderTopLeftRadius, logicalTopStartRadius);
+    const CGFloat topEndRadius = RCTDefaultIfNegativeTo(_borderTopRightRadius, logicalTopEndRadius);
+    const CGFloat bottomStartRadius = RCTDefaultIfNegativeTo(_borderBottomLeftRadius, logicalBottomStartRadius);
+    const CGFloat bottomEndRadius = RCTDefaultIfNegativeTo(_borderBottomRightRadius, logicalBottomEndRadius);
 
     const CGFloat directionAwareTopLeftRadius = isRTL ? topEndRadius : topStartRadius;
     const CGFloat directionAwareTopRightRadius = isRTL ? topStartRadius : topEndRadius;
@@ -1080,10 +1091,10 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
     bottomLeftRadius = RCTDefaultIfNegativeTo(radius, directionAwareBottomLeftRadius);
     bottomRightRadius = RCTDefaultIfNegativeTo(radius, directionAwareBottomRightRadius);
   } else {
-    const CGFloat directionAwareTopLeftRadius = isRTL ? _borderTopEndRadius : _borderTopStartRadius;
-    const CGFloat directionAwareTopRightRadius = isRTL ? _borderTopStartRadius : _borderTopEndRadius;
-    const CGFloat directionAwareBottomLeftRadius = isRTL ? _borderBottomEndRadius : _borderBottomStartRadius;
-    const CGFloat directionAwareBottomRightRadius = isRTL ? _borderBottomStartRadius : _borderBottomEndRadius;
+    const CGFloat directionAwareTopLeftRadius = isRTL ? logicalTopEndRadius : logicalTopStartRadius;
+    const CGFloat directionAwareTopRightRadius = isRTL ? logicalTopStartRadius : logicalTopEndRadius;
+    const CGFloat directionAwareBottomLeftRadius = isRTL ? logicalBottomEndRadius : logicalBottomStartRadius;
+    const CGFloat directionAwareBottomRightRadius = isRTL ? logicalBottomStartRadius : logicalBottomEndRadius;
 
     topLeftRadius =
         RCTDefaultIfNegativeTo(radius, RCTDefaultIfNegativeTo(_borderTopLeftRadius, directionAwareTopLeftRadius));
@@ -1136,6 +1147,17 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   RCTUIColor *borderColor = _borderColor;
   RCTUIColor *borderTopColor = _borderTopColor;
   RCTUIColor *borderBottomColor = _borderBottomColor;
+
+  if (_borderBlockColor) {
+    borderTopColor = _borderBlockColor;
+    borderBottomColor = _borderBlockColor;
+  }
+  if (_borderBlockEndColor) {
+    borderBottomColor = _borderBlockEndColor;
+  }
+  if (_borderBlockStartColor) {
+    borderTopColor = _borderBlockStartColor;
+  }
 
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
   if (@available(iOS 13.0, *)) {
@@ -1356,7 +1378,7 @@ static void RCTUpdateShadowPathForView(RCTView *view)
   }
 
 setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom) setBorderColor(Left)
-    setBorderColor(Start) setBorderColor(End)
+    setBorderColor(Start) setBorderColor(End) setBorderColor(Block) setBorderColor(BlockEnd) setBorderColor(BlockStart)
 
 #pragma mark - Border Width
 
@@ -1387,7 +1409,8 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 
                 setBorderRadius() setBorderRadius(TopLeft) setBorderRadius(TopRight) setBorderRadius(TopStart)
                     setBorderRadius(TopEnd) setBorderRadius(BottomLeft) setBorderRadius(BottomRight)
-                        setBorderRadius(BottomStart) setBorderRadius(BottomEnd)
+                        setBorderRadius(BottomStart) setBorderRadius(BottomEnd) setBorderRadius(EndEnd)
+                            setBorderRadius(EndStart) setBorderRadius(StartEnd) setBorderRadius(StartStart)
 
 #pragma mark - Border Curve
 
@@ -1401,7 +1424,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
     [self.layer setNeedsDisplay];                       \
   }
 
-                            setBorderCurve()
+                                setBorderCurve()
 
 #pragma mark - Border Style
 
@@ -1415,7 +1438,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
     [self.layer setNeedsDisplay];                       \
   }
 
-                                setBorderStyle()
+                                    setBorderStyle()
 
 #if TARGET_OS_OSX  // [macOS
 
@@ -1712,4 +1735,4 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   }
 }
 #endif // macOS]
-                                    @end
+                                        @end

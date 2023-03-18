@@ -21,9 +21,10 @@ const os = require('os');
 const path = require('path');
 const {cat, echo, exec, exit, sed} = require('shelljs');
 const yargs = require('yargs');
-const {parseVersion} = require('./version-utils');
+const {parseVersion, validateBuildType} = require('./version-utils');
 const {saveFiles} = require('./scm-utils');
 
+<<<<<<< HEAD
 const tmpVersioningFolder = fs.mkdtempSync(
   path.join(os.tmpdir(), 'rn-set-version'),
 );
@@ -57,13 +58,44 @@ let argv = yargs
     default: false, // macOS]
     // macOS]
   }).argv;
+||||||| 890805db9cc
+const tmpVersioningFolder = fs.mkdtempSync(
+  path.join(os.tmpdir(), 'rn-set-version'),
+);
+echo(`The temp versioning folder is ${tmpVersioningFolder}`);
 
+let argv = yargs.option('v', {
+  alias: 'to-version',
+  type: 'string',
+}).argv;
+=======
+let argv = yargs
+  .option('v', {
+    alias: 'to-version',
+    type: 'string',
+    required: true,
+  })
+  .option('b', {
+    alias: 'build-type',
+    type: 'string',
+    required: true,
+  }).argv;
+>>>>>>> 379d9d4918886e002d70dd30fff29f8e6a8cf48f
+
+<<<<<<< HEAD
 const autogenerateVersionNumber = argv.autogenerateVersionNumber;
 const nightlyBuild = argv.nightly;
 // Nightly builds don't need an update as main will already be up-to-date.
 const updatePodfileLock = !nightlyBuild;
 let version = argv.toVersion;
+||||||| 890805db9cc
+const version = argv.toVersion;
+=======
+const buildType = argv.buildType;
+const version = argv.toVersion;
+>>>>>>> 379d9d4918886e002d70dd30fff29f8e6a8cf48f
 
+<<<<<<< HEAD
 if (!version) {
   if (nightlyBuild && autogenerateVersionNumber) {
     // [macOS Some of our calls to set-rn-version.js still depend on an automatically generated version number
@@ -112,6 +144,16 @@ if (!nightlyBuild) {
     );
     exit(1);
   }
+||||||| 890805db9cc
+if (!version) {
+  echo('You must specify a version using -v');
+  exit(1);
+=======
+try {
+  validateBuildType(buildType);
+} catch (e) {
+  throw e;
+>>>>>>> 379d9d4918886e002d70dd30fff29f8e6a8cf48f
 }
 
 let major,
@@ -119,11 +161,15 @@ let major,
   patch,
   prerelease = -1;
 try {
-  ({major, minor, patch, prerelease} = parseVersion(version));
+  ({major, minor, patch, prerelease} = parseVersion(version, buildType));
 } catch (e) {
-  echo(e.message);
-  exit(1);
+  throw e;
 }
+
+const tmpVersioningFolder = fs.mkdtempSync(
+  path.join(os.tmpdir(), 'rn-set-version'),
+);
+echo(`The temp versioning folder is ${tmpVersioningFolder}`);
 
 saveFiles(['package.json', 'template/package.json'], tmpVersioningFolder);
 
@@ -187,6 +233,7 @@ packageJson.version = version;
 // delete packageJson.private;
 
 // Copy repo-config/package.json dependencies as devDependencies
+<<<<<<< HEAD
 // const repoConfigJson = JSON.parse(cat('repo-config/package.json'));
 // packageJson.devDependencies = {
 //   ...packageJson.devDependencies,
@@ -200,6 +247,31 @@ packageJson.version = version;
 // };
 // macOS]
 
+||||||| 890805db9cc
+const repoConfigJson = JSON.parse(cat('repo-config/package.json'));
+packageJson.devDependencies = {
+  ...packageJson.devDependencies,
+  ...repoConfigJson.dependencies,
+};
+// Make react-native-codegen a direct dependency of react-native
+delete packageJson.devDependencies['react-native-codegen'];
+packageJson.dependencies = {
+  ...packageJson.dependencies,
+  'react-native-codegen': repoConfigJson.dependencies['react-native-codegen'],
+};
+=======
+const repoConfigJson = JSON.parse(cat('repo-config/package.json'));
+packageJson.devDependencies = {
+  ...packageJson.devDependencies,
+  ...repoConfigJson.dependencies,
+};
+// Make @react-native/codegen a direct dependency of react-native
+delete packageJson.devDependencies['@react-native/codegen'];
+packageJson.dependencies = {
+  ...packageJson.dependencies,
+  '@react-native/codegen': repoConfigJson.dependencies['@react-native/codegen'],
+};
+>>>>>>> 379d9d4918886e002d70dd30fff29f8e6a8cf48f
 fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2), 'utf-8');
 
 // Change ReactAndroid/gradle.properties
@@ -249,6 +321,7 @@ const numberOfChangedLinesWithNewVersion = exec(
   {silent: true},
 ).stdout.trim();
 
+<<<<<<< HEAD
 // Release builds should commit the version bumps, and create tags.
 // Nightly builds do not need to do that.
 if (!nightlyBuild) {
@@ -315,6 +388,29 @@ if (!nightlyBuild) {
   }
 
   exec(`git push ${remote} ${branch} --follow-tags`);
+||||||| 890805db9cc
+if (+numberOfChangedLinesWithNewVersion !== filesToValidate.length) {
+  echo(
+    `Failed to update all the files: [${filesToValidate.join(
+      ', ',
+    )}] must have versions in them`,
+  );
+  echo('Fix the issue and try again');
+  exit(1);
+=======
+if (+numberOfChangedLinesWithNewVersion !== filesToValidate.length) {
+  // TODO: the logic that checks whether all the changes have been applied
+  // is missing several files. For example, it is not checking Ruby version nor that
+  // the Objecive-C files, the codegen and other files are properly updated.
+  // We are going to work on this in another PR.
+  echo('WARNING:');
+  echo(
+    `Failed to update all the files: [${filesToValidate.join(
+      ', ',
+    )}] must have versions in them`,
+  );
+  echo(`These files already had version ${version} set.`);
+>>>>>>> 379d9d4918886e002d70dd30fff29f8e6a8cf48f
 }
 
 exit(0);

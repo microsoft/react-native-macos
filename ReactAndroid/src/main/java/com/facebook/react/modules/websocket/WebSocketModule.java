@@ -19,7 +19,6 @@ import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.network.ForwardingCookieHandler;
 import java.io.IOException;
 import java.net.URI;
@@ -36,12 +35,8 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
-@ReactModule(name = WebSocketModule.NAME, hasConstants = false)
+@ReactModule(name = NativeWebSocketModuleSpec.NAME, hasConstants = false)
 public final class WebSocketModule extends NativeWebSocketModuleSpec {
-  public static final String TAG = WebSocketModule.class.getSimpleName();
-
-  public static final String NAME = "WebSocketModule";
-
   public interface ContentHandler {
     void onMessage(String text, WritableMap params);
 
@@ -70,15 +65,8 @@ public final class WebSocketModule extends NativeWebSocketModuleSpec {
   private void sendEvent(String eventName, WritableMap params) {
     ReactApplicationContext reactApplicationContext = getReactApplicationContext();
     if (reactApplicationContext.hasActiveReactInstance()) {
-      reactApplicationContext
-          .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-          .emit(eventName, params);
+      reactApplicationContext.emitDeviceEvent(eventName, params);
     }
-  }
-
-  @Override
-  public String getName() {
-    return NAME;
   }
 
   public void setContentHandler(final int id, final ContentHandler contentHandler) {

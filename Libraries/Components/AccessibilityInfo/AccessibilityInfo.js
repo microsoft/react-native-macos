@@ -10,7 +10,6 @@
 
 import type {HostComponent} from '../../Renderer/shims/ReactNativeTypes';
 import type {EventSubscription} from '../../vendor/emitter/EventEmitter';
-import type {AccessibilityInfoType} from './AccessibilityInfo.flow';
 import type {ElementRef} from 'react';
 
 import RCTDeviceEventEmitter from '../../EventEmitter/RCTDeviceEventEmitter';
@@ -50,7 +49,7 @@ type AccessibilityEventDefinitions = {
   screenReaderChanged: [boolean],
 };
 
-type AccessibilityEventTypes = 'click' | 'focus';
+type AccessibilityEventTypes = 'click' | 'focus' | 'viewHoverEnter';
 
 // Mapping of public event names to platform-specific event names.
 const EventNames: Map<
@@ -84,7 +83,7 @@ const EventNames: Map<
  *
  * See https://reactnative.dev/docs/accessibilityinfo
  */
-const AccessibilityInfo: AccessibilityInfoType = {
+const AccessibilityInfo = {
   /**
    * Query whether bold text is currently enabled.
    *

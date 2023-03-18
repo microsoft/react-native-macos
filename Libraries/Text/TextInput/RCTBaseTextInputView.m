@@ -370,6 +370,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   if (showSoftInputOnFocus) {
     // Resets to default keyboard.
     self.backedTextInputView.inputView = nil;
+
+    // Without the call to reloadInputViews, the keyboard will not change until the textInput field (the first
+    // responder) loses and regains focus.
+    if (self.backedTextInputView.isFirstResponder) {
+      [self.backedTextInputView reloadInputViews];
+    }
   } else {
     // Hides keyboard, but keeps blinking cursor.
     self.backedTextInputView.inputView = [UIView new];
@@ -584,7 +590,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
   if (range.location + range.length > backedTextInputView.attributedText.string.length) {
     _predictedText = backedTextInputView.attributedText.string;
-  } else if (text != nil) { // [macOS] -[NSString stringByReplacingCharactersInRange:withString:] doesn't like when the replacement string is nil
+  } else if (text != nil) {
     _predictedText = [backedTextInputView.attributedText.string stringByReplacingCharactersInRange:range
                                                                                         withString:text];
   }

@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   s.summary                = "Fabric for React Native."
   s.homepage               = "https://reactnative.dev/"
   s.license                = package["license"]
-  s.author                 = "Facebook, Inc. and its affiliates"
+  s.author                 = "Meta Platforms, Inc. and its affiliates"
   s.platforms              = { :ios => "12.4", :osx => "10.15" } # [macOS]
   s.source                 = source
   s.source_files           = "dummyFile.cpp"
@@ -37,5 +37,6 @@ Pod::Spec.new do |s|
     :js_srcs_dir => "#{react_native_path}/Libraries",
     :library_name => "rncore",
     :library_type => "components",
+    :output_dir => "#{react_native_path}/../ReactCommon"
   })
 end

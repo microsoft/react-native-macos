@@ -117,7 +117,31 @@ ShadowNode::ShadowNode(
 
 ShadowNode::Unshared ShadowNode::clone(
     const ShadowNodeFragment &fragment) const {
-  return family_->componentDescriptor_.cloneShadowNode(*this, fragment);
+  auto const &family = *family_;
+  auto const &componentDescriptor = family.componentDescriptor_;
+  if (family.nativeProps_DEPRECATED != nullptr) {
+    auto propsParserContext = PropsParserContext{family_->getSurfaceId(), {}};
+    if (fragment.props == ShadowNodeFragment::propsPlaceholder()) {
+      // Clone existing `props_` with `family.nativeProps_DEPRECATED` to apply
+      // previously set props via `setNativeProps` API.
+      auto props = componentDescriptor.cloneProps(
+          propsParserContext, props_, RawProps(*family.nativeProps_DEPRECATED));
+      auto clonedNode = componentDescriptor.cloneShadowNode(
+          *this,
+          {
+              props,
+              fragment.children,
+              fragment.state,
+          });
+      return clonedNode;
+    } else {
+      // TODO: We might need to merge fragment.priops with
+      // `family.nativeProps_DEPRECATED`.
+      return componentDescriptor.cloneShadowNode(*this, fragment);
+    }
+  } else {
+    return componentDescriptor.cloneShadowNode(*this, fragment);
+  }
 }
 
 ContextContainer::Shared ShadowNode::getContextContainer() const {
@@ -204,7 +228,7 @@ void ShadowNode::appendChild(const ShadowNode::Shared &child) {
 void ShadowNode::replaceChild(
     ShadowNode const &oldChild,
     ShadowNode::Shared const &newChild,
-    int suggestedIndex) {
+    size_t suggestedIndex) {
   ensureUnsealed();
 
   cloneChildrenIfShared();
@@ -215,7 +239,7 @@ void ShadowNode::replaceChild(
       *std::const_pointer_cast<ShadowNode::ListOfShared>(children_);
   auto size = children.size();
 
-  if (suggestedIndex != -1 && static_cast<size_t>(suggestedIndex) < size) {
+  if (suggestedIndex != -1 && suggestedIndex < size) {
     // If provided `suggestedIndex` is accurate,
     // replacing in place using the index.
     if (children.at(suggestedIndex).get() == &oldChild) {

@@ -9,14 +9,11 @@
 
 #include <string>
 
-#include <ReactCommon/LongLivedObject.h>
 #include <ReactCommon/TurboModule.h>
 #include <jsi/jsi.h>
 
 namespace facebook {
 namespace react {
-
-class JSCallInvoker;
 
 enum class TurboModuleBindingMode : uint8_t {
   HostObject = 0,
@@ -35,30 +32,24 @@ class TurboModuleBinding {
    */
   static void install(
       jsi::Runtime &runtime,
-      const TurboModuleProviderFunctionType &&moduleProvider,
       TurboModuleBindingMode bindingMode,
-      std::shared_ptr<LongLivedObjectCollection> longLivedObjectCollection);
+      TurboModuleProviderFunctionType &&moduleProvider);
 
  private:
   TurboModuleBinding(
-      const TurboModuleProviderFunctionType &&moduleProvider,
       TurboModuleBindingMode bindingMode,
-      std::shared_ptr<LongLivedObjectCollection> longLivedObjectCollection);
+      TurboModuleProviderFunctionType &&moduleProvider);
   virtual ~TurboModuleBinding();
 
   /**
    * A lookup function exposed to JS to get an instance of a TurboModule
    * for the given name.
    */
-  jsi::Value getModule(
-      jsi::Runtime &runtime,
-      const jsi::Value &thisVal,
-      const jsi::Value *args,
-      size_t count);
+  jsi::Value getModule(jsi::Runtime &runtime, const std::string &moduleName)
+      const;
 
-  TurboModuleProviderFunctionType moduleProvider_;
-  std::shared_ptr<LongLivedObjectCollection> longLivedObjectCollection_;
   TurboModuleBindingMode bindingMode_;
+  TurboModuleProviderFunctionType moduleProvider_;
 };
 
 } // namespace react

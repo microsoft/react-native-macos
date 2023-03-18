@@ -26,7 +26,6 @@ import com.facebook.react.bridge.UIManagerListener;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.annotations.VisibleForTesting;
 import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.ReactChoreographer;
 import com.facebook.react.uimanager.GuardedFrameCallback;
 import com.facebook.react.uimanager.NativeViewHierarchyManager;
@@ -85,11 +84,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * This isolates us from the problems that may be caused by concurrent updates of animated graph
  * while UI thread is "executing" the animation loop.
  */
-@ReactModule(name = NativeAnimatedModule.NAME)
+@ReactModule(name = NativeAnimatedModuleSpec.NAME)
 public class NativeAnimatedModule extends NativeAnimatedModuleSpec
     implements LifecycleEventListener, UIManagerListener {
 
-  public static final String NAME = "NativeAnimatedModule";
   public static final boolean ANIMATED_MODULE_DEBUG = false;
 
   // For `queueAndExecuteBatchedOperations`
@@ -266,11 +264,9 @@ public class NativeAnimatedModule extends NativeAnimatedModuleSpec
 
   @Override
   public void initialize() {
-    ReactApplicationContext reactApplicationContext = getReactApplicationContextIfActiveOrWarn();
+    super.initialize();
 
-    if (reactApplicationContext != null) {
-      reactApplicationContext.addLifecycleEventListener(this);
-    }
+    getReactApplicationContext().addLifecycleEventListener(this);
   }
 
   @Override
@@ -375,11 +371,6 @@ public class NativeAnimatedModule extends NativeAnimatedModuleSpec
   public void onHostDestroy() {
     // Is it possible for onHostDestroy to be called without a corresponding onHostPause?
     clearFrameCallback();
-  }
-
-  @Override
-  public String getName() {
-    return NAME;
   }
 
   /**
@@ -574,9 +565,7 @@ public class NativeAnimatedModule extends NativeAnimatedModuleSpec
             ReactApplicationContext reactApplicationContext =
                 getReactApplicationContextIfActiveOrWarn();
             if (reactApplicationContext != null) {
-              reactApplicationContext
-                  .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                  .emit("onAnimatedValueUpdate", onAnimatedValueData);
+              reactApplicationContext.emitDeviceEvent("onAnimatedValueUpdate", onAnimatedValueData);
             }
           }
         };
@@ -987,10 +976,9 @@ public class NativeAnimatedModule extends NativeAnimatedModuleSpec
 
   @Override
   public void invalidate() {
-    ReactApplicationContext context = getReactApplicationContextIfActiveOrWarn();
-    if (context != null) {
-      context.removeLifecycleEventListener(this);
-    }
+    super.invalidate();
+
+    getReactApplicationContext().removeLifecycleEventListener(this);
   }
 
   /**
@@ -1099,9 +1087,8 @@ public class NativeAnimatedModule extends NativeAnimatedModuleSpec
                           ReactApplicationContext reactApplicationContext =
                               getReactApplicationContextIfActiveOrWarn();
                           if (reactApplicationContext != null) {
-                            reactApplicationContext
-                                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                                .emit("onAnimatedValueUpdate", onAnimatedValueData);
+                            reactApplicationContext.emitDeviceEvent(
+                                "onAnimatedValueUpdate", onAnimatedValueData);
                           }
                         }
                       };
