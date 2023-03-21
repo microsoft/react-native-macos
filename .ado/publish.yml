@@ -19,7 +19,6 @@ pr: none
 variables:
   - template: variables/vars.yml
   - group: React-native-macos Secrets
-  - group: InfoSec-SecurityResults
   - name: tags
     value: production,externalfacing
 
