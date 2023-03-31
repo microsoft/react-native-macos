@@ -21,8 +21,8 @@ variables:
     value: production,externalfacing
 
 jobs:
-  - job: RNGithubNpmJSPublish
-    displayName: React-Native GitHub Publish to npmjs.org
+  - job: NPMPublishRNM
+    displayName: NPM Publish React Native macOS
     pool:
       vmImage: $(VmImageApple)
     variables:
@@ -30,8 +30,6 @@ jobs:
         value: true
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
-    dependsOn:
-      - Compliance
     steps:
       - checkout: self # self represents the repo where the initial Pipelines YAML file was found
         clean: true # whether to fetch clean each time
@@ -52,14 +50,7 @@ jobs:
           script: |
             VERSION=$(node .ado/get-next-semver-version.js)
             echo "Set version to: $VERSION"
-        condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'main'))
-
-      - task: CmdLine@2
-        displayName: Set release type
-        inputs:
-          script: |
-            RELEASE_TYPE=$(node .ado/get-next-release-type.js)
-            echo "Set release type to: $RELEASE_TYPE"
+        condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/main'))
   
       - task: CmdLine@2
         displayName: Set latest tag if latest stable branch
@@ -67,7 +58,23 @@ jobs:
           script: |
             LATEST=true
             echo "Set latest to: $LATEST"
-        condition: eq(variables['Build.SourceBranchName'], $(latest_stable_branch))
+        condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+      - task: CmdLine@2
+        displayName: Set release type to 'nightly'
+        inputs:
+          script: |
+            RELEASE_TYPE=nightly
+            echo "Set release type to: $RELEASE_TYPE"
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  
+      - task: CmdLine@2
+        displayName: Set release type to 'release'
+        inputs:
+          script: |
+            RELEASE_TYPE=nightly
+            echo "Set release type to: $RELEASE_TYPE"
+        condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/main'))
 
       - task: CmdLine@2
         displayName: Prepare package for release
@@ -78,7 +85,7 @@ jobs:
               echo "Using the version from the package.json: $VERSION"
             fi
             node ./scripts/prepare-package-for-release.js -v "$VERSION" -l $LATEST
-        condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'main'))
+        condition: and(succeeded(), ne(variables['Build.TargetBranch'], 'refs/heads/main'))
 
       - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
         displayName: 📒 Generate Manifest
