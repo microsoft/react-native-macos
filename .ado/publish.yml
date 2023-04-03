@@ -72,7 +72,7 @@ jobs:
         displayName: Set release type to 'release'
         inputs:
           script: |
-            RELEASE_TYPE=nightly
+            RELEASE_TYPE=release
             echo "Set release type to: $RELEASE_TYPE"
         condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/main'))
 
