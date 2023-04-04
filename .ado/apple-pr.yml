@@ -26,7 +26,7 @@ jobs:
         parameters:
             slice_name: $(slice_name)
             xcode_version: $(xcode_version)
-  
+
   - job: ApplePR
     displayName: PR
     strategy:
