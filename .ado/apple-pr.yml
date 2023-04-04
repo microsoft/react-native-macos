@@ -4,6 +4,7 @@ name: $(Date:yyyyMMdd).$(Rev:.r)
 variables:
   - template: variables/vars.yml
 
+
 trigger: none # will disable CI builds entirely
 
 pr:
@@ -237,6 +238,20 @@ jobs:
         lfs: false # whether to download Git-LFS files
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
+
+      # Check TestVar is true
+      - ${{ if eq(variables['TestVar'], true) }}:
+        - task: CmdLine@2
+          displayName: TestVar True
+          inputs:
+            script: |
+              echo "TestVar is true"
+      - ${{ else }}:
+        - task: CmdLine@2
+          displayName: TestVar False
+          inputs:
+            script: |
+              echo "TestVar is false"
 
       - template: templates/apple-job-publish.yml
         parameters:
