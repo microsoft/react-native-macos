@@ -45,9 +45,9 @@ const {
   generateAndroidArtifacts,
   publishAndroidArtifactsToMaven,
 } = require('./release-utils');
+macOS] */
 const fs = require('fs');
 const path = require('path');
-macOS] */
 const yargs = require('yargs');
 
 const buildTag = exec('git tag --points-at HEAD'); // [macOS] Don't rely on CircleCI environment variables.
