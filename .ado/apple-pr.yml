@@ -4,7 +4,6 @@ name: $(Date:yyyyMMdd).$(Rev:.r)
 variables:
   - template: variables/vars.yml
 
-
 trigger: none # will disable CI builds entirely
 
 pr:
