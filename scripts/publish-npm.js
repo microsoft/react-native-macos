@@ -104,7 +104,7 @@ const rawVersion =
     nightlyBuild
     ? '0.0.0'
     : // For pre-release and stable releases, we use the git tag of the version we're releasing (set in set-rn-version)
-      buildTag.substring(0, buildTag.indexOf('-microsft')); // [macOS] Strip off the "-microsoft" suffix from the tag name.
+      buildTag.substring(0, buildTag.indexOf('-microsoft')); // [macOS] Strip off the "-microsoft" suffix from the tag name.
 
 let version,
   major,
