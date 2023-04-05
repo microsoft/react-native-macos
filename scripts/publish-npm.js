@@ -175,6 +175,7 @@ const tagFlag = nightlyBuild
 // use otp from envvars if available
 const otpFlag = otp ? `--otp ${otp}` : '';
 
+/* [macOS We do this separately for React Native macOS
 if (exec(`npm publish ${tagFlag} ${otpFlag}`).code) {
   echo('Failed to publish package to npm');
   exit(1);
@@ -182,3 +183,4 @@ if (exec(`npm publish ${tagFlag} ${otpFlag}`).code) {
   echo(`Published to npm ${releaseVersion}`);
   exit(0);
 }
+macOS] */
