@@ -30,6 +30,7 @@ steps:
       displayName: Prepare and tag package for release
       inputs:
         script: |
+          set -eo pipefail
           if [[ -z "$VERSION" ]]; then
             VERSION=$(grep '"version"' package.json | cut -d '"' -f 4 | head -1)
             echo "Using the version from the package.json: $VERSION"
