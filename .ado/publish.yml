@@ -38,21 +38,9 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
-      - ${{ if eq(variables['isMain'], true) }}:
-        - template: templates/apple-job-publish.yml
-          parameters:
-            build_type: nightly
-      - ${{ elseif eq(variables['isReleaseBranch'], true) }}:
-        - template: templates/apple-job-publish.yml
-          parameters:
-            build_type: release
-      - ${{ else }}:
-        - task: CmdLine@2
-          displayName: Unknown branch, skipping publish
-          inputs:
-            script: |
-              echo "Skipping publish for branch $(Build.SourceBranchName)"
-              exit 1
+      - template: templates/apple-job-publish.yml
+        parameters:
+          build_type: release
 
       - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
         displayName: 📒 Generate Manifest

@@ -54,4 +54,6 @@ steps:
     displayName: NPM Publish
     inputs:
       script: |
+        set -eo pipefail
         node ./scripts/publish-npm.js --${{ parameters.build_type }}
+        npm publish --tag nightly --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
