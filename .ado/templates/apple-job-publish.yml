@@ -10,13 +10,6 @@ steps:
   - ${{ if ne( parameters['build_type'], 'dry-run') }}:
     - template: apple-release-setup.yml  
 
-  - task: CmdLine@2
-    displayName: Set build type to ${{parameters.build_type}}
-    inputs:
-      script: |
-        BUILD_TYPE=${{parameters.build_type}}
-        echo "Set build type: $BUILD_TYPE"
-
   # Extra steps needed for *-stable releases
   - ${{ if eq( parameters['build_type'], 'release') }}:
     - task: CmdLine@2
@@ -25,13 +18,6 @@ steps:
         script: |
           VERSION=$(node .ado/get-next-semver-version.js)
           echo "Set version: $VERSION"
-
-    - task: CmdLine@2
-      displayName: Set build type to ${{parameters.build_type}}
-      inputs:
-        script: |
-          BUILD_TYPE=release
-          echo "Set build type: $BUILD_TYPE"
 
     - task: CmdLine@2
       displayName: Set latest tag
