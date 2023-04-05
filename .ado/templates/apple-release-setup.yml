@@ -10,4 +10,5 @@ steps:
     displayName: Set NPM Auth Token
     inputs:
       script: |
-        echo "//registry.npmjs.org/:_authToken=${npmAuthToken}" > ~/.npmrc
+        echo "//registry.npmjs.org/:_authToken=${npmAuthToken}" > .npmrc
+        echo "always-auth=true" >> .npmrc
