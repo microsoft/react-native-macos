@@ -27,6 +27,7 @@ function doPublish() {
 
   exec(`git config --global user.email "53619745+rnbot@users.noreply.github.com"`);
   exec(`git config --global user.name "React-Native Bot"`);
+  exec(`git remote set-url origin https://rnbot:$(githubAuthToken)@github.com/microsoft/react-native-macos`)
 
   exec(`git add .`);
   exec(`git commit -m "Applying package update to ${releaseVersion} ***NO_CI***"`);
