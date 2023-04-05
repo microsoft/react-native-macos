@@ -45,7 +45,7 @@ const argv = yargs
     default: false,
   }).argv;
 
-const branch = getBranchName(); // [macOS] Don't rely on CircleCI environment variables.
+const branch = '0.71-stable'; // [macOS] Don't rely on CircleCI environment variables.
 const remote = argv.remote;
 const releaseVersion = argv.toVersion;
 const isLatest = argv.latest;
