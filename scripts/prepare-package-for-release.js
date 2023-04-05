@@ -22,7 +22,6 @@ const {echo, exec, exit} = require('shelljs');
 const yargs = require('yargs');
 const {isReleaseBranch, parseVersion} = require('./version-utils');
 const {failIfTagExists} = require('./release-utils');
-const {getBranchName} = require('./scm-utils'); // [macOS]
 
 const argv = yargs
   .option('r', {

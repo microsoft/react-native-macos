@@ -186,12 +186,16 @@ const tagFlag = nightlyBuild
 // use otp from envvars if available
 const otpFlag = otp ? `--otp ${otp}` : '';
 
-/* [macOS We do this separately for React Native macOS
-if (exec(`npm publish ${tagFlag} ${otpFlag}`).code) {
+if (
+  // [macOS Azure Pipelines can't seem to read the npmAuthToken from a local .npmrc file, so we pass in the auth token here
+  exec(
+    `npm publish ${tagFlag} ${otpFlag} --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=${process.env.npmAuthToken}`,
+  ).code
+  // macOS]
+) {
   echo('Failed to publish package to npm');
   exit(1);
 } else {
   echo(`Published to npm ${releaseVersion}`);
   exit(0);
 }
-macOS] */
