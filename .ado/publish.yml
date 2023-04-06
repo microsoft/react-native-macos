@@ -40,39 +40,32 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
+      - template: templates/configure-git.yml
+
       # Setup the repo to be ready for release. This includes:
       # - Autogenerating the next version number
       # - Calling the approprate scripts that upstream React Native uses to prepare a release
       # - Skipping the actual `git tag`, `git push`, and `npm publish steps as we do that here instead
 
-      - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-        - template: templates/apple-job-publish.yml
-          parameters:
-            build_type: nightly
-      - ${{ elseif endsWith(variables['Build.SourceBranchName'], '-stable') }}:
-        - template: templates/apple-job-publish.yml
-          parameters:
-            build_type: release
-      - ${{ else }}:
-        - task: CmdLine@2
-          displayName: Unknown branch, skipping publish
-          inputs:
-            script: |
-              echo "Skipping publish for branch $(Build.SourceBranchName)"
-              exit 1
+      # - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      #   - template: templates/apple-job-publish.yml
+      #     parameters:
+      #       build_type: nightly
+      # - ${{ elseif endsWith(variables['Build.SourceBranchName'], '-stable') }}:
+      #   - template: templates/apple-job-publish.yml
+      #     parameters:
+      #       build_type: release
+      # - ${{ else }}:
+      #   - task: CmdLine@2
+      #     displayName: Unknown branch, skipping publish
+      #     inputs:
+      #       script: |
+      #         echo "Skipping publish for branch $(Build.SourceBranchName)"
+      #         exit 1
 
-      # Generate and publish the SBOM
-  
-      - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
-        displayName: 📒 Generate Manifest
-        inputs:
-          BuildDropPath: $(System.DefaultWorkingDirectory)
-
-      - task: PublishPipelineArtifact@1
-        displayName: 📒 Publish Manifest
-        inputs:
-          artifactName: SBom-RNGithubNpmJSPublish-$(System.JobAttempt)
-          targetPath: $(System.DefaultWorkingDirectory)/_manifest
+      - template: templates/apple-job-publish.yml
+        parameters:
+          build_type: release
 
       # Set the NPM dist-tag and do the actual NPM publish
   
@@ -88,24 +81,37 @@ jobs:
         displayName: Set dist-tag to v0.x-stable
         condition: and(ne(variables['Build.SourceBranchName'], 'main'), ne(variables['Build.SourceBranchName'], variables.latestStableBranch))
 
-      - task: CmdLine@2
-        displayName: Actual NPM Publish
-        inputs:
-          script: |
-            npm publish --tag $(npmDistTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
+      # - task: CmdLine@2
+      #   displayName: Actual NPM Publish
+      #   inputs:
+      #     script: |
+      #       npm publish --tag $(npmDistTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
 
       # Set the git tag and push the version update back to Github
 
-      - task: CmdLine@2
-        displayName: 'Tag and push to Github'
+      # - task: CmdLine@2
+      #   displayName: 'Tag and push to Github'
+      #   inputs:
+      #     script: node .ado/gitTagRelease.js
+      #   env:
+      #     BUILD_STAGINGDIRECTORY: $(Build.StagingDirectory)
+      #     BUILD_SOURCEBRANCH: $(Build.SourceBranch)
+      #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      #     githubAuthToken: $(githubAuthToken)
+      #   condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'main'))
+
+      # Generate and publish the SBOM
+  
+      - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+        displayName: 📒 Generate Manifest
         inputs:
-          script: node .ado/gitTagRelease.js
-        env:
-          BUILD_STAGINGDIRECTORY: $(Build.StagingDirectory)
-          BUILD_SOURCEBRANCH: $(Build.SourceBranch)
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          githubAuthToken: $(githubAuthToken)
-        condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'main'))
+          BuildDropPath: $(System.DefaultWorkingDirectory)
+
+      - task: PublishPipelineArtifact@1
+        displayName: 📒 Publish Manifest
+        inputs:
+          artifactName: SBom-RNGithubNpmJSPublish-$(System.JobAttempt)
+          targetPath: $(System.DefaultWorkingDirectory)/_manifest
       
 
   - job: RNMacOSInitNpmJSPublish

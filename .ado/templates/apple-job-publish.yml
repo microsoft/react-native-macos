@@ -7,14 +7,6 @@ steps:
   - template: apple-install-dependencies.yml
 
   # Extra steps needed for *-stable releases
-  - ${{ if eq( parameters['build_type'], 'release') }}:
-    - task: CmdLine@2
-      displayName: Set next version
-      inputs:
-        script: |
-          VERSION=$(node .ado/get-next-semver-version.js)
-          echo "Set version: $VERSION"
-
     - task: CmdLine@2
       displayName: Set latest tag
       inputs:
@@ -29,13 +21,15 @@ steps:
       displayName: Prepare package for release
       inputs:
         script: |
+          VERSION=$(node .ado/get-next-semver-version.js)
           if [[ -z "$VERSION" ]]; then
             VERSION=$(grep '"version"' package.json | cut -d '"' -f 4 | head -1)
             echo "Using the version from the package.json: $VERSION"
           fi
-          node ./scripts/prepare-package-for-release.js -v "$VERSION" --dry-run
+          node ./scripts/prepare-package-for-release.js -v $VERSION
       env:
-        BUILD_SOURCEBRANCHNAME: $(Build.SourceBranchName)
+        # Map the corresponding variable since `prepare-package-for-release` depends on it.
+        CIRCLE_BRANCH: $(Build.SourceBranchName)
 
   # Note: This won't actually publish to NPM as we've commented that bit out.
   # We do that as a separate step in `.ado/publish.yml`. 

@@ -44,7 +44,7 @@ const argv = yargs
     default: false,
   }).argv;
 
-const branch = process.env.BUILD_SOURCEBRANCHNAME; // [macOS] Don't rely on CircleCI environment variables.
+const branch = process.env.CIRCLE_BRANCH;
 const remote = argv.remote;
 const releaseVersion = argv.toVersion;
 const isLatest = argv.latest;
