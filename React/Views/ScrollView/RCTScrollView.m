@@ -25,6 +25,7 @@
 #import "RCTRefreshControl.h"
 #else
 #import "RCTViewKeyboardEvent.h"
+#import "RCTI18nUtil.h"
 #endif // TODO(macOS GH#774)
 
 /**
@@ -257,6 +258,10 @@
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext] setDuration:0.3];
     [[self.contentView animator] setBoundsOrigin:contentOffset];
+    if([[RCTI18nUtil sharedInstance] isRTL] && contentOffset.y < 1) {
+        [self.contentView scrollToPoint:contentOffset];
+        [self reflectScrolledClipView:self.contentView];
+    }
     [NSAnimationContext endGrouping];
   } else {
     self.contentOffset = contentOffset;
