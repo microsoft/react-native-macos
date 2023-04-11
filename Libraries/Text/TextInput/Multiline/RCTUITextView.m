@@ -22,6 +22,7 @@
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
 #if TARGET_OS_OSX // [macOS
   NSArray<NSPasteboardType> *_readablePasteboardTypes;
+  RCTUIColor *_cursorColor;
 #endif // macOS]
 }
 
@@ -152,12 +153,23 @@ static RCTUIColor *defaultPlaceholderColor() // [macOS]
   NSMutableDictionary *selectTextAttributes = self.selectedTextAttributes.mutableCopy;
   selectTextAttributes[NSBackgroundColorAttributeName] = selectionColor ?: [NSColor selectedControlColor];
   self.selectedTextAttributes = selectTextAttributes.copy;
-  self.insertionPointColor = self.selectionColor ?: [NSColor textColor];
+  self.insertionPointColor = _cursorColor ?: self.selectionColor ?: [NSColor textColor];
 }
 
 - (RCTUIColor*)selectionColor
 {
   return (RCTUIColor*)self.selectedTextAttributes[NSBackgroundColorAttributeName];
+}
+
+- (NSColor*)cursorColor
+{
+  return _cursorColor;
+}
+
+- (void)setCursorColor:(NSColor *)cursorColor
+{
+  _cursorColor = cursorColor;
+  self.insertionPointColor = cursorColor;
 }
 
 - (void)setEnabledTextCheckingTypes:(NSTextCheckingTypes)checkingType
