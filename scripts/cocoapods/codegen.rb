@@ -63,7 +63,7 @@ def checkAndGenerateEmptyThirdPartyProvider!(react_native_path, new_arch_enabled
         'node',
         [
             "#{relative_installation_root}/#{react_native_path}/scripts/generate-provider-cli.js",
-            "--platform", 'ios',
+            "--platform", 'apple',
             "--schemaListPath", temp_schema_list_path,
             "--outputDir", "#{output_dir}"
         ])
@@ -79,7 +79,7 @@ def run_codegen!(
   react_native_path: "../node_modules/react-native",
   fabric_enabled: false,
   hermes_enabled: true,
-  codegen_output_dir: 'build/generated/ios',
+  codegen_output_dir: 'build/generated/apple',
   config_key: 'codegenConfig',
   package_json_file: '~/app/package.json',
   folly_version: '2021.07.22.00',
