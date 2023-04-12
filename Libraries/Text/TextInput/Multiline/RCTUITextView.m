@@ -48,7 +48,7 @@ static RCTUIColor *defaultPlaceholderColor() // TODO(OSS Candidate ISS#2710739)
 #else // [TODO(macOS GH#774)
     NSTextCheckingTypes checkingTypes = 0;
     self.enabledTextCheckingTypes = checkingTypes;
-    self.insertionPointColor = [NSColor selectedControlColor];
+    self.insertionPointColor = [NSColor controlTextColor];
     // Fix blurry text on non-retina displays.
     self.canDrawSubviewsIntoLayer = YES;
 #endif // ]TODO(macOS GH#774)

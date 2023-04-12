@@ -73,7 +73,7 @@
   NSMutableDictionary *selectTextAttributes = fieldEditor.selectedTextAttributes.mutableCopy;
   selectTextAttributes[NSBackgroundColorAttributeName] = self.selectionColor ?: [NSColor selectedControlColor];
 	fieldEditor.selectedTextAttributes = selectTextAttributes;
-  fieldEditor.insertionPointColor = [RCTUIColor selectedControlColor];
+  fieldEditor.insertionPointColor = [RCTUIColor controlTextColor];
   return fieldEditor;
 }
 
