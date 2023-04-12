@@ -22,7 +22,6 @@
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
 #if TARGET_OS_OSX // [macOS
   NSArray<NSPasteboardType> *_readablePasteboardTypes;
-  RCTUIColor *_cursorColor;
 #endif // macOS]
 }
 
@@ -159,11 +158,6 @@ static RCTUIColor *defaultPlaceholderColor() // [macOS]
 - (RCTUIColor*)selectionColor
 {
   return (RCTUIColor*)self.selectedTextAttributes[NSBackgroundColorAttributeName];
-}
-
-- (NSColor*)cursorColor
-{
-  return _cursorColor;
 }
 
 - (void)setCursorColor:(NSColor *)cursorColor
