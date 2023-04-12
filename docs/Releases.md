@@ -43,6 +43,8 @@ An attempt was made to simplify the steps above and re-use more of the scripts t
 - Don't bother with manually removing and restoring workspace config. We don't need the `private` field set anyway since we don't have beachball auto-publishing or anything. 
 - Extract all the steps to a template `apple-job-publish` with a parameter to switch between nightlies, dry runs, and releases. This was we can now add a new "NPM Publish Dry Run" step to our PR checks.
 
+We don't however, use the scripts from upstream to publish to NPM or Github, we still keep that as separate steps in Azure Pipelines. In the future, we can look into removing these steps and just using the scripts directly. 
+
 The new publish yaml looks like this:
 
 1. Setup our pipeline with NPM / Github auth tokens (extracted into the template `apple-release-setup`)
@@ -55,4 +57,6 @@ The new publish yaml looks like this:
       2. Set the `latest` tag to an environment variable. This will be passed to..
       3. Call `prepare-package-for-release` to bump versions, tag the commit, and push to git
       4. Call `publish-npm` to publish to NPM the version that was just tagged. 
+4. Generate the correct NPM `dist-tag` and publish to NPM
+5. Commit all changed files and push back to Github 
 
