@@ -299,8 +299,8 @@ function getCodeGenCliPath() {
   return codegenCliPath;
 }
 
-function computeIOSOutputDir(outputPath, appRootDir) {
-  return path.join(outputPath ? outputPath : appRootDir, 'build/generated/ios');
+function computeAppleOutputDir(outputPath, appRootDir) {
+  return path.join(outputPath ? outputPath : appRootDir, 'build/generated/apple');
 }
 
 function generateSchema(tmpDir, library, node, codegenCliPath) {
@@ -331,7 +331,7 @@ function generateSchema(tmpDir, library, node, codegenCliPath) {
   return pathToSchema;
 }
 
-function generateCode(iosOutputDir, library, tmpDir, node, pathToSchema) {
+function generateCode(appleOutputDir, library, tmpDir, node, pathToSchema) {
   // ...then generate native code artifacts.
   const libraryTypeArg = library.config.type ? `${library.config.type}` : ''; // [macOS]
 
@@ -355,15 +355,15 @@ function generateCode(iosOutputDir, library, tmpDir, node, pathToSchema) {
   // macOS]
 
   // Finally, copy artifacts to the final output directory.
-  fs.mkdirSync(iosOutputDir, {recursive: true});
-  execSync(`cp -R ${tmpOutputDir}/* ${iosOutputDir}`);
-  console.log(`[Codegen] Generated artifacts: ${iosOutputDir}`);
+  fs.mkdirSync(appleOutputDir, {recursive: true});
+  execSync(`cp -R ${tmpOutputDir}/* ${appleOutputDir}`);
+  console.log(`[Codegen] Generated artifacts: ${appleOutputDir}`);
 }
 
 function generateNativeCodegenFiles(
   libraries,
   fabricEnabled,
-  iosOutputDir,
+  appleOutputDir,
   node,
   codegenCliPath,
   schemaPaths,
@@ -381,7 +381,7 @@ function generateNativeCodegenFiles(
     }
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), library.config.name));
     const pathToSchema = generateSchema(tmpDir, library, node, codegenCliPath);
-    generateCode(iosOutputDir, library, tmpDir, node, pathToSchema);
+    generateCode(appleOutputDir, library, tmpDir, node, pathToSchema);
 
     // Filter the react native core library out.
     // In the future, core library and third party library should
@@ -396,7 +396,7 @@ function createComponentProvider(
   fabricEnabled,
   schemaPaths,
   node,
-  iosOutputDir,
+  appleOutputDir,
 ) {
   if (fabricEnabled) {
     console.log('\n\n>>>>> Creating component provider');
@@ -417,10 +417,10 @@ function createComponentProvider(
       '--schemaListPath',
       schemaListTmpPath,
       '--outputDir',
-      iosOutputDir,
+      appleOutputDir,
     ]);
     // macOS]
-    console.log(`Generated provider in: ${iosOutputDir}`);
+    console.log(`Generated provider in: ${appleOutputDir}`);
   }
 }
 
@@ -540,19 +540,19 @@ function execute(
 
     const schemaPaths = {};
 
-    const iosOutputDir = computeIOSOutputDir(outputPath, appRootDir);
+    const appleOutputDir = computeAppleOutputDir(outputPath, appRootDir);
 
     generateNativeCodegenFiles(
       libraries,
       fabricEnabled,
-      iosOutputDir,
+      appleOutputDir,
       node,
       codegenCliPath,
       schemaPaths,
     );
 
-    createComponentProvider(fabricEnabled, schemaPaths, node, iosOutputDir);
-    cleanupEmptyFilesAndFolders(iosOutputDir);
+    createComponentProvider(fabricEnabled, schemaPaths, node, appleOutputDir);
+    cleanupEmptyFilesAndFolders(appleOutputDir);
   } catch (err) {
     console.error(err);
     process.exitCode = 1;
