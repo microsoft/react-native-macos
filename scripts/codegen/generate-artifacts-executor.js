@@ -322,7 +322,7 @@ function generateSchema(tmpDir, library, node, codegenCliPath) {
       'combine-js-to-schema-cli.js',
     )}`,
     '--platform',
-    'ios',
+    'apple',
     pathToSchema,
     pathToJavaScriptSources,
   ]);
