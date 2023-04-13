@@ -159,6 +159,12 @@ static RCTUIColor *defaultPlaceholderColor() // [macOS]
   return (RCTUIColor*)self.selectedTextAttributes[NSBackgroundColorAttributeName];
 }
 
+- (void)setCursorColor:(NSColor *)cursorColor
+{
+  _cursorColor = cursorColor;
+  self.insertionPointColor = cursorColor;
+}
+
 - (void)setEnabledTextCheckingTypes:(NSTextCheckingTypes)checkingType
 {
   [super setEnabledTextCheckingTypes:checkingType];
