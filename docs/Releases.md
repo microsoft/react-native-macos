@@ -1,12 +1,20 @@
 # Releases Guide
 
+React Native macOS has 3 types of builds it will publish. that are shared with React Native
+
+1. **Dry Runs** : Only used by CI to test a PR won't break our publish flow
+2. **Nightlies / Canaries** : Published off our main branch with every commit
+3. **Stable Releases** : Published off `*-stable` branches, with a new patch release for every commit.
+
 We use Azure Pipelines for our publish pipeline. The pipeline is defined in `.ado/publish.yml`, and is set to run on pushes to `main` and `*-stable` branches. The pipeline steps differ between stable branches, with the latest as of time of writing (`0.71-stable`) attempting to re-use some of the NodeJS scripts used by our upstream repo React Native in their CircleCI pipeline. 
 
 ## Relevant Scripts from React Native Core
 
 There are various nodejs scripts that React Native Core uses to maintain their releases. These have been refactored over time, so I'll be brief and mention the relevant scripts for React Native macOS. For more info on upstream releases, you can take a look at https://reactnative.dev/contributing/release-testing
 
-- set-rn-version.js : This will modify file version numbers, (optionally) commit the version bump, and delete "private" and "workspace" keys from the root package.json to make it suitable for publishing. Most of the other scripts below call this script.
+- `set-rn-version.js` : This will locally modify file version numbers. Most other scripts below call this script. Depending on the repo and branch, this script was modified to do a lot more, including:
+  - (React Native 0.72 and lower) Delete the "private" and "workspace" keys from the root package.json to make it suitable for publishing. In React Native macOS, we commented this out.
+  - (React Native macOS 0.68 and lower) Commit and tag the version bump to git
 - `bump-oss-version.js`: This is an interactive script used by Open Source maintainers to push React Native releases. It will walk you through the steps of triggering a new release, ending on triggering a CircleCI job to kickoff the release process.
 - `prepare-package-for-release.js`: This is used by CircleCI. It will call `set-rn-version`, update the podfile.lock, and appropriately `git tag` the release with the version and/or the "latest" tag. It will also `git push` the version bump and tags back to Github. 
 - `publish-npm.js`: This is used by CircleCI, and is generally triggered by a new git tag. This script takes care of the actual `npm publish`, along with creating and publishing pre-build artifacts (for both iOS and Android). 
@@ -18,10 +26,14 @@ There are various nodejs scripts that React Native Core uses to maintain their r
 ### 0.68 and lower
 
 Our publish pipeline was mostly separate from React Native Core. At this point in time, we only re-used `set-rn-version.js`, with heavy modifications to:
-1. An extra arguments to handle nightlies
-2. Not destructively delete `private` / `workspace` keys from the package.json file (we have separate steps to delete and restore those keys in our pipeline)
+1. Add extra arguments to do the following:
+    - `rnmpublish` : git commit and tag the version bump
+    - `nightly` : Create a nightly build to be published off our main branch
+    - `autogenerate-version-number` : Autogenerate the next version number. Unlike React Native, we publish a new patch release on every commit via automation
+    - `skip-update-ruby` : This used to cause publish failures, so we added an arg to skip it. 
+2. Not destructively delete `private` / `workspace` keys from the package.json file (we had separate steps to delete and restore those keys in our pipeline)
 3. Make it more similar to `bump-oss-version.js` (the intention was to make it the one script to call that is more CI friendly)
-4. .. but also skip some of those modifications with an extra `rnmpublish` flag because we do `git tag` and `git push` separately
+4. .. but also skip some of those modifications with the extra `rnmpublish` flag because we do `git tag` and `git push` separately
 
 The Publish flow does the following:
 
