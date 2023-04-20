@@ -3,17 +3,17 @@
 React Native macOS has 3 types of builds it will publish. that are shared with React Native
 
 1. **Dry Runs** : Only used by CI to test a PR won't break our publish flow
-2. **Nightlies / Canaries** : Published off our main branch with every commit
-3. **Stable Releases** : Published off `*-stable` branches, with a new patch release for every commit.
+2. **Nightlies / Canaries** : Published off our main branch on every commit
+3. **Stable Releases** : Published off `*-stable` branches, with a new patch release for every commit
 
-We use Azure Pipelines for our publish pipeline. The pipeline is defined in `.ado/publish.yml`, and is set to run on pushes to `main` and `*-stable` branches. The pipeline steps differ between stable branches, with the latest as of time of writing (`0.71-stable`) attempting to re-use some of the NodeJS scripts used by our upstream repo React Native in their CircleCI pipeline. 
+We use Azure Pipelines for our publish pipeline. The pipeline is defined in `.ado/publish.yml`, and is set to run on pushes to `main` and `*-stable` branches. The pipeline steps differ between stable branches, with the latest as of time of writing (`0.71-stable`) attempting to re-use some of the scripts used by the upstream repo in their CircleCI pipelines. 
 
 ## Relevant Scripts from React Native Core
 
-There are various nodejs scripts that React Native Core uses to maintain their releases. These have been refactored over time, so I'll be brief and mention the relevant scripts for React Native macOS. For more info on upstream releases, you can take a look at https://reactnative.dev/contributing/release-testing
+There are various scripts that React Native core uses to manage their releases. These have been refactored over time, so I'll be brief and mention the relevant scripts for React Native macOS. For more info on upstream releases, you can take a look at [the documentation](https://reactnative.dev/contributing/release-branch-cut-and-rc0)
 
 - `set-rn-version.js` : This will locally modify file version numbers. Most other scripts below call this script. Depending on the repo and branch, this script was modified to do a lot more, including:
-  - (React Native 0.72 and lower) Delete the "private" and "workspace" keys from the root package.json to make it suitable for publishing. In React Native macOS, we commented this out.
+  - (React Native 0.71 and lower) Delete the "private" and "workspace" keys from the root package.json to make it suitable for publishing. In React Native macOS, we commented this out.
   - (React Native macOS 0.68 and lower) Commit and tag the version bump to git
 - `bump-oss-version.js`: This is an interactive script used by Open Source maintainers to push React Native releases. It will walk you through the steps of triggering a new release, ending on triggering a CircleCI job to kickoff the release process.
 - `prepare-package-for-release.js`: This is used by CircleCI. It will call `set-rn-version`, update the podfile.lock, and appropriately `git tag` the release with the version and/or the "latest" tag. It will also `git push` the version bump and tags back to Github. 
@@ -53,9 +53,9 @@ The Publish flow does the following:
 An attempt was made to simplify the steps above and re-use more of the scripts that React Native Core uses. Namely:
 - Use more of the RN scripts to handle things like git tagging, git pushing, and NPM publishing. The intention is to leverage new features that have been added to those scripts, like the ability to build nightlies and dry runs, along with increased safety via checks on the version number. 
 - Don't bother with manually removing and restoring workspace config. We don't need the `private` field set anyway since we don't have beachball auto-publishing or anything. 
-- Extract all the steps to a template `apple-job-publish` with a parameter to switch between nightlies, dry runs, and releases. This was we can now add a new "NPM Publish Dry Run" step to our PR checks.
+- Extract all the steps to a template `apple-job-publish` with a parameter to switch between nightlies, dry runs, and releases. This was done so that we can now add a new "NPM Publish Dry Run" step to our PR checks.
 
-We don't however, use the scripts from upstream to publish to NPM or Github, we still keep that as separate steps in Azure Pipelines. In the future, we can look into removing these steps and just using the scripts directly. 
+We don't however use the scripts from upstream to publish to NPM or Github: we still keep that as separate steps in Azure Pipelines. In the future, we can look into removing these steps and just using the scripts directly. 
 
 The Publish flow does the following:
 
