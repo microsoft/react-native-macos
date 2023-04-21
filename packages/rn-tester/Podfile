@@ -5,21 +5,22 @@ platform :ios, min_ios_version_supported
 
 prepare_react_native_project!
 
-USE_FRAMEWORKS = ENV['USE_FRAMEWORKS'] == '1'
 IN_CI = ENV['CI'] == 'true'
 
 @prefix_path = "../.."
 
+linkage = ENV['USE_FRAMEWORKS']
+USE_FRAMEWORKS = linkage != nil
 if USE_FRAMEWORKS
-  puts "Installing pods with use_frameworks!"
-  use_frameworks!
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
 end
 
 def pods(target_name, options = {}, use_flipper: !IN_CI && !USE_FRAMEWORKS)
   project 'RNTesterPods.xcodeproj'
 
   # [macOS Disable Fabric by default till macOS supports it
-  fabric_enabled = ENV['RCT_NEW_ARCH_ENABLED'] == '1'
+  fabric_enabled = ENV['USE_FRAMEWORKS'] == 'dynamic' ? false : ENV['RCT_NEW_ARCH_ENABLED'] == '1' ? true : false
   # macOS]
 
   # Hermes is now enabled by default.
@@ -43,7 +44,7 @@ def pods(target_name, options = {}, use_flipper: !IN_CI && !USE_FRAMEWORKS)
     production: !ENV['PRODUCTION'].nil?,
     ios_folder: '.',
   )
-  pod 'ReactCommon/turbomodule/samples', :path => "#{@prefix_path}/ReactCommon"
+  pod 'ReactCommon-Samples', :path => "#{@prefix_path}/ReactCommon/react/nativemodule/samples"
 
   # Additional Pods which aren't included in the default Podfile
   pod 'React-RCTPushNotification', :path => "#{@prefix_path}/Libraries/PushNotificationIOS"

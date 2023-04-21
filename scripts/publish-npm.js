@@ -168,7 +168,6 @@ const isLatest = exitIfNotOnGit(
 publishAndroidArtifactsToMaven(releaseVersion, nightlyBuild);
 macOS] */
 
-/* [macOS Comment the NPM publish out as we do this separately
 const releaseBranch = `${major}.${minor}-stable`;
 
 // Set the right tag for nightly and prerelease builds
@@ -185,6 +184,7 @@ const tagFlag = nightlyBuild
 // use otp from envvars if available
 const otpFlag = otp ? `--otp ${otp}` : '';
 
+/* [macOS Comment the NPM publish out as we do this separately
 if (exec(`npm publish ${tagFlag} ${otpFlag}`, {cwd: RN_PACKAGE_DIR}).code) {
   echo('Failed to publish package to npm');
   exit(1);

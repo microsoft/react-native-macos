@@ -239,6 +239,10 @@ const APIs: Array<RNTesterModuleInfo> = [
   },
   // macOS]
   {
+    key: 'InvalidPropsExample',
+    module: require('../examples/InvalidProps/InvalidPropsExample'),
+  },
+  {
     key: 'Keyboard',
     module: require('../examples/Keyboard/KeyboardExample').default,
   },
@@ -330,6 +334,11 @@ const APIs: Array<RNTesterModuleInfo> = [
   {
     key: 'XHRExample',
     module: require('../examples/XHR/XHRExample'),
+  },
+  {
+    key: 'PerformanceApiExample',
+    category: 'Basic',
+    module: require('../examples/Performance/PerformanceApiExample'),
   },
 ];
 

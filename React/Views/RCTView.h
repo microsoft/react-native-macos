@@ -100,13 +100,16 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 /**
  * Border colors (actually retained).
  */
-@property (nonatomic, strong) RCTUIColor *borderTopColor;
-@property (nonatomic, strong) RCTUIColor *borderRightColor;
-@property (nonatomic, strong) RCTUIColor *borderBottomColor;
-@property (nonatomic, strong) RCTUIColor *borderLeftColor;
-@property (nonatomic, strong) RCTUIColor *borderStartColor;
-@property (nonatomic, strong) RCTUIColor *borderEndColor;
-@property (nonatomic, strong) RCTUIColor *borderColor;
+@property (nonatomic, strong) RCTUIColor *borderTopColor; // [macOS]
+@property (nonatomic, strong) RCTUIColor *borderRightColor; // [macOS]
+@property (nonatomic, strong) RCTUIColor *borderBottomColor; // [macOS]
+@property (nonatomic, strong) RCTUIColor *borderLeftColor; // [macOS]
+@property (nonatomic, strong) RCTUIColor *borderStartColor; // [macOS]
+@property (nonatomic, strong) RCTUIColor *borderEndColor; // [macOS]
+@property (nonatomic, strong) RCTUIColor *borderColor; // [macOS]
+@property (nonatomic, strong) RCTUIColor *borderBlockColor; // [macOS]
+@property (nonatomic, strong) RCTUIColor *borderBlockEndColor; // [macOS]
+@property (nonatomic, strong) RCTUIColor *borderBlockStartColor; // [macOS]
 
 /**
  * Border widths.
@@ -118,6 +121,10 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, assign) CGFloat borderStartWidth;
 @property (nonatomic, assign) CGFloat borderEndWidth;
 @property (nonatomic, assign) CGFloat borderWidth;
+// TODO: Implement logical border width logic
+@property (nonatomic, assign) CGFloat borderBlockWidth;
+@property (nonatomic, assign) CGFloat borderBlockEndWidth;
+@property (nonatomic, assign) CGFloat borderBlockStartWidth;
 
 /**
  * Border curve.

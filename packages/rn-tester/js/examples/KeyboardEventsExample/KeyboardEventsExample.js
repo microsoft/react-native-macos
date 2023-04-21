@@ -16,7 +16,7 @@ import {Platform} from 'react-native';
 const {StyleSheet, Text, TextInput, View} = ReactNative;
 
 function KeyEventExample(): React.Node {
-  const [log, setLog] = React.useState([]);
+  const [log, setLog] = React.useState<Array<string>>([]);
   const appendLog = (line: string) => {
     const limit = 12;
     let newLog = log.slice(0, limit - 1);

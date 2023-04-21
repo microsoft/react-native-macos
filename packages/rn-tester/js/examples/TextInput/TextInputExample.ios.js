@@ -365,7 +365,7 @@ function AutoCorrectSpellCheckGrammarCheckCallbacks(): React.Node {
 }
 
 function OnDragEnterOnDragLeaveOnDrop(): React.Node {
-  const [log, setLog] = React.useState([]);
+  const [log, setLog] = React.useState<Array<string>>([]);
   const appendLog = (line: string) => {
     const limit = 6;
     let newLog = log.slice(0, limit - 1);
@@ -408,7 +408,7 @@ function OnDragEnterOnDragLeaveOnDrop(): React.Node {
 }
 
 function OnPaste(): React.Node {
-  const [log, setLog] = React.useState([]);
+  const [log, setLog] = React.useState<Array<string>>([]);
   const appendLog = (line: string) => {
     const limit = 3;
     let newLog = log.slice(0, limit - 1);
@@ -973,6 +973,13 @@ exports.examples = ([
           </WithLabel>
           <WithLabel label="name">
             <TextInput textContentType="name" style={styles.default} />
+          </WithLabel>
+          <WithLabel label="postalCode, when autoComplete set">
+            <TextInput
+              textContentType="postalCode"
+              autoComplete="email"
+              style={styles.default}
+            />
           </WithLabel>
         </View>
       );
