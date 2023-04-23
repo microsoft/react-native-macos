@@ -51,7 +51,7 @@ The Publish flow does the following:
 ### 0.71 and higher
 
 An attempt was made to simplify the steps above and re-use more of the scripts that React Native Core uses. Namely:
-- Use more of the RN scripts to handle prepating the build. The intention is to leverage new features that have been added to those scripts, like the ability to build nightlies and dry runs, along with increased safety via checks on the version number. 
+- Use more of the RN scripts to handle preparing the build. The intention is to leverage new features that have been added to those scripts, like the ability to build nightlies and dry runs, along with increased safety via checks on the version number. 
 - Don't bother with manually removing and restoring workspace config. We don't need the `private` field set anyway since we don't have beachball auto-publishing or anything. 
 - Extract all the steps to a template `apple-job-publish` with a parameter to switch between nightlies, dry runs, and releases. This was done so that we can now add a new "NPM Publish Dry Run" step to our PR checks.
 
