@@ -1,5 +1,4 @@
 # It is expected that a `latestStableBranch` variable is set in the pipeline's settings:
-# https://dev.azure.com/office/ISS/_apps/hub/ms.vss-build-web.ci-designer-hub?pipelineId=18541
 
 # This file defines the build steps to publish a release
 name: $(Date:yyyyMMdd).$(Rev:.r)
