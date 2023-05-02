@@ -413,6 +413,14 @@ static __weak RCTPlatformView *_pendingFocusView; // [macOS]
       self, @selector(accessibilityValueInternal), accessibilityValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
+// [macOS
+#pragma mark - Hit testing
+  - (RCTPlatformView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+{
+  return [self hitTest:point];
+}
+// macOS]
+
 #pragma mark - Debug
 - (void)react_addRecursiveDescriptionToString:(NSMutableString *)string atLevel:(NSUInteger)level
 {
