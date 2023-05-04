@@ -415,11 +415,12 @@ static __weak RCTPlatformView *_pendingFocusView; // [macOS]
 
 // [macOS
 #pragma mark - Hit testing
-  - (RCTPlatformView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+#if TARGET_OS_OSX  
+- (RCTPlatformView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
   return [self hitTest:point];
 }
-// macOS]
+#endif // macOS]
 
 #pragma mark - Debug
 - (void)react_addRecursiveDescriptionToString:(NSMutableString *)string atLevel:(NSUInteger)level
