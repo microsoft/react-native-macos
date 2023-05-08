@@ -476,7 +476,6 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     _scrollView.delegate = self;
     _scrollView.delaysContentTouches = NO;
 #else // [macOS
-    _scrollView.drawsBackground = NO;
     _scrollView.postsBoundsChangedNotifications = YES;
     _lastScrollPosition = NSZeroPoint;
 #endif // macOS]
