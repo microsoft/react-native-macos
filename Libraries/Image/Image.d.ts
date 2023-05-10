@@ -81,7 +81,6 @@ interface ImagePropsAndroid {
   fadeDuration?: number | undefined;
 }
 
-
 interface ImagePropsMacOS {
   tooltip?: string | undefined;
 }

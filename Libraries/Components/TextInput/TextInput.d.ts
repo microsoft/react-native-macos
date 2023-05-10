@@ -266,33 +266,33 @@ export interface TextInputIOSProps {
 
 // [MacOS
 export type SettingChangeEvent = NativeSyntheticEvent<{
-  enabled: boolean,
-}>
+  enabled: boolean;
+}>;
 
 export type PasteEvent = NativeSyntheticEvent<{
   dataTransfer: {
     files: {
-      height: number,
-      size: number,
-      type: string,
-      uri: string,
-      width: number,
-    }[],
+      height: number;
+      size: number;
+      type: string;
+      uri: string;
+      width: number;
+    }[];
     items: {
-      kind: string,
-      type: string,
-    }[],
-    types: string[],
-  },
-}>
+      kind: string;
+      type: string;
+    }[];
+    types: string[];
+  };
+}>;
 
 export type SubmitKeyEvent = {
-  key: string,
-  altKey?: boolean | undefined,
-  ctrlKey?: boolean | undefined,
-  metaKey?: boolean | undefined,
-  shiftKey?: boolean | undefined,
-  functionKey?: boolean | undefined,
+  key: string;
+  altKey?: boolean | undefined;
+  ctrlKey?: boolean | undefined;
+  metaKey?: boolean | undefined;
+  shiftKey?: boolean | undefined;
+  functionKey?: boolean | undefined;
 };
 
 export type PasteType = 'fileUrl' | 'image' | 'string';

@@ -12,7 +12,12 @@ import {Insets} from '../../../types/public/Insets';
 import {GestureResponderHandlers} from '../../../types/public/ReactNativeRenderer';
 import {StyleProp} from '../../StyleSheet/StyleSheet';
 import {ViewStyle} from '../../StyleSheet/StyleSheetTypes';
-import {KeyEvent, LayoutChangeEvent, MouseEvent, PointerEvents} from '../../Types/CoreEventTypes';
+import {
+  KeyEvent,
+  LayoutChangeEvent,
+  MouseEvent,
+  PointerEvents,
+} from '../../Types/CoreEventTypes';
 import {Touchable} from '../Touchable/Touchable';
 import {AccessibilityProps} from './ViewAccessibility';
 
