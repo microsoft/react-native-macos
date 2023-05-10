@@ -261,3 +261,23 @@ export interface PointerEvents {
   onPointerUp?: ((event: PointerEvent) => void) | undefined;
   onPointerUpCapture?: ((event: PointerEvent) => void) | undefined;
 }
+
+export interface NativeKeyEvent {
+    // Modifier keys
+    capsLockKey: boolean;
+    shiftKey: boolean;
+    ctrlKey: boolean;
+    altKey: boolean;
+    metaKey: boolean;
+    numericPadKey: boolean;
+    helpKey: boolean;
+    functionKey: boolean;
+    // Key options
+    ArrowLeft: boolean;
+    ArrowRight: boolean;
+    ArrowUp: boolean;
+    ArrowDown: boolean;
+    key: string;
+}
+
+export interface KeyEvent extends NativeSyntheticEvent<NativeKeyEvent> {}
