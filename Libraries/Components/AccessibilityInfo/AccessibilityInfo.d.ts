@@ -59,9 +59,9 @@ export interface AccessibilityInfoStatic {
   isGrayscaleEnabled: () => Promise<boolean>;
 
   /**
-   * 
+   *
    * @returns Query whether high contract is currently enabled.
-   * 
+   *
    * @platform macos
    */
   isHighContrastEnabled: () => Promise<boolean>;
