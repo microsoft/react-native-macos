@@ -262,6 +262,7 @@ export interface PointerEvents {
   onPointerUpCapture?: ((event: PointerEvent) => void) | undefined;
 }
 
+// [macOS
 export interface NativeKeyEvent {
   // Modifier keys
   capsLockKey: boolean;
@@ -281,3 +282,4 @@ export interface NativeKeyEvent {
 }
 
 export interface KeyEvent extends NativeSyntheticEvent<NativeKeyEvent> {}
+// macOS]

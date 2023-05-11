@@ -15,7 +15,7 @@ type AccessibilityChangeEventName =
   | 'change' // deprecated, maps to screenReaderChanged
   | 'boldTextChanged' // iOS-only Event
   | 'grayscaleChanged' // iOS-only Event
-  | 'highContrastChanged' // [MacOS]
+  | 'highContrastChanged' // [macOS]
   | 'invertColorsChanged' // iOS-only Event
   | 'reduceMotionChanged'
   | 'screenReaderChanged'
