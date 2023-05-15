@@ -8,5 +8,5 @@
 #import <React/RCTAnimatedImage.h>
 #import <React/RCTDefines.h>
 
-@interface RCTUIImageViewAnimated : RCTUIImageView
+@interface RCTUIImageViewAnimated : RCTUIImageView // [macOS]
 @end

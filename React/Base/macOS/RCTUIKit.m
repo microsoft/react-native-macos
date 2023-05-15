@@ -770,8 +770,6 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 
 - (BOOL)clipsToBounds
 {
-  NSLog(@"%s", __PRETTY_FUNCTION__);
-
   return self.layer.masksToBounds;
 }
 
