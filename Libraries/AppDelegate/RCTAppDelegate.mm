@@ -6,27 +6,39 @@
  */
 
 #import "RCTAppDelegate.h"
-#import "RCTAppSetupUtils.h"
+#import <React/RCTCxxBridgeDelegate.h>
 #import <React/RCTRootView.h>
+#import <React/RCTRuntimeExecutorFromBridge.h>
+#import <react/renderer/runtimescheduler/RuntimeScheduler.h>
+
+#import "RCTAppSetupUtils.h"
 
 #if RCT_NEW_ARCH_ENABLED
 #import <React/CoreModulesPlugins.h>
-#import <React/RCTCxxBridgeDelegate.h>
+#import <React/RCTComponentViewFactory.h>
+#import <React/RCTComponentViewProtocol.h>
 #import <React/RCTFabricSurfaceHostingProxyRootView.h>
 #import <React/RCTSurfacePresenter.h>
 #import <React/RCTSurfacePresenterBridgeAdapter.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <react/config/ReactNativeConfig.h>
+#import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
+#import "RCTLegacyInteropComponents.h"
 
 static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 
-@interface RCTAppDelegate () <RCTTurboModuleManagerDelegate, RCTCxxBridgeDelegate> {
+@interface RCTAppDelegate () <RCTTurboModuleManagerDelegate, RCTComponentViewFactoryComponentProvider> {
   std::shared_ptr<const facebook::react::ReactNativeConfig> _reactNativeConfig;
   facebook::react::ContextContainer::Shared _contextContainer;
 }
 @end
 
 #endif
+
+@interface RCTAppDelegate () <RCTCxxBridgeDelegate> {
+  std::shared_ptr<facebook::react::RuntimeScheduler> _runtimeScheduler;
+}
+@end
 
 @implementation RCTAppDelegate
 
@@ -140,18 +152,28 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 }
 #endif // macOS]
 
-#if RCT_NEW_ARCH_ENABLED
 #pragma mark - RCTCxxBridgeDelegate
 
 - (std::unique_ptr<facebook::react::JSExecutorFactory>)jsExecutorFactoryForBridge:(RCTBridge *)bridge
 {
-  self.turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridge:bridge
-                                                                 delegate:self
-                                                                jsInvoker:bridge.jsCallInvoker];
-  return RCTAppSetupDefaultJsExecutorFactory(bridge, _turboModuleManager);
+  _runtimeScheduler = std::make_shared<facebook::react::RuntimeScheduler>(RCTRuntimeExecutorFromBridge(bridge));
+#if RCT_NEW_ARCH_ENABLED
+  std::shared_ptr<facebook::react::CallInvoker> callInvoker =
+      std::make_shared<facebook::react::RuntimeSchedulerCallInvoker>(_runtimeScheduler);
+  RCTTurboModuleManager *turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridge:bridge
+                                                                                   delegate:self
+                                                                                  jsInvoker:callInvoker];
+  _contextContainer->erase("RuntimeScheduler");
+  _contextContainer->insert("RuntimeScheduler", _runtimeScheduler);
+  return RCTAppSetupDefaultJsExecutorFactory(bridge, turboModuleManager, _runtimeScheduler);
+#else
+  return RCTAppSetupJsExecutorFactoryForOldArch(bridge, _runtimeScheduler);
+#endif
 }
 
-#pragma mark RCTTurboModuleManagerDelegate
+#if RCT_NEW_ARCH_ENABLED
+
+#pragma mark - RCTTurboModuleManagerDelegate
 
 - (Class)getModuleClassFromName:(const char *)name
 {

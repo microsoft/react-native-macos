@@ -7,6 +7,10 @@
 
 #import "RCTAppSetupUtils.h"
 
+#import <React/RCTJSIExecutorRuntimeInstaller.h>
+#import <react/renderer/runtimescheduler/RuntimeScheduler.h>
+#import <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
+
 #if RCT_NEW_ARCH_ENABLED
 // Turbo Module
 #import <React/CoreModulesPlugins.h>
@@ -15,7 +19,6 @@
 #import <React/RCTGIFImageDecoder.h>
 #import <React/RCTHTTPRequestHandler.h>
 #import <React/RCTImageLoader.h>
-#import <React/RCTJSIExecutorRuntimeInstaller.h>
 #import <React/RCTLocalAssetImageLoader.h>
 #import <React/RCTNetworking.h>
 
@@ -125,6 +128,27 @@ std::unique_ptr<facebook::react::JSExecutorFactory> RCTAppSetupDefaultJsExecutor
         facebook::react::RuntimeExecutor syncRuntimeExecutor =
             [&](std::function<void(facebook::jsi::Runtime & runtime_)> &&callback) { callback(runtime); };
         [turboModuleManager installJSBindingWithRuntimeExecutor:syncRuntimeExecutor];
+      }));
+}
+
+#else
+
+std::unique_ptr<facebook::react::JSExecutorFactory> RCTAppSetupJsExecutorFactoryForOldArch(
+    RCTBridge *bridge,
+    std::shared_ptr<facebook::react::RuntimeScheduler> const &runtimeScheduler)
+{
+#if RCT_USE_HERMES
+  return std::make_unique<facebook::react::HermesExecutorFactory>(
+#else
+  return std::make_unique<facebook::react::JSCExecutorFactory>(
+#endif
+      facebook::react::RCTJSIExecutorRuntimeInstaller([bridge, runtimeScheduler](facebook::jsi::Runtime &runtime) {
+        if (!bridge) {
+          return;
+        }
+        if (runtimeScheduler) {
+          facebook::react::RuntimeSchedulerBinding::createAndInstallIfNeeded(runtime, runtimeScheduler);
+        }
       }));
 }
 

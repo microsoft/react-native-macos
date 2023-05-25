@@ -42,6 +42,19 @@ Pod::Spec.new do |s|
   s.dependency "RCTTypeSafety", version
   s.dependency "ReactCommon/turbomodule/core", version
   s.dependency "React-jsi", version
+  s.dependency "React-logger"
+  s.dependency "glog"
+  s.dependency "DoubleConversion"
+  s.dependency "React-Core"
+  s.dependency "React-debug"
+  s.dependency "React-utils"
+  s.dependency "React-runtimescheduler"
+
+  if ENV["USE_HERMES"] == nil || ENV["USE_HERMES"] == "1"
+    s.dependency "hermes-engine"
+  else
+    s.dependency "React-jsi"
+  end
 
   s.subspec "animations" do |ss|
     ss.dependency             folly_dep_name, folly_version
@@ -222,15 +235,6 @@ Pod::Spec.new do |s|
     end
   end
 
-  s.subspec "debug_core" do |ss|
-    ss.dependency             folly_dep_name, folly_version
-    ss.compiler_flags       = folly_compiler_flags
-    ss.source_files         = "react/debug/**/*.{m,mm,cpp,h}"
-    ss.exclude_files        = "react/debug/tests"
-    ss.header_dir           = "react/debug"
-    ss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/RCT-Folly\"" }
-  end
-
   s.subspec "debug_renderer" do |ss|
     ss.dependency             folly_dep_name, folly_version
     ss.compiler_flags       = folly_compiler_flags
@@ -327,21 +331,4 @@ Pod::Spec.new do |s|
     ss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/RCT-Folly\"",
                                 "GCC_WARN_PEDANTIC" => "YES" }
   end
-
-  s.subspec "runtimescheduler" do |ss|
-    ss.dependency             folly_dep_name, folly_version
-    ss.compiler_flags       = folly_compiler_flags
-    ss.source_files         = "react/renderer/runtimescheduler/**/*.{cpp,h}"
-    ss.exclude_files        = "react/renderer/runtimescheduler/tests"
-    ss.header_dir           = "react/renderer/runtimescheduler"
-    ss.pod_target_xcconfig  = {"HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/RCT-Folly\"",
-                               "GCC_WARN_PEDANTIC" => "YES" }
-  end
-
-  s.subspec "utils" do |ss|
-    ss.source_files         = "react/utils/*.{m,mm,cpp,h}"
-    ss.header_dir           = "react/utils"
-    ss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/RCT-Folly\""}
-  end
-
 end

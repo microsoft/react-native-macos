@@ -74,6 +74,34 @@ class CodegenUtils
         folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -Wno-comma -Wno-shorten-64-to-32'
         boost_compiler_flags = '-Wno-documentation'
 
+        header_search_paths = [
+          "\"$(PODS_ROOT)/boost\"",
+          "\"$(PODS_ROOT)/RCT-Folly\"",
+          "\"$(PODS_ROOT)/DoubleConversion\"",
+          "\"${PODS_ROOT}/Headers/Public/React-Codegen/react/renderer/components\"",
+          "\"$(PODS_ROOT)/Headers/Private/React-Fabric\"",
+          "\"$(PODS_ROOT)/Headers/Private/React-RCTFabric\"",
+          "\"$(PODS_ROOT)/Headers/Private/Yoga\"",
+        ]
+        framework_search_paths = []
+
+        if use_frameworks
+          header_search_paths.concat([
+            "\"$(PODS_ROOT)/DoubleConversion\"",
+            "\"$(PODS_TARGET_SRCROOT)\"",
+            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Fabric/React_Fabric.framework/Headers\"",
+            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-FabricImage/React_FabricImage.framework/Headers\"",
+            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics/React_graphics.framework/Headers\"",
+            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\"",
+            "\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers\"",
+            "\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core\"",
+            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple/React_NativeModulesApple.framework/Headers\"",
+            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-RCTFabric/RCTFabric.framework/Headers\"",
+            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\"",
+            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-utils/React_utils.framework/Headers\"",
+          ])
+        end
+
         spec = {
           'name' => "React-Codegen",
           'version' => version,
@@ -107,14 +135,19 @@ class CodegenUtils
             "React-Core": [],
             "React-jsi": [],
             "ReactCommon/turbomodule/bridging": [],
-            "ReactCommon/turbomodule/core": []
+            "ReactCommon/turbomodule/core": [],
+            "React-NativeModulesApple": [],
+            "glog": [],
+            "DoubleConversion": [],
           }
         }
 
         if fabric_enabled
           spec[:'dependencies'].merge!({
             'React-graphics': [],
-            'React-rncore':  [],
+            'React-Fabric': [],
+            'React-debug': [],
+            'React-utils': [],
           });
         end
 

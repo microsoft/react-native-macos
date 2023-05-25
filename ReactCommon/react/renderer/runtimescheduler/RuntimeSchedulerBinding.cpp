@@ -6,7 +6,9 @@
  */
 
 #include "RuntimeSchedulerBinding.h"
-#include "SchedulerPriority.h"
+#include <ReactCommon/SchedulerPriority.h>
+#include "RuntimeScheduler.h"
+#include "SchedulerPriorityUtils.h"
 #include "primitives.h"
 
 #include <react/debug/react_native_assert.h>

@@ -35,6 +35,10 @@
 #import <React/RCTLocalAssetImageLoader.h>
 #import <React/RCTNetworking.h>
 #import <React/RCTRootView.h>
+#import <React/RCTRuntimeExecutorFromBridge.h>
+#import <ReactCommon/RuntimeExecutor.h>
+#import <react/renderer/runtimescheduler/RuntimeScheduler.h>
+#import <react/renderer/runtimescheduler/RuntimeSchedulerBinding.h>
 
 #import <cxxreact/JSExecutor.h>
 
@@ -48,6 +52,11 @@
 #import <React/RCTSurfacePresenterBridgeAdapter.h>
 
 #import <react/config/ReactNativeConfig.h>
+#import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
+#endif
+
+#if RCT_NEW_ARCH_ENABLED
+#import <RNTMyNativeViewComponentView.h>
 #endif
 
 #if DEBUG
@@ -65,11 +74,19 @@
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import "RNTesterTurboModuleProvider.h"
 
+@interface RCTBridge ()
+- (std::shared_ptr<facebook::react::MessageQueueThread>)jsMessageThread;
+- (void)invokeAsync:(std::function<void()> &&)func;
+@end
+
+using namespace facebook::react;
+
 #if !TARGET_OS_OSX // [macOS]
 @interface AppDelegate () <RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate> {
 #else // [macOS
-@interface AppDelegate () <RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate, NSUserNotificationCenterDelegate> { // [macOS]
+@interface AppDelegate () <RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate, NSUserNotificationCenterDelegate> {
 #endif // macOS]
+  std::shared_ptr<facebook::react::RuntimeScheduler> _runtimeScheduler;
 #ifdef RN_FABRIC_ENABLED
   RCTSurfacePresenterBridgeAdapter *_bridgeAdapter;
   std::shared_ptr<const facebook::react::ReactNativeConfig> _reactNativeConfig;
@@ -214,10 +231,19 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 
 - (std::unique_ptr<facebook::react::JSExecutorFactory>)jsExecutorFactoryForBridge:(RCTBridge *)bridge
 {
-  _turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridge:bridge
-                                                             delegate:self
-                                                            jsInvoker:bridge.jsCallInvoker];
-  [bridge setRCTTurboModuleRegistry:_turboModuleManager];
+  std::shared_ptr<facebook::react::CallInvoker> callInvoker = bridge.jsCallInvoker;
+  _runtimeScheduler = std::make_shared<facebook::react::RuntimeScheduler>(RCTRuntimeExecutorFromBridge(bridge));
+
+#ifdef RN_FABRIC_ENABLED
+  _contextContainer->erase("RuntimeScheduler");
+  _contextContainer->insert("RuntimeScheduler", _runtimeScheduler);
+  callInvoker = std::make_shared<facebook::react::RuntimeSchedulerCallInvoker>(_runtimeScheduler);
+#endif
+
+  RCTTurboModuleManager *turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridge:bridge
+                                                                                   delegate:self
+                                                                                  jsInvoker:callInvoker];
+  [bridge setRCTTurboModuleRegistry:turboModuleManager];
 
 #if RCT_DEV
   /**
@@ -243,6 +269,10 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
               [&](std::function<void(facebook::jsi::Runtime & runtime_)> &&callback) { callback(runtime); };
           [strongSelf->_turboModuleManager installJSBindingWithRuntimeExecutor:syncRuntimeExecutor];
         }
+
+        facebook::react::RuntimeExecutor syncRuntimeExecutor =
+            [&](std::function<void(facebook::jsi::Runtime & runtime_)> &&callback) { callback(runtime); };
+        [turboModuleManager installJSBindingWithRuntimeExecutor:syncRuntimeExecutor];
       }));
 }
 

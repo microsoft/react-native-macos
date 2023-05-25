@@ -275,6 +275,11 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+    - React-CoreModules
+    - React-hermes
+    - React-NativeModulesApple
+    - React-RCTImage
+    - React-RCTNetwork
     - ReactCommon/turbomodule/core
   - React-RCTBlob (0.71.9):
     - RCT-Folly (= 2021.07.22.00)
@@ -365,6 +370,7 @@ PODS:
     - React-perflogger (= 0.71.9)
     - ReactCommon/turbomodule/core (= 0.71.9)
   - ScreenshotManager (0.0.1):
+    - glog
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - SocketRocket (0.6.0)
