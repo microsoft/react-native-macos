@@ -144,6 +144,17 @@ ShadowNode::Unshared ShadowNode::clone(
   }
 }
 
+ShadowNode::Unshared ShadowNode::cloneRecursive() const {
+  auto clonedChildren = std::make_shared<ShadowNode::ListOfShared>(*children_);
+  auto nonConstChildren =
+      std::const_pointer_cast<ShadowNode::ListOfShared>(clonedChildren);
+  for (auto iter = nonConstChildren->begin(); iter != nonConstChildren->end(); iter++) {
+    auto sharedChild = *iter;
+    *iter = sharedChild->cloneRecursive();
+  }
+  return clone({.children = nonConstChildren});
+}
+
 ContextContainer::Shared ShadowNode::getContextContainer() const {
   return family_->componentDescriptor_.getContextContainer();
 }

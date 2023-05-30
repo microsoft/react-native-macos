@@ -248,6 +248,11 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
   [self _updateViews];
 }
 
+- (void)viewDidChangeBackingProperties
+{
+  [_surface updateLayoutContextWithPointScaleFactor:self.window.backingScaleFactor];
+}
+
 #pragma mark - RCTSurfaceDelegate
 
 - (void)surface:(__unused RCTSurface *)surface didChangeStage:(RCTSurfaceStage)stage

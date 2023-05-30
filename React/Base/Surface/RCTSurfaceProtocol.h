@@ -75,6 +75,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)start;
 - (void)stop;
 
+- (void)updateLayoutContextWithPointScaleFactor:(CGFloat)pointScaleFactor;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -240,8 +240,8 @@ void SurfaceHandler::constraintLayout(
     react_native_assert(
         link_.shadowTree && "`link_.shadowTree` must not be null.");
     link_.shadowTree->commit([&](RootShadowNode const &oldRootShadowNode) {
-      return oldRootShadowNode.clone(
-          propsParserContext, layoutConstraints, layoutContext);
+      return std::static_pointer_cast<RootShadowNode>(oldRootShadowNode.clone(
+          propsParserContext, layoutConstraints, layoutContext)->cloneRecursive());
     });
   }
 }
