@@ -7,7 +7,7 @@
 
 #include "ManagedObjectWrapper.h"
 
-#if TARGET_OS_MAC
+#if TARGET_OS_MAC && (TARGET_OS_IPHONE || TARGET_OS_OSX)
 
 namespace facebook {
 namespace react {
@@ -33,4 +33,4 @@ void wrappedManagedObjectDeleter(void *cfPointer) noexcept
 @implementation RCTInternalGenericWeakWrapper
 @end
 
-#endif
+// #endif

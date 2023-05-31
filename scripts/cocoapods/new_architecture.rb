@@ -84,6 +84,9 @@ class NewArchitectureHelper
             header_search_paths << "\"${PODS_CONFIGURATION_BUILD_DIR}/React-utils/React_utils.framework/Headers\""
             header_search_paths << "\"${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers\""
         end
+
+        boost_search_path = "\"$(PODS_ROOT)/boost\""
+
         header_search_paths_string = header_search_paths.join(" ")
         spec.compiler_flags = compiler_flags.empty? ? @@folly_compiler_flags : "#{compiler_flags} #{@@folly_compiler_flags}"
         current_config["HEADER_SEARCH_PATHS"] = current_headers.empty? ? boost_search_path : "#{current_headers} #{boost_search_path}"
@@ -102,7 +105,7 @@ class NewArchitectureHelper
             spec.dependency "RCTTypeSafety"
             spec.dependency "ReactCommon/turbomodule/bridging"
             spec.dependency "ReactCommon/turbomodule/core"
-            spec.dependency "React-NativeModulesApple"
+            # spec.dependency "React-NativeModulesApple"
             spec.dependency "Yoga"
             spec.dependency "React-Fabric"
             spec.dependency "React-graphics"

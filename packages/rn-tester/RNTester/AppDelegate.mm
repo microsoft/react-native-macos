@@ -244,6 +244,7 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
                                                                                    delegate:self
                                                                                   jsInvoker:callInvoker];
   [bridge setRCTTurboModuleRegistry:turboModuleManager];
+  _turboModuleManager = turboModuleManager;
 
 #if RCT_DEV
   /**
@@ -259,20 +260,19 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 #else
   return std::make_unique<facebook::react::JSCExecutorFactory>(
 #endif
-      facebook::react::RCTJSIExecutorRuntimeInstaller([weakSelf, bridge](facebook::jsi::Runtime &runtime) {
+      facebook::react::RCTJSIExecutorRuntimeInstaller([weakSelf, bridge, &turboModuleManager](facebook::jsi::Runtime &runtime) {
         if (!bridge) {
           return;
         }
         __typeof(self) strongSelf = weakSelf;
-        if (strongSelf) {
-          facebook::react::RuntimeExecutor syncRuntimeExecutor =
-              [&](std::function<void(facebook::jsi::Runtime & runtime_)> &&callback) { callback(runtime); };
-          [strongSelf->_turboModuleManager installJSBindingWithRuntimeExecutor:syncRuntimeExecutor];
-        }
+       if (strongSelf && strongSelf->_runtimeScheduler) {
+         facebook::react::RuntimeSchedulerBinding::createAndInstallIfNeeded(runtime, strongSelf->_runtimeScheduler);
+       }
 
         facebook::react::RuntimeExecutor syncRuntimeExecutor =
             [&](std::function<void(facebook::jsi::Runtime & runtime_)> &&callback) { callback(runtime); };
-        [turboModuleManager installJSBindingWithRuntimeExecutor:syncRuntimeExecutor];
+        [strongSelf->_turboModuleManager installJSBindingWithRuntimeExecutor:syncRuntimeExecutor];
+
       }));
 }
 
@@ -286,16 +286,16 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
                                                       jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
 {
-  // [macOS Github#1734: Disable React-TurboModuleCxx RNW implementation as React Native now has C++ sharing support and examples
-  // if (!_turboModulesProvider) {
-  //   _turboModulesProvider = std::make_shared<winrt::Microsoft::ReactNative::TurboModulesProvider>();
-  //   _turboModulesProvider->SetReactContext(winrt::Microsoft::ReactNative::CreateMacOSReactContext(jsInvoker));
-
-  //   _turboModulesProvider->AddModuleProvider(
-  //       L"ScreenshotManager", winrt::Microsoft::ReactNative::MakeModuleProvider<ScreenshotManagerCxx>());
-  // }
-  // return _turboModulesProvider->getModule(name, jsInvoker);
-  // macOS]
+//   [macOS Github#1734: Disable React-TurboModuleCxx RNW implementation as React Native now has C++ sharing support and examples
+//   if (!_turboModulesProvider) {
+//     _turboModulesProvider = std::make_shared<winrt::Microsoft::ReactNative::TurboModulesProvider>();
+//     _turboModulesProvider->SetReactContext(winrt::Microsoft::ReactNative::CreateMacOSReactContext(jsInvoker));
+//
+//     _turboModulesProvider->AddModuleProvider(
+//         L"ScreenshotManager", winrt::Microsoft::ReactNative::MakeModuleProvider<ScreenshotManagerCxx>());
+//   }
+//   return _turboModulesProvider->getModule(name, jsInvoker);
+//   macOS]
   return facebook::react::RNTesterTurboModuleProvider(name, jsInvoker);
 }
 

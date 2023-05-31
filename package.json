@@ -201,6 +201,7 @@
     "shouldPublish": false
   },
   "resolutions": {
+    "@babel/runtime": "7.21.0",
     "async": "^3.2.2",
     "debug": ">=3.1.0",
     "es5-ext": "0.10.53",

@@ -137,7 +137,7 @@ class NewArchitectureTests < Test::Unit::TestCase
                 { :dependency_name => "RCTTypeSafety" },
                 { :dependency_name => "ReactCommon/turbomodule/bridging" },
                 { :dependency_name => "ReactCommon/turbomodule/core" },
-                { :dependency_name => "React-NativeModulesApple" },
+                # { :dependency_name => "React-NativeModulesApple" },
                 { :dependency_name => "Yoga" },
                 { :dependency_name => "React-Fabric" },
                 { :dependency_name => "React-graphics" },

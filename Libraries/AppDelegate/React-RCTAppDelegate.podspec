@@ -37,16 +37,6 @@ header_search_paths = [
 ].concat(use_hermes ? [
   "$(PODS_ROOT)/Headers/Public/React-hermes",
   "$(PODS_ROOT)/Headers/Public/hermes-engine"
-] : []).concat(use_frameworks ? [
-  "$(PODS_CONFIGURATION_BUILD_DIR)/React-Fabric/React_Fabric.framework/Headers/",
-  "$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics/React_graphics.framework/Headers/",
-  "$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
-  "$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core",
-  "$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
-  "$(PODS_CONFIGURATION_BUILD_DIR)/React-RCTFabric/RCTFabric.framework/Headers/",
-  "$(PODS_CONFIGURATION_BUILD_DIR)/React-utils/React_utils.framework/Headers/",
-  "$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers/",
-  "$(PODS_CONFIGURATION_BUILD_DIR)/React-runtimescheduler/React_runtimescheduler.framework/Headers/",
 ] : []).map{|p| "\"#{p}\""}.join(" ")
 
 Pod::Spec.new do |s|
@@ -77,7 +67,7 @@ Pod::Spec.new do |s|
   s.dependency "ReactCommon/turbomodule/core"
   s.dependency "React-RCTNetwork"
   s.dependency "React-RCTImage"
-  s.dependency "React-NativeModulesApple"
+  # s.dependency "React-NativeModulesApple"
   s.dependency "React-CoreModules"
   s.dependency "React-runtimescheduler"
 

@@ -85,22 +85,22 @@ class CodegenUtils
         ]
         framework_search_paths = []
 
-        if use_frameworks
-          header_search_paths.concat([
-            "\"$(PODS_ROOT)/DoubleConversion\"",
-            "\"$(PODS_TARGET_SRCROOT)\"",
-            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Fabric/React_Fabric.framework/Headers\"",
-            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-FabricImage/React_FabricImage.framework/Headers\"",
-            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics/React_graphics.framework/Headers\"",
-            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\"",
-            "\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers\"",
-            "\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core\"",
-            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple/React_NativeModulesApple.framework/Headers\"",
-            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-RCTFabric/RCTFabric.framework/Headers\"",
-            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\"",
-            "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-utils/React_utils.framework/Headers\"",
-          ])
-        end
+        # if use_frameworks
+        #   header_search_paths.concat([
+        #     "\"$(PODS_ROOT)/DoubleConversion\"",
+        #     "\"$(PODS_TARGET_SRCROOT)\"",
+        #     "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Fabric/React_Fabric.framework/Headers\"",
+        #     "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-FabricImage/React_FabricImage.framework/Headers\"",
+        #     "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics/React_graphics.framework/Headers\"",
+        #     "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\"",
+        #     "\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers\"",
+        #     "\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core\"",
+        #     "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple/React_NativeModulesApple.framework/Headers\"",
+        #     "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-RCTFabric/RCTFabric.framework/Headers\"",
+        #     "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\"",
+        #     "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-utils/React_utils.framework/Headers\"",
+        #   ])
+        # end
 
         spec = {
           'name' => "React-Codegen",
@@ -136,7 +136,7 @@ class CodegenUtils
             "React-jsi": [],
             "ReactCommon/turbomodule/bridging": [],
             "ReactCommon/turbomodule/core": [],
-            "React-NativeModulesApple": [],
+            # "React-NativeModulesApple": [],
             "glog": [],
             "DoubleConversion": [],
           }
