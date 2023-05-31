@@ -14,7 +14,7 @@
 #endif
 
 #if defined(__OBJC__) && defined(__cplusplus)
-#if TARGET_OS_MAC && (TARGET_OS_IPHONE || TARGET_OS_OSX)
+// #if TARGET_OS_MAC && (TARGET_OS_IPHONE || TARGET_OS_OSX)
 
 #include <memory>
 
@@ -78,5 +78,5 @@ inline id unwrapManagedObjectWeakly(std::shared_ptr<void> const &object) noexcep
 } // namespace react
 } // namespace facebook
 
-#endif
+// #endif
 #endif
