@@ -142,6 +142,7 @@ class LayoutableShadowNode : public ShadowNode {
    */
   virtual void cleanLayout() = 0;
   virtual void dirtyLayout() = 0;
+  virtual void dirtyLayoutAndPropagateDownwards() = 0;
   virtual bool getIsLayoutClean() const = 0;
 
   /*
