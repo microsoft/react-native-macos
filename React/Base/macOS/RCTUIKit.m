@@ -820,7 +820,9 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
         [_tintingLayer setFrame:self.bounds];
         [_tintingLayer setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
         [_tintingLayer setZPosition:1.0];
-        [_tintingLayer setCompositingFilter:[CIFilter filterWithName:@"CISourceInCompositing"]];
+        CIFilter *sourceInCompositingFilter = [CIFilter filterWithName:@"CISourceInCompositing"];
+        [sourceInCompositingFilter setDefaults];
+        [_tintingLayer setCompositingFilter:sourceInCompositingFilter];
         [layer addSublayer:_tintingLayer];
       }
       [_tintingLayer setBackgroundColor:_tintColor.CGColor];
