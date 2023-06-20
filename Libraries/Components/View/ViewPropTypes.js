@@ -510,11 +510,11 @@ type MacOSViewProps = $ReadOnly<{|
 
   /**
    * Specifies whether clicking and dragging the view can move the window. This is useful
-   * to disable if you're making a button-like control where you don't want a click to move 
-   * the window.
+   * to disable in Button like components like Pressable where mouse the user should still
+   * be able to click and drag off the view to cancel the click without accidentally moving the window.
    *
    * @platform macos
-   */
+   */x
   mouseDownCanMoveWindow?: ?boolean,
 
   /**
