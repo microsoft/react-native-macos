@@ -197,6 +197,7 @@ type Props = $ReadOnly<{|
   validKeysUp?: ?Array<string>,
 
   acceptsFirstMouse?: ?boolean,
+  mouseDownCanMoveWindow?: ?boolean,
   enableFocusRing?: ?boolean,
   tooltip?: ?string,
   onDragEnter?: (event: MouseEvent) => void,
@@ -251,6 +252,7 @@ type Props = $ReadOnly<{|
 function Pressable(props: Props, forwardedRef): React.Node {
   const {
     acceptsFirstMouse, // [macOS]
+    mouseDownCanMoveWindow,
     enableFocusRing, // [macOS]
     accessible,
     accessibilityState,
@@ -323,6 +325,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
     ...restProps,
     ...android_rippleConfig?.viewProps,
     acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [macOS
+    mouseDownCanMoveWindow: false,
     enableFocusRing: enableFocusRing !== false && !disabled,
     accessible: accessible !== false,
     accessibilityViewIsModal:

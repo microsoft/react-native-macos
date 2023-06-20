@@ -509,6 +509,15 @@ type MacOSViewProps = $ReadOnly<{|
   acceptsFirstMouse?: ?boolean,
 
   /**
+   * Specifies whether clicking and dragging the view can move the window. This is useful
+   * to disable if you're making a button-like control where you don't want a click to move 
+   * the window.
+   *
+   * @platform macos
+   */
+  mouseDownCanMoveWindow?: ?boolean,
+
+  /**
    * Specifies whether focus ring should be drawn when the view has the first responder status.
    *
    * @platform macos

@@ -65,6 +65,18 @@
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import "RNTesterTurboModuleProvider.h"
 
+@interface MyWindow: NSWindow
+@end
+
+@implementation MyWindow
+
+//- (void)mouseDragged:(NSEvent *)event
+//{
+////  [super mouseDragged:event];
+//}
+
+@end
+
 #if !TARGET_OS_OSX // [macOS]
 @interface AppDelegate () <RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate> {
 #else // [macOS
@@ -127,12 +139,13 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   return YES;
 #else // [macOS
   NSRect frame = NSMakeRect(0,0,1024,768);
-  self.window = [[NSWindow alloc] initWithContentRect:NSZeroRect
+  self.window = [[MyWindow alloc] initWithContentRect:NSZeroRect
                                             styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskResizable | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable
                                               backing:NSBackingStoreBuffered
                                                 defer:NO];
   self.window.title = @"RNTester-macOS";
   self.window.autorecalculatesKeyViewLoop = YES;
+  [self.window setMovableByWindowBackground:YES];
   NSViewController *rootViewController = [NSViewController new];
   rootViewController.view = rootView;
   rootView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
