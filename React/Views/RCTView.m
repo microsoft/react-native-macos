@@ -1507,11 +1507,6 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
                  additionalData:nil];
 }
 
-//- (void)mouseDragged:(NSEvent *)event
-//{
-//	[super mouseDragged:event];
-//}
-
 - (BOOL)mouseDownCanMoveWindow{
 	return _mouseDownCanMoveWindow;
 }
