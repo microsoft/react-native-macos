@@ -514,7 +514,7 @@ type MacOSViewProps = $ReadOnly<{|
    * be able to click and drag off the view to cancel the click without accidentally moving the window.
    *
    * @platform macos
-   */x
+   */
   mouseDownCanMoveWindow?: ?boolean,
 
   /**
