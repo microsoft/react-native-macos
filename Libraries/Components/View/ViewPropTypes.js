@@ -100,22 +100,64 @@ type DirectEventProps = $ReadOnly<{|
 |}>;
 
 // [macOS
-type KeyboardEventProps = $ReadOnly<{|
-  onKeyDown?: ?(event: KeyEvent) => void,
-  onKeyUp?: ?(event: KeyEvent) => void,
+/**
+ * Represents a key that could be passed to `validKeysDown` and `validKeysUp`.
+ *
+ * `key` is the actual key, such as "a", or one of the special values:
+ * "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+ * "Backspace", "Delete", "Home", "End", "PageUp", "PageDown".
+ *
+ * The rest are modifiers that when absent mean don't care (either state -- true or false --
+ * matches), and when present require that modifier state to match. All present modifers must
+ * match for the event to pass the filter.
+ *
+ * @platform macos
+ */
+export type HandledKey = $ReadOnly<{|
+  key: string,
+  capsLock?: ?boolean,
+  shift?: ?boolean,
+  ctrl?: ?boolean,
+  alt?: ?boolean,
+  meta?: ?boolean,
+  numericPad?: ?boolean,
+  help?: ?boolean,
+  function?: ?boolean,
+|}>;
+
+export type KeyboardEventProps = $ReadOnly<{|
   /**
-   * Array of keys to receive key down events for
-   *
-   * @platform macos
+   * Called after a key down event is detected.
    */
-  validKeysDown?: ?Array<string>,
+  onKeyDown?: ?(event: KeyEvent) => void,
 
   /**
-   * Array of keys to receive key up events for
+   * Called after a key up event is detected.
+   */
+  onKeyUp?: ?(event: KeyEvent) => void,
+
+  /**
+   * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
+   * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
+   * are still removed from the event queue, but the others are not.
    *
    * @platform macos
    */
-  validKeysUp?: ?Array<string>,
+  passthroughAllKeyEvents?: ?boolean,
+
+  /**
+   * Array of keys to receive key down events for. These events are always removed from the system event queue.
+   *
+   * @platform macos
+   */
+  validKeysDown?: ?Array<string | HandledKey>,
+
+  /**
+   * Array of keys to receive key up events for. These events are always removed from the system event queue.
+   *
+   * @platform macos
+   */
+  validKeysUp?: ?Array<string | HandledKey>,
 |}>;
 // macOS]
 

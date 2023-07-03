@@ -12,7 +12,6 @@ import type {
   BlurEvent,
   // [macOS
   FocusEvent,
-  KeyEvent,
   LayoutEvent,
   MouseEvent,
   PressEvent,
@@ -26,6 +25,7 @@ import type {
   AccessibilityState,
   AccessibilityValue,
 } from '../View/ViewAccessibility';
+import type {KeyboardEventProps} from '../View/ViewPropTypes'; // [macOS]
 
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
@@ -174,27 +174,7 @@ type Props = $ReadOnly<{|
    */
   onBlur?: ?(event: BlurEvent) => void,
 
-  /**
-   * Called after a key down event is detected.
-   */
-  onKeyDown?: ?(event: KeyEvent) => void,
-
-  /**
-   * Called after a key up event is detected.
-   */
-  onKeyUp?: ?(event: KeyEvent) => void,
-
-  /**
-   * Array of keys to receive key down events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
-   */
-  validKeysDown?: ?Array<string>,
-
-  /**
-   * Array of keys to receive key up events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
-   */
-  validKeysUp?: ?Array<string>,
+  ...KeyboardEventProps, // [macOS]
 
   /**
    * Specifies whether the view should receive the mouse down event when the
