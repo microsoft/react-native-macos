@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+ // [macOS]
+
 #import "RCTViewKeyboardEvent.h"
 #import <React/RCTAssert.h>
 
@@ -12,6 +14,7 @@
 
 @implementation RCTViewKeyboardEvent
 
+#if TARGET_OS_OSX 
 + (NSDictionary *)bodyFromEvent:(NSEvent *)event
 {
   NSString *key = [self keyFromEvent:event];

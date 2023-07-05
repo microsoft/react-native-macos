@@ -10,31 +10,31 @@
 #import <React/RCTAssert.h>
 #import <React/UIView+React.h>
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
 #import <React/RCTUIManager.h>
 #import "RCTScrollContentLocalData.h"
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
 #import "RCTScrollView.h"
 
 @implementation RCTScrollContentView
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
 - (BOOL)isFlipped
 {
   return !self.inverted;
 }
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
 - (void)reactSetFrame:(CGRect)frame
 {
   [super reactSetFrame:frame];
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
   RCTScrollView *scrollView = (RCTScrollView *)self.superview.superview;
-#else // [TODO(macOS GH#774)
+#else // [macOS
   // macOS also has a NSClipView in its hierarchy
   RCTScrollView *scrollView = (RCTScrollView *)self.superview.superview.superview;
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
   if (!scrollView) {
     return;
@@ -43,7 +43,7 @@
   RCTAssert([scrollView isKindOfClass:[RCTScrollView class]], @"Unexpected view hierarchy of RCTScrollView component.");
 
   [scrollView updateContentSizeIfNeeded];
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
   // On macOS scroll indicators may float over the content view like they do in iOS
   // or depending on system preferences they may be outside of the content view
   // which means the clip view will be smaller than the scroll view itself.
@@ -51,13 +51,12 @@
   // the contents will overflow causing the scroll indicators to appear unnecessarily.
   NSScrollView *platformScrollView = [scrollView scrollView];
   if ([platformScrollView scrollerStyle] == NSScrollerStyleLegacy) {
-    CGFloat horizontalScrollerHeight = [platformScrollView hasHorizontalScroller] ? NSHeight([[platformScrollView horizontalScroller] frame]) : 0;
+    BOOL contentHasHeight = platformScrollView.contentSize.height > 0;
+    CGFloat horizontalScrollerHeight = ([platformScrollView hasHorizontalScroller] && contentHasHeight) ? NSHeight([[platformScrollView horizontalScroller] frame]) : 0;
     CGFloat verticalScrollerWidth = [platformScrollView hasVerticalScroller] ? NSWidth([[platformScrollView verticalScroller] frame]) : 0;
 
-    RCTScrollContentLocalData *localData =
-      [[RCTScrollContentLocalData alloc]
-      initWithVerticalScrollerWidth:horizontalScrollerHeight
-           horizontalScrollerHeight:verticalScrollerWidth];
+    RCTScrollContentLocalData *localData = [[RCTScrollContentLocalData alloc] initWithVerticalScrollerWidth:verticalScrollerWidth horizontalScrollerHeight:horizontalScrollerHeight];
+
     [[[scrollView bridge] uiManager] setLocalData:localData forView:self];
   }
 
@@ -72,7 +71,7 @@
       [platformScrollView setAccessibilityRows:subViews];
   }
 
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 }
 
 @end

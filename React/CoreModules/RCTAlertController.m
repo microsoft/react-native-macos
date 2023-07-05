@@ -11,28 +11,47 @@
 
 @interface RCTAlertController ()
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, strong) UIWindow *alertWindow;
-#endif // ]TODO(macOS GH#774)
+#endif // [macOS]
 
 @end
 
 @implementation RCTAlertController
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
 - (UIWindow *)alertWindow
 {
   if (_alertWindow == nil) {
-    _alertWindow = [[UIWindow alloc] initWithFrame:RCTSharedApplication().keyWindow.bounds];
-    _alertWindow.rootViewController = [UIViewController new];
-    _alertWindow.windowLevel = UIWindowLevelAlert + 1;
+    _alertWindow = [self getUIWindowFromScene];
+
+    if (_alertWindow == nil) {
+      UIWindow *keyWindow = RCTSharedApplication().keyWindow;
+      if (keyWindow) {
+        _alertWindow = [[UIWindow alloc] initWithFrame:keyWindow.bounds];
+      } else {
+        // keyWindow is nil, so we cannot create and initialize _alertWindow
+        NSLog(@"Unable to create alert window: keyWindow is nil");
+      }
+    }
+
+    if (_alertWindow) {
+      _alertWindow.rootViewController = [UIViewController new];
+      _alertWindow.windowLevel = UIWindowLevelAlert + 1;
+    }
   }
+
   return _alertWindow;
 }
 
 - (void)show:(BOOL)animated completion:(void (^)(void))completion
 {
-  // [TODO(macOS GH#774)
+  if (@available(iOS 13.0, *)) {
+    UIUserInterfaceStyle style =
+        RCTSharedApplication().delegate.window.overrideUserInterfaceStyle ?: UIUserInterfaceStyleUnspecified;
+    self.overrideUserInterfaceStyle = style;
+  }
+  // [macOS
   // Call self.alertWindow to ensure that it gets populated
   UIWindow *alertWindow = self.alertWindow;
 
@@ -46,7 +65,7 @@
     // When using Scenes, we must present the alert from a view controller associated with a window in the Scene. A fresh window (i.e. _alertWindow) cannot show the alert.
     [RCTPresentedViewController() presentViewController:self animated:animated completion:completion];
   }
-  // TODO(macOS GH#774)]
+  // macOS]
 }
 
 - (void)hide
@@ -59,6 +78,19 @@
 
   _alertWindow = nil;
 }
-#endif // ]TODO(macOS GH#774)
+
+- (UIWindow *)getUIWindowFromScene
+{
+  if (@available(iOS 13.0, *)) {
+    for (UIScene *scene in RCTSharedApplication().connectedScenes) {
+      if (scene.activationState == UISceneActivationStateForegroundActive &&
+          [scene isKindOfClass:[UIWindowScene class]]) {
+        return [[UIWindow alloc] initWithWindowScene:(UIWindowScene *)scene];
+      }
+    }
+  }
+  return nil;
+}
+#endif // [macOS]
 
 @end

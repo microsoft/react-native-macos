@@ -10,8 +10,10 @@
 
 import type {ViewProps} from './ViewPropTypes';
 
-import ViewNativeComponent from './ViewNativeComponent';
+import flattenStyle from '../../StyleSheet/flattenStyle';
 import TextAncestor from '../../Text/TextAncestor';
+import {getAccessibilityRoleFromRole} from '../../Utilities/AcessibilityMapping';
+import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
 import invariant from 'invariant'; // [macOS]
 import type {KeyEvent} from '../../Types/CoreEventTypes'; // [macOS]
@@ -28,52 +30,153 @@ export type Props = ViewProps;
 const View: React.AbstractComponent<
   ViewProps,
   React.ElementRef<typeof ViewNativeComponent>,
-> = React.forwardRef((props: ViewProps, forwardedRef) => {
-  // [macOS
-  const {onKeyDown, onKeyUp, validKeysDown, validKeysUp} = props;
+> = React.forwardRef(
+  (
+    {
+      accessibilityElementsHidden,
+      accessibilityLabel,
+      accessibilityLabelledBy,
+      accessibilityLiveRegion,
+      accessibilityRole,
+      accessibilityState,
+      accessibilityValue,
+      'aria-busy': ariaBusy,
+      'aria-checked': ariaChecked,
+      'aria-disabled': ariaDisabled,
+      'aria-expanded': ariaExpanded,
+      'aria-hidden': ariaHidden,
+      'aria-label': ariaLabel,
+      'aria-labelledby': ariaLabelledBy,
+      'aria-live': ariaLive,
+      'aria-selected': ariaSelected,
+      'aria-valuemax': ariaValueMax,
+      'aria-valuemin': ariaValueMin,
+      'aria-valuenow': ariaValueNow,
+      'aria-valuetext': ariaValueText,
+      focusable,
+      id,
+      importantForAccessibility,
+      nativeID,
+      pointerEvents,
+      role,
+      tabIndex,
+      // [macOS
+      onKeyDown,
+      onKeyUp,
+      validKeysDown,
+      validKeysUp,
+      // macOS]
+      ...otherProps
+    }: ViewProps,
+    forwardedRef,
+  ) => {
+    const _accessibilityLabelledBy =
+      ariaLabelledBy?.split(/\s*,\s*/g) ?? accessibilityLabelledBy;
 
-  invariant(
-    // $FlowFixMe Wanting to catch untyped usages
-    validKeysDown === undefined,
-    'Support for the "acceptsKeyboardFocus" property has been deprecated in favor of "keyDownEvents"',
-  );
-
-  invariant(
-    // $FlowFixMe Wanting to catch untyped usages
-    validKeysUp === undefined,
-    'Support for the "acceptsKeyboardFocus" property has been removed in favor of "keyUpEvents"',
-  );
-
-  // To support the deprecated validKeysDown prop, suppress bubbling if it is defined
-  const onKeyDownWithLegacyBehavior = (e: KeyEvent) => {
-    if (validKeysDown) {
-      e.stopPropogation();
+    let _accessibilityState;
+    if (
+      accessibilityState != null ||
+      ariaBusy != null ||
+      ariaChecked != null ||
+      ariaDisabled != null ||
+      ariaExpanded != null ||
+      ariaSelected != null
+    ) {
+      _accessibilityState = {
+        busy: ariaBusy ?? accessibilityState?.busy,
+        checked: ariaChecked ?? accessibilityState?.checked,
+        disabled: ariaDisabled ?? accessibilityState?.disabled,
+        expanded: ariaExpanded ?? accessibilityState?.expanded,
+        selected: ariaSelected ?? accessibilityState?.selected,
+      };
     }
-    onKeyDown?.();
-  };
-
-  // To support the deprecated validKeysUp prop, suppress bubbling if it is defined
-  const onKeyUpWithLegacyBehavior = (e: KeyEvent) => {
-    if (validKeysUp) {
-      e.stopPropogation();
+    let _accessibilityValue;
+    if (
+      accessibilityValue != null ||
+      ariaValueMax != null ||
+      ariaValueMin != null ||
+      ariaValueNow != null ||
+      ariaValueText != null
+    ) {
+      _accessibilityValue = {
+        max: ariaValueMax ?? accessibilityValue?.max,
+        min: ariaValueMin ?? accessibilityValue?.min,
+        now: ariaValueNow ?? accessibilityValue?.now,
+        text: ariaValueText ?? accessibilityValue?.text,
+      };
     }
-    onKeyUp?.();
-  };
-  // macOS]
 
-  return (
-    <TextAncestor.Provider value={false}>
-      {/* [macOS */}
-      <ViewNativeComponent
-        {...props}
-        ref={forwardedRef}
-        {...(onKeyDown && {keyDown: onKeyDownWithLegacyBehavior})}
-        {...(onKeyUp && {keyUp: onKeyUpWithLegacyBehavior})}
-      />
-      {/* macOS] */}
-    </TextAncestor.Provider>
-  );
-});
+    // $FlowFixMe[underconstrained-implicit-instantiation]
+    let style = flattenStyle(otherProps.style);
+
+    const newPointerEvents = style?.pointerEvents || pointerEvents;
+
+    // [macOS
+    invariant(
+      // $FlowFixMe Wanting to catch untyped usages
+      validKeysDown === undefined,
+      'Support for the "acceptsKeyboardFocus" property has been deprecated in favor of "keyDownEvents"',
+    );
+  
+    invariant(
+      // $FlowFixMe Wanting to catch untyped usages
+      validKeysUp === undefined,
+      'Support for the "acceptsKeyboardFocus" property has been removed in favor of "keyUpEvents"',
+    );
+  
+    // To support the deprecated validKeysDown prop, suppress bubbling if it is defined
+    const onKeyDownWithLegacyBehavior = (e: KeyEvent) => {
+      if (validKeysDown) {
+        e.stopPropogation();
+      }
+      onKeyDown?.();
+    };
+  
+    // To support the deprecated validKeysUp prop, suppress bubbling if it is defined
+    const onKeyUpWithLegacyBehavior = (e: KeyEvent) => {
+      if (validKeysUp) {
+        e.stopPropogation();
+      }
+      onKeyUp?.();
+    };
+    // macOS]
+
+    return (
+      <TextAncestor.Provider value={false}>
+        <ViewNativeComponent
+          {...otherProps}
+          accessibilityLiveRegion={
+            ariaLive === 'off' ? 'none' : ariaLive ?? accessibilityLiveRegion
+          }
+          accessibilityLabel={ariaLabel ?? accessibilityLabel}
+          focusable={tabIndex !== undefined ? !tabIndex : focusable}
+          accessibilityState={_accessibilityState}
+          accessibilityRole={
+            role ? getAccessibilityRoleFromRole(role) : accessibilityRole
+          }
+          accessibilityElementsHidden={
+            ariaHidden ?? accessibilityElementsHidden
+          }
+          accessibilityLabelledBy={_accessibilityLabelledBy}
+          accessibilityValue={_accessibilityValue}
+          importantForAccessibility={
+            ariaHidden === true
+              ? 'no-hide-descendants'
+              : importantForAccessibility
+          }
+          nativeID={id ?? nativeID}
+          style={style}
+          pointerEvents={newPointerEvents}
+          ref={forwardedRef}
+          // [macOS
+          {...(onKeyDown && {keyDown: onKeyDownWithLegacyBehavior})}
+          {...(onKeyUp && {keyUp: onKeyUpWithLegacyBehavior})}
+          // macOS]
+        />
+      </TextAncestor.Provider>
+    );
+  },
+);
 
 View.displayName = 'View';
 

@@ -8,8 +8,7 @@
 #import "RCTPlatformColorUtils.h"
 
 #import <Foundation/Foundation.h>
-#import <React/RCTUtils.h>
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #include <string>
 
@@ -131,7 +130,7 @@ static NSDictionary<NSString *, NSDictionary *> *_PlatformColorSelectorsDict()
   return dict;
 }
 
-static RCTUIColor *_UIColorFromHexValue(NSNumber *hexValue) // TODO(macOS GH#774)
+static RCTUIColor *_UIColorFromHexValue(NSNumber *hexValue) // [macOS]
 {
   NSUInteger hexIntValue = [hexValue unsignedIntegerValue];
 
@@ -140,10 +139,10 @@ static RCTUIColor *_UIColorFromHexValue(NSNumber *hexValue) // TODO(macOS GH#774
   CGFloat blue = ((CGFloat)((hexIntValue & 0xFF00) >> 8)) / 255.0;
   CGFloat alpha = ((CGFloat)(hexIntValue & 0xFF)) / 255.0;
 
-  return [RCTUIColor colorWithRed:red green:green blue:blue alpha:alpha]; // TODO(macOS GH#774)
+  return [RCTUIColor colorWithRed:red green:green blue:blue alpha:alpha]; // [macOS]
 }
 
-static RCTUIColor *_Nullable _UIColorFromSemanticString(NSString *semanticString) // TODO(macOS GH#774)
+static RCTUIColor *_Nullable _UIColorFromSemanticString(NSString *semanticString) // [macOS]
 {
   NSString *platformColorString = [semanticString hasSuffix:kColorSuffix]
       ? [semanticString substringToIndex:[semanticString length] - [kColorSuffix length]]
@@ -152,17 +151,17 @@ static RCTUIColor *_Nullable _UIColorFromSemanticString(NSString *semanticString
   NSDictionary<NSString *, id> *colorInfo = platformColorSelectorsDict[platformColorString];
   if (colorInfo) {
     SEL objcColorSelector = NSSelectorFromString([platformColorString stringByAppendingString:kColorSuffix]);
-    if (![RCTUIColor respondsToSelector:objcColorSelector]) { // TODO(macOS GH#774)
+    if (![RCTUIColor respondsToSelector:objcColorSelector]) { // [macOS]
       NSNumber *fallbackRGB = colorInfo[kFallbackARGBKey];
       if (fallbackRGB) {
         return _UIColorFromHexValue(fallbackRGB);
       }
     } else {
-      Class uiColorClass = [RCTUIColor class]; // TODO(macOS GH#774)
+      Class uiColorClass = [RCTUIColor class]; // [macOS]
       IMP imp = [uiColorClass methodForSelector:objcColorSelector];
       id (*getUIColor)(id, SEL) = ((id(*)(id, SEL))imp);
       id colorObject = getUIColor(uiColorClass, objcColorSelector);
-      if ([colorObject isKindOfClass:[RCTUIColor class]]) { // TODO(macOS GH#774)
+      if ([colorObject isKindOfClass:[RCTUIColor class]]) { // [macOS]
         return colorObject;
       }
     }
@@ -177,10 +176,13 @@ static inline NSString *_NSStringFromCString(
   return [NSString stringWithCString:string.c_str() encoding:encoding];
 }
 
-static inline facebook::react::ColorComponents _ColorComponentsFromUIColor(RCTUIColor *color) // TODO(macOS GH#774)
+static inline facebook::react::ColorComponents _ColorComponentsFromUIColor(RCTUIColor *color) // [macOS]
 {
   CGFloat rgba[4];
-  RCTGetRGBAColorComponents(color.CGColor, rgba);
+#if TARGET_OS_OSX // [macOS
+  color = [color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+#endif // macOS]
+  [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
   return {(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]};
 }
 
@@ -188,7 +190,7 @@ facebook::react::ColorComponents RCTPlatformColorComponentsFromSemanticItems(std
 {
   for (const auto &semanticCString : semanticItems) {
     NSString *semanticNSString = _NSStringFromCString(semanticCString);
-    RCTUIColor *uiColor = [RCTUIColor colorNamed:semanticNSString]; // TODO(macOS GH#774)
+    RCTUIColor *uiColor = [RCTUIColor colorNamed:semanticNSString]; // [macOS]
     if (uiColor != nil) {
       return _ColorComponentsFromUIColor(uiColor);
     }

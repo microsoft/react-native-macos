@@ -8,14 +8,14 @@
  * @flow
  */
 
+import RCTDeviceEventEmitter from '../EventEmitter/RCTDeviceEventEmitter';
 import EventEmitter, {
   type EventSubscription,
 } from '../vendor/emitter/EventEmitter';
-import RCTDeviceEventEmitter from '../EventEmitter/RCTDeviceEventEmitter';
 import NativeDeviceInfo, {
+  type DimensionsPayload,
   type DisplayMetrics,
   type DisplayMetricsAndroid,
-  type DimensionsPayload,
 } from './NativeDeviceInfo';
 import invariant from 'invariant';
 
@@ -108,19 +108,6 @@ class Dimensions {
     );
     return eventEmitter.addListener(type, handler);
   }
-
-  /**
-   * @deprecated Use `remove` on the EventSubscription from `addEventListener`.
-   */
-  static removeEventListener(type: 'change', handler: Function) {
-    invariant(
-      type === 'change',
-      'Trying to remove listener for unknown event: "%s"',
-      type,
-    );
-    // NOTE: This will report a deprecation notice via `console.error`.
-    eventEmitter.removeListener(type, handler);
-  }
 }
 
 let initialDims: ?$ReadOnly<DimensionsPayload> =
@@ -140,4 +127,4 @@ if (!initialDims) {
 
 Dimensions.set(initialDims);
 
-module.exports = Dimensions;
+export default Dimensions;

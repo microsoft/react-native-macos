@@ -9,7 +9,10 @@
  */
 
 import type {Node} from 'react';
-import {Platform, StyleSheet, Text} from 'react-native';
+
+import StyleSheet from '../../StyleSheet/StyleSheet';
+import Text from '../../Text/Text';
+import Platform from '../../Utilities/Platform';
 import React from 'react';
 
 const styles = StyleSheet.create({
@@ -26,13 +29,13 @@ const DebugInstructions: () => Node = Platform.select({
       Native debug menu.
     </Text>
   ),
-  // [TODO(macOS GH#774)
+  // [macOS
   macos: () => (
     <Text>
       Secondary click in this window to open the React Native debug menu.
     </Text>
   ),
-  // ]TODO(macOS GH#774)
+  // macOS]
   default: () => (
     <Text>
       Press <Text style={styles.highlight}>Cmd or Ctrl + M</Text> or{' '}

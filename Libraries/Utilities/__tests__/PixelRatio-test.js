@@ -5,14 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @emails oncall+react_native
+ * @oncall react_native
  */
 
 'use strict';
 
 describe('PixelRatio', () => {
-  const Dimensions = require('../Dimensions');
-  const PixelRatio = require('../PixelRatio');
+  const Dimensions = require('../Dimensions').default;
+  const PixelRatio = require('../PixelRatio').default;
 
   beforeEach(() => {
     Dimensions.set({

@@ -7,6 +7,8 @@
 
 #import "UIView+ComponentViewProtocol.h"
 
+#import <objc/runtime.h> // [macOS]
+
 #import <React/RCTAssert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
@@ -15,7 +17,7 @@
 
 using namespace facebook::react;
 
-@implementation RCTUIView (ComponentViewProtocol) // TODO(macOS GH#774)
+@implementation RCTUIView (ComponentViewProtocol) // [macOS]
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
 {
@@ -28,7 +30,7 @@ using namespace facebook::react;
   return {};
 }
 
-- (void)mountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // TODO(macOS GH#774)
+- (void)mountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // [macOS]
 {
   RCTAssert(
       childComponentView.superview == nil,
@@ -40,7 +42,7 @@ using namespace facebook::react;
   [self insertSubview:childComponentView atIndex:index];
 }
 
-- (void)unmountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // TODO(macOS GH#774)
+- (void)unmountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // [macOS]
 {
   RCTAssert(
       childComponentView.superview == self,
@@ -103,16 +105,22 @@ using namespace facebook::react;
     } else {
       // Note: Changing `frame` when `layer.transform` is not the `identity transform` is undefined behavior.
       // Therefore, we must use `center` and `bounds`.
+#if !TARGET_OS_OSX // [macOS]
       self.center = CGPoint{CGRectGetMidX(frame), CGRectGetMidY(frame)};
+#else // [macOS
+      self.frame = frame;
+#endif // macOS]
       self.bounds = CGRect{CGPointZero, frame.size};
     }
   }
 
+#if !TARGET_OS_OSX // [macOS]
   if (forceUpdate || (layoutMetrics.layoutDirection != oldLayoutMetrics.layoutDirection)) {
     self.semanticContentAttribute = layoutMetrics.layoutDirection == LayoutDirection::RightToLeft
         ? UISemanticContentAttributeForceRightToLeft
         : UISemanticContentAttributeForceLeftToRight;
   }
+#endif // [macOS]
 
   if (forceUpdate || (layoutMetrics.displayType != oldLayoutMetrics.displayType)) {
     self.hidden = layoutMetrics.displayType == DisplayType::None;
@@ -146,6 +154,16 @@ using namespace facebook::react;
   // Default implementation does nothing.
 }
 
+- (NSNumber *)reactTag
+{
+  return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setReactTag:(NSNumber *)reactTag
+{
+  objc_setAssociatedObject(self, @selector(reactTag), reactTag, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
 - (void)setPropKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN:(nullable NSSet<NSString *> *)propKeys
 {
   // Default implementation does nothing.
@@ -156,14 +174,14 @@ using namespace facebook::react;
   return nil;
 }
 
-- (void)updateClippedSubviewsWithClipRect:(CGRect)clipRect relativeToView:(RCTUIView *)clipView // TODO(macOS GH#774)
+- (void)updateClippedSubviewsWithClipRect:(CGRect)clipRect relativeToView:(RCTUIView *)clipView // [macOS]
 {
   clipRect = [clipView convertRect:clipRect toView:self];
 
   // Normal views don't support unmounting, so all
   // this does is forward message to our subviews,
   // in case any of those do support it
-  for (RCTUIView *subview in self.subviews) { // TODO(macOS GH#774)
+  for (RCTUIView *subview in self.subviews) { // [macOS]
     [subview updateClippedSubviewsWithClipRect:clipRect relativeToView:self];
   }
 }

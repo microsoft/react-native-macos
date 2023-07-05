@@ -1,11 +1,11 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO(macOS GH#774)
+// [macOS]
 
 #include <TargetConditionals.h>
 
@@ -14,6 +14,8 @@
 #if !TARGET_OS_OSX
 
 #import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 //
 // functionally equivalent types
@@ -59,13 +61,12 @@ UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
 //
 
 // UIView
-#define RCTPlatformView         UIView
-#define RCTUIView UIView // TODO(macOS ISS#3536887)
-#define RCTUIScrollView UIScrollView // TODO(macOS ISS#3536887)
-
+#define RCTPlatformView UIView
+#define RCTUIView UIView
+#define RCTUIScrollView UIScrollView
 #define RCTPlatformWindow UIWindow
 
-UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, UIEvent *event)
+UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
   return [view hitTest:point withEvent:event];
 }
@@ -116,9 +117,13 @@ UIKIT_STATIC_INLINE CGFloat UIFontLineHeight(UIFont *font)
   return [font lineHeight];
 }
 
+NS_ASSUME_NONNULL_END
+
 #else // TARGET_OS_OSX [
 
 #import <AppKit/AppKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 //
 // semantically equivalent constants
@@ -310,6 +315,9 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 // These types have the same purpose but may differ semantically. Use with care!
 
 #define UIEvent NSEvent
+#define UITouchType NSTouchType
+#define UIEventButtonMask NSEventButtonMask
+#define UIKeyModifierFlags NSEventModifierFlags
 
 // UIGestureRecognizer
 #define UIGestureRecognizer NSGestureRecognizer
@@ -320,6 +328,11 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 
 // UIImage
 @compatibility_alias UIImage NSImage;
+
+typedef NS_ENUM(NSInteger, UIImageRenderingMode) {
+    UIImageRenderingModeAlwaysOriginal,
+    UIImageRenderingModeAlwaysTemplate,
+};
 
 #ifdef __cplusplus
 extern "C"
@@ -359,7 +372,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 #define RCTPlatformWindow NSWindow
 
-@interface RCTUIView : NSView // TODO(macOS ISS#3536887)
+@interface RCTUIView : RCTPlatformView
 
 @property (nonatomic, readonly) BOOL canBecomeFirstResponder;
 - (BOOL)becomeFirstResponder;
@@ -367,7 +380,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 @property (nonatomic, getter=isUserInteractionEnabled) BOOL userInteractionEnabled;
 
-- (NSView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
+- (NSView *)hitTest:(CGPoint)point withEvent:(UIEvent *_Nullable)event;
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
 
 - (void)insertSubview:(NSView *)view atIndex:(NSInteger)index;
@@ -384,7 +397,6 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 // An override of an undocumented API that controls the layer's masksToBounds property
 @property (nonatomic) BOOL clipsToBounds;
 @property (nonatomic, copy) NSColor *backgroundColor;
-@property (nonatomic, readwrite, getter=isOpaque) BOOL opaque;
 @property (nonatomic) CGAffineTransform transform;
 
 /**
@@ -392,6 +404,9 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
  * containing window is in the background.
  */
 @property (nonatomic, assign) BOOL acceptsFirstMouse;
+
+@property (nonatomic, assign) BOOL mouseDownCanMoveWindow;
+
 /**
  * Specifies whether the view participates in the key view loop as user tabs through different controls
  * This is equivalent to acceptsFirstResponder on mac OS.
@@ -402,12 +417,11 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
  */
 @property (nonatomic, assign) BOOL enableFocusRing;
 
-
 @end
 
 // UIScrollView
 
-@interface RCTUIScrollView : NSScrollView // TODO(macOS ISS#3536887)
+@interface RCTUIScrollView : NSScrollView
 
 // UIScrollView properties missing in NSScrollView
 @property (nonatomic, assign) CGPoint contentOffset;
@@ -425,14 +439,14 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 @end
 
-@interface RCTClipView : NSClipView // [TODO(macOS GH#774)
+@interface RCTClipView : NSClipView
 
 @property (nonatomic, assign) BOOL constrainScrolling;
 
-@end // ]TODO(macOS GH#774)
+@end
 
 
-NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *event)
+NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
   return [view hitTest:point];
 }
@@ -466,7 +480,15 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
   return rect;
 }
 
+NS_ASSUME_NONNULL_END
+
 #endif // ] TARGET_OS_OSX
+
+#if !TARGET_OS_OSX
+typedef UIApplication RCTUIApplication;
+#else
+typedef NSApplication RCTUIApplication;
+#endif
 
 //
 // fabric component types
@@ -474,11 +496,14 @@ NS_INLINE CGRect CGRectValue(NSValue *value)
 
 // RCTUISlider
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX
 typedef UISlider RCTUISlider;
 #else
-@interface RCTUISlider : NSSlider
+@protocol RCTUISliderDelegate;
 
+@interface RCTUISlider : NSSlider
+NS_ASSUME_NONNULL_BEGIN
+@property (nonatomic, weak) id<RCTUISliderDelegate> delegate;
 @property (nonatomic, readonly) BOOL pressed;
 @property (nonatomic, assign) float value;
 @property (nonatomic, assign) float minimumValue;
@@ -487,40 +512,55 @@ typedef UISlider RCTUISlider;
 @property (nonatomic, strong) NSColor *maximumTrackTintColor;
 
 - (void)setValue:(float)value animated:(BOOL)animated;
-
+NS_ASSUME_NONNULL_END
 @end
-#endif // ]TODO(macOS GH#774)
+#endif
+
+#if TARGET_OS_OSX // [macOS
+@protocol RCTUISliderDelegate <NSObject>
+@optional
+NS_ASSUME_NONNULL_BEGIN
+- (void)slider:(RCTUISlider *)slider didPress:(BOOL)press;
+NS_ASSUME_NONNULL_END
+@end
+#endif // macOS]
 
 // RCTUILabel
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
-#define RCTUILabel UILabel
+#if !TARGET_OS_OSX
+typedef UILabel RCTUILabel;
 #else
 @interface RCTUILabel : NSTextField
+NS_ASSUME_NONNULL_BEGIN
+@property(nonatomic, copy) NSString* _Nullable text;
+@property(nonatomic, assign) NSInteger numberOfLines;
+@property(nonatomic, assign) NSTextAlignment textAlignment;
+NS_ASSUME_NONNULL_END
 @end
-#endif // ]TODO(macOS GH#774)
+#endif
 
 // RCTUISwitch
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX
 typedef UISwitch RCTUISwitch;
 #else
 @interface RCTUISwitch : NSSwitch
-
+NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, getter=isOn) BOOL on;
 
 - (void)setOn:(BOOL)on animated:(BOOL)animated;
 
+NS_ASSUME_NONNULL_END
 @end
-#endif // ]TODO(macOS GH#774)
+#endif
 
 // RCTUIActivityIndicatorView
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
-#define RCTUIActivityIndicatorView UIActivityIndicatorView
+#if !TARGET_OS_OSX
+typedef UIActivityIndicatorView RCTUIActivityIndicatorView;
 #else
 @interface RCTUIActivityIndicatorView : NSProgressIndicator
-
+NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UIActivityIndicatorViewStyle activityIndicatorViewStyle;
 @property (nonatomic, assign) BOOL hidesWhenStopped;
 @property (nullable, readwrite, nonatomic, strong) RCTUIColor *color;
@@ -528,6 +568,30 @@ typedef UISwitch RCTUISwitch;
 
 - (void)startAnimating;
 - (void)stopAnimating;
-
+NS_ASSUME_NONNULL_END
 @end
-#endif // ]TODO(macOS GH#774)
+
+#endif
+
+// RCTUITouch
+
+#if !TARGET_OS_OSX
+typedef UITouch RCTUITouch;
+#else
+@interface RCTUITouch : NSEvent
+@end
+#endif
+
+// RCTUIImageView
+
+#if !TARGET_OS_OSX
+typedef UIImageView RCTUIImageView;
+#else
+@interface RCTUIImageView : NSImageView
+NS_ASSUME_NONNULL_BEGIN
+@property (nonatomic, assign) BOOL clipsToBounds;
+@property (nonatomic, strong) RCTUIColor *tintColor;
+@property (nonatomic, assign) UIViewContentMode contentMode;
+NS_ASSUME_NONNULL_END
+@end
+#endif

@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails react_native
  * @format
+ * @oncall react_native
  */
 
 'use strict';
@@ -13,7 +13,7 @@
 const path = require('path');
 const withBabelRegister = require('./with-babel-register');
 
-// We run yarn prepublish before publishing package which will set this value to true
+// We use the prepack hook before publishing package to set this value to true
 const PACKAGE_USAGE = false;
 const ERRORS = {
   misnamedHasteModule(hasteModuleName) {
@@ -23,10 +23,11 @@ const ERRORS = {
 
 let RNModuleParser;
 let RNParserUtils;
+let RNFlowParser;
 
 function requireModuleParser() {
-  if (RNModuleParser == null || RNParserUtils == null) {
-    // If using this externally, we leverage react-native-codegen as published form
+  if (RNModuleParser == null || RNParserUtils == null || RNFlowParser == null) {
+    // If using this externally, we leverage @react-native/codegen as published form
     if (!PACKAGE_USAGE) {
       const config = {
         only: [/react-native-codegen\/src\//],
@@ -34,18 +35,20 @@ function requireModuleParser() {
       };
 
       withBabelRegister(config, () => {
-        RNModuleParser = require('react-native-codegen/src/parsers/flow/modules');
-        RNParserUtils = require('react-native-codegen/src/parsers/flow/utils');
+        RNModuleParser = require('@react-native/codegen/src/parsers/flow/modules');
+        RNParserUtils = require('@react-native/codegen/src/parsers/utils');
+        RNFlowParser = require('@react-native/codegen/src/parsers/flow/parser');
       });
     } else {
       const config = {
-        only: [/react-native-codegen\/lib\//],
+        only: [/@react-native\/codegen\/lib\//],
         plugins: [require('@babel/plugin-transform-flow-strip-types').default],
       };
 
       withBabelRegister(config, () => {
-        RNModuleParser = require('react-native-codegen/lib/parsers/flow/modules');
-        RNParserUtils = require('react-native-codegen/lib/parsers/flow/utils');
+        RNModuleParser = require('@react-native/codegen/lib/parsers/flow/modules');
+        RNParserUtils = require('@react-native/codegen/lib/parsers/flow/utils');
+        RNFlowParser = require('@react-native/codegen/lib/parsers/flow/parser');
       });
     }
   }
@@ -53,6 +56,7 @@ function requireModuleParser() {
   return {
     buildModuleSchema: RNModuleParser.buildModuleSchema,
     createParserErrorCapturer: RNParserUtils.createParserErrorCapturer,
+    parser: new RNFlowParser.FlowParser(),
   };
 }
 
@@ -127,17 +131,16 @@ function rule(context) {
         });
       }
 
-      const {buildModuleSchema, createParserErrorCapturer} =
+      const {buildModuleSchema, createParserErrorCapturer, parser} =
         requireModuleParser();
-      const flowParser = require('flow-parser');
 
       const [parsingErrors, tryParse] = createParserErrorCapturer();
 
       const sourceCode = context.getSourceCode().getText();
-      const ast = flowParser.parse(sourceCode);
+      const ast = parser.getAst(sourceCode);
 
       tryParse(() => {
-        buildModuleSchema(hasteModuleName, ast, tryParse);
+        buildModuleSchema(hasteModuleName, ast, tryParse, parser);
       });
 
       parsingErrors.forEach(error => {

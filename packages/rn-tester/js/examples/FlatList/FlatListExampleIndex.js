@@ -10,12 +10,15 @@
 
 import type {RNTesterModule} from '../../types/RNTesterTypes';
 import BasicExample from './FlatList-basic';
+import OnStartReachedExample from './FlatList-onStartReached';
 import OnEndReachedExample from './FlatList-onEndReached';
 import ContentInsetExample from './FlatList-contentInset';
 import InvertedExample from './FlatList-inverted';
 import onViewableItemsChangedExample from './FlatList-onViewableItemsChanged';
 import WithSeparatorsExample from './FlatList-withSeparators';
 import MultiColumnExample from './FlatList-multiColumn';
+import StickyHeadersExample from './FlatList-stickyHeaders';
+import NestedExample from './FlatList-nested';
 
 export default ({
   framework: 'React',
@@ -26,11 +29,14 @@ export default ({
   showIndividualExamples: true,
   examples: [
     BasicExample,
+    OnStartReachedExample,
     OnEndReachedExample,
     ContentInsetExample,
     InvertedExample,
     onViewableItemsChangedExample,
     WithSeparatorsExample,
     MultiColumnExample,
+    StickyHeadersExample,
+    NestedExample,
   ],
 }: RNTesterModule);

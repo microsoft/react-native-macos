@@ -10,10 +10,10 @@
 
 /* eslint no-bitwise: 0 */
 
-import _normalizeColor from '@react-native/normalize-color';
-
-import type {ColorValue} from './StyleSheet';
 import type {ProcessedColorValue} from './processColor';
+import type {ColorValue} from './StyleSheet';
+
+import _normalizeColor from '@react-native/normalize-colors';
 
 function normalizeColor(
   color: ?(ColorValue | ProcessedColorValue),
@@ -22,7 +22,7 @@ function normalizeColor(
     const {normalizeColorObject} = require('./PlatformColorValueTypes');
     const normalizedColor = normalizeColorObject(color);
     if (normalizedColor != null) {
-      return color;
+      return normalizedColor;
     }
   }
 

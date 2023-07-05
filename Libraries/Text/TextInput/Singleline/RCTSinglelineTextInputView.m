@@ -10,28 +10,27 @@
 #import <React/RCTBridge.h>
 
 #include <React/RCTUITextField.h>
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
 #include <React/RCTUISecureTextField.h>
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
-@implementation RCTSinglelineTextInputView
-{
+@implementation RCTSinglelineTextInputView {
   RCTUITextField *_backedTextInputView;
-  BOOL _useSecureTextField; // TODO(macOS GH#774)
+  BOOL _useSecureTextField; // [macOS]
 }
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge
 {
   if (self = [super initWithBridge:bridge]) {
-    // `blurOnSubmit` defaults to `true` for <TextInput multiline={false}> by design.
-    self.blurOnSubmit = YES;
+    // `submitBehavior` defaults to `"blurAndSubmit"` for <TextInput multiline={false}> by design.
+    self.submitBehavior = @"blurAndSubmit";
 
     _backedTextInputView = [[RCTUITextField alloc] initWithFrame:self.bounds];
     _backedTextInputView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
     _backedTextInputView.cell.scrollable = YES;
     _backedTextInputView.cell.usesSingleLineMode = YES;
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
     _backedTextInputView.textInputDelegate = self;
 
     [self addSubview:_backedTextInputView];
@@ -45,7 +44,7 @@
   return _backedTextInputView;
 }
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
 - (void)setReactPaddingInsets:(UIEdgeInsets)reactPaddingInsets
 {
   [super setReactPaddingInsets:reactPaddingInsets];
@@ -98,6 +97,6 @@
     [_backedTextInputView setEnableFocusRing:enableFocusRing];
   }
 }
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
 @end

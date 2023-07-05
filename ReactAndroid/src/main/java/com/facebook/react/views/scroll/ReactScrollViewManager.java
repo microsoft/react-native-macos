@@ -8,7 +8,6 @@
 package com.facebook.react.views.scroll;
 
 import android.graphics.Color;
-import android.util.DisplayMetrics;
 import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
@@ -17,7 +16,6 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.RetryableMountingLayerException;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.uimanager.DisplayMetricsHolder;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.PointerEvents;
 import com.facebook.react.uimanager.ReactClippingViewGroupHelper;
@@ -98,21 +96,21 @@ public class ReactScrollViewManager extends ViewGroupManager<ReactScrollView>
   @ReactProp(name = "snapToInterval")
   public void setSnapToInterval(ReactScrollView view, float snapToInterval) {
     // snapToInterval needs to be exposed as a float because of the Javascript interface.
-    DisplayMetrics screenDisplayMetrics = DisplayMetricsHolder.getScreenDisplayMetrics();
-    view.setSnapInterval((int) (snapToInterval * screenDisplayMetrics.density));
+    float density = PixelUtil.getDisplayMetricDensity();
+    view.setSnapInterval((int) (snapToInterval * density));
   }
 
   @ReactProp(name = "snapToOffsets")
   public void setSnapToOffsets(ReactScrollView view, @Nullable ReadableArray snapToOffsets) {
-    if (snapToOffsets == null) {
+    if (snapToOffsets == null || snapToOffsets.size() == 0) {
       view.setSnapOffsets(null);
       return;
     }
 
-    DisplayMetrics screenDisplayMetrics = DisplayMetricsHolder.getScreenDisplayMetrics();
+    float density = PixelUtil.getDisplayMetricDensity();
     List<Integer> offsets = new ArrayList<Integer>();
     for (int i = 0; i < snapToOffsets.size(); i++) {
-      offsets.add((int) (snapToOffsets.getDouble(i) * screenDisplayMetrics.density));
+      offsets.add((int) (snapToOffsets.getDouble(i) * density));
     }
     view.setSnapOffsets(offsets);
   }
@@ -287,6 +285,9 @@ public class ReactScrollViewManager extends ViewGroupManager<ReactScrollView>
   @Override
   public void scrollToEnd(
       ReactScrollView scrollView, ReactScrollViewCommandHelper.ScrollToEndCommandData data) {
+    // ScrollView always has one child - the scrollable area. However, it's possible today that we
+    // execute this method as view command before the child view is mounted. Here we will retry the
+    // view commands as a workaround.
     View child = scrollView.getChildAt(0);
     if (child == null) {
       throw new RetryableMountingLayerException("scrollToEnd called on ScrollView without child");
@@ -319,18 +320,12 @@ public class ReactScrollViewManager extends ViewGroupManager<ReactScrollView>
 
   @ReactProp(name = "contentOffset", customType = "Point")
   public void setContentOffset(ReactScrollView view, ReadableMap value) {
-    if (value != null) {
-      double x = value.hasKey("x") ? value.getDouble("x") : 0;
-      double y = value.hasKey("y") ? value.getDouble("y") : 0;
-      view.scrollTo((int) PixelUtil.toPixelFromDIP(x), (int) PixelUtil.toPixelFromDIP(y));
-    } else {
-      view.scrollTo(0, 0);
-    }
+    view.setContentOffset(value);
   }
 
   @Override
   public Object updateState(
-      ReactScrollView view, ReactStylesDiffMap props, @Nullable StateWrapper stateWrapper) {
+      ReactScrollView view, ReactStylesDiffMap props, StateWrapper stateWrapper) {
     view.getFabricViewStateManager().setStateWrapper(stateWrapper);
     return null;
   }
@@ -368,5 +363,10 @@ public class ReactScrollViewManager extends ViewGroupManager<ReactScrollView>
   @ReactProp(name = ViewProps.POINTER_EVENTS)
   public void setPointerEvents(ReactScrollView view, @Nullable String pointerEventsStr) {
     view.setPointerEvents(PointerEvents.parsePointerEvents(pointerEventsStr));
+  }
+
+  @ReactProp(name = "scrollEventThrottle")
+  public void setScrollEventThrottle(ReactScrollView view, int scrollEventThrottle) {
+    view.setScrollEventThrottle(scrollEventThrottle);
   }
 }

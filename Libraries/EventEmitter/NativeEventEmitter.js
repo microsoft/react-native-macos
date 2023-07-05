@@ -10,10 +10,11 @@
 
 'use strict';
 
-import {
-  type EventSubscription,
-  type IEventEmitter,
+import type {
+  EventSubscription,
+  IEventEmitter,
 } from '../vendor/emitter/EventEmitter';
+
 import Platform from '../Utilities/Platform';
 import RCTDeviceEventEmitter from './RCTDeviceEventEmitter';
 import invariant from 'invariant';
@@ -41,10 +42,7 @@ export default class NativeEventEmitter<TEventToArgsMap: {...}>
   _nativeModule: ?NativeModule;
 
   constructor(nativeModule: ?NativeModule) {
-    if (
-      Platform.OS === 'ios' ||
-      Platform.OS === 'macos' /* TODO(macOS GH#774) */
-    ) {
+    if (Platform.OS === 'ios' || Platform.OS === 'macos' /* [macOS] */) {
       invariant(
         nativeModule != null,
         '`new NativeEventEmitter()` requires a non-null argument.',
@@ -96,19 +94,6 @@ export default class NativeEventEmitter<TEventToArgsMap: {...}>
         }
       },
     };
-  }
-
-  /**
-   * @deprecated Use `remove` on the EventSubscription from `addListener`.
-   */
-  removeListener<TEvent: $Keys<TEventToArgsMap>>(
-    eventType: TEvent,
-    listener: (...args: $ElementType<TEventToArgsMap, TEvent>) => mixed,
-  ): void {
-    this._nativeModule?.removeListeners(1);
-    // NOTE: This will report a deprecation notice via `console.error`.
-    // $FlowFixMe[prop-missing] - `removeListener` exists but is deprecated.
-    RCTDeviceEventEmitter.removeListener(eventType, listener);
   }
 
   emit<TEvent: $Keys<TEventToArgsMap>>(

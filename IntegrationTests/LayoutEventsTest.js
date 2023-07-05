@@ -13,14 +13,14 @@
 const React = require('react');
 const ReactNative = require('react-native');
 const {Image, LayoutAnimation, StyleSheet, Text, View} = ReactNative;
-const {Platform} = ReactNative; // TODO(macOS GH#774)
+const {Platform} = ReactNative; // [macOS]
 const {TestModule} = ReactNative.NativeModules;
 
 import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 const deepDiffer = require('react-native/Libraries/Utilities/differ/deepDiffer');
 
-function debug(...args) {
+function debug(...args: Array<void | Layout | string>) {
   // console.log.apply(null, arguments);
 }
 
@@ -54,8 +54,8 @@ class LayoutEventsTest extends React.Component<Props, State> {
   animateViewLayout() {
     debug('animateViewLayout invoked');
     LayoutAnimation.configureNext(
-      Platform.OS === 'macos' // [TODO(macOS GH#774)
-        ? LayoutAnimation.Presets.easeInEaseOut // ]TODO(macOS GH#774)
+      Platform.OS === 'macos' // [macOS
+        ? LayoutAnimation.Presets.easeInEaseOut // macOS]
         : LayoutAnimation.Presets.spring,
       () => {
         debug('animateViewLayout done');
@@ -125,16 +125,19 @@ class LayoutEventsTest extends React.Component<Props, State> {
   }
 
   onViewLayout: (e: LayoutEvent) => void = (e: LayoutEvent) => {
+    // $FlowFixMe[incompatible-call]
     debug('received view layout event\n', e.nativeEvent);
     this.setState({viewLayout: e.nativeEvent.layout}, this.checkLayout);
   };
 
   onTextLayout: (e: LayoutEvent) => void = (e: LayoutEvent) => {
+    // $FlowFixMe[incompatible-call]
     debug('received text layout event\n', e.nativeEvent);
     this.setState({textLayout: e.nativeEvent.layout}, this.checkLayout);
   };
 
   onImageLayout: (e: LayoutEvent) => void = (e: LayoutEvent) => {
+    // $FlowFixMe[incompatible-call]
     debug('received image layout event\n', e.nativeEvent);
     this.setState({imageLayout: e.nativeEvent.layout}, this.checkLayout);
   };

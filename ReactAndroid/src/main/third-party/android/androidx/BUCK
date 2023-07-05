@@ -16,6 +16,7 @@ fb_native.android_library(
         ":collection",
         ":core",
         ":cursoradapter",
+        ":drawerlayout",
         ":fragment",
         ":legacy-support-core-utils",
         ":vectordrawable",
@@ -138,10 +139,10 @@ fb_native.android_library(
         ":annotation",
         ":core",
         ":fragment-binary",
-        ":legacy-support-core-ui",
         ":legacy-support-core-utils",
         ":lifecycle-viewmodel",
         ":loader",
+        ":viewpager",
     ],
 )
 
@@ -151,26 +152,6 @@ fb_native.android_library(
     exported_deps = [
         ":annotation",
         ":interpolator-binary",
-    ],
-)
-
-fb_native.android_library(
-    name = "legacy-support-core-ui",
-    visibility = ["PUBLIC"],
-    exported_deps = [
-        ":annotation",
-        ":asynclayoutinflater",
-        ":coordinatorlayout",
-        ":core",
-        ":cursoradapter",
-        ":customview",
-        ":drawerlayout",
-        ":interpolator",
-        ":legacy-support-core-ui-binary",
-        ":legacy-support-core-utils",
-        ":slidingpanelayout",
-        ":swiperefreshlayout",
-        ":viewpager",
     ],
 )
 
@@ -292,6 +273,15 @@ fb_native.android_library(
 )
 
 fb_native.android_library(
+    name = "tracing",
+    visibility = ["PUBLIC"],
+    exported_deps = [
+        ":annotation",
+        ":tracing-binary",
+    ],
+)
+
+fb_native.android_library(
     name = "test-monitor",
     visibility = ["PUBLIC"],
     exported_deps = [
@@ -333,7 +323,6 @@ fb_native.android_library(
     name = "vectordrawable-animated",
     visibility = ["PUBLIC"],
     exported_deps = [
-        ":legacy-support-core-ui",
         ":vectordrawable",
         ":vectordrawable-animated-binary",
     ],
@@ -437,11 +426,6 @@ fb_native.android_prebuilt_aar(
 )
 
 fb_native.android_prebuilt_aar(
-    name = "legacy-support-core-ui-binary",
-    aar = ":legacy-support-core-ui-binary-aar",
-)
-
-fb_native.android_prebuilt_aar(
     name = "legacy-support-core-utils-binary",
     aar = ":legacy-support-core-utils-binary-aar",
 )
@@ -494,6 +478,11 @@ fb_native.android_prebuilt_aar(
 fb_native.android_prebuilt_aar(
     name = "swiperefreshlayout-binary",
     aar = ":swiperefreshlayout-binary-aar",
+)
+
+fb_native.android_prebuilt_aar(
+    name = "tracing-binary",
+    aar = ":tracing-binary-aar",
 )
 
 fb_native.android_prebuilt_aar(
@@ -629,12 +618,6 @@ fb_native.remote_file(
 )
 
 fb_native.remote_file(
-    name = "legacy-support-core-ui-binary-aar",
-    sha1 = "61a264f996046e059f889914050fae1e75d3b702",
-    url = "mvn:androidx.legacy:legacy-support-core-ui:aar:1.0.0",
-)
-
-fb_native.remote_file(
     name = "legacy-support-core-utils-binary-aar",
     sha1 = "9b9570042115da8629519090dfeb71df75da59fc",
     url = "mvn:androidx.legacy:legacy-support-core-utils:aar:1.0.0",
@@ -698,6 +681,12 @@ fb_native.remote_file(
     name = "swiperefreshlayout-binary-aar",
     sha1 = "4fd265b80a2b0fbeb062ab2bc4b1487521507762",
     url = "mvn:androidx.swiperefreshlayout:swiperefreshlayout:aar:1.0.0",
+)
+
+fb_native.remote_file(
+    name = "tracing-binary-aar",
+    sha1 = "cdc41b1335c3857e4136d399f6a7962663d05e5e",
+    url = "mvn:androidx.tracing:tracing:aar:1.1.0",
 )
 
 fb_native.remote_file(

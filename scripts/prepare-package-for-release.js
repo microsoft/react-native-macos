@@ -21,6 +21,7 @@
 const {echo, exec, exit} = require('shelljs');
 const yargs = require('yargs');
 const {isReleaseBranch, parseVersion} = require('./version-utils');
+const {failIfTagExists} = require('./release-utils');
 
 const argv = yargs
   .option('r', {
@@ -36,26 +37,46 @@ const argv = yargs
     alias: 'latest',
     type: 'boolean',
     default: false,
+  })
+  .option('d', {
+    alias: 'dry-run',
+    type: 'boolean',
+    default: false,
   }).argv;
 
-const currentCommit = process.env.CIRCLE_SHA1;
 const branch = process.env.CIRCLE_BRANCH;
 const remote = argv.remote;
 const releaseVersion = argv.toVersion;
 const isLatest = argv.latest;
+const isDryRun = argv.dryRun;
 
-if (!isReleaseBranch(branch)) {
+const buildType = isDryRun
+  ? 'dry-run'
+  : isReleaseBranch(branch)
+  ? 'release'
+  : 'nightly';
+
+failIfTagExists(releaseVersion, buildType);
+
+if (branch && !isReleaseBranch(branch) && !isDryRun) {
   console.error(`This needs to be on a release branch. On branch: ${branch}`);
+  exit(1);
+} else if (!branch && !isDryRun) {
+  console.error('This needs to be on a release branch.');
   exit(1);
 }
 
-const {version} = parseVersion(releaseVersion);
+const {version} = parseVersion(releaseVersion, buildType);
 if (version == null) {
   console.error(`Invalid version provided: ${releaseVersion}`);
   exit(1);
 }
 
-if (exec(`node scripts/set-rn-version.js --to-version ${version}`).code) {
+if (
+  exec(
+    `node scripts/set-rn-version.js --to-version ${version} --build-type ${buildType}`,
+  ).code
+) {
   echo(`Failed to set React Native version to ${version}`);
   exit(1);
 }
@@ -68,6 +89,12 @@ if (exec('source scripts/update_podfile_lock.sh && update_pods').code) {
   exit(1);
 }
 
+echo(`Local checkout has been prepared for release version ${version}.`);
+if (isDryRun) {
+  echo('Changes will not be committed because --dry-run was set to true.');
+  exit(0);
+}
+
 // Make commit [0.21.0-rc] Bump version numbers
 if (exec(`git commit -a -m "[${version}] Bump version numbers"`).code) {
   echo('failed to commit');
@@ -75,7 +102,8 @@ if (exec(`git commit -a -m "[${version}] Bump version numbers"`).code) {
 }
 
 // Add tag v0.21.0-rc.1
-if (exec(`git tag -a v${version} -m "v${version}"`).code) {
+// [macOS] Add "-microsoft" suffix to tag to distinguish from React Native Core.
+if (exec(`git tag -a v${version}-microsoft -m "v${version}-microsoft"`).code) {
   echo(
     `failed to tag the commit with v${version}, are you sure this release wasn't made earlier?`,
   );

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @emails oncall+react_native
+ * @oncall react_native
  */
 
 'use strict';
@@ -19,7 +19,7 @@ describe('resolveAssetSource', () => {
   beforeEach(() => {
     jest.resetModules();
 
-    AssetRegistry = require('@react-native/assets/registry');
+    AssetRegistry = require('@react-native/assets-registry/registry');
     resolveAssetSource = require('../resolveAssetSource');
     NativeSourceCode =
       require('../../NativeModules/specs/NativeSourceCode').default;

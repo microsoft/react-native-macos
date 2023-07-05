@@ -6,11 +6,11 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 #import <React/RCTDefines.h>
 #import <React/RCTInspectorPackagerConnection.h>
 
-#if RCT_DEV
+#if RCT_DEV || RCT_REMOTE_PROFILE
 
 @interface RCTInspectorDevServerHelper : NSObject
 

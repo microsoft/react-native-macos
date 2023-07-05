@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
@@ -40,6 +40,11 @@ RCT_EXTERN NSString *const RCTShowDevMenuNotification;
 @property (nonatomic, assign) BOOL hotLoadingEnabled DEPRECATED_ATTRIBUTE;
 
 /**
+ * Whether the hotkeys that toggles the developer menu is enabled.
+ */
+@property (nonatomic, assign) BOOL hotkeysEnabled;
+
+/**
  * Presented items in development menu
  */
 @property (nonatomic, copy, readonly) NSArray<RCTDevMenuItem *> *presentedItems;
@@ -70,12 +75,12 @@ RCT_EXTERN NSString *const RCTShowDevMenuNotification;
  */
 - (void)addItem:(RCTDevMenuItem *)item;
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
 /**
  * Creates the NSMenu for macOS.
  */
 - (NSMenu *)menu;
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
 @end
 

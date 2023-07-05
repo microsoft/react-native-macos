@@ -21,9 +21,10 @@ extern NSString *const RCTAccessibilityManagerDidUpdateMultiplierNotification; /
 
 @property (nonatomic, assign) BOOL isBoldTextEnabled;
 @property (nonatomic, assign) BOOL isGrayscaleEnabled;
-@property (nonatomic, assign) BOOL isHighContrastEnabled; // TODO(macOS GH#774) - maps to shouldIncreaseContrast on macOS
+@property (nonatomic, assign) BOOL isHighContrastEnabled; // [macOS] maps to shouldIncreaseContrast on macOS
 @property (nonatomic, assign) BOOL isInvertColorsEnabled;
 @property (nonatomic, assign) BOOL isReduceMotionEnabled;
+@property (nonatomic, assign) BOOL prefersCrossFadeTransitions;
 @property (nonatomic, assign) BOOL isReduceTransparencyEnabled;
 @property (nonatomic, assign) BOOL isVoiceOverEnabled;
 

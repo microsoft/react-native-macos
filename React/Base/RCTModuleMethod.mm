@@ -91,7 +91,7 @@ static BOOL RCTParseSelectorPart(const char **input, NSMutableString *selector)
 static BOOL RCTParseUnused(const char **input)
 {
   return RCTReadString(input, "__attribute__((unused))") || RCTReadString(input, "__attribute__((__unused__))") ||
-      RCTReadString(input, "__unused");
+      RCTReadString(input, "__unused") || RCTReadString(input, "[[maybe_unused]]");
 }
 
 static RCTNullability RCTParseNullability(const char **input)
@@ -602,7 +602,7 @@ RCT_EXTERN_C_END
   return [NSString stringWithFormat:@"-[%@ %s]", _moduleClass, sel_getName(_selector)];
 }
 
-#if DEBUG // TODO(macOS GH#774) description is a debug-only feature
+#if DEBUG // [macOS description is a debug-only feature
 - (NSString *)description
 {
   return [NSString stringWithFormat:@"<%@: %p; exports %@ as %s(); type: %s>",
@@ -612,6 +612,6 @@ RCT_EXTERN_C_END
                                     self.JSMethodName,
                                     RCTFunctionDescriptorFromType(self.functionType)];
 }
-#endif // TODO(macOS GH#774)
+#endif // macOS]
 
 @end

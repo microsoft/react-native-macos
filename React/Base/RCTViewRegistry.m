@@ -26,9 +26,9 @@
   _bridgelessComponentViewProvider = bridgelessComponentViewProvider;
 }
 
-- (RCTPlatformView *)viewForReactTag:(NSNumber *)reactTag // TODO(macOS GH#774)
+- (RCTPlatformView *)viewForReactTag:(NSNumber *)reactTag // [macOS]
 {
-  RCTPlatformView *view = nil; // TODO(macOS GH#774)
+  RCTPlatformView *view = nil; // [macOS]
 
   RCTBridge *bridge = _bridge;
   if (bridge) {
@@ -40,6 +40,30 @@
   }
 
   return view;
+}
+
+- (void)addUIBlock:(RCTViewRegistryUIBlock)block
+{
+  if (!block) {
+    return;
+  }
+
+  __weak __typeof(self) weakSelf = self;
+  if (_bridge) {
+    [_bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) {
+      __typeof(self) strongSelf = weakSelf;
+      if (strongSelf) {
+        block(strongSelf);
+      }
+    }];
+  } else {
+    RCTExecuteOnMainQueue(^{
+      __typeof(self) strongSelf = weakSelf;
+      if (strongSelf) {
+        block(strongSelf);
+      }
+    });
+  }
 }
 
 @end

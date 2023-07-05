@@ -8,23 +8,24 @@
  * @flow strict-local
  */
 
-const DevSettings = require('./DevSettings');
-const invariant = require('invariant');
-const MetroHMRClient = require('metro-runtime/src/modules/HMRClient');
-const Platform = require('./Platform');
-const prettyFormat = require('pretty-format');
+import type {ExtendedError} from '../Core/ExtendedError';
 
 import getDevServer from '../Core/Devtools/getDevServer';
-import NativeRedBox from '../NativeModules/specs/NativeRedBox';
 import LogBox from '../LogBox/LogBox';
-import type {ExtendedError} from '../Core/ExtendedError';
+import NativeRedBox from '../NativeModules/specs/NativeRedBox';
+
+const DevSettings = require('./DevSettings');
+const Platform = require('./Platform');
+const invariant = require('invariant');
+const MetroHMRClient = require('metro-runtime/src/modules/HMRClient');
+const prettyFormat = require('pretty-format');
 
 const pendingEntryPoints = [];
 let hmrClient = null;
 let hmrUnavailableReason: string | null = null;
 let currentCompileErrorMessage: string | null = null;
 let didConnect: boolean = false;
-let pendingLogs: Array<[LogLevel, Array<mixed>]> = [];
+let pendingLogs: Array<[LogLevel, $ReadOnlyArray<mixed>]> = [];
 
 type LogLevel =
   | 'trace'
@@ -41,7 +42,7 @@ export type HMRClientNativeInterface = {|
   enable(): void,
   disable(): void,
   registerBundle(requestUrl: string): void,
-  log(level: LogLevel, data: Array<mixed>): void,
+  log(level: LogLevel, data: $ReadOnlyArray<mixed>): void,
   setup(
     platform: string,
     bundleEntry: string,
@@ -104,7 +105,7 @@ const HMRClient: HMRClientNativeInterface = {
     registerBundleEntryPoints(hmrClient);
   },
 
-  log(level: LogLevel, data: Array<mixed>) {
+  log(level: LogLevel, data: $ReadOnlyArray<mixed>) {
     if (!hmrClient) {
       // Catch a reasonable number of early logs
       // in case hmrClient gets initialized later.
@@ -180,10 +181,7 @@ const HMRClient: HMRClientNativeInterface = {
 Try the following to fix the issue:
 - Ensure that Metro is running and available on the same network`;
 
-      if (
-        Platform.OS === 'ios' ||
-        Platform.OS === 'macos' /* TODO(macOS GH#774) */
-      ) {
+      if (Platform.OS === 'ios' || Platform.OS === 'macos' /* [macOS] */) {
         error += `
 - Ensure that the Metro URL is correctly set in AppDelegate`;
       } else {
@@ -243,9 +241,29 @@ Error: ${e.message}`;
       }
     });
 
-    client.on('close', data => {
+    client.on('close', closeEvent => {
       LoadingView.hide();
-      setHMRUnavailableReason('Disconnected from Metro.');
+
+      // https://www.rfc-editor.org/rfc/rfc6455.html#section-7.4.1
+      // https://www.rfc-editor.org/rfc/rfc6455.html#section-7.1.5
+      const isNormalOrUnsetCloseReason =
+        closeEvent == null ||
+        closeEvent.code === 1000 ||
+        closeEvent.code === 1005 ||
+        closeEvent.code == null;
+
+      setHMRUnavailableReason(
+        `${
+          isNormalOrUnsetCloseReason
+            ? 'Disconnected from Metro.'
+            : `Disconnected from Metro (${closeEvent.code}: "${closeEvent.reason}").`
+        }
+
+To reconnect:
+- Ensure that Metro is running and available on the same network
+- Reload this app (will trigger further help if Metro cannot be connected to)
+      `,
+      );
     });
 
     if (isEnabled) {
@@ -259,7 +277,7 @@ Error: ${e.message}`;
   },
 };
 
-function setHMRUnavailableReason(reason) {
+function setHMRUnavailableReason(reason: string) {
   invariant(hmrClient, 'Expected HMRClient.setup() call at startup.');
   if (hmrUnavailableReason !== null) {
     // Don't show more than one warning.
@@ -276,7 +294,7 @@ function setHMRUnavailableReason(reason) {
   }
 }
 
-function registerBundleEntryPoints(client) {
+function registerBundleEntryPoints(client: MetroHMRClient) {
   if (hmrUnavailableReason != null) {
     DevSettings.reload('Bundle Splitting – Metro disconnected');
     return;
@@ -293,9 +311,9 @@ function registerBundleEntryPoints(client) {
   }
 }
 
-function flushEarlyLogs(client) {
+function flushEarlyLogs(client: MetroHMRClient) {
   try {
-    pendingLogs.forEach(([level: LogLevel, data: Array<mixed>]) => {
+    pendingLogs.forEach(([level, data]) => {
       HMRClient.log(level, data);
     });
   } finally {
@@ -305,8 +323,7 @@ function flushEarlyLogs(client) {
 
 function dismissRedbox() {
   if (
-    (Platform.OS === 'ios' ||
-      Platform.OS === 'macos') /* TODO(macOS GH#774) */ &&
+    (Platform.OS === 'ios' || Platform.OS === 'macos') /* [macOS] */ &&
     NativeRedBox != null &&
     NativeRedBox.dismiss != null
   ) {

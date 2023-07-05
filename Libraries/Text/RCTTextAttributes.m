@@ -11,17 +11,16 @@
 #import <React/RCTFont.h>
 #import <React/RCTLog.h>
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
 #import <React/RCTCursor.h>
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
 NSString *const RCTTextAttributesIsHighlightedAttributeName = @"RCTTextAttributesIsHighlightedAttributeName";
-NSString *const RCTTextAttributesFontSmoothingAttributeName = @"RCTTextAttributesFontSmoothingAttributeName"; // TODO(OSS Candidate ISS#2710739)
 NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttributeName";
 
 @implementation RCTTextAttributes
 
-// [TODO(macOS GH#774)
+// [macOS
 + (RCTUIColor *)defaultForegroundColor
 {
   if (@available(iOS 13.0, *)) {
@@ -30,7 +29,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     return [RCTUIColor blackColor];
   }
 }
-// ]TODO(macOS GH#774)
+// macOS]
 
 - (instancetype)init
 {
@@ -43,15 +42,14 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     _maxFontSizeMultiplier = NAN;
     _alignment = NSTextAlignmentNatural;
     _baseWritingDirection = NSWritingDirectionNatural;
+    _lineBreakStrategy = NSLineBreakStrategyNone;
     _textShadowRadius = NAN;
     _opacity = NAN;
     _textTransform = RCTTextTransformUndefined;
-    // [TODO(macOS GH#774)
-    _foregroundColor = [RCTTextAttributes defaultForegroundColor];
-    // ]TODO(macOS GH#774)
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+    _foregroundColor = [RCTTextAttributes defaultForegroundColor]; // [macOS]
+#if TARGET_OS_OSX // [macOS
     _cursor = RCTCursorAuto;
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
   }
 
   return self;
@@ -66,45 +64,59 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   // Color
   _foregroundColor = textAttributes->_foregroundColor == [RCTTextAttributes defaultForegroundColor] ? _foregroundColor : textAttributes->_foregroundColor;
   _backgroundColor = textAttributes->_backgroundColor ?: _backgroundColor;
-  _opacity = !isnan(textAttributes->_opacity) ? (isnan(_opacity) ? 1.0 : _opacity) * textAttributes->_opacity : _opacity;
+  _opacity =
+      !isnan(textAttributes->_opacity) ? (isnan(_opacity) ? 1.0 : _opacity) * textAttributes->_opacity : _opacity;
 
   // Font
   _fontFamily = textAttributes->_fontFamily ?: _fontFamily;
   _fontSize = !isnan(textAttributes->_fontSize) ? textAttributes->_fontSize : _fontSize;
-  _fontSizeMultiplier = !isnan(textAttributes->_fontSizeMultiplier) ? textAttributes->_fontSizeMultiplier : _fontSizeMultiplier;
-  _maxFontSizeMultiplier = !isnan(textAttributes->_maxFontSizeMultiplier) ? textAttributes->_maxFontSizeMultiplier : _maxFontSizeMultiplier;
+  _fontSizeMultiplier =
+      !isnan(textAttributes->_fontSizeMultiplier) ? textAttributes->_fontSizeMultiplier : _fontSizeMultiplier;
+  _maxFontSizeMultiplier =
+      !isnan(textAttributes->_maxFontSizeMultiplier) ? textAttributes->_maxFontSizeMultiplier : _maxFontSizeMultiplier;
   _fontWeight = textAttributes->_fontWeight ?: _fontWeight;
   _fontStyle = textAttributes->_fontStyle ?: _fontStyle;
   _fontVariant = textAttributes->_fontVariant ?: _fontVariant;
-  _allowFontScaling = textAttributes->_allowFontScaling || _allowFontScaling;  // *
-  _dynamicTypeRamp = textAttributes->_dynamicTypeRamp != RCTDynamicTypeRampUndefined ? textAttributes->_dynamicTypeRamp : _dynamicTypeRamp; // TODO(macOS GH#774)
+  _allowFontScaling = textAttributes->_allowFontScaling || _allowFontScaling; // *
+  _dynamicTypeRamp = textAttributes->_dynamicTypeRamp != RCTDynamicTypeRampUndefined ? textAttributes->_dynamicTypeRamp
+                                                                                     : _dynamicTypeRamp;
   _letterSpacing = !isnan(textAttributes->_letterSpacing) ? textAttributes->_letterSpacing : _letterSpacing;
-  _fontSmoothing = textAttributes->_fontSmoothing != RCTFontSmoothingAuto ? textAttributes->_fontSmoothing : _fontSmoothing; // TODO(OSS Candidate ISS#2710739)
 
   // Paragraph Styles
   _lineHeight = !isnan(textAttributes->_lineHeight) ? textAttributes->_lineHeight : _lineHeight;
   _alignment = textAttributes->_alignment != NSTextAlignmentNatural ? textAttributes->_alignment : _alignment; // *
-  _baseWritingDirection = textAttributes->_baseWritingDirection != NSWritingDirectionNatural ? textAttributes->_baseWritingDirection : _baseWritingDirection; // *
+  _baseWritingDirection = textAttributes->_baseWritingDirection != NSWritingDirectionNatural
+      ? textAttributes->_baseWritingDirection
+      : _baseWritingDirection; // *
+  _lineBreakStrategy = textAttributes->_lineBreakStrategy ?: _lineBreakStrategy;
 
   // Decoration
   _textDecorationColor = textAttributes->_textDecorationColor ?: _textDecorationColor;
-  _textDecorationStyle = textAttributes->_textDecorationStyle != NSUnderlineStyleSingle ? textAttributes->_textDecorationStyle : _textDecorationStyle; // *
-  _textDecorationLine = textAttributes->_textDecorationLine != RCTTextDecorationLineTypeNone ? textAttributes->_textDecorationLine : _textDecorationLine; // *
+  _textDecorationStyle = textAttributes->_textDecorationStyle != NSUnderlineStyleSingle
+      ? textAttributes->_textDecorationStyle
+      : _textDecorationStyle; // *
+  _textDecorationLine = textAttributes->_textDecorationLine != RCTTextDecorationLineTypeNone
+      ? textAttributes->_textDecorationLine
+      : _textDecorationLine; // *
 
   // Shadow
-  _textShadowOffset = !CGSizeEqualToSize(textAttributes->_textShadowOffset, CGSizeZero) ? textAttributes->_textShadowOffset : _textShadowOffset; // *
+  _textShadowOffset = !CGSizeEqualToSize(textAttributes->_textShadowOffset, CGSizeZero)
+      ? textAttributes->_textShadowOffset
+      : _textShadowOffset; // *
   _textShadowRadius = !isnan(textAttributes->_textShadowRadius) ? textAttributes->_textShadowRadius : _textShadowRadius;
   _textShadowColor = textAttributes->_textShadowColor ?: _textShadowColor;
 
   // Special
-  _isHighlighted = textAttributes->_isHighlighted || _isHighlighted;  // *
+  _isHighlighted = textAttributes->_isHighlighted || _isHighlighted; // *
   _tag = textAttributes->_tag ?: _tag;
-  _layoutDirection = textAttributes->_layoutDirection != UIUserInterfaceLayoutDirectionLeftToRight ? textAttributes->_layoutDirection : _layoutDirection;
-  _textTransform = textAttributes->_textTransform != RCTTextTransformUndefined ? textAttributes->_textTransform : _textTransform;
-
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+  _layoutDirection = textAttributes->_layoutDirection != UIUserInterfaceLayoutDirectionLeftToRight
+      ? textAttributes->_layoutDirection
+      : _layoutDirection;
+  _textTransform =
+      textAttributes->_textTransform != RCTTextTransformUndefined ? textAttributes->_textTransform : _textTransform;
+#if TARGET_OS_OSX // [macOS
   _cursor = textAttributes->_cursor != RCTCursorAuto ? textAttributes->_cursor : _cursor;
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 }
 
 - (NSParagraphStyle *)effectiveParagraphStyle
@@ -131,6 +143,13 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     isParagraphStyleUsed = YES;
   }
 
+  if (_lineBreakStrategy != NSLineBreakStrategyNone) {
+    if (@available(iOS 14.0, macOS 11.0, *)) { // [macOS]
+      paragraphStyle.lineBreakStrategy = _lineBreakStrategy;
+      isParagraphStyleUsed = YES;
+    }
+  }
+
   if (!isnan(_lineHeight)) {
     CGFloat lineHeight = _lineHeight * self.effectiveFontSizeMultiplier;
     paragraphStyle.minimumLineHeight = lineHeight;
@@ -147,8 +166,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
 
 - (NSDictionary<NSAttributedStringKey, id> *)effectiveTextAttributes
 {
-  NSMutableDictionary<NSAttributedStringKey, id> *attributes =
-    [NSMutableDictionary dictionaryWithCapacity:10];
+  NSMutableDictionary<NSAttributedStringKey, id> *attributes = [NSMutableDictionary dictionaryWithCapacity:10];
 
   // Font
   UIFont *font = self.effectiveFont;
@@ -157,7 +175,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   }
 
   // Colors
-  RCTUIColor *effectiveForegroundColor = self.effectiveForegroundColor; // TODO(OSS Candidate ISS#2710739)
+  RCTUIColor *effectiveForegroundColor = self.effectiveForegroundColor; // [macOS]
 
   if (_foregroundColor || !isnan(_opacity)) {
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
@@ -187,7 +205,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   }
 
   if (_textDecorationLine == RCTTextDecorationLineTypeStrikethrough ||
-      _textDecorationLine == RCTTextDecorationLineTypeUnderlineStrikethrough){
+      _textDecorationLine == RCTTextDecorationLineTypeUnderlineStrikethrough) {
     isTextDecorationEnabled = YES;
     attributes[NSStrikethroughStyleAttributeName] = @(_textDecorationStyle);
   }
@@ -211,21 +229,15 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
     attributes[RCTTextAttributesIsHighlightedAttributeName] = @YES;
   }
 
-  // [TODO(macOS GH#774)
-  if (_fontSmoothing != RCTFontSmoothingAuto) {
-    attributes[RCTTextAttributesFontSmoothingAttributeName] = @(_fontSmoothing);
-  }
-  // ]TODO(macOS GH#774)
-
   if (_tag) {
     attributes[RCTTextAttributesTagAttributeName] = _tag;
   }
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
   if (_cursor != RCTCursorAuto) {
     attributes[NSCursorAttributeName] = [RCTConvert NSCursor:_cursor];
   }
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
   return [attributes copy];
 }
@@ -248,13 +260,14 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
 
   if (fontScalingEnabled) {
     CGFloat fontSizeMultiplier = !isnan(_fontSizeMultiplier) ? _fontSizeMultiplier : 1.0;
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
     if (_dynamicTypeRamp != RCTDynamicTypeRampUndefined) {
       UIFontMetrics *fontMetrics = RCTUIFontMetricsForDynamicTypeRamp(_dynamicTypeRamp);
-      CGFloat baseSize = RCTBaseSizeForDynamicTypeRamp(_dynamicTypeRamp);
-      fontSizeMultiplier = [fontMetrics scaledValueForValue:baseSize] / baseSize;
+      // Using a specific font size reduces rounding errors from -scaledValueForValue:
+      CGFloat requestedSize = isnan(_fontSize) ? RCTBaseSizeForDynamicTypeRamp(_dynamicTypeRamp) : _fontSize;
+      fontSizeMultiplier = [fontMetrics scaledValueForValue:requestedSize] / requestedSize;
     }
-#endif // ]TODO(macOS GH#774)
+#endif // [macOS]
     CGFloat maxFontSizeMultiplier = !isnan(_maxFontSizeMultiplier) ? _maxFontSizeMultiplier : 0.0;
     return maxFontSizeMultiplier >= 1.0 ? fminf(maxFontSizeMultiplier, fontSizeMultiplier) : fontSizeMultiplier;
   } else {
@@ -262,26 +275,28 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   }
 }
 
-- (RCTUIColor *)effectiveForegroundColor // TODO(OSS Candidate ISS#2710739)
+- (RCTUIColor *)effectiveForegroundColor // [macOS]
 {
-  RCTUIColor *effectiveForegroundColor = _foregroundColor ?: [RCTUIColor blackColor]; // TODO(OSS Candidate ISS#2710739)
+  RCTUIColor *effectiveForegroundColor = _foregroundColor ?: [RCTUIColor blackColor]; // [macOS]
 
   if (!isnan(_opacity)) {
-    effectiveForegroundColor = [effectiveForegroundColor colorWithAlphaComponent:CGColorGetAlpha(effectiveForegroundColor.CGColor) * _opacity];
+    effectiveForegroundColor =
+        [effectiveForegroundColor colorWithAlphaComponent:CGColorGetAlpha(effectiveForegroundColor.CGColor) * _opacity];
   }
 
   return effectiveForegroundColor;
 }
 
-- (RCTUIColor *)effectiveBackgroundColor // TODO(OSS Candidate ISS#2710739)
+- (RCTUIColor *)effectiveBackgroundColor // [macOS]
 {
-  RCTUIColor *effectiveBackgroundColor = _backgroundColor;// ?: [[UIColor whiteColor] colorWithAlphaComponent:0]; // TODO(OSS Candidate ISS#2710739)
+  RCTUIColor *effectiveBackgroundColor = _backgroundColor; // ?: [[UIColor whiteColor] colorWithAlphaComponent:0]; // [macOS]
 
   if (effectiveBackgroundColor && !isnan(_opacity)) {
-    effectiveBackgroundColor = [effectiveBackgroundColor colorWithAlphaComponent:CGColorGetAlpha(effectiveBackgroundColor.CGColor) * _opacity];
+    effectiveBackgroundColor =
+        [effectiveBackgroundColor colorWithAlphaComponent:CGColorGetAlpha(effectiveBackgroundColor.CGColor) * _opacity];
   }
 
-  return effectiveBackgroundColor ?: [RCTUIColor clearColor]; // TODO(OSS Candidate ISS#2710739)
+  return effectiveBackgroundColor ?: [RCTUIColor clearColor]; // [macOS]
 }
 
 static NSString *capitalizeText(NSString *text)
@@ -290,7 +305,7 @@ static NSString *capitalizeText(NSString *text)
   NSMutableArray *newWords = [NSMutableArray new];
   NSNumberFormatter *num = [NSNumberFormatter new];
   for (NSString *item in words) {
-    NSString *word; 
+    NSString *word;
     if ([item length] > 0 && [num numberFromString:[item substringWithRange:NSMakeRange(0, 1)]] == nil) {
       word = [item capitalizedString];
     } else {
@@ -340,51 +355,26 @@ static NSString *capitalizeText(NSString *text)
 #define RCTTextAttributesCompareStrings(a) ((a == textAttributes->a) || [a isEqualToString:textAttributes->a])
 #define RCTTextAttributesCompareOthers(a) (a == textAttributes->a)
 
-  return
-    RCTTextAttributesCompareObjects(_foregroundColor) &&
-    RCTTextAttributesCompareObjects(_backgroundColor) &&
-    RCTTextAttributesCompareFloats(_opacity) &&
-    // Font
-    RCTTextAttributesCompareObjects(_fontFamily) &&
-    RCTTextAttributesCompareFloats(_fontSize) &&
-    RCTTextAttributesCompareFloats(_fontSizeMultiplier) &&
-    RCTTextAttributesCompareFloats(_maxFontSizeMultiplier) &&
-    RCTTextAttributesCompareStrings(_fontWeight) &&
-    RCTTextAttributesCompareObjects(_fontStyle) &&
-    RCTTextAttributesCompareObjects(_fontVariant) &&
-    RCTTextAttributesCompareOthers(_allowFontScaling) &&
-    RCTTextAttributesCompareOthers(_dynamicTypeRamp) && // TODO(macOS GH#774)
-    RCTTextAttributesCompareFloats(_letterSpacing) &&
-    RCTTextAttributesCompareOthers(_fontSmoothing) && // TODO(OSS Candidate ISS#2710739)
-    // Paragraph Styles
-    RCTTextAttributesCompareFloats(_lineHeight) &&
-    RCTTextAttributesCompareFloats(_alignment) &&
-    RCTTextAttributesCompareOthers(_baseWritingDirection) &&
-    // Decoration
-    RCTTextAttributesCompareObjects(_textDecorationColor) &&
-    RCTTextAttributesCompareOthers(_textDecorationStyle) &&
-    RCTTextAttributesCompareOthers(_textDecorationLine) &&
-    // Shadow
-    RCTTextAttributesCompareSize(_textShadowOffset) &&
-    RCTTextAttributesCompareFloats(_textShadowRadius) &&
-    RCTTextAttributesCompareObjects(_textShadowColor) &&
-    // Special
-    RCTTextAttributesCompareOthers(_isHighlighted) &&
-    RCTTextAttributesCompareObjects(_tag) &&
-    RCTTextAttributesCompareOthers(_layoutDirection) &&
-    RCTTextAttributesCompareOthers(_textTransform);
+  return RCTTextAttributesCompareObjects(_foregroundColor) && RCTTextAttributesCompareObjects(_backgroundColor) &&
+      RCTTextAttributesCompareFloats(_opacity) &&
+      // Font
+      RCTTextAttributesCompareObjects(_fontFamily) && RCTTextAttributesCompareFloats(_fontSize) &&
+      RCTTextAttributesCompareFloats(_fontSizeMultiplier) && RCTTextAttributesCompareFloats(_maxFontSizeMultiplier) &&
+      RCTTextAttributesCompareStrings(_fontWeight) && RCTTextAttributesCompareObjects(_fontStyle) &&
+      RCTTextAttributesCompareObjects(_fontVariant) && RCTTextAttributesCompareOthers(_allowFontScaling) &&
+      RCTTextAttributesCompareOthers(_dynamicTypeRamp) && RCTTextAttributesCompareFloats(_letterSpacing) &&
+      // Paragraph Styles
+      RCTTextAttributesCompareFloats(_lineHeight) && RCTTextAttributesCompareFloats(_alignment) &&
+      RCTTextAttributesCompareOthers(_baseWritingDirection) && RCTTextAttributesCompareOthers(_lineBreakStrategy) &&
+      // Decoration
+      RCTTextAttributesCompareObjects(_textDecorationColor) && RCTTextAttributesCompareOthers(_textDecorationStyle) &&
+      RCTTextAttributesCompareOthers(_textDecorationLine) &&
+      // Shadow
+      RCTTextAttributesCompareSize(_textShadowOffset) && RCTTextAttributesCompareFloats(_textShadowRadius) &&
+      RCTTextAttributesCompareObjects(_textShadowColor) &&
+      // Special
+      RCTTextAttributesCompareOthers(_isHighlighted) && RCTTextAttributesCompareObjects(_tag) &&
+      RCTTextAttributesCompareOthers(_layoutDirection) && RCTTextAttributesCompareOthers(_textTransform);
 }
-
-// [TODO(OSS Candidate ISS#2710739)
-static RCTFontSmoothing _fontSmoothingDefault = RCTFontSmoothingAuto;
-
-+ (RCTFontSmoothing)fontSmoothingDefault {
-  return _fontSmoothingDefault;
-}
-
-+ (void)setFontSmoothingDefault:(RCTFontSmoothing)fontSmoothingDefault {
-  _fontSmoothingDefault = fontSmoothingDefault;
-}
-// ]TODO(OSS Candidate ISS#2710739)
 
 @end

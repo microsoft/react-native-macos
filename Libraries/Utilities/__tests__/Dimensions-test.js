@@ -5,13 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @emails oncall+react_native
+ * @oncall react_native
  */
 
 'use strict';
 
 describe('Dimensions', () => {
-  const Dimensions = require('../Dimensions');
+  const Dimensions = require('../Dimensions').default;
   const Platform = require('../Platform');
 
   it('should set window dimensions', () => {

@@ -16,7 +16,6 @@
 #import <React/RCTModuleMethod.h>
 #import <ReactCommon/CallInvoker.h>
 #import <ReactCommon/TurboModule.h>
-#import <ReactCommon/TurboModuleUtils.h>
 #import <string>
 #import <unordered_map>
 
@@ -27,10 +26,8 @@
 namespace facebook {
 namespace react {
 
+class CallbackWrapper;
 class Instance;
-
-typedef std::weak_ptr<CallbackWrapper> (
-    ^RCTRetainJSCallback)(jsi::Function &&callback, jsi::Runtime &runtime, std::shared_ptr<CallInvoker> jsInvoker);
 
 /**
  * ObjC++ specific TurboModule base class.
@@ -44,7 +41,6 @@ class JSI_EXPORT ObjCTurboModule : public TurboModule {
     std::shared_ptr<CallInvoker> jsInvoker;
     std::shared_ptr<CallInvoker> nativeInvoker;
     bool isSyncModule;
-    RCTRetainJSCallback retainJSCallback;
   };
 
   ObjCTurboModule(const InitParams &params);
@@ -66,8 +62,6 @@ class JSI_EXPORT ObjCTurboModule : public TurboModule {
  private:
   // Does the NativeModule dispatch async methods to the JS thread?
   const bool isSyncModule_;
-
-  RCTRetainJSCallback retainJSCallback_;
 
   /**
    * TODO(ramanpreet):

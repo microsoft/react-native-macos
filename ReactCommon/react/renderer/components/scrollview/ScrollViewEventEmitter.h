@@ -12,7 +12,6 @@
 #include <folly/dynamic.h>
 #include <react/renderer/components/view/ViewEventEmitter.h>
 #include <react/renderer/core/EventEmitter.h>
-#include <react/renderer/graphics/Geometry.h>
 
 namespace facebook {
 namespace react {
@@ -38,7 +37,7 @@ class ScrollViewEventEmitter : public ViewEventEmitter {
 
  private:
   void dispatchScrollViewEvent(
-      const std::string &name,
+      std::string name,
       const ScrollViewMetrics &scrollViewMetrics,
       EventPriority priority = EventPriority::AsynchronousBatched) const;
 };

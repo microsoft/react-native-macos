@@ -7,10 +7,8 @@ const path = require('path');
 const childProcess = require('child_process');
 const fs = require('fs');
 const {
-  appendToExistingFile,
   createDir,
   copyAndReplaceAll,
-  copyAndReplaceWithChangedCallback,
 } = require('../generator-common');
 
 const macOSDir = 'macos';
@@ -41,7 +39,6 @@ function copyProjectTemplateAndReplace(
   }
 
   createDir(path.join(destPath, macOSDir));
-  createDir(path.join(destPath, srcDirPath(newProjectName, 'iOS')));
   createDir(path.join(destPath, srcDirPath(newProjectName, 'macOS')));
   createDir(path.join(destPath, xcodeprojPath(newProjectName)));
   createDir(path.join(destPath, schemesPath(newProjectName)));
@@ -53,10 +50,8 @@ function copyProjectTemplateAndReplace(
   [
     { from: path.join(srcRootPath, macOSDir, 'Podfile'), to: path.join(macOSDir, 'Podfile') },
     { from: path.join(srcRootPath, macOSDir, '_gitignore'), to: path.join(macOSDir, '.gitignore') },
-    { from: path.join(srcRootPath, srcDirPath(oldProjectName, 'iOS')), to: srcDirPath(newProjectName, 'iOS') },
     { from: path.join(srcRootPath, srcDirPath(oldProjectName, 'macOS')), to: srcDirPath(newProjectName, 'macOS') },
     { from: path.join(srcRootPath, pbxprojPath(oldProjectName)), to: pbxprojPath(newProjectName) },
-    { from: path.join(srcRootPath, schemePath(oldProjectName, 'iOS')), to: schemePath(newProjectName, 'iOS') },
     { from: path.join(srcRootPath, schemePath(oldProjectName, 'macOS')), to: schemePath(newProjectName, 'macOS') },
   ].forEach((mapping) => copyAndReplaceAll(mapping.from, destPath, mapping.to, templateVars, options.overwrite));
 }

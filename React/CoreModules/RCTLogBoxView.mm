@@ -11,7 +11,7 @@
 #import <React/RCTSurface.h>
 #import <React/RCTSurfaceHostingView.h>
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
 
 @implementation RCTLogBoxView {
   RCTSurface *_surface;
@@ -35,23 +35,10 @@
   self.rootViewController = _rootViewController;
 }
 
-- (instancetype)initWithFrame:(CGRect)frame surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
-{
-  if (self = [super initWithFrame:frame]) {
-    id<RCTSurfaceProtocol> surface = [surfacePresenter createFabricSurfaceForModuleName:@"LogBox"
-                                                                      initialProperties:@{}];
-    [surface start];
-    RCTSurfaceHostingView *rootView = [[RCTSurfaceHostingView alloc]
-        initWithSurface:surface
-        sizeMeasureMode:RCTSurfaceSizeMeasureModeWidthExact | RCTSurfaceSizeMeasureModeHeightExact];
-
-    [self createRootViewController:rootView];
-  }
-  return self;
-}
-
 - (instancetype)initWithWindow:(UIWindow *)window bridge:(RCTBridge *)bridge
 {
+  RCTErrorNewArchitectureValidation(RCTNotAllowedInFabricWithoutLegacy, @"RCTLogBoxView", nil);
+
   if (@available(iOS 13.0, *)) {
     self = [super initWithWindowScene:window.windowScene];
   } else {
@@ -68,6 +55,24 @@
     RCTLogInfo(@"Failed to mount LogBox within 1s");
   }
   [self createRootViewController:(UIView *)_surface.view];
+
+  return self;
+}
+
+- (instancetype)initWithWindow:(UIWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
+{
+  if (@available(iOS 13.0, *)) {
+    self = [super initWithWindowScene:window.windowScene];
+  } else {
+    self = [super initWithFrame:window.frame];
+  }
+
+  id<RCTSurfaceProtocol> surface = [surfacePresenter createFabricSurfaceForModuleName:@"LogBox" initialProperties:@{}];
+  [surface start];
+  RCTSurfaceHostingView *rootView = [[RCTSurfaceHostingView alloc]
+      initWithSurface:surface
+      sizeMeasureMode:RCTSurfaceSizeMeasureModeWidthExact | RCTSurfaceSizeMeasureModeHeightExact];
+  [self createRootViewController:rootView];
 
   return self;
 }
@@ -91,7 +96,7 @@
 
 @end
 
-#else // [TODO(macOS GH#774)
+#else // [macOS
 
 @implementation RCTLogBoxView {
   RCTSurface *_surface;
@@ -139,7 +144,7 @@
   return self;
 }
 
-- (void)setHidden:(BOOL)hidden // [TODO(macOS GH#774)
+- (void)setHidden:(BOOL)hidden // [macOS
 {
   if (hidden) {
     if (NSApp.modalWindow == self) {
@@ -147,7 +152,7 @@
     }
     [self orderOut:nil];
   }
-} // ]TODO(macOS GH#774)
+} // macOS]
 
 - (void)show
 {
@@ -175,4 +180,4 @@
 
 @end
 
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]

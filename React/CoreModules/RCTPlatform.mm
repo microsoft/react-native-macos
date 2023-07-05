@@ -7,13 +7,15 @@
 
 #import "RCTPlatform.h"
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTUtils.h>
 #import <React/RCTVersion.h>
 
 #import "CoreModulesPlugins.h"
+
+#import <optional>
 
 using namespace facebook::react;
 
@@ -73,7 +75,7 @@ RCT_EXPORT_MODULE(PlatformConstants)
              .major = [versions[@"major"] doubleValue],
              .patch = [versions[@"patch"] doubleValue],
              .prerelease = [versions[@"prerelease"] isKindOfClass:[NSNull class]]
-                 ? folly::Optional<double>{}
+                 ? std::optional<double>{}
                  : [versions[@"prerelease"] doubleValue]}),
     });
   });

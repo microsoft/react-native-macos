@@ -18,25 +18,25 @@ const {
   Text,
   TextInput,
   View,
-  Image, // TODO(macOS GH#774)
-  Platform, // TODO(macOS GH#774)
+  Image, // [macOS]
+  Platform, // [macOS]
   StyleSheet,
-  Slider,
   Switch,
   Alert,
 } = require('react-native');
+// [macOS
 import type {
   KeyboardType,
   SettingChangeEvent,
   PasteEvent,
-} from 'react-native/Libraries/Components/TextInput/TextInput'; // [TODO(macOS GH#774)
+} from 'react-native/Libraries/Components/TextInput/TextInput'; // macOS]
 
 const TextInputSharedExamples = require('./TextInputSharedExamples.js');
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 class WithLabel extends React.Component<$FlowFixMeProps> {
-  render() {
+  render(): React.Node {
     return (
       <View style={styles.labelContainer}>
         <View style={styles.label}>
@@ -52,12 +52,12 @@ class TextInputAccessoryViewChangeTextExample extends React.Component<
   {...},
   {text: string},
 > {
-  constructor(props) {
+  constructor(props: void | {...}) {
     super(props);
     this.state = {text: 'Placeholder Text'};
   }
 
-  render() {
+  render(): React.Node {
     const inputAccessoryViewID = 'inputAccessoryView1';
     return (
       <View>
@@ -85,7 +85,7 @@ class TextInputAccessoryViewChangeKeyboardExample extends React.Component<
   {...},
   {keyboardType: string, text: string},
 > {
-  constructor(props) {
+  constructor(props: void | {...}) {
     super(props);
     this.state = {text: '', keyboardType: 'default'};
   }
@@ -97,11 +97,12 @@ class TextInputAccessoryViewChangeKeyboardExample extends React.Component<
     });
   };
 
-  render() {
+  render(): React.Node {
     const inputAccessoryViewID = 'inputAccessoryView2';
     return (
       <View>
         <Text>Set InputAccessoryView with ID & switch keyboard:</Text>
+        {/* $FlowFixMe[incompatible-use] */}
         <TextInput
           style={styles.default}
           inputAccessoryViewID={inputAccessoryViewID}
@@ -127,12 +128,12 @@ class TextInputAccessoryViewDefaultDoneButtonExample extends React.Component<
   |}>,
   {text: string},
 > {
-  constructor(props) {
+  constructor(props: void | $ReadOnly<{keyboardType: KeyboardType}>) {
     super(props);
     this.state = {text: ''};
   }
 
-  render() {
+  render(): React.Node {
     return (
       <TextInput
         style={styles.default}
@@ -146,11 +147,11 @@ class TextInputAccessoryViewDefaultDoneButtonExample extends React.Component<
 }
 
 class RewriteExampleKana extends React.Component<$FlowFixMeProps, any> {
-  constructor(props) {
+  constructor(props: any | void) {
     super(props);
     this.state = {text: ''};
   }
-  render() {
+  render(): React.Node {
     return (
       <View style={styles.rewriteContainer}>
         <TextInput
@@ -167,7 +168,7 @@ class RewriteExampleKana extends React.Component<$FlowFixMeProps, any> {
 }
 
 class SecureEntryExample extends React.Component<$FlowFixMeProps, any> {
-  constructor(props) {
+  constructor(props: any | void) {
     super(props);
     this.state = {
       text: '',
@@ -175,7 +176,7 @@ class SecureEntryExample extends React.Component<$FlowFixMeProps, any> {
       isSecureTextEntry: true,
     };
   }
-  render() {
+  render(): React.Node {
     return (
       <View>
         <TextInput
@@ -215,12 +216,12 @@ class AutogrowingTextInputExample extends React.Component<
   $FlowFixMeProps,
   $FlowFixMeState,
 > {
-  constructor(props) {
+  constructor(props: any | void) {
     super(props);
 
     this.state = {
-      width: 100,
       multiline: true,
+      fullWidth: true,
       text: '',
       contentSize: {
         width: 0,
@@ -229,34 +230,33 @@ class AutogrowingTextInputExample extends React.Component<
     };
   }
 
-  UNSAFE_componentWillReceiveProps(props) {
+  UNSAFE_componentWillReceiveProps(props: any) {
     this.setState({
       multiline: props.multiline,
     });
   }
 
-  render() {
+  render(): React.Node {
     const {style, multiline, ...props} = this.props;
     return (
       <View>
-        <Text>Width:</Text>
-        <Slider
-          value={100}
-          minimumValue={0}
-          maximumValue={100}
-          step={10}
-          onValueChange={value => this.setState({width: value})}
+        <Text>Full width:</Text>
+        <Switch
+          value={this.state.fullWidth}
+          onValueChange={value => this.setState({fullWidth: value})}
         />
+
         <Text>Multiline:</Text>
         <Switch
           value={this.state.multiline}
           onValueChange={value => this.setState({multiline: value})}
         />
+
         <Text>TextInput:</Text>
         <TextInput
           value="prop"
           multiline={this.state.multiline}
-          style={[style, {width: this.state.width + '%'}]}
+          style={[style, {width: this.state.fullWidth ? '100%' : '50%'}]}
           onChangeText={value => this.setState({text: value})}
           onContentSizeChange={event =>
             this.setState({contentSize: event.nativeEvent.contentSize})
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   },
 });
 
-// [TODO(macOS GH#774)
+// [macOS
 function AutoCorrectSpellCheckGrammarCheckCallbacks(): React.Node {
   const [enableAutoCorrect, setEnableAutoCorrect] = React.useState(false);
   const [enableSpellSpeck, setEnableSpellSpeck] = React.useState(false);
@@ -454,7 +454,7 @@ function OnPaste(): React.Node {
     </>
   );
 }
-// ]TODO(macOS GH#774)
+// macOS]
 
 exports.displayName = (undefined: ?string);
 exports.title = 'TextInput';
@@ -608,6 +608,10 @@ exports.examples = ([
   },
   {
     title: 'Colored highlight/cursor for text input',
+    // [macOS
+    description:
+      ('Note: On macOS, the selectionColor prop does not change the cursor color.': string),
+    // macOS]
     render: function (): React.Node {
       return (
         <View>
@@ -742,14 +746,14 @@ exports.examples = ([
             multiline={true}
             style={styles.multiline}
           />
-          {/* [TODO(macOS GH#774) */}
+          {/* [macOS */}
           <TextInput
             placeholder="multiline text input with scroll disabled"
             multiline={true}
             scrollEnabled={false}
             style={styles.multiline}
           />
-          {/* [TODO(macOS GH#774) */}
+          {/* macOS] */}
           <TextInput
             placeholder="multiline text input with vertical scrollbar hidden"
             multiline={true}
@@ -762,6 +766,35 @@ exports.examples = ([
             multiline={true}
             style={styles.multiline}
             dataDetectorTypes="phoneNumber"
+          />
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Editable and Read only',
+    render: function (): React.Node {
+      return (
+        <View>
+          <TextInput
+            placeholder="editable text input using editable prop"
+            style={styles.default}
+            editable
+          />
+          <TextInput
+            placeholder="uneditable text input using editable prop"
+            style={styles.default}
+            editable={false}
+          />
+          <TextInput
+            placeholder="editable text input using readOnly prop"
+            style={styles.default}
+            readOnly={false}
+          />
+          <TextInput
+            placeholder="uneditable text input using readOnly prop"
+            style={styles.default}
+            readOnly
           />
         </View>
       );
@@ -916,6 +949,21 @@ exports.examples = ([
     },
   },
   {
+    title: 'Text Auto Complete',
+    render: function (): React.Node {
+      return (
+        <View>
+          <WithLabel label="country">
+            <TextInput autoComplete="country" style={styles.default} />
+          </WithLabel>
+          <WithLabel label="one-time-code">
+            <TextInput autoComplete="one-time-code" style={styles.default} />
+          </WithLabel>
+        </View>
+      );
+    },
+  },
+  {
     title: 'Text Content Type',
     render: function (): React.Node {
       return (
@@ -964,8 +1012,47 @@ exports.examples = ([
       );
     },
   },
+  {
+    title: 'Line Break Strategy',
+    render: function (): React.Node {
+      const lineBreakStrategy = ['none', 'standard', 'hangul-word', 'push-out'];
+      const textByCode = {
+        en: 'lineBreakStrategy lineBreakStrategy lineBreakStrategy lineBreakStrategy',
+        ko: '한글개행한글개행 한글개행한글개행 한글개행한글개행 한글개행한글개행 한글개행한글개행 한글개행한글개행',
+        ja: 'かいぎょう かいぎょう かいぎょう かいぎょう かいぎょう かいぎょう',
+        cn: '改行 改行 改行 改行 改行 改行 改行 改行 改行 改行 改行 改行',
+      };
+      return (
+        <View>
+          {lineBreakStrategy.map(strategy => {
+            return (
+              <View key={strategy} style={{marginBottom: 12}}>
+                <Text
+                  style={{
+                    backgroundColor: 'lightgrey',
+                  }}>{`Strategy: ${strategy}`}</Text>
+                {Object.keys(textByCode).map(code => {
+                  return (
+                    <View key={code}>
+                      <Text style={{fontWeight: 'bold'}}>{`[${code}]`}</Text>
+                      <TextInput
+                        multiline
+                        lineBreakStrategyIOS={strategy}
+                        style={styles.default}
+                        defaultValue={textByCode[code]}
+                      />
+                    </View>
+                  );
+                })}
+              </View>
+            );
+          })}
+        </View>
+      );
+    },
+  },
 ]: Array<RNTesterModuleExample>);
-// [TODO(macOS GH#774)
+// [macOS
 if (Platform.OS === 'macos') {
   exports.examples.push(
     {
@@ -1024,6 +1111,55 @@ if (Platform.OS === 'macos') {
         return <OnPaste />;
       },
     },
+    {
+      title: 'Cursor color',
+      render: function (): React.Node {
+        return (
+          <View>
+            <TextInput
+              placeholder="Single line"
+              cursorColor="#00FF00"
+              placeholderTextColor="grey"
+              style={[
+                styles.default,
+                {backgroundColor: 'black', color: 'white', marginBottom: 4},
+              ]}
+            />
+            <TextInput
+              multiline={true}
+              placeholder="Multiline"
+              cursorColor="#00FF00"
+              placeholderTextColor="grey"
+              style={[
+                styles.default,
+                {backgroundColor: 'black', color: 'white', marginBottom: 4},
+              ]}
+            />
+            <TextInput
+              placeholder="Single line with selection color"
+              cursorColor="#00FF00"
+              selectionColor="yellow"
+              placeholderTextColor="grey"
+              style={[
+                styles.default,
+                {backgroundColor: 'black', color: 'white', marginBottom: 4},
+              ]}
+            />
+            <TextInput
+              multiline={true}
+              placeholder="Multiline with selection color"
+              cursorColor="#00FF00"
+              selectionColor="yellow"
+              placeholderTextColor="grey"
+              style={[
+                styles.default,
+                {backgroundColor: 'black', color: 'white'},
+              ]}
+            />
+          </View>
+        );
+      },
+    },
   );
 }
-// ]TODO(macOS GH#774)
+// macOS]

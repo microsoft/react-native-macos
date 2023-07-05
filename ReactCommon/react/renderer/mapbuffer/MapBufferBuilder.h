@@ -9,6 +9,7 @@
 
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/mapbuffer/MapBuffer.h>
+#include <vector>
 
 namespace facebook {
 namespace react {
@@ -35,10 +36,14 @@ class MapBufferBuilder {
 
   void putMapBuffer(MapBuffer::Key key, MapBuffer const &map);
 
+  void putMapBufferList(
+      MapBuffer::Key key,
+      const std::vector<MapBuffer> &mapBufferList);
+
   MapBuffer build();
 
  private:
-  MapBuffer::Header header_ = {.count = 0, .bufferSize = 0};
+  MapBuffer::Header header_;
 
   std::vector<MapBuffer::Bucket> buckets_{};
 

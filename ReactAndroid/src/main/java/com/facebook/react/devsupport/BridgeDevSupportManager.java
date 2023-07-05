@@ -25,8 +25,10 @@ import com.facebook.react.common.ReactConstants;
 import com.facebook.react.common.SurfaceDelegateFactory;
 import com.facebook.react.common.futures.SimpleSettableFuture;
 import com.facebook.react.devsupport.interfaces.DevBundleDownloadListener;
+import com.facebook.react.devsupport.interfaces.DevLoadingViewManager;
 import com.facebook.react.devsupport.interfaces.DevOptionHandler;
 import com.facebook.react.devsupport.interfaces.DevSplitBundleCallback;
+import com.facebook.react.devsupport.interfaces.RedBoxHandler;
 import com.facebook.react.packagerconnection.RequestHandler;
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +65,8 @@ import java.util.concurrent.TimeoutException;
  */
 public final class BridgeDevSupportManager extends DevSupportManagerBase {
   private boolean mIsSamplingProfilerEnabled = false;
+  private ReactInstanceDevHelper mReactInstanceManagerHelper;
+  private @Nullable DevLoadingViewManager mDevLoadingViewManager;
 
   public BridgeDevSupportManager(
       Context applicationContext,
@@ -73,7 +77,8 @@ public final class BridgeDevSupportManager extends DevSupportManagerBase {
       @Nullable DevBundleDownloadListener devBundleDownloadListener,
       int minNumShakes,
       @Nullable Map<String, RequestHandler> customPackagerCommandHandlers,
-      @Nullable SurfaceDelegateFactory surfaceDelegateFactory) {
+      @Nullable SurfaceDelegateFactory surfaceDelegateFactory,
+      @Nullable DevLoadingViewManager devLoadingViewManager) {
     super(
         applicationContext,
         reactInstanceManagerHelper,
@@ -83,7 +88,11 @@ public final class BridgeDevSupportManager extends DevSupportManagerBase {
         devBundleDownloadListener,
         minNumShakes,
         customPackagerCommandHandlers,
-        surfaceDelegateFactory);
+        surfaceDelegateFactory,
+        devLoadingViewManager);
+
+    mReactInstanceManagerHelper = reactInstanceManagerHelper;
+    mDevLoadingViewManager = devLoadingViewManager;
 
     if (getDevSettings().isStartSamplingProfilerOnInit()) {
       // Only start the profiler. If its already running, there is an error
@@ -122,6 +131,14 @@ public final class BridgeDevSupportManager extends DevSupportManagerBase {
             }
           });
     }
+  }
+
+  public DevLoadingViewManager getDevLoadingViewManager() {
+    return mDevLoadingViewManager;
+  }
+
+  public ReactInstanceDevHelper getReactInstanceManagerHelper() {
+    return mReactInstanceManagerHelper;
   }
 
   @Override

@@ -9,10 +9,14 @@
  */
 
 'use strict';
+import type {
+  ComponentShape,
+  EventTypeShape,
+  PropTypeAnnotation,
+} from '../../CodegenSchema';
+import type {SchemaType} from '../../CodegenSchema';
 
 const j = require('jscodeshift');
-
-import type {SchemaType} from '../../CodegenSchema';
 
 // File path -> contents
 type FilesOutput = Map<string, string>;
@@ -46,7 +50,7 @@ ${componentConfig}
 // this multiple times.
 const UIMANAGER_IMPORT = 'const {UIManager} = require("react-native")';
 
-function getReactDiffProcessValue(typeAnnotation) {
+function getReactDiffProcessValue(typeAnnotation: PropTypeAnnotation) {
   switch (typeAnnotation.type) {
     case 'BooleanTypeAnnotation':
     case 'StringTypeAnnotation':
@@ -61,10 +65,12 @@ function getReactDiffProcessValue(typeAnnotation) {
       switch (typeAnnotation.name) {
         case 'ColorPrimitive':
           return j.template
-            .expression`{ process: require('react-native/Libraries/StyleSheet/processColor') }`;
+            .expression`{ process: require('react-native/Libraries/StyleSheet/processColor').default }`;
         case 'ImageSourcePrimitive':
           return j.template
             .expression`{ process: require('react-native/Libraries/Image/resolveAssetSource') }`;
+        case 'ImageRequestPrimitive':
+          throw new Error('ImageRequest should not be used in props');
         case 'PointPrimitive':
           return j.template
             .expression`{ diff: require('react-native/Libraries/Utilities/differ/pointsDiffer') }`;
@@ -130,9 +136,8 @@ export default NativeComponentRegistry.get(nativeComponentName, () => __INTERNAL
 `.trim();
 };
 
-// If static view configs are enabled, get whether the native component exists
-// in the app binary using hasViewManagerConfig() instead of getViewManagerConfig().
-// Old getViewManagerConfig() checks for the existance of the native Paper view manager.
+// Check whether the native component exists in the app binary.
+// Old getViewManagerConfig() checks for the existance of the native Paper view manager. Not available in Bridgeless.
 // New hasViewManagerConfig() queries Fabric’s native component registry directly.
 const DeprecatedComponentNameCheckTemplate = ({
   componentName,
@@ -142,28 +147,17 @@ const DeprecatedComponentNameCheckTemplate = ({
   paperComponentNameDeprecated: string,
 }) =>
   `
-const staticViewConfigsEnabled = global.__fbStaticViewConfig === true;
-if (staticViewConfigsEnabled) {
-  if (UIManager.hasViewManagerConfig('${componentName}')) {
-    nativeComponentName = '${componentName}';
-  } else if (UIManager.hasViewManagerConfig('${paperComponentNameDeprecated}')) {
-    nativeComponentName = '${paperComponentNameDeprecated}';
-  } else {
-    throw new Error('Failed to find native component for either "${componentName}" or "${paperComponentNameDeprecated}", with SVC enabled.');
-  }
+if (UIManager.hasViewManagerConfig('${componentName}')) {
+  nativeComponentName = '${componentName}';
+} else if (UIManager.hasViewManagerConfig('${paperComponentNameDeprecated}')) {
+  nativeComponentName = '${paperComponentNameDeprecated}';
 } else {
-  if (UIManager.getViewManagerConfig('${componentName}')) {
-    nativeComponentName = '${componentName}';
-  } else if (UIManager.getViewManagerConfig('${paperComponentNameDeprecated}')) {
-    nativeComponentName = '${paperComponentNameDeprecated}';
-  } else {
-    throw new Error('Failed to find native component for either "${componentName}" or "${paperComponentNameDeprecated}", with SVC disabled.');
-  }
+  throw new Error('Failed to find native component for either "${componentName}" or "${paperComponentNameDeprecated}"');
 }
 `.trim();
 
 // Replicates the behavior of RCTNormalizeInputEventName in RCTEventDispatcher.m
-function normalizeInputEventName(name) {
+function normalizeInputEventName(name: string) {
   if (name.startsWith('on')) {
     return name.replace(/^on/, 'top');
   } else if (!name.startsWith('top')) {
@@ -173,7 +167,30 @@ function normalizeInputEventName(name) {
   return name;
 }
 
-function generateBubblingEventInfo(event, nameOveride) {
+// Replicates the behavior of viewConfig in RCTComponentData.m
+function getValidAttributesForEvents(
+  events: $ReadOnlyArray<EventTypeShape>,
+  imports: Set<string>,
+) {
+  imports.add(
+    "const {ConditionallyIgnoredEventHandlers} = require('react-native/Libraries/NativeComponent/ViewConfigIgnore');",
+  );
+
+  const validAttributes = j.objectExpression(
+    events.map(eventType => {
+      return j.property('init', j.identifier(eventType.name), j.literal(true));
+    }),
+  );
+
+  return j.callExpression(j.identifier('ConditionallyIgnoredEventHandlers'), [
+    validAttributes,
+  ]);
+}
+
+function generateBubblingEventInfo(
+  event: EventTypeShape,
+  nameOveride: void | string,
+) {
   return j.property(
     'init',
     j.identifier(nameOveride || normalizeInputEventName(event.name)),
@@ -194,7 +211,10 @@ function generateBubblingEventInfo(event, nameOveride) {
   );
 }
 
-function generateDirectEventInfo(event, nameOveride) {
+function generateDirectEventInfo(
+  event: EventTypeShape,
+  nameOveride: void | string,
+) {
   return j.property(
     'init',
     j.identifier(nameOveride || normalizeInputEventName(event.name)),
@@ -211,8 +231,8 @@ function generateDirectEventInfo(event, nameOveride) {
 function buildViewConfig(
   schema: SchemaType,
   componentName: string,
-  component,
-  imports,
+  component: ComponentShape,
+  imports: Set<string>,
 ) {
   const componentProps = component.props;
   const componentEvents = component.events;
@@ -245,11 +265,18 @@ function buildViewConfig(
         getReactDiffProcessValue(schemaProp.typeAnnotation),
       );
     }),
+    ...(componentEvents.length > 0
+      ? [
+          j.spreadProperty(
+            getValidAttributesForEvents(componentEvents, imports),
+          ),
+        ]
+      : []),
   ]);
 
   const bubblingEventNames = component.events
     .filter(event => event.bubblingType === 'bubble')
-    .reduce((bubblingEvents, event) => {
+    .reduce((bubblingEvents: Array<any>, event) => {
       // We add in the deprecated paper name so that it is in the view config.
       // This means either the old event name or the new event name can fire
       // and be sent to the listener until the old top level name is removed.
@@ -274,7 +301,7 @@ function buildViewConfig(
 
   const directEventNames = component.events
     .filter(event => event.bubblingType === 'direct')
-    .reduce((directEvents, event) => {
+    .reduce((directEvents: Array<any>, event) => {
       // We add in the deprecated paper name so that it is in the view config.
       // This means either the old event name or the new event name can fire
       // and be sent to the listener until the old top level name is removed.
@@ -314,8 +341,8 @@ function buildViewConfig(
 function buildCommands(
   schema: SchemaType,
   componentName: string,
-  component,
-  imports,
+  component: ComponentShape,
+  imports: Set<string>,
 ) {
   const commands = component.commands;
 
@@ -324,7 +351,7 @@ function buildCommands(
   }
 
   imports.add(
-    'const {dispatchCommand} = require("react-native/Libraries/Renderer/shims/ReactNative");',
+    'const {dispatchCommand} = require("react-native/Libraries/ReactNative/RendererProxy");',
   );
 
   const properties = commands.map(command => {

@@ -10,14 +10,15 @@
 
 'use strict';
 
-const Dimensions = require('../Utilities/Dimensions');
-const ElementBox = require('./ElementBox');
-const React = require('react');
-const StyleSheet = require('../StyleSheet/StyleSheet');
-const View = require('../Components/View/View');
-
 import type {ViewStyleProp} from '../StyleSheet/StyleSheet';
 import type {PressEvent} from '../Types/CoreEventTypes';
+
+import Dimensions from '../Utilities/Dimensions';
+
+const View = require('../Components/View/View');
+const StyleSheet = require('../StyleSheet/StyleSheet');
+const ElementBox = require('./ElementBox');
+const React = require('react');
 
 type Inspected = $ReadOnly<{|
   frame?: Object,

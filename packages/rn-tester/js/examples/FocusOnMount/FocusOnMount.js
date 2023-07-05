@@ -7,7 +7,7 @@
  * @format
  * @flow
  */
-// [TODO(macOS GH #1412)
+// [macOS] Github#1412)
 'use strict';
 
 const React = require('react');
@@ -15,7 +15,7 @@ const ReactNative = require('react-native');
 const {Button, findNodeHandle, UIManager} = ReactNative;
 
 class FocusOnMountExample extends React.Component<{}> {
-  ref = React.createRef();
+  ref: any = React.createRef();
 
   componentDidMount() {
     if (this.ref.current) {
@@ -30,7 +30,7 @@ class FocusOnMountExample extends React.Component<{}> {
     }
   }
 
-  render() {
+  render(): React.Node {
     return (
       <Button
         ref={this.ref}
@@ -51,4 +51,3 @@ exports.examples = [
     },
   },
 ];
-// TODO(macOS GH #1412)]

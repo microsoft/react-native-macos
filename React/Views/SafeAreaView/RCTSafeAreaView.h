@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <React/RCTView.h>
 
@@ -16,8 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCTSafeAreaView : RCTView
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge;
-
-@property (nonatomic, assign) BOOL emulateUnlessSupported;
 
 @end
 

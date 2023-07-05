@@ -6,7 +6,7 @@
 #import <Foundation/Foundation.h>
 #import <React/RCTComponentEvent.h>
 
-#if TARGET_OS_OSX // TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
 
 @interface RCTHandledKeyboardEvent : NSObject
 
@@ -32,4 +32,4 @@
 
 @end
 
-#endif // TODO(macOS GH#774)
+#endif // macOS]

@@ -5,6 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+ // [macOS]
+ #if TARGET_OS_OSX
+
 #import "RCTAccessibilityManager.h"
 
 #import "RCTBridge.h"
@@ -57,6 +60,7 @@ static void *AccessibilityVoiceOverChangeContext = &AccessibilityVoiceOverChange
 
 RCT_EXPORT_METHOD(announceForAccessibility:(NSString *)announcement)
 {
+  dispatch_async(dispatch_get_main_queue(), ^{
     NSAccessibilityPostNotificationWithUserInfo(
                                                     NSApp,
                                                     NSAccessibilityAnnouncementRequestedNotification,
@@ -64,6 +68,7 @@ RCT_EXPORT_METHOD(announceForAccessibility:(NSString *)announcement)
                                                       NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
                                                     }
                                                 );
+  });
 }
 
 RCT_EXPORT_METHOD(getCurrentHighContrastState:(RCTResponseSenderBlock)callback
@@ -158,3 +163,4 @@ RCT_EXPORT_METHOD(setAccessibilityFocus:(nonnull NSNumber *)reactTag)
 }
 
 @end
+ #endif

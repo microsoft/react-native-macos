@@ -25,6 +25,8 @@ const {
 
 import {RNTesterThemeContext} from './RNTesterTheme';
 
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 const ExampleModuleRow = ({
   onShowUnderlay,
   onHideUnderlay,
@@ -38,7 +40,7 @@ const ExampleModuleRow = ({
   const onAndroid = !platform || platform === 'android';
   const rightAddOn = (
     <TouchableHighlight
-      focusable={false} // TODO(macOS GH#774)
+      focusable={false} // [macOS]
       style={styles.imageViewStyle}
       onPress={() =>
         toggleBookmark({
@@ -122,9 +124,10 @@ const RNTesterModuleList: React$AbstractComponent<any, void> = React.memo(
   ({sections, toggleBookmark, handleModuleCardPress}) => {
     const filter = ({example, filterRegex, category}: any) =>
       filterRegex.test(example.module.title) &&
-      (!category || example.category === category) &&
-      (!Platform.isTV || example.supportsTVOS);
+      (!category || example.category === category);
 
+    /* $FlowFixMe[missing-local-annot] The type annotation(s) required by
+     * Flow's LTI update could not be added via codemod */
     const renderListItem = ({item, section, separators}) => {
       return (
         <ExampleModuleRow
@@ -152,11 +155,12 @@ const RNTesterModuleList: React$AbstractComponent<any, void> = React.memo(
               extraData={filteredSections}
               renderItem={renderListItem}
               keyboardShouldPersistTaps="handled"
-              focusable={true} // TODO(macOS GH#774)
-              enableSelectionOnKeyPress={true} // TODO(macOS GH#774)
+              focusable={true} // [macOS]
+              enableSelectionOnKeyPress={true} // [macOS]
               automaticallyAdjustContentInsets={false}
               keyboardDismissMode="on-drag"
               renderSectionHeader={renderSectionHeader}
+              // eslint-disable-next-line react/no-unstable-nested-components
               ListFooterComponent={() => <View style={{height: 80}} />}
             />
           )}
@@ -172,25 +176,24 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     ...Platform.select({
-      // [TODO(macOS GH#774)
+      // [macOS
       macos: {
-        backgroundColor: {
-          semantic: 'unemphasizedSelectedContentBackgroundColor',
-        },
+        backgroundColor: PlatformColor(
+          'unemphasizedSelectedContentBackgroundColor',
+        ),
+
         color: PlatformColor('headerTextColor'),
       },
       ios: {
-        backgroundColor: {
-          semantic: 'systemGroupedBackgroundColor',
-        },
+        backgroundColor: PlatformColor('systemGroupedBackgroundColor'),
         color: PlatformColor('secondaryLabelColor'),
       },
       default: {
-        // ]TODO(macOS GH#774)
+        // macOS]
         backgroundColor: '#eeeeee',
         color: 'black',
-      }, // [TODO(macOS GH#774)
-    }), // ]TODO(macOS GH#774)
+      }, // [macOS
+    }), // macOS]
     padding: 5,
     fontWeight: '500',
     fontSize: 11,
@@ -199,7 +202,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 15,
     paddingVertical: 12,
-    marginVertical: Platform.select({ios: 4, android: 8}),
+    marginVertical: Platform.select({ios: 4, android: 8, macos: 4}), // [macOS]
     marginHorizontal: 15,
     overflow: 'hidden',
     elevation: 5,

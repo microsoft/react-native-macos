@@ -8,15 +8,16 @@
  * @format
  */
 
+import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
+import typeof TouchableWithoutFeedback from './TouchableWithoutFeedback';
+
+import Animated from '../../Animated/Animated';
+import Easing from '../../Animated/Easing';
 import Pressability, {
   type PressabilityConfig,
 } from '../../Pressability/Pressability';
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
-import typeof TouchableWithoutFeedback from './TouchableWithoutFeedback';
-import Animated from 'react-native/Libraries/Animated/Animated';
-import Easing from 'react-native/Libraries/Animated/Easing';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
-import flattenStyle from 'react-native/Libraries/StyleSheet/flattenStyle';
+import flattenStyle from '../../StyleSheet/flattenStyle';
 import Platform from '../../Utilities/Platform';
 import * as React from 'react';
 
@@ -38,7 +39,7 @@ type Props = $ReadOnly<{|
 
   hostRef?: ?React.Ref<typeof Animated.View>,
 
-  // [ TODO(macOS GH#774)
+  // [macOS
   /*
    * Array of keys to receive key down events for
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
@@ -50,7 +51,7 @@ type Props = $ReadOnly<{|
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?Array<string>,
-  // TODO(macOS GH#774) ]
+  // macOS]
 |}>;
 
 type State = $ReadOnly<{|
@@ -151,7 +152,10 @@ class TouchableOpacity extends React.Component<Props, State> {
   _createPressabilityConfig(): PressabilityConfig {
     return {
       cancelable: !this.props.rejectResponderTermination,
-      disabled: this.props.disabled ?? this.props.accessibilityState?.disabled,
+      disabled:
+        this.props.disabled ??
+        this.props['aria-disabled'] ??
+        this.props.accessibilityState?.disabled,
       hitSlop: this.props.hitSlop,
       delayLongPress: this.props.delayLongPress,
       delayPressIn: this.props.delayPressIn,
@@ -228,6 +232,7 @@ class TouchableOpacity extends React.Component<Props, State> {
   }
 
   _getChildStyleOpacityWithDefault(): number {
+    // $FlowFixMe[underconstrained-implicit-instantiation]
     const opacity = flattenStyle(this.props.style)?.opacity;
     return typeof opacity === 'number' ? opacity : 1;
   }
@@ -238,33 +243,68 @@ class TouchableOpacity extends React.Component<Props, State> {
     const {
       onBlur,
       onFocus,
-      onMouseEnter, // [TODO(macOS/win GH#774)
-      onMouseLeave, // ]TODO(macOS/win GH#774)
+      onMouseEnter, // [macOS]
+      onMouseLeave, // [macOS]
       ...eventHandlersWithoutBlurAndFocus
     } = this.state.pressability.getEventHandlers();
 
-    const accessibilityState =
+    let _accessibilityState = {
+      busy: this.props['aria-busy'] ?? this.props.accessibilityState?.busy,
+      checked:
+        this.props['aria-checked'] ?? this.props.accessibilityState?.checked,
+      disabled:
+        this.props['aria-disabled'] ?? this.props.accessibilityState?.disabled,
+      expanded:
+        this.props['aria-expanded'] ?? this.props.accessibilityState?.expanded,
+      selected:
+        this.props['aria-selected'] ?? this.props.accessibilityState?.selected,
+    };
+
+    _accessibilityState =
       this.props.disabled != null
         ? {
-            ...this.props.accessibilityState,
+            ..._accessibilityState,
             disabled: this.props.disabled,
           }
-        : this.props.accessibilityState;
+        : _accessibilityState;
 
+    const accessibilityValue = {
+      max: this.props['aria-valuemax'] ?? this.props.accessibilityValue?.max,
+      min: this.props['aria-valuemin'] ?? this.props.accessibilityValue?.min,
+      now: this.props['aria-valuenow'] ?? this.props.accessibilityValue?.now,
+      text: this.props['aria-valuetext'] ?? this.props.accessibilityValue?.text,
+    };
+
+    const accessibilityLiveRegion =
+      this.props['aria-live'] === 'off'
+        ? 'none'
+        : this.props['aria-live'] ?? this.props.accessibilityLiveRegion;
+
+    const accessibilityLabel =
+      this.props['aria-label'] ?? this.props.accessibilityLabel;
     return (
       <Animated.View
         accessible={this.props.accessible !== false}
-        accessibilityLabel={this.props.accessibilityLabel}
+        accessibilityLabel={accessibilityLabel}
         accessibilityHint={this.props.accessibilityHint}
+        accessibilityLanguage={this.props.accessibilityLanguage}
         accessibilityRole={this.props.accessibilityRole}
-        accessibilityState={accessibilityState}
+        accessibilityState={_accessibilityState}
         accessibilityActions={this.props.accessibilityActions}
         onAccessibilityAction={this.props.onAccessibilityAction}
-        accessibilityValue={this.props.accessibilityValue}
-        importantForAccessibility={this.props.importantForAccessibility}
-        accessibilityLiveRegion={this.props.accessibilityLiveRegion}
-        accessibilityViewIsModal={this.props.accessibilityViewIsModal}
-        accessibilityElementsHidden={this.props.accessibilityElementsHidden}
+        accessibilityValue={accessibilityValue}
+        importantForAccessibility={
+          this.props['aria-hidden'] === true
+            ? 'no-hide-descendants'
+            : this.props.importantForAccessibility
+        }
+        accessibilityViewIsModal={
+          this.props['aria-modal'] ?? this.props.accessibilityViewIsModal
+        }
+        accessibilityLiveRegion={accessibilityLiveRegion}
+        accessibilityElementsHidden={
+          this.props['aria-hidden'] ?? this.props.accessibilityElementsHidden
+        }
         style={[this.props.style, {opacity: this.state.anim}]}
         nativeID={this.props.nativeID}
         testID={this.props.testID}
@@ -276,7 +316,7 @@ class TouchableOpacity extends React.Component<Props, State> {
         nextFocusUp={this.props.nextFocusUp}
         hasTVPreferredFocus={this.props.hasTVPreferredFocus}
         hitSlop={this.props.hitSlop}
-        // [TODO(macOS GH#774)
+        // [macOS
         acceptsFirstMouse={
           this.props.acceptsFirstMouse !== false && !this.props.disabled
         }
@@ -295,7 +335,7 @@ class TouchableOpacity extends React.Component<Props, State> {
         onFocus={this.props.onFocus}
         onBlur={this.props.onBlur}
         draggedTypes={this.props.draggedTypes}
-        // ]TODO(macOS/win GH#774)
+        // macOS]
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
         {this.props.children}
@@ -308,7 +348,13 @@ class TouchableOpacity extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps: Props, prevState: State) {
     this.state.pressability.configure(this._createPressabilityConfig());
-    if (this.props.disabled !== prevProps.disabled) {
+    if (
+      this.props.disabled !== prevProps.disabled ||
+      // $FlowFixMe[underconstrained-implicit-instantiation]
+      flattenStyle(prevProps.style)?.opacity !==
+        // $FlowFixMe[underconstrained-implicit-instantiation]
+        flattenStyle(this.props.style)?.opacity
+    ) {
       this._opacityInactive(250);
     }
   }

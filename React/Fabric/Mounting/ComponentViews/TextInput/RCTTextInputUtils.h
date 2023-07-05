@@ -4,8 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+#import <optional>
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
+#import <React/RCTUITextField.h> // [macOS]
+#import <React/RCTUITextView.h> // [macOS]
 
 #import <optional>
 
@@ -15,10 +18,16 @@
 NS_ASSUME_NONNULL_BEGIN
 
 void RCTCopyBackedTextInput(
+#if !TARGET_OS_OSX // [macOS]
     RCTUIView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput); // TODO(macOS GH#774)
+    RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput
+#else // [macOS
+    RCTUITextView<RCTBackedTextInputViewProtocol> *fromTextInput,
+    RCTUITextView<RCTBackedTextInputViewProtocol> *toTextInput
+#endif // macOS]
+);
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
 UITextAutocorrectionType RCTUITextAutocorrectionTypeFromOptionalBool(std::optional<bool> autoCorrect);
 
 UITextAutocapitalizationType RCTUITextAutocapitalizationTypeFromAutocapitalizationType(
@@ -36,11 +45,9 @@ UIKeyboardType RCTUIKeyboardTypeFromKeyboardType(facebook::react::KeyboardType k
 
 UIReturnKeyType RCTUIReturnKeyTypeFromReturnKeyType(facebook::react::ReturnKeyType returnKeyType);
 
-API_AVAILABLE(ios(10.0))
 UITextContentType RCTUITextContentTypeFromString(std::string const &contentType);
 
-API_AVAILABLE(ios(12.0))
 UITextInputPasswordRules *RCTUITextInputPasswordRulesFromString(std::string const &passwordRules);
-#endif // ]TODO(macOS GH#774)
+#endif // [macOS]
 
 NS_ASSUME_NONNULL_END

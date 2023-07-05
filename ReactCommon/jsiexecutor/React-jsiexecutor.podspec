@@ -17,7 +17,7 @@ else
 end
 
 folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -Wno-comma -Wno-shorten-64-to-32'
-folly_version = '2021.06.28.00-v2'
+folly_version = '2021.07.22.00'
 boost_compiler_flags = '-Wno-documentation'
 
 Pod::Spec.new do |s|
@@ -26,18 +26,19 @@ Pod::Spec.new do |s|
   s.summary                = "-"  # TODO
   s.homepage               = "https://reactnative.dev/"
   s.license                = package["license"]
-  s.author                 = "Facebook, Inc. and its affiliates"
-  s.platforms              = { :ios => "11.0", :osx => "10.15" } # TODO(macOS GH#214)
+  s.author                 = "Meta Platforms, Inc. and its affiliates"
+  s.platforms              = { :ios => "12.4", :osx => "10.15" } # [macOS]
   s.source                 = source
   s.source_files         = "jsireact/*.{cpp,h}"
   s.compiler_flags         = folly_compiler_flags + ' ' + boost_compiler_flags
-  s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/RCT-Folly\" \"$(PODS_ROOT)/DoubleConversion\"" }
+  s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/RCT-Folly\" \"$(PODS_ROOT)/DoubleConversion\"",
+                               "CLANG_CXX_LANGUAGE_STANDARD" => "c++17" }
   s.header_dir             = "jsireact"
 
   s.dependency "React-cxxreact", version
   s.dependency "React-jsi", version
-  s.dependency "RCT-Folly", folly_version
   s.dependency "React-perflogger", version
+  s.dependency "RCT-Folly", folly_version
   s.dependency "DoubleConversion"
   s.dependency "glog"
 end

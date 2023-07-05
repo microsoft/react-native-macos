@@ -9,8 +9,7 @@
 
 #include <react/debug/react_native_assert.h>
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
 ShadowTreeRegistry::~ShadowTreeRegistry() {
   react_native_assert(
@@ -53,12 +52,16 @@ bool ShadowTreeRegistry::visit(
 }
 
 void ShadowTreeRegistry::enumerate(
-    std::function<void(const ShadowTree &shadowTree)> const &callback) const {
+    std::function<void(const ShadowTree &shadowTree, bool &stop)> const
+        &callback) const {
   std::shared_lock<butter::shared_mutex> lock(mutex_);
+  auto stop = false;
   for (auto const &pair : registry_) {
-    callback(*pair.second);
+    callback(*pair.second, stop);
+    if (stop) {
+      return;
+    }
   }
 }
 
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react

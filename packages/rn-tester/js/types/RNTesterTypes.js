@@ -10,14 +10,14 @@
 
 import * as React from 'react';
 
-// TODO(macOS GH#774) - useful since RNTesterModuleExample.platform can either be
+// [macOS] useful since RNTesterModuleExample.platform can either be
 // one of these strings or an array of said strings
 type RNTesterPlatform = 'ios' | 'android' | 'macos';
 
 export type RNTesterModuleExample = $ReadOnly<{|
   name?: string,
   title: string,
-  platform?: RNTesterPlatform | Array<RNTesterPlatform>, // TODO(OSS Candidate ISS#2710739)
+  platform?: RNTesterPlatform | Array<RNTesterPlatform>, // [macOS]
   description?: string,
   expect?: string,
   render: () => React.Node,
@@ -44,9 +44,8 @@ export type RNTesterModuleInfo = $ReadOnly<{|
     ios?: string,
     macos?: string,
     default?: string,
-  }, // TODO(OSS Candidate ISS#2710739)
+  }, // [macOS]
   category?: string,
-  supportsTVOS?: boolean,
   documentationURL?: string,
   isBookmarked?: boolean,
   exampleType?: 'components' | 'apis',
@@ -68,11 +67,18 @@ export type ScreenTypes = 'components' | 'apis' | 'bookmarks' | null;
 
 export type ComponentList = null | {components: string[], apis: string[]};
 
-export type RNTesterState = {
+export type RNTesterNavigationState = {
   activeModuleKey: null | string,
   activeModuleTitle: null | string,
   activeModuleExampleKey: null | string,
   screen: ScreenTypes,
   bookmarks: ComponentList,
   recentlyUsed: ComponentList,
+};
+
+export type RNTesterJsStallsState = {
+  stallIntervalId: ?IntervalID,
+  busyTime: null | number,
+  filteredStall: number,
+  tracking: boolean,
 };

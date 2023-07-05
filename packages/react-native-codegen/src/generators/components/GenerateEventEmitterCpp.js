@@ -9,6 +9,7 @@
  */
 
 'use strict';
+import type {EventTypeShape} from '../../CodegenSchema';
 
 const {generateEventStructName} = require('./CppHelpers.js');
 
@@ -66,14 +67,18 @@ const ComponentTemplate = ({
   structName: string,
   dispatchEventName: string,
   implementation: string,
-}) =>
-  `
+}) => {
+  const capture = implementation.includes('event')
+    ? 'event=std::move(event)'
+    : '';
+  return `
 void ${className}EventEmitter::${eventName}(${structName} event) const {
-  dispatchEvent("${dispatchEventName}", [event=std::move(event)](jsi::Runtime &runtime) {
+  dispatchEvent("${dispatchEventName}", [${capture}](jsi::Runtime &runtime) {
     ${implementation}
   });
 }
 `.trim();
+};
 
 const BasicComponentTemplate = ({
   className,
@@ -90,7 +95,11 @@ void ${className}EventEmitter::${eventName}() const {
 }
 `.trim();
 
-function generateSetter(variableName, propertyName, propertyParts) {
+function generateSetter(
+  variableName: string,
+  propertyName: string,
+  propertyParts: $ReadOnlyArray<string>,
+) {
   const trailingPeriod = propertyParts.length === 0 ? '' : '.';
   const eventChain = `event.${propertyParts.join(
     '.',
@@ -99,7 +108,11 @@ function generateSetter(variableName, propertyName, propertyParts) {
   return `${variableName}.setProperty(runtime, "${propertyName}", ${eventChain}`;
 }
 
-function generateEnumSetter(variableName, propertyName, propertyParts) {
+function generateEnumSetter(
+  variableName: string,
+  propertyName: string,
+  propertyParts: $ReadOnlyArray<string>,
+) {
   const trailingPeriod = propertyParts.length === 0 ? '' : '.';
   const eventChain = `event.${propertyParts.join(
     '.',
@@ -177,7 +190,7 @@ function generateSetters(
   return propSetters;
 }
 
-function generateEvent(componentName: string, event): string {
+function generateEvent(componentName: string, event: EventTypeShape): string {
   // This is a gross hack necessary because native code is sending
   // events named things like topChange to JS which is then converted back to
   // call the onChange prop. We should be consistent throughout the system.

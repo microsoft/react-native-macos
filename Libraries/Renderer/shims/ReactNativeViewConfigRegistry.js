@@ -1,12 +1,12 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
  * @noformat
  * @flow strict-local
- * @generated SignedSource<<a81ed33269e71024fedad145e843fab0>>
+ * @generated SignedSource<<7b69bfde64e35b7f706c2f6b9ef91e7c>>
  *
  * This file was sync'd from the facebook/react repository.
  */
@@ -18,26 +18,27 @@ import invariant from 'invariant';
 
 // Event configs
 const customBubblingEventTypes: {
-  [eventName: string]: $ReadOnly<{|
-    phasedRegistrationNames: $ReadOnly<{|
+  [eventName: string]: $ReadOnly<{
+    phasedRegistrationNames: $ReadOnly<{
       captured: string,
       bubbled: string,
-    |}>,
-  |}>,
+      skipBubbling?: ?boolean,
+    }>,
+  }>,
   ...,
 } = {};
 const customDirectEventTypes: {
-  [eventName: string]: $ReadOnly<{|
+  [eventName: string]: $ReadOnly<{
     registrationName: string,
-  |}>,
+  }>,
   ...,
 } = {};
 
 exports.customBubblingEventTypes = customBubblingEventTypes;
 exports.customDirectEventTypes = customDirectEventTypes;
 
-const viewConfigCallbacks = new Map();
-const viewConfigs = new Map();
+const viewConfigCallbacks = new Map<string, ?() => ViewConfig>();
+const viewConfigs = new Map<string, ViewConfig>();
 
 function processEventTypes(viewConfig: ViewConfig): void {
   const {bubblingEventTypes, directEventTypes} = viewConfig;

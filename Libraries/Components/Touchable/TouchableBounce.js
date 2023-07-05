@@ -8,13 +8,15 @@
  * @format
  */
 
+import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
+import typeof TouchableWithoutFeedback from './TouchableWithoutFeedback';
+
+import Animated from '../../Animated/Animated';
 import Pressability, {
   type PressabilityConfig,
 } from '../../Pressability/Pressability';
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
-import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
-import typeof TouchableWithoutFeedback from './TouchableWithoutFeedback';
-import {Animated, Platform} from 'react-native';
+import Platform from '../../Utilities/Platform';
 import * as React from 'react';
 
 type Props = $ReadOnly<{|
@@ -131,30 +133,63 @@ class TouchableBounce extends React.Component<Props, State> {
     const {
       onBlur,
       onFocus,
-      onMouseEnter, // [TODO(macOS/win GH#774)
-      onMouseLeave, // ]TODO(macOS/win GH#774)
+      onMouseEnter,
+      onMouseLeave,
       ...eventHandlersWithoutBlurAndFocus
-    } = this.state.pressability.getEventHandlers();
+    } = this.state.pressability.getEventHandlers(); // [macOS]
+    const accessibilityLiveRegion =
+      this.props['aria-live'] === 'off'
+        ? 'none'
+        : this.props['aria-live'] ?? this.props.accessibilityLiveRegion;
+    const _accessibilityState = {
+      busy: this.props['aria-busy'] ?? this.props.accessibilityState?.busy,
+      checked:
+        this.props['aria-checked'] ?? this.props.accessibilityState?.checked,
+      disabled:
+        this.props['aria-disabled'] ?? this.props.accessibilityState?.disabled,
+      expanded:
+        this.props['aria-expanded'] ?? this.props.accessibilityState?.expanded,
+      selected:
+        this.props['aria-selected'] ?? this.props.accessibilityState?.selected,
+    };
 
+    const accessibilityValue = {
+      max: this.props['aria-valuemax'] ?? this.props.accessibilityValue?.max,
+      min: this.props['aria-valuemin'] ?? this.props.accessibilityValue?.min,
+      now: this.props['aria-valuenow'] ?? this.props.accessibilityValue?.now,
+      text: this.props['aria-valuetext'] ?? this.props.accessibilityValue?.text,
+    };
+
+    const accessibilityLabel =
+      this.props['aria-label'] ?? this.props.accessibilityLabel;
     return (
       <Animated.View
         style={[{transform: [{scale: this.state.scale}]}, this.props.style]}
         accessible={this.props.accessible !== false}
-        accessibilityLabel={this.props.accessibilityLabel}
+        accessibilityLabel={accessibilityLabel}
         accessibilityHint={this.props.accessibilityHint}
+        accessibilityLanguage={this.props.accessibilityLanguage}
         accessibilityRole={this.props.accessibilityRole}
-        accessibilityState={this.props.accessibilityState}
+        accessibilityState={_accessibilityState}
         accessibilityActions={this.props.accessibilityActions}
         onAccessibilityAction={this.props.onAccessibilityAction}
-        accessibilityValue={this.props.accessibilityValue}
-        importantForAccessibility={this.props.importantForAccessibility}
-        accessibilityLiveRegion={this.props.accessibilityLiveRegion}
-        accessibilityViewIsModal={this.props.accessibilityViewIsModal}
-        accessibilityElementsHidden={this.props.accessibilityElementsHidden}
+        accessibilityValue={accessibilityValue}
+        accessibilityLiveRegion={accessibilityLiveRegion}
+        importantForAccessibility={
+          this.props['aria-hidden'] === true
+            ? 'no-hide-descendants'
+            : this.props.importantForAccessibility
+        }
+        accessibilityViewIsModal={
+          this.props['aria-modal'] ?? this.props.accessibilityViewIsModal
+        }
+        accessibilityElementsHidden={
+          this.props['aria-hidden'] ?? this.props.accessibilityElementsHidden
+        }
         nativeID={this.props.nativeID}
         testID={this.props.testID}
         hitSlop={this.props.hitSlop}
-        // [TODO(macOS GH#774)
+        // [macOS
         acceptsFirstMouse={
           this.props.acceptsFirstMouse !== false && !this.props.disabled
         }
@@ -173,7 +208,7 @@ class TouchableBounce extends React.Component<Props, State> {
         onFocus={this.props.onFocus}
         onBlur={this.props.onBlur}
         draggedTypes={this.props.draggedTypes}
-        // ]TODO(macOS GH#774)
+        // macOS]
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
         {this.props.children}

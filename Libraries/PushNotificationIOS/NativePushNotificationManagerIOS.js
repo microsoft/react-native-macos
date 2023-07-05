@@ -9,6 +9,7 @@
  */
 
 import type {TurboModule} from '../TurboModule/RCTExport';
+
 import * as TurboModuleRegistry from '../TurboModule/TurboModuleRegistry';
 
 type Permissions = {|
@@ -29,6 +30,7 @@ type Notification = {|
   +repeatInterval?: ?string,
   +applicationIconBadgeNumber?: ?number,
   +isSilent?: ?boolean,
+  +soundName?: ?string,
 |};
 
 export interface Spec extends TurboModule {

@@ -8,11 +8,17 @@
  * @format
  */
 
-import * as React from 'react';
-import {useMemo, useState, useRef, useImperativeHandle} from 'react';
-import useAndroidRippleForView, {
-  type RippleConfig,
-} from './useAndroidRippleForView';
+import type {
+  BlurEvent,
+  // [macOS
+  FocusEvent,
+  KeyEvent,
+  LayoutEvent,
+  MouseEvent,
+  PressEvent,
+  // macOS]
+} from '../../Types/CoreEventTypes';
+import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
 import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
@@ -20,21 +26,16 @@ import type {
   AccessibilityState,
   AccessibilityValue,
 } from '../View/ViewAccessibility';
+
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
-import {normalizeRect, type RectOrSize} from '../../StyleSheet/Rect';
-import type {
-  LayoutEvent,
-  MouseEvent,
-  PressEvent,
-  // [TODO(macOS GH#774)
-  FocusEvent,
-  BlurEvent,
-  KeyEvent,
-  // ]TODO(macOS GH#774)
-} from '../../Types/CoreEventTypes';
-import type {DraggedTypesType} from '../View/DraggedType'; // TODO(macOS GH#774)
+import {type RectOrSize} from '../../StyleSheet/Rect';
 import View from '../View/View';
+import useAndroidRippleForView, {
+  type RippleConfig,
+} from './useAndroidRippleForView';
+import * as React from 'react';
+import {useImperativeHandle, useMemo, useRef, useState} from 'react';
 
 type ViewStyleProp = $ElementType<React.ElementConfig<typeof View>, 'style'>;
 
@@ -49,14 +50,37 @@ type Props = $ReadOnly<{|
   accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
   accessibilityElementsHidden?: ?boolean,
   accessibilityHint?: ?Stringish,
+  accessibilityLanguage?: ?Stringish,
   accessibilityIgnoresInvertColors?: ?boolean,
   accessibilityLabel?: ?Stringish,
   accessibilityLiveRegion?: ?('none' | 'polite' | 'assertive'),
   accessibilityRole?: ?AccessibilityRole,
   accessibilityState?: ?AccessibilityState,
   accessibilityValue?: ?AccessibilityValue,
+  'aria-valuemax'?: AccessibilityValue['max'],
+  'aria-valuemin'?: AccessibilityValue['min'],
+  'aria-valuenow'?: AccessibilityValue['now'],
+  'aria-valuetext'?: AccessibilityValue['text'],
   accessibilityViewIsModal?: ?boolean,
+  'aria-modal'?: ?boolean,
   accessible?: ?boolean,
+
+  /**
+   * alias for accessibilityState
+   *
+   * see https://reactnative.dev/docs/accessibility#accessibilitystate
+   */
+  'aria-busy'?: ?boolean,
+  'aria-checked'?: ?boolean | 'mixed',
+  'aria-disabled'?: ?boolean,
+  'aria-expanded'?: ?boolean,
+  'aria-selected'?: ?boolean,
+  /**
+   * A value indicating whether the accessibility elements contained within
+   * this accessibility element are hidden.
+   */
+  'aria-hidden'?: ?boolean,
+  'aria-live'?: ?('polite' | 'assertive' | 'off'),
   focusable?: ?boolean,
   importantForAccessibility?: ?('auto' | 'yes' | 'no' | 'no-hide-descendants'),
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
@@ -139,23 +163,23 @@ type Props = $ReadOnly<{|
    */
   onPressOut?: ?(event: PressEvent) => mixed,
 
-  // [TODO(macOS GH#774)
+  // [macOS
   /**
    * Called after the element is focused.
    */
-  onFocus?: ?(event: FocusEvent) => mixed,
+  onFocus?: ?(event: FocusEvent) => void,
 
   /**
    * Called after the element loses focus.
    */
-  onBlur?: ?(event: BlurEvent) => mixed,
+  onBlur?: ?(event: BlurEvent) => void,
 
   /**
    * Fired when a key is pressed. If validKeysDown is set, only those keys will fire this event.
    *
    * @platform macos
    */
-  onKeyDown?: ?(e: KeyEvent) => void,
+  onKeyDown?: ?(event: KeyEvent) => void,
 
   /**
    * Array of keyboard events whose natiev handling should be supressed. Use with `onKeyDown`
@@ -163,7 +187,7 @@ type Props = $ReadOnly<{|
    *
    * @platform macos
    */
-  keyDownEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
+  onKeyUp?: ?(event: KeyEvent) => void,
 
   /**
    * @deprecated use `keyDownEvents` instead.
@@ -197,7 +221,69 @@ type Props = $ReadOnly<{|
    * @platform macos
    */
   validKeysUp?: ?Array<string>,
-  // ]TODO(macOS GH#774)
+
+  /**
+   * Specifies whether the view should receive the mouse down event when the
+   * containing window is in the background.
+   *
+   * @platform macos
+   */
+  acceptsFirstMouse?: ?boolean,
+
+  /**
+   * Specifies whether clicking and dragging the view can move the window. This is useful
+   * to disable in Button like components like Pressable where mouse the user should still
+   * be able to click and drag off the view to cancel the click without accidentally moving the window.
+   *
+   * @platform macos
+   */
+  mouseDownCanMoveWindow?: ?boolean,
+
+  /**
+   * Specifies whether system focus ring should be drawn when the view has keyboard focus.
+   *
+   * @platform macos
+   */
+  enableFocusRing?: ?boolean,
+
+  /**
+   * Specifies the Tooltip for the Pressable.
+   * @platform macos
+   */
+  tooltip?: ?string,
+
+  /**
+   * Fired when a file is dragged into the Pressable via the mouse.
+   *
+   * @platform macos
+   */
+  onDragEnter?: (event: MouseEvent) => void,
+
+  /**
+   * Fired when a file is dragged out of the Pressable via the mouse.
+   *
+   * @platform macos
+   */
+  onDragLeave?: (event: MouseEvent) => void,
+
+  /**
+   * Fired when a file is dropped on the Pressable via the mouse.
+   *
+   * @platform macos
+   */
+  onDrop?: (event: MouseEvent) => void,
+
+  /**
+   * The types of dragged files that the Pressable will accept.
+   *
+   * Possible values for `draggedTypes` are:
+   *
+   * - `'fileUrl'`
+   *
+   * @platform macos
+   */
+  draggedTypes?: ?DraggedTypesType,
+  // macOS]
 
   /**
    * Either view styles or a function that receives a boolean reflecting whether
@@ -229,29 +315,32 @@ type Props = $ReadOnly<{|
    * Duration to wait after press down before calling `onPressIn`.
    */
   unstable_pressDelay?: ?number,
-
-  // [TODO(macOS GH#774)
-  acceptsFirstMouse?: ?boolean,
-  enableFocusRing?: ?boolean,
-  tooltip?: ?string,
-  onDragEnter?: (event: MouseEvent) => void,
-  onDragLeave?: (event: MouseEvent) => void,
-  onDrop?: (event: MouseEvent) => void,
-  draggedTypes?: ?DraggedTypesType,
-  // ]TODO(macOS GH#774)
+  /**
+   * Web to Native Accessibilty props
+   * https://github.com/facebook/react-native/issues/34424
+   */
+  'aria-label'?: ?string,
 |}>;
 
 /**
  * Component used to build display components that should respond to whether the
  * component is currently pressed or not.
  */
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 function Pressable(props: Props, forwardedRef): React.Node {
   const {
-    acceptsFirstMouse, // [TODO(macOS GH#774)
-    enableFocusRing, // ]TODO(macOS GH#774)
     accessible,
+    accessibilityState,
+    'aria-live': ariaLive,
     android_disableSound,
     android_ripple,
+    'aria-busy': ariaBusy,
+    'aria-checked': ariaChecked,
+    'aria-disabled': ariaDisabled,
+    'aria-expanded': ariaExpanded,
+    'aria-label': ariaLabel,
+    'aria-selected': ariaSelected,
     cancelable,
     children,
     delayHoverIn,
@@ -259,18 +348,22 @@ function Pressable(props: Props, forwardedRef): React.Node {
     delayLongPress,
     disabled,
     focusable,
+    hitSlop,
     onHoverIn,
     onHoverOut,
     onLongPress,
     onPress,
     onPressIn,
     onPressOut,
-    // [TODO(macOS GH#774)
+    // [macOS
     onFocus,
     onBlur,
     onKeyDown,
     onKeyUp,
-    // ]TODO(macOS GH#774)
+    acceptsFirstMouse,
+    mouseDownCanMoveWindow,
+    enableFocusRing,
+    // macOS]
     pressRetentionOffset,
     style,
     testOnly_pressed,
@@ -285,21 +378,42 @@ function Pressable(props: Props, forwardedRef): React.Node {
 
   const [pressed, setPressed] = usePressState(testOnly_pressed === true);
 
-  const hitSlop = normalizeRect(props.hitSlop);
+  let _accessibilityState = {
+    busy: ariaBusy ?? accessibilityState?.busy,
+    checked: ariaChecked ?? accessibilityState?.checked,
+    disabled: ariaDisabled ?? accessibilityState?.disabled,
+    expanded: ariaExpanded ?? accessibilityState?.expanded,
+    selected: ariaSelected ?? accessibilityState?.selected,
+  };
 
-  const accessibilityState =
-    disabled != null
-      ? {...props.accessibilityState, disabled}
-      : props.accessibilityState;
+  _accessibilityState =
+    disabled != null ? {..._accessibilityState, disabled} : _accessibilityState;
 
+  const accessibilityValue = {
+    max: props['aria-valuemax'] ?? props.accessibilityValue?.max,
+    min: props['aria-valuemin'] ?? props.accessibilityValue?.min,
+    now: props['aria-valuenow'] ?? props.accessibilityValue?.now,
+    text: props['aria-valuetext'] ?? props.accessibilityValue?.text,
+  };
+
+  const accessibilityLiveRegion =
+    ariaLive === 'off' ? 'none' : ariaLive ?? props.accessibilityLiveRegion;
+
+  const accessibilityLabel = ariaLabel ?? props.accessibilityLabel;
   const restPropsWithDefaults: React.ElementConfig<typeof View> = {
     ...restProps,
     ...android_rippleConfig?.viewProps,
-    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [TODO(macOS GH#774)
+    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [macOS]
+    mouseDownCanMoveWindow: false, // [macOS]
     enableFocusRing: enableFocusRing !== false && !disabled,
     accessible: accessible !== false,
-    focusable: focusable !== false && !disabled, // ]TODO(macOS GH#774)
-    accessibilityState,
+    accessibilityViewIsModal:
+      restProps['aria-modal'] ?? restProps.accessibilityViewIsModal,
+    accessibilityLiveRegion,
+    accessibilityLabel,
+    accessibilityState: _accessibilityState,
+    focusable: focusable !== false && !disabled, // macOS]
+    accessibilityValue,
     hitSlop,
   };
 
@@ -337,12 +451,12 @@ function Pressable(props: Props, forwardedRef): React.Node {
           onPressOut(event);
         }
       },
-      // [TODO(macOS GH#774)
+      // [macOS
       onFocus,
       onBlur,
       onKeyDown,
       onKeyUp,
-      // ]TODO(macOS GH#774)
+      // macOS]
     }),
     [
       android_disableSound,
@@ -359,12 +473,12 @@ function Pressable(props: Props, forwardedRef): React.Node {
       onPress,
       onPressIn,
       onPressOut,
-      // [TODO(macOS GH#774)
+      // [macOS
       onFocus,
       onBlur,
       onKeyDown,
       onKeyUp,
-      // ]TODO(macOS GH#774)
+      // macOS]
       pressRetentionOffset,
       setPressed,
       unstable_pressDelay,

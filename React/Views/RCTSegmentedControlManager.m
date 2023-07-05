@@ -15,16 +15,20 @@
 
 RCT_EXPORT_MODULE()
 
-- (RCTPlatformView *)view // TODO(macOS GH#774)
+- (RCTPlatformView *)view // [macOS]
 {
+  RCTNewArchitectureValidationPlaceholder(
+      RCTNotAllowedInFabricWithoutLegacy,
+      self,
+      @"This native component is still using the legacy interop layer -- please migrate it to use a Fabric specific implementation.");
   return [RCTSegmentedControl new];
 }
 
 RCT_EXPORT_VIEW_PROPERTY(values, NSArray<NSString *>)
 RCT_EXPORT_VIEW_PROPERTY(selectedIndex, NSInteger)
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
 RCT_EXPORT_VIEW_PROPERTY(tintColor, UIColor)
-#endif // TODO(macOS GH#774)
+#endif // [macOS]
 RCT_EXPORT_VIEW_PROPERTY(backgroundColor, UIColor)
 RCT_EXPORT_VIEW_PROPERTY(textColor, UIColor)
 RCT_EXPORT_VIEW_PROPERTY(momentary, BOOL)

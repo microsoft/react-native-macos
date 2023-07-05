@@ -15,17 +15,16 @@
 
 #import "RCTSettingsPlugins.h"
 
-@interface RCTSettingsManager() <NativeSettingsManagerSpec>
+@interface RCTSettingsManager () <NativeSettingsManagerSpec>
 @end
 
-@implementation RCTSettingsManager
-{
+@implementation RCTSettingsManager {
   BOOL _ignoringUpdates;
   NSUserDefaults *_defaults;
   
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
   BOOL _isListeningForUpdates;
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 }
 
 @synthesize moduleRegistry = _moduleRegistry;
@@ -47,12 +46,12 @@ RCT_EXPORT_MODULE()
   if ((self = [super init])) {
     _defaults = defaults;
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(userDefaultsDidChange:)
                                                  name:NSUserDefaultsDidChangeNotification
                                                object:_defaults];
-#endif // TODO(macOS GH#774)
+#endif // [macOS]
   }
   return self;
 }
@@ -64,9 +63,8 @@ RCT_EXPORT_MODULE()
 
 - (facebook::react::ModuleConstants<JS::NativeSettingsManager::Constants>)getConstants
 {
-  return facebook::react::typedConstants<JS::NativeSettingsManager::Constants>({
-    .settings = RCTJSONClean([_defaults dictionaryRepresentation])
-  });
+  return facebook::react::typedConstants<JS::NativeSettingsManager::Constants>(
+      {.settings = RCTJSONClean([_defaults dictionaryRepresentation])});
 }
 
 - (void)userDefaultsDidChange:(NSNotification *)note
@@ -78,8 +76,8 @@ RCT_EXPORT_MODULE()
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   [[_moduleRegistry moduleForName:"EventDispatcher"]
-   sendDeviceEventWithName:@"settingsUpdated"
-   body:RCTJSONClean([_defaults dictionaryRepresentation])];
+      sendDeviceEventWithName:@"settingsUpdated"
+                         body:RCTJSONClean([_defaults dictionaryRepresentation])];
 #pragma clang diagnostic pop
 }
 
@@ -87,7 +85,7 @@ RCT_EXPORT_MODULE()
  * Set one or more values in the settings.
  * TODO: would it be useful to have a callback for when this has completed?
  */
-RCT_EXPORT_METHOD(setValues:(NSDictionary *)values)
+RCT_EXPORT_METHOD(setValues : (NSDictionary *)values)
 {
   _ignoringUpdates = YES;
   [values enumerateKeysAndObjectsUsingBlock:^(NSString *key, id json, BOOL *stop) {
@@ -106,7 +104,7 @@ RCT_EXPORT_METHOD(setValues:(NSDictionary *)values)
 /**
  * Remove some values from the settings.
  */
-RCT_EXPORT_METHOD(deleteValues:(NSArray<NSString *> *)keys)
+RCT_EXPORT_METHOD(deleteValues : (NSArray<NSString *> *)keys)
 {
   _ignoringUpdates = YES;
   for (NSString *key in keys) {
@@ -117,7 +115,7 @@ RCT_EXPORT_METHOD(deleteValues:(NSArray<NSString *> *)keys)
   _ignoringUpdates = NO;
 }
 
-#if TARGET_OS_OSX // [TODO(macOS GH#774)
+#if TARGET_OS_OSX // [macOS
 /**
  * Enable or disable monitoring of changes to NSUserDefaults
  */
@@ -140,9 +138,10 @@ RCT_EXPORT_METHOD(setIsMonitoringEnabled:(BOOL)isEnabled)
     }
   }
 }
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
-- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
 {
   return std::make_shared<facebook::react::NativeSettingsManagerSpecJSI>(params);
 }

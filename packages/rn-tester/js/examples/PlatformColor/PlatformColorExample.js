@@ -12,7 +12,7 @@ const React = require('react');
 const ReactNative = require('react-native');
 import Platform from 'react-native/Libraries/Utilities/Platform';
 const {
-  ColorWithSystemEffectMacOS, // TODO(macOS GH#750)
+  ColorWithSystemEffectMacOS, // [macOS]
   DynamicColorIOS,
   DynamicColorMacOS,
   PlatformColor,
@@ -23,7 +23,7 @@ const {
 
 function PlatformColorsExample() {
   function createTable() {
-    let colors = [];
+    let colors: Array<{color: $Call<typeof PlatformColor>, label: string}> = [];
     if (Platform.OS === 'ios') {
       colors = [
         // https://developer.apple.com/documentation/uikit/uicolor/ui_element_colors
@@ -199,7 +199,7 @@ function FallbackColorsExample() {
   let color = {};
   if (
     Platform.OS === 'ios' ||
-    Platform.OS === 'macos' // TODO(macOS GH#774)
+    Platform.OS === 'macos' // [macOS]
   ) {
     color = {
       label: "PlatformColor('bogus', 'systemGreenColor')",
@@ -225,6 +225,7 @@ function FallbackColorsExample() {
           style={{
             ...styles.colorCell,
             backgroundColor: color.color,
+            borderColor: color.color,
           }}
         />
       </View>
@@ -233,7 +234,7 @@ function FallbackColorsExample() {
 }
 
 function DynamicColorsExample() {
-  // [TODO(macOS GH#774)
+  // [macOS
   return Platform.OS === 'macos' ? (
     <View style={styles.column}>
       <View style={styles.row}>
@@ -288,7 +289,7 @@ function DynamicColorsExample() {
         />
       </View>
     </View>
-  ) : // ]TODO(macOS GH#774)
+  ) : // macOS]
   Platform.OS === 'ios' ? (
     <View style={styles.column}>
       <View style={styles.row}>
@@ -347,14 +348,14 @@ function VariantColorsExample() {
       <View style={styles.row}>
         <Text style={styles.labelCell}>
           {
-            // [TODO(OSS Candidate ISS#2710739)
+            // [macOS
             Platform.select({
               ios: "DynamicColorIOS({light: 'red', dark: 'blue'})",
               android: "PlatformColor('?attr/colorAccent')",
               macos: "DynamicColorMacOS({light: 'red', dark: 'blue'})",
               default: 'Unexpected Platform.OS: ' + Platform.OS,
             })
-            // ]TODO(OSS Candidate ISS#2710739)
+            // macOS]
           }
         </Text>
         <View
@@ -363,10 +364,10 @@ function VariantColorsExample() {
             backgroundColor:
               Platform.OS === 'ios'
                 ? DynamicColorIOS({light: 'red', dark: 'blue'})
-                : // [TODO(macOS GH#774)
+                : // [macOS
                 Platform.OS === 'macos'
                 ? DynamicColorMacOS({light: 'red', dark: 'blue'})
-                : // ]TODO(macOS GH#774)
+                : // macOS]
                 Platform.OS === 'android'
                 ? PlatformColor('?attr/colorAccent')
                 : 'red',
@@ -377,7 +378,7 @@ function VariantColorsExample() {
   );
 }
 
-// [TODO(macOS GH#750)
+// [macOS
 function ColorWithSystemEffectMacOSExample() {
   function createTable() {
     let colors = [
@@ -513,7 +514,7 @@ function ColorWithSystemEffectMacOSExample() {
   ) : (
     <Text style={styles.labelCell}>Not applicable on this platform</Text>
   );
-} // ]TODO(macOS GH#750)
+} // macOS]
 
 const styles = StyleSheet.create({
   column: {flex: 1, flexDirection: 'column'},
@@ -521,7 +522,7 @@ const styles = StyleSheet.create({
   labelCell: {
     flex: 1,
     alignItems: 'stretch',
-    // TODO(macOS GH#774)
+    // [macOS]
     // Remove need to specify label color
   },
   colorCell: {flex: 0.25, alignItems: 'stretch'},
@@ -546,7 +547,7 @@ exports.examples = [
     },
   },
   {
-    title: 'Dynamic Colors', // TODO(OSS Candidate ISS#2710739)
+    title: 'Dynamic Colors', // [macOS]
     render(): React.Element<any> {
       return <DynamicColorsExample />;
     },
@@ -557,11 +558,11 @@ exports.examples = [
       return <VariantColorsExample />;
     },
   },
-  // [TODO(macOS GH#750)
+  // [macOS
   {
     title: 'Color With System Effect macOS',
     render(): React.Element<any> {
       return <ColorWithSystemEffectMacOSExample />;
     },
-  }, // ]TODO(macOS GH#750)
+  }, // macOS]
 ];

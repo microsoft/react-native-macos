@@ -38,14 +38,14 @@ using namespace facebook::react;
   return UIEdgeInsetsZero;
 }
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
 - (void)safeAreaInsetsDidChange
 {
   [super safeAreaInsetsDidChange];
 
   [self _updateStateIfNecessary];
 }
-#endif // TODO(macOS GH#774)
+#endif // [macOS]
 
 - (void)_updateStateIfNecessary
 {
@@ -54,22 +54,22 @@ using namespace facebook::react;
   }
 
   UIEdgeInsets insets = [self _safeAreaInsets];
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+  CGFloat scale = _layoutMetrics.pointScaleFactor; // [macOS]
+#if !TARGET_OS_OSX // [macOS]
   insets.left = RCTRoundPixelValue(insets.left);
   insets.top = RCTRoundPixelValue(insets.top);
   insets.right = RCTRoundPixelValue(insets.right);
   insets.bottom = RCTRoundPixelValue(insets.bottom);
-#else // [TODO(macOS GH#774)
-  CGFloat scale = [[NSScreen mainScreen] backingScaleFactor];;
+#else // [macOS
   insets.left = RCTRoundPixelValue(insets.left, scale);
   insets.top = RCTRoundPixelValue(insets.top, scale);
   insets.right = RCTRoundPixelValue(insets.right, scale);
   insets.bottom = RCTRoundPixelValue(insets.bottom, scale);
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
   auto newPadding = RCTEdgeInsetsFromUIEdgeInsets(insets);
-  auto threshold = 1.0 / RCTScreenScale() + 0.01; // Size of a pixel plus some small threshold.
-
+  auto threshold = 1.0 / scale + 0.01; // Size of a pixel plus some small threshold. [macOS]
+  
   _state->updateState(
       [=](SafeAreaViewShadowNode::ConcreteState::Data const &oldData)
           -> SafeAreaViewShadowNode::ConcreteState::SharedData {

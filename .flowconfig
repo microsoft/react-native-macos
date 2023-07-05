@@ -1,26 +1,25 @@
 [ignore]
 ; We fork some components by platform
 .*/*[.]android.js
-; TODO(macOS GH#774):
+; [macOS]
 .*/*[.]macos.js
 
 ; Ignore templates for 'react-native init'
 <PROJECT_ROOT>/template/.*
 
 ; Ignore the Dangerfile
-<PROJECT_ROOT>/bots/dangerfile.js
+<PROJECT_ROOT>/packages/react-native-bots/dangerfile.js
 
 ; Ignore "BUCK" generated dirs
 <PROJECT_ROOT>/\.buckd/
 
-; TODO(macOS GH#774): Ignore metro.config.js
+; [macOS] Ignore metro.config.js
 <PROJECT_ROOT>/metro.config.js
 
 ; Flow doesn't support platforms
 .*/Libraries/Utilities/LoadingView.js
 
-; Ignore everything in android-patches
-<PROJECT_ROOT>/android-patches/.*
+.*/node_modules/resolve/test/resolver/malformed_package_json/package\.json$
 
 [untyped]
 .*/node_modules/@react-native-community/cli/.*/.*
@@ -57,6 +56,9 @@ suppress_type=$FlowFixMeProps
 suppress_type=$FlowFixMeState
 suppress_type=$FlowFixMeEmpty
 
+experimental.array_literal_providers=true
+inference_mode=experimental.lti
+
 [lints]
 sketchy-null-number=warn
 sketchy-null-mixed=warn
@@ -66,7 +68,6 @@ nonstrict-import=warn
 deprecated-type=error
 unsafe-getters-setters=warn
 unnecessary-invariant=warn
-signature-verification-failure=warn
 
 [strict]
 deprecated-type
@@ -78,4 +79,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.170.0
+^0.196.3

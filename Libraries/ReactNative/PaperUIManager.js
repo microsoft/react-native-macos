@@ -8,18 +8,18 @@
  * @format
  */
 
+import type {RootTag} from '../Types/RootTagTypes';
+
+import NativeUIManager from './NativeUIManager';
+
 const NativeModules = require('../BatchedBridge/NativeModules');
+const defineLazyObjectProperty = require('../Utilities/defineLazyObjectProperty');
 const Platform = require('../Utilities/Platform');
 const UIManagerProperties = require('./UIManagerProperties');
 
-const defineLazyObjectProperty = require('../Utilities/defineLazyObjectProperty');
+const viewManagerConfigs: {[string]: any | null} = {};
 
-import NativeUIManager from './NativeUIManager';
-import type {RootTag} from 'react-native/Libraries/Types/RootTagTypes';
-
-const viewManagerConfigs = {};
-
-const triedLoadingConfig = new Set();
+const triedLoadingConfig = new Set<string>();
 
 let NativeUIManagerConstants = {};
 let isNativeUIManagerConstantsSet = false;
@@ -114,14 +114,14 @@ const UIManagerJS = {
 // $FlowFixMe[prop-missing]
 NativeUIManager.getViewManagerConfig = UIManagerJS.getViewManagerConfig;
 
-function lazifyViewManagerConfig(viewName) {
+function lazifyViewManagerConfig(viewName: string) {
   const viewConfig = getConstants()[viewName];
   viewManagerConfigs[viewName] = viewConfig;
   if (viewConfig.Manager) {
     defineLazyObjectProperty(viewConfig, 'Constants', {
       get: () => {
         const viewManager = NativeModules[viewConfig.Manager];
-        const constants = {};
+        const constants: {[string]: mixed} = {};
         viewManager &&
           Object.keys(viewManager).forEach(key => {
             const value = viewManager[key];
@@ -135,7 +135,7 @@ function lazifyViewManagerConfig(viewName) {
     defineLazyObjectProperty(viewConfig, 'Commands', {
       get: () => {
         const viewManager = NativeModules[viewConfig.Manager];
-        const commands = {};
+        const commands: {[string]: number} = {};
         let index = 0;
         viewManager &&
           Object.keys(viewManager).forEach(key => {
@@ -155,7 +155,7 @@ function lazifyViewManagerConfig(viewName) {
  * only needed for iOS, which puts the constants in the ViewManager
  * namespace instead of UIManager, unlike Android.
  */
-if (Platform.OS === 'ios' || Platform.OS === 'macos' /* TODO(macOS GH#774) */) {
+if (Platform.OS === 'ios' || Platform.OS === 'macos' /* [macOS] */) {
   Object.keys(getConstants()).forEach(viewName => {
     lazifyViewManagerConfig(viewName);
   });

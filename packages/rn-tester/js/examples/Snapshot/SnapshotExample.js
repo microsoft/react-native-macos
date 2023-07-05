@@ -15,11 +15,11 @@ const {Alert, Image, StyleSheet, Text, View} = require('react-native');
 const ScreenshotManager = require('../../../NativeModuleExample/NativeScreenshotManager');
 
 class ScreenshotExample extends React.Component<{...}, $FlowFixMeState> {
-  state = {
+  state: any | {uri: void} = {
     uri: undefined,
   };
 
-  render() {
+  render(): React.Node {
     return (
       <View style={style.container}>
         <Text onPress={this.takeScreenshot} style={style.button}>
@@ -30,7 +30,7 @@ class ScreenshotExample extends React.Component<{...}, $FlowFixMeState> {
     );
   }
 
-  // TODO(macOS GH#774): alert needs two string arguments, passing an error results in crashing
+  // [macOS] alert needs two string arguments, passing an error results in crashing
   takeScreenshot = () => {
     if (ScreenshotManager !== undefined && ScreenshotManager !== null) {
       ScreenshotManager.takeScreenshot('window', {format: 'jpeg', quality: 0.8}) // See UIManager.js for options

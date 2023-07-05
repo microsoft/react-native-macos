@@ -11,7 +11,6 @@
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/graphics/Color.h>
-#include <react/renderer/graphics/Geometry.h>
 
 namespace facebook {
 namespace react {
@@ -27,6 +26,12 @@ class BaseTextProps {
       const PropsParserContext &context,
       const BaseTextProps &sourceProps,
       const RawProps &rawProps);
+
+  void setProp(
+      const PropsParserContext &context,
+      RawPropsPropNameHash hash,
+      const char *propName,
+      RawValue const &value);
 
 #pragma mark - Props
 

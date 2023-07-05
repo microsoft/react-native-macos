@@ -6,16 +6,19 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <React/RCTDefines.h>
 #import <React/RCTJSThread.h>
 
+#import "RCTBundleManager.h"
+
 @class RCTBridge;
 @protocol RCTBridgeMethod;
+@protocol RCTTurboModule;
+@protocol RCTTurboModuleRegistry;
 @class RCTModuleRegistry;
 @class RCTViewRegistry;
-@class RCTBundleManager;
 @class RCTCallableJSModules;
 
 /**
@@ -379,37 +382,6 @@ RCT_EXTERN_C_END
 @end
 
 /**
- * A protocol that allows TurboModules to do lookup on other TurboModules.
- * Calling these methods may cause a module to be synchronously instantiated.
- */
-@protocol RCTTurboModuleRegistry <NSObject>
-- (id)moduleForName:(const char *)moduleName;
-
-/**
- * Rationale:
- * When TurboModules lookup other modules by name, we first check the TurboModule
- * registry to see if a TurboModule exists with the respective name. In this case,
- * we don't want a RedBox to be raised if the TurboModule isn't found.
- *
- * This method is deprecated and will be deleted after the migration from
- * TurboModules to TurboModules is complete.
- */
-- (id)moduleForName:(const char *)moduleName warnOnLookupFailure:(BOOL)warnOnLookupFailure;
-- (BOOL)moduleIsInitialized:(const char *)moduleName;
-
-- (NSArray<NSString *> *)eagerInitModuleNames;
-- (NSArray<NSString *> *)eagerInitMainQueueModuleNames;
-@end
-
-/**
- * Experimental.
- * A protocol to declare that a class supports TurboModule.
- * This may be removed in the future.
- * See RCTTurboModule.h for actual signature.
- */
-@protocol RCTTurboModule;
-
-/**
  * A class that allows NativeModules and TurboModules to look up one another.
  */
 @interface RCTModuleRegistry : NSObject
@@ -420,22 +392,9 @@ RCT_EXTERN_C_END
 - (id)moduleForName:(const char *)moduleName lazilyLoadIfNecessary:(BOOL)lazilyLoad;
 @end
 
-typedef void (^RCTBridgelessBundleURLSetter)(NSURL *bundleURL);
-typedef NSURL * (^RCTBridgelessBundleURLGetter)(void);
+typedef RCTPlatformView * (^RCTBridgelessComponentViewProvider)(NSNumber *); // [macOS]
 
-/**
- * A class that allows NativeModules/TurboModules to read/write the bundleURL, with or without the bridge.
- */
-@interface RCTBundleManager : NSObject
-- (void)setBridge:(RCTBridge *)bridge;
-- (void)setBridgelessBundleURLGetter:(RCTBridgelessBundleURLGetter)getter
-                           andSetter:(RCTBridgelessBundleURLSetter)setter
-                    andDefaultGetter:(RCTBridgelessBundleURLGetter)defaultGetter;
-- (void)resetBundleURL;
-@property (strong) NSURL *bundleURL; // TODO(macOS GH#774)
-@end
-
-typedef RCTPlatformView * (^RCTBridgelessComponentViewProvider)(NSNumber *); // TODO(macOS GH#774)
+typedef void (^RCTViewRegistryUIBlock)(RCTViewRegistry *viewRegistry);
 
 /**
  * A class that allows NativeModules to query for views, given React Tags.
@@ -444,7 +403,8 @@ typedef RCTPlatformView * (^RCTBridgelessComponentViewProvider)(NSNumber *); // 
 - (void)setBridge:(RCTBridge *)bridge;
 - (void)setBridgelessComponentViewProvider:(RCTBridgelessComponentViewProvider)bridgelessComponentViewProvider;
 
-- (RCTPlatformView *)viewForReactTag:(NSNumber *)reactTag; // TODO(macOS GH#774)
+- (RCTPlatformView *)viewForReactTag:(NSNumber *)reactTag; // [macOS]
+- (void)addUIBlock:(RCTViewRegistryUIBlock)block;
 @end
 
 typedef void (^RCTBridgelessJSModuleMethodInvoker)(

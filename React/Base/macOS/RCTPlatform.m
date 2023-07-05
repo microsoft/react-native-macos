@@ -5,7 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO(macOS GH#774)
+// [macOS]
+#if TARGET_OS_OSX
 
 #import "RCTPlatform.h"
 
@@ -38,3 +39,4 @@ Class RCTPlatformCls(void) {
 }
 
 @end
+#endif

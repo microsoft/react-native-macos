@@ -7,13 +7,16 @@
  * @format
  * @flow strict-local
  */
-// [TODO(macOS GH#774)
+
+// [macOS]
+
 'use strict';
 
 import type {ColorValue} from './StyleSheet';
+
 import {
-  DynamicColorMacOSPrivate,
   ColorWithSystemEffectMacOSPrivate,
+  DynamicColorMacOSPrivate,
 } from './PlatformColorValueTypes';
 
 export type DynamicColorMacOSTuple = {
@@ -47,4 +50,3 @@ export const ColorWithSystemEffectMacOS = (
 ): ColorValue => {
   return ColorWithSystemEffectMacOSPrivate(color, effect);
 };
-// ]TODO(macOS GH#774)

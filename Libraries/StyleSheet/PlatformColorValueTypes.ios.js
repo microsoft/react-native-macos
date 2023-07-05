@@ -8,8 +8,8 @@
  * @flow strict-local
  */
 
-import type {ColorValue} from './StyleSheet';
 import type {ProcessedColorValue} from './processColor';
+import type {ColorValue} from './StyleSheet';
 
 export opaque type NativeColorValue = {
   semantic?: Array<string>,
@@ -58,9 +58,13 @@ export const normalizeColorObject = (
     const dynamic = color.dynamic;
     const dynamicColor: NativeColorValue = {
       dynamic: {
+        // $FlowFixMe[incompatible-use]
         light: normalizeColor(dynamic.light),
+        // $FlowFixMe[incompatible-use]
         dark: normalizeColor(dynamic.dark),
+        // $FlowFixMe[incompatible-use]
         highContrastLight: normalizeColor(dynamic.highContrastLight),
+        // $FlowFixMe[incompatible-use]
         highContrastDark: normalizeColor(dynamic.highContrastDark),
       },
     };
@@ -74,13 +78,17 @@ export const processColorObject = (
   color: NativeColorValue,
 ): ?NativeColorValue => {
   if ('dynamic' in color && color.dynamic != null) {
-    const processColor = require('./processColor');
+    const processColor = require('./processColor').default;
     const dynamic = color.dynamic;
     const dynamicColor: NativeColorValue = {
       dynamic: {
+        // $FlowFixMe[incompatible-use]
         light: processColor(dynamic.light),
+        // $FlowFixMe[incompatible-use]
         dark: processColor(dynamic.dark),
+        // $FlowFixMe[incompatible-use]
         highContrastLight: processColor(dynamic.highContrastLight),
+        // $FlowFixMe[incompatible-use]
         highContrastDark: processColor(dynamic.highContrastDark),
       },
     };

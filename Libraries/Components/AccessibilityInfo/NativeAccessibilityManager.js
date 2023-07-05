@@ -9,6 +9,7 @@
  */
 
 import type {TurboModule} from '../../TurboModule/RCTExport';
+
 import * as TurboModuleRegistry from '../../TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
@@ -20,18 +21,22 @@ export interface Spec extends TurboModule {
     onSuccess: (isGrayscaleEnabled: boolean) => void,
     onError: (error: Object) => void,
   ) => void;
-  // [TODO(macOS GH#774)
+  // [macOS
   +getCurrentHighContrastState: (
     onSuccess: (isHighContrastEnabled: boolean) => void,
     onError: (error: Object) => void,
   ) => void;
-  // ]TODO(macOS GH#774)
+  // macOS]
   +getCurrentInvertColorsState: (
     onSuccess: (isInvertColorsEnabled: boolean) => void,
     onError: (error: Object) => void,
   ) => void;
   +getCurrentReduceMotionState: (
     onSuccess: (isReduceMotionEnabled: boolean) => void,
+    onError: (error: Object) => void,
+  ) => void;
+  +getCurrentPrefersCrossFadeTransitionsState?: (
+    onSuccess: (prefersCrossFadeTransitions: boolean) => void,
     onError: (error: Object) => void,
   ) => void;
   +getCurrentReduceTransparencyState: (

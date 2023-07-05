@@ -9,6 +9,7 @@
  */
 
 import type {TurboModule} from '../../TurboModule/RCTExport';
+
 import * as TurboModuleRegistry from '../../TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
@@ -29,7 +30,7 @@ export interface Spec extends TurboModule {
   +setIsShakeToShowDevMenuEnabled: (enabled: boolean) => void;
 
   // macOS only.
-  +setIsSecondaryClickToShowDevMenuEnabled: (enabled: boolean) => void; // TODO(macOS GH#774)
+  +setIsSecondaryClickToShowDevMenuEnabled: (enabled: boolean) => void; // [macOS]
 }
 
 export default (TurboModuleRegistry.getEnforcing<Spec>('DevSettings'): Spec);

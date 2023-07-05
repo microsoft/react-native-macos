@@ -8,14 +8,12 @@
  * @flow
  */
 
-'use strict'; // TODO(OSS Candidate ISS#2710739)
+'use strict'; // [macOS]
 
 const React = require('react');
 const ReactNative = require('react-native');
 import {Platform} from 'react-native';
-const {Button, PlatformColor, StyleSheet, Text, TextInput, View} = ReactNative;
-
-import type {KeyEvent} from 'react-native/Libraries/Types/CoreEventTypes';
+const {StyleSheet, Text, TextInput, View} = ReactNative;
 
 function KeyEventExample(): React.Node {
   const [log, setLog] = React.useState([]);

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #import "RCTAnimatedNode.h"
 
@@ -24,7 +24,7 @@
 - (void)extractOffset;
 
 @property (nonatomic, assign) CGFloat value;
-@property (nonatomic, strong) id animatedObject;
+@property (nonatomic, strong, readonly) id animatedObject;
 @property (nonatomic, weak) id<RCTValueAnimatedNodeObserver> valueObserver;
 
 @end

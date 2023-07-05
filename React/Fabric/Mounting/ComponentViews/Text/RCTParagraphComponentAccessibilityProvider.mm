@@ -21,21 +21,21 @@
 using namespace facebook::react;
 
 @implementation RCTParagraphComponentAccessibilityProvider {
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
   NSMutableArray<UIAccessibilityElement *> *_accessibilityElements;
-#endif // TODO(macOS GH#774)
+#endif // [macOS]
   AttributedString _attributedString;
   RCTTextLayoutManager *_layoutManager;
   ParagraphAttributes _paragraphAttributes;
   CGRect _frame;
-  __weak RCTUIView *_view; // TODO(macOS GH#774)
+  __weak RCTUIView *_view; // [macOS]
 }
 
 - (instancetype)initWithString:(facebook::react::AttributedString)attributedString
                  layoutManager:(RCTTextLayoutManager *)layoutManager
            paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                          frame:(CGRect)frame
-                          view:(RCTUIView *)view // TODO(macOS GH#774)
+                          view:(RCTUIView *)view // [macOS]
 {
   if (self = [super init]) {
     _attributedString = attributedString;
@@ -47,7 +47,7 @@ using namespace facebook::react;
   return self;
 }
 
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
 - (NSArray<UIAccessibilityElement *> *)accessibilityElements
 {
   if (_accessibilityElements) {
@@ -70,6 +70,7 @@ using namespace facebook::react;
   firstElement.isAccessibilityElement = YES;
   firstElement.accessibilityTraits = _view.accessibilityTraits;
   firstElement.accessibilityLabel = accessibilityLabel;
+  firstElement.accessibilityLanguage = _view.accessibilityLanguage;
   firstElement.accessibilityFrame = UIAccessibilityConvertFrameToScreenCoordinates(_view.bounds, _view);
   [firstElement setAccessibilityActivationPoint:CGPointMake(
                                                     firstElement.accessibilityFrame.origin.x + 1.0,
@@ -174,7 +175,7 @@ using namespace facebook::react;
   _accessibilityElements = elements;
   return _accessibilityElements;
 }
-#endif // TODO(macOS GH#774)
+#endif // [macOS]
 
 - (BOOL)isUpToDate:(facebook::react::AttributedString)currentAttributedString
 {

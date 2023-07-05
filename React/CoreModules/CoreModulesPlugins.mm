@@ -19,10 +19,10 @@
 Class RCTCoreModulesClassProvider(const char *name) {
   // Intentionally leak to avoid crashing after static destructors are run.
   static const auto sCoreModuleClassMap = new const std::unordered_map<std::string, Class (*)(void)>{
-#if !TARGET_OS_OSX // TODO(macOS) = Do we need these?
+#if !TARGET_OS_OSX // [macOS] Do we need these?
     {"AccessibilityManager", RCTAccessibilityManagerCls},
+#endif // [macOS]
     {"Appearance", RCTAppearanceCls},
-#endif // TODO(macOS)
     {"DeviceInfo", RCTDeviceInfoCls},
     {"ExceptionsManager", RCTExceptionsManagerCls},
     {"PlatformConstants", RCTPlatformCls},
@@ -31,25 +31,23 @@ Class RCTCoreModulesClassProvider(const char *name) {
     {"SourceCode", RCTSourceCodeCls},
     {"ActionSheetManager", RCTActionSheetManagerCls},
     {"AlertManager", RCTAlertManagerCls},
-    {"AsyncLocalStorage", RCTAsyncLocalStorageCls},
     {"Timing", RCTTimingCls},
     {"StatusBarManager", RCTStatusBarManagerCls},
     {"KeyboardObserver", RCTKeyboardObserverCls},
     {"AppState", RCTAppStateCls},
-#if !TARGET_OS_OSX // TODO(macOS) = Do we need these?
+#if !TARGET_OS_OSX // [macOS] Do we need these?
     {"PerfMonitor", RCTPerfMonitorCls},
-#endif // TODO(macOS)
+#endif // [macOS]
     {"DevMenu", RCTDevMenuCls},
     {"DevSettings", RCTDevSettingsCls},
     {"RedBox", RCTRedBoxCls},
-#if !TARGET_OS_OSX // TODO(macOS) = Do we need these?
     {"LogBox", RCTLogBoxCls},
-#endif // TODO(macOS)
     {"WebSocketExecutor", RCTWebSocketExecutorCls},
     {"WebSocketModule", RCTWebSocketModuleCls},
     {"DevLoadingView", RCTDevLoadingViewCls},
     {"DevSplitBundleLoader", RCTDevSplitBundleLoaderCls},
     {"EventDispatcher", RCTEventDispatcherCls},
+    {"BlobModule", RCTBlobManagerCls},
   };
 
   auto p = sCoreModuleClassMap->find(name);

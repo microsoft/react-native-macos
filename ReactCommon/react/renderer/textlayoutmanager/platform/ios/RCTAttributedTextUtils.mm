@@ -55,6 +55,89 @@ inline static UIFontWeight RCTUIFontWeightFromInteger(NSInteger fontWeight)
   return weights[(fontWeight + 50) / 100 - 1];
 }
 
+#if !TARGET_OS_OSX // [macOS]
+inline static UIFontTextStyle RCTUIFontTextStyleForDynamicTypeRamp(const DynamicTypeRamp &dynamicTypeRamp)
+{
+  switch (dynamicTypeRamp) {
+    case DynamicTypeRamp::Caption2:
+      return UIFontTextStyleCaption2;
+    case DynamicTypeRamp::Caption1:
+      return UIFontTextStyleCaption1;
+    case DynamicTypeRamp::Footnote:
+      return UIFontTextStyleFootnote;
+    case DynamicTypeRamp::Subheadline:
+      return UIFontTextStyleSubheadline;
+    case DynamicTypeRamp::Callout:
+      return UIFontTextStyleCallout;
+    case DynamicTypeRamp::Body:
+      return UIFontTextStyleBody;
+    case DynamicTypeRamp::Headline:
+      return UIFontTextStyleHeadline;
+    case DynamicTypeRamp::Title3:
+      return UIFontTextStyleTitle3;
+    case DynamicTypeRamp::Title2:
+      return UIFontTextStyleTitle2;
+    case DynamicTypeRamp::Title1:
+      return UIFontTextStyleTitle1;
+    case DynamicTypeRamp::LargeTitle:
+      return UIFontTextStyleLargeTitle;
+  }
+}
+#endif // [macOS]
+
+inline static CGFloat RCTBaseSizeForDynamicTypeRamp(const DynamicTypeRamp &dynamicTypeRamp)
+{
+  // Values taken from
+  // https://developer.apple.com/design/human-interface-guidelines/foundations/typography/#specifications
+  switch (dynamicTypeRamp) {
+    case DynamicTypeRamp::Caption2:
+      return 11.0;
+    case DynamicTypeRamp::Caption1:
+      return 12.0;
+    case facebook::react::DynamicTypeRamp::Footnote:
+      return 13.0;
+    case facebook::react::DynamicTypeRamp::Subheadline:
+      return 15.0;
+    case facebook::react::DynamicTypeRamp::Callout:
+      return 16.0;
+    case facebook::react::DynamicTypeRamp::Body:
+      return 17.0;
+    case facebook::react::DynamicTypeRamp::Headline:
+      return 17.0;
+    case facebook::react::DynamicTypeRamp::Title3:
+      return 20.0;
+    case facebook::react::DynamicTypeRamp::Title2:
+      return 22.0;
+    case facebook::react::DynamicTypeRamp::Title1:
+      return 28.0;
+    case facebook::react::DynamicTypeRamp::LargeTitle:
+      return 34.0;
+  }
+}
+
+inline static CGFloat RCTEffectiveFontSizeMultiplierFromTextAttributes(const TextAttributes &textAttributes)
+{
+  if (textAttributes.allowFontScaling.value_or(true)) {
+#if !TARGET_OS_OSX // [macOS]
+    if (textAttributes.dynamicTypeRamp.has_value()) {
+      DynamicTypeRamp dynamicTypeRamp = textAttributes.dynamicTypeRamp.value();
+      UIFontMetrics *fontMetrics =
+          [UIFontMetrics metricsForTextStyle:RCTUIFontTextStyleForDynamicTypeRamp(dynamicTypeRamp)];
+      // Using a specific font size reduces rounding errors from -scaledValueForValue:
+      CGFloat requestedSize =
+          isnan(textAttributes.fontSize) ? RCTBaseSizeForDynamicTypeRamp(dynamicTypeRamp) : textAttributes.fontSize;
+      return [fontMetrics scaledValueForValue:requestedSize] / requestedSize;
+    } else {
+      return textAttributes.fontSizeMultiplier;
+    }
+#else // [macOS
+    return textAttributes.fontSizeMultiplier;
+#endif // macOS]
+  } else {
+    return 1.0;
+  }
+}
+
 inline static UIFont *RCTEffectiveFontFromTextAttributes(const TextAttributes &textAttributes)
 {
   NSString *fontFamily = [NSString stringWithCString:textAttributes.fontFamily.c_str() encoding:NSUTF8StringEncoding];
@@ -71,21 +154,14 @@ inline static UIFont *RCTEffectiveFontFromTextAttributes(const TextAttributes &t
   fontProperties.weight = textAttributes.fontWeight.has_value()
       ? RCTUIFontWeightFromInteger((NSInteger)textAttributes.fontWeight.value())
       : NAN;
-  fontProperties.sizeMultiplier = textAttributes.fontSizeMultiplier;
+  fontProperties.sizeMultiplier = RCTEffectiveFontSizeMultiplierFromTextAttributes(textAttributes);
 
   return RCTFontWithFontProperties(fontProperties);
 }
 
-inline static CGFloat RCTEffectiveFontSizeMultiplierFromTextAttributes(const TextAttributes &textAttributes)
+inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const TextAttributes &textAttributes) // [macOS]
 {
-  return textAttributes.allowFontScaling.value_or(true) && !isnan(textAttributes.fontSizeMultiplier)
-      ? textAttributes.fontSizeMultiplier
-      : 1.0;
-}
-
-inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const TextAttributes &textAttributes) // TODO(macOS GH#774)
-{
-  RCTUIColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ?: [RCTUIColor blackColor]; // TODO(macOS GH#774)
+  RCTUIColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ? RCTUIColorFromSharedColor(textAttributes.foregroundColor) : [RCTUIColor blackColor]; // [macOS]
 
   if (!isnan(textAttributes.opacity)) {
     effectiveForegroundColor = [effectiveForegroundColor
@@ -95,16 +171,16 @@ inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const Te
   return effectiveForegroundColor;
 }
 
-inline static RCTUIColor *RCTEffectiveBackgroundColorFromTextAttributes(const TextAttributes &textAttributes) // TODO(macOS GH#774)
+inline static RCTUIColor *RCTEffectiveBackgroundColorFromTextAttributes(const TextAttributes &textAttributes) // [macOS]
 {
-  RCTUIColor *effectiveBackgroundColor = RCTUIColorFromSharedColor(textAttributes.backgroundColor); // TODO(macOS GH#774)
+  RCTUIColor *effectiveBackgroundColor = RCTUIColorFromSharedColor(textAttributes.backgroundColor); // [macOS]
 
   if (effectiveBackgroundColor && !isnan(textAttributes.opacity)) {
     effectiveBackgroundColor = [effectiveBackgroundColor
         colorWithAlphaComponent:CGColorGetAlpha(effectiveBackgroundColor.CGColor) * textAttributes.opacity];
   }
 
-  return effectiveBackgroundColor ?: [RCTUIColor clearColor]; // TODO(macOS GH#774)
+  return effectiveBackgroundColor ? effectiveBackgroundColor : [RCTUIColor clearColor]; // [macOS]
 }
 
 NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(TextAttributes const &textAttributes)
@@ -118,7 +194,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
   }
 
   // Colors
-  RCTUIColor *effectiveForegroundColor = RCTEffectiveForegroundColorFromTextAttributes(textAttributes); // TODO(macOS GH#774)
+  RCTUIColor *effectiveForegroundColor = RCTEffectiveForegroundColorFromTextAttributes(textAttributes); // [macOS]
 
   if (textAttributes.foregroundColor || !isnan(textAttributes.opacity)) {
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
@@ -156,6 +232,12 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
     isParagraphStyleUsed = YES;
   }
 
+  if (textAttributes.lineBreakStrategy.has_value()) {
+    paragraphStyle.lineBreakStrategy =
+        RCTNSLineBreakStrategyFromLineBreakStrategy(textAttributes.lineBreakStrategy.value());
+    isParagraphStyleUsed = YES;
+  }
+
   if (!isnan(textAttributes.lineHeight)) {
     CGFloat lineHeight = textAttributes.lineHeight * RCTEffectiveFontSizeMultiplierFromTextAttributes(textAttributes);
     paragraphStyle.minimumLineHeight = lineHeight;
@@ -174,7 +256,7 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
     NSUnderlineStyle style = RCTNSUnderlineStyleFromTextDecorationStyle(
         textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid));
 
-    RCTUIColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor); // TODO(macOS GH#774)
+    RCTUIColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor); // [macOS]
 
     // Underline
     if (textDecorationLineType == TextDecorationLineType::Underline ||
@@ -305,6 +387,50 @@ NSDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(T
   return [attributes copy];
 }
 
+static void RCTApplyBaselineOffset(NSMutableAttributedString *attributedText)
+{
+  __block CGFloat maximumLineHeight = 0;
+
+  [attributedText enumerateAttribute:NSParagraphStyleAttributeName
+                             inRange:NSMakeRange(0, attributedText.length)
+                             options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
+                          usingBlock:^(NSParagraphStyle *paragraphStyle, __unused NSRange range, __unused BOOL *stop) {
+                            if (!paragraphStyle) {
+                              return;
+                            }
+
+                            maximumLineHeight = MAX(paragraphStyle.maximumLineHeight, maximumLineHeight);
+                          }];
+
+  if (maximumLineHeight == 0) {
+    // `lineHeight` was not specified, nothing to do.
+    return;
+  }
+
+  __block CGFloat maximumFontLineHeight = 0;
+
+  [attributedText enumerateAttribute:NSFontAttributeName
+                             inRange:NSMakeRange(0, attributedText.length)
+                             options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
+                          usingBlock:^(UIFont *font, NSRange range, __unused BOOL *stop) {
+                            if (!font) {
+                              return;
+                            }
+    
+                            maximumFontLineHeight = MAX(UIFontLineHeight(font), maximumFontLineHeight); // [macOS]
+                          }];
+
+  if (maximumLineHeight < maximumFontLineHeight) {
+    return;
+  }
+
+  CGFloat baseLineOffset = (maximumLineHeight - maximumFontLineHeight) / 2.0;
+
+  [attributedText addAttribute:NSBaselineOffsetAttributeName
+                         value:@(baseLineOffset)
+                         range:NSMakeRange(0, attributedText.length)];
+}
+
 NSAttributedString *RCTNSAttributedStringFromAttributedString(const AttributedString &attributedString)
 {
   static UIImage *placeholderImage;
@@ -357,7 +483,7 @@ NSAttributedString *RCTNSAttributedStringFromAttributedString(const AttributedSt
 
     [nsAttributedString appendAttributedString:nsAttributedStringFragment];
   }
-
+  RCTApplyBaselineOffset(nsAttributedString);
   [nsAttributedString endEditing];
 
   return nsAttributedString;
@@ -378,6 +504,23 @@ AttributedStringBox RCTAttributedStringBoxFromNSAttributedString(NSAttributedStr
   return nsAttributedString.length ? AttributedStringBox{wrapManagedObject(nsAttributedString)} : AttributedStringBox{};
 }
 
+static NSString *capitalizeText(NSString *text)
+{
+  NSArray *words = [text componentsSeparatedByString:@" "];
+  NSMutableArray *newWords = [NSMutableArray new];
+  NSNumberFormatter *num = [NSNumberFormatter new];
+  for (NSString *item in words) {
+    NSString *word;
+    if ([item length] > 0 && [num numberFromString:[item substringWithRange:NSMakeRange(0, 1)]] == nil) {
+      word = [item capitalizedString];
+    } else {
+      word = [item lowercaseString];
+    }
+    [newWords addObject:word];
+  }
+  return [newWords componentsJoinedByString:@" "];
+}
+
 NSString *RCTNSStringFromStringApplyingTextTransform(NSString *string, TextTransform textTransform)
 {
   switch (textTransform) {
@@ -386,7 +529,7 @@ NSString *RCTNSStringFromStringApplyingTextTransform(NSString *string, TextTrans
     case TextTransform::Lowercase:
       return [string lowercaseString];
     case TextTransform::Capitalize:
-      return [string capitalizedString];
+      return capitalizeText(string);
     default:
       return string;
   }

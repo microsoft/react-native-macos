@@ -5,25 +5,25 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <React/RCTBridge.h>
 #import <React/RCTDefines.h>
+#import <React/RCTImageCache.h>
+#import <React/RCTImageDataDecoder.h>
+#import <React/RCTImageLoaderLoggable.h>
+#import <React/RCTImageLoaderProtocol.h>
+#import <React/RCTImageURLLoader.h>
 #import <React/RCTResizeMode.h>
 #import <React/RCTURLRequestHandler.h>
-#import <React/RCTImageDataDecoder.h>
-#import <React/RCTImageURLLoader.h>
-#import <React/RCTImageCache.h>
-#import <React/RCTImageLoaderProtocol.h>
-#import <React/RCTImageLoaderLoggable.h>
 
 @interface RCTImageLoader : NSObject <RCTBridgeModule, RCTImageLoaderProtocol, RCTImageLoaderLoggableProtocol>
 - (instancetype)init;
 - (instancetype)initWithRedirectDelegate:(id<RCTImageRedirectProtocol>)redirectDelegate NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithRedirectDelegate:(id<RCTImageRedirectProtocol>)redirectDelegate
-                              loadersProvider:(NSArray<id<RCTImageURLLoader>> * (^)(RCTModuleRegistry *))getLoaders
-                             decodersProvider:(NSArray<id<RCTImageDataDecoder>> * (^)(RCTModuleRegistry *))getDecoders;
-- (NSInteger)activeTasks; // TODO(OSS Candidate ISS#2710739)
+                         loadersProvider:(NSArray<id<RCTImageURLLoader>> * (^)(RCTModuleRegistry *))getLoaders
+                        decodersProvider:(NSArray<id<RCTImageDataDecoder>> * (^)(RCTModuleRegistry *))getDecoders;
+- (NSInteger)activeTasks; // [macOS]
 @end
 
 /**

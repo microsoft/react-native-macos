@@ -7,12 +7,11 @@
 
 #include "Touch.h"
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
-std::string getDebugName(Touch const &touch) {
+std::string getDebugName(Touch const & /*touch*/) {
   return "Touch";
 }
 
@@ -27,10 +26,14 @@ std::vector<DebugStringConvertibleObject> getDebugProps(
       {"target", getDebugDescription(touch.target, options)},
       {"force", getDebugDescription(touch.force, options)},
       {"timestamp", getDebugDescription(touch.timestamp, options)},
+      {"button", getDebugDescription(touch.button, options)}, // [macOS]
+      {"altKey", getDebugDescription(touch.altKey, options)}, // [macOS]
+      {"ctrlKey", getDebugDescription(touch.ctrlKey, options)}, // [macOS]
+      {"shiftKey", getDebugDescription(touch.shiftKey, options)}, // [macOS]
+      {"metaKey", getDebugDescription(touch.metaKey, options)}, // [macOS]
   };
 }
 
 #endif
 
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <React/RCTAutoInsetsProtocol.h>
 #import <React/RCTDefines.h>
@@ -16,11 +16,11 @@
 @protocol UIScrollViewDelegate;
 
 @interface RCTScrollView : RCTView <
-#if TARGET_OS_IPHONE // [TODO(macOS GH#774)
+#if TARGET_OS_IPHONE // [macOS
 	UIScrollViewDelegate,
 #endif
 	RCTScrollableProtocol, RCTAutoInsetsProtocol
-> // ]TODO(macOS GH#774)
+> // macOS]
 
 - (instancetype)initWithEventDispatcher:(id<RCTEventDispatcherProtocol>)eventDispatcher NS_DESIGNATED_INITIALIZER;
 
@@ -33,12 +33,12 @@
  * efficiently since it will have already been computed by the off-main-thread
  * layout system.
  */
-@property (nonatomic, readonly) RCTUIView *contentView; // TODO(macOS ISS#3536887)
+@property (nonatomic, readonly) RCTUIView *contentView; // [macOS]
 
 /**
  * The underlying scrollView (TODO: can we remove this?)
  */
-@property (nonatomic, readonly) RCTUIScrollView *scrollView; // TODO(macOS ISS#3536887)
+@property (nonatomic, readonly) RCTUIScrollView *scrollView; // [macOS]
 
 @property (nonatomic, assign) UIEdgeInsets contentInset;
 @property (nonatomic, assign) BOOL automaticallyAdjustContentInsets;
@@ -55,6 +55,7 @@
 @property (nonatomic, assign) BOOL snapToEnd;
 @property (nonatomic, copy) NSString *snapToAlignment;
 @property (nonatomic, assign) BOOL inverted;
+@property (nonatomic, assign) BOOL hasOverlayStyleIndicator; // [macOS]
 
 // NOTE: currently these event props are only declared so we can export the
 // event names to JS - we don't call the blocks directly because scroll events
@@ -65,11 +66,11 @@
 @property (nonatomic, copy) RCTDirectEventBlock onScrollEndDrag;
 @property (nonatomic, copy) RCTDirectEventBlock onMomentumScrollBegin;
 @property (nonatomic, copy) RCTDirectEventBlock onMomentumScrollEnd;
-@property (nonatomic, copy) RCTDirectEventBlock onPreferredScrollerStyleDidChange; // TODO(macOS GH#774)
+@property (nonatomic, copy) RCTDirectEventBlock onPreferredScrollerStyleDidChange; // [macOS]
 
-@property (nonatomic, copy) RCTDirectEventBlock onInvertedDidChange; // TODO(macOS GH#774)
+@property (nonatomic, copy) RCTDirectEventBlock onInvertedDidChange; // [macOS]
 
-- (void)flashScrollIndicators; // TODO(macOS GH#774)
+- (void)flashScrollIndicators; // [macOS]
 
 @end
 

@@ -8,16 +8,21 @@
  * @format
  */
 
-import type {ResolvedAssetSource} from './AssetSourceResolver';
-import type {ImageProps} from './ImageProps';
 import type {ViewProps} from '../Components/View/ViewPropTypes';
-import * as NativeComponentRegistry from '../NativeComponent/NativeComponentRegistry';
-import type {HostComponent} from '../Renderer/shims/ReactNativeTypes';
+import type {
+  HostComponent,
+  PartialViewConfig,
+} from '../Renderer/shims/ReactNativeTypes';
 import type {
   ColorValue,
   DangerouslyImpreciseStyle,
   ImageStyleProp,
 } from '../StyleSheet/StyleSheet';
+import type {ResolvedAssetSource} from './AssetSourceResolver';
+import type {ImageProps} from './ImageProps';
+
+import * as NativeComponentRegistry from '../NativeComponent/NativeComponentRegistry';
+import {ConditionallyIgnoredEventHandlers} from '../NativeComponent/ViewConfigIgnore';
 import Platform from '../Utilities/Platform';
 
 type Props = $ReadOnly<{
@@ -31,13 +36,15 @@ type Props = $ReadOnly<{
 
   // Android native props
   shouldNotifyLoadEvents?: boolean,
-  src?: ?ResolvedAssetSource | $ReadOnlyArray<{uri: string, ...}>,
+  src?:
+    | ?ResolvedAssetSource
+    | ?$ReadOnlyArray<?$ReadOnly<{uri?: ?string, ...}>>,
   headers?: ?{[string]: string},
   defaultSrc?: ?string,
   loadingIndicatorSrc?: ?string,
 }>;
 
-const ImageViewViewConfig =
+export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
   Platform.OS === 'android'
     ? {
         uiViewClassName: 'RCTImageView',
@@ -64,7 +71,7 @@ const ImageViewViewConfig =
           internal_analyticTag: true,
           resizeMode: true,
           tintColor: {
-            process: require('../StyleSheet/processColor'),
+            process: require('../StyleSheet/processColor').default,
           },
           borderBottomLeftRadius: true,
           borderTopLeftRadius: true,
@@ -75,10 +82,10 @@ const ImageViewViewConfig =
           shouldNotifyLoadEvents: true,
           defaultSrc: true,
           overlayColor: {
-            process: require('../StyleSheet/processColor'),
+            process: require('../StyleSheet/processColor').default,
           },
           borderColor: {
-            process: require('../StyleSheet/processColor'),
+            process: require('../StyleSheet/processColor').default,
           },
           accessible: true,
           progressiveRenderingEnabled: true,
@@ -123,12 +130,23 @@ const ImageViewViewConfig =
           resizeMode: true,
           source: true,
           tintColor: {
-            process: require('../StyleSheet/processColor'),
+            process: require('../StyleSheet/processColor').default,
           },
+          ...ConditionallyIgnoredEventHandlers({
+            onLoadStart: true,
+            onLoad: true,
+            onLoadEnd: true,
+            onProgress: true,
+            onError: true,
+            onPartialLoad: true,
+          }),
         },
       };
 
 const ImageViewNativeComponent: HostComponent<Props> =
-  NativeComponentRegistry.get<Props>('RCTImageView', () => ImageViewViewConfig);
+  NativeComponentRegistry.get<Props>(
+    'RCTImageView',
+    () => __INTERNAL_VIEW_CONFIG,
+  );
 
 export default ImageViewNativeComponent;

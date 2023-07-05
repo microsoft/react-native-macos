@@ -22,7 +22,7 @@ using namespace facebook::react;
 @end
 
 @implementation RCTSwitchComponentView {
-  RCTUISwitch *_switchView; // TODO(macOS GH#774)
+  RCTUISwitch *_switchView; // [macOS]
   BOOL _isInitialValueSet;
 }
 
@@ -32,9 +32,14 @@ using namespace facebook::react;
     static const auto defaultProps = std::make_shared<const SwitchProps>();
     _props = defaultProps;
 
-    _switchView = [[RCTUISwitch alloc] initWithFrame:self.bounds]; // TODO(macOS GH#774)
+    _switchView = [[RCTUISwitch alloc] initWithFrame:self.bounds]; // [macOS]
 
+#if !TARGET_OS_OSX // [macOS]
     [_switchView addTarget:self action:@selector(onChange:) forControlEvents:UIControlEventValueChanged];
+#else // [macOS
+    [_switchView setTarget:self];
+    [_switchView setAction:@selector(onChange:)];
+#endif // macOS]
 
     self.contentView = _switchView;
   }
@@ -72,25 +77,27 @@ using namespace facebook::react;
     _switchView.enabled = !newSwitchProps.disabled;
   }
 
+#if !TARGET_OS_OSX // [macOS]
   // `tintColor`
   if (oldSwitchProps.tintColor != newSwitchProps.tintColor) {
-    _switchView.tintColor = RCTUIColorFromSharedColor(newSwitchProps.tintColor);
+    _switchView.tintColor = RCTUIColorFromSharedColor(newSwitchProps.tintColor); // [macOS]
   }
 
   // `onTintColor
   if (oldSwitchProps.onTintColor != newSwitchProps.onTintColor) {
-    _switchView.onTintColor = RCTUIColorFromSharedColor(newSwitchProps.onTintColor);
+    _switchView.onTintColor = RCTUIColorFromSharedColor(newSwitchProps.onTintColor); // [macOS]
   }
 
   // `thumbTintColor`
   if (oldSwitchProps.thumbTintColor != newSwitchProps.thumbTintColor) {
-    _switchView.thumbTintColor = RCTUIColorFromSharedColor(newSwitchProps.thumbTintColor);
+    _switchView.thumbTintColor = RCTUIColorFromSharedColor(newSwitchProps.thumbTintColor); // [macOS]
   }
+#endif // [macOS]
 
   [super updateProps:props oldProps:oldProps];
 }
 
-- (void)onChange:(RCTUISwitch *)sender // TODO(macOS GH#774)
+- (void)onChange:(RCTUISwitch *)sender // [macOS]
 {
   const auto &props = *std::static_pointer_cast<const SwitchProps>(_props);
   if (props.value == sender.on) {

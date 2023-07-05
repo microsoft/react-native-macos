@@ -2,7 +2,7 @@
 // Used to apply the package updates: the git tag for the published release.
 
 const execSync = require("child_process").execSync;
-const {pkgJsonPath, publishBranchName, gatherVersionInfo} = require('./versionUtils');
+const {publishBranchName, gatherVersionInfo} = require('./versionUtils');
 
 function exec(command) {
   try {
@@ -24,9 +24,6 @@ function doPublish() {
 
   const tempPublishBranch = `publish-temp-${Date.now()}`;
   exec(`git checkout -b ${tempPublishBranch}`);
-
-  exec(`git config --global user.email "53619745+rnbot@users.noreply.github.com"`);
-  exec(`git config --global user.name "React-Native Bot"`);
 
   exec(`git add .`);
   exec(`git commit -m "Applying package update to ${releaseVersion} ***NO_CI***"`);

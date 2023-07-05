@@ -7,14 +7,13 @@
 
 #import <React/RCTInspector.h>
 
-#if RCT_DEV
+#if RCT_DEV || RCT_REMOTE_PROFILE
 
 #include <jsinspector/InspectorInterfaces.h>
 
 #import <React/RCTDefines.h>
 #import <React/RCTInspectorPackagerConnection.h>
 #import <React/RCTLog.h>
-#import <React/RCTSRWebSocket.h>
 #import <React/RCTUtils.h>
 
 using namespace facebook::react;

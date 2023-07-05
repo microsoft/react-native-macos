@@ -11,11 +11,11 @@
 #include <folly/Conv.h>
 #include <folly/dynamic.h>
 #include <glog/logging.h>
+#include <react/config/ReactNativeConfig.h>
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/components/view/primitives.h>
 #include <react/renderer/core/LayoutMetrics.h>
 #include <react/renderer/core/PropsParserContext.h>
-#include <react/renderer/graphics/Geometry.h>
 #include <react/renderer/graphics/Transform.h>
 #include <stdlib.h>
 #include <yoga/YGEnums.h>
@@ -377,13 +377,19 @@ inline void fromRawValue(
     const PropsParserContext &context,
     const RawValue &value,
     YGStyle::ValueRepr &result) {
+  // For bug compatibility, pass "auto" as YGValueUndefined
+  static bool treatAutoAsUndefined =
+      context.contextContainer
+          .at<std::shared_ptr<ReactNativeConfig const>>("ReactNativeConfig")
+          ->getBool("react_fabric:treat_auto_as_undefined");
+
   if (value.hasType<Float>()) {
     result = yogaStyleValueFromFloat((Float)value);
     return;
   } else if (value.hasType<std::string>()) {
     const auto stringValue = (std::string)value;
     if (stringValue == "auto") {
-      result = YGValueUndefined;
+      result = treatAutoAsUndefined ? YGValueUndefined : YGValueAuto;
       return;
     } else {
       if (stringValue.back() == '%') {
@@ -392,8 +398,11 @@ inline void fromRawValue(
             YGUnitPercent};
         return;
       } else {
-        result = YGValue{folly::to<float>(stringValue), YGUnitPoint};
-        return;
+        auto tryValue = folly::tryTo<float>(stringValue);
+        if (tryValue.hasValue()) {
+          result = YGValue{tryValue.value(), YGUnitPoint};
+          return;
+        }
       }
     }
   }
@@ -557,6 +566,24 @@ inline void fromRawValue(
     return;
   }
   LOG(FATAL) << "Could not parse BackfaceVisibility:" << stringValue;
+  react_native_assert(false);
+}
+
+inline void fromRawValue(
+    const PropsParserContext &context,
+    const RawValue &value,
+    BorderCurve &result) {
+  react_native_assert(value.hasType<std::string>());
+  auto stringValue = (std::string)value;
+  if (stringValue == "circular") {
+    result = BorderCurve::Circular;
+    return;
+  }
+  if (stringValue == "continuous") {
+    result = BorderCurve::Continuous;
+    return;
+  }
+  LOG(FATAL) << "Could not parse BorderCurve:" << stringValue;
   react_native_assert(false);
 }
 

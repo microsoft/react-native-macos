@@ -15,11 +15,11 @@ NSString *const RCTBundleURLProviderUpdatedNotification = @"RCTBundleURLProvider
 
 const NSUInteger kRCTBundleURLProviderDefaultPort = RCT_METRO_PORT;
 
-#if !TARGET_OS_OSX // [TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
 NSString *const kRCTPlatformName = @"ios";
-#else
+#else // [macOS
 NSString *const kRCTPlatformName = @"macos";
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
 #if RCT_DEV_MENU | RCT_PACKAGER_LOADING_FUNCTIONALITY
 static BOOL kRCTAllowPackagerAccess = YES;
@@ -80,7 +80,7 @@ static NSURL *serverRootWithHostPort(NSString *hostPort, NSString *scheme)
                                                          (unsigned long)kRCTBundleURLProviderDefaultPort]];
 }
 
-#if RCT_DEV_MENU
+#if RCT_DEV_MENU | RCT_PACKAGER_LOADING_FUNCTIONALITY
 + (BOOL)isPackagerRunning:(NSString *)hostPort
 {
   return [RCTBundleURLProvider isPackagerRunning:hostPort scheme:nil];
@@ -88,6 +88,10 @@ static NSURL *serverRootWithHostPort(NSString *hostPort, NSString *scheme)
 
 + (BOOL)isPackagerRunning:(NSString *)hostPort scheme:(NSString *)scheme
 {
+  if (!kRCTAllowPackagerAccess) {
+    return NO;
+  }
+
   NSURL *url = [serverRootWithHostPort(hostPort, scheme) URLByAppendingPathComponent:@"status"];
 
   NSURLSession *session = [NSURLSession sharedSession];
@@ -275,7 +279,7 @@ static NSURL *serverRootWithHostPort(NSString *hostPort, NSString *scheme)
 
   // When we support only iOS 8 and above, use queryItems for a better API.
   NSString *query = [NSString stringWithFormat:@"platform=%@&dev=%@&minify=%@&modulesOnly=%@&runModule=%@%@",
-                                               kRCTPlatformName, // TODO(macOS GH#774)
+                                               kRCTPlatformName, // [macOS]
                                                enableDev ? @"true" : @"false",
                                                enableMinification ? @"true" : @"false",
                                                modulesOnly ? @"true" : @"false",

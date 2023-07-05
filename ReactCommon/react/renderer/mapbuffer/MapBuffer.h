@@ -20,23 +20,23 @@
 namespace facebook {
 namespace react {
 
-class ReadableMapBuffer;
+class JReadableMapBuffer;
 
 // clang-format off
 
 /**
  * MapBuffer is an optimized sparse array format for transferring props-like
- * between C++ and other VMs. The implementation of this map is optimized to:
+ * objects between C++ and other VMs. The implementation of this map is optimized to:
  * - be compact to optimize space when sparse (sparse is the common case).
  * - be accessible through JNI with zero/minimal copying via ByteBuffer.
- * - Have excellent C++ single-write and many-read performance by maximizing
+ * - have excellent C++ single-write and many-read performance by maximizing
  *   CPU cache performance through compactness, data locality, and fixed offsets
  *   where possible.
  * - be optimized for iteration and intersection against other maps, but with
  *   reasonably good random access as well.
- * - Work recursively for nested maps/arrays.
- * - Supports dynamic types that map to JSON.
- * - Don't require mutability - single-write on creation.
+ * - work recursively for nested maps/arrays.
+ * - support dynamic types that map to JSON.
+ * - don't require mutability/copy - single-write on creation and move semantics.
  * - have minimal APK size and build time impact.
  *
  * MapBuffer data is stored in a continuous chunk of memory (bytes_ field below) with the following layout:
@@ -80,7 +80,8 @@ class MapBuffer {
     uint32_t bufferSize; // Amount of bytes used to store the map in memory
   };
 
-  struct __attribute__((__packed__)) Bucket {
+#pragma pack(push, 1)
+  struct Bucket {
     Key key;
     uint16_t type;
     uint64_t data;
@@ -88,13 +89,14 @@ class MapBuffer {
     Bucket(Key key, uint16_t type, uint64_t data)
         : key(key), type(type), data(data) {}
   };
+#pragma pack(pop)
 
   static_assert(sizeof(Header) == 8, "MapBuffer header size is incorrect.");
   static_assert(sizeof(Bucket) == 12, "MapBuffer bucket size is incorrect.");
 
   /**
    * Data types available for serialization in MapBuffer
-   * Keep in sync with `DataType` enum in `ReadableMapBuffer.java`, which
+   * Keep in sync with `DataType` enum in `JReadableMapBuffer.java`, which
    * expects the same values after reading them through JNI.
    */
   enum DataType : uint16_t {
@@ -109,9 +111,11 @@ class MapBuffer {
 
   MapBuffer(MapBuffer const &buffer) = delete;
 
-  MapBuffer &operator=(MapBuffer other) = delete;
+  MapBuffer &operator=(const MapBuffer &other) = delete;
 
   MapBuffer(MapBuffer &&buffer) = default;
+
+  MapBuffer &operator=(MapBuffer &&other) = default;
 
   int32_t getInt(MapBuffer::Key key) const;
 
@@ -124,7 +128,9 @@ class MapBuffer {
   // TODO T83483191: review this declaration
   MapBuffer getMapBuffer(MapBuffer::Key key) const;
 
-  uint32_t size() const;
+  std::vector<MapBuffer> getMapBufferList(MapBuffer::Key key) const;
+
+  size_t size() const;
 
   uint8_t const *data() const;
 
@@ -132,7 +138,7 @@ class MapBuffer {
 
  private:
   // Buffer and its size
-  std::vector<uint8_t> const bytes_;
+  std::vector<uint8_t> bytes_;
 
   // amount of items in the MapBuffer
   uint16_t count_ = 0;
@@ -140,9 +146,9 @@ class MapBuffer {
   // returns the relative offset of the first byte of dynamic data
   int32_t getDynamicDataOffset() const;
 
-  uint32_t getKeyBucket(MapBuffer::Key key) const;
+  int32_t getKeyBucket(MapBuffer::Key key) const;
 
-  friend ReadableMapBuffer;
+  friend JReadableMapBuffer;
 };
 
 } // namespace react

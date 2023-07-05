@@ -5,12 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <react/renderer/attributedstring/AttributedString.h>
 #import <react/renderer/attributedstring/ParagraphAttributes.h>
 #import <react/renderer/core/LayoutConstraints.h>
-#import <react/renderer/graphics/Geometry.h>
 #import <react/renderer/textlayoutmanager/TextMeasureCache.h>
 
 NS_ASSUME_NONNULL_BEGIN

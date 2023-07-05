@@ -45,12 +45,17 @@ class TextInputEventEmitter : public ViewEventEmitter {
   void onSelectionChange(TextInputMetrics const &textInputMetrics) const;
   void onEndEditing(TextInputMetrics const &textInputMetrics) const;
   void onSubmitEditing(TextInputMetrics const &textInputMetrics) const;
-  void onKeyPress(KeyPressMetrics const &textInputMetrics) const;
-  void onKeyPressSync(KeyPressMetrics const &textInputMetrics) const;
+  void onKeyPress(KeyPressMetrics const &keyPressMetrics) const;
+  void onKeyPressSync(KeyPressMetrics const &keyPressMetrics) const;
   void onScroll(TextInputMetrics const &textInputMetrics) const;
 
  private:
   void dispatchTextInputEvent(
+      std::string const &name,
+      TextInputMetrics const &textInputMetrics,
+      EventPriority priority = EventPriority::AsynchronousBatched) const;
+
+  void dispatchTextInputContentSizeChangeEvent(
       std::string const &name,
       TextInputMetrics const &textInputMetrics,
       EventPriority priority = EventPriority::AsynchronousBatched) const;

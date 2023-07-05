@@ -10,6 +10,8 @@
 
 import type {PartialViewConfig} from '../../Renderer/shims/ReactNativeTypes';
 
+import {ConditionallyIgnoredEventHandlers} from '../../NativeComponent/ViewConfigIgnore';
+
 type PartialViewConfigWithoutName = $Rest<
   PartialViewConfig,
   {uiViewClassName: string},
@@ -114,24 +116,29 @@ const RCTTextInputViewConfig = {
     textShadowRadius: true,
     letterSpacing: true,
     textDecorationStyle: true,
-    textDecorationColor: {process: require('../../StyleSheet/processColor')},
-    color: {process: require('../../StyleSheet/processColor')},
+    textDecorationColor: {
+      process: require('../../StyleSheet/processColor').default,
+    },
+    color: {process: require('../../StyleSheet/processColor').default},
     maxFontSizeMultiplier: true,
-    textShadowColor: {process: require('../../StyleSheet/processColor')},
+    textShadowColor: {
+      process: require('../../StyleSheet/processColor').default,
+    },
     editable: true,
     inputAccessoryViewID: true,
     caretHidden: true,
     enablesReturnKeyAutomatically: true,
-    placeholderTextColor: {process: require('../../StyleSheet/processColor')},
+    placeholderTextColor: {
+      process: require('../../StyleSheet/processColor').default,
+    },
     clearButtonMode: true,
     keyboardType: true,
     selection: true,
     returnKeyType: true,
-    blurOnSubmit: true,
+    submitBehavior: true,
     mostRecentEventCount: true,
     scrollEnabled: true,
-    hideVerticalScrollIndicator: true,
-    selectionColor: {process: require('../../StyleSheet/processColor')},
+    selectionColor: {process: require('../../StyleSheet/processColor').default},
     contextMenuHidden: true,
     secureTextEntry: true,
     placeholder: true,
@@ -142,13 +149,37 @@ const RCTTextInputViewConfig = {
     autoCapitalize: true,
     keyboardAppearance: true,
     passwordRules: true,
-    grammarCheck: true, // TODO(macOS GH#774)
     spellCheck: true,
     selectTextOnFocus: true,
     text: true,
     clearTextOnFocus: true,
     showSoftInputOnFocus: true,
     autoFocus: true,
+    lineBreakStrategyIOS: true,
+    // [macOS
+    clearTextOnSubmit: true,
+    grammarCheck: true,
+    hideVerticalScrollIndicator: true,
+    pastedTypes: true,
+    submitKeyEvents: true,
+    tooltip: true,
+    cursorColor: {process: require('../../StyleSheet/processColor').default},
+    // macOS]
+    ...ConditionallyIgnoredEventHandlers({
+      onChange: true,
+      onSelectionChange: true,
+      onContentSizeChange: true,
+      onScroll: true,
+      onChangeSync: true,
+      onKeyPressSync: true,
+      onTextInput: true,
+      // [macOS
+      onPaste: true,
+      onAutoCorrectChange: true,
+      onSpellCheckChange: true,
+      onGrammarCheckChange: true,
+      // macOS]
+    }),
   },
 };
 

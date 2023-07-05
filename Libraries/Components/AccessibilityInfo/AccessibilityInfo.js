@@ -8,16 +8,16 @@
  * @format
  */
 
-import RCTDeviceEventEmitter from '../../EventEmitter/RCTDeviceEventEmitter';
-import {sendAccessibilityEvent} from '../../Renderer/shims/ReactNative';
 import type {HostComponent} from '../../Renderer/shims/ReactNativeTypes';
-import Platform from '../../Utilities/Platform';
-import type EventEmitter from '../../vendor/emitter/EventEmitter';
 import type {EventSubscription} from '../../vendor/emitter/EventEmitter';
-import NativeAccessibilityInfoAndroid from './NativeAccessibilityInfo';
-import NativeAccessibilityManagerApple from './NativeAccessibilityManager';
-import legacySendAccessibilityEvent from './legacySendAccessibilityEvent';
 import type {ElementRef} from 'react';
+
+import RCTDeviceEventEmitter from '../../EventEmitter/RCTDeviceEventEmitter';
+import {sendAccessibilityEvent} from '../../ReactNative/RendererProxy';
+import Platform from '../../Utilities/Platform';
+import legacySendAccessibilityEvent from './legacySendAccessibilityEvent';
+import NativeAccessibilityInfoAndroid from './NativeAccessibilityInfo';
+import NativeAccessibilityManagerApple from './NativeAccessibilityManager'; // [macOS]
 
 // Events that are only supported on Android.
 type AccessibilityEventDefinitionsAndroid = {
@@ -33,10 +33,17 @@ type AccessibilityEventDefinitionsIOS = {
   reduceTransparencyChanged: [boolean],
 };
 
+// [macOS
+// Events that are only supported on macOS.
+type AccessibilityEventDefinitionsMacOS = {
+  highContrastChanged: [boolean], // [macOS] highContrastChanged is used on macOS
+};
+// macOS]
+
 type AccessibilityEventDefinitions = {
   ...AccessibilityEventDefinitionsAndroid,
   ...AccessibilityEventDefinitionsIOS,
-  highContrastChanged: [boolean], // TODO(macOS GH#774) - highContrastChanged is used on macOS
+  ...AccessibilityEventDefinitionsMacOS, // [macOS]
   change: [boolean], // screenReaderChanged
   reduceMotionChanged: [boolean],
   screenReaderChanged: [boolean],
@@ -60,7 +67,7 @@ const EventNames: Map<
       ['boldTextChanged', 'boldTextChanged'],
       ['change', 'screenReaderChanged'],
       ['grayscaleChanged', 'grayscaleChanged'],
-      ['highContrastChanged', 'highContrastChanged'], // TODO(macOS GH#774)
+      ['highContrastChanged', 'highContrastChanged'], // [macOS]
       ['invertColorsChanged', 'invertColorsChanged'],
       ['reduceMotionChanged', 'reduceMotionChanged'],
       ['reduceTransparencyChanged', 'reduceTransparencyChanged'],
@@ -86,7 +93,7 @@ const AccessibilityInfo = {
    * See https://reactnative.dev/docs/accessibilityinfo#isBoldTextEnabled
    */
   isBoldTextEnabled(): Promise<boolean> {
-    // [TODO(macOS GH#774) - rework logic to return Promise.resolve(false) on macOS
+    // [macOS rework logic to return Promise.resolve(false) on macOS
     if (Platform.OS === 'ios') {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerApple != null) {
@@ -101,7 +108,7 @@ const AccessibilityInfo = {
     } else {
       return Promise.resolve(false);
     }
-    // ]TODO(macOS GH#774)
+    // macOS]
   },
 
   /**
@@ -113,7 +120,7 @@ const AccessibilityInfo = {
    * See https://reactnative.dev/docs/accessibilityinfo#isGrayscaleEnabled
    */
   isGrayscaleEnabled(): Promise<boolean> {
-    // [TODO(macOS GH#774) - rework logic to return Promise.resolve(false) on macOS
+    // [macOS rework logic to return Promise.resolve(false) on macOS
     if (Platform.OS === 'ios') {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerApple != null) {
@@ -128,13 +135,13 @@ const AccessibilityInfo = {
     } else {
       return Promise.resolve(false);
     }
-    // ]TODO(macOS GH#774)
+    // macOS]
   },
 
+  // [macOS
   /**
    * macOS only
    */
-  // [TODO(macOS GH#774)
   isHighContrastEnabled: function (): Promise<boolean> {
     if (Platform.OS === 'macos') {
       return new Promise((resolve, reject) => {
@@ -151,7 +158,7 @@ const AccessibilityInfo = {
       return Promise.resolve(false);
     }
   },
-  // ]TODO(macOS GH#774)
+  // macOS]
 
   /**
    * Query whether inverted colors are currently enabled.
@@ -162,7 +169,7 @@ const AccessibilityInfo = {
    * See https://reactnative.dev/docs/accessibilityinfo#isInvertColorsEnabled
    */
   isInvertColorsEnabled(): Promise<boolean> {
-    // [TODO(macOS GH#774) - rework logic to return Promise.resolve(false) on macOS
+    // [macOS rework logic to return Promise.resolve(false) on macOS
     if (Platform.OS === 'ios') {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerApple != null) {
@@ -177,7 +184,7 @@ const AccessibilityInfo = {
     } else {
       return Promise.resolve(false);
     }
-    // ]TODO(macOS GH#774)
+    // macOS]
   },
 
   /**
@@ -210,6 +217,35 @@ const AccessibilityInfo = {
   },
 
   /**
+   * Query whether reduce motion and prefer cross-fade transitions settings are currently enabled.
+   *
+   * Returns a promise which resolves to a boolean.
+   * The result is `true` when  prefer cross-fade transitions is enabled and `false` otherwise.
+   *
+   * See https://reactnative.dev/docs/accessibilityinfo#prefersCrossFadeTransitions
+   */
+  prefersCrossFadeTransitions(): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      if (Platform.OS === 'android') {
+        return Promise.resolve(false);
+      } else {
+        if (
+          NativeAccessibilityManagerApple?.getCurrentPrefersCrossFadeTransitionsState != // [macOS]
+          null
+        ) {
+          // [macOS]
+          NativeAccessibilityManagerApple.getCurrentPrefersCrossFadeTransitionsState(
+            resolve,
+            reject,
+          );
+        } else {
+          reject(null);
+        }
+      }
+    });
+  },
+
+  /**
    * Query whether reduced transparency is currently enabled.
    *
    * Returns a promise which resolves to a boolean.
@@ -218,7 +254,7 @@ const AccessibilityInfo = {
    * See https://reactnative.dev/docs/accessibilityinfo#isReduceTransparencyEnabled
    */
   isReduceTransparencyEnabled(): Promise<boolean> {
-    // [TODO(macOS GH#774) - rework logic to return Promise.resolve(false) on macOS
+    // [macOS rework logic to return Promise.resolve(false) on macOS
     if (Platform.OS === 'ios') {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerApple != null) {
@@ -233,7 +269,7 @@ const AccessibilityInfo = {
     } else {
       return Promise.resolve(false);
     }
-    // ]TODO(macOS GH#774)
+    // macOS]
   },
 
   /**
@@ -328,12 +364,14 @@ const AccessibilityInfo = {
    */
   addEventListener<K: $Keys<AccessibilityEventDefinitions>>(
     eventName: K,
+    // $FlowIssue[incompatible-type] - Flow bug with unions and generics (T128099423)
     handler: (...$ElementType<AccessibilityEventDefinitions, K>) => void,
   ): EventSubscription {
     const deviceEventName = EventNames.get(eventName);
     return deviceEventName == null
       ? {remove(): void {}}
-      : RCTDeviceEventEmitter.addListener(deviceEventName, handler);
+      : // $FlowFixMe[incompatible-call]
+        RCTDeviceEventEmitter.addListener(deviceEventName, handler);
   },
 
   /**
@@ -348,7 +386,7 @@ const AccessibilityInfo = {
   /**
    * Send a named accessibility event to a HostComponent.
    */
-  sendAccessibilityEvent_unstable(
+  sendAccessibilityEvent(
     handle: ElementRef<HostComponent<mixed>>,
     eventType: AccessibilityEventTypes,
   ) {
@@ -369,7 +407,7 @@ const AccessibilityInfo = {
     if (Platform.OS === 'android') {
       NativeAccessibilityInfoAndroid?.announceForAccessibility(announcement);
     } else {
-      NativeAccessibilityManagerApple?.announceForAccessibility(announcement);
+      NativeAccessibilityManagerApple?.announceForAccessibility(announcement); // [macOS]
     }
   },
 
@@ -386,7 +424,7 @@ const AccessibilityInfo = {
     if (Platform.OS === 'android') {
       NativeAccessibilityInfoAndroid?.announceForAccessibility(announcement);
     } else {
-      // [TODO(GH#774) NativeAccessibilityManagerIOS -> NativeAccessibilityManagerApple
+      // [macOS NativeAccessibilityManagerApple -> NativeAccessibilityManagerApple
       if (
         NativeAccessibilityManagerApple?.announceForAccessibilityWithOptions
       ) {
@@ -397,26 +435,7 @@ const AccessibilityInfo = {
       } else {
         NativeAccessibilityManagerApple?.announceForAccessibility(announcement);
       }
-      // ]TODO(macOS GH#774)
-    }
-  },
-
-  /**
-   * @deprecated Use `remove` on the EventSubscription from `addEventListener`.
-   */
-  removeEventListener<K: $Keys<AccessibilityEventDefinitions>>(
-    eventName: K,
-    handler: (...$ElementType<AccessibilityEventDefinitions, K>) => void,
-  ): void {
-    // NOTE: This will report a deprecation notice via `console.error`.
-    const deviceEventName = EventNames.get(eventName);
-    if (deviceEventName != null) {
-      // $FlowIgnore[incompatible-cast]
-      (RCTDeviceEventEmitter: EventEmitter<$FlowFixMe>).removeListener(
-        'deviceEventName',
-        // $FlowFixMe[invalid-tuple-arity]
-        handler,
-      );
+      // macOS]
     }
   },
 

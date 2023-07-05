@@ -32,6 +32,21 @@ RCT_ENUM_CONVERTER(
 
 @end
 
+@implementation RCTConvert (UIUserInterfaceStyle)
+
+#if !TARGET_OS_OSX // [macOS]
+RCT_ENUM_CONVERTER(
+    UIUserInterfaceStyle,
+    (@{
+      @"unspecified" : @(UIUserInterfaceStyleUnspecified),
+      @"light" : @(UIUserInterfaceStyleLight),
+      @"dark" : @(UIUserInterfaceStyleDark),
+    }),
+    UIUserInterfaceStyleUnspecified,
+    integerValue)
+#endif // macOS]
+@end
+
 @interface RCTAlertManager () <NativeAlertManagerSpec>
 
 @end
@@ -49,11 +64,11 @@ RCT_EXPORT_MODULE()
 
 - (void)invalidate
 {
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
   for (UIAlertController *alertController in _alertControllers) {
     [alertController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
   }
-#else // [TODO(macOS GH#774)
+#else // [macOS
   for (NSAlert *alert in _alertControllers) {
     if (alert.window.sheetParent) {
       [alert.window.sheetParent endSheet:alert.window];
@@ -61,7 +76,7 @@ RCT_EXPORT_MODULE()
       [alert.window close];
     }
   }
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 }
 
 /**
@@ -87,22 +102,23 @@ RCT_EXPORT_METHOD(alertWithArgs : (JS::NativeAlertManager::Args &)args callback 
       [RCTConvert NSDictionaryArray:RCTConvertOptionalVecToArray(args.buttons(), ^id(id<NSObject> element) {
                     return element;
                   })];
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
   NSString *defaultValue = [RCTConvert NSString:args.defaultValue()];
   NSString *cancelButtonKey = [RCTConvert NSString:args.cancelButtonKey()];
   NSString *destructiveButtonKey = [RCTConvert NSString:args.destructiveButtonKey()];
+  NSString *preferredButtonKey = [RCTConvert NSString:args.preferredButtonKey()];
   UIKeyboardType keyboardType = [RCTConvert UIKeyboardType:args.keyboardType()];
-#else // [TODO(macOS GH#774)
+#else // [macOS
   BOOL critical = args.critical().value_or(NO);
   BOOL modal = args.modal().value_or(NO);
   NSArray<NSDictionary *> *defaultInputs = [RCTConvert NSDictionaryArray:RCTConvertOptionalVecToArray(args.defaultInputs(), ^id(id<NSObject> element) { return element; })];
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 
   if (!title && !message) {
     RCTLogError(@"Must specify either an alert title, or message, or both");
     return;
   }
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
   if (buttons.count == 0) {
     if (type == RCTAlertViewStyleDefault) {
       buttons = @[ @{@"0" : RCTUIKitLocalizedString(@"OK")} ];
@@ -119,6 +135,15 @@ RCT_EXPORT_METHOD(alertWithArgs : (JS::NativeAlertManager::Args &)args callback 
   RCTAlertController *alertController = [RCTAlertController alertControllerWithTitle:title
                                                                              message:nil
                                                                       preferredStyle:UIAlertControllerStyleAlert];
+
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && defined(__IPHONE_13_0) && \
+    __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0
+  if (@available(iOS 13.0, *)) {
+    UIUserInterfaceStyle userInterfaceStyle = [RCTConvert UIUserInterfaceStyle:args.userInterfaceStyle()];
+    alertController.overrideUserInterfaceStyle = userInterfaceStyle;
+  }
+#endif
+
   switch (type) {
     case RCTAlertViewStylePlainTextInput: {
       [alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
@@ -168,32 +193,37 @@ RCT_EXPORT_METHOD(alertWithArgs : (JS::NativeAlertManager::Args &)args callback 
       buttonStyle = UIAlertActionStyleDestructive;
     }
     __weak RCTAlertController *weakAlertController = alertController;
-    [alertController
-        addAction:[UIAlertAction
-                      actionWithTitle:buttonTitle
-                                style:buttonStyle
-                              handler:^(__unused UIAlertAction *action) {
-                                switch (type) {
-                                  case RCTAlertViewStylePlainTextInput:
-                                  case RCTAlertViewStyleSecureTextInput:
-                                    callback(@[ buttonKey, [weakAlertController.textFields.firstObject text] ]);
-                                    [weakAlertController hide];
-                                    break;
-                                  case RCTAlertViewStyleLoginAndPasswordInput: {
-                                    NSDictionary<NSString *, NSString *> *loginCredentials = @{
-                                      @"login" : [weakAlertController.textFields.firstObject text],
-                                      @"password" : [weakAlertController.textFields.lastObject text]
-                                    };
-                                    callback(@[ buttonKey, loginCredentials ]);
-                                    [weakAlertController hide];
-                                    break;
-                                  }
-                                  case RCTAlertViewStyleDefault:
-                                    callback(@[ buttonKey ]);
-                                    [weakAlertController hide];
-                                    break;
-                                }
-                              }]];
+
+    UIAlertAction *alertAction =
+        [UIAlertAction actionWithTitle:buttonTitle
+                                 style:buttonStyle
+                               handler:^(__unused UIAlertAction *action) {
+                                 switch (type) {
+                                   case RCTAlertViewStylePlainTextInput:
+                                   case RCTAlertViewStyleSecureTextInput:
+                                     callback(@[ buttonKey, [weakAlertController.textFields.firstObject text] ]);
+                                     [weakAlertController hide];
+                                     break;
+                                   case RCTAlertViewStyleLoginAndPasswordInput: {
+                                     NSDictionary<NSString *, NSString *> *loginCredentials = @{
+                                       @"login" : [weakAlertController.textFields.firstObject text],
+                                       @"password" : [weakAlertController.textFields.lastObject text]
+                                     };
+                                     callback(@[ buttonKey, loginCredentials ]);
+                                     [weakAlertController hide];
+                                     break;
+                                   }
+                                   case RCTAlertViewStyleDefault:
+                                     callback(@[ buttonKey ]);
+                                     [weakAlertController hide];
+                                     break;
+                                 }
+                               }];
+    [alertController addAction:alertAction];
+
+    if ([buttonKey isEqualToString:preferredButtonKey]) {
+      [alertController setPreferredAction:alertAction];
+    }
   }
 
   if (!_alertControllers) {
@@ -204,7 +234,7 @@ RCT_EXPORT_METHOD(alertWithArgs : (JS::NativeAlertManager::Args &)args callback 
   dispatch_async(dispatch_get_main_queue(), ^{
     [alertController show:YES completion:nil];
   });
-#else // [TODO(macOS GH#774)
+#else // [macOS
   
   NSAlert *alert = [NSAlert new];
   if (title.length > 0) {
@@ -296,7 +326,7 @@ RCT_EXPORT_METHOD(alertWithArgs : (JS::NativeAlertManager::Args &)args callback 
   } else {
     [alert beginSheetModalForWindow:[NSApp keyWindow] completionHandler:callbacksHandlers];
   }
-#endif // ]TODO(macOS GH#774)
+#endif // macOS]
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:

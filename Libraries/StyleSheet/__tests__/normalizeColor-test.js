@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @emails oncall+react_native
+ * @oncall react_native
  */
 
 'use strict';
@@ -13,11 +13,11 @@
 const {OS} = require('../../Utilities/Platform');
 const normalizeColor = require('../normalizeColor');
 
-it('forwards calls to @react-native/normalize-color', () => {
-  jest.resetModules().mock('@react-native/normalize-color', () => jest.fn());
+it('forwards calls to @react-native/normalize-colors', () => {
+  jest.resetModules().mock('@react-native/normalize-colors', () => jest.fn());
 
   expect(require('../normalizeColor')('#abc')).not.toBe(null);
-  expect(require('@react-native/normalize-color')).toBeCalled();
+  expect(require('@react-native/normalize-colors')).toBeCalled();
 });
 
 describe('iOS', () => {
@@ -37,7 +37,12 @@ describe('iOS', () => {
     it('should normalize iOS Dynamic colors with named colors', () => {
       const color = DynamicColorIOS({light: 'black', dark: 'white'});
       const normalizedColor = normalizeColor(color);
-      const expectedColor = {dynamic: {light: 'black', dark: 'white'}};
+      const expectedColor = {
+        dynamic: {
+          light: normalizeColor('black'),
+          dark: normalizeColor('white'),
+        },
+      };
       expect(normalizedColor).toEqual(expectedColor);
     });
 
@@ -51,10 +56,10 @@ describe('iOS', () => {
       const normalizedColor = normalizeColor(color);
       const expectedColor = {
         dynamic: {
-          light: 'black',
-          dark: 'white',
-          highContrastLight: 'red',
-          highContrastDark: 'blue',
+          light: normalizeColor('black'),
+          dark: normalizeColor('white'),
+          highContrastLight: normalizeColor('red'),
+          highContrastDark: normalizeColor('blue'),
         },
       };
       expect(normalizedColor).toEqual(expectedColor);

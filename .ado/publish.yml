@@ -1,5 +1,4 @@
 # It is expected that a `latestStableBranch` variable is set in the pipeline's settings:
-# https://dev.azure.com/office/ISS/_apps/hub/ms.vss-build-web.ci-designer-hub?pipelineId=18541
 
 # This file defines the build steps to publish a release
 name: $(Date:yyyyMMdd).$(Rev:.r)
@@ -25,7 +24,7 @@ variables:
 
 jobs:
   - job: RNGithubNpmJSPublish
-    displayName: React-Native GitHub Publish to npmjs.org
+    displayName: NPM Publish React-native-macos
     pool:
       vmImage: $(VmImageApple)
     variables:
@@ -43,10 +42,29 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
-      - script: exit 1
-        displayName: Validate variables
-        condition: eq(variables.latestStableBranch, '')
+      # Setup the repo to be ready for release. This includes:
+      # - Autogenerating the next version number
+      # - Calling the approprate scripts that upstream React Native uses to prepare a release
+      # - Skipping the actual `git tag`, `git push`, and `npm publish steps as we do that here instead
 
+      - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+        - template: templates/apple-job-publish.yml
+          parameters:
+            build_type: nightly
+      - ${{ elseif endsWith(variables['Build.SourceBranchName'], '-stable') }}:
+        - template: templates/apple-job-publish.yml
+          parameters:
+            build_type: release
+      - ${{ else }}:
+        - task: CmdLine@2
+          displayName: Unknown branch, skipping publish
+          inputs:
+            script: |
+              echo "Skipping publish for branch $(Build.SourceBranchName)"
+              exit 1
+
+      # Set the NPM dist-tag and do the actual NPM publish
+  
       - bash: echo "##vso[task.setvariable variable=npmDistTag]latest"
         displayName: Set dist-tag to latest
         condition: eq(variables['Build.SourceBranchName'], variables.latestStableBranch)
@@ -59,39 +77,29 @@ jobs:
         displayName: Set dist-tag to v0.x-stable
         condition: and(ne(variables['Build.SourceBranchName'], 'main'), ne(variables['Build.SourceBranchName'], variables.latestStableBranch))
 
-      - template: templates/apple-node-setup.yml
-
       - task: CmdLine@2
-        displayName: yarn install
-        inputs:
-          script: yarn install --frozen-lockfile
-
-      - task: CmdLine@2
-        displayName: Bump stable package version
-        inputs:
-          script: node .ado/bumpFileVersions.js
-        condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'main'))
-
-      - task: CmdLine@2
-        displayName: pod update React-TurboModuleCxx-RNW
+        displayName: Actual NPM Publish
         inputs:
           script: |
-            cd packages/rn-tester
-            pod update React-TurboModuleCxx-RNW
+            npm publish --tag $(npmDistTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
+
+      # Set the git tag and push the version update back to Github
+
+      - template: templates/configure-git.yml
+
+      - task: CmdLine@2
+        displayName: 'Tag and push to Github'
+        inputs:
+          script: node .ado/gitTagRelease.js
+        env:
+          BUILD_STAGINGDIRECTORY: $(Build.StagingDirectory)
+          BUILD_SOURCEBRANCH: $(Build.SourceBranch)
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          githubAuthToken: $(githubAuthToken)
         condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'main'))
 
-      - task: CmdLine@2
-        displayName: Set canary package version
-        inputs:
-          script: node scripts/set-rn-version.js --nightly --autogenerateVersionNumber
-        condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
-
-      # Publish will fail if package.json is marked as private
-      - task: CmdLine@2
-        displayName: Remove workspace config from package.json
-        inputs:
-          script: node .ado/removeWorkspaceConfig.js
-
+      # Generate and publish the SBOM
+  
       - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
         displayName: 📒 Generate Manifest
         inputs:
@@ -102,30 +110,10 @@ jobs:
         inputs:
           artifactName: SBom-RNGithubNpmJSPublish-$(System.JobAttempt)
           targetPath: $(System.DefaultWorkingDirectory)/_manifest
-
-      - script: npm publish --tag $(npmDistTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
-        displayName: Publish react-native-macos to npmjs.org
-
-      # Put the private flag back so that the removal does not get committed by the tag release step
-      - task: CmdLine@2
-        displayName: Restore package.json workspace config
-        inputs:
-          script: node .ado/restoreWorkspaceConfig.js
-
-      - task: CmdLine@2
-        displayName: 'Tag published release'
-        inputs:
-          script: node .ado/gitTagRelease.js
-        env:
-          BUILD_STAGINGDIRECTORY: $(Build.StagingDirectory)
-          BUILD_SOURCEBRANCH: $(Build.SourceBranch)
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          githubApiToken: $(githubAuthToken)
-        condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'main'))
-
+      
 
   - job: RNMacOSInitNpmJSPublish
-    displayName: react-native-macos-init Publish to npmjs.org
+    displayName: NPM Publish react-native-macos-init
     pool: cxeiss-ubuntu-20-04-large
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
@@ -147,10 +135,10 @@ jobs:
         inputs:
           script: |
             cd packages/react-native-macos-init
-            yarn install --frozen-lockfile
+            yarn install
 
       - task: CmdLine@2
-        displayName: yarn build
+        displayName: Build react-native-macos-init
         inputs:
           script: |
             cd packages/react-native-macos-init

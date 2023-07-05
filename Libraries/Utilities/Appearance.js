@@ -8,17 +8,17 @@
  * @flow strict-local
  */
 
+import NativeEventEmitter from '../EventEmitter/NativeEventEmitter';
+import Platform from '../Utilities/Platform';
 import EventEmitter, {
   type EventSubscription,
 } from '../vendor/emitter/EventEmitter';
-import NativeEventEmitter from '../EventEmitter/NativeEventEmitter';
+import {isAsyncDebugging} from './DebugEnvironment';
 import NativeAppearance, {
   type AppearancePreferences,
   type ColorSchemeName,
 } from './NativeAppearance';
 import invariant from 'invariant';
-import {isAsyncDebugging} from './DebugEnvironment';
-import Platform from '../Utilities/Platform';
 
 type AppearanceListener = (preferences: AppearancePreferences) => void;
 const eventEmitter = new EventEmitter<{
@@ -34,9 +34,9 @@ if (NativeAppearance) {
     new NativeEventEmitter<NativeAppearanceEventDefinitions>(
       // T88715063: NativeEventEmitter only used this parameter on iOS. Now it uses it on all platforms, so this code was modified automatically to preserve its behavior
       // If you want to use the native module on other platforms, please remove this condition and test its behavior
-      Platform.OS !== 'ios' && Platform.OS !== 'macos'
+      Platform.OS !== 'ios' && Platform.OS !== 'macos' // [macOS Also use this parameter on macOS
         ? null
-        : NativeAppearance, // TODO(macOS GH#774): Also use this parameter on macOS
+        : NativeAppearance, // macOS]
     );
   nativeEventEmitter.addListener(
     'appearanceChanged',
@@ -92,13 +92,5 @@ module.exports = {
    */
   addChangeListener(listener: AppearanceListener): EventSubscription {
     return eventEmitter.addListener('change', listener);
-  },
-
-  /**
-   * @deprecated Use `remove` on the EventSubscription from `addEventListener`.
-   */
-  removeChangeListener(listener: AppearanceListener): void {
-    // NOTE: This will report a deprecation notice via `console.error`.
-    eventEmitter.removeListener('change', listener);
   },
 };

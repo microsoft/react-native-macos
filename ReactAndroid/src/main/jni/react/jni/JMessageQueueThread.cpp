@@ -11,13 +11,14 @@
 #include <mutex>
 
 #include <fb/log.h>
+#include <fbjni/NativeRunnable.h>
 #include <fbjni/fbjni.h>
 #include <jsi/jsi.h>
 
-#include "JNativeRunnable.h"
-
 namespace facebook {
 namespace react {
+
+using namespace jni;
 
 namespace {
 
@@ -69,11 +70,10 @@ void JMessageQueueThread::runOnQueue(std::function<void()> &&runnable) {
   jni::ThreadScope guard;
   static auto method =
       JavaMessageQueueThread::javaClassStatic()
-          ->getMethod<jboolean(Runnable::javaobject)>("runOnQueue");
-  method(
-      m_jobj,
-      JNativeRunnable::newObjectCxxArgs(wrapRunnable(std::move(runnable)))
-          .get());
+          ->getMethod<jboolean(JRunnable::javaobject)>("runOnQueue");
+  auto jrunnable =
+      JNativeRunnable::newObjectCxxArgs(wrapRunnable(std::move(runnable)));
+  method(m_jobj, jrunnable.get());
 }
 
 void JMessageQueueThread::runOnQueueSync(std::function<void()> &&runnable) {

@@ -54,40 +54,64 @@ namespace react {
 
 ${modules}
 
-std::shared_ptr<TurboModule> ${libraryName}_ModuleProvider(const std::string moduleName, const JavaTurboModule::InitParams &params);
+JSI_EXPORT
+std::shared_ptr<TurboModule> ${libraryName}_ModuleProvider(const std::string &moduleName, const JavaTurboModule::InitParams &params);
 
 } // namespace react
 } // namespace facebook
 `;
 };
 
-// Note: this Android.mk template includes dependencies for both NativeModule and components.
-const AndroidMkTemplate = ({libraryName}: $ReadOnly<{libraryName: string}>) => {
+// Note: this CMakeLists.txt template includes dependencies for both NativeModule and components.
+const CMakeListsTemplate = ({
+  libraryName,
+}: $ReadOnly<{libraryName: string}>) => {
   return `# Copyright (c) Meta Platforms, Inc. and affiliates.
 #
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-LOCAL_PATH := $(call my-dir)
+cmake_minimum_required(VERSION 3.13)
+set(CMAKE_VERBOSE_MAKEFILE on)
 
-include $(CLEAR_VARS)
+file(GLOB react_codegen_SRCS CONFIGURE_DEPENDS *.cpp react/renderer/components/${libraryName}/*.cpp)
 
-LOCAL_MODULE := react_codegen_${libraryName}
+add_library(
+  react_codegen_${libraryName}
+  SHARED
+  \${react_codegen_SRCS}
+)
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)
+target_include_directories(react_codegen_${libraryName} PUBLIC . react/renderer/components/${libraryName})
 
-LOCAL_SRC_FILES := $(wildcard $(LOCAL_PATH)/*.cpp) $(wildcard $(LOCAL_PATH)/react/renderer/components/${libraryName}/*.cpp)
+target_link_libraries(
+  react_codegen_${libraryName}
+  fbjni
+  folly_runtime
+  glog
+  jsi
+  ${libraryName !== 'rncore' ? 'react_codegen_rncore' : ''}
+  react_debug
+  react_nativemodule_core
+  react_render_core
+  react_render_debug
+  react_render_graphics
+  react_render_imagemanager
+  rrc_image
+  rrc_view
+  turbomodulejsijni
+  yoga
+)
 
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH) $(LOCAL_PATH)/react/renderer/components/${libraryName}
-
-LOCAL_SHARED_LIBRARIES := libjsi libglog libfolly_json libyoga libreact_nativemodule_core librrc_view libreact_render_core libreact_render_graphics libfbjni libturbomodulejsijni libreact_codegen_rncore libreact_debug libreact_render_debug
-
-LOCAL_CFLAGS := \\
+target_compile_options(
+  react_codegen_${libraryName}
+  PRIVATE
   -DLOG_TAG=\\"ReactNative\\"
-
-LOCAL_CFLAGS += -fexceptions -frtti -std=c++17 -Wall
-
-include $(BUILD_SHARED_LIBRARY)
+  -fexceptions
+  -frtti
+  -std=c++17
+  -Wall
+)
 `;
 };
 
@@ -118,12 +142,7 @@ module.exports = {
     });
     return new Map([
       [`jni/${fileName}`, replacedTemplate],
-      [
-        'jni/Android.mk',
-        AndroidMkTemplate({
-          libraryName: libraryName,
-        }),
-      ],
+      ['jni/CMakeLists.txt', CMakeListsTemplate({libraryName: libraryName})],
     ]);
   },
 };

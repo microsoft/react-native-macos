@@ -22,7 +22,6 @@ Class<RCTComponentViewProtocol> RCTFabricComponentsProvider(const char *name) {
     {"ScrollView", RCTScrollViewCls},
     {"PullToRefreshView", RCTPullToRefreshViewCls},
     {"ActivityIndicatorView", RCTActivityIndicatorViewCls},
-    {"Slider", RCTSliderCls},
     {"Switch", RCTSwitchCls},
     {"UnimplementedNativeView", RCTUnimplementedNativeViewCls},
     {"Paragraph", RCTParagraphCls},
@@ -30,6 +29,7 @@ Class<RCTComponentViewProtocol> RCTFabricComponentsProvider(const char *name) {
     {"InputAccessoryView", RCTInputAccessoryCls},
     {"View", RCTViewCls},
     {"Image", RCTImageCls},
+    {"ModalHostView", RCTModalHostViewCls},
   };
 
   auto p = sFabricComponentsClassMap.find(name);

@@ -16,19 +16,18 @@ RCT_EXPORT_MODULE()
 
 - (RCTShadowView *)shadowView
 {
-  RCTBaseTextInputShadowView *shadowView =
-    (RCTBaseTextInputShadowView *)[super shadowView];
+  RCTBaseTextInputShadowView *shadowView = (RCTBaseTextInputShadowView *)[super shadowView];
 
   shadowView.maximumNumberOfLines = 1;
 
   return shadowView;
 }
 
-- (RCTUIView *)view // TODO(macOS ISS#3536887)
+- (RCTUIView *)view // [macOS]
 {
   return [[RCTSinglelineTextInputView alloc] initWithBridge:self.bridge];
 }
 
-RCT_REMAP_OSX_VIEW_PROPERTY(secureTextEntry, useSecureTextField, BOOL) // TODO(macOS GH#774)
+RCT_REMAP_OSX_VIEW_PROPERTY(secureTextEntry, useSecureTextField, BOOL) // [macOS]
 
 @end

@@ -9,6 +9,7 @@
  */
 
 import type {TurboModule} from '../TurboModule/RCTExport';
+
 import * as TurboModuleRegistry from '../TurboModule/TurboModuleRegistry';
 
 export type Args = {|
@@ -19,12 +20,14 @@ export type Args = {|
   defaultValue?: string,
   cancelButtonKey?: string,
   destructiveButtonKey?: string,
+  preferredButtonKey?: string,
   keyboardType?: string,
-  // [TODO(macOS GH#774)
+  userInterfaceStyle?: string,
+  // [macOS
   defaultInputs?: Array<Object>,
   modal?: ?boolean,
   critical?: ?boolean,
-  // ]TODO(macOS GH#774)
+  // macOS]
 |};
 
 export interface Spec extends TurboModule {

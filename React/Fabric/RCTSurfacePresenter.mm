@@ -27,6 +27,8 @@
 
 #import <react/config/ReactNativeConfig.h>
 #import <react/renderer/componentregistry/ComponentDescriptorFactory.h>
+#import <react/renderer/components/text/BaseTextProps.h>
+#import <react/renderer/core/CoreFeatures.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #import <react/renderer/scheduler/AsynchronousEventBeat.h>
 #import <react/renderer/scheduler/SchedulerToolbox.h>
@@ -37,6 +39,7 @@
 #import "PlatformRunLoopObserver.h"
 #import "RCTConversions.h"
 
+using namespace facebook;
 using namespace facebook::react;
 
 static dispatch_queue_t RCTGetBackgroundQueue()
@@ -78,6 +81,7 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
   RCTScheduler *_Nullable _scheduler; // Thread-safe. Pointer is protected by `_schedulerAccessMutex`.
   ContextContainer::Shared _contextContainer; // Protected by `_schedulerLifeCycleMutex`.
   RuntimeExecutor _runtimeExecutor; // Protected by `_schedulerLifeCycleMutex`.
+  std::optional<RuntimeExecutor> _bridgelessBindingsExecutor; // Only used for installing bindings.
 
   butter::shared_mutex _observerListMutex;
   std::vector<__weak id<RCTSurfacePresenterObserver>> _observers; // Protected by `_observerListMutex`.
@@ -85,10 +89,12 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
 
 - (instancetype)initWithContextContainer:(ContextContainer::Shared)contextContainer
                          runtimeExecutor:(RuntimeExecutor)runtimeExecutor
+              bridgelessBindingsExecutor:(std::optional<RuntimeExecutor>)bridgelessBindingsExecutor
 {
   if (self = [super init]) {
     assert(contextContainer && "RuntimeExecutor must be not null.");
     _runtimeExecutor = runtimeExecutor;
+    _bridgelessBindingsExecutor = bridgelessBindingsExecutor;
     _contextContainer = contextContainer;
 
     _surfaceRegistry = [RCTSurfaceRegistry new];
@@ -97,6 +103,13 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
     _mountingManager.delegate = self;
 
     _scheduler = [self _createScheduler];
+
+#if !TARGET_OS_OSX // [macOS]
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_applicationWillTerminate)
+                                                 name:UIApplicationWillTerminateNotification
+                                               object:nil];
+#endif // [macOS]
   }
 
   return self;
@@ -171,10 +184,10 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
                                           initialProperties:initialProperties];
 }
 
-- (RCTUIView *)findComponentViewWithTag_DO_NOT_USE_DEPRECATED:(NSInteger)tag // TODO(macOS GH#774)
+- (RCTUIView *)findComponentViewWithTag_DO_NOT_USE_DEPRECATED:(NSInteger)tag // [macOS]
 {
   RCTUIView<RCTComponentViewProtocol> *componentView =
-      [_mountingManager.componentViewRegistry findComponentViewWithTag:tag]; // TODO(macOS GH#774)
+      [_mountingManager.componentViewRegistry findComponentViewWithTag:tag]; // [macOS]
   return componentView;
 }
 
@@ -187,7 +200,7 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
 
   ReactTag tag = [reactTag integerValue];
   RCTUIView<RCTComponentViewProtocol> *componentView =
-      [_mountingManager.componentViewRegistry findComponentViewWithTag:tag]; // TODO(macOS GH#774)
+      [_mountingManager.componentViewRegistry findComponentViewWithTag:tag]; // [macOS]
   if (componentView == nil) {
     return NO; // This view probably isn't managed by Fabric
   }
@@ -257,8 +270,12 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
 {
   auto reactNativeConfig = _contextContainer->at<std::shared_ptr<ReactNativeConfig const>>("ReactNativeConfig");
 
-  if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:preemptive_view_allocation_disabled_ios")) {
-    RCTExperimentSetPreemptiveViewAllocationDisabled(YES);
+  if (reactNativeConfig && reactNativeConfig->getBool("rn_convergence:dispatch_pointer_events")) {
+    RCTSetDispatchW3CPointerEvents(YES);
+  }
+
+  if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:enable_cpp_props_iterator_setter_ios")) {
+    CoreFeatures::enablePropIteratorSetter = true;
   }
 
   if (reactNativeConfig && reactNativeConfig->getBool("rn_convergence:dispatch_pointer_events")) {
@@ -287,13 +304,16 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
   }
 
   toolbox.runtimeExecutor = runtimeExecutor;
+  toolbox.bridgelessBindingsExecutor = _bridgelessBindingsExecutor;
 
   toolbox.mainRunLoopObserverFactory = [](RunLoopObserver::Activity activities,
                                           RunLoopObserver::WeakOwner const &owner) {
     return std::make_unique<MainRunLoopObserver>(activities, owner);
   };
 
-  toolbox.backgroundExecutor = RCTGetBackgroundExecutor();
+  if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:enable_background_executor_ios")) {
+    toolbox.backgroundExecutor = RCTGetBackgroundExecutor();
+  }
 
   toolbox.synchronousEventBeatFactory =
       [runtimeExecutor, runtimeScheduler = runtimeScheduler](EventBeat::SharedOwnerBox const &ownerBox) {
@@ -333,6 +353,11 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
       [scheduler unregisterSurface:surface.surfaceHandler];
     }
   }];
+}
+
+- (void)_applicationWillTerminate
+{
+  [self suspend];
 }
 
 #pragma mark - RCTSchedulerDelegate

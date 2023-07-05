@@ -12,6 +12,7 @@
 #import "RCTBridge.h"
 #import "RCTBridgeModule.h"
 #import "RCTComponentEvent.h"
+#import "RCTConstants.h"
 #import "RCTConvert.h"
 #import "RCTEventDispatcherProtocol.h"
 #import "RCTParserUtils.h"
@@ -74,18 +75,18 @@ static SEL selectorForType(NSString *type)
 
 RCT_NOT_IMPLEMENTED(-(instancetype)init)
 
-- (RCTPlatformView *)createViewWithTag:(nullable NSNumber *)tag rootTag:(nullable NSNumber *)rootTag // TODO(macOS GH#774)
+- (RCTPlatformView *)createViewWithTag:(nullable NSNumber *)tag rootTag:(nullable NSNumber *)rootTag // [macOS]
 {
   RCTAssertMainQueue();
 
-  RCTPlatformView *view = [self.manager view]; // TODO(macOS GH#774)
+  RCTPlatformView *view = [self.manager view]; // [macOS]
   view.reactTag = tag;
   view.rootTag = rootTag;
-#if !TARGET_OS_OSX // TODO(macOS GH#774)
+#if !TARGET_OS_OSX // [macOS]
   view.multipleTouchEnabled = YES;
   view.userInteractionEnabled = YES; // required for touch handling
   view.layer.allowsGroupOpacity = YES; // required for touch handling
-#endif // TODO(macOS GH#774)
+#endif // [macOS]
   return view;
 }
 
@@ -262,7 +263,8 @@ static RCTPropBlock createNSInvocationSetter(NSMethodSignature *typeSignature, S
     // Build setter block
     void (^setterBlock)(id target, id json) = nil;
     if (type == NSSelectorFromString(@"RCTBubblingEventBlock:") ||
-        type == NSSelectorFromString(@"RCTDirectEventBlock:")) {
+        type == NSSelectorFromString(@"RCTDirectEventBlock:") ||
+        type == NSSelectorFromString(@"RCTCapturingEventBlock:")) {
       // Special case for event handlers
       setterBlock =
           createEventSetter(name, setter, self.eventInterceptor, _bridge ? _bridge.eventDispatcher : _eventDispatcher);
@@ -388,6 +390,7 @@ static RCTPropBlock createNSInvocationSetter(NSMethodSignature *typeSignature, S
 - (NSDictionary<NSString *, id> *)viewConfig
 {
   NSMutableArray<NSString *> *bubblingEvents = [NSMutableArray new];
+  NSMutableArray<NSString *> *capturingEvents = [NSMutableArray new];
   NSMutableArray<NSString *> *directEvents = [NSMutableArray new];
 
 #pragma clang diagnostic push
@@ -430,18 +433,13 @@ static RCTPropBlock createNSInvocationSetter(NSMethodSignature *typeSignature, S
 
     if ([type isEqualToString:@"RCTBubblingEventBlock"]) {
       [bubblingEvents addObject:RCTNormalizeInputEventName(name)];
-
-      // TODO(109509380): Remove this gating
-      if (!RCTViewConfigEventValidAttributesDisabled()) {
-        propTypes[name] = @"BOOL";
-      }
+      propTypes[name] = @"BOOL";
+    } else if ([type isEqualToString:@"RCTCapturingEventBlock"]) {
+      [capturingEvents addObject:RCTNormalizeInputEventName(name)];
+      propTypes[name] = @"BOOL";
     } else if ([type isEqualToString:@"RCTDirectEventBlock"]) {
       [directEvents addObject:RCTNormalizeInputEventName(name)];
-
-      // TODO(109509380): Remove this gating
-      if (!RCTViewConfigEventValidAttributesDisabled()) {
-        propTypes[name] = @"BOOL";
-      }
+      propTypes[name] = @"BOOL";
     } else {
       propTypes[name] = type;
     }
@@ -466,6 +464,7 @@ static RCTPropBlock createNSInvocationSetter(NSMethodSignature *typeSignature, S
     @"propTypes" : propTypes,
     @"directEvents" : directEvents,
     @"bubblingEvents" : bubblingEvents,
+    @"capturingEvents" : capturingEvents,
     @"baseModuleName" : superClass == [NSObject class] ? (id)kCFNull : moduleNameForClass(superClass),
   };
 }

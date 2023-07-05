@@ -10,6 +10,7 @@
 #include <cinttypes>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace facebook {
 namespace react {
@@ -53,12 +54,24 @@ struct AccessibilityAction {
   std::optional<std::string> label{};
 };
 
+inline static bool operator==(
+    AccessibilityAction const &lhs,
+    AccessibilityAction const &rhs) {
+  return lhs.name == rhs.name && lhs.label == rhs.label;
+}
+
+inline static bool operator!=(
+    AccessibilityAction const &lhs,
+    AccessibilityAction const &rhs) {
+  return !(rhs == lhs);
+}
+
 struct AccessibilityState {
   bool disabled{false};
   bool selected{false};
-  enum { Unchecked, Checked, Mixed, None } checked{None};
   bool busy{false};
   bool expanded{false};
+  enum { Unchecked, Checked, Mixed, None } checked{None};
 };
 
 constexpr bool operator==(
@@ -73,6 +86,22 @@ constexpr bool operator!=(
     AccessibilityState const &lhs,
     AccessibilityState const &rhs) {
   return !(rhs == lhs);
+}
+
+struct AccessibilityLabelledBy {
+  std::vector<std::string> value{};
+};
+
+inline static bool operator==(
+    AccessibilityLabelledBy const &lhs,
+    AccessibilityLabelledBy const &rhs) {
+  return lhs.value == rhs.value;
+}
+
+inline static bool operator!=(
+    AccessibilityLabelledBy const &lhs,
+    AccessibilityLabelledBy const &rhs) {
+  return !(lhs == rhs);
 }
 
 struct AccessibilityValue {
@@ -95,11 +124,17 @@ constexpr bool operator!=(
   return !(rhs == lhs);
 }
 
-enum class ImportantForAccessibility {
+enum class ImportantForAccessibility : uint8_t {
   Auto,
   Yes,
   No,
   NoHideDescendants,
+};
+
+enum class AccessibilityLiveRegion : uint8_t {
+  None,
+  Polite,
+  Assertive,
 };
 
 } // namespace react

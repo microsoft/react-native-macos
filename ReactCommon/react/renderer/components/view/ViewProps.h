@@ -14,7 +14,6 @@
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/graphics/Color.h>
-#include <react/renderer/graphics/Geometry.h>
 #include <react/renderer/graphics/Transform.h>
 
 #include <optional>
@@ -32,7 +31,19 @@ class ViewProps : public YogaStylableProps, public AccessibilityProps {
   ViewProps(
       const PropsParserContext &context,
       ViewProps const &sourceProps,
-      RawProps const &rawProps);
+      RawProps const &rawProps,
+      bool shouldSetRawProps = true);
+
+  void setProp(
+      const PropsParserContext &context,
+      RawPropsPropNameHash hash,
+      const char *propName,
+      RawValue const &value);
+
+#ifdef ANDROID
+  void propsDiffMapBuffer(Props const *oldProps, MapBufferBuilder &builder)
+      const override;
+#endif
 
 #pragma mark - Props
 
@@ -44,6 +55,7 @@ class ViewProps : public YogaStylableProps, public AccessibilityProps {
   // Borders
   CascadedBorderRadii borderRadii{};
   CascadedBorderColors borderColors{};
+  CascadedBorderCurves borderCurves{}; // iOS only?
   CascadedBorderStyles borderStyles{};
 
   // Shadow
@@ -63,17 +75,25 @@ class ViewProps : public YogaStylableProps, public AccessibilityProps {
   EdgeInsets hitSlop{};
   bool onLayout{};
 
-  bool pointerEnter{};
-
-  bool pointerLeave{};
-
-  bool pointerMove{};
+  ViewEvents events{};
 
   bool collapsable{true};
 
   bool removeClippedSubviews{false};
 
   Float elevation{}; /* Android-only */
+
+#ifdef ANDROID
+
+  std::optional<NativeDrawable> nativeBackground{};
+  std::optional<NativeDrawable> nativeForeground{};
+
+  bool focusable{false};
+  bool hasTVPreferredFocus{false};
+  bool needsOffscreenAlphaCompositing{false};
+  bool renderToHardwareTextureAndroid{false};
+
+#endif
 
 #pragma mark - Convenience Methods
 

@@ -3,10 +3,28 @@
 exports[`<Pressable /> should render as expected: should deep render when mocked (please verify output manually) 1`] = `
 <View
   acceptsFirstMouse={true}
+  accessibilityState={
+    Object {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    Object {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
   accessible={true}
   collapsable={false}
   enableFocusRing={true}
   focusable={true}
+  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -26,10 +44,28 @@ exports[`<Pressable /> should render as expected: should deep render when mocked
 exports[`<Pressable /> should render as expected: should deep render when not mocked (please verify output manually) 1`] = `
 <View
   acceptsFirstMouse={true}
+  accessibilityState={
+    Object {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    Object {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
   accessible={true}
   collapsable={false}
   enableFocusRing={true}
   focusable={true}
+  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -63,13 +99,26 @@ exports[`<Pressable disabled={true} /> should be disabled when disabled is true:
   acceptsFirstMouse={false}
   accessibilityState={
     Object {
+      "busy": undefined,
+      "checked": undefined,
       "disabled": true,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    Object {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
     }
   }
   accessible={true}
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -91,13 +140,26 @@ exports[`<Pressable disabled={true} /> should be disabled when disabled is true:
   acceptsFirstMouse={false}
   accessibilityState={
     Object {
+      "busy": undefined,
+      "checked": undefined,
       "disabled": true,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    Object {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
     }
   }
   accessible={true}
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -135,13 +197,26 @@ exports[`<Pressable disabled={true} accessibilityState={{}} /> should be disable
   acceptsFirstMouse={false}
   accessibilityState={
     Object {
+      "busy": undefined,
+      "checked": undefined,
       "disabled": true,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    Object {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
     }
   }
   accessible={true}
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -163,13 +238,26 @@ exports[`<Pressable disabled={true} accessibilityState={{}} /> should be disable
   acceptsFirstMouse={false}
   accessibilityState={
     Object {
+      "busy": undefined,
+      "checked": undefined,
       "disabled": true,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    Object {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
     }
   }
   accessible={true}
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -209,14 +297,26 @@ exports[`<Pressable disabled={true} accessibilityState={{checked: true}} /> shou
   acceptsFirstMouse={false}
   accessibilityState={
     Object {
+      "busy": undefined,
       "checked": true,
       "disabled": true,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    Object {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
     }
   }
   accessible={true}
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -238,14 +338,26 @@ exports[`<Pressable disabled={true} accessibilityState={{checked: true}} /> shou
   acceptsFirstMouse={false}
   accessibilityState={
     Object {
+      "busy": undefined,
       "checked": true,
       "disabled": true,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    Object {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
     }
   }
   accessible={true}
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -293,13 +405,26 @@ exports[`<Pressable disabled={true} accessibilityState={{disabled: false}} /> sh
   acceptsFirstMouse={false}
   accessibilityState={
     Object {
+      "busy": undefined,
+      "checked": undefined,
       "disabled": true,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    Object {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
     }
   }
   accessible={true}
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
@@ -321,13 +446,26 @@ exports[`<Pressable disabled={true} accessibilityState={{disabled: false}} /> sh
   acceptsFirstMouse={false}
   accessibilityState={
     Object {
+      "busy": undefined,
+      "checked": undefined,
       "disabled": true,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    Object {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
     }
   }
   accessible={true}
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}

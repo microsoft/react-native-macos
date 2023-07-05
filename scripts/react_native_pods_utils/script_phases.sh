@@ -13,8 +13,6 @@ GENERATED_SCHEMA_FILE="$GENERATED_SRCS_DIR/schema.json"
 
 cd "$RCT_SCRIPT_RN_DIR"
 
-CODEGEN_REPO_PATH="$RCT_SCRIPT_RN_DIR/packages/react-native-codegen"
-CODEGEN_NPM_PATH="$RCT_SCRIPT_RN_DIR/../react-native-codegen"
 CODEGEN_CLI_PATH=""
 
 error () {
@@ -23,22 +21,19 @@ error () {
     exit 1
 }
 
-# Determine path to react-native-codegen
-if [ -d "$CODEGEN_REPO_PATH" ]; then
-    CODEGEN_CLI_PATH=$(cd "$CODEGEN_REPO_PATH" && pwd)
-elif [ -d "$CODEGEN_NPM_PATH" ]; then
-    CODEGEN_CLI_PATH=$(cd "$CODEGEN_NPM_PATH" && pwd)
-else
-    error "error: Could not determine react-native-codegen location in $CODEGEN_REPO_PATH or $CODEGEN_NPM_PATH. Try running 'yarn install' or 'npm install' in your project root."
-fi
-
 find_node () {
-    # shellcheck disable=SC1091
-    source "$RCT_SCRIPT_RN_DIR/scripts/find-node.sh"
-
     NODE_BINARY="${NODE_BINARY:-$(command -v node || true)}"
     if [ -z "$NODE_BINARY" ]; then
-        error "error: Could not find node. Make sure it is in bash PATH or set the NODE_BINARY environment variable."
+        error "[Error] Could not find node. It looks like that the .xcode.env or .xcode.env.local " \
+"files are misconfigured. Please check that they are exporting a valid NODE_BINARY " \
+"variable, pointing to a node executable."
+    fi
+}
+
+find_codegen () {
+    CODEGEN_CLI_PATH=$("$NODE_BINARY" --print "require('path').dirname(require.resolve('@react-native/codegen/package.json'))")
+    if ! [ -d "$CODEGEN_CLI_PATH" ]; then
+        error "error: Could not determine @react-native/codegen location, using node module resolution. Try running 'yarn install' or 'npm install' in your project root."
     fi
 }
 
@@ -88,12 +83,12 @@ generateCodegenArtifactsFromSchema () {
     describe "Generating codegen artifacts from schema"
     pushd "$RN_DIR" >/dev/null || exit 1
         if [ "$RCT_SCRIPT_LIBRARY_TYPE" = "all" ]; then
-            runSpecCodegen "$TEMP_OUTPUT_DIR/$RCT_SCRIPT_CODEGEN_MODULE_DIR/$RCT_SCRIPT_LIBRARY_NAME" "modules"
-            runSpecCodegen "$TEMP_OUTPUT_DIR/$RCT_SCRIPT_CODEGEN_COMPONENT_DIR/$RCT_SCRIPT_LIBRARY_NAME" "components"
+            runSpecCodegen "$TEMP_OUTPUT_DIR" "modules"
+            runSpecCodegen "$TEMP_OUTPUT_DIR" "components"
         elif [ "$RCT_SCRIPT_LIBRARY_TYPE" = "components" ]; then
-            runSpecCodegen "$TEMP_OUTPUT_DIR/$RCT_SCRIPT_CODEGEN_COMPONENT_DIR/$RCT_SCRIPT_LIBRARY_NAME" "$RCT_SCRIPT_LIBRARY_TYPE"
+            runSpecCodegen "$TEMP_OUTPUT_DIR" "$RCT_SCRIPT_LIBRARY_TYPE"
         elif [ "$RCT_SCRIPT_LIBRARY_TYPE" = "modules" ]; then
-            runSpecCodegen "$TEMP_OUTPUT_DIR/$RCT_SCRIPT_CODEGEN_MODULE_DIR/$RCT_SCRIPT_LIBRARY_NAME" "$RCT_SCRIPT_LIBRARY_TYPE"
+            runSpecCodegen "$TEMP_OUTPUT_DIR" "$RCT_SCRIPT_LIBRARY_TYPE"
         fi
     popd >/dev/null || exit 1
 }
@@ -101,7 +96,7 @@ generateCodegenArtifactsFromSchema () {
 generateArtifacts () {
     describe "Generating codegen artifacts"
     pushd "$RCT_SCRIPT_RN_DIR" >/dev/null || exit 1
-        "$NODE_BINARY" "scripts/generate-artifacts.js" --path "$RCT_SCRIPT_APP_PATH" --outputPath "$TEMP_OUTPUT_DIR" --fabricEnabled "$RCT_SCRIPT_FABRIC_ENABLED" --configFileDir "$RCT_SCRIPT_CONFIG_FILE_DIR"
+        "$NODE_BINARY" "scripts/generate-codegen-artifacts.js" --path "$RCT_SCRIPT_APP_PATH" --outputPath "$TEMP_OUTPUT_DIR" --fabricEnabled "$RCT_SCRIPT_FABRIC_ENABLED" --configFileDir "$RCT_SCRIPT_CONFIG_FILE_DIR" --nodeBinary "$NODE_BINARY"
     popd >/dev/null || exit 1
 }
 
@@ -109,7 +104,7 @@ moveOutputs () {
     mkdir -p "$RCT_SCRIPT_OUTPUT_DIR"
 
     # Copy all output to output_dir
-    cp -R "$TEMP_OUTPUT_DIR/" "$RCT_SCRIPT_OUTPUT_DIR" || exit 1
+    cp -R "$TEMP_OUTPUT_DIR/." "$RCT_SCRIPT_OUTPUT_DIR" || exit 1
     echo "$LIBRARY_NAME output has been written to $RCT_SCRIPT_OUTPUT_DIR:" >> "${SCRIPT_OUTPUT_FILE_0}" 2>&1
     ls -1 "$RCT_SCRIPT_OUTPUT_DIR" >> "${SCRIPT_OUTPUT_FILE_0}" 2>&1
 }
@@ -117,6 +112,7 @@ moveOutputs () {
 withCodgenDiscovery () {
     setup_dirs
     find_node
+    find_codegen
     generateArtifacts
     moveOutputs
 }
@@ -124,6 +120,7 @@ withCodgenDiscovery () {
 noCodegenDiscovery () {
     setup_dirs
     find_node
+    find_codegen
     generateCodegenSchemaFromJavaScript
     generateCodegenArtifactsFromSchema
     moveOutputs

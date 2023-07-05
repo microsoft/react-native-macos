@@ -27,6 +27,7 @@ import com.facebook.react.common.MapBuilder;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.uimanager.events.PointerEventHelper;
 import com.facebook.react.uimanager.util.ReactFindViewUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,6 +64,81 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   private static final String STATE_BUSY = "busy";
   private static final String STATE_EXPANDED = "expanded";
   private static final String STATE_MIXED = "mixed";
+
+  @Override
+  protected T prepareToRecycleView(@NonNull ThemedReactContext reactContext, T view) {
+    // Reset tags
+    view.setTag(null);
+    view.setTag(R.id.pointer_events, null);
+    view.setTag(R.id.react_test_id, null);
+    view.setTag(R.id.view_tag_native_id, null);
+    view.setTag(R.id.labelled_by, null);
+    view.setTag(R.id.accessibility_label, null);
+    view.setTag(R.id.accessibility_hint, null);
+    view.setTag(R.id.accessibility_role, null);
+    view.setTag(R.id.accessibility_state, null);
+    view.setTag(R.id.accessibility_actions, null);
+    view.setTag(R.id.accessibility_value, null);
+    view.setTag(R.id.accessibility_state_expanded, null);
+
+    // This indirectly calls (and resets):
+    // setTranslationX
+    // setTranslationY
+    // setRotation
+    // setRotationX
+    // setRotationY
+    // setScaleX
+    // setScaleY
+    // setCameraDistance
+    setTransform(view, null);
+
+    // RenderNode params not covered by setTransform above
+    view.resetPivot();
+    view.setTop(0);
+    view.setBottom(0);
+    view.setLeft(0);
+    view.setRight(0);
+    view.setElevation(0);
+    view.setAnimationMatrix(null);
+
+    // setShadowColor
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      view.setOutlineAmbientShadowColor(Color.BLACK);
+      view.setOutlineSpotShadowColor(Color.BLACK);
+    }
+
+    // Focus IDs
+    // Also see in AOSP source:
+    // https://android.googlesource.com/platform/frameworks/base/+/a175a5b/core/java/android/view/View.java#4493
+    view.setNextFocusDownId(View.NO_ID);
+    view.setNextFocusForwardId(View.NO_ID);
+    view.setNextFocusRightId(View.NO_ID);
+    view.setNextFocusUpId(View.NO_ID);
+
+    // This is possibly subject to change and overrideable per-platform, but these
+    // are the default view flags in View.java:
+    // https://android.googlesource.com/platform/frameworks/base/+/a175a5b/core/java/android/view/View.java#2712
+    // `mViewFlags = SOUND_EFFECTS_ENABLED | HAPTIC_FEEDBACK_ENABLED | LAYOUT_DIRECTION_INHERIT`
+    // Therefore we set the following options as such:
+    view.setFocusable(false);
+    view.setFocusableInTouchMode(false);
+
+    // https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-mainline-12.0.0_r96/core/java/android/view/View.java#5491
+    view.setElevation(0);
+
+    // Predictably, alpha defaults to 1:
+    // https://android.googlesource.com/platform/frameworks/base/+/a175a5b/core/java/android/view/View.java#2186
+    // This accounts for resetting mBackfaceOpacity and mBackfaceVisibility
+    view.setAlpha(1);
+
+    // setPadding is a noop for most View types, but it is not for Text
+    setPadding(view, 0, 0, 0, 0);
+
+    // Other stuff
+    view.setForeground(null);
+
+    return view;
+  }
 
   @Override
   @ReactProp(
@@ -176,10 +252,27 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   }
 
   @Override
+  @ReactProp(name = ViewProps.ACCESSIBILITY_COLLECTION)
+  public void setAccessibilityCollection(
+      @NonNull T view, @Nullable ReadableMap accessibilityCollection) {
+    view.setTag(R.id.accessibility_collection, accessibilityCollection);
+  }
+
+  @Override
+  @ReactProp(name = ViewProps.ACCESSIBILITY_COLLECTION_ITEM)
+  public void setAccessibilityCollectionItem(
+      @NonNull T view, @Nullable ReadableMap accessibilityCollectionItem) {
+    view.setTag(R.id.accessibility_collection_item, accessibilityCollectionItem);
+  }
+
+  @Override
   @ReactProp(name = ViewProps.ACCESSIBILITY_STATE)
   public void setViewState(@NonNull T view, @Nullable ReadableMap accessibilityState) {
     if (accessibilityState == null) {
       return;
+    }
+    if (accessibilityState.hasKey("expanded")) {
+      view.setTag(R.id.accessibility_state_expanded, accessibilityState.getBoolean("expanded"));
     }
     if (accessibilityState.hasKey("selected")) {
       boolean prevSelected = view.isSelected();
@@ -197,7 +290,9 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       view.setSelected(false);
     }
     view.setTag(R.id.accessibility_state, accessibilityState);
-    view.setEnabled(true);
+    if (accessibilityState.hasKey("disabled") && !accessibilityState.getBoolean("disabled")) {
+      view.setEnabled(true);
+    }
 
     // For states which don't have corresponding methods in
     // AccessibilityNodeInfo, update the view's content description
@@ -226,7 +321,6 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   private void updateViewContentDescription(@NonNull T view) {
     final String accessibilityLabel = (String) view.getTag(R.id.accessibility_label);
     final ReadableMap accessibilityState = (ReadableMap) view.getTag(R.id.accessibility_state);
-    final String accessibilityHint = (String) view.getTag(R.id.accessibility_hint);
     final List<String> contentDescription = new ArrayList<>();
     final ReadableMap accessibilityValue = (ReadableMap) view.getTag(R.id.accessibility_value);
     if (accessibilityLabel != null) {
@@ -245,13 +339,6 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
             && value.getType() == ReadableType.Boolean
             && value.asBoolean()) {
           contentDescription.add(view.getContext().getString(R.string.state_busy_description));
-        } else if (state.equals(STATE_EXPANDED) && value.getType() == ReadableType.Boolean) {
-          contentDescription.add(
-              view.getContext()
-                  .getString(
-                      value.asBoolean()
-                          ? R.string.state_expanded_description
-                          : R.string.state_collapsed_description));
         }
       }
     }
@@ -260,9 +347,6 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       if (text != null && text.getType() == ReadableType.String) {
         contentDescription.add(text.asString());
       }
-    }
-    if (accessibilityHint != null) {
-      contentDescription.add(accessibilityHint);
     }
     if (contentDescription.size() > 0) {
       view.setContentDescription(TextUtils.join(", ", contentDescription));
@@ -282,12 +366,13 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @ReactProp(name = ViewProps.ACCESSIBILITY_VALUE)
   public void setAccessibilityValue(T view, ReadableMap accessibilityValue) {
     if (accessibilityValue == null) {
-      return;
-    }
-
-    view.setTag(R.id.accessibility_value, accessibilityValue);
-    if (accessibilityValue.hasKey("text")) {
-      updateViewContentDescription(view);
+      view.setTag(R.id.accessibility_value, null);
+      view.setContentDescription(null);
+    } else {
+      view.setTag(R.id.accessibility_value, accessibilityValue);
+      if (accessibilityValue.hasKey("text")) {
+        updateViewContentDescription(view);
+      }
     }
   }
 
@@ -433,13 +518,78 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   }
 
   private void updateViewAccessibility(@NonNull T view) {
-    ReactAccessibilityDelegate.setDelegate(view);
+    ReactAccessibilityDelegate.setDelegate(
+        view, view.isFocusable(), view.getImportantForAccessibility());
   }
 
   @Override
   protected void onAfterUpdateTransaction(@NonNull T view) {
     super.onAfterUpdateTransaction(view);
     updateViewAccessibility(view);
+  }
+
+  @Override
+  public @Nullable Map<String, Object> getExportedCustomBubblingEventTypeConstants() {
+    Map<String, Object> baseEventTypeConstants = super.getExportedCustomDirectEventTypeConstants();
+    Map<String, Object> eventTypeConstants =
+        baseEventTypeConstants == null ? new HashMap<String, Object>() : baseEventTypeConstants;
+    eventTypeConstants.putAll(
+        MapBuilder.<String, Object>builder()
+            .put(
+                "topPointerCancel",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of(
+                        "bubbled", "onPointerCancel", "captured", "onPointerCancelCapture")))
+            .put(
+                "topPointerDown",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of("bubbled", "onPointerDown", "captured", "onPointerDownCapture")))
+            .put(
+                "topPointerEnter",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of(
+                        "bubbled",
+                        "onPointerEnter",
+                        "captured",
+                        "onPointerEnterCapture",
+                        "skipBubbling",
+                        true)))
+            .put(
+                "topPointerLeave",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of(
+                        "bubbled",
+                        "onPointerLeave",
+                        "captured",
+                        "onPointerLeaveCapture",
+                        "skipBubbling",
+                        true)))
+            .put(
+                "topPointerMove",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of("bubbled", "onPointerMove", "captured", "onPointerMoveCapture")))
+            .put(
+                "topPointerUp",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of("bubbled", "onPointerUp", "captured", "onPointerUpCapture")))
+            .put(
+                "topPointerOut",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of("bubbled", "onPointerOut", "captured", "onPointerOutCapture")))
+            .put(
+                "topPointerOver",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of("bubbled", "onPointerOver", "captured", "onPointerOverCapture")))
+            .build());
+    return eventTypeConstants;
   }
 
   @Override
@@ -486,18 +636,149 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     FLog.w(ReactConstants.TAG, "%s doesn't support property '%s'", getName(), propName);
   }
 
-  @ReactProp(name = "pointerenter")
-  public void setPointerEnter(@NonNull T view, @Nullable boolean value) {
-    view.setTag(R.id.pointer_enter, value);
+  private static void setPointerEventsFlag(
+      @NonNull View view, PointerEventHelper.EVENT event, boolean isListening) {
+    Integer tag = (Integer) view.getTag(R.id.pointer_events);
+    int currentValue = tag != null ? tag.intValue() : 0;
+    int flag = 1 << event.ordinal();
+    view.setTag(R.id.pointer_events, isListening ? (currentValue | flag) : (currentValue & ~flag));
   }
 
-  @ReactProp(name = "pointerleave")
-  public void setPointerLeave(@NonNull T view, @Nullable boolean value) {
-    view.setTag(R.id.pointer_leave, value);
+  /* Experimental W3C Pointer events start */
+  @ReactProp(name = "onPointerEnter")
+  public void setPointerEnter(@NonNull T view, boolean value) {
+    setPointerEventsFlag(view, PointerEventHelper.EVENT.ENTER, value);
   }
 
-  @ReactProp(name = "pointermove")
-  public void setPointerMove(@NonNull T view, @Nullable boolean value) {
-    view.setTag(R.id.pointer_move, value);
+  @ReactProp(name = "onPointerEnterCapture")
+  public void setPointerEnterCapture(@NonNull T view, boolean value) {
+    setPointerEventsFlag(view, PointerEventHelper.EVENT.ENTER_CAPTURE, value);
+  }
+
+  @ReactProp(name = "onPointerOver")
+  public void setPointerOver(@NonNull T view, boolean value) {
+    setPointerEventsFlag(view, PointerEventHelper.EVENT.OVER, value);
+  }
+
+  @ReactProp(name = "onPointerOverCapture")
+  public void setPointerOverCapture(@NonNull T view, boolean value) {
+    setPointerEventsFlag(view, PointerEventHelper.EVENT.OVER_CAPTURE, value);
+  }
+
+  @ReactProp(name = "onPointerOut")
+  public void setPointerOut(@NonNull T view, boolean value) {
+    setPointerEventsFlag(view, PointerEventHelper.EVENT.OUT, value);
+  }
+
+  @ReactProp(name = "onPointerOutCapture")
+  public void setPointerOutCapture(@NonNull T view, boolean value) {
+    setPointerEventsFlag(view, PointerEventHelper.EVENT.OUT_CAPTURE, value);
+  }
+
+  @ReactProp(name = "onPointerLeave")
+  public void setPointerLeave(@NonNull T view, boolean value) {
+    setPointerEventsFlag(view, PointerEventHelper.EVENT.LEAVE, value);
+  }
+
+  @ReactProp(name = "onPointerLeaveCapture")
+  public void setPointerLeaveCapture(@NonNull T view, boolean value) {
+    setPointerEventsFlag(view, PointerEventHelper.EVENT.LEAVE_CAPTURE, value);
+  }
+
+  @ReactProp(name = "onPointerMove")
+  public void setPointerMove(@NonNull T view, boolean value) {
+    setPointerEventsFlag(view, PointerEventHelper.EVENT.MOVE, value);
+  }
+
+  @ReactProp(name = "onPointerMoveCapture")
+  public void setPointerMoveCapture(@NonNull T view, boolean value) {
+    setPointerEventsFlag(view, PointerEventHelper.EVENT.MOVE_CAPTURE, value);
+  }
+
+  /* Experimental W3C Pointer events end */
+
+  @ReactProp(name = "onMoveShouldSetResponder")
+  public void setMoveShouldSetResponder(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onMoveShouldSetResponderCapture")
+  public void setMoveShouldSetResponderCapture(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onStartShouldSetResponder")
+  public void setStartShouldSetResponder(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onStartShouldSetResponderCapture")
+  public void setStartShouldSetResponderCapture(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onResponderGrant")
+  public void setResponderGrant(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onResponderReject")
+  public void setResponderReject(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onResponderStart")
+  public void setResponderStart(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onResponderEnd")
+  public void setResponderEnd(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onResponderRelease")
+  public void setResponderRelease(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onResponderMove")
+  public void setResponderMove(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onResponderTerminate")
+  public void setResponderTerminate(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onResponderTerminationRequest")
+  public void setResponderTerminationRequest(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onShouldBlockNativeResponder")
+  public void setShouldBlockNativeResponder(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onTouchStart")
+  public void setTouchStart(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onTouchMove")
+  public void setTouchMove(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onTouchEnd")
+  public void setTouchEnd(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
+  }
+
+  @ReactProp(name = "onTouchCancel")
+  public void setTouchCancel(@NonNull T view, boolean value) {
+    // no-op, handled by JSResponder
   }
 }

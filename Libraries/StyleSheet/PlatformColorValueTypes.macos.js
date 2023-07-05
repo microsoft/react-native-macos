@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Mete Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -7,11 +7,10 @@
  * @format
  * @flow strict-local
  */
-// [TODO(macOS GH#774)
-'use strict';
 
-import type {ColorValue} from './StyleSheet';
+// [macOS]
 import type {ProcessedColorValue} from './processColor';
+import type {ColorValue} from './StyleSheet';
 
 export opaque type NativeColorValue = {
   semantic?: Array<string>,
@@ -83,9 +82,13 @@ export const normalizeColorObject = (
     const dynamic = color.dynamic;
     const dynamicColor: NativeColorValue = {
       dynamic: {
+        // $FlowFixMe[incompatible-use]
         light: normalizeColor(dynamic.light),
+        // $FlowFixMe[incompatible-use]
         dark: normalizeColor(dynamic.dark),
+        // $FlowFixMe[incompatible-use]
         highContrastLight: normalizeColor(dynamic.highContrastLight),
+        // $FlowFixMe[incompatible-use]
         highContrastDark: normalizeColor(dynamic.highContrastDark),
       },
     };
@@ -94,16 +97,19 @@ export const normalizeColorObject = (
     'colorWithSystemEffect' in color &&
     color.colorWithSystemEffect != null
   ) {
-    const processColor = require('./processColor');
+    const normalizeColor = require('./normalizeColor');
     const colorWithSystemEffect = color.colorWithSystemEffect;
     const colorObject: NativeColorValue = {
       colorWithSystemEffect: {
-        baseColor: processColor(colorWithSystemEffect.baseColor),
+        // $FlowFixMe[incompatible-use]
+        baseColor: normalizeColor(colorWithSystemEffect.baseColor),
+        // $FlowFixMe[incompatible-use]
         systemEffect: colorWithSystemEffect.systemEffect,
       },
     };
     return colorObject;
   }
+
   return null;
 };
 
@@ -111,13 +117,17 @@ export const processColorObject = (
   color: NativeColorValue,
 ): ?NativeColorValue => {
   if ('dynamic' in color && color.dynamic != null) {
-    const processColor = require('./processColor');
+    const processColor = require('./processColor').default;
     const dynamic = color.dynamic;
     const dynamicColor: NativeColorValue = {
       dynamic: {
+        // $FlowFixMe[incompatible-use]
         light: processColor(dynamic.light),
+        // $FlowFixMe[incompatible-use]
         dark: processColor(dynamic.dark),
+        // $FlowFixMe[incompatible-use]
         highContrastLight: processColor(dynamic.highContrastLight),
+        // $FlowFixMe[incompatible-use]
         highContrastDark: processColor(dynamic.highContrastDark),
       },
     };
@@ -126,11 +136,13 @@ export const processColorObject = (
     'colorWithSystemEffect' in color &&
     color.colorWithSystemEffect != null
   ) {
-    const processColor = require('./processColor');
+    const processColor = require('./processColor').default;
     const colorWithSystemEffect = color.colorWithSystemEffect;
     const colorObject: NativeColorValue = {
       colorWithSystemEffect: {
+        // $FlowFixMe[incompatible-use]
         baseColor: processColor(colorWithSystemEffect.baseColor),
+        // $FlowFixMe[incompatible-use]
         systemEffect: colorWithSystemEffect.systemEffect,
       },
     };
@@ -138,4 +150,3 @@ export const processColorObject = (
   }
   return color;
 };
-// ]TODO(macOS GH#774)

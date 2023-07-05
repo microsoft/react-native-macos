@@ -52,6 +52,23 @@ public class ReactViewManager extends ReactClippingViewManager<ReactViewGroup> {
   private static final int CMD_SET_PRESSED = 2;
   private static final String HOTSPOT_UPDATE_KEY = "hotspotUpdate";
 
+  public ReactViewManager() {
+    super();
+
+    setupViewRecycling();
+  }
+
+  @Override
+  protected ReactViewGroup prepareToRecycleView(
+      @NonNull ThemedReactContext reactContext, ReactViewGroup view) {
+    // BaseViewManager
+    super.prepareToRecycleView(reactContext, view);
+
+    view.recycleView();
+
+    return view;
+  }
+
   @ReactProp(name = "accessible")
   public void setAccessible(ReactViewGroup view, boolean accessible) {
     view.setFocusable(accessible);
@@ -102,6 +119,10 @@ public class ReactViewManager extends ReactClippingViewManager<ReactViewGroup> {
         ViewProps.BORDER_TOP_END_RADIUS,
         ViewProps.BORDER_BOTTOM_START_RADIUS,
         ViewProps.BORDER_BOTTOM_END_RADIUS,
+        ViewProps.BORDER_END_END_RADIUS,
+        ViewProps.BORDER_END_START_RADIUS,
+        ViewProps.BORDER_START_END_RADIUS,
+        ViewProps.BORDER_START_START_RADIUS,
       },
       defaultFloat = YogaConstants.UNDEFINED)
   public void setBorderRadius(ReactViewGroup view, int index, float borderRadius) {

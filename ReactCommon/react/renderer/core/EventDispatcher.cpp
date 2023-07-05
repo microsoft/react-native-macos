@@ -6,15 +6,15 @@
  */
 
 #include "EventDispatcher.h"
-
+#include <cxxreact/JSExecutor.h>
 #include <react/renderer/core/StateUpdate.h>
+#include "EventLogger.h"
 
 #include "BatchedEventQueue.h"
 #include "RawEvent.h"
 #include "UnbatchedEventQueue.h"
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
 EventDispatcher::EventDispatcher(
     EventQueueProcessor const &eventProcessor,
@@ -39,6 +39,11 @@ void EventDispatcher::dispatchEvent(RawEvent &&rawEvent, EventPriority priority)
   // Allows the event listener to interrupt default event dispatch
   if (eventListeners_.willDispatchEvent(rawEvent)) {
     return;
+  }
+
+  auto eventLogger = getEventLogger();
+  if (eventLogger != nullptr) {
+    rawEvent.loggingTag = eventLogger->onEventStart(rawEvent.type.c_str());
   }
   getEventQueue(priority).enqueueEvent(std::move(rawEvent));
 }
@@ -83,5 +88,4 @@ void EventDispatcher::removeListener(
   eventListeners_.removeListener(listener);
 }
 
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react

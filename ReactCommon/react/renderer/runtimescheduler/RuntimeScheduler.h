@@ -35,7 +35,7 @@ class RuntimeScheduler final {
   RuntimeScheduler(RuntimeScheduler &&) = delete;
   RuntimeScheduler &operator=(RuntimeScheduler &&) = delete;
 
-  void scheduleWork(std::function<void(jsi::Runtime &)> callback) const;
+  void scheduleWork(RawCallback callback) const;
 
   /*
    * Grants access to the runtime synchronously on the caller's thread.
@@ -44,8 +44,7 @@ class RuntimeScheduler final {
    * by dispatching a synchronous event via event emitter in your native
    * component.
    */
-  void executeNowOnTheSameThread(
-      std::function<void(jsi::Runtime &runtime)> callback);
+  void executeNowOnTheSameThread(RawCallback callback);
 
   /*
    * Adds a JavaScript callback to priority queue with given priority.
@@ -56,6 +55,10 @@ class RuntimeScheduler final {
   std::shared_ptr<Task> scheduleTask(
       SchedulerPriority priority,
       jsi::Function callback);
+
+  std::shared_ptr<Task> scheduleTask(
+      SchedulerPriority priority,
+      RawCallback callback);
 
   /*
    * Cancelled task will never be executed.
@@ -96,6 +99,16 @@ class RuntimeScheduler final {
    */
   RuntimeSchedulerTimePoint now() const noexcept;
 
+  /*
+   * Expired task is a task that should have been already executed. Designed to
+   * be called in the event pipeline after an event is dispatched to React.
+   * React may schedule events with immediate priority which need to be handled
+   * before the next event is sent to React.
+   *
+   * Thread synchronization must be enforced externally.
+   */
+  void callExpiredTasks(jsi::Runtime &runtime);
+
  private:
   mutable std::priority_queue<
       std::shared_ptr<Task>,
@@ -105,7 +118,6 @@ class RuntimeScheduler final {
 
   RuntimeExecutor const runtimeExecutor_;
   mutable SchedulerPriority currentPriority_{SchedulerPriority::NormalPriority};
-  mutable std::atomic_bool shouldYield_{false};
 
   /*
    * Counter indicating how many access to the runtime have been requested.

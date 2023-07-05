@@ -10,12 +10,13 @@
 
 'use strict';
 
-const NativeAnimatedHelper = require('../NativeAnimatedHelper');
+import type {PlatformConfig} from '../AnimatedPlatformConfig';
+
+import ReactNativeFeatureFlags from '../../ReactNative/ReactNativeFeatureFlags';
+import NativeAnimatedHelper from '../NativeAnimatedHelper';
+import invariant from 'invariant';
 
 const NativeAnimatedAPI = NativeAnimatedHelper.API;
-const invariant = require('invariant');
-
-import type {PlatformConfig} from '../AnimatedPlatformConfig';
 
 type ValueListenerCallback = (state: {value: number, ...}) => mixed;
 
@@ -23,12 +24,13 @@ let _uniqueId = 1;
 
 // Note(vjeux): this would be better as an interface but flow doesn't
 // support them yet
-class AnimatedNode {
+export default class AnimatedNode {
   _listeners: {[key: string]: ValueListenerCallback, ...};
   _platformConfig: ?PlatformConfig;
   __nativeAnimatedValueListener: ?any;
   __attach(): void {}
   __detach(): void {
+    this.removeAllListeners();
     if (this.__isNative && this.__nativeTag != null) {
       NativeAnimatedHelper.API.dropAnimatedNode(this.__nativeTag);
       this.__nativeTag = undefined;
@@ -40,7 +42,7 @@ class AnimatedNode {
   }
   __addChild(child: AnimatedNode) {}
   __removeChild(child: AnimatedNode) {}
-  __getChildren(): Array<AnimatedNode> {
+  __getChildren(): $ReadOnlyArray<AnimatedNode> {
     return [];
   }
 
@@ -53,7 +55,7 @@ class AnimatedNode {
     this._listeners = {};
   }
 
-  __makeNative(platformConfig: ?PlatformConfig) {
+  __makeNative(platformConfig: ?PlatformConfig): void {
     if (!this.__isNative) {
       throw new Error('This node cannot be made a "native" animated node');
     }
@@ -130,12 +132,12 @@ class AnimatedNode {
           if (data.tag !== this.__getNativeTag()) {
             return;
           }
-          this._onAnimatedValueUpdateReceived(data.value);
+          this.__onAnimatedValueUpdateReceived(data.value);
         },
       );
   }
 
-  _onAnimatedValueUpdateReceived(value: number) {
+  __onAnimatedValueUpdateReceived(value: number) {
     this.__callListeners(value);
   }
 
@@ -182,6 +184,7 @@ class AnimatedNode {
       'This JS animated node type cannot be used as native animated node',
     );
   }
+
   toJSON(): any {
     return this.__getValue();
   }
@@ -193,5 +196,3 @@ class AnimatedNode {
     this._platformConfig = platformConfig;
   }
 }
-
-module.exports = AnimatedNode;

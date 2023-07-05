@@ -9,8 +9,7 @@
 
 using namespace facebook::react;
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
 static inline int32_t bucketOffset(int32_t index) {
   return sizeof(MapBuffer::Header) + sizeof(MapBuffer::Bucket) * index;
@@ -33,11 +32,11 @@ MapBuffer::MapBuffer(std::vector<uint8_t> data) : bytes_(std::move(data)) {
   }
 }
 
-uint32_t MapBuffer::getKeyBucket(Key key) const {
-  uint32_t lo = 0;
-  uint32_t hi = count_ - 1;
+int32_t MapBuffer::getKeyBucket(Key key) const {
+  int32_t lo = 0;
+  int32_t hi = count_ - 1;
   while (lo <= hi) {
-    uint32_t mid = (lo + hi) >> 1;
+    int32_t mid = (lo + hi) >> 1;
 
     Key midVal =
         *reinterpret_cast<Key const *>(bytes_.data() + bucketOffset(mid));
@@ -90,7 +89,7 @@ std::string MapBuffer::getString(Key key) const {
   uint8_t const *stringPtr =
       bytes_.data() + dynamicDataOffset + offset + sizeof(int);
 
-  return std::string(stringPtr, stringPtr + stringLength);
+  return {stringPtr, stringPtr + stringLength};
 }
 
 MapBuffer MapBuffer::getMapBuffer(Key key) const {
@@ -112,7 +111,32 @@ MapBuffer MapBuffer::getMapBuffer(Key key) const {
   return MapBuffer(std::move(value));
 }
 
-uint32_t MapBuffer::size() const {
+std::vector<MapBuffer> MapBuffer::getMapBufferList(MapBuffer::Key key) const {
+  std::vector<MapBuffer> mapBufferList;
+
+  int32_t dynamicDataOffset = getDynamicDataOffset();
+  int32_t offset = getInt(key);
+  int32_t mapBufferListLength = *reinterpret_cast<int32_t const *>(
+      bytes_.data() + dynamicDataOffset + offset);
+  offset = offset + sizeof(uint32_t);
+
+  int32_t curLen = 0;
+  while (curLen < mapBufferListLength) {
+    int32_t mapBufferLength = *reinterpret_cast<int32_t const *>(
+        bytes_.data() + dynamicDataOffset + offset + curLen);
+    curLen = curLen + sizeof(uint32_t);
+    std::vector<uint8_t> value(mapBufferLength);
+    memcpy(
+        value.data(),
+        bytes_.data() + dynamicDataOffset + offset + curLen,
+        mapBufferLength);
+    mapBufferList.emplace_back(std::move(value));
+    curLen = curLen + mapBufferLength;
+  }
+  return mapBufferList;
+}
+
+size_t MapBuffer::size() const {
   return bytes_.size();
 }
 
@@ -124,5 +148,4 @@ uint16_t MapBuffer::count() const {
   return count_;
 }
 
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react

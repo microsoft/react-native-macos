@@ -5,13 +5,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// TODO(macOS GH#774)
+// [macOS]
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#if TARGET_OS_OSX
+
+#import <React/RCTUIKit.h>
 
 #import <React/RCTAssert.h>
 
 #import <objc/runtime.h>
+
+#import <CoreImage/CIFilter.h>
+#import <CoreImage/CIVector.h>
 
 static char RCTGraphicsContextSizeKey;
 
@@ -67,7 +72,9 @@ NSImage *UIGraphicsGetImageFromCurrentImageContext(void)
 		CGImageRef cgImage = CGBitmapContextCreateImage([graphicsContext CGContext]);
 
 		if (cgImage != NULL) {
-			image = [[NSImage alloc] initWithCGImage:cgImage size:[sizeValue sizeValue]];
+			NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
+			image = [[NSImage alloc] initWithSize:[sizeValue sizeValue]];
+			[image addRepresentation:imageRep];
 			CFRelease(cgImage);
 		}
 	}
@@ -131,7 +138,7 @@ NSData *UIImagePNGRepresentation(NSImage *image) {
 NSData *UIImageJPEGRepresentation(NSImage *image, CGFloat compressionQuality) {
   return NSImageDataForFileType(image,
                                 NSBitmapImageFileTypeJPEG,
-                                @{NSImageCompressionFactor: @(1.0)});
+                                @{NSImageCompressionFactor: @(compressionQuality)});
 }
 
 // UIBezierPath
@@ -202,13 +209,13 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
 // UIView
 
 
-@implementation RCTUIView // TODO(macOS ISS#3536887)
+@implementation RCTUIView
 {
 @private
   NSColor *_backgroundColor;
   BOOL _clipsToBounds;
-  BOOL _opaque;
   BOOL _userInteractionEnabled;
+  BOOL _mouseDownCanMoveWindow;
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key
@@ -237,6 +244,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     self.wantsLayer = YES;
     self->_userInteractionEnabled = YES;
     self->_enableFocusRing = YES;
+    self->_mouseDownCanMoveWindow = YES;
   }
   return self;
 }
@@ -282,14 +290,17 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   [self didMoveToWindow];
 }
 
+- (BOOL)mouseDownCanMoveWindow{
+	return _mouseDownCanMoveWindow;
+}
+
+- (void)setMouseDownCanMoveWindow:(BOOL)mouseDownCanMoveWindow{
+	_mouseDownCanMoveWindow = mouseDownCanMoveWindow;
+}
+
 - (BOOL)isFlipped
 {
   return YES;
-}
-
-- (BOOL)isOpaque
-{
-  return _opaque;
 }
 
 - (CGFloat)alpha
@@ -434,12 +445,13 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 // RCTUIScrollView
 
-@implementation RCTUIScrollView // TODO(macOS ISS#3536887)
+@implementation RCTUIScrollView
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
     self.scrollEnabled = YES;
+    self.drawsBackground = NO;
   }
   
   return self;
@@ -592,19 +604,19 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 
 // RCTUISlider
 
-@implementation RCTUISlider {} // [TODO(macOS GH#774)
+@implementation RCTUISlider {}
 
 - (void)setValue:(float)value animated:(__unused BOOL)animated
 {
   self.animator.floatValue = value;
 }
 
-@end  // ]TODO(macOS GH#774)
+@end
 
 
 // RCTUILabel
 
-@implementation RCTUILabel {} // [TODO(macOS GH#774)
+@implementation RCTUILabel {}
 
 - (instancetype)initWithFrame:(NSRect)frameRect
 {
@@ -619,7 +631,7 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
   return self;
 }
 
-@end // ]TODO(macOS GH#774)
+@end
 
 @implementation RCTUISwitch
 
@@ -637,5 +649,198 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 	self.state = on ? NSControlStateValueOn : NSControlStateValueOff;
 }
 
+@end
+
+// RCTUIActivityIndicatorView
+
+@interface RCTUIActivityIndicatorView ()
+@property (nonatomic, readwrite, getter=isAnimating) BOOL animating;
+@end
+
+@implementation RCTUIActivityIndicatorView {}
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+  if ((self = [super initWithFrame:frame])) {
+    self.displayedWhenStopped = NO;
+    self.style = NSProgressIndicatorStyleSpinning;
+  }
+  return self;
+}
+
+- (void)startAnimating
+{
+  // `wantsLayer` gets reset after the animation is stopped. We have to
+  // reset it in order for CALayer filters to take effect.
+  [self setWantsLayer:YES];
+  [self startAnimation:self];
+}
+
+- (void)stopAnimating
+{
+  [self stopAnimation:self];
+}
+
+- (void)startAnimation:(id)sender
+{
+  [super startAnimation:sender];
+  self.animating = YES;
+}
+
+- (void)stopAnimation:(id)sender
+{
+  [super stopAnimation:sender];
+  self.animating = NO;
+}
+
+- (void)setActivityIndicatorViewStyle:(UIActivityIndicatorViewStyle)activityIndicatorViewStyle
+{
+  _activityIndicatorViewStyle = activityIndicatorViewStyle;
+  
+  switch (activityIndicatorViewStyle) {
+    case UIActivityIndicatorViewStyleWhiteLarge:
+      self.controlSize = NSControlSizeRegular;
+      break;
+    case UIActivityIndicatorViewStyleWhite:
+      self.controlSize = NSControlSizeSmall;
+      break;
+    default:
+      break;
+  }
+}
+
+- (void)setColor:(RCTUIColor*)color
+{
+  if (_color != color) {
+    _color = color;
+    [self setNeedsDisplay:YES];
+  }
+}
+
+- (void)updateLayer
+{
+  [super updateLayer];
+  if (_color != nil) {
+    CGFloat r, g, b, a;
+    [[_color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]] getRed:&r green:&g blue:&b alpha:&a];
+
+    CIFilter *colorPoly = [CIFilter filterWithName:@"CIColorPolynomial"];
+    [colorPoly setDefaults];
+    
+    CIVector *redVector = [CIVector vectorWithX:r Y:0 Z:0 W:0];
+    CIVector *greenVector = [CIVector vectorWithX:g Y:0 Z:0 W:0];
+    CIVector *blueVector = [CIVector vectorWithX:b Y:0 Z:0 W:0];
+    [colorPoly setValue:redVector forKey:@"inputRedCoefficients"];
+    [colorPoly setValue:greenVector forKey:@"inputGreenCoefficients"];
+    [colorPoly setValue:blueVector forKey:@"inputBlueCoefficients"];
+    
+    [[self layer] setFilters:@[colorPoly]];
+  } else {
+    [[self layer] setFilters:nil];
+  }
+}
+
+- (void)setHidesWhenStopped:(BOOL)hidesWhenStopped
+{
+  self.displayedWhenStopped = !hidesWhenStopped;
+}
+
+- (BOOL)hidesWhenStopped
+{
+  return !self.displayedWhenStopped;
+}
+
+- (void)setHidden:(BOOL)hidden
+{
+  if ([self hidesWhenStopped] && ![self isAnimating]) {
+    [super setHidden:YES];
+  } else {
+    [super setHidden:hidden];
+  }
+}
 
 @end
+
+// RCTUIImageView
+
+@implementation RCTUIImageView
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+  if (self = [super initWithFrame:frame]) {
+    [self setLayer:[[CALayer alloc] init]];
+    [self setWantsLayer:YES];
+  }
+  
+  return self;
+}
+
+- (BOOL)clipsToBounds
+{
+  return [[self layer] masksToBounds];
+}
+
+- (void)setClipsToBounds:(BOOL)clipsToBounds
+{
+  [[self layer] setMasksToBounds:clipsToBounds];
+}
+
+- (void)setContentMode:(UIViewContentMode)contentMode
+{
+  _contentMode = contentMode;
+  
+  CALayer *layer = [self layer];
+  switch (contentMode) {
+    case UIViewContentModeScaleAspectFill:
+      [layer setContentsGravity:kCAGravityResizeAspectFill];
+      break;
+      
+    case UIViewContentModeScaleAspectFit:
+      [layer setContentsGravity:kCAGravityResizeAspect];
+      break;
+      
+    case UIViewContentModeScaleToFill:
+      [layer setContentsGravity:kCAGravityResize];
+      break;
+      
+    case UIViewContentModeCenter:
+      [layer setContentsGravity:kCAGravityCenter];
+      break;
+    
+    default:
+      break;
+  }
+}
+
+- (UIImage *)image
+{
+  return [[self layer] contents];
+}
+
+- (void)setImage:(UIImage *)image
+{
+  CALayer *layer = [self layer];
+  
+  if ([layer contents] != image || [layer backgroundColor] != nil) {
+    if (_tintColor != nil) {
+      image = [image copy];
+      [image lockFocus];
+      [_tintColor set];
+      NSRect imageRect = { NSZeroPoint, image.size };
+      NSRectFillUsingOperation(imageRect, NSCompositingOperationSourceIn);
+      [image unlockFocus];
+    }
+    
+    if (image != nil && [image resizingMode] == NSImageResizingModeTile) {
+      [layer setContents:nil];
+      [layer setBackgroundColor:[NSColor colorWithPatternImage:image].CGColor];
+    } else {
+      [layer setContents:image];
+      [layer setBackgroundColor:nil];
+    }
+  }
+}
+
+@end
+
+#endif

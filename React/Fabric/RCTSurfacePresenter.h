@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTUIKit.h> // TODO(macOS GH#774)
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <React/RCTPrimitives.h>
 #import <React/RCTSurfacePresenterStub.h>
@@ -28,7 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCTSurfacePresenter : NSObject
 
 - (instancetype)initWithContextContainer:(facebook::react::ContextContainer::Shared)contextContainer
-                         runtimeExecutor:(facebook::react::RuntimeExecutor)runtimeExecutor;
+                         runtimeExecutor:(facebook::react::RuntimeExecutor)runtimeExecutor
+              bridgelessBindingsExecutor:(std::optional<facebook::react::RuntimeExecutor>)bridgelessBindingsExecutor;
 
 @property (nonatomic) facebook::react::ContextContainer::Shared contextContainer;
 @property (nonatomic) facebook::react::RuntimeExecutor runtimeExecutor;
@@ -78,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*
  * Please do not use this, this will be deleted soon.
  */
-- (nullable RCTUIView *)findComponentViewWithTag_DO_NOT_USE_DEPRECATED:(NSInteger)tag; // TODO(macOS GH#774)
+- (nullable RCTUIView *)findComponentViewWithTag_DO_NOT_USE_DEPRECATED:(NSInteger)tag; // [macOS]
 
 @end
 

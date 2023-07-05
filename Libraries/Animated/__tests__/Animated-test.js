@@ -5,12 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @emails oncall+react_native
+ * @oncall react_native
  */
 
-import AnimatedProps from '../nodes/AnimatedProps';
-import TestRenderer from 'react-test-renderer';
 import * as React from 'react';
+
+const {PlatformColor} = require('../../StyleSheet/PlatformColorValueTypes');
+let Animated = require('../Animated').default;
+const AnimatedProps = require('../nodes/AnimatedProps').default;
+const TestRenderer = require('react-test-renderer');
 
 jest.mock('../../BatchedBridge/NativeModules', () => ({
   NativeAnimatedModule: {},
@@ -21,8 +24,6 @@ jest.mock('../../BatchedBridge/NativeModules', () => ({
   },
 }));
 
-let Animated = require('../Animated');
-
 describe('Animated tests', () => {
   beforeEach(() => {
     jest.resetModules();
@@ -31,6 +32,10 @@ describe('Animated tests', () => {
   describe('Animated', () => {
     it('works end to end', () => {
       const anim = new Animated.Value(0);
+      const translateAnim = anim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [100, 200],
+      });
 
       const callback = jest.fn();
 
@@ -41,10 +46,10 @@ describe('Animated tests', () => {
             opacity: anim,
             transform: [
               {
-                translateX: anim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [100, 200],
-                }),
+                translate: [translateAnim, translateAnim],
+              },
+              {
+                translateX: translateAnim,
               },
               {scale: anim},
             ],
@@ -61,7 +66,7 @@ describe('Animated tests', () => {
         style: {
           backgroundColor: 'red',
           opacity: 0,
-          transform: [{translateX: 100}, {scale: 0}],
+          transform: [{translate: [100, 100]}, {translateX: 100}, {scale: 0}],
           shadowOffset: {
             width: 0,
             height: 0,
@@ -83,7 +88,7 @@ describe('Animated tests', () => {
         style: {
           backgroundColor: 'red',
           opacity: 0.5,
-          transform: [{translateX: 150}, {scale: 0.5}],
+          transform: [{translate: [150, 150]}, {translateX: 150}, {scale: 0.5}],
           shadowOffset: {
             width: 0.5,
             height: 0.5,
@@ -171,11 +176,13 @@ describe('Animated tests', () => {
 
       expect(testRenderer.toJSON().props.style.opacity).toEqual(0);
 
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 0,
-        useNativeDriver: false,
-      }).start();
+      TestRenderer.act(() => {
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 0,
+          useNativeDriver: false,
+        }).start();
+      });
 
       expect(testRenderer.toJSON().props.style.opacity).toEqual(1);
     });
@@ -692,7 +699,7 @@ describe('Animated tests', () => {
 
     beforeEach(() => {
       jest.mock('../../Interaction/InteractionManager');
-      Animated = require('../Animated');
+      Animated = require('../Animated').default;
       InteractionManager = require('../../Interaction/InteractionManager');
     });
 
@@ -1033,10 +1040,10 @@ describe('Animated tests', () => {
       });
 
       node.__attach();
-      expect(callback.mock.calls.length).toBe(0);
+      expect(callback).not.toHaveBeenCalled();
 
       color.setValue({r: 11, g: 22, b: 33, a: 0.5});
-      expect(callback.mock.calls.length).toBe(4);
+      expect(callback).toHaveBeenCalledTimes(5);
       expect(node.__getValue()).toEqual({
         style: {
           backgroundColor: 'rgba(11, 22, 33, 0.5)',
@@ -1046,7 +1053,7 @@ describe('Animated tests', () => {
 
       node.__detach();
       color.setValue({r: 255, g: 0, b: 0, a: 1.0});
-      expect(callback.mock.calls.length).toBe(4);
+      expect(callback).toHaveBeenCalledTimes(5);
     });
 
     it('should track colors', () => {
@@ -1081,6 +1088,34 @@ describe('Animated tests', () => {
       color1.setValue({r: 44, g: 55, b: 66, a: 0.0});
       jest.runAllTimers();
       expect(color2.__getValue()).toEqual('rgba(44, 55, 66, 0)');
+    });
+
+    it('should provide updates for native colors', () => {
+      const color = new Animated.Color('red');
+
+      const listener = jest.fn();
+      color.addListener(listener);
+
+      const callback = jest.fn(() => {
+        console.log('callback', color.__getValue());
+      });
+      const node = new AnimatedProps({style: {color}}, callback);
+      node.__attach();
+
+      color.setValue('blue');
+      expect(callback).toHaveBeenCalledTimes(5);
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(listener).toHaveBeenCalledWith({value: 'rgba(0, 0, 255, 1)'});
+      expect(color.__getValue()).toEqual('rgba(0, 0, 255, 1)');
+
+      callback.mockClear();
+      listener.mockClear();
+
+      color.setValue(PlatformColor('bar'));
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(listener).toHaveBeenCalledWith({value: PlatformColor('bar')});
+      expect(color.__getValue()).toEqual(PlatformColor('bar'));
     });
   });
 });

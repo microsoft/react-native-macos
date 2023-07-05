@@ -17,8 +17,11 @@ else
 end
 
 folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -Wno-comma -Wno-shorten-64-to-32'
-folly_version = '2021.06.28.00-v2'
+folly_version = '2021.07.22.00'
+socket_rocket_version = '0.6.0'
 boost_compiler_flags = '-Wno-documentation'
+
+use_hermes = ENV['USE_HERMES'] == '1'
 
 header_subspecs = {
   'CoreModulesHeaders'          => 'React/CoreModules/**/*.h',
@@ -34,20 +37,40 @@ header_subspecs = {
   'RCTVibrationHeaders'         => 'Libraries/Vibration/*.h',
 }
 
+header_search_paths = [
+  "$(PODS_TARGET_SRCROOT)/ReactCommon",
+  "$(PODS_ROOT)/boost",
+  "$(PODS_ROOT)/DoubleConversion",
+  "$(PODS_ROOT)/RCT-Folly",
+  "${PODS_ROOT}/Headers/Public/FlipperKit",
+  "$(PODS_ROOT)/Headers/Public/ReactCommon",
+  "$(PODS_ROOT)/Headers/Public/React-RCTFabric"
+].concat(use_hermes ? [
+  "$(PODS_ROOT)/Headers/Public/React-hermes",
+  "$(PODS_ROOT)/Headers/Public/hermes-engine"
+] : []).map{|p| "\"#{p}\""}.join(" ")
+
 Pod::Spec.new do |s|
   s.name                   = "React-Core"
   s.version                = version
   s.summary                = "The core of React Native."
   s.homepage               = "https://reactnative.dev/"
   s.license                = package["license"]
-  s.author                 = "Facebook, Inc. and its affiliates"
-  s.platforms              = { :ios => "11.0", :osx => "10.15" } # TODO(macOS GH#774)
+  s.author                 = "Meta Platforms, Inc. and its affiliates"
+  s.platforms              = { :ios => "12.4", :osx => "10.15" } # [macOS]
   s.source                 = source
   s.resource_bundle        = { "AccessibilityResources" => ["React/AccessibilityResources/*.lproj"]}
   s.compiler_flags         = folly_compiler_flags + ' ' + boost_compiler_flags
   s.header_dir             = "React"
   s.framework              = "JavaScriptCore"
-  s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/DoubleConversion\" \"$(PODS_ROOT)/RCT-Folly\" \"${PODS_ROOT}/Headers/Public/React-hermes\" \"${PODS_ROOT}/Headers/Public/hermes-engine\" \"${PODS_ROOT}/Headers/Public/FlipperKit\" \"$(PODS_ROOT)/Headers/Public/ReactCommon\" \"$(PODS_ROOT)/Headers/Public/React-RCTFabric\"", "DEFINES_MODULE" => "YES" }
+  s.pod_target_xcconfig    = {
+                               "HEADER_SEARCH_PATHS" => header_search_paths,
+                               "DEFINES_MODULE" => "YES",
+                               "GCC_PREPROCESSOR_DEFINITIONS" => "RCT_METRO_PORT=${RCT_METRO_PORT}",
+                               "CLANG_CXX_LANGUAGE_STANDARD" => "c++17",
+                             }.merge!(use_hermes ? {
+                               "FRAMEWORK_SEARCH_PATHS" => "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-hermes\""
+                             } : {})
   s.user_target_xcconfig   = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/Headers/Private/React-Core\""}
   s.default_subspec        = "Default"
 
@@ -58,21 +81,7 @@ Pod::Spec.new do |s|
                                 "React/Fabric/**/*",
                                 "React/FBReactNativeSpec/**/*",
                                 "React/Tests/**/*",
-                                "React/CxxBridge/HermesExecutorFactory.*" # TODO(macOS GH#214)
-
-    # [TODO(macOS GH#774)
-    ss.ios.exclude_files      = "**/macOS/*",
-                                "React/Inspector/**/*" # TODO(macOS GH#214) don't exclude on macOS for hermes support
-    ss.osx.exclude_files      = "React/Modules/RCTRedBoxExtraDataViewController.{h,m}",
-                                "React/Modules/RCTAccessibilityManager.m",
-                                "React/Profiler/{RCTFPSGraph,RCTPerfMonitor}.*",
-                                "React/Profiler/RCTProfileTrampoline-{arm,i386}.S",
-                                "React/Base/RCTKeyCommands.*",
-                                "React/Base/RCTTV*.*",
-                                "React/Views/{RCTModal*,RCTMasked*,RCTTV*,RCTWrapperViewController}.*",
-                                "React/Views/RefreshControl/*",
-                                "React/Views/SafeAreaView/*"
-    # ]TODO(macOS GH#774)
+                                "React/Inspector/**/*"
     ss.private_header_files   = "React/Cxx*/*.h"
   end
 
@@ -104,6 +113,7 @@ Pod::Spec.new do |s|
   s.dependency "React-perflogger", version
   s.dependency "React-jsi", version
   s.dependency "React-jsiexecutor", version
+  s.dependency "SocketRocket", socket_rocket_version
   s.dependency "Yoga"
   s.dependency "glog"
 end

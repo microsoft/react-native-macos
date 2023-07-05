@@ -6,6 +6,9 @@
  */
 
 #pragma once
+
+#ifdef __cplusplus
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -37,10 +40,10 @@ inline bool isUndefined(double value) {
   return std::isnan(value);
 }
 
+void throwLogicalErrorWithMessage(const char* message);
+
 } // namespace yoga
 } // namespace facebook
-
-using namespace facebook;
 
 extern const std::array<YGEdge, 4> trailing;
 extern const std::array<YGEdge, 4> leading;
@@ -66,6 +69,8 @@ struct YGCachedMeasurement {
         computedHeight(-1) {}
 
   bool operator==(YGCachedMeasurement measurement) const {
+    using namespace facebook;
+
     bool isEqual = widthMeasureMode == measurement.widthMeasureMode &&
         heightMeasureMode == measurement.heightMeasureMode;
 
@@ -105,6 +110,8 @@ private:
 
 public:
   Values() = default;
+  Values(const Values& other) = default;
+
   explicit Values(const YGValue& defaultValue) noexcept {
     values_.fill(defaultValue);
   }
@@ -138,7 +145,6 @@ public:
 
   Values& operator=(const Values& other) = default;
 };
-
 } // namespace detail
 } // namespace yoga
 } // namespace facebook
@@ -148,3 +154,5 @@ static const float kDefaultFlexShrink = 0.0f;
 static const float kWebDefaultFlexShrink = 1.0f;
 
 extern bool YGFloatsEqual(const float a, const float b);
+
+#endif
