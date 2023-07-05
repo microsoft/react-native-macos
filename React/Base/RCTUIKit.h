@@ -395,8 +395,8 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 - (void)setNeedsDisplay;
 
-// An override of an undocumented API that controls the layer's masksToBounds property
-@property (nonatomic) BOOL clipsToBounds;
+// FUTURE: When Xcode 14 is no longer supported (CI is building with Xcode 15), we can remove this override since it's now declared on NSView
+@property BOOL clipsToBounds;
 @property (nonatomic, copy) NSColor *backgroundColor;
 @property (nonatomic) CGAffineTransform transform;
 
