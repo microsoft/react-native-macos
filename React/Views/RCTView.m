@@ -1725,7 +1725,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 // Send all keyboard events to JS. Suppress native bubbling if keyEvent matches keyDownEvents.
 // Returns whether native bubbling should be suppressed (i.e: don't call super).
 - (BOOL)handleKeyboardEventModern:(NSEvent*)event {
-    RCTViewKeyboardEvent *keyEvent = [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
+    RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
 
     // To ensure we only dispatch one keyboard event to JS, only dispatch it if we are the first responder.
     BOOL isFirstResponder = self == [[self window] firstResponder];
@@ -1734,11 +1734,11 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
     }
 
     BOOL keyDown = event.type == NSEventTypeKeyDown;
-    bool handledKeyEvents = keyDown ? [self keyDownEvents] : [self keyUpEvents];
+    NSArray<RCTHandledKeyboardEvent *> *handledKeyEvents = keyDown ? [self keyDownEvents] : [self keyUpEvents];
 
     BOOL shouldSuppressNativeHandling = NO;
     for (RCTHandledKeyboardEvent *handledEvent in handledKeyEvents) {
-      if ([keyEvent matches:handledEvent]) {
+		if ([RCTViewKeyboardEvent event:event matches:handledEvent]) {
         shouldSuppressNativeHandling = YES;
         break;
       }
@@ -1746,34 +1746,31 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
     return shouldSuppressNativeHandling;
 }
 
-// If validKeysUp or validKeysDown is defined, use the legacy keyboard event handling behavior
-- (void)shouldUseLegacyKeyboardBehaviorForEvent:(NSEvent*)event  {
-  BOOL keyDown = event.type == NSEventTypeKeyDown;
-  NSArray<NSString *> *validKeys = keyDown ? [self validKeysDown] : [self validKeysUp];
-  return (validKeys == nil);
-}
-
 - (void)keyDown:(NSEvent *)event {
-  BOOL shouldUseLegacyBehavior = [self shouldUseLegacyKeyboardBehaviorForEvent:event];
+  BOOL shouldUseKeyDownEvents = RCTGetEnableCrossPlatformKeyboardEventAPI();
 
-  SEL handleKeyboardEvent = shouldUseLegacyBehavior ?
-    @selector(handleKeyboardEventLegacy) : 
-    @selector(handleKeyboardEventModern);
-
-  if (![self handleKeyboardEventSelector:event]) {
-    [super keyDown:event];
+  if (shouldUseKeyDownEvents) {
+    if (![self handleKeyboardEventModern:event]) {
+      [super keyDown:event];
+    }
+  } else {
+    if (![self handleKeyboardEventLegacy:event]) {
+      [super keyDown:event];
+    }
   }
 }
 
 - (void)keyUp:(NSEvent *)event {
-  BOOL shouldUseLegacyBehavior = [self shouldUseLegacyKeyboardBehaviorForEvent:event];
+  BOOL shouldUseKeyUpEvents = RCTGetEnableCrossPlatformKeyboardEventAPI();
 
-  SEL handleKeyboardEvent = shouldUseLegacyBehavior ?
-    @selector(handleKeyboardEventLegacy) : 
-    @selector(handleKeyboardEventModern);
-
-  if (![self handleKeyboardEvent:event]) {
-    [super keyUp:event];
+  if (shouldUseKeyUpEvents) {
+    if (![self handleKeyboardEventModern:event]) {
+      [super keyDown:event];
+      }
+  } else {
+    if (![self handleKeyboardEventLegacy:event]) {
+      [super keyDown:event];
+    }
   }
 }
 #endif // macOS]

@@ -27,7 +27,7 @@
 + (instancetype)keyEventFromEvent:(NSEvent *)event reactTag:(NSNumber *)reactTag;
 + (NSDictionary *)bodyFromEvent:(NSEvent *)event;
 + (NSString *)keyFromEvent:(NSEvent *)event;
-+ (BOOL)matches:(RCTHandledKeyboardEvent *)handledEvent;
++ (BOOL)event:(NSEvent *)event matches:(RCTHandledKeyboardEvent *)handledEvent;
 
 
 @end

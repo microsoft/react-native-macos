@@ -15,8 +15,6 @@ import TextAncestor from '../../Text/TextAncestor';
 import {getAccessibilityRoleFromRole} from '../../Utilities/AcessibilityMapping';
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
-import invariant from 'invariant'; // [macOS]
-import type {KeyEvent} from '../../Types/CoreEventTypes'; // [macOS]
 
 export type Props = ViewProps;
 
@@ -60,12 +58,6 @@ const View: React.AbstractComponent<
       pointerEvents,
       role,
       tabIndex,
-      // [macOS
-      onKeyDown,
-      onKeyUp,
-      validKeysDown,
-      validKeysUp,
-      // macOS]
       ...otherProps
     }: ViewProps,
     forwardedRef,
@@ -111,36 +103,6 @@ const View: React.AbstractComponent<
 
     const newPointerEvents = style?.pointerEvents || pointerEvents;
 
-    // [macOS
-    invariant(
-      // $FlowFixMe Wanting to catch untyped usages
-      validKeysDown === undefined,
-      'Support for the "acceptsKeyboardFocus" property has been deprecated in favor of "keyDownEvents"',
-    );
-  
-    invariant(
-      // $FlowFixMe Wanting to catch untyped usages
-      validKeysUp === undefined,
-      'Support for the "acceptsKeyboardFocus" property has been removed in favor of "keyUpEvents"',
-    );
-  
-    // To support the deprecated validKeysDown prop, suppress bubbling if it is defined
-    const onKeyDownWithLegacyBehavior = (e: KeyEvent) => {
-      if (validKeysDown) {
-        e.stopPropogation();
-      }
-      onKeyDown?.();
-    };
-  
-    // To support the deprecated validKeysUp prop, suppress bubbling if it is defined
-    const onKeyUpWithLegacyBehavior = (e: KeyEvent) => {
-      if (validKeysUp) {
-        e.stopPropogation();
-      }
-      onKeyUp?.();
-    };
-    // macOS]
-
     return (
       <TextAncestor.Provider value={false}>
         <ViewNativeComponent
@@ -168,10 +130,6 @@ const View: React.AbstractComponent<
           style={style}
           pointerEvents={newPointerEvents}
           ref={forwardedRef}
-          // [macOS
-          {...(onKeyDown && {keyDown: onKeyDownWithLegacyBehavior})}
-          {...(onKeyUp && {keyUp: onKeyUpWithLegacyBehavior})}
-          // macOS]
         />
       </TextAncestor.Provider>
     );

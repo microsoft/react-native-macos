@@ -11,6 +11,7 @@
 #import <React/RCTBorderStyle.h>
 #import <React/RCTComponent.h>
 #import <React/RCTEventDispatcherProtocol.h> // [macOS]
+#import <React/RCTViewKeyboardEvent.h> // [macOS]
 #import <React/RCTPointerEvents.h>
 
 #if TARGET_OS_OSX // [macOS
@@ -165,8 +166,8 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) RCTBubblingEventBlock onKeyUp;
 @property (nonatomic, copy) NSArray<NSString *> *validKeysDown;
 @property (nonatomic, copy) NSArray<NSString *> *validKeysUp;
-@property (nonatomic, copy) NSArray<RCTHandledKeyboardEvent> *keyDownEvents;
-@property (nonatomic, copy) NSArray<RCTHandledKeyboardEvent> *keyUpEvents;
+@property (nonatomic, copy) NSArray<RCTHandledKeyboardEvent *> *keyDownEvents;
+@property (nonatomic, copy) NSArray<RCTHandledKeyboardEvent *> *keyUpEvents;
 
 // Shadow Properties
 @property (nonatomic, strong) NSColor *shadowColor;

@@ -15,9 +15,22 @@ import type {PartialViewConfigWithoutName} from './PlatformBaseViewConfig';
 /* $FlowFixMe allow macOS to share iOS file */
 import PlatformBaseViewConfigIos from './BaseViewConfig.ios';
 import {ConditionallyIgnoredEventHandlers} from './ViewConfigIgnore';
+import ReactNativeFeatureFlags from '../ReactNative/ReactNativeFeatureFlags';
+
+const keyboardConfig = {
+  topKeyUp: {
+    registrationName: 'onKeyUp',
+  },
+  topKeyDown: {
+    registrationName: 'onKeyDown',
+  },
+}
 
 const bubblingEventTypes = {
   ...PlatformBaseViewConfigIos.bubblingEventTypes,
+  ...(ReactNativeFeatureFlags.enableCrossPlatformKeyboardEventAPI() && {
+    keyboardConfig,
+  }),
 };
 
 const directEventTypes = {
@@ -31,18 +44,15 @@ const directEventTypes = {
   topDrop: {
     registrationName: 'onDrop',
   },
-  topKeyUp: {
-    registrationName: 'onKeyUp',
-  },
-  topKeyDown: {
-    registrationName: 'onKeyDown',
-  },
   topMouseEnter: {
     registrationName: 'onMouseEnter',
   },
   topMouseLeave: {
     registrationName: 'onMouseLeave',
   },
+  ...(!ReactNativeFeatureFlags.enableCrossPlatformKeyboardEventAPI() && {
+    keyboardConfig,
+  }),
 };
 
 const validAttributesForNonEventProps = {

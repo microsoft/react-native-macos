@@ -1207,7 +1207,7 @@ export default class VirtualizedList extends StateSafePureComponent<
     const keyboardNavigationProps = {
       focusable: true,
       onKeyDown: this._handleKeyDown,
-      keyDownEvents: __keyDownEvents,
+      keyDownEvents: _keyDownEvents,
     };
 
     // macOS]

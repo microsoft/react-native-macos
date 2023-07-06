@@ -9,12 +9,15 @@
 
 #import "RCTViewKeyboardEvent.h"
 #import <React/RCTAssert.h>
+#import <React/RCTConvert.h>
 
-#if TARGET_OS_OSX // TODO(macOS GH#774)
+#if TARGET_OS_OSX
+
+@implementation RCTHandledKeyboardEvent
+@end
 
 @implementation RCTViewKeyboardEvent
 
-#if TARGET_OS_OSX 
 + (NSDictionary *)bodyFromEvent:(NSEvent *)event
 {
   NSString *key = [self keyFromEvent:event];
@@ -83,16 +86,18 @@
                                body:[self bodyFromEvent:event]];
 }
 
-+ (BOOL)matches:(RCTHandledKeyboardEvent *)event
++ (BOOL)event:(NSEvent *)event matches:(RCTHandledKeyboardEvent *)handledEvent
 {
-    if ([[self key] isEqualToString:[event key]] &&
-        [self capsLockKey] == [event capsLockKey] &&
-        [self shiftKey] == [event shiftKey] &&
-        [self ctrlKey] == [event ctrlKey] &&
-        [self altKey] == [event altKey] &&
-        [self metaKey] == [event metaKey] &&
-        [self helpKey] == [event helpKey] &&
-        [self functionKey] == [event functionKey])
+	NSDictionary *body = [self bodyFromEvent:event];
+	
+    if ([body[@"key"] isEqualToString:[handledEvent key]] &&
+        ((BOOL)body[@"capsLockKey"]) == [handledEvent capsLockKey] &&
+        ((BOOL)body[@"shiftKey"]) == [handledEvent shiftKey] &&
+        ((BOOL)body[@"ctrlKey"]) == [handledEvent ctrlKey] &&
+        ((BOOL)body[@"altKey"]) == [handledEvent altKey] &&
+        ((BOOL)body[@"metaKey"]) == [handledEvent metaKey] &&
+        ((BOOL)body[@"helpKey"]) == [handledEvent helpKey] &&
+        ((BOOL)body[@"functionKey"]) == [handledEvent functionKey])
     {
         return YES;
     }
@@ -126,4 +131,4 @@
 
 @end
 
-#endif // TODO(macOS GH#774)
+#endif // TARGET_OS_OSX
