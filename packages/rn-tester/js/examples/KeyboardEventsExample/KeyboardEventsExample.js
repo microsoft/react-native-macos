@@ -144,7 +144,7 @@ function KeyEventExample(): React.Node {
                     validKeysDown={[
                       'ArrowRight',
                       'ArrowDown',
-                      {key: 'Enter', ctrl: true},
+                      {key: 'Enter', ctrlKey: true},
                     ]}
                     onKeyDown={handleKeyDown}
                     validKeysUp={['Escape', 'Enter']}
@@ -159,7 +159,7 @@ function KeyEventExample(): React.Node {
                     validKeysDown={[
                       'ArrowRight',
                       'ArrowDown',
-                      {key: 'Enter', ctrl: true},
+                      {key: 'Enter', ctrlKey: true},
                     ]}
                     onKeyDown={handleKeyDown}
                     validKeysUp={['Escape', 'Enter']}

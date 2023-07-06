@@ -18,7 +18,7 @@
 
 + (NSArray<NSString *> *)validModifiers {
   // keep in sync with actual properties and RCTViewKeyboardEvent
-  return @[@"capsLock", @"shift", @"ctrl", @"alt", @"meta", @"numericPad", @"help", @"function"];
+  return @[@"altKey", @"ctrlKey", @"metaKey", @"shiftKey"];
 }
 
 + (BOOL)event:(NSEvent *)event matchesFilter:(NSArray<RCTHandledKey *> *)filter {
@@ -57,32 +57,37 @@
   }
 
   NSDictionary *body = [RCTViewKeyboardEvent bodyFromEvent:event];
-  if (![body[@"key"] isEqualToString:self.key]) {
+  NSString *key = body[@"key"];
+  if (key == nil) {
+    RCTFatal(RCTErrorWithMessage(@"Event body has missing value for 'key'"));
+    return NO;
+  }
+
+  if (![key isEqualToString:self.key]) {
     return NO;
   }
 
   NSArray<NSString *> *modifiers = [RCTHandledKey validModifiers];
   for (NSString *modifier in modifiers) {
-    NSString *modifierKey = [modifier stringByAppendingString:@"Key"];
     NSNumber *myValue = [self valueForKey:modifier];
 
     if (myValue == nil) {
 		continue;
 	}
 
-	NSNumber *eventValue = (NSNumber *)body[modifierKey];
+	NSNumber *eventValue = (NSNumber *)body[modifier];
 	if (eventValue == nil) {
-		RCTFatal(RCTErrorWithMessage([NSString stringWithFormat:@"Event body has missing value for %@", modifierKey]));
+		RCTFatal(RCTErrorWithMessage([NSString stringWithFormat:@"Event body has missing value for '%@'", modifier]));
 		return NO;
 	}
 
 	if (![eventValue isKindOfClass:[NSNumber class]]) {
-		RCTFatal(RCTErrorWithMessage([NSString stringWithFormat:@"Event body has unexpected value of class %@ for %@",
-			NSStringFromClass(object_getClass(eventValue)), modifierKey]));
+		RCTFatal(RCTErrorWithMessage([NSString stringWithFormat:@"Event body has unexpected value of class '%@' for '%@'",
+			NSStringFromClass(object_getClass(eventValue)), modifier]));
 		return NO;
     }
 
-	if (![myValue isEqualToNumber:body[modifierKey]]) {
+	if (![myValue isEqualToNumber:body[modifier]]) {
 		return NO;
 	}
   }
@@ -113,7 +118,7 @@
     for (NSString *key in modifiers) {
       id value = dict[key];
       if (value == nil) {
-        continue;
+        value = @NO;	// assume NO -- instead of nil i.e. "don't care" unlike the string case above.
 	  }
 
       if (![value isKindOfClass:[NSNumber class]]) {

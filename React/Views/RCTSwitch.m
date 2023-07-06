@@ -11,14 +11,6 @@
 
 @implementation RCTSwitch
 
-// [macOS
-- (void)setOn:(BOOL)on
-{
-  _wasOn = on;
-  [super setOn:on];
-}
-// macOS]
-
 - (void)setOn:(BOOL)on animated:(BOOL)animated
 {
   _wasOn = on;

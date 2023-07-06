@@ -12,6 +12,7 @@ import type {
   BlurEvent,
   // [macOS
   FocusEvent,
+  KeyEvent,
   LayoutEvent,
   MouseEvent,
   PressEvent,
@@ -25,7 +26,7 @@ import type {
   AccessibilityState,
   AccessibilityValue,
 } from '../View/ViewAccessibility';
-import type {KeyboardEventProps} from '../View/ViewPropTypes'; // [macOS]
+import type {HandledKeyboardEvent} from '../View/ViewPropTypes'; // [macOS]
 
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
@@ -174,7 +175,38 @@ type Props = $ReadOnly<{|
    */
   onBlur?: ?(event: BlurEvent) => void,
 
-  ...KeyboardEventProps, // [macOS]
+  /**
+   * Called after a key down event is detected.
+   */
+  onKeyDown?: ?(event: KeyEvent) => void,
+
+  /**
+   * Called after a key up event is detected.
+   */
+  onKeyUp?: ?(event: KeyEvent) => void,
+
+  /**
+   * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
+   * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
+   * are still removed from the event queue, but the others are not.
+   *
+   * @platform macos
+   */
+  passthroughAllKeyEvents?: ?boolean,
+
+  /**
+   * Array of keys to receive key down events for. These events are always removed from the system event queue.
+   *
+   * @platform macos
+   */
+  validKeysDown?: ?Array<string | HandledKeyboardEvent>,
+
+  /**
+   * Array of keys to receive key up events for. These events are always removed from the system event queue.
+   *
+   * @platform macos
+   */
+  validKeysUp?: ?Array<string | HandledKeyboardEvent>,
 
   /**
    * Specifies whether the view should receive the mouse down event when the

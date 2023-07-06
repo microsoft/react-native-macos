@@ -17,14 +17,10 @@
 - (BOOL)matchesEvent:(NSEvent *)event;
 
 @property (nonatomic, copy) NSString *key;
-@property (nonatomic, assign) NSNumber *capsLock; // boolean; nil == don't care
-@property (nonatomic, assign) NSNumber *shift; // boolean; nil == don't care
-@property (nonatomic, assign) NSNumber *ctrl; // boolean; nil == don't care
-@property (nonatomic, assign) NSNumber *alt; // boolean; nil == don't care
-@property (nonatomic, assign) NSNumber *meta; // boolean; nil == don't care
-@property (nonatomic, assign) NSNumber *numericPad; // boolean; nil == don't care
-@property (nonatomic, assign) NSNumber *help; // boolean; nil == don't care
-@property (nonatomic, assign) NSNumber *function; // boolean; nil == don't care
+@property (nonatomic, assign) NSNumber *altKey; // boolean; nil == don't care
+@property (nonatomic, assign) NSNumber *ctrlKey; // boolean; nil == don't care
+@property (nonatomic, assign) NSNumber *metaKey; // boolean; nil == don't care
+@property (nonatomic, assign) NSNumber *shiftKey; // boolean; nil == don't care
 
 @end
 

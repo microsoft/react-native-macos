@@ -107,22 +107,16 @@ type DirectEventProps = $ReadOnly<{|
  * "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
  * "Backspace", "Delete", "Home", "End", "PageUp", "PageDown".
  *
- * The rest are modifiers that when absent mean don't care (either state -- true or false --
- * matches), and when present require that modifier state to match. All present modifers must
- * match for the event to pass the filter.
+ * The rest are modifiers that when absent mean false.
  *
  * @platform macos
  */
-export type HandledKey = $ReadOnly<{|
+export type HandledKeyboardEvent = $ReadOnly<{|
+  altKey?: ?boolean,
+  ctrlKey?: ?boolean,
+  metaKey?: ?boolean,
+  shiftKey?: ?boolean,
   key: string,
-  capsLock?: ?boolean,
-  shift?: ?boolean,
-  ctrl?: ?boolean,
-  alt?: ?boolean,
-  meta?: ?boolean,
-  numericPad?: ?boolean,
-  help?: ?boolean,
-  function?: ?boolean,
 |}>;
 
 export type KeyboardEventProps = $ReadOnly<{|
@@ -150,14 +144,14 @@ export type KeyboardEventProps = $ReadOnly<{|
    *
    * @platform macos
    */
-  validKeysDown?: ?Array<string | HandledKey>,
+  validKeysDown?: ?Array<string | HandledKeyboardEvent>,
 
   /**
    * Array of keys to receive key up events for. These events are always removed from the system event queue.
    *
    * @platform macos
    */
-  validKeysUp?: ?Array<string | HandledKey>,
+  validKeysUp?: ?Array<string | HandledKeyboardEvent>,
 |}>;
 // macOS]
 
