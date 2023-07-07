@@ -188,7 +188,7 @@ type Props = $ReadOnly<{|
   /**
    * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
    * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
-   * are still removed from the event queue, but the others are not.
+   * still have their native default behavior prevented, but the others do not.
    *
    * @platform macos
    */
