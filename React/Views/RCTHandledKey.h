@@ -5,9 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#if TARGET_OS_OSX // [macOS
+// [macOS]
+
+#if TARGET_OS_OSX
 #import <React/RCTConvert.h>
 
+// This class is used for specifying key filtering e.g. for -[RCTView validKeysDown] and -[RCTView validKeysUp]
+// Also see RCTViewKeyboardEvent, which is a React representation of an actual NSEvent that is dispatched to JS.
 @interface RCTHandledKey : NSObject
 
 + (BOOL)event:(NSEvent *)event matchesFilter:(NSArray<RCTHandledKey *> *)filter;
@@ -17,10 +21,13 @@
 - (BOOL)matchesEvent:(NSEvent *)event;
 
 @property (nonatomic, copy) NSString *key;
-@property (nonatomic, assign) NSNumber *altKey; // boolean; nil == don't care
-@property (nonatomic, assign) NSNumber *ctrlKey; // boolean; nil == don't care
-@property (nonatomic, assign) NSNumber *metaKey; // boolean; nil == don't care
-@property (nonatomic, assign) NSNumber *shiftKey; // boolean; nil == don't care
+
+// For the following modifiers, nil means we don't care about the presence of the modifier when filtering the key
+// They are still expected to be only boolean when not nil.
+@property (nonatomic, assign) NSNumber *altKey;
+@property (nonatomic, assign) NSNumber *ctrlKey;
+@property (nonatomic, assign) NSNumber *metaKey;
+@property (nonatomic, assign) NSNumber *shiftKey;
 
 @end
 
@@ -30,4 +37,4 @@
 
 @end
 
-#endif // macOS]
+#endif

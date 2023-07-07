@@ -1723,7 +1723,7 @@ NSMutableDictionary<NSNumber *, NSNumber *> *GetEventDispatchStateDictionary(NSE
     ];
   }
 
-  // If a view specifies a key, it will always be removed from the system event queue (i.e. "handled")
+  // If a view specifies a key, it will always be removed from the responder chain (i.e. "handled")
   *shouldBlock = [RCTHandledKey event:event matchesFilter:validKeys];
 
   // If an event isn't being removed from the queue, but was requested to "passthrough" by a view,

@@ -195,14 +195,14 @@ type Props = $ReadOnly<{|
   passthroughAllKeyEvents?: ?boolean,
 
   /**
-   * Array of keys to receive key down events for. These events are always removed from the system event queue.
+   * Array of keys to receive key down events for. These events have their default native behavior prevented.
    *
    * @platform macos
    */
   validKeysDown?: ?Array<string | HandledKeyboardEvent>,
 
   /**
-   * Array of keys to receive key up events for. These events are always removed from the system event queue.
+   * Array of keys to receive key up events for. These events have their default native behavior prevented.
    *
    * @platform macos
    */

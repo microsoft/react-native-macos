@@ -21,7 +21,7 @@
 #import <React/RCTTextSelection.h>
 #import <React/RCTUITextView.h> // [macOS]
 #import "../RCTTextUIKit.h" // [macOS]
-#import "RCTHandledKey.h" // [macOS]
+#import <React/RCTHandledKey.h> // [macOS]
 
 @implementation RCTBaseTextInputView {
   __weak RCTBridge *_bridge;

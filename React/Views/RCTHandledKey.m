@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+// [macOS]
+
 #import "objc/runtime.h"
 #import <React/RCTAssert.h>
 #import <React/RCTUtils.h>
@@ -12,7 +14,7 @@
 #import <RCTHandledKey.h>
 #import <RCTViewKeyboardEvent.h>
 
-#if TARGET_OS_OSX // [macOS
+#if TARGET_OS_OSX
 
 @implementation RCTHandledKey
 
@@ -101,10 +103,12 @@
 
 + (RCTHandledKey *)RCTHandledKey:(id)json
 {
+  // legacy way of specifying validKeysDown and validKeysUp -- here we ignore the modifiers when comparing to the NSEvent
   if ([json isKindOfClass:[NSString class]]) {
     return [[RCTHandledKey alloc] initWithKey:(NSString *)json];
   }
 
+  // modern way of specifying validKeys and validKeysUp -- here we assume missing modifiers to mean false\NO
   if ([json isKindOfClass:[NSDictionary class]]) {
     NSDictionary *dict = (NSDictionary *)json;
     NSString *key = dict[@"key"];
@@ -138,4 +142,4 @@
 
 @end
 
-#endif // macOS]
+#endif
