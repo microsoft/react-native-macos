@@ -26,6 +26,10 @@
 #import "RCTViewKeyboardEvent.h"
 #if TARGET_OS_OSX // [macOS
 #import "RCTTextView.h"
+#import <React/RCTSinglelineTextInputView.h>
+#import <React/RCTMultilineTextInputView.h>
+#import <React/RCTUITextField.h>
+
 #endif // macOS]
 
 RCT_MOCK_DEF(RCTView, RCTContentInsets);
@@ -1763,6 +1767,12 @@ NSMutableDictionary<NSNumber *, NSNumber *> *GetEventDispatchStateDictionary(NSE
 
   // To ensure we only dispatch one keyboard event to JS, only dispatch it if we are the first responder.
   BOOL isFirstResponder = self == [[self window] firstResponder];
+  if ([self isKindOfClass:[RCTSinglelineTextInputView class]]) {
+    isFirstResponder = [(RCTUITextField *)[(RCTSinglelineTextInputView *)self backedTextInputView] currentEditor] == [[self window] firstResponder];
+  }
+  if ([self isKindOfClass:[RCTMultilineTextInputView class]]) {
+    isFirstResponder = [(RCTSinglelineTextInputView *)self backedTextInputView] == [[self window] firstResponder];
+  }
   if (isFirstResponder) {
     RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
     [_eventDispatcher sendEvent:keyboardEvent];

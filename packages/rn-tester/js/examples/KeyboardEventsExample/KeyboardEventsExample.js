@@ -15,8 +15,7 @@ const ReactNative = require('react-native');
 import {Platform} from 'react-native';
 import type {KeyEvent} from 'react-native/Libraries/Types/CoreEventTypes';
 
-const {Button, ScrollView, StyleSheet, Switch, Text, TextInput, View} =
-  ReactNative;
+const {Button, StyleSheet, Switch, Text, TextInput, View} = ReactNative;
 
 const switchStyle = {
   alignItems: 'center',
@@ -116,140 +115,150 @@ function KeyboardEventExample(): React.Node {
   );
 
   return (
-    <ScrollView>
-      <View style={{padding: 10}}>
-        <Text>
-          Key events are called when a component detects a key press.To tab
-          between views on macOS: Enable System Preferences / Keyboard /
-          Shortcuts > Use keyboard navigation to move focus between controls.
-        </Text>
-        <View>
-          {Platform.OS === 'macos' ? (
-            <>
-              <View style={switchStyle}>
-                <Text style={styles.title}>View</Text>
-                <Switch value={showView} onValueChange={toggleShowView} />
-              </View>
-              {showView ? (
-                <>
-                  <Text style={styles.text}>
-                    validKeysDown: [g, Escape, Enter, ArrowLeft]{'\n'}
-                    validKeysUp: [c, d]
-                  </Text>
-                  <View
-                    focusable={true}
-                    style={styles.row}
-                    passthroughAllKeyEvents={passthroughAllKeyEvents}
-                    validKeysDown={['g', 'Escape', 'Enter', 'ArrowLeft']}
-                    keyDownEvents={['g', 'Escape', 'Enter', 'ArrowLeft']}
-                    onKeyDown={handleKeyDown}
-                    validKeysUp={['c', 'd']}
-                    onKeyUp={handleKeyUp}
-                  />
-                </>
-              ) : null}
-              <View style={switchStyle}>
-                <Text style={styles.title}>TextInput</Text>
-                <Switch
-                  value={showTextInput}
-                  onValueChange={toggleShowTextInput}
+    <View style={{padding: 10}}>
+      <Text>
+        Key events are called when a component detects a key press.To tab
+        between views on macOS: Enable System Preferences / Keyboard / Shortcuts
+        > Use keyboard navigation to move focus between controls.
+      </Text>
+      <View>
+        {Platform.OS === 'macos' ? (
+          <>
+            <View style={switchStyle}>
+              <Text style={styles.title}>View</Text>
+              <Switch value={showView} onValueChange={toggleShowView} />
+            </View>
+            {showView ? (
+              <>
+                <Text style={styles.text}>
+                  validKeysDown: [g, Escape, Enter, ArrowLeft]{'\n'}
+                  validKeysUp: [c, d]
+                </Text>
+                <View
+                  focusable={true}
+                  style={styles.row}
+                  passthroughAllKeyEvents={passthroughAllKeyEvents}
+                  validKeysDown={['g', 'Escape', 'Enter', 'ArrowLeft']}
+                  keyDownEvents={['g', 'Escape', 'Enter', 'ArrowLeft']}
+                  onKeyDown={handleKeyDown}
+                  validKeysUp={['c', 'd']}
+                  onKeyUp={handleKeyUp}
                 />
-              </View>
-              {showTextInput ? (
-                <>
-                  <Text style={styles.text}>
-                    validKeysDown: [ArrowRight, ArrowDown, Ctrl+Enter]{'\n'}
-                    validKeysUp: [Escape, Enter]
-                  </Text>
-                  <TextInput
-                    blurOnSubmit={false}
-                    placeholder={'Singleline textInput'}
-                    multiline={false}
-                    focusable={true}
-                    style={styles.row}
-                    passthroughAllKeyEvents={passthroughAllKeyEvents}
-                    validKeysDown={[
-                      'ArrowRight',
-                      'ArrowDown',
-                      {key: 'Enter', ctrlKey: true},
-                    ]}
-                    onKeyDown={handleKeyDown}
-                    validKeysUp={['Escape', 'Enter']}
-                    onKeyUp={handleKeyUp}
-                  />
-                  <TextInput
-                    placeholder={'Multiline textInput'}
-                    multiline={true}
-                    focusable={true}
-                    style={styles.row}
-                    passthroughAllKeyEvents={passthroughAllKeyEvents}
-                    validKeysDown={[
-                      'ArrowRight',
-                      'ArrowDown',
-                      {key: 'Enter', ctrlKey: true},
-                    ]}
-                    onKeyDown={handleKeyDown}
-                    validKeysUp={['Escape', 'Enter']}
-                    onKeyUp={handleKeyUp}
-                  />
-                </>
-              ) : null}
-              <View style={switchStyle}>
-                <Text style={styles.title}>TextInput with no handled keys</Text>
-                <Switch
-                  value={showTextInput2}
-                  onValueChange={toggleShowTextInput2}
+              </>
+            ) : null}
+            <View style={switchStyle}>
+              <Text style={styles.title}>TextInput</Text>
+              <Switch
+                value={showTextInput}
+                onValueChange={toggleShowTextInput}
+              />
+            </View>
+            {showTextInput ? (
+              <>
+                <Text style={styles.text}>
+                  validKeysDown: [ArrowRight, ArrowDown, Ctrl+Enter]{'\n'}
+                  validKeysUp: [Escape, Enter]
+                </Text>
+                <TextInput
+                  blurOnSubmit={false}
+                  placeholder={'Singleline textInput'}
+                  multiline={false}
+                  focusable={true}
+                  style={styles.row}
+                  passthroughAllKeyEvents={passthroughAllKeyEvents}
+                  validKeysDown={[
+                    'ArrowRight',
+                    'ArrowDown',
+                    {key: 'Enter', ctrlKey: true},
+                  ]}
+                  keyDownEvents={[
+                    {key: 'ArrowRight'},
+                    {key: 'ArrowDown'},
+                    {key: 'Enter', ctrlKey: true},
+                  ]}
+                  onKeyDown={handleKeyDown}
+                  validKeysUp={['Escape', 'Enter']}
+                  onKeyUp={handleKeyUp}
                 />
-              </View>
-              {showTextInput2 ? (
-                <>
-                  <Text style={styles.text}>
-                    validKeysDown: []{'\n'}
-                    validKeysUp: []
-                  </Text>
-                  <TextInput
-                    blurOnSubmit={false}
-                    placeholder={'Singleline textInput'}
-                    multiline={false}
-                    focusable={true}
-                    style={styles.row}
-                    passthroughAllKeyEvents={passthroughAllKeyEvents}
-                    validKeysDown={[]}
-                    onKeyDown={handleKeyDown}
-                    validKeysUp={[]}
-                    onKeyUp={handleKeyUp}
-                  />
-                  <TextInput
-                    placeholder={'Multiline textInput'}
-                    multiline={true}
-                    focusable={true}
-                    style={styles.row}
-                    passthroughAllKeyEvents={passthroughAllKeyEvents}
-                    validKeysDown={[]}
-                    onKeyDown={handleKeyDown}
-                    validKeysUp={[]}
-                    onKeyUp={handleKeyUp}
-                  />
-                </>
-              ) : null}
-            </>
-          ) : null}
-          <View style={switchStyle}>
-            <Text>{'Pass through all key events'}</Text>
-            <Switch
-              value={passthroughAllKeyEvents}
-              onValueChange={toggleSwitch}
-            />
-          </View>
-          <Button
-            testID="event_clear_button"
-            onPress={clearLog}
-            title="Clear event log"
+                <TextInput
+                  placeholder={'Multiline textInput'}
+                  multiline={true}
+                  focusable={true}
+                  style={styles.row}
+                  passthroughAllKeyEvents={passthroughAllKeyEvents}
+                  validKeysDown={[
+                    'ArrowRight',
+                    'ArrowDown',
+                    {key: 'Enter', ctrlKey: true},
+                  ]}
+                  keyDownEvents={[
+                    {key: 'ArrowRight'},
+                    {key: 'ArrowDown'},
+                    {key: 'Enter', ctrlKey: true},
+                  ]}
+                  onKeyDown={handleKeyDown}
+                  validKeysUp={['Escape', 'Enter']}
+                  onKeyUp={handleKeyUp}
+                />
+              </>
+            ) : null}
+            <View style={switchStyle}>
+              <Text style={styles.title}>TextInput with no handled keys</Text>
+              <Switch
+                value={showTextInput2}
+                onValueChange={toggleShowTextInput2}
+              />
+            </View>
+            {showTextInput2 ? (
+              <>
+                <Text style={styles.text}>
+                  validKeysDown: []{'\n'}
+                  validKeysUp: []
+                </Text>
+                <TextInput
+                  blurOnSubmit={false}
+                  placeholder={'Singleline textInput'}
+                  multiline={false}
+                  focusable={true}
+                  style={styles.row}
+                  passthroughAllKeyEvents={passthroughAllKeyEvents}
+                  validKeysDown={[]}
+                  keyDownEvents={[]}
+                  onKeyDown={handleKeyDown}
+                  validKeysUp={[]}
+                  onKeyUp={handleKeyUp}
+                />
+                <TextInput
+                  placeholder={'Multiline textInput'}
+                  multiline={true}
+                  focusable={true}
+                  style={styles.row}
+                  passthroughAllKeyEvents={passthroughAllKeyEvents}
+                  validKeysDown={[]}
+                  keyDownEvents={[]}
+                  onKeyDown={handleKeyDown}
+                  validKeysUp={[]}
+                  onKeyUp={handleKeyUp}
+                />
+              </>
+            ) : null}
+          </>
+        ) : null}
+        <View style={switchStyle}>
+          <Text>{'Pass through all key events'}</Text>
+          <Switch
+            value={passthroughAllKeyEvents}
+            onValueChange={toggleSwitch}
           />
-          <Text>{'Events:\n' + log.join('\n')}</Text>
         </View>
+        <Button
+          testID="event_clear_button"
+          onPress={clearLog}
+          title="Clear event log"
+        />
+        <Text>{'Events:\n' + log.join('\n')}</Text>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -287,5 +296,4 @@ exports.examples = [
       return <KeyboardEventExample />;
     },
   },
-
 ];
