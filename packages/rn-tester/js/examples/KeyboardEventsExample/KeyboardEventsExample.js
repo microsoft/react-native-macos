@@ -25,7 +25,7 @@ const switchStyle = {
   justifyContent: 'space-between',
 };
 
-function KeyEventExample(): React.Node {
+function KeyboardEventExample(): React.Node {
   const [log, setLog] = React.useState([]);
 
   const clearLog = React.useCallback(() => {
@@ -115,6 +115,7 @@ function KeyEventExample(): React.Node {
                     style={styles.row}
                     passthroughAllKeyEvents={passthroughAllKeyEvents}
                     validKeysDown={['g', 'Escape', 'Enter', 'ArrowLeft']}
+                    keyDownEvents={['g', 'Escape', 'Enter', 'ArrowLeft']}
                     onKeyDown={handleKeyDown}
                     validKeysUp={['c', 'd']}
                     onKeyUp={handleKeyUp}
@@ -245,13 +246,13 @@ const styles = StyleSheet.create({
   },
 });
 
-exports.title = 'Key Events';
+exports.title = 'Keyboard Events';
 exports.description = 'Examples that show how Key events can be used.';
 exports.examples = [
   {
-    title: 'KeyEventExample',
+    title: 'KeyboaradEventExample',
     render: function (): React.Element<any> {
-      return <KeyEventExample />;
+      return <KeyboardEventExample />;
     },
   },
 ];

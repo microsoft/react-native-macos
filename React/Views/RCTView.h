@@ -11,7 +11,6 @@
 #import <React/RCTBorderStyle.h>
 #import <React/RCTComponent.h>
 #import <React/RCTEventDispatcherProtocol.h> // [macOS]
-#import <React/RCTViewKeyboardEvent.h> // [macOS]
 #import <React/RCTPointerEvents.h>
 
 #if TARGET_OS_OSX // [macOS
@@ -169,8 +168,8 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) NSArray<RCTHandledKey*> *validKeysDown;
 @property (nonatomic, copy) NSArray<RCTHandledKey*> *validKeysUp;
 
-@property (nonatomic, copy) NSArray<RCTHandledKeyboardEvent *> *keyDownEvents;
-@property (nonatomic, copy) NSArray<RCTHandledKeyboardEvent *> *keyUpEvents;
+@property (nonatomic, copy) NSArray<RCTHandledKey *> *keyDownEvents;
+@property (nonatomic, copy) NSArray<RCTHandledKey *> *keyUpEvents;
 
 /**
  * Note: does not properly work with single line text inputs (most key downs). This is because those are 

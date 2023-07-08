@@ -1710,105 +1710,103 @@ NSMutableDictionary<NSNumber *, NSNumber *> *GetEventDispatchStateDictionary(NSE
 	return dict;
 }
 
-- (RCTViewKeyboardEvent*)keyboardEvent:(NSEvent*)event shouldBlock:(BOOL *)shouldBlock {
+/// Use the legacy validKeysDown/validKeysUp/passthroughAllKeyEvents API.
+/// Returns a BOOL of whether to prevent the default behavior.
+/// the NSEvent is handled natively normally ( A.K.A: sent up the NSResponder chain ) unless `validKeysDown` or `validKeysUp`
+/// contains the event. This prevents the default native behavior and sends the event to JS as a direct event.
+/// The prop `passthroughAllKeyEvents` can be used to pass through all keyboard events to JS unconditionally. It does not, however,
+/// have any effect on whether the default native behavior is prevented.
+- (BOOL)handleKeyboardEventLegacy:(NSEvent *)event {
   BOOL keyDown = event.type == NSEventTypeKeyDown;
-  NSArray<RCTHandledKey *> *validKeys = keyDown ? self.validKeysDown : self.validKeysUp;
-
+  NSArray<RCTHandledKey *> *keyEventsToBlock = keyDown ? [self validKeysDown] : [self validKeysUp];
   // If the view is focusable and the component didn't explicity set the validKeysDown or validKeysUp,
   // allow enter/return and spacebar key events to mimic the behavior of native controls.
-  if (self.focusable && validKeys == nil) {
-    validKeys = @[
+  if ([self focusable] && keyEventsToBlock == nil) {
+    keyEventsToBlock = @[
       [[RCTHandledKey alloc] initWithKey:@"Enter"],
       [[RCTHandledKey alloc] initWithKey:@" "]
     ];
   }
 
-  // If a view specifies a key, it will always be removed from the responder chain (i.e. "handled")
-  *shouldBlock = [RCTHandledKey event:event matchesFilter:validKeys];
+  BOOL eventMatchesFilter = [RCTHandledKey event:event matchesFilter:keyEventsToBlock];
 
-  // If an event isn't being removed from the queue, but was requested to "passthrough" by a view,
+  BOOL shouldDispatchEvent = eventMatchesFilter;
+  // If an event isn't having it's native behavior prevented, but was requested to "passthrough" by a view,
   // we want to be sure we dispatch it only once for that view. See note for GetEventDispatchStateDictionary.
-  if ([self passthroughAllKeyEvents] && !*shouldBlock) {
+  if ([self passthroughAllKeyEvents] && !eventMatchesFilter) {
     NSNumber *tag = [self reactTag];
     NSMutableDictionary<NSNumber *, NSNumber *> *dict = GetEventDispatchStateDictionary(event);
 
     if ([dict[tag] boolValue]) {
-		return nil;
-	}
-
-	dict[tag] = @YES;
-  }
-
-  // Don't pass events we don't care about
-  if (![self passthroughAllKeyEvents] && !*shouldBlock) {
-    return nil;
-  }
-
-  return [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
-}
-
-// Only send events to JS that are defined in validKeysDown. Bubbling happens only natively
-- (BOOL)handleKeyboardEventLegacy:(NSEvent *)event {
-  if (event.type == NSEventTypeKeyDown ? self.onKeyDown : self.onKeyUp) {
-	BOOL shouldBlock = YES;
-    RCTViewKeyboardEvent *keyboardEvent = [self keyboardEvent:event shouldBlock:&shouldBlock];
-    if (keyboardEvent) {
-      [_eventDispatcher sendEvent:keyboardEvent];
-      return shouldBlock;
+      shouldDispatchEvent = NO;
+    } else {
+      shouldDispatchEvent = YES;
+      dict[tag] = @YES;
     }
   }
-  return NO;
-}
 
-// Send all keyboard events to JS. Suppress native bubbling if keyEvent matches keyDownEvents.
-// Returns whether native bubbling should be suppressed (i.e: don't call super).
-- (BOOL)handleKeyboardEventModern:(NSEvent*)event {
+  if (shouldDispatchEvent) {
     RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
+    [_eventDispatcher sendEvent:keyboardEvent];
+  }
 
-    // To ensure we only dispatch one keyboard event to JS, only dispatch it if we are the first responder.
-    BOOL isFirstResponder = self == [[self window] firstResponder];
-    if (isFirstResponder) {
-      [_eventDispatcher sendEvent:keyboardEvent];
-    }
+  return eventMatchesFilter;
+}
 
-    BOOL keyDown = event.type == NSEventTypeKeyDown;
-    NSArray<RCTHandledKeyboardEvent *> *handledKeyEvents = keyDown ? [self keyDownEvents] : [self keyUpEvents];
+/// Use the cross platform `keyDownEvents/keyUpEvents` API to handle keyboard events:
+/// All keyboard events are sent to JS unconditionally, and are bubbling events. The NSEvent is handled natively normally
+/// ( A.K.A: sent up the NSResponder chain ) unless `keyFownEvents` or `keyUpEvents` is specified.
+- (BOOL)handleKeyboardEventModern:(NSEvent*)event {
+  BOOL keyDown = event.type == NSEventTypeKeyDown;
+  NSArray<RCTHandledKey *> *keyEventsToBlock = keyDown ? [self keyDownEvents] : [self keyUpEvents];
+  
 
-    BOOL shouldSuppressNativeHandling = NO;
-    for (RCTHandledKeyboardEvent *handledEvent in handledKeyEvents) {
-		if ([RCTViewKeyboardEvent event:event matches:handledEvent]) {
-        shouldSuppressNativeHandling = YES;
-        break;
-      }
-    }
-    return shouldSuppressNativeHandling;
+  // To ensure we only dispatch one keyboard event to JS, only dispatch it if we are the first responder.
+  BOOL isFirstResponder = self == [[self window] firstResponder];
+  if (isFirstResponder) {
+    RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
+    [_eventDispatcher sendEvent:keyboardEvent];
+  }
+
+  BOOL eventMatchesFilter = [RCTHandledKey event:event matchesFilter:keyEventsToBlock];
+
+  return eventMatchesFilter;
+}
+
+/// This method will dispatch the keyboard event to JS if needed, based on the current Feature Flag.
+/// Returns: a boolean indicating whether we prevent the default native behavior (aka: calling super ).
+- (BOOL)handleKeyboardEvent:(NSEvent *)event {
+  BOOL shouldUseCrossPlatformKeyboardEventAPI = RCTGetEnableCrossPlatformKeyboardEventAPI();
+  BOOL shouldPreventNativeBehavior = NO;
+
+  if (shouldUseCrossPlatformKeyboardEventAPI) {
+    shouldPreventNativeBehavior = [self handleKeyboardEventModern:event];
+  } else {
+    shouldPreventNativeBehavior = [self handleKeyboardEventLegacy:event];
+  }
+
+  return shouldPreventNativeBehavior;
 }
 
 - (void)keyDown:(NSEvent *)event {
-  BOOL shouldUseKeyDownEvents = RCTGetEnableCrossPlatformKeyboardEventAPI();
+  // Ignore "dead keys" (key press that waits for another key to make a character)
+  if (!event.charactersIgnoringModifiers.length) {
+    [super keyDown:event];
+  }
 
-  if (shouldUseKeyDownEvents) {
-    if (![self handleKeyboardEventModern:event]) {
-      [super keyDown:event];
-    }
-  } else {
-    if (![self handleKeyboardEventLegacy:event]) {
-      [super keyDown:event];
-    }
+  if (![self handleKeyboardEvent:event]) {
+    [super keyDown:event];
   }
 }
 
 - (void)keyUp:(NSEvent *)event {
-  BOOL shouldUseKeyUpEvents = RCTGetEnableCrossPlatformKeyboardEventAPI();
-
-  if (shouldUseKeyUpEvents) {
-    if (![self handleKeyboardEventModern:event]) {
-      [super keyDown:event];
-      }
-  } else {
-    if (![self handleKeyboardEventLegacy:event]) {
-      [super keyDown:event];
-    }
+  // Ignore "dead keys" (key press that waits for another key to make a character)
+  if (!event.charactersIgnoringModifiers.length) {
+    [super keyUp:event];
+  }
+  
+  if (![self handleKeyboardEvent:event]) {
+    [super keyUp:event];
   }
 }
 #endif // macOS]
