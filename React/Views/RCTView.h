@@ -24,6 +24,8 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 
 @protocol RCTAutoInsetsProtocol;
 
+@class RCTHandledKey; // [macOS]
+
 @interface RCTView : RCTUIView // [macOS]
 
 // [macOS
@@ -162,12 +164,28 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) RCTDirectEventBlock onDrop;
 
 // Keyboarding events
-@property (nonatomic, copy) RCTBubblingEventBlock onKeyDown;
-@property (nonatomic, copy) RCTBubblingEventBlock onKeyUp;
-@property (nonatomic, copy) NSArray<NSString *> *validKeysDown;
-@property (nonatomic, copy) NSArray<NSString *> *validKeysUp;
+
+@property (nonatomic, assign) BOOL passthroughAllKeyEvents;
+@property (nonatomic, copy) NSArray<RCTHandledKey*> *validKeysDown;
+@property (nonatomic, copy) NSArray<RCTHandledKey*> *validKeysUp;
+
 @property (nonatomic, copy) NSArray<RCTHandledKeyboardEvent *> *keyDownEvents;
 @property (nonatomic, copy) NSArray<RCTHandledKeyboardEvent *> *keyUpEvents;
+
+/**
+ * Note: does not properly work with single line text inputs (most key downs). This is because those are 
+ * presumably handled by the window's field editor. To make it work, we'd need to look into providing
+ * a custom field editor for NSTextField controls.
+ */
+
+/**
+ * Note 2: `RCTDirectEventBlock` and `RCTBubblingEventBlock` are both typedefs for the same thing. The distinction is actually made in
+ * the JS ViewConfig. So it's safe to specify `onKeyDown/onKeyUp` as RCTBubblingEventBlock here, even though they are direct events 
+ * when used in conjunction with `validKeysDown/validKeysUp
+ */
+
+@property (nonatomic, copy) RCTBubblingEventBlock onKeyDown;
+@property (nonatomic, copy) RCTBubblingEventBlock onKeyUp;
 
 // Shadow Properties
 @property (nonatomic, strong) NSColor *shadowColor;

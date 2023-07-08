@@ -26,6 +26,7 @@ import type {
   AccessibilityState,
   AccessibilityValue,
 } from '../View/ViewAccessibility';
+import type {HandledKeyboardEvent} from '../View/ViewPropTypes'; // [macOS]
 
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
@@ -190,37 +191,41 @@ type Props = $ReadOnly<{|
   onKeyUp?: ?(event: KeyEvent) => void,
 
   /**
-   * @deprecated use `keyDownEvents` instead.
-   * Array of keys to receive key down events for.
-   * If undefined, all keyboard events will fire `onKeyUp`.
+   * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
+   * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
+   * still have their native default behavior prevented, but the others do not.
    *
    * @platform macos
    */
-  validKeysDown?: ?Array<string>,
+  passthroughAllKeyEvents?: ?boolean,
 
   /**
-   * Fired when a key is pressed. If validKeysDown is set, only those keys will fire this event.
+   * Array of keys to receive key down events for. These events have their default native behavior prevented.
    *
    * @platform macos
    */
-  onKeyUp?: ?(e: KeyEvent) => void,
+  validKeysDown?: ?Array<string | HandledKeyboardEvent>,
 
   /**
-   * Array of keyboard events whose natiev handling should be supressed. Use with `onUp`
-   * to handle a keyboard event purely in JS.
+   * Array of keys to receive key up events for. These events have their default native behavior prevented.
+   *
+   * @platform macos
+   */
+  validKeysUp?: ?Array<string | HandledKeyboardEvent>,
+
+  /**
+   * Array of keyboard events who should have their default native behavior prevented.
    *
    * @platform macos
    */
   keyUpEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
 
   /**
-   * @deprecated use `keyUpEvents` instead.
-   * Array of keys to receive key up events for.
-   * If undefined, all keyboard events will fire `onKeyUp`
+   * Array of keyboard events who should have their default native behavior prevented.
    *
    * @platform macos
    */
-  validKeysUp?: ?Array<string>,
+  keyUpEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
 
   /**
    * Specifies whether the view should receive the mouse down event when the

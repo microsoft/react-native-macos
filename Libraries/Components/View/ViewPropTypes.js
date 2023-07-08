@@ -100,25 +100,58 @@ type DirectEventProps = $ReadOnly<{|
 |}>;
 
 // [macOS
-type KeyboardEventProps = $ReadOnly<{|
+/**
+ * Represents a key that could be passed to `validKeysDown` and `validKeysUp`.
+ *
+ * `key` is the actual key, such as "a", or one of the special values:
+ * "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+ * "Backspace", "Delete", "Home", "End", "PageUp", "PageDown".
+ *
+ * The rest are modifiers that when absent mean false.
+ *
+ * @platform macos
+ */
+export type HandledKeyboardEvent = $ReadOnly<{|
+  altKey?: ?boolean,
+  ctrlKey?: ?boolean,
+  metaKey?: ?boolean,
+  shiftKey?: ?boolean,
+  key: string,
+|}>;
+
+export type KeyboardEventProps = $ReadOnly<{|
+  /**
+   * Called after a key down event is detected.
+   */
   onKeyDown?: ?(event: KeyEvent) => void,
+
+  /**
+   * Called after a key up event is detected.
+   */
   onKeyUp?: ?(event: KeyEvent) => void,
+
   /**
-   * Array of keys to receive key down events for
+   * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
+   * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
+   * are still removed from the event queue, but the others are not.
    *
    * @platform macos
    */
-  validKeysDown?: ?Array<string>,
+  passthroughAllKeyEvents?: ?boolean,
 
   /**
-   * Array of keys to receive key up events for
+   * Array of keys to receive key down events for. These events have their default native behavior prevented.
    *
    * @platform macos
    */
-  validKeysUp?: ?Array<string>,
+  validKeysDown?: ?Array<string | HandledKeyboardEvent>,
 
-  keyDownEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
-  keyUpEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
+  /**
+   * Array of keys to receive key up events for. These events have their default native behavior prevented.
+   *
+   * @platform macos
+   */
+  validKeysUp?: ?Array<string | HandledKeyboardEvent>,
 |}>;
 // macOS]
 
