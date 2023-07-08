@@ -17,19 +17,21 @@ import PlatformBaseViewConfigIos from './BaseViewConfig.ios';
 import {ConditionallyIgnoredEventHandlers} from './ViewConfigIgnore';
 import ReactNativeFeatureFlags from '../ReactNative/ReactNativeFeatureFlags';
 
-const keyboardConfig = {
-  topKeyUp: {
-    registrationName: 'onKeyUp',
-  },
-  topKeyDown: {
-    registrationName: 'onKeyDown',
-  },
-}
-
 const bubblingEventTypes = {
   ...PlatformBaseViewConfigIos.bubblingEventTypes,
   ...(ReactNativeFeatureFlags.enableCrossPlatformKeyboardEventAPI() && {
-    keyboardConfig,
+    topKeyDown: {
+      phasedRegistrationNames: {
+        captured: 'onKeyDownCapture',
+        bubbled: 'onKeyDown',
+      },
+    },
+    topKeyUp: {
+      phasedRegistrationNames: {
+        captured: 'onKeyUpCapture',
+        bubbled: 'onKeyUp',
+      },
+    },
   }),
 };
 
@@ -51,7 +53,12 @@ const directEventTypes = {
     registrationName: 'onMouseLeave',
   },
   ...(!ReactNativeFeatureFlags.enableCrossPlatformKeyboardEventAPI() && {
-    keyboardConfig,
+    topKeyUp: {
+      registrationName: 'onKeyUp',
+    },
+    topKeyDown: {
+      registrationName: 'onKeyDown',
+    },
   }),
 };
 

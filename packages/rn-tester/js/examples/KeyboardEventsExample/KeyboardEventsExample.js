@@ -25,6 +25,32 @@ const switchStyle = {
   justifyContent: 'space-between',
 };
 
+function BubblingExample(): React.Node {
+  const onKeyDown = e => {
+    console.log(e.nativeEvent.key);
+  };
+  return (
+    <View
+      style={{padding: 20, borderColor: 'red', borderWidth: 1}}
+      focusable
+      keyDownEvents={[{key: 'g'}]}
+      onKeyDown={onKeyDown}>
+      <View
+        style={{padding: 20, borderColor: 'green', borderWidth: 1}}
+        focusable
+        keyDownEvents={[{key: 'Tab'}]}
+        onKeyDown={onKeyDown}>
+        <View
+          style={{padding: 20, borderColor: 'blue', borderWidth: 1}}
+          focusable
+          keyDownEvents={[{key: 'g'}]}
+          onKeyDown={onKeyDown}
+        />
+      </View>
+    </View>
+  );
+}
+
 function KeyboardEventExample(): React.Node {
   const [log, setLog] = React.useState([]);
 
@@ -250,9 +276,16 @@ exports.title = 'Keyboard Events';
 exports.description = 'Examples that show how Key events can be used.';
 exports.examples = [
   {
-    title: 'KeyboaradEventExample',
+    title: 'Bubbling Example',
+    render: function (): React.Element<any> {
+      return <BubblingExample />;
+    },
+  },
+  {
+    title: 'Keyboard Event Example',
     render: function (): React.Element<any> {
       return <KeyboardEventExample />;
     },
   },
+
 ];
