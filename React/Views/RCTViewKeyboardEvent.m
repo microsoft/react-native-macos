@@ -13,9 +13,6 @@
 
 #if TARGET_OS_OSX
 
-@implementation RCTHandledKeyboardEvent
-@end
-
 @implementation RCTViewKeyboardEvent
 
 + (NSString *)keyFromEvent:(NSEvent *)event
