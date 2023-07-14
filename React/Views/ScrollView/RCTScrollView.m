@@ -382,6 +382,7 @@
   BOOL _allowNextScrollNoMatterWhat;
 #if TARGET_OS_OSX // [macOS
   BOOL _notifyDidScroll;
+  NSPoint _lastScrollPosition;
 #endif // macOS]
   CGRect _lastClippedToRect;
   uint16_t _coalescingKey;
@@ -477,6 +478,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 #else // [macOS
     _scrollView.drawsBackground = NO;
     _scrollView.postsBoundsChangedNotifications = YES;
+    _lastScrollPosition = NSZeroPoint;
 #endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
@@ -925,6 +927,22 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 {
   NSTimeInterval now = CACurrentMediaTime();
   [self updateClippedSubviews];
+  
+#if TARGET_OS_OSX // [macOS
+  /**
+   * To check for effective scroll position changes, the comparison with lastScrollPosition should happen
+   * after updateClippedSubviews. updateClippedSubviews will update the display of the vertical/horizontal 
+   * scrollers which can change the clipview bounds.
+   * This change also ensures that no onScroll events are sent when the React setFrame call is running,
+   * which could submit onScroll events while the content view was not setup yet.
+   */
+  BOOL didScroll = !NSEqualPoints(scrollView.contentView.bounds.origin, _lastScrollPosition);
+  if (!didScroll) {
+    return;
+  }
+  _lastScrollPosition = scrollView.contentView.bounds.origin;
+#endif // macOS]
+  
   /**
    * TODO: this logic looks wrong, and it may be because it is. Currently, if _scrollEventThrottle
    * is set to zero (the default), the "didScroll" event is only sent once per scroll, instead of repeatedly
