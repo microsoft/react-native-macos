@@ -176,12 +176,17 @@ type Props = $ReadOnly<{|
   onBlur?: ?(event: BlurEvent) => void,
 
   /**
-   * Called after a key down event is detected.
+   * Fired when a key is pressed. If validKeysDown is set, only those keys will fire this event.
+   *
+   * @platform macos
    */
   onKeyDown?: ?(event: KeyEvent) => void,
 
   /**
-   * Called after a key up event is detected.
+   * Array of keyboard events whose natiev handling should be supressed. Use with `onKeyDown`
+   * to handle a keyboard event purely in JS.
+   *
+   * @platform macos
    */
   onKeyUp?: ?(event: KeyEvent) => void,
 
@@ -207,6 +212,20 @@ type Props = $ReadOnly<{|
    * @platform macos
    */
   validKeysUp?: ?Array<string | HandledKeyboardEvent>,
+
+  /**
+   * Array of keyboard events who should have their default native behavior prevented.
+   *
+   * @platform macos
+   */
+  keyUpEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
+
+  /**
+   * Array of keyboard events who should have their default native behavior prevented.
+   *
+   * @platform macos
+   */
+  keyUpEvents?: ?$ReadOnlyArray<HandledKeyboardEvent>,
 
   /**
    * Specifies whether the view should receive the mouse down event when the

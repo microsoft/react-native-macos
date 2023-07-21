@@ -81,3 +81,10 @@ RCT_EXTERN void RCTSetMemoryPressureUnloadLevel(int value);
  */
 RCT_EXTERN BOOL RCTGetParseUnhandledJSErrorStackNatively(void);
 RCT_EXTERN void RCTSetParseUnhandledJSErrorStackNatively(BOOL value);
+
+/**
+ * Align to the Keyboard API spec and use `key(Up|Down)Events` instead of `validKeys(Up|Down)`
+ * https://github.com/microsoft/react-native-windows/blob/main/vnext/proposals/active/keyboard-reconcile-desktop.md
+ */
+RCT_EXTERN BOOL RCTGetEnableCrossPlatformKeyboardEventAPI(void);
+RCT_EXTERN void RCTSetEnableCrossPlatformKeyboardEventAPI(BOOL value);

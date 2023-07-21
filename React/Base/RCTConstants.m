@@ -81,3 +81,18 @@ void RCTSetParseUnhandledJSErrorStackNatively(BOOL value)
 {
   RCTParseUnhandledJSErrorStackNatively = value;
 }
+
+/**
+ * TODO
+ */
+static BOOL RCTEnableCrossPlatformKeyboardEventAPI = NO;
+
+BOOL RCTGetEnableCrossPlatformKeyboardEventAPI()
+{
+  return RCTEnableCrossPlatformKeyboardEventAPI;
+}
+
+void RCTSetEnableCrossPlatformKeyboardEventAPI(BOOL value)
+{
+	RCTEnableCrossPlatformKeyboardEventAPI = value;
+}

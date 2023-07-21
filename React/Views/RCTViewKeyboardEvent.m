@@ -9,28 +9,11 @@
 
 #import "RCTViewKeyboardEvent.h"
 #import <React/RCTAssert.h>
+#import <React/RCTConvert.h>
+
+#if TARGET_OS_OSX
 
 @implementation RCTViewKeyboardEvent
-
-#if TARGET_OS_OSX 
-+ (NSDictionary *)bodyFromEvent:(NSEvent *)event
-{
-  NSString *key = [self keyFromEvent:event];
-  NSEventModifierFlags modifierFlags = event.modifierFlags;
-
-  // when making changes here, also consider what should happen to RCTHandledKey. [macOS]
-  return @{
-    @"key" : key,
-    @"capsLockKey" : (modifierFlags & NSEventModifierFlagCapsLock) ? @YES : @NO,
-    @"shiftKey" : (modifierFlags & NSEventModifierFlagShift) ? @YES : @NO,
-    @"ctrlKey" : (modifierFlags & NSEventModifierFlagControl) ? @YES : @NO,
-    @"altKey" : (modifierFlags & NSEventModifierFlagOption) ? @YES : @NO,
-    @"metaKey" : (modifierFlags & NSEventModifierFlagCommand) ? @YES : @NO,
-    @"numericPadKey" : (modifierFlags & NSEventModifierFlagNumericPad) ? @YES : @NO,
-    @"helpKey" : (modifierFlags & NSEventModifierFlagHelp) ? @YES : @NO,
-    @"functionKey" : (modifierFlags & NSEventModifierFlagFunction) ? @YES : @NO,
-  };
-}
 
 + (NSString *)keyFromEvent:(NSEvent *)event
 {
@@ -68,18 +51,37 @@
   return key;
 }
 
-// Keyboard mappings are aligned cross-platform as much as possible as per this doc https://github.com/microsoft/react-native-windows/blob/master/vnext/proposals/active/keyboard-reconcile-desktop.md
++ (NSDictionary *)bodyFromEvent:(NSEvent *)event
+{
+  NSString *key = [self keyFromEvent:event];
+  NSEventModifierFlags modifierFlags = event.modifierFlags;
+
+  // when making changes here, also consider what should happen to RCTHandledKey. [macOS]
+  return @{
+    @"key" : key,
+    @"capsLockKey" : (modifierFlags & NSEventModifierFlagCapsLock) ? @YES : @NO,
+    @"shiftKey" : (modifierFlags & NSEventModifierFlagShift) ? @YES : @NO,
+    @"ctrlKey" : (modifierFlags & NSEventModifierFlagControl) ? @YES : @NO,
+    @"altKey" : (modifierFlags & NSEventModifierFlagOption) ? @YES : @NO,
+    @"metaKey" : (modifierFlags & NSEventModifierFlagCommand) ? @YES : @NO,
+    @"numericPadKey" : (modifierFlags & NSEventModifierFlagNumericPad) ? @YES : @NO,
+    @"helpKey" : (modifierFlags & NSEventModifierFlagHelp) ? @YES : @NO,
+    @"functionKey" : (modifierFlags & NSEventModifierFlagFunction) ? @YES : @NO,
+  };
+}
+
+// Keyboard mappings are aligned cross-platform as much as possible as per this doc
+// https://github.com/microsoft/react-native-windows/blob/master/vnext/proposals/active/keyboard-reconcile-desktop.md
 + (instancetype)keyEventFromEvent:(NSEvent *)event reactTag:(NSNumber *)reactTag
 {
-  // Ignore "dead keys" (key press that waits for another key to make a character)
-  if (!event.charactersIgnoringModifiers.length) {
-    return nil;
-  }
+  NSString *eventName = event.type == NSEventTypeKeyDown ? @"keyDown" : @"keyUp";
+  NSDictionary *eventBody = [self bodyFromEvent:event];
 
-  return [[self alloc] initWithName:(event.type == NSEventTypeKeyDown ? @"keyDown" : @"keyUp")
+  return [[self alloc] initWithName:eventName
                             viewTag:reactTag
-                               body:[self bodyFromEvent:event]];
+                               body:eventBody];
 }
-#endif
 
 @end
+
+#endif // TARGET_OS_OSX

@@ -6,12 +6,15 @@
 #import <Foundation/Foundation.h>
 #import <React/RCTComponentEvent.h>
 
+#if TARGET_OS_OSX // [macOS
+
 @interface RCTViewKeyboardEvent : RCTComponentEvent
 
-#if TARGET_OS_OSX // [macOS
-+ (NSDictionary *)bodyFromEvent:(NSEvent *)event;
-+ (NSString *)keyFromEvent:(NSEvent *)event;
 + (instancetype)keyEventFromEvent:(NSEvent *)event reactTag:(NSNumber *)reactTag;
-#endif // macOS]
++ (NSString *)keyFromEvent:(NSEvent *)event;
++ (NSDictionary *)bodyFromEvent:(NSEvent *)event;
+
 
 @end
+
+#endif // macOS]

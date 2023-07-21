@@ -43,6 +43,9 @@ export type FeatureFlags = {|
    * components that are implemented in C++.
    */
   enableCppComponents: () => boolean,
+
+  // [macOS]
+  enableCrossPlatformKeyboardEventAPI: () => boolean,
 |};
 
 const ReactNativeFeatureFlags: FeatureFlags = {
@@ -52,6 +55,7 @@ const ReactNativeFeatureFlags: FeatureFlags = {
   animatedShouldDebounceQueueFlush: () => false,
   animatedShouldUseSingleOp: () => false,
   enableCppComponents: () => false,
+  enableCrossPlatformKeyboardEventAPI: () => false, // [macOS]
 };
 
 module.exports = ReactNativeFeatureFlags;

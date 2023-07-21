@@ -508,6 +508,15 @@ type IOSViewProps = $ReadOnly<{|
 |}>;
 
 // [macOS
+type HandledKeyboardEvent = $ReadOnly<{|
+  altKey?: ?boolean,
+  ctrlKey?: ?boolean,
+  metaKey?: ?boolean,
+  shiftKey?: ?boolean,
+  code: string,
+  handledEventPhase?: number,
+|}>;
+
 type MacOSViewProps = $ReadOnly<{|
   /**
    * Fired when a file is dragged into the view via the mouse.

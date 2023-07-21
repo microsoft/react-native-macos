@@ -50,6 +50,8 @@ const UIView = {
   passthroughAllKeyEvents: true,
   validKeysDown: true,
   validKeysUp: true,
+  keyDownEvents: true,
+  keyUpEvents: true,
   draggedTypes: true,
   // macOS]
 };
