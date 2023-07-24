@@ -172,6 +172,7 @@ export type DraggedType = 'fileUrl';
 export type DraggedTypesType = DraggedType | DraggedType[];
 
 export interface ViewPropsMacOS {
+  allowsVibrancy?: boolean | undefined;
   acceptsFirstMouse?: boolean | undefined;
   mouseDownCanMoveWindow?: boolean | undefined;
   enableFocusRing?: boolean | undefined;
