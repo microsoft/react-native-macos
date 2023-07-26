@@ -26,6 +26,9 @@
 @implementation RCTBaseTextInputView {
   __weak RCTBridge *_bridge;
   __weak id<RCTEventDispatcherProtocol> _eventDispatcher;
+
+  NSInteger _ghostTextPosition; // only valid if _ghostText != nil [macOS]
+
   BOOL _hasInputAccesoryView;
   // [macOS] remove explicit _predictedText ivar declaration
   BOOL _didMoveToWindow;
@@ -164,7 +167,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
   textNeedsUpdate = ([self textOf:attributedTextCopy equals:backedTextInputViewTextCopy] == NO);
 
-  if (eventLag == 0 && textNeedsUpdate) {
+  if ((eventLag == 0 || self.backedTextInputView.ghostTextChanging) && textNeedsUpdate) { // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     UITextRange *selection = self.backedTextInputView.selectedTextRange;
 #else // [macOS
@@ -191,7 +194,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
           [self.backedTextInputView positionFromPosition:self.backedTextInputView.beginningOfDocument offset:newOffset];
       [self.backedTextInputView setSelectedTextRange:[self.backedTextInputView textRangeFromPosition:position
                                                                                           toPosition:position]
-                                      notifyDelegate:YES];
+                                      notifyDelegate:!self.backedTextInputView.ghostTextChanging];
     }
 #else // [macOS
     if (selection.length == 0) {
@@ -200,7 +203,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
       NSInteger offsetFromEnd = oldTextLength - start;
       NSInteger newOffset = self.backedTextInputView.attributedText.length - offsetFromEnd;
       [self.backedTextInputView setSelectedTextRange:NSMakeRange(newOffset, 0)
-                                      notifyDelegate:YES];
+                                      notifyDelegate:!self.backedTextInputView.ghostTextChanging];
     }
 #endif // macOS]
 
@@ -415,6 +418,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (void)textInputDidEndEditing
 {
+  self.ghostText = nil; // [macOS]
+
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeEnd
                                  reactTag:self.reactTag
                                      text:[self.backedTextInputView.attributedText.string copy]
@@ -524,6 +529,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 {
   id<RCTBackedTextInputViewProtocol> backedTextInputView = self.backedTextInputView;
 
+  self.ghostText = nil; // [macOS]
+
   if (!backedTextInputView.textWasPasted) {
     [_eventDispatcher sendTextEventWithType:RCTTextEventTypeKeyPress
                                    reactTag:self.reactTag
@@ -590,7 +597,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
                                                                                         withString:text];
   }
 
-  if (_onTextInput) {
+  if (_onTextInput && !self.backedTextInputView.ghostTextChanging) { // [macOS]
     _onTextInput(@{
       // We copy the string here because if it's a mutable string it may get released before we stop using it on a
       // different thread, causing a crash.
@@ -624,20 +631,24 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
     [self setPredictedText:backedTextInputView.attributedText.string]; // [macOS]
   }
 
-  _nativeEventCount++;
+  if (!self.backedTextInputView.ghostTextChanging) { // [macOS]
+    _nativeEventCount++;
 
-  if (_onChange) {
-    _onChange(@{
-      @"text" : [self.attributedText.string copy],
-      @"target" : self.reactTag,
-      @"eventCount" : @(_nativeEventCount),
-    });
-  }
+    if (_onChange) {
+      _onChange(@{
+        @"text" : [self.attributedText.string copy],
+        @"target" : self.reactTag,
+        @"eventCount" : @(_nativeEventCount),
+      });
+    }
+  } // [macOS]
 }
 
 - (void)textInputDidChangeSelection
 {
-  if (!_onSelectionChange) {
+  self.ghostText = nil; // [macOS]
+
+  if (!_onSelectionChange || self.backedTextInputView.ghostTextChanging) { // [macOS]
     return;
   }
 
@@ -874,6 +885,92 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   }
 }
 #endif // [macOS]
+
+// [macOS
+
+- (NSDictionary<NSAttributedStringKey, id> *)ghostTextAttributes
+{
+  RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView = self.backedTextInputView;
+  NSMutableDictionary<NSAttributedStringKey, id> *textAttributes =
+      [backedTextInputView.defaultTextAttributes mutableCopy] ?: [NSMutableDictionary new];
+
+  if (@available(iOS 13.0, *)) {
+    [textAttributes setValue:backedTextInputView.placeholderColor ?: [RCTUIColor placeholderTextColor]
+                      forKey:NSForegroundColorAttributeName];
+  } else {
+    if (backedTextInputView.placeholderColor) {
+      [textAttributes setValue:backedTextInputView.placeholderColor forKey:NSForegroundColorAttributeName];
+    } else {
+      [textAttributes removeObjectForKey:NSForegroundColorAttributeName];
+    }
+  }
+
+  return textAttributes;
+}
+
+- (void)setGhostText:(NSString *)ghostText {
+  RCTTextSelection *selection = self.selection;
+  NSString *newGhostText = ghostText.length > 0 ? ghostText : nil;
+
+  if (selection.start != selection.end) {
+    newGhostText = nil;
+  }
+
+  if ((_ghostText == nil && newGhostText == nil) || [_ghostText isEqual:newGhostText]) {
+    return;
+  }
+
+  if (self.backedTextInputView.ghostTextChanging) {
+    // look out for nested callbacks -- this can happen for example when selection changes in response to
+    // attributed text changing. Such callbacks are initiated by Apple, or we could suppress this other ways.
+    return;
+  }
+
+  self.backedTextInputView.ghostTextChanging = YES;
+
+  if (_ghostText != nil) {
+    BOOL shouldDeleteGhostText = YES;
+    NSRange ghostTextRange = NSMakeRange(_ghostTextPosition, _ghostText.length);
+    NSMutableAttributedString *attributedString = [self.attributedText mutableCopy];
+
+    if ([attributedString length] < NSMaxRange(ghostTextRange)) {
+      RCTAssert(false, @"Ghost text not fully present in text view text");
+      shouldDeleteGhostText = NO;
+    }
+
+    NSString *actualGhostText = shouldDeleteGhostText
+      ? [[attributedString attributedSubstringFromRange:ghostTextRange] string]
+      : nil;
+
+    if (![actualGhostText isEqual:_ghostText]) {
+      RCTAssert(false, @"Ghost text does not match text view text");
+      shouldDeleteGhostText = NO;
+    }
+
+    if (shouldDeleteGhostText) {
+      [attributedString deleteCharactersInRange:ghostTextRange];
+      self.attributedText = attributedString;
+      [self setSelectionStart:selection.start selectionEnd:selection.end];
+    }
+  }
+
+  _ghostText = [newGhostText copy];
+  _ghostTextPosition = selection.start;
+
+  if (_ghostText != nil) {
+    NSMutableAttributedString *attributedString = [self.attributedText mutableCopy];
+    NSAttributedString *ghostAttributedString = [[NSAttributedString alloc] initWithString:_ghostText
+                                                                                attributes:self.ghostTextAttributes];
+
+    [attributedString insertAttributedString:ghostAttributedString atIndex:_ghostTextPosition];
+    self.attributedText = attributedString;
+    [self setSelectionStart:_ghostTextPosition selectionEnd:_ghostTextPosition];
+  }
+
+  self.backedTextInputView.ghostTextChanging = NO;
+}
+
+// macOS]
 
 #pragma mark - Helpers
 

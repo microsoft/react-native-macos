@@ -61,6 +61,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nullable) id<RCTUITextFieldDelegate> delegate;
 #endif // macOS]
 
+@property (nonatomic, getter=isGhostTextChanging) BOOL ghostTextChanging; // [macOS]
+
 @end
 
 NS_ASSUME_NONNULL_END

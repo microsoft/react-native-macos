@@ -877,6 +877,13 @@ export type Props = $ReadOnly<{|
   onContentSizeChange?: ?(e: ContentSizeChangeEvent) => mixed,
 
   /**
+   * Callback that is called when the text is input into the text input.
+   * The original text, the selection in the original text, and the inserted
+   * text are passed to the callback handler.
+   */
+  onTextInput?: ?(e: TextInputEvent) => mixed,
+
+  /**
    * Callback that is called when text input ends.
    */
   onEndEditing?: ?(e: EditingEvent) => mixed,
@@ -1086,6 +1093,7 @@ type ImperativeMethods = $ReadOnly<{|
   isFocused: () => boolean,
   getNativeRef: () => ?React.ElementRef<HostComponent<mixed>>,
   setSelection: (start: number, end: number) => void,
+  setGhostText: (ghostText: ?string) => void, // [macOS]
 |}>;
 
 const emptyFunctionThatReturnsTrue = () => true;
@@ -1366,6 +1374,14 @@ function InternalTextInput(props: Props): React.Node {
     }
   }
 
+  // [macOS
+  function setGhostText(ghostText: ?string) {
+    if (inputRef.current != null) {
+      viewCommands.setGhostText(inputRef.current, ghostText);
+    }
+  }
+  // macOS]
+
   // TODO: Fix this returning true on null === null, when no input is focused
   function isFocused(): boolean {
     return TextInputState.currentlyFocusedInput() === inputRef.current;
@@ -1407,6 +1423,7 @@ function InternalTextInput(props: Props): React.Node {
         ref.isFocused = isFocused;
         ref.getNativeRef = getNativeRef;
         ref.setSelection = setSelection;
+        ref.setGhostText = setGhostText; // [macOS]
       }
     },
   });
