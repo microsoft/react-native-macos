@@ -599,7 +599,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
     _onTextInput(@{
       // We copy the string here because if it's a mutable string it may get released before we stop using it on a
       // different thread, causing a crash.
-      @"text" : [text copy],
+        @"text" : (text != nil) ? [text copy] : @"",
       @"previousText" : previousText,
       @"range" : @{@"start" : @(range.location), @"end" : @(range.location + range.length)},
       @"eventCount" : @(_nativeEventCount),
