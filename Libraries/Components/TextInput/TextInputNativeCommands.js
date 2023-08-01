@@ -31,6 +31,11 @@ export interface TextInputNativeCommands<T> {
   // macOS]
 }
 
-const supportedCommands = ['focus', 'blur', 'setTextAndSelection', 'setGhostText']; // [macOS]
+const supportedCommands = [
+  'focus',
+  'blur',
+  'setTextAndSelection',
+  'setGhostText',
+]; // [macOS]
 
 export default supportedCommands;

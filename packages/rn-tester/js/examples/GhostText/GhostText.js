@@ -39,7 +39,7 @@ function lastIndexOfWhitespace(str: string, searchPos: number): number {
 
 function determinePrefixAndSuffix(
   oldText: string,
-  newText: string
+  newText: string,
 ): {
   previousText: string,
   range: $ReadOnly<{start: number, end: number}>,
