@@ -22,7 +22,6 @@ export interface TextInputNativeCommands<T> {
     start: Int32,
     end: Int32,
   ) => void;
-
   // [macOS
   // NYI on Android
   +setGhostText: (
@@ -32,6 +31,6 @@ export interface TextInputNativeCommands<T> {
   // macOS]
 }
 
-const supportedCommands = ['focus', 'blur', 'setTextAndSelection'];
+const supportedCommands = ['focus', 'blur', 'setTextAndSelection', 'setGhostText']; // [macOS]
 
 export default supportedCommands;

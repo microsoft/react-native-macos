@@ -27,7 +27,7 @@
   __weak RCTBridge *_bridge;
   __weak id<RCTEventDispatcherProtocol> _eventDispatcher;
 
-  NSInteger _ghostTextPosition; // only valid if _ghostText != nil [macOS]
+  NSInteger _ghostTextPosition; // [macOS] only valid if _ghostText != nil
 
   BOOL _hasInputAccesoryView;
   // [macOS] remove explicit _predictedText ivar declaration
@@ -194,7 +194,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
           [self.backedTextInputView positionFromPosition:self.backedTextInputView.beginningOfDocument offset:newOffset];
       [self.backedTextInputView setSelectedTextRange:[self.backedTextInputView textRangeFromPosition:position
                                                                                           toPosition:position]
-                                      notifyDelegate:!self.backedTextInputView.ghostTextChanging];
+                                      notifyDelegate:!self.backedTextInputView.ghostTextChanging]; // [macOS]
     }
 #else // [macOS
     if (selection.length == 0) {

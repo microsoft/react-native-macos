@@ -383,8 +383,9 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   if (_lastStringStateWasUpdatedWith && ![_lastStringStateWasUpdatedWith isEqual:_backedTextInputView.attributedText]) {
     [self textViewDidChange:_backedTextInputView];
 
-    if (![_backedTextInputView isGhostTextChanging]) // [macOS]
+    if (![_backedTextInputView isGhostTextChanging]) { // [macOS]
       _ignoreNextTextInputCall = YES;
+    } // [macOS]
   }
   _lastStringStateWasUpdatedWith = _backedTextInputView.attributedText;
   [self textViewProbablyDidChangeSelection];

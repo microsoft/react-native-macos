@@ -37,6 +37,43 @@ function lastIndexOfWhitespace(str: string, searchPos: number): number {
   return -1;
 }
 
+function determinePrefixAndSuffix(
+  oldText: string,
+  newText: string
+): {
+  previousText: string,
+  range: $ReadOnly<{start: number, end: number}>,
+  text: string,
+} {
+  const oldTextLength = oldText.length;
+  const newTextLength = newText.length;
+
+  let suffixLength = 0;
+  while (
+    suffixLength < oldTextLength &&
+    suffixLength < newTextLength &&
+    oldText.charAt(oldTextLength - suffixLength - 1) ===
+      newText.charAt(newTextLength - suffixLength - 1)
+  ) {
+    suffixLength++;
+  }
+
+  let prefixLength = 0;
+  while (
+    prefixLength < oldTextLength - suffixLength &&
+    prefixLength < newTextLength - suffixLength &&
+    oldText.charAt(prefixLength) === newText.charAt(prefixLength)
+  ) {
+    prefixLength++;
+  }
+
+  return {
+    previousText: oldText,
+    range: {start: prefixLength, end: oldTextLength - suffixLength},
+    text: newText.substring(prefixLength, newTextLength - suffixLength),
+  };
+}
+
 function determineGhostText(
   text: string,
   selection: $ReadOnly<{start: number, end: number}>,
@@ -89,6 +126,8 @@ function GhostTextExample(): React.Node {
 
   const textInput = React.useRef(undefined);
   const textInput2 = React.useRef(undefined);
+  const oldTextContent = React.useRef('');
+  const oldText2Content = React.useRef('');
   return (
     <ScrollView>
       <View style={styles.root}>
@@ -107,8 +146,21 @@ function GhostTextExample(): React.Node {
             onBlur={event =>
               appendLog('onBlur: ' + JSON.stringify(event.nativeEvent))
             }
-            onChange={event => appendLog('onChange: ' + event.nativeEvent.text)}
-            onChangeText={text => appendLog('onChangeText: ' + text)}
+            onChangeText={text => {
+              appendLog('onChangeText: ' + text);
+              const changes = determinePrefixAndSuffix(
+                oldTextContent.current,
+                text,
+              );
+              textInput.current?.setGhostText(
+                determineGhostText(
+                  changes.previousText,
+                  changes.range,
+                  changes.text,
+                ),
+              );
+              oldTextContent.current = text;
+            }}
             onEndEditing={event =>
               appendLog('onEndEditing: ' + event.nativeEvent.text)
             }
@@ -124,16 +176,6 @@ function GhostTextExample(): React.Node {
             onSubmitEditing={event =>
               appendLog('onSubmitEditing: ' + event.nativeEvent.text)
             }
-            onTextInput={event => {
-              appendLog('onTextInput: ' + JSON.stringify(event.nativeEvent));
-              textInput.current?.setGhostText(
-                determineGhostText(
-                  event.nativeEvent.previousText,
-                  event.nativeEvent.range,
-                  event.nativeEvent.text,
-                ),
-              );
-            }}
             style={styles.row}
           />
           <TextInput
@@ -142,8 +184,21 @@ function GhostTextExample(): React.Node {
             onBlur={event =>
               appendLog('onBlur: ' + JSON.stringify(event.nativeEvent))
             }
-            onChange={event => appendLog('onChange: ' + event.nativeEvent.text)}
-            onChangeText={text => appendLog('onChangeText: ' + text)}
+            onChangeText={text => {
+              appendLog('onChangeText: ' + text);
+              const changes = determinePrefixAndSuffix(
+                oldText2Content.current,
+                text,
+              );
+              textInput2.current?.setGhostText(
+                determineGhostText(
+                  changes.previousText,
+                  changes.range,
+                  changes.text,
+                ),
+              );
+              oldText2Content.current = text;
+            }}
             onEndEditing={event =>
               appendLog('onEndEditing: ' + event.nativeEvent.text)
             }
@@ -159,16 +214,6 @@ function GhostTextExample(): React.Node {
             onSubmitEditing={event =>
               appendLog('onSubmitEditing: ' + event.nativeEvent.text)
             }
-            onTextInput={event => {
-              appendLog('onTextInput: ' + JSON.stringify(event.nativeEvent));
-              textInput2.current?.setGhostText(
-                determineGhostText(
-                  event.nativeEvent.previousText,
-                  event.nativeEvent.range,
-                  event.nativeEvent.text,
-                ),
-              );
-            }}
             style={styles.row}
           />
           <Button

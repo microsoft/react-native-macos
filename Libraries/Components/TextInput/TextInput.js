@@ -877,13 +877,6 @@ export type Props = $ReadOnly<{|
   onContentSizeChange?: ?(e: ContentSizeChangeEvent) => mixed,
 
   /**
-   * Callback that is called when the text is input into the text input.
-   * The original text, the selection in the original text, and the inserted
-   * text are passed to the callback handler.
-   */
-  onTextInput?: ?(e: TextInputEvent) => mixed,
-
-  /**
    * Callback that is called when text input ends.
    */
   onEndEditing?: ?(e: EditingEvent) => mixed,
