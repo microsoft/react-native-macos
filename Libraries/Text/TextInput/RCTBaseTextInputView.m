@@ -527,6 +527,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (NSString *)textInputShouldChangeText:(NSString *)text inRange:(NSRange)range
 {
+  if (text == nil) { // [macOS
+    return nil;
+  } // macOS]
+    
   id<RCTBackedTextInputViewProtocol> backedTextInputView = self.backedTextInputView;
 
   if (!backedTextInputView.textWasPasted) {
@@ -599,7 +603,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
     _onTextInput(@{
       // We copy the string here because if it's a mutable string it may get released before we stop using it on a
       // different thread, causing a crash.
-        @"text" : (text != nil) ? [text copy] : @"",
+      @"text" : [text copy],
       @"previousText" : previousText,
       @"range" : @{@"start" : @(range.location), @"end" : @(range.location + range.length)},
       @"eventCount" : @(_nativeEventCount),
