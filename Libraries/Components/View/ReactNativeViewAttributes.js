@@ -37,6 +37,7 @@ const UIView = {
   style: ReactNativeStyleAttributes,
   // [macOS
   acceptsFirstMouse: true,
+  mouseDownCanMoveWindow: true,
   enableFocusRing: true,
   focusable: true,
   onMouseEnter: true,
@@ -46,6 +47,7 @@ const UIView = {
   onDrop: true,
   onKeyDown: true,
   onKeyUp: true,
+  passthroughAllKeyEvents: true,
   validKeysDown: true,
   validKeysUp: true,
   draggedTypes: true,

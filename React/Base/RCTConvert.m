@@ -12,6 +12,7 @@
 #import <CoreText/CoreText.h>
 
 #import "RCTDefines.h"
+#import "RCTHandledKey.h" // [macOS]
 #import "RCTImageSource.h"
 #import "RCTParserUtils.h"
 #import "RCTUtils.h"
@@ -1115,7 +1116,7 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
           } else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastDarkAqua) {
             return highContrastDarkColor;
           } else {
-            RCTLogConvertError(json, @"an NSColorColor. Could not resolve current appearance. Defaulting to light.");
+            RCTLogWarn(@"DynamicColorMacOS: Could not resolve current appearance. Defaulting to light.");
             return lightColor;
           }
         }];
@@ -1500,6 +1501,9 @@ RCT_ENUM_CONVERTER(
   }
   return NSAccessibilityUnknownRole;
 }
+
+RCT_ARRAY_CONVERTER(RCTHandledKey);
+
 #endif // macOS]
 
 @end

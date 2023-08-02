@@ -394,8 +394,8 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 - (void)setNeedsDisplay;
 
-// An override of an undocumented API that controls the layer's masksToBounds property
-@property (nonatomic) BOOL clipsToBounds;
+// FUTURE: When Xcode 14 is no longer supported (CI is building with Xcode 15), we can remove this override since it's now declared on NSView
+@property BOOL clipsToBounds;
 @property (nonatomic, copy) NSColor *backgroundColor;
 @property (nonatomic) CGAffineTransform transform;
 
@@ -404,6 +404,9 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
  * containing window is in the background.
  */
 @property (nonatomic, assign) BOOL acceptsFirstMouse;
+
+@property (nonatomic, assign) BOOL mouseDownCanMoveWindow;
+
 /**
  * Specifies whether the view participates in the key view loop as user tabs through different controls
  * This is equivalent to acceptsFirstResponder on mac OS.
@@ -543,7 +546,7 @@ typedef UISwitch RCTUISwitch;
 #else
 @interface RCTUISwitch : NSSwitch
 NS_ASSUME_NONNULL_BEGIN
-@property (nonatomic, assign, getter=isOn) BOOL on;
+@property (nonatomic, getter=isOn) BOOL on;
 
 - (void)setOn:(BOOL)on animated:(BOOL)animated;
 
@@ -586,7 +589,8 @@ typedef UIImageView RCTUIImageView;
 #else
 @interface RCTUIImageView : NSImageView
 NS_ASSUME_NONNULL_BEGIN
-@property (nonatomic, assign) BOOL clipsToBounds;
+// FUTURE: When Xcode 14 is no longer supported (CI is building with Xcode 15), we can remove this override since it's now declared on NSView
+@property (assign) BOOL clipsToBounds;
 @property (nonatomic, strong) RCTUIColor *tintColor;
 @property (nonatomic, assign) UIViewContentMode contentMode;
 NS_ASSUME_NONNULL_END

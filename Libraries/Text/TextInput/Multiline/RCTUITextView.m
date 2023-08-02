@@ -464,7 +464,7 @@ static RCTUIColor *defaultPlaceholderColor() // [macOS]
                                .size;
   placeholderSize = CGSizeMake(RCTCeilPixelValue(placeholderSize.width), RCTCeilPixelValue(placeholderSize.height));
 #else // [macOS
-  CGFloat scale = self.window.backingScaleFactor;
+  CGFloat scale = _pointScaleFactor ?: self.window.backingScaleFactor;
   CGSize placeholderSize = [placeholder sizeWithAttributes:[self _placeholderTextAttributes]];
   placeholderSize = CGSizeMake(RCTCeilPixelValue(placeholderSize.width, scale), RCTCeilPixelValue(placeholderSize.height, scale));
 #endif // macOS]
@@ -555,6 +555,14 @@ static RCTUIColor *defaultPlaceholderColor() // [macOS]
   }
 }
 #else // [macOS
+- (BOOL)performKeyEquivalent:(NSEvent *)event {
+  if (!self.hasMarkedText && ![self.textInputDelegate textInputShouldHandleKeyEvent:event]) {
+    return YES;
+  }
+
+  return [super performKeyEquivalent:event];
+}
+
 - (void)keyDown:(NSEvent *)event {
   // If has marked text, handle by native and return
   // Do this check before textInputShouldHandleKeyEvent as that one attempts to send the event to JS

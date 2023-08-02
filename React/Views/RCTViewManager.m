@@ -427,12 +427,16 @@ RCT_CUSTOM_VIEW_PROPERTY(acceptsFirstMouse, BOOL, RCTView)
     view.acceptsFirstMouse = json ? [RCTConvert BOOL:json] : defaultView.acceptsFirstMouse;
   }
 }
+
+RCT_EXPORT_VIEW_PROPERTY(mouseDownCanMoveWindow, BOOL)
+
 RCT_CUSTOM_VIEW_PROPERTY(focusable, BOOL, RCTView)
 {
   if ([view respondsToSelector:@selector(setFocusable:)]) {
     view.focusable = json ? [RCTConvert BOOL:json] : defaultView.focusable;
   }
 }
+
 RCT_CUSTOM_VIEW_PROPERTY(enableFocusRing, BOOL, RCTView)
 {
   if ([view respondsToSelector:@selector(setEnableFocusRing:)]) {
@@ -521,10 +525,12 @@ RCT_EXPORT_VIEW_PROPERTY(onMouseLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragEnter, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDrop, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(passthroughAllKeyEvents, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTDirectEventBlock) // macOS keyboard events
 RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTDirectEventBlock) // macOS keyboard events
-RCT_EXPORT_VIEW_PROPERTY(validKeysDown, NSArray<NSString*>)
-RCT_EXPORT_VIEW_PROPERTY(validKeysUp, NSArray<NSString*>)
+RCT_EXPORT_VIEW_PROPERTY(validKeysDown, NSArray<RCTHandledKey *>)
+RCT_EXPORT_VIEW_PROPERTY(validKeysUp, NSArray<RCTHandledKey *>)
+
 #endif // macOS]
 
 #pragma mark - ShadowView properties

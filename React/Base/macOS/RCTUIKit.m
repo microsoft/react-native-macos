@@ -215,6 +215,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
   NSColor *_backgroundColor;
   BOOL _clipsToBounds;
   BOOL _userInteractionEnabled;
+  BOOL _mouseDownCanMoveWindow;
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key
@@ -243,6 +244,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     self.wantsLayer = YES;
     self->_userInteractionEnabled = YES;
     self->_enableFocusRing = YES;
+    self->_mouseDownCanMoveWindow = YES;
   }
   return self;
 }
@@ -286,6 +288,14 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 - (void)viewDidMoveToWindow
 {
   [self didMoveToWindow];
+}
+
+- (BOOL)mouseDownCanMoveWindow{
+	return _mouseDownCanMoveWindow;
+}
+
+- (void)setMouseDownCanMoveWindow:(BOOL)mouseDownCanMoveWindow{
+	_mouseDownCanMoveWindow = mouseDownCanMoveWindow;
 }
 
 - (BOOL)isFlipped
@@ -632,7 +642,7 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 
 - (void)setOn:(BOOL)on
 {
-	self.state = on ? NSControlStateValueOn : NSControlStateValueOff;
+	[self setOn:on animated:NO];
 }
 
 - (void)setOn:(BOOL)on animated:(BOOL)animated {
@@ -753,7 +763,9 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 
 // RCTUIImageView
 
-@implementation RCTUIImageView
+@implementation RCTUIImageView {
+  CALayer *_tintingLayer;
+}
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -812,13 +824,21 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
   CALayer *layer = [self layer];
   
   if ([layer contents] != image || [layer backgroundColor] != nil) {
-    if (_tintColor != nil) {
-      image = [image copy];
-      [image lockFocus];
-      [_tintColor set];
-      NSRect imageRect = { NSZeroPoint, image.size };
-      NSRectFillUsingOperation(imageRect, NSCompositingOperationSourceIn);
-      [image unlockFocus];
+    if (_tintColor) {
+      if (!_tintingLayer) {
+        _tintingLayer = [CALayer new];
+        [_tintingLayer setFrame:self.bounds];
+        [_tintingLayer setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
+        [_tintingLayer setZPosition:1.0];
+        CIFilter *sourceInCompositingFilter = [CIFilter filterWithName:@"CISourceInCompositing"];
+        [sourceInCompositingFilter setDefaults];
+        [_tintingLayer setCompositingFilter:sourceInCompositingFilter];
+        [layer addSublayer:_tintingLayer];
+      }
+      [_tintingLayer setBackgroundColor:_tintColor.CGColor];
+    } else {
+      [_tintingLayer removeFromSuperlayer];
+      _tintingLayer = nil;
     }
     
     if (image != nil && [image resizingMode] == NSImageResizingModeTile) {

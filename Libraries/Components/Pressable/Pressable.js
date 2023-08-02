@@ -26,6 +26,7 @@ import type {
   AccessibilityState,
   AccessibilityValue,
 } from '../View/ViewAccessibility';
+import type {HandledKeyboardEvent} from '../View/ViewPropTypes'; // [macOS]
 
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
@@ -185,23 +186,88 @@ type Props = $ReadOnly<{|
   onKeyUp?: ?(event: KeyEvent) => void,
 
   /**
-   * Array of keys to receive key down events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+   * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
+   * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
+   * still have their native default behavior prevented, but the others do not.
+   *
+   * @platform macos
    */
-  validKeysDown?: ?Array<string>,
+  passthroughAllKeyEvents?: ?boolean,
 
   /**
-   * Array of keys to receive key up events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+   * Array of keys to receive key down events for. These events have their default native behavior prevented.
+   *
+   * @platform macos
    */
-  validKeysUp?: ?Array<string>,
+  validKeysDown?: ?Array<string | HandledKeyboardEvent>,
 
+  /**
+   * Array of keys to receive key up events for. These events have their default native behavior prevented.
+   *
+   * @platform macos
+   */
+  validKeysUp?: ?Array<string | HandledKeyboardEvent>,
+
+  /**
+   * Specifies whether the view should receive the mouse down event when the
+   * containing window is in the background.
+   *
+   * @platform macos
+   */
   acceptsFirstMouse?: ?boolean,
+
+  /**
+   * Specifies whether clicking and dragging the view can move the window. This is useful
+   * to disable in Button like components like Pressable where mouse the user should still
+   * be able to click and drag off the view to cancel the click without accidentally moving the window.
+   *
+   * @platform macos
+   */
+  mouseDownCanMoveWindow?: ?boolean,
+
+  /**
+   * Specifies whether system focus ring should be drawn when the view has keyboard focus.
+   *
+   * @platform macos
+   */
   enableFocusRing?: ?boolean,
+
+  /**
+   * Specifies the Tooltip for the Pressable.
+   * @platform macos
+   */
   tooltip?: ?string,
+
+  /**
+   * Fired when a file is dragged into the Pressable via the mouse.
+   *
+   * @platform macos
+   */
   onDragEnter?: (event: MouseEvent) => void,
+
+  /**
+   * Fired when a file is dragged out of the Pressable via the mouse.
+   *
+   * @platform macos
+   */
   onDragLeave?: (event: MouseEvent) => void,
+
+  /**
+   * Fired when a file is dropped on the Pressable via the mouse.
+   *
+   * @platform macos
+   */
   onDrop?: (event: MouseEvent) => void,
+
+  /**
+   * The types of dragged files that the Pressable will accept.
+   *
+   * Possible values for `draggedTypes` are:
+   *
+   * - `'fileUrl'`
+   *
+   * @platform macos
+   */
   draggedTypes?: ?DraggedTypesType,
   // macOS]
 
@@ -250,8 +316,6 @@ type Props = $ReadOnly<{|
  * LTI update could not be added via codemod */
 function Pressable(props: Props, forwardedRef): React.Node {
   const {
-    acceptsFirstMouse, // [macOS]
-    enableFocusRing, // [macOS]
     accessible,
     accessibilityState,
     'aria-live': ariaLive,
@@ -282,6 +346,9 @@ function Pressable(props: Props, forwardedRef): React.Node {
     onBlur,
     onKeyDown,
     onKeyUp,
+    acceptsFirstMouse,
+    mouseDownCanMoveWindow,
+    enableFocusRing,
     // macOS]
     pressRetentionOffset,
     style,
@@ -322,7 +389,8 @@ function Pressable(props: Props, forwardedRef): React.Node {
   const restPropsWithDefaults: React.ElementConfig<typeof View> = {
     ...restProps,
     ...android_rippleConfig?.viewProps,
-    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [macOS
+    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [macOS]
+    mouseDownCanMoveWindow: false, // [macOS]
     enableFocusRing: enableFocusRing !== false && !disabled,
     accessible: accessible !== false,
     accessibilityViewIsModal:
