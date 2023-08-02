@@ -528,10 +528,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (NSString *)textInputShouldChangeText:(NSString *)text inRange:(NSRange)range
 {
-  if (text == nil) { // [macOS
-    return nil;
-  } // macOS]
-    
   id<RCTBackedTextInputViewProtocol> backedTextInputView = self.backedTextInputView;
 
   if (!backedTextInputView.textWasPasted) {
