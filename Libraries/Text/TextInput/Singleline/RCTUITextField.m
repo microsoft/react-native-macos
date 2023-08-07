@@ -593,7 +593,7 @@
   size = CGSizeMake(RCTCeilPixelValue(size.width), RCTCeilPixelValue(size.height));
 #else // [macOS
   CGSize size = [text sizeWithAttributes:@{NSFontAttributeName: self.font}];
-  CGFloat scale = self.window.backingScaleFactor;
+  CGFloat scale = _pointScaleFactor ?: self.window.backingScaleFactor;
   RCTAssert(scale != 0.0, @"Layout occurs before the view is in a window?");
   if (scale == 0) {
     scale = [[NSScreen mainScreen] backingScaleFactor];
