@@ -95,6 +95,12 @@ class ShadowNode : public Sealable, public DebugStringConvertible {
    * Clones the shadow node using stored `cloneFunction`.
    */
   Unshared clone(const ShadowNodeFragment &fragment) const;
+  
+  /*
+   * Clones the shadow node recursively.
+   */
+  Unshared cloneRecursive() const;
+
 
   /*
    * Clones the node (and partially the tree starting from the node) by

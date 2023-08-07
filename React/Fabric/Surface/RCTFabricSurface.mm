@@ -170,19 +170,24 @@ using namespace facebook::react;
   }
 }
 
-- (void)_updateLayoutContext
+- (void)updateLayoutContextWithPointScaleFactor:(CGFloat)pointScaleFactor
 {
   auto layoutConstraints = _surfaceHandler->getLayoutConstraints();
   layoutConstraints.layoutDirection = RCTLayoutDirection([[RCTI18nUtil sharedInstance] isRTL]);
 
   auto layoutContext = _surfaceHandler->getLayoutContext();
 
-  layoutContext.pointScaleFactor = RCTScreenScale();
+  layoutContext.pointScaleFactor = pointScaleFactor;
   layoutContext.swapLeftAndRightInRTL =
       [[RCTI18nUtil sharedInstance] isRTL] && [[RCTI18nUtil sharedInstance] doLeftAndRightSwapInRTL];
   layoutContext.fontSizeMultiplier = RCTFontSizeMultiplier();
 
   _surfaceHandler->constraintLayout(layoutConstraints, layoutContext);
+}
+
+- (void)_updateLayoutContext
+{
+  [self updateLayoutContextWithPointScaleFactor:RCTScreenScale()];
 }
 
 #pragma mark - Properties Management

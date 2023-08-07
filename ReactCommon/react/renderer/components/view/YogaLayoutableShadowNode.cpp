@@ -141,6 +141,10 @@ void YogaLayoutableShadowNode::dirtyLayout() {
   yogaNode_.setDirty(true);
 }
 
+void YogaLayoutableShadowNode::dirtyLayoutAndPropagateDownwards() {
+  yogaNode_.markDirtyAndPropogateDownwards();
+}
+
 bool YogaLayoutableShadowNode::getIsLayoutClean() const {
   return !yogaNode_.isDirty();
 }
