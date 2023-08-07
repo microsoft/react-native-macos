@@ -180,6 +180,9 @@ static inline NSString *_NSStringFromCString(
 static inline facebook::react::ColorComponents _ColorComponentsFromUIColor(RCTUIColor *color) // [macOS]
 {
   CGFloat rgba[4];
+#if TARGET_OS_OSX // [macOS
+  color = [color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+#endif // macOS]
   RCTGetRGBAColorComponents(color.CGColor, rgba);
   return {(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]};
 }
