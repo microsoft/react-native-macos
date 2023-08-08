@@ -561,7 +561,7 @@ type MacOSViewProps = $ReadOnly<{|
    *
    * @platform macos
    */
-  allowsVibrancy?: boolean | undefined;
+  allowsVibrancy?: boolean | undefined,
 
   /**
    * Specifies whether system focus ring should be drawn when the view has keyboard focus.
