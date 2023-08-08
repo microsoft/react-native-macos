@@ -1520,7 +1520,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 }
 
 - (BOOL)allowsVibrancy {
-  return _allowsVibrancyInternal;
+  return _allowsVibrancyInternal || [super allowsVibrancy];
 }
 
 - (NSDictionary*)locationInfoFromEvent:(NSEvent*)event
