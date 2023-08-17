@@ -347,6 +347,16 @@ static RCTUIColor *defaultPlaceholderColor() // [macOS]
   return _readablePasteboardTypes ? _readablePasteboardTypes : [super readablePasteboardTypes];
 }
 
+// Remove the default touchbar that comes with NSTextView, since the actions that come with the
+// default touchbar are currently not supported by RCTUITextView
+- (NSTouchBar *)makeTouchBar
+{
+    NSTouchBar *touchBar = [[NSTouchBar alloc] init];
+    [touchBar setDelegate:self];
+    [touchBar setDefaultItemIdentifiers:[NSArray new]];
+    return touchBar;
+}
+
 #endif // macOS]
 
 - (void)paste:(id)sender
