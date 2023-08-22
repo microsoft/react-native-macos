@@ -351,10 +351,7 @@ static RCTUIColor *defaultPlaceholderColor() // [macOS]
 // default touchbar are currently not supported by RCTUITextView
 - (NSTouchBar *)makeTouchBar
 {
-    NSTouchBar *touchBar = [[NSTouchBar alloc] init];
-    [touchBar setDelegate:self];
-    [touchBar setDefaultItemIdentifiers:[NSArray new]];
-    return touchBar;
+    return nil;
 }
 
 #endif // macOS]
