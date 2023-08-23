@@ -22,11 +22,7 @@ void RCTBundleURLProviderAllowPackagerServerAccess(BOOL allowed)
   kRCTAllowPackagerAccess = allowed;
 }
 #endif
-#if !TARGET_OS_OSX // [macOS]
-static NSString *const kRCTPlatformName = @"ios";
-#else // [macOS
-static NSString *const kRCTPlatformName = @"macos";
-#endif // macOS]
+
 static NSString *const kRCTPackagerSchemeKey = @"RCT_packager_scheme";
 static NSString *const kRCTJsLocationKey = @"RCT_jsLocation";
 static NSString *const kRCTEnableDevKey = @"RCT_enableDev";

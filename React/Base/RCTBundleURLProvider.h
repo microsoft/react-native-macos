@@ -22,7 +22,11 @@ RCT_EXTERN const NSUInteger kRCTBundleURLProviderDefaultPort;
 RCT_EXTERN void RCTBundleURLProviderAllowPackagerServerAccess(BOOL allowed);
 #endif
 
-extern NSString *const kRCTPlatformName; // [macOS]
+#if !TARGET_OS_OSX // [macOS]
+static NSString *const kRCTPlatformName = @"ios";
+#else // [macOS
+static NSString *const kRCTPlatformName = @"macos";
+#endif // macOS] // [macOS]
 
 @interface RCTBundleURLProvider : NSObject
 

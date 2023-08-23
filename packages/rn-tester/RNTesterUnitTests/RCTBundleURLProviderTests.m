@@ -58,7 +58,7 @@ static NSURL *ipBundleURL()
       URLWithString:
           [NSString
               stringWithFormat:
-                  @"http://192.168.1.1:8081/%@.bundle?platform=%@s&dev=true&minify=false&inlineSourceMap=false&modulesOnly=false&runModule=true&app=com.apple.dt.xctest.tool",
+                  @"http://192.168.1.1:8081/%@.bundle?platform=%@&dev=true&minify=false&inlineSourceMap=false&modulesOnly=false&runModule=true&app=com.apple.dt.xctest.tool",
                   testFile,
                   kRCTPlatformName]]; // [macOS]
 #endif
