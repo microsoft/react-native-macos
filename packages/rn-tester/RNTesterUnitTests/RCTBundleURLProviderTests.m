@@ -27,7 +27,7 @@ static NSURL *localhostBundleURL()
       URLWithString:
           [NSString
               stringWithFormat:
-                  @"http://localhost:8081/%@.bundle?platform=%@&dev=true&minify=false&modulesOnly=false&runModule=true&runtimeBytecodeVersion=%u&app=com.apple.dt.xctest.tool",
+                  @"http://localhost:8081/%@.bundle?platform=%@&dev=true&minify=false&inlineSourceMap=false&modulesOnly=false&runModule=true&runtimeBytecodeVersion=%u&app=com.apple.dt.xctest.tool",
                   testFile,
                   kRCTPlatformName, // [macOS]
                   HERMES_BYTECODE_VERSION]];
@@ -36,7 +36,7 @@ static NSURL *localhostBundleURL()
       URLWithString:
           [NSString
               stringWithFormat:
-                  @"http://localhost:8081/%@.bundle?platform=%@&dev=true&minify=false&modulesOnly=false&runModule=true&app=com.apple.dt.xctest.tool",
+                  @"http://localhost:8081/%@.bundle?platform=%@&dev=true&minify=false&inlineSourceMap=false&modulesOnly=false&runModule=true&app=com.apple.dt.xctest.tool",
                   testFile,
                   kRCTPlatformName]]; // [macOS]
 #endif
@@ -49,7 +49,7 @@ static NSURL *ipBundleURL()
       URLWithString:
           [NSString
               stringWithFormat:
-                  @"http://192.168.1.1:8081/%@.bundle?platform=%@&dev=true&minify=false&modulesOnly=false&runModule=true&runtimeBytecodeVersion=%u&app=com.apple.dt.xctest.tool",
+                  @"http://192.168.1.1:8081/%@.bundle?platform=%@&dev=true&minify=false&inlineSourceMap=false&modulesOnly=false&runModule=true&runtimeBytecodeVersion=%u&app=com.apple.dt.xctest.tool",
                   testFile,
                   kRCTPlatformName, // [macOS]
                   HERMES_BYTECODE_VERSION]];
@@ -58,7 +58,7 @@ static NSURL *ipBundleURL()
       URLWithString:
           [NSString
               stringWithFormat:
-                  @"http://192.168.1.1:8081/%@.bundle?platform=%@&dev=true&minify=false&modulesOnly=false&runModule=true&app=com.apple.dt.xctest.tool",
+                  @"http://192.168.1.1:8081/%@.bundle?platform=%@s&dev=true&minify=false&inlineSourceMap=false&modulesOnly=false&runModule=true&app=com.apple.dt.xctest.tool",
                   testFile,
                   kRCTPlatformName]]; // [macOS]
 #endif

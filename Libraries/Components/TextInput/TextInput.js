@@ -1579,6 +1579,8 @@ function InternalTextInput(props: Props): React.Node {
 
   let style = flattenStyle(props.style);
 
+  let style = flattenStyle(props.style);
+
   if (Platform.OS === 'ios' || Platform.OS === 'macos') {
     // [macOS]
     const RCTTextInputView =
