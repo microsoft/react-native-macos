@@ -50,10 +50,11 @@
  *   - (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass
  */
 #if !TARGET_OS_OSX // [macOS]
-@interface RCTAppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate>
+@interface RCTAppDelegate : UIResponder <UIApplicationDelegate, UISceneDelegate, RCTBridgeDelegate>
 #else // [macOS
 @interface RCTAppDelegate : NSResponder <NSApplicationDelegate, RCTBridgeDelegate>
 #endif // macOS]
+
 /// The window object, used to render the UViewControllers
 @property (nonatomic, strong) RCTPlatformWindow *window; // [macOS]
 @property (nonatomic, strong) RCTBridge *bridge;
