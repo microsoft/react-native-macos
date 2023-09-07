@@ -11,6 +11,7 @@
 #include <jsi/jsilib.h>
 #include <array>
 #include <atomic>
+#include <codecvt>
 #include <condition_variable>
 #include <cstdlib>
 #include <mutex>
@@ -741,10 +742,25 @@ jsi::String JSCRuntime::createStringFromAscii(const char *str, size_t length) {
 jsi::String JSCRuntime::createStringFromUtf8(
     const uint8_t *str,
     size_t length) {
-  std::string tmp(reinterpret_cast<const char *>(str), length);
-  JSStringRef stringRef = JSStringCreateWithUTF8CString(tmp.c_str());
+  static_assert(
+    sizeof(JSChar) == sizeof(char16_t),
+    "JSChar size must match char16_t size for UTF-8 to UTF-16 conversions");
+
+  const char *utf8 = reinterpret_cast<const char *>(str);
+  const char *utf8end = utf8 + length;
+
+  std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> cnv;
+  const std::u16string s = cnv.from_bytes(utf8, utf8end);
+
+  if (cnv.converted() < length)
+      throw std::runtime_error("incomplete conversion");
+
+  JSStringRef stringRef = JSStringCreateWithCharacters(
+    reinterpret_cast<const JSChar *>(s.data()),
+    s.length());
   auto result = createString(stringRef);
   JSStringRelease(stringRef);
+
   return result;
 }
 
