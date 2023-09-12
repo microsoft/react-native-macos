@@ -13,7 +13,7 @@ We use Azure Pipelines for our publish pipeline. The pipeline is defined in `.ad
 There are various scripts that React Native core uses to manage their releases. These have been refactored over time, so I'll be brief and mention the relevant scripts for React Native macOS. For more info on upstream releases, you can take a look at [the documentation](https://reactnative.dev/contributing/release-branch-cut-and-rc0).
 
 - `set-rn-version.js` : This will locally modify file version numbers. Most other scripts below call this script. Depending on the repo and branch, this script was modified to do a lot more, including:
-  - (React Native 0.72 and lower) Delete the "private" and "workspace" keys from the root package.json to make it suitable for publishing. In React Native macOS, we commented this out.
+  - (React Native 0.71 and lower) Delete the "private" and "workspace" keys from the root package.json to make it suitable for publishing. In React Native macOS, we commented this out.
   - (React Native macOS 0.68 and lower) Commit and tag the version bump to git
 - `bump-oss-version.js`: This is an interactive script used by Open Source maintainers to push React Native releases. It will walk you through the steps of triggering a new release, ending on triggering a CircleCI job to kickoff the release process.
 - `prepare-package-for-release.js`: This is used by CircleCI. It will call `set-rn-version`, update RNTester's `podfile.lock` file, and appropriately `git tag` the release with the version and/or the "latest" tag. It will also `git push` the version bump and tags back to Github. 
