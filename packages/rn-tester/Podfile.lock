@@ -508,46 +508,46 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: 8fa3cd00fa17ef6c3221e5fd283fa93e81d23017
   DoubleConversion: acaf5db79676d2e9119015819153f0f99191de12
-  FBLazyVector: f675a717737d719a18dffde140c984896bc103ca
-  FBReactNativeSpec: 3d185c72e95d7d08af8f30e2928565acc4675c50
+  FBLazyVector: bfab2c0bc9280c8bfd781564a092af8dc4a67e56
+  FBReactNativeSpec: 43311df1a38d8a4e993f630ae0dc52eb7b7aaa9d
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 6df0a3d6e2750a50609471fd1a01fd2948d405b5
   OCMock: 9491e4bec59e0b267d52a9184ff5605995e74be8
   RCT-Folly: bf7b4921a91932051ebf1c5c2d297154b1fa3c8c
-  RCTRequired: 23818f8d69af159020a96677b959bb4bc42c5597
-  RCTTypeSafety: 0cd48401b30208bf9424f75b843f81b6fa834599
-  React: 4899eeb992e17d0efdc75757688adc372233ee03
-  React-callinvoker: 974f861054f2802e20909a358232e6d4eaa89e8d
+  RCTRequired: 9b39aba15f4a994ef17e281fc4d24ebfb2b76066
+  RCTTypeSafety: 29b97b4e5e756b45511b99d3c8d0704f51019a90
+  React: da2281cd2bea28e9ba308fd6ab35fce2edf7aeae
+  React-callinvoker: cca8942f666421669aa586285020e6e4adaf0252
   React-Codegen: 9e4433cdb48a2cda2a1407715abcc6ef43ab097e
-  React-Core: 75ccd5ea1dfba94396fe7f42d742b5fad316833f
-  React-CoreModules: c0dae5bd3bfc71d4b9a1a396995e0a96aaea8c38
-  React-cxxreact: f80b96e7ede70dc713f278f801870941df15e482
-  React-jsc: fe34e7cb127ee24c524c0ae0fc4f50f59b815c3c
-  React-jsi: 3c8e8e5571b4616ef87e1741d300340ae3c2bf92
-  React-jsiexecutor: 1a26e4c29fa910dce2383029c746db6ec333665d
-  React-jsinspector: 49ece915ffdb72b97bf7e734ba5dd8d8f1f52cd4
-  React-logger: bd582ff5f4803ed308b57b897b86f48c9ee0c082
-  React-NativeModulesApple: 127aed47c8018865681694fd5cf0857953ae34c7
-  React-perflogger: 73bfde53a5ad9f25c87b12c0f189f5e8501e027d
-  React-RCTActionSheet: 5a5189b2896f1ddd6a0dbaa80ecc09470ba9066a
-  React-RCTAnimation: 61bc6807c9ed65a18384c47b9cf4cccd26ead593
-  React-RCTAppDelegate: 7f97426e3f42629bf58ca4dae9f8495b0fa2f165
-  React-RCTBlob: b678eb7c0e4c24aa496bc9d6ad5d33862c2524e7
-  React-RCTImage: 6b8a3679ff1b8a0a9cbe95373b6b55b705fedd1b
-  React-RCTLinking: 838cfa436d2baf8a92d5ca65d86483a973170f53
-  React-RCTNetwork: 4ba93f65f99209fec7881178b96399722df153fd
-  React-RCTPushNotification: c5ca40c92fc69c61b3d4eb12565426688095c493
-  React-RCTSettings: ebf15e8fea9e2b900145fba0370a06ffd71662b6
-  React-RCTTest: f80d4874ac6926abf0f69cccffad9c932e8c8b2f
-  React-RCTText: e3bb643877f6da844c60186176153548bdfcd259
-  React-RCTVibration: fffcc22fb9eaa8e37a4c92468324aa31d2c9df9d
-  React-rncore: 7afbb7d475c177a67c597613d39d4ba2d47d50b1
-  React-runtimeexecutor: 88a93791d15040cef31b87c025715b006ac7970f
-  ReactCommon: ede267cba0b9b4414fd4b8143912240ed5bf8e35
-  ReactCommon-Samples: 96daa3326279837fc934ac35a57c0a7bb8322bfa
+  React-Core: 77d7114f096645ce9e2189f04e59aacef2f404e5
+  React-CoreModules: 8dcdde5ba05cd6fc233c9a202798635c81dbde72
+  React-cxxreact: b6363e4f784d64b0658f1a1f3f097485fdb289b8
+  React-jsc: ea3527da26dcd4fa2aa59723f41c469fd92179c1
+  React-jsi: 04a0a436a92ff556fe66919dc59684ddf3a78811
+  React-jsiexecutor: d28befea931848d4d2c688b0c9e57d812adad4ac
+  React-jsinspector: 2e53a1498e4e4f3f3822fb780c4aa491608e94f7
+  React-logger: 8f96626cb0e6d1c51e67693178213ec4e43f3da4
+  React-NativeModulesApple: 3f1c4ef6ced26feb43127590044d8fcb579b1cb8
+  React-perflogger: 1e3e950db4c877570e9c58bdbbba343cc6d551c4
+  React-RCTActionSheet: 74543b1c9f338b200166c1d6fa45e6bad854b437
+  React-RCTAnimation: 32384936fc55d7fea9ac1e6e37df2af4b0b3d126
+  React-RCTAppDelegate: 7417844a8b724abd5e311def8d063ce7725578a6
+  React-RCTBlob: fee42be545ffb0b9f07ba268f90a830a9815109a
+  React-RCTImage: c423ba45da6fc52071ec46e1a16faeafd67c789d
+  React-RCTLinking: ccd45cbc0bf912ba8fbed94164874ddc9c28c320
+  React-RCTNetwork: 6f7ecd45c8013893034fa63f75af485ddddf6a8a
+  React-RCTPushNotification: 43882e949070a393872d70ef4c1d8cfa5642423a
+  React-RCTSettings: c92261ca8e1248e7b408a8c908c189c3ce9d9a54
+  React-RCTTest: bf124dfa87a3ca10f650d6da501977a53528f1c4
+  React-RCTText: aee9b75482b51d95b39a6fcf2a74a041793c25fe
+  React-RCTVibration: 43c7a1c348f69e9082f61017859482e5523393be
+  React-rncore: 6f652d176e89279697337ee0685f7ab0cc99b94e
+  React-runtimeexecutor: bf2b2630738b11cd766a925d4abbad1bc2c9b54f
+  ReactCommon: ed564b6a5467a302e997337ddeeb237b3b46cf5b
+  ReactCommon-Samples: a338f161f83f32c99484df3c3c6d56902689d913
   ScreenshotManager: 84f13d11f296b960bbafd9897ba52588a42dd5ca
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
-  Yoga: d322d4a205e5fbc90fc64e7b9af8ef316e2a5338
+  Yoga: 4f13708a28b1657dbbee432c21523662f830c07e
 
 PODFILE CHECKSUM: 23258155130fc3ae417bc5bb12e76438f3b9a394
 

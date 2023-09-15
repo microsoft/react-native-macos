@@ -245,6 +245,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     self->_userInteractionEnabled = YES;
     self->_enableFocusRing = YES;
     self->_mouseDownCanMoveWindow = YES;
+    self->_transform3D = CATransform3DIdentity;
   }
   return self;
 }

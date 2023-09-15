@@ -417,6 +417,11 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
  */
 @property (nonatomic, assign) BOOL enableFocusRing;
 
+#if TARGET_OS_OSX // [macOS
+// macOS Properties
+@property (nonatomic, assign) CATransform3D transform3D;
+#endif // macOS]
+
 @end
 
 // UIScrollView
