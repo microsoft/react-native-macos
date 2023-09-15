@@ -179,6 +179,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     _borderStyle = RCTBorderStyleSolid;
     _hitTestEdgeInsets = UIEdgeInsetsZero;
 #if TARGET_OS_OSX // [macOS
+    _shadowColor = nil;
     _mouseDownCanMoveWindow = YES;
 #endif // macOS]
 
@@ -726,36 +727,36 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 #if TARGET_OS_OSX // [macOS
 - (void)setShadowColor:(NSColor *)shadowColor
 {
-    if ([super shadowColor] != shadowColor)
+    if (_shadowColor != shadowColor)
     {
-        [super setShadowColor:shadowColor];
+        _shadowColor = shadowColor;
         [self didUpdateShadow];
     }
 }
 
 - (void)setShadowOffset:(CGSize)shadowOffset
 {
-    if (!CGSizeEqualToSize([super shadowOffset], shadowOffset))
+    if (!CGSizeEqualToSize(_shadowOffset, shadowOffset))
     {
-        [super setShadowOffset:shadowOffset];
+        _shadowOffset = shadowOffset;
         [self didUpdateShadow];
     }
 }
 
 - (void)setShadowOpacity:(CGFloat)shadowOpacity
 {
-    if ([super shadowOpacity] != shadowOpacity)
+    if (_shadowOpacity != shadowOpacity)
     {
-        [super setShadowOpacity:shadowOpacity];
+        _shadowOpacity = shadowOpacity;
         [self didUpdateShadow];
     }
 }
 
 - (void)setShadowRadius:(CGFloat)shadowRadius
 {
-    if ([super shadowRadius] != shadowRadius)
+    if (_shadowRadius != shadowRadius)
     {
-        [super setShadowRadius:shadowRadius];
+        _shadowRadius = shadowRadius;
         [self didUpdateShadow];
     }
 }
@@ -1531,7 +1532,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 }
 
 - (BOOL)allowsVibrancy {
-  return [self allowsVibrancyInternal];
+  return _allowsVibrancyInternal;
 }
 
 - (NSDictionary*)locationInfoFromEvent:(NSEvent*)event

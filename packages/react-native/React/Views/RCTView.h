@@ -155,6 +155,39 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, assign) RCTBubblingEventBlock onPointerOver;
 @property (nonatomic, assign) RCTBubblingEventBlock onPointerOut;
 
+#if TARGET_OS_OSX // [macOS
+/**
+ * macOS Properties
+ */
+@property (nonatomic, assign) RCTCursor cursor;
+
+// `allowsVibrancy` is readonly on NSView, so let's create a new property to make it assignable
+// that we can set through JS and the getter for `allowsVibrancy` can read in RCTView.
+@property (nonatomic, assign) BOOL allowsVibrancyInternal;
+
+@property (nonatomic, copy) RCTDirectEventBlock onMouseEnter;
+@property (nonatomic, copy) RCTDirectEventBlock onMouseLeave;
+@property (nonatomic, copy) RCTDirectEventBlock onDragEnter;
+@property (nonatomic, copy) RCTDirectEventBlock onDragLeave;
+@property (nonatomic, copy) RCTDirectEventBlock onDrop;
+
+// Keyboarding events
+// NOTE does not properly work with single line text inputs (most key downs). This is because those are
+// presumably handled by the window's field editor. To make it work, we'd need to look into providing
+// a custom field editor for NSTextField controls.
+@property (nonatomic, assign) BOOL passthroughAllKeyEvents;
+@property (nonatomic, copy) RCTDirectEventBlock onKeyDown;
+@property (nonatomic, copy) RCTDirectEventBlock onKeyUp;
+@property (nonatomic, copy) NSArray<RCTHandledKey*> *validKeysDown;
+@property (nonatomic, copy) NSArray<RCTHandledKey*> *validKeysUp;
+
+// Shadow Properties
+@property (nonatomic, strong) NSColor *shadowColor;
+@property (nonatomic, assign) CGFloat shadowOpacity;
+@property (nonatomic, assign) CGFloat shadowRadius;
+@property (nonatomic, assign) CGSize shadowOffset;
+#endif // macOS]
+
 /**
  * Common Focus Properties
  */
