@@ -10,7 +10,9 @@
 
 #if !TARGET_OS_OSX // [macOS]
 #import <MobileCoreServices/UTCoreTypes.h>
-#endif // [macOS]
+#else // [macOS
+#import <React/RCTSurfaceTouchHandler.h>
+#endif // macOS]
 
 #import <react/renderer/components/text/ParagraphComponentDescriptor.h>
 #import <react/renderer/components/text/ParagraphProps.h>
@@ -26,6 +28,33 @@
 #import "RCTFabricComponentsPlugins.h"
 
 using namespace facebook::react;
+
+#if TARGET_OS_OSX // [macOS
+@interface RCTParagraphComponentUnfocusableTextView : NSTextView
+@end
+
+@implementation RCTParagraphComponentUnfocusableTextView
+
+- (BOOL)canBecomeKeyView
+{
+  return NO;
+}
+
+- (BOOL)resignFirstResponder
+{
+  // Don't relinquish first responder while selecting text.
+  if (self.selectable && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
+    return NO;
+  }
+
+  return [super resignFirstResponder];
+}
+
+@end
+
+@interface RCTParagraphComponentView () <NSTextViewDelegate>
+@end
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
@@ -53,7 +82,27 @@ using namespace facebook::react;
 #if !TARGET_OS_OSX  // [macOS]
     self.contentMode = UIViewContentModeRedraw;
     self.opaque = NO;
-#endif  // [macOS]
+#else // [macOS
+    // Make the RCTParagraphComponentView accessible and available in the a11y hierarchy.
+    self.accessibilityElement = YES;
+    self.accessibilityRole = NSAccessibilityStaticTextRole;
+    // Fix blurry text on non-retina displays.
+    self.canDrawSubviewsIntoLayer = YES;
+    // The NSTextView is responsible for drawing text and managing selection.
+    _textView = [[RCTParagraphComponentUnfocusableTextView alloc] initWithFrame:self.bounds];
+    _textView.delegate = self;
+    // The RCTParagraphComponentUnfocusableTextView is only used for rendering and should not appear in the a11y hierarchy.
+    _textView.accessibilityElement = NO;
+    _textView.usesFontPanel = NO;
+    _textView.drawsBackground = NO;
+    _textView.linkTextAttributes = @{};
+    _textView.editable = NO;
+    _textView.selectable = NO;
+    _textView.verticallyResizable = NO;
+    _textView.layoutManager.usesFontLeading = NO;
+    self.contentView = _textView;
+    self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
+#endif // macOS]
   }
 
   return self;
@@ -267,14 +316,89 @@ using namespace facebook::react;
     [menuController showMenuFromView:self rect:self.bounds];
   }
 }
-#endif // [macOS]
+#else // [macOS
+- (NSView *)hitTest:(NSPoint)point
+{
+  // We will forward mouse click events to the NSTextView ourselves to prevent NSTextView from swallowing events that may be handled in JS (e.g. long press).
+  NSView *hitView = [super hitTest:point];
+  
+  NSEventType eventType = NSApp.currentEvent.type;
+  BOOL isMouseClickEvent = NSEvent.pressedMouseButtons > 0;
+  BOOL isMouseMoveEventType = eventType == NSEventTypeMouseMoved || eventType == NSEventTypeMouseEntered || eventType == NSEventTypeMouseExited || eventType == NSEventTypeCursorUpdate;
+  BOOL isMouseMoveEvent = !isMouseClickEvent && isMouseMoveEventType;
+  BOOL isTextViewClick = (hitView && hitView == _textView) && !isMouseMoveEvent;
+  
+  return isTextViewClick ? self : hitView;
+}
 
+- (void)mouseDown:(NSEvent *)event
+{
+  if (!_textView.selectable) {
+    [super mouseDown:event];
+    return;
+  }
+
+  // Double/triple-clicks should be forwarded to the NSTextView.
+  BOOL shouldForward = event.clickCount > 1;
+
+  if (!shouldForward) {
+    // Peek at next event to know if a selection should begin.
+    NSEvent *nextEvent = [self.window nextEventMatchingMask:NSEventMaskLeftMouseUp | NSEventMaskLeftMouseDragged
+                                                  untilDate:[NSDate distantFuture]
+                                                     inMode:NSEventTrackingRunLoopMode
+                                                    dequeue:NO];
+    shouldForward = nextEvent.type == NSEventTypeLeftMouseDragged;
+  }
+
+  if (shouldForward) {
+    NSView *contentView = self.window.contentView;
+    // -[NSView hitTest:] takes coordinates in a view's superview coordinate system.
+    NSPoint point = [contentView.superview convertPoint:event.locationInWindow fromView:nil];
+
+    // Start selection if we're still selectable and hit-testable.
+    if (_textView.selectable && [contentView hitTest:point] == self) {
+      [[RCTSurfaceTouchHandler surfaceTouchHandlerForView:self] cancelTouchWithEvent:event];
+      [self.window makeFirstResponder:_textView];
+      [_textView mouseDown:event];
+    }
+  } else {
+    // Clear selection for single clicks.
+    _textView.selectedRange = NSMakeRange(NSNotFound, 0);
+  }
+}
+
+#pragma mark - Selection
+
+- (void)textDidEndEditing:(NSNotification *)notification
+{
+  _textView.selectedRange = NSMakeRange(NSNotFound, 0);
+}
+
+#endif // macOS]
+
+#if !TARGET_OS_OSX // [macOS]
 - (BOOL)canBecomeFirstResponder
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
   return paragraphProps.isSelectable;
 }
+#else
+- (BOOL)becomeFirstResponder
+{
+  if (![super becomeFirstResponder]) {
+    return NO;
+  }
 
+  return YES;
+}
+
+- (BOOL)canBecomeFirstResponder
+{
+  return self.focusable;
+}
+#endif // macOS]
+
+#if !TARGET_OS_OSX // [macOS]
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
@@ -289,6 +413,7 @@ using namespace facebook::react;
   return NO;
 #endif // macOS]
 }
+#endif // [macOS]
 
 - (void)copy:(id)sender
 {
