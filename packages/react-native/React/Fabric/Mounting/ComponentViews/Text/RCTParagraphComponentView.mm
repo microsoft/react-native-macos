@@ -29,6 +29,7 @@
 
 using namespace facebook::react;
 
+#if !TARGET_OS_OSX // [macOS]
 // ParagraphTextView is an auxiliary view we set as contentView so the drawing
 // can happen on top of the layers manipulated by RCTViewComponentView (the parent view)
 @interface RCTParagraphTextView : RCTUIView // [macOS]
@@ -38,6 +39,14 @@ using namespace facebook::react;
 @property (nonatomic) LayoutMetrics layoutMetrics;
 
 @end
+#else // [macOS
+#if TARGET_OS_OSX // [macOS
+// On macOS, we defer drawing to an NSTextView rather than a plan NSView, in order
+// to get more native behaviors like text selection. We make sure this NSTextView 
+// does not take focus.
+@interface RCTParagraphComponentUnfocusableTextView : NSTextView
+@end
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
@@ -53,8 +62,10 @@ using namespace facebook::react;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
 #if !TARGET_OS_OSX // [macOS]
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
-#endif // [macOS]
   RCTParagraphTextView *_textView;
+#else // [macOS
+  RCTParagraphComponentUnfocusableTextView *_textView;
+#endif // macOS]
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -64,10 +75,29 @@ using namespace facebook::react;
 
 #if !TARGET_OS_OSX  // [macOS]
     self.opaque = NO;
-#endif  // [macOS]
     _textView = [RCTParagraphTextView new];
     _textView.backgroundColor = RCTUIColor.clearColor; // [macOS]
     self.contentView = _textView;
+#else // [macOS
+    // Make the RCTParagraphComponentView accessible and available in the a11y hierarchy.
+    self.accessibilityElement = YES;
+    self.accessibilityRole = NSAccessibilityStaticTextRole;
+    // Fix blurry text on non-retina displays.
+    self.canDrawSubviewsIntoLayer = YES;
+    // The NSTextView is responsible for drawing text and managing selection.
+    _textView = [[RCTParagraphComponentUnfocusableTextView alloc] initWithFrame:self.bounds];
+    // The RCTParagraphComponentUnfocusableTextView is only used for rendering and should not appear in the a11y hierarchy.
+    _textView.accessibilityElement = NO;
+    _textView.usesFontPanel = NO;
+    _textView.drawsBackground = NO;
+    _textView.linkTextAttributes = @{};
+    _textView.editable = NO;
+    _textView.selectable = NO;
+    _textView.verticallyResizable = NO;
+    _textView.layoutManager.usesFontLeading = NO;
+    self.contentView = _textView;
+    self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
+#endif // macOS]
   }
 
   return self;
@@ -123,7 +153,9 @@ using namespace facebook::react;
     } else {
       [self disableContextMenu];
     }
-#endif // [macOS]
+#else // [macOS
+    _textView.selectable = newParagraphProps.isSelectable;
+#endif // macOS]
   }
 
   [super updateProps:props oldProps:oldProps];
@@ -132,9 +164,12 @@ using namespace facebook::react;
 - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
 {
   _state = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state);
+#if !TARGET_OS_OSX // [macOS]
   _textView.state = _state;
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
+  [self _updateTextView];
+#endif // macOS]
 }
 
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
@@ -143,10 +178,53 @@ using namespace facebook::react;
   // Using stored `_layoutMetrics` as `oldLayoutMetrics` here to avoid
   // re-applying individual sub-values which weren't changed.
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:_layoutMetrics];
+#if !TARGET_OS_OSX // [macOS]
   _textView.layoutMetrics = _layoutMetrics;
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
+#else // [macOS
+  [self _updateTextView];
+#endif // macOS]
 }
+
+#if TARGET_OS_OSX // [macOS
+- (void)_updateTextView
+{
+  if (!_state) {
+    return;
+  }
+
+  auto textLayoutManager = _state->getData().paragraphLayoutManager.getTextLayoutManager();
+
+  if (!textLayoutManager) {
+    return;
+  }
+
+  RCTTextLayoutManager *nativeTextLayoutManager =
+      (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
+
+  CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+
+  NSTextStorage *textStorage = [nativeTextLayoutManager getTextStorageForAttributedString:_state->getData().attributedString paragraphAttributes:_paragraphAttributes frame:frame];
+
+  NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
+  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+
+  [_textView replaceTextContainer:textContainer];
+
+  NSArray<NSLayoutManager *> *managers = [[textStorage layoutManagers] copy];
+  for (NSLayoutManager *manager in managers) {
+    [textStorage removeLayoutManager:manager];
+  }
+
+  _textView.minSize = frame.size;
+  _textView.maxSize = frame.size;
+  _textView.frame = frame;
+  _textView.textStorage.attributedString = textStorage;
+
+  [self setNeedsDisplay];
+}
+#endif // macOS]
 
 - (void)prepareForRecycle
 {
@@ -349,6 +427,7 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
   return RCTParagraphComponentView.class;
 }
 
+#if !TARGET_OS_OSX // [macOS]
 @implementation RCTParagraphTextView {
   CAShapeLayer *_highlightLayer;
 }
@@ -390,3 +469,24 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
 }
 
 @end
+#else // [macOS
+#if TARGET_OS_OSX // [macOS
+@implementation RCTParagraphComponentUnfocusableTextView
+
+- (BOOL)canBecomeKeyView
+{
+  return NO;
+}
+
+- (BOOL)resignFirstResponder
+{
+  // Don't relinquish first responder while selecting text.
+  if (self.selectable && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
+    return NO;
+  }
+
+  return [super resignFirstResponder];
+}
+
+@end
+#endif // macOS]
