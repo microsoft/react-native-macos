@@ -28,6 +28,7 @@ using namespace facebook::react;
 @implementation RCTDeviceInfo {
 #if !TARGET_OS_OSX // [macOS]
   UIInterfaceOrientation _currentInterfaceOrientation;
+#endif // [macOS]
   NSDictionary *_currentInterfaceDimensions;
   BOOL _isFullscreen;
 #endif // [macOS]
@@ -61,9 +62,11 @@ RCT_EXPORT_MODULE()
                                            selector:@selector(interfaceOrientationDidChange)
                                                name:UIApplicationDidChangeStatusBarOrientationNotification
                                              object:nil];
+#endif // [macOS]
 
   _currentInterfaceDimensions = [self _exportedDimensions];
 
+#if !TARGET_OS_OSX // [macOS]
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(interfaceOrientationDidChange)
                                                name:UIApplicationDidBecomeActiveNotification
@@ -73,12 +76,11 @@ RCT_EXPORT_MODULE()
                                            selector:@selector(interfaceFrameDidChange)
                                                name:RCTUserInterfaceStyleDidChangeNotification
                                              object:nil];
-
+#endif // [macOS]
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(interfaceFrameDidChange)
                                                name:RCTRootViewFrameDidChangeNotification
                                              object:nil];
-#endif // [macOS]
 }
 
 static BOOL RCTIsIPhoneX()
@@ -135,7 +137,12 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
   RCTAccessibilityManager *accessibilityManager =
       (RCTAccessibilityManager *)[_moduleRegistry moduleForName:"AccessibilityManager"];
   CGFloat fontScale = accessibilityManager ? accessibilityManager.multiplier : 1.0;
+#if !TARGET_OS_OSX // [macOS]
   return RCTExportedDimensions(fontScale);
+#else // [macOS
+  // TODO: Saad - get root view here
+  return RCTExportedDimensions(nil);
+#endif // macOS]
 }
 
 - (NSDictionary<NSString *, id> *)constantsToExport
@@ -217,6 +224,7 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 #pragma clang diagnostic pop
   }
 }
+#endif // [macOS]
 
 - (void)interfaceFrameDidChange
 {
@@ -242,7 +250,6 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 #pragma clang diagnostic pop
   }
 }
-#endif // [macOS]
 
 - (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
 {
