@@ -11,7 +11,8 @@
 
 #include <react/renderer/core/LayoutableShadowNode.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * LayoutContext: Additional contextual information useful for particular
@@ -33,7 +34,7 @@ struct LayoutContext {
    * list. The order is not specified. Nothing in this collection is owing (on
    * purpose), make sure the memory is managed responsibly.
    */
-  std::vector<const LayoutableShadowNode*>* affectedNodes{};
+  std::vector<LayoutableShadowNode const *> *affectedNodes{};
 
   /*
    * Flag indicating whether in reassignment of direction
@@ -61,7 +62,7 @@ struct LayoutContext {
   Point viewportOffset{};
 };
 
-inline bool operator==(const LayoutContext& lhs, const LayoutContext& rhs) {
+inline bool operator==(LayoutContext const &lhs, LayoutContext const &rhs) {
   return std::tie(
              lhs.pointScaleFactor,
              lhs.affectedNodes,
@@ -76,8 +77,9 @@ inline bool operator==(const LayoutContext& lhs, const LayoutContext& rhs) {
              rhs.viewportOffset);
 }
 
-inline bool operator!=(const LayoutContext& lhs, const LayoutContext& rhs) {
+inline bool operator!=(LayoutContext const &lhs, LayoutContext const &rhs) {
   return !(lhs == rhs);
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

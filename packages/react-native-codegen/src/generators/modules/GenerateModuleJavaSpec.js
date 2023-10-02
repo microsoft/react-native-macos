@@ -52,7 +52,7 @@ package ${packageName};
 
 ${imports}
 
-public abstract class ${className} extends ReactContextBaseJavaModule implements TurboModule {
+public abstract class ${className} extends ReactContextBaseJavaModule implements ReactModuleWithSpec, TurboModule {
   public static final String NAME = "${jsName}";
 
   public ${className}(ReactApplicationContext reactContext) {
@@ -355,20 +355,16 @@ function getFalsyReturnStatementFromReturnType(
 function buildGetConstantsMethod(
   method: NativeModulePropertyShape,
   imports: Set<string>,
-  resolveAlias: AliasResolver,
 ): string {
   const [methodTypeAnnotation] =
     unwrapNullable<NativeModuleFunctionTypeAnnotation>(method.typeAnnotation);
-  let returnTypeAnnotation = methodTypeAnnotation.returnTypeAnnotation;
-  if (returnTypeAnnotation.type === 'TypeAliasTypeAnnotation') {
-    // The return type is an alias, resolve it to get the expected undelying object literal type
-    returnTypeAnnotation = resolveAlias(returnTypeAnnotation.name);
-  }
-
-  if (returnTypeAnnotation.type === 'ObjectTypeAnnotation') {
+  if (
+    methodTypeAnnotation.returnTypeAnnotation.type === 'ObjectTypeAnnotation'
+  ) {
     const requiredProps = [];
     const optionalProps = [];
-    const rawProperties = returnTypeAnnotation.properties || [];
+    const rawProperties =
+      methodTypeAnnotation.returnTypeAnnotation.properties || [];
     rawProperties.forEach(p => {
       if (p.optional || p.typeAnnotation.type === 'NullableTypeAnnotation') {
         optionalProps.push(p.name);
@@ -467,6 +463,7 @@ module.exports = {
         'com.facebook.react.bridge.ReactApplicationContext',
         'com.facebook.react.bridge.ReactContextBaseJavaModule',
         'com.facebook.react.bridge.ReactMethod',
+        'com.facebook.react.bridge.ReactModuleWithSpec',
         'com.facebook.react.turbomodule.core.interfaces.TurboModule',
         'com.facebook.proguard.annotations.DoNotStrip',
         'javax.annotation.Nonnull',
@@ -474,7 +471,7 @@ module.exports = {
 
       const methods = properties.map(method => {
         if (method.name === 'getConstants') {
-          return buildGetConstantsMethod(method, imports, resolveAlias);
+          return buildGetConstantsMethod(method, imports);
         }
 
         const [methodTypeAnnotation] =

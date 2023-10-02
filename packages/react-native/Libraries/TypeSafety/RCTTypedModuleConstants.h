@@ -30,7 +30,8 @@
 
 @end
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 // Objective-C doesn't allow arbitrary types in its lightweight generics, only object and block types. We can work
 // around that by having the struct type we care about be a block-argument. The block never exists at runtime.
@@ -44,4 +45,5 @@ ModuleConstants<T> typedConstants(typename T::Builder::Input &&value)
   return [_RCTTypedModuleConstants newWithUnsafeDictionary:builder.buildUnsafeRawValue()];
 }
 
-} // namespace facebook::react
+}
+}

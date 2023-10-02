@@ -7,8 +7,7 @@
 
 #pragma once
 
-#include <unordered_map>
-
+#include <butter/map.h>
 #include <folly/dynamic.h>
 #include <glog/logging.h>
 #include <react/debug/react_native_expect.h>
@@ -16,12 +15,13 @@
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/imagemanager/primitives.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 inline void fromRawValue(
-    const PropsParserContext& context,
-    const RawValue& value,
-    ImageSource& result) {
+    const PropsParserContext &context,
+    const RawValue &value,
+    ImageSource &result) {
   if (value.hasType<std::string>()) {
     result = {
         /* .type = */ ImageSource::Type::Remote,
@@ -30,8 +30,8 @@ inline void fromRawValue(
     return;
   }
 
-  if (value.hasType<std::unordered_map<std::string, RawValue>>()) {
-    auto items = (std::unordered_map<std::string, RawValue>)value;
+  if (value.hasType<butter::map<std::string, RawValue>>()) {
+    auto items = (butter::map<std::string, RawValue>)value;
     result = {};
 
     result.type = ImageSource::Type::Remote;
@@ -89,14 +89,14 @@ inline void fromRawValue(
   result.type = ImageSource::Type::Invalid;
 }
 
-inline std::string toString(const ImageSource& value) {
+inline std::string toString(const ImageSource &value) {
   return "{uri: " + value.uri + "}";
 }
 
 inline void fromRawValue(
-    const PropsParserContext& context,
-    const RawValue& value,
-    ImageResizeMode& result) {
+    const PropsParserContext &context,
+    const RawValue &value,
+    ImageResizeMode &result) {
   react_native_expect(value.hasType<std::string>());
   if (!value.hasType<std::string>()) {
     LOG(ERROR) << "Unsupported ImageResizeMode type";
@@ -124,7 +124,7 @@ inline void fromRawValue(
   }
 }
 
-inline std::string toString(const ImageResizeMode& value) {
+inline std::string toString(const ImageResizeMode &value) {
   switch (value) {
     case ImageResizeMode::Cover:
       return "cover";
@@ -139,4 +139,5 @@ inline std::string toString(const ImageResizeMode& value) {
   }
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

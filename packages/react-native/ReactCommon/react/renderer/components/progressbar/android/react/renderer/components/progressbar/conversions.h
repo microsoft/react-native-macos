@@ -9,10 +9,11 @@
 #include <react/renderer/components/rncore/Props.h>
 #include <react/renderer/core/propsConversions.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 #ifdef ANDROID
-inline folly::dynamic toDynamic(const AndroidProgressBarProps& props) {
+inline folly::dynamic toDynamic(AndroidProgressBarProps const &props) {
   folly::dynamic serializedProps = folly::dynamic::object();
   serializedProps["styleAttr"] = props.styleAttr;
   serializedProps["typeAttr"] = props.typeAttr;
@@ -25,4 +26,5 @@ inline folly::dynamic toDynamic(const AndroidProgressBarProps& props) {
 }
 #endif
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

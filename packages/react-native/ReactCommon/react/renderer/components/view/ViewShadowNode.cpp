@@ -7,58 +7,72 @@
 
 #include "ViewShadowNode.h"
 #include <react/config/ReactNativeConfig.h>
-#include <react/renderer/components/view/HostPlatformViewTraitsInitializer.h>
 #include <react/renderer/components/view/primitives.h>
-#include <react/utils/CoreFeatures.h>
+#include <react/renderer/core/CoreFeatures.h>
 
 namespace facebook::react {
 
-const char ViewComponentName[] = "View";
+char const ViewComponentName[] = "View";
 
 ViewShadowNodeProps::ViewShadowNodeProps(
-    const PropsParserContext& context,
-    const ViewShadowNodeProps& sourceProps,
-    const RawProps& rawProps)
-    : ViewProps(context, sourceProps, rawProps){};
+    PropsParserContext const &context,
+    ViewShadowNodeProps const &sourceProps,
+    RawProps const &rawProps)
+    : ViewProps(
+          context,
+          sourceProps,
+          rawProps,
+          !CoreFeatures::enableMapBuffer){};
 
 ViewShadowNode::ViewShadowNode(
-    const ShadowNodeFragment& fragment,
-    const ShadowNodeFamily::Shared& family,
+    ShadowNodeFragment const &fragment,
+    ShadowNodeFamily::Shared const &family,
     ShadowNodeTraits traits)
     : ConcreteViewShadowNode(fragment, family, traits) {
   initialize();
 }
 
 ViewShadowNode::ViewShadowNode(
-    const ShadowNode& sourceShadowNode,
-    const ShadowNodeFragment& fragment)
+    ShadowNode const &sourceShadowNode,
+    ShadowNodeFragment const &fragment)
     : ConcreteViewShadowNode(sourceShadowNode, fragment) {
   initialize();
 }
 
 void ViewShadowNode::initialize() noexcept {
-  auto& viewProps = static_cast<const ViewProps&>(*props_);
+  auto &viewProps = static_cast<ViewProps const &>(*props_);
 
   bool formsStackingContext = !viewProps.collapsable ||
       viewProps.pointerEvents == PointerEventsMode::None ||
       !viewProps.nativeId.empty() || viewProps.accessible ||
       viewProps.opacity != 1.0 || viewProps.transform != Transform{} ||
       (viewProps.zIndex.has_value() &&
-       viewProps.yogaStyle.positionType() != yoga::PositionType::Static) ||
-      viewProps.yogaStyle.display() == yoga::Display::None ||
+       viewProps.yogaStyle.positionType() != YGPositionTypeStatic) ||
+      viewProps.yogaStyle.display() == YGDisplayNone ||
       viewProps.getClipsContentToBounds() || viewProps.events.bits.any() ||
       isColorMeaningful(viewProps.shadowColor) ||
       viewProps.accessibilityElementsHidden ||
       viewProps.accessibilityViewIsModal ||
       viewProps.importantForAccessibility != ImportantForAccessibility::Auto ||
-      viewProps.removeClippedSubviews ||
-      HostPlatformViewTraitsInitializer::formsStackingContext(viewProps);
+      viewProps.removeClippedSubviews;
+
+#ifdef ANDROID
+  formsStackingContext = formsStackingContext || viewProps.elevation != 0;
+#endif
 
   bool formsView = formsStackingContext ||
       isColorMeaningful(viewProps.backgroundColor) ||
-      !(viewProps.yogaStyle.border() == yoga::Style::Edges{}) ||
-      !viewProps.testId.empty() ||
-      HostPlatformViewTraitsInitializer::formsView(viewProps);
+      isColorMeaningful(viewProps.foregroundColor) ||
+      !(viewProps.yogaStyle.border() == YGStyle::Edges{}) ||
+      !viewProps.testId.empty();
+
+#ifdef ANDROID
+  formsView = formsView || viewProps.nativeBackground.has_value() ||
+      viewProps.nativeForeground.has_value() || viewProps.focusable ||
+      viewProps.hasTVPreferredFocus ||
+      viewProps.needsOffscreenAlphaCompositing ||
+      viewProps.renderToHardwareTextureAndroid;
+#endif
 
   if (formsView) {
     traits_.set(ShadowNodeTraits::Trait::FormsView);
@@ -72,7 +86,9 @@ void ViewShadowNode::initialize() noexcept {
     traits_.unset(ShadowNodeTraits::Trait::FormsStackingContext);
   }
 
-  traits_.set(HostPlatformViewTraitsInitializer::extraTraits());
+#ifdef ANDROID
+  traits_.set(ShadowNodeTraits::Trait::AndroidMapBufferPropsSupported);
+#endif
 }
 
 } // namespace facebook::react

@@ -15,12 +15,11 @@
 #include <condition_variable>
 
 #include <react/debug/react_native_assert.h>
-#include <react/renderer/debug/SystraceSection.h>
 #include <react/renderer/mounting/ShadowViewMutation.h>
 
 namespace facebook::react {
 
-MountingCoordinator::MountingCoordinator(const ShadowTreeRevision& baseRevision)
+MountingCoordinator::MountingCoordinator(const ShadowTreeRevision &baseRevision)
     : surfaceId_(baseRevision.rootShadowNode->getSurfaceId()),
       baseRevision_(baseRevision),
       telemetryController_(*this) {
@@ -36,7 +35,7 @@ SurfaceId MountingCoordinator::getSurfaceId() const {
 
 void MountingCoordinator::push(ShadowTreeRevision revision) const {
   {
-    std::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     react_native_assert(
         !lastRevision_.has_value() || revision.number != lastRevision_->number);
@@ -50,7 +49,7 @@ void MountingCoordinator::push(ShadowTreeRevision revision) const {
 }
 
 void MountingCoordinator::revoke() const {
-  std::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   // We have two goals here.
   // 1. We need to stop retaining `ShadowNode`s to not prolong their lifetime
   // to prevent them from overliving `ComponentDescriptor`s.
@@ -67,7 +66,7 @@ bool MountingCoordinator::waitForTransaction(
 }
 
 void MountingCoordinator::updateBaseRevision(
-    const ShadowTreeRevision& baseRevision) const {
+    ShadowTreeRevision const &baseRevision) const {
   baseRevision_ = baseRevision;
 }
 
@@ -77,9 +76,7 @@ void MountingCoordinator::resetLatestRevision() const {
 
 std::optional<MountingTransaction> MountingCoordinator::pullTransaction()
     const {
-  SystraceSection section("MountingCoordinator::pullTransaction");
-
-  std::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
 
   auto transaction = std::optional<MountingTransaction>{};
 
@@ -178,21 +175,13 @@ std::optional<MountingTransaction> MountingCoordinator::pullTransaction()
   return transaction;
 }
 
-bool MountingCoordinator::hasPendingTransactions() const {
-  return lastRevision_.has_value();
-}
-
-const TelemetryController& MountingCoordinator::getTelemetryController() const {
+TelemetryController const &MountingCoordinator::getTelemetryController() const {
   return telemetryController_;
 }
 
-const ShadowTreeRevision& MountingCoordinator::getBaseRevision() const {
-  return baseRevision_;
-}
-
 void MountingCoordinator::setMountingOverrideDelegate(
-    std::weak_ptr<const MountingOverrideDelegate> delegate) const {
-  std::scoped_lock lock(mutex_);
+    std::weak_ptr<MountingOverrideDelegate const> delegate) const {
+  std::lock_guard<std::mutex> lock(mutex_);
   mountingOverrideDelegate_ = std::move(delegate);
 }
 

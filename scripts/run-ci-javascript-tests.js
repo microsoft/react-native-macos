@@ -40,36 +40,15 @@ try {
     throw Error(exitCode);
   }
 
-  describe('Test: Flow check');
-  if (exec(`${YARN_BINARY} run flow-check`).code) {
+  describe('Test: Flow check (iOS)');
+  if (exec(`${YARN_BINARY} run flow-check-ios`).code) {
     echo('Failed to run flow.');
     exitCode = 1;
     throw Error(exitCode);
   }
-
-  /*
-   * Build @react-native/codegen and  @react-native/codegen-typescript-test
-   *
-   * The typescript-test project use TypeScript to write test cases
-   * In order to make these tests discoverable to jest
-   * *-test.ts must be compiled to *-test.js before running jest
-   */
-
-  describe('Test: Build @react-native/codegen');
-  if (
-    exec(`${YARN_BINARY} --cwd ./packages/react-native-codegen run build`).code
-  ) {
-    echo('Failed to build @react-native/codegen.');
-    exitCode = 1;
-    throw Error(exitCode);
-  }
-  describe('Test: Build @react-native/codegen-typescript-test');
-  if (
-    exec(
-      `${YARN_BINARY} --cwd ./packages/react-native-codegen-typescript-test run build`,
-    ).code
-  ) {
-    echo('Failed to build @react-native/codegen-typescript-test.');
+  describe('Test: Flow check (Android)');
+  if (exec(`${YARN_BINARY} run flow-check-android`).code) {
+    echo('Failed to run flow.');
     exitCode = 1;
     throw Error(exitCode);
   }

@@ -6,7 +6,6 @@
  */
 
 #import <React/RCTBridge.h>
-#import <React/RCTBridgeProxy.h>
 #import <React/RCTDefines.h>
 #import <React/RCTEventEmitter.h>
 #import <React/RCTInitializing.h>
@@ -125,12 +124,6 @@
 @end
 
 @interface RCTBridge (RCTDevSettings)
-
-@property (nonatomic, readonly) RCTDevSettings *devSettings;
-
-@end
-
-@interface RCTBridgeProxy (RCTDevSettings)
 
 @property (nonatomic, readonly) RCTDevSettings *devSettings;
 

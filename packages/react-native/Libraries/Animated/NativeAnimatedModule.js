@@ -11,9 +11,8 @@
 import type {TurboModule} from '../TurboModule/RCTExport';
 
 import * as TurboModuleRegistry from '../TurboModule/TurboModuleRegistry';
-import shouldUseTurboAnimatedModule from './shouldUseTurboAnimatedModule';
 
-type EndResult = {finished: boolean, value?: number, ...};
+type EndResult = {finished: boolean, ...};
 type EndCallback = (result: EndResult) => void;
 type SaveValueCallback = (value: number) => void;
 
@@ -71,7 +70,4 @@ export interface Spec extends TurboModule {
   +queueAndExecuteBatchedOperations?: (operationsAndArgs: Array<any>) => void;
 }
 
-const NativeModule: ?Spec = !shouldUseTurboAnimatedModule()
-  ? TurboModuleRegistry.get<Spec>('NativeAnimatedModule')
-  : null;
-export default NativeModule;
+export default (TurboModuleRegistry.get<Spec>('NativeAnimatedModule'): ?Spec);

@@ -20,47 +20,48 @@
 #include <react/renderer/imagemanager/primitives.h>
 #include <vector>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class TextInputProps final : public ViewProps, public BaseTextProps {
  public:
   TextInputProps() = default;
   TextInputProps(
-      const PropsParserContext& context,
-      const TextInputProps& sourceProps,
-      const RawProps& rawProps);
+      const PropsParserContext &context,
+      TextInputProps const &sourceProps,
+      RawProps const &rawProps);
 
   void setProp(
-      const PropsParserContext& context,
+      const PropsParserContext &context,
       RawPropsPropNameHash hash,
-      const char* propName,
-      const RawValue& value);
+      const char *propName,
+      RawValue const &value);
 
 #pragma mark - Props
 
-  const TextInputTraits traits{};
-  const ParagraphAttributes paragraphAttributes{};
+  TextInputTraits const traits{};
+  ParagraphAttributes const paragraphAttributes{};
 
   std::string const defaultValue{};
 
   std::string const placeholder{};
-  const SharedColor placeholderTextColor{};
+  SharedColor const placeholderTextColor{};
 
   int maxLength{};
 
   /*
    * Tint colors
    */
-  const SharedColor cursorColor{};
-  const SharedColor selectionColor{};
+  SharedColor const cursorColor{};
+  SharedColor const selectionColor{};
   // TODO: Rename to `tintColor` and make universal.
-  const SharedColor underlineColorAndroid{};
+  SharedColor const underlineColorAndroid{};
 
   /*
    * "Private" (only used by TextInput.js) props
    */
   std::string const text{};
-  const int mostRecentEventCount{0};
+  int const mostRecentEventCount{0};
 
   bool autoFocus{false};
   std::optional<Selection> selection{};
@@ -77,4 +78,5 @@ class TextInputProps final : public ViewProps, public BaseTextProps {
   ParagraphAttributes getEffectiveParagraphAttributes() const;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

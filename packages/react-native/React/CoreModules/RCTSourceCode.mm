@@ -9,6 +9,8 @@
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 
+#import <React/RCTBridge.h>
+
 #import "CoreModulesPlugins.h"
 
 using namespace facebook::react;
@@ -20,6 +22,7 @@ using namespace facebook::react;
 
 RCT_EXPORT_MODULE()
 
+@synthesize bridge = _bridge;
 @synthesize bundleManager = _bundleManager;
 
 + (BOOL)requiresMainQueueSetup

@@ -11,7 +11,8 @@
 
 #include <react/renderer/mounting/ShadowView.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Describes a single native view tree mutation which may contain
@@ -124,11 +125,12 @@ using ShadowViewMutationList = std::vector<ShadowViewMutation>;
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
-std::string getDebugName(const ShadowViewMutation& mutation);
+std::string getDebugName(ShadowViewMutation const &mutation);
 std::vector<DebugStringConvertibleObject> getDebugProps(
-    const ShadowViewMutation& mutation,
+    ShadowViewMutation const &mutation,
     DebugStringConvertibleOptions options);
 
 #endif
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

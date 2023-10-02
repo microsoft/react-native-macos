@@ -9,7 +9,8 @@
 
 #include <memory>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * We need this types only to ensure type-safety when we deal with them.
@@ -25,4 +26,5 @@ struct EventHandler {
 };
 using UniqueEventHandler = std::unique_ptr<const EventHandler>;
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

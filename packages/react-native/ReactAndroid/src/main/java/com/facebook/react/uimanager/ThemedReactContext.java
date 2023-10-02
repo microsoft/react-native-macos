@@ -50,7 +50,6 @@ public class ThemedReactContext extends ReactContext {
     if (reactApplicationContext.hasCatalystInstance()) {
       initializeWithInstance(reactApplicationContext.getCatalystInstance());
     }
-    initializeInteropModules(reactApplicationContext);
     mReactApplicationContext = reactApplicationContext;
     mModuleName = moduleName;
     mSurfaceId = surfaceId;

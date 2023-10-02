@@ -8,7 +8,6 @@
 #include "RuntimeScheduler.h"
 #include "SchedulerPriorityUtils.h"
 
-#include <react/renderer/debug/SystraceSection.h>
 #include <utility>
 #include "ErrorUtils.h"
 
@@ -22,13 +21,10 @@ RuntimeScheduler::RuntimeScheduler(
     : runtimeExecutor_(std::move(runtimeExecutor)), now_(std::move(now)) {}
 
 void RuntimeScheduler::scheduleWork(RawCallback callback) const {
-  SystraceSection s("RuntimeScheduler::scheduleWork");
-
   runtimeAccessRequests_ += 1;
 
   runtimeExecutor_(
-      [this, callback = std::move(callback)](jsi::Runtime& runtime) {
-        SystraceSection s2("RuntimeScheduler::scheduleWork callback");
+      [this, callback = std::move(callback)](jsi::Runtime &runtime) {
         runtimeAccessRequests_ -= 1;
         callback(runtime);
         startWorkLoop(runtime);
@@ -69,7 +65,7 @@ bool RuntimeScheduler::getIsSynchronous() const noexcept {
   return isSynchronous_;
 }
 
-void RuntimeScheduler::cancelTask(Task& task) noexcept {
+void RuntimeScheduler::cancelTask(Task &task) noexcept {
   task.callback.reset();
 }
 
@@ -82,15 +78,10 @@ RuntimeSchedulerTimePoint RuntimeScheduler::now() const noexcept {
 }
 
 void RuntimeScheduler::executeNowOnTheSameThread(RawCallback callback) {
-  SystraceSection s("RuntimeScheduler::executeNowOnTheSameThread");
-
   runtimeAccessRequests_ += 1;
   executeSynchronouslyOnSameThread_CAN_DEADLOCK(
       runtimeExecutor_,
-      [this, callback = std::move(callback)](jsi::Runtime& runtime) {
-        SystraceSection s2(
-            "RuntimeScheduler::executeNowOnTheSameThread callback");
-
+      [this, callback = std::move(callback)](jsi::Runtime &runtime) {
         runtimeAccessRequests_ -= 1;
         isSynchronous_ = true;
         callback(runtime);
@@ -103,9 +94,7 @@ void RuntimeScheduler::executeNowOnTheSameThread(RawCallback callback) {
   scheduleWorkLoopIfNecessary();
 }
 
-void RuntimeScheduler::callExpiredTasks(jsi::Runtime& runtime) {
-  SystraceSection s("RuntimeScheduler::callExpiredTasks");
-
+void RuntimeScheduler::callExpiredTasks(jsi::Runtime &runtime) {
   auto previousPriority = currentPriority_;
   try {
     while (!taskQueue_.empty()) {
@@ -117,9 +106,19 @@ void RuntimeScheduler::callExpiredTasks(jsi::Runtime& runtime) {
         break;
       }
 
-      executeTask(runtime, topPriorityTask, didUserCallbackTimeout);
+      currentPriority_ = topPriorityTask->priority;
+      auto result = topPriorityTask->execute(runtime, didUserCallbackTimeout);
+
+      if (result.isObject() && result.getObject(runtime).isFunction(runtime)) {
+        topPriorityTask->callback =
+            result.getObject(runtime).getFunction(runtime);
+      } else {
+        if (taskQueue_.top() == topPriorityTask) {
+          taskQueue_.pop();
+        }
+      }
     }
-  } catch (jsi::JSError& error) {
+  } catch (jsi::JSError &error) {
     handleFatalError(runtime, error);
   }
 
@@ -131,16 +130,14 @@ void RuntimeScheduler::callExpiredTasks(jsi::Runtime& runtime) {
 void RuntimeScheduler::scheduleWorkLoopIfNecessary() const {
   if (!isWorkLoopScheduled_ && !isPerformingWork_) {
     isWorkLoopScheduled_ = true;
-    runtimeExecutor_([this](jsi::Runtime& runtime) {
+    runtimeExecutor_([this](jsi::Runtime &runtime) {
       isWorkLoopScheduled_ = false;
       startWorkLoop(runtime);
     });
   }
 }
 
-void RuntimeScheduler::startWorkLoop(jsi::Runtime& runtime) const {
-  SystraceSection s("RuntimeScheduler::startWorkLoop");
-
+void RuntimeScheduler::startWorkLoop(jsi::Runtime &runtime) const {
   auto previousPriority = currentPriority_;
   isPerformingWork_ = true;
   try {
@@ -154,37 +151,24 @@ void RuntimeScheduler::startWorkLoop(jsi::Runtime& runtime) const {
         break;
       }
 
-      executeTask(runtime, topPriorityTask, didUserCallbackTimeout);
+      currentPriority_ = topPriorityTask->priority;
+      auto result = topPriorityTask->execute(runtime, didUserCallbackTimeout);
+
+      if (result.isObject() && result.getObject(runtime).isFunction(runtime)) {
+        topPriorityTask->callback =
+            result.getObject(runtime).getFunction(runtime);
+      } else {
+        if (taskQueue_.top() == topPriorityTask) {
+          taskQueue_.pop();
+        }
+      }
     }
-  } catch (jsi::JSError& error) {
+  } catch (jsi::JSError &error) {
     handleFatalError(runtime, error);
   }
 
   currentPriority_ = previousPriority;
   isPerformingWork_ = false;
-}
-
-void RuntimeScheduler::executeTask(
-    jsi::Runtime& runtime,
-    std::shared_ptr<Task> task,
-    bool didUserCallbackTimeout) const {
-  SystraceSection s(
-      "RuntimeScheduler::executeTask",
-      "priority",
-      serialize(task->priority),
-      "didUserCallbackTimeout",
-      didUserCallbackTimeout);
-
-  currentPriority_ = task->priority;
-  auto result = task->execute(runtime, didUserCallbackTimeout);
-
-  if (result.isObject() && result.getObject(runtime).isFunction(runtime)) {
-    task->callback = result.getObject(runtime).getFunction(runtime);
-  } else {
-    if (taskQueue_.top() == task) {
-      taskQueue_.pop();
-    }
-  }
 }
 
 } // namespace facebook::react

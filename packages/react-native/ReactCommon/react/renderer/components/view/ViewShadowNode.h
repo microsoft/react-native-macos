@@ -10,7 +10,8 @@
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/components/view/ViewProps.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 extern const char ViewComponentName[];
 
@@ -21,9 +22,9 @@ class ViewShadowNodeProps final : public ViewProps {
  public:
   ViewShadowNodeProps() = default;
   ViewShadowNodeProps(
-      const PropsParserContext& context,
-      const ViewShadowNodeProps& sourceProps,
-      const RawProps& rawProps);
+      const PropsParserContext &context,
+      ViewShadowNodeProps const &sourceProps,
+      RawProps const &rawProps);
 };
 
 /*
@@ -41,16 +42,17 @@ class ViewShadowNode final : public ConcreteViewShadowNode<
   }
 
   ViewShadowNode(
-      const ShadowNodeFragment& fragment,
-      const ShadowNodeFamily::Shared& family,
+      ShadowNodeFragment const &fragment,
+      ShadowNodeFamily::Shared const &family,
       ShadowNodeTraits traits);
 
   ViewShadowNode(
-      const ShadowNode& sourceShadowNode,
-      const ShadowNodeFragment& fragment);
+      ShadowNode const &sourceShadowNode,
+      ShadowNodeFragment const &fragment);
 
  private:
   void initialize() noexcept;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

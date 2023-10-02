@@ -12,7 +12,8 @@
 #include <folly/Hash.h>
 #include <react/renderer/graphics/Float.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Generic data structure describes some values associated with *corners*
@@ -25,7 +26,7 @@ struct RectangleCorners {
   T bottomLeft{};
   T bottomRight{};
 
-  bool operator==(const RectangleCorners<T>& rhs) const noexcept {
+  bool operator==(RectangleCorners<T> const &rhs) const noexcept {
     return std::tie(
                this->topLeft,
                this->topRight,
@@ -34,7 +35,7 @@ struct RectangleCorners {
         std::tie(rhs.topLeft, rhs.topRight, rhs.bottomLeft, rhs.bottomRight);
   }
 
-  bool operator!=(const RectangleCorners<T>& rhs) const noexcept {
+  bool operator!=(RectangleCorners<T> const &rhs) const noexcept {
     return !(*this == rhs);
   }
 
@@ -49,14 +50,15 @@ struct RectangleCorners {
  */
 using CornerInsets = RectangleCorners<Float>;
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook
 
 namespace std {
 
 template <typename T>
 struct hash<facebook::react::RectangleCorners<T>> {
   size_t operator()(
-      const facebook::react::RectangleCorners<T>& corners) const noexcept {
+      facebook::react::RectangleCorners<T> const &corners) const noexcept {
     return folly::hash::hash_combine(
         0,
         corners.topLeft,

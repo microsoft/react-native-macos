@@ -11,20 +11,19 @@
 #include <string>
 
 #include <jsi/jsi.h>
-#include <react/renderer/core/EventPayload.h>
 #include <react/renderer/core/EventTarget.h>
 #include <react/renderer/core/ReactEventPriority.h>
 #include <react/renderer/core/ValueFactory.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 using EventPipe = std::function<void(
-    jsi::Runtime& runtime,
-    const EventTarget* eventTarget,
-    const std::string& type,
+    jsi::Runtime &runtime,
+    const EventTarget *eventTarget,
+    const std::string &type,
     ReactEventPriority priority,
-    const EventPayload& payload)>;
+    const ValueFactory &payloadFactory)>;
 
-using EventPipeConclusion = std::function<void(jsi::Runtime& runtime)>;
-
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -98,10 +98,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
   return _coalescingKey;
 }
 
+#if DEBUG // [macOS description is a debug-only feature
 - (NSString *)description
 {
   return [NSString
       stringWithFormat:@"<%@: %p; name = %@; coalescing key = %hu>", [self class], self, _eventName, _coalescingKey];
 }
+#endif // macOS]
 
 @end

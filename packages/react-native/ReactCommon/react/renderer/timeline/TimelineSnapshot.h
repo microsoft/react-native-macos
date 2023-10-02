@@ -10,7 +10,8 @@
 #include <react/renderer/components/root/RootShadowNode.h>
 #include <react/renderer/timeline/TimelineFrame.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Represents a reference to a commit from the past used by `Timeline`.
@@ -29,4 +30,5 @@ class TimelineSnapshot final {
   TimelineFrame frame_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

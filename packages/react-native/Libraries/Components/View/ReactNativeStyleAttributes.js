@@ -14,7 +14,6 @@ import processAspectRatio from '../../StyleSheet/processAspectRatio';
 import processColor from '../../StyleSheet/processColor';
 import processFontVariant from '../../StyleSheet/processFontVariant';
 import processTransform from '../../StyleSheet/processTransform';
-import processTransformOrigin from '../../StyleSheet/processTransformOrigin';
 import sizesDiffer from '../../Utilities/differ/sizesDiffer';
 
 const colorAttributes = {process: processColor};
@@ -112,7 +111,6 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
    * Transform
    */
   transform: {process: processTransform},
-  transformOrigin: {process: processTransformOrigin},
 
   /**
    * View

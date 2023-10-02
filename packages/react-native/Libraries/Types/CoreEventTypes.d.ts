@@ -8,6 +8,7 @@
  */
 
 import type * as React from 'react';
+import {NodeHandle} from '../ReactNative/RendererProxy';
 import {HostComponent} from '../../types/public/ReactNativeTypes';
 
 export interface LayoutRectangle {
@@ -41,11 +42,7 @@ export interface TextLayoutEventData extends TargetedEvent {
 
 // Similar to React.SyntheticEvent except for nativeEvent
 export interface NativeSyntheticEvent<T>
-  extends React.BaseSyntheticEvent<
-    T,
-    React.ElementRef<HostComponent<unknown>>,
-    React.ElementRef<HostComponent<unknown>>
-  > {}
+  extends React.BaseSyntheticEvent<T, NodeHandle, NodeHandle> {}
 
 export interface NativeTouchEvent {
   /**

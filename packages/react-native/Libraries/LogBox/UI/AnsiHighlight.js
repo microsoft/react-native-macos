@@ -73,7 +73,7 @@ export default function Ansi({
       return content.replace(/\| $/, ' ');
     } else if (key === 2 && commonWhitespaceLength < Infinity) {
       // Remove common whitespace at the beginning of the line
-      return content.slice(commonWhitespaceLength);
+      return content.substr(commonWhitespaceLength);
     } else {
       return content;
     }

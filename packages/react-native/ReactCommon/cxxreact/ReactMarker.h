@@ -7,20 +7,15 @@
 
 #pragma once
 
-#include <cmath>
-
 #ifdef __APPLE__
 #include <functional>
 #endif
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 namespace ReactMarker {
 
 enum ReactMarkerId {
-  APP_STARTUP_START,
-  APP_STARTUP_STOP,
-  INIT_REACT_RUNTIME_START,
-  INIT_REACT_RUNTIME_STOP,
   NATIVE_REQUIRE_START,
   NATIVE_REQUIRE_STOP,
   RUN_JS_BUNDLE_START,
@@ -38,13 +33,15 @@ enum ReactMarkerId {
 
 #ifdef __APPLE__
 using LogTaggedMarker =
-    std::function<void(const ReactMarkerId, const char* tag)>; // Bridge only
+    std::function<void(const ReactMarkerId, const char *tag)>; // Bridge only
 using LogTaggedMarkerBridgeless =
-    std::function<void(const ReactMarkerId, const char* tag)>;
+    std::function<void(const ReactMarkerId, const char *tag)>;
+using GetAppStartTime = std::function<double()>;
 #else
 typedef void (
-    *LogTaggedMarker)(const ReactMarkerId, const char* tag); // Bridge only
-typedef void (*LogTaggedMarkerBridgeless)(const ReactMarkerId, const char* tag);
+    *LogTaggedMarker)(const ReactMarkerId, const char *tag); // Bridge only
+typedef void (*LogTaggedMarkerBridgeless)(const ReactMarkerId, const char *tag);
+typedef double (*GetAppStartTime)();
 #endif
 
 #ifndef RN_EXPORT
@@ -53,53 +50,42 @@ typedef void (*LogTaggedMarkerBridgeless)(const ReactMarkerId, const char* tag);
 
 extern RN_EXPORT LogTaggedMarker logTaggedMarkerImpl; // Bridge only
 extern RN_EXPORT LogTaggedMarker logTaggedMarkerBridgelessImpl;
+extern RN_EXPORT GetAppStartTime getAppStartTimeImpl;
 
 extern RN_EXPORT void logMarker(const ReactMarkerId markerId); // Bridge only
 extern RN_EXPORT void logTaggedMarker(
     const ReactMarkerId markerId,
-    const char* tag); // Bridge only
+    const char *tag); // Bridge only
 extern RN_EXPORT void logMarkerBridgeless(const ReactMarkerId markerId);
 extern RN_EXPORT void logTaggedMarkerBridgeless(
     const ReactMarkerId markerId,
-    const char* tag);
+    const char *tag);
+extern RN_EXPORT double getAppStartTime();
 
 struct ReactMarkerEvent {
   const ReactMarkerId markerId;
-  const char* tag;
+  const char *tag;
   double time;
 };
 
-class RN_EXPORT StartupLogger {
+class StartupLogger {
  public:
-  static StartupLogger& getInstance();
+  static StartupLogger &getInstance();
 
-  void logStartupEvent(const ReactMarkerId markerName, double markerTime);
-  double getAppStartupStartTime();
-  double getInitReactRuntimeStartTime();
-  double getInitReactRuntimeEndTime();
+  void logStartupEvent(const ReactMarker::ReactMarkerId markerId);
+  double getAppStartTime();
   double getRunJSBundleStartTime();
   double getRunJSBundleEndTime();
-  double getAppStartupEndTime();
 
  private:
   StartupLogger() = default;
-  StartupLogger(const StartupLogger&) = delete;
-  StartupLogger& operator=(const StartupLogger&) = delete;
+  StartupLogger(const StartupLogger &) = delete;
+  StartupLogger &operator=(const StartupLogger &) = delete;
 
-  double appStartupStartTime = std::nan("");
-  double appStartupEndTime = std::nan("");
-  double initReactRuntimeStartTime = std::nan("");
-  double initReactRuntimeEndTime = std::nan("");
-  double runJSBundleStartTime = std::nan("");
-  double runJSBundleEndTime = std::nan("");
+  double runJSBundleStartTime;
+  double runJSBundleEndTime;
 };
 
-// When the marker got logged from the platform, it will notify here. This is
-// used to collect react markers that are logged in the platform instead of in
-// C++.
-extern RN_EXPORT void logMarkerDone(
-    const ReactMarkerId markerId,
-    double markerTime);
-
 } // namespace ReactMarker
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

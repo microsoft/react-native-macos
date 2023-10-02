@@ -16,7 +16,7 @@
  * in a codegenConfigFilename file.
  */
 
-const {execSync, execFileSync} = require('child_process');
+const {execSync, execFileSync} = require('child_process'); // [macOS]
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -46,6 +46,7 @@ function isReactNativeCoreLibrary(libraryName) {
 }
 
 function executeNodeScript(node, scriptArgs) {
+  // [macOS] use execFileSync to help keep shell commands clean
   execFileSync(node, scriptArgs);
 }
 
@@ -326,6 +327,7 @@ function generateSchema(tmpDir, library, node, codegenCliPath) {
 
   console.log(`\n\n[Codegen] >>>>> Processing ${library.config.name}`);
   // Generate one schema for the entire library...
+  // [macOS use execFileSync to help keep shell commands clean
   executeNodeScript(node, [
     `${path.join(
       codegenCliPath,
@@ -339,17 +341,19 @@ function generateSchema(tmpDir, library, node, codegenCliPath) {
     pathToSchema,
     pathToJavaScriptSources,
   ]);
+  // macOS]
   console.log(`[Codegen] Generated schema: ${pathToSchema}`);
   return pathToSchema;
 }
 
 function generateCode(iosOutputDir, library, tmpDir, node, pathToSchema) {
   // ...then generate native code artifacts.
-  const libraryTypeArg = library.config.type ? `${library.config.type}` : '';
+  const libraryTypeArg = library.config.type ? `${library.config.type}` : ''; // [macOS]
 
   const tmpOutputDir = path.join(tmpDir, 'out');
   fs.mkdirSync(tmpOutputDir, {recursive: true});
 
+  // [macOS use execFileSync to help keep shell commands clean
   executeNodeScript(node, [
     `${path.join(
       REACT_NATIVE_PACKAGE_ROOT_FOLDER,
@@ -367,12 +371,13 @@ function generateCode(iosOutputDir, library, tmpDir, node, pathToSchema) {
     '--libraryType',
     libraryTypeArg,
   ]);
+  // macOS]
 
   // Finally, copy artifacts to the final output directory.
   const outputDir =
     CORE_LIBRARIES_WITH_OUTPUT_FOLDER[library.config.name] ?? iosOutputDir;
   fs.mkdirSync(outputDir, {recursive: true});
-  execSync(`cp -R ${tmpOutputDir}/* "${outputDir}"`);
+  execSync(`cp -R ${tmpOutputDir}/* ${outputDir}`);
   console.log(`[Codegen] Generated artifacts: ${iosOutputDir}`);
 }
 
@@ -431,6 +436,7 @@ function createComponentProvider(
 
     // Generate FabricComponentProvider.
     // Only for iOS at this moment.
+    // [macOS use execFileSync to help keep shell commands clean
     executeNodeScript(node, [
       `${path.join(
         REACT_NATIVE_PACKAGE_ROOT_FOLDER,
@@ -444,6 +450,7 @@ function createComponentProvider(
       '--outputDir',
       outputDir,
     ]);
+    // macOS]
     console.log(`Generated provider in: ${outputDir}`);
   }
 }

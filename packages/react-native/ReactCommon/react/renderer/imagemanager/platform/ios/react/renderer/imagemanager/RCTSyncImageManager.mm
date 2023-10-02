@@ -37,10 +37,12 @@ using namespace facebook::react;
 - (ImageRequest)requestImage:(ImageSource)imageSource surfaceId:(SurfaceId)surfaceId
 {
   auto telemetry = std::make_shared<ImageTelemetry>(surfaceId);
-  auto sharedCancelationFunction = SharedFunction<>();
-  auto imageRequest = ImageRequest(imageSource, telemetry, sharedCancelationFunction);
+  auto imageRequest = ImageRequest(imageSource, telemetry);
   auto weakObserverCoordinator =
       (std::weak_ptr<const ImageResponseObserverCoordinator>)imageRequest.getSharedObserverCoordinator();
+
+  auto sharedCancelationFunction = SharedFunction<>();
+  imageRequest.setCancelationFunction(sharedCancelationFunction);
 
   dispatch_group_t imageWaitGroup = dispatch_group_create();
 

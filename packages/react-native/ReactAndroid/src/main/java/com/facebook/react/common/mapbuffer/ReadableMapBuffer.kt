@@ -262,7 +262,6 @@ class ReadableMapBuffer : MapBuffer {
 
     override val key: Int
       get() = readUnsignedShort(bucketOffset).toInt()
-
     override val type: MapBuffer.DataType
       get() = MapBuffer.DataType.values()[readUnsignedShort(bucketOffset + TYPE_OFFSET).toInt()]
 

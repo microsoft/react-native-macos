@@ -27,7 +27,11 @@ public class ReactTextUpdate {
   private final float mPaddingBottom;
   private final int mTextAlign;
   private final int mTextBreakStrategy;
+  private final int mSelectionStart;
+  private final int mSelectionEnd;
   private final int mJustificationMode;
+
+  public boolean mContainsMultipleFragments;
 
   /**
    * @deprecated Use a non-deprecated constructor for ReactTextUpdate instead. This one remains
@@ -53,7 +57,35 @@ public class ReactTextUpdate {
         paddingBottom,
         textAlign,
         Layout.BREAK_STRATEGY_HIGH_QUALITY,
-        Layout.JUSTIFICATION_MODE_NONE);
+        Layout.JUSTIFICATION_MODE_NONE,
+        -1,
+        -1);
+  }
+
+  public ReactTextUpdate(
+      Spannable text,
+      int jsEventCounter,
+      boolean containsImages,
+      float paddingStart,
+      float paddingTop,
+      float paddingEnd,
+      float paddingBottom,
+      int textAlign,
+      int textBreakStrategy,
+      int justificationMode) {
+    this(
+        text,
+        jsEventCounter,
+        containsImages,
+        paddingStart,
+        paddingTop,
+        paddingEnd,
+        paddingBottom,
+        textAlign,
+        textBreakStrategy,
+        justificationMode,
+        -1,
+        -1);
   }
 
   public ReactTextUpdate(
@@ -73,7 +105,9 @@ public class ReactTextUpdate {
         UNSET,
         textAlign,
         textBreakStrategy,
-        justificationMode);
+        justificationMode,
+        -1,
+        -1);
   }
 
   public ReactTextUpdate(
@@ -86,7 +120,9 @@ public class ReactTextUpdate {
       float paddingBottom,
       int textAlign,
       int textBreakStrategy,
-      int justificationMode) {
+      int justificationMode,
+      int selectionStart,
+      int selectionEnd) {
     mText = text;
     mJsEventCounter = jsEventCounter;
     mContainsImages = containsImages;
@@ -96,6 +132,8 @@ public class ReactTextUpdate {
     mPaddingBottom = paddingBottom;
     mTextAlign = textAlign;
     mTextBreakStrategy = textBreakStrategy;
+    mSelectionStart = selectionStart;
+    mSelectionEnd = selectionEnd;
     mJustificationMode = justificationMode;
   }
 
@@ -104,11 +142,13 @@ public class ReactTextUpdate {
       int jsEventCounter,
       int textAlign,
       int textBreakStrategy,
-      int justificationMode) {
+      int justificationMode,
+      boolean containsMultipleFragments) {
 
     ReactTextUpdate reactTextUpdate =
         new ReactTextUpdate(
             text, jsEventCounter, false, textAlign, textBreakStrategy, justificationMode);
+    reactTextUpdate.mContainsMultipleFragments = containsMultipleFragments;
     return reactTextUpdate;
   }
 
@@ -150,5 +190,13 @@ public class ReactTextUpdate {
 
   public int getJustificationMode() {
     return mJustificationMode;
+  }
+
+  public int getSelectionStart() {
+    return mSelectionStart;
+  }
+
+  public int getSelectionEnd() {
+    return mSelectionEnd;
   }
 }

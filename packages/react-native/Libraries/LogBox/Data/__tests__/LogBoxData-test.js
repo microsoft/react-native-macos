@@ -10,10 +10,6 @@
  */
 
 'use strict';
-
-// TODO(legacy-fake-timers): Fix these tests to work with modern timers.
-jest.useFakeTimers({legacyFakeTimers: true});
-
 jest.mock('../../../Core/Devtools/parseErrorStack', () => {
   return {__esModule: true, default: jest.fn(() => [])};
 });

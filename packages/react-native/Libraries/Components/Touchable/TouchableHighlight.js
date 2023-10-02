@@ -346,12 +346,7 @@ class TouchableHighlight extends React.Component<Props, State> {
         nextFocusLeft={this.props.nextFocusLeft}
         nextFocusRight={this.props.nextFocusRight}
         nextFocusUp={this.props.nextFocusUp}
-        focusable={
-          this.props.focusable !== false &&
-          this.props.onPress !== undefined &&
-          !this.props.disabled // [macOS]
-        }
-        nativeID={this.props.id ?? this.props.nativeID}
+        nativeID={this.props.nativeID}
         testID={this.props.testID}
         // [macOS
         acceptsFirstMouse={
@@ -362,6 +357,7 @@ class TouchableHighlight extends React.Component<Props, State> {
             this.props.enableFocusRing === true) &&
           !this.props.disabled
         }
+        focusable={this.props.focusable !== false && !this.props.disabled}
         tooltip={this.props.tooltip}
         onMouseEnter={this.props.onMouseEnter}
         onMouseLeave={this.props.onMouseLeave}

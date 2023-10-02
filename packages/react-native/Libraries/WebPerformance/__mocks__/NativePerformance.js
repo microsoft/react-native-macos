@@ -20,12 +20,12 @@ import {RawPerformanceEntryTypeValues} from '../RawPerformanceEntry';
 const marks: Map<string, number> = new Map();
 
 const NativePerformanceMock: NativePerformance = {
-  mark: (name: string, startTime: number): void => {
+  mark: (name: string, startTime: number, duration: number): void => {
     NativePerformanceObserver?.logRawEntry({
       name,
       entryType: RawPerformanceEntryTypeValues.MARK,
       startTime,
-      duration: 0,
+      duration,
     });
     marks.set(name, startTime);
   },
@@ -58,8 +58,6 @@ const NativePerformanceMock: NativePerformance = {
       endTime: 0,
       executeJavaScriptBundleEntryPointStart: 0,
       executeJavaScriptBundleEntryPointEnd: 0,
-      initializeRuntimeStart: 0,
-      initializeRuntimeEnd: 0,
     };
   },
 };

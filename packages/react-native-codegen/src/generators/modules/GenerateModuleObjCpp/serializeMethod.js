@@ -459,24 +459,14 @@ function serializeConstantsProtocolMethods(
     );
   }
 
-  let {returnTypeAnnotation} = propertyTypeAnnotation;
-
-  if (returnTypeAnnotation.type === 'TypeAliasTypeAnnotation') {
-    // The return type is an alias, resolve it to get the expected undelying object literal type
-    returnTypeAnnotation = resolveAlias(returnTypeAnnotation.name);
-  }
-
+  const {returnTypeAnnotation} = propertyTypeAnnotation;
   if (returnTypeAnnotation.type !== 'ObjectTypeAnnotation') {
     throw new Error(
-      `${hasteModuleName}.getConstants() may only return an object literal: {...}` +
-        ` or a type alias of such. Got '${propertyTypeAnnotation.returnTypeAnnotation.type}'.`,
+      `${hasteModuleName}.getConstants() may only return an object literal: {...}.`,
     );
   }
 
-  if (
-    returnTypeAnnotation.type === 'ObjectTypeAnnotation' &&
-    returnTypeAnnotation.properties.length === 0
-  ) {
+  if (returnTypeAnnotation.properties.length === 0) {
     return [];
   }
 

@@ -9,4 +9,4 @@
 
 #define RCT_SUBCLASS_SECURETEXTFIELD 1
 
-#include "../RCTUITextField.mm"
+#include "../RCTUITextField.m"

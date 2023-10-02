@@ -136,9 +136,7 @@ class WritableMapBuffer : MapBuffer {
   override fun iterator(): Iterator<MapBuffer.Entry> =
       object : Iterator<MapBuffer.Entry> {
         var count = 0
-
         override fun hasNext(): Boolean = count < values.size()
-
         override fun next(): MapBuffer.Entry = MapBufferEntry(count++)
       }
 
@@ -147,16 +145,12 @@ class WritableMapBuffer : MapBuffer {
     override val type: DataType = values.valueAt(index).dataType(key)
     override val booleanValue: Boolean
       get() = verifyValue(key, values.valueAt(index))
-
     override val intValue: Int
       get() = verifyValue(key, values.valueAt(index))
-
     override val doubleValue: Double
       get() = verifyValue(key, values.valueAt(index))
-
     override val stringValue: String
       get() = verifyValue(key, values.valueAt(index))
-
     override val mapBufferValue: MapBuffer
       get() = verifyValue(key, values.valueAt(index))
   }

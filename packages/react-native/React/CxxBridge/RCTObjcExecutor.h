@@ -12,7 +12,8 @@
 #import <React/RCTJavaScriptExecutor.h>
 #import <cxxreact/JSExecutor.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class RCTObjcExecutorFactory : public JSExecutorFactory {
  public:
@@ -28,4 +29,5 @@ class RCTObjcExecutorFactory : public JSExecutorFactory {
   RCTJavaScriptCompleteBlock m_errorBlock;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

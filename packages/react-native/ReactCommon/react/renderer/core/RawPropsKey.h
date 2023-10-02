@@ -11,16 +11,17 @@
 
 #include <react/renderer/core/RawPropsPrimitives.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Represent a prop name stored as three `char const *` fragments.
  */
 class RawPropsKey final {
  public:
-  const char* prefix{};
-  const char* name{};
-  const char* suffix{};
+  char const *prefix{};
+  char const *name{};
+  char const *suffix{};
 
   /*
    * Converts to `std::string`.
@@ -31,10 +32,11 @@ class RawPropsKey final {
    * Renders compound prop name to given buffer and put the resulting length
    * into `length`.
    */
-  void render(char* buffer, RawPropsPropNameLength* length) const noexcept;
+  void render(char *buffer, RawPropsPropNameLength *length) const noexcept;
 };
 
-bool operator==(const RawPropsKey& lhs, const RawPropsKey& rhs) noexcept;
-bool operator!=(const RawPropsKey& lhs, const RawPropsKey& rhs) noexcept;
+bool operator==(RawPropsKey const &lhs, RawPropsKey const &rhs) noexcept;
+bool operator!=(RawPropsKey const &lhs, RawPropsKey const &rhs) noexcept;
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -7,11 +7,12 @@
 
 #pragma once
 
-#include <jsi/jsi.h>
-#include <react/renderer/core/InstanceHandle.h>
 #include <memory>
 
-namespace facebook::react {
+#include <jsi/jsi.h>
+
+namespace facebook {
+namespace react {
 
 /*
  * `EventTarget` represents storage of a weak instance handle object with some
@@ -34,7 +35,7 @@ class EventTarget {
   /*
    * Constructs an EventTarget from a weak instance handler and a tag.
    */
-  explicit EventTarget(InstanceHandle::Shared instanceHandle);
+  EventTarget(jsi::Runtime &runtime, jsi::Value const &instanceHandle, Tag tag);
 
   /*
    * Sets the `enabled` flag that allows creating a strong instance handle from
@@ -46,18 +47,18 @@ class EventTarget {
    * Retains an instance handler by creating a strong reference to it.
    * If the EventTarget is disabled, does nothing.
    */
-  void retain(jsi::Runtime& runtime) const;
+  void retain(jsi::Runtime &runtime) const;
 
   /*
    * Releases the instance handler by nulling a strong reference to it.
    */
-  void release(jsi::Runtime& runtime) const;
+  void release(jsi::Runtime &runtime) const;
 
   /*
    * Creates and returns the `instanceHandle`.
    * Returns `null` if the `instanceHandle` is not retained at this moment.
    */
-  jsi::Value getInstanceHandle(jsi::Runtime& runtime) const;
+  jsi::Value getInstanceHandle(jsi::Runtime &runtime) const;
 
   /*
    * Deprecated. Do not use.
@@ -65,12 +66,13 @@ class EventTarget {
   Tag getTag() const;
 
  private:
-  const InstanceHandle::Shared instanceHandle_;
   mutable bool enabled_{false}; // Protected by `EventEmitter::DispatchMutex()`.
+  mutable jsi::WeakObject weakInstanceHandle_; // Protected by `jsi::Runtime &`.
   mutable jsi::Value strongInstanceHandle_; // Protected by `jsi::Runtime &`.
-  mutable size_t retainCount_{0}; // Protected by `jsi::Runtime &`.
+  Tag tag_;
 };
 
 using SharedEventTarget = std::shared_ptr<const EventTarget>;
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

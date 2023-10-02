@@ -18,19 +18,14 @@
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * State for <ScrollView> component.
  */
 class ScrollViewState final {
  public:
-  ScrollViewState(
-      Point contentOffset,
-      Rect contentBoundingRect,
-      int scrollAwayPaddingTop);
-  ScrollViewState() = default;
-
   Point contentOffset;
   Rect contentBoundingRect;
   int scrollAwayPaddingTop;
@@ -41,7 +36,8 @@ class ScrollViewState final {
   Size getContentSize() const;
 
 #ifdef ANDROID
-  ScrollViewState(const ScrollViewState& previousState, folly::dynamic data)
+  ScrollViewState() = default;
+  ScrollViewState(ScrollViewState const &previousState, folly::dynamic data)
       : contentOffset(
             {(Float)data["contentOffsetLeft"].getDouble(),
              (Float)data["contentOffsetTop"].getDouble()}),
@@ -59,4 +55,5 @@ class ScrollViewState final {
 #endif
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

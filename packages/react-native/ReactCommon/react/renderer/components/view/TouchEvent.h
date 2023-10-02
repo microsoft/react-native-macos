@@ -13,7 +13,8 @@
 
 #include <react/renderer/components/view/Touch.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Defines the `touchstart`, `touchend`, `touchmove`, and `touchcancel` event
@@ -41,11 +42,12 @@ struct TouchEvent {
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
-std::string getDebugName(const TouchEvent& touchEvent);
+std::string getDebugName(TouchEvent const &touchEvent);
 std::vector<DebugStringConvertibleObject> getDebugProps(
-    const TouchEvent& touchEvent,
+    TouchEvent const &touchEvent,
     DebugStringConvertibleOptions options);
 
 #endif
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

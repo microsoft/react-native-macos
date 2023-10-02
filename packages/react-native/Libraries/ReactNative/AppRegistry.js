@@ -10,7 +10,6 @@
 
 import type {RootTag} from '../Types/RootTagTypes';
 import type {IPerformanceLogger} from '../Utilities/createPerformanceLogger';
-import type {DisplayModeType} from './DisplayMode';
 
 import BatchedBridge from '../BatchedBridge/BatchedBridge';
 import BugReporting from '../BugReporting/BugReporting';
@@ -31,34 +30,29 @@ type TaskCancelProvider = () => TaskCanceller;
 
 export type ComponentProvider = () => React$ComponentType<any>;
 export type ComponentProviderInstrumentationHook = (
-  component_: ComponentProvider,
+  component: ComponentProvider,
   scopedPerformanceLogger: IPerformanceLogger,
 ) => React$ComponentType<any>;
 export type AppConfig = {
   appKey: string,
   component?: ComponentProvider,
-  run?: Runnable,
+  run?: Function,
   section?: boolean,
   ...
 };
-type AppParameters = {
-  initialProps: $ReadOnly<{[string]: mixed, ...}>,
-  rootTag: RootTag,
-  fabric?: boolean,
-  concurrentRoot?: boolean,
+export type Runnable = {
+  component?: ComponentProvider,
+  run: Function,
+  ...
 };
-export type Runnable = (
-  appParameters: AppParameters,
-  displayMode: DisplayModeType,
-) => void;
-export type Runnables = {[appKey: string]: Runnable};
+export type Runnables = {[appKey: string]: Runnable, ...};
 export type Registry = {
-  sections: $ReadOnlyArray<string>,
+  sections: Array<string>,
   runnables: Runnables,
   ...
 };
 export type WrapperComponentProvider = (
-  appParameters: Object,
+  appParameters: any,
 ) => React$ComponentType<any>;
 
 const runnables: Runnables = {};
@@ -116,28 +110,30 @@ const AppRegistry = {
     componentProvider: ComponentProvider,
     section?: boolean,
   ): string {
-    const scopedPerformanceLogger = createPerformanceLogger();
-    runnables[appKey] = (appParameters, displayMode) => {
-      const concurrentRootEnabled = Boolean(
-        appParameters.initialProps?.concurrentRoot ||
-          appParameters.concurrentRoot,
-      );
-      renderApplication(
-        componentProviderInstrumentationHook(
-          componentProvider,
+    let scopedPerformanceLogger = createPerformanceLogger();
+    runnables[appKey] = {
+      componentProvider,
+      run: (appParameters, displayMode) => {
+        const concurrentRootEnabled =
+          appParameters.initialProps?.concurrentRoot ||
+          appParameters.concurrentRoot;
+        renderApplication(
+          componentProviderInstrumentationHook(
+            componentProvider,
+            scopedPerformanceLogger,
+          ),
+          appParameters.initialProps,
+          appParameters.rootTag,
+          wrapperComponentProvider && wrapperComponentProvider(appParameters),
+          appParameters.fabric,
+          showArchitectureIndicator,
           scopedPerformanceLogger,
-        ),
-        appParameters.initialProps,
-        appParameters.rootTag,
-        wrapperComponentProvider && wrapperComponentProvider(appParameters),
-        appParameters.fabric,
-        showArchitectureIndicator,
-        scopedPerformanceLogger,
-        appKey === 'LogBox', // is logbox
-        appKey,
-        displayMode,
-        concurrentRootEnabled,
-      );
+          appKey === 'LogBox',
+          appKey,
+          coerceDisplayMode(displayMode),
+          concurrentRootEnabled,
+        );
+      },
     };
     if (section) {
       sections[appKey] = runnables[appKey];
@@ -145,8 +141,8 @@ const AppRegistry = {
     return appKey;
   },
 
-  registerRunnable(appKey: string, run: Runnable): string {
-    runnables[appKey] = run;
+  registerRunnable(appKey: string, run: Function): string {
+    runnables[appKey] = {run};
     return appKey;
   },
 
@@ -154,11 +150,11 @@ const AppRegistry = {
     AppRegistry.registerComponent(appKey, component, true);
   },
 
-  getAppKeys(): $ReadOnlyArray<string> {
+  getAppKeys(): Array<string> {
     return Object.keys(runnables);
   },
 
-  getSectionKeys(): $ReadOnlyArray<string> {
+  getSectionKeys(): Array<string> {
     return Object.keys(sections);
   },
 
@@ -192,7 +188,7 @@ const AppRegistry = {
    */
   runApplication(
     appKey: string,
-    appParameters: AppParameters,
+    appParameters: any,
     displayMode?: number,
   ): void {
     if (appKey !== 'LogBox') {
@@ -207,7 +203,7 @@ const AppRegistry = {
       );
     }
     invariant(
-      runnables[appKey],
+      runnables[appKey] && runnables[appKey].run,
       `"${appKey}" has not been registered. This can happen if:\n` +
         '* Metro (the local dev server) is run from the wrong folder. ' +
         'Check if Metro is running, stop it and restart it in the current project.\n' +
@@ -215,7 +211,7 @@ const AppRegistry = {
     );
 
     SceneTracker.setActiveScene({name: appKey});
-    runnables[appKey](appParameters, coerceDisplayMode(displayMode));
+    runnables[appKey].run(appParameters, displayMode);
   },
 
   /**
@@ -223,7 +219,7 @@ const AppRegistry = {
    */
   setSurfaceProps(
     appKey: string,
-    appParameters: Object,
+    appParameters: any,
     displayMode?: number,
   ): void {
     if (appKey !== 'LogBox') {
@@ -239,14 +235,14 @@ const AppRegistry = {
       );
     }
     invariant(
-      runnables[appKey],
+      runnables[appKey] && runnables[appKey].run,
       `"${appKey}" has not been registered. This can happen if:\n` +
         '* Metro (the local dev server) is run from the wrong folder. ' +
         'Check if Metro is running, stop it and restart it in the current project.\n' +
         "* A module failed to load due to an error and `AppRegistry.registerComponent` wasn't called.",
     );
 
-    runnables[appKey](appParameters, coerceDisplayMode(displayMode));
+    runnables[appKey].run(appParameters, displayMode);
   },
 
   /**
@@ -342,27 +338,18 @@ const AppRegistry = {
   },
 };
 
-// Register LogBox as a default surface
-AppRegistry.registerComponent('LogBox', () => {
-  if (__DEV__ && typeof jest === 'undefined') {
-    return require('../LogBox/LogBoxInspectorContainer').default;
-  } else {
-    return function NoOp() {
-      return null;
-    };
-  }
-});
-
-global.RN$AppRegistry = AppRegistry;
-
-// Backwards compat with SurfaceRegistry, remove me later
-global.RN$SurfaceRegistry = {
-  renderSurface: AppRegistry.runApplication,
-  setSurfaceProps: AppRegistry.setSurfaceProps,
-};
-
-if (global.RN$Bridgeless !== true) {
+if (!(global.RN$Bridgeless === true)) {
   BatchedBridge.registerCallableModule('AppRegistry', AppRegistry);
+
+  AppRegistry.registerComponent('LogBox', () => {
+    if (__DEV__) {
+      return require('../LogBox/LogBoxInspectorContainer').default;
+    } else {
+      return function NoOp() {
+        return null;
+      };
+    }
+  });
 }
 
 module.exports = AppRegistry;

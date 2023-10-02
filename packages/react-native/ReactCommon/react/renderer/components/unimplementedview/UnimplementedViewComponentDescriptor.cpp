@@ -15,13 +15,13 @@ ComponentHandle UnimplementedViewComponentDescriptor::getComponentHandle()
 }
 
 ComponentName UnimplementedViewComponentDescriptor::getComponentName() const {
-  return static_cast<const std::string*>(flavor_.get())->c_str();
+  return std::static_pointer_cast<std::string const>(this->flavor_)->c_str();
 }
 
 Props::Shared UnimplementedViewComponentDescriptor::cloneProps(
-    const PropsParserContext& context,
-    const Props::Shared& props,
-    const RawProps& rawProps) const {
+    PropsParserContext const &context,
+    Props::Shared const &props,
+    RawProps const &rawProps) const {
   auto clonedProps =
       ConcreteComponentDescriptor<UnimplementedViewShadowNode>::cloneProps(
           context, props, rawProps);
@@ -32,7 +32,7 @@ Props::Shared UnimplementedViewComponentDescriptor::cloneProps(
   emptyRawProps.parse(rawPropsParser_, context);
   auto unimplementedViewProps = std::make_shared<UnimplementedViewProps>(
       context,
-      static_cast<const UnimplementedViewProps&>(*clonedProps),
+      *std::static_pointer_cast<UnimplementedViewProps const>(clonedProps),
       emptyRawProps);
 
   unimplementedViewProps->setComponentName(getComponentName());

@@ -23,7 +23,7 @@ namespace butter {
  *
  * Target C++ Version
  * ------------------
- * Currently, Butter targets c++20.
+ * Currently, Butter targets C++17.
  *
  * The Scope
  * ---------

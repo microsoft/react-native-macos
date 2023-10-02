@@ -7,7 +7,9 @@
 
 #include "common.h"
 
-namespace facebook::yoga::vanillajni {
+namespace facebook {
+namespace yoga {
+namespace vanillajni {
 
 void registerNatives(
     JNIEnv* env,
@@ -18,8 +20,7 @@ void registerNatives(
 
   assertNoPendingJniExceptionIf(env, !clazz);
 
-  auto result =
-      env->RegisterNatives(clazz, methods, static_cast<int32_t>(numMethods));
+  auto result = env->RegisterNatives(clazz, methods, numMethods);
 
   assertNoPendingJniExceptionIf(env, result != JNI_OK);
 }
@@ -76,8 +77,11 @@ DEFINE_CALL_METHOD_FOR_PRIMITIVE_INTERFACE(void, Void) {
   assertNoPendingJniException(env);
 }
 
-ScopedLocalRef<jobject>
-callStaticObjectMethod(JNIEnv* env, jclass clazz, jmethodID methodId, ...) {
+ScopedLocalRef<jobject> callStaticObjectMethod(
+    JNIEnv* env,
+    jclass clazz,
+    jmethodID methodId,
+    ...) {
   va_list args;
   va_start(args, methodId);
   jobject result = env->CallStaticObjectMethodV(clazz, methodId, args);
@@ -105,5 +109,6 @@ ScopedGlobalRef<jthrowable> newGlobalRef(JNIEnv* env, jthrowable obj) {
 
   return make_global_ref(result);
 }
-
-} // namespace facebook::yoga::vanillajni
+} // namespace vanillajni
+} // namespace yoga
+} // namespace facebook

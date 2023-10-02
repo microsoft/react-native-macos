@@ -8,7 +8,6 @@
 #pragma once
 
 #include <chrono>
-#include <condition_variable>
 #include <optional>
 
 #include <react/renderer/debug/flags.h>
@@ -23,7 +22,8 @@
 #include <react/renderer/mounting/stubs.h>
 #endif
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Stores inside all non-mounted yet revisions of a shadow tree and coordinates
@@ -34,13 +34,13 @@ namespace facebook::react {
  */
 class MountingCoordinator final {
  public:
-  using Shared = std::shared_ptr<const MountingCoordinator>;
+  using Shared = std::shared_ptr<MountingCoordinator const>;
 
   /*
    * The constructor is meant to be used only inside `ShadowTree`, and it's
    * `public` only to enable using with `std::make_shared<>`.
    */
-  MountingCoordinator(const ShadowTreeRevision& baseRevision);
+  MountingCoordinator(const ShadowTreeRevision &baseRevision);
 
   /*
    * Returns the id of the surface that the coordinator belongs to.
@@ -59,14 +59,6 @@ class MountingCoordinator final {
   std::optional<MountingTransaction> pullTransaction() const;
 
   /*
-   * Indicates if there are transactions waiting to be consumed and mounted on
-   * the host platform. This can be useful to determine if side-effects of
-   * mounting can be expected after some operations (like IntersectionObserver
-   * initial paint notifications).
-   */
-  bool hasPendingTransactions() const;
-
-  /*
    * Blocks the current thread until a new mounting transaction is available or
    * after the specified `timeout` duration.
    * Returns `false` if a timeout occurred before a new transaction available.
@@ -77,20 +69,18 @@ class MountingCoordinator final {
    */
   bool waitForTransaction(std::chrono::duration<double> timeout) const;
 
-  const TelemetryController& getTelemetryController() const;
-
-  const ShadowTreeRevision& getBaseRevision() const;
+  TelemetryController const &getTelemetryController() const;
 
   /*
    * Methods from this section are meant to be used by
    * `MountingOverrideDelegate` only.
    */
  public:
-  void updateBaseRevision(const ShadowTreeRevision& baseRevision) const;
+  void updateBaseRevision(ShadowTreeRevision const &baseRevision) const;
   void resetLatestRevision() const;
 
   void setMountingOverrideDelegate(
-      std::weak_ptr<const MountingOverrideDelegate> delegate) const;
+      std::weak_ptr<MountingOverrideDelegate const> delegate) const;
 
   /*
    * Methods from this section are meant to be used by `ShadowTree` only.
@@ -110,14 +100,14 @@ class MountingCoordinator final {
   void revoke() const;
 
  private:
-  const SurfaceId surfaceId_;
+  SurfaceId const surfaceId_;
 
   mutable std::mutex mutex_;
   mutable ShadowTreeRevision baseRevision_;
   mutable std::optional<ShadowTreeRevision> lastRevision_{};
   mutable MountingTransaction::Number number_{0};
   mutable std::condition_variable signal_;
-  mutable std::weak_ptr<const MountingOverrideDelegate>
+  mutable std::weak_ptr<MountingOverrideDelegate const>
       mountingOverrideDelegate_;
 
   TelemetryController telemetryController_;
@@ -127,4 +117,5 @@ class MountingCoordinator final {
 #endif
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

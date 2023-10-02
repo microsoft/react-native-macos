@@ -16,7 +16,8 @@
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * State for <ModalHostView> component.
@@ -30,7 +31,7 @@ class ModalHostViewState final {
 
 #ifdef ANDROID
   ModalHostViewState(
-      const ModalHostViewState& previousState,
+      ModalHostViewState const &previousState,
       folly::dynamic data)
       : screenSize(Size{
             (Float)data["screenWidth"].getDouble(),
@@ -50,4 +51,5 @@ class ModalHostViewState final {
 #pragma mark - Getters
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

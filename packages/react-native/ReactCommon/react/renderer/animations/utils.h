@@ -11,11 +11,12 @@
 #include <react/renderer/graphics/Float.h>
 #include <react/renderer/mounting/ShadowViewMutation.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 static inline bool shouldFirstComeBeforeSecondRemovesOnly(
-    const ShadowViewMutation& lhs,
-    const ShadowViewMutation& rhs) noexcept {
+    ShadowViewMutation const &lhs,
+    ShadowViewMutation const &rhs) noexcept {
   // Make sure that removes on the same level are sorted - highest indices must
   // come first.
   return (lhs.type == ShadowViewMutation::Type::Remove &&
@@ -25,8 +26,8 @@ static inline bool shouldFirstComeBeforeSecondRemovesOnly(
 }
 
 static inline bool shouldFirstComeBeforeSecondMutation(
-    const ShadowViewMutation& lhs,
-    const ShadowViewMutation& rhs) noexcept {
+    ShadowViewMutation const &lhs,
+    ShadowViewMutation const &rhs) noexcept {
   if (lhs.type != rhs.type) {
     // Deletes always come last
     if (lhs.type == ShadowViewMutation::Type::Delete) {
@@ -73,7 +74,8 @@ static inline bool shouldFirstComeBeforeSecondMutation(
 
 std::pair<Float, Float> calculateAnimationProgress(
     uint64_t now,
-    const LayoutAnimation& animation,
-    const AnimationConfig& mutationConfig);
+    LayoutAnimation const &animation,
+    AnimationConfig const &mutationConfig);
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -98,7 +98,6 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           focusable: true,
           overflow: true,
           backfaceVisibility: true,
-          experimental_layoutConformance: true,
         },
       }
     : {

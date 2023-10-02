@@ -12,23 +12,20 @@ import type {TurboModule} from '../TurboModule/RCTExport';
 
 import * as TurboModuleRegistry from '../TurboModule/TurboModuleRegistry';
 
-export type PlatformConstantsIOS = {|
-  isTesting: boolean,
-  isDisableAnimations?: boolean,
-  reactNativeVersion: {|
-    major: number,
-    minor: number,
-    patch: number,
-    prerelease: ?number,
-  |},
-  forceTouchAvailable: boolean,
-  osVersion: string,
-  systemName: string,
-  interfaceIdiom: string,
-|};
-
 export interface Spec extends TurboModule {
-  +getConstants: () => PlatformConstantsIOS;
+  +getConstants: () => {|
+    isTesting: boolean,
+    reactNativeVersion: {|
+      major: number,
+      minor: number,
+      patch: number,
+      prerelease: ?number,
+    |},
+    forceTouchAvailable: boolean,
+    osVersion: string,
+    systemName: string,
+    interfaceIdiom: string,
+  |};
 }
 
 export default (TurboModuleRegistry.getEnforcing<Spec>(

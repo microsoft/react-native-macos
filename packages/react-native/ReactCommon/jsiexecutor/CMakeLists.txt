@@ -9,7 +9,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 add_compile_options(
         -fexceptions
         -frtti
-        -std=c++20
+        -std=c++17
         -O3)
 
 add_library(jsireact

@@ -9,7 +9,8 @@
 
 #include <string>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /**
  * ReactNative configuration as provided by the hosting app.
@@ -20,10 +21,10 @@ class ReactNativeConfig {
   ReactNativeConfig();
   virtual ~ReactNativeConfig();
 
-  virtual bool getBool(const std::string& param) const = 0;
-  virtual std::string getString(const std::string& param) const = 0;
-  virtual int64_t getInt64(const std::string& param) const = 0;
-  virtual double getDouble(const std::string& param) const = 0;
+  virtual bool getBool(const std::string &param) const = 0;
+  virtual std::string getString(const std::string &param) const = 0;
+  virtual int64_t getInt64(const std::string &param) const = 0;
+  virtual double getDouble(const std::string &param) const = 0;
 };
 
 /**
@@ -33,10 +34,11 @@ class EmptyReactNativeConfig : public ReactNativeConfig {
  public:
   EmptyReactNativeConfig();
 
-  bool getBool(const std::string& param) const override;
-  std::string getString(const std::string& param) const override;
-  int64_t getInt64(const std::string& param) const override;
-  double getDouble(const std::string& param) const override;
+  bool getBool(const std::string &param) const override;
+  std::string getString(const std::string &param) const override;
+  int64_t getInt64(const std::string &param) const override;
+  double getDouble(const std::string &param) const override;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

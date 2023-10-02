@@ -7,5 +7,7 @@
 
 #include "LegacyViewManagerInteropState.h"
 
-namespace facebook::react {
-} // namespace facebook::react
+namespace facebook {
+namespace react {
+} // namespace react
+} // namespace facebook

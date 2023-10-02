@@ -9,9 +9,9 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
     id("de.undercouch.download")
+    id("com.android.library")
     id("maven-publish")
     id("signing")
-    alias(libs.plugins.android.library)
 }
 
 group = "com.facebook.react"
@@ -42,18 +42,6 @@ def downloadsDir = customDownloadDir ? new File(customDownloadDir) : new File(re
 def overrideHermesDir = System.getenv("REACT_NATIVE_OVERRIDE_HERMES_DIR") != null
 def hermesDir = System.getenv("REACT_NATIVE_OVERRIDE_HERMES_DIR") ?: new File(reactNativeRootDir, "sdks/hermes")
 def hermesBuildDir = new File("$buildDir/hermes")
-def hermesCOutputBinary = new File("$buildDir/hermes/bin/hermesc")
-
-// This filetree represents the file of the Hermes build that we want as input/output
-// of the buildHermesC task. Gradle will compute the hash of files in the file tree
-// and won't rebuilt hermesc unless those files are changing.
-def hermesBuildOutputFileTree = fileTree(hermesBuildDir.toString())
-                    .include('**/*.make')
-                    .include('**/*.cmake')
-                    .include('**/*.marks')
-                    .include('**/compiler_depends.ts')
-                    .include('**/Makefile')
-                    .include('**/link.txt')
 
 def hermesVersion = "main"
 def hermesVersionFile = new File(reactNativeRootDir, "sdks/.hermesversion")
@@ -98,36 +86,12 @@ task unzipHermes(dependsOn: downloadHermes, type: Copy) {
 
 task configureBuildForHermes(type: Exec) {
     workingDir(hermesDir)
-    inputs.dir(hermesDir)
-    outputs.files(hermesBuildOutputFileTree)
-    commandLine(
-        windowsAwareCommandLine(
-            findCmakePath(cmakeVersion),
-            Os.isFamily(Os.FAMILY_WINDOWS) ? "-GNMake Makefiles" : "",
-            "-S",
-            ".",
-            "-B",
-            hermesBuildDir.toString(),
-            "-DJSI_DIR=" + jsiDir.absolutePath
-        )
-    )
+    commandLine(windowsAwareCommandLine(findCmakePath(cmakeVersion), Os.isFamily(Os.FAMILY_WINDOWS) ? "-GNMake Makefiles" : "", "-S", ".", "-B", hermesBuildDir.toString(), "-DJSI_DIR=" + jsiDir.absolutePath))
 }
 
-task buildHermesC(dependsOn: configureBuildForHermes, type: Exec) {
+task buildHermes(dependsOn: configureBuildForHermes, type: Exec) {
     workingDir(hermesDir)
-    inputs.files(hermesBuildOutputFileTree)
-    outputs.file(hermesCOutputBinary)
-    commandLine(
-        windowsAwareCommandLine(
-            findCmakePath(cmakeVersion),
-            "--build",
-            hermesBuildDir.toString(),
-            "--target",
-            "hermesc",
-            "-j",
-            ndkBuildJobs,
-        )
-    )
+    commandLine(windowsAwareCommandLine(findCmakePath(cmakeVersion), "--build", hermesBuildDir.toString(), "--target", "hermesc", "-j", ndkBuildJobs))
 }
 
 task prepareHeadersForPrefab(type: Copy) {
@@ -161,12 +125,12 @@ repositories {
 }
 
 android {
-    compileSdk libs.versions.compileSdk.get().toInteger()
-    buildToolsVersion = libs.versions.buildTools.get()
+    compileSdkVersion 31
+    buildToolsVersion = "31.0.0"
     namespace "com.facebook.hermes"
 
     // Used to override the NDK path/version on internal CI or by allowing
-    // users to customize the NDK path/version from their root project (e.g. for Apple Silicon support)
+    // users to customize the NDK path/version from their root project (e.g. for M1 support)
     if (rootProject.hasProperty("ndkPath")) {
         ndkPath rootProject.ext.ndkPath
     }
@@ -175,7 +139,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInteger()
+        minSdkVersion 21
 
         externalNativeBuild {
             cmake {
@@ -190,9 +154,6 @@ android {
                 // We intentionally build Hermes with Intl support only. This is to simplify
                 // the build setup and to avoid overcomplicating the build-type matrix.
                 arguments "-DHERMES_ENABLE_INTL=True"
-                // Due to https://github.com/android/ndk/issues/1693 we're losing Android
-                // specific compilation flags. This can be removed once we moved to NDK 25/26
-                arguments "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=ON"
                 targets "libhermes"
             }
         }
@@ -217,9 +178,6 @@ android {
                     // This has the (unlucky) side effect of letting AGP call the build
                     // tasks `configureCMakeRelease` while is actually building the debug flavor.
                     arguments "-DCMAKE_BUILD_TYPE=Release"
-                    // Adding -O3 to handle the issue here: https://github.com/android/ndk/issues/1740#issuecomment-1198438260
-                    // The old NDK toolchain is not passing -O3 correctly for release CMake builds. This is fixed in NDK 25 and can be removed once we're there.
-                    cppFlags "-O3"
                 }
             }
         }
@@ -227,8 +185,6 @@ android {
             externalNativeBuild {
                 cmake {
                     arguments "-DCMAKE_BUILD_TYPE=MinSizeRel"
-                    // For release builds, we don't want to enable the Hermes Debugger.
-                    arguments "-DHERMES_ENABLE_DEBUGGER=False"
                 }
             }
         }
@@ -249,10 +205,10 @@ android {
     }
 
     dependencies {
-        implementation(libs.fbjni)
-        implementation(libs.soloader)
-        implementation(libs.yoga.proguard.annotations)
-        implementation(libs.androidx.annotation)
+        implementation("com.facebook.fbjni:fbjni:0.3.0")
+        implementation("com.facebook.soloader:soloader:0.10.4")
+        implementation("com.facebook.yoga:proguard-annotations:1.19.0")
+        implementation("androidx.annotation:annotation:1.3.0")
     }
 
     packagingOptions {
@@ -283,9 +239,9 @@ afterEvaluate {
         configureBuildForHermes.dependsOn(unzipHermes)
         prepareHeadersForPrefab.dependsOn(unzipHermes)
     }
-    preBuild.dependsOn(buildHermesC)
+    preBuild.dependsOn(buildHermes)
     preBuild.dependsOn(prepareHeadersForPrefab)
-    prepareHeadersForPrefab.dependsOn(buildHermesC)
+    prepareHeadersForPrefab.dependsOn(buildHermes)
 }
 
 /* Publishing Configuration */

@@ -9,7 +9,8 @@
 
 #include <react/renderer/graphics/RectangleEdges.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * State for <SafeAreaView> component.
@@ -19,4 +20,5 @@ class SafeAreaViewState final {
   EdgeInsets padding{};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

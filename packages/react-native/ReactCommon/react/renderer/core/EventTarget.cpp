@@ -13,23 +13,25 @@ namespace facebook::react {
 
 using Tag = EventTarget::Tag;
 
-EventTarget::EventTarget(InstanceHandle::Shared instanceHandle)
-    : instanceHandle_(std::move(instanceHandle)),
-      strongInstanceHandle_(jsi::Value::null()) {}
+EventTarget::EventTarget(
+    jsi::Runtime &runtime,
+    jsi::Value const &instanceHandle,
+    Tag tag)
+    : weakInstanceHandle_(
+          jsi::WeakObject(runtime, instanceHandle.asObject(runtime))),
+      strongInstanceHandle_(jsi::Value::null()),
+      tag_(tag) {}
 
 void EventTarget::setEnabled(bool enabled) const {
   enabled_ = enabled;
 }
 
-void EventTarget::retain(jsi::Runtime& runtime) const {
+void EventTarget::retain(jsi::Runtime &runtime) const {
   if (!enabled_) {
     return;
   }
 
-  if (retainCount_ == 0) {
-    strongInstanceHandle_ = instanceHandle_->getInstanceHandle(runtime);
-  }
-  retainCount_ += 1;
+  strongInstanceHandle_ = weakInstanceHandle_.lock(runtime);
 
   // Having a `null` or `undefined` object here indicates that
   // `weakInstanceHandle_` was already deallocated. This should *not* happen by
@@ -43,19 +45,14 @@ void EventTarget::retain(jsi::Runtime& runtime) const {
   // react_native_assert(!strongInstanceHandle_.isUndefined());
 }
 
-void EventTarget::release(jsi::Runtime& /*runtime*/) const {
+void EventTarget::release(jsi::Runtime & /*runtime*/) const {
   // The method does not use `jsi::Runtime` reference.
   // It takes it only to ensure thread-safety (if the caller has the reference,
   // we are on a proper thread).
-
-  if (--retainCount_ == 0) {
-    strongInstanceHandle_ = jsi::Value::null();
-  }
-
-  react_native_assert(retainCount_ >= 0);
+  strongInstanceHandle_ = jsi::Value::null();
 }
 
-jsi::Value EventTarget::getInstanceHandle(jsi::Runtime& runtime) const {
+jsi::Value EventTarget::getInstanceHandle(jsi::Runtime &runtime) const {
   if (strongInstanceHandle_.isNull()) {
     // The `instanceHandle` is not retained.
     return jsi::Value::null();
@@ -65,7 +62,7 @@ jsi::Value EventTarget::getInstanceHandle(jsi::Runtime& runtime) const {
 }
 
 Tag EventTarget::getTag() const {
-  return instanceHandle_->getTag();
+  return tag_;
 }
 
 } // namespace facebook::react

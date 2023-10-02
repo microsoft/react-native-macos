@@ -11,7 +11,8 @@
 #include <reactperflogger/NativeModulePerfLogger.h>
 #include <memory>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class JNativeModulePerfLogger
     : public jni::HybridClass<JNativeModulePerfLogger> {
@@ -25,4 +26,5 @@ class JNativeModulePerfLogger
   friend HybridBase;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

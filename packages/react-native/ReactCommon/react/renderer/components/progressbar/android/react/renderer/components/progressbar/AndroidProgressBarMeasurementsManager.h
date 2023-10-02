@@ -13,17 +13,18 @@
 #include <react/renderer/core/LayoutConstraints.h>
 #include <react/utils/ContextContainer.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class AndroidProgressBarMeasurementsManager {
  public:
   AndroidProgressBarMeasurementsManager(
-      const ContextContainer::Shared& contextContainer)
+      const ContextContainer::Shared &contextContainer)
       : contextContainer_(contextContainer) {}
 
   Size measure(
       SurfaceId surfaceId,
-      const AndroidProgressBarProps& props,
+      AndroidProgressBarProps const &props,
       LayoutConstraints layoutConstraints) const;
 
  private:
@@ -33,4 +34,5 @@ class AndroidProgressBarMeasurementsManager {
   mutable Size cachedMeasurement_{};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

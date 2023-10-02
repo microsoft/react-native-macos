@@ -9,7 +9,8 @@
 
 #include <react/renderer/graphics/Float.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Convenience functions for rounding float values to be aligned with a device
@@ -80,4 +81,5 @@ inline long double floor(long double value) noexcept {
   return ::floorl(value);
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

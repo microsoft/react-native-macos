@@ -85,6 +85,11 @@ export namespace AppRegistry {
     displayMode?: number,
   ): void;
 
+  export function registerHeadlessTask(
+    appKey: string,
+    task: TaskProvider,
+  ): void;
+
   export function getRunnable(appKey: string): Runnable | undefined;
 
   export function getRegistry(): {sections: string[]; runnables: Runnable[]};

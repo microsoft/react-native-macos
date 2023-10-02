@@ -14,7 +14,8 @@
 
 #include "TurboModule.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /**
  * A helper class to convert the legacy CxxModule instance to a TurboModule
@@ -29,16 +30,16 @@ class JSI_EXPORT TurboCxxModule : public TurboModule {
       std::shared_ptr<CallInvoker> jsInvoker);
 
   facebook::jsi::Value get(
-      facebook::jsi::Runtime& runtime,
-      const facebook::jsi::PropNameID& propName) override;
+      facebook::jsi::Runtime &runtime,
+      const facebook::jsi::PropNameID &propName) override;
 
   std::vector<facebook::jsi::PropNameID> getPropertyNames(
-      facebook::jsi::Runtime& runtime) override;
+      facebook::jsi::Runtime &runtime) override;
 
   jsi::Value invokeMethod(
-      jsi::Runtime& runtime,
-      const std::string& methodName,
-      const jsi::Value* args,
+      jsi::Runtime &runtime,
+      const std::string &methodName,
+      const jsi::Value *args,
       size_t count);
 
  private:
@@ -46,4 +47,5 @@ class JSI_EXPORT TurboCxxModule : public TurboModule {
   std::unique_ptr<facebook::xplat::module::CxxModule> cxxModule_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -18,12 +18,6 @@
 #include <react/renderer/core/RawProps.h>
 #include <react/renderer/core/ShadowNode.h>
 
-#ifdef ANDROID
-#include <folly/dynamic.h>
-#include <react/renderer/mapbuffer/MapBuffer.h>
-#include <react/renderer/mapbuffer/MapBufferBuilder.h>
-#endif
-
 /**
  * This defines a set of TestComponent classes: Props, ShadowNode,
  * ComponentDescriptor. To be used for testing purpose.
@@ -31,20 +25,9 @@
 
 namespace facebook::react {
 
-struct TestState {
-  TestState() = default;
-
-#ifdef ANDROID
-  TestState(const TestState& previousState, folly::dynamic&& data){};
-
-  folly::dynamic getDynamic() const {
-    return {};
-  }
-
-  MapBuffer getMapBuffer() const {
-    return MapBufferBuilder::EMPTY();
-  }
-#endif
+class TestState {
+ public:
+  int number;
 };
 
 static const char TestComponentName[] = "Test";
@@ -54,9 +37,9 @@ class TestProps : public ViewProps {
   TestProps() = default;
 
   TestProps(
-      const PropsParserContext& context,
-      const TestProps& sourceProps,
-      const RawProps& rawProps)
+      const PropsParserContext &context,
+      const TestProps &sourceProps,
+      const RawProps &rawProps)
       : ViewProps(context, sourceProps, rawProps) {}
 };
 

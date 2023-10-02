@@ -29,12 +29,8 @@ function RNTTestDetails({
     <>
       {description == null ? null : (
         <View style={styles.section}>
-          <Text style={[styles.heading, {color: theme.LabelColor}]}>
-            Description
-          </Text>
-          <Text style={[styles.paragraph, {color: theme.LabelColor}]}>
-            {description}
-          </Text>
+          <Text style={styles.heading}>Description</Text>
+          <Text style={styles.paragraph}>{description}</Text>
         </View>
       )}
       {expect == null ? null : (
@@ -82,6 +78,7 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: 16,
+    color: 'grey',
     fontWeight: '500',
   },
   paragraph: {

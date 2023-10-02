@@ -13,7 +13,8 @@
 #include <fbjni/fbjni.h>
 #include <folly/dynamic.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class Instance;
 
@@ -42,9 +43,9 @@ class MethodInvoker {
       bool isSync);
 
   MethodCallResult invoke(
-      std::weak_ptr<Instance>& instance,
+      std::weak_ptr<Instance> &instance,
       jni::alias_ref<JBaseJavaModule::javaobject> module,
-      const folly::dynamic& params);
+      const folly::dynamic &params);
 
   std::string getMethodName() const;
 
@@ -61,4 +62,5 @@ class MethodInvoker {
   bool isSync_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

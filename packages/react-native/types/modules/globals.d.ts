@@ -67,7 +67,7 @@ declare interface WindowOrWorkerGlobalScope {
 interface Blob {
   readonly size: number;
   readonly type: string;
-  slice(start?: number, end?: number, contentType?: string): Blob;
+  slice(start?: number, end?: number): Blob;
 }
 
 interface BlobOptions {
@@ -78,20 +78,6 @@ interface BlobOptions {
 declare var Blob: {
   prototype: Blob;
   new (blobParts?: Array<Blob | string>, options?: BlobOptions): Blob;
-};
-
-interface File extends Blob {
-  name: string;
-  lastModified: number;
-}
-
-declare var File: {
-  prototype: File;
-  new (
-    fileParts?: Array<Blob | string>,
-    name?: string,
-    options?: BlobOptions,
-  ): File;
 };
 
 type FormDataValue =
@@ -187,7 +173,6 @@ declare interface Request extends Object, Body {
   readonly mode: RequestMode_;
   readonly referrer: string;
   readonly url: string;
-  readonly signal: AbortSignal | undefined;
   clone(): Request;
 }
 

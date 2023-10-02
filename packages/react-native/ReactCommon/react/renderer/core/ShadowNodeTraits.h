@@ -9,7 +9,8 @@
 
 #include <cstdint>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * A set of predefined traits associated with a particular `ShadowNode` class
@@ -60,7 +61,7 @@ class ShadowNodeTraits {
     // Any Yoga node (not only Leaf ones) can have this trait.
     DirtyYogaNode = 1 << 7,
 
-    // Inherits `YogaLayoutableShadowNode` and enforces that the yoga node is a
+    // Inherits `YogaLayoutableShadowNode` and enforces that the `YGNode` is a
     // leaf.
     LeafYogaNode = 1 << 8,
 
@@ -118,4 +119,5 @@ class ShadowNodeTraits {
   Trait traits_{Trait::None};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

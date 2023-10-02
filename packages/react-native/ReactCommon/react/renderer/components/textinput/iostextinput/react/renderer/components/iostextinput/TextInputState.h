@@ -17,7 +17,8 @@
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * State for <TextInput> component.
@@ -51,14 +52,14 @@ class TextInputState final {
    * text rendering infrastructure which is capable to render the
    * `AttributedString`.
    */
-  std::shared_ptr<const TextLayoutManager> layoutManager;
+  std::shared_ptr<TextLayoutManager const> layoutManager;
 
   size_t mostRecentEventCount{0};
 
 #ifdef ANDROID
   TextInputState(
-      const TextInputState& previousState,
-      const folly::dynamic& data);
+      TextInputState const &previousState,
+      folly::dynamic const &data);
 
   folly::dynamic getDynamic() const;
 
@@ -66,4 +67,5 @@ class TextInputState final {
 #endif
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

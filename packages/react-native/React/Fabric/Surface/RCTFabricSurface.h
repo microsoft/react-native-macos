@@ -114,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCTFabricSurface (Internal)
 
-- (const facebook::react::SurfaceHandler &)surfaceHandler;
+- (facebook::react::SurfaceHandler const &)surfaceHandler;
 
 @end
 

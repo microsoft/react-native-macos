@@ -6,10 +6,10 @@
  */
 
 #import <React/RCTComponentViewDescriptor.h>
-#import <unordered_map>
-#import <unordered_set>
-
 #import "RCTMountingTransactionObserverCoordinator.h"
+
+#import <butter/map.h>
+#import <butter/set.h>
 
 #include <react/renderer/mounting/MountingTransaction.h>
 
@@ -21,25 +21,25 @@ class RCTMountingTransactionObserverCoordinator final {
    * `componentViewDescriptor` does not listen the events.
    */
   void registerViewComponentDescriptor(
-      const RCTComponentViewDescriptor& componentViewDescriptor,
+      RCTComponentViewDescriptor const &componentViewDescriptor,
       facebook::react::SurfaceId surfaceId);
   void unregisterViewComponentDescriptor(
-      const RCTComponentViewDescriptor& componentViewDescriptor,
+      RCTComponentViewDescriptor const &componentViewDescriptor,
       facebook::react::SurfaceId surfaceId);
 
   /*
    * To be called from `RCTMountingManager`.
    */
   void notifyObserversMountingTransactionWillMount(
-      const facebook::react::MountingTransaction& transaction,
-      const facebook::react::SurfaceTelemetry& surfaceTelemetry) const;
+      facebook::react::MountingTransaction const &transaction,
+      facebook::react::SurfaceTelemetry const &surfaceTelemetry) const;
   void notifyObserversMountingTransactionDidMount(
-      const facebook::react::MountingTransaction& transaction,
-      const facebook::react::SurfaceTelemetry& surfaceTelemetry) const;
+      facebook::react::MountingTransaction const &transaction,
+      facebook::react::SurfaceTelemetry const &surfaceTelemetry) const;
 
  private:
-  std::unordered_map<
+  facebook::butter::map<
       facebook::react::SurfaceId,
-      std::unordered_set<RCTComponentViewDescriptor>>
+      facebook::butter::set<RCTComponentViewDescriptor>>
       registry_;
 };

@@ -22,7 +22,7 @@ using namespace facebook::react;
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-    static const auto defaultProps = std::make_shared<const SafeAreaViewProps>();
+    static auto const defaultProps = std::make_shared<SafeAreaViewProps const>();
     _props = defaultProps;
   }
 
@@ -71,7 +71,7 @@ using namespace facebook::react;
   auto threshold = 1.0 / scale + 0.01; // Size of a pixel plus some small threshold. [macOS]
   
   _state->updateState(
-      [=](const SafeAreaViewShadowNode::ConcreteState::Data &oldData)
+      [=](SafeAreaViewShadowNode::ConcreteState::Data const &oldData)
           -> SafeAreaViewShadowNode::ConcreteState::SharedData {
         auto oldPadding = oldData.padding;
         auto deltaPadding = newPadding - oldPadding;
@@ -94,8 +94,8 @@ using namespace facebook::react;
   return concreteComponentDescriptorProvider<SafeAreaViewComponentDescriptor>();
 }
 
-- (void)updateState:(const facebook::react::State::Shared &)state
-           oldState:(const facebook::react::State::Shared &)oldState
+- (void)updateState:(facebook::react::State::Shared const &)state
+           oldState:(facebook::react::State::Shared const &)oldState
 {
   _state = std::static_pointer_cast<SafeAreaViewShadowNode::ConcreteState const>(state);
 }

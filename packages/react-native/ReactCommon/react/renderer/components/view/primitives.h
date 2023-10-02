@@ -16,12 +16,13 @@
 #include <cmath>
 #include <optional>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 enum class PointerEventsMode : uint8_t { Auto, None, BoxNone, BoxOnly };
 
 struct ViewEvents {
-  std::bitset<64> bits{};
+  std::bitset<32> bits{};
 
   enum class Offset : std::size_t {
     // Pointer events
@@ -58,30 +59,23 @@ struct ViewEvents {
     PointerOut = 27,
     PointerOverCapture = 28,
     PointerOutCapture = 29,
-    Click = 30,
-    ClickCapture = 31,
-    GotPointerCapture = 32,
-    LostPointerCapture = 33,
-    PointerDown = 34,
-    PointerDownCapture = 35,
-    PointerUp = 36,
-    PointerUpCapture = 37,
+
   };
 
   constexpr bool operator[](const Offset offset) const {
     return bits[static_cast<std::size_t>(offset)];
   }
 
-  std::bitset<64>::reference operator[](const Offset offset) {
+  std::bitset<32>::reference operator[](const Offset offset) {
     return bits[static_cast<std::size_t>(offset)];
   }
 };
 
-inline static bool operator==(const ViewEvents& lhs, const ViewEvents& rhs) {
+inline static bool operator==(ViewEvents const &lhs, ViewEvents const &rhs) {
   return lhs.bits == rhs.bits;
 }
 
-inline static bool operator!=(const ViewEvents& lhs, const ViewEvents& rhs) {
+inline static bool operator!=(ViewEvents const &lhs, ViewEvents const &rhs) {
   return lhs.bits != rhs.bits;
 }
 
@@ -90,8 +84,6 @@ enum class BackfaceVisibility : uint8_t { Auto, Visible, Hidden };
 enum class BorderCurve : uint8_t { Circular, Continuous };
 
 enum class BorderStyle : uint8_t { Solid, Dotted, Dashed };
-
-enum class LayoutConformance : uint8_t { Undefined, Classic, Strict };
 
 template <typename T>
 struct CascadedRectangleEdges {
@@ -133,7 +125,7 @@ struct CascadedRectangleEdges {
     };
   }
 
-  bool operator==(const CascadedRectangleEdges<T>& rhs) const {
+  bool operator==(const CascadedRectangleEdges<T> &rhs) const {
     return std::tie(
                this->left,
                this->top,
@@ -162,7 +154,7 @@ struct CascadedRectangleEdges {
                rhs.blockEnd);
   }
 
-  bool operator!=(const CascadedRectangleEdges<T>& rhs) const {
+  bool operator!=(const CascadedRectangleEdges<T> &rhs) const {
     return !(*this == rhs);
   }
 };
@@ -209,7 +201,7 @@ struct CascadedRectangleCorners {
     };
   }
 
-  bool operator==(const CascadedRectangleCorners<T>& rhs) const {
+  bool operator==(const CascadedRectangleCorners<T> &rhs) const {
     return std::tie(
                this->topLeft,
                this->topRight,
@@ -240,7 +232,7 @@ struct CascadedRectangleCorners {
                rhs.startStart);
   }
 
-  bool operator!=(const CascadedRectangleCorners<T>& rhs) const {
+  bool operator!=(const CascadedRectangleCorners<T> &rhs) const {
     return !(*this == rhs);
   }
 };
@@ -264,7 +256,7 @@ struct BorderMetrics {
   BorderCurves borderCurves{};
   BorderStyles borderStyles{};
 
-  bool operator==(const BorderMetrics& rhs) const {
+  bool operator==(const BorderMetrics &rhs) const {
     return std::tie(
                this->borderColors,
                this->borderWidths,
@@ -279,9 +271,53 @@ struct BorderMetrics {
                rhs.borderStyles);
   }
 
-  bool operator!=(const BorderMetrics& rhs) const {
+  bool operator!=(const BorderMetrics &rhs) const {
     return !(*this == rhs);
   }
 };
 
-} // namespace facebook::react
+#ifdef ANDROID
+
+struct NativeDrawable {
+  enum class Kind : uint8_t {
+    Ripple,
+    ThemeAttr,
+  };
+
+  struct Ripple {
+    std::optional<int32_t> color{};
+    std::optional<Float> rippleRadius{};
+    bool borderless{false};
+
+    bool operator==(const Ripple &rhs) const {
+      return std::tie(this->color, this->borderless, this->rippleRadius) ==
+          std::tie(rhs.color, rhs.borderless, rhs.rippleRadius);
+    }
+  };
+
+  std::string themeAttr;
+  Ripple ripple;
+  Kind kind;
+
+  bool operator==(const NativeDrawable &rhs) const {
+    if (this->kind != rhs.kind)
+      return false;
+    switch (this->kind) {
+      case Kind::ThemeAttr:
+        return this->themeAttr == rhs.themeAttr;
+      case Kind::Ripple:
+        return this->ripple == rhs.ripple;
+    }
+  }
+
+  bool operator!=(const NativeDrawable &rhs) const {
+    return !(*this == rhs);
+  }
+
+  ~NativeDrawable() = default;
+};
+
+#endif
+
+} // namespace react
+} // namespace facebook

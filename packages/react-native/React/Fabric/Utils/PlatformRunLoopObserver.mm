@@ -9,7 +9,8 @@
 
 #import <mutex>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 static CFRunLoopActivity toCFRunLoopActivity(RunLoopObserver::Activity activity)
 {
@@ -45,7 +46,7 @@ static RunLoopObserver::Activity toRunLoopActivity(CFRunLoopActivity activity)
 
 PlatformRunLoopObserver::PlatformRunLoopObserver(
     RunLoopObserver::Activity activities,
-    const RunLoopObserver::WeakOwner &owner,
+    RunLoopObserver::WeakOwner const &owner,
     CFRunLoopRef runLoop)
     : RunLoopObserver(activities, owner), runLoop_(runLoop)
 {
@@ -92,4 +93,5 @@ bool PlatformRunLoopObserver::isOnRunLoopThread() const noexcept
   return CFRunLoopGetCurrent() == runLoop_;
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

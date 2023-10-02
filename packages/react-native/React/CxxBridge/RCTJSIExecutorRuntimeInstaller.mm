@@ -10,7 +10,8 @@
 #import <React/RCTLog.h>
 #include <chrono>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 JSIExecutor::RuntimeInstaller RCTJSIExecutorRuntimeInstaller(JSIExecutor::RuntimeInstaller runtimeInstallerToWrap)
 {
@@ -19,6 +20,7 @@ JSIExecutor::RuntimeInstaller RCTJSIExecutorRuntimeInstaller(JSIExecutor::Runtim
       _RCTLogJavaScriptInternal(static_cast<RCTLogLevel>(logLevel), [NSString stringWithUTF8String:message.c_str()]);
     };
     bindNativeLogger(runtime, iosLoggingBinder);
+    bindNativePerformanceNow(runtime);
 
     // Wrap over the original runtimeInstaller
     if (runtimeInstaller) {
@@ -27,4 +29,5 @@ JSIExecutor::RuntimeInstaller RCTJSIExecutorRuntimeInstaller(JSIExecutor::Runtim
   };
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

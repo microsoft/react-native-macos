@@ -7,7 +7,6 @@
 
 package com.facebook.react.shell;
 
-import android.annotation.SuppressLint;
 import androidx.annotation.Nullable;
 import com.facebook.react.TurboReactPackage;
 import com.facebook.react.ViewManagerOnDemandReactPackage;
@@ -188,41 +187,153 @@ public class MainReactPackage extends TurboReactPackage implements ViewManagerOn
   }
 
   /** @return a map of view managers that should be registered with {@link UIManagerModule} */
-  @SuppressLint("VisibleForTests")
-  public Map<String, ModuleSpec> getViewManagersMap() {
+  public Map<String, ModuleSpec> getViewManagersMap(final ReactApplicationContext reactContext) {
     if (mViewManagers == null) {
       Map<String, ModuleSpec> viewManagers = new HashMap<>();
-      appendMap(viewManagers, ReactDrawerLayoutManager.REACT_CLASS, ReactDrawerLayoutManager::new);
+      appendMap(
+          viewManagers,
+          ReactDrawerLayoutManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactDrawerLayoutManager();
+            }
+          });
       appendMap(
           viewManagers,
           ReactHorizontalScrollViewManager.REACT_CLASS,
-          ReactHorizontalScrollViewManager::new);
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactHorizontalScrollViewManager();
+            }
+          });
       appendMap(
           viewManagers,
           ReactHorizontalScrollContainerViewManager.REACT_CLASS,
-          ReactHorizontalScrollContainerViewManager::new);
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactHorizontalScrollContainerViewManager();
+            }
+          });
       appendMap(
-          viewManagers, ReactProgressBarViewManager.REACT_CLASS, ReactProgressBarViewManager::new);
-      appendMap(viewManagers, ReactScrollViewManager.REACT_CLASS, ReactScrollViewManager::new);
-      appendMap(viewManagers, ReactSwitchManager.REACT_CLASS, ReactSwitchManager::new);
+          viewManagers,
+          ReactProgressBarViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactProgressBarViewManager();
+            }
+          });
       appendMap(
-          viewManagers, SwipeRefreshLayoutManager.REACT_CLASS, SwipeRefreshLayoutManager::new);
+          viewManagers,
+          ReactScrollViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactScrollViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactSwitchManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactSwitchManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          SwipeRefreshLayoutManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new SwipeRefreshLayoutManager();
+            }
+          });
       appendMap(
           viewManagers,
           FrescoBasedReactTextInlineImageViewManager.REACT_CLASS,
-          FrescoBasedReactTextInlineImageViewManager::new);
-      appendMap(viewManagers, ReactImageManager.REACT_CLASS, ReactImageManager::new);
-      appendMap(viewManagers, ReactModalHostManager.REACT_CLASS, ReactModalHostManager::new);
-      appendMap(viewManagers, ReactRawTextManager.REACT_CLASS, ReactRawTextManager::new);
-      appendMap(viewManagers, ReactTextInputManager.REACT_CLASS, ReactTextInputManager::new);
-      appendMap(viewManagers, ReactTextViewManager.REACT_CLASS, ReactTextViewManager::new);
-      appendMap(viewManagers, ReactViewManager.REACT_CLASS, ReactViewManager::new);
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new FrescoBasedReactTextInlineImageViewManager();
+            }
+          });
       appendMap(
-          viewManagers, ReactVirtualTextViewManager.REACT_CLASS, ReactVirtualTextViewManager::new);
+          viewManagers,
+          ReactImageManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactImageManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactModalHostManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactModalHostManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactRawTextManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactRawTextManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactTextInputManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactTextInputManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactTextViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactTextViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactViewManager();
+            }
+          });
+      appendMap(
+          viewManagers,
+          ReactVirtualTextViewManager.REACT_CLASS,
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactVirtualTextViewManager();
+            }
+          });
       appendMap(
           viewManagers,
           ReactUnimplementedViewManager.REACT_CLASS,
-          ReactUnimplementedViewManager::new);
+          new Provider<NativeModule>() {
+            @Override
+            public NativeModule get() {
+              return new ReactUnimplementedViewManager();
+            }
+          });
       mViewManagers = viewManagers;
     }
     return mViewManagers;
@@ -230,18 +341,18 @@ public class MainReactPackage extends TurboReactPackage implements ViewManagerOn
 
   @Override
   public List<ModuleSpec> getViewManagers(ReactApplicationContext reactContext) {
-    return new ArrayList<>(getViewManagersMap().values());
+    return new ArrayList<>(getViewManagersMap(reactContext).values());
   }
 
   @Override
   public Collection<String> getViewManagerNames(ReactApplicationContext reactContext) {
-    return getViewManagersMap().keySet();
+    return getViewManagersMap(reactContext).keySet();
   }
 
   @Override
   public @Nullable ViewManager createViewManager(
       ReactApplicationContext reactContext, String viewManagerName) {
-    ModuleSpec spec = getViewManagersMap().get(viewManagerName);
+    ModuleSpec spec = getViewManagersMap(reactContext).get(viewManagerName);
     return spec != null ? (ViewManager) spec.getProvider().get() : null;
   }
 
@@ -283,19 +394,25 @@ public class MainReactPackage extends TurboReactPackage implements ViewManagerOn
       final Map<String, ReactModuleInfo> reactModuleInfoMap = new HashMap<>();
       for (Class<? extends NativeModule> moduleClass : moduleList) {
         ReactModule reactModule = moduleClass.getAnnotation(ReactModule.class);
-        if (reactModule != null) {
-          reactModuleInfoMap.put(
-              reactModule.name(),
-              new ReactModuleInfo(
-                  reactModule.name(),
-                  moduleClass.getName(),
-                  reactModule.canOverrideExistingModule(),
-                  reactModule.needsEagerInit(),
-                  reactModule.isCxxModule(),
-                  TurboModule.class.isAssignableFrom(moduleClass)));
-        }
+
+        reactModuleInfoMap.put(
+            reactModule.name(),
+            new ReactModuleInfo(
+                reactModule.name(),
+                moduleClass.getName(),
+                reactModule.canOverrideExistingModule(),
+                reactModule.needsEagerInit(),
+                reactModule.hasConstants(),
+                reactModule.isCxxModule(),
+                TurboModule.class.isAssignableFrom(moduleClass)));
       }
-      return () -> reactModuleInfoMap;
+
+      return new ReactModuleInfoProvider() {
+        @Override
+        public Map<String, ReactModuleInfo> getReactModuleInfos() {
+          return reactModuleInfoMap;
+        }
+      };
     } catch (InstantiationException e) {
       throw new RuntimeException(
           "No ReactModuleInfoProvider for CoreModulesPackage$$ReactModuleInfoProvider", e);

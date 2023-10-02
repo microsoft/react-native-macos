@@ -12,7 +12,7 @@
 
 class StubQueue {
  public:
-  void runOnQueue(std::function<void()>&& func) {
+  void runOnQueue(std::function<void()> &&func) {
     {
       std::lock_guard<std::mutex> lock(mutex_);
       callbackQueue_.push(func);
@@ -47,15 +47,17 @@ class StubQueue {
     return callbackQueue_.size();
   }
 
-  bool waitForTask() const {
+  bool waitForTask(std::chrono::duration<double> timeout) const {
     std::unique_lock<std::mutex> lock(mutex_);
     return signal_.wait_for(
-        lock, StubQueue::timeout, [this]() { return !callbackQueue_.empty(); });
+        lock, timeout, [this]() { return !callbackQueue_.empty(); });
   }
 
-  bool waitForTasks(std::size_t numberOfTasks) const {
+  bool waitForTasks(
+      std::size_t numberOfTasks,
+      std::chrono::duration<double> timeout) const {
     std::unique_lock<std::mutex> lock(mutex_);
-    return signal_.wait_for(lock, StubQueue::timeout, [this, numberOfTasks]() {
+    return signal_.wait_for(lock, timeout, [this, numberOfTasks]() {
       return numberOfTasks == callbackQueue_.size();
     });
   }
@@ -64,7 +66,4 @@ class StubQueue {
   mutable std::condition_variable signal_;
   mutable std::mutex mutex_;
   std::queue<std::function<void()>> callbackQueue_;
-
-  static constexpr std::chrono::duration<double> timeout =
-      std::chrono::milliseconds(100);
 };

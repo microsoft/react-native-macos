@@ -18,13 +18,14 @@
 
 using namespace facebook::jsi;
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 JSINativeModules::JSINativeModules(
     std::shared_ptr<ModuleRegistry> moduleRegistry)
     : m_moduleRegistry(std::move(moduleRegistry)) {}
 
-Value JSINativeModules::getModule(Runtime& rt, const PropNameID& name) {
+Value JSINativeModules::getModule(Runtime &rt, const PropNameID &name) {
   if (!m_moduleRegistry) {
     return nullptr;
   }
@@ -65,8 +66,8 @@ void JSINativeModules::reset() {
 }
 
 std::optional<Object> JSINativeModules::createModule(
-    Runtime& rt,
-    const std::string& name) {
+    Runtime &rt,
+    const std::string &name) {
   bool hasLogger(ReactMarker::logTaggedMarkerImpl);
   if (hasLogger) {
     ReactMarker::logTaggedMarker(
@@ -102,4 +103,5 @@ std::optional<Object> JSINativeModules::createModule(
   return module;
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

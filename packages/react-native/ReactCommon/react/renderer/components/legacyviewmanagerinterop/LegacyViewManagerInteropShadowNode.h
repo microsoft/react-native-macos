@@ -12,7 +12,8 @@
 #include <react/renderer/components/legacyviewmanagerinterop/LegacyViewManagerInteropViewProps.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 extern const char LegacyViewManagerInteropComponentName[];
 
@@ -22,4 +23,5 @@ using LegacyViewManagerInteropShadowNode = ConcreteViewShadowNode<
     LegacyViewManagerInteropViewEventEmitter,
     LegacyViewManagerInteropState>;
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

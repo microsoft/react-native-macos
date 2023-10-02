@@ -20,20 +20,22 @@
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Represents the most generic props object.
  */
 class Props : public virtual Sealable, public virtual DebugStringConvertible {
  public:
-  using Shared = std::shared_ptr<const Props>;
+  using Shared = std::shared_ptr<Props const>;
 
   Props() = default;
   Props(
-      const PropsParserContext& context,
-      const Props& sourceProps,
-      const RawProps& rawProps);
+      const PropsParserContext &context,
+      const Props &sourceProps,
+      RawProps const &rawProps,
+      bool shouldSetRawProps = true);
   virtual ~Props() = default;
 
   /**
@@ -47,10 +49,10 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
    * ViewProps uses "propX", Props may also use "propX".
    */
   void setProp(
-      const PropsParserContext& context,
+      const PropsParserContext &context,
       RawPropsPropNameHash hash,
-      const char* propName,
-      const RawValue& value);
+      const char *propName,
+      RawValue const &value);
 
   std::string nativeId;
 
@@ -58,16 +60,10 @@ class Props : public virtual Sealable, public virtual DebugStringConvertible {
   folly::dynamic rawProps = folly::dynamic::object();
 
   virtual void propsDiffMapBuffer(
-      const Props* oldProps,
-      MapBufferBuilder& builder) const;
+      Props const *oldProps,
+      MapBufferBuilder &builder) const;
 #endif
-
- protected:
-  /** Initialize member variables of Props instance */
-  void initialize(
-      const PropsParserContext& context,
-      const Props& sourceProps,
-      const RawProps& rawProps);
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

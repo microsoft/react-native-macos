@@ -12,7 +12,8 @@
 #include <react/renderer/textlayoutmanager/TextLayoutManager.h>
 #include <react/utils/ContextContainer.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Descriptor for <Paragraph> component.
@@ -20,7 +21,7 @@ namespace facebook::react {
 class ParagraphComponentDescriptor final
     : public ConcreteComponentDescriptor<ParagraphShadowNode> {
  public:
-  ParagraphComponentDescriptor(const ComponentDescriptorParameters& parameters)
+  ParagraphComponentDescriptor(ComponentDescriptorParameters const &parameters)
       : ConcreteComponentDescriptor<ParagraphShadowNode>(parameters) {
     // Every single `ParagraphShadowNode` will have a reference to
     // a shared `TextLayoutManager`.
@@ -28,18 +29,20 @@ class ParagraphComponentDescriptor final
   }
 
  protected:
-  void adopt(ShadowNode& shadowNode) const override {
+  void adopt(ShadowNode::Unshared const &shadowNode) const override {
     ConcreteComponentDescriptor::adopt(shadowNode);
 
-    auto& paragraphShadowNode = static_cast<ParagraphShadowNode&>(shadowNode);
+    auto paragraphShadowNode =
+        std::static_pointer_cast<ParagraphShadowNode>(shadowNode);
 
     // `ParagraphShadowNode` uses `TextLayoutManager` to measure text content
     // and communicate text rendering metrics to mounting layer.
-    paragraphShadowNode.setTextLayoutManager(textLayoutManager_);
+    paragraphShadowNode->setTextLayoutManager(textLayoutManager_);
   }
 
  private:
-  std::shared_ptr<const TextLayoutManager> textLayoutManager_;
+  std::shared_ptr<TextLayoutManager const> textLayoutManager_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

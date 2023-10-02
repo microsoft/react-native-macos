@@ -9,14 +9,15 @@
 
 #include <memory>
 #include <shared_mutex>
-#include <unordered_map>
+
+#include <butter/map.h>
 
 #include <react/renderer/componentregistry/ComponentDescriptorProvider.h>
 #include <react/renderer/core/ComponentDescriptor.h>
-#include <react/renderer/core/InstanceHandle.h>
 #include <react/utils/ContextContainer.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class ComponentDescriptorProviderRegistry;
 class ComponentDescriptorRegistry;
@@ -37,7 +38,7 @@ class ComponentDescriptorRegistry {
    */
   ComponentDescriptorRegistry(
       ComponentDescriptorParameters parameters,
-      const ComponentDescriptorProviderRegistry& providerRegistry,
+      ComponentDescriptorProviderRegistry const &providerRegistry,
       ContextContainer::Shared contextContainer);
 
   /*
@@ -45,31 +46,31 @@ class ComponentDescriptorRegistry {
    * If you requesting a ComponentDescriptor and unsure that it's there, you are
    * doing something wrong.
    */
-  const ComponentDescriptor*
+  ComponentDescriptor const *
   findComponentDescriptorByHandle_DO_NOT_USE_THIS_IS_BROKEN(
       ComponentHandle componentHandle) const;
 
-  const ComponentDescriptor& at(const std::string& componentName) const;
-  const ComponentDescriptor& at(ComponentHandle componentHandle) const;
+  ComponentDescriptor const &at(std::string const &componentName) const;
+  ComponentDescriptor const &at(ComponentHandle componentHandle) const;
 
   bool hasComponentDescriptorAt(ComponentHandle componentHandle) const;
 
   ShadowNode::Shared createNode(
       Tag tag,
-      const std::string& viewName,
+      std::string const &viewName,
       SurfaceId surfaceId,
-      const folly::dynamic& props,
-      const InstanceHandle::Shared& instanceHandle) const;
+      folly::dynamic const &props,
+      SharedEventTarget const &eventTarget) const;
 
   void setFallbackComponentDescriptor(
-      const SharedComponentDescriptor& descriptor);
+      const SharedComponentDescriptor &descriptor);
   ComponentDescriptor::Shared getFallbackComponentDescriptor() const;
 
  private:
   friend class ComponentDescriptorProviderRegistry;
 
   void registerComponentDescriptor(
-      const SharedComponentDescriptor& componentDescriptor) const;
+      const SharedComponentDescriptor &componentDescriptor) const;
 
   /*
    * Creates a `ComponentDescriptor` using specified
@@ -81,14 +82,14 @@ class ComponentDescriptorRegistry {
   void add(ComponentDescriptorProvider componentDescriptorProvider) const;
 
   mutable std::shared_mutex mutex_;
-  mutable std::unordered_map<ComponentHandle, SharedComponentDescriptor>
+  mutable butter::map<ComponentHandle, SharedComponentDescriptor>
       _registryByHandle;
-  mutable std::unordered_map<std::string, SharedComponentDescriptor>
-      _registryByName;
+  mutable butter::map<std::string, SharedComponentDescriptor> _registryByName;
   ComponentDescriptor::Shared _fallbackComponentDescriptor;
   ComponentDescriptorParameters parameters_{};
-  const ComponentDescriptorProviderRegistry& providerRegistry_;
+  ComponentDescriptorProviderRegistry const &providerRegistry_;
   ContextContainer::Shared contextContainer_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

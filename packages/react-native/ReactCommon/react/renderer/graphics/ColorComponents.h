@@ -7,7 +7,8 @@
 
 #pragma once
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 struct ColorComponents {
   float red{0};
@@ -16,4 +17,5 @@ struct ColorComponents {
   float alpha{0};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

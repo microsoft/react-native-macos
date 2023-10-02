@@ -9,7 +9,8 @@
 
 #pragma once
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class MountingCoordinator;
 
@@ -38,8 +39,9 @@ class MountingOverrideDelegate {
   virtual std::optional<MountingTransaction> pullTransaction(
       SurfaceId surfaceId,
       MountingTransaction::Number number,
-      const TransactionTelemetry& telemetry,
+      TransactionTelemetry const &telemetry,
       ShadowViewMutationList mutations) const = 0;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

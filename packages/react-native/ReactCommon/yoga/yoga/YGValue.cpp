@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <yoga/YGValue.h>
+#include "YGValue.h"
 
 const YGValue YGValueZero = {0, YGUnitPoint};
 const YGValue YGValueUndefined = {YGUndefined, YGUnitUndefined};

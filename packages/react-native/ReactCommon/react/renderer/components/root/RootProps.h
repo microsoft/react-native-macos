@@ -14,20 +14,21 @@
 #include <react/renderer/core/LayoutContext.h>
 #include <react/renderer/core/PropsParserContext.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class RootProps final : public ViewProps {
  public:
   RootProps() = default;
   RootProps(
-      const PropsParserContext& context,
-      const RootProps& sourceProps,
-      const RawProps& rawProps);
+      const PropsParserContext &context,
+      RootProps const &sourceProps,
+      RawProps const &rawProps);
   RootProps(
-      const PropsParserContext& context,
-      const RootProps& sourceProps,
-      const LayoutConstraints& layoutConstraints,
-      const LayoutContext& layoutContext);
+      const PropsParserContext &context,
+      RootProps const &sourceProps,
+      LayoutConstraints const &layoutConstraints,
+      LayoutContext const &layoutContext);
 
 #pragma mark - Props
 
@@ -35,4 +36,5 @@ class RootProps final : public ViewProps {
   LayoutContext layoutContext{};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

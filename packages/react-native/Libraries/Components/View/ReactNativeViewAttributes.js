@@ -35,7 +35,6 @@ const UIView = {
   collapsable: true,
   needsOffscreenAlphaCompositing: true,
   style: ReactNativeStyleAttributes,
-  role: true,
   // [macOS
   acceptsFirstMouse: true,
   mouseDownCanMoveWindow: true,

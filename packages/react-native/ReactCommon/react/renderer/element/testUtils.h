@@ -17,16 +17,15 @@
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 #include <react/renderer/element/ComponentBuilder.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
-inline ComponentBuilder simpleComponentBuilder(
-    ContextContainer::Shared contextContainer = nullptr) {
+inline ComponentBuilder simpleComponentBuilder() {
   ComponentDescriptorProviderRegistry componentDescriptorProviderRegistry{};
   auto eventDispatcher = EventDispatcher::Shared{};
   auto componentDescriptorRegistry =
       componentDescriptorProviderRegistry.createComponentDescriptorRegistry(
-          ComponentDescriptorParameters{
-              eventDispatcher, std::move(contextContainer), nullptr});
+          ComponentDescriptorParameters{eventDispatcher, nullptr, nullptr});
 
   componentDescriptorProviderRegistry.add(
       concreteComponentDescriptorProvider<RootComponentDescriptor>());
@@ -46,4 +45,5 @@ inline ComponentBuilder simpleComponentBuilder(
   return ComponentBuilder{componentDescriptorRegistry};
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

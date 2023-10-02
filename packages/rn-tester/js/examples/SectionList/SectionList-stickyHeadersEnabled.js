@@ -45,7 +45,9 @@ export default {
   title: 'SectionList Sticky Headers Enabled',
   name: 'SectionList-stickyHeadersEnabled',
   description: 'Toggle sticky headers on/off',
-  render: function (): React.MixedElement {
+  render: function (): React.Element<
+    typeof SectionList_stickySectionHeadersEnabled,
+  > {
     return <SectionList_stickySectionHeadersEnabled />;
   },
 };

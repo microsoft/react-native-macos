@@ -13,7 +13,8 @@
 #include <react/renderer/components/view/ViewEventEmitter.h>
 #include <react/renderer/core/EventEmitter.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class LegacyViewManagerInteropViewEventEmitter;
 
@@ -24,8 +25,9 @@ class LegacyViewManagerInteropViewEventEmitter : public ViewEventEmitter {
  public:
   using ViewEventEmitter::ViewEventEmitter;
 
-  void dispatchEvent(const std::string& type, const folly::dynamic& payload)
+  void dispatchEvent(std::string const &type, folly::dynamic const &payload)
       const;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

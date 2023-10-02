@@ -9,16 +9,17 @@
 
 #include <react/renderer/components/text/BaseTextShadowNode.h>
 #include <react/renderer/components/text/ParagraphEventEmitter.h>
+#include <react/renderer/components/text/ParagraphLayoutManager.h>
 #include <react/renderer/components/text/ParagraphProps.h>
 #include <react/renderer/components/text/ParagraphState.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/core/LayoutContext.h>
 #include <react/renderer/core/ShadowNode.h>
-#include <react/renderer/textlayoutmanager/TextLayoutManager.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
-extern const char ParagraphComponentName[];
+extern char const ParagraphComponentName[];
 
 /*
  * `ShadowNode` for <Paragraph> component, represents <View>-like component
@@ -33,10 +34,6 @@ class ParagraphShadowNode final : public ConcreteViewShadowNode<
                                   public BaseTextShadowNode {
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
-
-  ParagraphShadowNode(
-      const ShadowNode& sourceShadowNode,
-      const ShadowNodeFragment& fragment);
 
   static ShadowNodeTraits BaseTraits() {
     auto traits = ConcreteViewShadowNode::BaseTraits();
@@ -59,14 +56,14 @@ class ParagraphShadowNode final : public ConcreteViewShadowNode<
    * and construct `ParagraphState` objects.
    */
   void setTextLayoutManager(
-      std::shared_ptr<const TextLayoutManager> textLayoutManager);
+      std::shared_ptr<TextLayoutManager const> textLayoutManager);
 
 #pragma mark - LayoutableShadowNode
 
   void layout(LayoutContext layoutContext) override;
   Size measureContent(
-      const LayoutContext& layoutContext,
-      const LayoutConstraints& layoutConstraints) const override;
+      LayoutContext const &layoutContext,
+      LayoutConstraints const &layoutConstraints) const override;
 
   /*
    * Internal representation of the nested content of the node in a format
@@ -83,20 +80,20 @@ class ParagraphShadowNode final : public ConcreteViewShadowNode<
   /*
    * Builds (if needed) and returns a reference to a `Content` object.
    */
-  const Content& getContent(const LayoutContext& layoutContext) const;
+  Content const &getContent(LayoutContext const &layoutContext) const;
 
   /*
    * Builds and returns a `Content` object with given `layoutConstraints`.
    */
   Content getContentWithMeasuredAttachments(
-      const LayoutContext& layoutContext,
-      const LayoutConstraints& layoutConstraints) const;
+      LayoutContext const &layoutContext,
+      LayoutConstraints const &layoutConstraints) const;
 
   /*
    * Creates a `State` object (with `AttributedText` and
    * `TextLayoutManager`) if needed.
    */
-  void updateStateIfNeeded(const Content& content);
+  void updateStateIfNeeded(Content const &content);
 
   /*
    * Cached content of the subtree started from the node.
@@ -104,4 +101,5 @@ class ParagraphShadowNode final : public ConcreteViewShadowNode<
   mutable std::optional<Content> content_{};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

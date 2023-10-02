@@ -13,11 +13,12 @@
 
 #include <chrono>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 std::string JSExecutor::getSyntheticBundlePath(
     uint32_t bundleId,
-    const std::string& bundlePath) {
+    const std::string &bundlePath) {
   if (bundleId == RAMBundleRegistry::MAIN_BUNDLE_ID) {
     return bundlePath;
   }
@@ -34,4 +35,5 @@ double JSExecutor::performanceNow() {
   return duration / NANOSECONDS_IN_MILLISECOND;
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

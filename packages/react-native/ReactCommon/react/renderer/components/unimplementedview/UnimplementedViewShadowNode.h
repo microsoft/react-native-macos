@@ -10,7 +10,8 @@
 #include <react/renderer/components/unimplementedview/UnimplementedViewProps.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 extern const char UnimplementedViewComponentName[];
 
@@ -18,4 +19,5 @@ using UnimplementedViewShadowNode = ConcreteViewShadowNode<
     UnimplementedViewComponentName,
     UnimplementedViewProps>;
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

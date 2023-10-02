@@ -15,7 +15,8 @@
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
 #include <react/renderer/mounting/ShadowView.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 static const int NO_VIEW_TAG = -1;
 
@@ -24,11 +25,11 @@ class StubView final {
   using Shared = std::shared_ptr<StubView>;
 
   StubView() = default;
-  StubView(const StubView& stubView) = default;
+  StubView(StubView const &stubView) = default;
 
   operator ShadowView() const;
 
-  void update(const ShadowView& shadowView);
+  void update(ShadowView const &shadowView);
 
   ComponentName componentName;
   ComponentHandle componentHandle;
@@ -42,20 +43,21 @@ class StubView final {
   Tag parentTag{NO_VIEW_TAG};
 };
 
-bool operator==(const StubView& lhs, const StubView& rhs);
-bool operator!=(const StubView& lhs, const StubView& rhs);
+bool operator==(StubView const &lhs, StubView const &rhs);
+bool operator!=(StubView const &lhs, StubView const &rhs);
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
-std::string getDebugName(const StubView& stubView);
+std::string getDebugName(StubView const &stubView);
 
 std::vector<DebugStringConvertibleObject> getDebugProps(
-    const StubView& stubView,
+    StubView const &stubView,
     DebugStringConvertibleOptions options);
 std::vector<StubView> getDebugChildren(
-    const StubView& stubView,
+    StubView const &stubView,
     DebugStringConvertibleOptions options);
 
 #endif
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -24,7 +24,7 @@ RCT_EXPORT_MODULE()
 
 - (BOOL)canLoadImageURL:(NSURL *)requestURL
 {
-  return RCTIsBundleAssetURL(requestURL);
+  return RCTIsLocalAssetURL(requestURL);
 }
 
 - (BOOL)requiresScheduling
@@ -68,11 +68,6 @@ RCT_EXPORT_MODULE()
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {
   return nullptr;
-}
-
-- (float)loaderPriority
-{
-  return 0;
 }
 
 @end

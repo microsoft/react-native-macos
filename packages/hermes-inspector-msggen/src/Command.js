@@ -23,38 +23,26 @@ export class Command {
     domain: string,
     obj: any,
     ignoreExperimental: boolean,
-    includeExperimental: Set<string>,
   ): ?Command {
-    return ignoreExperimental &&
-      obj.experimental &&
-      !includeExperimental.has(domain + '.' + obj.name)
+    return ignoreExperimental && obj.experimental
       ? null
-      : new Command(domain, obj, ignoreExperimental, includeExperimental);
+      : new Command(domain, obj, ignoreExperimental);
   }
 
-  constructor(
-    domain: string,
-    obj: any,
-    ignoreExperimental: boolean,
-    includeExperimental: Set<string>,
-  ) {
+  constructor(domain: string, obj: any, ignoreExperimental: boolean) {
     this.domain = domain;
     this.name = obj.name;
     this.description = obj.description;
     this.experimental = obj.experimental;
     this.parameters = Property.createArray(
       domain,
-      obj.name,
       obj.parameters || [],
       ignoreExperimental,
-      includeExperimental,
     );
     this.returns = Property.createArray(
       domain,
-      obj.name,
       obj.returns || [],
       ignoreExperimental,
-      includeExperimental,
     );
   }
 

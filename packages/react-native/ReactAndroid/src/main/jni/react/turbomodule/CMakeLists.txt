@@ -10,7 +10,7 @@ add_compile_options(
         -fexceptions
         -frtti
         -Wno-unused-lambda-capture
-        -std=c++20)
+        -std=c++17)
 
 #########################
 ### callinvokerholder ###
@@ -21,7 +21,6 @@ add_library(
         callinvokerholder
         STATIC
         ReactCommon/CallInvokerHolder.cpp
-        ReactCommon/NativeMethodCallInvokerHolder.cpp
 )
 
 target_include_directories(callinvokerholder

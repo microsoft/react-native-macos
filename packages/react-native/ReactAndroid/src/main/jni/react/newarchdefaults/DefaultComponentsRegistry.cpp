@@ -12,15 +12,16 @@
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/rncore/ComponentDescriptors.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
-std::function<void(std::shared_ptr<const ComponentDescriptorProviderRegistry>)>
+std::function<void(std::shared_ptr<ComponentDescriptorProviderRegistry const>)>
     DefaultComponentsRegistry::registerComponentDescriptorsFromEntryPoint{};
 
-DefaultComponentsRegistry::DefaultComponentsRegistry(ComponentFactory* delegate)
+DefaultComponentsRegistry::DefaultComponentsRegistry(ComponentFactory *delegate)
     : delegate_(delegate) {}
 
-std::shared_ptr<const ComponentDescriptorProviderRegistry>
+std::shared_ptr<ComponentDescriptorProviderRegistry const>
 DefaultComponentsRegistry::sharedProviderRegistry() {
   auto providerRegistry = CoreComponentsRegistry::sharedProviderRegistry();
 
@@ -33,19 +34,21 @@ DefaultComponentsRegistry::sharedProviderRegistry() {
 jni::local_ref<DefaultComponentsRegistry::jhybriddata>
 DefaultComponentsRegistry::initHybrid(
     jni::alias_ref<jclass>,
-    ComponentFactory* delegate) {
+    ComponentFactory *delegate) {
   auto instance = makeCxxInstance(delegate);
 
   auto buildRegistryFunction =
-      [](const EventDispatcher::Weak& eventDispatcher,
-         const ContextContainer::Shared& contextContainer)
+      [](EventDispatcher::Weak const &eventDispatcher,
+         ContextContainer::Shared const &contextContainer)
       -> ComponentDescriptorRegistry::Shared {
     auto registry = DefaultComponentsRegistry::sharedProviderRegistry()
                         ->createComponentDescriptorRegistry(
                             {eventDispatcher, contextContainer});
 
-    auto& mutableRegistry = const_cast<ComponentDescriptorRegistry&>(*registry);
-    mutableRegistry.setFallbackComponentDescriptor(
+    auto mutableRegistry =
+        std::const_pointer_cast<ComponentDescriptorRegistry>(registry);
+
+    mutableRegistry->setFallbackComponentDescriptor(
         std::make_shared<UnimplementedNativeViewComponentDescriptor>(
             ComponentDescriptorParameters{
                 eventDispatcher, contextContainer, nullptr}));
@@ -63,4 +66,5 @@ void DefaultComponentsRegistry::registerNatives() {
   });
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

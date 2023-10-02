@@ -157,11 +157,10 @@ function PointerEventPointerCancelTouchTestCase(
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: {width: '100%', height: 100},
+  scrollContainer: {width: '100%', height: '100%'},
   target: {
     backgroundColor: 'black',
     padding: 32,
-    height: 200,
   },
 });
 

@@ -25,7 +25,6 @@ import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.UIManagerHelper;
 import com.facebook.react.uimanager.common.UIManagerType;
-import com.facebook.react.uimanager.common.ViewUtil;
 import com.facebook.react.uimanager.events.Event;
 import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.events.EventDispatcherListener;
@@ -141,8 +140,6 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
       node = new TransformAnimatedNode(config, this);
     } else if ("tracking".equals(type)) {
       node = new TrackingAnimatedNode(config, this);
-    } else if ("object".equals(type)) {
-      node = new ObjectAnimatedNode(config, this);
     } else {
       throw new JSApplicationIllegalArgumentException("Unsupported node type: " + type);
     }
@@ -302,7 +299,6 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
           // Invoke animation end callback with {finished: false}
           WritableMap endCallbackResponse = Arguments.createMap();
           endCallbackResponse.putBoolean("finished", false);
-          endCallbackResponse.putDouble("value", animation.mAnimatedValue.mValue);
           animation.mEndCallback.invoke(endCallbackResponse);
         } else if (mReactApplicationContext != null) {
           // If no callback is passed in, this /may/ be an animation set up by the single-op
@@ -311,7 +307,6 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
           WritableMap params = Arguments.createMap();
           params.putInt("animationId", animation.mId);
           params.putBoolean("finished", false);
-          params.putDouble("value", animation.mAnimatedValue.mValue);
           mReactApplicationContext.emitDeviceEvent(
               "onNativeAnimatedModuleAnimationFinished", params);
         }
@@ -334,7 +329,6 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
           // Invoke animation end callback with {finished: false}
           WritableMap endCallbackResponse = Arguments.createMap();
           endCallbackResponse.putBoolean("finished", false);
-          endCallbackResponse.putDouble("value", animation.mAnimatedValue.mValue);
           animation.mEndCallback.invoke(endCallbackResponse);
         } else if (mReactApplicationContext != null) {
           // If no callback is passed in, this /may/ be an animation set up by the single-op
@@ -343,7 +337,6 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
           WritableMap params = Arguments.createMap();
           params.putInt("animationId", animation.mId);
           params.putBoolean("finished", false);
-          params.putDouble("value", animation.mAnimatedValue.mValue);
           mReactApplicationContext.emitDeviceEvent(
               "onNativeAnimatedModuleAnimationFinished", params);
         }
@@ -577,9 +570,7 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
         return;
       }
       UIManager uiManager =
-          UIManagerHelper.getUIManager(
-              mReactApplicationContext,
-              ViewUtil.getUIManagerType(event.getViewTag(), event.getSurfaceId()));
+          UIManagerHelper.getUIManager(mReactApplicationContext, event.getUIManagerType());
       if (uiManager == null) {
         return;
       }
@@ -649,7 +640,6 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
           if (animation.mEndCallback != null) {
             WritableMap endCallbackResponse = Arguments.createMap();
             endCallbackResponse.putBoolean("finished", true);
-            endCallbackResponse.putDouble("value", animation.mAnimatedValue.mValue);
             animation.mEndCallback.invoke(endCallbackResponse);
           } else if (mReactApplicationContext != null) {
             // If no callback is passed in, this /may/ be an animation set up by the single-op
@@ -658,7 +648,6 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
             WritableMap params = Arguments.createMap();
             params.putInt("animationId", animation.mId);
             params.putBoolean("finished", true);
-            params.putDouble("value", animation.mAnimatedValue.mValue);
             mReactApplicationContext.emitDeviceEvent(
                 "onNativeAnimatedModuleAnimationFinished", params);
           }

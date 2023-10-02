@@ -16,15 +16,12 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class ReactActivityDelegateTest {
 
-  val nullDelegate: ReactActivity? = null
-
   @Test
   fun delegateWithFabricEnabled_populatesInitialPropsCorrectly() {
     val delegate =
-        object : ReactActivityDelegate(nullDelegate, "test-delegate") {
+        object : ReactActivityDelegate(null, "test-delegate") {
           override fun isFabricEnabled() = true
-
-          val inspectLaunchOptions: Bundle?
+          public val inspectLaunchOptions: Bundle?
             get() = composeLaunchOptions()
         }
 
@@ -36,10 +33,9 @@ class ReactActivityDelegateTest {
   @Test
   fun delegateWithoutFabricEnabled_hasNullInitialProperties() {
     val delegate =
-        object : ReactActivityDelegate(nullDelegate, "test-delegate") {
+        object : ReactActivityDelegate(null, "test-delegate") {
           override fun isFabricEnabled() = false
-
-          val inspectLaunchOptions: Bundle?
+          public val inspectLaunchOptions: Bundle?
             get() = composeLaunchOptions()
         }
 
@@ -49,13 +45,11 @@ class ReactActivityDelegateTest {
   @Test
   fun delegateWithFabricEnabled_composesInitialPropertiesCorrectly() {
     val delegate =
-        object : ReactActivityDelegate(nullDelegate, "test-delegate") {
+        object : ReactActivityDelegate(null, "test-delegate") {
           override fun isFabricEnabled() = true
-
           override fun getLaunchOptions(): Bundle =
               Bundle().apply { putString("test-property", "test-value") }
-
-          val inspectLaunchOptions: Bundle?
+          public val inspectLaunchOptions: Bundle?
             get() = composeLaunchOptions()
         }
 

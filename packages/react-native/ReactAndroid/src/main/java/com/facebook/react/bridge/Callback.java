@@ -18,5 +18,5 @@ public interface Callback {
    *
    * @param args arguments passed to javascript callback method via bridge
    */
-  void invoke(Object... args);
+  public void invoke(Object... args);
 }

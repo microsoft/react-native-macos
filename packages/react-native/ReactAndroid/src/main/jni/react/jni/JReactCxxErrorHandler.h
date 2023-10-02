@@ -10,14 +10,16 @@
 #include <fbjni/fbjni.h>
 #include <string>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class JReactCxxErrorHandler : public jni::JavaClass<JReactCxxErrorHandler> {
  public:
-  static constexpr const char* kJavaDescriptor =
+  static constexpr const char *kJavaDescriptor =
       "Lcom/facebook/react/bridge/ReactCxxErrorHandler;";
 
   static void handleError(std::string message);
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

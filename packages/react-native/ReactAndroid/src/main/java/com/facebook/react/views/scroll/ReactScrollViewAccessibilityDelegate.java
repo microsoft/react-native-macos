@@ -17,7 +17,6 @@ import com.facebook.react.bridge.AssertionException;
 import com.facebook.react.bridge.ReactSoftExceptionLogger;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.ReactAccessibilityDelegate;
-import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole;
 
 public class ReactScrollViewAccessibilityDelegate extends AccessibilityDelegateCompat {
   private final String TAG = ReactScrollViewAccessibilityDelegate.class.getSimpleName();
@@ -106,7 +105,7 @@ public class ReactScrollViewAccessibilityDelegate extends AccessibilityDelegateC
           }
         }
 
-        if (isVisible && accessibilityCollectionItem != null) {
+        if (isVisible == true && accessibilityCollectionItem != null) {
           if (firstVisibleIndex == null) {
             firstVisibleIndex = accessibilityCollectionItem.getInt("itemIndex");
           }
@@ -123,8 +122,8 @@ public class ReactScrollViewAccessibilityDelegate extends AccessibilityDelegateC
 
   private void onInitializeAccessibilityNodeInfoInternal(
       View view, AccessibilityNodeInfoCompat info) {
-
-    final AccessibilityRole accessibilityRole = AccessibilityRole.fromViewTag(view);
+    final ReactAccessibilityDelegate.AccessibilityRole accessibilityRole =
+        (ReactAccessibilityDelegate.AccessibilityRole) view.getTag(R.id.accessibility_role);
 
     if (accessibilityRole != null) {
       ReactAccessibilityDelegate.setRole(info, accessibilityRole, view.getContext());

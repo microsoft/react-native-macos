@@ -51,19 +51,17 @@ export class HeaderWriter {
 
       #pragma once
 
-      #include <hermes/inspector-modern/chrome/MessageInterfaces.h>
+      #include <hermes/inspector/chrome/MessageInterfaces.h>
 
       #include <optional>
       #include <vector>
 
       namespace facebook {
       namespace hermes {
-      namespace inspector_modern {
+      namespace inspector {
       namespace chrome {
       namespace message {
 
-template<typename T>
-void deleter(T* p);
     `);
   }
 
@@ -160,7 +158,7 @@ void deleter(T* p);
     this.stream.write(`
         } // namespace message
         } // namespace chrome
-        } // namespace inspector_modern
+        } // namespace inspector
         } // namespace hermes
         } // namespace facebook
     `);
@@ -224,12 +222,8 @@ export function emitTypeDecl(stream: Writable, type: PropsType) {
 
   stream.write(`struct ${cppNs}::${cppType} : public Serializable {
     ${cppType}() = default;
-    ${cppType}(${cppType}&&) = default;
-    ${cppType}(const ${cppType}&) = delete;
     explicit ${cppType}(const folly::dynamic &obj);
     folly::dynamic toDynamic() const override;
-    ${cppType}& operator=(const ${cppType}&) = delete;
-    ${cppType}& operator=(${cppType}&&) = default;
   `);
 
   if (type instanceof PropsType) {

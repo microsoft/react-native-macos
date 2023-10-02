@@ -14,9 +14,10 @@
 #import "RCTImageManager.h"
 #import "RCTSyncImageManager.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
-ImageManager::ImageManager(const ContextContainer::Shared &contextContainer)
+ImageManager::ImageManager(ContextContainer::Shared const &contextContainer)
 {
   id<RCTImageLoaderWithAttributionProtocol> imageLoader =
       (id<RCTImageLoaderWithAttributionProtocol>)unwrapManagedObject(
@@ -40,4 +41,5 @@ ImageRequest ImageManager::requestImage(const ImageSource &imageSource, SurfaceI
   return [imageManager requestImage:imageSource surfaceId:surfaceId];
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -45,7 +45,7 @@ export default ({
   name: 'onEndReached',
   description:
     'Scroll to end of list or tap Test button to see `onEndReached` triggered.',
-  render: function () {
+  render: function (): React.Element<typeof FlatList_onEndReached> {
     return <FlatList_onEndReached />;
   },
 }: RNTesterModuleExample);

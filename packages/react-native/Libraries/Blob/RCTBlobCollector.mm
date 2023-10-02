@@ -10,7 +10,8 @@
 #import <React/RCTBlobManager.h>
 #import <React/RCTBridge+Private.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 RCTBlobCollector::RCTBlobCollector(RCTBlobManager *blobManager, const std::string &blobId)
     : blobId_(blobId), blobManager_(blobManager)
@@ -51,4 +52,5 @@ void RCTBlobCollector::install(RCTBlobManager *blobManager)
               queue:RCTJSThread];
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

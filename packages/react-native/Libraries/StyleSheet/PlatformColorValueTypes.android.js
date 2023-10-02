@@ -9,25 +9,20 @@
  */
 
 import type {ProcessedColorValue} from './processColor';
-import type {ColorValue, NativeColorValue} from './StyleSheet';
+import type {ColorValue} from './StyleSheet';
 
-/** The actual type of the opaque NativeColorValue on Android platform */
-type LocalNativeColorValue = {
+export opaque type NativeColorValue = {
   resource_paths?: Array<string>,
 };
 
 export const PlatformColor = (...names: Array<string>): ColorValue => {
-  /* $FlowExpectedError[incompatible-return]
-   * LocalNativeColorValue is the actual type of the opaque NativeColorValue on Android platform */
-  return ({resource_paths: names}: LocalNativeColorValue);
+  return {resource_paths: names};
 };
 
 export const normalizeColorObject = (
   color: NativeColorValue,
 ): ?ProcessedColorValue => {
-  /* $FlowExpectedError[incompatible-cast]
-   * LocalNativeColorValue is the actual type of the opaque NativeColorValue on Android platform */
-  if ('resource_paths' in (color: LocalNativeColorValue)) {
+  if ('resource_paths' in color) {
     return color;
   }
   return null;

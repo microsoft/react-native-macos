@@ -11,15 +11,15 @@
 
 namespace facebook::react {
 
-SurfaceManager::SurfaceManager(const Scheduler& scheduler) noexcept
+SurfaceManager::SurfaceManager(Scheduler const &scheduler) noexcept
     : scheduler_(scheduler) {}
 
 void SurfaceManager::startSurface(
     SurfaceId surfaceId,
-    const std::string& moduleName,
-    const folly::dynamic& props,
-    const LayoutConstraints& layoutConstraints,
-    const LayoutContext& layoutContext) const noexcept {
+    std::string const &moduleName,
+    folly::dynamic const &props,
+    LayoutConstraints const &layoutConstraints,
+    LayoutContext const &layoutContext) const noexcept {
   {
     std::unique_lock lock(mutex_);
     auto surfaceHandler = SurfaceHandler{moduleName, surfaceId};
@@ -27,7 +27,7 @@ void SurfaceManager::startSurface(
     registry_.emplace(surfaceId, std::move(surfaceHandler));
   }
 
-  visit(surfaceId, [&](const SurfaceHandler& surfaceHandler) {
+  visit(surfaceId, [&](SurfaceHandler const &surfaceHandler) {
     surfaceHandler.setProps(props);
     surfaceHandler.constraintLayout(layoutConstraints, layoutContext);
 
@@ -38,7 +38,7 @@ void SurfaceManager::startSurface(
 }
 
 void SurfaceManager::stopSurface(SurfaceId surfaceId) const noexcept {
-  visit(surfaceId, [&](const SurfaceHandler& surfaceHandler) {
+  visit(surfaceId, [&](SurfaceHandler const &surfaceHandler) {
     surfaceHandler.stop();
     scheduler_.unregisterSurface(surfaceHandler);
   });
@@ -53,11 +53,11 @@ void SurfaceManager::stopSurface(SurfaceId surfaceId) const noexcept {
 
 Size SurfaceManager::measureSurface(
     SurfaceId surfaceId,
-    const LayoutConstraints& layoutConstraints,
-    const LayoutContext& layoutContext) const noexcept {
+    LayoutConstraints const &layoutConstraints,
+    LayoutContext const &layoutContext) const noexcept {
   auto size = Size{};
 
-  visit(surfaceId, [&](const SurfaceHandler& surfaceHandler) {
+  visit(surfaceId, [&](SurfaceHandler const &surfaceHandler) {
     size = surfaceHandler.measure(layoutConstraints, layoutContext);
   });
 
@@ -68,7 +68,7 @@ MountingCoordinator::Shared SurfaceManager::findMountingCoordinator(
     SurfaceId surfaceId) const noexcept {
   auto mountingCoordinator = MountingCoordinator::Shared{};
 
-  visit(surfaceId, [&](const SurfaceHandler& surfaceHandler) {
+  visit(surfaceId, [&](SurfaceHandler const &surfaceHandler) {
     mountingCoordinator = surfaceHandler.getMountingCoordinator();
   });
 
@@ -77,16 +77,16 @@ MountingCoordinator::Shared SurfaceManager::findMountingCoordinator(
 
 void SurfaceManager::constraintSurfaceLayout(
     SurfaceId surfaceId,
-    const LayoutConstraints& layoutConstraints,
-    const LayoutContext& layoutContext) const noexcept {
-  visit(surfaceId, [=](const SurfaceHandler& surfaceHandler) {
+    LayoutConstraints const &layoutConstraints,
+    LayoutContext const &layoutContext) const noexcept {
+  visit(surfaceId, [=](SurfaceHandler const &surfaceHandler) {
     surfaceHandler.constraintLayout(layoutConstraints, layoutContext);
   });
 }
 
 void SurfaceManager::visit(
     SurfaceId surfaceId,
-    const std::function<void(SurfaceHandler const& surfaceHandler)>& callback)
+    std::function<void(SurfaceHandler const &surfaceHandler)> const &callback)
     const noexcept {
   std::shared_lock lock(mutex_);
 

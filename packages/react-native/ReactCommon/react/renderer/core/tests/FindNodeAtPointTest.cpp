@@ -11,7 +11,6 @@
 
 #include "TestComponent.h"
 
-using namespace facebook;
 using namespace facebook::react;
 
 TEST(FindNodeAtPointTest, withoutTransform) {
@@ -202,7 +201,7 @@ TEST(FindNodeAtPointTest, overlappingViewsWithZIndex) {
           auto sharedProps = std::make_shared<ViewShadowNodeProps>();
           sharedProps->zIndex = 1;
           auto &yogaStyle = sharedProps->yogaStyle;
-          yogaStyle.positionType() = yoga::PositionType::Absolute;
+          yogaStyle.positionType() = YGPositionTypeAbsolute;
           return sharedProps;
         })
         .finalize([](ViewShadowNode &shadowNode){

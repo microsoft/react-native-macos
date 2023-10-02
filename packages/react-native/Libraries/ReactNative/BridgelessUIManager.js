@@ -13,45 +13,27 @@
 import type {RootTag} from '../Types/RootTagTypes';
 
 import {unstable_hasComponent} from '../NativeComponent/NativeComponentRegistryUnstable';
-import ReactNativeFeatureFlags from './ReactNativeFeatureFlags';
-
-let cachedConstants = null;
 
 const errorMessageForMethod = (methodName: string): string =>
   "[ReactNative Architecture][JS] '" +
   methodName +
   "' is not available in the new React Native architecture.";
 
-function getCachedConstants(): Object {
-  if (!cachedConstants) {
-    cachedConstants = global.RN$LegacyInterop_UIManager_getConstants();
-  }
-  return cachedConstants;
-}
-
 module.exports = {
   getViewManagerConfig: (viewManagerName: string): mixed => {
-    if (ReactNativeFeatureFlags.enableNativeViewConfigsInBridgelessMode()) {
-      return getCachedConstants()[viewManagerName];
-    } else {
-      console.error(
-        errorMessageForMethod('getViewManagerConfig') +
-          'Use hasViewManagerConfig instead. viewManagerName: ' +
-          viewManagerName,
-      );
-      return null;
-    }
+    console.error(
+      errorMessageForMethod('getViewManagerConfig') +
+        'Use hasViewManagerConfig instead. viewManagerName: ' +
+        viewManagerName,
+    );
+    return null;
   },
   hasViewManagerConfig: (viewManagerName: string): boolean => {
     return unstable_hasComponent(viewManagerName);
   },
   getConstants: (): Object => {
-    if (ReactNativeFeatureFlags.enableNativeViewConfigsInBridgelessMode()) {
-      return getCachedConstants();
-    } else {
-      console.error(errorMessageForMethod('getConstants'));
-      return null;
-    }
+    console.error(errorMessageForMethod('getConstants'));
+    return {};
   },
   getConstantsForViewManager: (viewManagerName: string): Object => {
     console.error(errorMessageForMethod('getConstantsForViewManager'));

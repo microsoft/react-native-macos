@@ -10,17 +10,19 @@
 #include <react/renderer/components/view/ViewEventEmitter.h>
 #include <react/renderer/textlayoutmanager/TextMeasureCache.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class ParagraphEventEmitter : public ViewEventEmitter {
  public:
   using ViewEventEmitter::ViewEventEmitter;
 
-  void onTextLayout(const LinesMeasurements& linesMeasurements) const;
+  void onTextLayout(LinesMeasurements const &linesMeasurements) const;
 
  private:
   mutable std::mutex linesMeasurementsMutex_;
   mutable LinesMeasurements linesMeasurementsMetrics_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

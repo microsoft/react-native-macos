@@ -5,116 +5,40 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @flow strict-local
+ * @flow strict
  */
 
 // flowlint unsafe-getters-setters:off
 
 import type {
   HostComponent,
-  INativeMethods,
-  InternalInstanceHandle,
   MeasureInWindowOnSuccessCallback,
   MeasureLayoutOnSuccessCallback,
   MeasureOnSuccessCallback,
-  ViewConfig,
 } from '../../Renderer/shims/ReactNativeTypes';
 import type {ElementRef} from 'react';
 
-import TextInputState from '../../Components/TextInput/TextInputState';
-import {getFabricUIManager} from '../../ReactNative/FabricUIManager';
-import {create as createAttributePayload} from '../../ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload';
-import warnForStyleProps from '../../ReactNative/ReactFabricPublicInstance/warnForStyleProps';
-import ReadOnlyElement, {getBoundingClientRect} from './ReadOnlyElement';
-import ReadOnlyNode from './ReadOnlyNode';
-import {
-  getPublicInstanceFromInternalInstanceHandle,
-  getShadowNode,
-} from './ReadOnlyNode';
-import nullthrows from 'nullthrows';
+import ReadOnlyElement from './ReadOnlyElement';
 
-const noop = () => {};
-
-export default class ReactNativeElement
-  extends ReadOnlyElement
-  implements INativeMethods
-{
-  // These need to be accessible from `ReactFabricPublicInstanceUtils`.
-  __nativeTag: number;
-  __internalInstanceHandle: InternalInstanceHandle;
-
-  _viewConfig: ViewConfig;
-
-  constructor(
-    tag: number,
-    viewConfig: ViewConfig,
-    internalInstanceHandle: InternalInstanceHandle,
-  ) {
-    super(internalInstanceHandle);
-
-    this.__nativeTag = tag;
-    this.__internalInstanceHandle = internalInstanceHandle;
-    this._viewConfig = viewConfig;
-  }
-
+export default class ReactNativeElement extends ReadOnlyElement {
   get offsetHeight(): number {
-    return Math.round(
-      getBoundingClientRect(this, {includeTransform: false}).height,
-    );
+    throw new TypeError('Unimplemented');
   }
 
   get offsetLeft(): number {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const offset = nullthrows(getFabricUIManager()).getOffset(node);
-      if (offset != null) {
-        return Math.round(offset[2]);
-      }
-    }
-
-    return 0;
+    throw new TypeError('Unimplemented');
   }
 
   get offsetParent(): ReadOnlyElement | null {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const offset = nullthrows(getFabricUIManager()).getOffset(node);
-      // For children of the root node we currently return offset data
-      // but a `null` parent because the root node is not accessible
-      // in JavaScript yet.
-      if (offset != null && offset[0] != null) {
-        const offsetParentInstanceHandle = offset[0];
-        const offsetParent = getPublicInstanceFromInternalInstanceHandle(
-          offsetParentInstanceHandle,
-        );
-        // $FlowExpectedError[incompatible-type] The value returned by `getOffset` is always an instance handle for `ReadOnlyElement`.
-        const offsetParentElement: ReadOnlyElement = offsetParent;
-        return offsetParentElement;
-      }
-    }
-
-    return null;
+    throw new TypeError('Unimplemented');
   }
 
   get offsetTop(): number {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const offset = nullthrows(getFabricUIManager()).getOffset(node);
-      if (offset != null) {
-        return Math.round(offset[1]);
-      }
-    }
-
-    return 0;
+    throw new TypeError('Unimplemented');
   }
 
   get offsetWidth(): number {
-    return Math.round(
-      getBoundingClientRect(this, {includeTransform: false}).width,
-    );
+    throw new TypeError('Unimplemented');
   }
 
   /**
@@ -122,71 +46,30 @@ export default class ReactNativeElement
    */
 
   blur(): void {
-    // $FlowFixMe[incompatible-exact] Migrate all usages of `NativeMethods` to an interface to fix this.
-    TextInputState.blurTextInput(this);
+    throw new TypeError('Unimplemented');
   }
 
-  focus() {
-    // $FlowFixMe[incompatible-exact] Migrate all usages of `NativeMethods` to an interface to fix this.
-    TextInputState.focusTextInput(this);
+  focus(): void {
+    throw new TypeError('Unimplemented');
   }
 
-  measure(callback: MeasureOnSuccessCallback) {
-    const node = getShadowNode(this);
-    if (node != null) {
-      nullthrows(getFabricUIManager()).measure(node, callback);
-    }
+  measure(callback: MeasureOnSuccessCallback): void {
+    throw new TypeError('Unimplemented');
   }
 
-  measureInWindow(callback: MeasureInWindowOnSuccessCallback) {
-    const node = getShadowNode(this);
-    if (node != null) {
-      nullthrows(getFabricUIManager()).measureInWindow(node, callback);
-    }
+  measureInWindow(callback: MeasureInWindowOnSuccessCallback): void {
+    throw new TypeError('Unimplemented');
   }
 
   measureLayout(
     relativeToNativeNode: number | ElementRef<HostComponent<mixed>>,
     onSuccess: MeasureLayoutOnSuccessCallback,
     onFail?: () => void /* currently unused */,
-  ) {
-    if (!(relativeToNativeNode instanceof ReadOnlyNode)) {
-      if (__DEV__) {
-        console.error(
-          'Warning: ref.measureLayout must be called with a ref to a native component.',
-        );
-      }
-
-      return;
-    }
-
-    const toStateNode = getShadowNode(this);
-    const fromStateNode = getShadowNode(relativeToNativeNode);
-
-    if (toStateNode != null && fromStateNode != null) {
-      nullthrows(getFabricUIManager()).measureLayout(
-        toStateNode,
-        fromStateNode,
-        onFail != null ? onFail : noop,
-        onSuccess != null ? onSuccess : noop,
-      );
-    }
+  ): void {
+    throw new TypeError('Unimplemented');
   }
 
   setNativeProps(nativeProps: {...}): void {
-    if (__DEV__) {
-      warnForStyleProps(nativeProps, this._viewConfig.validAttributes);
-    }
-
-    const updatePayload = createAttributePayload(
-      nativeProps,
-      this._viewConfig.validAttributes,
-    );
-
-    const node = getShadowNode(this);
-
-    if (node != null && updatePayload != null) {
-      nullthrows(getFabricUIManager()).setNativeProps(node, updatePayload);
-    }
+    throw new TypeError('Unimplemented');
   }
 }

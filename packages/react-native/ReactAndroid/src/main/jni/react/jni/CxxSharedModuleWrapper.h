@@ -11,7 +11,8 @@
 
 #include "CxxModuleWrapperBase.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class CxxSharedModuleWrapper : public CxxModuleWrapperBase {
  public:
@@ -34,4 +35,5 @@ class CxxSharedModuleWrapper : public CxxModuleWrapperBase {
   std::shared_ptr<xplat::module::CxxModule> shared_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -9,7 +9,8 @@
 #import <React/RCTLog.h>
 #import <glog/logging.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 void RCTDefaultCxxLogFunction(ReactNativeLogLevel level, const char *message)
 {
@@ -34,4 +35,5 @@ void RCTDefaultCxxLogFunction(ReactNativeLogLevel level, const char *message)
   }
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

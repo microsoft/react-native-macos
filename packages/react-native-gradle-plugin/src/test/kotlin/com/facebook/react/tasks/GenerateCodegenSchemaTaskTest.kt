@@ -68,7 +68,10 @@ class GenerateCodegenSchemaTaskTest {
     assertEquals(jsRootDir, task.jsInputFiles.dir)
     assertEquals(
         setOf(
-            "**/build/**/*",
+            "**/build/ASSETS/**/*",
+            "**/build/RES/**/*",
+            "**/build/generated/**/*",
+            "**/build/intermediates/**/*",
         ),
         task.jsInputFiles.excludes)
     assertEquals(1, task.jsInputFiles.files.size)

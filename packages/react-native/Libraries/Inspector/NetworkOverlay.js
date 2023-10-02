@@ -64,7 +64,7 @@ function getStringByValue(value: any): string {
   }
   if (typeof value === 'string' && value.length > 500) {
     return String(value)
-      .slice(0, 500)
+      .substr(0, 500)
       .concat('\n***TRUNCATED TO 500 CHARACTERS***');
   }
   return value;
@@ -88,7 +88,7 @@ function keyExtractor(request: NetworkRequestInfo): string {
  * Show all the intercepted network requests over the InspectorPanel.
  */
 class NetworkOverlay extends React.Component<Props, State> {
-  _requestsListView: ?React.ElementRef<Class<FlatList<NetworkRequestInfo>>>;
+  _requestsListView: ?React.ElementRef<typeof FlatList>;
   _detailScrollView: ?React.ElementRef<typeof ScrollView>;
 
   // Metrics are used to decide when if the request list should be sticky, and

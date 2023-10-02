@@ -10,11 +10,17 @@
 
 using namespace facebook::jni;
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
-void EventEmitterWrapper::dispatchEvent(
+jni::local_ref<EventEmitterWrapper::jhybriddata>
+EventEmitterWrapper::initHybrid(jni::alias_ref<jclass>) {
+  return makeCxxInstance();
+}
+
+void EventEmitterWrapper::invokeEvent(
     std::string eventName,
-    NativeMap* payload,
+    NativeMap *payload,
     int category) {
   // It is marginal, but possible for this to be constructed without a valid
   // EventEmitter. In those cases, make sure we noop/blackhole events instead of
@@ -28,9 +34,11 @@ void EventEmitterWrapper::dispatchEvent(
   }
 }
 
-void EventEmitterWrapper::dispatchUniqueEvent(
+void EventEmitterWrapper::invokeUniqueEvent(
     std::string eventName,
-    NativeMap* payload) {
+    NativeMap *payload,
+    int customCoalesceKey) {
+  // TODO: customCoalesceKey currently unused
   // It is marginal, but possible for this to be constructed without a valid
   // EventEmitter. In those cases, make sure we noop/blackhole events instead of
   // crashing.
@@ -42,10 +50,12 @@ void EventEmitterWrapper::dispatchUniqueEvent(
 
 void EventEmitterWrapper::registerNatives() {
   registerHybrid({
-      makeNativeMethod("dispatchEvent", EventEmitterWrapper::dispatchEvent),
+      makeNativeMethod("initHybrid", EventEmitterWrapper::initHybrid),
+      makeNativeMethod("invokeEvent", EventEmitterWrapper::invokeEvent),
       makeNativeMethod(
-          "dispatchUniqueEvent", EventEmitterWrapper::dispatchUniqueEvent),
+          "invokeUniqueEvent", EventEmitterWrapper::invokeUniqueEvent),
   });
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

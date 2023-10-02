@@ -9,31 +9,25 @@
 
 namespace facebook::react {
 
-#if defined(__clang__)
-#define NO_DESTROY [[clang::no_destroy]]
-#else
-#define NO_DESTROY
-#endif
-
-const Props::Shared& ShadowNodeFragment::propsPlaceholder() {
-  NO_DESTROY static Props::Shared instance;
+Props::Shared const &ShadowNodeFragment::propsPlaceholder() {
+  static auto &instance = *new Props::Shared();
   return instance;
 }
 
-const ShadowNode::SharedListOfShared&
+ShadowNode::SharedListOfShared const &
 ShadowNodeFragment::childrenPlaceholder() {
-  NO_DESTROY static ShadowNode::SharedListOfShared instance;
+  static auto &instance = *new ShadowNode::SharedListOfShared();
   return instance;
 }
 
-const State::Shared& ShadowNodeFragment::statePlaceholder() {
-  NO_DESTROY static State::Shared instance;
+State::Shared const &ShadowNodeFragment::statePlaceholder() {
+  static auto &instance = *new State::Shared();
   return instance;
 }
 
 using Value = ShadowNodeFragment::Value;
 
-Value::Value(const ShadowNodeFragment& fragment)
+Value::Value(ShadowNodeFragment const &fragment)
     : props(fragment.props),
       children(fragment.children),
       state(fragment.state) {}

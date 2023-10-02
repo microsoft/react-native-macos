@@ -23,24 +23,17 @@ typedef void (^InterceptorBlock)(std::string eventName, folly::dynamic event);
                                bridge:(RCTBridge *)bridge
                 bridgelessInteropData:(RCTBridgeModuleDecorator *)bridgelessInteropData;
 
-- (RCTPlatformView *)createPaperViewWithTag:(NSInteger)tag; // [macOS]
+- (RCTUIView *)createPaperViewWithTag:(NSInteger)tag; // [macOS]
 
 - (void)addObserveForTag:(NSInteger)tag usingBlock:(InterceptorBlock)block;
 
 - (void)removeObserveForTag:(NSInteger)tag;
 
-- (void)setProps:(const folly::dynamic &)props forView:(RCTPlatformView *)view; // [macOS]
+- (void)setProps:(folly::dynamic const &)props forView:(RCTUIView *)view; // [macOS]
 
 - (NSString *)componentViewName;
 
-- (void)handleCommand:(NSString *)commandName
-                 args:(NSArray *)args
-             reactTag:(NSInteger)tag
-            paperView:(RCTPlatformView *)paperView; // [macOS]
-
-- (void)removeViewFromRegistryWithTag:(NSInteger)tag;
-
-- (void)addViewToRegistry:(RCTPlatformView *)view withTag:(NSInteger)tag; // [macOS]
+- (void)handleCommand:(NSString *)commandName args:(NSArray *)args reactTag:(NSInteger)tag;
 
 @end
 

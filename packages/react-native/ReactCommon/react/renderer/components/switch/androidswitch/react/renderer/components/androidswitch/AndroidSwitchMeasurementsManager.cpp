@@ -19,13 +19,13 @@ Size AndroidSwitchMeasurementsManager::measure(
     SurfaceId surfaceId,
     LayoutConstraints layoutConstraints) const {
   {
-    std::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (hasBeenMeasured_) {
       return cachedMeasurement_;
     }
   }
 
-  const jni::global_ref<jobject>& fabricUIManager =
+  const jni::global_ref<jobject> &fabricUIManager =
       contextContainer_->at<jni::global_ref<jobject>>("FabricUIManager");
 
   static auto measure =
@@ -58,7 +58,7 @@ Size AndroidSwitchMeasurementsManager::measure(
       minimumSize.height,
       maximumSize.height));
 
-  std::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   cachedMeasurement_ = measurement;
   return measurement;
 }

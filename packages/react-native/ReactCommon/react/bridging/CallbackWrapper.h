@@ -12,27 +12,28 @@
 
 #include <memory>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 // Helper for passing jsi::Function arg to other methods.
 class CallbackWrapper : public LongLivedObject {
  private:
   CallbackWrapper(
-      jsi::Function&& callback,
-      jsi::Runtime& runtime,
+      jsi::Function &&callback,
+      jsi::Runtime &runtime,
       std::shared_ptr<CallInvoker> jsInvoker)
       : callback_(std::move(callback)),
         runtime_(runtime),
         jsInvoker_(std::move(jsInvoker)) {}
 
   jsi::Function callback_;
-  jsi::Runtime& runtime_;
+  jsi::Runtime &runtime_;
   std::shared_ptr<CallInvoker> jsInvoker_;
 
  public:
   static std::weak_ptr<CallbackWrapper> createWeak(
-      jsi::Function&& callback,
-      jsi::Runtime& runtime,
+      jsi::Function &&callback,
+      jsi::Runtime &runtime,
       std::shared_ptr<CallInvoker> jsInvoker) {
     auto wrapper = std::shared_ptr<CallbackWrapper>(new CallbackWrapper(
         std::move(callback), runtime, std::move(jsInvoker)));
@@ -45,15 +46,15 @@ class CallbackWrapper : public LongLivedObject {
     allowRelease();
   }
 
-  jsi::Function& callback() {
+  jsi::Function &callback() {
     return callback_;
   }
 
-  jsi::Runtime& runtime() {
+  jsi::Runtime &runtime() {
     return runtime_;
   }
 
-  CallInvoker& jsInvoker() {
+  CallInvoker &jsInvoker() {
     return *(jsInvoker_);
   }
 
@@ -62,4 +63,5 @@ class CallbackWrapper : public LongLivedObject {
   }
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

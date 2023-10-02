@@ -8,10 +8,10 @@
 #pragma once
 
 #include <jsi/jsi.h>
+#include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 
-namespace facebook::react {
-
-class RuntimeScheduler;
+namespace facebook {
+namespace react {
 
 /*
  * Exposes RuntimeScheduler to JavaScript realm.
@@ -27,20 +27,20 @@ class RuntimeSchedulerBinding : public jsi::HostObject {
    * installed, returns that.
    */
   static std::shared_ptr<RuntimeSchedulerBinding> createAndInstallIfNeeded(
-      jsi::Runtime& runtime,
-      const std::shared_ptr<RuntimeScheduler>& runtimeScheduler);
+      jsi::Runtime &runtime,
+      std::shared_ptr<RuntimeScheduler> const &runtimeScheduler);
 
   /*
    * Returns a shared pointer to RuntimeSchedulerBinding previously installed
    * into a runtime. Thread synchronization must be enforced externally.
    */
   static std::shared_ptr<RuntimeSchedulerBinding> getBinding(
-      jsi::Runtime& runtime);
+      jsi::Runtime &runtime);
 
   /*
    * `jsi::HostObject` specific overloads.
    */
-  jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& name) override;
+  jsi::Value get(jsi::Runtime &runtime, jsi::PropNameID const &name) override;
 
   bool getIsSynchronous() const;
 
@@ -48,4 +48,5 @@ class RuntimeSchedulerBinding : public jsi::HostObject {
   std::shared_ptr<RuntimeScheduler> runtimeScheduler_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

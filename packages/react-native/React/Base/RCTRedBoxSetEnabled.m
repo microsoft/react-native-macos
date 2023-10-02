@@ -18,7 +18,7 @@ void RCTRedBoxSetEnabled(BOOL enabled)
   redBoxEnabled = enabled;
 }
 
-BOOL RCTRedBoxGetEnabled(void)
+BOOL RCTRedBoxGetEnabled()
 {
   return redBoxEnabled;
 }

@@ -7,22 +7,21 @@
 
 package com.facebook.react.devsupport;
 
-import android.net.Uri;
+import android.content.Context;
 import android.os.AsyncTask;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.common.ReactConstants;
+import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.devsupport.interfaces.DevBundleDownloadListener;
 import com.facebook.react.devsupport.interfaces.PackagerStatusCallback;
-import com.facebook.react.modules.debug.interfaces.DeveloperSettings;
+import com.facebook.react.devsupport.interfaces.StackFrame;
 import com.facebook.react.modules.systeminfo.AndroidInfoHelpers;
 import com.facebook.react.packagerconnection.FileIoHandler;
 import com.facebook.react.packagerconnection.JSPackagerClient;
 import com.facebook.react.packagerconnection.NotificationOnlyHandler;
-import com.facebook.react.packagerconnection.PackagerConnectionSettings;
 import com.facebook.react.packagerconnection.ReconnectingWebSocket.ConnectionCallback;
 import com.facebook.react.packagerconnection.RequestHandler;
 import com.facebook.react.packagerconnection.RequestOnlyHandler;
@@ -30,18 +29,23 @@ import com.facebook.react.packagerconnection.Responder;
 import com.facebook.react.util.RNLog;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.Okio;
 import okio.Sink;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Helper class for all things about the debug server running in the engineer's host machine.
@@ -62,6 +66,10 @@ public class DevServerHelper {
 
   private static final String DEBUGGER_MSG_DISABLE = "{ \"id\":1,\"method\":\"Debugger.disable\" }";
 
+  public interface OnServerContentChangeListener {
+    void onServerContentChanged();
+  }
+
   public interface PackagerCommandListener {
     void onPackagerConnected();
 
@@ -76,6 +84,12 @@ public class DevServerHelper {
     // Allow apps to provide listeners for custom packager commands.
     @Nullable
     Map<String, RequestHandler> customCommandHandlers();
+  }
+
+  public interface PackagerCustomCommandProvider {}
+
+  public interface SymbolicationListener {
+    void onSymbolicationComplete(@Nullable Iterable<StackFrame> stackFrames);
   }
 
   private enum BundleType {
@@ -93,10 +107,7 @@ public class DevServerHelper {
     }
   }
 
-  private final DeveloperSettings mSettings;
-
-  private final PackagerConnectionSettings mPackagerConnectionSettings;
-
+  private final DevInternalSettings mSettings;
   private final OkHttpClient mClient;
   private final BundleDownloader mBundleDownloader;
   private final PackagerStatusCheck mPackagerStatusCheck;
@@ -104,15 +115,13 @@ public class DevServerHelper {
 
   private @Nullable JSPackagerClient mPackagerClient;
   private @Nullable InspectorPackagerConnection mInspectorPackagerConnection;
-  private final InspectorPackagerConnection.BundleStatusProvider mBundlerStatusProvider;
+  private InspectorPackagerConnection.BundleStatusProvider mBundlerStatusProvider;
 
   public DevServerHelper(
-      DeveloperSettings developerSettings,
+      DevInternalSettings settings,
       String packageName,
-      InspectorPackagerConnection.BundleStatusProvider bundleStatusProvider,
-      PackagerConnectionSettings packagerConnectionSettings) {
-    mSettings = developerSettings;
-    mPackagerConnectionSettings = packagerConnectionSettings;
+      InspectorPackagerConnection.BundleStatusProvider bundleStatusProvider) {
+    mSettings = settings;
     mBundlerStatusProvider = bundleStatusProvider;
     mClient =
         new OkHttpClient.Builder()
@@ -180,7 +189,10 @@ public class DevServerHelper {
 
         mPackagerClient =
             new JSPackagerClient(
-                clientId, mPackagerConnectionSettings, handlers, onPackagerConnectedCallback);
+                clientId,
+                mSettings.getPackagerConnectionSettings(),
+                handlers,
+                onPackagerConnectedCallback);
         mPackagerClient.init();
 
         return null;
@@ -237,18 +249,124 @@ public class DevServerHelper {
     }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
   }
 
+  public void openUrl(final ReactContext context, final String url, final String errorMessage) {
+    new AsyncTask<Void, String, Boolean>() {
+      @Override
+      protected Boolean doInBackground(Void... ignore) {
+        return doSync();
+      }
+
+      public boolean doSync() {
+        try {
+          String openUrlEndpoint = getOpenUrlEndpoint(context);
+          String jsonString = new JSONObject().put("url", url).toString();
+          RequestBody body = RequestBody.create(MediaType.parse("application/json"), jsonString);
+
+          Request request = new Request.Builder().url(openUrlEndpoint).post(body).build();
+          OkHttpClient client = new OkHttpClient();
+          client.newCall(request).execute();
+          return true;
+        } catch (JSONException | IOException e) {
+          FLog.e(ReactConstants.TAG, "Failed to open URL" + url, e);
+          return false;
+        }
+      }
+
+      @Override
+      protected void onPostExecute(Boolean result) {
+        if (!result) {
+          RNLog.w(context, errorMessage);
+        }
+      }
+    }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+  }
+
+  public void symbolicateStackTrace(
+      Iterable<StackFrame> stackFrames, final SymbolicationListener listener) {
+    try {
+      final String symbolicateURL =
+          createSymbolicateURL(mSettings.getPackagerConnectionSettings().getDebugServerHost());
+      final JSONArray jsonStackFrames = new JSONArray();
+      for (final StackFrame stackFrame : stackFrames) {
+        jsonStackFrames.put(stackFrame.toJSON());
+      }
+      final Request request =
+          new Request.Builder()
+              .url(symbolicateURL)
+              .post(
+                  RequestBody.create(
+                      MediaType.parse("application/json"),
+                      new JSONObject().put("stack", jsonStackFrames).toString()))
+              .build();
+      Call symbolicateCall = Assertions.assertNotNull(mClient.newCall(request));
+      symbolicateCall.enqueue(
+          new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+              FLog.w(
+                  ReactConstants.TAG,
+                  "Got IOException when attempting symbolicate stack trace: " + e.getMessage());
+              listener.onSymbolicationComplete(null);
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+              try {
+                listener.onSymbolicationComplete(
+                    Arrays.asList(
+                        StackTraceHelper.convertJsStackTrace(
+                            new JSONObject(response.body().string()).getJSONArray("stack"))));
+              } catch (JSONException exception) {
+                listener.onSymbolicationComplete(null);
+              }
+            }
+          });
+    } catch (JSONException e) {
+      FLog.w(
+          ReactConstants.TAG,
+          "Got JSONException when attempting symbolicate stack trace: " + e.getMessage());
+    }
+  }
+
+  public void openStackFrameCall(StackFrame stackFrame) {
+    final String openStackFrameURL =
+        createOpenStackFrameURL(mSettings.getPackagerConnectionSettings().getDebugServerHost());
+    final Request request =
+        new Request.Builder()
+            .url(openStackFrameURL)
+            .post(
+                RequestBody.create(
+                    MediaType.parse("application/json"), stackFrame.toJSON().toString()))
+            .build();
+    Call symbolicateCall = Assertions.assertNotNull(mClient.newCall(request));
+    symbolicateCall.enqueue(
+        new Callback() {
+          @Override
+          public void onFailure(Call call, IOException e) {
+            FLog.w(
+                ReactConstants.TAG,
+                "Got IOException when attempting to open stack frame: " + e.getMessage());
+          }
+
+          @Override
+          public void onResponse(Call call, final Response response) throws IOException {
+            // We don't have a listener for this.
+          }
+        });
+  }
+
   public String getWebsocketProxyURL() {
     return String.format(
         Locale.US,
         "ws://%s/debugger-proxy?role=client",
-        mPackagerConnectionSettings.getDebugServerHost());
+        mSettings.getPackagerConnectionSettings().getDebugServerHost());
   }
 
   private String getInspectorDeviceUrl() {
     return String.format(
         Locale.US,
         "http://%s/inspector/device?name=%s&app=%s",
-        mPackagerConnectionSettings.getInspectorServerHost(),
+        mSettings.getPackagerConnectionSettings().getInspectorServerHost(),
         AndroidInfoHelpers.getFriendlyDeviceName(),
         mPackageName);
   }
@@ -259,6 +377,11 @@ public class DevServerHelper {
       String bundleURL,
       BundleDownloader.BundleInfo bundleInfo) {
     mBundleDownloader.downloadBundleFromURL(callback, outputFile, bundleURL, bundleInfo);
+  }
+
+  private String getOpenUrlEndpoint(Context context) {
+    return String.format(
+        Locale.US, "http://%s/open-url", AndroidInfoHelpers.getServerHost(context));
   }
 
   public void downloadBundleFromURL(
@@ -274,7 +397,8 @@ public class DevServerHelper {
   /** @return the host to use when connecting to the bundle server from the host itself. */
   private String getHostForJSProxy() {
     // Use custom port if configured. Note that host stays "localhost".
-    String host = Assertions.assertNotNull(mPackagerConnectionSettings.getDebugServerHost());
+    String host =
+        Assertions.assertNotNull(mSettings.getPackagerConnectionSettings().getDebugServerHost());
     int portOffset = host.lastIndexOf(':');
     if (portOffset > -1) {
       return "localhost" + host.substring(portOffset);
@@ -303,40 +427,55 @@ public class DevServerHelper {
 
   private String createBundleURL(
       String mainModuleID, BundleType type, String host, boolean modulesOnly, boolean runModule) {
-    boolean dev = getDevMode();
+    String runtimeBytecodeVersion =
+        ReactBuildConfig.HERMES_BYTECODE_VERSION != 0
+            ? "&runtimeBytecodeVersion=" + ReactBuildConfig.HERMES_BYTECODE_VERSION
+            : "";
     return String.format(
         Locale.US,
-        "http://%s/%s.%s?platform=android&dev=%s&lazy=%s&minify=%s&app=%s&modulesOnly=%s&runModule=%s",
+        "http://%s/%s.%s?platform=android&dev=%s&minify=%s&app=%s&modulesOnly=%s&runModule=%s%s",
         host,
         mainModuleID,
         type.typeID(),
-        dev, // dev
-        dev, // lazy
+        getDevMode(),
         getJSMinifyMode(),
         mPackageName,
         modulesOnly ? "true" : "false",
-        runModule ? "true" : "false");
+        runModule ? "true" : "false",
+        runtimeBytecodeVersion);
   }
 
   private String createBundleURL(String mainModuleID, BundleType type) {
-    return createBundleURL(mainModuleID, type, mPackagerConnectionSettings.getDebugServerHost());
+    return createBundleURL(
+        mainModuleID, type, mSettings.getPackagerConnectionSettings().getDebugServerHost());
   }
 
   private static String createResourceURL(String host, String resourcePath) {
     return String.format(Locale.US, "http://%s/%s", host, resourcePath);
   }
 
+  private static String createSymbolicateURL(String host) {
+    return String.format(Locale.US, "http://%s/symbolicate", host);
+  }
+
+  private static String createOpenStackFrameURL(String host) {
+    return String.format(Locale.US, "http://%s/open-stack-frame", host);
+  }
+
   public String getDevServerBundleURL(final String jsModulePath) {
     return createBundleURL(
-        jsModulePath, BundleType.BUNDLE, mPackagerConnectionSettings.getDebugServerHost());
+        jsModulePath,
+        BundleType.BUNDLE,
+        mSettings.getPackagerConnectionSettings().getDebugServerHost());
   }
 
   public String getDevServerSplitBundleURL(String jsModulePath) {
-    return createSplitBundleURL(jsModulePath, mPackagerConnectionSettings.getDebugServerHost());
+    return createSplitBundleURL(
+        jsModulePath, mSettings.getPackagerConnectionSettings().getDebugServerHost());
   }
 
   public void isPackagerRunning(final PackagerStatusCallback callback) {
-    String host = mPackagerConnectionSettings.getDebugServerHost();
+    String host = mSettings.getPackagerConnectionSettings().getDebugServerHost();
     if (host == null) {
       FLog.w(ReactConstants.TAG, "No packager host configured.");
       callback.onPackagerStatusFetched(false);
@@ -349,7 +488,7 @@ public class DevServerHelper {
     return String.format(
         Locale.US,
         "http://%s/launch-js-devtools",
-        mPackagerConnectionSettings.getDebugServerHost());
+        mSettings.getPackagerConnectionSettings().getDebugServerHost());
   }
 
   public void launchJSDevtools() {
@@ -359,13 +498,14 @@ public class DevServerHelper {
         .enqueue(
             new Callback() {
               @Override
-              public void onFailure(@NonNull Call call, @NonNull IOException e) {
+              public void onFailure(Call call, IOException e) {
                 // ignore HTTP call response, this is just to open a debugger page and there is no
-                // reason to report failures from here
+                // reason
+                // to report failures from here
               }
 
               @Override
-              public void onResponse(@NonNull Call call, @NonNull Response response) {
+              public void onResponse(Call call, Response response) throws IOException {
                 // ignore HTTP call response - see above
               }
             });
@@ -395,16 +535,23 @@ public class DevServerHelper {
   public @Nullable File downloadBundleResourceFromUrlSync(
       final String resourcePath, final File outputFile) {
     final String resourceURL =
-        createResourceURL(mPackagerConnectionSettings.getDebugServerHost(), resourcePath);
+        createResourceURL(
+            mSettings.getPackagerConnectionSettings().getDebugServerHost(), resourcePath);
     final Request request = new Request.Builder().url(resourceURL).build();
 
     try (Response response = mClient.newCall(request).execute()) {
       if (!response.isSuccessful()) {
         return null;
       }
+      Sink output = null;
 
-      try (Sink output = Okio.sink(outputFile)) {
+      try {
+        output = Okio.sink(outputFile);
         Okio.buffer(response.body().source()).readAll(output);
+      } finally {
+        if (output != null) {
+          output.close();
+        }
       }
 
       return outputFile;
@@ -417,31 +564,5 @@ public class DevServerHelper {
           ex);
       return null;
     }
-  }
-
-  /** Attempt to open the JS debugger on the host machine (on-device CDP debugging). */
-  public void openDebugger(final ReactContext context, final String errorMessage) {
-    // TODO(huntie): Requests to dev server should not assume 'http' URL scheme
-    String requestUrl =
-        String.format(
-            Locale.US,
-            "http://%s/open-debugger?appId=%s",
-            mPackagerConnectionSettings.getInspectorServerHost(),
-            Uri.encode(mPackageName));
-    Request request =
-        new Request.Builder().url(requestUrl).method("POST", RequestBody.create(null, "")).build();
-
-    mClient
-        .newCall(request)
-        .enqueue(
-            new Callback() {
-              @Override
-              public void onFailure(@NonNull Call _call, @NonNull IOException _e) {
-                RNLog.w(context, errorMessage);
-              }
-
-              @Override
-              public void onResponse(@NonNull Call _call, @NonNull Response _response) {}
-            });
   }
 }

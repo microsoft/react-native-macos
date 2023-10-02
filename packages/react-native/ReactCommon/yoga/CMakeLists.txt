@@ -6,9 +6,17 @@
 cmake_minimum_required(VERSION 3.13)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
-# Yoga by default does not enable optimizations in debug builds. Enable -O2
-# for all builds in RN for faster debug app performance (at the cost of not
-# being able to debug inside Yoga)
-set(CMAKE_BUILD_TYPE Release)
+add_compile_options(
+        -fexceptions
+        -frtti
+        -O3
+        -Wall
+        -Wpedantic
+        -Wno-gnu-zero-variadic-macro-arguments)
 
-add_subdirectory(yoga)
+file(GLOB_RECURSE yogacore_SRC CONFIGURE_DEPENDS yoga/*.cpp)
+add_library(yogacore STATIC ${yogacore_SRC})
+
+target_include_directories(yogacore PUBLIC .)
+
+target_link_libraries(yogacore android log)

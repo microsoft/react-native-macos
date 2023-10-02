@@ -9,7 +9,8 @@
 
 #include <react/renderer/mounting/MountingCoordinator.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class ShadowTree;
 
@@ -25,9 +26,9 @@ class ShadowTreeDelegate {
    * Returning a `nullptr` cancels the commit.
    */
   virtual RootShadowNode::Unshared shadowTreeWillCommit(
-      const ShadowTree& shadowTree,
-      const RootShadowNode::Shared& oldRootShadowNode,
-      const RootShadowNode::Unshared& newRootShadowNode) const = 0;
+      ShadowTree const &shadowTree,
+      RootShadowNode::Shared const &oldRootShadowNode,
+      RootShadowNode::Unshared const &newRootShadowNode) const = 0;
 
   /*
    * Called right after Shadow Tree commit a new state of the tree.
@@ -39,4 +40,5 @@ class ShadowTreeDelegate {
   virtual ~ShadowTreeDelegate() noexcept = default;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

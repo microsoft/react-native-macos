@@ -20,10 +20,7 @@ public interface RootView {
   void onChildStartedNativeGesture(View childView, MotionEvent ev);
 
   /** @deprecated */
-  @Deprecated
-  default void onChildStartedNativeGesture(MotionEvent ev) {
-    onChildStartedNativeGesture(null, ev);
-  }
+  void onChildStartedNativeGesture(MotionEvent ev);
 
   /**
    * Called when a child ends a native gesture. Should be called from the child's onTouchIntercepted

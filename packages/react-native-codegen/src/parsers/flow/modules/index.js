@@ -22,6 +22,7 @@ import type {
 import type {Parser} from '../../parser';
 import type {ParserErrorCapturer, TypeDeclarationMap} from '../../utils';
 
+const {resolveTypeAnnotation} = require('../utils');
 const {
   unwrapNullable,
   wrapNullable,
@@ -30,10 +31,15 @@ const {
 } = require('../../parsers-commons');
 const {
   emitArrayType,
+  emitBoolean,
   emitFunction,
-  emitDictionary,
+  emitNumber,
+  emitGenericObject,
   emitPromise,
   emitRootTag,
+  emitVoid,
+  emitString,
+  emitMixed,
   emitUnion,
   emitCommonTypes,
   typeAliasResolution,
@@ -58,13 +64,12 @@ function translateTypeAnnotation(
   cxxOnly: boolean,
   parser: Parser,
 ): Nullable<NativeModuleTypeAnnotation> {
-  const resolveTypeAnnotationFN = parser.getResolveTypeAnnotationFN();
   const {nullable, typeAnnotation, typeResolutionStatus} =
-    resolveTypeAnnotationFN(flowTypeAnnotation, types, parser);
+    resolveTypeAnnotation(flowTypeAnnotation, types);
 
   switch (typeAnnotation.type) {
     case 'GenericTypeAnnotation': {
-      switch (parser.getTypeAnnotationName(typeAnnotation)) {
+      switch (typeAnnotation.id.name) {
         case 'RootTag': {
           return emitRootTag(nullable);
         }
@@ -152,7 +157,7 @@ function translateTypeAnnotation(
           // check the property type to prevent developers from using unsupported types
           // the return value from `translateTypeAnnotation` is unused
           const propertyType = indexers[0].value;
-          const valueType = translateTypeAnnotation(
+          translateTypeAnnotation(
             hasteModuleName,
             propertyType,
             types,
@@ -163,7 +168,7 @@ function translateTypeAnnotation(
             parser,
           );
           // no need to do further checking
-          return emitDictionary(nullable, valueType);
+          return emitGenericObject(nullable);
         }
       }
 
@@ -202,6 +207,18 @@ function translateTypeAnnotation(
         nullable,
       );
     }
+    case 'BooleanTypeAnnotation': {
+      return emitBoolean(nullable);
+    }
+    case 'NumberTypeAnnotation': {
+      return emitNumber(nullable);
+    }
+    case 'VoidTypeAnnotation': {
+      return emitVoid(nullable);
+    }
+    case 'StringTypeAnnotation': {
+      return emitString(nullable);
+    }
     case 'FunctionTypeAnnotation': {
       return emitFunction(
         nullable,
@@ -226,6 +243,13 @@ function translateTypeAnnotation(
         memberType: 'StringTypeAnnotation',
       });
     }
+    case 'MixedTypeAnnotation': {
+      if (cxxOnly) {
+        return emitMixed(nullable);
+      } else {
+        return emitGenericObject(nullable);
+      }
+    }
     case 'EnumStringBody':
     case 'EnumNumberBody': {
       return typeEnumResolution(
@@ -238,26 +262,11 @@ function translateTypeAnnotation(
       );
     }
     default: {
-      const commonType = emitCommonTypes(
+      throw new UnsupportedTypeAnnotationParserError(
         hasteModuleName,
-        types,
         typeAnnotation,
-        aliasMap,
-        enumMap,
-        tryParse,
-        cxxOnly,
-        nullable,
-        parser,
+        parser.language(),
       );
-
-      if (!commonType) {
-        throw new UnsupportedTypeAnnotationParserError(
-          hasteModuleName,
-          typeAnnotation,
-          parser.language(),
-        );
-      }
-      return commonType;
     }
   }
 }

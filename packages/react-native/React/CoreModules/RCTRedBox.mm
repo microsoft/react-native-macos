@@ -333,11 +333,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"msg-cell"];
     cell.textLabel.accessibilityIdentifier = @"redbox-error";
     cell.textLabel.textColor = [UIColor whiteColor];
-
-    // Prefer a monofont for formatting messages that were designed
-    // to be displayed in a terminal.
-    cell.textLabel.font = [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightBold];
-
+    if (@available(iOS 13.0, *)) {
+      // Prefer a monofont for formatting messages that were designed
+      // to be displayed in a terminal.
+      cell.textLabel.font = [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightBold];
+    } else {
+      cell.textLabel.font = [UIFont boldSystemFontOfSize:14];
+    }
     cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     cell.textLabel.numberOfLines = 0;
     cell.detailTextLabel.textColor = [UIColor whiteColor];
@@ -1071,15 +1073,6 @@ RCT_EXPORT_METHOD(dismiss)
 
 @end
 
-@implementation RCTBridgeProxy (RCTRedBox)
-
-- (RCTRedBox *)redBox
-{
-  return RCTRedBoxGetEnabled() ? [self moduleForClass:[RCTRedBox class]] : nil;
-}
-
-@end
-
 #else // Disabled
 
 @interface RCTRedBox () <NativeRedBoxSpec>
@@ -1157,15 +1150,6 @@ RCT_EXPORT_METHOD(dismiss)
 @end
 
 @implementation RCTBridge (RCTRedBox)
-
-- (RCTRedBox *)redBox
-{
-  return nil;
-}
-
-@end
-
-@implementation RCTBridgeProxy (RCTRedBox)
 
 - (RCTRedBox *)redBox
 {

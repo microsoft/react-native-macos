@@ -14,7 +14,6 @@
 #include <memory>
 #include <random>
 
-#include <react/config/ReactNativeConfig.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/mounting/Differentiator.h>
 #include <react/renderer/mounting/stubs.h>
@@ -24,7 +23,8 @@
 
 #include "Entropy.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 static Tag generateReactTag() {
   static Tag tag = 1000;
@@ -39,11 +39,11 @@ class ShadowTreeEdge final {
 };
 
 static bool traverseShadowTree(
-    const ShadowNode::Shared& parentShadowNode,
-    const std::function<void(ShadowTreeEdge const& edge, bool& stop)>&
-        callback) {
+    ShadowNode::Shared const &parentShadowNode,
+    std::function<void(ShadowTreeEdge const &edge, bool &stop)> const
+        &callback) {
   auto index = int{0};
-  for (const auto& childNode : parentShadowNode->getChildren()) {
+  for (auto const &childNode : parentShadowNode->getChildren()) {
     auto stop = bool{false};
 
     callback(ShadowTreeEdge{childNode, parentShadowNode, index}, stop);
@@ -61,23 +61,23 @@ static bool traverseShadowTree(
   return false;
 }
 
-static int countShadowNodes(const ShadowNode::Shared& rootShadowNode) {
+static int countShadowNodes(ShadowNode::Shared const &rootShadowNode) {
   auto counter = int{0};
 
   traverseShadowTree(
       rootShadowNode,
-      [&](const ShadowTreeEdge& edge, bool& stop) { counter++; });
+      [&](ShadowTreeEdge const &edge, bool &stop) { counter++; });
 
   return counter;
 }
 
 static ShadowTreeEdge findShadowNodeWithIndex(
-    const ShadowNode::Shared& rootNode,
+    ShadowNode::Shared const &rootNode,
     int index) {
   auto counter = int{0};
   auto result = ShadowTreeEdge{};
 
-  traverseShadowTree(rootNode, [&](const ShadowTreeEdge& edge, bool& stop) {
+  traverseShadowTree(rootNode, [&](ShadowTreeEdge const &edge, bool &stop) {
     if (index == counter) {
       result = edge;
     }
@@ -89,8 +89,8 @@ static ShadowTreeEdge findShadowNodeWithIndex(
 }
 
 static ShadowTreeEdge findRandomShadowNode(
-    const Entropy& entropy,
-    const ShadowNode::Shared& rootShadowNode) {
+    Entropy const &entropy,
+    ShadowNode::Shared const &rootShadowNode) {
   auto count = countShadowNodes(rootShadowNode);
   return findShadowNodeWithIndex(
       rootShadowNode,
@@ -98,18 +98,18 @@ static ShadowTreeEdge findRandomShadowNode(
 }
 
 static ShadowNode::ListOfShared cloneSharedShadowNodeList(
-    const ShadowNode::ListOfShared& list) {
+    ShadowNode::ListOfShared const &list) {
   auto result = ShadowNode::ListOfShared{};
   result.reserve(list.size());
-  for (const auto& shadowNode : list) {
+  for (auto const &shadowNode : list) {
     result.push_back(shadowNode->clone({}));
   }
   return result;
 }
 
 static inline ShadowNode::Unshared messWithChildren(
-    const Entropy& entropy,
-    const ShadowNode& shadowNode) {
+    Entropy const &entropy,
+    ShadowNode const &shadowNode) {
   auto children = shadowNode.getChildren();
   children = cloneSharedShadowNodeList(children);
   entropy.shuffle(children);
@@ -119,8 +119,8 @@ static inline ShadowNode::Unshared messWithChildren(
 }
 
 static inline ShadowNode::Unshared messWithLayoutableOnlyFlag(
-    const Entropy& entropy,
-    const ShadowNode& shadowNode) {
+    Entropy const &entropy,
+    ShadowNode const &shadowNode) {
   auto oldProps = shadowNode.getProps();
 
   ContextContainer contextContainer{};
@@ -129,8 +129,8 @@ static inline ShadowNode::Unshared messWithLayoutableOnlyFlag(
   auto newProps = shadowNode.getComponentDescriptor().cloneProps(
       parserContext, oldProps, RawProps(folly::dynamic::object()));
 
-  auto& viewProps =
-      const_cast<ViewProps&>(static_cast<const ViewProps&>(*newProps));
+  auto &viewProps =
+      const_cast<ViewProps &>(static_cast<ViewProps const &>(*newProps));
 
   if (entropy.random<bool>(0.1)) {
     viewProps.nativeId = entropy.random<bool>() ? "42" : "";
@@ -139,6 +139,11 @@ static inline ShadowNode::Unshared messWithLayoutableOnlyFlag(
   if (entropy.random<bool>(0.1)) {
     viewProps.backgroundColor =
         entropy.random<bool>() ? SharedColor() : whiteColor();
+  }
+
+  if (entropy.random<bool>(0.1)) {
+    viewProps.foregroundColor =
+        entropy.random<bool>() ? SharedColor() : blackColor();
   }
 
   if (entropy.random<bool>(0.1)) {
@@ -164,11 +169,9 @@ static inline ShadowNode::Unshared messWithLayoutableOnlyFlag(
                                                  : Transform::Perspective(42);
   }
 
-#ifdef ANDROID
   if (entropy.random<bool>(0.1)) {
     viewProps.elevation = entropy.random<bool>() ? 1 : 0;
   }
-#endif
 
   return shadowNode.clone({newProps});
 }
@@ -176,8 +179,8 @@ static inline ShadowNode::Unshared messWithLayoutableOnlyFlag(
 // Similar to `messWithLayoutableOnlyFlag` but has a 50/50 chance of flattening
 // (or unflattening) a node's children.
 static inline ShadowNode::Unshared messWithNodeFlattenednessFlags(
-    const Entropy& entropy,
-    const ShadowNode& shadowNode) {
+    Entropy const &entropy,
+    ShadowNode const &shadowNode) {
   ContextContainer contextContainer{};
   PropsParserContext parserContext{-1, contextContainer};
 
@@ -185,40 +188,38 @@ static inline ShadowNode::Unshared messWithNodeFlattenednessFlags(
   auto newProps = shadowNode.getComponentDescriptor().cloneProps(
       parserContext, oldProps, RawProps(folly::dynamic::object()));
 
-  auto& viewProps =
-      const_cast<ViewProps&>(static_cast<const ViewProps&>(*newProps));
+  auto &viewProps =
+      const_cast<ViewProps &>(static_cast<ViewProps const &>(*newProps));
 
   if (entropy.random<bool>(0.5)) {
     viewProps.nativeId = "";
     viewProps.collapsable = true;
     viewProps.backgroundColor = SharedColor();
+    viewProps.foregroundColor = SharedColor();
     viewProps.shadowColor = SharedColor();
     viewProps.accessible = false;
     viewProps.zIndex = {};
     viewProps.pointerEvents = PointerEventsMode::Auto;
     viewProps.transform = Transform::Identity();
-#ifdef ANDROID
     viewProps.elevation = 0;
-#endif
   } else {
     viewProps.nativeId = "42";
     viewProps.backgroundColor = whiteColor();
+    viewProps.foregroundColor = blackColor();
     viewProps.shadowColor = blackColor();
     viewProps.accessible = true;
     viewProps.zIndex = {entropy.random<int>()};
     viewProps.pointerEvents = PointerEventsMode::None;
     viewProps.transform = Transform::Perspective(entropy.random<int>());
-#ifdef ANDROID
     viewProps.elevation = entropy.random<int>();
-#endif
   }
 
   return shadowNode.clone({newProps});
 }
 
 static inline ShadowNode::Unshared messWithYogaStyles(
-    const Entropy& entropy,
-    const ShadowNode& shadowNode) {
+    Entropy const &entropy,
+    ShadowNode const &shadowNode) {
   folly::dynamic dynamic = folly::dynamic::object();
 
   if (entropy.random<bool>()) {
@@ -238,16 +239,13 @@ static inline ShadowNode::Unshared messWithYogaStyles(
   // failures if the size of properties also changes.
   EXPECT_EQ(properties.size(), 20);
 
-  for (const auto& property : properties) {
+  for (auto const &property : properties) {
     if (entropy.random<bool>(0.1)) {
       dynamic[property] = entropy.random<int>(0, 1024);
     }
   }
 
-  ContextContainer contextContainer;
-  contextContainer.insert(
-      "ReactNativeConfig", std::make_shared<EmptyReactNativeConfig>());
-
+  ContextContainer contextContainer{};
   PropsParserContext parserContext{-1, contextContainer};
 
   auto oldProps = shadowNode.getProps();
@@ -257,46 +255,46 @@ static inline ShadowNode::Unshared messWithYogaStyles(
 }
 
 using ShadowNodeAlteration = std::function<
-    ShadowNode::Unshared(const Entropy& entropy, const ShadowNode& shadowNode)>;
+    ShadowNode::Unshared(Entropy const &entropy, ShadowNode const &shadowNode)>;
 
 static inline void alterShadowTree(
-    const Entropy& entropy,
-    RootShadowNode::Shared& rootShadowNode,
+    Entropy const &entropy,
+    RootShadowNode::Shared &rootShadowNode,
     ShadowNodeAlteration alteration) {
   auto edge = findRandomShadowNode(entropy, rootShadowNode);
 
   rootShadowNode =
       std::static_pointer_cast<RootShadowNode>(rootShadowNode->cloneTree(
-          edge.shadowNode->getFamily(), [&](const ShadowNode& oldShadowNode) {
+          edge.shadowNode->getFamily(), [&](ShadowNode const &oldShadowNode) {
             return alteration(entropy, oldShadowNode);
           }));
 }
 
 static inline void alterShadowTree(
-    const Entropy& entropy,
-    RootShadowNode::Shared& rootShadowNode,
+    Entropy const &entropy,
+    RootShadowNode::Shared &rootShadowNode,
     std::vector<ShadowNodeAlteration> alterations) {
   auto i = entropy.random<int>(0, alterations.size() - 1);
   alterShadowTree(entropy, rootShadowNode, alterations[i]);
 }
 
 static SharedViewProps generateDefaultProps(
-    const ComponentDescriptor& componentDescriptor) {
+    ComponentDescriptor const &componentDescriptor) {
   ContextContainer contextContainer{};
   PropsParserContext parserContext{-1, contextContainer};
 
-  return std::static_pointer_cast<const ViewProps>(
+  return std::static_pointer_cast<ViewProps const>(
       componentDescriptor.cloneProps(parserContext, nullptr, RawProps{}));
 }
 
 static inline ShadowNode::Shared generateShadowNodeTree(
-    const Entropy& entropy,
-    const ComponentDescriptor& componentDescriptor,
+    Entropy const &entropy,
+    ComponentDescriptor const &componentDescriptor,
     int size,
     int deviation = 3) {
   if (size <= 1) {
     auto family = componentDescriptor.createFamily(
-        {generateReactTag(), SurfaceId(1), nullptr});
+        {generateReactTag(), SurfaceId(1), nullptr}, nullptr);
     return componentDescriptor.createShadowNode(
         ShadowNodeFragment{generateDefaultProps(componentDescriptor)}, family);
   }
@@ -306,13 +304,13 @@ static inline ShadowNode::Shared generateShadowNodeTree(
   auto chunks = entropy.distribute(items, deviation);
   auto children = ShadowNode::ListOfShared{};
 
-  for (const auto& chunk : chunks) {
+  for (auto const &chunk : chunks) {
     children.push_back(
         generateShadowNodeTree(entropy, componentDescriptor, chunk.size()));
   }
 
   auto family = componentDescriptor.createFamily(
-      {generateReactTag(), SurfaceId(1), nullptr});
+      {generateReactTag(), SurfaceId(1), nullptr}, nullptr);
   return componentDescriptor.createShadowNode(
       ShadowNodeFragment{
           generateDefaultProps(componentDescriptor),
@@ -320,4 +318,5 @@ static inline ShadowNode::Shared generateShadowNodeTree(
       family);
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

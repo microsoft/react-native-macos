@@ -10,16 +10,18 @@ package com.facebook.react.devsupport;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import com.facebook.react.common.annotations.VisibleForTesting;
 import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.modules.debug.interfaces.DeveloperSettings;
 import com.facebook.react.packagerconnection.PackagerConnectionSettings;
 
 /**
- * Helper class for accessing developers settings that can not be accessed outside of the package
+ * Helper class for accessing developers settings that should not be accessed outside of the package
  * {@link com.facebook.react.devsupport}. For accessing some of the settings by external modules
  * this class implements an external interface {@link DeveloperSettings}.
  */
-class DevInternalSettings
+@VisibleForTesting
+public class DevInternalSettings
     implements DeveloperSettings, SharedPreferences.OnSharedPreferenceChangeListener {
 
   private static final String PREFS_FPS_DEBUG_KEY = "fps_debug";
@@ -43,9 +45,17 @@ class DevInternalSettings
     mPackagerConnectionSettings = new PackagerConnectionSettings(applicationContext);
   }
 
+  public PackagerConnectionSettings getPackagerConnectionSettings() {
+    return mPackagerConnectionSettings;
+  }
+
   @Override
   public boolean isFpsDebugEnabled() {
     return mPreferences.getBoolean(PREFS_FPS_DEBUG_KEY, false);
+  }
+
+  public void setFpsDebugEnabled(boolean enabled) {
+    mPreferences.edit().putBoolean(PREFS_FPS_DEBUG_KEY, enabled).apply();
   }
 
   @Override
@@ -58,12 +68,15 @@ class DevInternalSettings
     return mPreferences.getBoolean(PREFS_JS_DEV_MODE_DEBUG_KEY, true);
   }
 
+  public void setJSDevModeEnabled(boolean value) {
+    mPreferences.edit().putBoolean(PREFS_JS_DEV_MODE_DEBUG_KEY, value).apply();
+  }
+
   @Override
   public boolean isJSMinifyEnabled() {
     return mPreferences.getBoolean(PREFS_JS_MINIFY_DEBUG_KEY, false);
   }
 
-  @Override
   public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
     if (mListener != null) {
       if (PREFS_FPS_DEBUG_KEY.equals(key)
@@ -75,14 +88,25 @@ class DevInternalSettings
     }
   }
 
-  @Override
+  public boolean isHotModuleReplacementEnabled() {
+    return mPreferences.getBoolean(PREFS_HOT_MODULE_REPLACEMENT_KEY, true);
+  }
+
+  public void setHotModuleReplacementEnabled(boolean enabled) {
+    mPreferences.edit().putBoolean(PREFS_HOT_MODULE_REPLACEMENT_KEY, enabled).apply();
+  }
+
   public boolean isElementInspectorEnabled() {
     return mPreferences.getBoolean(PREFS_INSPECTOR_DEBUG_KEY, false);
   }
 
+  public void setElementInspectorEnabled(boolean enabled) {
+    mPreferences.edit().putBoolean(PREFS_INSPECTOR_DEBUG_KEY, enabled).apply();
+  }
+
   @Override
   public boolean isDeviceDebugEnabled() {
-    return ReactBuildConfig.DEBUG;
+    return ReactBuildConfig.IS_INTERNAL_BUILD && ReactBuildConfig.DEBUG;
   }
 
   @Override
@@ -103,30 +127,6 @@ class DevInternalSettings
   @Override
   public void addMenuItem(String title) {
     // Not supported.
-  }
-
-  void setElementInspectorEnabled(boolean enabled) {
-    mPreferences.edit().putBoolean(PREFS_INSPECTOR_DEBUG_KEY, enabled).apply();
-  }
-
-  boolean isHotModuleReplacementEnabled() {
-    return mPreferences.getBoolean(PREFS_HOT_MODULE_REPLACEMENT_KEY, true);
-  }
-
-  void setHotModuleReplacementEnabled(boolean enabled) {
-    mPreferences.edit().putBoolean(PREFS_HOT_MODULE_REPLACEMENT_KEY, enabled).apply();
-  }
-
-  void setJSDevModeEnabled(boolean value) {
-    mPreferences.edit().putBoolean(PREFS_JS_DEV_MODE_DEBUG_KEY, value).apply();
-  }
-
-  void setFpsDebugEnabled(boolean enabled) {
-    mPreferences.edit().putBoolean(PREFS_FPS_DEBUG_KEY, enabled).apply();
-  }
-
-  PackagerConnectionSettings getPackagerConnectionSettings() {
-    return mPackagerConnectionSettings;
   }
 
   public interface Listener {

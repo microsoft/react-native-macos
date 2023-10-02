@@ -213,7 +213,7 @@ describe('LogBoxMessage', () => {
       <LogBoxMessage
         style={{}}
         message={{
-          content: 'https://reactnative.dev',
+          content: 'http://reactnative.dev',
           substitutions: [],
         }}
       />,
@@ -227,7 +227,7 @@ describe('LogBoxMessage', () => {
       <LogBoxMessage
         style={{}}
         message={{
-          content: 'https://reactnative.dev and https://react.dev',
+          content: 'http://reactnative.dev and http://reactjs.org',
           substitutions: [],
         }}
       />,
@@ -242,7 +242,7 @@ describe('LogBoxMessage', () => {
         style={{}}
         maxLength={35}
         message={{
-          content: 'https://reactnative.dev and https://react.dev',
+          content: 'http://reactnative.dev and http://reactjs.org',
           substitutions: [],
         }}
       />,

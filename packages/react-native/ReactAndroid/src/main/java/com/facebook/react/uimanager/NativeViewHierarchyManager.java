@@ -860,7 +860,12 @@ public class NativeViewHierarchyManager {
               + commandId);
     }
     ViewManager viewManager = resolveViewManager(reactTag);
-    viewManager.receiveCommand(view, commandId, args);
+    ViewManagerDelegate delegate = viewManager.getDelegate();
+    if (delegate != null) {
+      delegate.receiveCommand(view, commandId, args);
+    } else {
+      viewManager.receiveCommand(view, commandId, args);
+    }
   }
 
   /**
@@ -945,7 +950,7 @@ public class NativeViewHierarchyManager {
   public void sendAccessibilityEvent(int tag, int eventType) {
     View view = mTagsToViews.get(tag);
     if (view == null) {
-      throw new RetryableMountingLayerException("Could not find view with tag " + tag);
+      throw new JSApplicationIllegalArgumentException("Could not find view with tag " + tag);
     }
     view.sendAccessibilityEvent(eventType);
   }

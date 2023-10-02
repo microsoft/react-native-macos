@@ -11,9 +11,13 @@
 
 #import <React/RCTBridgeModule.h>
 
-namespace facebook::xplat::module {
+namespace facebook {
+namespace xplat {
+namespace module {
 class CxxModule;
-} // namespace facebook::react::module
+}
+}
+}
 
 /**
  * Subclass RCTCxxModule to use cross-platform CxxModule on iOS.

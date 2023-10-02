@@ -10,7 +10,8 @@
 #include <glog/logging.h>
 #include <jsi/jsi.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Exposes StubErrorUtils to JavaScript realm.
@@ -18,7 +19,7 @@ namespace facebook::react {
 class StubErrorUtils : public jsi::HostObject {
  public:
   static std::shared_ptr<StubErrorUtils> createAndInstallIfNeeded(
-      jsi::Runtime& runtime) {
+      jsi::Runtime &runtime) {
     auto errorUtilsModuleName = "ErrorUtils";
     auto errorUtilsValue =
         runtime.global().getProperty(runtime, errorUtilsModuleName);
@@ -38,7 +39,7 @@ class StubErrorUtils : public jsi::HostObject {
   /*
    * `jsi::HostObject` specific overloads.
    */
-  jsi::Value get(jsi::Runtime& runtime, const jsi::PropNameID& name) override {
+  jsi::Value get(jsi::Runtime &runtime, jsi::PropNameID const &name) override {
     auto propertyName = name.utf8(runtime);
 
     if (propertyName == "reportFatalError") {
@@ -47,9 +48,9 @@ class StubErrorUtils : public jsi::HostObject {
           name,
           1,
           [this](
-              jsi::Runtime& runtime,
-              const jsi::Value&,
-              const jsi::Value* arguments,
+              jsi::Runtime &runtime,
+              jsi::Value const &,
+              jsi::Value const *arguments,
               size_t) noexcept -> jsi::Value {
             reportFatalCallCount_++;
             return jsi::Value::undefined();
@@ -67,4 +68,5 @@ class StubErrorUtils : public jsi::HostObject {
   int reportFatalCallCount_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

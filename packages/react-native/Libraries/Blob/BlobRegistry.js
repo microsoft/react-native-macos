@@ -8,32 +8,27 @@
  * @format
  */
 
-const registry: Map<string, number> = new Map();
+const registry: {[key: string]: number, ...} = {};
 
 const register = (id: string) => {
-  const used = registry.get(id);
-
-  if (used != null) {
-    registry.set(id, used + 1);
+  if (registry[id]) {
+    registry[id]++;
   } else {
-    registry.set(id, 1);
+    registry[id] = 1;
   }
 };
 
 const unregister = (id: string) => {
-  const used = registry.get(id);
-
-  if (used != null) {
-    if (used <= 1) {
-      registry.delete(id);
-    } else {
-      registry.set(id, used - 1);
+  if (registry[id]) {
+    registry[id]--;
+    if (registry[id] <= 0) {
+      delete registry[id];
     }
   }
 };
 
 const has = (id: string): number | boolean => {
-  return registry.get(id) || false;
+  return registry[id] && registry[id] > 0;
 };
 
 module.exports = {

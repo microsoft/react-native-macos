@@ -12,14 +12,14 @@ import androidx.annotation.Nullable;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.fabric.mounting.MountingManager;
 
-final class DispatchStringCommandMountItem extends DispatchCommandMountItem {
+public class DispatchStringCommandMountItem extends DispatchCommandMountItem {
 
   private final int mSurfaceId;
   private final int mReactTag;
   private final @NonNull String mCommandId;
   private final @Nullable ReadableArray mCommandArgs;
 
-  DispatchStringCommandMountItem(
+  public DispatchStringCommandMountItem(
       int surfaceId, int reactTag, @NonNull String commandId, @Nullable ReadableArray commandArgs) {
     mSurfaceId = surfaceId;
     mReactTag = reactTag;
@@ -38,7 +38,6 @@ final class DispatchStringCommandMountItem extends DispatchCommandMountItem {
   }
 
   @Override
-  @NonNull
   public String toString() {
     return "DispatchStringCommandMountItem [" + mReactTag + "] " + mCommandId;
   }

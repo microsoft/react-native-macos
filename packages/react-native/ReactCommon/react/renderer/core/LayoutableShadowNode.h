@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 
+#include <butter/small_vector.h>
 #include <react/debug/react_native_assert.h>
 #include <react/renderer/core/LayoutMetrics.h>
 #include <react/renderer/core/ShadowNode.h>
@@ -19,7 +20,8 @@
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/graphics/Transform.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 struct LayoutConstraints;
 struct LayoutContext;
@@ -31,13 +33,13 @@ struct LayoutContext;
 class LayoutableShadowNode : public ShadowNode {
  public:
   LayoutableShadowNode(
-      const ShadowNodeFragment& fragment,
-      const ShadowNodeFamily::Shared& family,
+      ShadowNodeFragment const &fragment,
+      ShadowNodeFamily::Shared const &family,
       ShadowNodeTraits traits);
 
   LayoutableShadowNode(
-      const ShadowNode& sourceShadowNode,
-      const ShadowNodeFragment& fragment);
+      ShadowNode const &sourceShadowNode,
+      ShadowNodeFragment const &fragment);
 
   static ShadowNodeTraits BaseTraits();
   static ShadowNodeTraits::Trait IdentifierTrait();
@@ -45,10 +47,10 @@ class LayoutableShadowNode : public ShadowNode {
   struct LayoutInspectingPolicy {
     bool includeTransform{true};
     bool includeViewportOffset{false};
-    bool enableOverflowClipping{false};
   };
 
-  using UnsharedList = std::vector<LayoutableShadowNode*>;
+  using UnsharedList = butter::
+      small_vector<LayoutableShadowNode *, kShadowNodeChildrenSmallVectorSize>;
 
   /*
    * Returns layout metrics of a node represented as `descendantNodeFamily`
@@ -57,15 +59,8 @@ class LayoutableShadowNode : public ShadowNode {
    * tree.
    */
   static LayoutMetrics computeRelativeLayoutMetrics(
-      const ShadowNodeFamily& descendantNodeFamily,
-      const LayoutableShadowNode& ancestorNode,
-      LayoutInspectingPolicy policy);
-
-  /*
-   * Computes the layout metrics of a node relative to its specified ancestors.
-   */
-  static LayoutMetrics computeRelativeLayoutMetrics(
-      const AncestorList& ancestors,
+      ShadowNodeFamily const &descendantNodeFamily,
+      LayoutableShadowNode const &ancestorNode,
       LayoutInspectingPolicy policy);
 
   /*
@@ -83,8 +78,8 @@ class LayoutableShadowNode : public ShadowNode {
    * Default implementation returns zero size.
    */
   virtual Size measureContent(
-      const LayoutContext& layoutContext,
-      const LayoutConstraints& layoutConstraints) const;
+      LayoutContext const &layoutContext,
+      LayoutConstraints const &layoutConstraints) const;
 
   /*
    * Measures the node with given `layoutContext` and `layoutConstraints`.
@@ -92,8 +87,8 @@ class LayoutableShadowNode : public ShadowNode {
    * should *not* be included. Default implementation returns zero size.
    */
   virtual Size measure(
-      const LayoutContext& layoutContext,
-      const LayoutConstraints& layoutConstraints) const;
+      LayoutContext const &layoutContext,
+      LayoutConstraints const &layoutConstraints) const;
 
   /*
    * Computes layout recursively.
@@ -138,7 +133,7 @@ class LayoutableShadowNode : public ShadowNode {
    * parameter.
    */
   static ShadowNode::Shared findNodeAtPoint(
-      const ShadowNode::Shared& node,
+      ShadowNode::Shared const &node,
       Point point);
 
   /*
@@ -170,4 +165,5 @@ class LayoutableShadowNode : public ShadowNode {
   LayoutMetrics layoutMetrics_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

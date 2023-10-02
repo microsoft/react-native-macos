@@ -14,7 +14,6 @@ import android.text.TextPaint;
 import android.text.style.MetricAffectingSpan;
 import androidx.annotation.Nullable;
 import com.facebook.infer.annotation.Nullsafe;
-import com.facebook.react.common.assets.ReactFontManager;
 
 @Nullsafe(Nullsafe.Mode.LOCAL)
 public class CustomStyleSpan extends MetricAffectingSpan implements ReactSpan {
@@ -61,21 +60,15 @@ public class CustomStyleSpan extends MetricAffectingSpan implements ReactSpan {
   }
 
   public int getStyle() {
-    return mStyle == ReactFontManager.TypefaceStyle.UNSET ? Typeface.NORMAL : mStyle;
+    return mStyle == ReactBaseTextShadowNode.UNSET ? Typeface.NORMAL : mStyle;
   }
 
   public int getWeight() {
-    return mWeight == ReactFontManager.TypefaceStyle.UNSET
-        ? ReactFontManager.TypefaceStyle.NORMAL
-        : mWeight;
+    return mWeight == ReactBaseTextShadowNode.UNSET ? TypefaceStyle.NORMAL : mWeight;
   }
 
   public @Nullable String getFontFamily() {
     return mFontFamily;
-  }
-
-  public @Nullable String getFontFeatureSettings() {
-    return mFeatureSettings;
   }
 
   private static void apply(

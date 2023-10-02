@@ -44,10 +44,9 @@ const ScrollViewViewConfig = {
       process: require('../../StyleSheet/processColor').default,
     },
     fadingEdgeLength: true,
-    hasOverlayStyleIndicator: true, // [macOS]
     indicatorStyle: true,
     inverted: true,
-    isInvertedVirtualizedList: true,
+    hasOverlayStyleIndicator: true,
     keyboardDismissMode: true,
     maintainVisibleContentPosition: true,
     maximumZoomScale: true,

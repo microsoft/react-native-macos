@@ -9,7 +9,7 @@
 
 #import <React/RCTAssert.h>
 #import <React/RCTBridge+Private.h>
-#import <React/RCTConstants.h>
+#import <React/RCTBundleURLProvider.h> // [macOS]
 #import <React/RCTDevSettings.h>
 #import <React/RCTImageLoader.h> // [macOS]
 #import <React/RCTLog.h>
@@ -93,9 +93,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
 - (NSURL *)defaultScriptURL
 {
   if (getenv("CI_USE_PACKAGER") || _useBundler) {
-    return [NSURL URLWithString:[NSString stringWithFormat:@"http://localhost:8081/%@.bundle?platform=%@&dev=true",
+    NSString *bundlePrefix =
+        [[[NSBundle mainBundle] infoDictionary] valueForKey:@"RN_BUNDLE_PREFIX"] ?: @""; // [macOS]
+    return [NSURL URLWithString:[NSString stringWithFormat:@"http://localhost:8081/%@%@.bundle?platform=%@&dev=true",
+                                                           bundlePrefix,
                                                            _appPath,
-                                                           RCTPlatformName]];
+                                                           kRCTPlatformName]]; // [macOS]
   } else {
     return [[NSBundle bundleForClass:[RCTBridge class]] URLForResource:@"main" withExtension:@"jsbundle"];
   }

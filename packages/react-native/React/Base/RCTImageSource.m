@@ -42,6 +42,7 @@
       (CGSizeEqualToSize(_size, object.size) || CGSizeEqualToSize(object.size, CGSizeZero));
 }
 
+#if DEBUG // [macOS description is a debug-only feature
 - (NSString *)description
 {
   return [NSString stringWithFormat:@"<RCTImageSource: %p URL=%@, size=%@, scale=%0.f>",
@@ -50,6 +51,7 @@
                                     NSStringFromCGSize(_size),
                                     _scale];
 }
+#endif // macOS]
 
 @end
 

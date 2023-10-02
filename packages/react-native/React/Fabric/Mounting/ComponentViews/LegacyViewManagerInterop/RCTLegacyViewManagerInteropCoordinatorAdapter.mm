@@ -24,12 +24,11 @@
 
 - (void)dealloc
 {
-  [_coordinator removeViewFromRegistryWithTag:_tag];
   [_paperView removeFromSuperview];
   [_coordinator removeObserveForTag:_tag];
 }
 
-- (RCTPlatformView *)paperView // [macOS]
+- (RCTUIView *)paperView // [macOS]
 {
   if (!_paperView) {
     _paperView = [_coordinator createPaperViewWithTag:_tag];
@@ -40,7 +39,6 @@
                             weakSelf.eventInterceptor(eventName, event);
                           }
                         }];
-    [_coordinator addViewToRegistry:_paperView withTag:_tag];
   }
   return _paperView;
 }
@@ -52,7 +50,7 @@
 
 - (void)handleCommand:(NSString *)commandName args:(NSArray *)args
 {
-  [_coordinator handleCommand:commandName args:args reactTag:_tag paperView:self.paperView];
+  [_coordinator handleCommand:commandName args:args reactTag:_tag];
 }
 
 @end

@@ -16,7 +16,8 @@
 #include <react/renderer/textlayoutmanager/TextMeasureCache.h>
 #include <react/utils/ContextContainer.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class TextLayoutManager;
 
@@ -27,7 +28,7 @@ using SharedTextLayoutManager = std::shared_ptr<const TextLayoutManager>;
  */
 class TextLayoutManager {
  public:
-  TextLayoutManager(const ContextContainer::Shared& contextContainer) {}
+  TextLayoutManager(const ContextContainer::Shared &contextContainer) {}
 
   /*
    * Measures `attributedStringBox` using native text rendering infrastructure.
@@ -51,7 +52,7 @@ class TextLayoutManager {
    * Returns an opaque pointer to platform-specific TextLayoutManager.
    * Is used on a native views layer to delegate text rendering to the manager.
    */
-  void* getNativeTextLayoutManager() const;
+  void *getNativeTextLayoutManager() const;
 
   std::shared_ptr<void> getHostTextStorage(
       AttributedString attributedStringBox,
@@ -59,4 +60,5 @@ class TextLayoutManager {
       LayoutConstraints layoutConstraints) const;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Mete Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -10,10 +10,9 @@
 
 // [macOS]
 import type {ProcessedColorValue} from './processColor';
-import type {ColorValue, NativeColorValue} from './StyleSheet';
+import type {ColorValue} from './StyleSheet';
 
-/** The actual type of the opaque NativeColorValue on macOS platform */
-type LocalNativeColorValue = {
+export opaque type NativeColorValue = {
   semantic?: Array<string>,
   dynamic?: {
     light: ?(ColorValue | ProcessedColorValue),
@@ -28,8 +27,7 @@ type LocalNativeColorValue = {
 };
 
 export const PlatformColor = (...names: Array<string>): ColorValue => {
-  // $FlowExpectedError[incompatible-return] LocalNativeColorValue is the macOS LocalNativeColorValue type
-  return ({semantic: names}: LocalNativeColorValue);
+  return {semantic: names};
 };
 
 export type SystemEffectMacOSPrivate =
@@ -43,14 +41,12 @@ export const ColorWithSystemEffectMacOSPrivate = (
   color: ColorValue,
   effect: SystemEffectMacOSPrivate,
 ): ColorValue => {
-  return ({
+  return {
     colorWithSystemEffect: {
       baseColor: color,
       systemEffect: effect,
     },
-    /* $FlowExpectedError[incompatible-return]
-     * LocalNativeColorValue is the actual type of the opaque NativeColorValue on macOS platform */
-  }: LocalNativeColorValue);
+  };
 };
 
 export type DynamicColorMacOSTuplePrivate = {
@@ -63,21 +59,19 @@ export type DynamicColorMacOSTuplePrivate = {
 export const DynamicColorMacOSPrivate = (
   tuple: DynamicColorMacOSTuplePrivate,
 ): ColorValue => {
-  return ({
+  return {
     dynamic: {
       light: tuple.light,
       dark: tuple.dark,
       highContrastLight: tuple.highContrastLight,
       highContrastDark: tuple.highContrastDark,
     },
-    /* $FlowExpectedError[incompatible-return]
-     * LocalNativeColorValue is the actual type of the opaque NativeColorValue on macOS platform */
-  }: LocalNativeColorValue);
+  };
 };
 
-const _normalizeColorObject = (
-  color: LocalNativeColorValue,
-): ?LocalNativeColorValue => {
+export const normalizeColorObject = (
+  color: NativeColorValue,
+): ?ProcessedColorValue => {
   if ('semantic' in color) {
     // a macOS semantic color
     return color;
@@ -86,7 +80,7 @@ const _normalizeColorObject = (
 
     // a dynamic, appearance aware color
     const dynamic = color.dynamic;
-    const dynamicColor: LocalNativeColorValue = {
+    const dynamicColor: NativeColorValue = {
       dynamic: {
         // $FlowFixMe[incompatible-use]
         light: normalizeColor(dynamic.light),
@@ -105,7 +99,7 @@ const _normalizeColorObject = (
   ) {
     const normalizeColor = require('./normalizeColor');
     const colorWithSystemEffect = color.colorWithSystemEffect;
-    const colorObject: LocalNativeColorValue = {
+    const colorObject: NativeColorValue = {
       colorWithSystemEffect: {
         // $FlowFixMe[incompatible-use]
         baseColor: normalizeColor(colorWithSystemEffect.baseColor),
@@ -115,22 +109,17 @@ const _normalizeColorObject = (
     };
     return colorObject;
   }
+
   return null;
 };
 
-export const normalizeColorObject: (
+export const processColorObject = (
   color: NativeColorValue,
-  /* $FlowExpectedError[incompatible-type]
-   * LocalNativeColorValue is the actual type of the opaque NativeColorValue on macOS platform */
-) => ?ProcessedColorValue = _normalizeColorObject;
-
-const _processColorObject = (
-  color: LocalNativeColorValue,
-): ?LocalNativeColorValue => {
+): ?NativeColorValue => {
   if ('dynamic' in color && color.dynamic != null) {
     const processColor = require('./processColor').default;
     const dynamic = color.dynamic;
-    const dynamicColor: LocalNativeColorValue = {
+    const dynamicColor: NativeColorValue = {
       dynamic: {
         // $FlowFixMe[incompatible-use]
         light: processColor(dynamic.light),
@@ -149,7 +138,7 @@ const _processColorObject = (
   ) {
     const processColor = require('./processColor').default;
     const colorWithSystemEffect = color.colorWithSystemEffect;
-    const colorObject: LocalNativeColorValue = {
+    const colorObject: NativeColorValue = {
       colorWithSystemEffect: {
         // $FlowFixMe[incompatible-use]
         baseColor: processColor(colorWithSystemEffect.baseColor),

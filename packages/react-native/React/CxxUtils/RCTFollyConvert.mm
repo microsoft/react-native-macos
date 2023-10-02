@@ -10,7 +10,8 @@
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 id convertFollyDynamicToId(const folly::dynamic &dyn)
 {
@@ -113,4 +114,5 @@ folly::dynamic convertIdToFollyDynamic(id json)
   return nil;
 }
 
-} // namespace facebook::react
+}
+}

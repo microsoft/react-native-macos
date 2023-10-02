@@ -7,15 +7,16 @@
 
 #pragma once
 
+#include <butter/map.h>
 #include <mutex>
 #include <shared_mutex>
-#include <unordered_map>
 
 #include <react/renderer/core/LayoutConstraints.h>
 #include <react/renderer/mounting/MountingCoordinator.h>
 #include <react/renderer/scheduler/SurfaceHandler.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * `SurfaceManager` allows controlling React Native Surfaces via
@@ -26,28 +27,28 @@ namespace facebook::react {
  */
 class SurfaceManager final {
  public:
-  explicit SurfaceManager(const Scheduler& scheduler) noexcept;
+  explicit SurfaceManager(Scheduler const &scheduler) noexcept;
 
 #pragma mark - Surface Management
 
   void startSurface(
       SurfaceId surfaceId,
-      const std::string& moduleName,
-      const folly::dynamic& props,
-      const LayoutConstraints& layoutConstraints = {},
-      const LayoutContext& layoutContext = {}) const noexcept;
+      std::string const &moduleName,
+      folly::dynamic const &props,
+      LayoutConstraints const &layoutConstraints = {},
+      LayoutContext const &layoutContext = {}) const noexcept;
 
   void stopSurface(SurfaceId surfaceId) const noexcept;
 
   Size measureSurface(
       SurfaceId surfaceId,
-      const LayoutConstraints& layoutConstraints,
-      const LayoutContext& layoutContext) const noexcept;
+      LayoutConstraints const &layoutConstraints,
+      LayoutContext const &layoutContext) const noexcept;
 
   void constraintSurfaceLayout(
       SurfaceId surfaceId,
-      const LayoutConstraints& layoutConstraints,
-      const LayoutContext& layoutContext) const noexcept;
+      LayoutConstraints const &layoutConstraints,
+      LayoutContext const &layoutContext) const noexcept;
 
   MountingCoordinator::Shared findMountingCoordinator(
       SurfaceId surfaceId) const noexcept;
@@ -55,12 +56,13 @@ class SurfaceManager final {
  private:
   void visit(
       SurfaceId surfaceId,
-      const std::function<void(SurfaceHandler const& surfaceHandler)>& callback)
+      std::function<void(SurfaceHandler const &surfaceHandler)> const &callback)
       const noexcept;
 
-  const Scheduler& scheduler_;
+  Scheduler const &scheduler_;
   mutable std::shared_mutex mutex_; // Protects `registry_`.
-  mutable std::unordered_map<SurfaceId, SurfaceHandler> registry_{};
+  mutable butter::map<SurfaceId, SurfaceHandler> registry_{};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

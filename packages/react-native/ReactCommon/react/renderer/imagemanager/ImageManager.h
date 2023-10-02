@@ -14,7 +14,8 @@
 #include <react/renderer/imagemanager/primitives.h>
 #include <react/utils/ContextContainer.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class ImageManager;
 
@@ -25,14 +26,15 @@ using SharedImageManager = std::shared_ptr<ImageManager>;
  */
 class ImageManager {
  public:
-  ImageManager(const ContextContainer::Shared& contextContainer);
+  ImageManager(ContextContainer::Shared const &contextContainer);
   ~ImageManager();
 
-  ImageRequest requestImage(const ImageSource& imageSource, SurfaceId surfaceId)
+  ImageRequest requestImage(const ImageSource &imageSource, SurfaceId surfaceId)
       const;
 
  private:
-  void* self_{};
+  void *self_{};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

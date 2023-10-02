@@ -7,6 +7,8 @@
 
 package com.facebook.react.testing;
 
+import static org.mockito.Mockito.mock;
+
 import android.test.AndroidTestCase;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +32,6 @@ import com.facebook.soloader.SoLoader;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import org.mockito.Mockito;
 
 /**
  * Use this class for writing integration tests of catalyst. This class will run all JNI call within
@@ -75,11 +76,14 @@ public abstract class ReactIntegrationTestCase extends AndroidTestCase {
 
       final SimpleSettableFuture<Void> semaphore = new SimpleSettableFuture<>();
       UiThreadUtil.runOnUiThread(
-          () -> {
-            if (contextToDestroy != null) {
-              contextToDestroy.destroy();
+          new Runnable() {
+            @Override
+            public void run() {
+              if (contextToDestroy != null) {
+                contextToDestroy.destroy();
+              }
+              semaphore.set(null);
             }
-            semaphore.set(null);
           });
       semaphore.getOrThrow();
     }
@@ -133,11 +137,14 @@ public abstract class ReactIntegrationTestCase extends AndroidTestCase {
     final SimpleSettableFuture<TimingModule> simpleSettableFuture =
         new SimpleSettableFuture<TimingModule>();
     UiThreadUtil.runOnUiThread(
-        () -> {
-          ReactChoreographer.initialize();
-          TimingModule timingModule =
-              new TimingModule(getContext(), Mockito.mock(DevSupportManager.class));
-          simpleSettableFuture.set(timingModule);
+        new Runnable() {
+          @Override
+          public void run() {
+            ReactChoreographer.initialize();
+            TimingModule timingModule =
+                new TimingModule(getContext(), mock(DevSupportManager.class));
+            simpleSettableFuture.set(timingModule);
+          }
         });
     try {
       return simpleSettableFuture.get(5000, TimeUnit.MILLISECONDS);
@@ -181,12 +188,15 @@ public abstract class ReactIntegrationTestCase extends AndroidTestCase {
   protected static void initializeJavaModule(final BaseJavaModule javaModule) {
     final Semaphore semaphore = new Semaphore(0);
     UiThreadUtil.runOnUiThread(
-        () -> {
-          javaModule.initialize();
-          if (javaModule instanceof LifecycleEventListener) {
-            ((LifecycleEventListener) javaModule).onHostResume();
+        new Runnable() {
+          @Override
+          public void run() {
+            javaModule.initialize();
+            if (javaModule instanceof LifecycleEventListener) {
+              ((LifecycleEventListener) javaModule).onHostResume();
+            }
+            semaphore.release();
           }
-          semaphore.release();
         });
     try {
       SoftAssertions.assertCondition(

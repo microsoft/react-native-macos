@@ -11,13 +11,14 @@
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class Instance;
 
 class ComponentFactory : public jni::HybridClass<ComponentFactory> {
  public:
-  constexpr static const char* const kJavaDescriptor =
+  constexpr static const char *const kJavaDescriptor =
       "Lcom/facebook/react/fabric/ComponentFactory;";
 
   static void registerNatives();
@@ -28,4 +29,5 @@ class ComponentFactory : public jni::HybridClass<ComponentFactory> {
   static jni::local_ref<jhybriddata> initHybrid(jni::alias_ref<jclass>);
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

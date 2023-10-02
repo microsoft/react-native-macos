@@ -7,11 +7,13 @@
 
 #pragma once
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 inline bool floatEquality(float a, float b, float epsilon = 0.005f) {
   return (std::isnan(a) && std::isnan(b)) ||
       (!std::isnan(a) && !std::isnan(b) && fabs(a - b) < epsilon);
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -49,7 +49,7 @@ function configureNext(
   onAnimationDidEnd?: OnAnimationDidEndCallback,
   onAnimationDidFail?: OnAnimationDidFailCallback,
 ) {
-  if (Platform.isDisableAnimations) {
+  if (Platform.isTesting) {
     return;
   }
 

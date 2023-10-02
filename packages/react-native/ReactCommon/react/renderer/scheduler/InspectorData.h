@@ -7,7 +7,8 @@
 
 #include <vector>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 struct InspectorData {
   std::vector<std::string> hierarchy;
@@ -19,4 +20,5 @@ struct InspectorData {
   folly::dynamic props;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

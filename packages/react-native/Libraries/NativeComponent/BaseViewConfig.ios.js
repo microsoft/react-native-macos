@@ -88,12 +88,6 @@ const bubblingEventTypes = {
   },
 
   // Experimental/Work in Progress Pointer Events (not yet ready for use)
-  topClick: {
-    phasedRegistrationNames: {
-      captured: 'onClickCapture',
-      bubbled: 'onClick',
-    },
-  },
   topPointerCancel: {
     phasedRegistrationNames: {
       captured: 'onPointerCancelCapture',
@@ -142,18 +136,6 @@ const bubblingEventTypes = {
     phasedRegistrationNames: {
       captured: 'onPointerOutCapture',
       bubbled: 'onPointerOut',
-    },
-  },
-  topGotPointerCapture: {
-    phasedRegistrationNames: {
-      captured: 'onGotPointerCaptureCapture',
-      bubbled: 'onGotPointerCapture',
-    },
-  },
-  topLostPointerCapture: {
-    phasedRegistrationNames: {
-      captured: 'onLostPointerCaptureCapture',
-      bubbled: 'onLostPointerCapture',
     },
   },
 };
@@ -205,13 +187,11 @@ const validAttributesForNonEventProps = {
   overflow: true,
   shouldRasterizeIOS: true,
   transform: {diff: require('../Utilities/differ/matricesDiffer')},
-  transformOrigin: true,
   accessibilityRole: true,
   accessibilityState: true,
   nativeID: true,
   pointerEvents: true,
   removeClippedSubviews: true,
-  role: true,
   borderRadius: true,
   borderColor: {process: require('../StyleSheet/processColor').default},
   borderCurve: true,
@@ -336,8 +316,6 @@ const validAttributesForNonEventProps = {
   direction: true,
 
   style: ReactNativeStyleAttributes,
-
-  experimental_layoutConformance: true,
 };
 
 // Props for bubbling and direct events
@@ -372,7 +350,6 @@ const validAttributesForEventProps = ConditionallyIgnoredEventHandlers({
   onTouchCancel: true,
 
   // Pointer events
-  onClick: true,
   onPointerUp: true,
   onPointerDown: true,
   onPointerCancel: true,
@@ -381,8 +358,6 @@ const validAttributesForEventProps = ConditionallyIgnoredEventHandlers({
   onPointerLeave: true,
   onPointerOver: true,
   onPointerOut: true,
-  onGotPointerCapture: true,
-  onLostPointerCapture: true,
 });
 
 /**

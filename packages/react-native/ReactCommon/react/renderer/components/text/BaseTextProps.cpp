@@ -8,18 +8,18 @@
 #include "BaseTextProps.h"
 
 #include <react/renderer/attributedstring/conversions.h>
+#include <react/renderer/core/CoreFeatures.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/DebugStringConvertibleItem.h>
-#include <react/utils/CoreFeatures.h>
 
 namespace facebook::react {
 
 static TextAttributes convertRawProp(
-    const PropsParserContext& context,
-    const RawProps& rawProps,
-    const TextAttributes& sourceTextAttributes,
-    const TextAttributes& defaultTextAttributes) {
+    PropsParserContext const &context,
+    RawProps const &rawProps,
+    TextAttributes const &sourceTextAttributes,
+    TextAttributes const &defaultTextAttributes) {
   auto textAttributes = TextAttributes{};
 
   // Color (not accessed by ViewProps)
@@ -183,13 +183,6 @@ static TextAttributes convertRawProp(
       sourceTextAttributes.accessibilityRole,
       defaultTextAttributes.accessibilityRole);
 
-  textAttributes.role = convertRawProp(
-      context,
-      rawProps,
-      "role",
-      sourceTextAttributes.role,
-      defaultTextAttributes.role);
-
   // Color (accessed in this order by ViewProps)
   textAttributes.opacity = convertRawProp(
       context,
@@ -208,9 +201,9 @@ static TextAttributes convertRawProp(
 }
 
 BaseTextProps::BaseTextProps(
-    const PropsParserContext& context,
-    const BaseTextProps& sourceProps,
-    const RawProps& rawProps)
+    const PropsParserContext &context,
+    const BaseTextProps &sourceProps,
+    const RawProps &rawProps)
     : textAttributes(
           CoreFeatures::enablePropIteratorSetter
               ? sourceProps.textAttributes
@@ -221,10 +214,10 @@ BaseTextProps::BaseTextProps(
                     TextAttributes{})){};
 
 void BaseTextProps::setProp(
-    const PropsParserContext& context,
+    const PropsParserContext &context,
     RawPropsPropNameHash hash,
-    const char* /*propName*/,
-    const RawValue& value) {
+    const char * /*propName*/,
+    RawValue const &value) {
   static auto defaults = TextAttributes{};
 
   switch (hash) {
@@ -300,7 +293,6 @@ void BaseTextProps::setProp(
         textAttributes,
         accessibilityRole,
         "accessibilityRole");
-    REBUILD_FIELD_SWITCH_CASE(defaults, value, textAttributes, role, "role");
     REBUILD_FIELD_SWITCH_CASE(
         defaults, value, textAttributes, opacity, "opacity");
     REBUILD_FIELD_SWITCH_CASE(

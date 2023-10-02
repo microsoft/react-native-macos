@@ -7,21 +7,22 @@
 
 #include "LongLivedObject.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 // LongLivedObjectCollection
-LongLivedObjectCollection& LongLivedObjectCollection::get() {
+LongLivedObjectCollection &LongLivedObjectCollection::get() {
   static LongLivedObjectCollection instance;
   return instance;
 }
 
 void LongLivedObjectCollection::add(std::shared_ptr<LongLivedObject> so) {
-  std::scoped_lock lock(collectionMutex_);
+  std::lock_guard<std::mutex> lock(collectionMutex_);
   collection_.insert(std::move(so));
 }
 
-void LongLivedObjectCollection::remove(const LongLivedObject* o) {
-  std::scoped_lock lock(collectionMutex_);
+void LongLivedObjectCollection::remove(const LongLivedObject *o) {
+  std::lock_guard<std::mutex> lock(collectionMutex_);
   for (auto p = collection_.begin(); p != collection_.end(); p++) {
     if (p->get() == o) {
       collection_.erase(p);
@@ -31,12 +32,12 @@ void LongLivedObjectCollection::remove(const LongLivedObject* o) {
 }
 
 void LongLivedObjectCollection::clear() {
-  std::scoped_lock lock(collectionMutex_);
+  std::lock_guard<std::mutex> lock(collectionMutex_);
   collection_.clear();
 }
 
 size_t LongLivedObjectCollection::size() const {
-  std::scoped_lock lock(collectionMutex_);
+  std::lock_guard<std::mutex> lock(collectionMutex_);
   return collection_.size();
 }
 
@@ -46,4 +47,5 @@ void LongLivedObject::allowRelease() {
   LongLivedObjectCollection::get().remove(this);
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

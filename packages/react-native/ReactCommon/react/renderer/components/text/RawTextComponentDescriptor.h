@@ -10,9 +10,11 @@
 #include <react/renderer/components/text/RawTextShadowNode.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 using RawTextComponentDescriptor =
     ConcreteComponentDescriptor<RawTextShadowNode>;
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

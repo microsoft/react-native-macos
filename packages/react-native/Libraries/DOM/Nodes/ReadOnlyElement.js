@@ -5,273 +5,85 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @flow strict-local
+ * @flow strict
  */
 
 // flowlint unsafe-getters-setters:off
 
 import type HTMLCollection from '../OldStyleCollections/HTMLCollection';
 
-import {getFabricUIManager} from '../../ReactNative/FabricUIManager';
-import DOMRect from '../Geometry/DOMRect';
-import {createHTMLCollection} from '../OldStyleCollections/HTMLCollection';
-import ReadOnlyNode, {
-  getChildNodes,
-  getInstanceHandle,
-  getShadowNode,
-} from './ReadOnlyNode';
-import {getElementSibling} from './Utilities/Traversal';
-import nullthrows from 'nullthrows';
+import ReadOnlyNode from './ReadOnlyNode';
 
 export default class ReadOnlyElement extends ReadOnlyNode {
   get childElementCount(): number {
-    return getChildElements(this).length;
+    throw new TypeError('Unimplemented');
   }
 
   get children(): HTMLCollection<ReadOnlyElement> {
-    return createHTMLCollection(getChildElements(this));
+    throw new TypeError('Unimplemented');
   }
 
   get clientHeight(): number {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const innerSize = nullthrows(getFabricUIManager()).getInnerSize(node);
-      if (innerSize != null) {
-        return innerSize[1];
-      }
-    }
-
-    return 0;
+    throw new TypeError('Unimplemented');
   }
 
   get clientLeft(): number {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const borderSize = nullthrows(getFabricUIManager()).getBorderSize(node);
-      if (borderSize != null) {
-        return borderSize[3];
-      }
-    }
-
-    return 0;
+    throw new TypeError('Unimplemented');
   }
 
   get clientTop(): number {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const borderSize = nullthrows(getFabricUIManager()).getBorderSize(node);
-      if (borderSize != null) {
-        return borderSize[0];
-      }
-    }
-
-    return 0;
+    throw new TypeError('Unimplemented');
   }
 
   get clientWidth(): number {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const innerSize = nullthrows(getFabricUIManager()).getInnerSize(node);
-      if (innerSize != null) {
-        return innerSize[0];
-      }
-    }
-
-    return 0;
+    throw new TypeError('Unimplemented');
   }
 
   get firstElementChild(): ReadOnlyElement | null {
-    const childElements = getChildElements(this);
-
-    if (childElements.length === 0) {
-      return null;
-    }
-
-    return childElements[0];
+    throw new TypeError('Unimplemented');
   }
 
   get id(): string {
-    const instanceHandle = getInstanceHandle(this);
-    // TODO: migrate off this private React API
-    // $FlowExpectedError[incompatible-use]
-    const props = instanceHandle?.stateNode?.canonical?.currentProps;
-    return props?.id ?? props?.nativeID ?? '';
+    throw new TypeError('Unimplemented');
   }
 
   get lastElementChild(): ReadOnlyElement | null {
-    const childElements = getChildElements(this);
-
-    if (childElements.length === 0) {
-      return null;
-    }
-
-    return childElements[childElements.length - 1];
+    throw new TypeError('Unimplemented');
   }
 
   get nextElementSibling(): ReadOnlyElement | null {
-    return getElementSibling(this, 'next');
+    throw new TypeError('Unimplemented');
   }
-
-  get nodeName(): string {
-    return this.tagName;
-  }
-
-  get nodeType(): number {
-    return ReadOnlyNode.ELEMENT_NODE;
-  }
-
-  get nodeValue(): string | null {
-    return null;
-  }
-
-  set nodeValue(value: string): void {}
 
   get previousElementSibling(): ReadOnlyElement | null {
-    return getElementSibling(this, 'previous');
+    throw new TypeError('Unimplemented');
   }
 
   get scrollHeight(): number {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const scrollSize = nullthrows(getFabricUIManager()).getScrollSize(node);
-      if (scrollSize != null) {
-        return scrollSize[1];
-      }
-    }
-
-    return 0;
+    throw new TypeError('Unimplemented');
   }
 
   get scrollLeft(): number {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const scrollPosition = nullthrows(getFabricUIManager()).getScrollPosition(
-        node,
-      );
-      if (scrollPosition != null) {
-        return scrollPosition[0];
-      }
-    }
-
-    return 0;
+    throw new TypeError('Unimplemented');
   }
 
   get scrollTop(): number {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const scrollPosition = nullthrows(getFabricUIManager()).getScrollPosition(
-        node,
-      );
-      if (scrollPosition != null) {
-        return scrollPosition[1];
-      }
-    }
-
-    return 0;
+    throw new TypeError('Unimplemented');
   }
 
   get scrollWidth(): number {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      const scrollSize = nullthrows(getFabricUIManager()).getScrollSize(node);
-      if (scrollSize != null) {
-        return scrollSize[0];
-      }
-    }
-
-    return 0;
+    throw new TypeError('Unimplemented');
   }
 
   get tagName(): string {
-    const node = getShadowNode(this);
-
-    if (node != null) {
-      return nullthrows(getFabricUIManager()).getTagName(node);
-    }
-
-    return '';
-  }
-
-  get textContent(): string | null {
-    const shadowNode = getShadowNode(this);
-
-    if (shadowNode != null) {
-      return nullthrows(getFabricUIManager()).getTextContent(shadowNode);
-    }
-
-    return '';
+    throw new TypeError('Unimplemented');
   }
 
   getBoundingClientRect(): DOMRect {
-    return getBoundingClientRect(this, {includeTransform: true});
+    throw new TypeError('Unimplemented');
   }
 
-  /**
-   * Pointer Capture APIs
-   */
-  hasPointerCapture(pointerId: number): boolean {
-    const node = getShadowNode(this);
-    if (node != null) {
-      return nullthrows(getFabricUIManager()).hasPointerCapture(
-        node,
-        pointerId,
-      );
-    }
-    return false;
+  getClientRects(): DOMRectList {
+    throw new TypeError('Unimplemented');
   }
-
-  setPointerCapture(pointerId: number): void {
-    const node = getShadowNode(this);
-    if (node != null) {
-      nullthrows(getFabricUIManager()).setPointerCapture(node, pointerId);
-    }
-  }
-
-  releasePointerCapture(pointerId: number): void {
-    const node = getShadowNode(this);
-    if (node != null) {
-      nullthrows(getFabricUIManager()).releasePointerCapture(node, pointerId);
-    }
-  }
-}
-
-function getChildElements(node: ReadOnlyNode): $ReadOnlyArray<ReadOnlyElement> {
-  // $FlowIssue[incompatible-call]
-  return getChildNodes(node).filter(
-    childNode => childNode instanceof ReadOnlyElement,
-  );
-}
-
-/**
- * The public API for `getBoundingClientRect` always includes transform,
- * so we use this internal version to get the data without transform to
- * implement methods like `offsetWidth` and `offsetHeight`.
- */
-export function getBoundingClientRect(
-  node: ReadOnlyElement,
-  {includeTransform}: {includeTransform: boolean},
-): DOMRect {
-  const shadowNode = getShadowNode(node);
-
-  if (shadowNode != null) {
-    const rect = nullthrows(getFabricUIManager()).getBoundingClientRect(
-      shadowNode,
-      includeTransform,
-    );
-
-    if (rect) {
-      return new DOMRect(rect[0], rect[1], rect[2], rect[3]);
-    }
-  }
-
-  // Empty rect if any of the above failed
-  return new DOMRect(0, 0, 0, 0);
 }

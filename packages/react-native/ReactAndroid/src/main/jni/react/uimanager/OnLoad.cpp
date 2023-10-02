@@ -8,11 +8,9 @@
 #include <fbjni/fbjni.h>
 
 #include "ComponentNameResolverManager.h"
-#include "UIConstantsProviderManager.h"
 
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
   return facebook::jni::initialize(vm, [] {
     facebook::react::ComponentNameResolverManager::registerNatives();
-    facebook::react::UIConstantsProviderManager::registerNatives();
   });
 }

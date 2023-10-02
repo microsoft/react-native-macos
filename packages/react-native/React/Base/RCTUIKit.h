@@ -227,8 +227,8 @@ enum : NSInteger
 
 // RCTActivityIndicatorView.h
 typedef NS_ENUM(NSInteger, UIActivityIndicatorViewStyle) {
-  UIActivityIndicatorViewStyleLarge,
-  UIActivityIndicatorViewStyleMedium,
+  UIActivityIndicatorViewStyleWhiteLarge,
+  UIActivityIndicatorViewStyleWhite
 };
 
 
@@ -261,20 +261,11 @@ NS_INLINE NSString *NSStringFromCGRect(CGRect rect)
 	return NSStringFromRect(NSRectFromCGRect(rect));
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // UIGraphics.h
 CGContextRef UIGraphicsGetCurrentContext(void);
 void UIGraphicsBeginImageContextWithOptions(CGSize size, BOOL opaque, CGFloat scale);
 NSImage *UIGraphicsGetImageFromCurrentImageContext(void);
 void UIGraphicsEndImageContext(void);
-CGImageRef UIImageGetCGImageRef(NSImage *image);
-
-#ifdef __cplusplus
-}
-#endif // __cpusplus
 
 //
 // semantically equivalent types

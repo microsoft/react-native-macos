@@ -29,13 +29,10 @@ Pod::Spec.new do |spec|
                         'src/base/*.h'
   spec.exclude_files       = "src/windows/**/*"
   spec.compiler_flags      = '-Wno-shorten-64-to-32'
-  spec.pod_target_xcconfig = {
-    "USE_HEADERMAP" => "NO",
-    "HEADER_SEARCH_PATHS" => "$(PODS_TARGET_SRCROOT)/src",
-    "DEFINES_MODULE" => "YES"
-  }
+  spec.pod_target_xcconfig = { "USE_HEADERMAP" => "NO",
+                               "HEADER_SEARCH_PATHS" => "$(PODS_TARGET_SRCROOT)/src" }
 
   # Pinning to the same version as React.podspec.
-  spec.platforms = min_supported_versions
+  spec.platforms = { :ios => "12.4", :osx => "10.15" } # [macOS]
 
 end

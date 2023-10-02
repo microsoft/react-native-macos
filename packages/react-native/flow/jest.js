@@ -39,10 +39,6 @@ type JestMockFn<TArguments: $ReadOnlyArray<any>, TReturn> = {
      */
     instances: Array<TReturn>,
     /**
-     * An array that contains the contexts for all calls of the mock function.
-     */
-    contexts: Array<mixed>,
-    /**
      * An array that contains all the object results that have been
      * returned by this mock function call
      */
@@ -677,7 +673,7 @@ interface JestExpectType {
    * Use .toBeInstanceOf(Class) to check that an object is an instance of a
    * class.
    */
-  toBeInstanceOf(cls: Class<any>): void;
+  toBeInstanceOf(cls: Class<*>): void;
   /**
    * .toBeNull() is the same as .toBe(null) but the error messages are a bit
    * nicer.

@@ -37,7 +37,7 @@ export type Props<ItemT> = {
   onUnmount: (cellKey: string) => void,
   onUpdateSeparators: (
     cellKeys: Array<?string>,
-    props: Partial<SeparatorProps<ItemT>>,
+    props: $Shape<SeparatorProps<ItemT>>,
   ) => void,
   prevCellKey: ?string,
   renderItem?: ?RenderItemType<ItemT>,

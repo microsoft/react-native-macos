@@ -9,7 +9,8 @@
 
 #include <chrono>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 enum class SchedulerPriority : int {
   ImmediatePriority = 1,
@@ -19,4 +20,5 @@ enum class SchedulerPriority : int {
   IdlePriority = 5,
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -15,35 +15,24 @@ jobs:
     runs-on: ubuntu-latest
     if: "${{ github.repository == 'facebook/react-native' && contains(github.event.label.name, 'Needs: Triage :mag:') }}"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Verify RN version
-        uses: actions/github-script@v6
+      - uses: actions/checkout@v3
+      - uses: actions/github-script@v6
         with:
           script: |
-            const verifyVersion = require('./.github/workflow-scripts/verifyVersion.js')
-            const labelWithContext = await verifyVersion(github, context);
+            const verifyVersion = require('./.github/workflows/verifyVersion.js')
+            const labelToAdd = await verifyVersion(github, context);
 
-            if(labelWithContext && labelWithContext.label) {
+            if(labelToAdd) {
               await github.rest.issues.addLabels({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                labels: [labelWithContext.label]
+                labels: [labelToAdd]
               })
 
-              const actOnLabel = require('./.github/workflow-scripts/actOnLabel.js')
-              await actOnLabel(github, context, labelWithContext)
+              const actOnLabel = require('./.github/workflows/actOnLabel.js')
+              await actOnLabel(github, context, labelToAdd)
             }
-
-      - name: Add descriptive label
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const addDescriptiveLabel = require('./.github/workflow-scripts/addDescriptiveLabels.js')
-            await addDescriptiveLabel(github, context);
-
   # Reacts to the label that triggered this workflow (added manually or via other workflows)
   act-on-label:
     runs-on: ubuntu-latest
@@ -53,5 +42,5 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            const actOnLabel = require('./.github/workflow-scripts/actOnLabel.js')
-            await actOnLabel(github, context, {label: context.payload.label.name})
+            const actOnLabel = require('./.github/workflows/actOnLabel.js')
+            await actOnLabel(github, context, context.payload.label.name)

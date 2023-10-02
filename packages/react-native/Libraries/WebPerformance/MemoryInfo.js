@@ -11,7 +11,7 @@
 
 // flowlint unsafe-getters-setters:off
 
-type MemoryInfoLike = {
+export type MemoryInfoLike = {
   jsHeapSizeLimit: ?number,
   totalJSHeapSize: ?number,
   usedJSHeapSize: ?number,

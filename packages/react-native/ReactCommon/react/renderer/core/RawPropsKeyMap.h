@@ -7,11 +7,13 @@
 
 #pragma once
 
+#include <butter/small_vector.h>
+
 #include <react/renderer/core/RawPropsKey.h>
 #include <react/renderer/core/RawPropsPrimitives.h>
-#include <vector>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * A map especially optimized to hold `{name: index}` relations.
@@ -25,7 +27,7 @@ class RawPropsKeyMap final {
   /*
    * Stores `value` with by given `key`.
    */
-  void insert(const RawPropsKey& key, RawPropsValueIndex value) noexcept;
+  void insert(RawPropsKey const &key, RawPropsValueIndex value) noexcept;
 
   /*
    * Reindexes the stored data.
@@ -38,7 +40,7 @@ class RawPropsKeyMap final {
    * Returns `kRawPropsValueIndexEmpty` if the value wan't found.
    */
   RawPropsValueIndex at(
-      const char* name,
+      char const *name,
       RawPropsPropNameLength length) noexcept;
 
  private:
@@ -49,12 +51,14 @@ class RawPropsKeyMap final {
   };
 
   static bool shouldFirstOneBeBeforeSecondOne(
-      const Item& lhs,
-      const Item& rhs) noexcept;
-  static bool hasSameName(const Item& lhs, const Item& rhs) noexcept;
+      Item const &lhs,
+      Item const &rhs) noexcept;
+  static bool hasSameName(Item const &lhs, Item const &rhs) noexcept;
 
-  std::vector<Item> items_{};
-  std::vector<RawPropsPropNameLength> buckets_{};
+  butter::small_vector<Item, kNumberOfExplicitlySpecifiedPropsSoftCap> items_{};
+  butter::small_vector<RawPropsPropNameLength, kPropNameLengthHardCap>
+      buckets_{};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

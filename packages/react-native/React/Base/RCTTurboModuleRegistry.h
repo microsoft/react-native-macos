@@ -23,4 +23,7 @@
  */
 - (id)moduleForName:(const char *)moduleName warnOnLookupFailure:(BOOL)warnOnLookupFailure;
 - (BOOL)moduleIsInitialized:(const char *)moduleName;
+
+- (NSArray<NSString *> *)eagerInitModuleNames;
+- (NSArray<NSString *> *)eagerInitMainQueueModuleNames;
 @end

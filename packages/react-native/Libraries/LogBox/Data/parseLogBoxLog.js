@@ -14,38 +14,12 @@ import type {LogBoxLogData} from './LogBoxLog';
 import parseErrorStack from '../../Core/Devtools/parseErrorStack';
 import UTFSequence from '../../UTFSequence';
 import stringifySafe from '../../Utilities/stringifySafe';
-import ansiRegex from 'ansi-regex';
-
-const ANSI_REGEX = ansiRegex().source;
 
 const BABEL_TRANSFORM_ERROR_FORMAT =
   /^(?:TransformError )?(?:SyntaxError: |ReferenceError: )(.*): (.*) \((\d+):(\d+)\)\n\n([\s\S]+)/;
-
-// https://github.com/babel/babel/blob/33dbb85e9e9fe36915273080ecc42aee62ed0ade/packages/babel-code-frame/src/index.ts#L183-L184
-const BABEL_CODE_FRAME_MARKER_PATTERN = new RegExp(
-  [
-    // Beginning of a line (per 'm' flag)
-    '^',
-    // Optional ANSI escapes for colors
-    `(?:${ANSI_REGEX})*`,
-    // Marker
-    '>',
-    // Optional ANSI escapes for colors
-    `(?:${ANSI_REGEX})*`,
-    // Left padding for line number
-    ' +',
-    // Line number
-    '[0-9]+',
-    // Gutter
-    ' \\|',
-  ].join(''),
-  'm',
-);
-
 const BABEL_CODE_FRAME_ERROR_FORMAT =
   // eslint-disable-next-line no-control-regex
   /^(?:TransformError )?(?:.*):? (?:.*?)(\/.*): ([\s\S]+?)\n([ >]{2}[\d\s]+ \|[\s\S]+|\u{001b}[\s\S]+)/u;
-
 const METRO_ERROR_FORMAT =
   /^(?:InternalError Metro has encountered an error:) (.*): (.*) \((\d+):(\d+)\)\n\n([\s\S]+)/u;
 
@@ -237,7 +211,6 @@ export function parseLogBoxException(
         substitutions: [],
       },
       category: `${fileName}-${row}-${column}`,
-      extraData: error.extraData,
     };
   }
 
@@ -265,36 +238,30 @@ export function parseLogBoxException(
         substitutions: [],
       },
       category: `${fileName}-${row}-${column}`,
-      extraData: error.extraData,
     };
   }
 
-  // Perform a cheap match first before trying to parse the full message, which
-  // can get expensive for arbitrary input.
-  if (BABEL_CODE_FRAME_MARKER_PATTERN.test(message)) {
-    const babelCodeFrameError = message.match(BABEL_CODE_FRAME_ERROR_FORMAT);
+  const babelCodeFrameError = message.match(BABEL_CODE_FRAME_ERROR_FORMAT);
 
-    if (babelCodeFrameError) {
-      // Codeframe errors are thrown from any use of buildCodeFrameError.
-      const [fileName, content, codeFrame] = babelCodeFrameError.slice(1);
-      return {
-        level: 'syntax',
-        stack: [],
-        isComponentError: false,
-        componentStack: [],
-        codeFrame: {
-          fileName,
-          location: null, // We are not given the location.
-          content: codeFrame,
-        },
-        message: {
-          content,
-          substitutions: [],
-        },
-        category: `${fileName}-${1}-${1}`,
-        extraData: error.extraData,
-      };
-    }
+  if (babelCodeFrameError) {
+    // Codeframe errors are thrown from any use of buildCodeFrameError.
+    const [fileName, content, codeFrame] = babelCodeFrameError.slice(1);
+    return {
+      level: 'syntax',
+      stack: [],
+      isComponentError: false,
+      componentStack: [],
+      codeFrame: {
+        fileName,
+        location: null, // We are not given the location.
+        content: codeFrame,
+      },
+      message: {
+        content,
+        substitutions: [],
+      },
+      category: `${fileName}-${1}-${1}`,
+    };
   }
 
   if (message.match(/^TransformError /)) {
@@ -308,7 +275,6 @@ export function parseLogBoxException(
         substitutions: [],
       },
       category: message,
-      extraData: error.extraData,
     };
   }
 
@@ -320,7 +286,6 @@ export function parseLogBoxException(
       isComponentError: error.isComponentError,
       componentStack:
         componentStack != null ? parseComponentStack(componentStack) : [],
-      extraData: error.extraData,
       ...parseInterpolation([message]),
     };
   }
@@ -332,7 +297,6 @@ export function parseLogBoxException(
       stack: error.stack,
       isComponentError: error.isComponentError,
       componentStack: parseComponentStack(componentStack),
-      extraData: error.extraData,
       ...parseInterpolation([message]),
     };
   }
@@ -343,7 +307,6 @@ export function parseLogBoxException(
     level: 'error',
     stack: error.stack,
     isComponentError: error.isComponentError,
-    extraData: error.extraData,
     ...parseLogBoxLog([message]),
   };
 }

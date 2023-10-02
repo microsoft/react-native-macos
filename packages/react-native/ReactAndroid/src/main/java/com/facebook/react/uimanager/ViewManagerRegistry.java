@@ -103,28 +103,12 @@ public final class ViewManagerRegistry implements ComponentCallbacks2 {
       viewManagers = new ArrayList<>(mViewManagers.values());
     }
     Runnable runnable =
-        () -> {
-          for (ViewManager viewManager : viewManagers) {
-            viewManager.onSurfaceStopped(surfaceId);
-          }
-        };
-    if (UiThreadUtil.isOnUiThread()) {
-      runnable.run();
-    } else {
-      UiThreadUtil.runOnUiThread(runnable);
-    }
-  }
-
-  /** Called on instance destroy */
-  public void invalidate() {
-    final List<ViewManager> viewManagers;
-    synchronized (this) {
-      viewManagers = new ArrayList<>(mViewManagers.values());
-    }
-    Runnable runnable =
-        () -> {
-          for (ViewManager viewManager : viewManagers) {
-            viewManager.invalidate();
+        new Runnable() {
+          @Override
+          public void run() {
+            for (ViewManager viewManager : viewManagers) {
+              viewManager.onSurfaceStopped(surfaceId);
+            }
           }
         };
     if (UiThreadUtil.isOnUiThread()) {

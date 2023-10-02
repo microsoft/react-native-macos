@@ -11,12 +11,15 @@
 #include <memory>
 #include <string>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * `Tag` and `InstanceHandle` are used to address React Native components.
  */
 using Tag = int32_t;
+using InstanceHandle = struct InstanceHandleDummyStruct {
+} *;
 
 /*
  * An id of a running Surface instance that is used to refer to the instance.
@@ -35,7 +38,7 @@ using ComponentHandle = int64_t;
  * String identifier for components used for addressing them from
  * JavaScript side.
  */
-using ComponentName = const char*;
+using ComponentName = char const *;
 
 /*
  * Defines how visual side effects (views, images, text, and so on) are
@@ -71,4 +74,5 @@ enum class DisplayMode {
   Hidden = 2,
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

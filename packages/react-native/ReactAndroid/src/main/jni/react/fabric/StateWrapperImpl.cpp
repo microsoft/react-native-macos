@@ -13,7 +13,8 @@
 
 using namespace facebook::jni;
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /**
  * Called from Java constructor through the JNI.
@@ -25,31 +26,21 @@ jni::local_ref<StateWrapperImpl::jhybriddata> StateWrapperImpl::initHybrid(
 
 jni::local_ref<ReadableNativeMap::jhybridobject>
 StateWrapperImpl::getStateDataImpl() {
-  if (auto state = state_.lock()) {
-    folly::dynamic map = state->getDynamic();
-    return ReadableNativeMap::newObjectCxxArgs(std::move(map));
-  } else {
-    return nullptr;
-  }
+  folly::dynamic map = state_->getDynamic();
+  return ReadableNativeMap::newObjectCxxArgs(std::move(map));
 }
 
 jni::local_ref<JReadableMapBuffer::jhybridobject>
 StateWrapperImpl::getStateMapBufferDataImpl() {
-  if (auto state = state_.lock()) {
-    MapBuffer map = state->getMapBuffer();
-    return JReadableMapBuffer::createWithContents(std::move(map));
-  } else {
-    return nullptr;
-  }
+  MapBuffer map = state_->getMapBuffer();
+  return JReadableMapBuffer::createWithContents(std::move(map));
 }
 
-void StateWrapperImpl::updateStateImpl(NativeMap* map) {
-  if (auto state = state_.lock()) {
-    // Get folly::dynamic from map
-    auto dynamicMap = map->consume();
-    // Set state
-    state->updateState(std::move(dynamicMap));
-  }
+void StateWrapperImpl::updateStateImpl(NativeMap *map) {
+  // Get folly::dynamic from map
+  auto dynamicMap = map->consume();
+  // Set state
+  state_->updateState(std::move(dynamicMap));
 }
 
 void StateWrapperImpl::registerNatives() {
@@ -63,4 +54,5 @@ void StateWrapperImpl::registerNatives() {
   });
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

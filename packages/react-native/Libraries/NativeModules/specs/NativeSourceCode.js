@@ -12,19 +12,19 @@ import type {TurboModule} from '../../TurboModule/RCTExport';
 
 import * as TurboModuleRegistry from '../../TurboModule/TurboModuleRegistry';
 
-export type SourceCodeConstants = {|
-  scriptURL: string,
-|};
-
 export interface Spec extends TurboModule {
-  +getConstants: () => SourceCodeConstants;
+  +getConstants: () => {|
+    scriptURL: string,
+  |};
 }
 
 const NativeModule = TurboModuleRegistry.getEnforcing<Spec>('SourceCode');
 let constants = null;
 
 const NativeSourceCode = {
-  getConstants(): SourceCodeConstants {
+  getConstants(): {|
+    scriptURL: string,
+  |} {
     if (constants == null) {
       constants = NativeModule.getConstants();
     }

@@ -48,7 +48,7 @@ internal fun Project.configureReactTasks(variant: Variant, config: ReactExtensio
   val isDebuggableVariant =
       config.debuggableVariants.get().any { it.equals(variant.name, ignoreCase = true) }
 
-  configureNewArchPackagingOptions(project, config, variant)
+  configureNewArchPackagingOptions(project, variant)
   configureJsEnginePackagingOptions(config, variant, isHermesEnabledInThisVariant)
 
   if (!isDebuggableVariant) {

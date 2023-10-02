@@ -8,6 +8,7 @@
 package com.facebook.react.bridge;
 
 import com.facebook.infer.annotation.Assertions;
+import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.systrace.Systrace;
 import java.util.ArrayList;
@@ -41,6 +42,17 @@ public class NativeModuleRegistry {
     ArrayList<JavaModuleWrapper> javaModules = new ArrayList<>();
     for (Map.Entry<String, ModuleHolder> entry : mModules.entrySet()) {
       if (!entry.getValue().isCxxModule()) {
+        if (ReactFeatureFlags.warnOnLegacyNativeModuleSystemUse) {
+          ReactSoftExceptionLogger.logSoftException(
+              TAG,
+              new ReactNoCrashSoftException(
+                  "Registering legacy NativeModule: Java NativeModule (name = \""
+                      + entry.getValue().getName()
+                      + "\", className = "
+                      + entry.getValue().getClassName()
+                      + ")."));
+        }
+
         javaModules.add(new JavaModuleWrapper(jsInstance, entry.getValue()));
       }
     }
@@ -51,6 +63,16 @@ public class NativeModuleRegistry {
     ArrayList<ModuleHolder> cxxModules = new ArrayList<>();
     for (Map.Entry<String, ModuleHolder> entry : mModules.entrySet()) {
       if (entry.getValue().isCxxModule()) {
+        if (ReactFeatureFlags.warnOnLegacyNativeModuleSystemUse) {
+          ReactSoftExceptionLogger.logSoftException(
+              TAG,
+              new ReactNoCrashSoftException(
+                  "Registering legacy NativeModule: Cxx NativeModule (name = \""
+                      + entry.getValue().getName()
+                      + "\", className = "
+                      + entry.getValue().getClassName()
+                      + ")."));
+        }
         cxxModules.add(entry.getValue());
       }
     }

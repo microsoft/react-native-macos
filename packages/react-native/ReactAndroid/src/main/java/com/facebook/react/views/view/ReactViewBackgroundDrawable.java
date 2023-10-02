@@ -7,6 +7,9 @@
 
 package com.facebook.react.views.view;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -564,28 +567,19 @@ public class ReactViewBackgroundDrawable extends Drawable {
     int colorRight = getBorderColor(Spacing.RIGHT);
     int colorBottom = getBorderColor(Spacing.BOTTOM);
     int borderColor = getBorderColor(Spacing.ALL);
-
     int colorBlock = getBorderColor(Spacing.BLOCK);
     int colorBlockStart = getBorderColor(Spacing.BLOCK_START);
     int colorBlockEnd = getBorderColor(Spacing.BLOCK_END);
-
-    if (isBorderColorDefined(Spacing.BLOCK)) {
-      colorBottom = colorBlock;
-      colorTop = colorBlock;
-    }
-    if (isBorderColorDefined(Spacing.BLOCK_END)) {
-      colorBottom = colorBlockEnd;
-    }
-    if (isBorderColorDefined(Spacing.BLOCK_START)) {
-      colorTop = colorBlockStart;
-    }
 
     // Clip border ONLY if its color is non transparent
     if (Color.alpha(colorLeft) != 0
         && Color.alpha(colorTop) != 0
         && Color.alpha(colorRight) != 0
         && Color.alpha(colorBottom) != 0
-        && Color.alpha(borderColor) != 0) {
+        && Color.alpha(borderColor) != 0
+        && Color.alpha(colorBlock) != 0
+        && Color.alpha(colorBlockStart) != 0
+        && Color.alpha(colorBlockEnd) != 0) {
 
       mInnerClipTempRectForBorderRadius.top += borderWidth.top;
       mInnerClipTempRectForBorderRadius.bottom -= borderWidth.bottom;
@@ -891,7 +885,7 @@ public class ReactViewBackgroundDrawable extends Drawable {
 
     /** Compute mInnerTopLeftCorner */
     mInnerTopLeftCorner.x = mInnerClipTempRectForBorderRadius.left;
-    mInnerTopLeftCorner.y = mInnerClipTempRectForBorderRadius.top;
+    mInnerTopLeftCorner.y = mInnerClipTempRectForBorderRadius.top * 2;
 
     getEllipseIntersectionWithLine(
         // Ellipse Bounds
@@ -917,7 +911,10 @@ public class ReactViewBackgroundDrawable extends Drawable {
     }
 
     mInnerBottomLeftCorner.x = mInnerClipTempRectForBorderRadius.left;
-    mInnerBottomLeftCorner.y = mInnerClipTempRectForBorderRadius.bottom;
+    mInnerBottomLeftCorner.y =
+        borderWidth.bottom != 0
+            ? mInnerClipTempRectForBorderRadius.bottom * -2
+            : mInnerClipTempRectForBorderRadius.bottom;
 
     getEllipseIntersectionWithLine(
         // Ellipse Bounds
@@ -943,7 +940,7 @@ public class ReactViewBackgroundDrawable extends Drawable {
     }
 
     mInnerTopRightCorner.x = mInnerClipTempRectForBorderRadius.right;
-    mInnerTopRightCorner.y = mInnerClipTempRectForBorderRadius.top;
+    mInnerTopRightCorner.y = mInnerClipTempRectForBorderRadius.top * 2;
 
     getEllipseIntersectionWithLine(
         // Ellipse Bounds
@@ -969,7 +966,10 @@ public class ReactViewBackgroundDrawable extends Drawable {
     }
 
     mInnerBottomRightCorner.x = mInnerClipTempRectForBorderRadius.right;
-    mInnerBottomRightCorner.y = mInnerClipTempRectForBorderRadius.bottom;
+    mInnerBottomRightCorner.y =
+        borderWidth.bottom != 0
+            ? mInnerClipTempRectForBorderRadius.bottom * -2
+            : mInnerClipTempRectForBorderRadius.bottom;
 
     getEllipseIntersectionWithLine(
         // Ellipse Bounds
@@ -1396,6 +1396,7 @@ public class ReactViewBackgroundDrawable extends Drawable {
     return ReactViewBackgroundDrawable.colorFromAlphaAndRGBComponents(alpha, rgb);
   }
 
+  @TargetApi(LOLLIPOP)
   public RectF getDirectionAwareBorderInsets() {
     final float borderWidth = getBorderWidthOrDefaultTo(0, Spacing.ALL);
     final float borderTopWidth = getBorderWidthOrDefaultTo(borderWidth, Spacing.TOP);

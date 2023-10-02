@@ -62,7 +62,8 @@ public class ReactEventEmitter implements RCTModernEventEmitter {
   @Override
   public void receiveEvent(
       int surfaceId, int targetTag, String eventName, @Nullable WritableMap event) {
-    // We assume this event can't be coalesced. `customCoalesceKey` has no meaning in Fabric.
+    // The two additional params here, `canCoalesceEvent` and `customCoalesceKey`, have no
+    // meaning outside of Fabric.
     receiveEvent(surfaceId, targetTag, eventName, false, 0, event, EventCategoryDef.UNSPECIFIED);
   }
 
@@ -77,7 +78,7 @@ public class ReactEventEmitter implements RCTModernEventEmitter {
 
     int reactTag = touches.getMap(0).getInt(TARGET_KEY);
     @UIManagerType int uiManagerType = ViewUtil.getUIManagerType(reactTag);
-    if (uiManagerType == UIManagerType.DEFAULT && getDefaultEventEmitter() != null) {
+    if (uiManagerType == UIManagerType.DEFAULT && getEventEmitter(reactTag) != null) {
       mRCTEventEmitter.receiveTouches(eventName, touches, changedIndices);
     }
   }
@@ -85,11 +86,10 @@ public class ReactEventEmitter implements RCTModernEventEmitter {
   @Override
   public void receiveTouches(TouchEvent event) {
     int reactTag = event.getViewTag();
-    @UIManagerType
-    int uiManagerType = ViewUtil.getUIManagerType(event.getViewTag(), event.getSurfaceId());
+    @UIManagerType int uiManagerType = event.getUIManagerType();
     if (uiManagerType == UIManagerType.FABRIC && mFabricEventEmitter != null) {
       mFabricEventEmitter.receiveTouches(event);
-    } else if (uiManagerType == UIManagerType.DEFAULT && getDefaultEventEmitter() != null) {
+    } else if (uiManagerType == UIManagerType.DEFAULT && getEventEmitter(reactTag) != null) {
       TouchesHelper.sendTouchesLegacy(mRCTEventEmitter, event);
     } else {
       ReactSoftExceptionLogger.logSoftException(
@@ -105,12 +105,10 @@ public class ReactEventEmitter implements RCTModernEventEmitter {
     }
   }
 
-  /**
-   * Get default/Paper event emitter. Callers should have verified that this is not an event for a
-   * View managed by Fabric
-   */
   @Nullable
-  private RCTEventEmitter getDefaultEventEmitter() {
+  private RCTEventEmitter getEventEmitter(int reactTag) {
+    int type = ViewUtil.getUIManagerType(reactTag);
+    assert type == UIManagerType.DEFAULT;
     if (mRCTEventEmitter == null) {
       if (mReactContext.hasActiveReactInstance()) {
         mRCTEventEmitter = mReactContext.getJSModule(RCTEventEmitter.class);
@@ -118,7 +116,11 @@ public class ReactEventEmitter implements RCTModernEventEmitter {
         ReactSoftExceptionLogger.logSoftException(
             TAG,
             new ReactNoCrashSoftException(
-                "Cannot get RCTEventEmitter from Context, no active Catalyst instance!"));
+                "Cannot get RCTEventEmitter from Context for reactTag: "
+                    + reactTag
+                    + " - uiManagerType: "
+                    + type
+                    + " - No active Catalyst instance!"));
       }
     }
     return mRCTEventEmitter;
@@ -133,7 +135,7 @@ public class ReactEventEmitter implements RCTModernEventEmitter {
       int customCoalesceKey,
       @Nullable WritableMap event,
       @EventCategoryDef int category) {
-    @UIManagerType int uiManagerType = ViewUtil.getUIManagerType(targetReactTag, surfaceId);
+    @UIManagerType int uiManagerType = ViewUtil.getUIManagerType(targetReactTag);
     if (uiManagerType == UIManagerType.FABRIC && mFabricEventEmitter != null) {
       mFabricEventEmitter.receiveEvent(
           surfaceId,
@@ -143,7 +145,7 @@ public class ReactEventEmitter implements RCTModernEventEmitter {
           customCoalesceKey,
           event,
           category);
-    } else if (uiManagerType == UIManagerType.DEFAULT && getDefaultEventEmitter() != null) {
+    } else if (uiManagerType == UIManagerType.DEFAULT && getEventEmitter(targetReactTag) != null) {
       mRCTEventEmitter.receiveEvent(targetReactTag, eventName, event);
     } else {
       ReactSoftExceptionLogger.logSoftException(

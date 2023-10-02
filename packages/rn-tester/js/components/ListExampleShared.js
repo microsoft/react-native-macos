@@ -13,7 +13,6 @@
 const React = require('react');
 
 const {
-  ActivityIndicator,
   Animated,
   Image,
   Platform,
@@ -35,28 +34,16 @@ export type Item = {
   ...
 };
 
-function genItemData(i: number): Item {
-  const itemHash = Math.abs(hashCode('Item ' + i));
-  return {
-    title: 'Item ' + i,
-    text: LOREM_IPSUM.slice(0, (itemHash % 301) + 20),
-    key: String(i),
-    pressed: false,
-  };
-}
-
-function genNewerItems(count: number, start: number = 0): Array<Item> {
+function genItemData(count: number, start: number = 0): Array<Item> {
   const dataBlob = [];
-  for (let i = start; i < count + start; i++) {
-    dataBlob.push(genItemData(i));
-  }
-  return dataBlob;
-}
-
-function genOlderItems(count: number, start: number = 0): Array<Item> {
-  const dataBlob = [];
-  for (let i = count; i > 0; i--) {
-    dataBlob.push(genItemData(start - i));
+  for (let ii = start; ii < count + start; ii++) {
+    const itemHash = Math.abs(hashCode('Item ' + ii));
+    dataBlob.push({
+      title: 'Item ' + ii,
+      text: LOREM_IPSUM.substr(0, (itemHash % 301) + 20),
+      key: String(ii),
+      pressed: false,
+    });
   }
   return dataBlob;
 }
@@ -164,12 +151,6 @@ class SeparatorComponent extends React.PureComponent<{...}> {
     return <View style={styles.separator} />;
   }
 }
-
-const LoadingComponent: React.ComponentType<{}> = React.memo(() => (
-  <View style={styles.loadingContainer}>
-    <ActivityIndicator />
-  </View>
-));
 
 class ItemSeparatorComponent extends React.PureComponent<$FlowFixMeProps> {
   render(): React.Node {
@@ -399,13 +380,6 @@ const styles = StyleSheet.create({
     }),
   },
   // macOS]
-  loadingContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 100,
-    borderTopWidth: 1,
-    borderTopColor: 'rgb(200, 199, 204)',
-  },
 });
 
 module.exports = {
@@ -416,10 +390,8 @@ module.exports = {
   ItemSeparatorComponent,
   PlainInput,
   SeparatorComponent,
-  LoadingComponent,
   Spindicator,
-  genNewerItems,
-  genOlderItems,
+  genItemData,
   getItemLayout,
   pressItem,
   renderSmallSwitchOption,

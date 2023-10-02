@@ -58,8 +58,7 @@ public class ReactDrawerLayoutManager extends ViewGroupManager<ReactDrawerLayout
   }
 
   @Override
-  protected void addEventEmitters(
-      @NonNull ThemedReactContext reactContext, ReactDrawerLayout view) {
+  protected void addEventEmitters(ThemedReactContext reactContext, ReactDrawerLayout view) {
     EventDispatcher eventDispatcher =
         UIManagerHelper.getEventDispatcherForReactTag(reactContext, view.getId());
     if (eventDispatcher == null) {
@@ -189,8 +188,7 @@ public class ReactDrawerLayoutManager extends ViewGroupManager<ReactDrawerLayout
   }
 
   @Override
-  public void receiveCommand(
-      @NonNull ReactDrawerLayout root, int commandId, @Nullable ReadableArray args) {
+  public void receiveCommand(ReactDrawerLayout root, int commandId, @Nullable ReadableArray args) {
     switch (commandId) {
       case OPEN_DRAWER:
         root.openDrawer();
@@ -215,13 +213,13 @@ public class ReactDrawerLayoutManager extends ViewGroupManager<ReactDrawerLayout
   }
 
   @Override
-  public @Nullable Map<String, Object> getExportedViewConstants() {
+  public @Nullable Map getExportedViewConstants() {
     return MapBuilder.of(
         "DrawerPosition", MapBuilder.of("Left", Gravity.START, "Right", Gravity.END));
   }
 
   @Override
-  public @Nullable Map<String, Object> getExportedCustomDirectEventTypeConstants() {
+  public @Nullable Map getExportedCustomDirectEventTypeConstants() {
     @Nullable
     Map<String, Object> baseEventTypeConstants = super.getExportedCustomDirectEventTypeConstants();
     Map<String, Object> eventTypeConstants =

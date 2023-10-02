@@ -22,7 +22,7 @@ class FabricTest < Test::Unit::TestCase
     # ================== #
     # TEST - setupFabric #
     # ================== #
-    def test_setupFabric_installsPods
+    def test_setupFabric_whenNewArchDisabled_installsPods
         # Arrange
         prefix = "../.."
 
@@ -33,11 +33,22 @@ class FabricTest < Test::Unit::TestCase
         check_installed_pods(prefix)
     end
 
+    def test_setupFabric_whenNewArchEnabled_installPods
+        # Arrange
+        prefix = "../.."
+        ENV['RCT_NEW_ARCH_ENABLED'] = "1"
+
+        # Act
+        setup_fabric!(:react_native_path => prefix, new_arch_enabled: true)
+
+        # Assert
+        check_installed_pods(prefix)
+    end
+
     def check_installed_pods(prefix)
-        assert_equal(6, $podInvocationCount)
+        assert_equal($podInvocationCount, 5)
 
         check_pod("React-Fabric", :path => "#{prefix}/ReactCommon")
-        check_pod("React-FabricImage", :path => "#{prefix}/ReactCommon")
         check_pod("React-graphics", :path => "#{prefix}/ReactCommon/react/renderer/graphics")
         check_pod("React-RCTFabric", :path => "#{prefix}/React", :modular_headers => true)
         check_pod("RCT-Folly/Fabric", :podspec => "#{prefix}/third-party-podspecs/RCT-Folly.podspec")

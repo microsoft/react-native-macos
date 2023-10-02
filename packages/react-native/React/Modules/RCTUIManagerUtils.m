@@ -32,7 +32,7 @@ dispatch_queue_t RCTGetUIManagerQueue(void)
   return shadowQueue;
 }
 
-BOOL RCTIsUIManagerQueue(void)
+BOOL RCTIsUIManagerQueue()
 {
   static void *queueKey = &queueKey;
   static dispatch_once_t onceToken;
@@ -42,7 +42,7 @@ BOOL RCTIsUIManagerQueue(void)
   return dispatch_get_specific(queueKey) == queueKey;
 }
 
-BOOL RCTIsPseudoUIManagerQueue(void)
+BOOL RCTIsPseudoUIManagerQueue()
 {
   if (RCTIsMainQueue()) {
     return pseudoUIManagerQueueFlag;
@@ -95,7 +95,7 @@ void RCTUnsafeExecuteOnUIManagerQueueSync(dispatch_block_t block)
   }
 }
 
-NSNumber *RCTAllocateRootViewTag(void)
+NSNumber *RCTAllocateRootViewTag()
 {
   // Numbering of these tags goes from 1, 11, 21, 31, ..., 100501, ...
   static _Atomic int64_t rootViewTagCounter = 0;

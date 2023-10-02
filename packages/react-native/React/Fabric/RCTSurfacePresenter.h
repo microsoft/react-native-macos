@@ -67,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)synchronouslyUpdateViewOnUIThread:(NSNumber *)reactTag props:(NSDictionary *)props;
 
-- (void)setupAnimationDriverWithSurfaceHandler:(const facebook::react::SurfaceHandler &)surfaceHandler;
+- (void)setupAnimationDriverWithSurfaceHandler:(facebook::react::SurfaceHandler const &)surfaceHandler;
 
 /*
  * Deprecated.

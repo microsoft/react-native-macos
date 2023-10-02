@@ -27,7 +27,9 @@ declare var global: {
   },
 
   // setUpPerformance
-  +performance: Performance,
+  +performance: {
+    +now: () => number,
+  },
 
   // setUpXHR
   +XMLHttpRequest: typeof XMLHttpRequest,

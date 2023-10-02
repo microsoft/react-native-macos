@@ -12,14 +12,15 @@
 #import <react/renderer/imagemanager/ImageResponseObserver.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 RCTImageResponseObserverProxy::RCTImageResponseObserverProxy(id<RCTImageResponseDelegate> delegate)
     : delegate_(delegate)
 {
 }
 
-void RCTImageResponseObserverProxy::didReceiveImage(const ImageResponse &imageResponse) const
+void RCTImageResponseObserverProxy::didReceiveImage(ImageResponse const &imageResponse) const
 {
   UIImage *image = (UIImage *)unwrapManagedObject(imageResponse.getImage());
   id metadata = unwrapManagedObject(imageResponse.getMetadata());
@@ -48,4 +49,5 @@ void RCTImageResponseObserverProxy::didReceiveFailure() const
   });
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

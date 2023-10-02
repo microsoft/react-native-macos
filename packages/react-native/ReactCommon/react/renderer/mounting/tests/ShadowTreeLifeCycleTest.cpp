@@ -10,7 +10,6 @@
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
-#include <react/config/ReactNativeConfig.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 #include <react/renderer/core/PropsParserContext.h>
@@ -42,6 +41,8 @@ static void testShadowNodeTreeLifeCycle(
       ViewComponentDescriptor(componentDescriptorParameters);
   auto rootComponentDescriptor =
       RootComponentDescriptor(componentDescriptorParameters);
+  auto noopEventEmitter =
+      std::make_shared<ViewEventEmitter const>(nullptr, -1, eventDispatcher);
 
   PropsParserContext parserContext{-1, *contextContainer};
 
@@ -50,12 +51,12 @@ static void testShadowNodeTreeLifeCycle(
   for (int i = 0; i < repeats; i++) {
     allNodes.clear();
 
-    auto family =
-        rootComponentDescriptor.createFamily({Tag(1), SurfaceId(1), nullptr});
+    auto family = rootComponentDescriptor.createFamily(
+        {Tag(1), SurfaceId(1), nullptr}, nullptr);
 
     // Creating an initial root shadow node.
     auto emptyRootNode = std::const_pointer_cast<RootShadowNode>(
-        std::static_pointer_cast<const RootShadowNode>(
+        std::static_pointer_cast<RootShadowNode const>(
             rootComponentDescriptor.createShadowNode(
                 ShadowNodeFragment{RootShadowNode::defaultSharedProps()},
                 family)));
@@ -72,7 +73,7 @@ static void testShadowNodeTreeLifeCycle(
         generateShadowNodeTree(entropy, viewComponentDescriptor, treeSize);
 
     // Injecting a tree into the root node.
-    auto currentRootNode = std::static_pointer_cast<const RootShadowNode>(
+    auto currentRootNode = std::static_pointer_cast<RootShadowNode const>(
         emptyRootNode->ShadowNode::clone(ShadowNodeFragment{
             ShadowNodeFragment::propsPlaceholder(),
             std::make_shared<ShadowNode::ListOfShared>(
@@ -96,7 +97,7 @@ static void testShadowNodeTreeLifeCycle(
               &messWithLayoutableOnlyFlag,
           });
 
-      std::vector<const LayoutableShadowNode*> affectedLayoutableNodes{};
+      std::vector<LayoutableShadowNode const *> affectedLayoutableNodes{};
       affectedLayoutableNodes.reserve(1024);
 
       // Laying out the tree.
@@ -114,12 +115,12 @@ static void testShadowNodeTreeLifeCycle(
       // view is not followed by a CREATE for the same view.
       {
         std::vector<int> deletedTags{};
-        for (const auto& mutation : mutations) {
+        for (auto const &mutation : mutations) {
           if (mutation.type == ShadowViewMutation::Type::Delete) {
             deletedTags.push_back(mutation.oldChildShadowView.tag);
           }
         }
-        for (const auto& mutation : mutations) {
+        for (auto const &mutation : mutations) {
           if (mutation.type == ShadowViewMutation::Type::Create) {
             if (std::find(
                     deletedTags.begin(),
@@ -148,7 +149,7 @@ static void testShadowNodeTreeLifeCycle(
 
         // There are some issues getting `getDebugDescription` to compile
         // under test on Android for now.
-#if RN_DEBUG_STRING_CONVERTIBLE
+#ifdef RN_DEBUG_STRING_CONVERTIBLE
         LOG(ERROR) << "Shadow Tree before: \n"
                    << currentRootNode->getDebugDescription();
         LOG(ERROR) << "Shadow Tree after: \n"
@@ -184,15 +185,14 @@ static void testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
 
   auto eventDispatcher = EventDispatcher::Shared{};
   auto contextContainer = std::make_shared<ContextContainer>();
-  contextContainer->insert(
-      "ReactNativeConfig", std::make_shared<EmptyReactNativeConfig>());
-
   auto componentDescriptorParameters =
       ComponentDescriptorParameters{eventDispatcher, contextContainer, nullptr};
   auto viewComponentDescriptor =
       ViewComponentDescriptor(componentDescriptorParameters);
   auto rootComponentDescriptor =
       RootComponentDescriptor(componentDescriptorParameters);
+  auto noopEventEmitter =
+      std::make_shared<ViewEventEmitter const>(nullptr, -1, eventDispatcher);
 
   PropsParserContext parserContext{-1, *contextContainer};
 
@@ -201,12 +201,12 @@ static void testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
   for (int i = 0; i < repeats; i++) {
     allNodes.clear();
 
-    auto family =
-        rootComponentDescriptor.createFamily({Tag(1), SurfaceId(1), nullptr});
+    auto family = rootComponentDescriptor.createFamily(
+        {Tag(1), SurfaceId(1), nullptr}, nullptr);
 
     // Creating an initial root shadow node.
     auto emptyRootNode = std::const_pointer_cast<RootShadowNode>(
-        std::static_pointer_cast<const RootShadowNode>(
+        std::static_pointer_cast<RootShadowNode const>(
             rootComponentDescriptor.createShadowNode(
                 ShadowNodeFragment{RootShadowNode::defaultSharedProps()},
                 family)));
@@ -223,7 +223,7 @@ static void testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
         generateShadowNodeTree(entropy, viewComponentDescriptor, treeSize);
 
     // Injecting a tree into the root node.
-    auto currentRootNode = std::static_pointer_cast<const RootShadowNode>(
+    auto currentRootNode = std::static_pointer_cast<RootShadowNode const>(
         emptyRootNode->ShadowNode::clone(ShadowNodeFragment{
             ShadowNodeFragment::propsPlaceholder(),
             std::make_shared<ShadowNode::ListOfShared>(
@@ -248,7 +248,7 @@ static void testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
       alterShadowTree(entropy, nextRootNode, &messWithNodeFlattenednessFlags);
       alterShadowTree(entropy, nextRootNode, &messWithChildren);
 
-      std::vector<const LayoutableShadowNode*> affectedLayoutableNodes{};
+      std::vector<LayoutableShadowNode const *> affectedLayoutableNodes{};
       affectedLayoutableNodes.reserve(1024);
 
       // Laying out the tree.
@@ -266,12 +266,12 @@ static void testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
       // view is not followed by a CREATE for the same view.
       {
         std::vector<int> deletedTags{};
-        for (const auto& mutation : mutations) {
+        for (auto const &mutation : mutations) {
           if (mutation.type == ShadowViewMutation::Type::Delete) {
             deletedTags.push_back(mutation.oldChildShadowView.tag);
           }
         }
-        for (const auto& mutation : mutations) {
+        for (auto const &mutation : mutations) {
           if (mutation.type == ShadowViewMutation::Type::Create) {
             if (std::find(
                     deletedTags.begin(),
@@ -300,7 +300,7 @@ static void testShadowNodeTreeLifeCycleExtensiveFlatteningUnflattening(
 
         // There are some issues getting `getDebugDescription` to compile
         // under test on Android for now.
-#if RN_DEBUG_STRING_CONVERTIBLE
+#ifdef RN_DEBUG_STRING_CONVERTIBLE
         LOG(ERROR) << "Shadow Tree before: \n"
                    << currentRootNode->getDebugDescription();
         LOG(ERROR) << "Shadow Tree after: \n"

@@ -10,7 +10,8 @@
 
 #include <optional>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 static inline std::optional<AnimationType> parseAnimationType(
     std::string param) {
@@ -57,7 +58,7 @@ static inline std::optional<AnimationProperty> parseAnimationProperty(
 }
 
 static inline std::optional<AnimationConfig> parseAnimationConfig(
-    const folly::dynamic& config,
+    folly::dynamic const &config,
     double defaultDuration,
     bool parsePropertyType) {
   if (config.empty() || !config.isObject()) {
@@ -70,12 +71,12 @@ static inline std::optional<AnimationConfig> parseAnimationConfig(
         0};
   }
 
-  const auto typeIt = config.find("type");
+  auto const typeIt = config.find("type");
   if (typeIt == config.items().end()) {
     LOG(ERROR) << "Error parsing animation config: could not find field `type`";
     return {};
   }
-  const auto animationTypeParam = typeIt->second;
+  auto const animationTypeParam = typeIt->second;
   if (animationTypeParam.empty() || !animationTypeParam.isString()) {
     LOG(ERROR)
         << "Error parsing animation config: could not unwrap field `type`";
@@ -90,13 +91,13 @@ static inline std::optional<AnimationConfig> parseAnimationConfig(
 
   AnimationProperty animationProperty = AnimationProperty::NotApplicable;
   if (parsePropertyType) {
-    const auto propertyIt = config.find("property");
+    auto const propertyIt = config.find("property");
     if (propertyIt == config.items().end()) {
       LOG(ERROR)
           << "Error parsing animation config: could not find field `property`";
       return {};
     }
-    const auto animationPropertyParam = propertyIt->second;
+    auto const animationPropertyParam = propertyIt->second;
     if (animationPropertyParam.empty() || !animationPropertyParam.isString()) {
       LOG(ERROR)
           << "Error parsing animation config: could not unwrap field `property`";
@@ -117,7 +118,7 @@ static inline std::optional<AnimationConfig> parseAnimationConfig(
   Float springDamping = 0.5;
   Float initialVelocity = 0;
 
-  const auto durationIt = config.find("duration");
+  auto const durationIt = config.find("duration");
   if (durationIt != config.items().end()) {
     if (durationIt->second.isDouble()) {
       duration = durationIt->second.asDouble();
@@ -128,7 +129,7 @@ static inline std::optional<AnimationConfig> parseAnimationConfig(
     }
   }
 
-  const auto delayIt = config.find("delay");
+  auto const delayIt = config.find("delay");
   if (delayIt != config.items().end()) {
     if (delayIt->second.isDouble()) {
       delay = delayIt->second.asDouble();
@@ -139,7 +140,7 @@ static inline std::optional<AnimationConfig> parseAnimationConfig(
     }
   }
 
-  const auto springDampingIt = config.find("springDamping");
+  auto const springDampingIt = config.find("springDamping");
   if (springDampingIt != config.items().end() &&
       springDampingIt->second.isDouble()) {
     if (springDampingIt->second.isDouble()) {
@@ -151,7 +152,7 @@ static inline std::optional<AnimationConfig> parseAnimationConfig(
     }
   }
 
-  const auto initialVelocityIt = config.find("initialVelocity");
+  auto const initialVelocityIt = config.find("initialVelocity");
   if (initialVelocityIt != config.items().end()) {
     if (initialVelocityIt->second.isDouble()) {
       initialVelocity = (Float)initialVelocityIt->second.asDouble();
@@ -173,7 +174,7 @@ static inline std::optional<AnimationConfig> parseAnimationConfig(
 
 // Parse animation config from JS
 static inline std::optional<LayoutAnimationConfig> parseLayoutAnimationConfig(
-    const folly::dynamic& config) {
+    folly::dynamic const &config) {
   if (config.empty() || !config.isObject()) {
     return {};
   }
@@ -207,4 +208,5 @@ static inline std::optional<LayoutAnimationConfig> parseLayoutAnimationConfig(
       duration, *createConfig, *updateConfig, *deleteConfig};
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

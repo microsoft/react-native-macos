@@ -19,7 +19,6 @@
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/components/image/ImageProps.h>
 #include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/components/view/ViewPropsInterpolation.h>
 #include <react/renderer/core/ComponentDescriptor.h>
 #include <react/renderer/core/LayoutMetrics.h>
 #include <react/renderer/core/Props.h>
@@ -35,7 +34,7 @@ namespace facebook::react {
 
 #ifdef LAYOUT_ANIMATION_VERBOSE_LOGGING
 static std::string GetMutationInstructionString(
-    const ShadowViewMutation& mutation) {
+    ShadowViewMutation const &mutation) {
   Tag tag = mutation.type == ShadowViewMutation::Type::Insert ||
           mutation.type == ShadowViewMutation::Type::Create
       ? mutation.newChildShadowView.tag
@@ -47,8 +46,8 @@ static std::string GetMutationInstructionString(
 
 void PrintMutationInstruction(
     std::string message,
-    const ShadowViewMutation& mutation) {
-  [&](std::ostream& stream) -> std::ostream& {
+    ShadowViewMutation const &mutation) {
+  [&](std::ostream &stream) -> std::ostream & {
     stream << message
            << " Mutation: " << GetMutationInstructionString(mutation);
     if (mutation.oldChildShadowView.tag != 0) {
@@ -65,8 +64,8 @@ void PrintMutationInstruction(
 
 void PrintMutationInstructionRelative(
     std::string message,
-    const ShadowViewMutation& mutation,
-    const ShadowViewMutation& relativeMutation) {
+    ShadowViewMutation const &mutation,
+    ShadowViewMutation const &relativeMutation) {
   LOG(ERROR) << message
              << " Mutation: " << GetMutationInstructionString(mutation)
              << " RelativeMutation: "
@@ -83,8 +82,8 @@ interpolateFloats(Float coefficient, Float oldValue, Float newValue) {
 
 LayoutAnimationKeyFrameManager::LayoutAnimationKeyFrameManager(
     RuntimeExecutor runtimeExecutor,
-    ContextContainer::Shared& contextContainer,
-    LayoutAnimationStatusDelegate* delegate)
+    ContextContainer::Shared &contextContainer,
+    LayoutAnimationStatusDelegate *delegate)
     : runtimeExecutor_(std::move(runtimeExecutor)),
       contextContainer_(contextContainer),
       layoutAnimationStatusDelegate_(delegate),
@@ -101,10 +100,10 @@ LayoutAnimationKeyFrameManager::LayoutAnimationKeyFrameManager(
  * This is guaranteed to be called only on the JS thread.
  */
 void LayoutAnimationKeyFrameManager::uiManagerDidConfigureNextLayoutAnimation(
-    jsi::Runtime& runtime,
-    const RawValue& config,
-    const jsi::Value& successCallbackValue,
-    const jsi::Value& failureCallbackValue) const {
+    jsi::Runtime &runtime,
+    RawValue const &config,
+    const jsi::Value &successCallbackValue,
+    const jsi::Value &failureCallbackValue) const {
   bool hasSuccessCallback = successCallbackValue.isObject() &&
       successCallbackValue.getObject(runtime).isFunction(runtime);
   bool hasFailureCallback = failureCallbackValue.isObject() &&
@@ -122,7 +121,7 @@ void LayoutAnimationKeyFrameManager::uiManagerDidConfigureNextLayoutAnimation(
       parseLayoutAnimationConfig((folly::dynamic)config);
 
   if (layoutAnimationConfig) {
-    std::scoped_lock lock(currentAnimationMutex_);
+    std::lock_guard<std::mutex> lock(currentAnimationMutex_);
 
     uiManagerDidConfigureNextLayoutAnimation(LayoutAnimation{
         -1,
@@ -141,7 +140,7 @@ void LayoutAnimationKeyFrameManager::uiManagerDidConfigureNextLayoutAnimation(
 }
 
 void LayoutAnimationKeyFrameManager::setComponentDescriptorRegistry(
-    const SharedComponentDescriptorRegistry& componentDescriptorRegistry) {
+    const SharedComponentDescriptorRegistry &componentDescriptorRegistry) {
   componentDescriptorRegistry_ = componentDescriptorRegistry;
 }
 
@@ -151,12 +150,12 @@ void LayoutAnimationKeyFrameManager::setReduceDeleteCreateMutation(
 }
 
 bool LayoutAnimationKeyFrameManager::shouldAnimateFrame() const {
-  std::scoped_lock lock(currentAnimationMutex_);
+  std::lock_guard<std::mutex> lock(currentAnimationMutex_);
   return currentAnimation_ || !inflightAnimations_.empty();
 }
 
 void LayoutAnimationKeyFrameManager::stopSurface(SurfaceId surfaceId) {
-  std::scoped_lock lock(surfaceIdsToStopMutex_);
+  std::lock_guard<std::mutex> lock(surfaceIdsToStopMutex_);
   surfaceIdsToStop_.insert(surfaceId);
 }
 
@@ -170,7 +169,7 @@ std::optional<MountingTransaction>
 LayoutAnimationKeyFrameManager::pullTransaction(
     SurfaceId surfaceId,
     MountingTransaction::Number transactionNumber,
-    const TransactionTelemetry& telemetry,
+    TransactionTelemetry const &telemetry,
     ShadowViewMutationList mutations) const {
   // Current time in milliseconds
   uint64_t now = now_();
@@ -196,18 +195,18 @@ LayoutAnimationKeyFrameManager::pullTransaction(
     LOG(ERROR) << "BEGINNING DISPLAYING ONGOING inflightAnimations_!";
     int i = 0;
     int j = 0;
-    for (const auto& inflightAnimation : inflightAnimations_) {
+    for (auto const &inflightAnimation : inflightAnimations_) {
       i++;
       j = 0;
       if (inflightAnimation.completed) {
         continue;
       }
-      for (auto& keyframe : inflightAnimation.keyFrames) {
+      for (auto &keyframe : inflightAnimation.keyFrames) {
         j++;
         if (keyframe.invalidated) {
           continue;
         }
-        for (const auto& finalMutationForKeyFrame :
+        for (const auto &finalMutationForKeyFrame :
              keyframe.finalMutationsForKeyFrame) {
           if (finalMutationForKeyFrame.mutatedViewIsVirtual()) {
             std::string msg = "Animation " + std::to_string(i) + " keyframe " +
@@ -245,7 +244,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
     // Are we animating this list of mutations?
     std::optional<LayoutAnimation> currentAnimation{};
     {
-      std::scoped_lock lock(currentAnimationMutex_);
+      std::lock_guard<std::mutex> lock(currentAnimationMutex_);
       if (currentAnimation_) {
         currentAnimation = std::move(currentAnimation_);
         currentAnimation_.reset();
@@ -264,12 +263,11 @@ LayoutAnimationKeyFrameManager::pullTransaction(
       // TODO: to prevent this step we could tag Remove/Insert mutations as
       // being moves on the Differ level, since we know that there? We could use
       // TinyMap here, but it's not exposed by Differentiator (yet).
-      std::unordered_set<Tag> insertedTags;
-      std::unordered_set<Tag> deletedTags;
-      std::unordered_set<Tag>
-          reparentedTags; // tags that are deleted and recreated
+      butter::set<Tag> insertedTags;
+      butter::set<Tag> deletedTags;
+      butter::set<Tag> reparentedTags; // tags that are deleted and recreated
       std::unordered_map<Tag, ShadowViewMutation> movedTags;
-      for (const auto& mutation : mutations) {
+      for (const auto &mutation : mutations) {
         if (mutation.type == ShadowViewMutation::Type::Insert) {
           insertedTags.insert(mutation.newChildShadowView.tag);
         }
@@ -295,8 +293,8 @@ LayoutAnimationKeyFrameManager::pullTransaction(
       // "immediate mutations". The corresponding "insert" will also be executed
       // immediately and animated as an update.
       std::vector<AnimationKeyFrame> keyFramesToAnimate;
-      const auto layoutAnimationConfig = animation.layoutAnimationConfig;
-      for (const auto& mutation : mutations) {
+      auto const layoutAnimationConfig = animation.layoutAnimationConfig;
+      for (auto const &mutation : mutations) {
         if (mutation.type == ShadowViewMutation::Type::RemoveDeleteTree) {
           continue;
         }
@@ -352,7 +350,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
           wasInsertedTagRemoved = movedIt != movedTags.end();
         }
 
-        const auto& mutationConfig =
+        auto const &mutationConfig =
             (mutation.type == ShadowViewMutation::Type::Delete ||
                      (mutation.type == ShadowViewMutation::Type::Remove &&
                       !wasInsertedTagRemoved)
@@ -384,7 +382,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
           // any UPDATE animations already queued up for this tag, we adjust the
           // "previous" ShadowView.
           if (mutation.type == ShadowViewMutation::Type::Insert) {
-            for (auto& keyframe : keyFramesToAnimate) {
+            for (auto &keyframe : keyFramesToAnimate) {
               if (keyframe.tag == baselineShadowView.tag) {
                 // If there's already an animation queued up, followed by this
                 // Insert, it *must* be an Update mutation animation. Other
@@ -406,7 +404,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
               }
             }
           } else if (mutation.type == ShadowViewMutation::Type::Remove) {
-            for (auto& keyframe : keyFramesToAnimate) {
+            for (auto &keyframe : keyFramesToAnimate) {
               if (keyframe.tag == baselineShadowView.tag) {
                 // If there's already an animation queued up, followed by this
                 // Insert, it *must* be an Update mutation animation. Other
@@ -469,8 +467,9 @@ LayoutAnimationKeyFrameManager::pullTransaction(
 
               if (baselineShadowView.traits.check(
                       ShadowNodeTraits::Trait::ViewKind)) {
-                const auto& viewProps = static_cast<const ViewProps&>(*props);
-                const_cast<ViewProps&>(viewProps).opacity = 0;
+                auto const &viewProps =
+                    *std::static_pointer_cast<ViewProps const>(props);
+                const_cast<ViewProps &>(viewProps).opacity = 0;
               }
 
               react_native_assert(props != nullptr);
@@ -490,8 +489,9 @@ LayoutAnimationKeyFrameManager::pullTransaction(
                       .cloneProps(propsParserContext, viewStart.props, {});
               if (baselineShadowView.traits.check(
                       ShadowNodeTraits::Trait::ViewKind)) {
-                const auto& viewProps = static_cast<const ViewProps&>(*props);
-                const_cast<ViewProps&>(viewProps).transform =
+                auto const &viewProps =
+                    *std::static_pointer_cast<ViewProps const>(props);
+                const_cast<ViewProps &>(viewProps).transform =
                     Transform::Scale(isScaleX ? 0 : 1, isScaleY ? 0 : 1, 1);
               }
 
@@ -563,7 +563,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
             auto correspondingInsertIt = std::find_if(
                 mutations.begin(),
                 mutations.end(),
-                [&removeTag](auto& mutation) {
+                [&removeTag](auto &mutation) {
                   return mutation.type == ShadowViewMutation::Type::Insert &&
                       mutation.newChildShadowView.tag == removeTag;
                 });
@@ -573,7 +573,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
               auto correspondingDeleteIt = std::find_if(
                   mutations.begin(),
                   mutations.end(),
-                  [&removeTag](auto& mutation) {
+                  [&removeTag](auto &mutation) {
                     return mutation.type == ShadowViewMutation::Type::Delete &&
                         mutation.oldChildShadowView.tag == removeTag;
                   });
@@ -590,8 +590,9 @@ LayoutAnimationKeyFrameManager::pullTransaction(
 
                 if (baselineShadowView.traits.check(
                         ShadowNodeTraits::Trait::ViewKind)) {
-                  const auto& viewProps = static_cast<const ViewProps&>(*props);
-                  const_cast<ViewProps&>(viewProps).opacity = 0;
+                  auto const &viewProps =
+                      *std::static_pointer_cast<ViewProps const>(props);
+                  const_cast<ViewProps &>(viewProps).opacity = 0;
                 }
 
                 react_native_assert(props != nullptr);
@@ -614,8 +615,9 @@ LayoutAnimationKeyFrameManager::pullTransaction(
 
                 if (baselineShadowView.traits.check(
                         ShadowNodeTraits::Trait::ViewKind)) {
-                  const auto& viewProps = static_cast<const ViewProps&>(*props);
-                  const_cast<ViewProps&>(viewProps).transform =
+                  auto const &viewProps =
+                      *std::static_pointer_cast<ViewProps const>(props);
+                  const_cast<ViewProps &>(viewProps).transform =
                       Transform::Scale(isScaleX ? 0 : 1, isScaleY ? 0 : 1, 1);
                 }
 
@@ -648,8 +650,8 @@ LayoutAnimationKeyFrameManager::pullTransaction(
           }
 
           // Handle conflicting animations
-          for (auto& conflictingKeyFrame : conflictingAnimations) {
-            const auto& conflictingMutationBaselineShadowView =
+          for (auto &conflictingKeyFrame : conflictingAnimations) {
+            auto const &conflictingMutationBaselineShadowView =
                 conflictingKeyFrame.viewStart;
 
             // We've found a conflict.
@@ -707,7 +709,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
 #ifdef LAYOUT_ANIMATION_VERBOSE_LOGGING
       {
         int idx = 0;
-        for (auto& mutation : immediateMutations) {
+        for (auto &mutation : immediateMutations) {
           PrintMutationInstruction(
               std::string("IMMEDIATE list: ") + std::to_string(idx) + "/" +
                   std::to_string(immediateMutations.size()),
@@ -718,8 +720,8 @@ LayoutAnimationKeyFrameManager::pullTransaction(
 
       {
         int idx = 0;
-        for (const auto& keyframe : keyFramesToAnimate) {
-          for (const auto& finalMutationForKeyFrame :
+        for (const auto &keyframe : keyFramesToAnimate) {
+          for (const auto &finalMutationForKeyFrame :
                keyframe.finalMutationsForKeyFrame) {
             PrintMutationInstruction(
                 std::string("FINAL list: ") + std::to_string(idx) + "/" +
@@ -733,7 +735,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
 #endif
 
       auto finalConflictingMutations = ShadowViewMutationList{};
-      for (auto& keyFrame : conflictingAnimations) {
+      for (auto &keyFrame : conflictingAnimations) {
         // Special-case: if the next conflicting animation contain "delete",
         // while the final mutation has the same tag with "create", we should
         // remove both the delete and create as they have no effect when
@@ -742,13 +744,13 @@ LayoutAnimationKeyFrameManager::pullTransaction(
         if (reduceDeleteCreateMutation_) {
           for (auto itMutation = immediateMutations.begin();
                itMutation != immediateMutations.end();) {
-            auto& mutation = *itMutation;
+            auto &mutation = *itMutation;
             bool hasCreateMutationDeletedWithSameTag = false;
             if (mutation.newChildShadowView.tag == keyFrame.tag &&
                 mutation.type == ShadowViewMutation::Create) {
               for (auto itKeyFrame = keyFrame.finalMutationsForKeyFrame.begin();
                    itKeyFrame != keyFrame.finalMutationsForKeyFrame.end();) {
-                auto& conflictFinalMutation = *itKeyFrame;
+                auto &conflictFinalMutation = *itKeyFrame;
                 if (conflictFinalMutation.type == ShadowViewMutation::Delete) {
                   itKeyFrame =
                       keyFrame.finalMutationsForKeyFrame.erase(itKeyFrame);
@@ -778,7 +780,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
             auto newKeyFrameForUpdate = std::find_if(
                 keyFramesToAnimate.begin(),
                 keyFramesToAnimate.end(),
-                [&](const auto& newKeyFrame) {
+                [&](auto const &newKeyFrame) {
                   return newKeyFrame.type ==
                       AnimationConfigurationType::Update &&
                       newKeyFrame.tag == keyFrame.tag;
@@ -791,7 +793,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
               keyFrame.viewStart = keyFrame.viewPrev;
 
               // Find the insert mutation that conflicted with this update
-              for (auto& mutation : immediateMutations) {
+              for (auto &mutation : immediateMutations) {
                 if (mutation.newChildShadowView.tag == keyFrame.tag &&
                     (mutation.type == ShadowViewMutation::Insert ||
                      mutation.type == ShadowViewMutation::Create)) {
@@ -862,7 +864,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
 #ifdef LAYOUT_ANIMATION_VERBOSE_LOGGING
       LOG(ERROR) << "Adjust [Delayed] based on [FinalConflicting]";
 #endif
-      for (auto& mutation : finalConflictingMutations) {
+      for (auto &mutation : finalConflictingMutations) {
         if (mutation.type == ShadowViewMutation::Type::Insert ||
             mutation.type == ShadowViewMutation::Type::Remove) {
           adjustDelayedMutationIndicesForMutation(surfaceId, mutation, true);
@@ -880,8 +882,8 @@ LayoutAnimationKeyFrameManager::pullTransaction(
 #ifdef LAYOUT_ANIMATION_VERBOSE_LOGGING
       LOG(ERROR) << "Adjust [FrameDelayed] based on [Delayed]";
 #endif
-      for (auto& keyframe : inflightAnimations_.back().keyFrames) {
-        for (auto& finalMutation : keyframe.finalMutationsForKeyFrame) {
+      for (auto &keyframe : inflightAnimations_.back().keyFrames) {
+        for (auto &finalMutation : keyframe.finalMutationsForKeyFrame) {
           if (finalMutation.type == ShadowViewMutation::Type::Insert ||
               finalMutation.type == ShadowViewMutation::Type::Remove) {
             // When adjusting, skip adjusting against last animation - because
@@ -919,7 +921,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
       LOG(ERROR)
           << "Adjust each [ImmediateExecution] based on [Delayed] and [Delayed] based on each [ImmediateExecution]";
 #endif
-      for (auto& mutation : immediateMutations) {
+      for (auto &mutation : immediateMutations) {
         // Note: when adjusting [ImmediateExecutions] based on [FrameDelayed],
         // we need only adjust Inserts. Since inserts are executed
         // highest-index-first, lower indices being delayed does not impact
@@ -962,7 +964,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
       LOG(ERROR) << "No Animation: Queue up final conflicting animations";
 #endif
       ShadowViewMutationList finalMutationsForConflictingAnimations{};
-      for (const auto& keyFrame : conflictingAnimations) {
+      for (auto const &keyFrame : conflictingAnimations) {
         queueFinalMutationsForCompletedKeyFrame(
             keyFrame,
             finalMutationsForConflictingAnimations,
@@ -981,7 +983,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
       LOG(ERROR)
           << "No Animation: Adjust delayed mutations based on all finalMutationsForConflictingAnimations";
 #endif
-      for (const auto& mutation : finalMutationsForConflictingAnimations) {
+      for (auto const &mutation : finalMutationsForConflictingAnimations) {
         if (mutation.type == ShadowViewMutation::Type::Remove ||
             mutation.type == ShadowViewMutation::Type::Insert) {
           adjustDelayedMutationIndicesForMutation(surfaceId, mutation);
@@ -996,7 +998,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
       LOG(ERROR)
           << "No Animation: Adjust mutations based on remaining delayed mutations / adjust delayed, based on each";
 #endif
-      for (auto& mutation : mutations) {
+      for (auto &mutation : mutations) {
         if (mutation.type == ShadowViewMutation::Type::Remove ||
             mutation.type == ShadowViewMutation::Type::Insert) {
           adjustImmediateMutationIndicesForDelayedMutations(
@@ -1029,7 +1031,7 @@ LayoutAnimationKeyFrameManager::pullTransaction(
   LOG(ERROR)
       << "Adjust all delayed mutations based on final mutations generated by animation driver";
 #endif
-  for (const auto& mutation : mutationsForAnimation) {
+  for (auto const &mutation : mutationsForAnimation) {
     if (mutation.type == ShadowViewMutation::Type::Remove) {
       adjustDelayedMutationIndicesForMutation(surfaceId, mutation);
     }
@@ -1045,18 +1047,18 @@ LayoutAnimationKeyFrameManager::pullTransaction(
   LOG(ERROR) << "FINISHING DISPLAYING ONGOING inflightAnimations_!";
   int i = 0;
   int j = 0;
-  for (const auto& inflightAnimation : inflightAnimations_) {
+  for (auto const &inflightAnimation : inflightAnimations_) {
     i++;
     j = 0;
     if (inflightAnimation.completed) {
       continue;
     }
-    for (auto& keyframe : inflightAnimation.keyFrames) {
+    for (auto &keyframe : inflightAnimation.keyFrames) {
       j++;
       if (keyframe.invalidated) {
         continue;
       }
-      for (const auto& finalMutation : keyframe.finalMutationsForKeyFrame) {
+      for (auto const &finalMutation : keyframe.finalMutationsForKeyFrame) {
         if (!finalMutation.mutatedViewIsVirtual()) {
           std::string msg = "Animation " + std::to_string(i) + " keyframe " +
               std::to_string(j) + ": Final Animation";
@@ -1071,13 +1073,13 @@ LayoutAnimationKeyFrameManager::pullTransaction(
   // Signal to delegate if all animations are complete, or if we were not
   // animating anything and now some animation exists.
   if (inflightAnimationsExistInitially && inflightAnimations_.empty()) {
-    std::scoped_lock lock(layoutAnimationStatusDelegateMutex_);
+    std::lock_guard<std::mutex> lock(layoutAnimationStatusDelegateMutex_);
     if (layoutAnimationStatusDelegate_ != nullptr) {
       layoutAnimationStatusDelegate_->onAllAnimationsComplete();
     }
   } else if (
       !inflightAnimationsExistInitially && !inflightAnimations_.empty()) {
-    std::scoped_lock lock(layoutAnimationStatusDelegateMutex_);
+    std::lock_guard<std::mutex> lock(layoutAnimationStatusDelegateMutex_);
     if (layoutAnimationStatusDelegate_ != nullptr) {
       layoutAnimationStatusDelegate_->onAnimationStarted();
     }
@@ -1093,8 +1095,8 @@ void LayoutAnimationKeyFrameManager::uiManagerDidConfigureNextLayoutAnimation(
 }
 
 void LayoutAnimationKeyFrameManager::setLayoutAnimationStatusDelegate(
-    LayoutAnimationStatusDelegate* delegate) const {
-  std::scoped_lock lock(layoutAnimationStatusDelegateMutex_);
+    LayoutAnimationStatusDelegate *delegate) const {
+  std::lock_guard<std::mutex> lock(layoutAnimationStatusDelegateMutex_);
   layoutAnimationStatusDelegate_ = delegate;
 }
 
@@ -1106,21 +1108,21 @@ void LayoutAnimationKeyFrameManager::setClockNow(
 #pragma mark - Protected
 
 bool LayoutAnimationKeyFrameManager::hasComponentDescriptorForShadowView(
-    const ShadowView& shadowView) const {
+    ShadowView const &shadowView) const {
   return componentDescriptorRegistry_->hasComponentDescriptorAt(
       shadowView.componentHandle);
 }
 
-const ComponentDescriptor&
+ComponentDescriptor const &
 LayoutAnimationKeyFrameManager::getComponentDescriptorForShadowView(
-    const ShadowView& shadowView) const {
+    ShadowView const &shadowView) const {
   return componentDescriptorRegistry_->at(shadowView.componentHandle);
 }
 
 ShadowView LayoutAnimationKeyFrameManager::createInterpolatedShadowView(
     Float progress,
-    const ShadowView& startingView,
-    const ShadowView& finalView) const {
+    ShadowView const &startingView,
+    ShadowView const &finalView) const {
   react_native_assert(startingView.tag > 0);
   react_native_assert(finalView.tag > 0);
   if (!hasComponentDescriptorForShadowView(startingView)) {
@@ -1130,7 +1132,7 @@ ShadowView LayoutAnimationKeyFrameManager::createInterpolatedShadowView(
     return finalView;
   }
 
-  const ComponentDescriptor& componentDescriptor =
+  ComponentDescriptor const &componentDescriptor =
       getComponentDescriptorForShadowView(startingView);
 
   // Base the mutated view on the finalView, so that the following stay
@@ -1152,21 +1154,16 @@ ShadowView LayoutAnimationKeyFrameManager::createInterpolatedShadowView(
   // Animate opacity or scale/transform
   PropsParserContext propsParserContext{
       finalView.surfaceId, *contextContainer_};
-  mutatedShadowView.props = interpolateProps(
-      componentDescriptor,
-      propsParserContext,
-      progress,
-      startingView.props,
-      finalView.props);
-
+  mutatedShadowView.props = componentDescriptor.interpolateProps(
+      propsParserContext, progress, startingView.props, finalView.props);
   react_native_assert(mutatedShadowView.props != nullptr);
   if (mutatedShadowView.props == nullptr) {
     return finalView;
   }
 
   // Interpolate LayoutMetrics
-  const LayoutMetrics& finalLayoutMetrics = finalView.layoutMetrics;
-  const LayoutMetrics& baselineLayoutMetrics = startingView.layoutMetrics;
+  LayoutMetrics const &finalLayoutMetrics = finalView.layoutMetrics;
+  LayoutMetrics const &baselineLayoutMetrics = startingView.layoutMetrics;
   LayoutMetrics interpolatedLayoutMetrics = finalLayoutMetrics;
   interpolatedLayoutMetrics.frame.origin.x = interpolateFloats(
       progress,
@@ -1190,21 +1187,21 @@ ShadowView LayoutAnimationKeyFrameManager::createInterpolatedShadowView(
 }
 
 void LayoutAnimationKeyFrameManager::callCallback(
-    const LayoutAnimationCallbackWrapper& callback) const {
+    LayoutAnimationCallbackWrapper const &callback) const {
   runtimeExecutor_(
-      [callback](jsi::Runtime& runtime) { callback.call(runtime); });
+      [callback](jsi::Runtime &runtime) { callback.call(runtime); });
 }
 
 void LayoutAnimationKeyFrameManager::queueFinalMutationsForCompletedKeyFrame(
-    const AnimationKeyFrame& keyframe,
-    ShadowViewMutation::List& mutationsList,
+    AnimationKeyFrame const &keyframe,
+    ShadowViewMutation::List &mutationsList,
     bool interrupted,
-    const std::string& /*logPrefix*/) const {
+    const std::string & /*logPrefix*/) const {
   if (!keyframe.finalMutationsForKeyFrame.empty()) {
     // TODO: modularize this segment, it is repeated 2x in KeyFrameManager
     // as well.
     ShadowView prev = keyframe.viewPrev;
-    for (const auto& finalMutation : keyframe.finalMutationsForKeyFrame) {
+    for (auto const &finalMutation : keyframe.finalMutationsForKeyFrame) {
       PrintMutationInstruction(
           logPrefix + ": Queuing up Final Mutation:", finalMutation);
       // Copy so that if something else mutates the inflight animations,
@@ -1305,7 +1302,7 @@ void LayoutAnimationKeyFrameManager::queueFinalMutationsForCompletedKeyFrame(
 void LayoutAnimationKeyFrameManager::
     adjustImmediateMutationIndicesForDelayedMutations(
         SurfaceId surfaceId,
-        ShadowViewMutation& mutation,
+        ShadowViewMutation &mutation,
         bool skipLastAnimation,
         bool lastAnimationOnly) const {
   bool isRemoveMutation = mutation.type == ShadowViewMutation::Type::Remove;
@@ -1326,13 +1323,13 @@ void LayoutAnimationKeyFrameManager::
 
   // First, collect all final mutations that could impact this immediate
   // mutation.
-  std::vector<const ShadowViewMutation*> candidateMutations{};
+  std::vector<ShadowViewMutation const *> candidateMutations{};
 
   for (auto inflightAnimationIt =
            inflightAnimations_.rbegin() + (skipLastAnimation ? 1 : 0);
        inflightAnimationIt != inflightAnimations_.rend();
        inflightAnimationIt++) {
-    auto& inflightAnimation = *inflightAnimationIt;
+    auto &inflightAnimation = *inflightAnimationIt;
     if (inflightAnimation.surfaceId != surfaceId) {
       continue;
     }
@@ -1340,7 +1337,7 @@ void LayoutAnimationKeyFrameManager::
       continue;
     }
 
-    for (const auto& animatedKeyFrame : inflightAnimation.keyFrames) {
+    for (auto const &animatedKeyFrame : inflightAnimation.keyFrames) {
       if (animatedKeyFrame.invalidated) {
         continue;
       }
@@ -1351,7 +1348,7 @@ void LayoutAnimationKeyFrameManager::
         continue;
       }
 
-      for (const auto& delayedMutation :
+      for (auto const &delayedMutation :
            animatedKeyFrame.finalMutationsForKeyFrame) {
         if (delayedMutation.type != ShadowViewMutation::Type::Remove) {
           continue;
@@ -1390,7 +1387,7 @@ void LayoutAnimationKeyFrameManager::
             candidateMutations.begin(),
             candidateMutations.end(),
             [&changed, &mutation, &adjustedDelta, &isRemoveMutation](
-                const ShadowViewMutation* candidateMutation) {
+                ShadowViewMutation const *candidateMutation) {
               bool indexConflicts =
                   (candidateMutation->index < mutation.index ||
                    (isRemoveMutation &&
@@ -1413,7 +1410,7 @@ void LayoutAnimationKeyFrameManager::
 
 void LayoutAnimationKeyFrameManager::adjustDelayedMutationIndicesForMutation(
     SurfaceId surfaceId,
-    const ShadowViewMutation& mutation,
+    ShadowViewMutation const &mutation,
     bool skipLastAnimation) const {
   bool isRemoveMutation = mutation.type == ShadowViewMutation::Type::Remove;
   bool isInsertMutation = mutation.type == ShadowViewMutation::Type::Insert;
@@ -1430,13 +1427,13 @@ void LayoutAnimationKeyFrameManager::adjustDelayedMutationIndicesForMutation(
 
   // First, collect all final mutations that could impact this immediate
   // mutation.
-  std::vector<ShadowViewMutation*> candidateMutations{};
+  std::vector<ShadowViewMutation *> candidateMutations{};
 
   for (auto inflightAnimationIt =
            inflightAnimations_.rbegin() + (skipLastAnimation ? 1 : 0);
        inflightAnimationIt != inflightAnimations_.rend();
        inflightAnimationIt++) {
-    auto& inflightAnimation = *inflightAnimationIt;
+    auto &inflightAnimation = *inflightAnimationIt;
 
     if (inflightAnimation.surfaceId != surfaceId) {
       continue;
@@ -1445,7 +1442,7 @@ void LayoutAnimationKeyFrameManager::adjustDelayedMutationIndicesForMutation(
       continue;
     }
 
-    for (auto& animatedKeyFrame : inflightAnimation.keyFrames) {
+    for (auto &animatedKeyFrame : inflightAnimation.keyFrames) {
       if (animatedKeyFrame.invalidated) {
         continue;
       }
@@ -1456,7 +1453,7 @@ void LayoutAnimationKeyFrameManager::adjustDelayedMutationIndicesForMutation(
         continue;
       }
 
-      for (auto& finalAnimationMutation :
+      for (auto &finalAnimationMutation :
            animatedKeyFrame.finalMutationsForKeyFrame) {
         if (finalAnimationMutation.oldChildShadowView.tag == tag) {
           continue;
@@ -1497,7 +1494,7 @@ void LayoutAnimationKeyFrameManager::adjustDelayedMutationIndicesForMutation(
             candidateMutations.begin(),
             candidateMutations.end(),
             [&mutation, &isRemoveMutation, &isInsertMutation, &changed](
-                ShadowViewMutation* candidateMutation) {
+                ShadowViewMutation *candidateMutation) {
               if (isRemoveMutation &&
                   mutation.index <= candidateMutation->index) {
                 candidateMutation->index--;
@@ -1526,10 +1523,10 @@ void LayoutAnimationKeyFrameManager::adjustDelayedMutationIndicesForMutation(
 
 void LayoutAnimationKeyFrameManager::getAndEraseConflictingAnimations(
     SurfaceId surfaceId,
-    const ShadowViewMutationList& mutations,
-    std::vector<AnimationKeyFrame>& conflictingAnimations) const {
+    ShadowViewMutationList const &mutations,
+    std::vector<AnimationKeyFrame> &conflictingAnimations) const {
   ShadowViewMutationList localConflictingMutations{};
-  for (const auto& mutation : mutations) {
+  for (auto const &mutation : mutations) {
     if (mutation.type == ShadowViewMutation::Type::RemoveDeleteTree) {
       continue;
     }
@@ -1537,14 +1534,14 @@ void LayoutAnimationKeyFrameManager::getAndEraseConflictingAnimations(
     bool mutationIsCreateOrDelete =
         mutation.type == ShadowViewMutation::Type::Create ||
         mutation.type == ShadowViewMutation::Type::Delete;
-    const auto& baselineShadowView =
+    auto const &baselineShadowView =
         (mutation.type == ShadowViewMutation::Type::Insert ||
          mutation.type == ShadowViewMutation::Type::Create)
         ? mutation.newChildShadowView
         : mutation.oldChildShadowView;
     auto baselineTag = baselineShadowView.tag;
 
-    for (auto& inflightAnimation : inflightAnimations_) {
+    for (auto &inflightAnimation : inflightAnimations_) {
       if (inflightAnimation.surfaceId != surfaceId) {
         continue;
       }
@@ -1554,7 +1551,7 @@ void LayoutAnimationKeyFrameManager::getAndEraseConflictingAnimations(
 
       for (auto it = inflightAnimation.keyFrames.begin();
            it != inflightAnimation.keyFrames.end();) {
-        auto& animatedKeyFrame = *it;
+        auto &animatedKeyFrame = *it;
 
         if (animatedKeyFrame.invalidated) {
           continue;
@@ -1585,7 +1582,7 @@ void LayoutAnimationKeyFrameManager::getAndEraseConflictingAnimations(
           // opacity to "1", even if there's no final ShadowNode update.
           // TODO: don't animate virtual views in the first place?
           bool isVirtual = false;
-          for (const auto& finalMutationForKeyFrame :
+          for (const auto &finalMutationForKeyFrame :
                animatedKeyFrame.finalMutationsForKeyFrame) {
             isVirtual =
                 isVirtual || finalMutationForKeyFrame.mutatedViewIsVirtual();
@@ -1599,7 +1596,7 @@ void LayoutAnimationKeyFrameManager::getAndEraseConflictingAnimations(
           }
 
           conflictingAnimations.push_back(animatedKeyFrame);
-          for (const auto& finalMutationForKeyFrame :
+          for (const auto &finalMutationForKeyFrame :
                animatedKeyFrame.finalMutationsForKeyFrame) {
             if (!isVirtual ||
                 finalMutationForKeyFrame.type ==
@@ -1631,9 +1628,9 @@ void LayoutAnimationKeyFrameManager::deleteAnimationsForStoppedSurfaces()
 
   // Execute stopSurface on any ongoing animations
   if (inflightAnimationsExistInitially) {
-    std::unordered_set<SurfaceId> surfaceIdsToStop{};
+    butter::set<SurfaceId> surfaceIdsToStop{};
     {
-      std::scoped_lock lock(surfaceIdsToStopMutex_);
+      std::lock_guard<std::mutex> lock(surfaceIdsToStopMutex_);
       surfaceIdsToStop = surfaceIdsToStop_;
       surfaceIdsToStop_.clear();
     }
@@ -1650,7 +1647,7 @@ void LayoutAnimationKeyFrameManager::deleteAnimationsForStoppedSurfaces()
 
     for (auto it = inflightAnimations_.begin();
          it != inflightAnimations_.end();) {
-      const auto& animation = *it;
+      const auto &animation = *it;
       if (surfaceIdsToStop.find(animation.surfaceId) !=
           surfaceIdsToStop.end()) {
         it = inflightAnimations_.erase(it);
@@ -1660,33 +1657,5 @@ void LayoutAnimationKeyFrameManager::deleteAnimationsForStoppedSurfaces()
     }
   }
 }
-
-Props::Shared LayoutAnimationKeyFrameManager::interpolateProps(
-    const ComponentDescriptor& componentDescriptor,
-    const PropsParserContext& context,
-    Float animationProgress,
-    const Props::Shared& props,
-    const Props::Shared& newProps) const {
-#ifdef ANDROID
-  // On Android only, the merged props should have the same RawProps as the
-  // final props struct
-  Props::Shared interpolatedPropsShared =
-      (newProps != nullptr
-           ? componentDescriptor.cloneProps(
-                 context, newProps, RawProps(newProps->rawProps))
-           : componentDescriptor.cloneProps(context, newProps, {}));
-#else
-  Props::Shared interpolatedPropsShared =
-      componentDescriptor.cloneProps(context, newProps, {});
-#endif
-
-  if (componentDescriptor.getTraits().check(
-          ShadowNodeTraits::Trait::ViewKind)) {
-    interpolateViewProps(
-        animationProgress, props, newProps, interpolatedPropsShared);
-  }
-
-  return interpolatedPropsShared;
-};
 
 } // namespace facebook::react

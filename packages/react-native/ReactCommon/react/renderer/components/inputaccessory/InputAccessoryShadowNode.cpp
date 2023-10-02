@@ -7,8 +7,10 @@
 
 #include "InputAccessoryShadowNode.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 extern const char InputAccessoryComponentName[] = "InputAccessoryView";
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

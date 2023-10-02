@@ -10,8 +10,7 @@
 
 'use strict';
 
-import type {CellMetricProps} from './ListMetricsAggregator';
-import ListMetricsAggregator from './ListMetricsAggregator';
+import type {FrameMetricProps} from './VirtualizedListProps';
 
 const invariant = require('invariant');
 
@@ -102,10 +101,17 @@ class ViewabilityHelper {
    * Determines which items are viewable based on the current metrics and config.
    */
   computeViewableItems(
-    props: CellMetricProps,
+    props: FrameMetricProps,
     scrollOffset: number,
     viewportHeight: number,
-    listMetrics: ListMetricsAggregator,
+    getFrameMetrics: (
+      index: number,
+      props: FrameMetricProps,
+    ) => ?{
+      length: number,
+      offset: number,
+      ...
+    },
     // Optional optimization to reduce the scan size
     renderRange?: {
       first: number,
@@ -140,13 +146,12 @@ class ViewabilityHelper {
       return [];
     }
     for (let idx = first; idx <= last; idx++) {
-      const metrics = listMetrics.getCellMetrics(idx, props);
+      const metrics = getFrameMetrics(idx, props);
       if (!metrics) {
         continue;
       }
-      const top = Math.floor(metrics.offset - scrollOffset);
-      const bottom = Math.floor(top + metrics.length);
-
+      const top = metrics.offset - scrollOffset;
+      const bottom = top + metrics.length;
       if (top < viewportHeight && bottom > 0) {
         firstVisible = idx;
         if (
@@ -173,14 +178,21 @@ class ViewabilityHelper {
    * `onViewableItemsChanged` as appropriate.
    */
   onUpdate(
-    props: CellMetricProps,
+    props: FrameMetricProps,
     scrollOffset: number,
     viewportHeight: number,
-    listMetrics: ListMetricsAggregator,
+    getFrameMetrics: (
+      index: number,
+      props: FrameMetricProps,
+    ) => ?{
+      length: number,
+      offset: number,
+      ...
+    },
     createViewToken: (
       index: number,
       isViewable: boolean,
-      props: CellMetricProps,
+      props: FrameMetricProps,
     ) => ViewToken,
     onViewableItemsChanged: ({
       viewableItems: Array<ViewToken>,
@@ -198,7 +210,7 @@ class ViewabilityHelper {
     if (
       (this._config.waitForInteraction && !this._hasInteracted) ||
       itemCount === 0 ||
-      !listMetrics.getCellMetrics(0, props)
+      !getFrameMetrics(0, props)
     ) {
       return;
     }
@@ -208,7 +220,7 @@ class ViewabilityHelper {
         props,
         scrollOffset,
         viewportHeight,
-        listMetrics,
+        getFrameMetrics,
         renderRange,
       );
     }
@@ -263,7 +275,7 @@ class ViewabilityHelper {
   }
 
   _onUpdateSync(
-    props: CellMetricProps,
+    props: FrameMetricProps,
     viewableIndicesToCheck: Array<number>,
     onViewableItemsChanged: ({
       changed: Array<ViewToken>,
@@ -273,7 +285,7 @@ class ViewabilityHelper {
     createViewToken: (
       index: number,
       isViewable: boolean,
-      props: CellMetricProps,
+      props: FrameMetricProps,
     ) => ViewToken,
   ) {
     // Filter out indices that have gone out of view since this call was scheduled.

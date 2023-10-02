@@ -12,7 +12,8 @@
 
 #include "NativeCommon.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class NativeMap : public jni::HybridClass<NativeMap> {
  public:
@@ -35,13 +36,14 @@ class NativeMap : public jni::HybridClass<NativeMap> {
   friend HybridBase;
 
   template <class Dyn>
-  explicit NativeMap(Dyn&& map)
+  explicit NativeMap(Dyn &&map)
       : isConsumed(false), map_(std::forward<Dyn>(map)) {}
 
   void throwIfConsumed();
 
-  NativeMap(const NativeMap&) = delete;
-  NativeMap& operator=(const NativeMap&) = delete;
+  NativeMap(const NativeMap &) = delete;
+  NativeMap &operator=(const NativeMap &) = delete;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

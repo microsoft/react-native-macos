@@ -12,7 +12,8 @@
 #include <react/renderer/components/safeareaview/SafeAreaViewState.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 extern const char SafeAreaViewComponentName[];
 
@@ -25,6 +26,14 @@ class SafeAreaViewShadowNode final : public ConcreteViewShadowNode<
                                          ViewEventEmitter,
                                          SafeAreaViewState> {
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
+
+ public:
+  static ShadowNodeTraits BaseTraits() {
+    auto traits = ConcreteViewShadowNode::BaseTraits();
+    traits.set(ShadowNodeTraits::Trait::DirtyYogaNode);
+    return traits;
+  }
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

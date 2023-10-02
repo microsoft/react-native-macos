@@ -4,8 +4,9 @@ parameters:
   xcode_configuration: ''
   xcode_scheme: ''
   xcode_actions: ''
-  xcode_destination: ''
+  # xcode_destination: ''
   xcode_extraArgs: ''
+  slice_name: ''
   xcode_version: ''
   new_arch_enabled: ''
   use_hermes: ''
@@ -60,8 +61,7 @@ steps:
       sdk: ${{ parameters.xcode_sdk }}
       xcWorkspacePath: packages/rn-tester/RNTesterPods.xcworkspace
       scheme: ${{ parameters.xcode_scheme }}
-      xcodeVersion: specifyPath
-      xcodeDeveloperDir: ${{ parameters.xcode_version }}
+      xcodeVersion: default
       signingOption: auto
       packageApp: false
       teamId: '$(XCodeSigningMicrosoftTeamID)'

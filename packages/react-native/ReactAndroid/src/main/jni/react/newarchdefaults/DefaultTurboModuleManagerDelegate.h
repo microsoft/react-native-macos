@@ -13,7 +13,8 @@
 #include <ReactCommon/TurboModuleManagerDelegate.h>
 #include <fbjni/fbjni.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class DefaultTurboModuleManagerDelegate : public jni::HybridClass<
                                               DefaultTurboModuleManagerDelegate,
@@ -27,25 +28,26 @@ class DefaultTurboModuleManagerDelegate : public jni::HybridClass<
   static void registerNatives();
 
   static std::function<std::shared_ptr<TurboModule>(
-      const std::string&,
-      const std::shared_ptr<CallInvoker>&)>
+      const std::string &,
+      const std::shared_ptr<CallInvoker> &)>
       cxxModuleProvider;
 
   static std::function<std::shared_ptr<TurboModule>(
-      const std::string&,
-      const JavaTurboModule::InitParams&)>
+      const std::string &,
+      const JavaTurboModule::InitParams &)>
       javaModuleProvider;
 
   std::shared_ptr<TurboModule> getTurboModule(
-      const std::string& name,
-      const std::shared_ptr<CallInvoker>& jsInvoker) override;
+      const std::string &name,
+      const std::shared_ptr<CallInvoker> &jsInvoker) override;
   std::shared_ptr<TurboModule> getTurboModule(
-      const std::string& name,
-      const JavaTurboModule::InitParams& params) override;
+      const std::string &name,
+      const JavaTurboModule::InitParams &params) override;
 
  private:
   friend HybridBase;
   using HybridBase::HybridBase;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

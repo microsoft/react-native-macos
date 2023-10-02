@@ -28,7 +28,7 @@ import com.facebook.react.common.annotations.VisibleForTesting;
 import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.turbomodule.core.CallInvokerHolderImpl;
-import com.facebook.react.turbomodule.core.NativeMethodCallInvokerHolderImpl;
+import com.facebook.react.turbomodule.core.interfaces.TurboModule;
 import com.facebook.react.turbomodule.core.interfaces.TurboModuleRegistry;
 import com.facebook.systrace.Systrace;
 import com.facebook.systrace.TraceListener;
@@ -112,7 +112,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
 
   public native CallInvokerHolderImpl getJSCallInvokerHolder();
 
-  public native NativeMethodCallInvokerHolderImpl getNativeMethodCallInvokerHolder();
+  public native CallInvokerHolderImpl getNativeCallInvokerHolder();
 
   private CatalystInstanceImpl(
       final ReactQueueConfigurationSpec reactQueueConfigurationSpec,
@@ -139,6 +139,10 @@ public class CatalystInstanceImpl implements CatalystInstance {
 
     FLog.d(ReactConstants.TAG, "Initializing React Xplat Bridge before initializeBridge");
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "initializeCxxBridge");
+
+    if (ReactFeatureFlags.warnOnLegacyNativeModuleSystemUse) {
+      warnOnLegacyNativeModuleSystemUse();
+    }
 
     initializeBridge(
         new BridgeCallback(this),
@@ -206,6 +210,8 @@ public class CatalystInstanceImpl implements CatalystInstance {
 
   private native void jniExtendNativeModules(
       Collection<JavaModuleWrapper> javaModules, Collection<ModuleHolder> cxxModules);
+
+  private native void warnOnLegacyNativeModuleSystemUse();
 
   private native void initializeBridge(
       ReactCallback callback,
@@ -477,9 +483,9 @@ public class CatalystInstanceImpl implements CatalystInstance {
   @Nullable
   public NativeModule getNativeModule(String moduleName) {
     if (getTurboModuleRegistry() != null) {
-      NativeModule module = getTurboModuleRegistry().getModule(moduleName);
-      if (module != null) {
-        return module;
+      TurboModule turboModule = getTurboModuleRegistry().getModule(moduleName);
+      if (turboModule != null) {
+        return (NativeModule) turboModule;
       }
     }
 
@@ -504,8 +510,8 @@ public class CatalystInstanceImpl implements CatalystInstance {
     nativeModules.addAll(mNativeModuleRegistry.getAllModules());
 
     if (getTurboModuleRegistry() != null) {
-      for (NativeModule module : getTurboModuleRegistry().getModules()) {
-        nativeModules.add(module);
+      for (TurboModule turboModule : getTurboModuleRegistry().getModules()) {
+        nativeModules.add((NativeModule) turboModule);
       }
     }
 

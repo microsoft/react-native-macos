@@ -9,7 +9,8 @@
 
 #include <react/renderer/graphics/Float.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 struct Vector {
   Float x{0};
@@ -18,4 +19,5 @@ struct Vector {
   Float w{0};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

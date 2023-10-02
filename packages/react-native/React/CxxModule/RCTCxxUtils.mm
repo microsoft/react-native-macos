@@ -17,7 +17,8 @@
 #import "RCTCxxModule.h"
 #import "RCTNativeModule.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 using facebook::jsi::JSError;
 
@@ -100,4 +101,5 @@ NSString *deriveSourceURL(NSURL *url)
   return sourceUrl ?: @"";
 }
 
-} // namespace facebook::react
+}
+}

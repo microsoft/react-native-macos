@@ -9,8 +9,6 @@
 
 'use strict';
 
-const {defaults} = require('jest-config');
-
 module.exports = {
   transform: {
     '^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp)$':
@@ -20,14 +18,13 @@ module.exports = {
   setupFiles: ['./packages/react-native/jest/local-setup.js'],
   fakeTimers: {
     enableGlobally: true,
-    legacyFakeTimers: false,
+    legacyFakeTimers: true,
   },
   snapshotFormat: {
     escapeString: true,
     printBasicPrototype: true,
   },
-  // This allows running Meta-internal tests with the `-test.fb.js` suffix.
-  testRegex: '/__tests__/.*-test(\\.fb)?\\.js$',
+  testRegex: '/__tests__/.*-test\\.js$',
   testPathIgnorePatterns: [
     '/node_modules/',
     '<rootDir>/packages/react-native/template',
@@ -39,14 +36,6 @@ module.exports = {
     defaultPlatform: 'ios',
     platforms: ['ios', 'android', 'macos'],
   },
-  moduleNameMapper: {
-    // This module is internal to Meta and used by their custom React renderer.
-    // In tests, we can just use a mock.
-    '^ReactNativeInternalFeatureFlags$':
-      '<rootDir>/packages/react-native/jest/ReactNativeInternalFeatureFlagsMock.js',
-    '^react-native(.*)': '<rootDir>/packages/react-native$1', // [macOS]
-  },
-  moduleFileExtensions: ['fb.js'].concat(defaults.moduleFileExtensions),
   unmockedModulePathPatterns: [
     'node_modules/react/',
     'packages/react-native/Libraries/Renderer',
@@ -56,6 +45,11 @@ module.exports = {
     'denodeify',
   ],
   testEnvironment: 'node',
+  moduleNameMapper: {
+    'react-native-codegen/(.*)': '<rootDir>/packages/react-native-codegen/$1',
+    'eslint/lib/rules/(.*)': '<rootDir>/node_modules/eslint/lib/rules/$1',
+    '^react-native(.*)': '<rootDir>/packages/react-native$1',
+  },
   collectCoverageFrom: ['packages/react-native/Libraries/**/*.js'],
   coveragePathIgnorePatterns: [
     '/__tests__/',

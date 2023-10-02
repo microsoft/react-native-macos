@@ -48,10 +48,12 @@ using namespace facebook::react;
     telemetry = nullptr;
   }
 
-  auto sharedCancelationFunction = SharedFunction<>();
-  auto imageRequest = ImageRequest(imageSource, telemetry, sharedCancelationFunction);
+  auto imageRequest = ImageRequest(imageSource, telemetry);
   auto weakObserverCoordinator =
       (std::weak_ptr<const ImageResponseObserverCoordinator>)imageRequest.getSharedObserverCoordinator();
+
+  auto sharedCancelationFunction = SharedFunction<>();
+  imageRequest.setCancelationFunction(sharedCancelationFunction);
 
   /*
    * Even if an image is being loaded asynchronously on some other background thread, some other preparation

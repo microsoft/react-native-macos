@@ -13,24 +13,25 @@
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class AccessibilityProps {
  public:
   AccessibilityProps() = default;
   AccessibilityProps(
-      const PropsParserContext& context,
-      const AccessibilityProps& sourceProps,
-      const RawProps& rawProps);
+      const PropsParserContext &context,
+      AccessibilityProps const &sourceProps,
+      RawProps const &rawProps);
 
   void setProp(
-      const PropsParserContext& context,
+      const PropsParserContext &context,
       RawPropsPropNameHash hash,
-      const char* propName,
-      const RawValue& value);
+      const char *propName,
+      RawValue const &value);
 
 #ifdef ANDROID
-  void propsDiffMapBuffer(const Props* oldProps, MapBufferBuilder& builder)
+  void propsDiffMapBuffer(Props const *oldProps, MapBufferBuilder &builder)
       const;
 #endif
 
@@ -57,7 +58,6 @@ class AccessibilityProps {
   bool onAccessibilityAction{};
   ImportantForAccessibility importantForAccessibility{
       ImportantForAccessibility::Auto};
-  Role role{Role::None};
   std::string testId{""};
 
 #pragma mark - DebugStringConvertible
@@ -67,4 +67,5 @@ class AccessibilityProps {
 #endif
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

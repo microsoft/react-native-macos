@@ -19,20 +19,18 @@ namespace facebook::react {
 using AncestorList = ShadowNode::AncestorList;
 
 ShadowNodeFamily::ShadowNodeFamily(
-    const ShadowNodeFamilyFragment& fragment,
+    ShadowNodeFamilyFragment const &fragment,
     EventDispatcher::Weak eventDispatcher,
-    const ComponentDescriptor& componentDescriptor)
+    ComponentDescriptor const &componentDescriptor)
     : eventDispatcher_(std::move(eventDispatcher)),
       tag_(fragment.tag),
       surfaceId_(fragment.surfaceId),
-      instanceHandle_(fragment.instanceHandle),
-      eventEmitter_(
-          componentDescriptor.createEventEmitter(fragment.instanceHandle)),
+      eventEmitter_(fragment.eventEmitter),
       componentDescriptor_(componentDescriptor),
       componentHandle_(componentDescriptor.getComponentHandle()),
       componentName_(componentDescriptor.getComponentName()) {}
 
-void ShadowNodeFamily::setParent(const ShadowNodeFamily::Shared& parent) const {
+void ShadowNodeFamily::setParent(ShadowNodeFamily::Shared const &parent) const {
   react_native_assert(parent_.lock() == nullptr || parent_.lock() == parent);
   if (hasParent_) {
     return;
@@ -50,21 +48,17 @@ SurfaceId ShadowNodeFamily::getSurfaceId() const {
   return surfaceId_;
 }
 
-SharedEventEmitter ShadowNodeFamily::getEventEmitter() const {
-  return eventEmitter_;
-}
-
 ComponentName ShadowNodeFamily::getComponentName() const {
   return componentName_;
 }
 
-const ComponentDescriptor& ShadowNodeFamily::getComponentDescriptor() const {
+const ComponentDescriptor &ShadowNodeFamily::getComponentDescriptor() const {
   return componentDescriptor_;
 }
 
 AncestorList ShadowNodeFamily::getAncestors(
-    const ShadowNode& ancestorShadowNode) const {
-  auto families = std::vector<const ShadowNodeFamily*>{};
+    ShadowNode const &ancestorShadowNode) const {
+  auto families = butter::small_vector<ShadowNodeFamily const *, 64>{};
   auto ancestorFamily = ancestorShadowNode.family_.get();
 
   auto family = this;
@@ -83,7 +77,7 @@ AncestorList ShadowNodeFamily::getAncestors(
     auto childFamily = *it;
     auto found = false;
     auto childIndex = 0;
-    for (const auto& childNode : *parentNode->children_) {
+    for (const auto &childNode : *parentNode->children_) {
       if (childNode->family_.get() == childFamily) {
         ancestors.emplace_back(*parentNode, childIndex);
         parentNode = childNode.get();
@@ -107,7 +101,7 @@ State::Shared ShadowNodeFamily::getMostRecentState() const {
   return mostRecentState_;
 }
 
-void ShadowNodeFamily::setMostRecentState(const State::Shared& state) const {
+void ShadowNodeFamily::setMostRecentState(State::Shared const &state) const {
   std::unique_lock lock(mutex_);
 
   /*
@@ -116,7 +110,7 @@ void ShadowNodeFamily::setMostRecentState(const State::Shared& state) const {
    * Nodes (the evolution of nodes is not linear), however, we never back out
    * states (they progress linearly).
    */
-  if (state && (state->isObsolete_ || state == mostRecentState_)) {
+  if (state && state->isObsolete_) {
     return;
   }
 
@@ -127,8 +121,8 @@ void ShadowNodeFamily::setMostRecentState(const State::Shared& state) const {
   mostRecentState_ = state;
 }
 
-std::shared_ptr<const State> ShadowNodeFamily::getMostRecentStateIfObsolete(
-    const State& state) const {
+std::shared_ptr<State const> ShadowNodeFamily::getMostRecentStateIfObsolete(
+    State const &state) const {
   std::unique_lock lock(mutex_);
   if (!state.isObsolete_) {
     return {};
@@ -137,7 +131,7 @@ std::shared_ptr<const State> ShadowNodeFamily::getMostRecentStateIfObsolete(
 }
 
 void ShadowNodeFamily::dispatchRawState(
-    StateUpdate&& stateUpdate,
+    StateUpdate &&stateUpdate,
     EventPriority priority) const {
   auto eventDispatcher = eventDispatcher_.lock();
   if (!eventDispatcher) {

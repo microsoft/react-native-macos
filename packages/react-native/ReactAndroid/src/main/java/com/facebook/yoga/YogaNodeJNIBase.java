@@ -155,7 +155,7 @@ public abstract class YogaNodeJNIBase extends YogaNode implements Cloneable {
 
   private void clearChildren() {
     mChildren = null;
-    YogaNative.jni_YGNodeRemoveAllChildrenJNI(mNativePointer);
+    YogaNative.jni_YGNodeClearChildrenJNI(mNativePointer);
   }
 
   public YogaNodeJNIBase removeChildAt(int i) {
@@ -232,7 +232,7 @@ public abstract class YogaNodeJNIBase extends YogaNode implements Cloneable {
   }
 
   public void dirtyAllDescendants() {
-    YogaNative.jni_YGNodeMarkDirtyAndPropagateToDescendantsJNI(mNativePointer);
+    YogaNative.jni_YGNodeMarkDirtyAndPropogateToDescendantsJNI(mNativePointer);
   }
 
   public boolean isDirty() {

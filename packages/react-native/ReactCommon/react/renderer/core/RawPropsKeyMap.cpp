@@ -9,7 +9,6 @@
 
 #include <react/debug/react_native_assert.h>
 
-#include <glog/logging.h>
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -17,14 +16,14 @@
 
 namespace facebook::react {
 
-bool RawPropsKeyMap::hasSameName(const Item& lhs, const Item& rhs) noexcept {
+bool RawPropsKeyMap::hasSameName(Item const &lhs, Item const &rhs) noexcept {
   return lhs.length == rhs.length &&
       (std::memcmp(lhs.name, rhs.name, lhs.length) == 0);
 }
 
 bool RawPropsKeyMap::shouldFirstOneBeBeforeSecondOne(
-    const Item& lhs,
-    const Item& rhs) noexcept {
+    Item const &lhs,
+    Item const &rhs) noexcept {
   if (lhs.length != rhs.length) {
     return lhs.length < rhs.length;
   }
@@ -33,14 +32,12 @@ bool RawPropsKeyMap::shouldFirstOneBeBeforeSecondOne(
 }
 
 void RawPropsKeyMap::insert(
-    const RawPropsKey& key,
+    RawPropsKey const &key,
     RawPropsValueIndex value) noexcept {
   auto item = Item{};
   item.value = value;
   key.render(item.name, &item.length);
   items_.push_back(item);
-  react_native_assert(
-      items_.size() < std::numeric_limits<RawPropsPropNameLength>::max());
 }
 
 void RawPropsKeyMap::reindex() noexcept {
@@ -52,32 +49,21 @@ void RawPropsKeyMap::reindex() noexcept {
       &RawPropsKeyMap::shouldFirstOneBeBeforeSecondOne);
 
   // Filtering out duplicating keys.
-  // Accessing the same key twice is supported by RawPropsPorser, but the
-  // RawPropsKey used must be identical, and if not, lookup will be
-  // inconsistent.
-  auto it = items_.begin();
-  auto end = items_.end();
-  // Implements std::unique with additional logging
-  if (it != end) {
-    auto result = it;
-    while (++it != end) {
-      if (hasSameName(*result, *it)) {
-        LOG(ERROR)
-            << "Component property map contains multiple entries for '"
-            << std::string_view(it->name, it->length)
-            << "'. Ensure all calls to convertRawProp use a consistent prefix, name and suffix.";
-      } else if (++result != it) {
-        *result = *it;
-      }
-    }
-    items_.erase(++result, items_.end());
-  }
+  // If some `*Props` object requests a prop more than once, only the first
+  // request will be fulfilled. E.g. `TextInputProps` class has a sub-property
+  // `backgroundColor` twice, the first time as part of `ViewProps` base-class
+  // and the second as part of `BaseTextProps` base-class. In this
+  // configuration, the only one which comes first (from `ViewProps`, which
+  // appear first) will be assigned.
+  items_.erase(
+      std::unique(items_.begin(), items_.end(), &RawPropsKeyMap::hasSameName),
+      items_.end());
 
   buckets_.resize(kPropNameLengthHardCap);
 
   auto length = RawPropsPropNameLength{0};
   for (size_t i = 0; i < items_.size(); i++) {
-    auto& item = items_[i];
+    auto &item = items_[i];
     if (item.length != length) {
       for (auto j = length; j < item.length; j++) {
         buckets_[j] = static_cast<RawPropsPropNameLength>(i);
@@ -92,7 +78,7 @@ void RawPropsKeyMap::reindex() noexcept {
 }
 
 RawPropsValueIndex RawPropsKeyMap::at(
-    const char* name,
+    char const *name,
     RawPropsPropNameLength length) noexcept {
   react_native_assert(length > 0);
   react_native_assert(length < kPropNameLengthHardCap);

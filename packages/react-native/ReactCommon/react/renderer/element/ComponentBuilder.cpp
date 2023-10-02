@@ -16,32 +16,34 @@ ComponentBuilder::ComponentBuilder(
     : componentDescriptorRegistry_(std::move(componentDescriptorRegistry)){};
 
 ShadowNode::Unshared ComponentBuilder::build(
-    const ElementFragment& elementFragment) const {
-  auto& componentDescriptor =
+    ElementFragment const &elementFragment) const {
+  auto &componentDescriptor =
       componentDescriptorRegistry_->at(elementFragment.componentHandle);
 
   auto children = ShadowNode::ListOfShared{};
   children.reserve(elementFragment.children.size());
-  for (const auto& childFragment : elementFragment.children) {
+  for (auto const &childFragment : elementFragment.children) {
     children.push_back(build(childFragment));
   }
 
-  auto family = componentDescriptor.createFamily(ShadowNodeFamilyFragment{
-      elementFragment.tag, elementFragment.surfaceId, nullptr});
+  auto family = componentDescriptor.createFamily(
+      ShadowNodeFamilyFragment{
+          elementFragment.tag, elementFragment.surfaceId, nullptr},
+      nullptr);
 
-  auto initialState =
-      componentDescriptor.createInitialState(elementFragment.props, family);
+  auto state = componentDescriptor.createInitialState(
+      ShadowNodeFragment{elementFragment.props}, family);
 
   auto constShadowNode = componentDescriptor.createShadowNode(
       ShadowNodeFragment{
           elementFragment.props,
           std::make_shared<ShadowNode::ListOfShared const>(children),
-          initialState},
+          state},
       family);
 
   if (elementFragment.stateCallback) {
     auto newState = componentDescriptor.createState(
-        *family, elementFragment.stateCallback(initialState));
+        *family, elementFragment.stateCallback());
     constShadowNode = componentDescriptor.cloneShadowNode(
         *constShadowNode,
         ShadowNodeFragment{

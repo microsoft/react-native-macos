@@ -9,7 +9,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 add_compile_options(
         -fexceptions
         -frtti
-        -std=c++20
+        -std=c++17
         -Wno-unused-lambda-capture
         -DLOG_TAG=\"ReactNative\")
 
@@ -27,5 +27,4 @@ target_link_libraries(reactnative
         jsinspector
         logger
         reactperflogger
-        runtimeexecutor
-        react_debug)
+        runtimeexecutor)

@@ -10,7 +10,8 @@
 
 'use strict';
 
-import type {ColorValue, NativeColorValue} from './StyleSheet';
+import type {NativeColorValue} from './PlatformColorValueTypes';
+import type {ColorValue} from './StyleSheet';
 
 const Platform = require('../Utilities/Platform');
 const normalizeColor = require('./normalizeColor');

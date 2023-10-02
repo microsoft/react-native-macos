@@ -11,7 +11,8 @@
 #include <mutex>
 #include <unordered_set>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /**
  * A simple wrapper class that can be registered to a collection that keep it
@@ -37,13 +38,13 @@ class LongLivedObject {
  */
 class LongLivedObjectCollection {
  public:
-  static LongLivedObjectCollection& get();
+  static LongLivedObjectCollection &get();
 
-  LongLivedObjectCollection(const LongLivedObjectCollection&) = delete;
-  void operator=(const LongLivedObjectCollection&) = delete;
+  LongLivedObjectCollection(LongLivedObjectCollection const &) = delete;
+  void operator=(LongLivedObjectCollection const &) = delete;
 
   void add(std::shared_ptr<LongLivedObject> o);
-  void remove(const LongLivedObject* o);
+  void remove(const LongLivedObject *o);
   void clear();
   size_t size() const;
 
@@ -54,4 +55,5 @@ class LongLivedObjectCollection {
   mutable std::mutex collectionMutex_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

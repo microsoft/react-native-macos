@@ -15,14 +15,14 @@
 #include <react/renderer/graphics/Point.h>
 #include <react/renderer/graphics/RectangleEdges.h>
 #include <react/renderer/graphics/Size.h>
-#include <react/renderer/graphics/ValueUnit.h>
 #include <react/renderer/graphics/Vector.h>
 
 #ifdef ANDROID
 #include <folly/dynamic.h>
 #endif
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 inline bool isZero(Float n) {
   // We use this ternary expression instead of abs, fabsf, etc, because
@@ -44,28 +44,11 @@ enum class TransformOperationType {
   Rotate,
   Skew
 };
-
 struct TransformOperation {
   TransformOperationType type;
   Float x;
   Float y;
   Float z;
-};
-
-struct TransformOrigin {
-  std::array<ValueUnit, 2> xy;
-  float z = 0.0f;
-
-  bool operator==(const TransformOrigin& other) const {
-    return xy[0] == other.xy[0] && xy[1] == other.xy[1] && z == other.z;
-  }
-  bool operator!=(const TransformOrigin& other) const {
-    return !(*this == other);
-  }
-  bool isSet() const {
-    return xy[0].value != 0.0f || xy[0].unit != UnitType::Undefined ||
-        xy[1].value != 0.0f || xy[1].unit != UnitType::Undefined || z != 0.0f;
-  }
 };
 
 /*
@@ -80,8 +63,8 @@ struct Transform {
   /**
    * For debugging only. Prints out the matrix.
    */
-#if RN_DEBUG_STRING_CONVERTIBLE
-  static void print(const Transform& t, std::string prefix);
+#ifdef RN_DEBUG_STRING_CONVERTIBLE
+  static void print(Transform const &t, std::string prefix);
 #endif
 
   /*
@@ -150,30 +133,28 @@ struct Transform {
    */
   static Transform Interpolate(
       Float animationProgress,
-      const Transform& lhs,
-      const Transform& rhs);
+      Transform const &lhs,
+      Transform const &rhs);
 
-  static bool isVerticalInversion(const Transform& transform);
-  static bool isHorizontalInversion(const Transform& transform);
+  static bool isVerticalInversion(Transform const &transform);
+  static bool isHorizontalInversion(Transform const &transform);
 
   /*
    * Equality operators.
    */
-  bool operator==(const Transform& rhs) const;
-  bool operator!=(const Transform& rhs) const;
+  bool operator==(Transform const &rhs) const;
+  bool operator!=(Transform const &rhs) const;
 
   /*
    * Matrix subscript.
    */
-  Float& at(int i, int j);
-  const Float& at(int i, int j) const;
+  Float &at(int i, int j);
+  Float const &at(int i, int j) const;
 
   /*
    * Concatenates (multiplies) transform matrices.
    */
-  Transform operator*(const Transform& rhs) const;
-
-  Rect applyWithCenter(const Rect& rect, const Point& center) const;
+  Transform operator*(Transform const &rhs) const;
 
   /**
    * Convert to folly::dynamic.
@@ -204,34 +185,35 @@ struct Transform {
 /*
  * Applies transformation to the given point.
  */
-Point operator*(const Point& point, const Transform& transform);
+Point operator*(Point const &point, Transform const &transform);
 
 /*
  * Applies transformation to the given size.
  */
-Size operator*(const Size& size, const Transform& transform);
+Size operator*(Size const &size, Transform const &transform);
 
 /*
  * Applies transformation to the given rect.
  * ONLY SUPPORTS scale and translation transformation.
  */
-Rect operator*(const Rect& rect, const Transform& transform);
+Rect operator*(Rect const &rect, Transform const &transform);
 
 /*
  * Applies transformation to the given EdgeInsets.
  * ONLY SUPPORTS scale transformation.
  */
-EdgeInsets operator*(const EdgeInsets& edgeInsets, const Transform& transform);
+EdgeInsets operator*(EdgeInsets const &edgeInsets, Transform const &transform);
 
-Vector operator*(const Transform& transform, const Vector& vector);
+Vector operator*(Transform const &transform, Vector const &vector);
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook
 
 namespace std {
 
 template <>
 struct hash<facebook::react::Transform> {
-  size_t operator()(const facebook::react::Transform& transform) const {
+  size_t operator()(const facebook::react::Transform &transform) const {
     return folly::hash::hash_combine(
         0,
         transform.matrix[0],

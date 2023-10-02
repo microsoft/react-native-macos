@@ -420,9 +420,13 @@ RCT_EXPORT_METHOD(setHotLoadingEnabled : (BOOL)enabled)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
       if (enabled) {
-        [self.callableJSModules invokeModule:@"HMRClient" method:@"enable" withArgs:@[]];
+        if (self.callableJSModules) {
+          [self.callableJSModules invokeModule:@"HMRClient" method:@"enable" withArgs:@[]];
+        }
       } else {
-        [self.callableJSModules invokeModule:@"HMRClient" method:@"disable" withArgs:@[]];
+        if (self.callableJSModules) {
+          [self.callableJSModules invokeModule:@"HMRClient" method:@"disable" withArgs:@[]];
+        }
       }
 #pragma clang diagnostic pop
     }
@@ -505,19 +509,22 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
     NSNumber *const port = urlComponents.port;
     NSString *const scheme = urlComponents.scheme;
     BOOL isHotLoadingEnabled = self.isHotLoadingEnabled;
-    [self.callableJSModules
-        invokeModule:@"HMRClient"
-              method:@"setup"
-            withArgs:@[ RCTPlatformName, path, host, RCTNullIfNil(port), @(isHotLoadingEnabled), scheme ]];
+    if (self.callableJSModules) {
+      [self.callableJSModules invokeModule:@"HMRClient"
+                                    method:@"setup"
+                                  withArgs:@[ kRCTPlatformName, path, host, RCTNullIfNil(port), @(isHotLoadingEnabled), scheme ]]; // [macOS] we could perhaps infer the platform from the bundleURL's query parameters, instead of hardcoding
+    }
   }
 }
 
 - (void)setupHMRClientWithAdditionalBundleURL:(NSURL *)bundleURL
 {
   if (bundleURL && !bundleURL.fileURL) { // isHotLoadingAvailable check
-    [self.callableJSModules invokeModule:@"HMRClient"
-                                  method:@"registerBundle"
-                                withArgs:@[ [bundleURL absoluteString] ]];
+    if (self.callableJSModules) {
+      [self.callableJSModules invokeModule:@"HMRClient"
+                                    method:@"registerBundle"
+                                  withArgs:@[ [bundleURL absoluteString] ]];
+    }
   }
 }
 
@@ -648,21 +655,6 @@ RCT_EXPORT_MODULE()	// [macOS]
 #endif // #if RCT_DEV_MENU
 
 @implementation RCTBridge (RCTDevSettings)
-
-- (RCTDevSettings *)devSettings
-{
-#if RCT_REMOTE_PROFILE
-  return [self moduleForClass:[RCTDevSettings class]];
-#elif RCT_DEV_MENU
-  return devSettingsMenuEnabled ? [self moduleForClass:[RCTDevSettings class]] : nil;
-#else
-  return nil;
-#endif
-}
-
-@end
-
-@implementation RCTBridgeProxy (RCTDevSettings)
 
 - (RCTDevSettings *)devSettings
 {

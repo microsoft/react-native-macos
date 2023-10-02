@@ -15,6 +15,7 @@ public abstract class GuardedRunnable implements Runnable {
 
   private final JSExceptionHandler mExceptionHandler;
 
+  @Deprecated
   public GuardedRunnable(ReactContext reactContext) {
     this(reactContext.getExceptionHandler());
   }

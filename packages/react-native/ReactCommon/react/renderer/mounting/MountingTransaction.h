@@ -11,7 +11,8 @@
 #include <react/renderer/telemetry/SurfaceTelemetry.h>
 #include <react/renderer/telemetry/TransactionTelemetry.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Encapsulates all artifacts of `ShadowTree` commit (or a series of them),
@@ -35,7 +36,7 @@ class MountingTransaction final {
   MountingTransaction(
       SurfaceId surfaceId,
       Number number,
-      ShadowViewMutationList&& mutations,
+      ShadowViewMutationList &&mutations,
       TransactionTelemetry telemetry);
 
   /*
@@ -43,28 +44,28 @@ class MountingTransaction final {
    * Copying of MountingTransaction is expensive, so copy-constructor is
    * explicit and copy-assignment is deleted to prevent accidental copying.
    */
-  explicit MountingTransaction(const MountingTransaction& mountingTransaction) =
+  explicit MountingTransaction(const MountingTransaction &mountingTransaction) =
       default;
-  MountingTransaction& operator=(const MountingTransaction& other) = delete;
+  MountingTransaction &operator=(const MountingTransaction &other) = delete;
 
   /*
    * Move semantic.
    */
-  MountingTransaction(MountingTransaction&& mountingTransaction) noexcept =
+  MountingTransaction(MountingTransaction &&mountingTransaction) noexcept =
       default;
-  MountingTransaction& operator=(MountingTransaction&& other) = default;
+  MountingTransaction &operator=(MountingTransaction &&other) = default;
 
   /*
    * Returns a list of mutations that represent the transaction. The list can be
    * empty (theoretically).
    */
-  const ShadowViewMutationList& getMutations() const&;
+  ShadowViewMutationList const &getMutations() const &;
   ShadowViewMutationList getMutations() &&;
 
   /*
    * Returns telemetry associated with this transaction.
    */
-  TransactionTelemetry& getTelemetry() const;
+  TransactionTelemetry &getTelemetry() const;
 
   /*
    * Returns the id of the surface that the transaction belongs to.
@@ -83,4 +84,5 @@ class MountingTransaction final {
   mutable TransactionTelemetry telemetry_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

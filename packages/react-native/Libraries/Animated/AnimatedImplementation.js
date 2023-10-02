@@ -378,7 +378,7 @@ const parallel = function (
       }
 
       animations.forEach((animation, idx) => {
-        const cb = function (endResult: EndResult) {
+        const cb = function (endResult: EndResult | {finished: boolean}) {
           hasEnded[idx] = true;
           doneCount++;
           if (doneCount === animations.length) {

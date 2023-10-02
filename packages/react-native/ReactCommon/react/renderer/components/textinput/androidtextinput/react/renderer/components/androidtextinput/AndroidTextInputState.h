@@ -17,7 +17,8 @@
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * State for <TextInput> component.
@@ -54,6 +55,20 @@ class AndroidTextInputState final {
   ParagraphAttributes paragraphAttributes{};
 
   /**
+   * Default TextAttributes used if we need to construct a new Fragment.
+   * Only used if text is inserted into an AttributedString with no existing
+   * Fragments.
+   */
+  TextAttributes defaultTextAttributes;
+
+  /**
+   * Default parent ShadowView used if we need to construct a new Fragment.
+   * Only used if text is inserted into an AttributedString with no existing
+   * Fragments.
+   */
+  ShadowView defaultParentShadowView;
+
+  /**
    * Communicates Android theme padding back to the ShadowNode / Component
    * Descriptor for layout.
    */
@@ -67,6 +82,8 @@ class AndroidTextInputState final {
       AttributedString attributedString,
       AttributedString reactTreeAttributedString,
       ParagraphAttributes paragraphAttributes,
+      TextAttributes defaultTextAttributes,
+      ShadowView defaultParentShadowView,
       float defaultThemePaddingStart,
       float defaultThemePaddingEnd,
       float defaultThemePaddingTop,
@@ -74,10 +91,11 @@ class AndroidTextInputState final {
 
   AndroidTextInputState() = default;
   AndroidTextInputState(
-      const AndroidTextInputState& previousState,
-      const folly::dynamic& data);
+      AndroidTextInputState const &previousState,
+      folly::dynamic const &data);
   folly::dynamic getDynamic() const;
   MapBuffer getMapBuffer() const;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

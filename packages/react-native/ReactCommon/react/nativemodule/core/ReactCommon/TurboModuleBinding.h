@@ -12,9 +12,14 @@
 #include <ReactCommon/TurboModule.h>
 #include <jsi/jsi.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
-class BridgelessNativeModuleProxy;
+enum class TurboModuleBindingMode : uint8_t {
+  HostObject = 0,
+  Prototype = 1,
+  Eager = 2,
+};
 
 /**
  * Represents the JavaScript binding for the TurboModule system.
@@ -26,24 +31,26 @@ class TurboModuleBinding {
    * Thread synchronization must be enforced externally.
    */
   static void install(
-      jsi::Runtime& runtime,
-      TurboModuleProviderFunctionType&& moduleProvider,
-      TurboModuleProviderFunctionType&& legacyModuleProvider = nullptr);
-
-  TurboModuleBinding(TurboModuleProviderFunctionType&& moduleProvider);
-  virtual ~TurboModuleBinding();
+      jsi::Runtime &runtime,
+      TurboModuleBindingMode bindingMode,
+      TurboModuleProviderFunctionType &&moduleProvider);
 
  private:
-  friend BridgelessNativeModuleProxy;
+  TurboModuleBinding(
+      TurboModuleBindingMode bindingMode,
+      TurboModuleProviderFunctionType &&moduleProvider);
+  virtual ~TurboModuleBinding();
 
   /**
    * A lookup function exposed to JS to get an instance of a TurboModule
    * for the given name.
    */
-  jsi::Value getModule(jsi::Runtime& runtime, const std::string& moduleName)
+  jsi::Value getModule(jsi::Runtime &runtime, const std::string &moduleName)
       const;
 
+  TurboModuleBindingMode bindingMode_;
   TurboModuleProviderFunctionType moduleProvider_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

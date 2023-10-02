@@ -10,7 +10,6 @@
 
 import type {IEventEmitter} from '../vendor/emitter/EventEmitter';
 
-import {beginEvent, endEvent} from '../Performance/Systrace';
 import EventEmitter from '../vendor/emitter/EventEmitter';
 
 // FIXME: use typed events
@@ -22,22 +21,12 @@ type RCTDeviceEventDefinitions = $FlowFixMe;
  *
  * NativeModules that emit events should instead subclass `NativeEventEmitter`.
  */
-class RCTDeviceEventEmitter extends EventEmitter<RCTDeviceEventDefinitions> {
-  // Add systrace to RCTDeviceEventEmitter.emit method for debugging
-  emit<TEvent: $Keys<RCTDeviceEventDefinitions>>(
-    eventType: TEvent,
-    ...args: RCTDeviceEventDefinitions[TEvent]
-  ): void {
-    beginEvent(() => `RCTDeviceEventEmitter.emit#${eventType}`);
-    super.emit(eventType, ...args);
-    endEvent();
-  }
-}
-const instance = new RCTDeviceEventEmitter();
+const RCTDeviceEventEmitter: IEventEmitter<RCTDeviceEventDefinitions> =
+  new EventEmitter();
 
 Object.defineProperty(global, '__rctDeviceEventEmitter', {
   configurable: true,
-  value: instance,
+  value: RCTDeviceEventEmitter,
 });
 
-export default (instance: IEventEmitter<RCTDeviceEventDefinitions>);
+export default (RCTDeviceEventEmitter: IEventEmitter<RCTDeviceEventDefinitions>);

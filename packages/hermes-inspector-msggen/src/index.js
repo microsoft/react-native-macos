@@ -53,12 +53,7 @@ function parseDomains(
     const domain = obj.domain;
 
     for (const typeObj of obj.types || []) {
-      const type = Type.create(
-        domain,
-        typeObj,
-        ignoreExperimental,
-        includeExperimental,
-      );
+      const type = Type.create(domain, typeObj, ignoreExperimental);
       if (type) {
         desc.types.push(type);
       }
@@ -70,7 +65,6 @@ function parseDomains(
         commandObj,
         !includeExperimental.has(`${domain}.${commandObj.name}`) &&
           ignoreExperimental,
-        includeExperimental,
       );
       if (command) {
         desc.commands.push(command);
@@ -78,12 +72,7 @@ function parseDomains(
     }
 
     for (const eventObj of obj.events || []) {
-      const event = Event.create(
-        domain,
-        eventObj,
-        ignoreExperimental,
-        includeExperimental,
-      );
+      const event = Event.create(domain, eventObj, ignoreExperimental);
       if (event) {
         desc.events.push(event);
       }
@@ -172,8 +161,7 @@ function filterReachableFromRoots(
   graph: Graph,
   roots: Array<string>,
 ): Descriptor {
-  const traversal = graph.traverse(roots);
-  const topoSortedIds = traversal.nodes;
+  const topoSortedIds = graph.traverse(roots);
 
   // Types can include other types by value, so they need to be topologically
   // sorted in the header.
@@ -187,29 +175,6 @@ function filterReachableFromRoots(
     const type = typeMap.get(id);
     if (type) {
       types.push(type);
-    }
-  }
-
-  const cycles: Set<string> = new Set();
-  for (const cycle of traversal.cycles) {
-    const from = typeMap.get(cycle.from);
-    const to = typeMap.get(cycle.to);
-    if (from && to) {
-      cycles.add(from.id + ' > ' + to.id);
-    }
-  }
-
-  for (const type of types) {
-    if (type instanceof PropsType) {
-      for (const prop of type.properties) {
-        const ref = (prop: Object).$ref;
-        if (ref) {
-          const cycleKey = `${type.id} > ${ref}`;
-          if (cycles.has(cycleKey)) {
-            (prop: Object).cyclical = true;
-          }
-        }
-      }
     }
   }
 

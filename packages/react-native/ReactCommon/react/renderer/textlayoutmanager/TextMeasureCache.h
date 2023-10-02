@@ -14,7 +14,8 @@
 #include <react/utils/FloatComparison.h>
 #include <react/utils/SimpleThreadSafeCache.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 struct LineMeasurement {
   std::string text;
@@ -32,9 +33,9 @@ struct LineMeasurement {
       Float ascender,
       Float xHeight);
 
-  LineMeasurement(const folly::dynamic& data);
+  LineMeasurement(folly::dynamic const &data);
 
-  bool operator==(const LineMeasurement& rhs) const;
+  bool operator==(LineMeasurement const &rhs) const;
 };
 
 using LinesMeasurements = std::vector<LineMeasurement>;
@@ -83,8 +84,8 @@ using TextMeasureCache = SimpleThreadSafeCache<
     kSimpleThreadSafeCacheSizeCap>;
 
 inline bool areTextAttributesEquivalentLayoutWise(
-    const TextAttributes& lhs,
-    const TextAttributes& rhs) {
+    TextAttributes const &lhs,
+    TextAttributes const &rhs) {
   // Here we check all attributes that affect layout metrics and don't check any
   // attributes that affect only a decorative aspect of displayed text (like
   // colors).
@@ -111,7 +112,7 @@ inline bool areTextAttributesEquivalentLayoutWise(
 }
 
 inline size_t textAttributesHashLayoutWise(
-    const TextAttributes& textAttributes) {
+    TextAttributes const &textAttributes) {
   // Taking into account the same props as
   // `areTextAttributesEquivalentLayoutWise` mentions.
   return folly::hash::hash_combine(
@@ -130,8 +131,8 @@ inline size_t textAttributesHashLayoutWise(
 }
 
 inline bool areAttributedStringFragmentsEquivalentLayoutWise(
-    const AttributedString::Fragment& lhs,
-    const AttributedString::Fragment& rhs) {
+    AttributedString::Fragment const &lhs,
+    AttributedString::Fragment const &rhs) {
   return lhs.string == rhs.string &&
       areTextAttributesEquivalentLayoutWise(
              lhs.textAttributes, rhs.textAttributes) &&
@@ -143,7 +144,7 @@ inline bool areAttributedStringFragmentsEquivalentLayoutWise(
 }
 
 inline size_t textAttributesHashLayoutWise(
-    const AttributedString::Fragment& fragment) {
+    AttributedString::Fragment const &fragment) {
   // Here we are not taking `isAttachment` and `layoutMetrics` into account
   // because they are logically interdependent and this can break an invariant
   // between hash and equivalence functions (and cause cache misses).
@@ -154,10 +155,10 @@ inline size_t textAttributesHashLayoutWise(
 }
 
 inline bool areAttributedStringsEquivalentLayoutWise(
-    const AttributedString& lhs,
-    const AttributedString& rhs) {
-  auto& lhsFragment = lhs.getFragments();
-  auto& rhsFragment = rhs.getFragments();
+    AttributedString const &lhs,
+    AttributedString const &rhs) {
+  auto &lhsFragment = lhs.getFragments();
+  auto &rhsFragment = rhs.getFragments();
 
   if (lhsFragment.size() != rhsFragment.size()) {
     return false;
@@ -175,10 +176,10 @@ inline bool areAttributedStringsEquivalentLayoutWise(
 }
 
 inline size_t textAttributedStringHashLayoutWise(
-    const AttributedString& attributedString) {
+    AttributedString const &attributedString) {
   auto seed = size_t{0};
 
-  for (const auto& fragment : attributedString.getFragments()) {
+  for (auto const &fragment : attributedString.getFragments()) {
     seed =
         folly::hash::hash_combine(seed, textAttributesHashLayoutWise(fragment));
   }
@@ -187,8 +188,8 @@ inline size_t textAttributedStringHashLayoutWise(
 }
 
 inline bool operator==(
-    const TextMeasureCacheKey& lhs,
-    const TextMeasureCacheKey& rhs) {
+    TextMeasureCacheKey const &lhs,
+    TextMeasureCacheKey const &rhs) {
   return areAttributedStringsEquivalentLayoutWise(
              lhs.attributedString, rhs.attributedString) &&
       lhs.paragraphAttributes == rhs.paragraphAttributes &&
@@ -197,18 +198,19 @@ inline bool operator==(
 }
 
 inline bool operator!=(
-    const TextMeasureCacheKey& lhs,
-    const TextMeasureCacheKey& rhs) {
+    TextMeasureCacheKey const &lhs,
+    TextMeasureCacheKey const &rhs) {
   return !(lhs == rhs);
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook
 
 namespace std {
 
 template <>
 struct hash<facebook::react::TextMeasureCacheKey> {
-  size_t operator()(const facebook::react::TextMeasureCacheKey& key) const {
+  size_t operator()(facebook::react::TextMeasureCacheKey const &key) const {
     return folly::hash::hash_combine(
         0,
         textAttributedStringHashLayoutWise(key.attributedString),

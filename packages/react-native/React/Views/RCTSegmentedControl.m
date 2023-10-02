@@ -51,25 +51,39 @@
   self.selectedSegmentIndex = selectedIndex; // [macOS]
 }
 
-#if !TARGET_OS_OSX // [macOS]
 - (void)setBackgroundColor:(RCTUIColor *)backgroundColor // [macOS]
 {
-  [super setBackgroundColor:backgroundColor];
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && defined(__IPHONE_13_0) && \
+    __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0
+  if (@available(iOS 13.0, *)) {
+    [super setBackgroundColor:backgroundColor];
+  }
+#endif
 }
 
 - (void)setTextColor:(RCTUIColor *)textColor // [macOS]
 {
-  [self setTitleTextAttributes:@{NSForegroundColorAttributeName : textColor} forState:UIControlStateNormal];
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && defined(__IPHONE_13_0) && \
+    __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0
+  if (@available(iOS 13.0, *)) {
+    [self setTitleTextAttributes:@{NSForegroundColorAttributeName : textColor} forState:UIControlStateNormal];
+  }
+#endif
 }
 
+#if !TARGET_OS_OSX // [macOS] no concept of tintColor on macOS
 - (void)setTintColor:(UIColor *)tintColor // [macOS]
 {
   [super setTintColor:tintColor];
-
-  [self setSelectedSegmentTintColor:tintColor];
-  [self setTitleTextAttributes:@{NSForegroundColorAttributeName : [UIColor whiteColor]}
-                      forState:UIControlStateSelected];
-  [self setTitleTextAttributes:@{NSForegroundColorAttributeName : tintColor} forState:UIControlStateNormal];
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && defined(__IPHONE_13_0) && \
+    __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0
+  if (@available(iOS 13.0, *)) {
+    [self setSelectedSegmentTintColor:tintColor];
+    [self setTitleTextAttributes:@{NSForegroundColorAttributeName : [UIColor whiteColor]}
+                        forState:UIControlStateSelected];
+    [self setTitleTextAttributes:@{NSForegroundColorAttributeName : tintColor} forState:UIControlStateNormal];
+  }
+#endif
 }
 #endif // [macOS]
 

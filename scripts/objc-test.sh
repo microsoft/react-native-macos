@@ -75,9 +75,9 @@ waitForWebSocketServer() {
 
 runTests() {
   # shellcheck disable=SC1091
-  source "$ROOT/scripts/.tests.env"
+  source "./scripts/.tests.env"
   xcodebuild build test \
-    -workspace RNTesterPods.xcworkspace \
+    -workspace packages/rn-tester/RNTesterPods.xcworkspace \
     -scheme RNTester \
     -sdk iphonesimulator \
     -destination "platform=iOS Simulator,name=$IOS_DEVICE,OS=$IOS_TARGET_OS" \
@@ -86,7 +86,7 @@ runTests() {
 
 buildProject() {
   xcodebuild build \
-    -workspace RNTesterPods.xcworkspace \
+    -workspace packages/rn-tester/RNTesterPods.xcworkspace \
     -scheme RNTester \
     -sdk iphonesimulator
 }
@@ -112,13 +112,13 @@ preloadBundlesRNIntegrationTests() {
 }
 
 preloadBundlesRNTester() {
-  # Preload RNTesterApp bundles (packages/rn-tester/)
-  curl -s 'http://localhost:8081/js/RNTesterApp.ios.bundle?platform=ios&dev=true' -o /dev/null
-  curl -s 'http://localhost:8081/js/RNTesterApp.ios.bundle?platform=ios&dev=true&minify=false' -o /dev/null
+  # Preload the RNTesterApp bundle for better performance in integration tests
+  curl -s 'http://localhost:8081/packages/rn-tester/js/RNTesterApp.ios.bundle?platform=ios&dev=true' -o /dev/null
+  curl -s 'http://localhost:8081/packages/rn-tester/js/RNTesterApp.ios.bundle?platform=ios&dev=true&minify=false' -o /dev/null
 }
 
 main() {
-  cd "$ROOT/packages/rn-tester" || exit
+  cd "$ROOT" || exit
 
   # If first argument is "test", actually start the packager and run tests.
   # Otherwise, just build RNTester and exit

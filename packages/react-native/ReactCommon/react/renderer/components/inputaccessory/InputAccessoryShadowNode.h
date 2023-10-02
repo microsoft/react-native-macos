@@ -12,7 +12,8 @@
 #include <react/renderer/components/rncore/Props.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 extern const char InputAccessoryComponentName[];
 
@@ -34,4 +35,5 @@ class InputAccessoryShadowNode final : public ConcreteViewShadowNode<
   }
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

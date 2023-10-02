@@ -22,8 +22,8 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.common.build.ReactBuildConfig;
+import com.facebook.react.uimanager.FabricViewStateManager;
 import com.facebook.react.uimanager.PixelUtil;
-import com.facebook.react.uimanager.StateWrapper;
 import com.facebook.react.uimanager.UIManagerHelper;
 import com.facebook.react.uimanager.common.UIManagerType;
 import com.facebook.react.uimanager.common.ViewUtil;
@@ -55,11 +55,6 @@ public class ReactScrollViewHelper {
         ViewGroup scrollView, ScrollEventType scrollEventType, float xVelocity, float yVelocity);
 
     void onLayout(ViewGroup scrollView);
-  }
-
-  public interface HasStateWrapper {
-    @Nullable
-    StateWrapper getStateWrapper();
   }
 
   // Support global native listeners for scroll events
@@ -106,15 +101,6 @@ public class ReactScrollViewHelper {
   private static <T extends ViewGroup & HasScrollEventThrottle> void emitScrollEvent(
       T scrollView, ScrollEventType scrollEventType, float xVelocity, float yVelocity) {
     long now = System.currentTimeMillis();
-    // Throttle the scroll event if scrollEventThrottle is set to be equal or more than 17 ms.
-    // We limit the delta to 17ms so that small throttles intended to enable 60fps updates will not
-    // inadvertently filter out any scroll events.
-    if (scrollView.getScrollEventThrottle()
-        >= Math.max(17, now - scrollView.getLastScrollDispatchTime())) {
-      // Scroll events are throttled.
-      return;
-    }
-
     View contentView = scrollView.getChildAt(0);
 
     if (contentView == null) {
@@ -342,7 +328,10 @@ public class ReactScrollViewHelper {
    * by calculate the "would be" initial velocity with internal friction to move to the point (x,
    * y), then apply that to the animator.
    */
-  public static <T extends ViewGroup & HasStateWrapper & HasScrollState & HasFlingAnimator>
+  public static <
+          T extends
+              ViewGroup & FabricViewStateManager.HasFabricViewStateManager & HasScrollState
+                  & HasFlingAnimator>
       void smoothScrollTo(final T scrollView, final int x, final int y) {
     if (DEBUG_MODE) {
       FLog.i(TAG, "smoothScrollTo[%d] x %d y %d", scrollView.getId(), x, y);
@@ -372,7 +361,10 @@ public class ReactScrollViewHelper {
   }
 
   /** Get current position or position after current animation finishes, if any. */
-  public static <T extends ViewGroup & HasScrollState & HasFlingAnimator>
+  public static <
+          T extends
+              ViewGroup & FabricViewStateManager.HasFabricViewStateManager & HasScrollState
+                  & HasFlingAnimator>
       int getNextFlingStartValue(
           final T scrollView,
           final int currentValue,
@@ -393,16 +385,22 @@ public class ReactScrollViewHelper {
         : currentValue;
   }
 
-  public static <T extends ViewGroup & HasStateWrapper & HasScrollState & HasFlingAnimator>
-      void updateFabricScrollState(final T scrollView) {
-    updateFabricScrollState(scrollView, scrollView.getScrollX(), scrollView.getScrollY());
+  public static <
+          T extends
+              ViewGroup & FabricViewStateManager.HasFabricViewStateManager & HasScrollState
+                  & HasFlingAnimator>
+      boolean updateFabricScrollState(final T scrollView) {
+    return updateFabricScrollState(scrollView, scrollView.getScrollX(), scrollView.getScrollY());
   }
 
   /**
    * Called on any stabilized onScroll change to propagate content offset value to a Shadow Node.
    */
-  public static <T extends ViewGroup & HasStateWrapper & HasScrollState & HasFlingAnimator>
-      void updateFabricScrollState(final T scrollView, final int scrollX, final int scrollY) {
+  public static <
+          T extends
+              ViewGroup & FabricViewStateManager.HasFabricViewStateManager & HasScrollState
+                  & HasFlingAnimator>
+      boolean updateFabricScrollState(final T scrollView, final int scrollX, final int scrollY) {
     if (DEBUG_MODE) {
       FLog.i(
           TAG,
@@ -413,21 +411,24 @@ public class ReactScrollViewHelper {
     }
 
     if (ViewUtil.getUIManagerType(scrollView.getId()) == UIManagerType.DEFAULT) {
-      return;
+      return false;
     }
 
     final ReactScrollViewScrollState scrollState = scrollView.getReactScrollViewScrollState();
     // Dedupe events to reduce JNI traffic
     if (scrollState.getLastStateUpdateScroll().equals(scrollX, scrollY)) {
-      return;
+      return false;
     }
 
     scrollState.setLastStateUpdateScroll(scrollX, scrollY);
     forceUpdateState(scrollView);
-    return;
+    return true;
   }
 
-  public static <T extends ViewGroup & HasScrollState & HasStateWrapper & HasFlingAnimator>
+  public static <
+          T extends
+              ViewGroup & FabricViewStateManager.HasFabricViewStateManager & HasScrollState
+                  & HasFlingAnimator>
       void forceUpdateState(final T scrollView) {
     final ReactScrollViewScrollState scrollState = scrollView.getReactScrollViewScrollState();
     final int scrollAwayPaddingTop = scrollState.getScrollAwayPaddingTop();
@@ -457,21 +458,26 @@ public class ReactScrollViewHelper {
           fabricScrollX);
     }
 
-    StateWrapper stateWrapper = scrollView.getStateWrapper();
-    if (stateWrapper != null) {
-      WritableMap newStateData = new WritableNativeMap();
-      newStateData.putDouble(CONTENT_OFFSET_LEFT, PixelUtil.toDIPFromPixel(scrollX));
-      newStateData.putDouble(CONTENT_OFFSET_TOP, PixelUtil.toDIPFromPixel(scrollY));
-      newStateData.putDouble(
-          SCROLL_AWAY_PADDING_TOP, PixelUtil.toDIPFromPixel(scrollAwayPaddingTop));
-      stateWrapper.updateState(newStateData);
-    }
+    scrollView
+        .getFabricViewStateManager()
+        .setState(
+            new FabricViewStateManager.StateUpdateCallback() {
+              @Override
+              public WritableMap getStateUpdate() {
+                WritableMap map = new WritableNativeMap();
+                map.putDouble(CONTENT_OFFSET_LEFT, PixelUtil.toDIPFromPixel(scrollX));
+                map.putDouble(CONTENT_OFFSET_TOP, PixelUtil.toDIPFromPixel(scrollY));
+                map.putDouble(
+                    SCROLL_AWAY_PADDING_TOP, PixelUtil.toDIPFromPixel(scrollAwayPaddingTop));
+                return map;
+              }
+            });
   }
 
   public static <
           T extends
-              ViewGroup & HasStateWrapper & HasScrollState & HasFlingAnimator
-                  & HasScrollEventThrottle>
+              ViewGroup & FabricViewStateManager.HasFabricViewStateManager & HasScrollState
+                  & HasFlingAnimator & HasScrollEventThrottle>
       void updateStateOnScrollChanged(
           final T scrollView, final float xVelocity, final float yVelocity) {
     // Race an UpdateState with every onScroll. This makes it more likely that, in Fabric,
@@ -482,7 +488,10 @@ public class ReactScrollViewHelper {
     emitScrollEvent(scrollView, xVelocity, yVelocity);
   }
 
-  public static <T extends ViewGroup & HasStateWrapper & HasScrollState & HasFlingAnimator>
+  public static <
+          T extends
+              ViewGroup & FabricViewStateManager.HasFabricViewStateManager & HasScrollState
+                  & HasFlingAnimator>
       void registerFlingAnimator(final T scrollView) {
     scrollView
         .getFlingAnimator()
@@ -512,7 +521,10 @@ public class ReactScrollViewHelper {
             });
   }
 
-  public static <T extends ViewGroup & HasScrollState & HasFlingAnimator>
+  public static <
+          T extends
+              ViewGroup & FabricViewStateManager.HasFabricViewStateManager & HasScrollState
+                  & HasFlingAnimator>
       Point predictFinalScrollPosition(
           final T scrollView,
           final int velocityX,

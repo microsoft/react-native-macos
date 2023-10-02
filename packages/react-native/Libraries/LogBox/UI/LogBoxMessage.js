@@ -138,14 +138,17 @@ function LogBoxMessage(props: Props): React.Node {
     const key = String(index);
 
     if (substitution.offset > prevOffset) {
-      const prevPart = content.slice(prevOffset, substitution.offset);
+      const prevPart = content.substr(
+        prevOffset,
+        substitution.offset - prevOffset,
+      );
 
       createUnderLength(key, prevPart);
     }
 
-    const substitutionPart = content.slice(
+    const substitutionPart = content.substr(
       substitution.offset,
-      substitution.offset + substitution.length,
+      substitution.length,
     );
 
     createUnderLength(key + '.5', substitutionPart, substitutionStyle);
@@ -153,7 +156,7 @@ function LogBoxMessage(props: Props): React.Node {
   }, 0);
 
   if (lastOffset < content.length) {
-    const lastPart = content.slice(lastOffset);
+    const lastPart = content.substr(lastOffset);
     createUnderLength('-1', lastPart);
   }
 

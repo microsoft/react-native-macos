@@ -11,9 +11,10 @@
 
 #import "RCTTextLayoutManager.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
-TextLayoutManager::TextLayoutManager(const ContextContainer::Shared &contextContainer)
+TextLayoutManager::TextLayoutManager(ContextContainer::Shared const &contextContainer)
 {
   self_ = wrapManagedObject([RCTTextLayoutManager new]);
 }
@@ -57,7 +58,7 @@ TextMeasurement TextLayoutManager::measure(
       auto &attributedString = attributedStringBox.getValue();
 
       measurement = measureCache_.get(
-          {attributedString, paragraphAttributes, layoutConstraints}, [&](const TextMeasureCacheKey &key) {
+          {attributedString, paragraphAttributes, layoutConstraints}, [&](TextMeasureCacheKey const &key) {
             auto telemetry = TransactionTelemetry::threadLocalTelemetry();
             if (telemetry) {
               telemetry->willMeasureText();
@@ -115,4 +116,5 @@ LinesMeasurements TextLayoutManager::measureLines(
                                                    size:{size.width, size.height}];
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

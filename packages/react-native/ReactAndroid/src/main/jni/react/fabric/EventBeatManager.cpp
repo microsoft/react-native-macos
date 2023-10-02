@@ -9,7 +9,8 @@
 #include <fbjni/fbjni.h>
 using namespace facebook::jni;
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 EventBeatManager::EventBeatManager(
     jni::alias_ref<EventBeatManager::jhybriddata> jhybridobject)
@@ -21,19 +22,19 @@ jni::local_ref<EventBeatManager::jhybriddata> EventBeatManager::initHybrid(
 }
 
 void EventBeatManager::addObserver(
-    const EventBeatManagerObserver& observer) const {
-  std::scoped_lock lock(mutex_);
+    EventBeatManagerObserver const &observer) const {
+  std::lock_guard<std::mutex> lock(mutex_);
   observers_.insert(&observer);
 }
 
 void EventBeatManager::removeObserver(
-    const EventBeatManagerObserver& observer) const {
-  std::scoped_lock lock(mutex_);
+    EventBeatManagerObserver const &observer) const {
+  std::lock_guard<std::mutex> lock(mutex_);
   observers_.erase(&observer);
 }
 
 void EventBeatManager::tick() {
-  std::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
 
   for (auto observer : observers_) {
     observer->tick();
@@ -47,4 +48,5 @@ void EventBeatManager::registerNatives() {
   });
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

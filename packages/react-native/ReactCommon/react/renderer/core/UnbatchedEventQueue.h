@@ -9,7 +9,8 @@
 
 #include <react/renderer/core/EventQueue.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Event Queue that dispatches events as granular as possible without waiting
@@ -22,4 +23,5 @@ class UnbatchedEventQueue final : public EventQueue {
   void onEnqueue() const override;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

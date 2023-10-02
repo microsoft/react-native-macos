@@ -12,7 +12,6 @@ import com.facebook.proguard.annotations.DoNotStrip;
 import com.facebook.react.bridge.queue.ReactQueueConfiguration;
 import com.facebook.react.common.annotations.VisibleForTesting;
 import com.facebook.react.turbomodule.core.interfaces.CallInvokerHolder;
-import com.facebook.react.turbomodule.core.interfaces.NativeMethodCallInvokerHolder;
 import java.util.Collection;
 import java.util.List;
 
@@ -123,10 +122,10 @@ public interface CatalystInstance
   CallInvokerHolder getJSCallInvokerHolder();
 
   /**
-   * Returns a hybrid object that contains a pointer to a NativeMethodCallInvoker, which is used to
+   * Returns a hybrid object that contains a pointer to a Native CallInvoker, which is used to
    * schedule work on the NativeModules thread. Required for TurboModuleManager initialization.
    */
-  NativeMethodCallInvokerHolder getNativeMethodCallInvokerHolder();
+  CallInvokerHolder getNativeCallInvokerHolder();
 
   /**
    * For the time being, we want code relying on the old infra to also work with TurboModules.

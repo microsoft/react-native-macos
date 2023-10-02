@@ -7,46 +7,53 @@
 
 #pragma once
 
-#include <mutex>
-#include <unordered_map>
-#include <unordered_set>
+#include "FabricMountItem.h"
+
+#include <react/config/ReactNativeConfig.h>
+#include <react/renderer/animations/LayoutAnimationDriver.h>
+#include <react/renderer/mounting/MountingCoordinator.h>
+#include <react/renderer/mounting/ShadowView.h>
+#include <react/renderer/uimanager/LayoutAnimationStatusDelegate.h>
+#include <react/utils/ContextContainer.h>
 
 #include <fbjni/fbjni.h>
-#include <react/fabric/JFabricUIManager.h>
-#include <react/renderer/uimanager/primitives.h>
 
-namespace facebook::react {
+#include <mutex>
 
-class MountingTransaction;
-class ReactNativeConfig;
-struct ShadowView;
+namespace facebook {
+namespace react {
 
 class FabricMountingManager final {
  public:
+  constexpr static auto UIManagerJavaDescriptor =
+      "com/facebook/react/fabric/FabricUIManager";
+
+  constexpr static auto ReactFeatureFlagsJavaDescriptor =
+      "com/facebook/react/config/ReactFeatureFlags";
+
   FabricMountingManager(
-      std::shared_ptr<const ReactNativeConfig>& config,
-      jni::global_ref<JFabricUIManager::javaobject>& javaUIManager);
-  FabricMountingManager(const FabricMountingManager&) = delete;
+      std::shared_ptr<const ReactNativeConfig> &config,
+      jni::global_ref<jobject> &javaUIManager);
 
   void onSurfaceStart(SurfaceId surfaceId);
 
   void onSurfaceStop(SurfaceId surfaceId);
 
-  void preallocateShadowView(SurfaceId surfaceId, const ShadowView& shadowView);
+  void preallocateShadowView(SurfaceId surfaceId, ShadowView const &shadowView);
 
-  void executeMount(const MountingTransaction& transaction);
+  void executeMount(MountingCoordinator::Shared mountingCoordinator);
 
   void dispatchCommand(
-      const ShadowView& shadowView,
-      const std::string& commandName,
-      const folly::dynamic& args);
+      ShadowView const &shadowView,
+      std::string const &commandName,
+      folly::dynamic const &args);
 
   void sendAccessibilityEvent(
-      const ShadowView& shadowView,
-      const std::string& eventType);
+      const ShadowView &shadowView,
+      std::string const &eventType);
 
   void setIsJSResponder(
-      const ShadowView& shadowView,
+      ShadowView const &shadowView,
       bool isJSResponder,
       bool blockNativeResponder);
 
@@ -55,19 +62,19 @@ class FabricMountingManager final {
   void onAllAnimationsComplete();
 
  private:
-  jni::global_ref<JFabricUIManager::javaobject> javaUIManager_;
+  jni::global_ref<jobject> javaUIManager_;
 
   std::recursive_mutex commitMutex_;
 
-  std::unordered_map<SurfaceId, std::unordered_set<Tag>>
-      allocatedViewRegistry_{};
+  butter::map<SurfaceId, butter::set<Tag>> allocatedViewRegistry_{};
   std::recursive_mutex allocatedViewsMutex_;
 
-  const bool reduceDeleteCreateMutation_{false};
+  bool const reduceDeleteCreateMutation_{false};
 
   jni::local_ref<jobject> getProps(
-      const ShadowView& oldShadowView,
-      const ShadowView& newShadowView);
+      ShadowView const &oldShadowView,
+      ShadowView const &newShadowView);
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

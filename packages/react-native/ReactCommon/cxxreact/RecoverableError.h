@@ -11,7 +11,8 @@
 #include <functional>
 #include <string>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /**
  * RecoverableError
@@ -19,10 +20,10 @@ namespace facebook::react {
  * An exception that it is expected we should be able to recover from.
  */
 struct RecoverableError : public std::exception {
-  explicit RecoverableError(const std::string& what_)
+  explicit RecoverableError(const std::string &what_)
       : m_what{"facebook::react::Recoverable: " + what_} {}
 
-  virtual const char* what() const noexcept override {
+  virtual const char *what() const noexcept override {
     return m_what.c_str();
   }
 
@@ -36,7 +37,7 @@ struct RecoverableError : public std::exception {
   inline static void runRethrowingAsRecoverable(std::function<void()> act) {
     try {
       act();
-    } catch (const E& err) {
+    } catch (const E &err) {
       throw RecoverableError(err.what());
     }
   }
@@ -45,4 +46,5 @@ struct RecoverableError : public std::exception {
   std::string m_what;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

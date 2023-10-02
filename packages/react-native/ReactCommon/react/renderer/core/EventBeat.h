@@ -12,7 +12,8 @@
 #include <functional>
 #include <memory>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Event Beat serves two interleaving purposes: synchronization of event queues
@@ -35,16 +36,16 @@ class EventBeat {
    * around this issue; it allows to store the pointer later, right after the
    * creation of some other object that owns an `EventBeat`.
    */
-  using Owner = std::weak_ptr<const void>;
+  using Owner = std::weak_ptr<void const>;
   struct OwnerBox {
     Owner owner;
   };
   using SharedOwnerBox = std::shared_ptr<OwnerBox>;
 
   using Factory =
-      std::function<std::unique_ptr<EventBeat>(const SharedOwnerBox& ownerBox)>;
+      std::function<std::unique_ptr<EventBeat>(SharedOwnerBox const &ownerBox)>;
 
-  using BeatCallback = std::function<void(jsi::Runtime& runtime)>;
+  using BeatCallback = std::function<void(jsi::Runtime &runtime)>;
 
   EventBeat(SharedOwnerBox ownerBox);
 
@@ -79,11 +80,12 @@ class EventBeat {
    * Should be used by subclasses to send a beat.
    * Receiver might ignore the call if a beat was not requested.
    */
-  void beat(jsi::Runtime& runtime) const;
+  void beat(jsi::Runtime &runtime) const;
 
   BeatCallback beatCallback_;
   SharedOwnerBox ownerBox_;
   mutable std::atomic<bool> isRequested_{false};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

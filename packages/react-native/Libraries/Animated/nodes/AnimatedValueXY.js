@@ -19,7 +19,11 @@ import invariant from 'invariant';
 export type AnimatedValueXYConfig = $ReadOnly<{
   useNativeDriver: boolean,
 }>;
-type ValueXYListenerCallback = (value: {x: number, y: number, ...}) => mixed;
+type ValueXYListenerCallback = (value: {
+  x: number,
+  y: number,
+  ...
+}) => mixed;
 
 let _uniqueId = 1;
 
@@ -131,7 +135,11 @@ export default class AnimatedValueXY extends AnimatedWithChildren {
    * See https://reactnative.dev/docs/animatedvaluexy#resetanimation
    */
   resetAnimation(
-    callback?: (value: {x: number, y: number, ...}) => void,
+    callback?: (value: {
+      x: number,
+      y: number,
+      ...
+    }) => void,
   ): void {
     this.x.resetAnimation();
     this.y.resetAnimation();
@@ -145,7 +153,13 @@ export default class AnimatedValueXY extends AnimatedWithChildren {
    *
    * See https://reactnative.dev/docs/animatedvaluexy#stopanimation
    */
-  stopAnimation(callback?: (value: {x: number, y: number, ...}) => void): void {
+  stopAnimation(
+    callback?: (value: {
+      x: number,
+      y: number,
+      ...
+    }) => void,
+  ): void {
     this.x.stopAnimation();
     this.y.stopAnimation();
     callback && callback(this.__getValue());

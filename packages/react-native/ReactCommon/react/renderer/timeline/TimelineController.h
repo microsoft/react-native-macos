@@ -8,15 +8,16 @@
 #pragma once
 
 #include <memory>
-#include <shared_mutex>
-#include <unordered_map>
+
+#include <butter/map.h>
 
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/timeline/Timeline.h>
 #include <react/renderer/timeline/TimelineHandler.h>
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Provides tools for introspecting the series of commits and associated
@@ -24,7 +25,7 @@ namespace facebook::react {
  */
 class TimelineController final : public UIManagerCommitHook {
  public:
-  using Shared = std::shared_ptr<const TimelineController>;
+  using Shared = std::shared_ptr<TimelineController const>;
 
   /*
    * Creates a `TimelineHandler` associated with given `SurfaceId` and starts
@@ -37,7 +38,7 @@ class TimelineController final : public UIManagerCommitHook {
    * destruction of all associated resources and stopping the introspection
    * process.
    */
-  void disable(TimelineHandler&& handler) const;
+  void disable(TimelineHandler &&handler) const;
 
   /*
    * TO BE DELETED.
@@ -49,27 +50,31 @@ class TimelineController final : public UIManagerCommitHook {
 #pragma mark - UIManagerCommitHook
 
   RootShadowNode::Unshared shadowTreeWillCommit(
-      const ShadowTree& shadowTree,
-      const RootShadowNode::Shared& oldRootShadowNode,
-      const RootShadowNode::Unshared& newRootShadowNode) noexcept override;
+      ShadowTree const &shadowTree,
+      RootShadowNode::Shared const &oldRootShadowNode,
+      RootShadowNode::Unshared const &newRootShadowNode)
+      const noexcept override;
 
-  void commitHookWasRegistered(const UIManager& uiManager) noexcept override;
+  void commitHookWasRegistered(
+      UIManager const &uiManager) const noexcept override;
 
-  void commitHookWasUnregistered(const UIManager& uiManager) noexcept override;
+  void commitHookWasUnregistered(
+      UIManager const &uiManager) const noexcept override;
 
  private:
   /*
    * Protects all the data members.
    */
-  mutable std::shared_mutex timelinesMutex_;
+  mutable butter::shared_mutex timelinesMutex_;
 
   /*
    * Owning collection of all running `Timeline` instances.
    */
-  mutable std::unordered_map<SurfaceId, std::unique_ptr<Timeline>> timelines_;
+  mutable butter::map<SurfaceId, std::unique_ptr<Timeline>> timelines_;
 
-  mutable const UIManager* uiManager_;
+  mutable UIManager const *uiManager_;
   mutable SurfaceId lastUpdatedSurface_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

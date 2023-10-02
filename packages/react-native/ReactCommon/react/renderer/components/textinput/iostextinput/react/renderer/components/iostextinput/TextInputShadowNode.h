@@ -16,7 +16,8 @@
 #include <react/renderer/textlayoutmanager/TextLayoutManager.h>
 #include <react/utils/ContextContainer.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 extern const char TextInputComponentName[];
 
@@ -46,26 +47,26 @@ class TextInputShadowNode final : public ConcreteViewShadowNode<
    * and construct `TextInputState` objects.
    */
   void setTextLayoutManager(
-      std::shared_ptr<const TextLayoutManager> textLayoutManager);
+      std::shared_ptr<TextLayoutManager const> textLayoutManager);
 
 #pragma mark - LayoutableShadowNode
 
   Size measureContent(
-      const LayoutContext& layoutContext,
-      const LayoutConstraints& layoutConstraints) const override;
+      LayoutContext const &layoutContext,
+      LayoutConstraints const &layoutConstraints) const override;
   void layout(LayoutContext layoutContext) override;
 
  private:
   /*
    * Creates a `State` object if needed.
    */
-  void updateStateIfNeeded(const LayoutContext& layoutContext);
+  void updateStateIfNeeded(LayoutContext const &layoutContext);
 
   /*
    * Returns a `AttributedString` which represents text content of the node.
    */
   AttributedString getAttributedString(
-      const LayoutContext& layoutContext) const;
+      LayoutContext const &layoutContext) const;
 
   /*
    * Returns an `AttributedStringBox` which represents text content that should
@@ -73,9 +74,10 @@ class TextInputShadowNode final : public ConcreteViewShadowNode<
    * placeholder value or some character that represents the size of the font.
    */
   AttributedStringBox attributedStringBoxToMeasure(
-      const LayoutContext& layoutContext) const;
+      LayoutContext const &layoutContext) const;
 
-  std::shared_ptr<const TextLayoutManager> textLayoutManager_;
+  std::shared_ptr<TextLayoutManager const> textLayoutManager_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

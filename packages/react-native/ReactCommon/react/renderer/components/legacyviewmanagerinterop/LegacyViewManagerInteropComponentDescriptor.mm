@@ -16,9 +16,10 @@
 #include "LegacyViewManagerInteropState.h"
 #include "RCTLegacyViewManagerInteropCoordinator.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
-static std::string moduleNameFromComponentNameNoRCTPrefix(const std::string &componentName)
+static std::string moduleNameFromComponentName(const std::string &componentName)
 {
   // TODO: remove FB specific code (T56174424)
   if (componentName == "StickerInputView") {
@@ -45,41 +46,22 @@ static std::string moduleNameFromComponentNameNoRCTPrefix(const std::string &com
     return componentName + "Manager";
   }
 
-  return componentName + "Manager";
+  return "RCT" + componentName + "Manager";
 }
 
 inline NSString *RCTNSStringFromString(const std::string &string)
 {
-  return [NSString stringWithUTF8String:string.c_str()];
+  return [NSString stringWithCString:string.c_str() encoding:NSUTF8StringEncoding];
 }
 
-static Class getViewManagerFromComponentName(const std::string &componentName)
-{
-  auto viewManagerName = moduleNameFromComponentNameNoRCTPrefix(componentName);
-
-  // 1. Try to get the manager with the RCT prefix.
-  auto rctViewManagerName = "RCT" + viewManagerName;
-  Class viewManagerClass = NSClassFromString(RCTNSStringFromString(rctViewManagerName));
-  if (viewManagerClass) {
-    return viewManagerClass;
-  }
-
-  // 2. Try to get the manager without the prefix.
-  viewManagerClass = NSClassFromString(RCTNSStringFromString(viewManagerName));
-  if (viewManagerClass) {
-    return viewManagerClass;
-  }
-
-  return nil;
-}
-
-static const std::shared_ptr<void> constructCoordinator(
-    const ContextContainer::Shared &contextContainer,
-    const ComponentDescriptor::Flavor &flavor)
+static std::shared_ptr<void> const constructCoordinator(
+    ContextContainer::Shared const &contextContainer,
+    ComponentDescriptor::Flavor const &flavor)
 {
   auto componentName = *std::static_pointer_cast<std::string const>(flavor);
-  Class viewManagerClass = getViewManagerFromComponentName(componentName);
-  assert(viewManagerClass);
+  auto moduleName = moduleNameFromComponentName(componentName);
+  Class module = NSClassFromString(RCTNSStringFromString(moduleName));
+  assert(module);
   auto optionalBridge = contextContainer->find<std::shared_ptr<void>>("Bridge");
   RCTBridge *bridge;
   if (optionalBridge) {
@@ -98,7 +80,7 @@ static const std::shared_ptr<void> constructCoordinator(
     bridgeModuleDecorator = unwrapManagedObject(optionalModuleDecorator.value());
   }
 
-  RCTComponentData *componentData = [[RCTComponentData alloc] initWithManagerClass:viewManagerClass
+  RCTComponentData *componentData = [[RCTComponentData alloc] initWithManagerClass:module
                                                                             bridge:bridge
                                                                    eventDispatcher:eventDispatcher];
   return wrapManagedObject([[RCTLegacyViewManagerInteropCoordinator alloc]
@@ -108,7 +90,7 @@ static const std::shared_ptr<void> constructCoordinator(
 }
 
 LegacyViewManagerInteropComponentDescriptor::LegacyViewManagerInteropComponentDescriptor(
-    const ComponentDescriptorParameters &parameters)
+    ComponentDescriptorParameters const &parameters)
     : ConcreteComponentDescriptor(parameters), _coordinator(constructCoordinator(contextContainer_, flavor_))
 {
 }
@@ -120,18 +102,20 @@ ComponentHandle LegacyViewManagerInteropComponentDescriptor::getComponentHandle(
 
 ComponentName LegacyViewManagerInteropComponentDescriptor::getComponentName() const
 {
-  return static_cast<const std::string *>(flavor_.get())->c_str();
+  return std::static_pointer_cast<std::string const>(this->flavor_)->c_str();
 }
 
-void LegacyViewManagerInteropComponentDescriptor::adopt(ShadowNode &shadowNode) const
+void LegacyViewManagerInteropComponentDescriptor::adopt(ShadowNode::Unshared const &shadowNode) const
 {
   ConcreteComponentDescriptor::adopt(shadowNode);
 
-  auto &legacyViewManagerInteropShadowNode = static_cast<LegacyViewManagerInteropShadowNode &>(shadowNode);
+  assert(std::dynamic_pointer_cast<LegacyViewManagerInteropShadowNode>(shadowNode));
+  auto legacyViewManagerInteropShadowNode = std::static_pointer_cast<LegacyViewManagerInteropShadowNode>(shadowNode);
 
   auto state = LegacyViewManagerInteropState{};
   state.coordinator = _coordinator;
 
-  legacyViewManagerInteropShadowNode.setStateData(std::move(state));
+  legacyViewManagerInteropShadowNode->setStateData(std::move(state));
 }
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

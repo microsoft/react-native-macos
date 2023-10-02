@@ -13,12 +13,7 @@ import java.nio.charset.Charset;
  * Not all versions of Android SDK have this class in nio package. This is the reason to have it
  * around.
  */
-@Deprecated(
-    since = "Deprecated class since v0.73.0, please use java.nio.charset.StandardCharsets instead.",
-    forRemoval = true)
-public final class StandardCharsets {
-
-  private StandardCharsets() {}
+public class StandardCharsets {
 
   /** Eight-bit UCS Transformation Format */
   public static final Charset UTF_8 = Charset.forName("UTF-8");

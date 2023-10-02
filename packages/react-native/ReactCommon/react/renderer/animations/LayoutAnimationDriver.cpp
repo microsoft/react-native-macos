@@ -16,9 +16,9 @@ namespace facebook::react {
 
 void LayoutAnimationDriver::animationMutationsForFrame(
     SurfaceId surfaceId,
-    ShadowViewMutation::List& mutationsList,
+    ShadowViewMutation::List &mutationsList,
     uint64_t now) const {
-  for (auto& animation : inflightAnimations_) {
+  for (auto &animation : inflightAnimations_) {
     if (animation.surfaceId != surfaceId) {
       continue;
     }
@@ -27,18 +27,18 @@ void LayoutAnimationDriver::animationMutationsForFrame(
     }
 
     int incompleteAnimations = 0;
-    for (auto& keyframe : animation.keyFrames) {
+    for (auto &keyframe : animation.keyFrames) {
       if (keyframe.invalidated) {
         continue;
       }
 
-      const auto& baselineShadowView = keyframe.viewStart;
-      const auto& finalShadowView = keyframe.viewEnd;
+      auto const &baselineShadowView = keyframe.viewStart;
+      auto const &finalShadowView = keyframe.viewEnd;
 
       // The contract with the "keyframes generation" phase is that any animated
       // node will have a valid configuration.
-      const auto layoutAnimationConfig = animation.layoutAnimationConfig;
-      const auto& mutationConfig =
+      auto const layoutAnimationConfig = animation.layoutAnimationConfig;
+      auto const &mutationConfig =
           (keyframe.type == AnimationConfigurationType::Delete
                ? layoutAnimationConfig.deleteConfig
                : (keyframe.type == AnimationConfigurationType::Create
@@ -76,12 +76,12 @@ void LayoutAnimationDriver::animationMutationsForFrame(
   // Clear out finished animations
   for (auto it = inflightAnimations_.begin();
        it != inflightAnimations_.end();) {
-    const auto& animation = *it;
+    const auto &animation = *it;
     if (animation.completed) {
       callCallback(animation.successCallback);
 
       // Queue up "final" mutations for all keyframes in the completed animation
-      for (const auto& keyframe : animation.keyFrames) {
+      for (auto const &keyframe : animation.keyFrames) {
         if (keyframe.invalidated) {
           continue;
         }

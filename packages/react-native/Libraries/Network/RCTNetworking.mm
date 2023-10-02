@@ -762,15 +762,6 @@ RCT_EXPORT_METHOD(clearCookies : (RCTResponseSenderBlock)responseSender)
 
 @end
 
-@implementation RCTBridgeProxy (RCTNetworking)
-
-- (RCTNetworking *)networking
-{
-  return [self moduleForClass:[RCTNetworking class]];
-}
-
-@end
-
 Class RCTNetworkingCls(void)
 {
   return RCTNetworking.class;

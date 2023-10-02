@@ -10,18 +10,31 @@
 
 'use strict';
 
+import type {ASTNode} from '../utils';
+import type {NamedShape} from '../../../CodegenSchema.js';
 const {getValueFromTypes} = require('../utils.js');
-const {verifyPropNotAlreadyDefined} = require('../../parsers-commons');
-import type {TypeDeclarationMap, PropAST, ASTNode} from '../../utils';
-import type {BuildSchemaFN, Parser} from '../../parser';
+import type {TypeDeclarationMap} from '../../utils';
+
+function getProperties(
+  typeName: string,
+  types: TypeDeclarationMap,
+): $FlowFixMe {
+  const typeAlias = types[typeName];
+  try {
+    return typeAlias.right.typeParameters.params[0].properties;
+  } catch (e) {
+    throw new Error(
+      `Failed to find type definition for "${typeName}", please check that you have a valid codegen flow file`,
+    );
+  }
+}
 
 function getTypeAnnotationForArray<+T>(
   name: string,
   typeAnnotation: $FlowFixMe,
   defaultValue: $FlowFixMe | null,
   types: TypeDeclarationMap,
-  parser: Parser,
-  buildSchema: BuildSchemaFN<T>,
+  buildSchema: (property: PropAST, types: TypeDeclarationMap) => ?NamedShape<T>,
 ): $FlowFixMe {
   const extractedTypeAnnotation = getValueFromTypes(typeAnnotation, types);
   if (extractedTypeAnnotation.type === 'NullableTypeAnnotation') {
@@ -32,7 +45,7 @@ function getTypeAnnotationForArray<+T>(
 
   if (
     extractedTypeAnnotation.type === 'GenericTypeAnnotation' &&
-    parser.getTypeAnnotationName(extractedTypeAnnotation) === 'WithDefault'
+    extractedTypeAnnotation.id.name === 'WithDefault'
   ) {
     throw new Error(
       'Nested defaults such as "$ReadOnlyArray<WithDefault<boolean, false>>" are not supported, please declare defaults at the top level of value definitions as in "WithDefault<$ReadOnlyArray<boolean>, false>"',
@@ -49,9 +62,8 @@ function getTypeAnnotationForArray<+T>(
         properties: flattenProperties(
           objectType.typeParameters.params[0].properties,
           types,
-          parser,
         )
-          .map(prop => buildSchema(prop, types, parser))
+          .map(prop => buildSchema(prop, types))
           .filter(Boolean),
       };
     }
@@ -71,9 +83,8 @@ function getTypeAnnotationForArray<+T>(
           properties: flattenProperties(
             nestedObjectType.typeParameters.params[0].properties,
             types,
-            parser,
           )
-            .map(prop => buildSchema(prop, types, parser))
+            .map(prop => buildSchema(prop, types))
             .filter(Boolean),
         },
       };
@@ -82,7 +93,7 @@ function getTypeAnnotationForArray<+T>(
 
   const type =
     extractedTypeAnnotation.type === 'GenericTypeAnnotation'
-      ? parser.getTypeAnnotationName(extractedTypeAnnotation)
+      ? extractedTypeAnnotation.id.name
       : extractedTypeAnnotation.type;
 
   switch (type) {
@@ -170,6 +181,7 @@ function getTypeAnnotationForArray<+T>(
         );
       }
     default:
+      (type: empty);
       throw new Error(`Unknown property type for "${name}": ${type}`);
   }
 }
@@ -177,7 +189,6 @@ function getTypeAnnotationForArray<+T>(
 function flattenProperties(
   typeDefinition: $ReadOnlyArray<PropAST>,
   types: TypeDeclarationMap,
-  parser: Parser,
 ): $ReadOnlyArray<PropAST> {
   return typeDefinition
     .map(property => {
@@ -185,9 +196,8 @@ function flattenProperties(
         return property;
       } else if (property.type === 'ObjectTypeSpreadProperty') {
         return flattenProperties(
-          parser.getProperties(property.argument.id.name, types),
+          getProperties(property.argument.id.name, types),
           types,
-          parser,
         );
       }
     })
@@ -206,20 +216,30 @@ function flattenProperties(
     .filter(Boolean);
 }
 
+function verifyPropNotAlreadyDefined(
+  props: $ReadOnlyArray<PropAST>,
+  needleProp: PropAST,
+) {
+  const propName = needleProp.key.name;
+  const foundProp = props.some(prop => prop.key.name === propName);
+  if (foundProp) {
+    throw new Error(`A prop was already defined with the name ${propName}`);
+  }
+}
+
 function getTypeAnnotation<+T>(
   name: string,
   annotation: $FlowFixMe | ASTNode,
   defaultValue: $FlowFixMe | null,
   withNullDefault: boolean,
   types: TypeDeclarationMap,
-  parser: Parser,
-  buildSchema: BuildSchemaFN<T>,
+  buildSchema: (property: PropAST, types: TypeDeclarationMap) => ?NamedShape<T>,
 ): $FlowFixMe {
   const typeAnnotation = getValueFromTypes(annotation, types);
 
   if (
     typeAnnotation.type === 'GenericTypeAnnotation' &&
-    parser.getTypeAnnotationName(typeAnnotation) === '$ReadOnlyArray'
+    typeAnnotation.id.name === '$ReadOnlyArray'
   ) {
     return {
       type: 'ArrayTypeAnnotation',
@@ -228,7 +248,6 @@ function getTypeAnnotation<+T>(
         typeAnnotation.typeParameters.params[0],
         defaultValue,
         types,
-        parser,
         buildSchema,
       ),
     };
@@ -236,23 +255,22 @@ function getTypeAnnotation<+T>(
 
   if (
     typeAnnotation.type === 'GenericTypeAnnotation' &&
-    parser.getTypeAnnotationName(typeAnnotation) === '$ReadOnly'
+    typeAnnotation.id.name === '$ReadOnly'
   ) {
     return {
       type: 'ObjectTypeAnnotation',
       properties: flattenProperties(
         typeAnnotation.typeParameters.params[0].properties,
         types,
-        parser,
       )
-        .map(prop => buildSchema(prop, types, parser))
+        .map(prop => buildSchema(prop, types))
         .filter(Boolean),
     };
   }
 
   const type =
     typeAnnotation.type === 'GenericTypeAnnotation'
-      ? parser.getTypeAnnotationName(typeAnnotation)
+      ? typeAnnotation.id.name
       : typeAnnotation.type;
 
   switch (type) {
@@ -378,6 +396,7 @@ function getTypeAnnotation<+T>(
         type: 'MixedTypeAnnotation',
       };
     default:
+      (type: empty);
       throw new Error(
         `Unknown property type for "${name}": "${type}" in the State`,
       );
@@ -480,7 +499,11 @@ function getSchemaInfo(
   };
 }
 
+// $FlowFixMe[unclear-type] there's no flowtype for ASTs
+type PropAST = Object;
+
 module.exports = {
+  getProperties,
   getSchemaInfo,
   getTypeAnnotation,
   flattenProperties,

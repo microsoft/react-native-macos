@@ -166,6 +166,7 @@ describe('promise tasks', () => {
   }
   beforeEach(() => {
     jest.resetModules();
+    jest.useFakeTimers({legacyFakeTimers: true});
     InteractionManager = require('../InteractionManager');
     sequenceId = 0;
   });

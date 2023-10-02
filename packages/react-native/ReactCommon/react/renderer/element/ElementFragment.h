@@ -13,7 +13,8 @@
 
 #include <react/renderer/core/ShadowNode.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * This is an implementation detail, do not use it directly.
@@ -27,10 +28,9 @@ class ElementFragment final {
   using List = std::vector<ElementFragment>;
   using ListOfShared = std::vector<Shared>;
   using ReferenceCallback =
-      std::function<void(const ShadowNode::Unshared& shadowNode)>;
-  using FinalizeCallback = std::function<void(ShadowNode& shadowNode)>;
-  using StateCallback =
-      std::function<StateData::Shared(const State::Shared& state)>;
+      std::function<void(ShadowNode::Unshared const &shadowNode)>;
+  using FinalizeCallback = std::function<void(ShadowNode &shadowNode)>;
+  using StateCallback = std::function<StateData::Shared()>;
 
   /*
    * ComponentDescriptor part (describes the type)
@@ -58,4 +58,5 @@ class ElementFragment final {
   StateCallback stateCallback;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

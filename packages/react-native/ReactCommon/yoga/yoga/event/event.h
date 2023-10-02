@@ -7,14 +7,17 @@
 
 #pragma once
 
-#include <yoga/Yoga.h>
-
-#include <stdint.h>
-#include <array>
 #include <functional>
 #include <vector>
+#include <array>
+#include <yoga/YGEnums.h>
+#include <stdint.h>
 
-namespace facebook::yoga {
+struct YGConfig;
+struct YGNode;
+
+namespace facebook {
+namespace yoga {
 
 enum struct LayoutType : int {
   kLayout = 0,
@@ -38,7 +41,7 @@ enum struct LayoutPassReason : int {
 struct LayoutData {
   int layouts;
   int measures;
-  uint32_t maxMeasureCache;
+  int maxMeasureCache;
   int cachedLayouts;
   int cachedMeasures;
   int measureCallbacks;
@@ -48,7 +51,7 @@ struct LayoutData {
 
 const char* LayoutPassReasonToString(const LayoutPassReason value);
 
-struct YG_EXPORT Event {
+struct YOGA_EXPORT Event {
   enum Type {
     NodeAllocation,
     NodeDeallocation,
@@ -61,7 +64,7 @@ struct YG_EXPORT Event {
     NodeBaselineEnd,
   };
   class Data;
-  using Subscriber = void(YGNodeConstRef, Type, Data);
+  using Subscriber = void(const YGNode&, Type, Data);
   using Subscribers = std::vector<std::function<Subscriber>>;
 
   template <Type E>
@@ -70,14 +73,14 @@ struct YG_EXPORT Event {
   class Data {
     const void* data_;
 
-   public:
+  public:
     template <Type E>
     Data(const TypedData<E>& data) : data_{&data} {}
 
     template <Type E>
     const TypedData<E>& get() const {
       return *static_cast<const TypedData<E>*>(data_);
-    }
+    };
   };
 
   static void reset();
@@ -85,31 +88,43 @@ struct YG_EXPORT Event {
   static void subscribe(std::function<Subscriber>&& subscriber);
 
   template <Type E>
-  static void publish(YGNodeConstRef node, const TypedData<E>& eventData = {}) {
+  static void publish(const YGNode& node, const TypedData<E>& eventData = {}) {
     publish(node, E, Data{eventData});
   }
 
- private:
-  static void publish(YGNodeConstRef, Type, const Data&);
+  template <Type E>
+  static void publish(const YGNode* node, const TypedData<E>& eventData = {}) {
+    publish<E>(*node, eventData);
+  }
+
+private:
+  static void publish(const YGNode&, Type, const Data&);
 };
 
 template <>
 struct Event::TypedData<Event::NodeAllocation> {
-  YGConfigConstRef config;
+  YGConfig* config;
 };
 
 template <>
 struct Event::TypedData<Event::NodeDeallocation> {
-  YGConfigConstRef config;
+  YGConfig* config;
+};
+
+template <>
+struct Event::TypedData<Event::LayoutPassStart> {
+  void* layoutContext;
 };
 
 template <>
 struct Event::TypedData<Event::LayoutPassEnd> {
+  void* layoutContext;
   LayoutData* layoutData;
 };
 
 template <>
 struct Event::TypedData<Event::MeasureCallbackEnd> {
+  void* layoutContext;
   float width;
   YGMeasureMode widthMeasureMode;
   float height;
@@ -122,6 +137,8 @@ struct Event::TypedData<Event::MeasureCallbackEnd> {
 template <>
 struct Event::TypedData<Event::NodeLayout> {
   LayoutType layoutType;
+  void* layoutContext;
 };
 
-} // namespace facebook::yoga
+} // namespace yoga
+} // namespace facebook

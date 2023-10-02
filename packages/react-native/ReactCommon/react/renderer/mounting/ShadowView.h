@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <butter/small_vector.h>
 #include <folly/Hash.h>
 #include <react/renderer/core/EventEmitter.h>
 #include <react/renderer/core/LayoutMetrics.h>
@@ -15,7 +16,8 @@
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/debug/flags.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Describes a view that can be mounted.
@@ -23,19 +25,19 @@ namespace facebook::react {
  */
 struct ShadowView final {
   ShadowView() = default;
-  ShadowView(const ShadowView& shadowView) = default;
-  ShadowView(ShadowView&& shadowView) noexcept = default;
+  ShadowView(ShadowView const &shadowView) = default;
+  ShadowView(ShadowView &&shadowView) noexcept = default;
 
   /*
    * Constructs a `ShadowView` from given `ShadowNode`.
    */
-  explicit ShadowView(const ShadowNode& shadowNode);
+  explicit ShadowView(ShadowNode const &shadowNode);
 
-  ShadowView& operator=(const ShadowView& other) = default;
-  ShadowView& operator=(ShadowView&& other) = default;
+  ShadowView &operator=(ShadowView const &other) = default;
+  ShadowView &operator=(ShadowView &&other) = default;
 
-  bool operator==(const ShadowView& rhs) const;
-  bool operator!=(const ShadowView& rhs) const;
+  bool operator==(ShadowView const &rhs) const;
+  bool operator!=(ShadowView const &rhs) const;
 
   ComponentName componentName{};
   ComponentHandle componentHandle{};
@@ -50,9 +52,9 @@ struct ShadowView final {
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
-std::string getDebugName(const ShadowView& object);
+std::string getDebugName(ShadowView const &object);
 std::vector<DebugStringConvertibleObject> getDebugProps(
-    const ShadowView& object,
+    ShadowView const &object,
     DebugStringConvertibleOptions options);
 
 #endif
@@ -63,11 +65,13 @@ std::vector<DebugStringConvertibleObject> getDebugProps(
  *
  */
 struct ShadowViewNodePair final {
-  using NonOwningList = std::vector<ShadowViewNodePair*>;
-  using OwningList = std::vector<ShadowViewNodePair>;
+  using NonOwningList = butter::
+      small_vector<ShadowViewNodePair *, kShadowNodeChildrenSmallVectorSize>;
+  using OwningList = butter::
+      small_vector<ShadowViewNodePair, kShadowNodeChildrenSmallVectorSize>;
 
   ShadowView shadowView;
-  const ShadowNode* shadowNode;
+  ShadowNode const *shadowNode;
   bool flattened{false};
   bool isConcreteView{true};
   Point contextOrigin{0, 0};
@@ -80,13 +84,13 @@ struct ShadowViewNodePair final {
    * rely on this more heavily to simplify the diffing algorithm
    * overall?
    */
-  mutable const ShadowViewNodePair* otherTreePair{nullptr};
+  mutable ShadowViewNodePair const *otherTreePair{nullptr};
 
   /*
    * The stored pointer to `ShadowNode` represents an identity of the pair.
    */
-  bool operator==(const ShadowViewNodePair& rhs) const;
-  bool operator!=(const ShadowViewNodePair& rhs) const;
+  bool operator==(const ShadowViewNodePair &rhs) const;
+  bool operator!=(const ShadowViewNodePair &rhs) const;
 
   bool inOtherTree() const {
     return this->otherTreePair != nullptr;
@@ -99,10 +103,12 @@ struct ShadowViewNodePair final {
  *
  */
 struct ShadowViewNodePairLegacy final {
-  using OwningList = std::vector<ShadowViewNodePairLegacy>;
+  using OwningList = butter::small_vector<
+      ShadowViewNodePairLegacy,
+      kShadowNodeChildrenSmallVectorSize>;
 
   ShadowView shadowView;
-  const ShadowNode* shadowNode;
+  ShadowNode const *shadowNode;
   bool flattened{false};
   bool isConcreteView{true};
 
@@ -113,17 +119,18 @@ struct ShadowViewNodePairLegacy final {
   /*
    * The stored pointer to `ShadowNode` represents an identity of the pair.
    */
-  bool operator==(const ShadowViewNodePairLegacy& rhs) const;
-  bool operator!=(const ShadowViewNodePairLegacy& rhs) const;
+  bool operator==(const ShadowViewNodePairLegacy &rhs) const;
+  bool operator!=(const ShadowViewNodePairLegacy &rhs) const;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook
 
 namespace std {
 
 template <>
 struct hash<facebook::react::ShadowView> {
-  size_t operator()(const facebook::react::ShadowView& shadowView) const {
+  size_t operator()(const facebook::react::ShadowView &shadowView) const {
     return folly::hash::hash_combine(
         0,
         shadowView.surfaceId,

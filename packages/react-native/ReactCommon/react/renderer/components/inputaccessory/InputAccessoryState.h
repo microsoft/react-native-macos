@@ -10,7 +10,8 @@
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/graphics/Float.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * State for <InputAccessoryView> component.
@@ -23,4 +24,5 @@ class InputAccessoryState final {
   const Size viewportSize{};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

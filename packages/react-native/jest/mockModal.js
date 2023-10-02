@@ -17,13 +17,11 @@ import typeof Modal from '../Libraries/Modal/Modal';
 
 function mockModal(BaseComponent: $FlowFixMe) {
   class ModalMock extends BaseComponent {
-    render(): React.Element<Modal> | null {
-      if (this.props.visible === false) {
-        return null;
-      }
-
+    render(): React.Element<Modal> {
       return (
-        <BaseComponent {...this.props}>{this.props.children}</BaseComponent>
+        <BaseComponent {...this.props}>
+          {this.props.visible !== true ? null : this.props.children}
+        </BaseComponent>
       );
     }
   }

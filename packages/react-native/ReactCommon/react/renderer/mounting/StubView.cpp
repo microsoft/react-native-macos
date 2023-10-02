@@ -26,7 +26,7 @@ StubView::operator ShadowView() const {
   return shadowView;
 }
 
-void StubView::update(const ShadowView& shadowView) {
+void StubView::update(ShadowView const &shadowView) {
   componentName = shadowView.componentName;
   componentHandle = shadowView.componentHandle;
   surfaceId = shadowView.surfaceId;
@@ -37,7 +37,7 @@ void StubView::update(const ShadowView& shadowView) {
   state = shadowView.state;
 }
 
-bool operator==(const StubView& lhs, const StubView& rhs) {
+bool operator==(StubView const &lhs, StubView const &rhs) {
   if (lhs.props != rhs.props) {
 #ifdef STUB_VIEW_TREE_VERBOSE
     LOG(ERROR) << "StubView: props do not match. lhs hash: "
@@ -57,20 +57,20 @@ bool operator==(const StubView& lhs, const StubView& rhs) {
   return true;
 }
 
-bool operator!=(const StubView& lhs, const StubView& rhs) {
+bool operator!=(StubView const &lhs, StubView const &rhs) {
   return !(lhs == rhs);
 }
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
-std::string getDebugName(const StubView& stubView) {
+std::string getDebugName(StubView const &stubView) {
   return std::string{"Stub"} +
       std::string{
           stubView.componentHandle != 0 ? stubView.componentName : "[invalid]"};
 }
 
 std::vector<DebugStringConvertibleObject> getDebugProps(
-    const StubView& stubView,
+    StubView const &stubView,
     DebugStringConvertibleOptions options) {
   return {
       {"surfaceId", getDebugDescription(stubView.surfaceId, options)},
@@ -83,10 +83,10 @@ std::vector<DebugStringConvertibleObject> getDebugProps(
 }
 
 std::vector<StubView> getDebugChildren(
-    const StubView& stubView,
+    StubView const &stubView,
     DebugStringConvertibleOptions /*options*/) {
   std::vector<StubView> result;
-  for (const auto& child : stubView.children) {
+  for (auto const &child : stubView.children) {
     result.push_back(*child);
   }
   return result;

@@ -10,8 +10,7 @@
 
 'use strict';
 
-import type {CellMetricProps} from './ListMetricsAggregator';
-import ListMetricsAggregator from './ListMetricsAggregator';
+import type {FrameMetricProps} from './VirtualizedListProps';
 
 export type FillRateInfo = Info;
 
@@ -27,6 +26,13 @@ class Info {
   total_time_spent: number = 0;
   sample_count: number = 0;
 }
+
+type FrameMetrics = {
+  inLayout?: boolean,
+  length: number,
+  offset: number,
+  ...
+};
 
 const DEBUG = false;
 
@@ -45,7 +51,7 @@ let _sampleRate = DEBUG ? 1 : null;
 class FillRateHelper {
   _anyBlankStartTime: ?number = null;
   _enabled = false;
-  _listMetrics: ListMetricsAggregator;
+  _getFrameMetrics: (index: number, props: FrameMetricProps) => ?FrameMetrics;
   _info: Info = new Info();
   _mostlyBlankStartTime: ?number = null;
   _samplesStartTime: ?number = null;
@@ -73,8 +79,10 @@ class FillRateHelper {
     _minSampleCount = minSampleCount;
   }
 
-  constructor(listMetrics: ListMetricsAggregator) {
-    this._listMetrics = listMetrics;
+  constructor(
+    getFrameMetrics: (index: number, props: FrameMetricProps) => ?FrameMetrics,
+  ) {
+    this._getFrameMetrics = getFrameMetrics;
     this._enabled = (_sampleRate || 0) > Math.random();
     this._resetData();
   }
@@ -131,7 +139,7 @@ class FillRateHelper {
 
   computeBlankness(
     props: {
-      ...CellMetricProps,
+      ...FrameMetricProps,
       initialNumToRender?: ?number,
       ...
     },
@@ -178,12 +186,12 @@ class FillRateHelper {
 
     let blankTop = 0;
     let first = cellsAroundViewport.first;
-    let firstFrame = this._listMetrics.getCellMetrics(first, props);
+    let firstFrame = this._getFrameMetrics(first, props);
     while (
       first <= cellsAroundViewport.last &&
-      (!firstFrame || !firstFrame.isMounted)
+      (!firstFrame || !firstFrame.inLayout)
     ) {
-      firstFrame = this._listMetrics.getCellMetrics(first, props);
+      firstFrame = this._getFrameMetrics(first, props);
       first++;
     }
     // Only count blankTop if we aren't rendering the first item, otherwise we will count the header
@@ -196,12 +204,12 @@ class FillRateHelper {
     }
     let blankBottom = 0;
     let last = cellsAroundViewport.last;
-    let lastFrame = this._listMetrics.getCellMetrics(last, props);
+    let lastFrame = this._getFrameMetrics(last, props);
     while (
       last >= cellsAroundViewport.first &&
-      (!lastFrame || !lastFrame.isMounted)
+      (!lastFrame || !lastFrame.inLayout)
     ) {
-      lastFrame = this._listMetrics.getCellMetrics(last, props);
+      lastFrame = this._getFrameMetrics(last, props);
       last--;
     }
     // Only count blankBottom if we aren't rendering the last item, otherwise we will count the

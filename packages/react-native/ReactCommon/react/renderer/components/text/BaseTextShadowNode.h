@@ -10,7 +10,8 @@
 #include <react/renderer/attributedstring/AttributedString.h>
 #include <react/renderer/attributedstring/TextAttributes.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Base class (one of) for shadow nodes that represents attributed text,
@@ -28,7 +29,7 @@ class BaseTextShadowNode {
      * Unowning pointer to a `ShadowNode` that represents the attachment.
      * Cannot be `null`.
      */
-    const ShadowNode* shadowNode;
+    ShadowNode const *shadowNode;
 
     /*
      * Index of the fragment in `AttributedString` that represents the
@@ -52,10 +53,10 @@ class BaseTextShadowNode {
    * function, or if TextInput should inherit from BaseTextShadowNode.
    */
   static void buildAttributedString(
-      const TextAttributes& baseTextAttributes,
-      const ShadowNode& parentNode,
-      AttributedString& outAttributedString,
-      Attachments& outAttachments);
+      TextAttributes const &baseTextAttributes,
+      ShadowNode const &parentNode,
+      AttributedString &outAttributedString,
+      Attachments &outAttachments);
 
   /**
    * Returns a character used to measure empty strings in native platforms.
@@ -65,4 +66,5 @@ class BaseTextShadowNode {
   }
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

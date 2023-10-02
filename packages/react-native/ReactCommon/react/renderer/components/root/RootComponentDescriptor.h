@@ -10,8 +10,10 @@
 #include <react/renderer/components/root/RootShadowNode.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 using RootComponentDescriptor = ConcreteComponentDescriptor<RootShadowNode>;
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -18,28 +18,28 @@
 
 namespace facebook::react {
 
-StubViewTree::StubViewTree(const ShadowView& shadowView) {
+StubViewTree::StubViewTree(ShadowView const &shadowView) {
   auto view = std::make_shared<StubView>();
   view->update(shadowView);
-  rootTag_ = shadowView.tag;
-  registry_[shadowView.tag] = view;
+  rootTag = shadowView.tag;
+  registry[shadowView.tag] = view;
 }
 
-const StubView& StubViewTree::getRootStubView() const {
-  return *registry_.at(rootTag_);
+StubView const &StubViewTree::getRootStubView() const {
+  return *registry.at(rootTag);
 }
 
-const StubView& StubViewTree::getStubView(Tag tag) const {
-  return *registry_.at(tag);
+StubView const &StubViewTree::getStubView(Tag tag) const {
+  return *registry.at(tag);
 }
 
 size_t StubViewTree::size() const {
-  return registry_.size();
+  return registry.size();
 }
 
-void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
+void StubViewTree::mutate(ShadowViewMutationList const &mutations) {
   STUB_VIEW_LOG({ LOG(ERROR) << "StubView: Mutating Begin"; });
-  for (const auto& mutation : mutations) {
+  for (auto const &mutation : mutations) {
     switch (mutation.type) {
       case ShadowViewMutation::Create: {
         react_native_assert(mutation.parentShadowView == ShadowView{});
@@ -52,14 +52,8 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
           LOG(ERROR) << "StubView: Create [" << tag << "] ##"
                      << std::hash<ShadowView>{}((ShadowView)*stubView);
         });
-        if (hasTag(tag)) {
-          LOG(ERROR) << "StubView: Create [" << tag << "]: tag already exists"
-                     << (tag == rootTag_ ? " (and it's the root tag)" : "")
-                     << ". The current registry: ";
-          dumpTags(LOG(ERROR));
-        }
-        react_native_assert(!hasTag(tag));
-        registry_[tag] = stubView;
+        react_native_assert(registry.find(tag) == registry.end());
+        registry[tag] = stubView;
         break;
       }
 
@@ -72,8 +66,8 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
         react_native_assert(mutation.parentShadowView == ShadowView{});
         react_native_assert(mutation.newChildShadowView == ShadowView{});
         auto tag = mutation.oldChildShadowView.tag;
-        react_native_assert(hasTag(tag));
-        auto stubView = registry_[tag];
+        react_native_assert(registry.find(tag) != registry.end());
+        auto stubView = registry[tag];
         if ((ShadowView)(*stubView) != mutation.oldChildShadowView) {
           LOG(ERROR)
               << "StubView: ASSERT FAILURE: DELETE mutation assertion failure: oldChildShadowView does not match stubView: ["
@@ -81,7 +75,7 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
               << std::hash<ShadowView>{}((ShadowView)*stubView)
               << " old mutation hash: ##"
               << std::hash<ShadowView>{}(mutation.oldChildShadowView);
-#if RN_DEBUG_STRING_CONVERTIBLE
+#ifdef RN_DEBUG_STRING_CONVERTIBLE
           LOG(ERROR) << "StubView: "
                      << getDebugPropsDescription((ShadowView)*stubView, {});
           LOG(ERROR) << "OldChildShadowView: "
@@ -91,7 +85,7 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
         }
         react_native_assert(
             (ShadowView)(*stubView) == mutation.oldChildShadowView);
-        registry_.erase(tag);
+        registry.erase(tag);
         break;
       }
 
@@ -100,20 +94,20 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
           react_native_assert(mutation.oldChildShadowView == ShadowView{});
           auto parentTag = mutation.parentShadowView.tag;
           auto childTag = mutation.newChildShadowView.tag;
-          if (!hasTag(parentTag)) {
+          if (registry.find(parentTag) == registry.end()) {
             LOG(ERROR)
                 << "StubView: ASSERT FAILURE: INSERT mutation assertion failure: parentTag not found: ["
                 << parentTag << "] inserting child: [" << childTag << "]";
           }
-          if (!hasTag(childTag)) {
+          if (registry.find(childTag) == registry.end()) {
             LOG(ERROR)
                 << "StubView: ASSERT FAILURE: INSERT mutation assertion failure: childTag not found: ["
                 << parentTag << "] inserting child: [" << childTag << "]";
           }
-          react_native_assert(hasTag(parentTag));
-          auto parentStubView = registry_[parentTag];
-          react_native_assert(hasTag(childTag));
-          auto childStubView = registry_[childTag];
+          react_native_assert(registry.find(parentTag) != registry.end());
+          auto parentStubView = registry[parentTag];
+          react_native_assert(registry.find(childTag) != registry.end());
+          auto childStubView = registry[childTag];
           childStubView->update(mutation.newChildShadowView);
           STUB_VIEW_LOG({
             LOG(ERROR) << "StubView: Insert [" << childTag << "] into ["
@@ -130,8 +124,8 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
               parentStubView->children.begin() + mutation.index, childStubView);
         } else {
           auto childTag = mutation.newChildShadowView.tag;
-          react_native_assert(hasTag(childTag));
-          auto childStubView = registry_[childTag];
+          react_native_assert(registry.find(childTag) != registry.end());
+          auto childStubView = registry[childTag];
           childStubView->update(mutation.newChildShadowView);
         }
         break;
@@ -142,13 +136,13 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
           react_native_assert(mutation.newChildShadowView == ShadowView{});
           auto parentTag = mutation.parentShadowView.tag;
           auto childTag = mutation.oldChildShadowView.tag;
-          if (!hasTag(parentTag)) {
+          if (registry.find(parentTag) == registry.end()) {
             LOG(ERROR)
                 << "StubView: ASSERT FAILURE: REMOVE mutation assertion failure: parentTag not found: ["
                 << parentTag << "] removing child: [" << childTag << "]";
           }
-          react_native_assert(hasTag(parentTag));
-          auto parentStubView = registry_[parentTag];
+          react_native_assert(registry.find(parentTag) != registry.end());
+          auto parentStubView = registry[parentTag];
           STUB_VIEW_LOG({
             LOG(ERROR) << "StubView: Remove [" << childTag << "] from ["
                        << parentTag << "] @" << mutation.index << " with "
@@ -158,8 +152,8 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
               mutation.index >= 0 &&
               parentStubView->children.size() >
                   static_cast<size_t>(mutation.index));
-          react_native_assert(hasTag(childTag));
-          auto childStubView = registry_[childTag];
+          react_native_assert(registry.find(childTag) != registry.end());
+          auto childStubView = registry[childTag];
           if ((ShadowView)(*childStubView) != mutation.oldChildShadowView) {
             LOG(ERROR)
                 << "StubView: ASSERT FAILURE: REMOVE mutation assertion failure: oldChildShadowView does not match oldStubView: ["
@@ -167,7 +161,7 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
                 << std::hash<ShadowView>{}((ShadowView)*childStubView)
                 << " old mutation hash: ##"
                 << std::hash<ShadowView>{}(mutation.oldChildShadowView);
-#if RN_DEBUG_STRING_CONVERTIBLE
+#ifdef RN_DEBUG_STRING_CONVERTIBLE
             LOG(ERROR) << "ChildStubView: "
                        << getDebugPropsDescription(
                               (ShadowView)*childStubView, {});
@@ -182,7 +176,7 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
           STUB_VIEW_LOG({
             std::string strChildList = "";
             int i = 0;
-            for (auto const& child : parentStubView->children) {
+            for (auto const &child : parentStubView->children) {
               strChildList.append(std::to_string(i));
               strChildList.append(":");
               strChildList.append(std::to_string(child->tag));
@@ -223,8 +217,9 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
         react_native_assert(mutation.newChildShadowView.props);
         react_native_assert(
             mutation.newChildShadowView.tag == mutation.oldChildShadowView.tag);
-        react_native_assert(hasTag(mutation.newChildShadowView.tag));
-        auto oldStubView = registry_[mutation.newChildShadowView.tag];
+        react_native_assert(
+            registry.find(mutation.newChildShadowView.tag) != registry.end());
+        auto oldStubView = registry[mutation.newChildShadowView.tag];
         react_native_assert(oldStubView->tag != 0);
         if ((ShadowView)(*oldStubView) != mutation.oldChildShadowView) {
           LOG(ERROR)
@@ -233,7 +228,7 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
               << std::hash<ShadowView>{}((ShadowView)*oldStubView)
               << " old mutation hash: ##"
               << std::hash<ShadowView>{}(mutation.oldChildShadowView);
-#if RN_DEBUG_STRING_CONVERTIBLE
+#ifdef RN_DEBUG_STRING_CONVERTIBLE
           LOG(ERROR) << "OldStubView: "
                      << getDebugPropsDescription((ShadowView)*oldStubView, {});
           LOG(ERROR) << "OldChildShadowView: "
@@ -262,34 +257,39 @@ void StubViewTree::mutate(const ShadowViewMutationList& mutations) {
   google::FlushLogFiles(google::GLOG_INFO);
 }
 
-std::ostream& StubViewTree::dumpTags(std::ostream& stream) {
-  for (const auto& pair : registry_) {
-    auto& stubView = *registry_.at(pair.first);
-    stream << "[" << stubView.tag << "]##"
-           << std::hash<ShadowView>{}((ShadowView)stubView) << " ";
-  }
-  return stream;
-}
-
-bool operator==(const StubViewTree& lhs, const StubViewTree& rhs) {
-  if (lhs.registry_.size() != rhs.registry_.size()) {
+bool operator==(StubViewTree const &lhs, StubViewTree const &rhs) {
+  if (lhs.registry.size() != rhs.registry.size()) {
     STUB_VIEW_LOG({
       LOG(ERROR) << "Registry sizes are different. Sizes: LHS: "
-                 << lhs.registry_.size() << " RHS: " << rhs.registry_.size();
+                 << lhs.registry.size() << " RHS: " << rhs.registry.size();
 
-      LOG(ERROR) << "Tags in LHS: ";
-      lhs.dumpTagsHash(LOG(ERROR));
+      [&](std::ostream &stream) -> std::ostream & {
+        stream << "Tags in LHS: ";
+        for (auto const &pair : lhs.registry) {
+          auto &lhsStubView = *lhs.registry.at(pair.first);
+          stream << "[" << lhsStubView.tag << "]##"
+                 << std::hash<ShadowView>{}((ShadowView)lhsStubView) << " ";
+        }
+        return stream;
+      }(LOG(ERROR));
 
-      LOG(ERROR) << "Tags in RHS: ";
-      rhs.dumpTagsHash(LOG(ERROR));
+      [&](std::ostream &stream) -> std::ostream & {
+        stream << "Tags in RHS: ";
+        for (auto const &pair : rhs.registry) {
+          auto &rhsStubView = *rhs.registry.at(pair.first);
+          stream << "[" << rhsStubView.tag << "]##"
+                 << std::hash<ShadowView>{}((ShadowView)rhsStubView) << " ";
+        }
+        return stream;
+      }(LOG(ERROR));
     });
 
     return false;
   }
 
-  for (const auto& pair : lhs.registry_) {
-    auto& lhsStubView = *lhs.registry_.at(pair.first);
-    auto& rhsStubView = *rhs.registry_.at(pair.first);
+  for (auto const &pair : lhs.registry) {
+    auto &lhsStubView = *lhs.registry.at(pair.first);
+    auto &rhsStubView = *rhs.registry.at(pair.first);
 
     if (lhsStubView != rhsStubView) {
       STUB_VIEW_LOG({
@@ -306,7 +306,7 @@ bool operator==(const StubViewTree& lhs, const StubViewTree& rhs) {
   return true;
 }
 
-bool operator!=(const StubViewTree& lhs, const StubViewTree& rhs) {
+bool operator!=(StubViewTree const &lhs, StubViewTree const &rhs) {
   return !(lhs == rhs);
 }
 

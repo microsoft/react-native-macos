@@ -12,13 +12,14 @@
 #include <react/jni/ReadableNativeMap.h>
 #include <react/renderer/core/State.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class Instance;
 
 class StateWrapperImpl : public jni::HybridClass<StateWrapperImpl> {
  public:
-  constexpr static const char* const kJavaDescriptor =
+  constexpr static const char *const kJavaDescriptor =
       "Lcom/facebook/react/fabric/StateWrapperImpl;";
   constexpr static auto StateWrapperImplJavaDescriptor =
       "com/facebook/react/fabric/StateWrapperImpl";
@@ -27,9 +28,9 @@ class StateWrapperImpl : public jni::HybridClass<StateWrapperImpl> {
 
   jni::local_ref<JReadableMapBuffer::jhybridobject> getStateMapBufferDataImpl();
   jni::local_ref<ReadableNativeMap::jhybridobject> getStateDataImpl();
-  void updateStateImpl(NativeMap* map);
+  void updateStateImpl(NativeMap *map);
 
-  std::weak_ptr<const State> state_;
+  State::Shared state_;
 
  private:
   jni::alias_ref<StateWrapperImpl::jhybriddata> jhybridobject_;
@@ -37,4 +38,5 @@ class StateWrapperImpl : public jni::HybridClass<StateWrapperImpl> {
   static jni::local_ref<jhybriddata> initHybrid(jni::alias_ref<jclass>);
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

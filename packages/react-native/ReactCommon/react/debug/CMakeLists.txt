@@ -9,7 +9,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 add_compile_options(
         -fexceptions
         -frtti
-        -std=c++20
+        -std=c++17
         -Wall
         -Wpedantic
         -Wno-gnu-zero-variadic-macro-arguments
@@ -23,6 +23,6 @@ target_include_directories(react_debug PUBLIC ${REACT_COMMON_DIR})
 
 target_link_libraries(react_debug log folly_runtime)
 
-if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug)
+if(${CMAKE_BUILD_TYPE} MATCHES Release)
         target_compile_options(react_debug PUBLIC -DNDEBUG)
 endif()

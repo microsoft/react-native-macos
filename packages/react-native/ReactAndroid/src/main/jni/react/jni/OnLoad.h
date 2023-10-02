@@ -9,8 +9,10 @@
 
 #include <jni.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 jmethodID getLogMarkerMethod();
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

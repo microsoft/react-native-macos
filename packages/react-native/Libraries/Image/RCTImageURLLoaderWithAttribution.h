@@ -13,7 +13,8 @@
 
 // TODO (T61325135): Remove C++ checks
 #ifdef __cplusplus
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 struct ImageURLLoaderAttribution {
   int32_t nativeViewTag = 0;
@@ -22,7 +23,8 @@ struct ImageURLLoaderAttribution {
   NSString *analyticTag;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook
 #endif
 
 @interface RCTImageURLLoaderRequest : NSObject

@@ -8,7 +8,8 @@
 #include "ReactMarker.h"
 #include <cxxreact/JSExecutor.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 namespace ReactMarker {
 
 #if __clang__
@@ -18,6 +19,7 @@ namespace ReactMarker {
 
 LogTaggedMarker logTaggedMarkerImpl = nullptr;
 LogTaggedMarker logTaggedMarkerBridgelessImpl = nullptr;
+GetAppStartTime getAppStartTimeImpl = nullptr;
 
 #if __clang__
 #pragma clang diagnostic pop
@@ -27,7 +29,8 @@ void logMarker(const ReactMarkerId markerId) {
   logTaggedMarker(markerId, nullptr);
 }
 
-void logTaggedMarker(const ReactMarkerId markerId, const char* tag) {
+void logTaggedMarker(const ReactMarkerId markerId, const char *tag) {
+  StartupLogger::getInstance().logStartupEvent(markerId);
   logTaggedMarkerImpl(markerId, tag);
 }
 
@@ -35,56 +38,28 @@ void logMarkerBridgeless(const ReactMarkerId markerId) {
   logTaggedMarkerBridgeless(markerId, nullptr);
 }
 
-void logTaggedMarkerBridgeless(const ReactMarkerId markerId, const char* tag) {
+void logTaggedMarkerBridgeless(const ReactMarkerId markerId, const char *tag) {
+  StartupLogger::getInstance().logStartupEvent(markerId);
   logTaggedMarkerBridgelessImpl(markerId, tag);
 }
 
-void logMarkerDone(const ReactMarkerId markerId, double markerTime) {
-  StartupLogger::getInstance().logStartupEvent(markerId, markerTime);
-}
-
-StartupLogger& StartupLogger::getInstance() {
+StartupLogger &StartupLogger::getInstance() {
   static StartupLogger instance;
   return instance;
 }
 
-void StartupLogger::logStartupEvent(
-    const ReactMarkerId markerId,
-    double markerTime) {
+void StartupLogger::logStartupEvent(const ReactMarkerId markerId) {
+  auto now = JSExecutor::performanceNow();
   switch (markerId) {
-    case ReactMarkerId::APP_STARTUP_START:
-      if (std::isnan(appStartupStartTime)) {
-        appStartupStartTime = markerTime;
-      }
-      return;
-
-    case ReactMarkerId::APP_STARTUP_STOP:
-      if (std::isnan(appStartupEndTime)) {
-        appStartupEndTime = markerTime;
-      }
-      return;
-
-    case ReactMarkerId::INIT_REACT_RUNTIME_START:
-      if (std::isnan(initReactRuntimeStartTime)) {
-        initReactRuntimeStartTime = markerTime;
-      }
-      return;
-
-    case ReactMarkerId::INIT_REACT_RUNTIME_STOP:
-      if (std::isnan(initReactRuntimeEndTime)) {
-        initReactRuntimeEndTime = markerTime;
-      }
-      return;
-
     case ReactMarkerId::RUN_JS_BUNDLE_START:
-      if (std::isnan(runJSBundleStartTime)) {
-        runJSBundleStartTime = markerTime;
+      if (runJSBundleStartTime == 0) {
+        runJSBundleStartTime = now;
       }
       return;
 
     case ReactMarkerId::RUN_JS_BUNDLE_STOP:
-      if (std::isnan(runJSBundleEndTime)) {
-        runJSBundleEndTime = markerTime;
+      if (runJSBundleEndTime == 0) {
+        runJSBundleEndTime = now;
       }
       return;
 
@@ -93,16 +68,12 @@ void StartupLogger::logStartupEvent(
   }
 }
 
-double StartupLogger::getAppStartupStartTime() {
-  return appStartupStartTime;
-}
+double StartupLogger::getAppStartTime() {
+  if (getAppStartTimeImpl == nullptr) {
+    return 0;
+  }
 
-double StartupLogger::getInitReactRuntimeStartTime() {
-  return initReactRuntimeStartTime;
-}
-
-double StartupLogger::getInitReactRuntimeEndTime() {
-  return initReactRuntimeEndTime;
+  return getAppStartTimeImpl();
 }
 
 double StartupLogger::getRunJSBundleStartTime() {
@@ -113,9 +84,6 @@ double StartupLogger::getRunJSBundleEndTime() {
   return runJSBundleEndTime;
 }
 
-double StartupLogger::getAppStartupEndTime() {
-  return appStartupEndTime;
-}
-
 } // namespace ReactMarker
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

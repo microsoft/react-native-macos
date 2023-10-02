@@ -9,16 +9,16 @@
 
 #include <react/renderer/components/view/accessibilityPropsConversions.h>
 #include <react/renderer/components/view/propsConversions.h>
+#include <react/renderer/core/CoreFeatures.h>
 #include <react/renderer/core/propsConversions.h>
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
-#include <react/utils/CoreFeatures.h>
 
 namespace facebook::react {
 
 AccessibilityProps::AccessibilityProps(
-    const PropsParserContext& context,
-    const AccessibilityProps& sourceProps,
-    const RawProps& rawProps)
+    const PropsParserContext &context,
+    AccessibilityProps const &sourceProps,
+    RawProps const &rawProps)
     : accessible(
           CoreFeatures::enablePropIteratorSetter ? sourceProps.accessible
                                                  : convertRawProp(
@@ -187,39 +187,27 @@ AccessibilityProps::AccessibilityProps(
   // to work around here, and (2) would require very careful work to address
   // this case and not regress the more common cases.
   if (!CoreFeatures::enablePropIteratorSetter) {
-    auto* accessibilityRoleValue =
+    const auto *rawPropValue =
         rawProps.at("accessibilityRole", nullptr, nullptr);
-    auto* roleValue = rawProps.at("role", nullptr, nullptr);
-
-    auto* precedentRoleValue =
-        roleValue != nullptr ? roleValue : accessibilityRoleValue;
-
-    if (accessibilityRoleValue == nullptr ||
-        !accessibilityRoleValue->hasValue()) {
-      accessibilityRole = sourceProps.accessibilityRole;
+    AccessibilityTraits traits;
+    std::string roleString;
+    if (rawPropValue == nullptr || !rawPropValue->hasValue()) {
+      traits = sourceProps.accessibilityTraits;
+      roleString = sourceProps.accessibilityRole;
     } else {
-      fromRawValue(context, *accessibilityRoleValue, accessibilityRole);
+      fromRawValue(context, *rawPropValue, traits);
+      fromRawValue(context, *rawPropValue, roleString);
     }
-
-    if (roleValue == nullptr || !roleValue->hasValue()) {
-      role = sourceProps.role;
-    } else {
-      fromRawValue(context, *roleValue, role);
-    }
-
-    if (precedentRoleValue == nullptr || !precedentRoleValue->hasValue()) {
-      accessibilityTraits = sourceProps.accessibilityTraits;
-    } else {
-      fromRawValue(context, *precedentRoleValue, accessibilityTraits);
-    }
+    accessibilityTraits = traits;
+    accessibilityRole = roleString;
   }
 }
 
 void AccessibilityProps::setProp(
-    const PropsParserContext& context,
+    const PropsParserContext &context,
     RawPropsPropNameHash hash,
-    const char* /*propName*/,
-    const RawValue& value) {
+    const char * /*propName*/,
+    RawValue const &value) {
   static auto defaults = AccessibilityProps{};
 
   switch (hash) {
@@ -239,7 +227,6 @@ void AccessibilityProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityEscape);
     RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityAction);
     RAW_SET_PROP_SWITCH_CASE_BASIC(importantForAccessibility);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(role);
     RAW_SET_PROP_SWITCH_CASE(testId, "testID");
     case CONSTEXPR_RAW_PROPS_KEY_HASH("accessibilityRole"): {
       AccessibilityTraits traits = AccessibilityTraits::None;
@@ -260,7 +247,7 @@ void AccessibilityProps::setProp(
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 SharedDebugStringConvertibleList AccessibilityProps::getDebugProps() const {
-  const auto& defaultProps = AccessibilityProps();
+  auto const &defaultProps = AccessibilityProps();
   return SharedDebugStringConvertibleList{
       debugStringConvertibleItem("testId", testId, defaultProps.testId),
   };

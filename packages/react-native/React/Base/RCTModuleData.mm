@@ -32,6 +32,17 @@ int32_t getUniqueId()
   return counter++;
 }
 }
+static BOOL isMainQueueExecutionOfConstantToExportDisabled = NO;
+
+void RCTSetIsMainQueueExecutionOfConstantsToExportDisabled(BOOL val)
+{
+  isMainQueueExecutionOfConstantToExportDisabled = val;
+}
+
+BOOL RCTIsMainQueueExecutionOfConstantsToExportDisabled()
+{
+  return isMainQueueExecutionOfConstantToExportDisabled;
+}
 
 @implementation RCTModuleData {
   NSDictionary<NSString *, id> *_constantsToExport;
@@ -450,7 +461,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init);
       BridgeNativeModulePerfLogger::moduleJSRequireEndingStart([moduleName UTF8String]);
     }
 
-    if (_requiresMainQueueSetup) {
+    if (!RCTIsMainQueueExecutionOfConstantsToExportDisabled() && _requiresMainQueueSetup) {
       if (!RCTIsMainQueue()) {
         RCTLogWarn(@"Required dispatch_sync to load constants for %@. This may lead to deadlocks", _moduleClass);
       }
@@ -494,9 +505,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init);
   _methodQueue = nil;
 }
 
+#if DEBUG // [macOS description is a debug-only feature
 - (NSString *)description
 {
   return [NSString stringWithFormat:@"<%@: %p; name=\"%@\">", [self class], self, self.name];
 }
+#endif // macOS]
 
 @end

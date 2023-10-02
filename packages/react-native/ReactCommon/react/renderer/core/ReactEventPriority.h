@@ -7,7 +7,8 @@
 
 #pragma once
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * An enum that represents React's event priority.
@@ -38,4 +39,5 @@ static constexpr std::underlying_type<ReactEventPriority>::type serialize(
       reactEventPriority);
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

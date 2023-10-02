@@ -12,7 +12,8 @@
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
 #include "ComponentFactory.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class CoreComponentsRegistry
     : public facebook::jni::HybridClass<CoreComponentsRegistry> {
@@ -22,19 +23,20 @@ class CoreComponentsRegistry
 
   static void registerNatives();
 
-  explicit CoreComponentsRegistry(ComponentFactory* delegate);
+  explicit CoreComponentsRegistry(ComponentFactory *delegate);
 
-  static std::shared_ptr<const ComponentDescriptorProviderRegistry>
+  static std::shared_ptr<ComponentDescriptorProviderRegistry const>
   sharedProviderRegistry();
 
  private:
   friend HybridBase;
 
-  const ComponentFactory* delegate_;
+  const ComponentFactory *delegate_;
 
   static jni::local_ref<jhybriddata> initHybrid(
       jni::alias_ref<jclass>,
-      ComponentFactory* delegate);
+      ComponentFactory *delegate);
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

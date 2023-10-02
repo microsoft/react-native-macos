@@ -13,7 +13,8 @@
 
 #include <cxxreact/CxxNativeModule.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 std::string ModuleHolder::getName() const {
   static auto method = getClass()->getMethod<jstring()>("getName");
@@ -21,7 +22,7 @@ std::string ModuleHolder::getName() const {
 }
 
 xplat::module::CxxModule::Provider ModuleHolder::getProvider(
-    const std::string& moduleName) const {
+    const std::string &moduleName) const {
   return [self = jni::make_global(self()), moduleName] {
     static auto getModule =
         ModuleHolder::javaClassStatic()->getMethod<JNativeModule::javaobject()>(
@@ -49,13 +50,13 @@ std::vector<std::unique_ptr<NativeModule>> buildNativeModuleList(
     std::shared_ptr<MessageQueueThread> moduleMessageQueue) {
   std::vector<std::unique_ptr<NativeModule>> modules;
   if (javaModules) {
-    for (const auto& jm : *javaModules) {
+    for (const auto &jm : *javaModules) {
       modules.emplace_back(std::make_unique<JavaNativeModule>(
           winstance, jm, moduleMessageQueue));
     }
   }
   if (cxxModules) {
-    for (const auto& cm : *cxxModules) {
+    for (const auto &cm : *cxxModules) {
       std::string moduleName = cm->getName();
       modules.emplace_back(std::make_unique<CxxNativeModule>(
           winstance,
@@ -67,4 +68,5 @@ std::vector<std::unique_ptr<NativeModule>> buildNativeModuleList(
   return modules;
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -9,7 +9,8 @@
 
 #include <jsireact/JSIExecutor.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class JSCExecutorFactory : public JSExecutorFactory {
  public:
@@ -24,4 +25,5 @@ class JSCExecutorFactory : public JSExecutorFactory {
   JSIExecutor::RuntimeInstaller runtimeInstaller_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

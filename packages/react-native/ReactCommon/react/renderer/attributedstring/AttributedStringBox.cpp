@@ -15,12 +15,12 @@ namespace facebook::react {
 
 AttributedStringBox::AttributedStringBox()
     : mode_(Mode::Value),
-      value_(std::make_shared<const AttributedString>(AttributedString{})),
+      value_(std::make_shared<AttributedString const>(AttributedString{})),
       opaquePointer_({}){};
 
-AttributedStringBox::AttributedStringBox(const AttributedString& value)
+AttributedStringBox::AttributedStringBox(AttributedString const &value)
     : mode_(Mode::Value),
-      value_(std::make_shared<const AttributedString>(value)),
+      value_(std::make_shared<AttributedString const>(value)),
       opaquePointer_({}){};
 
 AttributedStringBox::AttributedStringBox(std::shared_ptr<void> opaquePointer)
@@ -28,19 +28,19 @@ AttributedStringBox::AttributedStringBox(std::shared_ptr<void> opaquePointer)
       value_({}),
       opaquePointer_(std::move(opaquePointer)) {}
 
-AttributedStringBox::AttributedStringBox(AttributedStringBox&& other) noexcept
+AttributedStringBox::AttributedStringBox(AttributedStringBox &&other) noexcept
     : mode_(other.mode_),
       value_(std::move(other.value_)),
       opaquePointer_(std::move(other.opaquePointer_)) {
   other.mode_ = AttributedStringBox::Mode::Value;
-  other.value_ = std::make_shared<const AttributedString>(AttributedString{});
+  other.value_ = std::make_shared<AttributedString const>(AttributedString{});
 }
 
 AttributedStringBox::Mode AttributedStringBox::getMode() const {
   return mode_;
 }
 
-const AttributedString& AttributedStringBox::getValue() const {
+AttributedString const &AttributedStringBox::getValue() const {
   react_native_assert(mode_ == AttributedStringBox::Mode::Value);
   react_native_assert(value_);
   return *value_;
@@ -52,21 +52,21 @@ std::shared_ptr<void> AttributedStringBox::getOpaquePointer() const {
   return opaquePointer_;
 }
 
-AttributedStringBox& AttributedStringBox::operator=(
-    AttributedStringBox&& other) noexcept {
+AttributedStringBox &AttributedStringBox::operator=(
+    AttributedStringBox &&other) noexcept {
   if (this != &other) {
     mode_ = other.mode_;
     value_ = std::move(other.value_);
     opaquePointer_ = std::move(other.opaquePointer_);
     other.mode_ = AttributedStringBox::Mode::Value;
-    other.value_ = std::make_shared<const AttributedString>(AttributedString{});
+    other.value_ = std::make_shared<AttributedString const>(AttributedString{});
   }
   return *this;
 }
 
 bool operator==(
-    const AttributedStringBox& lhs,
-    const AttributedStringBox& rhs) {
+    AttributedStringBox const &lhs,
+    AttributedStringBox const &rhs) {
   if (lhs.getMode() != rhs.getMode()) {
     return false;
   }
@@ -80,8 +80,8 @@ bool operator==(
 }
 
 bool operator!=(
-    const AttributedStringBox& lhs,
-    const AttributedStringBox& rhs) {
+    AttributedStringBox const &lhs,
+    AttributedStringBox const &rhs) {
   return !(lhs == rhs);
 }
 

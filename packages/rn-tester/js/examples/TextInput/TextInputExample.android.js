@@ -16,10 +16,7 @@ const {Text, TextInput, View, StyleSheet, Switch} = require('react-native');
 
 const TextInputSharedExamples = require('./TextInputSharedExamples.js');
 
-import type {
-  RNTesterModule,
-  RNTesterModuleExample,
-} from '../../types/RNTesterTypes';
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 class ToggleDefaultPaddingExample extends React.Component<
   $FlowFixMeProps,
@@ -154,7 +151,11 @@ const styles = StyleSheet.create({
   },
 });
 
-const examples: Array<RNTesterModuleExample> = [
+exports.title = 'TextInput';
+exports.documentationURL = 'https://reactnative.dev/docs/textinput';
+exports.category = 'Basic';
+exports.description = 'Single and multi-line text inputs.';
+exports.examples = ([
   ...TextInputSharedExamples,
   {
     title: 'Colors and text inputs',
@@ -530,13 +531,4 @@ const examples: Array<RNTesterModuleExample> = [
       return <ToggleDefaultPaddingExample />;
     },
   },
-];
-
-module.exports = ({
-  displayName: (undefined: ?string),
-  title: 'TextInput',
-  documentationURL: 'https://reactnative.dev/docs/textinput',
-  category: 'Basic',
-  description: 'Single and multi-line text inputs.',
-  examples,
-}: RNTesterModule);
+]: Array<RNTesterModuleExample>);

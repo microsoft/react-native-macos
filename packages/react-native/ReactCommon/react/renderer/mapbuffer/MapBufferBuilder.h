@@ -8,10 +8,11 @@
 #pragma once
 
 #include <react/debug/react_native_assert.h>
+#include <react/renderer/mapbuffer/MapBuffer.h>
 #include <vector>
-#include "MapBuffer.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 // Default reserved size for buckets_ vector
 constexpr uint32_t INITIAL_BUCKETS_SIZE = 10;
@@ -31,13 +32,13 @@ class MapBufferBuilder {
 
   void putDouble(MapBuffer::Key key, double value);
 
-  void putString(MapBuffer::Key key, const std::string& value);
+  void putString(MapBuffer::Key key, std::string const &value);
 
-  void putMapBuffer(MapBuffer::Key key, const MapBuffer& map);
+  void putMapBuffer(MapBuffer::Key key, MapBuffer const &map);
 
   void putMapBufferList(
       MapBuffer::Key key,
-      const std::vector<MapBuffer>& mapBufferList);
+      const std::vector<MapBuffer> &mapBufferList);
 
   MapBuffer build();
 
@@ -55,8 +56,9 @@ class MapBufferBuilder {
   void storeKeyValue(
       MapBuffer::Key key,
       MapBuffer::DataType type,
-      const uint8_t* value,
+      uint8_t const *value,
       uint32_t valueSize);
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

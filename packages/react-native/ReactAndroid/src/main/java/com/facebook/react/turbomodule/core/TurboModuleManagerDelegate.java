@@ -10,8 +10,9 @@ package com.facebook.react.turbomodule.core;
 import androidx.annotation.Nullable;
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;
-import com.facebook.react.bridge.NativeModule;
+import com.facebook.react.bridge.CxxModuleWrapper;
 import com.facebook.react.turbomodule.core.interfaces.TurboModule;
+import com.facebook.soloader.SoLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,14 +21,13 @@ public abstract class TurboModuleManagerDelegate {
   @SuppressWarnings("unused")
   private final HybridData mHybridData;
 
-  static {
-    NativeModuleSoLoader.maybeLoadSoLibrary();
-  }
+  private static volatile boolean sIsSoLibraryLoaded;
 
   protected abstract HybridData initHybrid();
 
   protected TurboModuleManagerDelegate() {
     maybeLoadOtherSoLibraries();
+    maybeLoadSoLibrary();
     mHybridData = initHybrid();
   }
 
@@ -38,36 +38,23 @@ public abstract class TurboModuleManagerDelegate {
   @Nullable
   public abstract TurboModule getModule(String moduleName);
 
-  public abstract boolean unstable_isModuleRegistered(String moduleName);
-
   /**
-   * Create an return a legacy NativeModule with name `moduleName`. If `moduleName` is a
-   * TurboModule, return null.
+   * Create an return a CxxModuleWrapper NativeModule with name `moduleName`. If `moduleName` isn't
+   * a CxxModule, return null.
    */
   @Nullable
-  public NativeModule getLegacyModule(String moduleName) {
-    return null;
-  }
-
-  public boolean unstable_isLegacyModuleRegistered(String moduleName) {
-    return false;
-  };
+  public abstract CxxModuleWrapper getLegacyCxxModule(String moduleName);
 
   public List<String> getEagerInitModuleNames() {
     return new ArrayList<>();
   }
 
-  /** Can the TurboModule system create legacy modules? */
-  public boolean unstable_shouldEnableLegacyModuleInterop() {
-    return false;
-  }
-
-  /**
-   * Should the TurboModule system treat all turbo native modules as though they were legacy
-   * modules? This method is for testing purposes only.
-   */
-  public boolean unstable_shouldRouteTurboModulesThroughLegacyModuleInterop() {
-    return false;
+  // Prevents issues with initializer interruptions. See T38996825 and D13793825 for more context.
+  private static synchronized void maybeLoadSoLibrary() {
+    if (!sIsSoLibraryLoaded) {
+      SoLoader.loadLibrary("turbomodulejsijni");
+      sIsSoLibraryLoaded = true;
+    }
   }
 
   protected synchronized void maybeLoadOtherSoLibraries() {}

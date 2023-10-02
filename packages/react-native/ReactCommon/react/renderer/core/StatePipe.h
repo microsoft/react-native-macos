@@ -11,8 +11,10 @@
 
 #include <react/renderer/core/StateUpdate.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
-using StatePipe = std::function<void(const StateUpdate& stateUpdate)>;
+using StatePipe = std::function<void(StateUpdate const &stateUpdate)>;
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -15,7 +15,8 @@
 #include <react/renderer/textlayoutmanager/TextMeasureCache.h>
 #include <react/utils/ContextContainer.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class TextLayoutManager;
 
@@ -24,7 +25,7 @@ class TextLayoutManager;
  */
 class TextLayoutManager {
  public:
-  TextLayoutManager(const ContextContainer::Shared& contextContainer);
+  TextLayoutManager(ContextContainer::Shared const &contextContainer);
 
   /*
    * Measures `attributedString` using native text rendering infrastructure.
@@ -60,4 +61,5 @@ class TextLayoutManager {
   TextMeasureCache measureCache_{};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

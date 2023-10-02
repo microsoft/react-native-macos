@@ -20,7 +20,8 @@
 #import <cxxreact/RAMBundleRegistry.h>
 #import <folly/json.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 namespace {
 
@@ -143,4 +144,5 @@ std::unique_ptr<JSExecutor> RCTObjcExecutorFactory::createJSExecutor(
   return std::unique_ptr<JSExecutor>(new RCTObjcExecutor(m_jse, m_errorBlock, jsQueue, delegate));
 }
 
-} // namespace facebook::react
+}
+}

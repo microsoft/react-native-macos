@@ -10,7 +10,6 @@
 
 'use strict';
 
-import type {RNTesterModule} from '../../types/RNTesterTypes';
 import TextAdjustsDynamicLayoutExample from './TextAdjustsDynamicLayoutExample';
 
 const RNTesterBlock = require('../../components/RNTesterBlock');
@@ -677,10 +676,6 @@ class TextExample extends React.Component<{...}> {
             Maximum of one line no matter now much I write here. If I keep
             writing it{"'"}ll just truncate after one line
           </Text>
-          <Text style={{fontSize: 31}} numberOfLines={1}>
-            Maximum of one line no matter now much I write here. If I keep
-            writing it{"'"}ll just truncate after one line
-          </Text>
           <Text numberOfLines={2} style={{marginTop: 20}}>
             Maximum of two lines no matter now much I write here. If I keep
             writing it{"'"}ll just truncate after two lines
@@ -982,7 +977,11 @@ function TextBaseLineLayoutExample(props: {}): React.Node {
   );
 }
 
-const examples = [
+exports.title = 'Text';
+exports.documentationURL = 'https://reactnative.dev/docs/text';
+exports.category = 'Basic';
+exports.description = 'Base component for rendering styled text.';
+exports.examples = [
   {
     title: 'Basic text',
     render: function (): React.Element<typeof TextExample> {
@@ -1028,12 +1027,3 @@ const examples = [
     },
   },
 ];
-
-module.exports = ({
-  title: 'Text',
-  documentationURL: 'https://reactnative.dev/docs/text',
-  category: 'Basic',
-  description: 'Base component for rendering styled text.',
-  displayName: 'TextExample',
-  examples,
-}: RNTesterModule);

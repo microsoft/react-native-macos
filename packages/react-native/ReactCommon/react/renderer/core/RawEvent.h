@@ -11,10 +11,11 @@
 #include <string>
 
 #include <react/renderer/core/EventLogger.h>
-#include <react/renderer/core/EventPayload.h>
 #include <react/renderer/core/EventTarget.h>
+#include <react/renderer/core/ValueFactory.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Represents ready-to-dispatch event object.
@@ -60,15 +61,16 @@ struct RawEvent {
 
   RawEvent(
       std::string type,
-      SharedEventPayload eventPayload,
+      ValueFactory payloadFactory,
       SharedEventTarget eventTarget,
       Category category = Category::Unspecified);
 
   std::string type;
-  SharedEventPayload eventPayload;
+  ValueFactory payloadFactory;
   SharedEventTarget eventTarget;
   Category category;
   EventTag loggingTag{0};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -71,7 +71,6 @@ class XHRExampleBinaryUpload extends React.Component<{...}, $FlowFixMeState> {
     }
     const url = xhr.responseText.slice(index).split('\n')[0];
     console.log('Upload successful: ' + url);
-    // $FlowFixMe[unused-promise]
     Linking.openURL(url);
   }
 

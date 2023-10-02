@@ -11,12 +11,13 @@
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 inline void fromRawValue(
-    const PropsParserContext& context,
-    const RawValue& value,
-    AutocapitalizationType& result) {
+    const PropsParserContext &context,
+    const RawValue &value,
+    AutocapitalizationType &result) {
   auto string = (std::string)value;
   if (string == "none") {
     result = AutocapitalizationType::None;
@@ -38,9 +39,9 @@ inline void fromRawValue(
 }
 
 inline void fromRawValue(
-    const PropsParserContext& context,
-    const RawValue& value,
-    KeyboardAppearance& result) {
+    const PropsParserContext &context,
+    const RawValue &value,
+    KeyboardAppearance &result) {
   auto string = (std::string)value;
   if (string == "default") {
     result = KeyboardAppearance::Default;
@@ -58,9 +59,9 @@ inline void fromRawValue(
 }
 
 inline void fromRawValue(
-    const PropsParserContext& context,
-    const RawValue& value,
-    ReturnKeyType& result) {
+    const PropsParserContext &context,
+    const RawValue &value,
+    ReturnKeyType &result) {
   auto string = (std::string)value;
   if (string == "default") {
     result = ReturnKeyType::Default;
@@ -126,9 +127,9 @@ inline void fromRawValue(
 }
 
 inline void fromRawValue(
-    const PropsParserContext& context,
-    const RawValue& value,
-    SubmitBehavior& result) {
+    const PropsParserContext &context,
+    const RawValue &value,
+    SubmitBehavior &result) {
   auto string = (std::string)value;
   if (string == "newline") {
     result = SubmitBehavior::Newline;
@@ -146,9 +147,9 @@ inline void fromRawValue(
 }
 
 inline void fromRawValue(
-    const PropsParserContext& context,
-    const RawValue& value,
-    TextInputAccessoryVisibilityMode& result) {
+    const PropsParserContext &context,
+    const RawValue &value,
+    TextInputAccessoryVisibilityMode &result) {
   auto string = (std::string)value;
   if (string == "never") {
     result = TextInputAccessoryVisibilityMode::Never;
@@ -170,9 +171,9 @@ inline void fromRawValue(
 }
 
 inline void fromRawValue(
-    const PropsParserContext& context,
-    const RawValue& value,
-    KeyboardType& result) {
+    const PropsParserContext &context,
+    const RawValue &value,
+    KeyboardType &result) {
   auto string = (std::string)value;
   if (string == "default") {
     result = KeyboardType::Default;
@@ -237,4 +238,5 @@ inline void fromRawValue(
   abort();
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

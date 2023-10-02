@@ -18,14 +18,15 @@
 
 #include <memory>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 const auto EXECUTOR_BASECLASS = "com/facebook/react/bridge/JavaJSExecutor";
 
 static std::string executeJSCallWithProxy(
     jobject executor,
-    const std::string& methodName,
-    const folly::dynamic& arguments) {
+    const std::string &methodName,
+    const folly::dynamic &arguments) {
   static auto executeJSCall =
       jni::findClassStatic(EXECUTOR_BASECLASS)
           ->getMethod<jstring(jstring, jstring)>("executeJSCall");
@@ -44,7 +45,7 @@ std::unique_ptr<JSExecutor> ProxyExecutorOneTimeFactory::createJSExecutor(
 }
 
 ProxyExecutor::ProxyExecutor(
-    jni::global_ref<jobject>&& executorInstance,
+    jni::global_ref<jobject> &&executorInstance,
     std::shared_ptr<ExecutorDelegate> delegate)
     : m_executor(std::move(executorInstance)), m_delegate(delegate) {}
 
@@ -58,7 +59,7 @@ void ProxyExecutor::initializeRuntime() {
   {
     SystraceSection s("collectNativeModuleDescriptions");
     auto moduleRegistry = m_delegate->getModuleRegistry();
-    for (const auto& name : moduleRegistry->moduleNames()) {
+    for (const auto &name : moduleRegistry->moduleNames()) {
       auto config = moduleRegistry->getConfig(name);
       nativeModuleConfig.push_back(config ? config->config : nullptr);
     }
@@ -96,16 +97,16 @@ void ProxyExecutor::setBundleRegistry(std::unique_ptr<RAMBundleRegistry>) {
 
 void ProxyExecutor::registerBundle(
     uint32_t bundleId,
-    const std::string& bundlePath) {
+    const std::string &bundlePath) {
   jni::throwNewJavaException(
       "java/lang/UnsupportedOperationException",
       "Loading application RAM bundles is not supported for proxy executors");
 }
 
 void ProxyExecutor::callFunction(
-    const std::string& moduleId,
-    const std::string& methodId,
-    const folly::dynamic& arguments) {
+    const std::string &moduleId,
+    const std::string &methodId,
+    const folly::dynamic &arguments) {
   auto call = folly::dynamic::array(moduleId, methodId, std::move(arguments));
 
   std::string result = executeJSCallWithProxy(
@@ -115,7 +116,7 @@ void ProxyExecutor::callFunction(
 
 void ProxyExecutor::invokeCallback(
     const double callbackId,
-    const folly::dynamic& arguments) {
+    const folly::dynamic &arguments) {
   auto call = folly::dynamic::array(callbackId, std::move(arguments));
   std::string result = executeJSCallWithProxy(
       m_executor.get(), "invokeCallbackAndReturnFlushedQueue", std::move(call));
@@ -139,4 +140,5 @@ std::string ProxyExecutor::getDescription() {
   return "Chrome";
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

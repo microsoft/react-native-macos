@@ -7,7 +7,6 @@
 
 package com.facebook.react.defaults
 
-import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.ReactRootView
@@ -43,8 +42,5 @@ open class DefaultReactActivityDelegate(
   override fun isFabricEnabled(): Boolean = fabricEnabled
 
   override fun createRootView(): ReactRootView =
-      ReactRootView(context).apply { setIsFabric(fabricEnabled) }
-
-  override fun createRootView(bundle: Bundle?): ReactRootView =
       ReactRootView(context).apply { setIsFabric(fabricEnabled) }
 }

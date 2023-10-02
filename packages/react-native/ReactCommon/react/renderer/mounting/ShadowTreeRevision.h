@@ -13,7 +13,8 @@
 #include <react/renderer/mounting/ShadowViewMutation.h>
 #include <react/renderer/telemetry/TransactionTelemetry.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Represent a particular committed state of a shadow tree. The object contains
@@ -35,4 +36,5 @@ class ShadowTreeRevision final {
   TransactionTelemetry telemetry;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

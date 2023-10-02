@@ -11,7 +11,8 @@
 
 #include <react/renderer/attributedstring/AttributedString.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Represents an object storing a shared `AttributedString` or a shared pointer
@@ -33,39 +34,40 @@ class AttributedStringBox final {
   /*
    * Custom explicit constructors.
    */
-  explicit AttributedStringBox(const AttributedString& value);
+  explicit AttributedStringBox(AttributedString const &value);
   explicit AttributedStringBox(std::shared_ptr<void> opaquePointer);
 
   /*
    * Movable, Copyable, Assignable.
    */
-  AttributedStringBox(const AttributedStringBox& other) = default;
-  AttributedStringBox(AttributedStringBox&& other) noexcept;
-  AttributedStringBox& operator=(const AttributedStringBox& other) = default;
-  AttributedStringBox& operator=(AttributedStringBox&& other) noexcept;
+  AttributedStringBox(AttributedStringBox const &other) = default;
+  AttributedStringBox(AttributedStringBox &&other) noexcept;
+  AttributedStringBox &operator=(AttributedStringBox const &other) = default;
+  AttributedStringBox &operator=(AttributedStringBox &&other) noexcept;
 
   /*
    * Getters.
    */
   Mode getMode() const;
-  const AttributedString& getValue() const;
+  AttributedString const &getValue() const;
   std::shared_ptr<void> getOpaquePointer() const;
 
  private:
   Mode mode_;
-  std::shared_ptr<const AttributedString> value_;
+  std::shared_ptr<AttributedString const> value_;
   std::shared_ptr<void> opaquePointer_;
 };
 
-bool operator==(const AttributedStringBox& lhs, const AttributedStringBox& rhs);
-bool operator!=(const AttributedStringBox& lhs, const AttributedStringBox& rhs);
+bool operator==(AttributedStringBox const &lhs, AttributedStringBox const &rhs);
+bool operator!=(AttributedStringBox const &lhs, AttributedStringBox const &rhs);
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook
 
 template <>
 struct std::hash<facebook::react::AttributedStringBox> {
   size_t operator()(
-      const facebook::react::AttributedStringBox& attributedStringBox) const {
+      facebook::react::AttributedStringBox const &attributedStringBox) const {
     switch (attributedStringBox.getMode()) {
       case facebook::react::AttributedStringBox::Mode::Value:
         return std::hash<facebook::react::AttributedString>()(

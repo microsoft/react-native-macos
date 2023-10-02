@@ -21,6 +21,7 @@ import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.module.annotations.ReactModuleList;
 import com.facebook.react.module.model.ReactModuleInfo;
 import com.facebook.react.module.model.ReactModuleInfoProvider;
+import com.facebook.react.modules.bundleloader.NativeDevSplitBundleLoaderModule;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.ExceptionsManagerModule;
@@ -56,6 +57,7 @@ import java.util.Map;
       SourceCodeModule.class,
       TimingModule.class,
       UIManagerModule.class,
+      NativeDevSplitBundleLoaderModule.class,
     })
 public class CoreModulesPackage extends TurboReactPackage implements ReactPackageLogger {
 
@@ -101,6 +103,7 @@ public class CoreModulesPackage extends TurboReactPackage implements ReactPackag
             SourceCodeModule.class,
             TimingModule.class,
             UIManagerModule.class,
+            NativeDevSplitBundleLoaderModule.class,
           };
 
       final Map<String, ReactModuleInfo> reactModuleInfoMap = new HashMap<>();
@@ -114,11 +117,17 @@ public class CoreModulesPackage extends TurboReactPackage implements ReactPackag
                 moduleClass.getName(),
                 reactModule.canOverrideExistingModule(),
                 reactModule.needsEagerInit(),
+                reactModule.hasConstants(),
                 reactModule.isCxxModule(),
                 TurboModule.class.isAssignableFrom(moduleClass)));
       }
 
-      return () -> reactModuleInfoMap;
+      return new ReactModuleInfoProvider() {
+        @Override
+        public Map<String, ReactModuleInfo> getReactModuleInfos() {
+          return reactModuleInfoMap;
+        }
+      };
     } catch (InstantiationException e) {
       throw new RuntimeException(
           "No ReactModuleInfoProvider for CoreModulesPackage$$ReactModuleInfoProvider", e);
@@ -151,6 +160,9 @@ public class CoreModulesPackage extends TurboReactPackage implements ReactPackag
         return createUIManager(reactContext);
       case DeviceInfoModule.NAME:
         return new DeviceInfoModule(reactContext);
+      case NativeDevSplitBundleLoaderModule.NAME:
+        return new NativeDevSplitBundleLoaderModule(
+            reactContext, mReactInstanceManager.getDevSupportManager());
       default:
         throw new IllegalArgumentException(
             "In CoreModulesPackage, could not find Native module for " + name);

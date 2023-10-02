@@ -11,7 +11,8 @@
 #include <react/renderer/components/modal/ModalHostViewShadowNode.h>
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Descriptor for <ModalHostView> component.
@@ -22,20 +23,25 @@ class ModalHostViewComponentDescriptor final
  public:
   using ConcreteComponentDescriptor::ConcreteComponentDescriptor;
 
-  void adopt(ShadowNode& shadowNode) const override {
-    auto& layoutableShadowNode =
-        static_cast<YogaLayoutableShadowNode&>(shadowNode);
-    auto& stateData =
-        static_cast<const ModalHostViewShadowNode::ConcreteState&>(
-            *shadowNode.getState())
-            .getData();
+  void adopt(ShadowNode::Unshared const &shadowNode) const override {
+    auto modalShadowNode =
+        std::static_pointer_cast<ModalHostViewShadowNode>(shadowNode);
 
-    layoutableShadowNode.setSize(
+    auto layoutableShadowNode =
+        std::static_pointer_cast<YogaLayoutableShadowNode>(modalShadowNode);
+
+    auto state =
+        std::static_pointer_cast<const ModalHostViewShadowNode::ConcreteState>(
+            shadowNode->getState());
+    auto stateData = state->getData();
+
+    layoutableShadowNode->setSize(
         Size{stateData.screenSize.width, stateData.screenSize.height});
-    layoutableShadowNode.setPositionType(YGPositionTypeAbsolute);
+    layoutableShadowNode->setPositionType(YGPositionTypeAbsolute);
 
     ConcreteComponentDescriptor::adopt(shadowNode);
   }
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

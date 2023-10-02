@@ -12,7 +12,8 @@
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/graphics/Color.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * `Props`-like class which is used as a base class for all Props classes
@@ -22,15 +23,15 @@ class BaseTextProps {
  public:
   BaseTextProps() = default;
   BaseTextProps(
-      const PropsParserContext& context,
-      const BaseTextProps& sourceProps,
-      const RawProps& rawProps);
+      const PropsParserContext &context,
+      const BaseTextProps &sourceProps,
+      const RawProps &rawProps);
 
   void setProp(
-      const PropsParserContext& context,
+      const PropsParserContext &context,
       RawPropsPropNameHash hash,
-      const char* propName,
-      const RawValue& value);
+      const char *propName,
+      RawValue const &value);
 
 #pragma mark - Props
 
@@ -43,4 +44,5 @@ class BaseTextProps {
 #endif
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

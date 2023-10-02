@@ -39,7 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 #else // [macOS
 @property (nonatomic, assign) BOOL textWasPasted;
 #endif // macOS]
-@property (nonatomic, assign, readonly) BOOL dictationRecognizing;
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
 #if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, strong, nullable) UIView *inputAccessoryView;

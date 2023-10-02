@@ -221,14 +221,6 @@ export default class SpringAnimation extends Animation {
     }
 
     const start = () => {
-      if (!this._useNativeDriver && animatedValue.__isNative === true) {
-        throw new Error(
-          'Attempting to run JS driven animation on animated node ' +
-            'that has been moved to "native" earlier by starting an ' +
-            'animation with `useNativeDriver: true`',
-        );
-      }
-
       if (this._useNativeDriver) {
         this.__startNativeAnimation(animatedValue);
       } else {

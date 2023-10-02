@@ -48,7 +48,7 @@ export default ({
   name: 'onStartReached',
   description:
     'Scroll to start of list or tap Test button to see `onStartReached` triggered.',
-  render: function () {
+  render: function (): React.Element<typeof FlatList_onStartReached> {
     return <FlatList_onStartReached />;
   },
 }: RNTesterModuleExample);

@@ -23,7 +23,7 @@ const FlatListWithEventThrottle = React.forwardRef(
     ref:
       | ((null | FlatList<mixed>) => mixed)
       | {current: null | FlatList<mixed>, ...},
-  ) => <FlatList {...props} ref={ref} />,
+  ) => <FlatList scrollEventThrottle={0.0001} {...props} ref={ref} />,
 );
 
 export default (createAnimatedComponent(

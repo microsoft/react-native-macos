@@ -15,7 +15,8 @@
 
 #include "ComponentDescriptorRegistry.h"
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /**
  * A factory to provide hosting app specific set of ComponentDescriptor's.
@@ -24,9 +25,10 @@ namespace facebook::react {
  */
 using ComponentRegistryFactory =
     std::function<SharedComponentDescriptorRegistry(
-        const EventDispatcher::Weak& eventDispatcher,
-        const ContextContainer::Shared& contextContainer)>;
+        EventDispatcher::Weak const &eventDispatcher,
+        ContextContainer::Shared const &contextContainer)>;
 
 ComponentRegistryFactory getDefaultComponentRegistryFactory();
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

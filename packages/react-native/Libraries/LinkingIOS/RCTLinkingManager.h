@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTEventEmitter.h>
-#import <React/RCTUIKit.h>
-#if !TARGET_OS_OSX // [macOS]
+#import <React/RCTUIKit.h> // [macOS]
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= 12000) /* __IPHONE_12_0 */
 #import <UIKit/UIUserActivity.h>
-#endif // [macOS]
+#endif
+#import <React/RCTEventEmitter.h>
 
 @interface RCTLinkingManager : RCTEventEmitter
 
@@ -25,7 +25,12 @@
 
 + (BOOL)application:(nonnull UIApplication *)application
     continueUserActivity:(nonnull NSUserActivity *)userActivity
-      restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler;
+      restorationHandler:
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= 12000) /* __IPHONE_12_0 */
+          (nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler;
+#else
+          (nonnull void (^)(NSArray *_Nullable))restorationHandler;
+#endif
 #else // [macOS
 + (void)getUrlEventHandler:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
 + (void)setAlwaysForegroundLastWindow:(BOOL)alwaysForeground;

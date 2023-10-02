@@ -11,11 +11,11 @@
 #include <react/renderer/components/image/ImageProps.h>
 #include <react/renderer/components/image/ImageState.h>
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
-#include <react/renderer/core/ShadowNodeFamily.h>
 #include <react/renderer/imagemanager/ImageManager.h>
 #include <react/renderer/imagemanager/primitives.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 extern const char ImageComponentName[];
 
@@ -39,14 +39,14 @@ class ImageShadowNode final : public ConcreteViewShadowNode<
   /*
    * Associates a shared `ImageManager` with the node.
    */
-  void setImageManager(const SharedImageManager& imageManager);
+  void setImageManager(const SharedImageManager &imageManager);
 
   static ImageState initialStateData(
-      const Props::Shared& props,
-      const ShadowNodeFamily::Shared& /*family*/,
-      const ComponentDescriptor& componentDescriptor) {
+      ShadowNodeFragment const &fragment,
+      ShadowNodeFamilyFragment const &familyFragment,
+      ComponentDescriptor const &componentDescriptor) {
     auto imageSource = ImageSource{ImageSource::Type::Invalid};
-    return {imageSource, {imageSource, nullptr, {}}, 0};
+    return {imageSource, {imageSource, nullptr}, 0};
   }
 
 #pragma mark - LayoutableShadowNode
@@ -61,4 +61,5 @@ class ImageShadowNode final : public ConcreteViewShadowNode<
   void updateStateIfNeeded();
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

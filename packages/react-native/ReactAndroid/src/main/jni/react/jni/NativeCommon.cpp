@@ -9,17 +9,18 @@
 
 using namespace facebook::jni;
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 namespace exceptions {
-const char* gUnexpectedNativeTypeExceptionClass =
+const char *gUnexpectedNativeTypeExceptionClass =
     "com/facebook/react/bridge/UnexpectedNativeTypeException";
 }
 
 namespace {
 
 // Returns a leaked global_ref.
-alias_ref<ReadableType> getTypeField(const char* fieldName) {
+alias_ref<ReadableType> getTypeField(const char *fieldName) {
   static auto cls = ReadableType::javaClassStatic();
   auto field = cls->getStaticField<ReadableType::javaobject>(fieldName);
   return make_global(cls->getStaticFieldValue(field)).release();
@@ -60,4 +61,5 @@ local_ref<ReadableType> ReadableType::getType(folly::dynamic::Type type) {
   }
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

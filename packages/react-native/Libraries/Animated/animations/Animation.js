@@ -11,16 +11,11 @@
 'use strict';
 
 import type {PlatformConfig} from '../AnimatedPlatformConfig';
-import type AnimatedNode from '../nodes/AnimatedNode';
 import type AnimatedValue from '../nodes/AnimatedValue';
 
-import Platform from '../../Utilities/Platform';
 import NativeAnimatedHelper from '../NativeAnimatedHelper';
-import AnimatedColor from '../nodes/AnimatedColor';
-import AnimatedProps from '../nodes/AnimatedProps';
-import AnimatedValueXY from '../nodes/AnimatedValueXY';
 
-export type EndResult = {finished: boolean, value?: number, ...};
+export type EndResult = {finished: boolean, ...};
 export type EndCallback = (result: EndResult) => void;
 
 export type AnimationConfig = {
@@ -42,7 +37,6 @@ export default class Animation {
   __nativeId: number;
   __onEnd: ?EndCallback;
   __iterations: number;
-
   start(
     fromValue: number,
     onUpdate: (value: number) => void,
@@ -50,55 +44,22 @@ export default class Animation {
     previousAnimation: ?Animation,
     animatedValue: AnimatedValue,
   ): void {}
-
   stop(): void {
     if (this.__nativeId) {
       NativeAnimatedHelper.API.stopAnimation(this.__nativeId);
     }
   }
-
   __getNativeAnimationConfig(): any {
     // Subclasses that have corresponding animation implementation done in native
     // should override this method
     throw new Error('This animation type cannot be offloaded to native');
   }
-
   // Helper function for subclasses to make sure onEnd is only called once.
   __debouncedOnEnd(result: EndResult): void {
     const onEnd = this.__onEnd;
     this.__onEnd = null;
     onEnd && onEnd(result);
   }
-
-  __findAnimatedPropsNodes(node: AnimatedNode): Array<AnimatedProps> {
-    const result = [];
-
-    if (node instanceof AnimatedProps) {
-      result.push(node);
-      return result;
-    }
-
-    // Vectorized animations (animations on AnimatedValueXY, AnimatedColor nodes)
-    // are split into multiple animations for each component that execute in parallel.
-    // Calling update() on AnimatedProps when each animation completes results in
-    // potential flickering as all animations that are part of the vectorized animation
-    // may not have completed yet. For example, only the animation for the red channel of
-    // an animating color may have been completed, resulting in a temporary red color
-    // being rendered. So, for now, ignore AnimatedProps that use a vectorized animation.
-    if (
-      Platform.OS === 'ios' &&
-      (node instanceof AnimatedValueXY || node instanceof AnimatedColor)
-    ) {
-      return result;
-    }
-
-    for (const child of node.__getChildren()) {
-      result.push(...this.__findAnimatedPropsNodes(child));
-    }
-
-    return result;
-  }
-
   __startNativeAnimation(animatedValue: AnimatedValue): void {
     const startNativeAnimationWaitId = `${startNativeAnimationNextId}:startAnimation`;
     startNativeAnimationNextId += 1;
@@ -113,23 +74,8 @@ export default class Animation {
         this.__nativeId,
         animatedValue.__getNativeTag(),
         config,
-        result => {
-          this.__debouncedOnEnd(result);
-
-          // When using natively driven animations, once the animation completes,
-          // we need to ensure that the JS side nodes are synced with the updated
-          // values.
-          const {value} = result;
-          if (value != null) {
-            animatedValue.__onAnimatedValueUpdateReceived(value);
-
-            // Once the JS side node is synced with the updated values, trigger an
-            // update on the AnimatedProps nodes to call any registered callbacks.
-            this.__findAnimatedPropsNodes(animatedValue).forEach(node =>
-              node.update(),
-            );
-          }
-        },
+        // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+        this.__debouncedOnEnd.bind(this),
       );
     } catch (e) {
       throw e;

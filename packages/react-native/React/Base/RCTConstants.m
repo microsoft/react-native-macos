@@ -7,16 +7,8 @@
 
 #import "RCTConstants.h"
 
-#if !TARGET_OS_OSX // [macOS]
-NSString *const RCTPlatformName = @"ios";
-#else // [macOS
-NSString *const RCTPlatformName = @"macos";
-#endif // macOS]
-
 NSString *const RCTUserInterfaceStyleDidChangeNotification = @"RCTUserInterfaceStyleDidChangeNotification";
 NSString *const RCTUserInterfaceStyleDidChangeNotificationTraitCollectionKey = @"traitCollection";
-
-NSString *const RCTRootViewFrameDidChangeNotification = @"RCTRootViewFrameDidChangeNotification";
 
 NSString *const RCTJavaScriptDidFailToLoadNotification = @"RCTJavaScriptDidFailToLoadNotification";
 NSString *const RCTJavaScriptDidLoadNotification = @"RCTJavaScriptDidLoadNotification";
@@ -24,13 +16,16 @@ NSString *const RCTJavaScriptWillStartExecutingNotification = @"RCTJavaScriptWil
 NSString *const RCTJavaScriptWillStartLoadingNotification = @"RCTJavaScriptWillStartLoadingNotification";
 
 NSString *const RCTDidInitializeModuleNotification = @"RCTDidInitializeModuleNotification";
+NSString *const RCTDidSetupModuleNotification = @"RCTDidSetupModuleNotification";
+NSString *const RCTDidSetupModuleNotificationModuleNameKey = @"moduleName";
+NSString *const RCTDidSetupModuleNotificationSetupTimeKey = @"setupTime";
 
 /*
  * W3C Pointer Events
  */
 static BOOL RCTDispatchW3CPointerEvents = NO;
 
-BOOL RCTGetDispatchW3CPointerEvents(void)
+BOOL RCTGetDispatchW3CPointerEvents()
 {
   return RCTDispatchW3CPointerEvents;
 }
@@ -45,7 +40,7 @@ void RCTSetDispatchW3CPointerEvents(BOOL value)
  */
 static BOOL RCTValidateCanSendEventInRCTEventEmitter = NO;
 
-BOOL RCTGetValidateCanSendEventInRCTEventEmitter(void)
+BOOL RCTGetValidateCanSendEventInRCTEventEmitter()
 {
   return RCTValidateCanSendEventInRCTEventEmitter;
 }
@@ -61,7 +56,7 @@ void RCTSetValidateCanSendEventInRCTEventEmitter(BOOL value)
  */
 static int RCTMemoryPressureUnloadLevel = 15;
 
-int RCTGetMemoryPressureUnloadLevel(void)
+BOOL RCTGetMemoryPressureUnloadLevel()
 {
   return RCTMemoryPressureUnloadLevel;
 }
@@ -77,7 +72,7 @@ void RCTSetMemoryPressureUnloadLevel(int value)
  */
 static BOOL RCTParseUnhandledJSErrorStackNatively = NO;
 
-BOOL RCTGetParseUnhandledJSErrorStackNatively(void)
+BOOL RCTGetParseUnhandledJSErrorStackNatively()
 {
   return RCTParseUnhandledJSErrorStackNatively;
 }
@@ -85,19 +80,4 @@ BOOL RCTGetParseUnhandledJSErrorStackNatively(void)
 void RCTSetParseUnhandledJSErrorStackNatively(BOOL value)
 {
   RCTParseUnhandledJSErrorStackNatively = value;
-}
-
-/*
- * Use native view configs in bridgeless mode
- */
-static BOOL RCTUseNativeViewConfigsInBridgelessMode = NO;
-
-BOOL RCTGetUseNativeViewConfigsInBridgelessMode(void)
-{
-  return RCTUseNativeViewConfigsInBridgelessMode;
-}
-
-void RCTSetUseNativeViewConfigsInBridgelessMode(BOOL value)
-{
-  RCTUseNativeViewConfigsInBridgelessMode = value;
 }

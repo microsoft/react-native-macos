@@ -13,10 +13,10 @@
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/RawProps.h>
 #include <react/renderer/core/ShadowNode.h>
-#include <react/renderer/core/ShadowNodeFamily.h>
 #include <react/renderer/core/StateData.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Base templace class for all `ShadowNode`s which connects exact `ShadowNode`
@@ -46,11 +46,11 @@ class ConcreteShadowNode : public BaseShadowNodeT {
   using BaseShadowNodeT::BaseShadowNodeT;
 
   using ConcreteProps = PropsT;
-  using SharedConcreteProps = std::shared_ptr<const PropsT>;
+  using SharedConcreteProps = std::shared_ptr<PropsT const>;
   using UnsharedConcreteProps = std::shared_ptr<PropsT>;
   using ConcreteEventEmitter = EventEmitterT;
-  using SharedConcreteEventEmitter = std::shared_ptr<const EventEmitterT>;
-  using SharedConcreteShadowNode = std::shared_ptr<const ConcreteShadowNode>;
+  using SharedConcreteEventEmitter = std::shared_ptr<EventEmitterT const>;
+  using SharedConcreteShadowNode = std::shared_ptr<ConcreteShadowNode const>;
   using ConcreteState = ConcreteState<StateDataT>;
   using ConcreteStateData = StateDataT;
 
@@ -71,12 +71,12 @@ class ConcreteShadowNode : public BaseShadowNodeT {
   }
 
   static UnsharedConcreteProps Props(
-      const PropsParserContext& context,
-      const RawProps& rawProps,
-      const Props::Shared& baseProps = nullptr) {
+      const PropsParserContext &context,
+      RawProps const &rawProps,
+      Props::Shared const &baseProps = nullptr) {
     return std::make_shared<PropsT>(
         context,
-        baseProps ? static_cast<const PropsT&>(*baseProps) : PropsT(),
+        baseProps ? static_cast<PropsT const &>(*baseProps) : PropsT(),
         rawProps);
   }
 
@@ -87,9 +87,9 @@ class ConcreteShadowNode : public BaseShadowNodeT {
   }
 
   static ConcreteStateData initialStateData(
-      const Props::Shared& /*props*/,
-      const ShadowNodeFamily::Shared& /*family*/,
-      const ComponentDescriptor& /*componentDescriptor*/) {
+      ShadowNodeFragment const &fragment,
+      ShadowNodeFamilyFragment const &familyFragment,
+      ComponentDescriptor const &componentDescriptor) {
     return {};
   }
 
@@ -97,18 +97,18 @@ class ConcreteShadowNode : public BaseShadowNodeT {
    * Returns a concrete props object associated with the node.
    * Thread-safe after the node is sealed.
    */
-  const ConcreteProps& getConcreteProps() const {
+  ConcreteProps const &getConcreteProps() const {
     react_native_assert(
         BaseShadowNodeT::props_ && "Props must not be `nullptr`.");
-    return static_cast<const ConcreteProps&>(*props_);
+    return static_cast<ConcreteProps const &>(*props_);
   }
 
   /*
    * Returns a concrete event emitter object associated with the node.
    * Thread-safe after the node is sealed.
    */
-  const ConcreteEventEmitter& getConcreteEventEmitter() const {
-    return static_cast<const ConcreteEventEmitter&>(
+  ConcreteEventEmitter const &getConcreteEventEmitter() const {
+    return static_cast<ConcreteEventEmitter const &>(
         *BaseShadowNodeT::getEventEmitter());
   }
 
@@ -116,20 +116,21 @@ class ConcreteShadowNode : public BaseShadowNodeT {
    * Returns a concrete state data associated with the node.
    * Thread-safe after the node is sealed.
    */
-  const ConcreteStateData& getStateData() const {
+  ConcreteStateData const &getStateData() const {
     react_native_assert(state_ && "State must not be `nullptr`.");
-    return static_cast<const ConcreteState*>(state_.get())->getData();
+    return static_cast<ConcreteState const *>(state_.get())->getData();
   }
 
   /*
    * Creates and assigns a new state object containing given state data.
    * Can be called only before the node is sealed (usually during construction).
    */
-  void setStateData(ConcreteStateData&& data) {
+  void setStateData(ConcreteStateData &&data) {
     Sealable::ensureUnsealed();
-    state_ = std::make_shared<const ConcreteState>(
-        std::make_shared<const ConcreteStateData>(std::move(data)), *state_);
+    state_ = std::make_shared<ConcreteState const>(
+        std::make_shared<ConcreteStateData const>(std::move(data)), *state_);
   }
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

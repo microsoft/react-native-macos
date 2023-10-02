@@ -10,7 +10,9 @@
 #include <jni.h>
 #include <cstddef>
 
-namespace facebook::yoga::vanillajni {
+namespace facebook {
+namespace yoga {
+namespace vanillajni {
 
 /**
  * This method has to be called before using the vanillajni library. This method
@@ -47,4 +49,6 @@ void assertNoPendingJniException(JNIEnv* env);
 
 void assertNoPendingJniExceptionIf(JNIEnv* env, bool condition);
 
-} // namespace facebook::yoga::vanillajni
+} // namespace vanillajni
+} // namespace yoga
+} // namespace facebook

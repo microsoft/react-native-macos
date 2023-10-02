@@ -20,7 +20,7 @@ internal object NdkConfiguratorUtils {
   fun configureReactNativeNdk(project: Project, extension: ReactExtension) {
     project.pluginManager.withPlugin("com.android.application") {
       project.extensions.getByType(AndroidComponentsExtension::class.java).finalizeDsl { ext ->
-        if (!project.isNewArchEnabled(extension)) {
+        if (!project.isNewArchEnabled) {
           // For Old Arch, we don't need to setup the NDK
           return@finalizeDsl
         }
@@ -40,21 +40,15 @@ internal object NdkConfiguratorUtils {
         // Parameters should be provided in an additive manner (do not override what
         // the user provided, but allow for sensible defaults).
         val cmakeArgs = ext.defaultConfig.externalNativeBuild.cmake.arguments
-        if (cmakeArgs.none { it.startsWith("-DPROJECT_BUILD_DIR") }) {
-          cmakeArgs.add("-DPROJECT_BUILD_DIR=${project.layout.buildDirectory.get().asFile}")
+        if ("-DPROJECT_BUILD_DIR" !in cmakeArgs) {
+          cmakeArgs.add("-DPROJECT_BUILD_DIR=${project.buildDir}")
         }
-        if (cmakeArgs.none { it.startsWith("-DREACT_ANDROID_DIR") }) {
+        if ("-DREACT_ANDROID_DIR" !in cmakeArgs) {
           cmakeArgs.add(
               "-DREACT_ANDROID_DIR=${extension.reactNativeDir.file("ReactAndroid").get().asFile}")
         }
-        if (cmakeArgs.none { it.startsWith("-DANDROID_STL") }) {
+        if ("-DANDROID_STL" !in cmakeArgs) {
           cmakeArgs.add("-DANDROID_STL=c++_shared")
-        }
-        // Due to the new NDK toolchain file, the C++ flags gets overridden between compilation
-        // units. This is causing some libraries to don't be compiled with -DANDROID and other
-        // crucial flags. This can be revisited once we bump to NDK 25/26
-        if (cmakeArgs.none { it.startsWith("-DANDROID_USE_LEGACY_TOOLCHAIN_FILE") }) {
-          cmakeArgs.add("-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=ON")
         }
 
         val architectures = project.getReactNativeArchitectures()
@@ -74,12 +68,11 @@ internal object NdkConfiguratorUtils {
    */
   fun configureNewArchPackagingOptions(
       project: Project,
-      extension: ReactExtension,
-      variant: Variant
+      variant: Variant,
   ) {
-    if (!project.isNewArchEnabled(extension)) {
+    if (!project.isNewArchEnabled) {
       // For Old Arch, we set a pickFirst only on libraries that we know are
-      // clashing with our direct dependencies (mainly FBJNI and Hermes).
+      // clashing with our direct dependencies (FBJNI, Flipper and Hermes).
       variant.packaging.jniLibs.pickFirsts.addAll(
           listOf(
               "**/libfbjni.so",
@@ -108,7 +101,6 @@ internal object NdkConfiguratorUtils {
               "**/libreact_render_graphics.so",
               "**/libreact_render_imagemanager.so",
               "**/libreact_render_mapbuffer.so",
-              "**/libreact_utils.so",
               "**/librrc_image.so",
               "**/librrc_legacyviewmanagerinterop.so",
               "**/librrc_view.so",

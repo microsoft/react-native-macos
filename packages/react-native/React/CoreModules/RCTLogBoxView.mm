@@ -39,7 +39,11 @@
 {
   RCTErrorNewArchitectureValidation(RCTNotAllowedInFabricWithoutLegacy, @"RCTLogBoxView", nil);
 
-  self = [super initWithWindowScene:window.windowScene];
+  if (@available(iOS 13.0, *)) {
+    self = [super initWithWindowScene:window.windowScene];
+  } else {
+    self = [super initWithFrame:window.frame];
+  }
 
   self.windowLevel = UIWindowLevelStatusBar - 1;
   self.backgroundColor = [UIColor clearColor];
@@ -57,7 +61,11 @@
 
 - (instancetype)initWithWindow:(UIWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter
 {
-  self = [super initWithWindowScene:window.windowScene];
+  if (@available(iOS 13.0, *)) {
+    self = [super initWithWindowScene:window.windowScene];
+  } else {
+    self = [super initWithFrame:window.frame];
+  }
 
   id<RCTSurfaceProtocol> surface = [surfacePresenter createFabricSurfaceForModuleName:@"LogBox" initialProperties:@{}];
   [surface start];

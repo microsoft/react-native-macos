@@ -59,15 +59,11 @@
   _activityIndicatorViewStyle = activityIndicatorViewStyle;
   
   switch (activityIndicatorViewStyle) {
-    case UIActivityIndicatorViewStyleLarge:
-	  if (@available(macOS 11.0, *)) {
-		self.controlSize = NSControlSizeLarge;
-	  } else {
-		self.controlSize = NSControlSizeRegular;
-	  }
-      break;
-    case UIActivityIndicatorViewStyleMedium:
+    case UIActivityIndicatorViewStyleWhiteLarge:
       self.controlSize = NSControlSizeRegular;
+      break;
+    case UIActivityIndicatorViewStyleWhite:
+      self.controlSize = NSControlSizeSmall;
       break;
     default:
       break;

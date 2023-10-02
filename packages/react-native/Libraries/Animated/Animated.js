@@ -21,7 +21,7 @@ import Platform from '../Utilities/Platform';
 import AnimatedImplementation from './AnimatedImplementation';
 import AnimatedMock from './AnimatedMock';
 
-const Animated = ((Platform.isDisableAnimations
+const Animated = ((Platform.isTesting
   ? AnimatedMock
   : AnimatedImplementation): typeof AnimatedImplementation);
 

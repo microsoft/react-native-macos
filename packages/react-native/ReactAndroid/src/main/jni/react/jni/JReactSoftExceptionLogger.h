@@ -10,12 +10,13 @@
 #include <fbjni/fbjni.h>
 #include <string>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class JReactSoftExceptionLogger
     : public jni::JavaClass<JReactSoftExceptionLogger> {
  public:
-  static constexpr const char* kJavaDescriptor =
+  static constexpr const char *kJavaDescriptor =
       "Lcom/facebook/react/bridge/ReactSoftExceptionLogger;";
 
   static void logNoThrowSoftExceptionWithMessage(
@@ -23,4 +24,5 @@ class JReactSoftExceptionLogger
       std::string message);
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

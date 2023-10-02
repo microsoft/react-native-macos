@@ -27,141 +27,28 @@ class ProjectUtilsTest {
 
   @Test
   fun isNewArchEnabled_returnsFalseByDefault() {
-    val project = createProject()
-    val extension = TestReactExtension(project)
-    assertFalse(createProject().isNewArchEnabled(extension))
+    assertFalse(createProject().isNewArchEnabled)
   }
 
   @Test
   fun isNewArchEnabled_withDisabled_returnsFalse() {
     val project = createProject()
     project.extensions.extraProperties.set("newArchEnabled", "false")
-    val extension = TestReactExtension(project)
-    assertFalse(project.isNewArchEnabled(extension))
+    assertFalse(project.isNewArchEnabled)
   }
 
   @Test
   fun isNewArchEnabled_withEnabled_returnsTrue() {
     val project = createProject()
     project.extensions.extraProperties.set("newArchEnabled", "true")
-    val extension = TestReactExtension(project)
-    assertTrue(project.isNewArchEnabled(extension))
+    assertTrue(project.isNewArchEnabled)
   }
 
   @Test
   fun isNewArchEnabled_withInvalid_returnsFalse() {
     val project = createProject()
     project.extensions.extraProperties.set("newArchEnabled", "¯\\_(ツ)_/¯")
-    val extension = TestReactExtension(project)
-    assertFalse(project.isNewArchEnabled(extension))
-  }
-
-  @Test
-  fun isNewArchEnabled_withRNVersion0_returnFalse() {
-    val project = createProject()
-    val extension = TestReactExtension(project)
-    File(tempFolder.root, "package.json").apply {
-      writeText(
-          // language=json
-          """
-      {
-        "version": "0.73.0"
-      }
-      """
-              .trimIndent())
-    }
-    extension.reactNativeDir.set(tempFolder.root)
-    assertFalse(project.isNewArchEnabled(extension))
-  }
-
-  @Test
-  fun isNewArchEnabled_withRNVersion1_returnTrue() {
-    val project = createProject()
-    val extension = TestReactExtension(project)
-    File(tempFolder.root, "package.json").apply {
-      writeText(
-          // language=json
-          """
-      {
-        "version": "1.2.3"
-      }
-      """
-              .trimIndent())
-    }
-    extension.reactNativeDir.set(tempFolder.root)
-    assertTrue(project.isNewArchEnabled(extension))
-  }
-
-  @Test
-  fun isNewArchEnabled_withRNVersion1PrereleaseString_returnTrue() {
-    val project = createProject()
-    val extension = TestReactExtension(project)
-    File(tempFolder.root, "package.json").apply {
-      writeText(
-          // language=json
-          """
-      {
-        "version": "1.2.3-prealpha0"
-      }
-      """
-              .trimIndent())
-    }
-    extension.reactNativeDir.set(tempFolder.root)
-    assertTrue(project.isNewArchEnabled(extension))
-  }
-
-  @Test
-  fun isNewArchEnabled_withRNVersion1PrereleaseStringDotNumber_returnTrue() {
-    val project = createProject()
-    val extension = TestReactExtension(project)
-    File(tempFolder.root, "package.json").apply {
-      writeText(
-          // language=json
-          """
-      {
-        "version": "1.2.3-prealpha.0"
-      }
-      """
-              .trimIndent())
-    }
-    extension.reactNativeDir.set(tempFolder.root)
-    assertTrue(project.isNewArchEnabled(extension))
-  }
-
-  @Test
-  fun isNewArchEnabled_withRNVersion1PrereleaseStringDashNumber_returnTrue() {
-    val project = createProject()
-    val extension = TestReactExtension(project)
-    File(tempFolder.root, "package.json").apply {
-      writeText(
-          // language=json
-          """
-      {
-        "version": "1.2.3-prealpha-0"
-      }
-      """
-              .trimIndent())
-    }
-    extension.reactNativeDir.set(tempFolder.root)
-    assertTrue(project.isNewArchEnabled(extension))
-  }
-
-  @Test
-  fun isNewArchEnabled_withRNVersion1000_returnFalse() {
-    val project = createProject()
-    val extension = TestReactExtension(project)
-    File(tempFolder.root, "package.json").apply {
-      writeText(
-          // language=json
-          """
-      {
-        "version": "1000.0.0"
-      }
-      """
-              .trimIndent())
-    }
-    extension.reactNativeDir.set(tempFolder.root)
-    assertFalse(project.isNewArchEnabled(extension))
+    assertFalse(project.isNewArchEnabled)
   }
 
   @Test
@@ -262,7 +149,7 @@ class ProjectUtilsTest {
   @Test
   fun needsCodegenFromPackageJson_withCodegenConfigInModel_returnsTrue() {
     val project = createProject()
-    val model = ModelPackageJson("1000.0.0", ModelCodegenConfig(null, null, null, null))
+    val model = ModelPackageJson(ModelCodegenConfig(null, null, null, null))
 
     assertTrue(project.needsCodegenFromPackageJson(model))
   }
@@ -270,7 +157,7 @@ class ProjectUtilsTest {
   @Test
   fun needsCodegenFromPackageJson_withMissingCodegenConfigInModel_returnsFalse() {
     val project = createProject()
-    val model = ModelPackageJson("1000.0.0", null)
+    val model = ModelPackageJson(null)
 
     assertFalse(project.needsCodegenFromPackageJson(model))
   }

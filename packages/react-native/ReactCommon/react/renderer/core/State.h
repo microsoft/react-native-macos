@@ -15,7 +15,8 @@
 
 #include <react/renderer/core/ShadowNodeFamily.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * An abstract interface of State.
@@ -33,10 +34,10 @@ class State {
    * Constructors are protected to make calling them directly with
    * type-erasured arguments impossible.
    */
-  explicit State(StateData::Shared data, const State& previousState);
+  explicit State(StateData::Shared data, State const &state);
   explicit State(
       StateData::Shared data,
-      const ShadowNodeFamily::Shared& family);
+      ShadowNodeFamily::Shared const &family);
 
  public:
   virtual ~State() = default;
@@ -67,7 +68,7 @@ class State {
 #ifdef ANDROID
   virtual folly::dynamic getDynamic() const = 0;
   virtual MapBuffer getMapBuffer() const = 0;
-  virtual void updateState(folly::dynamic&& data) const = 0;
+  virtual void updateState(folly::dynamic data) const = 0;
 #endif
 
  protected:
@@ -78,7 +79,7 @@ class State {
    * Returns a shared pointer to data.
    * To be used by `UIManager` only.
    */
-  const StateData::Shared& getDataPointer() const {
+  StateData::Shared const &getDataPointer() const {
     return data_;
   }
 
@@ -109,4 +110,5 @@ class State {
   size_t revision_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

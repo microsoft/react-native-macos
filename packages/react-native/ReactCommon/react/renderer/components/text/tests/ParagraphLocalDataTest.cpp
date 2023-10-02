@@ -15,7 +15,8 @@
 #include <react/renderer/components/text/ParagraphState.h>
 #include <react/renderer/components/text/conversions.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 #ifdef ANDROID
 
@@ -49,4 +50,5 @@ TEST(ParagraphLocalDataTest, testSomething) {
 
 #endif
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

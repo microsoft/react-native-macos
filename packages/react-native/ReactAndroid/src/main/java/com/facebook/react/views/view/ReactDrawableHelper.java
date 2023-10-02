@@ -7,6 +7,7 @@
 
 package com.facebook.react.views.view;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -30,6 +31,7 @@ public class ReactDrawableHelper {
 
   private static final TypedValue sResolveOutValue = new TypedValue();
 
+  @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   public static Drawable createDrawableFromJSDescription(
       Context context, ReadableMap drawableDescriptionDict) {
     String type = drawableDescriptionDict.getString("type");
@@ -50,6 +52,7 @@ public class ReactDrawableHelper {
     }
   }
 
+  @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   private static int getAttrId(Context context, String attr) {
     SoftAssertions.assertNotNull(attr);
     if ("selectableItemBackground".equals(attr)) {

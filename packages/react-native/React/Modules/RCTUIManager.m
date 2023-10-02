@@ -1519,12 +1519,11 @@ RCT_EXPORT_METHOD(clearJSResponder)
   }];
 }
 
-NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
+static NSMutableDictionary<NSString *, id> *moduleConstantsForComponent(
     NSMutableDictionary<NSString *, NSDictionary *> *directEvents,
     NSMutableDictionary<NSString *, NSDictionary *> *bubblingEvents,
-    Class managerClass,
-    NSString *name,
-    NSDictionary<NSString *, id> *viewConfig)
+    NSMutableDictionary<NSString *, NSString *> *registrationCache, // [macOS]
+    RCTComponentData *componentData)
 {
   NSMutableDictionary<NSString *, id> *moduleConstants = [NSMutableDictionary new];
 
@@ -1534,20 +1533,16 @@ NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
   NSMutableDictionary<NSString *, NSDictionary *> *directEventTypes = [NSMutableDictionary new];
 
   // Add manager class
-  moduleConstants[@"Manager"] = RCTBridgeModuleNameForClass(managerClass);
+  moduleConstants[@"Manager"] = RCTBridgeModuleNameForClass(componentData.managerClass);
 
   // Add native props
+  NSDictionary<NSString *, id> *viewConfig = [componentData viewConfig];
   moduleConstants[@"NativeProps"] = viewConfig[@"propTypes"];
   moduleConstants[@"baseModuleName"] = viewConfig[@"baseModuleName"];
   moduleConstants[@"bubblingEventTypes"] = bubblingEventTypes;
   moduleConstants[@"directEventTypes"] = directEventTypes;
-  // In the Old Architecture the "Commands" and "Constants" properties of view manager config are populated by
-  // lazifyViewManagerConfig function in JS. This fuction uses NativeModules global object that is not available in the
-  // New Architecture. To make native view configs work in the New Architecture we will populate these properties in
-  // native.
-  moduleConstants[@"Commands"] = viewConfig[@"Commands"];
-  // In the Old Architecture "Constants" are empty.
-  moduleConstants[@"Constants"] = [NSDictionary new];
+
+  NSString *componentName = [componentData name]; // [macOS]
 
   // Add direct events
   for (NSString *eventName in viewConfig[@"directEvents"]) {
@@ -1559,11 +1554,13 @@ NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
     directEventTypes[eventName] = directEvents[eventName];
     if (RCT_DEBUG && bubblingEvents[eventName]) {
       RCTLogError(
-          @"Component '%@' re-registered bubbling event '%@' as a "
+          @"Component '%@' re-registered bubbling event '%@' (originally registered by '%@') as a "
            "direct event",
-          name,
-          eventName);
+          componentName,
+          eventName,
+          registrationCache[eventName] ?: @"<unknown>"); // [macOS]
     }
+    registrationCache[eventName] = componentName; // [macOS]
   }
 
   // Add bubbling events
@@ -1580,11 +1577,13 @@ NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
     bubblingEventTypes[eventName] = bubblingEvents[eventName];
     if (RCT_DEBUG && directEvents[eventName]) {
       RCTLogError(
-          @"Component '%@' re-registered direct event '%@' as a "
+          @"Component '%@' re-registered direct event '%@' (originally registered by '%@') as a "
            "bubbling event",
-          name,
-          eventName);
+          componentName,
+          eventName,
+          registrationCache[eventName] ?: @"<unknown>"); // [macOS]
     }
+    registrationCache[eventName] = componentName; // [macOS]
   }
 
   // Add capturing events (added as bubbling events but with the 'skipBubbling' flag)
@@ -1604,21 +1603,12 @@ NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
       RCTLogError(
           @"Component '%@' re-registered direct event '%@' as a "
            "bubbling event",
-          name,
+          componentData.name,
           eventName);
     }
   }
 
   return moduleConstants;
-}
-
-static NSMutableDictionary<NSString *, id> *moduleConstantsForComponentData(
-    NSMutableDictionary<NSString *, NSDictionary *> *directEvents,
-    NSMutableDictionary<NSString *, NSDictionary *> *bubblingEvents,
-    RCTComponentData *componentData)
-{
-  return RCTModuleConstantsForDestructuredComponent(
-      directEvents, bubblingEvents, componentData.managerClass, componentData.name, componentData.viewConfig);
 }
 
 - (NSDictionary<NSString *, id> *)constantsToExport
@@ -1631,12 +1621,13 @@ static NSMutableDictionary<NSString *, id> *moduleConstantsForComponentData(
   NSMutableDictionary<NSString *, NSDictionary *> *constants = [NSMutableDictionary new];
   NSMutableDictionary<NSString *, NSDictionary *> *directEvents = [NSMutableDictionary new];
   NSMutableDictionary<NSString *, NSDictionary *> *bubblingEvents = [NSMutableDictionary new];
+  NSMutableDictionary<NSString *, NSString *> *registrationCache = [NSMutableDictionary new]; // [macOS]
 
   [_componentDataByName
       enumerateKeysAndObjectsUsingBlock:^(NSString *name, RCTComponentData *componentData, __unused BOOL *stop) {
         RCTAssert(!constants[name], @"UIManager already has constants for %@", componentData.name);
         NSMutableDictionary<NSString *, id> *moduleConstants =
-            moduleConstantsForComponentData(directEvents, bubblingEvents, componentData);
+            moduleConstantsForComponent(directEvents, bubblingEvents, registrationCache, componentData); // [macOS]
         constants[name] = moduleConstants;
       }];
 
@@ -1683,8 +1674,9 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(lazilyLoadView : (NSString *)name)
   _componentDataByName[componentData.name] = componentData;
   NSMutableDictionary<NSString *, NSDictionary *> *directEvents = [NSMutableDictionary new];
   NSMutableDictionary<NSString *, NSDictionary *> *bubblingEvents = [NSMutableDictionary new];
+  NSMutableDictionary<NSString *, NSString *> *registrationCache = [NSMutableDictionary new]; // [macOS]
   NSMutableDictionary<NSString *, id> *moduleConstants =
-      moduleConstantsForComponentData(directEvents, bubblingEvents, componentData);
+      moduleConstantsForComponent(directEvents, bubblingEvents, registrationCache, componentData); // [macOS]
   return @{
     @"viewConfig" : moduleConstants,
   };

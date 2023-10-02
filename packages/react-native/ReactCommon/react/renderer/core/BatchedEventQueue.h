@@ -10,7 +10,8 @@
 #include <react/renderer/core/EventQueue.h>
 #include <react/renderer/core/EventQueueProcessor.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Event Queue that dispatches event in batches synchronizing them with
@@ -25,4 +26,5 @@ class BatchedEventQueue final : public EventQueue {
   void onEnqueue() const override;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

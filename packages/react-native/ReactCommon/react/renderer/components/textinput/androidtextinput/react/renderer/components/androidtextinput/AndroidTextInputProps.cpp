@@ -7,18 +7,18 @@
 
 #include "AndroidTextInputProps.h"
 #include <react/renderer/components/image/conversions.h>
+#include <react/renderer/core/CoreFeatures.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
-#include <react/utils/CoreFeatures.h>
 
 namespace facebook::react {
 
 static bool hasValue(
-    const RawProps& rawProps,
+    const RawProps &rawProps,
     bool defaultValue,
-    const char* name,
-    const char* prefix,
-    const char* suffix) {
+    const char *name,
+    const char *prefix,
+    const char *suffix) {
   auto rawValue = rawProps.at(name, prefix, suffix);
 
   // No change to prop - use default
@@ -134,6 +134,8 @@ AndroidTextInputProps::AndroidTextInputProps(
           "selectionColor",
           sourceProps.selectionColor,
           {})),
+      selection(CoreFeatures::enablePropIteratorSetter? sourceProps.selection :
+          convertRawProp(context, rawProps, "selection", sourceProps.selection, {})),
       value(CoreFeatures::enablePropIteratorSetter? sourceProps.value : convertRawProp(context, rawProps, "value", sourceProps.value, {})),
       defaultValue(CoreFeatures::enablePropIteratorSetter? sourceProps.defaultValue : convertRawProp(context, rawProps,
           "defaultValue",
@@ -257,10 +259,10 @@ AndroidTextInputProps::AndroidTextInputProps(
 }
 
 void AndroidTextInputProps::setProp(
-    const PropsParserContext& context,
+    const PropsParserContext &context,
     RawPropsPropNameHash hash,
-    const char* propName,
-    const RawValue& value) {
+    const char *propName,
+    RawValue const &value) {
   // All Props structs setProp methods must always, unconditionally,
   // call all super::setProp methods, since multiple structs may
   // reuse the same values.
@@ -347,6 +349,7 @@ void AndroidTextInputProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(placeholderTextColor);
     RAW_SET_PROP_SWITCH_CASE_BASIC(secureTextEntry);
     RAW_SET_PROP_SWITCH_CASE_BASIC(selectionColor);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(selection);
     RAW_SET_PROP_SWITCH_CASE_BASIC(defaultValue);
     RAW_SET_PROP_SWITCH_CASE_BASIC(selectTextOnFocus);
     RAW_SET_PROP_SWITCH_CASE_BASIC(submitBehavior);
@@ -446,6 +449,7 @@ folly::dynamic AndroidTextInputProps::getDynamic() const {
   props["placeholderTextColor"] = toAndroidRepr(placeholderTextColor);
   props["secureTextEntry"] = secureTextEntry;
   props["selectionColor"] = toAndroidRepr(selectionColor);
+  props["selection"] = toDynamic(selection);
   props["value"] = value;
   props["defaultValue"] = defaultValue;
   props["selectTextOnFocus"] = selectTextOnFocus;

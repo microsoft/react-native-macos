@@ -9,11 +9,12 @@
 
 using namespace facebook::jni;
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 WritableNativeMap::WritableNativeMap() : HybridBase(folly::dynamic::object()) {}
 
-WritableNativeMap::WritableNativeMap(folly::dynamic&& val)
+WritableNativeMap::WritableNativeMap(folly::dynamic &&val)
     : HybridBase(std::move(val)) {
   if (!map_.isObject()) {
     throw std::runtime_error("WritableNativeMap value must be an object.");
@@ -56,7 +57,7 @@ void WritableNativeMap::putString(std::string key, alias_ref<jstring> val) {
 
 void WritableNativeMap::putNativeArray(
     std::string key,
-    ReadableNativeArray* otherArray) {
+    ReadableNativeArray *otherArray) {
   if (!otherArray) {
     putNull(std::move(key));
     return;
@@ -67,7 +68,7 @@ void WritableNativeMap::putNativeArray(
 
 void WritableNativeMap::putNativeMap(
     std::string key,
-    ReadableNativeMap* otherMap) {
+    ReadableNativeMap *otherMap) {
   if (!otherMap) {
     putNull(std::move(key));
     return;
@@ -76,7 +77,7 @@ void WritableNativeMap::putNativeMap(
   map_.insert(std::move(key), otherMap->consume());
 }
 
-void WritableNativeMap::mergeNativeMap(ReadableNativeMap* other) {
+void WritableNativeMap::mergeNativeMap(ReadableNativeMap *other) {
   throwIfConsumed();
   other->throwIfConsumed();
 
@@ -99,4 +100,5 @@ void WritableNativeMap::registerNatives() {
   });
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

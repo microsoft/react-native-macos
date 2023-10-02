@@ -159,11 +159,15 @@ static NSDictionary *onLoadParamsForSource(RCTImageSource *source)
                selector:@selector(clearImageIfDetached)
                    name:UIApplicationDidEnterBackgroundNotification
                  object:nil];
-    [center addObserver:self
-               selector:@selector(clearImageIfDetached)
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
+    if (@available(iOS 13.0, *)) {
+      [center addObserver:self
+                 selector:@selector(clearImageIfDetached)
 
-                   name:UISceneDidEnterBackgroundNotification
-                 object:nil];
+                     name:UISceneDidEnterBackgroundNotification
+                   object:nil];
+    }
+#endif
 #endif // [macOS]
   }
   return self;

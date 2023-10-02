@@ -13,7 +13,8 @@
 #include <react/renderer/graphics/Float.h>
 #include <react/renderer/graphics/Point.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Contains width and height values.
@@ -22,34 +23,35 @@ struct Size {
   Float width{0};
   Float height{0};
 
-  Size& operator+=(const Point& point) noexcept {
+  Size &operator+=(Point const &point) noexcept {
     width += point.x;
     height += point.y;
     return *this;
   }
 
-  Size& operator*=(const Point& point) noexcept {
+  Size &operator*=(Point const &point) noexcept {
     width *= point.x;
     height *= point.y;
     return *this;
   }
 };
 
-inline bool operator==(const Size& rhs, const Size& lhs) noexcept {
+inline bool operator==(Size const &rhs, Size const &lhs) noexcept {
   return std::tie(lhs.width, lhs.height) == std::tie(rhs.width, rhs.height);
 }
 
-inline bool operator!=(const Size& rhs, const Size& lhs) noexcept {
+inline bool operator!=(Size const &rhs, Size const &lhs) noexcept {
   return !(lhs == rhs);
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook
 
 namespace std {
 
 template <>
 struct hash<facebook::react::Size> {
-  size_t operator()(const facebook::react::Size& size) const {
+  size_t operator()(facebook::react::Size const &size) const {
     return folly::hash::hash_combine(0, size.width, size.height);
   }
 };

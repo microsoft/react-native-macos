@@ -12,7 +12,8 @@
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #include <react/utils/RunLoopObserver.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Event beat associated with main run loop.
@@ -31,7 +32,7 @@ class SynchronousEventBeat final : public EventBeat,
 #pragma mark - RunLoopObserver::Delegate
 
   void activityDidChange(
-      const RunLoopObserver::Delegate* delegate,
+      RunLoopObserver::Delegate const *delegate,
       RunLoopObserver::Activity activity) const noexcept override;
 
  private:
@@ -42,4 +43,5 @@ class SynchronousEventBeat final : public EventBeat,
   std::shared_ptr<RuntimeScheduler> runtimeScheduler_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

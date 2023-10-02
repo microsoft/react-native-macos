@@ -10,7 +10,8 @@
 #include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * It's a normal `ViewProps` with additional information about the component
@@ -31,4 +32,5 @@ class UnimplementedViewProps final : public ViewProps {
   mutable ComponentName componentName_{};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

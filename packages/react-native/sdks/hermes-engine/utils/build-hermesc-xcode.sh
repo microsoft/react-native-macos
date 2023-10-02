@@ -6,8 +6,7 @@
 
 set -x
 
-hermesc_dir_path="$1"; shift
-jsi_path="$1"
+hermesc_dir_path="$1"
 
 # This script is supposed to be executed from Xcode "run script" phase.
 # Xcode sets up its build environment based on the build target.
@@ -18,7 +17,7 @@ export MACOSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET
 SDKROOT=$(xcode-select -p)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 export SDKROOT=$SDKROOT
 
-if ! "$CMAKE_BINARY" -S "${PODS_ROOT}/hermes-engine" -B "$hermesc_dir_path" -DJSI_DIR="$jsi_path"
+if ! "$CMAKE_BINARY" -S "${PODS_ROOT}/hermes-engine" -B "$hermesc_dir_path"
 then
     echo "Failed to configure Hermesc cmake project."
     exit 1

@@ -131,9 +131,11 @@ using namespace facebook::react;
   }
 }
 
+#if DEBUG // [macOS description is a debug-only feature
 - (NSString *)description
 {
   return [NSString stringWithFormat:@"<%@: %p; name = %s>", [self class], self, self.JSMethodName];
 }
+#endif // macOS]
 
 @end

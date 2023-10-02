@@ -792,7 +792,6 @@ public class UIImplementation {
 
   public void onCatalystInstanceDestroyed() {
     mViewOperationsEnabled = false;
-    mViewManagers.invalidate();
   }
 
   public void setViewHierarchyUpdateDebugListener(

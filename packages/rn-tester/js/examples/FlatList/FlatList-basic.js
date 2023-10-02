@@ -35,21 +35,14 @@ import {
   ItemSeparatorComponent,
   PlainInput,
   SeparatorComponent,
-  LoadingComponent,
   Spindicator,
-  genNewerItems,
-  genOlderItems,
+  genItemData,
   getItemLayout,
   pressItem,
   renderSmallSwitchOption,
 } from '../../components/ListExampleShared';
 
 import type {Item} from '../../components/ListExampleShared';
-
-const PAGE_SIZE = 100;
-const NUM_PAGES = 10;
-const INITIAL_PAGE_OFFSET = Math.floor(NUM_PAGES / 2);
-const LOAD_TIME = 2000;
 
 const VIEWABILITY_CONFIG = {
   minimumViewTime: 3000,
@@ -60,8 +53,6 @@ const VIEWABILITY_CONFIG = {
 type Props = $ReadOnly<{||}>;
 type State = {|
   data: Array<Item>,
-  first: number,
-  last: number,
   debug: boolean,
   horizontal: boolean,
   inverted: boolean,
@@ -75,9 +66,6 @@ type State = {|
   onPressDisabled: boolean,
   textSelectable: boolean,
   isRTL: boolean,
-  maintainVisibleContentPosition: boolean,
-  previousLoading: boolean,
-  nextLoading: boolean,
   // [macOS
   enableSelectionOnKeyPress: boolean,
   focusable: boolean,
@@ -89,9 +77,7 @@ const IS_RTL = I18nManager.isRTL;
 
 class FlatListExample extends React.PureComponent<Props, State> {
   state: State = {
-    data: genNewerItems(PAGE_SIZE, PAGE_SIZE * INITIAL_PAGE_OFFSET),
-    first: PAGE_SIZE * INITIAL_PAGE_OFFSET,
-    last: PAGE_SIZE + PAGE_SIZE * INITIAL_PAGE_OFFSET,
+    data: genItemData(100),
     debug: false,
     horizontal: false,
     inverted: false,
@@ -105,9 +91,6 @@ class FlatListExample extends React.PureComponent<Props, State> {
     onPressDisabled: false,
     textSelectable: true,
     isRTL: IS_RTL,
-    maintainVisibleContentPosition: true,
-    previousLoading: false,
-    nextLoading: false,
     // [macOS
     enableSelectionOnKeyPress: false,
     focusable: true,
@@ -163,12 +146,14 @@ class FlatListExample extends React.PureComponent<Props, State> {
     const filteredData = this.state.data.filter(filter);
     const flatListItemRendererProps = this._renderItemComponent();
     return (
-      <RNTesterPage noScroll={true} title="Simple list of items">
+      <RNTesterPage
+        noSpacer={true}
+        noScroll={true}
+        title="Simple list of items">
         <View style={styles.container}>
           <View style={styles.searchRow}>
             <View style={styles.options}>
               <PlainInput
-                testID="search_bar_flat_list"
                 onChangeText={this._onChangeFilterText}
                 placeholder="Search..."
                 value={this.state.filterText}
@@ -234,11 +219,6 @@ class FlatListExample extends React.PureComponent<Props, State> {
                 this.state.isRTL,
                 this._setIsRTL,
               )}
-              {renderSmallSwitchOption(
-                'Maintain content position',
-                this.state.maintainVisibleContentPosition,
-                this._setBooleanValue('maintainVisibleContentPosition'),
-              )}
               {/* [macOS  */}
               {Platform.OS === 'macos' &&
                 renderSmallSwitchOption(
@@ -285,15 +265,9 @@ class FlatListExample extends React.PureComponent<Props, State> {
             enableFocusRing={this.state.enableFocusRing}
             // macOS]
             fadingEdgeLength={this.state.fadingEdgeLength}
-            ItemSeparatorComponent={
-              this.state.horizontal ? null : ItemSeparatorComponent
-            }
-            ListHeaderComponent={
-              this.state.previousLoading ? LoadingComponent : HeaderComponent
-            }
-            ListFooterComponent={
-              this.state.nextLoading ? LoadingComponent : FooterComponent
-            }
+            ItemSeparatorComponent={ItemSeparatorComponent}
+            ListHeaderComponent={<HeaderComponent />}
+            ListFooterComponent={FooterComponent}
             ListEmptyComponent={ListEmptyComponent}
             // $FlowFixMe[missing-empty-array-annot]
             data={this.state.empty ? [] : filteredData}
@@ -312,24 +286,16 @@ class FlatListExample extends React.PureComponent<Props, State> {
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="on-drag"
             numColumns={1}
-            onStartReached={this._onStartReached}
-            initialScrollIndex={Math.floor(PAGE_SIZE / 2)}
             onEndReached={this._onEndReached}
             onRefresh={this._onRefresh}
             onScroll={
               this.state.horizontal ? this._scrollSinkX : this._scrollSinkY
             }
-            onScrollToIndexFailed={this._onScrollToIndexFailed}
             onViewableItemsChanged={this._onViewableItemsChanged}
             ref={this._captureRef}
             refreshing={false}
             contentContainerStyle={styles.list}
             viewabilityConfig={VIEWABILITY_CONFIG}
-            maintainVisibleContentPosition={
-              this.state.maintainVisibleContentPosition
-                ? {minIndexForVisible: 0}
-                : undefined
-            }
             {...flatListItemRendererProps}
           />
         </View>
@@ -350,33 +316,13 @@ class FlatListExample extends React.PureComponent<Props, State> {
   _getItemLayout = (data: any, index: number) => {
     return getItemLayout(data, index, this.state.horizontal);
   };
-  _onStartReached = () => {
-    if (this.state.first <= 0 || this.state.previousLoading) {
-      return;
-    }
-
-    this.setState({previousLoading: true});
-    setTimeout(() => {
-      this.setState(state => ({
-        previousLoading: false,
-        data: genOlderItems(PAGE_SIZE, state.first).concat(state.data),
-        first: state.first - PAGE_SIZE,
-      }));
-    }, LOAD_TIME);
-  };
   _onEndReached = () => {
-    if (this.state.last >= PAGE_SIZE * NUM_PAGES || this.state.nextLoading) {
+    if (this.state.data.length >= 1000) {
       return;
     }
-
-    this.setState({nextLoading: true});
-    setTimeout(() => {
-      this.setState(state => ({
-        nextLoading: false,
-        data: state.data.concat(genNewerItems(PAGE_SIZE, state.last)),
-        last: state.last + PAGE_SIZE,
-      }));
-    }, LOAD_TIME);
+    this.setState(state => ({
+      data: state.data.concat(genItemData(100, state.data.length)),
+    }));
   };
   // $FlowFixMe[missing-local-annot]
   _onPressCallback = () => {
@@ -414,19 +360,6 @@ class FlatListExample extends React.PureComponent<Props, State> {
         }
       : {renderItem: renderProp};
   };
-
-  _onScrollToIndexFailed = ({
-    index,
-    highestMeasuredFrameIndex,
-  }: {
-    index: number,
-    highestMeasuredFrameIndex: number,
-  }) => {
-    console.warn(
-      `failed to scroll to index: ${index} (measured up to ${highestMeasuredFrameIndex})`,
-    );
-  };
-
   // This is called when items change viewability by scrolling into or out of
   // the viewable area.
   _onViewableItemsChanged = (info: {
@@ -451,7 +384,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
 
   _pressItem = (key: string) => {
     this._listRef?.recordInteraction();
-    const index = this.state.data.findIndex(item => item.key === key);
+    const index = Number(key);
     // [macOS
     if (this.state.enableSelectionOnKeyPress) {
       this._listRef && this._listRef.selectRowAtIndex(index);

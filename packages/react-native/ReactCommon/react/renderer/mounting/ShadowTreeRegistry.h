@@ -8,12 +8,14 @@
 #pragma once
 
 #include <shared_mutex>
-#include <unordered_map>
+
+#include <butter/map.h>
 
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/mounting/ShadowTree.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Owning registry of `ShadowTree`s.
@@ -28,7 +30,7 @@ class ShadowTreeRegistry final {
    * The ownership of the instance is also transferred to the registry.
    * Can be called from any thread.
    */
-  void add(std::unique_ptr<ShadowTree>&& shadowTree) const;
+  void add(std::unique_ptr<ShadowTree> &&shadowTree) const;
 
   /*
    * Removes a `ShadowTree` instance with given `surfaceId` from the registry
@@ -49,7 +51,7 @@ class ShadowTreeRegistry final {
    */
   bool visit(
       SurfaceId surfaceId,
-      const std::function<void(const ShadowTree& shadowTree)>& callback) const;
+      std::function<void(const ShadowTree &shadowTree)> const &callback) const;
 
   /*
    * Enumerates all stored shadow trees.
@@ -57,13 +59,14 @@ class ShadowTreeRegistry final {
    * Can be called from any thread.
    */
   void enumerate(
-      const std::function<void(const ShadowTree& shadowTree, bool& stop)>&
-          callback) const;
+      std::function<void(const ShadowTree &shadowTree, bool &stop)> const
+          &callback) const;
 
  private:
   mutable std::shared_mutex mutex_;
-  mutable std::unordered_map<SurfaceId, std::unique_ptr<ShadowTree>>
+  mutable butter::map<SurfaceId, std::unique_ptr<ShadowTree>>
       registry_; // Protected by `mutex_`.
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -333,6 +333,6 @@ public class InspectorPackagerConnection {
   }
 
   public interface BundleStatusProvider {
-    BundleStatus getBundleStatus();
+    public BundleStatus getBundleStatus();
   }
 }

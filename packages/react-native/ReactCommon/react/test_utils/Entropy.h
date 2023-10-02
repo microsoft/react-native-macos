@@ -10,7 +10,8 @@
 #include <algorithm>
 #include <random>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * The source of pseudo-random numbers and some problem-oriented tools built on
@@ -68,17 +69,17 @@ class Entropy final {
   }
 
   void generateRandomValue(
-      Generator& generator,
-      bool& result,
+      Generator &generator,
+      bool &result,
       double ratio = 0.5) const {
     result = generator() % 10000 < 10000 * ratio;
   }
 
-  void generateRandomValue(Generator& generator, int& result) const {
+  void generateRandomValue(Generator &generator, int &result) const {
     result = generator();
   }
 
-  void generateRandomValue(Generator& generator, int& result, int min, int max)
+  void generateRandomValue(Generator &generator, int &result, int min, int max)
       const {
     std::uniform_int_distribution<int> distribution(min, max);
     result = distribution(generator);
@@ -105,7 +106,7 @@ class Entropy final {
     auto spreadResult = std::vector<std::vector<T>>(deviationLimit * 2);
     std::fill(spreadResult.begin(), spreadResult.end(), std::vector<T>{});
 
-    for (const auto& item : items) {
+    for (auto const &item : items) {
       auto position = int(distribution(generator_) + deviationLimit);
       position = std::max(0, std::min(position, deviationLimit * 2));
 
@@ -115,7 +116,7 @@ class Entropy final {
     }
 
     auto result = std::vector<std::vector<T>>{};
-    for (const auto& chunk : spreadResult) {
+    for (auto const &chunk : spreadResult) {
       if (chunk.size() == 0) {
         continue;
       }
@@ -130,4 +131,5 @@ class Entropy final {
   uint_fast32_t seed_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

@@ -18,21 +18,11 @@ export class Type {
   exported: ?boolean;
   experimental: ?boolean;
 
-  static create(
-    domain: string,
-    obj: any,
-    ignoreExperimental: boolean,
-    includeExperimental: Set<string>,
-  ): ?Type {
+  static create(domain: string, obj: any, ignoreExperimental: boolean): ?Type {
     let type = null;
 
     if (obj.type === 'object' && obj.properties) {
-      type = new PropsType(
-        domain,
-        obj,
-        ignoreExperimental,
-        includeExperimental,
-      );
+      type = new PropsType(domain, obj, ignoreExperimental);
     } else if (obj.type) {
       type = new PrimitiveType(domain, obj, ignoreExperimental);
     } else {
@@ -40,9 +30,7 @@ export class Type {
     }
 
     if (ignoreExperimental && type.experimental) {
-      if (!includeExperimental.has(domain + '.' + type.id)) {
-        type = null;
-      }
+      type = null;
     }
 
     return type;
@@ -94,20 +82,13 @@ export class PropsType extends Type {
   type: 'object';
   properties: Array<Property>;
 
-  constructor(
-    domain: string,
-    obj: any,
-    ignoreExperimental: boolean,
-    includeExperimental: Set<string>,
-  ) {
+  constructor(domain: string, obj: any, ignoreExperimental: boolean) {
     super(domain, obj);
     this.type = obj.type;
     this.properties = Property.createArray(
       domain,
-      obj.id,
       obj.properties || [],
       ignoreExperimental,
-      includeExperimental,
     );
   }
 

@@ -199,26 +199,14 @@ exports[`RN Codegen TypeScript Parser can generate fixture CXX_ONLY_NATIVE_MODUL
             'typeAnnotation': {
               'type': 'FunctionTypeAnnotation',
               'returnTypeAnnotation': {
-                'type': 'GenericObjectTypeAnnotation',
-                'dictionaryValueType': {
-                  'type': 'NullableTypeAnnotation',
-                  'typeAnnotation': {
-                    'type': 'NumberTypeAnnotation'
-                  }
-                }
+                'type': 'GenericObjectTypeAnnotation'
               },
               'params': [
                 {
                   'name': 'arg',
                   'optional': false,
                   'typeAnnotation': {
-                    'type': 'GenericObjectTypeAnnotation',
-                    'dictionaryValueType': {
-                      'type': 'NullableTypeAnnotation',
-                      'typeAnnotation': {
-                        'type': 'NumberTypeAnnotation'
-                      }
-                    }
+                    'type': 'GenericObjectTypeAnnotation'
                   }
                 }
               ]
@@ -230,20 +218,14 @@ exports[`RN Codegen TypeScript Parser can generate fixture CXX_ONLY_NATIVE_MODUL
             'typeAnnotation': {
               'type': 'FunctionTypeAnnotation',
               'returnTypeAnnotation': {
-                'type': 'GenericObjectTypeAnnotation',
-                'dictionaryValueType': {
-                  'type': 'StringTypeAnnotation'
-                }
+                'type': 'GenericObjectTypeAnnotation'
               },
               'params': [
                 {
                   'name': 'arg',
                   'optional': false,
                   'typeAnnotation': {
-                    'type': 'GenericObjectTypeAnnotation',
-                    'dictionaryValueType': {
-                      'type': 'StringTypeAnnotation'
-                    }
+                    'type': 'GenericObjectTypeAnnotation'
                   }
                 }
               ]

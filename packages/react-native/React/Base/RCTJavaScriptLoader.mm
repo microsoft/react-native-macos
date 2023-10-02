@@ -19,6 +19,8 @@
 
 NSString *const RCTJavaScriptLoaderErrorDomain = @"RCTJavaScriptLoaderErrorDomain";
 
+const uint32_t RCT_BYTECODE_ALIGNMENT = 4;
+
 @interface RCTSource () {
  @public
   NSURL *_url;
@@ -39,7 +41,12 @@ static RCTSource *RCTSourceCreate(NSURL *url, NSData *data, int64_t length) NS_R
 
   RCTSource *source = [RCTSource new];
   source->_url = url;
-  source->_data = data;
+  // Multipart responses may give us an unaligned view into the buffer. This ensures memory is aligned.
+  if (parseTypeFromHeader(header) == ScriptTag::MetroHBCBundle && ((long)[data bytes] % RCT_BYTECODE_ALIGNMENT)) {
+    source->_data = [[NSData alloc] initWithData:data];
+  } else {
+    source->_data = data;
+  }
   source->_length = length;
   source->_filesChangedCount = RCTSourceFilesChangedCountNotBuiltByBundler;
   return source;
@@ -49,6 +56,7 @@ static RCTSource *RCTSourceCreate(NSURL *url, NSData *data, int64_t length) NS_R
 
 @implementation RCTLoadingProgress
 
+#if DEBUG // [macOS description is a debug-only feature
 - (NSString *)description
 {
   NSMutableString *desc = [NSMutableString new];
@@ -64,6 +72,7 @@ static RCTSource *RCTSourceCreate(NSURL *url, NSData *data, int64_t length) NS_R
   [desc appendString:@"\u2026"];
   return desc;
 }
+#endif // macOS]
 
 @end
 
@@ -164,6 +173,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
 
   facebook::react::ScriptTag tag = facebook::react::parseTypeFromHeader(header);
   switch (tag) {
+    case facebook::react::ScriptTag::MetroHBCBundle:
     case facebook::react::ScriptTag::RAMBundle:
       break;
 
@@ -277,7 +287,8 @@ static void attemptAsynchronousLoadOfBundleAtURL(
         // Validate that the packager actually returned javascript.
         NSString *contentType = headers[@"Content-Type"];
         NSString *mimeType = [[contentType componentsSeparatedByString:@";"] firstObject];
-        if (![mimeType isEqualToString:@"application/javascript"] && ![mimeType isEqualToString:@"text/javascript"]) {
+        if (![mimeType isEqualToString:@"application/javascript"] && ![mimeType isEqualToString:@"text/javascript"] &&
+            ![mimeType isEqualToString:@"application/x-metro-bytecode-bundle"]) {
           NSString *description;
           if ([mimeType isEqualToString:@"application/json"]) {
             NSError *parseError;
@@ -303,17 +314,7 @@ static void attemptAsynchronousLoadOfBundleAtURL(
           return;
         }
 
-        // Prefer `Content-Location` as the canonical source URL, if given, or fall back to scriptURL.
-        NSURL *sourceURL = scriptURL;
-        NSString *contentLocationHeader = headers[@"Content-Location"];
-        if (contentLocationHeader) {
-          NSURL *contentLocationURL = [NSURL URLWithString:contentLocationHeader relativeToURL:scriptURL];
-          if (contentLocationURL) {
-            sourceURL = contentLocationURL;
-          }
-        }
-
-        RCTSource *source = RCTSourceCreate(sourceURL, data, data.length);
+        RCTSource *source = RCTSourceCreate(scriptURL, data, data.length);
         parseHeaders(headers, source);
         onComplete(nil, source);
       }

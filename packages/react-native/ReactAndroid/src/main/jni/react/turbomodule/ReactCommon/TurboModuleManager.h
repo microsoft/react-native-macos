@@ -10,7 +10,6 @@
 #include <ReactCommon/CallInvokerHolder.h>
 #include <ReactCommon/JavaTurboModule.h>
 #include <ReactCommon/LongLivedObject.h>
-#include <ReactCommon/NativeMethodCallInvokerHolder.h>
 #include <ReactCommon/RuntimeExecutor.h>
 #include <ReactCommon/TurboModule.h>
 #include <ReactCommon/TurboModuleManagerDelegate.h>
@@ -21,7 +20,8 @@
 #include <memory>
 #include <unordered_map>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class TurboModuleManager : public jni::HybridClass<TurboModuleManager> {
  public:
@@ -31,8 +31,7 @@ class TurboModuleManager : public jni::HybridClass<TurboModuleManager> {
       jni::alias_ref<jhybridobject> jThis,
       jni::alias_ref<JRuntimeExecutor::javaobject> runtimeExecutor,
       jni::alias_ref<CallInvokerHolder::javaobject> jsCallInvokerHolder,
-      jni::alias_ref<NativeMethodCallInvokerHolder::javaobject>
-          nativeMethodCallInvokerHolder,
+      jni::alias_ref<CallInvokerHolder::javaobject> nativeCallInvokerHolder,
       jni::alias_ref<TurboModuleManagerDelegate::javaobject> delegate);
   static void registerNatives();
 
@@ -41,10 +40,10 @@ class TurboModuleManager : public jni::HybridClass<TurboModuleManager> {
   jni::global_ref<TurboModuleManager::javaobject> javaPart_;
   RuntimeExecutor runtimeExecutor_;
   std::shared_ptr<CallInvoker> jsCallInvoker_;
-  std::shared_ptr<NativeMethodCallInvoker> nativeMethodCallInvoker_;
+  std::shared_ptr<CallInvoker> nativeCallInvoker_;
   jni::global_ref<TurboModuleManagerDelegate::javaobject> delegate_;
 
-  using ModuleCache =
+  using TurboModuleCache =
       std::unordered_map<std::string, std::shared_ptr<react::TurboModule>>;
 
   /**
@@ -53,19 +52,16 @@ class TurboModuleManager : public jni::HybridClass<TurboModuleManager> {
    * We need to come up with a mechanism to allow modules to specify whether
    * they want to be long-lived or short-lived.
    */
-  std::shared_ptr<ModuleCache> turboModuleCache_;
-  std::shared_ptr<ModuleCache> legacyModuleCache_;
+  std::shared_ptr<TurboModuleCache> turboModuleCache_;
 
-  void installJSIBindings(bool shouldCreateLegacyModules);
+  void installJSIBindings();
   explicit TurboModuleManager(
       jni::alias_ref<TurboModuleManager::jhybridobject> jThis,
       RuntimeExecutor runtimeExecutor,
       std::shared_ptr<CallInvoker> jsCallInvoker,
-      std::shared_ptr<NativeMethodCallInvoker> nativeMethodCallInvoker,
+      std::shared_ptr<CallInvoker> nativeCallInvoker,
       jni::alias_ref<TurboModuleManagerDelegate::javaobject> delegate);
-
-  TurboModuleProviderFunctionType createTurboModuleProvider();
-  TurboModuleProviderFunctionType createLegacyModuleProvider();
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

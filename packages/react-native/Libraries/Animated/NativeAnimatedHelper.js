@@ -28,7 +28,9 @@ import invariant from 'invariant';
 
 // TODO T69437152 @petetheheat - Delete this fork when Fabric ships to 100%.
 const NativeAnimatedModule =
-  NativeAnimatedNonTurboModule ?? NativeAnimatedTurboModule;
+  Platform.OS === 'ios' && global.RN$Bridgeless === true
+    ? NativeAnimatedTurboModule
+    : NativeAnimatedNonTurboModule;
 
 let __nativeAnimatedNodeTagCount = 1; /* used for animated nodes */
 let __nativeAnimationIdCount = 1; /* used for started animations */
@@ -423,9 +425,6 @@ const SUPPORTED_TRANSFORMS = {
   rotateY: true,
   rotateZ: true,
   perspective: true,
-  skewX: true,
-  skewY: true,
-  matrix: ReactNativeFeatureFlags.shouldUseAnimatedObjectForTransform(),
 };
 
 const SUPPORTED_INTERPOLATION_PARAMS = {
@@ -452,19 +451,19 @@ function addWhitelistedInterpolationParam(param: string): void {
 }
 
 function isSupportedColorStyleProp(prop: string): boolean {
-  return SUPPORTED_COLOR_STYLES[prop] === true;
+  return SUPPORTED_COLOR_STYLES.hasOwnProperty(prop);
 }
 
 function isSupportedStyleProp(prop: string): boolean {
-  return SUPPORTED_STYLES[prop] === true;
+  return SUPPORTED_STYLES.hasOwnProperty(prop);
 }
 
 function isSupportedTransformProp(prop: string): boolean {
-  return SUPPORTED_TRANSFORMS[prop] === true;
+  return SUPPORTED_TRANSFORMS.hasOwnProperty(prop);
 }
 
 function isSupportedInterpolationParam(param: string): boolean {
-  return SUPPORTED_INTERPOLATION_PARAMS[param] === true;
+  return SUPPORTED_INTERPOLATION_PARAMS.hasOwnProperty(param);
 }
 
 function validateTransform(
@@ -563,13 +562,10 @@ function transformDataType(value: number | string): number | string {
   if (typeof value !== 'string') {
     return value;
   }
-
-  // Normalize degrees and radians to a number expressed in radians
-  if (value.endsWith('deg')) {
+  if (/deg$/.test(value)) {
     const degrees = parseFloat(value) || 0;
-    return (degrees * Math.PI) / 180.0;
-  } else if (value.endsWith('rad')) {
-    return parseFloat(value) || 0;
+    const radians = (degrees * Math.PI) / 180.0;
+    return radians;
   } else {
     return value;
   }

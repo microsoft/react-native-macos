@@ -15,7 +15,8 @@
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * State for <Image> component.
@@ -23,9 +24,9 @@ namespace facebook::react {
 class ImageState final {
  public:
   ImageState(
-      const ImageSource& imageSource,
+      ImageSource const &imageSource,
       ImageRequest imageRequest,
-      const Float blurRadius)
+      Float const blurRadius)
       : imageSource_(imageSource),
         imageRequest_(std::make_shared<ImageRequest>(std::move(imageRequest))),
         blurRadius_(blurRadius){};
@@ -39,12 +40,12 @@ class ImageState final {
    * Exposes for reading stored `ImageRequest` object.
    * `ImageRequest` object cannot be copied or moved from `ImageLocalData`.
    */
-  const ImageRequest& getImageRequest() const;
+  ImageRequest const &getImageRequest() const;
 
   Float getBlurRadius() const;
 
 #ifdef ANDROID
-  ImageState(const ImageState& previousState, folly::dynamic data)
+  ImageState(ImageState const &previousState, folly::dynamic data)
       : blurRadius_{0} {};
 
   /*
@@ -62,7 +63,8 @@ class ImageState final {
  private:
   ImageSource imageSource_;
   std::shared_ptr<ImageRequest> imageRequest_;
-  const Float blurRadius_;
+  Float const blurRadius_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

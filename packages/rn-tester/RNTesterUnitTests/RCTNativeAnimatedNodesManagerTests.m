@@ -487,8 +487,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
   RCTResponseSenderBlock endCallback = ^(NSArray *response) {
     endCallbackCalls++;
-    NSArray *expected = @[ @{@"finished" : @YES, @"value" : @1} ];
-    XCTAssertEqualObjects(response, expected);
+    XCTAssertEqualObjects(response, @[ @{@"finished" : @YES} ]);
   };
 
   [_nodesManager startAnimatingNode:@1
@@ -716,8 +715,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
 
   RCTResponseSenderBlock endCallback = ^(NSArray *response) {
     endCallbackCalled = YES;
-    XCTAssertEqual(response.count, 1);
-    XCTAssertEqualObjects(response[0][@"finished"], @NO);
+    XCTAssertEqualObjects(response, @[ @{@"finished" : @NO} ]);
   };
 
   [_nodesManager startAnimatingNode:@404

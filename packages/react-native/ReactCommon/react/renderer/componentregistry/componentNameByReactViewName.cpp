@@ -6,7 +6,6 @@
  */
 
 #include "componentNameByReactViewName.h"
-#include <algorithm>
 
 namespace facebook::react {
 

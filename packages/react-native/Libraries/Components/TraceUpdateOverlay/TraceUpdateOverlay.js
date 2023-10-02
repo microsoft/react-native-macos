@@ -33,7 +33,10 @@ interface Agent {
   removeListener(event: $Keys<AgentEvents>, listener: () => void): void;
 }
 
-type PublicInstance = {
+type TraceNode = {
+  publicInstance?: TraceNode,
+  // TODO: remove this field when syncing the new version of the renderer from React to React Native.
+  canonical?: TraceNode,
   measure?: (
     (
       x: number,
@@ -45,16 +48,6 @@ type PublicInstance = {
     ) => void,
   ) => void,
 };
-
-type TraceNode =
-  | PublicInstance
-  | {
-      canonical?:
-        | PublicInstance // TODO: remove this variant when syncing the new version of the renderer from React to React Native.
-        | {
-            publicInstance?: PublicInstance,
-          },
-    };
 
 type ReactDevToolsGlobalHook = {
   on: (eventName: string, (agent: Agent) => void) => void,
@@ -109,14 +102,11 @@ export default function TraceUpdateOverlay(): React.Node {
 
       const newFramesToDraw: Array<Promise<Overlay>> = [];
       nodesToDraw.forEach(({node, color}) => {
-        // `canonical.publicInstance` => Fabric
+        // `publicInstance` => Fabric
         // TODO: remove this check when syncing the new version of the renderer from React to React Native.
         // `canonical` => Legacy Fabric
         // `node` => Legacy renderer
-        const component =
-          (node.canonical && node.canonical.publicInstance) ??
-          node.canonical ??
-          node;
+        const component = node.publicInstance ?? node.canonical ?? node;
         if (!component || !component.measure) {
           return;
         }

@@ -5,9 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 extern const char LegacyViewManagerInteropComponentName[] =
     "LegacyViewManagerInterop";
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

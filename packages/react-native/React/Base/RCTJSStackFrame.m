@@ -29,7 +29,7 @@
  *   at eval (native)
  *   at global (/path/to/file.js:13:5)
  */
-static NSRegularExpression *RCTJSStackFrameRegex(void)
+static NSRegularExpression *RCTJSStackFrameRegex()
 {
   static dispatch_once_t onceToken;
   static NSRegularExpression *_regex;
@@ -136,6 +136,7 @@ static NSRegularExpression *RCTJSStackFrameRegex(void)
   return stack;
 }
 
+#if DEBUG // [macOS description is a debug-only feature
 - (NSString *)description
 {
   return [NSString stringWithFormat:@"<%@: %p method name: %@; file name: %@; line: %ld; column: %ld>",
@@ -146,5 +147,6 @@ static NSRegularExpression *RCTJSStackFrameRegex(void)
                                     (long)self.lineNumber,
                                     (long)self.column];
 }
+#endif // macOS]
 
 @end

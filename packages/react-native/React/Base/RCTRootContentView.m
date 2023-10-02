@@ -8,7 +8,7 @@
 #import "RCTRootContentView.h"
 
 #import "RCTBridge.h"
-#import "RCTConstants.h" // [macOS]
+#import "RCTDeviceInfo.h" // [macOS]
 #import "RCTPerformanceLogger.h"
 #import "RCTRootView.h"
 #import "RCTRootViewInternal.h"
@@ -78,7 +78,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (nonnull NSCoder *)aDecoder)
 
 - (void)sendFrameChangedEvent:(__unused NSNotification *)notification
 {
-  [[NSNotificationCenter defaultCenter] postNotificationName:RCTRootViewFrameDidChangeNotification object:self];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  [_bridge.eventDispatcher sendDeviceEventWithName:@"didUpdateDimensions"
+                                              body:RCTExportedDimensions(self, self.bridge)];
+#pragma clang diagnostic pop
 }
 
 #endif // macOS]

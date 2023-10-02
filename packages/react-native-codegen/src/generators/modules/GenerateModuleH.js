@@ -9,10 +9,6 @@
  */
 
 'use strict';
-import type {
-  NativeModuleBaseTypeAnnotation,
-  NamedShape,
-} from '../../CodegenSchema';
 
 import type {
   Nullable,
@@ -78,11 +74,9 @@ public:
     return delegate_.get(rt, propName);
   }
 
-  static constexpr std::string_view kModuleName = "${moduleName}";
-
 protected:
   ${hasteModuleName}CxxSpec(std::shared_ptr<CallInvoker> jsInvoker)
-    : TurboModule(std::string{${hasteModuleName}CxxSpec::kModuleName}, jsInvoker),
+    : TurboModule("${moduleName}", jsInvoker),
       delegate_(static_cast<T*>(this), jsInvoker) {}
 
 private:
@@ -223,18 +217,6 @@ function createStructsString(
   resolveAlias: AliasResolver,
   enumMap: NativeModuleEnumMap,
 ): string {
-  const getCppType = (
-    v: NamedShape<Nullable<NativeModuleBaseTypeAnnotation>>,
-  ) =>
-    translatePrimitiveJSTypeToCpp(
-      moduleName,
-      v.typeAnnotation,
-      false,
-      typeName => `Unsupported type for param "${v.name}". Found: ${typeName}`,
-      resolveAlias,
-      enumMap,
-    );
-
   return Object.keys(aliasMap)
     .map(alias => {
       const value = aliasMap[alias];
@@ -243,22 +225,28 @@ function createStructsString(
       }
       const structName = `${moduleName}Base${alias}`;
       const templateParameterWithTypename = value.properties
-        .map((v, i) => `typename P${i}`)
+        .map((v, i) => 'typename P' + i)
         .join(', ');
       const templateParameter = value.properties
         .map((v, i) => 'P' + i)
         .join(', ');
-      const debugParameterConversion = value.properties
-        .map(
-          (v, i) => `  static ${getCppType(v)} ${
-            v.name
-          }ToJs(jsi::Runtime &rt, P${i} value) {
+      const paramemterConversion = value.properties
+        .map((v, i) => {
+          const translatedParam = translatePrimitiveJSTypeToCpp(
+            moduleName,
+            v.typeAnnotation,
+            false,
+            typeName =>
+              `Unsupported type for param "${v.name}". Found: ${typeName}`,
+            resolveAlias,
+            enumMap,
+          );
+          return `  static ${translatedParam} ${v.name}ToJs(jsi::Runtime &rt, P${i} value) {
     return bridging::toJs(rt, value);
-  }`,
-        )
-        .join('\n\n');
-      return `
-#pragma mark - ${structName}
+  }`;
+        })
+        .join('\n');
+      return `#pragma mark - ${structName}
 
 template <${templateParameterWithTypename}>
 struct ${structName} {
@@ -287,28 +275,28 @@ ${value.properties
   }
 
 #ifdef DEBUG
-${debugParameterConversion}
+${paramemterConversion}
 #endif
 
   static jsi::Object toJs(
-      jsi::Runtime &rt,
-      const ${structName}<${templateParameter}> &value,
-      const std::shared_ptr<CallInvoker> &jsInvoker) {
-    auto result = facebook::jsi::Object(rt);
-${value.properties
-  .map((v, i) => {
-    if (v.optional) {
-      return `    if (value.${v.name}) {
-      result.setProperty(rt, "${v.name}", bridging::toJs(rt, value.${v.name}.value(), jsInvoker));
-    }`;
-    } else {
-      return `    result.setProperty(rt, "${v.name}", bridging::toJs(rt, value.${v.name}, jsInvoker));`;
-    }
-  })
-  .join('\n')}
-    return result;
-  }
-};
+    jsi::Runtime &rt,
+    const ${structName}<${templateParameter}> &value,
+    const std::shared_ptr<CallInvoker> &jsInvoker) {
+      auto result = facebook::jsi::Object(rt);
+      ${value.properties
+        .map((v, i) => {
+          if (v.optional) {
+            return `    if (value.${v.name}) {
+            result.setProperty(rt, "${v.name}", bridging::toJs(rt, value.${v.name}.value(), jsInvoker));
+          }`;
+          } else {
+            return `    result.setProperty(rt, "${v.name}", bridging::toJs(rt, value.${v.name}, jsInvoker));`;
+          }
+        })
+        .join('\n')}
+          return result;
+        }
+      };
 
 `;
     })
@@ -350,12 +338,12 @@ enum ${enumName} { ${values} };
 
 template <>
 struct Bridging<${enumName}> {
-  static ${enumName} fromJs(jsi::Runtime &rt, ${fromValue}) {
+  static ${enumName} fromJs(jsi::Runtime &rt, ${fromValue}, const std::shared_ptr<CallInvoker> &jsInvoker) {
     ${fromValueConversion}
     ${fromCases}
   }
 
-  static ${toValue} toJs(jsi::Runtime &rt, ${enumName} value) {
+  static ${toValue} toJs(jsi::Runtime &rt, ${enumName} value, const std::shared_ptr<CallInvoker> &jsInvoker) {
     ${toCases}
   }
 };`;

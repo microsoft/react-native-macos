@@ -19,8 +19,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.common.mapbuffer.MapBuffer;
 import com.facebook.react.uimanager.PixelUtil;
-import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole;
-import com.facebook.react.uimanager.ReactAccessibilityDelegate.Role;
+import com.facebook.react.uimanager.ReactAccessibilityDelegate;
 import com.facebook.react.uimanager.ReactStylesDiffMap;
 import com.facebook.react.uimanager.ViewProps;
 import java.util.ArrayList;
@@ -52,13 +51,9 @@ public class TextAttributeProps {
   public static final short TA_KEY_TEXT_DECORATION_STYLE = 16;
   public static final short TA_KEY_TEXT_SHADOW_RADIUS = 18;
   public static final short TA_KEY_TEXT_SHADOW_COLOR = 19;
-  public static final short TA_KEY_TEXT_SHADOW_OFFSET_DX = 20;
-  public static final short TA_KEY_TEXT_SHADOW_OFFSET_DY = 21;
-  public static final short TA_KEY_IS_HIGHLIGHTED = 22;
-  public static final short TA_KEY_LAYOUT_DIRECTION = 23;
-  public static final short TA_KEY_ACCESSIBILITY_ROLE = 24;
-  public static final short TA_KEY_LINE_BREAK_STRATEGY = 25;
-  public static final short TA_KEY_ROLE = 26;
+  public static final short TA_KEY_IS_HIGHLIGHTED = 20;
+  public static final short TA_KEY_LAYOUT_DIRECTION = 21;
+  public static final short TA_KEY_ACCESSIBILITY_ROLE = 22;
 
   public static final int UNSET = -1;
 
@@ -99,15 +94,16 @@ public class TextAttributeProps {
 
   protected float mTextShadowOffsetDx = 0;
   protected float mTextShadowOffsetDy = 0;
-  protected float mTextShadowRadius = 0;
+  protected float mTextShadowRadius = 1;
   protected int mTextShadowColor = DEFAULT_TEXT_SHADOW_COLOR;
 
   protected boolean mIsUnderlineTextDecorationSet = false;
   protected boolean mIsLineThroughTextDecorationSet = false;
   protected boolean mIncludeFontPadding = true;
 
-  protected @Nullable AccessibilityRole mAccessibilityRole = null;
-  protected @Nullable Role mRole = null;
+  protected @Nullable ReactAccessibilityDelegate.AccessibilityRole mAccessibilityRole = null;
+  protected boolean mIsAccessibilityRoleSet = false;
+  protected boolean mIsAccessibilityLink = false;
 
   protected int mFontStyle = UNSET;
   protected int mFontWeight = UNSET;
@@ -202,12 +198,6 @@ public class TextAttributeProps {
         case TA_KEY_TEXT_SHADOW_COLOR:
           result.setTextShadowColor(entry.getIntValue());
           break;
-        case TA_KEY_TEXT_SHADOW_OFFSET_DX:
-          result.setTextShadowOffsetDx((float) entry.getDoubleValue());
-          break;
-        case TA_KEY_TEXT_SHADOW_OFFSET_DY:
-          result.setTextShadowOffsetDy((float) entry.getDoubleValue());
-          break;
         case TA_KEY_IS_HIGHLIGHTED:
           break;
         case TA_KEY_LAYOUT_DIRECTION:
@@ -216,9 +206,6 @@ public class TextAttributeProps {
         case TA_KEY_ACCESSIBILITY_ROLE:
           result.setAccessibilityRole(entry.getStringValue());
           break;
-        case TA_KEY_ROLE:
-          result.setRole(Role.values()[entry.getIntValue()]);
-          break;
       }
     }
 
@@ -226,6 +213,7 @@ public class TextAttributeProps {
     // setNumberOfLines
     // setColor
     // setIncludeFontPadding
+    // setTextShadowOffset
     // setTextTransform
     return result;
   }
@@ -259,7 +247,6 @@ public class TextAttributeProps {
     result.setTextTransform(getStringProp(props, PROP_TEXT_TRANSFORM));
     result.setLayoutDirection(getStringProp(props, ViewProps.LAYOUT_DIRECTION));
     result.setAccessibilityRole(getStringProp(props, ViewProps.ACCESSIBILITY_ROLE));
-    result.setRole(getStringProp(props, ViewProps.ROLE));
     return result;
   }
 
@@ -569,14 +556,6 @@ public class TextAttributeProps {
     }
   }
 
-  private void setTextShadowOffsetDx(float dx) {
-    mTextShadowOffsetDx = PixelUtil.toPixelFromDIP(dx);
-  }
-
-  private void setTextShadowOffsetDy(float dy) {
-    mTextShadowOffsetDy = PixelUtil.toPixelFromDIP(dy);
-  }
-
   public static int getLayoutDirection(@Nullable String layoutDirection) {
     int androidLayoutDirection;
     if (layoutDirection == null || "undefined".equals(layoutDirection)) {
@@ -624,23 +603,13 @@ public class TextAttributeProps {
   }
 
   private void setAccessibilityRole(@Nullable String accessibilityRole) {
-    if (accessibilityRole == null) {
-      mAccessibilityRole = null;
-    } else {
-      mAccessibilityRole = AccessibilityRole.fromValue(accessibilityRole);
+    if (accessibilityRole != null) {
+      mIsAccessibilityRoleSet = true;
+      mAccessibilityRole =
+          ReactAccessibilityDelegate.AccessibilityRole.fromValue(accessibilityRole);
+      mIsAccessibilityLink =
+          mAccessibilityRole.equals(ReactAccessibilityDelegate.AccessibilityRole.LINK);
     }
-  }
-
-  private void setRole(@Nullable String role) {
-    if (role == null) {
-      mRole = null;
-    } else {
-      mRole = Role.fromValue(role);
-    }
-  }
-
-  private void setRole(Role role) {
-    mRole = role;
   }
 
   public static int getTextBreakStrategy(@Nullable String textBreakStrategy) {

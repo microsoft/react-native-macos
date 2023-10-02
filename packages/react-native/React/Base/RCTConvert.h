@@ -75,8 +75,6 @@ typedef NSURL RCTFileURL;
 + (UIKeyboardAppearance)UIKeyboardAppearance:(id)json;
 + (UIReturnKeyType)UIReturnKeyType:(id)json;
 + (UIUserInterfaceStyle)UIUserInterfaceStyle:(id)json API_AVAILABLE(ios(12));
-+ (UIInterfaceOrientationMask)UIInterfaceOrientationMask:(NSString *)orientation;
-
 #if !TARGET_OS_TV
 + (UIDataDetectorTypes)UIDataDetectorTypes:(id)json;
 #endif

@@ -80,7 +80,7 @@ const ClassTemplate = ({
   `
 ${enums}
 ${structs}
-class ${className} final${extendClasses} {
+class JSI_EXPORT ${className} final${extendClasses} {
  public:
   ${className}() = default;
   ${className}(const PropsParserContext& context, const ${className} &sourceProps, const RawProps &rawProps);
@@ -161,7 +161,7 @@ const StructTemplate = ({
 };
 
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, ${structName} &result) {
-  auto map = (std::unordered_map<std::string, RawValue>)value;
+  auto map = (butter::map<std::string, RawValue>)value;
 
   ${fromCases}
 }
@@ -478,6 +478,7 @@ function getExtendsImports(
   const imports: Set<string> = new Set();
 
   imports.add('#include <react/renderer/core/PropsParserContext.h>');
+  imports.add('#include <jsi/jsi.h>');
 
   extendsProps.forEach(extendProps => {
     switch (extendProps.type) {

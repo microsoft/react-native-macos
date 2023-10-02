@@ -27,7 +27,7 @@ const SectionListWithEventThrottle = React.forwardRef(
           current: null | SectionList<SectionBase<$FlowFixMe>>,
           ...
         },
-  ) => <SectionList {...props} ref={ref} />,
+  ) => <SectionList scrollEventThrottle={0.0001} {...props} ref={ref} />,
 );
 
 export default (createAnimatedComponent(

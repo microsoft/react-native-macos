@@ -16,11 +16,13 @@
 
 using namespace std::placeholders;
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class Instance;
 
-} // namespace facebook::react
+}
+} // namespace facebook
 
 namespace facebook {
 namespace xplat {
@@ -73,20 +75,20 @@ class CxxModule {
 
     std::function<folly::dynamic(folly::dynamic)> syncFunc;
 
-    const char* getType() {
+    const char *getType() {
       assert(func || syncFunc);
       return func ? (isPromise ? "promise" : "async") : "sync";
     }
 
     // std::function/lambda ctors
 
-    Method(std::string aname, std::function<void()>&& afunc)
+    Method(std::string aname, std::function<void()> &&afunc)
         : name(std::move(aname)),
           callbacks(0),
           isPromise(false),
           func(std::bind(std::move(afunc))) {}
 
-    Method(std::string aname, std::function<void(folly::dynamic)>&& afunc)
+    Method(std::string aname, std::function<void(folly::dynamic)> &&afunc)
         : name(std::move(aname)),
           callbacks(0),
           isPromise(false),
@@ -94,7 +96,7 @@ class CxxModule {
 
     Method(
         std::string aname,
-        std::function<void(folly::dynamic, Callback)>&& afunc)
+        std::function<void(folly::dynamic, Callback)> &&afunc)
         : name(std::move(aname)),
           callbacks(1),
           isPromise(false),
@@ -105,7 +107,7 @@ class CxxModule {
 
     Method(
         std::string aname,
-        std::function<void(folly::dynamic, Callback, Callback)>&& afunc)
+        std::function<void(folly::dynamic, Callback, Callback)> &&afunc)
         : name(std::move(aname)),
           callbacks(2),
           isPromise(true),
@@ -113,7 +115,7 @@ class CxxModule {
 
     Method(
         std::string aname,
-        std::function<void(folly::dynamic, Callback, Callback)>&& afunc,
+        std::function<void(folly::dynamic, Callback, Callback)> &&afunc,
         AsyncTagType)
         : name(std::move(aname)),
           callbacks(2),
@@ -123,21 +125,21 @@ class CxxModule {
     // method pointer ctors
 
     template <typename T>
-    Method(std::string aname, T* t, void (T::*method)())
+    Method(std::string aname, T *t, void (T::*method)())
         : name(std::move(aname)),
           callbacks(0),
           isPromise(false),
           func(std::bind(method, t)) {}
 
     template <typename T>
-    Method(std::string aname, T* t, void (T::*method)(folly::dynamic))
+    Method(std::string aname, T *t, void (T::*method)(folly::dynamic))
         : name(std::move(aname)),
           callbacks(0),
           isPromise(false),
           func(std::bind(method, t, std::placeholders::_1)) {}
 
     template <typename T>
-    Method(std::string aname, T* t, void (T::*method)(folly::dynamic, Callback))
+    Method(std::string aname, T *t, void (T::*method)(folly::dynamic, Callback))
         : name(std::move(aname)),
           callbacks(1),
           isPromise(false),
@@ -150,7 +152,7 @@ class CxxModule {
     template <typename T>
     Method(
         std::string aname,
-        T* t,
+        T *t,
         void (T::*method)(folly::dynamic, Callback, Callback))
         : name(std::move(aname)),
           callbacks(2),
@@ -165,7 +167,7 @@ class CxxModule {
     template <typename T>
     Method(
         std::string aname,
-        T* t,
+        T *t,
         void (T::*method)(folly::dynamic, Callback, Callback),
         AsyncTagType)
         : name(std::move(aname)),
@@ -186,18 +188,18 @@ class CxxModule {
 
     Method(
         std::string aname,
-        std::function<folly::dynamic()>&& afunc,
+        std::function<folly::dynamic()> &&afunc,
         SyncTagType)
         : name(std::move(aname)),
           callbacks(0),
           isPromise(false),
-          syncFunc([afunc = std::move(afunc)](const folly::dynamic&) {
+          syncFunc([afunc = std::move(afunc)](const folly::dynamic &) {
             return afunc();
           }) {}
 
     Method(
         std::string aname,
-        std::function<folly::dynamic(folly::dynamic)>&& afunc,
+        std::function<folly::dynamic(folly::dynamic)> &&afunc,
         SyncTagType)
         : name(std::move(aname)),
           callbacks(0),

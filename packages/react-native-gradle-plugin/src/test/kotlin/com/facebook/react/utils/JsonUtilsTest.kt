@@ -21,14 +21,14 @@ class JsonUtilsTest {
   fun withInvalidJson_returnsNull() {
     val invalidJson = createJsonFile("""¯\_(ツ)_/¯""")
 
-    assertNull(JsonUtils.fromPackageJson(invalidJson))
+    assertNull(JsonUtils.fromCodegenJson(invalidJson))
   }
 
   @Test
   fun withEmptyJson_returnsEmptyObject() {
     val invalidJson = createJsonFile("""{}""")
 
-    val parsed = JsonUtils.fromPackageJson(invalidJson)
+    val parsed = JsonUtils.fromCodegenJson(invalidJson)
 
     assertNotNull(parsed)
     assertNull(parsed?.codegenConfig)
@@ -54,7 +54,7 @@ class JsonUtilsTest {
       """
                 .trimIndent())
 
-    val parsed = JsonUtils.fromPackageJson(oldJsonConfig)!!
+    val parsed = JsonUtils.fromCodegenJson(oldJsonConfig)!!
 
     assertNull(parsed.codegenConfig?.name)
     assertNull(parsed.codegenConfig?.jsSrcsDir)
@@ -82,43 +82,11 @@ class JsonUtilsTest {
       """
                 .trimIndent())
 
-    val parsed = JsonUtils.fromPackageJson(validJson)!!
+    val parsed = JsonUtils.fromCodegenJson(validJson)!!
 
     assertEquals("an awesome library", parsed.codegenConfig!!.name)
     assertEquals("../js/", parsed.codegenConfig!!.jsSrcsDir)
     assertEquals("com.awesome.library", parsed.codegenConfig!!.android!!.javaPackageName)
-  }
-
-  @Test
-  fun fromReactNativePackageJson_withInvalidJson_returnsNull() {
-    val invalidJson = createJsonFile("""¯\_(ツ)_/¯""")
-
-    assertNull(JsonUtils.fromPackageJson(invalidJson))
-  }
-
-  @Test
-  fun fromReactNativePackageJson_withEmptyJson_returnsEmptyObject() {
-    val invalidJson = createJsonFile("""{}""")
-
-    val parsed = JsonUtils.fromPackageJson(invalidJson)
-
-    assertNotNull(parsed)
-    assertNull(parsed?.version)
-  }
-
-  @Test
-  fun fromReactNativePackageJson_withValidJson_parsesJsonCorrectly() {
-    val validJson =
-        createJsonFile(
-            """
-      {
-        "version": "1000.0.0"
-      }
-      """
-                .trimIndent())
-    val parsed = JsonUtils.fromPackageJson(validJson)!!
-
-    assertEquals("1000.0.0", parsed.version)
   }
 
   private fun createJsonFile(@Language("JSON") input: String) =

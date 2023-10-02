@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <butter/map.h>
+#include <butter/small_vector.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/RawProps.h>
@@ -15,7 +17,8 @@
 #include <react/renderer/core/RawPropsPrimitives.h>
 #include <react/renderer/core/RawValue.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Specialized (to a particular type of Props) parser that provides the most
@@ -60,7 +63,7 @@ class RawPropsParser final {
   /*
    * To be used by `RawProps` only.
    */
-  void preparse(const RawProps& rawProps) const noexcept;
+  void preparse(RawProps const &rawProps) const noexcept;
 
   /*
    * Non-generic part of `prepare`.
@@ -70,21 +73,23 @@ class RawPropsParser final {
   /*
    * To be used by `RawProps` only.
    */
-  const RawValue* at(const RawProps& rawProps, const RawPropsKey& key)
+  RawValue const *at(RawProps const &rawProps, RawPropsKey const &key)
       const noexcept;
 
   /**
    * To be used by RawProps only. Value iterator functions.
    */
   void iterateOverValues(
-      const RawProps& rawProps,
-      const std::function<
-          void(RawPropsPropNameHash, const char*, RawValue const&)>& visit)
-      const;
+      RawProps const &rawProps,
+      std::function<
+          void(RawPropsPropNameHash, const char *, RawValue const &)> const
+          &visit) const;
 
-  mutable std::vector<RawPropsKey> keys_{};
+  mutable butter::small_vector<RawPropsKey, kNumberOfPropsPerComponentSoftCap>
+      keys_{};
   mutable RawPropsKeyMap nameToIndex_{};
   mutable bool ready_{false};
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

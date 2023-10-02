@@ -10,15 +10,16 @@
 #include <jsi/jsi.h>
 #include <memory>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class LayoutAnimationCallbackWrapper {
  public:
-  LayoutAnimationCallbackWrapper(jsi::Function&& callback)
+  LayoutAnimationCallbackWrapper(jsi::Function &&callback)
       : callback_(std::make_shared<jsi::Function>(std::move(callback))) {}
   LayoutAnimationCallbackWrapper() : callback_(nullptr) {}
 
-  void call(jsi::Runtime& runtime) const {
+  void call(jsi::Runtime &runtime) const {
     if (callback_) {
       callback_->call(runtime);
       callback_.reset();
@@ -29,4 +30,5 @@ class LayoutAnimationCallbackWrapper {
   mutable std::shared_ptr<jsi::Function> callback_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

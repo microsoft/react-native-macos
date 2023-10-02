@@ -11,7 +11,6 @@
 import invariant from 'assert';
 
 type NodeId = string;
-type NodeCycle = {from: NodeId, to: NodeId};
 
 class Node {
   id: NodeId;
@@ -50,10 +49,7 @@ export class Graph {
   // traverse returns all nodes in the graph reachable from the given rootIds.
   // the returned nodes are topologically sorted, with the deepest nodes
   // returned first.
-  traverse(rootIds: Array<NodeId>): {
-    nodes: Array<NodeId>,
-    cycles: Array<NodeCycle>,
-  } {
+  traverse(rootIds: Array<NodeId>): Array<NodeId> {
     // clear marks
     for (const node of this.nodes.values()) {
       node.state = 'none';
@@ -67,32 +63,28 @@ export class Graph {
       root.children.add(node);
     }
 
-    const nodes: Array<NodeId> = [];
-    const cycles: Array<NodeCycle> = [];
-    postorder(root, nodes, cycles);
+    const output: Array<NodeId> = [];
+    postorder(root, output);
 
     // remove fake root node
-    nodes.splice(-1);
+    output.splice(-1);
 
-    return {nodes: nodes, cycles: cycles};
+    return output;
   }
 }
 
-function postorder(node: Node, nodes: Array<NodeId>, cycles: Array<NodeCycle>) {
+function postorder(node: Node, output: Array<NodeId>) {
   if (node.state === 'visited') {
     return;
   }
 
+  invariant(node.state !== 'visiting', `Not a DAG: cycle involving ${node.id}`);
+
   node.state = 'visiting';
   for (const child of node.children) {
-    if (child.state === 'visiting') {
-      // This will lead to a cycle; we need to mark that and move on
-      cycles.push({from: node.id, to: child.id});
-    } else {
-      postorder(child, nodes, cycles);
-    }
+    postorder(child, output);
   }
 
   node.state = 'visited';
-  nodes.push(node.id);
+  output.push(node.id);
 }

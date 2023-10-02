@@ -11,7 +11,6 @@
 #include <react/renderer/core/EventPipe.h>
 #include <react/renderer/core/EventQueueProcessor.h>
 #include <react/renderer/core/StatePipe.h>
-#include <react/renderer/core/ValueFactoryEventPayload.h>
 
 #include <memory>
 
@@ -23,20 +22,19 @@ class EventQueueProcessorTest : public testing::Test {
     runtime_ = facebook::hermes::makeHermesRuntime();
 
     auto eventPipe = [this](
-                         jsi::Runtime& /*runtime*/,
-                         const EventTarget* /*eventTarget*/,
-                         const std::string& type,
+                         jsi::Runtime & /*runtime*/,
+                         const EventTarget * /*eventTarget*/,
+                         const std::string &type,
                          ReactEventPriority priority,
-                         const EventPayload& /*payload*/) {
+                         const ValueFactory & /*payloadFactory*/) {
       eventTypes_.push_back(type);
       eventPriorities_.push_back(priority);
     };
 
-    auto dummyEventPipeConclusion = [](jsi::Runtime& runtime) {};
-    auto dummyStatePipe = [](const StateUpdate& stateUpdate) {};
+    auto dummyStatePipe = [](StateUpdate const &stateUpdate) {};
 
-    eventProcessor_ = std::make_unique<EventQueueProcessor>(
-        eventPipe, dummyEventPipeConclusion, dummyStatePipe);
+    eventProcessor_ =
+        std::make_unique<EventQueueProcessor>(eventPipe, dummyStatePipe);
   }
 
   std::unique_ptr<facebook::hermes::HermesRuntime> runtime_;
@@ -51,7 +49,7 @@ TEST_F(EventQueueProcessorTest, singleUnspecifiedEvent) {
       *runtime_,
       {RawEvent(
           "my type",
-          std::make_shared<ValueFactoryEventPayload>(dummyValueFactory_),
+          dummyValueFactory_,
           nullptr,
           RawEvent::Category::Unspecified)});
 
@@ -65,22 +63,22 @@ TEST_F(EventQueueProcessorTest, continuousEvent) {
       *runtime_,
       {RawEvent(
            "touchStart",
-           std::make_shared<ValueFactoryEventPayload>(dummyValueFactory_),
+           dummyValueFactory_,
            nullptr,
            RawEvent::Category::ContinuousStart),
        RawEvent(
            "touchMove",
-           std::make_shared<ValueFactoryEventPayload>(dummyValueFactory_),
+           dummyValueFactory_,
            nullptr,
            RawEvent::Category::Unspecified),
        RawEvent(
            "touchEnd",
-           std::make_shared<ValueFactoryEventPayload>(dummyValueFactory_),
+           dummyValueFactory_,
            nullptr,
            RawEvent::Category::ContinuousEnd),
        RawEvent(
            "custom event",
-           std::make_shared<ValueFactoryEventPayload>(dummyValueFactory_),
+           dummyValueFactory_,
            nullptr,
            RawEvent::Category::Unspecified)});
 
@@ -105,7 +103,7 @@ TEST_F(EventQueueProcessorTest, alwaysContinuousEvent) {
       {
           RawEvent(
               "onScroll",
-              std::make_shared<ValueFactoryEventPayload>(dummyValueFactory_),
+              dummyValueFactory_,
               nullptr,
               RawEvent::Category::Continuous),
       });
@@ -122,7 +120,7 @@ TEST_F(EventQueueProcessorTest, alwaysDiscreteEvent) {
       {
           RawEvent(
               "onChange",
-              std::make_shared<ValueFactoryEventPayload>(dummyValueFactory_),
+              dummyValueFactory_,
               nullptr,
               RawEvent::Category::Discrete),
       });

@@ -20,12 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setTextStorage:(NSTextStorage *)textStorage
           contentFrame:(CGRect)contentFrame
-       descendantViews:(NSArray<RCTPlatformView *> *)descendantViews; // [macOS]
-
-/**
- * (Experimental and unused for Paper) Pointer event handlers.
- */
-@property (nonatomic, assign) RCTBubblingEventBlock onClick;
+       descendantViews:(NSArray<RCTUIView *> *)descendantViews; // [macOS]
 
 @end
 

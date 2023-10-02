@@ -21,7 +21,7 @@
 namespace facebook::react {
 
 static SharedViewProps nonFlattenedDefaultProps(
-    const ComponentDescriptor& componentDescriptor) {
+    ComponentDescriptor const &componentDescriptor) {
   folly::dynamic dynamic = folly::dynamic::object();
   dynamic["position"] = "absolute";
   dynamic["top"] = 0;
@@ -31,21 +31,18 @@ static SharedViewProps nonFlattenedDefaultProps(
   dynamic["nativeId"] = "NativeId";
   dynamic["accessible"] = true;
 
-  ContextContainer contextContainer;
-  contextContainer.insert(
-      "ReactNativeConfig", std::make_shared<EmptyReactNativeConfig>());
-
+  ContextContainer contextContainer{};
   PropsParserContext parserContext{-1, contextContainer};
 
-  return std::static_pointer_cast<const ViewProps>(
+  return std::static_pointer_cast<ViewProps const>(
       componentDescriptor.cloneProps(
           parserContext, nullptr, RawProps{dynamic}));
 }
 
 static ShadowNode::Shared makeNode(
-    const ComponentDescriptor& componentDescriptor,
+    ComponentDescriptor const &componentDescriptor,
     int tag,
-    const ShadowNode::ListOfShared& children,
+    const ShadowNode::ListOfShared &children,
     bool flattened = false) {
   auto props = flattened ? generateDefaultProps(componentDescriptor)
                          : nonFlattenedDefaultProps(componentDescriptor);
@@ -53,7 +50,7 @@ static ShadowNode::Shared makeNode(
   return componentDescriptor.createShadowNode(
       ShadowNodeFragment{
           props, std::make_shared<ShadowNode::ListOfShared>(children)},
-      componentDescriptor.createFamily({tag, SurfaceId(1), nullptr}));
+      componentDescriptor.createFamily({tag, SurfaceId(1), nullptr}, nullptr));
 }
 
 /**
@@ -67,11 +64,7 @@ static ShadowNode::Shared makeNode(
  */
 TEST(MountingTest, testReorderingInstructionGeneration) {
   auto eventDispatcher = EventDispatcher::Shared{};
-
   auto contextContainer = std::make_shared<ContextContainer>();
-  contextContainer->insert(
-      "ReactNativeConfig", std::make_shared<EmptyReactNativeConfig>());
-
   auto componentDescriptorParameters =
       ComponentDescriptorParameters{eventDispatcher, contextContainer, nullptr};
   auto viewComponentDescriptor =
@@ -79,12 +72,12 @@ TEST(MountingTest, testReorderingInstructionGeneration) {
   auto rootComponentDescriptor =
       RootComponentDescriptor(componentDescriptorParameters);
 
-  auto rootFamily =
-      rootComponentDescriptor.createFamily({Tag(1), SurfaceId(1), nullptr});
+  auto rootFamily = rootComponentDescriptor.createFamily(
+      {Tag(1), SurfaceId(1), nullptr}, nullptr);
 
   // Creating an initial root shadow node.
   auto emptyRootNode = std::const_pointer_cast<RootShadowNode>(
-      std::static_pointer_cast<const RootShadowNode>(
+      std::static_pointer_cast<RootShadowNode const>(
           rootComponentDescriptor.createShadowNode(
               ShadowNodeFragment{RootShadowNode::defaultSharedProps()},
               rootFamily)));
@@ -110,8 +103,8 @@ TEST(MountingTest, testReorderingInstructionGeneration) {
   auto childJ = makeNode(viewComponentDescriptor, 109, {});
   auto childK = makeNode(viewComponentDescriptor, 110, {});
 
-  auto family =
-      viewComponentDescriptor.createFamily({10, SurfaceId(1), nullptr});
+  auto family = viewComponentDescriptor.createFamily(
+      {10, SurfaceId(1), nullptr}, nullptr);
 
   // Construct "identical" shadow nodes: they differ only in children.
   auto shadowNodeV1 = viewComponentDescriptor.createShadowNode(
@@ -154,74 +147,74 @@ TEST(MountingTest, testReorderingInstructionGeneration) {
           childK})});
 
   // Injecting a tree into the root node.
-  auto rootNodeV1 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV1 = std::static_pointer_cast<RootShadowNode const>(
       emptyRootNode->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV1})}));
-  auto rootNodeV2 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV2 = std::static_pointer_cast<RootShadowNode const>(
       rootNodeV1->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV2})}));
-  auto rootNodeV3 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV3 = std::static_pointer_cast<RootShadowNode const>(
       rootNodeV2->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV3})}));
-  auto rootNodeV4 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV4 = std::static_pointer_cast<RootShadowNode const>(
       rootNodeV3->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV4})}));
-  auto rootNodeV5 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV5 = std::static_pointer_cast<RootShadowNode const>(
       rootNodeV4->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV5})}));
-  auto rootNodeV6 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV6 = std::static_pointer_cast<RootShadowNode const>(
       rootNodeV5->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV6})}));
-  auto rootNodeV7 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV7 = std::static_pointer_cast<RootShadowNode const>(
       rootNodeV6->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV7})}));
 
   // Layout
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV1{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV1{};
   affectedLayoutableNodesV1.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV1)
       ->layoutIfNeeded(&affectedLayoutableNodesV1);
   rootNodeV1->sealRecursive();
 
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV2{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV2{};
   affectedLayoutableNodesV2.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV2)
       ->layoutIfNeeded(&affectedLayoutableNodesV2);
   rootNodeV2->sealRecursive();
 
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV3{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV3{};
   affectedLayoutableNodesV3.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV3)
       ->layoutIfNeeded(&affectedLayoutableNodesV3);
   rootNodeV3->sealRecursive();
 
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV4{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV4{};
   affectedLayoutableNodesV4.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV4)
       ->layoutIfNeeded(&affectedLayoutableNodesV4);
   rootNodeV4->sealRecursive();
 
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV5{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV5{};
   affectedLayoutableNodesV5.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV5)
       ->layoutIfNeeded(&affectedLayoutableNodesV5);
   rootNodeV5->sealRecursive();
 
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV6{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV6{};
   affectedLayoutableNodesV6.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV6)
       ->layoutIfNeeded(&affectedLayoutableNodesV6);
@@ -364,7 +357,7 @@ TEST(MountingTest, testReorderingInstructionGeneration) {
   // The actual nodes that should be created in this transaction have a tag >
   // 105.
   EXPECT_TRUE(mutations6.size() == 25);
-  for (auto& i : mutations6) {
+  for (auto &i : mutations6) {
     if (i.type == ShadowViewMutation::Create) {
       EXPECT_TRUE(i.newChildShadowView.tag > 105);
     }
@@ -380,9 +373,6 @@ TEST(MountingTest, testReorderingInstructionGeneration) {
 TEST(MountingTest, testViewReparentingInstructionGeneration) {
   auto eventDispatcher = EventDispatcher::Shared{};
   auto contextContainer = std::make_shared<ContextContainer>();
-  contextContainer->insert(
-      "ReactNativeConfig", std::make_shared<EmptyReactNativeConfig>());
-
   auto componentDescriptorParameters =
       ComponentDescriptorParameters{eventDispatcher, contextContainer, nullptr};
   auto viewComponentDescriptor =
@@ -390,12 +380,12 @@ TEST(MountingTest, testViewReparentingInstructionGeneration) {
   auto rootComponentDescriptor =
       RootComponentDescriptor(componentDescriptorParameters);
 
-  auto rootFamily =
-      rootComponentDescriptor.createFamily({Tag(1), SurfaceId(1), nullptr});
+  auto rootFamily = rootComponentDescriptor.createFamily(
+      {Tag(1), SurfaceId(1), nullptr}, nullptr);
 
   // Creating an initial root shadow node.
   auto emptyRootNode = std::const_pointer_cast<RootShadowNode>(
-      std::static_pointer_cast<const RootShadowNode>(
+      std::static_pointer_cast<RootShadowNode const>(
           rootComponentDescriptor.createShadowNode(
               ShadowNodeFragment{RootShadowNode::defaultSharedProps()},
               rootFamily)));
@@ -422,8 +412,8 @@ TEST(MountingTest, testViewReparentingInstructionGeneration) {
   auto childJ = makeNode(viewComponentDescriptor, 109, {});
   auto childK = makeNode(viewComponentDescriptor, 110, {});
 
-  auto family =
-      viewComponentDescriptor.createFamily({10, SurfaceId(1), nullptr});
+  auto family = viewComponentDescriptor.createFamily(
+      {10, SurfaceId(1), nullptr}, nullptr);
 
   auto reparentedViewA = makeNode(
       viewComponentDescriptor,
@@ -566,58 +556,58 @@ TEST(MountingTest, testViewReparentingInstructionGeneration) {
                                                       {})})})})})})})})})})});
 
   // Injecting a tree into the root node.
-  auto rootNodeV1 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV1 = std::static_pointer_cast<RootShadowNode const>(
       emptyRootNode->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV1})}));
-  auto rootNodeV2 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV2 = std::static_pointer_cast<RootShadowNode const>(
       rootNodeV1->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV2})}));
-  auto rootNodeV3 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV3 = std::static_pointer_cast<RootShadowNode const>(
       rootNodeV2->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV3})}));
-  auto rootNodeV4 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV4 = std::static_pointer_cast<RootShadowNode const>(
       rootNodeV3->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV4})}));
-  auto rootNodeV5 = std::static_pointer_cast<const RootShadowNode>(
+  auto rootNodeV5 = std::static_pointer_cast<RootShadowNode const>(
       rootNodeV4->ShadowNode::clone(ShadowNodeFragment{
           ShadowNodeFragment::propsPlaceholder(),
           std::make_shared<ShadowNode::ListOfShared>(
               ShadowNode::ListOfShared{shadowNodeV5})}));
 
   // Layout
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV1{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV1{};
   affectedLayoutableNodesV1.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV1)
       ->layoutIfNeeded(&affectedLayoutableNodesV1);
   rootNodeV1->sealRecursive();
 
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV2{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV2{};
   affectedLayoutableNodesV2.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV2)
       ->layoutIfNeeded(&affectedLayoutableNodesV2);
   rootNodeV2->sealRecursive();
 
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV3{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV3{};
   affectedLayoutableNodesV3.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV3)
       ->layoutIfNeeded(&affectedLayoutableNodesV3);
   rootNodeV3->sealRecursive();
 
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV4{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV4{};
   affectedLayoutableNodesV4.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV4)
       ->layoutIfNeeded(&affectedLayoutableNodesV4);
   rootNodeV4->sealRecursive();
 
-  std::vector<const LayoutableShadowNode*> affectedLayoutableNodesV5{};
+  std::vector<LayoutableShadowNode const *> affectedLayoutableNodesV5{};
   affectedLayoutableNodesV5.reserve(1024);
   std::const_pointer_cast<RootShadowNode>(rootNodeV5)
       ->layoutIfNeeded(&affectedLayoutableNodesV5);

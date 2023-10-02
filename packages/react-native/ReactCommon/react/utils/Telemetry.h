@@ -10,7 +10,8 @@
 #include <chrono>
 #include <type_traits>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Represents a monotonic clock suitable for measuring intervals.
@@ -30,7 +31,7 @@ using TelemetryDuration = std::chrono::nanoseconds;
 /*
  * Represents a time point which never happens.
  */
-static const TelemetryTimePoint kTelemetryUndefinedTimePoint =
+static TelemetryTimePoint const kTelemetryUndefinedTimePoint =
     TelemetryTimePoint::max();
 
 /*
@@ -110,4 +111,5 @@ static inline int64_t telemetryDurationToMilliseconds(
       .count();
 }
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

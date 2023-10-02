@@ -19,7 +19,8 @@
 #define RN_EXPORT __attribute__((visibility("default")))
 #endif
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 class RN_EXPORT RAMBundleRegistry {
  public:
@@ -36,19 +37,20 @@ class RN_EXPORT RAMBundleRegistry {
       std::function<std::unique_ptr<JSModulesUnbundle>(std::string)> factory =
           nullptr);
 
-  RAMBundleRegistry(RAMBundleRegistry&&) = default;
-  RAMBundleRegistry& operator=(RAMBundleRegistry&&) = default;
+  RAMBundleRegistry(RAMBundleRegistry &&) = default;
+  RAMBundleRegistry &operator=(RAMBundleRegistry &&) = default;
 
   void registerBundle(uint32_t bundleId, std::string bundlePath);
   JSModulesUnbundle::Module getModule(uint32_t bundleId, uint32_t moduleId);
   virtual ~RAMBundleRegistry(){};
 
  private:
-  JSModulesUnbundle* getBundle(uint32_t bundleId) const;
+  JSModulesUnbundle *getBundle(uint32_t bundleId) const;
 
   std::function<std::unique_ptr<JSModulesUnbundle>(std::string)> m_factory;
   std::unordered_map<uint32_t, std::string> m_bundlePaths;
   std::unordered_map<uint32_t, std::unique_ptr<JSModulesUnbundle>> m_bundles;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

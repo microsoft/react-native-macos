@@ -15,15 +15,9 @@
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTConversions.h>
 #import <React/RCTUtils.h> // [macOS]
-#import <React/RCTLocalizedString.h>
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
 #import <react/renderer/components/view/ViewProps.h>
-#import <react/renderer/components/view/accessibilityPropsConversions.h>
-
-#ifdef RCT_DYNAMIC_FRAMEWORKS
-#import <React/RCTComponentViewFactory.h>
-#endif
 
 using namespace facebook::react;
 
@@ -37,17 +31,10 @@ using namespace facebook::react;
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
 }
 
-#ifdef RCT_DYNAMIC_FRAMEWORKS
-+ (void)load
-{
-  [RCTComponentViewFactory.currentComponentViewFactory registerComponentViewClass:self];
-}
-#endif
-
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-    static const auto defaultProps = std::make_shared<const ViewProps>();
+    static auto const defaultProps = std::make_shared<ViewProps const>();
     _props = defaultProps;
     _reactSubviews = [NSMutableArray new];
 #if !TARGET_OS_OSX // [macOS]
@@ -188,7 +175,7 @@ using namespace facebook::react;
   }
 }
 
-- (void)updateProps:(const Props::Shared &)props oldProps:(const Props::Shared &)oldProps
+- (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
 {
   RCTAssert(props, @"`props` must not be `null`.");
 
@@ -203,8 +190,8 @@ using namespace facebook::react;
       NSStringFromClass([self class]));
 #endif
 
-  const auto &oldViewProps = static_cast<const ViewProps &>(*_props);
-  const auto &newViewProps = static_cast<const ViewProps &>(*props);
+  auto const &oldViewProps = *std::static_pointer_cast<ViewProps const>(_props);
+  auto const &newViewProps = *std::static_pointer_cast<ViewProps const>(props);
 
   BOOL needsInvalidateLayer = NO;
 
@@ -226,6 +213,11 @@ using namespace facebook::react;
   if (oldViewProps.backgroundColor != newViewProps.backgroundColor) {
     self.backgroundColor = RCTUIColorFromSharedColor(newViewProps.backgroundColor); // [macOS]
     needsInvalidateLayer = YES;
+  }
+
+  // `foregroundColor`
+  if (oldViewProps.foregroundColor != newViewProps.foregroundColor) {
+    self.foregroundColor = RCTUIColorFromSharedColor(newViewProps.foregroundColor); // [macOS]
   }
 
   // `shadowColor`
@@ -275,11 +267,9 @@ using namespace facebook::react;
   }
 
   // `transform`
-  if ((oldViewProps.transform != newViewProps.transform ||
-       oldViewProps.transformOrigin != newViewProps.transformOrigin) &&
+  if (oldViewProps.transform != newViewProps.transform &&
       ![_propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN containsObject:@"transform"]) {
-    auto newTransform = newViewProps.resolveTransform(_layoutMetrics);
-    self.layer.transform = RCTCATransform3DFromTransformMatrix(newTransform);
+    self.layer.transform = RCTCATransform3DFromTransformMatrix(newViewProps.transform);
     self.layer.allowsEdgeAntialiasing = newViewProps.transform != Transform::Identity();
   }
 
@@ -387,24 +377,19 @@ using namespace facebook::react;
     self.accessibilityIdentifier = RCTNSStringFromString(newViewProps.testId);
   }
 
-  // `zIndex`
-  if (oldViewProps.zIndex != newViewProps.zIndex) {
-    self.layer.zPosition = newViewProps.zIndex.value_or(0);
-  }
-
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
 
-  _props = std::static_pointer_cast<const ViewProps>(props);
+  _props = std::static_pointer_cast<ViewProps const>(props);
 }
 
-- (void)updateEventEmitter:(const EventEmitter::Shared &)eventEmitter
+- (void)updateEventEmitter:(EventEmitter::Shared const &)eventEmitter
 {
-  assert(std::dynamic_pointer_cast<const ViewEventEmitter>(eventEmitter));
-  _eventEmitter = std::static_pointer_cast<const ViewEventEmitter>(eventEmitter);
+  assert(std::dynamic_pointer_cast<ViewEventEmitter const>(eventEmitter));
+  _eventEmitter = std::static_pointer_cast<ViewEventEmitter const>(eventEmitter);
 }
 
-- (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
-           oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
+- (void)updateLayoutMetrics:(LayoutMetrics const &)layoutMetrics
+           oldLayoutMetrics:(LayoutMetrics const &)oldLayoutMetrics
 {
   // Using stored `_layoutMetrics` as `oldLayoutMetrics` here to avoid
   // re-applying individual sub-values which weren't changed.
@@ -419,11 +404,6 @@ using namespace facebook::react;
 
   if (_contentView) {
     _contentView.frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
-  }
-
-  if (_props->transformOrigin.isSet()) {
-    auto newTransform = _props->resolveTransform(layoutMetrics);
-    self.layer.transform = RCTCATransform3DFromTransformMatrix(newTransform);
   }
 }
 
@@ -453,7 +433,7 @@ using namespace facebook::react;
   [super prepareForRecycle];
 
   // If view was managed by animated, its props need to align with UIView's properties.
-  const auto &props = static_cast<const ViewProps &>(*_props);
+  auto const &props = *std::static_pointer_cast<ViewProps const>(_props);
   if ([_propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN containsObject:@"transform"]) {
     self.layer.transform = RCTCATransform3DFromTransformMatrix(props.transform);
   }
@@ -587,14 +567,14 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
     return;
   }
 
-  const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
+  auto const borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
 
   // Stage 1. Shadow Path
   BOOL const layerHasShadow = layer.shadowOpacity > 0 && CGColorGetAlpha(layer.shadowColor) > 0;
   if (layerHasShadow) {
     if (CGColorGetAlpha(_backgroundColor.CGColor) > 0.999) {
       // If view has a solid background color, calculate shadow path from border.
-      const RCTCornerInsets cornerInsets =
+      RCTCornerInsets const cornerInsets =
           RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero);
       CGPathRef shadowPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, nil);
       layer.shadowPath = shadowPath;
@@ -608,7 +588,7 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
   }
 
   // Stage 2. Border Rendering
-  const bool useCoreAnimationBorderRendering =
+  bool const useCoreAnimationBorderRendering =
       borderMetrics.borderColors.isUniform() && borderMetrics.borderWidths.isUniform() &&
       borderMetrics.borderStyles.isUniform() && borderMetrics.borderRadii.isUniform() &&
       borderMetrics.borderStyles.left == BorderStyle::Solid &&
@@ -631,9 +611,9 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
     layer.borderColor = borderColor;
     CGColorRelease(borderColor);
     layer.cornerRadius = (CGFloat)borderMetrics.borderRadii.topLeft;
-
-    layer.cornerCurve = CornerCurveFromBorderCurve(borderMetrics.borderCurves.topLeft);
-
+    if (@available(iOS 13.0, *)) {
+      layer.cornerCurve = CornerCurveFromBorderCurve(borderMetrics.borderCurves.topLeft);
+    }
     layer.backgroundColor = _backgroundColor.CGColor;
   } else {
     if (!_borderLayer) {
@@ -756,7 +736,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 - (NSString *)accessibilityValue
 {
-  const auto &props = static_cast<const ViewProps &>(*_props);
+  auto const &props = *std::static_pointer_cast<ViewProps const>(_props);
 
   // Handle Switch.
 #if !TARGET_OS_OSX // [macOS]
@@ -769,58 +749,21 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   }
 #endif // [macOS]
 
-  NSMutableArray *valueComponents = [NSMutableArray new];
-  NSString *roleString = (props.role != Role::None) ? [NSString stringWithUTF8String:toString(props.role).c_str()]
-                                                    : [NSString stringWithUTF8String:props.accessibilityRole.c_str()];
-
-  // In iOS, checkbox and radio buttons aren't recognized as traits. However,
-  // because our apps use checkbox and radio buttons often, we should announce
-  // these to screenreader users.  (They should already be familiar with them
-  // from using web).
-  if ([roleString isEqualToString:@"checkbox"]) {
-    [valueComponents addObject:RCTLocalizedString("checkbox", "checkable interactive control")];
-  }
-
-  if ([roleString isEqualToString:@"radio"]) {
-    [valueComponents
-        addObject:
-            RCTLocalizedString(
-                "radio button",
-                "a checkable input that when associated with other radio buttons, only one of which can be checked at a time")];
-  }
-
   // Handle states which haven't already been handled.
   if (props.accessibilityState.checked == AccessibilityState::Checked) {
-    [valueComponents
-        addObject:RCTLocalizedString("checked", "a checkbox, radio button, or other widget which is checked")];
+    return @"checked";
   }
   if (props.accessibilityState.checked == AccessibilityState::Unchecked) {
-    [valueComponents
-        addObject:RCTLocalizedString("unchecked", "a checkbox, radio button, or other widget which is unchecked")];
+    return @"unchecked";
   }
   if (props.accessibilityState.checked == AccessibilityState::Mixed) {
-    [valueComponents
-        addObject:RCTLocalizedString(
-                      "mixed", "a checkbox, radio button, or other widget which is both checked and unchecked")];
+    return @"mixed";
   }
   if (props.accessibilityState.expanded) {
-    [valueComponents
-        addObject:RCTLocalizedString("expanded", "a menu, dialog, accordian panel, or other widget which is expanded")];
+    return @"expanded";
   }
-
   if (props.accessibilityState.busy) {
-    [valueComponents addObject:RCTLocalizedString("busy", "an element currently being updated or modified")];
-  }
-
-  // Using super.accessibilityValue:
-  // 1. to access the value that is set to accessibilityValue in updateProps
-  // 2. can't access from self.accessibilityElement because it resolves to self
-  if (super.accessibilityValue) {
-    [valueComponents addObject:super.accessibilityValue];
-  }
-
-  if (valueComponents.count > 0) {
-    return [valueComponents componentsJoinedByString:@", "];
+    return @"busy";
   }
 
   return nil;
@@ -835,14 +778,14 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 - (NSArray<UIAccessibilityCustomAction *> *)accessibilityCustomActions
 {
-  const auto &accessibilityActions = _props->accessibilityActions;
+  auto const &accessibilityActions = _props->accessibilityActions;
 
   if (accessibilityActions.empty()) {
     return nil;
   }
 
   NSMutableArray<UIAccessibilityCustomAction *> *customActions = [NSMutableArray array];
-  for (const auto &accessibilityAction : accessibilityActions) {
+  for (auto const &accessibilityAction : accessibilityActions) {
     [customActions
         addObject:[[UIAccessibilityCustomAction alloc] initWithName:RCTNSStringFromString(accessibilityAction.name)
                                                              target:self

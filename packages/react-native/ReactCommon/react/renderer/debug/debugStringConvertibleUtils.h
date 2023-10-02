@@ -16,7 +16,8 @@
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/debug/DebugStringConvertibleItem.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 #if RN_DEBUG_STRING_CONVERTIBLE
 
@@ -27,8 +28,7 @@ debugStringConvertibleItem(std::string name, T value, T defaultValue = {}) {
     return nullptr;
   }
 
-  return std::make_shared<DebugStringConvertibleItem>(
-      name, facebook::react::toString(value));
+  return std::make_shared<DebugStringConvertibleItem>(name, toString(value));
 }
 
 template <typename T>
@@ -45,8 +45,8 @@ inline SharedDebugStringConvertible debugStringConvertibleItem(
 }
 
 inline SharedDebugStringConvertibleList operator+(
-    const SharedDebugStringConvertibleList& lhs,
-    const SharedDebugStringConvertibleList& rhs) {
+    const SharedDebugStringConvertibleList &lhs,
+    const SharedDebugStringConvertibleList &rhs) {
   auto result = SharedDebugStringConvertibleList{};
   std::move(lhs.begin(), lhs.end(), std::back_inserter(result));
   std::move(rhs.begin(), rhs.end(), std::back_inserter(result));
@@ -63,4 +63,5 @@ inline SharedDebugStringConvertible debugStringConvertibleItem(
 
 #endif
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

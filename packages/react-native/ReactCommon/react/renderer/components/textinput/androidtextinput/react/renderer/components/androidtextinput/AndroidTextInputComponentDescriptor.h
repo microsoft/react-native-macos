@@ -11,15 +11,14 @@
 
 #include <fbjni/fbjni.h>
 
+#include <yoga/CompactValue.h>
 #include <yoga/YGEnums.h>
 #include <yoga/YGValue.h>
-#include <yoga/style/CompactValue.h>
-
-#include <unordered_map>
 
 #include <react/renderer/core/ConcreteComponentDescriptor.h>
 
-namespace facebook::react {
+namespace facebook {
+namespace react {
 
 /*
  * Descriptor for <AndroidTextInput> component.
@@ -28,7 +27,7 @@ class AndroidTextInputComponentDescriptor final
     : public ConcreteComponentDescriptor<AndroidTextInputShadowNode> {
  public:
   AndroidTextInputComponentDescriptor(
-      const ComponentDescriptorParameters& parameters)
+      ComponentDescriptorParameters const &parameters)
       : ConcreteComponentDescriptor<AndroidTextInputShadowNode>(parameters) {
     // Every single `AndroidTextInputShadowNode` will have a reference to
     // a shared `TextLayoutManager`.
@@ -36,17 +35,17 @@ class AndroidTextInputComponentDescriptor final
   }
 
   virtual State::Shared createInitialState(
-      const Props::Shared& props,
-      const ShadowNodeFamily::Shared& family) const override {
+      ShadowNodeFragment const &fragment,
+      ShadowNodeFamily::Shared const &family) const override {
     int surfaceId = family->getSurfaceId();
 
-    yoga::Style::Edges theme;
+    YGStyle::Edges theme;
     // TODO: figure out RTL/start/end/left/right stuff here
     if (surfaceIdToThemePaddingMap_.find(surfaceId) !=
         surfaceIdToThemePaddingMap_.end()) {
       theme = surfaceIdToThemePaddingMap_[surfaceId];
     } else {
-      const jni::global_ref<jobject>& fabricUIManager =
+      const jni::global_ref<jobject> &fabricUIManager =
           contextContainer_->at<jni::global_ref<jobject>>("FabricUIManager");
 
       auto env = jni::Environment::current();
@@ -57,7 +56,7 @@ class AndroidTextInputComponentDescriptor final
 
       if (getThemeData(
               fabricUIManager, surfaceId, defaultTextInputPaddingArray)) {
-        jfloat* defaultTextInputPadding =
+        jfloat *defaultTextInputPadding =
             env->GetFloatArrayElements(defaultTextInputPaddingArray, 0);
         theme[YGEdgeStart] = (YGValue){defaultTextInputPadding[0], YGUnitPoint};
         theme[YGEdgeEnd] = (YGValue){defaultTextInputPadding[1], YGUnitPoint};
@@ -72,8 +71,10 @@ class AndroidTextInputComponentDescriptor final
     }
 
     return std::make_shared<AndroidTextInputShadowNode::ConcreteState>(
-        std::make_shared<const AndroidTextInputState>(AndroidTextInputState(
+        std::make_shared<AndroidTextInputState const>(AndroidTextInputState(
             0,
+            {},
+            {},
             {},
             {},
             {},
@@ -85,50 +86,53 @@ class AndroidTextInputComponentDescriptor final
   }
 
  protected:
-  void adopt(ShadowNode& shadowNode) const override {
-    auto& textInputShadowNode =
-        static_cast<AndroidTextInputShadowNode&>(shadowNode);
+  void adopt(ShadowNode::Unshared const &shadowNode) const override {
+    auto textInputShadowNode =
+        std::static_pointer_cast<AndroidTextInputShadowNode>(shadowNode);
 
     // `ParagraphShadowNode` uses `TextLayoutManager` to measure text content
     // and communicate text rendering metrics to mounting layer.
-    textInputShadowNode.setTextLayoutManager(textLayoutManager_);
+    textInputShadowNode->setTextLayoutManager(textLayoutManager_);
 
-    textInputShadowNode.setContextContainer(
-        const_cast<ContextContainer*>(getContextContainer().get()));
+    textInputShadowNode->setContextContainer(
+        const_cast<ContextContainer *>(getContextContainer().get()));
 
-    int surfaceId = textInputShadowNode.getSurfaceId();
+    int surfaceId = textInputShadowNode->getSurfaceId();
     if (surfaceIdToThemePaddingMap_.find(surfaceId) !=
         surfaceIdToThemePaddingMap_.end()) {
-      yoga::Style::Edges theme = surfaceIdToThemePaddingMap_[surfaceId];
-
-      auto& textInputProps = textInputShadowNode.getConcreteProps();
+      YGStyle::Edges theme = surfaceIdToThemePaddingMap_[surfaceId];
 
       // Override padding
       // Node is still unsealed during adoption, before layout is complete
       // TODO: T62959168 account for RTL and paddingLeft when setting default
       // paddingStart, and vice-versa with paddingRight/paddingEnd.
       // For now this assumes no RTL.
-      yoga::Style::Edges result = textInputProps.yogaStyle.padding();
+      YGStyle::Edges result =
+          textInputShadowNode->getConcreteProps().yogaStyle.padding();
       bool changedPadding = false;
-      if (!textInputProps.hasPadding && !textInputProps.hasPaddingStart &&
-          !textInputProps.hasPaddingLeft &&
-          !textInputProps.hasPaddingHorizontal) {
+      if (!textInputShadowNode->getConcreteProps().hasPadding &&
+          !textInputShadowNode->getConcreteProps().hasPaddingStart &&
+          !textInputShadowNode->getConcreteProps().hasPaddingLeft &&
+          !textInputShadowNode->getConcreteProps().hasPaddingHorizontal) {
         changedPadding = true;
         result[YGEdgeStart] = theme[YGEdgeStart];
       }
-      if (!textInputProps.hasPadding && !textInputProps.hasPaddingEnd &&
-          !textInputProps.hasPaddingRight &&
-          !textInputProps.hasPaddingHorizontal) {
+      if (!textInputShadowNode->getConcreteProps().hasPadding &&
+          !textInputShadowNode->getConcreteProps().hasPaddingEnd &&
+          !textInputShadowNode->getConcreteProps().hasPaddingRight &&
+          !textInputShadowNode->getConcreteProps().hasPaddingHorizontal) {
         changedPadding = true;
         result[YGEdgeEnd] = theme[YGEdgeEnd];
       }
-      if (!textInputProps.hasPadding && !textInputProps.hasPaddingTop &&
-          !textInputProps.hasPaddingVertical) {
+      if (!textInputShadowNode->getConcreteProps().hasPadding &&
+          !textInputShadowNode->getConcreteProps().hasPaddingTop &&
+          !textInputShadowNode->getConcreteProps().hasPaddingVertical) {
         changedPadding = true;
         result[YGEdgeTop] = theme[YGEdgeTop];
       }
-      if (!textInputProps.hasPadding && !textInputProps.hasPaddingBottom &&
-          !textInputProps.hasPaddingVertical) {
+      if (!textInputShadowNode->getConcreteProps().hasPadding &&
+          !textInputShadowNode->getConcreteProps().hasPaddingBottom &&
+          !textInputShadowNode->getConcreteProps().hasPaddingVertical) {
         changedPadding = true;
         result[YGEdgeBottom] = theme[YGEdgeBottom];
       }
@@ -138,14 +142,16 @@ class AndroidTextInputComponentDescriptor final
       // paddingLeft update, we must explicitly unset paddingStart... (same with
       // paddingEnd)
       // TODO: support RTL
-      if ((textInputProps.hasPadding || textInputProps.hasPaddingLeft ||
-           textInputProps.hasPaddingHorizontal) &&
-          !textInputProps.hasPaddingStart) {
+      if ((textInputShadowNode->getConcreteProps().hasPadding ||
+           textInputShadowNode->getConcreteProps().hasPaddingLeft ||
+           textInputShadowNode->getConcreteProps().hasPaddingHorizontal) &&
+          !textInputShadowNode->getConcreteProps().hasPaddingStart) {
         result[YGEdgeStart] = YGValueUndefined;
       }
-      if ((textInputProps.hasPadding || textInputProps.hasPaddingRight ||
-           textInputProps.hasPaddingHorizontal) &&
-          !textInputProps.hasPaddingEnd) {
+      if ((textInputShadowNode->getConcreteProps().hasPadding ||
+           textInputShadowNode->getConcreteProps().hasPaddingRight ||
+           textInputShadowNode->getConcreteProps().hasPaddingHorizontal) &&
+          !textInputShadowNode->getConcreteProps().hasPaddingEnd) {
         result[YGEdgeEnd] = YGValueUndefined;
       }
 
@@ -154,15 +160,16 @@ class AndroidTextInputComponentDescriptor final
       // commit, state update, etc, will incur this cost.
       if (changedPadding) {
         // Set new props on node
-        const_cast<AndroidTextInputProps&>(textInputProps).yogaStyle.padding() =
-            result;
+        const_cast<AndroidTextInputProps &>(
+            textInputShadowNode->getConcreteProps())
+            .yogaStyle.padding() = result;
         // Communicate new props to Yoga part of the node
-        textInputShadowNode.updateYogaProps();
+        textInputShadowNode->updateYogaProps();
       }
     }
 
-    textInputShadowNode.dirtyLayout();
-    textInputShadowNode.enableMeasurement();
+    textInputShadowNode->dirtyLayout();
+    textInputShadowNode->enableMeasurement();
 
     ConcreteComponentDescriptor::adopt(shadowNode);
   }
@@ -173,8 +180,8 @@ class AndroidTextInputComponentDescriptor final
       "com/facebook/react/fabric/FabricUIManager";
 
   SharedTextLayoutManager textLayoutManager_;
-  mutable std::unordered_map<int, yoga::Style::Edges>
-      surfaceIdToThemePaddingMap_;
+  mutable butter::map<int, YGStyle::Edges> surfaceIdToThemePaddingMap_;
 };
 
-} // namespace facebook::react
+} // namespace react
+} // namespace facebook

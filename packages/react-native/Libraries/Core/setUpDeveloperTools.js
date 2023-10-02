@@ -10,7 +10,7 @@
 
 import Platform from '../Utilities/Platform';
 
-declare var console: {[string]: $FlowFixMe};
+declare var console: typeof console & {_isPolyfilled: boolean, ...};
 
 /**
  * Sets up developer tools for React Native.
@@ -74,8 +74,4 @@ if (__DEV__) {
   }
 
   require('./setUpReactRefresh');
-
-  global[
-    `${global.__METRO_GLOBAL_PREFIX__ ?? ''}__loadBundleAsync`
-  ] = require('./Devtools/loadBundleFromServer');
 }

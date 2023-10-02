@@ -13,7 +13,6 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import com.facebook.infer.annotation.Nullsafe;
 import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.common.assets.ReactFontManager;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +44,7 @@ public class ReactTypefaceUtils {
           return 900;
       }
     }
-    return ReactFontManager.TypefaceStyle.UNSET;
+    return ReactBaseTextShadowNode.UNSET;
   }
 
   public static int parseFontStyle(@Nullable String fontStyleString) {
@@ -57,7 +56,7 @@ public class ReactTypefaceUtils {
         return Typeface.NORMAL;
       }
     }
-    return ReactFontManager.TypefaceStyle.UNSET;
+    return ReactBaseTextShadowNode.UNSET;
   }
 
   public static @Nullable String parseFontVariant(@Nullable ReadableArray fontVariantArray) {
@@ -85,32 +84,6 @@ public class ReactTypefaceUtils {
             break;
           case "proportional-nums":
             features.add("'pnum'");
-            break;
-          case "common-ligatures":
-            features.add("'liga'");
-            features.add("'clig'");
-            break;
-          case "no-common-ligatures":
-            features.add("'liga' off");
-            features.add("'clig' off");
-            break;
-          case "discretionary-ligatures":
-            features.add("'dlig'");
-            break;
-          case "no-discretionary-ligatures":
-            features.add("'dlig' off");
-            break;
-          case "historical-ligatures":
-            features.add("'hlig'");
-            break;
-          case "no-historical-ligatures":
-            features.add("'hlig' off");
-            break;
-          case "contextual":
-            features.add("'calt'");
-            break;
-          case "no-contextual":
-            features.add("'calt' off");
             break;
           case "stylistic-one":
             features.add("'ss01'");
@@ -185,8 +158,7 @@ public class ReactTypefaceUtils {
       int weight,
       @Nullable String fontFamilyName,
       AssetManager assetManager) {
-    ReactFontManager.TypefaceStyle typefaceStyle =
-        new ReactFontManager.TypefaceStyle(style, weight);
+    TypefaceStyle typefaceStyle = new TypefaceStyle(style, weight);
     if (fontFamilyName == null) {
       return typefaceStyle.apply(typeface == null ? Typeface.DEFAULT : typeface);
     } else {

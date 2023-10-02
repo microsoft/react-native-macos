@@ -12,7 +12,9 @@
 #include <type_traits>
 #include "corefunctions.h"
 
-namespace facebook::yoga::vanillajni {
+namespace facebook {
+namespace yoga {
+namespace vanillajni {
 
 /**
  * ScopedGlobalRef is a sort of smart reference that allows us to control the
@@ -35,7 +37,7 @@ namespace facebook::yoga::vanillajni {
  * unexpected conversions or unexpected ownership transfer. In practice, this
  * class acts as a unique pointer where the underying JNI reference can have one
  * and just one owner. Transferring ownership is allowed but it is an explicit
- * operation (implemented via move semantics and also via explicitly API calls).
+ * operation (implemneted via move semantics and also via explicity API calls).
  *
  * Note that this class doesn't receive an explicit JNIEnv at construction time.
  * At destruction time it uses vanillajni::getCurrentEnv() to retrieve the
@@ -56,7 +58,7 @@ class ScopedGlobalRef {
           std::is_same<T, jbooleanArray>(),
       "ScopedGlobalRef instantiated for invalid type");
 
- public:
+public:
   /**
    * Constructs a ScopedGlobalRef with a JNI global reference.
    *
@@ -82,9 +84,7 @@ class ScopedGlobalRef {
     return *this;
   }
 
-  ~ScopedGlobalRef() {
-    reset();
-  }
+  ~ScopedGlobalRef() { reset(); }
 
   /**
    * Deletes the currently held reference and reassigns a new one to the
@@ -113,21 +113,17 @@ class ScopedGlobalRef {
   /**
    * Returns the underlying JNI global reference.
    */
-  T get() const {
-    return mGlobalRef;
-  }
+  T get() const { return mGlobalRef; }
 
   /**
    * Returns true if the underlying JNI reference is not NULL.
    */
-  operator bool() const {
-    return mGlobalRef != NULL;
-  }
+  operator bool() const { return mGlobalRef != NULL; }
 
   ScopedGlobalRef(const ScopedGlobalRef& ref) = delete;
   ScopedGlobalRef& operator=(const ScopedGlobalRef& other) = delete;
 
- private:
+private:
   T mGlobalRef;
 };
 
@@ -136,4 +132,6 @@ ScopedGlobalRef<T> make_global_ref(T globalRef) {
   return ScopedGlobalRef<T>(globalRef);
 }
 
-} // namespace facebook::yoga::vanillajni
+} // namespace vanillajni
+} // namespace yoga
+} // namespace facebook

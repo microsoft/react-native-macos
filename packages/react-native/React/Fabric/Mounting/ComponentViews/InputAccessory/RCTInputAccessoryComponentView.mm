@@ -109,10 +109,10 @@ static RCTUIView<RCTBackedTextInputViewProtocol> *_Nullable RCTFindTextInputWith
   [childComponentView removeFromSuperview];
 }
 
-- (void)updateProps:(const Props::Shared &)props oldProps:(const Props::Shared &)oldProps
+- (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
 {
-  const auto &oldInputAccessoryProps = static_cast<const InputAccessoryProps &>(*_props);
-  const auto &newInputAccessoryProps = static_cast<const InputAccessoryProps &>(*props);
+  auto const &oldInputAccessoryProps = *std::static_pointer_cast<InputAccessoryProps const>(_props);
+  auto const &newInputAccessoryProps = *std::static_pointer_cast<InputAccessoryProps const>(props);
 
   if (newInputAccessoryProps.backgroundColor != oldInputAccessoryProps.backgroundColor) {
     _contentView.backgroundColor = RCTUIColorFromSharedColor(newInputAccessoryProps.backgroundColor);
@@ -135,8 +135,8 @@ static RCTUIView<RCTBackedTextInputViewProtocol> *_Nullable RCTFindTextInputWith
   }
 }
 
-- (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
-           oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
+- (void)updateLayoutMetrics:(LayoutMetrics const &)layoutMetrics
+           oldLayoutMetrics:(LayoutMetrics const &)oldLayoutMetrics
 {
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
 
