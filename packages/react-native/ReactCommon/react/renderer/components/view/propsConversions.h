@@ -244,26 +244,32 @@ static inline yoga::Style convertRawProp(
       sourceValue.padding(),
       yogaStyle.padding());
 
-  yogaStyle.gap()[YGGutterRow] = convertRawProp(
-      context,
-      rawProps,
-      "rowGap",
-      sourceValue.gap()[YGGutterRow],
-      yogaStyle.gap()[YGGutterRow]);
+  yogaStyle.setGap(
+      YGGutterRow,
+      convertRawProp(
+          context,
+          rawProps,
+          "rowGap",
+          sourceValue.gap(YGGutterRow),
+          yogaStyle.gap(YGGutterRow)));
 
-  yogaStyle.gap()[YGGutterColumn] = convertRawProp(
-      context,
-      rawProps,
-      "columnGap",
-      sourceValue.gap()[YGGutterColumn],
-      yogaStyle.gap()[YGGutterColumn]);
+  yogaStyle.setGap(
+      YGGutterColumn,
+      convertRawProp(
+          context,
+          rawProps,
+          "columnGap",
+          sourceValue.gap(YGGutterColumn),
+          yogaStyle.gap(YGGutterColumn)));
 
-  yogaStyle.gap()[YGGutterAll] = convertRawProp(
-      context,
-      rawProps,
-      "gap",
-      sourceValue.gap()[YGGutterAll],
-      yogaStyle.gap()[YGGutterAll]);
+  yogaStyle.setGap(
+      YGGutterAll,
+      convertRawProp(
+          context,
+          rawProps,
+          "gap",
+          sourceValue.gap(YGGutterAll),
+          yogaStyle.gap(YGGutterAll)));
 
   yogaStyle.border() = convertRawProp(
       context,
@@ -274,54 +280,54 @@ static inline yoga::Style convertRawProp(
       yogaStyle.border());
 
   yogaStyle.setDimension(
-      YGDimensionWidth,
+      yoga::Dimension::Width,
       convertRawProp(
           context,
           rawProps,
           "width",
-          sourceValue.dimension(YGDimensionWidth),
+          sourceValue.dimension(yoga::Dimension::Width),
           {}));
   yogaStyle.setDimension(
-      YGDimensionHeight,
+      yoga::Dimension::Height,
       convertRawProp(
           context,
           rawProps,
           "height",
-          sourceValue.dimension(YGDimensionHeight),
+          sourceValue.dimension(yoga::Dimension::Height),
           {}));
 
   yogaStyle.setMinDimension(
-      YGDimensionWidth,
+      yoga::Dimension::Width,
       convertRawProp(
           context,
           rawProps,
           "minWidth",
-          sourceValue.minDimension(YGDimensionWidth),
+          sourceValue.minDimension(yoga::Dimension::Width),
           {}));
   yogaStyle.setMinDimension(
-      YGDimensionHeight,
+      yoga::Dimension::Height,
       convertRawProp(
           context,
           rawProps,
           "minHeight",
-          sourceValue.minDimension(YGDimensionHeight),
+          sourceValue.minDimension(yoga::Dimension::Height),
           {}));
 
   yogaStyle.setMaxDimension(
-      YGDimensionWidth,
+      yoga::Dimension::Width,
       convertRawProp(
           context,
           rawProps,
           "maxWidth",
-          sourceValue.maxDimension(YGDimensionWidth),
+          sourceValue.maxDimension(yoga::Dimension::Width),
           {}));
   yogaStyle.setMaxDimension(
-      YGDimensionHeight,
+      yoga::Dimension::Height,
       convertRawProp(
           context,
           rawProps,
           "maxHeight",
-          sourceValue.maxDimension(YGDimensionHeight),
+          sourceValue.maxDimension(yoga::Dimension::Height),
           {}));
 
   yogaStyle.aspectRatio() = convertRawProp(
