@@ -16,6 +16,10 @@
 #import <react/utils/ManagedObjectWrapper.h>
 #import "RCTLegacyViewManagerInteropCoordinatorAdapter.h"
 
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTView.h>
+#endif // macOS]
+
 using namespace facebook::react;
 
 static NSString *const kRCTLegacyInteropChildComponentKey = @"childComponentView";
@@ -210,8 +214,14 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
   };
 
   if (!_adapter) {
+#if !TARGET_OS_OSX // [macOS]
     _adapter = [[RCTLegacyViewManagerInteropCoordinatorAdapter alloc] initWithCoordinator:[self _coordinator]
                                                                                  reactTag:self.tag];
+#else // [macOS
+    _adapter = [[RCTLegacyViewManagerInteropCoordinatorAdapter alloc] initWithCoordinator:[self _coordinator]
+                                                                                 reactTag:self.reactTag.integerValue];
+#endif // macOS]
+
     _adapter.eventInterceptor = ^(std::string eventName, folly::dynamic event) {
       if (weakSelf) {
         __typeof(self) strongSelf = weakSelf;
