@@ -56,6 +56,6 @@ Pod::Spec.new do |s|
 
   s.dependency "RCT-Folly", folly_version
   s.dependency "DoubleConversion"
-  s.dependency 'fmt' , '~> 6.2.1'
+  s.dependency "fmt", "9.1.0"
   add_dependency(s, "React-debug")
 end

@@ -9,24 +9,24 @@ PODS:
     - React-Core (= 0.73.8)
     - React-jsi (= 0.73.8)
     - ReactCommon/turbomodule/core (= 0.73.8)
-  - fmt (6.2.1)
+  - fmt (9.1.0)
   - glog (0.3.5)
-  - OCMock (3.9.1)
+  - OCMock (3.9.3)
   - RCT-Folly (2022.05.16.00):
     - boost
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Default (= 2022.05.16.00)
   - RCT-Folly/Default (2022.05.16.00):
     - boost
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
   - RCT-Folly/Fabric (2022.05.16.00):
     - boost
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
   - RCTRequired (0.73.8)
   - RCTTypeSafety (0.73.8):
@@ -272,7 +272,7 @@ PODS:
   - React-cxxreact (0.73.8):
     - boost (= 1.83.0)
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-callinvoker (= 0.73.8)
@@ -285,7 +285,7 @@ PODS:
   - React-debug (0.73.8)
   - React-Fabric (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -318,7 +318,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/animations (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -337,7 +337,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/attributedstring (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -356,7 +356,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/componentregistry (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -375,7 +375,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/componentregistrynative (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -394,7 +394,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -424,7 +424,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/inputaccessory (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -443,7 +443,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/legacyviewmanagerinterop (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -462,7 +462,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/modal (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -481,7 +481,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/rncore (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -500,7 +500,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/root (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -519,7 +519,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/safeareaview (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -538,7 +538,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/scrollview (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -557,7 +557,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/text (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -576,7 +576,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/textinput (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -595,7 +595,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/unimplementedview (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -614,7 +614,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/components/view (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -634,7 +634,7 @@ PODS:
     - Yoga
   - React-Fabric/core (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -653,7 +653,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/imagemanager (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -672,7 +672,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/leakchecker (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -691,7 +691,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/mounting (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -710,7 +710,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/scheduler (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -729,7 +729,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/telemetry (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -748,7 +748,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/templateprocessor (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -767,7 +767,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/textlayoutmanager (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -787,7 +787,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-Fabric/uimanager (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired
@@ -806,7 +806,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - React-FabricImage (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Fabric (= 2022.05.16.00)
     - RCTRequired (= 0.73.8)
@@ -849,12 +849,12 @@ PODS:
   - React-jsi (0.73.8):
     - boost (= 1.83.0)
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2022.05.16.00)
   - React-jsiexecutor (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-cxxreact (= 0.73.8)
@@ -986,7 +986,7 @@ PODS:
     - ReactCommon
   - React-rendererdebug (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - RCT-Folly (= 2022.05.16.00)
     - React-debug
   - React-rncore (0.73.8)
@@ -1012,7 +1012,7 @@ PODS:
     - ReactCommon/turbomodule (= 0.73.8)
   - ReactCommon-Samples (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - RCT-Folly
     - React-Codegen
     - React-Core
@@ -1023,7 +1023,7 @@ PODS:
     - ReactCommon
   - ReactCommon/turbomodule (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-callinvoker (= 0.73.8)
@@ -1035,7 +1035,7 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.73.8)
   - ReactCommon/turbomodule/bridging (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-callinvoker (= 0.73.8)
@@ -1045,7 +1045,7 @@ PODS:
     - React-perflogger (= 0.73.8)
   - ReactCommon/turbomodule/core (0.73.8):
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-callinvoker (= 0.73.8)
@@ -1065,6 +1065,7 @@ DEPENDENCIES:
   - DoubleConversion (from `../react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../react-native/React/FBReactNativeSpec`)
+  - fmt (from `../react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../react-native/third-party-podspecs/glog.podspec`)
   - OCMock (~> 3.9.1)
   - RCT-Folly (from `../react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1114,13 +1115,12 @@ DEPENDENCIES:
   - ReactCommon-Samples (from `../react-native/ReactCommon/react/nativemodule/samples`)
   - ReactCommon/turbomodule/core (from `../react-native/ReactCommon`)
   - ScreenshotManager (from `NativeModuleExample`)
+  - SocketRocket (from `../react-native/third-party-podspecs/SocketRocket.podspec`)
   - Yoga (from `../react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
-    - fmt
     - OCMock
-    - SocketRocket
 
 EXTERNAL SOURCES:
   boost:
@@ -1131,6 +1131,8 @@ EXTERNAL SOURCES:
     :path: "../react-native/Libraries/FBLazyVector"
   FBReactNativeSpec:
     :path: "../react-native/React/FBReactNativeSpec"
+  fmt:
+    :podspec: "../react-native/third-party-podspecs/fmt.podspec"
   glog:
     :podspec: "../react-native/third-party-podspecs/glog.podspec"
   RCT-Folly:
@@ -1223,6 +1225,8 @@ EXTERNAL SOURCES:
     :path: "../react-native/ReactCommon/react/nativemodule/samples"
   ScreenshotManager:
     :path: NativeModuleExample
+  SocketRocket:
+    :podspec: "../react-native/third-party-podspecs/SocketRocket.podspec"
   Yoga:
     :path: "../react-native/ReactCommon/yoga"
 
@@ -1231,10 +1235,10 @@ SPEC CHECKSUMS:
   DoubleConversion: 56bb181dd9093360c7cd027b592155b7f33eeb61
   FBLazyVector: 0526cb6f8535f95130720d69bc9ed625be392b94
   FBReactNativeSpec: cd81035e922b6c558728ad81e954ebad953c69d6
-  fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
+  fmt: bfe4e820dd96e7fde9e51e956fcdee44bd6df114
   glog: 905b36b53c03b6e3afad8c8868237e84df8e17c4
-  OCMock: 9491e4bec59e0b267d52a9184ff5605995e74be8
-  RCT-Folly: 270f9eebb5a7d757382d0438ea993e4d7aa85932
+  OCMock: 300b1b1b9155cb6378660b981c2557448830bdc6
+  RCT-Folly: 7dd80816b9d4820bcad26a2e62c19c2b557531a6
   RCTRequired: d3c6c7e483814fa538965961499b6539f8fc65fb
   RCTTypeSafety: 51632b725fe364e6663325185df8e87f1c4cf18e
   React: ab2b70e44e127aa2d76c43cabf7039796adfb2d8
@@ -1242,16 +1246,16 @@ SPEC CHECKSUMS:
   React-Codegen: 630bb8ebbeba4368e8763bdb2d4fe89d5f9b115f
   React-Core: 8524c3b04d093a652177cd8e3ce98fbafe7f5929
   React-CoreModules: fbed4f81a6ca4b23e285456210084fec3e83612c
-  React-cxxreact: 83c4f8266822e130a2898f5f697dfa2d6e8b64b9
+  React-cxxreact: 4f59d91c959ed81c37cf3eee6fd956767d6950dd
   React-debug: 62efeb8c8455801fb5548081d9934dcb08e410f0
-  React-Fabric: 12827fdc2953a7d14640170b1a4f0921c0259d9a
-  React-FabricImage: 44be1ad74c7db27dcd82f01706f3629c9588eeeb
+  React-Fabric: 78c64258d71f0f2b89dc329f83d045ff95998806
+  React-FabricImage: a0dce2f4bd4427d8d42ab5ae2200c36001f9a2e2
   React-graphics: d6b03b35c595ec5c27a8721d4eff18440c8258a5
   React-ImageManager: 4ce7edc9774c1d670c0c0086d43978f78987ce47
   React-jsc: 5bef2b51e334b76481f7c74d1e93152860c0fe13
   React-jserrorhandler: b1aca6af6b43053b3a2ff9d609bdce8e5fbb7ba8
-  React-jsi: 34d5c83c2f058346aa3e9cad8b17bff577584b1d
-  React-jsiexecutor: a4f7403040508c1eb680cb2f2e7a0fb2335b9ee4
+  React-jsi: 48727cce9043163a39b15aecfd604f021f9457a3
+  React-jsiexecutor: 3aee1b1b9df12d62e4c4db0739a5ba595fd11366
   React-jsinspector: 0a36e5d5ace0e7494208a8dbb49e322b9e17f471
   React-logger: e5f66818947c9628d7fee559d385fc81d61f1da2
   React-Mapbuffer: fae35991bccb1ffa6b64135a14637545c2930155
@@ -1271,15 +1275,15 @@ SPEC CHECKSUMS:
   React-RCTTest: 33510f150bb71034d27d05aab1d4eaf615c78b6e
   React-RCTText: 1cb1684a4638be1bd1a3312fa64a8d35464d4cdc
   React-RCTVibration: f38d5241dcffd547938c16feeed125d171f07e9b
-  React-rendererdebug: c3358c2a4a83257dfb2561af17e52350bd2ed7a3
+  React-rendererdebug: 325ff79e4e5a3dfc58b5a2ee0ff972aedc0a72ec
   React-rncore: edaebc61f9fe2e200f5e5a6664acf7e1b7b699df
   React-runtimeexecutor: 5d60e5fb0bea1509ecb9757f013b345ecc37d49b
   React-runtimescheduler: acc91de6b5304ed736046e2d5df036b99e66a4ca
   React-utils: 01ecd50ae73a7e5275cb2c3298e650cc31bf5d5e
-  ReactCommon: 9abb67e5dcdbc3fd2e5f0c776497f0bb459b4783
-  ReactCommon-Samples: 9f8d7da03e60688461eaca8dd797a29b3d33547f
+  ReactCommon: 36af1328f0f0ecd9054f2178484bf85a791cb853
+  ReactCommon-Samples: 5179bb2b0fff5fb1d7edd3c7a538ca963817944e
   ScreenshotManager: b7521db0bb38052cee55c7fa9811ce55081f4055
-  SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
+  SocketRocket: 0c8713b5fd6abddb949e9ad04a7f320274f6e105
   Yoga: addc2976fa66271744ce0c3dbe4b43d5de2043a3
 
 PODFILE CHECKSUM: cfeda206bf8917b64b065521c6c7f81321a8f25b
