@@ -9,19 +9,19 @@ PODS:
     - React-Core (= 0.72.14)
     - React-jsi (= 0.72.14)
     - ReactCommon/turbomodule/core (= 0.72.14)
-  - fmt (6.2.1)
+  - fmt (9.1.0)
   - glog (0.3.5)
-  - OCMock (3.9.1)
+  - OCMock (3.9.3)
   - RCT-Folly (2021.07.22.00):
     - boost
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly/Default (= 2021.07.22.00)
   - RCT-Folly/Default (2021.07.22.00):
     - boost
     - DoubleConversion
-    - fmt (~> 6.2.1)
+    - fmt (= 9.1.0)
     - glog
   - RCTRequired (0.72.14)
   - RCTTypeSafety (0.72.14):
@@ -266,6 +266,7 @@ PODS:
   - React-cxxreact (0.72.14):
     - boost (= 1.76.0)
     - DoubleConversion
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2021.07.22.00)
     - React-callinvoker (= 0.72.14)
@@ -284,10 +285,12 @@ PODS:
   - React-jsi (0.72.14):
     - boost (= 1.76.0)
     - DoubleConversion
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2021.07.22.00)
   - React-jsiexecutor (0.72.14):
     - DoubleConversion
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2021.07.22.00)
     - React-cxxreact (= 0.72.14)
@@ -405,6 +408,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - ReactCommon/turbomodule/bridging (0.72.14):
     - DoubleConversion
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2021.07.22.00)
     - React-callinvoker (= 0.72.14)
@@ -414,6 +418,7 @@ PODS:
     - React-perflogger (= 0.72.14)
   - ReactCommon/turbomodule/core (0.72.14):
     - DoubleConversion
+    - fmt (= 9.1.0)
     - glog
     - RCT-Folly (= 2021.07.22.00)
     - React-callinvoker (= 0.72.14)
@@ -432,6 +437,7 @@ DEPENDENCIES:
   - DoubleConversion (from `../react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../react-native/React/FBReactNativeSpec`)
+  - fmt (from `../react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../react-native/third-party-podspecs/glog.podspec`)
   - OCMock (~> 3.9.1)
   - RCT-Folly (from `../react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -471,13 +477,12 @@ DEPENDENCIES:
   - ReactCommon-Samples (from `../react-native/ReactCommon/react/nativemodule/samples`)
   - ReactCommon/turbomodule/core (from `../react-native/ReactCommon`)
   - ScreenshotManager (from `NativeModuleExample`)
+  - SocketRocket (from `../react-native/third-party-podspecs/SocketRocket.podspec`)
   - Yoga (from `../react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
-    - fmt
     - OCMock
-    - SocketRocket
 
 EXTERNAL SOURCES:
   boost:
@@ -488,6 +493,8 @@ EXTERNAL SOURCES:
     :path: "../react-native/Libraries/FBLazyVector"
   FBReactNativeSpec:
     :path: "../react-native/React/FBReactNativeSpec"
+  fmt:
+    :podspec: "../react-native/third-party-podspecs/fmt.podspec"
   glog:
     :podspec: "../react-native/third-party-podspecs/glog.podspec"
   RCT-Folly:
@@ -562,6 +569,8 @@ EXTERNAL SOURCES:
     :path: "../react-native/ReactCommon/react/nativemodule/samples"
   ScreenshotManager:
     :path: NativeModuleExample
+  SocketRocket:
+    :podspec: "../react-native/third-party-podspecs/SocketRocket.podspec"
   Yoga:
     :path: "../react-native/ReactCommon/yoga"
 
@@ -570,10 +579,10 @@ SPEC CHECKSUMS:
   DoubleConversion: acaf5db79676d2e9119015819153f0f99191de12
   FBLazyVector: 288049ecff3e9d4dbc45472ad9806ee7107d6f25
   FBReactNativeSpec: f92472dd3d7d7a61592f899d2c2dad34a34a33fd
-  fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
+  fmt: 5b727a448676142428a33049f421fa92202a0a46
   glog: 6df0a3d6e2750a50609471fd1a01fd2948d405b5
-  OCMock: 9491e4bec59e0b267d52a9184ff5605995e74be8
-  RCT-Folly: d4068a27d2141b203d46e675446351fcc3fe6b8d
+  OCMock: 300b1b1b9155cb6378660b981c2557448830bdc6
+  RCT-Folly: 7c4e3756fb6c3658e361d9bc03dc1bdb141f9216
   RCTRequired: 54ff765a2616c96e325b2ffc619b9cb5fa43112d
   RCTTypeSafety: 93648de41301fffd43492aebad61e9b627c08432
   React: c622bf9e7f72d875b783e6343bbceaaf22947d67
@@ -581,11 +590,11 @@ SPEC CHECKSUMS:
   React-Codegen: 884870dbc2d6760983f552857ddca39b3934836d
   React-Core: ec5221e3765fabd167a8d814f01dc50a18fd2cfc
   React-CoreModules: 36f02e348091fd0049b5fc3ae6471ea9d39de611
-  React-cxxreact: 1602814de180db73416ea51c79bcdb7b9ad8e4a9
+  React-cxxreact: 699ecb34a0767d430a6c7091f962ded866c3529a
   React-debug: 03f67152cc6e6c8076ffafd47293a25b7dcf675a
   React-jsc: 509dba8de93247c6479b9bb235b29a14a2df5306
-  React-jsi: e62fd46e5ff8c7a24f092ea99c7a0024d0360590
-  React-jsiexecutor: de9b97a1743ce44e1e4315b4067d0b4f43dc16f6
+  React-jsi: 1676dd387bdd1be50cca299c4636df7fa8b007cb
+  React-jsiexecutor: e6cbb7f2bf955a586041ddbd235f64bbb84f2ca2
   React-jsinspector: 6b49486408e655a5e29dfaff0fcffcdb20a0573e
   React-logger: fab7d1a4a3468a8a900b715155d30080e04001e1
   React-NativeModulesApple: e15208341807161e632353b30b42776badfede99
@@ -606,10 +615,10 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: d7e529ca7df51132f6f87e9e5e1412e291ee4ce6
   React-runtimescheduler: 1923caf10ec6307dac48cd192bc8c6d93480dbb8
   React-utils: de8d9d4a6b209b4b00b3cdf5140f06bc7e636fd9
-  ReactCommon: dc1738ce1b8030f242151ecf45af8acc62cdcf1f
+  ReactCommon: b08f02351da5586be3f0008ba2c8d58d7f445101
   ReactCommon-Samples: a3ca42d47f6ab4c55f9e9d59b3f2ceb18b120dc4
   ScreenshotManager: 84f13d11f296b960bbafd9897ba52588a42dd5ca
-  SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
+  SocketRocket: 68865697074ea9021e801d3aa9f466c52e656ca5
   Yoga: 8c3ef397bb03ad9761b37e4f9abc6e6157abdbf7
 
 PODFILE CHECKSUM: 23258155130fc3ae417bc5bb12e76438f3b9a394
