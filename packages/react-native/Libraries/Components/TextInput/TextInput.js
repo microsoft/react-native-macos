@@ -176,6 +176,9 @@ type DataDetectorTypesType =
   | 'address'
   | 'calendarEvent'
   // iOS-only
+  | 'trackingNumber'
+  | 'flightNumber'
+  | 'lookupSuggestion'
   | 'none'
   | 'all'
   // [macOS macOS-only

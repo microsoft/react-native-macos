@@ -131,12 +131,27 @@ export type SubmitKeyEvent = $ReadOnly<{|
 // macOS]
 
 type DataDetectorTypesType =
+  // iOS+macOS
   | 'phoneNumber'
   | 'link'
   | 'address'
   | 'calendarEvent'
+  // iOS-only
+  | 'trackingNumber'
+  | 'flightNumber'
+  | 'lookupSuggestion'
   | 'none'
-  | 'all';
+  | 'all'
+  // [macOS macOS-only
+  | 'ortography'
+  | 'spelling'
+  | 'grammar'
+  | 'quote'
+  | 'dash'
+  | 'replacement'
+  | 'correction'
+  | 'regularExpression'
+  | 'transitInformation'; // macOS]
 
 export type KeyboardType =
   // Cross Platform

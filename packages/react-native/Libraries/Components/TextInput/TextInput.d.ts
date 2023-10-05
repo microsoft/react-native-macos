@@ -79,13 +79,28 @@ export type EnterKeyHintTypeOptions =
   | EnterKeyHintTypeAndroid
   | EnterKeyHintTypeIOS;
 
-type DataDetectorTypes =
+type DataDetectorTypesType =
+  // iOS+macOS
   | 'phoneNumber'
   | 'link'
   | 'address'
   | 'calendarEvent'
+  // iOS-only
+  | 'trackingNumber'
+  | 'flightNumber'
+  | 'lookupSuggestion'
   | 'none'
-  | 'all';
+  | 'all'
+  // [macOS macOS-only
+  | 'ortography'
+  | 'spelling'
+  | 'grammar'
+  | 'quote'
+  | 'dash'
+  | 'replacement'
+  | 'correction'
+  | 'regularExpression'
+  | 'transitInformation'; // macOS]
 
 /**
  * DocumentSelectionState is responsible for maintaining selection information

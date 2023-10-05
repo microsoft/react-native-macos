@@ -21,6 +21,16 @@
 #import <RNTMyNativeViewComponentView.h>
 #endif
 
+#if BUNDLE_PATH
+NSString *kBundlePath = @"xplat/js/RKJSModules/EntryPoints/RNTesterTestBundle.js";
+#else
+#if !TARGET_OS_OSX // [macOS]
+NSString *kBundlePath = @"js/RNTesterApp.ios";
+#else // [macOS
+NSString *kBundlePath = @"js/RNTesterApp.macos";
+#endif // macOS]
+#endif
+
 @implementation AppDelegate
 
 #if !TARGET_OS_OSX // [macOS]
@@ -55,11 +65,7 @@
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
-#if !TARGET_OS_OSX // [macOS]
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"js/RNTesterApp.ios"];
-#else // [macOS
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"js/RNTesterApp.macos"];
-#endif
+  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:kBundlePath];
 }
 
 #if !TARGET_OS_OSX // [macOS]
@@ -161,11 +167,7 @@
 
 - (NSURL *)getBundleURL
 {
-#if !TARGET_OS_OSX // [macOS]
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"js/RNTesterApp.ios"];
-#else // [macOS
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"js/RNTesterApp.macos"];
-#endif // macOS]
+  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:kBundlePath];
 }
 #endif
 
