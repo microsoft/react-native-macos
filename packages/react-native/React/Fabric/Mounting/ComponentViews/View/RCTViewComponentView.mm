@@ -409,6 +409,13 @@ using namespace facebook::react;
     self.layer.zPosition = newViewProps.zIndex.value_or(0);
   }
 
+#if TARGET_OS_OSX // [macOS
+  // `focusable`
+  self.focusable = (bool)newViewProps.focusable;
+  // `enableFocusRing`
+  self.enableFocusRing = (bool)newViewProps.enableFocusRing;
+#endif // macOS]
+
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
 
   _props = std::static_pointer_cast<const ViewProps>(props);

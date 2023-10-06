@@ -74,6 +74,11 @@ class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
 
   LayoutConformance experimental_layoutConformance{};
 
+#ifdef TARGET_OS_OSX // [macOS
+  bool focusable{false};
+  bool enableFocusRing{false};
+#endif // macOS]
+
 #pragma mark - Convenience Methods
 
   BorderMetrics resolveBorderMetrics(const LayoutMetrics& layoutMetrics) const;
