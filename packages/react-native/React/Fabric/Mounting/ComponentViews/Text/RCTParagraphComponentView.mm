@@ -317,10 +317,10 @@ using namespace facebook::react;
   }
 }
 #else // [macOS
-- (NSView *)hitTest:(NSPoint)point
+- (NSView *)hitTest:(CGPoint)point withEvent:(NSEvent *)event
 {
   // We will forward mouse click events to the NSTextView ourselves to prevent NSTextView from swallowing events that may be handled in JS (e.g. long press).
-  NSView *hitView = [super hitTest:point];
+  NSView *hitView = [super hitTest:point withEvent:event];
   
   NSEventType eventType = NSApp.currentEvent.type;
   BOOL isMouseClickEvent = NSEvent.pressedMouseButtons > 0;
@@ -329,6 +329,11 @@ using namespace facebook::react;
   BOOL isTextViewClick = (hitView && hitView == _textView) && !isMouseMoveEvent;
   
   return isTextViewClick ? self : hitView;
+}
+
+- (NSView *)hitTest:(NSPoint)point
+{
+  return [self hitTest:point withEvent:NSApp.currentEvent];
 }
 
 - (void)mouseDown:(NSEvent *)event
