@@ -401,33 +401,19 @@ RCT_EXPORT_METHOD(requestPermissions
   // Add a listener to make sure that startObserving has been called
   [self addListener:@"remoteNotificationsRegistered"];
 
-#if !TARGET_OS_OSX // [macOS
-  UIUserNotificationType types = UIUserNotificationTypeNone;
+  UNAuthorizationOptions options = UNAuthorizationOptionNone;
 
   if (permissions.alert()) {
-    types |= UIUserNotificationTypeAlert;
+    options |= UNAuthorizationOptionAlert;
   }
   if (permissions.badge()) {
-    types |= UIUserNotificationTypeBadge;
+    options |= UNAuthorizationOptionBadge;
   }
   if (permissions.sound()) {
-    types |= UIUserNotificationTypeSound;
+    options |= UNAuthorizationOptionSound;
   }
-#else
-    NSRemoteNotificationType types = NSRemoteNotificationTypeNone;
-
-    if (permissions.alert()) {
-      types |= NSRemoteNotificationTypeAlert;
-    }
-    if (permissions.badge()) {
-      types |= NSRemoteNotificationTypeBadge;
-    }
-    if (permissions.sound()) {
-      types |= NSRemoteNotificationTypeSound;
-    }
-#endif // macOS]
   [UNUserNotificationCenter.currentNotificationCenter
-      requestAuthorizationWithOptions:types
+      requestAuthorizationWithOptions:options
                     completionHandler:^(BOOL granted, NSError *_Nullable error) {
                       if (error != NULL) {
                         reject(@"-1", @"Error - Push authorization request failed.", error);
