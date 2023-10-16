@@ -79,7 +79,7 @@ RCT_EXPORT_MODULE()
 #endif // [macOS]
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(interfaceFrameDidChange)
-                                               name:RCTRootViewFrameDidChangeNotification
+                                               name:RCTWindowFrameDidChangeNotification
                                              object:nil];
 }
 
