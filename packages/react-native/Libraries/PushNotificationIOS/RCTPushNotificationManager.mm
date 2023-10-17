@@ -235,12 +235,6 @@ RCT_EXPORT_MODULE()
   ];
 }
 
-#if !TARGET_OS_OSX // [macOS]
-+ (void)didRegisterUserNotificationSettings:(__unused UIUserNotificationSettings *)notificationSettings
-{
-}
-#endif // [macOS]
-
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
 {
   NSMutableString *hexString = [NSMutableString string];
