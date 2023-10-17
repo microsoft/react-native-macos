@@ -25,7 +25,6 @@ import com.facebook.react.modules.blob.BlobModule;
 import com.facebook.react.modules.blob.FileReaderModule;
 import com.facebook.react.modules.camera.ImageStoreManager;
 import com.facebook.react.modules.clipboard.ClipboardModule;
-import com.facebook.react.modules.devloading.DevLoadingModule;
 import com.facebook.react.modules.devtoolssettings.DevToolsSettingsManagerModule;
 import com.facebook.react.modules.dialog.DialogModule;
 import com.facebook.react.modules.fresco.FrescoModule;
@@ -73,7 +72,6 @@ import javax.inject.Provider;
       AppearanceModule.class,
       AppStateModule.class,
       BlobModule.class,
-      DevLoadingModule.class,
       FileReaderModule.class,
       ClipboardModule.class,
       DialogModule.class,
@@ -115,8 +113,6 @@ public class MainReactPackage extends TurboReactPackage implements ViewManagerOn
         return new AppStateModule(context);
       case BlobModule.NAME:
         return new BlobModule(context);
-      case DevLoadingModule.NAME:
-        return new DevLoadingModule(context);
       case FileReaderModule.NAME:
         return new FileReaderModule(context);
       case ClipboardModule.NAME:
@@ -375,7 +371,6 @@ public class MainReactPackage extends TurboReactPackage implements ViewManagerOn
             AppearanceModule.class,
             AppStateModule.class,
             BlobModule.class,
-            DevLoadingModule.class,
             FileReaderModule.class,
             ClipboardModule.class,
             DialogModule.class,
