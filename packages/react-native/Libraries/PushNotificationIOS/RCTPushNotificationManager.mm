@@ -25,86 +25,60 @@ static NSString *const kRemoteNotificationRegistrationFailed = @"RemoteNotificat
 static NSString *const kErrorUnableToRequestPermissions = @"E_UNABLE_TO_REQUEST_PERMISSIONS";
 
 #if !TARGET_OS_UIKITFORMAC
-@implementation RCTConvert (NSCalendarUnit)
-
-RCT_ENUM_CONVERTER(
-    NSCalendarUnit,
-    (@{
-      @"year" : @(NSCalendarUnitYear),
-      @"month" : @(NSCalendarUnitMonth),
-      @"week" : @(NSCalendarUnitWeekOfYear),
-      @"day" : @(NSCalendarUnitDay),
-      @"hour" : @(NSCalendarUnitHour),
-      @"minute" : @(NSCalendarUnitMinute)
-    }),
-    0,
-    integerValue)
-
-@end
 
 @interface RCTPushNotificationManager () <NativePushNotificationManagerIOSSpec>
 @property (nonatomic, strong) NSMutableDictionary *remoteNotificationCallbacks;
 @end
 
-@implementation RCTConvert (UILocalNotification)
+@implementation RCTConvert (UNNotificationContent)
 
-#if !TARGET_OS_OSX // [macOS]
-+ (UILocalNotification *)UILocalNotification:(id)json
++ (UNNotificationContent *)UNNotificationContent:(id)json
 {
   NSDictionary<NSString *, id> *details = [self NSDictionary:json];
   BOOL isSilent = [RCTConvert BOOL:details[@"isSilent"]];
-  UILocalNotification *notification = [UILocalNotification new];
-  notification.alertTitle = [RCTConvert NSString:details[@"alertTitle"]];
-  notification.fireDate = [RCTConvert NSDate:details[@"fireDate"]] ?: [NSDate date];
-  notification.alertBody = [RCTConvert NSString:details[@"alertBody"]];
-  notification.alertAction = [RCTConvert NSString:details[@"alertAction"]];
-  notification.userInfo = [RCTConvert NSDictionary:details[@"userInfo"]];
-  notification.category = [RCTConvert NSString:details[@"category"]];
-  notification.repeatInterval = [RCTConvert NSCalendarUnit:details[@"repeatInterval"]];
+  UNMutableNotificationContent *content = [UNMutableNotificationContent new];
+  content.title = [RCTConvert NSString:details[@"alertTitle"]];
+  content.body = [RCTConvert NSString:details[@"alertBody"]];
+  content.userInfo = [RCTConvert NSDictionary:details[@"userInfo"]];
+  content.categoryIdentifier = [RCTConvert NSString:details[@"category"]];
   if (details[@"applicationIconBadgeNumber"]) {
-    notification.applicationIconBadgeNumber = [RCTConvert NSInteger:details[@"applicationIconBadgeNumber"]];
+    content.badge = [RCTConvert NSNumber:details[@"applicationIconBadgeNumber"]];
   }
   if (!isSilent) {
-    notification.soundName = [RCTConvert NSString:details[@"soundName"]] ?: UILocalNotificationDefaultSoundName;
+    NSString *soundName = [RCTConvert NSString:details[@"soundName"]];
+    content.sound =
+        soundName ? [UNNotificationSound soundNamed:details[@"soundName"]] : [UNNotificationSound defaultSound];
   }
-  return notification;
+
+  return content;
 }
-#else // [macOS
-+ (NSUserNotification *)NSUserNotification:(id)json
+
++ (NSDictionary<NSString *, id> *)NSDictionaryForNotification:
+    (JS::NativePushNotificationManagerIOS::Notification &)notification
 {
-  NSDictionary<NSString *, id> *details = [self NSDictionary:json];
-  BOOL isSilent = [RCTConvert BOOL:details[@"isSilent"]];
-  NSUserNotification *notification = [NSUserNotification new];
-  notification.deliveryDate = [RCTConvert NSDate:details[@"fireDate"]] ?: [NSDate date];
-  notification.informativeText = [RCTConvert NSString:details[@"alertBody"]];
-  NSString *title = [RCTConvert NSString:details[@"alertTitle"]];
-  if (title) {
-    notification.title = title;
+  // Note: alertAction is not set, as it is no longer relevant with UNNotification
+  NSMutableDictionary *notificationDict = [NSMutableDictionary new];
+  notificationDict[@"alertTitle"] = notification.alertTitle();
+  notificationDict[@"alertBody"] = notification.alertBody();
+  notificationDict[@"userInfo"] = notification.userInfo();
+  notificationDict[@"category"] = notification.category();
+  if (notification.fireIntervalSeconds()) {
+    notificationDict[@"fireIntervalSeconds"] = @(*notification.fireIntervalSeconds());
   }
-  NSString *actionButtonTitle = [RCTConvert NSString:details[@"alertAction"]];
-  if (actionButtonTitle) {
-    notification.actionButtonTitle = actionButtonTitle;
+  if (notification.fireDate()) {
+    notificationDict[@"fireDate"] = @(*notification.fireDate());
   }
-  notification.userInfo = [RCTConvert NSDictionary:details[@"userInfo"]];
-  
-  NSCalendarUnit calendarUnit = [RCTConvert NSCalendarUnit:details[@"repeatInterval"]];
-  if (calendarUnit > 0) {
-    NSDateComponents *dateComponents = [NSDateComponents new];
-    [dateComponents setValue:1 forComponent:calendarUnit];
-    notification.deliveryRepeatInterval = dateComponents;
+  if (notification.applicationIconBadgeNumber()) {
+    notificationDict[@"applicationIconBadgeNumber"] = @(*notification.applicationIconBadgeNumber());
   }
-  if (!isSilent) {
-    notification.soundName = [RCTConvert NSString:details[@"soundName"]] ?: NSUserNotificationDefaultSoundName;
+  if (notification.isSilent()) {
+    notificationDict[@"isSilent"] = @(*notification.isSilent());
+    if ([notificationDict[@"isSilent"] isEqualToNumber:@(NO)]) {
+      notificationDict[@"soundName"] = notification.soundName();
+    }
   }
-  
-  NSString *identifier = [RCTConvert NSString:details[@"identifier"]];
-  if (identifier == nil) {
-    identifier = [[NSUUID UUID] UUIDString];
-  }
-  notification.identifier = identifier;
-  return notification;
+  return notificationDict;
 }
-#endif // macOS]
 
 @end
 
@@ -513,26 +487,16 @@ static inline NSDictionary *RCTSettingsDictForUNNotificationSettings(
 #if !TARGET_OS_OSX // [macOS]
 RCT_EXPORT_METHOD(presentLocalNotification : (JS::NativePushNotificationManagerIOS::Notification &)notification)
 {
-  NSMutableDictionary *notificationDict = [NSMutableDictionary new];
-  notificationDict[@"alertTitle"] = notification.alertTitle();
-  notificationDict[@"alertBody"] = notification.alertBody();
-  notificationDict[@"alertAction"] = notification.alertAction();
-  notificationDict[@"userInfo"] = notification.userInfo();
-  notificationDict[@"category"] = notification.category();
-  notificationDict[@"repeatInterval"] = notification.repeatInterval();
-  if (notification.fireDate()) {
-    notificationDict[@"fireDate"] = @(*notification.fireDate());
-  }
-  if (notification.applicationIconBadgeNumber()) {
-    notificationDict[@"applicationIconBadgeNumber"] = @(*notification.applicationIconBadgeNumber());
-  }
-  if (notification.isSilent()) {
-    notificationDict[@"isSilent"] = @(*notification.isSilent());
-    if ([notificationDict[@"isSilent"] isEqualToNumber:@(NO)]) {
-      notificationDict[@"soundName"] = notification.soundName();
-    }
-  }
-  [RCTSharedApplication() presentLocalNotificationNow:[RCTConvert UILocalNotification:notificationDict]];
+  NSDictionary<NSString *, id> *notificationDict = [RCTConvert NSDictionaryForNotification:notification];
+  UNNotificationContent *content = [RCTConvert UNNotificationContent:notificationDict];
+  UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:0.1
+                                                                                                  repeats:NO];
+  UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:[[NSUUID UUID] UUIDString]
+                                                                        content:content
+                                                                        trigger:trigger];
+
+  UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+  [center addNotificationRequest:request withCompletionHandler:nil];
 }
 #else // [macOS
 RCT_EXPORT_METHOD(presentLocalNotification:(NSUserNotification *)notification)
@@ -544,26 +508,30 @@ RCT_EXPORT_METHOD(presentLocalNotification:(NSUserNotification *)notification)
 #if !TARGET_OS_OSX // [macOS]
 RCT_EXPORT_METHOD(scheduleLocalNotification : (JS::NativePushNotificationManagerIOS::Notification &)notification)
 {
-  NSMutableDictionary *notificationDict = [NSMutableDictionary new];
-  notificationDict[@"alertTitle"] = notification.alertTitle();
-  notificationDict[@"alertBody"] = notification.alertBody();
-  notificationDict[@"alertAction"] = notification.alertAction();
-  notificationDict[@"userInfo"] = notification.userInfo();
-  notificationDict[@"category"] = notification.category();
-  notificationDict[@"repeatInterval"] = notification.repeatInterval();
-  if (notification.fireDate()) {
-    notificationDict[@"fireDate"] = @(*notification.fireDate());
+  NSDictionary<NSString *, id> *notificationDict = [RCTConvert NSDictionaryForNotification:notification];
+  UNNotificationContent *content = [RCTConvert UNNotificationContent:notificationDict];
+
+  UNNotificationTrigger *trigger = nil;
+  if (notificationDict[@"fireDate"]) {
+    NSDate *fireDate = [RCTConvert NSDate:notificationDict[@"fireDate"]] ?: [NSDate date];
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components =
+        [calendar components:(NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour |
+                              NSCalendarUnitMinute | NSCalendarUnitSecond)
+                    fromDate:fireDate];
+    trigger = [UNCalendarNotificationTrigger triggerWithDateMatchingComponents:components repeats:NO];
+  } else if (notificationDict[@"fireIntervalSeconds"]) {
+    trigger = [UNTimeIntervalNotificationTrigger
+        triggerWithTimeInterval:[notificationDict[@"fireIntervalSeconds"] doubleValue]
+                        repeats:NO];
   }
-  if (notification.applicationIconBadgeNumber()) {
-    notificationDict[@"applicationIconBadgeNumber"] = @(*notification.applicationIconBadgeNumber());
-  }
-  if (notification.isSilent()) {
-    notificationDict[@"isSilent"] = @(*notification.isSilent());
-    if ([notificationDict[@"isSilent"] isEqualToNumber:@(NO)]) {
-      notificationDict[@"soundName"] = notification.soundName();
-    }
-  }
-  [RCTSharedApplication() scheduleLocalNotification:[RCTConvert UILocalNotification:notificationDict]];
+
+  UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:[[NSUUID UUID] UUIDString]
+                                                                        content:content
+                                                                        trigger:trigger];
+
+  UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+  [center addNotificationRequest:request withCompletionHandler:nil];
 }
 #else // [macOS
 RCT_EXPORT_METHOD(scheduleLocalNotification:(NSUserNotification *)notification)
