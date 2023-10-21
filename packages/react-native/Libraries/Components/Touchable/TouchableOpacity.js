@@ -38,20 +38,6 @@ type Props = $ReadOnly<{|
   style?: ?ViewStyleProp,
 
   hostRef?: ?React.Ref<typeof Animated.View>,
-
-  // [macOS
-  /*
-   * Array of keys to receive key down events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
-   */
-  validKeysDown?: ?Array<string>,
-
-  /*
-   * Array of keys to receive key up events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
-   */
-  validKeysUp?: ?Array<string>,
-  // macOS]
 |}>;
 
 type State = $ReadOnly<{|
@@ -178,18 +164,6 @@ class TouchableOpacity extends React.Component<Props, State> {
           this.props.onFocus(event);
         }
       },
-      onKeyDown: event => {
-        if (this.props.onKeyDown != null) {
-          this.props.onKeyDown(event);
-        }
-      },
-      onKeyUp: event => {
-        if (this.props.onKeyUp != null) {
-          this.props.onKeyUp(event);
-        }
-      },
-      validKeysDown: this.props.validKeysDown,
-      validKeysUp: this.props.validKeysUp,
       onLongPress: this.props.onLongPress,
       onPress: this.props.onPress,
       onPressIn: event => {
@@ -241,13 +215,8 @@ class TouchableOpacity extends React.Component<Props, State> {
   render(): React.Node {
     // BACKWARD-COMPATIBILITY: Focus and blur events were never supported before
     // adopting `Pressability`, so preserve that behavior.
-    const {
-      onBlur,
-      onFocus,
-      onMouseEnter, // [macOS]
-      onMouseLeave, // [macOS]
-      ...eventHandlersWithoutBlurAndFocus
-    } = this.state.pressability.getEventHandlers();
+    const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
+      this.state.pressability.getEventHandlers();
 
     let _accessibilityState = {
       busy: this.props['aria-busy'] ?? this.props.accessibilityState?.busy,
@@ -317,26 +286,9 @@ class TouchableOpacity extends React.Component<Props, State> {
         nextFocusUp={this.props.nextFocusUp}
         hasTVPreferredFocus={this.props.hasTVPreferredFocus}
         hitSlop={this.props.hitSlop}
-        // [macOS
-        acceptsFirstMouse={
-          this.props.acceptsFirstMouse !== false && !this.props.disabled
+        focusable={
+          this.props.focusable !== false && this.props.onPress !== undefined
         }
-        enableFocusRing={
-          (this.props.enableFocusRing === undefined ||
-            this.props.enableFocusRing === true) &&
-          !this.props.disabled
-        }
-        focusable={this.props.focusable !== false && !this.props.disabled}
-        tooltip={this.props.tooltip}
-        onMouseEnter={this.props.onMouseEnter}
-        onMouseLeave={this.props.onMouseLeave}
-        onDragEnter={this.props.onDragEnter}
-        onDragLeave={this.props.onDragLeave}
-        onDrop={this.props.onDrop}
-        onFocus={this.props.onFocus}
-        onBlur={this.props.onBlur}
-        draggedTypes={this.props.draggedTypes}
-        // macOS]
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
         {this.props.children}

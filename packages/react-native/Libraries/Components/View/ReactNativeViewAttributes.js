@@ -36,23 +36,6 @@ const UIView = {
   needsOffscreenAlphaCompositing: true,
   style: ReactNativeStyleAttributes,
   role: true,
-  // [macOS
-  acceptsFirstMouse: true,
-  mouseDownCanMoveWindow: true,
-  enableFocusRing: true,
-  focusable: true,
-  onMouseEnter: true,
-  onMouseLeave: true,
-  onDragEnter: true,
-  onDragLeave: true,
-  onDrop: true,
-  onKeyDown: true,
-  onKeyUp: true,
-  passthroughAllKeyEvents: true,
-  validKeysDown: true,
-  validKeysUp: true,
-  draggedTypes: true,
-  // macOS]
 };
 
 const RCTView = {

@@ -20,31 +20,6 @@ import type {
 } from './private/_StyleSheetTypesOverrides';
 import type {____TransformStyle_Internal} from './private/_TransformStyle';
 
-// [macOS
-export type CursorValue = ?(
-  | 'alias'
-  | 'auto'
-  | 'col-resize'
-  | 'context-menu'
-  | 'copy'
-  | 'crosshair'
-  | 'default'
-  | 'disappearing-item'
-  | 'e-resize'
-  | 'grab'
-  | 'grabbing'
-  | 'n-resize'
-  | 'no-drop'
-  | 'not-allowed'
-  | 'pointer'
-  | 'row-resize'
-  | 's-resize'
-  | 'text'
-  | 'vertical-text'
-  | 'w-resize'
-);
-// macOS]
-
 declare export opaque type NativeColorValue;
 export type ____ColorValue_Internal = null | string | number | NativeColorValue;
 export type ColorArrayValue = null | $ReadOnlyArray<____ColorValue_Internal>;
@@ -752,7 +727,6 @@ export type ____ViewStyle_InternalCore = $ReadOnly<{
   opacity?: AnimatableNumericValue,
   elevation?: number,
   pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only',
-  cursor?: CursorValue, // [macOS]
 }>;
 
 export type ____ViewStyle_Internal = $ReadOnly<{
@@ -875,7 +849,6 @@ export type ____TextStyle_InternalCore = $ReadOnly<{
   userSelect?: 'auto' | 'text' | 'none' | 'contain' | 'all',
   verticalAlign?: 'auto' | 'top' | 'bottom' | 'middle',
   writingDirection?: 'auto' | 'ltr' | 'rtl',
-  cursor?: CursorValue, // [macOS]
 }>;
 
 export type ____TextStyle_Internal = $ReadOnly<{

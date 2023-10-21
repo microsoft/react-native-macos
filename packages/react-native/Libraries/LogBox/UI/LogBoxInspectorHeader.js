@@ -146,7 +146,6 @@ const styles = StyleSheet.create({
     height: Platform.select({
       android: 48,
       ios: 44,
-      macos: 44, // [macOS]
     }),
   },
   title: {

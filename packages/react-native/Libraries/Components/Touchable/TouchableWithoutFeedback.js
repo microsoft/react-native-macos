@@ -19,16 +19,10 @@ import type {EdgeInsetsOrSizeProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {
   BlurEvent,
   FocusEvent,
-  KeyEvent,
   LayoutEvent,
-  MouseEvent,
   PressEvent,
-  // [macOS]
 } from '../../Types/CoreEventTypes';
-// [macOS
-import type {DraggedTypesType} from '../View/DraggedType';
 
-// macOS]
 import View from '../../Components/View/View';
 import Pressability, {
   type PressabilityConfig,
@@ -78,28 +72,13 @@ type Props = $ReadOnly<{|
   importantForAccessibility?: ?('auto' | 'yes' | 'no' | 'no-hide-descendants'),
   nativeID?: ?string,
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
-  onBlur?: ?(event: BlurEvent) => void, // [macOS]
-  onFocus?: ?(event: FocusEvent) => void, // [macOS]
+  onBlur?: ?(event: BlurEvent) => mixed,
+  onFocus?: ?(event: FocusEvent) => mixed,
   onLayout?: ?(event: LayoutEvent) => mixed,
   onLongPress?: ?(event: PressEvent) => mixed,
   onPress?: ?(event: PressEvent) => mixed,
   onPressIn?: ?(event: PressEvent) => mixed,
   onPressOut?: ?(event: PressEvent) => mixed,
-  // [macOS
-  acceptsFirstMouse?: ?boolean,
-  enableFocusRing?: ?boolean,
-  tooltip?: ?string,
-  onMouseEnter?: (event: MouseEvent) => void,
-  onMouseLeave?: (event: MouseEvent) => void,
-  onDragEnter?: (event: MouseEvent) => void,
-  onDragLeave?: (event: MouseEvent) => void,
-  onDrop?: (event: MouseEvent) => void,
-  draggedTypes?: ?DraggedTypesType,
-  onKeyDown?: ?(event: KeyEvent) => void,
-  onKeyUp?: ?(event: KeyEvent) => void,
-  validKeysDown?: ?Array<string>,
-  validKeysUp?: ?Array<string>,
-  // macOS]
   pressRetentionOffset?: ?EdgeInsetsOrSizeProp,
   rejectResponderTermination?: ?boolean,
   testID?: ?string,
@@ -132,16 +111,7 @@ const PASSTHROUGH_PROPS = [
   'onAccessibilityAction',
   'onBlur',
   'onFocus',
-  'validKeysDown',
-  'validKeysUp',
   'onLayout',
-  'onMouseEnter', // [macOS
-  'onMouseLeave',
-  'onDragEnter',
-  'onDragLeave',
-  'onDrop',
-  'draggedTypes',
-  'tooltip', // macOS]
   'testID',
 ];
 
@@ -177,13 +147,8 @@ class TouchableWithoutFeedback extends React.Component<Props, State> {
 
     // BACKWARD-COMPATIBILITY: Focus and blur events were never supported before
     // adopting `Pressability`, so preserve that behavior.
-    const {
-      onBlur,
-      onFocus,
-      onMouseEnter, // [macOS]
-      onMouseLeave, // [macOS]
-      ...eventHandlersWithoutBlurAndFocus
-    } = this.state.pressability.getEventHandlers();
+    const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
+      this.state.pressability.getEventHandlers();
 
     const elementProps: {[string]: mixed, ...} = {
       ...eventHandlersWithoutBlurAndFocus,
@@ -197,12 +162,7 @@ class TouchableWithoutFeedback extends React.Component<Props, State> {
           : _accessibilityState,
       focusable:
         this.props.focusable !== false && this.props.onPress !== undefined,
-      // [macOS
-      acceptsFirstMouse:
-        this.props.acceptsFirstMouse !== false && !this.props.disabled,
-      enableFocusRing:
-        this.props.enableFocusRing !== false && !this.props.disabled,
-      // macOS]
+
       accessibilityElementsHidden:
         this.props['aria-hidden'] ?? this.props.accessibilityElementsHidden,
       importantForAccessibility:
@@ -253,10 +213,6 @@ function createPressabilityConfig({
     android_disableSound: props.touchSoundDisabled,
     onBlur: props.onBlur,
     onFocus: props.onFocus,
-    onKeyDown: props.onKeyDown,
-    onKeyUp: props.onKeyUp,
-    validKeysDown: props.validKeysDown,
-    validKeysUp: props.validKeysUp,
     onLongPress: props.onLongPress,
     onPress: props.onPress,
     onPressIn: props.onPressIn,

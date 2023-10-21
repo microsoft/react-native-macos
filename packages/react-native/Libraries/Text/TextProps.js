@@ -265,28 +265,4 @@ export type TextProps = $ReadOnly<{|
    * See https://reactnative.dev/docs/text.html#linebreakstrategyios
    */
   lineBreakStrategyIOS?: ?('none' | 'standard' | 'hangul-word' | 'push-out'),
-
-  /**
-   * Specifies the Tooltip for the button view
-   *
-   * @platform macos
-   */
-  tooltip?: ?string,
-
-  /**
-   * When `true`, indicates that the text can be focused in key view loop
-   * By default, when `selectable={true}` the text view will be focusable unless disabled.
-   *
-   * @platform macos
-   */
-  focusable?: ?boolean,
-
-  /**
-   * Specifies whether focus ring should be drawn when the view has the first responder status.
-   * Only works when `focusable={true}`.
-   *
-   * @platform macos
-   */
-  enableFocusRing?: ?boolean,
-  // macOS]
 |}>;

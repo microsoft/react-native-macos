@@ -9,16 +9,10 @@
  */
 
 import type {
-  BlurEvent,
-  // [macOS
-  FocusEvent,
-  KeyEvent,
   LayoutEvent,
   MouseEvent,
   PressEvent,
-  // macOS]
 } from '../../Types/CoreEventTypes';
-import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
 import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
@@ -26,7 +20,6 @@ import type {
   AccessibilityState,
   AccessibilityValue,
 } from '../View/ViewAccessibility';
-import type {HandledKeyboardEvent} from '../View/ViewPropTypes'; // [macOS]
 
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
@@ -165,123 +158,6 @@ type Props = $ReadOnly<{|
    */
   onPressOut?: ?(event: PressEvent) => mixed,
 
-  // [macOS
-  /**
-   * Called after the element is focused.
-   */
-  onFocus?: ?(event: FocusEvent) => void,
-
-  /**
-   * Called after the element loses focus.
-   */
-  onBlur?: ?(event: BlurEvent) => void,
-
-  /**
-   * Called after a key down event is detected.
-   */
-  onKeyDown?: ?(event: KeyEvent) => void,
-
-  /**
-   * Called after a key up event is detected.
-   */
-  onKeyUp?: ?(event: KeyEvent) => void,
-
-  /**
-   * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
-   * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
-   * still have their native default behavior prevented, but the others do not.
-   *
-   * @platform macos
-   */
-  passthroughAllKeyEvents?: ?boolean,
-
-  /**
-   * Array of keys to receive key down events for. These events have their default native behavior prevented.
-   *
-   * @platform macos
-   */
-  validKeysDown?: ?Array<string | HandledKeyboardEvent>,
-
-  /**
-   * Array of keys to receive key up events for. These events have their default native behavior prevented.
-   *
-   * @platform macos
-   */
-  validKeysUp?: ?Array<string | HandledKeyboardEvent>,
-
-  /**
-   * Specifies whether the view should receive the mouse down event when the
-   * containing window is in the background.
-   *
-   * @platform macos
-   */
-  acceptsFirstMouse?: ?boolean,
-
-  /**
-   * Specifies whether clicking and dragging the view can move the window. This is useful
-   * to disable in Button like components like Pressable where mouse the user should still
-   * be able to click and drag off the view to cancel the click without accidentally moving the window.
-   *
-   * @platform macos
-   */
-  mouseDownCanMoveWindow?: ?boolean,
-
-  /**
-   * Specifies whether system focus ring should be drawn when the view has keyboard focus.
-   *
-   * @platform macos
-   */
-  enableFocusRing?: ?boolean,
-
-  /**
-   * Specifies whether the view ensures it is vibrant on top of other content.
-   * For more information, see the following apple documentation:
-   * https://developer.apple.com/documentation/appkit/nsview/1483793-allowsvibrancy
-   * https://developer.apple.com/documentation/appkit/nsvisualeffectview#1674177
-   *
-   * @platform macos
-   */
-  allowsVibrancy?: ?boolean,
-
-  /**
-   * Specifies the Tooltip for the Pressable.
-   * @platform macos
-   */
-  tooltip?: ?string,
-
-  /**
-   * Fired when a file is dragged into the Pressable via the mouse.
-   *
-   * @platform macos
-   */
-  onDragEnter?: (event: MouseEvent) => void,
-
-  /**
-   * Fired when a file is dragged out of the Pressable via the mouse.
-   *
-   * @platform macos
-   */
-  onDragLeave?: (event: MouseEvent) => void,
-
-  /**
-   * Fired when a file is dropped on the Pressable via the mouse.
-   *
-   * @platform macos
-   */
-  onDrop?: (event: MouseEvent) => void,
-
-  /**
-   * The types of dragged files that the Pressable will accept.
-   *
-   * Possible values for `draggedTypes` are:
-   *
-   * - `'fileUrl'`
-   *
-   * @platform macos
-   */
-  draggedTypes?: ?DraggedTypesType,
-  // macOS]
-
   /**
    * Either view styles or a function that receives a boolean reflecting whether
    * the component is currently pressed and returns view styles.
@@ -352,15 +228,6 @@ function Pressable(props: Props, forwardedRef): React.Node {
     onPress,
     onPressIn,
     onPressOut,
-    // [macOS
-    onFocus,
-    onBlur,
-    onKeyDown,
-    onKeyUp,
-    acceptsFirstMouse,
-    mouseDownCanMoveWindow,
-    enableFocusRing,
-    // macOS]
     pressRetentionOffset,
     style,
     testOnly_pressed,
@@ -400,16 +267,13 @@ function Pressable(props: Props, forwardedRef): React.Node {
   const restPropsWithDefaults: React.ElementConfig<typeof View> = {
     ...restProps,
     ...android_rippleConfig?.viewProps,
-    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [macOS]
-    mouseDownCanMoveWindow: false, // [macOS]
-    enableFocusRing: enableFocusRing !== false && !disabled,
     accessible: accessible !== false,
     accessibilityViewIsModal:
       restProps['aria-modal'] ?? restProps.accessibilityViewIsModal,
     accessibilityLiveRegion,
     accessibilityLabel,
     accessibilityState: _accessibilityState,
-    focusable: focusable !== false && !disabled, // macOS]
+    focusable: focusable !== false,
     accessibilityValue,
     hitSlop,
   };
@@ -448,12 +312,6 @@ function Pressable(props: Props, forwardedRef): React.Node {
           onPressOut(event);
         }
       },
-      // [macOS
-      onFocus,
-      onBlur,
-      onKeyDown,
-      onKeyUp,
-      // macOS]
     }),
     [
       android_disableSound,
@@ -470,12 +328,6 @@ function Pressable(props: Props, forwardedRef): React.Node {
       onPress,
       onPressIn,
       onPressOut,
-      // [macOS
-      onFocus,
-      onBlur,
-      onKeyDown,
-      onKeyUp,
-      // macOS]
       pressRetentionOffset,
       setPressed,
       unstable_pressDelay,
