@@ -16,11 +16,9 @@ exports[`ScrollView renders its children: should deep render when not mocked (pl
 <RCTScrollView
   alwaysBounceVertical={true}
   onContentSizeChange={null}
-  onInvertedDidChange={[Function]}
   onLayout={[Function]}
   onMomentumScrollBegin={[Function]}
   onMomentumScrollEnd={[Function]}
-  onPreferredScrollerStyleDidChange={[Function]}
   onResponderGrant={[Function]}
   onResponderReject={[Function]}
   onResponderRelease={[Function]}
