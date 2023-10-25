@@ -332,6 +332,15 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
       ![_propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN containsObject:@"transform"]) {
     auto newTransform = newViewProps.resolveTransform(_layoutMetrics);
     CATransform3D caTransform = RCTCATransform3DFromTransformMatrix(newTransform);
+#if TARGET_OS_OSX // [macOS
+    CGPoint anchorPoint = self.layer.anchorPoint;
+    if (CGPointEqualToPoint(anchorPoint, CGPointZero) && !CATransform3DEqualToTransform(caTransform, CATransform3DIdentity)) {
+      // https://developer.apple.com/documentation/quartzcore/calayer/1410817-anchorpoint
+      // This compensates for the fact that layer.anchorPoint is {0, 0} instead of {0.5, 0.5} on macOS for some reason.
+      CATransform3D originAdjust = CATransform3DTranslate(CATransform3DIdentity, self.frame.size.width / 2, self.frame.size.height / 2, 0);
+      caTransform = CATransform3DConcat(CATransform3DConcat(CATransform3DInvert(originAdjust), caTransform), originAdjust);
+    }
+#endif // macOS]
 
     self.layer.transform = caTransform;
     // Enable edge antialiasing in rotation, skew, or perspective transforms
