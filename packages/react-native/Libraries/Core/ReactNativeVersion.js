@@ -10,8 +10,8 @@
  */
 
 exports.version = {
-  major: 1000,
-  minor: 0,
+  major: 0,
+  minor: 74,
   patch: 0,
-  prerelease: null,
+  prerelease: 'nightly-20231026-7ed16a4d4',
 };
