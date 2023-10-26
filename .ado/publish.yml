@@ -52,7 +52,7 @@ extends:
            displayName: NPM Publish React-native-macos
            pool:
              name: Azure Pipelines
-             vmImage: internal-macos13
+             vmImage: macos13
              os: macOS
            variables:
              - name: BUILDSECMON_OPT_IN
@@ -136,7 +136,7 @@ extends:
              os: linux
            timeoutInMinutes: 90 # how long to run the job before automatically cancelling
            cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
-           condition: eq(variables['Build.SourceBranchName'], 'main')
+           condition: eq(variables['Build.SourceBranchName'], '1espt')
            templateContext:
              outputs:
                - output: pipelineArtifact
@@ -175,4 +175,4 @@ extends:
                displayName: "Publish beachball packages to npmjs.org"
                inputs:
                  script: |
-                   npx beachball publish --scope '!packages/react-native' --branch origin/$(Build.SourceBranchName) -n $(npmAuthToken) -yes -m "applying package updates ***NO_CI***" --access public
+                   npx beachball publish --scope '!packages/react-native' --branch origin/$(Build.SourceBranchName) -n NOAUTH -yes -m "applying package updates ***NO_CI***" --access public
