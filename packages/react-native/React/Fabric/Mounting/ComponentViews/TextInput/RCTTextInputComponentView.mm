@@ -552,7 +552,15 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)blur
 {
+#if !TARGET_OS_OSX // [macOS]
   [_backedTextInputView resignFirstResponder];
+#else // [macOS
+  NSWindow *window = _backedTextInputView.window;
+  if (window && window.firstResponder == _backedTextInputView) {
+    // Calling makeFirstResponder with nil will call resignFirstResponder and make the window the first responder
+    [window makeFirstResponder:nil];
+  }
+#endif // macOS];
 }
 
 - (void)setTextAndSelection:(NSInteger)eventCount
