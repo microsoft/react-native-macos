@@ -77,7 +77,7 @@ extends:
              # - Calling the approprate scripts that upstream React Native uses to prepare a release
              # - Skipping the actual `git tag`, `git push`, and `npm publish steps as we do that here instead
 
-             - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+             - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/1espt') }}:
                - template: .ado/templates/apple-job-publish.yml@self
                  parameters:
                    build_type: nightly
