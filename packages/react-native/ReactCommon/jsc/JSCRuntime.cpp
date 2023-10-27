@@ -293,7 +293,7 @@ class JSCRuntime : public jsi::Runtime {
     }                          \
   } while (0)
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) // [macOS]
 // This takes care of watch and tvos (due to backwards compatibility in
 // Availability.h
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0
@@ -316,6 +316,11 @@ class JSCRuntime : public jsi::Runtime {
 #if __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_12
 #define _JSC_NO_ARRAY_BUFFERS
 #endif
+// [macOS
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 130300
+#define _JSC_HAS_INSPECTABLE
+#endif
+// macOS]
 #endif
 
 // JSStringRef utilities
