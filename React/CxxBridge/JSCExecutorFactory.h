@@ -17,9 +17,11 @@ class JSCExecutorFactory : public JSExecutorFactory {
   explicit JSCExecutorFactory(JSIExecutor::RuntimeInstaller runtimeInstaller)
       : runtimeInstaller_(std::move(runtimeInstaller)) {}
 
+  // [macOS
   void setEnableDebugger(bool enableDebugger);
 
   void setDebuggerName(const std::string &debuggerName);
+  // macOS]
 
   std::unique_ptr<JSExecutor> createJSExecutor(
       std::shared_ptr<ExecutorDelegate> delegate,
@@ -28,8 +30,10 @@ class JSCExecutorFactory : public JSExecutorFactory {
  private:
   JSIExecutor::RuntimeInstaller runtimeInstaller_;
 
+  // [macOS
   bool enableDebugger_ = true;
   std::string debuggerName_ = "JSC React Native";
+  // macOS]
 };
 
 } // namespace react
