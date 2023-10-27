@@ -40,11 +40,12 @@ extends:
       eslint:
         configuration: 'recommended'
         parser: '@typescript-eslint/parser'
-        parserOptions: 'sourceType:script\necmaVersion:2017'
-        customEnvironments: true
-        environmentsBrowser: true
-        environmentsEs6: true
-        environmentsNode: true
+        parserOptions: ''
+        enableExclusions: true
+        # Justification: js files in this repo are flow files. the built-in eslint does not support this. Adding a separate step to run the sdl rules for flow files.
+        exclusionPatterns: '**/*.js'
+      credscan:
+          suppressionsFile: $(Build.SourcesDirectory)\.config\CredScanSuppressions.json
     stages:
       - stage: main
         jobs:
