@@ -13,6 +13,7 @@
 
 namespace facebook::react {
 
+// [macOS
 void JSCExecutorFactory::setEnableDebugger(bool enableDebugger) {
   enableDebugger_ = enableDebugger;
 }
@@ -20,15 +21,18 @@ void JSCExecutorFactory::setEnableDebugger(bool enableDebugger) {
 void JSCExecutorFactory::setDebuggerName(const std::string &debuggerName) {
   debuggerName_ = debuggerName;
 }
+// macOS]
 
 std::unique_ptr<JSExecutor> JSCExecutorFactory::createJSExecutor(
     std::shared_ptr<ExecutorDelegate> delegate,
     std::shared_ptr<MessageQueueThread> __unused jsQueue)
 {
+  // [macOS
   facebook::jsc::RuntimeConfig rc = {
     .enableDebugger = enableDebugger_,
     .debuggerName = debuggerName_,
   };
   return std::make_unique<JSIExecutor>(facebook::jsc::makeJSCRuntime(std::move(rc)), delegate, JSIExecutor::defaultTimeoutInvoker, runtimeInstaller_);
+  // macOS]
 }
 } // namespace facebook::react
