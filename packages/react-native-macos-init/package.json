@@ -1,6 +1,6 @@
 {
   "name": "react-native-macos-init",
-  "version": "2.1.0",
+  "version": "0.74.0-nightly-20231027-66d4c6fdc",
   "description": "CLI to add react-native-macos to an existing react-native project",
   "main": "index.js",
   "repository": "https://github.com/microsoft/react-native-macos",
