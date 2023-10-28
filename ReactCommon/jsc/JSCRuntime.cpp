@@ -36,6 +36,10 @@ class JSCRuntime : public jsi::Runtime {
  public:
   // Creates new context in new context group
   JSCRuntime();
+  // [macOS
+  // Creates new context in new context group with config
+  JSCRuntime(const facebook::jsc::RuntimeConfig& rc);
+  // macOS]
   // Retains ctx
   JSCRuntime(JSGlobalContextRef ctx);
   ~JSCRuntime();
@@ -314,6 +318,11 @@ class JSCRuntime : public jsi::Runtime {
 #if __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_12
 #define _JSC_NO_ARRAY_BUFFERS
 #endif
+// [macOS
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 130300
+#define _JSC_HAS_INSPECTABLE
+#endif
+// macOS]
 #endif
 
 // JSStringRef utilities
@@ -389,6 +398,19 @@ JSCRuntime::JSCRuntime()
     : JSCRuntime(JSGlobalContextCreateInGroup(nullptr, nullptr)) {
   JSGlobalContextRelease(ctx_);
 }
+
+// [macOS
+JSCRuntime::JSCRuntime(const facebook::jsc::RuntimeConfig& rc)
+	: JSCRuntime() {
+#ifdef _JSC_HAS_INSPECTABLE
+  if (__builtin_available(macOS 13.3, iOS 16.4, tvOS 16.4, *)) {
+    JSGlobalContextSetInspectable(ctx_, rc.enableDebugger);
+  }
+#endif
+  JSGlobalContextSetName(ctx_, JSStringCreateWithUTF8CString(rc.debuggerName.c_str()));
+
+}
+// macOS]
 
 JSCRuntime::JSCRuntime(JSGlobalContextRef ctx)
     : ctx_(JSGlobalContextRetain(ctx)),
@@ -1564,6 +1586,12 @@ void JSCRuntime::checkException(
 std::unique_ptr<jsi::Runtime> makeJSCRuntime() {
   return std::make_unique<JSCRuntime>();
 }
+
+// [macOS
+std::unique_ptr<jsi::Runtime> makeJSCRuntime(const facebook::jsc::RuntimeConfig& rc) {
+  return std::make_unique<JSCRuntime>(rc);
+}
+// macOS]
 
 } // namespace jsc
 } // namespace facebook
