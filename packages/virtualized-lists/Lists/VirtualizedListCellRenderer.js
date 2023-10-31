@@ -19,7 +19,7 @@ import type {
 import {VirtualizedListCellContextProvider} from './VirtualizedListContext.js';
 import invariant from 'invariant';
 import * as React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native'; // [macOS]
 
 export type Props<ItemT> = {
   CellRendererComponent?: ?React.ComponentType<CellRendererProps<ItemT>>,
@@ -219,7 +219,7 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       : horizontal
         ? [styles.row, inversionStyle]
         : inversionStyle;
-    const result = !CellRendererComponent ? (
+    let result = !CellRendererComponent ? ( // [macOS]
       <View
         style={cellStyle}
         onFocusCapture={this._onCellFocusCapture}
@@ -239,6 +239,11 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
         {itemSeparator}
       </CellRendererComponent>
     );
+
+    if (Platform.OS === 'macos') {
+      // [macOS
+      result = React.cloneElement(result, {collapsable: false});
+    } // macOS]
 
     return (
       <VirtualizedListCellContextProvider cellKey={this.props.cellKey}>
