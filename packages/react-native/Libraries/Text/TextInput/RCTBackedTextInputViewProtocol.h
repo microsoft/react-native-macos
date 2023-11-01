@@ -62,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) UIEdgeInsets contentInset;
 #if TARGET_OS_OSX // [macOS
 @property (nonatomic, assign) CGFloat pointScaleFactor;
+@property (nonatomic, getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled;
 #endif // macOS]
 
 // This protocol disallows direct access to `selectedTextRange` property because

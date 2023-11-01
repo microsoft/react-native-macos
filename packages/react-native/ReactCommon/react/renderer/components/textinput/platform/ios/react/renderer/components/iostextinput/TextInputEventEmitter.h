@@ -44,6 +44,13 @@ class TextInputEventEmitter : public ViewEventEmitter {
   void onKeyPress(const KeyPressMetrics& keyPressMetrics) const;
   void onScroll(const Metrics& textInputMetrics) const;
 
+#if TARGET_OS_OSX // [macOS
+  struct OnAutoCorrectChange {
+      bool enabled;
+    };
+  void onAutoCorrectChange(OnAutoCorrectChange value) const;
+#endif // macOS]
+
  private:
   void dispatchTextInputEvent(
       const std::string& name,

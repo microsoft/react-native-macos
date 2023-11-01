@@ -168,13 +168,20 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.autocapitalizationType =
         RCTUITextAutocapitalizationTypeFromAutocapitalizationType(newTextInputProps.traits.autocapitalizationType);
   }
+#endif // [macOS]
 
+#if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.autoCorrect != oldTextInputProps.traits.autoCorrect) {
     _backedTextInputView.autocorrectionType =
         RCTUITextAutocorrectionTypeFromOptionalBool(newTextInputProps.traits.autoCorrect);
   }
-#endif // [macOS]
-
+#else // [macOS
+  if (newTextInputProps.traits.autoCorrect != oldTextInputProps.traits.autoCorrect && newTextInputProps.traits.autoCorrect.has_value()) {
+    _backedTextInputView.automaticSpellingCorrectionEnabled =
+        newTextInputProps.traits.autoCorrect.value();
+  }
+#endif // macOS]
+  
   if (newTextInputProps.traits.contextMenuHidden != oldTextInputProps.traits.contextMenuHidden) {
     _backedTextInputView.contextMenuHidden = newTextInputProps.traits.contextMenuHidden;
   }
@@ -463,7 +470,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 }
 
 #if TARGET_OS_OSX // [macOS
-- (void)automaticSpellingCorrectionDidChange:(BOOL)enabled {}
+- (void)automaticSpellingCorrectionDidChange:(BOOL)enabled {
+  if (_eventEmitter) {
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onAutoCorrectChange({.enabled =  enabled});
+  }
+}
 
 
 - (void)continuousSpellCheckingDidChange:(BOOL)enabled {}
