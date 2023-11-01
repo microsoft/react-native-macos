@@ -22,16 +22,16 @@ folly_version = '2023.08.07.00'
 header_search_paths = [
   "\"$(PODS_ROOT)/RCT-Folly\"",
   "\"${PODS_ROOT}/Headers/Public/React-Codegen/react/renderer/components\"",
-  "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Codegen/React_Codegen.framework/Headers\""
+  "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Codegen-macOS/React_Codegen.framework/Headers\""
 ]
 
 if ENV["USE_FRAMEWORKS"]
   header_search_paths = header_search_paths.concat([
-    "\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core\"",
-    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple/React_NativeModulesApple.framework/Headers\"",
-    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple/React_NativeModulesApple.framework/Headers/build/generated/ios\"",
-    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Codegen/React_Codegen.framework/Headers/build/generated/ios\"",
-    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Codegen/React_Codegen.framework/Headers\"",
+    "\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon-macOS/ReactCommon.framework/Headers/react/nativemodule/core\"",
+    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple-macOS/React_NativeModulesApple.framework/Headers\"",
+    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple-macOS/React_NativeModulesApple.framework/Headers/build/generated/ios\"",
+    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Codegen-macOS/React_Codegen.framework/Headers/build/generated/ios\"",
+    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Codegen-macOS/React_Codegen.framework/Headers\"",
   ])
 end
 
