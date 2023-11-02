@@ -24,12 +24,12 @@ header_search_paths = [
   "\"$(PODS_TARGET_SRCROOT)/React/CoreModules\"",
   "\"$(PODS_ROOT)/RCT-Folly\"",
   "\"${PODS_ROOT}/Headers/Public/React-Codegen/react/renderer/components\"",
-  "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Codegen/React_Codegen.framework/Headers\""
+  "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Codegen-macOS/React_Codegen.framework/Headers\""
 ]
 
 if ENV['USE_FRAMEWORKS']
-  header_search_paths.append("\"$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple/React_NativeModulesApple.framework/Headers\"")
-  header_search_paths.append("\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core\"")
+  header_search_paths.append("\"$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple-macOS/React_NativeModulesApple.framework/Headers\"")
+  header_search_paths.append("\"$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon-macOS/ReactCommon.framework/Headers/react/nativemodule/core\"")
 end
 
 Pod::Spec.new do |s|

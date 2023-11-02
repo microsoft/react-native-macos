@@ -41,7 +41,9 @@ header_subspecs = {
 frameworks_search_paths = []
 frameworks_search_paths << "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-hermes\"" if use_hermes
 frameworks_search_paths << "\"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon\"" if use_frameworks
+frameworks_search_paths << "\"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-macOS\"" if use_frameworks
 frameworks_search_paths << "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-RCTFabric\"" if use_frameworks
+frameworks_search_paths << "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-RCTFabric-macOS\"" if use_frameworks
 
 header_search_paths = [
   "$(PODS_TARGET_SRCROOT)/ReactCommon",
@@ -58,7 +60,10 @@ header_search_paths = [
 ] : []).concat(use_frameworks ? [
   "$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers",
   "$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core",
-  "$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple/React_NativeModulesApple.framework/Headers"
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon-macOS/ReactCommon.framework/Headers",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon-macOS/ReactCommon.framework/Headers/react/nativemodule/core",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple-macOS/React_NativeModulesApple.framework/Headers"
 ] : []).map{|p| "\"#{p}\""}.join(" ")
 
 Pod::Spec.new do |s|
