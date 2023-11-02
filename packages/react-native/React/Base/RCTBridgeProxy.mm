@@ -392,7 +392,7 @@ using namespace facebook;
 
 @implementation RCTUIManagerProxy {
   RCTViewRegistry *_viewRegistry;
-  NSMutableDictionary<NSNumber *, UIView *> *_legacyViewRegistry;
+  NSMutableDictionary<NSNumber *, RCTUIView *> *_legacyViewRegistry;
 }
 - (instancetype)initWithViewRegistry:(RCTViewRegistry *)viewRegistry
 {
