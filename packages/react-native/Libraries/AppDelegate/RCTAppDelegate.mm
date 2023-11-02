@@ -94,6 +94,13 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 
   if (enableBridgeless) {
 #if RCT_NEW_ARCH_ENABLED
+    // Enable native view config interop only if both bridgeless mode and Fabric is enabled.
+    RCTSetUseNativeViewConfigsInBridgelessMode([self fabricEnabled]);
+
+    // Enable TurboModule interop by default in Bridgeless mode
+    RCTEnableTurboModuleInterop(YES);
+    RCTEnableTurboModuleInteropBridgeProxy(YES);
+
     [self createReactHost];
     [self unstable_registerLegacyComponents];
     [RCTComponentViewFactory currentComponentViewFactory].thirdPartyFabricComponentsProvider = self;
@@ -220,7 +227,7 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
         interfaceOrientation:(UIInterfaceOrientation)previousInterfaceOrientation
              traitCollection:(UITraitCollection *)previousTraitCollection API_AVAILABLE(ios(13.0))
 {
-  [[NSNotificationCenter defaultCenter] postNotificationName:RCTRootViewFrameDidChangeNotification object:self];
+  [[NSNotificationCenter defaultCenter] postNotificationName:RCTWindowFrameDidChangeNotification object:self];
 }
 #endif // [macOS]
 
