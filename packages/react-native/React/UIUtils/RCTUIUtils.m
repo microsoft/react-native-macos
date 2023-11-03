@@ -12,7 +12,7 @@
 #if !TARGET_OS_OSX // [macOS]
 RCTDimensions RCTGetDimensions(CGFloat fontScale)
 #else // [macOS
-RCTDimensions RCTGetDimensions(RCTPlatformView *rootView)
+RCTDimensions RCTGetDimensions(void)
 #endif // macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
@@ -24,20 +24,12 @@ RCTDimensions RCTGetDimensions(RCTPlatformView *rootView)
   // We fallback to screen size if a key window is not found.
   CGSize windowSize = mainWindow ? mainWindow.bounds.size : screenSize;
 #else // [macOS
-  NSWindow *window = nil;
-  NSSize windowSize;
-  NSSize screenSize;
-  if (rootView != nil) {
-	  window = [rootView window];
-	  windowSize = [window frame].size;
-  } else {
-    // We don't have a root view so fall back to the app's key window
-    window = [NSApp keyWindow];
-    windowSize = [window frame].size;
-  }
-  screenSize = [[window screen] frame].size;
+  NSWindow *window = [NSApp keyWindow];
+  NSSize windowSize = window ? [window frame].size : CGSizeMake(0, 0);
+  NSSize screenSize = window ? [[window screen] frame].size : CGSizeMake(0, 0);
+  CGFloat scale = window ? [[window screen] backingScaleFactor] : 1.0; // Default scale to 1.0 if window is nil
+  CGFloat fontScale = 1;
 #endif
-
   RCTDimensions result;
 #if !TARGET_OS_OSX // [macOS]
   typeof(result.screen) dimsScreen = {
@@ -48,13 +40,13 @@ RCTDimensions RCTGetDimensions(RCTPlatformView *rootView)
   typeof(result.screen) dimsScreen = {
       .width = screenSize.width, 
       .height = screenSize.height, 
-      .scale = [[window screen] backingScaleFactor],
-      .fontScale = 1};
+      .scale = scale,
+      .fontScale = fontScale};
   typeof(result.window) dimsWindow = {
       .width = windowSize.width, 
       .height = windowSize.height, 
-      .scale = [[window screen] backingScaleFactor], 
-      .fontScale = 1};
+      .scale = scale,
+      .fontScale = fontScale};
 #endif // macOS]
   result.screen = dimsScreen;
   result.window = dimsWindow;
