@@ -94,9 +94,9 @@ Pod::Spec.new do |s|
       header_search_path = header_search_path + [
         "\"$(PODS_ROOT)/DoubleConversion\"",
         "\"$(PODS_ROOT)/fmt/include\"",
-        "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Codegen/React_Codegen.framework/Headers\"",
-        "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\"",
-        "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-rendererdebug/React_rendererdebug.framework/Headers/\"",
+        "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Codegen-macOS/React_Codegen.framework/Headers\"",
+        "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics-macOS/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\"",
+        "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-rendererdebug-macOS/React_rendererdebug.framework/Headers/\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/textlayoutmanager/platform/ios\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/textinput/iostextinput\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/view/platform/cxx\"",

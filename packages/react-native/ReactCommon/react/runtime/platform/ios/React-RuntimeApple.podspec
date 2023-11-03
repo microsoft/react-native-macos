@@ -23,9 +23,13 @@ boost_compiler_flags = '-Wno-documentation'
 
 header_search_paths = [
   "$(PODS_ROOT)/boost",
+  "\"$(PODS_ROOT)/fmt/include\"",
+  "$(PODS_ROOT)/RCT-Folly",
+  "$(PODS_ROOT)/DoubleConversion",
   "$(PODS_ROOT)/Headers/Private/React-Core",
   "$(PODS_TARGET_SRCROOT)/../../../..",
   "$(PODS_TARGET_SRCROOT)/../../../../..",
+  "${PODS_CONFIGURATION_BUILD_DIR}/React-RCTFabric-macOS/RCTFabric.framework/Headers"
 ]
 
 Pod::Spec.new do |s|

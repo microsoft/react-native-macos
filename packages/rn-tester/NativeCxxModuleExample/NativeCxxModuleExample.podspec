@@ -22,7 +22,8 @@ Pod::Spec.new do |s|
   s.requires_arc    = true
   s.pod_target_xcconfig = {
     "USE_HEADERMAP" => "YES",
-    "CLANG_CXX_LANGUAGE_STANDARD" => "c++20"
+    "CLANG_CXX_LANGUAGE_STANDARD" => "c++20",
+    "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/RCT-Folly\""
   }
 
   install_modules_dependencies(s)

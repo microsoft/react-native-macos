@@ -34,14 +34,14 @@ if ENV['USE_FRAMEWORKS']
     "\"$(PODS_TARGET_SRCROOT)\"",
     "\"$(PODS_ROOT)/DoubleConversion\"",
     "\"$(PODS_ROOT)/fmt/include\"",
-    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Codegen/React_Codegen.framework/Headers\"",
-    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\"",
-    "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/imagemanager/platform/ios\"",
-    "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx\"",
+    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-Codegen-macOS/React_Codegen.framework/Headers\"",
+    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics-macOS/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\"",
+    "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric-macOS/React_Fabric.framework/Headers/react/renderer/imagemanager/platform/ios\"",
+    "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric-macOS/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx\"",
     "\"$(PODS_TARGET_SRCROOT)/react/renderer/textlayoutmanager/platform/ios\"",
     "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/textinput/iostextinput\"",
-    "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers\"",
-    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-rendererdebug/React_rendererdebug.framework/Headers/\""
+    "\"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric-macOS/React_Fabric.framework/Headers\"",
+    "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-rendererdebug-macOS/React_rendererdebug.framework/Headers/\""
   ]
 end
 

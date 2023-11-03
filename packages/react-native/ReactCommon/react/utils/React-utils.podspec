@@ -26,7 +26,7 @@ header_search_paths = [
 ]
 
 if ENV["USE_FRAMEWORKS"]
-  header_search_paths << "\"${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers\""
+  header_search_paths << "\"${PODS_CONFIGURATION_BUILD_DIR}/React-debug-macOS/React_debug.framework/Headers\""
 end
 
 Pod::Spec.new do |s|

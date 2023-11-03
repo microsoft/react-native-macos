@@ -57,6 +57,19 @@ header_search_paths = [
   "$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers/",
   "$(PODS_CONFIGURATION_BUILD_DIR)/React-runtimescheduler/React_runtimescheduler.framework/Headers/",
   "$(PODS_CONFIGURATION_BUILD_DIR)/React-rendererdebug/React_rendererdebug.framework/Headers/",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-Fabric-macOS/React_Fabric.framework/Headers/",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-Fabric-macOS/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx/",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics-macOS/React_graphics.framework/Headers/",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-graphics-macOS/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/ReactCommon-macOS/ReactCommon.framework/Headers/react/nativemodule/core",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-NativeModulesApple-macOS/React_NativeModulesApple.framework/Headers",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-RuntimeApple-macOS/React_RuntimeApple.framework/Headers",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-RuntimeCore-macOS/React_RuntimeCore.framework/Headers",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-RCTFabric-macOS/RCTFabric.framework/Headers/",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-utils-macOS/React_utils.framework/Headers/",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-debug-macOS/React_debug.framework/Headers/",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-runtimescheduler-macOS/React_runtimescheduler.framework/Headers/",
+  "$(PODS_CONFIGURATION_BUILD_DIR)/React-rendererdebug-macOS/React_rendererdebug.framework/Headers/",
 ] : []).map{|p| "\"#{p}\""}.join(" ")
 
 Pod::Spec.new do |s|
