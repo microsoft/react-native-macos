@@ -33,7 +33,7 @@ Pod::Spec.new do |s|
   s.source_files           = "*.{cpp,h}", "nativeviewconfig/*.{cpp,h}"
   s.exclude_files          = "iostests/*", "tests/**/*.{cpp,h}"
   s.header_dir             = "react/runtime"
-  s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/Headers/Private/React-Core\" \"${PODS_TARGET_SRCROOT}/../..\"",
+  s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/fmt/include\" \"$(PODS_ROOT)/Headers/Private/React-Core\" \"${PODS_TARGET_SRCROOT}/../..\" \"$(PODS_ROOT)/RCT-Folly\" \"$(PODS_ROOT)/DoubleConversion\"",
                                 "USE_HEADERMAP" => "YES",
                                 "CLANG_CXX_LANGUAGE_STANDARD" => "c++20",
                                 "GCC_WARN_PEDANTIC" => "YES" }
