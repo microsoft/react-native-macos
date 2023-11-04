@@ -22,11 +22,7 @@ typedef struct {
   } window, screen;
 } RCTDimensions;
 extern __attribute__((visibility("default")))
-#if !TARGET_OS_OSX // [macOS]
 RCTDimensions RCTGetDimensions(CGFloat fontScale);
-#else // [macOS
-RCTDimensions RCTGetDimensions(void);
-#endif // macOS]
 
 #ifdef __cplusplus
 }

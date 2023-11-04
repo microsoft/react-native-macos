@@ -335,6 +335,9 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 // UIApplication
 #define UIApplication NSApplication
 
+// UIWindow
+#define UIWindow NSWindow
+
 // UIImage
 @compatibility_alias UIImage NSImage;
 

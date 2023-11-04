@@ -108,18 +108,10 @@ static BOOL RCTIsIPhoneNotched()
 }
 
 
-#if !TARGET_OS_OSX // [macOS]
-NSDictionary *RCTExportedDimensions(CGFloat fontScale)
-#else // [macOS
-static NSDictionary *RCTExportedDimensions(void)
-#endif // macOS]
+static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 {
   RCTAssertMainQueue();
-#if !TARGET_OS_OSX // [macOS]
   RCTDimensions dimensions = RCTGetDimensions(fontScale);
-#else // [macOS
-  RCTDimensions dimensions = RCTGetDimensions();
-#endif // macOS]
   __typeof(dimensions.window) window = dimensions.window;
   NSDictionary<NSString *, NSNumber *> *dimsWindow = @{
     @"width" : @(window.width),
@@ -144,12 +136,13 @@ static NSDictionary *RCTExportedDimensions(void)
   RCTAccessibilityManager *accessibilityManager =
       (RCTAccessibilityManager *)[_moduleRegistry moduleForName:"AccessibilityManager"];
   RCTAssert(accessibilityManager, @"Failed to get exported dimensions: AccessibilityManager is nil");
-  CGFloat fontScale = accessibilityManager ? accessibilityManager.multiplier : 1.0;
 #if !TARGET_OS_OSX // [macOS]
-  return RCTExportedDimensions(fontScale);
+  CGFloat fontScale = accessibilityManager ? accessibilityManager.multiplier : 1.0;
 #else // [macOS
-  return RCTExportedDimensions();
+  CGFloat fontScale = 1.0;
 #endif // macOS]
+  
+  return RCTExportedDimensions(fontScale);
 }
 
 - (NSDictionary<NSString *, id> *)constantsToExport

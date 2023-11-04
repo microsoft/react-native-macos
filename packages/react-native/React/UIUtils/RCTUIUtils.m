@@ -9,11 +9,7 @@
 
 #import "RCTUtils.h"
 
-#if !TARGET_OS_OSX // [macOS]
 RCTDimensions RCTGetDimensions(CGFloat fontScale)
-#else // [macOS
-RCTDimensions RCTGetDimensions(void)
-#endif // macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
   UIScreen *mainScreen = UIScreen.mainScreen;
@@ -24,12 +20,11 @@ RCTDimensions RCTGetDimensions(void)
   // We fallback to screen size if a key window is not found.
   CGSize windowSize = mainWindow ? mainWindow.bounds.size : screenSize;
 #else // [macOS
-  NSWindow *window = [NSApp keyWindow];
+  NSWindow *window = RCTKeyWindow();
   NSSize windowSize = window ? [window frame].size : CGSizeMake(0, 0);
   NSSize screenSize = window ? [[window screen] frame].size : CGSizeMake(0, 0);
   CGFloat scale = window ? [[window screen] backingScaleFactor] : 1.0; // Default scale to 1.0 if window is nil
-  CGFloat fontScale = 1;
-#endif
+#endif // macOS]
   RCTDimensions result;
 #if !TARGET_OS_OSX // [macOS]
   typeof(result.screen) dimsScreen = {
