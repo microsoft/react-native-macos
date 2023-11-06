@@ -335,9 +335,6 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 // UIApplication
 #define UIApplication NSApplication
 
-// UIWindow
-#define UIWindow NSWindow
-
 // UIImage
 @compatibility_alias UIImage NSImage;
 
@@ -498,8 +495,10 @@ NS_ASSUME_NONNULL_END
 
 #if !TARGET_OS_OSX
 typedef UIApplication RCTUIApplication;
+typedef UIWindow RCTUIWindow;
 #else
 typedef NSApplication RCTUIApplication;
+typedef NSWindow RCTUIWindow;
 #endif
 
 //
