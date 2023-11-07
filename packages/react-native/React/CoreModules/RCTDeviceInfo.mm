@@ -136,13 +136,14 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
   RCTAssert(_moduleRegistry, @"ModuleRegistry must be set to properly init dimensions");
   RCTAccessibilityManager *accessibilityManager =
       (RCTAccessibilityManager *)[_moduleRegistry moduleForName:"AccessibilityManager"];
-  CGFloat fontScale = accessibilityManager ? accessibilityManager.multiplier : 1.0;
+  RCTAssert(accessibilityManager, @"Failed to get exported dimensions: AccessibilityManager is nil");
 #if !TARGET_OS_OSX // [macOS]
-  return RCTExportedDimensions(fontScale);
+  CGFloat fontScale = accessibilityManager ? accessibilityManager.multiplier : 1.0;
 #else // [macOS
-  // TODO: Saad - get root view here
-  return RCTExportedDimensions(nil);
+  CGFloat fontScale = 1.0;
 #endif // macOS]
+  
+  return RCTExportedDimensions(fontScale);
 }
 
 - (NSDictionary<NSString *, id> *)constantsToExport
