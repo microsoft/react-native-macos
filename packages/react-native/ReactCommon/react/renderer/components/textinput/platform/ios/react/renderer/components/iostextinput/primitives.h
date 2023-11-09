@@ -231,6 +231,15 @@ class TextInputTraits final {
    * Default value: `empty` (`null`).
    */
   std::optional<bool> smartInsertDelete{};
+
+#ifdef TARGET_OS_OSX // [macOS
+  /*
+   * Can be empty (`null` in JavaScript) which means `default`.
+   * maOS
+   * Default value: `empty` (`null`).
+   */
+  std::optional<bool> grammarCheck{};
+#endif // macOS]
 };
 
 } // namespace facebook::react

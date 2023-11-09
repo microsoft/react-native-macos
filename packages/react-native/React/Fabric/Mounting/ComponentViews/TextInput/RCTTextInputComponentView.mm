@@ -213,6 +213,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         newTextInputProps.traits.spellCheck.value();
   }
 #endif // macOS]
+  
+#if TARGET_OS_OSX // [macOS
+  if (newTextInputProps.traits.grammarCheck != oldTextInputProps.traits.grammarCheck && newTextInputProps.traits.grammarCheck.has_value()) {
+    _backedTextInputView.grammarCheckingEnabled =
+        newTextInputProps.traits.grammarCheck.value();
+  }
+#endif // macOS]
 
   if (newTextInputProps.traits.caretHidden != oldTextInputProps.traits.caretHidden) {
     _backedTextInputView.caretHidden = newTextInputProps.traits.caretHidden;
@@ -490,8 +497,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 }
 
-- (void)grammarCheckingDidChange:(BOOL)enabled {}
-
+- (void)grammarCheckingDidChange:(BOOL)enabled 
+{
+  if (_eventEmitter) {
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onGrammarCheckChange({.enabled =  enabled});
+  }
+}
 
 - (BOOL)hasValidKeyDownOrValidKeyUp:(nonnull NSString *)key {
   return YES;

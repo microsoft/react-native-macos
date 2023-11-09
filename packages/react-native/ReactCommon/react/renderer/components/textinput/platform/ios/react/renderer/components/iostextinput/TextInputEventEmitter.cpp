@@ -204,6 +204,14 @@ void TextInputEventEmitter::onSpellCheckChange(OnSpellCheckChange event) const {
     return payload;
   });
 }
+
+void TextInputEventEmitter::onGrammarCheckChange(OnGrammarCheckChange event) const {
+  dispatchEvent("grammarCheckChange", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "enabled", event.enabled);
+    return payload;
+  });
+}
 #endif // macOS]
 
 } // namespace facebook::react
