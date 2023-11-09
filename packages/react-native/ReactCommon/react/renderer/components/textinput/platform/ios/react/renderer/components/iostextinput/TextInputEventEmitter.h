@@ -49,6 +49,11 @@ class TextInputEventEmitter : public ViewEventEmitter {
       bool enabled;
     };
   void onAutoCorrectChange(OnAutoCorrectChange value) const;
+
+  struct OnSpellCheckChange {
+      bool enabled;
+    };
+  void onSpellCheckChange(OnSpellCheckChange value) const;
 #endif // macOS]
 
  private:

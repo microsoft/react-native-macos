@@ -63,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_OSX // [macOS
 @property (nonatomic, assign) CGFloat pointScaleFactor;
 @property (nonatomic, getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled;
+@property (nonatomic, getter=isContinuousSpellCheckingEnabled) BOOL continuousSpellCheckingEnabled;
 #endif // macOS]
 
 // This protocol disallows direct access to `selectedTextRange` property because

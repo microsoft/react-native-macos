@@ -200,12 +200,19 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.keyboardAppearance =
         RCTUIKeyboardAppearanceFromKeyboardAppearance(newTextInputProps.traits.keyboardAppearance);
   }
-
+#endif // [macOS]
+  
+#if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.spellCheck != oldTextInputProps.traits.spellCheck) {
     _backedTextInputView.spellCheckingType =
         RCTUITextSpellCheckingTypeFromOptionalBool(newTextInputProps.traits.spellCheck);
   }
-#endif // [macOS]
+#else // [macOS
+  if (newTextInputProps.traits.spellCheck != oldTextInputProps.traits.spellCheck && newTextInputProps.traits.spellCheck.has_value()) {
+    _backedTextInputView.continuousSpellCheckingEnabled =
+        newTextInputProps.traits.spellCheck.value();
+  }
+#endif // macOS]
 
   if (newTextInputProps.traits.caretHidden != oldTextInputProps.traits.caretHidden) {
     _backedTextInputView.caretHidden = newTextInputProps.traits.caretHidden;
@@ -476,9 +483,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 }
 
-
-- (void)continuousSpellCheckingDidChange:(BOOL)enabled {}
-
+- (void)continuousSpellCheckingDidChange:(BOOL)enabled
+{
+  if (_eventEmitter) {
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onSpellCheckChange({.enabled =  enabled});
+  }
+}
 
 - (void)grammarCheckingDidChange:(BOOL)enabled {}
 
