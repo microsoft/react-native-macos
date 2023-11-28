@@ -1,6 +1,8 @@
 name: Integrate $(Date:yyyyMMdd).$(Rev:.r)
 variables:
   - template: variables/vars.yml
+  - name: reactNativeVersion
+    value: "^0.72"
 trigger:
   branches:
     include:
@@ -44,13 +46,13 @@ jobs:
           npm pack ./packages/react-native
         displayName: 'Pack react-native-macos'
       - bash: |
-          git clone --progress https://github.com/microsoft/react-native-test-app.git
+          git clone --filter=blob:none --progress https://github.com/microsoft/react-native-test-app.git
         displayName: Checkout react-native-test-app
       - bash: |
           set -eo pipefail
           cat package.json |
             jq '.devDependencies["react"] = $(react_version)' |
-            jq '.devDependencies["react-native"] = "^0.71"' |
+            jq '.devDependencies["react-native"] = "${{ variables.reactNativeVersion }}"' |
             jq '.devDependencies["react-native-macos"] = "../react-native-macos-$(package_version).tgz"' |
             jq 'del(.devDependencies["@react-native-community/cli"])' |
             jq 'del(.devDependencies["@react-native-community/cli-platform-android"])' |
@@ -67,7 +69,7 @@ jobs:
             jq '.devDependencies["@react-native-community/cli-platform-android"] = $(rncli_android_version)' |
             jq '.devDependencies["@react-native-community/cli-platform-ios"] = $(rncli_ios_version)' |
             jq '.devDependencies["react"] = $(react_version)' |
-            jq '.devDependencies["react-native"] = "^0.71"' |
+            jq '.devDependencies["react-native"] = "${{ variables.reactNativeVersion }}"' |
             jq '.devDependencies["react-native-macos"] = "../../react-native-macos-$(package_version).tgz"' |
             jq 'del(.devDependencies["react-native-windows"])' > .package.json
           mv .package.json package.json
