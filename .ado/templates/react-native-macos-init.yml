@@ -53,6 +53,12 @@ steps:
       workingDirectory: $(Agent.BuildDirectory)/testcli
 
   - task: CmdLine@2
+    displayName: Print macos config
+    inputs:
+      script: node --print 'require("react-native-macos/react-native.config")'
+      workingDirectory: $(Agent.BuildDirectory)/testcli
+
+  - task: CmdLine@2
     displayName: Run macos [test]
     inputs:
       script: npx react-native run-macos
