@@ -97,6 +97,7 @@
     "@react-native-community/cli": "12.0.0-alpha.15",
     "@react-native-community/cli-platform-android": "12.0.0-alpha.15",
     "@react-native-community/cli-platform-ios": "12.0.0-alpha.15",
+    "@react-native-community/cli-tools": "12.0.0-alpha.15",
     "@react-native/assets-registry": "^0.73.0",
     "@react-native/community-cli-plugin": "^0.73.0",
     "@react-native/codegen": "^0.73.0",
