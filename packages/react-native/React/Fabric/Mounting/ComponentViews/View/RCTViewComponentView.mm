@@ -424,6 +424,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   if (oldViewProps.accessibilityElementsHidden != newViewProps.accessibilityElementsHidden) {
     self.accessibilityElement.accessibilityElementsHidden = newViewProps.accessibilityElementsHidden;
   }
+#endif // [macOS]
 
   // `accessibilityShowsLargeContentViewer`
   if (oldViewProps.accessibilityShowsLargeContentViewer != newViewProps.accessibilityShowsLargeContentViewer) {
@@ -447,10 +448,15 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   // `accessibilityTraits`
   if (oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
+#if !TARGET_OS_OSX // [macOS]
     self.accessibilityElement.accessibilityTraits =
         RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
+#else // [macOS
+    self.accessibilityElement.accessibilityRole = RCTUIAccessibilityRoleFromAccessibilityTraits(newViewProps.accessibilityTraits);
+#endif // macOS]
   }
 
+#if !TARGET_OS_OSX // [macOS]
   // `accessibilityState`
   if (oldViewProps.accessibilityState != newViewProps.accessibilityState) {
     self.accessibilityTraits &= ~(UIAccessibilityTraitNotEnabled | UIAccessibilityTraitSelected);

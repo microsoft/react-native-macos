@@ -130,7 +130,45 @@ inline UIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
   }
   return result;
 };
-#endif // [macOS]
+#else // [macOS
+inline NSAccessibilityRole RCTUIAccessibilityRoleFromAccessibilityTraits(
+    facebook::react::AccessibilityTraits accessibilityTraits)
+{
+  using AccessibilityTraits = facebook::react::AccessibilityTraits;
+  if ((accessibilityTraits & AccessibilityTraits::Button) != AccessibilityTraits::None) {
+    return NSAccessibilityButtonRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Link) != AccessibilityTraits::None) {
+    return NSAccessibilityLinkRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Image) != AccessibilityTraits::None) {
+    return NSAccessibilityImageRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::KeyboardKey) != AccessibilityTraits::None) {
+    return NSAccessibilityButtonRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::StaticText) != AccessibilityTraits::None) {
+    return NSAccessibilityStaticTextRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::SummaryElement) != AccessibilityTraits::None) {
+    return NSAccessibilityStaticTextRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::SearchField) != AccessibilityTraits::None) {
+    return NSAccessibilityTextFieldRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Adjustable) != AccessibilityTraits::None) {
+    return NSAccessibilitySliderRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Header) != AccessibilityTraits::None) {
+    return NSAccessibilityStaticTextRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Switch) != AccessibilityTraits::None) {
+    return NSAccessibilityCheckBoxRole;
+  }
+  
+  return NSAccessibilityUnknownRole;
+};
+#endif // macOS]
 
 inline CATransform3D RCTCATransform3DFromTransformMatrix(const facebook::react::Transform &transformMatrix)
 {
