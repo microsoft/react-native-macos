@@ -19,6 +19,7 @@
 #import <React/RCTCursor.h> // [macOS]
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
+#import <React/UIView+React.h> // [macOS]
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
@@ -384,10 +385,13 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     self.nativeId = RCTNSStringFromStringNilIfEmpty(newViewProps.nativeId);
   }
 
-#if !TARGET_OS_OSX // [macOS]
   // `accessible`
   if (oldViewProps.accessible != newViewProps.accessible) {
+#if !TARGET_OS_OSX // [macOS]
     self.accessibilityElement.isAccessibilityElement = newViewProps.accessible;
+#else // [macOS
+    self.accessibilityElement.accessibilityElement = newViewProps.accessible;
+#endif // macOS]
   }
 
   // `accessibilityLabel`
@@ -403,9 +407,14 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   // `accessibilityHint`
   if (oldViewProps.accessibilityHint != newViewProps.accessibilityHint) {
+#if !TARGET_OS_OSX // [macOS]
     self.accessibilityElement.accessibilityHint = RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityHint);
+#else // [macOS
+    self.accessibilityElement.accessibilityHelp = RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityHint);
+#endif // macOS]
   }
 
+#if !TARGET_OS_OSX // [macOS]
   // `accessibilityViewIsModal`
   if (oldViewProps.accessibilityViewIsModal != newViewProps.accessibilityViewIsModal) {
     self.accessibilityElement.accessibilityViewIsModal = newViewProps.accessibilityViewIsModal;
@@ -458,6 +467,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   if (oldViewProps.accessibilityIgnoresInvertColors != newViewProps.accessibilityIgnoresInvertColors) {
     self.accessibilityIgnoresInvertColors = newViewProps.accessibilityIgnoresInvertColors;
   }
+#endif // [macOS]
 
   // `accessibilityValue`
   if (oldViewProps.accessibilityValue != newViewProps.accessibilityValue) {
@@ -476,8 +486,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
       self.accessibilityElement.accessibilityValue = nil;
     }
   }
-#endif // [macOS]
-
+  
   // `testId`
   if (oldViewProps.testId != newViewProps.testId) {
     SEL setAccessibilityIdentifierSelector = @selector(setAccessibilityIdentifier:);
@@ -1303,7 +1312,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
 #pragma mark - Accessibility
 
-- (NSObject *)accessibilityElement
+- (RCTPlatformView *)accessibilityElement
 {
   return self;
 }
