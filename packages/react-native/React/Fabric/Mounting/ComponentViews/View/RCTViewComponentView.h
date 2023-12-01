@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
  * transparent in favour of some subview.
  * Defaults to `self`.
  */
-@property (nonatomic, strong, nullable, readonly) NSObject *accessibilityElement;
+@property (nonatomic, strong, nullable, readonly) RCTPlatformView *accessibilityElement; // [macOS]
 
 /**
  * Insets used when hit testing inside this view.
