@@ -203,6 +203,7 @@ using namespace facebook::react;
   return self.attributedText.string;
 }
 
+#if !TARGET_OS_OSX // [macOS]
 - (BOOL)isAccessibilityElement
 {
   // All accessibility functionality of the component is implemented in `accessibilityElements` method below.
@@ -211,7 +212,6 @@ using namespace facebook::react;
   return NO;
 }
 
-#if !TARGET_OS_OSX // [macOS]
 - (NSArray *)accessibilityElements
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
