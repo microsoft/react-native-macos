@@ -15,6 +15,9 @@
 #import <React/RCTUITextField.h>
 #import <React/RCTUITextView.h>
 #import <React/RCTUtils.h>
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTWrappedTextView.h>
+#endif // macOS]
 
 #import "RCTConversions.h"
 #import "RCTTextInputNativeCommands.h"
@@ -70,7 +73,11 @@ using namespace facebook::react;
     _props = defaultProps;
     auto &props = *defaultProps;
 
+#if !TARGET_OS_OSX // [macOS]
     _backedTextInputView = props.traits.multiline ? [RCTUITextView new] : [RCTUITextField new];
+#else // [macOS
+    _backedTextInputView = props.traits.multiline ? [[RCTWrappedTextView alloc] initWithFrame:self.bounds] : [RCTUITextField new];
+#endif // macOS]
     _backedTextInputView.textInputDelegate = self;
     _ignoreNextTextInputCall = NO;
     _comingFromJS = NO;
@@ -503,12 +510,27 @@ using namespace facebook::react;
 
 - (void)focus
 {
+#if !TARGET_OS_OSX // [macOS]
   [_backedTextInputView becomeFirstResponder];
+#else // [macOS
+  NSWindow *window = _backedTextInputView.window;
+  if (window) {
+    [window makeFirstResponder:_backedTextInputView.responder];
+  }
+#endif // macOS]
 }
 
 - (void)blur
 {
+#if !TARGET_OS_OSX // [macOS]
   [_backedTextInputView resignFirstResponder];
+#else
+  NSWindow *window = _backedTextInputView.window;
+  if (window && window.firstResponder == _backedTextInputView.responder) {
+    // Calling makeFirstResponder with nil will call resignFirstResponder and make the window the first responder
+    [window makeFirstResponder:nil];
+  }
+#endif // macOS];
 }
 
 - (void)setTextAndSelection:(NSInteger)eventCount
@@ -725,7 +747,7 @@ using namespace facebook::react;
 #if !TARGET_OS_OSX // [macOS]
   RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new];
 #else // [macOS
-  RCTUITextView<RCTBackedTextInputViewProtocol> *backedTextInputView = [RCTUITextView new];
+  RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTWrappedTextView new] : [RCTUITextField new];
 #endif // macOS]
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
