@@ -23,8 +23,8 @@ void RCTCopyBackedTextInput(
     RCTUIView<RCTBackedTextInputViewProtocol> *fromTextInput,
     RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput
 #else // [macOS
-    RCTUITextView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUITextView<RCTBackedTextInputViewProtocol> *toTextInput
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *fromTextInput,
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *toTextInput
 #endif // macOS]
 )
 {
