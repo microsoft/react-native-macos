@@ -191,6 +191,19 @@
   _forwardingTextView.textContainerInsets = textContainerInsets;
 }
 
+#pragma mark -
+#pragma mark Focus ring
+
+- (BOOL)enableFocusRing
+{
+  return _scrollView.enableFocusRing;
+}
+
+- (void)setEnableFocusRing:(BOOL)enableFocusRing 
+{
+  _scrollView.enableFocusRing = enableFocusRing;
+}
+
 @end
 
 #endif // TARGET_OS_OSX
