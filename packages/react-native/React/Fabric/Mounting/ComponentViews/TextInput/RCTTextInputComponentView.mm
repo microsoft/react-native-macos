@@ -662,7 +662,28 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // [macOS]
 {
   if (_eventEmitter) {
+#if !TARGET_OS_OSX // [macOS]
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetrics]);
+#else // [macOS
+    TextInputMetrics metrics = [self _textInputMetrics]; // [macOS]
+
+    CGPoint contentOffset = scrollView.contentOffset;
+    metrics.contentOffset = {contentOffset.x, contentOffset.y};
+
+    UIEdgeInsets contentInset = scrollView.contentInset;
+    metrics.contentInset = {contentInset.left, contentInset.top, contentInset.right, contentInset.bottom};
+
+    CGSize contentSize = scrollView.contentSize;
+    metrics.contentSize = {contentSize.width, contentSize.height};
+
+    CGSize layoutMeasurement = scrollView.bounds.size;
+    metrics.layoutMeasurement = {layoutMeasurement.width, layoutMeasurement.height};
+
+    CGFloat zoomScale = scrollView.zoomScale ?: 1;
+    metrics.zoomScale = zoomScale;
+
+    static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll(metrics);
+#endif // macOS]
   }
 }
 
