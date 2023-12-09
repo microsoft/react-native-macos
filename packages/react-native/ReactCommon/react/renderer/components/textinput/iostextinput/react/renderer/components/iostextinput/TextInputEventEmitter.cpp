@@ -67,6 +67,8 @@ static jsi::Value keyPressMetricsPayload(
       key = "Enter";
     } else if (keyPressMetrics.text.front() == '\t') {
       key = "Tab";
+    } else if (keyPressMetrics.text.front() == '\x1B') {
+      key = "Escape";
     } else {
       key = keyPressMetrics.text.front();
     }

@@ -460,7 +460,24 @@ using namespace facebook::react;
 
 - (void)submitOnKeyDownIfNeeded:(nonnull NSEvent *)event {}
 
-- (void)textInputDidCancel {}
+- (void)textInputDidCancel
+{
+  if (_eventEmitter) {
+    KeyPressMetrics keyPressMetrics;
+    keyPressMetrics.text = RCTStringFromNSString(@"\x1B"); // Escape key
+    keyPressMetrics.eventCount = _mostRecentEventCount;
+
+    auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
+    auto const &props = *std::static_pointer_cast<TextInputProps const>(_props);
+    if (props.onKeyPressSync) {
+      textInputEventEmitter.onKeyPressSync(keyPressMetrics);
+    } else {
+      textInputEventEmitter.onKeyPress(keyPressMetrics);
+    }
+  }
+  
+  [self textInputDidEndEditing];
+}
 
 - (NSDragOperation)textInputDraggingEntered:(nonnull id<NSDraggingInfo>)draggingInfo {
   return NSDragOperationNone;
