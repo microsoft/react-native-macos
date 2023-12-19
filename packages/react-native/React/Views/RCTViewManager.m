@@ -284,7 +284,6 @@ RCT_CUSTOM_VIEW_PROPERTY(shouldRasterizeIOS, BOOL, RCTView)
 RCT_REMAP_VIEW_PROPERTY(transform, reactTransform, CATransform3D)
 RCT_REMAP_VIEW_PROPERTY(transformOrigin, reactTransformOrigin, RCTTransformOrigin)
 
-
 RCT_CUSTOM_VIEW_PROPERTY(accessibilityRole, UIAccessibilityTraits, RCTView)
 {
   #if !TARGET_OS_OSX // [macOS]
