@@ -27,6 +27,18 @@
 
 using namespace facebook::react;
 
+#if !TARGET_OS_OSX // [macOS]
+@interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
+#else // [macOS
+@interface RCTParagraphComponentView ()
+#endif // macOS]
+
+#if !TARGET_OS_OSX // [macOS]
+@property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
+#endif // [macOS]
+
+@end
+
 @implementation RCTParagraphComponentView {
   ParagraphShadowNode::ConcreteState::Shared _state;
   ParagraphAttributes _paragraphAttributes;
@@ -39,8 +51,7 @@ using namespace facebook::react;
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-    static const auto defaultProps = std::make_shared<const ParagraphProps>();
-    _props = defaultProps;
+    _props = ParagraphShadowNode::defaultSharedProps();
 
 #if !TARGET_OS_OSX  // [macOS]
     self.contentMode = UIViewContentModeRedraw;
@@ -223,19 +234,36 @@ using namespace facebook::react;
 {
   _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self
                                                                               action:@selector(handleLongPress:)];
+
+  if (@available(iOS 16.0, *)) {
+    _editMenuInteraction = [[UIEditMenuInteraction alloc] initWithDelegate:self];
+    [self addInteraction:_editMenuInteraction];
+  }
   [self addGestureRecognizer:_longPressGestureRecognizer];
 }
 
 - (void)disableContextMenu
 {
   [self removeGestureRecognizer:_longPressGestureRecognizer];
+  if (@available(iOS 16.0, *)) {
+    [self removeInteraction:_editMenuInteraction];
+    _editMenuInteraction = nil;
+  }
   _longPressGestureRecognizer = nil;
 }
 
 - (void)handleLongPress:(UILongPressGestureRecognizer *)gesture
 {
-  // TODO: Adopt showMenuFromRect (necessary for UIKitForMac)
 #if !TARGET_OS_UIKITFORMAC
+  if (@available(iOS 16.0, *)) {
+    CGPoint location = [gesture locationInView:self];
+    UIEditMenuConfiguration *config = [UIEditMenuConfiguration configurationWithIdentifier:nil sourcePoint:location];
+    if (_editMenuInteraction) {
+      [_editMenuInteraction presentEditMenuWithConfiguration:config];
+    }
+    return;
+  }
+  // TODO: Adopt showMenuFromRect (necessary for UIKitForMac)
   UIMenuController *menuController = [UIMenuController sharedMenuController];
 
   if (menuController.isMenuVisible) {

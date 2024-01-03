@@ -9,17 +9,19 @@
 
 'use strict';
 
-const {exec} = require('shelljs');
-const {parseVersion} = require('./version-utils');
 const {
   exitIfNotOnGit,
   getCurrentCommit,
   isTaggedLatest,
 } = require('./scm-utils');
-const path = require('path'); // [macOS]
-const fs = require('fs'); // [macOS]
+const {parseVersion} = require('./version-utils');
+const {exec} = require('shelljs');
 
-// [macOS] Function to get our version from package.json instead of the CircleCI build tag.
+// [macOS
+const path = require('path');
+const fs = require('fs');
+
+// Function to get our version from package.json instead of the CircleCI build tag.
 function getPkgJsonVersion() {
   const RN_PACKAGE_DIRECTORY = path.resolve(
     __dirname,
@@ -61,6 +63,24 @@ function getNpmInfo(buildType) {
     return {
       version: `${mainVersion}-nightly-${dateIdentifier}-${shortCommit}`,
       tag: 'nightly',
+    };
+  }
+
+  if (buildType === 'prealpha') {
+    const mainVersion = '0.0.0';
+    // Date in the format of YYYYMMDDHH.
+    // This is a progressive int that can track subsequent
+    // releases and it is smaller of 2^32-1.
+    // It is unlikely that we can trigger two prealpha in less
+    // than an hour given that nightlies take ~ 1 hr to complete.
+    const dateIdentifier = new Date()
+      .toISOString()
+      .slice(0, -10)
+      .replace(/[-T:]/g, '');
+
+    return {
+      version: `${mainVersion}-prealpha-${dateIdentifier}`,
+      tag: 'prealpha',
     };
   }
 

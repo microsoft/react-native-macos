@@ -414,7 +414,6 @@ void Binding::installFabricUIManager(
 
   CoreFeatures::enablePropIteratorSetter =
       getFeatureFlagValue("enableCppPropsIteratorSetter");
-  CoreFeatures::useNativeState = getFeatureFlagValue("useNativeState");
   CoreFeatures::doNotSwapLeftAndRightOnAndroidInLTR =
       getFeatureFlagValue("doNotSwapLeftAndRightOnAndroidInLTR");
   CoreFeatures::enableCleanParagraphYogaNode =
@@ -425,6 +424,8 @@ void Binding::installFabricUIManager(
       getFeatureFlagValue("enableClonelessStateProgression");
   CoreFeatures::excludeYogaFromRawProps =
       getFeatureFlagValue("excludeYogaFromRawProps");
+  CoreFeatures::positionRelativeDefault =
+      getFeatureFlagValue("positionRelativeDefault");
 
   // RemoveDelete mega-op
   ShadowViewMutation::PlatformSupportsRemoveDeleteTreeInstruction =

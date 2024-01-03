@@ -96,11 +96,12 @@ using namespace facebook::react;
   return view;
 }
 
-- (void)setProps:(const folly::dynamic &)props forView:(RCTPlatformView *)view // [macOS]
+- (void)setProps:(NSDictionary<NSString *, id> *)props forView:(RCTPlatformView *)view // [macOS]
 {
-  if (props.isObject()) {
-    NSDictionary<NSString *, id> *convertedProps = convertFollyDynamicToId(props);
-    [_componentData setProps:convertedProps forView:view];
+  [_componentData setProps:props forView:view];
+
+  if ([view respondsToSelector:@selector(didSetProps:)]) {
+    [view performSelector:@selector(didSetProps:) withObject:[props allKeys]];
   }
 }
 

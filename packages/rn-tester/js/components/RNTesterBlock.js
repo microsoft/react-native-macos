@@ -8,10 +8,9 @@
  * @flow
  */
 
-import * as React from 'react';
 import {RNTesterThemeContext} from './RNTesterTheme';
-import {PlatformColor, StyleSheet, Text, View} from 'react-native';
-import {Platform} from 'react-native'; // [macOS]
+import * as React from 'react';
+import {Platform, StyleSheet, Text, View} from 'react-native'; // [macOS]
 
 type Props = $ReadOnly<{|
   children?: React.Node,

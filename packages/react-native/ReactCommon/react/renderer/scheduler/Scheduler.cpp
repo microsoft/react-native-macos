@@ -139,6 +139,14 @@ Scheduler::Scheduler(
   reduceDeleteCreateMutationLayoutAnimation_ = true;
 #endif
 
+#ifdef ANDROID
+  CoreFeatures::enableMicrotasks =
+      reactNativeConfig_->getBool("react_fabric:enable_microtasks_android");
+#else
+  CoreFeatures::enableMicrotasks =
+      reactNativeConfig_->getBool("react_fabric:enable_microtasks_ios");
+#endif
+
   CoreFeatures::blockPaintForUseLayoutEffect = reactNativeConfig_->getBool(
       "react_fabric:block_paint_for_use_layout_effect");
 
@@ -148,6 +156,9 @@ Scheduler::Scheduler(
   CoreFeatures::enableGranularShadowTreeStateReconciliation =
       reactNativeConfig_->getBool(
           "react_fabric:enable_granular_shadow_tree_state_reconciliation");
+
+  CoreFeatures::enableReportEventPaintTime = reactNativeConfig_->getBool(
+      "rn_responsiveness_performance:enable_paint_time_reporting");
 
   if (animationDelegate != nullptr) {
     animationDelegate->setComponentDescriptorRegistry(
@@ -286,24 +297,18 @@ void Scheduler::uiManagerDidFinishTransaction(
   SystraceSection s("Scheduler::uiManagerDidFinishTransaction");
 
   if (delegate_ != nullptr) {
-    if (CoreFeatures::blockPaintForUseLayoutEffect) {
-      auto weakRuntimeScheduler =
-          contextContainer_->find<std::weak_ptr<RuntimeScheduler>>(
-              "RuntimeScheduler");
-      auto runtimeScheduler = weakRuntimeScheduler.has_value()
-          ? weakRuntimeScheduler.value().lock()
-          : nullptr;
-      if (runtimeScheduler && !mountSynchronously) {
-        runtimeScheduler->scheduleTask(
-            SchedulerPriority::UserBlockingPriority,
-            [delegate = delegate_,
-             mountingCoordinator =
-                 std::move(mountingCoordinator)](jsi::Runtime&) {
-              delegate->schedulerDidFinishTransaction(mountingCoordinator);
-            });
-      } else {
-        delegate_->schedulerDidFinishTransaction(mountingCoordinator);
-      }
+    auto weakRuntimeScheduler =
+        contextContainer_->find<std::weak_ptr<RuntimeScheduler>>(
+            "RuntimeScheduler");
+    auto runtimeScheduler = weakRuntimeScheduler.has_value()
+        ? weakRuntimeScheduler.value().lock()
+        : nullptr;
+    if (runtimeScheduler && !mountSynchronously) {
+      runtimeScheduler->scheduleRenderingUpdate(
+          [delegate = delegate_,
+           mountingCoordinator = std::move(mountingCoordinator)]() {
+            delegate->schedulerDidFinishTransaction(mountingCoordinator);
+          });
     } else {
       delegate_->schedulerDidFinishTransaction(mountingCoordinator);
     }

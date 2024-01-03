@@ -9,18 +9,18 @@
 
 'use strict';
 
-const {echo, exit} = require('shelljs');
+const getAndUpdatePackages = require('./monorepo/get-and-update-packages');
 const {getNpmInfo} = require('./npm-utils'); // [macOS] Remove publishPackage as we don't use it for React Native macOS
-const getAndUpdateNightlies = require('./monorepo/get-and-update-nightlies');
-const setReactNativeVersion = require('./set-rn-version');
 /* [macOS We do not generate Android artifacts for React Native macOS
 const {
   generateAndroidArtifacts,
   publishAndroidArtifactsToMaven,
 } = require('./release-utils');
 macOS] */
-const fs = require('fs');
+const removeNewArchFlags = require('./releases/remove-new-arch-flags');
+const setReactNativeVersion = require('./set-rn-version');
 const path = require('path');
+const {echo, exit} = require('shelljs');
 const yargs = require('yargs');
 
 /**
@@ -65,17 +65,21 @@ if (require.main === module) {
 function publishNpm(buildType) {
   const {version, tag} = getNpmInfo(buildType);
 
+  if (buildType === 'prealpha') {
+    removeNewArchFlags();
+  }
+
   // Here we update the react-native package and template package with the right versions
   // For releases, CircleCI job `prepare_package_for_release` handles this
-  if (buildType === 'nightly' || buildType === 'dry-run') {
-    // Publish monorepo nightlies if there are updates, returns nightly versions for each
-    const monorepoNightlyVersions =
-      buildType === 'nightly' ? getAndUpdateNightlies(version) : null;
+  if (['dry-run', 'nightly', 'prealpha'].includes(buildType)) {
+    // Publish monorepo nightlies and prealphas if there are updates, returns the new version for each package
+    const monorepoVersions =
+      buildType === 'dry-run' ? null : getAndUpdatePackages(version, buildType);
 
     try {
       // Update the react-native and template packages with the react-native version
       // and nightly versions of monorepo deps
-      setReactNativeVersion(version, monorepoNightlyVersions, buildType);
+      setReactNativeVersion(version, monorepoVersions, buildType);
     } catch (e) {
       console.error(`Failed to set version number to ${version}`);
       console.error(e);
@@ -94,7 +98,7 @@ function publishNpm(buildType) {
   // We first publish on Maven Central all the necessary artifacts.
   // NPM publishing is done just after.
   /* [macOS] Skip the Android Artifact and NPM Publish here as we do that in our Azure Pipeline
-  // publishAndroidArtifactsToMaven(version, buildType === 'nightly');
+  // publishAndroidArtifactsToMaven(version, buildType);
 
   const packagePath = path.join(__dirname, '..', 'packages', 'react-native');
   const result = publishPackage(packagePath, {

@@ -16,15 +16,18 @@
 #import <React/RCTPushNotificationManager.h>
 #endif
 
-#if RCT_NEW_ARCH_ENABLED
 #import <NativeCxxModuleExample/NativeCxxModuleExample.h>
 #ifndef RN_DISABLE_OSS_PLUGIN_HEADER
 #import <RNTMyNativeViewComponentView.h>
 #endif
+
+// FB-internal imports
+#ifdef RN_DISABLE_OSS_PLUGIN_HEADER
+#import <RCTFBAppInit/RCTFBAppInit.h>
 #endif
 
 #if BUNDLE_PATH
-NSString *kBundlePath = @"xplat/js/RKJSModules/EntryPoints/RNTesterTestBundle.js";
+NSString *kBundlePath = @"xplat/js/RKJSModules/EntryPoints/RNTesterBundle.js";
 #else
 #if TARGET_OS_OSX // [macOS]
 NSString *kBundlePath = @"js/RNTesterApp.ios";
@@ -41,6 +44,11 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 #endif // macOS]
 {
+#ifdef RN_DISABLE_OSS_PLUGIN_HEADER
+  // FB-internal app init setup.
+  RCTFBAppInitApplicationDidFinishLaunching(launchOptions);
+#endif
+
   self.moduleName = @"RNTesterApp";
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
@@ -51,6 +59,14 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
 #else // [macOS
   [super applicationDidFinishLaunching:notification];
 #endif // macOS]
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+#ifdef RN_DISABLE_OSS_PLUGIN_HEADER
+  // FB-internal app backgrounding setup.
+  RCTFBAppInitApplicationDidEnterBackground(application);
+#endif
 }
 
 - (NSDictionary *)prepareInitialProps
@@ -92,24 +108,13 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
   if (name == std::string([@"SampleTurboCxxModule" UTF8String])) {
     return std::make_shared<facebook::react::SampleTurboCxxModule>(jsInvoker);
   }
-#ifdef RCT_NEW_ARCH_ENABLED
   if (name == facebook::react::NativeCxxModuleExample::kModuleName) {
     return std::make_shared<facebook::react::NativeCxxModuleExample>(jsInvoker);
   }
-#endif
   return nullptr;
 }
 
 #if !TARGET_OS_TV && !TARGET_OS_UIKITFORMAC
-
-#if !TARGET_OS_OSX // [macOS]
-// Required to register for notifications
-- (void)application:(__unused UIApplication *)application
-    didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings
-{
-  [RCTPushNotificationManager didRegisterUserNotificationSettings:notificationSettings];
-}
-#endif // [macOS]
 
 // Required for the remoteNotificationsRegistered event.
 - (void)application:(__unused RCTUIApplication *)application
@@ -161,7 +166,6 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
 
 #pragma mark - RCTComponentViewFactoryComponentProvider
 
-#if RCT_NEW_ARCH_ENABLED
 #ifndef RN_DISABLE_OSS_PLUGIN_HEADER
 - (nonnull NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents
 {
@@ -169,10 +173,9 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
 }
 #endif
 
-- (NSURL *)getBundleURL
+- (NSURL *)bundleURL
 {
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:kBundlePath];
 }
-#endif
 
 @end

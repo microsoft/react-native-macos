@@ -31,6 +31,11 @@ public abstract class TurboModuleManagerDelegate {
     mHybridData = initHybrid();
   }
 
+  protected TurboModuleManagerDelegate(HybridData hybridData) {
+    maybeLoadOtherSoLibraries();
+    mHybridData = hybridData;
+  }
+
   /**
    * Create and return a TurboModule Java object with name `moduleName`. If `moduleName` isn't a
    * TurboModule, return null.
@@ -39,6 +44,8 @@ public abstract class TurboModuleManagerDelegate {
   public abstract TurboModule getModule(String moduleName);
 
   public abstract boolean unstable_isModuleRegistered(String moduleName);
+
+  public abstract boolean unstable_isLazyTurboModuleDelegate();
 
   /**
    * Create an return a legacy NativeModule with name `moduleName`. If `moduleName` is a
@@ -70,9 +77,12 @@ public abstract class TurboModuleManagerDelegate {
     return false;
   }
 
+  /* Can TurboModule methods that return void execute on the JS thread? */
   public boolean unstable_enableSyncVoidMethods() {
     return false;
   }
 
+  // TODO(T171231381): Consider removing this method: could we just use the static initializer
+  // of derived classes instead?
   protected synchronized void maybeLoadOtherSoLibraries() {}
 }

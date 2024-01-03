@@ -31,7 +31,7 @@ typedef void (^InterceptorBlock)(std::string eventName, folly::dynamic event);
 
 - (void)removeObserveForTag:(NSInteger)tag;
 
-- (void)setProps:(const folly::dynamic &)props forView:(RCTPlatformView *)view; // [macOS]
+- (void)setProps:(NSDictionary<NSString *, id> *)props forView:(RCTPlatformView *)view; // [macOS]
 
 - (NSString *)componentViewName;
 

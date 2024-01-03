@@ -258,20 +258,8 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
 {
   auto reactNativeConfig = _contextContainer->at<std::shared_ptr<const ReactNativeConfig>>("ReactNativeConfig");
 
-  if (reactNativeConfig && reactNativeConfig->getBool("rn_convergence:dispatch_pointer_events")) {
-    RCTSetDispatchW3CPointerEvents(YES);
-  }
-
   if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:enable_cpp_props_iterator_setter_ios")) {
     CoreFeatures::enablePropIteratorSetter = true;
-  }
-
-  if (reactNativeConfig && reactNativeConfig->getBool("rn_convergence:dispatch_pointer_events")) {
-    RCTSetDispatchW3CPointerEvents(YES);
-  }
-
-  if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:use_native_state")) {
-    CoreFeatures::useNativeState = true;
   }
 
   if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:cancel_image_downloads_on_recycle")) {
@@ -286,16 +274,16 @@ static BackgroundExecutor RCTGetBackgroundExecutor()
     CoreFeatures::enableMountHooks = true;
   }
 
-  if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:disable_scroll_event_throttle_requirement")) {
-    CoreFeatures::disableScrollEventThrottleRequirement = true;
-  }
-
   if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:enable_default_async_batched_priority")) {
     CoreFeatures::enableDefaultAsyncBatchedPriority = true;
   }
 
   if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:enable_cloneless_state_progression")) {
     CoreFeatures::enableClonelessStateProgression = true;
+  }
+
+  if (reactNativeConfig && reactNativeConfig->getBool("react_fabric:position_relative_default")) {
+    CoreFeatures::positionRelativeDefault = true;
   }
 
   auto componentRegistryFactory =
