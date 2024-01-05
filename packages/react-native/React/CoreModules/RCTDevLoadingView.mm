@@ -139,12 +139,14 @@ RCT_EXPORT_MODULE()
 
   dispatch_async(dispatch_get_main_queue(), ^{
     self->_showDate = [NSDate date];
+
     if (!self->_window && !RCTRunningInTestEnvironment()) {
 #if !TARGET_OS_OSX // [macOS]
-      UIWindow *window = RCTSharedApplication().keyWindow;
+      UIWindow *window = RCTKeyWindow();
       CGFloat windowWidth = window.bounds.size.width;
 
-      self->_window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, windowWidth, window.safeAreaInsets.top + 10)];
+      self->_window = [[UIWindow alloc] initWithWindowScene:window.windowScene];
+      self->_window.frame = CGRectMake(0, 0, windowWidth, window.safeAreaInsets.top + 10);
       self->_label = [[UILabel alloc] initWithFrame:CGRectMake(0, window.safeAreaInsets.top - 10, windowWidth, 20)];
       [self->_window addSubview:self->_label];
 
@@ -184,6 +186,7 @@ RCT_EXPORT_MODULE()
 #else // [macOS
     self->_label.stringValue = message;
     self->_label.textColor = color;
+
     self->_label.backgroundColor = backgroundColor;
     [self->_window orderFront:nil];
 #endif // macOS]
