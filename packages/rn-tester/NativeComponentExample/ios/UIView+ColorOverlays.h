@@ -6,17 +6,17 @@
  */
 
 #import <React/RCTComponent.h>
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 #import <string>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIView (ColorOverlays)
+@interface RCTPlatformView (ColorOverlays) // [macOS]
 
 - (void)setBackgroundColorWithColorString:(NSString *)colorString;
 - (void)addColorOverlays:(const NSArray *)overlayColors;
 - (void)removeOverlays;
-+ (UIColor *)UIColorFromHexString:(const std::string)hexString;
++ (RCTUIColor *)RCTUIColorFromHexString:(const std::string)hexString;  // [macOS]
 
 @end
 
