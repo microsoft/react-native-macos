@@ -139,12 +139,14 @@ RCT_EXPORT_MODULE()
 
   dispatch_async(dispatch_get_main_queue(), ^{
     self->_showDate = [NSDate date];
+
     if (!self->_window && !RCTRunningInTestEnvironment()) {
 #if !TARGET_OS_OSX // [macOS]
-      UIWindow *window = RCTSharedApplication().keyWindow;
+      UIWindow *window = RCTKeyWindow();
       CGFloat windowWidth = window.bounds.size.width;
 
-      self->_window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, windowWidth, window.safeAreaInsets.top + 10)];
+      self->_window = [[UIWindow alloc] initWithWindowScene:window.windowScene];
+      self->_window.frame = CGRectMake(0, 0, windowWidth, window.safeAreaInsets.top + 10);
       self->_label = [[UILabel alloc] initWithFrame:CGRectMake(0, window.safeAreaInsets.top - 10, windowWidth, 20)];
       [self->_window addSubview:self->_label];
 
@@ -184,17 +186,11 @@ RCT_EXPORT_MODULE()
 #else // [macOS
     self->_label.stringValue = message;
     self->_label.textColor = color;
+
     self->_label.backgroundColor = backgroundColor;
     [self->_window orderFront:nil];
 #endif // macOS]
 
-#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && defined(__IPHONE_13_0) && \
-    __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0
-    if (@available(iOS 13.0, *)) {
-      UIWindowScene *scene = (UIWindowScene *)RCTSharedApplication().connectedScenes.anyObject;
-      self->_window.windowScene = scene;
-    }
-#endif
   });
 }
 
