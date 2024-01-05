@@ -71,6 +71,28 @@ static NSString *getSHA256(NSString *string)
                                     result[19]];
 }
 
+#if TARGET_OS_OSX // [macOS
+static NSString *getHardwareUUID()
+{
+  mach_port_t port = 0;
+  if (@available(macOS 12.0, *)) {
+	port = kIOMainPortDefault;
+  } else {
+	port = kIOMasterPortDefault;
+  }
+  
+  CFMutableDictionaryRef matchingDict = IOServiceMatching("IOPlatformExpertDevice");
+  io_service_t platformExpert = IOServiceGetMatchingService(port, matchingDict);
+  
+  NSString *hardwareUUID = nil;
+  if (platformExpert != 0) {
+	NSString *hardwareUUID = (NSString *) CFBridgingRelease(IORegistryEntryCreateCFProperty(platformExpert, (CFStringRef) kIOPlatformUUIDKey, kCFAllocatorDefault, 0));
+  }
+  IOObjectRelease(platformExpert);
+  return hardwareUUID;
+}
+#endif // macOS]
+
 // Returns an opaque ID which is stable for the current combination of device and app, stable across installs,
 // and unique across devices.
 static NSString *getInspectorDeviceId()
@@ -79,7 +101,11 @@ static NSString *getInspectorDeviceId()
   NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
 
   // An alphanumeric string that uniquely identifies a device to the app's vendor. [Source: Apple docs]
+#if !TARGET_OS_OSX // [macOS]
   NSString *identifierForVendor = [[UIDevice currentDevice] identifierForVendor].UUIDString;
+#else // [macOS
+  NSString *identifierForVendor = getHardwareUUID();
+#endif
 
   NSString *rawDeviceId = [NSString stringWithFormat:@"apple-%@-%@", identifierForVendor, bundleId];
 
