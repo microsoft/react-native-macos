@@ -12,7 +12,7 @@ Pod::Spec.new do |spec|
   spec.authors = 'Rene Rivera'
   # [macOS] Workaround for https://github.com/facebook/react-native/issues/42180
   spec.source = { :http => 'https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2',
-                  :sha256 => '6478edfe2f3305127cffe8caf73ea0176c53769f4bf1585be237eb30798c3b8e' }
+                  :sha256 => 'f0397ba6e982c4450f27bf32a2a83292aba035b827a5623a14636ea583318c41' }
 
   # Pinning to the same version as React.podspec.
   spec.platforms = { :ios => '11.0', :osx => "10.15" } # [macOS]
