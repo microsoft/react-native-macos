@@ -3,7 +3,7 @@ steps:
     inputs:
       versionSpec: '18.x'
 
-  - script: 'brew bundle --file .ado/Brewfile'
+  - script: 'brew bundle --file .ado/Brewfile --no-lock'
     displayName: 'brew bundle'
 
   - ${{ if ne(parameters.xcode_version, '')}}:
