@@ -8,7 +8,6 @@ require 'rexml/document'
 require 'open3'
 
 HERMES_GITHUB_URL = "https://github.com/facebook/hermes.git"
-REACT_NATIVE_ARTIFACTS_MAVEN_URL = "https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts"
 
 module HermesEngineSourceType
     LOCAL_PREBUILT_TARBALL = :local_prebuilt_tarball
@@ -205,7 +204,7 @@ end
 def release_tarball_url(version, build_type)
     # Sample url from Maven:
     # https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.71.0/react-native-artifacts-0.71.0-hermes-ios-debug.tar.gz
-    return "#{REACT_NATIVE_ARTIFACTS_MAVEN_URL}/#{version}/react-native-artifacts-#{version}-hermes-ios-#{build_type.to_s}.tar.gz"
+    return "https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/#{version}/react-native-artifacts-#{version}-hermes-ios-#{build_type.to_s}.tar.gz"
 end
 
 def download_stable_hermes(react_native_path, version, configuration)
@@ -235,11 +234,11 @@ def resolve_url_redirects(url)
     return (`curl -Ls -o /dev/null -w %{url_effective} \"#{url}\"`)
 end
 
-# react-native-macos does not publish macos specific hermes artifacts
+# [macOS react-native-macos does not publish macos specific hermes artifacts
 # so we attempt to find the latest patch version of the iOS artifacts and use that
 def findLastestVersionWithArtifact(version)
     versionWithoutPatch = version.match(/^(\d+\.\d+)/)
-    xml_data, = Open3.capture3("curl -s #{REACT_NATIVE_ARTIFACTS_MAVEN_URL}/maven-metadata.xml")
+    xml_data, = Open3.capture3("curl -s https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/maven-metadata.xml")
 
     metadata = REXML::Document.new(xml_data)
     versions = metadata.elements.to_a('//metadata/versioning/versions/version')
@@ -255,6 +254,7 @@ def findLastestVersionWithArtifact(version)
 
     return sorted_versions.last
 end
+# macOS]
 
 # This function checks that Hermes artifact exists.
 # As of now it should check it on the Maven repo.
