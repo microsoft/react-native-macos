@@ -5,7 +5,7 @@
 
 require 'net/http'
 require 'rexml/document'
-require 'open3'
+require 'open3' # [macOS]
 
 HERMES_GITHUB_URL = "https://github.com/facebook/hermes.git"
 
