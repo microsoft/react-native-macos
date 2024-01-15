@@ -938,6 +938,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)_setAttributedString:(NSAttributedString *)attributedString
 {
+#if TARGET_OS_OSX // [macOS
+  // When the text view displays temporary content (e.g. completions, accents), do not update the attributed string.
+  if (_backedTextInputView.hasMarkedText) {
+    return;
+  }
+#endif // macOS]
+
   if ([self _textOf:attributedString equals:_backedTextInputView.attributedText]) {
     return;
   }
