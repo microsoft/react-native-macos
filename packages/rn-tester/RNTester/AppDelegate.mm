@@ -12,9 +12,7 @@
 #import <ReactCommon/RCTSampleTurboModule.h>
 #import <ReactCommon/SampleTurboCxxModule.h>
 
-#if !TARGET_OS_TV && !TARGET_OS_UIKITFORMAC
 #import <React/RCTPushNotificationManager.h>
-#endif
 
 #if RCT_NEW_ARCH_ENABLED
 #import <NativeCxxModuleExample/NativeCxxModuleExample.h>
@@ -100,8 +98,6 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
   return nullptr;
 }
 
-#if !TARGET_OS_TV && !TARGET_OS_UIKITFORMAC
-
 // Required for the remoteNotificationsRegistered event.
 - (void)application:(__unused RCTUIApplication *)application
     didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
@@ -148,7 +144,6 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
   return YES;
 }
 #endif // macOS]
-#endif
 
 #pragma mark - RCTComponentViewFactoryComponentProvider
 
