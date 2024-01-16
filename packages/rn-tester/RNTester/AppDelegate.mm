@@ -48,9 +48,7 @@
 
 #import <cxxreact/JSExecutor.h>
 
-#if !TARGET_OS_TV && !TARGET_OS_UIKITFORMAC
 #import <React/RCTPushNotificationManager.h>
-#endif
 
 #ifdef RN_FABRIC_ENABLED
 #import <React/RCTFabricSurfaceHostingProxyRootView.h>
@@ -336,8 +334,6 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 
 #pragma mark - Push Notifications
 
-#if !TARGET_OS_TV && !TARGET_OS_UIKITFORMAC
-
 // Required for the remoteNotificationsRegistered event.
 - (void)application:(__unused RCTUIApplication *)application
     didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
@@ -384,6 +380,5 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   return YES;
 }
 #endif // macOS]
-#endif
 
 @end
