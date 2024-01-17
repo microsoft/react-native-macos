@@ -379,19 +379,15 @@
     if (_editMenuInteraction) {
       [_editMenuInteraction presentEditMenuWithConfiguration:config];
     }
-    return;
+  } else {
+    UIMenuController *menuController = [UIMenuController sharedMenuController];
+
+    if (menuController.isMenuVisible) {
+      return;
+    }
+
+    [menuController showMenuFromView:self rect:self.bounds];
   }
-  UIMenuController *menuController = [UIMenuController sharedMenuController];
-
-	  if (menuController.isMenuVisible) {
-		return;
-	  }
-
-	  if (!self.isFirstResponder) {
-		[self becomeFirstResponder];
-	  }
-
-  [menuController showMenuFromView:self rect:self.bounds];
 }
 #else // [macOS
 
