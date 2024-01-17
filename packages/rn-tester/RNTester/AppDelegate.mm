@@ -24,7 +24,7 @@
 #if BUNDLE_PATH
 NSString *kBundlePath = @"xplat/js/RKJSModules/EntryPoints/RNTesterTestBundle.js";
 #else
-#if TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX // [macOS]
 NSString *kBundlePath = @"js/RNTesterApp.ios";
 #else // [macOS
 NSString *kBundlePath = @"js/RNTesterApp.macos";
@@ -118,14 +118,14 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
   [RCTPushNotificationManager didReceiveRemoteNotification:notification];
 }
 
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
 // Required for the localNotificationReceived event.
 - (void)application:(__unused UIApplication *)application
     didReceiveLocalNotification:(UILocalNotification *)notification
 {
   [RCTPushNotificationManager didReceiveLocalNotification:notification];
 }
-#endif // [macOS]
+#endif // [macOS] [visionOS]
 #if TARGET_OS_OSX // [macOS
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center
         didDeliverNotification:(NSUserNotification *)notification

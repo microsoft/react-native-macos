@@ -20,7 +20,9 @@ typedef void (^RCTRemoteNotificationCallback)(UIBackgroundFetchResult result);
 #if !TARGET_OS_OSX // [macOS]
 + (void)didReceiveRemoteNotification:(NSDictionary *)notification
               fetchCompletionHandler:(RCTRemoteNotificationCallback)completionHandler;
+#if TARGET_OS_IOS // [visionOS]
 + (void)didReceiveLocalNotification:(UILocalNotification *)notification;
+#endif // [visionOS]
 #endif // [macOS]
 #if TARGET_OS_OSX // [macOS
 + (void)didReceiveUserNotification:(NSUserNotification *)notification;

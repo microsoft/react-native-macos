@@ -118,7 +118,8 @@ static NSDictionary *RCTFormatLocalNotification(UILocalNotification *notificatio
   formattedLocalNotification[@"remote"] = @NO;
   return formattedLocalNotification;
 }
-#else // [macOS
+#endif // [macOS] [visionOS]
+#if TARGET_OS_OSX // [macOS
 static NSDictionary *RCTFormatUserNotification(NSUserNotification *notification)
 {
   NSMutableDictionary *formattedUserNotification = [NSMutableDictionary dictionary];
@@ -271,14 +272,15 @@ RCT_EXPORT_MODULE()
 }
 #endif // [macOS]
 
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
 + (void)didReceiveLocalNotification:(UILocalNotification *)notification
 {
   [[NSNotificationCenter defaultCenter] postNotificationName:kLocalNotificationReceived
                                                       object:self
                                                     userInfo:RCTFormatLocalNotification(notification)];
 }
-#else // [macOS 
+#endif // [macOS] [visionOS]
+#if TARGET_OS_OSX // [macOS
 + (void)didReceiveUserNotification:(NSUserNotification *)notification
 {
   NSString *notificationName = notification.isRemote ? RCTRemoteNotificationReceived : kLocalNotificationReceived;
@@ -557,7 +559,7 @@ RCT_EXPORT_METHOD(getInitialNotification
                   : (RCTPromiseResolveBlock)resolve reject
                   : (__unused RCTPromiseRejectBlock)reject)
 {
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
   NSMutableDictionary<NSString *, id> *initialNotification =
       [self.bridge.launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey] mutableCopy];
 
@@ -572,7 +574,8 @@ RCT_EXPORT_METHOD(getInitialNotification
   } else {
     resolve((id)kCFNull);
   }
-#else // [macOS
+#endif // [macOS] [visionOS]
+#if TARGET_OS_OSX // [macOS
   NSUserNotification *initialNotification = self.bridge.launchOptions[NSApplicationLaunchUserNotificationKey];
   if (initialNotification) {
     resolve(RCTFormatUserNotification(initialNotification));
