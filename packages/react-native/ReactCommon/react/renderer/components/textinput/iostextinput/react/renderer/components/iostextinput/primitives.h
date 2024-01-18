@@ -89,6 +89,18 @@ class Selection final {
   int end{0};
 };
 
+#if TARGET_OS_OSX // [macOS
+class SubmitKeyEvent final {
+  public:
+    std::string key{};
+    bool altKey{false};
+    bool shiftKey{false};
+    bool ctrlKey{false};
+    bool metaKey{false};
+    bool functionKey{false};
+};
+#endif // macOS]
+
 /*
  * Controls features of text inputs.
  */
@@ -231,6 +243,22 @@ class TextInputTraits final {
    * Default value: `empty` (`null`).
    */
   std::optional<bool> smartInsertDelete{};
+
+#ifdef TARGET_OS_OSX // [macOS
+  /*
+   * Can be empty (`null` in JavaScript) which means `default`.
+   * maOS
+   * Default value: `empty` (`null`).
+   */
+  std::optional<bool> grammarCheck{};
+
+  /*
+   * List of key combinations that should submit.
+   * macOS
+   * Default value: `empty` applies as 'Enter' key.
+  */
+  std::vector<SubmitKeyEvent> submitKeyEvents{};
+#endif // macOS]
 };
 
 } // namespace facebook::react
