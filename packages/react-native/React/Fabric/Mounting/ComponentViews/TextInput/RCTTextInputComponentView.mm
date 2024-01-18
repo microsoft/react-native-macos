@@ -495,6 +495,11 @@ using namespace facebook::react;
       auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
       textInputEventEmitter.onSubmitEditing([self _textInputMetrics]);
     }
+
+    if (props.traits.clearTextOnSubmit) {
+      _backedTextInputView.attributedText = nil;
+      [self textInputDidChange];
+    }
   }
 }
 
