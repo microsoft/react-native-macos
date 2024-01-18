@@ -17,6 +17,7 @@
 #import <React/RCTUtils.h>
 #if TARGET_OS_OSX // [macOS
 #import <React/RCTWrappedTextView.h>
+#import <React/RCTViewKeyboardEvent.h>
 #endif // macOS]
 
 #import "RCTConversions.h"
@@ -469,7 +470,44 @@ using namespace facebook::react;
   return YES;
 }
 
-- (void)submitOnKeyDownIfNeeded:(nonnull NSEvent *)event {}
+- (void)submitOnKeyDownIfNeeded:(nonnull NSEvent *)event
+{
+  BOOL shouldSubmit = NO;
+  NSDictionary *keyEvent = [RCTViewKeyboardEvent bodyFromEvent:event];
+  auto const &props = *std::static_pointer_cast<TextInputProps const>(_props);
+  if (props.traits.submitKeyEvents.empty()) {
+    shouldSubmit = [keyEvent[@"key"] isEqualToString:@"Enter"]
+      && ![keyEvent[@"altKey"] boolValue]
+      && ![keyEvent[@"shiftKey"] boolValue]
+      && ![keyEvent[@"ctrlKey"] boolValue]
+      && ![keyEvent[@"metaKey"] boolValue]
+      && ![keyEvent[@"functionKey"] boolValue]; // Default clearTextOnSubmit key 
+  } else {
+    NSString *keyValue = keyEvent[@"key"];
+    NSUInteger keyValueLength = [keyValue lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    std::string key = std::string([keyValue UTF8String], keyValueLength);
+    for (auto const &submitKeyEvent : props.traits.submitKeyEvents) {
+      if (
+        submitKeyEvent.key == key &&
+        submitKeyEvent.altKey == [keyEvent[@"altKey"] boolValue] &&
+        submitKeyEvent.shiftKey == [keyEvent[@"shiftKey"] boolValue] &&
+        submitKeyEvent.ctrlKey == [keyEvent[@"ctrlKey"] boolValue] &&
+        submitKeyEvent.metaKey == [keyEvent[@"metaKey"] boolValue] &&
+        submitKeyEvent.functionKey == [keyEvent[@"functionKey"] boolValue]
+      ) {
+        shouldSubmit = YES;
+        break;
+      }
+    }
+  }
+  
+  if (shouldSubmit) {
+    if (_eventEmitter) {
+      auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
+      textInputEventEmitter.onSubmitEditing([self _textInputMetrics]);
+    }
+  }
+}
 
 - (void)textInputDidCancel
 {
