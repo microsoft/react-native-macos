@@ -241,7 +241,7 @@ class TextInputTraits final {
 #if TARGET_OS_OSX // [macOS
   /*
    * Can be empty (`null` in JavaScript) which means `default`.
-   * maOS
+   * macOS
    * Default value: `empty` (`null`).
    */
   std::optional<bool> grammarCheck{};
@@ -255,10 +255,17 @@ class TextInputTraits final {
 
   /*
    * List of key combinations that should submit.
-   * macOS
-   * Default value: `empty` applies as 'Enter' key.
+   * macOS-only
+   * Default value: `empty list` applies as 'Enter' key.
   */
   std::vector<SubmitKeyEvent> submitKeyEvents{};
+
+  /*
+   * When set to `true`, the text will be cleared after the submit.
+   * macOS-only
+   * Default value: `false`
+   */
+   bool clearTextOnSubmit{false};
 #endif // macOS]
 };
 
