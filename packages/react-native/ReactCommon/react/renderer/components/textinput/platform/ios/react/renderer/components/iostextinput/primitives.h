@@ -89,6 +89,16 @@ enum class PastedTypesType {
   Image,
   String,
 };
+
+class SubmitKeyEvent final {
+  public:
+    std::string key{};
+    bool altKey{false};
+    bool shiftKey{false};
+    bool ctrlKey{false};
+    bool metaKey{false};
+    bool functionKey{false};
+};
 #endif // macOS]
 
 /*
@@ -242,6 +252,13 @@ class TextInputTraits final {
    * Default value: `empty list`
    */
   std::vector<PastedTypesType> pastedTypes{};
+
+  /*
+   * List of key combinations that should submit.
+   * macOS
+   * Default value: `empty` applies as 'Enter' key.
+  */
+  std::vector<SubmitKeyEvent> submitKeyEvents{};
 #endif // macOS]
 };
 
