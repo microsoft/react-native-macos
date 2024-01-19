@@ -40,5 +40,10 @@ module Helpers
         def self.min_ios_version_supported
             return '12.4'
         end
+        # [macOS
+        def self.min_macos_version_supported
+            return '10.15'
+        end
+        # macOS]
     end
 end

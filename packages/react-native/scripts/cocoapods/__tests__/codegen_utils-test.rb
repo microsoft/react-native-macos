@@ -23,8 +23,14 @@ def min_ios_version_supported
     return '12.4'
 end
 
+# [macOS
+def min_macos_version_supported
+    return '10.15'
+end
+# macOS]
+
 def min_supported_versions
-  return  { :ios => min_ios_version_supported }
+  return  { :ios => min_ios_version_supported, :osx => min_macos_version_supported } # [macOS]
 end
 
 class CodegenUtilsTests < Test::Unit::TestCase
