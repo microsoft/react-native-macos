@@ -13,7 +13,14 @@
 
 #import <React/RCTBackedTextInputViewProtocol.h>
 #import <React/RCTScrollViewComponentView.h>
+
+#if !TARGET_OS_OSX // [macOS]
 #import <React/RCTUITextField.h>
+#else // [macOS
+#include <React/RCTUITextField.h>
+#include <React/RCTUISecureTextField.h>
+#endif // macOS]
+
 #import <React/RCTUITextView.h>
 #import <React/RCTUtils.h>
 #if TARGET_OS_OSX // [macOS
@@ -280,11 +287,15 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.scrollEnabled = newTextInputProps.traits.scrollEnabled;
   }
 
-#if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.secureTextEntry != oldTextInputProps.traits.secureTextEntry) {
+#if !TARGET_OS_OSX // [macOS]
     _backedTextInputView.secureTextEntry = newTextInputProps.traits.secureTextEntry;
+#else // [macOS
+    [self _setSecureTextEntry:newTextInputProps.traits.secureTextEntry];
+#endif // macOS]
   }
 
+#if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.keyboardType != oldTextInputProps.traits.keyboardType) {
     _backedTextInputView.keyboardType = RCTUIKeyboardTypeFromKeyboardType(newTextInputProps.traits.keyboardType);
   }
@@ -1093,6 +1104,27 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     // Hides keyboard, but keeps blinking cursor.
     _backedTextInputView.inputView = [UIView new];
   }
+}
+#endif // macOS]
+
+#if TARGET_OS_OSX // [macOS
+- (void)_setSecureTextEntry:(BOOL)secureTextEntry
+{
+  [_backedTextInputView removeFromSuperview];
+  RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView = secureTextEntry ? [RCTUISecureTextField new] : [RCTUITextField new];
+  backedTextInputView.frame = _backedTextInputView.frame;
+  RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
+  
+  // Copy the text field specific properties if we came from a single line input before the switch
+  if ([_backedTextInputView isKindOfClass:[RCTUITextField class]]) {
+    RCTUITextField *previousTextField = (RCTUITextField *)_backedTextInputView;
+    RCTUITextField *newTextField = (RCTUITextField *)backedTextInputView;
+    newTextField.textAlignment = previousTextField.textAlignment;
+    newTextField.text = previousTextField.text;
+  }
+
+  _backedTextInputView = backedTextInputView;
+  [self addSubview:_backedTextInputView];
 }
 #endif // macOS]
 
