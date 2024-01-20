@@ -152,7 +152,9 @@ def use_react_native! (
   pod 'DoubleConversion', :podspec => "#{prefix}/third-party-podspecs/DoubleConversion.podspec"
   pod 'glog', :podspec => "#{prefix}/third-party-podspecs/glog.podspec"
   pod 'boost', :podspec => "#{prefix}/third-party-podspecs/boost.podspec"
+  pod 'fmt', :podspec => "#{prefix}/third-party-podspecs/fmt.podspec"
   pod 'RCT-Folly', :podspec => "#{prefix}/third-party-podspecs/RCT-Folly.podspec", :modular_headers => true
+  pod 'SocketRocket', :podspec => "#{prefix}/third-party-podspecs/SocketRocket.podspec", :modular_headers => true # [visionOS]
 
   run_codegen!(
     app_path,
