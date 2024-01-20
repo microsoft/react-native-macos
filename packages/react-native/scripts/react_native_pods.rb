@@ -35,12 +35,21 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+def min_ios_version_supported
+  return Helpers::Constants.min_ios_version_supported
+end
+
+# [macOS
+def min_macos_version_supported
+  return  Helpers::Constants.min_macos_version_supported
+end
+# macOS]
 
 # This function returns the min supported OS versions supported by React Native
 # By using this function, you won't have to manually change your Podfile
 # when we change the minimum version supported by the framework.
-def min_ios_version_supported
-  return Helpers::Constants.min_ios_version_supported
+def min_supported_versions
+  return  { :ios => min_ios_version_supported, :osx => min_macos_version_supported } # [macOS]
 end
 
 # This function prepares the project for React Native, before processing
@@ -247,7 +256,7 @@ def react_native_post_install(
   ReactNativePodsUtils.set_node_modules_user_settings(installer, react_native_path)
   ReactNativePodsUtils.apply_flags_for_fabric(installer, fabric_enabled: fabric_enabled)
   ReactNativePodsUtils.apply_xcode_15_patch(installer)
-  ReactNativePodsUtils.updateIphoneOSDeploymentTarget(installer)
+  ReactNativePodsUtils.updateOSDeploymentTarget(installer)
 
   NewArchitectureHelper.set_clang_cxx_language_standard_if_needed(installer)
   is_new_arch_enabled = ENV['RCT_NEW_ARCH_ENABLED'] == "1"

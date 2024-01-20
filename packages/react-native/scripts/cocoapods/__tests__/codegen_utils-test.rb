@@ -15,12 +15,22 @@ require_relative "./test_utils/CodegenUtilsMock.rb"
 require_relative "./test_utils/CodegenScriptPhaseExtractorMock.rb"
 require_relative "./test_utils/FileUtilsMock.rb"
 
-# mocking the min_ios_version_supported function
+# mocking the min_supported_versions function
 # as it is not possible to require the original react_native_pod
 # without incurring in circular deps
 # TODO: move `min_ios_version_supported` to utils.rb
 def min_ios_version_supported
     return '12.4'
+end
+
+# [macOS
+def min_macos_version_supported
+    return '10.15'
+end
+# macOS]
+
+def min_supported_versions
+  return  { :ios => min_ios_version_supported, :osx => min_macos_version_supported } # [macOS]
 end
 
 class CodegenUtilsTests < Test::Unit::TestCase
@@ -535,8 +545,7 @@ class CodegenUtilsTests < Test::Unit::TestCase
           'source' => { :git => '' },
           'header_mappings_dir' => './',
           'platforms' => {
-            'ios' => '12.4',
-            'osx' => '10.15',
+            :ios => '13.4',
           },
           'source_files' => "**/*.{h,mm,cpp}",
           'pod_target_xcconfig' => {
