@@ -198,10 +198,12 @@ RCT_EXPORT_MODULE()
                                                object:[self->_bridge moduleForName:@"AccessibilityManager"
                                                              lazilyLoadIfNecessary:YES]];
   });
+#if TARGET_OS_IOS // [visionOS]
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(namedOrientationDidChange)
                                                name:UIDeviceOrientationDidChangeNotification
                                              object:nil];
+#endif // [visionOS]
   [RCTLayoutAnimation initializeStatics];
 #endif // [macOS]
 }
@@ -231,7 +233,7 @@ RCT_EXPORT_MODULE()
 }
 #endif // [macOS]
 
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
 // Names and coordinate system from html5 spec:
 // https://developer.mozilla.org/en-US/docs/Web/API/Screen.orientation
 // https://developer.mozilla.org/en-US/docs/Web/API/Screen.lockOrientation
@@ -284,7 +286,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
                                                                         body:orientationEvent];
 #pragma clang diagnostic pop
 }
-#endif // macOS]
+#endif // [macOS] [visionOS]
 
 - (dispatch_queue_t)methodQueue
 {

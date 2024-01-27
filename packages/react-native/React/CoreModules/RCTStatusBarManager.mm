@@ -12,9 +12,9 @@
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
 
-#if !TARGET_OS_OSX // [macOS]
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 
+#if !TARGET_OS_OSX // [macOS]
 @implementation RCTConvert (UIStatusBar)
 
 + (UIStatusBarStyle)UIStatusBarStyle:(id)json RCT_DYNAMIC
@@ -44,14 +44,14 @@ RCT_ENUM_CONVERTER(
     integerValue);
 
 @end
+#endif // [macOS]
 
 @interface RCTStatusBarManager () <NativeStatusBarManagerIOSSpec>
 @end
 
-#endif // [macOS]
-
 @implementation RCTStatusBarManager
 
+#if !TARGET_OS_OSX // [macOS]
 static BOOL RCTViewControllerBasedStatusBarAppearance()
 {
   static BOOL value;
@@ -64,6 +64,7 @@ static BOOL RCTViewControllerBasedStatusBarAppearance()
 
   return value;
 }
+#endif // [macOS]
 
 RCT_EXPORT_MODULE()
 
@@ -72,15 +73,15 @@ RCT_EXPORT_MODULE()
   return YES;
 }
 
+#if TARGET_OS_OSX // [macOS]
 - (NSArray<NSString *> *)supportedEvents
 {
   return @[ @"statusBarFrameDidChange", @"statusBarFrameWillChange" ];
 }
 
-#if !TARGET_OS_OSX // [macOS]
-
 - (void)startObserving
 {
+#if TARGET_OS_IOS // [visionOS]
   NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
   [nc addObserver:self
          selector:@selector(applicationDidChangeStatusBarFrame:)
@@ -90,6 +91,7 @@ RCT_EXPORT_MODULE()
          selector:@selector(applicationWillChangeStatusBarFrame:)
              name:UIApplicationWillChangeStatusBarFrameNotification
            object:nil];
+#endif // [visionOS]
 }
 
 - (void)stopObserving
@@ -104,6 +106,7 @@ RCT_EXPORT_MODULE()
 
 - (void)emitEvent:(NSString *)eventName forNotification:(NSNotification *)notification
 {
+#if TARGET_OS_IOS // [visionOS]
   CGRect frame = [notification.userInfo[UIApplicationStatusBarFrameUserInfoKey] CGRectValue];
   NSDictionary *event = @{
     @"frame" : @{
@@ -114,6 +117,7 @@ RCT_EXPORT_MODULE()
     },
   };
   [self sendEventWithName:eventName body:event];
+#endif // [visionOS]
 }
 
 - (void)applicationDidChangeStatusBarFrame:(NSNotification *)notification
@@ -125,19 +129,34 @@ RCT_EXPORT_MODULE()
 {
   [self emitEvent:@"statusBarFrameWillChange" forNotification:notification];
 }
+#endif
 
 RCT_EXPORT_METHOD(getHeight : (RCTResponseSenderBlock)callback)
 {
+#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_VISION // [visionOS]
   callback(@[ @{
     @"height" : @(RCTSharedApplication().statusBarFrame.size.height),
   } ]);
+#else // [visionOS
+  callback(@[ @{
+    @"height" : @(RCTUIStatusBarManager().statusBarFrame.size),
+  } ]);
+#endif // visionOS]
+#else // [macOS
+  callback(@[ @{
+    @"height" : @(0),
+  } ]);
+#endif // macOS]
 }
 
 RCT_EXPORT_METHOD(setStyle : (NSString *)style animated : (BOOL)animated)
 {
-  UIStatusBarStyle statusBarStyle = [RCTConvert UIStatusBarStyle:style];
-  if (RCTViewControllerBasedStatusBarAppearance()) {
-    RCTLogError(@"RCTStatusBarManager module requires that the \
+#if TARGET_OS_IOS // [macOS] [visionOS]
+  dispatch_async(dispatch_get_main_queue(), ^{
+    UIStatusBarStyle statusBarStyle = [RCTConvert UIStatusBarStyle:style];
+    if (RCTViewControllerBasedStatusBarAppearance()) {
+      RCTLogError(@"RCTStatusBarManager module requires that the \
                 UIViewControllerBasedStatusBarAppearance key in the Info.plist is set to NO");
   } else {
 #pragma clang diagnostic push
@@ -145,25 +164,35 @@ RCT_EXPORT_METHOD(setStyle : (NSString *)style animated : (BOOL)animated)
     [RCTSharedApplication() setStatusBarStyle:statusBarStyle animated:animated];
   }
 #pragma clang diagnostic pop
+  });
+#endif // [macOS] [visionOS]
 }
 
 RCT_EXPORT_METHOD(setHidden : (BOOL)hidden withAnimation : (NSString *)withAnimation)
 {
-  UIStatusBarAnimation animation = [RCTConvert UIStatusBarAnimation:withAnimation];
-  if (RCTViewControllerBasedStatusBarAppearance()) {
-    RCTLogError(@"RCTStatusBarManager module requires that the \
+#if TARGET_OS_IOS // [macOS] [visionOS]
+  dispatch_async(dispatch_get_main_queue(), ^{
+    UIStatusBarAnimation animation = [RCTConvert UIStatusBarAnimation:withAnimation];
+    if (RCTViewControllerBasedStatusBarAppearance()) {
+      RCTLogError(@"RCTStatusBarManager module requires that the \
                 UIViewControllerBasedStatusBarAppearance key in the Info.plist is set to NO");
   } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [RCTSharedApplication() setStatusBarHidden:hidden withAnimation:animation];
 #pragma clang diagnostic pop
-  }
+    }
+  });
+#endif // [macOS] [visionOS]
 }
 
 RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible)
 {
-  RCTSharedApplication().networkActivityIndicatorVisible = visible;
+#if TARGET_OS_IOS // [visionOS]
+  dispatch_async(dispatch_get_main_queue(), ^{
+    RCTSharedApplication().networkActivityIndicatorVisible = visible;
+  });
+#endif // [visionOS]
 }
 
 - (facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants>)getConstants
@@ -171,7 +200,15 @@ RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible)
   __block facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> constants;
   RCTUnsafeExecuteOnMainQueueSync(^{
     constants = facebook::react::typedConstants<JS::NativeStatusBarManagerIOS::Constants>({
+#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_VISION // [visionOS]
         .HEIGHT = RCTSharedApplication().statusBarFrame.size.height,
+#else // [visionOS
+        .HEIGHT = RCTUIStatusBarManager().statusBarFrame.size.height,
+#endif // visionOS]
+#else // [macOS
+        .HEIGHT = 0,
+#endif // macOS]
         .DEFAULT_BACKGROUND_COLOR = std::nullopt,
     });
   });
@@ -189,8 +226,6 @@ RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible)
 {
   return std::make_shared<facebook::react::NativeStatusBarManagerIOSSpecJSI>(params);
 }
-
-#endif // [macOS]
 
 @end
 

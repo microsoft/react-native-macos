@@ -12,13 +12,21 @@
 #import <ReactCommon/RCTSampleTurboModule.h>
 #import <ReactCommon/SampleTurboCxxModule.h>
 
-#if !TARGET_OS_TV && !TARGET_OS_UIKITFORMAC
 #import <React/RCTPushNotificationManager.h>
-#endif
 
 #if RCT_NEW_ARCH_ENABLED
 #import <NativeCxxModuleExample/NativeCxxModuleExample.h>
 #import <RNTMyNativeViewComponentView.h>
+#endif
+
+#if BUNDLE_PATH
+NSString *kBundlePath = @"xplat/js/RKJSModules/EntryPoints/RNTesterTestBundle.js";
+#else
+#if !TARGET_OS_OSX // [macOS]
+NSString *kBundlePath = @"js/RNTesterApp.ios";
+#else // [macOS
+NSString *kBundlePath = @"js/RNTesterApp.macos";
+#endif // macOS]
 #endif
 
 @implementation AppDelegate
@@ -92,8 +100,6 @@
   return nullptr;
 }
 
-#if !TARGET_OS_TV && !TARGET_OS_UIKITFORMAC
-
 // Required for the remoteNotificationsRegistered event.
 - (void)application:(__unused RCTUIApplication *)application
     didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
@@ -114,14 +120,14 @@
   [RCTPushNotificationManager didReceiveRemoteNotification:notification];
 }
 
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
 // Required for the localNotificationReceived event.
 - (void)application:(__unused UIApplication *)application
     didReceiveLocalNotification:(UILocalNotification *)notification
 {
   [RCTPushNotificationManager didReceiveLocalNotification:notification];
 }
-#endif // [macOS]
+#endif // [macOS] [visionOS]
 #if TARGET_OS_OSX // [macOS
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center
         didDeliverNotification:(NSUserNotification *)notification
@@ -140,7 +146,6 @@
   return YES;
 }
 #endif // macOS]
-#endif
 
 #pragma mark - RCTComponentViewFactoryComponentProvider
 
