@@ -30,7 +30,9 @@
 
   if ((self = [super initWithNibName:nil bundle:nil])) {
     _contentView = contentView;
+#if TARGET_OS_IOS // [visionOS]
     self.automaticallyAdjustsScrollViewInsets = NO;
+#endif // [visionOS]
   }
   return self;
 }
