@@ -17,6 +17,10 @@ steps:
         xcode_version: ${{ parameters.xcode_version }}
 
   - script: |
+      xcodebuild -downloadAllPlatforms
+    displayName: 'Xcode download all platforms'
+
+  - script: |
       xcrun simctl list
     displayName: 'List Simulators'
     
