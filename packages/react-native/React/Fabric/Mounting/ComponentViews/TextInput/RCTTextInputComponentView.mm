@@ -562,6 +562,7 @@ using namespace facebook::react;
        keyboardType == UIKeyboardTypeDecimalPad || keyboardType == UIKeyboardTypeASCIICapableNumberPad) &&
       _backedTextInputView.returnKeyType == UIReturnKeyDone;
 
+#if !TARGET_OS_VISION // [visionOS]
   if ((_backedTextInputView.inputAccessoryView != nil) == shouldHaveInputAccessoryView) {
     return;
   }
@@ -580,7 +581,8 @@ using namespace facebook::react;
   } else {
     _backedTextInputView.inputAccessoryView = nil;
   }
-  
+#endif // [visionOS]
+
   if (_backedTextInputView.isFirstResponder) {
     [_backedTextInputView reloadInputViews];
   }

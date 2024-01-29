@@ -20,11 +20,19 @@ using namespace facebook::react;
 
 static UIActivityIndicatorViewStyle convertActivityIndicatorViewStyle(const ActivityIndicatorViewSize &size)
 {
+
   switch (size) {
+#if TARGET_OS_IOS // [visionOS]
     case ActivityIndicatorViewSize::Small:
       return UIActivityIndicatorViewStyleWhite;
     case ActivityIndicatorViewSize::Large:
       return UIActivityIndicatorViewStyleWhiteLarge;
+#else // [visionOS
+    case ActivityIndicatorViewSize::Small:
+      return UIActivityIndicatorViewStyleMedium;
+    case ActivityIndicatorViewSize::Large:
+      return UIActivityIndicatorViewStyleLarge;
+#endif // visionOS]
   }
 }
 

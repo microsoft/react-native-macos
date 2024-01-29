@@ -85,15 +85,20 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   RCTPlatformView *rootView = [self createRootViewWithBridge:self.bridge moduleName:self.moduleName initProps:initProps]; // [macOS]
 
 #if !TARGET_OS_OSX // [macOS
+#if !TARGET_OS_VISION // [visionOS]
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+#else
+  self.window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 1280, 720)];
+#endif // [visionOS]
   UIViewController *rootViewController = [self createRootViewController];
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
+  self.window.windowScene.delegate = self;
   [self.window makeKeyAndVisible];
 
   return YES;
 #else // [macOS
-  NSRect frame = NSMakeRect(0,0,1024,768);
+  NSRect frame = NSMakeRect(0,0,1280,720);
   self.window = [[NSWindow alloc] initWithContentRect:NSZeroRect
                                             styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskResizable | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable
                                               backing:NSBackingStoreBuffered
@@ -172,6 +177,17 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 {
   return YES;
 }
+
+#pragma mark - UISceneDelegate
+#if !TARGET_OS_OSX // [macOS]
+- (void)windowScene:(UIWindowScene *)windowScene
+    didUpdateCoordinateSpace:(id<UICoordinateSpace>)previousCoordinateSpace
+        interfaceOrientation:(UIInterfaceOrientation)previousInterfaceOrientation
+             traitCollection:(UITraitCollection *)previousTraitCollection API_AVAILABLE(ios(13.0))
+{
+  [[NSNotificationCenter defaultCenter] postNotificationName:RCTWindowFrameDidChangeNotification object:self];
+}
+#endif // [macOS]
 
 #pragma mark - RCTCxxBridgeDelegate
 - (std::unique_ptr<facebook::react::JSExecutorFactory>)jsExecutorFactoryForBridge:(RCTBridge *)bridge

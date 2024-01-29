@@ -807,6 +807,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 #pragma mark - Custom Input Accessory View
 
+#if TARGET_OS_IOS // [macOS] [visionOS]
 - (void)didSetProps:(NSArray<NSString *> *)changedProps
 {
   if ([changedProps containsObject:@"inputAccessoryViewID"] && self.inputAccessoryViewID) {
@@ -818,7 +819,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (void)setCustomInputAccessoryViewWithNativeID:(NSString *)nativeID
 {
-#if !TARGET_OS_OSX // [macOS]
   __weak RCTBaseTextInputView *weakSelf = self;
   [_bridge.uiManager rootViewForReactTag:self.reactTag
                           withCompletion:^(UIView *rootView) {
@@ -833,12 +833,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
                               }
                             }
                           }];
-#endif // [macOS]
 }
 
 - (void)setDefaultInputAccessoryView
 {
-#if !TARGET_OS_OSX // [macOS]
   UIView<RCTBackedTextInputViewProtocol> *textInputView = self.backedTextInputView;
   UIKeyboardType keyboardType = textInputView.keyboardType;
 
@@ -870,10 +868,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
     textInputView.inputAccessoryView = nil;
   }
   [self reloadInputViewsIfNecessary];
-#endif // [macOS]
 }
 
-#if !TARGET_OS_OSX // [macOS]
 - (void)reloadInputViewsIfNecessary
 {
   // We have to call `reloadInputViews` for focused text inputs to update an accessory view.
@@ -890,7 +886,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
     [self.backedTextInputView endEditing:YES];
   }
 }
-#endif // [macOS]
+#endif // [macOS] [visionOS]
 
 // [macOS
 

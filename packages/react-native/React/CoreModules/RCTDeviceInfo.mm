@@ -28,12 +28,11 @@ using namespace facebook::react;
 @implementation RCTDeviceInfo {
 #if !TARGET_OS_OSX // [macOS]
   UIInterfaceOrientation _currentInterfaceOrientation;
+#endif // [macOS]
   NSDictionary *_currentInterfaceDimensions;
   BOOL _isFullscreen;
-#endif // [macOS]
 }
 
-@synthesize bridge = _bridge;
 @synthesize moduleRegistry = _moduleRegistry;
 
 RCT_EXPORT_MODULE()
@@ -56,15 +55,19 @@ RCT_EXPORT_MODULE()
                                                name:RCTAccessibilityManagerDidUpdateMultiplierNotification
                                              object:[_moduleRegistry moduleForName:"AccessibilityManager"]];
 
+#if TARGET_OS_IOS // [visionOS]
   _currentInterfaceOrientation = [RCTSharedApplication() statusBarOrientation];
 
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(interfaceOrientationDidChange)
                                                name:UIApplicationDidChangeStatusBarOrientationNotification
                                              object:nil];
+#endif // [visionOS]
+#endif // [macOS]
 
-  _currentInterfaceDimensions = RCTExportedDimensions(_moduleRegistry, _bridge);
+  _currentInterfaceDimensions = [self _exportedDimensions];
 
+#if !TARGET_OS_OSX // [macOS]
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(interfaceOrientationDidChange)
                                                name:UIApplicationDidBecomeActiveNotification
@@ -75,12 +78,16 @@ RCT_EXPORT_MODULE()
                                                name:RCTUserInterfaceStyleDidChangeNotification
                                              object:nil];
 #endif // [macOS]
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(interfaceFrameDidChange)
+                                               name:RCTWindowFrameDidChangeNotification
+                                             object:nil];
 }
 
 static BOOL RCTIsIPhoneX()
 {
   static BOOL isIPhoneX = NO;
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
   static dispatch_once_t onceToken;
 
   dispatch_once(&onceToken, ^{
@@ -100,31 +107,14 @@ static BOOL RCTIsIPhoneX()
         CGSizeEqualToSize(screenSize, iPhone12ProMaxScreenSize);
     ;
   });
-#endif // [macOS]
+#endif // [macOS] [visionOS]
   return isIPhoneX;
 }
 
-#if !TARGET_OS_OSX // [macOS]
-static NSDictionary *RCTExportedDimensions(RCTModuleRegistry *moduleRegistry, RCTBridge *bridge)
-#else // [macOS
-NSDictionary *RCTExportedDimensions(RCTPlatformView *rootView, RCTBridge *bridge)
-#endif // macOS]
+static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 {
   RCTAssertMainQueue();
-
-#if !TARGET_OS_OSX // [macOS]
-  RCTDimensions dimensions;
-  if (moduleRegistry) {
-    RCTAccessibilityManager *accessibilityManager =
-        (RCTAccessibilityManager *)[moduleRegistry moduleForName:"AccessibilityManager"];
-    dimensions = RCTGetDimensions(accessibilityManager ? accessibilityManager.multiplier : 1.0);
-  } else {
-    RCTAssert(false, @"ModuleRegistry must be set to properly init dimensions. Bridge exists: %d", bridge != nil);
-  }
-#else // [macOS
-  RCTDimensions dimensions = RCTGetDimensions(rootView);
-#endif // macOS]
-
+  RCTDimensions dimensions = RCTGetDimensions(fontScale);
   __typeof(dimensions.window) window = dimensions.window;
   NSDictionary<NSString *, NSNumber *> *dimsWindow = @{
     @"width" : @(window.width),
@@ -142,6 +132,21 @@ NSDictionary *RCTExportedDimensions(RCTPlatformView *rootView, RCTBridge *bridge
   return @{@"window" : dimsWindow, @"screen" : dimsScreen};
 }
 
+- (NSDictionary *)_exportedDimensions
+{
+  RCTAssert(_moduleRegistry, @"ModuleRegistry must be set to properly init dimensions");
+  RCTAccessibilityManager *accessibilityManager =
+      (RCTAccessibilityManager *)[_moduleRegistry moduleForName:"AccessibilityManager"];
+  RCTAssert(accessibilityManager, @"Failed to get exported dimensions: AccessibilityManager is nil");
+#if !TARGET_OS_OSX // [macOS]
+  CGFloat fontScale = accessibilityManager ? accessibilityManager.multiplier : 1.0;
+#else // [macOS
+  CGFloat fontScale = 1.0;
+#endif // macOS]
+  
+  return RCTExportedDimensions(fontScale);
+}
+
 - (NSDictionary<NSString *, id> *)constantsToExport
 {
   return [self getConstants];
@@ -150,15 +155,10 @@ NSDictionary *RCTExportedDimensions(RCTPlatformView *rootView, RCTBridge *bridge
 - (NSDictionary<NSString *, id> *)getConstants
 {
   __block NSDictionary<NSString *, id> *constants;
-  RCTModuleRegistry *moduleRegistry = _moduleRegistry;
-  RCTBridge *bridge = _bridge;
+  __weak __typeof(self) weakSelf = self;
   RCTUnsafeExecuteOnMainQueueSync(^{
     constants = @{
-#if !TARGET_OS_OSX // [macOS]
-      @"Dimensions" : RCTExportedDimensions(moduleRegistry, bridge),
-#else // [macOS
-      @"Dimensions": RCTExportedDimensions(nil, bridge),
-#endif // macOS]
+      @"Dimensions" : [weakSelf _exportedDimensions],
       // Note:
       // This prop is deprecated and will be removed in a future release.
       // Please use this only for a quick and temporary solution.
@@ -172,25 +172,19 @@ NSDictionary *RCTExportedDimensions(RCTPlatformView *rootView, RCTBridge *bridge
 
 - (void)didReceiveNewContentSizeMultiplier
 {
+  __weak __typeof(self) weakSelf = self;
   RCTModuleRegistry *moduleRegistry = _moduleRegistry;
-  RCTBridge *bridge = _bridge;
   RCTExecuteOnMainQueue(^{
   // Report the event across the bridge.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [[moduleRegistry moduleForName:"EventDispatcher"]
-        sendDeviceEventWithName:@"didUpdateDimensions"
-#if !TARGET_OS_OSX // [macOS]
-                           body:RCTExportedDimensions(moduleRegistry, bridge)];
-#else // [macOS
-                           body:RCTExportedDimensions(nil, bridge)];
-#endif // macOS]
+    [[moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"didUpdateDimensions"
+                                                                         body:[weakSelf _exportedDimensions]];
 #pragma clang diagnostic pop
   });
 }
 
-#if !TARGET_OS_OSX // [macOS]
-
+#if TARGET_OS_IOS // [macOS] [visionOS]
 - (void)interfaceOrientationDidChange
 {
   __weak __typeof(self) weakSelf = self;
@@ -222,9 +216,8 @@ NSDictionary *RCTExportedDimensions(RCTPlatformView *rootView, RCTBridge *bridge
   if ((isOrientationChanging || isResizingOrChangingToFullscreen) && RCTIsAppActive()) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [[_moduleRegistry moduleForName:"EventDispatcher"]
-        sendDeviceEventWithName:@"didUpdateDimensions"
-                           body:RCTExportedDimensions(_moduleRegistry, _bridge)];
+    [[_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"didUpdateDimensions"
+                                                                          body:[self _exportedDimensions]];
     // We only want to track the current _currentInterfaceOrientation and _isFullscreen only
     // when it happens and only when it is published.
     _currentInterfaceOrientation = nextOrientation;
@@ -232,6 +225,7 @@ NSDictionary *RCTExportedDimensions(RCTPlatformView *rootView, RCTBridge *bridge
 #pragma clang diagnostic pop
   }
 }
+#endif // [macOS] [visionOS]
 
 - (void)interfaceFrameDidChange
 {
@@ -243,7 +237,7 @@ NSDictionary *RCTExportedDimensions(RCTPlatformView *rootView, RCTBridge *bridge
 
 - (void)_interfaceFrameDidChange
 {
-  NSDictionary *nextInterfaceDimensions = RCTExportedDimensions(_moduleRegistry, _bridge);
+  NSDictionary *nextInterfaceDimensions = [self _exportedDimensions];
 
   // update and publish the even only when the app is in active state
   if (!([nextInterfaceDimensions isEqual:_currentInterfaceDimensions]) && RCTIsAppActive()) {
@@ -257,7 +251,6 @@ NSDictionary *RCTExportedDimensions(RCTPlatformView *rootView, RCTBridge *bridge
 #pragma clang diagnostic pop
   }
 }
-#endif // [macOS]
 
 - (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
 {

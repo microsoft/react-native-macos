@@ -352,7 +352,11 @@ CGSize RCTScreenSize()
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     RCTUnsafeExecuteOnMainQueueSync(^{
+#if TARGET_OS_IOS // [visionOS]
       size = [UIScreen mainScreen].bounds.size;
+#else // [visionOS
+      size = RCTKeyWindow().bounds.size;
+#endif // visionOS]
     });
   });
 
@@ -581,7 +585,7 @@ BOOL RCTRunningInAppExtension(void)
 }
 #endif // [macOS]
 
-UIApplication *__nullable RCTSharedApplication(void)
+RCTUIApplication *__nullable RCTSharedApplication(void) // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
   if (RCTRunningInAppExtension()) {
@@ -593,9 +597,9 @@ UIApplication *__nullable RCTSharedApplication(void)
 #endif // macOS]
 }
 
-#if !TARGET_OS_OSX // [macOS]
-UIWindow *__nullable RCTKeyWindow(void)
+RCTUIWindow *__nullable RCTKeyWindow(void) // [macOS]
 {
+#if !TARGET_OS_OSX // [macOS]
   if (RCTRunningInAppExtension()) {
     return nil;
   }
@@ -615,8 +619,20 @@ UIWindow *__nullable RCTKeyWindow(void)
   }
 
   return nil;
+#else // [macOS
+  return [NSApp keyWindow];
+#endif // macOS]
 }
 
+#if TARGET_OS_VISION // [visionOS
+UIStatusBarManager *__nullable RCTUIStatusBarManager(void) {
+	NSSet *connectedScenes = RCTSharedApplication().connectedScenes;
+	UIWindowScene *windowScene = [connectedScenes anyObject];
+	return windowScene.statusBarManager;
+}
+#endif // visionOS]
+
+#if !TARGET_OS_OSX // [macOS]
 UIViewController *__nullable RCTPresentedViewController(void)
 {
   if ([RCTUtilsUIOverride hasPresentedViewController]) {

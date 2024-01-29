@@ -15,6 +15,7 @@
 // NOTE: It's pointless to support UIActivityIndicatorViewStyleGray
 // as we can set the color to any arbitrary value that we want to
 
+#if TARGET_OS_IOS // [visionOS]
 RCT_ENUM_CONVERTER(
     UIActivityIndicatorViewStyle,
     (@{
@@ -23,7 +24,16 @@ RCT_ENUM_CONVERTER(
     }),
     UIActivityIndicatorViewStyleWhiteLarge,
     integerValue)
-
+#else // [visionOS
+RCT_ENUM_CONVERTER(
+    UIActivityIndicatorViewStyle,
+    (@{
+      @"large" : @(UIActivityIndicatorViewStyleLarge),
+      @"small" : @(UIActivityIndicatorViewStyleMedium),
+    }),
+    UIActivityIndicatorViewStyleLarge,
+    integerValue)
+#endif // visionOS]
 @end
 
 @implementation RCTActivityIndicatorViewManager

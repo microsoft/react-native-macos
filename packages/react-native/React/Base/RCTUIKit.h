@@ -227,8 +227,8 @@ enum : NSInteger
 
 // RCTActivityIndicatorView.h
 typedef NS_ENUM(NSInteger, UIActivityIndicatorViewStyle) {
-  UIActivityIndicatorViewStyleWhiteLarge,
-  UIActivityIndicatorViewStyleWhite
+  UIActivityIndicatorViewStyleLarge,
+  UIActivityIndicatorViewStyleMedium,
 };
 
 
@@ -486,8 +486,10 @@ NS_ASSUME_NONNULL_END
 
 #if !TARGET_OS_OSX
 typedef UIApplication RCTUIApplication;
+typedef UIWindow RCTUIWindow;
 #else
 typedef NSApplication RCTUIApplication;
+typedef NSWindow RCTUIWindow;
 #endif
 
 //
