@@ -9,6 +9,7 @@
 
 #include <react/renderer/components/view/AccessibilityProps.h>
 #include <react/renderer/components/view/YogaStylableProps.h>
+#include <react/renderer/components/view/HostPlatformViewProps.h>
 #include <react/renderer/components/view/primitives.h>
 #include <react/renderer/core/LayoutMetrics.h>
 #include <react/renderer/core/Props.h>
@@ -20,8 +21,9 @@
 
 namespace facebook::react {
 
-class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
+class BaseViewProps : public YogaStylableProps, public AccessibilityProps, public HostPlatformViewProps {
  public:
+  using SharedViewProps = std::shared_ptr<BaseViewProps const>;
   BaseViewProps() = default;
   BaseViewProps(
       const PropsParserContext& context,
