@@ -42,6 +42,7 @@ static UIScrollViewKeyboardDismissMode RCTUIKeyboardDismissModeFromProps(ScrollV
 }
 #endif // [macOS] [visionOS]
 
+#if !TARGET_OS_OSX // [macOS]
 static UIScrollViewIndicatorStyle RCTUIScrollViewIndicatorStyleFromProps(ScrollViewProps const &props)
 {
   switch (props.indicatorStyle) {
