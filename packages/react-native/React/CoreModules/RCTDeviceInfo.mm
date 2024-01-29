@@ -31,7 +31,6 @@ using namespace facebook::react;
 #endif // [macOS]
   NSDictionary *_currentInterfaceDimensions;
   BOOL _isFullscreen;
-#endif // [macOS]
 }
 
 @synthesize moduleRegistry = _moduleRegistry;

@@ -175,6 +175,7 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 }
 
 #pragma mark - UISceneDelegate
+#if !TARGET_OS_OSX // [macOS]
 - (void)windowScene:(UIWindowScene *)windowScene
     didUpdateCoordinateSpace:(id<UICoordinateSpace>)previousCoordinateSpace
         interfaceOrientation:(UIInterfaceOrientation)previousInterfaceOrientation
@@ -182,6 +183,7 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 {
   [[NSNotificationCenter defaultCenter] postNotificationName:RCTWindowFrameDidChangeNotification object:self];
 }
+#endif // [macOS]
 
 #pragma mark - RCTCxxBridgeDelegate
 - (std::unique_ptr<facebook::react::JSExecutorFactory>)jsExecutorFactoryForBridge:(RCTBridge *)bridge

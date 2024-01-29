@@ -617,9 +617,10 @@ RCTUIWindow *__nullable RCTKeyWindow(void) // [macOS]
   return nil;
 #else // [macOS
   return [NSApp keyWindow];
-@end // macOS]
+#endif // macOS]
 }
 
+#if !TARGET_OS_OSX // [macOS]
 UIViewController *__nullable RCTPresentedViewController(void)
 {
   if ([RCTUtilsUIOverride hasPresentedViewController]) {

@@ -576,11 +576,11 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost: dd6670278a62b2597c8aa78da360a2b25563e3f8
-  DoubleConversion: b27dc0920d7399c3d0135ef9089b1dc4d0403a2a
+  DoubleConversion: ca54355f8932558971f6643521d62b9bc8231cee
   FBLazyVector: 8aed4758e72c2a110bab13fdaea7c09c66ff7d57
   FBReactNativeSpec: 3dd88ceff7f4ba7642bed6c59a02f0d72dfce6d2
-  fmt: c62421983dfc7fa3d78183aad21a532cb344a337
-  glog: 48990dc5c7733bd923abbd8f3acf1f4e0df9e1c8
+  fmt: 03574da4b7ba40de39da59677ca66610ce8c4a02
+  glog: 3a72874c0322c7caf24931d3a2777cb7a3090529
   OCMock: 300b1b1b9155cb6378660b981c2557448830bdc6
   RCT-Folly: 587ebd9331504e20f18b57cf87d848a14a6292f9
   RCTRequired: 2cf640b6eb1582e19bf003efb3e7cda4086f733e
@@ -618,7 +618,7 @@ SPEC CHECKSUMS:
   ReactCommon: e87bc9667499139ae31fc637a5bbc6aa46b0b852
   ReactCommon-Samples: d2d971f602e2e061d2d1a4a674086be1c6db506c
   ScreenshotManager: ecbac137e88dd9491e93ecbd78d342361b08ed20
-  SocketRocket: ffef1e643b17817e1ab75f76928e68f8e6d6a3ce
+  SocketRocket: f6c6249082c011e6de2de60ed641ef8bbe0cfac9
   Yoga: 20be6d8dd5cf20ca7eb16ccc058807928b1f5305
 
 PODFILE CHECKSUM: a99d6ed17dc354f4be50fde10887b6813916606b
