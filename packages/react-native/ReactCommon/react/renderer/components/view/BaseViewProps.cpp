@@ -54,6 +54,7 @@ BaseViewProps::BaseViewProps(
     const RawProps& rawProps)
     : YogaStylableProps(context, sourceProps, rawProps),
       AccessibilityProps(context, sourceProps, rawProps),
+      HostPlatformViewProps(context, sourceProps, rawProps, shouldSetRawProps),
       opacity(
           CoreFeatures::enablePropIteratorSetter ? sourceProps.opacity
                                                  : convertRawProp(
@@ -292,6 +293,7 @@ void BaseViewProps::setProp(
   // reuse the same values.
   YogaStylableProps::setProp(context, hash, propName, value);
   AccessibilityProps::setProp(context, hash, propName, value);
+  HostPlatformViewProps::setProp(context, hash, propName, value);
 
   static auto defaults = BaseViewProps{};
 
