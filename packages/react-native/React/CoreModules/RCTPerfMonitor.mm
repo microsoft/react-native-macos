@@ -211,7 +211,13 @@ RCT_EXPORT_MODULE()
 - (UIView *)container
 {
   if (!_container) {
-    _container = [[UIView alloc] initWithFrame:CGRectMake(10, 25, 180, RCTPerfMonitorBarHeight)];
+#if !TARGET_OS_VISION // [visionOS]
+	CGSize statusBarSize = RCTSharedApplication().statusBarFrame.size;
+#else // [visionOS
+	CGSize statusBarSize = RCTUIStatusBarManager().statusBarFrame.size;
+#endif // visionOS]
+    CGFloat statusBarHeight = statusBarSize.height;
+    _container = [[UIView alloc] initWithFrame:CGRectMake(10, statusBarHeight, 180, RCTPerfMonitorBarHeight)];
     _container.layer.borderWidth = 2;
     _container.layer.borderColor = [UIColor lightGrayColor].CGColor;
     [_container addGestureRecognizer:self.gestureRecognizer];

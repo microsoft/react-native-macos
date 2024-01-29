@@ -1385,7 +1385,9 @@ RCT_SET_AND_PRESERVE_OFFSET(setCanCancelContentTouches, canCancelContentTouches,
 RCT_SET_AND_PRESERVE_OFFSET(setDecelerationRate, decelerationRate, CGFloat)
 RCT_SET_AND_PRESERVE_OFFSET(setDirectionalLockEnabled, isDirectionalLockEnabled, BOOL)
 RCT_SET_AND_PRESERVE_OFFSET(setIndicatorStyle, indicatorStyle, UIScrollViewIndicatorStyle)
+#if TARGET_OS_IOS // [visionOS]
 RCT_SET_AND_PRESERVE_OFFSET(setKeyboardDismissMode, keyboardDismissMode, UIScrollViewKeyboardDismissMode)
+#endif // visionOS]
 RCT_SET_AND_PRESERVE_OFFSET(setMaximumZoomScale, maximumZoomScale, CGFloat)
 RCT_SET_AND_PRESERVE_OFFSET(setMinimumZoomScale, minimumZoomScale, CGFloat)
 #endif // [macOS]
@@ -1397,7 +1399,9 @@ RCT_SET_AND_PRESERVE_OFFSET(setScrollsToTop, scrollsToTop, BOOL)
 RCT_SET_AND_PRESERVE_OFFSET(setShowsHorizontalScrollIndicator, showsHorizontalScrollIndicator, BOOL)
 RCT_SET_AND_PRESERVE_OFFSET(setShowsVerticalScrollIndicator, showsVerticalScrollIndicator, BOOL)
 RCT_SET_AND_PRESERVE_OFFSET(setZoomScale, zoomScale, CGFloat);
+#if !TARGET_OS_VISION // [visionOS]
 RCT_SET_AND_PRESERVE_OFFSET(setScrollIndicatorInsets, scrollIndicatorInsets, UIEdgeInsets);
+#endif // [visionOS]
 
 #pragma clang diagnostic push // [macOS]
 #pragma clang diagnostic ignored "-Wunguarded-availability" // [macOS]

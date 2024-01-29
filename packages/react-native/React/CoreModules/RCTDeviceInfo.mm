@@ -55,12 +55,14 @@ RCT_EXPORT_MODULE()
                                                name:RCTAccessibilityManagerDidUpdateMultiplierNotification
                                              object:[_moduleRegistry moduleForName:"AccessibilityManager"]];
 
+#if TARGET_OS_IOS // [visionOS]
   _currentInterfaceOrientation = [RCTSharedApplication() statusBarOrientation];
 
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(interfaceOrientationDidChange)
                                                name:UIApplicationDidChangeStatusBarOrientationNotification
                                              object:nil];
+#endif // [visionOS]
 #endif // [macOS]
 
   _currentInterfaceDimensions = [self _exportedDimensions];
@@ -85,7 +87,7 @@ RCT_EXPORT_MODULE()
 static BOOL RCTIsIPhoneX()
 {
   static BOOL isIPhoneX = NO;
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
   static dispatch_once_t onceToken;
 
   dispatch_once(&onceToken, ^{
@@ -105,7 +107,7 @@ static BOOL RCTIsIPhoneX()
         CGSizeEqualToSize(screenSize, iPhone12ProMaxScreenSize);
     ;
   });
-#endif // [macOS]
+#endif // [macOS] [visionOS]
   return isIPhoneX;
 }
 
@@ -182,8 +184,7 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
   });
 }
 
-#if !TARGET_OS_OSX // [macOS]
-
+#if TARGET_OS_IOS // [macOS] [visionOS]
 - (void)interfaceOrientationDidChange
 {
   __weak __typeof(self) weakSelf = self;
@@ -224,7 +225,7 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 #pragma clang diagnostic pop
   }
 }
-#endif // [macOS]
+#endif // [macOS] [visionOS]
 
 - (void)interfaceFrameDidChange
 {

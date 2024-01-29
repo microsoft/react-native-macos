@@ -28,7 +28,7 @@ using namespace facebook::react;
 
 static CGFloat const kClippingLeeway = 44.0;
 
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
 static UIScrollViewKeyboardDismissMode RCTUIKeyboardDismissModeFromProps(ScrollViewProps const &props)
 {
   switch (props.keyboardDismissMode) {
@@ -40,6 +40,7 @@ static UIScrollViewKeyboardDismissMode RCTUIKeyboardDismissModeFromProps(ScrollV
       return UIScrollViewKeyboardDismissModeInteractive;
   }
 }
+#endif // [macOS] [visionOS]
 
 static UIScrollViewIndicatorStyle RCTUIScrollViewIndicatorStyleFromProps(ScrollViewProps const &props)
 {
@@ -52,6 +53,7 @@ static UIScrollViewIndicatorStyle RCTUIScrollViewIndicatorStyleFromProps(ScrollV
       return UIScrollViewIndicatorStyleWhite;
   }
 }
+#endif // [macOS]
 
 // Once Fabric implements proper NativeAnimationDriver, this should be removed.
 // This is just a workaround to allow animations based on onScroll event.
@@ -79,7 +81,6 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
                                                       userInfo:userInfo];
   }
 }
-#endif // [macOS]
 
 @interface RCTScrollViewComponentView () <
 #if !TARGET_OS_OSX // [macOS]
@@ -328,9 +329,9 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
   MAP_SCROLL_VIEW_PROP(snapToInterval);
 
   if (oldScrollViewProps.keyboardDismissMode != newScrollViewProps.keyboardDismissMode) {
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
     scrollView.keyboardDismissMode = RCTUIKeyboardDismissModeFromProps(newScrollViewProps);
-#endif // [macOS]
+#endif // [macOS] [visionOS]
   }
 
   [super updateProps:props oldProps:oldProps];

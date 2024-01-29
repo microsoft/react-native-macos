@@ -354,14 +354,14 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   [RCTPushNotificationManager didReceiveRemoteNotification:notification];
 }
 
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
 // Required for the localNotificationReceived event.
 - (void)application:(__unused UIApplication *)application
     didReceiveLocalNotification:(UILocalNotification *)notification
 {
   [RCTPushNotificationManager didReceiveLocalNotification:notification];
 }
-#endif // [macOS]
+#endif // [macOS] [visionOS]
 #if TARGET_OS_OSX // [macOS
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center
         didDeliverNotification:(NSUserNotification *)notification
