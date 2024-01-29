@@ -7,10 +7,15 @@
 
 #pragma once
 
+#if !TARGET_OS_OSX // [macOS
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
+#else // [macOS
+#include <react/renderer/components/view/macOS/MacOSViewProps.h>
+#endif // macOS]
 
 namespace facebook::react {
+#if !TARGET_OS_OSX // [macOS]
 class HostPlatformViewProps {
  public:
   HostPlatformViewProps() = default;
@@ -27,4 +32,7 @@ class HostPlatformViewProps {
       const char *propName,
       RawValue const &value) {}
 };
+#else // [macOS
+  using HostPlatformViewProps = MacOSViewProps;
+#endif // macOS]
 } // namespace facebook::react

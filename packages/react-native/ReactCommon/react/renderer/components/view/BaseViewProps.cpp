@@ -240,27 +240,6 @@ BaseViewProps::BaseViewProps(
                     sourceProps.removeClippedSubviews,
                     false)),
 
-#ifdef TARGET_OS_OSX // [macOS
-      focusable(
-          CoreFeatures::enablePropIteratorSetter 
-              ? sourceProps.focusable
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "focusable",
-                    sourceProps.focusable,
-                    false)),
-      enableFocusRing(
-          CoreFeatures::enablePropIteratorSetter 
-              ? sourceProps.enableFocusRing
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "enableFocusRing",
-                    sourceProps.enableFocusRing,
-                    false)),
-#endif // macOS]
-
       experimental_layoutConformance(
           CoreFeatures::enablePropIteratorSetter
               ? sourceProps.experimental_layoutConformance
@@ -314,10 +293,6 @@ void BaseViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(collapsable);
     RAW_SET_PROP_SWITCH_CASE_BASIC(removeClippedSubviews);
     RAW_SET_PROP_SWITCH_CASE_BASIC(experimental_layoutConformance);
-#ifdef TARGET_OS_OSX // [macOS
-    RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing);
-#endif // macOS]
     // events field
     VIEW_EVENT_CASE(PointerEnter);
     VIEW_EVENT_CASE(PointerEnterCapture);
