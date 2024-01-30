@@ -18,7 +18,10 @@ MacOSViewProps::MacOSViewProps(
     const MacOSViewProps &sourceProps,
     const RawProps &rawProps,
     bool shouldSetRawProps)
-    : focusable(
+    : macOSViewEvents(
+          CoreFeatures::enablePropIteratorSetter ? sourceProps.macOSViewEvents
+                                                 : convertRawProp(context, rawProps, sourceProps.macOSViewEvents, {})),
+      focusable(
           CoreFeatures::enablePropIteratorSetter
               ? sourceProps.focusable
               : convertRawProp(context, rawProps, "focusable", sourceProps.focusable, {})),
@@ -35,12 +38,25 @@ MacOSViewProps::MacOSViewProps(
               ? sourceProps.validKeysUp
               : convertRawProp(context, rawProps, "validKeysUp", sourceProps.validKeysUp, {})){};
 
+#define VIEW_EVENT_CASE_MACOS(eventType, eventString) \
+  case CONSTEXPR_RAW_PROPS_KEY_HASH(eventString): {   \
+    MacOSViewEvents defaultViewEvents{};              \
+    bool res = defaultViewEvents[eventType];          \
+    if (value.hasValue()) {                           \
+      fromRawValue(context, value, res);              \
+    }                                                 \
+    macOSViewEvents[eventType] = res;                 \
+    return;                                           \
+  }
+
 void MacOSViewProps::setProp(
     const PropsParserContext &context,
     RawPropsPropNameHash hash,
     const char *propName,
     RawValue const &value) {
   switch (hash) {
+    VIEW_EVENT_CASE_MACOS(MacOSViewEvents::Offset::KeyDown, "onKeyDown");
+    VIEW_EVENT_CASE_MACOS(MacOSViewEvents::Offset::KeyUp, "onKeyUp");
     RAW_SET_PROP_SWITCH_CASE_BASIC(focusable, false);
     RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing, true);
     RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysDown, {});

@@ -9,12 +9,30 @@
 
 #include <folly/Conv.h>
 #include <react/renderer/components/view/macOS/KeyEvent.h>
+#include <react/renderer/components/view/macOS/primitives.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 
 #include <unordered_map>
+#include <string>
 
 namespace facebook::react {
+
+static inline MacOSViewEvents convertRawProp(
+    const PropsParserContext &context,
+    const RawProps &rawProps,
+    const MacOSViewEvents &sourceValue,
+    const MacOSViewEvents &defaultValue) {
+  MacOSViewEvents result{};
+  using Offset = MacOSViewEvents::Offset;
+
+  result[Offset::KeyDown] =
+      convertRawProp(context, rawProps, "onKeyDown", sourceValue[Offset::KeyDown], defaultValue[Offset::KeyDown]);
+  result[Offset::KeyUp] =
+      convertRawProp(context, rawProps, "onKeyUp", sourceValue[Offset::KeyUp], defaultValue[Offset::KeyUp]);
+
+  return result;
+}
 
 inline void fromRawValue(const PropsParserContext &context, const RawValue &value, HandledKey &result) {
   if (value.hasType<std::unordered_map<std::string, RawValue>>()) {
