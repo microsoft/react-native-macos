@@ -16,7 +16,6 @@
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTBoxShadow.h>
 #import <React/RCTConversions.h>
-#import <React/RCTCursor.h> // [macOS]
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
@@ -29,6 +28,11 @@
 #ifdef RCT_DYNAMIC_FRAMEWORKS
 #import <React/RCTComponentViewFactory.h>
 #endif
+
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTCursor.h>
+#import <React/RCTViewKeyboardEvent.h>
+#endif // macOS]
 
 using namespace facebook::react;
 
@@ -1597,7 +1601,69 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   
   return YES;
 }
+
+#pragma mark - Keyboard Events
+
+- (BOOL)handleKeyboardEvent:(NSEvent *)event {
+  BOOL keyDown = event.type == NSEventTypeKeyDown;
+  BOOL hasHandler = keyDown ? _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::KeyDown]
+                            : _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::KeyUp];
+  if (hasHandler) {
+    auto validKeys = keyDown ? _props->validKeysDown : _props->validKeysUp;
+
+    // If the view is focusable and the component didn't explicity set the validKeysDown or validKeysUp,
+    // allow enter/return and spacebar key events to mimic the behavior of native controls.
+    if (self.focusable && !validKeys.has_value()) {
+      validKeys = { { .key = "Enter" }, { .key = " " } };
+    }
+    
+    // Convert the event to a KeyEvent
+    NSEventModifierFlags modifierFlags = event.modifierFlags;
+    facebook::react::KeyEvent keyEvent = {
+      .key = [[RCTViewKeyboardEvent keyFromEvent:event] UTF8String],
+      .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+      .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+      .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+      .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+      .capsLockKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCapsLock),
+      .numericPadKey = static_cast<bool>(modifierFlags & NSEventModifierFlagNumericPad),
+      .helpKey = static_cast<bool>(modifierFlags & NSEventModifierFlagHelp),
+      .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
+    };
+
+    BOOL shouldBlock = NO;
+    for (auto const &validKey : *validKeys) {
+      if (keyEvent == validKey) {
+        shouldBlock = YES;
+        break;
+      }
+    }
+
+    if (shouldBlock) {
+      if (keyDown) {
+        _eventEmitter->onKeyDown(keyEvent);
+      } else {
+        _eventEmitter->onKeyUp(keyEvent);
+      }
+      return YES;
+    }
+  }
   
+  return NO;
+}
+
+- (void)keyDown:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyDown:event];
+  }
+}
+
+- (void)keyUp:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyUp:event];
+  }
+}
+
 #endif // macOS]
 
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
