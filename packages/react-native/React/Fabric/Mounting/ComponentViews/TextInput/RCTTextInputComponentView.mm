@@ -563,10 +563,6 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 }
 
-- (BOOL)hasValidKeyDownOrValidKeyUp:(nonnull NSString *)key {
-  return YES;
-}
-
 - (void)submitOnKeyDownIfNeeded:(nonnull NSEvent *)event {}
 
 - (void)textInputDidCancel {}
@@ -592,7 +588,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 }
 
 - (BOOL)textInputShouldHandleKeyEvent:(nonnull NSEvent *)event {
-  return YES;
+  return ![self handleKeyboardEvent:event];
 }
 
 - (BOOL)textInputShouldHandlePaste:(nonnull id<RCTBackedTextInputViewProtocol>)sender {
