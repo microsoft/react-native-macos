@@ -10,6 +10,7 @@
 #pragma once
 
 #include <react/renderer/components/view/BaseViewEventEmitter.h>
+#include <react/renderer/components/view/KeyEvent.h>
 
 namespace facebook::react {
 
@@ -21,6 +22,11 @@ class HostPlatformViewEventEmitter : public BaseViewEventEmitter {
 
   void onFocus() const;
   void onBlur() const;
+
+#pragma mark - Keyboard Events
+
+  void onKeyDown(KeyEvent const &keyEvent) const;
+  void onKeyUp(KeyEvent const &keyEvent) const;
 };
 
 } // namespace facebook::react

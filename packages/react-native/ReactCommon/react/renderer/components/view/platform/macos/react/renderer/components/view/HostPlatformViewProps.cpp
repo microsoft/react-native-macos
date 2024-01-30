@@ -94,6 +94,8 @@ void HostPlatformViewProps::setProp(
   switch (hash) {
     MACOS_VIEW_EVENT_CASE(Focus);
     MACOS_VIEW_EVENT_CASE(Blur);
+    MACOS_VIEW_EVENT_CASE(KeyDown);
+    MACOS_VIEW_EVENT_CASE(KeyUp);
     RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
     RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing);
     RAW_SET_PROP_SWITCH_CASE_OPTIONAL_VECTOR(validKeysDown);
