@@ -21,6 +21,10 @@ struct MacOSViewEvents {
     // Focus Events
     Focus = 0,
     Blur = 1,
+
+    // Keyboard Events
+    KeyDown = 2,
+    KeyUp = 3,
   };
 
   constexpr bool operator[](const Offset offset) const {
@@ -53,6 +57,10 @@ static inline MacOSViewEvents convertRawProp(
       convertRawProp(context, rawProps, "onFocus", sourceValue[Offset::Focus], defaultValue[Offset::Focus]);
   result[Offset::Blur] =
       convertRawProp(context, rawProps, "onBlur", sourceValue[Offset::Blur], defaultValue[Offset::Blur]);
+  result[Offset::KeyDown] =
+      convertRawProp(context, rawProps, "onKeyDown", sourceValue[Offset::KeyDown], defaultValue[Offset::KeyDown]);
+  result[Offset::KeyUp] =
+      convertRawProp(context, rawProps, "onKeyUp", sourceValue[Offset::KeyUp], defaultValue[Offset::KeyUp]);
 
   return result;
 }
