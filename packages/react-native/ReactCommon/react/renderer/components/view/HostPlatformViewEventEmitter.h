@@ -7,8 +7,20 @@
 
 #pragma once
 
+#if TARGET_OS_OSX
+
+#include <react/renderer/components/view/macOS/MacOSViewEventEmitter.h>
+
+namespace facebook::react {
+using HostPlatformViewEventEmitter = MacOSViewEventEmitter;
+} // namespace facebook::react
+
+#else
+
 #include <react/renderer/components/view/TouchEventEmitter.h>
 
 namespace facebook::react {
   using HostPlatformViewEventEmitter = TouchEventEmitter;
 } // namespace facebook::react
+
+#endif

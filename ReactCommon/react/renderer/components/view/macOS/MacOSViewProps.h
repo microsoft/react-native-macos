@@ -8,6 +8,7 @@
 #pragma once
 
 #include <react/renderer/components/view/macOS/KeyEvent.h>
+#include <react/renderer/components/view/macOS/primitives.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 
@@ -28,6 +29,8 @@ class MacOSViewProps {
       RawPropsPropNameHash hash,
       const char *propName,
       RawValue const &value);
+
+  MacOSViewEvents macOSViewEvents{};
 
   bool focusable{false};
   bool enableFocusRing{true};
