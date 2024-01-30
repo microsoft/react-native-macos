@@ -8,6 +8,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 namespace facebook::react {
 

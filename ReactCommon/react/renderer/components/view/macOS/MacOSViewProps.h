@@ -12,6 +12,8 @@
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 
+#include <optional>
+
 namespace facebook::react {
 
 class MacOSViewProps {
