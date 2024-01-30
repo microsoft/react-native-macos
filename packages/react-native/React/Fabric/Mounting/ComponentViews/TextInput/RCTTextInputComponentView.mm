@@ -478,7 +478,25 @@ using namespace facebook::react;
 
 
 - (BOOL)hasValidKeyDownOrValidKeyUp:(nonnull NSString *)key {
-  return YES;
+  std::string keyString = key.UTF8String;
+
+  if (_props->validKeysDown.has_value()) {
+    for (auto const &validKey : *_props->validKeysDown) {
+      if (validKey.key == keyString) {
+        return YES;
+      }
+    }
+  }
+
+  if (_props->validKeysUp.has_value()) {
+    for (auto const &validKey : *_props->validKeysUp) {
+      if (validKey.key == keyString) {
+        return YES;
+      }
+    }
+  }
+  
+  return NO;
 }
 
 - (void)submitOnKeyDownIfNeeded:(nonnull NSEvent *)event
@@ -565,7 +583,7 @@ using namespace facebook::react;
 }
 
 - (BOOL)textInputShouldHandleKeyEvent:(nonnull NSEvent *)event {
-  return YES;
+  return ![self handleKeyboardEvent:event];
 }
 
 - (BOOL)textInputShouldHandlePaste:(nonnull id<RCTBackedTextInputViewProtocol>)sender {

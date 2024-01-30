@@ -75,6 +75,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask NS_REQUIRES_SUPER;
 - (void)prepareForRecycle NS_REQUIRES_SUPER;
 
+#if TARGET_OS_OSX // [macOS
+- (BOOL)handleKeyboardEvent:(NSEvent *)event;
+#endif // macOS]
+
 /*
  * This is a fragment of temporary workaround that we need only temporary and will get rid of soon.
  */
