@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <react/renderer/components/view/macOS/KeyEvent.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 
@@ -30,6 +31,9 @@ class MacOSViewProps {
 
   bool focusable{false};
   bool enableFocusRing{true};
+
+  std::optional<std::vector<HandledKey>> validKeysDown{};
+  std::optional<std::vector<HandledKey>> validKeysUp{};
 };
 
 } // namespace facebook::react

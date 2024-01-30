@@ -7,6 +7,7 @@
 
 #include "MacOSViewProps.h"
 
+#include <react/renderer/components/view/macOS/conversions.h>
 #include <react/renderer/core/CoreFeatures.h>
 #include <react/renderer/core/propsConversions.h>
 
@@ -24,7 +25,15 @@ MacOSViewProps::MacOSViewProps(
       enableFocusRing(
           CoreFeatures::enablePropIteratorSetter
               ? sourceProps.enableFocusRing
-              : convertRawProp(context, rawProps, "enableFocusRing", sourceProps.enableFocusRing, true));
+              : convertRawProp(context, rawProps, "enableFocusRing", sourceProps.enableFocusRing, true)),
+      validKeysDown(
+          CoreFeatures::enablePropIteratorSetter
+              ? sourceProps.validKeysDown
+              : convertRawProp(context, rawProps, "validKeysDown", sourceProps.validKeysDown, {})),
+      validKeysUp(
+          CoreFeatures::enablePropIteratorSetter
+              ? sourceProps.validKeysUp
+              : convertRawProp(context, rawProps, "validKeysUp", sourceProps.validKeysUp, {})){};
 
 void MacOSViewProps::setProp(
     const PropsParserContext &context,
@@ -34,6 +43,8 @@ void MacOSViewProps::setProp(
   switch (hash) {
     RAW_SET_PROP_SWITCH_CASE_BASIC(focusable, false);
     RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing, true);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysDown, {});
+    RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysUp, {});
   }
 }
 
