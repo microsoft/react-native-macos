@@ -162,7 +162,7 @@ class ReactNativePodsUtils
             project.build_configurations.each do |config|
                 # fix for weak linking
                 self.safe_init(config, other_ld_flags_key)
-                if self.is_using_xcode15_or_greater(:xcodebuild_manager => xcodebuild_manager)
+                if self.is_using_xcode15_0(:xcodebuild_manager => xcodebuild_manager)
                     self.add_value_to_setting_if_missing(config, other_ld_flags_key, xcode15_compatibility_flags)
                 else
                     self.remove_value_to_setting_if_present(config, other_ld_flags_key, xcode15_compatibility_flags)
@@ -399,7 +399,7 @@ class ReactNativePodsUtils
         end
     end
 
-    def self.is_using_xcode15_or_greater(xcodebuild_manager: Xcodebuild)
+    def self.is_using_xcode15_0(xcodebuild_manager: Xcodebuild)
         xcodebuild_version = xcodebuild_manager.version
 
         # The output of xcodebuild -version is something like
@@ -410,7 +410,8 @@ class ReactNativePodsUtils
         regex = /(\d+)\.(\d+)(?:\.(\d+))?/
         if match_data = xcodebuild_version.match(regex)
             major = match_data[1].to_i
-            return major >= 15
+            minor = match_data[2].to_i
+            return major == 15 && minor == 0
         end
 
         return false
@@ -548,42 +549,6 @@ class ReactNativePodsUtils
         header_search_paths = ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-Fabric", "React_Fabric", ["react/renderer/imagemanager/platform/ios"])
             .map { |search_path| "\"#{search_path}\"" }
         ReactNativePodsUtils.update_header_paths_if_depends_on(target_installation_result, "React-ImageManager", header_search_paths)
-    end
-
-    def self.get_plist_paths_from(user_project)
-        info_plists = user_project
-          .files
-          .select { |p|
-            p.name&.end_with?('Info.plist')
-          }
-        return info_plists
-      end
-
-    def self.update_ats_in_plist(plistPaths, parent)
-        plistPaths.each do |plistPath|
-            fullPlistPath = File.join(parent, plistPath.path)
-            plist = Xcodeproj::Plist.read_from_path(fullPlistPath)
-            ats_configs = {
-                "NSAllowsArbitraryLoads" => false,
-                "NSAllowsLocalNetworking" => true,
-            }
-            if plist.nil?
-                plist = {
-                    "NSAppTransportSecurity" => ats_configs
-                }
-            else
-                plist["NSAppTransportSecurity"] = ats_configs
-            end
-            Xcodeproj::Plist.write_to_path(plist, fullPlistPath)
-        end
-    end
-
-    def self.apply_ats_config(installer)
-        user_project = installer.aggregate_targets
-                    .map{ |t| t.user_project }
-                    .first
-        plistPaths = self.get_plist_paths_from(user_project)
-        self.update_ats_in_plist(plistPaths, user_project.path.parent)
     end
 
     def self.react_native_pods

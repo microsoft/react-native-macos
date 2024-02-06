@@ -190,13 +190,20 @@ RCT_EXPORT_MODULE()
   }
 
 #if !TARGET_OS_OSX // [macOS]
+  // Preload the a11yManager as the RCTUIManager needs it to listen for notification
+  // By eagerly preloading it in the setBridge method, we make sure that the manager is
+  // properly initialized in the Main Thread and that we do not incur in any race condition
+  // or concurrency problem.
+  id<RCTBridgeModule> a11yManager = [self->_bridge moduleForName:@"AccessibilityManager"
+                                           lazilyLoadIfNecessary:YES];
+  __weak NSObject * a11yManagerWeakObject = a11yManager;
   // This dispatch_async avoids a deadlock while configuring native modules
   dispatch_async(dispatch_get_main_queue(), ^{
+    __strong NSObject * a11yManagerStrongObject = a11yManagerWeakObject;
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didReceiveNewContentSizeMultiplier)
                                                  name:@"RCTAccessibilityManagerDidUpdateMultiplierNotification"
-                                               object:[self->_bridge moduleForName:@"AccessibilityManager"
-                                                             lazilyLoadIfNecessary:YES]];
+                                               object:a11yManagerStrongObject];
   });
 #if TARGET_OS_IOS // [visionOS]
   [[NSNotificationCenter defaultCenter] addObserver:self

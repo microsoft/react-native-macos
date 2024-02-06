@@ -15,7 +15,7 @@ DEST=$CONFIGURATION_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH
 # Enables iOS devices to get the IP address of the machine running Metro
 if [[ ! "$SKIP_BUNDLING_METRO_IP" && "$CONFIGURATION" = *Debug* && ! "$PLATFORM_NAME" == *simulator && ! "$PLATFORM_NAME" == macosx ]]; then # [macOS]
   for num in 0 1 2 3 4 5 6 7 8; do
-    IP=$(ipconfig getifaddr en${num})
+    IP=$(ipconfig getifaddr en${num} || echo "")
     if [ ! -z "$IP" ]; then
       break
     fi
@@ -129,7 +129,7 @@ fi
 PACKAGER_SOURCEMAP_FILE=
 if [[ $EMIT_SOURCEMAP == true ]]; then
   if [[ $USE_HERMES != false ]]; then
-    PACKAGER_SOURCEMAP_FILE="$CONFIGURATION_BUILD_DIR/$(basename $SOURCEMAP_FILE)"
+    PACKAGER_SOURCEMAP_FILE="$CONFIGURATION_BUILD_DIR/$(basename "$SOURCEMAP_FILE")"
   else
     PACKAGER_SOURCEMAP_FILE="$SOURCEMAP_FILE"
   fi
