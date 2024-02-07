@@ -39,4 +39,31 @@ void MacOSViewEventEmitter::onKeyUp(KeyEvent const &keyEvent) const {
       EventPriority::AsynchronousBatched);
 }
 
+static jsi::Value mouseEventPayload(jsi::Runtime &runtime, MouseEvent const &event) {
+  auto payload = jsi::Object(runtime);
+  payload.setProperty(runtime, "clientX", event.clientX);
+  payload.setProperty(runtime, "clientY", event.clientY);
+  payload.setProperty(runtime, "screenX", event.screenX);
+  payload.setProperty(runtime, "screenY", event.screenY);
+  payload.setProperty(runtime, "altKey", event.altKey);
+  payload.setProperty(runtime, "ctrlKey", event.ctrlKey);
+  payload.setProperty(runtime, "shiftKey", event.shiftKey);
+  payload.setProperty(runtime, "metaKey", event.metaKey);
+  return payload;
+};
+
+void MacOSViewEventEmitter::onMouseEnter(MouseEvent const &mouseEvent) const {
+  dispatchEvent(
+      "mouseEnter",
+      [mouseEvent](jsi::Runtime &runtime) { return mouseEventPayload(runtime, mouseEvent); },
+      EventPriority::AsynchronousBatched);
+}
+
+void MacOSViewEventEmitter::onMouseLeave(MouseEvent const &mouseEvent) const {
+  dispatchEvent(
+      "mouseLeave",
+      [mouseEvent](jsi::Runtime &runtime) { return mouseEventPayload(runtime, mouseEvent); },
+      EventPriority::AsynchronousBatched);
+}
+
 } // namespace facebook::react

@@ -57,6 +57,8 @@ void MacOSViewProps::setProp(
   switch (hash) {
     VIEW_EVENT_CASE_MACOS(MacOSViewEvents::Offset::KeyDown, "onKeyDown");
     VIEW_EVENT_CASE_MACOS(MacOSViewEvents::Offset::KeyUp, "onKeyUp");
+    VIEW_EVENT_CASE_MACOS(MacOSViewEvents::Offset::MouseEnter, "onMouseEnter");
+    VIEW_EVENT_CASE_MACOS(MacOSViewEvents::Offset::MouseLeave, "onMouseLeave");
     RAW_SET_PROP_SWITCH_CASE_BASIC(focusable, false);
     RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing, true);
     RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysDown, {});

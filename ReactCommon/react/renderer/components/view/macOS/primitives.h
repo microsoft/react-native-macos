@@ -17,6 +17,9 @@ struct MacOSViewEvents {
   enum class Offset : uint8_t {
     KeyDown = 1,
     KeyUp = 2,
+
+    MouseEnter = 3,
+    MouseLeave = 4,
   };
 
   constexpr bool operator[](const Offset offset) const {
