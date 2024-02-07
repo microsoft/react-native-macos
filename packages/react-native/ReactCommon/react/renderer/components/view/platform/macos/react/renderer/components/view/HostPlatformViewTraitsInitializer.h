@@ -17,7 +17,9 @@ inline bool formsStackingContext(const ViewProps& props) {
 }
 
 inline bool formsView(const ViewProps& props) {
-  return props.focusable;
+  return props.focusable ||
+         props.macOSViewEvents[MacOSViewEvents::Offset::MouseEnter] ||
+         props.macOSViewEvents[MacOSViewEvents::Offset::MouseLeave];
 }
 
 } // namespace facebook::react::HostPlatformViewTraitsInitializer
