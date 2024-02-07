@@ -39,6 +39,7 @@ using namespace facebook::react;
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
   BOOL _hasMouseOver; // [macOS]
+  BOOL _hasClipViewBoundsObserver; // [macOS]
   NSTrackingArea *_trackingArea; // [macOS]
   NSMutableArray<RCTUIView *> *_reactSubviews; // [macOS]
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
@@ -479,6 +480,7 @@ using namespace facebook::react;
   [self invalidateLayer];
 
   [self updateTrackingAreas];
+  [self updateClipViewBoundsObserverIfNeeded];
 }
 
 - (void)prepareForRecycle
@@ -1119,6 +1121,38 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     _hasMouseOver = hasMouseOver;
     [self sendMouseEvent:hasMouseOver];
   }
+}
+
+- (void)updateClipViewBoundsObserverIfNeeded
+{
+  // Subscribe to view bounds changed notification so that the view can be notified when a
+  // scroll event occurs either due to trackpad/gesture based scrolling or a scrollwheel event
+  // both of which would not cause the mouseExited to be invoked.
+
+  NSClipView *clipView = self.window ? self.enclosingScrollView.contentView : nil;
+  
+  BOOL hasMouseEventHandler = _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseEnter] ||
+    _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseLeave];
+
+  if (_hasClipViewBoundsObserver && (!clipView || !hasMouseEventHandler)) {
+    _hasClipViewBoundsObserver = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NSViewBoundsDidChangeNotification
+                                                  object:nil];
+  } else if (!_hasClipViewBoundsObserver && clipView && hasMouseEventHandler) {
+    _hasClipViewBoundsObserver = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(updateMouseOverIfNeeded)
+                                                 name:NSViewBoundsDidChangeNotification
+                                               object:clipView];
+    [self updateMouseOverIfNeeded];
+  }
+}
+
+- (void)viewDidMoveToWindow
+{
+  [self updateClipViewBoundsObserverIfNeeded];
+  [super viewDidMoveToWindow];
 }
 
 - (void)updateTrackingAreas
