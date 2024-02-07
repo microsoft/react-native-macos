@@ -96,6 +96,8 @@ void HostPlatformViewProps::setProp(
     VIEW_EVENT_CASE_MACOS(Blur);
     VIEW_EVENT_CASE_MACOS(KeyDown);
     VIEW_EVENT_CASE_MACOS(KeyUp);
+    VIEW_EVENT_CASE_MACOS(MouseEnter);
+    VIEW_EVENT_CASE_MACOS(MouseLeave);
     RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
     RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing);
     RAW_SET_PROP_SWITCH_CASE_BASIC(keyDownEvents);

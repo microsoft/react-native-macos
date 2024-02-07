@@ -11,6 +11,7 @@
 
 #include <react/renderer/components/view/BaseViewEventEmitter.h>
 #include <react/renderer/components/view/KeyEvent.h>
+#include <react/renderer/components/view/MouseEvent.h>
 
 namespace facebook::react {
 
@@ -27,6 +28,11 @@ class HostPlatformViewEventEmitter : public BaseViewEventEmitter {
 
   void onKeyDown(KeyEvent const &keyEvent) const;
   void onKeyUp(KeyEvent const &keyEvent) const;
+
+#pragma mark - Mouse Events
+
+  void onMouseEnter(MouseEvent const &mouseEvent) const;
+  void onMouseLeave(MouseEvent const &mouseEvent) const;
 };
 
 } // namespace facebook::react

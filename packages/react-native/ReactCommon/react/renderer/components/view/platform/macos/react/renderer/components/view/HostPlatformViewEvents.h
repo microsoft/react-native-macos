@@ -25,6 +25,10 @@ struct HostPlatformViewEvents {
     // Keyboard Events
     KeyDown = 2,
     KeyUp = 3,
+
+    // Mouse Events
+    MouseEnter = 2,
+    MouseLeave = 3,
   };
 
   constexpr bool operator[](const Offset offset) const {
@@ -57,10 +61,16 @@ static inline HostPlatformViewEvents convertRawProp(
       convertRawProp(context, rawProps, "onFocus", sourceValue[Offset::Focus], defaultValue[Offset::Focus]);
   result[Offset::Blur] =
       convertRawProp(context, rawProps, "onBlur", sourceValue[Offset::Blur], defaultValue[Offset::Blur]);
+  // Keyboard Events
   result[Offset::KeyDown] =
       convertRawProp(context, rawProps, "onKeyDown", sourceValue[Offset::KeyDown], defaultValue[Offset::KeyDown]);
   result[Offset::KeyUp] =
       convertRawProp(context, rawProps, "onKeyUp", sourceValue[Offset::KeyUp], defaultValue[Offset::KeyUp]);
+  // Mouse Events
+  result[Offset::MouseEnter] =
+      convertRawProp(context, rawProps, "onMouseEnter", sourceValue[Offset::MouseEnter], defaultValue[Offset::MouseEnter]);
+  result[Offset::MouseLeave] =
+      convertRawProp(context, rawProps, "onMouseLeave", sourceValue[Offset::MouseLeave], defaultValue[Offset::MouseLeave]);
 
   return result;
 }

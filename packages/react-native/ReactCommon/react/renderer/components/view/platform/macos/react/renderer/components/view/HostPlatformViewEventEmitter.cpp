@@ -50,4 +50,31 @@ void HostPlatformViewEventEmitter::onKeyUp(const KeyEvent& keyEvent) const {
   });
 }
 
+#pragma mark - Mouse Events
+
+static jsi::Value mouseEventPayload(jsi::Runtime& runtime, const MouseEvent& event) {
+  auto payload = jsi::Object(runtime);
+  payload.setProperty(runtime, "clientX", event.clientX);
+  payload.setProperty(runtime, "clientY", event.clientY);
+  payload.setProperty(runtime, "screenX", event.screenX);
+  payload.setProperty(runtime, "screenY", event.screenY);
+  payload.setProperty(runtime, "altKey", event.altKey);
+  payload.setProperty(runtime, "ctrlKey", event.ctrlKey);
+  payload.setProperty(runtime, "shiftKey", event.shiftKey);
+  payload.setProperty(runtime, "metaKey", event.metaKey);
+  return payload;
+};
+
+void HostPlatformViewEventEmitter::onMouseEnter(const MouseEvent& mouseEvent) const {
+  dispatchEvent("mouseEnter", [mouseEvent](jsi::Runtime &runtime) { 
+    return mouseEventPayload(runtime, mouseEvent); 
+  });
+}
+
+void HostPlatformViewEventEmitter::onMouseLeave(const MouseEvent& mouseEvent) const {
+  dispatchEvent("mouseLeave", [mouseEvent](jsi::Runtime &runtime) { 
+    return mouseEventPayload(runtime, mouseEvent); 
+  });
+}
+
 } // namespace facebook::react
