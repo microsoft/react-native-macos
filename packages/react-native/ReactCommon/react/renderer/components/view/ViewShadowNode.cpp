@@ -56,6 +56,8 @@ void ViewShadowNode::initialize() noexcept {
 #if TARGET_OS_OSX // [macOS
        || viewProps.focusable
        || viewProps.enableFocusRing
+       || viewProps.macOSViewEvents[MacOSViewEvents::Offset::MouseEnter]
+       || viewProps.macOSViewEvents[MacOSViewEvents::Offset::MouseLeave]
 #endif // macOS]
       ;
 
