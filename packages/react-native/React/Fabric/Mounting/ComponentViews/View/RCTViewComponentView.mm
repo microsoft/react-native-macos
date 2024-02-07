@@ -49,6 +49,8 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   BOOL _needsInvalidateLayer;
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
+  BOOL _hasMouseOver; // [macOS]
+  NSTrackingArea *_trackingArea; // [macOS]
   NSMutableArray<RCTUIView *> *_reactSubviews; // [macOS]
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
   RCTPlatformView *_containerView; // [macOS]
@@ -645,6 +647,8 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   _needsInvalidateLayer = NO;
   [self invalidateLayer];
+
+  [self updateTrackingAreas];
 }
 
 - (void)prepareForRecycle
@@ -1656,6 +1660,108 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   }
 }
 
+
+#pragma mark - Mouse Events
+
+- (void)sendMouseEvent:(BOOL)isMouseOver {
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  
+  NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
+
+  MouseEvent mouseEvent = {
+    .clientX = locationInView.x,
+    .clientY = locationInView.y,
+    .screenX = locationInWindow.x,
+    .screenY = locationInWindow.y,
+    .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+    .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+    .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+    .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+  };
+  
+  if (isMouseOver) {
+    _eventEmitter->onMouseEnter(mouseEvent);
+  } else {
+    _eventEmitter->onMouseLeave(mouseEvent);
+  }
+}
+
+- (void)updateMouseOverIfNeeded
+{
+  // When an enclosing scrollview is scrolled using the scrollWheel or trackpad,
+  // the mouseExited: event does not get called on the view where mouseEntered: was previously called.
+  // This creates an unnatural pairing of mouse enter and exit events and can cause problems.
+  // We therefore explicitly check for this here and handle them by calling the appropriate callbacks.
+
+  BOOL hasMouseOver = _hasMouseOver;
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  BOOL insideBounds = NSPointInRect(locationInView, self.visibleRect);
+
+  // On macOS 14.0 visibleRect can be larger than the view bounds
+  insideBounds &= NSPointInRect(locationInView, self.bounds);
+
+  if (hasMouseOver && !insideBounds) {
+    hasMouseOver = NO;
+  } else if (!hasMouseOver && insideBounds) {
+    // The window's frame view must be used for hit testing against `locationInWindow`
+    NSView *hitView = [self.window.contentView.superview hitTest:locationInWindow];
+    hasMouseOver = [hitView isDescendantOf:self];
+  }
+
+  if (hasMouseOver != _hasMouseOver) {
+    _hasMouseOver = hasMouseOver;
+    [self sendMouseEvent:hasMouseOver];
+  }
+}
+
+- (void)updateTrackingAreas
+{
+  if (_trackingArea) {
+    [self removeTrackingArea:_trackingArea];
+  }
+
+  if (
+    _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseEnter] ||
+    _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseLeave]
+  ) {
+    _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
+                                                 options:NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited
+                                                   owner:self
+                                                userInfo:nil];
+    [self addTrackingArea:_trackingArea];
+    [self updateMouseOverIfNeeded];
+  }
+
+  [super updateTrackingAreas];
+}
+
+- (void)mouseEntered:(NSEvent *)event
+{
+  if (_hasMouseOver) {
+    return;
+  }
+
+  // The window's frame view must be used for hit testing against `locationInWindow`
+  NSView *hitView = [self.window.contentView.superview hitTest:event.locationInWindow];
+  if (![hitView isDescendantOf:self]) {
+    return;
+  }
+
+  _hasMouseOver = YES;
+  [self sendMouseEvent:_hasMouseOver];
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+  if (!_hasMouseOver) {
+    return;
+  }
+
+  _hasMouseOver = NO;
+  [self sendMouseEvent:_hasMouseOver];
+}
 #endif // macOS]
 
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
