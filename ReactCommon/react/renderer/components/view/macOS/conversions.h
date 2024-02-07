@@ -31,6 +31,11 @@ static inline MacOSViewEvents convertRawProp(
   result[Offset::KeyUp] =
       convertRawProp(context, rawProps, "onKeyUp", sourceValue[Offset::KeyUp], defaultValue[Offset::KeyUp]);
 
+  result[Offset::MouseEnter] =
+      convertRawProp(context, rawProps, "onMouseEnter", sourceValue[Offset::MouseEnter], defaultValue[Offset::MouseEnter]);
+  result[Offset::MouseLeave] =
+      convertRawProp(context, rawProps, "onMouseLeave", sourceValue[Offset::MouseLeave], defaultValue[Offset::MouseLeave]);
+
   return result;
 }
 

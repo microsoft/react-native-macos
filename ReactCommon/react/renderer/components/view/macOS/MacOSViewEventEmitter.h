@@ -9,6 +9,7 @@
 
 #include <react/renderer/components/view/TouchEventEmitter.h>
 #include <react/renderer/components/view/macOS/KeyEvent.h>
+#include <react/renderer/components/view/macOS/MouseEvent.h>
 
 namespace facebook::react {
 
@@ -20,6 +21,11 @@ class MacOSViewEventEmitter : public TouchEventEmitter {
 
   void onKeyDown(KeyEvent const &keyEvent) const;
   void onKeyUp(KeyEvent const &keyEvent) const;
+  
+#pragma mark - Mouse Events
+
+  void onMouseEnter(MouseEvent const &mouseEvent) const;
+  void onMouseLeave(MouseEvent const &mouseEvent) const;
 };
 
 } // namespace facebook::react
