@@ -1634,7 +1634,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   static const char kRCTViewKeyboardEventEmittedKey = 0;
   NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
   BOOL alreadyEmitted = [emitted boolValue];
-  if (!alreadyEmitted) {
+  if (!alreadyEmitted && _eventEmitter) {
     if (event.type == NSEventTypeKeyDown) {
       _eventEmitter->onKeyDown(keyEvent);
     } else {
@@ -1664,6 +1664,10 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 #pragma mark - Mouse Events
 
 - (void)sendMouseEvent:(BOOL)isMouseOver {
+  if (!_eventEmitter) {
+    return;
+  }
+
   NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
   NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
   
