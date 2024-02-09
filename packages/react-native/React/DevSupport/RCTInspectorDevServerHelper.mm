@@ -17,6 +17,8 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 
+static const CFStringRef kCFZeroUUID = CFSTR("00000000-0000-0000-0000-000000000000"); // [macOS]
+
 static NSString *const kDebuggerMsgDisable = @"{ \"id\":1,\"method\":\"Debugger.disable\" }";
 
 static NSString *getServerHost(NSURL *bundleURL)
@@ -78,8 +80,29 @@ static NSString *getInspectorDeviceId()
   // A bundle ID uniquely identifies a single app throughout the system. [Source: Apple docs]
   NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
 
+#if !TARGET_OS_OSX // [macOS]
   // An alphanumeric string that uniquely identifies a device to the app's vendor. [Source: Apple docs]
   NSString *identifierForVendor = [[UIDevice currentDevice] identifierForVendor].UUIDString;
+#else // [macOS
+  uuid_t uuidBytes;
+  CFUUIDRef deviceId = nil;
+  int result = 0;
+
+  const struct timespec spec = {1, 0};
+  result = gethostuuid(uuidBytes, &spec);
+  
+  //If we got good bits, create the UUID, else create a blank UUID to indicate failure
+  if(result == 0)
+  {
+      deviceId = CFUUIDCreateFromUUIDBytes(kCFAllocatorDefault, *(CFUUIDBytes*)uuidBytes);
+  }
+  else
+  {
+      deviceId = CFUUIDCreateFromString(kCFAllocatorDefault, kCFZeroUUID);
+  }
+  
+  NSString *identifierForVendor = (__bridge NSString *)CFUUIDCreateString(kCFAllocatorDefault, deviceId);
+#endif // macOS]
 
   NSString *rawDeviceId = [NSString stringWithFormat:@"apple-%@-%@", identifierForVendor, bundleId];
 
