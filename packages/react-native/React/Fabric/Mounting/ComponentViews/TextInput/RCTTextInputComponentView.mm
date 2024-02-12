@@ -563,11 +563,25 @@ using namespace facebook::react;
 }
 
 - (NSDragOperation)textInputDraggingEntered:(nonnull id<NSDraggingInfo>)draggingInfo {
+  if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    return [self draggingEntered:draggingInfo];
+  }
   return NSDragOperationNone;
 }
 
 - (void)textInputDraggingExited:(nonnull id<NSDraggingInfo>)draggingInfo {
-  return;
+  if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    [self draggingExited:draggingInfo];
+  }
+}
+
+- (BOOL)textInputShouldHandleDragOperation:(nonnull id<NSDraggingInfo>)draggingInfo {
+  if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    [self performDragOperation:draggingInfo];
+    return NO;
+  }
+
+  return YES;
 }
 
 - (BOOL)textInputShouldHandleDeleteBackward:(nonnull id<RCTBackedTextInputViewProtocol>)sender {
@@ -575,10 +589,6 @@ using namespace facebook::react;
 }
 
 - (BOOL)textInputShouldHandleDeleteForward:(nonnull id<RCTBackedTextInputViewProtocol>)sender {
-  return YES;
-}
-
-- (BOOL)textInputShouldHandleDragOperation:(nonnull id<NSDraggingInfo>)draggingInfo {
   return YES;
 }
 
