@@ -1090,6 +1090,158 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 }
 
 
+#pragma mark - Drag and Drop Events
+
+enum DragEventType {
+  DragEnter,
+  DragLeave,
+  Drop,
+};
+
+- (void)buildDataTransferItems:(std::vector<DataTransferItem> &)dataTransferItems forPasteboard:(NSPasteboard *)pasteboard {
+  NSArray *fileNames = [pasteboard propertyListForType:NSFilenamesPboardType] ?: @[];
+  for (NSString *file in fileNames) {
+    NSURL *fileURL = [NSURL fileURLWithPath:file];
+    BOOL isDir = NO;
+    BOOL isValid = (![[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDir] || isDir) ? NO : YES;
+    if (isValid) {
+      
+      NSString *MIMETypeString = nil;
+      if (fileURL.pathExtension) {
+        CFStringRef fileExtension = (__bridge CFStringRef)fileURL.pathExtension;
+        CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, fileExtension, NULL);
+        if (UTI != NULL) {
+          CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass(UTI, kUTTagClassMIMEType);
+          CFRelease(UTI);
+          MIMETypeString = (__bridge_transfer NSString *)MIMEType;
+        }
+      }
+
+      NSNumber *fileSizeValue = nil;
+      NSError *fileSizeError = nil;
+      BOOL success = [fileURL getResourceValue:&fileSizeValue
+                                        forKey:NSURLFileSizeKey
+                                         error:&fileSizeError];
+
+      NSNumber *width = nil;
+      NSNumber *height = nil;
+      if ([MIMETypeString hasPrefix:@"image/"]) {
+        NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
+        width = @(image.size.width);
+        height = @(image.size.height);
+      }
+
+      DataTransferItem transferItem = {
+        .name = fileURL.lastPathComponent.UTF8String,
+        .kind = "file",
+        .type = MIMETypeString.UTF8String,
+        .uri = fileURL.path.UTF8String,
+      };
+      
+      if (success) {
+        transferItem.size = fileSizeValue.intValue;
+      }
+
+      if (width != nil) {
+        transferItem.width = width.intValue;
+      }
+      
+      if (height != nil) {
+        transferItem.height = height.intValue;
+      }
+      
+      dataTransferItems.push_back(transferItem);
+    }
+  }
+  
+  NSPasteboardType imageType = [pasteboard availableTypeFromArray:@[NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  if (imageType && fileNames.count == 0) {
+    NSString *MIMETypeString = imageType == NSPasteboardTypePNG ? @"image/png" : @"image/tiff";
+    NSData *imageData = [pasteboard dataForType:imageType];
+    NSImage *image = [[NSImage alloc] initWithData:imageData];
+    
+    DataTransferItem transferItem = {
+      .kind = "image",
+      .type = MIMETypeString.UTF8String,
+      .uri = RCTDataURL(MIMETypeString, imageData).absoluteString.UTF8String,
+      .size = imageData.length,
+      .width = image.size.width,
+      .height = image.size.height,
+    };
+
+    dataTransferItems.push_back(transferItem);
+  }
+}
+
+- (void)sendDragEvent:(DragEventType)eventType withLocation:(NSPoint)locationInWindow pasteboard:(NSPasteboard *)pasteboard {
+  if (!_eventEmitter) {
+    return;
+  }
+  
+  std::vector<DataTransferItem> dataTransferItems{};
+  [self buildDataTransferItems:dataTransferItems forPasteboard:pasteboard];
+
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
+
+  DragEvent dragEvent = {
+    {
+      .clientX = locationInView.x,
+      .clientY = locationInView.y,
+      .screenX = locationInWindow.x,
+      .screenY = locationInWindow.y,
+      .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+      .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+      .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+      .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+    },
+    .dataTransferItems = dataTransferItems,
+  };
+  
+  switch (eventType) {
+    case DragEnter:
+      _eventEmitter->onDragEnter(dragEvent);
+      break;
+    
+    case DragLeave:
+      _eventEmitter->onDragLeave(dragEvent);
+      break;
+    
+    case Drop:
+      _eventEmitter->onDrop(dragEvent);
+      break;
+  }
+}
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+  NSPasteboard *pboard = sender.draggingPasteboard;
+  NSDragOperation sourceDragMask = sender.draggingSourceOperationMask;
+
+  [self sendDragEvent:DragEnter withLocation:sender.draggingLocation pasteboard:pboard];
+
+  if ([pboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    if (sourceDragMask & NSDragOperationLink) {
+      return NSDragOperationLink;
+    } else if (sourceDragMask & NSDragOperationCopy) {
+      return NSDragOperationCopy;
+    }
+  }
+  return NSDragOperationNone;
+}
+
+- (void)draggingExited:(id<NSDraggingInfo>)sender
+{
+  [self sendDragEvent:DragLeave withLocation:sender.draggingLocation pasteboard:sender.draggingPasteboard];
+}
+
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+  [self sendDragEvent:Drop withLocation:sender.draggingLocation pasteboard:sender.draggingPasteboard];
+  return YES;
+}
+
+
 #pragma mark - Mouse Events
 
 - (void)sendMouseEvent:(BOOL)isMouseOver {
