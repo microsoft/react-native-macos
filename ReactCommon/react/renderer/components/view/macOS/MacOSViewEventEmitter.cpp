@@ -39,7 +39,7 @@ void MacOSViewEventEmitter::onKeyUp(KeyEvent const &keyEvent) const {
       EventPriority::AsynchronousBatched);
 }
 
-static jsi::Value mouseEventPayload(jsi::Runtime &runtime, MouseEvent const &event) {
+static jsi::Object mouseEventPayload(jsi::Runtime &runtime, MouseEvent const &event) {
   auto payload = jsi::Object(runtime);
   payload.setProperty(runtime, "clientX", event.clientX);
   payload.setProperty(runtime, "clientY", event.clientY);
@@ -63,6 +63,67 @@ void MacOSViewEventEmitter::onMouseLeave(MouseEvent const &mouseEvent) const {
   dispatchEvent(
       "mouseLeave",
       [mouseEvent](jsi::Runtime &runtime) { return mouseEventPayload(runtime, mouseEvent); },
+      EventPriority::AsynchronousBatched);
+}
+
+static jsi::Value dragEventPayload(jsi::Runtime &runtime, DragEvent const &event) {
+  auto filesArray = jsi::Array(runtime, event.dataTransferItems.size());
+  auto itemsArray = jsi::Array(runtime, event.dataTransferItems.size());
+  auto typesArray = jsi::Array(runtime, event.dataTransferItems.size());
+  int i = 0;
+  for (auto const &transferItem : event.dataTransferItems) {
+    auto fileObject = jsi::Object(runtime);
+    fileObject.setProperty(runtime, "name", transferItem.name);
+    fileObject.setProperty(runtime, "type", transferItem.type);
+    fileObject.setProperty(runtime, "uri", transferItem.uri);
+    if (transferItem.size.has_value()) {
+      fileObject.setProperty(runtime, "size", *transferItem.size);
+    }
+    if (transferItem.width.has_value()) {
+      fileObject.setProperty(runtime, "width", *transferItem.width);
+    }
+    if (transferItem.height.has_value()) {
+      fileObject.setProperty(runtime, "height", *transferItem.height);
+    }
+    filesArray.setValueAtIndex(runtime, i, fileObject);
+    
+    auto itemObject = jsi::Object(runtime);
+    itemObject.setProperty(runtime, "kind", transferItem.kind);
+    itemObject.setProperty(runtime, "type", transferItem.type);
+    itemsArray.setValueAtIndex(runtime, i, itemObject);
+    
+    typesArray.setValueAtIndex(runtime, i, transferItem.type);
+    i++;
+  }
+  
+  auto dataTransferObject = jsi::Object(runtime);
+  dataTransferObject.setProperty(runtime, "files", filesArray);
+  dataTransferObject.setProperty(runtime, "items", itemsArray);
+  dataTransferObject.setProperty(runtime, "types", typesArray);
+
+  auto payload = mouseEventPayload(runtime, event);
+  payload.setProperty(runtime, "dataTransfer", dataTransferObject);
+  return payload;
+};
+
+void MacOSViewEventEmitter::onDragEnter(DragEvent const &dragEvent) const {
+  dispatchEvent(
+      "dragEnter",
+      [dragEvent](jsi::Runtime &runtime) { return dragEventPayload(runtime, dragEvent); },
+      EventPriority::AsynchronousBatched);
+}
+
+void MacOSViewEventEmitter::onDragLeave(DragEvent const &dragEvent) const {
+  dispatchEvent(
+      "dragLeave",
+      [dragEvent](jsi::Runtime &runtime) { return dragEventPayload(runtime, dragEvent); },
+      EventPriority::AsynchronousBatched);
+}
+
+void MacOSViewEventEmitter::onDrop(DragEvent const &dragEvent) const {
+  dispatchEvent(
+      "drop",
+      [dragEvent](jsi::Runtime &runtime) { return dragEventPayload(runtime, dragEvent); },
       EventPriority::AsynchronousBatched);
 }
 
