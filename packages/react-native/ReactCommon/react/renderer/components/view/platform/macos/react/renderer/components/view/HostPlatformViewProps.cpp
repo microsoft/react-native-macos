@@ -65,7 +65,16 @@ HostPlatformViewProps::HostPlatformViewProps(
                     rawProps,
                     "keyUpEvents",
                     sourceProps.keyUpEvents,
-                    {})) {}
+                    {})),
+      draggedTypes(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.draggedTypes
+              : convertRawProp(
+                context,
+                rawProps,
+                "draggedTypes",
+                sourceProps.draggedTypes,
+                {})) {};
 
 #define VIEW_EVENT_CASE_MACOS(eventType)                           \
   case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): {            \
