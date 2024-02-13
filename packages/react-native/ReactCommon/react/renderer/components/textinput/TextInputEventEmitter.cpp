@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/renderer/components/view/HostPlatformViewEventEmitter.h>
+
 #include "TextInputEventEmitter.h"
 
 namespace facebook::react {
@@ -190,6 +192,13 @@ void TextInputEventEmitter::onSpellCheckChange(
 void TextInputEventEmitter::onGrammarCheckChange(
     const Metrics& textInputMetrics) const {
   dispatchTextInputEvent("grammarCheckChange", textInputMetrics);
+}
+
+void TextInputEventEmitter::onPaste(
+    const Metrics& textInputMetrics) const {
+  dispatchEvent("paste", [textInputMetrics](jsi::Runtime& runtime) {
+    return dataTransferPayload(runtime, textInputMetrics.dataTransferItems);
+  });
 }
 #endif // macOS]
 
