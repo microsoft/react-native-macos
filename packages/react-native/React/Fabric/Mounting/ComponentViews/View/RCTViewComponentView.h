@@ -79,6 +79,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask NS_REQUIRES_SUPER;
 - (void)prepareForRecycle NS_REQUIRES_SUPER;
 
+#if TARGET_OS_OSX // [macOS
+- (void)buildDataTransferItems:(std::vector<DataTransferItem> &)dataTransferItems forPasteboard:(NSPasteboard *)pasteboard;
+#endif // macOS]
+
 /*
  * This is a fragment of temporary workaround that we need only temporary and will get rid of soon.
  */
