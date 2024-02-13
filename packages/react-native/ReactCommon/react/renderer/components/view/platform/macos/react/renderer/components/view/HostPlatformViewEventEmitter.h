@@ -39,6 +39,9 @@ class HostPlatformViewEventEmitter : public BaseViewEventEmitter {
   void onDragEnter(DragEvent const& dragEvent) const;
   void onDragLeave(DragEvent const& dragEvent) const;
   void onDrop(DragEvent const& dragEvent) const;
+
+  static jsi::Value dataTransferPayload(jsi::Runtime& runtime, std::vector<DataTransferItem> const& dataTransferItems);
+
 };
 
 } // namespace facebook::react

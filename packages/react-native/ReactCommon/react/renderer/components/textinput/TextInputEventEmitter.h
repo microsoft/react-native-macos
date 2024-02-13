@@ -32,7 +32,8 @@ class TextInputEventEmitter : public ViewEventEmitter {
     bool autoCorrectEnabled;
     bool spellCheckEnabled;
     bool grammarCheckEnabled;
-#endif // macOS]   
+    std::vector<DataTransferItem> dataTransferItems;
+#endif // macOS]
   };
 
   struct KeyPressMetrics {
@@ -53,6 +54,7 @@ class TextInputEventEmitter : public ViewEventEmitter {
   void onAutoCorrectChange(const Metrics& textInputMetrics) const;
   void onSpellCheckChange(const Metrics& textInputMetrics) const;
   void onGrammarCheckChange(const Metrics& textInputMetrics) const;
+  void onPaste(const Metrics& textInputMetrics) const;
  #endif // macOS]
 
  private:
