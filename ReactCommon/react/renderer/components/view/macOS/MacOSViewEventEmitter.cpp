@@ -66,12 +66,12 @@ void MacOSViewEventEmitter::onMouseLeave(MouseEvent const &mouseEvent) const {
       EventPriority::AsynchronousBatched);
 }
 
-static jsi::Value dragEventPayload(jsi::Runtime &runtime, DragEvent const &event) {
-  auto filesArray = jsi::Array(runtime, event.dataTransferItems.size());
-  auto itemsArray = jsi::Array(runtime, event.dataTransferItems.size());
-  auto typesArray = jsi::Array(runtime, event.dataTransferItems.size());
+jsi::Value MacOSViewEventEmitter::dataTransferPayload(jsi::Runtime &runtime, std::vector<DataTransferItem> const &dataTransferItems) {
+  auto filesArray = jsi::Array(runtime, dataTransferItems.size());
+  auto itemsArray = jsi::Array(runtime, dataTransferItems.size());
+  auto typesArray = jsi::Array(runtime, dataTransferItems.size());
   int i = 0;
-  for (auto const &transferItem : event.dataTransferItems) {
+  for (auto const &transferItem : dataTransferItems) {
     auto fileObject = jsi::Object(runtime);
     fileObject.setProperty(runtime, "name", transferItem.name);
     fileObject.setProperty(runtime, "type", transferItem.type);
@@ -100,11 +100,16 @@ static jsi::Value dragEventPayload(jsi::Runtime &runtime, DragEvent const &event
   dataTransferObject.setProperty(runtime, "files", filesArray);
   dataTransferObject.setProperty(runtime, "items", itemsArray);
   dataTransferObject.setProperty(runtime, "types", typesArray);
+  
+  return dataTransferObject;
+}
 
+static jsi::Value dragEventPayload(jsi::Runtime &runtime, DragEvent const &event) {
   auto payload = mouseEventPayload(runtime, event);
+  auto dataTransferObject = MacOSViewEventEmitter::dataTransferPayload(runtime, event.dataTransferItems);
   payload.setProperty(runtime, "dataTransfer", dataTransferObject);
   return payload;
-};
+}
 
 void MacOSViewEventEmitter::onDragEnter(DragEvent const &dragEvent) const {
   dispatchEvent(

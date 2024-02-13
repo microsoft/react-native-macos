@@ -11,6 +11,9 @@
 #include <react/renderer/components/view/ViewEventEmitter.h>
 
 namespace facebook::react {
+#if TARGET_OS_OSX // [macOS
+#include <react/renderer/components/view/macOS/MouseEvent.h>
+#endif // macOS]
 
 class TextInputMetrics {
  public:
@@ -47,6 +50,28 @@ class TextInputEventEmitter : public ViewEventEmitter {
   void onKeyPress(const KeyPressMetrics& keyPressMetrics) const;
   void onKeyPressSync(const KeyPressMetrics& keyPressMetrics) const;
   void onScroll(const TextInputMetrics& textInputMetrics) const;
+
+#if TARGET_OS_OSX // [macOS
+  struct OnAutoCorrectChange {
+      bool enabled;
+    };
+  void onAutoCorrectChange(OnAutoCorrectChange value) const;
+  
+  struct OnSpellCheckChange {
+      bool enabled;
+    };
+  void onSpellCheckChange(OnSpellCheckChange value) const;
+  
+  struct OnGrammarCheckChange {
+      bool enabled;
+    };
+  void onGrammarCheckChange(OnGrammarCheckChange value) const;
+  
+  struct PasteEvent {
+    std::vector<DataTransferItem> dataTransferItems;
+  };
+  void onPaste(PasteEvent const &pasteEvent) const;
+#endif // macOS]
 
  private:
   void dispatchTextInputEvent(
