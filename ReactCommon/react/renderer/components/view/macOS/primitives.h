@@ -11,6 +11,12 @@
 
 namespace facebook::react {
 
+enum class DraggedType {
+  FileUrl,
+  Image,
+  String,
+};
+
 struct MacOSViewEvents {
   std::bitset<8> bits{};
 

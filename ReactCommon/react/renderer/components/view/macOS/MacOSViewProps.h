@@ -40,7 +40,7 @@ class MacOSViewProps {
   std::optional<std::vector<HandledKey>> validKeysDown{};
   std::optional<std::vector<HandledKey>> validKeysUp{};
   
-  std::optional<std::vector<std::string>> draggedTypes{};
+  std::optional<std::vector<DraggedType>> draggedTypes{};
 };
 
 } // namespace facebook::react

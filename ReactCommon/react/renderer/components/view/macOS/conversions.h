@@ -60,4 +60,17 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   }
 }
 
+inline void fromRawValue(const PropsParserContext &context, const RawValue &value, DraggedType &result) {
+  auto string = (std::string)value;
+  if (string == "fileUrl") {
+    result = DraggedType::FileUrl;
+  } else if (string == "image") {
+    result = DraggedType::Image;
+  } else if (string == "string") {
+    result = DraggedType::String;
+  } else {
+    abort();
+  }
+}
+
 } // namespace facebook::react
