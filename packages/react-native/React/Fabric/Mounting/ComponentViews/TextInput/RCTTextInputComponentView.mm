@@ -597,7 +597,24 @@ using namespace facebook::react;
 }
 
 - (BOOL)textInputShouldHandlePaste:(nonnull id<RCTBackedTextInputViewProtocol>)sender {
-  return YES;
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  NSPasteboardType fileType = [pasteboard availableTypeFromArray:@[NSFilenamesPboardType, NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  NSArray<NSPasteboardType>* pastedTypes = ((RCTUITextView*) _backedTextInputView).readablePasteboardTypes;
+      
+  // If there's a fileType that is of interest, notify JS. Also blocks notifying JS if it's a text paste
+  if (_eventEmitter && fileType != nil && [pastedTypes containsObject:fileType]) {
+    auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
+    std::vector<DataTransferItem> dataTransferItems{};
+    [self buildDataTransferItems:dataTransferItems forPasteboard:pasteboard];
+    
+    TextInputEventEmitter::PasteEvent pasteEvent = {
+      .dataTransferItems = dataTransferItems,
+    };
+    textInputEventEmitter.onPaste(pasteEvent);
+  }
+
+  // Only allow pasting text.
+  return fileType == nil;
 }
 
 #endif // macOS]
