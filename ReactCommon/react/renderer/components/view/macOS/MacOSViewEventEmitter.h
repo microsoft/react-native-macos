@@ -33,6 +33,11 @@ class MacOSViewEventEmitter : public TouchEventEmitter {
   void onDragLeave(DragEvent const &dragEvent) const;
   void onDrop(DragEvent const &dragEvent) const;
 
+#pragma mark - Focus Events
+
+  void onFocus() const;
+  void onBlur() const;
+
   static jsi::Value dataTransferPayload(jsi::Runtime &runtime, std::vector<DataTransferItem> const &dataTransferItems);
 };
 

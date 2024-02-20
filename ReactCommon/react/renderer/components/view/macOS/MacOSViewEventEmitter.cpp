@@ -138,4 +138,15 @@ void MacOSViewEventEmitter::onDrop(DragEvent const &dragEvent) const {
       EventPriority::AsynchronousBatched);
 }
 
+
+#pragma mark - Focus Events
+
+void MacOSViewEventEmitter::onFocus() const {
+  dispatchEvent("focus");
+}
+
+void MacOSViewEventEmitter::onBlur() const {
+  dispatchEvent("blur");
+}
+
 } // namespace facebook::react
