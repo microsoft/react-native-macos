@@ -1027,6 +1027,35 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 #if TARGET_OS_OSX // [macOS
 
+#pragma mark - Focus Events
+
+- (BOOL)becomeFirstResponder
+{
+  if (![super becomeFirstResponder]) {
+    return NO;
+  }
+  
+  if (_eventEmitter) {
+    _eventEmitter->onFocus();
+  }
+  
+  return YES;
+}
+
+-  (BOOL)resignFirstResponder
+{
+  if (![super resignFirstResponder]) {
+    return NO;
+  }
+  
+  if (_eventEmitter) {
+    _eventEmitter->onBlur();
+  }
+  
+  return YES;
+}
+
+
 #pragma mark - Keyboard Events
 
 - (BOOL)handleKeyboardEvent:(NSEvent *)event {
