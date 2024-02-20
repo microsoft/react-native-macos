@@ -39,6 +39,9 @@ void MacOSViewEventEmitter::onKeyUp(KeyEvent const &keyEvent) const {
       EventPriority::AsynchronousBatched);
 }
 
+
+#pragma mark - Mouse Events
+
 static jsi::Object mouseEventPayload(jsi::Runtime &runtime, MouseEvent const &event) {
   auto payload = jsi::Object(runtime);
   payload.setProperty(runtime, "clientX", event.clientX);
@@ -65,6 +68,9 @@ void MacOSViewEventEmitter::onMouseLeave(MouseEvent const &mouseEvent) const {
       [mouseEvent](jsi::Runtime &runtime) { return mouseEventPayload(runtime, mouseEvent); },
       EventPriority::AsynchronousBatched);
 }
+
+
+#pragma mark - Drag and Drop Events
 
 jsi::Value MacOSViewEventEmitter::dataTransferPayload(jsi::Runtime &runtime, std::vector<DataTransferItem> const &dataTransferItems) {
   auto filesArray = jsi::Array(runtime, dataTransferItems.size());
