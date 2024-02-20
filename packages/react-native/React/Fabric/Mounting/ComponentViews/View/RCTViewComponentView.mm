@@ -1616,6 +1616,11 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     if (self.focusable && !validKeys.has_value()) {
       validKeys = { { .key = "Enter" }, { .key = " " } };
     }
+
+    // If there are no valid keys defined, no key event handling is required.
+    if (!validKeys.has_value()) {
+      return NO;
+    }
     
     // Convert the event to a KeyEvent
     NSEventModifierFlags modifierFlags = event.modifierFlags;
