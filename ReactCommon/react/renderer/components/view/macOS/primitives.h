@@ -21,11 +21,14 @@ struct MacOSViewEvents {
   std::bitset<8> bits{};
 
   enum class Offset : uint8_t {
+    // Keyboard Events
     KeyDown = 1,
     KeyUp = 2,
 
+    // Mouse Events
     MouseEnter = 3,
     MouseLeave = 4,
+    DoubleClick = 5,
   };
 
   constexpr bool operator[](const Offset offset) const {

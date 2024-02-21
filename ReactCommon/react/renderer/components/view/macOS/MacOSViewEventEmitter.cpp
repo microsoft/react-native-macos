@@ -69,6 +69,13 @@ void MacOSViewEventEmitter::onMouseLeave(MouseEvent const &mouseEvent) const {
       EventPriority::AsynchronousBatched);
 }
 
+void MacOSViewEventEmitter::onDoubleClick(MouseEvent const &mouseEvent) const {
+  dispatchEvent(
+      "doubleClick",
+      [mouseEvent](jsi::Runtime &runtime) { return mouseEventPayload(runtime, mouseEvent); },
+      EventPriority::AsynchronousBatched);
+}
+
 
 #pragma mark - Drag and Drop Events
 

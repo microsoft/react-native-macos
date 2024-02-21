@@ -36,6 +36,9 @@ static inline MacOSViewEvents convertRawProp(
   result[Offset::MouseLeave] =
       convertRawProp(context, rawProps, "onMouseLeave", sourceValue[Offset::MouseLeave], defaultValue[Offset::MouseLeave]);
 
+  result[Offset::DoubleClick] =
+      convertRawProp(context, rawProps, "onDoubleClick", sourceValue[Offset::DoubleClick], defaultValue[Offset::DoubleClick]);
+
   return result;
 }
 
