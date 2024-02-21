@@ -1278,7 +1278,13 @@ enum DragEventType {
 
 #pragma mark - Mouse Events
 
-- (void)sendMouseEvent:(BOOL)isMouseOver {
+enum MouseEventType {
+  MouseEnter,
+  MouseLeave,
+  DoubleClick,
+};
+
+- (void)sendMouseEvent:(MouseEventType)eventType {
   if (!_eventEmitter) {
     return;
   }
@@ -1299,10 +1305,18 @@ enum DragEventType {
     .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
   };
   
-  if (isMouseOver) {
-    _eventEmitter->onMouseEnter(mouseEvent);
-  } else {
-    _eventEmitter->onMouseLeave(mouseEvent);
+  switch (eventType) {
+    case MouseEnter:
+      _eventEmitter->onMouseEnter(mouseEvent);
+      break;
+
+    case MouseLeave:
+      _eventEmitter->onMouseLeave(mouseEvent);
+      break;
+
+    case DoubleClick:
+      _eventEmitter->onDoubleClick(mouseEvent);
+      break;
   }
 }
 
@@ -1331,7 +1345,7 @@ enum DragEventType {
 
   if (hasMouseOver != _hasMouseOver) {
     _hasMouseOver = hasMouseOver;
-    [self sendMouseEvent:hasMouseOver];
+    [self sendMouseEvent:hasMouseOver ? MouseEnter : MouseLeave];
   }
 }
 
@@ -1388,6 +1402,16 @@ enum DragEventType {
   [super updateTrackingAreas];
 }
 
+- (void)mouseUp:(NSEvent *)event
+{
+  BOOL hasDoubleClickEventHandler = _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::DoubleClick];
+  if (hasDoubleClickEventHandler && event.clickCount == 2) {
+    [self sendMouseEvent:DoubleClick];
+  } else {
+    [super mouseUp:event];
+  }
+}
+
 - (void)mouseEntered:(NSEvent *)event
 {
   if (_hasMouseOver) {
@@ -1401,7 +1425,7 @@ enum DragEventType {
   }
 
   _hasMouseOver = YES;
-  [self sendMouseEvent:_hasMouseOver];
+  [self sendMouseEvent:MouseEnter];
 }
 
 - (void)mouseExited:(NSEvent *)event
@@ -1411,7 +1435,7 @@ enum DragEventType {
   }
 
   _hasMouseOver = NO;
-  [self sendMouseEvent:_hasMouseOver];
+  [self sendMouseEvent:MouseLeave];
 }
 #endif // macOS]
 
