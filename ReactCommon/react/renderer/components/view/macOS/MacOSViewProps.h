@@ -13,6 +13,7 @@
 #include <react/renderer/core/PropsParserContext.h>
 
 #include <optional>
+#include <string>
 
 namespace facebook::react {
 
@@ -41,6 +42,8 @@ class MacOSViewProps {
   std::optional<std::vector<HandledKey>> validKeysUp{};
   
   std::optional<std::vector<DraggedType>> draggedTypes{};
+  
+  std::optional<std::string> tooltip{};
 };
 
 } // namespace facebook::react

@@ -40,7 +40,11 @@ MacOSViewProps::MacOSViewProps(
       draggedTypes(
           CoreFeatures::enablePropIteratorSetter
               ? sourceProps.draggedTypes
-              : convertRawProp(context, rawProps, "draggedTypes", sourceProps.draggedTypes, {})){};
+              : convertRawProp(context, rawProps, "draggedTypes", sourceProps.draggedTypes, {})),
+      tooltip(
+          CoreFeatures::enablePropIteratorSetter
+              ? sourceProps.tooltip
+              : convertRawProp(context, rawProps, "tooltip", sourceProps.tooltip, {})){};
 
 #define VIEW_EVENT_CASE_MACOS(eventType, eventString) \
   case CONSTEXPR_RAW_PROPS_KEY_HASH(eventString): {   \
@@ -69,6 +73,7 @@ void MacOSViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysDown, {});
     RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysUp, {});
     RAW_SET_PROP_SWITCH_CASE_BASIC(draggedTypes, {});
+    RAW_SET_PROP_SWITCH_CASE_BASIC(tooltip, {});
   }
 }
 
