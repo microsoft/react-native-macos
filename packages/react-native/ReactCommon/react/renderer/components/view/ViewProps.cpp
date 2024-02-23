@@ -120,6 +120,15 @@ ViewProps::ViewProps(
                                                        "shadowRadius",
                                                        sourceProps.shadowRadius,
                                                        {})),
+      cursor(
+          CoreFeatures::enablePropIteratorSetter
+              ? sourceProps.cursor
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "cursor",
+                    sourceProps.cursor,
+                    {})),
       transform(
           CoreFeatures::enablePropIteratorSetter ? sourceProps.transform
                                                  : convertRawProp(
