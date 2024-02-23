@@ -76,4 +76,51 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   }
 }
 
+inline void fromRawValue(const PropsParserContext &context, const RawValue &value, Cursor &result) {
+  auto string = (std::string)value;
+  if (string == "alias") {
+    result = Cursor::DragLink;
+  } else if (string == "auto") {
+    result = Cursor::Auto;
+  } else if (string == "col-resize") {
+    result = Cursor::ResizeLeftRight;
+  } else if (string == "context-menu") {
+    result = Cursor::ContextualMenu;
+  } else if (string == "copy") {
+    result = Cursor::DragCopy;
+  } else if (string == "crosshair") {
+    result = Cursor::Crosshair;
+  } else if (string == "default") {
+    result = Cursor::Arrow;
+  } else if (string == "disappearing-item") {
+    result = Cursor::DisappearingItem;
+  } else if (string == "e-resize") {
+    result = Cursor::ResizeRight;
+  } else if (string == "grab") {
+    result = Cursor::OpenHand;
+  } else if (string == "grabbing") {
+    result = Cursor::ClosedHand;
+  } else if (string == "n-resize") {
+    result = Cursor::ResizeUp;
+  } else if (string == "no-drop") {
+    result = Cursor::OperationNotAllowed;
+  } else if (string == "not-allowed") {
+    result = Cursor::OperationNotAllowed;
+  } else if (string == "pointer") {
+    result = Cursor::PointingHand;
+  } else if (string == "row-resize") {
+    result = Cursor::ResizeUpDown;
+  } else if (string == "s-resize") {
+    result = Cursor::ResizeDown;
+  } else if (string == "text") {
+    result = Cursor::IBeam;
+  } else if (string == "vertical-text") {
+    result = Cursor::IBeamCursorForVerticalLayout;
+  } else if (string == "w-resize") {
+    result = Cursor::ResizeLeft;
+  } else {
+    result = Cursor::Auto;
+  }
+}
+
 } // namespace facebook::react

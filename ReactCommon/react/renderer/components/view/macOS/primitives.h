@@ -17,6 +17,28 @@ enum class DraggedType {
   String,
 };
 
+enum class Cursor {
+  Arrow,
+  Auto,
+  ClosedHand,
+  ContextualMenu,
+  Crosshair,
+  DisappearingItem,
+  DragCopy,
+  DragLink,
+  IBeam,
+  IBeamCursorForVerticalLayout,
+  OpenHand,
+  OperationNotAllowed,
+  PointingHand,
+  ResizeDown,
+  ResizeLeft,
+  ResizeLeftRight,
+  ResizeRight,
+  ResizeUp,
+  ResizeUpDown,
+};
+
 struct MacOSViewEvents {
   std::bitset<8> bits{};
 

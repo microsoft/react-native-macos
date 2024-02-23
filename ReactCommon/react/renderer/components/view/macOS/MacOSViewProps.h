@@ -44,6 +44,7 @@ class MacOSViewProps {
   std::optional<std::vector<DraggedType>> draggedTypes{};
   
   std::optional<std::string> tooltip{};
+  std::optional<Cursor> cursor{};
 };
 
 } // namespace facebook::react
