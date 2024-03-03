@@ -158,15 +158,12 @@ let BaseImage: AbstractImageIOS = React.forwardRef((props, forwardedRef) => {
   };
   const accessibilityLabel = props['aria-label'] ?? props.accessibilityLabel;
 
-  const accessibilityRole = props.accessibilityRole || 'image';
-
   return (
     <ImageAnalyticsTagContext.Consumer>
       {analyticTag => {
         return (
           <ImageViewNativeComponent
             accessibilityState={_accessibilityState}
-            accessibilityRole={accessibilityRole} // [macOS]
             {...restProps}
             accessible={props.alt !== undefined ? true : props.accessible}
             accessibilityLabel={accessibilityLabel ?? props.alt}

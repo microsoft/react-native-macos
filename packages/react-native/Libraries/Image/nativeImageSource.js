@@ -15,7 +15,6 @@ import Platform from '../Utilities/Platform';
 type NativeImageSourceSpec = $ReadOnly<{|
   android?: string,
   ios?: string,
-  macos?: string, // [macOS]
   default?: string,
 
   // For more details on width and height, see
@@ -45,7 +44,6 @@ function nativeImageSource(spec: NativeImageSourceSpec): ImageURISource {
     android: spec.android,
     default: spec.default,
     ios: spec.ios,
-    macos: spec.macos, // [macOS]
   });
   if (uri == null) {
     console.warn(

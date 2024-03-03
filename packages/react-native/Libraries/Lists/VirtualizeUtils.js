@@ -10,9 +10,9 @@
 
 'use strict';
 
-import {typeof keyExtractor as KeyExtractorType} from '@react-native-mac/virtualized-lists'; // [macOS]
+import {typeof keyExtractor as KeyExtractorType} from '@react-native/virtualized-lists';
 
 const keyExtractor: KeyExtractorType =
-  require('@react-native-mac/virtualized-lists').keyExtractor; // [macOS]
+  require('@react-native/virtualized-lists').keyExtractor;
 
 module.exports = {keyExtractor};

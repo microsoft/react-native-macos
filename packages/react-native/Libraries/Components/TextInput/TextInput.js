@@ -40,7 +40,6 @@ type TextInputInstance = React.ElementRef<HostComponent<mixed>> & {
   +isFocused: () => boolean,
   +getNativeRef: () => ?React.ElementRef<HostComponent<mixed>>,
   +setSelection: (start: number, end: number) => void,
-  +setGhostText: (ghostText: ?string) => void, // [macOS]
 };
 
 let AndroidTextInput;
@@ -54,7 +53,7 @@ if (Platform.OS === 'android') {
   AndroidTextInput = require('./AndroidTextInputNativeComponent').default;
   AndroidTextInputCommands =
     require('./AndroidTextInputNativeComponent').Commands;
-} else if (Platform.OS === 'ios' || Platform.OS === 'macos' /* [macOS] */) {
+} else if (Platform.OS === 'ios') {
   RCTSinglelineTextInputView =
     require('./RCTSingelineTextInputNativeComponent').default;
   RCTSinglelineTextInputNativeCommands =
@@ -133,66 +132,16 @@ export type EditingEvent = SyntheticEvent<
   |}>,
 >;
 
-// [macOS macOS-only
-export type SettingChangeEvent = SyntheticEvent<
-  $ReadOnly<{|
-    enabled: boolean,
-  |}>,
->;
-
-export type PasteEvent = SyntheticEvent<
-  $ReadOnly<{|
-    dataTransfer: {|
-      files: $ReadOnlyArray<{|
-        height: number,
-        size: number,
-        type: string,
-        uri: string,
-        width: number,
-      |}>,
-      items: $ReadOnlyArray<{|
-        kind: string,
-        type: string,
-      |}>,
-      types: $ReadOnlyArray<string>,
-    |},
-  |}>,
->;
-
-export type SubmitKeyEvent = $ReadOnly<{|
-  key: string,
-  altKey?: ?boolean,
-  ctrlKey?: ?boolean,
-  metaKey?: ?boolean,
-  shiftKey?: ?boolean,
-  functionKey?: ?boolean,
-|}>;
-// macOS]
-
-// [macOS
 type DataDetectorTypesType =
-  // iOS+macOS
   | 'phoneNumber'
   | 'link'
   | 'address'
   | 'calendarEvent'
-  // iOS-only
   | 'trackingNumber'
   | 'flightNumber'
   | 'lookupSuggestion'
   | 'none'
-  | 'all'
-  // [macOS macOS-only
-  | 'ortography'
-  | 'spelling'
-  | 'grammar'
-  | 'quote'
-  | 'dash'
-  | 'replacement'
-  | 'correction'
-  | 'regularExpression'
-  | 'transitInformation';
-// macOS]
+  | 'all';
 
 export type KeyboardType =
   // Cross Platform
@@ -403,7 +352,7 @@ type IOSProps = $ReadOnly<{|
 
   /**
    * Set line break strategy on iOS.
-   * @platform ios macos
+   * @platform ios
    */
   lineBreakStrategyIOS?: ?('none' | 'standard' | 'hangul-word' | 'push-out'),
 
@@ -418,102 +367,12 @@ type IOSProps = $ReadOnly<{|
   smartInsertDelete?: ?boolean,
 |}>;
 
-// [macOS
-type MacOSProps = $ReadOnly<{|
-  /**
-   * If `true`, clears the text field synchronously before `onSubmitEditing` is emitted.
-   *
-   * @platform macos
-   */
-  clearTextOnSubmit?: ?boolean,
-
-  /**
-   * If `false`, disables grammar-check.
-   *
-   * @platform macos
-   */
-  grammarCheck?: ?boolean,
-
-  /**
-   * If `true`, hide vertical scrollbar on the underlying multiline scrollview
-   * The default value is `false`.
-   *
-   * @platform macos
-   */
-  hideVerticalScrollIndicator?: ?boolean,
-
-  /**
-   * Fired when a supported element is pasted
-   *
-   * @platform macos
-   */
-  onPaste?: (event: PasteEvent) => void,
-
-  /**
-   * Callback that is called when the text input's autoCorrect setting changes.
-   * This will be called with
-   * `{ nativeEvent: { enabled } }`.
-   * Does only work with 'multiline={true}'.
-   *
-   * @platform macos
-   */
-  onAutoCorrectChange?: ?(e: SettingChangeEvent) => mixed,
-
-  /**
-   * Callback that is called when the text input's spellCheck setting changes.
-   * This will be called with
-   * `{ nativeEvent: { enabled } }`.
-   * Does only work with 'multiline={true}'.
-   *
-   * @platform macos
-   */
-  onSpellCheckChange?: ?(e: SettingChangeEvent) => mixed,
-
-  /**
-   * Callback that is called when the text input's grammarCheck setting changes.
-   * This will be called with
-   * `{ nativeEvent: { enabled } }`.
-   * Does only work with 'multiline={true}'.
-   *
-   * @platform macos
-   */
-  onGrammarCheckChange?: ?(e: SettingChangeEvent) => mixed,
-
-  /**
-   * Enables Paste support for certain types of pasted types
-   *
-   * Possible values for `pastedTypes` are:
-   *
-   * - `'fileUrl'`
-   * - `'image'`
-   * - `'string'`
-   *
-   * @platform macos
-   */
-  pastedTypes?: PastedTypesType,
-
-  /**
-   * Configures keys that can be used to submit editing for the TextInput. Defaults to 'Enter' key.
-   * @platform macos
-   */
-  submitKeyEvents?: ?$ReadOnlyArray<SubmitKeyEvent>,
-
-  /**
-   * Specifies the tooltip.
-   *
-   * @platform macos
-   */
-  tooltip?: ?string,
-|}>;
-// macOS]
-
 type AndroidProps = $ReadOnly<{|
   /**
    * When provided it will set the color of the cursor (or "caret") in the component.
    * Unlike the behavior of `selectionColor` the cursor color will be set independently
    * from the color of the text selection box.
-   // [macOS]
-   * @platform android macos
+   * @platform android
    */
   cursorColor?: ?ColorValue,
 
@@ -594,13 +453,9 @@ type AndroidProps = $ReadOnly<{|
   underlineColorAndroid?: ?ColorValue,
 |}>;
 
-export type PasteType = 'fileUrl' | 'image' | 'string'; // [macOS]
-export type PastedTypesType = PasteType | $ReadOnlyArray<PasteType>; // [macOS]
-
 export type Props = $ReadOnly<{|
   ...$Diff<ViewProps, $ReadOnly<{|style: ?ViewStyleProp|}>>,
   ...IOSProps,
-  ...MacOSProps, // [macOS]
   ...AndroidProps,
 
   /**
@@ -930,7 +785,7 @@ export type Props = $ReadOnly<{|
   /**
    * Callback that is called when the text input is focused.
    */
-  onFocus?: ?(e: FocusEvent) => void, // [macOS]
+  onFocus?: ?(e: FocusEvent) => mixed,
 
   /**
    * Callback that is called when a key is pressed.
@@ -1244,19 +1099,6 @@ const emptyFunctionThatReturnsTrue = () => true;
  * in AndroidManifest.xml ( https://developer.android.com/guide/topics/manifest/activity-element.html )
  * or control this param programmatically with native code.
  *
- *
- * The following values work on macOS only:
- *
- * - `'ortography'`
- * - `'spelling'`
- * - `'grammar'`
- * - `'quote'`
- * - `'dash'`
- * - `'replacement'`
- * - `'correction'`
- * - `'regularExpression'`
- * - `'transitInformation'`
- *
  */
 function InternalTextInput(props: Props): React.Node {
   const {
@@ -1430,13 +1272,6 @@ function InternalTextInput(props: Props): React.Node {
               );
             }
           },
-          // [macOS
-          setGhostText(ghostText: ?string): void {
-            if (inputRef.current != null) {
-              viewCommands.setGhostText(inputRef.current, ghostText);
-            }
-          },
-          // macOS]
         });
       }
     },
@@ -1573,11 +1408,7 @@ function InternalTextInput(props: Props): React.Node {
       },
       onPressIn: onPressIn,
       onPressOut: onPressOut,
-      // [macOS]
-      cancelable:
-        Platform.OS === 'ios' || Platform.OS === 'macos'
-          ? !rejectResponderTermination
-          : null,
+      cancelable: Platform.OS === 'ios' ? !rejectResponderTermination : null,
     }),
     [
       editable,
@@ -1621,8 +1452,7 @@ function InternalTextInput(props: Props): React.Node {
   // $FlowFixMe[underconstrained-implicit-instantiation]
   let style = flattenStyle(props.style);
 
-  if (Platform.OS === 'ios' || Platform.OS === 'macos') {
-    // [macOS]
+  if (Platform.OS === 'ios') {
     const RCTTextInputView =
       props.multiline === true
         ? RCTMultilineTextInputView
@@ -1654,8 +1484,6 @@ function InternalTextInput(props: Props): React.Node {
         onChangeSync={useOnChangeSync === true ? _onChangeSync : null}
         onContentSizeChange={props.onContentSizeChange}
         onFocus={_onFocus}
-        onKeyDown={props.onKeyDown} // [macOS]
-        onKeyUp={props.onKeyUp} // [macOS]
         onScroll={_onScroll}
         onSelectionChange={_onSelectionChange}
         onSelectionChangeShouldSetResponder={emptyFunctionThatReturnsTrue}

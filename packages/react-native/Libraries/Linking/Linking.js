@@ -29,11 +29,7 @@ type LinkingEventDefinitions = {
  */
 class Linking extends NativeEventEmitter<LinkingEventDefinitions> {
   constructor() {
-    super(
-      Platform.OS === 'ios' || Platform.OS === 'macos' // [macOS]
-        ? nullthrows(NativeLinkingManager)
-        : undefined,
-    );
+    super(Platform.OS === 'ios' ? nullthrows(NativeLinkingManager) : undefined);
   }
 
   /**

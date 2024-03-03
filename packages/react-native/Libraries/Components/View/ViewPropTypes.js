@@ -15,17 +15,12 @@ import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import type {
   BlurEvent,
   FocusEvent,
-  // [macOS]
-  KeyEvent,
   Layout,
   LayoutEvent,
   MouseEvent,
   PointerEvent,
   PressEvent,
-  ScrollEvent,
-  // [macOS]
 } from '../../Types/CoreEventTypes';
-import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
 import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
@@ -54,20 +49,6 @@ type DirectEventProps = $ReadOnly<{|
    * See https://reactnative.dev/docs/view#onaccessibilitytap
    */
   onAccessibilityTap?: ?() => mixed,
-
-  // [macOS
-  /**
-   * This event is fired when the scrollView's inverted property changes.
-   * @platform macos
-   */
-  onInvertedDidChange?: ?() => mixed,
-
-  /**
-   * This event is fired when the system's preferred scroller style changes.
-   * The `preferredScrollerStyle` key will be `legacy` or `overlay`.
-   */
-  onPreferredScrollerStyleDidChange?: ?(event: ScrollEvent) => mixed,
-  // macOS]
 
   /**
    * Invoked on mount and layout changes with:
@@ -98,62 +79,6 @@ type DirectEventProps = $ReadOnly<{|
    */
   onAccessibilityEscape?: ?() => mixed,
 |}>;
-
-// [macOS
-/**
- * Represents a key that could be passed to `validKeysDown` and `validKeysUp`.
- *
- * `key` is the actual key, such as "a", or one of the special values:
- * "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
- * "Backspace", "Delete", "Home", "End", "PageUp", "PageDown".
- *
- * The rest are modifiers that when absent mean false.
- *
- * @platform macos
- */
-export type HandledKeyboardEvent = $ReadOnly<{|
-  altKey?: ?boolean,
-  ctrlKey?: ?boolean,
-  metaKey?: ?boolean,
-  shiftKey?: ?boolean,
-  key: string,
-|}>;
-
-export type KeyboardEventProps = $ReadOnly<{|
-  /**
-   * Called after a key down event is detected.
-   */
-  onKeyDown?: ?(event: KeyEvent) => void,
-
-  /**
-   * Called after a key up event is detected.
-   */
-  onKeyUp?: ?(event: KeyEvent) => void,
-
-  /**
-   * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
-   * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
-   * are still removed from the event queue, but the others are not.
-   *
-   * @platform macos
-   */
-  passthroughAllKeyEvents?: ?boolean,
-
-  /**
-   * Array of keys to receive key down events for. These events have their default native behavior prevented.
-   *
-   * @platform macos
-   */
-  validKeysDown?: ?Array<string | HandledKeyboardEvent>,
-
-  /**
-   * Array of keys to receive key up events for. These events have their default native behavior prevented.
-   *
-   * @platform macos
-   */
-  validKeysUp?: ?Array<string | HandledKeyboardEvent>,
-|}>;
-// macOS]
 
 type MouseEventProps = $ReadOnly<{|
   onMouseEnter?: ?(event: MouseEvent) => void,
@@ -440,7 +365,7 @@ type AndroidViewProps = $ReadOnly<{|
   /**
    * Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
    *
-   * @platform android macos
+   * @platform android
    */
   focusable?: boolean,
 
@@ -513,89 +438,6 @@ type IOSViewProps = $ReadOnly<{|
   shouldRasterizeIOS?: ?boolean,
 |}>;
 
-// [macOS
-type MacOSViewProps = $ReadOnly<{|
-  /**
-   * Fired when a file is dragged into the view via the mouse.
-   *
-   * @platform macos
-   */
-  onDragEnter?: (event: MouseEvent) => void,
-
-  /**
-   * Fired when a file is dragged out of the view via the mouse.
-   *
-   * @platform macos
-   */
-  onDragLeave?: (event: MouseEvent) => void,
-
-  /**
-   * Fired when an element is dropped on a valid drop target
-   *
-   * @platform macos
-   */
-  onDrop?: (event: MouseEvent) => void,
-
-  /**
-   * Specifies the Tooltip for the view
-   * @platform macos
-   */
-  tooltip?: ?string,
-
-  /**
-   * Specifies whether the view should receive the mouse down event when the
-   * containing window is in the background.
-   *
-   * @platform macos
-   */
-  acceptsFirstMouse?: ?boolean,
-
-  /**
-   * Specifies whether clicking and dragging the view can move the window. This is useful
-   * to disable in Button like components like Pressable where mouse the user should still
-   * be able to click and drag off the view to cancel the click without accidentally moving the window.
-   *
-   * @platform macos
-   */
-  mouseDownCanMoveWindow?: ?boolean,
-
-  /**
-   * Specifies whether the view ensures it is vibrant on top of other content.
-   * For more information, see the following apple documentation:
-   * https://developer.apple.com/documentation/appkit/nsview/1483793-allowsvibrancy
-   * https://developer.apple.com/documentation/appkit/nsvisualeffectview#1674177
-   *
-   * @platform macos
-   */
-  allowsVibrancy?: ?boolean,
-
-  /**
-   * Specifies whether system focus ring should be drawn when the view has keyboard focus.
-   *
-   * @platform macos
-   */
-  enableFocusRing?: ?boolean,
-
-  /**
-   * The types of dragged files that the view will accept.
-   *
-   * Possible values for `draggedTypes` are:
-   *
-   * - `'fileUrl'`
-   *
-   * @platform macos
-   */
-  draggedTypes?: ?DraggedTypesType,
-
-  /**
-   * Reverses the direction of scroll. Uses native inversion on macOS and scale transforms of -1 elsewhere
-   *
-   * @platform macos
-   */
-  inverted?: ?boolean,
-|}>;
-// macOS]
-
 export type ViewProps = $ReadOnly<{|
   ...DirectEventProps,
   ...GestureResponderEventProps,
@@ -603,10 +445,8 @@ export type ViewProps = $ReadOnly<{|
   ...PointerEventProps,
   ...FocusEventProps,
   ...TouchEventProps,
-  ...KeyboardEventProps, // [macOS]
   ...AndroidViewProps,
   ...IOSViewProps,
-  ...MacOSViewProps, // [macOS]
 
   children?: Node,
   style?: ?ViewStyleProp,

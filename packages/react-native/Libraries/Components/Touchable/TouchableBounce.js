@@ -130,13 +130,8 @@ class TouchableBounce extends React.Component<Props, State> {
   render(): React.Node {
     // BACKWARD-COMPATIBILITY: Focus and blur events were never supported before
     // adopting `Pressability`, so preserve that behavior.
-    const {
-      onBlur,
-      onFocus,
-      onMouseEnter,
-      onMouseLeave,
-      ...eventHandlersWithoutBlurAndFocus
-    } = this.state.pressability.getEventHandlers(); // [macOS]
+    const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
+      this.state.pressability.getEventHandlers();
     const accessibilityLiveRegion =
       this.props['aria-live'] === 'off'
         ? 'none'
@@ -189,26 +184,11 @@ class TouchableBounce extends React.Component<Props, State> {
         nativeID={this.props.id ?? this.props.nativeID}
         testID={this.props.testID}
         hitSlop={this.props.hitSlop}
-        // [macOS
-        acceptsFirstMouse={
-          this.props.acceptsFirstMouse !== false && !this.props.disabled
-        }
-        enableFocusRing={
-          (this.props.enableFocusRing === undefined ||
-            this.props.enableFocusRing === true) &&
+        focusable={
+          this.props.focusable !== false &&
+          this.props.onPress !== undefined &&
           !this.props.disabled
         }
-        focusable={this.props.focusable !== false && !this.props.disabled}
-        tooltip={this.props.tooltip}
-        onMouseEnter={this.props.onMouseEnter}
-        onMouseLeave={this.props.onMouseLeave}
-        onDragEnter={this.props.onDragEnter}
-        onDragLeave={this.props.onDragLeave}
-        onDrop={this.props.onDrop}
-        onFocus={this.props.onFocus}
-        onBlur={this.props.onBlur}
-        draggedTypes={this.props.draggedTypes}
-        // macOS]
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
         {this.props.children}

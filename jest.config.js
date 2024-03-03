@@ -46,6 +46,7 @@ module.exports = {
     '^ReactNativeInternalFeatureFlags$':
       '<rootDir>/packages/react-native/jest/ReactNativeInternalFeatureFlagsMock.js',
     '^react-native(.*)': '<rootDir>/packages/react-native$1', // [macOS]
+    '@react-native/virtualized-lists': '@react-native-mac/virtualized-lists', // [macOS]
   },
   moduleFileExtensions: ['fb.js'].concat(defaults.moduleFileExtensions),
   unmockedModulePathPatterns: [

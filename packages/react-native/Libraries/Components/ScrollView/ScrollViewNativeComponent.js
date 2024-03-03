@@ -162,10 +162,6 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
             onMomentumScrollBegin: true,
             onScrollToTop: true,
             onScroll: true,
-            // [macOS
-            onInvertedDidChange: true,
-            onPreferredScrollerStyleDidChange: true,
-            // macOS]
           }),
         },
       };

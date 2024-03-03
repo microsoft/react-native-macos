@@ -47,7 +47,6 @@ const textViewConfig = {
     dataDetectorType: true,
     android_hyphenationFrequency: true,
     lineBreakStrategyIOS: true,
-    tooltip: true, // [macOS]
   },
   directEventTypes: {
     topTextLayout: {

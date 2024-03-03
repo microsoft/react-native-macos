@@ -82,11 +82,7 @@ const ExceptionsManager = {
     NativeModule.updateExceptionMessage(message, stack, exceptionId);
   },
   dismissRedbox(): void {
-    if (
-      Platform.OS !== 'ios' &&
-      Platform.OS !== 'macos' /* [macOS] */ &&
-      NativeModule.dismissRedbox
-    ) {
+    if (Platform.OS !== 'ios' && NativeModule.dismissRedbox) {
       // TODO(T53311281): This is a noop on iOS now. Implement it.
       NativeModule.dismissRedbox();
     }

@@ -2,7 +2,6 @@
 
 exports[`<Pressable /> should render as expected: should deep render when mocked (please verify output manually) 1`] = `
 <View
-  acceptsFirstMouse={true}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -22,14 +21,10 @@ exports[`<Pressable /> should render as expected: should deep render when mocked
   }
   accessible={true}
   collapsable={false}
-  enableFocusRing={true}
   focusable={true}
-  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -43,7 +38,6 @@ exports[`<Pressable /> should render as expected: should deep render when mocked
 
 exports[`<Pressable /> should render as expected: should deep render when not mocked (please verify output manually) 1`] = `
 <View
-  acceptsFirstMouse={true}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -63,14 +57,10 @@ exports[`<Pressable /> should render as expected: should deep render when not mo
   }
   accessible={true}
   collapsable={false}
-  enableFocusRing={true}
   focusable={true}
-  mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -96,7 +86,6 @@ exports[`<Pressable /> should render as expected: should shallow render as <Pres
 
 exports[`<Pressable disabled={true} /> should be disabled when disabled is true: should deep render when mocked (please verify output manually) 1`] = `
 <View
-  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -116,14 +105,10 @@ exports[`<Pressable disabled={true} /> should be disabled when disabled is true:
   }
   accessible={true}
   collapsable={false}
-  enableFocusRing={false}
-  focusable={false}
-  mouseDownCanMoveWindow={false}
+  focusable={true}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -137,7 +122,6 @@ exports[`<Pressable disabled={true} /> should be disabled when disabled is true:
 
 exports[`<Pressable disabled={true} /> should be disabled when disabled is true: should deep render when not mocked (please verify output manually) 1`] = `
 <View
-  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -157,14 +141,10 @@ exports[`<Pressable disabled={true} /> should be disabled when disabled is true:
   }
   accessible={true}
   collapsable={false}
-  enableFocusRing={false}
-  focusable={false}
-  mouseDownCanMoveWindow={false}
+  focusable={true}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -194,7 +174,6 @@ exports[`<Pressable disabled={true} /> should be disabled when disabled is true:
 
 exports[`<Pressable disabled={true} accessibilityState={{}} /> should be disabled when disabled is true and accessibilityState is empty: should deep render when mocked (please verify output manually) 1`] = `
 <View
-  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -214,14 +193,10 @@ exports[`<Pressable disabled={true} accessibilityState={{}} /> should be disable
   }
   accessible={true}
   collapsable={false}
-  enableFocusRing={false}
-  focusable={false}
-  mouseDownCanMoveWindow={false}
+  focusable={true}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -235,7 +210,6 @@ exports[`<Pressable disabled={true} accessibilityState={{}} /> should be disable
 
 exports[`<Pressable disabled={true} accessibilityState={{}} /> should be disabled when disabled is true and accessibilityState is empty: should deep render when not mocked (please verify output manually) 1`] = `
 <View
-  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -255,14 +229,10 @@ exports[`<Pressable disabled={true} accessibilityState={{}} /> should be disable
   }
   accessible={true}
   collapsable={false}
-  enableFocusRing={false}
-  focusable={false}
-  mouseDownCanMoveWindow={false}
+  focusable={true}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -294,7 +264,6 @@ exports[`<Pressable disabled={true} accessibilityState={{}} /> should be disable
 
 exports[`<Pressable disabled={true} accessibilityState={{checked: true}} /> should keep accessibilityState when disabled is true: should deep render when mocked (please verify output manually) 1`] = `
 <View
-  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -314,14 +283,10 @@ exports[`<Pressable disabled={true} accessibilityState={{checked: true}} /> shou
   }
   accessible={true}
   collapsable={false}
-  enableFocusRing={false}
-  focusable={false}
-  mouseDownCanMoveWindow={false}
+  focusable={true}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -335,7 +300,6 @@ exports[`<Pressable disabled={true} accessibilityState={{checked: true}} /> shou
 
 exports[`<Pressable disabled={true} accessibilityState={{checked: true}} /> should keep accessibilityState when disabled is true: should deep render when not mocked (please verify output manually) 1`] = `
 <View
-  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -355,14 +319,10 @@ exports[`<Pressable disabled={true} accessibilityState={{checked: true}} /> shou
   }
   accessible={true}
   collapsable={false}
-  enableFocusRing={false}
-  focusable={false}
-  mouseDownCanMoveWindow={false}
+  focusable={true}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -402,7 +362,6 @@ exports[`<Pressable disabled={true} accessibilityState={{checked: true}} /> shou
 
 exports[`<Pressable disabled={true} accessibilityState={{disabled: false}} /> should overwrite accessibilityState with value of disabled prop: should deep render when mocked (please verify output manually) 1`] = `
 <View
-  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -422,14 +381,10 @@ exports[`<Pressable disabled={true} accessibilityState={{disabled: false}} /> sh
   }
   accessible={true}
   collapsable={false}
-  enableFocusRing={false}
-  focusable={false}
-  mouseDownCanMoveWindow={false}
+  focusable={true}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -443,7 +398,6 @@ exports[`<Pressable disabled={true} accessibilityState={{disabled: false}} /> sh
 
 exports[`<Pressable disabled={true} accessibilityState={{disabled: false}} /> should overwrite accessibilityState with value of disabled prop: should deep render when not mocked (please verify output manually) 1`] = `
 <View
-  acceptsFirstMouse={false}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -463,14 +417,10 @@ exports[`<Pressable disabled={true} accessibilityState={{disabled: false}} /> sh
   }
   accessible={true}
   collapsable={false}
-  enableFocusRing={false}
-  focusable={false}
-  mouseDownCanMoveWindow={false}
+  focusable={true}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}

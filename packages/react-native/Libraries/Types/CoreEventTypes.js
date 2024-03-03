@@ -224,18 +224,13 @@ export type PointerEvent = SyntheticEvent<NativePointerEvent>;
 
 export type PressEvent = ResponderSyntheticEvent<
   $ReadOnly<{|
-    altKey?: ?boolean, // [macOS]
-    button?: ?number, // [macOS]
     changedTouches: $ReadOnlyArray<$PropertyType<PressEvent, 'nativeEvent'>>,
-    ctrlKey?: ?boolean, // [macOS]
     force?: number,
     identifier: number,
     locationX: number,
     locationY: number,
-    metaKey?: ?boolean, // [macOS]
     pageX: number,
     pageY: number,
-    shiftKey?: ?boolean, // [macOS]
     target: ?number,
     timestamp: number,
     touches: $ReadOnlyArray<$PropertyType<PressEvent, 'nativeEvent'>>,
@@ -272,7 +267,6 @@ export type ScrollEvent = SyntheticEvent<
     |}>,
     zoomScale?: number,
     responderIgnoreScroll?: boolean,
-    preferredScrollerStyle?: string, // [macOS]
   |}>,
 >;
 
@@ -285,26 +279,6 @@ export type BlurEvent = SyntheticEvent<
 export type FocusEvent = SyntheticEvent<
   $ReadOnly<{|
     target: number,
-  |}>,
->;
-
-export type KeyEvent = SyntheticEvent<
-  $ReadOnly<{|
-    // Modifier keys
-    capsLockKey: boolean,
-    shiftKey: boolean,
-    ctrlKey: boolean,
-    altKey: boolean,
-    metaKey: boolean,
-    numericPadKey: boolean,
-    helpKey: boolean,
-    functionKey: boolean,
-    // Key options
-    ArrowLeft: boolean,
-    ArrowRight: boolean,
-    ArrowUp: boolean,
-    ArrowDown: boolean,
-    key: string,
   |}>,
 >;
 

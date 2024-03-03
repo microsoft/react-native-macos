@@ -29,13 +29,6 @@ const DebugInstructions: () => Node = Platform.select({
       Menu.
     </Text>
   ),
-  // [macOS
-  macos: () => (
-    <Text>
-      Secondary click in this window to open the React Native debug menu.
-    </Text>
-  ),
-  // macOS]
   default: () => (
     <Text>
       Press <Text style={styles.highlight}>Cmd or Ctrl + M</Text> or{' '}
