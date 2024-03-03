@@ -64,6 +64,8 @@ class ViewProps : public YogaStylableProps, public AccessibilityProps {
   Float shadowOpacity{};
   Float shadowRadius{3};
 
+  Cursor cursor{};
+
   // Transform
   Transform transform{};
   BackfaceVisibility backfaceVisibility{};

@@ -85,6 +85,31 @@ enum class BorderCurve : uint8_t { Circular, Continuous };
 
 enum class BorderStyle : uint8_t { Solid, Dotted, Dashed };
 
+// [macOS [visionOS]
+enum class Cursor : uint8_t { 
+  Auto,
+  Alias,
+  ColumnResize,
+  ContextualMenu,
+  Copy,
+  Crosshair,
+  Default,
+  DisappearingItem,
+  EastResize,
+  Grab,
+  Grabbing,
+  NorthResize,
+  NoDrop,
+  NotAllowed,
+  Pointer,
+  RowResize,
+  SouthResize,
+  Text,
+  VerticalText,
+  WestResize,
+};
+// macOS] [visionOS]
+
 template <typename T>
 struct CascadedRectangleEdges {
   using Counterpart = RectangleEdges<T>;

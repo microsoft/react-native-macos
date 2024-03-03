@@ -178,6 +178,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     _borderCurve = RCTBorderCurveCircular;
     _borderStyle = RCTBorderStyleSolid;
     _hitTestEdgeInsets = UIEdgeInsetsZero;
+    _cursor = RCTCursorAuto;
 #if TARGET_OS_OSX // [macOS
     _transform3D = CATransform3DIdentity;
     _shadowColor = nil;
@@ -1204,7 +1205,11 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   }
 
   RCTUpdateShadowPathForView(self);
-  
+
+#if !TARGET_OS_OSX // [visionOS]
+  RCTUpdateHoverStyleForView(self);
+#endif // [visionOS]
+
 #if TARGET_OS_OSX // [macOS
   // clipsToBounds is stubbed out on macOS because it's not part of NSView
   layer.masksToBounds = self.clipsToBounds;
@@ -1346,6 +1351,33 @@ static void RCTUpdateShadowPathForView(RCTView *view)
   }
 }
 
+#if !TARGET_OS_OSX // [visionOS
+static void RCTUpdateHoverStyleForView(RCTView *view)
+{
+  if (@available(iOS 17.0, *)) {
+    UIHoverStyle *hoverStyle = nil;
+    if ([view cursor] == RCTCursorPointer) {
+      const RCTCornerRadii cornerRadii = [view cornerRadii];
+      const RCTCornerInsets cornerInsets = RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero);
+#if TARGET_OS_IOS
+      // Due to an Apple bug, it seems on iOS, `[UIShape shapeWithBezierPath:]` needs to
+      // be calculated in the superviews' coordinate space (view.frame). This is not true
+      // on other platforms like visionOS.
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(view.frame, cornerInsets, NULL);
+#else // TARGET_OS_VISION
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(view.bounds, cornerInsets, NULL);
+#endif
+      UIBezierPath *bezierPath = [UIBezierPath bezierPathWithCGPath:borderPath];
+      CGPathRelease(borderPath);
+      UIShape *shape = [UIShape shapeWithBezierPath:bezierPath];
+
+      hoverStyle = [UIHoverStyle styleWithEffect:[UIHoverHighlightEffect effect] shape:shape];
+    }
+    [view setHoverStyle:hoverStyle];
+  }
+}
+#endif // visionOS]
+
 - (void)updateClippingForLayer:(CALayer *)layer
 {
   CALayer *mask = nil;
@@ -1473,8 +1505,9 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 - (void)resetCursorRects
 {
   [self discardCursorRects];
-  NSCursor *cursor = [RCTConvert NSCursor:self.cursor];
-  if (cursor) {
+  if ([self cursor] != RCTCursorAuto)
+  {
+    NSCursor *cursor = NSCursorFromRCTCursor(self.cursor);
     [self addCursorRect:self.bounds cursor:cursor];
   }
 }

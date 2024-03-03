@@ -54,7 +54,7 @@ void ViewShadowNode::initialize() noexcept {
       viewProps.accessibilityElementsHidden ||
       viewProps.accessibilityViewIsModal ||
       viewProps.importantForAccessibility != ImportantForAccessibility::Auto ||
-      viewProps.removeClippedSubviews;
+      viewProps.removeClippedSubviews || viewProps.cursor != Cursor::Auto; // [macOS] [visionOS]
 
 #ifdef ANDROID
   formsStackingContext = formsStackingContext || viewProps.elevation != 0;
