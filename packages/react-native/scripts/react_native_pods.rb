@@ -170,6 +170,7 @@ def use_react_native! (
   pod 'fmt', :podspec => "#{prefix}/third-party-podspecs/fmt.podspec"
   pod 'RCT-Folly', :podspec => "#{prefix}/third-party-podspecs/RCT-Folly.podspec", :modular_headers => true
   pod 'SocketRocket', :podspec => "#{prefix}/third-party-podspecs/SocketRocket.podspec", :modular_headers => true # [visionOS]
+  pod 'libevent', :podspec => "#{prefix}/third-party-podspecs/libevent.podspec", :modular_headers => true # [visionOS]
 
   run_codegen!(
     app_path,
