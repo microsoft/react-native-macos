@@ -105,7 +105,12 @@ using namespace facebook::react;
     if (props.autoFocus) {
 #if !TARGET_OS_OSX // [macOS]
       [_backedTextInputView becomeFirstResponder];
-#endif // [macOS]
+#else // [macOS
+      NSWindow *window = _backedTextInputView.window;
+      if (window) {
+        [window makeFirstResponder:_backedTextInputView.responder];
+      }
+#endif // macOS]
     }
     _didMoveToWindow = YES;
   }
