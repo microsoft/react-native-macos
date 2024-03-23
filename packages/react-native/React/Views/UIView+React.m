@@ -12,7 +12,7 @@
 #import "RCTAssert.h"
 #import "RCTLog.h"
 #import "RCTShadowView.h"
-#import "RCTView.h"
+#import "RCTView.h" // [macOS]
 
 @implementation RCTPlatformView (React) // [macOS]
 
