@@ -12,7 +12,6 @@
 #import "RCTAssert.h"
 #import "RCTLog.h"
 #import "RCTShadowView.h"
-#import "RCTView.h" // [macOS]
 
 @implementation RCTPlatformView (React) // [macOS]
 
@@ -312,12 +311,16 @@ static void updateTransform(RCTPlatformView *view) // [macOS]
   // Enable edge antialiasing in rotation, skew, or perspective transforms
   view.layer.allowsEdgeAntialiasing = transform.m12 != 0.0f || transform.m21 != 0.0f || transform.m34 != 0.0f;
 #else // [macOS
-  if ([view isKindOfClass:[RCTView class]]) {
-    [(RCTView *)view setTransform3D:transform];
-    [view setNeedsDisplay:YES];
-  }
+  [view updateInternalReactTransform:transform];
 #endif // macOS]
 }
+
+#if TARGET_OS_OSX // [macOS
+- (void)updateInternalReactTransform:(CATransform3D)transform
+{
+  // Do nothing, this will get overridden by RCTView
+}
+#endif // macOS]
 
 - (UIViewController *)reactViewController
 {
