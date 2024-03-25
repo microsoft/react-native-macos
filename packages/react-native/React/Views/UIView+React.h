@@ -80,9 +80,9 @@
 
 #if TARGET_OS_OSX // [macOS
 /**
- * Used by react-native-macos to propagate transform changes internally.
+ * Used by macOS to propagate transform changes internally.
  */
-- (void)updateInternalReactTransform:(CATransform3D)transform;
+- (void)updateReactTransformInternal:(CATransform3D)transform;
 #endif // macOS]
 
 /**

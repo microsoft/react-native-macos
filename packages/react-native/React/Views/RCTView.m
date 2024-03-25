@@ -1319,7 +1319,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 }
 
 #if TARGET_OS_OSX // [macOS
-- (void)updateInternalReactTransform:(CATransform3D)transform
+- (void)updateReactTransformInternal:(CATransform3D)transform
 {
   [self setTransform3D:transform];
   [self setNeedsDisplay];
