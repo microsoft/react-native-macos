@@ -174,6 +174,11 @@ using namespace facebook::react;
   [super prepareForRecycle];
   _state.reset();
   _accessibilityProvider = nil;
+  
+#if TARGET_OS_OSX // [macOS
+  // Clear the text view to avoid displaying the previous text on recycle with undefined text content.
+  _textView.string = @"";
+#endif // macOS]
 }
 
 - (void)drawRect:(CGRect)rect
