@@ -1008,8 +1008,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 /**
  * Attempts to remove the ghost text from a provided string given our current state.
- * If `strict` mode is enabled, this method asserts if we don't find the ghost text in the expected location.
- * If disabled and we don't find the ghost text, we assume it's already been removed and just return the input string.
+ * If `strict` mode is enabled, this method assumes the ghost text exists exactly
+ * where we expect it to be, and we assert if this turns out to not be the case.
+ * If disabled, we allow for the possibility that the ghost text has already been removed,
+ * which can happen if a delegate callback is trying to remove ghost text after invoking `setAttributedText:`.
  */
 - (NSAttributedString *)removingGhostTextFromString:(NSAttributedString *)string strict:(BOOL)strict {
   if (_ghostText == nil) {
