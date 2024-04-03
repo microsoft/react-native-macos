@@ -213,7 +213,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
     // Ghost text changes should not be part of the undo stack
     if (!self.backedTextInputView.ghostTextChanging) {
-      // If there was ghost text previously, we don't want it showing up if we undo
+      // If there was ghost text previously, we don't want it showing up if we undo.
+      // If something goes wrong when trying to remove it, just stick with oldAttributedText.
       NSAttributedString *oldAttributedTextWithoutGhostText = [self removingGhostTextFromString:oldAttributedText strict:YES] ?: oldAttributedText;
       [self.backedTextInputView.undoManager registerUndoWithTarget:self handler:^(RCTBaseTextInputView *strongSelf) {
         strongSelf.attributedText = oldAttributedTextWithoutGhostText;
@@ -1008,8 +1009,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 /**
  * Attempts to remove the ghost text from a provided string given our current state.
+ *
  * If `strict` mode is enabled, this method assumes the ghost text exists exactly
- * where we expect it to be, and we assert if this turns out to not be the case.
+ * where we expect it to be. We assert and return `nil` if we don't find the expected ghost text.
+ * It's the responsibility of the caller to make sure the result isn't `nil`.
+ *
  * If disabled, we allow for the possibility that the ghost text has already been removed,
  * which can happen if a delegate callback is trying to remove ghost text after invoking `setAttributedText:`.
  */
