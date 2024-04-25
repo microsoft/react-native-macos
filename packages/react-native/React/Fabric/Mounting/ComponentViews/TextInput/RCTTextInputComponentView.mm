@@ -344,6 +344,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.disableKeyboardShortcuts = newTextInputProps.disableKeyboardShortcuts;
   }
 
+#if TARGET_OS_OSX // [macOS
+  if (newTextInputProps.traits.pastedTypes!= oldTextInputProps.traits.pastedTypes) {
+    NSArray<NSPasteboardType> *types = RCTPasteboardTypeArrayFromProps(newTextInputProps.traits.pastedTypes);
+    [_backedTextInputView setReadablePasteBoardTypes:types];
+  }
+#endif // macOS]
+
   [super updateProps:props oldProps:oldProps];
 
 #if TARGET_OS_IOS // [macOS] [visionOS]
