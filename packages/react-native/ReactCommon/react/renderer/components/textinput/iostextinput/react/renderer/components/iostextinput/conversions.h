@@ -237,4 +237,26 @@ inline void fromRawValue(
   abort();
 }
 
+#ifdef TARGET_OS_OSX // [macOS
+inline void fromRawValue(
+    const PropsParserContext &context,
+    const RawValue &value,
+    PastedTypesType &result) {
+  auto string = (std::string)value;
+  if (string == "fileUrl") {
+    result = PastedTypesType::FileUrl;
+    return;
+  }
+  if (string == "image") {
+    result = PastedTypesType::Image;
+    return;
+  }
+  if (string == "string") {
+    result = PastedTypesType::String;
+    return;
+  }
+  abort();
+}
+#endif // macOS]
+
 } // namespace facebook::react

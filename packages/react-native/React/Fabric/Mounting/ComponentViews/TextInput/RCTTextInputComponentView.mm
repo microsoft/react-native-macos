@@ -251,6 +251,14 @@ using namespace facebook::react;
   if (newTextInputProps.inputAccessoryViewID != oldTextInputProps.inputAccessoryViewID) {
     _backedTextInputView.inputAccessoryViewID = RCTNSStringFromString(newTextInputProps.inputAccessoryViewID);
   }
+  
+#if TARGET_OS_OSX // [macOS
+  if (newTextInputProps.traits.pastedTypes!= oldTextInputProps.traits.pastedTypes) {
+    NSArray<NSPasteboardType> *types = RCTPasteboardTypeArrayFromProps(newTextInputProps.traits.pastedTypes);
+    [_backedTextInputView setReadablePasteBoardTypes:types];
+  }
+#endif // macOS]
+  
   [super updateProps:props oldProps:oldProps];
 
   [self setDefaultInputAccessoryView];
