@@ -9,6 +9,7 @@ parameters:
   xcode_version: ''
   new_arch_enabled: ''
   use_hermes: ''
+  use_frameworks: ''
 
 steps:
   - template: apple-tools-setup.yml
@@ -31,6 +32,7 @@ steps:
     env:
       RCT_NEW_ARCH_ENABLED: $(new_arch_enabled)
       USE_HERMES: $(use_hermes)
+      USE_FRAMEWORKS: $(use_frameworks)
 
   - task: ShellScript@2
     displayName: 'Setup packager and WebSocket test server'
