@@ -2025,6 +2025,11 @@ enum DragEventType {
   return RCTNSStringFromString([[self class] componentDescriptorProvider].name);
 }
 
+- (BOOL)wantsUpdateLayer
+{
+  return YES;
+}
+
 @end
 
 #ifdef __cplusplus
