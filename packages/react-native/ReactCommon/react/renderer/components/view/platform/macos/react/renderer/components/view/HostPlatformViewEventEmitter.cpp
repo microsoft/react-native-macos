@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "MacOSViewEventEmitter.h"
+#include "HostPlatformViewEventEmitter.h"
 
 namespace facebook::react {
 
@@ -25,20 +25,19 @@ static jsi::Value keyEventPayload(jsi::Runtime &runtime, KeyEvent const &event) 
   return payload;
 };
 
-void MacOSViewEventEmitter::onKeyDown(KeyEvent const &keyEvent) const {
+void HostPlatformViewEventEmitter::onKeyDown(KeyEvent const &keyEvent) const {
   dispatchEvent(
       "keyDown",
       [keyEvent](jsi::Runtime &runtime) { return keyEventPayload(runtime, keyEvent); },
       EventPriority::AsynchronousBatched);
 }
 
-void MacOSViewEventEmitter::onKeyUp(KeyEvent const &keyEvent) const {
+void HostPlatformViewEventEmitter::onKeyUp(KeyEvent const &keyEvent) const {
   dispatchEvent(
       "keyUp",
       [keyEvent](jsi::Runtime &runtime) { return keyEventPayload(runtime, keyEvent); },
       EventPriority::AsynchronousBatched);
 }
-
 
 #pragma mark - Mouse Events
 
@@ -55,31 +54,30 @@ static jsi::Object mouseEventPayload(jsi::Runtime &runtime, MouseEvent const &ev
   return payload;
 };
 
-void MacOSViewEventEmitter::onMouseEnter(MouseEvent const &mouseEvent) const {
+void HostPlatformViewEventEmitter::onMouseEnter(MouseEvent const &mouseEvent) const {
   dispatchEvent(
       "mouseEnter",
       [mouseEvent](jsi::Runtime &runtime) { return mouseEventPayload(runtime, mouseEvent); },
       EventPriority::AsynchronousBatched);
 }
 
-void MacOSViewEventEmitter::onMouseLeave(MouseEvent const &mouseEvent) const {
+void HostPlatformViewEventEmitter::onMouseLeave(MouseEvent const &mouseEvent) const {
   dispatchEvent(
       "mouseLeave",
       [mouseEvent](jsi::Runtime &runtime) { return mouseEventPayload(runtime, mouseEvent); },
       EventPriority::AsynchronousBatched);
 }
 
-void MacOSViewEventEmitter::onDoubleClick(MouseEvent const &mouseEvent) const {
+void HostPlatformViewEventEmitter::onDoubleClick(MouseEvent const &mouseEvent) const {
   dispatchEvent(
       "doubleClick",
       [mouseEvent](jsi::Runtime &runtime) { return mouseEventPayload(runtime, mouseEvent); },
       EventPriority::AsynchronousBatched);
 }
 
-
 #pragma mark - Drag and Drop Events
 
-jsi::Value MacOSViewEventEmitter::dataTransferPayload(jsi::Runtime &runtime, std::vector<DataTransferItem> const &dataTransferItems) {
+jsi::Value HostPlatformViewEventEmitter::dataTransferPayload(jsi::Runtime &runtime, std::vector<DataTransferItem> const &dataTransferItems) {
   auto filesArray = jsi::Array(runtime, dataTransferItems.size());
   auto itemsArray = jsi::Array(runtime, dataTransferItems.size());
   auto typesArray = jsi::Array(runtime, dataTransferItems.size());
@@ -99,60 +97,59 @@ jsi::Value MacOSViewEventEmitter::dataTransferPayload(jsi::Runtime &runtime, std
       fileObject.setProperty(runtime, "height", *transferItem.height);
     }
     filesArray.setValueAtIndex(runtime, i, fileObject);
-    
+
     auto itemObject = jsi::Object(runtime);
     itemObject.setProperty(runtime, "kind", transferItem.kind);
     itemObject.setProperty(runtime, "type", transferItem.type);
     itemsArray.setValueAtIndex(runtime, i, itemObject);
-    
+
     typesArray.setValueAtIndex(runtime, i, transferItem.type);
     i++;
   }
-  
+
   auto dataTransferObject = jsi::Object(runtime);
   dataTransferObject.setProperty(runtime, "files", filesArray);
   dataTransferObject.setProperty(runtime, "items", itemsArray);
   dataTransferObject.setProperty(runtime, "types", typesArray);
-  
+
   return dataTransferObject;
 }
 
 static jsi::Value dragEventPayload(jsi::Runtime &runtime, DragEvent const &event) {
   auto payload = mouseEventPayload(runtime, event);
-  auto dataTransferObject = MacOSViewEventEmitter::dataTransferPayload(runtime, event.dataTransferItems);
+  auto dataTransferObject = HostPlatformViewEventEmitter::dataTransferPayload(runtime, event.dataTransferItems);
   payload.setProperty(runtime, "dataTransfer", dataTransferObject);
   return payload;
 }
 
-void MacOSViewEventEmitter::onDragEnter(DragEvent const &dragEvent) const {
+void HostPlatformViewEventEmitter::onDragEnter(DragEvent const &dragEvent) const {
   dispatchEvent(
       "dragEnter",
       [dragEvent](jsi::Runtime &runtime) { return dragEventPayload(runtime, dragEvent); },
       EventPriority::AsynchronousBatched);
 }
 
-void MacOSViewEventEmitter::onDragLeave(DragEvent const &dragEvent) const {
+void HostPlatformViewEventEmitter::onDragLeave(DragEvent const &dragEvent) const {
   dispatchEvent(
       "dragLeave",
       [dragEvent](jsi::Runtime &runtime) { return dragEventPayload(runtime, dragEvent); },
       EventPriority::AsynchronousBatched);
 }
 
-void MacOSViewEventEmitter::onDrop(DragEvent const &dragEvent) const {
+void HostPlatformViewEventEmitter::onDrop(DragEvent const &dragEvent) const {
   dispatchEvent(
       "drop",
       [dragEvent](jsi::Runtime &runtime) { return dragEventPayload(runtime, dragEvent); },
       EventPriority::AsynchronousBatched);
 }
 
-
 #pragma mark - Focus Events
 
-void MacOSViewEventEmitter::onFocus() const {
+void HostPlatformViewEventEmitter::onFocus() const {
   dispatchEvent("focus");
 }
 
-void MacOSViewEventEmitter::onBlur() const {
+void HostPlatformViewEventEmitter::onBlur() const {
   dispatchEvent("blur");
 }
 

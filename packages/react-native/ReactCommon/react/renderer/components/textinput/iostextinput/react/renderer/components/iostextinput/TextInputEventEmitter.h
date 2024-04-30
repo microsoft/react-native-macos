@@ -12,7 +12,7 @@
 
 namespace facebook::react {
 #if TARGET_OS_OSX // [macOS
-#include <react/renderer/components/view/macOS/MouseEvent.h>
+#include <react/renderer/components/view/MouseEvent.h>
 #endif // macOS]
 
 class TextInputMetrics {

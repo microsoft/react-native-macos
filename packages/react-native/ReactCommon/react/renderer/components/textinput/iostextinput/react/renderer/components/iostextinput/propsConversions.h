@@ -198,12 +198,13 @@ inline void fromRawValue(
   } else {
     LOG(ERROR) << "Unsupported Selection type";
   }
+}
 
 #if TARGET_OS_OSX // [macOS
 static inline void fromRawValue(
-    const PropsParserContext &context,
-    const RawValue &value,
-    SubmitKeyEvent &result) {
+    const PropsParserContext& context,
+    const RawValue& value,
+    SubmitKeyEvent& result) {
   auto map = (std::unordered_map<std::string, RawValue>)value;
 
   auto tmp_key = map.find("key");
@@ -233,9 +234,9 @@ static inline void fromRawValue(
 }
 
 static inline void fromRawValue(
-    const PropsParserContext &context,
-    const RawValue &value,
-    std::vector<SubmitKeyEvent> &result) {
+    const PropsParserContext& context,
+    const RawValue& value,
+    std::vector<SubmitKeyEvent>& result) {
   auto items = (std::vector<RawValue>)value;
   for (const auto &item : items) {
     SubmitKeyEvent newItem;
