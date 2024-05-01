@@ -51,9 +51,6 @@ using namespace facebook::react;
 }
 
 @end
-
-@interface RCTParagraphComponentView () <NSTextViewDelegate>
-@end
 #endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
@@ -68,9 +65,17 @@ using namespace facebook::react;
   ParagraphShadowNode::ConcreteState::Shared _state;
   ParagraphAttributes _paragraphAttributes;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
-#if !TARGET_OS_OSX // [macOS]
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
-#endif // [macOS]
+}
+#else // [macOS
+@interface RCTParagraphComponentView () <NSTextViewDelegate>
+@end
+
+@implementation RCTParagraphComponentView {
+  ParagraphShadowNode::ConcreteState::Shared _state;
+  ParagraphAttributes _paragraphAttributes;
+  RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
+  RCTParagraphComponentUnfocusableTextView *_textView;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame

@@ -93,7 +93,9 @@
 #endif
   RCTBackedTextFieldDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
+#if TARGET_OS_OSX // [macOS
   NSArray<NSPasteboardType> *_readablePasteboardTypes;
+#endif // macOS]
 }
 
 #if TARGET_OS_OSX // [macOS

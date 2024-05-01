@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, assign, getter=isEditable) BOOL editable;
 #else // [macOS
-@property (assign, getter=isEditable) BOOL editable;
+@property (atomic, assign, getter=isEditable) BOOL editable;
 #endif // macOS]
 @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
 @property (nonatomic, strong, nullable) NSString *inputAccessoryViewID;
@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_OSX // [macOS
 @property (nonatomic, copy, nullable) NSString *text;
 @property (nonatomic, copy, nullable) NSAttributedString *attributedText;
-@property (nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *defaultTextAttributes;
+@property (nonatomic, strong, nullable) NSDictionary<NSAttributedStringKey, id> *defaultTextAttributes;
 @property (nonatomic, assign) NSTextAlignment textAlignment;
 @property (nonatomic, getter=isAutomaticTextReplacementEnabled) BOOL automaticTextReplacementEnabled;
 @property (nonatomic, getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled;
