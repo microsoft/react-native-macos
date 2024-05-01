@@ -367,7 +367,6 @@ using namespace facebook::react;
 
     // Start selection if we're still selectable and hit-testable.
     if (_textView.selectable && [contentView hitTest:point] == self) {
-      [[RCTSurfaceTouchHandler surfaceTouchHandlerForView:self] cancelTouchWithEvent:event];
       [self.window makeFirstResponder:_textView];
       [_textView mouseDown:event];
     }
