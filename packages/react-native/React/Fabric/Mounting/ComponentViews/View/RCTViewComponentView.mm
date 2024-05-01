@@ -32,71 +32,6 @@
 
 using namespace facebook::react;
 
-#if TARGET_OS_OSX // [macOS
-inline NSCursor* RCTNSCursorFromCursor(facebook::react::Cursor cursorValue) {
-  NSCursor *cursor = nil;
-  
-  switch (cursorValue) {
-    case Cursor::Arrow:
-      cursor = [NSCursor arrowCursor];
-      break;
-    case Cursor::ClosedHand:
-      cursor = [NSCursor closedHandCursor];
-      break;
-    case Cursor::ContextualMenu:
-      cursor = [NSCursor contextualMenuCursor];
-      break;
-    case Cursor::Crosshair:
-      cursor = [NSCursor crosshairCursor];
-      break;
-    case Cursor::DisappearingItem:
-      cursor = [NSCursor disappearingItemCursor];
-      break;
-    case Cursor::DragCopy:
-      cursor = [NSCursor dragCopyCursor];
-      break;
-    case Cursor::DragLink:
-      cursor = [NSCursor dragLinkCursor];
-      break;
-    case Cursor::IBeam:
-      cursor = [NSCursor IBeamCursor];
-      break;
-    case Cursor::IBeamCursorForVerticalLayout:
-      cursor = [NSCursor IBeamCursorForVerticalLayout];
-      break;
-    case Cursor::OpenHand:
-      cursor = [NSCursor openHandCursor];
-      break;
-    case Cursor::OperationNotAllowed:
-      cursor = [NSCursor operationNotAllowedCursor];
-      break;
-    case Cursor::PointingHand:
-      cursor = [NSCursor pointingHandCursor];
-      break;
-    case Cursor::ResizeDown:
-      cursor = [NSCursor resizeDownCursor];
-      break;
-    case Cursor::ResizeLeft:
-      cursor = [NSCursor resizeLeftCursor];
-      break;
-    case Cursor::ResizeLeftRight:
-      cursor = [NSCursor resizeLeftRightCursor];
-      break;
-    case Cursor::ResizeRight:
-      cursor = [NSCursor resizeRightCursor];
-      break;
-    case Cursor::ResizeUp:
-      cursor = [NSCursor resizeUpCursor];
-      break;
-    case Cursor::ResizeUpDown:
-      cursor = [NSCursor resizeUpDownCursor];
-      break;
-  }
-  
-  return cursor;
-}
-#endif // macOS]
-
 @implementation RCTViewComponentView {
   RCTUIColor *_backgroundColor; // [macOS]
   CALayer *_borderLayer;
@@ -347,7 +282,11 @@ inline NSCursor* RCTNSCursorFromCursor(facebook::react::Cursor cursorValue) {
   
   // `cursor`
   if (oldViewProps.cursor != newViewProps.cursor) {
-    needsInvalidateLayer = YES;
+#if !TARGET_OS_OSX // [macOS]
+    needsInvalidateLayer = YES;  // `cursor`
+#else // [macOS
+    _cursor = NSCursorFromCursor(newViewProps.cursor);
+#endif // macOS]
   }
 
   // `shouldRasterize`
@@ -520,13 +459,6 @@ inline NSCursor* RCTNSCursorFromCursor(facebook::react::Cursor cursorValue) {
     }
   }
   
-  // `cursor`
-  if (oldViewProps.cursor != newViewProps.cursor) {
-    _cursor = nil;
-    if (newViewProps.cursor.has_value()) {
-      _cursor = RCTNSCursorFromCursor(newViewProps.cursor.value());
-    }
-  }
 #endif // macOS]
 
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
@@ -720,13 +652,17 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
 }
 
 #if TARGET_OS_OSX // [macOS
-  static NSCursor *NSCursorFromCursor(Cursor cursor)
+static NSCursor *NSCursorFromCursor(Cursor cursor)
 {
   switch (cursor) {
-    case Cursor::Auto:
-      return [NSCursor arrowCursor];
     case Cursor::Alias:
       return [NSCursor dragLinkCursor];
+    case Cursor::Arrow:
+      return [NSCursor arrowCursor];
+    case Cursor::Auto:
+      return [NSCursor arrowCursor];
+    case Cursor::ClosedHand:
+      return [NSCursor closedHandCursor];
     case Cursor::ColumnResize:
       return [NSCursor resizeLeftRightCursor];
     case Cursor::ContextualMenu:
@@ -739,19 +675,33 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
       return [NSCursor arrowCursor];
     case Cursor::DisappearingItem:
       return [NSCursor disappearingItemCursor];
+    case Cursor::DragCopy:
+      return [NSCursor dragCopyCursor];
+    case Cursor::DragLink:
+      return [NSCursor dragLinkCursor];
     case Cursor::EastResize:
       return [NSCursor resizeRightCursor];
     case Cursor::Grab:
       return [NSCursor openHandCursor];
     case Cursor::Grabbing:
       return [NSCursor closedHandCursor];
+    case Cursor::IBeam:
+      return [NSCursor IBeamCursor];
+    case Cursor::IBeamCursorForVerticalLayout:
+      return [NSCursor IBeamCursorForVerticalLayout];
     case Cursor::NorthResize:
       return [NSCursor resizeUpCursor];
     case Cursor::NoDrop:
       return [NSCursor operationNotAllowedCursor];
     case Cursor::NotAllowed:
       return [NSCursor operationNotAllowedCursor];
+    case Cursor::OpenHand:
+      return [NSCursor openHandCursor];
+    case Cursor::OperationNotAllowed:
+      return [NSCursor operationNotAllowedCursor];
     case Cursor::Pointer:
+      return [NSCursor pointingHandCursor];
+    case Cursor::PointingHand:
       return [NSCursor pointingHandCursor];
     case Cursor::RowResize:
       return [NSCursor resizeUpDownCursor];
@@ -763,10 +713,21 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
       return [NSCursor IBeamCursorForVerticalLayout];
     case Cursor::WestResize:
       return [NSCursor resizeLeftCursor];
+    case Cursor::ResizeDown:
+      return [NSCursor resizeDownCursor];
+    case Cursor::ResizeLeft:
+      return [NSCursor resizeLeftCursor];
+    case Cursor::ResizeLeftRight:
+      return [NSCursor resizeLeftRightCursor];
+    case Cursor::ResizeRight:
+      return [NSCursor resizeRightCursor];
+    case Cursor::ResizeUp:
+      return [NSCursor resizeUpCursor];
+    case Cursor::ResizeUpDown:
+      return [NSCursor resizeDownCursor];
   }
 }
 #endif // macOS]
-
 
 - (void)invalidateLayer
 {
@@ -1463,15 +1424,6 @@ enum MouseEventType {
 {
   [self updateClipViewBoundsObserverIfNeeded];
   [super viewDidMoveToWindow];
-}
-
-- (void)resetCursorRects
-{
-  [self discardCursorRects];
-  if (_cursor) {
-    [self addCursorRect:self.bounds cursor:_cursor];
-  }
-  [self updateMouseOverIfNeeded];
 }
 
 - (void)updateTrackingAreas
