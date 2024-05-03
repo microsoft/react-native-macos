@@ -53,9 +53,16 @@ steps:
       xcode_sdk: ${{ parameters.xcode_sdk }}
       xcode_workspacePath: packages/rn-tester/RNTesterPods.xcworkspace
       xcode_scheme: ${{ parameters.xcode_scheme }}
-      xcode_actions: ${{ parameters.xcode_actions }}
+      xcode_actions: 'build'
       xcode_extraArgs: ${{ parameters.xcode_extraArgs }}
 
+  - template: /.ado/templates/apple-xcode-build.yml@self
+    parameters:
+      xcode_sdk: ${{ parameters.xcode_sdk }}
+      xcode_workspacePath: packages/rn-tester/RNTesterPods.xcworkspace
+      xcode_scheme: ${{ parameters.xcode_scheme }}
+      xcode_actions: 'test'
+      xcode_extraArgs: ${{ parameters.xcode_extraArgs }}
 
   - task: ShellScript@2
     displayName: 'Cleanup packager and WebSocket test server'
