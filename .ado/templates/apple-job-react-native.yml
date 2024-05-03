@@ -48,23 +48,14 @@ steps:
       PLATFORM: ${{ parameters.packager_platform }}
     displayName: 'curl the packager'
 
-  - task: Xcode@5
-    displayName: 'Xcode ${{ parameters.xcode_actions }} ${{ parameters.xcode_sdk }} ${{ parameters.xcode_scheme }}'
-    inputs:
-      actions: '${{ parameters.xcode_actions }}'
-      sdk: ${{ parameters.xcode_sdk }}
-      xcWorkspacePath: packages/rn-tester/RNTesterPods.xcworkspace
-      scheme: ${{ parameters.xcode_scheme }}
-      xcodeVersion: specifyPath
-      xcodeDeveloperDir: ${{ parameters.xcode_version }}
-      signingOption: auto
-      packageApp: false
-      teamId: '$(XCodeSigningMicrosoftTeamID)'
-      args: '-destination "${{ parameters.xcode_destination }}" -verbose -derivedDataPath DerivedData ${{ parameters.xcode_extraArgs }}'
-      exportPath: '$(agent.builddirectory)/output/${{ parameters.xcode_sdk }}/'
-      useXcpretty: true
-      publishJUnitResults: true
-      xctoolReporter: 'junit:test-results.xml'
+  - template: /.ado/templates/apple-xcode-build.yml@self
+    parameters:
+      xcode_sdk: ${{ parameters.xcode_sdk }}
+      xcode_workspacePath: packages/rn-tester/RNTesterPods.xcworkspace
+      xcode_scheme: ${{ parameters.xcode_scheme }}
+      xcode_actions: ${{ parameters.xcode_actions }}
+      xcode_extraArgs: ${{ parameters.xcode_extraArgs }}
+
 
   - task: ShellScript@2
     displayName: 'Cleanup packager and WebSocket test server'
