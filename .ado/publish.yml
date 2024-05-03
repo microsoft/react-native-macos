@@ -16,7 +16,7 @@ trigger:
 pr: none
 
 variables:
-  - template: variables/vars.yml
+  - template: /.ado/variables/vars.yml@self
   - group: React-native-macos Secrets
   - group: InfoSec-SecurityResults
   - name: tags

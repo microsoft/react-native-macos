@@ -11,7 +11,7 @@ steps:
         cat .ado/Brewfile.lock.json
 
   - ${{ if ne(parameters.xcode_version, '')}}:
-    - template: apple-xcode-select.yml
+    - template: /.ado/templates/apple-xcode-select.yml@self
       parameters:
         slice_name: ${{ parameters.slice_name }}
         xcode_version: ${{ parameters.xcode_version }}

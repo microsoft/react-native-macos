@@ -1,6 +1,6 @@
 name: Integrate $(Date:yyyyMMdd).$(Rev:.r)
 variables:
-  - template: variables/vars.yml
+  - template: /.ado/variables/vars.yml@self
 trigger:
   branches:
     include:
@@ -28,7 +28,7 @@ jobs:
     timeoutInMinutes: 60
     cancelTimeoutInMinutes: 5
     steps:
-      - template: templates/apple-tools-setup.yml
+      - template: /.ado/templates/apple-tools-setup.yml@self
         parameters:
           slice_name: $(slice_name)
           xcode_version: $(xcode_version)
@@ -74,7 +74,7 @@ jobs:
           cat package.json | jq .devDependencies
         displayName: Modify example app dependencies
         workingDirectory: react-native-test-app/example
-      - template: templates/verdaccio-init.yml
+      - template: /.ado/templates/verdaccio-init.yml@self
       - bash: |
           npx beachball publish --branch origin/$(System.PullRequest.TargetBranch) --no-push --registry http://localhost:4873 --yes --access public
         displayName: Publish beachball packages to verdaccio

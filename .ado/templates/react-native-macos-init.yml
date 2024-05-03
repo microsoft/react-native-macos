@@ -9,10 +9,10 @@ steps:
     submodules: false # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
     persistCredentials: false # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
-  - template: apple-tools-setup.yml
+  - template: /.ado/templates/apple-tools-setup.yml@self
 
-  - template: verdaccio-init.yml
-  - template: verdaccio-publish.yml
+  - template: /.ado/templates/verdaccio-init.yml@self
+  - template: /.ado/templates/verdaccio-publish.yml@self
 
   # First do a build of the local package, since we point the cli at the local files, it needs to be pre-built
   - task: CmdLine@2

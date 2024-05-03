@@ -2,7 +2,7 @@
 name: $(Date:yyyyMMdd).$(Rev:.r)
 
 variables:
-  - template: variables/vars.yml
+  - template: /.ado/variables/vars.yml@self
 
 trigger: none # will disable CI builds entirely
 
@@ -22,7 +22,7 @@ jobs:
       vmImage: $(VmImageApple)
       demands: ['xcode', 'sh', 'npm']
     steps:
-      - template: templates/apple-job-javascript.yml
+      - template: /.ado/templates/apple-job-javascript.yml@self
         parameters:
             slice_name: $(slice_name)
             xcode_version: $(xcode_version)
@@ -113,7 +113,7 @@ jobs:
     timeoutInMinutes: 90 # how long to run the job before automatically cancelling
     cancelTimeoutInMinutes: 5 # how much time to give 'run always even if cancelled tasks' before killing them
     steps:
-      - template: templates/apple-job-react-native.yml
+      - template: /.ado/templates/apple-job-react-native.yml@self
         parameters:
           packager_platform: $(packager_platform)
           xcode_sdk: $(xcode_sdk)
@@ -133,7 +133,7 @@ jobs:
       vmImage: $(VmImageApple)
       demands: ['xcode', 'sh', 'npm']
     steps:
-      - template: templates/react-native-macos-init.yml
+      - template: /.ado/templates/react-native-macos-init.yml@self
         parameters:
           configuration: $(configuration)
 
@@ -151,6 +151,6 @@ jobs:
         submodules: recursive # set to 'true' for a single level of submodules or 'recursive' to get submodules of submodules
         persistCredentials: true # set to 'true' to leave the OAuth token in the Git config after the initial fetch
 
-      - template: templates/apple-job-publish.yml
+      - template: /.ado/templates/apple-job-publish.yml@self
         parameters:
           build_type: 'dry-run'

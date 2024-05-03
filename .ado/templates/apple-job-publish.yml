@@ -2,7 +2,7 @@ parameters:
   build_type: ''
 
 steps:
-  - template: apple-tools-setup.yml
+  - template: /.ado/templates/apple-tools-setup.yml@self
 
   # Extra steps needed for *-stable releases
   - ${{ if eq( parameters['build_type'], 'release') }}:
