@@ -4,6 +4,11 @@ parameters:
 steps:
   - template: /.ado/templates/apple-tools-setup.yml@self
 
+  - task: CmdLine@2
+    displayName: yarn install (local react-native-macos)
+    inputs:
+      script: yarn install --immutable
+
   # Extra steps needed for *-stable releases
   - ${{ if eq( parameters['build_type'], 'release') }}:
     - task: CmdLine@2

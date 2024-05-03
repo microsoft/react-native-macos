@@ -1,0 +1,138 @@
+parameters:
+  - name: appleBuildMatrix
+    type: object
+    default:
+      - name: iphoneos_debug
+        friendly_name: 'iOS Debug'
+        sdk: iphoneos
+        configuration: Debug
+        project_directory: 'packages/react-native-community/ios'
+        xcconfig: 'SDX_overrides_ios_device.xcconfig'
+        vmImage: $(VmImageApple)
+      - name: iphoneos_release
+        friendly_name: 'iOS Release'
+        sdk: iphoneos
+        configuration: Release
+        project_directory: 'packages/react-native-community/ios'
+        xcconfig: 'SDX_overrides_ios_device.xcconfig'
+        vmImage: $(VmImageApple)
+      - name: iphonesimulator_debug
+        friendly_name: 'iOS Simulator Debug'
+        sdk: iphonesimulator
+        configuration: Debug
+        project_directory: 'packages/react-native-community/ios'
+        xcconfig: 'SDX__common.xcconfig'
+        vmImage: $(VmImageApple)
+      - name: iphonesimulator_release
+        friendly_name: 'iOS Simulator Release'
+        sdk: iphonesimulator
+        configuration: Release
+        project_directory: 'packages/react-native-community/ios'
+        xcconfig: 'SDX__common.xcconfig'
+        vmImage: $(VmImageApple)
+      - name: macosx_debug
+        friendly_name: 'macOS Debug'
+        sdk: macosx
+        configuration: Debug
+        project_directory: 'packages/react-native-community/macos'
+        xcconfig: 'SDX_overrides_macos.xcconfig'
+        vmImage: $(VmImageApple)
+      - name: macosx_release
+        friendly_name: 'macOS Release'
+        sdk: macosx
+        configuration: Release
+        project_directory: 'packages/react-native-community/macos'
+        xcconfig: 'SDX_overrides_macos.xcconfig'
+        vmImage: $(VmImageApple)
+      - name: visionos_debug
+        friendly_name: 'visionOS Debug'
+        sdk: xros
+        configuration: Debug
+        project_directory: 'packages/react-native-community/visionos'
+        xcconfig: 'SDX_overrides_ios_device.xcconfig'
+      - name: visionos_release
+        friendly_name: 'visionOS Release'
+        sdk: xros
+        configuration: Release
+        project_directory: 'packages/react-native-community/visionos'
+        xcconfig: 'SDX_overrides_ios_device.xcconfig'
+      - name: visionsimulator_debug
+        friendly_name: 'visionOS Simulator Debug'
+        sdk: xrsimulator
+        configuration: Debug
+        project_directory: 'packages/react-native-community/visionos'
+        xcconfig: 'SDX__common.xcconfig'
+      - name: visionsimulator_release
+        friendly_name: 'visionOS Simulator Release'
+        sdk: xrsimulator
+        configuration: Release
+        project_directory: 'packages/react-native-community/visionos'
+        xcconfig: 'SDX__common.xcconfig'
+
+jobs:
+  - ${{ each slice in parameters.appleBuildMatrix }}:
+      - job: ${{ slice.name }}
+        displayName: ${{ slice.friendly_name }}
+        pool:
+          vmImage: ${{ slice.vmImage }}
+        timeoutInMinutes: 90
+        cancelTimeoutInMinutes: 5
+        steps:
+        - template: /.ado/templates/apple-tools-setup.yml@self
+
+        - task: CmdLine@2
+          displayName: yarn install
+          inputs:
+            script: yarn install --immutable
+
+        - task: CmdLine@2
+          displayName: pod install
+          inputs:
+            script: |
+              cd packages/rn-tester
+              bundle install
+              bundle exec pod install
+          env:
+            RCT_NEW_ARCH_ENABLED: $(new_arch_enabled)
+            USE_HERMES: $(use_hermes)
+
+        - task: ShellScript@2
+          displayName: 'Setup packager and WebSocket test server'
+          inputs:
+            scriptPath: '.ado/ado-test-setup.sh'
+            disableAutoCwd: true
+            cwd: ''
+
+        - bash: |
+            echo Preparing the packager for platform $PLATFORM
+            curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/packages/rn-tester/js/RNTesterApp.${PLATFORM}.bundle?platform=${PLATFORM}&dev=true" -o /dev/null
+            curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/packages/rn-tester/js/RNTesterApp.${PLATFORM}.bundle?platform=${PLATFORM}&dev=true&minify=false" -o /dev/null
+            curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/IntegrationTests/IntegrationTestsApp.bundle?platform=${PLATFORM}&dev=true" -o /dev/null
+            curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/IntegrationTests/RCTRootViewIntegrationTestApp.bundle?platform=${PLATFORM}&dev=true" -o /dev/null
+          env:
+            PLATFORM: ${{ parameters.packager_platform }}
+          displayName: 'curl the packager'
+
+        - template: /.ado/templates/apple-xcode-build.yml@self
+          parameters:
+            xcode_sdk: ${{ parameters.xcode_sdk }}
+            xcode_workspacePath: packages/rn-tester/RNTesterPods.xcworkspace
+            xcode_scheme: ${{ parameters.xcode_scheme }}
+            xcode_actions: 'build'
+            xcode_extraArgs: ${{ parameters.xcode_extraArgs }}
+
+        - template: /.ado/templates/apple-xcode-build.yml@self
+          parameters:
+            xcode_sdk: ${{ parameters.xcode_sdk }}
+            xcode_workspacePath: packages/rn-tester/RNTesterPods.xcworkspace
+            xcode_scheme: ${{ parameters.xcode_scheme }}
+            xcode_actions: 'test'
+            xcode_extraArgs: ${{ parameters.xcode_extraArgs }}
+
+        - task: ShellScript@2
+          displayName: 'Cleanup packager and WebSocket test server'
+          inputs:
+            scriptPath: '.ado/ado-test-cleanup.sh'
+            disableAutoCwd: true
+            cwd: ''
+          condition: always()
