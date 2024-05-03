@@ -1,7 +1,6 @@
 parameters:
   packager_platform: ''
   xcode_sdk: ''
-  xcode_configuration: ''
   xcode_scheme: ''
   xcode_actions: ''
   xcode_destination: ''
@@ -50,10 +49,9 @@ steps:
     displayName: 'curl the packager'
 
   - task: Xcode@5
-    displayName: 'Xcode ${{ parameters.xcode_actions }} ${{ parameters.xcode_configuration }} ${{ parameters.xcode_sdk }} ${{ parameters.xcode_scheme }}'
+    displayName: 'Xcode ${{ parameters.xcode_actions }} ${{ parameters.xcode_sdk }} ${{ parameters.xcode_scheme }}'
     inputs:
       actions: '${{ parameters.xcode_actions }}'
-      configuration: ${{ parameters.xcode_configuration }}
       sdk: ${{ parameters.xcode_sdk }}
       xcWorkspacePath: packages/rn-tester/RNTesterPods.xcworkspace
       scheme: ${{ parameters.xcode_scheme }}
@@ -63,7 +61,7 @@ steps:
       packageApp: false
       teamId: '$(XCodeSigningMicrosoftTeamID)'
       args: '-destination "${{ parameters.xcode_destination }}" -verbose -derivedDataPath DerivedData ${{ parameters.xcode_extraArgs }}'
-      exportPath: '$(agent.builddirectory)/output/${{ parameters.xcode_sdk }}/${{ parameters.xcode_configuration }}'
+      exportPath: '$(agent.builddirectory)/output/${{ parameters.xcode_sdk }}/'
       useXcpretty: true
       publishJUnitResults: true
       xctoolReporter: 'junit:test-results.xml'

@@ -31,196 +31,91 @@ jobs:
     displayName: PR
     strategy:
       matrix:
-        'iOS Paper Debug JSC':
+        'iOS Paper JSC':
           packager_platform: 'ios'
           xcode_sdk: iphonesimulator
           xcode_scheme: 'RNTester'
-          xcode_configuration: 'Debug'
           xcode_destination: 'platform=iOS Simulator,OS=$(ios_version),name=$(ios_simulator)'
           xcode_actions: 'build test'
           xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/debug_overrides.xcconfig'
           new_arch_enabled: '0'
           use_hermes: '0'
-        'iOS Paper Release JSC':
-          packager_platform: 'ios'
-          xcode_sdk: iphonesimulator
-          xcode_scheme: 'RNTester'
-          xcode_configuration: 'Release'
-          xcode_destination: 'platform=iOS Simulator,OS=$(ios_version),name=$(ios_simulator)'
-          xcode_actions: 'build'
-          xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/release_overrides.xcconfig'
-          new_arch_enabled: '0'
-          use_hermes: '0'
-        'macOS Paper Debug JSC':
+        'macOS Paper JSC':
           packager_platform: 'macos'
           xcode_sdk: macosx
           xcode_scheme: 'RNTester-macOS'
-          xcode_configuration: 'Debug'
           xcode_destination: 'platform=macOS,arch=arm64'
           xcode_actions: 'build test'
           xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/debug_overrides.xcconfig'
           new_arch_enabled: '0'
           use_hermes: '0'
-        'macOS Paper Release JSC':
-          packager_platform: 'macos'
-          xcode_sdk: macosx
-          xcode_scheme: 'RNTester-macOS'
-          xcode_configuration: 'Release'
-          xcode_destination: 'platform=macOS,arch=arm64'
-          xcode_actions: 'build'
-          xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/release_overrides.xcconfig'
-          new_arch_enabled: '0'
-          use_hermes: '0'
-        'iOS Fabric Debug JSC':
+        'iOS Fabric JSC':
           packager_platform: 'ios'
           xcode_sdk: iphonesimulator
           xcode_scheme: 'RNTester'
-          xcode_configuration: 'Debug'
           xcode_destination: 'platform=iOS Simulator,OS=$(ios_version),name=$(ios_simulator)'
           xcode_actions: 'build' # https://github.com/facebook/react-native/issues/39719 Tests fail on RNTester with `RCT_NEW_ARCH_ENABLED`
           xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/debug_overrides.xcconfig'
           new_arch_enabled: '1'
           use_hermes: '0'
-        'iOS Fabric Release JSC':
-          packager_platform: 'ios'
-          xcode_sdk: iphonesimulator
-          xcode_scheme: 'RNTester'
-          xcode_configuration: 'Release'
-          xcode_destination: 'platform=iOS Simulator,OS=$(ios_version),name=$(ios_simulator)'
-          xcode_actions: 'build'
-          xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/release_overrides.xcconfig'
-          new_arch_enabled: '1'
-          use_hermes: '0'
-        'macOS Fabric Debug JSC':
+        'macOS Fabric JSC':
           packager_platform: 'macos'
           xcode_sdk: macosx
           xcode_scheme: 'RNTester-macOS'
-          xcode_configuration: 'Debug'
           xcode_destination: 'platform=macOS,arch=arm64'
           xcode_actions: 'build test'
           xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/debug_overrides.xcconfig'
           new_arch_enabled: '1'
           use_hermes: '0'
-        'macOS Fabric Release JSC':
-          packager_platform: 'macos'
-          xcode_sdk: macosx
-          xcode_scheme: 'RNTester-macOS'
-          xcode_configuration: 'Release'
-          xcode_actions: 'build'
-          xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/release_overrides.xcconfig'
-          new_arch_enabled: '1'
-          use_hermes: '0'
-        'visionOS Paper Debug JSC':
+        'visionOS Paper JSC':
           packager_platform: 'ios'
           xcode_sdk: xros
           xcode_scheme: 'RNTester-visionOS'
-          xcode_configuration: 'Debug'
           xcode_actions: 'build'
           xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/debug_overrides.xcconfig'
           new_arch_enabled: '0'
           use_hermes: '0'
-        'visionOS Paper Release JSC':
+        'visionOS Fabric JSC':
           packager_platform: 'ios'
           xcode_sdk: xros
           xcode_scheme: 'RNTester-visionOS'
-          xcode_configuration: 'Release'
-          xcode_actions: 'build'
-          xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/release_overrides.xcconfig'
-          new_arch_enabled: '0'
-          use_hermes: '0'
-        'visionOS Fabric Debug JSC':
-          packager_platform: 'ios'
-          xcode_sdk: xros
-          xcode_scheme: 'RNTester-visionOS'
-          xcode_configuration: 'Debug'
           xcode_actions: 'build'
           xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/debug_overrides.xcconfig'
-          new_arch_enabled: '1'
-          use_hermes: '0'
-        'visionOS Fabric Release JSC':
-          packager_platform: 'ios'
-          xcode_sdk: xros
-          xcode_scheme: 'RNTester-visionOS'
-          xcode_configuration: 'Release'
-          xcode_destination: 'platform=macOS,arch=arm64'
-          xcode_actions: 'build'
-          xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/release_overrides.xcconfig'
           new_arch_enabled: '1'
           use_hermes: '0'
         # Disable Hermes Jobs for now
-        # 'iOS Paper Debug Hermes':
+        # 'iOS Paper Hermes':
         #   packager_platform: 'ios'
         #   xcode_sdk: iphonesimulator
         #   xcode_scheme: 'RNTester'
-        #   xcode_configuration: 'Debug'
         #   xcode_destination: 'platform=iOS Simulator,OS=$(ios_version),name=$(ios_simulator)'
         #   xcode_actions: 'build test'
         #   xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/debug_overrides.xcconfig'
         #   new_arch_enabled: '0'
         #   use_hermes: '1'
-        # 'iOS Paper Release Hermes':
-        #   packager_platform: 'ios'
-        #   xcode_sdk: iphonesimulator
-        #   xcode_scheme: 'RNTester'
-        #   xcode_configuration: 'Release'
-        #   xcode_destination: 'platform=iOS Simulator,OS=$(ios_version),name=$(ios_simulator)'
-        #   xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/release_overrides.xcconfig'
-        #   xcode_actions: 'build'
-        #   new_arch_enabled: '0'
-        #   use_hermes: '1'
-        # 'macOS Paper Debug Hermes':
+        # 'macOS Paper Hermes':
         #   packager_platform: 'macos'
         #   xcode_sdk: macosx
         #   xcode_scheme: 'RNTester-macOS'
-        #   xcode_configuration: 'Debug'
         #   xcode_destination: 'platform=macOS,arch=arm64'
         #   xcode_actions: 'build test'
         #   xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/debug_overrides.xcconfig'
         #   new_arch_enabled: '0'
         #   use_hermes: '1'
-        # 'macOS Paper Release Hermes':
-        #   packager_platform: 'macos'
-        #   xcode_sdk: macosx
-        #   xcode_scheme: 'RNTester-macOS'
-        #   xcode_configuration: 'Release'
-        #   xcode_actions: 'build'
-        #   xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/release_overrides.xcconfig'
-        #   new_arch_enabled: '0'
-        #   use_hermes: '1'
-        # 'iOS Fabric Debug Hermes':
+        # 'iOS Fabric Hermes':
         #   packager_platform: 'ios'
         #   xcode_sdk: iphonesimulator
         #   xcode_scheme: 'RNTester'
-        #   xcode_configuration: 'Debug'
         #   xcode_actions: 'build test'
         #   xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/debug_overrides.xcconfig'
         #   new_arch_enabled: '1'
         #   use_hermes: '1'
-        # 'iOS Fabric Release Hermes':
-        #   packager_platform: 'ios'
-        #   xcode_sdk: iphonesimulator
-        #   xcode_scheme: 'RNTester'
-        #   xcode_configuration: 'Release'
-        #   xcode_actions: 'build'
-        #   xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/release_overrides.xcconfig'
-        #   new_arch_enabled: '1'
-        #   use_hermes: '0'
-        # 'macOS Fabric Debug Hermes':
+        # 'macOS Fabric Hermes':
         #   packager_platform: 'macos'
         #   xcode_sdk: macosx
         #   xcode_scheme: 'RNTester-macOS'
-        #   xcode_configuration: 'Debug'
         #   xcode_actions: 'build test'
         #   xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/debug_overrides.xcconfig'
-        #   new_arch_enabled: '1'
-        #   use_hermes: '1'
-        # 'macOS Fabric Release Hermes':
-        #   packager_platform: 'macos'
-        #   xcode_sdk: macosx
-        #   xcode_scheme: 'RNTester-macOS'
-        #   xcode_configuration: 'Release'
-        #   xcode_actions: 'build'
-        #   xcode_extraArgs: '-xcconfig $(Build.Repository.LocalPath)/.ado/xcconfig/release_overrides.xcconfig'
         #   new_arch_enabled: '1'
         #   use_hermes: '1'
     pool:
@@ -232,7 +127,6 @@ jobs:
         parameters:
           packager_platform: $(packager_platform)
           xcode_sdk: $(xcode_sdk)
-          xcode_configuration: $(xcode_configuration)
           xcode_scheme: $(xcode_scheme)
           xcode_actions: $(xcode_actions)
           slice_name: $(slice_name)
