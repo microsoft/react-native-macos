@@ -18,14 +18,14 @@ steps:
   - task: CmdLine@2
     displayName: yarn install (local react-native-macos)
     inputs:
-      script: yarn install --frozen-lockfile
+      script: yarn install --immutable
 
   - task: CmdLine@2
     displayName: yarn install (local react-native-macos-init)
     inputs:
       script: |
         cd packages/react-native-macos-init
-        yarn install --frozen-lockfile
+        yarn install --immutable
 
   - task: CmdLine@2
     displayName: yarn build (local react-native-macos-init)
@@ -43,7 +43,7 @@ steps:
   - task: CmdLine@2
     displayName: yarn install (local react-native-macos-init)
     inputs:
-      script: yarn install --frozen-lockfile
+      script: yarn install --immutable
       workingDirectory: $(Agent.BuildDirectory)/testcli
 
   - task: CmdLine@2
