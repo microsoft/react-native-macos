@@ -4,8 +4,6 @@ parameters:
 steps:
   - template: apple-tools-setup.yml
 
-  - template: apple-install-dependencies.yml
-
   # Extra steps needed for *-stable releases
   - ${{ if eq( parameters['build_type'], 'release') }}:
     - task: CmdLine@2
