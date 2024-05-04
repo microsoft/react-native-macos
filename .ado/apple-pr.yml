@@ -15,11 +15,23 @@ pr:
     exclude:
       - '*.md'
 
-jobs:
-  - template: /.ado/jobs/test-javascript.yml@self
+stages:
+  - stage: Build_And_Test
+    displayName: 'Build and Test'
+    dependsOn: []
+    jobs:
+      - template: /.ado/jobs/build-test-rntester.yml@self
 
-  - template: /.ado/jobs/test-react-native-macos-init.yml@self
+  - stage: JSOnly
+    dependsOn: []
+    jobs:
+      - template: /.ado/jobs/test-javascript.yml@self
 
-  - template: /.ado/jobs/npm-publish-dry-run.yml@self
+      - template: /.ado/jobs/npm-publish-dry-run.yml@self
 
-  - template: /.ado/jobs/build-test-rntester.yml@self
+  - stage: Integration
+    dependsOn: []
+    jobs:
+      - template: /.ado/jobs/test-react-native-macos-init.yml@self
+
+      - template: /.ado/jobs/react-native-test-app-integration.yml@self

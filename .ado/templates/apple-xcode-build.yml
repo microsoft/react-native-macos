@@ -4,13 +4,10 @@ parameters:
   xcode_workspacePath: ''
   xcode_scheme: ''
   xcode_actions: ''
-  xcode_publishJUnitResults: false
-  xcode_extraArgs: ''
-  xcode_displayNameTags: ''
 
 steps:
   - task: CmdLine@2
     displayName: Xcode ${{ parameters.xcode_actions }} ${{ parameters.xcode_configuration }} ${{ parameters.xcode_sdk }} ${{ parameters.xcode_scheme }} ${{ parameters.xcode_displayNameTags }}
     inputs:
       script: |
-        set -eox pipefail && xcodebuild -sdk ${{ parameters.xcode_sdk }} -configuration ${{ parameters.xcode_configuration }} -workspace ${{ parameters.xcode_workspacePath }} -scheme ${{ parameters.xcode_scheme }} ${{ parameters.xcode_actions }} -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=no ${{ parameters.xcode_extraArgs }} | xcbeautify --report junit
+        set -eox pipefail && xcodebuild -sdk ${{ parameters.xcode_sdk }} -configuration ${{ parameters.xcode_configuration }} -workspace ${{ parameters.xcode_workspacePath }} -scheme ${{ parameters.xcode_scheme }} ${{ parameters.xcode_actions }} CODE_SIGNING_ALLOWED=no ${{ parameters.xcode_extraArgs }} | xcbeautify --report junit

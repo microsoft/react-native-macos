@@ -1,28 +1,8 @@
-name: Integrate $(Date:yyyyMMdd).$(Rev:.r)
-variables:
-  - template: /.ado/variables/vars.yml@self
-trigger:
-  branches:
-    include:
-      - main
-      - '*-stable'
-  paths:
-    exclude:
-      - '*.md'
-pr:
-  branches:
-    include:
-      - main
-      - '*-stable'
-  paths:
-    exclude:
-      - '*.md'
 jobs:
   - job: react_native_test_app
     displayName: react-native-test-app
     pool:
       vmImage: $(VmImageApple)
-      demands: ['npm', 'sh', 'xcode']
     workspace:
       clean: all
     timeoutInMinutes: 60
