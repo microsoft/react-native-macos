@@ -18,9 +18,9 @@ const {
   generateAndroidArtifacts,
   publishAndroidArtifactsToMaven,
 } = require('./release-utils');
-macOS] */
-const fs = require('fs');
+
 const path = require('path');
+macOS] */
 const yargs = require('yargs');
 
 /**
@@ -63,7 +63,7 @@ if (require.main === module) {
 }
 
 function publishNpm(buildType) {
-  const {version, tag} = getNpmInfo(buildType);
+  const {version} = getNpmInfo(buildType);
 
   // Here we update the react-native package and template package with the right versions
   // For releases, CircleCI job `prepare_package_for_release` handles this

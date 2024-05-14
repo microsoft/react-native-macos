@@ -92,7 +92,9 @@ describe('publish-npm', () => {
       execMock
         .mockReturnValueOnce({stdout: '0.81.0-rc.1\n', code: 0})
         .mockReturnValueOnce({code: 0});
+      /* [macOS We skip Android Artifact and NPM Publish on React Native macOS
       const expectedVersion = '0.82.0-nightly-20230420-currentco';
+      macOS] */
 
       publishNpm('nightly');
 
