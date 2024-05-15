@@ -138,13 +138,12 @@ jobs:
             xcode_scheme: ${{ slice.scheme }}
             xcode_actions: 'build'
 
-        # TODO: Uncomment before merge
-        # - template: /.ado/templates/apple-xcode-build.yml@self
-        #   parameters:
-        #     xcode_sdk: ${{ slice.sdk }}
-        #     xcode_workspacePath: packages/rn-tester/RNTesterPods.xcworkspace
-        #     xcode_scheme: ${{ slice.scheme }}
-        #     xcode_actions: 'test'
+        - template: /.ado/templates/apple-xcode-build.yml@self
+          parameters:
+            xcode_sdk: ${{ slice.sdk }}
+            xcode_workspacePath: packages/rn-tester/RNTesterPods.xcworkspace
+            xcode_scheme: ${{ slice.scheme }}
+            xcode_actions: 'test'
 
         - task: ShellScript@2
           displayName: 'Cleanup packager and WebSocket test server'
