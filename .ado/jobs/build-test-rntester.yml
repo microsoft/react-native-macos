@@ -117,7 +117,7 @@ jobs:
         - task: ShellScript@2
           displayName: 'Setup packager and WebSocket test server'
           inputs:
-            scriptPath: '.ado/ado-test-setup.sh'
+            scriptPath: '.ado/scripts/ado-test-setup.sh'
             disableAutoCwd: true
             cwd: ''
 
@@ -148,7 +148,7 @@ jobs:
         - task: ShellScript@2
           displayName: 'Cleanup packager and WebSocket test server'
           inputs:
-            scriptPath: '.ado/ado-test-cleanup.sh'
+            scriptPath: '.ado/scripts/ado-test-cleanup.sh'
             disableAutoCwd: true
             cwd: ''
           condition: always()
