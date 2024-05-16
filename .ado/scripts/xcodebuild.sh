@@ -2,12 +2,14 @@
 set -eox pipefail
 
 workspace=$1
-action=$2
-shift 2
+sdk=$2
+scheme=$3
+action=$4
 
-platform=$(grep -o '\w\+/ReactTestApp.xcodeproj' "$workspace/contents.xcworkspacedata")
+shift 4
 
-if [[ $platform == ios/* ]]; then
+
+if [[ $sdk == iphoneos || $sdk == iphonesimulator ]]; then
   if [[ $action == 'test' || $action == 'test-without-building' ]]; then
     device=$(xcrun simctl list devices iPhone available)
     re='iPhone [0-9]+ \(([-0-9A-Fa-f]+)\)'
@@ -17,12 +19,9 @@ if [[ $platform == ios/* ]]; then
   else
     destination='-destination "generic/platform=iOS Simulator"'
   fi
-
-  skip_testing='-skip-testing:ReactTestAppTests/ReactNativePerformanceTests'
-elif [[ $platform == macos/* ]]; then
+elif [[ $sdk == macosx ]]; then
   destination=''
-  skip_testing=''
-elif [[ $platform == visionos/* ]]; then
+elif [[ $sdk == xros || $sdk == xrsimulator ]]; then
   if [[ $action == 'test' || $action == 'test-without-building' ]]; then
     device=$(xcrun simctl list devices visionOS available)
     re='Apple Vision Pro \(([-0-9A-Fa-f]+)\)'
@@ -32,20 +31,18 @@ elif [[ $platform == visionos/* ]]; then
   else
     destination='-destination "generic/platform=visionOS Simulator"'
   fi
-
-  skip_testing='-skip-testing:ReactTestAppTests/ReactNativePerformanceTests'
 else
-  echo "Cannot detect platform: $workspace"
+  echo "Cannot detect sdk: $sdk"
   exit 1
 fi
 
 build_cmd=$(
   echo xcodebuild \
     -workspace "$workspace" \
-    -scheme ReactTestApp \
+    -scheme "$scheme" \
+    -sdk "$sdk" \
     "$destination" \
     -derivedDataPath $(dirname $workspace)/build \
-    "$skip_testing" \
     CODE_SIGNING_ALLOWED=NO \
     COMPILER_INDEX_STORE_ENABLE=NO \
     "$action" \
@@ -73,7 +70,7 @@ if ! command -v xcbeautify 1> /dev/null; then
   brew install xcbeautify
 fi
 
-eval "$build_cmd" | xcbeautify
+eval "$build_cmd" | xcbeautify --report junit
 
 if [[ "$CCACHE_DISABLE" != "1" ]]; then
   ccache --show-stats --verbose
