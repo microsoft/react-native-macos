@@ -1,5 +1,5 @@
 variables:
-  VmImageApple: macOS-13-arm64
+  VmImageApple: macos-latest-internal
   xcode_friendly_name: 'Xcode 15.2'
   xcode_version: '/Applications/Xcode_15.2.app'
   ios_version: '17.2'
