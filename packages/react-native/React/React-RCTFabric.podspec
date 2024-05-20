@@ -56,10 +56,10 @@ Pod::Spec.new do |s|
   s.compiler_flags         = folly_compiler_flags + ' ' + boost_compiler_flags + new_arch_flags
   s.header_dir             = header_dir
   s.module_name            = module_name
-  # [macOS MobileCoreServices not available on macOS
-  s.ios.framework          = ["JavaScriptCore", "MobileCoreServices"] 
-  s.visionos.framework     = ["JavaScriptCore", "MobileCoreServices"] 
-  s.osx.framework          = ["JavaScriptCore"]
+  # [macOS MobileCoreServices not available on macOS, weak link JavascriptCore
+  s.ios.framework          = "MobileCoreServices"
+  s.visionos.framework     = "MobileCoreServices"
+  s.weak_framework         = "JavaScriptCore"
   # macOS]
   s.pod_target_xcconfig    = {
     "HEADER_SEARCH_PATHS" => header_search_paths,
