@@ -158,3 +158,8 @@ package-lock.json
 
 # CircleCI
 .circleci/generated_config.yml
+
+# [macOS
+# Ccache 
+.ccache/*
+# macOS]
