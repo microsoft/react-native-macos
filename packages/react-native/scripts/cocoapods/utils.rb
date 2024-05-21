@@ -45,6 +45,7 @@ class ReactNativePodsUtils
     def self.set_gcc_preprocessor_definition_for_React_hermes(installer)
         self.add_build_settings_to_pod(installer, "GCC_PREPROCESSOR_DEFINITIONS", "HERMES_ENABLE_DEBUGGER=1", "React-hermes", "Debug")
         self.add_build_settings_to_pod(installer, "GCC_PREPROCESSOR_DEFINITIONS", "HERMES_ENABLE_DEBUGGER=1", "hermes-engine", "Debug")
+        self.add_build_settings_to_pod(installer, "GCC_PREPROCESSOR_DEFINITIONS", "HERMES_ENABLE_DEBUGGER=1", "React-RuntimeHermes", "Debug")
     end
 
     def self.turn_off_resource_bundle_react_core(installer)
@@ -209,7 +210,7 @@ class ReactNativePodsUtils
         installer.target_installation_results.pod_target_installation_results.each do |pod_name, target_installation_result|
             if pod_name.to_s == target_pod_name
                 target_installation_result.native_target.build_configurations.each do |config|
-                        if configuration == nil || (configuration != nil && configuration == config.name)
+                        if configuration == nil || (configuration != nil && config.name.include?(configuration))
                             config.build_settings[settings_name] ||= '$(inherited) '
                             config.build_settings[settings_name] << settings_value
                         end
@@ -570,6 +571,44 @@ class ReactNativePodsUtils
         header_search_paths = ReactNativePodsUtils.create_header_search_path_for_frameworks("PODS_CONFIGURATION_BUILD_DIR", "React-Fabric", "React_Fabric", ["react/renderer/imagemanager/platform/ios"])
             .map { |search_path| "\"#{search_path}\"" }
         ReactNativePodsUtils.update_header_paths_if_depends_on(target_installation_result, "React-ImageManager", header_search_paths)
+    end
+
+    def self.get_privacy_manifest_paths_from(user_project)
+        privacy_manifests = user_project
+            .files
+            .select { |p|
+                p.path&.end_with?('PrivacyInfo.xcprivacy')
+            }
+        return privacy_manifests
+    end
+
+    def self.add_privacy_manifest_if_needed(installer)
+        user_project = installer.aggregate_targets
+                    .map{ |t| t.user_project }
+                    .first
+        privacy_manifest = self.get_privacy_manifest_paths_from(user_project).first
+        if privacy_manifest.nil?
+            file_timestamp_reason = {
+                "NSPrivacyAccessedAPIType" => "NSPrivacyAccessedAPICategoryFileTimestamp",
+                "NSPrivacyAccessedAPITypeReasons" => ["C617.1"],
+            }
+            user_defaults_reason = {
+                "NSPrivacyAccessedAPIType" => "NSPrivacyAccessedAPICategoryUserDefaults",
+                "NSPrivacyAccessedAPITypeReasons" => ["CA92.1"],
+            }
+            boot_time_reason = {
+                "NSPrivacyAccessedAPIType" => "NSPrivacyAccessedAPICategorySystemBootTime",
+                "NSPrivacyAccessedAPITypeReasons" => ["35F9.1"],
+            }
+            privacy_manifest = {
+                "NSPrivacyCollectedDataTypes" => [],
+                "NSPrivacyTracking" => false,
+                "NSPrivacyAccessedAPITypes" => [file_timestamp_reason, user_defaults_reason, boot_time_reason]
+            }
+            path = File.join(user_project.path.parent, "PrivacyInfo.xcprivacy")
+            Xcodeproj::Plist.write_to_path(privacy_manifest, path)
+            Pod::UI.puts "Your app does not have a privacy manifest! A template has been generated containing Required Reasons API usage in the core React Native library. Please add the PrivacyInfo.xcprivacy file to your project and complete data use, tracking and any additional required reasons your app is using according to Apple's guidance: https://developer.apple.com/.../privacy_manifest_files. Then, you will need to manually add this file to your project in Xcode.".red
+        end
     end
 
     def self.react_native_pods
