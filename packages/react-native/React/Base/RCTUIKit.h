@@ -435,6 +435,17 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 @property (nonatomic, copy) RCTDirectEventBlock onDragLeave;
 @property (nonatomic, copy) RCTDirectEventBlock onDrop;
 
+// Focus events
+@property (nonatomic, copy) RCTBubblingEventBlock onBlur;
+@property (nonatomic, copy) RCTBubblingEventBlock onFocus;
+
+@property (nonatomic, copy) RCTBubblingEventBlock onResponderGrant;
+@property (nonatomic, copy) RCTBubblingEventBlock onResponderMove;
+@property (nonatomic, copy) RCTBubblingEventBlock onResponderRelease;
+@property (nonatomic, copy) RCTBubblingEventBlock onResponderTerminate;
+@property (nonatomic, copy) RCTBubblingEventBlock onResponderTerminationRequest;
+@property (nonatomic, copy) RCTBubblingEventBlock onStartShouldSetResponder;
+
 @end
 
 // UIScrollView
