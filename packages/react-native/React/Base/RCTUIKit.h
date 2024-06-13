@@ -123,6 +123,8 @@ NS_ASSUME_NONNULL_END
 
 #import <AppKit/AppKit.h>
 
+#import <React/RCTComponent.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 //
@@ -425,6 +427,13 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
  * Specifies whether focus ring should be drawn when the view has the first responder status.
  */
 @property (nonatomic, assign) BOOL enableFocusRing;
+
+// Mouse events
+@property (nonatomic, copy) RCTDirectEventBlock onMouseEnter;
+@property (nonatomic, copy) RCTDirectEventBlock onMouseLeave;
+@property (nonatomic, copy) RCTDirectEventBlock onDragEnter;
+@property (nonatomic, copy) RCTDirectEventBlock onDragLeave;
+@property (nonatomic, copy) RCTDirectEventBlock onDrop;
 
 @end
 
