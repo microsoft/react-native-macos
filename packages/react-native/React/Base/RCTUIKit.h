@@ -405,6 +405,15 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 - (void)setNeedsDisplay;
 
+// Methods related to mouse events
+- (NSDictionary*)locationInfoFromDraggingLocation:(NSPoint)locationInWindow;
+- (NSDictionary*)locationInfoFromEvent:(NSEvent*)event;
+
+- (void)sendMouseEventWithBlock:(RCTDirectEventBlock)block
+                   locationInfo:(NSDictionary*)locationInfo
+                  modifierFlags:(NSEventModifierFlags)modifierFlags
+                 additionalData:(NSDictionary*)additionalData;
+
 // FUTURE: When Xcode 14 is no longer supported (CI is building with Xcode 15), we can remove this override since it's now declared on NSView
 @property BOOL clipsToBounds;
 @property (nonatomic, copy) NSColor *backgroundColor;
