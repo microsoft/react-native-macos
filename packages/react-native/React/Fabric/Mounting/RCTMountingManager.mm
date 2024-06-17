@@ -310,6 +310,7 @@ static void RCTPerformMountInstructions(
 
   const auto &newViewProps = static_cast<const ViewProps &>(*newProps);
 
+#if !TARGET_OS_OSX // [macOS]
   if (props[@"transform"]) {
     auto layoutMetrics = LayoutMetrics();
     layoutMetrics.frame.size.width = componentView.layer.bounds.size.width;
@@ -318,7 +319,21 @@ static void RCTPerformMountInstructions(
     if (!CATransform3DEqualToTransform(newTransform, componentView.layer.transform)) {
       componentView.layer.transform = newTransform;
     }
+#else // [macOS
+  if (props[@"transform"]) {
+    CATransform3D transform = RCTCATransform3DFromTransformMatrix(newViewProps.transform);
+
+    if (CGPointEqualToPoint(componentView.layer.anchorPoint, CGPointZero) && !CATransform3DEqualToTransform(transform, CATransform3DIdentity)) {
+      CATransform3D originAdjust = CATransform3DTranslate(CATransform3DIdentity, componentView.frame.size.width / 2, componentView.frame.size.height / 2, 0);
+      transform = CATransform3DConcat(CATransform3DConcat(CATransform3DInvert(originAdjust), transform), originAdjust);
+    }
+
+    if (!CATransform3DEqualToTransform(transform, componentView.layer.transform)) {
+      componentView.layer.transform = transform;
+    }
   }
+#endif // macOS]
+
   if (props[@"opacity"] && componentView.layer.opacity != (float)newViewProps.opacity) {
     componentView.layer.opacity = newViewProps.opacity;
   }

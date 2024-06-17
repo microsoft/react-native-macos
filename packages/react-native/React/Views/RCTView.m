@@ -258,9 +258,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 #if !TARGET_OS_OSX // [macOS]
       pointForHitTest = [subview convertPoint:point fromView:self];
 #else // [macOS
-      if ([subview isKindOfClass:[RCTView class]]) {
+      // Paper and Fabric components use the target view coordinate space for hit testing
+      if ([subview isKindOfClass:[RCTView class]] || [subview respondsToSelector:@selector(updateProps:oldProps:)]) {
         pointForHitTest = [subview convertPoint:point fromView:self];
       } else {
+        // Native macOS views require the point to be in the super view coordinate space for hit testing.
         pointForHitTest = point;
       }
 #endif // macOS]
