@@ -207,6 +207,20 @@
   [self setNeedsDisplay];
 }
 
+- (NSRect)getRectForCharRange:(NSRange)charRange // [macOS
+{
+    if (_textStorage) {
+        NSLayoutManager *layoutManager = _textStorage.layoutManagers.firstObject;
+        NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+        if (layoutManager && textContainer) {
+            NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:charRange actualCharacterRange:nullptr];
+            return [layoutManager boundingRectForGlyphRange:glyphRange inTextContainer:textContainer];
+        }
+    }
+    
+    return {0, 0, 0, 0};
+} // macOS]
+
 - (void)drawRect:(CGRect)rect
 {
   [super drawRect:rect];
