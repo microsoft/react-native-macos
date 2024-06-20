@@ -207,7 +207,8 @@
   [self setNeedsDisplay];
 }
 
-- (NSRect)getRectForCharRange:(NSRange)charRange // [macOS
+#if TARGET_OS_OSX // [macOS
+- (NSRect)getRectForCharRange:(NSRange)charRange
 {
     if (_textStorage) {
         NSLayoutManager *layoutManager = _textStorage.layoutManagers.firstObject;
@@ -219,7 +220,8 @@
     }
     
     return {0, 0, 0, 0};
-} // macOS]
+}
+#endif // macOS]
 
 - (void)drawRect:(CGRect)rect
 {
