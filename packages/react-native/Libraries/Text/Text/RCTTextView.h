@@ -22,6 +22,10 @@ NS_ASSUME_NONNULL_BEGIN
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTPlatformView *> *)descendantViews; // [macOS]
 
+#if TARGET_OS_OSX // [macOS
+- (NSRect)getRectForCharRange:(NSRange)charRange;
+#endif // macOS]
+
 /**
  * (Experimental and unused for Paper) Pointer event handlers.
  */
