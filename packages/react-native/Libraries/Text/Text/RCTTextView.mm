@@ -503,11 +503,12 @@
 
   // self will always be an ancestor of any views we pass in here, so it serves as a good default option.
   // Also, if we do set from/to nil, we have to call the relevant events on the entire subtree.
-  RCTPlatformView *commonAncestor = [(_currentHoveredSubview ?: self) ancestorSharedWithView:(hoveredView ?: self)];
+  RCTPlatformView *commonAncestor = [(_currentHoveredSubview ?: self) ancestorSharedWithView:(hoveredView ?: self)] ?: self;
 
-  for (RCTPlatformView *exitedView = _currentHoveredSubview; exitedView != self && exitedView != nil; exitedView = [exitedView superview]) {
+  for (RCTPlatformView *exitedView = _currentHoveredSubview; exitedView != commonAncestor && exitedView != nil; exitedView = [exitedView superview]) {
     if (![exitedView isKindOfClass:[RCTUIView class]]) {
-      // TODO: error
+      RCTLogError(@"Unexpected view of type %@ found in hierarchy, must be RCTUIView or subclass", [exitedView class]);
+      continue;
     }
     RCTUIView *exitedReactView = (RCTUIView *)exitedView;
     [self sendMouseEventWithBlock:[exitedReactView onMouseLeave]
@@ -518,9 +519,10 @@
 
   // We cache these so we can call them from outermost to innermost
   NSMutableArray<RCTUIView *> *enteredViewHierarchy = [NSMutableArray new];
-  for (RCTPlatformView *enteredView = hoveredView; enteredView != self && enteredView != nil; enteredView = [enteredView superview]) {
+  for (RCTPlatformView *enteredView = hoveredView; enteredView != commonAncestor && enteredView != nil; enteredView = [enteredView superview]) {
     if (![enteredView isKindOfClass:[RCTUIView class]]) {
-      // TODO: error
+      RCTLogError(@"Unexpected view of type %@ found in hierarchy, must be RCTUIView or subclass", [enteredView class]);
+      continue;
     }
     [enteredViewHierarchy addObject:(RCTUIView *)enteredView];
   }
