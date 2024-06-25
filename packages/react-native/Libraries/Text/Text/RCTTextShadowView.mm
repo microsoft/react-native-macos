@@ -85,6 +85,8 @@
 
   NSNumber *tag = self.reactTag;
   NSMutableSet<NSNumber *> *descendantViewTags = [NSMutableSet new]; // [macOS] avoids duplicates
+
+#if !TARGET_OS_OSX // [macOS]
   [textStorage enumerateAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
                           inRange:NSMakeRange(0, textStorage.length)
                           options:0
@@ -95,17 +97,22 @@
 
                          [descendantViewTags addObject:shadowView.reactTag];
                        }];
-  // [macOS
-  [textStorage enumerateAttribute:RCTTextAttributesTagAttributeName
-                          inRange:NSMakeRange(0, textStorage.length)
-                          options:0
-                       usingBlock:^(NSNumber *reactTag, NSRange range, __unused BOOL *stop) {
-                         if (!reactTag || [reactTag isEqualToNumber:tag]) {
-                           return;
-                         }
-                         [descendantViewTags addObject:reactTag];
-                       }];
-  // macOS]
+#else // [macOS
+  [textStorage enumerateAttributesInRange:NSMakeRange(0, textStorage.length)
+                                  options:0
+                               usingBlock:^(NSDictionary<NSAttributedStringKey, id> *_Nonnull attrs, NSRange range, __unused BOOL * _Nonnull stop) {
+    id embeddedViewAttribute = attrs[RCTBaseTextShadowViewEmbeddedShadowViewAttributeName];
+    if ([embeddedViewAttribute isKindOfClass:[RCTShadowView class]]) {
+      RCTShadowView *embeddedShadowView = (RCTShadowView *)embeddedViewAttribute;
+      [descendantViewTags addObject:embeddedShadowView.reactTag];
+    }
+
+    id tagAttribute = attrs[RCTTextAttributesTagAttributeName];
+    if ([tagAttribute isKindOfClass:[NSNumber class]] && ![tagAttribute isEqualToNumber:tag]) {
+      [descendantViewTags addObject:tagAttribute];
+    }
+  }];
+#endif // macOS]
 
   [_bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) { // [macOS]
     RCTTextView *textView = (RCTTextView *)viewRegistry[tag];
