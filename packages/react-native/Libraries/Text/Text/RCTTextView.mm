@@ -456,32 +456,12 @@
   // superclass invokes self.onMouseEnter, so do this first
   [super mouseEntered:event];
 
-  // TODO: dedupe from mouseMoved
-  if (_descendantViews != nil) {
-    NSNumber *reactTagOfHoveredView = [self reactTagAtMouseLocationFromEvent:event];
-
-    RCTUIView *hoveredView = nil;
-    if ([reactTagOfHoveredView isEqualToNumber:self.reactTag]) {
-      // We're hovering over the root Text element
-      hoveredView = self;
-    } else {
-      // Maybe we're hovering over a child Text element?
-      NSUInteger index = [_descendantViews indexOfObjectPassingTest:^BOOL(RCTUIView * _Nonnull view, NSUInteger idx, BOOL * _Nonnull stop) {
-        *stop = [[view reactTag] isEqualToNumber:reactTagOfHoveredView];
-        return *stop;
-      }];
-      if (index != NSNotFound) {
-        hoveredView = _descendantViews[index];
-      }
-    }
-
-    [self setCurrentHoveredSubview:hoveredView withEvent:event];
-  }
+  [self updateHoveredSubviewWithEvent:event];
 }
 
 - (void)mouseExited:(NSEvent *)event
 {
-  [self setCurrentHoveredSubview:nil withEvent:event];
+  [self updateHoveredSubviewWithEvent:event];
 
   // superclass invokes self.onMouseLeave, so do this last
   [super mouseExited:event];
@@ -489,10 +469,19 @@
 
 - (void)mouseMoved:(NSEvent *)event
 {
-  if (_descendantViews != nil) {
+  [self updateHoveredSubviewWithEvent:event];
+
+  // Web environments call mouse move events from the inside outwards, so do this last
+  [super mouseMoved:event];
+}
+
+- (void)updateHoveredSubviewWithEvent:(NSEvent *)event
+{
+  RCTUIView *hoveredView = nil;
+
+  if ([event type] != NSEventTypeMouseExited && _descendantViews != nil) {
     NSNumber *reactTagOfHoveredView = [self reactTagAtMouseLocationFromEvent:event];
 
-    RCTUIView *hoveredView = nil;
     if ([reactTagOfHoveredView isEqualToNumber:self.reactTag]) {
       // We're hovering over the root Text element
       hoveredView = self;
@@ -506,16 +495,8 @@
         hoveredView = _descendantViews[index];
       }
     }
-
-    [self setCurrentHoveredSubview:hoveredView withEvent:event];
   }
 
-  // Web environments call mouse move events from the inside outwards, so do this last
-  [super mouseMoved:event];
-}
-
-- (void)setCurrentHoveredSubview:(RCTUIView *)hoveredView withEvent:(NSEvent *)event
-{
   if (_currentHoveredSubview == hoveredView) {
     return;
   }
