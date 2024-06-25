@@ -217,6 +217,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
   BOOL _clipsToBounds;
   BOOL _hasMouseOver;
   BOOL _userInteractionEnabled;
+  NSTrackingArea *_trackingArea;
   BOOL _mouseDownCanMoveWindow;
 }
 
@@ -349,6 +350,13 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   }
 }
 
+- (BOOL)hasMouseHoverEvent
+{
+  // This can be overridden by subclasses as needed.
+  // e.g., RCTTextView, which consolidates its JS children into a single gigantic NSAttributedString
+  return self.onMouseEnter || self.onMouseLeave;
+}
+
 - (NSDictionary*)locationInfoFromDraggingLocation:(NSPoint)locationInWindow
 {
   NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
@@ -423,6 +431,28 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   }
 
   block(body);
+}
+
+- (void)updateTrackingAreas
+{
+  BOOL hasMouseHoverEvent = [self hasMouseHoverEvent];
+  BOOL wouldRecreateIdenticalTrackingArea = hasMouseHoverEvent && _trackingArea && NSEqualRects(self.bounds, [_trackingArea rect]);
+
+  if (!wouldRecreateIdenticalTrackingArea) {
+    if (_trackingArea) {
+      [self removeTrackingArea:_trackingArea];
+    }
+
+    if (hasMouseHoverEvent) {
+      _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
+                                                   options:NSTrackingActiveAlways|NSTrackingMouseEnteredAndExited
+                                                     owner:self
+                                                  userInfo:nil];
+      [self addTrackingArea:_trackingArea];
+    }
+  }
+
+  [super updateTrackingAreas];
 }
 
 - (BOOL)mouseDownCanMoveWindow{

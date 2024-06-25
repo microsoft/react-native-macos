@@ -136,7 +136,6 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   RCTUIColor *_backgroundColor; // [macOS]
   id<RCTEventDispatcherProtocol> _eventDispatcher; // [macOS]
 #if TARGET_OS_OSX // [macOS
-  NSTrackingArea *_trackingArea;
   BOOL _mouseDownCanMoveWindow;
 #endif // macOS]
   NSMutableDictionary<NSString *, NSDictionary *> *accessibilityActionsNameMap;
@@ -1464,28 +1463,6 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 - (BOOL)acceptsFirstResponder
 {
 	return [self focusable] || [super acceptsFirstResponder];
-}
-
-- (void)updateTrackingAreas
-{
-  BOOL hasMouseHoverEvent = self.onMouseEnter || self.onMouseLeave;
-  BOOL wouldRecreateIdenticalTrackingArea = hasMouseHoverEvent && _trackingArea && NSEqualRects(self.bounds, [_trackingArea rect]);
-
-  if (!wouldRecreateIdenticalTrackingArea) {
-    if (_trackingArea) {
-      [self removeTrackingArea:_trackingArea];
-    }
-
-    if (hasMouseHoverEvent) {
-      _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
-                                                   options:NSTrackingActiveAlways|NSTrackingMouseEnteredAndExited
-                                                     owner:self
-                                                  userInfo:nil];
-      [self addTrackingArea:_trackingArea];
-    }
-  }
-
-  [super updateTrackingAreas];
 }
 
 - (BOOL)mouseDownCanMoveWindow{

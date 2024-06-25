@@ -62,6 +62,7 @@
 
   id<RCTEventDispatcherProtocol> _eventDispatcher; // [macOS]
   NSArray<RCTUIView *> *_Nullable _descendantViews; // [macOS]
+  RCTUIView *_Nullable _currentHoveredSubview; // [macOS]
   NSTextStorage *_Nullable _textStorage;
   CGRect _contentFrame;
 }
@@ -99,6 +100,7 @@
     _textView.layoutManager.usesFontLeading = NO;
     _textStorage = _textView.textStorage;
     [self addSubview:_textView];
+    _currentHoveredSubview = nil;
 #endif // macOS]
     RCTUIViewSetContentModeRedraw(self); // [macOS]
   }
@@ -414,6 +416,20 @@
 }
 #else // [macOS
 
+- (BOOL)hasMouseHoverEvent
+{
+  if ([super hasMouseHoverEvent]) {
+    return YES;
+  }
+
+  // All descendant views of an RCTTextView are RCTVirtualTextViews
+  NSUInteger indexOfChildWithMouseHoverEvent = [_descendantViews indexOfObjectPassingTest:^BOOL(RCTUIView * _Nonnull childView, NSUInteger idx, BOOL * _Nonnull stop) {
+    *stop = [childView hasMouseHoverEvent];
+    return *stop;
+  }];
+  return indexOfChildWithMouseHoverEvent != NSNotFound;
+}
+
 - (NSView *)hitTest:(NSPoint)point
 {
   // We will forward mouse click events to the NSTextView ourselves to prevent NSTextView from swallowing events that may be handled in JS (e.g. long press).
@@ -426,6 +442,115 @@
   BOOL isTextViewClick = (hitView && hitView == _textView) && !isMouseMoveEvent;
   
   return isTextViewClick ? self : hitView;
+}
+
+- (NSNumber *)reactTagAtMouseLocationFromEvent:(NSEvent *)event
+{
+  NSPoint locationInSelf = [self convertPoint:event.locationInWindow fromView:nil];
+  NSPoint locationInInnerTextView = [self convertPoint:locationInSelf toView:_textView]; // This is needed if the parent <Text> view has padding
+  return [self reactTagAtPoint:locationInInnerTextView];
+}
+
+- (void)mouseEntered:(NSEvent *)event
+{
+  // superclass invokes self.onMouseEnter, so do this first
+  [super mouseEntered:event];
+
+  // TODO: dedupe from mouseMoved
+  if (_descendantViews != nil) {
+    NSNumber *reactTagOfHoveredView = [self reactTagAtMouseLocationFromEvent:event];
+
+    RCTUIView *hoveredView = nil;
+    if ([reactTagOfHoveredView isEqualToNumber:self.reactTag]) {
+      // We're hovering over the root Text element
+      hoveredView = self;
+    } else {
+      // Maybe we're hovering over a child Text element?
+      NSUInteger index = [_descendantViews indexOfObjectPassingTest:^BOOL(RCTUIView * _Nonnull view, NSUInteger idx, BOOL * _Nonnull stop) {
+        *stop = [[view reactTag] isEqualToNumber:reactTagOfHoveredView];
+        return *stop;
+      }];
+      if (index != NSNotFound) {
+        hoveredView = _descendantViews[index];
+      }
+    }
+
+    [self setCurrentHoveredSubview:hoveredView withEvent:event];
+  }
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+  [self setCurrentHoveredSubview:nil withEvent:event];
+
+  // superclass invokes self.onMouseLeave, so do this last
+  [super mouseExited:event];
+}
+
+- (void)mouseMoved:(NSEvent *)event
+{
+  if (_descendantViews != nil) {
+    NSNumber *reactTagOfHoveredView = [self reactTagAtMouseLocationFromEvent:event];
+
+    RCTUIView *hoveredView = nil;
+    if ([reactTagOfHoveredView isEqualToNumber:self.reactTag]) {
+      // We're hovering over the root Text element
+      hoveredView = self;
+    } else {
+      // Maybe we're hovering over a child Text element?
+      NSUInteger index = [_descendantViews indexOfObjectPassingTest:^BOOL(RCTUIView * _Nonnull view, NSUInteger idx, BOOL * _Nonnull stop) {
+        *stop = [[view reactTag] isEqualToNumber:reactTagOfHoveredView];
+        return *stop;
+      }];
+      if (index != NSNotFound) {
+        hoveredView = _descendantViews[index];
+      }
+    }
+
+    [self setCurrentHoveredSubview:hoveredView withEvent:event];
+  }
+
+  // Web environments call mouse move events from the inside outwards, so do this last
+  [super mouseMoved:event];
+}
+
+- (void)setCurrentHoveredSubview:(RCTUIView *)hoveredView withEvent:(NSEvent *)event
+{
+  if (_currentHoveredSubview == hoveredView) {
+    return;
+  }
+
+  // self will always be an ancestor of any views we pass in here, so it serves as a good default option.
+  // Also, if we do set from/to nil, we have to call the relevant events on the entire subtree.
+  RCTPlatformView *commonAncestor = [(_currentHoveredSubview ?: self) ancestorSharedWithView:(hoveredView ?: self)];
+
+  for (RCTPlatformView *exitedView = _currentHoveredSubview; exitedView != self && exitedView != nil; exitedView = [exitedView superview]) {
+    if (![exitedView isKindOfClass:[RCTUIView class]]) {
+      // TODO: error
+    }
+    RCTUIView *exitedReactView = (RCTUIView *)exitedView;
+    [self sendMouseEventWithBlock:[exitedReactView onMouseLeave]
+                     locationInfo:[self locationInfoFromEvent:event]
+                    modifierFlags:event.modifierFlags
+                   additionalData:nil];
+  }
+
+  // We cache these so we can call them from outermost to innermost
+  NSMutableArray<RCTUIView *> *enteredViewHierarchy = [NSMutableArray new];
+  for (RCTPlatformView *enteredView = hoveredView; enteredView != self && enteredView != nil; enteredView = [enteredView superview]) {
+    if (![enteredView isKindOfClass:[RCTUIView class]]) {
+      // TODO: error
+    }
+    [enteredViewHierarchy addObject:(RCTUIView *)enteredView];
+  }
+  for (NSInteger i = [enteredViewHierarchy count] - 1; i >= 0; i--) {
+    [self sendMouseEventWithBlock:[[enteredViewHierarchy objectAtIndex:i] onMouseEnter]
+                     locationInfo:[self locationInfoFromEvent:event]
+                    modifierFlags:event.modifierFlags
+                   additionalData:nil];
+  }
+
+  _currentHoveredSubview = hoveredView;
 }
 
 - (void)rightMouseDown:(NSEvent *)event

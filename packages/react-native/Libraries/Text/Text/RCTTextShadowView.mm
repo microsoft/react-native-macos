@@ -84,7 +84,7 @@
                                                           exclusiveOwnership:YES];
 
   NSNumber *tag = self.reactTag;
-  NSMutableArray<NSNumber *> *descendantViewTags = [NSMutableArray new];
+  NSMutableSet<NSNumber *> *descendantViewTags = [NSMutableSet new]; // [macOS] avoids duplicates
   [textStorage enumerateAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
                           inRange:NSMakeRange(0, textStorage.length)
                           options:0
@@ -95,6 +95,17 @@
 
                          [descendantViewTags addObject:shadowView.reactTag];
                        }];
+  // [macOS
+  [textStorage enumerateAttribute:RCTTextAttributesTagAttributeName
+                          inRange:NSMakeRange(0, textStorage.length)
+                          options:0
+                       usingBlock:^(NSNumber *reactTag, NSRange range, __unused BOOL *stop) {
+                         if (!reactTag || [reactTag isEqualToNumber:tag]) {
+                           return;
+                         }
+                         [descendantViewTags addObject:reactTag];
+                       }];
+  // macOS]
 
   [_bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) { // [macOS]
     RCTTextView *textView = (RCTTextView *)viewRegistry[tag];
@@ -103,7 +114,7 @@
     }
 
     NSMutableArray<RCTPlatformView *> *descendantViews = [NSMutableArray arrayWithCapacity:descendantViewTags.count]; // [macOS]
-    [descendantViewTags
+    [[descendantViewTags allObjects] // [macOS] because it's an NSMutableSet now
         enumerateObjectsUsingBlock:^(NSNumber *_Nonnull descendantViewTag, NSUInteger index, BOOL *_Nonnull stop) {
           RCTPlatformView *descendantView = viewRegistry[descendantViewTag]; // [macOS]
           if (!descendantView) {
