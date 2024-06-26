@@ -470,13 +470,8 @@
 
 - (void)mouseMoved:(NSEvent *)event
 {
-  [self updateHoveredSubviewWithEvent:event];
-
-  // As of the time of writing (2024-06-25), the latest versions of Safari, Firefox, Chrome, and Edge
-  // all run mousemove events from the innermost component outwards. While we don't have full support
-  // for mousemove events in react-native-macos yet, performing our internal updates before invoking
-  // the superclass is more aligned to this apparent Web behavior.
   [super mouseMoved:event];
+  [self updateHoveredSubviewWithEvent:event];
 }
 
 - (void)updateHoveredSubviewWithEvent:(NSEvent *)event
