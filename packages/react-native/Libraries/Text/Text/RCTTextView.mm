@@ -12,6 +12,7 @@
 #endif // [macOS]
 
 #import <React/RCTAssert.h> // [macOS]
+#import <React/RCTUIManager.h> // [macOS]
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
 #import <React/RCTFocusChangeEvent.h> // [macOS]
@@ -506,13 +507,20 @@
 
   // self will always be an ancestor of any views we pass in here, so it serves as a good default option.
   // Also, if we do set from/to nil, we have to call the relevant events on the entire subtree.
-  RCTPlatformView *commonAncestor = [(_currentHoveredSubview ?: self) ancestorSharedWithView:(hoveredView ?: self)] ?: self;
+  RCTUIManager *uiManager = [[_eventDispatcher bridge] uiManager];
+  RCTShadowView *oldShadowView = [uiManager shadowViewForReactTag:[(_currentHoveredSubview ?: self) reactTag]];
+  RCTShadowView *newShadowView = [uiManager shadowViewForReactTag:[(hoveredView ?: self) reactTag]];
 
-  for (RCTPlatformView *exitedView = _currentHoveredSubview; exitedView != commonAncestor && exitedView != nil; exitedView = [exitedView superview]) {
+  // Find the common ancestor between the two shadow views
+  RCTShadowView *commonAncestor = [oldShadowView ancestorSharedWithShadowView:newShadowView];
+
+  for (RCTShadowView *exitedShadowView = oldShadowView; exitedShadowView != commonAncestor && exitedShadowView != nil; exitedShadowView = [exitedShadowView reactSuperview]) {
+    RCTPlatformView *exitedView = [uiManager viewForReactTag:[exitedShadowView reactTag]];
     if (![exitedView isKindOfClass:[RCTUIView class]]) {
       RCTLogError(@"Unexpected view of type %@ found in hierarchy, must be RCTUIView or subclass", [exitedView class]);
       continue;
     }
+
     RCTUIView *exitedReactView = (RCTUIView *)exitedView;
     [self sendMouseEventWithBlock:[exitedReactView onMouseLeave]
                      locationInfo:[self locationInfoFromEvent:event]
@@ -522,11 +530,13 @@
 
   // We cache these so we can call them from outermost to innermost
   NSMutableArray<RCTUIView *> *enteredViewHierarchy = [NSMutableArray new];
-  for (RCTPlatformView *enteredView = hoveredView; enteredView != commonAncestor && enteredView != nil; enteredView = [enteredView superview]) {
+  for (RCTShadowView *enteredShadowView = newShadowView; enteredShadowView != commonAncestor && enteredShadowView != nil; enteredShadowView = [enteredShadowView reactSuperview]) {
+    RCTPlatformView *enteredView = [uiManager viewForReactTag:[enteredShadowView reactTag]];
     if (![enteredView isKindOfClass:[RCTUIView class]]) {
       RCTLogError(@"Unexpected view of type %@ found in hierarchy, must be RCTUIView or subclass", [enteredView class]);
       continue;
     }
+
     [enteredViewHierarchy addObject:(RCTUIView *)enteredView];
   }
   for (NSInteger i = [enteredViewHierarchy count] - 1; i >= 0; i--) {
