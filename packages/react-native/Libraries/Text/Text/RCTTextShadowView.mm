@@ -85,6 +85,9 @@
 
   NSNumber *tag = self.reactTag;
   NSMutableArray<NSNumber *> *descendantViewTags = [NSMutableArray new];
+  NSMutableArray<NSNumber *> *virtualSubviewTags = [NSMutableArray new];
+
+#if !TARGET_OS_OSX // [macOS]
   [textStorage enumerateAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
                           inRange:NSMakeRange(0, textStorage.length)
                           options:0
@@ -95,6 +98,22 @@
 
                          [descendantViewTags addObject:shadowView.reactTag];
                        }];
+#else // [macOS
+  [textStorage enumerateAttributesInRange:NSMakeRange(0, textStorage.length)
+                                  options:0
+                               usingBlock:^(NSDictionary<NSAttributedStringKey, id> *_Nonnull attrs, NSRange range, __unused BOOL * _Nonnull stop) {
+    id embeddedViewAttribute = attrs[RCTBaseTextShadowViewEmbeddedShadowViewAttributeName];
+    if ([embeddedViewAttribute isKindOfClass:[RCTShadowView class]]) {
+      RCTShadowView *embeddedShadowView = (RCTShadowView *)embeddedViewAttribute;
+      [descendantViewTags addObject:embeddedShadowView.reactTag];
+    }
+
+    id tagAttribute = attrs[RCTTextAttributesTagAttributeName];
+    if ([tagAttribute isKindOfClass:[NSNumber class]] && ![tagAttribute isEqualToNumber:tag]) {
+      [virtualSubviewTags addObject:tagAttribute];
+    }
+  }];
+#endif // macOS]
 
   [_bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTUIView *> *viewRegistry) { // [macOS]
     RCTTextView *textView = (RCTTextView *)viewRegistry[tag];
@@ -113,11 +132,25 @@
           [descendantViews addObject:descendantView];
         }];
 
+
+    NSMutableArray<RCTVirtualTextView *> *virtualSubviews = [NSMutableArray arrayWithCapacity:virtualSubviewTags.count]; // [macOS]
+    [virtualSubviewTags
+        enumerateObjectsUsingBlock:^(NSNumber *_Nonnull virtualSubviewTag, NSUInteger index, BOOL *_Nonnull stop) {
+          RCTPlatformView *virtualSubview = viewRegistry[virtualSubviewTag]; // [macOS]
+          if ([virtualSubview isKindOfClass:[RCTVirtualTextView class]]) {
+            [virtualSubviews addObject:(RCTVirtualTextView *)virtualSubview];
+          }
+        }];
+
     // Removing all references to Shadow Views to avoid unnecessary retaining.
     [textStorage removeAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
                            range:NSMakeRange(0, textStorage.length)];
 
-    [textView setTextStorage:textStorage contentFrame:contentFrame descendantViews:descendantViews];
+    [textView setTextStorage:textStorage contentFrame:contentFrame descendantViews:descendantViews
+#if TARGET_OS_OSX // [macOS
+     virtualSubviews:virtualSubviews
+#endif // macOS]
+    ];
   }];
 }
 
