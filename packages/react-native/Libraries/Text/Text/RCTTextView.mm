@@ -63,6 +63,7 @@
 
   id<RCTEventDispatcherProtocol> _eventDispatcher; // [macOS]
   NSArray<RCTUIView *> *_Nullable _descendantViews; // [macOS]
+  NSArray<RCTVirtualTextView *> *_Nullable _virtualSubviews; // [macOS]
   RCTUIView *_Nullable _currentHoveredSubview; // [macOS]
   NSTextStorage *_Nullable _textStorage;
   CGRect _contentFrame;
@@ -164,6 +165,19 @@
 - (void)setTextStorage:(NSTextStorage *)textStorage
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTPlatformView *> *)descendantViews // [macOS]
+#if TARGET_OS_OSX // [macOS
+{
+  [self setTextStorage:textStorage
+          contentFrame:contentFrame
+       descendantViews:descendantViews
+       virtualSubviews:nil];
+}
+
+- (void)setTextStorage:(NSTextStorage *)textStorage
+          contentFrame:(CGRect)contentFrame
+       descendantViews:(NSArray<RCTPlatformView *> *)descendantViews
+       virtualSubviews:(NSArray<RCTVirtualTextView *> *)virtualSubviews
+#endif // macOS]
 {
   // This lets the textView own its text storage on macOS
   // We update and replace the text container `_textView.textStorage.attributedString` when text/layout changes
@@ -206,6 +220,10 @@
   for (RCTUIView *view in descendantViews) { // [macOS]
     [self addSubview:view];
   }
+
+#if TARGET_OS_OSX // [macOS
+  _virtualSubviews = virtualSubviews;
+#endif // macOS]
 
   [self setNeedsDisplay];
 }
@@ -424,7 +442,9 @@
   }
 
   // All descendant views of an RCTTextView are RCTVirtualTextViews
-  NSUInteger indexOfChildWithMouseHoverEvent = [_descendantViews indexOfObjectPassingTest:^BOOL(RCTUIView * _Nonnull childView, NSUInteger idx, BOOL * _Nonnull stop) {
+  // TODO: This isn't right in the case of embedded views. But maybe we want to keep these separate?
+  // TODO: How does current RNM handle mouse events in embedded views?
+  NSUInteger indexOfChildWithMouseHoverEvent = [_virtualSubviews indexOfObjectPassingTest:^BOOL(RCTVirtualTextView *_Nonnull childView, NSUInteger idx, BOOL *_Nonnull stop) {
     *stop = [childView hasMouseHoverEvent];
     return *stop;
   }];
@@ -478,20 +498,25 @@
 {
   RCTUIView *hoveredView = nil;
 
-  if ([event type] != NSEventTypeMouseExited && _descendantViews != nil) {
+  if ([event type] != NSEventTypeMouseExited && _virtualSubviews != nil) {
     NSNumber *reactTagOfHoveredView = [self reactTagAtMouseLocationFromEvent:event];
+
+    if (reactTagOfHoveredView == nil) {
+      // This happens if we hover over an embedded view, which will handle its own mouse events
+      return;
+    }
 
     if ([reactTagOfHoveredView isEqualToNumber:self.reactTag]) {
       // We're hovering over the root Text element
       hoveredView = self;
     } else {
       // Maybe we're hovering over a child Text element?
-      NSUInteger index = [_descendantViews indexOfObjectPassingTest:^BOOL(RCTUIView * _Nonnull view, NSUInteger idx, BOOL * _Nonnull stop) {
+      NSUInteger index = [_virtualSubviews indexOfObjectPassingTest:^BOOL(RCTVirtualTextView *_Nonnull view, NSUInteger idx, BOOL *_Nonnull stop) {
         *stop = [[view reactTag] isEqualToNumber:reactTagOfHoveredView];
         return *stop;
       }];
       if (index != NSNotFound) {
-        hoveredView = _descendantViews[index];
+        hoveredView = _virtualSubviews[index];
       }
     }
   }
