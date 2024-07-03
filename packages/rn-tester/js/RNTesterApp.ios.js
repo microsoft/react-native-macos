@@ -8,16 +8,15 @@
  * @flow
  */
 
+import type {RNTesterModuleInfo} from './types/RNTesterTypes';
 import type {Node} from 'react';
 
-import {AppRegistry, NativeModules, Platform, View} from 'react-native'; // [macOS] everything but AppRegistry
-import React from 'react';
-
-import SnapshotViewIOS from './examples/Snapshot/SnapshotViewIOS.ios';
 import RNTesterModuleContainer from './components/RNTesterModuleContainer';
-import RNTesterList from './utils/RNTesterList';
+import SnapshotViewIOS from './examples/Snapshot/SnapshotViewIOS.ios';
 import RNTesterApp from './RNTesterAppShared';
-import type {RNTesterModuleInfo} from './types/RNTesterTypes';
+import RNTesterList from './utils/RNTesterList';
+import React from 'react';
+import {AppRegistry, NativeModules, Platform, View} from 'react-native'; // [macOS] everything but AppRegistry
 
 const {TestModule} = NativeModules; // [macOS]
 

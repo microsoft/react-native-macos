@@ -52,6 +52,12 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+@interface RCTTextView () <UIEditMenuInteractionDelegate>
+
+@property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
+
+@end
+
 @implementation RCTTextView {
   CAShapeLayer *_highlightLayer;
 #if !TARGET_OS_OSX // [macOS]
@@ -385,16 +391,22 @@
 {
   _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self
                                                                               action:@selector(handleLongPress:)];
- if (@available(iOS 16.0, *)) {
+  if (@available(iOS 16.0, *)) {
     _editMenuInteraction = [[UIEditMenuInteraction alloc] initWithDelegate:self];
     [self addInteraction:_editMenuInteraction];
   }
+
   [self addGestureRecognizer:_longPressGestureRecognizer];
 }
 
 - (void)disableContextMenu
 {
   [self removeGestureRecognizer:_longPressGestureRecognizer];
+
+  if (@available(iOS 16.0, *)) {
+    [self removeInteraction:_editMenuInteraction];
+    _editMenuInteraction = nil;
+  }
   _longPressGestureRecognizer = nil;
 }
 

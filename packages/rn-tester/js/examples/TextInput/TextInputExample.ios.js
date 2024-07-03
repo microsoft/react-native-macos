@@ -10,19 +10,25 @@
 
 'use strict';
 
-const React = require('react');
+import type {
+  RNTesterModule,
+  RNTesterModuleExample,
+} from '../../types/RNTesterTypes';
+import type {KeyboardType} from 'react-native/Libraries/Components/TextInput/TextInput';
 
+const TextInputSharedExamples = require('./TextInputSharedExamples.js');
+const React = require('react');
 const {
+  Alert,
   Button,
-  InputAccessoryView,
-  Text,
-  TextInput,
-  View,
   Image, // [macOS]
+  InputAccessoryView,
   Platform, // [macOS]
   StyleSheet,
   Switch,
-  Alert,
+  Text,
+  TextInput,
+  View,
 } = require('react-native');
 // [macOS
 import type {
@@ -30,13 +36,6 @@ import type {
   SettingChangeEvent,
   PasteEvent,
 } from 'react-native/Libraries/Components/TextInput/TextInput'; // macOS]
-
-const TextInputSharedExamples = require('./TextInputSharedExamples.js');
-
-import type {
-  RNTesterModule,
-  RNTesterModuleExample,
-} from '../../types/RNTesterTypes';
 
 class WithLabel extends React.Component<$FlowFixMeProps> {
   render(): React.Node {
@@ -461,7 +460,7 @@ function OnPaste(): React.Node {
 }
 // macOS]
 
-const examples: Array<RNTesterModuleExample> = [
+const textInputExamples: Array<RNTesterModuleExample> = [
   ...TextInputSharedExamples,
   {
     title: 'Live Re-Write (ひ -> 日)',
@@ -1212,5 +1211,5 @@ module.exports = ({
   documentationURL: 'https://reactnative.dev/docs/textinput',
   category: 'Basic',
   description: 'Single and multi-line text inputs.',
-  examples,
+  examples: textInputExamples,
 }: RNTesterModule);

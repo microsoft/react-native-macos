@@ -72,6 +72,8 @@ RCT_EXPORT_VIEW_PROPERTY(maintainVisibleContentPosition, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(automaticallyAdjustContentInsets, BOOL)
 RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(automaticallyAdjustKeyboardInsets, BOOL) // [macOS]
 RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(decelerationRate, CGFloat) // [macOS]
+RCT_EXPORT_VIEW_PROPERTY(endDraggingSensitivityMultiplier, CGFloat)
+RCT_EXPORT_VIEW_PROPERTY(endDraggingSensitivityVelocityMultiplier, CGFloat)
 RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(directionalLockEnabled, BOOL) // [macOS]
 RCT_EXPORT_NOT_OSX_VIEW_PROPERTY(indicatorStyle, UIScrollViewIndicatorStyle) // [macOS]
 #if TARGET_OS_IOS // [visionOS]

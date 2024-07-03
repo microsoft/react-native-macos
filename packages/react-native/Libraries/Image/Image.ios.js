@@ -16,7 +16,10 @@ import {createRootTag} from '../ReactNative/RootTag';
 import flattenStyle from '../StyleSheet/flattenStyle';
 import StyleSheet from '../StyleSheet/StyleSheet';
 import ImageAnalyticsTagContext from './ImageAnalyticsTagContext';
-import {unstable_getImageComponentDecorator} from './ImageInjection';
+import {
+  unstable_getImageComponentDecorator,
+  useWrapRefWithImageAttachedCallbacks,
+} from './ImageInjection';
 import {getImageSourcesFromImageProps} from './ImageSourceUtils';
 import {convertObjectFitToResizeMode} from './ImageUtils';
 import ImageViewNativeComponent from './ImageViewNativeComponent';
@@ -160,6 +163,8 @@ let BaseImage: AbstractImageIOS = React.forwardRef((props, forwardedRef) => {
 
   const accessibilityRole = props.accessibilityRole || 'image';
 
+  const actualRef = useWrapRefWithImageAttachedCallbacks(forwardedRef);
+
   return (
     <ImageAnalyticsTagContext.Consumer>
       {analyticTag => {
@@ -170,7 +175,7 @@ let BaseImage: AbstractImageIOS = React.forwardRef((props, forwardedRef) => {
             {...restProps}
             accessible={props.alt !== undefined ? true : props.accessible}
             accessibilityLabel={accessibilityLabel ?? props.alt}
-            ref={forwardedRef}
+            ref={actualRef}
             style={style}
             resizeMode={resizeMode}
             tintColor={tintColor}
@@ -243,12 +248,6 @@ Image.queryCache = queryCache;
  */
 // $FlowFixMe[incompatible-use] This property isn't writable but we're actually defining it here for the first time.
 Image.resolveAssetSource = resolveAssetSource;
-
-/**
- * Switch to `deprecated-react-native-prop-types` for compatibility with future
- * releases. This is deprecated and will be removed in the future.
- */
-Image.propTypes = require('deprecated-react-native-prop-types').ImagePropTypes;
 
 const styles = StyleSheet.create({
   base: {

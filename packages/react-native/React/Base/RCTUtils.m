@@ -35,6 +35,20 @@ NSString *__nullable RCTHomePathForURL(NSURL *__nullable URL);
 // Determines if a given image URL refers to a image in Home directory (~)
 BOOL RCTIsHomeAssetURL(NSURL *__nullable imageURL);
 
+// Whether the New Architecture is enabled or not
+static BOOL _newArchEnabled = false;
+BOOL RCTIsNewArchEnabled(void)
+{
+  return _newArchEnabled;
+}
+void RCTSetNewArchEnabled(BOOL enabled)
+{
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    _newArchEnabled = enabled;
+  });
+}
+
 static NSString *__nullable _RCTJSONStringifyNoRetry(id __nullable jsonObject, NSError **error)
 {
   if (!jsonObject) {
@@ -624,15 +638,18 @@ RCTUIWindow *__nullable RCTKeyWindow(void) // [macOS]
 #endif // macOS]
 }
 
+#if !TARGET_OS_OSX // [macOS]
+UIStatusBarManager *__nullable RCTUIStatusBarManager(void)
+{
 #if TARGET_OS_VISION // [visionOS
-UIStatusBarManager *__nullable RCTUIStatusBarManager(void) {
-	NSSet *connectedScenes = RCTSharedApplication().connectedScenes;
+  NSSet *connectedScenes = RCTSharedApplication().connectedScenes;
 	UIWindowScene *windowScene = [connectedScenes anyObject];
 	return windowScene.statusBarManager;
+#else // visionOS]
+  return RCTKeyWindow().windowScene.statusBarManager;
+#endif // [visionOS]
 }
-#endif // visionOS]
 
-#if !TARGET_OS_OSX // [macOS]
 UIViewController *__nullable RCTPresentedViewController(void)
 {
   if ([RCTUtilsUIOverride hasPresentedViewController]) {

@@ -15,6 +15,9 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 
 #if !TARGET_OS_OSX // [macOS]
+static NSString *const kStatusBarFrameDidChange = @"statusBarFrameDidChange";
+static NSString *const kStatusBarFrameWillChange = @"statusBarFrameWillChange";
+
 @implementation RCTConvert (UIStatusBar)
 
 + (UIStatusBarStyle)UIStatusBarStyle:(id)json RCT_DYNAMIC
@@ -73,10 +76,10 @@ RCT_EXPORT_MODULE()
   return YES;
 }
 
-#if TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX // [macOS]
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[ @"statusBarFrameDidChange", @"statusBarFrameWillChange" ];
+  return @[ kStatusBarFrameDidChange, kStatusBarFrameWillChange ];
 }
 
 - (void)startObserving
@@ -117,14 +120,14 @@ RCT_EXPORT_MODULE()
 
 - (void)applicationDidChangeStatusBarFrame:(NSNotification *)notification
 {
-  [self emitEvent:@"statusBarFrameDidChange" forNotification:notification];
+  [self emitEvent:kStatusBarFrameDidChange forNotification:notification];
 }
 
 - (void)applicationWillChangeStatusBarFrame:(NSNotification *)notification
 {
-  [self emitEvent:@"statusBarFrameWillChange" forNotification:notification];
+  [self emitEvent:kStatusBarFrameWillChange forNotification:notification];
 }
-#endif
+#endif // [macOS]
 
 RCT_EXPORT_METHOD(getHeight : (RCTResponseSenderBlock)callback)
 {
@@ -196,11 +199,7 @@ RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible)
   RCTUnsafeExecuteOnMainQueueSync(^{
     constants = facebook::react::typedConstants<JS::NativeStatusBarManagerIOS::Constants>({
 #if !TARGET_OS_OSX // [macOS]
-#if !TARGET_OS_VISION // [visionOS]
-        .HEIGHT = RCTSharedApplication().statusBarFrame.size.height,
-#else // [visionOS
         .HEIGHT = RCTUIStatusBarManager().statusBarFrame.size.height,
-#endif // visionOS]
 #else // [macOS
         .HEIGHT = 0,
 #endif // macOS]
