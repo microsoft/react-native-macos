@@ -21,16 +21,20 @@ const {removeNewArchFlags} = require('../releases/remove-new-arch-flags');
 const {setReactNativeVersion} = require('../releases/set-rn-version');
 const setVersion = require('../releases/set-version');
 const {getPackages} = require('../releases/utils/monorepo');
+/* [macOS We do not generate Android artifacts for React Native macOS
 const {
   generateAndroidArtifacts,
   publishAndroidArtifactsToMaven,
 } = require('../releases/utils/release-utils');
+macOS] */
 const path = require('path');
 const yargs = require('yargs');
 
 /**
  * This script prepares a release version of react-native and may publish to NPM.
  * It is supposed to run in CI environment, not on a developer's machine.
+ *
+ * [macOS] For React Native macOS, we have modified this script to not create Android Artifacts.
  *
  * For a dry run (commitly), this script will:
  *  * Version the commitly of the form `1000.0.0-<commitSha>`
@@ -108,8 +112,9 @@ async function publishNpm(buildType /*: BuildType */) /*: Promise<void> */ {
       await setReactNativeVersion(version, null, buildType);
     }
   }
-
-  generateAndroidArtifacts(version);
+  
+  // [macOS] Do not generate Android artifacts for React Native macOS
+  // generateAndroidArtifacts(version);
 
   if (buildType === 'dry-run') {
     console.log('Skipping `npm publish` because --dry-run is set.');
@@ -118,7 +123,8 @@ async function publishNpm(buildType /*: BuildType */) /*: Promise<void> */ {
 
   // We first publish on Maven Central all the necessary artifacts.
   // NPM publishing is done just after.
-  publishAndroidArtifactsToMaven(version, buildType);
+  /* [macOS] Skip the Android Artifact and NPM Publish here as we do that in our Azure Pipeline
+  // publishAndroidArtifactsToMaven(version, buildType);
 
   const packagePath = path.join(REPO_ROOT, 'packages', 'react-native');
   const result = publishPackage(packagePath, {
@@ -131,6 +137,7 @@ async function publishNpm(buildType /*: BuildType */) /*: Promise<void> */ {
     throw new Error(`Failed to publish react-native@${version} to npm.`);
   }
   console.log(`Published react-native@${version} to npm`);
+  macOS] */
 }
 
 module.exports = {

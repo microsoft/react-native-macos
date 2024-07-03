@@ -263,7 +263,7 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
   }
 }
 
-- (UIView *)paperView
+- (RCTUIView *)paperView // [macOS]
 {
   return _adapter.paperView;
 }

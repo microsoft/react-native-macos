@@ -320,7 +320,9 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
       });
   NSString *userInterfaceStyle = [RCTConvert NSString:options.userInterfaceStyle()];
   NSNumber *anchorViewTag = [RCTConvert NSNumber:options.anchor() ? @(*options.anchor()) : nil];
+#if !TARGET_OS_OSX // [macOS]
   UIColor *tintColor = [RCTConvert UIColor:options.tintColor() ? @(*options.tintColor()) : nil];
+#endif
 
   dispatch_async(dispatch_get_main_queue(), ^{
     if (message) {
@@ -379,14 +381,20 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
     NSMutableArray<NSSharingService*> *excludedTypes = [NSMutableArray array];
     for (NSString *excludeActivityType in excludedActivityTypes) {
       NSSharingService *sharingService = [NSSharingService sharingServiceNamed:excludeActivityType];
-    @@ -390,7 +383,6 @@ - (void)presentMenu:(NSMenu *)menu
+      if (sharingService) {
+        [excludedTypes addObject:sharingService];
+      }
+    }
+    _excludedActivities = excludedTypes.copy;
+    _sharingSubject = options.subject();
     _failureCallback = failureCallback;
     _successCallback = successCallback;
     RCTPlatformView *sourceView = nil;
     if (anchorViewTag) {
       sourceView = [self.viewRegistry_DEPRECATED viewForReactTag:anchorViewTag];
     }
-    @@ -399,6 +391,7 @@ - (void)presentMenu:(NSMenu *)menu
+    NSView *contentView = sourceView ?: NSApp.keyWindow.contentView;
+    NSSharingServicePicker *picker = [[NSSharingServicePicker alloc] initWithItems:items];
     picker.delegate = self;
     [picker showRelativeToRect:contentView.bounds ofView:contentView preferredEdge:NSRectEdgeMinX];
 #endif // macOS]

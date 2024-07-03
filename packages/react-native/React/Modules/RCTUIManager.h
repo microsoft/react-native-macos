@@ -162,7 +162,7 @@ void RCTTraverseViewNodes(id<RCTComponent> view, void (^block)(id<RCTComponent>)
  * If the view passed as parameter is the Interop Layer wrapper, this method returns the wrapped view
  * Otherwise, it returns the view itself.
  */
-+ (UIView *)paperViewOrCurrentView:(UIView *)view;
++ (RCTPlatformView *)paperViewOrCurrentView:(RCTPlatformView *)view; // [macOS]
 
 /**
  * Dedicated object for subscribing for UIManager events.
@@ -204,13 +204,13 @@ void RCTTraverseViewNodes(id<RCTComponent> view, void (^block)(id<RCTComponent>)
  */
 @interface RCTComposedViewRegistry : NSMutableDictionary
 
-- (instancetype)initWithUIManager:(RCTUIManager *)uiManager andRegistry:(NSDictionary<NSNumber *, UIView *> *)registry;
+- (instancetype)initWithUIManager:(RCTUIManager *)uiManager andRegistry:(NSDictionary<NSNumber *, RCTPlatformView *> *)registry; // [macOS]
 
 @end
 
 // This protocol is needed to silence the "unknown selector" warning
 @protocol RCTRendererInteropLayerAdapting
-- (UIView *)paperView;
+- (RCTPlatformView *)paperView; // [macOS]
 @end
 
 RCT_EXTERN NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(

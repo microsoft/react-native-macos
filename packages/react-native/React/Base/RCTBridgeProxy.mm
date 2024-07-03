@@ -414,8 +414,8 @@ using namespace facebook;
 {
   [self logWarning:@"Please migrate to RCTViewRegistry: @synthesize viewRegistry_DEPRECATED = _viewRegistry_DEPRECATED."
                cmd:_cmd];
-  UIView *view = [_viewRegistry viewForReactTag:reactTag] ? [_viewRegistry viewForReactTag:reactTag]
-                                                          : [_legacyViewRegistry objectForKey:reactTag];
+  RCTPlatformView *view = [_viewRegistry viewForReactTag:reactTag] ? [_viewRegistry viewForReactTag:reactTag] // [macOS]
+                                                                   : [_legacyViewRegistry objectForKey:reactTag];
   return [RCTUIManager paperViewOrCurrentView:view];
 }
 

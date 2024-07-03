@@ -6,6 +6,9 @@
  */
 
 #import <React/RCTEventEmitter.h>
+#if TARGET_OS_OSX // [macOS
+#import <UserNotifications/UserNotifications.h>
+#endif // macOS]
 
 extern NSString *const RCTRemoteNotificationReceived;
 

@@ -719,7 +719,13 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
           borderMetrics.borderWidths.left == 0 ||
           colorComponentsFromColor(borderMetrics.borderColors.left).alpha == 0 || self.clipsToBounds);
 
-  CGColorRef backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection].CGColor;
+    CGColorRef backgroundColor; // [macOS]
+
+  #if !TARGET_OS_OSX // [macOS]
+    backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection].CGColor;
+  #else // [macOS TBD REVIEW
+    backgroundColor = [_backgroundColor CGColor];
+  #endif // macOS]
 
   if (useCoreAnimationBorderRendering) {
     layer.mask = nil;

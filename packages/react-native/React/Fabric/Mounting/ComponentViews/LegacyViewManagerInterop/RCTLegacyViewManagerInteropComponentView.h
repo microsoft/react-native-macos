@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
  * This method is required for addUIBlock and to let the infra bypass the interop layer
  * when providing views from the RCTUIManager. The interop layer should be transparent to the users.
  */
-- (UIView *)paperView;
+- (RCTUIView *)paperView; // [macOS]
 
 @end
 

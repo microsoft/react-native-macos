@@ -17,15 +17,15 @@
 
 RCT_EXPORT_MODULE(DebuggingOverlay)
 
-- (UIView *)view
+- (RCTPlatformView *)view // [macOS]
 {
   return [RCTDebuggingOverlay new];
 }
 
 RCT_EXPORT_METHOD(highlightTraceUpdates : (nonnull NSNumber *)viewTag nodes : (NSArray *)updates)
 {
-  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
-    UIView *view = viewRegistry[viewTag];
+  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
+    RCTPlatformView *view = viewRegistry[viewTag]; // [macOS]
 
     if ([view isKindOfClass:[RCTDebuggingOverlay class]]) {
       [(RCTDebuggingOverlay *)view highlightTraceUpdates:updates];
@@ -37,8 +37,8 @@ RCT_EXPORT_METHOD(highlightTraceUpdates : (nonnull NSNumber *)viewTag nodes : (N
 
 RCT_EXPORT_METHOD(highlightElements : (nonnull NSNumber *)viewTag elements : (NSArray *)elements)
 {
-  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
-    UIView *view = viewRegistry[viewTag];
+  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
+    RCTPlatformView *view = viewRegistry[viewTag]; // [macOS]
 
     if ([view isKindOfClass:[RCTDebuggingOverlay class]]) {
       [(RCTDebuggingOverlay *)view highlightElements:elements];
@@ -50,8 +50,8 @@ RCT_EXPORT_METHOD(highlightElements : (nonnull NSNumber *)viewTag elements : (NS
 
 RCT_EXPORT_METHOD(clearElementsHighlights : (nonnull NSNumber *)viewTag)
 {
-  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
-    UIView *view = viewRegistry[viewTag];
+  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
+    RCTPlatformView *view = viewRegistry[viewTag]; // [macOS]
 
     if ([view isKindOfClass:[RCTDebuggingOverlay class]]) {
       [(RCTDebuggingOverlay *)view clearElementsHighlights];

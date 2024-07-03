@@ -192,7 +192,7 @@ facebook::react::ColorComponents RCTPlatformColorComponentsFromSemanticItems(std
   return _ColorComponentsFromUIColor(RCTPlatformColorFromSemanticItems(semanticItems));
 }
 
-UIColor *RCTPlatformColorFromSemanticItems(std::vector<std::string> &semanticItems)
+RCTUIColor *RCTPlatformColorFromSemanticItems(std::vector<std::string> &semanticItems) // [macOS]
 {
   for (const auto &semanticCString : semanticItems) {
     NSString *semanticNSString = _NSStringFromCString(semanticCString);
@@ -206,12 +206,12 @@ UIColor *RCTPlatformColorFromSemanticItems(std::vector<std::string> &semanticIte
     }
   }
 
-  return UIColor.clearColor;
+  return [RCTUIColor clearColor]; // [macOS]
 }
 
-UIColor *RCTPlatformColorFromColor(const facebook::react::Color &color)
+RCTUIColor *RCTPlatformColorFromColor(const facebook::react::Color &color) // [macOS]
 {
-  return (UIColor *)facebook::react::unwrapManagedObject(color.getUIColor());
+  return (RCTUIColor *)facebook::react::unwrapManagedObject(color.getUIColor()); // [macOS]
 }
 
 NS_ASSUME_NONNULL_END

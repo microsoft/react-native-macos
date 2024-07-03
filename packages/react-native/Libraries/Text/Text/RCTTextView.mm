@@ -52,12 +52,6 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-@interface RCTTextView () <UIEditMenuInteractionDelegate>
-
-@property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
-
-@end
-
 @implementation RCTTextView {
   CAShapeLayer *_highlightLayer;
 #if !TARGET_OS_OSX // [macOS]

@@ -158,7 +158,9 @@
     [attributedText insertAttributedString:propertyAttributedText atIndex:0];
   }
 
+#if !TARGET_OS_OSX // [macOS] TBD
   [self postprocessAttributedText:attributedText];
+#endif // [macOS]
 
   NSAttributedString *newAttributedText;
   if (![_previousAttributedText isEqualToAttributedString:attributedText]) {
@@ -193,6 +195,7 @@
   }];
 }
 
+#if !TARGET_OS_OSX // [macOS] TBD
 - (void)postprocessAttributedText:(NSMutableAttributedString *)attributedText
 {
   __block CGFloat maximumLineHeight = 0;
@@ -238,6 +241,7 @@
                          value:@(baseLineOffset)
                          range:NSMakeRange(0, attributedText.length)];
 }
+#endif // [macOS]
 
 #pragma mark -
 

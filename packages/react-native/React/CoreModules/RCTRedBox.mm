@@ -91,6 +91,21 @@
 
 @end
 
+#if TARGET_OS_OSX // [macOS
+@interface RCTRedBoxScrollView : NSScrollView
+@end
+
+@implementation RCTRedBoxScrollView
+
+- (NSSize)intrinsicContentSize
+{
+  NSView *documentView = self.documentView;
+  return documentView != nil ? documentView.intrinsicContentSize : super.intrinsicContentSize;
+}
+
+@end
+#endif // macOS]
+
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTRedBoxController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 #else // [macOS
@@ -264,7 +279,6 @@
     [buttonStackView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
   ]];
 
-
   for (NSUInteger i = 0; i < [_customButtonTitles count]; i++) {
 #if !TARGET_OS_OSX // [macOS]
     UIButton *button = [self redBoxButton:_customButtonTitles[i]
@@ -280,6 +294,15 @@
     [button.heightAnchor constraintEqualToConstant:buttonHeight].active = YES;
     [buttonStackView addArrangedSubview:button];
   }
+#else // [macOS  
+  for (NSUInteger i = 0; i < [_customButtonTitles count]; i++) {
+  NSButton *button = [self redBoxButton:_customButtonTitles[i]
+                  accessibilityIdentifier:@""
+                                 selector:nil
+                                    block:_customButtonHandlers[i]];
+    [buttonStackView addArrangedSubview:button];
+  }
+#endif // macOS]
 
   RCTPlatformView *topBorder = [[RCTPlatformView alloc] init]; // [macOS]
   topBorder.translatesAutoresizingMaskIntoConstraints = NO;
@@ -453,7 +476,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   for (RCTJSStackFrame *stackFrame in _lastStackTrace) {
     [fullStackTrace appendString:[NSString stringWithFormat:@"%@\n", stackFrame.methodName]];
     if (stackFrame.file) {
-      [fullStackTrace appendFormat:@"    %@\n", [self formatFrameSource:stackFrame]];
+      // [fullStackTrace appendFormat:@"    %@\n", [self formatFrameSource:stackFrame]]; TBD
     }
   }
 #if !TARGET_OS_OSX // [macOS]
@@ -466,6 +489,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 #endif // macOS]
 }
 
+#if !TARGET_OS_OSX // [macOS]
 - (NSString *)formatFrameSource:(RCTJSStackFrame *)stackFrame
 {
   NSString *fileName = RCTNilIfNull(stackFrame.file) ? [stackFrame.file lastPathComponent] : @"<unknown file>";

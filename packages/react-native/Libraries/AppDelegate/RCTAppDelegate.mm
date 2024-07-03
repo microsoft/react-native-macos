@@ -91,7 +91,7 @@ static NSDictionary *updateInitialProps(NSDictionary *initialProps, BOOL isFabri
 
   RCTAppSetupPrepareApp(application, enableTM);
 
-  RCTPlatformView *rootView; // [macOS]
+  RCTUIView *rootView; // [macOS]
 
   if (enableBridgeless) {
     // Enable native view config interop only if both bridgeless mode and Fabric is enabled.
@@ -110,7 +110,11 @@ static NSDictionary *updateInitialProps(NSDictionary *initialProps, BOOL isFabri
         sizeMeasureMode:RCTSurfaceSizeMeasureModeWidthExact | RCTSurfaceSizeMeasureModeHeightExact];
 
     rootView = (RCTRootView *)surfaceHostingProxyRootView;
+#if !TARGET_OS_OSX // [macOS]
     rootView.backgroundColor = [UIColor systemBackgroundColor];
+#else // [macOS
+    rootView.layer.backgroundColor = [[NSColor windowBackgroundColor] CGColor];
+#endif // macOS]
   } else {
     if (!self.bridge) {
       self.bridge = [self createBridgeWithDelegate:self launchOptions:launchOptions];

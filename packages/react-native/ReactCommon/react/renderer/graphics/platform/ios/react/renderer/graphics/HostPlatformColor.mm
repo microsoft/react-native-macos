@@ -8,7 +8,7 @@
 #import "HostPlatformColor.h"
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 #import <react/utils/ManagedObjectWrapper.h>
 #import <string>
 
@@ -19,28 +19,31 @@ NS_ASSUME_NONNULL_BEGIN
 namespace facebook::react {
 
 namespace {
-UIColor *_Nullable UIColorFromInt32(int32_t intColor)
+RCTUIColor *_Nullable UIColorFromInt32(int32_t intColor) // [macOS]
 {
   CGFloat a = CGFloat((intColor >> 24) & 0xFF) / 255.0;
   CGFloat r = CGFloat((intColor >> 16) & 0xFF) / 255.0;
   CGFloat g = CGFloat((intColor >> 8) & 0xFF) / 255.0;
   CGFloat b = CGFloat(intColor & 0xFF) / 255.0;
-  return [UIColor colorWithRed:r green:g blue:b alpha:a];
+  return [RCTUIColor colorWithRed:r green:g blue:b alpha:a]; // [macOS]
 }
 
-UIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColor &dynamicColor)
+RCTUIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColor &dynamicColor)
 {
   int32_t light = dynamicColor.lightColor;
   int32_t dark = dynamicColor.darkColor;
   int32_t highContrastLight = dynamicColor.highContrastLightColor;
   int32_t highContrastDark = dynamicColor.highContrastDarkColor;
 
-  UIColor *lightColor = UIColorFromInt32(light);
-  UIColor *darkColor = UIColorFromInt32(dark);
-  UIColor *highContrastLightColor = UIColorFromInt32(highContrastLight);
-  UIColor *highContrastDarkColor = UIColorFromInt32(highContrastDark);
+  // [macOS
+  RCTUIColor *lightColor = UIColorFromInt32(light);
+  RCTUIColor *darkColor = UIColorFromInt32(dark);
+  RCTUIColor *highContrastLightColor = UIColorFromInt32(highContrastLight);
+  RCTUIColor *highContrastDarkColor = UIColorFromInt32(highContrastDark);
+  // macOS]
 
   if (lightColor != nil && darkColor != nil) {
+#if !TARGET_OS_OSX // [macOS]
     UIColor *color = [UIColor colorWithDynamicProvider:^UIColor *_Nonnull(UITraitCollection *_Nonnull collection) {
       if (collection.userInterfaceStyle == UIUserInterfaceStyleDark) {
         if (collection.accessibilityContrast == UIAccessibilityContrastHigh && highContrastDarkColor != nil) {
@@ -57,6 +60,30 @@ UIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColor &
       }
     }];
     return color;
+#else // [macOS REVIEW: copy pasted from RCTConvert.mm
+    NSColor *color = [NSColor colorWithName:nil dynamicProvider:^NSColor * _Nonnull(NSAppearance * _Nonnull appearance) {
+      NSMutableArray<NSAppearanceName> *appearances = [NSMutableArray arrayWithArray:@[NSAppearanceNameAqua,NSAppearanceNameDarkAqua]];
+      if (highContrastLightColor != nil) {
+        [appearances addObject:NSAppearanceNameAccessibilityHighContrastAqua];
+      }
+      if (highContrastDarkColor != nil) {
+        [appearances addObject:NSAppearanceNameAccessibilityHighContrastDarkAqua];
+      }
+      NSAppearanceName bestMatchingAppearance = [appearance bestMatchFromAppearancesWithNames:appearances];
+      if (bestMatchingAppearance == NSAppearanceNameAqua) {
+        return lightColor;
+      } else if (bestMatchingAppearance == NSAppearanceNameDarkAqua) {
+        return darkColor;
+      } else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastAqua) {
+        return highContrastLightColor;
+      } else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastDarkAqua) {
+        return highContrastDarkColor;
+      } else {
+        return lightColor;
+      }
+    }];
+    return color;
+#endif // macOS]
   } else {
     return nil;
   }
@@ -64,7 +91,7 @@ UIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColor &
   return nil;
 }
 
-int32_t ColorFromUIColor(UIColor *color)
+int32_t ColorFromUIColor(RCTUIColor *color) // [macOS]
 {
   float ratio = 255;
   CGFloat rgba[4];
@@ -75,19 +102,21 @@ int32_t ColorFromUIColor(UIColor *color)
 
 int32_t ColorFromUIColor(const std::shared_ptr<void> &uiColor)
 {
-  UIColor *color = (UIColor *)unwrapManagedObject(uiColor);
+  RCTUIColor *color = (RCTUIColor *)unwrapManagedObject(uiColor); // [macOS]
   if (color) {
+#if !TARGET_OS_OSX // [macOS REVIEW
     UITraitCollection *currentTraitCollection = [UITraitCollection currentTraitCollection];
     color = [color resolvedColorWithTraitCollection:currentTraitCollection];
+#endif
     return ColorFromUIColor(color);
   }
 
   return 0;
 }
 
-UIColor *_Nullable UIColorFromComponentsColor(const facebook::react::ColorComponents &components)
+RCTUIColor *_Nullable UIColorFromComponentsColor(const facebook::react::ColorComponents &components) // [macOS]
 {
-  return [UIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha];
+  return [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha];
 }
 } // anonymous namespace
 

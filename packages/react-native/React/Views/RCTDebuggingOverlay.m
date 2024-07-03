@@ -13,7 +13,7 @@
 
 @implementation TraceUpdateTuple
 
-- (instancetype)initWithView:(UIView *)view cleanupBlock:(dispatch_block_t)cleanupBlock
+- (instancetype)initWithView:(RCTPlatformView *)view cleanupBlock:(dispatch_block_t)cleanupBlock // [macOS]
 {
   if (self = [super init]) {
     _view = view;
@@ -26,7 +26,7 @@
 @end
 
 @implementation RCTDebuggingOverlay {
-  NSMutableArray<UIView *> *_highlightedElements;
+  NSMutableArray<RCTPlatformView *> *_highlightedElements; // [macOS]
   NSMutableDictionary<NSNumber *, TraceUpdateTuple *> *_idToTraceUpdateMap;
 }
 
@@ -44,14 +44,14 @@
   for (NSDictionary *update in updates) {
     NSNumber *identifier = [RCTConvert NSNumber:update[@"id"]];
     NSDictionary *nodeRectangle = update[@"rectangle"];
-    UIColor *nodeColor = [RCTConvert UIColor:update[@"color"]];
+    RCTUIColor *nodeColor = [RCTConvert UIColor:update[@"color"]]; // [macOS]
 
     CGRect rect = [RCTConvert CGRect:nodeRectangle];
 
     TraceUpdateTuple *possiblyRegisteredTraceUpdateTuple = [_idToTraceUpdateMap objectForKey:identifier];
     if (possiblyRegisteredTraceUpdateTuple != nil) {
       dispatch_block_t cleanupBlock = [possiblyRegisteredTraceUpdateTuple cleanupBlock];
-      UIView *view = [possiblyRegisteredTraceUpdateTuple view];
+      RCTPlatformView *view = [possiblyRegisteredTraceUpdateTuple view]; // [macOS]
 
       dispatch_block_cancel(cleanupBlock);
 
@@ -71,8 +71,8 @@
       continue;
     }
 
-    UIView *box = [[UIView alloc] initWithFrame:rect];
-    box.backgroundColor = [UIColor clearColor];
+    RCTUIView *box = [[RCTUIView alloc] initWithFrame:rect]; // [macOS]
+    box.backgroundColor = [RCTUIColor clearColor]; // [macOS]
 
     box.layer.borderWidth = 2.0f;
     box.layer.borderColor = nodeColor.CGColor;
@@ -100,8 +100,8 @@
   }
 
   for (NSDictionary *rectangle in rectangles) {
-    UIView *view = [[UIView alloc] initWithFrame:[RCTConvert CGRect:rectangle]];
-    view.backgroundColor = [UIColor colorWithRed:200 / 255.0 green:230 / 255.0 blue:255 / 255.0 alpha:0.8];
+    RCTUIView *view = [[RCTUIView alloc] initWithFrame:[RCTConvert CGRect:rectangle]]; // [macOS]
+    view.backgroundColor = [RCTUIColor colorWithRed:200 / 255.0 green:230 / 255.0 blue:255 / 255.0 alpha:0.8]; // [macOS]
 
     [self addSubview:view];
     [_highlightedElements addObject:view];
@@ -111,7 +111,7 @@
 - (void)clearElementsHighlights
 {
   if (_highlightedElements != nil) {
-    for (UIView *v in _highlightedElements) {
+    for (RCTPlatformView *v in _highlightedElements) { // [macOS]
       [v removeFromSuperview];
     }
   }

@@ -7,12 +7,12 @@
 
 #pragma once
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 #import <react/renderer/graphics/HostPlatformColor.h>
 #import <vector>
 
 facebook::react::ColorComponents RCTPlatformColorComponentsFromSemanticItems(
     std::vector<std::string>& semanticItems);
-UIColor* RCTPlatformColorFromSemanticItems(
+RCTUIColor* RCTPlatformColorFromSemanticItems( // [macOS]
     std::vector<std::string>& semanticItems);
-UIColor* RCTPlatformColorFromColor(const facebook::react::Color& color);
+RCTUIColor* RCTPlatformColorFromColor(const facebook::react::Color& color); // [macOS]

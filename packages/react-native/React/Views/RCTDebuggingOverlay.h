@@ -5,16 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <React/RCTView.h>
 
 @interface TraceUpdateTuple : NSObject
 
-@property (nonatomic, strong, readonly) UIView *view;
+@property (nonatomic, strong, readonly) RCTPlatformView *view; // [macOS]
 @property (nonatomic, copy, readonly) dispatch_block_t cleanupBlock;
 
-- (instancetype)initWithView:(UIView *)view cleanupBlock:(dispatch_block_t)cleanupBlock;
+- (instancetype)initWithView:(RCTPlatformView *)view cleanupBlock:(dispatch_block_t)cleanupBlock; // [macOS]
 
 @end
 

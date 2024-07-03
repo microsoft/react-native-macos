@@ -14,7 +14,12 @@ import type {
   RNTesterModule,
   RNTesterModuleExample,
 } from '../../types/RNTesterTypes';
-import type {KeyboardType} from 'react-native/Libraries/Components/TextInput/TextInput';
+// [macOS
+import type {
+  KeyboardType,
+  SettingChangeEvent,
+  PasteEvent,
+} from 'react-native/Libraries/Components/TextInput/TextInput'; // macOS]
 
 const TextInputSharedExamples = require('./TextInputSharedExamples.js');
 const React = require('react');
@@ -30,12 +35,6 @@ const {
   TextInput,
   View,
 } = require('react-native');
-// [macOS
-import type {
-  KeyboardType,
-  SettingChangeEvent,
-  PasteEvent,
-} from 'react-native/Libraries/Components/TextInput/TextInput'; // macOS]
 
 class WithLabel extends React.Component<$FlowFixMeProps> {
   render(): React.Node {
@@ -1095,7 +1094,7 @@ const textInputExamples: Array<RNTesterModuleExample> = [
 
 // [macOS
 if (Platform.OS === 'macos') {
-  examples.push(
+  textInputExamples.push(
     {
       title:
         'AutoCorrect, spellCheck and grammarCheck callbacks - Multiline Textfield',
