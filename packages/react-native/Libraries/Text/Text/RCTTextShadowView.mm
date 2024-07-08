@@ -85,7 +85,9 @@
 
   NSNumber *tag = self.reactTag;
   NSMutableArray<NSNumber *> *descendantViewTags = [NSMutableArray new];
+#if TARGET_OS_OSX // [macOS
   NSMutableArray<NSNumber *> *virtualSubviewTags = [NSMutableArray new];
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
   [textStorage enumerateAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
@@ -133,14 +135,16 @@
         }];
 
 
-    NSMutableArray<RCTVirtualTextView *> *virtualSubviews = [NSMutableArray arrayWithCapacity:virtualSubviewTags.count]; // [macOS]
+#if TARGET_OS_OSX // [macOS
+    NSMutableArray<RCTVirtualTextView *> *virtualSubviews = [NSMutableArray arrayWithCapacity:virtualSubviewTags.count];
     [virtualSubviewTags
         enumerateObjectsUsingBlock:^(NSNumber *_Nonnull virtualSubviewTag, NSUInteger index, BOOL *_Nonnull stop) {
-          RCTPlatformView *virtualSubview = viewRegistry[virtualSubviewTag]; // [macOS]
+          RCTPlatformView *virtualSubview = viewRegistry[virtualSubviewTag];
           if ([virtualSubview isKindOfClass:[RCTVirtualTextView class]]) {
             [virtualSubviews addObject:(RCTVirtualTextView *)virtualSubview];
           }
         }];
+#endif // macOS]
 
     // Removing all references to Shadow Views to avoid unnecessary retaining.
     [textStorage removeAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
