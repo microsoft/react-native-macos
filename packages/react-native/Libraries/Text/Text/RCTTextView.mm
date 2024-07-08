@@ -63,7 +63,9 @@
 
   id<RCTEventDispatcherProtocol> _eventDispatcher; // [macOS]
   NSArray<RCTUIView *> *_Nullable _descendantViews; // [macOS]
-  NSArray<RCTVirtualTextView *> *_Nullable _virtualSubviews; // [macOS]
+#if TARGET_OS_OSX // [macOS
+  NSArray<RCTVirtualTextView *> *_Nullable _virtualSubviews;
+#endif // macOS]
   RCTUIView *_Nullable _currentHoveredSubview; // [macOS]
   NSTextStorage *_Nullable _textStorage;
   CGRect _contentFrame;
@@ -165,19 +167,19 @@
 - (void)setTextStorage:(NSTextStorage *)textStorage
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTPlatformView *> *)descendantViews // [macOS]
-#if TARGET_OS_OSX // [macOS
 {
+  // [macOS]
   [self setTextStorage:textStorage
           contentFrame:contentFrame
        descendantViews:descendantViews
        virtualSubviews:nil];
 }
 
+// [macOS]
 - (void)setTextStorage:(NSTextStorage *)textStorage
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTPlatformView *> *)descendantViews
        virtualSubviews:(NSArray<RCTVirtualTextView *> *)virtualSubviews
-#endif // macOS]
 {
   // This lets the textView own its text storage on macOS
   // We update and replace the text container `_textView.textStorage.attributedString` when text/layout changes
