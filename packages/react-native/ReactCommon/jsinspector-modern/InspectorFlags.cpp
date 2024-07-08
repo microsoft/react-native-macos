@@ -8,7 +8,6 @@
 #include "InspectorFlags.h"
 
 #include <glog/logging.h>
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 
 namespace facebook::react::jsinspector_modern {
 
@@ -34,19 +33,7 @@ void InspectorFlags::dangerouslyResetFlags() {
 const InspectorFlags::Values& InspectorFlags::loadFlagsAndAssertUnchanged()
     const {
   InspectorFlags::Values newValues = {
-      .fuseboxEnabled =
-#if defined(REACT_NATIVE_FORCE_ENABLE_FUSEBOX)
-          true,
-#elif defined(REACT_NATIVE_FORCE_DISABLE_FUSEBOX)
-          false,
-#elif defined(HERMES_ENABLE_DEBUGGER) && \
-    defined(REACT_NATIVE_ENABLE_FUSEBOX_DEBUG)
-          true,
-#elif defined(HERMES_ENABLE_DEBUGGER)
-          ReactNativeFeatureFlags::fuseboxEnabledDebug(),
-#else
-          ReactNativeFeatureFlags::fuseboxEnabledRelease(),
-#endif
+      .fuseboxEnabled = true
   };
 
   if (cachedValues_.has_value() && !inconsistentFlagsStateLogged_) {
