@@ -7,7 +7,7 @@
 
 #include "ConnectionDemux.h"
 
-#ifdef HERMES_ENABLE_DEBUGGER
+//#ifdef HERMES_ENABLE_DEBUGGER
 
 #include <hermes/inspector/RuntimeAdapter.h>
 #include <hermes/inspector/chrome/CDPHandler.h>
@@ -144,4 +144,4 @@ void ConnectionDemux::removePage(int pageId) {
 } // namespace hermes
 } // namespace facebook
 
-#endif // HERMES_ENABLE_DEBUGGER
+//#endif  HERMES_ENABLE_DEBUGGER

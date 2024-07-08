@@ -7,7 +7,7 @@
 
 #pragma once
 
-#ifdef HERMES_ENABLE_DEBUGGER
+//#ifdef HERMES_ENABLE_DEBUGGER
 
 #include <memory>
 #include <string>
@@ -44,4 +44,4 @@ extern void disableDebugging(DebugSessionToken session);
 } // namespace hermes
 } // namespace facebook
 
-#endif // HERMES_ENABLE_DEBUGGER
+//#endif  HERMES_ENABLE_DEBUGGER

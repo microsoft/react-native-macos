@@ -222,24 +222,25 @@ std::pair<NextStatePtr, CommandPtr> InspectorState::Running::didPause(
         makeContinueCommand());
   }
 
-  if (reason == debugger::PauseReason::AsyncTrigger) {
-    AsyncPauseState &pendingPauseState = inspector_.pendingPauseState_;
-
-    switch (pendingPauseState) {
-      case AsyncPauseState::None:
-        // shouldn't ever async break without us asking first
-        assert(false);
-        break;
-      case AsyncPauseState::Implicit:
-        pendingPauseState = AsyncPauseState::None;
-        break;
-      case AsyncPauseState::Explicit:
-        // explicit break was requested by user, so go to Paused state
-        pendingPauseState = AsyncPauseState::None;
-        return std::make_pair<NextStatePtr, CommandPtr>(
-            InspectorState::Paused::make(inspector_), nullptr);
-    }
-  } else if (reason == debugger::PauseReason::ScriptLoaded) {
+//  if (reason == debugger::PauseReason::AsyncTrigger) {
+//    AsyncPauseState &pendingPauseState = inspector_.pendingPauseState_;
+//
+//    switch (pendingPauseState) {
+//      case AsyncPauseState::None:
+//        // shouldn't ever async break without us asking first
+//        assert(false);
+//        break;
+//      case AsyncPauseState::Implicit:
+//        pendingPauseState = AsyncPauseState::None;
+//        break;
+//      case AsyncPauseState::Explicit:
+//        // explicit break was requested by user, so go to Paused state
+//        pendingPauseState = AsyncPauseState::None;
+//        return std::make_pair<NextStatePtr, CommandPtr>(
+//            InspectorState::Paused::make(inspector_), nullptr);
+//    }
+//  } else if (reason == debugger::PauseReason::ScriptLoaded) {
+  if (reason == debugger::PauseReason::ScriptLoaded) {
     inspector_.addCurrentScriptToLoadedScripts();
     inspector_.notifyScriptsLoaded();
     if (inspector_.shouldPauseOnThisScriptLoad()) {

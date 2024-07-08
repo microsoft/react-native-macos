@@ -8,7 +8,7 @@
 #include "Registration.h"
 #include "ConnectionDemux.h"
 
-#ifdef HERMES_ENABLE_DEBUGGER
+//#ifdef HERMES_ENABLE_DEBUGGER
 
 namespace facebook {
 namespace hermes {
@@ -40,4 +40,4 @@ void disableDebugging(DebugSessionToken session) {
 } // namespace hermes
 } // namespace facebook
 
-#endif // HERMES_ENABLE_DEBUGGER
+//#endif  HERMES_ENABLE_DEBUGGER
