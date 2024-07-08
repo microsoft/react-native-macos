@@ -1,0 +1,14 @@
+oncall("react_native")
+
+# Internal React Native DevTools (Fusebox) rollout (H1 2024). Apps can apply
+# the constraint value "enable_fusebox_debug" to opt in.
+constraint_setting(
+    name = "fusebox_internal_rollout",
+    visibility = ["PUBLIC"],
+)
+
+constraint_value(
+    name = "enable_fusebox_debug",
+    constraint_setting = ":fusebox_internal_rollout",
+    visibility = ["PUBLIC"],
+)

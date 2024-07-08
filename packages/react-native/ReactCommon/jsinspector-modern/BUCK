@@ -1,0 +1,118 @@
+load("@fbsource//tools/build_defs:glob_defs.bzl", "subdir_glob")
+load("@fbsource//tools/build_defs:platform_defs.bzl", "ANDROID", "APPLE", "CXX", "FBCODE", "WINDOWS")
+load("@fbsource//tools/build_defs/oss:rn_defs.bzl", "react_native_xplat_target")
+load("@fbsource//xplat/hermes/defs:hermes.bzl", "hermes_is_debugger_enabled")
+load("@fbsource//xplat/js/react-native-github/packages/react-native/ReactCommon/jsinspector-modern:DEFS.bzl", "get_fusebox_enabled_flags")
+load("//tools/build_defs/oss:rn_defs.bzl", "get_hermes_shared_library_preprocessor_flags", "rn_xplat_cxx_library", "rn_xplat_cxx_test")
+
+oncall("react_native")
+
+EXPORTED_HEADERS = [
+    "CdpJson.h",
+    "ConsoleMessage.h",
+    "ExecutionContext.h",
+    "ExecutionContextManager.h",
+    "FallbackRuntimeTargetDelegate.h",
+    "HostAgent.h",
+    "HostCommand.h",
+    "HostTarget.h",
+    "InspectorFlags.h",
+    "InspectorInterfaces.h",
+    "InspectorPackagerConnection.h",
+    "InstanceAgent.h",
+    "InstanceTarget.h",
+    "ReactCdp.h",
+    "RuntimeAgent.h",
+    "RuntimeAgentDelegate.h",
+    "RuntimeTarget.h",
+    "ScopedExecutor.h",
+    "SessionState.h",
+    "StackTrace.h",
+    "UniqueMonostate.h",
+    "WeakList.h",
+    "WebSocketInterfaces.h",
+]
+
+rn_xplat_cxx_library(
+    name = "jsinspector",
+    srcs = glob(
+        ["*.cpp"],
+    ),
+    headers = subdir_glob(
+        [
+            ("", "*.def"),
+            ("", "*.h"),
+        ],
+        prefix = "jsinspector-modern",
+    ),
+    header_namespace = "",
+    exported_headers = subdir_glob(
+        [
+            ("", header)
+            for header in EXPORTED_HEADERS
+        ],
+        prefix = "jsinspector-modern",
+    ),
+    compiler_flags_disallow_vendor_extensions = True,
+    compiler_flags_strict_warnings = True,
+    # jsinspector contains singletons that hold app-global state (InspectorFlags, InspectorImpl).
+    # Placing it in a shared library makes the singletons safe to use from arbitrary shared libraries
+    # (even ones that don't depend on one another).
+    fbandroid_preferred_linkage = "shared",
+    labels = [
+        "pfh:ReactNative_CommonInfrastructurePlaceholder",
+    ],
+    platforms = (ANDROID, APPLE, CXX, FBCODE, WINDOWS),
+    preprocessor_flags = get_hermes_shared_library_preprocessor_flags() + get_fusebox_enabled_flags() + ([
+        "-DHERMES_ENABLE_DEBUGGER",
+    ] if hermes_is_debugger_enabled() else []),
+    tests = [
+        ":tests",
+    ],
+    visibility = [
+        "PUBLIC",
+    ],
+    windows_compiler_flags = ["/WX-"],  # Do not treat all warnings as errors
+    deps = [
+        "//third-party/glog:glog",
+        "//xplat/folly:dynamic",
+        "//xplat/folly:json",
+        react_native_xplat_target("reactperflogger:reactperflogger"),
+        react_native_xplat_target("react/featureflags:featureflags"),
+        react_native_xplat_target("runtimeexecutor:runtimeexecutor"),
+    ],
+    exported_deps = ["//xplat/jsi:jsi"],
+)
+
+rn_xplat_cxx_test(
+    name = "tests",
+    srcs = glob([
+        "tests/**/*.cpp",
+    ]),
+    headers = glob(["tests/**/*.h"]),
+    contacts = ["oncall+react_native@xmail.facebook.com"],
+    cxx_labels = [
+        "asan-ubsan",
+    ],
+    platforms = (ANDROID, APPLE, WINDOWS, CXX),
+    deps = [
+        ":jsinspector",
+        "//third-party/googletest:gmock_main",
+        "//third-party/googletest:gtest_main",
+        "//xplat/ReactNative/react/jsi:hermesinstance",
+        "//xplat/folly:dynamic",
+        "//xplat/folly:executor",
+        "//xplat/folly:format",
+        "//xplat/folly:json",
+        "//xplat/folly:json_pointer",
+        "//xplat/folly:scope_guard",
+        "//xplat/folly:shared_mutex",
+        "//xplat/folly:system_thread_id",
+        "//xplat/folly:thread_local",
+        "//xplat/folly/executors:manual_executor",
+        "//xplat/folly/executors:queued_immediate_executor",
+        "//xplat/hermes/API:HermesAPI",
+        react_native_xplat_target("hermes/inspector-modern:chrome"),
+        react_native_xplat_target("react/runtime:runtime"),
+    ],
+)
