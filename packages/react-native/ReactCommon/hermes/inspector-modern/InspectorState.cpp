@@ -364,9 +364,9 @@ void InspectorState::Paused::onEnter(InspectorState *prevState) {
 std::pair<NextStatePtr, CommandPtr> InspectorState::Paused::didPause(
     std::unique_lock<std::mutex> &lock) {
   switch (getPauseReason()) {
-    case debugger::PauseReason::AsyncTrigger:
-      inspector_.pendingPauseState_ = AsyncPauseState::None;
-      break;
+//    case debugger::PauseReason::AsyncTrigger:
+//      inspector_.pendingPauseState_ = AsyncPauseState::None;
+//      break;
     case debugger::PauseReason::EvalComplete: {
       assert(pendingEvalPromise_);
       if (auto userCallbackException = runUserCallback(
