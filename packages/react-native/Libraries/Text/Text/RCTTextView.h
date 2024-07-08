@@ -28,7 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTPlatformView *> *)descendantViews
        virtualSubviews:(NSArray<RCTVirtualTextView *> *_Nullable)virtualSubviews;
+#endif // macOS]
 
+#if TARGET_OS_OSX // [macOS
 - (NSRect)getRectForCharRange:(NSRange)charRange;
 #endif // macOS]
 
