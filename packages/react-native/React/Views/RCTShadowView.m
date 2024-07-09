@@ -185,7 +185,7 @@ static void RCTProcessMetaPropsBorder(const YGValue metaProps[META_PROP_COUNT], 
 // [macOS
 - (RCTShadowView *)ancestorSharedWithShadowView:(RCTShadowView *)shadowView
 {
-  // TODO: This can be optimized by climbing up both hierarchies at the same time
+  // TODO: Can this be optimized by climbing up both hierarchies at the same time?
   NSMutableSet<RCTShadowView *> *selfSuperviews = [NSMutableSet set];
   for (RCTShadowView *view = self; view != nil; view = [view reactSuperview]) {
     [selfSuperviews addObject:view];
