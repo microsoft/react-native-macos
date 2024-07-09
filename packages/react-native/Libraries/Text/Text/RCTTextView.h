@@ -7,7 +7,7 @@
 
 #import <React/RCTComponent.h>
 #import <React/RCTEventDispatcher.h> // [macOS]
-#import <React/RCTVirtualTextView.h>
+#import <React/RCTVirtualTextView.h> // [macOS]
 
 #import <React/RCTUIKit.h> // [macOS]
 
@@ -23,12 +23,12 @@ NS_ASSUME_NONNULL_BEGIN
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTPlatformView *> *)descendantViews; // [macOS]
 
-#if TARGET_OS_OSX // [macOS
+// [macOS
 - (void)setTextStorage:(NSTextStorage *)textStorage
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTPlatformView *> *)descendantViews
        virtualSubviews:(NSArray<RCTVirtualTextView *> *_Nullable)virtualSubviews;
-#endif // macOS]
+// macOS]
 
 #if TARGET_OS_OSX // [macOS
 - (NSRect)getRectForCharRange:(NSRange)charRange;

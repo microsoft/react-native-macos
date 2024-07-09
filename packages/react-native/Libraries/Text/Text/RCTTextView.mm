@@ -63,9 +63,7 @@
 
   id<RCTEventDispatcherProtocol> _eventDispatcher; // [macOS]
   NSArray<RCTUIView *> *_Nullable _descendantViews; // [macOS]
-#if TARGET_OS_OSX // [macOS
-  NSArray<RCTVirtualTextView *> *_Nullable _virtualSubviews;
-#endif // macOS]
+  NSArray<RCTVirtualTextView *> *_Nullable _virtualSubviews; // [macOS]
   RCTUIView *_Nullable _currentHoveredSubview; // [macOS]
   NSTextStorage *_Nullable _textStorage;
   CGRect _contentFrame;
@@ -168,19 +166,20 @@
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTPlatformView *> *)descendantViews // [macOS]
 {
-  // [macOS]
+  // [macOS - to keep track of virtualSubviews as well
   [self setTextStorage:textStorage
           contentFrame:contentFrame
        descendantViews:descendantViews
        virtualSubviews:nil];
 }
 
-// [macOS]
 - (void)setTextStorage:(NSTextStorage *)textStorage
           contentFrame:(CGRect)contentFrame
        descendantViews:(NSArray<RCTPlatformView *> *)descendantViews
        virtualSubviews:(NSArray<RCTVirtualTextView *> *)virtualSubviews
 {
+  // macOS]
+
   // This lets the textView own its text storage on macOS
   // We update and replace the text container `_textView.textStorage.attributedString` when text/layout changes
 #if !TARGET_OS_OSX // [macOS]
@@ -223,9 +222,7 @@
     [self addSubview:view];
   }
 
-#if TARGET_OS_OSX // [macOS
-  _virtualSubviews = virtualSubviews;
-#endif // macOS]
+  _virtualSubviews = virtualSubviews; // [macOS]
 
   [self setNeedsDisplay];
 }
@@ -443,9 +440,8 @@
     return YES;
   }
 
-  // All descendant views of an RCTTextView are RCTVirtualTextViews
-  // TODO: This isn't right in the case of embedded views. But maybe we want to keep these separate?
-  // TODO: How does current RNM handle mouse events in embedded views?
+  // We only care about virtual subviews here.
+  // Embedded views (e.g., <Text> <View /> </Text>) handle mouse hover events themselves.
   NSUInteger indexOfChildWithMouseHoverEvent = [_virtualSubviews indexOfObjectPassingTest:^BOOL(RCTVirtualTextView *_Nonnull childView, NSUInteger idx, BOOL *_Nonnull stop) {
     *stop = [childView hasMouseHoverEvent];
     return *stop;
