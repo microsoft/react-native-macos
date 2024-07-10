@@ -406,6 +406,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 - (void)setNeedsDisplay;
 
 // Methods related to mouse events
+- (BOOL)hasMouseHoverEvent;
 - (NSDictionary*)locationInfoFromDraggingLocation:(NSPoint)locationInWindow;
 - (NSDictionary*)locationInfoFromEvent:(NSEvent*)event;
 
