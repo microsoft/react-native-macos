@@ -370,7 +370,7 @@ const Button: React.AbstractComponent<ButtonProps> = (props: ButtonProps) => {
     accessibilityLanguage,
     accessibilityRole, // [macOS]
     onAccessibilityAction,
-  } = this.props;
+  } = props;
   const buttonStyles: Array<ViewStyleProp> = [styles.button];
   const textStyles: Array<TextStyleProp> = [styles.text];
   if (color) {
