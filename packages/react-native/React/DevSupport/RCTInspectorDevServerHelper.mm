@@ -88,7 +88,10 @@ static NSString *getHardwareUUID()
 
   NSString *hardwareUUID = nil;
   if (platformExpert != 0) {
-	// NSString *hardwareUUID = (NSString *) CFBridgingRelease(IORegistryEntryCreateCFProperty(platformExpert, (CFStringRef) kIOPlatformUUIDKey, kCFAllocatorDefault, 0));
+      CFTypeRef serialNumberAsCFString = IORegistryEntryCreateCFProperty(platformExpert,CFSTR(kIOPlatformUUIDKey),kCFAllocatorDefault, 0);
+      if (serialNumberAsCFString) {
+          hardwareUUID = (__bridge NSString*)serialNumberAsCFString;
+      }
   }
   IOObjectRelease(platformExpert);
   return hardwareUUID;
