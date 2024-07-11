@@ -723,7 +723,7 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
 
   #if !TARGET_OS_OSX // [macOS]
     backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection].CGColor;
-  #else // [macOS TBD REVIEW
+  #else // [macOS TBD
     backgroundColor = [_backgroundColor CGColor];
   #endif // macOS]
 

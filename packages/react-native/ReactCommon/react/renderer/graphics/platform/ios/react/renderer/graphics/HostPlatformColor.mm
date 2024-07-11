@@ -60,7 +60,7 @@ RCTUIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColo
       }
     }];
     return color;
-#else // [macOS REVIEW: copy pasted from RCTConvert.mm
+#else // [macOS TBD copy pasted from RCTConvert.mm
     NSColor *color = [NSColor colorWithName:nil dynamicProvider:^NSColor * _Nonnull(NSAppearance * _Nonnull appearance) {
       NSMutableArray<NSAppearanceName> *appearances = [NSMutableArray arrayWithArray:@[NSAppearanceNameAqua,NSAppearanceNameDarkAqua]];
       if (highContrastLightColor != nil) {
@@ -104,7 +104,7 @@ int32_t ColorFromUIColor(const std::shared_ptr<void> &uiColor)
 {
   RCTUIColor *color = (RCTUIColor *)unwrapManagedObject(uiColor); // [macOS]
   if (color) {
-#if !TARGET_OS_OSX // [macOS REVIEW
+#if !TARGET_OS_OSX // [macOS TBD
     UITraitCollection *currentTraitCollection = [UITraitCollection currentTraitCollection];
     color = [color resolvedColorWithTraitCollection:currentTraitCollection];
 #endif
