@@ -158,9 +158,7 @@
     [attributedText insertAttributedString:propertyAttributedText atIndex:0];
   }
 
-#if !TARGET_OS_OSX // [macOS] TBD
   [self postprocessAttributedText:attributedText];
-#endif // [macOS]
 
   NSAttributedString *newAttributedText;
   if (![_previousAttributedText isEqualToAttributedString:attributedText]) {
@@ -195,7 +193,6 @@
   }];
 }
 
-#if !TARGET_OS_OSX // [macOS] TBD
 - (void)postprocessAttributedText:(NSMutableAttributedString *)attributedText
 {
   __block CGFloat maximumLineHeight = 0;
@@ -226,8 +223,8 @@
                               return;
                             }
 
-                            if (maximumFontLineHeight <= font.lineHeight) {
-                              maximumFontLineHeight = font.lineHeight;
+                            if (maximumFontLineHeight <= UIFontLineHeight(font)) { // [macOS]
+                              maximumFontLineHeight = UIFontLineHeight(font); // [macOS]
                             }
                           }];
 
@@ -241,7 +238,6 @@
                          value:@(baseLineOffset)
                          range:NSMakeRange(0, attributedText.length)];
 }
-#endif // [macOS]
 
 #pragma mark -
 
