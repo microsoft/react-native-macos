@@ -34,6 +34,17 @@ declare export default typeof NativeActionSheetManager;
 "
 `;
 
+exports[`public API should not change unintentionally Libraries/AddressSanitizerCrash/AddressSanitizerCrash.js 1`] = `
+"declare module.exports: NativeAddressSanitizerCrash;
+"
+`;
+
+exports[`public API should not change unintentionally Libraries/AddressSanitizerCrash/NativeAddressSanitizerCrash.js 1`] = `
+"export interface Spec extends TurboModule {}
+declare export default ?Spec;
+"
+`;
+
 exports[`public API should not change unintentionally Libraries/Alert/Alert.js 1`] = `
 "export type AlertType =
   | \\"default\\"
@@ -48,10 +59,17 @@ export type Buttons = Array<{
   style?: AlertButtonStyle,
   ...
 }>;
+export type DefaultInputsArray = Array<{
+  default?: string,
+  placeholder?: string,
+  style?: AlertButtonStyle,
+}>;
 type Options = {
   cancelable?: ?boolean,
   userInterfaceStyle?: \\"unspecified\\" | \\"light\\" | \\"dark\\",
   onDismiss?: ?() => void,
+  modal?: ?boolean,
+  critical?: ?boolean,
   ...
 };
 declare class Alert {
@@ -69,6 +87,15 @@ declare class Alert {
     defaultValue?: string,
     keyboardType?: string,
     options?: Options
+  ): void;
+  static promptMacOS(
+    title: ?string,
+    message?: ?string,
+    callbackOrButtons?: ?((text: string) => void) | Buttons,
+    type?: ?AlertType,
+    defaultInputs?: DefaultInputsArray,
+    modal?: ?boolean,
+    critical?: ?boolean
   ): void;
 }
 declare module.exports: Alert;
@@ -1552,9 +1579,13 @@ type AccessibilityEventDefinitionsIOS = {
   invertColorsChanged: [boolean],
   reduceTransparencyChanged: [boolean],
 };
+type AccessibilityEventDefinitionsMacOS = {
+  highContrastChanged: [boolean],
+};
 type AccessibilityEventDefinitions = {
   ...AccessibilityEventDefinitionsAndroid,
   ...AccessibilityEventDefinitionsIOS,
+  ...AccessibilityEventDefinitionsMacOS,
   change: [boolean],
   reduceMotionChanged: [boolean],
   screenReaderChanged: [boolean],
@@ -1563,6 +1594,7 @@ type AccessibilityEventTypes = \\"click\\" | \\"focus\\" | \\"viewHoverEnter\\";
 declare const AccessibilityInfo: {
   isBoldTextEnabled(): Promise<boolean>,
   isGrayscaleEnabled(): Promise<boolean>,
+  isHighContrastEnabled: () => Promise<boolean>,
   isInvertColorsEnabled(): Promise<boolean>,
   isReduceMotionEnabled(): Promise<boolean>,
   prefersCrossFadeTransitions(): Promise<boolean>,
@@ -1670,6 +1702,15 @@ exports[`public API should not change unintentionally Libraries/Components/Butto
   \\"aria-label\\"?: ?string,
   disabled?: ?boolean,
   testID?: ?string,
+  accessibilityRole?: ?AccessibilityRole,
+  onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
+  onBlur?: ?(e: BlurEvent) => void,
+  onFocus?: ?(e: FocusEvent) => void,
+  onKeyDown?: ?(e: KeyEvent) => void,
+  onKeyUp?: ?(e: KeyEvent) => void,
+  validKeysDown?: ?Array<string>,
+  validKeysUp?: ?Array<string>,
+  tooltip?: string,
   accessible?: ?boolean,
   accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
@@ -1856,6 +1897,22 @@ type Props = $ReadOnly<{|
   onPress?: ?(event: PressEvent) => mixed,
   onPressIn?: ?(event: PressEvent) => mixed,
   onPressOut?: ?(event: PressEvent) => mixed,
+  onFocus?: ?(event: FocusEvent) => void,
+  onBlur?: ?(event: BlurEvent) => void,
+  onKeyDown?: ?(event: KeyEvent) => void,
+  onKeyUp?: ?(event: KeyEvent) => void,
+  passthroughAllKeyEvents?: ?boolean,
+  validKeysDown?: ?Array<string | HandledKeyboardEvent>,
+  validKeysUp?: ?Array<string | HandledKeyboardEvent>,
+  acceptsFirstMouse?: ?boolean,
+  mouseDownCanMoveWindow?: ?boolean,
+  enableFocusRing?: ?boolean,
+  allowsVibrancy?: ?boolean,
+  tooltip?: ?string,
+  onDragEnter?: (event: MouseEvent) => void,
+  onDragLeave?: (event: MouseEvent) => void,
+  onDrop?: (event: MouseEvent) => void,
+  draggedTypes?: ?DraggedTypesType,
   style?: ViewStyleProp | ((state: StateCallbackType) => ViewStyleProp),
   testID?: ?string,
   android_disableSound?: ?boolean,
@@ -2514,6 +2571,37 @@ export type EditingEvent = SyntheticEvent<
     target: number,
   |}>,
 >;
+export type SettingChangeEvent = SyntheticEvent<
+  $ReadOnly<{|
+    enabled: boolean,
+  |}>,
+>;
+export type PasteEvent = SyntheticEvent<
+  $ReadOnly<{|
+    dataTransfer: {|
+      files: $ReadOnlyArray<{|
+        height: number,
+        size: number,
+        type: string,
+        uri: string,
+        width: number,
+      |}>,
+      items: $ReadOnlyArray<{|
+        kind: string,
+        type: string,
+      |}>,
+      types: $ReadOnlyArray<string>,
+    |},
+  |}>,
+>;
+export type SubmitKeyEvent = $ReadOnly<{|
+  key: string,
+  altKey?: ?boolean,
+  ctrlKey?: ?boolean,
+  metaKey?: ?boolean,
+  shiftKey?: ?boolean,
+  functionKey?: ?boolean,
+|}>;
 type DataDetectorTypesType =
   | \\"phoneNumber\\"
   | \\"link\\"
@@ -2523,7 +2611,16 @@ type DataDetectorTypesType =
   | \\"flightNumber\\"
   | \\"lookupSuggestion\\"
   | \\"none\\"
-  | \\"all\\";
+  | \\"all\\"
+  | \\"ortography\\"
+  | \\"spelling\\"
+  | \\"grammar\\"
+  | \\"quote\\"
+  | \\"dash\\"
+  | \\"replacement\\"
+  | \\"correction\\"
+  | \\"regularExpression\\"
+  | \\"transitInformation\\";
 export type KeyboardType =
   | \\"default\\"
   | \\"email-address\\"
@@ -2632,6 +2729,18 @@ type IOSProps = $ReadOnly<{|
   lineBreakStrategyIOS?: ?(\\"none\\" | \\"standard\\" | \\"hangul-word\\" | \\"push-out\\"),
   smartInsertDelete?: ?boolean,
 |}>;
+type MacOSProps = $ReadOnly<{|
+  clearTextOnSubmit?: ?boolean,
+  grammarCheck?: ?boolean,
+  hideVerticalScrollIndicator?: ?boolean,
+  onPaste?: (event: PasteEvent) => void,
+  onAutoCorrectChange?: ?(e: SettingChangeEvent) => mixed,
+  onSpellCheckChange?: ?(e: SettingChangeEvent) => mixed,
+  onGrammarCheckChange?: ?(e: SettingChangeEvent) => mixed,
+  pastedTypes?: PastedTypesType,
+  submitKeyEvents?: ?$ReadOnlyArray<SubmitKeyEvent>,
+  tooltip?: ?string,
+|}>;
 type AndroidProps = $ReadOnly<{|
   cursorColor?: ?ColorValue,
   selectionHandleColor?: ?ColorValue,
@@ -2652,10 +2761,13 @@ type AndroidProps = $ReadOnly<{|
   textBreakStrategy?: ?(\\"simple\\" | \\"highQuality\\" | \\"balanced\\"),
   underlineColorAndroid?: ?ColorValue,
 |}>;
+export type PasteType = \\"fileUrl\\" | \\"image\\" | \\"string\\";
+export type PastedTypesType = PasteType | $ReadOnlyArray<PasteType>;
 export type Props = $ReadOnly<{|
   ...$Diff<ViewProps, $ReadOnly<{| style: ?ViewStyleProp |}>>,
   ...IOSProps,
   ...AndroidProps,
+  ...MacOSProps,
   autoCapitalize?: ?AutoCapitalize,
   autoComplete?: ?(
     | \\"additional-name\\"
@@ -2739,7 +2851,7 @@ export type Props = $ReadOnly<{|
   unstable_onChangeTextSync?: ?(text: string) => mixed,
   onContentSizeChange?: ?(e: ContentSizeChangeEvent) => mixed,
   onEndEditing?: ?(e: EditingEvent) => mixed,
-  onFocus?: ?(e: FocusEvent) => mixed,
+  onFocus?: ?(e: FocusEvent) => void,
   onKeyPress?: ?(e: KeyPressEvent) => mixed,
   unstable_onKeyPressSync?: ?(e: KeyPressEvent) => mixed,
   onPress?: ?(event: PressEvent) => mixed,
@@ -2769,6 +2881,7 @@ type ImperativeMethods = $ReadOnly<{|
   isFocused: () => boolean,
   getNativeRef: () => ?React.ElementRef<HostComponent<mixed>>,
   setSelection: (start: number, end: number) => void,
+  setGhostText: (ghostText: ?string) => void,
 |}>;
 type InternalTextInput = (props: Props) => React.Node;
 export type TextInputComponentStatics = $ReadOnly<{|
@@ -2799,6 +2912,7 @@ type TextInputInstance = React.ElementRef<HostComponent<mixed>> & {
   +isFocused: () => boolean,
   +getNativeRef: () => ?React.ElementRef<HostComponent<mixed>>,
   +setSelection: (start: number, end: number) => void,
+  +setGhostText: (ghostText: ?string) => void,
 };
 export type ChangeEvent = SyntheticEvent<
   $ReadOnly<{|
@@ -2859,6 +2973,37 @@ export type EditingEvent = SyntheticEvent<
     target: number,
   |}>,
 >;
+export type SettingChangeEvent = SyntheticEvent<
+  $ReadOnly<{|
+    enabled: boolean,
+  |}>,
+>;
+export type PasteEvent = SyntheticEvent<
+  $ReadOnly<{|
+    dataTransfer: {|
+      files: $ReadOnlyArray<{|
+        height: number,
+        size: number,
+        type: string,
+        uri: string,
+        width: number,
+      |}>,
+      items: $ReadOnlyArray<{|
+        kind: string,
+        type: string,
+      |}>,
+      types: $ReadOnlyArray<string>,
+    |},
+  |}>,
+>;
+export type SubmitKeyEvent = $ReadOnly<{|
+  key: string,
+  altKey?: ?boolean,
+  ctrlKey?: ?boolean,
+  metaKey?: ?boolean,
+  shiftKey?: ?boolean,
+  functionKey?: ?boolean,
+|}>;
 type DataDetectorTypesType =
   | \\"phoneNumber\\"
   | \\"link\\"
@@ -2868,7 +3013,16 @@ type DataDetectorTypesType =
   | \\"flightNumber\\"
   | \\"lookupSuggestion\\"
   | \\"none\\"
-  | \\"all\\";
+  | \\"all\\"
+  | \\"ortography\\"
+  | \\"spelling\\"
+  | \\"grammar\\"
+  | \\"quote\\"
+  | \\"dash\\"
+  | \\"replacement\\"
+  | \\"correction\\"
+  | \\"regularExpression\\"
+  | \\"transitInformation\\";
 export type KeyboardType =
   | \\"default\\"
   | \\"email-address\\"
@@ -2977,6 +3131,18 @@ type IOSProps = $ReadOnly<{|
   lineBreakStrategyIOS?: ?(\\"none\\" | \\"standard\\" | \\"hangul-word\\" | \\"push-out\\"),
   smartInsertDelete?: ?boolean,
 |}>;
+type MacOSProps = $ReadOnly<{|
+  clearTextOnSubmit?: ?boolean,
+  grammarCheck?: ?boolean,
+  hideVerticalScrollIndicator?: ?boolean,
+  onPaste?: (event: PasteEvent) => void,
+  onAutoCorrectChange?: ?(e: SettingChangeEvent) => mixed,
+  onSpellCheckChange?: ?(e: SettingChangeEvent) => mixed,
+  onGrammarCheckChange?: ?(e: SettingChangeEvent) => mixed,
+  pastedTypes?: PastedTypesType,
+  submitKeyEvents?: ?$ReadOnlyArray<SubmitKeyEvent>,
+  tooltip?: ?string,
+|}>;
 type AndroidProps = $ReadOnly<{|
   cursorColor?: ?ColorValue,
   disableFullscreenUI?: ?boolean,
@@ -2996,9 +3162,12 @@ type AndroidProps = $ReadOnly<{|
   textBreakStrategy?: ?(\\"simple\\" | \\"highQuality\\" | \\"balanced\\"),
   underlineColorAndroid?: ?ColorValue,
 |}>;
+export type PasteType = \\"fileUrl\\" | \\"image\\" | \\"string\\";
+export type PastedTypesType = PasteType | $ReadOnlyArray<PasteType>;
 export type Props = $ReadOnly<{|
   ...$Diff<ViewProps, $ReadOnly<{| style: ?ViewStyleProp |}>>,
   ...IOSProps,
+  ...MacOSProps,
   ...AndroidProps,
   autoCapitalize?: ?AutoCapitalize,
   autoComplete?: ?(
@@ -3081,7 +3250,7 @@ export type Props = $ReadOnly<{|
   unstable_onChangeTextSync?: ?(text: string) => mixed,
   onContentSizeChange?: ?(e: ContentSizeChangeEvent) => mixed,
   onEndEditing?: ?(e: EditingEvent) => mixed,
-  onFocus?: ?(e: FocusEvent) => mixed,
+  onFocus?: ?(e: FocusEvent) => void,
   onKeyPress?: ?(e: KeyPressEvent) => mixed,
   unstable_onKeyPressSync?: ?(e: KeyPressEvent) => mixed,
   onPress?: ?(event: PressEvent) => mixed,
@@ -3130,6 +3299,7 @@ exports[`public API should not change unintentionally Libraries/Components/TextI
     start: Int32,
     end: Int32
   ) => void;
+  +setGhostText: (viewRef: React.ElementRef<T>, value: ?string) => void;
 }
 declare const supportedCommands: $FlowFixMe;
 declare export default typeof supportedCommands;
@@ -3399,6 +3569,8 @@ type Props = $ReadOnly<{|
   activeOpacity?: ?number,
   style?: ?ViewStyleProp,
   hostRef?: ?React.Ref<typeof Animated.View>,
+  validKeysDown?: ?Array<string>,
+  validKeysUp?: ?Array<string>,
 |}>;
 declare const Touchable: React.AbstractComponent<
   Props,
@@ -3411,6 +3583,13 @@ declare module.exports: Touchable;
 exports[`public API should not change unintentionally Libraries/Components/UnimplementedViews/UnimplementedNativeViewNativeComponent.js 1`] = `
 "export * from \\"../../../src/private/specs/components/UnimplementedNativeViewNativeComponent\\";
 declare export default typeof UnimplementedNativeViewNativeComponent;
+"
+`;
+
+exports[`public API should not change unintentionally Libraries/Components/View/DraggedType.js 1`] = `
+"export type DraggedType = \\"fileUrl\\";
+export type DraggedTypesType = DraggedType | $ReadOnlyArray<DraggedType>;
+declare module.exports: { DraggedTypes: $FlowFixMe };
 "
 `;
 
@@ -3446,6 +3625,21 @@ exports[`public API should not change unintentionally Libraries/Components/View/
   needsOffscreenAlphaCompositing: true,
   style: ReactNativeStyleAttributes,
   role: true,
+  acceptsFirstMouse: true,
+  mouseDownCanMoveWindow: true,
+  enableFocusRing: true,
+  focusable: true,
+  onMouseEnter: true,
+  onMouseLeave: true,
+  onDragEnter: true,
+  onDragLeave: true,
+  onDrop: true,
+  onKeyDown: true,
+  onKeyUp: true,
+  passthroughAllKeyEvents: true,
+  validKeysDown: true,
+  validKeysUp: true,
+  draggedTypes: true,
 };
 declare const RCTView: { ...UIView, removeClippedSubviews: true };
 declare const ReactNativeViewAttributes: { UIView: UIView, RCTView: RCTView };
@@ -3504,7 +3698,8 @@ exports[`public API should not change unintentionally Libraries/Components/View/
   | \\"webview\\"
   | \\"drawerlayout\\"
   | \\"slidingdrawer\\"
-  | \\"iconmenu\\";
+  | \\"iconmenu\\"
+  | \\"menubutton\\";
 export type Role =
   | \\"alert\\"
   | \\"alertdialog\\"
@@ -3622,9 +3817,25 @@ export type ViewLayoutEvent = LayoutEvent;
 type DirectEventProps = $ReadOnly<{|
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
   onAccessibilityTap?: ?() => mixed,
+  onInvertedDidChange?: ?() => mixed,
+  onPreferredScrollerStyleDidChange?: ?(event: ScrollEvent) => mixed,
   onLayout?: ?(event: LayoutEvent) => mixed,
   onMagicTap?: ?() => mixed,
   onAccessibilityEscape?: ?() => mixed,
+|}>;
+export type HandledKeyboardEvent = $ReadOnly<{|
+  altKey?: ?boolean,
+  ctrlKey?: ?boolean,
+  metaKey?: ?boolean,
+  shiftKey?: ?boolean,
+  key: string,
+|}>;
+export type KeyboardEventProps = $ReadOnly<{|
+  onKeyDown?: ?(event: KeyEvent) => void,
+  onKeyUp?: ?(event: KeyEvent) => void,
+  passthroughAllKeyEvents?: ?boolean,
+  validKeysDown?: ?Array<string | HandledKeyboardEvent>,
+  validKeysUp?: ?Array<string | HandledKeyboardEvent>,
 |}>;
 type MouseEventProps = $ReadOnly<{|
   onMouseEnter?: ?(event: MouseEvent) => void,
@@ -3722,6 +3933,18 @@ type IOSViewProps = $ReadOnly<{|
   accessibilityLanguage?: ?Stringish,
   shouldRasterizeIOS?: ?boolean,
 |}>;
+type MacOSViewProps = $ReadOnly<{|
+  onDragEnter?: (event: MouseEvent) => void,
+  onDragLeave?: (event: MouseEvent) => void,
+  onDrop?: (event: MouseEvent) => void,
+  tooltip?: ?string,
+  acceptsFirstMouse?: ?boolean,
+  mouseDownCanMoveWindow?: ?boolean,
+  allowsVibrancy?: ?boolean,
+  enableFocusRing?: ?boolean,
+  draggedTypes?: ?DraggedTypesType,
+  inverted?: ?boolean,
+|}>;
 export type ViewProps = $ReadOnly<{|
   ...DirectEventProps,
   ...GestureResponderEventProps,
@@ -3729,8 +3952,10 @@ export type ViewProps = $ReadOnly<{|
   ...PointerEventProps,
   ...FocusEventProps,
   ...TouchEventProps,
+  ...KeyboardEventProps,
   ...AndroidViewProps,
   ...IOSViewProps,
+  ...MacOSViewProps,
   children?: Node,
   style?: ?ViewStyleProp,
   accessible?: ?boolean,
@@ -4455,6 +4680,7 @@ export type ImageProps = {|
   src?: ?string,
   srcSet?: ?string,
   children?: empty,
+  tooltip?: ?string,
 |};
 export type ImageBackgroundProps = $ReadOnly<{|
   ...ImageProps,
@@ -4649,6 +4875,7 @@ exports[`public API should not change unintentionally Libraries/Image/nativeImag
 "type NativeImageSourceSpec = $ReadOnly<{|
   android?: string,
   ios?: string,
+  macos?: string,
   default?: string,
   height: number,
   width: number,
@@ -5121,7 +5348,7 @@ declare export default typeof NativeLinkingManager;
 
 exports[`public API should not change unintentionally Libraries/Lists/FillRateHelper.js 1`] = `
 "declare const FillRateHelper: FillRateHelperType;
-export type { FillRateInfo } from \\"@react-native/virtualized-lists\\";
+export type { FillRateInfo } from \\"@react-native-mac/virtualized-lists\\";
 declare module.exports: FillRateHelper;
 "
 `;
@@ -5185,7 +5412,7 @@ exports[`public API should not change unintentionally Libraries/Lists/Viewabilit
   ViewToken,
   ViewabilityConfig,
   ViewabilityConfigCallbackPair,
-} from \\"@react-native/virtualized-lists\\";
+} from \\"@react-native-mac/virtualized-lists\\";
 declare const ViewabilityHelper: ViewabilityHelperType;
 declare module.exports: ViewabilityHelper;
 "
@@ -5203,7 +5430,7 @@ export type {
   RenderItemProps,
   RenderItemType,
   Separators,
-} from \\"@react-native/virtualized-lists\\";
+} from \\"@react-native-mac/virtualized-lists\\";
 declare module.exports: VirtualizedList;
 "
 `;
@@ -5221,7 +5448,7 @@ exports[`public API should not change unintentionally Libraries/Lists/Virtualize
 export type {
   SectionBase,
   ScrollToLocationParamsType,
-} from \\"@react-native/virtualized-lists\\";
+} from \\"@react-native-mac/virtualized-lists\\";
 declare module.exports: VirtualizedSectionList;
 "
 `;
@@ -6212,8 +6439,12 @@ exports[`public API should not change unintentionally Libraries/Pressability/Pre
   delayPressIn?: ?number,
   delayPressOut?: ?number,
   minPressDuration?: ?number,
-  onBlur?: ?(event: BlurEvent) => mixed,
-  onFocus?: ?(event: FocusEvent) => mixed,
+  onBlur?: ?(event: BlurEvent) => void,
+  onFocus?: ?(event: FocusEvent) => void,
+  onKeyDown?: ?(event: KeyEvent) => void,
+  onKeyUp?: ?(event: KeyEvent) => void,
+  validKeysDown?: ?Array<string>,
+  validKeysUp?: ?Array<string>,
   onHoverIn?: ?(event: MouseEvent) => mixed,
   onHoverOut?: ?(event: MouseEvent) => mixed,
   onLongPress?: ?(event: PressEvent) => mixed,
@@ -6230,6 +6461,8 @@ export type EventHandlers = $ReadOnly<{|
   onBlur: (event: BlurEvent) => void,
   onClick: (event: PressEvent) => void,
   onFocus: (event: FocusEvent) => void,
+  onKeyDown: (event: KeyEvent) => void,
+  onKeyUp: (event: KeyEvent) => void,
   onMouseEnter?: (event: MouseEvent) => void,
   onMouseLeave?: (event: MouseEvent) => void,
   onPointerEnter?: (event: PointerEvent) => void,
@@ -7378,6 +7611,29 @@ declare export const DynamicColorIOS: (
 "
 `;
 
+exports[`public API should not change unintentionally Libraries/StyleSheet/PlatformColorValueTypesMacOS.js 1`] = `
+"export type DynamicColorMacOSTuple = {
+  light: ColorValue,
+  dark: ColorValue,
+  highContrastLight?: ColorValue,
+  highContrastDark?: ColorValue,
+};
+declare export const DynamicColorMacOS: (
+  tuple: DynamicColorMacOSTuple
+) => ColorValue;
+export type SystemEffectMacOS =
+  | \\"none\\"
+  | \\"pressed\\"
+  | \\"deepPressed\\"
+  | \\"disabled\\"
+  | \\"rollover\\";
+declare export const ColorWithSystemEffectMacOS: (
+  color: ColorValue,
+  effect: SystemEffectMacOS
+) => ColorValue;
+"
+`;
+
 exports[`public API should not change unintentionally Libraries/StyleSheet/PointPropType.js 1`] = `
 "export type PointProp = $ReadOnly<{
   x: number,
@@ -7458,6 +7714,27 @@ export type EdgeInsetsValue = {
 };
 export type DimensionValue = number | string | \\"auto\\" | AnimatedNode | null;
 export type AnimatableNumericValue = number | AnimatedNode;
+export type CursorValue =
+  | \\"alias\\"
+  | \\"auto\\"
+  | \\"col-resize\\"
+  | \\"context-menu\\"
+  | \\"copy\\"
+  | \\"crosshair\\"
+  | \\"default\\"
+  | \\"disappearing-item\\"
+  | \\"e-resize\\"
+  | \\"grab\\"
+  | \\"grabbing\\"
+  | \\"n-resize\\"
+  | \\"no-drop\\"
+  | \\"not-allowed\\"
+  | \\"pointer\\"
+  | \\"row-resize\\"
+  | \\"s-resize\\"
+  | \\"text\\"
+  | \\"vertical-text\\"
+  | \\"w-resize\\";
 type ____LayoutStyle_Internal = $ReadOnly<{
   display?: \\"none\\" | \\"flex\\",
   width?: DimensionValue,
@@ -7608,6 +7885,7 @@ export type ____ViewStyle_InternalCore = $ReadOnly<{
   opacity?: AnimatableNumericValue,
   elevation?: number,
   pointerEvents?: \\"auto\\" | \\"none\\" | \\"box-none\\" | \\"box-only\\",
+  cursor?: CursorValue,
 }>;
 export type ____ViewStyle_Internal = $ReadOnly<{
   ...____ViewStyle_InternalCore,
@@ -7724,6 +8002,7 @@ export type ____TextStyle_InternalCore = $ReadOnly<{
   userSelect?: \\"auto\\" | \\"text\\" | \\"none\\" | \\"contain\\" | \\"all\\",
   verticalAlign?: \\"auto\\" | \\"top\\" | \\"bottom\\" | \\"middle\\",
   writingDirection?: \\"auto\\" | \\"ltr\\" | \\"rtl\\",
+  cursor?: CursorValue,
 }>;
 export type ____TextStyle_Internal = $ReadOnly<{
   ...____TextStyle_InternalCore,
@@ -8010,6 +8289,9 @@ export type TextProps = $ReadOnly<{|
   minimumFontScale?: ?number,
   suppressHighlighting?: ?boolean,
   lineBreakStrategyIOS?: ?(\\"none\\" | \\"standard\\" | \\"hangul-word\\" | \\"push-out\\"),
+  tooltip?: ?string,
+  focusable?: ?boolean,
+  enableFocusRing?: ?boolean,
 |}>;
 "
 `;
@@ -8156,13 +8438,18 @@ export interface NativePointerEvent extends NativeMouseEvent {
 export type PointerEvent = SyntheticEvent<NativePointerEvent>;
 export type PressEvent = ResponderSyntheticEvent<
   $ReadOnly<{|
+    altKey?: ?boolean,
+    button?: ?number,
     changedTouches: $ReadOnlyArray<$PropertyType<PressEvent, \\"nativeEvent\\">>,
+    ctrlKey?: ?boolean,
     force?: number,
     identifier: number,
     locationX: number,
     locationY: number,
+    metaKey?: ?boolean,
     pageX: number,
     pageY: number,
+    shiftKey?: ?boolean,
     target: ?number,
     timestamp: number,
     touches: $ReadOnlyArray<$PropertyType<PressEvent, \\"nativeEvent\\">>,
@@ -8198,6 +8485,7 @@ export type ScrollEvent = SyntheticEvent<
     |}>,
     zoomScale?: number,
     responderIgnoreScroll?: boolean,
+    preferredScrollerStyle?: string,
   |}>,
 >;
 export type BlurEvent = SyntheticEvent<
@@ -8208,6 +8496,23 @@ export type BlurEvent = SyntheticEvent<
 export type FocusEvent = SyntheticEvent<
   $ReadOnly<{|
     target: number,
+  |}>,
+>;
+export type KeyEvent = SyntheticEvent<
+  $ReadOnly<{|
+    capsLockKey: boolean,
+    shiftKey: boolean,
+    ctrlKey: boolean,
+    altKey: boolean,
+    metaKey: boolean,
+    numericPadKey: boolean,
+    helpKey: boolean,
+    functionKey: boolean,
+    ArrowLeft: boolean,
+    ArrowRight: boolean,
+    ArrowUp: boolean,
+    ArrowDown: boolean,
+    key: string,
   |}>,
 >;
 export type MouseEvent = SyntheticEvent<
@@ -8537,6 +8842,24 @@ declare export default typeof NativePlatformConstantsAndroid;
 exports[`public API should not change unintentionally Libraries/Utilities/NativePlatformConstantsIOS.js 1`] = `
 "export * from \\"../../src/private/specs/modules/NativePlatformConstantsIOS\\";
 declare export default typeof NativePlatformConstantsIOS;
+"
+`;
+
+exports[`public API should not change unintentionally Libraries/Utilities/NativePlatformConstantsMacOS.js 1`] = `
+"export interface Spec extends TurboModule {
+  +getConstants: () => {|
+    isTesting: boolean,
+    reactNativeVersion: {|
+      major: number,
+      minor: number,
+      patch: number,
+      prerelease: ?number,
+    |},
+    osVersion: string,
+    systemName: string,
+  |};
+}
+declare export default Spec;
 "
 `;
 
@@ -9096,6 +9419,8 @@ declare module.exports: {
   get Platform(): Platform,
   get PlatformColor(): PlatformColor,
   get processColor(): processColor,
+  get DynamicColorMacOS(): DynamicColorMacOS,
+  get ColorWithSystemEffectMacOS(): ColorWithSystemEffectMacOS,
   get requireNativeComponent(): <T>(
     uiViewClassName: string
   ) => HostComponent<T>,
