@@ -106,6 +106,13 @@ jobs:
               yarn install --immutable
 
         - task: CmdLine@2
+          displayName: yarn build
+          inputs:
+            scripts: |
+              set -eox pipefail
+              yarn build
+
+        - task: CmdLine@2
           displayName: pod install
           inputs:
             script: |
