@@ -178,7 +178,7 @@ describe('publish-npm', () => {
         [`Published monorepo/pkg-a@${expectedVersion} to npm`],
         ['Publishing monorepo/pkg-b...'],
         [`Published monorepo/pkg-b@${expectedVersion} to npm`],
-        [`Published react-native@${expectedVersion} to npm`],
+        // [`Published react-native@${expectedVersion} to npm`], [macOS We skip NPM Publish on React Native macOS]
       ]);
     });
 
@@ -282,13 +282,12 @@ describe('publish-npm', () => {
       expect(removeNewArchFlags).not.toHaveBeenCalled();
       expect(setReactNativeVersionMock).not.toHaveBeenCalled();
       expect(setVersionMock).not.toBeCalled();
-      /* [macOS We skip Android Artifact on React Native macOS
+      /* [macOS We skip Android Artifact and NPM Publish on React Native macOS
       expect(generateAndroidArtifactsMock).toHaveBeenCalled(); 
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
       );
-      macOS] */
 
       expect(publishPackageMock.mock.calls).toEqual([
         [
@@ -299,6 +298,7 @@ describe('publish-npm', () => {
 
       expect(consoleLogMock.mock.calls).toEqual([
         [`Published react-native@${expectedVersion} to npm`],
+      macOS] */
       ]);
     });
 
@@ -319,13 +319,12 @@ describe('publish-npm', () => {
       expect(removeNewArchFlags).not.toHaveBeenCalled();
       expect(setVersionMock).not.toBeCalled();
       expect(setReactNativeVersionMock).not.toBeCalled();
-      /* [macOS We skip Android Artifact on React Native macOS
+      /* [macOS We skip Android Artifact and NPM Publish on React Native macOS
       expect(generateAndroidArtifactsMock).toHaveBeenCalled(); 
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
       );
-      macOS] */
 
       expect(publishPackageMock.mock.calls).toEqual([
         [
@@ -337,6 +336,7 @@ describe('publish-npm', () => {
       expect(consoleLogMock.mock.calls).toEqual([
         [`Published react-native@${expectedVersion} to npm`],
       ]);
+      macOS] */
     });
 
     it('should fail to publish latest stable', async () => {
@@ -365,13 +365,12 @@ describe('publish-npm', () => {
       expect(removeNewArchFlags).not.toHaveBeenCalled();
       expect(setVersionMock).not.toBeCalled();
       expect(setReactNativeVersionMock).not.toHaveBeenCalled();
-      /* [macOS We skip Android Artifact on React Native macOS
+      /* [macOS We skip Android Artifact and NPM Publish on React Native macOS
       expect(generateAndroidArtifactsMock).toHaveBeenCalled();
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
       );
-      macOS] */
 
       expect(publishPackageMock.mock.calls).toEqual([
         [
@@ -379,6 +378,7 @@ describe('publish-npm', () => {
           {otp: process.env.NPM_CONFIG_OTP, tags: ['latest']},
         ],
       ]);
+      macOS] */
       expect(consoleLogMock).not.toHaveBeenCalled();
     });
 
@@ -399,13 +399,12 @@ describe('publish-npm', () => {
       expect(removeNewArchFlags).not.toHaveBeenCalled();
       expect(setReactNativeVersionMock).not.toHaveBeenCalled();
       expect(setVersionMock).not.toBeCalled();
-      /* [macOS We skip Android Artifact on React Native macOS
+      /* [macOS We skip Android Artifact and NPM Publish on React Native macOS
       expect(generateAndroidArtifactsMock).toHaveBeenCalled(); [macOS We skip Android Artifact on React Native macOS]
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
       );
-      macOS] */
 
       expect(publishPackageMock.mock.calls).toEqual([
         [
@@ -416,6 +415,7 @@ describe('publish-npm', () => {
       expect(consoleLogMock.mock.calls).toEqual([
         [`Published react-native@${expectedVersion} to npm`],
       ]);
+      macOS] */
     });
   });
 });
