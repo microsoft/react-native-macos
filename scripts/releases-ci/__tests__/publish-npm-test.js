@@ -108,7 +108,7 @@ describe('publish-npm', () => {
         'dry-run',
       );
 
-      expect(generateAndroidArtifactsMock).toBeCalledWith(version);
+      // expect(generateAndroidArtifactsMock).toBeCalledWith(version); [macOS We skip Android Artifact on React Native macOS]
       expect(consoleLogMock).toHaveBeenCalledWith(
         'Skipping `npm publish` because --dry-run is set.',
       );
@@ -158,7 +158,7 @@ describe('publish-npm', () => {
 
       expect(removeNewArchFlags).not.toHaveBeenCalled();
       expect(setVersionMock).toBeCalledWith(expectedVersion);
-      expect(generateAndroidArtifactsMock).toHaveBeenCalled();
+      // expect(generateAndroidArtifactsMock).toHaveBeenCalled(); [macOS We skip Android Artifact on React Native macOS]
       expect(publishPackageMock.mock.calls).toEqual([
         ['path/to/monorepo/pkg-a', {otp: undefined, tags: ['nightly']}],
         ['path/to/monorepo/pkg-b', {otp: undefined, tags: ['nightly']}],
@@ -280,7 +280,7 @@ describe('publish-npm', () => {
       expect(removeNewArchFlags).not.toHaveBeenCalled();
       expect(setReactNativeVersionMock).not.toHaveBeenCalled();
       expect(setVersionMock).not.toBeCalled();
-      expect(generateAndroidArtifactsMock).toHaveBeenCalled();
+      // expect(generateAndroidArtifactsMock).toHaveBeenCalled(); [macOS We skip Android Artifact on React Native macOS]
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
@@ -315,7 +315,7 @@ describe('publish-npm', () => {
       expect(removeNewArchFlags).not.toHaveBeenCalled();
       expect(setVersionMock).not.toBeCalled();
       expect(setReactNativeVersionMock).not.toBeCalled();
-      expect(generateAndroidArtifactsMock).toHaveBeenCalled();
+      // expect(generateAndroidArtifactsMock).toHaveBeenCalled(); [macOS We skip Android Artifact on React Native macOS]
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
@@ -389,7 +389,7 @@ describe('publish-npm', () => {
       expect(removeNewArchFlags).not.toHaveBeenCalled();
       expect(setReactNativeVersionMock).not.toHaveBeenCalled();
       expect(setVersionMock).not.toBeCalled();
-      expect(generateAndroidArtifactsMock).toHaveBeenCalled();
+      // expect(generateAndroidArtifactsMock).toHaveBeenCalled(); [macOS We skip Android Artifact on React Native macOS]
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
