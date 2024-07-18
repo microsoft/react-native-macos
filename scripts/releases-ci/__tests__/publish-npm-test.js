@@ -298,8 +298,8 @@ describe('publish-npm', () => {
 
       expect(consoleLogMock.mock.calls).toEqual([
         [`Published react-native@${expectedVersion} to npm`],
-      macOS] */
       ]);
+      macOS] */
     });
 
     it('should publish latest stable', async () => {

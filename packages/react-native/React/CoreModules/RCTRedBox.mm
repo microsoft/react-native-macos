@@ -119,6 +119,8 @@
   UITableView *_stackTraceTableView;
 #else // [macOS
   NSTableView *_stackTraceTableView;
+  NSWindow *_window;
+  BOOL _visible;
 #endif //  macOS]
   NSString *_lastErrorMessage;
   NSArray<RCTJSStackFrame *> *_lastStackTrace;
@@ -134,6 +136,11 @@
     _lastErrorCookie = -1;
     _customButtonTitles = customButtonTitles;
     _customButtonHandlers = customButtonHandlers;
+    
+    _window = [[NSWindow alloc] initWithContentRect:NSZeroRect styleMask:NSWindowStyleMaskTitled backing:NSBackingStoreBuffered defer:YES];
+    _window.backgroundColor = [NSColor colorWithRed:0.8 green:0 blue:0 alpha:1];
+    _window.animationBehavior = NSWindowAnimationBehaviorDocumentWindow;
+    _window.contentViewController = self;
   }
 
   return self;
@@ -426,8 +433,17 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     // unlimited length, so we truncate it
     _lastErrorMessage = [messageWithoutAnsi substringToIndex:MIN((NSUInteger)10000, messageWithoutAnsi.length)];
     _lastErrorCookie = errorCookie;
+    
+#if TARGET_OS_OSX // [macOS
+    [_window layoutIfNeeded]; // layout the window for the correct width
+#endif // macOS]
 
     [_stackTraceTableView reloadData];
+    
+#if TARGET_OS_OSX // [macOS
+    [_stackTraceTableView.enclosingScrollView invalidateIntrinsicContentSize]; // the height of the scroll view changed with the new data
+    [_window layoutIfNeeded]; // layout the window for the correct width
+#endif // macOS]
 
     if (!isRootViewControllerPresented) {
 #if !TARGET_OS_OSX // [macOS]
@@ -442,6 +458,20 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     }
   }
 }
+
+#if TARGET_OS_OSX // [macOS]
+- (void)showModal
+{
+  NSModalSession session = [NSApp beginModalSessionForWindow:_window];
+
+  while ([NSApp runModalSession:session] == NSModalResponseContinue) {
+    // Spin the runloop so that the main dispatch queue is processed.
+    [[NSRunLoop currentRunLoop] limitDateForMode:NSDefaultRunLoopMode];
+  }
+
+  [NSApp endModalSession:session];
+}
+#endif
 
 - (void)dismiss
 {
@@ -476,7 +506,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   for (RCTJSStackFrame *stackFrame in _lastStackTrace) {
     [fullStackTrace appendString:[NSString stringWithFormat:@"%@\n", stackFrame.methodName]];
     if (stackFrame.file) {
-      // [fullStackTrace appendFormat:@"    %@\n", [self formatFrameSource:stackFrame]]; TBD
+       [fullStackTrace appendFormat:@"    %@\n", [self formatFrameSource:stackFrame]];
     }
   }
 #if !TARGET_OS_OSX // [macOS]
@@ -489,7 +519,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 #endif // macOS]
 }
 
-#if !TARGET_OS_OSX // [macOS]
 - (NSString *)formatFrameSource:(RCTJSStackFrame *)stackFrame
 {
   NSString *fileName = RCTNilIfNull(stackFrame.file) ? [stackFrame.file lastPathComponent] : @"<unknown file>";
@@ -502,6 +531,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 }
 
 #pragma mark - TableView
+#if !TARGET_OS_OSX // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 - (NSInteger)numberOfSectionsInTableView:(__unused UITableView *)tableView
