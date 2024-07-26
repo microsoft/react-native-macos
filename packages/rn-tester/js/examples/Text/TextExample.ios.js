@@ -1361,8 +1361,8 @@ const examples = [
           </Text>{' '}
           that tracks mouse hover events
         </Text>
-      )
-    }
+      );
+    },
   },
   {
     title: 'Text components inheriting color from parent',
