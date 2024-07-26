@@ -1346,7 +1346,7 @@ const examples = [
   {
     title: 'Mouse hover events on nested Text elements',
     render: function (): React.Node {
-      function mouseProps(name) {
+      function mouseProps(name: string) {
         return {
           onMouseEnter: () => console.log(`Enter ${name}`),
           onMouseLeave: () => console.log(`Leave ${name}`),
