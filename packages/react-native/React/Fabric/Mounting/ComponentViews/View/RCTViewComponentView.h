@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
  * transparent in favour of some subview.
  * Defaults to `self`.
  */
-@property (nonatomic, strong, nullable, readonly) NSObject *accessibilityElement;
+@property (nonatomic, strong, nullable, readonly) RCTPlatformView *accessibilityElement; // [macOS]
 
 /**
  * Insets used when hit testing inside this view.
@@ -74,6 +74,11 @@ NS_ASSUME_NONNULL_BEGIN
            oldLayoutMetrics:(const facebook::react::LayoutMetrics &)oldLayoutMetrics NS_REQUIRES_SUPER;
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask NS_REQUIRES_SUPER;
 - (void)prepareForRecycle NS_REQUIRES_SUPER;
+
+#if TARGET_OS_OSX // [macOS
+- (BOOL)handleKeyboardEvent:(NSEvent *)event;
+- (void)buildDataTransferItems:(std::vector<facebook::react::DataTransferItem> &)dataTransferItems forPasteboard:(NSPasteboard *)pasteboard;
+#endif // macOS]
 
 /*
  * This is a fragment of temporary workaround that we need only temporary and will get rid of soon.

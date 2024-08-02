@@ -1005,6 +1005,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
       cells.push(
         <VirtualizedListCellContextProvider
           cellKey={this._getCellKey() + '-empty'}
+          collapsable={Platform.OS !== 'macos'} // [macOS]
           key="$empty">
           {React.cloneElement(element, {
             onLayout: (event: LayoutEvent) => {
@@ -1061,6 +1062,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
             lastMetrics.offset + lastMetrics.length - firstMetrics.offset;
           cells.push(
             <View
+              collapsable={Platform.OS !== 'macos'} // [macOS]
               key={`$spacer-${section.first}`}
               style={{[spacerKey]: spacerSize}}
             />,
@@ -1101,6 +1103,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
           cellKey={this._getFooterCellKey()}
           key="$footer">
           <View
+            collapsable={Platform.OS !== 'macos'} // [macOS]
             onLayout={this._onLayoutFooter}
             style={StyleSheet.compose(
               inversionStyle,

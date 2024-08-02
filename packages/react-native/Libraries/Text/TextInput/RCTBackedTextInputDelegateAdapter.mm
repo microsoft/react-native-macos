@@ -391,16 +391,16 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   [self textViewProbablyDidChangeSelection];
 }
 
+#endif // [macOS]
+
 #pragma mark - UIScrollViewDelegate
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+- (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // [macOS]
 {
   if ([_backedTextInputView.textInputDelegate respondsToSelector:@selector(scrollViewDidScroll:)]) {
     [_backedTextInputView.textInputDelegate scrollViewDidScroll:scrollView];
   }
 }
-
-#endif // [macOS]
 
 #if TARGET_OS_OSX // [macOS
 

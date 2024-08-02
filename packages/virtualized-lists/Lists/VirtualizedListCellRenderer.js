@@ -20,6 +20,8 @@ import {VirtualizedListCellContextProvider} from './VirtualizedListContext.js';
 import invariant from 'invariant';
 import * as React from 'react';
 
+const Platform = require('../Utilities/Platform'); // [macOS]
+
 export type Props<ItemT> = {
   CellRendererComponent?: ?React.ComponentType<CellRendererProps<ItemT>>,
   ItemSeparatorComponent: ?React.ComponentType<
@@ -208,7 +210,7 @@ export default class CellRenderer<ItemT> extends React.Component<
       : horizontal
       ? [styles.row, inversionStyle]
       : inversionStyle;
-    const result = !CellRendererComponent ? (
+    let result = !CellRendererComponent ? ( // [macOS]
       <View
         style={cellStyle}
         onFocusCapture={onCellFocusCapture}
@@ -228,6 +230,10 @@ export default class CellRenderer<ItemT> extends React.Component<
         {itemSeparator}
       </CellRendererComponent>
     );
+
+    if (Platform.OS === 'macos') { // [macOS
+      result = React.cloneElement(result, {collapsable: false});
+    } // macOS]
 
     return (
       <VirtualizedListCellContextProvider cellKey={this.props.cellKey}>

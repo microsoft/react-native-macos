@@ -181,8 +181,14 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
   [super finalizeUpdates:updateMask];
 
   if (!_adapter) {
+#if !TARGET_OS_OSX // [macOS]
     _adapter = [[RCTLegacyViewManagerInteropCoordinatorAdapter alloc] initWithCoordinator:[self _coordinator]
                                                                                  reactTag:self.tag];
+#else // [macOS
+    _adapter = [[RCTLegacyViewManagerInteropCoordinatorAdapter alloc] initWithCoordinator:[self _coordinator]
+                                                                                 reactTag:self.reactTag.integerValue];
+#endif // macOS]
+    
     __weak __typeof(self) weakSelf = self;
     _adapter.eventInterceptor = ^(std::string eventName, folly::dynamic event) {
       if (weakSelf) {
