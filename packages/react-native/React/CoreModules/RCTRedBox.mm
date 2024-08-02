@@ -91,21 +91,6 @@
 
 @end
 
-#if TARGET_OS_OSX // [macOS
-@interface RCTRedBoxScrollView : NSScrollView
-@end
-
-@implementation RCTRedBoxScrollView
-
-- (NSSize)intrinsicContentSize
-{
-  NSView *documentView = self.documentView;
-  return documentView != nil ? documentView.intrinsicContentSize : super.intrinsicContentSize;
-}
-
-@end
-#endif // macOS]
-
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTRedBoxController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 #else // [macOS
@@ -119,8 +104,6 @@
   UITableView *_stackTraceTableView;
 #else // [macOS
   NSTableView *_stackTraceTableView;
-  NSWindow *_window;
-  BOOL _visible;
 #endif //  macOS]
   NSString *_lastErrorMessage;
   NSArray<RCTJSStackFrame *> *_lastStackTrace;
@@ -136,11 +119,6 @@
     _lastErrorCookie = -1;
     _customButtonTitles = customButtonTitles;
     _customButtonHandlers = customButtonHandlers;
-    
-    _window = [[NSWindow alloc] initWithContentRect:NSZeroRect styleMask:NSWindowStyleMaskTitled backing:NSBackingStoreBuffered defer:YES];
-    _window.backgroundColor = [NSColor colorWithRed:0.8 green:0 blue:0 alpha:1];
-    _window.animationBehavior = NSWindowAnimationBehaviorDocumentWindow;
-    _window.contentViewController = self;
   }
 
   return self;
@@ -286,6 +264,7 @@
     [buttonStackView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
   ]];
 
+
   for (NSUInteger i = 0; i < [_customButtonTitles count]; i++) {
 #if !TARGET_OS_OSX // [macOS]
     UIButton *button = [self redBoxButton:_customButtonTitles[i]
@@ -301,15 +280,6 @@
     [button.heightAnchor constraintEqualToConstant:buttonHeight].active = YES;
     [buttonStackView addArrangedSubview:button];
   }
-#else // [macOS  
-  for (NSUInteger i = 0; i < [_customButtonTitles count]; i++) {
-  NSButton *button = [self redBoxButton:_customButtonTitles[i]
-                  accessibilityIdentifier:@""
-                                 selector:nil
-                                    block:_customButtonHandlers[i]];
-    [buttonStackView addArrangedSubview:button];
-  }
-#endif // macOS]
 
   RCTPlatformView *topBorder = [[RCTPlatformView alloc] init]; // [macOS]
   topBorder.translatesAutoresizingMaskIntoConstraints = NO;
@@ -433,17 +403,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     // unlimited length, so we truncate it
     _lastErrorMessage = [messageWithoutAnsi substringToIndex:MIN((NSUInteger)10000, messageWithoutAnsi.length)];
     _lastErrorCookie = errorCookie;
-    
-#if TARGET_OS_OSX // [macOS
-    [_window layoutIfNeeded]; // layout the window for the correct width
-#endif // macOS]
 
     [_stackTraceTableView reloadData];
-    
-#if TARGET_OS_OSX // [macOS
-    [_stackTraceTableView.enclosingScrollView invalidateIntrinsicContentSize]; // the height of the scroll view changed with the new data
-    [_window layoutIfNeeded]; // layout the window for the correct width
-#endif // macOS]
 
     if (!isRootViewControllerPresented) {
 #if !TARGET_OS_OSX // [macOS]
@@ -452,26 +413,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
                                           animated:NO];
       [RCTKeyWindow().rootViewController presentViewController:self animated:YES completion:nil];
 #else // [macOS
-	  [_stackTraceTableView scrollRowToVisible:0];
+    [_stackTraceTableView scrollRowToVisible:0];
     [[RCTKeyWindow() contentViewController] presentViewControllerAsSheet:self];
 #endif // macOS]
     }
   }
 }
-
-#if TARGET_OS_OSX // [macOS]
-- (void)showModal
-{
-  NSModalSession session = [NSApp beginModalSessionForWindow:_window];
-
-  while ([NSApp runModalSession:session] == NSModalResponseContinue) {
-    // Spin the runloop so that the main dispatch queue is processed.
-    [[NSRunLoop currentRunLoop] limitDateForMode:NSDefaultRunLoopMode];
-  }
-
-  [NSApp endModalSession:session];
-}
-#endif
 
 - (void)dismiss
 {
@@ -506,7 +453,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   for (RCTJSStackFrame *stackFrame in _lastStackTrace) {
     [fullStackTrace appendString:[NSString stringWithFormat:@"%@\n", stackFrame.methodName]];
     if (stackFrame.file) {
-       [fullStackTrace appendFormat:@"    %@\n", [self formatFrameSource:stackFrame]];
+      [fullStackTrace appendFormat:@"    %@\n", [self formatFrameSource:stackFrame]];
     }
   }
 #if !TARGET_OS_OSX // [macOS]
@@ -531,7 +478,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 }
 
 #pragma mark - TableView
-#if !TARGET_OS_OSX // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 - (NSInteger)numberOfSectionsInTableView:(__unused UITableView *)tableView
