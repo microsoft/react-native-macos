@@ -122,8 +122,8 @@ RCT_EXPORT_MODULE()
     self->_showDate = [NSDate date];
 
     if (!self->_window && !RCTRunningInTestEnvironment()) {
-      RCTUIWindow *window = RCTKeyWindow(); // [macOS]
 #if !TARGET_OS_OSX // [macOS]
+      UIWindow *window = RCTKeyWindow(); // [macOS]
       CGFloat windowWidth = window.bounds.size.width;
 
       self->_window = [[UIWindow alloc] initWithWindowScene:window.windowScene];
@@ -169,7 +169,7 @@ RCT_EXPORT_MODULE()
     self->_label.textColor = color;
 
     self->_label.backgroundColor = backgroundColor;
-//    [RCTKeyWindow() beginSheet:self->_window completionHandler:nil];
+    [RCTKeyWindow() beginSheet:self->_window completionHandler:nil];
 #endif // macOS]
   });
 

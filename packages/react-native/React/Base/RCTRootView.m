@@ -168,12 +168,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 #else // [macOS
   CGFloat centerX = CGRectGetMidX(self.bounds);
   CGFloat centerY = CGRectGetMidY(self.bounds);
-  NSRect newFrame = {
+  NSRect newFrame = NSMakeRect(
     centerX - _loadingView.frame.size.width / 2.0,
     centerY - _loadingView.frame.size.height / 2.0,
-    _loadingView.frame.size
-  };
-  _loadingView.frame = NSRectFromCGRect(newFrame);
+    _loadingView.frame.size.width,
+    _loadingView.frame.size.height
+  );
+  _loadingView.frame = newFrame;
 #endif // macOS]
 }
 
