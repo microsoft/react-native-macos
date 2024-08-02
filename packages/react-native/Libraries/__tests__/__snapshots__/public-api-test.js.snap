@@ -8292,6 +8292,8 @@ export type TextProps = $ReadOnly<{|
   tooltip?: ?string,
   focusable?: ?boolean,
   enableFocusRing?: ?boolean,
+  onMouseEnter?: ?(event: MouseEvent) => void,
+  onMouseLeave?: ?(event: MouseEvent) => void,
 |}>;
 "
 `;
