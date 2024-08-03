@@ -288,9 +288,10 @@ export type FocusEvent = SyntheticEvent<
   |}>,
 >;
 
+// [macOS
 export type KeyEvent = SyntheticEvent<
-  $ReadOnly<{|
-    // Modifier keys
+$ReadOnly<{|
+  // Modifier keys
     capsLockKey: boolean,
     shiftKey: boolean,
     ctrlKey: boolean,
@@ -307,6 +308,7 @@ export type KeyEvent = SyntheticEvent<
     key: string,
   |}>,
 >;
+// macOS]
 
 export type MouseEvent = SyntheticEvent<
   $ReadOnly<{|
