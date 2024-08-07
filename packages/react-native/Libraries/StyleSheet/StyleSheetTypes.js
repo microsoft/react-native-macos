@@ -753,7 +753,7 @@ export type ____ViewStyle_InternalCore = $ReadOnly<{
   opacity?: AnimatableNumericValue,
   elevation?: number,
   pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only',
-  cursor?: CursorValue, // [macOS][visionOS]
+  cursor?: CursorValue,
 }>;
 
 export type ____ViewStyle_Internal = $ReadOnly<{

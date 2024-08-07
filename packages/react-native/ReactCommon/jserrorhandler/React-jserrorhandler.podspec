@@ -36,12 +36,12 @@ Pod::Spec.new do |s|
   s.source_files           = "JsErrorHandler.{cpp,h}"
   s.pod_target_xcconfig = {
     "USE_HEADERMAP" => "YES",
-    "CLANG_CXX_LANGUAGE_STANDARD" => "c++20"
+    "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
   }
   s.compiler_flags         = folly_compiler_flags + ' ' + boost_compiler_flags
 
   if ENV['USE_FRAMEWORKS']
-    s.header_mappings_dir     = './'
+    s.header_mappings_dir     = '../'
     s.module_name             = 'React_jserrorhandler'
   end
 

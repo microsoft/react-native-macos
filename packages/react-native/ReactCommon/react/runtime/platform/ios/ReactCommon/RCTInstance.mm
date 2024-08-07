@@ -6,16 +6,18 @@
  */
 
 #import "RCTInstance.h"
-#import <React/RCTBridgeProxy.h>
 
 #import <memory>
 
 #import <React/NSDataBigString.h>
 #import <React/RCTAssert.h>
+#import <React/RCTBridge+Inspector.h>
 #import <React/RCTBridge+Private.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTBridgeModuleDecorator.h>
+#import <React/RCTBridgeProxy+Cxx.h>
+#import <React/RCTBridgeProxy.h>
 #import <React/RCTComponentViewFactory.h>
 #import <React/RCTConstants.h>
 #import <React/RCTCxxUtils.h>
@@ -28,6 +30,7 @@
 #import <React/RCTLogBox.h>
 #import <React/RCTModuleData.h>
 #import <React/RCTPerformanceLogger.h>
+#import <React/RCTRedBox.h>
 #import <React/RCTSurfacePresenter.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <ReactCommon/RuntimeExecutor.h>
@@ -80,6 +83,7 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
   std::mutex _invalidationMutex;
   std::atomic<bool> _valid;
   RCTJSThreadManager *_jsThreadManager;
+  NSDictionary *_launchOptions;
 
   // APIs supporting interop with native modules and view managers
   RCTBridgeModuleDecorator *_bridgeModuleDecorator;
@@ -96,6 +100,7 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
              onInitialBundleLoad:(RCTInstanceInitialBundleLoadCompletionBlock)onInitialBundleLoad
                   moduleRegistry:(RCTModuleRegistry *)moduleRegistry
            parentInspectorTarget:(jsinspector_modern::PageTarget *)parentInspectorTarget
+                   launchOptions:(nullable NSDictionary *)launchOptions
 {
   if (self = [super init]) {
     _performanceLogger = [RCTPerformanceLogger new];
@@ -121,11 +126,14 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
             [weakSelf callFunctionOnJSModule:moduleName method:methodName args:args];
           }];
     }
+    _launchOptions = launchOptions;
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(_notifyEventDispatcherObserversOfEvent_DEPRECATED:)
-                                                 name:@"RCTNotifyEventDispatcherObserversOfEvent_DEPRECATED"
-                                               object:nil];
+    NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(_notifyEventDispatcherObserversOfEvent_DEPRECATED:)
+                          name:@"RCTNotifyEventDispatcherObserversOfEvent_DEPRECATED"
+                        object:nil];
 
     [self _start];
   }
@@ -247,6 +255,7 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
   RuntimeExecutor bufferedRuntimeExecutor = _reactInstance->getBufferedRuntimeExecutor();
   timerManager->setRuntimeExecutor(bufferedRuntimeExecutor);
 
+  auto jsCallInvoker = make_shared<BridgelessJSCallInvoker>(bufferedRuntimeExecutor);
   RCTBridgeProxy *bridgeProxy =
       [[RCTBridgeProxy alloc] initWithViewRegistry:_bridgeModuleDecorator.viewRegistry_DEPRECATED
           moduleRegistry:_bridgeModuleDecorator.moduleRegistry
@@ -264,15 +273,16 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
               [strongSelf registerSegmentWithId:segmentId path:path];
             }
           }
-          runtime:_reactInstance->getJavaScriptContext()];
+          runtime:_reactInstance->getJavaScriptContext()
+          launchOptions:_launchOptions];
+  bridgeProxy.jsCallInvoker = jsCallInvoker;
   [RCTBridge setCurrentBridge:(RCTBridge *)bridgeProxy];
 
   // Set up TurboModules
-  _turboModuleManager = [[RCTTurboModuleManager alloc]
-        initWithBridgeProxy:bridgeProxy
-      bridgeModuleDecorator:_bridgeModuleDecorator
-                   delegate:self
-                  jsInvoker:std::make_shared<BridgelessJSCallInvoker>(bufferedRuntimeExecutor)];
+  _turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridgeProxy:bridgeProxy
+                                                     bridgeModuleDecorator:_bridgeModuleDecorator
+                                                                  delegate:self
+                                                                 jsInvoker:jsCallInvoker];
   _turboModuleManager.runtimeHandler = self;
 
 #if RCT_DEV
@@ -389,6 +399,24 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
   }
 }
 
+- (void)handleBundleLoadingError:(NSError *)error
+{
+  if (!_valid) {
+    return;
+  }
+
+  RCTRedBox *redBox = [_turboModuleManager moduleForName:"RedBox"];
+
+  RCTExecuteOnMainQueue(^{
+    [[NSNotificationCenter defaultCenter] postNotificationName:RCTJavaScriptDidFailToLoadNotification
+                                                        object:self
+                                                      userInfo:@{@"error" : error}];
+    [redBox showErrorMessage:[error localizedDescription]];
+
+    RCTFatal(error);
+  });
+}
+
 - (void)_loadJSBundle:(NSURL *)sourceURL
 {
 #if RCT_DEV_MENU && __has_include(<React/RCTDevLoadingViewProtocol.h>)
@@ -420,8 +448,7 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
         }
 
         if (error) {
-          // TODO(T91461138): Properly address bundle loading errors.
-          RCTLogError(@"RCTInstance: Error while loading bundle: %@", error);
+          [strongSelf handleBundleLoadingError:error];
           [strongSelf invalidate];
           return;
         }

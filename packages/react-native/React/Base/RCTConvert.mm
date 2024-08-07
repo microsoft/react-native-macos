@@ -599,6 +599,15 @@ RCT_MULTI_ENUM_CONVERTER(NSTextCheckingTypes, (@{
 }), NSTextCheckingTypeOrthography, unsignedLongLongValue)
 #endif // macOS]
 
+RCT_ENUM_CONVERTER(
+    RCTCursor,
+    (@{
+      @"auto" : @(RCTCursorAuto),
+      @"pointer" : @(RCTCursorPointer),
+    }),
+    RCTCursorAuto,
+    integerValue)
+
 static void convertCGStruct(const char *type, NSArray *fields, CGFloat *result, id json)
 {
   NSUInteger count = fields.count;

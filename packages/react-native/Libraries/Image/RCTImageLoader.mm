@@ -54,7 +54,6 @@ static NSInteger RCTImageBytesForImage(UIImage *image)
 }
 
 #if TARGET_OS_OSX // [macOS
-
 /**
  * Github #1611 - We can't depend on RCTUIKit here, because this file's podspec (React-RCTImage) doesn't
  * take a dependency on RCTUIKit's pod `React-Core`. Let's just copy the methods we want to shim here
@@ -85,11 +84,7 @@ NSData *UIImageJPEGRepresentation(NSImage *image, CGFloat compressionQuality) {
 }
 #endif // macOS]
 
-static uint64_t getNextImageRequestCount(void)
-{
-  static uint64_t requestCounter = 0;
-  return requestCounter++;
-}
+static auto currentRequestCount = std::atomic<uint64_t>(0);
 
 static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLResponse *response)
 {
@@ -569,7 +564,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
   auto cancelled = std::make_shared<std::atomic<int>>(0);
   __block dispatch_block_t cancelLoad = nil;
   __block NSLock *cancelLoadLock = [NSLock new];
-  NSString *requestId = [NSString stringWithFormat:@"%@-%llu", [[NSUUID UUID] UUIDString], getNextImageRequestCount()];
+  NSString *requestId = [NSString stringWithFormat:@"%@-%llu", [[NSUUID UUID] UUIDString], currentRequestCount++];
 
   void (^completionHandler)(NSError *, id, id, NSURLResponse *) =
       ^(NSError *error, id imageOrData, id imageMetadata, NSURLResponse *response) {

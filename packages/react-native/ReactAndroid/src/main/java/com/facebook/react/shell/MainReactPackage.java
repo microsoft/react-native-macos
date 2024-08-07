@@ -15,7 +15,6 @@ import com.facebook.react.animated.NativeAnimatedModule;
 import com.facebook.react.bridge.ModuleSpec;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.internal.turbomodule.core.interfaces.TurboModule;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.module.annotations.ReactModuleList;
 import com.facebook.react.module.model.ReactModuleInfo;
@@ -47,7 +46,6 @@ import com.facebook.react.uimanager.ViewManager;
 import com.facebook.react.views.drawer.ReactDrawerLayoutManager;
 import com.facebook.react.views.image.ReactImageManager;
 import com.facebook.react.views.modal.ReactModalHostManager;
-import com.facebook.react.views.popupmenu.ReactPopupMenuManager;
 import com.facebook.react.views.progressbar.ReactProgressBarViewManager;
 import com.facebook.react.views.scroll.ReactHorizontalScrollContainerViewManager;
 import com.facebook.react.views.scroll.ReactHorizontalScrollViewManager;
@@ -171,7 +169,6 @@ public class MainReactPackage extends TurboReactPackage implements ViewManagerOn
     viewManagers.add(new ReactScrollViewManager());
     viewManagers.add(new ReactSwitchManager());
     viewManagers.add(new SwipeRefreshLayoutManager());
-    viewManagers.add(new ReactPopupMenuManager());
 
     // Native equivalents
     viewManagers.add(new FrescoBasedReactTextInlineImageViewManager());
@@ -213,7 +210,6 @@ public class MainReactPackage extends TurboReactPackage implements ViewManagerOn
       appendMap(viewManagers, ReactSwitchManager.REACT_CLASS, ReactSwitchManager::new);
       appendMap(
           viewManagers, SwipeRefreshLayoutManager.REACT_CLASS, SwipeRefreshLayoutManager::new);
-      appendMap(viewManagers, ReactPopupMenuManager.REACT_CLASS, ReactPopupMenuManager::new);
       appendMap(
           viewManagers,
           FrescoBasedReactTextInlineImageViewManager.REACT_CLASS,
@@ -300,7 +296,7 @@ public class MainReactPackage extends TurboReactPackage implements ViewManagerOn
                   reactModule.canOverrideExistingModule(),
                   reactModule.needsEagerInit(),
                   reactModule.isCxxModule(),
-                  TurboModule.class.isAssignableFrom(moduleClass)));
+                  ReactModuleInfo.classIsTurboModule(moduleClass)));
         }
       }
       return () -> reactModuleInfoMap;

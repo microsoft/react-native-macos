@@ -644,24 +644,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
     }
   }
 
-  NSString *previousText = [backedTextInputView.attributedText.string copy] ?: @"";
-
   if (range.location + range.length > backedTextInputView.attributedText.string.length) {
     _predictedText = backedTextInputView.attributedText.string;
   } else if (text != nil) {
     _predictedText = [backedTextInputView.attributedText.string stringByReplacingCharactersInRange:range
                                                                                         withString:text];
-  }
-
-  if (_onTextInput && !self.backedTextInputView.ghostTextChanging) { // [macOS]
-    _onTextInput(@{
-      // We copy the string here because if it's a mutable string it may get released before we stop using it on a
-      // different thread, causing a crash.
-      @"text" : [text copy] ?: @"", // [macOS] fall back to empty string if text is nil
-      @"previousText" : previousText,
-      @"range" : @{@"start" : @(range.location), @"end" : @(range.location + range.length)},
-      @"eventCount" : @(_nativeEventCount),
-    });
   }
 
   return text; // Accepting the change.

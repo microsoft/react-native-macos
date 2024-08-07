@@ -128,8 +128,8 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 {
   if (self = [super initWithFrame:frame]) {
     _props = ScrollViewShadowNode::defaultSharedProps();
-
     _scrollView = [[RCTEnhancedScrollView alloc] initWithFrame:self.bounds];
+    _scrollView.clipsToBounds = _props->getClipsContentToBounds();
     _scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 #if !TARGET_OS_OSX // [macOS]
     _scrollView.delaysContentTouches = NO;
@@ -280,6 +280,11 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
     } else {
       _scrollEventThrottle = throttleInSeconds;
     }
+  }
+
+  // Overflow prop
+  if (oldScrollViewProps.getClipsContentToBounds() != newScrollViewProps.getClipsContentToBounds()) {
+    _scrollView.clipsToBounds = newScrollViewProps.getClipsContentToBounds();
   }
 
   MAP_SCROLL_VIEW_PROP(zoomScale);
@@ -453,6 +458,11 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
 
 - (void)prepareForRecycle
 {
+  [super prepareForRecycle];
+  // Must invalidate state before setting contentOffset on ScrollView.
+  // Otherwise the state will be propagated to shadow tree.
+  _state.reset();
+
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
   _scrollView.contentOffset = RCTCGPointFromPoint(props.contentOffset);
   // We set the default behavior to "never" so that iOS
@@ -462,7 +472,6 @@ static void RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *sc
   _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
 #endif // [macOS]
   _shouldUpdateContentInsetAdjustmentBehavior = YES;
-  _state.reset();
   _isUserTriggeredScrolling = NO;
   CGRect oldFrame = self.frame;
   self.frame = CGRectZero;

@@ -9,6 +9,7 @@ package com.facebook.react
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.queue.ReactQueueConfiguration
@@ -110,6 +111,22 @@ public interface ReactHost {
    * @return A task that completes when React Native gets destroyed.
    */
   public fun destroy(reason: String, ex: Exception?): TaskInterface<Void>
+
+  /* To be called when the host activity receives an activity result. */
+  public fun onActivityResult(
+      activity: Activity,
+      requestCode: Int,
+      resultCode: Int,
+      data: Intent?,
+  )
+
+  /* To be called when focus has changed for the hosting window. */
+  public fun onWindowFocusChange(hasFocus: Boolean)
+
+  /* This method will give JS the opportunity to receive intents via Linking. */
+  public fun onNewIntent(intent: Intent)
+
+  public fun onConfigurationChanged(context: Context)
 
   public fun addBeforeDestroyListener(onBeforeDestroy: () -> Unit)
 
