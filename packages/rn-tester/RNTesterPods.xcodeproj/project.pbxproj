@@ -19,7 +19,6 @@
 		8145AE06241172D900A3F8DA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8145AE05241172D900A3F8DA /* LaunchScreen.storyboard */; };
 		832F45BB2A8A6E1F0097B4E6 /* SwiftTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832F45BA2A8A6E1F0097B4E6 /* SwiftTest.swift */; };
 		918A215FD4EF5A828705D765 /* libPods-RNTester-macOSIntegrationTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 474EC5CD967949D41527EECF /* libPods-RNTester-macOSIntegrationTests.a */; };
-		952DE744170276A21733854C /* libPods-RNTester.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F8231F4FA4BF1B10D67D9E82 /* libPods-RNTester.a */; };
 		AC30658829B14F38007A839A /* RCTComponentPropsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB20CC22B2BAA5005AC45F /* RCTComponentPropsTests.m */; };
 		AC73FCE829B1316D0003586F /* RNTesterIntegrationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7C1241922BEC44B00DA25C0 /* RNTesterIntegrationTests.m */; };
 		AC73FCE929B131700003586F /* RCTLoggingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E7DB215E22B2F3EC005AC45F /* RCTLoggingTests.m */; };
@@ -903,23 +902,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RNTester/Pods-RNTester-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		659CD3193D6E6ED5B92470CE /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RNTesterIntegrationTests/Pods-RNTesterIntegrationTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RNTesterIntegrationTests/Pods-RNTesterIntegrationTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RNTesterIntegrationTests/Pods-RNTesterIntegrationTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		68CD48B71D2BCB2C007E06A9 /* Build JS Bundle */ = {
