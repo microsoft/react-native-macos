@@ -107,20 +107,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		ACC52F59299ECB8A002A2B0B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = ACC52F3D299ECB7A002A2B0B;
-			remoteInfo = "RNTester-macOS";
-		};
-		ACC52F66299ECB97002A2B0B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = ACC52F3D299ECB7A002A2B0B;
-			remoteInfo = "RNTester-macOS";
-		};
 		ADA4EF572546F3F8000B7E75 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
@@ -134,6 +120,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
 			remoteInfo = RNTester;
+		};
+		ACC52F59299ECB8A002A2B0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ACC52F3D299ECB7A002A2B0B;
+			remoteInfo = "RNTester-macOS";
+		};
+		ACC52F66299ECB97002A2B0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ACC52F3D299ECB7A002A2B0B;
+			remoteInfo = "RNTester-macOS";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -266,6 +266,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E7DB209C22B2BA84005AC45F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7DB213122B2C649005AC45F /* JavaScriptCore.framework in Frameworks */,
+				A984E3435258D1FA0F157FCE /* libPods-RNTesterUnitTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E7DB215022B2F332005AC45F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7DB218C22B41FCD005AC45F /* XCTest.framework in Frameworks */,
+				E7DB216722B2F69F005AC45F /* JavaScriptCore.framework in Frameworks */,
+				233478CE9E17A00ACD643BA1 /* libPods-RNTesterIntegrationTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ACC52F3B299ECB7A002A2B0B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -295,25 +314,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E319E5C2892523FABA38B418 /* libPods-RNTester-visionOS.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E7DB209C22B2BA84005AC45F /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				E7DB213122B2C649005AC45F /* JavaScriptCore.framework in Frameworks */,
-				A984E3435258D1FA0F157FCE /* libPods-RNTesterUnitTests.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E7DB215022B2F332005AC45F /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				E7DB218C22B41FCD005AC45F /* XCTest.framework in Frameworks */,
-				E7DB216722B2F69F005AC45F /* JavaScriptCore.framework in Frameworks */,
-				233478CE9E17A00ACD643BA1 /* libPods-RNTesterIntegrationTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -567,6 +567,46 @@
 			productReference = 13B07F961A680F5B00A75B9A /* RNTester.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E7DB209E22B2BA84005AC45F /* RNTesterUnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E7DB20A622B2BA84005AC45F /* Build configuration list for PBXNativeTarget "RNTesterUnitTests" */;
+			buildPhases = (
+				9E05A96E88B51366B482536F /* [CP] Check Pods Manifest.lock */,
+				E7DB209B22B2BA84005AC45F /* Sources */,
+				E7DB209C22B2BA84005AC45F /* Frameworks */,
+				E7DB209D22B2BA84005AC45F /* Resources */,
+				829D7C63C528493FD8CA45E9 /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ADA4EF582546F3F8000B7E75 /* PBXTargetDependency */,
+			);
+			name = RNTesterUnitTests;
+			productName = RNTesterUnitTests;
+			productReference = E7DB209F22B2BA84005AC45F /* RNTesterUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E7DB215222B2F332005AC45F /* RNTesterIntegrationTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E7DB215A22B2F332005AC45F /* Build configuration list for PBXNativeTarget "RNTesterIntegrationTests" */;
+			buildPhases = (
+				8AA5E9AFEED3571ADC48A9E6 /* [CP] Check Pods Manifest.lock */,
+				E7DB214F22B2F332005AC45F /* Sources */,
+				E7DB215022B2F332005AC45F /* Frameworks */,
+				E7DB215122B2F332005AC45F /* Resources */,
+				C5A1A0DE195B37E2DE72DBE8 /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E7DB215922B2F332005AC45F /* PBXTargetDependency */,
+			);
+			name = RNTesterIntegrationTests;
+			productName = RNTesterIntegrationTests;
+			productReference = E7DB215322B2F332005AC45F /* RNTesterIntegrationTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		AC78A6092B5738FB00121555 /* RNTester-visionOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AC78A61C2B5738FD00121555 /* Build configuration list for PBXNativeTarget "RNTester-visionOS" */;
@@ -645,46 +685,6 @@
 			productReference = ACC52F62299ECB97002A2B0B /* RNTester-macOSIntegrationTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		E7DB209E22B2BA84005AC45F /* RNTesterUnitTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = E7DB20A622B2BA84005AC45F /* Build configuration list for PBXNativeTarget "RNTesterUnitTests" */;
-			buildPhases = (
-				9E05A96E88B51366B482536F /* [CP] Check Pods Manifest.lock */,
-				E7DB209B22B2BA84005AC45F /* Sources */,
-				E7DB209C22B2BA84005AC45F /* Frameworks */,
-				E7DB209D22B2BA84005AC45F /* Resources */,
-				829D7C63C528493FD8CA45E9 /* [CP] Copy Pods Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				ADA4EF582546F3F8000B7E75 /* PBXTargetDependency */,
-			);
-			name = RNTesterUnitTests;
-			productName = RNTesterUnitTests;
-			productReference = E7DB209F22B2BA84005AC45F /* RNTesterUnitTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		E7DB215222B2F332005AC45F /* RNTesterIntegrationTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = E7DB215A22B2F332005AC45F /* Build configuration list for PBXNativeTarget "RNTesterIntegrationTests" */;
-			buildPhases = (
-				8AA5E9AFEED3571ADC48A9E6 /* [CP] Check Pods Manifest.lock */,
-				E7DB214F22B2F332005AC45F /* Sources */,
-				E7DB215022B2F332005AC45F /* Frameworks */,
-				E7DB215122B2F332005AC45F /* Resources */,
-				C5A1A0DE195B37E2DE72DBE8 /* [CP] Copy Pods Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				E7DB215922B2F332005AC45F /* PBXTargetDependency */,
-			);
-			name = RNTesterIntegrationTests;
-			productName = RNTesterIntegrationTests;
-			productReference = E7DB215322B2F332005AC45F /* RNTesterIntegrationTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -746,6 +746,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E7DB209D22B2BA84005AC45F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7DB20DA22B2BAA6005AC45F /* RNTesterUnitTestsBundle.js in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E7DB215122B2F332005AC45F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AC78A6082B5738FB00121555 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -773,21 +788,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		ACC52F60299ECB97002A2B0B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E7DB209D22B2BA84005AC45F /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				E7DB20DA22B2BAA6005AC45F /* RNTesterUnitTestsBundle.js in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		E7DB215122B2F332005AC45F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1264,16 +1264,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		ACC52F5A299ECB8A002A2B0B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = ACC52F3D299ECB7A002A2B0B /* RNTester-macOS */;
-			targetProxy = ACC52F59299ECB8A002A2B0B /* PBXContainerItemProxy */;
-		};
-		ACC52F67299ECB97002A2B0B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = ACC52F3D299ECB7A002A2B0B /* RNTester-macOS */;
-			targetProxy = ACC52F66299ECB97002A2B0B /* PBXContainerItemProxy */;
-		};
 		ADA4EF582546F3F8000B7E75 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 13B07F861A680F5B00A75B9A /* RNTester */;
@@ -1283,6 +1273,16 @@
 			isa = PBXTargetDependency;
 			target = 13B07F861A680F5B00A75B9A /* RNTester */;
 			targetProxy = E7DB215822B2F332005AC45F /* PBXContainerItemProxy */;
+		};
+		ACC52F5A299ECB8A002A2B0B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ACC52F3D299ECB7A002A2B0B /* RNTester-macOS */;
+			targetProxy = ACC52F59299ECB8A002A2B0B /* PBXContainerItemProxy */;
+		};
+		ACC52F67299ECB97002A2B0B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ACC52F3D299ECB7A002A2B0B /* RNTester-macOS */;
+			targetProxy = ACC52F66299ECB97002A2B0B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2033,6 +2033,24 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		E7DB20A622B2BA84005AC45F /* Build configuration list for PBXNativeTarget "RNTesterUnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E7DB20A722B2BA84005AC45F /* Debug */,
+				E7DB20A822B2BA84005AC45F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E7DB215A22B2F332005AC45F /* Build configuration list for PBXNativeTarget "RNTesterIntegrationTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E7DB215B22B2F332005AC45F /* Debug */,
+				E7DB215C22B2F332005AC45F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		AC78A61C2B5738FD00121555 /* Build configuration list for PBXNativeTarget "RNTester-visionOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -2065,24 +2083,6 @@
 			buildConfigurations = (
 				ACC52F69299ECB97002A2B0B /* Debug */,
 				ACC52F6A299ECB97002A2B0B /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		E7DB20A622B2BA84005AC45F /* Build configuration list for PBXNativeTarget "RNTesterUnitTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				E7DB20A722B2BA84005AC45F /* Debug */,
-				E7DB20A822B2BA84005AC45F /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		E7DB215A22B2F332005AC45F /* Build configuration list for PBXNativeTarget "RNTesterIntegrationTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				E7DB215B22B2F332005AC45F /* Debug */,
-				E7DB215C22B2F332005AC45F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
