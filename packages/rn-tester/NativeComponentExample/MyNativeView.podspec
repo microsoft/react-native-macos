@@ -23,19 +23,11 @@ Pod::Spec.new do |s|
   s.source          = { :git => "https://github.com/facebook/my-native-view.git", :tag => "#{s.version}" }
   s.pod_target_xcconfig    = {
     "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/RCT-Folly\" \"$(PODS_ROOT)/boost\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-Codegen/React_Codegen.framework/Headers\"",
-    "CLANG_CXX_LANGUAGE_STANDARD" => "c++20"
+    "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
   }
 
   s.source_files    = "ios/**/*.{h,m,mm,cpp}"
   s.requires_arc    = true
 
   install_modules_dependencies(s)
-
-  # Enable codegen for this library
-  use_react_native_codegen!(s, {
-    :library_name => "MyNativeViewSpec",
-    :react_native_path => "../../react-native",
-    :js_srcs_dir => "./js",
-    :library_type => "components"
-  })
 end

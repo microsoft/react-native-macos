@@ -29,8 +29,8 @@ Pod::Spec.new do |s|
   s.exclude_files          = "react/renderer/mapbuffer/tests"
   s.public_header_files    = 'react/renderer/mapbuffer/*.h'
   s.header_dir             = "react/renderer/mapbuffer"
-  s.pod_target_xcconfig = {  "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\"", "USE_HEADERMAP" => "YES",
-                            "CLANG_CXX_LANGUAGE_STANDARD" => "c++20" }
+  s.pod_target_xcconfig = {  "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)\"", "USE_HEADERMAP" => "YES",
+                            "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard() }
 
   if ENV['USE_FRAMEWORKS']
     s.header_mappings_dir     = './'
@@ -38,6 +38,6 @@ Pod::Spec.new do |s|
   end
 
   s.dependency "glog"
-  s.dependency "React-debug"
+  add_dependency(s, "React-debug")
 
 end

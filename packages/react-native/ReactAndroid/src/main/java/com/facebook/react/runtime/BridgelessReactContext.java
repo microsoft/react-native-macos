@@ -8,20 +8,23 @@
 package com.facebook.react.runtime;
 
 import android.content.Context;
+import android.util.Log;
 import com.facebook.infer.annotation.Nullsafe;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.CatalystInstance;
-import com.facebook.react.bridge.JSIModule;
-import com.facebook.react.bridge.JSIModuleType;
+import com.facebook.react.bridge.JavaScriptContextHolder;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.JavaScriptModuleRegistry;
 import com.facebook.react.bridge.NativeArray;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactNoCrashBridgeNotAllowedSoftException;
-import com.facebook.react.bridge.ReactSoftExceptionLogger;
+import com.facebook.react.bridge.RuntimeExecutor;
+import com.facebook.react.bridge.UIManager;
 import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.common.annotations.FrameworkAPI;
+import com.facebook.react.common.annotations.UnstableReactNativeAPI;
+import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.react.devsupport.interfaces.DevSupportManager;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.uimanager.events.EventDispatcher;
@@ -49,6 +52,9 @@ class BridgelessReactContext extends ReactApplicationContext implements EventDis
   BridgelessReactContext(Context context, ReactHostImpl host) {
     super(context);
     mReactHost = host;
+    if (ReactFeatureFlags.unstable_useFabricInterop) {
+      initializeInteropModules();
+    }
   }
 
   @Override
@@ -71,22 +77,16 @@ class BridgelessReactContext extends ReactApplicationContext implements EventDis
   }
 
   @Override
-  public @Nullable JSIModule getJSIModule(JSIModuleType moduleType) {
-    if (moduleType == JSIModuleType.UIManager) {
-      return mReactHost.getUIManager();
-    }
-    throw new UnsupportedOperationException(
-        "getJSIModule is not implemented for bridgeless mode. Trying to get module: "
-            + moduleType.name());
+  public @Nullable UIManager getFabricUIManager() {
+    return mReactHost.getUIManager();
   }
 
   @Override
   public CatalystInstance getCatalystInstance() {
-    ReactSoftExceptionLogger.logSoftExceptionVerbose(
+    Log.w(
         TAG,
-        new ReactNoCrashBridgeNotAllowedSoftException(
-            "getCatalystInstance() cannot be called when the bridge is disabled"));
-    throw new UnsupportedOperationException("There is no Catalyst instance in bridgeless mode.");
+        "[WARNING] Bridgeless doesn't support CatalystInstance. Accessing an API that's not part of the new architecture is not encouraged usage.");
+    return new BridgelessCatalystInstance(mReactHost);
   }
 
   @Override
@@ -124,6 +124,10 @@ class BridgelessReactContext extends ReactApplicationContext implements EventDis
 
   @Override
   public <T extends JavaScriptModule> T getJSModule(Class<T> jsInterface) {
+    if (mInteropModuleRegistry != null
+        && mInteropModuleRegistry.shouldReturnInteropModule(jsInterface)) {
+      return mInteropModuleRegistry.getInteropModule(jsInterface);
+    }
     JavaScriptModule interfaceProxy =
         (JavaScriptModule)
             Proxy.newProxyInstance(
@@ -146,6 +150,23 @@ class BridgelessReactContext extends ReactApplicationContext implements EventDis
   @Override
   public @Nullable <T extends NativeModule> T getNativeModule(Class<T> nativeModuleInterface) {
     return mReactHost.getNativeModule(nativeModuleInterface);
+  }
+  /**
+   * @return the RuntimeExecutor, a thread-safe handler for accessing the runtime. If the runtime is
+   *     not initialized yet, it will return null.
+   */
+  @Override
+  @FrameworkAPI
+  @UnstableReactNativeAPI
+  public @Nullable RuntimeExecutor getRuntimeExecutor() {
+    return mReactHost.getRuntimeExecutor();
+  }
+
+  @Override
+  @FrameworkAPI
+  @UnstableReactNativeAPI
+  public @Nullable JavaScriptContextHolder getJavaScriptContextHolder() {
+    return mReactHost.getJavaScriptContextHolder();
   }
 
   @Override

@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <atomic>
 #import <mutex>
 
 #import <React/RCTLog.h>
@@ -20,6 +21,8 @@
   RCTNetworkTask *_selfReference;
 }
 
+static auto currentRequestId = std::atomic<NSUInteger>(0);
+
 - (instancetype)initWithRequest:(NSURLRequest *)request
                         handler:(id<RCTURLRequestHandler>)handler
                   callbackQueue:(dispatch_queue_t)callbackQueue
@@ -28,10 +31,8 @@
   RCTAssertParam(handler);
   RCTAssertParam(callbackQueue);
 
-  static NSUInteger requestID = 0;
-
   if ((self = [super init])) {
-    _requestID = @(requestID++);
+    _requestID = @(currentRequestId++);
     _request = request;
     _handler = handler;
     _callbackQueue = callbackQueue;
@@ -164,7 +165,21 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
     if (!_data) {
       _data = [NSMutableData new];
     }
-    [_data appendData:data];
+    @try {
+      [_data appendData:data];
+    } @catch (NSException *exception) {
+      _status = RCTNetworkTaskFinished;
+      if (_completionBlock) {
+        RCTURLRequestCompletionBlock completionBlock = _completionBlock;
+        [self dispatchCallback:^{
+          completionBlock(
+              self->_response, nil, RCTErrorWithMessage(exception.reason ?: @"Request's received data too long."));
+        }];
+      }
+      [self invalidate];
+      return;
+    }
+
     length = _data.length;
   }
 

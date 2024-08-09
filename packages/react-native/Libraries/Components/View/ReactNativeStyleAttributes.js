@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format strict-local
- * @flow
+ * @flow strict-local
  */
 
 import type {AnyAttributeType} from '../../Renderer/shims/ReactNativeTypes';
@@ -144,7 +144,7 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   borderTopLeftRadius: true,
   borderTopRightRadius: true,
   borderTopStartRadius: true,
-  cursor: true, // [macOS] [visionOS]
+  cursor: true,
   opacity: true,
   pointerEvents: true,
 

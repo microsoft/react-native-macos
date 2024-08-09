@@ -166,6 +166,14 @@ function getEnumMaskName(enumName: string): string {
   return `${enumName}Mask`;
 }
 
+function getDefaultInitializerString(
+  componentName: string,
+  prop: NamedShape<PropTypeAnnotation>,
+): string {
+  const defaultValue = convertDefaultTypeToString(componentName, prop);
+  return `{${defaultValue}}`;
+}
+
 function convertDefaultTypeToString(
   componentName: string,
   prop: NamedShape<PropTypeAnnotation>,
@@ -256,7 +264,21 @@ function convertDefaultTypeToString(
   }
 }
 
+const IncludeTemplate = ({
+  headerPrefix,
+  file,
+}: {
+  headerPrefix: string,
+  file: string,
+}): string => {
+  if (headerPrefix === '') {
+    return `#include "${file}"`;
+  }
+  return `#include <${headerPrefix}${file}>`;
+};
+
 module.exports = {
+  getDefaultInitializerString,
   convertDefaultTypeToString,
   getCppArrayTypeForAnnotation,
   getCppTypeForAnnotation,
@@ -265,4 +287,5 @@ module.exports = {
   toIntEnumValueName,
   generateStructName,
   generateEventStructName,
+  IncludeTemplate,
 };

@@ -7,19 +7,20 @@
 
 package com.facebook.react.runtime;
 
+import androidx.annotation.Nullable;
 import com.facebook.infer.annotation.Nullsafe;
 import com.facebook.react.TurboReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.devsupport.LogBoxModule;
 import com.facebook.react.devsupport.interfaces.DevSupportManager;
-import com.facebook.react.internal.turbomodule.core.interfaces.TurboModule;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.module.annotations.ReactModuleList;
 import com.facebook.react.module.model.ReactModuleInfo;
 import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.modules.core.ExceptionsManagerModule;
 import com.facebook.react.modules.debug.DevSettingsModule;
 import com.facebook.react.modules.debug.SourceCodeModule;
 import com.facebook.react.modules.deviceinfo.DeviceInfoModule;
@@ -36,11 +37,12 @@ import java.util.Map;
       SourceCodeModule.class,
       LogBoxModule.class,
       DeviceEventManagerModule.class,
+      ExceptionsManagerModule.class,
     })
 class CoreReactPackage extends TurboReactPackage {
 
-  private DevSupportManager mDevSupportManager;
-  private DefaultHardwareBackBtnHandler mHardwareBackBtnHandler;
+  private final DevSupportManager mDevSupportManager;
+  private final DefaultHardwareBackBtnHandler mHardwareBackBtnHandler;
 
   public CoreReactPackage(
       DevSupportManager devSupportManager, DefaultHardwareBackBtnHandler hardwareBackBtnHandler) {
@@ -49,7 +51,7 @@ class CoreReactPackage extends TurboReactPackage {
   }
 
   @Override
-  public NativeModule getModule(String name, ReactApplicationContext reactContext) {
+  public @Nullable NativeModule getModule(String name, ReactApplicationContext reactContext) {
     switch (name) {
       case AndroidInfoModule.NAME:
         return new AndroidInfoModule(reactContext);
@@ -63,9 +65,10 @@ class CoreReactPackage extends TurboReactPackage {
         return new DeviceEventManagerModule(reactContext, mHardwareBackBtnHandler);
       case LogBoxModule.NAME:
         return new LogBoxModule(reactContext, mDevSupportManager);
+      case ExceptionsManagerModule.NAME:
+        return new ExceptionsManagerModule(mDevSupportManager);
       default:
-        throw new IllegalArgumentException(
-            "In BridgelessReactPackage, could not find Native module for " + name);
+        return null;
     }
   }
 
@@ -73,7 +76,7 @@ class CoreReactPackage extends TurboReactPackage {
   public ReactModuleInfoProvider getReactModuleInfoProvider() {
     try {
       Class<?> reactModuleInfoProviderClass =
-          Class.forName("com.facebook.react.CoreModulesPackage$$ReactModuleInfoProvider");
+          Class.forName(CoreReactPackage.class.getName() + "$$ReactModuleInfoProvider");
       return (ReactModuleInfoProvider) reactModuleInfoProviderClass.newInstance();
     } catch (ClassNotFoundException e) {
       // In OSS case, the annotation processor does not run. We fall back on creating this byhand
@@ -85,6 +88,7 @@ class CoreReactPackage extends TurboReactPackage {
             DevSettingsModule.class,
             DeviceEventManagerModule.class,
             LogBoxModule.class,
+            ExceptionsManagerModule.class,
           };
       final Map<String, ReactModuleInfo> reactModuleInfoMap = new HashMap<>();
       for (Class<? extends NativeModule> moduleClass : moduleList) {
@@ -98,16 +102,22 @@ class CoreReactPackage extends TurboReactPackage {
                   reactModule.canOverrideExistingModule(),
                   reactModule.needsEagerInit(),
                   reactModule.isCxxModule(),
-                  TurboModule.class.isAssignableFrom(moduleClass)));
+                  ReactModuleInfo.classIsTurboModule(moduleClass)));
         }
       }
       return () -> reactModuleInfoMap;
     } catch (InstantiationException e) {
       throw new RuntimeException(
-          "No ReactModuleInfoProvider for CoreModulesPackage$$ReactModuleInfoProvider", e);
+          "No ReactModuleInfoProvider for "
+              + CoreReactPackage.class.getName()
+              + "$$ReactModuleInfoProvider",
+          e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(
-          "No ReactModuleInfoProvider for CoreModulesPackage$$ReactModuleInfoProvider", e);
+          "No ReactModuleInfoProvider for "
+              + CoreReactPackage.class.getName()
+              + "$$ReactModuleInfoProvider",
+          e);
     }
   }
 }

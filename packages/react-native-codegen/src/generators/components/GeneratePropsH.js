@@ -10,27 +10,24 @@
 
 'use strict';
 import type {ComponentShape} from '../../CodegenSchema';
-
-const {
-  getNativeTypeFromAnnotation,
-  getLocalImports,
-} = require('./ComponentsGeneratorUtils.js');
-
-const {
-  convertDefaultTypeToString,
-  getEnumMaskName,
-  generateStructName,
-  toIntEnumValueName,
-} = require('./CppHelpers.js');
-
-const {getEnumName, toSafeCppString} = require('../Utils');
-
 import type {
   ExtendsPropsShape,
   NamedShape,
   PropTypeAnnotation,
   SchemaType,
 } from '../../CodegenSchema';
+
+const {getEnumName, toSafeCppString} = require('../Utils');
+const {
+  getLocalImports,
+  getNativeTypeFromAnnotation,
+} = require('./ComponentsGeneratorUtils.js');
+const {
+  generateStructName,
+  getDefaultInitializerString,
+  getEnumMaskName,
+  toIntEnumValueName,
+} = require('./CppHelpers.js');
 
 // File path -> contents
 type FilesOutput = Map<string, string>;
@@ -55,13 +52,11 @@ const FileTemplate = ({
 
 ${imports}
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
 ${componentClasses}
 
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react
 `;
 
 const ClassTemplate = ({
@@ -461,13 +456,21 @@ function generateEnumString(
 function generatePropsString(
   componentName: string,
   props: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
+  nameParts: $ReadOnlyArray<string>,
 ) {
   return props
     .map(prop => {
-      const nativeType = getNativeTypeFromAnnotation(componentName, prop, []);
-      const defaultValue = convertDefaultTypeToString(componentName, prop);
+      const nativeType = getNativeTypeFromAnnotation(
+        componentName,
+        prop,
+        nameParts,
+      );
+      const defaultInitializer = getDefaultInitializerString(
+        componentName,
+        prop,
+      );
 
-      return `${nativeType} ${prop.name}{${defaultValue}};`;
+      return `${nativeType} ${prop.name}${defaultInitializer};`;
     })
     .join('\n' + '  ');
 }
@@ -634,16 +637,11 @@ function generateStruct(
 ): void {
   const structNameParts = nameParts;
   const structName = generateStructName(componentName, structNameParts);
-
-  const fields = properties
-    .map(property => {
-      return `${getNativeTypeFromAnnotation(
-        componentName,
-        property,
-        structNameParts,
-      )} ${property.name};`;
-    })
-    .join('\n' + '  ');
+  const fields = generatePropsString(
+    componentName,
+    properties,
+    structNameParts,
+  );
 
   properties.forEach((property: NamedShape<PropTypeAnnotation>) => {
     const name = property.name;
@@ -711,6 +709,7 @@ module.exports = {
     schema: SchemaType,
     packageName?: string,
     assumeNonnull: boolean = false,
+    headerPrefix?: string,
   ): FilesOutput {
     const fileName = 'Props.h';
 
@@ -742,6 +741,7 @@ module.exports = {
             const propsString = generatePropsString(
               componentName,
               component.props,
+              [],
             );
             const extendString = getClassExtendString(component);
             const extendsImports = getExtendsImports(component.extendsProps);

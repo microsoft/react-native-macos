@@ -7,11 +7,15 @@
 
 #import <React/RCTBridgeDelegate.h>
 #import <React/RCTUIKit.h> // [macOS]
+#import "RCTRootViewFactory.h"
 
 @class RCTBridge;
 @protocol RCTBridgeDelegate;
 @protocol RCTComponentViewProtocol;
+@class RCTRootView;
 @class RCTSurfacePresenterBridgeAdapter;
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  * The RCTAppDelegate is an utility class that implements some base configurations for all the React Native apps.
@@ -39,7 +43,6 @@
  *   - (UIViewController *)createRootViewController;
  *   - (void)setRootView:(UIView *)rootView toRootViewController:(UIViewController *)rootViewController;
  * New Architecture:
- *   - (BOOL)concurrentRootEnabled
  *   - (BOOL)turboModuleEnabled;
  *   - (BOOL)fabricEnabled;
  *   - (NSDictionary *)prepareInitialProps
@@ -58,9 +61,12 @@
 #endif // macOS]
 /// The window object, used to render the UViewControllers
 @property (nonatomic, strong) RCTPlatformWindow *window; // [macOS]
-@property (nonatomic, strong) RCTBridge *bridge;
-@property (nonatomic, strong) NSString *moduleName;
-@property (nonatomic, strong) NSDictionary *initialProps;
+@property (nonatomic, nullable) RCTBridge *bridge;
+@property (nonatomic, strong, nullable) NSString *moduleName;
+@property (nonatomic, strong, nullable) NSDictionary *initialProps;
+@property (nonatomic, strong, nonnull) RCTRootViewFactory *rootViewFactory;
+
+@property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter;
 
 /**
  * It creates a `RCTBridge` using a delegate and some launch options.
@@ -87,8 +93,28 @@
  * @returns: a UIView properly configured with a bridge for React Native.
  */
 - (RCTPlatformView *)createRootViewWithBridge:(RCTBridge *)bridge // [macOS]
-                                   moduleName:(NSString *)moduleName
-                                    initProps:(NSDictionary *)initProps;
+                          moduleName:(NSString *)moduleName
+                           initProps:(NSDictionary *)initProps;
+/**
+ * This method can be used to customize the rootView that is passed to React Native.
+ * A typical example is to override this method in the AppDelegate to change the background color.
+ * To achieve this, add in your `AppDelegate.mm`:
+ * ```
+ * - (void)customizeRootView:(RCTRootView *)rootView
+ * {
+ *   rootView.backgroundColor = [UIColor colorWithDynamicProvider:^UIColor *(UITraitCollection *traitCollection) {
+ *     if ([traitCollection userInterfaceStyle] == UIUserInterfaceStyleDark) {
+ *       return [UIColor blackColor];
+ *     } else {
+ *       return [UIColor whiteColor];
+ *     }
+ *   }];
+ * }
+ * ```
+ *
+ * @parameter: rootView - The root view to customize.
+ */
+- (void)customizeRootView:(RCTRootView *)rootView;
 
 /**
  * It creates the RootViewController.
@@ -104,18 +130,8 @@
  * By default, it assigns the rootView to the view property of the rootViewController
  * If you are not using a simple UIViewController, then there could be other methods to use to setup the rootView.
  * For example: UISplitViewController requires `setViewController(_:for:)`
- *
- * @return: void
  */
 - (void)setRootView:(RCTPlatformView *)rootView toRootViewController:(UIViewController *)rootViewController; // [macOS]
-
-/// This method controls whether the App will use RuntimeScheduler. Only applicable in the legacy architecture.
-///
-/// @return: `YES` to use RuntimeScheduler, `NO` to use JavaScript scheduler. The default value is `YES`.
-- (BOOL)runtimeSchedulerEnabled;
-
-#if RCT_NEW_ARCH_ENABLED
-@property (nonatomic, strong) RCTSurfacePresenterBridgeAdapter *bridgeAdapter;
 
 /// This method returns a map of Component Descriptors and Components classes that needs to be registered in the
 /// new renderer. The Component Descriptor is a string which represent the name used in JS to refer to the native
@@ -142,8 +158,8 @@
 - (BOOL)bridgelessEnabled;
 
 /// Return the bundle URL for the main bundle.
-- (NSURL *)getBundleURL;
-
-#endif
+- (NSURL *__nullable)bundleURL;
 
 @end
+
+NS_ASSUME_NONNULL_END

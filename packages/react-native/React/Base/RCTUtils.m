@@ -35,6 +35,20 @@ NSString *__nullable RCTHomePathForURL(NSURL *__nullable URL);
 // Determines if a given image URL refers to a image in Home directory (~)
 BOOL RCTIsHomeAssetURL(NSURL *__nullable imageURL);
 
+// Whether the New Architecture is enabled or not
+static BOOL _newArchEnabled = false;
+BOOL RCTIsNewArchEnabled(void)
+{
+  return _newArchEnabled;
+}
+void RCTSetNewArchEnabled(BOOL enabled)
+{
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    _newArchEnabled = enabled;
+  });
+}
+
 static NSString *__nullable _RCTJSONStringifyNoRetry(id __nullable jsonObject, NSError **error)
 {
   if (!jsonObject) {
@@ -363,7 +377,7 @@ CGSize RCTScreenSize(void)
   return size;
 }
 #else // [macOS
-CGFloat RCTScreenScale()
+CGFloat RCTScreenScale(void)
 {
   return [NSScreen mainScreen].backingScaleFactor;
 }
@@ -378,11 +392,14 @@ CGSize RCTScreenSize(void)
 }
 #endif // macOS]
 
-#if !TARGET_OS_OSX // [macOS]
 CGSize RCTViewportSize(void)
 {
-  UIWindow *window = RCTKeyWindow();
+  RCTUIWindow *window = RCTKeyWindow(); // [macOS]
+#if !TARGET_OS_OSX // [macOS]
   return window ? window.bounds.size : RCTScreenSize();
+#else // [macOS
+  return window ? window.frame.size : RCTScreenSize();
+#endif // macOS]
 }
 
 CGFloat RCTRoundPixelValue(CGFloat value)
@@ -402,28 +419,6 @@ CGFloat RCTFloorPixelValue(CGFloat value)
   CGFloat scale = RCTScreenScale();
   return floor(value * scale) / scale;
 }
-#else // [macOS
-CGSize RCTViewportSize()
-{
-  NSScreen* screen = [NSScreen mainScreen];
-  return screen ? screen.frame.size : RCTScreenSize();
-}
-
-CGFloat RCTRoundPixelValue(CGFloat value, CGFloat scale)
-{
-  return round(value * scale) / scale;
-}
-
-CGFloat RCTCeilPixelValue(CGFloat value, CGFloat scale)
-{
-  return ceil(value * scale) / scale;
-}
-
-CGFloat RCTFloorPixelValue(CGFloat value, CGFloat scale)
-{
-  return floor(value * scale) / scale;
-}
-#endif // macOS]
 
 CGSize RCTSizeInPixels(CGSize pointSize, CGFloat scale)
 {
@@ -604,17 +599,37 @@ RCTUIWindow *__nullable RCTKeyWindow(void) // [macOS]
     return nil;
   }
 
-  for (UIScene *scene in RCTSharedApplication().connectedScenes) {
-    if (scene.activationState != UISceneActivationStateForegroundActive ||
-        ![scene isKindOfClass:[UIWindowScene class]]) {
+  NSSet<UIScene *> *connectedScenes = RCTSharedApplication().connectedScenes;
+
+  UIScene *foregroundActiveScene;
+  UIScene *foregroundInactiveScene;
+
+  for (UIScene *scene in connectedScenes) {
+    if (![scene isKindOfClass:[UIWindowScene class]]) {
       continue;
     }
-    UIWindowScene *windowScene = (UIWindowScene *)scene;
 
-    for (UIWindow *window in windowScene.windows) {
-      if (window.isKeyWindow) {
-        return window;
-      }
+    if (scene.activationState == UISceneActivationStateForegroundActive) {
+      foregroundActiveScene = scene;
+      break;
+    }
+
+    if (!foregroundInactiveScene && scene.activationState == UISceneActivationStateForegroundInactive) {
+      foregroundInactiveScene = scene;
+      // no break, we can have the active scene later in the set.
+    }
+  }
+
+  UIScene *sceneToUse = foregroundActiveScene ? foregroundActiveScene : foregroundInactiveScene;
+  UIWindowScene *windowScene = (UIWindowScene *)sceneToUse;
+
+  if (@available(iOS 15.0, *)) {
+    return windowScene.keyWindow;
+  }
+
+  for (UIWindow *window in windowScene.windows) {
+    if (window.isKeyWindow) {
+      return window;
     }
   }
 
@@ -624,15 +639,12 @@ RCTUIWindow *__nullable RCTKeyWindow(void) // [macOS]
 #endif // macOS]
 }
 
-#if TARGET_OS_VISION // [visionOS
-UIStatusBarManager *__nullable RCTUIStatusBarManager(void) {
-	NSSet *connectedScenes = RCTSharedApplication().connectedScenes;
-	UIWindowScene *windowScene = [connectedScenes anyObject];
-	return windowScene.statusBarManager;
-}
-#endif // visionOS]
-
 #if !TARGET_OS_OSX // [macOS]
+UIStatusBarManager *__nullable RCTUIStatusBarManager(void)
+{
+  return RCTKeyWindow().windowScene.statusBarManager;
+}
+
 UIViewController *__nullable RCTPresentedViewController(void)
 {
   if ([RCTUtilsUIOverride hasPresentedViewController]) {

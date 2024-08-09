@@ -17,7 +17,6 @@ import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactMarker;
 import com.facebook.react.devsupport.LogBoxModule;
-import com.facebook.react.internal.turbomodule.core.interfaces.TurboModule;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.module.annotations.ReactModuleList;
 import com.facebook.react.module.model.ReactModuleInfo;
@@ -57,7 +56,7 @@ import java.util.Map;
       TimingModule.class,
       UIManagerModule.class,
     })
-public class CoreModulesPackage extends TurboReactPackage implements ReactPackageLogger {
+class CoreModulesPackage extends TurboReactPackage implements ReactPackageLogger {
 
   private final ReactInstanceManager mReactInstanceManager;
   private final DefaultHardwareBackBtnHandler mHardwareBackBtnHandler;
@@ -115,7 +114,7 @@ public class CoreModulesPackage extends TurboReactPackage implements ReactPackag
                 reactModule.canOverrideExistingModule(),
                 reactModule.needsEagerInit(),
                 reactModule.isCxxModule(),
-                TurboModule.class.isAssignableFrom(moduleClass)));
+                ReactModuleInfo.classIsTurboModule(moduleClass)));
       }
 
       return () -> reactModuleInfoMap;

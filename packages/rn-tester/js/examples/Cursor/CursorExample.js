@@ -9,8 +9,6 @@
 
 'use strict';
 
-// [macOS]
-
 const React = require('react');
 const {StyleSheet, Text, View} = require('react-native');
 
@@ -41,7 +39,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'blue',
   },
   pointer: {
-    cursor: 'alias',
+    cursor: 'pointer',
   },
   row: {
     flexDirection: 'row',
@@ -181,7 +179,7 @@ exports.examples = [
     render: CursorExamplePointer,
   },
   {
-    title: 'Pointer',
+    title: 'View flattening',
     description: 'Views with a cursor do not get flattened',
     render: CursorExampleViewFlattening,
   },

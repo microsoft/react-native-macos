@@ -61,12 +61,20 @@ static SEL selectorForType(NSString *type)
   return self;
 }
 
+- (BOOL)isBridgeMode
+{
+  // If we are in bridge mode, the bridge is RCTBridge
+  // If we are bridgeless, the bridge is RCTBridgeProxy
+  return [_bridge isKindOfClass:[RCTBridge class]];
+}
+
 - (RCTViewManager *)manager
 {
-  if (!_manager && _bridge) {
+  if (!_manager && [self isBridgeMode]) {
     _manager = [_bridge moduleForClass:_managerClass];
   } else if (!_manager && !_bridgelessViewManager) {
     _bridgelessViewManager = [_managerClass new];
+    _bridgelessViewManager.bridge = _bridge;
     [[NSNotificationCenter defaultCenter] postNotificationName:RCTDidInitializeModuleNotification
                                                         object:nil
                                                       userInfo:@{@"module" : _bridgelessViewManager}];
@@ -267,8 +275,8 @@ static RCTPropBlock createNSInvocationSetter(NSMethodSignature *typeSignature, S
         type == NSSelectorFromString(@"RCTDirectEventBlock:") ||
         type == NSSelectorFromString(@"RCTCapturingEventBlock:")) {
       // Special case for event handlers
-      setterBlock =
-          createEventSetter(name, setter, self.eventInterceptor, _bridge ? _bridge.eventDispatcher : _eventDispatcher);
+      setterBlock = createEventSetter(
+          name, setter, self.eventInterceptor, [self isBridgeMode] ? _bridge.eventDispatcher : _eventDispatcher);
     } else {
       // Ordinary property handlers
       NSMethodSignature *typeSignature = [[RCTConvert class] methodSignatureForSelector:type];
@@ -368,23 +376,22 @@ static RCTPropBlock createNSInvocationSetter(NSMethodSignature *typeSignature, S
 
 - (void)setProps:(NSDictionary<NSString *, id> *)props forView:(id<RCTComponent>)view
 {
+  [self setProps:props forView:view isShadowView:NO];
+}
+
+- (void)setProps:(NSDictionary<NSString *, id> *)props forShadowView:(RCTShadowView *)shadowView
+{
+  [self setProps:props forView:shadowView isShadowView:YES];
+}
+
+- (void)setProps:(NSDictionary<NSString *, id> *)props forView:(id<RCTComponent>)view isShadowView:(BOOL)isShadowView
+{
   if (!view) {
     return;
   }
 
   [props enumerateKeysAndObjectsUsingBlock:^(NSString *key, id json, __unused BOOL *stop) {
-    [self propBlockForKey:key isShadowView:NO](view, json);
-  }];
-}
-
-- (void)setProps:(NSDictionary<NSString *, id> *)props forShadowView:(RCTShadowView *)shadowView
-{
-  if (!shadowView) {
-    return;
-  }
-
-  [props enumerateKeysAndObjectsUsingBlock:^(NSString *key, id json, __unused BOOL *stop) {
-    [self propBlockForKey:key isShadowView:YES](shadowView, json);
+    [self propBlockForKey:key isShadowView:isShadowView](view, json);
   }];
 }
 
@@ -419,7 +426,20 @@ static RCTPropBlock createNSInvocationSetter(NSMethodSignature *typeSignature, S
 + (NSDictionary<NSString *, id> *)constantsForViewMangerClass:(Class)managerClass
 {
   if ([managerClass instancesRespondToSelector:@selector(constantsToExport)]) {
-    return [[managerClass new] constantsToExport];
+    BOOL shouldRunOnMainThread = NO;
+
+    if ([managerClass respondsToSelector:@selector(requiresMainQueueSetup)]) {
+      shouldRunOnMainThread = [managerClass requiresMainQueueSetup];
+    }
+    if (shouldRunOnMainThread) {
+      __block NSDictionary<NSString *, id> *constants;
+      RCTUnsafeExecuteOnMainQueueSync(^{
+        constants = [[managerClass new] constantsToExport];
+      });
+      return constants;
+    } else {
+      return [[managerClass new] constantsToExport];
+    }
   }
   return @{};
 }

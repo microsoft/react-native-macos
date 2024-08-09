@@ -16,8 +16,9 @@ else
   source[:tag] = "v#{version}"
 end
 
-folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -DFOLLY_HAVE_CLOCK_GETTIME=1 -Wno-comma -Wno-shorten-64-to-32'
-folly_version = '2023.08.07.00'
+folly_config = get_folly_config()
+folly_compiler_flags = folly_config[:compiler_flags]
+folly_version = folly_config[:version]
 boost_compiler_flags = '-Wno-documentation'
 
 Pod::Spec.new do |s|
@@ -32,7 +33,7 @@ Pod::Spec.new do |s|
   s.source_files         = "jsireact/*.{cpp,h}"
   s.compiler_flags         = folly_compiler_flags + ' ' + boost_compiler_flags
   s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/RCT-Folly\" \"$(PODS_ROOT)/DoubleConversion\" \"$(PODS_ROOT)/fmt/include\"",
-                               "CLANG_CXX_LANGUAGE_STANDARD" => "c++20" }
+                               "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard() }
   s.header_dir             = "jsireact"
 
   s.dependency "React-cxxreact", version
@@ -42,6 +43,7 @@ Pod::Spec.new do |s|
   s.dependency "DoubleConversion"
   s.dependency "fmt", "9.1.0"
   s.dependency "glog"
+  add_dependency(s, "React-jsinspector", :framework_name => 'jsinspector_modern')
 
   if ENV['USE_HERMES'] == nil || ENV['USE_HERMES'] == "1"
     s.dependency 'hermes-engine'

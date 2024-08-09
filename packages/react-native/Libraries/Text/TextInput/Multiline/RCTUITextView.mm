@@ -316,46 +316,11 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
 #endif // macOS]
 }
 
-#if TARGET_OS_OSX // [macOS
-- (NSRange)selectedTextRange
+// After restoring the previous cursor position, we manually trigger the scroll to the new cursor position (PR 38679).
+- (void)scrollRangeToVisible:(NSRange)range
 {
-  return [super selectedRange];
+  [super scrollRangeToVisible:range];
 }
-
-- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)draggingInfo
-{
-  NSDragOperation dragOperation = [self.textInputDelegate textInputDraggingEntered:draggingInfo];
-  NSDragOperation superOperation = [super draggingEntered:draggingInfo];
-  // The delegate's operation should take precedence.
-  return dragOperation != NSDragOperationNone ? dragOperation : superOperation;
-}
-
-- (void)draggingExited:(id<NSDraggingInfo>)draggingInfo
-{
-  [self.textInputDelegate textInputDraggingExited:draggingInfo];
-  [super draggingExited:draggingInfo];
-}
-
-- (BOOL)performDragOperation:(id<NSDraggingInfo>)draggingInfo
-{
-  if ([self.textInputDelegate textInputShouldHandleDragOperation:draggingInfo]) {
-    return [super performDragOperation:draggingInfo];
-  }
-  return YES;
-}
-- (NSArray *)readablePasteboardTypes
-{
-  return _readablePasteboardTypes ? _readablePasteboardTypes : [super readablePasteboardTypes];
-}
-
-// Remove the default touchbar that comes with NSTextView, since the actions that come with the
-// default touchbar are currently not supported by RCTUITextView
-- (NSTouchBar *)makeTouchBar
-{
-    return nil;
-}
-
-#endif // macOS]
 
 - (void)paste:(id)sender
 {
@@ -460,7 +425,6 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
   UIEdgeInsets textContainerInset = self.textContainerInsets;
 #endif // macOS]
   NSString *placeholder = self.placeholder ?: @"";
-#if !TARGET_OS_OSX // [macOS]
   CGSize maxPlaceholderSize =
       CGSizeMake(UIEdgeInsetsInsetRect(self.bounds, textContainerInset).size.width, CGFLOAT_MAX);
   CGSize placeholderSize = [placeholder boundingRectWithSize:maxPlaceholderSize
@@ -469,11 +433,6 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
                                                      context:nil]
                                .size;
   placeholderSize = CGSizeMake(RCTCeilPixelValue(placeholderSize.width), RCTCeilPixelValue(placeholderSize.height));
-#else // [macOS
-  CGFloat scale = _pointScaleFactor ?: self.window.backingScaleFactor;
-  CGSize placeholderSize = [placeholder sizeWithAttributes:[self _placeholderTextAttributes]];
-  placeholderSize = CGSizeMake(RCTCeilPixelValue(placeholderSize.width, scale), RCTCeilPixelValue(placeholderSize.height, scale));
-#endif // macOS]
   placeholderSize.width += textContainerInset.left + textContainerInset.right;
   placeholderSize.height += textContainerInset.top + textContainerInset.bottom;
   // Returning size DOES contain `textContainerInset` (aka `padding`; as `sizeThatFits:` does).

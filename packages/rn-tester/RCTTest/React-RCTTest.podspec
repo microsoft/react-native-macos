@@ -16,8 +16,9 @@ else
   source[:tag] = "v#{version}"
 end
 
-folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -DFOLLY_HAVE_CLOCK_GETTIME=1 -Wno-comma -Wno-shorten-64-to-32'
-folly_version = '2023.08.07.00'
+folly_config = get_folly_config()
+folly_compiler_flags = folly_config[:compiler_flags]
+folly_version = folly_config[:version]
 
 Pod::Spec.new do |s|
   s.name                   = "React-RCTTest"
@@ -35,7 +36,7 @@ Pod::Spec.new do |s|
   s.header_dir             = "RCTTest"
   s.pod_target_xcconfig    = {
                              "USE_HEADERMAP" => "YES",
-                             "CLANG_CXX_LANGUAGE_STANDARD" => "c++20",
+                             "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                              "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/RCT-Folly\""
                            }
 
