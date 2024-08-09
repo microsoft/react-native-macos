@@ -36,6 +36,7 @@ static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
   BOOL _hasInputAccessoryView;
   // [macOS] remove explicit _predictedText ivar declaration
   BOOL _didMoveToWindow;
+  BOOL _isCurrentlyEditing; // [macOS] avoids duplicating effects of textInputDid(Begin|End)Editing calls
 }
 
 #if !TARGET_OS_OSX // [macOS]
@@ -71,6 +72,7 @@ static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
   if (self = [super initWithEventDispatcher:bridge.eventDispatcher]) { // [macOS]
     _bridge = bridge;
     _eventDispatcher = bridge.eventDispatcher;
+    _isCurrentlyEditing = NO; // [macOS]
   }
 
   return self;
@@ -455,16 +457,19 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
       [self.backedTextInputView selectAll:nil];
     }
 #if TARGET_OS_OSX // [macOS
-  } else {
+  } else if (!_isCurrentlyEditing) {
     [self.backedTextInputView setSelectedTextRange:NSMakeRange(NSNotFound, 0) notifyDelegate:NO];
 #endif // macOS]
   }
 
-  [_eventDispatcher sendTextEventWithType:RCTTextEventTypeFocus
-                                 reactTag:self.reactTag
-                                     text:[self.backedTextInputView.attributedText.string copy]
-                                      key:nil
-                               eventCount:_nativeEventCount];
+  if (!_isCurrentlyEditing) { // [macOS] avoid sending duplicate onFocus events
+    _isCurrentlyEditing = YES; // [macOS]
+    [_eventDispatcher sendTextEventWithType:RCTTextEventTypeFocus
+                                   reactTag:self.reactTag
+                                       text:[self.backedTextInputView.attributedText.string copy]
+                                        key:nil
+                                 eventCount:_nativeEventCount];
+  } // [macOS]
 }
 
 - (BOOL)textInputShouldEndEditing
@@ -474,7 +479,15 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (void)textInputDidEndEditing
 {
+  // [macOS avoid sending duplicate onEndEditing/onBlur events
+  if (!_isCurrentlyEditing) {
+    return;
+  }
+  _isCurrentlyEditing = NO;
+  // macOS]
+
   self.ghostText = nil; // [macOS]
+
 
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeEnd
                                  reactTag:self.reactTag
