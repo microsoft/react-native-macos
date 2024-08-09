@@ -15,6 +15,9 @@ import static java.lang.Boolean.TRUE;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -54,11 +57,13 @@ import com.facebook.react.fabric.FabricUIManager;
 import com.facebook.react.interfaces.TaskInterface;
 import com.facebook.react.interfaces.exceptionmanager.ReactJsExceptionHandler;
 import com.facebook.react.interfaces.fabric.ReactSurface;
+import com.facebook.react.modules.appearance.AppearanceModule;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.runtime.internal.bolts.Continuation;
 import com.facebook.react.runtime.internal.bolts.Task;
 import com.facebook.react.runtime.internal.bolts.TaskCompletionSource;
+import com.facebook.react.turbomodule.core.interfaces.CallInvokerHolder;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.events.BlackHoleEventDispatcher;
 import com.facebook.react.uimanager.events.EventDispatcher;
@@ -373,7 +378,9 @@ public class ReactHostImpl implements ReactHost {
   public ReactSurface createSurface(
       Context context, String moduleName, @Nullable Bundle initialProps) {
     ReactSurfaceImpl surface = new ReactSurfaceImpl(context, moduleName, initialProps);
-    surface.attachView(new ReactSurfaceView(context, surface));
+    ReactSurfaceView surfaceView = new ReactSurfaceView(context, surface);
+    surfaceView.setShouldLogContentAppeared(true);
+    surface.attachView(surfaceView);
     surface.attach(this);
     return surface;
   }
@@ -589,6 +596,16 @@ public class ReactHostImpl implements ReactHost {
 
   /* package */
   @Nullable
+  NativeModule getNativeModule(String nativeModuleName) {
+    final ReactInstance reactInstance = mReactInstanceTaskRef.get().getResult();
+    if (reactInstance != null) {
+      return reactInstance.getNativeModule(nativeModuleName);
+    }
+    return null;
+  }
+
+  /* package */
+  @Nullable
   RuntimeExecutor getRuntimeExecutor() {
     final ReactInstance reactInstance = mReactInstanceTaskRef.get().getResult();
     if (reactInstance != null) {
@@ -598,6 +615,115 @@ public class ReactHostImpl implements ReactHost {
         TAG,
         new ReactNoCrashSoftException("Tried to get runtime executor while instance is not ready"));
     return null;
+  }
+
+  /* package */
+  @Nullable
+  CallInvokerHolder getJSCallInvokerHolder() {
+    final ReactInstance reactInstance = mReactInstanceTaskRef.get().getResult();
+    if (reactInstance != null) {
+      return reactInstance.getJSCallInvokerHolder();
+    }
+    ReactSoftExceptionLogger.logSoftException(
+        TAG,
+        new ReactNoCrashSoftException(
+            "Tried to get JSCallInvokerHolder while instance is not ready"));
+    return null;
+  }
+
+  /**
+   * To be called when the host activity receives an activity result.
+   *
+   * @param activity The host activity
+   */
+  @ThreadConfined(UI)
+  @Override
+  public void onActivityResult(
+      Activity activity, int requestCode, int resultCode, @Nullable Intent data) {
+    final String method =
+        "onActivityResult(activity = \""
+            + activity
+            + "\", requestCode = \""
+            + requestCode
+            + "\", resultCode = \""
+            + resultCode
+            + "\", data = \""
+            + data
+            + "\")";
+    log(method);
+
+    ReactContext currentContext = getCurrentReactContext();
+    if (currentContext != null) {
+      currentContext.onActivityResult(activity, requestCode, resultCode, data);
+    } else {
+      ReactSoftExceptionLogger.logSoftException(
+          TAG,
+          new ReactNoCrashSoftException(
+              "Tried to access onActivityResult while context is not ready"));
+    }
+  }
+
+  /* To be called when focus has changed for the hosting window. */
+  @ThreadConfined(UI)
+  @Override
+  public void onWindowFocusChange(boolean hasFocus) {
+    final String method = "onWindowFocusChange(hasFocus = \"" + hasFocus + "\")";
+    log(method);
+
+    ReactContext currentContext = getCurrentReactContext();
+    if (currentContext != null) {
+      currentContext.onWindowFocusChange(hasFocus);
+    } else {
+      ReactSoftExceptionLogger.logSoftException(
+          TAG,
+          new ReactNoCrashSoftException(
+              "Tried to access onWindowFocusChange while context is not ready"));
+    }
+  }
+
+  /* This method will give JS the opportunity to receive intents via Linking.
+   *
+   * @param intent The incoming intent
+   */
+  @ThreadConfined(UI)
+  @Override
+  public void onNewIntent(Intent intent) {
+    log("onNewIntent()");
+
+    ReactContext currentContext = getCurrentReactContext();
+    if (currentContext != null) {
+      String action = intent.getAction();
+      Uri uri = intent.getData();
+
+      if (uri != null
+          && (Intent.ACTION_VIEW.equals(action)
+              || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action))) {
+        DeviceEventManagerModule deviceEventManagerModule =
+            currentContext.getNativeModule(DeviceEventManagerModule.class);
+        if (deviceEventManagerModule != null) {
+          deviceEventManagerModule.emitNewIntentReceived(uri);
+        }
+      }
+      currentContext.onNewIntent(getCurrentActivity(), intent);
+    } else {
+      ReactSoftExceptionLogger.logSoftException(
+          TAG,
+          new ReactNoCrashSoftException("Tried to access onNewIntent while context is not ready"));
+    }
+  }
+
+  @ThreadConfined(UI)
+  @Override
+  public void onConfigurationChanged(Context updatedContext) {
+    ReactContext currentReactContext = getCurrentReactContext();
+    if (currentReactContext != null) {
+      AppearanceModule appearanceModule =
+          currentReactContext.getNativeModule(AppearanceModule.class);
+
+      if (appearanceModule != null) {
+        appearanceModule.onConfigurationChanged(updatedContext);
+      }
+    }
   }
 
   @Nullable
@@ -1402,9 +1528,9 @@ public class ReactHostImpl implements ReactHost {
 
                     // Step 3: Stop all React Native surfaces
                     stopAttachedSurfaces(method, reactInstance);
-
-                    // TODO(T161461674): Should we clear mAttachedSurfaces?
-                    // Not clearing mAttachedSurfaces could lead to a memory leak.
+                    synchronized (mAttachedSurfaces) {
+                      mAttachedSurfaces.clear();
+                    }
 
                     return task;
                   },

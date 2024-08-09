@@ -1733,35 +1733,46 @@ static RCTPlatformView *_jsResponder; // [macOS]
 {
   self = [super init];
   if (self) {
-    self->_uiManager = uiManager;
-    self->_registry = registry;
+    _uiManager = uiManager;
+    _registry = registry;
   }
   return self;
+}
+
+- (NSUInteger)count
+{
+  return self->_registry.count;
+}
+
+- (NSEnumerator *)keyEnumerator
+{
+  return self->_registry.keyEnumerator;
 }
 
 - (id)objectForKey:(id)key
 {
   if (![key isKindOfClass:[NSNumber class]]) {
-    return [super objectForKeyedSubscript:key];
+    return NULL;
   }
 
   NSNumber *index = (NSNumber *)key;
-  RCTPlatformView *view = [_uiManager viewForReactTag:index]; // [macOS]
+  RCTPlatformView *view = _registry[index]; // [macOS]
   if (view) {
     return [RCTUIManager paperViewOrCurrentView:view];
   }
-  view = _registry[index];
+  view = [_uiManager viewForReactTag:index];
   if (view) {
     return [RCTUIManager paperViewOrCurrentView:view];
   }
-  return [super objectForKeyedSubscript:key];
+  return NULL;
 }
 
 - (void)removeObjectForKey:(id)key
 {
   if (![key isKindOfClass:[NSNumber class]]) {
-    return [super removeObjectForKey:key];
+    return;
   }
+
   NSNumber *tag = (NSNumber *)key;
 
   if (_registry[key]) {
@@ -1769,8 +1780,6 @@ static RCTPlatformView *_jsResponder; // [macOS]
     [mutableRegistry removeObjectForKey:tag];
   } else if ([_uiManager viewForReactTag:tag]) {
     [_uiManager removeViewFromRegistry:tag];
-  } else {
-    [super removeObjectForKey:key];
   }
 }
 

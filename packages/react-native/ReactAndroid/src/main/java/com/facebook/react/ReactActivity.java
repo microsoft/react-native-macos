@@ -65,6 +65,10 @@ public abstract class ReactActivity extends AppCompatActivity
     mDelegate.onDestroy();
   }
 
+  public @Nullable ReactDelegate getReactDelegate() {
+    return mDelegate.getReactDelegate();
+  }
+
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);

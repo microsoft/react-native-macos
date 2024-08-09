@@ -293,6 +293,11 @@ using namespace facebook::react;
     needsInvalidateLayer = YES;
   }
 
+  // `cursor`
+  if (oldViewProps.cursor != newViewProps.cursor) {
+    needsInvalidateLayer = YES;
+  }
+
   // `shouldRasterize`
   if (oldViewProps.shouldRasterize != newViewProps.shouldRasterize) {
     self.layer.shouldRasterize = newViewProps.shouldRasterize;
@@ -714,6 +719,33 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
   }
 #endif // [visionOS]
 
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 /* __IPHONE_17_0 */
+  // Stage 1.5. Cursor / Hover Effects
+  if (@available(iOS 17.0, *)) {
+    UIHoverStyle *hoverStyle = nil;
+    if (_props->cursor == Cursor::Pointer) {
+      const RCTCornerInsets cornerInsets =
+          RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero);
+#if TARGET_OS_IOS
+      // Due to an Apple bug, it seems on iOS, UIShapes made with `[UIShape shapeWithBezierPath:]`
+      // evaluate their shape on the superviews' coordinate space. This leads to the hover shape
+      // rendering incorrectly on iOS, iOS apps in compatibility mode on visionOS, but not on visionOS.
+      // To work around this, for iOS, we can calculate the border path based on `view.frame` (the
+      // superview's coordinate space) instead of view.bounds.
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.frame, cornerInsets, NULL);
+#else // TARGET_OS_VISION
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL);
+#endif
+      UIBezierPath *bezierPath = [UIBezierPath bezierPathWithCGPath:borderPath];
+      CGPathRelease(borderPath);
+      UIShape *shape = [UIShape shapeWithBezierPath:bezierPath];
+
+      hoverStyle = [UIHoverStyle styleWithEffect:[UIHoverAutomaticEffect effect] shape:shape];
+    }
+    [self setHoverStyle:hoverStyle];
+  }
+#endif
+
   // Stage 2. Border Rendering
   const bool useCoreAnimationBorderRendering =
       borderMetrics.borderColors.isUniform() && borderMetrics.borderWidths.isUniform() &&
@@ -723,8 +755,9 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
           // iOS draws borders in front of the content whereas CSS draws them behind
           // the content. For this reason, only use iOS border drawing when clipping
           // or when the border is hidden.
-          borderMetrics.borderWidths.left == 0 ||
-          colorComponentsFromColor(borderMetrics.borderColors.left).alpha == 0 || self.clipsToBounds);
+          borderMetrics.borderWidths.left == 0 || self.clipsToBounds ||
+          (colorComponentsFromColor(borderMetrics.borderColors.left).alpha == 0 &&
+           (*borderMetrics.borderColors.left).getUIColor() != nullptr));
 
 #if !TARGET_OS_OSX // [macOS]
   CGColorRef backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection].CGColor;

@@ -1,6 +1,6 @@
 {
   "name": "react-native-macos",
-  "version": "1000.0.0",
+  "version": "0.74.0",
   "description": "React Native for macOS",
   "license": "MIT",
   "repository": {
@@ -64,6 +64,9 @@
     "scripts/hermes/hermes-utils.js",
     "scripts/hermes/prepare-hermes-for-build.js",
     "scripts/ios-configure-glog.sh",
+    "scripts/xcode/ccache-clang++.sh",
+    "scripts/xcode/ccache-clang.sh",
+    "scripts/xcode/ccache.conf",
     "scripts/xcode/with-environment.sh",
     "scripts/native_modules.rb",
     "scripts/node-binary.sh",
@@ -95,20 +98,26 @@
     "featureflags-update": "node ./scripts/featureflags/index.js"
   },
   "peerDependencies": {
+    "@types/react": "^18.2.6",
     "react": "18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@jest/create-cache-key-function": "^29.6.3",
-    "@react-native-community/cli": "13.6.0",
-    "@react-native-community/cli-platform-android": "13.6.0",
-    "@react-native-community/cli-platform-ios": "13.6.0",
-    "@react-native-mac/virtualized-lists": "0.74.0",
-    "@react-native/assets-registry": "0.74.0",
-    "@react-native/codegen": "0.74.0",
-    "@react-native/community-cli-plugin": "0.74.0",
-    "@react-native/gradle-plugin": "0.74.0",
-    "@react-native/js-polyfills": "0.74.0",
-    "@react-native/normalize-colors": "0.74.1",
+    "@react-native-community/cli": "13.6.9",
+    "@react-native-community/cli-platform-android": "13.6.9",
+    "@react-native-community/cli-platform-ios": "13.6.9",
+    "@react-native-mac/virtualized-lists": "0.74.87",
+    "@react-native/assets-registry": "0.74.87",
+    "@react-native/codegen": "0.74.87",
+    "@react-native/community-cli-plugin": "0.74.87",
+    "@react-native/gradle-plugin": "0.74.87",
+    "@react-native/js-polyfills": "0.74.87",
+    "@react-native/normalize-colors": "0.74.87",
     "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",

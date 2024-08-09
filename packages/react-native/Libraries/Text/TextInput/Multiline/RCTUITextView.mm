@@ -297,6 +297,13 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
 
 #pragma mark - Overrides
 
+#if TARGET_OS_OSX // [macOS
+- (NSRange)selectedTextRange
+{
+  return [super selectedRange];
+}
+#endif // macOS]
+
 #if !TARGET_OS_OSX // [macOS]
 - (void)setSelectedTextRange:(UITextRange *)selectedTextRange notifyDelegate:(BOOL)notifyDelegate
 #else // [macOS
@@ -316,12 +323,35 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
 #endif // macOS]
 }
 
-#if TARGET_OS_OSX // [macOS
-- (NSRange)selectedTextRange
+// After restoring the previous cursor position, we manually trigger the scroll to the new cursor position (PR 38679).
+- (void)scrollRangeToVisible:(NSRange)range
 {
-  return [super selectedRange];
+  [super scrollRangeToVisible:range];
 }
 
+- (void)paste:(id)sender
+{
+#if TARGET_OS_OSX // [macOS
+  if ([self.textInputDelegate textInputShouldHandlePaste:self]) 
+  {
+#endif // macOS]
+    _textWasPasted = YES;
+    [super paste:sender];
+#if TARGET_OS_OSX // [macOS
+  }
+#endif // macOS]
+}
+
+// Turn off scroll animation to fix flaky scrolling.
+// This is only necessary for iOS < 14.
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED < 140000
+- (void)setContentOffset:(CGPoint)contentOffset animated:(__unused BOOL)animated
+{
+  [super setContentOffset:contentOffset animated:NO];
+}
+#endif
+
+#if TARGET_OS_OSX // [macOS
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)draggingInfo
 {
   NSDragOperation dragOperation = [self.textInputDelegate textInputDraggingEntered:draggingInfo];
@@ -356,28 +386,6 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
 }
 
 #endif // macOS]
-
-- (void)paste:(id)sender
-{
-#if TARGET_OS_OSX // [macOS
-  if ([self.textInputDelegate textInputShouldHandlePaste:self]) 
-  {
-#endif // macOS]
-    _textWasPasted = YES;
-    [super paste:sender];
-#if TARGET_OS_OSX // [macOS
-  }
-#endif // macOS]
-}
-
-// Turn off scroll animation to fix flaky scrolling.
-// This is only necessary for iOS < 14.
-#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED < 140000
-- (void)setContentOffset:(CGPoint)contentOffset animated:(__unused BOOL)animated
-{
-  [super setContentOffset:contentOffset animated:NO];
-}
-#endif
 
 #if TARGET_OS_OSX // [macOS
 

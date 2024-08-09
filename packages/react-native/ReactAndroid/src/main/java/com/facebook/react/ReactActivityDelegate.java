@@ -88,6 +88,10 @@ public class ReactActivityDelegate {
     return ((ReactApplication) getPlainActivity().getApplication()).getReactHost();
   }
 
+  protected @Nullable ReactDelegate getReactDelegate() {
+    return mReactDelegate;
+  }
+
   public ReactInstanceManager getReactInstanceManager() {
     return mReactDelegate.getReactInstanceManager();
   }
@@ -105,7 +109,11 @@ public class ReactActivityDelegate {
     } else {
       mReactDelegate =
           new ReactDelegate(
-              getPlainActivity(), getReactNativeHost(), mainComponentName, launchOptions) {
+              getPlainActivity(),
+              getReactNativeHost(),
+              mainComponentName,
+              launchOptions,
+              isFabricEnabled()) {
             @Override
             protected ReactRootView createRootView() {
               return ReactActivityDelegate.this.createRootView(launchOptions);
@@ -144,15 +152,7 @@ public class ReactActivityDelegate {
   }
 
   public boolean onKeyDown(int keyCode, KeyEvent event) {
-    if (!ReactFeatureFlags.enableBridgelessArchitecture) {
-      if (getReactNativeHost().hasInstance()
-          && getReactNativeHost().getUseDeveloperSupport()
-          && keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD) {
-        event.startTracking();
-        return true;
-      }
-    }
-    return false;
+    return mReactDelegate.onKeyDown(keyCode, event);
   }
 
   public boolean onKeyUp(int keyCode, KeyEvent event) {
@@ -160,15 +160,7 @@ public class ReactActivityDelegate {
   }
 
   public boolean onKeyLongPress(int keyCode, KeyEvent event) {
-    if (!ReactFeatureFlags.enableBridgelessArchitecture) {
-      if (getReactNativeHost().hasInstance()
-          && getReactNativeHost().getUseDeveloperSupport()
-          && keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD) {
-        getReactNativeHost().getReactInstanceManager().showDevOptionsDialog();
-        return true;
-      }
-    }
-    return false;
+    return mReactDelegate.onKeyLongPress(keyCode);
   }
 
   public boolean onBackPressed() {
@@ -176,29 +168,15 @@ public class ReactActivityDelegate {
   }
 
   public boolean onNewIntent(Intent intent) {
-    if (!ReactFeatureFlags.enableBridgelessArchitecture) {
-      if (getReactNativeHost().hasInstance()) {
-        getReactNativeHost().getReactInstanceManager().onNewIntent(intent);
-        return true;
-      }
-    }
-    return false;
+    return mReactDelegate.onNewIntent(intent);
   }
 
   public void onWindowFocusChanged(boolean hasFocus) {
-    if (!ReactFeatureFlags.enableBridgelessArchitecture) {
-      if (getReactNativeHost().hasInstance()) {
-        getReactNativeHost().getReactInstanceManager().onWindowFocusChange(hasFocus);
-      }
-    }
+    mReactDelegate.onWindowFocusChanged(hasFocus);
   }
 
   public void onConfigurationChanged(Configuration newConfig) {
-    if (!ReactFeatureFlags.enableBridgelessArchitecture) {
-      if (getReactNativeHost().hasInstance()) {
-        getReactInstanceManager().onConfigurationChanged(getContext(), newConfig);
-      }
-    }
+    mReactDelegate.onConfigurationChanged(newConfig);
   }
 
   public void requestPermissions(

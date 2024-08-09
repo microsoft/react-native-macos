@@ -705,7 +705,7 @@ inline void fromRawValue(
   react_native_expect(false);
 }
 
-// [macOS [visionOS]
+// [macOS
 inline void fromRawValue(
     const PropsParserContext& context,
     const RawValue& value,
@@ -799,7 +799,7 @@ inline void fromRawValue(
   LOG(ERROR) << "Could not parse Cursor:" << stringValue;
   react_native_expect(false);
 }
-// macOS] [visionOS]
+// macOS]
 
 inline void fromRawValue(
     const PropsParserContext& /*context*/,

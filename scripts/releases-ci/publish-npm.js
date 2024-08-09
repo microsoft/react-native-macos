@@ -20,13 +20,13 @@ const {getNpmInfo, publishPackage} = require('../npm-utils');
 const {removeNewArchFlags} = require('../releases/remove-new-arch-flags');
 const {setReactNativeVersion} = require('../releases/set-rn-version');
 const setVersion = require('../releases/set-version');
-const {getPackages} = require('../releases/utils/monorepo');
 /* [macOS We do not generate Android artifacts for React Native macOS
 const {
   generateAndroidArtifacts,
   publishAndroidArtifactsToMaven,
 } = require('../releases/utils/release-utils');
 macOS] */
+const {getPackages} = require('../utils/monorepo');
 const path = require('path');
 const yargs = require('yargs');
 

@@ -552,7 +552,7 @@ RCT_ENUM_CONVERTER(
     integerValue)
 #endif // [macOS]
 
-// [macOS [visionOS]
+// [macOS
 RCT_ENUM_CONVERTER(
     RCTCursor,
     (@{
@@ -579,7 +579,7 @@ RCT_ENUM_CONVERTER(
     }),
     RCTCursorAuto,
     integerValue)
-// macOS] [visionOS]
+// macOS]
 
 #if TARGET_OS_OSX // [macOS
 RCT_MULTI_ENUM_CONVERTER(NSTextCheckingTypes, (@{

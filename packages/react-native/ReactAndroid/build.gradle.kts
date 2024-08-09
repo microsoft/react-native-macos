@@ -126,6 +126,26 @@ val preparePrefab by
                       Pair("../ReactCommon/react/renderer/components/view/platform/android/", ""),
                   )),
               PrefabPreprocessingEntry(
+                  "rrc_text",
+                  listOf(
+                      Pair(
+                          "../ReactCommon/react/renderer/components/text/",
+                          "react/renderer/components/text/"),
+                      Pair(
+                          "../ReactCommon/react/renderer/attributedstring",
+                          "react/renderer/attributedstring"),
+                  )),
+              PrefabPreprocessingEntry(
+                  "rrc_textinput",
+                  listOf(
+                      Pair(
+                          "../ReactCommon/react/renderer/components/textinput/",
+                          "react/renderer/components/textinput/"),
+                      Pair(
+                          "../ReactCommon/react/renderer/components/textinput/platform/android/",
+                          ""),
+                  )),
+              PrefabPreprocessingEntry(
                   "rrc_legacyviewmanagerinterop",
                   Pair(
                       "../ReactCommon/react/renderer/components/legacyviewmanagerinterop/",
@@ -138,6 +158,14 @@ val preparePrefab by
               PrefabPreprocessingEntry(
                   "react_render_mapbuffer",
                   Pair("../ReactCommon/react/renderer/mapbuffer/", "react/renderer/mapbuffer/")),
+              PrefabPreprocessingEntry(
+                  "react_render_textlayoutmanager",
+                  listOf(
+                      Pair(
+                          "../ReactCommon/react/renderer/textlayoutmanager/",
+                          "react/renderer/textlayoutmanager/"),
+                      Pair("../ReactCommon/react/renderer/textlayoutmanager/platform/android/", ""),
+                  )),
               PrefabPreprocessingEntry(
                   "yoga",
                   listOf(
@@ -470,6 +498,8 @@ android {
   }
   if (rootProject.hasProperty("ndkVersion") && rootProject.properties["ndkVersion"] != null) {
     ndkVersion = rootProject.properties["ndkVersion"].toString()
+  } else {
+    ndkVersion = libs.versions.ndkVersion.get()
   }
 
   compileOptions {
@@ -538,11 +568,14 @@ android {
             "rrc_image",
             "rrc_root",
             "rrc_view",
+            "rrc_text",
+            "rrc_textinput",
             "rrc_legacyviewmanagerinterop",
             "jsi",
             "glog",
             "fabricjni",
             "react_render_mapbuffer",
+            "react_render_textlayoutmanager",
             "yoga",
             "folly_runtime",
             "react_nativemodule_core",
@@ -662,6 +695,8 @@ android {
     create("rrc_image") { headers = File(prefabHeadersDir, "rrc_image").absolutePath }
     create("rrc_root") { headers = File(prefabHeadersDir, "rrc_root").absolutePath }
     create("rrc_view") { headers = File(prefabHeadersDir, "rrc_view").absolutePath }
+    create("rrc_text") { headers = File(prefabHeadersDir, "rrc_text").absolutePath }
+    create("rrc_textinput") { headers = File(prefabHeadersDir, "rrc_textinput").absolutePath }
     create("rrc_legacyviewmanagerinterop") {
       headers = File(prefabHeadersDir, "rrc_legacyviewmanagerinterop").absolutePath
     }
@@ -670,6 +705,9 @@ android {
     create("fabricjni") { headers = File(prefabHeadersDir, "fabricjni").absolutePath }
     create("react_render_mapbuffer") {
       headers = File(prefabHeadersDir, "react_render_mapbuffer").absolutePath
+    }
+    create("react_render_textlayoutmanager") {
+      headers = File(prefabHeadersDir, "react_render_textlayoutmanager").absolutePath
     }
     create("yoga") { headers = File(prefabHeadersDir, "yoga").absolutePath }
     create("folly_runtime") { headers = File(prefabHeadersDir, "folly_runtime").absolutePath }
