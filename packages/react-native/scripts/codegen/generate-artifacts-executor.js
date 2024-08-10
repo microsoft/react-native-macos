@@ -283,11 +283,7 @@ function findLibrariesFromReactNativeConfig(projectRoot) {
       return [];
     }
 
-    return extractLibrariesFromJSON(
-      configFile,
-      configFile.name,
-      codegenConfigFileDir,
-    );
+    return extractLibrariesFromJSON(configFile, codegenConfigFileDir);
   });
 }
 
@@ -368,7 +364,7 @@ function computeOutputPath(projectRoot, baseOutputPath, pkgJson, platform) {
   if (baseOutputPath == null) {
     const outputDirFromPkgJson = readOutputDirFromPkgJson(pkgJson, platform);
     if (outputDirFromPkgJson != null) {
-      baseOutputPath = outputDirFromPkgJson;
+      baseOutputPath = path.join(projectRoot, outputDirFromPkgJson);
     } else {
       baseOutputPath = projectRoot;
     }

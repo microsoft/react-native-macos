@@ -136,11 +136,11 @@ function translateFunctionParamToJavaType(
     case 'NumberTypeAnnotation':
       return wrapOptional('double', isRequired);
     case 'FloatTypeAnnotation':
-      return wrapOptional('float', isRequired);
+      return wrapOptional('double', isRequired);
     case 'DoubleTypeAnnotation':
       return wrapOptional('double', isRequired);
     case 'Int32TypeAnnotation':
-      return wrapOptional('int', isRequired);
+      return wrapOptional('double', isRequired);
     case 'BooleanTypeAnnotation':
       return wrapOptional('boolean', isRequired);
     case 'EnumDeclaration':
@@ -462,7 +462,7 @@ module.exports = {
         'com.facebook.react.bridge.ReactApplicationContext',
         'com.facebook.react.bridge.ReactContextBaseJavaModule',
         'com.facebook.react.bridge.ReactMethod',
-        'com.facebook.react.internal.turbomodule.core.interfaces.TurboModule',
+        'com.facebook.react.turbomodule.core.interfaces.TurboModule',
         'com.facebook.proguard.annotations.DoNotStrip',
         'javax.annotation.Nonnull',
       ]);
