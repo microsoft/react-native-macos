@@ -3,5 +3,5 @@
   "comment": "Release virtualized-lists for React Native macOS 0.74",
   "packageName": "@react-native-mac/virtualized-lists",
   "email": "sanajmi@microsoft.com",
-  "dependentChangeType": "patch"
+  "dependentChangeType": "none"
 }
