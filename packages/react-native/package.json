@@ -111,7 +111,7 @@
     "@react-native-community/cli": "13.6.9",
     "@react-native-community/cli-platform-android": "13.6.9",
     "@react-native-community/cli-platform-ios": "13.6.9",
-    "@react-native-mac/virtualized-lists": "0.74.87",
+    "@react-native-mac/virtualized-lists": "0.74.86",
     "@react-native/assets-registry": "0.74.87",
     "@react-native/codegen": "0.74.87",
     "@react-native/community-cli-plugin": "0.74.87",
