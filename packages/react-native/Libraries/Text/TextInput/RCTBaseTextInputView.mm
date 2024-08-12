@@ -492,7 +492,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
   self.ghostText = nil; // [macOS]
 
-
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeEnd
                                  reactTag:self.reactTag
                                      text:[self.backedTextInputView.attributedText.string copy]
