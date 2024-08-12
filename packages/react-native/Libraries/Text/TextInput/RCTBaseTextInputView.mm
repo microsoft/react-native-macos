@@ -483,7 +483,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (void)textInputDidEndEditing
 {
-  // [macOS avoid sending duplicate onEndEditing/onBlur events
+  // [macOS consolidate duplicate callbacks
   if (!_isCurrentlyEditing) {
     return;
   }
