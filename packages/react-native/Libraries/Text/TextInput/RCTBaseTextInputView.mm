@@ -448,6 +448,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (void)textInputDidBeginEditing
 {
+  // [macOS consolidate duplicate callbacks
+  if (_isCurrentlyEditing) {
+    return;
+  }
+  _isCurrentlyEditing = YES;
+  // macOS]
+
   if (_clearTextOnFocus) {
     self.backedTextInputView.attributedText = [NSAttributedString new];
   }
@@ -457,19 +464,16 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
       [self.backedTextInputView selectAll:nil];
     }
 #if TARGET_OS_OSX // [macOS
-  } else if (!_isCurrentlyEditing) {
+  } else {
     [self.backedTextInputView setSelectedTextRange:NSMakeRange(NSNotFound, 0) notifyDelegate:NO];
 #endif // macOS]
   }
 
-  if (!_isCurrentlyEditing) { // [macOS] avoid sending duplicate onFocus events
-    _isCurrentlyEditing = YES; // [macOS]
-    [_eventDispatcher sendTextEventWithType:RCTTextEventTypeFocus
-                                   reactTag:self.reactTag
-                                       text:[self.backedTextInputView.attributedText.string copy]
-                                        key:nil
-                                 eventCount:_nativeEventCount];
-  } // [macOS]
+  [_eventDispatcher sendTextEventWithType:RCTTextEventTypeFocus
+                                 reactTag:self.reactTag
+                                     text:[self.backedTextInputView.attributedText.string copy]
+                                      key:nil
+                               eventCount:_nativeEventCount];
 }
 
 - (BOOL)textInputShouldEndEditing
