@@ -85,16 +85,24 @@
 
   NSNumber *tag = self.reactTag;
   NSMutableArray<NSNumber *> *descendantViewTags = [NSMutableArray new];
-  [textStorage enumerateAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
-                          inRange:NSMakeRange(0, textStorage.length)
-                          options:0
-                       usingBlock:^(RCTShadowView *shadowView, NSRange range, __unused BOOL *stop) {
-                         if (!shadowView) {
-                           return;
-                         }
+  NSMutableArray<NSNumber *> *virtualSubviewTags = [NSMutableArray new]; // [macOS]
 
-                         [descendantViewTags addObject:shadowView.reactTag];
-                       }];
+// [macOS - Enumerate embedded shadow views and virtual subviews in one loop
+  [textStorage enumerateAttributesInRange:NSMakeRange(0, textStorage.length)
+                                  options:0
+                               usingBlock:^(NSDictionary<NSAttributedStringKey, id> *_Nonnull attrs, NSRange range, __unused BOOL * _Nonnull stop) {
+    id embeddedViewAttribute = attrs[RCTBaseTextShadowViewEmbeddedShadowViewAttributeName];
+    if ([embeddedViewAttribute isKindOfClass:[RCTShadowView class]]) {
+      RCTShadowView *embeddedShadowView = (RCTShadowView *)embeddedViewAttribute;
+      [descendantViewTags addObject:embeddedShadowView.reactTag];
+    }
+
+    id tagAttribute = attrs[RCTTextAttributesTagAttributeName];
+    if ([tagAttribute isKindOfClass:[NSNumber class]] && ![tagAttribute isEqualToNumber:tag]) {
+      [virtualSubviewTags addObject:tagAttribute];
+    }
+  }];
+// macOS]
 
   [_bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
     RCTTextView *textView = (RCTTextView *)viewRegistry[tag];
@@ -113,11 +121,25 @@
           [descendantViews addObject:descendantView];
         }];
 
+// [macOS
+    NSMutableArray<RCTVirtualTextView *> *virtualSubviews = [NSMutableArray arrayWithCapacity:virtualSubviewTags.count];
+    [virtualSubviewTags
+        enumerateObjectsUsingBlock:^(NSNumber *_Nonnull virtualSubviewTag, NSUInteger index, BOOL *_Nonnull stop) {
+          RCTPlatformView *virtualSubview = viewRegistry[virtualSubviewTag];
+          if ([virtualSubview isKindOfClass:[RCTVirtualTextView class]]) {
+            [virtualSubviews addObject:(RCTVirtualTextView *)virtualSubview];
+          }
+        }];
+// macOS]
+
     // Removing all references to Shadow Views to avoid unnecessary retaining.
     [textStorage removeAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
                            range:NSMakeRange(0, textStorage.length)];
 
-    [textView setTextStorage:textStorage contentFrame:contentFrame descendantViews:descendantViews];
+    [textView setTextStorage:textStorage
+                contentFrame:contentFrame
+             descendantViews:descendantViews
+             virtualSubviews:virtualSubviews]; // [macOS]
   }];
 }
 
@@ -288,19 +310,10 @@
                 UIFont *font = [textStorage attribute:NSFontAttributeName atIndex:range.location effectiveRange:nil];
 
                 CGRect frame = {
-#if !TARGET_OS_OSX // [macOS]
                     {RCTRoundPixelValue(glyphRect.origin.x),
                      RCTRoundPixelValue(
                          glyphRect.origin.y + glyphRect.size.height - attachmentSize.height + font.descender)},
-#else // [macOS
-                    {RCTRoundPixelValue(glyphRect.origin.x, [self scale]),
-                     RCTRoundPixelValue(glyphRect.origin.y + glyphRect.size.height - attachmentSize.height + font.descender, [self scale])},
-#endif // macOS]
-#if !TARGET_OS_OSX // [macOS]
                     {RCTRoundPixelValue(attachmentSize.width), RCTRoundPixelValue(attachmentSize.height)}};
-#else // [macOS
-                    {RCTRoundPixelValue(attachmentSize.width, [self scale]), RCTRoundPixelValue(attachmentSize.height, [self scale])}};
-#endif // macOS]
 
                 NSRange truncatedGlyphRange =
                     [layoutManager truncatedGlyphRangeInLineFragmentForGlyphAtIndex:range.location];
@@ -310,7 +323,7 @@
                 localLayoutContext.absolutePosition.x += frame.origin.x;
                 localLayoutContext.absolutePosition.y += frame.origin.y;
 
-                [shadowView layoutWithMinimumSize:frame.size
+                [shadowView layoutWithMinimumSize:{shadowView.minWidth.value, shadowView.minHeight.value}
                                       maximumSize:frame.size
                                   layoutDirection:self.layoutMetrics.layoutDirection
                                     layoutContext:localLayoutContext];
@@ -405,12 +418,7 @@ static YGSize RCTTextShadowViewMeasure(
   }
 
   size = (CGSize){
-#if !TARGET_OS_OSX // [macOS]
       MIN(RCTCeilPixelValue(size.width), maximumSize.width), MIN(RCTCeilPixelValue(size.height), maximumSize.height)};
-#else // [macOS
-      MIN(RCTCeilPixelValue(size.width, shadowTextView.scale), maximumSize.width),
-      MIN(RCTCeilPixelValue(size.height, shadowTextView.scale), maximumSize.height)};
-#endif // macOS]
 
   // Adding epsilon value illuminates problems with converting values from
   // `double` to `float`, and then rounding them to pixel grid in Yoga.

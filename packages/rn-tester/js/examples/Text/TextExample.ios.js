@@ -12,11 +12,10 @@
 
 import type {RNTesterModule} from '../../types/RNTesterTypes';
 
-const React = require('react');
-const TextAncestor = require('react-native/Libraries/Text/TextAncestor');
-const TextInlineView = require('../../components/TextInlineView');
 import TextLegend from '../../components/TextLegend';
 
+const TextInlineView = require('../../components/TextInlineView');
+const React = require('react');
 const {
   Button,
   LayoutAnimation,
@@ -25,6 +24,7 @@ const {
   TextInput,
   View,
 } = require('react-native');
+const TextAncestor = require('react-native/Libraries/Text/TextAncestor');
 
 // TODO: Is there a cleaner way to flip the TextAncestor value to false? I
 //   suspect apps won't even be able to leverage this workaround because
@@ -1343,6 +1343,27 @@ const examples = [
     },
   },
   // [macOS
+  {
+    title: 'Mouse hover events on nested Text elements',
+    render: function (): React.Node {
+      function mouseProps(name: string) {
+        return {
+          onMouseEnter: () => console.log(`Enter ${name}`),
+          onMouseLeave: () => console.log(`Leave ${name}`),
+        };
+      }
+
+      return (
+        <Text {...mouseProps('outer')}>
+          This is some text with{' '}
+          <Text style={{color: 'red'}} {...mouseProps('inner')}>
+            a nested element
+          </Text>{' '}
+          that tracks mouse hover events
+        </Text>
+      );
+    },
+  },
   {
     title: 'Text components inheriting color from parent',
     render: function (): React.Node {
