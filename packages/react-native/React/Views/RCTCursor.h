@@ -8,39 +8,69 @@
  #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(NSInteger, RCTCursor) {
-  RCTCursorAlias,
   RCTCursorAuto,
-  RCTCursorColumnResize,
-  RCTCursorContextualMenu,
+  RCTCursorPointer,
+  // [macOS
+  RCTCursorAlias,
+  RCTCursorAllScroll,
+  RCTCursorCell,
+  RCTCursorColResize,
+  RCTCursorContextMenu,
   RCTCursorCopy,
   RCTCursorCrosshair,
   RCTCursorDefault,
-  RCTCursorDisappearingItem,
-  RCTCursorEastResize,
+  RCTCursorEResize,
+  RCTCursorEWResize,
   RCTCursorGrab,
   RCTCursorGrabbing,
-  RCTCursorNorthResize,
+  RCTCursorHelp,
+  RCTCursorMove,
+  RCTCursorNEResize,
+  RCTCursorNESWResize,
+  RCTCursorNResize,
+  RCTCursorNSResize,
+  RCTCursorNWResize,
+  RCTCursorNWSEResize,
   RCTCursorNoDrop,
+  RCTCursorNone,
   RCTCursorNotAllowed,
-  RCTCursorPointer,
+  RCTCursorProgress,
   RCTCursorRowResize,
-  RCTCursorSouthResize,
+  RCTCursorSResize,
+  RCTCursorSEResize,
+  RCTCursorSWResize,
   RCTCursorText,
-  RCTCursorVerticalText,
-  RCTCursorWestResize,
+  RCTCursorUrl,
+  RCTCursorWResize,
+  RCTCursorWait,
+  RCTCursorZoomIn,
+  RCTCursorZoomOut,
+  // macOS]
 };
+
+// Write a switch statement for every cursor type in RCTCursor
+// [macOS
+
+
+
 
 #if TARGET_OS_OSX // [macOS
 inline static NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
 {
   switch (cursor) {
-    case RCTCursorAlias:
-      return [NSCursor dragLinkCursor];
     case RCTCursorAuto:
       return [NSCursor arrowCursor];
-    case RCTCursorColumnResize:
+    case RCTCursorPointer:
+      return [NSCursor pointingHandCursor];
+    case RCTCursorAlias:
+      return [NSCursor dragLinkCursor];
+    case RCTCursorAllScroll:
+      // TODO
+    case RCTCursorCell:
+      
+    case RCTCursorColResize:
       return [NSCursor resizeLeftRightCursor];
-    case RCTCursorContextualMenu:
+    case RCTCursorContextMenu:
       return [NSCursor contextualMenuCursor];
     case RCTCursorCopy:
       return [NSCursor dragCopyCursor];
@@ -48,32 +78,58 @@ inline static NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       return [NSCursor crosshairCursor];
     case RCTCursorDefault:
       return [NSCursor arrowCursor];
-    case RCTCursorDisappearingItem:
-      return [NSCursor disappearingItemCursor];
-    case RCTCursorEastResize:
+    case RCTCursorEResize:
       return [NSCursor resizeRightCursor];
+    case RCTCursorEWResize:
+      // TODO
     case RCTCursorGrab:
       return [NSCursor openHandCursor];
     case RCTCursorGrabbing:
       return [NSCursor closedHandCursor];
-    case RCTCursorNorthResize:
+    case RCTCursorHelp:
+      // TODO
+    case RCTCursorMove:
+      // TODO
+    case RCTCursorNEResize:
+      // TODO
+    case RCTCursorNESWResize:
+      // TODO
+    case RCTCursorNResize:
       return [NSCursor resizeUpCursor];
+    case RCTCursorNSResize:
+      // TODO
+    case RCTCursorNWResize:
+      // TODO
+    case RCTCursorNWSEResize:
+     // TODO
     case RCTCursorNoDrop:
       return [NSCursor operationNotAllowedCursor];
+    case RCTCursorNone:
+      // TODO
     case RCTCursorNotAllowed:
       return [NSCursor operationNotAllowedCursor];
-    case RCTCursorPointer:
-      return [NSCursor pointingHandCursor];
+    case RCTCursorProgress:
+      // TODO
     case RCTCursorRowResize:
       return [NSCursor resizeUpDownCursor];
-    case RCTCursorSouthResize:
+    case RCTCursorSResize:
       return [NSCursor resizeDownCursor];
+    case RCTCursorSEResize:
+      // TODO
+    case RCTCursorSWResize:
+      // TODO
     case RCTCursorText:
       return [NSCursor IBeamCursor];
-    case RCTCursorVerticalText:
-      return [NSCursor IBeamCursorForVerticalLayout];
-    case RCTCursorWestResize:
-      return [NSCursor resizeLeftCursor];
+    case RCTCursorUrl:
+      // TODO
+    case RCTCursorWResize:
+      // TODO
+    case RCTCursorWait:
+      // TODO
+    case RCTCursorZoomIn:
+      // TODO
+    case RCTCursorZoomOut:
+      // TODO
   }
 }
 #endif // macOS]
