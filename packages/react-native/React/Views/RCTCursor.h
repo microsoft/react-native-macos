@@ -8,10 +8,9 @@
  #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(NSInteger, RCTCursor) {
-  RCTCursorAuto,
-  RCTCursorPointer,
   // [macOS
   RCTCursorAlias,
+  RCTCursorAuto,
   RCTCursorAllScroll,
   RCTCursorCell,
   RCTCursorColResize,
@@ -34,6 +33,7 @@ typedef NS_ENUM(NSInteger, RCTCursor) {
   RCTCursorNoDrop,
   RCTCursorNone,
   RCTCursorNotAllowed,
+  RCTCursorPointer,
   RCTCursorProgress,
   RCTCursorRowResize,
   RCTCursorSResize,
