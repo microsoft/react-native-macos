@@ -188,7 +188,8 @@ exports.examples = [
   // [macOS
   {
     title: 'macOS Cursors',
-    description: 'macOS supports many more cursors. Unsupported cursors show the system cursor',
+    description:
+      'macOS supports many more cursors. Unsupported cursors show the system cursor',
     render: CursorExampleMacOS,
   },
   // macOS]
