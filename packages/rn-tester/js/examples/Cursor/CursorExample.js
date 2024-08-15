@@ -52,9 +52,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  singleExample: {
-    padding: 10,
-  },
 });
 
 function CursorExampleAuto() {
