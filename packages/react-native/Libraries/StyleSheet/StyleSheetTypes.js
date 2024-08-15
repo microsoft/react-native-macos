@@ -59,7 +59,7 @@ export type CursorValue =
   | 'n-resize'
   | 'ns-resize'
   | 'ns-resize'
-  | 'nswe-resize'
+  | 'nwse-resize'
   | 'no-drop'
   | 'none'
   | 'not-allowed'

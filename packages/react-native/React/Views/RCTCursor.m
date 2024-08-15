@@ -103,6 +103,7 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTopRight
                                                     inDirections:NSCursorFrameResizeDirectionsOutward];
       }
+      break;
 #endif // __MAC_OS_15_SDK_AVAILABLE
     case RCTCursorNESWResize:
 #ifdef __MAC_OS_15_SDK_AVAILABLE
