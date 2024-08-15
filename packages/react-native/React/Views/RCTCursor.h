@@ -7,6 +7,12 @@
 
  #import <Foundation/Foundation.h>
 
+// [macOS
+#if defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 150000 /* __MAC_15_0 */
+#define __MAC_OS_15_AVAILABLE
+#endif // __MAC_OS_X_VERSION_MAX_ALLOWED
+// macOS]
+
 typedef NS_ENUM(NSInteger, RCTCursor) {
   // [macOS
   RCTCursorAlias,
@@ -48,89 +54,238 @@ typedef NS_ENUM(NSInteger, RCTCursor) {
   // macOS]
 };
 
-// Write a switch statement for every cursor type in RCTCursor
-// [macOS
-
-
-
-
 #if TARGET_OS_OSX // [macOS
-inline static NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
+/// Returns an NSCursor with a given SF Symbol name as it's image, if the symbol exists. Returns nil otherwise
+inline static NSCursor *__nullable NSCursorFromSFSymbol(NSString * _Nonnull symbolName)
 {
+  NSCursor *cursor = nil;
+  if (@available(macOS 11.0, *)) {
+    NSImage *symbolImage = [NSImage imageWithSystemSymbolName:symbolName accessibilityDescription:nil];
+    if (symbolImage != nil) {
+      cursor = [[NSCursor alloc] initWithImage:symbolImage hotSpot:NSZeroPoint];
+    }
+  }
+  return cursor;
+}
+
+
+inline static NSCursor * _Nullable NSCursorFromRCTCursor(RCTCursor cursor)
+{
+  NSCursor *resolvedCursor = nil;
   switch (cursor) {
     case RCTCursorAuto:
-      return [NSCursor arrowCursor];
-    case RCTCursorPointer:
-      return [NSCursor pointingHandCursor];
+      break;
     case RCTCursorAlias:
-      return [NSCursor dragLinkCursor];
+      resolvedCursor = [NSCursor dragLinkCursor];
+      break;
     case RCTCursorAllScroll:
-      // TODO
+      resolvedCursor = NSCursorFromSFSymbol(@"arrow.up.and.down.and.arrow.left.and.right");
+      break;
     case RCTCursorCell:
-      
+      resolvedCursor = NSCursorFromSFSymbol(@"cross.fill");
+      break;
     case RCTCursorColResize:
-      return [NSCursor resizeLeftRightCursor];
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor columnResizeCursor];
+      } else {
+        resolvedCursor = [NSCursor resizeLeftRightCursor];
+      }
+#else
+      resolvedCursor = [NSCursor resizeLeftRightCursor];
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorContextMenu:
-      return [NSCursor contextualMenuCursor];
+      resolvedCursor = [NSCursor contextualMenuCursor];
+      break;
     case RCTCursorCopy:
-      return [NSCursor dragCopyCursor];
+      resolvedCursor = [NSCursor dragCopyCursor];
+      break;
     case RCTCursorCrosshair:
-      return [NSCursor crosshairCursor];
+      resolvedCursor = [NSCursor crosshairCursor];
+      break;
     case RCTCursorDefault:
-      return [NSCursor arrowCursor];
+      resolvedCursor = [NSCursor arrowCursor];
+      break;
     case RCTCursorEResize:
-      return [NSCursor resizeRightCursor];
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionLeft
+                                                    inDirections:NSCursorFrameResizeDirectionsOutward];
+      } else {
+        resolvedCursor = [NSCursor resizeRightCursor];
+      }
+#else
+      resolvedCursor = [NSCursor resizeRightCursor];
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorEWResize:
-      // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionLeft
+                                                    inDirections:NSCursorFrameResizeDirectionsAll];
+      }
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorGrab:
-      return [NSCursor openHandCursor];
+      resolvedCursor = [NSCursor openHandCursor];
+      break;
     case RCTCursorGrabbing:
-      return [NSCursor closedHandCursor];
+      resolvedCursor = [NSCursor closedHandCursor];
+      break;
     case RCTCursorHelp:
-      // TODO
+      resolvedCursor = NSCursorFromSFSymbol(@"questionmark");
+      break;
     case RCTCursorMove:
-      // TODO
+      resolvedCursor = NSCursorFromSFSymbol(@"arrow.up.and.down.and.arrow.left.and.right");
+      break;
     case RCTCursorNEResize:
-      // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTopRight
+                                                    inDirections:NSCursorFrameResizeDirectionsOutward];
+      }
+#endif // __MAC_OS_15_AVAILABLE
     case RCTCursorNESWResize:
-      // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTopRight
+                                                    inDirections:NSCursorFrameResizeDirectionsAll];
+      }
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorNResize:
-      return [NSCursor resizeUpCursor];
+      resolvedCursor = [NSCursor resizeUpCursor];
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTop
+                                                    inDirections:NSCursorFrameResizeDirectionsOutward];
+      } else {
+        resolvedCursor = [NSCursor resizeUpCursor];
+      }
+#else
+      resolvedCursor = [NSCursor resizeUpCursor];
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorNSResize:
-      // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTop
+                                                    inDirections:NSCursorFrameResizeDirectionsAll];
+      }
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorNWResize:
-      // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTopLeft
+                                                    inDirections:NSCursorFrameResizeDirectionsOutward];
+      }
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorNWSEResize:
-     // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTopLeft
+                                                    inDirections:NSCursorFrameResizeDirectionsAll];
+      }
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorNoDrop:
-      return [NSCursor operationNotAllowedCursor];
+      resolvedCursor = [NSCursor operationNotAllowedCursor];
+      break;
     case RCTCursorNone:
-      // TODO
+      // Not supported
+      break;
     case RCTCursorNotAllowed:
-      return [NSCursor operationNotAllowedCursor];
+      resolvedCursor = [NSCursor operationNotAllowedCursor];
+      break;
+    case RCTCursorPointer:
+      resolvedCursor = [NSCursor pointingHandCursor];
+      break;
     case RCTCursorProgress:
-      // TODO
+      resolvedCursor = NSCursorFromSFSymbol(@"progress.indicator");
+      break;
     case RCTCursorRowResize:
-      return [NSCursor resizeUpDownCursor];
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor rowResizeCursor];
+      } else {
+        resolvedCursor = [NSCursor resizeUpDownCursor];
+      }
+#else
+      resolvedCursor = [NSCursor resizeUpDownCursor];
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorSResize:
-      return [NSCursor resizeDownCursor];
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionBottom
+                                                    inDirections:NSCursorFrameResizeDirectionsOutward];
+      } else {
+        resolvedCursor = [NSCursor resizeDownCursor];
+      }
+#else
+      resolvedCursor = [NSCursor resizeDownCursor];
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorSEResize:
-      // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionBottomRight
+                                                    inDirections:NSCursorFrameResizeDirectionsOutward];
+      }
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorSWResize:
-      // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionBottomLeft
+                                                    inDirections:NSCursorFrameResizeDirectionsOutward];
+      }
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorText:
-      return [NSCursor IBeamCursor];
+      resolvedCursor = [NSCursor IBeamCursor];
+      break;
     case RCTCursorUrl:
-      // TODO
+      // Not supported
+      break;
     case RCTCursorWResize:
-      // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionLeft
+                                                    inDirections:NSCursorFrameResizeDirectionsOutward];
+      }
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorWait:
-      // TODO
+      resolvedCursor = NSCursorFromSFSymbol(@"arrow.trianglehead.2.clockwise.rotate.90.circle.fill");
+      break;
     case RCTCursorZoomIn:
-      // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor zoomInCursor];
+      } else {
+        resolvedCursor = NSCursorFromSFSymbol(@"plus.magnifyingglass");
+      }
+#else
+      resolvedCursor = NSCursorFromSFSymbol(@"plus.magnifyingglass");
+#endif // __MAC_OS_15_AVAILABLE
+      break;
     case RCTCursorZoomOut:
-      // TODO
+#ifdef __MAC_OS_15_AVAILABLE
+      if (@available(macOS 15.0, *)) {
+        resolvedCursor = [NSCursor zoomOutCursor];
+      } else {
+        resolvedCursor = NSCursorFromSFSymbol(@"minus.magnifyingglass");
+      }
+#else
+      resolvedCursor = NSCursorFromSFSymbol(@"minus.magnifyingglass");
+#endif // __MAC_OS_15_AVAILABLE
+      break;
   }
+  return resolvedCursor;
 }
 #endif // macOS]
 

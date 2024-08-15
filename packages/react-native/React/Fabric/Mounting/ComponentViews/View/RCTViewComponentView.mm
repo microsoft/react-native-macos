@@ -613,48 +613,49 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
 #if TARGET_OS_OSX // [macOS
   static NSCursor *NSCursorFromCursor(Cursor cursor)
 {
-  switch (cursor) {
-    case Cursor::Auto:
-      return [NSCursor arrowCursor];
-    case Cursor::Alias:
-      return [NSCursor dragLinkCursor];
-    case Cursor::ColumnResize:
-      return [NSCursor resizeLeftRightCursor];
-    case Cursor::ContextualMenu:
-      return [NSCursor contextualMenuCursor];
-    case Cursor::Copy:
-      return [NSCursor dragCopyCursor];
-    case Cursor::Crosshair:
-      return [NSCursor crosshairCursor];
-    case Cursor::Default:
-      return [NSCursor arrowCursor];
-    case Cursor::DisappearingItem:
-      return [NSCursor disappearingItemCursor];
-    case Cursor::EastResize:
-      return [NSCursor resizeRightCursor];
-    case Cursor::Grab:
-      return [NSCursor openHandCursor];
-    case Cursor::Grabbing:
-      return [NSCursor closedHandCursor];
-    case Cursor::NorthResize:
-      return [NSCursor resizeUpCursor];
-    case Cursor::NoDrop:
-      return [NSCursor operationNotAllowedCursor];
-    case Cursor::NotAllowed:
-      return [NSCursor operationNotAllowedCursor];
-    case Cursor::Pointer:
-      return [NSCursor pointingHandCursor];
-    case Cursor::RowResize:
-      return [NSCursor resizeUpDownCursor];
-    case Cursor::SouthResize:
-      return [NSCursor resizeDownCursor];
-    case Cursor::Text:
-      return [NSCursor IBeamCursor];
-    case Cursor::VerticalText:
-      return [NSCursor IBeamCursorForVerticalLayout];
-    case Cursor::WestResize:
-      return [NSCursor resizeLeftCursor];
-  }
+  return [NSCursor arrowCursor];
+//  switch (cursor) {
+//    case Cursor::Auto:
+//      return [NSCursor arrowCursor];
+//    case Cursor::Alias:
+//      return [NSCursor dragLinkCursor];
+//    case Cursor::ColumnResize:
+//      return [NSCursor resizeLeftRightCursor];
+//    case Cursor::ContextualMenu:
+//      return [NSCursor contextualMenuCursor];
+//    case Cursor::Copy:
+//      return [NSCursor dragCopyCursor];
+//    case Cursor::Crosshair:
+//      return [NSCursor crosshairCursor];
+//    case Cursor::Default:
+//      return [NSCursor arrowCursor];
+//    case Cursor::DisappearingItem:
+//      return [NSCursor disappearingItemCursor];
+//    case Cursor::EastResize:
+//      return [NSCursor resizeRightCursor];
+//    case Cursor::Grab:
+//      return [NSCursor openHandCursor];
+//    case Cursor::Grabbing:
+//      return [NSCursor closedHandCursor];
+//    case Cursor::NorthResize:
+//      return [NSCursor resizeUpCursor];
+//    case Cursor::NoDrop:
+//      return [NSCursor operationNotAllowedCursor];
+//    case Cursor::NotAllowed:
+//      return [NSCursor operationNotAllowedCursor];
+//    case Cursor::Pointer:
+//      return [NSCursor pointingHandCursor];
+//    case Cursor::RowResize:
+//      return [NSCursor resizeUpDownCursor];
+//    case Cursor::SouthResize:
+//      return [NSCursor resizeDownCursor];
+//    case Cursor::Text:
+//      return [NSCursor IBeamCursor];
+//    case Cursor::VerticalText:
+//      return [NSCursor IBeamCursorForVerticalLayout];
+//    case Cursor::WestResize:
+//      return [NSCursor resizeLeftCursor];
+//  }
 }
 #endif // macOS]
 
