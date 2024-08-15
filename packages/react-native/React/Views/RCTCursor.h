@@ -50,9 +50,6 @@ typedef NS_ENUM(NSInteger, RCTCursor) {
 };
 
 #if TARGET_OS_OSX // [macOS
-/// Returns an NSCursor with a given SF Symbol name as it's image, if the symbol exists. Returns nil otherwise
-RCT_EXTERN NSCursor *__nullable NSCursorFromSFSymbol(NSString * _Nonnull symbolName);
-
 RCT_EXTERN NSCursor *__nullable NSCursorFromRCTCursor(RCTCursor cursor);
 #endif // macOS]
 
