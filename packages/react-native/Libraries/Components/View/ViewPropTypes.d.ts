@@ -13,6 +13,7 @@ import {GestureResponderHandlers} from '../../../types/public/ReactNativeRendere
 import {StyleProp} from '../../StyleSheet/StyleSheet';
 import {ViewStyle} from '../../StyleSheet/StyleSheetTypes';
 import {
+  HandledKeyEvent,
   KeyEvent,
   LayoutChangeEvent,
   MouseEvent,
@@ -20,48 +21,6 @@ import {
 } from '../../Types/CoreEventTypes';
 import {Touchable} from '../Touchable/Touchable';
 import {AccessibilityProps} from './ViewAccessibility';
-
-export type TVParallaxProperties = {
-  /**
-   * If true, parallax effects are enabled.  Defaults to true.
-   */
-  enabled?: boolean | undefined;
-
-  /**
-   * Defaults to 2.0.
-   */
-  shiftDistanceX?: number | undefined;
-
-  /**
-   * Defaults to 2.0.
-   */
-  shiftDistanceY?: number | undefined;
-
-  /**
-   * Defaults to 0.05.
-   */
-  tiltAngle?: number | undefined;
-
-  /**
-   * Defaults to 1.0
-   */
-  magnification?: number | undefined;
-
-  /**
-   * Defaults to 1.0
-   */
-  pressMagnification?: number | undefined;
-
-  /**
-   * Defaults to 0.3
-   */
-  pressDuration?: number | undefined;
-
-  /**
-   * Defaults to 0.3
-   */
-  pressDelay?: number | undefined;
-};
 
 export interface TVViewPropsIOS {
   /**
@@ -78,13 +37,6 @@ export interface TVViewPropsIOS {
    * @platform ios
    */
   hasTVPreferredFocus?: boolean | undefined;
-
-  /**
-   * *(Apple TV only)* Object with properties to control Apple TV parallax effects.
-   *
-   * @platform ios
-   */
-  tvParallaxProperties?: TVParallaxProperties | undefined;
 
   /**
    * *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
@@ -138,6 +90,13 @@ export interface ViewPropsAndroid {
   collapsable?: boolean | undefined;
 
   /**
+   * Setting to false prevents direct children of the view from being removed
+   * from the native view hierarchy, similar to the effect of setting
+   * `collapsable={false}` on each child.
+   */
+  collapsableChildren?: boolean | undefined;
+
+  /**
    * Whether this view should render itself (and all of its children) into a single hardware texture on the GPU.
    *
    * On Android, this is useful for animations and interactions that only modify opacity, rotation, translation, and/or scale:
@@ -178,8 +137,11 @@ export interface ViewPropsMacOS {
   onDrop?: ((event: MouseEvent) => void) | undefined;
   onKeyDown?: ((event: KeyEvent) => void) | undefined;
   onKeyUp?: ((event: KeyEvent) => void) | undefined;
-  validKeysDown?: string[] | undefined;
-  validKeysUp?: string[] | undefined;
+  validKeysDown?: Array<HandledKeyEvent | string> | undefined;
+  validKeysUp?: Array<HandledKeyEvent | string> | undefined;
+  passthroughAllKeyEvents?: boolean | undefined;
+  keyDownEvents?: Array<HandledKeyEvent> | undefined;
+  keyUpEvents?: Array<HandledKeyEvent> | undefined;
   draggedTypes?: DraggedTypesType | undefined;
 }
 

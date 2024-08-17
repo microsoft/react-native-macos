@@ -10,7 +10,6 @@
 
 import type {ViewProps} from './ViewPropTypes';
 
-import flattenStyle from '../../StyleSheet/flattenStyle';
 import TextAncestor from '../../Text/TextAncestor';
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
@@ -53,8 +52,14 @@ const View: React.AbstractComponent<
       id,
       importantForAccessibility,
       nativeID,
-      pointerEvents,
       tabIndex,
+      // [macOS
+      passthroughAllKeyEvents,
+      validKeysDown,
+      validKeysUp,
+      keyDownEvents,
+      keyUpEvents,
+      // macOS]
       ...otherProps
     }: ViewProps,
     forwardedRef,
@@ -102,6 +107,19 @@ const View: React.AbstractComponent<
     // $FlowFixMe[sketchy-null-mixed]
     const newPointerEvents = style?.pointerEvents || pointerEvents;
 
+    // [macOS
+    let _passthroughAllKeyEvents = passthroughAllKeyEvents;
+    let _validKeysDown = validKeysDown;
+    let _validKeysUp = validKeysUp;
+    if (keyDownEvents || keyUpEvents) {
+      _passthroughAllKeyEvents = true;
+      // $FlowFixMe[incompatible-type]
+      _validKeysDown = keyDownEvents;
+      // $FlowFixMe[incompatible-type]
+      _validKeysUp = keyUpEvents;
+    }
+    // macOS]
+
     const actualView = (
       <ViewNativeComponent
         {...otherProps}
@@ -123,6 +141,11 @@ const View: React.AbstractComponent<
         style={style}
         // $FlowFixMe[incompatible-type]
         pointerEvents={newPointerEvents}
+        // [macOS
+        passthroughAllKeyEvents={_passthroughAllKeyEvents}
+        validKeysDown={_validKeysDown}
+        validKeysUp={_validKeysUp}
+        // macOS]
         ref={forwardedRef}
       />
     );

@@ -26,6 +26,7 @@
 
 /** Native iOS text field bottom keyboard offset amount */
 static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
+static NSSet<NSNumber *> *returnKeyTypesSet;
 
 @implementation RCTBaseTextInputView {
   __weak RCTBridge *_bridge;
@@ -36,6 +37,9 @@ static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
   BOOL _hasInputAccessoryView;
   // [macOS] remove explicit _predictedText ivar declaration
   BOOL _didMoveToWindow;
+#if TARGET_OS_OSX // [macOS avoids duplicating effects of textInputDid(Begin|End)Editing calls
+  BOOL _isCurrentlyEditing;
+#endif // macOS]
 }
 
 #if !TARGET_OS_OSX // [macOS]
@@ -71,6 +75,12 @@ static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
   if (self = [super initWithEventDispatcher:bridge.eventDispatcher]) { // [macOS]
     _bridge = bridge;
     _eventDispatcher = bridge.eventDispatcher;
+#if TARGET_OS_OSX // [macOS
+    _isCurrentlyEditing = NO;
+#endif // macOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
+    [self initializeReturnKeyType];
+#endif // [macOS] [visionOS]
   }
 
   return self;
@@ -446,6 +456,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (void)textInputDidBeginEditing
 {
+#if TARGET_OS_OSX // [macOS consolidate duplicate callbacks
+  if (_isCurrentlyEditing) {
+    return;
+  }
+  _isCurrentlyEditing = YES;
+#endif // macOS]
+
   if (_clearTextOnFocus) {
     self.backedTextInputView.attributedText = [NSAttributedString new];
   }
@@ -474,6 +491,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (void)textInputDidEndEditing
 {
+#if TARGET_OS_OSX // [macOS consolidate duplicate callbacks
+  if (!_isCurrentlyEditing) {
+    return;
+  }
+  _isCurrentlyEditing = NO;
+#endif // macOS]
+
   self.ghostText = nil; // [macOS]
 
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeEnd
@@ -644,24 +668,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
     }
   }
 
-  NSString *previousText = [backedTextInputView.attributedText.string copy] ?: @"";
-
   if (range.location + range.length > backedTextInputView.attributedText.string.length) {
     _predictedText = backedTextInputView.attributedText.string;
   } else if (text != nil) {
     _predictedText = [backedTextInputView.attributedText.string stringByReplacingCharactersInRange:range
                                                                                         withString:text];
-  }
-
-  if (_onTextInput && !self.backedTextInputView.ghostTextChanging) { // [macOS]
-    _onTextInput(@{
-      // We copy the string here because if it's a mutable string it may get released before we stop using it on a
-      // different thread, causing a crash.
-      @"text" : [text copy] ?: @"", // [macOS] fall back to empty string if text is nil
-      @"previousText" : previousText,
-      @"range" : @{@"start" : @(range.location), @"end" : @(range.location + range.length)},
-      @"eventCount" : @(_nativeEventCount),
-    });
   }
 
   return text; // Accepting the change.
@@ -848,6 +859,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 {
   if (self.autoFocus && !_didMoveToWindow) {
     [self.backedTextInputView reactFocus];
+#if TARGET_OS_IOS // [macOS] [visionOS]
+    [self initializeReturnKeyType];
+#endif // [macOS]
   } else {
     [self.backedTextInputView reactFocusIfNeeded];
   }
@@ -857,7 +871,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 #pragma mark - Custom Input Accessory View
 
-#if TARGET_OS_IOS // [macOS] [visionOS]
+#if TARGET_OS_IOS // [macOS] [visionOS] Input Accessory Views are only a concept on iOS
 - (void)didSetProps:(NSArray<NSString *> *)changedProps
 {
   if ([changedProps containsObject:@"inputAccessoryViewID"] && self.inputAccessoryViewID) {
@@ -885,17 +899,67 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
                           }];
 }
 
+- (NSString *)returnKeyTypeToString:(UIReturnKeyType)returnKeyType
+{
+  switch (returnKeyType) {
+    case UIReturnKeyDefault:
+      return @"Default";
+    case UIReturnKeyGo:
+      return @"Go";
+    case UIReturnKeyNext:
+      return @"Next";
+    case UIReturnKeySearch:
+      return @"Search";
+    case UIReturnKeySend:
+      return @"Send";
+    case UIReturnKeyYahoo:
+      return @"Yahoo";
+    case UIReturnKeyGoogle:
+      return @"Google";
+    case UIReturnKeyRoute:
+      return @"Route";
+    case UIReturnKeyJoin:
+      return @"Join";
+    case UIReturnKeyEmergencyCall:
+      return @"Emergency Call";
+    default:
+      return @"Done";
+  }
+}
+
+- (void)initializeReturnKeyType
+{
+  returnKeyTypesSet = [NSSet setWithObjects:@(UIReturnKeyDone),
+                                            @(UIReturnKeyGo),
+                                            @(UIReturnKeyDefault),
+                                            @(UIReturnKeyNext),
+                                            @(UIReturnKeySearch),
+                                            @(UIReturnKeySend),
+                                            @(UIReturnKeyYahoo),
+                                            @(UIReturnKeyGoogle),
+                                            @(UIReturnKeyRoute),
+                                            @(UIReturnKeyJoin),
+                                            @(UIReturnKeyRoute),
+                                            @(UIReturnKeyEmergencyCall),
+                                            nil];
+}
+
 - (void)setDefaultInputAccessoryView
 {
   UIView<RCTBackedTextInputViewProtocol> *textInputView = self.backedTextInputView;
   UIKeyboardType keyboardType = textInputView.keyboardType;
 
-  // These keyboard types (all are number pads) don't have a "Done" button by default,
+  // These keyboard types (all are number pads) don't have a Return Key button by default,
   // so we create an `inputAccessoryView` with this button for them.
+
+  UIReturnKeyType returnKeyType = textInputView.returnKeyType;
+
+  BOOL containsKeyType = [returnKeyTypesSet containsObject:@(returnKeyType)];
+
   BOOL shouldHaveInputAccessoryView =
       (keyboardType == UIKeyboardTypeNumberPad || keyboardType == UIKeyboardTypePhonePad ||
        keyboardType == UIKeyboardTypeDecimalPad || keyboardType == UIKeyboardTypeASCIICapableNumberPad) &&
-      textInputView.returnKeyType == UIReturnKeyDone;
+      containsKeyType;
 
   if (_hasInputAccessoryView == shouldHaveInputAccessoryView) {
     return;
@@ -904,14 +968,16 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   _hasInputAccessoryView = shouldHaveInputAccessoryView;
 
   if (shouldHaveInputAccessoryView) {
+    NSString *buttonLabel = [self returnKeyTypeToString:returnKeyType];
+
     UIToolbar *toolbarView = [UIToolbar new];
     [toolbarView sizeToFit];
     UIBarButtonItem *flexibleSpace =
         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-    UIBarButtonItem *doneButton =
-        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-                                                      target:self
-                                                      action:@selector(handleInputAccessoryDoneButton)];
+    UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithTitle:buttonLabel
+                                                                   style:UIBarButtonItemStylePlain
+                                                                  target:self
+                                                                  action:@selector(handleInputAccessoryDoneButton)];
     toolbarView.items = @[ flexibleSpace, doneButton ];
     textInputView.inputAccessoryView = toolbarView;
   } else {
@@ -939,6 +1005,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 #endif // [macOS] [visionOS]
 
 // [macOS
+#pragma mark - Ghost Text
 
 - (NSDictionary<NSAttributedStringKey, id> *)ghostTextAttributes
 {
@@ -946,16 +1013,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   NSMutableDictionary<NSAttributedStringKey, id> *textAttributes =
       [backedTextInputView.defaultTextAttributes mutableCopy] ?: [NSMutableDictionary new];
 
-  if (@available(iOS 13.0, *)) {
-    [textAttributes setValue:backedTextInputView.placeholderColor ?: [RCTUIColor placeholderTextColor]
-                      forKey:NSForegroundColorAttributeName];
-  } else {
-    if (backedTextInputView.placeholderColor) {
-      [textAttributes setValue:backedTextInputView.placeholderColor forKey:NSForegroundColorAttributeName];
-    } else {
-      [textAttributes removeObjectForKey:NSForegroundColorAttributeName];
-    }
-  }
+  [textAttributes setValue:backedTextInputView.placeholderColor ?: [RCTUIColor placeholderTextColor]
+                    forKey:NSForegroundColorAttributeName];
 
   return textAttributes;
 }

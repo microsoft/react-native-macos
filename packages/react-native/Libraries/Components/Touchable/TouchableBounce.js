@@ -191,7 +191,9 @@ class TouchableBounce extends React.Component<Props, State> {
         hitSlop={this.props.hitSlop}
         // [macOS
         acceptsFirstMouse={
-          this.props.acceptsFirstMouse !== false && !this.props.disabled
+          this.props.acceptsFirstMouse !== false &&
+          this.props.acceptsFirstMouse !== undefined &&
+          !this.props.disabled
         }
         enableFocusRing={
           (this.props.enableFocusRing === undefined ||
@@ -229,6 +231,7 @@ class TouchableBounce extends React.Component<Props, State> {
 
   componentWillUnmount(): void {
     this.state.pressability.reset();
+    this.state.scale.resetAnimation();
   }
 }
 

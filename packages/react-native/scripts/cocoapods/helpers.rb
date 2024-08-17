@@ -42,7 +42,7 @@ module Helpers
         end
         # [macOS
         def self.min_macos_version_supported
-            return '10.15'
+            return '11.0'
         end
         # macOS]
         # [visionOS
@@ -50,6 +50,10 @@ module Helpers
             return '1.0'
         end
         # visionOS]
+
+        def self.min_xcode_version_supported
+            return '14.3'
+        end
 
         def self.folly_config
             return {

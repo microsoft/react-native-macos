@@ -19,22 +19,20 @@ import type {EdgeInsetsOrSizeProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {
   BlurEvent,
   FocusEvent,
-  KeyEvent,
+  KeyEvent, // [macOS]
   LayoutEvent,
-  MouseEvent,
+  MouseEvent, // [macOS]
   PressEvent,
-  // [macOS]
 } from '../../Types/CoreEventTypes';
 // [macOS
 import type {DraggedTypesType} from '../View/DraggedType';
 
 // macOS]
 import View from '../../Components/View/View';
-import Pressability, {
-  type PressabilityConfig,
-} from '../../Pressability/Pressability';
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
+import usePressability from '../../Pressability/usePressability';
 import * as React from 'react';
+import {useMemo} from 'react';
 
 type Props = $ReadOnly<{|
   accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
@@ -95,19 +93,11 @@ type Props = $ReadOnly<{|
   onDragLeave?: (event: MouseEvent) => void,
   onDrop?: (event: MouseEvent) => void,
   draggedTypes?: ?DraggedTypesType,
-  onKeyDown?: ?(event: KeyEvent) => void,
-  onKeyUp?: ?(event: KeyEvent) => void,
-  validKeysDown?: ?Array<string>,
-  validKeysUp?: ?Array<string>,
   // macOS]
   pressRetentionOffset?: ?EdgeInsetsOrSizeProp,
   rejectResponderTermination?: ?boolean,
   testID?: ?string,
   touchSoundDisabled?: ?boolean,
-|}>;
-
-type State = $ReadOnly<{|
-  pressability: Pressability,
 |}>;
 
 const PASSTHROUGH_PROPS = [
@@ -132,97 +122,96 @@ const PASSTHROUGH_PROPS = [
   'onAccessibilityAction',
   'onBlur',
   'onFocus',
-  'validKeysDown',
-  'validKeysUp',
   'onLayout',
-  'onMouseEnter', // [macOS
+  // [macOS
+  'onMouseEnter',
   'onMouseLeave',
   'onDragEnter',
   'onDragLeave',
   'onDrop',
   'draggedTypes',
-  'tooltip', // macOS]
+  'tooltip',
+  // macOS]
   'testID',
 ];
 
-class TouchableWithoutFeedback extends React.Component<Props, State> {
-  state: State = {
-    pressability: new Pressability(createPressabilityConfig(this.props)),
-  };
+module.exports = function TouchableWithoutFeedback(props: Props): React.Node {
+  const {
+    disabled,
+    rejectResponderTermination,
+    'aria-disabled': ariaDisabled,
+    accessibilityState,
+    hitSlop,
+    delayLongPress,
+    delayPressIn,
+    delayPressOut,
+    pressRetentionOffset,
+    touchSoundDisabled,
+    onBlur: _onBlur,
+    onFocus: _onFocus,
+    onLongPress,
+    onPress,
+    onPressIn,
+    onPressOut,
+    // [macOS
+    onKeyDown,
+    onKeyUp,
+    // macOS]
+  } = props;
 
-  render(): React.Node {
-    const element = React.Children.only<$FlowFixMe>(this.props.children);
-    const children: Array<React.Node> = [element.props.children];
-    const ariaLive = this.props['aria-live'];
-
-    if (__DEV__) {
-      if (element.type === View) {
-        children.push(
-          <PressabilityDebugView color="red" hitSlop={this.props.hitSlop} />,
-        );
-      }
-    }
-
-    let _accessibilityState = {
-      busy: this.props['aria-busy'] ?? this.props.accessibilityState?.busy,
-      checked:
-        this.props['aria-checked'] ?? this.props.accessibilityState?.checked,
+  const pressabilityConfig = useMemo(
+    () => ({
+      cancelable: !rejectResponderTermination,
       disabled:
-        this.props['aria-disabled'] ?? this.props.accessibilityState?.disabled,
-      expanded:
-        this.props['aria-expanded'] ?? this.props.accessibilityState?.expanded,
-      selected:
-        this.props['aria-selected'] ?? this.props.accessibilityState?.selected,
-    };
+        disabled !== null
+          ? disabled
+          : ariaDisabled ?? accessibilityState?.disabled,
+      hitSlop: hitSlop,
+      delayLongPress: delayLongPress,
+      delayPressIn: delayPressIn,
+      delayPressOut: delayPressOut,
+      minPressDuration: 0,
+      pressRectOffset: pressRetentionOffset,
+      android_disableSound: touchSoundDisabled,
+      onBlur: _onBlur,
+      onFocus: _onFocus,
+      onLongPress: onLongPress,
+      onPress: onPress,
+      onPressIn: onPressIn,
+      onPressOut: onPressOut,
+    }),
+    [
+      rejectResponderTermination,
+      disabled,
+      ariaDisabled,
+      accessibilityState?.disabled,
+      hitSlop,
+      delayLongPress,
+      delayPressIn,
+      delayPressOut,
+      pressRetentionOffset,
+      touchSoundDisabled,
+      _onBlur,
+      _onFocus,
+      onLongPress,
+      onPress,
+      onPressIn,
+      onPressOut,
+    ],
+  );
 
-    // BACKWARD-COMPATIBILITY: Focus and blur events were never supported before
-    // adopting `Pressability`, so preserve that behavior.
-    const {
-      onBlur,
-      onFocus,
-      onMouseEnter, // [macOS]
-      onMouseLeave, // [macOS]
-      ...eventHandlersWithoutBlurAndFocus
-    } = this.state.pressability.getEventHandlers();
+  const eventHandlers = usePressability(pressabilityConfig);
 
-    const elementProps: {[string]: mixed, ...} = {
-      ...eventHandlersWithoutBlurAndFocus,
-      accessible: this.props.accessible !== false,
-      accessibilityState:
-        this.props.disabled != null
-          ? {
-              ..._accessibilityState,
-              disabled: this.props.disabled,
-            }
-          : _accessibilityState,
-      focusable:
-        this.props.focusable !== false && this.props.onPress !== undefined,
-      // [macOS
-      acceptsFirstMouse:
-        this.props.acceptsFirstMouse !== false && !this.props.disabled,
-      enableFocusRing:
-        this.props.enableFocusRing !== false && !this.props.disabled,
-      // macOS]
-      accessibilityElementsHidden:
-        this.props['aria-hidden'] ?? this.props.accessibilityElementsHidden,
-      importantForAccessibility:
-        this.props['aria-hidden'] === true
-          ? 'no-hide-descendants'
-          : this.props.importantForAccessibility,
-      accessibilityLiveRegion:
-        ariaLive === 'off'
-          ? 'none'
-          : ariaLive ?? this.props.accessibilityLiveRegion,
-      nativeID: this.props.id ?? this.props.nativeID,
-    };
-    for (const prop of PASSTHROUGH_PROPS) {
-      if (this.props[prop] !== undefined) {
-        elementProps[prop] = this.props[prop];
-      }
+  const element = React.Children.only<$FlowFixMe>(props.children);
+  const children: Array<React.Node> = [element.props.children];
+  const ariaLive = props['aria-live'];
+
+  if (__DEV__) {
+    if (element.type === View) {
+      children.push(
+        <PressabilityDebugView color="red" hitSlop={props.hitSlop} />,
+      );
     }
-
-    // $FlowFixMe[incompatible-call]
-    return React.cloneElement(element, elementProps, ...children);
   }
 
   componentDidUpdate(): void {
@@ -257,17 +246,59 @@ function createPressabilityConfig({
     android_disableSound: props.touchSoundDisabled,
     onBlur: props.onBlur,
     onFocus: props.onFocus,
-    onKeyDown: props.onKeyDown,
-    onKeyUp: props.onKeyUp,
-    validKeysDown: props.validKeysDown,
-    validKeysUp: props.validKeysUp,
     onLongPress: props.onLongPress,
     onPress: props.onPress,
     onPressIn: props.onPressIn,
     onPressOut: props.onPressOut,
   };
-}
 
-TouchableWithoutFeedback.displayName = 'TouchableWithoutFeedback';
+  // BACKWARD-COMPATIBILITY: Focus and blur events were never supported before
+  // adopting `Pressability`, so preserve that behavior.
+  const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
+    eventHandlers || {};
 
-module.exports = TouchableWithoutFeedback;
+  const elementProps: {[string]: mixed, ...} = {
+    ...eventHandlersWithoutBlurAndFocus,
+    accessible: props.accessible !== false,
+    accessibilityState:
+      props.disabled != null
+        ? {
+            ..._accessibilityState,
+            disabled: props.disabled,
+          }
+        : _accessibilityState,
+    focusable:
+      props.focusable !== false &&
+      props.onPress !== undefined &&
+      !props.disabled,
+    // [macOS
+    acceptsFirstMouse:
+      props.acceptsFirstMouse !== false &&
+      props.onPress !== undefined &&
+      !props.disabled,
+    enableFocusRing:
+      props.enableFocusRing !== false &&
+      props.onPress !== undefined &&
+      !props.disabled,
+    // macOS]
+
+    accessibilityElementsHidden:
+      props['aria-hidden'] ?? props.accessibilityElementsHidden,
+    importantForAccessibility:
+      props['aria-hidden'] === true
+        ? 'no-hide-descendants'
+        : props.importantForAccessibility,
+    accessibilityLiveRegion:
+      ariaLive === 'off' ? 'none' : ariaLive ?? props.accessibilityLiveRegion,
+    nativeID: props.id ?? props.nativeID,
+  };
+
+  for (const prop of PASSTHROUGH_PROPS) {
+    if (props[prop] !== undefined) {
+      elementProps[prop] = props[prop];
+    }
+  }
+
+  // $FlowFixMe[incompatible-call]
+  return React.cloneElement(element, elementProps, ...children);
+};

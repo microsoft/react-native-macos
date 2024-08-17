@@ -169,7 +169,7 @@ RCT_EXPORT_MODULE()
     self->_label.textColor = color;
 
     self->_label.backgroundColor = backgroundColor;
-    [RCTKeyWindow() beginSheet:self->_window completionHandler:nil];
+//    [RCTKeyWindow() beginSheet:self->_window completionHandler:nil];
 #endif // macOS]
   });
 

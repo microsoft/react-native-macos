@@ -11,6 +11,7 @@
 'use strict';
 
 import type AnimatedNode from '../Animated/nodes/AnimatedNode';
+import type {FilterPrimitive} from '../StyleSheet/processFilter';
 import type {
   ____DangerouslyImpreciseStyle_InternalOverrides,
   ____ImageStyle_InternalOverrides,
@@ -39,26 +40,43 @@ export type AnimatableNumericValue = number | AnimatedNode;
 
 // [macOS
 export type CursorValue =
-  | 'alias'
   | 'auto'
+  | 'alias'
+  | 'all-scroll'
+  | 'cell'
   | 'col-resize'
   | 'context-menu'
   | 'copy'
   | 'crosshair'
   | 'default'
-  | 'disappearing-item'
   | 'e-resize'
+  | 'ew-resize'
   | 'grab'
   | 'grabbing'
+  | 'help'
+  | 'move'
+  | 'ne-rsize'
+  | 'nesw-resize'
   | 'n-resize'
+  | 'ns-resize'
+  | 'ns-resize'
+  | 'nwse-resize'
   | 'no-drop'
+  | 'none'
   | 'not-allowed'
   | 'pointer'
-  | 'row-resize'
+  | 'progress'
+  | 'row-esize'
   | 's-resize'
+  | 'se-resize'
+  | 'sw-resize'
   | 'text'
+  | 'url'
   | 'vertical-text'
-  | 'w-resize';
+  | 'w-resize'
+  | 'wait'
+  | 'zoom-in'
+  | 'zoom-out';
 // macOS]
 
 /**
@@ -666,9 +684,9 @@ type ____LayoutStyle_Internal = $ReadOnly<{
    * between children may be larger than the gap value.
    * See https://developer.mozilla.org/en-US/docs/Web/CSS/gap for more details.
    */
-  rowGap?: number,
-  columnGap?: number,
-  gap?: number,
+  rowGap?: number | string,
+  columnGap?: number | string,
+  gap?: number | string,
 }>;
 
 /**
@@ -712,10 +730,15 @@ export type ____ShadowStyle_Internal = $ReadOnly<{
   ...____ShadowStyle_InternalOverrides,
 }>;
 
+type ____FilterStyle_Internal = $ReadOnly<{
+  experimental_filter?: $ReadOnlyArray<FilterPrimitive>,
+}>;
+
 export type ____ViewStyle_InternalCore = $ReadOnly<{
   ...$Exact<____LayoutStyle_Internal>,
   ...$Exact<____ShadowStyle_Internal>,
   ...$Exact<____TransformStyle_Internal>,
+  ...____FilterStyle_Internal,
   backfaceVisibility?: 'visible' | 'hidden',
   backgroundColor?: ____ColorValue_Internal,
   borderColor?: ____ColorValue_Internal,
@@ -729,19 +752,19 @@ export type ____ViewStyle_InternalCore = $ReadOnly<{
   borderBlockColor?: ____ColorValue_Internal,
   borderBlockEndColor?: ____ColorValue_Internal,
   borderBlockStartColor?: ____ColorValue_Internal,
-  borderRadius?: AnimatableNumericValue,
-  borderBottomEndRadius?: AnimatableNumericValue,
-  borderBottomLeftRadius?: AnimatableNumericValue,
-  borderBottomRightRadius?: AnimatableNumericValue,
-  borderBottomStartRadius?: AnimatableNumericValue,
-  borderEndEndRadius?: AnimatableNumericValue,
-  borderEndStartRadius?: AnimatableNumericValue,
-  borderStartEndRadius?: AnimatableNumericValue,
-  borderStartStartRadius?: AnimatableNumericValue,
-  borderTopEndRadius?: AnimatableNumericValue,
-  borderTopLeftRadius?: AnimatableNumericValue,
-  borderTopRightRadius?: AnimatableNumericValue,
-  borderTopStartRadius?: AnimatableNumericValue,
+  borderRadius?: AnimatableNumericValue | string,
+  borderBottomEndRadius?: AnimatableNumericValue | string,
+  borderBottomLeftRadius?: AnimatableNumericValue | string,
+  borderBottomRightRadius?: AnimatableNumericValue | string,
+  borderBottomStartRadius?: AnimatableNumericValue | string,
+  borderEndEndRadius?: AnimatableNumericValue | string,
+  borderEndStartRadius?: AnimatableNumericValue | string,
+  borderStartEndRadius?: AnimatableNumericValue | string,
+  borderStartStartRadius?: AnimatableNumericValue | string,
+  borderTopEndRadius?: AnimatableNumericValue | string,
+  borderTopLeftRadius?: AnimatableNumericValue | string,
+  borderTopRightRadius?: AnimatableNumericValue | string,
+  borderTopStartRadius?: AnimatableNumericValue | string,
   borderStyle?: 'solid' | 'dotted' | 'dashed',
   borderWidth?: AnimatableNumericValue,
   borderBottomWidth?: AnimatableNumericValue,
@@ -753,7 +776,7 @@ export type ____ViewStyle_InternalCore = $ReadOnly<{
   opacity?: AnimatableNumericValue,
   elevation?: number,
   pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only',
-  cursor?: CursorValue, // [macOS][visionOS]
+  cursor?: CursorValue,
 }>;
 
 export type ____ViewStyle_Internal = $ReadOnly<{
@@ -944,5 +967,5 @@ export type ____FlattenStyleProp_Internal<
 > = TStyleProp extends null | void | false | ''
   ? empty
   : TStyleProp extends $ReadOnlyArray<infer V>
-  ? ____FlattenStyleProp_Internal<V>
-  : TStyleProp;
+    ? ____FlattenStyleProp_Internal<V>
+    : TStyleProp;

@@ -12,6 +12,7 @@ import type {
   BlurEvent,
   // [macOS
   FocusEvent,
+  HandledKeyEvent,
   KeyEvent,
   LayoutEvent,
   MouseEvent,
@@ -26,7 +27,6 @@ import type {
   AccessibilityState,
   AccessibilityValue,
 } from '../View/ViewAccessibility';
-import type {HandledKeyboardEvent} from '../View/ViewPropTypes'; // [macOS]
 
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
@@ -187,9 +187,24 @@ type Props = $ReadOnly<{|
   onKeyUp?: ?(event: KeyEvent) => void,
 
   /**
+   * Array of keys to receive key down events for. These events have their default native behavior prevented.
+   *
+   * @platform macos
+   */
+  validKeysDown?: ?Array<string | HandledKeyEvent>,
+
+  /**
+   * Array of keys to receive key up events for. These events have their default native behavior prevented.
+   *
+   * @platform macos
+   */
+  validKeysUp?: ?Array<string | HandledKeyEvent>,
+
+  /**
+   * @deprecated use `keyDownEvents` or `keyUpEvents` instead
    * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
    * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
-   * still have their native default behavior prevented, but the others do not.
+   * are still removed from the event queue, but the others are not.
    *
    * @platform macos
    */
@@ -197,17 +212,19 @@ type Props = $ReadOnly<{|
 
   /**
    * Array of keys to receive key down events for. These events have their default native behavior prevented.
+   * Overrides the props `validKeysDown`, `validKeysUp` and `passthroughAllKeyEvents`
    *
    * @platform macos
    */
-  validKeysDown?: ?Array<string | HandledKeyboardEvent>,
+  keyDownEvents?: ?Array<HandledKeyEvent>,
 
   /**
    * Array of keys to receive key up events for. These events have their default native behavior prevented.
+   * Overrides the props `validKeysDown`, `validKeysUp` and `passthroughAllKeyEvents`
    *
    * @platform macos
    */
-  validKeysUp?: ?Array<string | HandledKeyboardEvent>,
+  keyUpEvents?: ?Array<HandledKeyEvent>,
 
   /**
    * Specifies whether the view should receive the mouse down event when the
@@ -319,13 +336,16 @@ type Props = $ReadOnly<{|
   'aria-label'?: ?string,
 |}>;
 
+type Instance = React.ElementRef<typeof View>;
+
 /**
  * Component used to build display components that should respond to whether the
  * component is currently pressed or not.
  */
-/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
- * LTI update could not be added via codemod */
-function Pressable(props: Props, forwardedRef): React.Node {
+function Pressable(
+  props: Props,
+  forwardedRef: React.RefSetter<Instance>,
+): React.Node {
   const {
     accessible,
     accessibilityState,
@@ -357,6 +377,9 @@ function Pressable(props: Props, forwardedRef): React.Node {
     onBlur,
     onKeyDown,
     onKeyUp,
+    passthroughAllKeyEvents,
+    keyDownEvents,
+    keyUpEvents,
     acceptsFirstMouse,
     mouseDownCanMoveWindow,
     enableFocusRing,
@@ -368,12 +391,15 @@ function Pressable(props: Props, forwardedRef): React.Node {
     ...restProps
   } = props;
 
-  const viewRef = useRef<React.ElementRef<typeof View> | null>(null);
+  const viewRef = useRef<Instance | null>(null);
   const mergedRef = useMergeRefs(forwardedRef, viewRef);
 
   const android_rippleConfig = useAndroidRippleForView(android_ripple, viewRef);
 
   const [pressed, setPressed] = usePressState(testOnly_pressed === true);
+
+  const shouldUpdatePressed =
+    typeof children === 'function' || typeof style === 'function';
 
   let _accessibilityState = {
     busy: ariaBusy ?? accessibilityState?.busy,
@@ -397,6 +423,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
     ariaLive === 'off' ? 'none' : ariaLive ?? props.accessibilityLiveRegion;
 
   const accessibilityLabel = ariaLabel ?? props.accessibilityLabel;
+
   const restPropsWithDefaults: React.ElementConfig<typeof View> = {
     ...restProps,
     ...android_rippleConfig?.viewProps,
@@ -433,7 +460,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
         if (android_rippleConfig != null) {
           android_rippleConfig.onPressIn(event);
         }
-        setPressed(true);
+        shouldUpdatePressed && setPressed(true);
         if (onPressIn != null) {
           onPressIn(event);
         }
@@ -443,7 +470,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
         if (android_rippleConfig != null) {
           android_rippleConfig.onPressOut(event);
         }
-        setPressed(false);
+        shouldUpdatePressed && setPressed(false);
         if (onPressOut != null) {
           onPressOut(event);
         }
@@ -478,6 +505,7 @@ function Pressable(props: Props, forwardedRef): React.Node {
       // macOS]
       pressRetentionOffset,
       setPressed,
+      shouldUpdatePressed,
       unstable_pressDelay,
     ],
   );

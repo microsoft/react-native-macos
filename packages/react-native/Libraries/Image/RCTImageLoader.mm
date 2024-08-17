@@ -27,18 +27,6 @@
 
 using namespace facebook::react;
 
-static BOOL imagePerfInstrumentationEnabled = NO;
-
-BOOL RCTImageLoadingPerfInstrumentationEnabled(void)
-{
-  return imagePerfInstrumentationEnabled;
-}
-
-void RCTEnableImageLoadingPerfInstrumentation(BOOL enabled)
-{
-  imagePerfInstrumentationEnabled = enabled;
-}
-
 static NSInteger RCTImageBytesForImage(UIImage *image)
 {
   CGFloat imageScale = 1.0;
@@ -500,12 +488,6 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
     }
   });
 }
-
-// [macOS
-- (NSInteger)activeTasks {
-  return _activeTasks;
-}
-// macOS]
 
 /**
  * This returns either an image, or raw image data, depending on the loading

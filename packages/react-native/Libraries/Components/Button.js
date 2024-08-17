@@ -12,7 +12,12 @@
 
 import type {TextStyleProp, ViewStyleProp} from '../StyleSheet/StyleSheet';
 import type {PressEvent} from '../Types/CoreEventTypes';
-import type {BlurEvent, FocusEvent, KeyEvent} from '../Types/CoreEventTypes'; // [macOS]
+import type {
+  BlurEvent,
+  FocusEvent,
+  HandledKeyEvent,
+  KeyEvent,
+} from '../Types/CoreEventTypes'; // [macOS]
 import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
@@ -177,16 +182,44 @@ type ButtonProps = $ReadOnly<{|
   onKeyUp?: ?(e: KeyEvent) => void,
 
   /*
+   * @deprecated use `keyDownEvents` or `keyUpEvents` instead
    * Array of keys to receive key down events for
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysDown?: ?Array<string>,
 
   /*
+   * @deprecated use `keyDownEvents` or `keyUpEvents` instead
    * Array of keys to receive key up events for
    * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
    */
   validKeysUp?: ?Array<string>,
+
+  /**
+   * @deprecated use `keyDownEvents` or `keyUpEvents` instead
+   * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
+   * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
+   * are still removed from the event queue, but the others are not.
+   *
+   * @platform macos
+   */
+  passthroughAllKeyEvents?: ?boolean,
+
+  /**
+   * Array of keys to receive key down events for. These events have their default native behavior prevented.
+   * Overrides the props `validKeysDown`, `validKeysUp` and `passthroughAllKeyEvents`
+   *
+   * @platform macos
+   */
+  keyDownEvents?: ?Array<HandledKeyEvent>,
+
+  /**
+   * Array of keys to receive key up events for. These events have their default native behavior prevented.
+   * Overrides the props `validKeysDown`, `validKeysUp` and `passthroughAllKeyEvents`
+   *
+   * @platform macos
+   */
+  keyUpEvents?: ?Array<HandledKeyEvent>,
 
   /*
    * Specifies the Tooltip for the view
@@ -332,7 +365,13 @@ type ButtonProps = $ReadOnly<{|
   ```
  */
 
-const Button: React.AbstractComponent<ButtonProps> = (props: ButtonProps) => {
+const Touchable: typeof TouchableNativeFeedback | typeof TouchableOpacity =
+  Platform.OS === 'android' ? TouchableNativeFeedback : TouchableOpacity;
+
+const Button: React.AbstractComponent<
+  ButtonProps,
+  React.ElementRef<typeof Touchable>,
+> = React.forwardRef((props: ButtonProps, ref) => {
   const {
     accessibilityLabel,
     accessibilityRole, // [macOS]
@@ -365,8 +404,6 @@ const Button: React.AbstractComponent<ButtonProps> = (props: ButtonProps) => {
     onBlur,
     onKeyDown,
     onKeyUp,
-    validKeysDown,
-    validKeysUp,
     tooltip,
     // macOS]
   } = props;
@@ -408,8 +445,6 @@ const Button: React.AbstractComponent<ButtonProps> = (props: ButtonProps) => {
   );
   const formattedTitle =
     Platform.OS === 'android' ? title.toUpperCase() : title;
-  const Touchable =
-    Platform.OS === 'android' ? TouchableNativeFeedback : TouchableOpacity;
 
   // If `no` is specified for `importantForAccessibility`, it will be changed to `no-hide-descendants` because the text inside should not be focused.
   const _importantForAccessibility =
@@ -441,13 +476,10 @@ const Button: React.AbstractComponent<ButtonProps> = (props: ButtonProps) => {
       // [macOS
       onFocus={onFocus}
       onBlur={onBlur}
-      onKeyDown={onKeyDown}
-      onKeyUp={onKeyUp}
-      validKeysDown={validKeysDown}
-      validKeysUp={validKeysUp}
       tooltip={tooltip}
       // macOS]
-      touchSoundDisabled={touchSoundDisabled}>
+      touchSoundDisabled={touchSoundDisabled}
+      ref={ref}>
       <View style={buttonStyles}>
         <Text style={textStyles} disabled={disabled}>
           {formattedTitle}
@@ -455,7 +487,7 @@ const Button: React.AbstractComponent<ButtonProps> = (props: ButtonProps) => {
       </View>
     </Touchable>
   );
-};
+});
 
 Button.displayName = 'Button';
 

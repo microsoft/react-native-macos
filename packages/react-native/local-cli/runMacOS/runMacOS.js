@@ -9,7 +9,6 @@
 /**
  * @typedef {{
  *   configuration: string;
- *   mode: string;
  *   packager: boolean;
  *   port: number;
  *   projectPath: string;
@@ -24,11 +23,11 @@
  * }} XcodeProject
  */
 
-const findXcodeProject = require('./findXcodeProject');
-const chalk = require('chalk');
 const child_process = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const chalk = require('chalk');
+const findXcodeProject = require('./findXcodeProject');
 const {logger, CLIError, getDefaultUserTerminal} = (() => {
   const cli = require.resolve('@react-native-community/cli/package.json');
   const options = {paths: [path.dirname(cli)]};
@@ -46,16 +45,6 @@ function runMacOS(_, _ctx, args) {
     throw new CLIError(
       'macOS project folder not found. Are you sure this is a React Native project?',
     );
-  }
-
-  if (args.configuration) {
-    logger.warn(
-      'Argument --configuration has been deprecated and will be removed in a future release, please use --mode instead.',
-    );
-
-    if (!args.mode) {
-      args.mode = args.configuration;
-    }
   }
 
   process.chdir(args.projectPath);
@@ -89,7 +78,11 @@ function runMacOS(_, _ctx, args) {
 async function run(xcodeProject, scheme, args) {
   await buildProject(xcodeProject, scheme, args);
 
-  const buildSettings = getBuildSettings(xcodeProject, args.mode, scheme);
+  const buildSettings = getBuildSettings(
+    xcodeProject,
+    args.configuration,
+    scheme,
+  );
   const appPath = path.join(
     buildSettings.TARGET_BUILD_DIR,
     buildSettings.FULL_PRODUCT_NAME,
@@ -134,7 +127,7 @@ function buildProject(xcodeProject, scheme, args) {
       xcodeProject.isWorkspace ? '-workspace' : '-project',
       xcodeProject.name,
       '-configuration',
-      args.mode,
+      args.configuration,
       '-scheme',
       scheme,
     ];
@@ -285,19 +278,12 @@ module.exports = {
   options: [
     {
       name: '--configuration [string]',
-      description:
-        '[Deprecated] Explicitly set the scheme configuration to use',
+      description: 'Explicitly set the scheme configuration to use',
       default: 'Debug',
     },
     {
-      name: '--mode [string]',
-      description:
-        'Explicitly set the scheme configuration to use, corresponds to `--configuration` in `xcodebuild` command, e.g. Debug, Release.',
-    },
-    {
       name: '--scheme [string]',
-      description:
-        'Explicitly set Xcode scheme to use, corresponds to `--scheme` in `xcodebuild` command.',
+      description: 'Explicitly set Xcode scheme to use',
     },
     {
       name: '--project-path [string]',
