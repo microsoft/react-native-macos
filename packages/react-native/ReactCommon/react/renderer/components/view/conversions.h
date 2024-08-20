@@ -844,10 +844,12 @@ inline void fromRawValue(
     result = Cursor::Url;
     return;
   }
+  // [macOS
   if (stringValue == "vertical-text") {
     result = Cursor::VerticalText;
     return;
   }
+  // macOS]
   if (stringValue == "w-resize") {
     result = Cursor::WResize;
     return;

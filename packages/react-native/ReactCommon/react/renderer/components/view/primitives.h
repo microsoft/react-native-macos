@@ -124,7 +124,7 @@ enum class Cursor : uint8_t {
   SWResize,
   Text,
   Url,
-  VerticalText,
+  VerticalText, // [macOS]
   WResize,
   Wait,
   ZoomIn,
