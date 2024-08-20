@@ -142,7 +142,7 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       resolvedCursor = [NSCursor operationNotAllowedCursor];
       break;
     case RCTCursorNone:
-      // Not supported
+      resolvedCursor = [[NSCursor alloc] initWithImage:[[NSImage alloc] initWithSize:NSMakeSize(1, 1)] hotSpot:NSZeroPoint];
       break;
     case RCTCursorNotAllowed:
       resolvedCursor = [NSCursor operationNotAllowedCursor];
