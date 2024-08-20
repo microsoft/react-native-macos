@@ -1465,7 +1465,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 	return [self focusable] || [super acceptsFirstResponder];
 }
 
-- (BOOL)mouseDownCanMoveWindow {
+- (BOOL)mouseDownCanMoveWindow{
 	return _mouseDownCanMoveWindow;
 }
 
