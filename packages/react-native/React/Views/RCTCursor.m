@@ -11,7 +11,7 @@
 #import "RCTCursor.h"
 
 #if defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 150000 /* __MAC_15_0 */
-#define __MAC_OS_15_SDK_AVAILABLE
+#define RCT_MAC_OS_15_SDK_AVAILABLE
 #endif // __MAC_OS_X_VERSION_MAX_ALLOWED
 
 #if TARGET_OS_OSX
@@ -31,7 +31,7 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       // Not supported
       break;
     case RCTCursorColResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor columnResizeCursor];
       } else {
@@ -39,7 +39,7 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       }
 #else
       resolvedCursor = [NSCursor resizeLeftRightCursor];
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorContextMenu:
       resolvedCursor = [NSCursor contextualMenuCursor];
@@ -54,7 +54,7 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       resolvedCursor = [NSCursor arrowCursor];
       break;
     case RCTCursorEResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionRight
                                                     inDirections:NSCursorFrameResizeDirectionsOutward];
@@ -63,15 +63,15 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       }
 #else
       resolvedCursor = [NSCursor resizeRightCursor];
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorEWResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionLeft
                                                     inDirections:NSCursorFrameResizeDirectionsAll];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorGrab:
       resolvedCursor = [NSCursor openHandCursor];
@@ -86,24 +86,24 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       // Not supported
       break;
     case RCTCursorNEResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTopRight
                                                     inDirections:NSCursorFrameResizeDirectionsOutward];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorNESWResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTopRight
                                                     inDirections:NSCursorFrameResizeDirectionsAll];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorNResize:
       resolvedCursor = [NSCursor resizeUpCursor];
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTop
                                                     inDirections:NSCursorFrameResizeDirectionsOutward];
@@ -112,31 +112,31 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       }
 #else
       resolvedCursor = [NSCursor resizeUpCursor];
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorNSResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTop
                                                     inDirections:NSCursorFrameResizeDirectionsAll];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorNWResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTopLeft
                                                     inDirections:NSCursorFrameResizeDirectionsOutward];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorNWSEResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionTopLeft
                                                     inDirections:NSCursorFrameResizeDirectionsAll];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorNoDrop:
       resolvedCursor = [NSCursor operationNotAllowedCursor];
@@ -154,7 +154,7 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       // Not supported
       break;
     case RCTCursorRowResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor rowResizeCursor];
       } else {
@@ -162,10 +162,10 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       }
 #else
       resolvedCursor = [NSCursor resizeUpDownCursor];
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorSResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionBottom
                                                     inDirections:NSCursorFrameResizeDirectionsOutward];
@@ -174,23 +174,23 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       }
 #else
       resolvedCursor = [NSCursor resizeDownCursor];
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorSEResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionBottomRight
                                                     inDirections:NSCursorFrameResizeDirectionsOutward];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorSWResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionBottomLeft
                                                     inDirections:NSCursorFrameResizeDirectionsOutward];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorText:
       resolvedCursor = [NSCursor IBeamCursor];
@@ -202,29 +202,29 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
       resolvedCursor = [NSCursor IBeamCursorForVerticalLayout];
       break;
     case RCTCursorWResize:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor frameResizeCursorFromPosition:NSCursorFrameResizePositionLeft
                                                     inDirections:NSCursorFrameResizeDirectionsOutward];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorWait:
       // Not supported
       break;
     case RCTCursorZoomIn:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor zoomInCursor];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
     case RCTCursorZoomOut:
-#ifdef __MAC_OS_15_SDK_AVAILABLE
+#ifdef RCT_MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {
         resolvedCursor = [NSCursor zoomOutCursor];
       }
-#endif // __MAC_OS_15_SDK_AVAILABLE
+#endif // RCT_MAC_OS_15_SDK_AVAILABLE
       break;
   }
   return resolvedCursor;
