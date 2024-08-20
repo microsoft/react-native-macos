@@ -614,7 +614,6 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
 static RCTCursor RCTCursorFromCursor(Cursor cursor)
 {
   switch (cursor) {
-      
     case Cursor::Auto:
       return RCTCursorAuto;
     case Cursor::Alias:
