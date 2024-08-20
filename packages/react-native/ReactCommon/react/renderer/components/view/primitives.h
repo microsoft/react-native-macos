@@ -124,6 +124,7 @@ enum class Cursor : uint8_t {
   SWResize,
   Text,
   Url,
+  VerticalText,
   WResize,
   Wait,
   ZoomIn,

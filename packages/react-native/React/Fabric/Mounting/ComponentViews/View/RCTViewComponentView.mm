@@ -15,7 +15,6 @@
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTConversions.h>
 #import <React/RCTCursor.h> // [macOS]
-
 #import <React/RCTLocalizedString.h>
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
@@ -611,6 +610,7 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
   }
 }
 
+#if TARGET_OS_OSX // [macOS
 static RCTCursor RCTCursorFromCursor(Cursor cursor)
 {
   switch (cursor) {
@@ -679,6 +679,8 @@ static RCTCursor RCTCursorFromCursor(Cursor cursor)
       return RCTCursorText;
     case Cursor::Url:
       return RCTCursorUrl;
+    case Cursor::VerticalText:
+      return RCTCursorVerticalText;
     case Cursor::WResize:
       return RCTCursorWResize;
     case Cursor::Wait:
@@ -689,6 +691,7 @@ static RCTCursor RCTCursorFromCursor(Cursor cursor)
       return RCTCursorZoomOut;
   }
 }
+#endif // macOS]
 
 - (void)invalidateLayer
 {

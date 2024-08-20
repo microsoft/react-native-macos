@@ -198,6 +198,9 @@ NSCursor *NSCursorFromRCTCursor(RCTCursor cursor)
     case RCTCursorUrl:
       // Not supported
       break;
+    case RCTCursorVerticalText:
+      resolvedCursor = [NSCursor IBeamCursorForVerticalLayout];
+      break;
     case RCTCursorWResize:
 #ifdef __MAC_OS_15_SDK_AVAILABLE
       if (@available(macOS 15.0, *)) {

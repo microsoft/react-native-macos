@@ -42,6 +42,7 @@ typedef NS_ENUM(NSInteger, RCTCursor) {
   RCTCursorSWResize,
   RCTCursorText,
   RCTCursorUrl,
+  RCTCursorVerticalText,
   RCTCursorWResize,
   RCTCursorWait,
   RCTCursorZoomIn,

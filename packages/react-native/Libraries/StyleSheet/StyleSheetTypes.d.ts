@@ -61,6 +61,7 @@ export type CursorValue =
   | 'sw-resize'
   | 'text'
   | 'url'
+  | 'vertical-text'
   | 'w-resize'
   | 'wait'
   | 'zoom-in'
