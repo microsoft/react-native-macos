@@ -103,12 +103,6 @@
 
 + (RCTHandledKey *)RCTHandledKey:(id)json
 {
-  // legacy way of specifying validKeysDown and validKeysUp -- here we ignore the modifiers when comparing to the NSEvent
-  if ([json isKindOfClass:[NSString class]]) {
-    return [[RCTHandledKey alloc] initWithKey:(NSString *)json];
-  }
-
-  // modern way of specifying validKeys and validKeysUp -- here we assume missing modifiers to mean false\NO
   if ([json isKindOfClass:[NSDictionary class]]) {
     NSDictionary *dict = (NSDictionary *)json;
     NSString *key = dict[@"key"];
@@ -122,7 +116,7 @@
     for (NSString *key in modifiers) {
       id value = dict[key];
       if (value == nil) {
-        value = @NO;	// assume NO -- instead of nil i.e. "don't care" unlike the string case above.
+        value = @(NO);	// assume NO -- instead of nil i.e. "don't care" unlike the string case above.
 	  }
 
       if (![value isKindOfClass:[NSNumber class]]) {

@@ -101,11 +101,15 @@ export type PressabilityConfig = $ReadOnly<{|
   // [macOS
   /*
    * Called after a key down event is detected.
+   *
+   * @platform macos
    */
   onKeyDown?: ?(event: KeyEvent) => void,
 
   /*
    * Called after a key up event is detected.
+   *
+   * @platform macos
    */
   onKeyUp?: ?(event: KeyEvent) => void,
   // macOS]
