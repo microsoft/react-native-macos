@@ -19,7 +19,6 @@
 
 const {REPO_ROOT} = require('../consts');
 const {initNewProjectFromSource} = require('../e2e/init-template-e2e');
-const updateTemplatePackage = require('../releases/update-template-package');
 const {
   checkPackagerRunning,
   launchPackagerInSeparateWindow,
@@ -167,15 +166,15 @@ async function testRNTesterAndroid(
       apkPath = path.join(
         unzipFolder,
         'hermes',
-        'release',
-        `app-hermes-${emulatorArch}-release.apk`,
+        'debug',
+        `app-hermes-${emulatorArch}-debug.apk`,
       );
     } else {
       apkPath = path.join(
         unzipFolder,
         'jsc',
-        'release',
-        `app-jsc-${emulatorArch}-release.apk`,
+        'debug',
+        `app-jsc-${emulatorArch}-debug.apk`,
       );
     }
 
@@ -282,18 +281,20 @@ async function testRNTestProject(
     }
   }
 
-  updateTemplatePackage({
-    'react-native': `file://${newLocalNodeTGZ}`,
-  });
+  const currentBranch = exec(`git rev-parse --abbrev-ref HEAD`)
+    .toString()
+    .trim();
 
   pushd('/tmp/');
 
-  debug('Creating RNTestProject from template');
+  // Cleanup RNTestProject folder. This makes it easier to rerun the script when it fails
+  exec('rm -rf /tmp/RNTestProject');
 
   await initNewProjectFromSource({
     projectName: 'RNTestProject',
     directory: '/tmp/RNTestProject',
-    templatePath: reactNativePackagePath,
+    pathToLocalReactNative: newLocalNodeTGZ,
+    currentBranch,
   });
 
   cd('RNTestProject');
