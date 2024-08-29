@@ -3299,7 +3299,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native-mac/virtualized-lists@npm:0.74.99, @react-native-mac/virtualized-lists@workspace:packages/virtualized-lists":
+"@react-native-mac/virtualized-lists@npm:0.75.0, @react-native-mac/virtualized-lists@workspace:packages/virtualized-lists":
   version: 0.0.0-use.local
   resolution: "@react-native-mac/virtualized-lists@workspace:packages/virtualized-lists"
   dependencies:
@@ -12736,7 +12736,7 @@ __metadata:
     "@react-native-community/cli": "npm:14.0.0"
     "@react-native-community/cli-platform-android": "npm:14.0.0"
     "@react-native-community/cli-platform-ios": "npm:14.0.0"
-    "@react-native-mac/virtualized-lists": "npm:0.74.99"
+    "@react-native-mac/virtualized-lists": "npm:0.75.0"
     "@react-native/assets-registry": "npm:0.75.2"
     "@react-native/codegen": "npm:0.75.2"
     "@react-native/community-cli-plugin": "npm:0.75.2"
