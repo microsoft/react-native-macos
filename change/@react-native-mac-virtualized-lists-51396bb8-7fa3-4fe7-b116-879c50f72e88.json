@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "Update React Native macOS to 0.75",
+  "packageName": "@react-native-mac/virtualized-lists",
+  "email": "sanajmi@microsoft.com",
+  "dependentChangeType": "none"
+}
