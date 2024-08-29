@@ -11,6 +11,8 @@
 
 'use strict';
 
+/*:: import type {ProjectInfo} from '../utils/monorepo'; */
+
 const {retry} = require('../circleci/retry');
 const {REPO_ROOT} = require('../consts');
 const {getPackages} = require('../utils/monorepo');
@@ -23,12 +25,14 @@ const {parseArgs} = require('@pkgjs/parseargs');
 const chalk = require('chalk');
 const {execSync} = require('child_process');
 const path = require('path');
+const {popd, pushd} = require('shelljs');
+const fs = require('fs');
 
 const config = {
   options: {
     projectName: {type: 'string'},
-    templatePath: {type: 'string'},
     directory: {type: 'string'},
+    currentBranch: {type: 'string'},
     verbose: {type: 'boolean', default: false},
     help: {type: 'boolean'},
   },
@@ -56,10 +60,11 @@ async function main() {
   should not be committed.
 
   Options:
-    --projectName      The name of the new React Native project.
-    --templatePath     The absolute path to the folder containing the template.
-    --directory        The absolute path to the target project directory.
-    --verbose          Print additional output. Default: false.
+    --projectName             The name of the new React Native project.
+    --currentBranch           The current branch to checkout.
+    --directory               The absolute path to the target project directory.
+    --pathToLocalReactNative  The absolute path to the local react-native package.
+    --verbose                 Print additional output. Default: false.
     `);
     return;
   }
@@ -74,10 +79,11 @@ async function main() {
 async function initNewProjectFromSource(
   {
     projectName,
-    templatePath,
     directory,
+    currentBranch,
+    pathToLocalReactNative = null,
     verbose = false,
-  } /*: {projectName: string, templatePath: string, directory: string, verbose?: boolean} */,
+  } /*: {projectName: string, directory: string, currentBranch: string, pathToLocalReactNative?: ?string, verbose?: boolean} */,
 ) {
   console.log('Starting local npm proxy (Verdaccio)');
   const verdaccioPid = setupVerdaccio();
@@ -90,12 +96,15 @@ async function initNewProjectFromSource(
     });
     console.log('\nDone ✅');
 
-    console.log('Publishing packages to local npm proxy\n');
     const packages = await getPackages({
       includeReactNative: false,
       includePrivate: false,
     });
 
+    // packages are updated in a lockstep, let's get the version of the first one
+    const version = packages[Object.keys(packages)[0]].packageJson.version;
+
+    console.log('Publishing packages to local npm proxy\n');
     for (const {path: packagePath, packageJson} of Object.values(packages)) {
       const desc = `${packageJson.name} (${path.relative(
         REPO_ROOT,
@@ -115,11 +124,17 @@ async function initNewProjectFromSource(
     }
     console.log('\nDone ✅');
 
+    const pathToTemplate = _prepareTemplate(
+      version,
+      pathToLocalReactNative,
+      currentBranch,
+    );
+
     console.log('Running react-native init without install');
     execSync(
-      `node ./packages/react-native/cli.js init ${projectName} \
+      `npx @react-native-community/cli@next init ${projectName} \
         --directory ${directory} \
-        --template ${templatePath} \
+        --template file://${pathToTemplate} \
         --verbose \
         --pm npm \
         --skip-install`,
@@ -167,6 +182,92 @@ async function installProjectUsingProxy(cwd /*: string */) {
   if (!success) {
     throw new Error('Failed to install project dependencies');
   }
+}
+
+function _updateScopedPackages(
+  packages /*: ProjectInfo */,
+  directory /*: string */,
+  version /*: string */,
+) {
+  console.log(
+    'Updating the scoped packagesto match the version published in Verdaccio',
+  );
+
+  // Update scoped packages which starts with @react-native
+  const appPackageJsonPath = path.join(directory, 'package.json');
+  const appPackageJson = JSON.parse(
+    fs.readFileSync(appPackageJsonPath, 'utf8'),
+  );
+
+  for (const [key, _] of Object.entries(appPackageJson.dependencies)) {
+    if (key.startsWith('@react-native')) {
+      appPackageJson.dependencies[key] = version;
+    }
+  }
+  for (const [key, _] of Object.entries(appPackageJson.devDependencies)) {
+    if (key.startsWith('@react-native')) {
+      appPackageJson.devDependencies[key] = version;
+    }
+  }
+
+  fs.writeFileSync(appPackageJsonPath, JSON.stringify(appPackageJson, null, 2));
+
+  console.log('Done ✅');
+}
+
+function _prepareTemplate(
+  version /*: string */,
+  pathToLocalReactNative /*: ?string*/,
+  currentBranch /*: string*/,
+) {
+  console.log('Prepare template locally');
+
+  const templateCloneBaseFolder = '/tmp/react-native-tmp/template';
+  execSync(`rm -rf ${templateCloneBaseFolder}`);
+
+  const templateCloneFolder = path.join(templateCloneBaseFolder, 'template');
+
+  execSync(
+    `git clone https://github.com/react-native-community/template ${templateCloneBaseFolder}`,
+  );
+
+  pushd(templateCloneBaseFolder);
+
+  execSync(`git checkout ${currentBranch}`);
+
+  pushd('template');
+
+  // read the package.json
+  const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+
+  // and update the dependencies and devDependencies of packages scoped as @react-native
+  // to the version passed as parameter
+  for (const [key, _] of Object.entries(packageJson.dependencies)) {
+    if (key.startsWith('@react-native')) {
+      packageJson.dependencies[key] = version;
+    }
+  }
+
+  for (const [key, _] of Object.entries(packageJson.devDependencies)) {
+    if (key.startsWith('@react-native')) {
+      packageJson.devDependencies[key] = version;
+    }
+  }
+
+  if (pathToLocalReactNative != null) {
+    packageJson.dependencies['react-native'] = `file:${pathToLocalReactNative}`;
+  }
+
+  // write the package.json to disk
+  fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2));
+
+  popd();
+  const templateTgz = execSync(`npm pack`).toString().trim();
+
+  popd();
+
+  console.log('Done ✅');
+  return path.join(templateCloneBaseFolder, templateTgz);
 }
 
 module.exports = {

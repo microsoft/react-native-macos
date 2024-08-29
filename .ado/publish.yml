@@ -1,5 +1,3 @@
-# It is expected that a `latestStableBranch` variable is set in the pipeline's settings:
-
 # This file defines the build steps to publish a release
 name: $(Date:yyyyMMdd).$(Rev:.r)
 
@@ -82,10 +80,10 @@ extends:
                - template: .ado/templates/apple-steps-publish.yml@self
                  parameters:
                    build_type: nightly
-             - ${{ elseif endsWith(variables['Build.SourceBranchName'], '-stable') }}:
-               - template: .ado/templates/apple-steps-publish.yml@self
-                 parameters:
-                   build_type: release
+            #  - ${{ elseif endsWith(variables['Build.SourceBranchName'], '-stable') }}:
+            #    - template: .ado/templates/apple-steps-publish.yml@self
+            #      parameters:
+            #        build_type: release
              - ${{ else }}:
                - task: CmdLine@2
                  displayName: Unknown branch, skipping publish
@@ -98,7 +96,6 @@ extends:
          
              - bash: echo "##vso[task.setvariable variable=npmDistTag]latest"
                displayName: Set dist-tag to latest
-               condition: eq(variables['Build.SourceBranchName'], variables.latestStableBranch)
 
              - bash: echo "##vso[task.setvariable variable=npmDistTag]canary"
                displayName: Set dist-tag to canary

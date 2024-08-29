@@ -18,6 +18,7 @@ dependencies {
   implementation(libs.gson)
   implementation(libs.guava)
   testImplementation(libs.junit)
+  testImplementation(project(":shared-testutil"))
 }
 
 java { targetCompatibility = JavaVersion.VERSION_11 }
