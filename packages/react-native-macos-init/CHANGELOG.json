@@ -2,6 +2,21 @@
   "name": "react-native-macos-init",
   "entries": [
     {
+      "date": "Fri, 30 Aug 2024 21:43:59 GMT",
+      "version": "2.1.1",
+      "tag": "react-native-macos-init_v2.1.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "sanajmi@microsoft.com",
+            "package": "react-native-macos-init",
+            "commit": "b732623bb52295d791c0fb4b1277235cf6287b8d",
+            "comment": "Update for Yarn 3+"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 18 May 2020 23:31:12 GMT",
       "tag": "react-native-macos-init_v2.1.0",
       "version": "2.1.0",

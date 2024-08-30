@@ -1,8 +1,16 @@
 # Change Log - react-native-macos-init
 
-This log was last generated on Mon, 18 May 2020 23:31:12 GMT and should not be manually modified.
+This log was last generated on Fri, 30 Aug 2024 21:43:59 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.1.1
+
+Fri, 30 Aug 2024 21:43:59 GMT
+
+### Patches
+
+- Update for Yarn 3+ (sanajmi@microsoft.com)
 
 ## 2.1.0
 

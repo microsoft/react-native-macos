@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Update for Yarn 3+",
-  "packageName": "react-native-macos-init",
-  "email": "sanajmi@microsoft.com",
-  "dependentChangeType": "patch"
-}
