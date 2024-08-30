@@ -19,6 +19,9 @@ variables:
   - group: InfoSec-SecurityResults
   - name: tags
     value: production,externalfacing
+  # Remember to update this in previous stable branches when creating a new stable branch
+  - name : latestStableBranch
+    value: '0.75-stable'
 
 resources:
   repositories:
@@ -96,6 +99,7 @@ extends:
          
              - bash: echo "##vso[task.setvariable variable=npmDistTag]latest"
                displayName: Set dist-tag to latest
+               condition: eq(variables['Build.SourceBranchName'], variables.latestStableBranch)
 
              - bash: echo "##vso[task.setvariable variable=npmDistTag]canary"
                displayName: Set dist-tag to canary
