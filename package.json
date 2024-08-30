@@ -86,7 +86,7 @@
     "jscodeshift": "^0.14.0",
     "metro-babel-register": "^0.80.0",
     "metro-memory-fs": "^0.80.0",
-    "micromatch": "^4.0.4",
+    "micromatch": "^4.0.8",
     "mkdirp": "^0.5.1",
     "node-fetch": "^2.2.0",
     "nullthrows": "^1.1.1",
