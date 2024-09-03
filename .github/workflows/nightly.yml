@@ -575,42 +575,42 @@ jobs:
       - name: Create /tmp/hermes/osx-bin directory
         run: mkdir -p /tmp/hermes/osx-bin
       - name: Download osx-bin release artifacts
-        uses: actions/download-artifact@v4.1.3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: hermes-osx-bin-Release
           path: /tmp/hermes/osx-bin
       - name: Download osx-bin debug artifacts
-        uses: actions/download-artifact@v4.1.3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: hermes-osx-bin-Debug
           path: /tmp/hermes/osx-bin
       - name: Download darwin-bin release artifacts
-        uses: actions/download-artifact@v4.1.3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: hermes-darwin-bin-Release
           path: /tmp/hermes/hermes-runtime-darwin
       - name: Download darwin-bin debug artifacts
-        uses: actions/download-artifact@v4.1.3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: hermes-darwin-bin-Debug
           path: /tmp/hermes/hermes-runtime-darwin
       - name: Download hermes dSYM debug artifacts
-        uses: actions/download-artifact@v4.1.3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: hermes-dSYM-Debug
           path: /tmp/hermes/dSYM/Debug
       - name: Download hermes dSYM release vartifacts
-        uses: actions/download-artifact@v4.1.3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: hermes-dSYM-Release
           path: /tmp/hermes/dSYM/Release
       - name: Download windows-bin artifacts
-        uses: actions/download-artifact@v4.1.3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: hermes-win64-bin
           path: /tmp/hermes/win64-bin
       - name: Download linux-bin artifacts
-        uses: actions/download-artifact@v4.1.3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: hermes-linux-bin
           path: /tmp/hermes/linux64-bin
