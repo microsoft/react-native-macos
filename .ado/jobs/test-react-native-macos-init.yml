@@ -13,6 +13,20 @@ jobs:
 
       - template: /.ado/templates/apple-tools-setup.yml@self
 
+      - task: CmdLine@2
+        displayName: yarn install react-native-macos-init
+        inputs:
+          script: |
+            cd packages/react-native-macos-init
+            yarn install
+
+      - task: CmdLine@2
+        displayName: Build react-native-macos-init
+        inputs:
+          script: |
+            cd packages/react-native-macos-init
+            yarn build
+
       - template: /.ado/templates/verdaccio-init.yml@self
 
       - template: /.ado/templates/verdaccio-publish.yml@self
