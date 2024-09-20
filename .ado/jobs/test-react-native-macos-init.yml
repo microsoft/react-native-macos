@@ -54,7 +54,7 @@ jobs:
       - task: CmdLine@2
         displayName: Init new project
         inputs:
-          script: npx --yes react-native@0.71.5 init testcli --template react-native@0.71.5 --skip-install
+          script: npx --yes react-native@0.75 init testcli --template react-native@0.75 --skip-install
           workingDirectory: $(Agent.BuildDirectory)
 
       - task: CmdLine@2
