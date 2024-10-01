@@ -123,6 +123,12 @@ static void renderOutsetShadows(
     CGFloat blurRadius = it->blurRadius;
     CGFloat spreadDistance = it->spreadDistance;
     CGColorRef color = colorRefFromSharedColor(it->color);
+      
+    #if TARGET_OS_OSX // [macOS
+      // For some reason, unflipping the context gets outset shadows to (mostly) appear correctly on macOS
+      CGAffineTransform flippedTransform = CGAffineTransformMake(1, 0, 0, -1, 0, boundingRect.size.height);
+      CGContextConcatCTM(context, flippedTransform);
+    #endif // macOS]
 
     // First, define the shadow rect. This is the rect that will be filled
     // and _cast_ the shadow. As a result, the size does not incorporate
@@ -282,12 +288,14 @@ UIImage *RCTGetBoxShadowImage(
     CALayer *layer)
 {
   CGRect boundingRect = RCTGetBoundingRect(shadows, layer.bounds.size);
-#if !TARGET_OS_OSX // [macOS]
-  UIGraphicsImageRendererFormat *const rendererFormat = [UIGraphicsImageRendererFormat defaultFormat];
-  UIGraphicsImageRenderer *const renderer = [[UIGraphicsImageRenderer alloc] initWithSize:boundingRect.size
-                                                                                   format:rendererFormat];
+  // [macOS Use RCTUIGraphicsImageRenderer shim
+  RCTUIGraphicsImageRendererFormat *const rendererFormat = [RCTUIGraphicsImageRendererFormat defaultFormat];
+  RCTUIGraphicsImageRenderer *const renderer = [[RCTUIGraphicsImageRenderer alloc] initWithSize:boundingRect.size
+                                                                                         format:rendererFormat];
+  // macOS]
+
   UIImage *const boxShadowImage =
-      [renderer imageWithActions:^(UIGraphicsImageRendererContext *_Nonnull rendererContext) {
+      [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
         auto [outsetShadows, insetShadows] = splitBoxShadowsByInset(shadows);
         const CGContextRef context = rendererContext.CGContext;
         // Outset shadows should be before inset shadows since outset needs to
@@ -297,22 +305,6 @@ UIImage *RCTGetBoxShadowImage(
         renderOutsetShadows(outsetShadows, cornerRadii, layer, boundingRect, context);
         renderInsetShadows(insetShadows, cornerRadii, edgeInsets, layer, boundingRect, context);
       }];
-#else // [macOS
-  UIGraphicsBeginImageContextWithOptions(boundingRect.size, YES, 0.0);
-  CGContextRef context = UIGraphicsGetCurrentContext();
-
-  // Mostly copied from above iOS block
-  auto [outsetShadows, insetShadows] = splitBoxShadowsByInset(shadows);
-  // Outset shadows should be before inset shadows since outset needs to
-  // clear out a region in the view so we do not block its contents.
-  // Inset shadows could draw over those outset shadows but if the shadow
-  // colors have alpha < 1 then we will have inaccurate alpha compositing
-  renderOutsetShadows(outsetShadows, cornerRadii, layer, boundingRect, context);
-  renderInsetShadows(insetShadows, cornerRadii, edgeInsets, layer, boundingRect, context);
-
-  UIImage *boxShadowImage = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
-#endif // macOS]
 
   return boxShadowImage;
 }
