@@ -172,7 +172,7 @@ static CGPathRef RCTPathCreateOuterOutline(BOOL drawToEdge, CGRect rect, RCTCorn
 }
 
 static RCTUIGraphicsImageRenderer * // [macOS]
-RCTUIGraphicsImageRenderer2(CGSize size, CGColorRef backgroundColor, BOOL hasCornerRadii, BOOL drawToEdge)
+RCTMakeUIGraphicsImageRenderer(CGSize size, CGColorRef backgroundColor, BOOL hasCornerRadii, BOOL drawToEdge) // [macOS]
 {
   const CGFloat alpha = CGColorGetAlpha(backgroundColor);
   const BOOL opaque = (drawToEdge || !hasCornerRadii) && alpha == 1.0;
@@ -227,7 +227,7 @@ static UIImage *RCTGetSolidBorderImage(
   } // macOS]
 
   RCTUIGraphicsImageRenderer *const imageRenderer =
-      RCTUIGraphicsImageRenderer2(size, backgroundColor, hasCornerRadii, drawToEdge); // [macOS]
+      RCTMakeUIGraphicsImageRenderer(size, backgroundColor, hasCornerRadii, drawToEdge); // [macOS]
   UIImage *image = [imageRenderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
     const CGContextRef context = rendererContext.CGContext;
     const CGRect rect = {.size = size};
@@ -487,7 +487,7 @@ static UIImage *RCTGetDashedOrDottedBorderImage(
 
   const BOOL hasCornerRadii = RCTCornerRadiiAreAboveThreshold(cornerRadii);
   RCTUIGraphicsImageRenderer *const imageRenderer = // [macOS]
-      RCTUIGraphicsImageRenderer2(viewSize, backgroundColor, hasCornerRadii, drawToEdge); // [macOS]
+      RCTMakeUIGraphicsImageRenderer(viewSize, backgroundColor, hasCornerRadii, drawToEdge); // [macOS]
   return [imageRenderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
     const CGContextRef context = rendererContext.CGContext;
     const CGRect rect = {.size = viewSize};
