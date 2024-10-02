@@ -1006,12 +1006,8 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 @implementation RCTUIGraphicsImageRendererFormat
 
 + (nonnull instancetype)defaultFormat {
-    static dispatch_once_t token = 0;
-    static RCTUIGraphicsImageRendererFormat *_sharedObject = nil;
-    dispatch_once(&token, ^{
-        _sharedObject = [[self alloc] init];
-    });
-    return _sharedObject;
+    RCTUIGraphicsImageRendererFormat *format = [RCTUIGraphicsImageRendererFormat new];
+    return format;
 }
 
 @end
@@ -1019,11 +1015,13 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 @implementation RCTUIGraphicsImageRenderer
 {
     CGSize _size;
+    RCTUIGraphicsImageRendererFormat *_format;
 }
 
 - (nonnull instancetype)initWithSize:(CGSize)size format:(nonnull RCTUIGraphicsImageRendererFormat *)format {
     if (self = [super init]) {
         self->_size = size;
+        self->_format = format;
     }
     return self;
 }
