@@ -32,37 +32,6 @@ CGContextRef UIGraphicsGetCurrentContext(void)
 	return [[NSGraphicsContext currentContext] CGContext];
 }
 
-void UIGraphicsBeginImageContextWithOptions(CGSize size, __unused BOOL opaque, CGFloat scale)
-{
-	if (scale == 0.0)
-	{
-		// TODO: Assert. We can't assume a display scale on macOS
-		scale = 1.0;
-	}
-
-	size_t width = ceilf(size.width * scale);
-	size_t height = ceilf(size.height * scale);
-
-	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	CGContextRef ctx = CGBitmapContextCreate(NULL, width, height, 8/*bitsPerComponent*/, width * 4/*bytesPerRow*/, colorSpace, kCGImageAlphaPremultipliedFirst);
-	CGColorSpaceRelease(colorSpace);
-
-	if (ctx != NULL)
-	{
-		// flip the context (top left at 0, 0) and scale it
-		CGContextTranslateCTM(ctx, 0.0, height);
-		CGContextScaleCTM(ctx, scale, -scale);
-
-		NSGraphicsContext *graphicsContext = [NSGraphicsContext graphicsContextWithCGContext:ctx flipped:YES];
-		objc_setAssociatedObject(graphicsContext, &RCTGraphicsContextSizeKey, [NSValue valueWithSize:size], OBJC_ASSOCIATION_COPY_NONATOMIC);
-
-		[NSGraphicsContext saveGraphicsState];
-		[NSGraphicsContext setCurrentContext:graphicsContext];
-
-		CFRelease(ctx);
-	}
-}
-
 NSImage *UIGraphicsGetImageFromCurrentImageContext(void)
 {
 	NSImage *image = nil;
@@ -81,12 +50,6 @@ NSImage *UIGraphicsGetImageFromCurrentImageContext(void)
 	}
 
 	return image;
-}
-
-void UIGraphicsEndImageContext(void)
-{
-	RCTAssert(objc_getAssociatedObject([NSGraphicsContext currentContext], &RCTGraphicsContextSizeKey), @"The current graphics context is not a React image context!");
-	[NSGraphicsContext restoreGraphicsState];
 }
 
 //
@@ -1036,6 +999,42 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
       [layer setBackgroundColor:nil];
     }
   }
+}
+
+@end
+
+@implementation RCTUIGraphicsImageRendererFormat
+
++ (nonnull instancetype)defaultFormat {
+    static dispatch_once_t token = 0;
+    static RCTUIGraphicsImageRendererFormat *_sharedObject = nil;
+    dispatch_once(&token, ^{
+        _sharedObject = [[self alloc] init];
+    });
+    return _sharedObject;
+}
+
+@end
+
+@implementation RCTUIGraphicsImageRenderer
+{
+    CGSize _size;
+}
+
+- (nonnull instancetype)initWithSize:(CGSize)size format:(nonnull RCTUIGraphicsImageRendererFormat *)format {
+    if (self = [super init]) {
+        self->_size = size;
+    }
+    return self;
+}
+
+- (nonnull NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions {
+
+    NSImage *image = [[NSImage alloc] initWithSize:_size];
+    [image lockFocusFlipped:YES];
+    actions([NSGraphicsContext currentContext]);
+    [image unlockFocus];
+    return image;
 }
 
 @end

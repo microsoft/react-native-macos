@@ -171,27 +171,16 @@ static CGPathRef RCTPathCreateOuterOutline(BOOL drawToEdge, CGRect rect, RCTCorn
   return RCTPathCreateWithRoundedRect(rect, RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero), NULL);
 }
 
-#if !TARGET_OS_OSX // [macOS]
-static UIGraphicsImageRenderer *
-RCTUIGraphicsImageRenderer(CGSize size, CGColorRef backgroundColor, BOOL hasCornerRadii, BOOL drawToEdge)
+static RCTUIGraphicsImageRenderer * // [macOS]
+RCTUIGraphicsImageRenderer2(CGSize size, CGColorRef backgroundColor, BOOL hasCornerRadii, BOOL drawToEdge)
 {
   const CGFloat alpha = CGColorGetAlpha(backgroundColor);
   const BOOL opaque = (drawToEdge || !hasCornerRadii) && alpha == 1.0;
-  UIGraphicsImageRendererFormat *const rendererFormat = [UIGraphicsImageRendererFormat defaultFormat];
+  RCTUIGraphicsImageRendererFormat *const rendererFormat = [RCTUIGraphicsImageRendererFormat defaultFormat]; // [macOS]
   rendererFormat.opaque = opaque;
-  UIGraphicsImageRenderer *const renderer = [[UIGraphicsImageRenderer alloc] initWithSize:size format:rendererFormat];
+  RCTUIGraphicsImageRenderer *const renderer = [[RCTUIGraphicsImageRenderer alloc] initWithSize:size format:rendererFormat]; // [macOS]
   return renderer;
 }
-#else // [macOS
-static CGContextRef
-RCTUIGraphicsBeginImageContext(CGSize size, CGColorRef backgroundColor, BOOL hasCornerRadii, BOOL drawToEdge, CGFloat scaleFactor)
-{
-  const CGFloat alpha = CGColorGetAlpha(backgroundColor);
-  const BOOL opaque = (drawToEdge || !hasCornerRadii) && alpha == 1.0;
-  UIGraphicsBeginImageContextWithOptions(size, opaque, scaleFactor);
-  return UIGraphicsGetCurrentContext();
-}
-#endif // macOS]
 
 static UIImage *RCTGetSolidBorderImage(
     RCTCornerRadii cornerRadii,
@@ -237,16 +226,10 @@ static UIImage *RCTGetSolidBorderImage(
     return nil;
   } // macOS]
 
-#if !TARGET_OS_OSX // [macOS]
-  UIGraphicsImageRenderer *const imageRenderer =
-      RCTUIGraphicsImageRenderer(size, backgroundColor, hasCornerRadii, drawToEdge);
-  UIImage *image = [imageRenderer imageWithActions:^(UIGraphicsImageRendererContext *_Nonnull rendererContext) {
+  RCTUIGraphicsImageRenderer *const imageRenderer =
+      RCTUIGraphicsImageRenderer2(size, backgroundColor, hasCornerRadii, drawToEdge); // [macOS]
+  UIImage *image = [imageRenderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
     const CGContextRef context = rendererContext.CGContext;
-#else // [macOS
-  CGContextRef context = RCTUIGraphicsBeginImageContext(size, backgroundColor, hasCornerRadii, drawToEdge, scaleFactor);
-  // Add extra braces for scope to match the indentation level of the iOS block
-  {
-#endif // macOS]
     const CGRect rect = {.size = size};
     CGPathRef path = RCTPathCreateOuterOutline(drawToEdge, rect, cornerRadii);
 
@@ -402,13 +385,7 @@ static UIImage *RCTGetSolidBorderImage(
     }
 
     CGPathRelease(insetPath);
-#if !TARGET_OS_OSX // [macOS]
   }];
-#else // [macOS
-  }
-  UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
-#endif // macOS]
 
   if (makeStretchable) {
 #if !TARGET_OS_OSX // [macOS]
@@ -509,16 +486,10 @@ static UIImage *RCTGetDashedOrDottedBorderImage(
   } // macOS]
 
   const BOOL hasCornerRadii = RCTCornerRadiiAreAboveThreshold(cornerRadii);
-#if !TARGET_OS_OSX // [macOS]
-  UIGraphicsImageRenderer *const imageRenderer =
-      RCTUIGraphicsImageRenderer(viewSize, backgroundColor, hasCornerRadii, drawToEdge);
-  return [imageRenderer imageWithActions:^(UIGraphicsImageRendererContext *_Nonnull rendererContext) {
+  RCTUIGraphicsImageRenderer *const imageRenderer = // [macOS]
+      RCTUIGraphicsImageRenderer2(viewSize, backgroundColor, hasCornerRadii, drawToEdge); // [macOS]
+  return [imageRenderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
     const CGContextRef context = rendererContext.CGContext;
-#else // [macOS
-  CGContextRef context = RCTUIGraphicsBeginImageContext(viewSize, backgroundColor, hasCornerRadii, drawToEdge, scaleFactor);
-  // Add extra braces for scope to match the indentation level of the iOS block
-  {
-#endif // macOS]
     const CGRect rect = {.size = viewSize};
 
     if (backgroundColor) {
@@ -549,14 +520,7 @@ static UIImage *RCTGetDashedOrDottedBorderImage(
     CGContextStrokePath(context);
 
     CGPathRelease(path);
-#if !TARGET_OS_OSX // [macOS]
   }];
-#else // [macOS
-  }
-  UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
-  return image;
-#endif // macOS]
 }
 
 UIImage *RCTGetBorderImage(
