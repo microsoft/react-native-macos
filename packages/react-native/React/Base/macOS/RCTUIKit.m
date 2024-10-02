@@ -1028,10 +1028,12 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 
 - (nonnull NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions {
 
-    NSImage *image = [[NSImage alloc] initWithSize:_size];
-    [image lockFocusFlipped:YES];
-    actions([NSGraphicsContext currentContext]);
-    [image unlockFocus];
+    NSImage *image = [NSImage imageWithSize:_size
+                                    flipped:YES
+                             drawingHandler:^BOOL(NSRect dstRect) {
+        actions([NSGraphicsContext currentContext]);
+        return YES;
+    }];
     return image;
 }
 
