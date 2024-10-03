@@ -228,7 +228,7 @@ static UIImage *RCTGetSolidBorderImage(
 
   RCTUIGraphicsImageRenderer *const imageRenderer =
       RCTMakeUIGraphicsImageRenderer(size, backgroundColor, hasCornerRadii, drawToEdge); // [macOS]
-      CGColorRetain(backgroundColor); // [macOS] CGColorRefs are not atuomtically retained wehn passed into a block
+      CGColorRetain(backgroundColor); // [macOS] CGColorRefs are not atuomtically retained when passed into a block
   UIImage *image = [imageRenderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
     const CGContextRef context = rendererContext.CGContext;
     const CGRect rect = {.size = size};
