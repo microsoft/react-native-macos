@@ -1031,7 +1031,12 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
     NSImage *image = [NSImage imageWithSize:_size
                                     flipped:YES
                              drawingHandler:^BOOL(NSRect dstRect) {
-        actions([NSGraphicsContext currentContext]);
+        
+        RCTUIGraphicsImageRendererContext *context = [NSGraphicsContext currentContext];
+        if (self->_format.opaque) {
+            CGContextSetAlpha([context CGContext], 1.0);
+        }
+        actions(context);
         return YES;
     }];
     return image;
