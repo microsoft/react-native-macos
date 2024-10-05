@@ -228,7 +228,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     //escape
   } else if (commandSelector == @selector(cancelOperation:)) {
     [textInputDelegate textInputDidCancel];
-    if (![textInputDelegate hasValidKeyDownOrValidKeyUp:@"Escape"]) {
+    if (![textInputDelegate hasKeyDownEventOrKeyUpEvent:@"Escape"]) {
       [[_backedTextInputView window] makeFirstResponder:nil];
     }
     commandHandled = YES;
@@ -450,7 +450,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     //escape
   } else if (commandSelector == @selector(cancelOperation:)) {
     [textInputDelegate textInputDidCancel];
-    if (![textInputDelegate hasValidKeyDownOrValidKeyUp:@"Escape"]) {
+    if (![textInputDelegate hasKeyDownEventOrKeyUpEvent:@"Escape"]) {
       [[_backedTextInputView window] makeFirstResponder:nil];
     }
     commandHandled = YES;
