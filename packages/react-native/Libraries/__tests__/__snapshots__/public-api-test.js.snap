@@ -2095,7 +2095,9 @@ export type Props = $ReadOnly<{|
   decelerationRate?: ?DecelerationRateType,
   experimental_endDraggingSensitivityMultiplier?: ?number,
   horizontal?: ?boolean,
+  hasOverlayStyleIndicator?: ?boolean,
   invertStickyHeaders?: ?boolean,
+  inverted?: ?boolean,
   keyboardDismissMode?: ?(\\"none\\" | \\"on-drag\\" | \\"interactive\\"),
   keyboardShouldPersistTaps?: ?(\\"always\\" | \\"never\\" | \\"handled\\" | true | false),
   maintainVisibleContentPosition?: ?$ReadOnly<{|
@@ -2131,6 +2133,7 @@ export type Props = $ReadOnly<{|
   scrollViewRef?: React.RefSetter<PublicScrollViewInstance>,
 |}>;
 type State = {|
+  contentKey: number,
   layoutHeight: ?number,
 |};
 export type ScrollViewComponentStatics = $ReadOnly<{|
@@ -2215,6 +2218,8 @@ declare class ScrollView extends React.Component<Props, State> {
     event: $FlowFixMe,
     key: $FlowFixMe
   ): void;
+  _handlePreferredScrollerStyleDidChange: $FlowFixMe;
+  _handleInvertedDidChange: $FlowFixMe;
   _handleScroll: $FlowFixMe;
   _handleLayout: $FlowFixMe;
   _handleContentOnLayout: $FlowFixMe;
@@ -2450,8 +2455,8 @@ declare export default typeof NativeStatusBarManagerIOS;
 exports[`public API should not change unintentionally Libraries/Components/StatusBar/StatusBar.js 1`] = `
 "export type StatusBarStyle = $Keys<{
   default: string,
-  \\"light-content\\": string,
-  \\"dark-content\\": string,
+  \\"light-content\\": ColorValue,
+  \\"dark-content\\": ColorValue,
   ...
 }>;
 export type StatusBarAnimation = $Keys<{
@@ -3970,6 +3975,13 @@ exports[`public API should not change unintentionally Libraries/Components/Unimp
   render(): React.Node;
 }
 declare module.exports: UnimplementedView;
+"
+`;
+
+exports[`public API should not change unintentionally Libraries/Components/View/DraggedType.js 1`] = `
+"export type DraggedType = \\"fileUrl\\";
+export type DraggedTypesType = DraggedType | $ReadOnlyArray<DraggedType>;
+declare module.exports: { DraggedTypes: $FlowFixMe };
 "
 `;
 
@@ -5790,6 +5802,7 @@ type RequiredProps<ItemT> = {|
 type OptionalProps<ItemT> = {|
   renderItem?: ?RenderItemType<ItemT>,
   columnWrapperStyle?: ViewStyleProp,
+  enableSelectionOnKeyPress?: ?boolean,
   extraData?: any,
   getItemLayout?: (
     data: ?$ReadOnly<$ArrayLike<ItemT>>,
@@ -5803,6 +5816,7 @@ type OptionalProps<ItemT> = {|
   horizontal?: ?boolean,
   initialNumToRender?: ?number,
   initialScrollIndex?: ?number,
+  initialSelectedIndex?: ?number,
   inverted?: ?boolean,
   keyExtractor?: ?(item: ItemT, index: number) => string,
   numColumns?: number,
@@ -5849,6 +5863,7 @@ declare class FlatList<ItemT> extends React.PureComponent<Props<ItemT>, void> {
   scrollToOffset(params: { animated?: ?boolean, offset: number, ... }): void;
   recordInteraction(): void;
   flashScrollIndicators(): void;
+  selectRowAtIndex(index: number): void;
   getScrollResponder(): ?ScrollResponderType;
   getNativeScrollRef():
     | ?React.ElementRef<typeof View>
