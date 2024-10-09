@@ -18,12 +18,16 @@ import type {BuildType} from '../releases/utils/version-utils';
 const {REPO_ROOT} = require('../consts');
 const {getNpmInfo, publishPackage} = require('../npm-utils');
 const {removeNewArchFlags} = require('../releases/remove-new-arch-flags');
-const {setReactNativeVersion} = require('../releases/set-rn-version');
-const setVersion = require('../releases/set-version');
 /* [macOS We do not generate Android artifacts for React Native macOS
 const {
-  generateAndroidArtifacts,
+  updateReactNativeArtifacts,
+} = require('../releases/set-rn-artifacts-version');
+ macOS] */
+const {setVersion} = require('../releases/set-version');
+/* [macOS We do not generate Android artifacts for React Native macOS
+const {
   publishAndroidArtifactsToMaven,
+  publishExternalArtifactsToMaven,
 } = require('../releases/utils/release-utils');
 macOS] */
 const {getPackages} = require('../utils/monorepo');
@@ -109,19 +113,20 @@ async function publishNpm(buildType /*: BuildType */) /*: Promise<void> */ {
       await setVersion(version);
       await publishMonorepoPackages(tag);
     } else {
-      await setReactNativeVersion(version, null, buildType);
+      await updateReactNativeArtifacts(version, buildType);
     }
   }
-
-  // [macOS] Do not generate Android artifacts for React Native macOS
-  // generateAndroidArtifacts(version);
 
   if (buildType === 'dry-run') {
     console.log('Skipping `npm publish` because --dry-run is set.');
     return;
   }
 
-  // We first publish on Maven Central all the necessary artifacts.
+  // We first publish on Maven Central the external artifacts
+  // produced by iOS
+  publishExternalArtifactsToMaven(version, buildType);
+
+  // We the publish on Maven Central all the Android artifacts.
   // NPM publishing is done just after.
   /* [macOS] Skip the Android Artifact and NPM Publish here as we do that in our Azure Pipeline
   // publishAndroidArtifactsToMaven(version, buildType);

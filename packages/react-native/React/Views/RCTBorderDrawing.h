@@ -11,10 +11,14 @@
 #import <React/RCTDefines.h>
 
 typedef struct {
-  CGFloat topLeft;
-  CGFloat topRight;
-  CGFloat bottomLeft;
-  CGFloat bottomRight;
+  CGFloat topLeftHorizontal;
+  CGFloat topLeftVertical;
+  CGFloat topRightHorizontal;
+  CGFloat topRightVertical;
+  CGFloat bottomLeftHorizontal;
+  CGFloat bottomLeftVertical;
+  CGFloat bottomRightHorizontal;
+  CGFloat bottomRightVertical;
 } RCTCornerRadii;
 
 typedef struct {
@@ -25,17 +29,17 @@ typedef struct {
 } RCTCornerInsets;
 
 typedef struct {
-  CGColorRef top;
-  CGColorRef left;
-  CGColorRef bottom;
-  CGColorRef right;
+  RCTUIColor *top;
+  RCTUIColor *left;
+  RCTUIColor *bottom;
+  RCTUIColor *right;
 } RCTBorderColors;
 
 /**
  * Determine if the border widths, colors and radii are all equal.
  */
 RCT_EXTERN BOOL RCTBorderInsetsAreEqual(UIEdgeInsets borderInsets);
-RCT_EXTERN BOOL RCTCornerRadiiAreEqual(RCTCornerRadii cornerRadii);
+RCT_EXTERN BOOL RCTCornerRadiiAreEqualAndSymmetrical(RCTCornerRadii cornerRadii);
 RCT_EXTERN BOOL RCTBorderColorsAreEqual(RCTBorderColors borderColors);
 
 /**
@@ -64,6 +68,6 @@ RCT_EXTERN UIImage *RCTGetBorderImage(
     RCTCornerRadii cornerRadii,
     UIEdgeInsets borderInsets,
     RCTBorderColors borderColors,
-    CGColorRef backgroundColor,
+    RCTUIColor *backgroundColor,
     BOOL drawToEdge,
     CGFloat scaleFactor); // [macOS]
