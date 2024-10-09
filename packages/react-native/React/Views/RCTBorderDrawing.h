@@ -25,10 +25,10 @@ typedef struct {
 } RCTCornerInsets;
 
 typedef struct {
-  CGColorRef top;
-  CGColorRef left;
-  CGColorRef bottom;
-  CGColorRef right;
+  UIColor *top;
+  UIColor *left;
+  UIColor *bottom;
+  UIColor *right;
 } RCTBorderColors;
 
 /**
@@ -64,6 +64,6 @@ RCT_EXTERN UIImage *RCTGetBorderImage(
     RCTCornerRadii cornerRadii,
     UIEdgeInsets borderInsets,
     RCTBorderColors borderColors,
-    CGColorRef backgroundColor,
+    RCTUIColor *backgroundColor, // [macOS]
     BOOL drawToEdge,
     CGFloat scaleFactor); // [macOS]
