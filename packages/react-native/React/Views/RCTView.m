@@ -1241,11 +1241,6 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   [self updateClippingForLayer:layer];
 }
 
-- (void)viewDidChangeBackingProperties
-{
-  
-}
-
 #if TARGET_OS_OSX // [macOS
 - (void)updateReactTransformInternal:(CATransform3D)transform
 {

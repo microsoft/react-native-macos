@@ -260,7 +260,7 @@ using namespace facebook::react;
 
   // `shadowColor`
   if (oldViewProps.shadowColor != newViewProps.shadowColor) {
-    RCTUIColor *shadowColor = RCTUIColorFromSharedColor(newViewProps.shadowColor); // [macOS
+    RCTUIColor *shadowColor = RCTUIColorFromSharedColor(newViewProps.shadowColor); // [macOS]
     self.layer.shadowColor = shadowColor.CGColor;
     needsInvalidateLayer = YES;
   }
