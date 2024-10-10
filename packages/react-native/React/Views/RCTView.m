@@ -1193,7 +1193,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 #endif // macOS]
   if (useIOSBorderRendering) {
     layer.cornerRadius = cornerRadii.topLeft;
-    layer.borderColor = borderColors.left;
+    layer.borderColor = borderColors.left.CGColor;
     layer.borderWidth = borderInsets.left;
     layer.backgroundColor = backgroundColor.CGColor;
     layer.contents = nil;

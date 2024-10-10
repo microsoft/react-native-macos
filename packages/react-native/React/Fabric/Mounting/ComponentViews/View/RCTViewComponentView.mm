@@ -260,7 +260,7 @@ using namespace facebook::react;
 
   // `shadowColor`
   if (oldViewProps.shadowColor != newViewProps.shadowColor) {
-    UIColor *shadowColor = RCTUIColorFromSharedColor(newViewProps.shadowColor);
+    RCTUIColor *shadowColor = RCTUIColorFromSharedColor(newViewProps.shadowColor); // [macOS
     self.layer.shadowColor = shadowColor.CGColor;
     needsInvalidateLayer = YES;
   }
@@ -801,7 +801,7 @@ static RCTCursor RCTCursorFromCursor(Cursor cursor)
     [_borderLayer removeFromSuperlayer];
 
     layer.borderWidth = (CGFloat)borderMetrics.borderWidths.left;
-    layer.borderColor = borderMetrics.borderColors.left.CGColor;
+    layer.borderColor = RCTUIColorFromSharedColor(borderMetrics.borderColors.left).CGColor;
     layer.cornerRadius = (CGFloat)borderMetrics.borderRadii.topLeft;
 
     layer.cornerCurve = CornerCurveFromBorderCurve(borderMetrics.borderCurves.topLeft);

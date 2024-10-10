@@ -25,10 +25,10 @@ typedef struct {
 } RCTCornerInsets;
 
 typedef struct {
-  UIColor *top;
-  UIColor *left;
-  UIColor *bottom;
-  UIColor *right;
+  RCTUIColor *top;
+  RCTUIColor *left;
+  RCTUIColor *bottom;
+  RCTUIColor *right;
 } RCTBorderColors;
 
 /**

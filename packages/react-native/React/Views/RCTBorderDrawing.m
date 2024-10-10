@@ -314,7 +314,7 @@ static UIImage *RCTGetSolidBorderImage(
         }
       }
 
-      UIColor *currentColor = nil;
+      RCTUIColor *currentColor = nil;
 
       // RIGHT
       if (borderInsets.right > 0) {
@@ -531,7 +531,7 @@ UIImage *RCTGetBorderImage(
     RCTBorderColors borderColors,
     RCTUIColor *backgroundColor, // [macOS]
     BOOL drawToEdge,
-    CGFloat scaleFactor) // [macOS]
+    CGFloat scaleFactor)
 {
   switch (borderStyle) {
     case RCTBorderStyleSolid:
