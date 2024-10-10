@@ -1202,19 +1202,6 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
     return;
   }
 
-#if TARGET_OS_OSX // [macOS
-  CGFloat scaleFactor = self.window.backingScaleFactor;
-  if (scaleFactor == 0.0 && RCTRunningInTestEnvironment()) {
-    // When running in the test environment the view is not on screen.
-    // Use a scaleFactor of 1 so that the test results are machine independent.
-    scaleFactor = 1;
-  }
-  RCTAssert(scaleFactor != 0.0, @"displayLayer occurs before the view is in a window?");
-#else
-  // On iOS setting the scaleFactor to 0.0 will default to the device's native scale factor.
-  CGFloat scaleFactor = 0.0;
-#endif // macOS]
-
   UIImage *image = RCTGetBorderImage(
       _borderStyle, layer.bounds.size, cornerRadii, borderInsets, borderColors, backgroundColor, self.clipsToBounds);
 
@@ -1237,6 +1224,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   layer.contents = (id)image.CGImage;
   layer.contentsScale = image.scale;
 #else // [macOS
+  CGFloat scaleFactor = self.window.backingScaleFactor;
   layer.contents = [image layerContentsForContentsScale:scaleFactor];
   layer.contentsScale = scaleFactor;
 #endif // macOS]
@@ -1251,6 +1239,11 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   }
 
   [self updateClippingForLayer:layer];
+}
+
+- (void)viewDidChangeBackingProperties
+{
+  
 }
 
 #if TARGET_OS_OSX // [macOS
