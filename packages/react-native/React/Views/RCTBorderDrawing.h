@@ -65,5 +65,4 @@ RCT_EXTERN UIImage *RCTGetBorderImage(
     UIEdgeInsets borderInsets,
     RCTBorderColors borderColors,
     RCTUIColor *backgroundColor, // [macOS]
-    BOOL drawToEdge,
-    CGFloat scaleFactor); // [macOS]
+    BOOL drawToEdge);

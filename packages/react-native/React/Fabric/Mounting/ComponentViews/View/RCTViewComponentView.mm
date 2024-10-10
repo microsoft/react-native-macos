@@ -837,8 +837,7 @@ static RCTCursor RCTCursorFromCursor(Cursor cursor)
         RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths),
         borderColors,
         backgroundColor,
-        self.clipsToBounds,
-        scaleFactor); // [macOS]
+        self.clipsToBounds);
 
 
     if (image == nil) {
