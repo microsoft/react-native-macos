@@ -73,11 +73,7 @@ NSData *UIImageJPEGRepresentation(NSImage *image, CGFloat compressionQuality) {
 }
 #endif // macOS]
 
-static uint64_t getNextImageRequestCount(void)
-{
-  static uint64_t requestCounter = 0;
-  return requestCounter++;
-}
+static auto currentRequestCount = std::atomic<uint64_t>(0);
 
 static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLResponse *response)
 {
@@ -113,6 +109,8 @@ static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLRespo
 @end
 
 @implementation RCTImageLoader {
+  std::atomic<BOOL> _isLoaderSetup;
+  std::mutex _loaderSetupLock;
   NSArray<id<RCTImageURLLoader>> * (^_loadersProvider)(RCTModuleRegistry *);
   NSArray<id<RCTImageDataDecoder>> * (^_decodersProvider)(RCTModuleRegistry *);
   NSArray<id<RCTImageURLLoader>> *_loaders;
@@ -151,6 +149,7 @@ RCT_EXPORT_MODULE()
 {
   if (self = [super init]) {
     _redirectDelegate = redirectDelegate;
+    _isLoaderSetup = NO;
   }
   return self;
 }
@@ -168,12 +167,16 @@ RCT_EXPORT_MODULE()
 
 - (void)setUp
 {
-  // Set defaults
-  _maxConcurrentLoadingTasks = _maxConcurrentLoadingTasks ?: 4;
-  _maxConcurrentDecodingTasks = _maxConcurrentDecodingTasks ?: 2;
-  _maxConcurrentDecodingBytes = _maxConcurrentDecodingBytes ?: 30 * 1024 * 1024; // 30MB
+  std::lock_guard<std::mutex> guard(_loaderSetupLock);
+  if (!_isLoaderSetup) {
+    // Set defaults
+    _maxConcurrentLoadingTasks = _maxConcurrentLoadingTasks ?: 4;
+    _maxConcurrentDecodingTasks = _maxConcurrentDecodingTasks ?: 2;
+    _maxConcurrentDecodingBytes = _maxConcurrentDecodingBytes ?: 30 * 1024 * 1024; // 30MB
 
-  _URLRequestQueue = dispatch_queue_create("com.facebook.react.ImageLoaderURLRequestQueue", DISPATCH_QUEUE_SERIAL);
+    _URLRequestQueue = dispatch_queue_create("com.facebook.react.ImageLoaderURLRequestQueue", DISPATCH_QUEUE_SERIAL);
+    _isLoaderSetup = YES;
+  }
 }
 
 - (float)handlerPriority
@@ -201,7 +204,7 @@ RCT_EXPORT_MODULE()
 
 - (id<RCTImageURLLoader>)imageURLLoaderForURL:(NSURL *)URL
 {
-  if (!_maxConcurrentLoadingTasks) {
+  if (!_isLoaderSetup) {
     [self setUp];
   }
 
@@ -274,7 +277,7 @@ RCT_EXPORT_MODULE()
 
 - (id<RCTImageDataDecoder>)imageDataDecoderForData:(NSData *)data
 {
-  if (!_maxConcurrentLoadingTasks) {
+  if (!_isLoaderSetup) {
     [self setUp];
   }
 
@@ -557,7 +560,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
   auto cancelled = std::make_shared<std::atomic<int>>(0);
   __block dispatch_block_t cancelLoad = nil;
   __block NSLock *cancelLoadLock = [NSLock new];
-  NSString *requestId = [NSString stringWithFormat:@"%@-%llu", [[NSUUID UUID] UUIDString], getNextImageRequestCount()];
+  NSString *requestId = [NSString stringWithFormat:@"%@-%llu", [[NSUUID UUID] UUIDString], currentRequestCount++];
 
   void (^completionHandler)(NSError *, id, id, NSURLResponse *) =
       ^(NSError *error, id imageOrData, id imageMetadata, NSURLResponse *response) {
@@ -615,7 +618,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
   }
 
   // All access to URL cache must be serialized
-  if (!_URLRequestQueue) {
+  if (!_isLoaderSetup) {
     [self setUp];
   }
 
@@ -891,7 +894,9 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
                                                                    progressBlock:progressBlock
                                                                 partialLoadBlock:partialLoadBlock
                                                                  completionBlock:completionHandler];
+  [cancelLoadLock lock];
   cancelLoad = loaderRequest.cancellationBlock;
+  [cancelLoadLock unlock];
   return [[RCTImageURLLoaderRequest alloc] initWithRequestId:loaderRequest.requestId
                                                     imageURL:imageURLRequest.URL
                                            cancellationBlock:cancellationBlock];
@@ -1028,7 +1033,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
       });
     };
 
-    if (!_URLRequestQueue) {
+    if (!_isLoaderSetup) {
       [self setUp];
     }
     dispatch_async(_URLRequestQueue, ^{
