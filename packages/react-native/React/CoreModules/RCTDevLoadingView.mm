@@ -138,14 +138,14 @@ RCT_EXPORT_MODULE()
       self->_label.font = [UIFont monospacedDigitSystemFontOfSize:12.0 weight:UIFontWeightRegular];
       self->_label.textAlignment = NSTextAlignmentCenter;
 #else // [macOS
-      self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
+      self->_window = [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
                                                  styleMask:NSWindowStyleMaskBorderless
                                                    backing:NSBackingStoreBuffered
                                                      defer:YES];
-      self->_window.releasedWhenClosed = NO;
       self->_window.backgroundColor = [NSColor clearColor];
 
       NSTextField *label = [[NSTextField alloc] initWithFrame:self->_window.contentView.bounds];
+      label.font = [NSFont monospacedDigitSystemFontOfSize:12.0 weight:NSFontWeightRegular];
       label.alignment = NSTextAlignmentCenter;
       label.bezeled = NO;
       label.editable = NO;
@@ -169,7 +169,11 @@ RCT_EXPORT_MODULE()
     self->_label.textColor = color;
 
     self->_label.backgroundColor = backgroundColor;
-    [RCTKeyWindow() beginSheet:self->_window completionHandler:nil];
+    if (![[RCTKeyWindow() sheets] doesContain:self->_window]) {
+      [RCTKeyWindow() beginSheet:self->_window completionHandler:^(NSModalResponse returnCode) {
+        [self->_window orderOut:self];
+      }];
+    }
 #endif // macOS]
   });
 
@@ -214,6 +218,8 @@ RCT_EXPORT_METHOD(hide)
         }];
 #else // [macOS]
     [RCTKeyWindow() endSheet:self->_window];
+    self->_window = nil;
+    self->_hiding = false;
 #endif // macOS]
   });
 }

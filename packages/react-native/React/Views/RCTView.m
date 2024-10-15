@@ -1117,10 +1117,10 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 #endif // [macOS]
 
   return (RCTBorderColors){
-      (borderTopColor ?: borderColor).CGColor,
-      (directionAwareBorderLeftColor ?: borderColor).CGColor,
-      (borderBottomColor ?: borderColor).CGColor,
-      (directionAwareBorderRightColor ?: borderColor).CGColor,
+      (borderTopColor ?: borderColor),
+      (directionAwareBorderLeftColor ?: borderColor),
+      (borderBottomColor ?: borderColor),
+      (directionAwareBorderRightColor ?: borderColor),
   };
 }
 
@@ -1144,9 +1144,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 
   RCTUpdateShadowPathForView(self);
 
-#if !TARGET_OS_OSX // [visionOS]
   RCTUpdateHoverStyleForView(self);
-#endif // [visionOS]
 
 #if TARGET_OS_OSX // [macOS
   // clipsToBounds is stubbed out on macOS because it's not part of NSView
@@ -1167,18 +1165,17 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
       // the content. For this reason, only use iOS border drawing when clipping
       // or when the border is hidden.
 
-      (borderInsets.top == 0 || (borderColors.top && CGColorGetAlpha(borderColors.top) == 0) || self.clipsToBounds);
+      (borderInsets.top == 0 || (borderColors.top && CGColorGetAlpha(borderColors.top.CGColor) == 0) ||
+       self.clipsToBounds);
 
   // iOS clips to the outside of the border, but CSS clips to the inside. To
   // solve this, we'll need to add a container view inside the main view to
   // correctly clip the subviews.
 
-  CGColorRef backgroundColor;
-
 #if !TARGET_OS_OSX // [macOS]
-  backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection].CGColor;
+  RCTUIColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
 #else // [macOS
-  backgroundColor = [_backgroundColor CGColor];
+  RCTUIColor *backgroundColor = _backgroundColor;
 #endif // macOS]
 
 #if TARGET_OS_OSX // [macOS
@@ -1196,30 +1193,17 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 #endif // macOS]
   if (useIOSBorderRendering) {
     layer.cornerRadius = cornerRadii.topLeft;
-    layer.borderColor = borderColors.left;
+    layer.borderColor = borderColors.left.CGColor;
     layer.borderWidth = borderInsets.left;
-    layer.backgroundColor = backgroundColor;
+    layer.backgroundColor = backgroundColor.CGColor;
     layer.contents = nil;
     layer.needsDisplayOnBoundsChange = NO;
     layer.mask = nil;
     return;
   }
 
-#if TARGET_OS_OSX // [macOS
-  CGFloat scaleFactor = self.window.backingScaleFactor;
-  if (scaleFactor == 0.0 && RCTRunningInTestEnvironment()) {
-    // When running in the test environment the view is not on screen.
-    // Use a scaleFactor of 1 so that the test results are machine independent.
-    scaleFactor = 1;
-  }
-  RCTAssert(scaleFactor != 0.0, @"displayLayer occurs before the view is in a window?");
-#else
-  // On iOS setting the scaleFactor to 0.0 will default to the device's native scale factor.
-  CGFloat scaleFactor = 0.0;
-#endif // macOS]
-
   UIImage *image = RCTGetBorderImage(
-      _borderStyle, layer.bounds.size, cornerRadii, borderInsets, borderColors, backgroundColor, self.clipsToBounds, scaleFactor); // [macOS]
+      _borderStyle, layer.bounds.size, cornerRadii, borderInsets, borderColors, backgroundColor, self.clipsToBounds);
 
   layer.backgroundColor = NULL;
 
@@ -1240,6 +1224,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   layer.contents = (id)image.CGImage;
   layer.contentsScale = image.scale;
 #else // [macOS
+  CGFloat scaleFactor = self.window.backingScaleFactor;
   layer.contents = [image layerContentsForContentsScale:scaleFactor];
   layer.contentsScale = scaleFactor;
 #endif // macOS]
@@ -1294,9 +1279,10 @@ static void RCTUpdateShadowPathForView(RCTView *view)
   }
 }
 
-#if !TARGET_OS_OSX // [visionOS
 static void RCTUpdateHoverStyleForView(RCTView *view)
 {
+#if !TARGET_OS_OSX // [macOS]
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 /* __IPHONE_17_0 */
   if (@available(iOS 17.0, *)) {
     UIHoverStyle *hoverStyle = nil;
     if ([view cursor] == RCTCursorPointer) {
@@ -1318,8 +1304,9 @@ static void RCTUpdateHoverStyleForView(RCTView *view)
     }
     [view setHoverStyle:hoverStyle];
   }
+#endif
+#endif // [macOS]
 }
-#endif // visionOS]
 
 - (void)updateClippingForLayer:(CALayer *)layer
 {
@@ -1465,11 +1452,11 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 	return [self focusable] || [super acceptsFirstResponder];
 }
 
-- (BOOL)mouseDownCanMoveWindow{
+- (BOOL)mouseDownCanMoveWindow {
 	return _mouseDownCanMoveWindow;
 }
 
-- (void)setMouseDownCanMoveWindow:(BOOL)mouseDownCanMoveWindow{
+- (void)setMouseDownCanMoveWindow:(BOOL)mouseDownCanMoveWindow {
 	_mouseDownCanMoveWindow = mouseDownCanMoveWindow;
 }
 
