@@ -448,7 +448,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)grammarCheckingDidChange:(BOOL)enabled {}
 
 
-- (BOOL)hasValidKeyDownOrValidKeyUp:(nonnull NSString *)key {
+- (BOOL)hasKeyDownEventOrKeyUpEvent:(nonnull NSString *)key {
   return YES;
 }
 

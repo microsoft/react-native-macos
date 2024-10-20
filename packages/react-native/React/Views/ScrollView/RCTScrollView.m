@@ -1332,10 +1332,10 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 #if TARGET_OS_OSX
 - (RCTViewKeyboardEvent*)keyboardEvent:(NSEvent*)event {
 	BOOL keyDown = event.type == NSEventTypeKeyDown;
-	NSArray<RCTHandledKey *> *validKeys = keyDown ? self.validKeysDown : self.validKeysUp;
+  NSArray<RCTHandledKey *> *keyEvents = keyDown ? self.keyDownEvents : self.keyUpEvents;
 
 	// Only post events for keys we care about
-	if (![RCTHandledKey event:event matchesFilter:validKeys]) {
+	if (![RCTHandledKey event:event matchesFilter:keyEvents]) {
 		return nil;
 	}
 
