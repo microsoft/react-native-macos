@@ -84,6 +84,14 @@ jobs:
           workingDirectory: $(Agent.BuildDirectory)/testcli
 
       - task: CmdLine@2
+        displayName: Build macos [test]
+        inputs:
+          script: |
+            set -eox pipefail
+            npx react-native build-macos
+          workingDirectory: $(Agent.BuildDirectory)/testcli
+
+      - task: CmdLine@2
         displayName: Run macos [test]
         inputs:
           script: |
