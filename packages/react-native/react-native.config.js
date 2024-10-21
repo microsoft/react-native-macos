@@ -43,6 +43,7 @@ try {
 }
 
 const macosCommands = require('./local-cli/runMacOS/runMacOS'); // [macOS]
+const {getDependencyConfig, getProjectConfig} = require('@react-native-community/cli-platform-apple'); // [macOS]
 const {
   bundleCommand,
   startCommand,
@@ -128,8 +129,8 @@ config.platforms.macos = {
       ) => {},
     };
   },
-  projectConfig: () => null,
-  dependencyConfig: () => null,
+  projectConfig: getProjectConfig({platformName: 'macos'}),
+  dependencyConfig: getDependencyConfig({platformName: 'macos'}),
   npmPackageName: 'react-native-macos',
 };
 // macOS]
