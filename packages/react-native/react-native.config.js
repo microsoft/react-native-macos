@@ -43,7 +43,10 @@ try {
 }
 
 const macosCommands = require('./local-cli/runMacOS/runMacOS'); // [macOS]
-const {getDependencyConfig, getProjectConfig} = require('@react-native-community/cli-platform-apple'); // [macOS]
+const {
+  getDependencyConfig,
+  getProjectConfig,
+} = require('@react-native-community/cli-platform-apple'); // [macOS]
 const {
   bundleCommand,
   startCommand,
