@@ -17,7 +17,7 @@ const {
   startCommand,
 } = require('@react-native/community-cli-plugin');
 
-const macosCommands = [require('./local-cli/runMacOS/runMacOS')]; // [macOS]
+const macosCommands = require('./local-cli/runMacOS/runMacOS'); // [macOS]
 
 const codegenCommand = {
   name: 'codegen',
