@@ -12735,6 +12735,7 @@ __metadata:
     "@jest/create-cache-key-function": "npm:^29.6.3"
     "@react-native-community/cli": "npm:14.0.0"
     "@react-native-community/cli-platform-android": "npm:14.0.0"
+    "@react-native-community/cli-platform-apple": "npm:14.0.0"
     "@react-native-community/cli-platform-ios": "npm:14.0.0"
     "@react-native-mac/virtualized-lists": "npm:0.75.0"
     "@react-native/assets-registry": "npm:0.75.2"
