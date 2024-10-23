@@ -12,6 +12,10 @@
 const android = require('@react-native-community/cli-platform-android');
 const ios = require('@react-native-community/cli-platform-ios');
 const {
+  getDependencyConfig,
+  getProjectConfig,
+} = require('@react-native-community/cli-platform-apple'); // [macOS]
+const {
   bundleCommand,
   ramBundleCommand,
   startCommand,
@@ -95,8 +99,8 @@ module.exports = {
           ) => {},
         };
       },
-      projectConfig: () => null,
-      dependencyConfig: () => null,
+      projectConfig: getProjectConfig({platformName: 'macos'}),
+      dependencyConfig: getDependencyConfig({platformName: 'macos'}),
       npmPackageName: 'react-native-macos', // [macOS]
     },
   },
