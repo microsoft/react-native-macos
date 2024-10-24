@@ -19,7 +19,7 @@
   "dependencies": {
     "chalk": "^3",
     "find-up": "^4.1.0",
-    "npm-registry-fetch": "^14.0.0",
+    "npm-registry-fetch": "^18.0.2",
     "prompts": "^2.3.0",
     "semver": "^7.5.2",
     "valid-url": "^1.0.9",
