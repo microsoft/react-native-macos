@@ -1,0 +1,25 @@
+steps:
+  - script: |
+      yarn install
+    displayName: Install npm dependencies
+
+  - script: |
+      yarn build
+    displayName: Build @react-native/community-cli-plugin
+
+  - script: |
+      yarn build
+    workingDirectory: packages/react-native-macos-init
+    displayName: Build react-native-macos-init
+
+  - script: |
+      npx verdaccio --config .ado/verdaccio/config.yaml &
+    displayName: Start Verdaccio server
+
+  - script: |
+      .ado/scripts/verdaccio.sh init
+    displayName: Configure npm for Verdaccio server
+
+  - script: |
+      .ado/scripts/verdaccio.sh publish --branch origin/$(System.PullRequest.TargetBranch)
+    displayName: Publish react-native-macos to Verdaccio

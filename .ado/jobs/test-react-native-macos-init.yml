@@ -13,27 +13,7 @@ jobs:
 
       - template: /.ado/templates/apple-tools-setup.yml@self
 
-      - script: |
-          set -eox pipefail
-          yarn install
-        displayName: Install npm dependencies
-
-      - script: |
-          set -eox pipefail
-          yarn build
-        displayName: Build @react-native/community-cli-plugin
-
-      - script: |
-          set -eox pipefail
-          yarn build
-        workingDirectory: packages/react-native-macos-init
-        displayName: Build react-native-macos-init
-
-      - template: /.ado/templates/verdaccio-init.yml@self
-
-      - script: |
-          .ado/scripts/verdaccio.sh publish --branch origin/$(System.PullRequest.TargetBranch)
-        displayName: Publish react-native-macos to Verdaccio
+      - template: /.ado/templates/verdaccio-publish.yml@self
 
       - script: |
           node .ado/scripts/export-versions.mjs
