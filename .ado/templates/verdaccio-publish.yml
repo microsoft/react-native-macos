@@ -1,0 +1,24 @@
+steps:
+  - script: |
+      set -eox pipefail
+      yarn install
+    displayName: Install npm dependencies
+
+  - script: |
+      set -eox pipefail
+      yarn build
+    displayName: Build @react-native/community-cli-plugin
+
+  - script: |
+      set -eox pipefail
+      yarn build
+    workingDirectory: packages/react-native-macos-init
+    displayName: Build react-native-macos-init
+
+  - script: |
+      .ado/scripts/verdaccio.sh init
+    displayName: Initialize Verdaccio server
+
+  - script: |
+      .ado/scripts/verdaccio.sh publish --branch origin/$(System.PullRequest.TargetBranch)
+    displayName: Publish react-native-macos to Verdaccio
