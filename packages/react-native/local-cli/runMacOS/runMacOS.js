@@ -20,7 +20,7 @@
  *
  * @typedef {{
  *   name: string;
- *   path: string;
+ *   path?: string;
  *   isWorkspace: boolean;
  * }} XcodeProject
  *
