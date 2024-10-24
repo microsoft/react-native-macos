@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@octokit/rest": "^18.12.0",
-    "firebase": "^9.6.5"
+    "firebase": "^11.0.1"
   },
   "resolutions": {
     "readable-stream": "^4.0.0"
