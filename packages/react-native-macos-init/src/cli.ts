@@ -12,13 +12,7 @@ import * as fs from 'fs';
 import * as npmFetch from 'npm-registry-fetch';
 import prompts from 'prompts';
 import * as semver from 'semver';
-import * as validUrl from 'valid-url';
 import * as yargs from 'yargs';
-
-const npmConfReg = execSync('npm config get registry').toString().trim();
-const NPM_REGISTRY_URL = validUrl.isUri(npmConfReg)
-  ? npmConfReg
-  : 'http://registry.npmjs.org';
 
 const argv = yargs.version(false).options({
   version: {
@@ -50,6 +44,19 @@ function reactNativeMacOSGeneratePath() {
   return require.resolve(`${MACOSPKG}/local-cli/generate-macos.js`, {
     paths: [process.cwd()],
   });
+}
+
+function getNpmRegistryUrl(): string {
+  const reg = execSync('npm config get registry', {encoding: 'utf-8'}).trim();
+  try {
+    const url = new URL(reg);
+    if (url) {
+      return reg;
+    }
+  } catch (_) {
+    // ignore
+  }
+  return 'https://registry.npmjs.org';
 }
 
 function getReactNativeAppName() {
@@ -150,7 +157,7 @@ async function getLatestMatchingVersion(
   pkg: string,
   versionSemVer: string,
 ): Promise<string> {
-  const npmResponse = await npmFetch.json(pkg, {registry: NPM_REGISTRY_URL});
+  const npmResponse = await npmFetch.json(pkg, {registry: getNpmRegistryUrl()});
 
   // Check if versionSemVer is a tag (i.e. 'canary', 'latest', 'preview', etc.)
   if ('dist-tags' in npmResponse) {
