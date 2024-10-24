@@ -5,15 +5,15 @@
  * @format
  */
 
-import * as yargs from 'yargs';
-import * as fs from 'fs';
-import * as semver from 'semver';
+import chalk from 'chalk';
 import {execSync} from 'child_process';
-import * as validUrl from 'valid-url';
-import * as prompts from 'prompts';
 import * as findUp from 'find-up';
-import * as chalk from 'chalk';
+import * as fs from 'fs';
 import * as npmFetch from 'npm-registry-fetch';
+import prompts from 'prompts';
+import * as semver from 'semver';
+import * as validUrl from 'valid-url';
+import * as yargs from 'yargs';
 
 const npmConfReg = execSync('npm config get registry').toString().trim();
 const NPM_REGISTRY_URL = validUrl.isUri(npmConfReg)
@@ -104,9 +104,12 @@ function getReactNativeMacOSVersion() {
   return getPackageVersion(MACOSPKG, false);
 }
 
-function errorOutOnUnsupportedVersionOfReactNative(rnVersion: string) {
-  printError(`Unsupported version of ${RNPKG}: ${chalk.cyan(rnVersion)}
-${MACOSPKG} supports ${RNPKG} versions ${chalk.cyan('>=0.60')}`);
+function errorOutOnUnsupportedVersionOfReactNative(rnVersion: string): never {
+  const version = chalk.cyan(rnVersion);
+  const supportedVersions = chalk.cyan('>=0.60');
+  printError(
+    `Unsupported version of ${RNPKG}: ${version}\n${MACOSPKG} supports ${RNPKG} versions ${supportedVersions}`,
+  );
   process.exit(EXITCODE_UNSUPPORTED_VERION_RN);
 }
 
@@ -306,7 +309,7 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
       verbose,
     });
   } catch (error) {
-    printError(error.message, error);
+    printError(`${error}`, error);
     process.exit(EXITCODE_UNKNOWN_ERROR);
   }
 })();

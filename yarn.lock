@@ -4132,6 +4132,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rnx-kit/tsconfig@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@rnx-kit/tsconfig@npm:2.0.0"
+  checksum: 10c0/b31353cb1a3b75d4827373887806f5495eccb9e38e9edcf111a85a3e6967256e13f18a7acfbb9eabd7bfbe04b6b5e6ac3ec0a638d31b55f9231ffd3d946c735c
+  languageName: node
+  linkType: hard
+
 "@rushstack/node-core-library@npm:3.61.0":
   version: 3.61.0
   resolution: "@rushstack/node-core-library@npm:3.61.0"
@@ -12909,6 +12916,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "react-native-macos-init@workspace:packages/react-native-macos-init"
   dependencies:
+    "@rnx-kit/tsconfig": "npm:^2.0.0"
     "@types/chalk": "npm:^2.2.0"
     "@types/npm-registry-fetch": "npm:^8.0.0"
     "@types/prompts": "npm:^2.0.3"
