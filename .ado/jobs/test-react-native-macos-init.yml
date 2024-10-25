@@ -63,7 +63,7 @@ jobs:
 
       - script: |
           set -eox pipefail
-          npx react-native build-macos | xcbeautify
+          npx react-native build-macos
         workingDirectory: $(Agent.BuildDirectory)/testcli
         displayName: Build macOS app (new project)
 
