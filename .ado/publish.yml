@@ -21,7 +21,7 @@ variables:
     value: production,externalfacing
   # Remember to update this in previous stable branches when creating a new stable branch
   - name : latestStableBranch
-    value: '0.75-stable'
+    value: '0.76-stable'
 
 resources:
   repositories:
