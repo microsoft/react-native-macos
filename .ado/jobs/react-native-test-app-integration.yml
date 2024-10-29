@@ -26,6 +26,7 @@ jobs:
         workingDirectory: react-native-test-app
 
       - script: |
+          set -eo pipefail
           $(Build.Repository.LocalPath)/.ado/scripts/verdaccio.sh configure
           yarn --no-immutable
         displayName: Install npm dependencies
@@ -43,6 +44,7 @@ jobs:
         workingDirectory: react-native-test-app/example
 
       - script: |
+          set -eo pipefail
           ../scripts/build/xcodebuild.sh macos/Example.xcworkspace build
         displayName: Build x86
         workingDirectory: react-native-test-app/example
@@ -50,6 +52,7 @@ jobs:
           CCACHE_DISABLE: 1
 
       - script: |
+          set -eo pipefail
           ../scripts/build/xcodebuild.sh macos/Example.xcworkspace clean
           ../scripts/build/xcodebuild.sh macos/Example.xcworkspace build ARCHS=arm64
         displayName: Build ARM
