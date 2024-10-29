@@ -56,7 +56,7 @@ extends:
            displayName: NPM Publish React-native-macos
            pool:
              name: Azure Pipelines
-             vmImage: macos-13
+             vmImage: macos-latest-internal
              os: macOS
            variables:
              - name: BUILDSECMON_OPT_IN
@@ -86,7 +86,7 @@ extends:
                  parameters:
                    build_type: nightly
              - ${{ elseif endsWith(variables['Build.SourceBranchName'], '-stable') }}:
-               - template: .ado/templates/apple-steps-publish.yml@self
+               - template: .ado/templates/≈l@self
                  parameters:
                    build_type: release
              - ${{ else }}:
