@@ -1,0 +1,26 @@
+parameters:
+  # If this is a new stable branch, change `publishTag` to `latest` when going stable
+  publishTag: 'next'
+
+steps:
+  - script: |
+      yarn install
+    displayName: Install npm dependencies
+
+  - script: |
+      node .ado/scripts/prepublish-check.mjs --tag ${{ parameters['publishTag'] }}
+    displayName: Verify release config
+
+  - script: |
+      yarn nx release --dry-run
+    displayName: Version and publish packages (dry run)
+    condition: ${{ ne(variables['publish_react_native_macos'], '1') }}
+
+  - script: |
+      #yarn nx release --yes
+      yarn nx release --dry-run
+    env:
+      GITHUB_TOKEN: $(githubAuthToken)
+      NODE_AUTH_TOKEN: $(npmAuthToken)
+    displayName: Version and publish packages
+    condition: ${{ eq(variables['publish_react_native_macos'], '1') }}

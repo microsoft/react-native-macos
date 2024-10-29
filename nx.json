@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "main",
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"]
+    }
+  },
+  "release": {
+    "changelog": {
+      "projectChangelogs": false,
+      "workspaceChangelog": {
+        "file": false,
+        "createRelease": "github"
+      }
+    },
+    "projects": ["packages/react-native", "packages/virtualized-lists"],
+    "projectsRelationship": "independent",
+    "versionPlans": true,
+    "version": {
+      "generatorOptions": {
+        "currentVersionResolver": "registry",
+        "currentVersionResolverMetadata": {
+          "tag": "nightly"
+        },
+        "fallbackCurrentVersionResolver": "disk",
+        "preid": "nightly",
+        "skipLockFileUpdate": true
+      }
+    }
+  }
+}

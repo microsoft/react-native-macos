@@ -52,6 +52,7 @@
     "@babel/preset-flow": "^7.24.7",
     "@definitelytyped/dtslint": "^0.0.127",
     "@jest/create-cache-key-function": "^29.6.3",
+    "@nx/js": "~20.0.0",
     "@pkgjs/parseargs": "^0.11.0",
     "@react-native/metro-babel-transformer": "0.76.0-main",
     "@react-native/metro-config": "0.76.0-main",
@@ -96,6 +97,7 @@
     "mkdirp": "^0.5.1",
     "node-fetch": "^2.2.0",
     "nullthrows": "^1.1.1",
+    "nx": "~20.0.0",
     "prettier": "2.8.8",
     "prettier-plugin-hermes-parser": "0.23.1",
     "react": "19.0.0-rc-fb9a90fa48-20240614",
@@ -106,9 +108,6 @@
     "supports-color": "^7.1.0",
     "typescript": "5.0.4",
     "ws": "^6.2.3"
-  },
-  "beachball": {
-    "shouldPublish": false
   },
   "resolutions": {
     "react-is": "19.0.0-rc-fb9a90fa48-20240614",
