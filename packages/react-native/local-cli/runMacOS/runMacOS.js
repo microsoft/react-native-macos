@@ -20,7 +20,7 @@
  *
  * @typedef {{
  *   name: string;
- *   path: string;
+ *   path?: string;
  *   isWorkspace: boolean;
  * }} XcodeProject
  *
@@ -43,6 +43,14 @@ const {logger, CLIError, getDefaultUserTerminal} = (() => {
   const tools = require.resolve('@react-native-community/cli-tools', options);
   return require(tools);
 })();
+
+/**
+ * @param {string} sourceDir
+ * @param {XcodeProject} xcodeProject
+ */
+function getXcodeProjectPath(sourceDir, xcodeProject) {
+  return path.join(sourceDir, xcodeProject.path || '.', xcodeProject.name);
+}
 
 /**
  * @param {ProjectConfig} ctx
@@ -117,7 +125,7 @@ function runMacOS(_, ctx, args) {
 async function run(sourceDir, xcodeProject, scheme, args) {
   await buildProject(sourceDir, xcodeProject, scheme, args);
 
-  const buildSettings = getBuildSettings(xcodeProject, args.mode, scheme);
+  const buildSettings = getBuildSettings(sourceDir, xcodeProject, args.mode, scheme);
   const appPath = path.join(
     buildSettings.TARGET_BUILD_DIR,
     buildSettings.FULL_PRODUCT_NAME,
@@ -162,7 +170,7 @@ function buildProject(sourceDir, xcodeProject, scheme, args) {
   return new Promise((resolve, reject) => {
     const xcodebuildArgs = [
       xcodeProject.isWorkspace ? '-workspace' : '-project',
-      path.join(sourceDir, xcodeProject.path, xcodeProject.name),
+      getXcodeProjectPath(sourceDir, xcodeProject),
       '-configuration',
       args.mode,
       '-scheme',
@@ -231,18 +239,19 @@ function buildProject(sourceDir, xcodeProject, scheme, args) {
 }
 
 /**
+ * @param {string} sourceDir
  * @param {XcodeProject} xcodeProject
  * @param {string} configuration
  * @param {string} scheme
  * @returns {{ FULL_PRODUCT_NAME: string, INFOPLIST_PATH: string, TARGET_BUILD_DIR: string }}
  */
-function getBuildSettings(xcodeProject, configuration, scheme) {
+function getBuildSettings(sourceDir, xcodeProject, configuration, scheme) {
   const settings = JSON.parse(
     child_process.execFileSync(
       'xcodebuild',
       [
         xcodeProject.isWorkspace ? '-workspace' : '-project',
-        xcodeProject.name,
+        getXcodeProjectPath(sourceDir, xcodeProject),
         '-scheme',
         scheme,
         '-sdk',
@@ -363,7 +372,7 @@ module.exports = [
       {
         name: '--port [number]',
         default: process.env.RCT_METRO_PORT || 8081,
-        parse: val => Number(val),
+        parse: (/** @type {string} */ val) => Number(val),
       },
       {
         name: '--terminal [string]',

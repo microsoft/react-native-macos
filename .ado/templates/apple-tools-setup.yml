@@ -3,11 +3,9 @@ steps:
     inputs:
       versionSpec: '18.x'
 
-  - task: CmdLine@2
-    displayName: 'brew bundle'
-    inputs:
-      script: |
-        brew bundle --file .ado/Brewfile
-        cat .ado/Brewfile.lock.json
+  - script: |
+      brew bundle --file .ado/Brewfile
+      cat .ado/Brewfile.lock.json
+    displayName: 'Install Homebrew dependencies'
 
   - template: /.ado/templates/apple-xcode-select.yml@self

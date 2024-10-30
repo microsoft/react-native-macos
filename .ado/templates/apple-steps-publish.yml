@@ -2,8 +2,6 @@ parameters:
   build_type: ''
 
 steps:
-  - template: /.ado/templates/apple-tools-setup.yml@self
-
   - task: CmdLine@2
     displayName: yarn install (local react-native-macos)
     inputs:
@@ -33,7 +31,7 @@ steps:
       inputs:
         script: |
           set -eox pipefail
-          node scripts/releases/set-rn-version.js -v $RNM_PACKAGE_VERSION --build-type "release"
+          node scripts/releases/set-version.js -v $RNM_PACKAGE_VERSION --build-type "release"
 
   # Note: This won't actually publish to NPM as we've commented that bit out.
   # We do that as a separate step in `.ado/publish.yml`. 
