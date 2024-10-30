@@ -55,9 +55,9 @@ extends:
          - job: RNGithubNpmJSPublish
            displayName: NPM Publish React-native-macos
            pool:
-             name: Azure Pipelines
-             vmImage: macos-latest-internal
-             os: macOS
+             name: cxeiss-ubuntu-20-04-large
+             image: cxe-ubuntu-20-04-1es-pt
+             os: linux
            variables:
              - name: BUILDSECMON_OPT_IN
                value: true
@@ -86,7 +86,7 @@ extends:
                  parameters:
                    build_type: nightly
              - ${{ elseif endsWith(variables['Build.SourceBranchName'], '-stable') }}:
-               - template: .ado/templates/≈l@self
+               - template: .ado/templates/apple-steps-publish.yml@self
                  parameters:
                    build_type: release
              - ${{ else }}:
