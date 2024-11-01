@@ -37,7 +37,9 @@
   "workspaces": [
     "packages/*",
     "tools/*",
-    "!packages/helloworld"
+    "!packages/helloworld",
+    "!packages/hermes-inspector-msggen",
+    "!packages/react-native-bots"
   ],
   "devDependencies": {
     "@babel/core": "^7.25.2",
