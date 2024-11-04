@@ -38,8 +38,10 @@
     "packages/*",
     "tools/*",
     "!packages/helloworld",
+    "// [macOS",
     "!packages/hermes-inspector-msggen",
-    "!packages/react-native-bots"
+    "!packages/react-native-bots",
+    "// macOS]"
   ],
   "devDependencies": {
     "@babel/core": "^7.25.2",
