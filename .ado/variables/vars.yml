@@ -1,5 +1,5 @@
 variables:
-  VmImageApple: macos-15
+  VmImageApple: macos-15-large
   xcode_friendly_name: 'Xcode 16.0'
   xcode_version: '/Applications/Xcode_16.0.app'
   ios_version: '18.0'
