@@ -7,7 +7,6 @@
 
 import org.gradle.api.internal.classpath.ModuleRegistry
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.configurationcache.extensions.serviceOf
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -52,14 +51,6 @@ dependencies {
   testImplementation(libs.junit)
   testImplementation(libs.assertj)
   testImplementation(project(":shared-testutil"))
-
-  testRuntimeOnly(
-      files(
-          serviceOf<ModuleRegistry>()
-              .getModule("gradle-tooling-api-builders")
-              .classpath
-              .asFiles
-              .first()))
 }
 
 // We intentionally don't build for Java 17 as users will see a cryptic bytecode version
@@ -74,7 +65,8 @@ tasks.withType<KotlinCompile>().configureEach {
     apiVersion = "1.6"
     // See comment above on JDK 11 support
     jvmTarget = "11"
-    allWarningsAsErrors = true
+    allWarningsAsErrors =
+        project.properties["enableWarningsAsErrors"]?.toString()?.toBoolean() ?: false
   }
 }
 
