@@ -130,10 +130,7 @@ function printFinishMessage(newProjectName) {
   ${chalk.blue(`Run instructions for ${chalk.bold('macOS')}`)}:
     • pod install --project-directory=macos
     • npx react-native run-macos
-    ${chalk.dim('- or -')}
-    • Open ${xcworkspacePath(newProjectName)} in Xcode or run "xed -b ${macOSDir}"
     • yarn start:macos
-    • Hit the Run button
 `);
 }
 
