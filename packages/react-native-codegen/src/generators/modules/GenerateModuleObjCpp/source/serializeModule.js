@@ -10,53 +10,88 @@
 
 'use strict';
 
-import type {Struct} from '../StructCollector';
+import type {NativeModuleEventEmitterShape} from '../../../../CodegenSchema';
 import type {
   MethodSerializationOutput,
   StructParameterRecord,
 } from '../serializeMethod';
+import type {Struct} from '../StructCollector';
+
+const {
+  EventEmitterImplementationTemplate,
+} = require('./../serializeEventEmitter');
 
 const ModuleTemplate = ({
   hasteModuleName,
   structs,
+  moduleName,
+  eventEmitters,
   methodSerializationOutputs,
 }: $ReadOnly<{
   hasteModuleName: string,
   structs: $ReadOnlyArray<Struct>,
+  moduleName: string,
+  eventEmitters: $ReadOnlyArray<NativeModuleEventEmitterShape>,
   methodSerializationOutputs: $ReadOnlyArray<MethodSerializationOutput>,
-}>) => `${structs
+}>) => `
+@implementation ${hasteModuleName}SpecBase
+${eventEmitters
+  .map(eventEmitter => EventEmitterImplementationTemplate(eventEmitter))
+  .join('\n')}
+
+- (void)setEventEmitterCallback:(EventEmitterCallbackWrapper *)eventEmitterCallbackWrapper
+{
+  _eventEmitterCallback = std::move(eventEmitterCallbackWrapper->_eventEmitterCallback);
+}
+@end
+
+${structs
   .map(struct =>
     RCTCxxConvertCategoryTemplate({hasteModuleName, structName: struct.name}),
   )
   .join('\n')}
-namespace facebook {
-  namespace react {
-    ${methodSerializationOutputs
-      .map(serializedMethodParts =>
-        InlineHostFunctionTemplate({
-          hasteModuleName,
-          methodName: serializedMethodParts.methodName,
-          returnJSType: serializedMethodParts.returnJSType,
-          selector: serializedMethodParts.selector,
-        }),
-      )
-      .join('\n')}
+namespace facebook::react {
+  ${methodSerializationOutputs
+    .map(serializedMethodParts =>
+      InlineHostFunctionTemplate({
+        hasteModuleName,
+        methodName: serializedMethodParts.methodName,
+        returnJSType: serializedMethodParts.returnJSType,
+        selector: serializedMethodParts.selector,
+      }),
+    )
+    .join('\n')}
 
-    ${hasteModuleName}SpecJSI::${hasteModuleName}SpecJSI(const ObjCTurboModule::InitParams &params)
-      : ObjCTurboModule(params) {
-        ${methodSerializationOutputs
-          .map(({methodName, structParamRecords, argCount}) =>
-            MethodMapEntryTemplate({
-              hasteModuleName,
-              methodName,
-              structParamRecords,
-              argCount,
-            }),
-          )
-          .join('\n' + ' '.repeat(8))}
-    }
-  } // namespace react
-} // namespace facebook`;
+  ${hasteModuleName}SpecJSI::${hasteModuleName}SpecJSI(const ObjCTurboModule::InitParams &params)
+    : ObjCTurboModule(params) {
+      ${methodSerializationOutputs
+        .map(({methodName, structParamRecords, argCount}) =>
+          MethodMapEntryTemplate({
+            hasteModuleName,
+            methodName,
+            structParamRecords,
+            argCount,
+          }),
+        )
+        .join('\n' + ' '.repeat(8))}${
+  eventEmitters.length > 0
+    ? eventEmitters
+        .map(eventEmitter => {
+          return `
+        eventEmitterMap_["${eventEmitter.name}"] = std::make_shared<AsyncEventEmitter<id>>();`;
+        })
+        .join('')
+    : ''
+}${
+  eventEmitters.length > 0
+    ? `
+        setEventEmitterCallback([&](const std::string &name, id value) {
+          static_cast<AsyncEventEmitter<id> &>(*eventEmitterMap_[name]).emit(value);
+        });`
+    : ''
+}
+  }
+} // namespace facebook::react`;
 
 const RCTCxxConvertCategoryTemplate = ({
   hasteModuleName,
@@ -107,11 +142,15 @@ const MethodMapEntryTemplate = ({
 function serializeModuleSource(
   hasteModuleName: string,
   structs: $ReadOnlyArray<Struct>,
+  moduleName: string,
+  eventEmitters: $ReadOnlyArray<NativeModuleEventEmitterShape>,
   methodSerializationOutputs: $ReadOnlyArray<MethodSerializationOutput>,
 ): string {
   return ModuleTemplate({
     hasteModuleName,
     structs: structs.filter(({context}) => context !== 'CONSTANTS'),
+    moduleName,
+    eventEmitters,
     methodSerializationOutputs,
   });
 }

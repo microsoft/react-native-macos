@@ -11,25 +11,27 @@
 'use strict';
 
 import type {NativeModuleTypeAnnotation} from '../CodegenSchema';
+import type {TypeDeclarationMap} from '../parsers/utils';
 import type {ParserType} from './errors';
 import type {Parser} from './parser';
-import type {TypeDeclarationMap} from '../parsers/utils';
 
 const {
-  MisnamedModuleInterfaceParserError,
-  UnsupportedFunctionReturnTypeAnnotationParserError,
-  ModuleInterfaceNotFoundParserError,
-  MoreThanOneModuleRegistryCallsParserError,
-  UnusedModuleInterfaceParserError,
+  IncorrectModuleRegistryCallArgumentTypeParserError,
   IncorrectModuleRegistryCallArityParserError,
   IncorrectModuleRegistryCallTypeParameterParserError,
-  IncorrectModuleRegistryCallArgumentTypeParserError,
+  MisnamedModuleInterfaceParserError,
+  ModuleInterfaceNotFoundParserError,
+  MoreThanOneModuleInterfaceParserError,
+  MoreThanOneModuleRegistryCallsParserError,
+  UnsupportedArrayElementTypeAnnotationParserError,
+  UnsupportedFunctionParamTypeAnnotationParserError,
+  UnsupportedFunctionReturnTypeAnnotationParserError,
+  UnsupportedModuleEventEmitterPropertyParserError,
+  UnsupportedModuleEventEmitterTypePropertyParserError,
+  UnsupportedModulePropertyParserError,
   UnsupportedObjectPropertyValueTypeAnnotationParserError,
   UntypedModuleRegistryCallParserError,
-  UnsupportedModulePropertyParserError,
-  MoreThanOneModuleInterfaceParserError,
-  UnsupportedFunctionParamTypeAnnotationParserError,
-  UnsupportedArrayElementTypeAnnotationParserError,
+  UnusedModuleInterfaceParserError,
 } = require('./errors');
 
 function throwIfModuleInterfaceIsMisnamed(
@@ -155,6 +157,44 @@ function throwIfUntypedModule(
   }
 }
 
+function throwIfEventEmitterTypeIsUnsupported(
+  nativeModuleName: string,
+  propertyName: string,
+  propertyValueType: string,
+  parser: Parser,
+  nullable: boolean,
+  untyped: boolean,
+) {
+  if (nullable || untyped) {
+    throw new UnsupportedModuleEventEmitterPropertyParserError(
+      nativeModuleName,
+      propertyName,
+      propertyValueType,
+      parser.language(),
+      nullable,
+      untyped,
+    );
+  }
+}
+
+function throwIfEventEmitterEventTypeIsUnsupported(
+  nativeModuleName: string,
+  propertyName: string,
+  propertyValueType: string,
+  parser: Parser,
+  nullable: boolean,
+) {
+  if (nullable) {
+    throw new UnsupportedModuleEventEmitterTypePropertyParserError(
+      nativeModuleName,
+      propertyName,
+      propertyValueType,
+      parser.language(),
+      nullable,
+    );
+  }
+}
+
 function throwIfModuleTypeIsUnsupported(
   nativeModuleName: string,
   propertyValue: $FlowFixMe,
@@ -186,6 +226,7 @@ function throwIfPropertyValueTypeIsUnsupported(
   type: string,
 ) {
   const invalidPropertyValueType =
+    // $FlowFixMe[invalid-computed-prop]
     UnsupportedObjectPropertyTypeToInvalidPropertyValueTypeMap[type];
 
   throw new UnsupportedObjectPropertyValueTypeAnnotationParserError(
@@ -245,6 +286,7 @@ function throwIfArrayElementTypeAnnotationIsUnsupported(
       hasteModuleName,
       flowElementType,
       flowArrayType,
+      // $FlowFixMe[invalid-computed-prop]
       TypeMap[type],
     );
   }
@@ -298,6 +340,59 @@ function throwIfMoreThanOneCodegenNativecommands(
   }
 }
 
+function throwIfConfigNotfound(foundConfigs: Array<{[string]: string}>) {
+  if (foundConfigs.length === 0) {
+    throw new Error('Could not find component config for native component');
+  }
+}
+
+function throwIfMoreThanOneConfig(foundConfigs: Array<{[string]: string}>) {
+  if (foundConfigs.length > 1) {
+    throw new Error('Only one component is supported per file');
+  }
+}
+
+function throwIfEventHasNoName(typeAnnotation: $FlowFixMe, parser: Parser) {
+  const name =
+    parser.language() === 'Flow' ? typeAnnotation.id : typeAnnotation.typeName;
+
+  if (!name) {
+    throw new Error("typeAnnotation of event doesn't have a name");
+  }
+}
+
+function throwIfBubblingTypeIsNull(
+  bubblingType: ?('direct' | 'bubble'),
+  eventName: string,
+): 'direct' | 'bubble' {
+  if (!bubblingType) {
+    throw new Error(
+      `Unable to determine event bubbling type for "${eventName}"`,
+    );
+  }
+
+  return bubblingType;
+}
+
+function throwIfArgumentPropsAreNull(
+  argumentProps: ?$ReadOnlyArray<$FlowFixMe>,
+  eventName: string,
+): $ReadOnlyArray<$FlowFixMe> {
+  if (!argumentProps) {
+    throw new Error(`Unable to determine event arguments for "${eventName}"`);
+  }
+
+  return argumentProps;
+}
+
+function throwIfTypeAliasIsNotInterface(typeAlias: $FlowFixMe, parser: Parser) {
+  if (typeAlias.type !== parser.interfaceDeclaration) {
+    throw new Error(
+      `The type argument for codegenNativeCommands must be an interface, received ${typeAlias.type}`,
+    );
+  }
+}
+
 module.exports = {
   throwIfModuleInterfaceIsMisnamed,
   throwIfUnsupportedFunctionReturnTypeAnnotationParserError,
@@ -308,6 +403,8 @@ module.exports = {
   throwIfWrongNumberOfCallExpressionArgs,
   throwIfIncorrectModuleRegistryCallTypeParameterParserError,
   throwIfUntypedModule,
+  throwIfEventEmitterTypeIsUnsupported,
+  throwIfEventEmitterEventTypeIsUnsupported,
   throwIfModuleTypeIsUnsupported,
   throwIfMoreThanOneModuleInterfaceParserError,
   throwIfUnsupportedFunctionParamTypeAnnotationParserError,
@@ -316,4 +413,10 @@ module.exports = {
   throwIfPartialNotAnnotatingTypeParameter,
   throwIfPartialWithMoreParameter,
   throwIfMoreThanOneCodegenNativecommands,
+  throwIfConfigNotfound,
+  throwIfMoreThanOneConfig,
+  throwIfEventHasNoName,
+  throwIfBubblingTypeIsNull,
+  throwIfArgumentPropsAreNull,
+  throwIfTypeAliasIsNotInterface,
 };

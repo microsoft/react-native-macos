@@ -29,6 +29,7 @@ const ANDROID_BASE_DENSITY = 160;
  */
 function getAndroidAssetSuffix(scale: number): string {
   if (scale.toString() in androidScaleSuffix) {
+    // $FlowFixMe[invalid-computed-prop]
     return androidScaleSuffix[scale.toString()];
   }
   // NOTE: Android Gradle Plugin does not fully support the nnndpi format.
@@ -82,7 +83,7 @@ function getAndroidResourceIdentifier(asset: PackagerAsset): string {
 
 function getBasePath(asset: PackagerAsset): string {
   const basePath = asset.httpServerLocation;
-  return basePath.startsWith('/') ? basePath.substr(1) : basePath;
+  return basePath.startsWith('/') ? basePath.slice(1) : basePath;
 }
 
 module.exports = {

@@ -5,18 +5,24 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @flow
+ * @flow strict-local
  */
 
 'use strict';
 
-import Scrollable from './SectionList-scrollable';
 import ContentInset from './SectionList-contentInset';
+import Scrollable from './SectionList-scrollable';
+import inverted from './SectionList-inverted';
 import onEndReached from './SectionList-onEndReached';
 import onViewableItemsChanged from './SectionList-onViewableItemsChanged';
-import withSeparators from './SectionList-withSeparators';
+import onViewableItemsChanged_horizontal_noWaitForInteraction from './SectionList-onViewableItemsChanged-horizontal-noWaitForInteraction';
+import onViewableItemsChanged_horizontal_offScreen_noWaitForInteraction from './SectionList-onViewableItemsChanged-horizontal-offScreen-noWaitForInteraction';
+import onViewableItemsChanged_horizontal_waitForInteraction from './SectionList-onViewableItemsChanged-horizontal-waitForInteraction';
+import onViewableItemsChanged_noWaitForInteraction from './SectionList-onViewableItemsChanged-noWaitForInteraction';
+import onViewableItemsChanged_offScreen_noWaitForInteraction from './SectionList-onViewableItemsChanged-offScreen-noWaitForInteraction';
+import onViewableItemsChanged_waitForInteraction from './SectionList-onViewableItemsChanged-waitForInteraction';
 import stickyHeadersEnabled from './SectionList-stickyHeadersEnabled';
-import inverted from './SectionList-inverted';
+import withSeparators from './SectionList-withSeparators';
 
 exports.title = 'SectionList';
 exports.category = 'ListView';
@@ -31,4 +37,10 @@ exports.examples = [
   stickyHeadersEnabled,
   inverted,
   Scrollable,
+  onViewableItemsChanged_noWaitForInteraction,
+  onViewableItemsChanged_waitForInteraction,
+  onViewableItemsChanged_horizontal_noWaitForInteraction,
+  onViewableItemsChanged_horizontal_waitForInteraction,
+  onViewableItemsChanged_horizontal_offScreen_noWaitForInteraction,
+  onViewableItemsChanged_offScreen_noWaitForInteraction,
 ];

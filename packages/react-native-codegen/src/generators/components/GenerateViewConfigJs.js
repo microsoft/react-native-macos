@@ -60,6 +60,7 @@ function getReactDiffProcessValue(typeAnnotation: PropTypeAnnotation) {
     case 'ObjectTypeAnnotation':
     case 'StringEnumTypeAnnotation':
     case 'Int32EnumTypeAnnotation':
+    case 'MixedTypeAnnotation':
       return j.literal(true);
     case 'ReservedPropTypeAnnotation':
       switch (typeAnnotation.name) {
@@ -196,7 +197,7 @@ function generateBubblingEventInfo(
 ) {
   return j.property(
     'init',
-    j.identifier(nameOveride || normalizeInputEventName(event.name)),
+    j.identifier(normalizeInputEventName(nameOveride || event.name)),
     j.objectExpression([
       j.property(
         'init',
@@ -220,7 +221,7 @@ function generateDirectEventInfo(
 ) {
   return j.property(
     'init',
-    j.identifier(nameOveride || normalizeInputEventName(event.name)),
+    j.identifier(normalizeInputEventName(nameOveride || event.name)),
     j.objectExpression([
       j.property(
         'init',

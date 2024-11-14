@@ -22,6 +22,7 @@ class FocusOnMountExample extends React.Component<{}> {
       const commands = UIManager.getViewManagerConfig('RCTView').Commands;
       if ('focus' in commands) {
         UIManager.dispatchViewManagerCommand(
+          // $FlowFixMe[incompatible-call]
           findNodeHandle(this.ref.current),
           UIManager.getViewManagerConfig('RCTView').Commands.focus,
           undefined,
@@ -46,7 +47,7 @@ exports.description = 'Example for focusing a component on mount';
 exports.examples = [
   {
     title: 'FocusOnMountExample',
-    render: function (): React.Element<any> {
+    render: function (): React.Node {
       return <FocusOnMountExample />;
     },
   },

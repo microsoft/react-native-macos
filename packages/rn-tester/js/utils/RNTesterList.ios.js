@@ -58,10 +58,6 @@ const Components: Array<RNTesterModuleInfo> = [
   {
     key: 'ImageExample',
     module: require('../examples/Image/ImageExample'),
-    skipTest: {
-      // [macOS
-      ios: 'Reason: -[NSURLResponse allHeaderFields]: unrecognized selector exception. Occurs upstream also.',
-    }, // macOS]
     category: 'Basic',
   },
   {
@@ -116,7 +112,11 @@ const Components: Array<RNTesterModuleInfo> = [
   },
   {
     key: 'ScrollViewIndicatorInsetsExample',
-    module: require('../examples/ScrollView/ScrollViewIndicatorInsetsExample'),
+    module: require('../examples/ScrollView/ScrollViewIndicatorInsetsIOSExample'),
+  },
+  {
+    key: 'ScrollViewKeyboardInsetsExample',
+    module: require('../examples/ScrollView/ScrollViewKeyboardInsetsIOSExample'),
   },
   {
     key: 'SectionListIndex',
@@ -161,23 +161,26 @@ const Components: Array<RNTesterModuleInfo> = [
   },
   {
     key: 'ViewExample',
-    module: require('../examples/View/ViewExample'),
+    module: require('../examples/View/ViewExample').default,
     category: 'Basic',
   },
   {
     key: 'NewArchitectureExample',
     category: 'UI',
     module: require('../examples/NewArchitecture/NewArchitectureExample'),
-    // [macOS
-    skipTest: {
-      default:
-        'Reason: requires RCT_NEW_ARCH_ENABLED flag to be set during build',
-    },
-    // macOS]
+  },
+  {
+    key: 'PerformanceComparisonExample',
+    category: 'Basic',
+    module: require('../examples/Performance/PerformanceComparisonExample'),
+  },
+  {
+    key: 'OSSLibraryExample',
+    module: require('../examples/OSSLibraryExample/OSSLibraryExample'),
   },
 ];
 
-const APIs: Array<RNTesterModuleInfo> = [
+const APIs: Array<RNTesterModuleInfo> = ([
   {
     key: 'AccessibilityExample',
     module: require('../examples/Accessibility/AccessibilityExample'),
@@ -215,7 +218,7 @@ const APIs: Array<RNTesterModuleInfo> = [
   },
   {
     key: 'BorderExample',
-    module: require('../examples/Border/BorderExample'),
+    module: require('../examples/Border/BorderExample').default,
   },
   {
     key: 'BoxShadowExample',
@@ -225,7 +228,10 @@ const APIs: Array<RNTesterModuleInfo> = [
     key: 'CrashExample',
     module: require('../examples/Crash/CrashExample'),
   },
-
+  {
+    key: 'CursorExample',
+    module: require('../examples/Cursor/CursorExample'),
+  },
   {
     key: 'DevSettings',
     module: require('../examples/DevSettings/DevSettingsExample'),
@@ -234,16 +240,14 @@ const APIs: Array<RNTesterModuleInfo> = [
     key: 'Dimensions',
     module: require('../examples/Dimensions/DimensionsExample'),
   },
-  // [macOS
-  {
-    key: 'ASANCrashExample',
-    module: require('../examples/ASAN/ASANCrashExample'),
-  },
-  {
-    key: 'Focus Ring',
-    module: require('../examples/FocusRing/FocusRingExample'),
-  },
-  // macOS]
+  // Only show the link for the example if the API is available.
+  typeof IntersectionObserver === 'function'
+    ? {
+        key: 'IntersectionObserver',
+        category: 'UI',
+        module: require('../examples/IntersectionObserver/IntersectionObserverIndex'),
+      }
+    : null,
   {
     key: 'InvalidPropsExample',
     module: require('../examples/InvalidProps/InvalidPropsExample'),
@@ -264,6 +268,13 @@ const APIs: Array<RNTesterModuleInfo> = [
     key: 'LinkingExample',
     module: require('../examples/Linking/LinkingExample'),
   },
+  typeof MutationObserver === 'function'
+    ? {
+        key: 'MutationObserver',
+        category: 'UI',
+        module: require('../examples/MutationObserver/MutationObserverIndex'),
+      }
+    : null,
   {
     key: 'NativeAnimationsExample',
     module: require('../examples/NativeAnimation/NativeAnimationsExample'),
@@ -281,17 +292,16 @@ const APIs: Array<RNTesterModuleInfo> = [
     module: require('../examples/PlatformColor/PlatformColorExample'),
   },
   {
+    key: 'PixelRatio',
+    module: require('../examples/PixelRatio/PixelRatioExample'),
+  },
+  {
     key: 'PointerEventsExample',
     module: require('../examples/PointerEvents/PointerEventsExample'),
   },
   {
     key: 'RCTRootViewIOSExample',
     module: require('../examples/RCTRootView/RCTRootViewIOSExample'),
-    // [macOS
-    skipTest: {
-      default:
-        'Reason: requires native components and is convered by RCTRootViewIntegrationTests',
-    }, // macOS]
   },
   {
     key: 'RTLExample',
@@ -312,18 +322,26 @@ const APIs: Array<RNTesterModuleInfo> = [
   {
     key: 'TransformExample',
     module: require('../examples/Transform/TransformExample'),
-    // [macOS
-    skipTest: {
-      default: 'Reason: Stack overflow in jsi, upstream issue.',
-    }, // macOS]
+  },
+  {
+    key: 'FilterExample',
+    module: require('../examples/Filter/FilterExample'),
+  },
+  {
+    key: 'LinearGradient',
+    module: require('../examples/LinearGradient/LinearGradientExample'),
+  },
+  {
+    key: 'MixBlendModeExample',
+    module: require('../examples/MixBlendMode/MixBlendModeExample'),
   },
   {
     key: 'TurboModuleExample',
     module: require('../examples/TurboModule/TurboModuleExample'),
-    // [macOS
-    skipTest: {
-      default: 'Reason: requires TurboModule to be configured in host app.',
-    }, // macOS]
+  },
+  {
+    key: 'LegacyModuleExample',
+    module: require('../examples/TurboModule/LegacyModuleExample'),
   },
   {
     key: 'TurboCxxModuleExample',
@@ -346,7 +364,17 @@ const APIs: Array<RNTesterModuleInfo> = [
     category: 'Basic',
     module: require('../examples/Performance/PerformanceApiExample'),
   },
-];
+  // [macOS
+  {
+    key: 'ASANCrashExample',
+    module: require('../examples/ASAN/ASANCrashExample'),
+  },
+  {
+    key: 'Focus Ring',
+    module: require('../examples/FocusRing/FocusRingExample'),
+  },
+  // macOS]
+]: Array<?RNTesterModuleInfo>).filter(Boolean);
 
 if (ReactNativeFeatureFlags.shouldEmitW3CPointerEvents()) {
   APIs.push({

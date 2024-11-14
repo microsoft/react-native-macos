@@ -3,8 +3,6 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-# TODO: Delete me before merging
-
 require "json"
 
 package = JSON.parse(File.read(File.join(__dir__, "../package.json")))
@@ -16,22 +14,18 @@ Pod::Spec.new do |s|
   s.description     = "ScreenshotManager"
   s.homepage        = "https://github.com/facebook/react-native.git"
   s.license         = "MIT"
-  s.platforms       = { :ios => "12.4", :osx => "10.15" } # [macOS]
+  s.platforms       = min_supported_versions
   s.compiler_flags  = '-Wno-nullability-completeness'
   s.author          = "Meta Platforms, Inc. and its affiliates"
   s.source          = { :git => "https://github.com/facebook/react-native.git", :tag => "#{s.version}" }
 
   s.source_files    = "**/*.{h,m,mm,swift}"
   s.requires_arc    = true
+  # [macOS Restrict UIKit to iOS and visionOS
+  s.ios.framework = ["UIKit", "CoreGraphics"] 
+  s.visionos.framework = ["UIKit", "CoreGraphics"]
+  s.osx.framework = ["Appkit", "CoreGraphics"]
+  # macOS]
 
   install_modules_dependencies(s)
-
-  # s.dependency "..."
-
-  # Enable codegen for this library
-  use_react_native_codegen!(s, {
-    :react_native_path => "../../..",
-    :js_srcs_dir => "./",
-    :library_type => "modules",
-  })
 end

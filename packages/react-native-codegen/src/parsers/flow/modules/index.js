@@ -13,52 +13,37 @@
 import type {
   NamedShape,
   NativeModuleAliasMap,
-  NativeModuleEnumMap,
   NativeModuleBaseTypeAnnotation,
+  NativeModuleEnumMap,
   NativeModuleTypeAnnotation,
   Nullable,
 } from '../../../CodegenSchema';
-
 import type {Parser} from '../../parser';
 import type {ParserErrorCapturer, TypeDeclarationMap} from '../../utils';
 
-const {resolveTypeAnnotation} = require('../utils');
 const {
-  unwrapNullable,
-  wrapNullable,
+  UnsupportedEnumDeclarationParserError,
+  UnsupportedGenericParserError,
+  UnsupportedTypeAnnotationParserError,
+} = require('../../errors');
+const {
   assertGenericTypeAnnotationHasExactlyOneTypeParameter,
   parseObjectProperty,
+  unwrapNullable,
+  wrapNullable,
 } = require('../../parsers-commons');
 const {
   emitArrayType,
-  emitBoolean,
-  emitDouble,
-  emitFloat,
+  emitCommonTypes,
+  emitDictionary,
   emitFunction,
-  emitNumber,
-  emitInt32,
-  emitGenericObject,
-  emitObject,
   emitPromise,
   emitRootTag,
-  emitVoid,
-  emitString,
-  emitStringish,
-  emitMixed,
   emitUnion,
+  translateArrayTypeAnnotation,
   typeAliasResolution,
   typeEnumResolution,
 } = require('../../parsers-primitives');
-
-const {
-  UnsupportedTypeAnnotationParserError,
-  UnsupportedGenericParserError,
-} = require('../../errors');
-
-const {
-  throwIfPartialNotAnnotatingTypeParameter,
-  throwIfPartialWithMoreParameter,
-} = require('../../error-utils');
 
 function translateTypeAnnotation(
   hasteModuleName: string,
@@ -73,12 +58,27 @@ function translateTypeAnnotation(
   cxxOnly: boolean,
   parser: Parser,
 ): Nullable<NativeModuleTypeAnnotation> {
+  const resolveTypeAnnotationFN = parser.getResolveTypeAnnotationFN();
   const {nullable, typeAnnotation, typeResolutionStatus} =
-    resolveTypeAnnotation(flowTypeAnnotation, types);
+    resolveTypeAnnotationFN(flowTypeAnnotation, types, parser);
 
   switch (typeAnnotation.type) {
+    case 'ArrayTypeAnnotation': {
+      return translateArrayTypeAnnotation(
+        hasteModuleName,
+        types,
+        aliasMap,
+        enumMap,
+        cxxOnly,
+        'Array',
+        typeAnnotation.elementType,
+        nullable,
+        translateTypeAnnotation,
+        parser,
+      );
+    }
     case 'GenericTypeAnnotation': {
-      switch (typeAnnotation.id.name) {
+      switch (parser.getTypeAnnotationName(typeAnnotation)) {
         case 'RootTag': {
           return emitRootTag(nullable);
         }
@@ -132,55 +132,27 @@ function translateTypeAnnotation(
 
           return wrapNullable(nullable || isParamNullable, paramType);
         }
-        case 'Stringish': {
-          return emitStringish(nullable);
-        }
-        case 'Int32': {
-          return emitInt32(nullable);
-        }
-        case 'Double': {
-          return emitDouble(nullable);
-        }
-        case 'Float': {
-          return emitFloat(nullable);
-        }
-        case 'UnsafeObject':
-        case 'Object': {
-          return emitGenericObject(nullable);
-        }
-        case 'Partial':
-        case '$Partial': {
-          throwIfPartialWithMoreParameter(typeAnnotation);
-
-          const annotatedElement = parser.extractAnnotatedElement(
-            typeAnnotation,
-            types,
-          );
-
-          throwIfPartialNotAnnotatingTypeParameter(
-            typeAnnotation,
-            types,
-            parser,
-          );
-
-          const properties = parser.computePartialProperties(
-            annotatedElement.right.properties,
+        default: {
+          const commonType = emitCommonTypes(
             hasteModuleName,
             types,
+            typeAnnotation,
             aliasMap,
             enumMap,
             tryParse,
             cxxOnly,
-          );
-
-          return emitObject(nullable, properties);
-        }
-        default: {
-          throw new UnsupportedGenericParserError(
-            hasteModuleName,
-            typeAnnotation,
+            nullable,
             parser,
           );
+
+          if (!commonType) {
+            throw new UnsupportedGenericParserError(
+              hasteModuleName,
+              typeAnnotation,
+              parser,
+            );
+          }
+          return commonType;
         }
       }
     }
@@ -194,7 +166,7 @@ function translateTypeAnnotation(
           // check the property type to prevent developers from using unsupported types
           // the return value from `translateTypeAnnotation` is unused
           const propertyType = indexers[0].value;
-          translateTypeAnnotation(
+          const valueType = translateTypeAnnotation(
             hasteModuleName,
             propertyType,
             types,
@@ -205,7 +177,7 @@ function translateTypeAnnotation(
             parser,
           );
           // no need to do further checking
-          return emitGenericObject(nullable);
+          return emitDictionary(nullable, valueType);
         }
       }
 
@@ -220,6 +192,7 @@ function translateTypeAnnotation(
             property => {
               return tryParse(() => {
                 return parseObjectProperty(
+                  flowTypeAnnotation,
                   property,
                   hasteModuleName,
                   types,
@@ -243,18 +216,6 @@ function translateTypeAnnotation(
         aliasMap,
         nullable,
       );
-    }
-    case 'BooleanTypeAnnotation': {
-      return emitBoolean(nullable);
-    }
-    case 'NumberTypeAnnotation': {
-      return emitNumber(nullable);
-    }
-    case 'VoidTypeAnnotation': {
-      return emitVoid(nullable);
-    }
-    case 'StringTypeAnnotation': {
-      return emitString(nullable);
     }
     case 'FunctionTypeAnnotation': {
       return emitFunction(
@@ -280,15 +241,21 @@ function translateTypeAnnotation(
         memberType: 'StringTypeAnnotation',
       });
     }
-    case 'MixedTypeAnnotation': {
-      if (cxxOnly) {
-        return emitMixed(nullable);
-      } else {
-        return emitGenericObject(nullable);
-      }
-    }
     case 'EnumStringBody':
     case 'EnumNumberBody': {
+      if (
+        typeAnnotation.type === 'EnumNumberBody' &&
+        typeAnnotation.members.some(
+          m =>
+            m.type === 'EnumNumberMember' && !Number.isInteger(m.init?.value),
+        )
+      ) {
+        throw new UnsupportedEnumDeclarationParserError(
+          hasteModuleName,
+          typeAnnotation,
+          parser.language(),
+        );
+      }
       return typeEnumResolution(
         typeAnnotation,
         typeResolutionStatus,
@@ -299,11 +266,26 @@ function translateTypeAnnotation(
       );
     }
     default: {
-      throw new UnsupportedTypeAnnotationParserError(
+      const commonType = emitCommonTypes(
         hasteModuleName,
+        types,
         typeAnnotation,
-        parser.language(),
+        aliasMap,
+        enumMap,
+        tryParse,
+        cxxOnly,
+        nullable,
+        parser,
       );
+
+      if (!commonType) {
+        throw new UnsupportedTypeAnnotationParserError(
+          hasteModuleName,
+          typeAnnotation,
+          parser.language(),
+        );
+      }
+      return commonType;
     }
   }
 }

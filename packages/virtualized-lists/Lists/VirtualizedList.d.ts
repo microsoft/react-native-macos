@@ -18,8 +18,8 @@ import type {
   ScrollView,
 } from 'react-native';
 
-export interface ViewToken {
-  item: any;
+export interface ViewToken<ItemT = any> {
+  item: ItemT;
   key: string;
   index: number | null;
   isViewable: boolean;
@@ -267,7 +267,7 @@ export interface VirtualizedListWithoutRenderItemProps<ItemT>
 
   /**
    * The maximum number of items to render in each incremental render batch. The more rendered at
-   * once, the better the fill rate, but responsiveness my suffer because rendering content may
+   * once, the better the fill rate, but responsiveness may suffer because rendering content may
    * interfere with responding to button taps or other interactions.
    */
   maxToRenderPerBatch?: number | undefined;
@@ -330,8 +330,8 @@ export interface VirtualizedListWithoutRenderItemProps<ItemT>
    */
   onViewableItemsChanged?:
     | ((info: {
-        viewableItems: Array<ViewToken>;
-        changed: Array<ViewToken>;
+        viewableItems: Array<ViewToken<ItemT>>;
+        changed: Array<ViewToken<ItemT>>;
       }) => void)
     | null
     | undefined;

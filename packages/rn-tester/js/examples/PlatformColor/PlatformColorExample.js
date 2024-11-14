@@ -8,22 +8,19 @@
  * @flow
  */
 
+import Platform from 'react-native/Libraries/Utilities/Platform';
+
 const React = require('react');
 const ReactNative = require('react-native');
-import Platform from 'react-native/Libraries/Utilities/Platform';
-const {
-  ColorWithSystemEffectMacOS, // [macOS]
-  DynamicColorIOS,
-  DynamicColorMacOS,
-  PlatformColor,
-  StyleSheet,
-  Text,
-  View,
-} = ReactNative;
+const {DynamicColorIOS, PlatformColor, StyleSheet, Text, View} = ReactNative;
+const {DynamicColorMacOS, ColorWithSystemEffectMacOS} = ReactNative; // [macOS]
 
 function PlatformColorsExample() {
   function createTable() {
-    let colors: Array<{color: $Call<typeof PlatformColor>, label: string}> = [];
+    let colors: Array<{
+      color: ReturnType<typeof PlatformColor>,
+      label: string,
+    }> = [];
     if (Platform.OS === 'ios') {
       colors = [
         // https://developer.apple.com/documentation/uikit/uicolor/ui_element_colors
@@ -365,12 +362,12 @@ function VariantColorsExample() {
               Platform.OS === 'ios'
                 ? DynamicColorIOS({light: 'red', dark: 'blue'})
                 : // [macOS
-                Platform.OS === 'macos'
-                ? DynamicColorMacOS({light: 'red', dark: 'blue'})
-                : // macOS]
-                Platform.OS === 'android'
-                ? PlatformColor('?attr/colorAccent')
-                : 'red',
+                  Platform.OS === 'macos'
+                  ? DynamicColorMacOS({light: 'red', dark: 'blue'})
+                  : // macOS]
+                    Platform.OS === 'android'
+                    ? PlatformColor('?attr/colorAccent')
+                    : 'red',
           }}
         />
       </View>
@@ -536,32 +533,32 @@ exports.description =
 exports.examples = [
   {
     title: 'Platform Colors',
-    render(): React.Element<any> {
+    render(): React.MixedElement {
       return <PlatformColorsExample />;
     },
   },
   {
     title: 'Fallback Colors',
-    render(): React.Element<any> {
+    render(): React.MixedElement {
       return <FallbackColorsExample />;
     },
   },
   {
-    title: 'Dynamic Colors', // [macOS]
-    render(): React.Element<any> {
+    title: 'iOS Dynamic Colors',
+    render(): React.MixedElement {
       return <DynamicColorsExample />;
     },
   },
   {
     title: 'Variant Colors',
-    render(): React.Element<any> {
+    render(): React.MixedElement {
       return <VariantColorsExample />;
     },
   },
   // [macOS
   {
     title: 'Color With System Effect macOS',
-    render(): React.Element<any> {
+    render(): React.Node {
       return <ColorWithSystemEffectMacOSExample />;
     },
   }, // macOS]

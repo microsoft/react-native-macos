@@ -9,9 +9,9 @@
  */
 
 'use strict';
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {ViewToken} from 'react-native/Libraries/Lists/ViewabilityHelper';
 import type {RenderItemProps} from 'react-native/Libraries/Lists/VirtualizedList';
-import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import RNTesterPage from '../../components/RNTesterPage';
 import * as React from 'react';
@@ -97,7 +97,7 @@ function NestedListExample(): React.Node {
   );
 
   return (
-    <RNTesterPage noSpacer={true} noScroll={true}>
+    <RNTesterPage noScroll={true}>
       <Text style={styles.debugText}>
         <Text style={styles.debugTextHeader}>Outer Viewable:{'\n'}</Text>
         {outerItems
@@ -116,11 +116,19 @@ function NestedListExample(): React.Node {
       </Text>
       <Text style={styles.debugText}>
         <Text style={styles.debugTextHeader}>Inner Viewable:{'\n'}</Text>
-        {inner.viewableItems.sort((a, b) => a - b).join(', ')}
+        {
+          // $FlowFixMe[react-rule-hook-mutation]
+          // $FlowFixMe[missing-local-annot]
+          inner.viewableItems.sort((a, b) => a - b).join(', ')
+        }
       </Text>
       <Text style={styles.debugText}>
         <Text style={styles.debugTextHeader}>Inner Rendered:{'\n'}</Text>
-        {inner.renderedItems.sort((a, b) => a - b).join(', ')}
+        {
+          // $FlowFixMe[react-rule-hook-mutation]
+          // $FlowFixMe[missing-local-annot]
+          inner.renderedItems.sort((a, b) => a - b).join(', ')
+        }
       </Text>
 
       <FlatList

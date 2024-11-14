@@ -8,24 +8,25 @@
  * @format
  */
 
+import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import type {CellRendererProps, RenderItemType} from './VirtualizedListProps';
 import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 import type {
   FocusEvent,
   LayoutEvent,
 } from 'react-native/Libraries/Types/CoreEventTypes';
-import type {CellRendererProps, RenderItemType} from './VirtualizedListProps';
 
-import {View, StyleSheet} from 'react-native';
 import {VirtualizedListCellContextProvider} from './VirtualizedListContext.js';
 import invariant from 'invariant';
 import * as React from 'react';
+import {StyleSheet, View} from 'react-native';
 
 export type Props<ItemT> = {
   CellRendererComponent?: ?React.ComponentType<CellRendererProps<ItemT>>,
   ItemSeparatorComponent: ?React.ComponentType<
     any | {highlighted: boolean, leadingItem: ?ItemT},
   >,
-  ListItemComponent?: ?(React.ComponentType<any> | React.Element<any>),
+  ListItemComponent?: ?(React.ComponentType<any> | React.MixedElement),
   cellKey: string,
   horizontal: ?boolean,
   index: number,
@@ -33,11 +34,11 @@ export type Props<ItemT> = {
   isSelected: ?boolean, // [macOS]
   item: ItemT,
   onCellLayout?: (event: LayoutEvent, cellKey: string, index: number) => void,
-  onCellFocusCapture?: (event: FocusEvent) => void,
+  onCellFocusCapture?: (cellKey: string) => void,
   onUnmount: (cellKey: string) => void,
   onUpdateSeparators: (
     cellKeys: Array<?string>,
-    props: $Shape<SeparatorProps<ItemT>>,
+    props: Partial<SeparatorProps<ItemT>>,
   ) => void,
   prevCellKey: ?string,
   renderItem?: ?RenderItemType<ItemT>,
@@ -54,7 +55,7 @@ type State<ItemT> = {
   ...
 };
 
-export default class CellRenderer<ItemT> extends React.Component<
+export default class CellRenderer<ItemT> extends React.PureComponent<
   Props<ItemT>,
   State<ItemT>,
 > {
@@ -69,12 +70,24 @@ export default class CellRenderer<ItemT> extends React.Component<
     props: Props<ItemT>,
     prevState: State<ItemT>,
   ): ?State<ItemT> {
-    return {
-      separatorProps: {
-        ...prevState.separatorProps,
-        leadingItem: props.item,
-      },
-    };
+    if (ReactNativeFeatureFlags.enableOptimisedVirtualizedCells()) {
+      if (props.item !== prevState.separatorProps.leadingItem) {
+        return {
+          separatorProps: {
+            ...prevState.separatorProps,
+            leadingItem: props.item,
+          },
+        };
+      }
+      return null;
+    } else {
+      return {
+        separatorProps: {
+          ...prevState.separatorProps,
+          leadingItem: props.item,
+        },
+      };
+    }
   }
 
   // TODO: consider factoring separator stuff out of VirtualizedList into FlatList since it's not
@@ -116,12 +129,15 @@ export default class CellRenderer<ItemT> extends React.Component<
   }
 
   _onLayout = (nativeEvent: LayoutEvent): void => {
-    this.props.onCellLayout &&
-      this.props.onCellLayout(
-        nativeEvent,
-        this.props.cellKey,
-        this.props.index,
-      );
+    this.props.onCellLayout?.(
+      nativeEvent,
+      this.props.cellKey,
+      this.props.index,
+    );
+  };
+
+  _onCellFocusCapture = (e: FocusEvent): void => {
+    this.props.onCellFocusCapture?.(this.props.cellKey);
   };
 
   _renderElement(
@@ -139,17 +155,13 @@ export default class CellRenderer<ItemT> extends React.Component<
     }
 
     if (ListItemComponent) {
-      /* $FlowFixMe[not-a-component] (>=0.108.0 site=react_native_fb) This
-       * comment suppresses an error found when Flow v0.108 was deployed. To
-       * see the error, delete this comment and run Flow. */
-      /* $FlowFixMe[incompatible-type-arg] (>=0.108.0 site=react_native_fb)
-       * This comment suppresses an error found when Flow v0.108 was deployed.
-       * To see the error, delete this comment and run Flow. */
-      return React.createElement(ListItemComponent, {
-        item,
-        index,
-        separators: this._separators,
-      });
+      return (
+        <ListItemComponent
+          item={item}
+          index={index}
+          separators={this._separators}
+        />
+      );
     }
 
     if (renderItem) {
@@ -178,7 +190,6 @@ export default class CellRenderer<ItemT> extends React.Component<
       index,
       inversionStyle,
       isSelected, // [macOS]
-      onCellFocusCapture,
       onCellLayout,
       renderItem,
     } = this.props;
@@ -206,12 +217,12 @@ export default class CellRenderer<ItemT> extends React.Component<
         ? [styles.rowReverse, inversionStyle]
         : [styles.columnReverse, inversionStyle]
       : horizontal
-      ? [styles.row, inversionStyle]
-      : inversionStyle;
+        ? [styles.row, inversionStyle]
+        : inversionStyle;
     const result = !CellRendererComponent ? (
       <View
         style={cellStyle}
-        onFocusCapture={onCellFocusCapture}
+        onFocusCapture={this._onCellFocusCapture}
         {...(onCellLayout && {onLayout: this._onLayout})}>
         {element}
         {itemSeparator}
@@ -222,7 +233,7 @@ export default class CellRenderer<ItemT> extends React.Component<
         index={index}
         item={item}
         style={cellStyle}
-        onFocusCapture={onCellFocusCapture}
+        onFocusCapture={this._onCellFocusCapture}
         {...(onCellLayout && {onLayout: this._onLayout})}>
         {element}
         {itemSeparator}

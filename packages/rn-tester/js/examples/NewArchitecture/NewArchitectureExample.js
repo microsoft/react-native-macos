@@ -10,8 +10,8 @@
 
 'use strict';
 
-import * as React from 'react';
 import MyNativeView from '../../../NativeComponentExample/js/MyNativeView';
+import * as React from 'react';
 
 exports.title = 'New Architecture Examples';
 exports.description =
@@ -20,7 +20,7 @@ exports.examples = [
   {
     title: 'New Architecture Renderer',
     description: 'Click to change background and opacity',
-    render(): React.Element<any> {
+    render(): React.MixedElement {
       return (
         <>
           <MyNativeView />

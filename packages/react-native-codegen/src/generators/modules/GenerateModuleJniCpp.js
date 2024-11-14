@@ -11,18 +11,19 @@
 'use strict';
 
 import type {
-  Nullable,
   NamedShape,
-  SchemaType,
+  NativeModuleEventEmitterShape,
+  NativeModuleFunctionTypeAnnotation,
+  NativeModuleParamTypeAnnotation,
   NativeModulePropertyShape,
   NativeModuleReturnTypeAnnotation,
-  NativeModuleParamTypeAnnotation,
-  NativeModuleFunctionTypeAnnotation,
+  Nullable,
+  SchemaType,
 } from '../../CodegenSchema';
-
 import type {AliasResolver} from './Utils';
-const {createAliasResolver, getModules} = require('./Utils');
+
 const {unwrapNullable} = require('../../parsers/parsers-commons');
+const {createAliasResolver, getModules} = require('./Utils');
 
 type FilesOutput = Map<string, string>;
 
@@ -54,9 +55,11 @@ const HostFunctionTemplate = ({
 
 const ModuleClassConstructorTemplate = ({
   hasteModuleName,
+  eventEmitters,
   methods,
 }: $ReadOnly<{
   hasteModuleName: string,
+  eventEmitters: $ReadOnlyArray<NativeModuleEventEmitterShape>,
   methods: $ReadOnlyArray<{
     propertyName: string,
     argCount: number,
@@ -69,7 +72,21 @@ ${methods
   .map(({propertyName, argCount}) => {
     return `  methodMap_["${propertyName}"] = MethodMetadata {${argCount}, __hostFunction_${hasteModuleName}SpecJSI_${propertyName}};`;
   })
-  .join('\n')}
+  .join('\n')}${
+    eventEmitters.length > 0
+      ? eventEmitters
+          .map(eventEmitter => {
+            return `
+  eventEmitterMap_["${eventEmitter.name}"] = std::make_shared<AsyncEventEmitter<folly::dynamic>>();`;
+          })
+          .join('')
+      : ''
+  }${
+    eventEmitters.length > 0
+      ? `
+  setEventEmitterCallback(params.instance);`
+      : ''
+  }
 }`.trim();
 };
 
@@ -108,8 +125,7 @@ const FileTemplate = ({
 
 #include ${include}
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
 ${modules}
 
@@ -118,8 +134,7 @@ ${moduleLookups.map(ModuleLookupTemplate).join('\n')}
   return nullptr;
 }
 
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react
 `;
 };
 
@@ -424,6 +439,7 @@ module.exports = {
     schema: SchemaType,
     packageName?: string,
     assumeNonnull: boolean = false,
+    headerPrefix?: string,
   ): FilesOutput {
     const nativeModules = getModules(schema);
 
@@ -439,11 +455,11 @@ module.exports = {
       .map(hasteModuleName => {
         const {
           aliasMap,
-          spec: {properties},
+          spec: {eventEmitters, methods},
         } = nativeModules[hasteModuleName];
         const resolveAlias = createAliasResolver(aliasMap);
 
-        const translatedMethods = properties
+        const translatedMethods = methods
           .map(property =>
             translateMethodForImplementation(
               hasteModuleName,
@@ -458,7 +474,8 @@ module.exports = {
           '\n\n' +
           ModuleClassConstructorTemplate({
             hasteModuleName,
-            methods: properties
+            eventEmitters,
+            methods: methods
               .map(({name: propertyName, typeAnnotation}) => {
                 const [{returnTypeAnnotation, params}] =
                   unwrapNullable<NativeModuleFunctionTypeAnnotation>(

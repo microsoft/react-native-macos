@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @flow
+ * @flow strict-local
  */
 
 import type {PlatformTestComponentBaseProps} from '../PlatformTest/RNTesterPlatformTestTypes';
@@ -66,13 +66,16 @@ function PointerEventAttributesNoHoverPointersTestCase(
         testNamePrefix + ' ' + expectedPointerType + ' ' + expectedEventType;
 
       detected_pointertypes[event.nativeEvent.pointerType] = true;
-      harness.test(({assert_equals}) => {
-        assert_equals(
-          eventType,
-          expectedEventType,
-          'Event.type should be ' + expectedEventType,
-        );
-      }, pointerTestName + "'s type should be " + expectedEventType);
+      harness.test(
+        ({assert_equals}) => {
+          assert_equals(
+            eventType,
+            expectedEventType,
+            'Event.type should be ' + expectedEventType,
+          );
+        },
+        pointerTestName + "'s type should be " + expectedEventType,
+      );
 
       // Test button and buttons
       harness.test(({assert_equals}) => {
@@ -137,13 +140,7 @@ function PointerEventAttributesNoHoverPointersTestCase(
     [harness],
   );
 
-  const square1Ref =
-    useRef<?React$ElementRef<
-      React$AbstractComponent<
-        ViewProps,
-        React.ElementRef<HostComponent<ViewProps>>,
-      >,
-    >>();
+  const square1Ref = useRef<?React.ElementRef<HostComponent<ViewProps>>>();
   const square1Handlers = useTestEventHandler(eventList, (event, eventType) => {
     if (!square1Visible) {
       return;
@@ -172,13 +169,7 @@ function PointerEventAttributesNoHoverPointersTestCase(
     }
   });
 
-  const square2Ref =
-    useRef<?React$ElementRef<
-      React$AbstractComponent<
-        ViewProps,
-        React.ElementRef<HostComponent<ViewProps>>,
-      >,
-    >>();
+  const square2Ref = useRef<?React.ElementRef<HostComponent<ViewProps>>>();
   const square2Handlers = useTestEventHandler(eventList, (event, eventType) => {
     const square2Elem = square2Ref.current;
     if (square2Elem != null) {

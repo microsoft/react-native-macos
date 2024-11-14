@@ -10,11 +10,13 @@
 
 'use strict';
 
-const React = require('react');
-const TextAncestor = require('react-native/Libraries/Text/TextAncestor');
-const TextInlineView = require('../../components/TextInlineView');
-import TextLegend from '../../components/TextLegend';
+import type {RNTesterModule} from '../../types/RNTesterTypes';
 
+import TextLegend from '../../components/TextLegend';
+import TextInlineViewsExample from './TextInlineViewsExample';
+
+const TextInlineView = require('../../components/TextInlineView');
+const React = require('react');
 const {
   Button,
   LayoutAnimation,
@@ -23,6 +25,7 @@ const {
   TextInput,
   View,
 } = require('react-native');
+const TextAncestor = require('react-native/Libraries/Text/TextAncestor');
 
 // TODO: Is there a cleaner way to flip the TextAncestor value to false? I
 //   suspect apps won't even be able to leverage this workaround because
@@ -305,9 +308,6 @@ class TextBaseLineLayoutExample extends React.Component<{}, mixed> {
           {marker}
         </View>
 
-        {/* iOS-only because it relies on inline views being able to size to content.
-         * Android's implementation requires that a width and height be specified
-         * on the inline view. */}
         <Text style={subtitleStyle}>{'Interleaving <View> and <Text>:'}</Text>
         <View style={{flexDirection: 'row', alignItems: 'baseline'}}>
           {marker}
@@ -342,6 +342,23 @@ class TextBaseLineLayoutExample extends React.Component<{}, mixed> {
             </View>{' '}
             , ante arcu vestibulum ligula, et scelerisque diam.
           </Text>
+        </View>
+
+        <Text style={subtitleStyle}>{'Multi-line <Text> alignment'}</Text>
+        <View style={{flexDirection: 'row', alignItems: 'baseline'}}>
+          <View style={{width: 50, height: 50, backgroundColor: 'gray'}} />
+          <View style={{width: 125, backgroundColor: '#eee'}}>
+            <Text style={{fontSize: 15}}>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </Text>
+          </View>
+          <View style={{width: 125, backgroundColor: '#eee'}}>
+            <Text style={{fontSize: 10}}>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </Text>
+          </View>
         </View>
 
         <Text style={subtitleStyle}>{'<TextInput/>:'}</Text>
@@ -546,12 +563,7 @@ class TextWithCapBaseBox extends React.Component<
   }
 }
 
-exports.title = 'Text';
-exports.documentationURL = 'https://reactnative.dev/docs/text';
-exports.category = 'Basic';
-exports.description = 'Base component for rendering styled text.';
-exports.displayName = 'TextExample';
-exports.examples = [
+const examples = [
   {
     title: 'Wrap',
     render: function (): React.Node {
@@ -579,6 +591,68 @@ exports.examples = [
             Another text in a (inline) red box (which is inside the gray box).
           </Text>
         </Text>
+      );
+    },
+  },
+  {
+    title: 'Background Color and Border Width',
+    name: 'background-border-width',
+    render: function (): React.Node {
+      return (
+        <View testID="background-border-width">
+          <Text
+            style={{
+              backgroundColor: '#F000F0',
+              padding: 10,
+            }}>
+            Text with background color only
+          </Text>
+          <Text
+            style={{
+              backgroundColor: '#F000F0',
+              borderRadius: 10,
+              padding: 10,
+              marginTop: 10,
+            }}>
+            Text with background color and uniform borderRadii
+          </Text>
+          <Text
+            style={{
+              backgroundColor: '#F000F0',
+              borderTopRightRadius: 10,
+              borderTopLeftRadius: 20,
+              borderBottomRightRadius: 20,
+              borderBottomLeftRadius: 10,
+              padding: 10,
+              marginTop: 10,
+            }}>
+            Text with background color and non-uniform borders
+          </Text>
+          <Text
+            style={{
+              borderWidth: 1,
+              borderColor: 'red',
+              borderTopRightRadius: 10,
+              borderTopLeftRadius: 20,
+              borderBottomRightRadius: 20,
+              borderBottomLeftRadius: 10,
+              padding: 10,
+              marginTop: 10,
+            }}>
+            Text with borderWidth
+          </Text>
+          <Text
+            style={{
+              backgroundColor: '#00AA00',
+              borderWidth: 2,
+              borderColor: 'blue',
+              borderRadius: 10,
+              padding: 10,
+              marginTop: 10,
+            }}>
+            Text with background AND borderWidth
+          </Text>
+        </View>
       );
     },
   },
@@ -985,7 +1059,7 @@ exports.examples = [
   },
   {
     title: 'Toggling Attributes',
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <AttributeToggler />;
     },
   },
@@ -1188,7 +1262,7 @@ exports.examples = [
   },
   {
     title: 'Dynamic Font Size Adjustment',
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <AdjustingFontSize />;
     },
   },
@@ -1345,7 +1419,71 @@ exports.examples = [
       );
     },
   },
+  {
+    title: 'Clipping',
+    name: 'clipping',
+    render: function (): React.Node {
+      return (
+        <View>
+          <Text
+            testID="text-clipping"
+            style={{
+              borderRadius: 50,
+              padding: 0,
+              borderColor: 'red',
+              borderWidth: 5,
+              overflow: 'hidden',
+              fontSize: 16,
+            }}>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          </Text>
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Box Shadow',
+    name: 'boxShadow',
+    render: function (): React.Node {
+      return (
+        <View>
+          <Text
+            testID="text-box-shadow"
+            style={{
+              borderRadius: 10,
+              experimental_boxShadow: '0 0 10px red',
+            }}>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          </Text>
+        </View>
+      );
+    },
+  },
+  TextInlineViewsExample,
   // [macOS
+  {
+    title: 'Mouse hover events on nested Text elements',
+    render: function (): React.Node {
+      function mouseProps(name: string) {
+        return {
+          onMouseEnter: () => console.log(`Enter ${name}`),
+          onMouseLeave: () => console.log(`Leave ${name}`),
+        };
+      }
+
+      return (
+        <Text {...mouseProps('outer')}>
+          This is some text with{' '}
+          <Text style={{color: 'red'}} {...mouseProps('inner')}>
+            a nested element
+          </Text>{' '}
+          that tracks mouse hover events
+        </Text>
+      );
+    },
+  },
   {
     title: 'Text components inheriting color from parent',
     render: function (): React.Node {
@@ -1388,3 +1526,12 @@ exports.examples = [
   },
   // macOS]
 ];
+
+module.exports = ({
+  title: 'Text',
+  documentationURL: 'https://reactnative.dev/docs/text',
+  category: 'Basic',
+  description: 'Base component for rendering styled text.',
+  displayName: 'TextExample',
+  examples,
+}: RNTesterModule);

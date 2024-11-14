@@ -117,6 +117,23 @@ function getImports(
     if (typeAnnotation.type === 'ObjectTypeAnnotation') {
       imports.add('import com.facebook.react.bridge.ReadableMap;');
     }
+
+    if (typeAnnotation.type === 'MixedTypeAnnotation') {
+      if (type === 'delegate') {
+        imports.add('import com.facebook.react.bridge.DynamicFromObject;');
+      } else {
+        imports.add('import com.facebook.react.bridge.Dynamic;');
+      }
+    }
+  });
+
+  component.commands.forEach(command => {
+    command.typeAnnotation.params.forEach(param => {
+      const cmdParamType = param.typeAnnotation.type;
+      if (cmdParamType === 'ArrayTypeAnnotation') {
+        imports.add('import com.facebook.react.bridge.ReadableArray;');
+      }
+    });
   });
 
   return imports;

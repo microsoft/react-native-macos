@@ -11,9 +11,9 @@
 
 const React = require('react');
 const {
+  RefreshControl,
   ScrollView,
   StyleSheet,
-  RefreshControl,
   Text,
   TouchableWithoutFeedback,
   View,
@@ -45,7 +45,7 @@ class Row extends React.Component {
     return (
       <TouchableWithoutFeedback onPress={this._onClick}>
         <View style={styles.row}>
-          <Text style={styles.text}>
+          <Text testID="refresh_control_row" style={styles.text}>
             {this.props.data.text + ' (' + this.props.data.clicks + ' clicks)'}
           </Text>
         </View>
@@ -121,7 +121,7 @@ exports.description = 'Adds pull-to-refresh support to a scrollview.';
 exports.examples = [
   {
     title: 'Simple refresh',
-    render: function (): React.Element<typeof RefreshControlExample> {
+    render(): React.MixedElement {
       return <RefreshControlExample />;
     },
   },

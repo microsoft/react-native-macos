@@ -8,19 +8,19 @@
  * @format
  */
 
-import {typeof ScrollView} from 'react-native';
-import type {
-  FocusEvent,
-  LayoutEvent,
-} from 'react-native/Libraries/Types/CoreEventTypes';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 import type {
   ViewabilityConfig,
   ViewabilityConfigCallbackPair,
   ViewToken,
 } from './ViewabilityHelper';
+import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
+import type {
+  FocusEvent,
+  LayoutEvent,
+} from 'react-native/Libraries/Types/CoreEventTypes';
 
 import * as React from 'react';
+import {typeof ScrollView} from 'react-native';
 
 export type Item = any;
 
@@ -162,17 +162,26 @@ type OptionalProps = {|
    * `highlight` and `unhighlight` (which set the `highlighted: boolean` prop) are insufficient for
    * your use-case.
    */
-  ListItemComponent?: ?(React.ComponentType<any> | React.Element<any>),
+  ListItemComponent?: ?(
+    | React.ComponentType<any>
+    | ExactReactElement_DEPRECATED<any>
+  ),
   /**
    * Rendered when the list is empty. Can be a React Component Class, a render function, or
    * a rendered element.
    */
-  ListEmptyComponent?: ?(React.ComponentType<any> | React.Element<any>),
+  ListEmptyComponent?: ?(
+    | React.ComponentType<any>
+    | ExactReactElement_DEPRECATED<any>
+  ),
   /**
    * Rendered at the bottom of all the items. Can be a React Component Class, a render function, or
    * a rendered element.
    */
-  ListFooterComponent?: ?(React.ComponentType<any> | React.Element<any>),
+  ListFooterComponent?: ?(
+    | React.ComponentType<any>
+    | ExactReactElement_DEPRECATED<any>
+  ),
   /**
    * Styling for internal View for ListFooterComponent
    */
@@ -181,7 +190,10 @@ type OptionalProps = {|
    * Rendered at the top of all the items. Can be a React Component Class, a render function, or
    * a rendered element.
    */
-  ListHeaderComponent?: ?(React.ComponentType<any> | React.Element<any>),
+  ListHeaderComponent?: ?(
+    | React.ComponentType<any>
+    | ExactReactElement_DEPRECATED<any>
+  ),
   /**
    * Styling for internal View for ListHeaderComponent
    */
@@ -251,7 +263,7 @@ type OptionalProps = {|
    * <RefreshControl> component built internally. The onRefresh and refreshing
    * props are also ignored. Only works for vertical VirtualizedList.
    */
-  refreshControl?: ?React.Element<any>,
+  refreshControl?: ?ExactReactElement_DEPRECATED<any>,
   /**
    * Set this true while waiting for new data from a refresh.
    */
@@ -265,7 +277,7 @@ type OptionalProps = {|
   /**
    * Render a custom scroll component, e.g. with a differently styled `RefreshControl`.
    */
-  renderScrollComponent?: (props: Object) => React.Element<any>,
+  renderScrollComponent?: (props: Object) => ExactReactElement_DEPRECATED<any>,
   /**
    * Amount of time between low-pri item render batches, e.g. for rendering items quite a ways off
    * screen. Similar fill rate/responsiveness tradeoff as `maxToRenderPerBatch`.
@@ -346,13 +358,44 @@ export type Props = {|
 |};
 
 /**
- * Subset of properties needed to calculate frame metrics
+ * Default Props Helper Functions
+ * Use the following helper functions for default values
  */
-export type FrameMetricProps = {
-  data: RequiredProps['data'],
-  getItemCount: RequiredProps['getItemCount'],
-  getItem: RequiredProps['getItem'],
-  getItemLayout?: OptionalProps['getItemLayout'],
-  keyExtractor?: OptionalProps['keyExtractor'],
-  ...
-};
+
+// horizontalOrDefault(this.props.horizontal)
+export function horizontalOrDefault(horizontal: ?boolean): boolean {
+  return horizontal ?? false;
+}
+
+// initialNumToRenderOrDefault(this.props.initialNumToRender)
+export function initialNumToRenderOrDefault(
+  initialNumToRender: ?number,
+): number {
+  return initialNumToRender ?? 10;
+}
+
+// maxToRenderPerBatchOrDefault(this.props.maxToRenderPerBatch)
+export function maxToRenderPerBatchOrDefault(
+  maxToRenderPerBatch: ?number,
+): number {
+  return maxToRenderPerBatch ?? 10;
+}
+
+// onStartReachedThresholdOrDefault(this.props.onStartReachedThreshold)
+export function onStartReachedThresholdOrDefault(
+  onStartReachedThreshold: ?number,
+): number {
+  return onStartReachedThreshold ?? 2;
+}
+
+// onEndReachedThresholdOrDefault(this.props.onEndReachedThreshold)
+export function onEndReachedThresholdOrDefault(
+  onEndReachedThreshold: ?number,
+): number {
+  return onEndReachedThreshold ?? 2;
+}
+
+// windowSizeOrDefault(this.props.windowSize)
+export function windowSizeOrDefault(windowSize: ?number): number {
+  return windowSize ?? 21;
+}

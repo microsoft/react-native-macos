@@ -13,7 +13,6 @@
 const RNTesterBlock = require('../../components/RNTesterBlock');
 const RNTesterPage = require('../../components/RNTesterPage');
 const React = require('react');
-
 const {StyleSheet, Text, View} = require('react-native');
 
 class Circle extends React.Component<$FlowFixMeProps> {
@@ -200,7 +199,7 @@ exports.displayName = 'LayoutExample';
 exports.examples = [
   {
     title: 'Simple layout using flexbox',
-    render: function (): React.Element<typeof LayoutExample> {
+    render(): React.MixedElement {
       return <LayoutExample />;
     },
   },

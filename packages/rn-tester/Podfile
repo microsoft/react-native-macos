@@ -1,13 +1,29 @@
-require_relative '../../scripts/react_native_pods'
+require_relative '../react-native/scripts/react_native_pods'
 
 source 'https://cdn.cocoapods.org/'
 platform :ios, min_ios_version_supported
+
+cmake_path = `command -v cmake`
+
+if cmake_path == ""
+  brew_path = `command -v brew`
+  if brew_path != ""
+    Pod::UI.puts "Installing CMake using brew. This is required to build RNTester.".red
+    `brew install cmake`
+  else
+    Pod::UI.puts "In order to build RNTester locally, you need cmake installed, please install it and try again".red
+    return
+  end
+else
+  Pod::UI.puts "Cmake found at: #{cmake_path}".green
+end
+
 
 prepare_react_native_project!
 
 IN_CI = ENV['CI'] == 'true'
 
-@prefix_path = "../.."
+@prefix_path = "../react-native"
 
 linkage = ENV['USE_FRAMEWORKS']
 USE_FRAMEWORKS = linkage != nil
@@ -16,12 +32,10 @@ if USE_FRAMEWORKS
   use_frameworks! :linkage => linkage.to_sym
 end
 
-def pods(target_name, options = {}, use_flipper: !IN_CI && !USE_FRAMEWORKS)
+def pods(target_name, options = {})
   project 'RNTesterPods.xcodeproj'
 
-  fabric_enabled = \
-    ENV['RCT_NEW_ARCH_ENABLED'] == '1' && # [macOS] Disable Fabric by default till macOS supports it
-    (ENV['USE_FRAMEWORKS'] == 'dynamic' ? false : true)
+  fabric_enabled = ENV['RCT_NEW_ARCH_ENABLED'] == '1' # [macOS] Disable Fabric by default till macOS supports it
 
   # Hermes is now enabled by default.
   # The following line will only disable Hermes if the USE_HERMES envvar is SET to a value other than 1 (e.g. USE_HERMES=0).
@@ -29,33 +43,25 @@ def pods(target_name, options = {}, use_flipper: !IN_CI && !USE_FRAMEWORKS)
   hermes_enabled = ENV['USE_HERMES'] == '1'
   puts "Configuring #{target_name} with Fabric #{fabric_enabled ? "enabled" : "disabled"}.#{hermes_enabled ? " Using Hermes engine." : ""}"
 
-  if ENV['RCT_NEW_ARCH_ENABLED'] == '1'
-    # Custom fabric component is only supported when using codegen discovery.
-    pod 'MyNativeView', :path => "NativeComponentExample"
-  end
-
   use_react_native!(
     path: @prefix_path,
     fabric_enabled: fabric_enabled,
     hermes_enabled: hermes_enabled,
-    flipper_configuration: FlipperConfiguration.disabled, # [macOS] Disable Flipper as it's not supported on macOS
     app_path: "#{Dir.pwd}",
     config_file_dir: "#{Dir.pwd}/node_modules",
-    production: !ENV['PRODUCTION'].nil?,
-    ios_folder: '.',
+    production: false, #deprecated
   )
   pod 'ReactCommon-Samples', :path => "#{@prefix_path}/ReactCommon/react/nativemodule/samples"
 
   # Additional Pods which aren't included in the default Podfile
   pod 'React-RCTPushNotification', :path => "#{@prefix_path}/Libraries/PushNotificationIOS"
-  pod 'Yoga', :path => "#{@prefix_path}/ReactCommon/yoga", :modular_headers => true
   # Additional Pods which are classed as unstable
 
   # RNTester native modules and components
   pod 'ScreenshotManager', :path => "NativeModuleExample"
-  if ENV['RCT_NEW_ARCH_ENABLED'] == '1'
-    pod 'NativeCxxModuleExample', :path => "NativeCxxModuleExample"
-  end
+  pod 'MyNativeView', :path => "NativeComponentExample"
+  pod 'NativeCxxModuleExample', :path => "NativeCxxModuleExample"
+  pod 'OSSLibraryExample', :path => '../react-native-test-library'
 end
 
 target 'RNTester' do
@@ -73,25 +79,33 @@ target 'RNTesterIntegrationTests' do
   pod 'React-RCTTest', :path => "./RCTTest"
 end
 
+# [macOS
 target 'RNTester-macOS' do
-  platform :osx, '10.15'
+  platform :macos, min_macos_version_supported # [macOS]
   pods('RNTester-macOS')
 end
 
 target 'RNTester-macOSUnitTests' do
-  platform :osx, '10.15'
+  platform :macos, min_macos_version_supported # [macOS]
   pods('RNTester-macOSUnitTests')
   pod 'React-RCTTest', :path => "./RCTTest"
   pod 'OCMock', '~> 3.9.1'
 end
 
 target 'RNTester-macOSIntegrationTests' do
-  platform :osx, '10.15'
+  platform :macos, min_macos_version_supported # [macOS]
   pods('RNTester-macOSIntegrationTests')
   pod 'React-RCTTest', :path => "./RCTTest"
 end
+# macOS]
+
+# [visionOS
+target('RNTester-visionOS') do
+  platform :visionos, min_visionos_version_supported # [visionOS]
+  pods('RNTester-visionOS')
+end
+# visionOS]
 
 post_install do |installer|
   react_native_post_install(installer, @prefix_path, :mac_catalyst_enabled => false)
-  __apply_Xcode_12_5_M1_post_install_workaround(installer)
 end

@@ -6,7 +6,7 @@ React Native macOS has 3 types of builds it can publish, similar to React Native
 2. **Nightlies / Canaries** : Published off our main branch on every commit
 3. **Stable Releases** : Published off `*-stable` branches, with a new patch release for every commit
 
-We use Azure Pipelines for our publish pipeline. The pipeline is defined in `.ado/publish.yml`, and is set to run on pushes to `main` and `*-stable` branches. The pipeline steps differ between stable branches, with the latest as of time of writing (`0.71-stable`) attempting to re-use some of the scripts used by the upstream repo in their CircleCI pipelines. 
+We use Azure Pipelines for our publish pipeline. The pipeline is defined in `.ado/publish.yml`, and is set to run on pushes to `main` and `*-stable` branches. The pipeline steps differ between stable branches, with the latest as of time of writing (`0.72-stable`) attempting to re-use some of the scripts used by the upstream repo in their CircleCI pipelines. 
 
 ## Relevant Scripts from React Native Core
 
@@ -53,13 +53,13 @@ The Publish flow does the following:
 An attempt was made to simplify the steps above and re-use more of the scripts that React Native Core uses. Namely:
 - Use more of the RN scripts to handle preparing the build. The intention is to leverage new features that have been added to those scripts, like the ability to build nightlies and dry runs, along with increased safety via checks on the version number. 
 - Don't bother with manually removing and restoring workspace config. We don't need the `private` field set anyway since we don't have beachball auto-publishing or anything. 
-- Extract all the steps to a template `apple-job-publish` with a parameter to switch between nightlies, dry runs, and releases. This was done so that we can now add a new "NPM Publish Dry Run" step to our PR checks.
+- Extract all the steps to a template `apple-steps-publish` with a parameter to switch between nightlies, dry runs, and releases. This was done so that we can now add a new "NPM Publish Dry Run" step to our PR checks.
 
 We don't however use the scripts from upstream to publish to NPM or Github: we still keep that as separate steps in Azure Pipelines. In the future, we can look into removing these steps and just using the scripts directly. 
 
 The Publish flow does the following:
 
-1. Call the template `apple-job-publish` with either nightly or release as the build type based on branch name. 
+1. Call the template `apple-steps-publish` with either nightly or release as the build type based on branch name. 
 2. The template will do the following steps based on build type:
     - If we're a *nightly* or *dry run*
       - Just call `publish-npm.js`, as this will take care of bumping versions, and publishing and no pushing back to Github is needed
@@ -69,5 +69,17 @@ The Publish flow does the following:
       3. Call `prepare-package-for-release` to bump versions, tag the commit, and push to git
       4. Call `publish-npm` to publish to NPM the version that was just tagged. 
 4. Generate the correct NPM `dist-tag` and publish to NPM
-5. Commit all changed files and push back to Github 
+5. Commit all changed files and push back to Github
 
+### Publishing New Versions
+
+Each minor version publishes out of its own branch (e.g., 0.72-stable for react-native-macos 0.72.x). In order to ensure initial releases are properly versioned, we have a special prerelease name called `ready`. This will tell our `get-next-semver-version` script that we're ready to release the next version.
+
+We do this so that our first release will have a proper patch version of 0, as shown by this snippet from an interactive Node.js console:
+
+```js
+> semver.inc('0.72.0', 'patch')
+'0.72.1' // Not ideal
+> semver.inc('0.72.0-ready', 'patch')
+'0.72.0' // Better!
+```

@@ -10,6 +10,7 @@
 #import <React/RCTViewManager.h>
 #import "RNTLegacyView.h"
 #import "RNTMyNativeViewComponentView.h"
+#import "UIView+ColorOverlays.h"
 
 @interface RNTMyLegacyNativeViewManager : RCTViewManager
 
@@ -30,9 +31,54 @@ RCT_REMAP_VIEW_PROPERTY(opacity, alpha, CGFloat)
 
 RCT_EXPORT_VIEW_PROPERTY(onColorChanged, RCTBubblingEventBlock)
 
-- (RCTUIView *)view // [macOS]
+RCT_CUSTOM_VIEW_PROPERTY(cornerRadius, CGFloat, RNTLegacyView)
+{
+  view.clipsToBounds = true;
+  NSNumber *cornerRadius = (NSNumber *)json;
+  view.layer.cornerRadius = [cornerRadius floatValue];
+}
+
+RCT_EXPORT_METHOD(changeBackgroundColor : (nonnull NSNumber *)reactTag color : (NSString *)color)
+{
+  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
+    if (RCTPlatformView *view = [RNTMyLegacyNativeViewManager getViewByTag:viewRegistry reactTag:reactTag]) { // [macOS]
+      [view setBackgroundColorWithColorString:color];
+    }
+  }];
+}
+
+RCT_EXPORT_METHOD(addOverlays : (nonnull NSNumber *)reactTag overlayColors : (NSArray *)overlayColors)
+{
+  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
+    if (RCTPlatformView *view = [RNTMyLegacyNativeViewManager getViewByTag:viewRegistry reactTag:reactTag]) { // [macOS]
+      [view addColorOverlays:overlayColors];
+    }
+  }];
+}
+
+RCT_EXPORT_METHOD(removeOverlays : (nonnull NSNumber *)reactTag)
+{
+  [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
+    if (RCTPlatformView *view = [RNTMyLegacyNativeViewManager getViewByTag:viewRegistry reactTag:reactTag]) { // [macOS]
+      [view removeOverlays];
+    }
+  }];
+}
+
++ (RCTPlatformView *)getViewByTag:(NSDictionary<NSNumber *, RCTPlatformView *> *)viewRegistry reactTag:(nonnull NSNumber *)reactTag // [macOS]
+{
+  RCTPlatformView *view = viewRegistry[reactTag]; // [macOS]
+  if (!view || ![view isKindOfClass:[RNTLegacyView class]]) {
+    RCTLogError(@"Cannot find RNTLegacyView with tag #%@", reactTag);
+    return NULL;
+  }
+  return view;
+}
+
+- (RCTPlatformView *)view // [macOS]
 {
   RNTLegacyView *view = [[RNTLegacyView alloc] init];
+  view.backgroundColor = RCTUIColor.redColor; // [macOS]
   return view;
 }
 

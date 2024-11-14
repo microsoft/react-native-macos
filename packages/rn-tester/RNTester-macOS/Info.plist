@@ -34,6 +34,8 @@
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
 	<key>NSHumanReadableCopyright</key>
@@ -46,7 +48,5 @@
 	<string>Photo library access needed for some tests.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	<key>RN_BUNDLE_PREFIX</key>
-	<string>$(RN_BUNDLE_PREFIX)</string>
 </dict>
 </plist>

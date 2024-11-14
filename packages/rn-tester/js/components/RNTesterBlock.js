@@ -8,10 +8,9 @@
  * @flow
  */
 
-import * as React from 'react';
 import {RNTesterThemeContext} from './RNTesterTheme';
-import {PlatformColor, StyleSheet, Text, View} from 'react-native';
-import {Platform} from 'react-native'; // [macOS]
+import * as React from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 
 type Props = $ReadOnly<{|
   children?: React.Node,
@@ -55,67 +54,19 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 0,
     borderWidth: 1,
-    ...Platform.select({
-      macos: {
-        borderColor: PlatformColor('separatorColor'),
-        backgroundColor: PlatformColor('windowBackgroundColor'),
-      },
-      ios: {
-        borderColor: PlatformColor('separatorColor'),
-        backgroundColor: PlatformColor('tertiarySystemBackgroundColor'),
-      },
-      default: {
-        borderColor: '#d6d7da',
-        backgroundColor: '#ffffff',
-      },
-    }),
-    marginTop: 30,
     marginHorizontal: 20,
   },
   titleText: {
-    ...Platform.select({
-      macos: {
-        color: PlatformColor('labelColor'),
-      },
-      ios: {
-        color: PlatformColor('labelColor'),
-      },
-      default: undefined,
-    }),
     fontSize: 18,
     fontWeight: '300',
   },
   titleContainer: {
-    ...Platform.select({
-      macos: {
-        borderBottomColor: PlatformColor('separatorColor'),
-        backgroundColor: PlatformColor('controlBackgroundColor'),
-      },
-      ios: {
-        borderBottomColor: PlatformColor('separatorColor'),
-        backgroundColor: PlatformColor('tertiarySystemBackgroundColor'),
-      },
-      default: {
-        borderBottomColor: '#d6d7da',
-        backgroundColor: '#f6f7f8',
-      },
-    }),
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   descriptionText: {
     fontSize: 12,
     opacity: 0.5,
-    // [macOS Fix tester block description color in DarkMode
-    ...Platform.select({
-      macos: {
-        color: PlatformColor('secondaryLabelColor'),
-      },
-      ios: {
-        color: PlatformColor('secondaryLabelColor'),
-      },
-      default: undefined,
-    }), // macOS]
   },
   children: {
     marginHorizontal: 20,

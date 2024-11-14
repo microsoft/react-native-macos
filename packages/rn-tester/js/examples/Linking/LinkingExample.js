@@ -9,6 +9,7 @@
 
 'use strict';
 
+const RNTesterBlock = require('../../components/RNTesterBlock');
 const React = require('react');
 const {
   Button,
@@ -16,12 +17,10 @@ const {
   Platform,
   StyleSheet,
   Text,
-  TouchableOpacity,
   ToastAndroid,
+  TouchableOpacity,
   View,
 } = require('react-native');
-
-const RNTesterBlock = require('../../components/RNTesterBlock');
 
 type Props = $ReadOnly<{|
   url?: ?string,
@@ -142,13 +141,13 @@ exports.examples = [
     title: 'Open external URLs',
     description:
       'Custom schemes may require specific apps to be installed on the device. Note: Phone app is not supported in the simulator.',
-    render: function (): React.Element<typeof IntentAndroidExample> {
+    render(): React.MixedElement {
       return <IntentAndroidExample />;
     },
   },
   {
     title: 'Open settings app',
-    render: function (): React.Element<typeof LinkingChangesListenerExample> {
+    render(): React.MixedElement {
       return <OpenSettingsExample />;
     },
   },

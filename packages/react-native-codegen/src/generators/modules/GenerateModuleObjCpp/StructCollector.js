@@ -11,29 +11,28 @@
 'use strict';
 
 import type {
-  Nullable,
-  NativeModuleObjectTypeAnnotation,
-  NativeModuleStringTypeAnnotation,
-  NativeModuleNumberTypeAnnotation,
-  NativeModuleInt32TypeAnnotation,
-  NativeModuleDoubleTypeAnnotation,
-  NativeModuleFloatTypeAnnotation,
-  NativeModuleBooleanTypeAnnotation,
-  NativeModuleEnumDeclaration,
-  NativeModuleGenericObjectTypeAnnotation,
-  ReservedTypeAnnotation,
-  NativeModuleTypeAliasTypeAnnotation,
   NativeModuleArrayTypeAnnotation,
   NativeModuleBaseTypeAnnotation,
+  BooleanTypeAnnotation,
+  DoubleTypeAnnotation,
+  NativeModuleEnumDeclaration,
+  FloatTypeAnnotation,
+  NativeModuleGenericObjectTypeAnnotation,
+  Int32TypeAnnotation,
+  NativeModuleNumberTypeAnnotation,
+  NativeModuleObjectTypeAnnotation,
+  StringTypeAnnotation,
+  NativeModuleTypeAliasTypeAnnotation,
+  Nullable,
+  ReservedTypeAnnotation,
 } from '../../../CodegenSchema';
-
 import type {AliasResolver} from '../Utils';
 
-const {capitalize} = require('../../Utils');
 const {
   unwrapNullable,
   wrapNullable,
 } = require('../../../parsers/parsers-commons');
+const {capitalize} = require('../../Utils');
 
 type StructContext = 'CONSTANTS' | 'REGULAR';
 
@@ -58,12 +57,12 @@ export type StructProperty = $ReadOnly<{
 }>;
 
 export type StructTypeAnnotation =
-  | NativeModuleStringTypeAnnotation
+  | StringTypeAnnotation
   | NativeModuleNumberTypeAnnotation
-  | NativeModuleInt32TypeAnnotation
-  | NativeModuleDoubleTypeAnnotation
-  | NativeModuleFloatTypeAnnotation
-  | NativeModuleBooleanTypeAnnotation
+  | Int32TypeAnnotation
+  | DoubleTypeAnnotation
+  | FloatTypeAnnotation
+  | BooleanTypeAnnotation
   | NativeModuleEnumDeclaration
   | NativeModuleGenericObjectTypeAnnotation
   | ReservedTypeAnnotation
@@ -94,9 +93,12 @@ class StructCollector {
         });
       }
       case 'ArrayTypeAnnotation': {
-        if (typeAnnotation.elementType == null) {
+        if (typeAnnotation.elementType.type === 'AnyTypeAnnotation') {
           return wrapNullable(nullable, {
             type: 'ArrayTypeAnnotation',
+            elementType: {
+              type: 'AnyTypeAnnotation',
+            },
           });
         }
 

@@ -11,50 +11,53 @@
 
 'use-strict';
 
-import {
-  assertGenericTypeAnnotationHasExactlyOneTypeParameter,
-  isObjectProperty,
-  parseObjectProperty,
-  wrapNullable,
-  unwrapNullable,
-  buildSchemaFromConfigType,
-  buildSchema,
-  parseModuleName,
-  createComponentConfig,
-} from '../parsers-commons';
 import type {ParserType} from '../errors';
 
-const {Visitor} = require('../parsers-primitives');
-const {wrapComponentSchema} = require('../schema.js');
-const {buildComponentSchema} = require('../flow/components');
-const {buildModuleSchema} = require('../parsers-commons.js');
+import {FlowParser} from '../flow/parser';
+import {MockedParser} from '../parserMock';
+import {
+  assertGenericTypeAnnotationHasExactlyOneTypeParameter,
+  buildSchema,
+  buildSchemaFromConfigType,
+  createComponentConfig,
+  getCommandOptions,
+  getCommandTypeNameAndOptionsExpression,
+  getOptions,
+  getTypeResolutionStatus,
+  handleGenericTypeAnnotation,
+  isObjectProperty,
+  parseModuleName,
+  parseObjectProperty,
+  propertyNames,
+  unwrapNullable,
+  wrapNullable,
+} from '../parsers-commons';
+
 const {
-  isModuleRegistryCall,
-  createParserErrorCapturer,
-} = require('../utils.js');
-const {
-  ParserError,
-  UnsupportedObjectPropertyTypeAnnotationParserError,
-  UnusedModuleInterfaceParserError,
-  MoreThanOneModuleRegistryCallsParserError,
-  IncorrectModuleRegistryCallArityParserError,
   IncorrectModuleRegistryCallArgumentTypeParserError,
-  UntypedModuleRegistryCallParserError,
+  IncorrectModuleRegistryCallArityParserError,
+  MisnamedModuleInterfaceParserError,
   ModuleInterfaceNotFoundParserError,
   MoreThanOneModuleInterfaceParserError,
-  MisnamedModuleInterfaceParserError,
+  MoreThanOneModuleRegistryCallsParserError,
+  ParserError,
+  UnsupportedObjectPropertyTypeAnnotationParserError,
+  UntypedModuleRegistryCallParserError,
+  UnusedModuleInterfaceParserError,
 } = require('../errors');
-
-import {MockedParser} from '../parserMock';
-import {FlowParser} from '../flow/parser';
+const {buildComponentSchema} = require('../flow/components');
+const {flowTranslateTypeAnnotation} = require('../flow/modules/index');
+const {buildModuleSchema} = require('../parsers-commons.js');
+const {Visitor} = require('../parsers-primitives');
+const {wrapComponentSchema} = require('../schema.js');
+const typeScriptTranslateTypeAnnotation = require('../typescript/modules/index');
+const {
+  createParserErrorCapturer,
+  isModuleRegistryCall,
+} = require('../utils.js');
 
 const parser = new MockedParser();
-
 const flowParser = new FlowParser();
-
-const {flowTranslateTypeAnnotation} = require('../flow/modules/index');
-const typeScriptTranslateTypeAnnotation = require('../typescript/modules/index');
-const {resolveTypeAnnotation} = require('../flow/utils');
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -319,6 +322,7 @@ describe('parseObjectProperty', () => {
       );
       expect(() =>
         parseObjectProperty(
+          null, // parentObject
           property,
           moduleName,
           types,
@@ -353,6 +357,7 @@ describe('parseObjectProperty', () => {
       );
       expect(() =>
         parseObjectProperty(
+          null, // parentObject
           property,
           moduleName,
           types,
@@ -396,7 +401,7 @@ describe('buildSchemaFromConfigType', () => {
     type: 'NativeModule',
     aliasMap: {},
     enumMap: {},
-    spec: {properties: []},
+    spec: {eventEmitters: [], methods: []},
     moduleName: '',
   };
 
@@ -405,7 +410,7 @@ describe('buildSchemaFromConfigType', () => {
     (_ast, _parser) => componentSchemaMock,
   );
   const buildModuleSchemaMock = jest.fn(
-    (_0, _1, _2, _3, _4, _5) => moduleSchemaMock,
+    (_0, _1, _2, _3, _4) => moduleSchemaMock,
   );
 
   const buildSchemaFromConfigTypeHelper = (
@@ -420,7 +425,6 @@ describe('buildSchemaFromConfigType', () => {
       buildComponentSchemaMock,
       buildModuleSchemaMock,
       parser,
-      resolveTypeAnnotation,
       flowTranslateTypeAnnotation,
     );
 
@@ -503,7 +507,6 @@ describe('buildSchemaFromConfigType', () => {
             astMock,
             expect.any(Function),
             parser,
-            resolveTypeAnnotation,
             flowTranslateTypeAnnotation,
           );
 
@@ -675,7 +678,6 @@ describe('buildSchema', () => {
         buildModuleSchema,
         Visitor,
         parser,
-        resolveTypeAnnotation,
         flowTranslateTypeAnnotation,
       );
 
@@ -709,13 +711,68 @@ describe('buildSchema', () => {
         buildModuleSchema,
         Visitor,
         flowParser,
-        resolveTypeAnnotation,
         flowTranslateTypeAnnotation,
       );
 
       expect(getConfigTypeSpy).toHaveBeenCalledTimes(1);
       expect(getConfigTypeSpy).toHaveBeenCalledWith(
-        parser.getAst(contents),
+        parser.getAst(contents, 'fileName'),
+        Visitor,
+      );
+      expect(schema).toEqual({
+        modules: {
+          Module: {
+            type: 'Component',
+            components: {
+              Module: {
+                extendsProps: [
+                  {
+                    type: 'ReactNativeBuiltInType',
+                    knownTypeName: 'ReactNativeCoreViewProps',
+                  },
+                ],
+                events: [],
+                props: [],
+                commands: [],
+              },
+            },
+          },
+        },
+      });
+    });
+  });
+
+  describe('when there is a codegenNativeComponent, using `as`', () => {
+    const contents = `
+      import type {ViewProps} from 'ViewPropTypes';
+      import type {HostComponent} from 'react-native';
+
+      const codegenNativeComponent = require('codegenNativeComponent');
+
+      export type ModuleProps = $ReadOnly<{|
+        ...ViewProps,
+      |}>;
+
+      export default codegenNativeComponent<ModuleProps>(
+        'Module',
+      ) as HostComponent<ModuleProps>;
+    `;
+
+    it('returns a module with good properties', () => {
+      const schema = buildSchema(
+        contents,
+        'fileName',
+        wrapComponentSchema,
+        buildComponentSchema,
+        buildModuleSchema,
+        Visitor,
+        flowParser,
+        flowTranslateTypeAnnotation,
+      );
+
+      expect(getConfigTypeSpy).toHaveBeenCalledTimes(1);
+      expect(getConfigTypeSpy).toHaveBeenCalledWith(
+        parser.getAst(contents, 'fileName'),
         Visitor,
       );
       expect(schema).toEqual({
@@ -764,13 +821,12 @@ describe('buildSchema', () => {
         buildModuleSchema,
         Visitor,
         flowParser,
-        resolveTypeAnnotation,
         flowTranslateTypeAnnotation,
       );
 
       expect(getConfigTypeSpy).toHaveBeenCalledTimes(1);
       expect(getConfigTypeSpy).toHaveBeenCalledWith(
-        parser.getAst(contents),
+        parser.getAst(contents, 'fileName'),
         Visitor,
       );
       expect(schema).toEqual({
@@ -780,7 +836,8 @@ describe('buildSchema', () => {
             aliasMap: {},
             enumMap: {},
             spec: {
-              properties: [
+              eventEmitters: [],
+              methods: [
                 {
                   name: 'getArray',
                   optional: false,
@@ -794,7 +851,10 @@ describe('buildSchema', () => {
                       {
                         name: 'a',
                         optional: false,
-                        typeAnnotation: {type: 'ArrayTypeAnnotation'},
+                        typeAnnotation: {
+                          type: 'ArrayTypeAnnotation',
+                          elementType: {type: 'AnyTypeAnnotation'},
+                        },
                       },
                     ],
                   },
@@ -1060,7 +1120,6 @@ describe('buildModuleSchema', () => {
           ast,
           tryParse,
           flowParser,
-          resolveTypeAnnotation,
           flowTranslateTypeAnnotation,
         ),
       ).toThrow(expected);
@@ -1075,7 +1134,6 @@ describe('buildModuleSchema', () => {
           ast,
           tryParse,
           flowParser,
-          resolveTypeAnnotation,
           flowTranslateTypeAnnotation,
         ),
       ).not.toThrow();
@@ -1087,7 +1145,7 @@ describe('buildModuleSchema', () => {
       const contents = `
       import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
         import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
-    
+
         export interface Spec extends TurboModule {
           +getBool: (arg: boolean) => boolean;      }
         export interface SpecOther extends TurboModule {
@@ -1112,7 +1170,6 @@ describe('buildModuleSchema', () => {
           ast,
           tryParse,
           flowParser,
-          resolveTypeAnnotation,
           flowTranslateTypeAnnotation,
         ),
       ).toThrow(expected);
@@ -1127,7 +1184,6 @@ describe('buildModuleSchema', () => {
           ast,
           tryParse,
           flowParser,
-          resolveTypeAnnotation,
           flowTranslateTypeAnnotation,
         ),
       ).not.toThrow();
@@ -1139,11 +1195,11 @@ describe('buildModuleSchema', () => {
       const contents = `
       import type {TurboModule} from 'react-native/Libraries/TurboModule/RCTExport';
         import * as TurboModuleRegistry from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
-  
+
         export interface MisnamedSpec extends TurboModule {
           +getArray: (a: Array<any>) => Array<string>;
         }
-  
+
         export default (TurboModuleRegistry.getEnforcing<Spec>(
           'SampleTurboModule',
         ): Spec);
@@ -1167,7 +1223,6 @@ describe('buildModuleSchema', () => {
           ast,
           tryParse,
           flowParser,
-          resolveTypeAnnotation,
           flowTranslateTypeAnnotation,
         ),
       ).toThrow(expected);
@@ -1182,7 +1237,6 @@ describe('buildModuleSchema', () => {
           ast,
           tryParse,
           flowParser,
-          resolveTypeAnnotation,
           flowTranslateTypeAnnotation,
         ),
       ).not.toThrow();
@@ -1197,7 +1251,8 @@ describe('buildModuleSchema', () => {
       excludedPlatforms: undefined,
       moduleName: 'SampleTurboModule',
       spec: {
-        properties: [
+        eventEmitters: [],
+        methods: [
           {
             name: 'getArray',
             optional: false,
@@ -1206,7 +1261,10 @@ describe('buildModuleSchema', () => {
                 {
                   name: 'a',
                   optional: false,
-                  typeAnnotation: {type: 'ArrayTypeAnnotation'},
+                  typeAnnotation: {
+                    type: 'ArrayTypeAnnotation',
+                    elementType: {type: 'AnyTypeAnnotation'},
+                  },
                 },
               ],
               returnTypeAnnotation: {
@@ -1225,7 +1283,6 @@ describe('buildModuleSchema', () => {
       ast,
       tryParse,
       flowParser,
-      resolveTypeAnnotation,
       flowTranslateTypeAnnotation,
     );
 
@@ -1275,5 +1332,398 @@ describe('createComponentConfig', () => {
       const configs = createComponentConfig(foundConfig, commandsTypeNames);
       expect(configs).toEqual(expectedConfig);
     });
+  });
+});
+
+describe('getCommandOptions', () => {
+  it('returns null when commandOptionsExpression is null', () => {
+    const result = getCommandOptions(null);
+    expect(result).toBeNull();
+  });
+
+  it('parses and returns command options correctly', () => {
+    const commandOptionsExpression = {
+      properties: [
+        {
+          range: [],
+          loc: {},
+          type: '',
+          key: {
+            name: 'hotspotUpdate',
+            loc: {},
+          },
+          value: {
+            elements: [
+              {
+                value: 'value',
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const result = getCommandOptions(commandOptionsExpression);
+    expect(result).toEqual({
+      hotspotUpdate: ['value'],
+    });
+  });
+
+  it('should throw an error if command options are not defined correctly', () => {
+    const commandOptionsExpression = {
+      properties: null,
+    };
+    expect(() => getCommandOptions(commandOptionsExpression)).toThrowError(
+      'Failed to parse command options, please check that they are defined correctly',
+    );
+  });
+});
+
+describe('getOptions', () => {
+  it('returns null if optionsExpression is falsy', () => {
+    expect(getOptions(null)).toBeNull();
+    expect(getOptions(undefined)).toBeNull();
+    expect(getOptions(false)).toBeNull();
+    expect(getOptions(0)).toBeNull();
+    expect(getOptions('')).toBeNull();
+  });
+
+  it('parses and returns options correctly if codegen options are defined correctly', () => {
+    const optionsExpression = {
+      properties: [
+        {
+          value: {
+            type: 'ArrayExpression',
+            value: 'value',
+            elements: [
+              {
+                value: 'value1',
+              },
+            ],
+          },
+          key: {
+            name: 'keyName',
+          },
+        },
+      ],
+    };
+    expect(getOptions(optionsExpression)).toEqual({
+      keyName: ['value1'],
+    });
+  });
+
+  it('throws an error if codegen options are not defined correctly', () => {
+    const optionsExpression = {
+      properties: null,
+    };
+    expect(() => getOptions(optionsExpression)).toThrowError(
+      'Failed to parse codegen options, please check that they are defined correctly',
+    );
+  });
+
+  it('throws an error if both paperComponentName and paperComponentNameDeprecated are used', () => {
+    const optionsExpression = {
+      properties: [
+        {
+          key: {name: 'paperComponentName'},
+          value: {value: 'RCTRefreshControl'},
+        },
+        {
+          key: {name: 'paperComponentNameDeprecated'},
+          value: {value: 'RCTSwitch'},
+        },
+      ],
+    };
+    expect(() => getOptions(optionsExpression)).toThrowError(
+      'Failed to parse codegen options, cannot use both paperComponentName and paperComponentNameDeprecated',
+    );
+  });
+
+  it('returns options if only paperComponentName is used', () => {
+    const optionsExpression = {
+      properties: [
+        {
+          key: {name: 'paperComponentName'},
+          value: {value: 'RCTRefreshControl'},
+        },
+      ],
+    };
+    const expectedOptions = {paperComponentName: 'RCTRefreshControl'};
+    expect(getOptions(optionsExpression)).toEqual(expectedOptions);
+  });
+
+  it('returns options if only paperComponentNameDeprecated is used', () => {
+    const optionsExpression = {
+      properties: [
+        {
+          key: {name: 'paperComponentNameDeprecated'},
+          value: {value: 'RCTRefreshControl'},
+        },
+      ],
+    };
+    const expectedOptions = {paperComponentNameDeprecated: 'RCTRefreshControl'};
+    expect(getOptions(optionsExpression)).toEqual(expectedOptions);
+  });
+});
+
+describe('getCommandTypeNameAndOptionsExpression', () => {
+  it("returns undefined when namedExport isn't well formatted", () => {
+    expect(
+      getCommandTypeNameAndOptionsExpression(null, flowParser),
+    ).toBeUndefined();
+
+    expect(
+      getCommandTypeNameAndOptionsExpression(undefined, flowParser),
+    ).toBeUndefined();
+
+    expect(
+      getCommandTypeNameAndOptionsExpression({}, flowParser),
+    ).toBeUndefined();
+  });
+
+  it('returns undefined when the called expression name is not codegenNativeCommands', () => {
+    const namedExportMock = {
+      declaration: {
+        declarations: [
+          {
+            init: {
+              callee: {
+                name: 'notCodegenNativeCommands',
+              },
+            },
+          },
+        ],
+      },
+    };
+
+    expect(
+      getCommandTypeNameAndOptionsExpression(namedExportMock, flowParser),
+    ).toBeUndefined();
+  });
+
+  it("throws when the called expression doesn't have 1 argument", () => {
+    const namedExportMock = {
+      declaration: {
+        declarations: [
+          {
+            init: {
+              callee: {
+                name: 'codegenNativeCommands',
+              },
+              arguments: [],
+            },
+          },
+        ],
+      },
+    };
+
+    expect(() =>
+      getCommandTypeNameAndOptionsExpression(namedExportMock, flowParser),
+    ).toThrow(
+      new Error(
+        'codegenNativeCommands must be passed options including the supported commands',
+      ),
+    );
+  });
+
+  it('throws when the type of the argument is not a generic type annotation', () => {
+    const namedExportMock = {
+      declaration: {
+        declarations: [
+          {
+            init: {
+              callee: {
+                name: 'codegenNativeCommands',
+              },
+              arguments: [{}],
+              typeArguments: {params: [{type: 'StringTypeAnnotation'}]},
+            },
+          },
+        ],
+      },
+    };
+
+    expect(() =>
+      getCommandTypeNameAndOptionsExpression(namedExportMock, flowParser),
+    ).toThrow(
+      new Error(
+        "codegenNativeCommands doesn't support inline definitions. Specify a file local type alias",
+      ),
+    );
+  });
+
+  it('returns the command TypeName and options expression when the named export is valid', () => {
+    const commandTypeName = 'MyCommandType';
+    const commandOptionsExpression = {
+      type: 'ObjectExpression',
+      properties: [],
+    };
+
+    const namedExportMock = {
+      declaration: {
+        declarations: [
+          {
+            init: {
+              callee: {
+                name: 'codegenNativeCommands',
+              },
+              arguments: [commandOptionsExpression],
+              typeArguments: {
+                params: [
+                  {
+                    type: 'GenericTypeAnnotation',
+                    id: {
+                      name: commandTypeName,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    };
+
+    expect(
+      getCommandTypeNameAndOptionsExpression(namedExportMock, flowParser),
+    ).toStrictEqual({
+      commandTypeName,
+      commandOptionsExpression,
+    });
+  });
+
+  describe('propertyNames', () => {
+    it('returns propertyNames with valid properties', () => {
+      const properties = [
+        {key: {name: 'testName'}},
+        {key: {name: 'testName2'}},
+      ];
+      const expected = ['testName', 'testName2'];
+      expect(propertyNames(properties)).toEqual(expected);
+    });
+
+    it('returns empty propertyNames with incorrect properties', () => {
+      const properties = [
+        {key: {invalid: 'testName'}},
+        {key: {invalid: 'testName2'}},
+      ];
+      expect(propertyNames(properties)).toEqual([]);
+    });
+  });
+});
+
+describe('getTypeResolutionStatus', () => {
+  it('returns type resolution status for a type declaration', () => {
+    const typeAnnotation = {
+      id: {
+        name: 'TypeAnnotationName',
+      },
+    };
+    expect(
+      getTypeResolutionStatus('alias', typeAnnotation, flowParser),
+    ).toEqual({
+      successful: true,
+      type: 'alias',
+      name: 'TypeAnnotationName',
+    });
+  });
+
+  it('returns type resolution status for an enum declaration', () => {
+    const typeAnnotation = {
+      id: {
+        name: 'TypeAnnotationName',
+      },
+    };
+    expect(getTypeResolutionStatus('enum', typeAnnotation, flowParser)).toEqual(
+      {
+        successful: true,
+        type: 'enum',
+        name: 'TypeAnnotationName',
+      },
+    );
+  });
+});
+
+describe('handleGenericTypeAnnotation', () => {
+  it('returns when TypeAnnotation is a type declaration', () => {
+    const typeAnnotation = {
+      id: {
+        name: 'TypeAnnotationName',
+      },
+    };
+    const resolvedTypeAnnotation = {
+      type: 'TypeAlias',
+      right: {
+        type: 'TypeAnnotation',
+      },
+    };
+    expect(
+      handleGenericTypeAnnotation(
+        typeAnnotation,
+        resolvedTypeAnnotation,
+        flowParser,
+      ),
+    ).toEqual({
+      typeAnnotation: {
+        type: 'TypeAnnotation',
+      },
+      typeResolutionStatus: {
+        successful: true,
+        type: 'alias',
+        name: 'TypeAnnotationName',
+      },
+    });
+  });
+
+  it('returns when TypeAnnotation is an enum declaration', () => {
+    const typeAnnotation = {
+      id: {
+        name: 'TypeAnnotationName',
+      },
+    };
+    const resolvedTypeAnnotation = {
+      type: 'EnumDeclaration',
+      body: {
+        type: 'TypeAnnotation',
+      },
+    };
+    expect(
+      handleGenericTypeAnnotation(
+        typeAnnotation,
+        resolvedTypeAnnotation,
+        flowParser,
+      ),
+    ).toEqual({
+      typeAnnotation: {
+        type: 'TypeAnnotation',
+      },
+      typeResolutionStatus: {
+        successful: true,
+        type: 'enum',
+        name: 'TypeAnnotationName',
+      },
+    });
+  });
+
+  it('throws when the non GenericTypeAnnotation is unsupported', () => {
+    const typeAnnotation = {
+      type: 'UnsupportedTypeAnnotation',
+      id: {
+        name: 'UnsupportedType',
+      },
+    };
+    const resolvedTypeAnnotation = {
+      type: 'UnsupportedTypeAnnotation',
+    };
+    expect(() =>
+      handleGenericTypeAnnotation(
+        typeAnnotation,
+        resolvedTypeAnnotation,
+        flowParser,
+      ),
+    ).toThrow(
+      new Error(
+        parser.genericTypeAnnotationErrorMessage(resolvedTypeAnnotation),
+      ),
+    );
   });
 });

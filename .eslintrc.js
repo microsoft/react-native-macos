@@ -21,10 +21,10 @@ module.exports = {
   plugins: ['@react-native/eslint-plugin-specs', 'lint'],
 
   overrides: [
-    // overriding the JS config from eslint-config-react-native-community config to ensure
+    // overriding the JS config from @react-native/eslint-config to ensure
     // that we use hermes-eslint for all js files
     {
-      files: ['*.js'],
+      files: ['*.js', '*.js.flow', '*.jsx'],
       parser: 'hermes-eslint',
       rules: {
         // These rules are not required with hermes-eslint
@@ -34,16 +34,14 @@ module.exports = {
         'no-undef': 0,
       },
     },
-
     {
-      files: ['Libraries/**/*.js'],
+      files: ['package.json'],
+      parser: 'jsonc-eslint-parser',
+    },
+    {
+      files: ['package.json'],
       rules: {
-        '@react-native/platform-colors': 2,
-        '@react-native/specs/react-native-modules': 2,
-        'lint/no-haste-imports': 2,
-        'lint/no-react-native-imports': 2,
-        'lint/require-extends-error': 2,
-        'lint/sort-imports': 1,
+        'lint/react-native-manifest': 2,
       },
     },
     {
@@ -56,10 +54,23 @@ module.exports = {
     },
     {
       files: [
+        'packages/react-native/Libraries/**/*.js',
+        'packages/react-native/src/**/*.js',
+      ],
+      rules: {
+        '@react-native/platform-colors': 2,
+        '@react-native/specs/react-native-modules': 2,
+        'lint/no-haste-imports': 2,
+        'lint/no-react-native-imports': 2,
+        'lint/require-extends-error': 2,
+      },
+    },
+    {
+      files: [
         '**/__fixtures__/**/*.js',
         '**/__mocks__/**/*.js',
         '**/__tests__/**/*.js',
-        'jest/**/*.js',
+        'packages/react-native/jest/**/*.js',
         'packages/rn-tester/**/*.js',
       ],
       globals: {
@@ -95,6 +106,7 @@ module.exports = {
       files: ['**/*.d.ts'],
       plugins: ['redundant-undefined'],
       rules: {
+        'no-dupe-class-members': 'off',
         'redundant-undefined/redundant-undefined': [
           'error',
           {followExactOptionalPropertyTypes: true},

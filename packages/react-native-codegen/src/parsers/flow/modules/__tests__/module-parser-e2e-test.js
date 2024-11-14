@@ -9,22 +9,21 @@
  */
 
 import type {
-  NativeModuleReturnTypeAnnotation,
   NativeModuleBaseTypeAnnotation,
-  NativeModuleSchema,
   NativeModuleParamTypeAnnotation,
+  NativeModuleReturnTypeAnnotation,
+  NativeModuleSchema,
 } from '../../../../CodegenSchema';
 
-const invariant = require('invariant');
-
-const {unwrapNullable} = require('../../../parsers-commons');
 const {
+  MissingTypeParameterGenericParserError,
+  UnnamedFunctionParamParserError,
   UnsupportedGenericParserError,
   UnsupportedTypeAnnotationParserError,
-  UnnamedFunctionParamParserError,
-  MissingTypeParameterGenericParserError,
 } = require('../../../errors');
+const {unwrapNullable} = require('../../../parsers-commons');
 const {FlowParser} = require('../../parser');
+const invariant = require('invariant');
 
 const flowParser = new FlowParser();
 
@@ -85,7 +84,7 @@ describe('Flow Module Parser', () => {
           import type {TurboModule} from 'RCTExport';
           import * as TurboModuleRegistry from 'TurboModuleRegistry';
           export interface Spec extends TurboModule {
-            +useArg(arg: any): void;
+            useArg(arg: any): void;
           }
           export default TurboModuleRegistry.get<Spec>('Foo');
         `);
@@ -99,7 +98,7 @@ describe('Flow Module Parser', () => {
           import type {TurboModule} from 'RCTExport';
           import * as TurboModuleRegistry from 'TurboModuleRegistry';
           export interface Spec extends TurboModule {
-            +useArg(boolean): void;
+            useArg(boolean): void;
           }
           export default TurboModuleRegistry.get<Spec>('Foo');
         `);
@@ -146,15 +145,14 @@ describe('Flow Module Parser', () => {
           ${TYPE_ALIAS_DECLARATIONS}
 
           export interface Spec extends TurboModule {
-            +useArg(${annotateArg(paramName, paramType)}): void;
+            useArg(${annotateArg(paramName, paramType)}): void;
           }
           export default TurboModuleRegistry.get<Spec>('Foo');
         `);
 
-        expect(module.spec.properties[0]).not.toBe(null);
-        const param = unwrapNullable(
-          module.spec.properties[0].typeAnnotation,
-        )[0].params[0];
+        expect(module.spec.methods[0]).not.toBe(null);
+        const param = unwrapNullable(module.spec.methods[0].typeAnnotation)[0]
+          .params[0];
         expect(param).not.toBe(null);
         expect(param.name).toBe(paramName);
         expect(param.optional).toBe(optional);
@@ -231,8 +229,13 @@ describe('Flow Module Parser', () => {
               expect(paramTypeAnnotation.type).toBe('ArrayTypeAnnotation');
               invariant(paramTypeAnnotation.type === 'ArrayTypeAnnotation', '');
 
-              expect(paramTypeAnnotation.elementType).not.toBe(null);
-              invariant(paramTypeAnnotation.elementType != null, '');
+              expect(paramTypeAnnotation.elementType.type).not.toEqual(
+                'AnyTypeAnnotation',
+              );
+              invariant(
+                paramTypeAnnotation.elementType.type !== 'AnyTypeAnnotation',
+                '',
+              );
               const [elementType, isElementTypeNullable] =
                 unwrapNullable<NativeModuleBaseTypeAnnotation>(
                   paramTypeAnnotation.elementType,
@@ -357,14 +360,14 @@ describe('Flow Module Parser', () => {
               type AnimalPointer = Animal;
 
               export interface Spec extends TurboModule {
-                +useArg(${annotateArg('arg', 'AnimalPointer')}): void;
+                useArg(${annotateArg('arg', 'AnimalPointer')}): void;
               }
               export default TurboModuleRegistry.get<Spec>('Foo');
             `);
 
-            expect(module.spec.properties[0]).not.toBe(null);
+            expect(module.spec.methods[0]).not.toBe(null);
             const param = unwrapNullable(
-              module.spec.properties[0].typeAnnotation,
+              module.spec.methods[0].typeAnnotation,
             )[0].params[0];
             expect(param.name).toBe('arg');
             expect(param.optional).toBe(optional);
@@ -534,8 +537,13 @@ describe('Flow Module Parser', () => {
 
                     const {elementType: nullableElementType} =
                       property.typeAnnotation;
-                    expect(nullableElementType).not.toBe(null);
-                    invariant(nullableElementType != null, '');
+                    expect(nullableElementType.type).not.toEqual(
+                      'AnyTypeAnnotation',
+                    );
+                    invariant(
+                      nullableElementType.type !== 'AnyTypeAnnotation',
+                      '',
+                    );
 
                     const [elementType, isElementTypeNullable] =
                       unwrapNullable<NativeModuleBaseTypeAnnotation>(
@@ -694,15 +702,15 @@ describe('Flow Module Parser', () => {
         import type {TurboModule} from 'RCTExport';
         import * as TurboModuleRegistry from 'TurboModuleRegistry';
         export interface Spec extends TurboModule {
-          +useArg(): void;
+          useArg(): void;
         }
         export default TurboModuleRegistry.get<Spec>('Foo');
       `);
 
-      expect(module.spec.properties[0]).not.toBe(null);
+      expect(module.spec.methods[0]).not.toBe(null);
 
       const [functionTypeAnnotation, isFunctionTypeAnnotationNullable] =
-        unwrapNullable(module.spec.properties[0].typeAnnotation);
+        unwrapNullable(module.spec.methods[0].typeAnnotation);
       expect(isFunctionTypeAnnotationNullable).toBe(false);
 
       const [returnTypeAnnotation, isReturnTypeAnnotationNullable] =
@@ -728,14 +736,14 @@ describe('Flow Module Parser', () => {
           ${TYPE_ALIAS_DECLARATIONS}
 
           export interface Spec extends TurboModule {
-            +useArg(): ${annotateRet(flowType)};
+            useArg(): ${annotateRet(flowType)};
           }
           export default TurboModuleRegistry.get<Spec>('Foo');
         `);
 
-        expect(module.spec.properties[0]).not.toBe(null);
+        expect(module.spec.methods[0]).not.toBe(null);
         const [functionTypeAnnotation, isFunctionTypeAnnotationNullable] =
-          unwrapNullable(module.spec.properties[0].typeAnnotation);
+          unwrapNullable(module.spec.methods[0].typeAnnotation);
         expect(isFunctionTypeAnnotationNullable).toBe(false);
 
         const [returnTypeAnnotation, isReturnTypeAnnotationNullable] =
@@ -804,8 +812,8 @@ describe('Flow Module Parser', () => {
               const arrayTypeAnnotation = returnTypeAnnotation;
 
               const {elementType} = arrayTypeAnnotation;
-              expect(elementType).not.toBe(null);
-              invariant(elementType != null, '');
+              expect(elementType.type).not.toEqual('AnyTypeAnnotation');
+              invariant(elementType.type !== 'AnyTypeAnnotation', '');
 
               const [elementTypeAnnotation, isElementTypeAnnotation] =
                 unwrapNullable<NativeModuleBaseTypeAnnotation>(elementType);
@@ -1076,8 +1084,13 @@ describe('Flow Module Parser', () => {
 
                       const {elementType: nullableElementType} =
                         property.typeAnnotation;
-                      expect(nullableElementType).not.toBe(null);
-                      invariant(nullableElementType != null, '');
+                      expect(nullableElementType.type).not.toEqual(
+                        'AnyTypeAnnotation',
+                      );
+                      invariant(
+                        nullableElementType.type !== 'AnyTypeAnnotation',
+                        '',
+                      );
 
                       const [elementType, isElementTypeNullable] =
                         unwrapNullable<NativeModuleBaseTypeAnnotation>(

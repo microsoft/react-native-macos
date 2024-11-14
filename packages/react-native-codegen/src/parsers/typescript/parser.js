@@ -11,40 +11,64 @@
 'use strict';
 
 import type {
-  UnionTypeAnnotationMemberType,
-  SchemaType,
+  ExtendsPropsShape,
   NamedShape,
-  Nullable,
-  NativeModuleParamTypeAnnotation,
-  NativeModuleEnumMembers,
-  NativeModuleEnumMemberType,
   NativeModuleAliasMap,
   NativeModuleEnumMap,
+  NativeModuleEnumMembers,
+  NativeModuleEnumMemberType,
+  NativeModuleParamTypeAnnotation,
+  Nullable,
+  PropTypeAnnotation,
+  SchemaType,
+  UnionTypeAnnotationMemberType,
 } from '../../CodegenSchema';
 import type {ParserType} from '../errors';
-import type {Parser} from '../parser';
-import type {ParserErrorCapturer, TypeDeclarationMap} from '../utils';
-
-const {typeScriptTranslateTypeAnnotation} = require('./modules');
-
-// $FlowFixMe[untyped-import] Use flow-types for @babel/parser
-const babelParser = require('@babel/parser');
-
-const {buildSchema} = require('../parsers-commons');
-const {Visitor} = require('../parsers-primitives');
-const {buildComponentSchema} = require('./components');
-const {wrapComponentSchema} = require('../schema.js');
-const {buildModuleSchema} = require('../parsers-commons.js');
-const {resolveTypeAnnotation} = require('./utils');
-
-const fs = require('fs');
+import type {
+  GetSchemaInfoFN,
+  GetTypeAnnotationFN,
+  Parser,
+  ResolveTypeAnnotationFN,
+} from '../parser';
+import type {
+  ParserErrorCapturer,
+  PropAST,
+  TypeDeclarationMap,
+  TypeResolutionStatus,
+} from '../utils';
 
 const {
   UnsupportedObjectPropertyTypeAnnotationParserError,
 } = require('../errors');
+const {
+  buildModuleSchema,
+  buildPropSchema,
+  buildSchema,
+  extendsForProp,
+  handleGenericTypeAnnotation,
+} = require('../parsers-commons.js');
+const {Visitor} = require('../parsers-primitives');
+const {wrapComponentSchema} = require('../schema.js');
+const {buildComponentSchema} = require('./components');
+const {
+  flattenProperties,
+  getSchemaInfo,
+  getTypeAnnotation,
+} = require('./components/componentsUtils');
+const {typeScriptTranslateTypeAnnotation} = require('./modules');
+const {parseTopLevelType} = require('./parseTopLevelType');
+// $FlowFixMe[untyped-import] Use flow-types for @babel/parser
+const babelParser = require('@babel/parser');
+const fs = require('fs');
+const invariant = require('invariant');
 
 class TypeScriptParser implements Parser {
   typeParameterInstantiation: string = 'TSTypeParameterInstantiation';
+  typeAlias: string = 'TSTypeAliasDeclaration';
+  enumDeclaration: string = 'TSEnumDeclaration';
+  interfaceDeclaration: string = 'TSInterfaceDeclaration';
+  nullLiteralTypeAnnotation: string = 'TSNullKeyword';
+  undefinedLiteralTypeAnnotation: string = 'TSUndefinedKeyword';
 
   isProperty(property: $FlowFixMe): boolean {
     return property.type === 'TSPropertySignature';
@@ -66,8 +90,8 @@ class TypeScriptParser implements Parser {
     return 'TypeScript';
   }
 
-  nameForGenericTypeAnnotation(typeAnnotation: $FlowFixMe): string {
-    return typeAnnotation.typeName.name;
+  getTypeAnnotationName(typeAnnotation: $FlowFixMe): string {
+    return typeAnnotation?.typeName?.name;
   }
 
   checkIfInvalidModule(typeArguments: $FlowFixMe): boolean {
@@ -108,7 +132,6 @@ class TypeScriptParser implements Parser {
       buildModuleSchema,
       Visitor,
       this,
-      resolveTypeAnnotation,
       typeScriptTranslateTypeAnnotation,
     );
   }
@@ -119,7 +142,7 @@ class TypeScriptParser implements Parser {
     return this.parseString(contents, 'path/NativeSampleTurboModule.ts');
   }
 
-  getAst(contents: string): $FlowFixMe {
+  getAst(contents: string, filename?: ?string): $FlowFixMe {
     return babelParser.parse(contents, {
       sourceType: 'module',
       plugins: ['typescript'],
@@ -210,6 +233,10 @@ class TypeScriptParser implements Parser {
     );
   }
 
+  isGenericTypeAnnotation(type: $FlowFixMe): boolean {
+    return type === 'TSTypeReference';
+  }
+
   extractAnnotatedElement(
     typeAnnotation: $FlowFixMe,
     types: TypeDeclarationMap,
@@ -298,6 +325,247 @@ class TypeScriptParser implements Parser {
       propsTypeName: typeArgumentParams[0].typeName.name,
       componentName: funcArgumentParams[0].value,
     };
+  }
+
+  getAnnotatedElementProperties(annotatedElement: $FlowFixMe): $FlowFixMe {
+    return annotatedElement.typeAnnotation.members;
+  }
+
+  bodyProperties(typeAlias: TypeDeclarationMap): $ReadOnlyArray<$FlowFixMe> {
+    return typeAlias.body.body;
+  }
+
+  convertKeywordToTypeAnnotation(keyword: string): string {
+    switch (keyword) {
+      case 'TSArrayType':
+        return 'ArrayTypeAnnotation';
+      case 'TSBooleanKeyword':
+        return 'BooleanTypeAnnotation';
+      case 'TSNumberKeyword':
+        return 'NumberTypeAnnotation';
+      case 'TSVoidKeyword':
+        return 'VoidTypeAnnotation';
+      case 'TSStringKeyword':
+        return 'StringTypeAnnotation';
+      case 'TSTypeLiteral':
+        return 'ObjectTypeAnnotation';
+      case 'TSUnknownKeyword':
+        return 'MixedTypeAnnotation';
+    }
+
+    return keyword;
+  }
+
+  argumentForProp(prop: PropAST): $FlowFixMe {
+    return prop.expression;
+  }
+
+  nameForArgument(prop: PropAST): $FlowFixMe {
+    return prop.expression.name;
+  }
+
+  isOptionalProperty(property: $FlowFixMe): boolean {
+    return property.optional || false;
+  }
+
+  getGetSchemaInfoFN(): GetSchemaInfoFN {
+    return getSchemaInfo;
+  }
+
+  getTypeAnnotationFromProperty(property: PropAST): $FlowFixMe {
+    return property.typeAnnotation.typeAnnotation;
+  }
+
+  getGetTypeAnnotationFN(): GetTypeAnnotationFN {
+    return getTypeAnnotation;
+  }
+
+  getResolvedTypeAnnotation(
+    // TODO(T108222691): Use flow-types for @babel/parser
+    typeAnnotation: $FlowFixMe,
+    types: TypeDeclarationMap,
+    parser: Parser,
+  ): {
+    nullable: boolean,
+    typeAnnotation: $FlowFixMe,
+    typeResolutionStatus: TypeResolutionStatus,
+  } {
+    invariant(
+      typeAnnotation != null,
+      'resolveTypeAnnotation(): typeAnnotation cannot be null',
+    );
+
+    let node =
+      typeAnnotation.type === 'TSTypeAnnotation'
+        ? typeAnnotation.typeAnnotation
+        : typeAnnotation;
+    let nullable = false;
+    let typeResolutionStatus: TypeResolutionStatus = {
+      successful: false,
+    };
+
+    for (;;) {
+      const topLevelType = parseTopLevelType(node);
+      nullable = nullable || topLevelType.optional;
+      node = topLevelType.type;
+
+      if (node.type !== 'TSTypeReference') {
+        break;
+      }
+
+      const typeAnnotationName = this.getTypeAnnotationName(node);
+      const resolvedTypeAnnotation = types[typeAnnotationName];
+      if (resolvedTypeAnnotation == null) {
+        break;
+      }
+
+      const {typeAnnotation: typeAnnotationNode, typeResolutionStatus: status} =
+        handleGenericTypeAnnotation(node, resolvedTypeAnnotation, this);
+      typeResolutionStatus = status;
+      node = typeAnnotationNode;
+    }
+
+    return {
+      nullable: nullable,
+      typeAnnotation: node,
+      typeResolutionStatus,
+    };
+  }
+
+  getResolveTypeAnnotationFN(): ResolveTypeAnnotationFN {
+    return (
+      typeAnnotation: $FlowFixMe,
+      types: TypeDeclarationMap,
+      parser: Parser,
+    ) => {
+      return this.getResolvedTypeAnnotation(typeAnnotation, types, parser);
+    };
+  }
+
+  isEvent(typeAnnotation: $FlowFixMe): boolean {
+    if (typeAnnotation.type !== 'TSTypeReference') {
+      return false;
+    }
+    const eventNames = new Set(['BubblingEventHandler', 'DirectEventHandler']);
+    return eventNames.has(this.getTypeAnnotationName(typeAnnotation));
+  }
+
+  isProp(name: string, typeAnnotation: $FlowFixMe): boolean {
+    if (typeAnnotation.type !== 'TSTypeReference') {
+      return true;
+    }
+    const isStyle =
+      name === 'style' &&
+      typeAnnotation.type === 'GenericTypeAnnotation' &&
+      this.getTypeAnnotationName(typeAnnotation) === 'ViewStyleProp';
+    return !isStyle;
+  }
+
+  getProps(
+    typeDefinition: $ReadOnlyArray<PropAST>,
+    types: TypeDeclarationMap,
+  ): {
+    props: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
+    extendsProps: $ReadOnlyArray<ExtendsPropsShape>,
+  } {
+    const extendsProps: Array<ExtendsPropsShape> = [];
+    const componentPropAsts: Array<PropAST> = [];
+    const remaining: Array<PropAST> = [];
+
+    for (const prop of typeDefinition) {
+      // find extends
+      if (prop.type === 'TSExpressionWithTypeArguments') {
+        const extend = extendsForProp(prop, types, this);
+        if (extend) {
+          extendsProps.push(extend);
+          continue;
+        }
+      }
+
+      remaining.push(prop);
+    }
+
+    // find events and props
+    for (const prop of flattenProperties(remaining, types, this)) {
+      const topLevelType = parseTopLevelType(
+        prop.typeAnnotation.typeAnnotation,
+        types,
+      );
+
+      if (
+        prop.type === 'TSPropertySignature' &&
+        !this.isEvent(topLevelType.type) &&
+        this.isProp(prop.key.name, prop)
+      ) {
+        componentPropAsts.push(prop);
+      }
+    }
+
+    return {
+      props: componentPropAsts
+        .map(property => buildPropSchema(property, types, this))
+        .filter(Boolean),
+      extendsProps,
+    };
+  }
+
+  getProperties(typeName: string, types: TypeDeclarationMap): $FlowFixMe {
+    const alias = types[typeName];
+    if (!alias) {
+      throw new Error(
+        `Failed to find definition for "${typeName}", please check that you have a valid codegen typescript file`,
+      );
+    }
+    const aliasKind =
+      alias.type === 'TSInterfaceDeclaration' ? 'interface' : 'type';
+
+    try {
+      if (aliasKind === 'interface') {
+        return [...(alias.extends ?? []), ...alias.body.body];
+      }
+
+      return (
+        alias.typeAnnotation.members ||
+        alias.typeAnnotation.typeParameters.params[0].members ||
+        alias.typeAnnotation.typeParameters.params
+      );
+    } catch (e) {
+      throw new Error(
+        `Failed to find ${aliasKind} definition for "${typeName}", please check that you have a valid codegen typescript file`,
+      );
+    }
+  }
+
+  nextNodeForTypeAlias(typeAnnotation: $FlowFixMe): $FlowFixMe {
+    return typeAnnotation.typeAnnotation;
+  }
+
+  nextNodeForEnum(typeAnnotation: $FlowFixMe): $FlowFixMe {
+    return typeAnnotation;
+  }
+
+  genericTypeAnnotationErrorMessage(typeAnnotation: $FlowFixMe): string {
+    return `A non GenericTypeAnnotation must be a type declaration ('${this.typeAlias}'), an interface ('${this.interfaceDeclaration}'), or enum ('${this.enumDeclaration}'). Instead, got the unsupported ${typeAnnotation.type}.`;
+  }
+
+  extractTypeFromTypeAnnotation(typeAnnotation: $FlowFixMe): string {
+    return typeAnnotation.type === 'TSTypeReference'
+      ? typeAnnotation.typeName.name
+      : typeAnnotation.type;
+  }
+
+  getObjectProperties(typeAnnotation: $FlowFixMe): $FlowFixMe {
+    return typeAnnotation.members;
+  }
+
+  getLiteralValue(option: $FlowFixMe): $FlowFixMe {
+    return option.literal.value;
+  }
+
+  getPaperTopLevelNameDeprecated(typeAnnotation: $FlowFixMe): $FlowFixMe {
+    return typeAnnotation.typeParameters.params.length > 1
+      ? typeAnnotation.typeParameters.params[1].literal.value
+      : null;
   }
 }
 

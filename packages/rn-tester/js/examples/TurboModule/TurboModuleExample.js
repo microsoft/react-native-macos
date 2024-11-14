@@ -10,8 +10,8 @@
 
 'use strict';
 
-const React = require('react');
 const SampleTurboModuleExample = require('./SampleTurboModuleExample');
+const React = require('react');
 
 exports.displayName = (undefined: ?string);
 exports.title = 'TurboModule';
@@ -20,7 +20,7 @@ exports.description = 'Usage of TurboModule';
 exports.examples = [
   {
     title: 'SampleTurboModule',
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <SampleTurboModuleExample />;
     },
   },

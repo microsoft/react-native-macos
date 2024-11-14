@@ -11,40 +11,66 @@
 'use strict';
 
 import type {
-  UnionTypeAnnotationMemberType,
-  SchemaType,
+  ExtendsPropsShape,
   NamedShape,
-  Nullable,
-  NativeModuleParamTypeAnnotation,
-  NativeModuleEnumMemberType,
-  NativeModuleEnumMembers,
   NativeModuleAliasMap,
   NativeModuleEnumMap,
+  NativeModuleEnumMembers,
+  NativeModuleEnumMemberType,
+  NativeModuleParamTypeAnnotation,
+  Nullable,
+  PropTypeAnnotation,
+  SchemaType,
+  UnionTypeAnnotationMemberType,
 } from '../../CodegenSchema';
 import type {ParserType} from '../errors';
-import type {Parser} from '../parser';
-import type {ParserErrorCapturer, TypeDeclarationMap} from '../utils';
-
-const {flowTranslateTypeAnnotation} = require('./modules');
-
-// $FlowFixMe[untyped-import] there's no flowtype flow-parser
-const flowParser = require('flow-parser');
-
-const {buildSchema} = require('../parsers-commons');
-const {Visitor} = require('../parsers-primitives');
-const {buildComponentSchema} = require('./components');
-const {wrapComponentSchema} = require('../schema.js');
-const {buildModuleSchema} = require('../parsers-commons.js');
-const {resolveTypeAnnotation} = require('./utils');
-
-const fs = require('fs');
+import type {
+  GetSchemaInfoFN,
+  GetTypeAnnotationFN,
+  Parser,
+  ResolveTypeAnnotationFN,
+} from '../parser';
+import type {
+  ParserErrorCapturer,
+  PropAST,
+  TypeDeclarationMap,
+  TypeResolutionStatus,
+} from '../utils';
 
 const {
   UnsupportedObjectPropertyTypeAnnotationParserError,
 } = require('../errors');
+const {
+  buildModuleSchema,
+  buildPropSchema,
+  buildSchema,
+  handleGenericTypeAnnotation,
+} = require('../parsers-commons');
+const {Visitor} = require('../parsers-primitives');
+const {wrapComponentSchema} = require('../schema.js');
+const {buildComponentSchema} = require('./components');
+const {
+  flattenProperties,
+  getSchemaInfo,
+  getTypeAnnotation,
+} = require('./components/componentsUtils');
+const {flowTranslateTypeAnnotation} = require('./modules');
+const {parseFlowAndThrowErrors} = require('./parseFlowAndThrowErrors');
+const fs = require('fs');
+const invariant = require('invariant');
+
+type ExtendsForProp = null | {
+  type: 'ReactNativeBuiltInType',
+  knownTypeName: 'ReactNativeCoreViewProps',
+};
 
 class FlowParser implements Parser {
   typeParameterInstantiation: string = 'TypeParameterInstantiation';
+  typeAlias: string = 'TypeAlias';
+  enumDeclaration: string = 'EnumDeclaration';
+  interfaceDeclaration: string = 'InterfaceDeclaration';
+  nullLiteralTypeAnnotation: string = 'NullLiteralTypeAnnotation';
+  undefinedLiteralTypeAnnotation: string = 'VoidLiteralTypeAnnotation';
 
   isProperty(property: $FlowFixMe): boolean {
     return property.type === 'ObjectTypeProperty';
@@ -66,8 +92,8 @@ class FlowParser implements Parser {
     return 'Flow';
   }
 
-  nameForGenericTypeAnnotation(typeAnnotation: $FlowFixMe): string {
-    return typeAnnotation.id.name;
+  getTypeAnnotationName(typeAnnotation: $FlowFixMe): string {
+    return typeAnnotation?.id?.name;
   }
 
   checkIfInvalidModule(typeArguments: $FlowFixMe): boolean {
@@ -106,7 +132,6 @@ class FlowParser implements Parser {
       buildModuleSchema,
       Visitor,
       this,
-      resolveTypeAnnotation,
       flowTranslateTypeAnnotation,
     );
   }
@@ -117,10 +142,8 @@ class FlowParser implements Parser {
     return this.parseString(contents, 'path/NativeSampleTurboModule.js');
   }
 
-  getAst(contents: string): $FlowFixMe {
-    return flowParser.parse(contents, {
-      enums: true,
-    });
+  getAst(contents: string, filename?: ?string): $FlowFixMe {
+    return parseFlowAndThrowErrors(contents, {filename});
   }
 
   getFunctionTypeAnnotationParameters(
@@ -212,6 +235,10 @@ class FlowParser implements Parser {
       node.extends[0].type === 'InterfaceExtends' &&
       node.extends[0].id.name === 'TurboModule'
     );
+  }
+
+  isGenericTypeAnnotation(type: $FlowFixMe): boolean {
+    return type === 'GenericTypeAnnotation';
   }
 
   extractAnnotatedElement(
@@ -312,6 +339,210 @@ class FlowParser implements Parser {
       propsTypeName: typeArgumentParams[0].id.name,
       componentName: funcArgumentParams[0].value,
     };
+  }
+
+  getAnnotatedElementProperties(annotatedElement: $FlowFixMe): $FlowFixMe {
+    return annotatedElement.right.properties;
+  }
+
+  bodyProperties(typeAlias: $FlowFixMe): $ReadOnlyArray<$FlowFixMe> {
+    return typeAlias.body.properties;
+  }
+
+  convertKeywordToTypeAnnotation(keyword: string): string {
+    return keyword;
+  }
+
+  argumentForProp(prop: PropAST): $FlowFixMe {
+    return prop.argument;
+  }
+
+  nameForArgument(prop: PropAST): $FlowFixMe {
+    return prop.argument.id.name;
+  }
+
+  isOptionalProperty(property: $FlowFixMe): boolean {
+    return (
+      property.value.type === 'NullableTypeAnnotation' || property.optional
+    );
+  }
+
+  getGetSchemaInfoFN(): GetSchemaInfoFN {
+    return getSchemaInfo;
+  }
+
+  getTypeAnnotationFromProperty(property: PropAST): $FlowFixMe {
+    return property.value.type === 'NullableTypeAnnotation'
+      ? property.value.typeAnnotation
+      : property.value;
+  }
+
+  getGetTypeAnnotationFN(): GetTypeAnnotationFN {
+    return getTypeAnnotation;
+  }
+
+  getResolvedTypeAnnotation(
+    typeAnnotation: $FlowFixMe,
+    types: TypeDeclarationMap,
+    parser: Parser,
+  ): {
+    nullable: boolean,
+    typeAnnotation: $FlowFixMe,
+    typeResolutionStatus: TypeResolutionStatus,
+  } {
+    invariant(
+      typeAnnotation != null,
+      'resolveTypeAnnotation(): typeAnnotation cannot be null',
+    );
+
+    let node = typeAnnotation;
+    let nullable = false;
+    let typeResolutionStatus: TypeResolutionStatus = {
+      successful: false,
+    };
+
+    for (;;) {
+      if (node.type === 'NullableTypeAnnotation') {
+        nullable = true;
+        node = node.typeAnnotation;
+        continue;
+      }
+
+      if (node.type !== 'GenericTypeAnnotation') {
+        break;
+      }
+
+      const typeAnnotationName = this.getTypeAnnotationName(node);
+      const resolvedTypeAnnotation = types[typeAnnotationName];
+      if (resolvedTypeAnnotation == null) {
+        break;
+      }
+
+      const {typeAnnotation: typeAnnotationNode, typeResolutionStatus: status} =
+        handleGenericTypeAnnotation(node, resolvedTypeAnnotation, this);
+      typeResolutionStatus = status;
+      node = typeAnnotationNode;
+    }
+
+    return {
+      nullable: nullable,
+      typeAnnotation: node,
+      typeResolutionStatus,
+    };
+  }
+
+  getResolveTypeAnnotationFN(): ResolveTypeAnnotationFN {
+    return (typeAnnotation, types, parser) =>
+      this.getResolvedTypeAnnotation(typeAnnotation, types, parser);
+  }
+  extendsForProp(
+    prop: PropAST,
+    types: TypeDeclarationMap,
+    parser: Parser,
+  ): ExtendsForProp {
+    const argument = this.argumentForProp(prop);
+    if (!argument) {
+      console.log('null', prop);
+    }
+    const name = parser.nameForArgument(prop);
+
+    if (types[name] != null) {
+      // This type is locally defined in the file
+      return null;
+    }
+
+    switch (name) {
+      case 'ViewProps':
+        return {
+          type: 'ReactNativeBuiltInType',
+          knownTypeName: 'ReactNativeCoreViewProps',
+        };
+      default: {
+        throw new Error(`Unable to handle prop spread: ${name}`);
+      }
+    }
+  }
+
+  removeKnownExtends(
+    typeDefinition: $ReadOnlyArray<PropAST>,
+    types: TypeDeclarationMap,
+  ): $ReadOnlyArray<PropAST> {
+    return typeDefinition.filter(
+      prop =>
+        prop.type !== 'ObjectTypeSpreadProperty' ||
+        this.extendsForProp(prop, types, this) === null,
+    );
+  }
+
+  getExtendsProps(
+    typeDefinition: $ReadOnlyArray<PropAST>,
+    types: TypeDeclarationMap,
+  ): $ReadOnlyArray<ExtendsPropsShape> {
+    return typeDefinition
+      .filter(prop => prop.type === 'ObjectTypeSpreadProperty')
+      .map(prop => this.extendsForProp(prop, types, this))
+      .filter(Boolean);
+  }
+
+  getProps(
+    typeDefinition: $ReadOnlyArray<PropAST>,
+    types: TypeDeclarationMap,
+  ): {
+    props: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
+    extendsProps: $ReadOnlyArray<ExtendsPropsShape>,
+  } {
+    const nonExtendsProps = this.removeKnownExtends(typeDefinition, types);
+    const props = flattenProperties(nonExtendsProps, types, this)
+      .map(property => buildPropSchema(property, types, this))
+      .filter(Boolean);
+
+    return {
+      props,
+      extendsProps: this.getExtendsProps(typeDefinition, types),
+    };
+  }
+
+  getProperties(typeName: string, types: TypeDeclarationMap): $FlowFixMe {
+    const typeAlias = types[typeName];
+    try {
+      return typeAlias.right.typeParameters.params[0].properties;
+    } catch (e) {
+      throw new Error(
+        `Failed to find type definition for "${typeName}", please check that you have a valid codegen flow file`,
+      );
+    }
+  }
+
+  nextNodeForTypeAlias(typeAnnotation: $FlowFixMe): $FlowFixMe {
+    return typeAnnotation.right;
+  }
+
+  nextNodeForEnum(typeAnnotation: $FlowFixMe): $FlowFixMe {
+    return typeAnnotation.body;
+  }
+
+  genericTypeAnnotationErrorMessage(typeAnnotation: $FlowFixMe): string {
+    return `A non GenericTypeAnnotation must be a type declaration ('${this.typeAlias}') or enum ('${this.enumDeclaration}'). Instead, got the unsupported ${typeAnnotation.type}.`;
+  }
+
+  extractTypeFromTypeAnnotation(typeAnnotation: $FlowFixMe): string {
+    return typeAnnotation.type === 'GenericTypeAnnotation'
+      ? typeAnnotation.id.name
+      : typeAnnotation.type;
+  }
+
+  getObjectProperties(typeAnnotation: $FlowFixMe): $FlowFixMe {
+    return typeAnnotation.properties;
+  }
+
+  getLiteralValue(option: $FlowFixMe): $FlowFixMe {
+    return option.value;
+  }
+
+  getPaperTopLevelNameDeprecated(typeAnnotation: $FlowFixMe): $FlowFixMe {
+    return typeAnnotation.typeParameters.params.length > 1
+      ? typeAnnotation.typeParameters.params[1].value
+      : null;
   }
 }
 

@@ -123,7 +123,7 @@ const EVENTS_WITH_PAPER_NAME: SchemaType = {
               },
             },
             {
-              name: 'onDire tChange',
+              name: 'onDirectChange',
               paperTopLevelNameDeprecated: 'paperDirectChange',
               optional: true,
               bubblingType: 'direct',
@@ -872,6 +872,38 @@ const OBJECT_PROPS: SchemaType = {
                     },
                   },
                   {
+                    name: 'stringUserDefaultProp',
+                    optional: true,
+                    typeAnnotation: {
+                      type: 'StringTypeAnnotation',
+                      default: 'user_default',
+                    },
+                  },
+                  {
+                    name: 'booleanUserDefaultProp',
+                    optional: true,
+                    typeAnnotation: {
+                      type: 'BooleanTypeAnnotation',
+                      default: true,
+                    },
+                  },
+                  {
+                    name: 'floatUserDefaultProp',
+                    optional: true,
+                    typeAnnotation: {
+                      type: 'FloatTypeAnnotation',
+                      default: 3.14,
+                    },
+                  },
+                  {
+                    name: 'intUserDefaultProp',
+                    optional: true,
+                    typeAnnotation: {
+                      type: 'Int32TypeAnnotation',
+                      default: 9999,
+                    },
+                  },
+                  {
                     name: 'stringEnumProp',
                     optional: true,
                     typeAnnotation: {
@@ -1123,6 +1155,35 @@ const INT32_ENUM_PROP: SchemaType = {
   },
 };
 
+const MIXED_PROP: SchemaType = {
+  modules: {
+    CustomView: {
+      type: 'Component',
+      components: {
+        MixedPropNativeComponent: {
+          extendsProps: [
+            {
+              type: 'ReactNativeBuiltInType',
+              knownTypeName: 'ReactNativeCoreViewProps',
+            },
+          ],
+          events: [],
+          props: [
+            {
+              name: 'mixedProp',
+              optional: false,
+              typeAnnotation: {
+                type: 'MixedTypeAnnotation',
+              },
+            },
+          ],
+          commands: [],
+        },
+      },
+    },
+  },
+};
+
 const EVENT_PROPS: SchemaType = {
   modules: {
     Switch: {
@@ -1178,6 +1239,99 @@ const EVENT_PROPS: SchemaType = {
               },
             },
             {
+              name: 'onArrayEventType',
+              optional: true,
+              bubblingType: 'bubble',
+              typeAnnotation: {
+                type: 'EventTypeAnnotation',
+                argument: {
+                  type: 'ObjectTypeAnnotation',
+                  properties: [
+                    {
+                      name: 'bool_array_event_prop',
+                      optional: false,
+                      typeAnnotation: {
+                        type: 'ArrayTypeAnnotation',
+                        elementType: {
+                          type: 'BooleanTypeAnnotation',
+                        },
+                      },
+                    },
+                    {
+                      name: 'string_enum_event_prop',
+                      optional: false,
+                      typeAnnotation: {
+                        type: 'ArrayTypeAnnotation',
+                        elementType: {
+                          type: 'StringEnumTypeAnnotation',
+                          options: ['YES', 'NO'],
+                        },
+                      },
+                    },
+                    {
+                      name: 'array_array_event_prop',
+                      optional: false,
+                      typeAnnotation: {
+                        type: 'ArrayTypeAnnotation',
+                        elementType: {
+                          type: 'ArrayTypeAnnotation',
+                          elementType: {
+                            type: 'StringTypeAnnotation',
+                          },
+                        },
+                      },
+                    },
+                    {
+                      name: 'array_object_event_prop',
+                      optional: false,
+                      typeAnnotation: {
+                        type: 'ArrayTypeAnnotation',
+                        elementType: {
+                          type: 'ObjectTypeAnnotation',
+                          properties: [
+                            {
+                              name: 'lat',
+                              optional: false,
+                              typeAnnotation: {
+                                type: 'DoubleTypeAnnotation',
+                              },
+                            },
+                            {
+                              name: 'lon',
+                              optional: false,
+                              typeAnnotation: {
+                                type: 'DoubleTypeAnnotation',
+                              },
+                            },
+                            {
+                              name: 'names',
+                              optional: false,
+                              typeAnnotation: {
+                                type: 'ArrayTypeAnnotation',
+                                elementType: {
+                                  type: 'StringTypeAnnotation',
+                                },
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    },
+                    {
+                      name: 'array_mixed_event_prop',
+                      optional: false,
+                      typeAnnotation: {
+                        type: 'ArrayTypeAnnotation',
+                        elementType: {
+                          type: 'MixedTypeAnnotation',
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            {
               name: 'onEventDirect',
               optional: true,
               bubblingType: 'direct',
@@ -1224,6 +1378,26 @@ const EVENT_PROPS: SchemaType = {
               bubblingType: 'bubble',
               typeAnnotation: {
                 type: 'EventTypeAnnotation',
+              },
+            },
+            {
+              name: 'onEventWithMixedPropAttribute',
+              optional: true,
+              bubblingType: 'direct',
+              typeAnnotation: {
+                type: 'EventTypeAnnotation',
+                argument: {
+                  type: 'ObjectTypeAnnotation',
+                  properties: [
+                    {
+                      name: 'value',
+                      optional: false,
+                      typeAnnotation: {
+                        type: 'MixedTypeAnnotation',
+                      },
+                    },
+                  ],
+                },
               },
             },
           ],
@@ -1584,6 +1758,28 @@ const COMMANDS_AND_PROPS: SchemaType = {
                 },
               },
             },
+            {
+              name: 'addItems',
+              optional: false,
+              typeAnnotation: {
+                type: 'FunctionTypeAnnotation',
+                params: [
+                  {
+                    name: 'items',
+                    optional: false,
+                    typeAnnotation: {
+                      type: 'ArrayTypeAnnotation',
+                      elementType: {
+                        type: 'StringTypeAnnotation',
+                      },
+                    },
+                  },
+                ],
+                returnTypeAnnotation: {
+                  type: 'VoidTypeAnnotation',
+                },
+              },
+            },
           ],
         },
       },
@@ -1701,6 +1897,7 @@ module.exports = {
   MULTI_NATIVE_PROP,
   STRING_ENUM_PROP,
   INT32_ENUM_PROP,
+  MIXED_PROP,
   EVENT_PROPS,
   EVENTS_WITH_PAPER_NAME,
   EVENT_NESTED_OBJECT_PROPS,

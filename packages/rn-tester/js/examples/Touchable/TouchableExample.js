@@ -8,22 +8,21 @@
  * @flow
  */
 
-const React = require('react');
+import {useEffect, useRef, useState} from 'react';
 
+const React = require('react');
 const {
   Animated,
   Image,
+  Platform,
   StyleSheet,
   Text,
   TouchableHighlight,
-  TouchableOpacity,
-  Platform,
   TouchableNativeFeedback,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } = require('react-native');
-
-import {useEffect, useRef, useState} from 'react';
 
 const forceTouchAvailable =
   (Platform.OS === 'ios' && Platform.constants.forceTouchAvailable) || false;
@@ -322,8 +321,8 @@ function TouchableNativeMethodChecker<
         {status == null
           ? 'Missing Ref!'
           : status === true
-          ? 'Native Methods Exist'
-          : 'Native Methods Missing!'}
+            ? 'Native Methods Exist'
+            : 'Native Methods Missing!'}
       </Text>
     </View>
   );
@@ -830,7 +829,7 @@ exports.examples = [
   },
   {
     title: '<Text onPress={fn}> with highlight',
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <TextOnPressBox />;
     },
   },
@@ -838,7 +837,7 @@ exports.examples = [
     title: 'Touchable feedback events',
     description: ('<Touchable*> components accept onPress, onPressIn, ' +
       'onPressOut, and onLongPress as props.': string),
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <TouchableFeedbackEvents />;
     },
   },
@@ -847,7 +846,7 @@ exports.examples = [
     description: ('<Touchable*> components also accept delayPressIn, ' +
       'delayPressOut, and delayLongPress as props. These props impact the ' +
       'timing of feedback events.': string),
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <TouchableDelayEvents />;
     },
   },
@@ -855,7 +854,7 @@ exports.examples = [
     title: '3D Touch / Force Touch',
     description:
       'iPhone 8 and 8 plus support 3D touch, which adds a force property to touches',
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <ForceTouchExample />;
     },
     platform: 'ios',
@@ -865,7 +864,7 @@ exports.examples = [
     description:
       ('<Touchable*> components accept hitSlop prop which extends the touch area ' +
         'without changing the view bounds.': string),
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <TouchableHitSlop />;
     },
   },
@@ -873,7 +872,7 @@ exports.examples = [
     title: 'Touchable Native Methods',
     description:
       ('Some <Touchable*> components expose native methods like `measure`.': string),
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <TouchableNativeMethods />;
     },
   },
@@ -881,7 +880,7 @@ exports.examples = [
     title: 'Custom Ripple Radius (Android-only)',
     description:
       ('Ripple radius on TouchableNativeFeedback can be controlled': string),
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <CustomRippleRadius />;
     },
   },
@@ -890,7 +889,7 @@ exports.examples = [
     description:
       ('<Touchable*> components accept disabled prop which prevents ' +
         'any interaction with component': string),
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <TouchableDisabled />;
     },
   },
@@ -899,7 +898,7 @@ exports.examples = [
     title: 'Touchable Hover',
     description: ('<Touchable*> components reacts to mouse events ' +
       'onMouseEnter and onMouseLeave': string),
-    render: function (): React.Element<any> {
+    render: function (): React.Node {
       return <TouchableHover />;
     },
   },
@@ -907,7 +906,7 @@ exports.examples = [
     title: 'Touchable feedback mouse events',
     description: ('<Touchable*> components reacts to mouse events ' +
       'onPressIn, onPressOut, onDragEnter, onDragLeave, and onDrop': string),
-    render: function (): React.Element<any> {
+    render: function (): React.Node {
       return <TouchableMouseEvents />;
     },
     platform: 'macos',

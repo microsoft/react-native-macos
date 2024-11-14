@@ -10,8 +10,8 @@
 
 'use strict';
 
-const React = require('react');
 const NativeCxxModuleExampleExample = require('./NativeCxxModuleExampleExample');
+const React = require('react');
 
 exports.displayName = (undefined: ?string);
 exports.title = 'Cxx TurboModule';
@@ -20,7 +20,7 @@ exports.description = 'Usage of Cxx TurboModule';
 exports.examples = [
   {
     title: 'TurboCxxModuleExample',
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <NativeCxxModuleExampleExample />;
     },
   },

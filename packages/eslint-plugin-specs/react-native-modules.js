@@ -10,8 +10,8 @@
 
 'use strict';
 
-const path = require('path');
 const withBabelRegister = require('./with-babel-register');
+const path = require('path');
 
 // We use the prepack hook before publishing package to set this value to true
 const PACKAGE_USAGE = false;
@@ -69,7 +69,6 @@ function requireModuleParser() {
     buildModuleSchema: RNParserCommons.buildModuleSchema,
     createParserErrorCapturer: RNParserUtils.createParserErrorCapturer,
     parser: new RNFlowParser.FlowParser(),
-    resolveTypeAnnotation: RNFlowParserUtils.resolveTypeAnnotation,
     translateTypeAnnotation: RNModuleParser.flowTranslateTypeAnnotation,
   };
 }
@@ -149,14 +148,13 @@ function rule(context) {
         buildModuleSchema,
         createParserErrorCapturer,
         parser,
-        resolveTypeAnnotation,
         translateTypeAnnotation,
       } = requireModuleParser();
 
       const [parsingErrors, tryParse] = createParserErrorCapturer();
 
       const sourceCode = context.getSourceCode().getText();
-      const ast = parser.getAst(sourceCode);
+      const ast = parser.getAst(sourceCode, filename);
 
       tryParse(() => {
         buildModuleSchema(
@@ -164,7 +162,6 @@ function rule(context) {
           ast,
           tryParse,
           parser,
-          resolveTypeAnnotation,
           translateTypeAnnotation,
         );
       });

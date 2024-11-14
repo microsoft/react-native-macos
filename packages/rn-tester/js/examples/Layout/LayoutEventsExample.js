@@ -10,21 +10,21 @@
 
 'use strict';
 
-const React = require('react');
-
-const {
-  Image,
-  LayoutAnimation,
-  Platform, // [macOS]
-  StyleSheet,
-  Text,
-  View,
-} = require('react-native');
-
 import type {
   ViewLayout,
   ViewLayoutEvent,
 } from 'react-native/Libraries/Components/View/ViewPropTypes';
+
+const React = require('react');
+const {
+  Image,
+  LayoutAnimation,
+  // [macOS]
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} = require('react-native');
 
 type Props = $ReadOnly<{||}>;
 type State = {
@@ -168,7 +168,7 @@ exports.description = ('Examples that show how Layout events can be used to ' +
 exports.examples = [
   {
     title: 'LayoutEventExample',
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <LayoutEventExample />;
     },
   },

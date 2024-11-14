@@ -10,19 +10,19 @@
 
 'use strict';
 import type {CommandParamTypeAnnotation} from '../../CodegenSchema';
-
 import type {
-  NamedShape,
   CommandTypeAnnotation,
   ComponentShape,
+  NamedShape,
   PropTypeAnnotation,
   SchemaType,
 } from '../../CodegenSchema';
+
 const {
-  getImports,
-  toSafeJavaString,
-  getInterfaceJavaClassName,
   getDelegateJavaClassName,
+  getImports,
+  getInterfaceJavaClassName,
+  toSafeJavaString,
 } = require('./JavaHelpers');
 
 // File path -> contents
@@ -74,7 +74,7 @@ const PropSetterTemplate = ({propCases}: {propCases: string}) =>
 const CommandsTemplate = ({commandCases}: {commandCases: string}) =>
   `
   @Override
-  public void receiveCommand(T view, String commandName, ReadableArray args) {
+  public void receiveCommand(T view, String commandName, @Nullable ReadableArray args) {
     switch (commandName) {
       ${commandCases}
     }
@@ -144,6 +144,8 @@ function getJavaValueForProp(
       return '(String) value';
     case 'Int32EnumTypeAnnotation':
       return `value == null ? ${typeAnnotation.default} : ((Double) value).intValue()`;
+    case 'MixedTypeAnnotation':
+      return 'new DynamicFromObject(value)';
     default:
       (typeAnnotation: empty);
       throw new Error('Received invalid typeAnnotation');
@@ -200,6 +202,8 @@ function getCommandArgJavaType(
       return `args.getInt(${index})`;
     case 'StringTypeAnnotation':
       return `args.getString(${index})`;
+    case 'ArrayTypeAnnotation':
+      return `args.getArray(${index})`;
     default:
       (typeAnnotation.type: empty);
       throw new Error(`Receieved invalid type: ${typeAnnotation.type}`);
@@ -293,6 +297,7 @@ module.exports = {
     schema: SchemaType,
     packageName?: string,
     assumeNonnull: boolean = false,
+    headerPrefix?: string,
   ): FilesOutput {
     // TODO: This doesn't support custom package name yet.
     const normalizedPackageName = 'com.facebook.react.viewmanagers';

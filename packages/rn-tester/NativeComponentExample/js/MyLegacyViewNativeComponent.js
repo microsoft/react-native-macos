@@ -10,7 +10,10 @@
 
 import type {HostComponent} from 'react-native';
 import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import {requireNativeComponent} from 'react-native';
+
+import ReactNative from '../../../react-native/Libraries/Renderer/shims/ReactNative';
+import * as React from 'react';
+import {UIManager, requireNativeComponent} from 'react-native';
 
 type ColorChangedEvent = {
   nativeEvent: {
@@ -31,6 +34,70 @@ type NativeProps = $ReadOnly<{|
 |}>;
 
 export type MyLegacyViewType = HostComponent<NativeProps>;
+
+export function callNativeMethodToChangeBackgroundColor(
+  viewRef: React.ElementRef<MyLegacyViewType> | null,
+  color: string,
+) {
+  if (!viewRef) {
+    console.log('viewRef is null');
+    return;
+  }
+  const reactTag = ReactNative.findNodeHandle(viewRef);
+  if (reactTag == null) {
+    console.log('reactTag is null');
+    return;
+  }
+  UIManager.dispatchViewManagerCommand(
+    reactTag,
+    UIManager.getViewManagerConfig('RNTMyLegacyNativeView').Commands
+      .changeBackgroundColor,
+    [color],
+  );
+}
+
+export function callNativeMethodToAddOverlays(
+  viewRef: React.ElementRef<MyLegacyViewType> | null,
+  overlayColors: $ReadOnlyArray<string>,
+) {
+  if (!viewRef) {
+    console.log('viewRef is null');
+    return;
+  }
+  const reactTag = ReactNative.findNodeHandle(viewRef);
+  if (reactTag == null) {
+    console.log('reactTag is null');
+    return;
+  }
+
+  UIManager.dispatchViewManagerCommand(
+    reactTag,
+    UIManager.getViewManagerConfig('RNTMyLegacyNativeView').Commands
+      .addOverlays,
+    [overlayColors],
+  );
+}
+
+export function callNativeMethodToRemoveOverlays(
+  viewRef: React.ElementRef<MyLegacyViewType> | null,
+) {
+  if (!viewRef) {
+    console.log('viewRef is null');
+    return;
+  }
+  const reactTag = ReactNative.findNodeHandle(viewRef);
+  if (reactTag == null) {
+    console.log('reactTag is null');
+    return;
+  }
+
+  UIManager.dispatchViewManagerCommand(
+    reactTag,
+    UIManager.getViewManagerConfig('RNTMyLegacyNativeView').Commands
+      .removeOverlays,
+    [],
+  );
+}
 
 export default (requireNativeComponent(
   'RNTMyLegacyNativeView',
