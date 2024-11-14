@@ -13,8 +13,7 @@ import * as validUrl from 'valid-url';
 import * as prompts from 'prompts';
 import * as findUp from 'find-up';
 import * as chalk from 'chalk';
-// @ts-ignore
-import npmFetch from 'npm-registry';
+import * as npmFetch from 'npm-registry-fetch';
 
 const npmConfReg = execSync('npm config get registry').toString().trim();
 const NPM_REGISTRY_URL = validUrl.isUri(npmConfReg)
@@ -291,7 +290,7 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
       const pkgmgr = isProjectUsingYarn(process.cwd())
         ? `yarn add${verbose ? '' : ' --silent'}`
         : `npm install --save${verbose ? '' : ' --silent'}`;
-      const execOptions = verbose ? {stdio: 'inherit' as 'inherit'} : {};
+      const execOptions = verbose ? {stdio: 'inherit' as const} : {};
       execSync(`${pkgmgr} "${MACOSPKG}@${version}"`, execOptions);
 
       console.log(`${pkgLatest} ${chalk.green('successfully installed!')}`);
@@ -302,10 +301,7 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
     }
 
     const generateMacOS = require(reactNativeMacOSGeneratePath());
-    generateMacOS(process.cwd(), name, {
-      overwrite,
-      verbose,
-    });
+    generateMacOS(process.cwd(), name, {overwrite, verbose});
   } catch (error) {
     printError(error.message, error);
     process.exit(EXITCODE_UNKNOWN_ERROR);
