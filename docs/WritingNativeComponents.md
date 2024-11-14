@@ -1,7 +1,7 @@
 # Writing native components derived from NSView
 
 
-React Native macOS inherits some assumptions from React Native on iOS / UIKit. There are subtle differences in how AppKit's and UIKit;s implementation, such as where the coordinate system places the origin (bottom left on Appkit, top left on UIKit), or how hit testing is implemented This serves as an issue when we want to write our own native components derived from NSView, as we don't inherit the "fixes" made in RCTView to get views working properly. This doc illustrates what methods / implementation you will need to override in order for your native component, using the NSView derived `NSVisualEffectView` as our base class
+React Native macOS inherits some assumptions from React Native on iOS / UIKit. There are subtle differences in how AppKit's and UIKit's implementation, such as where the coordinate system places the origin (bottom left on Appkit, top left on UIKit), or how hit testing is implemented. This serves as an issue when we want to write our own native components derived from NSView, as we don't inherit the "fixes" made in RCTView to get views working properly. This doc illustrates what methods / implementation you will need to override in order for your native component, using the NSView derived `NSVisualEffectView` as our base class.
 
 ```Swift
 internal class FixedVisualEffectView: NSVisualEffectView {
@@ -13,7 +13,7 @@ internal class FixedVisualEffectView: NSVisualEffectView {
 		return true
 	}
 
-	/// This subclass is necessary due to differences' in hitTest()'s implementation between iOS and macOS
+	/// This subclass is necessary due to differences in hitTest()'s implementation between iOS and macOS
 	///	On iOS / UIKit, hitTest(_ point:, with event:) takes a point in the receiver's local coordinate system.
 	///	On macOS / AppKit, hitTest(_ point) takes a point in the reciever's superviews' coordinate system.
 	/// RCTView assumes the iOS implementation, so it has  an override of hitTest(_ point). Let's copy the
