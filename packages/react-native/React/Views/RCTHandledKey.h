@@ -10,7 +10,7 @@
 #if TARGET_OS_OSX
 #import <React/RCTConvert.h>
 
-// This class is used for specifying key filtering e.g. for -[RCTView validKeysDown] and -[RCTView validKeysUp]
+// This class is used for specifying key filtering e.g. for -[RCTView keyDownEvents] and -[RCTView keyUpEvents]
 // Also see RCTViewKeyboardEvent, which is a React representation of an actual NSEvent that is dispatched to JS.
 @interface RCTHandledKey : NSObject
 

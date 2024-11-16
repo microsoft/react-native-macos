@@ -730,9 +730,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   return YES;
 }
 
-- (BOOL)hasValidKeyDownOrValidKeyUp:(NSString *)key {
-  return [RCTHandledKey key:key matchesFilter:self.validKeysDown]
-	||  [RCTHandledKey key:key matchesFilter:self.validKeysUp];
+- (BOOL)hasKeyDownEventOrKeyUpEvent:(NSString *)key {
+  return [RCTHandledKey key:key matchesFilter:self.keyDownEvents]
+     ||  [RCTHandledKey key:key matchesFilter:self.keyUpEvents];
 }
 
 - (NSDragOperation)textInputDraggingEntered:(id<NSDraggingInfo>)draggingInfo
