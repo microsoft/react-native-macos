@@ -531,10 +531,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
   [_backedTextInputView becomeFirstResponder];
 #else // [macOS
-  NSWindow *window = _backedTextInputView.window;
-  if (window) {
-    [window makeFirstResponder:_backedTextInputView];
-  }
+  NSWindow *window = [_backedTextInputView window];
+  [window makeFirstResponder:_backedTextInputView];
 #endif // macOS]
 
   const auto &props = static_cast<const TextInputProps &>(*_props);
@@ -555,12 +553,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
   [_backedTextInputView resignFirstResponder];
 #else // [macOS
-  NSWindow *window = _backedTextInputView.window;
-  if (window && window.firstResponder == _backedTextInputView) {
-    // Calling makeFirstResponder with nil will call resignFirstResponder and make the window the first responder
+  NSWindow *window = [_backedTextInputView window];
+  if ([window firstResponder] == _backedTextInputView) {
     [window makeFirstResponder:nil];
   }
-#endif // macOS];
+#endif // macOS]
 }
 
 - (void)setTextAndSelection:(NSInteger)eventCount
