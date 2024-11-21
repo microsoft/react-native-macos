@@ -85,6 +85,15 @@ const RCTTextInputViewConfig = {
     topContentSizeChange: {
       registrationName: 'onContentSizeChange',
     },
+    topAutoCorrectChange: {
+      registrationName: 'onAutoCorrectChange',
+    },
+    topSpellCheckChange: {
+      registrationName: 'onSpellCheckChange',
+    },
+    topGrammarCheckChange: {
+      registrationName: 'onGrammarCheckChange',
+    },
   },
   validAttributes: {
     fontSize: true,
