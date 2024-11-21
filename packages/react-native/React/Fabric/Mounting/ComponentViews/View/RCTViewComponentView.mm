@@ -18,7 +18,6 @@
 #import <React/RCTCursor.h> // [macOS]
 #import <React/RCTLocalizedString.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
-#import <React/RCTView.h> // [macOS]
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
 #import <react/renderer/components/view/ViewProps.h>
@@ -664,8 +663,8 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     // Native macOS views require the point to be in the super view coordinate space for hit testing. [macOS]
     CGPoint hitTestPoint = point;
 #if TARGET_OS_OSX // [macOS
-    // Paper and Fabric components use the target view coordinate space for hit testing
-    if ([subview isKindOfClass:[RCTView class]] || [subview isKindOfClass:[RCTViewComponentView class]]) {
+    // Fabric components use the target view coordinate space for hit testing
+    if ([subview isKindOfClass:[RCTViewComponentView class]]) {
       hitTestPoint = [subview convertPoint:point fromView:self];
     }
 #endif // macOS]
