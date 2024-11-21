@@ -179,7 +179,6 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     _hitTestEdgeInsets = UIEdgeInsetsZero;
     _cursor = RCTCursorAuto;
 #if TARGET_OS_OSX // [macOS
-    _transform3D = CATransform3DIdentity;
     _shadowColor = nil;
     _mouseDownCanMoveWindow = YES;
 #endif // macOS]
@@ -1187,20 +1186,19 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 #else // [macOS
   RCTUIColor *backgroundColor = _backgroundColor;
 #endif // macOS]
-
+  
 #if TARGET_OS_OSX // [macOS
-  CATransform3D transform = [self transform3D];
+  CATransform3D transform = [[self layer] transform];
   CGPoint anchorPoint = [layer anchorPoint];
   if (CGPointEqualToPoint(anchorPoint, CGPointZero) && !CATransform3DEqualToTransform(transform, CATransform3DIdentity)) {
     // https://developer.apple.com/documentation/quartzcore/calayer/1410817-anchorpoint
     // This compensates for the fact that layer.anchorPoint is {0, 0} instead of {0.5, 0.5} on macOS for some reason.
     CATransform3D originAdjust = CATransform3DTranslate(CATransform3DIdentity, self.frame.size.width / 2, self.frame.size.height / 2, 0);
     transform = CATransform3DConcat(CATransform3DConcat(CATransform3DInvert(originAdjust), transform), originAdjust);
-    // Enable edge antialiasing in perspective transforms
-    [layer setAllowsEdgeAntialiasing:!(transform.m34 == 0.0f)];
   }
   [layer setTransform:transform];
 #endif // macOS]
+
   if (useIOSBorderRendering) {
     layer.cornerRadius = cornerRadii.topLeftHorizontal;
     layer.borderColor = borderColors.left.CGColor;
@@ -1250,14 +1248,6 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 
   [self updateClippingForLayer:layer];
 }
-
-#if TARGET_OS_OSX // [macOS
-- (void)updateReactTransformInternal:(CATransform3D)transform
-{
-  [self setTransform3D:transform];
-  [self setNeedsDisplay];
-}
-#endif // macOS]
 
 static BOOL RCTLayerHasShadow(CALayer *layer)
 {
