@@ -67,9 +67,9 @@ RCT_EXPORT_VIEW_PROPERTY(textContentType, NSString)
 RCT_EXPORT_VIEW_PROPERTY(passwordRules, NSString)
 
 #if TARGET_OS_OSX // [macOS
-RCT_EXPORT_VIEW_PROPERTY(onAutoCorrectChange, RCTBubblingEventBlock);
-RCT_EXPORT_VIEW_PROPERTY(onSpellCheckChange, RCTBubblingEventBlock);
-RCT_EXPORT_VIEW_PROPERTY(onGrammarCheckChange, RCTBubblingEventBlock);
+RCT_EXPORT_VIEW_PROPERTY(onAutoCorrectChange, RCTDirectEventBlock);
+RCT_EXPORT_VIEW_PROPERTY(onSpellCheckChange, RCTDirectEventBlock);
+RCT_EXPORT_VIEW_PROPERTY(onGrammarCheckChange, RCTDirectEventBlock);
 
 RCT_EXPORT_VIEW_PROPERTY(onPaste, RCTDirectEventBlock)
 
