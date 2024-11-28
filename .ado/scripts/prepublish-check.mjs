@@ -3,6 +3,10 @@ import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as util from "node:util";
 
+const ADO_PUBLISH_PIPELINE = ".ado/templates/npm-publish.yml";
+const NPM_TAG_NEXT = "next";
+const NX_CONFIG_FILE = "nx.json";
+
 /**
  * @typedef {typeof import("../../nx.json")} NxConfig
  * @typedef {{ tag?: string; update?: boolean; }} Options
@@ -39,9 +43,10 @@ function isStableBranch(branch) {
 
 /**
  * Loads Nx configuration.
+ * @param {string} configFile
  * @returns {NxConfig}
  */
-function loadNxConfig(configFile = "nx.json") {
+function loadNxConfig(configFile) {
   const nx = fs.readFileSync(configFile, { encoding: "utf-8" });
   return JSON.parse(nx);
 }
@@ -119,7 +124,7 @@ function getTagForStableBranch(branch, { tag }) {
   }
 
   // Publishing a release candidate
-  return { npmTag: "next", prerelease: "rc" };
+  return { npmTag: NPM_TAG_NEXT, prerelease: "rc" };
 }
 
 /**
@@ -173,6 +178,22 @@ function enablePublishing(config, currentBranch, tag, prerelease) {
 }
 
 /**
+ * @param {string} file
+ * @param {string} tag
+ */
+function verifyPublishPipeline(file, tag) {
+  const data = fs.readFileSync(file, { encoding: "utf-8" });
+  const m = data.match(/publishTag: '(\w*?)'/);
+  if (!m) {
+    throw new Error(`Could not find npm publish tag in '${file}'`);
+  }
+
+  if (m[1] !== tag) {
+    throw new Error(`${file}: 'publishTag' needs to be set to '${tag}'`);
+  }
+}
+
+/**
  * @param {Options} options
  */
 function main(options) {
@@ -181,9 +202,9 @@ function main(options) {
     throw new Error("Could not get current branch");
   }
 
-  const nxConfigPath = "nx.json";
+  verifyPublishPipeline(ADO_PUBLISH_PIPELINE, options.tag || NPM_TAG_NEXT);
 
-  const config = loadNxConfig(nxConfigPath);
+  const config = loadNxConfig(NX_CONFIG_FILE);
   try {
     if (isMainBranch(branch)) {
       enablePublishing(config, branch, "nightly", "nightly");
@@ -194,7 +215,7 @@ function main(options) {
   } catch (e) {
     process.exitCode = 1;
     if (options.update) {
-      const fd = fs.openSync(nxConfigPath, "w");
+      const fd = fs.openSync(NX_CONFIG_FILE, "w");
       fs.writeSync(fd, JSON.stringify(config, undefined, 2));
       fs.writeSync(fd, "\n");
       fs.closeSync(fd)
@@ -209,7 +230,7 @@ const { values } = util.parseArgs({
   options: {
     tag: {
       type: "string",
-      default: "next",
+      default: NPM_TAG_NEXT,
     },
     update: {
       type: "boolean",
