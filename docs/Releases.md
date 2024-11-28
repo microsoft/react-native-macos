@@ -20,12 +20,12 @@ Nx Release is configured in `nx.json`. It is currently configured to:
 
 The documentation for Nx Release can be found here: https://nx.dev/features/manage-releases
 
-To ensure Nx Release is correctly configured, we have a script, [`.ado/scripts/prepublish-check.mjs`](//microsoft/react-native-macos/blob/main/.ado/scripts/prepublish-check.mjs), running on CI. This script can also be run locally when creating a new stable branch.
+To ensure Nx Release is correctly configured, we have a script, [`.ado/scripts/prepublish-check.mjs`](/microsoft/react-native-macos/blob/main/.ado/scripts/prepublish-check.mjs), running on CI. This script can also be run locally when creating a new stable branch.
 
 In addition to `nx.json`, we also have `nx.test.json`. This configuration is only used for integration tests. Because we need to ensure that all the bits in this repository work, we cannot consume already published packages and must always publish all packages from this repository. As of writing, we have two pipelines consuming this configuration:
 
-- [Verify react-native-macos in a new project](//microsoft/react-native-macos/blob/0.76-stable/.ado/jobs/test-react-native-macos-init.yml)
-- [react-native-test-app](//microsoft/react-native-macos/blob/0.76-stable/.ado/jobs/react-native-test-app-integration.yml)
+- [Verify react-native-macos in a new project](/microsoft/react-native-macos/blob/0.76-stable/.ado/jobs/test-react-native-macos-init.yml)
+- [react-native-test-app](/microsoft/react-native-macos/blob/0.76-stable/.ado/jobs/react-native-test-app-integration.yml)
 
 ## Creating a new stable branch (release candidate)
 
@@ -62,7 +62,7 @@ yarn nx release --dry-run
 > - The version string should include the `rc` prerelease identifier (e.g., `0.77.0-rc.0`)
 > - Make sure GitHub release change logs only include relevant entries
 
-When you have verified that everything looks good, commit the changes and push the branch to GitHub:
+When you have verified that everything looks good, commit the changes and push the branch:
 
 ```sh
 git add .nx/version-plans nx.json
@@ -105,10 +105,10 @@ yarn nx release --dry-run
 > - The version string should **NOT** include the `rc` prerelease identifier (e.g., `0.77.0`)
 > - Make sure GitHub release change logs only include relevant entries
 
-When you have verified that everything looks good, push the changes to GitHub:
+When you have verified that everything looks good, push the changes:
 
 ```sh
-git add .nx/version-plans nx.json
+git add .ado/templates/npm-publish.yml .nx/version-plans nx.json
 git commit -m 'Mark 0.77 as stable'
 git push
 ```
@@ -135,7 +135,7 @@ yarn nx release --dry-run
 >   - Some test packages will also be bumped, but we can ignore them
 > - Make sure GitHub release change logs only include relevant entries
 
-When you have verified that everything looks good, push the changes to GitHub:
+When you have verified that everything looks good, push the changes:
 
 ```sh
 git add .nx/version-plans
