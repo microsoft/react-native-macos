@@ -53,12 +53,14 @@ Verify that the release plan correctly bumps published packages:
 yarn nx release --dry-run
 ```
 
-Things to look out for:
-
-- The next version number should be one greater than the current (e.g., `0.76.0-main` → `0.77.0-rc.0`)
-  - Some test packages will also be bumped, but we can ignore them
-- The version string should include the `rc` prerelease identifier (e.g., `0.77.0-rc.0`)
-- Make sure GitHub release change logs only include relevant entries
+> [!NOTE]
+>
+> Things to look out for:
+>
+> - The next version number should be one greater than the current (e.g., `0.76.0-main` → `0.77.0-rc.0`)
+>   - Some test packages will also be bumped, but we can ignore them
+> - The version string should include the `rc` prerelease identifier (e.g., `0.77.0-rc.0`)
+> - Make sure GitHub release change logs only include relevant entries
 
 When you have verified that everything looks good, commit the changes and push the branch to GitHub:
 
@@ -94,7 +96,16 @@ Verify that the release plan correctly bumps published packages:
 yarn nx release --dry-run
 ```
 
-When you have verified that everything looks good, commit and the changes to GitHub:
+> [!NOTE]
+>
+> Things to look out for:
+>
+> - The next version number should be one greater than the current (e.g., `0.76.0-main` → `0.77.0`)
+>   - Some test packages will also be bumped, but we can ignore them
+> - The version string should **NOT** include the `rc` prerelease identifier (e.g., `0.77.0`)
+> - Make sure GitHub release change logs only include relevant entries
+
+When you have verified that everything looks good, push the changes to GitHub:
 
 ```sh
 git add .nx/version-plans nx.json
@@ -116,7 +127,15 @@ Verify that the release plan correctly bumps published packages:
 yarn nx release --dry-run
 ```
 
-When you have verified that everything looks good, commit and the changes to GitHub:
+> [!NOTE]
+>
+> Things to look out for:
+>
+> - The next version number should be one greater than the current (e.g., `0.77.0` → `0.77.1`)
+>   - Some test packages will also be bumped, but we can ignore them
+> - Make sure GitHub release change logs only include relevant entries
+
+When you have verified that everything looks good, push the changes to GitHub:
 
 ```sh
 git add .nx/version-plans
