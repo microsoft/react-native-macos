@@ -129,7 +129,9 @@ jobs:
             CCACHE_DISABLE: 1
           displayName: Build ${{ slice.scheme }}
 
-        # Skip testing on visionOS via the conditions below
+
+        # https://github.com/microsoft/react-native-macos/issues/2297
+        # Skip native tests as they tend to be flaky
 
         - ${{ if ne(slice.scheme, 'RNTester-visionOS') }}:
           - task: ShellScript@2
