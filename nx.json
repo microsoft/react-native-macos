@@ -3,18 +3,23 @@
   "defaultBase": "main",
   "targetDefaults": {
     "build": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
     }
   },
   "release": {
     "changelog": {
-      "projectChangelogs": false,
-      "workspaceChangelog": {
+      "projectChangelogs": {
         "file": false,
         "createRelease": "github"
-      }
+      },
+      "workspaceChangelog": false
     },
-    "projects": ["packages/react-native", "packages/virtualized-lists"],
+    "projects": [
+      "packages/react-native",
+      "packages/virtualized-lists"
+    ],
     "projectsRelationship": "independent",
     "versionPlans": true,
     "version": {
@@ -23,7 +28,6 @@
         "currentVersionResolverMetadata": {
           "tag": "nightly"
         },
-        "fallbackCurrentVersionResolver": "disk",
         "preid": "nightly",
         "skipLockFileUpdate": true
       }

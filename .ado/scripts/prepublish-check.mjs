@@ -5,7 +5,7 @@ import * as util from "node:util";
 
 /**
  * @typedef {typeof import("../../nx.json")} NxConfig
- * @typedef {{ tag?: string }} Options
+ * @typedef {{ tag?: string; update?: boolean; }} Options
  */
 
 /**
@@ -130,26 +130,36 @@ function getTagForStableBranch(branch, { tag }) {
  * @param {string} [prerelease]
  * @returns {asserts config is NxConfig["release"]}
  */
-function enablePublishing({ defaultBase, release: config }, currentBranch, tag, prerelease) {
+function enablePublishing(config, currentBranch, tag, prerelease) {
   /** @type {string[]} */
   const errors = [];
+
+  const { defaultBase, release } = config;
 
   // `defaultBase` determines what we diff against when looking for tags or
   // released version and must therefore be set to either the main branch or one
   // of the stable branches.
   if (currentBranch !== defaultBase) {
     errors.push(`'defaultBase' must be set to '${currentBranch}'`);
+    config.defaultBase = currentBranch;
   }
 
   // Determines whether we need to add "nightly" or "rc" to the version string.
-  const { currentVersionResolverMetadata, preid } = config.version.generatorOptions;
+  const { currentVersionResolverMetadata, preid } = release.version.generatorOptions;
   if (preid !== prerelease) {
     errors.push(`'release.version.generatorOptions.preid' must be set to '${prerelease || ""}'`);
+    if (prerelease) {
+      release.version.generatorOptions.preid = prerelease;
+    } else {
+      // @ts-expect-error `preid` is optional
+      release.version.generatorOptions.preid = undefined;
+    }
   }
 
   // What the published version should be tagged as e.g., "latest" or "nightly".
   if (currentVersionResolverMetadata.tag !== tag) {
     errors.push(`'release.version.generatorOptions.currentVersionResolverMetadata.tag' must be set to '${tag}'`);
+    release.version.generatorOptions.currentVersionResolverMetadata.tag = tag;
   }
 
   if (errors.length > 0) {
@@ -171,12 +181,26 @@ function main(options) {
     throw new Error("Could not get current branch");
   }
 
-  const config = loadNxConfig();
-  if (isMainBranch(branch)) {
-    enablePublishing(config, branch, "nightly", "nightly");
-  } else if (isStableBranch(branch)) {
-    const { npmTag, prerelease } = getTagForStableBranch(branch, options);
-    enablePublishing(config, branch, npmTag, prerelease);
+  const nxConfigPath = "nx.json";
+
+  const config = loadNxConfig(nxConfigPath);
+  try {
+    if (isMainBranch(branch)) {
+      enablePublishing(config, branch, "nightly", "nightly");
+    } else if (isStableBranch(branch)) {
+      const { npmTag, prerelease } = getTagForStableBranch(branch, options);
+      enablePublishing(config, branch, npmTag, prerelease);
+    }
+  } catch (e) {
+    process.exitCode = 1;
+    if (options.update) {
+      const fd = fs.openSync(nxConfigPath, "w");
+      fs.writeSync(fd, JSON.stringify(config, undefined, 2));
+      fs.writeSync(fd, "\n");
+      fs.closeSync(fd)
+    } else {
+      console.error(`${e}`);
+    }
   }
 }
 
@@ -187,9 +211,12 @@ const { values } = util.parseArgs({
       type: "string",
       default: "next",
     },
+    update: {
+      type: "boolean",
+      default: false,
+    },
   },
   strict: true,
-  allowNegative: true,
 });
 
 main(values);
