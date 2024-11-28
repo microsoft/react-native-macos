@@ -15,14 +15,14 @@ Nx Release is configured in `nx.json`. It is currently configured to:
 
 - **NOT** create change log files
 - Make GitHub releases
-- Use version plans (similar to [Beachball's](https://microsoft.github.io/beachball/cli/change.html) or [Changesets](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md) change files)
+- Use version plans (similar to [Beachball](https://microsoft.github.io/beachball/cli/change.html) or [Changesets](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md) change files)
   - This essentially means that every time we want to bump the version number, we must create a change file (more on that later)
 
 The documentation for Nx Release can be found here: https://nx.dev/features/manage-releases
 
 To ensure Nx Release is correctly configured, we have a script, [`.ado/scripts/prepublish-check.mjs`](//microsoft/react-native-macos/blob/main/.ado/scripts/prepublish-check.mjs), running on CI. This script can also be run locally when creating a new stable branch.
 
-In addition to `nx.json`, we also have `nx.test.json`. This configuration is only used for integration tests. Because we need to ensure that all the bits in this repository works, we cannot consume already published packages and must always publish all packages from this repository. As of writing, we have two pipelines:
+In addition to `nx.json`, we also have `nx.test.json`. This configuration is only used for integration tests. Because we need to ensure that all the bits in this repository work, we cannot consume already published packages and must always publish all packages from this repository. As of writing, we have two pipelines consuming this configuration:
 
 - [Verify react-native-macos in a new project](//microsoft/react-native-macos/blob/0.76-stable/.ado/jobs/test-react-native-macos-init.yml)
 - [react-native-test-app](//microsoft/react-native-macos/blob/0.76-stable/.ado/jobs/react-native-test-app-integration.yml)
