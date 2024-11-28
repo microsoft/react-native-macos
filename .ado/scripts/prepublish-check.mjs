@@ -4,8 +4,10 @@ import * as fs from "node:fs";
 import * as util from "node:util";
 
 const ADO_PUBLISH_PIPELINE = ".ado/templates/npm-publish.yml";
-const NPM_TAG_NEXT = "next";
 const NX_CONFIG_FILE = "nx.json";
+
+const NPM_TAG_NEXT = "next";
+const NPM_TAG_NIGHTLY = "nightly";
 
 /**
  * @typedef {typeof import("../../nx.json")} NxConfig
@@ -21,6 +23,14 @@ const NX_CONFIG_FILE = "nx.json";
  */
 function enablePublishingOnAzurePipelines() {
   console.log(`##vso[task.setvariable variable=publish_react_native_macos]1`);
+}
+
+/**
+ * Logs an error message to the console.
+ * @param {string} message
+ */
+function error(message) {
+  console.error("❌", message);
 }
 
 /**
@@ -168,9 +178,7 @@ function enablePublishing(config, currentBranch, tag, prerelease) {
   }
 
   if (errors.length > 0) {
-    for (const e of errors) {
-      console.error("❌", e);
-    }
+    errors.forEach(error);
     throw new Error("Nx Release is not correctly configured for the current branch");
   }
 
@@ -180,40 +188,48 @@ function enablePublishing(config, currentBranch, tag, prerelease) {
 /**
  * @param {string} file
  * @param {string} tag
+ * @returns {boolean}
  */
 function verifyPublishPipeline(file, tag) {
   const data = fs.readFileSync(file, { encoding: "utf-8" });
   const m = data.match(/publishTag: '(\w*?)'/);
   if (!m) {
-    throw new Error(`Could not find npm publish tag in '${file}'`);
+    error(`${file}: Could not find npm publish tag`);
+    return false;
   }
 
   if (m[1] !== tag) {
-    throw new Error(`${file}: 'publishTag' needs to be set to '${tag}'`);
+    error(`${file}: 'publishTag' needs to be set to '${tag}'`);
+    return false;
   }
+
+  return true;
 }
 
 /**
  * @param {Options} options
+ * @returns {number}
  */
 function main(options) {
   const branch = getCurrentBranch();
   if (!branch) {
-    throw new Error("Could not get current branch");
+    error("Could not get current branch");
+    return 1;
   }
 
-  verifyPublishPipeline(ADO_PUBLISH_PIPELINE, options.tag || NPM_TAG_NEXT);
+  if (!verifyPublishPipeline(ADO_PUBLISH_PIPELINE, options.tag || NPM_TAG_NEXT)) {
+    return 1;
+  }
 
   const config = loadNxConfig(NX_CONFIG_FILE);
   try {
     if (isMainBranch(branch)) {
-      enablePublishing(config, branch, "nightly", "nightly");
+      enablePublishing(config, branch, NPM_TAG_NIGHTLY, NPM_TAG_NIGHTLY);
     } else if (isStableBranch(branch)) {
       const { npmTag, prerelease } = getTagForStableBranch(branch, options);
       enablePublishing(config, branch, npmTag, prerelease);
     }
   } catch (e) {
-    process.exitCode = 1;
     if (options.update) {
       const fd = fs.openSync(NX_CONFIG_FILE, "w");
       fs.writeSync(fd, JSON.stringify(config, undefined, 2));
@@ -222,7 +238,10 @@ function main(options) {
     } else {
       console.error(`${e}`);
     }
+    return 1;
   }
+
+  return 0;
 }
 
 const { values } = util.parseArgs({
@@ -240,4 +259,4 @@ const { values } = util.parseArgs({
   strict: true,
 });
 
-main(values);
+process.exitCode = main(values);
