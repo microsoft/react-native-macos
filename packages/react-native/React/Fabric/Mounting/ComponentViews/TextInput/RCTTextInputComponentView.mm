@@ -486,21 +486,21 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if TARGET_OS_OSX // [macOS
 - (void)automaticSpellingCorrectionDidChange:(BOOL)enabled {
   if (_eventEmitter) {
-    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onAutoCorrectChange({.enabled = static_cast<bool>(enabled)});
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onAutoCorrectChange({.autoCorrectEnabled = static_cast<bool>(enabled)});
   }
 }
 
 - (void)continuousSpellCheckingDidChange:(BOOL)enabled
 {
   if (_eventEmitter) {
-    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onSpellCheckChange({.enabled = static_cast<bool>(enabled)});
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onSpellCheckChange({.spellCheckEnabled = static_cast<bool>(enabled)});
   }
 }
 
 - (void)grammarCheckingDidChange:(BOOL)enabled 
 {
   if (_eventEmitter) {
-    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onGrammarCheckChange({.enabled = static_cast<bool>(enabled)});
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onGrammarCheckChange({.grammarCheckEnabled = static_cast<bool>(enabled)});
   }
 }
 

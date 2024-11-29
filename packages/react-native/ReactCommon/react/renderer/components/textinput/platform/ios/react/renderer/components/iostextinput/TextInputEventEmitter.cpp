@@ -172,6 +172,35 @@ void TextInputEventEmitter::onScroll(const Metrics& textInputMetrics) const {
   });
 }
 
+#if TARGET_OS_OSX // [macOS
+void TextInputEventEmitter::onAutoCorrectChange(
+    const Metrics& textInputMetrics) const {
+  dispatchEvent("autoCorrectChange", [textInputMetrics](jsi::Runtime& runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "enabled", textInputMetrics.autoCorrectEnabled);
+    return payload;
+  });
+}
+
+void TextInputEventEmitter::onSpellCheckChange(
+    const Metrics& textInputMetrics) const {
+  dispatchEvent("spellCheckChange", [textInputMetrics](jsi::Runtime& runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "enabled", textInputMetrics.spellCheckEnabled);
+    return payload;
+  });
+}
+
+void TextInputEventEmitter::onGrammarCheckChange(
+    const Metrics& textInputMetrics) const {
+  dispatchEvent("grammarCheckChange", [textInputMetrics](jsi::Runtime& runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "enabled", textInputMetrics.grammarCheckEnabled);
+    return payload;
+  });
+}
+#endif // macOS]
+
 void TextInputEventEmitter::dispatchTextInputEvent(
     const std::string& name,
     const Metrics& textInputMetrics) const {
@@ -187,31 +216,5 @@ void TextInputEventEmitter::dispatchTextInputContentSizeChangeEvent(
     return textInputMetricsContentSizePayload(runtime, textInputMetrics);
   });
 }
-
-#if TARGET_OS_OSX // [macOS
-void TextInputEventEmitter::onAutoCorrectChange(OnAutoCorrectChange event) const {
-  dispatchEvent("autoCorrectChange", [event=std::move(event)](jsi::Runtime &runtime) {
-    auto payload = jsi::Object(runtime);
-    payload.setProperty(runtime, "enabled", event.enabled);
-    return payload;
-  });
-}
-
-void TextInputEventEmitter::onSpellCheckChange(OnSpellCheckChange event) const {
-  dispatchEvent("spellCheckChange", [event=std::move(event)](jsi::Runtime &runtime) {
-    auto payload = jsi::Object(runtime);
-    payload.setProperty(runtime, "enabled", event.enabled);
-    return payload;
-  });
-}
-
-void TextInputEventEmitter::onGrammarCheckChange(OnGrammarCheckChange event) const {
-  dispatchEvent("grammarCheckChange", [event=std::move(event)](jsi::Runtime &runtime) {
-    auto payload = jsi::Object(runtime);
-    payload.setProperty(runtime, "enabled", event.enabled);
-    return payload;
-  });
-}
-#endif // macOS]
 
 } // namespace facebook::react
