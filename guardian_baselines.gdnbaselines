@@ -1,0 +1,57 @@
+{
+  "properties": {
+    "helpUri": "https://eng.ms/docs/microsoft-security/security/azure-security/cloudai-security-fundamentals-engineering/security-integration/guardian-wiki/microsoft-guardian/general/baselines"
+  },
+  "version": "1.0.0",
+  "baselines": {
+    "guardian-baseline": {
+      "name": "guardian-baseline",
+      "createdDate": "2024-12-04 18:07:39Z",
+      "lastUpdatedDate": "2024-12-04 18:07:39Z"
+    }
+  },
+  "results": {
+    "c6f42161e39d689e3292f55865a2407afa597f79afab8265bed80795b2963dde": {
+      "signature": "c6f42161e39d689e3292f55865a2407afa597f79afab8265bed80795b2963dde",
+      "alternativeSignatures": [],
+      "target": ".git/config",
+      "line": 8,
+      "memberOf": [
+        "guardian-baseline"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0060",
+      "createdDate": "2024-12-04 18:07:41Z",
+      "expirationDate": "2025-05-23 18:09:43Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-12-04 18:09:43Z"
+    },
+    "5eeb354498f130d920418f7553fb6fc3ec6adb7d3155e87d5f66abb194f68d23": {
+      "signature": "5eeb354498f130d920418f7553fb6fc3ec6adb7d3155e87d5f66abb194f68d23",
+      "alternativeSignatures": [],
+      "target": "packages/helloworld/android/app/debug.keystore",
+      "line": 1,
+      "memberOf": [
+        "guardian-baseline"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-12-04 18:08:56Z",
+      "expirationDate": "2025-05-23 18:09:43Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-12-04 18:09:43Z"
+    },
+    "b1acb10e061027857f8073eb985c4b5dc7838f0f1424cb48c20ada3f52f32511": {
+      "signature": "b1acb10e061027857f8073eb985c4b5dc7838f0f1424cb48c20ada3f52f32511",
+      "alternativeSignatures": [],
+      "target": "packages/debugger-frontend/dist/third-party/front_end/third_party/lighthouse/lighthouse-dt-bundle.js",
+      "line": 2135,
+      "memberOf": [
+        "guardian-baseline"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0060",
+      "createdDate": "2024-12-04 18:08:56Z",
+      "expirationDate": "2025-05-23 18:09:43Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-12-04 18:09:43Z"
+    }
+  }
+}
