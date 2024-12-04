@@ -148,6 +148,15 @@ static TextInputTraits convertRawProp(
       sourceTraits.smartInsertDelete,
       defaultTraits.smartInsertDelete);
 
+#ifdef TARGET_OS_OSX // [macOS
+  traits.grammarCheck = convertRawProp(
+      context,
+      rawProps,
+      "grammarCheck",
+      sourceTraits.grammarCheck,
+      defaultTraits.grammarCheck);
+#endif // macOS]
+
   return traits;
 }
 

@@ -168,13 +168,20 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.autocapitalizationType =
         RCTUITextAutocapitalizationTypeFromAutocapitalizationType(newTextInputProps.traits.autocapitalizationType);
   }
+#endif // [macOS]
 
+#if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.autoCorrect != oldTextInputProps.traits.autoCorrect) {
     _backedTextInputView.autocorrectionType =
         RCTUITextAutocorrectionTypeFromOptionalBool(newTextInputProps.traits.autoCorrect);
   }
-#endif // [macOS]
-
+#else // [macOS
+  if (newTextInputProps.traits.autoCorrect != oldTextInputProps.traits.autoCorrect && newTextInputProps.traits.autoCorrect.has_value()) {
+    _backedTextInputView.automaticSpellingCorrectionEnabled =
+        newTextInputProps.traits.autoCorrect.value();
+  }
+#endif // macOS]
+  
   if (newTextInputProps.traits.contextMenuHidden != oldTextInputProps.traits.contextMenuHidden) {
     _backedTextInputView.contextMenuHidden = newTextInputProps.traits.contextMenuHidden;
   }
@@ -193,12 +200,26 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.keyboardAppearance =
         RCTUIKeyboardAppearanceFromKeyboardAppearance(newTextInputProps.traits.keyboardAppearance);
   }
-
+#endif // [macOS]
+  
+#if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.spellCheck != oldTextInputProps.traits.spellCheck) {
     _backedTextInputView.spellCheckingType =
         RCTUITextSpellCheckingTypeFromOptionalBool(newTextInputProps.traits.spellCheck);
   }
-#endif // [macOS]
+#else // [macOS
+  if (newTextInputProps.traits.spellCheck != oldTextInputProps.traits.spellCheck && newTextInputProps.traits.spellCheck.has_value()) {
+    _backedTextInputView.continuousSpellCheckingEnabled =
+        newTextInputProps.traits.spellCheck.value();
+  }
+#endif // macOS]
+  
+#if TARGET_OS_OSX // [macOS
+  if (newTextInputProps.traits.grammarCheck != oldTextInputProps.traits.grammarCheck && newTextInputProps.traits.grammarCheck.has_value()) {
+    _backedTextInputView.grammarCheckingEnabled =
+        newTextInputProps.traits.grammarCheck.value();
+  }
+#endif // macOS]
 
   if (newTextInputProps.traits.caretHidden != oldTextInputProps.traits.caretHidden) {
     _backedTextInputView.caretHidden = newTextInputProps.traits.caretHidden;
@@ -463,14 +484,25 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 }
 
 #if TARGET_OS_OSX // [macOS
-- (void)automaticSpellingCorrectionDidChange:(BOOL)enabled {}
+- (void)automaticSpellingCorrectionDidChange:(BOOL)enabled {
+  if (_eventEmitter) {
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onAutoCorrectChange({.autoCorrectEnabled = static_cast<bool>(enabled)});
+  }
+}
 
+- (void)continuousSpellCheckingDidChange:(BOOL)enabled
+{
+  if (_eventEmitter) {
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onSpellCheckChange({.spellCheckEnabled = static_cast<bool>(enabled)});
+  }
+}
 
-- (void)continuousSpellCheckingDidChange:(BOOL)enabled {}
-
-
-- (void)grammarCheckingDidChange:(BOOL)enabled {}
-
+- (void)grammarCheckingDidChange:(BOOL)enabled 
+{
+  if (_eventEmitter) {
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onGrammarCheckChange({.grammarCheckEnabled = static_cast<bool>(enabled)});
+  }
+}
 
 - (BOOL)hasValidKeyDownOrValidKeyUp:(nonnull NSString *)key {
   return YES;
