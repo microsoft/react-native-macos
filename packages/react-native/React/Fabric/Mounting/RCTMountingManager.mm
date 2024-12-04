@@ -309,6 +309,12 @@ static void RCTPerformMountInstructions(
     layoutMetrics.frame.size.width = componentView.layer.bounds.size.width;
     layoutMetrics.frame.size.height = componentView.layer.bounds.size.height;
     CATransform3D newTransform = RCTCATransform3DFromTransformMatrix(newViewProps.resolveTransform(layoutMetrics));
+#if TARGET_OS_OSX // [macOS]
+    if (CGPointEqualToPoint(componentView.layer.anchorPoint, CGPointZero) && !CATransform3DEqualToTransform(newTransform, CATransform3DIdentity)) {
+      CATransform3D originAdjust = CATransform3DTranslate(CATransform3DIdentity, componentView.frame.size.width / 2, componentView.frame.size.height / 2, 0);
+      newTransform = CATransform3DConcat(CATransform3DConcat(CATransform3DInvert(originAdjust), newTransform), originAdjust);
+    }
+#endif // macOS]
     if (!CATransform3DEqualToTransform(newTransform, componentView.layer.transform)) {
       componentView.layer.transform = newTransform;
     }

@@ -161,7 +161,6 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 /**
  * macOS Properties
  */
-@property (nonatomic, assign) CATransform3D transform3D;
 
 // `allowsVibrancy` is readonly on NSView, so let's create a new property to make it assignable
 // that we can set through JS and the getter for `allowsVibrancy` can read in RCTView.

@@ -413,6 +413,7 @@ exports[`VirtualizedList forwards correct stickyHeaderIndices when partially in 
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 50,
@@ -907,6 +908,7 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 110,
@@ -923,6 +925,7 @@ exports[`VirtualizedList keeps sticky headers above viewport visualized 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 10,
@@ -1173,6 +1176,7 @@ exports[`VirtualizedList renders all the bells and whistles 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       onLayout={[Function]}
       style={
         Object {
@@ -1258,6 +1262,7 @@ exports[`VirtualizedList renders empty list with empty component 1`] = `
     </View>
     <empty />
     <View
+      collapsable={true}
       onLayout={[Function]}
     >
       <footer />
@@ -1547,6 +1552,7 @@ exports[`VirtualizedList renders sticky headers in viewport on batched render 1`
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 50,
@@ -1837,6 +1843,7 @@ exports[`adjusts render area with non-zero initialScrollIndex 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 50,
@@ -1917,6 +1924,7 @@ exports[`clamps render area when items removed for initialScrollIndex > 0 and sc
 >
   <View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 40,
@@ -2182,6 +2190,7 @@ exports[`discards intitial render if initialScrollIndex != 0 1`] = `
 >
   <View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 140,
@@ -2364,6 +2373,7 @@ exports[`does not adjust render area until content area layed out 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 150,
@@ -2459,6 +2469,7 @@ exports[`does not move render area when initialScrollIndex is > 0 and offset not
 >
   <View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 10,
@@ -2506,6 +2517,7 @@ exports[`does not move render area when initialScrollIndex is > 0 and offset not
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 140,
@@ -2570,6 +2582,7 @@ exports[`does not over-render when there is less than initialNumToRender cells 1
 >
   <View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 40,
@@ -2823,6 +2836,7 @@ exports[`expands first in viewport to render up to maxToRenderPerBatch on initia
 >
   <View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 40,
@@ -2846,6 +2860,7 @@ exports[`expands first in viewport to render up to maxToRenderPerBatch on initia
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 40,
@@ -2996,6 +3011,7 @@ exports[`expands render area by maxToRenderPerBatch on tick 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 130,
@@ -3272,6 +3288,7 @@ exports[`handles maintainVisibleContentPosition 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 150,
@@ -3409,6 +3426,7 @@ exports[`handles maintainVisibleContentPosition 2`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 90,
@@ -3456,6 +3474,7 @@ exports[`handles maintainVisibleContentPosition 2`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 150,
@@ -3593,6 +3612,7 @@ exports[`handles maintainVisibleContentPosition 3`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 80,
@@ -3648,6 +3668,7 @@ exports[`handles maintainVisibleContentPosition 3`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 150,
@@ -3787,6 +3808,7 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 150,
@@ -3915,6 +3937,7 @@ exports[`handles maintainVisibleContentPosition when anchor moves before minInde
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 150,
@@ -3978,6 +4001,7 @@ exports[`initially renders nothing when initialNumToRender is 0 1`] = `
 >
   <View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 100,
@@ -4112,6 +4136,7 @@ exports[`keeps viewport above last focused rendered 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 70,
@@ -4342,6 +4367,7 @@ exports[`keeps viewport below last focused rendered 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 50,
@@ -4479,6 +4505,7 @@ exports[`renders a zero-height tail spacer on initial render if getItemLayout no
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 0,
@@ -4588,6 +4615,7 @@ exports[`renders full tail spacer if all cells measured 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 50,
@@ -4865,6 +4893,7 @@ exports[`renders new items when data is updated with non-zero initialScrollIndex
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 20,
@@ -5004,6 +5033,7 @@ exports[`renders offset cells in initial render when initialScrollIndex set 1`] 
 >
   <View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 40,
@@ -5043,6 +5073,7 @@ exports[`renders offset cells in initial render when initialScrollIndex set 1`] 
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 20,
@@ -5152,6 +5183,7 @@ exports[`renders tail spacer up to last measured index if getItemLayout not defi
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 20,
@@ -5252,6 +5284,7 @@ exports[`renders tail spacer up to last measured with irregular layout when getI
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 17,
@@ -5325,6 +5358,7 @@ exports[`renders windowSize derived region at bottom 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 40,
@@ -5462,6 +5496,7 @@ exports[`renders windowSize derived region at top 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 60,
@@ -5535,6 +5570,7 @@ exports[`renders windowSize derived region in middle 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 10,
@@ -5598,6 +5634,7 @@ exports[`renders windowSize derived region in middle 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 10,
@@ -5689,6 +5726,7 @@ exports[`renders zero-height tail spacer on batch render if cells not yet measur
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 0,
@@ -5926,6 +5964,7 @@ exports[`retains initial render region when an item is appended 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 80,
@@ -6061,6 +6100,7 @@ exports[`retains intitial render if initialScrollIndex == 0 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 90,
@@ -6257,6 +6297,7 @@ exports[`unmounts sticky headers moved below viewport 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 150,
@@ -6356,6 +6397,7 @@ exports[`virtualizes away last focused index if item removed 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 70,
@@ -6546,6 +6588,7 @@ exports[`virtualizes away last focused item if focus changes to a new cell 1`] =
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 110,
