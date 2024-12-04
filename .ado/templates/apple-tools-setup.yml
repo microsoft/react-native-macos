@@ -5,7 +5,6 @@ steps:
 
   - script: |
       brew bundle --file .ado/Brewfile
-      cat .ado/Brewfile.lock.json
     displayName: 'Install Homebrew dependencies'
 
   - template: /.ado/templates/apple-xcode-select.yml@self
