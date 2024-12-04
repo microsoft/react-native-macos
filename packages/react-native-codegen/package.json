@@ -38,9 +38,6 @@
     "nullthrows": "^1.1.1",
     "yargs": "^17.6.2"
   },
-  "beachball": {
-    "shouldPublish": false
-  },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",

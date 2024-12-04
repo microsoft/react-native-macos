@@ -47,8 +47,5 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "beachball": {
-    "shouldPublish": false
   }
 }
