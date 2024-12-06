@@ -7,4 +7,8 @@ steps:
       brew bundle --file .ado/Brewfile
     displayName: 'Install Homebrew dependencies'
 
+  - script: |
+      sudo xcode-select --switch $(xcode_version)
+    displayName: Use $(xcode_friendly_name)
+
   - template: /.ado/templates/apple-xcode-select.yml@self
