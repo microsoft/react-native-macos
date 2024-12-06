@@ -3,6 +3,8 @@ parameters:
   publishTag: 'latest'
 
 steps:
+  - template: /.ado/templates/configure-git.yml@self
+
   - script: |
       yarn install
     displayName: Install npm dependencies
