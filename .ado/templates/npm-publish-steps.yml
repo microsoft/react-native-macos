@@ -3,6 +3,8 @@ parameters:
   publishTag: 'next'
 
 steps:
+  - template: /.ado/templates/configure-git.yml@self
+
   - script: |
       yarn install
     displayName: Install npm dependencies
@@ -12,17 +14,17 @@ steps:
     displayName: Verify release config
 
   - script: |
-      yarn nx release --dry-run
+      echo Target branch: $(System.PullRequest.TargetBranch)
+      yarn nx release --dry-run --verbose
     displayName: Version and publish packages (dry run)
-    condition: ${{ ne(variables['publish_react_native_macos'], '1') }}
+    condition: and(succeeded(), ne(variables['publish_react_native_macos'], '1'))
 
   - script: |
-      # TODO: Before we can change the line below to `yarn nx release --yes` on
-      # `main`, we must first set up the pipeline for nightly builds. Stable
-      # branches should be fine.
-      yarn nx release --dry-run
+      git switch $(Build.SourceBranchName)
+      yarn nx release --skip-publish --verbose
+      yarn nx release publish --excludeTaskDependencies
     env:
       GITHUB_TOKEN: $(githubAuthToken)
       NODE_AUTH_TOKEN: $(npmAuthToken)
     displayName: Version and publish packages
-    condition: ${{ eq(variables['publish_react_native_macos'], '1') }}
+    condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
