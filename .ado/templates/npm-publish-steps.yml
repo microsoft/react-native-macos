@@ -16,7 +16,7 @@ steps:
   - script: |
       set -eox pipefail
       echo Target branch: $(System.PullRequest.TargetBranch)
-      git checkout -b test
+      git push --set-upstream origin test-publish
       yarn nx release plan --message 'Dry run test' --only-touched=false patch
       yarn nx release --skip-publish --verbose
       yarn nx release publish --excludeTaskDependencies
