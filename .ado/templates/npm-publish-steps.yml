@@ -15,6 +15,7 @@ steps:
 
   - script: |
       echo Target branch: $(System.PullRequest.TargetBranch)
+      yarn nx release plan --message 'Dry run test' patch
       yarn nx release --skip-publish --verbose
       yarn nx release publish --excludeTaskDependencies
     displayName: Version and publish packages (dry run)
