@@ -14,8 +14,9 @@ steps:
     displayName: Verify release config
 
   - script: |
+      set -eox pipefail
       echo Target branch: $(System.PullRequest.TargetBranch)
-      yarn nx release plan --message 'Dry run test' patch
+      yarn nx release plan --message 'Dry run test' --only-touched=false patch
       yarn nx release --skip-publish --verbose
       yarn nx release publish --excludeTaskDependencies
     displayName: Version and publish packages (dry run)
