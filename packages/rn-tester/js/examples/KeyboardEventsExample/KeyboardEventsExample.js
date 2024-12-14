@@ -16,103 +16,97 @@ const React = require('react');
 const ReactNative = require('react-native');
 
 const {Button, ScrollView, StyleSheet, Switch, Text, TextInput, View} =
-  ReactNative;
+    ReactNative;
 
 function KeyEventExample(): React.Node {
   // $FlowFixMe[missing-empty-array-annot]
   const [log, setLog] = React.useState([]);
 
-  const clearLog = React.useCallback(() => {
-    setLog([]);
-  }, [setLog]);
+  const clearLog = React.useCallback(() => { setLog([]); }, [ setLog ]);
 
   const appendLog = React.useCallback(
-    (line: string) => {
-      const limit = 12;
-      let newLog = log.slice(0, limit - 1);
-      newLog.unshift(line);
-      setLog(newLog);
-    },
-    [log, setLog],
+      (line: string) => {
+        const limit = 12;
+        let newLog = log.slice(0, limit - 1);
+        newLog.unshift(line);
+        setLog(newLog);
+      },
+      [ log, setLog ],
   );
 
   const handleKeyDown = React.useCallback(
-    (e: KeyEvent) => {
-      appendLog('Key Down:' + e.nativeEvent.key);
-    },
-    [appendLog],
+      (e: KeyEvent) => { appendLog('Key Down:' + e.nativeEvent.key); },
+      [ appendLog ],
   );
 
   const handleKeyUp = React.useCallback(
-    (e: KeyEvent) => {
-      appendLog('Key Up:' + e.nativeEvent.key);
-    },
-    [appendLog],
+      (e: KeyEvent) => { appendLog('Key Up:' + e.nativeEvent.key); },
+      [ appendLog ],
   );
 
   const viewText =
-    "keyDownEvents: [{key: 'g'}, {key: 'Escape'}, {key: 'Enter'}, {key: 'ArrowLeft'}] \nkeyUpEvents: [{key: 'c'}, {key: 'd'}]";
+      "keyDownEvents: [{key: 'g'}, {key: 'Escape'}, {key: 'Enter'}, {key: 'ArrowLeft'}] \nkeyUpEvents: [{key: 'c'}, {key: 'd'}]";
   const viewKeyboardProps = {
-    onKeyDown: handleKeyDown,
-    keyDownEvents: [
-      {key: 'g'},
-      {key: 'Escape'},
-      {key: 'Enter'},
-      {key: 'ArrowLeft'},
+    onKeyDown : handleKeyDown,
+    keyDownEvents : [
+      {key : 'g'},
+      {key : 'Escape'},
+      {key : 'Enter'},
+      {key : 'ArrowLeft'},
     ],
-    onKeyUp: handleKeyUp,
-    keyUpEvents: [{key: 'c'}, {key: 'd'}],
+    onKeyUp : handleKeyUp,
+    keyUpEvents : [ {key : 'c'}, {key : 'd'} ],
   };
 
   const textInputText =
-    "keyDownEvents: [{key: 'ArrowRight'}, {key: 'ArrowDown'}, {key: 'Enter', ctrlKey: true}, \nkeyUpEvents: [{key: 'Escape'}, {key: 'Enter'}]";
+      "keyDownEvents: [{key: 'ArrowRight'}, {key: 'ArrowDown'}, {key: 'Enter', ctrlKey: true}, \nkeyUpEvents: [{key: 'Escape'}, {key: 'Enter'}]";
   const textInputKeyboardProps = {
-    onKeyDown: handleKeyDown,
-    keyDownEvents: [
-      {key: 'ArrowRight'},
-      {key: 'ArrowDown'},
-      {key: 'Enter', ctrlKey: true},
+    onKeyDown : handleKeyDown,
+    keyDownEvents : [
+      {key : 'ArrowRight'},
+      {key : 'ArrowDown'},
+      {key : 'Enter', ctrlKey : true},
     ],
-    onKeyUp: handleKeyUp,
-    keyUpEvents: [{key: 'Escape'}, {key: 'Enter'}],
+    onKeyUp : handleKeyUp,
+    keyUpEvents : [ {key : 'Escape'}, {key : 'Enter'} ],
   };
 
   const textInputUnhandledText =
-    "keyDownEvents: [{key: 'ArrowRight'}, {key: 'ArrowDown'}, {key: 'Enter', ctrlKey: true}, \nkeyUpEvents: [{key: 'Escape'}, {key: 'Enter'}]";
+      "keyDownEvents: [{key: 'ArrowRight'}, {key: 'ArrowDown'}, {key: 'Enter', ctrlKey: true}, \nkeyUpEvents: [{key: 'Escape'}, {key: 'Enter'}]";
   const textInputunHandledKeyboardProps = {
-    onKeyDown: handleKeyDown,
-    onKeyUp: handleKeyUp,
+    onKeyDown : handleKeyDown,
+    onKeyUp : handleKeyUp,
   };
-
 
   return (
     <ScrollView>
-      <View style={{padding: 10}}>
+      <View style={{
+    padding: 10}}>
         <Text>
           Key events are called when a component detects a key press.To tab
-          between views on macOS: Enable System Preferences / Keyboard /
-          Shortcuts > Use keyboard navigation to move focus between controls.
-        </Text>
+  between views on macOS: Enable System Preferences / Keyboard / Shortcuts >
+      Use keyboard navigation to move focus between controls.<
+          /Text>
         <View>
           <Text style={styles.text}>{viewText}</Text>
-          <View focusable={true} style={styles.row} {...viewKeyboardProps} />
-          <Text style={styles.text}>{textInputText}</Text>
-          <TextInput
-            blurOnSubmit={false}
-            placeholder={'Singleline textInput'}
-            multiline={false}
-            focusable={true}
-            style={styles.row}
-            {...textInputKeyboardProps}
-          />
+      <View focusable = {true} style = {styles.row} {
+        ...viewKeyboardProps
+      } />
+          <Text style={styles.text}>{textInputText}</Text>< TextInput
+  blurOnSubmit = {false} placeholder = {'Singleline textInput'} multiline =
+      {false} focusable = {true} style =
+          {styles.row} {
+            ...textInputKeyboardProps
+          } />
           <TextInput
             placeholder={'Multiline textInput'}
             multiline={true}
             focusable={true}
             style={styles.row}
             {...textInputKeyboardProps}
-          />
-          <Text style={styles.text}>{textInputUnhandledText}</Text>
+          / >
+      <Text style = {styles.text}>{textInputUnhandledText}<
+              /Text>
           <TextInput
             blurOnSubmit={false}
             placeholder={'Singleline textInput'}
@@ -120,13 +114,14 @@ function KeyEventExample(): React.Node {
             focusable={true}
             style={styles.row}
             {...textInputunHandledKeyboardProps}
-          />
-          <TextInput
+          /><
+      TextInput
             placeholder={'Multiline textInput'}
             multiline={true}
             focusable={true}
             style={styles.row}
-            {...textInputunHandledKeyboardProps}
+            {
+    ...textInputunHandledKeyboardProps}
           />
           <Button
             testID="event_clear_button"
@@ -141,21 +136,21 @@ function KeyEventExample(): React.Node {
 }
 
 const styles = StyleSheet.create({
-  row: {
-    height: 36,
-    marginTop: 8,
-    marginBottom: 8,
-    backgroundColor: 'grey',
-    padding: 10,
+  row : {
+    height : 36,
+    marginTop : 8,
+    marginBottom : 8,
+    backgroundColor : 'grey',
+    padding : 10,
   },
-  title: {
-    fontSize: 14,
-    paddingTop: 12,
-    paddingBottom: 8,
+  title : {
+    fontSize : 14,
+    paddingTop : 12,
+    paddingBottom : 8,
   },
-  text: {
-    fontSize: 12,
-    paddingBottom: 4,
+  text : {
+    fontSize : 12,
+    paddingBottom : 4,
   },
 });
 
@@ -163,8 +158,8 @@ exports.title = 'Key Events';
 exports.description = 'Examples that show how Key events can be used.';
 exports.examples = [
   {
-    title: 'KeyEventExample',
-    render: function (): React.Node {
+    title : 'KeyEventExample',
+    render : function() : React.Node {
       return <KeyEventExample />;
     },
   },
