@@ -81,53 +81,9 @@ function KeyEventExample(): React.Node {
     "keyDownEvents: [{key: 'ArrowRight'}, {key: 'ArrowDown'}, {key: 'Enter', ctrlKey: true}, \nkeyUpEvents: [{key: 'Escape'}, {key: 'Enter'}]";
   const textInputunHandledKeyboardProps = {
     onKeyDown: handleKeyDown,
-    // keyDownEvents: [],
     onKeyUp: handleKeyUp,
-    // keyUpEvents: [],
   };
 
-  const [useKeyDownOrUpEvents, setUseKeyDownOrUpEvents] = React.useState(false);
-  const toggleKeyDownOrUpEvents = React.useCallback(
-    (value: boolean) => {
-      setUseKeyDownOrUpEvents(value);
-    },
-    [setUseKeyDownOrUpEvents],
-  );
-
-  const ViewText = useKeyDownOrUpEvents
-    ? "keyDownEvents: [{key: 'g'}, {key: 'Escape'}, {key: 'Enter'}, {key: 'ArrowLeft'}] \nkeyUpEvents: [{key: 'c'}, {key: 'd'}]"
-    : 'validKeysDown: [g, Escape, Enter, ArrowLeft] \nvalidKeysUp: [c, d]';
-  const viewKeyboardProps = useKeyDownOrUpEvents
-    ? {
-        keyDownEvents: [
-          {key: 'g'},
-          {key: 'Escape'},
-          {key: 'Enter'},
-          {key: 'ArrowLeft'},
-        ],
-        keyUpEvents: [{key: 'c'}, {key: 'd'}],
-      }
-    : {
-        validKeysDown: ['g', 'Escape', 'Enter', 'ArrowLeft'],
-        validKeysUp: ['c ', 'd'],
-      };
-
-  const TextInputText = useKeyDownOrUpEvents
-    ? "keyDownEvents: [{key: 'ArrowRight'}, {key: 'ArrowDown'}, {key: 'Enter', ctrlKey: true}, \nkeyUpEvents: [{key: 'Escape'}, {key: 'Enter'}]"
-    : "validKeysDown: ['ArrowRight', 'ArrowDown', 'Enter'] \nvalidKeysUp: ['Escape ', {key: 'Enter', ctrlKey: true}]";
-  const textInputKeyboardProps = useKeyDownOrUpEvents
-    ? {
-        keyDownEvents: [
-          {key: 'ArrowRight'},
-          {key: 'ArrowDown'},
-          {key: 'Enter', ctrlKey: true},
-        ],
-        keyUpEvents: [{key: 'Escape'}, {key: 'Enter'}],
-      }
-    : {
-        validKeysDown: ['ArrowRight', 'ArrowDown', 'Enter'],
-        validKeysUp: ['Escape ', {key: 'Enter', ctrlKey: true}],
-      };
 
   return (
     <ScrollView>
