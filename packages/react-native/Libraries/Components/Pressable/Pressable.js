@@ -188,7 +188,6 @@ type Props = $ReadOnly<{|
 
   /**
    * Array of keys to receive key down events for. These events have their default native behavior prevented.
-   * Overrides the props `validKeysDown`, `validKeysUp` and `passthroughAllKeyEvents`
    *
    * @platform macos
    */
@@ -196,7 +195,6 @@ type Props = $ReadOnly<{|
 
   /**
    * Array of keys to receive key up events for. These events have their default native behavior prevented.
-   * Overrides the props `validKeysDown`, `validKeysUp` and `passthroughAllKeyEvents`
    *
    * @platform macos
    */

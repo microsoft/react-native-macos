@@ -310,7 +310,7 @@ export type KeyEvent = SyntheticEvent<
 >;
 
 /**
- * Represents a key that could be passed to `validKeysDown` and `validKeysUp`.
+ * Represents a key that could be passed to `KeyDownEvents` and `KeyUpEvents`.
  *
  * `key` is the actual key, such as "a", or one of the special values:
  * "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
