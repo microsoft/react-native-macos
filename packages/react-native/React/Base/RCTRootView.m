@@ -16,6 +16,7 @@
 #import "RCTBridge.h"
 #import "RCTConstants.h"
 #import "RCTDevSettings.h" // [macOS]
+#import "RCTFocusChangeEvent.h" // [macOS]
 // [macOS] remove #import "RCTKeyCommands.h"
 #import "RCTLog.h"
 #import "RCTPerformanceLogger.h"
@@ -428,6 +429,46 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
                   userInfo:@{
                     RCTUserInterfaceStyleDidChangeNotificationAppearanceKey : self.effectiveAppearance,
                   }];
+}
+#endif // macOS]
+
+
+#pragma mark - Key window blur/focus
+
+#if TARGET_OS_OSX // [macOS
+- (void)viewDidMoveToWindow {
+  [super viewDidMoveToWindow];
+
+  NSWindow *window = [self window];
+  if (window == nil) {
+    return;
+  }
+
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(containingWindowDidBecomeKey)
+                                               name:NSWindowDidBecomeKeyNotification
+                                             object:window];
+
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(containingWindowDidResignKey)
+                                               name:NSWindowDidResignKeyNotification
+                                             object:window];
+}
+
+- (void)containingWindowDidBecomeKey {
+  NSResponder *firstResponder = [[self window] firstResponder];
+  if ([firstResponder isKindOfClass:[RCTPlatformView class]]) {
+    NSNumber *reactTag = [(RCTPlatformView *)firstResponder reactTag];
+    [[[self bridge] eventDispatcher] sendEvent:[RCTFocusChangeEvent focusEventWithReactTag:reactTag]];
+  }
+}
+
+- (void)containingWindowDidResignKey {
+  NSResponder *firstResponder = [[self window] firstResponder];
+  if ([firstResponder isKindOfClass:[RCTPlatformView class]]) {
+    NSNumber *reactTag = [(RCTPlatformView *)firstResponder reactTag];
+    [[[self bridge] eventDispatcher] sendEvent:[RCTFocusChangeEvent blurEventWithReactTag:reactTag]];
+  }
 }
 #endif // macOS]
 
