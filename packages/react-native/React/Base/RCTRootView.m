@@ -455,19 +455,36 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
                                              object:window];
 }
 
++ (NSNumber *)reactTagClosestToView:(RCTPlatformView *)view {
+  // The first responder may not necessarily have a React tag. For example, if we're focused on
+  // a multiline <TextInput>, the RN component whose blur/focus events we need to touch is an
+  // RCTMultilineTextInputView, but the first responder will be the underlying RCTUITextView.
+  for (RCTPlatformView *testView = view; testView != nil; testView = [testView superview]) {
+    NSNumber *reactTag = [testView reactTag];
+    if (reactTag != nil) {
+      return reactTag;
+    }
+  }
+  return nil;
+}
+
 - (void)containingWindowDidBecomeKey {
   NSResponder *firstResponder = [[self window] firstResponder];
   if ([firstResponder isKindOfClass:[RCTPlatformView class]]) {
-    NSNumber *reactTag = [(RCTPlatformView *)firstResponder reactTag];
-    [[[self bridge] eventDispatcher] sendEvent:[RCTFocusChangeEvent focusEventWithReactTag:reactTag]];
+    NSNumber *reactTag = [RCTRootView reactTagClosestToView:(RCTPlatformView *)firstResponder];
+    if (reactTag != nil) {
+      [[[self bridge] eventDispatcher] sendEvent:[RCTFocusChangeEvent focusEventWithReactTag:reactTag]];
+    }
   }
 }
 
 - (void)containingWindowDidResignKey {
   NSResponder *firstResponder = [[self window] firstResponder];
   if ([firstResponder isKindOfClass:[RCTPlatformView class]]) {
-    NSNumber *reactTag = [(RCTPlatformView *)firstResponder reactTag];
-    [[[self bridge] eventDispatcher] sendEvent:[RCTFocusChangeEvent blurEventWithReactTag:reactTag]];
+    NSNumber *reactTag = [RCTRootView reactTagClosestToView:(RCTPlatformView *)firstResponder];
+    if (reactTag != nil) {
+      [[[self bridge] eventDispatcher] sendEvent:[RCTFocusChangeEvent blurEventWithReactTag:reactTag]];
+    }
   }
 }
 #endif // macOS]
