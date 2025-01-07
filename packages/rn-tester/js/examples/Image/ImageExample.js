@@ -560,6 +560,19 @@ class OnPartialLoadExample extends React.Component<
   }
 }
 
+const AccessibilityExample = () => {
+  const [isAccessible, setIsAccessible] = React.useState(true);
+  return (
+    <>
+      <View style={styles.switch}>
+        <Text>Set acccessible:</Text>
+        <Switch value={isAccessible} onValueChange={setIsAccessible} />
+      </View>
+      <Image accessible={isAccessible} source={fullImage} style={styles.base} />
+    </>
+  );
+};
+
 const fullImage: ImageSource = {
   uri: 'https://www.facebook.com/ads/pics/successstories.png',
 };
@@ -1422,20 +1435,8 @@ exports.examples = [
     description:
       ('If the `accessible` (boolean) prop is set to True, the image will be indicated as an accessbility element. If the `accessible` (boolean) prop is set to False, the image will not be indicated as an accessbility element.': string),
     render: function (): React.Node {
-      const [isAccessible, setIsAccessible] = React.useState(true);
-      return (
-        <>
-          <View style={styles.switch}>
-            <Text>Set acccessible:</Text>
-            <Switch
-              value={isAccessible}
-              onValueChange={setIsAccessible}
-            />
-          </View>
-          <Image accessible={isAccessible} source={fullImage} style={styles.base} />
-        </>
-      );
-    }
+      return <AccessibilityExample />;
+    },
   },
   // macOS]
   {
