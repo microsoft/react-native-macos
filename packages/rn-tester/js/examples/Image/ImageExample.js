@@ -560,6 +560,7 @@ class OnPartialLoadExample extends React.Component<
   }
 }
 
+// [macOS add switch to toggle the value of the accessible prop
 const AccessibilityExample = () => {
   const [isAccessible, setIsAccessible] = React.useState(true);
   return (
@@ -572,6 +573,7 @@ const AccessibilityExample = () => {
     </>
   );
 };
+// macOS]
 
 const fullImage: ImageSource = {
   uri: 'https://www.facebook.com/ads/pics/successstories.png',
@@ -1429,7 +1431,7 @@ exports.examples = [
       );
     },
   },
-  // [macOS add switch to toggle the value of the accessible prop
+  // [macOS
   {
     title: 'Accessibility',
     description:
