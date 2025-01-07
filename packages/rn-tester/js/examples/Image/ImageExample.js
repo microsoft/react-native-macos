@@ -1556,7 +1556,7 @@ exports.examples = [
       ('If the `accessible` (boolean) prop is set to True, the image will be indicated as an accessbility element. If the `accessible` (boolean) prop is set to False, the image will not be indicated as an accessbility element.': string),
     render: function (): React.Node {
       return <AccessibilityExample />;
-    }
+    },
   },
   // macOS]
   {
