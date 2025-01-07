@@ -18,6 +18,7 @@ const {
   Image,
   ImageBackground,
   StyleSheet,
+  Switch, // [macOS]
   Text,
   View,
 } = require('react-native');
@@ -803,6 +804,12 @@ const styles = StyleSheet.create({
     borderColor: 'red',
     backgroundColor: 'yellow',
   },
+  // [macOS
+  switch: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  // macOS]
 });
 
 exports.displayName = (undefined: ?string);
@@ -1443,14 +1450,28 @@ exports.examples = [
       );
     },
   },
+  // [macOS add switch to toggle the value of the accessible prop
   {
     title: 'Accessibility',
     description:
-      ('If the `accessible` (boolean) prop is set to True, the image will be indicated as an accessbility element.': string),
+      ('If the `accessible` (boolean) prop is set to True, the image will be indicated as an accessbility element. If the `accessible` (boolean) prop is set to False, the image will not be indicated as an accessbility element.': string),
     render: function (): React.Node {
-      return <Image accessible source={fullImage} style={styles.base} />;
-    },
+      const [isAccessible, setIsAccessible] = React.useState(true);
+      return (
+        <>
+          <View style={styles.switch}>
+            <Text>Set acccessible:</Text>
+            <Switch
+              value={isAccessible}
+              onValueChange={setIsAccessible}
+            />
+          </View>
+          <Image accessible={isAccessible} source={fullImage} style={styles.base} />
+        </>
+      );
+    }
   },
+  // macOS]
   {
     title: 'Accessibility Label',
     description:
