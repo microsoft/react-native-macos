@@ -504,7 +504,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 }
 
-- (BOOL)hasValidKeyDownOrValidKeyUp:(nonnull NSString *)key {
+- (BOOL)hasKeyDownEventOrKeyUpEvent:(nonnull NSString *)key {
   return YES;
 }
 

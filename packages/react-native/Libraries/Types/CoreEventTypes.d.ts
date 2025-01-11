@@ -285,7 +285,7 @@ export interface NativeKeyEvent {
 }
 
 /**
- * Represents a key that could be passed to `validKeysDown` and `validKeysUp`.
+ * Represents a key that could be passed to `keyDownEvents` and `keyUpEvents`.
  *
  * `key` is the actual key, such as "a", or one of the special values:
  * "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
