@@ -455,6 +455,12 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     if (!didFocusExternalTextField && focusEnd > endFrame.origin.y) {
       // Text field active region is below visible area with keyboard - update diff to bring into view
       contentDiff = endFrame.origin.y - focusEnd;
+    } else {
+      UIView *inputAccessoryView = _firstResponderViewOutsideScrollView.inputAccessoryView;
+      if (inputAccessoryView) {
+        // Text input view is within the inputAccessoryView.
+        contentDiff = endFrame.origin.y - beginFrame.origin.y;
+      }
     }
   } else if (endFrame.origin.y <= beginFrame.origin.y) {
     // Keyboard opened for other reason
@@ -1157,6 +1163,26 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
   RCT_FORWARD_SCROLL_EVENT(scrollViewDidEndZooming : scrollView withView : view atScale : scale);
 }
 
+- (void)didMoveToWindow
+{
+  [super didMoveToWindow];
+  if (self.window == nil) {
+    // Check if the ScrollView was in motion
+    if (_scrollView.isDecelerating || !_scrollView.isTracking) {
+      // Trigger the onMomentumScrollEnd event manually
+      RCT_SEND_SCROLL_EVENT(onMomentumScrollEnd, nil);
+      // We can't use the RCT_FORWARD_SCROLL_EVENT here beacuse the `_cmd` parameter passed
+      // to `respondsToSelector` is the current method - so it will be `didMoveToWindow` - and not
+      // `scrollViewDidEndDecelerating` that is passed.
+      for (NSObject<UIScrollViewDelegate> *scrollViewListener in _scrollListeners) {
+        if ([scrollViewListener respondsToSelector:@selector(scrollViewDidEndDecelerating:)]) {
+          [scrollViewListener scrollViewDidEndDecelerating:_scrollView];
+        }
+      }
+    }
+  }
+}
+
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
 {
   // Fire a final scroll event
@@ -1435,6 +1461,23 @@ RCT_SET_AND_PRESERVE_OFFSET(setShowsVerticalScrollIndicator, showsVerticalScroll
 RCT_SET_AND_PRESERVE_OFFSET(setZoomScale, zoomScale, CGFloat);
 
 #if !TARGET_OS_OSX // [macOS]
+- (void)setScrollIndicatorInsets:(UIEdgeInsets)value
+{
+  [_scrollView setScrollIndicatorInsets:value];
+}
+
+- (UIEdgeInsets)scrollIndicatorInsets
+{
+  UIEdgeInsets verticalScrollIndicatorInsets = [_scrollView verticalScrollIndicatorInsets];
+  UIEdgeInsets horizontalScrollIndicatorInsets = [_scrollView horizontalScrollIndicatorInsets];
+
+  return UIEdgeInsetsMake(
+      verticalScrollIndicatorInsets.top,
+      horizontalScrollIndicatorInsets.left,
+      verticalScrollIndicatorInsets.bottom,
+      horizontalScrollIndicatorInsets.right);
+}
+
 - (void)setAutomaticallyAdjustsScrollIndicatorInsets:(BOOL)automaticallyAdjusts API_AVAILABLE(ios(13.0))
 {
   // `automaticallyAdjustsScrollIndicatorInsets` is available since iOS 13.

@@ -166,6 +166,8 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
   UIColor *tintColor = [RCTConvert UIColor:options.tintColor() ? @(*options.tintColor()) : nil];
   UIColor *cancelButtonTintColor =
       [RCTConvert UIColor:options.cancelButtonTintColor() ? @(*options.cancelButtonTintColor()) : nil];
+  UIColor *disabledButtonTintColor =
+      [RCTConvert UIColor:options.disabledButtonTintColor() ? @(*options.disabledButtonTintColor()) : nil];
 #endif // [macOS]
   NSString *userInterfaceStyle = [RCTConvert NSString:options.userInterfaceStyle()];
 
@@ -177,15 +179,16 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
       // [macOS nil check our dict values before inserting them or we may crash
       RCTLogError(
           @"Tried to display action sheet but there is no application window. options: %@", @{
-            @"title" : title ?: [NSNull null],
-            @"message" : message ?: [NSNull null],
-            @"options" : buttons ?: [NSNull null],
+            @"title" : title ?: @"(null)",
+            @"message" : message ?: @"(null)",
+            @"options" : buttons,
             @"cancelButtonIndex" : @(cancelButtonIndex),
-            @"destructiveButtonIndices" : destructiveButtonIndices ?: [NSNull null],
-            @"anchor" : anchor ?: [NSNull null],
-            @"tintColor" : tintColor ?: [NSNull null],
-            @"cancelButtonTintColor" : cancelButtonTintColor ?: [NSNull null],
-            @"disabledButtonIndices" : disabledButtonIndices ?: [NSNull null],
+            @"destructiveButtonIndices" : destructiveButtonIndices,
+            @"anchor" : anchor ?: @"(null)",
+            @"tintColor" : tintColor ?: @"(null)",
+            @"cancelButtonTintColor" : cancelButtonTintColor ?: @"(null)",
+            @"disabledButtonTintColor" : disabledButtonTintColor ?: @"(null)",
+            @"disabledButtonIndices" : disabledButtonIndices ?: @"(null)",
           });
       // macOS]
       return;
@@ -259,7 +262,11 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
       for (NSNumber *disabledButtonIndex in disabledButtonIndices) {
         if ([disabledButtonIndex integerValue] < buttons.count) {
 #if !TARGET_OS_OSX // [macOS]
-          [alertController.actions[[disabledButtonIndex integerValue]] setEnabled:false];
+          UIAlertAction *action = alertController.actions[[disabledButtonIndex integerValue]];
+          [action setEnabled:false];
+          if (disabledButtonTintColor) {
+            [action setValue:disabledButtonTintColor forKey:@"titleTextColor"];
+          }
 #else // [macOS
           NSMenuItem *menuItem = [[menu itemArray] objectAtIndex:[disabledButtonIndex integerValue]];
           [menuItem setEnabled:NO];

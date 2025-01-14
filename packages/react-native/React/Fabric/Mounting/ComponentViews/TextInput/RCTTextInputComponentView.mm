@@ -67,6 +67,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
    */
   BOOL _comingFromJS;
   BOOL _didMoveToWindow;
+
+  /*
+   * Newly initialized default typing attributes contain a no-op NSParagraphStyle and NSShadow. These cause inequality
+   * between the AttributedString backing the input and those generated from state. We store these attributes to make
+   * later comparison insensitive to them.
+   */
+  NSDictionary<NSAttributedStringKey, id> *_originalTypingAttributes;
 }
 
 #pragma mark - UIView overrides
@@ -77,11 +84,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     const auto &defaultProps = TextInputShadowNode::defaultSharedProps();
     _props = defaultProps;
 
-    _backedTextInputView = defaultProps->traits.multiline ? [RCTUITextView new] : [RCTUITextField new];
+    _backedTextInputView = defaultProps->multiline ? [RCTUITextView new] : [RCTUITextField new];
     _backedTextInputView.textInputDelegate = self;
     _ignoreNextTextInputCall = NO;
     _comingFromJS = NO;
     _didMoveToWindow = NO;
+    _originalTypingAttributes = [_backedTextInputView.typingAttributes copy];
 
     [self addSubview:_backedTextInputView];
 #if TARGET_OS_IOS // [macOS] [visionOS]
@@ -90,6 +98,20 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 
   return self;
+}
+
+- (void)updateEventEmitter:(const EventEmitter::Shared &)eventEmitter
+{
+  [super updateEventEmitter:eventEmitter];
+
+  NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
+      [_backedTextInputView.defaultTextAttributes mutableCopy];
+
+  RCTWeakEventEmitterWrapper *eventEmitterWrapper = [RCTWeakEventEmitterWrapper new];
+  eventEmitterWrapper.eventEmitter = _eventEmitter;
+  defaultAttributes[RCTAttributedStringEventEmitterKey] = eventEmitterWrapper;
+
+  _backedTextInputView.defaultTextAttributes = defaultAttributes;
 }
 
 - (void)didMoveToWindow
@@ -102,6 +124,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
       [_backedTextInputView becomeFirstResponder];
 #endif // [macOS]
+      [self scrollCursorIntoView];
     }
     _didMoveToWindow = YES;
 #if TARGET_OS_IOS // [macOS] [visionOS]
@@ -117,6 +140,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
   if (![self isDescendantOfView:scrollView.scrollView] || !_backedTextInputView.isFirstResponder) {
     // View is outside scroll view or it's not a first responder.
+    scrollView.firstResponderViewOutsideScrollView = _backedTextInputView;
     return;
   }
 
@@ -158,8 +182,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   const auto &newTextInputProps = static_cast<const TextInputProps &>(*props);
 
   // Traits:
-  if (newTextInputProps.traits.multiline != oldTextInputProps.traits.multiline) {
-    [self _setMultiline:newTextInputProps.traits.multiline];
+  if (newTextInputProps.multiline != oldTextInputProps.multiline) {
+    [self _setMultiline:newTextInputProps.multiline];
   }
 
 
@@ -280,8 +304,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 
   if (newTextInputProps.textAttributes != oldTextInputProps.textAttributes) {
-    _backedTextInputView.defaultTextAttributes =
+    NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
+    defaultAttributes[RCTAttributedStringEventEmitterKey] =
+        _backedTextInputView.defaultTextAttributes[RCTAttributedStringEventEmitterKey];
+    _backedTextInputView.defaultTextAttributes = defaultAttributes;
   }
 
 #if !TARGET_OS_OSX // [macOS]
@@ -292,6 +319,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   if (newTextInputProps.inputAccessoryViewID != oldTextInputProps.inputAccessoryViewID) {
     _backedTextInputView.inputAccessoryViewID = RCTNSStringFromString(newTextInputProps.inputAccessoryViewID);
+  }
+
+  if (newTextInputProps.inputAccessoryViewButtonLabel != oldTextInputProps.inputAccessoryViewButtonLabel) {
+    _backedTextInputView.inputAccessoryViewButtonLabel =
+        RCTNSStringFromString(newTextInputProps.inputAccessoryViewButtonLabel);
   }
   [super updateProps:props oldProps:oldProps];
 
@@ -472,8 +504,14 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (_comingFromJS) {
     return;
   }
+
+  // T207198334: Setting a new AttributedString (_comingFromJS) will trigger a selection change before the backing
+  // string is updated, so indicies won't point to what we want yet. Only respond to user selection change, and let
+  // `_setAttributedString` handle updating typing attributes if content changes.
+  [self _updateTypingAttributes];
+
   const auto &props = static_cast<const TextInputProps &>(*_props);
-  if (props.traits.multiline && ![_lastStringStateWasUpdatedWith isEqual:_backedTextInputView.attributedText]) {
+  if (props.multiline && ![_lastStringStateWasUpdatedWith isEqual:_backedTextInputView.attributedText]) {
     [self textInputDidChange];
     _ignoreNextTextInputCall = YES;
   }
@@ -578,6 +616,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     [_backedTextInputView selectAll:nil];
     [self textInputDidChangeSelection];
   }
+
+  [self scrollCursorIntoView];
 }
 
 - (void)blur
@@ -679,22 +719,25 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   UIKeyboardType keyboardType = _backedTextInputView.keyboardType;
   UIReturnKeyType returnKeyType = _backedTextInputView.returnKeyType;
+  NSString *inputAccessoryViewButtonLabel = _backedTextInputView.inputAccessoryViewButtonLabel;
 
   BOOL containsKeyType = [returnKeyTypesSet containsObject:@(returnKeyType)];
+  BOOL containsInputAccessoryViewButtonLabel = inputAccessoryViewButtonLabel != nil;
 
   // These keyboard types (all are number pads) don't have a "returnKey" button by default,
   // so we create an `inputAccessoryView` with this button for them.
   BOOL shouldHaveInputAccessoryView =
       (keyboardType == UIKeyboardTypeNumberPad || keyboardType == UIKeyboardTypePhonePad ||
        keyboardType == UIKeyboardTypeDecimalPad || keyboardType == UIKeyboardTypeASCIICapableNumberPad) &&
-      containsKeyType;
+      (containsKeyType || containsInputAccessoryViewButtonLabel);
 
   if ((_backedTextInputView.inputAccessoryView != nil) == shouldHaveInputAccessoryView) {
     return;
   }
 
   if (shouldHaveInputAccessoryView) {
-    NSString *buttonLabel = [self returnKeyTypeToString:returnKeyType];
+    NSString *buttonLabel = inputAccessoryViewButtonLabel != nil ? inputAccessoryViewButtonLabel
+                                                                 : [self returnKeyTypeToString:returnKeyType];
 
     UIToolbar *toolbarView = [UIToolbar new];
     [toolbarView sizeToFit];
@@ -812,8 +855,35 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     [_backedTextInputView scrollRangeToVisible:NSMakeRange(offsetStart, 0)];
   }
   [self _restoreTextSelection];
+  [self _updateTypingAttributes];
   _lastStringStateWasUpdatedWith = attributedString;
 #endif // [macOS]
+}
+
+// Ensure that newly typed text will inherit any custom attributes. We follow the logic of RN Android, where attributes
+// to the left of the cursor are copied into new text, unless we are at the start of the field, in which case we will
+// copy the attributes from text to the right. This allows consistency between backed input and new AttributedText
+// https://github.com/facebook/react-native/blob/3102a58df38d96f3dacef0530e4dbb399037fcd2/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/text/internal/span/SetSpanOperation.kt#L30
+- (void)_updateTypingAttributes
+{
+  if (_backedTextInputView.attributedText.length > 0 && _backedTextInputView.selectedTextRange != nil) {
+    NSUInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
+                                                           toPosition:_backedTextInputView.selectedTextRange.start];
+
+    NSUInteger samplePoint = offsetStart == 0 ? 0 : offsetStart - 1;
+    _backedTextInputView.typingAttributes = [_backedTextInputView.attributedText attributesAtIndex:samplePoint
+                                                                                    effectiveRange:NULL];
+  }
+}
+
+- (void)scrollCursorIntoView
+{
+  UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
+  if (selectedRange.empty) {
+    NSInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
+                                                          toPosition:selectedRange.start];
+    [_backedTextInputView scrollRangeToVisible:NSMakeRange(offsetStart, 0)];
+  }
 }
 
 - (void)_setMultiline:(BOOL)multiline
@@ -886,23 +956,17 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   fontHasBeenUpdatedBySystem;
 
   if (shouldFallbackToBareTextComparison) {
-    return ([newText.string isEqualToString:oldText.string]);
+    return [newText.string isEqualToString:oldText.string];
   } else {
-    return ([newText isEqualToAttributedString:oldText]);
+    return RCTIsAttributedStringEffectivelySame(
+        newText, oldText, _originalTypingAttributes, static_cast<const TextInputProps &>(*_props).textAttributes);
   }
 }
 
 - (SubmitBehavior)getSubmitBehavior
 {
   const auto &props = static_cast<const TextInputProps &>(*_props);
-  const SubmitBehavior submitBehaviorDefaultable = props.traits.submitBehavior;
-
-  // We should always have a non-default `submitBehavior`, but in case we don't, set it based on multiline.
-  if (submitBehaviorDefaultable == SubmitBehavior::Default) {
-    return props.traits.multiline ? SubmitBehavior::Newline : SubmitBehavior::BlurAndSubmit;
-  }
-
-  return submitBehaviorDefaultable;
+  return props.getNonDefaultSubmitBehavior();
 }
 
 @end

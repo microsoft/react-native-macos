@@ -16,7 +16,7 @@
   CGFloat _scrollViewZoomScale;
   NSDictionary *_userData;
   uint16_t _coalescingKey;
-  NSDictionary *_body; // [macOS]
+  CFTimeInterval _timestamp;
 }
 
 @synthesize viewTag = _viewTag;
@@ -44,7 +44,7 @@
     _scrollViewZoomScale = scrollViewZoomScale;
     _userData = userData;
     _coalescingKey = coalescingKey;
-    _body = [self body]; // [macOS]
+    _timestamp = CACurrentMediaTime();
   }
   return self;
 }
@@ -69,6 +69,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
     @"contentSize" : @{@"width" : @(_scrollViewContentSize.width), @"height" : @(_scrollViewContentSize.height)},
     @"layoutMeasurement" : @{@"width" : @(_scrollViewFrame.size.width), @"height" : @(_scrollViewFrame.size.height)},
     @"zoomScale" : @(_scrollViewZoomScale ?: 1),
+    @"timestamp" : @(_timestamp * 1000),
   };
 
   if (_userData) {
@@ -105,11 +106,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
 
 - (NSArray *)arguments
 {
-  // TODO: Revisit when FB issues their Main Thread Checker fix.
-  // Previously this called [self body], which in turn calls view-related methods.
-  // Because the arguments method is called from a background thread, we now return
-  // the cached metrics from _body to avoid calling main-thread-specific methods.
-  return @[ self.viewTag, RCTNormalizeInputEventName(self.eventName), _body ]; // [macOS]
+  return @[ self.viewTag, RCTNormalizeInputEventName(self.eventName), [self body] ];
 }
 
 @end

@@ -78,7 +78,7 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
                                                                  userData:nil
                                                             coalescingKey:coalescingKey];
   NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:scrollEvent, @"event", nil];
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"RCTNotifyEventDispatcherObserversOfEvent_DEPRECATED"
+  [[NSNotificationCenter defaultCenter] postNotificationName:RCTNotifyEventDispatcherObserversOfEvent_DEPRECATED
                                                       object:nil
                                                     userInfo:userInfo];
 }
@@ -199,6 +199,7 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
   UIViewAnimationCurve curve =
       (UIViewAnimationCurve)[notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] unsignedIntegerValue];
   CGRect keyboardEndFrame = [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  CGRect keyboardBeginFrame = [notification.userInfo[UIKeyboardFrameBeginUserInfoKey] CGRectValue];
 
   CGPoint absoluteViewOrigin = [self convertPoint:self.bounds.origin toView:nil];
   CGFloat scrollViewLowerY = isInverted ? absoluteViewOrigin.y : absoluteViewOrigin.y + self.bounds.size.height;
@@ -220,21 +221,24 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
                                                from:self
                                            forEvent:nil]) {
     if (CGRectEqualToRect(_firstResponderFocus, CGRectNull)) {
-      // Text input view is outside of the scroll view.
-      return;
-    }
+      UIView *inputAccessoryView = _firstResponderViewOutsideScrollView.inputAccessoryView;
+      if (inputAccessoryView) {
+        // Text input view is within the inputAccessoryView.
+        contentDiff = keyboardEndFrame.origin.y - keyboardBeginFrame.origin.y;
+      }
+    } else {
+      CGRect viewIntersection = CGRectIntersection(self.firstResponderFocus, keyboardEndFrame);
 
-    CGRect viewIntersection = CGRectIntersection(self.firstResponderFocus, keyboardEndFrame);
+      if (CGRectIsNull(viewIntersection)) {
+        return;
+      }
 
-    if (CGRectIsNull(viewIntersection)) {
-      return;
-    }
-
-    // Inner text field focused
-    CGFloat focusEnd = CGRectGetMaxY(self.firstResponderFocus);
-    if (focusEnd > keyboardEndFrame.origin.y) {
-      // Text field active region is below visible area with keyboard - update diff to bring into view
-      contentDiff = keyboardEndFrame.origin.y - focusEnd;
+      // Inner text field focused
+      CGFloat focusEnd = CGRectGetMaxY(self.firstResponderFocus);
+      if (focusEnd > keyboardEndFrame.origin.y) {
+        // Text field active region is below visible area with keyboard - update diff to bring into view
+        contentDiff = keyboardEndFrame.origin.y - focusEnd;
+      }
     }
   }
 
@@ -572,6 +576,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   metrics.contentInset = RCTEdgeInsetsFromUIEdgeInsets(_scrollView.contentInset);
   metrics.containerSize = RCTSizeFromCGSize(_scrollView.bounds.size);
   metrics.zoomScale = _scrollView.zoomScale;
+  metrics.timestamp = CACurrentMediaTime();
 
   if (_layoutMetrics.layoutDirection == LayoutDirection::RightToLeft) {
     metrics.contentOffset.x = metrics.contentSize.width - metrics.containerSize.width - metrics.contentOffset.x;
@@ -585,12 +590,19 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   if (!_state) {
     return;
   }
+
   auto contentOffset = RCTPointFromCGPoint(_scrollView.contentOffset);
-  _state->updateState([contentOffset](const ScrollViewShadowNode::ConcreteState::Data &data) {
-    auto newData = data;
-    newData.contentOffset = contentOffset;
-    return std::make_shared<const ScrollViewShadowNode::ConcreteState::Data>(newData);
-  });
+  _state->updateState(
+      [contentOffset](
+          const ScrollViewShadowNode::ConcreteState::Data &oldData) -> ScrollViewShadowNode::ConcreteState::SharedData {
+        if (oldData.contentOffset == contentOffset) {
+          // avoid doing a state update if content offset didn't change.
+          return nullptr;
+        }
+        auto newData = oldData;
+        newData.contentOffset = contentOffset;
+        return std::make_shared<const ScrollViewShadowNode::ConcreteState::Data>(newData);
+      });
 }
 
 - (void)prepareForRecycle
@@ -643,33 +655,18 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
 - (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // [macOS]
 {
-  const auto &props = static_cast<const ScrollViewProps &>(*_props);
   auto scrollMetrics = [self _scrollViewMetrics];
 
-  if (props.enableSyncOnScroll) {
+  [self _updateStateWithContentOffset];
+
+  NSTimeInterval now = CACurrentMediaTime();
+  if ((_lastScrollEventDispatchTime == 0) || (now - _lastScrollEventDispatchTime > _scrollEventThrottle)) {
+    _lastScrollEventDispatchTime = now;
     if (_eventEmitter) {
-      const auto &eventEmitter = static_cast<const ScrollViewEventEmitter &>(*_eventEmitter);
-      // TODO: temporary API to unblock testing of synchronous rendering.
-      eventEmitter.experimental_flushSync([&eventEmitter, &scrollMetrics, &self]() {
-        [self _updateStateWithContentOffset];
-        // TODO: temporary API to unblock testing of synchronous rendering.
-        eventEmitter.experimental_onDiscreteScroll(scrollMetrics);
-      });
-    }
-  } else {
-    if (!_isUserTriggeredScrolling || CoreFeatures::enableGranularScrollViewStateUpdatesIOS) {
-      [self _updateStateWithContentOffset];
+      static_cast<const ScrollViewEventEmitter &>(*_eventEmitter).onScroll(scrollMetrics);
     }
 
-    NSTimeInterval now = CACurrentMediaTime();
-    if ((_lastScrollEventDispatchTime == 0) || (now - _lastScrollEventDispatchTime > _scrollEventThrottle)) {
-      _lastScrollEventDispatchTime = now;
-      if (_eventEmitter) {
-        static_cast<const ScrollViewEventEmitter &>(*_eventEmitter).onScroll(scrollMetrics);
-      }
-
-      RCTSendScrollEventForNativeAnimations_DEPRECATED(scrollView, self.tag, kOnScrollEvent);
-    }
+    RCTSendScrollEventForNativeAnimations_DEPRECATED(scrollView, self.tag, kOnScrollEvent);
   }
 
   [self _remountChildrenIfNeeded];
@@ -758,6 +755,35 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)scrollViewDidEndScrollingAnimation:(RCTUIScrollView *)scrollView // [macOS]
 {
   [self _handleFinishedScrolling:scrollView];
+}
+
+#if !TARGET_OS_OSX // [macOS]
+- (void)didMoveToWindow
+{
+  [super didMoveToWindow];
+#else // [macOS
+- (void)viewDidMoveToWindow // [macOS]
+{
+  [super viewDidMoveToWindow];
+#endif // [macOS]
+
+  if (!self.window) {
+    // The view is being removed, ensure that the scroll end event is dispatched
+    [self _handleScrollEndIfNeeded];
+  }
+}
+
+- (void)_handleScrollEndIfNeeded
+{
+  if (_scrollView.isDecelerating || !_scrollView.isTracking) {
+    if (!_eventEmitter) {
+      return;
+    }
+    static_cast<const ScrollViewEventEmitter &>(*_eventEmitter).onMomentumScrollEnd([self _scrollViewMetrics]);
+
+    [self _updateStateWithContentOffset];
+    _isUserTriggeredScrolling = NO;
+  }
 }
 
 - (void)_handleFinishedScrolling:(RCTUIScrollView *)scrollView // [macOS]

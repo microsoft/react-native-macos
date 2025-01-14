@@ -22,12 +22,10 @@ const {
   updateReactNativeArtifacts,
 } = require('../releases/set-rn-artifacts-version');
 const {setVersion} = require('../releases/set-version');
-/* [macOS We do not generate Android artifacts for React Native macOS
 const {
   publishAndroidArtifactsToMaven,
   publishExternalArtifactsToMaven,
 } = require('../releases/utils/release-utils');
-macOS] */
 const {getPackages} = require('../utils/monorepo');
 const path = require('path');
 const yargs = require('yargs');
@@ -35,8 +33,6 @@ const yargs = require('yargs');
 /**
  * This script prepares a release version of react-native and may publish to NPM.
  * It is supposed to run in CI environment, not on a developer's machine.
- *
- * [macOS] For React Native macOS, we have modified this script to not create Android Artifacts.
  *
  * For a dry run (commitly), this script will:
  *  * Version the commitly of the form `1000.0.0-<commitSha>`
@@ -120,15 +116,14 @@ async function publishNpm(buildType /*: BuildType */) /*: Promise<void> */ {
     return;
   }
 
-  /* [macOS Skip the Android Artifact and NPM Publish here as we do that in our Azure Pipeline
-  // We first publish on Maven Central the external artifacts
-  // produced by iOS
-  publishExternalArtifactsToMaven(version, buildType);
+  // We first publish on Maven Central all the Android artifacts.
+  // Those were built by the `build-android` CI job.
+  publishAndroidArtifactsToMaven(version, buildType);
 
-  // We the publish on Maven Central all the Android artifacts.
+  // And we then publish on Maven Central the external artifacts
+  // produced by iOS
   // NPM publishing is done just after.
-  // publishAndroidArtifactsToMaven(version, buildType);
-    macOS] */
+  publishExternalArtifactsToMaven(version, buildType);
 
   const packagePath = path.join(REPO_ROOT, 'packages', 'react-native');
   const result = publishPackage(packagePath, {

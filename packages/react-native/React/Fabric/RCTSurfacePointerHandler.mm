@@ -694,22 +694,22 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
     if (eventEmitter != nil) {
       switch (eventType) {
         case RCTPointerEventTypeStart: {
-          eventEmitter->onPointerDown(pointerEvent);
+          eventEmitter->onPointerDown(std::move(pointerEvent));
           break;
         }
         case RCTPointerEventTypeMove: {
-          eventEmitter->onPointerMove(pointerEvent);
+          eventEmitter->onPointerMove(std::move(pointerEvent));
           break;
         }
         case RCTPointerEventTypeEnd: {
           eventEmitter->onPointerUp(pointerEvent);
           if (pointerEvent.isPrimary && pointerEvent.button == 0 && IsPointerWithinInitialTree(activePointer)) {
-            eventEmitter->onClick(pointerEvent);
+            eventEmitter->onClick(std::move(pointerEvent));
           }
           break;
         }
         case RCTPointerEventTypeCancel: {
-          eventEmitter->onPointerCancel(pointerEvent);
+          eventEmitter->onPointerCancel(std::move(pointerEvent));
           break;
         }
       }
@@ -929,9 +929,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   if (eventEmitter != nil) {
     switch (recognizer.state) {
       case UIGestureRecognizerStateEnded:
-        eventEmitter->onPointerLeave(event);
+        eventEmitter->onPointerLeave(std::move(event));
+        break;
       default:
-        eventEmitter->onPointerMove(event);
+        eventEmitter->onPointerMove(std::move(event));
+        break;
     }
   }
 }

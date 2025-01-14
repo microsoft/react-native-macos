@@ -44,13 +44,13 @@ RCTUIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColo
 #if !TARGET_OS_OSX // [macOS]
     UIColor *color = [UIColor colorWithDynamicProvider:^UIColor *_Nonnull(UITraitCollection *_Nonnull collection) {
       if (collection.userInterfaceStyle == UIUserInterfaceStyleDark) {
-        if (collection.accessibilityContrast == UIAccessibilityContrastHigh && highContrastDarkColor != nil) {
+        if (collection.accessibilityContrast == UIAccessibilityContrastHigh && highContrastDark != 0) {
           return highContrastDarkColor;
         } else {
           return darkColor;
         }
       } else {
-        if (collection.accessibilityContrast == UIAccessibilityContrastHigh && highContrastLightColor != nil) {
+        if (collection.accessibilityContrast == UIAccessibilityContrastHigh && highContrastLight != 0) {
           return highContrastLightColor;
         } else {
           return lightColor;

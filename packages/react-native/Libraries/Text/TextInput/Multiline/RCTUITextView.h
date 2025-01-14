@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL caretHidden;
 
 @property (nonatomic, strong, nullable) NSString *inputAccessoryViewID;
+@property (nonatomic, strong, nullable) NSString *inputAccessoryViewButtonLabel;
 
 #if TARGET_OS_OSX // [macOS
 @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;

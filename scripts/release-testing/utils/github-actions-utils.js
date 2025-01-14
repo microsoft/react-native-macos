@@ -25,10 +25,11 @@ type WorkflowRun = {
   id: number,
   name: string,
   run_number: number,
-  status: string,
+  status: "queued" | "in_progress" | "completed",
   workflow_id: number,
   url: string,
   created_at: string,
+  conclusion: "success" | "failure" | "neutral" | "cancelled" | "skipped" | "timed_out" | "action_required" | null,
 };
 
 
@@ -140,7 +141,15 @@ async function initialize(
     `https://github.com/facebook/react-native/actions/runs/${testAllWorkflows[0].id}\n`,
   );
 
-  artifacts = await _getArtifacts(testAllWorkflows[0].id);
+  let workflow = testAllWorkflows[0];
+  if (useLastSuccessfulPipeline) {
+    workflow =
+      testAllWorkflows.find(
+        wf => wf.status === 'completed' && wf.conclusion === 'success',
+      ) ?? workflow;
+  }
+
+  artifacts = await _getArtifacts(workflow.id);
 }
 
 function downloadArtifact(
@@ -161,13 +170,13 @@ function downloadArtifact(
 async function artifactURLForJSCRNTesterAPK(
   emulatorArch /*: string */,
 ) /*: Promise<string> */ {
-  return getArtifactURL('rntester-jsc-release');
+  return getArtifactURL('rntester-jsc-debug');
 }
 
 async function artifactURLForHermesRNTesterAPK(
   emulatorArch /*: string */,
 ) /*: Promise<string> */ {
-  return getArtifactURL('rntester-hermes-release');
+  return getArtifactURL('rntester-hermes-debug');
 }
 
 async function artifactURLForMavenLocal() /*: Promise<string> */ {

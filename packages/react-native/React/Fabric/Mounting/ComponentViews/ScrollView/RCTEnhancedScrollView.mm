@@ -7,8 +7,9 @@
 
 #import "RCTEnhancedScrollView.h"
 #import <React/RCTUtils.h>
-#import <React/RCTScrollableProtocol.h>
-#import <React/RCTAutoInsetsProtocol.h>
+#import <React/RCTScrollableProtocol.h> // [macOS]
+#import <React/RCTAutoInsetsProtocol.h> // [macOS]
+#import <react/utils/FloatComparison.h>
 
 @interface RCTEnhancedScrollView () <
 #if !TARGET_OS_OSX // [macOS]
@@ -278,7 +279,8 @@
 
 - (BOOL)isHorizontal:(RCTUIScrollView *)scrollView // [macOS]
 {
-  return scrollView.contentSize.width > self.frame.size.width;
+  return !facebook::react::floatEquality(scrollView.contentSize.width, self.frame.size.width) &&
+      scrollView.contentSize.width > self.frame.size.width;
 }
 
 @end

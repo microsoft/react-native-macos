@@ -15,6 +15,7 @@
 
 #include <yoga/algorithm/FlexDirection.h>
 #include <yoga/enums/Align.h>
+#include <yoga/enums/BoxSizing.h>
 #include <yoga/enums/Dimension.h>
 #include <yoga/enums/Direction.h>
 #include <yoga/enums/Display.h>
@@ -188,6 +189,24 @@ class YG_EXPORT Style {
     pool_.store(minDimensions_[yoga::to_underlying(axis)], value);
   }
 
+  FloatOptional resolvedMinDimension(
+      Direction direction,
+      Dimension axis,
+      float referenceLength,
+      float ownerWidth) const {
+    FloatOptional value = minDimension(axis).resolve(referenceLength);
+    if (boxSizing() == BoxSizing::BorderBox) {
+      return value;
+    }
+
+    FloatOptional dimensionPaddingAndBorder = FloatOptional{
+        computePaddingAndBorderForDimension(direction, axis, ownerWidth)};
+
+    return value +
+        (dimensionPaddingAndBorder.isDefined() ? dimensionPaddingAndBorder
+                                               : FloatOptional{0.0});
+  }
+
   Style::Length maxDimension(Dimension axis) const {
     return pool_.getLength(maxDimensions_[yoga::to_underlying(axis)]);
   }
@@ -195,11 +214,40 @@ class YG_EXPORT Style {
     pool_.store(maxDimensions_[yoga::to_underlying(axis)], value);
   }
 
+  FloatOptional resolvedMaxDimension(
+      Direction direction,
+      Dimension axis,
+      float referenceLength,
+      float ownerWidth) const {
+    FloatOptional value = maxDimension(axis).resolve(referenceLength);
+    if (boxSizing() == BoxSizing::BorderBox) {
+      return value;
+    }
+
+    FloatOptional dimensionPaddingAndBorder = FloatOptional{
+        computePaddingAndBorderForDimension(direction, axis, ownerWidth)};
+
+    return value +
+        (dimensionPaddingAndBorder.isDefined() ? dimensionPaddingAndBorder
+                                               : FloatOptional{0.0});
+  }
+
   FloatOptional aspectRatio() const {
     return pool_.getNumber(aspectRatio_);
   }
   void setAspectRatio(FloatOptional value) {
-    pool_.store(aspectRatio_, value);
+    // degenerate aspect ratios act as auto.
+    // see https://drafts.csswg.org/css-sizing-4/#valdef-aspect-ratio-ratio
+    pool_.store(
+        aspectRatio_,
+        value == 0.0f || std::isinf(value.unwrap()) ? FloatOptional{} : value);
+  }
+
+  BoxSizing boxSizing() const {
+    return boxSizing_;
+  }
+  void setBoxSizing(BoxSizing value) {
+    boxSizing_ = value;
   }
 
   bool horizontalInsetsDefined() const {
@@ -432,6 +480,20 @@ class YG_EXPORT Style {
       float widthSize) const {
     return computeFlexEndPadding(axis, direction, widthSize) +
         computeFlexEndBorder(axis, direction);
+  }
+
+  float computePaddingAndBorderForDimension(
+      Direction direction,
+      Dimension dimension,
+      float widthSize) const {
+    FlexDirection flexDirectionForDimension = dimension == Dimension::Width
+        ? FlexDirection::Row
+        : FlexDirection::Column;
+
+    return computeFlexStartPaddingAndBorder(
+               flexDirectionForDimension, direction, widthSize) +
+        computeFlexEndPaddingAndBorder(
+               flexDirectionForDimension, direction, widthSize);
   }
 
   float computeBorderForAxis(FlexDirection axis) const {
@@ -671,6 +733,7 @@ class YG_EXPORT Style {
   Wrap flexWrap_ : bitCount<Wrap>() = Wrap::NoWrap;
   Overflow overflow_ : bitCount<Overflow>() = Overflow::Visible;
   Display display_ : bitCount<Display>() = Display::Flex;
+  BoxSizing boxSizing_ : bitCount<BoxSizing>() = BoxSizing::BorderBox;
 
   StyleValueHandle flex_{};
   StyleValueHandle flexGrow_{};

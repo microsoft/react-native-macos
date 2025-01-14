@@ -3,6 +3,8 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+require 'shellwords'
+
 require_relative "./helpers.rb"
 
 # Utilities class for React Native Cocoapods
@@ -236,16 +238,9 @@ class ReactNativePodsUtils
         if !file_manager.exist?("#{file_path}.local")
             # When installing pods with a yarn alias, yarn creates a fake yarn and node executables
             # in a temporary folder.
-            # Using `type -a` we are able to retrieve all the paths of an executable and we can
-            # exclude the temporary ones.
-            # see https://github.com/facebook/react-native/issues/43285 for more info
-            node_binary = `type -a node`.split("\n").map { |path|
-                path.gsub!("node is ", "")
-            }.select { |b|
-                !b.start_with?("/var")
-            }
-
-            node_binary = node_binary[0]
+            # Using `node --print "process.argv[0]";` we are able to retrieve the actual path from which node is running.
+            # see https://github.com/facebook/react-native/issues/43285 for more info. We've tweaked this slightly.
+            node_binary = Shellwords.escape(`node --print "process.argv[0]"`.strip)
             system("echo 'export NODE_BINARY=#{node_binary}' > #{file_path}.local")
         end
     end
@@ -581,6 +576,7 @@ class ReactNativePodsUtils
         ReactNativePodsUtils.update_header_paths_if_depends_on(target_installation_result, "RCT-Folly", [
             "\"$(PODS_ROOT)/RCT-Folly\"",
             "\"$(PODS_ROOT)/DoubleConversion\"",
+            "\"$(PODS_ROOT)/fast_float/include\"",
             "\"$(PODS_ROOT)/fmt/include\"",
             "\"$(PODS_ROOT)/boost\""
         ])
@@ -656,6 +652,7 @@ class ReactNativePodsUtils
             "ReactCommon",
             "Yoga",
             "boost",
+            "fast_float",
             "fmt",
             "glog",
             "hermes-engine",
@@ -708,10 +705,18 @@ class ReactNativePodsUtils
             map[field] = "$(inherited)" + flag
         else
             unless map[field].include?(flag)
-                map[field] = map[field] + flag
+                if map[field].instance_of? String
+                    map[field] = map[field] + flag
+                elsif map[field].instance_of? Array
+                    map[field].push(flag)
+                end
             end
             unless map[field].include?("$(inherited)")
-                map[field] = "$(inherited) " + map[field]
+                if map[field].instance_of? String
+                    map[field] = "$(inherited) " + map[field]
+                elsif map[field].instance_of? Array
+                    map[field].unshift("$(inherited)")
+                end
             end
         end
     end

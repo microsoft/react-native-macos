@@ -198,6 +198,7 @@ const validAttributesForNonEventProps = {
   testID: true,
   backgroundColor: {process: require('../StyleSheet/processColor').default},
   backfaceVisibility: true,
+  cursor: true,
   opacity: true,
   shadowColor: {process: require('../StyleSheet/processColor').default},
   shadowOffset: {diff: require('../Utilities/differ/sizesDiffer')},
@@ -216,19 +217,21 @@ const validAttributesForNonEventProps = {
   role: true,
   borderRadius: true,
   borderColor: {process: require('../StyleSheet/processColor').default},
+  borderBlockColor: {process: require('../StyleSheet/processColor').default},
   borderCurve: true,
   borderWidth: true,
+  borderBlockWidth: true,
   borderStyle: true,
   hitSlop: {diff: require('../Utilities/differ/insetsDiffer')},
   collapsable: true,
   collapsableChildren: true,
-  experimental_filter: {
+  filter: {
     process: require('../StyleSheet/processFilter').default,
   },
-  experimental_boxShadow: {
+  boxShadow: {
     process: require('../StyleSheet/processBoxShadow').default,
   },
-  experimental_mixBlendMode: true,
+  mixBlendMode: true,
   isolation: true,
 
   borderTopWidth: true,
@@ -240,9 +243,15 @@ const validAttributesForNonEventProps = {
   borderLeftWidth: true,
   borderLeftColor: {process: require('../StyleSheet/processColor').default},
   borderStartWidth: true,
+  borderBlockStartWidth: true,
   borderStartColor: {process: require('../StyleSheet/processColor').default},
+  borderBlockStartColor: {
+    process: require('../StyleSheet/processColor').default,
+  },
   borderEndWidth: true,
+  borderBlockEndWidth: true,
   borderEndColor: {process: require('../StyleSheet/processColor').default},
+  borderBlockEndColor: {process: require('../StyleSheet/processColor').default},
 
   borderTopLeftRadius: true,
   borderTopRightRadius: true,
@@ -339,6 +348,7 @@ const validAttributesForNonEventProps = {
   alignContent: true,
   position: true,
   aspectRatio: true,
+  boxSizing: true,
 
   // Also declared as ViewProps
   // overflow: true,

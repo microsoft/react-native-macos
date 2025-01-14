@@ -17,11 +17,11 @@
 #include <react/renderer/attributedstring/TextAttributes.h>
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/components/image/conversions.h>
+#include <react/renderer/components/textinput/baseConversions.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/graphics/Color.h>
 #include <react/renderer/imagemanager/primitives.h>
-#include <react/utils/CoreFeatures.h>
 
 namespace facebook::react {
 
@@ -102,7 +102,31 @@ BaseTextInputProps::BaseTextInputProps(
           rawProps,
           "autoCapitalize",
           sourceProps.autoCapitalize,
-          {})) {}
+          {})),
+      editable(convertRawProp(
+          context,
+          rawProps,
+          "editable",
+          sourceProps.editable,
+          {})),
+      readOnly(convertRawProp(
+          context,
+          rawProps,
+          "readOnly",
+          sourceProps.readOnly,
+          {})),
+      submitBehavior(convertRawProp(
+          context,
+          rawProps,
+          "submitBehavior",
+          sourceProps.submitBehavior,
+          {})),
+      multiline(convertRawProp(
+          context,
+          rawProps,
+          "multiline",
+          sourceProps.multiline,
+          {false})) {}
 
 void BaseTextInputProps::setProp(
     const PropsParserContext& context,
@@ -180,7 +204,19 @@ void BaseTextInputProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(text);
     RAW_SET_PROP_SWITCH_CASE_BASIC(mostRecentEventCount);
     RAW_SET_PROP_SWITCH_CASE_BASIC(autoCapitalize);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(editable);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(readOnly);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(submitBehavior);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(multiline);
   }
+}
+
+SubmitBehavior BaseTextInputProps::getNonDefaultSubmitBehavior() const {
+  if (submitBehavior == SubmitBehavior::Default) {
+    return multiline ? SubmitBehavior::Newline : SubmitBehavior::BlurAndSubmit;
+  }
+
+  return submitBehavior;
 }
 
 } // namespace facebook::react

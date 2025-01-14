@@ -60,7 +60,9 @@ class TextAlignRTLExample extends React.Component<
     const {isRTL} = this.state;
     const toggleRTL = () => this.setState({isRTL: !isRTL});
     return (
-      <View style={{direction: isRTL ? 'rtl' : 'ltr'}}>
+      <View
+        style={{direction: isRTL ? 'rtl' : 'ltr'}}
+        testID="text-align-example">
         <Text>auto (default) - english LTR</Text>
         <Text>
           {'\u0623\u062D\u0628 \u0627\u0644\u0644\u063A\u0629 ' +
@@ -1268,6 +1270,7 @@ const examples = [
   },
   {
     title: 'Text Align with RTL',
+    name: 'textAlign',
     render: function (): React.Node {
       return <TextAlignRTLExample />;
     },
@@ -1452,7 +1455,7 @@ const examples = [
             testID="text-box-shadow"
             style={{
               borderRadius: 10,
-              experimental_boxShadow: '0 0 10px red',
+              boxShadow: '0 0 10px red',
             }}>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua.

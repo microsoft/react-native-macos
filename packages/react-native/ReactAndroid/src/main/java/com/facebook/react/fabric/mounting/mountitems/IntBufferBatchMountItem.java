@@ -13,6 +13,8 @@ import static com.facebook.react.fabric.mounting.mountitems.FabricNameComponentM
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Nullsafe;
 import com.facebook.proguard.annotations.DoNotStrip;
+import com.facebook.react.bridge.ReactMarker;
+import com.facebook.react.bridge.ReactMarkerConstants;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.fabric.events.EventEmitterWrapper;
 import com.facebook.react.fabric.mounting.MountingManager;
@@ -70,6 +72,25 @@ final class IntBufferBatchMountItem implements BatchMountItem {
     mObjBufferLen = mObjBuffer.length;
   }
 
+  private void beginMarkers(String reason) {
+    Systrace.beginSection(
+        Systrace.TRACE_TAG_REACT_JAVA_BRIDGE, "IntBufferBatchMountItem::" + reason);
+
+    if (mCommitNumber > 0) {
+      ReactMarker.logFabricMarker(
+          ReactMarkerConstants.FABRIC_BATCH_EXECUTION_START, null, mCommitNumber);
+    }
+  }
+
+  private void endMarkers() {
+    if (mCommitNumber > 0) {
+      ReactMarker.logFabricMarker(
+          ReactMarkerConstants.FABRIC_BATCH_EXECUTION_END, null, mCommitNumber);
+    }
+
+    Systrace.endSection(Systrace.TRACE_TAG_REACT_JAVA_BRIDGE);
+  }
+
   @Override
   public void execute(MountingManager mountingManager) {
     SurfaceMountingManager surfaceMountingManager = mountingManager.getSurfaceManager(mSurfaceId);
@@ -88,6 +109,7 @@ final class IntBufferBatchMountItem implements BatchMountItem {
       FLog.d(TAG, "Executing IntBufferBatchMountItem on surface [%d]", mSurfaceId);
     }
 
+    beginMarkers("mountViews");
     int i = 0, j = 0;
     while (i < mIntBufferLen) {
       int rawType = mIntBuffer[i++];
@@ -131,15 +153,9 @@ final class IntBufferBatchMountItem implements BatchMountItem {
           int width = mIntBuffer[i++];
           int height = mIntBuffer[i++];
           int displayType = mIntBuffer[i++];
-
-          if (ReactNativeFeatureFlags.setAndroidLayoutDirection()) {
-            int layoutDirection = mIntBuffer[i++];
-            surfaceMountingManager.updateLayout(
-                reactTag, parentTag, x, y, width, height, displayType, layoutDirection);
-          } else {
-            surfaceMountingManager.updateLayout(
-                reactTag, parentTag, x, y, width, height, displayType, 0);
-          }
+          int layoutDirection = mIntBuffer[i++];
+          surfaceMountingManager.updateLayout(
+              reactTag, parentTag, x, y, width, height, displayType, layoutDirection);
         } else if (type == INSTRUCTION_UPDATE_PADDING) {
           surfaceMountingManager.updatePadding(
               mIntBuffer[i++], mIntBuffer[i++], mIntBuffer[i++], mIntBuffer[i++], mIntBuffer[i++]);
@@ -166,6 +182,7 @@ final class IntBufferBatchMountItem implements BatchMountItem {
       }
       Systrace.endSection(Systrace.TRACE_TAG_REACT_JAVA_BRIDGE);
     }
+    endMarkers();
   }
 
   @Override
@@ -228,8 +245,7 @@ final class IntBufferBatchMountItem implements BatchMountItem {
             int w = mIntBuffer[i++];
             int h = mIntBuffer[i++];
             int displayType = mIntBuffer[i++];
-            int layoutDirection =
-                ReactNativeFeatureFlags.setAndroidLayoutDirection() ? mIntBuffer[i++] : 0;
+            int layoutDirection = mIntBuffer[i++];
             s.append(
                 String.format(
                     "UPDATE LAYOUT [%d]->[%d]: x:%d y:%d w:%d h:%d displayType:%d layoutDirection:"

@@ -7,7 +7,6 @@
 
 package com.facebook.react.modules.i18nmanager
 
-import android.os.Build
 import com.facebook.fbreact.specs.NativeI18nManagerSpec
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
@@ -18,7 +17,7 @@ public class I18nManagerModule(context: ReactApplicationContext?) : NativeI18nMa
   override public fun getTypedExportedConstants(): Map<String, Any> {
     val context = getReactApplicationContext()
     val locale = context.resources.configuration.locales[0]
-        
+
     return mapOf(
         "isRTL" to I18nUtil.instance.isRTL(context),
         "doLeftAndRightSwapInRTL" to I18nUtil.instance.doLeftAndRightSwapInRTL(context),
@@ -35,5 +34,9 @@ public class I18nManagerModule(context: ReactApplicationContext?) : NativeI18nMa
 
   override fun swapLeftAndRightInRTL(value: Boolean) {
     I18nUtil.instance.swapLeftAndRightInRTL(getReactApplicationContext(), value)
+  }
+
+  public companion object {
+    public const val NAME: String = NativeI18nManagerSpec.NAME
   }
 }

@@ -19,9 +19,10 @@ end
 folly_config = get_folly_config()
 folly_compiler_flags = folly_config[:compiler_flags]
 folly_version = folly_config[:version]
+folly_dep_name = folly_config[:dep_name]
 
-folly_dep_name = 'RCT-Folly/Fabric'
-boost_compiler_flags = '-Wno-documentation'
+boost_config = get_boost_config()
+boost_compiler_flags = boost_config[:compiler_flags]
 react_native_path = ".."
 
 Pod::Spec.new do |s|
@@ -33,6 +34,7 @@ Pod::Spec.new do |s|
     "\"$(PODS_ROOT)/Headers/Private/Yoga\"",
     "\"$(PODS_TARGET_SRCROOT)\"",
     "\"$(PODS_ROOT)/DoubleConversion\"",
+    "\"$(PODS_ROOT)/fast_float/include\"",
     "\"$(PODS_ROOT)/fmt/include\"",
   ]
 
@@ -74,7 +76,8 @@ Pod::Spec.new do |s|
   s.dependency "React-logger"
   s.dependency "glog"
   s.dependency "DoubleConversion"
-  s.dependency "fmt", "9.1.0"
+  s.dependency "fast_float", "6.1.4"
+  s.dependency "fmt", "11.0.2"
   s.dependency "React-Core"
   s.dependency "React-debug"
   s.dependency "React-featureflags"
@@ -89,7 +92,6 @@ Pod::Spec.new do |s|
     "react/renderer/components/view/platform/cxx",
     "react/renderer/imagemanager/platform/ios"
   ])
-  add_dependency(s, "ReactCodegen", :additional_framework_paths => ["build/generated/ios"])
 
   if ENV["USE_HERMES"] == nil || ENV["USE_HERMES"] == "1"
     s.dependency "hermes-engine"
@@ -152,7 +154,8 @@ Pod::Spec.new do |s|
     ss.subspec "iostextinput" do |sss|
       sss.dependency             folly_dep_name, folly_version
       sss.compiler_flags       = folly_compiler_flags
-      sss.source_files         = "react/renderer/components/textinput/platform/ios/**/*.{m,mm,cpp,h}"
+      sss.source_files         = "react/renderer/components/textinput/**/*.{m,mm,cpp,h}"
+      sss.exclude_files        = "react/renderer/components/textinput/platform/android"
       sss.header_dir           = "react/renderer/components/iostextinput"
 
     end

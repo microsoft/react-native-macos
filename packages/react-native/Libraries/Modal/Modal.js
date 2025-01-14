@@ -96,6 +96,14 @@ export type Props = $ReadOnly<{|
   statusBarTranslucent?: ?boolean,
 
   /**
+   * The `navigationBarTranslucent` prop determines whether your modal should go under
+   * the system navigationbar.
+   *
+   * See https://reactnative.dev/docs/modal.html#navigationbartranslucent-android
+   */
+  navigationBarTranslucent?: ?boolean,
+
+  /**
    * The `hardwareAccelerated` prop controls whether to force hardware
    * acceleration for the underlying window.
    *
@@ -157,6 +165,12 @@ export type Props = $ReadOnly<{|
    * See https://reactnative.dev/docs/modal#onorientationchange
    */
   onOrientationChange?: ?DirectEventHandler<OrientationChangeEvent>,
+
+  /**
+   * The `backdropColor` props sets the background color of the modal's container.
+   * Defaults to `white` if not provided and transparent is `false`. Ignored if `transparent` is `true`.
+   */
+  backdropColor?: ?string,
 |}>;
 
 function confirmProps(props: Props) {
@@ -168,6 +182,14 @@ function confirmProps(props: Props) {
     ) {
       console.warn(
         `Modal with '${props.presentationStyle}' presentation style and 'transparent' value is not supported.`,
+      );
+    }
+    if (
+      props.navigationBarTranslucent === true &&
+      props.statusBarTranslucent !== true
+    ) {
+      console.warn(
+        'Modal with translucent navigation bar and without translucent status bar is not supported.',
       );
     }
   }
@@ -218,6 +240,9 @@ class Modal extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
+    if (Platform.OS === 'ios') {
+      this.setState({isRendered: false});
+    }
     if (this._eventSubscription) {
       this._eventSubscription.remove();
     }
@@ -249,7 +274,9 @@ class Modal extends React.Component<Props, State> {
 
     const containerStyles = {
       backgroundColor:
-        this.props.transparent === true ? 'transparent' : 'white',
+        this.props.transparent === true
+          ? 'transparent'
+          : this.props.backdropColor ?? 'white',
     };
 
     let animationType = this.props.animationType || 'none';
@@ -290,6 +317,7 @@ class Modal extends React.Component<Props, State> {
         onDismiss={onDismiss}
         visible={this.props.visible}
         statusBarTranslucent={this.props.statusBarTranslucent}
+        navigationBarTranslucent={this.props.navigationBarTranslucent}
         identifier={this._identifier}
         style={styles.modal}
         // $FlowFixMe[method-unbinding] added when improving typing for this parameters
@@ -331,8 +359,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const ExportedModal: React.AbstractComponent<
-  React.ElementConfig<typeof Modal>,
-> = ModalInjection.unstable_Modal ?? Modal;
+const ExportedModal: React.ComponentType<React.ElementConfig<typeof Modal>> =
+  ModalInjection.unstable_Modal ?? Modal;
 
 module.exports = ExportedModal;

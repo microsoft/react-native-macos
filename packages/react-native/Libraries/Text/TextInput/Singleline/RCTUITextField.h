@@ -49,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // macOS]
 @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
 @property (nonatomic, strong, nullable) NSString *inputAccessoryViewID;
+@property (nonatomic, strong, nullable) NSString *inputAccessoryViewButtonLabel;
 @property (nonatomic, assign, readonly) CGFloat zoomScale;
 @property (nonatomic, assign, readonly) CGPoint contentOffset;
 @property (nonatomic, assign, readonly) UIEdgeInsets contentInset;

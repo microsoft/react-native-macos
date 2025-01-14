@@ -66,6 +66,7 @@ val prefabHeadersDir = project.file("$buildDir/prefab-headers")
 // Native versions which are defined inside the version catalog (libs.versions.toml)
 val BOOST_VERSION = libs.versions.boost.get()
 val DOUBLE_CONVERSION_VERSION = libs.versions.doubleconversion.get()
+val FAST_FLOAT_VERSION = libs.versions.fastFloat.get()
 val FMT_VERSION = libs.versions.fmt.get()
 val FOLLY_VERSION = libs.versions.folly.get()
 val GLOG_VERSION = libs.versions.glog.get()
@@ -106,6 +107,10 @@ val preparePrefab by
                       Pair("../ReactCommon/cxxreact/", "cxxreact/"),
                       // react_featureflags
                       Pair("../ReactCommon/react/featureflags/", "react/featureflags/"),
+                      // react_devtoolsruntimesettings
+                      Pair(
+                          "../ReactCommon/react/devtoolsruntimesettings/",
+                          "react/devtoolsruntimesettings/"),
                       // react_render_animations
                       Pair(
                           "../ReactCommon/react/renderer/animations/",
@@ -179,6 +184,7 @@ val preparePrefab by
                       // react_nativemodule_core
                       Pair(File(buildDir, "third-party-ndk/boost/boost_1_83_0/").absolutePath, ""),
                       Pair(File(buildDir, "third-party-ndk/double-conversion/").absolutePath, ""),
+                      Pair(File(buildDir, "third-party-ndk/fast_float/include/").absolutePath, ""),
                       Pair(File(buildDir, "third-party-ndk/fmt/include/").absolutePath, ""),
                       Pair(File(buildDir, "third-party-ndk/folly/").absolutePath, ""),
                       Pair(File(buildDir, "third-party-ndk/glog/exported/").absolutePath, ""),
@@ -220,10 +226,20 @@ val preparePrefab by
                       Pair(
                           "../ReactCommon/react/renderer/observers/events/",
                           "react/renderer/observers/events/"),
+                      // react_timing
+                      Pair("../ReactCommon/react/timing/", "react/timing/"),
                       // yoga
                       Pair("../ReactCommon/yoga/", ""),
                       Pair("src/main/jni/first-party/yogajni/jni", ""),
                   )),
+              PrefabPreprocessingEntry(
+                  "hermestooling",
+                  // hermes_executor
+                  Pair("../ReactCommon/hermes/inspector-modern/", "hermes/inspector-modern/")),
+              PrefabPreprocessingEntry(
+                  "jsctooling",
+                  // jsc
+                  Pair("../ReactCommon/jsc/", "jsc/")),
           ))
       outputDir.set(prefabHeadersDir)
     }
@@ -242,6 +258,7 @@ val downloadBoost by
       onlyIfModified(true)
       overwrite(false)
       retries(5)
+      quiet(true)
       dest(File(downloadsDir, "boost_${BOOST_VERSION}.tar.gz"))
     }
 
@@ -261,6 +278,7 @@ val downloadDoubleConversion by
       onlyIfModified(true)
       overwrite(false)
       retries(5)
+      quiet(true)
       dest(File(downloadsDir, "double-conversion-${DOUBLE_CONVERSION_VERSION}.tar.gz"))
     }
 
@@ -281,6 +299,7 @@ val downloadFolly by
       onlyIfModified(true)
       overwrite(false)
       retries(5)
+      quiet(true)
       dest(File(downloadsDir, "folly-${FOLLY_VERSION}.tar.gz"))
     }
 
@@ -295,6 +314,28 @@ val prepareFolly by
       into("$thirdPartyNdkDir/folly")
     }
 
+val downloadFastFloat by
+    tasks.creating(Download::class) {
+      dependsOn(createNativeDepsDirectories)
+      src("https://github.com/fastfloat/fast_float/archive/v${FAST_FLOAT_VERSION}.tar.gz")
+      onlyIfModified(true)
+      overwrite(false)
+      retries(5)
+      quiet(true)
+      dest(File(downloadsDir, "fast_float-${FAST_FLOAT_VERSION}.tar.gz"))
+    }
+
+val prepareFastFloat by
+    tasks.registering(Copy::class) {
+      dependsOn(if (dependenciesPath != null) emptyList() else listOf(downloadFastFloat))
+      from(dependenciesPath ?: tarTree(downloadFastFloat.dest))
+      from("src/main/jni/third-party/fast_float/")
+      include("fast_float-${FAST_FLOAT_VERSION}/include/**/*", "CMakeLists.txt")
+      eachFile { this.path = this.path.removePrefix("fast_float-${FAST_FLOAT_VERSION}/") }
+      includeEmptyDirs = false
+      into("$thirdPartyNdkDir/fast_float")
+    }
+
 val downloadFmt by
     tasks.creating(Download::class) {
       dependsOn(createNativeDepsDirectories)
@@ -302,6 +343,7 @@ val downloadFmt by
       onlyIfModified(true)
       overwrite(false)
       retries(5)
+      quiet(true)
       dest(File(downloadsDir, "fmt-${FMT_VERSION}.tar.gz"))
     }
 
@@ -323,6 +365,7 @@ val downloadGlog by
       onlyIfModified(true)
       overwrite(false)
       retries(5)
+      quiet(true)
       dest(File(downloadsDir, "glog-${GLOG_VERSION}.tar.gz"))
     }
 
@@ -333,6 +376,7 @@ val downloadGtest by
       onlyIfModified(true)
       overwrite(false)
       retries(5)
+      quiet(true)
       dest(File(downloadsDir, "gtest.tar.gz"))
     }
 
@@ -344,8 +388,6 @@ val prepareGtest by
       into(File(thirdPartyNdkDir, "googletest"))
     }
 
-// Prepare glog sources to be compiled, this task will perform steps that normally should've been
-// executed by automake. This way we can avoid dependencies on make/automake
 val prepareGlog by
     tasks.registering(PrepareGlogTask::class) {
       dependsOn(if (dependenciesPath != null) emptyList() else listOf(downloadGlog))
@@ -477,6 +519,7 @@ android {
 
     buildConfigField("boolean", "IS_INTERNAL_BUILD", "false")
     buildConfigField("int", "EXOPACKAGE_FLAGS", "0")
+    buildConfigField("boolean", "UNSTABLE_ENABLE_FUSEBOX_RELEASE", "false")
 
     resValue("integer", "react_native_dev_server_port", reactNativeDevServerPort())
 
@@ -491,9 +534,7 @@ android {
             "-DREACT_BUILD_DIR=$buildDir",
             "-DANDROID_STL=c++_shared",
             "-DANDROID_TOOLCHAIN=clang",
-            // Due to https://github.com/android/ndk/issues/1693 we're losing Android
-            // specific compilation flags. This can be removed once we moved to NDK 25/26
-            "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=ON")
+            "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
 
         targets(
             "reactnative",
@@ -531,6 +572,7 @@ android {
           "generateCodegenArtifactsFromSchema",
           prepareBoost,
           prepareDoubleConversion,
+          prepareFastFloat,
           prepareFmt,
           prepareFolly,
           prepareGlog,
@@ -550,7 +592,6 @@ android {
             "src/main/res/views/alert",
             "src/main/res/views/modal",
             "src/main/res/views/uimanager"))
-    kotlin.srcDir(project.file("../sdks/ossonly-soloader/src/main/java"))
     java.exclude("com/facebook/react/processing")
     java.exclude("com/facebook/react/module/processing")
   }
@@ -580,6 +621,8 @@ android {
   prefab {
     create("jsi") { headers = File(prefabHeadersDir, "jsi").absolutePath }
     create("reactnative") { headers = File(prefabHeadersDir, "reactnative").absolutePath }
+    create("hermestooling") { headers = File(prefabHeadersDir, "hermestooling").absolutePath }
+    create("jsctooling") { headers = File(prefabHeadersDir, "jsctooling").absolutePath }
   }
 
   publishing {
@@ -598,11 +641,6 @@ android {
 tasks.withType<KotlinCompile>().configureEach { exclude("com/facebook/annotationprocessors/**") }
 
 dependencies {
-  implementation(libs.fresco)
-  implementation(libs.fresco.middleware)
-  implementation(libs.fresco.imagepipeline.okhttp3)
-  implementation(libs.fresco.ui.common)
-
   api(libs.androidx.appcompat)
   api(libs.androidx.appcompat.resources)
   api(libs.androidx.autofill)
@@ -610,7 +648,12 @@ dependencies {
   api(libs.androidx.tracing)
 
   api(libs.fbjni)
+  api(libs.fresco)
+  api(libs.fresco.imagepipeline.okhttp3)
+  api(libs.fresco.middleware)
+  api(libs.fresco.ui.common)
   api(libs.infer.annotation)
+  api(libs.soloader)
   api(libs.yoga.proguard.annotations)
 
   api(libs.jsr305)
@@ -630,8 +673,6 @@ dependencies {
   testImplementation(libs.robolectric)
   testImplementation(libs.thoughtworks)
 }
-
-configurations.all { exclude(group = "com.facebook.soloader") }
 
 react {
   // TODO: The library name is chosen for parity with Fabric components & iOS
@@ -662,6 +703,8 @@ kotlin {
   jvmToolchain(17)
   explicitApi()
 }
+
+tasks.withType<Test> { jvmArgs = listOf("-Xshare:off") }
 
 /* Publishing Configuration */
 apply(from = "./publish.gradle")

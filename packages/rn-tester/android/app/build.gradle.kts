@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
   id("com.facebook.react")
   alias(libs.plugins.android.application)
@@ -130,6 +132,7 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     buildConfigField("String", "JS_MAIN_MODULE_NAME", "\"js/RNTesterApp.android\"")
     buildConfigField("String", "BUNDLE_ASSET_NAME", "\"RNTesterApp.android.bundle\"")
+    buildConfigField("Boolean", "IS_INTERNAL_BUILD", "false")
   }
   externalNativeBuild { cmake { version = cmakeVersion } }
   splits {
@@ -180,6 +183,20 @@ android {
         path("src/main/jni/CMakeLists.txt")
       }
     }
+  }
+}
+
+kotlin { explicitApi() }
+
+tasks.withType<JavaCompile>().configureEach {
+  options.compilerArgs.add("-Xlint:deprecation,unchecked")
+  options.compilerArgs.add("-Werror")
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+  compilerOptions {
+    allWarningsAsErrors =
+        project.properties["enableWarningsAsErrors"]?.toString()?.toBoolean() ?: false
   }
 }
 

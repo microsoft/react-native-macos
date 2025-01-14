@@ -24,6 +24,13 @@
 #import <RNTMyNativeViewComponentView.h>
 #endif
 
+#if __has_include(<ReactAppDependencyProvider/RCTAppDependencyProvider.h>)
+#define USE_OSS_CODEGEN 1
+#import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
+#else
+#define USE_OSS_CODEGEN 0
+#endif
+
 #if !TARGET_OS_OSX // [macOS]
 NSString *kBundlePath = @"js/RNTesterApp.ios";
 #else // [macOS
@@ -42,6 +49,9 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
 #endif // macOS]
 {
   self.moduleName = @"RNTesterApp";
+#if USE_OSS_CODEGEN
+  self.dependencyProvider = [RCTAppDependencyProvider new];
+#endif
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = [self prepareInitialProps];
@@ -165,7 +175,14 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
 #ifndef RN_DISABLE_OSS_PLUGIN_HEADER
 - (nonnull NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents
 {
-  return @{@"RNTMyNativeView" : RNTMyNativeViewComponentView.class};
+  NSMutableDictionary *dict = [super thirdPartyFabricComponents].mutableCopy;
+  if (!dict[@"RNTMyNativeView"]) {
+    dict[@"RNTMyNativeView"] = NSClassFromString(@"RNTMyNativeViewComponentView");
+  }
+  if (!dict[@"SampleNativeComponent"]) {
+    dict[@"SampleNativeComponent"] = NSClassFromString(@"RCTSampleNativeComponentComponentView");
+  }
+  return dict;
 }
 #endif
 

@@ -19,7 +19,7 @@ BOOL RCTBorderInsetsAreEqual(UIEdgeInsets borderInsets)
 
 BOOL RCTCornerRadiiAreEqualAndSymmetrical(RCTCornerRadii cornerRadii)
 {
-  return cornerRadii.topLeftHorizontal == cornerRadii.topLeftHorizontal &&
+  return cornerRadii.topLeftHorizontal == cornerRadii.topLeftVertical &&
       cornerRadii.topRightHorizontal == cornerRadii.topRightVertical &&
       cornerRadii.bottomLeftHorizontal == cornerRadii.bottomLeftVertical &&
       cornerRadii.bottomRightHorizontal == cornerRadii.bottomRightVertical &&
@@ -229,11 +229,6 @@ static UIImage *RCTGetSolidBorderImage(
     edgeInsets.top + 1 + edgeInsets.bottom
   } : viewSize;
 
-  // [macOS size must nonzero
-  if (size.width <= 0 || size.height <= 0) {
-    return nil;
-  } // macOS]
-
   RCTUIGraphicsImageRenderer *const imageRenderer =
       RCTMakeUIGraphicsImageRenderer(size, backgroundColor, hasCornerRadii, drawToEdge);
   UIImage *image = [imageRenderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
@@ -322,7 +317,7 @@ static UIImage *RCTGetSolidBorderImage(
         }
       }
 
-      RCTUIColor *currentColor = nil;
+      RCTUIColor *currentColor = nil; // [macOS]
 
       // RIGHT
       if (borderInsets.right > 0) {

@@ -27,24 +27,6 @@ namespace facebook::react {
 
 extern const char AndroidTextInputComponentName[] = "AndroidTextInput";
 
-AndroidTextInputShadowNode::AndroidTextInputShadowNode(
-    const ShadowNode& sourceShadowNode,
-    const ShadowNodeFragment& fragment)
-    : ConcreteViewShadowNode(sourceShadowNode, fragment) {
-  auto& sourceTextInputShadowNode =
-      static_cast<const AndroidTextInputShadowNode&>(sourceShadowNode);
-
-  if (ReactNativeFeatureFlags::enableCleanTextInputYogaNode()) {
-    if (!fragment.children && !fragment.props &&
-        sourceTextInputShadowNode.getIsLayoutClean()) {
-      // This ParagraphShadowNode was cloned but did not change
-      // in a way that affects its layout. Let's mark it clean
-      // to stop Yoga from traversing it.
-      cleanLayout();
-    }
-  }
-}
-
 void AndroidTextInputShadowNode::setContextContainer(
     ContextContainer* contextContainer) {
   ensureUnsealed();
@@ -64,6 +46,7 @@ AttributedString AndroidTextInputShadowNode::getAttributedString() const {
   auto attachments = BaseTextShadowNode::Attachments{};
   BaseTextShadowNode::buildAttributedString(
       childTextAttributes, *this, attributedString, attachments);
+  attributedString.setBaseTextAttributes(childTextAttributes);
 
   // BaseTextShadowNode only gets children. We must detect and prepend text
   // value attributes manually.
@@ -78,7 +61,7 @@ AttributedString AndroidTextInputShadowNode::getAttributedString() const {
     // that effect.
     fragment.textAttributes.backgroundColor = clearColor();
     fragment.parentShadowView = ShadowView(*this);
-    attributedString.prependFragment(fragment);
+    attributedString.prependFragment(std::move(fragment));
   }
 
   return attributedString;
@@ -108,7 +91,7 @@ AttributedString AndroidTextInputShadowNode::getPlaceholderAttributedString()
   // appended to the AttributedString (see implementation of appendFragment)
   fragment.textAttributes = textAttributes;
   fragment.parentShadowView = ShadowView(*this);
-  textAttributedString.appendFragment(fragment);
+  textAttributedString.appendFragment(std::move(fragment));
 
   return textAttributedString;
 }

@@ -94,6 +94,8 @@ fi
 
 [ -z "$CLI_PATH" ] && CLI_PATH="$REACT_NATIVE_DIR/scripts/bundle.js"
 
+[ -z "$BUNDLE_COMMAND" ] && BUNDLE_COMMAND="bundle"
+
 [ -z "$COMPOSE_SOURCEMAP_PATH" ] && COMPOSE_SOURCEMAP_PATH="$REACT_NATIVE_DIR/scripts/compose-source-maps.js"
 
 if [[ -z "$BUNDLE_CONFIG" ]]; then
@@ -102,7 +104,10 @@ else
   CONFIG_ARG="--config $BUNDLE_CONFIG"
 fi
 
-BUNDLE_FILE="$CONFIGURATION_BUILD_DIR/main.jsbundle"
+if [[ -z "$BUNDLE_NAME" ]]; then
+  BUNDLE_NAME="main"
+fi
+BUNDLE_FILE="$CONFIGURATION_BUILD_DIR/$BUNDLE_NAME.jsbundle"
 
 EXTRA_ARGS=()
 
@@ -162,7 +167,7 @@ fi
 
 if [[ $USE_HERMES == false ]]; then
   cp "$BUNDLE_FILE" "$DEST/"
-  BUNDLE_FILE="$DEST/main.jsbundle"
+  BUNDLE_FILE="$DEST/$BUNDLE_NAME.jsbundle"
 else
   EXTRA_COMPILER_ARGS=
   if [[ $DEV == true ]]; then
@@ -173,14 +178,14 @@ else
   if [[ $EMIT_SOURCEMAP == true ]]; then
     EXTRA_COMPILER_ARGS="$EXTRA_COMPILER_ARGS -output-source-map"
   fi
-  "$HERMES_CLI_PATH" -emit-binary -max-diagnostic-width=80 $EXTRA_COMPILER_ARGS -out "$DEST/main.jsbundle" "$BUNDLE_FILE"
+  "$HERMES_CLI_PATH" -emit-binary -max-diagnostic-width=80 $EXTRA_COMPILER_ARGS -out "$DEST/$BUNDLE_NAME.jsbundle" "$BUNDLE_FILE"
   if [[ $EMIT_SOURCEMAP == true ]]; then
-    HBC_SOURCEMAP_FILE="$DEST/main.jsbundle.map"
+    HBC_SOURCEMAP_FILE="$DEST/$BUNDLE_NAME.jsbundle.map"
     "$NODE_BINARY" "$COMPOSE_SOURCEMAP_PATH" "$PACKAGER_SOURCEMAP_FILE" "$HBC_SOURCEMAP_FILE" -o "$SOURCEMAP_FILE"
     rm "$HBC_SOURCEMAP_FILE"
     rm "$PACKAGER_SOURCEMAP_FILE"
   fi
-  BUNDLE_FILE="$DEST/main.jsbundle"
+  BUNDLE_FILE="$DEST/$BUNDLE_NAME.jsbundle"
 fi
 
 if [[ $DEV != true && ! -f "$BUNDLE_FILE" ]]; then

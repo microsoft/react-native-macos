@@ -8,21 +8,22 @@
  * @format
  */
 
-'use strict';
-
 import type {EventSubscription} from '../EventEmitter/NativeEventEmitter';
+import type {AnimatedPropsAllowlist} from './nodes/AnimatedProps';
 
+import NativeAnimatedHelper from '../../src/private/animated/NativeAnimatedHelper';
+import {useAnimatedPropsMemo} from '../../src/private/animated/useAnimatedPropsMemo';
 import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
 import {isPublicInstance as isFabricPublicInstance} from '../ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstanceUtils';
 import useRefEffect from '../Utilities/useRefEffect';
 import {AnimatedEvent} from './AnimatedEvent';
-import NativeAnimatedHelper from '../../src/private/animated/NativeAnimatedHelper';
 import AnimatedNode from './nodes/AnimatedNode';
 import AnimatedProps from './nodes/AnimatedProps';
 import AnimatedValue from './nodes/AnimatedValue';
 import {
   useCallback,
   useEffect,
+  useInsertionEffect,
   useLayoutEffect,
   useMemo,
   useReducer,
@@ -36,34 +37,46 @@ type ReducedProps<TProps> = {
 };
 type CallbackRef<T> = T => mixed;
 
+type UpdateCallback = () => void;
+
 type AnimatedValueListeners = Array<{
   propValue: AnimatedValue,
   listenerId: string,
 }>;
 
+const useMemoOrAnimatedPropsMemo =
+  ReactNativeFeatureFlags.enableAnimatedPropsMemo()
+    ? useAnimatedPropsMemo
+    : useMemo;
+
 export default function useAnimatedProps<TProps: {...}, TInstance>(
   props: TProps,
+  allowlist?: ?AnimatedPropsAllowlist,
 ): [ReducedProps<TProps>, CallbackRef<TInstance | null>] {
   const [, scheduleUpdate] = useReducer<number, void>(count => count + 1, 0);
-  const onUpdateRef = useRef<?() => void>(null);
+  const onUpdateRef = useRef<UpdateCallback | null>(null);
   const timerRef = useRef<TimeoutID | null>(null);
 
-  // TODO: Only invalidate `node` if animated props or `style` change. In the
-  // previous implementation, we permitted `style` to override props with the
-  // same name property name as styles, so we can probably continue doing that.
-  // The ordering of other props *should* not matter.
-  const node = useMemo(
-    () => new AnimatedProps(props, () => onUpdateRef.current?.()),
-    [props],
+  const allowlistIfEnabled = ReactNativeFeatureFlags.enableAnimatedAllowlist()
+    ? allowlist
+    : null;
+
+  const node = useMemoOrAnimatedPropsMemo(
+    () =>
+      new AnimatedProps(
+        props,
+        () => onUpdateRef.current?.(),
+        allowlistIfEnabled,
+      ),
+    [allowlistIfEnabled, props],
   );
+
   const useNativePropsInFabric =
     ReactNativeFeatureFlags.shouldUseSetNativePropsInFabric();
-  const useSetNativePropsInNativeAnimationsInFabric =
-    ReactNativeFeatureFlags.shouldUseSetNativePropsInNativeAnimationsInFabric();
 
   const useAnimatedPropsLifecycle =
-    ReactNativeFeatureFlags.usePassiveEffectsForAnimations()
-      ? useAnimatedPropsLifecycle_passiveEffects
+    ReactNativeFeatureFlags.useInsertionEffectsForAnimations()
+      ? useAnimatedPropsLifecycle_insertionEffects
       : useAnimatedPropsLifecycle_layoutEffects;
 
   useAnimatedPropsLifecycle(node);
@@ -104,12 +117,7 @@ export default function useAnimatedProps<TProps: {...}, TInstance>(
           if (isFabricNode) {
             // Call `scheduleUpdate` to synchronise Fiber and Shadow tree.
             // Must not be called in Paper.
-            if (useSetNativePropsInNativeAnimationsInFabric) {
-              // $FlowFixMe[incompatible-use]
-              instance.setNativeProps(node.__getAnimatedValue());
-            } else {
-              scheduleUpdate();
-            }
+            scheduleUpdate();
           }
           return;
         }
@@ -186,23 +194,23 @@ export default function useAnimatedProps<TProps: {...}, TInstance>(
         }
       };
     },
-    [
-      node,
-      useNativePropsInFabric,
-      useSetNativePropsInNativeAnimationsInFabric,
-      props,
-    ],
+    [node, useNativePropsInFabric, props],
   );
   const callbackRef = useRefEffect<TInstance>(refEffect);
 
-  return [reduceAnimatedProps<TProps>(node), callbackRef];
+  return [reduceAnimatedProps<TProps>(node, props), callbackRef];
 }
 
-function reduceAnimatedProps<TProps>(node: AnimatedNode): ReducedProps<TProps> {
+function reduceAnimatedProps<TProps>(
+  node: AnimatedProps,
+  props: TProps,
+): ReducedProps<TProps> {
   // Force `collapsable` to be false so that the native view is not flattened.
   // Flattened views cannot be accurately referenced by the native driver.
   return {
-    ...node.__getValue(),
+    ...(ReactNativeFeatureFlags.enableAnimatedPropsMemo()
+      ? node.__getValueWithStaticProps(props)
+      : node.__getValue()),
     collapsable: false,
   };
 }
@@ -301,10 +309,8 @@ function useAnimatedPropsLifecycle_layoutEffects(node: AnimatedProps): void {
  * uses reference counting to determine when to recursively detach its children
  * nodes. So in order to optimize this, we avoid detaching until the next attach
  * unless we are unmounting.
- *
- * NOTE: unlike `useAnimatedPropsLifecycle_layoutEffects`, this version uses passive effects to setup animation graph.
  */
-function useAnimatedPropsLifecycle_passiveEffects(node: AnimatedProps): void {
+function useAnimatedPropsLifecycle_insertionEffects(node: AnimatedProps): void {
   const prevNodeRef = useRef<?AnimatedProps>(null);
   const isUnmountingRef = useRef<boolean>(false);
 
@@ -315,14 +321,14 @@ function useAnimatedPropsLifecycle_passiveEffects(node: AnimatedProps): void {
     NativeAnimatedHelper.API.flushQueue();
   });
 
-  useEffect(() => {
+  useInsertionEffect(() => {
     isUnmountingRef.current = false;
     return () => {
       isUnmountingRef.current = true;
     };
   }, []);
 
-  useEffect(() => {
+  useInsertionEffect(() => {
     node.__attach();
     let drivenAnimationEndedListener: ?EventSubscription = null;
 

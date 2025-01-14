@@ -8,42 +8,44 @@
  * @format
  */
 
-'use strict';
-
 import type {PlatformConfig} from '../AnimatedPlatformConfig';
+import type {AnimatedStyleAllowlist} from './AnimatedStyle';
 
+import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
 import {findNodeHandle} from '../../ReactNative/RendererProxy';
 import {AnimatedEvent} from '../AnimatedEvent';
-import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
 import AnimatedNode from './AnimatedNode';
 import AnimatedObject from './AnimatedObject';
 import AnimatedStyle from './AnimatedStyle';
 import invariant from 'invariant';
 
+export type AnimatedPropsAllowlist = $ReadOnly<{
+  style?: ?AnimatedStyleAllowlist,
+  [string]: true,
+}>;
+
 function createAnimatedProps(
-  inputProps: Object,
-): [$ReadOnlyArray<string>, $ReadOnlyArray<AnimatedNode>, Object] {
+  inputProps: {[string]: mixed},
+  allowlist: ?AnimatedPropsAllowlist,
+): [$ReadOnlyArray<string>, $ReadOnlyArray<AnimatedNode>, {[string]: mixed}] {
   const nodeKeys: Array<string> = [];
   const nodes: Array<AnimatedNode> = [];
-  const props: Object = {};
+  const props: {[string]: mixed} = {};
 
   const keys = Object.keys(inputProps);
   for (let ii = 0, length = keys.length; ii < length; ii++) {
     const key = keys[ii];
     const value = inputProps[key];
 
-    if (key === 'style') {
-      const node = new AnimatedStyle(value);
-      nodeKeys.push(key);
-      nodes.push(node);
-      props[key] = node;
-    } else if (value instanceof AnimatedNode) {
-      const node = value;
-      nodeKeys.push(key);
-      nodes.push(node);
-      props[key] = node;
-    } else {
-      const node = AnimatedObject.from(value);
+    if (allowlist == null || Object.hasOwn(allowlist, key)) {
+      let node;
+      if (key === 'style') {
+        node = AnimatedStyle.from(value, allowlist?.style);
+      } else if (value instanceof AnimatedNode) {
+        node = value;
+      } else {
+        node = AnimatedObject.from(value);
+      }
       if (node == null) {
         props[key] = value;
       } else {
@@ -51,6 +53,20 @@ function createAnimatedProps(
         nodes.push(node);
         props[key] = node;
       }
+    } else {
+      if (__DEV__) {
+        // WARNING: This is a potentially expensive check that we should only
+        // do in development. Without this check in development, it might be
+        // difficult to identify which props need to be allowlisted.
+        if (AnimatedObject.from(inputProps[key]) != null) {
+          console.error(
+            `AnimatedProps: ${key} is not allowlisted for animation, but it ` +
+              'contains AnimatedNode values; props allowing animation: ',
+            allowlist,
+          );
+        }
+      }
+      props[key] = value;
     }
   }
 
@@ -58,29 +74,32 @@ function createAnimatedProps(
 }
 
 export default class AnimatedProps extends AnimatedNode {
+  #animatedView: any = null;
+  #callback: () => void;
   #nodeKeys: $ReadOnlyArray<string>;
   #nodes: $ReadOnlyArray<AnimatedNode>;
+  #props: {[string]: mixed};
 
-  _animatedView: any = null;
-  _props: Object;
-  _callback: () => void;
-
-  constructor(inputProps: Object, callback: () => void) {
+  constructor(
+    inputProps: {[string]: mixed},
+    callback: () => void,
+    allowlist?: ?AnimatedPropsAllowlist,
+  ) {
     super();
-    const [nodeKeys, nodes, props] = createAnimatedProps(inputProps);
+    const [nodeKeys, nodes, props] = createAnimatedProps(inputProps, allowlist);
     this.#nodeKeys = nodeKeys;
     this.#nodes = nodes;
-    this._props = props;
-    this._callback = callback;
+    this.#props = props;
+    this.#callback = callback;
   }
 
   __getValue(): Object {
-    const props: {[string]: any | ((...args: any) => void)} = {};
+    const props: {[string]: mixed} = {};
 
-    const keys = Object.keys(this._props);
+    const keys = Object.keys(this.#props);
     for (let ii = 0, length = keys.length; ii < length; ii++) {
       const key = keys[ii];
-      const value = this._props[key];
+      const value = this.#props[key];
 
       if (value instanceof AnimatedNode) {
         props[key] = value.__getValue();
@@ -94,8 +113,33 @@ export default class AnimatedProps extends AnimatedNode {
     return props;
   }
 
+  /**
+   * Creates a new `props` object that contains the same props as the supplied
+   * `staticProps` object, except with animated nodes for any props that were
+   * created by this `AnimatedProps` instance.
+   */
+  __getValueWithStaticProps(staticProps: Object): Object {
+    const props: {[string]: mixed} = {...staticProps};
+
+    const keys = Object.keys(staticProps);
+    for (let ii = 0, length = keys.length; ii < length; ii++) {
+      const key = keys[ii];
+      const maybeNode = this.#props[key];
+
+      if (key === 'style' && maybeNode instanceof AnimatedStyle) {
+        props[key] = maybeNode.__getValueWithStaticStyle(staticProps.style);
+      } else if (maybeNode instanceof AnimatedNode) {
+        props[key] = maybeNode.__getValue();
+      } else if (maybeNode instanceof AnimatedEvent) {
+        props[key] = maybeNode.__getHandler();
+      }
+    }
+
+    return props;
+  }
+
   __getAnimatedValue(): Object {
-    const props: {[string]: any} = {};
+    const props: {[string]: mixed} = {};
 
     const nodeKeys = this.#nodeKeys;
     const nodes = this.#nodes;
@@ -117,10 +161,10 @@ export default class AnimatedProps extends AnimatedNode {
   }
 
   __detach(): void {
-    if (this.__isNative && this._animatedView) {
+    if (this.__isNative && this.#animatedView) {
       this.__disconnectAnimatedView();
     }
-    this._animatedView = null;
+    this.#animatedView = null;
 
     const nodes = this.#nodes;
     for (let ii = 0, length = nodes.length; ii < length; ii++) {
@@ -132,7 +176,7 @@ export default class AnimatedProps extends AnimatedNode {
   }
 
   update(): void {
-    this._callback();
+    this.#callback();
   }
 
   __makeNative(platformConfig: ?PlatformConfig): void {
@@ -150,17 +194,17 @@ export default class AnimatedProps extends AnimatedNode {
       // where it will be needed to traverse the graph of attached values.
       super.__setPlatformConfig(platformConfig);
 
-      if (this._animatedView) {
+      if (this.#animatedView) {
         this.__connectAnimatedView();
       }
     }
   }
 
   setNativeView(animatedView: any): void {
-    if (this._animatedView === animatedView) {
+    if (this.#animatedView === animatedView) {
       return;
     }
-    this._animatedView = animatedView;
+    this.#animatedView = animatedView;
     if (this.__isNative) {
       this.__connectAnimatedView();
     }
@@ -168,11 +212,14 @@ export default class AnimatedProps extends AnimatedNode {
 
   __connectAnimatedView(): void {
     invariant(this.__isNative, 'Expected node to be marked as "native"');
-    const nativeViewTag: ?number = findNodeHandle(this._animatedView);
-    invariant(
-      nativeViewTag != null,
-      'Unable to locate attached view in the native tree',
-    );
+    let nativeViewTag: ?number = findNodeHandle(this.#animatedView);
+    if (nativeViewTag == null) {
+      if (process.env.NODE_ENV === 'test') {
+        nativeViewTag = -1;
+      } else {
+        throw new Error('Unable to locate attached view in the native tree');
+      }
+    }
     NativeAnimatedHelper.API.connectAnimatedNodeToView(
       this.__getNativeTag(),
       nativeViewTag,
@@ -181,11 +228,14 @@ export default class AnimatedProps extends AnimatedNode {
 
   __disconnectAnimatedView(): void {
     invariant(this.__isNative, 'Expected node to be marked as "native"');
-    const nativeViewTag: ?number = findNodeHandle(this._animatedView);
-    invariant(
-      nativeViewTag != null,
-      'Unable to locate attached view in the native tree',
-    );
+    let nativeViewTag: ?number = findNodeHandle(this.#animatedView);
+    if (nativeViewTag == null) {
+      if (process.env.NODE_ENV === 'test') {
+        nativeViewTag = -1;
+      } else {
+        throw new Error('Unable to locate attached view in the native tree');
+      }
+    }
     NativeAnimatedHelper.API.disconnectAnimatedNodeFromView(
       this.__getNativeTag(),
       nativeViewTag,

@@ -8,13 +8,16 @@
 #import <React/RCTBridgeDelegate.h>
 #import <React/RCTConvert.h>
 #import <React/RCTUIKit.h> // [macOS]
+#import "RCTArchConfiguratorProtocol.h"
 #import "RCTRootViewFactory.h"
+#import "RCTUIConfiguratorProtocol.h"
 
 @class RCTBridge;
 @protocol RCTBridgeDelegate;
 @protocol RCTComponentViewProtocol;
 @class RCTRootView;
 @class RCTSurfacePresenterBridgeAdapter;
+@protocol RCTDependencyProvider;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -56,16 +59,27 @@ NS_ASSUME_NONNULL_BEGIN
  *   - (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass
  */
 #if !TARGET_OS_OSX // [macOS]
-@interface RCTAppDelegate : UIResponder <UIApplicationDelegate, UISceneDelegate, RCTBridgeDelegate>
+@interface RCTAppDelegate : UIResponder <
+                                UIApplicationDelegate,
+                                UISceneDelegate,
 #else // [macOS
-@interface RCTAppDelegate : NSResponder <NSApplicationDelegate, RCTBridgeDelegate>
+@interface RCTAppDelegate : NSResponder <
+                                NSApplicationDelegate,
 #endif // macOS]
+                                RCTBridgeDelegate,
+                                RCTUIConfiguratorProtocol,
+                                RCTArchConfiguratorProtocol>
+
 /// The window object, used to render the UViewControllers
 @property (nonatomic, strong, nonnull) RCTPlatformWindow *window; // [macOS]
 @property (nonatomic, nullable) RCTBridge *bridge;
 @property (nonatomic, strong, nullable) NSString *moduleName;
 @property (nonatomic, strong, nullable) NSDictionary *initialProps;
 @property (nonatomic, strong, nonnull) RCTRootViewFactory *rootViewFactory;
+@property (nonatomic, strong) id<RCTDependencyProvider> dependencyProvider;
+
+/// If `automaticallyLoadReactNativeWindow` is set to `true`, the React Native window will be loaded automatically.
+@property (nonatomic, assign) BOOL automaticallyLoadReactNativeWindow;
 
 @property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter;
 
@@ -96,48 +110,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (RCTPlatformView *)createRootViewWithBridge:(RCTBridge *)bridge // [macOS]
                           moduleName:(NSString *)moduleName
                            initProps:(NSDictionary *)initProps;
-/**
- * This method can be used to customize the rootView that is passed to React Native.
- * A typical example is to override this method in the AppDelegate to change the background color.
- * To achieve this, add in your `AppDelegate.mm`:
- * ```
- * - (void)customizeRootView:(RCTRootView *)rootView
- * {
- *   rootView.backgroundColor = [UIColor colorWithDynamicProvider:^UIColor *(UITraitCollection *traitCollection) {
- *     if ([traitCollection userInterfaceStyle] == UIUserInterfaceStyleDark) {
- *       return [UIColor blackColor];
- *     } else {
- *       return [UIColor whiteColor];
- *     }
- *   }];
- * }
- * ```
- *
- * @parameter: rootView - The root view to customize.
- */
-- (void)customizeRootView:(RCTRootView *)rootView;
-
-/**
- * It creates the RootViewController.
- * By default, it creates a new instance of a `UIViewController`.
- * You can override it to provide your own initial ViewController.
- *
- * @return: an instance of `UIViewController`.
- */
-- (UIViewController *)createRootViewController;
-
-/**
- * It assigns the rootView to the rootViewController
- * By default, it assigns the rootView to the view property of the rootViewController
- * If you are not using a simple UIViewController, then there could be other methods to use to setup the rootView.
- * For example: UISplitViewController requires `setViewController(_:for:)`
- */
-- (void)setRootView:(RCTPlatformView *)rootView toRootViewController:(UIViewController *)rootViewController; // [macOS]
-
-/**
- * The default `RCTColorSpace` for the app. It defaults to `RCTColorSpaceSRGB`.
- */
-@property (nonatomic, readonly) RCTColorSpace defaultColorSpace;
 
 /// This method returns a map of Component Descriptors and Components classes that needs to be registered in the
 /// new renderer. The Component Descriptor is a string which represent the name used in JS to refer to the native
@@ -146,27 +118,6 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// @return a dictionary that associate a component for the new renderer with his descriptor.
 - (NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents;
-
-/// This method controls whether the `turboModules` feature of the New Architecture is turned on or off.
-///
-/// @note: This is required to be rendering on Fabric (i.e. on the New Architecture).
-/// @return: `true` if the Turbo Native Module are enabled. Otherwise, it returns `false`.
-- (BOOL)turboModuleEnabled __attribute__((deprecated("Use newArchEnabled instead")));
-
-/// This method controls whether the App will use the Fabric renderer of the New Architecture or not.
-///
-/// @return: `true` if the Fabric Renderer is enabled. Otherwise, it returns `false`.
-- (BOOL)fabricEnabled __attribute__((deprecated("Use newArchEnabled instead")));
-
-/// This method controls whether React Native's new initialization layer is enabled.
-///
-/// @return: `true` if the new initialization layer is enabled. Otherwise returns `false`.
-- (BOOL)bridgelessEnabled __attribute__((deprecated("Use newArchEnabled instead")));
-
-/// This method controls whether React Native uses new Architecture.
-///
-/// @return: `true` if the new architecture is enabled. Otherwise returns `false`.
-- (BOOL)newArchEnabled;
 
 /// Return the bundle URL for the main bundle.
 - (NSURL *__nullable)bundleURL;

@@ -12,13 +12,13 @@
 // TODO(legacy-fake-timers): Fix these tests to work with modern timers.
 jest.useFakeTimers({legacyFakeTimers: true});
 
-import type {HostComponent} from '../../../Renderer/shims/ReactNativeTypes';
+import type {HostInstance} from '../../../Renderer/shims/ReactNativeTypes';
 
 import * as React from 'react';
 import {act} from 'react-test-renderer';
 
 const TextInputState = require('../../../Components/TextInput/TextInputState');
-const ReactFabric = require('../../../Renderer/shims/ReactFabric');
+const ReactFabric = require('../../../Renderer/shims/ReactFabric').default;
 const ReactNativeViewConfigRegistry = require('../../../Renderer/shims/ReactNativeViewConfigRegistry');
 const FabricUIManager = require('../../FabricUIManager');
 const nullthrows = require('nullthrows');
@@ -65,7 +65,7 @@ function mockOf<TArguments: $ReadOnlyArray<mixed>, TReturn>(
  */
 async function mockRenderKeys(
   keyLists: Array<?Array<?string>>,
-): Promise<Array<?Array<?React.ElementRef<HostComponent<mixed>>>>> {
+): Promise<Array<?Array<?HostInstance>>> {
   const mockContainerTag = 11;
   const MockView = ReactNativeViewConfigRegistry.register(
     'RCTMockView',
@@ -75,13 +75,11 @@ async function mockRenderKeys(
     }),
   );
 
-  const result: Array<?Array<?React.ElementRef<HostComponent<mixed>>>> = [];
+  const result: Array<?Array<?HostInstance>> = [];
   for (let i = 0; i < keyLists.length; i++) {
     const keyList = keyLists[i];
     if (Array.isArray(keyList)) {
-      const refs: Array<?React.ElementRef<HostComponent<mixed>>> = keyList.map(
-        key => undefined,
-      );
+      const refs: Array<?HostInstance> = keyList.map(key => undefined);
       await act(() => {
         ReactFabric.render(
           <MockView>
@@ -89,9 +87,7 @@ async function mockRenderKeys(
               <MockView
                 key={key}
                 ref={ref => {
-                  refs[index] = ((ref: $FlowFixMe): ?React.ElementRef<
-                    HostComponent<mixed>,
-                  >);
+                  refs[index] = ((ref: $FlowFixMe): ?HostInstance);
                 }}
               />
             ))}

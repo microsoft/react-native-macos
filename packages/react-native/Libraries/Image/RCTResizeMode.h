@@ -20,6 +20,7 @@ typedef NS_ENUM(NSInteger, RCTResizeMode) {
   RCTResizeModeCenter = NSImageScaleNone, // assumes NSImageAlignmentCenter
 #endif // macOS]
   RCTResizeModeRepeat = -1, // Use negative values to avoid conflicts with iOS enum values.
+  RCTResizeModeNone = UIViewContentModeTopLeft,
 };
 
 static inline RCTResizeMode RCTResizeModeFromUIViewContentMode(UIViewContentMode mode)
@@ -38,12 +39,14 @@ static inline RCTResizeMode RCTResizeModeFromUIViewContentMode(UIViewContentMode
       return RCTResizeModeCenter;
       break;
 #if !TARGET_OS_OSX // [macOS]
+    case UIViewContentModeTopLeft:
+      return RCTResizeModeNone;
+      break;
     case UIViewContentModeRedraw:
     case UIViewContentModeTop:
     case UIViewContentModeBottom:
     case UIViewContentModeLeft:
     case UIViewContentModeRight:
-    case UIViewContentModeTopLeft:
     case UIViewContentModeTopRight:
     case UIViewContentModeBottomLeft:
     case UIViewContentModeBottomRight:

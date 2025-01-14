@@ -36,6 +36,7 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   borderRightWidth: true,
   borderStartWidth: true,
   borderTopWidth: true,
+  boxSizing: true,
   columnGap: true,
   borderWidth: true,
   bottom: true,
@@ -120,12 +121,12 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   /**
    * Filter
    */
-  experimental_filter: {process: processFilter},
+  filter: {process: processFilter},
 
   /**
    * MixBlendMode
    */
-  experimental_mixBlendMode: true,
+  mixBlendMode: true,
 
   /**
    * Isolation
@@ -135,7 +136,7 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   /*
    * BoxShadow
    */
-  experimental_boxShadow: {process: processBoxShadow},
+  boxShadow: {process: processBoxShadow},
 
   /**
    * Linear Gradient
@@ -174,6 +175,10 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   borderTopStartRadius: true,
   cursor: true,
   opacity: true,
+  outlineColor: colorAttributes,
+  outlineOffset: true,
+  outlineStyle: true,
+  outlineWidth: true,
   pointerEvents: true,
 
   /**

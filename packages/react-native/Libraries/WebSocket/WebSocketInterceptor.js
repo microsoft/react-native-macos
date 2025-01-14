@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
+ * @flow strict-local
  */
 
 import NativeEventEmitter from '../EventEmitter/NativeEventEmitter';
@@ -40,53 +41,53 @@ const WebSocketInterceptor = {
   /**
    * Invoked when RCTWebSocketModule.close(...) is called.
    */
-  setCloseCallback(callback) {
+  setCloseCallback(callback: $FlowFixMe) {
     closeCallback = callback;
   },
 
   /**
    * Invoked when RCTWebSocketModule.send(...) or sendBinary(...) is called.
    */
-  setSendCallback(callback) {
+  setSendCallback(callback: $FlowFixMe) {
     sendCallback = callback;
   },
 
   /**
    * Invoked when RCTWebSocketModule.connect(...) is called.
    */
-  setConnectCallback(callback) {
+  setConnectCallback(callback: $FlowFixMe) {
     connectCallback = callback;
   },
 
   /**
    * Invoked when event "websocketOpen" happens.
    */
-  setOnOpenCallback(callback) {
+  setOnOpenCallback(callback: $FlowFixMe) {
     onOpenCallback = callback;
   },
 
   /**
    * Invoked when event "websocketMessage" happens.
    */
-  setOnMessageCallback(callback) {
+  setOnMessageCallback(callback: $FlowFixMe) {
     onMessageCallback = callback;
   },
 
   /**
    * Invoked when event "websocketFailed" happens.
    */
-  setOnErrorCallback(callback) {
+  setOnErrorCallback(callback: $FlowFixMe) {
     onErrorCallback = callback;
   },
 
   /**
    * Invoked when event "websocketClosed" happens.
    */
-  setOnCloseCallback(callback) {
+  setOnCloseCallback(callback: $FlowFixMe) {
     onCloseCallback = callback;
   },
 
-  isInterceptorEnabled() {
+  isInterceptorEnabled(): boolean {
     return isInterceptorEnabled;
   },
 
@@ -100,6 +101,7 @@ const WebSocketInterceptor = {
    */
   _registerEvents() {
     subscriptions = [
+      // $FlowFixMe[incompatible-type]
       eventEmitter.addListener('websocketMessage', ev => {
         if (onMessageCallback) {
           onMessageCallback(
@@ -110,16 +112,19 @@ const WebSocketInterceptor = {
           );
         }
       }),
+      // $FlowFixMe[incompatible-type]
       eventEmitter.addListener('websocketOpen', ev => {
         if (onOpenCallback) {
           onOpenCallback(ev.id);
         }
       }),
+      // $FlowFixMe[incompatible-type]
       eventEmitter.addListener('websocketClosed', ev => {
         if (onCloseCallback) {
           onCloseCallback(ev.id, {code: ev.code, reason: ev.reason});
         }
       }),
+      // $FlowFixMe[incompatible-type]
       eventEmitter.addListener('websocketFailed', ev => {
         if (onErrorCallback) {
           onErrorCallback(ev.id, {message: ev.message});
@@ -132,6 +137,7 @@ const WebSocketInterceptor = {
     if (isInterceptorEnabled) {
       return;
     }
+    // $FlowFixMe[underconstrained-implicit-instantiation]
     eventEmitter = new NativeEventEmitter(
       // T88715063: NativeEventEmitter only used this parameter on iOS. Now it uses it on all platforms, so this code was modified automatically to preserve its behavior
       // If you want to use the native module on other platforms, please remove this condition and test its behavior
@@ -144,11 +150,13 @@ const WebSocketInterceptor = {
     // Override `connect` method for all RCTWebSocketModule requests
     // to intercept the request url, protocols, options and socketId,
     // then pass them through the `connectCallback`.
+    // $FlowFixMe[cannot-write]
+    // $FlowFixMe[missing-this-annot]
     NativeWebSocketModule.connect = function (
-      url,
-      protocols,
-      options,
-      socketId,
+      url: string,
+      protocols: Array<string> | null,
+      options: $FlowFixMe,
+      socketId: number,
     ) {
       if (connectCallback) {
         connectCallback(url, protocols, options, socketId);
@@ -158,6 +166,8 @@ const WebSocketInterceptor = {
 
     // Override `send` method for all RCTWebSocketModule requests to intercept
     // the data sent, then pass them through the `sendCallback`.
+    // $FlowFixMe[cannot-write]
+    // $FlowFixMe[missing-this-annot]
     NativeWebSocketModule.send = function (data, socketId) {
       if (sendCallback) {
         sendCallback(data, socketId);
@@ -167,6 +177,8 @@ const WebSocketInterceptor = {
 
     // Override `sendBinary` method for all RCTWebSocketModule requests to
     // intercept the data sent, then pass them through the `sendCallback`.
+    // $FlowFixMe[cannot-write]
+    // $FlowFixMe[missing-this-annot]
     NativeWebSocketModule.sendBinary = function (data, socketId) {
       if (sendCallback) {
         sendCallback(WebSocketInterceptor._arrayBufferToString(data), socketId);
@@ -176,6 +188,8 @@ const WebSocketInterceptor = {
 
     // Override `close` method for all RCTWebSocketModule requests to intercept
     // the close information, then pass them through the `closeCallback`.
+    // $FlowFixMe[cannot-write]
+    // $FlowFixMe[missing-this-annot]
     NativeWebSocketModule.close = function () {
       if (closeCallback) {
         if (arguments.length === 3) {
@@ -190,7 +204,7 @@ const WebSocketInterceptor = {
     isInterceptorEnabled = true;
   },
 
-  _arrayBufferToString(data) {
+  _arrayBufferToString(data: string): ArrayBuffer | string {
     const value = base64.toByteArray(data).buffer;
     if (value === undefined || value === null) {
       return '(no value)';
@@ -211,9 +225,13 @@ const WebSocketInterceptor = {
       return;
     }
     isInterceptorEnabled = false;
+    // $FlowFixMe[cannot-write]
     NativeWebSocketModule.send = originalRCTWebSocketSend;
+    // $FlowFixMe[cannot-write]
     NativeWebSocketModule.sendBinary = originalRCTWebSocketSendBinary;
+    // $FlowFixMe[cannot-write]
     NativeWebSocketModule.close = originalRCTWebSocketClose;
+    // $FlowFixMe[cannot-write]
     NativeWebSocketModule.connect = originalRCTWebSocketConnect;
 
     connectCallback = null;

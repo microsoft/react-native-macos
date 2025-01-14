@@ -9,6 +9,7 @@
 
 #include <react/renderer/attributedstring/conversions.h>
 #include <react/renderer/components/iostextinput/propsConversions.h>
+#include <react/renderer/components/textinput/baseConversions.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
 
@@ -31,6 +32,12 @@ TextInputProps::TextInputProps(
           rawProps,
           "inputAccessoryViewID",
           sourceProps.inputAccessoryViewID,
+          {})),
+      inputAccessoryViewButtonLabel(convertRawProp(
+          context,
+          rawProps,
+          "inputAccessoryViewButtonLabel",
+          sourceProps.inputAccessoryViewButtonLabel,
           {})),
       onKeyPressSync(convertRawProp(
           context,
@@ -64,7 +71,7 @@ TextAttributes TextInputProps::getEffectiveTextAttributes(
 ParagraphAttributes TextInputProps::getEffectiveParagraphAttributes() const {
   auto result = paragraphAttributes;
 
-  if (!traits.multiline) {
+  if (!multiline) {
     result.maximumNumberOfLines = 1;
   }
 

@@ -79,6 +79,11 @@ RCT_EXPORT_MODULE()
                                                object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(darkerSystemColorsDidChange:)
+                                                 name:UIAccessibilityDarkerSystemColorsStatusDidChangeNotification
+                                               object:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reduceTransparencyStatusDidChange:)
                                                  name:UIAccessibilityReduceTransparencyStatusDidChangeNotification
                                                object:nil];
@@ -93,6 +98,7 @@ RCT_EXPORT_MODULE()
     _isGrayscaleEnabled = UIAccessibilityIsGrayscaleEnabled();
     _isInvertColorsEnabled = UIAccessibilityIsInvertColorsEnabled();
     _isReduceMotionEnabled = UIAccessibilityIsReduceMotionEnabled();
+    _isDarkerSystemColorsEnabled = UIAccessibilityDarkerSystemColorsEnabled();
     _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled();
     _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
   }
@@ -167,6 +173,20 @@ RCT_EXPORT_MODULE()
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [[_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"reduceMotionChanged"
                                                                           body:@(_isReduceMotionEnabled)];
+#pragma clang diagnostic pop
+  }
+}
+
+- (void)darkerSystemColorsDidChange:(__unused NSNotification *)notification
+{
+  BOOL newDarkerSystemColorsEnabled = UIAccessibilityDarkerSystemColorsEnabled();
+  if (_isDarkerSystemColorsEnabled != newDarkerSystemColorsEnabled) {
+    _isDarkerSystemColorsEnabled = newDarkerSystemColorsEnabled;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    [[_moduleRegistry moduleForName:"EventDispatcher"] sendDeviceEventWithName:@"darkerSystemColorsChanged"
+                                                                          body:@(_isDarkerSystemColorsEnabled)];
+
 #pragma clang diagnostic pop
   }
 }
@@ -354,6 +374,13 @@ RCT_EXPORT_METHOD(getCurrentReduceMotionState
                   : (__unused RCTResponseSenderBlock)onError)
 {
   onSuccess(@[ @(_isReduceMotionEnabled) ]);
+}
+
+RCT_EXPORT_METHOD(getCurrentDarkerSystemColorsState
+                  : (RCTResponseSenderBlock)onSuccess onError
+                  : (__unused RCTResponseSenderBlock)onError)
+{
+  onSuccess(@[ @(_isDarkerSystemColorsEnabled) ]);
 }
 
 RCT_EXPORT_METHOD(getCurrentPrefersCrossFadeTransitionsState

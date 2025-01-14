@@ -1186,7 +1186,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 #else // [macOS
   RCTUIColor *backgroundColor = _backgroundColor;
 #endif // macOS]
-  
+
 #if TARGET_OS_OSX // [macOS
   CATransform3D transform = [[self layer] transform];
   CGPoint anchorPoint = [layer anchorPoint];

@@ -21,6 +21,7 @@ import com.facebook.react.bridge.ReactIgnorableMountingException;
 import com.facebook.react.bridge.ReactNoCrashSoftException;
 import com.facebook.react.bridge.ReactSoftExceptionLogger;
 import com.facebook.react.bridge.RetryableMountingLayerException;
+import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.fabric.mounting.mountitems.DispatchCommandMountItem;
 import com.facebook.react.fabric.mounting.mountitems.MountItem;
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
@@ -50,9 +51,23 @@ public class MountItemDispatcher {
   private final ConcurrentLinkedQueue<MountItem> mPreMountItems = new ConcurrentLinkedQueue<>();
 
   private boolean mInDispatch = false;
-  private int mReDispatchCounter = 0;
   private long mBatchedExecutionTime = 0L;
   private long mRunStartTime = 0L;
+
+  private long mLastFrameTimeNanos = 0L;
+  private boolean mIsPremountScheduled = false;
+  private final Runnable mPremountRunnable =
+      () -> {
+        mIsPremountScheduled = false;
+
+        if (mPreMountItems.isEmpty()) {
+          // Avoid starting systrace if there are no pre mount items.
+          return;
+        }
+
+        long deadline = mLastFrameTimeNanos + (FRAME_TIME_NS / 2);
+        dispatchPreMountItemsImpl(deadline);
+      };
 
   public MountItemDispatcher(MountingManager mountingManager, ItemDispatchListener listener) {
     mMountingManager = mountingManager;
@@ -101,60 +116,19 @@ public class MountItemDispatcher {
       return;
     }
 
-    if (ReactNativeFeatureFlags.forceBatchingMountItemsOnAndroid()) {
-      mInDispatch = true;
+    mInDispatch = true;
 
-      try {
-        boolean didDispatchItems = true;
-        // Dispatch as many mount items as we find. Some mount items might
-        // trigger state updates that trigger more mount items. This will
-        // process them correctly.
-        while (didDispatchItems) {
-          didDispatchItems = dispatchMountItems();
-        }
-      } finally {
-        mInDispatch = false;
-      }
-
-      // We call didDispatchMountItems regardless of whether we actually dispatched anything, since
-      // NativeAnimatedModule relies on this for executing any animations that may have been
-      // scheduled
-      mItemDispatchListener.didDispatchMountItems();
-    } else {
-      final boolean didDispatchItems;
-      try {
-        didDispatchItems = dispatchMountItems();
-      } catch (Throwable e) {
-        mReDispatchCounter = 0;
-        throw e;
-      } finally {
-        // Clean up after running dispatchMountItems - even if an exception was thrown
-        mInDispatch = false;
-      }
-
-      // We call didDispatchMountItems regardless of whether we actually dispatched anything, since
-      // NativeAnimatedModule relies on this for executing any animations that may have been
-      // scheduled
-      mItemDispatchListener.didDispatchMountItems();
-
-      // Decide if we want to try reentering
-      if (mReDispatchCounter < 10 && didDispatchItems) {
-        // Executing twice in a row is normal. Only log after that point.
-        if (mReDispatchCounter > 2) {
-          ReactSoftExceptionLogger.logSoftException(
-              TAG,
-              new ReactNoCrashSoftException(
-                  "Re-dispatched "
-                      + mReDispatchCounter
-                      + " times. This indicates setState (?) is likely being called too many times"
-                      + " during mounting."));
-        }
-
-        mReDispatchCounter++;
-        tryDispatchMountItems();
-      }
-      mReDispatchCounter = 0;
+    try {
+      dispatchMountItems();
+    } finally {
+      // Clean up after running dispatchMountItems - even if an exception was thrown
+      mInDispatch = false;
     }
+
+    // We call didDispatchMountItems regardless of whether we actually dispatched anything, since
+    // NativeAnimatedModule relies on this for executing any animations that may have been
+    // scheduled
+    mItemDispatchListener.didDispatchMountItems();
   }
 
   @UiThread
@@ -194,10 +168,8 @@ public class MountItemDispatcher {
    */
   @UiThread
   @ThreadConfined(UI)
-  private boolean dispatchMountItems() {
-    if (mReDispatchCounter == 0) {
-      mBatchedExecutionTime = 0;
-    }
+  private void dispatchMountItems() {
+    mBatchedExecutionTime = 0;
 
     mRunStartTime = SystemClock.uptimeMillis();
 
@@ -206,7 +178,7 @@ public class MountItemDispatcher {
     List<MountItem> mountItemsToDispatch = getAndResetMountItems();
 
     if (mountItemsToDispatch == null && viewCommandMountItemsToDispatch == null) {
-      return false;
+      return;
     }
 
     mItemDispatchListener.willMountItems(mountItemsToDispatch);
@@ -322,8 +294,6 @@ public class MountItemDispatcher {
     }
 
     mItemDispatchListener.didMountItems(mountItemsToDispatch);
-
-    return true;
   }
 
   /*
@@ -335,11 +305,25 @@ public class MountItemDispatcher {
   @UiThread
   @ThreadConfined(UI)
   public void dispatchPreMountItems(long frameTimeNanos) {
+    mLastFrameTimeNanos = frameTimeNanos;
+
     if (mPreMountItems.isEmpty()) {
       // Avoid starting systrace if there are no pre mount items.
       return;
     }
 
+    if (ReactNativeFeatureFlags.enablePreciseSchedulingForPremountItemsOnAndroid()) {
+      if (!mIsPremountScheduled) {
+        mIsPremountScheduled = true;
+        UiThreadUtil.getUiThreadHandler().post(mPremountRunnable);
+      }
+    } else {
+      long deadline = mLastFrameTimeNanos + FRAME_TIME_NS / 2;
+      dispatchPreMountItemsImpl(deadline);
+    }
+  }
+
+  private void dispatchPreMountItemsImpl(long deadline) {
     Systrace.beginSection(
         Systrace.TRACE_TAG_REACT_JAVA_BRIDGE, "MountItemDispatcher::premountViews");
 
@@ -347,10 +331,9 @@ public class MountItemDispatcher {
     // reentering during dispatchPreMountItems
     mInDispatch = true;
 
-    long frameTimeDeadline = frameTimeNanos + FRAME_TIME_NS / 2;
     try {
       while (true) {
-        if (System.nanoTime() > frameTimeDeadline) {
+        if (System.nanoTime() > deadline) {
           break;
         }
 
