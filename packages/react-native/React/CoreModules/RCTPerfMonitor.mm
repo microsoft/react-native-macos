@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#if !TARGET_OS_OSX // [macOS]
+
 #import <React/RCTDefines.h>
 
 #import "CoreModulesPlugins.h"
@@ -552,3 +554,5 @@ Class RCTPerfMonitorCls(void)
   return nil;
 #endif
 }
+
+#endif // [macOS]

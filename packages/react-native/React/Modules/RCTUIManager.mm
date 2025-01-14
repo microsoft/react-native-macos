@@ -281,6 +281,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
     @"isLandscape" : @(isLandscape),
   };
 }
+#endif // [macOS] [visionOS]
 
 #if TARGET_OS_IOS
 - (void)namedOrientationDidChange

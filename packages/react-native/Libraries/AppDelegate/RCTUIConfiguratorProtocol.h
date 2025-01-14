@@ -6,7 +6,7 @@
  */
 
 #import <React/RCTConvert.h>
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h>
 
 @class RCTRootView;
 
@@ -52,5 +52,5 @@
  * If you are not using a simple UIViewController, then there could be other methods to use to setup the rootView.
  * For example: UISplitViewController requires `setViewController(_:for:)`
  */
-- (void)setRootView:(UIView *)rootView toRootViewController:(UIViewController *)rootViewController;
+- (void)setRootView:(RCTPlatformView *)rootView toRootViewController:(RCTPlatformViewController *)rootViewController; // [macOS]
 @end

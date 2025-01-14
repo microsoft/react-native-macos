@@ -6,7 +6,7 @@
  */
 
 #import <React/RCTConvert.h>
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h>
 
 @protocol RCTArchConfiguratorProtocol
 /// This method controls whether the `turboModules` feature of the New Architecture is turned on or off.

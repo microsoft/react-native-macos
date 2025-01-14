@@ -77,7 +77,7 @@ CGFloat UIImageGetScale(NSImage *image)
   return 1.0;
 }
 
-CGImageRef UIImageGetCGImageRef(NSImage *image)
+CGImageRef __nullable UIImageGetCGImageRef(NSImage *image)
 {
   return [image CGImageForProposedRect:NULL context:NULL hints:NULL];
 }
@@ -781,6 +781,11 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
   return self;
 }
 
+- (void)setText:(NSString *)text
+{
+  [self setStringValue:text];
+}
+
 @end
 
 @implementation RCTUISwitch
@@ -1016,6 +1021,13 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 {
     CGSize _size;
     RCTUIGraphicsImageRendererFormat *_format;
+}
+
+- (nonnull instancetype)initWithSize:(CGSize)size {
+    if (self = [super init]) {
+        self->_size = size;
+    }
+    return self;
 }
 
 - (nonnull instancetype)initWithSize:(CGSize)size format:(nonnull RCTUIGraphicsImageRendererFormat *)format {

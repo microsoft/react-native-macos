@@ -397,7 +397,7 @@ CGSize RCTScreenSize(void)
 
 CGSize RCTViewportSize(void)
 {
-  RCTUIWindow *window = RCTKeyWindow(); // [macOS]
+  RCTPlatformWindow *window = RCTKeyWindow(); // [macOS]
 #if !TARGET_OS_OSX // [macOS]
   return window ? window.bounds.size : RCTScreenSize();
 #else // [macOS
@@ -595,7 +595,7 @@ RCTUIApplication *__nullable RCTSharedApplication(void) // [macOS]
 #endif // macOS]
 }
 
-RCTUIWindow *__nullable RCTKeyWindow(void) // [macOS]
+RCTPlatformWindow *__nullable RCTKeyWindow(void) // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
   if (RCTRunningInAppExtension()) {
@@ -659,18 +659,22 @@ UIViewController *__nullable RCTPresentedViewController(void)
 
   return controller;
 }
+#endif // [macOS]
 
 BOOL RCTForceTouchAvailable(void)
 {
   static BOOL forceSupported;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
+#if !TARGET_OS_OSX // [macOS]
     forceSupported = [UITraitCollection currentTraitCollection].forceTouchCapability == UIForceTouchCapabilityAvailable;
+#else // [macOS
+    forceSupported = NO;
+#endif // macOS]
   });
 
   return forceSupported;
 }
-#endif // [macOS]
 
 NSError *RCTErrorWithMessage(NSString *message)
 {

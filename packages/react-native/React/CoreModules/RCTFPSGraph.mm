@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#if !TARGET_OS_OSX // [macOS
+
 #import <React/RCTFPSGraph.h>
 
 #import <React/RCTAssert.h>
@@ -126,3 +128,5 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 @end
 
 #endif
+
+#endif // macOS]

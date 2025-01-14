@@ -749,7 +749,7 @@ static void RCTAddContourEffectToLayer(
     const RCTBorderStyle &contourStyle)
 {
   UIImage *image = RCTGetBorderImage(
-      contourStyle, layer.bounds.size, cornerRadii, contourInsets, contourColors, [UIColor clearColor], NO);
+      contourStyle, layer.bounds.size, cornerRadii, contourInsets, contourColors, [RCTUIColor clearColor], NO); // [macOS]
 
   if (image == nil) {
     layer.contents = nil;
@@ -759,8 +759,13 @@ static void RCTAddContourEffectToLayer(
     CGRect contentsCenter = CGRect{
         CGPoint{imageCapInsets.left / imageSize.width, imageCapInsets.top / imageSize.height},
         CGSize{(CGFloat)1.0 / imageSize.width, (CGFloat)1.0 / imageSize.height}};
+#if !TARGET_OS_OSX // [macOS]
     layer.contents = (id)image.CGImage;
     layer.contentsScale = image.scale;
+#else // [macOS
+    layer.contents = (__bridge id) UIImageGetCGImageRef(image);
+    layer.contentsScale = UIImageGetScale(image);
+#endif // macOS]
 
     BOOL isResizable = !UIEdgeInsetsEqualToEdgeInsets(image.capInsets, UIEdgeInsetsZero);
     if (isResizable) {
@@ -1137,11 +1142,11 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
         layer.bounds, -_props->outlineOffset - _props->outlineWidth, -_props->outlineOffset - _props->outlineWidth);
 
     if (borderMetrics.borderRadii.isUniform() && borderMetrics.borderRadii.topLeft.horizontal == 0) {
-      UIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor);
+      RCTUIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
       _outlineLayer.borderWidth = _props->outlineWidth;
       _outlineLayer.borderColor = outlineColor.CGColor;
     } else {
-      UIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor);
+      RCTUIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
 
       RCTAddContourEffectToLayer(
           _outlineLayer,

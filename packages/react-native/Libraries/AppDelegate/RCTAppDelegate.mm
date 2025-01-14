@@ -12,7 +12,7 @@
 #import <React/RCTSurfacePresenterBridgeAdapter.h>
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTHost.h>
-#include <UIKit/UIKit.h>
+#include <React/RCTUIKit.h>
 #import <objc/runtime.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
@@ -74,14 +74,16 @@ using namespace facebook::react;
     [self loadReactNativeWindow:launchOptions];
   }
 
+#if !TARGET_OS_OSX // [macOS]
   return YES;
+#endif // macOS]
 }
 
 - (void)loadReactNativeWindow:(NSDictionary *)launchOptions
 {
-  UIView *rootView = [self.rootViewFactory viewWithModuleName:self.moduleName
-                                            initialProperties:self.initialProps
-                                                launchOptions:launchOptions];
+  RCTPlatformView *rootView = [self.rootViewFactory viewWithModuleName:self.moduleName // [macOS]
+                                                     initialProperties:self.initialProps
+                                                         launchOptions:launchOptions];
 
 #if !TARGET_OS_OSX // [macOS]
 #if !TARGET_OS_VISION // [visionOS]
@@ -144,9 +146,9 @@ using namespace facebook::react;
   return rootView;
 }
 
-- (RCTUIViewController *)createRootViewController
+- (RCTPlatformViewController *)createRootViewController
 {
-  return [RCTUIViewController new];
+  return [RCTPlatformViewController new];
 }
 
 - (void)setRootView:(RCTPlatformView *)rootView toRootViewController:(UIViewController *)rootViewController // [macOS]

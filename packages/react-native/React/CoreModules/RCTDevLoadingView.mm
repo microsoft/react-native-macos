@@ -6,7 +6,7 @@
  */
 
 #import <React/RCTDevLoadingView.h>
-#include <UIKit/UIKit.h>
+#include <React/RCTUIKit.h> // [macOS]
 
 #import <QuartzCore/QuartzCore.h>
 
@@ -31,10 +31,9 @@ using namespace facebook::react;
 #if RCT_DEV_MENU
 
 @implementation RCTDevLoadingView {
-#if !TARGET_OS_OSX // [macOS]
-  UIWindow *_window;
-  UILabel *_label;
-  UIView *_container;
+  RCTPlatformWindow *_window; // [macOS]
+  RCTUILabel *_label; // [macOS]
+  RCTUIView *_container; // [macOS]
   NSDate *_showDate;
   BOOL _hiding;
   dispatch_block_t _initialMessageBlock;
@@ -123,38 +122,72 @@ RCT_EXPORT_MODULE()
 
     self->_showDate = [NSDate date];
 
-    UIWindow *mainWindow = RCTKeyWindow();
+    RCTPlatformWindow *mainWindow = RCTKeyWindow(); // [macOS]
+#if !TARGET_OS_OSX // [macOS]
     self->_window = [[UIWindow alloc] initWithWindowScene:mainWindow.windowScene];
     self->_window.windowLevel = UIWindowLevelStatusBar + 1;
     self->_window.rootViewController = [UIViewController new];
+#else // [macOS
+    self->_window = [[NSWindow alloc] initWithContentRect:NSZeroRect
+                                                styleMask:NSWindowStyleMaskBorderless
+                                                  backing:NSBackingStoreBuffered
+                                                    defer:YES];
+    [mainWindow addChildWindow:self->_window ordered:NSWindowAbove];
+    self->_window.contentViewController = [NSViewController new];
+#endif // macOS]
 
-    self->_container = [[UIView alloc] init];
+    self->_container = [[RCTUIView alloc] init]; // [macOS]
     self->_container.backgroundColor = backgroundColor;
     self->_container.translatesAutoresizingMaskIntoConstraints = NO;
 
-    self->_label = [[UILabel alloc] init];
+    self->_label = [[RCTUILabel alloc] init]; // [macOS]
     self->_label.translatesAutoresizingMaskIntoConstraints = NO;
     self->_label.font = [UIFont monospacedDigitSystemFontOfSize:12.0 weight:UIFontWeightRegular];
     self->_label.textAlignment = NSTextAlignmentCenter;
     self->_label.textColor = color;
     self->_label.text = message;
 
+#if !TARGET_OS_OSX // [macOS]
     [self->_window.rootViewController.view addSubview:self->_container];
+#else // [macOS
+    [self->_window.contentViewController.view addSubview:self->_container];
+#endif // macOS]
     [self->_container addSubview:self->_label];
 
+#if !TARGET_OS_OSX // [macOS]
     CGFloat topSafeAreaHeight = mainWindow.safeAreaInsets.top;
     CGFloat height = topSafeAreaHeight + 25;
     self->_window.frame = CGRectMake(0, 0, mainWindow.frame.size.width, height);
+#else // [macOS
+    CGFloat topSafeAreaHeight = mainWindow.contentView.safeAreaInsets.top;
+    CGFloat height = topSafeAreaHeight + 25;
+    CGFloat titlebarHeight = mainWindow.frame.size.height - mainWindow.contentView.frame.size.height;
+    NSRect windowFrame = CGRectMake(mainWindow.frame.origin.x,
+                                    mainWindow.frame.origin.y + mainWindow.frame.size.height - height - titlebarHeight,
+                                    mainWindow.contentView.frame.size.width,
+                                    height);
+    [self->_window setFrame:windowFrame display:YES];
+#endif // macOS]
 
+#if !TARGET_OS_OSX // [macOS]
     self->_window.hidden = NO;
+#else // [macOS
+    self->_window.isVisible = YES;
+#endif // macOS]
 
     [self->_window layoutIfNeeded];
 
     [NSLayoutConstraint activateConstraints:@[
       // Container constraints
+#if !TARGET_OS_OSX // [macOS]
       [self->_container.topAnchor constraintEqualToAnchor:self->_window.rootViewController.view.topAnchor],
       [self->_container.leadingAnchor constraintEqualToAnchor:self->_window.rootViewController.view.leadingAnchor],
       [self->_container.trailingAnchor constraintEqualToAnchor:self->_window.rootViewController.view.trailingAnchor],
+#else // [macOS
+      [self->_container.topAnchor constraintEqualToAnchor:self->_window.contentViewController.view.topAnchor],
+      [self->_container.leadingAnchor constraintEqualToAnchor:self->_window.contentViewController.view.leadingAnchor],
+      [self->_container.trailingAnchor constraintEqualToAnchor:self->_window.contentViewController.view.trailingAnchor],
+#endif // macOS]
       [self->_container.heightAnchor constraintEqualToConstant:height],
 
       // Label constraints
@@ -185,11 +218,11 @@ RCT_EXPORT_METHOD(hide)
 
   dispatch_async(dispatch_get_main_queue(), ^{
     self->_hiding = YES;
-#if !TARGET_OS_OSX // [macOS]
     const NSTimeInterval MIN_PRESENTED_TIME = 0.6;
     NSTimeInterval presentedTime = [[NSDate date] timeIntervalSinceDate:self->_showDate];
     NSTimeInterval delay = MAX(0, MIN_PRESENTED_TIME - presentedTime);
     CGRect windowFrame = self->_window.frame;
+#if !TARGET_OS_OSX // [macOS]
     [UIView animateWithDuration:0.25
         delay:delay
         options:0
@@ -202,10 +235,17 @@ RCT_EXPORT_METHOD(hide)
           self->_window = nil;
           self->_hiding = false;
         }];
-#else // [macOS]
-    [RCTKeyWindow() endSheet:self->_window];
-    self->_window = nil;
-    self->_hiding = false;
+#else // [macOS
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+      [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+        context.duration = 0.25;
+        [self->_window.animator setFrame:CGRectOffset(windowFrame, 0, windowFrame.size.height) display:YES];
+      } completionHandler:^{
+        [self->_window orderOut:self];
+        self->_window = nil;
+        self->_hiding = NO;
+      }];
+    });
 #endif // macOS]
   });
 }
@@ -216,11 +256,7 @@ RCT_EXPORT_METHOD(hide)
     // This is an optimization. Since the progress can come in quickly,
     // we want to do the minimum amount of work to update the UI,
     // which is to only update the label text.
-#if !TARGET_OS_OSX // [macOS]
     _label.text = message;
-#else // [macOS
-    self->_label.stringValue = message;
-#endif // macOS]
     return;
   }
 

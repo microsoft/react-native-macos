@@ -22,8 +22,8 @@
 
 - (void)createRootViewController:(RCTUIView *)view; // [macOS]
 
-- (instancetype)initWithWindow:(RCTUIWindow *)window bridge:(RCTBridge *)bridge; // [macOS]
-- (instancetype)initWithWindow:(RCTUIWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter; // [macOS]
+- (instancetype)initWithWindow:(RCTPlatformWindow *)window bridge:(RCTBridge *)bridge; // [macOS]
+- (instancetype)initWithWindow:(RCTPlatformWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter; // [macOS]
 
 - (void)show;
 #if TARGET_OS_OSX // [macOS

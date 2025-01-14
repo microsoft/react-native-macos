@@ -1616,7 +1616,6 @@ DEPENDENCIES:
   - React-idlecallbacksnativemodule (from `../react-native/ReactCommon/react/nativemodule/idlecallbacks`)
   - React-ImageManager (from `../react-native/ReactCommon/react/renderer/imagemanager/platform/ios`)
   - React-jsc (from `../react-native/ReactCommon/jsc`)
-  - React-jsc/Fabric (from `../react-native/ReactCommon/jsc`)
   - React-jserrorhandler (from `../react-native/ReactCommon/jserrorhandler`)
   - React-jsi (from `../react-native/ReactCommon/jsi`)
   - React-jsiexecutor (from `../react-native/ReactCommon/jsiexecutor`)
@@ -1817,10 +1816,10 @@ SPEC CHECKSUMS:
   FBLazyVector: c5aafec82665344dbab99d447cc9ae560b9e074c
   fmt: f6af2d677a106e3e44c9536a4c0c7f03ab53c854
   glog: b7594b792ee4e02ed1f44b01d046ca25fa713e3d
-  MyNativeView: 333ea912ec03d2cc4cfc2c9bef8f964435b7a5fe
-  NativeCxxModuleExample: 2b14a3a7930f0f33236344f356759452f975542f
+  MyNativeView: 2bb0bd8ced8ab27ac5f13cb3171e5e9d091091cd
+  NativeCxxModuleExample: cd7ce784179f841c56fd54cffae857fabb09c9d6
   OCMock: 589f2c84dacb1f5aaf6e4cec1f292551fe748e74
-  OSSLibraryExample: 9747658e5d88cedc8793dd927cd3b76d3778af66
+  OSSLibraryExample: 8d4f551df4dcca1f36ab2e974d26a2fd9c6f3c37
   RCT-Folly: abec2d7f4af402b4957c44e86ceff8725b23c1b4
   RCTDeprecation: 3808e36294137f9ee5668f4df2e73dc079cd1dcf
   RCTRequired: 875a480e4ea1089e5c19f37779f3c6e8d83bfc43
@@ -1856,10 +1855,10 @@ SPEC CHECKSUMS:
   React-performancetimeline: 8745df8438f59f5fba517aa79f6e4039741d51d9
   React-RCTActionSheet: 51df8f01feaed57205b1c44966157d62f652545c
   React-RCTAnimation: b0f7aea7c7d57135d617e8e158fdda9537f7d0b0
-  React-RCTAppDelegate: 949dc2c088075b33a48334aa276309d512eba602
+  React-RCTAppDelegate: 0b0678cc804366c7555c7f061e3c0a6df65f7f49
   React-RCTBlob: 506be5edd8c84364d11d30ea7dcc1929a775cc1a
-  React-RCTFabric: c1d24da7738514af4716ff93aa6cebac05f9b219
-  React-RCTFBReactNativeSpec: 7a76e342ccdb6a0d4096639e32c3eff114635528
+  React-RCTFabric: 8c1871ddfdc261e64f18650f245d928f5e0c18fb
+  React-RCTFBReactNativeSpec: 5a0e9d9f461020da6a5ad48a7faa9538109b81c3
   React-RCTImage: ca176ee71329570e0318c4be80e76f58e34a0075
   React-RCTLinking: 90cfc46f5a41f56c6424338595b2b093f2112bcf
   React-RCTNetwork: 6028059dc5ea6c1d656fee78779d2b6bbea5bd3f
@@ -1881,7 +1880,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 1519178b89a6547aab81c2ecdac132dc5b08dcc0
   ReactCommon: 99023cb1dcf2ec929023f92c09597b16d583ecdc
   ReactCommon-Samples: be8910d715ed1a3b17432d86d59145ac4a560cc8
-  ScreenshotManager: 77480271bf65c95f84af462374f5a825c11276f2
+  ScreenshotManager: ac9ccb28e7c527fea8ff5aa9222686b680941097
   SocketRocket: 03f7111df1a343b162bf5b06ead333be808e1e0a
   Yoga: e2c55506b4255e4c7138aa07e9af48f085d7c804
 
