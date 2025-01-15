@@ -327,7 +327,9 @@ function SpellingAngGrammerEvents(): React.Node {
       <Text>
         autoCorrectEnabled: {enableAutoCorrect ? 'enabled' : 'disabled'}
       </Text>
-      <Text>spellCheckEnabled: {enableSpellSpeck ? 'enabled' : 'disabled'}</Text>
+      <Text>
+        spellCheckEnabled: {enableSpellSpeck ? 'enabled' : 'disabled'}
+      </Text>
       <Text>
         grammarCheckEnabled: {enableGrammarCheck ? 'enabled' : 'disabled'}
       </Text>
@@ -1024,8 +1026,7 @@ const textInputExamples: Array<RNTesterModuleExample> = [
 if (Platform.OS === 'macos') {
   textInputExamples.push(
     {
-      title:
-        'Spelling and Grammer Events - Multiline Textfield',
+      title: 'Spelling and Grammer Events - Multiline Textfield',
       render: function (): React.Node {
         return <SpellingAngGrammerEvents />;
       },
