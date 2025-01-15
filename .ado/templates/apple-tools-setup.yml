@@ -13,4 +13,5 @@ steps:
 
   - script: |
       xcodebuild -downloadAllPlatforms
+      sudo xcodebuild -runFirstLaunch
     displayName: 'Download Xcode Platforms'
