@@ -16,7 +16,7 @@ const version: $ReadOnly<{
 }> = {
   major: 0,
   minor: 75,
-  patch: 16,
+  patch: 17,
   prerelease: null,
 };
 
