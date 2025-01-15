@@ -11,4 +11,7 @@ steps:
       sudo xcode-select --switch $(xcode_version)
     displayName: Use $(xcode_friendly_name)
 
-  - template: /.ado/templates/apple-xcode-select.yml@self
+  - script: |
+      xcodebuild -downloadAllPlatforms
+      sudo xcodebuild -runFirstLaunch
+    displayName: 'Download Xcode Platforms'
