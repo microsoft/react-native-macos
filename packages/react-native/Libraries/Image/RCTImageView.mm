@@ -634,6 +634,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
   return _imageView;
 }
 
+- (NSCell *)reactAccessibilityElementCell
+{
+  return _imageView.cell;
+}
+
 - (NSColor *)tintColor
 {
   return _imageView.tintColor;
