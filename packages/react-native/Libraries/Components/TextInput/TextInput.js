@@ -140,7 +140,7 @@ export type SettingChangeEvent = SyntheticEvent<
   $ReadOnly<{|
     autoCorrectEnabled: boolean,
     spellCheckEnabled: boolean,
-    grammerCheckEnabled: boolean,
+    grammarCheckEnabled: boolean,
   |}>,
 >;
 

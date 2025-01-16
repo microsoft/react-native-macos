@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
 });
 
 // [macOS
-function SpellingAngGrammerEvents(): React.Node {
+function SpellingAndGrammarEvents(): React.Node {
   const [enableAutoCorrect, setEnableAutoCorrect] = React.useState(false);
   const [enableSpellSpeck, setEnableSpellSpeck] = React.useState(false);
   const [enableGrammarCheck, setEnableGrammarCheck] = React.useState(false);
@@ -344,7 +344,7 @@ function SpellingAngGrammerEvents(): React.Node {
           setEnableSpellSpeck(event.nativeEvent.spellCheckEnabled)
         }
         onGrammarCheckChange={(event: SettingChangeEvent) =>
-          setEnableGrammarCheck(event.nativeEvent.grammerCheckEnabled)
+          setEnableGrammarCheck(event.nativeEvent.grammarCheckEnabled)
         }
       />
     </>
@@ -1028,7 +1028,7 @@ if (Platform.OS === 'macos') {
     {
       title: 'Spelling and Grammer Events - Multiline Textfield',
       render: function (): React.Node {
-        return <SpellingAngGrammerEvents />;
+        return <SpellingAndGrammarEvents />;
       },
     },
     {

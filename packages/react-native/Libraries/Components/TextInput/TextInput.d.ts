@@ -329,7 +329,7 @@ export interface TextInputIOSProps {
 export type SettingChangeEvent = NativeSyntheticEvent<{
   autoCorrectEnabled: boolean;
   spellCheckEnabled: boolean;
-  grammerCheckEnabled: boolean;
+  grammarCheckEnabled: boolean;
 }>;
 
 export type PasteEvent = NativeSyntheticEvent<{

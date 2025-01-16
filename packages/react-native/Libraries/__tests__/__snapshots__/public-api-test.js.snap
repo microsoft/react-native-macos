@@ -2848,7 +2848,7 @@ export type SettingChangeEvent = SyntheticEvent<
   $ReadOnly<{|
     autoCorrectEnabled: boolean,
     spellCheckEnabled: boolean,
-    grammerCheckEnabled: boolean,
+    grammarCheckEnabled: boolean,
   |}>,
 >;
 export type PasteEvent = SyntheticEvent<
@@ -3252,7 +3252,7 @@ export type SettingChangeEvent = SyntheticEvent<
   $ReadOnly<{|
     autoCorrectEnabled: boolean,
     spellCheckEnabled: boolean,
-    grammerCheckEnabled: boolean,
+    grammarCheckEnabled: boolean,
   |}>,
 >;
 export type PasteEvent = SyntheticEvent<
