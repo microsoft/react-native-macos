@@ -1,0 +1,35 @@
+parameters:
+  - name: sdk
+    type: string
+  - name: configuration
+    type: string
+  - name: scheme
+    type: string
+  - name: new_arch_enabled
+    type: string
+  - name: use_hermes
+    type: string
+
+steps:
+  - template: /.ado/templates/apple-tools-setup.yml@self
+
+  - script: |
+      yarn install
+    displayName: Install npm dependencies
+
+  - script: |
+      set -eox pipefail
+      bundle install
+      bundle exec pod install --verbose
+    env:
+      RCT_NEW_ARCH_ENABLED: ${{ parameters.new_arch_enabled }}
+      USE_HERMES: ${{ parameters.use_hermes }}
+    workingDirectory: packages/rn-tester
+    displayName: Install Pods
+
+  - script: |
+      set -eox pipefail
+      .ado/scripts/xcodebuild.sh packages/rn-tester/RNTesterPods.xcworkspace ${{ parameters.sdk }} ${{ parameters.configuration }} ${{ parameters.scheme }} build
+    env:
+      CCACHE_DISABLE: 1
+    displayName: Build ${{ parameters.scheme }}
