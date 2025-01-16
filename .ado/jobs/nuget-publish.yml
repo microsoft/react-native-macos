@@ -1,0 +1,197 @@
+parameters:
+  - name: appleBuildMatrix
+    type: object
+    default:
+      - name: macosx_debug_oldarch_jsc
+        friendly_name: 'macOS, Old Arch, JSC'
+        sdk: macosx
+        configuration: Debug
+        scheme: RNTester-macOS
+        packager_platform: 'macos'
+        new_arch_enabled: '0'
+        use_hermes: '0'
+      - name: macosx_release_oldarch_jsc
+        friendly_name: 'macOS, Old Arch, JSC'
+        sdk: macosx
+        configuration: Release
+        scheme: RNTester-macOS
+        packager_platform: 'macos'
+        new_arch_enabled: '0'
+        use_hermes: '0'
+      - name: iphonesimulator_debug_oldarch_jsc
+        friendly_name: 'iOS Simulator, Old Arch, JSC'
+        sdk: iphonesimulator
+        configuration: Debug
+        scheme: RNTester
+        packager_platform: 'ios'
+        new_arch_enabled: '0'
+        use_hermes: '0'
+      - name: iphonesimulator_release_oldarch_jsc
+        friendly_name: 'iOS Simulator, Old Arch, JSC'
+        sdk: iphonesimulator
+        configuration: Release
+        scheme: RNTester
+        packager_platform: 'ios'
+        new_arch_enabled: '0'
+        use_hermes: '0'
+      - name: iphoneos_debug_oldarch_jsc
+        friendly_name: 'iOS, Old Arch, JSC'
+        sdk: iphoneos
+        configuration: Debug
+        scheme: RNTester
+        packager_platform: 'ios'
+        new_arch_enabled: '0'
+        use_hermes: '0'
+      - name: iphoneos_release_oldarch_jsc
+        friendly_name: 'iOS, Old Arch, JSC'
+        sdk: iphoneos
+        configuration: Release
+        scheme: RNTester
+        packager_platform: 'ios'
+        new_arch_enabled: '0'
+        use_hermes: '0'
+      - name: xros_debug_oldarch_jsc
+        friendly_name: 'xrOS, Old Arch, JSC'
+        sdk: xros
+        configuration: Debug
+        scheme: RNTester-visionOS
+        packager_platform: 'ios'
+        new_arch_enabled: '0'
+        use_hermes: '0'
+      - name: xros_release_oldarch_jsc
+        friendly_name: 'xrOS, Old Arch, JSC'
+        sdk: xros
+        configuration: Release
+        scheme: RNTester-visionOS
+        packager_platform: 'ios'
+        new_arch_enabled: '0'
+        use_hermes: '0'
+      - name: xrsimulator_debug_oldarch_jsc
+        friendly_name: 'xrOS Simulator, Old Arch, JSC'
+        sdk: xrsimulator
+        configuration: Debug
+        scheme: RNTester-visionOS
+        packager_platform: 'ios'
+        new_arch_enabled: '0'
+        use_hermes: '0'
+      - name: xrsimulator_release_oldarch_jsc
+        friendly_name: 'xrOS Simulator, Old Arch, JSC'
+        sdk: xrsimulator
+        configuration: Release
+        scheme: RNTester-visionOS
+        packager_platform: 'ios'
+        new_arch_enabled: '0'
+        use_hermes: '0'
+
+jobs:
+  - ${{ each slice in parameters.appleBuildMatrix }}:
+    - job: ${{ slice.name }}
+      displayName: 'Build ${{ slice.friendly_name }}'
+      pool:
+        vmImage: $(vmImageApple)
+      timeoutInMinutes: 90
+      cancelTimeoutInMinutes: 5
+      templateContext:
+        outputs:
+          - output: pipelineArtifact
+            displayName: "\U0001F4E6 Publish build output"
+            artifactName: ${{ slice.name }}
+            targetPath: $(Build.ArtifactStagingDirectory)
+      steps:
+        - template: /.ado/templates/apple-tools-setup.yml@self
+
+        - script: |
+            yarn install
+          displayName: yarn install
+        
+        - template: /.ado/templates/build-rntester-steps.yml@self
+          parameters:
+            sdk: ${{ slice.sdk }}
+            configuration: ${{ slice.configuration }}
+            scheme: ${{ slice.scheme }}
+            new_arch_enabled: ${{ slice.new_arch_enabled }}
+            use_hermes: ${{ slice.use_hermes }}
+
+        - task: CopyFiles@2
+          displayName: "\U0001F4E6 Copy 'DerivedData' folders to artifacts staging directory"
+          inputs:
+            sourceFolder: $(Build.Repository.LocalPath)/packages/rn-tester/Build/Products/
+            contents: '**'
+            targetFolder: $(Build.ArtifactStagingDirectory)
+
+  - job: NuGetPublish
+    displayName: 'Nuget Publish'
+    dependsOn:
+      - ${{ each slice in parameters.appleBuildMatrix }}:
+        - ${{ slice.name }}
+    pool:
+      vmImage: $(vmImageApple)
+    variables:
+      - name: BUILDSECMON_OPT_IN
+        value: true
+      - name: Codeql.Enabled
+        value: false
+    timeoutInMinutes: 120
+    cancelTimeoutInMinutes: 5
+    templateContext:
+      outputs:
+        - output: nuget
+          displayName: 'NuGet Push'
+          packageParentPath: '$(Build.ArtifactStagingDirectory)'
+          packagesToPush: '$(System.ArtifactsDirectory)/*.nupkg'
+          nuGetFeedType: internal
+          publishPackageMetadata: true
+    steps:
+      - template: /.ado/templates/apple-tools-setup.yml@self
+
+      - task: NuGetToolInstaller@1
+
+      - script: yarn install --frozen-lockfile
+        displayName: yarn install
+
+      - ${{ each slice in parameters.appleBuildMatrix }}:
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download ${{ slice.friendly_name }} build output'
+            inputs:
+              artifact: ${{ slice.name }}
+              path: $(Build.Repository.LocalPath)/DerivedData/Build/Products
+
+      - script: |
+          set -eox pipefail
+          find $(Build.Repository.LocalPath)/DerivedData/Build/Products -type f -name '*.a'
+        displayName: List files
+
+      # Run pod install to set up the headers directory that our nuget must still reference
+      - script: |
+          set -eox pipefail
+          bundle install
+          bundle exec pod install --verbose
+        workingDirectory: packages/rn-tester
+        displayName: Install Pods
+
+
+      - ${{ each slice in parameters.appleBuildMatrix }}:
+          - ${{ if in(slice.sdk, 'iphonesimulator', 'iphoneos') }}:
+            - script: |
+                strip -x -S \
+                  $(Build.Repository.LocalPath)/DerivedData/Build/Products/${{ slice.configuration }}-${{ slice.sdk }}/**/*.a
+              displayName: Strip debug symbols for ${{ slice.sdk }} libraries
+
+          - ${{ if eq(slice.sdk, 'macosx') }}:
+            - script: |
+                strip -x -S \
+                  $(Build.Repository.LocalPath)/DerivedData/Build/Products/${{ slice.configuration }}/**/*.a
+              displayName: Strip debug symbols for macos libraries
+
+      - script: |
+          set -eox pipefail
+          node .ado/scripts/generate-build-number.js
+        displayName: 'Generate Build Number'
+
+      - task: NuGetCommand@2
+        displayName: 'NuGet pack'
+        inputs:
+          command: pack
+          packagesToPack: '.ado/ReactApple.nuspec'
+          buildProperties: buildNumber=$(sanitizedBuildNumber);commitId=$(Build.SourceVersion);repoUri=$(Build.Repository.Uri)
+        continueOnError: true
