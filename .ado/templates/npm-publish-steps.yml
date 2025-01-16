@@ -3,6 +3,11 @@ parameters:
   publishTag: 'next'
 
 steps:
+  - checkout: self
+    clean: true
+    fetchFilter: blob:none
+    persistCredentials: true
+
   - template: /.ado/templates/configure-git.yml@self
 
   - script: |
