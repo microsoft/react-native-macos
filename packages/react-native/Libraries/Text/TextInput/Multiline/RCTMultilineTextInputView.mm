@@ -136,7 +136,7 @@
   if (textViewSize.height > clipView.bounds.size.height) {
     // Sometimes dimensions returned are in floating point numbers. 
     // If the floats are close enough, then don't show the scrollbar even if there is a fraction of overflow with the text.
-    return textViewSize.height - clipView.bounds.size.height >= 1;
+    return fabs(textViewSize.height - clipView.bounds.size.height) >= 1;
   };
 
   return NO;
