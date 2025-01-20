@@ -1026,7 +1026,7 @@ const textInputExamples: Array<RNTesterModuleExample> = [
 if (Platform.OS === 'macos') {
   textInputExamples.push(
     {
-      title: 'Spelling and Grammer Events - Multiline Textfield',
+      title: 'Spelling and Grammar Events - Multiline Textfield',
       render: function (): React.Node {
         return <SpellingAndGrammarEvents />;
       },
