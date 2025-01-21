@@ -318,31 +318,33 @@ const styles = StyleSheet.create({
 });
 
 // [macOS
-function AutoCorrectSpellCheckGrammarCheckCallbacks(): React.Node {
+function SpellingAndGrammarEvents(): React.Node {
   const [enableAutoCorrect, setEnableAutoCorrect] = React.useState(false);
   const [enableSpellSpeck, setEnableSpellSpeck] = React.useState(false);
   const [enableGrammarCheck, setEnableGrammarCheck] = React.useState(false);
   return (
     <>
       <Text>
-        enableAutoCorrect: {enableAutoCorrect ? 'enabled' : 'disabled'}
+        autoCorrectEnabled: {enableAutoCorrect ? 'enabled' : 'disabled'}
       </Text>
-      <Text>enableSpellSpeck: {enableSpellSpeck ? 'enabled' : 'disabled'}</Text>
       <Text>
-        enableGrammarCheck: {enableGrammarCheck ? 'enabled' : 'disabled'}
+        spellCheckEnabled: {enableSpellSpeck ? 'enabled' : 'disabled'}
+      </Text>
+      <Text>
+        grammarCheckEnabled: {enableGrammarCheck ? 'enabled' : 'disabled'}
       </Text>
       <ExampleTextInput
         autoCorrect={enableAutoCorrect}
         style={{padding: 10, marginTop: 10}}
         multiline={true}
         onAutoCorrectChange={(event: SettingChangeEvent) =>
-          setEnableAutoCorrect(event.nativeEvent.enabled)
+          setEnableAutoCorrect(event.nativeEvent.autoCorrectEnabled)
         }
         onSpellCheckChange={(event: SettingChangeEvent) =>
-          setEnableSpellSpeck(event.nativeEvent.enabled)
+          setEnableSpellSpeck(event.nativeEvent.spellCheckEnabled)
         }
         onGrammarCheckChange={(event: SettingChangeEvent) =>
-          setEnableGrammarCheck(event.nativeEvent.enabled)
+          setEnableGrammarCheck(event.nativeEvent.grammarCheckEnabled)
         }
       />
     </>
@@ -1024,10 +1026,9 @@ const textInputExamples: Array<RNTesterModuleExample> = [
 if (Platform.OS === 'macos') {
   textInputExamples.push(
     {
-      title:
-        'AutoCorrect, spellCheck and grammarCheck callbacks - Multiline Textfield',
+      title: 'Spelling and Grammar Events - Multiline Textfield',
       render: function (): React.Node {
-        return <AutoCorrectSpellCheckGrammarCheckCallbacks />;
+        return <SpellingAndGrammarEvents />;
       },
     },
     {

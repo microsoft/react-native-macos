@@ -327,7 +327,9 @@ export interface TextInputIOSProps {
 
 // [macOS
 export type SettingChangeEvent = NativeSyntheticEvent<{
-  enabled: boolean;
+  autoCorrectEnabled: boolean;
+  spellCheckEnabled: boolean;
+  grammarCheckEnabled: boolean;
 }>;
 
 export type PasteEvent = NativeSyntheticEvent<{

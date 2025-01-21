@@ -97,7 +97,9 @@ export type EditingEvent = SyntheticEvent<
 // [macOS macOS-only
 export type SettingChangeEvent = SyntheticEvent<
   $ReadOnly<{|
-    enabled: boolean,
+    autoCorrectEnabled: boolean,
+    spellCheckEnabled: boolean,
+    grammarCheckEnabled: boolean,
   |}>,
 >;
 

@@ -175,29 +175,17 @@ void TextInputEventEmitter::onScroll(const Metrics& textInputMetrics) const {
 #if TARGET_OS_OSX // [macOS
 void TextInputEventEmitter::onAutoCorrectChange(
     const Metrics& textInputMetrics) const {
-  dispatchEvent("autoCorrectChange", [textInputMetrics](jsi::Runtime& runtime) {
-    auto payload = jsi::Object(runtime);
-    payload.setProperty(runtime, "enabled", textInputMetrics.autoCorrectEnabled);
-    return payload;
-  });
+  dispatchTextInputEvent("autoCorrectChange", textInputMetrics);
 }
 
 void TextInputEventEmitter::onSpellCheckChange(
     const Metrics& textInputMetrics) const {
-  dispatchEvent("spellCheckChange", [textInputMetrics](jsi::Runtime& runtime) {
-    auto payload = jsi::Object(runtime);
-    payload.setProperty(runtime, "enabled", textInputMetrics.spellCheckEnabled);
-    return payload;
-  });
+  dispatchTextInputEvent("spellCheckChange", textInputMetrics);
 }
 
 void TextInputEventEmitter::onGrammarCheckChange(
     const Metrics& textInputMetrics) const {
-  dispatchEvent("grammarCheckChange", [textInputMetrics](jsi::Runtime& runtime) {
-    auto payload = jsi::Object(runtime);
-    payload.setProperty(runtime, "enabled", textInputMetrics.grammarCheckEnabled);
-    return payload;
-  });
+  dispatchTextInputEvent("grammarCheckChange", textInputMetrics);
 }
 #endif // macOS]
 
