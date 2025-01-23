@@ -17,6 +17,10 @@ variables:
   - group: InfoSec-SecurityResults
   - name: tags
     value: production,externalfacing
+  # CodeQL Still has not fixed their bug running on Apple ARM64 jobs where they inject x64 binaries into arm64 processes and just make it crash :(
+  # Only workaround for now is to disable CodeQL on Apple jobs.
+  - name Codeql.Enabled
+    value: false
   - template: /.ado/variables/vars.yml@self
 
 resources:
