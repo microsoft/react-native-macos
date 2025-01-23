@@ -88,7 +88,9 @@ jobs:
     - job: ${{ slice.name }}
       displayName: 'Build ${{ slice.friendly_name }}'
       pool:
+        name: Azure Pipelines
         vmImage: $(vmImageApple)
+        os: macOS
       timeoutInMinutes: 90
       cancelTimeoutInMinutes: 5
       templateContext:
