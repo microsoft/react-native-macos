@@ -1,7 +1,23 @@
 steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '23.x'
+  # Installed via homebrew because the version of node cached doesn't have the proper ARM64 binaries
+  # - task: UseNode@1
+  #   inputs:
+  #     versionSpec: '23.x'
+
+  # The built in Azure pipelines task don't have the right binary architectrue for node.
+  # Instead, install it via the official instructions on https://nodejs.org/en/download
+  - script: |
+      # Download and install nvm:
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+      # Download and install Node.js:
+      nvm install 22
+      # Verify the Node.js version:
+      node -v # Should print "v22.13.1".
+      nvm current # Should print "v22.13.1".
+      # Download and install Yarn:
+      corepack enable yarn
+      # Verify Yarn version:
+      yarn -v
 
   - script: |
       brew bundle --file .ado/Brewfile
