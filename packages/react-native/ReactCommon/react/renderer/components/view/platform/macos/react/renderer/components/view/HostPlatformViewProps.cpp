@@ -1,17 +1,16 @@
 /*
- * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Microsoft Corporation.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "HostPlatformViewProps.h"
+ // [macOS]
 
-#include <algorithm>
+#include "HostPlatformViewProps.h"
 
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/view/conversions.h>
-#include <react/renderer/components/view/propsConversions.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
 
@@ -22,22 +21,13 @@ HostPlatformViewProps::HostPlatformViewProps(
     const HostPlatformViewProps& sourceProps,
     const RawProps& rawProps)
     : BaseViewProps(context, sourceProps, rawProps),
-      macOSViewEvents(
+      hostPlatformEvents(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.macOSViewEvents
-              : convertRawProp(
-                    context, 
-                    rawProps,
-                    sourceProps.macOSViewEvents,
-                    {})),
-      focusable(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.focusable
+              ? sourceProps.hostPlatformEvents
               : convertRawProp(
                     context,
                     rawProps,
-                    "focusable",
-                    sourceProps.focusable,
+                    sourceProps.hostPlatformEvents,
                     {})),
       enableFocusRing(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
@@ -47,19 +37,64 @@ HostPlatformViewProps::HostPlatformViewProps(
                     rawProps,
                     "enableFocusRing",
                     sourceProps.enableFocusRing,
-                    {})) {}
+                    true)),
+      focusable(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.focusable
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "focusable",
+                    sourceProps.focusable,
+                    {})),
+      draggedTypes(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.draggedTypes
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "draggedTypes",
+                    sourceProps.draggedTypes,
+                    {})),
+      tooltip(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.tooltip
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "tooltip",
+                    sourceProps.tooltip,
+                    {})),
+      validKeysDown(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.validKeysDown
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "validKeysDown",
+                    sourceProps.validKeysDown,
+                    {})),
+      validKeysUp(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.validKeysUp
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "validKeysUp",
+                    sourceProps.validKeysUp,
+                    {})){};
 
-#define MACOS_VIEW_EVENT_CASE(eventType)                    \
-case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): {       \
-  const auto offset = MacOSViewEvents::Offset::eventType;   \
-  MacOSViewEvents defaultViewEvents{};                      \
-  bool res = defaultViewEvents[offset];                     \
-  if (value.hasValue()) {                                   \
-    fromRawValue(context, value, res);                      \
-  }                                                         \
-  macOSViewEvents[offset] = res;                              \
-  return;                                                   \
-}
+#define VIEW_EVENT_CASE_MACOS(eventType)                           \
+  case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): {            \
+    const auto offset = HostPlatformViewEvents::Offset::eventType; \
+    HostPlatformViewEvents defaultViewEvents{};                    \
+    bool res = defaultViewEvents[offset];                          \
+    if (value.hasValue()) {                                        \
+      fromRawValue(context, value, res);                           \
+    }                                                              \
+    hostPlatformEvents[offset] = res;                              \
+    return;                                                        \
+  }
 
 void HostPlatformViewProps::setProp(
     const PropsParserContext& context,
@@ -70,17 +105,24 @@ void HostPlatformViewProps::setProp(
   // call all super::setProp methods, since multiple structs may
   // reuse the same values.
   BaseViewProps::setProp(context, hash, propName, value);
-  
+
   static auto defaults = HostPlatformViewProps{};
-  
+
   switch (hash) {
-    RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
+    VIEW_EVENT_CASE_MACOS(Focus);
+    VIEW_EVENT_CASE_MACOS(Blur);
+    VIEW_EVENT_CASE_MACOS(KeyDown);
+    VIEW_EVENT_CASE_MACOS(KeyUp);
+    VIEW_EVENT_CASE_MACOS(MouseEnter);
+    VIEW_EVENT_CASE_MACOS(MouseLeave);
+    VIEW_EVENT_CASE_MACOS(DoubleClick);
     RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing);
-    MACOS_VIEW_EVENT_CASE(Focus);
-    MACOS_VIEW_EVENT_CASE(Blur);
-      
+    RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(draggedTypes);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(tooltip);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysDown);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysUp);
   }
 }
-
 
 } // namespace facebook::react

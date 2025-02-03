@@ -10,14 +10,11 @@
 #pragma once
 
 #include <react/renderer/components/view/BaseViewProps.h>
-#include <react/renderer/components/view/primitives.h>
-#include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
-
-#include "MacOSViewEvents.h"
+#include "HostPlatformViewEvents.h"
+#include "KeyEvent.h"
 
 namespace facebook::react {
-
 class HostPlatformViewProps : public BaseViewProps {
  public:
   HostPlatformViewProps() = default;
@@ -32,12 +29,14 @@ class HostPlatformViewProps : public BaseViewProps {
       const char* propName,
       const RawValue& value);
 
-  MacOSViewEvents macOSViewEvents{};
+  HostPlatformViewEvents hostPlatformEvents{};
 
-#pragma mark - Props
-
-  bool focusable{false};
   bool enableFocusRing{true};
+  bool focusable{false};
 
+  std::vector<std::string> draggedTypes{};
+  std::optional<std::string> tooltip{};
+  std::optional<std::vector<HandledKey>> validKeysDown{};
+  std::optional<std::vector<HandledKey>> validKeysUp{};
 };
 } // namespace facebook::react
