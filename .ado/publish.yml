@@ -54,7 +54,3 @@ extends:
         dependsOn: []
         jobs:
          - template: /.ado/jobs/npm-publish.yml@self
-      - stage: NuGet
-        dependsOn: []
-        jobs:
-         - template: /.ado/jobs/nuget-publish.yml@self
