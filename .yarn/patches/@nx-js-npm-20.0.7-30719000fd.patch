@@ -1,0 +1,41 @@
+diff --git a/src/executors/release-publish/release-publish.impl.js b/src/executors/release-publish/release-publish.impl.js
+index 08cd58274d308bcb2ca644e8af5bd99a153c9e91..0c6a99d035e300e428fcbd20eb1239439e898745 100644
+--- a/src/executors/release-publish/release-publish.impl.js
++++ b/src/executors/release-publish/release-publish.impl.js
+@@ -10,6 +10,7 @@ const npm_config_1 = require("../../utils/npm-config");
+ const extract_npm_publish_json_data_1 = require("./extract-npm-publish-json-data");
+ const log_tar_1 = require("./log-tar");
+ const chalk = require("chalk");
++const semver_1 = require("semver");
+ const LARGE_BUFFER = 1024 * 1000000;
+ function processEnv(color) {
+     const env = {
+@@ -23,6 +24,7 @@ function processEnv(color) {
+ }
+ async function runExecutor(options, context) {
+     const pm = (0, devkit_1.detectPackageManager)();
++    const isYarnBerry = (packageManager === 'yarn' && !(0, semver_1.gte)((0, devkit_1.getPackageManagerVersion)(pm), '2.0.0'));
+     /**
+      * We need to check both the env var and the option because the executor may have been triggered
+      * indirectly via dependsOn, in which case the env var will be set, but the option will not.
+@@ -37,7 +39,7 @@ async function runExecutor(options, context) {
+      * pnpm supports dynamically updating locally linked packages during its packing phase, but other package managers do not.
+      * Therefore, protect the user from publishing invalid packages by checking if it contains local dependency protocols.
+      */
+-    if (pm !== 'pnpm') {
++    if (pm !== 'pnpm' || (pm !== 'yarn' && isYarnBerry)) {
+         const depTypes = ['dependencies', 'devDependencies', 'peerDependencies'];
+         for (const depType of depTypes) {
+             const deps = packageJson[depType];
+@@ -187,7 +189,10 @@ Please update the local dependency on "${depName}" to be a valid semantic versio
+         pm === 'pnpm'
+             ? // Unlike npm, pnpm publish does not support a custom registryConfigKey option, and will error on uncommitted changes by default if --no-git-checks is not set
+                 `pnpm publish "${packageRoot}" --json --registry="${registry}" --tag=${tag} --no-git-checks`
+-            : `npm publish "${packageRoot}" --json --"${registryConfigKey}=${registry}" --tag=${tag}`,
++            : pm === 'yarn'
++                ? `yarn npm publish "${packageRoot}" --tag=${tag}`
++                : `npm publish "${packageRoot}" --json --"${registryConfigKey}=${registry}" --tag=${tag}`,
++                  
+     ];
+     if (options.otp) {
+         publishCommandSegments.push(`--otp=${options.otp}`);
