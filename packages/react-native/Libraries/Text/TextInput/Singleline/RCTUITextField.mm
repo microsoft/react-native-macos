@@ -93,6 +93,10 @@
 #endif
   RCTBackedTextFieldDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
+#if !TARGET_OS_OSX // [macOS]
+  NSArray<UIBarButtonItemGroup *> *_initialValueLeadingBarButtonGroups;
+  NSArray<UIBarButtonItemGroup *> *_initialValueTrailingBarButtonGroups;
+#endif // [macOS]
 #if TARGET_OS_OSX // [macOS
   BOOL _isUpdatingPlaceholderText;
 #endif // macOS]
@@ -119,6 +123,10 @@
 
     _textInputDelegateAdapter = [[RCTBackedTextFieldDelegateAdapter alloc] initWithTextField:self];
     _scrollEnabled = YES;
+#if !TARGET_OS_OSX // [macOS]
+    _initialValueLeadingBarButtonGroups = nil;
+    _initialValueTrailingBarButtonGroups = nil;
+#endif // [macOS]
 #if TARGET_OS_OSX // [macOS
     _isUpdatingPlaceholderText = NO;
 #endif // macOS]
@@ -390,7 +398,6 @@
 }
 
 #if !TARGET_OS_OSX // [macOS]
-
 - (void)setSecureTextEntry:(BOOL)secureTextEntry
 {
   if (self.secureTextEntry == secureTextEntry) {
@@ -406,9 +413,29 @@
   self.attributedText = [NSAttributedString new];
   self.attributedText = originalText;
 }
-
 #endif // [macOS]
 
+- (void)setDisableKeyboardShortcuts:(BOOL)disableKeyboardShortcuts
+{
+#if TARGET_OS_IOS
+  // Initialize the initial values only once
+  if (_initialValueLeadingBarButtonGroups == nil) {
+    // Capture initial values of leading and trailing button groups
+    _initialValueLeadingBarButtonGroups = self.inputAssistantItem.leadingBarButtonGroups;
+    _initialValueTrailingBarButtonGroups = self.inputAssistantItem.trailingBarButtonGroups;
+  }
+
+  if (disableKeyboardShortcuts) {
+    self.inputAssistantItem.leadingBarButtonGroups = @[];
+    self.inputAssistantItem.trailingBarButtonGroups = @[];
+  } else {
+    // Restore the initial values
+    self.inputAssistantItem.leadingBarButtonGroups = _initialValueLeadingBarButtonGroups;
+    self.inputAssistantItem.trailingBarButtonGroups = _initialValueTrailingBarButtonGroups;
+  }
+  _disableKeyboardShortcuts = disableKeyboardShortcuts;
+#endif
+}
 
 #pragma mark - Placeholder
 

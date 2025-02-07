@@ -141,7 +141,7 @@ enum class Cursor : uint8_t {
   ZoomOut,
 };
 
-enum class LayoutConformance : uint8_t { Undefined, Classic, Strict };
+enum class LayoutConformance : uint8_t { Strict, Compatibility };
 
 template <typename T>
 struct CascadedRectangleEdges {

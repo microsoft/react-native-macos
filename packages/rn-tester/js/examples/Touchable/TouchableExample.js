@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+
 import RNTesterText from '../../components/RNTesterText';
 import React from 'react';
 import {useEffect, useRef, useState} from 'react';
@@ -927,4 +929,4 @@ exports.examples = [
     },
     platform: 'macos',
   }, // macOS]
-];
+] as Array<RNTesterModuleExample>;;

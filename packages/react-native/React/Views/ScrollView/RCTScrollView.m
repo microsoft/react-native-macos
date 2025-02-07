@@ -216,66 +216,12 @@
   return !shouldDisableScrollInteraction;
 }
 
-/*
- * Automatically centers the content such that if the content is smaller than the
- * ScrollView, we force it to be centered, but when you zoom or the content otherwise
- * becomes larger than the ScrollView, there is no padding around the content but it
- * can still fill the whole view.
- */
 - (void)setContentOffset:(CGPoint)contentOffset
 {
-  RCTUIView *contentView = nil; // [macOS]
-#if !TARGET_OS_OSX // [macOS]
-  contentView = [self contentView];
-#else // [macOS
-  contentView = (RCTUIView *) self.documentView;	// [macOS] NSScrollView's documentView must be of type UIView/RCTView
-#endif // macOS]
-  if (contentView && _centerContent && !CGSizeEqualToSize(contentView.frame.size, CGSizeZero)) {
-    CGSize subviewSize = contentView.frame.size;
-#if !TARGET_OS_OSX // [macOS]
-    CGSize scrollViewSize = self.bounds.size;
-#else // [macOS
-    CGSize scrollViewSize = self.contentView.bounds.size;
-#endif // macOS]
-    if (subviewSize.width <= scrollViewSize.width) {
-      contentOffset.x = -(scrollViewSize.width - subviewSize.width) / 2.0;
-    }
-    if (subviewSize.height <= scrollViewSize.height) {
-      contentOffset.y = -(scrollViewSize.height - subviewSize.height) / 2.0;
-    }
-  }
-#if !TARGET_OS_OSX // [macOS]
   super.contentOffset = CGPointMake(
       RCTSanitizeNaNValue(contentOffset.x, @"scrollView.contentOffset.x"),
       RCTSanitizeNaNValue(contentOffset.y, @"scrollView.contentOffset.y"));
-#else // [macOS
-  if (!NSEqualPoints(contentOffset, self.documentVisibleRect.origin))
-  {
-    [self.contentView scrollToPoint:contentOffset];
-    [self reflectScrolledClipView:self.contentView];
-  }
-#endif // macOS]
 }
-
-#if TARGET_OS_OSX // [macOS
-- (void)setContentOffset:(CGPoint)contentOffset
-                animated:(BOOL)animated
-{
-  if (animated) {
-    [NSAnimationContext beginGrouping];
-    [[NSAnimationContext currentContext] setDuration:0.3];
-    [[self.contentView animator] setBoundsOrigin:contentOffset];
-    // Handling a weird bug where setBoundsOrigin doesn't actually update view bounds
-    if ([[RCTI18nUtil sharedInstance] isRTL] && contentOffset.y < 1) {
-        [self.contentView scrollToPoint:contentOffset];
-        [self reflectScrolledClipView:self.contentView];
-    }
-    [NSAnimationContext endGrouping];
-  } else {
-    self.contentOffset = contentOffset;
-  }
-}
-#endif // macOS]
 
 - (void)setFrame:(CGRect)frame
 {
@@ -622,6 +568,12 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
   // Does nothing
 }
 
+- (void)setFrame:(CGRect)frame
+{
+  [super setFrame:frame];
+  [self centerContentIfNeeded];
+}
+
 - (void)insertReactSubview:(RCTUIView *)view atIndex:(NSInteger)atIndex // [macOS]
 {
   [super insertReactSubview:view atIndex:atIndex];
@@ -645,6 +597,8 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
 
   _scrollView.documentView = view;
 #endif // macOS]
+
+  [self centerContentIfNeeded];
 }
 
 - (void)removeReactSubview:(RCTUIView *)subview // [macOS]
@@ -945,11 +899,48 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
   }
 
 #if !TARGET_OS_OSX // [macOS]
-
 RCT_SCROLL_EVENT_HANDLER(scrollViewWillBeginDecelerating, onMomentumScrollBegin)
-RCT_SCROLL_EVENT_HANDLER(scrollViewDidZoom, onScroll)
 RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 
+- (void)scrollViewDidZoom:(UIScrollView *)scrollView
+{
+  [self centerContentIfNeeded];
+
+  RCT_SEND_SCROLL_EVENT(onScroll, nil);
+  RCT_FORWARD_SCROLL_EVENT(scrollViewDidZoom : scrollView);
+}
+#endif // macOS]
+
+/*
+ * Automatically centers the content such that if the content is smaller than the
+ * ScrollView, we force it to be centered, but when you zoom or the content otherwise
+ * becomes larger than the ScrollView, there is no padding around the content but it
+ * can still fill the whole view.
+ * This implementation is based on https://petersteinberger.com/blog/2013/how-to-center-uiscrollview/.
+ */
+- (void)centerContentIfNeeded
+{
+  if (!_scrollView.centerContent) {
+    return;
+  }
+
+  CGSize contentSize = self.contentSize;
+  CGSize boundsSize = self.bounds.size;
+  if (CGSizeEqualToSize(contentSize, CGSizeZero) || CGSizeEqualToSize(boundsSize, CGSizeZero)) {
+    return;
+  }
+
+  CGFloat top = 0, left = 0;
+  if (contentSize.width < boundsSize.width) {
+    left = (boundsSize.width - contentSize.width) * 0.5f;
+  }
+  if (contentSize.height < boundsSize.height) {
+    top = (boundsSize.height - contentSize.height) * 0.5f;
+  }
+  _scrollView.contentInset = UIEdgeInsetsMake(top, left, top, left);
+}
+
+#if !TARGET_OS_OSX // [macOS]
 - (void)addScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener
 {
   [_scrollListeners addObject:scrollListener];
@@ -959,7 +950,6 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 {
   [_scrollListeners removeObject:scrollListener];
 }
-
 #endif // [macOS]
 
 - (void)scrollViewDidScroll:(RCTCustomScrollView *)scrollView // [macOS]
@@ -1252,9 +1242,7 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
   CGSize contentSize = self.contentSize;
   if (!CGSizeEqualToSize(_scrollView.contentSize, contentSize)) {
     _scrollView.contentSize = contentSize;
-#if TARGET_OS_OSX // [macOS
-    [_scrollView setContentOffset:_scrollView.contentOffset];
-#endif // macOS]
+    [self centerContentIfNeeded];
   }
 }
 
