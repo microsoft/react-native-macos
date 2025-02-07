@@ -206,10 +206,11 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
 
   UIEdgeInsets newEdgeInsets = _scrollView.contentInset;
   CGFloat inset = MAX(scrollViewLowerY - keyboardEndFrame.origin.y, 0);
+  const auto &props = static_cast<const ScrollViewProps &>(*_props);
   if (isInverted) {
-    newEdgeInsets.top = MAX(inset, _scrollView.contentInset.top);
+    newEdgeInsets.top = MAX(inset, props.contentInset.top);
   } else {
-    newEdgeInsets.bottom = MAX(inset, _scrollView.contentInset.bottom);
+    newEdgeInsets.bottom = MAX(inset, props.contentInset.bottom);
   }
 
   CGPoint newContentOffset = _scrollView.contentOffset;
@@ -227,12 +228,6 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
         contentDiff = keyboardEndFrame.origin.y - keyboardBeginFrame.origin.y;
       }
     } else {
-      CGRect viewIntersection = CGRectIntersection(self.firstResponderFocus, keyboardEndFrame);
-
-      if (CGRectIsNull(viewIntersection)) {
-        return;
-      }
-
       // Inner text field focused
       CGFloat focusEnd = CGRectGetMaxY(self.firstResponderFocus);
       if (focusEnd > keyboardEndFrame.origin.y) {
@@ -264,7 +259,7 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
                    animations:^{
                      self->_scrollView.contentInset = newEdgeInsets;
                      self->_scrollView.verticalScrollIndicatorInsets = newEdgeInsets;
-                     [self scrollToOffset:newContentOffset animated:NO];
+                     [self scrollTo:newContentOffset.x y:newContentOffset.y animated:NO];
                    }
                    completion:nil];
 }

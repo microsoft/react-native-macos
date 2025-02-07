@@ -56,6 +56,8 @@ import com.facebook.react.uimanager.style.BorderRadiusProp;
 import com.facebook.react.uimanager.style.BorderStyle;
 import com.facebook.react.uimanager.style.LogicalEdge;
 import com.facebook.react.uimanager.style.Overflow;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Backing for a React View. Has support for borders, but since borders aren't common, lazy
@@ -134,6 +136,7 @@ public class ReactViewGroup extends ViewGroup
   private @Nullable ViewGroupDrawingOrderHelper mDrawingOrderHelper;
   private float mBackfaceOpacity;
   private String mBackfaceVisibility;
+  private @Nullable Set<Integer> mChildrenRemovedWhileTransitioning;
 
   /**
    * Creates a new `ReactViewGroup` instance.
@@ -167,6 +170,7 @@ public class ReactViewGroup extends ViewGroup
     mDrawingOrderHelper = null;
     mBackfaceOpacity = 1.f;
     mBackfaceVisibility = "visible";
+    mChildrenRemovedWhileTransitioning = null;
   }
 
   /* package */ void recycleView() {
@@ -349,6 +353,7 @@ public class ReactViewGroup extends ViewGroup
       return;
     }
     mRemoveClippedSubviews = removeClippedSubviews;
+    mChildrenRemovedWhileTransitioning = null;
     if (removeClippedSubviews) {
       mClippingRect = new Rect();
       ReactClippingViewGroupHelper.calculateClippingRect(this, mClippingRect);
@@ -400,6 +405,26 @@ public class ReactViewGroup extends ViewGroup
 
     ReactClippingViewGroupHelper.calculateClippingRect(this, mClippingRect);
     updateClippingToRect(mClippingRect);
+  }
+
+  @Override
+  public void endViewTransition(View view) {
+    super.endViewTransition(view);
+    if (mChildrenRemovedWhileTransitioning != null) {
+      mChildrenRemovedWhileTransitioning.remove(view.getId());
+    }
+  }
+
+  private void trackChildViewTransition(int childId) {
+    if (mChildrenRemovedWhileTransitioning == null) {
+      mChildrenRemovedWhileTransitioning = new HashSet<>();
+    }
+    mChildrenRemovedWhileTransitioning.add(childId);
+  }
+
+  private boolean isChildRemovedWhileTransitioning(View child) {
+    return mChildrenRemovedWhileTransitioning != null
+        && mChildrenRemovedWhileTransitioning.contains(child.getId());
   }
 
   private void updateClippingToRect(Rect clippingRect) {
@@ -548,6 +573,12 @@ public class ReactViewGroup extends ViewGroup
     } else {
       setChildrenDrawingOrderEnabled(false);
     }
+
+    // The parent might not be null in case the child is transitioning.
+    if (child.getParent() != null) {
+      trackChildViewTransition(child.getId());
+    }
+
     super.onViewRemoved(child);
   }
 
@@ -622,11 +653,12 @@ public class ReactViewGroup extends ViewGroup
   /*package*/ void addViewWithSubviewClippingEnabled(
       final View child, int index, ViewGroup.LayoutParams params) {
     Assertions.assertCondition(mRemoveClippedSubviews);
-    Rect clippingRect = Assertions.assertNotNull(mClippingRect);
-    View[] childArray = Assertions.assertNotNull(mAllChildren);
     addInArray(child, index);
+
     // we add view as "clipped" and then run {@link #updateSubviewClipStatus} to conditionally
     // attach it
+    Rect clippingRect = Assertions.assertNotNull(mClippingRect);
+    View[] childArray = Assertions.assertNotNull(mAllChildren);
     int clippedSoFar = 0;
     for (int i = 0; i < index; i++) {
       if (isViewClipped(childArray[i])) {
@@ -676,6 +708,7 @@ public class ReactViewGroup extends ViewGroup
         }
       }
       removeViewsInLayout(index - clippedSoFar, 1);
+      invalidate();
     }
     removeFromArray(index);
   }
