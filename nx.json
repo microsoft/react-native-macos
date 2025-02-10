@@ -28,7 +28,6 @@
         "currentVersionResolverMetadata": {
           "tag": "latest"
         },
-        "preid": "rc",
         "skipLockFileUpdate": true
       }
     }
