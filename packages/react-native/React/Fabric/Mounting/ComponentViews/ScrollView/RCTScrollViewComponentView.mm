@@ -960,9 +960,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   [self _forceDispatchNextScrollEvent];
 
-#if !TARGET_OS_OSX // [macOS]
   [_scrollView setContentOffset:offset animated:animated];
-#endif // [macOS]
 
   if (!animated) {
     // When not animated, the expected workflow in ``scrollViewDidEndScrollingAnimation`` after scrolling is not going

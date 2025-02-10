@@ -300,7 +300,7 @@
   }
 }
 
-- (void)scrollViewDidZoom:(__unused UIScrollView *)scrollView
+- (void)scrollViewDidZoom:(__unused RCTUIScrollView *)scrollView // [macOS]
 {
   [self centerContentIfNeeded];
 }

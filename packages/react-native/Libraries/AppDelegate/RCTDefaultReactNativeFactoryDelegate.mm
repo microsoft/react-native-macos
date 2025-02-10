@@ -33,7 +33,7 @@
   return [[RCTBridge alloc] initWithDelegate:delegate launchOptions:launchOptions];
 }
 
-- (void)setRootView:(UIView *)rootView toRootViewController:(UIViewController *)rootViewController
+- (void)setRootView:(RCTPlatformView *)rootView toRootViewController:(RCTPlatformViewController *)rootViewController
 {
   rootViewController.view = rootView;
 }
@@ -43,14 +43,18 @@
   // Override point for customization after application launch.
 }
 
-- (UIView *)createRootViewWithBridge:(RCTBridge *)bridge
+- (RCTPlatformView *)createRootViewWithBridge:(RCTBridge *)bridge
                           moduleName:(NSString *)moduleName
                            initProps:(NSDictionary *)initProps
 {
   BOOL enableFabric = self.fabricEnabled;
-  UIView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, enableFabric);
+  RCTUIView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, enableFabric);
 
+#if !TARGET_OS_OSX // [macOS]
   rootView.backgroundColor = [UIColor systemBackgroundColor];
+#else // [macOS
+  rootView.backgroundColor = [NSColor windowBackgroundColor];
+#endif // macOS]
 
   return rootView;
 }

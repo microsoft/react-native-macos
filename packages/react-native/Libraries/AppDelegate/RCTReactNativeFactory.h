@@ -7,7 +7,7 @@
 
 #import <React/RCTBridgeDelegate.h>
 #import <React/RCTConvert.h>
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 #import "RCTArchConfiguratorProtocol.h"
 #import "RCTDependencyProvider.h"
 #import "RCTRootViewFactory.h"
@@ -66,9 +66,9 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @returns: a UIView properly configured with a bridge for React Native.
  */
-- (UIView *)createRootViewWithBridge:(RCTBridge *)bridge
-                          moduleName:(NSString *)moduleName
-                           initProps:(NSDictionary *)initProps;
+- (RCTPlatformView *)createRootViewWithBridge:(RCTBridge *)bridge
+                                   moduleName:(NSString *)moduleName
+                                    initProps:(NSDictionary *)initProps;
 
 /// This method returns a map of Component Descriptors and Components classes that needs to be registered in the
 /// new renderer. The Component Descriptor is a string which represent the name used in JS to refer to the native

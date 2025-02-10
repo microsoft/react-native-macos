@@ -190,7 +190,7 @@ using namespace facebook::react;
                                                    turboModuleEnabled:self.turboModuleEnabled
                                                     bridgelessEnabled:self.bridgelessEnabled];
 
-  configuration.createRootViewWithBridge = ^UIView *(RCTBridge *bridge, NSString *moduleName, NSDictionary *initProps) {
+  configuration.createRootViewWithBridge = ^RCTPlatformView *(RCTBridge *bridge, NSString *moduleName, NSDictionary *initProps) {
     return [weakSelf.delegate createRootViewWithBridge:bridge moduleName:moduleName initProps:initProps];
   };
 
@@ -198,7 +198,7 @@ using namespace facebook::react;
     return [weakSelf.delegate createBridgeWithDelegate:delegate launchOptions:launchOptions];
   };
 
-  configuration.customizeRootView = ^(UIView *_Nonnull rootView) {
+  configuration.customizeRootView = ^(RCTPlatformView *_Nonnull rootView) {
     [weakSelf.delegate customizeRootView:(RCTRootView *)rootView];
   };
 

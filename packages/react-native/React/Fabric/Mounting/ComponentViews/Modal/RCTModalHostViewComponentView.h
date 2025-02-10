@@ -10,9 +10,10 @@
 /**
  * UIView class for root <ModalHostView> component.
  */
-@interface RCTModalHostViewComponentView : RCTViewComponentView <UIAdaptivePresentationControllerDelegate>
-
+@interface RCTModalHostViewComponentView : RCTViewComponentView
 #if !TARGET_OS_OSX // [macOS]
+<UIAdaptivePresentationControllerDelegate>
+
 /**
  * Subclasses may override this method and present the modal on different view controller.
  * Default implementation presents the modal on `[self reactViewController]`.

@@ -512,7 +512,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
       }
     } else {
       if (strongSelf->_onLoad) {
-        RCTImageSource *sourceLoaded = [source imageSourceWithSize:image.size scale:image.scale];
+        RCTImageSource *sourceLoaded = [source imageSourceWithSize:image.size scale:UIImageGetScale(image)]; // [macOS]
         strongSelf->_onLoad(onLoadParamsForSource(sourceLoaded));
       }
       if (strongSelf->_onLoadEnd) {

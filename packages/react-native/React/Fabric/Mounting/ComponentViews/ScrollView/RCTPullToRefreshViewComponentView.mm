@@ -158,9 +158,15 @@ using namespace facebook::react;
 
 #pragma mark - Attaching & Detaching
 
+#if !TARGET_OS_OSX // [macOS]
 - (void)didMoveToSuperview
 {
   [super didMoveToSuperview];
+#else // macOS]
+- (void)viewDidMoveToSuperview
+{
+  [super viewDidMoveToSuperview];
+#endif // macOS]
   if (self.superview) {
     [self _attach];
   } else {
