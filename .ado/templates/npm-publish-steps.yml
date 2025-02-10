@@ -1,6 +1,6 @@
 parameters:
   # If this is a new stable branch, change `publishTag` to `latest` when going stable
-  publishTag: 'next'
+  publishTag: 'latest'
 
 steps:
   - checkout: self
