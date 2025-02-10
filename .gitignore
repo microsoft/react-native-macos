@@ -68,6 +68,7 @@ local.properties
 *.iml
 /packages/react-native/android/*
 !/packages/react-native/android/README.md
+.kotlin/
 
 # Node
 node_modules
@@ -161,7 +162,7 @@ vendor/
 .circleci/generated_config.yml
 
 # Jest Integration
-/jest/integration/build/
+/packages/react-native-fantom/build/
 
 #[macOS
 # Yarn 

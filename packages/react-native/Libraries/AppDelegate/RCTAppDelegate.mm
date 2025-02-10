@@ -6,7 +6,6 @@
  */
 
 #import "RCTAppDelegate.h"
-#import <React/RCTColorSpaceUtils.h>
 #import <React/RCTLog.h>
 #import <React/RCTRootView.h>
 #import <React/RCTSurfacePresenterBridgeAdapter.h>
@@ -14,10 +13,6 @@
 #import <ReactCommon/RCTHost.h>
 #include <React/RCTUIKit.h>
 #import <objc/runtime.h>
-#import <react/featureflags/ReactNativeFeatureFlags.h>
-#import <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
-#import <react/renderer/graphics/ColorComponents.h>
-#import "RCTAppDelegate+Protected.h"
 #import "RCTAppSetupUtils.h"
 #import "RCTDependencyProvider.h"
 
@@ -36,9 +31,6 @@
 #import <react/nativemodule/defaults/DefaultTurboModules.h>
 
 using namespace facebook::react;
-
-@interface RCTAppDelegate () <RCTComponentViewFactoryComponentProvider, RCTHostDelegate>
-@end
 
 @implementation RCTAppDelegate
 
@@ -59,16 +51,7 @@ using namespace facebook::react;
     NSApplication *application = [notification object];
     NSDictionary *launchOptions = [notification userInfo];
 #endif // macOS]
-  [self _setUpFeatureFlags];
-
-  RCTSetNewArchEnabled([self newArchEnabled]);
-  [RCTColorSpaceUtils applyDefaultColorSpace:self.defaultColorSpace];
-  RCTAppSetupPrepareApp(application, self.turboModuleEnabled);
-
-  self.rootViewFactory = [self createRCTRootViewFactory];
-  if (self.newArchEnabled || self.fabricEnabled) {
-    [RCTComponentViewFactory currentComponentViewFactory].thirdPartyFabricComponentsProvider = self;
-  }
+  self.reactNativeFactory = [[RCTReactNativeFactory alloc] initWithDelegate:self];
 
   if (self.automaticallyLoadReactNativeWindow) {
     [self loadReactNativeWindow:launchOptions];
@@ -113,54 +96,6 @@ using namespace facebook::react;
 #endif // macOS]
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-  // Noop
-}
-
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-{
-  [NSException raise:@"RCTBridgeDelegate::sourceURLForBridge not implemented"
-              format:@"Subclasses must implement a valid sourceURLForBridge method"];
-  return nil;
-}
-
-- (RCTBridge *)createBridgeWithDelegate:(id<RCTBridgeDelegate>)delegate launchOptions:(NSDictionary *)launchOptions
-{
-  return [[RCTBridge alloc] initWithDelegate:delegate launchOptions:launchOptions];
-}
-
-- (RCTPlatformView *)createRootViewWithBridge:(RCTBridge *)bridge // [macOS]
-                                   moduleName:(NSString *)moduleName
-                                    initProps:(NSDictionary *)initProps
-{
-  BOOL enableFabric = self.fabricEnabled;
-  RCTPlatformView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, enableFabric); // [macOS]
-
-#if !TARGET_OS_OSX // [macOS]
-  rootView.backgroundColor = [UIColor systemBackgroundColor];
-#else // [macOS
-  rootView.layer.backgroundColor = [[NSColor windowBackgroundColor] CGColor];
-#endif // macOS]
-
-  return rootView;
-}
-
-- (RCTPlatformViewController *)createRootViewController
-{
-  return [RCTPlatformViewController new];
-}
-
-- (void)setRootView:(RCTPlatformView *)rootView toRootViewController:(UIViewController *)rootViewController // [macOS]
-{
-  rootViewController.view = rootView;
-}
-
-- (void)customizeRootView:(RCTRootView *)rootView
-{
-  // Override point for customization after application launch.
-}
-
 #pragma mark - UISceneDelegate
 #if !TARGET_OS_OSX // [macOS]
 - (void)windowScene:(UIWindowScene *)windowScene
@@ -172,51 +107,10 @@ using namespace facebook::react;
 }
 #endif // [macOS]
 
-- (RCTColorSpace)defaultColorSpace
+- (RCTRootViewFactory *)rootViewFactory
 {
-  return RCTColorSpaceSRGB;
+  return self.reactNativeFactory.rootViewFactory;
 }
-
-#pragma mark - New Arch Enabled settings
-
-- (BOOL)newArchEnabled
-{
-#if RCT_NEW_ARCH_ENABLED
-  return YES;
-#else
-  return NO;
-#endif
-}
-
-- (BOOL)turboModuleEnabled
-{
-  return [self newArchEnabled];
-}
-
-- (BOOL)fabricEnabled
-{
-  return [self newArchEnabled];
-}
-
-- (BOOL)bridgelessEnabled
-{
-  return [self newArchEnabled];
-}
-
-- (NSURL *)bundleURL
-{
-  [NSException raise:@"RCTAppDelegate::bundleURL not implemented"
-              format:@"Subclasses must implement a valid getBundleURL method"];
-  return nullptr;
-}
-
-#pragma mark - RCTHostDelegate
-
-- (void)hostDidStart:(RCTHost *)host
-{
-}
-
-#pragma mark - Bridge and Bridge Adapter properties
 
 - (RCTBridge *)bridge
 {
@@ -230,135 +124,12 @@ using namespace facebook::react;
 
 - (void)setBridge:(RCTBridge *)bridge
 {
-  self.rootViewFactory.bridge = bridge;
+  self.reactNativeFactory.rootViewFactory.bridge = bridge;
 }
 
 - (void)setBridgeAdapter:(RCTSurfacePresenterBridgeAdapter *)bridgeAdapter
 {
-  self.rootViewFactory.bridgeAdapter = bridgeAdapter;
-}
-
-#pragma mark - RCTTurboModuleManagerDelegate
-
-- (Class)getModuleClassFromName:(const char *)name
-{
-#if RN_DISABLE_OSS_PLUGIN_HEADER
-  return RCTTurboModulePluginClassProvider(name);
-#else
-  return RCTCoreModulesClassProvider(name);
-#endif
-}
-
-- (std::shared_ptr<TurboModule>)getTurboModule:(const std::string &)name
-                                     jsInvoker:(std::shared_ptr<CallInvoker>)jsInvoker
-{
-  return DefaultTurboModules::getTurboModule(name, jsInvoker);
-}
-
-- (std::shared_ptr<TurboModule>)getTurboModule:(const std::string &)name
-                                    initParams:(const ObjCTurboModule::InitParams &)params
-{
-  return nullptr;
-}
-
-- (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass
-{
-  return RCTAppSetupDefaultModuleFromClass(moduleClass, self.dependencyProvider);
-}
-
-#pragma mark - RCTComponentViewFactoryComponentProvider
-
-- (NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents
-{
-  return self.dependencyProvider ? self.dependencyProvider.thirdPartyFabricComponents : @{};
-}
-
-- (RCTRootViewFactory *)createRCTRootViewFactory
-{
-  __weak __typeof(self) weakSelf = self;
-  RCTBundleURLBlock bundleUrlBlock = ^{
-    RCTAppDelegate *strongSelf = weakSelf;
-    return strongSelf.bundleURL;
-  };
-
-  RCTRootViewFactoryConfiguration *configuration =
-      [[RCTRootViewFactoryConfiguration alloc] initWithBundleURLBlock:bundleUrlBlock
-                                                       newArchEnabled:self.fabricEnabled
-                                                   turboModuleEnabled:self.turboModuleEnabled
-                                                    bridgelessEnabled:self.bridgelessEnabled];
-
-  configuration.createRootViewWithBridge = ^RCTPlatformView *(RCTBridge *bridge, NSString *moduleName, NSDictionary *initProps) { // [macOS]
-    return [weakSelf createRootViewWithBridge:bridge moduleName:moduleName initProps:initProps];
-  };
-
-  configuration.createBridgeWithDelegate = ^RCTBridge *(id<RCTBridgeDelegate> delegate, NSDictionary *launchOptions) {
-    return [weakSelf createBridgeWithDelegate:delegate launchOptions:launchOptions];
-  };
-
-  configuration.customizeRootView = ^(RCTPlatformView *_Nonnull rootView) { // [macOS]
-    [weakSelf customizeRootView:(RCTRootView *)rootView];
-  };
-
-  configuration.sourceURLForBridge = ^NSURL *_Nullable(RCTBridge *_Nonnull bridge)
-  {
-    return [weakSelf sourceURLForBridge:bridge];
-  };
-
-  if ([self respondsToSelector:@selector(extraModulesForBridge:)]) {
-    configuration.extraModulesForBridge = ^NSArray<id<RCTBridgeModule>> *_Nonnull(RCTBridge *_Nonnull bridge)
-    {
-      return [weakSelf extraModulesForBridge:bridge];
-    };
-  }
-
-  if ([self respondsToSelector:@selector(extraLazyModuleClassesForBridge:)]) {
-    configuration.extraLazyModuleClassesForBridge =
-        ^NSDictionary<NSString *, Class> *_Nonnull(RCTBridge *_Nonnull bridge)
-    {
-      return [weakSelf extraLazyModuleClassesForBridge:bridge];
-    };
-  }
-
-  if ([self respondsToSelector:@selector(bridge:didNotFindModule:)]) {
-    configuration.bridgeDidNotFindModule = ^BOOL(RCTBridge *_Nonnull bridge, NSString *_Nonnull moduleName) {
-      return [weakSelf bridge:bridge didNotFindModule:moduleName];
-    };
-  }
-
-  return [[RCTRootViewFactory alloc] initWithTurboModuleDelegate:self hostDelegate:self configuration:configuration];
-}
-
-#pragma mark - Feature Flags
-
-class RCTAppDelegateBridgelessFeatureFlags : public ReactNativeFeatureFlagsDefaults {
- public:
-  bool enableBridgelessArchitecture() override
-  {
-    return true;
-  }
-  bool enableFabricRenderer() override
-  {
-    return true;
-  }
-  bool useTurboModules() override
-  {
-    return true;
-  }
-  bool useNativeViewConfigsInBridgelessMode() override
-  {
-    return true;
-  }
-  bool enableFixForViewCommandRace() override
-  {
-    return true;
-  }
-};
-
-- (void)_setUpFeatureFlags
-{
-  if ([self bridgelessEnabled]) {
-    ReactNativeFeatureFlags::override(std::make_unique<RCTAppDelegateBridgelessFeatureFlags>());
-  }
+  self.reactNativeFactory.rootViewFactory.bridgeAdapter = bridgeAdapter;
 }
 
 @end

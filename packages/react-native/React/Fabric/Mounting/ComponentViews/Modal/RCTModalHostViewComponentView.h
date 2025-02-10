@@ -10,7 +10,7 @@
 /**
  * UIView class for root <ModalHostView> component.
  */
-@interface RCTModalHostViewComponentView : RCTViewComponentView
+@interface RCTModalHostViewComponentView : RCTViewComponentView <UIAdaptivePresentationControllerDelegate>
 
 #if !TARGET_OS_OSX // [macOS]
 /**

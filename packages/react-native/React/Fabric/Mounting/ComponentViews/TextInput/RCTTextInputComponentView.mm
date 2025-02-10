@@ -74,6 +74,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
    * later comparison insensitive to them.
    */
   NSDictionary<NSAttributedStringKey, id> *_originalTypingAttributes;
+
+  BOOL _hasInputAccessoryView;
 }
 
 #pragma mark - UIView overrides
@@ -107,9 +109,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
       [_backedTextInputView.defaultTextAttributes mutableCopy];
 
+#if !TARGET_OS_MACCATALYST
   RCTWeakEventEmitterWrapper *eventEmitterWrapper = [RCTWeakEventEmitterWrapper new];
   eventEmitterWrapper.eventEmitter = _eventEmitter;
   defaultAttributes[RCTAttributedStringEventEmitterKey] = eventEmitterWrapper;
+#endif
 
   _backedTextInputView.defaultTextAttributes = defaultAttributes;
 }
@@ -306,8 +310,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (newTextInputProps.textAttributes != oldTextInputProps.textAttributes) {
     NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
+#if !TARGET_OS_MACCATALYST
     defaultAttributes[RCTAttributedStringEventEmitterKey] =
         _backedTextInputView.defaultTextAttributes[RCTAttributedStringEventEmitterKey];
+#endif
     _backedTextInputView.defaultTextAttributes = defaultAttributes;
   }
 
@@ -325,6 +331,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.inputAccessoryViewButtonLabel =
         RCTNSStringFromString(newTextInputProps.inputAccessoryViewButtonLabel);
   }
+
+  if (newTextInputProps.disableKeyboardShortcuts != oldTextInputProps.disableKeyboardShortcuts) {
+    _backedTextInputView.disableKeyboardShortcuts = newTextInputProps.disableKeyboardShortcuts;
+  }
+
   [super updateProps:props oldProps:oldProps];
 
 #if TARGET_OS_IOS // [macOS] [visionOS]
@@ -731,9 +742,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
        keyboardType == UIKeyboardTypeDecimalPad || keyboardType == UIKeyboardTypeASCIICapableNumberPad) &&
       (containsKeyType || containsInputAccessoryViewButtonLabel);
 
-  if ((_backedTextInputView.inputAccessoryView != nil) == shouldHaveInputAccessoryView) {
+  if (_hasInputAccessoryView == shouldHaveInputAccessoryView) {
     return;
   }
+
+  _hasInputAccessoryView = shouldHaveInputAccessoryView;
 
   if (shouldHaveInputAccessoryView) {
     NSString *buttonLabel = inputAccessoryViewButtonLabel != nil ? inputAccessoryViewButtonLabel
@@ -760,6 +773,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)handleInputAccessoryDoneButton
 {
+  // Ignore the value of whether we submitted; just make sure the submit event is called if necessary.
+  [self textInputShouldSubmitOnReturn];
   if ([self textInputShouldReturn]) {
     [_backedTextInputView endEditing:YES];
   }

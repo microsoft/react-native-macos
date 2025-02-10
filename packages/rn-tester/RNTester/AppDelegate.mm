@@ -9,7 +9,6 @@
 
 #import <UserNotifications/UserNotifications.h>
 
-#import <RCTAppDelegate+Protected.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTDefines.h>
 #import <React/RCTLinkingManager.h>
@@ -64,13 +63,6 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
   [super applicationDidFinishLaunching:notification];
 #endif // macOS]
 }
-
-#if !TARGET_OS_OSX // [macOS]
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-  [super applicationDidEnterBackground:application];
-}
-#endif // [macOS]
 
 - (NSDictionary *)prepareInitialProps
 {
