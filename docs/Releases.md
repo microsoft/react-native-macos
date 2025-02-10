@@ -75,7 +75,7 @@ git push -u origin HEAD
 Prepare the publish pipeline:
 
 ```sh
-sed -i '' "s/publishTag: 'next'/publishTag: 'latest'/" .ado/templates/npm-publish.yml
+sed -i '' "s/publishTag: 'next'/publishTag: 'latest'/" .ado/templates/npm-publish-steps.yml
 ```
 
 Update the release configuration:
