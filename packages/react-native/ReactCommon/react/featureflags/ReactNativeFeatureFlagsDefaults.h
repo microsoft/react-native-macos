@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<213e1ad83360a79e27d41c06e20fb8c9>>
+ * @generated SignedSource<<e38a0e9474ac349a4b8153862470c856>>
  */
 
 /**
@@ -43,12 +43,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableAlignItemsBaselineOnFabricIOS() override {
-    return true;
-  }
-
-  bool enableAndroidLineHeightCentering() override {
-    return true;
+  bool enableAccumulatedUpdatesInRawPropsAndroid() override {
+    return false;
   }
 
   bool enableBridgelessArchitecture() override {
@@ -79,10 +75,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableFabricRendererExclusively() override {
-    return false;
-  }
-
   bool enableFixForViewCommandRace() override {
     return false;
   }
@@ -92,6 +84,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableIOSViewClipToPaddingBox() override {
+    return false;
+  }
+
+  bool enableImagePrefetchingAndroid() override {
     return false;
   }
 
@@ -139,16 +135,16 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool fixDifferentiatorEmittingUpdatesWithWrongParentTag() override {
+    return true;
+  }
+
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
     return false;
   }
 
   bool fixMountingCoordinatorReportedPendingTransactionsOnAndroid() override {
     return false;
-  }
-
-  bool fuseboxEnabledDebug() override {
-    return true;
   }
 
   bool fuseboxEnabledRelease() override {
@@ -164,7 +160,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool loadVectorDrawablesOnImages() override {
-    return false;
+    return true;
   }
 
   bool traceTurboModulePromiseRejectionsOnAndroid() override {
@@ -195,8 +191,12 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool useRuntimeShadowNodeReferenceUpdate() override {
+  bool useRawPropsJsiValue() override {
     return false;
+  }
+
+  bool useRuntimeShadowNodeReferenceUpdate() override {
+    return true;
   }
 
   bool useTurboModuleInterop() override {

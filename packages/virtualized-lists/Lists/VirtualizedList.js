@@ -1052,6 +1052,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
             <View
               collapsable={Platform.OS !== 'macos'} // [macOS]
               key={`$spacer-${section.first}`}
+              // $FlowFixMe[incompatible-type]
               style={{[spacerKey]: spacerSize}}
             />,
           );

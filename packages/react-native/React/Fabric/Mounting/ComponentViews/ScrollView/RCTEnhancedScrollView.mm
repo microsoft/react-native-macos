@@ -81,30 +81,54 @@
  * ScrollView, we force it to be centered, but when you zoom or the content otherwise
  * becomes larger than the ScrollView, there is no padding around the content but it
  * can still fill the whole view.
+ * This implementation is based on https://petersteinberger.com/blog/2013/how-to-center-uiscrollview/.
  */
+- (void)centerContentIfNeeded
+{
+  if (!_centerContent) {
+    return;
+  }
+
+  CGSize contentSize = self.contentSize;
+  CGSize boundsSize = self.bounds.size;
+  if (CGSizeEqualToSize(contentSize, CGSizeZero) || CGSizeEqualToSize(boundsSize, CGSizeZero)) {
+    return;
+  }
+
+  CGFloat top = 0, left = 0;
+  if (contentSize.width < boundsSize.width) {
+    left = (boundsSize.width - contentSize.width) * 0.5f;
+  }
+  if (contentSize.height < boundsSize.height) {
+    top = (boundsSize.height - contentSize.height) * 0.5f;
+  }
+  self.contentInset = UIEdgeInsetsMake(top, left, top, left);
+}
+
 - (void)setContentOffset:(CGPoint)contentOffset
 {
   if (_isSetContentOffsetDisabled) {
     return;
   }
-
-  if (_centerContent && !CGSizeEqualToSize(self.contentSize, CGSizeZero)) {
-    CGSize scrollViewSize = self.bounds.size;
-    if (self.contentSize.width <= scrollViewSize.width) {
-      contentOffset.x = -(scrollViewSize.width - self.contentSize.width) / 2.0;
-    }
-    if (self.contentSize.height <= scrollViewSize.height) {
-      contentOffset.y = -(scrollViewSize.height - self.contentSize.height) / 2.0;
-    }
-  }
-
   super.contentOffset = CGPointMake(
       RCTSanitizeNaNValue(contentOffset.x, @"scrollView.contentOffset.x"),
       RCTSanitizeNaNValue(contentOffset.y, @"scrollView.contentOffset.y"));
 }
 
+- (void)setFrame:(CGRect)frame
+{
+  [super setFrame:frame];
+  [self centerContentIfNeeded];
+}
+
+- (void)didAddSubview:(RCTPlatformView *)subview // [macOS]
+{
+  [super didAddSubview:subview];
+  [self centerContentIfNeeded];
+}
+
 #if !TARGET_OS_OSX // [macOS]
-- (BOOL)touchesShouldCancelInContentView:(RCTPlatformView *)view // [macOS]
+- (BOOL)touchesShouldCancelInContentView:(UIView *)view
 {
   if ([_overridingDelegate respondsToSelector:@selector(touchesShouldCancelInContentView:)]) {
     return [_overridingDelegate touchesShouldCancelInContentView:view];
@@ -112,9 +136,11 @@
 
   return [super touchesShouldCancelInContentView:view];
 }
+#endif // [macOS]
 
 #pragma mark - RCTGenericDelegateSplitter
 
+#if !TARGET_OS_OSX // [macOS]
 - (void)setPrivateDelegate:(id<UIScrollViewDelegate>)delegate
 {
   [super setDelegate:delegate];
@@ -143,7 +169,6 @@
     [_delegateSplitter addDelegate:_publicDelegate];
   }
 }
-
 #endif // [macOS]
 
 #pragma mark - UIScrollViewDelegate
@@ -273,6 +298,11 @@
       targetContentOffset->y = newTargetContentOffset;
     }
   }
+}
+
+- (void)scrollViewDidZoom:(__unused UIScrollView *)scrollView
+{
+  [self centerContentIfNeeded];
 }
 
 #pragma mark -
