@@ -39,13 +39,21 @@ describe('Platform', () => {
       expect(PlatformMacOS.select(iosSpecific)).toEqual(iosSpecific.native);
 
       const androidSpecific = {android: 'android', native: 'native'};
-      expect(PlatformIOS.select(androidSpecific)).toEqual(androidSpecific.native);
-      expect(PlatformAndroid.select(androidSpecific)).toEqual(androidSpecific.android);
-      expect(PlatformMacOS.select(androidSpecific)).toEqual(androidSpecific.native);
+      expect(PlatformIOS.select(androidSpecific)).toEqual(
+        androidSpecific.native,
+      );
+      expect(PlatformAndroid.select(androidSpecific)).toEqual(
+        androidSpecific.android,
+      );
+      expect(PlatformMacOS.select(androidSpecific)).toEqual(
+        androidSpecific.native,
+      );
 
       const macosSpecific = {macos: 'macos', native: 'native'};
       expect(PlatformIOS.select(macosSpecific)).toEqual(macosSpecific.native);
-      expect(PlatformAndroid.select(macosSpecific)).toEqual(macosSpecific.native);
+      expect(PlatformAndroid.select(macosSpecific)).toEqual(
+        macosSpecific.native,
+      );
       expect(PlatformMacOS.select(macosSpecific)).toEqual(macosSpecific.macos);
     });
     // macOS]
