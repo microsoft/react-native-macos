@@ -84,7 +84,11 @@ const Platform: PlatformType = {
   },
   select: <T>(spec: PlatformSelectSpec<T>): T =>
     // $FlowFixMe[incompatible-return]
-    'ios' in spec ? spec.macos : 'native' in spec ? spec.native : spec.default,
+    'macos' in spec
+      ? spec.macos
+      : 'native' in spec
+        ? spec.native
+        : spec.default,
 };
 
 module.exports = Platform;
