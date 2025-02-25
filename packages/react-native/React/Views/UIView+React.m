@@ -313,6 +313,7 @@ static void updateTransform(RCTPlatformView *view) // [macOS]
 
 - (UIViewController *)reactViewController
 {
+#if !TARGET_OS_OSX // [macOS]
   id responder = [self nextResponder];
   while (responder) {
     if ([responder isKindOfClass:[UIViewController class]]) {
@@ -320,6 +321,16 @@ static void updateTransform(RCTPlatformView *view) // [macOS]
     }
     responder = [responder nextResponder];
   }
+#else // [macOS
+  NSView *view = self;
+  while (view) {
+    if ([view.nextResponder isKindOfClass:[NSViewController class]]) {
+      return (NSViewController *)view.nextResponder;
+    }
+    view = view.superview;
+    }
+#endif // macOS]
+
   return nil;
 }
 
