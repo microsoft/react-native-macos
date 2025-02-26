@@ -149,7 +149,6 @@ static UIFont *RCTDefaultFontWithFontProperties(RCTFontProperties fontProperties
 #if TARGET_OS_OSX // [macOS
 NSArray<NSString *> *RCTFontNamesForFamilyName(NSString *familyName) {
   NSArray<NSArray *> *fontMembers = [[NSFontManager sharedFontManager] availableMembersOfFontFamily:familyName];
-  NSLog(@"SAAD");
   NSMutableArray<NSString *> *fontNames = [NSMutableArray array];
 
   for (NSArray *fontMember in fontMembers) {
