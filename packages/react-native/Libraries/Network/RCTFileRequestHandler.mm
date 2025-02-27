@@ -48,17 +48,19 @@ RCT_EXPORT_MODULE()
 
   __weak __block NSBlockOperation *weakOp;
   __block NSBlockOperation *op = [NSBlockOperation blockOperationWithBlock:^{
+    // [macOS
     NSBlockOperation *strongOp = weakOp;  // Strong reference to avoid deallocation during execution
     if (strongOp == nil || [strongOp isCancelled]) {
       return;
     }
+    // macOS]
 
     // Get content length
     NSError *error = nil;
     NSFileManager *fileManager = [NSFileManager new];
     NSDictionary<NSString *, id> *fileAttributes = [fileManager attributesOfItemAtPath:request.URL.path error:&error];
     if (!fileAttributes) {
-      [delegate URLRequest:strongOp didCompleteWithError:error];
+      [delegate URLRequest:strongOp didCompleteWithError:error]; // [macOS]
       return;
     }
 
@@ -75,14 +77,14 @@ RCT_EXPORT_MODULE()
                                            expectedContentLength:[fileAttributes[NSFileSize] ?: @-1 integerValue]
                                                 textEncodingName:nil];
 
-    [delegate URLRequest:strongOp didReceiveResponse:response];
+    [delegate URLRequest:strongOp didReceiveResponse:response]; // [macOS]
 
     // Load data
     NSData *data = [NSData dataWithContentsOfURL:request.URL options:NSDataReadingMappedIfSafe error:&error];
     if (data) {
-      [delegate URLRequest:strongOp didReceiveData:data];
+      [delegate URLRequest:strongOp didReceiveData:data]; // [macOS]
     }
-    [delegate URLRequest:strongOp didCompleteWithError:error];
+    [delegate URLRequest:strongOp didCompleteWithError:error]; // [macOS]
   }];
 
   weakOp = op;
