@@ -146,6 +146,22 @@ static UIFont *RCTDefaultFontWithFontProperties(RCTFontProperties fontProperties
   return font;
 }
 
+#if TARGET_OS_OSX // [macOS
+NSArray<NSString *> *RCTFontNamesForFamilyName(NSString *familyName) {
+  NSArray<NSArray *> *fontMembers = [[NSFontManager sharedFontManager] availableMembersOfFontFamily:familyName];
+  NSMutableArray<NSString *> *fontNames = [NSMutableArray array];
+
+  for (NSArray *fontMember in fontMembers) {
+      // The first object is the Post-script name of the font.
+      NSString *fontName = fontMember.firstObject;
+      [fontNames addObject:fontName];
+  }
+
+  // Return an immutable array
+  return [NSArray arrayWithArray:fontNames];
+}
+#endif // macOS]
+
 UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
 {
   RCTFontProperties defaultFontProperties = RCTDefaultFontProperties();
@@ -162,7 +178,7 @@ UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
 #if !TARGET_OS_OSX // [macOS]
     NSArray<NSString *> *fontNames = [UIFont fontNamesForFamilyName:fontProperties.family];
 #else // [macOS
-    NSArray<NSString *> *fontNames = @[];
+    NSArray<NSString *> *fontNames = RCTFontNamesForFamilyName(fontProperties.family);
 #endif // macOS]
     UIFontWeight fontWeight = fontProperties.weight;
 
@@ -171,7 +187,11 @@ UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
       // example: "Helvetica Light Oblique" rather than just "Helvetica".
       font = [UIFont fontWithName:fontProperties.family size:effectiveFontSize];
       if (font) {
+#if !TARGET_OS_OSX // [macOS]
         fontNames = [UIFont fontNamesForFamilyName:font.familyName];
+#else // [macOS
+        fontNames = RCTFontNamesForFamilyName(font.familyName);
+#endif // macOS]
         fontWeight = fontWeight ?: RCTGetFontWeight(font);
       } else {
         // Failback to system font.

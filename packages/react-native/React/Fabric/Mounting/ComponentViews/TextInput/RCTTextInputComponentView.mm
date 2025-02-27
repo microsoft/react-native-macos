@@ -815,18 +815,19 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 // https://github.com/facebook/react-native/blob/3102a58df38d96f3dacef0530e4dbb399037fcd2/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/text/internal/span/SetSpanOperation.kt#L30
 - (void)_updateTypingAttributes
 {
-  if (_backedTextInputView.attributedText.length > 0 && _backedTextInputView.selectedTextRange != nil) {
 #if !TARGET_OS_OSX // [macOS]
+  if (_backedTextInputView.attributedText.length > 0 && _backedTextInputView.selectedTextRange != nil) {
     NSUInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
                                                            toPosition:_backedTextInputView.selectedTextRange.start];
-#else // [macOS
-    NSUInteger offsetStart = [_backedTextInputView selectedTextRange].location;
-#endif // macOS]
+
     
     NSUInteger samplePoint = offsetStart == 0 ? 0 : offsetStart - 1;
     _backedTextInputView.typingAttributes = [_backedTextInputView.attributedText attributesAtIndex:samplePoint
                                                                                     effectiveRange:NULL];
   }
+#else // [macOS
+  // TODO
+#endif // macOS]
 }
 
 - (void)_setMultiline:(BOOL)multiline
