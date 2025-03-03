@@ -8,11 +8,10 @@
  // [macOS]
  #if TARGET_OS_OSX
 
-#import "RCTAccessibilityManager.h"
+#import <React/RCTAccessibilityManager.h>
 
 #import "RCTBridge.h"
 #import "RCTConvert.h"
-#import "RCTEventDispatcher.h"
 #import "RCTLog.h"
 #import "RCTUIManager.h"
 

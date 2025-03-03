@@ -29,7 +29,7 @@ import View from './View/View';
 import invariant from 'invariant';
 import * as React from 'react';
 
-type ButtonProps = $ReadOnly<{|
+type ButtonProps = $ReadOnly<{
   /**
     Text to display inside the button. On Android the given title will be
     converted to the uppercased form.
@@ -38,9 +38,9 @@ type ButtonProps = $ReadOnly<{|
 
   /**
     Handler to be called when the user taps the button. The first function
-    argument is an event in form of [PressEvent](pressevent).
+    argument is an event in form of [GestureResponderEvent](pressevent).
    */
-  onPress: (event?: PressEvent) => mixed,
+  onPress: (event?: GestureResponderEvent) => mixed,
 
   /**
     If `true`, doesn't play system sound on touch.
@@ -197,7 +197,7 @@ type ButtonProps = $ReadOnly<{|
   importantForAccessibility?: ?('auto' | 'yes' | 'no' | 'no-hide-descendants'),
   accessibilityHint?: ?string,
   accessibilityLanguage?: ?Stringish,
-|}>;
+}>;
 
 /**
   A basic button component that should render nicely on any platform. Supports a
@@ -313,10 +313,12 @@ type ButtonProps = $ReadOnly<{|
 const Touchable: typeof TouchableNativeFeedback | typeof TouchableOpacity =
   Platform.OS === 'android' ? TouchableNativeFeedback : TouchableOpacity;
 
-const Button: React.AbstractComponent<
-  ButtonProps,
-  React.ElementRef<typeof Touchable>,
-> = React.forwardRef((props: ButtonProps, ref) => {
+type ButtonRef = React.ElementRef<typeof Touchable>;
+
+const Button: component(
+  ref: React.RefSetter<ButtonRef>,
+  ...props: ButtonProps
+) = React.forwardRef((props: ButtonProps, ref: React.RefSetter<ButtonRef>) => {
   const {
     accessibilityLabel,
     accessibilityRole, // [macOS]
@@ -422,6 +424,9 @@ const Button: React.AbstractComponent<
       tooltip={tooltip}
       // macOS]
       touchSoundDisabled={touchSoundDisabled}
+      // $FlowFixMe[incompatible-exact]
+      // $FlowFixMe[prop-missing]
+      // $FlowFixMe[incompatible-type-arg]
       ref={ref}>
       <View style={buttonStyles}>
         <Text style={textStyles} disabled={disabled}>

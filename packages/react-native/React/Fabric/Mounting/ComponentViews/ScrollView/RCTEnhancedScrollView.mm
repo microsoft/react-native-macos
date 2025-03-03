@@ -58,11 +58,54 @@
       [weakSelf setPrivateDelegate:delegate];
     }];
     [_delegateSplitter addDelegate:self];
-#endif // [macOS]
+#else // [macOS
+    self.hasHorizontalScroller = YES;
+    self.hasVerticalScroller = YES;
+    self.autohidesScrollers = YES;
+#endif // macOS]
   }
 
   return self;
 }
+
+#if TARGET_OS_OSX // [macOS
+- (void)setFrame:(NSRect)frame
+{
+  // Preserving and revalidating `contentOffset`.
+  CGPoint originalOffset = self.contentOffset;
+
+  [super setFrame:frame];
+
+  UIEdgeInsets contentInset = self.contentInset;
+  CGSize contentSize = self.contentSize;
+
+  // If contentSize has not been measured yet we can't check bounds.
+  if (CGSizeEqualToSize(contentSize, CGSizeZero)) {
+    self.contentOffset = originalOffset;
+  } else {
+    CGSize boundsSize = self.bounds.size;
+    CGFloat xMaxOffset = contentSize.width - boundsSize.width + contentInset.right;
+    CGFloat yMaxOffset = contentSize.height - boundsSize.height + contentInset.bottom;
+    // Make sure offset doesn't exceed bounds. This can happen on screen rotation.
+    if ((originalOffset.x >= -contentInset.left) && (originalOffset.x <= xMaxOffset) &&
+        (originalOffset.y >= -contentInset.top) && (originalOffset.y <= yMaxOffset)) {
+      return;
+    }
+    self.contentOffset = CGPointMake(
+        MAX(-contentInset.left, MIN(xMaxOffset, originalOffset.x)),
+        MAX(-contentInset.top, MIN(yMaxOffset, originalOffset.y)));
+  }
+}
+
+- (NSSize)contentSize
+{
+  if (!self.documentView) {
+    return [super contentSize];
+  }
+
+  return self.documentView.frame.size;
+}
+#endif // macos]
 
 - (void)preserveContentOffsetWithBlock:(void (^)())block
 {
@@ -88,7 +131,11 @@
   }
 
   if (_centerContent && !CGSizeEqualToSize(self.contentSize, CGSizeZero)) {
+#if !TARGET_OS_OSX // [macOS]
     CGSize scrollViewSize = self.bounds.size;
+#else // [macOS
+    CGSize scrollViewSize = self.contentView.bounds.size;
+#endif // macOS]
     if (self.contentSize.width <= scrollViewSize.width) {
       contentOffset.x = -(scrollViewSize.width - self.contentSize.width) / 2.0;
     }
@@ -97,10 +144,42 @@
     }
   }
 
+#if !TARGET_OS_OSX // [macOS]
   super.contentOffset = CGPointMake(
       RCTSanitizeNaNValue(contentOffset.x, @"scrollView.contentOffset.x"),
       RCTSanitizeNaNValue(contentOffset.y, @"scrollView.contentOffset.y"));
+#else // [macOS
+  if (!NSEqualPoints(contentOffset, self.documentVisibleRect.origin)) {
+    [self.contentView scrollToPoint:contentOffset];
+    [self reflectScrolledClipView:self.contentView];
+  }
+#endif // macOS]
 }
+
+
+#if TARGET_OS_OSX // [macOS
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated
+{
+  if (animated) {
+    [NSAnimationContext beginGrouping];
+    [[NSAnimationContext currentContext] setDuration:0.3];
+    [[self.contentView animator] setBoundsOrigin:contentOffset];
+    [NSAnimationContext endGrouping];
+  } else {
+    self.contentOffset = contentOffset;
+  }
+}
+
+- (void)zoomToRect:(CGRect)rect animated:(BOOL)animated
+{
+  [self magnifyToFitRect:rect];
+}
+
+- (void)flashScrollIndicators
+{
+  [self flashScrollers];
+}
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 - (BOOL)touchesShouldCancelInContentView:(RCTPlatformView *)view // [macOS]

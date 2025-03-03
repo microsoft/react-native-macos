@@ -6,6 +6,7 @@
  */
 
 #import <React/RCTUIKit.h> // [macOS]
+#import <React/RCTLog.h> // [macOS]
 
 #import <react/renderer/componentregistry/ComponentDescriptorProvider.h>
 #import <react/renderer/core/EventEmitter.h>
@@ -122,6 +123,11 @@ typedef NS_OPTIONS(NSInteger, RNComponentViewUpdateMask) {
 - (NSNumber *)reactTag; // [macOS]
 - (void)setReactTag:(NSNumber *)reactTag; // [macOS]
 
+#if TARGET_OS_OSX // [macOS
+- (void)focus;
+- (void)blur;
+#endif // macOS]
+
 /*
  * This is broken. Do not use.
  */
@@ -129,5 +135,41 @@ typedef NS_OPTIONS(NSInteger, RNComponentViewUpdateMask) {
 - (nullable NSSet<NSString *> *)propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
 
 @end
+
+#if TARGET_OS_OSX // [macOS
+RCT_EXTERN inline void
+RCTComponentViewHandleCommand(id<RCTComponentViewProtocol> componentView, NSString const *commandName, NSArray const *args)
+{
+  if ([commandName isEqualToString:@"focus"]) {
+#if RCT_DEBUG
+    if ([args count] != 0) {
+      RCTLogError(
+          @"%@ command %@ received %d arguments, expected %d.", @"View", commandName, (int)[args count], 0);
+      return;
+    }
+#endif
+
+    [componentView focus];
+    return;
+  }
+
+  if ([commandName isEqualToString:@"blur"]) {
+#if RCT_DEBUG
+    if ([args count] != 0) {
+      RCTLogError(
+          @"%@ command %@ received %d arguments, expected %d.", @"View", commandName, (int)[args count], 0);
+      return;
+    }
+#endif
+
+    [componentView blur];
+    return;
+  }
+
+#if RCT_DEBUG
+  RCTLogError(@"%@ received command %@, which is not a supported command.", @"View", commandName);
+#endif
+}
+#endif // macOS]
 
 NS_ASSUME_NONNULL_END

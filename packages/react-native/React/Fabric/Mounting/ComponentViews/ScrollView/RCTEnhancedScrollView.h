@@ -54,6 +54,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL snapToEnd;
 @property (nonatomic, copy) NSArray<NSNumber *> *snapToOffsets;
 
+#if TARGET_OS_OSX // [macOS
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated;
+- (void)zoomToRect:(CGRect)rect animated:(BOOL)animated;
+- (void)flashScrollIndicators;
+#endif // macOS]
+
 /*
  * Makes `setContentOffset:` method no-op when given `block` is executed.
  * The block is being executed synchronously.

@@ -28,17 +28,17 @@ const Platform = {
     return this.constants.osVersion;
   },
   // $FlowFixMe[unsafe-getters-setters]
-  get constants(): {|
+  get constants(): {
     isTesting: boolean,
     osVersion: string,
-    reactNativeVersion: {|
+    reactNativeVersion: {
       major: number,
       minor: number,
       patch: number,
       prerelease: ?number,
-    |},
+    },
     systemName: string,
-  |} {
+  } {
     // $FlowFixMe[object-this-reference]
     if (this.__constants == null) {
       // $FlowFixMe[object-this-reference]
@@ -75,4 +75,4 @@ const Platform = {
           spec.default,
 };
 
-module.exports = Platform;
+export default Platform;

@@ -18,8 +18,13 @@
 
 #import <React/RCTImageUtils.h>
 
+#if !TARGET_OS_OSX // [macOS]
 static NSUInteger RCTMaxCacheableDecodedImageSizeInBytes = 2 * 1024 * 1024;
 static NSUInteger RCTImageCacheTotalCostLimit = 20 * 1024 * 1024;
+#else // [macOS
+static NSUInteger RCTMaxCacheableDecodedImageSizeInBytes = 20 * 1024 * 1024;
+static NSUInteger RCTImageCacheTotalCostLimit = 100 * 1024 * 1024;
+#endif // macOS]
 
 void RCTSetImageCacheLimits(NSUInteger maxCacheableDecodedImageSizeInBytes, NSUInteger imageCacheTotalCostLimit)
 {

@@ -33,6 +33,8 @@
 #endif
 #import <react/nativemodule/defaults/DefaultTurboModules.h>
 
+using namespace facebook::react;
+
 @interface RCTAppDelegate () <RCTComponentViewFactoryComponentProvider, RCTHostDelegate>
 @end
 
@@ -331,17 +333,21 @@
 
 #pragma mark - Feature Flags
 
-class RCTAppDelegateBridgelessFeatureFlags : public facebook::react::ReactNativeFeatureFlagsDefaults {
+class RCTAppDelegateBridgelessFeatureFlags : public ReactNativeFeatureFlagsDefaults {
  public:
-  bool useModernRuntimeScheduler() override
+  bool enableBridgelessArchitecture() override
   {
     return true;
   }
-  bool enableMicrotasks() override
+  bool enableFabricRenderer() override
   {
     return true;
   }
-  bool batchRenderingUpdatesInEventLoop() override
+  bool useTurboModules() override
+  {
+    return true;
+  }
+  bool useNativeViewConfigsInBridgelessMode() override
   {
     return true;
   }

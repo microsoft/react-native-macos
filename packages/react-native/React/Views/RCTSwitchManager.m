@@ -30,12 +30,16 @@ RCT_EXPORT_MODULE()
 
 - (void)onChange:(RCTSwitch *)sender
 {
+#if !TARGET_OS_OSX // [macOS]
   if (sender.wasOn != sender.on) {
     if (sender.onChange) {
       sender.onChange(@{@"value" : @(sender.on)});
     }
     sender.wasOn = sender.on;
   }
+#else // [macOS
+  sender.onChange(@{ @"value": @(sender.on) });
+#endif // macOS]
 }
 
 RCT_EXPORT_METHOD(setValue : (nonnull NSNumber *)viewTag toValue : (BOOL)value)

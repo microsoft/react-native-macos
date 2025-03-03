@@ -12,7 +12,7 @@ import type {RNTesterModuleInfo} from './types/RNTesterTypes';
 import type {Node} from 'react';
 
 import RNTesterModuleContainer from './components/RNTesterModuleContainer';
-import SnapshotViewIOS from './examples/Snapshot/SnapshotViewIOS.ios';
+import SnapshotViewIOS from './examples/Snapshot/SnapshotViewIOS';
 import RNTesterApp from './RNTesterAppShared';
 import RNTesterList from './utils/RNTesterList';
 import React from 'react';

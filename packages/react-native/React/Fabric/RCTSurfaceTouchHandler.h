@@ -9,6 +9,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#if TARGET_OS_OSX // [macOS
+static NSString *const RCTSurfaceTouchHandlerOutsideViewMouseUpNotification = @"RCTSurfaceTouchHandlerOutsideViewMouseUpNotification";
+#endif // macOS]
+
 @interface RCTSurfaceTouchHandler : UIGestureRecognizer
 
 /*
@@ -22,6 +26,15 @@ NS_ASSUME_NONNULL_BEGIN
  * Offset of the attached view relative to the root component in points.
  */
 @property (nonatomic, assign) CGPoint viewOriginOffset;
+
+#if TARGET_OS_OSX // [macOS
++ (instancetype)surfaceTouchHandlerForEvent:(NSEvent *)event;
++ (instancetype)surfaceTouchHandlerForView:(NSView *)view;
++ (void)notifyOutsideViewMouseUp:(NSEvent *)event;
+
+- (void)cancelTouchWithEvent:(NSEvent *)event;
+- (void)reset;
+#endif // macOS]
 
 @end
 

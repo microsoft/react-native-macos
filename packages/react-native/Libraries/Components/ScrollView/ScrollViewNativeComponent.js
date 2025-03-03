@@ -42,10 +42,9 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
         },
         validAttributes: {
           contentOffset: {
-            diff: require('../../Utilities/differ/pointsDiffer'),
+            diff: require('../../Utilities/differ/pointsDiffer').default,
           },
           decelerationRate: true,
-          enableSyncOnScroll: true, // Fabric only.
           disableIntervalMomentum: true,
           maintainVisibleContentPosition: true,
           pagingEnabled: true,
@@ -115,6 +114,14 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           topScrollToTop: {
             registrationName: 'onScrollToTop',
           },
+          // [macOS
+          topInvertedDidChange: {
+            registrationName: 'onInvertedDidChange',
+          },
+          topPreferredScrollerStyleDidChange: {
+            registrationName: 'onPreferredScrollerStyleDidChange',
+          },
+          // macOS]
         },
         validAttributes: {
           alwaysBounceHorizontal: true,
@@ -127,15 +134,14 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           canCancelContentTouches: true,
           centerContent: true,
           contentInset: {
-            diff: require('../../Utilities/differ/insetsDiffer'),
+            diff: require('../../Utilities/differ/insetsDiffer').default,
           },
           contentOffset: {
-            diff: require('../../Utilities/differ/pointsDiffer'),
+            diff: require('../../Utilities/differ/pointsDiffer').default,
           },
           contentInsetAdjustmentBehavior: true,
           decelerationRate: true,
           endDraggingSensitivityMultiplier: true,
-          enableSyncOnScroll: true, // Fabric only.
           directionalLockEnabled: true,
           disableIntervalMomentum: true,
           indicatorStyle: true,
@@ -149,7 +155,7 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           scrollEnabled: true,
           scrollEventThrottle: true,
           scrollIndicatorInsets: {
-            diff: require('../../Utilities/differ/insetsDiffer'),
+            diff: require('../../Utilities/differ/insetsDiffer').default,
           },
           scrollToOverflowEnabled: true,
           scrollsToTop: true,

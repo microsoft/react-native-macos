@@ -85,6 +85,9 @@ const RCTTextInputViewConfig = {
     topContentSizeChange: {
       registrationName: 'onContentSizeChange',
     },
+    topPaste: {
+      registrationName: 'onPaste',
+    },
     topAutoCorrectChange: {
       registrationName: 'onAutoCorrectChange',
     },
@@ -123,6 +126,7 @@ const RCTTextInputViewConfig = {
     },
     editable: true,
     inputAccessoryViewID: true,
+    inputAccessoryViewButtonLabel: true,
     caretHidden: true,
     enablesReturnKeyAutomatically: true,
     placeholderTextColor: {
@@ -153,15 +157,18 @@ const RCTTextInputViewConfig = {
     showSoftInputOnFocus: true,
     autoFocus: true,
     lineBreakStrategyIOS: true,
+    lineBreakModeIOS: true,
     smartInsertDelete: true,
     // [macOS
     clearTextOnSubmit: true,
     grammarCheck: true,
     hideVerticalScrollIndicator: true,
+    href: true,
     pastedTypes: true,
     submitKeyEvents: true,
     tooltip: true,
     cursorColor: {process: require('../../StyleSheet/processColor').default},
+    disableWritingTools: true,
     // macOS]
     ...ConditionallyIgnoredEventHandlers({
       onChange: true,

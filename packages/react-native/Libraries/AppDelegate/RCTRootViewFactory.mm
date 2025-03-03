@@ -35,7 +35,6 @@
 #import <ReactCommon/RCTHost+Internal.h>
 #import <ReactCommon/RCTHost.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
-#import <react/config/ReactNativeConfig.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #import <react/runtime/JSRuntimeFactory.h>
@@ -188,7 +187,7 @@ static NSDictionary *updateInitialProps(NSDictionary *initialProps, BOOL isFabri
 #if !TARGET_OS_OSX // [macOS]
   rootView.backgroundColor = [UIColor systemBackgroundColor];
 #endif // [macOS]
-  
+
   return rootView;
 }
 
@@ -279,7 +278,6 @@ static NSDictionary *updateInitialProps(NSDictionary *initialProps, BOOL isFabri
   [reactHost setBundleURLProvider:^NSURL *() {
     return [weakSelf bundleURL];
   }];
-  [reactHost setContextContainerHandler:self];
   [reactHost start];
   return reactHost;
 }
@@ -287,16 +285,10 @@ static NSDictionary *updateInitialProps(NSDictionary *initialProps, BOOL isFabri
 - (std::shared_ptr<facebook::react::JSRuntimeFactory>)createJSRuntimeFactory
 {
 #if USE_HERMES
-  return std::make_shared<facebook::react::RCTHermesInstance>(
-      _reactNativeConfig, nullptr, /* allocInOldGenBeforeTTI */ false);
+  return std::make_shared<facebook::react::RCTHermesInstance>(nullptr, /* allocInOldGenBeforeTTI */ false);
 #else
   return std::make_shared<facebook::react::RCTJscInstance>();
 #endif
-}
-
-- (void)didCreateContextContainer:(std::shared_ptr<facebook::react::ContextContainer>)contextContainer
-{
-  contextContainer->insert("ReactNativeConfig", _reactNativeConfig);
 }
 
 - (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge

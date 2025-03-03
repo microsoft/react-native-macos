@@ -13,9 +13,8 @@
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
 
-#import <React/RCTTouchHandler.h> // [macOS]
-
 #if TARGET_OS_OSX // [macOS
+#import <React/RCTTouchHandler.h> // [macOS]
 
 #if RCT_SUBCLASS_SECURETEXTFIELD
 #define RCTUITextFieldCell RCTUISecureTextFieldCell
@@ -60,12 +59,12 @@
 {
   if (self.drawsBackground) {
     if (self.backgroundColor && self.backgroundColor.alphaComponent > 0) {
-      
+
       [self.backgroundColor set];
       NSRectFill(cellFrame);
     }
   }
-  
+
   [super drawInteriorWithFrame:[self titleRectForBounds:cellFrame] inView:controlView];
 }
 
@@ -105,7 +104,7 @@
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-        
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(_textDidChange)
                                                  name:UITextFieldTextDidChangeNotification
@@ -157,7 +156,7 @@
 }
 
 #endif // macOS]
-  
+
 #pragma mark - Accessibility
 
 #if !TARGET_OS_OSX // [macOS]
@@ -201,6 +200,11 @@
 }
 
 #if TARGET_OS_OSX // [macOS
+
+- (NSResponder *)responder
+{
+  return self;
+}
 
 + (Class)cellClass
 {
@@ -276,7 +280,7 @@
 {
   return ((RCTUITextFieldCell*)self.cell).selectionColor;
 }
-    
+
 - (void)setCursorColor:(NSColor *)cursorColor
 {
     ((RCTUITextFieldCell*)self.cell).insertionPointColor = cursorColor;
@@ -484,9 +488,9 @@
 {
   return [self textRectForBounds:bounds];
 }
-  
+
 #else // [macOS
-  
+
 #pragma mark - NSTextFieldDelegate methods
 
 - (void)textDidChange:(NSNotification *)notification
@@ -513,7 +517,7 @@
     [delegate textFieldEndEditing:self];
   }
 }
-  
+
 - (void)textViewDidChangeSelection:(NSNotification *)notification
 {
   id<RCTUITextFieldDelegate> delegate = self.delegate;
@@ -530,12 +534,17 @@
   }
   return NO;
 }
-  
+
 - (NSMenu *)textView:(NSTextView *)view menu:(NSMenu *)menu forEvent:(NSEvent *)event atIndex:(NSUInteger)charIndex
 {
   if (menu) {
     [[RCTTouchHandler touchHandlerForView:self] willShowMenuWithEvent:event];
   }
+
+  RCTHideMenuItemsWithFilterPredicate(menu, ^bool(NSMenuItem *item) {
+    // hide font menu option
+    return RCTMenuItemHasSubmenuItemWithAction(item, @selector(orderFrontFontPanel:));
+  });
 
   return menu;
 }
@@ -590,7 +599,7 @@
   return [super performKeyEquivalent:event];
 }
 #endif // macOS]
-	
+
 #if !TARGET_OS_OSX // [macOS]
 - (void)setSelectedTextRange:(UITextRange *)selectedTextRange notifyDelegate:(BOOL)notifyDelegate
 {
@@ -621,7 +630,7 @@
     // so the adapter must not generate a notification for it.
     [_textInputDelegateAdapter skipNextTextInputDidChangeSelectionEventWithTextRange:selectedTextRange];
   }
-  
+
   [[self currentEditor] setSelectedRange:selectedTextRange];
 }
 

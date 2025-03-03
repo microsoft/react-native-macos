@@ -5,10 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// [macOS]
-
-#if TARGET_OS_OSX
-
 #import <React/RCTUIKit.h>
 
 #import <React/RCTAssert.h>
@@ -32,6 +28,31 @@ CGContextRef UIGraphicsGetCurrentContext(void)
 	return [[NSGraphicsContext currentContext] CGContext];
 }
 
+void UIGraphicsBeginImageContextWithOptions(CGSize size, __unused BOOL opaque, CGFloat scale)
+{
+	if (scale == 0.0)
+	{
+		// TODO: Assert. We can't assume a display scale on macOS
+		scale = 1.0;
+	}
+	size_t width = ceilf(size.width * scale);
+	size_t height = ceilf(size.height * scale);
+	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+	CGContextRef ctx = CGBitmapContextCreate(NULL, width, height, 8/*bitsPerComponent*/, width * 4/*bytesPerRow*/, colorSpace, kCGImageAlphaPremultipliedFirst);
+	CGColorSpaceRelease(colorSpace);
+	if (ctx != NULL)
+	{
+		// flip the context (top left at 0, 0) and scale it
+		CGContextTranslateCTM(ctx, 0.0, height);
+		CGContextScaleCTM(ctx, scale, -scale);
+		NSGraphicsContext *graphicsContext = [NSGraphicsContext graphicsContextWithCGContext:ctx flipped:YES];
+		objc_setAssociatedObject(graphicsContext, &RCTGraphicsContextSizeKey, [NSValue valueWithSize:size], OBJC_ASSOCIATION_COPY_NONATOMIC);
+		[NSGraphicsContext saveGraphicsState];
+		[NSGraphicsContext setCurrentContext:graphicsContext];
+		CFRelease(ctx);
+	}
+}
+
 NSImage *UIGraphicsGetImageFromCurrentImageContext(void)
 {
 	NSImage *image = nil;
@@ -52,6 +73,12 @@ NSImage *UIGraphicsGetImageFromCurrentImageContext(void)
 	return image;
 }
 
+void UIGraphicsEndImageContext(void)
+{
+	RCTAssert(objc_getAssociatedObject([NSGraphicsContext currentContext], &RCTGraphicsContextSizeKey), @"The current graphics context is not a React image context!");
+	[NSGraphicsContext restoreGraphicsState];
+}
+
 //
 // functionally equivalent types
 //
@@ -63,7 +90,7 @@ CGFloat UIImageGetScale(NSImage *image)
   if (image == nil) {
     return 0.0;
   }
-  
+
   RCTAssert(image.representations.count == 1, @"The scale can only be derived if the image has one representation.");
 
   NSImageRep *imageRep = image.representations.firstObject;
@@ -119,7 +146,7 @@ void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath)
 CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
 {
   CGPathRef immutablePath = NULL;
-  
+
   // Draw the path elements.
   NSInteger numElements = [bezierPath elementCount];
   if (numElements > 0)
@@ -127,7 +154,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
     CGMutablePathRef    path = CGPathCreateMutable();
     NSPoint             points[3];
     BOOL                didClosePath = YES;
-    
+
     for (NSInteger i = 0; i < numElements; i++)
     {
       switch ([bezierPath elementAtIndex:i associatedPoints:points])
@@ -135,34 +162,34 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
         case NSMoveToBezierPathElement:
           CGPathMoveToPoint(path, NULL, points[0].x, points[0].y);
           break;
-          
+
         case NSLineToBezierPathElement:
           CGPathAddLineToPoint(path, NULL, points[0].x, points[0].y);
           didClosePath = NO;
           break;
-          
+
         case NSCurveToBezierPathElement:
           CGPathAddCurveToPoint(path, NULL, points[0].x, points[0].y,
                                 points[1].x, points[1].y,
                                 points[2].x, points[2].y);
           didClosePath = NO;
           break;
-          
+
         case NSClosePathBezierPathElement:
           CGPathCloseSubpath(path);
           didClosePath = YES;
           break;
       }
     }
-    
+
     // Be sure the path is closed or Quartz may not do valid hit detection.
     if (!didClosePath)
       CGPathCloseSubpath(path);
-    
+
     immutablePath = CGPathCreateCopy(path);
     CGPathRelease(path);
   }
-  
+
   return immutablePath;
 }
 
@@ -182,6 +209,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
   BOOL _userInteractionEnabled;
   NSTrackingArea *_trackingArea;
   BOOL _mouseDownCanMoveWindow;
+  BOOL _respondsToDisplayLayer;
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key
@@ -211,6 +239,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     self->_userInteractionEnabled = YES;
     self->_enableFocusRing = YES;
     self->_mouseDownCanMoveWindow = YES;
+    self->_respondsToDisplayLayer = [self respondsToSelector:@selector(displayLayer:)];
   }
   return self;
 }
@@ -471,14 +500,23 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     // so it has to be reset from the view's NSColor ivar.
     [layer setBackgroundColor:[_backgroundColor CGColor]];
   }
-  [(id<CALayerDelegate>)self displayLayer:layer];
+
+  // In Fabric, wantsUpdateLayer is always enabled and doesn't guarantee that
+  // the instance has a displayLayer method.
+  if (_respondsToDisplayLayer) {
+    [(id<CALayerDelegate>)self displayLayer:layer];
+  }
 }
 
 - (void)drawRect:(CGRect)rect
 {
   if (_backgroundColor) {
     [_backgroundColor set];
-    NSRectFill(rect);
+    // On macOS 14, views inside NSClipView can get a dirty rect that stretches
+    // outside the bounds of the view probably because of the changed behavior
+    // of visibleRect. To avoid weird background filling we clip to the bounds.
+    NSRect clippedToBoundsRect = NSIntersectionRect(self.bounds, rect);
+    NSRectFill(clippedToBoundsRect);
   }
   [super drawRect:rect];
 }
@@ -499,6 +537,21 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 - (BOOL)becomeFirstResponder
 {
   return [[self window] makeFirstResponder:self];
+}
+
+- (BOOL)canBecomeKeyView
+{
+  return self.focusable;
+}
+
+- (NSRect)focusRingMaskBounds {
+  return [self bounds];
+}
+
+- (void)drawFocusRingMask {
+  if ([self enableFocusRing]) {
+    NSRectFill(self.bounds);
+  }
 }
 
 @synthesize userInteractionEnabled = _userInteractionEnabled;
@@ -582,7 +635,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     self.scrollEnabled = YES;
     self.drawsBackground = NO;
   }
-  
+
   return self;
 }
 
@@ -737,7 +790,7 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
     self.constrainScrolling = NO;
     self.drawsBackground = NO;
   }
-  
+
   return self;
 }
 
@@ -746,7 +799,7 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
   if (self.constrainScrolling) {
     return NSMakeRect(0, 0, 0, 0);
   }
-  
+
   return [super constrainBoundsRect:proposedBounds];
 }
 
@@ -777,7 +830,7 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
     [self setSelectable:NO];
     [self setWantsLayer:YES];
   }
-  
+
   return self;
 }
 
@@ -846,7 +899,7 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 - (void)setActivityIndicatorViewStyle:(UIActivityIndicatorViewStyle)activityIndicatorViewStyle
 {
   _activityIndicatorViewStyle = activityIndicatorViewStyle;
-  
+
   switch (activityIndicatorViewStyle) {
     case UIActivityIndicatorViewStyleLarge:
       self.controlSize = NSControlSizeLarge;
@@ -876,14 +929,14 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 
     CIFilter *colorPoly = [CIFilter filterWithName:@"CIColorPolynomial"];
     [colorPoly setDefaults];
-    
+
     CIVector *redVector = [CIVector vectorWithX:r Y:0 Z:0 W:0];
     CIVector *greenVector = [CIVector vectorWithX:g Y:0 Z:0 W:0];
     CIVector *blueVector = [CIVector vectorWithX:b Y:0 Z:0 W:0];
     [colorPoly setValue:redVector forKey:@"inputRedCoefficients"];
     [colorPoly setValue:greenVector forKey:@"inputGreenCoefficients"];
     [colorPoly setValue:blueVector forKey:@"inputBlueCoefficients"];
-    
+
     [[self layer] setFilters:@[colorPoly]];
   } else {
     [[self layer] setFilters:nil];
@@ -914,6 +967,7 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 // RCTUIImageView
 
 @implementation RCTUIImageView {
+  UIImage *_image;
   CALayer *_tintingLayer;
 }
 
@@ -923,7 +977,7 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
     [self setLayer:[[CALayer alloc] init]];
     [self setWantsLayer:YES];
   }
-  
+
   return self;
 }
 
@@ -937,65 +991,79 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
   [[self layer] setMasksToBounds:clipsToBounds];
 }
 
+- (UIImage *)image
+{
+  return _image;
+}
+
+- (void)setImage:(UIImage *)image
+{
+  _image = image;
+  [self updateLayer];
+}
+
 - (void)setContentMode:(UIViewContentMode)contentMode
 {
   _contentMode = contentMode;
-  
+
   CALayer *layer = [self layer];
   switch (contentMode) {
     case UIViewContentModeScaleAspectFill:
       [layer setContentsGravity:kCAGravityResizeAspectFill];
       break;
-      
+
     case UIViewContentModeScaleAspectFit:
       [layer setContentsGravity:kCAGravityResizeAspect];
       break;
-      
+
     case UIViewContentModeScaleToFill:
       [layer setContentsGravity:kCAGravityResize];
       break;
-      
+
     case UIViewContentModeCenter:
       [layer setContentsGravity:kCAGravityCenter];
       break;
-    
+
     default:
       break;
   }
+
+  [self updateLayer];
 }
 
-- (UIImage *)image
+- (void)setTintColor:(RCTUIColor *)tintColor
 {
-  return [[self layer] contents];
+  _tintColor = tintColor;
+  [self updateLayer];
 }
 
-- (void)setImage:(UIImage *)image
+- (void)updateLayer
 {
   CALayer *layer = [self layer];
-  
-  if ([layer contents] != image || [layer backgroundColor] != nil) {
-    if (_tintColor) {
-      if (!_tintingLayer) {
-        _tintingLayer = [CALayer new];
-        [_tintingLayer setFrame:self.bounds];
-        [_tintingLayer setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
-        [_tintingLayer setZPosition:1.0];
-        CIFilter *sourceInCompositingFilter = [CIFilter filterWithName:@"CISourceInCompositing"];
-        [sourceInCompositingFilter setDefaults];
-        [_tintingLayer setCompositingFilter:sourceInCompositingFilter];
-        [layer addSublayer:_tintingLayer];
-      }
-      [_tintingLayer setBackgroundColor:_tintColor.CGColor];
-    } else {
-      [_tintingLayer removeFromSuperlayer];
-      _tintingLayer = nil;
+
+  if (_tintColor) {
+    if (!_tintingLayer) {
+      _tintingLayer = [CALayer new];
+      [_tintingLayer setFrame:self.bounds];
+      [_tintingLayer setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
+      [_tintingLayer setZPosition:1.0];
+      CIFilter *sourceInCompositingFilter = [CIFilter filterWithName:@"CISourceInCompositing"];
+      [sourceInCompositingFilter setDefaults];
+      [_tintingLayer setCompositingFilter:sourceInCompositingFilter];
+      [layer addSublayer:_tintingLayer];
     }
-    
-    if (image != nil && [image resizingMode] == NSImageResizingModeTile) {
+    [_tintingLayer setBackgroundColor:_tintColor.CGColor];
+  } else {
+    [_tintingLayer removeFromSuperlayer];
+    _tintingLayer = nil;
+  }
+
+  if ([layer contents] != _image || [layer backgroundColor] != nil) {
+    if (_image != nil && [_image resizingMode] == NSImageResizingModeTile) {
       [layer setContents:nil];
-      [layer setBackgroundColor:[NSColor colorWithPatternImage:image].CGColor];
+      [layer setBackgroundColor:[NSColor colorWithPatternImage:_image].CGColor];
     } else {
-      [layer setContents:image];
+      [layer setContents:_image];
       [layer setBackgroundColor:nil];
     }
   }
@@ -1026,12 +1094,12 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
     return self;
 }
 
-- (nonnull NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions {
+- (nonnull NSImage *)imageWithActions:(RCTUIGraphicsImageDrawingActions)actions {
 
     NSImage *image = [NSImage imageWithSize:_size
                                     flipped:YES
                              drawingHandler:^BOOL(NSRect dstRect) {
-        
+
         RCTUIGraphicsImageRendererContext *context = [NSGraphicsContext currentContext];
         if (self->_format.opaque) {
             CGContextSetAlpha([context CGContext], 1.0);
@@ -1043,5 +1111,3 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 }
 
 @end
-
-#endif

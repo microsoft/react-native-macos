@@ -19,7 +19,6 @@
 #import "RCTComponentData.h"
 #import "RCTConvert.h"
 #import "RCTDefines.h"
-#import "RCTDevSettings.h" // [macOS]
 #import "RCTEventDispatcherProtocol.h"
 #import "RCTLayoutAnimation.h"
 #import "RCTLayoutAnimationGroup.h"
@@ -44,7 +43,6 @@
 #import "RCTViewManager.h"
 #import "UIView+React.h"
 #import "RCTUIKit.h" // [macOS]
-#import "RCTDeviceInfo.h" // [macOS]
 
 #import <React/RCTUIKit.h>
 
@@ -832,7 +830,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
 #else // [macOS
     [originalSuperview addSubview:removedChild positioned:nextLowerView == nil ? NSWindowBelow : NSWindowAbove relativeTo:nextLowerView];
 #endif // macOS]
-    
+
     NSString *property = deletingLayoutAnimation.property;
     [deletingLayoutAnimation
           performAnimations:^{
@@ -1368,7 +1366,7 @@ RCT_EXPORT_METHOD(measureInWindow : (nonnull NSNumber *)reactTag callback : (RCT
     //The macOS default coordinate system has its origin at the lower left of the drawing area, so we need to flip the y-axis coordinate.
     windowFrame.origin.y = view.window.contentView.frame.size.height - windowFrame.origin.y - windowFrame.size.height;
 #endif // macOS]
-    
+
     callback(@[
       @(windowFrame.origin.x),
       @(windowFrame.origin.y),

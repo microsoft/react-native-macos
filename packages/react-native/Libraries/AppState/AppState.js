@@ -14,17 +14,19 @@ import Platform from '../Utilities/Platform';
 import {type EventSubscription} from '../vendor/emitter/EventEmitter';
 import NativeAppState from './NativeAppState';
 
-export type AppStateValues = 'inactive' | 'background' | 'active';
+export type AppStateStatus = 'inactive' | 'background' | 'active';
 
 type AppStateEventDefinitions = {
-  change: [AppStateValues],
+  change: [AppStateStatus],
   memoryWarning: [],
   blur: [],
   focus: [],
 };
 
+export type AppStateEvent = $Keys<AppStateEventDefinitions>;
+
 type NativeAppStateEventDefinitions = {
-  appStateDidChange: [{app_state: AppStateValues}],
+  appStateDidChange: [{app_state: AppStateStatus}],
   appStateFocusChange: [boolean],
   memoryWarning: [],
 };
@@ -91,7 +93,7 @@ class AppState {
    *
    * See https://reactnative.dev/docs/appstate#addeventlistener
    */
-  addEventListener<K: $Keys<AppStateEventDefinitions>>(
+  addEventListener<K: AppStateEvent>(
     type: K,
     handler: (...$ElementType<AppStateEventDefinitions, K>) => void,
   ): EventSubscription {
@@ -102,7 +104,7 @@ class AppState {
     switch (type) {
       case 'change':
         // $FlowIssue[invalid-tuple-arity] Flow cannot refine handler based on the event type
-        const changeHandler: AppStateValues => void = handler;
+        const changeHandler: AppStateStatus => void = handler;
         return emitter.addListener('appStateDidChange', appStateData => {
           changeHandler(appStateData.app_state);
         });
@@ -127,4 +129,4 @@ class AppState {
   }
 }
 
-module.exports = (new AppState(): AppState);
+export default (new AppState(): AppState);

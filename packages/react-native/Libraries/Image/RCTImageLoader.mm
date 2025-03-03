@@ -621,6 +621,15 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
     [self setUp];
   }
 
+#if TARGET_OS_OSX // [macOS
+  BOOL useDefaultLoading = [loadHandler respondsToSelector:@selector(defaultLoadingURL:)];
+  if (useDefaultLoading) {
+    NSMutableURLRequest *updatedRequest = [request mutableCopy];
+    updatedRequest.URL = [loadHandler defaultLoadingURL:request.URL];
+    request = updatedRequest;
+  }
+#endif // macOS]
+
   __weak RCTImageLoader *weakSelf = self;
   dispatch_async(_URLRequestQueue, ^{
     __typeof(self) strongSelf = weakSelf;
@@ -628,7 +637,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
       return;
     }
 
-    if (loadHandler) {
+    if (loadHandler && !useDefaultLoading) {
       dispatch_block_t cancelLoadLocal;
       if ([loadHandler conformsToProtocol:@protocol(RCTImageURLLoaderWithAttribution)]) {
         RCTImageURLLoaderRequest *loaderRequest = [(id<RCTImageURLLoaderWithAttribution>)loadHandler
@@ -1035,6 +1044,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
     if (!_isLoaderSetup) {
       [self setUp];
     }
+
     dispatch_async(_URLRequestQueue, ^{
       // The decode operation retains the compressed image data until it's
       // complete, so we'll mark it as having started, in order to block

@@ -5,10 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// [macOS]
-#if TARGET_OS_OSX
-
-#import "RCTPlatform.h"
+#import <React/RCTPlatform.h>
 
 #import <AppKit/AppKit.h>
 
@@ -39,4 +36,3 @@ Class RCTPlatformCls(void) {
 }
 
 @end
-#endif

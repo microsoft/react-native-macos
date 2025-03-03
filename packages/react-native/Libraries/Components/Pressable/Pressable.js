@@ -14,9 +14,9 @@ import type {
   FocusEvent,
   HandledKeyEvent,
   KeyEvent,
-  LayoutEvent,
+  LayoutChangeEvent,
   MouseEvent,
-  PressEvent,
+  GestureResponderEvent,
   // macOS]
 } from '../../Types/CoreEventTypes';
 import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
@@ -41,11 +41,11 @@ import {useMemo, useRef, useState} from 'react';
 
 type ViewStyleProp = $ElementType<React.ElementConfig<typeof View>, 'style'>;
 
-export type StateCallbackType = $ReadOnly<{|
+export type StateCallbackType = $ReadOnly<{
   pressed: boolean,
-|}>;
+}>;
 
-type Props = $ReadOnly<{|
+type Props = $ReadOnly<{
   /**
    * Accessibility.
    */
@@ -133,7 +133,7 @@ type Props = $ReadOnly<{|
   /**
    * Called when this view's layout changes.
    */
-  onLayout?: ?(event: LayoutEvent) => mixed,
+  onLayout?: ?(event: LayoutChangeEvent) => mixed,
 
   /**
    * Called when the hover is activated to provide visual feedback.
@@ -148,22 +148,22 @@ type Props = $ReadOnly<{|
   /**
    * Called when a long-tap gesture is detected.
    */
-  onLongPress?: ?(event: PressEvent) => mixed,
+  onLongPress?: ?(event: GestureResponderEvent) => mixed,
 
   /**
    * Called when a single tap gesture is detected.
    */
-  onPress?: ?(event: PressEvent) => mixed,
+  onPress?: ?(event: GestureResponderEvent) => mixed,
 
   /**
    * Called when a touch is engaged before `onPress`.
    */
-  onPressIn?: ?(event: PressEvent) => mixed,
+  onPressIn?: ?(event: GestureResponderEvent) => mixed,
 
   /**
    * Called when a touch is released before `onPress`.
    */
-  onPressOut?: ?(event: PressEvent) => mixed,
+  onPressOut?: ?(event: GestureResponderEvent) => mixed,
 
   // [macOS
   /**
@@ -308,7 +308,7 @@ type Props = $ReadOnly<{|
    * https://github.com/facebook/react-native/issues/34424
    */
   'aria-label'?: ?string,
-|}>;
+}>;
 
 type Instance = React.ElementRef<typeof View>;
 
@@ -429,7 +429,7 @@ function Pressable(
       onHoverOut,
       onLongPress,
       onPress,
-      onPressIn(event: PressEvent): void {
+      onPressIn(event: GestureResponderEvent): void {
         if (android_rippleConfig != null) {
           android_rippleConfig.onPressIn(event);
         }
@@ -439,7 +439,7 @@ function Pressable(
         }
       },
       onPressMove: android_rippleConfig?.onPressMove,
-      onPressOut(event: PressEvent): void {
+      onPressOut(event: GestureResponderEvent): void {
         if (android_rippleConfig != null) {
           android_rippleConfig.onPressOut(event);
         }
@@ -505,7 +505,7 @@ function usePressState(forcePressed: boolean): [boolean, (boolean) => void] {
 const MemoedPressable = React.memo(React.forwardRef(Pressable));
 MemoedPressable.displayName = 'Pressable';
 
-export default (MemoedPressable: React.AbstractComponent<
-  Props,
-  React.ElementRef<typeof View>,
->);
+export default (MemoedPressable: component(
+  ref: React.RefSetter<React.ElementRef<typeof View>>,
+  ...props: Props
+));

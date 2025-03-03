@@ -19,9 +19,9 @@ import type {EdgeInsetsOrSizeProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {
   BlurEvent,
   FocusEvent,
-  LayoutEvent,
+  LayoutChangeEvent,
   MouseEvent, // [macOS]
-  PressEvent,
+  GestureResponderEvent,
 } from '../../Types/CoreEventTypes';
 // [macOS
 import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
@@ -32,7 +32,7 @@ import usePressability from '../../Pressability/usePressability';
 import * as React from 'react';
 import {useMemo} from 'react';
 
-type Props = $ReadOnly<{|
+type Props = $ReadOnly<{
   accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
   accessibilityElementsHidden?: ?boolean,
   accessibilityHint?: ?Stringish,
@@ -76,11 +76,11 @@ type Props = $ReadOnly<{|
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
   onBlur?: ?(event: BlurEvent) => void, // [macOS]
   onFocus?: ?(event: FocusEvent) => void, // [macOS]
-  onLayout?: ?(event: LayoutEvent) => mixed,
-  onLongPress?: ?(event: PressEvent) => mixed,
-  onPress?: ?(event: PressEvent) => mixed,
-  onPressIn?: ?(event: PressEvent) => mixed,
-  onPressOut?: ?(event: PressEvent) => mixed,
+  onLayout?: ?(event: LayoutChangeEvent) => mixed,
+  onLongPress?: ?(event: GestureResponderEvent) => mixed,
+  onPress?: ?(event: GestureResponderEvent) => mixed,
+  onPressIn?: ?(event: GestureResponderEvent) => mixed,
+  onPressOut?: ?(event: GestureResponderEvent) => mixed,
   // [macOS
   acceptsFirstMouse?: ?boolean,
   enableFocusRing?: ?boolean,
@@ -96,7 +96,7 @@ type Props = $ReadOnly<{|
   rejectResponderTermination?: ?boolean,
   testID?: ?string,
   touchSoundDisabled?: ?boolean,
-|}>;
+}>;
 
 const PASSTHROUGH_PROPS = [
   'accessibilityActions',
@@ -133,7 +133,7 @@ const PASSTHROUGH_PROPS = [
   'testID',
 ];
 
-module.exports = function TouchableWithoutFeedback(props: Props): React.Node {
+export default function TouchableWithoutFeedback(props: Props): React.Node {
   const {
     disabled,
     rejectResponderTermination,
@@ -218,8 +218,7 @@ module.exports = function TouchableWithoutFeedback(props: Props): React.Node {
 
   // BACKWARD-COMPATIBILITY: Focus and blur events were never supported before
   // adopting `Pressability`, so preserve that behavior.
-  const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
-    eventHandlers || {};
+  const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} = eventHandlers;
 
   const elementProps: {[string]: mixed, ...} = {
     ...eventHandlersWithoutBlurAndFocus,
@@ -265,4 +264,4 @@ module.exports = function TouchableWithoutFeedback(props: Props): React.Node {
 
   // $FlowFixMe[incompatible-call]
   return React.cloneElement(element, elementProps, ...children);
-};
+}
