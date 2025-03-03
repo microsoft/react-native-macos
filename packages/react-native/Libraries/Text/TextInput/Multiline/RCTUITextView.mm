@@ -13,6 +13,10 @@
 #import <React/RCTBackedTextInputDelegateAdapter.h>
 #import <React/RCTTextAttributes.h>
 
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTTouchHandler.h>
+#endif // macOS]
+
 @implementation RCTUITextView {
 #if !TARGET_OS_OSX // [macOS]
   UILabel *_placeholderView;
@@ -122,6 +126,25 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
   return accessibilityLabel;
 }
 
+#pragma mark - Context menu
+
+#if TARGET_OS_OSX // [macOS
+- (NSMenu *)menuForEvent:(NSEvent *)event
+{
+  NSMenu *menu = [super menuForEvent:event];
+  if (menu) {
+    [[RCTTouchHandler touchHandlerForView:self] willShowMenuWithEvent:event];
+  }
+
+  RCTHideMenuItemsWithFilterPredicate(menu, ^bool(NSMenuItem *item) {
+    // hide font & layout orientation menu options
+    return (RCTMenuItemHasSubmenuItemWithAction(item, @selector(orderFrontFontPanel:)) || RCTMenuItemHasSubmenuItemWithAction(item, @selector(changeLayoutOrientation:)));
+  });
+
+  return menu;
+}
+#endif // macOS]
+
 #pragma mark - Properties
 
 - (void)setPlaceholder:(NSString *)placeholder
@@ -226,12 +249,8 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
 
 - (BOOL)resignFirstResponder
 {
-  if (self.selectable) {
-    self.selectedRange = NSMakeRange(NSNotFound, 0);
-  }
-
   BOOL success = [super resignFirstResponder];
-  
+
   if (success) {
     // Break undo coalescing when losing focus.
     [self breakUndoCoalescing];
@@ -365,7 +384,7 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
 - (void)paste:(id)sender
 {
 #if TARGET_OS_OSX // [macOS
-  if ([self.textInputDelegate textInputShouldHandlePaste:self]) 
+  if ([self.textInputDelegate textInputShouldHandlePaste:self])
   {
 #endif // macOS]
     _textWasPasted = YES;
@@ -399,19 +418,19 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
 - (void)drawRect:(NSRect)dirtyRect
 {
   [super drawRect:dirtyRect];
-  
+
   if (self.text.length == 0 && self.placeholder) {
     NSAttributedString *attributedPlaceholderString = self.placeholderTextAttributedString;
-    
+
     if (attributedPlaceholderString) {
       NSTextStorage *textStorage = [[NSTextStorage alloc] initWithAttributedString:attributedPlaceholderString];
       NSTextContainer *textContainer = [[NSTextContainer alloc] initWithContainerSize:self.textContainer.containerSize];
       NSLayoutManager *layoutManager = [NSLayoutManager new];
-      
+
       textContainer.lineFragmentPadding = self.textContainer.lineFragmentPadding;
       [layoutManager addTextContainer:textContainer];
       [textStorage addLayoutManager:layoutManager];
-      
+
       NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
       [layoutManager drawGlyphsForGlyphRange:glyphRange atPoint:self.textContainerOrigin];
     }
@@ -603,7 +622,7 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
   }
 
   // textInputShouldHandleKeyEvent represents if native should handle the event instead of JS.
-  // textInputShouldHandleKeyEvent also sends keyDown event to JS internally, so we only call this once  
+  // textInputShouldHandleKeyEvent also sends keyDown event to JS internally, so we only call this once
   if ([self.textInputDelegate textInputShouldHandleKeyEvent:event]) {
     [super keyDown:event];
     [self.textInputDelegate submitOnKeyDownIfNeeded:event];

@@ -12,6 +12,10 @@
 #import <React/RCTBridgeProxy.h>
 #import <React/RCTDefines.h>
 
+#if TARGET_OS_OSX // [macOS
+#import <Carbon/Carbon.h>
+#endif // macOS]
+
 #if RCT_DEV_MENU
 
 RCT_EXTERN NSString *const RCTShowDevMenuNotification;
@@ -44,6 +48,14 @@ RCT_EXTERN NSString *const RCTShowDevMenuNotification;
  * Whether the hotkeys that toggles the developer menu is enabled.
  */
 @property (nonatomic, assign) BOOL hotkeysEnabled;
+
+#if TARGET_OS_OSX // [macOS
+/**
+ * Reference to debug menu hotkey for registration lifecycle
+ * CMD + Shift + I to match Chrome's devtools hotkey
+ */
+@property EventHotKeyRef hotKeyRef;
+#endif // macOS]
 
 /**
  * Presented items in development menu

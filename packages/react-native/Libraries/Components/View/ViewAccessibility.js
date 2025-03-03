@@ -10,7 +10,7 @@
 
 'use strict';
 
-import type {SyntheticEvent} from '../../Types/CoreEventTypes';
+import type {NativeSyntheticEvent} from '../../Types/CoreEventTypes';
 
 // This must be kept in sync with the AccessibilityRolesMask in RCTViewManager.m
 export type AccessibilityRole =
@@ -132,7 +132,7 @@ export type AccessibilityActionInfo = $ReadOnly<{
 }>;
 
 // The info included in the event sent to onAccessibilityAction
-export type AccessibilityActionEvent = SyntheticEvent<
+export type AccessibilityActionEvent = NativeSyntheticEvent<
   $ReadOnly<{actionName: string, ...}>,
 >;
 
@@ -145,7 +145,7 @@ export type AccessibilityState = {
   ...
 };
 
-export type AccessibilityValue = $ReadOnly<{|
+export type AccessibilityValue = $ReadOnly<{
   /**
    * The minimum value of this component's range. (should be an integer)
    */
@@ -165,4 +165,4 @@ export type AccessibilityValue = $ReadOnly<{|
    * A textual description of this component's value. (will override minimum, current, and maximum if set)
    */
   text?: Stringish,
-|}>;
+}>;

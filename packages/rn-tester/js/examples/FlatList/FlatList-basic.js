@@ -12,9 +12,8 @@
 
 import type {Item} from '../../components/ListExampleShared';
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {AnimatedComponentType} from 'react-native/Libraries/Animated/createAnimatedComponent';
-import typeof FlatListType from 'react-native/Libraries/Lists/FlatList';
-import type {RenderItemProps} from 'react-native/Libraries/Lists/VirtualizedList';
+import type FlatList from 'react-native/Libraries/Lists/FlatList';
+import type {ListRenderItemInfo} from 'react-native/Libraries/Lists/VirtualizedList';
 
 import {
   FooterComponent,
@@ -56,8 +55,8 @@ const VIEWABILITY_CONFIG = {
   waitForInteraction: true,
 };
 
-type Props = $ReadOnly<{||}>;
-type State = {|
+type Props = $ReadOnly<{}>;
+type State = {
   data: Array<Item>,
   first: number,
   last: number,
@@ -82,7 +81,7 @@ type State = {|
   focusable: boolean,
   enableFocusRing: boolean,
   // macOS]
-|};
+};
 
 const IS_RTL = I18nManager.isRTL;
 
@@ -207,6 +206,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
                 'Empty',
                 this.state.empty,
                 this._setBooleanValue('empty'),
+                'switch_empty_option',
               )}
               {renderSmallSwitchOption(
                 'Debug',
@@ -335,14 +335,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
       </RNTesterPage>
     );
   }
-  _captureRef = (
-    ref: React.ElementRef<
-      AnimatedComponentType<
-        React.ElementConfig<FlatListType>,
-        React.ElementRef<FlatListType>,
-      >,
-    > | null,
-  ) => {
+  _captureRef = (ref: FlatList<mixed> | null) => {
     this._listRef = ref;
   };
   // $FlowFixMe[missing-local-annot]
@@ -350,7 +343,11 @@ class FlatListExample extends React.PureComponent<Props, State> {
     return getItemLayout(data, index, this.state.horizontal);
   };
   _onStartReached = () => {
-    if (this.state.first <= 0 || this.state.previousLoading) {
+    if (
+      this.state.empty ||
+      this.state.first <= 0 ||
+      this.state.previousLoading
+    ) {
       return;
     }
 
@@ -364,7 +361,11 @@ class FlatListExample extends React.PureComponent<Props, State> {
     }, LOAD_TIME);
   };
   _onEndReached = () => {
-    if (this.state.last >= PAGE_SIZE * NUM_PAGES || this.state.nextLoading) {
+    if (
+      this.state.empty ||
+      this.state.last >= PAGE_SIZE * NUM_PAGES ||
+      this.state.nextLoading
+    ) {
       return;
     }
 
@@ -392,9 +393,10 @@ class FlatListExample extends React.PureComponent<Props, State> {
       item,
       separators,
       isSelected, // [macOS]
-    }: RenderItemProps<Item>) => {
+    }: ListRenderItemInfo<Item>) => {
       return (
         <ItemComponent
+          testID={`item_${item.key}`}
           item={item}
           horizontal={this.state.horizontal}
           fixedHeight={this.state.fixedHeight}
@@ -466,7 +468,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
     }));
   };
 
-  _listRef: React.ElementRef<typeof Animated.FlatList> | null;
+  _listRef: FlatList<mixed> | null;
 }
 
 const styles = StyleSheet.create({

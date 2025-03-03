@@ -26,10 +26,7 @@ std::unique_ptr<JSRuntime> RCTHermesInstance::createJSRuntime(
     std::shared_ptr<MessageQueueThread> msgQueueThread) noexcept
 {
   return _hermesInstance->createJSRuntime(
-      _reactNativeConfig,
-      _crashManagerProvider ? _crashManagerProvider() : nullptr,
-      std::move(msgQueueThread),
-      _allocInOldGenBeforeTTI);
+      _crashManagerProvider ? _crashManagerProvider() : nullptr, std::move(msgQueueThread), _allocInOldGenBeforeTTI);
 }
 
 } // namespace facebook::react

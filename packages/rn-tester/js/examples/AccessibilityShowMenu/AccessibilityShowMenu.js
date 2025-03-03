@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @flow strict-local
  * @format
- * @flow
  */
 
 'use strict';
@@ -55,7 +55,7 @@ class AccessibilityShowMenu extends React.Component<{}> {
   }
 }
 
-exports.title = 'Accessibiltiy Show Menu action';
+exports.title = 'Accessibility Show Menu action';
 exports.description =
   'Examples that show how Accessibility Show Menu action can be used.';
 exports.examples = [

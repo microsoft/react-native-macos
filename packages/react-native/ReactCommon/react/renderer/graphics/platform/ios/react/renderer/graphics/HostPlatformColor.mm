@@ -59,27 +59,30 @@ RCTUIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColo
     }];
     return color;
 #else // [macOS
-    NSColor *color = [NSColor colorWithName:nil dynamicProvider:^NSColor * _Nonnull(NSAppearance * _Nonnull appearance) {
-      NSMutableArray<NSAppearanceName> *appearances = [NSMutableArray arrayWithArray:@[NSAppearanceNameAqua,NSAppearanceNameDarkAqua]];
-      if (highContrastLightColor != nil) {
-        [appearances addObject:NSAppearanceNameAccessibilityHighContrastAqua];
-      }
-      if (highContrastDarkColor != nil) {
-        [appearances addObject:NSAppearanceNameAccessibilityHighContrastDarkAqua];
-      }
-      NSAppearanceName bestMatchingAppearance = [appearance bestMatchFromAppearancesWithNames:appearances];
-      if (bestMatchingAppearance == NSAppearanceNameAqua) {
-        return lightColor;
-      } else if (bestMatchingAppearance == NSAppearanceNameDarkAqua) {
-        return darkColor;
-      } else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastAqua) {
-        return highContrastLightColor;
-      } else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastDarkAqua) {
-        return highContrastDarkColor;
-      } else {
-        return lightColor;
-      }
-    }];
+    NSColor *color = [NSColor colorWithName:nil
+                            dynamicProvider:^NSColor *_Nonnull(NSAppearance *_Nonnull appearance) {
+                              NSMutableArray<NSAppearanceName> *appearances =
+                                  [NSMutableArray arrayWithArray:@[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]];
+                              if (highContrastLightColor != nil) {
+                                [appearances addObject:NSAppearanceNameAccessibilityHighContrastAqua];
+                              }
+                              if (highContrastDarkColor != nil) {
+                                [appearances addObject:NSAppearanceNameAccessibilityHighContrastDarkAqua];
+                              }
+                              NSAppearanceName bestMatchingAppearance =
+                                  [appearance bestMatchFromAppearancesWithNames:appearances];
+                              if (bestMatchingAppearance == NSAppearanceNameAqua) {
+                                return lightColor;
+                              } else if (bestMatchingAppearance == NSAppearanceNameDarkAqua) {
+                                return darkColor;
+                              } else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastAqua) {
+                                return highContrastLightColor;
+                              } else if (bestMatchingAppearance == NSAppearanceNameAccessibilityHighContrastDarkAqua) {
+                                return highContrastDarkColor;
+                              } else {
+                                return lightColor;
+                              }
+                            }];
     return color;
 #endif // macOS]
   } else {
@@ -97,7 +100,10 @@ int32_t ColorFromUIColor(RCTUIColor *color) // [macOS]
   [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
 #else // [macOS
   // [NSColor getRed:green:blue:alpha]` wil throw an exception if the colorspace is not SRGB,
-  [[color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]] getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+  [[color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]] getRed:&rgba[0]
+                                                                     green:&rgba[1]
+                                                                      blue:&rgba[2]
+                                                                     alpha:&rgba[3]];
 #endif // macOS]
   return ((int32_t)round((float)rgba[3] * ratio) & 0xff) << 24 | ((int)round((float)rgba[0] * ratio) & 0xff) << 16 |
       ((int)round((float)rgba[1] * ratio) & 0xff) << 8 | ((int)round((float)rgba[2] * ratio) & 0xff);
@@ -125,7 +131,10 @@ RCTUIColor *_Nullable UIColorFromComponentsColor(const facebook::react::ColorCom
                                         blue:components.blue
                                        alpha:components.alpha];
   }
-  return [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha]; // [macOS]
+  return [RCTUIColor colorWithRed:components.red
+                            green:components.green
+                             blue:components.blue
+                            alpha:components.alpha]; // [macOS]
 }
 } // anonymous namespace
 

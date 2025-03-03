@@ -7,7 +7,6 @@
 
 // [macOS]
 
-#if TARGET_OS_OSX
 #import "RCTScrollContentLocalData.h"
 
 @implementation RCTScrollContentLocalData
@@ -23,4 +22,3 @@
 }
 
 @end
-#endif

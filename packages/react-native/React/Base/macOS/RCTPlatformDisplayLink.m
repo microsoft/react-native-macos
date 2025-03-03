@@ -6,7 +6,6 @@
  */
 
 // [macOS]
-#if TARGET_OS_OSX
 
 #import "RCTPlatformDisplayLink.h"
 
@@ -162,4 +161,3 @@ static CVReturn RCTPlatformDisplayLinkCallBack(__unused CVDisplayLinkRef display
 #pragma clang diagnostic pop
 
 @end
-#endif

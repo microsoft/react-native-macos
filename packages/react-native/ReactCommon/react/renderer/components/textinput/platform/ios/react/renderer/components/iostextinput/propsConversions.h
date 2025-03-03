@@ -141,6 +141,12 @@ static TextInputTraits convertRawProp(
       "passwordRules",
       sourceTraits.passwordRules,
       defaultTraits.passwordRules);
+  traits.grammarCheck = convertRawProp(
+      context,
+      rawProps,
+      "grammarCheck",
+      sourceTraits.grammarCheck,
+      defaultTraits.grammarCheck);
   traits.smartInsertDelete = convertRawProp(
       context,
       rawProps,
@@ -193,4 +199,49 @@ inline void fromRawValue(
     LOG(ERROR) << "Unsupported Selection type";
   }
 }
+
+static inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    KeyEvent& result) {
+  auto map = (std::unordered_map<std::string, RawValue>)value;
+
+  auto tmp_key = map.find("key");
+  if (tmp_key != map.end()) {
+    fromRawValue(context, tmp_key->second, result.key);
+  }
+  auto tmp_altKey = map.find("altKey");
+  if (tmp_altKey != map.end()) {
+    fromRawValue(context, tmp_altKey->second, result.altKey);
+  }
+  auto tmp_shiftKey = map.find("shiftKey");
+  if (tmp_shiftKey != map.end()) {
+    fromRawValue(context, tmp_shiftKey->second, result.shiftKey);
+  }
+  auto tmp_ctrlKey = map.find("ctrlKey");
+  if (tmp_ctrlKey != map.end()) {
+    fromRawValue(context, tmp_ctrlKey->second, result.ctrlKey);
+  }
+  auto tmp_metaKey = map.find("metaKey");
+  if (tmp_metaKey != map.end()) {
+    fromRawValue(context, tmp_metaKey->second, result.metaKey);
+  }
+  auto tmp_functionKey = map.find("functionKey");
+  if (tmp_functionKey != map.end()) {
+    fromRawValue(context, tmp_functionKey->second, result.functionKey);
+  }
+}
+
+static inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    std::vector<KeyEvent>& result) {
+  auto items = (std::vector<RawValue>)value;
+  for (const auto& item : items) {
+    KeyEvent newItem;
+    fromRawValue(context, item, newItem);
+    result.emplace_back(newItem);
+  }
+}
+
 } // namespace facebook::react

@@ -113,6 +113,8 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
   };
 
   _onLayout = async (event: ViewLayoutEvent) => {
+    event.persist();
+
     const oldFrame = this._frame;
     this._frame = event.nativeEvent.layout;
     if (!this._initialFrameHeight) {
@@ -175,6 +177,11 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
+    if (!Keyboard.isVisible()) {
+      this._keyboardEvent = null;
+      this._setBottom(0);
+    }
+
     if (Platform.OS === 'ios') {
       this._subscriptions = [
         Keyboard.addListener('keyboardWillChangeFrame', this._onKeyboardChange),

@@ -18,6 +18,9 @@
 #import "RCTRootContentView.h"
 #import "RCTRootViewDelegate.h"
 #import "RCTSurface.h"
+#import "RCTSurfaceRootShadowView.h"
+#import "RCTUIManager.h"
+#import "RCTUIManagerUtils.h"
 #import "UIView+React.h"
 
 static RCTSurfaceSizeMeasureMode convertToSurfaceSizeMeasureMode(RCTRootViewSizeFlexibility sizeFlexibility)

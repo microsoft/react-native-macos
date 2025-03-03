@@ -223,7 +223,7 @@ module.exports = {
     return require('./Libraries/ReactNative/AppRegistry');
   },
   get AppState(): AppState {
-    return require('./Libraries/AppState/AppState');
+    return require('./Libraries/AppState/AppState').default;
   },
   get BackHandler(): BackHandler {
     return require('./Libraries/Utilities/BackHandler');
@@ -259,7 +259,7 @@ module.exports = {
     return require('./Libraries/Interaction/InteractionManager');
   },
   get Keyboard(): Keyboard {
-    return require('./Libraries/Components/Keyboard/Keyboard');
+    return require('./Libraries/Components/Keyboard/Keyboard').default;
   },
   get LayoutAnimation(): LayoutAnimation {
     return require('./Libraries/LayoutAnimation/LayoutAnimation');

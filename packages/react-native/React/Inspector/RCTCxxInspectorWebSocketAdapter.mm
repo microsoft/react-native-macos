@@ -76,6 +76,14 @@ NSString *NSStringFromUTF8StringView(std::string_view view)
   }
 }
 
+- (void)webSocketDidOpen:(SRWebSocket *)webSocket
+{
+  // NOTE: We are on the main queue here, per SRWebSocket's defaults.
+  if (auto delegate = _delegate.lock()) {
+    delegate->didOpen();
+  }
+}
+
 - (void)webSocket:(__unused SRWebSocket *)webSocket
     didCloseWithCode:(__unused NSInteger)code
               reason:(__unused NSString *)reason

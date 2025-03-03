@@ -120,6 +120,7 @@ typedef void (^RCTDevMenuAlertActionHandler)(UIAlertAction *action);
 @synthesize moduleRegistry = _moduleRegistry;
 @synthesize callableJSModules = _callableJSModules;
 @synthesize bundleManager = _bundleManager;
+@synthesize hotKeyRef = _hotKeyRef;
 
 RCT_EXPORT_MODULE()
 
@@ -150,6 +151,26 @@ RCT_EXPORT_MODULE()
   return self;
 }
 
+#if TARGET_OS_OSX // [macOS
+static OSStatus openDebuggerHandler(EventHandlerCallRef nextHandler, EventRef anEvent, void *userData)
+{
+    // Do nothing if the app isn't the key window.
+    if (![[NSApplication sharedApplication] keyWindow]) {
+      return noErr;
+    }
+
+#if RCT_ENABLE_INSPECTOR
+    NSURL *bundleURL = (__bridge NSURL *) userData;
+    [RCTInspectorDevServerHelper
+                                openDebugger:bundleURL
+                                withErrorMessage:
+                                @"Failed to open debugger. Please check that the dev server is running and reload the app."];
+#endif
+
+    return noErr;
+}
+#endif // macOS]
+
 - (void)registerHotkeys
 {
 #if TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST
@@ -178,7 +199,24 @@ RCT_EXPORT_MODULE()
                                    [(RCTDevSettings *)[weakSelf.moduleRegistry moduleForName:"DevSettings"]
                                        setIsDebuggingRemotely:NO];
                                  }];
-#endif
+#elif TARGET_OS_OSX // [macOS
+    EventHotKeyID hotKeyID;
+    hotKeyID.signature = 'mhk1';
+    hotKeyID.id = 1;
+
+    EventTypeSpec eventType;
+    eventType.eventClass = kEventClassKeyboard;
+    eventType.eventKind = kEventHotKeyPressed;
+
+    InstallApplicationEventHandler(&openDebuggerHandler, 1, &eventType, (void *)CFBridgingRetain(self->_bundleManager.bundleURL), NULL);
+    RegisterEventHotKey(kVK_ANSI_I,
+                        shiftKey | cmdKey,
+                        hotKeyID,
+                        GetApplicationEventTarget(),
+                        0,
+                        &_hotKeyRef);
+
+#endif // macOS]
 }
 
 - (void)unregisterHotkeys
@@ -189,7 +227,9 @@ RCT_EXPORT_MODULE()
   [commands unregisterKeyCommandWithInput:@"d" modifierFlags:UIKeyModifierCommand];
   [commands unregisterKeyCommandWithInput:@"i" modifierFlags:UIKeyModifierCommand];
   [commands unregisterKeyCommandWithInput:@"n" modifierFlags:UIKeyModifierCommand];
-#endif
+#elif TARGET_OS_OSX // [macOS
+  UnregisterEventHotKey(_hotKeyRef);
+#endif // macOS]
 }
 
 - (BOOL)isHotkeysRegistered
@@ -249,12 +289,16 @@ RCT_EXPORT_MODULE()
     [self show];
   }
 }
+#endif // [macOS]
 
 - (BOOL)isActionSheetShown
 {
+#if !TARGET_OS_OSX // [macOS
   return _actionSheet != nil;
+#else
+  return NO;
+#endif // macOS]
 }
-#endif // [macOS]
 
 - (void)addItem:(NSString *)title handler:(void (^)(void))handler
 {
@@ -279,7 +323,9 @@ RCT_EXPORT_MODULE()
 
   // Add built-in items
   __weak RCTDevSettings *devSettings = [_moduleRegistry moduleForName:"DevSettings"];
+#if !TARGET_OS_OSX // [macOS]
   __weak RCTDevMenu *weakSelf = self;
+#endif // [macOS]
   __weak RCTBundleManager *bundleManager = _bundleManager;
 
   [items addObject:[RCTDevMenuItem buttonItemWithTitle:@"Reload"
@@ -622,6 +668,11 @@ RCT_EXPORT_METHOD(setHotLoadingEnabled : (BOOL)enabled)
 + (NSString *)moduleName
 {
   return @"DevMenu";
+}
+
+- (NSMenu *)menu
+{
+  return nil;
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:

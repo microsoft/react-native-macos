@@ -9,53 +9,17 @@
  */
 
 import type {DialogOptions} from '../NativeModules/specs/NativeDialogManagerAndroid';
+import type {AlertButtons, AlertOptions, AlertType} from './AlertTypes.flow';
 
 import Platform from '../Utilities/Platform';
 import RCTAlertManager from './RCTAlertManager';
 
-export type AlertType =
-  | 'default'
-  | 'plain-text'
-  | 'secure-text'
-  | 'login-password';
-export type AlertButtonStyle = 'default' | 'cancel' | 'destructive';
-export type Buttons = Array<{
-  text?: string,
-  onPress?: ?Function,
-  isPreferred?: boolean,
-  style?: AlertButtonStyle,
-  ...
-}>;
-// [macOS
-export type DefaultInputsArray = Array<{
-  default?: string,
-  placeholder?: string,
-  style?: AlertButtonStyle,
-}>;
-// macOS]
-
-type Options = {
-  cancelable?: ?boolean,
-  userInterfaceStyle?: 'unspecified' | 'light' | 'dark',
-  onDismiss?: ?() => void,
-  // [macOS
-  modal?: ?boolean,
-  critical?: ?boolean,
-  // macOS]
-  ...
-};
-
-/**
- * Launches an alert dialog with the specified title and message.
- *
- * See https://reactnative.dev/docs/alert
- */
 class Alert {
   static alert(
     title: ?string,
     message?: ?string,
-    buttons?: Buttons,
-    options?: Options,
+    buttons?: AlertButtons,
+    options?: AlertOptions,
   ): void {
     if (Platform.OS === 'ios') {
       Alert.prompt(
@@ -99,7 +63,7 @@ class Alert {
       // At most three buttons (neutral, negative, positive). Ignore rest.
       // The text 'OK' should be probably localized. iOS Alert does that in native.
       const defaultPositiveText = 'OK';
-      const validButtons: Buttons = buttons
+      const validButtons: AlertButtons = buttons
         ? buttons.slice(0, 3)
         : [{text: defaultPositiveText}];
       const buttonPositive = validButtons.pop();
@@ -142,11 +106,11 @@ class Alert {
   static prompt(
     title: ?string,
     message?: ?string,
-    callbackOrButtons?: ?(((text: string) => void) | Buttons),
+    callbackOrButtons?: ?(((text: string) => void) | AlertButtons),
     type?: ?AlertType = 'plain-text',
     defaultValue?: string,
     keyboardType?: string,
-    options?: Options,
+    options?: AlertOptions,
   ): void {
     if (Platform.OS === 'ios') {
       let callbacks: Array<?any> = [];
@@ -252,7 +216,7 @@ class Alert {
   static promptMacOS(
     title: ?string,
     message?: ?string,
-    callbackOrButtons?: ?((text: string) => void) | Buttons,
+    callbackOrButtons?: ?((text: string) => void) | AlertButtons,
     type?: ?AlertType = 'plain-text',
     defaultInputs?: DefaultInputsArray,
     modal?: ?boolean,
@@ -292,4 +256,4 @@ class Alert {
   // macOS]
 }
 
-module.exports = Alert;
+export default Alert;

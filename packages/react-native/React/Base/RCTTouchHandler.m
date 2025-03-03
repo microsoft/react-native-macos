@@ -11,6 +11,8 @@
 #import <UIKit/UIGestureRecognizerSubclass.h>
 #endif // [macOS]
 #import <React/RCTUITextField.h> // [macOS]
+#import <React/RCTUtils.h> // [macOS]
+
 
 #import "RCTAssert.h"
 #import "RCTBridge.h"
@@ -21,6 +23,54 @@
 #import "RCTUIManager.h"
 #import "RCTUtils.h"
 #import "UIView+React.h"
+
+#if TARGET_OS_OSX // [macOS
+@interface NSApplication (RCTTouchHandlerOverride)
+- (NSEvent*)override_nextEventMatchingMask:(NSEventMask)mask
+                                 untilDate:(NSDate*)expiration
+                                    inMode:(NSRunLoopMode)mode
+                                   dequeue:(BOOL)dequeue;
+@end
+
+@implementation NSApplication (RCTTouchHandlerOverride)
+
++ (void)load
+{
+  RCTSwapInstanceMethods(self, @selector(nextEventMatchingMask:untilDate:inMode:dequeue:), @selector(override_nextEventMatchingMask:untilDate:inMode:dequeue:));
+}
+
+- (NSEvent*)override_nextEventMatchingMask:(NSEventMask)mask
+                                 untilDate:(NSDate*)expiration
+                                    inMode:(NSRunLoopMode)mode
+                                   dequeue:(BOOL)dequeue
+{
+  NSEvent* event = [self override_nextEventMatchingMask:mask
+                                              untilDate:expiration
+                                                 inMode:mode
+                                                dequeue:dequeue];
+  if (dequeue && (event.type == NSEventTypeLeftMouseUp || event.type == NSEventTypeRightMouseUp || event.type == NSEventTypeOtherMouseUp)) {
+    RCTTouchHandler *targetTouchHandler = [RCTTouchHandler touchHandlerForEvent:event];
+    if (!targetTouchHandler) {
+      [RCTTouchHandler notifyOutsideViewMouseUp:event];
+    } else if ([mode isEqualTo:NSEventTrackingRunLoopMode]) {
+      // A tracking loop will deque an event, thereby not submitting it to the touch handler.
+      if (event.type == NSEventTypeLeftMouseUp) {
+        // NSTextField uses a tracking loop when clicking inside the view bounds. If a view
+        // is located above the NSTextField, the mouseUp won't reach the view and break the
+        // pressability. This submits the mouse up event on the next run loop to let it go
+        // through the touch handler.
+        dispatch_async(dispatch_get_main_queue (), ^{
+          [targetTouchHandler mouseUp:event];
+        });
+      }
+    }
+  }
+
+  return event;
+}
+
+@end
+#endif // macOS]
 
 @interface RCTTouchHandler () <UIGestureRecognizerDelegate>
 @end
@@ -40,12 +90,24 @@
   NSMutableArray<NSMutableDictionary *> *_reactTouches;
   NSMutableArray<RCTPlatformView *> *_touchViews; // [macOS]
 
+#if TARGET_OS_OSX // TODO(macOS ISS#2323203)
+  NSEvent* _lastRightMouseDown;
+  NSEvent* _lastEvent;
+#endif
+
   __weak RCTPlatformView *_cachedRootView;  // [macOS]
 
   uint16_t _coalescingKey;
-#if TARGET_OS_OSX// [macOS
-  BOOL _shouldSendMouseUpOnSystemBehalf;
-#endif// macOS]
+}
+
+static BOOL _notifyOutsideViewEvents = NO;
+
++ (BOOL)notifyOutsideViewEvents {
+  return _notifyOutsideViewEvents;
+}
+
++ (void)setNotifyOutsideViewEvents:(BOOL)newNotifyOutsideViewEvents {
+  _notifyOutsideViewEvents = newNotifyOutsideViewEvents;
 }
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge
@@ -70,6 +132,10 @@
     self.delaysPrimaryMouseButtonEvents = NO; // default is NO.
     self.delaysSecondaryMouseButtonEvents = NO; // default is NO.
     self.delaysOtherMouseButtonEvents = NO; // default is NO.
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(endOutsideViewMouseUp:)
+                                                 name:RCTTouchHandlerOutsideViewMouseUpNotification
+                                               object:[RCTTouchHandler class]];
 #endif // macOS]
 
     self.delegate = self;
@@ -82,6 +148,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 #if TARGET_OS_OSX // [macOS
 RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
 #endif // macOS]
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 - (void)attachToView:(RCTUIView *)view // [macOS]
 {
@@ -109,9 +179,28 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
 #endif // macOS]
 
     RCTAssert(![_nativeTouches containsObject:touch], @"Touch is already recorded. This is a critical bug.");
+#if TARGET_OS_OSX // [macOS]
+    // We're starting a new interaction while there is an unterminated RightMouseDown touch. This can
+    // happen for example after a right click on secure text fields when not the RightMouseUp nor
+    // willShowMenu event can be intercepted
+    // (see https://github.com/microsoft/react-native-macos/issues/1209).
+
+    // This means the state machine in Pressability.js on JS side is in a stuck state. Best we can do
+    // to get it unstuck is to send touch cancellation.
+    if (_lastRightMouseDown != NULL && [_nativeTouches containsObject:_lastRightMouseDown]) {
+      if (![RCTTouchHandler notifyOutsideViewEvents]) {
+        [self cancelTouchWithEvent:_lastRightMouseDown];
+      }
+      _lastRightMouseDown = NULL;
+    }
+    // Keep track of any active RightMouseDown touches. We reset it to NULL if interaction ends correctly
+    if (touch.type == NSEventTypeRightMouseDown) {
+       _lastRightMouseDown = touch;
+    }
+#endif
 
     // Find closest React-managed touchable view
-    
+
 #if !TARGET_OS_OSX // [macOS]
     UIView *targetView = touch.view;
     while (targetView) {
@@ -134,22 +223,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
     if ([targetView isKindOfClass:[NSScroller class]]) {
       continue;
     }
-    // Pair the mouse down events with mouse up events so our _nativeTouches cache doesn't get stale
-    if ([targetView isKindOfClass:[NSControl class]]) {
-      _shouldSendMouseUpOnSystemBehalf = [(NSControl*)targetView isEnabled];
-    } else if ([targetView isKindOfClass:[NSTabView class]]) {
-      // NSTabView sends click events for tab buttons but doesn't inherit from NSControl
-      _shouldSendMouseUpOnSystemBehalf = YES;
-    } else if ([targetView isKindOfClass:[NSText class]]) {
-      _shouldSendMouseUpOnSystemBehalf = [(NSText*)targetView isSelectable];
-    }
-    else if ([targetView.superview isKindOfClass:[RCTUITextField class]]) {
-      _shouldSendMouseUpOnSystemBehalf = [(RCTUITextField*)targetView.superview isSelectable];
-    } else {
-      _shouldSendMouseUpOnSystemBehalf = NO;
-    }
     touchLocation = [targetView convertPoint:touchLocation fromView:self.view.superview];
-    
+
     while (targetView) {
       BOOL isUserInteractionEnabled = NO;
       if ([((RCTUIView*)targetView) respondsToSelector:@selector(isUserInteractionEnabled)]) { // [macOS]
@@ -211,6 +286,11 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
     if (index == NSNotFound) {
       continue;
     }
+#if TARGET_OS_OSX
+    if (_lastRightMouseDown != NULL && _lastRightMouseDown.eventNumber == touch.eventNumber) {
+      _lastRightMouseDown = NULL;
+    }
+#endif
 
     [_touchViews removeObjectAtIndex:index];
     [_nativeTouches removeObjectAtIndex:index];
@@ -269,7 +349,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
   if (modifierFlags & NSEventModifierFlagCommand) {
     reactTouch[@"metaKey"] = @YES;
   }
-  
+
   NSEventType type = nativeTouch.type;
   if (type == NSEventTypeLeftMouseDown || type == NSEventTypeLeftMouseUp || type == NSEventTypeLeftMouseDragged) {
     reactTouch[@"button"] = @0;
@@ -307,11 +387,11 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
       return touch.eventNumber == event.eventNumber;
     }];
 #endif // macOS]
-    
+
     if (index == NSNotFound) {
       continue;
     }
-    
+
 #if TARGET_OS_OSX // [macOS
     _nativeTouches[index] = touch;
 #endif // macOS]
@@ -456,10 +536,10 @@ static BOOL RCTAnyTouchesChanged(NSSet *touches) // [macOS]
 #else // [macOS
   self.state = UIGestureRecognizerStateCancelled;
 #endif // macOS]
-  
+
   [self _recordRemovedTouches:touches];
 }
-  
+
 #if !TARGET_OS_OSX // [macOS]
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
@@ -486,6 +566,16 @@ static BOOL RCTAnyTouchesChanged(NSSet *touches) // [macOS]
 }
 #else // [macOS
 
+- (BOOL)isDuplicateEvent:(NSEvent *)event
+{
+  if (_lastEvent && (event == _lastEvent || (event.eventNumber == _lastEvent.eventNumber && event.type == _lastEvent.type && NSEqualPoints(event.locationInWindow, _lastEvent.locationInWindow  )))) {
+    return YES;
+  }
+
+  _lastEvent = event;
+  return NO;
+}
+
 - (BOOL)acceptsFirstMouse:(NSEvent *)event
 {
   // This will only be called if the hit-tested view returns YES for acceptsFirstMouse,
@@ -495,56 +585,64 @@ static BOOL RCTAnyTouchesChanged(NSSet *touches) // [macOS]
 
 - (void)mouseDown:(NSEvent *)event
 {
+  if ([self isDuplicateEvent:event]) {
+    return;
+  }
+
   [super mouseDown:event];
   [self interactionsBegan:[NSSet setWithObject:event]];
-  // [macOS
-  if (_shouldSendMouseUpOnSystemBehalf) {
-    _shouldSendMouseUpOnSystemBehalf = NO;
-    
-    NSEvent *newEvent = [NSEvent mouseEventWithType:NSEventTypeLeftMouseUp
-                                           location:[event locationInWindow]
-                                      modifierFlags:[event modifierFlags]
-                                          timestamp:[event timestamp]
-                                       windowNumber:[event windowNumber]
-                                            context:nil
-                                        eventNumber:[event eventNumber]
-                                         clickCount:[event clickCount]
-                                           pressure:[event pressure]];
-    [self interactionsEnded:[NSSet setWithObject:newEvent] withEvent:newEvent];
-    // macOS]
-  }
 }
-  
+
 - (void)rightMouseDown:(NSEvent *)event
 {
+  if ([self isDuplicateEvent:event]) {
+    return;
+  }
+
   [super rightMouseDown:event];
   [self interactionsBegan:[NSSet setWithObject:event]];
 }
-  
+
 - (void)mouseDragged:(NSEvent *)event
 {
+  if ([self isDuplicateEvent:event]) {
+    return;
+  }
+
   [super mouseDragged:event];
   [self interactionsMoved:[NSSet setWithObject:event]];
 }
-  
+
 - (void)rightMouseDragged:(NSEvent *)event
 {
+  if ([self isDuplicateEvent:event]) {
+    return;
+  }
+
   [super rightMouseDragged:event];
   [self interactionsMoved:[NSSet setWithObject:event]];
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
+  if ([self isDuplicateEvent:event]) {
+    return;
+  }
+
   [super mouseUp:event];
   [self interactionsEnded:[NSSet setWithObject:event] withEvent:event];
 }
-  
+
 - (void)rightMouseUp:(NSEvent *)event
 {
+  if ([self isDuplicateEvent:event]) {
+    return;
+  }
+
   [super rightMouseUp:event];
   [self interactionsEnded:[NSSet setWithObject:event] withEvent:event];
 }
-  
+
 #endif // macOS]
 
 - (BOOL)canPreventGestureRecognizer:(__unused UIGestureRecognizer *)preventedGestureRecognizer
@@ -556,7 +654,7 @@ static BOOL RCTAnyTouchesChanged(NSSet *touches) // [macOS]
 {
   // We fail in favour of other external gesture recognizers.
   // iOS will ask `delegate`'s opinion about this gesture recognizer little bit later.
-  return !RCTUIViewIsDescendantOfView(preventingGestureRecognizer.view, self.view); // macOS 
+  return !RCTUIViewIsDescendantOfView(preventingGestureRecognizer.view, self.view); // macOS
 }
 
 - (void)reset
@@ -606,13 +704,70 @@ static BOOL RCTAnyTouchesChanged(NSSet *touches) // [macOS]
   return nil;
 }
 
++ (void)notifyOutsideViewMouseUp:(NSEvent *) event {
+  if (![RCTTouchHandler notifyOutsideViewEvents]) {
+    return;
+  }
+  [[NSNotificationCenter defaultCenter] postNotificationName:RCTTouchHandlerOutsideViewMouseUpNotification
+                                                      object:self
+                                                    userInfo:@{@"event": event}];
+}
+
+- (void)endOutsideViewMouseUp:(NSNotification *)notification {
+  NSEvent *event = notification.userInfo[@"event"];
+
+  NSInteger index = [_nativeTouches indexOfObjectPassingTest:^BOOL(NSEvent *touch, __unused NSUInteger idx, __unused BOOL *stop) {
+    return touch.eventNumber == event.eventNumber;
+  }];
+  if (index == NSNotFound) {
+    // A contextual menu click would generate a mouse up with a diffrent event
+    // and leave a touchable/pressable session open. This would cause touch end
+    // events from a modal window to end the touchable/pressable session and
+    // potentially trigger an onPress event. Hence the need to reset and cancel
+    // that session when a mouse up event was detected outside the touch handler
+    // view bounds.
+    [self reset];
+    return;
+  }
+
+  if ([self isDuplicateEvent:event]) {
+    return;
+  }
+
+  [self interactionsEnded:[NSSet setWithObject:event] withEvent:event];
+}
+
+// Showing a context menu via RightMouseDown prevents receiving RightMouseUp event
+// and propagating touchEnd event to JS side, leaving the Responder state machine
+// on JS side (in Pressabity.js) in an intermediate state, that will not be able to
+// process the next interaction correctly.
+
+// To avoid this, we end the interaction proactively on RightMouseDown if we know it
+// triggers a context menu.
+
+// (Note this is not an issue for left clicks: context menu on left clicks is only shown
+// on LeftMouseUp)
 - (void)willShowMenuWithEvent:(NSEvent *)event
 {
+  if ([RCTTouchHandler notifyOutsideViewEvents]) {
+    return;
+  }
+
   if (event.type == NSEventTypeRightMouseDown) {
     [self interactionsEnded:[NSSet setWithObject:event] withEvent:event];
   }
 }
-  
+
+- (void)willShowMenu
+{
+  for (NSEvent* event in _nativeTouches) {
+    if (event.type == NSEventTypeRightMouseDown) {
+      [self willShowMenuWithEvent:event];
+      break;
+    }
+  }
+}
+
 - (void)cancelTouchWithEvent:(NSEvent *)event
 {
   [self interactionsCancelled:[NSSet setWithObject:event] withEvent:event];

@@ -8,18 +8,16 @@
  * @format
  */
 
-import type {HostComponent} from '../Renderer/shims/ReactNativeTypes';
+import type {HostInstance} from '../../src/private/types/HostInstance';
 
-import * as React from 'react';
-
-export type SyntheticEvent<+T> = $ReadOnly<{|
+export type NativeSyntheticEvent<+T> = $ReadOnly<{
   bubbles: ?boolean,
   cancelable: ?boolean,
-  currentTarget: number | React.ElementRef<HostComponent<mixed>>,
+  currentTarget: number | HostInstance,
   defaultPrevented: ?boolean,
-  dispatchConfig: $ReadOnly<{|
+  dispatchConfig: $ReadOnly<{
     registrationName: string,
-  |}>,
+  }>,
   eventPhase: ?number,
   preventDefault: () => void,
   isDefaultPrevented: () => boolean,
@@ -28,19 +26,19 @@ export type SyntheticEvent<+T> = $ReadOnly<{|
   isTrusted: ?boolean,
   nativeEvent: T,
   persist: () => void,
-  target: ?number | React.ElementRef<HostComponent<mixed>>,
+  target: ?number | HostInstance,
   timeStamp: number,
   type: ?string,
-|}>;
+}>;
 
-export type ResponderSyntheticEvent<T> = $ReadOnly<{|
-  ...SyntheticEvent<T>,
-  touchHistory: $ReadOnly<{|
+export type ResponderSyntheticEvent<T> = $ReadOnly<{
+  ...NativeSyntheticEvent<T>,
+  touchHistory: $ReadOnly<{
     indexOfSingleActiveTouch: number,
     mostRecentTimeStamp: number,
     numberActiveTouches: number,
     touchBank: $ReadOnlyArray<
-      $ReadOnly<{|
+      $ReadOnly<{
         touchActive: boolean,
         startPageX: number,
         startPageY: number,
@@ -51,38 +49,38 @@ export type ResponderSyntheticEvent<T> = $ReadOnly<{|
         previousPageX: number,
         previousPageY: number,
         previousTimeStamp: number,
-      |}>,
+      }>,
     >,
-  |}>,
-|}>;
+  }>,
+}>;
 
-export type Layout = $ReadOnly<{|
+export type LayoutRectangle = $ReadOnly<{
   x: number,
   y: number,
   width: number,
   height: number,
-|}>;
+}>;
 
-export type TextLayout = $ReadOnly<{|
-  ...Layout,
+export type TextLayoutLine = $ReadOnly<{
+  ...LayoutRectangle,
   ascender: number,
   capHeight: number,
   descender: number,
   text: string,
   xHeight: number,
-|}>;
+}>;
 
-export type LayoutEvent = SyntheticEvent<
-  $ReadOnly<{|
-    layout: Layout,
-  |}>,
+export type LayoutChangeEvent = NativeSyntheticEvent<
+  $ReadOnly<{
+    layout: LayoutRectangle,
+  }>,
 >;
 
-export type TextLayoutEvent = SyntheticEvent<
-  $ReadOnly<{|
-    lines: Array<TextLayout>,
-  |}>,
->;
+export type TextLayoutEventData = $ReadOnly<{
+  lines: Array<TextLayoutLine>,
+}>;
+
+export type TextLayoutEvent = NativeSyntheticEvent<TextLayoutEventData>;
 
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/UIEvent
@@ -157,7 +155,7 @@ export interface NativeMouseEvent extends NativeUIEvent {
   /**
    * The secondary target for the event, if there is one.
    */
-  +relatedTarget: null | number | React.ElementRef<HostComponent<mixed>>;
+  +relatedTarget: null | number | HostInstance;
   // offset is proposed: https://drafts.csswg.org/cssom-view/#extensions-to-the-mouseevent-interface
   /**
    * The X coordinate of the mouse pointer between that event and the padding edge of the target node
@@ -220,13 +218,15 @@ export interface NativePointerEvent extends NativeMouseEvent {
   +isPrimary: boolean;
 }
 
-export type PointerEvent = SyntheticEvent<NativePointerEvent>;
+export type PointerEvent = NativeSyntheticEvent<NativePointerEvent>;
 
-export type PressEvent = ResponderSyntheticEvent<
-  $ReadOnly<{|
+export type GestureResponderEvent = ResponderSyntheticEvent<
+  $ReadOnly<{
     altKey?: ?boolean, // [macOS]
     button?: ?number, // [macOS]
-    changedTouches: $ReadOnlyArray<$PropertyType<PressEvent, 'nativeEvent'>>,
+    changedTouches: $ReadOnlyArray<
+      $PropertyType<GestureResponderEvent, 'nativeEvent'>,
+    >,
     ctrlKey?: ?boolean, // [macOS]
     force?: number,
     identifier: number,
@@ -238,59 +238,61 @@ export type PressEvent = ResponderSyntheticEvent<
     shiftKey?: ?boolean, // [macOS]
     target: ?number,
     timestamp: number,
-    touches: $ReadOnlyArray<$PropertyType<PressEvent, 'nativeEvent'>>,
-  |}>,
+    touches: $ReadOnlyArray<
+      $PropertyType<GestureResponderEvent, 'nativeEvent'>,
+    >,
+  }>,
 >;
 
-export type ScrollEvent = SyntheticEvent<
-  $ReadOnly<{|
-    contentInset: $ReadOnly<{|
+export type ScrollEvent = NativeSyntheticEvent<
+  $ReadOnly<{
+    contentInset: $ReadOnly<{
       bottom: number,
       left: number,
       right: number,
       top: number,
-    |}>,
-    contentOffset: $ReadOnly<{|
+    }>,
+    contentOffset: $ReadOnly<{
       y: number,
       x: number,
-    |}>,
-    contentSize: $ReadOnly<{|
+    }>,
+    contentSize: $ReadOnly<{
       height: number,
       width: number,
-    |}>,
-    layoutMeasurement: $ReadOnly<{|
+    }>,
+    layoutMeasurement: $ReadOnly<{
       height: number,
       width: number,
-    |}>,
-    targetContentOffset?: $ReadOnly<{|
+    }>,
+    targetContentOffset?: $ReadOnly<{
       y: number,
       x: number,
-    |}>,
-    velocity?: $ReadOnly<{|
+    }>,
+    velocity?: $ReadOnly<{
       y: number,
       x: number,
-    |}>,
+    }>,
     zoomScale?: number,
     responderIgnoreScroll?: boolean,
     preferredScrollerStyle?: string, // [macOS]
-  |}>,
+  }>,
 >;
 
-export type BlurEvent = SyntheticEvent<
-  $ReadOnly<{|
+export type BlurEvent = NativeSyntheticEvent<
+  $ReadOnly<{
     target: number,
-  |}>,
+  }>,
 >;
 
-export type FocusEvent = SyntheticEvent<
-  $ReadOnly<{|
+export type FocusEvent = NativeSyntheticEvent<
+  $ReadOnly<{
     target: number,
-  |}>,
+  }>,
 >;
 
 // [macOS
-export type KeyEvent = SyntheticEvent<
-  $ReadOnly<{|
+export type KeyEvent = NativeSyntheticEvent<
+  $ReadOnly<{
     // Modifier keys
     capsLockKey: boolean,
     shiftKey: boolean,
@@ -306,7 +308,7 @@ export type KeyEvent = SyntheticEvent<
     ArrowUp: boolean,
     ArrowDown: boolean,
     key: string,
-  |}>,
+  }>,
 >;
 
 /**
@@ -320,22 +322,22 @@ export type KeyEvent = SyntheticEvent<
  *
  * @platform macos
  */
-export type HandledKeyEvent = $ReadOnly<{|
+export type HandledKeyEvent = $ReadOnly<{
   altKey?: ?boolean,
   ctrlKey?: ?boolean,
   metaKey?: ?boolean,
   shiftKey?: ?boolean,
   key: string,
-|}>;
+}>;
 
 // macOS]
 
-export type MouseEvent = SyntheticEvent<
-  $ReadOnly<{|
+export type MouseEvent = NativeSyntheticEvent<
+  $ReadOnly<{
     clientX: number,
     clientY: number,
     pageX: number,
     pageY: number,
     timestamp: number,
-  |}>,
+  }>,
 >;

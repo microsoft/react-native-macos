@@ -5,6 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "TextInputState.h"
+#pragma once
 
-namespace facebook::react {} // namespace facebook::react
+namespace facebook::react {
+
+enum class SubmitBehavior {
+  Default,
+  Submit,
+  BlurAndSubmit,
+  Newline,
+};
+
+} // namespace facebook::react

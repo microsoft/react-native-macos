@@ -23,6 +23,8 @@
 #import <QuartzCore/QuartzCore.h>
 
 #if TARGET_OS_OSX // [macOS
+#import <React/RCTRootContentView.h>
+#import <React/RCTTouchHandler.h>
 
 // We are managing the key view loop using the RCTTextView.
 // Disable key view for backed NSTextView so we don't get double focus.
@@ -34,6 +36,16 @@
 - (BOOL)canBecomeKeyView
 {
   return NO;
+}
+
+- (BOOL)resignFirstResponder
+{
+  // Don't relinquish first responder while selecting text.
+  if (self.selectable && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
+    return NO;
+  }
+
+  return [super resignFirstResponder];
 }
 
 @end
@@ -67,6 +79,10 @@
   CGRect _contentFrame;
 }
 
+#if TARGET_OS_OSX // [macOS
+@synthesize additionalMenuItems = _additionalMenuItems;
+#endif // macOS]
+
 // [macOS
 - (instancetype)initWithEventDispatcher:(id<RCTEventDispatcherProtocol>)eventDispatcher
 {
@@ -85,12 +101,16 @@
     self.accessibilityTraits |= UIAccessibilityTraitStaticText;
     self.opaque = NO;
 #else // [macOS
+    // Make the RCTTextView accessible and available in the a11y hierarchy.
+    self.accessibilityElement = YES;
     self.accessibilityRole = NSAccessibilityStaticTextRole;
     // Fix blurry text on non-retina displays.
     self.canDrawSubviewsIntoLayer = YES;
     // The NSTextView is responsible for drawing text and managing selection.
     _textView = [[RCTUnfocusableTextView alloc] initWithFrame:self.bounds];
     _textView.delegate = self;
+    // The RCTUnfocusableTextView is only used for rendering and should not appear in the a11y hierarchy.
+    _textView.accessibilityElement = NO;
     _textView.usesFontPanel = NO;
     _textView.drawsBackground = NO;
     _textView.linkTextAttributes = @{};
@@ -138,9 +158,6 @@
   }
 #else // [macOS
   _textView.selectable = _selectable;
-  if (_selectable) {
-    [self setFocusable:YES];
-  }
 #endif // macOS]
 }
 
@@ -273,8 +290,8 @@
                                               usingBlock:^(CGRect enclosingRect, __unused BOOL *anotherStop) {
                                                 // [macOS
                                                 UIBezierPath *path = UIBezierPathWithRoundedRect(
-                                                  CGRectInset(enclosingRect, -2, -2), 
-                                                  2); 
+                                                  CGRectInset(enclosingRect, -2, -2),
+                                                  2);
                                                 // [macOS]
                                                 if (highlightPath) {
 #if !TARGET_OS_OSX // [macOS]
@@ -438,17 +455,38 @@
   return indexOfChildWithMouseHoverEvent != NSNotFound;
 }
 
+- (NSMenu *)textView:(NSTextView *)view menu:(NSMenu *)menu forEvent:(NSEvent *)event atIndex:(NSUInteger)charIndex
+{
+  [[RCTTouchHandler touchHandlerForView:self] willShowMenuWithEvent:event];
+
+  [menu setAutoenablesItems:NO];
+
+  RCTHideMenuItemsWithFilterPredicate(menu, ^bool(NSMenuItem *item) {
+    // Remove items not applicable for readonly text.
+    return (item.action == @selector(cut:) || item.action == @selector(paste:) || RCTMenuItemHasSubmenuItemWithAction(item, @selector(checkSpelling:)) || RCTMenuItemHasSubmenuItemWithAction(item, @selector(orderFrontSubstitutionsPanel:)));
+  });
+
+  if (_additionalMenuItems && _additionalMenuItems.count > 0) {
+    [menu insertItem:[NSMenuItem separatorItem] atIndex:0];
+    for (NSMenuItem* item in [_additionalMenuItems reverseObjectEnumerator]) {
+      [menu insertItem:item atIndex:0];
+    }
+  }
+
+  return menu;
+}
+
 - (NSView *)hitTest:(NSPoint)point
 {
   // We will forward mouse click events to the NSTextView ourselves to prevent NSTextView from swallowing events that may be handled in JS (e.g. long press).
   NSView *hitView = [super hitTest:point];
-  
+
   NSEventType eventType = NSApp.currentEvent.type;
   BOOL isMouseClickEvent = NSEvent.pressedMouseButtons > 0;
   BOOL isMouseMoveEventType = eventType == NSEventTypeMouseMoved || eventType == NSEventTypeMouseEntered || eventType == NSEventTypeMouseExited || eventType == NSEventTypeCursorUpdate;
   BOOL isMouseMoveEvent = !isMouseClickEvent && isMouseMoveEventType;
   BOOL isTextViewClick = (hitView && hitView == _textView) && !isMouseMoveEvent;
-  
+
   return isTextViewClick ? self : hitView;
 }
 
@@ -510,7 +548,7 @@
 
   if (_currentHoveredSubview == hoveredView) {
     return;
-  } 
+  }
 
   // self will always be an ancestor of any views we pass in here, so it serves as a good default option.
   // Also, if we do set from/to nil, we have to call the relevant events on the entire subtree.
@@ -622,21 +660,6 @@
   return _selectable;
 }
 #else // [macOS
-- (BOOL)canBecomeKeyView
-{
-  return self.focusable;
-}
-
-- (void)drawFocusRingMask {
-  if (self.focusable && self.enableFocusRing) {
-    NSRectFill([self bounds]);
-  }
-}
-
-- (NSRect)focusRingMaskBounds {
-  return [self bounds];
-}
-
 - (BOOL)becomeFirstResponder
 {
   if (![super becomeFirstResponder]) {
@@ -647,16 +670,6 @@
   [_eventDispatcher sendEvent:[RCTFocusChangeEvent focusEventWithReactTag:self.reactTag]];
 
   return YES;
-}
-
-- (BOOL)resignFirstResponder
-{
-  //  Don't relinquish first responder while selecting text.
-  if (_selectable && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
-    return NO;
-  }
-  
-  return [super resignFirstResponder];
 }
 
 - (BOOL)canBecomeFirstResponder

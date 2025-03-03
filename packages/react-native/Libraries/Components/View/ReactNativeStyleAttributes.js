@@ -36,6 +36,7 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   borderRightWidth: true,
   borderStartWidth: true,
   borderTopWidth: true,
+  boxSizing: true,
   columnGap: true,
   borderWidth: true,
   bottom: true,
@@ -125,7 +126,7 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   /**
    * MixBlendMode
    */
-  experimental_mixBlendMode: true,
+  mixBlendMode: true,
 
   /**
    * Isolation
@@ -174,6 +175,10 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   borderTopStartRadius: true,
   cursor: true,
   opacity: true,
+  outlineColor: colorAttributes,
+  outlineOffset: true,
+  outlineStyle: true,
+  outlineWidth: true,
   pointerEvents: true,
 
   /**

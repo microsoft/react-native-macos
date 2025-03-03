@@ -16,7 +16,7 @@ import type {
 import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 import type {
   FocusEvent,
-  LayoutEvent,
+  LayoutChangeEvent,
 } from 'react-native/Libraries/Types/CoreEventTypes';
 
 import * as React from 'react';
@@ -31,7 +31,7 @@ export type Separators = {
   ...
 };
 
-export type RenderItemProps<ItemT> = {
+export type ListRenderItemInfo<ItemT> = {
   item: ItemT,
   index: number,
   isSelected: ?boolean, // [macOS]
@@ -45,12 +45,12 @@ export type CellRendererProps<ItemT> = $ReadOnly<{
   index: number,
   item: ItemT,
   onFocusCapture?: (event: FocusEvent) => void,
-  onLayout?: (event: LayoutEvent) => void,
+  onLayout?: (event: LayoutChangeEvent) => void,
   style: ViewStyleProp,
 }>;
 
-export type RenderItemType<ItemT> = (
-  info: RenderItemProps<ItemT>,
+export type ListRenderItem<ItemT> = (
+  info: ListRenderItemInfo<ItemT>,
 ) => React.Node;
 
 // [macOS
@@ -59,7 +59,7 @@ export type SelectedRowIndexPathType = {
   rowIndex: number,
 }; // macOS]
 
-type RequiredProps = {|
+type RequiredProps = {
   /**
    * The default accessor functions assume this is an Array<{key: string} | {id: string}> but you can override
    * getItem, getItemCount, and keyExtractor to handle any type of index-based data.
@@ -73,9 +73,9 @@ type RequiredProps = {|
    * Determines how many items are in the data blob.
    */
   getItemCount: (data: any) => number,
-|};
-type OptionalProps = {|
-  renderItem?: ?RenderItemType<Item>,
+};
+type OptionalProps = {
+  renderItem?: ?ListRenderItem<Item>,
   /**
    * `debug` will turn on extra logging and visual overlays to aid with debugging both usage and
    * implementation, but with a significant perf hit.
@@ -304,9 +304,9 @@ type OptionalProps = {|
    * The legacy implementation is no longer supported.
    */
   legacyImplementation?: empty,
-|};
+};
 // [macOS
-type MacOSProps = {|
+type MacOSProps = {
   /**
    * Allows you to 'select' a row using arrow keys. The selected row will have the prop `isSelected`
    * passed in as true to it's renderItem / ListItemComponent. You can also imperatively select a row
@@ -347,15 +347,15 @@ type MacOSProps = {|
 
   sectionIndex?: number,
   rowIndex?: number,
-|};
+};
 // macOS]
 
-export type Props = {|
+export type Props = {
   ...React.ElementConfig<ScrollView>,
   ...RequiredProps,
   ...OptionalProps,
   ...MacOSProps, // [macOS]
-|};
+};
 
 /**
  * Default Props Helper Functions

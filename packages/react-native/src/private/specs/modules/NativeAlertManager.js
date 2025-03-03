@@ -12,7 +12,7 @@ import type {TurboModule} from '../../../../Libraries/TurboModule/RCTExport';
 
 import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboModuleRegistry';
 
-export type Args = {|
+export type Args = {
   title?: string,
   message?: string,
   buttons?: Array<Object>, // TODO(T67565166): have a better type
@@ -28,7 +28,7 @@ export type Args = {|
   modal?: ?boolean,
   critical?: ?boolean,
   // macOS]
-|};
+};
 
 export interface Spec extends TurboModule {
   +alertWithArgs: (

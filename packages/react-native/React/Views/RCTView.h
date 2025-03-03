@@ -166,6 +166,9 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 // that we can set through JS and the getter for `allowsVibrancy` can read in RCTView.
 @property (nonatomic, assign) BOOL allowsVibrancyInternal;
 
+// Mouse events
+@property (nonatomic, copy) RCTDirectEventBlock onDoubleClick;
+
 // Keyboarding events
 // NOTE does not properly work with single line text inputs (most key downs). This is because those are
 // presumably handled by the window's field editor. To make it work, we'd need to look into providing

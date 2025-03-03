@@ -8,23 +8,22 @@
  * @format
  */
 
-'use strict';
-
 import type {EventSubscription} from '../EventEmitter/NativeEventEmitter';
+import type {AnimatedPropsAllowlist} from './nodes/AnimatedProps';
 
+import NativeAnimatedHelper from '../../src/private/animated/NativeAnimatedHelper';
+import {useAnimatedPropsMemo} from '../../src/private/animated/useAnimatedPropsMemo';
 import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
 import {isPublicInstance as isFabricPublicInstance} from '../ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstanceUtils';
 import useRefEffect from '../Utilities/useRefEffect';
 import {AnimatedEvent} from './AnimatedEvent';
-import NativeAnimatedHelper from '../../src/private/animated/NativeAnimatedHelper';
 import AnimatedNode from './nodes/AnimatedNode';
 import AnimatedProps from './nodes/AnimatedProps';
 import AnimatedValue from './nodes/AnimatedValue';
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
-  useMemo,
+  useInsertionEffect,
   useReducer,
   useRef,
 } from 'react';
@@ -36,6 +35,8 @@ type ReducedProps<TProps> = {
 };
 type CallbackRef<T> = T => mixed;
 
+type UpdateCallback = () => void;
+
 type AnimatedValueListeners = Array<{
   propValue: AnimatedValue,
   listenerId: string,
@@ -43,28 +44,19 @@ type AnimatedValueListeners = Array<{
 
 export default function useAnimatedProps<TProps: {...}, TInstance>(
   props: TProps,
+  allowlist?: ?AnimatedPropsAllowlist,
 ): [ReducedProps<TProps>, CallbackRef<TInstance | null>] {
   const [, scheduleUpdate] = useReducer<number, void>(count => count + 1, 0);
-  const onUpdateRef = useRef<?() => void>(null);
+  const onUpdateRef = useRef<UpdateCallback | null>(null);
   const timerRef = useRef<TimeoutID | null>(null);
 
-  // TODO: Only invalidate `node` if animated props or `style` change. In the
-  // previous implementation, we permitted `style` to override props with the
-  // same name property name as styles, so we can probably continue doing that.
-  // The ordering of other props *should* not matter.
-  const node = useMemo(
-    () => new AnimatedProps(props, () => onUpdateRef.current?.()),
-    [props],
+  const node = useAnimatedPropsMemo(
+    () => new AnimatedProps(props, () => onUpdateRef.current?.(), allowlist),
+    [allowlist, props],
   );
+
   const useNativePropsInFabric =
     ReactNativeFeatureFlags.shouldUseSetNativePropsInFabric();
-  const useSetNativePropsInNativeAnimationsInFabric =
-    ReactNativeFeatureFlags.shouldUseSetNativePropsInNativeAnimationsInFabric();
-
-  const useAnimatedPropsLifecycle =
-    ReactNativeFeatureFlags.usePassiveEffectsForAnimations()
-      ? useAnimatedPropsLifecycle_passiveEffects
-      : useAnimatedPropsLifecycle_layoutEffects;
 
   useAnimatedPropsLifecycle(node);
 
@@ -104,12 +96,7 @@ export default function useAnimatedProps<TProps: {...}, TInstance>(
           if (isFabricNode) {
             // Call `scheduleUpdate` to synchronise Fiber and Shadow tree.
             // Must not be called in Paper.
-            if (useSetNativePropsInNativeAnimationsInFabric) {
-              // $FlowFixMe[incompatible-use]
-              instance.setNativeProps(node.__getAnimatedValue());
-            } else {
-              scheduleUpdate();
-            }
+            scheduleUpdate();
           }
           return;
         }
@@ -186,23 +173,21 @@ export default function useAnimatedProps<TProps: {...}, TInstance>(
         }
       };
     },
-    [
-      node,
-      useNativePropsInFabric,
-      useSetNativePropsInNativeAnimationsInFabric,
-      props,
-    ],
+    [node, useNativePropsInFabric, props],
   );
   const callbackRef = useRefEffect<TInstance>(refEffect);
 
-  return [reduceAnimatedProps<TProps>(node), callbackRef];
+  return [reduceAnimatedProps<TProps>(node, props), callbackRef];
 }
 
-function reduceAnimatedProps<TProps>(node: AnimatedNode): ReducedProps<TProps> {
+function reduceAnimatedProps<TProps>(
+  node: AnimatedProps,
+  props: TProps,
+): ReducedProps<TProps> {
   // Force `collapsable` to be false so that the native view is not flattened.
   // Flattened views cannot be accurately referenced by the native driver.
   return {
-    ...node.__getValue(),
+    ...node.__getValueWithStaticProps(props),
     collapsable: false,
   };
 }
@@ -243,68 +228,7 @@ function addAnimatedValuesListenersToProps(
  * nodes. So in order to optimize this, we avoid detaching until the next attach
  * unless we are unmounting.
  */
-function useAnimatedPropsLifecycle_layoutEffects(node: AnimatedProps): void {
-  const prevNodeRef = useRef<?AnimatedProps>(null);
-  const isUnmountingRef = useRef<boolean>(false);
-
-  useEffect(() => {
-    // It is ok for multiple components to call `flushQueue` because it noops
-    // if the queue is empty. When multiple animated components are mounted at
-    // the same time. Only first component flushes the queue and the others will noop.
-    NativeAnimatedHelper.API.flushQueue();
-    let drivenAnimationEndedListener: ?EventSubscription = null;
-    if (node.__isNative) {
-      drivenAnimationEndedListener =
-        NativeAnimatedHelper.nativeEventEmitter.addListener(
-          'onUserDrivenAnimationEnded',
-          data => {
-            node.update();
-          },
-        );
-    }
-
-    return () => {
-      drivenAnimationEndedListener?.remove();
-    };
-  });
-
-  useLayoutEffect(() => {
-    isUnmountingRef.current = false;
-    return () => {
-      isUnmountingRef.current = true;
-    };
-  }, []);
-
-  useLayoutEffect(() => {
-    node.__attach();
-    if (prevNodeRef.current != null) {
-      const prevNode = prevNodeRef.current;
-      // TODO: Stop restoring default values (unless `reset` is called).
-      prevNode.__restoreDefaultValues();
-      prevNode.__detach();
-      prevNodeRef.current = null;
-    }
-    return () => {
-      if (isUnmountingRef.current) {
-        // NOTE: Do not restore default values on unmount, see D18197735.
-        node.__detach();
-      } else {
-        prevNodeRef.current = node;
-      }
-    };
-  }, [node]);
-}
-
-/**
- * Manages the lifecycle of the supplied `AnimatedProps` by invoking `__attach`
- * and `__detach`. However, this is more complicated because `AnimatedProps`
- * uses reference counting to determine when to recursively detach its children
- * nodes. So in order to optimize this, we avoid detaching until the next attach
- * unless we are unmounting.
- *
- * NOTE: unlike `useAnimatedPropsLifecycle_layoutEffects`, this version uses passive effects to setup animation graph.
- */
-function useAnimatedPropsLifecycle_passiveEffects(node: AnimatedProps): void {
+function useAnimatedPropsLifecycle(node: AnimatedProps): void {
   const prevNodeRef = useRef<?AnimatedProps>(null);
   const isUnmountingRef = useRef<boolean>(false);
 
@@ -315,14 +239,14 @@ function useAnimatedPropsLifecycle_passiveEffects(node: AnimatedProps): void {
     NativeAnimatedHelper.API.flushQueue();
   });
 
-  useEffect(() => {
+  useInsertionEffect(() => {
     isUnmountingRef.current = false;
     return () => {
       isUnmountingRef.current = true;
     };
   }, []);
 
-  useEffect(() => {
+  useInsertionEffect(() => {
     node.__attach();
     let drivenAnimationEndedListener: ?EventSubscription = null;
 

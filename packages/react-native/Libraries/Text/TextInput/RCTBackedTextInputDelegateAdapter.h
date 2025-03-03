@@ -12,6 +12,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface RCTBackedTextFieldDelegateAdapterUtility : NSObject
++ (BOOL)isShiftOrOptionKeyDown;
+@end
+
 #pragma mark - RCTBackedTextFieldDelegateAdapter (for UITextField)
 
 @protocol RCTBackedTextInputViewProtocol; // [macOS]

@@ -6,8 +6,7 @@
  */
 
 #import <React/RCTUIKit.h> // [macOS]
-
-#import "RCTTextUIKit.h" // [macOS]
+#import <React/RCTTextUIKit.h> // [macOS]
 
 #import <React/RCTBackedTextInputDelegate.h>
 #import <React/RCTBackedTextInputViewProtocol.h>

@@ -10,7 +10,7 @@
 
 'use strict';
 
-import type {RNTesterModuleInfo} from '../types/RNTesterTypes';
+import type {RNTesterModule, RNTesterModuleInfo} from '../types/RNTesterTypes';
 
 import ReactNativeFeatureFlags from 'react-native/Libraries/ReactNative/ReactNativeFeatureFlags';
 
@@ -71,6 +71,11 @@ const Components: Array<RNTesterModuleInfo> = [
   {
     key: 'KeyboardAvoidingViewExample',
     module: require('../examples/KeyboardAvoidingView/KeyboardAvoidingViewExample'),
+  },
+  {
+    key: 'LayoutConformanceExample',
+    module: require('../examples/LayoutConformance/LayoutConformanceExample')
+      .default,
   },
   {
     key: 'LayoutEventsExample',
@@ -139,12 +144,12 @@ const Components: Array<RNTesterModuleInfo> = [
   },
   {
     key: 'TextExample',
-    module: require('../examples/Text/TextExample.ios'),
+    module: require('../examples/Text/TextExample'),
     category: 'Basic',
   },
   {
     key: 'TextInputExample',
-    module: require('../examples/TextInput/TextInputExample.ios'),
+    module: require('../examples/TextInput/TextInputExample'),
     category: 'Basic',
   },
   {
@@ -239,6 +244,12 @@ const APIs: Array<RNTesterModuleInfo> = ([
   {
     key: 'Dimensions',
     module: require('../examples/Dimensions/DimensionsExample'),
+  },
+  {
+    key: 'DisplayContentsExample',
+    category: 'UI',
+    module: require('../examples/DisplayContents/DisplayContentsExample')
+      .default,
   },
   // Only show the link for the example if the API is available.
   typeof IntersectionObserver === 'function'
@@ -384,10 +395,16 @@ if (ReactNativeFeatureFlags.shouldEmitW3CPointerEvents()) {
   });
 }
 
-const Modules: {...} = {};
+const Playgrounds: Array<RNTesterModuleInfo> = [
+  {
+    key: 'PlaygroundExample',
+    module: require('../examples/Playground/PlaygroundExample'),
+  },
+];
 
-APIs.concat(Components).forEach(Example => {
-  // $FlowFixMe[prop-missing]
+const Modules: {[key: string]: RNTesterModule} = {};
+
+[...APIs, ...Components, ...Playgrounds].forEach(Example => {
   Modules[Example.key] = Example.module;
 });
 

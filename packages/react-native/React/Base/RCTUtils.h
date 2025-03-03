@@ -209,4 +209,10 @@ RCT_EXTERN BOOL RCTValidateTypeOfViewCommandArgument(
 
 RCT_EXTERN BOOL RCTIsAppActive(void);
 
+#if TARGET_OS_OSX // [macOS
+typedef bool (^RCTMenuItemFilterPredicate)(NSMenuItem *_Nonnull item);
+RCT_EXTERN void RCTHideMenuItemsWithFilterPredicate(NSMenu *_Nonnull menu, RCTMenuItemFilterPredicate shouldFilter);
+RCT_EXTERN BOOL RCTMenuItemHasSubmenuItemWithAction(NSMenuItem *_Nonnull item, SEL action);
+#endif // macOS]
+
 NS_ASSUME_NONNULL_END

@@ -20,7 +20,9 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig = {
   uiViewClassName: 'RCTScrollContentView',
   bubblingEventTypes: {},
   directEventTypes: {},
-  validAttributes: {},
+  validAttributes: {
+    inverted: true, // [macOS]
+  },
 };
 
 const ScrollContentViewNativeComponent: HostComponent<Props> =

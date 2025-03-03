@@ -14,6 +14,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {TextStyle} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import RNTesterButton from '../../components/RNTesterButton';
+import RNTesterText from '../../components/RNTesterText';
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
 import ExampleTextInput from './ExampleTextInput';
 import * as React from 'react';
@@ -114,7 +115,7 @@ class WithLabel extends React.Component<$FlowFixMeProps> {
   render(): React.Node {
     return (
       <View style={styles.labelContainer}>
-        <Text style={styles.label}>{this.props.label}</Text>
+        <RNTesterText style={styles.label}>{this.props.label}</RNTesterText>
         <View style={styles.inputContainer}>{this.props.children}</View>
       </View>
     );
@@ -425,7 +426,7 @@ class TextEventsExample extends React.Component<{...}, $FlowFixMeState> {
           // macOS]
           style={styles.singleLine}
         />
-        <Text style={styles.eventLabel}>
+        <RNTesterText style={styles.eventLabel}>
           {this.state.curText}
           {'\n'}
           (prev: {this.state.prevText}){'\n'}
@@ -500,10 +501,10 @@ class TokenizedTextExample extends React.Component<
 }
 
 type SelectionExampleState = {
-  selection: $ReadOnly<{|
+  selection: $ReadOnly<{
     start: number,
     end: number,
-  |}>,
+  }>,
   value: string,
   ...
 };
@@ -578,34 +579,38 @@ class SelectionExample extends React.Component<
           />
         </View>
         <View>
-          <Text testID={`${this.props.testID}-selection`}>
+          <RNTesterText testID={`${this.props.testID}-selection`}>
             selection ={' '}
             {`{start:${this.state.selection.start},end:${this.state.selection.end}}`}
-          </Text>
-          <Text
+          </RNTesterText>
+          <RNTesterText
             testID={`${this.props.testID}-cursor-start`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onPress={this.placeAt.bind(this, 0)}>
             Place at Start (0, 0)
-          </Text>
-          <Text
+          </RNTesterText>
+          <RNTesterText
             testID={`${this.props.testID}-cursor-end`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onPress={this.placeAt.bind(this, length)}>
             Place at End ({length}, {length})
-          </Text>
+          </RNTesterText>
           {/* $FlowFixMe[method-unbinding] added when improving typing for this
            * parameters */}
-          <Text onPress={this.placeAtRandom.bind(this)}>Place at Random</Text>
-          <Text
+          <RNTesterText onPress={this.placeAtRandom.bind(this)}>
+            Place at Random
+          </RNTesterText>
+          <RNTesterText
             testID={`${this.props.testID}-select-all`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onPress={this.select.bind(this, 0, length)}>
             Select All
-          </Text>
+          </RNTesterText>
           {/* $FlowFixMe[method-unbinding] added when improving typing for this
            * parameters */}
-          <Text onPress={this.selectRandom.bind(this)}>Select Random</Text>
+          <RNTesterText onPress={this.selectRandom.bind(this)}>
+            Select Random
+          </RNTesterText>
         </View>
       </View>
     );
@@ -850,6 +855,40 @@ function MultilineStyledTextInput({
       </Text>
       <Text style={textStyles[(3 + styleOffset) % textStyles.length]}>ld!</Text>
     </ExampleTextInput>
+  );
+}
+
+function DynamicContentWidth() {
+  const [text, setText] = useState('');
+  const update = () => {
+    const randomNumber = Math.floor(Math.random() * 10);
+    setText(text + randomNumber);
+  };
+
+  return (
+    <View>
+      <RNTesterText>Uncontrolled:</RNTesterText>
+      <TextInput
+        placeholder="Type..."
+        style={{
+          fontSize: 16,
+          alignSelf: 'center',
+          backgroundColor: 'orange',
+        }}
+      />
+      <RNTesterText>Controlled:</RNTesterText>
+      <TextInput
+        placeholder="..."
+        value={text}
+        onChangeText={setText}
+        style={{
+          fontSize: 16,
+          alignSelf: 'center',
+          backgroundColor: 'orange',
+        }}
+      />
+      <Button title="Update controlled Input" onPress={update} />
+    </View>
   );
 }
 
@@ -1160,6 +1199,13 @@ module.exports = ([
           </ExampleTextInput>
         </View>
       );
+    },
+  },
+  {
+    title: 'Dynamic content width',
+    name: 'dynamicWidth',
+    render: function (): React.Node {
+      return <DynamicContentWidth />;
     },
   },
 ]: Array<RNTesterModuleExample>);

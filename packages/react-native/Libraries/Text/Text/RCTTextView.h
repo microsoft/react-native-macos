@@ -13,7 +13,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTTextView : RCTUIView // [macOS]
+#else // [macOS
+@interface RCTTextView : RCTUIView <ExtensibleNativeMenuProtocol>
+#endif // macOS]
 
 - (instancetype)initWithEventDispatcher:(id<RCTEventDispatcherProtocol>)eventDispatcher; // [macOS]
 

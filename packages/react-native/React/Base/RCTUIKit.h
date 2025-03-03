@@ -218,6 +218,7 @@ typedef NS_ENUM(NSInteger, UIViewContentMode) {
   UIViewContentModeScaleAspectFit  = NSViewLayerContentsPlacementScaleProportionallyToFit,
   UIViewContentModeScaleToFill     = NSViewLayerContentsPlacementScaleAxesIndependently,
   UIViewContentModeCenter          = NSViewLayerContentsPlacementCenter,
+  UIViewContentModeTopLeft         = NSViewLayerContentsPlacementTopLeft,
 };
 
 // UIInterface.h/NSUserInterfaceLayout.h
@@ -269,6 +270,9 @@ extern "C" {
 
 // UIGraphics.h
 CGContextRef UIGraphicsGetCurrentContext(void);
+void UIGraphicsBeginImageContextWithOptions(CGSize size, BOOL opaque, CGFloat scale);
+NSImage *UIGraphicsGetImageFromCurrentImageContext(void);
+void UIGraphicsEndImageContext(void);
 CGImageRef UIImageGetCGImageRef(NSImage *image);
 
 #ifdef __cplusplus
@@ -661,8 +665,18 @@ typedef void (^RCTUIGraphicsImageDrawingActions)(RCTUIGraphicsImageRendererConte
 @interface RCTUIGraphicsImageRenderer : NSObject
 
 - (instancetype)initWithSize:(CGSize)size format:(RCTUIGraphicsImageRendererFormat *)format;
-- (NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions;
-
+- (NSImage *)imageWithActions:(RCTUIGraphicsImageDrawingActions)actions;
+@property (nonatomic, copy) RCTUIGraphicsImageDrawingActions actions;
 @end
 NS_ASSUME_NONNULL_END
 #endif
+
+#if TARGET_OS_OSX // [macOS
+// TextViews implementing this protocol can extend the native text menu
+@protocol ExtensibleNativeMenuProtocol
+
+@required
+@property (nonatomic, strong) NSArray<NSMenuItem *> * _Nullable additionalMenuItems;
+
+@end
+#endif // macOS]
