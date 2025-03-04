@@ -372,10 +372,6 @@ const APIs: Array<RNTesterModuleInfo> = ([
   },
   // [macOS
   {
-    key: 'ASANCrashExample',
-    module: require('../examples/ASAN/ASANCrashExample'),
-  },
-  {
     key: 'Focus Ring',
     module: require('../examples/FocusRing/FocusRingExample'),
   },
