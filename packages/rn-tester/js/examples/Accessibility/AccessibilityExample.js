@@ -1496,7 +1496,6 @@ class EnabledExample extends React.Component<
 class DisplayOptionsStatusExample extends React.Component<{}> {
   render(): React.Node {
     const isAndroid = Platform.OS === 'android';
-    const isMacOS = Platform.OS === 'macos'; // [macOS]
     return (
       <View>
         <DisplayOptionStatusExample
@@ -1526,15 +1525,13 @@ class DisplayOptionsStatusExample extends React.Component<{}> {
               optionChecker={AccessibilityInfo.isGrayscaleEnabled}
               notification={'grayscaleChanged'}
             />
-            {
-              isMacOS ? ( // [macOS
-                <DisplayOptionStatusExample
-                  optionName={'High Contrast'}
-                  optionChecker={AccessibilityInfo.isHighContrastEnabled}
-                  notification={'highContrastChanged'}
-                />
-              ) : null /* macOS] */
-            }
+            {/* [macOS */}
+            <DisplayOptionStatusExample
+              optionName={'High Contrast'}
+              optionChecker={AccessibilityInfo.isHighContrastEnabled}
+              notification={'highContrastChanged'}
+            />
+            {/* macOS] */}
             <DisplayOptionStatusExample
               optionName={'Invert Colors'}
               optionChecker={AccessibilityInfo.isInvertColorsEnabled}
