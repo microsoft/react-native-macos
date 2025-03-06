@@ -163,6 +163,17 @@ const Text: component(
         // $FlowFixMe[incompatible-type]
         _style = [_style, overrides];
       }
+
+      // [macOS
+      // For some reason, on macOS, Setting backgroundColor without borderRadius on Text will
+      // cause the color to spill pass the frame of the view. We can solve this by setting a dummy
+      // value for borderRadius.
+      if (Platform.OS === 'macos') {
+        if ('backgroundColor' in _style && !('borderRadius' in _style)) {
+          _style.borderRadius = 0.001;
+        }
+      }
+      // macOS]
     }
 
     const _nativeID = id ?? nativeID;
