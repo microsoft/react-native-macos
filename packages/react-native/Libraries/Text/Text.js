@@ -159,6 +159,21 @@ const Text: component(
         overrides.verticalAlign = undefined;
       }
 
+      // [macOS
+      // For some reason on macOS, Setting backgroundColor without borderRadius on Text will
+      // cause the color to spill pass the frame of the Text. We can solve this by setting a dummy
+      // value for borderRadius.
+      if (Platform.OS === 'macos') {
+        if (
+          'backgroundColor' in processedStyle &&
+          !('borderRadius' in processedStyle)
+        ) {
+          overrides = overrides || ({}: {...TextStyleInternal});
+          overrides.borderRadius = Number.MIN_VALUE;
+        }
+      }
+      // macOS]
+
       if (overrides != null) {
         // $FlowFixMe[incompatible-type]
         _style = [_style, overrides];

@@ -71,12 +71,12 @@ const EventNames: Map<
       ['boldTextChanged', 'boldTextChanged'],
       ['change', 'screenReaderChanged'],
       ['grayscaleChanged', 'grayscaleChanged'],
-      ['highContrastChanged', 'highContrastChanged'], // [macOS]
       ['invertColorsChanged', 'invertColorsChanged'],
       ['reduceMotionChanged', 'reduceMotionChanged'],
       ['reduceTransparencyChanged', 'reduceTransparencyChanged'],
       ['screenReaderChanged', 'screenReaderChanged'],
       ['darkerSystemColorsChanged', 'darkerSystemColorsChanged'],
+      ['highContrastChanged', 'highContrastChanged'], // [macOS]
     ]);
 
 /**
@@ -152,7 +152,7 @@ const AccessibilityInfo = {
    * macOS only
    */
   isHighContrastEnabled: function (): Promise<boolean> {
-    if (Platform.OS === 'macos') {
+    if (Platform.OS === 'macos' || Platform.OS === 'ios') {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerApple) {
           NativeAccessibilityManagerApple.getCurrentHighContrastState(
