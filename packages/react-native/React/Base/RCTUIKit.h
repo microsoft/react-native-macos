@@ -486,8 +486,8 @@ NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPo
 {
   // [macOS IMPORTANT -- point is in local coordinate space, but OSX expects super coordinate space for hitTest:
   NSView *superview = [view superview];
-  NSPoint pointInSuper = superview != nil ? [view convertPoint:point toView:superview] : point;
-  return [view hitTest:pointInSuper];
+  NSPoint pointInSuperview = superview != nil ? [view convertPoint:point toView:superview] : point;
+  return [view hitTest:pointInSuperview];
 }
 
 BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view);

@@ -128,8 +128,9 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
 #else // [macOS
     // -[NSView hitTest:] takes coordinates in a view's superview coordinate system.
     // The assumption here is that a RCTUIView/RCTSurfaceView will always have a superview.
-    const CGPoint touchLocationInSuper = [self.view.superview convertPoint:touch.locationInWindow fromView:nil];
-    NSView *targetView = [self.view hitTest:touchLocationInSuper];
+    NSView *superview = [[self view] superview];
+    const CGPoint touchLocationInSuperview = [superview convertPoint:touch.locationInWindow fromView:nil];
+    NSView *targetView = [self.view hitTest:touchLocationInSuperview];
     // Don't record clicks on scrollbars.
     if ([targetView isKindOfClass:[NSScroller class]]) {
       continue;
