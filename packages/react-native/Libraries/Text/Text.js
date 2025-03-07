@@ -164,7 +164,10 @@ const Text: component(
       // cause the color to spill pass the frame of the Text. We can solve this by setting a dummy
       // value for borderRadius.
       if (Platform.OS === 'macos') {
-        if ('backgroundColor' in processedStyle && !('borderRadius' in processedStyle)) {
+        if (
+          'backgroundColor' in processedStyle &&
+          !('borderRadius' in processedStyle)
+        ) {
           overrides = overrides || ({}: {...TextStyleInternal});
           overrides.borderRadius = Number.MIN_VALUE;
         }
