@@ -251,18 +251,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     // of the hit view will return YES from -pointInside:withEvent:). See:
     //  - https://developer.apple.com/library/ios/qa/qa2013/qa1812.html
     for (RCTUIView *subview in [sortedSubviews reverseObjectEnumerator]) { // [macOS]
-      CGPoint pointForHitTest = CGPointZero; // [macOS
-#if !TARGET_OS_OSX // [macOS]
-      pointForHitTest = [subview convertPoint:point fromView:self];
-#else // [macOS
-      // Paper and Fabric components use the target view coordinate space for hit testing
-      if ([subview isKindOfClass:[RCTView class]] || [subview respondsToSelector:@selector(updateProps:oldProps:)]) {
-        pointForHitTest = [subview convertPoint:point fromView:self];
-      } else {
-        // Native macOS views require the point to be in the super view coordinate space for hit testing.
-        pointForHitTest = point;
-      }
-#endif // macOS]
+      CGPoint pointForHitTest = [subview convertPoint:point fromView:self];
       hitSubview = RCTUIViewHitTestWithEvent(subview, pointForHitTest, event); // macOS]
       if (hitSubview != nil) {
         break;

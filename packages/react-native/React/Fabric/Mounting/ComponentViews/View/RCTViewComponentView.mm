@@ -680,17 +680,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   }
 
   for (RCTUIView *subview in [self.subviews reverseObjectEnumerator]) { // [macOS]
-#if !TARGET_OS_OSX // [macOS]
     RCTUIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event]; // [macOS]
-#else // [macOS
-    // Native macOS views require the point to be in the super view coordinate space for hit testing.
-    CGPoint hitTestPoint = point;
-    // Fabric components use the target view coordinate space for hit testing
-    if ([subview isKindOfClass:[RCTViewComponentView class]]) {
-      hitTestPoint = [subview convertPoint:point fromView:self];
-    }
-    RCTUIView *hitView = [subview hitTest:hitTestPoint withEvent:event]; // [macOS]
-#endif // macOS]
     if (hitView) {
       return hitView;
     }
