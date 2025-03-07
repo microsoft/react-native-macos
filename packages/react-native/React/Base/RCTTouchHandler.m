@@ -161,7 +161,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
       targetView = targetView.superview;
     }
 
-    const CGPoint touchLocationInSelf = [targetView convertPoint:touchLocationInSuper fromView:self.view.superview];
+    const CGPoint touchLocationInSelf = [targetView convertPoint:touchLocationInSuperview fromView:self.view.superview];
     NSNumber *reactTag = [targetView reactTagAtPoint:touchLocationInSelf];
     BOOL isUserInteractionEnabled = NO;
     if ([((RCTUIView*)targetView) respondsToSelector:@selector(isUserInteractionEnabled)]) { // [macOS]
