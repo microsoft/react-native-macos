@@ -128,8 +128,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
 #else // [macOS
     // -[NSView hitTest:] takes coordinates in a view's superview coordinate system.
     // The assumption here is that a RCTUIView/RCTSurfaceView will always have a superview.
-    CGPoint touchLocation = [self.view.superview convertPoint:touch.locationInWindow fromView:nil];
-    NSView *targetView = [self.view hitTest:touchLocation];
+    const CGPoint touchLocationInSuper = [self.view.superview convertPoint:touch.locationInWindow fromView:nil];
+    NSView *targetView = [self.view hitTest:touchLocationInSuper];
     // Don't record clicks on scrollbars.
     if ([targetView isKindOfClass:[NSScroller class]]) {
       continue;
@@ -148,8 +148,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
     } else {
       _shouldSendMouseUpOnSystemBehalf = NO;
     }
-    touchLocation = [targetView convertPoint:touchLocation fromView:self.view.superview];
-    
+
     while (targetView) {
       BOOL isUserInteractionEnabled = NO;
       if ([((RCTUIView*)targetView) respondsToSelector:@selector(isUserInteractionEnabled)]) { // [macOS]
@@ -161,7 +160,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
       targetView = targetView.superview;
     }
 
-    NSNumber *reactTag = [targetView reactTagAtPoint:touchLocation];
+    const CGPoint touchLocationInSelf = [targetView convertPoint:touchLocationInSuper fromView:self.view.superview];
+    NSNumber *reactTag = [targetView reactTagAtPoint:touchLocationInSelf];
     BOOL isUserInteractionEnabled = NO;
     if ([((RCTUIView*)targetView) respondsToSelector:@selector(isUserInteractionEnabled)]) { // [macOS]
       isUserInteractionEnabled = ((RCTUIView*)targetView).isUserInteractionEnabled; // [macOS]

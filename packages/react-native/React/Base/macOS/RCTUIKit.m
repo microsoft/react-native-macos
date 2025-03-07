@@ -454,7 +454,12 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 - (NSView *)hitTest:(NSPoint)point
 {
-  return [self hitTest:NSPointToCGPoint(point) withEvent:nil];
+// [macOS
+  // IMPORTANT point is passed in super coordinates by OSX, but expected to be passed in local coordinates
+  NSView *superview = [self superview];
+  NSPoint pointInSelf = superview != nil ? [self convertPoint:point fromView:superview] : point;
+  return [self hitTest:pointInSelf withEvent:nil];
+// macOS]
 }
 
 - (BOOL)wantsUpdateLayer
@@ -505,7 +510,12 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 - (NSView *)hitTest:(CGPoint)point withEvent:(__unused UIEvent *)event
 {
-  return self.userInteractionEnabled ? [super hitTest:NSPointFromCGPoint(point)] : nil;
+// [macOS
+  // IMPORTANT point is expected to be passed in local coordinates, but OSX expects point to be super coordinates.
+  NSView *superview = [self superview];
+  NSPoint pointInSuper = superview != nil ? [self convertPoint:point toView:superview] : point;
+  return self.userInteractionEnabled ? [super hitTest:pointInSuper] : nil;
+// macOS]
 }
 
 - (BOOL)pointInside:(CGPoint)point withEvent:(__unused UIEvent *)event
