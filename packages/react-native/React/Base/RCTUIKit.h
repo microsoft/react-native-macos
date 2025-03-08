@@ -137,29 +137,28 @@ NS_ASSUME_NONNULL_BEGIN
 #define UIApplicationWillResignActiveNotification     NSApplicationWillResignActiveNotification
 #define UIApplicationWillEnterForegroundNotification  NSApplicationWillUnhideNotification  
 
-// UIFontDescriptor.h/NSFontDescriptor.h
-#define UIFontDescriptorFamilyAttribute          NSFontFamilyAttribute;
-#define UIFontDescriptorNameAttribute            NSFontNameAttribute;
-#define UIFontDescriptorFaceAttribute            NSFontFaceAttribute;
-#define UIFontDescriptorSizeAttribute            NSFontSizeAttribute
+typedef NSFontDescriptorAttributeName RCTPlatformFontDescriptorFamilyAttribute;
+typedef NSFontDescriptorAttributeName RCTPlatformFontDescriptorNameAttribute;
+typedef NSFontDescriptorAttributeName RCTPlatformFontDescriptorFaceAttribute;
+typedef NSFontDescriptorAttributeName RCTPlatformFontDescriptorSizeAttribute;
 
-#define UIFontDescriptorTraitsAttribute          NSFontTraitsAttribute
-#define UIFontDescriptorFeatureSettingsAttribute NSFontFeatureSettingsAttribute
+typedef NSFontDescriptorAttributeName RCTPlatformFontDescriptorTraitsAttribute;
+typedef NSFontDescriptorAttributeName RCTPlatformFontDescriptorFeatureSettingsAttribute;
 
-#define UIFontSymbolicTrait                      NSFontSymbolicTrait
-#define UIFontWeightTrait                        NSFontWeightTrait
-#define UIFontFeatureTypeIdentifierKey           NSFontFeatureTypeIdentifierKey
-#define UIFontFeatureSelectorIdentifierKey       NSFontFeatureSelectorIdentifierKey
+typedef NSFontSymbolicTraits RCTPlatformFontSymbolicTraits;
+typedef NSString RCTPlatformFontFeatureTypeIdentifierKey;
+typedef NSString RCTPlatformFontFeatureSelectorIdentifierKey;
 
-#define UIFontWeightUltraLight                   NSFontWeightUltraLight
-#define UIFontWeightThin                         NSFontWeightThin
-#define UIFontWeightLight                        NSFontWeightLight
-#define UIFontWeightRegular                      NSFontWeightRegular
-#define UIFontWeightMedium                       NSFontWeightMedium
-#define UIFontWeightSemibold                     NSFontWeightSemibold
-#define UIFontWeightBold                         NSFontWeightBold
-#define UIFontWeightHeavy                        NSFontWeightHeavy
-#define UIFontWeightBlack                        NSFontWeightBlack
+typedef NSFontWeight RCTPlatformFontWeight;
+typedef NSFontWeight RCTPlatformFontWeightUltraLight;
+typedef NSFontWeight RCTPlatformFontWeightThin;
+typedef NSFontWeight RCTPlatformFontWeightLight;
+typedef NSFontWeight RCTPlatformFontWeightRegular;
+typedef NSFontWeight RCTPlatformFontWeightMedium;
+typedef NSFontWeight RCTPlatformFontWeightSemibold;
+typedef NSFontWeight RCTPlatformFontWeightBold;
+typedef NSFontWeight RCTPlatformFontWeightHeavy;
+typedef NSFontWeight RCTPlatformFontWeightBlack;
 
 // RCTActivityIndicatorView.h
 #define UIActivityIndicatorView NSProgressIndicator

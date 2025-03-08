@@ -188,6 +188,7 @@ const RCTTextInputViewConfig = {
       onGrammarCheckChange: true,
       // macOS]
     }),
+    disableKeyboardShortcuts: true,
   },
 };
 

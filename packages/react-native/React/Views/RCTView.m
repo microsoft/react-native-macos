@@ -105,7 +105,8 @@ const UIAccessibilityTraits SwitchAccessibilityTrait = 0x20000000000001;
 
 static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 {
-  NSMutableString *str = [NSMutableString stringWithString:@""];
+  // Result string is initialized lazily to prevent useless but costly allocations.
+  NSMutableString *str = nil;
   for (RCTUIView *subview in view.subviews) { // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     NSString *label = subview.accessibilityLabel;
@@ -123,13 +124,16 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
       label = RCTRecursiveAccessibilityLabel(subview);
     }
     if (label && label.length > 0) {
+      if (str == nil) {
+        str = [NSMutableString string];
+      }
       if (str.length > 0) {
         [str appendString:@" "];
       }
       [str appendString:label];
     }
   }
-  return str.length == 0 ? nil : str;
+  return str;
 }
 
 @implementation RCTView {
