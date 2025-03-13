@@ -8,10 +8,11 @@ const NX_CONFIG_FILE = "nx.json";
 
 const NPM_TAG_NEXT = "next";
 const NPM_TAG_NIGHTLY = "nightly";
+const RNMACOS_LATEST = "react-native-macos@latest";
 
 /**
  * @typedef {typeof import("../../nx.json")} NxConfig
- * @typedef {{ tag?: string; update?: boolean; }} Options
+ * @typedef {{ tag?: string; update?: boolean; verbose?: boolean; }} Options
  */
 
 /**
@@ -31,6 +32,14 @@ function enablePublishingOnAzurePipelines() {
  */
 function error(message) {
   console.error("❌", message);
+}
+
+/**
+ * Logs an informational message to the console.
+ * @param {string} message
+ */
+function info(message) {
+  console.log("ℹ️", message);
 }
 
 /**
@@ -94,7 +103,7 @@ function getCurrentBranch() {
  * @returns {number}
  */
 function getLatestVersion() {
-  const { stdout } = spawnSync("npm", ["view", "react-native-macos@latest", "version"]);
+  const { stdout } = spawnSync("npm", ["view", RNMACOS_LATEST, "version"]);
   return versionToNumber(stdout.toString().trim());
 }
 
@@ -108,9 +117,10 @@ function getLatestVersion() {
  *
  * @param {string} branch
  * @param {Options} options
+ * @param {typeof info} log
  * @returns {{ npmTag: string; prerelease?: string; }}
  */
-function getTagForStableBranch(branch, { tag }) {
+function getTagForStableBranch(branch, { tag }, log) {
   if (!isStableBranch(branch)) {
     throw new Error("Expected a stable branch");
   }
@@ -118,23 +128,49 @@ function getTagForStableBranch(branch, { tag }) {
   const latestVersion = getLatestVersion();
   const currentVersion = versionToNumber(branch);
 
+  log(`${RNMACOS_LATEST}: ${latestVersion}`);
+  log(`Current version: ${currentVersion}`);
+
   // Patching latest version
   if (currentVersion === latestVersion) {
-    return { npmTag: "latest" };
+    const npmTag = "latest";
+    log(`Expected npm tag: ${npmTag}`);
+    return { npmTag };
   }
 
   // Patching an older stable version
   if (currentVersion < latestVersion) {
-    return { npmTag: "v" + branch };
+    const npmTag = "v" + branch;
+    log(`Expected npm tag: ${npmTag}`);
+    return { npmTag };
   }
 
   // Publishing a new latest version
   if (tag === "latest") {
+    log(`Expected npm tag: ${tag}`);
     return { npmTag: tag };
   }
 
   // Publishing a release candidate
+  log(`Expected npm tag: ${NPM_TAG_NEXT}`);
   return { npmTag: NPM_TAG_NEXT, prerelease: "rc" };
+}
+
+/**
+ * @param {string} file
+ * @param {string} tag
+ * @returns {void}
+ */
+function verifyPublishPipeline(file, tag) {
+  const data = fs.readFileSync(file, { encoding: "utf-8" });
+  const m = data.match(/publishTag: '(\w*?)'/);
+  if (!m) {
+    throw new Error(`${file}: Could not find npm publish tag`);
+  }
+
+  if (m[1] !== tag) {
+    throw new Error(`${file}: 'publishTag' needs to be set to '${tag}'`);
+  }
 }
 
 /**
@@ -182,28 +218,8 @@ function enablePublishing(config, currentBranch, tag, prerelease) {
     throw new Error("Nx Release is not correctly configured for the current branch");
   }
 
+  verifyPublishPipeline(ADO_PUBLISH_PIPELINE, tag);
   enablePublishingOnAzurePipelines();
-}
-
-/**
- * @param {string} file
- * @param {string} tag
- * @returns {boolean}
- */
-function verifyPublishPipeline(file, tag) {
-  const data = fs.readFileSync(file, { encoding: "utf-8" });
-  const m = data.match(/publishTag: '(\w*?)'/);
-  if (!m) {
-    error(`${file}: Could not find npm publish tag`);
-    return false;
-  }
-
-  if (m[1] !== tag) {
-    error(`${file}: 'publishTag' needs to be set to '${tag}'`);
-    return false;
-  }
-
-  return true;
 }
 
 /**
@@ -217,16 +233,14 @@ function main(options) {
     return 1;
   }
 
-  if (!verifyPublishPipeline(ADO_PUBLISH_PIPELINE, options.tag || NPM_TAG_NEXT)) {
-    return 1;
-  }
+  const logger = options.verbose ? info : () => undefined;
 
   const config = loadNxConfig(NX_CONFIG_FILE);
   try {
     if (isMainBranch(branch)) {
       enablePublishing(config, branch, NPM_TAG_NIGHTLY, NPM_TAG_NIGHTLY);
     } else if (isStableBranch(branch)) {
-      const { npmTag, prerelease } = getTagForStableBranch(branch, options);
+      const { npmTag, prerelease } = getTagForStableBranch(branch, options, logger);
       enablePublishing(config, branch, npmTag, prerelease);
     }
   } catch (e) {
@@ -236,7 +250,7 @@ function main(options) {
       fs.writeSync(fd, "\n");
       fs.closeSync(fd)
     } else {
-      console.error(`${e}`);
+      error(`${e.message}`);
     }
     return 1;
   }
@@ -252,6 +266,10 @@ const { values } = util.parseArgs({
       default: NPM_TAG_NEXT,
     },
     update: {
+      type: "boolean",
+      default: false,
+    },
+    verbose: {
       type: "boolean",
       default: false,
     },
