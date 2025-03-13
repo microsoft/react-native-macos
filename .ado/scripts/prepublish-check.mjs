@@ -183,7 +183,7 @@ function getTagForStableBranch(branch, { tag }, log) {
  */
 function verifyPublishPipeline(file, tag) {
   const data = fs.readFileSync(file, { encoding: "utf-8" });
-  const m = data.match(/publishTag: '(\w*?)'/);
+  const m = data.match(/publishTag: '(latest|next|nightly|v\d+\.\d+-stable)'/);
   if (!m) {
     throw new Error(`${file}: Could not find npm publish tag`);
   }
