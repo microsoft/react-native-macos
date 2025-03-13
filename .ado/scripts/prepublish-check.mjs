@@ -9,10 +9,20 @@ const NX_CONFIG_FILE = "nx.json";
 const NPM_TAG_NEXT = "next";
 const NPM_TAG_NIGHTLY = "nightly";
 const RNMACOS_LATEST = "react-native-macos@latest";
+const RNMACOS_NEXT = "react-native-macos@next";
 
 /**
- * @typedef {typeof import("../../nx.json")} NxConfig
- * @typedef {{ tag?: string; update?: boolean; verbose?: boolean; }} Options
+ * @typedef {import("nx/src/command-line/release/version").ReleaseVersionGeneratorSchema} ReleaseVersionGeneratorSchema;
+ * @typedef {{
+ *   defaultBase: string;
+ *   release: {
+ *     version: {
+ *       generatorOptions: ReleaseVersionGeneratorSchema;
+ *     };
+ *   };
+ * }} NxConfig;
+ * @typedef {{ tag?: string; update?: boolean; verbose?: boolean; }} Options;
+ * @typedef {{ npmTag: string; prerelease?: string; isNewTag?: boolean; }} TagInfo;
  */
 
 /**
@@ -100,10 +110,11 @@ function getCurrentBranch() {
 
 /**
  * Returns the latest published version of `react-native-macos` from npm.
+ * @param {"latest" | "next"} tag
  * @returns {number}
  */
-function getLatestVersion() {
-  const { stdout } = spawnSync("npm", ["view", RNMACOS_LATEST, "version"]);
+function getPublishedVersion(tag) {
+  const { stdout } = spawnSync("npm", ["view", `react-native-macos@${tag}`, "version"]);
   return versionToNumber(stdout.toString().trim());
 }
 
@@ -118,14 +129,14 @@ function getLatestVersion() {
  * @param {string} branch
  * @param {Options} options
  * @param {typeof info} log
- * @returns {{ npmTag: string; prerelease?: string; }}
+ * @returns {TagInfo}
  */
 function getTagForStableBranch(branch, { tag }, log) {
   if (!isStableBranch(branch)) {
     throw new Error("Expected a stable branch");
   }
 
-  const latestVersion = getLatestVersion();
+  const latestVersion = getPublishedVersion("latest");
   const currentVersion = versionToNumber(branch);
 
   log(`${RNMACOS_LATEST}: ${latestVersion}`);
@@ -138,11 +149,14 @@ function getTagForStableBranch(branch, { tag }, log) {
     return { npmTag };
   }
 
-  // Patching an older stable version
+  // Demoting or patching an older stable version
   if (currentVersion < latestVersion) {
     const npmTag = "v" + branch;
     log(`Expected npm tag: ${npmTag}`);
-    return { npmTag };
+    // If we're demoting a branch, we will need to create a new tag. This will
+    // make Nx trip if we don't specify a fallback. In all other scenarios, the
+    // tags should exist and therefore prefer it to fail.
+    return { npmTag, isNewTag: true };
   }
 
   // Publishing a new latest version
@@ -152,7 +166,14 @@ function getTagForStableBranch(branch, { tag }, log) {
   }
 
   // Publishing a release candidate
+  const nextVersion = getPublishedVersion("next");
+  log(`${RNMACOS_NEXT}: ${nextVersion}`);
   log(`Expected npm tag: ${NPM_TAG_NEXT}`);
+
+  if (currentVersion < nextVersion) {
+    throw new Error(`Current version cannot be a release candidate because it is too old: ${currentVersion} < ${nextVersion}`);
+  }
+
   return { npmTag: NPM_TAG_NEXT, prerelease: "rc" };
 }
 
@@ -163,13 +184,13 @@ function getTagForStableBranch(branch, { tag }, log) {
  */
 function verifyPublishPipeline(file, tag) {
   const data = fs.readFileSync(file, { encoding: "utf-8" });
-  const m = data.match(/publishTag: '(\w*?)'/);
+  const m = data.match(/publishTag: '(latest|next|nightly|v\d+\.\d+-stable)'/);
   if (!m) {
     throw new Error(`${file}: Could not find npm publish tag`);
   }
 
   if (m[1] !== tag) {
-    throw new Error(`${file}: 'publishTag' needs to be set to '${tag}'`);
+    throw new Error(`${file}: 'publishTag' must be set to '${tag}'`);
   }
 }
 
@@ -177,11 +198,10 @@ function verifyPublishPipeline(file, tag) {
  * Verifies the configuration and enables publishing on CI.
  * @param {NxConfig} config
  * @param {string} currentBranch
- * @param {string} tag
- * @param {string} [prerelease]
+ * @param {TagInfo} tag
  * @returns {asserts config is NxConfig["release"]}
  */
-function enablePublishing(config, currentBranch, tag, prerelease) {
+function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNewTag }) {
   /** @type {string[]} */
   const errors = [];
 
@@ -196,21 +216,35 @@ function enablePublishing(config, currentBranch, tag, prerelease) {
   }
 
   // Determines whether we need to add "nightly" or "rc" to the version string.
-  const { currentVersionResolverMetadata, preid } = release.version.generatorOptions;
-  if (preid !== prerelease) {
+  const { generatorOptions } = release.version;
+  if (generatorOptions.preid !== prerelease) {
     errors.push(`'release.version.generatorOptions.preid' must be set to '${prerelease || ""}'`);
     if (prerelease) {
-      release.version.generatorOptions.preid = prerelease;
+      generatorOptions.preid = prerelease;
     } else {
-      // @ts-expect-error `preid` is optional
-      release.version.generatorOptions.preid = undefined;
+      generatorOptions.preid = undefined;
     }
   }
 
   // What the published version should be tagged as e.g., "latest" or "nightly".
-  if (currentVersionResolverMetadata.tag !== tag) {
+  const { currentVersionResolverMetadata } = generatorOptions;
+  if (currentVersionResolverMetadata?.tag !== tag) {
     errors.push(`'release.version.generatorOptions.currentVersionResolverMetadata.tag' must be set to '${tag}'`);
-    release.version.generatorOptions.currentVersionResolverMetadata.tag = tag;
+    generatorOptions.currentVersionResolverMetadata ??= {};
+    generatorOptions.currentVersionResolverMetadata.tag = tag;
+  }
+
+  // If we're demoting a branch, we will need to create a new tag. This will
+  // make Nx trip if we don't specify a fallback. In all other scenarios, the
+  // tags should exist and therefore prefer it to fail.
+  if (isNewTag) {
+    if (generatorOptions.fallbackCurrentVersionResolver !== "disk") {
+      errors.push("'release.version.generatorOptions.fallbackCurrentVersionResolver' must be set to 'disk'");
+      generatorOptions.fallbackCurrentVersionResolver = "disk";
+    }
+  } else if (typeof generatorOptions.fallbackCurrentVersionResolver === "string") {
+    errors.push("'release.version.generatorOptions.fallbackCurrentVersionResolver' must be unset");
+    generatorOptions.fallbackCurrentVersionResolver = undefined;
   }
 
   if (errors.length > 0) {
@@ -238,10 +272,10 @@ function main(options) {
   const config = loadNxConfig(NX_CONFIG_FILE);
   try {
     if (isMainBranch(branch)) {
-      enablePublishing(config, branch, NPM_TAG_NIGHTLY, NPM_TAG_NIGHTLY);
+      enablePublishing(config, branch, { npmTag: NPM_TAG_NIGHTLY, prerelease: NPM_TAG_NIGHTLY });
     } else if (isStableBranch(branch)) {
-      const { npmTag, prerelease } = getTagForStableBranch(branch, options, logger);
-      enablePublishing(config, branch, npmTag, prerelease);
+      const tag = getTagForStableBranch(branch, options, logger);
+      enablePublishing(config, branch, tag);
     }
   } catch (e) {
     if (options.update) {
