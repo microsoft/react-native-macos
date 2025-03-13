@@ -153,8 +153,9 @@ function getTagForStableBranch(branch, { tag }, log) {
   if (currentVersion < latestVersion) {
     const npmTag = "v" + branch;
     log(`Expected npm tag: ${npmTag}`);
-    // If we're demoting a branch, we will need to create a new tag that will
-    // not available in any npm feed
+    // If we're demoting a branch, we will need to create a new tag. This will
+    // make Nx trip if we don't specify a fallback. In all other scenarios, the
+    // tags should exist and therefore prefer it to fail.
     return { npmTag, isNewTag: true };
   }
 
@@ -233,6 +234,9 @@ function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNe
     generatorOptions.currentVersionResolverMetadata.tag = tag;
   }
 
+  // If we're demoting a branch, we will need to create a new tag. This will
+  // make Nx trip if we don't specify a fallback. In all other scenarios, the
+  // tags should exist and therefore prefer it to fail.
   if (isNewTag) {
     if (generatorOptions.fallbackCurrentVersionResolver !== "disk") {
       errors.push("'release.version.generatorOptions.fallbackCurrentVersionResolver' must be set to 'disk'");
