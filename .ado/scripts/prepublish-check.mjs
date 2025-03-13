@@ -45,6 +45,14 @@ function error(message) {
 }
 
 /**
+ * Logs an informational message to the console.
+ * @param {string} message
+ */
+function info(message) {
+  console.log("ℹ️", message);
+}
+
+/**
  * Returns whether the given branch is considered main branch.
  * @param {string} branch
  */
@@ -123,7 +131,7 @@ function getPublishedVersion(tag) {
  * @param {typeof info} log
  * @returns {TagInfo}
  */
-function getTagForStableBranch(branch, { tag }) {
+function getTagForStableBranch(branch, { tag }, log) {
   if (!isStableBranch(branch)) {
     throw new Error("Expected a stable branch");
   }
@@ -131,9 +139,14 @@ function getTagForStableBranch(branch, { tag }) {
   const latestVersion = getPublishedVersion("latest");
   const currentVersion = versionToNumber(branch);
 
+  log(`${RNMACOS_LATEST}: ${latestVersion}`);
+  log(`Current version: ${currentVersion}`);
+
   // Patching latest version
   if (currentVersion === latestVersion) {
-    return { npmTag: "latest" };
+    const npmTag = "latest";
+    log(`Expected npm tag: ${npmTag}`);
+    return { npmTag };
   }
 
   // Demoting or patching an older stable version
@@ -148,6 +161,7 @@ function getTagForStableBranch(branch, { tag }) {
 
   // Publishing a new latest version
   if (tag === "latest") {
+    log(`Expected npm tag: ${tag}`);
     return { npmTag: tag };
   }
 
@@ -238,28 +252,8 @@ function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNe
     throw new Error("Nx Release is not correctly configured for the current branch");
   }
 
+  verifyPublishPipeline(ADO_PUBLISH_PIPELINE, tag);
   enablePublishingOnAzurePipelines();
-}
-
-/**
- * @param {string} file
- * @param {string} tag
- * @returns {boolean}
- */
-function verifyPublishPipeline(file, tag) {
-  const data = fs.readFileSync(file, { encoding: "utf-8" });
-  const m = data.match(/publishTag: '(\w*?)'/);
-  if (!m) {
-    error(`${file}: Could not find npm publish tag`);
-    return false;
-  }
-
-  if (m[1] !== tag) {
-    error(`${file}: 'publishTag' needs to be set to '${tag}'`);
-    return false;
-  }
-
-  return true;
 }
 
 /**
@@ -273,9 +267,7 @@ function main(options) {
     return 1;
   }
 
-  if (!verifyPublishPipeline(ADO_PUBLISH_PIPELINE, options.tag || NPM_TAG_NEXT)) {
-    return 1;
-  }
+  const logger = options.verbose ? info : () => undefined;
 
   const config = loadNxConfig(NX_CONFIG_FILE);
   try {
@@ -292,7 +284,7 @@ function main(options) {
       fs.writeSync(fd, "\n");
       fs.closeSync(fd)
     } else {
-      console.error(`${e}`);
+      error(`${e.message}`);
     }
     return 1;
   }
@@ -308,6 +300,10 @@ const { values } = util.parseArgs({
       default: NPM_TAG_NEXT,
     },
     update: {
+      type: "boolean",
+      default: false,
+    },
+    verbose: {
       type: "boolean",
       default: false,
     },
