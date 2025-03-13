@@ -1,6 +1,6 @@
 parameters:
   # If this is a new stable branch, change `publishTag` to `latest` when going stable
-  publishTag: 'next'
+  publishTag: 'nightly'
 
 steps:
   - checkout: self
@@ -15,7 +15,7 @@ steps:
     displayName: Install npm dependencies
 
   - script: |
-      node .ado/scripts/prepublish-check.mjs --tag ${{ parameters['publishTag'] }}
+      node .ado/scripts/prepublish-check.mjs --verbose --tag ${{ parameters['publishTag'] }}
     displayName: Verify release config
 
   - script: |
