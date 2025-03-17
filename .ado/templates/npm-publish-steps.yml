@@ -1,12 +1,6 @@
 parameters:
   # If this is a new stable branch, change `publishTag` to `latest` when going stable
   publishTag: 'nightly'
-  dryRun: false
-
-variables:
-  - template: /.ado/variables/vars.yml@self
-  - name: dryRun
-    value: 'true'
 
 steps:
   - checkout: self
