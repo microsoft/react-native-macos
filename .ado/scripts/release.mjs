@@ -10,33 +10,44 @@ async function main(options) {
         verbose: options.verbose,
     });
 
-    const newRNMVersion = projectsVersionData["react-native-macos"].newVersion;
-    spawnSync("node", ["scripts/releases/set-rn-artifacts-version.js", "--build-type", "release", "--to-version", newRNMVersion], { encoding: "utf-8" });
-    spawnSync("git", ["add", 
-      "packages/react-native/Libraries/Core/ReactNativeVersion.js",
-      "packages/react-native/React/Base/RCTVersion.m",
-      "packages/react-native/ReactCommon/cxxreact/ReactNativeVersion.h",
-      "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/ReactNativeVersion.java",
-      "packages/react-native/ReactAndroid/gradle.properties"
-    ], { encoding: "utf-8" });
+    console.log("hit 1");
+    console.log(projectsVersionData["react-native-macos"]);
 
-  
-    await releaseChangelog({
+    const newRNMVersion = projectsVersionData["react-native-macos"].newVersion;
+
+    if (newRNMVersion) {
+      spawnSync("node", ["scripts/releases/set-rn-artifacts-version.js", "--build-type", "release", "--to-version", newRNMVersion], { encoding: "utf-8" });
+      spawnSync("git", ["add", 
+        "packages/react-native/Libraries/Core/ReactNativeVersion.js",
+        "packages/react-native/React/Base/RCTVersion.m",
+        "packages/react-native/ReactCommon/cxxreact/ReactNativeVersion.h",
+        "packages/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/ReactNativeVersion.java",
+        "packages/react-native/ReactAndroid/gradle.properties"
+      ], { encoding: "utf-8" });
+
+      console.log("hit 2");
+
+      await releaseChangelog({
         versionData: projectsVersionData,
         version: workspaceVersion,
         dryRun: options["dry-run"],
         verbose: options.verbose,
-    });
+      });
 
-    // publishResults contains a map of project names and their exit codes
-    const publishResults = await releasePublish({
+      console.log("hit 3");
+
+      // publishResults contains a map of project names and their exit codes
+      const publishResults = await releasePublish({
         dryRun: options["dry-run"],
         verbose: options.verbose,
-    });
-    
-    process.exit(
-        Object.values(publishResults).every((result) => result.code === 0) ? 0 : 1
-    );
+       });
+  
+      console.log("hit 3");
+
+      process.exit(
+          Object.values(publishResults).every((result) => result.code === 0) ? 0 : 1
+      );
+    }
 }
 
 const { values } = util.parseArgs({
