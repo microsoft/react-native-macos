@@ -1,15 +1,15 @@
 // @ts-check
 
-const { releaseVersionGenerator } = require("@nx/js/src/generators/release-version/release-version");
-const fs = require("node:fs");
-const path = require("node:path");
+const { releaseVersionGenerator } = require('@nx/js/src/generators/release-version/release-version');
+const fs = require('node:fs');
+const path = require('node:path');
 
 async function runSetVersion() {
-  const rnmPkgJson = require.resolve("react-native-macos/package.json");
-  const { REPO_ROOT } = require("../../scripts/consts");
+  const rnmPkgJson = require.resolve('react-native-macos/package.json');
+  const { REPO_ROOT } = require('../../scripts/consts');
   const { updateReactNativeArtifacts } = require('../../scripts/releases/set-rn-artifacts-version');
 
-  const manifest = fs.readFileSync(rnmPkgJson, { encoding: "utf-8" });
+  const manifest = fs.readFileSync(rnmPkgJson, { encoding: 'utf-8' });
   const { version } = JSON.parse(manifest);
 
   await updateReactNativeArtifacts(version);
@@ -17,48 +17,48 @@ async function runSetVersion() {
   return [
     path.join(
       REPO_ROOT,
-      "packages",
-      "react-native",
-      "ReactAndroid",
-      "gradle.properties",
+      'packages',
+      'react-native',
+      'ReactAndroid',
+      'gradle.properties',
     ),
     path.join(
       REPO_ROOT,
-      "packages",
-      "react-native",
-      "ReactAndroid",
-      "src",
-      "main",
-      "java",
-      "com",
-      "facebook",
-      "react",
-      "modules",
-      "systeminfo",
-      "ReactNativeVersion.java",
+      'packages',
+      'react-native',
+      'ReactAndroid',
+      'src',
+      'main',
+      'java',
+      'com',
+      'facebook',
+      'react',
+      'modules',
+      'systeminfo',
+      'ReactNativeVersion.java',
     ),
     path.join(REPO_ROOT,
-      "packages",
-      "react-native",
-      "React",
-      "Base",
-      "RCTVersion.m",
+      'packages',
+      'react-native',
+      'React',
+      'Base',
+      'RCTVersion.m',
     ),
     path.join(
       REPO_ROOT,
-      "packages",
-      "react-native",
-      "ReactCommon",
-      "cxxreact",
-      "ReactNativeVersion.h",
+      'packages',
+      'react-native',
+      'ReactCommon',
+      'cxxreact',
+      'ReactNativeVersion.h',
     ),
     path.join(
       REPO_ROOT,
-      "packages",
-      "react-native",
-      "Libraries",
-      "Core",
-      "ReactNativeVersion.js",
+      'packages',
+      'react-native',
+      'Libraries',
+      'Core',
+      'ReactNativeVersion.js',
     ),
   ];
 }
