@@ -1,6 +1,12 @@
 parameters:
   # If this is a new stable branch, change `publishTag` to `latest` when going stable
   publishTag: 'nightly'
+  dryRun: false
+
+variables:
+  - template: /.ado/variables/vars.yml@self
+  - name: dryRun
+    value: 'true'
 
 steps:
   - checkout: self
@@ -20,14 +26,16 @@ steps:
 
   - script: |
       echo Target branch: $(System.PullRequest.TargetBranch)
-      yarn nx release --dry-run --verbose
+      # yarn nx release --dry-run --verbose
+      node .ado/scripts/release.mjs --dry-run --verbose
     displayName: Version and publish packages (dry run)
     condition: and(succeeded(), ne(variables['publish_react_native_macos'], '1'))
 
   - script: |
       git switch $(Build.SourceBranchName)
-      yarn nx release --skip-publish --verbose
-      yarn nx release publish --excludeTaskDependencies
+      # yarn nx release --skip-publish --verbose
+      # yarn nx release publish --excludeTaskDependencies
+      node .ado/scripts/release.mjs --dry-run --verbose
     env:
       GITHUB_TOKEN: $(githubAuthToken)
       NODE_AUTH_TOKEN: $(npmAuthToken)

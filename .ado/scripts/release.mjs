@@ -2,12 +2,11 @@ import { releaseChangelog, releasePublish, releaseVersion } from 'nx/release/ind
 
 import { spawnSync } from "node:child_process";
 import * as util from "node:util";
-// import {updateReactNativeArtifacts} from '../../releases/set-rn-artifacts-version.js';
 
 async function main(options) {
     const { workspaceVersion, projectsVersionData } = await releaseVersion({
         specifier: options.version,
-        dryRun: true,
+        dryRun: options["dry-run"],
         verbose: options.verbose,
     });
 
@@ -22,22 +21,22 @@ async function main(options) {
     ], { encoding: "utf-8" });
 
   
-    // await releaseChangelog({
-    //     versionData: projectsVersionData,
-    //     version: workspaceVersion,
-    //     dryRun: true,
-    //     verbose: options.verbose,
-    // });
+    await releaseChangelog({
+        versionData: projectsVersionData,
+        version: workspaceVersion,
+        dryRun: options["dry-run"],
+        verbose: options.verbose,
+    });
 
-    // // publishResults contains a map of project names and their exit codes
-    // const publishResults = await releasePublish({
-    //     dryRun: true,
-    //     verbose: options.verbose,
-    // });
+    // publishResults contains a map of project names and their exit codes
+    const publishResults = await releasePublish({
+        dryRun: options["dry-run"],
+        verbose: options.verbose,
+    });
     
-    // process.exit(
-    //     Object.values(publishResults).every((result) => result.code === 0) ? 0 : 1
-    // );
+    process.exit(
+        Object.values(publishResults).every((result) => result.code === 0) ? 0 : 1
+    );
 }
 
 const { values } = util.parseArgs({
