@@ -42,8 +42,10 @@ steps:
     condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
   - script: |
-      rm ~/.npmrc
+      if [ -f ~/.npmrc ]; then
+        rm ~/.npmrc
+      fi
     env:
       NODE_AUTH_TOKEN: $(npmAuthToken)
-    displayName: Remove npmrc
+    displayName: Remove npmrc if it exists
     condition: always()
