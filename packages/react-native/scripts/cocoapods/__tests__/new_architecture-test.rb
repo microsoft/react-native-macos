@@ -407,7 +407,7 @@ class NewArchitectureTests < Test::Unit::TestCase
         assert_false(is_enabled)
     end
 
-    def test_newArchEnabled_whenRCTNewArchEnabledIsNotSet_returnFalse
+    def test_newArchEnabled_whenRCTNewArchEnabledIsNotSet_returnFalse  # [macOS] Disable Fabric by default till macOS supports it]
         ENV["RCT_NEW_ARCH_ENABLED"] = nil
         is_enabled = NewArchitectureHelper.new_arch_enabled
         assert_false(is_enabled)
