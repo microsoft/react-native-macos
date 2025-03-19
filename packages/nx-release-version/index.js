@@ -15,7 +15,7 @@ async function runSetVersion() {
 
   await updateReactNativeArtifacts(version);
 
-  spawnSync('yarn', ['install']);
+  spawnSync('yarn', ['install', '--mode', 'update-lockfile']);
 
   return [
     path.join(
