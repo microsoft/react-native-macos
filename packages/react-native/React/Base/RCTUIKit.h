@@ -140,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
 // UIFontDescriptor.h/NSFontDescriptor.h
 #define UIFontDescriptorFamilyAttribute          NSFontFamilyAttribute;
 #define UIFontDescriptorNameAttribute            NSFontNameAttribute;
-#define UIFontDescriptorFaceAttribute            NSFontFaceAttribute;
+#define UIFontDescriptorFaceAttribute            NSFontFaceAttribute;
 #define UIFontDescriptorSizeAttribute            NSFontSizeAttribute
 
 #define UIFontDescriptorTraitsAttribute          NSFontTraitsAttribute
@@ -160,6 +160,13 @@ NS_ASSUME_NONNULL_BEGIN
 #define UIFontWeightBold                         NSFontWeightBold
 #define UIFontWeightHeavy                        NSFontWeightHeavy
 #define UIFontWeightBlack                        NSFontWeightBlack
+
+#define UIFontDescriptorSystemDesign             NSFontDescriptorSystemDesign
+#define UIFontDescriptorSystemDesignDefault      NSFontDescriptorSystemDesignDefault
+#define UIFontDescriptorSystemDesignSerif        NSFontDescriptorSystemDesignSerif
+#define UIFontDescriptorSystemDesignRounded      NSFontDescriptorSystemDesignRounded
+#define UIFontDescriptorSystemDesignMonospaced   NSFontDescriptorSystemDesignMonospaced
+
 
 // RCTActivityIndicatorView.h
 #define UIActivityIndicatorView NSProgressIndicator
@@ -472,6 +479,8 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 // macOS specific properties
 @property (nonatomic, assign) BOOL enableFocusRing;
 @property (nonatomic, assign, getter=isScrollEnabled) BOOL scrollEnabled;
+
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated;
 
 @end
 

@@ -37,6 +37,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   BOOL _hasInputAccessoryView;
   // [macOS] remove explicit _predictedText ivar declaration
   BOOL _didMoveToWindow;
+#if !TARGET_OS_OSX // [macOS]
+  NSArray<UIBarButtonItemGroup *> *_initialValueLeadingBarButtonGroups;
+  NSArray<UIBarButtonItemGroup *> *_initialValueTrailingBarButtonGroups;
+#endif // [macOS]
 #if TARGET_OS_OSX // [macOS avoids duplicating effects of textInputDid(Begin|End)Editing calls
   BOOL _isCurrentlyEditing;
 #endif // macOS]
@@ -82,6 +86,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if TARGET_OS_IOS // [macOS] [visionOS]
     [self initializeReturnKeyType];
 #endif // [macOS] [visionOS]
+#if !TARGET_OS_OSX // [macOS]
+    _initialValueLeadingBarButtonGroups = nil;
+    _initialValueTrailingBarButtonGroups = nil;
+#endif // [macOS]
   }
 
   return self;
@@ -475,6 +483,27 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   self.backedTextInputView.inputAccessoryViewButtonLabel = inputAccessoryViewButtonLabel;
 }
 
+- (void)setDisableKeyboardShortcuts:(BOOL)disableKeyboardShortcuts
+{
+#if TARGET_OS_IOS
+  // Initialize the initial values only once
+  if (_initialValueLeadingBarButtonGroups == nil) {
+    // Capture initial values of leading and trailing button groups
+    _initialValueLeadingBarButtonGroups = self.backedTextInputView.inputAssistantItem.leadingBarButtonGroups;
+    _initialValueTrailingBarButtonGroups = self.backedTextInputView.inputAssistantItem.trailingBarButtonGroups;
+  }
+
+  if (disableKeyboardShortcuts) {
+    self.backedTextInputView.inputAssistantItem.leadingBarButtonGroups = @[];
+    self.backedTextInputView.inputAssistantItem.trailingBarButtonGroups = @[];
+  } else {
+    // Restore the initial values
+    self.backedTextInputView.inputAssistantItem.leadingBarButtonGroups = _initialValueLeadingBarButtonGroups;
+    self.backedTextInputView.inputAssistantItem.trailingBarButtonGroups = _initialValueTrailingBarButtonGroups;
+  }
+#endif
+}
+
 #pragma mark - RCTBackedTextInputDelegate
 
 - (BOOL)textInputShouldBeginEditing
@@ -631,7 +660,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
         _maxLength.integerValue - (NSInteger)backedTextInputView.attributedText.string.length + (NSInteger)range.length,
         0);
 
-    if (text.length > _maxLength.integerValue) {
+    if (text.length > allowedLength) {
       // If we typed/pasted more than one character, limit the text inputted.
       if (text.length > 1) {
         if (allowedLength > 0) {

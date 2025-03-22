@@ -53,6 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) CGFloat zoomScale;
 @property (nonatomic, assign, readonly) CGPoint contentOffset;
 @property (nonatomic, assign, readonly) UIEdgeInsets contentInset;
+@property (nonatomic, assign) BOOL disableKeyboardShortcuts;
 
 #if TARGET_OS_OSX // [macOS
 @property (nonatomic, copy, nullable) NSString *text;

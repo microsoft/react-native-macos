@@ -73,6 +73,11 @@ const Components: Array<RNTesterModuleInfo> = [
     module: require('../examples/KeyboardAvoidingView/KeyboardAvoidingViewExample'),
   },
   {
+    key: 'LayoutConformanceExample',
+    module: require('../examples/LayoutConformance/LayoutConformanceExample')
+      .default,
+  },
+  {
     key: 'LayoutEventsExample',
     module: require('../examples/Layout/LayoutEventsExample'),
   },

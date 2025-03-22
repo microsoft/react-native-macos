@@ -617,6 +617,18 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   [self.documentView scrollPoint:contentOffset];
 }
 
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated
+{
+    if (animated) {
+        [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+            context.duration = 0.3; // Set the duration of the animation
+            [self.documentView.animator scrollPoint:contentOffset];
+        } completionHandler:nil];
+    } else {
+        [self.documentView scrollPoint:contentOffset];
+    }
+}
+
 - (UIEdgeInsets)contentInset
 {
   return super.contentInsets;

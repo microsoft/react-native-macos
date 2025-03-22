@@ -335,9 +335,8 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   NSNumber *reactTag = rootView.reactTag;
   RCTAssert(RCTIsReactRootView(reactTag), @"View %@ with tag #%@ is not a root view", rootView, reactTag);
 
-  RCTPlatformView *existingView = _viewRegistry[reactTag]; // [macOS]
   RCTAssert(
-      existingView == nil || existingView == rootView,
+      _viewRegistry[reactTag] == nil || _viewRegistry[reactTag] == rootView,
       @"Expect all root views to have unique tag. Added %@ twice",
       reactTag);
 

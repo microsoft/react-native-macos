@@ -8,6 +8,8 @@
  * @flow
  */
 
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+
 import RNTesterText from '../../components/RNTesterText';
 import React from 'react';
 import {useEffect, useRef, useState} from 'react';
@@ -52,6 +54,7 @@ class TouchableHighlightBox extends React.Component<{...}, $FlowFixMeState> {
             style={styles.wrapper}
             testID="touchable_highlight_image_button"
             onPress={this.touchableOnPress}>
+            {' '}
             <Image source={remoteImage} style={styles.image} />
           </TouchableHighlight>
           <TouchableHighlight
@@ -60,6 +63,7 @@ class TouchableHighlightBox extends React.Component<{...}, $FlowFixMeState> {
             activeOpacity={1}
             underlayColor="rgb(210, 230, 255)"
             onPress={this.touchableOnPress}>
+            {' '}
             <View style={styles.wrapperCustom}>
               <RNTesterText style={styles.text}>
                 Tap Here For Custom Highlight!
@@ -69,6 +73,7 @@ class TouchableHighlightBox extends React.Component<{...}, $FlowFixMeState> {
         </View>
         <View style={styles.logBox}>
           <RNTesterText testID="touchable_highlight_console">
+            {' '}
             {textLog}
           </RNTesterText>
         </View>
@@ -148,7 +153,7 @@ class TextOnPressBox extends React.Component<{...}, $FlowFixMeState> {
           Text has built-in onPress handling
         </RNTesterText>
         <View style={styles.logBox}>
-          <RNTesterText testID="tappable_text_console">{textLog}</RNTesterText>
+          <RNTesterText testID="tappable_text_console"> {textLog}</RNTesterText>
         </View>
       </View>
     );
@@ -179,6 +184,7 @@ class TouchableFeedbackEvents extends React.Component<{...}, $FlowFixMeState> {
         <View
           testID="touchable_feedback_events_console"
           style={styles.eventLogBox}>
+          {' '}
           {this.state.eventLog.map((e, ii) => (
             <RNTesterText key={ii}>{e}</RNTesterText>
           ))}
@@ -927,4 +933,4 @@ exports.examples = [
     },
     platform: 'macos',
   }, // macOS]
-];
+] as Array<RNTesterModuleExample>;
