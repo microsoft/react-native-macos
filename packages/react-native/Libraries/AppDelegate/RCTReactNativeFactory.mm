@@ -156,6 +156,15 @@ using namespace facebook::react;
   return RCTAppSetupDefaultModuleFromClass(moduleClass, self.delegate.dependencyProvider);
 }
 
+- (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge
+{
+  if ([_delegate respondsToSelector:@selector(extraModulesForBridge:)]) {
+    return [_delegate extraModulesForBridge:bridge];
+  }
+
+  return @[];
+}
+
 #pragma mark - RCTComponentViewFactoryComponentProvider
 
 - (NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents
@@ -228,6 +237,21 @@ using namespace facebook::react;
     };
   }
 
+  if ([self.delegate respondsToSelector:@selector(loadSourceForBridge:onProgress:onComplete:)]) {
+    configuration.loadSourceForBridgeWithProgress =
+        ^(RCTBridge *_Nonnull bridge,
+          RCTSourceLoadProgressBlock _Nonnull onProgress,
+          RCTSourceLoadBlock _Nonnull loadCallback) {
+          [weakSelf.delegate loadSourceForBridge:bridge onProgress:onProgress onComplete:loadCallback];
+        };
+  }
+
+  if ([self.delegate respondsToSelector:@selector(loadSourceForBridge:withBlock:)]) {
+    configuration.loadSourceForBridge = ^(RCTBridge *_Nonnull bridge, RCTSourceLoadBlock _Nonnull loadCallback) {
+      [weakSelf.delegate loadSourceForBridge:bridge withBlock:loadCallback];
+    };
+  }
+
   return [[RCTRootViewFactory alloc] initWithTurboModuleDelegate:self hostDelegate:self configuration:configuration];
 }
 
@@ -255,9 +279,12 @@ class RCTAppDelegateBridgelessFeatureFlags : public ReactNativeFeatureFlagsDefau
 
 - (void)_setUpFeatureFlags
 {
-  if ([self bridgelessEnabled]) {
-    ReactNativeFeatureFlags::override(std::make_unique<RCTAppDelegateBridgelessFeatureFlags>());
-  }
+  static dispatch_once_t setupFeatureFlagsToken;
+  dispatch_once(&setupFeatureFlagsToken, ^{
+    if ([self bridgelessEnabled]) {
+      ReactNativeFeatureFlags::override(std::make_unique<RCTAppDelegateBridgelessFeatureFlags>());
+    }
+  });
 }
 
 @end
