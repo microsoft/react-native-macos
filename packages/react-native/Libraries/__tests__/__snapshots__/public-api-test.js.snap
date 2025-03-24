@@ -1185,6 +1185,7 @@ declare export default class AnimatedValue extends AnimatedWithChildren {
   __attach(): void;
   __detach(): void;
   __getValue(): number;
+  __makeNative(platformConfig: ?PlatformConfig): void;
   setValue(value: number): void;
   setOffset(offset: number): void;
   flattenOffset(): void;
@@ -5281,7 +5282,7 @@ exports[`public API should not change unintentionally Libraries/Image/ImageViewN
     | ?ResolvedAssetSource
     | ?$ReadOnlyArray<?$ReadOnly<{ uri?: ?string, ... }>>,
   headers?: ?{ [string]: string },
-  defaultSrc?: ?string,
+  defaultSource?: ?ImageSource | ?string,
   loadingIndicatorSrc?: ?string,
 }>;
 interface NativeCommands {
@@ -9321,7 +9322,6 @@ export type HMRClientNativeInterface = {|
     isEnabled: boolean,
     scheme?: string
   ): void,
-  unstable_notifyFuseboxConsoleEnabled(): void,
 |};
 declare const HMRClient: HMRClientNativeInterface;
 declare module.exports: HMRClient;

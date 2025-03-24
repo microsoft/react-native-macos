@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "defaultBase": "main",
+  "defaultBase": "0.78-stable",
   "targetDefaults": {
     "build": {
       "dependsOn": [
@@ -27,9 +27,9 @@
       "generatorOptions": {
         "currentVersionResolver": "registry",
         "currentVersionResolverMetadata": {
-          "tag": "nightly"
+          "tag": "latest"
         },
-        "preid": "nightly",
+        "preid": "next",
         "skipLockFileUpdate": true
       }
     }
