@@ -6,6 +6,7 @@ import * as util from "node:util";
 const ADO_PUBLISH_PIPELINE = ".ado/templates/npm-publish-steps.yml";
 const NX_CONFIG_FILE = "nx.json";
 
+const NPM_DEFEAULT_REGISTRY = "https://registry.npmjs.org/"
 const NPM_TAG_NEXT = "next";
 const NPM_TAG_NIGHTLY = "nightly";
 const RNMACOS_LATEST = "react-native-macos@latest";
@@ -80,6 +81,38 @@ function loadNxConfig(configFile) {
   return JSON.parse(nx);
 }
 
+function verifyNpmAuth(registry = NPM_DEFEAULT_REGISTRY) {
+  const npmErrorRegex = /npm error code (\w+)/;
+  const spawnOptions = {
+    stdio: /** @type {const} */ ("pipe"),
+    shell: true,
+    windowsVerbatimArguments: true,
+  };
+
+  const whoamiArgs = ["whoami", "--registry", registry];
+  const whoami = spawnSync("npm", whoamiArgs, spawnOptions);
+  if (whoami.status !== 0) {
+    const error = whoami.stderr.toString();
+    const m = error.match(npmErrorRegex);
+    switch (m && m[1]) {
+      case "EINVALIDNPMTOKEN":
+        throw new Error(`Invalid auth token for npm registry: ${registry}`);
+      case "ENEEDAUTH":
+        throw new Error(`Missing auth token for npm registry: ${registry}`);
+      default:
+        throw new Error(error);
+    }
+  }
+
+  const tokenArgs = ["token", "list", "--registry", registry];
+  const token = spawnSync("npm", tokenArgs, spawnOptions);
+  if (token.status !== 0) {
+    const error = token.stderr.toString();
+    const m = error.match(npmErrorRegex);
+    throw new Error(m ? `Auth token for '${registry}' returned error code ${m[1]}` : error);
+  }
+}
+
 /**
  * Returns a numerical value for a given version string.
  * @param {string} version
@@ -91,15 +124,18 @@ function versionToNumber(version) {
 }
 
 /**
- * Returns the currently checked out branch. Note that this function prefers
- * predefined CI environment variables over local clone.
+ * Returns the target branch. If not targetting any branches (e.g., when
+ * executing this script locally), the current branch is returned.
+ *
+ * @note This function prefers predefined CI environment variables over local clone.
+ *
  * @returns {string}
  */
 function getCurrentBranch() {
   // https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services
-  const adoSourceBranchName = process.env["BUILD_SOURCEBRANCHNAME"];
-  if (adoSourceBranchName) {
-    return adoSourceBranchName.replace(/^refs\/heads\//, "");
+  const adoTargetBranchName = process.env["SYSTEM_PULLREQUEST_TARGETBRANCH"];
+  if (adoTargetBranchName) {
+    return adoTargetBranchName.replace(/^refs\/heads\//, "");
   }
 
   // Depending on how the repo was cloned, HEAD may not exist. We only use this
@@ -252,6 +288,8 @@ function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNe
     throw new Error("Nx Release is not correctly configured for the current branch");
   }
 
+  verifyNpmAuth();
+
   verifyPublishPipeline(ADO_PUBLISH_PIPELINE, tag);
   enablePublishingOnAzurePipelines();
 }
@@ -263,7 +301,7 @@ function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNe
 function main(options) {
   const branch = getCurrentBranch();
   if (!branch) {
-    error("Could not get current branch");
+    error("Could not get target branch");
     return 1;
   }
 
