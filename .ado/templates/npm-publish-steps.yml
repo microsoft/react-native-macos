@@ -11,7 +11,7 @@ steps:
   - template: /.ado/templates/configure-git.yml@self
 
   - script: |
-      echo "//registry.npmjs.org/" > $(Pipeline.Workspace)/.npmrc
+      touch $(Pipeline.Workspace)/.npmrc
     displayName: Create npmrc file
 
   - task: npmAuthenticate@0
