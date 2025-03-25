@@ -10,6 +10,11 @@ steps:
 
   - template: /.ado/templates/configure-git.yml@self
 
+
+  - task: npmAuthenticate@0
+    inputs:
+      workingFile: '~/.npmrc'
+
   - script: |
       yarn install
     displayName: Install npm dependencies
