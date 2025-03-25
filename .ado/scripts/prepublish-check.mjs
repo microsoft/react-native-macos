@@ -138,6 +138,12 @@ function getCurrentBranch() {
     return adoTargetBranchName.replace(/^refs\/heads\//, "");
   }
 
+  // If there is no target branch, we're probably building `main` or stable branches
+  const adoSourceBranchName = process.env["BUILD_SOURCEBRANCHNAME"];
+  if (adoSourceBranchName) {
+    return adoSourceBranchName.replace(/^refs\/heads\//, "");
+  }
+
   // Depending on how the repo was cloned, HEAD may not exist. We only use this
   // method as fallback.
   const { stdout } = spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
