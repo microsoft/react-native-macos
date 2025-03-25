@@ -11,12 +11,12 @@ steps:
   - template: /.ado/templates/configure-git.yml@self
 
   - script: |
-      echo "//registry.npmjs.org/" > ~/.npmrc
+      echo "//registry.npmjs.org/" > $(Pipeline.Workspace)/.npmrc
     displayName: Create npmrc file
 
   - task: npmAuthenticate@0
     inputs:
-      workingFile: '.npmrc'
+      workingFile: '(Pipeline.Workspace)/.npmrc'
 
   - script: |
       yarn install
@@ -50,7 +50,7 @@ steps:
     condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
   - script: |
-      rm -f ~/.npmrc
+      rm -f (Pipeline.Workspace)/.npmrc
     env:
       NODE_AUTH_TOKEN: $(npmAuthToken)
     displayName: Remove npmrc if it exists
