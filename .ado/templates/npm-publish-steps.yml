@@ -16,7 +16,7 @@ steps:
 
   - task: npmAuthenticate@0
     inputs:
-      workingFile: '(Pipeline.Workspace)/.npmrc'
+      workingFile: '../.npmrc'
 
   - script: |
       yarn install
