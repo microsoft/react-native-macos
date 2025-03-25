@@ -10,6 +10,9 @@ steps:
 
   - template: /.ado/templates/configure-git.yml@self
 
+  - script: |
+      echo "//registry.npmjs.org/" > ~/.npmrc
+    displayName: Create npmrc file
 
   - task: npmAuthenticate@0
     inputs:
