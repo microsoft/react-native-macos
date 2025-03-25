@@ -21,7 +21,6 @@ steps:
 
   - script: |
       git switch $(Build.SourceBranchName)
-      echo "//registry.npmjs.org/:_authToken=$(NODE_AUTH_TOKEN)" > ~/.npmrc
       yarn nx release --skip-publish --verbose
     env:
       GITHUB_TOKEN: $(githubAuthToken)
@@ -29,10 +28,8 @@ steps:
     condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
   - script: |
-      echo "//registry.npmjs.org/:_authToken=$(NODE_AUTH_TOKEN)" > ~/.npmrc
+      echo "//registry.npmjs.org/:_authToken=$(npmAuthToken)" > ~/.npmrc
       yarn nx release publish --excludeTaskDependencies
-    env:
-      NODE_AUTH_TOKEN: $(npmAuthToken)
     displayName: Publish packages
     condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
