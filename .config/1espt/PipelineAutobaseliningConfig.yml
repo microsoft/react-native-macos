@@ -14,3 +14,12 @@ pipelines:
           lastModifiedDate: 2024-12-04
         armory:
           lastModifiedDate: 2024-12-04
+      binary:
+        credscan:
+          lastModifiedDate: 2025-03-26
+        binskim:
+          lastModifiedDate: 2025-03-26
+        prefast:
+          lastModifiedDate: 2025-03-26
+        roslyn:
+          lastModifiedDate: 2025-03-26
