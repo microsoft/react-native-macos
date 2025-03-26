@@ -32,7 +32,7 @@ steps:
     displayName: Version Packages and Github Release
     condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
-   # Disable Nightly publishing on the main branch
+  # Disable Nightly publishing on the main branch
   - ${{ if neq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     - script: |
         echo "//registry.npmjs.org/:_authToken=$(npmAuthToken)" > ~/.npmrc
