@@ -35,9 +35,9 @@
       ],
       "tool": "credscan",
       "ruleId": "CSCAN-GENERAL0020",
-      "createdDate": "2024-12-04 18:08:56Z",
-      "expirationDate": "2025-05-23 18:09:43Z",
-      "justification": "This error is baselined with an expiration date of 180 days from 2024-12-04 18:09:43Z"
+      "createdDate": "2025-03-26 00:49:41Z",
+      "expirationDate": "2025-09-12 00:52:33Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2025-03-26 00:52:33Z"
     },
     "b1acb10e061027857f8073eb985c4b5dc7838f0f1424cb48c20ada3f52f32511": {
       "signature": "b1acb10e061027857f8073eb985c4b5dc7838f0f1424cb48c20ada3f52f32511",
@@ -52,6 +52,20 @@
       "createdDate": "2024-12-04 18:08:56Z",
       "expirationDate": "2025-05-23 18:09:43Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-12-04 18:09:43Z"
+    },
+    "9e0d9e44fe1c2f1acdc8d24a25b9fc50e4fd401bb5cc61d140cd7a5286bb1459": {
+      "signature": "9e0d9e44fe1c2f1acdc8d24a25b9fc50e4fd401bb5cc61d140cd7a5286bb1459",
+      "alternativeSignatures": [],
+      "target": "packages/debugger-frontend/dist/third-party/front_end/third_party/lighthouse/lighthouse-dt-bundle.js",
+      "line": 2061,
+      "memberOf": [
+        "guardian-baseline"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0060",
+      "createdDate": "2025-03-26 00:49:41Z",
+      "expirationDate": "2025-09-12 00:52:33Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2025-03-26 00:52:33Z"
     }
   }
 }
