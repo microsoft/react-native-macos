@@ -2580,6 +2580,7 @@ __metadata:
     hermes-transform: "npm:0.25.1"
     inquirer: "npm:^7.1.0"
     jest: "npm:^29.6.3"
+    jest-config: "npm:^29.7.0"
     jest-diff: "npm:^29.7.0"
     jest-junit: "npm:^10.0.0"
     jest-snapshot: "npm:^29.7.0"
