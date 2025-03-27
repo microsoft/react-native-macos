@@ -27,7 +27,7 @@
       "generatorOptions": {
         "currentVersionResolver": "registry",
         "currentVersionResolverMetadata": {
-          "tag": "latest"
+          "tag": "v0.77-stable"
         },
         "skipLockFileUpdate": true
       }

@@ -1,6 +1,6 @@
 parameters:
   # If this is a new stable branch, change `publishTag` to `latest` when going stable
-  publishTag: 'latest'
+  publishTag: 'v0.77-stable'
 
 steps:
   - template: /.ado/templates/configure-git.yml@self
