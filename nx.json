@@ -29,6 +29,7 @@
         "currentVersionResolverMetadata": {
           "tag": "v0.77-stable"
         },
+        "fallbackCurrentVersionResolver": "disk",
         "skipLockFileUpdate": true
       }
     }
