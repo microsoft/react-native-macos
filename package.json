@@ -3,7 +3,7 @@
   "private": true,
   "version": "1000.0.0",
   "license": "MIT",
-  "packageManager": "yarn@4.5.0",
+  "packageManager": "yarn@4.7.0",
   "scripts": {
     "android": "cd packages/rn-tester && npm run android",
     "build-android": "./gradlew :packages:react-native:ReactAndroid:build",
@@ -88,6 +88,7 @@
     "hermes-transform": "0.25.1",
     "inquirer": "^7.1.0",
     "jest": "^29.6.3",
+    "jest-config": "^29.7.0",
     "jest-diff": "^29.7.0",
     "jest-junit": "^10.0.0",
     "jest-snapshot": "^29.7.0",
