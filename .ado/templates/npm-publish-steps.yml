@@ -15,7 +15,7 @@ steps:
     displayName: Install npm dependencies
 
   - script: |
-      node .ado/scripts/prepublish-check.mjs --verbose --tag ${{ parameters['publishTag'] }}
+      node .ado/scripts/prepublish-check.mjs --verbose --skip-auth --tag ${{ parameters['publishTag'] }}
     displayName: Verify release config
 
   - script: |
@@ -27,6 +27,12 @@ steps:
   # Disable Nightly publishing on the main branch
   - ${{ if endsWith(variables['Build.SourceBranchName'], '-stable') }}:
     - script: |
+        echo "//registry.npmjs.org/:_authToken=$(npmAuthToken)" > ~/.npmrc
+        node .ado/scripts/prepublish-check.mjs --verbose --tag ${{ parameters['publishTag'] }}
+      displayName: Set and validate npm auth
+      condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
+
+    - script: |
         git switch $(Build.SourceBranchName)
         yarn nx release --skip-publish --verbose
       env:
@@ -35,7 +41,6 @@ steps:
       condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
     - script: |
-        echo "//registry.npmjs.org/:_authToken=$(npmAuthToken)" > ~/.npmrc
         yarn nx release publish --excludeTaskDependencies
       displayName: Publish packages
       condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
