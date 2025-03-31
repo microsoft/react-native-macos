@@ -24,6 +24,8 @@
 
 using namespace facebook::react;
 
+static NSString *sRCTDevLoadingViewWindowIdentifier = @"RCTDevLoadingViewWindow";
+
 @interface RCTDevLoadingView () <NativeDevLoadingViewSpec>
 @end
 
@@ -131,6 +133,7 @@ RCT_EXPORT_MODULE()
                                                styleMask:NSWindowStyleMaskBorderless
                                                  backing:NSBackingStoreBuffered
                                                    defer:YES];
+    [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
 #endif // macOS]
 
     self->_container = [[RCTUIView alloc] init]; // [macOS]
@@ -221,7 +224,9 @@ RCT_EXPORT_METHOD(hide)
         }];
 #else // [macOS]
     for (NSWindow *window in [RCTKeyWindow() sheets]) {
-      [RCTKeyWindow() endSheet:window];
+      if ([[window identifier] isEqualToString:sRCTDevLoadingViewWindowIdentifier]) {
+        [RCTKeyWindow() endSheet:window];
+      }
     }
     self->_window = nil;
     self->_hiding = false;
