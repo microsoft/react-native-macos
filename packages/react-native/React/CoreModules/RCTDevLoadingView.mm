@@ -24,6 +24,8 @@
 
 using namespace facebook::react;
 
+static NSString *sRCTDevLoadingViewWindowIdentifier = @"RCTDevLoadingViewWindow";
+
 @interface RCTDevLoadingView () <NativeDevLoadingViewSpec>
 @end
 
@@ -121,16 +123,17 @@ RCT_EXPORT_MODULE()
 
     self->_showDate = [NSDate date];
 
-    RCTPlatformWindow *mainWindow = RCTKeyWindow(); // [macOS]
 #if !TARGET_OS_OSX // [macOS]
+    UIWindow *mainWindow = RCTKeyWindow();
     self->_window = [[UIWindow alloc] initWithWindowScene:mainWindow.windowScene];
     self->_window.windowLevel = UIWindowLevelStatusBar + 1;
     self->_window.rootViewController = [UIViewController new];
 #else // [macOS
-    self->_window = [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
+    self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
                                                styleMask:NSWindowStyleMaskBorderless
                                                  backing:NSBackingStoreBuffered
                                                    defer:YES];
+    [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
 #endif // macOS]
 
     self->_container = [[RCTUIView alloc] init]; // [macOS]
@@ -220,7 +223,11 @@ RCT_EXPORT_METHOD(hide)
           self->_hiding = false;
         }];
 #else // [macOS]
-    [RCTKeyWindow() endSheet:self->_window];
+    for (NSWindow *window in [RCTKeyWindow() sheets]) {
+      if ([[window identifier] isEqualToString:sRCTDevLoadingViewWindowIdentifier]) {
+        [RCTKeyWindow() endSheet:window];
+      }
+    }
     self->_window = nil;
     self->_hiding = false;
 #endif // macOS]
