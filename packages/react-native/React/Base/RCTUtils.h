@@ -95,7 +95,7 @@ RCT_EXTERN RCTUIApplication *__nullable RCTSharedApplication(void); // [macOS]
 
 // Returns the current main window, useful if you need to access the root view
 // or view controller
-RCT_EXTERN RCTUIWindow *__nullable RCTKeyWindow(void); // [macOS]
+RCT_EXTERN RCTPlatformWindow *__nullable RCTKeyWindow(void); // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 // Returns UIStatusBarManager to get it's configuration info.
@@ -109,10 +109,10 @@ RCT_EXTERN UIViewController *__nullable RCTPresentedViewController(void);
 
 // Retrieve current window UIStatusBarManager
 RCT_EXTERN UIStatusBarManager *__nullable RCTUIStatusBarManager(void) API_AVAILABLE(ios(13));
+#endif // [macOS]
 
 // Does this device support force touch (aka 3D Touch)?
 RCT_EXTERN BOOL RCTForceTouchAvailable(void);
-#endif // [macOS]
 
 // Create an NSError in the RCTErrorDomain
 RCT_EXTERN NSError *RCTErrorWithMessage(NSString *message);
@@ -121,7 +121,7 @@ RCT_EXTERN NSError *RCTErrorWithMessage(NSString *message);
 RCT_EXTERN NSError *RCTErrorWithNSException(NSException *exception);
 
 // Convert nil values to NSNull, and vice-versa
-#define RCTNullIfNil(value) ((value) ?: (id)kCFNull)
+#define RCTNullIfNil(value) ((value) ? (value) : (id)kCFNull)
 #define RCTNilIfNull(value)                           \
   ({                                                  \
     __typeof__(value) t = (value);                    \

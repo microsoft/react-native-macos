@@ -10,16 +10,14 @@
 
 // [macOS]
 
+import type {
+  Platform as PlatformType,
+  PlatformSelectSpec,
+} from './Platform.flow';
+
 import NativePlatformConstantsMacOS from './NativePlatformConstantsMacOS';
 
-export type PlatformSelectSpec<T> = {
-  default?: T,
-  native?: T,
-  macos?: T,
-  ...
-};
-
-const Platform = {
+const Platform: PlatformType = {
   __constants: null,
   OS: 'macos',
   // $FlowFixMe[unsafe-getters-setters]
@@ -29,7 +27,10 @@ const Platform = {
   },
   // $FlowFixMe[unsafe-getters-setters]
   get constants(): {|
+    forceTouchAvailable: boolean,
+    interfaceIdiom: string,
     isTesting: boolean,
+    isDisableAnimations?: boolean,
     osVersion: string,
     reactNativeVersion: {|
       major: number,
@@ -38,6 +39,7 @@ const Platform = {
       prerelease: ?number,
     |},
     systemName: string,
+    isMacCatalyst?: boolean,
   |} {
     // $FlowFixMe[object-this-reference]
     if (this.__constants == null) {
@@ -48,12 +50,19 @@ const Platform = {
     return this.__constants;
   },
   // $FlowFixMe[unsafe-getters-setters]
+  get isPad(): boolean {
+    // $FlowFixMe[object-this-reference]
+    return this.constants.interfaceIdiom === 'pad';
+  },
+  // $FlowFixMe[unsafe-getters-setters]
   get isTV(): boolean {
-    return false;
+    // $FlowFixMe[object-this-reference]
+    return this.constants.interfaceIdiom === 'tv';
   },
   // $FlowFixMe[unsafe-getters-setters]
   get isVision(): boolean {
-    return false;
+    // $FlowFixMe[object-this-reference]
+    return this.constants.interfaceIdiom === 'vision';
   },
   // $FlowFixMe[unsafe-getters-setters]
   get isTesting(): boolean {
@@ -63,16 +72,23 @@ const Platform = {
     }
     return false;
   },
+  // $FlowFixMe[unsafe-getters-setters]
+  get isDisableAnimations(): boolean {
+    // $FlowFixMe[object-this-reference]
+    return this.constants.isDisableAnimations ?? this.isTesting;
+  },
+  // $FlowFixMe[unsafe-getters-setters]
+  get isMacCatalyst(): boolean {
+    // $FlowFixMe[object-this-reference]
+    return this.constants.isMacCatalyst ?? false;
+  },
   select: <T>(spec: PlatformSelectSpec<T>): T =>
     // $FlowFixMe[incompatible-return]
     'macos' in spec
-      ? // $FlowFixMe[incompatible-return]
-        spec.macos
+      ? spec.macos
       : 'native' in spec
-        ? // $FlowFixMe[incompatible-return]
-          spec.native
-        : // $FlowFixMe[incompatible-return]
-          spec.default,
+        ? spec.native
+        : spec.default,
 };
 
 module.exports = Platform;

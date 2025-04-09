@@ -110,6 +110,7 @@ public class TouchEvent private constructor() : Event<TouchEvent>() {
 
   override fun getCoalescingKey(): Short = coalescingKey
 
+  @Deprecated("Deprecated in Java")
   override fun dispatch(rctEventEmitter: RCTEventEmitter) {
     if (verifyMotionEvent()) {
       TouchesHelper.sendTouchesLegacy(rctEventEmitter, this)
@@ -125,7 +126,7 @@ public class TouchEvent private constructor() : Event<TouchEvent>() {
     }
   }
 
-  protected override fun getEventCategory(): Int {
+  public override fun getEventCategory(): Int {
     val type = touchEventType ?: return EventCategoryDef.UNSPECIFIED
     return when (type) {
       TouchEventType.START -> EventCategoryDef.CONTINUOUS_START

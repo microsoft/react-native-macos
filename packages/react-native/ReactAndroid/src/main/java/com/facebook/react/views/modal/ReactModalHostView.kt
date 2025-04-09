@@ -24,8 +24,10 @@ import android.view.Window
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.FrameLayout
 import androidx.annotation.UiThread
+import com.facebook.common.logging.FLog
 import com.facebook.react.R
 import com.facebook.react.bridge.GuardedRunnable
 import com.facebook.react.bridge.LifecycleEventListener
@@ -33,6 +35,7 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.annotations.VisibleForTesting
 import com.facebook.react.config.ReactFeatureFlags
 import com.facebook.react.uimanager.JSPointerDispatcher
@@ -44,8 +47,9 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerModule
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.views.common.ContextUtils
-import com.facebook.react.views.view.setStatusBarTranslucency
 import com.facebook.react.views.view.ReactViewGroup
+import com.facebook.react.views.view.setStatusBarTranslucency
+import com.facebook.react.views.view.setSystemBarsTranslucency
 import java.util.Objects
 
 /**
@@ -72,6 +76,12 @@ public class ReactModalHostView(context: ThemedReactContext) :
   public var onShowListener: DialogInterface.OnShowListener? = null
   public var onRequestCloseListener: OnRequestCloseListener? = null
   public var statusBarTranslucent: Boolean = false
+    set(value) {
+      field = value
+      createNewDialog = true
+    }
+
+  public var navigationBarTranslucent: Boolean = false
     set(value) {
       field = value
       createNewDialog = true
@@ -110,7 +120,6 @@ public class ReactModalHostView(context: ThemedReactContext) :
   private var createNewDialog = false
 
   init {
-    context.addLifecycleEventListener(this)
     dialogRootViewGroup = DialogRootViewGroup(context)
   }
 
@@ -129,9 +138,14 @@ public class ReactModalHostView(context: ThemedReactContext) :
     dialogRootViewGroup.id = id
   }
 
+  protected override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+    (context as ThemedReactContext).addLifecycleEventListener(this)
+  }
+
   protected override fun onDetachedFromWindow() {
     super.onDetachedFromWindow()
-    dismiss()
+    onDropInstance()
   }
 
   public override fun addView(child: View?, index: Int) {
@@ -207,6 +221,15 @@ public class ReactModalHostView(context: ThemedReactContext) :
 
   private fun getCurrentActivity(): Activity? = (context as ThemedReactContext).currentActivity
 
+  private fun isFlagSecureSet(activity: Activity?): Boolean {
+    if (activity == null) {
+      return false
+    }
+
+    val flags = activity.window.attributes.flags
+    return (flags and WindowManager.LayoutParams.FLAG_SECURE) != 0
+  }
+
   /**
    * showOrUpdate will display the Dialog. It is called by the manager once all properties are set
    * because we need to know all of them before creating the Dialog. It is also smart during updates
@@ -280,6 +303,11 @@ public class ReactModalHostView(context: ThemedReactContext) :
     if (hardwareAccelerated) {
       newDialog.window?.addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
     }
+    val flagSecureSet = isFlagSecureSet(currentActivity)
+    if (flagSecureSet) {
+      newDialog.window?.setFlags(
+          WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+    }
     if (currentActivity?.isFinishing == false) {
       newDialog.show()
       updateSystemAppearance()
@@ -294,7 +322,14 @@ public class ReactModalHostView(context: ThemedReactContext) :
      * changed. This has the pleasant side-effect of us not having to preface all Modals with "top:
      * statusBarHeight", since that margin will be included in the FrameLayout.
      */
-    get() = FrameLayout(context).apply { addView(dialogRootViewGroup) }
+    get() =
+        FrameLayout(context).apply {
+          addView(dialogRootViewGroup)
+          if (!statusBarTranslucent) {
+            // this is needed to prevent content hiding behind systems bars < API 30
+            this.fitsSystemWindows = true
+          }
+        }
 
   /**
    * updateProperties will update the properties that do not require us to recreate the dialog
@@ -306,29 +341,42 @@ public class ReactModalHostView(context: ThemedReactContext) :
     val dialogWindow =
         checkNotNull(dialog.window) { "dialog must have window when we call updateProperties" }
     val currentActivity = getCurrentActivity()
-    if (currentActivity == null || currentActivity.isFinishing) {
+    if (currentActivity == null || currentActivity.isFinishing || currentActivity.isDestroyed) {
       // If the activity has disappeared, then we shouldn't update the window associated to the
       // Dialog.
       return
     }
-    val activityWindow = currentActivity.window
-    if (activityWindow != null) {
-      val activityWindowFlags = activityWindow.attributes.flags
-      if ((activityWindowFlags and WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0) {
-        dialogWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-      } else {
-        dialogWindow.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+    try {
+      val activityWindow = currentActivity.window
+      if (activityWindow != null) {
+        val activityWindowFlags = activityWindow.attributes.flags
+        if ((activityWindowFlags and WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0) {
+          dialogWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        } else {
+          dialogWindow.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        }
       }
-    }
 
-    dialogWindow.setStatusBarTranslucency(statusBarTranslucent)
+      // Navigation bar cannot be translucent without status bar being translucent too
+      dialogWindow.setSystemBarsTranslucency(navigationBarTranslucent)
 
-    if (transparent) {
-      dialogWindow.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-    } else {
-      dialogWindow.setDimAmount(0.5f)
-      dialogWindow.setFlags(
-          WindowManager.LayoutParams.FLAG_DIM_BEHIND, WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+      if (!navigationBarTranslucent) {
+        dialogWindow.setStatusBarTranslucency(statusBarTranslucent)
+      }
+
+      if (transparent) {
+        dialogWindow.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+      } else {
+        dialogWindow.setDimAmount(0.5f)
+        dialogWindow.setFlags(
+            WindowManager.LayoutParams.FLAG_DIM_BEHIND, WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+      }
+    } catch (e: IllegalArgumentException) {
+      // This is to prevent a crash from the following error, without a clear repro steps:
+      // java.lang.IllegalArgumentException: View=DecorView@c94931b[XxxActivity] not attached to
+      // window manager
+      FLog.e(
+          ReactConstants.TAG, "ReactModalHostView: error while setting window flags: ", e.message)
     }
   }
 
@@ -353,6 +401,15 @@ public class ReactModalHostView(context: ThemedReactContext) :
     }
   }
 
+  /**
+   * Sets the testID on the DialogRootViewGroup. Since the accessibility events are not triggered on
+   * the on the ReactModalHostView, the testID is forwarded to the DialogRootViewGroup to set the
+   * resource-id.
+   */
+  public fun setDialogRootViewGroupTestId(testId: String?) {
+    dialogRootViewGroup.setTag(R.id.react_test_id, testId)
+  }
+
   // This listener is called when the user presses KeyEvent.KEYCODE_BACK
   // An event is then passed to JS which can either close or not close the Modal by setting the
   // visible property
@@ -375,7 +432,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
    * styleHeight on the LayoutShadowNode to be the window size. This is done through the
    * UIManagerModule, and will then cause the children to layout as if they can fill the window.
    */
-  public class DialogRootViewGroup internal constructor(context: Context?) :
+  public class DialogRootViewGroup internal constructor(context: Context) :
       ReactViewGroup(context), RootView {
     internal var stateWrapper: StateWrapper? = null
     internal var eventDispatcher: EventDispatcher? = null
@@ -391,6 +448,15 @@ public class ReactModalHostView(context: ThemedReactContext) :
     init {
       if (ReactFeatureFlags.dispatchPointerEvents) {
         jSPointerDispatcher = JSPointerDispatcher(this)
+      }
+    }
+
+    override fun onInitializeAccessibilityNodeInfo(info: AccessibilityNodeInfo) {
+      super.onInitializeAccessibilityNodeInfo(info)
+
+      val testId = getTag(R.id.react_test_id) as String?
+      if (testId != null) {
+        info.viewIdResourceName = testId
       }
     }
 
@@ -413,18 +479,19 @@ public class ReactModalHostView(context: ThemedReactContext) :
         newStateData.putDouble("screenWidth", realWidth.toDouble())
         newStateData.putDouble("screenHeight", realHeight.toDouble())
         sw.updateState(newStateData)
-      } ?: run {
-          // old architecture
-          // TODO: T44725185 remove after full migration to Fabric
-          reactContext.runOnNativeModulesQueueThread(
-              object : GuardedRunnable(reactContext) {
-                override fun runGuarded() {
-                  reactContext.reactApplicationContext
-                      .getNativeModule(UIManagerModule::class.java)
-                      ?.updateNodeSize(id, viewWidth, viewHeight)
-                }
-              })
-        }
+      }
+          ?: run {
+            // old architecture
+            // TODO: T44725185 remove after full migration to Fabric
+            reactContext.runOnNativeModulesQueueThread(
+                object : GuardedRunnable(reactContext) {
+                  override fun runGuarded() {
+                    reactContext.reactApplicationContext
+                        .getNativeModule(UIManagerModule::class.java)
+                        ?.updateNodeSize(id, viewWidth, viewHeight)
+                  }
+                })
+          }
     }
 
     override fun handleException(t: Throwable) {
@@ -461,7 +528,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
       return super.onHoverEvent(event)
     }
 
-    override fun onChildStartedNativeGesture(childView: View, ev: MotionEvent) {
+    override fun onChildStartedNativeGesture(childView: View?, ev: MotionEvent) {
       eventDispatcher?.let { eventDispatcher ->
         jSTouchDispatcher.onChildStartedNativeGesture(ev, eventDispatcher)
         jSPointerDispatcher?.onChildStartedNativeGesture(childView, ev, eventDispatcher)

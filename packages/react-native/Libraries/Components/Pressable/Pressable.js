@@ -191,36 +191,10 @@ type Props = $ReadOnly<{|
    *
    * @platform macos
    */
-  validKeysDown?: ?Array<string | HandledKeyEvent>,
-
-  /**
-   * Array of keys to receive key up events for. These events have their default native behavior prevented.
-   *
-   * @platform macos
-   */
-  validKeysUp?: ?Array<string | HandledKeyEvent>,
-
-  /**
-   * @deprecated use `keyDownEvents` or `keyUpEvents` instead
-   * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
-   * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
-   * are still removed from the event queue, but the others are not.
-   *
-   * @platform macos
-   */
-  passthroughAllKeyEvents?: ?boolean,
-
-  /**
-   * Array of keys to receive key down events for. These events have their default native behavior prevented.
-   * Overrides the props `validKeysDown`, `validKeysUp` and `passthroughAllKeyEvents`
-   *
-   * @platform macos
-   */
   keyDownEvents?: ?Array<HandledKeyEvent>,
 
   /**
    * Array of keys to receive key up events for. These events have their default native behavior prevented.
-   * Overrides the props `validKeysDown`, `validKeysUp` and `passthroughAllKeyEvents`
    *
    * @platform macos
    */
@@ -377,7 +351,6 @@ function Pressable(
     onBlur,
     onKeyDown,
     onKeyUp,
-    passthroughAllKeyEvents,
     keyDownEvents,
     keyUpEvents,
     acceptsFirstMouse,
@@ -532,7 +505,7 @@ function usePressState(forcePressed: boolean): [boolean, (boolean) => void] {
 const MemoedPressable = React.memo(React.forwardRef(Pressable));
 MemoedPressable.displayName = 'Pressable';
 
-export default (MemoedPressable: React.AbstractComponent<
-  Props,
-  React.ElementRef<typeof View>,
->);
+export default (MemoedPressable: component(
+  ref: React.RefSetter<React.ElementRef<typeof View>>,
+  ...props: Props
+));

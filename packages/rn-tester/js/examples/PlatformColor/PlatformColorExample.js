@@ -8,12 +8,17 @@
  * @flow
  */
 
+import RNTesterText from '../../components/RNTesterText';
+import React from 'react';
+import {
+  ColorWithSystemEffectMacOS,
+  DynamicColorIOS,
+  DynamicColorMacOS,
+  PlatformColor,
+  StyleSheet,
+  View,
+} from 'react-native'; // [macOS]
 import Platform from 'react-native/Libraries/Utilities/Platform';
-
-const React = require('react');
-const ReactNative = require('react-native');
-const {DynamicColorIOS, PlatformColor, StyleSheet, Text, View} = ReactNative;
-const {DynamicColorMacOS, ColorWithSystemEffectMacOS} = ReactNative; // [macOS]
 
 function PlatformColorsExample() {
   function createTable() {
@@ -176,7 +181,7 @@ function PlatformColorsExample() {
     for (let color of colors) {
       table.push(
         <View style={styles.row} key={color.label}>
-          <Text style={styles.labelCell}>{color.label}</Text>
+          <RNTesterText style={styles.labelCell}>{color.label}</RNTesterText>
           <View
             style={{
               ...styles.colorCell,
@@ -217,7 +222,7 @@ function FallbackColorsExample() {
   return (
     <View style={styles.column}>
       <View style={styles.row}>
-        <Text style={styles.labelCell}>{color.label}</Text>
+        <RNTesterText style={styles.labelCell}>{color.label}</RNTesterText>
         <View
           style={{
             ...styles.colorCell,
@@ -235,11 +240,11 @@ function DynamicColorsExample() {
   return Platform.OS === 'macos' ? (
     <View style={styles.column}>
       <View style={styles.row}>
-        <Text style={styles.labelCell}>
+        <RNTesterText style={styles.labelCell}>
           DynamicColorMacOS({'{\n'}
           {'  '}light: 'red', dark: 'blue'{'\n'}
           {'}'})
-        </Text>
+        </RNTesterText>
         <View
           style={{
             ...styles.colorCell,
@@ -248,12 +253,12 @@ function DynamicColorsExample() {
         />
       </View>
       <View style={styles.row}>
-        <Text style={styles.labelCell}>
+        <RNTesterText style={styles.labelCell}>
           DynamicColorMacOS({'{\n'}
           {'  '}light: PlatformColor('systemBlueColor'),{'\n'}
           {'  '}dark: PlatformColor('systemRedColor'),{'\n'}
           {'}'})
-        </Text>
+        </RNTesterText>
         <View
           style={{
             ...styles.colorCell,
@@ -265,14 +270,14 @@ function DynamicColorsExample() {
         />
       </View>
       <View style={styles.row}>
-        <Text style={styles.labelCell}>
+        <RNTesterText style={styles.labelCell}>
           DynamicColorMacOS({'{\n'}
           {'  '}light: 'red',{'\n'}
           {'  '}dark: 'blue',{'\n'}
           {'  '}highContrastLight: 'green',{'\n'}
           {'  '}highContrastDark: 'orange',{'\n'}
           {'}'})
-        </Text>
+        </RNTesterText>
         <View
           style={{
             ...styles.colorCell,
@@ -290,11 +295,11 @@ function DynamicColorsExample() {
   Platform.OS === 'ios' ? (
     <View style={styles.column}>
       <View style={styles.row}>
-        <Text style={styles.labelCell}>
+        <RNTesterText style={styles.labelCell}>
           DynamicColorIOS({'{\n'}
           {'  '}light: 'red', dark: 'blue'{'\n'}
           {'}'})
-        </Text>
+        </RNTesterText>
         <View
           style={{
             ...styles.colorCell,
@@ -303,11 +308,11 @@ function DynamicColorsExample() {
         />
       </View>
       <View style={styles.row}>
-        <Text style={styles.labelCell}>
+        <RNTesterText style={styles.labelCell}>
           DynamicColorIOS({'{\n'}
           {'  '}light: 'red', dark: 'blue'{'\n'}
           {'}'})
-        </Text>
+        </RNTesterText>
         <View
           style={{
             ...styles.colorCell,
@@ -317,12 +322,12 @@ function DynamicColorsExample() {
         />
       </View>
       <View style={styles.row}>
-        <Text style={styles.labelCell}>
+        <RNTesterText style={styles.labelCell}>
           DynamicColorIOS({'{\n'}
           {'  '}light: PlatformColor('systemBlueColor'),{'\n'}
           {'  '}dark: PlatformColor('systemRedColor'),{'\n'}
           {'}'})
-        </Text>
+        </RNTesterText>
         <View
           style={{
             ...styles.colorCell,
@@ -335,7 +340,9 @@ function DynamicColorsExample() {
       </View>
     </View>
   ) : (
-    <Text style={styles.labelCell}>Not applicable on this platform</Text>
+    <RNTesterText style={styles.labelCell}>
+      Not applicable on this platform
+    </RNTesterText>
   );
 }
 
@@ -343,18 +350,14 @@ function VariantColorsExample() {
   return (
     <View style={styles.column}>
       <View style={styles.row}>
-        <Text style={styles.labelCell}>
-          {
-            // [macOS
-            Platform.select({
-              ios: "DynamicColorIOS({light: 'red', dark: 'blue'})",
-              android: "PlatformColor('?attr/colorAccent')",
-              macos: "DynamicColorMacOS({light: 'red', dark: 'blue'})",
-              default: 'Unexpected Platform.OS: ' + Platform.OS,
-            })
-            // macOS]
-          }
-        </Text>
+        <RNTesterText style={styles.labelCell}>
+          {Platform.select({
+            ios: "DynamicColorIOS({light: 'red', dark: 'blue'})",
+            macos: "DynamicColorMacOS({light: 'red', dark: 'blue'})", // [macOS]
+            android: "PlatformColor('?attr/colorAccent')",
+            default: 'Unexpected Platform.OS: ' + Platform.OS,
+          })}
+        </RNTesterText>
         <View
           style={{
             ...styles.colorCell,
@@ -494,7 +497,7 @@ function ColorWithSystemEffectMacOSExample() {
     for (let color of colors) {
       table.push(
         <View style={styles.row} key={color.label}>
-          <Text style={styles.labelCell}>{color.label}</Text>
+          <RNTesterText style={styles.labelCell}>{color.label}</RNTesterText>
           <View
             style={{
               ...styles.colorCell,
@@ -509,7 +512,9 @@ function ColorWithSystemEffectMacOSExample() {
   return Platform.OS === 'macos' ? (
     <View style={styles.column}>{createTable()}</View>
   ) : (
-    <Text style={styles.labelCell}>Not applicable on this platform</Text>
+    <RNTesterText style={styles.labelCell}>
+      Not applicable on this platform
+    </RNTesterText>
   );
 } // macOS]
 
@@ -519,8 +524,10 @@ const styles = StyleSheet.create({
   labelCell: {
     flex: 1,
     alignItems: 'stretch',
-    // [macOS]
-    // Remove need to specify label color
+    ...Platform.select({
+      ios: {color: PlatformColor('labelColor')},
+      macos: {color: PlatformColor('labelColor')},
+    }),
   },
   colorCell: {flex: 0.25, alignItems: 'stretch'},
 });

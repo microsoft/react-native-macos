@@ -44,7 +44,6 @@ using namespace facebook::react;
     _props = defaultProps;
 
     _view = [[RCTUIView alloc] init]; // [macOS]
-    _view.backgroundColor = [RCTUIColor redColor]; // [macOS]
 
     self.contentView = _view;
   }

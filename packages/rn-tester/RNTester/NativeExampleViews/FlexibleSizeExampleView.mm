@@ -66,7 +66,6 @@ RCT_EXPORT_MODULE();
 #else
     _currentSizeTextView.string = currentSizeTextViewString;
 #endif // macOS]
-#pragma clang diagnostic pop
     _currentSizeTextView.textColor = [RCTUIColor blackColor]; // [macOS]
     _currentSizeTextView.backgroundColor = [RCTUIColor whiteColor]; // [macOS]
     _currentSizeTextView.font = [UIFont boldSystemFontOfSize:10];

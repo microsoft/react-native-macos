@@ -8,14 +8,12 @@
  * @format
  */
 
-import type {HostComponent} from '../Renderer/shims/ReactNativeTypes';
-
-import * as React from 'react';
+import type {HostInstance} from '../Renderer/shims/ReactNativeTypes';
 
 export type SyntheticEvent<+T> = $ReadOnly<{|
   bubbles: ?boolean,
   cancelable: ?boolean,
-  currentTarget: number | React.ElementRef<HostComponent<mixed>>,
+  currentTarget: number | HostInstance,
   defaultPrevented: ?boolean,
   dispatchConfig: $ReadOnly<{|
     registrationName: string,
@@ -28,7 +26,7 @@ export type SyntheticEvent<+T> = $ReadOnly<{|
   isTrusted: ?boolean,
   nativeEvent: T,
   persist: () => void,
-  target: ?number | React.ElementRef<HostComponent<mixed>>,
+  target: ?number | HostInstance,
   timeStamp: number,
   type: ?string,
 |}>;
@@ -157,7 +155,7 @@ export interface NativeMouseEvent extends NativeUIEvent {
   /**
    * The secondary target for the event, if there is one.
    */
-  +relatedTarget: null | number | React.ElementRef<HostComponent<mixed>>;
+  +relatedTarget: null | number | HostInstance;
   // offset is proposed: https://drafts.csswg.org/cssom-view/#extensions-to-the-mouseevent-interface
   /**
    * The X coordinate of the mouse pointer between that event and the padding edge of the target node
@@ -310,7 +308,7 @@ export type KeyEvent = SyntheticEvent<
 >;
 
 /**
- * Represents a key that could be passed to `validKeysDown` and `validKeysUp`.
+ * Represents a key that could be passed to `KeyDownEvents` and `KeyUpEvents`.
  *
  * `key` is the actual key, such as "a", or one of the special values:
  * "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",

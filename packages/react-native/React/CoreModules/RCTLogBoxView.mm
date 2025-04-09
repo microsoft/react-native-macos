@@ -31,7 +31,7 @@
 
 - (void)createRootViewController:(RCTUIView *)view // [macOS]
 {
-  RCTUIViewController *_rootViewController = [RCTUIViewController new]; // [macOS]
+  RCTPlatformViewController *_rootViewController = [RCTPlatformViewController new]; // [macOS]
   _rootViewController.view = view;
 #if !TARGET_OS_OSX // [macOS]
   _rootViewController.view.backgroundColor = [UIColor clearColor];
@@ -44,7 +44,7 @@
 #endif // macOS]
 }
 
-- (instancetype)initWithWindow:(RCTUIWindow *)window bridge:(RCTBridge *)bridge // [macOS]
+- (instancetype)initWithWindow:(RCTPlatformWindow *)window bridge:(RCTBridge *)bridge // [macOS]
 {
   RCTErrorNewArchitectureValidation(RCTNotAllowedInFabricWithoutLegacy, @"RCTLogBoxView", nil);
 
@@ -74,7 +74,7 @@
   return self;
 }
 
-- (instancetype)initWithWindow:(RCTUIWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter // [macOS]
+- (instancetype)initWithWindow:(RCTPlatformWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
   self = [super initWithWindowScene:window.windowScene];

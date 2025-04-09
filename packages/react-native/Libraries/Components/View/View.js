@@ -23,10 +23,10 @@ export type Props = ViewProps;
  *
  * @see https://reactnative.dev/docs/view
  */
-const View: React.AbstractComponent<
-  ViewProps,
-  React.ElementRef<typeof ViewNativeComponent>,
-> = React.forwardRef(
+const View: component(
+  ref: React.RefSetter<React.ElementRef<typeof ViewNativeComponent>>,
+  ...props: ViewProps
+) = React.forwardRef(
   (
     {
       accessibilityElementsHidden,
@@ -54,9 +54,6 @@ const View: React.AbstractComponent<
       nativeID,
       tabIndex,
       // [macOS
-      passthroughAllKeyEvents,
-      validKeysDown,
-      validKeysUp,
       keyDownEvents,
       keyUpEvents,
       // macOS]
@@ -101,19 +98,6 @@ const View: React.AbstractComponent<
       };
     }
 
-    // [macOS
-    let _passthroughAllKeyEvents = passthroughAllKeyEvents;
-    let _validKeysDown = validKeysDown;
-    let _validKeysUp = validKeysUp;
-    if (keyDownEvents || keyUpEvents) {
-      _passthroughAllKeyEvents = true;
-      // $FlowFixMe[incompatible-type]
-      _validKeysDown = keyDownEvents;
-      // $FlowFixMe[incompatible-type]
-      _validKeysUp = keyUpEvents;
-    }
-    // macOS]
-
     const actualView = (
       <ViewNativeComponent
         {...otherProps}
@@ -132,11 +116,6 @@ const View: React.AbstractComponent<
             : importantForAccessibility
         }
         nativeID={id ?? nativeID}
-        // [macOS
-        passthroughAllKeyEvents={_passthroughAllKeyEvents}
-        validKeysDown={_validKeysDown}
-        validKeysUp={_validKeysUp}
-        // macOS]
         ref={forwardedRef}
       />
     );

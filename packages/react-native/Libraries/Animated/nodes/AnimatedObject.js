@@ -12,6 +12,7 @@
 'use strict';
 
 import type {PlatformConfig} from '../AnimatedPlatformConfig';
+import type {AnimatedNodeConfig} from './AnimatedNode';
 
 import AnimatedNode from './AnimatedNode';
 import AnimatedWithChildren from './AnimatedWithChildren';
@@ -19,9 +20,11 @@ import * as React from 'react';
 
 const MAX_DEPTH = 5;
 
-/* $FlowIssue[incompatible-type-guard] - Flow does not know that the prototype
-   and ReactElement checks preserve the type refinement of `value`. */
-function isPlainObject(value: mixed): value is $ReadOnly<{[string]: mixed}> {
+export function isPlainObject(
+  value: mixed,
+  /* $FlowIssue[incompatible-type-guard] - Flow does not know that the prototype
+     and ReactElement checks preserve the type refinement of `value`. */
+): value is $ReadOnly<{[string]: mixed}> {
   return (
     value !== null &&
     typeof value === 'object' &&
@@ -97,8 +100,12 @@ export default class AnimatedObject extends AnimatedWithChildren {
   /**
    * Should only be called by `AnimatedObject.from`.
    */
-  constructor(nodes: $ReadOnlyArray<AnimatedNode>, value: mixed) {
-    super();
+  constructor(
+    nodes: $ReadOnlyArray<AnimatedNode>,
+    value: mixed,
+    config?: ?AnimatedNodeConfig,
+  ) {
+    super(config);
     this.#nodes = nodes;
     this._value = value;
   }
@@ -107,6 +114,14 @@ export default class AnimatedObject extends AnimatedWithChildren {
     return mapAnimatedNodes(this._value, node => {
       return node.__getValue();
     });
+  }
+
+  __getValueWithStaticObject(staticObject: mixed): any {
+    const nodes = this.#nodes;
+    let index = 0;
+    // NOTE: We can depend on `this._value` and `staticObject` sharing a
+    // structure because of `useAnimatedPropsMemo`.
+    return mapAnimatedNodes(staticObject, () => nodes[index++].__getValue());
   }
 
   __getAnimatedValue(): any {
@@ -121,6 +136,7 @@ export default class AnimatedObject extends AnimatedWithChildren {
       const node = nodes[ii];
       node.__addChild(this);
     }
+    super.__attach();
   }
 
   __detach(): void {
@@ -147,6 +163,7 @@ export default class AnimatedObject extends AnimatedWithChildren {
       value: mapAnimatedNodes(this._value, node => {
         return {nodeTag: node.__getNativeTag()};
       }),
+      debugID: this.__getDebugID(),
     };
   }
 }

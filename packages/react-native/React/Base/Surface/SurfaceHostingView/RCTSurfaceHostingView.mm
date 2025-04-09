@@ -21,8 +21,8 @@
 @end
 
 @implementation RCTSurfaceHostingView {
-  RCTUIView *_Nullable _activityIndicatorView; // [macOS]
-  RCTUIView *_Nullable _surfaceView; // [macOS]
+  RCTPlatformView *_Nullable _activityIndicatorView; // [macOS]
+  RCTPlatformView *_Nullable _surfaceView; // [macOS]
   RCTSurfaceStage _stage;
   BOOL _autoHideDisabled;
 }

@@ -241,7 +241,10 @@ NSString *RCTMD5Hash(NSString *string)
 {
   const char *str = string.UTF8String;
   unsigned char result[CC_MD5_DIGEST_LENGTH];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   CC_MD5(str, (CC_LONG)strlen(str), result);
+#pragma clang diagnostic pop
 
   return [NSString stringWithFormat:@"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
                                     result[0],
@@ -298,8 +301,8 @@ void RCTUnsafeExecuteOnMainQueueSync(dispatch_block_t block)
 
 static void RCTUnsafeExecuteOnMainQueueOnceSync(dispatch_once_t *onceToken, dispatch_block_t block)
 {
-  // The solution was borrowed from a post by Ben Alpert:
-  // https://benalpert.com/2014/04/02/dispatch-once-initialization-on-the-main-thread.html
+  // The solution was borrowed from a post by Sophie Alpert:
+  // https://sophiebits.com/2014/04/02/dispatch-once-initialization-on-the-main-thread
   // See also: https://www.mikeash.com/pyblog/friday-qa-2014-06-06-secrets-of-dispatch_once.html
   if (RCTIsMainQueue()) {
     dispatch_once(onceToken, block);
@@ -394,7 +397,7 @@ CGSize RCTScreenSize(void)
 
 CGSize RCTViewportSize(void)
 {
-  RCTUIWindow *window = RCTKeyWindow(); // [macOS]
+  RCTPlatformWindow *window = RCTKeyWindow(); // [macOS]
 #if !TARGET_OS_OSX // [macOS]
   return window ? window.bounds.size : RCTScreenSize();
 #else // [macOS
@@ -592,7 +595,7 @@ RCTUIApplication *__nullable RCTSharedApplication(void) // [macOS]
 #endif // macOS]
 }
 
-RCTUIWindow *__nullable RCTKeyWindow(void) // [macOS]
+RCTPlatformWindow *__nullable RCTKeyWindow(void) // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
   if (RCTRunningInAppExtension()) {
@@ -621,16 +624,12 @@ RCTUIWindow *__nullable RCTKeyWindow(void) // [macOS]
   }
 
   UIScene *sceneToUse = foregroundActiveScene ? foregroundActiveScene : foregroundInactiveScene;
-  UIWindowScene *windowScene = (UIWindowScene *)sceneToUse;
 
-  if (@available(iOS 15.0, *)) {
+  if ([sceneToUse respondsToSelector:@selector(keyWindow)]) {
+    // We have apps internally that might use UIScenes which are not window scenes.
+    // Calling keyWindow on a UIScene which is not a UIWindowScene can cause a crash
+    UIWindowScene *windowScene = (UIWindowScene *)sceneToUse;
     return windowScene.keyWindow;
-  }
-
-  for (UIWindow *window in windowScene.windows) {
-    if (window.isKeyWindow) {
-      return window;
-    }
   }
 
   return nil;
@@ -660,18 +659,22 @@ UIViewController *__nullable RCTPresentedViewController(void)
 
   return controller;
 }
+#endif // [macOS]
 
 BOOL RCTForceTouchAvailable(void)
 {
   static BOOL forceSupported;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
+#if !TARGET_OS_OSX // [macOS]
     forceSupported = [UITraitCollection currentTraitCollection].forceTouchCapability == UIForceTouchCapabilityAvailable;
+#else // [macOS
+    forceSupported = NO;
+#endif // macOS]
   });
 
   return forceSupported;
 }
-#endif // [macOS]
 
 NSError *RCTErrorWithMessage(NSString *message)
 {
@@ -886,7 +889,7 @@ UIImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL)
 }
 
 #if TARGET_OS_OSX // [macOS
-static NSCache<NSURL *, UIImage *> *RCTLocalImageCache()
+static NSCache<NSURL *, UIImage *> *RCTLocalImageCache(void)
 {
   static NSCache *imageCache;
   static dispatch_once_t onceToken;

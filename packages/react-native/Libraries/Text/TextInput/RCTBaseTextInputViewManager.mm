@@ -63,13 +63,14 @@ RCT_EXPORT_VIEW_PROPERTY(maxLength, NSNumber)
 RCT_EXPORT_VIEW_PROPERTY(selectTextOnFocus, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(selection, RCTTextSelection)
 RCT_EXPORT_VIEW_PROPERTY(inputAccessoryViewID, NSString)
+RCT_EXPORT_VIEW_PROPERTY(inputAccessoryViewButtonLabel, NSString)
 RCT_EXPORT_VIEW_PROPERTY(textContentType, NSString)
 RCT_EXPORT_VIEW_PROPERTY(passwordRules, NSString)
 
 #if TARGET_OS_OSX // [macOS
-RCT_EXPORT_VIEW_PROPERTY(onAutoCorrectChange, RCTBubblingEventBlock);
-RCT_EXPORT_VIEW_PROPERTY(onSpellCheckChange, RCTBubblingEventBlock);
-RCT_EXPORT_VIEW_PROPERTY(onGrammarCheckChange, RCTBubblingEventBlock);
+RCT_EXPORT_VIEW_PROPERTY(onAutoCorrectChange, RCTDirectEventBlock);
+RCT_EXPORT_VIEW_PROPERTY(onSpellCheckChange, RCTDirectEventBlock);
+RCT_EXPORT_VIEW_PROPERTY(onGrammarCheckChange, RCTDirectEventBlock);
 
 RCT_EXPORT_VIEW_PROPERTY(onPaste, RCTDirectEventBlock)
 
@@ -88,6 +89,8 @@ RCT_EXPORT_VIEW_PROPERTY(onSelectionChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onScroll, RCTDirectEventBlock)
 
 RCT_EXPORT_VIEW_PROPERTY(mostRecentEventCount, NSInteger)
+
+RCT_EXPORT_VIEW_PROPERTY(disableKeyboardShortcuts, BOOL)
 
 RCT_EXPORT_SHADOW_PROPERTY(text, NSString)
 RCT_EXPORT_SHADOW_PROPERTY(placeholder, NSString)

@@ -14,6 +14,7 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {TextStyle} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import RNTesterButton from '../../components/RNTesterButton';
+import RNTesterText from '../../components/RNTesterText';
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
 import ExampleTextInput from './ExampleTextInput';
 import * as React from 'react';
@@ -22,11 +23,11 @@ import {
   Button,
   Platform,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import {Switch} from 'react-native'; // [macOS]
 
 const styles = StyleSheet.create({
   multiline: {
@@ -69,20 +70,15 @@ const styles = StyleSheet.create({
   focusedUncontrolled: {
     margin: -2,
   },
-  // [macOS
-  passthroughAllKeyEvents: {
-    alignItems: 'center',
-    padding: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  // macOS]
   screenshotArea: {
     position: 'absolute',
     top: -5,
     left: 120,
     right: -5,
     bottom: -5,
+  },
+  wrappedText: {
+    maxWidth: 300,
   },
 });
 
@@ -123,7 +119,7 @@ class WithLabel extends React.Component<$FlowFixMeProps> {
   render(): React.Node {
     return (
       <View style={styles.labelContainer}>
-        <Text style={styles.label}>{this.props.label}</Text>
+        <RNTesterText style={styles.label}>{this.props.label}</RNTesterText>
         <View style={styles.inputContainer}>{this.props.children}</View>
       </View>
     );
@@ -370,8 +366,6 @@ class SubmitBehaviorExample extends React.Component<{...}> {
   }
 }
 
-let counter = 0; // [macOS]
-
 class TextEventsExample extends React.Component<{...}, $FlowFixMeState> {
   state:
     | any
@@ -379,64 +373,24 @@ class TextEventsExample extends React.Component<{...}, $FlowFixMeState> {
         curText: string,
         prev2Text: string,
         prev3Text: string,
-        // [macOS
-        prev4Text: string,
-        prev5Text: string,
-        prev6Text: string,
-        // macOS]
         prevText: string,
-        passthroughAllKeyEvents: boolean, // [macOS]
       } = {
     curText: '<No Event>',
     prevText: '<No Event>',
     prev2Text: '<No Event>',
     prev3Text: '<No Event>',
-    // [macOS
-    prev4Text: '<No Event>',
-    prev5Text: '<No Event>',
-    prev6Text: '<No Event>',
-    passthroughAllKeyEvents: false,
-    // macOS]
   };
 
   updateText = (text: string) => {
-    counter++; // [macOS]
     this.setState(state => {
       return {
-        curText: text + ' [' + counter + ']', // [macOS]
+        curText: text,
         prevText: state.curText,
         prev2Text: state.prevText,
         prev3Text: state.prev2Text,
-        // [macOS
-        prev4Text: state.prev3Text,
-        prev5Text: state.prev4Text,
-        prev6Text: state.prev5Text,
-        // macOS]
       };
     });
   };
-
-  // [macOS
-  clearLog = () => {
-    this.setState(() => {
-      return {
-        curText: '<No Event>',
-        prevText: '<No Event>',
-        prev2Text: '<No Event>',
-        prev3Text: '<No Event>',
-        prev4Text: '<No Event>',
-        prev5Text: '<No Event>',
-        prev6Text: '<No Event>',
-      };
-    });
-  };
-
-  toggleSwitch = (value: boolean) => {
-    this.setState(() => {
-      return {passthroughAllKeyEvents: value};
-    });
-  };
-  // macOS]
 
   render(): React.Node {
     return (
@@ -473,34 +427,16 @@ class TextEventsExample extends React.Component<{...}, $FlowFixMeState> {
           onKeyUp={event =>
             this.updateText('onKeyUp key: ' + event.nativeEvent.key)
           }
-          passthroughAllKeyEvents={this.state.passthroughAllKeyEvents}
           // macOS]
           style={styles.singleLine}
         />
-        <Text style={styles.eventLabel}>
+        <RNTesterText style={styles.eventLabel}>
           {this.state.curText}
           {'\n'}
           (prev: {this.state.prevText}){'\n'}
           (prev2: {this.state.prev2Text}){'\n'}
-          (prev3: {this.state.prev3Text}){'\n'}
-          (prev4: {this.state.prev4Text}){'\n'}
-          (prev5: {this.state.prev5Text}){'\n'}
-          (prev6: {this.state.prev6Text})
-        </Text>
-        {/* [macOS */}
-        <Button
-          testID="event_clear_button"
-          onPress={this.clearLog}
-          title="Clear event log"
-        />
-        <View style={styles.passthroughAllKeyEvents}>
-          <Text>{'Pass through all key events'}</Text>
-          <Switch
-            value={this.state.passthroughAllKeyEvents}
-            onValueChange={this.toggleSwitch}
-          />
-        </View>
-        {/* macOS] */}
+          (prev3: {this.state.prev3Text})
+        </RNTesterText>
       </View>
     );
   }
@@ -648,34 +584,38 @@ class SelectionExample extends React.Component<
           />
         </View>
         <View>
-          <Text testID={`${this.props.testID}-selection`}>
+          <RNTesterText testID={`${this.props.testID}-selection`}>
             selection ={' '}
             {`{start:${this.state.selection.start},end:${this.state.selection.end}}`}
-          </Text>
-          <Text
+          </RNTesterText>
+          <RNTesterText
             testID={`${this.props.testID}-cursor-start`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onPress={this.placeAt.bind(this, 0)}>
             Place at Start (0, 0)
-          </Text>
-          <Text
+          </RNTesterText>
+          <RNTesterText
             testID={`${this.props.testID}-cursor-end`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onPress={this.placeAt.bind(this, length)}>
             Place at End ({length}, {length})
-          </Text>
+          </RNTesterText>
           {/* $FlowFixMe[method-unbinding] added when improving typing for this
            * parameters */}
-          <Text onPress={this.placeAtRandom.bind(this)}>Place at Random</Text>
-          <Text
+          <RNTesterText onPress={this.placeAtRandom.bind(this)}>
+            Place at Random
+          </RNTesterText>
+          <RNTesterText
             testID={`${this.props.testID}-select-all`}
             // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onPress={this.select.bind(this, 0, length)}>
             Select All
-          </Text>
+          </RNTesterText>
           {/* $FlowFixMe[method-unbinding] added when improving typing for this
            * parameters */}
-          <Text onPress={this.selectRandom.bind(this)}>Select Random</Text>
+          <RNTesterText onPress={this.selectRandom.bind(this)}>
+            Select Random
+          </RNTesterText>
         </View>
       </View>
     );
@@ -920,6 +860,77 @@ function MultilineStyledTextInput({
       </Text>
       <Text style={textStyles[(3 + styleOffset) % textStyles.length]}>ld!</Text>
     </ExampleTextInput>
+  );
+}
+
+function DynamicContentWidth() {
+  const [text, setText] = useState('');
+  const update = () => {
+    const randomNumber = Math.floor(Math.random() * 10);
+    setText(text + randomNumber);
+  };
+
+  return (
+    <View>
+      <RNTesterText>Uncontrolled:</RNTesterText>
+      <TextInput
+        placeholder="Type..."
+        style={{
+          fontSize: 16,
+          alignSelf: 'center',
+          backgroundColor: 'orange',
+        }}
+      />
+      <RNTesterText>Controlled:</RNTesterText>
+      <TextInput
+        placeholder="..."
+        value={text}
+        onChangeText={setText}
+        style={{
+          fontSize: 16,
+          alignSelf: 'center',
+          backgroundColor: 'orange',
+        }}
+      />
+      <Button title="Update controlled Input" onPress={update} />
+    </View>
+  );
+}
+
+function AutogrowingTextInputExample({
+  style,
+  ...props
+}: React.ElementConfig<typeof TextInput>) {
+  const [multiline, setMultiline] = React.useState(true);
+  const [fullWidth, setFullWidth] = React.useState(true);
+  const [text, setText] = React.useState('');
+  const [contentSize, setContentSize] = React.useState({width: 0, height: 0});
+
+  return (
+    <View>
+      <RNTesterText>Full width:</RNTesterText>
+      <Switch value={fullWidth} onValueChange={setFullWidth} />
+
+      <RNTesterText>Multiline:</RNTesterText>
+      <Switch value={multiline} onValueChange={setMultiline} />
+
+      <RNTesterText>TextInput:</RNTesterText>
+      <ExampleTextInput
+        multiline={multiline}
+        style={[style, {width: fullWidth ? '100%' : '50%'}]}
+        onChangeText={setText}
+        onContentSizeChange={({nativeEvent}) => {
+          setContentSize({
+            width: nativeEvent.contentSize.width,
+            height: nativeEvent.contentSize.height,
+          });
+        }}
+        {...props}
+      />
+      <RNTesterText>Plain text value representation:</RNTesterText>
+      <RNTesterText>{text}</RNTesterText>
+      <RNTesterText>Content Size: {JSON.stringify(contentSize)}</RNTesterText>
+    </View>
   );
 }
 
@@ -1228,6 +1239,36 @@ module.exports = ([
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua.
           </ExampleTextInput>
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Dynamic content width',
+    name: 'dynamicWidth',
+    render: function (): React.Node {
+      return <DynamicContentWidth />;
+    },
+  },
+  {
+    title: 'Auto-expanding',
+    render: function (): React.Node {
+      return (
+        <View style={styles.wrappedText}>
+          <AutogrowingTextInputExample
+            enablesReturnKeyAutomatically={true}
+            returnKeyType="done"
+            style={{maxHeight: 400, minHeight: 20, backgroundColor: '#eeeeee'}}>
+            generic generic generic
+            <Text style={{fontSize: 6, color: 'red'}}>
+              small small small small small small
+            </Text>
+            <Text>regular regular</Text>
+            <Text style={{fontSize: 30, color: 'green'}}>
+              huge huge huge huge huge
+            </Text>
+            generic generic generic
+          </AutogrowingTextInputExample>
         </View>
       );
     },

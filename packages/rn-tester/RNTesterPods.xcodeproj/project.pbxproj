@@ -10,6 +10,7 @@
 		08E25EBE4A584CD7B70FBB1E /* libPods-RNTester.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D74056A5352F0925816E50E0 /* libPods-RNTester.a */; };
 		0CBC915D60C701A81731A5A4 /* libPods-RNTester-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C88AE81E635231C7F0F3BA4 /* libPods-RNTester-macOS.a */; };
 		0E3E8DF4F87D07566A9489D4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AC276E71CF27E40DFA22979F /* PrivacyInfo.xcprivacy */; };
+		0EA618032BE537D3001875EF /* RNTesterBundle.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0EA618022BE537D3001875EF /* RNTesterBundle.bundle */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DDEF0101F84BF7B00DBDF73 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DDEF00F1F84BF7B00DBDF73 /* Images.xcassets */; };
 		34BEDB34D7F11B292D818883 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 714974E163024D0E0A9FA2F5 /* PrivacyInfo.xcprivacy */; };
@@ -143,6 +144,7 @@
 /* Begin PBXFileReference section */
 		0553512BB0EDB0E5BC262515 /* Pods-RNTester-visionOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester-visionOS.release.xcconfig"; path = "Target Support Files/Pods-RNTester-visionOS/Pods-RNTester-visionOS.release.xcconfig"; sourceTree = "<group>"; };
 		07517909E4081E5D74D5DD60 /* libPods-RNTester-macOSUnitTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester-macOSUnitTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0EA618022BE537D3001875EF /* RNTesterBundle.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = RNTesterBundle.bundle; path = RNTester/RNTesterBundle.bundle; sourceTree = "<group>"; };
 		1176CCE167820DDB6B66801A /* Pods-RNTester-macOSUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester-macOSUnitTests.release.xcconfig"; path = "Target Support Files/Pods-RNTester-macOSUnitTests/Pods-RNTester-macOSUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* RNTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RNTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = RNTester/AppDelegate.h; sourceTree = "<group>"; };
@@ -404,6 +406,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				0EA618022BE537D3001875EF /* RNTesterBundle.bundle */,
 				13B07FAE1A68108700A75B9A /* RNTester */,
 				E7DB20A022B2BA84005AC45F /* RNTesterUnitTests */,
 				E7DB215422B2F332005AC45F /* RNTesterIntegrationTests */,
@@ -743,6 +746,7 @@
 			files = (
 				2DDEF0101F84BF7B00DBDF73 /* Images.xcassets in Resources */,
 				8145AE06241172D900A3F8DA /* LaunchScreen.storyboard in Resources */,
+				0EA618032BE537D3001875EF /* RNTesterBundle.bundle in Resources */,
 				F0D621C32BBB9E38005960AC /* PrivacyInfo.xcprivacy in Resources */,
 				3D2AFAF51D646CF80089D1A3 /* legacy_image@2x.png in Resources */,
 			);

@@ -78,7 +78,6 @@ RCT_EXPORT_METHOD(removeOverlays : (nonnull NSNumber *)reactTag)
 - (RCTPlatformView *)view // [macOS]
 {
   RNTLegacyView *view = [[RNTLegacyView alloc] init];
-  view.backgroundColor = RCTUIColor.redColor; // [macOS]
   return view;
 }
 

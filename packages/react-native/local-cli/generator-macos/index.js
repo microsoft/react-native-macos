@@ -82,13 +82,6 @@ function xcodeprojPath(basename) {
 /**
  * @param {string} basename
  */
-function xcworkspacePath(basename) {
-  return path.join(macOSDir, basename + '.xcworkspace');
-}
-
-/**
- * @param {string} basename
- */
 function pbxprojPath(basename) {
   return path.join(xcodeprojPath(basename), 'project.pbxproj');
 }

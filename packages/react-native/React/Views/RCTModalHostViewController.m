@@ -55,7 +55,7 @@
 }
 #endif // [visionOS]
 
-#if RCT_DEV
+#if RCT_DEV && TARGET_OS_IOS
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
   UIInterfaceOrientationMask appSupportedOrientationsMask =

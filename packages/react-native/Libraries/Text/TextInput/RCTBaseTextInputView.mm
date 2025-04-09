@@ -37,6 +37,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   BOOL _hasInputAccessoryView;
   // [macOS] remove explicit _predictedText ivar declaration
   BOOL _didMoveToWindow;
+#if !TARGET_OS_OSX // [macOS]
+  NSArray<UIBarButtonItemGroup *> *_initialValueLeadingBarButtonGroups;
+  NSArray<UIBarButtonItemGroup *> *_initialValueTrailingBarButtonGroups;
+#endif // [macOS]
 #if TARGET_OS_OSX // [macOS avoids duplicating effects of textInputDid(Begin|End)Editing calls
   BOOL _isCurrentlyEditing;
 #endif // macOS]
@@ -47,6 +51,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 {
   if (![self isDescendantOfView:scrollView]) {
     // View is outside scroll view
+    scrollView.firstResponderViewOutsideScrollView = self.backedTextInputView;
     return;
   }
 
@@ -81,6 +86,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if TARGET_OS_IOS // [macOS] [visionOS]
     [self initializeReturnKeyType];
 #endif // [macOS] [visionOS]
+#if !TARGET_OS_OSX // [macOS]
+    _initialValueLeadingBarButtonGroups = nil;
+    _initialValueTrailingBarButtonGroups = nil;
+#endif // [macOS]
   }
 
   return self;
@@ -401,6 +410,15 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
         @"birthdateYear" : UITextContentTypeBirthdateYear,
       }];
     }
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 170400 /* __IPHONE_17_4 */
+    if (@available(iOS 17.4, *)) {
+      [mutableContentTypeMap addEntriesFromDictionary:@{
+        @"cellularEID" : UITextContentTypeCellularEID,
+        @"cellularIMEI" : UITextContentTypeCellularIMEI,
+      }];
+    }
+#endif
 #endif
 
     contentTypeMap = mutableContentTypeMap;
@@ -454,6 +472,37 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   }
 }
 #endif // [macOS]
+
+- (NSString *)inputAccessoryViewButtonLabel
+{
+  return self.backedTextInputView.inputAccessoryViewButtonLabel;
+}
+
+- (void)setInputAccessoryViewButtonLabel:(NSString *)inputAccessoryViewButtonLabel
+{
+  self.backedTextInputView.inputAccessoryViewButtonLabel = inputAccessoryViewButtonLabel;
+}
+
+- (void)setDisableKeyboardShortcuts:(BOOL)disableKeyboardShortcuts
+{
+#if TARGET_OS_IOS
+  // Initialize the initial values only once
+  if (_initialValueLeadingBarButtonGroups == nil) {
+    // Capture initial values of leading and trailing button groups
+    _initialValueLeadingBarButtonGroups = self.backedTextInputView.inputAssistantItem.leadingBarButtonGroups;
+    _initialValueTrailingBarButtonGroups = self.backedTextInputView.inputAssistantItem.trailingBarButtonGroups;
+  }
+
+  if (disableKeyboardShortcuts) {
+    self.backedTextInputView.inputAssistantItem.leadingBarButtonGroups = @[];
+    self.backedTextInputView.inputAssistantItem.trailingBarButtonGroups = @[];
+  } else {
+    // Restore the initial values
+    self.backedTextInputView.inputAssistantItem.leadingBarButtonGroups = _initialValueLeadingBarButtonGroups;
+    self.backedTextInputView.inputAssistantItem.trailingBarButtonGroups = _initialValueTrailingBarButtonGroups;
+  }
+#endif
+}
 
 #pragma mark - RCTBackedTextInputDelegate
 
@@ -611,7 +660,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
         _maxLength.integerValue - (NSInteger)backedTextInputView.attributedText.string.length + (NSInteger)range.length,
         0);
 
-    if (text.length > _maxLength.integerValue) {
+    if (text.length > allowedLength) {
       // If we typed/pasted more than one character, limit the text inputted.
       if (text.length > 1) {
         if (allowedLength > 0) {
@@ -730,9 +779,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   return YES;
 }
 
-- (BOOL)hasValidKeyDownOrValidKeyUp:(NSString *)key {
-  return [RCTHandledKey key:key matchesFilter:self.validKeysDown]
-	||  [RCTHandledKey key:key matchesFilter:self.validKeysUp];
+- (BOOL)hasKeyDownEventOrKeyUpEvent:(NSString *)key {
+  return [RCTHandledKey key:key matchesFilter:self.keyDownEvents]
+     ||  [RCTHandledKey key:key matchesFilter:self.keyUpEvents];
 }
 
 - (NSDragOperation)textInputDraggingEntered:(id<NSDraggingInfo>)draggingInfo
@@ -947,6 +996,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 {
   UIView<RCTBackedTextInputViewProtocol> *textInputView = self.backedTextInputView;
   UIKeyboardType keyboardType = textInputView.keyboardType;
+  NSString *inputAccessoryViewButtonLabel = textInputView.inputAccessoryViewButtonLabel;
 
   // These keyboard types (all are number pads) don't have a Return Key button by default,
   // so we create an `inputAccessoryView` with this button for them.
@@ -954,11 +1004,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   UIReturnKeyType returnKeyType = textInputView.returnKeyType;
 
   BOOL containsKeyType = [returnKeyTypesSet containsObject:@(returnKeyType)];
+  BOOL containsInputAccessoryViewButtonLabel = inputAccessoryViewButtonLabel != nil;
 
   BOOL shouldHaveInputAccessoryView =
       (keyboardType == UIKeyboardTypeNumberPad || keyboardType == UIKeyboardTypePhonePad ||
        keyboardType == UIKeyboardTypeDecimalPad || keyboardType == UIKeyboardTypeASCIICapableNumberPad) &&
-      containsKeyType;
+      (containsKeyType || containsInputAccessoryViewButtonLabel);
 
   if (_hasInputAccessoryView == shouldHaveInputAccessoryView) {
     return;
@@ -967,7 +1018,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   _hasInputAccessoryView = shouldHaveInputAccessoryView;
 
   if (shouldHaveInputAccessoryView) {
-    NSString *buttonLabel = [self returnKeyTypeToString:returnKeyType];
+    NSString *buttonLabel = inputAccessoryViewButtonLabel != nil ? inputAccessoryViewButtonLabel
+                                                                 : [self returnKeyTypeToString:returnKeyType];
 
     UIToolbar *toolbarView = [UIToolbar new];
     [toolbarView sizeToFit];

@@ -1,0 +1,19 @@
+jobs:
+- job: NPMPublish
+  displayName: NPM Publish
+  pool:
+    name: cxeiss-ubuntu-20-04-large
+    image: cxe-ubuntu-20-04-1es-pt
+    os: linux
+  variables:
+    - name: BUILDSECMON_OPT_IN
+      value: true
+  timeoutInMinutes: 90
+  cancelTimeoutInMinutes: 5
+  templateContext:
+    outputs:
+      - output: pipelineArtifact
+        targetPath: $(System.DefaultWorkingDirectory)
+        artifactName: github-npm-js-publish
+  steps:
+    - template: /.ado/templates/npm-publish-steps.yml@self

@@ -15,9 +15,19 @@ import {createRef} from 'react';
 const {create, unmount, update} = require('../../../../jest/renderer');
 
 describe('Native Animated', () => {
-  let Animated;
-  let NativeAnimatedHelper;
-  let NativeAnimatedModule;
+  function importModules() {
+    return {
+      get Animated() {
+        return require('../../../../Libraries/Animated/Animated').default;
+      },
+      get NativeAnimatedHelper() {
+        return require('../NativeAnimatedHelper').default;
+      },
+      get ReactNativeFeatureFlags() {
+        return require('../../featureflags/ReactNativeFeatureFlags');
+      },
+    };
+  }
 
   beforeEach(() => {
     jest.resetModules();
@@ -60,13 +70,12 @@ describe('Native Animated', () => {
       stopAnimation: jest.fn(),
       stopListeningToAnimatedNodeValue: jest.fn(),
     });
-
-    Animated = require('../../../../Libraries/Animated/Animated').default;
-    NativeAnimatedHelper = require('../NativeAnimatedHelper').default;
   });
 
   describe('Animated Value', () => {
     it('proxies `setValue` correctly', async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0);
       const ref = React.createRef(null);
 
@@ -91,6 +100,8 @@ describe('Native Animated', () => {
     });
 
     it('should set offset', async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0);
       opacity.setOffset(10);
       opacity.__makeNative();
@@ -109,6 +120,8 @@ describe('Native Animated', () => {
     });
 
     it('should flatten offset', async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0);
       opacity.__makeNative();
 
@@ -125,6 +138,8 @@ describe('Native Animated', () => {
     });
 
     it('should save value on unmount', async () => {
+      const {Animated} = importModules();
+
       NativeAnimatedModule.getValue = jest.fn((tag, saveCallback) => {
         saveCallback(1);
       });
@@ -145,6 +160,8 @@ describe('Native Animated', () => {
     });
 
     it('should deduct offset when saving value on unmount', async () => {
+      const {Animated} = importModules();
+
       NativeAnimatedModule.getValue = jest.fn((tag, saveCallback) => {
         // Assume current raw value of value node is 0.5, the NativeAnimated
         // getValue API returns the sum of raw value and offset, so return 1.
@@ -167,6 +184,8 @@ describe('Native Animated', () => {
     });
 
     it('should extract offset', async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0);
       opacity.__makeNative();
 
@@ -185,17 +204,25 @@ describe('Native Animated', () => {
 
   describe('Animated Listeners', () => {
     it('should get updates', () => {
+      const {Animated, NativeAnimatedHelper} = importModules();
+
       const value1 = new Animated.Value(0);
       value1.__makeNative();
+      const nativeTag = value1.__getNativeTag();
+
+      value1.__attach();
       const listener = jest.fn();
       const id = value1.addListener(listener);
       expect(
         NativeAnimatedModule.startListeningToAnimatedNodeValue,
-      ).toHaveBeenCalledWith(value1.__getNativeTag());
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        NativeAnimatedModule.startListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledWith(nativeTag);
 
       NativeAnimatedHelper.nativeEventEmitter.emit('onAnimatedValueUpdate', {
         value: 42,
-        tag: value1.__getNativeTag(),
+        tag: nativeTag,
       });
       expect(listener).toHaveBeenCalledTimes(1);
       expect(listener).toBeCalledWith({value: 42});
@@ -203,49 +230,65 @@ describe('Native Animated', () => {
 
       NativeAnimatedHelper.nativeEventEmitter.emit('onAnimatedValueUpdate', {
         value: 7,
-        tag: value1.__getNativeTag(),
+        tag: nativeTag,
       });
       expect(listener).toHaveBeenCalledTimes(2);
       expect(listener).toBeCalledWith({value: 7});
       expect(value1.__getValue()).toBe(7);
 
       value1.removeListener(id);
+      value1.__detach();
       expect(
         NativeAnimatedModule.stopListeningToAnimatedNodeValue,
-      ).toHaveBeenCalledWith(value1.__getNativeTag());
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        NativeAnimatedModule.stopListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledWith(nativeTag);
 
       NativeAnimatedHelper.nativeEventEmitter.emit('onAnimatedValueUpdate', {
         value: 1492,
-        tag: value1.__getNativeTag(),
+        tag: nativeTag,
       });
       expect(listener).toHaveBeenCalledTimes(2);
       expect(value1.__getValue()).toBe(7);
     });
 
     it('should removeAll', () => {
+      const {Animated, NativeAnimatedHelper} = importModules();
+
       const value1 = new Animated.Value(0);
       value1.__makeNative();
+      const nativeTag = value1.__getNativeTag();
+
+      value1.__attach();
       const listener = jest.fn();
       [1, 2, 3, 4].forEach(() => value1.addListener(listener));
       expect(
         NativeAnimatedModule.startListeningToAnimatedNodeValue,
-      ).toHaveBeenCalledWith(value1.__getNativeTag());
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        NativeAnimatedModule.startListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledWith(nativeTag);
 
       NativeAnimatedHelper.nativeEventEmitter.emit('onAnimatedValueUpdate', {
         value: 42,
-        tag: value1.__getNativeTag(),
+        tag: nativeTag,
       });
       expect(listener).toHaveBeenCalledTimes(4);
       expect(listener).toBeCalledWith({value: 42});
 
       value1.removeAllListeners();
+      value1.__detach();
       expect(
         NativeAnimatedModule.stopListeningToAnimatedNodeValue,
-      ).toHaveBeenCalledWith(value1.__getNativeTag());
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        NativeAnimatedModule.stopListeningToAnimatedNodeValue,
+      ).toHaveBeenCalledWith(nativeTag);
 
       NativeAnimatedHelper.nativeEventEmitter.emit('onAnimatedValueUpdate', {
         value: 7,
-        tag: value1.__getNativeTag(),
+        tag: nativeTag,
       });
       expect(listener).toHaveBeenCalledTimes(4);
     });
@@ -253,6 +296,8 @@ describe('Native Animated', () => {
 
   describe('Animated Events', () => {
     it('should map events', async () => {
+      const {Animated} = importModules();
+
       const value = new Animated.Value(0);
       value.__makeNative();
       const event = Animated.event([{nativeEvent: {state: {foo: value}}}], {
@@ -281,6 +326,8 @@ describe('Native Animated', () => {
     });
 
     it('should map AnimatedValueXY', async () => {
+      const {Animated} = importModules();
+
       const value = new Animated.ValueXY({x: 0, y: 0});
       value.__makeNative();
       const event = Animated.event([{nativeEvent: {state: value}}], {
@@ -299,6 +346,8 @@ describe('Native Animated', () => {
     });
 
     it('should throw on invalid event path', async () => {
+      const {Animated} = importModules();
+
       const value = new Animated.Value(0);
       value.__makeNative();
       const event = Animated.event([{notNativeEvent: {foo: value}}], {
@@ -323,6 +372,8 @@ describe('Native Animated', () => {
     });
 
     it('should call listeners', () => {
+      const {Animated} = importModules();
+
       const value = new Animated.Value(0);
       value.__makeNative();
       const listener = jest.fn();
@@ -339,6 +390,8 @@ describe('Native Animated', () => {
 
   describe('Animated Graph', () => {
     it('creates and detaches nodes', async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0);
       const root = await create(<Animated.View style={{opacity}} />);
 
@@ -379,6 +432,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid description for value, style and props nodes', async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0);
       await create(<Animated.View style={{opacity}} />);
 
@@ -403,6 +458,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid graph description for Animated.add nodes', async () => {
+      const {Animated} = importModules();
+
       const first = new Animated.Value(1);
       const second = new Animated.Value(2);
       first.__makeNative();
@@ -447,6 +504,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid graph description for Animated.subtract nodes', async () => {
+      const {Animated} = importModules();
+
       const first = new Animated.Value(2);
       const second = new Animated.Value(1);
       first.__makeNative();
@@ -491,6 +550,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid graph description for Animated.multiply nodes', async () => {
+      const {Animated} = importModules();
+
       const first = new Animated.Value(2);
       const second = new Animated.Value(1);
       first.__makeNative();
@@ -535,6 +596,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid graph description for Animated.divide nodes', async () => {
+      const {Animated} = importModules();
+
       const first = new Animated.Value(4);
       const second = new Animated.Value(2);
       first.__makeNative();
@@ -579,6 +642,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid graph description for Animated.modulo nodes', async () => {
+      const {Animated} = importModules();
+
       const value = new Animated.Value(4);
       value.__makeNative();
 
@@ -613,6 +678,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid graph description for interpolate() nodes', async () => {
+      const {Animated} = importModules();
+
       const value = new Animated.Value(10);
       value.__makeNative();
 
@@ -657,6 +724,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid graph description for transform nodes', async () => {
+      const {Animated} = importModules();
+
       const translateX = new Animated.Value(0);
       translateX.__makeNative();
 
@@ -685,6 +754,8 @@ describe('Native Animated', () => {
     });
 
     it('sends create operations before connect operations for multiple animated style props', async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0);
       const borderRadius = new Animated.Value(0);
       await create(<Animated.View style={{borderRadius, opacity}} />);
@@ -779,6 +850,8 @@ describe('Native Animated', () => {
     });
 
     it('sends create operations before connect operations for multiple animated transform props', async () => {
+      const {Animated} = importModules();
+
       const translateX = new Animated.Value(0);
       const translateY = new Animated.Value(0);
       await create(
@@ -901,6 +974,8 @@ describe('Native Animated', () => {
     });
 
     it('sends create operations before connect operations for multiple animated props', async () => {
+      const {Animated} = importModules();
+
       const propA = new Animated.Value(0);
       const propB = new Animated.Value(0);
       await create(<Animated.View propA={propA} propB={propB} />);
@@ -973,6 +1048,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid graph description for Animated.diffClamp nodes', async () => {
+      const {Animated} = importModules();
+
       const value = new Animated.Value(2);
       value.__makeNative();
 
@@ -1007,6 +1084,8 @@ describe('Native Animated', () => {
     });
 
     it("doesn't call into native API if useNativeDriver is set to false", async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0);
 
       const root = await create(<Animated.View style={{opacity}} />);
@@ -1023,6 +1102,8 @@ describe('Native Animated', () => {
     });
 
     it('fails when trying to run non-native animation on native node', async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0);
       const ref = React.createRef(null);
 
@@ -1053,6 +1134,8 @@ describe('Native Animated', () => {
     });
 
     it('fails for unsupported styles', async () => {
+      const {Animated} = importModules();
+
       const left = new Animated.Value(0);
 
       await create(<Animated.View style={{left}} />);
@@ -1073,6 +1156,8 @@ describe('Native Animated', () => {
     });
 
     it('works for any `static` props and styles', async () => {
+      const {Animated} = importModules();
+
       // Passing "unsupported" props should work just fine as long as they are not animated
       const opacity = new Animated.Value(0);
       opacity.__makeNative();
@@ -1097,6 +1182,8 @@ describe('Native Animated', () => {
 
   describe('Animations', () => {
     it('sends a valid timing animation description', () => {
+      const {Animated} = importModules();
+
       const anim = new Animated.Value(0);
       Animated.timing(anim, {
         toValue: 10,
@@ -1118,6 +1205,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid spring animation description', () => {
+      const {Animated} = importModules();
+
       const anim = new Animated.Value(0);
       Animated.spring(anim, {
         toValue: 10,
@@ -1194,6 +1283,8 @@ describe('Native Animated', () => {
     });
 
     it('sends a valid decay animation description', () => {
+      const {Animated} = importModules();
+
       const anim = new Animated.Value(0);
       Animated.decay(anim, {
         velocity: 10,
@@ -1210,6 +1301,8 @@ describe('Native Animated', () => {
     });
 
     it('works with Animated.loop', () => {
+      const {Animated} = importModules();
+
       const anim = new Animated.Value(0);
       Animated.loop(
         Animated.decay(anim, {
@@ -1229,6 +1322,8 @@ describe('Native Animated', () => {
     });
 
     it('sends stopAnimation command to native', () => {
+      const {Animated} = importModules();
+
       const value = new Animated.Value(0);
       const animation = Animated.timing(value, {
         toValue: 10,
@@ -1256,6 +1351,8 @@ describe('Native Animated', () => {
     });
 
     it('calls stopAnimation callback with native value', () => {
+      const {Animated} = importModules();
+
       NativeAnimatedModule.getValue = jest.fn((tag, saveCallback) => {
         saveCallback(1);
       });
@@ -1281,7 +1378,58 @@ describe('Native Animated', () => {
   });
 
   describe('Animated Components', () => {
+    it('preserves current values on update and unmount', async () => {
+      const {ReactNativeFeatureFlags} = importModules();
+      ReactNativeFeatureFlags.override({enableAnimatedPropsMemo: () => true});
+
+      const {Animated} = importModules();
+
+      const opacity = new Animated.Value(0);
+      opacity.__makeNative();
+
+      const root = await create(<Animated.View style={{opacity}} />);
+      expect(NativeAnimatedModule.restoreDefaultValues).not.toHaveBeenCalled();
+
+      await update(root, <Animated.View style={{opacity}} />);
+      expect(NativeAnimatedModule.restoreDefaultValues).not.toHaveBeenCalled();
+
+      await unmount(root);
+      // Make sure it doesn't get called on unmount.
+      expect(NativeAnimatedModule.restoreDefaultValues).not.toHaveBeenCalled();
+    });
+
+    it('restores defaults when receiving new animated values', async () => {
+      const {ReactNativeFeatureFlags} = importModules();
+      ReactNativeFeatureFlags.override({enableAnimatedPropsMemo: () => true});
+
+      const {Animated} = importModules();
+
+      const opacityA = new Animated.Value(0);
+      const opacityB = new Animated.Value(0);
+      opacityA.__makeNative();
+      opacityB.__makeNative();
+
+      const root = await create(<Animated.View style={{opacity: opacityA}} />);
+      expect(NativeAnimatedModule.restoreDefaultValues).not.toHaveBeenCalled();
+
+      await update(root, <Animated.View style={{opacity: opacityB}} />);
+      expect(NativeAnimatedModule.restoreDefaultValues).toHaveBeenCalledTimes(
+        1,
+      );
+
+      await unmount(root);
+      // Make sure it doesn't get called on unmount.
+      expect(NativeAnimatedModule.restoreDefaultValues).toHaveBeenCalledTimes(
+        1,
+      );
+    });
+
     it('should restore default values on prop updates only', async () => {
+      const {ReactNativeFeatureFlags} = importModules();
+      ReactNativeFeatureFlags.override({enableAnimatedPropsMemo: () => false});
+
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0);
       opacity.__makeNative();
 
@@ -1301,6 +1449,8 @@ describe('Native Animated', () => {
     });
 
     it('connects the native view on mount and disconnects on unmount', async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0, {useNativeDriver: true});
 
       const root = await create(<Animated.View style={{opacity}} />);
@@ -1322,6 +1472,8 @@ describe('Native Animated', () => {
     });
 
     it('reconnects the native view when the component is remounted', async () => {
+      const {Animated} = importModules();
+
       const opacity = new Animated.Value(0, {useNativeDriver: true});
       const ref = createRef();
       await create(<Animated.View ref={ref} style={{opacity}} />);

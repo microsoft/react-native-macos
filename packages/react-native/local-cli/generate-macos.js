@@ -3,7 +3,6 @@
 const {
   copyProjectTemplateAndReplace,
   installDependencies,
-  installPods,
   printFinishMessage,
 } = require('./generator-macos');
 const fs = require('fs');

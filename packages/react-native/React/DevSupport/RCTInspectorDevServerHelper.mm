@@ -14,7 +14,6 @@
 
 #import <React/RCTCxxInspectorPackagerConnection.h>
 #import <React/RCTDefines.h>
-#import <React/RCTInspectorPackagerConnection.h>
 
 #import <CommonCrypto/CommonCrypto.h>
 #import <jsinspector-modern/InspectorFlags.h>
@@ -149,15 +148,11 @@ static void sendEventToAllConnections(NSString *event)
 
 + (void)openDebugger:(NSURL *)bundleURL withErrorMessage:(NSString *)errorMessage
 {
-  NSString *appId = [[[NSBundle mainBundle] bundleIdentifier]
-      stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLQueryAllowedCharacterSet];
-
   NSString *escapedInspectorDeviceId = [getInspectorDeviceId()
       stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLQueryAllowedCharacterSet];
 
-  NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@/open-debugger?appId=%@&device=%@",
+  NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@/open-debugger?device=%@",
                                                                getServerHost(bundleURL),
-                                                               appId,
                                                                escapedInspectorDeviceId]];
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
   [request setHTTPMethod:@"POST"];
@@ -207,11 +202,7 @@ static void sendEventToAllConnections(NSString *event)
   connection = socketConnections[key];
    // macOS]
   if (!connection || !connection.isConnected) {
-    if (facebook::react::jsinspector_modern::InspectorFlags::getInstance().getFuseboxEnabled()) {
-      connection = [[RCTCxxInspectorPackagerConnection alloc] initWithURL:inspectorURL];
-    } else {
-      connection = [[RCTInspectorPackagerConnection alloc] initWithURL:inspectorURL];
-    }
+    connection = [[RCTCxxInspectorPackagerConnection alloc] initWithURL:inspectorURL];
 
     // [macOS safety check to avoid a crash
     if (connection != nil) {

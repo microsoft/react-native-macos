@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<89d0da3b2bb56a4ee3c887e6c57491b2>>
+ * @generated SignedSource<<77b4ed5aa33290ba9da1719544e974cb>>
  */
 
 /**
@@ -14,7 +14,7 @@
  *   packages/react-native/scripts/featureflags/ReactNativeFeatureFlags.config.js.
  *
  * To regenerate this code, run the following script from the repo root:
- *   yarn featureflags-update
+ *   yarn featureflags --update
  */
 
 #pragma once
@@ -33,28 +33,25 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool commonTestFlag(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool allowRecursiveCommitsWithSynchronousMountOnAndroid(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool batchRenderingUpdatesInEventLoop(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
   static bool completeReactInstanceCreationOnBgThreadOnAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool destroyFabricSurfacesInReactInstanceManager(
+  static bool disableEventLoopOnBridgeless(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool enableAlignItemsBaselineOnFabricIOS(
+  static bool disableMountItemReorderingAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool enableAndroidMixBlendModeProp(
+  static bool enableAccumulatedUpdatesInRawPropsAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool enableBackgroundStyleApplicator(
+  static bool enableBridgelessArchitecture(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool enableCleanTextInputYogaNode(
+  static bool enableCppPropsIteratorSetter(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableDeletionOfUnmountedViews(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableEagerRootViewAttachment(
@@ -66,7 +63,10 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool enableFabricLogs(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool enableFabricRendererExclusively(
+  static bool enableFabricRenderer(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableFixForViewCommandRace(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableGranularShadowTreeStateReconciliation(
@@ -75,13 +75,22 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool enableIOSViewClipToPaddingBox(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
+  static bool enableImagePrefetchingAndroid(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableLayoutAnimationsOnAndroid(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
   static bool enableLayoutAnimationsOnIOS(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableLongTaskAPI(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool enableMicrotasks(
+  static bool enableNewBackgroundAndBorderDrawables(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enablePreciseSchedulingForPremountItemsOnAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enablePropsUpdateReconciliationAndroid(
@@ -102,25 +111,13 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool excludeYogaFromRawProps(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool fetchImagesInViewPreallocation(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool fixIncorrectScrollViewStateUpdateOnAndroid(
+  static bool fixDifferentiatorEmittingUpdatesWithWrongParentTag(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool fixMappingOfEventPrioritiesBetweenFabricAndReact(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool fixMissedFabricStateUpdatesOnAndroid(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
   static bool fixMountingCoordinatorReportedPendingTransactionsOnAndroid(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool forceBatchingMountItemsOnAndroid(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool fuseboxEnabledDebug(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool fuseboxEnabledRelease(
@@ -135,10 +132,10 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool loadVectorDrawablesOnImages(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool setAndroidLayoutDirection(
+  static bool traceTurboModulePromiseRejectionsOnAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool traceTurboModulePromiseRejectionsOnAndroid(
+  static bool useAlwaysAvailableJSErrorHandling(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool useFabricInterop(
@@ -147,13 +144,7 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool useImmediateExecutorInAndroidBridgeless(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool useModernRuntimeScheduler(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
   static bool useNativeViewConfigsInBridgelessMode(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool useNewReactImageViewBackgroundDrawing(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool useOptimisedViewPreallocationOnAndroid(
@@ -162,16 +153,16 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool useOptimizedEventBatchingOnAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
+  static bool useRawPropsJsiValue(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
   static bool useRuntimeShadowNodeReferenceUpdate(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool useRuntimeShadowNodeReferenceUpdateOnLayout(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool useStateAlignmentMechanism(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
   static bool useTurboModuleInterop(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool useTurboModules(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static void override(
@@ -180,6 +171,10 @@ class JReactNativeFeatureFlagsCxxInterop
 
   static void dangerouslyReset(
       facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static jni::local_ref<jstring> dangerouslyForceOverride(
+      facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>,
+      jni::alias_ref<jobject> provider);
 
   static void registerNatives();
 };

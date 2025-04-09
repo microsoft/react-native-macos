@@ -12,12 +12,7 @@
 
 import type {TextStyleProp, ViewStyleProp} from '../StyleSheet/StyleSheet';
 import type {PressEvent} from '../Types/CoreEventTypes';
-import type {
-  BlurEvent,
-  FocusEvent,
-  HandledKeyEvent,
-  KeyEvent,
-} from '../Types/CoreEventTypes'; // [macOS]
+import type {BlurEvent, FocusEvent} from '../Types/CoreEventTypes'; // [macOS]
 import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
@@ -171,56 +166,6 @@ type ButtonProps = $ReadOnly<{|
    */
   onFocus?: ?(e: FocusEvent) => void,
 
-  /**
-   * Handler to be called when a key down press is detected
-   */
-  onKeyDown?: ?(e: KeyEvent) => void,
-
-  /**
-   * Handler to be called when a key up press is detected
-   */
-  onKeyUp?: ?(e: KeyEvent) => void,
-
-  /*
-   * @deprecated use `keyDownEvents` or `keyUpEvents` instead
-   * Array of keys to receive key down events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
-   */
-  validKeysDown?: ?Array<string>,
-
-  /*
-   * @deprecated use `keyDownEvents` or `keyUpEvents` instead
-   * Array of keys to receive key up events for
-   * For arrow keys, add "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
-   */
-  validKeysUp?: ?Array<string>,
-
-  /**
-   * @deprecated use `keyDownEvents` or `keyUpEvents` instead
-   * When `true`, allows `onKeyDown` and `onKeyUp` to receive events not specified in
-   * `validKeysDown` and `validKeysUp`, respectively. Events matching `validKeysDown` and `validKeysUp`
-   * are still removed from the event queue, but the others are not.
-   *
-   * @platform macos
-   */
-  passthroughAllKeyEvents?: ?boolean,
-
-  /**
-   * Array of keys to receive key down events for. These events have their default native behavior prevented.
-   * Overrides the props `validKeysDown`, `validKeysUp` and `passthroughAllKeyEvents`
-   *
-   * @platform macos
-   */
-  keyDownEvents?: ?Array<HandledKeyEvent>,
-
-  /**
-   * Array of keys to receive key up events for. These events have their default native behavior prevented.
-   * Overrides the props `validKeysDown`, `validKeysUp` and `passthroughAllKeyEvents`
-   *
-   * @platform macos
-   */
-  keyUpEvents?: ?Array<HandledKeyEvent>,
-
   /*
    * Specifies the Tooltip for the view
    */
@@ -368,10 +313,12 @@ type ButtonProps = $ReadOnly<{|
 const Touchable: typeof TouchableNativeFeedback | typeof TouchableOpacity =
   Platform.OS === 'android' ? TouchableNativeFeedback : TouchableOpacity;
 
-const Button: React.AbstractComponent<
-  ButtonProps,
-  React.ElementRef<typeof Touchable>,
-> = React.forwardRef((props: ButtonProps, ref) => {
+type ButtonRef = React.ElementRef<typeof Touchable>;
+
+const Button: component(
+  ref: React.RefSetter<ButtonRef>,
+  ...props: ButtonProps
+) = React.forwardRef((props: ButtonProps, ref: React.RefSetter<ButtonRef>) => {
   const {
     accessibilityLabel,
     accessibilityRole, // [macOS]
@@ -402,8 +349,6 @@ const Button: React.AbstractComponent<
     // [macOS
     onFocus,
     onBlur,
-    onKeyDown,
-    onKeyUp,
     tooltip,
     // macOS]
   } = props;
@@ -479,6 +424,9 @@ const Button: React.AbstractComponent<
       tooltip={tooltip}
       // macOS]
       touchSoundDisabled={touchSoundDisabled}
+      // $FlowFixMe[incompatible-exact]
+      // $FlowFixMe[prop-missing]
+      // $FlowFixMe[incompatible-type-arg]
       ref={ref}>
       <View style={buttonStyles}>
         <Text style={textStyles} disabled={disabled}>

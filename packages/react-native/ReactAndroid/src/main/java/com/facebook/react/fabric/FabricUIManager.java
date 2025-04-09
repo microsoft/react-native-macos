@@ -48,9 +48,9 @@ import com.facebook.react.bridge.UIManager;
 import com.facebook.react.bridge.UIManagerListener;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.common.annotations.UnstableReactNativeAPI;
 import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.common.mapbuffer.ReadableMapBuffer;
-import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.react.fabric.events.EventEmitterWrapper;
 import com.facebook.react.fabric.events.FabricEventEmitter;
 import com.facebook.react.fabric.internal.interop.InteropUIBlockListener;
@@ -68,6 +68,7 @@ import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.internal.interop.InteropEventEmitter;
 import com.facebook.react.modules.core.ReactChoreographer;
 import com.facebook.react.modules.i18nmanager.I18nUtil;
+import com.facebook.react.uimanager.GuardedFrameCallback;
 import com.facebook.react.uimanager.IllegalViewOperationException;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ReactRoot;
@@ -159,7 +160,7 @@ public class FabricUIManager
     FabricSoLoader.staticInit();
   }
 
-  @Nullable private Binding mBinding;
+  @Nullable private FabricUIManagerBinding mBinding;
   @NonNull private final ReactApplicationContext mReactApplicationContext;
   @NonNull private final MountingManager mMountingManager;
   @NonNull private final EventDispatcher mEventDispatcher;
@@ -257,29 +258,6 @@ public class FabricUIManager
     return rootTag;
   }
 
-  /**
-   * This API returns metadata associated to the React Component that rendered the Android View
-   * received as a parameter.
-   *
-   * @param surfaceId {@link int} that represents the surfaceId for the View received as a
-   *     parameter. In practice surfaceId can be retrieved calling the {@link View#getId()} method
-   *     on the {@link ReactRoot} that holds the View received as a second parameter.
-   * @param view {@link View} view that will be used to retrieve the React view hierarchy metadata.
-   * @return a {@link ReadableMap} that contains metadata associated to the React Component that
-   *     rendered the Android View received as a parameter. For more details about the keys stored
-   *     in the {@link ReadableMap} refer to the "getInspectorDataForInstance" method from
-   *     jni/react/fabric/Binding.cpp file.
-   */
-  @UiThread
-  @ThreadConfined(UI)
-  public ReadableMap getInspectorDataForInstance(final int surfaceId, final View view) {
-    UiThreadUtil.assertOnUiThread();
-    int reactTag = view.getId();
-
-    EventEmitterWrapper eventEmitter = mMountingManager.getEventEmitter(surfaceId, reactTag);
-    return mBinding.getInspectorDataForInstance(eventEmitter);
-  }
-
   @Override
   @AnyThread
   @ThreadConfined(ANY)
@@ -329,12 +307,11 @@ public class FabricUIManager
             mReactApplicationContext, context, surfaceHandler.getModuleName(), rootTag);
     mMountingManager.startSurface(rootTag, reactContext, rootView);
 
-    surfaceHandler.setSurfaceId(rootTag);
-    if (surfaceHandler instanceof SurfaceHandlerBinding) {
-      mBinding.registerSurface((SurfaceHandlerBinding) surfaceHandler);
+    if (!(surfaceHandler instanceof SurfaceHandlerBinding)) {
+      throw new IllegalArgumentException("Invalid SurfaceHandler");
     }
-    surfaceHandler.setMountable(rootView != null);
-    surfaceHandler.start();
+    mBinding.startSurfaceWithSurfaceHandler(
+        rootTag, (SurfaceHandlerBinding) surfaceHandler, rootView != null);
   }
 
   public void attachRootView(final SurfaceHandler surfaceHandler, final View rootView) {
@@ -358,12 +335,10 @@ public class FabricUIManager
     }
 
     mMountingManager.stopSurface(surfaceHandler.getSurfaceId());
-
-    surfaceHandler.stop();
-
-    if (surfaceHandler instanceof SurfaceHandlerBinding) {
-      mBinding.unregisterSurface((SurfaceHandlerBinding) surfaceHandler);
+    if (!(surfaceHandler instanceof SurfaceHandlerBinding)) {
+      throw new IllegalArgumentException("Invalid SurfaceHandler");
     }
+    mBinding.stopSurfaceWithSurfaceHandler((SurfaceHandlerBinding) surfaceHandler);
   }
 
   /** Method called when an event has been dispatched on the C++ side. */
@@ -442,19 +417,25 @@ public class FabricUIManager
     // responsible for initializing and deallocating EventDispatcher. StaticViewConfigs is enabled
     // only in Bridgeless for now.
     // TODO T83943316: Remove this IF once StaticViewConfigs are enabled by default
-    if (!ReactFeatureFlags.enableBridgelessArchitecture) {
+    if (!ReactNativeFeatureFlags.enableBridgelessArchitecture()) {
       mEventDispatcher.onCatalystInstanceDestroyed();
     }
   }
 
   @Override
   public void markActiveTouchForTag(int surfaceId, int reactTag) {
-    mMountingManager.getSurfaceManager(surfaceId).markActiveTouchForTag(reactTag);
+    SurfaceMountingManager surfaceMountingManager = mMountingManager.getSurfaceManager(surfaceId);
+    if (surfaceMountingManager != null) {
+      surfaceMountingManager.markActiveTouchForTag(reactTag);
+    }
   }
 
   @Override
   public void sweepActiveTouchForTag(int surfaceId, int reactTag) {
-    mMountingManager.getSurfaceManager(surfaceId).sweepActiveTouchForTag(reactTag);
+    SurfaceMountingManager surfaceMountingManager = mMountingManager.getSurfaceManager(surfaceId);
+    if (surfaceMountingManager != null) {
+      surfaceMountingManager.sweepActiveTouchForTag(reactTag);
+    }
   }
 
   /**
@@ -629,10 +610,10 @@ public class FabricUIManager
    * @return if theme data is available in the output parameters.
    */
   public boolean getThemeData(int surfaceId, float[] defaultTextInputPadding) {
-    Context context =
-        mMountingManager.getSurfaceManagerEnforced(surfaceId, "getThemeData").getContext();
+    SurfaceMountingManager surfaceMountingManager = mMountingManager.getSurfaceManager(surfaceId);
+    Context context = surfaceMountingManager != null ? surfaceMountingManager.getContext() : null;
     if (context == null) {
-      FLog.w(TAG, "\"themedReactContext\" is null when call \"getThemeData\"");
+      FLog.w(TAG, "Couldn't get context for surfaceId %d in getThemeData", surfaceId);
       return false;
     }
 
@@ -760,6 +741,14 @@ public class FabricUIManager
             isLayoutable));
   }
 
+  @SuppressWarnings("unused")
+  @AnyThread
+  @ThreadConfined(ANY)
+  private void destroyUnmountedView(int surfaceId, int reactTag) {
+    mMountItemDispatcher.addMountItem(
+        MountItemFactory.createDestroyViewMountItem(surfaceId, reactTag));
+  }
+
   @SuppressLint("NotInvokedPrivateMethod")
   @SuppressWarnings("unused")
   @AnyThread
@@ -868,7 +857,18 @@ public class FabricUIManager
     }
   }
 
-  public void setBinding(Binding binding) {
+  /**
+   * This method initiates preloading of an image specified by ImageSource. It can later be consumed
+   * by an ImageView.
+   */
+  @UnstableReactNativeAPI
+  public void experimental_prefetchResource(
+      String componentName, int surfaceId, int reactTag, ReadableMapBuffer params) {
+    mMountingManager.experimental_prefetchResource(
+        mReactApplicationContext, componentName, surfaceId, reactTag, params);
+  }
+
+  public void setBinding(FabricUIManagerBinding binding) {
     mBinding = binding;
   }
 
@@ -950,7 +950,6 @@ public class FabricUIManager
    * @param reactTag
    * @param eventName
    * @param canCoalesceEvent
-   * @param customCoalesceKey
    * @param params
    * @param eventCategory
    */
@@ -1021,7 +1020,6 @@ public class FabricUIManager
 
   @Override
   @NonNull
-  @SuppressWarnings("unchecked")
   public EventDispatcher getEventDispatcher() {
     return mEventDispatcher;
   }
@@ -1267,7 +1265,7 @@ public class FabricUIManager
                   public void run() {
                     mMountNotificationScheduled = false;
 
-                    final @Nullable Binding binding = mBinding;
+                    final @Nullable FabricUIManagerBinding binding = mBinding;
                     if (binding == null || mDestroyed) {
                       mMountedSurfaceIds.clear();
                       return;

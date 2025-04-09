@@ -8,7 +8,7 @@
  * @format
  */
 
-import type {HostComponent} from '../Renderer/shims/ReactNativeTypes';
+import type {HostInstance} from '../Renderer/shims/ReactNativeTypes';
 import type {
   BlurEvent,
   FocusEvent,
@@ -28,7 +28,6 @@ import {isHoverEnabled} from './HoverState';
 import PressabilityPerformanceEventEmitter from './PressabilityPerformanceEventEmitter.js';
 import {type PressabilityTouchSignal as TouchSignal} from './PressabilityTypes.js';
 import invariant from 'invariant';
-import * as React from 'react';
 
 export type PressabilityConfig = $ReadOnly<{|
   /**
@@ -101,11 +100,15 @@ export type PressabilityConfig = $ReadOnly<{|
   // [macOS
   /*
    * Called after a key down event is detected.
+   *
+   * @platform macos
    */
   onKeyDown?: ?(event: KeyEvent) => void,
 
   /*
    * Called after a key up event is detected.
+   *
+   * @platform macos
    */
   onKeyUp?: ?(event: KeyEvent) => void,
   // macOS]
@@ -394,7 +397,7 @@ export default class Pressability {
   _longPressDelayTimeout: ?TimeoutID = null;
   _pressDelayTimeout: ?TimeoutID = null;
   _pressOutDelayTimeout: ?TimeoutID = null;
-  _responderID: ?number | React.ElementRef<HostComponent<mixed>> = null;
+  _responderID: ?number | HostInstance = null;
   _responderRegion: ?$ReadOnly<{|
     bottom: number,
     left: number,

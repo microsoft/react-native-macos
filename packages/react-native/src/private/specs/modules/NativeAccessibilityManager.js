@@ -21,12 +21,6 @@ export interface Spec extends TurboModule {
     onSuccess: (isGrayscaleEnabled: boolean) => void,
     onError: (error: Object) => void,
   ) => void;
-  // [macOS
-  +getCurrentHighContrastState: (
-    onSuccess: (isHighContrastEnabled: boolean) => void,
-    onError: (error: Object) => void,
-  ) => void;
-  // macOS]
   +getCurrentInvertColorsState: (
     onSuccess: (isInvertColorsEnabled: boolean) => void,
     onError: (error: Object) => void,
@@ -35,6 +29,16 @@ export interface Spec extends TurboModule {
     onSuccess: (isReduceMotionEnabled: boolean) => void,
     onError: (error: Object) => void,
   ) => void;
+  +getCurrentDarkerSystemColorsState?: (
+    onSuccess: (isDarkerSystemColorsEnabled: boolean) => void,
+    onError: (error: Object) => void,
+  ) => void;
+  // [macOS
+  +getCurrentHighContrastState: (
+    onSuccess: (isHighContrastEnabled: boolean) => void,
+    onError: (error: Object) => void,
+  ) => void;
+  // macOS]
   +getCurrentPrefersCrossFadeTransitionsState?: (
     onSuccess: (prefersCrossFadeTransitions: boolean) => void,
     onError: (error: Object) => void,

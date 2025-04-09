@@ -21,12 +21,6 @@ static TextInputTraits convertRawProp(
     const TextInputTraits& defaultTraits) {
   auto traits = TextInputTraits{};
 
-  traits.multiline = convertRawProp(
-      context,
-      rawProps,
-      "multiline",
-      sourceTraits.multiline,
-      defaultTraits.multiline);
   traits.autocapitalizationType = convertRawProp(
       context,
       rawProps,
@@ -93,12 +87,6 @@ static TextInputTraits convertRawProp(
       "secureTextEntry",
       sourceTraits.secureTextEntry,
       defaultTraits.secureTextEntry);
-  traits.submitBehavior = convertRawProp(
-      context,
-      rawProps,
-      "submitBehavior",
-      sourceTraits.submitBehavior,
-      defaultTraits.submitBehavior);
   traits.clearTextOnFocus = convertRawProp(
       context,
       rawProps,
@@ -147,6 +135,15 @@ static TextInputTraits convertRawProp(
       "smartInsertDelete",
       sourceTraits.smartInsertDelete,
       defaultTraits.smartInsertDelete);
+
+#ifdef TARGET_OS_OSX // [macOS
+  traits.grammarCheck = convertRawProp(
+      context,
+      rawProps,
+      "grammarCheck",
+      sourceTraits.grammarCheck,
+      defaultTraits.grammarCheck);
+#endif // macOS]
 
   return traits;
 }

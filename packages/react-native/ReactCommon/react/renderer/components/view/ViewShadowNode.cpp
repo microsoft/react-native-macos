@@ -6,10 +6,8 @@
  */
 
 #include "ViewShadowNode.h"
-#include <react/config/ReactNativeConfig.h>
 #include <react/renderer/components/view/HostPlatformViewTraitsInitializer.h>
 #include <react/renderer/components/view/primitives.h>
-#include <react/utils/CoreFeatures.h>
 
 namespace facebook::react {
 
@@ -70,7 +68,8 @@ void ViewShadowNode::initialize() noexcept {
       isColorMeaningful(viewProps.backgroundColor) || hasBorder() ||
       !viewProps.testId.empty() || !viewProps.boxShadow.empty() ||
       !viewProps.backgroundImage.empty() ||
-      HostPlatformViewTraitsInitializer::formsView(viewProps);
+      HostPlatformViewTraitsInitializer::formsView(viewProps) ||
+      viewProps.outlineWidth > 0;
 
   if (formsView) {
     traits_.set(ShadowNodeTraits::Trait::FormsView);

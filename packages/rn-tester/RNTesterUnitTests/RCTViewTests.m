@@ -41,7 +41,7 @@ static UIEdgeInsets RCTContentInsetsMock(RCTUIView *view) // [macOS]
   [RCTView autoAdjustInsetsForView:parentView withScrollView:scrollView updateOffset:NO];
 
   XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets(scrollView.contentInset, UIEdgeInsetsMake(2, 3, 4, 5)));
-  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets(scrollView.scrollIndicatorInsets, UIEdgeInsetsMake(2, 3, 4, 5)));
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets(scrollView.verticalScrollIndicatorInsets, UIEdgeInsetsMake(2, 3, 4, 5)));
 
   RCT_MOCK_RESET(RCTView, RCTContentInsets);
 }

@@ -26,7 +26,6 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.UIManagerHelper;
 import com.facebook.react.uimanager.common.UIManagerType;
-import com.facebook.react.uimanager.common.ViewUtil;
 import com.facebook.react.uimanager.events.Event;
 import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.events.EventDispatcherListener;
@@ -92,7 +91,8 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
 
     UIManager uiManager = UIManagerHelper.getUIManager(mReactApplicationContext, uiManagerType);
     if (uiManager != null) {
-      uiManager.<EventDispatcher>getEventDispatcher().addListener(this);
+      EventDispatcher eventDispatcher = (EventDispatcher) uiManager.getEventDispatcher();
+      eventDispatcher.addListener(this);
       if (uiManagerType == UIManagerType.FABRIC) {
         mEventListenerInitializedForFabric = true;
       } else {
@@ -557,7 +557,6 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
   @UiThread
   public void removeAnimatedEventFromView(
       int viewTag, String eventHandlerName, int animatedValueTag) {
-
     String eventName = normalizeEventName(eventHandlerName);
 
     ListIterator<EventAnimationDriver> it = mEventDrivers.listIterator();
@@ -569,6 +568,11 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
         it.remove();
         break;
       }
+    }
+
+    if (eventName.equals("topScroll")) {
+      // Handle the custom topScrollEnded event sent by the ScrollViews when the user stops dragging
+      removeAnimatedEventFromView(viewTag, "topScrollEnded", animatedValueTag);
     }
   }
 
@@ -591,36 +595,24 @@ public class NativeAnimatedNodesManager implements EventDispatcherListener {
 
   @UiThread
   private void handleEvent(Event event) {
-    if (!mEventDrivers.isEmpty()) {
-      // If the event has a different name in native convert it to it's JS name.
-      // TODO T64216139 Remove dependency of UIManagerModule when the Constants are not in Native
-      // anymore
-      if (mReactApplicationContext == null) {
-        return;
-      }
-      UIManager uiManager =
-          UIManagerHelper.getUIManager(
-              mReactApplicationContext,
-              ViewUtil.getUIManagerType(event.getViewTag(), event.getSurfaceId()));
-      if (uiManager == null) {
-        return;
-      }
+    if (mEventDrivers.isEmpty()) {
+      return;
+    }
 
-      boolean foundAtLeastOneDriver = false;
-      Event.EventAnimationDriverMatchSpec matchSpec = event.getEventAnimationDriverMatchSpec();
-      for (EventAnimationDriver driver : mEventDrivers) {
-        if (matchSpec.match(driver.viewTag, driver.eventName)) {
-          foundAtLeastOneDriver = true;
-          stopAnimationsForNode(driver.valueNode);
-          event.dispatchModern(driver);
-          mRunUpdateNodeList.add(driver.valueNode);
-        }
+    boolean foundAtLeastOneDriver = false;
+    Event.EventAnimationDriverMatchSpec matchSpec = event.getEventAnimationDriverMatchSpec();
+    for (EventAnimationDriver driver : mEventDrivers) {
+      if (matchSpec.match(driver.viewTag, driver.eventName)) {
+        foundAtLeastOneDriver = true;
+        stopAnimationsForNode(driver.valueNode);
+        event.dispatchModern(driver);
+        mRunUpdateNodeList.add(driver.valueNode);
       }
+    }
 
-      if (foundAtLeastOneDriver) {
-        updateNodes(mRunUpdateNodeList);
-        mRunUpdateNodeList.clear();
-      }
+    if (foundAtLeastOneDriver) {
+      updateNodes(mRunUpdateNodeList);
+      mRunUpdateNodeList.clear();
     }
   }
 

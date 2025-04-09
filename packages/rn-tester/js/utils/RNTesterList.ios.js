@@ -10,7 +10,7 @@
 
 'use strict';
 
-import type {RNTesterModuleInfo} from '../types/RNTesterTypes';
+import type {RNTesterModule, RNTesterModuleInfo} from '../types/RNTesterTypes';
 
 import ReactNativeFeatureFlags from 'react-native/Libraries/ReactNative/ReactNativeFeatureFlags';
 
@@ -71,6 +71,11 @@ const Components: Array<RNTesterModuleInfo> = [
   {
     key: 'KeyboardAvoidingViewExample',
     module: require('../examples/KeyboardAvoidingView/KeyboardAvoidingViewExample'),
+  },
+  {
+    key: 'LayoutConformanceExample',
+    module: require('../examples/LayoutConformance/LayoutConformanceExample')
+      .default,
   },
   {
     key: 'LayoutEventsExample',
@@ -240,6 +245,12 @@ const APIs: Array<RNTesterModuleInfo> = ([
     key: 'Dimensions',
     module: require('../examples/Dimensions/DimensionsExample'),
   },
+  {
+    key: 'DisplayContentsExample',
+    category: 'UI',
+    module: require('../examples/DisplayContents/DisplayContentsExample')
+      .default,
+  },
   // Only show the link for the example if the API is available.
   typeof IntersectionObserver === 'function'
     ? {
@@ -366,10 +377,6 @@ const APIs: Array<RNTesterModuleInfo> = ([
   },
   // [macOS
   {
-    key: 'ASANCrashExample',
-    module: require('../examples/ASAN/ASANCrashExample'),
-  },
-  {
     key: 'Focus Ring',
     module: require('../examples/FocusRing/FocusRingExample'),
   },
@@ -384,10 +391,16 @@ if (ReactNativeFeatureFlags.shouldEmitW3CPointerEvents()) {
   });
 }
 
-const Modules: {...} = {};
+const Playgrounds: Array<RNTesterModuleInfo> = [
+  {
+    key: 'PlaygroundExample',
+    module: require('../examples/Playground/PlaygroundExample'),
+  },
+];
 
-APIs.concat(Components).forEach(Example => {
-  // $FlowFixMe[prop-missing]
+const Modules: {[key: string]: RNTesterModule} = {};
+
+[...APIs, ...Components, ...Playgrounds].forEach(Example => {
   Modules[Example.key] = Example.module;
 });
 

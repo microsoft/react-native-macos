@@ -105,7 +105,8 @@ const UIAccessibilityTraits SwitchAccessibilityTrait = 0x20000000000001;
 
 static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 {
-  NSMutableString *str = [NSMutableString stringWithString:@""];
+  // Result string is initialized lazily to prevent useless but costly allocations.
+  NSMutableString *str = nil;
   for (RCTUIView *subview in view.subviews) { // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     NSString *label = subview.accessibilityLabel;
@@ -123,13 +124,16 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
       label = RCTRecursiveAccessibilityLabel(subview);
     }
     if (label && label.length > 0) {
+      if (str == nil) {
+        str = [NSMutableString string];
+      }
       if (str.length > 0) {
         [str appendString:@" "];
       }
       [str appendString:label];
     }
   }
-  return str.length == 0 ? nil : str;
+  return str;
 }
 
 @implementation RCTView {
@@ -251,18 +255,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     // of the hit view will return YES from -pointInside:withEvent:). See:
     //  - https://developer.apple.com/library/ios/qa/qa2013/qa1812.html
     for (RCTUIView *subview in [sortedSubviews reverseObjectEnumerator]) { // [macOS]
-      CGPoint pointForHitTest = CGPointZero; // [macOS
-#if !TARGET_OS_OSX // [macOS]
-      pointForHitTest = [subview convertPoint:point fromView:self];
-#else // [macOS
-      // Paper and Fabric components use the target view coordinate space for hit testing
-      if ([subview isKindOfClass:[RCTView class]] || [subview respondsToSelector:@selector(updateProps:oldProps:)]) {
-        pointForHitTest = [subview convertPoint:point fromView:self];
-      } else {
-        // Native macOS views require the point to be in the super view coordinate space for hit testing.
-        pointForHitTest = point;
-      }
-#endif // macOS]
+      CGPoint pointForHitTest = [subview convertPoint:point fromView:self];
       hitSubview = RCTUIViewHitTestWithEvent(subview, pointForHitTest, event); // macOS]
       if (hitSubview != nil) {
         break;
@@ -1186,7 +1179,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 #else // [macOS
   RCTUIColor *backgroundColor = _backgroundColor;
 #endif // macOS]
-  
+
 #if TARGET_OS_OSX // [macOS
   CATransform3D transform = [[self layer] transform];
   CGPoint anchorPoint = [layer anchorPoint];
@@ -1598,23 +1591,23 @@ NSMutableDictionary<NSNumber *, NSNumber *> *GetEventDispatchStateDictionary(NSE
 
 - (RCTViewKeyboardEvent*)keyboardEvent:(NSEvent*)event shouldBlock:(BOOL *)shouldBlock {
   BOOL keyDown = event.type == NSEventTypeKeyDown;
-  NSArray<RCTHandledKey *> *validKeys = keyDown ? self.validKeysDown : self.validKeysUp;
+  NSArray<RCTHandledKey *> *keyEvents = keyDown ? self.keyDownEvents : self.keyUpEvents;
 
-  // If the view is focusable and the component didn't explicity set the validKeysDown or validKeysUp,
+  // If the view is focusable and the component didn't explicity set the keyDownEvents or keyUpEvents,
   // allow enter/return and spacebar key events to mimic the behavior of native controls.
-  if (self.focusable && validKeys == nil) {
-    validKeys = @[
+  if (self.focusable && keyEvents == nil) {
+    keyEvents = @[
       [[RCTHandledKey alloc] initWithKey:@"Enter"],
       [[RCTHandledKey alloc] initWithKey:@" "]
     ];
   }
 
   // If a view specifies a key, it will always be removed from the responder chain (i.e. "handled")
-  *shouldBlock = [RCTHandledKey event:event matchesFilter:validKeys];
+  *shouldBlock = [RCTHandledKey event:event matchesFilter:keyEvents];
 
-  // If an event isn't being removed from the queue, but was requested to "passthrough" by a view,
-  // we want to be sure we dispatch it only once for that view. See note for GetEventDispatchStateDictionary.
-  if ([self passthroughAllKeyEvents] && !*shouldBlock) {
+  // If an event isn't being removed from the queue, we want to be sure we dispatch it
+  // only once for that view. See note for GetEventDispatchStateDictionary.
+  if (!*shouldBlock) {
     NSNumber *tag = [self reactTag];
     NSMutableDictionary<NSNumber *, NSNumber *> *dict = GetEventDispatchStateDictionary(event);
 
@@ -1623,11 +1616,6 @@ NSMutableDictionary<NSNumber *, NSNumber *> *GetEventDispatchStateDictionary(NSE
 	}
 
 	dict[tag] = @YES;
-  }
-
-  // Don't pass events we don't care about
-  if (![self passthroughAllKeyEvents] && !*shouldBlock) {
-    return nil;
   }
 
   return [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];

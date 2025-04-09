@@ -8,18 +8,16 @@
  * @format
  */
 
-'use strict';
-
-import type {EventSubscription} from '../../vendor/emitter/EventEmitter';
 import type {PlatformConfig} from '../AnimatedPlatformConfig';
 
 import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
 import invariant from 'invariant';
 
-const {startListeningToAnimatedNodeValue, stopListeningToAnimatedNodeValue} =
-  NativeAnimatedHelper.API;
-
 type ValueListenerCallback = (state: {value: number, ...}) => mixed;
+
+export type AnimatedNodeConfig = $ReadOnly<{
+  debugID?: string,
+}>;
 
 let _uniqueId = 1;
 let _assertNativeAnimatedModule: ?() => void = () => {
@@ -29,12 +27,22 @@ let _assertNativeAnimatedModule: ?() => void = () => {
   _assertNativeAnimatedModule = null;
 };
 
-// Note(vjeux): this would be better as an interface but flow doesn't
-// support them yet
 export default class AnimatedNode {
   #listeners: Map<string, ValueListenerCallback> = new Map();
+
   _platformConfig: ?PlatformConfig = undefined;
-  __nativeAnimatedValueListener: ?EventSubscription = null;
+
+  constructor(
+    config?: ?$ReadOnly<{
+      ...AnimatedNodeConfig,
+      ...
+    }>,
+  ) {
+    if (__DEV__) {
+      this.__debugID = config?.debugID;
+    }
+  }
+
   __attach(): void {}
   __detach(): void {
     this.removeAllListeners();
@@ -56,17 +64,15 @@ export default class AnimatedNode {
   /* Methods and props used by native Animated impl */
   __isNative: boolean = false;
   __nativeTag: ?number = undefined;
-  __shouldUpdateListenersForNewNativeTag: boolean = false;
 
   __makeNative(platformConfig: ?PlatformConfig): void {
-    if (!this.__isNative) {
-      throw new Error('This node cannot be made a "native" animated node');
-    }
+    // Subclasses are expected to set `__isNative` to true before this.
+    invariant(
+      this.__isNative,
+      'This node cannot be made a "native" animated node',
+    );
 
     this._platformConfig = platformConfig;
-    if (this.#listeners.size > 0) {
-      this._startListeningToNativeValueUpdates();
-    }
   }
 
   /**
@@ -79,9 +85,6 @@ export default class AnimatedNode {
   addListener(callback: (value: any) => mixed): string {
     const id = String(_uniqueId++);
     this.#listeners.set(id, callback);
-    if (this.__isNative) {
-      this._startListeningToNativeValueUpdates();
-    }
     return id;
   }
 
@@ -93,9 +96,6 @@ export default class AnimatedNode {
    */
   removeListener(id: string): void {
     this.#listeners.delete(id);
-    if (this.__isNative && this.#listeners.size === 0) {
-      this._stopListeningForNativeValueUpdates();
-    }
   }
 
   /**
@@ -105,42 +105,13 @@ export default class AnimatedNode {
    */
   removeAllListeners(): void {
     this.#listeners.clear();
-    if (this.__isNative) {
-      this._stopListeningForNativeValueUpdates();
-    }
   }
 
   hasListeners(): boolean {
     return this.#listeners.size > 0;
   }
 
-  _startListeningToNativeValueUpdates() {
-    if (
-      this.__nativeAnimatedValueListener &&
-      !this.__shouldUpdateListenersForNewNativeTag
-    ) {
-      return;
-    }
-
-    if (this.__shouldUpdateListenersForNewNativeTag) {
-      this.__shouldUpdateListenersForNewNativeTag = false;
-      this._stopListeningForNativeValueUpdates();
-    }
-
-    startListeningToAnimatedNodeValue(this.__getNativeTag());
-    this.__nativeAnimatedValueListener =
-      NativeAnimatedHelper.nativeEventEmitter.addListener(
-        'onAnimatedValueUpdate',
-        data => {
-          if (data.tag !== this.__getNativeTag()) {
-            return;
-          }
-          this.__onAnimatedValueUpdateReceived(data.value);
-        },
-      );
-  }
-
-  __onAnimatedValueUpdateReceived(value: number) {
+  __onAnimatedValueUpdateReceived(value: number): void {
     this.__callListeners(value);
   }
 
@@ -149,16 +120,6 @@ export default class AnimatedNode {
     this.#listeners.forEach(listener => {
       listener(event);
     });
-  }
-
-  _stopListeningForNativeValueUpdates() {
-    if (!this.__nativeAnimatedValueListener) {
-      return;
-    }
-
-    this.__nativeAnimatedValueListener.remove();
-    this.__nativeAnimatedValueListener = null;
-    stopListeningToAnimatedNodeValue(this.__getNativeTag());
   }
 
   __getNativeTag(): number {
@@ -181,7 +142,6 @@ export default class AnimatedNode {
         config.platformConfig = this._platformConfig;
       }
       NativeAnimatedHelper.API.createAnimatedNode(nativeTag, config);
-      this.__shouldUpdateListenersForNewNativeTag = true;
     }
     return nativeTag;
   }
@@ -192,15 +152,28 @@ export default class AnimatedNode {
     );
   }
 
-  toJSON(): any {
-    return this.__getValue();
-  }
-
   __getPlatformConfig(): ?PlatformConfig {
     return this._platformConfig;
   }
 
   __setPlatformConfig(platformConfig: ?PlatformConfig) {
     this._platformConfig = platformConfig;
+  }
+
+  /**
+   * NOTE: This is intended to prevent `JSON.stringify` from throwing "cyclic
+   * structure" errors in React DevTools. Avoid depending on this!
+   */
+  toJSON(): mixed {
+    return this.__getValue();
+  }
+
+  __debugID: ?string = undefined;
+
+  __getDebugID(): ?string {
+    if (__DEV__) {
+      return this.__debugID;
+    }
+    return undefined;
   }
 }

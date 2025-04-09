@@ -1,0 +1,47 @@
+parameters:
+  - name: sdk
+    type: string
+  - name: configuration
+    type: string
+  - name: scheme
+    type: string
+  - name: packager_platform
+    type: string
+
+
+
+  # https://github.com/microsoft/react-native-macos/issues/2297
+  # Skip native tests as they tend to be flaky
+steps:
+  - ${{ if ne(parameters.scheme, 'RNTester-visionOS') }}:
+   - task: ShellScript@2
+     displayName: Setup packager and WebSocket test server
+     inputs:
+       scriptPath: .ado/scripts/ado-test-setup.sh
+       disableAutoCwd: true
+       cwd: ''
+
+   - script: |
+       echo Preparing the packager for platform $PLATFORM
+       curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/packages/rn-tester/js/RNTesterApp.${PLATFORM}.bundle?platform=${PLATFORM}&dev=true" -o /dev/null
+       curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/packages/rn-tester/js/RNTesterApp.${PLATFORM}.bundle?platform=${PLATFORM}&dev=true&minify=false" -o /dev/null
+       curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/IntegrationTests/IntegrationTestsApp.bundle?platform=${PLATFORM}&dev=true" -o /dev/null
+       curl --retry-connrefused --connect-timeout 5 --max-time 10 --retry 10 --retry-delay 5 --retry-max-time 120 "http://localhost:8081/IntegrationTests/RCTRootViewIntegrationTestApp.bundle?platform=${PLATFORM}&dev=true" -o /dev/null
+     env:
+       PLATFORM: ${{ parameters.packager_platform }}
+     displayName: Fetch JS bundles from dev server
+
+   - script: |
+       set -eox pipefail
+       .ado/scripts/xcodebuild.sh packages/rn-tester/RNTesterPods.xcworkspace ${{ parameters.sdk }} ${{ parameters.configuration }} ${{ parameters.scheme }} test
+     env:
+       CCACHE_DISABLE: 1
+     displayName: Test ${{ parameters.scheme }}
+
+   - task: ShellScript@2
+     displayName: Cleanup packager and WebSocket test server
+     inputs:
+       scriptPath: .ado/scripts/ado-test-cleanup.sh
+       disableAutoCwd: true
+       cwd: ''
+     condition: always()

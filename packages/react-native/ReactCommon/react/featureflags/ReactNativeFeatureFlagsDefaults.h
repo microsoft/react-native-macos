@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2a078848517574213e02b42dff1af8e8>>
+ * @generated SignedSource<<e38a0e9474ac349a4b8153862470c856>>
  */
 
 /**
@@ -14,7 +14,7 @@
  *   packages/react-native/scripts/featureflags/ReactNativeFeatureFlags.config.js.
  *
  * To regenerate this code, run the following script from the repo root:
- *   yarn featureflags-update
+ *   yarn featureflags --update
  */
 
 #pragma once
@@ -31,35 +31,31 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool allowRecursiveCommitsWithSynchronousMountOnAndroid() override {
-    return false;
-  }
-
-  bool batchRenderingUpdatesInEventLoop() override {
-    return false;
-  }
-
   bool completeReactInstanceCreationOnBgThreadOnAndroid() override {
-    return false;
-  }
-
-  bool destroyFabricSurfacesInReactInstanceManager() override {
-    return false;
-  }
-
-  bool enableAlignItemsBaselineOnFabricIOS() override {
     return true;
   }
 
-  bool enableAndroidMixBlendModeProp() override {
+  bool disableEventLoopOnBridgeless() override {
     return false;
   }
 
-  bool enableBackgroundStyleApplicator() override {
-    return true;
+  bool disableMountItemReorderingAndroid() override {
+    return false;
   }
 
-  bool enableCleanTextInputYogaNode() override {
+  bool enableAccumulatedUpdatesInRawPropsAndroid() override {
+    return false;
+  }
+
+  bool enableBridgelessArchitecture() override {
+    return false;
+  }
+
+  bool enableCppPropsIteratorSetter() override {
+    return false;
+  }
+
+  bool enableDeletionOfUnmountedViews() override {
     return false;
   }
 
@@ -75,7 +71,11 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableFabricRendererExclusively() override {
+  bool enableFabricRenderer() override {
+    return false;
+  }
+
+  bool enableFixForViewCommandRace() override {
     return false;
   }
 
@@ -87,6 +87,14 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool enableImagePrefetchingAndroid() override {
+    return false;
+  }
+
+  bool enableLayoutAnimationsOnAndroid() override {
+    return false;
+  }
+
   bool enableLayoutAnimationsOnIOS() override {
     return true;
   }
@@ -95,7 +103,11 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableMicrotasks() override {
+  bool enableNewBackgroundAndBorderDrawables() override {
+    return false;
+  }
+
+  bool enablePreciseSchedulingForPremountItemsOnAndroid() override {
     return false;
   }
 
@@ -123,19 +135,11 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool fetchImagesInViewPreallocation() override {
-    return false;
-  }
-
-  bool fixIncorrectScrollViewStateUpdateOnAndroid() override {
-    return false;
+  bool fixDifferentiatorEmittingUpdatesWithWrongParentTag() override {
+    return true;
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
-    return false;
-  }
-
-  bool fixMissedFabricStateUpdatesOnAndroid() override {
     return false;
   }
 
@@ -143,20 +147,12 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool forceBatchingMountItemsOnAndroid() override {
-    return false;
-  }
-
-  bool fuseboxEnabledDebug() override {
-    return true;
-  }
-
   bool fuseboxEnabledRelease() override {
     return false;
   }
 
   bool initEagerTurboModulesOnNativeModulesQueueAndroid() override {
-    return false;
+    return true;
   }
 
   bool lazyAnimationCallbacks() override {
@@ -164,14 +160,14 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool loadVectorDrawablesOnImages() override {
-    return false;
-  }
-
-  bool setAndroidLayoutDirection() override {
-    return false;
+    return true;
   }
 
   bool traceTurboModulePromiseRejectionsOnAndroid() override {
+    return false;
+  }
+
+  bool useAlwaysAvailableJSErrorHandling() override {
     return false;
   }
 
@@ -180,18 +176,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool useImmediateExecutorInAndroidBridgeless() override {
-    return false;
-  }
-
-  bool useModernRuntimeScheduler() override {
-    return false;
+    return true;
   }
 
   bool useNativeViewConfigsInBridgelessMode() override {
-    return false;
-  }
-
-  bool useNewReactImageViewBackgroundDrawing() override {
     return false;
   }
 
@@ -203,19 +191,19 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool useRawPropsJsiValue() override {
+    return false;
+  }
+
   bool useRuntimeShadowNodeReferenceUpdate() override {
-    return false;
-  }
-
-  bool useRuntimeShadowNodeReferenceUpdateOnLayout() override {
-    return false;
-  }
-
-  bool useStateAlignmentMechanism() override {
-    return false;
+    return true;
   }
 
   bool useTurboModuleInterop() override {
+    return false;
+  }
+
+  bool useTurboModules() override {
     return false;
   }
 };

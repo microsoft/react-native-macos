@@ -223,7 +223,13 @@ RCT_EXPORT_MODULE()
 - (void)showOnShake
 {
   if ([((RCTDevSettings *)[_moduleRegistry moduleForName:"DevSettings"]) isShakeToShowDevMenuEnabled]) {
-    for (RCTPlatformWindow *window in [RCTSharedApplication() windows]) {
+    NSMutableArray<RCTPlatformWindow *> *windows = [NSMutableArray new]; // [macOS]
+#if !TARGET_OS_OSX // [macOS]
+    for (UIWindowScene *scene in RCTSharedApplication().connectedScenes) {
+      [windows addObjectsFromArray:scene.windows];
+    }
+#endif // [macOS]
+    for (RCTPlatformWindow *window in windows) { // [macOS]
       NSString *recursiveDescription = [window valueForKey:@"recursiveDescription"];
       if ([recursiveDescription containsString:@"RCTView"]) {
         [self show];

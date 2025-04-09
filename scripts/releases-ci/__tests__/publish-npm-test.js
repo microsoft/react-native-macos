@@ -179,7 +179,6 @@ describe('publish-npm', () => {
           {otp: undefined, tags: ['nightly']},
         ],
       ]);
-      /* [macOS We skip artifact publishing
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'nightly',
@@ -188,7 +187,6 @@ describe('publish-npm', () => {
         expectedVersion,
         'nightly',
       );
-      macOS] */
       expect(consoleLogMock.mock.calls).toEqual([
         ['Publishing monorepo/pkg-a...'],
         [`Published monorepo/pkg-a@${expectedVersion} to npm`],
@@ -309,7 +307,6 @@ describe('publish-npm', () => {
 
       // Generate Android artifacts is now delegate to build_android entirely
       expect(generateAndroidArtifactsMock).not.toHaveBeenCalled();
-      /* [macOS
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
@@ -329,7 +326,6 @@ describe('publish-npm', () => {
       expect(consoleLogMock.mock.calls).toEqual([
         [`Published react-native@${expectedVersion} to npm`],
       ]);
-      macOS] */
     });
 
     it('should publish latest stable', async () => {
@@ -353,7 +349,6 @@ describe('publish-npm', () => {
       // Generate Android artifacts is now delegate to build_android entirely
       expect(generateAndroidArtifactsMock).not.toHaveBeenCalled();
 
-      /* [macOS
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
@@ -362,7 +357,6 @@ describe('publish-npm', () => {
         expectedVersion,
         'release',
       );
-      macOS] */
 
       expect(publishPackageMock.mock.calls).toEqual([
         [
@@ -404,7 +398,6 @@ describe('publish-npm', () => {
       // Generate Android artifacts is now delegate to build_android entirely
       expect(generateAndroidArtifactsMock).not.toHaveBeenCalled();
 
-      /* [macOS
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
@@ -413,7 +406,6 @@ describe('publish-npm', () => {
         expectedVersion,
         'release',
       );
-      macOS] */
 
       expect(publishPackageMock.mock.calls).toEqual([
         [
@@ -445,7 +437,6 @@ describe('publish-npm', () => {
       // Generate Android artifacts is now delegate to build_android entirely
       expect(generateAndroidArtifactsMock).not.toHaveBeenCalled();
 
-      /* [macOS
       expect(publishAndroidArtifactsToMavenMock).toHaveBeenCalledWith(
         expectedVersion,
         'release',
@@ -454,7 +445,6 @@ describe('publish-npm', () => {
         expectedVersion,
         'release',
       );
-      macOS] */
 
       expect(publishPackageMock.mock.calls).toEqual([
         [

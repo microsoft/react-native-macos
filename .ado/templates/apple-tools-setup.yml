@@ -1,11 +1,17 @@
 steps:
-  - task: NodeTool@0
+  - task: UseNode@1
     inputs:
-      versionSpec: '18.x'
+      version: '23.x'
 
   - script: |
       brew bundle --file .ado/Brewfile
-      cat .ado/Brewfile.lock.json
     displayName: 'Install Homebrew dependencies'
 
-  - template: /.ado/templates/apple-xcode-select.yml@self
+  - script: |
+      sudo xcode-select --switch $(xcode_version)
+    displayName: Use $(xcode_friendly_name)
+
+  - script: |
+      xcodebuild -downloadAllPlatforms
+      sudo xcodebuild -runFirstLaunch
+    displayName: 'Download Xcode Platforms'

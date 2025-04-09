@@ -11,9 +11,10 @@
 'use strict';
 
 import type {PlatformConfig} from '../AnimatedPlatformConfig';
+import type {AnimatedNodeConfig} from './AnimatedNode';
 
-import {validateTransform} from '../../../src/private/animated/NativeAnimatedValidation';
 import NativeAnimatedHelper from '../../../src/private/animated/NativeAnimatedHelper';
+import {validateTransform} from '../../../src/private/animated/NativeAnimatedValidation';
 import AnimatedNode from './AnimatedNode';
 import AnimatedWithChildren from './AnimatedWithChildren';
 
@@ -26,37 +27,59 @@ type Transform<T = AnimatedNode> = {
     | {[string]: number | string | T},
 };
 
+function flatAnimatedNodes(
+  transforms: $ReadOnlyArray<Transform<>>,
+): Array<AnimatedNode> {
+  const nodes = [];
+  for (let ii = 0, length = transforms.length; ii < length; ii++) {
+    const transform = transforms[ii];
+    // There should be exactly one property in `transform`.
+    for (const key in transform) {
+      const value = transform[key];
+      if (value instanceof AnimatedNode) {
+        nodes.push(value);
+      }
+    }
+  }
+  return nodes;
+}
+
 export default class AnimatedTransform extends AnimatedWithChildren {
   // NOTE: For potentially historical reasons, some operations only operate on
   // the first level of AnimatedNode instances. This optimizes that bevavior.
-  #shallowNodes: $ReadOnlyArray<AnimatedNode>;
+  #nodes: $ReadOnlyArray<AnimatedNode>;
 
   _transforms: $ReadOnlyArray<Transform<>>;
 
-  constructor(transforms: $ReadOnlyArray<Transform<>>) {
-    super();
-    this._transforms = transforms;
-
-    const shallowNodes = [];
-    // NOTE: This check should not be necessary, but the types are not enforced
-    // as of this writing. This check should be hoisted to instantiation sites.
-    if (Array.isArray(transforms)) {
-      for (let ii = 0, length = transforms.length; ii < length; ii++) {
-        const transform = transforms[ii];
-        // There should be exactly one property in `transform`.
-        for (const key in transform) {
-          const value = transform[key];
-          if (value instanceof AnimatedNode) {
-            shallowNodes.push(value);
-          }
-        }
-      }
+  /**
+   * Creates an `AnimatedTransform` if `transforms` contains `AnimatedNode`
+   * instances. Otherwise, returns `null`.
+   */
+  static from(transforms: $ReadOnlyArray<Transform<>>): ?AnimatedTransform {
+    const nodes = flatAnimatedNodes(
+      // NOTE: This check should not be necessary, but the types are not
+      // enforced as of this writing. This check should be hoisted to
+      // instantiation sites.
+      Array.isArray(transforms) ? transforms : [],
+    );
+    if (nodes.length === 0) {
+      return null;
     }
-    this.#shallowNodes = shallowNodes;
+    return new AnimatedTransform(nodes, transforms);
+  }
+
+  constructor(
+    nodes: $ReadOnlyArray<AnimatedNode>,
+    transforms: $ReadOnlyArray<Transform<>>,
+    config?: ?AnimatedNodeConfig,
+  ) {
+    super(config);
+    this.#nodes = nodes;
+    this._transforms = transforms;
   }
 
   __makeNative(platformConfig: ?PlatformConfig) {
-    const nodes = this.#shallowNodes;
+    const nodes = this.#nodes;
     for (let ii = 0, length = nodes.length; ii < length; ii++) {
       const node = nodes[ii];
       node.__makeNative(platformConfig);
@@ -70,6 +93,18 @@ export default class AnimatedTransform extends AnimatedWithChildren {
     );
   }
 
+  __getValueWithStaticTransforms(
+    staticTransforms: $ReadOnlyArray<Object>,
+  ): $ReadOnlyArray<Object> {
+    const values = [];
+    mapTransforms(this._transforms, node => {
+      values.push(node.__getValue());
+    });
+    // NOTE: We can depend on `this._transforms` and `staticTransforms` sharing
+    // a structure because of `useAnimatedPropsMemo`.
+    return mapTransforms(staticTransforms, () => values.shift());
+  }
+
   __getAnimatedValue(): $ReadOnlyArray<Transform<any>> {
     return mapTransforms(this._transforms, animatedNode =>
       animatedNode.__getAnimatedValue(),
@@ -77,15 +112,16 @@ export default class AnimatedTransform extends AnimatedWithChildren {
   }
 
   __attach(): void {
-    const nodes = this.#shallowNodes;
+    const nodes = this.#nodes;
     for (let ii = 0, length = nodes.length; ii < length; ii++) {
       const node = nodes[ii];
       node.__addChild(this);
     }
+    super.__attach();
   }
 
   __detach(): void {
-    const nodes = this.#shallowNodes;
+    const nodes = this.#nodes;
     for (let ii = 0, length = nodes.length; ii < length; ii++) {
       const node = nodes[ii];
       node.__removeChild(this);
@@ -127,6 +163,7 @@ export default class AnimatedTransform extends AnimatedWithChildren {
     return {
       type: 'transform',
       transforms: transformsConfig,
+      debugID: this.__getDebugID(),
     };
   }
 }

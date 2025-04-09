@@ -7,8 +7,7 @@
  * @format
  */
 
-import type * as React from 'react';
-import {HostComponent} from '../../../types/public/ReactNativeTypes';
+import {HostInstance} from '../../../types/public/ReactNativeTypes';
 import {EmitterSubscription} from '../../vendor/emitter/EventEmitter';
 
 type AccessibilityChangeEventName =
@@ -18,6 +17,8 @@ type AccessibilityChangeEventName =
   | 'highContrastChanged' // [macOS]
   | 'invertColorsChanged' // iOS-only Event
   | 'reduceMotionChanged'
+  | 'highTextContrastChanged' // Android-only Event
+  | 'darkerSystemColorsChanged' // iOS-only Event
   | 'screenReaderChanged'
   | 'reduceTransparencyChanged'; // iOS-only Event
 
@@ -77,6 +78,21 @@ export interface AccessibilityInfoStatic {
    * Query whether reduce motion is currently enabled.
    */
   isReduceMotionEnabled: () => Promise<boolean>;
+
+  /**
+   *
+   * Query whether high text contrast is currently enabled.
+   *
+   * @platform android
+   */
+  isHighTextContrastEnabled: () => Promise<boolean>;
+
+  /**
+   * Query whether darker system colors is currently enabled.
+   *
+   * @platform ios
+   */
+  isDarkerSystemColorsEnabled: () => Promise<boolean>;
 
   /**
    * Query whether reduce motion and prefer cross-fade transitions settings are currently enabled.
@@ -157,7 +173,7 @@ export interface AccessibilityInfoStatic {
    */
   getRecommendedTimeoutMillis: (originalTimeout: number) => Promise<number>;
   sendAccessibilityEvent: (
-    handle: React.ElementRef<HostComponent<unknown>>,
+    handle: HostInstance,
     eventType: AccessibilityEventTypes,
   ) => void;
 }

@@ -19,6 +19,7 @@
 
 using namespace facebook::react;
 
+#if !TARGET_OS_OSX // [macOS]
 static NSString *interfaceIdiom(UIUserInterfaceIdiom idiom)
 {
   switch (idiom) {
@@ -38,6 +39,11 @@ static NSString *interfaceIdiom(UIUserInterfaceIdiom idiom)
       return @"unknown";
   }
 }
+#else // [macOS
+static NSString *interfaceIdiom() {
+  return @"mac";
+}
+#endif // macOS]
 
 @interface RCTPlatform () <NativePlatformConstantsIOSSpec>
 @end
@@ -66,13 +72,24 @@ RCT_EXPORT_MODULE(PlatformConstants)
 {
   __block ModuleConstants<JS::NativePlatformConstantsIOS::Constants> constants;
   RCTUnsafeExecuteOnMainQueueSync(^{
+#if !TARGET_OS_OSX // [macOS]
     UIDevice *device = [UIDevice currentDevice];
+#else // [macOS]
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSOperatingSystemVersion osVersion = [[NSProcessInfo processInfo] operatingSystemVersion];
+#endif // [macOS]
     auto versions = RCTGetReactNativeVersion();
     constants = typedConstants<JS::NativePlatformConstantsIOS::Constants>({
         .forceTouchAvailable = RCTForceTouchAvailable() ? true : false,
+#if !TARGET_OS_OSX // [macOS]
         .osVersion = [device systemVersion],
         .systemName = [device systemName],
         .interfaceIdiom = interfaceIdiom([device userInterfaceIdiom]),
+#else // [macOS
+        .osVersion = [NSString stringWithFormat:@"%ld.%ld.%ld", osVersion.majorVersion, osVersion.minorVersion, osVersion.patchVersion],
+        .systemName = [processInfo operatingSystemVersionString],
+        .interfaceIdiom = interfaceIdiom(),
+#endif // macOS]
         .isTesting = RCTRunningInTestEnvironment() ? true : false,
         .reactNativeVersion = JS::NativePlatformConstantsIOS::ConstantsReactNativeVersion::Builder(
             {.minor = [versions[@"minor"] doubleValue],

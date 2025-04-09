@@ -20,7 +20,8 @@ import type {
   BlurEvent,
   FocusEvent,
   LayoutEvent,
-  MouseEvent, // [macOS]
+  // [macOS]
+  MouseEvent,
   PressEvent,
 } from '../../Types/CoreEventTypes';
 // [macOS
@@ -218,8 +219,7 @@ module.exports = function TouchableWithoutFeedback(props: Props): React.Node {
 
   // BACKWARD-COMPATIBILITY: Focus and blur events were never supported before
   // adopting `Pressability`, so preserve that behavior.
-  const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} =
-    eventHandlers || {};
+  const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} = eventHandlers;
 
   const elementProps: {[string]: mixed, ...} = {
     ...eventHandlersWithoutBlurAndFocus,

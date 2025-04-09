@@ -313,6 +313,7 @@ static void updateTransform(RCTPlatformView *view) // [macOS]
 
 - (UIViewController *)reactViewController
 {
+#if !TARGET_OS_OSX // [macOS]
   id responder = [self nextResponder];
   while (responder) {
     if ([responder isKindOfClass:[UIViewController class]]) {
@@ -320,6 +321,16 @@ static void updateTransform(RCTPlatformView *view) // [macOS]
     }
     responder = [responder nextResponder];
   }
+#else // [macOS
+  NSView *view = self;
+  while (view) {
+    if ([view.nextResponder isKindOfClass:[NSViewController class]]) {
+      return (NSViewController *)view.nextResponder;
+    }
+    view = view.superview;
+    }
+#endif // macOS]
+
   return nil;
 }
 
@@ -562,10 +573,13 @@ static __weak RCTPlatformView *_pendingFocusView; // [macOS]
 
 // [macOS
 #pragma mark - Hit testing
-#if TARGET_OS_OSX  
+#if TARGET_OS_OSX
+// IMPORTANT -- point is in local coordinate space, unlike the hitTest: version from OSX which is in super's coordinate space
 - (RCTPlatformView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-  return [self hitTest:point];
+  NSView *superview = [self superview];
+  NSPoint pointInSuper = superview != nil ? [self convertPoint:point toView:superview] : point;
+  return [self hitTest:pointInSuper];
 }
 #endif // macOS]
 

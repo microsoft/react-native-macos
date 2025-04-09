@@ -47,7 +47,7 @@ You can read more about the macOS implementation in our website - [React Native 
 
 ## 📋 Requirements
 
-React Native apps may target iOS 13.4 and Android 6.0 (API 23) or newer. You may use Windows, macOS, or Linux as your development operating system, though building and running iOS apps is limited to macOS. Tools like [Expo](https://expo.dev) can be used to work around this.
+React Native apps may target iOS 15.1 and Android 7.0 (API 24) or newer. You may use Windows, macOS, or Linux as your development operating system, though building and running iOS apps is limited to macOS. Tools like [Expo](https://expo.dev) can be used to work around this.
 
 ## 🎉 Building your first React Native app
 
@@ -89,7 +89,7 @@ See [Contributing guidelines](https://github.com/microsoft/react-native-macos/bl
 
 The full documentation for React Native can be found on the [documentation website][docs]. The React Native documentation discusses components, APIs, and topics that are specific to React Native. For further documentation on the React API that is shared between React Native and React DOM, refer to the [React documentation][r-docs].
 
-The source for the React Native documentation and website is hosted on a separate repo, [**@facebook/react-native-website**][repo-website].
+The source for the React Native documentation and website is hosted on a separate repository, [**@facebook/react-native-website**][repo-website].
 
 [React Native for Windows + macOS](https://microsoft.github.io/react-native-windows/) has its own separate documentation site where Windows and macOS
 specific information, like API docs and blog updates live. We are still working on the documentation for macOS, contributions are welcome!

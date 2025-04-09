@@ -137,11 +137,8 @@ export interface ViewPropsMacOS {
   onDrop?: ((event: MouseEvent) => void) | undefined;
   onKeyDown?: ((event: KeyEvent) => void) | undefined;
   onKeyUp?: ((event: KeyEvent) => void) | undefined;
-  validKeysDown?: Array<HandledKeyEvent | string> | undefined;
-  validKeysUp?: Array<HandledKeyEvent | string> | undefined;
-  passthroughAllKeyEvents?: boolean | undefined;
-  keyDownEvents?: Array<HandledKeyEvent> | undefined;
-  keyUpEvents?: Array<HandledKeyEvent> | undefined;
+  keyDownEvents?: HandledKeyEvent[] | undefined;
+  keyUpEvents?: HandledKeyEvent[] | undefined;
   draggedTypes?: DraggedTypesType | undefined;
 }
 

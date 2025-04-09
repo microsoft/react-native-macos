@@ -24,19 +24,17 @@
 
 using namespace facebook::react;
 
+static NSString *sRCTDevLoadingViewWindowIdentifier = @"RCTDevLoadingViewWindow";
+
 @interface RCTDevLoadingView () <NativeDevLoadingViewSpec>
 @end
 
 #if RCT_DEV_MENU
 
 @implementation RCTDevLoadingView {
-#if !TARGET_OS_OSX // [macOS]
-  UIWindow *_window;
-  UILabel *_label;
-#else // [macOS
-  NSWindow *_window;
-  NSTextField *_label;
-#endif // macOS]
+  RCTPlatformWindow *_window; // [macOS]
+  RCTUILabel *_label; // [macOS]
+  RCTUIView *_container; // [macOS]
   NSDate *_showDate;
   BOOL _hiding;
   dispatch_block_t _initialMessageBlock;
@@ -119,70 +117,73 @@ RCT_EXPORT_MODULE()
   }
 
   dispatch_async(dispatch_get_main_queue(), ^{
-    self->_showDate = [NSDate date];
-
-    if (!self->_window && !RCTRunningInTestEnvironment()) {
-#if !TARGET_OS_OSX // [macOS]
-      UIWindow *window = RCTKeyWindow(); // [macOS]
-      CGFloat windowWidth = window.bounds.size.width;
-
-      self->_window = [[UIWindow alloc] initWithWindowScene:window.windowScene];
-#if TARGET_OS_MACCATALYST
-      self->_window.frame = CGRectMake(0, window.safeAreaInsets.top, windowWidth, 20);
-      self->_label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, windowWidth, 20)];
-#else
-      self->_window.frame = CGRectMake(0, 0, windowWidth, window.safeAreaInsets.top + 10);
-      self->_label = [[UILabel alloc] initWithFrame:CGRectMake(0, window.safeAreaInsets.top - 10, windowWidth, 20)];
-#endif
-      [self->_window addSubview:self->_label];
-
-      self->_window.windowLevel = UIWindowLevelStatusBar + 1;
-      // set a root VC so rotation is supported
-      self->_window.rootViewController = [UIViewController new];
-
-      self->_label.font = [UIFont monospacedDigitSystemFontOfSize:12.0 weight:UIFontWeightRegular];
-      self->_label.textAlignment = NSTextAlignmentCenter;
-#else // [macOS
-      self->_window = [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
-                                                 styleMask:NSWindowStyleMaskBorderless
-                                                   backing:NSBackingStoreBuffered
-                                                     defer:YES];
-      self->_window.backgroundColor = [NSColor clearColor];
-
-      NSTextField *label = [[NSTextField alloc] initWithFrame:self->_window.contentView.bounds];
-      label.font = [NSFont monospacedDigitSystemFontOfSize:12.0 weight:NSFontWeightRegular];
-      label.alignment = NSTextAlignmentCenter;
-      label.bezeled = NO;
-      label.editable = NO;
-      label.selectable = NO;
-      label.wantsLayer = YES;
-      label.layer.cornerRadius = label.frame.size.height / 3;
-      label.layer.cornerCurve = kCACornerCurveContinuous;
-      self->_label = label;
-      [[self->_window contentView] addSubview:label];
-#endif // macOS]
+    if (RCTRunningInTestEnvironment()) {
+      return;
     }
 
+    self->_showDate = [NSDate date];
+
 #if !TARGET_OS_OSX // [macOS]
-    self->_label.text = message;
-    self->_label.textColor = color;
-
-    self->_window.backgroundColor = backgroundColor;
-    self->_window.hidden = NO;
+    UIWindow *mainWindow = RCTKeyWindow();
+    self->_window = [[UIWindow alloc] initWithWindowScene:mainWindow.windowScene];
+    self->_window.windowLevel = UIWindowLevelStatusBar + 1;
+    self->_window.rootViewController = [UIViewController new];
 #else // [macOS
-    self->_label.stringValue = message;
-    self->_label.textColor = color;
+    self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
+                                               styleMask:NSWindowStyleMaskBorderless
+                                                 backing:NSBackingStoreBuffered
+                                                   defer:YES];
+    [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
+#endif // macOS]
 
-    self->_label.backgroundColor = backgroundColor;
+    self->_container = [[RCTUIView alloc] init]; // [macOS]
+    self->_container.backgroundColor = backgroundColor;
+    self->_container.translatesAutoresizingMaskIntoConstraints = NO;
+
+    self->_label = [[RCTUILabel alloc] init]; // [macOS]
+    self->_label.translatesAutoresizingMaskIntoConstraints = NO;
+    self->_label.font = [UIFont monospacedDigitSystemFontOfSize:12.0 weight:UIFontWeightRegular];
+    self->_label.textAlignment = NSTextAlignmentCenter;
+    self->_label.textColor = color;
+    self->_label.text = message;
+
+#if !TARGET_OS_OSX // [macOS]
+    [self->_window.rootViewController.view addSubview:self->_container];
+#else // [macOS
+    [self->_window.contentViewController.view addSubview:self->_container];
+#endif // macOS]
+    [self->_container addSubview:self->_label];
+
+#if !TARGET_OS_OSX // [macOS]
+    CGFloat topSafeAreaHeight = mainWindow.safeAreaInsets.top;
+    CGFloat height = topSafeAreaHeight + 25;
+    self->_window.frame = CGRectMake(0, 0, mainWindow.frame.size.width, height);
+
+    self->_window.hidden = NO;
+
+    [self->_window layoutIfNeeded];
+
+    [NSLayoutConstraint activateConstraints:@[
+      // Container constraints
+      [self->_container.topAnchor constraintEqualToAnchor:self->_window.rootViewController.view.topAnchor],
+      [self->_container.leadingAnchor constraintEqualToAnchor:self->_window.rootViewController.view.leadingAnchor],
+      [self->_container.trailingAnchor constraintEqualToAnchor:self->_window.rootViewController.view.trailingAnchor],
+      [self->_container.heightAnchor constraintEqualToConstant:height],
+
+      // Label constraints
+      [self->_label.centerXAnchor constraintEqualToAnchor:self->_container.centerXAnchor],
+      [self->_label.bottomAnchor constraintEqualToAnchor:self->_container.bottomAnchor constant:-5],
+    ]];
+#else // [macOS
     if (![[RCTKeyWindow() sheets] doesContain:self->_window]) {
       [RCTKeyWindow() beginSheet:self->_window completionHandler:^(NSModalResponse returnCode) {
         [self->_window orderOut:self];
       }];
     }
 #endif // macOS]
-  });
 
-  [self hideBannerAfter:15.0];
+    [self hideBannerAfter:15.0];
+  });
 }
 
 RCT_EXPORT_METHOD(showMessage
@@ -222,7 +223,11 @@ RCT_EXPORT_METHOD(hide)
           self->_hiding = false;
         }];
 #else // [macOS]
-    [RCTKeyWindow() endSheet:self->_window];
+    for (NSWindow *window in [RCTKeyWindow() sheets]) {
+      if ([[window identifier] isEqualToString:sRCTDevLoadingViewWindowIdentifier]) {
+        [RCTKeyWindow() endSheet:window];
+      }
+    }
     self->_window = nil;
     self->_hiding = false;
 #endif // macOS]
@@ -235,11 +240,7 @@ RCT_EXPORT_METHOD(hide)
     // This is an optimization. Since the progress can come in quickly,
     // we want to do the minimum amount of work to update the UI,
     // which is to only update the label text.
-#if !TARGET_OS_OSX // [macOS]
     _label.text = message;
-#else // [macOS
-    self->_label.stringValue = message;
-#endif // macOS]
     return;
   }
 

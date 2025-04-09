@@ -21,6 +21,11 @@ struct ScrollEvent : public EventPayload {
   Size containerSize;
   Float zoomScale{};
 
+  /*
+   * The time in seconds when the touch occurred or when it was last mutated.
+   */
+  Float timestamp{};
+
   ScrollEvent() = default;
 
   folly::dynamic asDynamic() const;
@@ -30,6 +35,23 @@ struct ScrollEvent : public EventPayload {
    */
   jsi::Value asJSIValue(jsi::Runtime& runtime) const override;
   EventPayloadType getType() const override;
+};
+
+struct ScrollEndDragEvent : public ScrollEvent {
+  Point targetContentOffset;
+  Point velocity;
+
+  ScrollEndDragEvent() = default;
+
+  ScrollEndDragEvent(const ScrollEvent& scrollEvent)
+      : ScrollEvent(scrollEvent), targetContentOffset({}), velocity({}) {}
+
+  folly::dynamic asDynamic() const;
+
+  /*
+   * EventPayload implementations
+   */
+  jsi::Value asJSIValue(jsi::Runtime& runtime) const override;
 };
 
 #if RN_DEBUG_STRING_CONVERTIBLE

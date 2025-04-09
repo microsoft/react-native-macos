@@ -11,7 +11,7 @@ import type * as React from 'react';
 import {Constructor} from '../../../types/private/Utilities';
 import {TimerMixin} from '../../../types/private/TimerMixin';
 import {
-  HostComponent,
+  HostInstance,
   NativeMethods,
 } from '../../../types/public/ReactNativeTypes';
 import {ColorValue, StyleProp} from '../../StyleSheet/StyleSheet';
@@ -137,6 +137,11 @@ export interface DocumentSelectionState extends EventEmitter {
  */
 export interface TextInputIOSProps {
   /**
+   * If true, the keyboard shortcuts (undo/redo and copy buttons) are disabled. The default value is false.
+   */
+  disableKeyboardShortcuts?: boolean | undefined;
+
+  /**
    * enum('never', 'while-editing', 'unless-editing', 'always')
    * When the clear button should appear on the right side of the text view
    */
@@ -255,6 +260,11 @@ export interface TextInputIOSProps {
    *  - `'birthdateDay'` (iOS 17+)
    *  - `'birthdateMonth'` (iOS 17+)
    *  - `'birthdateYear'` (iOS 17+)
+   *  - `'cellularEID'` (iOS 17.4+)
+   *  - `'cellularIMEI'` (iOS 17.4+)
+   *  - `'dateTime'` (iOS 15+)
+   *  - `'flightNumber'` (iOS 15+)
+   *  - `'shipmentTrackingNumber'` (iOS 15+)
    *
    */
   textContentType?:
@@ -299,6 +309,11 @@ export interface TextInputIOSProps {
     | 'birthdateDay'
     | 'birthdateMonth'
     | 'birthdateYear'
+    | 'cellularEID'
+    | 'cellularIMEI'
+    | 'dateTime'
+    | 'flightNumber'
+    | 'shipmentTrackingNumber'
     | undefined;
 
   /**
@@ -317,6 +332,19 @@ export interface TextInputIOSProps {
     | undefined;
 
   /**
+   * Set line break mode on iOS.
+   * @platform ios
+   */
+  lineBreakModeIOS?:
+    | 'wordWrapping'
+    | 'char'
+    | 'clip'
+    | 'head'
+    | 'middle'
+    | 'tail'
+    | undefined;
+
+  /**
    * If `false`, the iOS system will not insert an extra space after a paste operation
    * neither delete one or two spaces after a cut or delete operation.
    *
@@ -327,7 +355,9 @@ export interface TextInputIOSProps {
 
 // [macOS
 export type SettingChangeEvent = NativeSyntheticEvent<{
-  enabled: boolean;
+  autoCorrectEnabled: boolean;
+  spellCheckEnabled: boolean;
+  grammarCheckEnabled: boolean;
 }>;
 
 export type PasteEvent = NativeSyntheticEvent<{
@@ -1044,21 +1074,21 @@ interface TextInputState {
    * Returns the ref of the currently focused text field, if one exists
    * If no text field is focused it returns null
    */
-  currentlyFocusedInput(): React.ElementRef<HostComponent<unknown>>;
+  currentlyFocusedInput(): HostInstance;
 
   /**
    * @param textField ref of the text field to focus
    * Focuses the specified text field
    * noop if the text field was already focused
    */
-  focusTextInput(textField?: React.ElementRef<HostComponent<unknown>>): void;
+  focusTextInput(textField?: HostInstance): void;
 
   /**
    * @param textField ref of the text field to focus
    * Unfocuses the specified text field
    * noop if it wasn't focused
    */
-  blurTextInput(textField?: React.ElementRef<HostComponent<unknown>>): void;
+  blurTextInput(textField?: HostInstance): void;
 }
 
 /**

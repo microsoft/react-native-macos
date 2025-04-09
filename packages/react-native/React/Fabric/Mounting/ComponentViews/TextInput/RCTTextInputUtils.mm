@@ -60,6 +60,7 @@ void RCTCopyBackedTextInput(
   toTextInput.textContentType = fromTextInput.textContentType;
   toTextInput.smartInsertDeleteType = fromTextInput.smartInsertDeleteType;
   toTextInput.passwordRules = fromTextInput.passwordRules;
+  toTextInput.disableKeyboardShortcuts = fromTextInput.disableKeyboardShortcuts;
 
   [toTextInput setSelectedTextRange:fromTextInput.selectedTextRange notifyDelegate:NO];
 #endif // [macOS]
@@ -98,7 +99,9 @@ UIKeyboardAppearance RCTUIKeyboardAppearanceFromKeyboardAppearance(KeyboardAppea
       return UIKeyboardAppearanceDark;
   }
 }
+#endif // [macOS]
 
+#if !TARGET_OS_OSX // [macOS]
 UITextSpellCheckingType RCTUITextSpellCheckingTypeFromOptionalBool(std::optional<bool> spellCheck)
 {
   return spellCheck.has_value() ? (*spellCheck ? UITextSpellCheckingTypeYes : UITextSpellCheckingTypeNo)
@@ -257,6 +260,15 @@ UITextContentType RCTUITextContentTypeFromString(const std::string &contentType)
         @"birthdateYear" : UITextContentTypeBirthdateYear,
       }];
     }
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 170400 /* __IPHONE_17_4 */
+    if (@available(iOS 17.4, *)) {
+      [mutableContentTypeMap addEntriesFromDictionary:@{
+        @"cellularEID" : UITextContentTypeCellularEID,
+        @"cellularIMEI" : UITextContentTypeCellularIMEI,
+      }];
+    }
+#endif
 #endif
 
     contentTypeMap = mutableContentTypeMap;

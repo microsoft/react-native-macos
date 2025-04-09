@@ -85,8 +85,26 @@ const RCTTextInputViewConfig = {
     topContentSizeChange: {
       registrationName: 'onContentSizeChange',
     },
+    topChangeSync: {
+      registrationName: 'onChangeSync',
+    },
+    topKeyPressSync: {
+      registrationName: 'onKeyPressSync',
+    },
+    // [macOS
+    topAutoCorrectChange: {
+      registrationName: 'onAutoCorrectChange',
+    },
+    topSpellCheckChange: {
+      registrationName: 'onSpellCheckChange',
+    },
+    topGrammarCheckChange: {
+      registrationName: 'onGrammarCheckChange',
+    },
+    // macOS]
   },
   validAttributes: {
+    dynamicTypeRamp: true,
     fontSize: true,
     fontWeight: true,
     fontVariant: true,
@@ -114,6 +132,7 @@ const RCTTextInputViewConfig = {
     },
     editable: true,
     inputAccessoryViewID: true,
+    inputAccessoryViewButtonLabel: true,
     caretHidden: true,
     enablesReturnKeyAutomatically: true,
     placeholderTextColor: {
@@ -144,6 +163,7 @@ const RCTTextInputViewConfig = {
     showSoftInputOnFocus: true,
     autoFocus: true,
     lineBreakStrategyIOS: true,
+    lineBreakModeIOS: true,
     smartInsertDelete: true,
     // [macOS
     clearTextOnSubmit: true,
@@ -159,6 +179,8 @@ const RCTTextInputViewConfig = {
       onSelectionChange: true,
       onContentSizeChange: true,
       onScroll: true,
+      onChangeSync: true,
+      onKeyPressSync: true,
       // [macOS
       onPaste: true,
       onAutoCorrectChange: true,
@@ -166,6 +188,7 @@ const RCTTextInputViewConfig = {
       onGrammarCheckChange: true,
       // macOS]
     }),
+    disableKeyboardShortcuts: true,
   },
 };
 

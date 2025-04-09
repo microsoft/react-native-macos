@@ -27,7 +27,6 @@ import com.facebook.react.packagerconnection.NotificationOnlyHandler;
 import com.facebook.react.packagerconnection.PackagerConnectionSettings;
 import com.facebook.react.packagerconnection.ReconnectingWebSocket.ConnectionCallback;
 import com.facebook.react.packagerconnection.RequestHandler;
-import com.facebook.react.packagerconnection.RequestOnlyHandler;
 import com.facebook.react.packagerconnection.Responder;
 import com.facebook.react.util.RNLog;
 import java.io.File;
@@ -76,7 +75,8 @@ public class DevServerHelper {
 
     void onPackagerDevMenuCommand();
 
-    void onCaptureHeapCommand(final Responder responder);
+    @Deprecated(forRemoval = true)
+    default void onCaptureHeapCommand(final Responder responder) {}
 
     // Allow apps to provide listeners for custom packager commands.
     @Nullable
@@ -155,14 +155,6 @@ public class DevServerHelper {
                 commandListener.onPackagerDevMenuCommand();
               }
             });
-        handlers.put(
-            "captureHeap",
-            new RequestOnlyHandler() {
-              @Override
-              public void onRequest(@Nullable Object params, Responder responder) {
-                commandListener.onCaptureHeapCommand(responder);
-              }
-            });
         Map<String, RequestHandler> customHandlers = commandListener.customCommandHandlers();
         if (customHandlers != null) {
           handlers.putAll(customHandlers);
@@ -213,13 +205,12 @@ public class DevServerHelper {
     new AsyncTask<Void, Void, Void>() {
       @Override
       protected Void doInBackground(Void... params) {
-        if (InspectorFlags.getFuseboxEnabled()) {
-          mInspectorPackagerConnection =
-              new CxxInspectorPackagerConnection(getInspectorDeviceUrl(), mPackageName);
-        } else {
-          mInspectorPackagerConnection =
-              new InspectorPackagerConnection(getInspectorDeviceUrl(), mPackageName);
-        }
+        Map<String, String> metadata =
+            AndroidInfoHelpers.getInspectorHostMetadata(mApplicationContext);
+
+        mInspectorPackagerConnection =
+            new CxxInspectorPackagerConnection(
+                getInspectorDeviceUrl(), metadata.get("deviceName"), mPackageName);
         mInspectorPackagerConnection.connect();
         return null;
       }
@@ -321,11 +312,12 @@ public class DevServerHelper {
   private String getInspectorDeviceUrl() {
     return String.format(
         Locale.US,
-        "http://%s/inspector/device?name=%s&app=%s&device=%s",
+        "http://%s/inspector/device?name=%s&app=%s&device=%s&profiling=%b",
         mPackagerConnectionSettings.getDebugServerHost(),
         Uri.encode(AndroidInfoHelpers.getFriendlyDeviceName()),
         Uri.encode(mPackageName),
-        Uri.encode(getInspectorDeviceId()));
+        Uri.encode(getInspectorDeviceId()),
+        InspectorFlags.getIsProfilingBuild());
   }
 
   public void downloadBundleFromURL(
@@ -516,9 +508,8 @@ public class DevServerHelper {
     String requestUrl =
         String.format(
             Locale.US,
-            "http://%s/open-debugger?appId=%s&device=%s",
+            "http://%s/open-debugger?device=%s",
             mPackagerConnectionSettings.getDebugServerHost(),
-            Uri.encode(mPackageName),
             Uri.encode(getInspectorDeviceId()));
     Request request =
         new Request.Builder().url(requestUrl).method("POST", RequestBody.create(null, "")).build();

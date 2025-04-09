@@ -64,7 +64,6 @@ UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
 #define RCTPlatformView UIView
 #define RCTUIView UIView
 #define RCTUIScrollView UIScrollView
-#define RCTPlatformWindow UIWindow
 
 UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
@@ -141,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
 // UIFontDescriptor.h/NSFontDescriptor.h
 #define UIFontDescriptorFamilyAttribute          NSFontFamilyAttribute;
 #define UIFontDescriptorNameAttribute            NSFontNameAttribute;
-#define UIFontDescriptorFaceAttribute            NSFontFaceAttribute;
+#define UIFontDescriptorFaceAttribute            NSFontFaceAttribute;
 #define UIFontDescriptorSizeAttribute            NSFontSizeAttribute
 
 #define UIFontDescriptorTraitsAttribute          NSFontTraitsAttribute
@@ -161,6 +160,13 @@ NS_ASSUME_NONNULL_BEGIN
 #define UIFontWeightBold                         NSFontWeightBold
 #define UIFontWeightHeavy                        NSFontWeightHeavy
 #define UIFontWeightBlack                        NSFontWeightBlack
+
+#define UIFontDescriptorSystemDesign             NSFontDescriptorSystemDesign
+#define UIFontDescriptorSystemDesignDefault      NSFontDescriptorSystemDesignDefault
+#define UIFontDescriptorSystemDesignSerif        NSFontDescriptorSystemDesignSerif
+#define UIFontDescriptorSystemDesignRounded      NSFontDescriptorSystemDesignRounded
+#define UIFontDescriptorSystemDesignMonospaced   NSFontDescriptorSystemDesignMonospaced
+
 
 // RCTActivityIndicatorView.h
 #define UIActivityIndicatorView NSProgressIndicator
@@ -218,6 +224,7 @@ typedef NS_ENUM(NSInteger, UIViewContentMode) {
   UIViewContentModeScaleAspectFit  = NSViewLayerContentsPlacementScaleProportionallyToFit,
   UIViewContentModeScaleToFill     = NSViewLayerContentsPlacementScaleAxesIndependently,
   UIViewContentModeCenter          = NSViewLayerContentsPlacementCenter,
+  UIViewContentModeTopLeft         = NSViewLayerContentsPlacementTopLeft,
 };
 
 // UIInterface.h/NSUserInterfaceLayout.h
@@ -378,8 +385,6 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 // UIView
 #define RCTPlatformView NSView
 
-#define RCTPlatformWindow NSWindow
-
 @interface RCTUIView : RCTPlatformView
 
 @property (nonatomic, readonly) BOOL canBecomeFirstResponder;
@@ -410,7 +415,7 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 - (void)sendMouseEventWithBlock:(RCTDirectEventBlock)block
                    locationInfo:(NSDictionary*)locationInfo
                   modifierFlags:(NSEventModifierFlags)modifierFlags
-                 additionalData:(NSDictionary*)additionalData;
+                 additionalData:(NSDictionary* __nullable)additionalData;
 
 // FUTURE: When Xcode 14 is no longer supported (CI is building with Xcode 15), we can remove this override since it's now declared on NSView
 @property BOOL clipsToBounds;
@@ -475,6 +480,8 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 @property (nonatomic, assign) BOOL enableFocusRing;
 @property (nonatomic, assign, getter=isScrollEnabled) BOOL scrollEnabled;
 
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated;
+
 @end
 
 @interface RCTClipView : NSClipView
@@ -486,7 +493,10 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
-  return [view hitTest:point];
+  // [macOS IMPORTANT -- point is in local coordinate space, but OSX expects super coordinate space for hitTest:
+  NSView *superview = [view superview];
+  NSPoint pointInSuperview = superview != nil ? [view convertPoint:point toView:superview] : point;
+  return [view hitTest:pointInSuperview];
 }
 
 BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view);
@@ -524,12 +534,12 @@ NS_ASSUME_NONNULL_END
 
 #if !TARGET_OS_OSX
 typedef UIApplication RCTUIApplication;
-typedef UIWindow RCTUIWindow;
-typedef UIViewController RCTUIViewController;
+typedef UIWindow RCTPlatformWindow;
+typedef UIViewController RCTPlatformViewController;
 #else
 typedef NSApplication RCTUIApplication;
-typedef NSWindow RCTUIWindow;
-typedef NSViewController RCTUIViewController;
+typedef NSWindow RCTPlatformWindow;
+typedef NSViewController RCTPlatformViewController;
 #endif
 
 //
@@ -660,6 +670,7 @@ typedef void (^RCTUIGraphicsImageDrawingActions)(RCTUIGraphicsImageRendererConte
 
 @interface RCTUIGraphicsImageRenderer : NSObject
 
+- (instancetype)initWithSize:(CGSize)size;
 - (instancetype)initWithSize:(CGSize)size format:(RCTUIGraphicsImageRendererFormat *)format;
 - (NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions;
 

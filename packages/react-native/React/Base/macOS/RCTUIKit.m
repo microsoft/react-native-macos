@@ -77,7 +77,7 @@ CGFloat UIImageGetScale(NSImage *image)
   return 1.0;
 }
 
-CGImageRef UIImageGetCGImageRef(NSImage *image)
+CGImageRef __nullable UIImageGetCGImageRef(NSImage *image)
 {
   return [image CGImageForProposedRect:NULL context:NULL hints:NULL];
 }
@@ -132,23 +132,23 @@ CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
     {
       switch ([bezierPath elementAtIndex:i associatedPoints:points])
       {
-        case NSMoveToBezierPathElement:
+        case NSBezierPathElementMoveTo:
           CGPathMoveToPoint(path, NULL, points[0].x, points[0].y);
           break;
           
-        case NSLineToBezierPathElement:
+        case NSBezierPathElementLineTo:
           CGPathAddLineToPoint(path, NULL, points[0].x, points[0].y);
           didClosePath = NO;
           break;
           
-        case NSCurveToBezierPathElement:
+        case NSBezierPathElementCurveTo:
           CGPathAddCurveToPoint(path, NULL, points[0].x, points[0].y,
                                 points[1].x, points[1].y,
                                 points[2].x, points[2].y);
           didClosePath = NO;
           break;
           
-        case NSClosePathBezierPathElement:
+        case NSBezierPathElementClosePath:
           CGPathCloseSubpath(path);
           didClosePath = YES;
           break;
@@ -364,7 +364,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 - (void)sendMouseEventWithBlock:(RCTDirectEventBlock)block
                    locationInfo:(NSDictionary*)locationInfo
                   modifierFlags:(NSEventModifierFlags)modifierFlags
-                 additionalData:(NSDictionary*)additionalData
+                 additionalData:(NSDictionary* __nullable)additionalData
 {
   if (block == nil) {
     return;
@@ -454,7 +454,10 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 - (NSView *)hitTest:(NSPoint)point
 {
-  return [self hitTest:NSPointToCGPoint(point) withEvent:nil];
+  // IMPORTANT point is passed in super coordinates by OSX, but expected to be passed in local coordinates
+  NSView *superview = [self superview];
+  NSPoint pointInSelf = superview != nil ? [self convertPoint:point fromView:superview] : point;
+  return [self hitTest:pointInSelf withEvent:nil];
 }
 
 - (BOOL)wantsUpdateLayer
@@ -505,7 +508,11 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 - (NSView *)hitTest:(CGPoint)point withEvent:(__unused UIEvent *)event
 {
-  return self.userInteractionEnabled ? [super hitTest:NSPointFromCGPoint(point)] : nil;
+// [macOS
+  // IMPORTANT point is expected to be passed in local coordinates, but OSX expects point to be super 
+  NSView *superview = [self superview];
+  NSPoint pointInSuperview = superview != nil ? [self convertPoint:point toView:superview] : point;
+  return self.userInteractionEnabled ? [super hitTest:pointInSuperview] : nil;
 }
 
 - (BOOL)pointInside:(CGPoint)point withEvent:(__unused UIEvent *)event
@@ -608,6 +615,18 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 - (void)setContentOffset:(CGPoint)contentOffset
 {
   [self.documentView scrollPoint:contentOffset];
+}
+
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated
+{
+    if (animated) {
+        [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+            context.duration = 0.3; // Set the duration of the animation
+            [self.documentView.animator scrollPoint:contentOffset];
+        } completionHandler:nil];
+    } else {
+        [self.documentView scrollPoint:contentOffset];
+    }
 }
 
 - (UIEdgeInsets)contentInset
@@ -779,6 +798,11 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
   }
   
   return self;
+}
+
+- (void)setText:(NSString *)text
+{
+  [self setStringValue:text];
 }
 
 @end
@@ -1016,6 +1040,13 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
 {
     CGSize _size;
     RCTUIGraphicsImageRendererFormat *_format;
+}
+
+- (nonnull instancetype)initWithSize:(CGSize)size {
+    if (self = [super init]) {
+        self->_size = size;
+    }
+    return self;
 }
 
 - (nonnull instancetype)initWithSize:(CGSize)size format:(nonnull RCTUIGraphicsImageRendererFormat *)format {

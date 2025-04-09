@@ -564,28 +564,22 @@ RCT_CUSTOM_VIEW_PROPERTY(collapsableChildren, BOOL, RCTView)
   // filtered by view configs.
 }
 
-RCT_CUSTOM_VIEW_PROPERTY(experimental_layoutConformance, NSString *, RCTView)
+typedef NSArray *FilterArray; // Custom type to make the StaticViewConfigValidator Happy
+RCT_CUSTOM_VIEW_PROPERTY(filter, FilterArray, RCTView)
 {
-  // Property is only to be used in the new renderer.
-  // It is necessary to add it here, otherwise it gets
-  // filtered by view configs.
+  //   Property is only to be used in the new renderer.
+  //   It is necessary to add it here, otherwise it gets
+  //   filtered by view configs.
+}
+typedef NSArray *BoxShadowArray; // Custom type to make the StaticViewConfigValidator Happy
+RCT_CUSTOM_VIEW_PROPERTY(boxShadow, BoxShadowArray, RCTView)
+{
+  //   Property is only to be used in the new renderer.
+  //   It is necessary to add it here, otherwise it gets
+  //   filtered by view configs.
 }
 
-RCT_CUSTOM_VIEW_PROPERTY(experimental_filter, NSArray *, RCTView)
-{
-  // Property is only to be used in the new renderer.
-  // It is necessary to add it here, otherwise it gets
-  // filtered by view configs.
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(experimental_boxShadow, NSArray *, RCTView)
-{
-  // Property is only to be used in the new renderer.
-  // It is necessary to add it here, otherwise it gets
-  // filtered by view configs.
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(experimental_mixBlendMode, NSString *, RCTView)
+RCT_CUSTOM_VIEW_PROPERTY(mixBlendMode, NSString *, RCTView)
 {
   // Property is only to be used in the new renderer.
   // It is necessary to add it here, otherwise it gets
@@ -654,11 +648,10 @@ RCT_EXPORT_VIEW_PROPERTY(onMouseLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragEnter, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDrop, RCTDirectEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(passthroughAllKeyEvents, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTDirectEventBlock) // macOS keyboard events
-RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTDirectEventBlock) // macOS keyboard events
-RCT_EXPORT_VIEW_PROPERTY(validKeysDown, NSArray<RCTHandledKey *>)
-RCT_EXPORT_VIEW_PROPERTY(validKeysUp, NSArray<RCTHandledKey *>)
+RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(keyDownEvents, NSArray<RCTHandledKey *>)
+RCT_EXPORT_VIEW_PROPERTY(keyUpEvents, NSArray<RCTHandledKey *>)
 
 #endif // macOS]
 

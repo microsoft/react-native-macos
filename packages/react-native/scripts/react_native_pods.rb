@@ -53,9 +53,9 @@ end
 # This function prepares the project for React Native, before processing
 # all the target exposed by the framework.
 def prepare_react_native_project!
-  # Temporary solution to suppress duplicated GUID error.
+  # Temporary solution to suppress duplicated GUID error & master specs repo warning.
   # Can be removed once we move to generate files outside pod install.
-  install! 'cocoapods', :deterministic_uuids => false
+  install! 'cocoapods', :deterministic_uuids => false, :warn_for_unused_master_specs_repo => false
 
   ReactNativePodsUtils.create_xcode_env_if_missing
 end
@@ -140,8 +140,8 @@ def use_react_native! (
   pod 'React-defaultsnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/defaults"
   pod 'React-Mapbuffer', :path => "#{prefix}/ReactCommon"
   pod 'React-jserrorhandler', :path => "#{prefix}/ReactCommon/jserrorhandler"
-  pod 'React-nativeconfig', :path => "#{prefix}/ReactCommon"
   pod 'RCTDeprecation', :path => "#{prefix}/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
+  pod 'React-RCTFBReactNativeSpec', :path => "#{prefix}/React"
 
   if hermes_enabled
     setup_hermes!(:react_native_path => prefix)
@@ -151,6 +151,7 @@ def use_react_native! (
 
   pod 'React-jsiexecutor', :path => "#{prefix}/ReactCommon/jsiexecutor"
   pod 'React-jsinspector', :path => "#{prefix}/ReactCommon/jsinspector-modern"
+  pod 'React-jsinspectortracing', :path => "#{prefix}/ReactCommon/jsinspector-modern/tracing"
 
   pod 'React-callinvoker', :path => "#{prefix}/ReactCommon/callinvoker"
   pod 'React-performancetimeline', :path => "#{prefix}/ReactCommon/react/performance/timeline"
@@ -168,6 +169,7 @@ def use_react_native! (
   pod 'DoubleConversion', :podspec => "#{prefix}/third-party-podspecs/DoubleConversion.podspec"
   pod 'glog', :podspec => "#{prefix}/third-party-podspecs/glog.podspec"
   pod 'boost', :podspec => "#{prefix}/third-party-podspecs/boost.podspec"
+  pod 'fast_float', :podspec => "#{prefix}/third-party-podspecs/fast_float.podspec"
   pod 'fmt', :podspec => "#{prefix}/third-party-podspecs/fmt.podspec"
   pod 'RCT-Folly', :podspec => "#{prefix}/third-party-podspecs/RCT-Folly.podspec", :modular_headers => true
   pod 'SocketRocket', :podspec => "#{prefix}/third-party-podspecs/SocketRocket.podspec", :modular_headers => true # [visionOS]
@@ -187,6 +189,7 @@ def use_react_native! (
   )
 
   pod 'ReactCodegen', :path => $CODEGEN_OUTPUT_DIR, :modular_headers => true
+  pod 'ReactAppDependencyProvider', :path => $CODEGEN_OUTPUT_DIR, :modular_headers => true
 
   # Always need fabric to access the RCTSurfacePresenterBridgeAdapter which allow to enable the RuntimeScheduler
   # If the New Arch is turned off, we will use the Old Renderer, though.
@@ -293,6 +296,13 @@ def get_glog_config()
   return Helpers::Constants.glog_config
 end
 
+# This method returns an hash with the fast_float git url
+# that can be used to configure libraries.
+# @return an hash with the `:git` field.
+def get_fast_float_config()
+  return Helpers::Constants.fast_float_config
+end
+
 # This method returns an hash with the fmt git url
 # that can be used to configure libraries.
 # @return an hash with the `:git` field.
@@ -330,6 +340,12 @@ end
 # that can be used to configure libraries.
 def set_glog_config(glog_config)
    Helpers::Constants.set_glog_config(glog_config)
+end
+
+# This method can be used to set the fast_float config
+# that can be used to configure libraries.
+def set_fast_float_config(fmt_config)
+  Helpers::Constants.set_fast_float_config(fast_float_config)
 end
 
 # This method can be used to set the fmt config
