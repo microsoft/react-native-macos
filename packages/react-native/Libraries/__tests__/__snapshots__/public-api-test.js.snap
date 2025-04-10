@@ -2847,6 +2847,8 @@ export type TextInputComponentStatics = $ReadOnly<{|
     currentlyFocusedField: () => ?number,
     focusTextInput: (textField: ?ComponentRef) => void,
     blurTextInput: (textField: ?ComponentRef) => void,
+    onTextInputFocus: (textField: ?ComponentRef) => void,
+    onTextInputBlur: (textField: ?ComponentRef) => void,
   |}>,
 |}>;
 export type TextInputType = React.AbstractComponent<
@@ -3236,6 +3238,8 @@ export type TextInputComponentStatics = $ReadOnly<{|
     currentlyFocusedField: typeof TextInputState.currentlyFocusedField,
     focusTextInput: typeof TextInputState.focusTextInput,
     blurTextInput: typeof TextInputState.blurTextInput,
+    onTextInputFocus: typeof TextInputState.focusInput,
+    onTextInputBlur: typeof TextInputState.blurInput,
   |}>,
 |}>;
 declare module.exports: TextInputType;
