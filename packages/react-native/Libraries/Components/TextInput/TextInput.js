@@ -2045,6 +2045,8 @@ ExportedForwardRef.State = {
   currentlyFocusedField: TextInputState.currentlyFocusedField,
   focusTextInput: TextInputState.focusTextInput,
   blurTextInput: TextInputState.blurTextInput,
+  onTextInputFocus: TextInputState.focusInput, // [macOS]
+  onTextInputBlur: TextInputState.blurInput, // [macOS]
 };
 
 export type TextInputComponentStatics = $ReadOnly<{|
