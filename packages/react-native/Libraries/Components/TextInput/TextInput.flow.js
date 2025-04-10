@@ -1249,6 +1249,8 @@ export type TextInputComponentStatics = $ReadOnly<{|
     currentlyFocusedField: () => ?number,
     focusTextInput: (textField: ?HostInstance) => void,
     blurTextInput: (textField: ?HostInstance) => void,
+    onTextInputFocus: (textField: ?HostInstance) => void, // [macOS]
+    onTextInputBlur: (textField: ?HostInstance) => void, // [macOS]
   |}>,
 |}>;
 
