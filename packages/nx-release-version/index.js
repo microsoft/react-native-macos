@@ -4,10 +4,13 @@ const { releaseVersionGenerator } = require('@nx/js/src/generators/release-versi
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { REPO_ROOT } = require('../../scripts/consts');
 
+/**
+ * @returns {Promise<string[]>}
+ */
 async function runSetVersion() {
   const rnmPkgJson = require.resolve('react-native-macos/package.json');
-  const { REPO_ROOT } = require('../../scripts/consts');
   const { updateReactNativeArtifacts } = require('../../scripts/releases/set-rn-artifacts-version');
 
   const manifest = fs.readFileSync(rnmPkgJson, { encoding: 'utf-8' });
@@ -78,9 +81,11 @@ module.exports = async function(tree, options) {
     callback: async (tree, options) => {
       const result = await callback(tree, options);
 
-      const versionedFiles = await runSetVersion();
-      if (versionedFiles) {
-        const changedFiles = Array.isArray(result) ? result : result.changedFiles;
+      // Only update artifacts if there were changes
+      const changedFiles = Array.isArray(result) ? result : result.changedFiles;
+      if (changedFiles.length > 0) {
+        fs.writeFile(path.join(REPO_ROOT, '.rnm-publish'), '', () => null);
+        const versionedFiles = await runSetVersion();
         changedFiles.push(...versionedFiles);
       }
 

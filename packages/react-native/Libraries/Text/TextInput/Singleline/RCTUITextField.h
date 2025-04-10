@@ -59,6 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *text;
 @property (nonatomic, copy, nullable) NSAttributedString *attributedText;
 @property (nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *defaultTextAttributes;
+@property (nullable, nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *typingAttributes;
 @property (nonatomic, assign) NSTextAlignment textAlignment;
 @property (nonatomic, getter=isAutomaticTextReplacementEnabled) BOOL automaticTextReplacementEnabled;
 @property (nonatomic, getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled;
