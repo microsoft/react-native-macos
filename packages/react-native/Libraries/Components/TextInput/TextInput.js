@@ -2055,6 +2055,8 @@ export type TextInputComponentStatics = $ReadOnly<{|
     currentlyFocusedField: typeof TextInputState.currentlyFocusedField,
     focusTextInput: typeof TextInputState.focusTextInput,
     blurTextInput: typeof TextInputState.blurTextInput,
+    onTextInputFocus: typeof TextInputState.focusInput, // [macOS]
+    onTextInputBlur: typeof TextInputState.blurInput, // [macOS]
   |}>,
 |}>;
 

@@ -3303,6 +3303,8 @@ export type TextInputComponentStatics = $ReadOnly<{|
     currentlyFocusedField: () => ?number,
     focusTextInput: (textField: ?HostInstance) => void,
     blurTextInput: (textField: ?HostInstance) => void,
+    onTextInputFocus: (textField: ?HostInstance) => void,
+    onTextInputBlur: (textField: ?HostInstance) => void,
   |}>,
 |}>;
 export type TextInputType = InternalTextInput & TextInputComponentStatics;
@@ -3702,6 +3704,8 @@ export type TextInputComponentStatics = $ReadOnly<{|
     currentlyFocusedField: typeof TextInputState.currentlyFocusedField,
     focusTextInput: typeof TextInputState.focusTextInput,
     blurTextInput: typeof TextInputState.blurTextInput,
+    onTextInputFocus: typeof TextInputState.focusInput,
+    onTextInputBlur: typeof TextInputState.blurInput,
   |}>,
 |}>;
 declare module.exports: TextInputType;
