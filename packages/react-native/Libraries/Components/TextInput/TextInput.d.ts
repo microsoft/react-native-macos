@@ -1090,7 +1090,7 @@ interface TextInputState {
    */
   blurTextInput(textField?: HostInstance): void;
 
-// [macOS
+  // [macOS
   /**
    * @param textField ref of the text field that was focused
    * Call on custom implementations of TextInput to notify the control was focused
@@ -1104,7 +1104,7 @@ interface TextInputState {
    * noop if it wasn't focused
    */
   onTextInputBlur(textField?: HostInstance): void;
-// macOS]
+  // macOS]
 }
 
 /**
