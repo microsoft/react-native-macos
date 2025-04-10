@@ -36,13 +36,8 @@
 
 const chalk = require('chalk');
 const child_process = require('child_process');
+const { error } = require('console');
 const path = require('path');
-const {logger, CLIError, getDefaultUserTerminal} = (() => {
-  const cli = require.resolve('@react-native-community/cli/package.json');
-  const options = {paths: [path.dirname(cli)]};
-  const tools = require.resolve('@react-native-community/cli-tools', options);
-  return require(tools);
-})();
 
 /**
  * @param {string} sourceDir
@@ -59,7 +54,7 @@ function getXcodeProjectPath(sourceDir, xcodeProject) {
  */
 function parseArgs(ctx, args) {
   if (args.configuration) {
-    logger.warn(
+    console.warn(
       'Argument --configuration has been deprecated and will be removed in a future release, please use --mode instead.',
     );
 
@@ -70,13 +65,13 @@ function parseArgs(ctx, args) {
 
   const {sourceDir, xcodeProject} = ctx.project?.macos ?? {};
   if (!sourceDir) {
-    throw new CLIError(
+    throw new error(
       'macOS project folder not found. Are you sure this is a React Native project?',
     );
   }
 
   if (!xcodeProject) {
-    throw new CLIError(
+    throw new error(
       'Xcode project for macOS not found. Did you forget to run `pod install`?',
     );
   }
@@ -220,7 +215,7 @@ function buildProject(sourceDir, xcodeProject, scheme, args) {
       }
       if (code !== 0) {
         reject(
-          new CLIError(
+          new error(
             `
             Failed to build macOS project.
 
@@ -273,7 +268,7 @@ function getBuildSettings(sourceDir, xcodeProject, configuration, scheme) {
     }
   }
 
-  throw new CLIError('Failed to get the target build settings.');
+  throw new error('Failed to get the target build settings.');
 }
 
 function xcprettyAvailable() {
@@ -373,12 +368,6 @@ module.exports = [
         name: '--port [number]',
         default: process.env.RCT_METRO_PORT || 8081,
         parse: (/** @type {string} */ val) => Number(val),
-      },
-      {
-        name: '--terminal [string]',
-        description:
-          'Launches the Metro Bundler in a new window using the specified terminal path.',
-        default: getDefaultUserTerminal,
       },
     ],
   },
