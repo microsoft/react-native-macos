@@ -2579,6 +2579,7 @@ __metadata:
     hermes-eslint: "npm:0.25.1"
     hermes-transform: "npm:0.25.1"
     inquirer: "npm:^7.1.0"
+    invariant: "npm:^2.2.4"
     jest: "npm:^29.6.3"
     jest-config: "npm:^29.7.0"
     jest-diff: "npm:^29.7.0"
