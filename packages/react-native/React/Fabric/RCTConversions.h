@@ -130,7 +130,99 @@ inline UIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
   }
   return result;
 };
-#endif // [macOS]
+#else // [macOS
+inline NSAccessibilityRole RCTUIAccessibilityRoleFromAccessibilityTraits(
+    facebook::react::AccessibilityTraits accessibilityTraits)
+{
+  using AccessibilityTraits = facebook::react::AccessibilityTraits;
+  if ((accessibilityTraits & AccessibilityTraits::Button) != AccessibilityTraits::None) {
+    if ((accessibilityTraits & AccessibilityTraits::Bar) != AccessibilityTraits::None) {
+      return NSAccessibilityToolbarRole;
+    }
+    if ((accessibilityTraits & AccessibilityTraits::PopUp) != AccessibilityTraits::None) {
+      return NSAccessibilityPopUpButtonRole;
+    }
+    if ((accessibilityTraits & AccessibilityTraits::Menu) != AccessibilityTraits::None) {
+      return NSAccessibilityMenuButtonRole;
+    }
+    return NSAccessibilityButtonRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Link) != AccessibilityTraits::None) {
+    return NSAccessibilityLinkRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Image) != AccessibilityTraits::None) {
+    return NSAccessibilityImageRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::KeyboardKey) != AccessibilityTraits::None) {
+    return NSAccessibilityButtonRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::StaticText) != AccessibilityTraits::None) {
+    return NSAccessibilityStaticTextRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::SummaryElement) != AccessibilityTraits::None) {
+    return NSAccessibilityStaticTextRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::SearchField) != AccessibilityTraits::None) {
+    return NSAccessibilityTextFieldRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Adjustable) != AccessibilityTraits::None) {
+    return NSAccessibilitySliderRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Header) != AccessibilityTraits::None) {
+    return NSAccessibilityStaticTextRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Switch) != AccessibilityTraits::None) {
+    return NSAccessibilityCheckBoxRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::UpdatesFrequently) != AccessibilityTraits::None) {
+    return NSAccessibilityProgressIndicatorRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::ComboBox) != AccessibilityTraits::None) {
+    return NSAccessibilityComboBoxRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Menu) != AccessibilityTraits::None) {
+    if ((accessibilityTraits & AccessibilityTraits::Bar) != AccessibilityTraits::None) {
+      return NSAccessibilityMenuBarRole;
+    }
+    if ((accessibilityTraits & AccessibilityTraits::Item) != AccessibilityTraits::None) {
+      return NSAccessibilityMenuItemRole;
+    }
+    return NSAccessibilityMenuRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Radio) != AccessibilityTraits::None) {
+    if ((accessibilityTraits & AccessibilityTraits::Group) != AccessibilityTraits::None) {
+      return NSAccessibilityRadioGroupRole;
+    }
+    return NSAccessibilityRadioButtonRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::ScrollBar) != AccessibilityTraits::None) {
+    return NSAccessibilityScrollBarRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::SpinButton) != AccessibilityTraits::None) {
+    return NSAccessibilityIncrementorRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Tab) != AccessibilityTraits::None) {
+    if ((accessibilityTraits & AccessibilityTraits::List) != AccessibilityTraits::None) {
+      return NSAccessibilityTabGroupRole;
+    }
+    return NSAccessibilityButtonRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Disclosure) != AccessibilityTraits::None) {
+    return NSAccessibilityDisclosureTriangleRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Group) != AccessibilityTraits::None) {
+    return NSAccessibilityGroupRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::List) != AccessibilityTraits::None) {
+    return NSAccessibilityListRole;
+  }
+  if ((accessibilityTraits & AccessibilityTraits::Table) != AccessibilityTraits::None) {
+    return NSAccessibilityTableRole;
+  }
+
+  return NSAccessibilityUnknownRole;
+};
+#endif // macOS]
 
 inline CATransform3D RCTCATransform3DFromTransformMatrix(const facebook::react::Transform &transformMatrix)
 {
