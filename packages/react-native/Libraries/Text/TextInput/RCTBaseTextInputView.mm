@@ -513,12 +513,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (void)textInputDidBeginEditing
 {
-  #if TARGET_OS_OSX // [macOS
+#if TARGET_OS_OSX // [macOS
   if (_isCurrentlyEditing) {
     return;
   }
   _isCurrentlyEditing = YES;
-  #endif // macOS]
+#endif // macOS]
   
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeFocus
                                  reactTag:self.reactTag
