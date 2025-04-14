@@ -1,6 +1,6 @@
 {
   "name": "@react-native/tester",
-  "version": "0.77.1",
+  "version": "0.77.2",
   "private": true,
   "description": "React Native tester app.",
   "license": "MIT",

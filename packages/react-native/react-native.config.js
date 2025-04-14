@@ -58,27 +58,11 @@ try {
 const macosCommands = require('./local-cli/runMacOS/runMacOS'); // [macOS]
 const commands = [];
 
-try {
-  const {
-    bundleCommand,
-    startCommand,
-  } = require('@react-native/community-cli-plugin');
-  commands.push(bundleCommand, startCommand);
-} catch (e) {
-  const known =
-    e.code === 'MODULE_NOT_FOUND' &&
-    e.message.includes('@react-native-community/cli-server-api');
-
-  if (!known) {
-    throw e;
-  }
-
-  if (verbose) {
-    console.warn(
-      '@react-native-community/cli-server-api not found, the react-native.config.js may be unusable.',
-    );
-  }
-}
+const {
+  bundleCommand,
+  startCommand,
+} = require('@react-native/community-cli-plugin');
+commands.push(bundleCommand, startCommand);
 
 const codegenCommand = {
   name: 'codegen',
@@ -98,12 +82,18 @@ const codegenCommand = {
       name: '--outputPath <path>',
       description: 'Path where generated artifacts will be output to.',
     },
+    {
+      name: '--source <string>',
+      description: 'Whether the script is invoked from an `app` or a `library`',
+      default: 'app',
+    },
   ],
   func: (argv, config, args) =>
     require('./scripts/codegen/generate-artifacts-executor').execute(
       args.path,
       args.platform,
       args.outputPath,
+      args.source,
     ),
 };
 
