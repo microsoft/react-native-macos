@@ -39,7 +39,7 @@
     "yargs": "^17.6.2"
   },
   "beachball": {
-      "shouldPublish": false
+    "shouldPublish": false
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

@@ -23,11 +23,10 @@
     "clean-ios": "rm -rf build/generated/ios Pods Podfile.lock"
   },
   "dependencies": {
-    "@react-native/popup-menu-android": "0.74.88",
+    "@react-native/popup-menu-android": "0.74.89",
     "flow-enums-runtime": "^0.0.6",
     "invariant": "^2.2.4",
-    "nullthrows": "^1.1.1",
-    "@react-native/popup-menu-android": "0.74.89"
+    "nullthrows": "^1.1.1"
   },
   "peerDependencies": {
     "react": "18.2.0",
