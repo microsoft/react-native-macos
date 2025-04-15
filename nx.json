@@ -28,8 +28,7 @@
         "currentVersionResolver": "registry",
         "currentVersionResolverMetadata": {
           "tag": "latest"
-        },
-        "skipLockFileUpdate": true
+        }
       }
     }
   }
