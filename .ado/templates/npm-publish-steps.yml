@@ -40,7 +40,5 @@ steps:
 
   - script: |
       rm -f ~/.npmrc
-    env:
-      NODE_AUTH_TOKEN: $(npmAuthToken)
     displayName: Remove npmrc if it exists
     condition: always()
