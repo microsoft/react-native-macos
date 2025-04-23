@@ -42,7 +42,7 @@ steps:
 
     - script: |
         if [[ -f .rnm-publish ]]; then
-          yarn nx release publish --excludeTaskDependencies
+          yarn nx release publish --tag ${{ parameters['publishTag'] }} --excludeTaskDependencies 
         fi
       displayName: Publish packages
       condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
