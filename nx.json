@@ -29,8 +29,7 @@
         "currentVersionResolverMetadata": {
           "tag": "nightly"
         },
-        "preid": "nightly",
-        "skipLockFileUpdate": true
+        "preid": "nightly"
       }
     }
   }
