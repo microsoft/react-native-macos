@@ -248,8 +248,7 @@ def findLastestVersionWithArtifact(version)
     res, = Open3.capture3("curl -s https://search.maven.org/solrsearch/select?q=g:com.facebook.react+AND+a:react-native-artifacts+AND+v:#{versionWithoutPatch}.*&core=gav&rows=1&wt=json")
     wt = JSON.parse(res)
     response = wt['response']
-    return if response['numFound'] == 0
-    return response['docs'][0]['v']
+    return response['docs'][0]['v'] unless response['numFound'] == 0
 end
 # macOS]
 
