@@ -44,7 +44,7 @@ void UIGraphicsBeginImageContextWithOptions(CGSize size, __unused BOOL opaque, C
 	size_t height = ceilf(size.height * scale);
 
 	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	CGContextRef ctx = CGBitmapContextCreate(NULL, width, height, 8/*bitsPerComponent*/, width * 4/*bytesPerRow*/, colorSpace, kCGImageAlphaPremultipliedFirst);
+	CGContextRef ctx = CGBitmapContextCreate(NULL, width, height, 8/*bitsPerComponent*/, width * 4/*bytesPerRow*/, colorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedFirst);
 	CGColorSpaceRelease(colorSpace);
 
 	if (ctx != NULL)
