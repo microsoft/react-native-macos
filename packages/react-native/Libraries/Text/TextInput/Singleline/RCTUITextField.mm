@@ -161,7 +161,7 @@
 
 - (NSArray<NSAttributedStringKey> *)validAttributesForMarkedText
 {
-	return ((NSTextView *)self.currentEditor).validAttributesForMarkedText;
+	return ((NSTextView *)self.currentEditor).validAttributesForMarkedText ?: @[];
 }
 
 #endif // macOS]
