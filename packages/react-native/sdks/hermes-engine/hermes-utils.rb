@@ -308,7 +308,7 @@ end
 
 # [macOS react-native-macos does not publish macos specific hermes artifacts
 # so we attempt to find the latest patch version of the iOS artifacts and use that
-def findLastestVersionWithArtifact(version)
+def findLatestVersionWithArtifact(version)
     if version == "1000.0.0"
         # The main branch builds from source, so skip the artifact check
         return nil
