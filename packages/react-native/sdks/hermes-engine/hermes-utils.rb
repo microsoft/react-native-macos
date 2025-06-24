@@ -7,6 +7,7 @@ require 'net/http'
 require 'rexml/document'
 require 'open3' # [macOS]
 require 'json' # [macOS]
+require 'tmpdir' # [macOS]
 
 HERMES_GITHUB_URL = "https://github.com/facebook/hermes.git"
 ENV_BUILD_FROM_SOURCE = "RCT_BUILD_HERMES_FROM_SOURCE"
@@ -19,13 +20,14 @@ module HermesEngineSourceType
     BUILD_FROM_GITHUB_TAG = :build_from_github_tag
     BUILD_FROM_GITHUB_MAIN = :build_from_github_main
     BUILD_FROM_LOCAL_SOURCE_DIR = :build_from_local_source_dir
+    BUILD_FROM_GITHUB_MERGE_BASE = :build_from_github_merge_base # [macOS]
 
     def HermesEngineSourceType.isPrebuilt(source_type)
         return source_type == LOCAL_PREBUILT_TARBALL || source_type == DOWNLOAD_PREBUILD_RELEASE_TARBALL || source_type == DOWNLOAD_PREBUILT_NIGHTLY_TARBALL
     end
 
     def HermesEngineSourceType.isFromSource(source_type)
-        return source_type == BUILD_FROM_GITHUB_COMMIT || source_type == BUILD_FROM_GITHUB_TAG || source_type == BUILD_FROM_GITHUB_MAIN || source_type == BUILD_FROM_LOCAL_SOURCE_DIR
+        return source_type == BUILD_FROM_GITHUB_COMMIT || source_type == BUILD_FROM_GITHUB_TAG || source_type == BUILD_FROM_GITHUB_MAIN || source_type == BUILD_FROM_LOCAL_SOURCE_DIR || source_type == BUILD_FROM_GITHUB_MERGE_BASE # [macOS] add BUILD_FROM_GITHUB_MERGE_BASE
     end
 end
 
@@ -71,6 +73,12 @@ def hermes_source_type(version, react_native_path)
     if nightly_artifact_exists(version)
         return HermesEngineSourceType::DOWNLOAD_PREBUILT_NIGHTLY_TARBALL
     end
+
+    # [macOS - react-native-macos's main branch needs an extra bit of logic
+    if version == "1000.0.0"
+        return HermesEngineSourceType::BUILD_FROM_GITHUB_MERGE_BASE
+    end
+    # macOS]
 
     return HermesEngineSourceType::BUILD_FROM_GITHUB_MAIN
 end
@@ -119,6 +127,10 @@ def podspec_source(source_type, version, react_native_path)
         return podspec_source_download_prebuild_release_tarball(react_native_path, version)
     when HermesEngineSourceType::DOWNLOAD_PREBUILT_NIGHTLY_TARBALL
         return podspec_source_download_prebuilt_nightly_tarball(version)
+    # [macOS
+    when HermesEngineSourceType::BUILD_FROM_GITHUB_MERGE_BASE
+        return podspec_source_build_from_github_merge_base()
+    # macOS]
     else
         abort "[Hermes] Unsupported or invalid source type provided: #{source_type}"
     end
@@ -194,6 +206,60 @@ def podspec_source_download_prebuilt_nightly_tarball(version)
     hermes_log("Using nightly tarball from URL: #{url}")
     return {:http => url}
 end
+
+# [macOS
+# Hermes and JSI don't always guarantee backwards compatibility, so the safest option is to use
+# the commit hash of Hermes at the time of the merge base between us and RNCore.
+def podspec_source_build_from_github_merge_base()
+    rncore_main = `git ls-remote https://github.com/facebook/react-native.git main | cut -f 1`.strip
+    if rncore_main.empty?
+        abort <<-EOS
+        [Hermes] Unable to find the main branch commit hash of RNCore.
+        EOS
+    end
+
+    fetch_result = `git fetch -q https://github.com/facebook/react-native.git #{rncore_main}`
+    if $?.exitstatus != 0
+        abort <<-EOS
+        [Hermes] Failed to fetch RNCore main commit (#{rncore_main}) into the local repository.
+        EOS
+    end
+
+    merge_base = `git merge-base #{rncore_main} HEAD`.strip
+    if merge_base.empty?
+        abort <<-EOS
+        [Hermes] Unable to find the merge base between RNCore main (#{rncore_main}) and the current branch.
+        EOS
+    end
+
+    timestamp = `git show -s --format=%ci #{merge_base}`.strip
+    if timestamp.empty?
+        abort <<-EOS
+        [Hermes] Unable to extract the timestamp for the merge base (#{merge_base}).
+        EOS
+    end
+
+    commit = nil
+    Dir.mktmpdir do |tmpdir|
+        hermes_git_dir = File.join(tmpdir, "hermes.git")
+        # Unfortunately we can't use git rev-list on HERMES_GITHUB_URL directly since we're not in that repo.
+        # Instead, we create a shallow clone to avoid downloading the entire history.
+        `git clone -q --bare --shallow-since="#{timestamp}" #{HERMES_GITHUB_URL} "#{hermes_git_dir}"`
+        `git --git-dir="#{hermes_git_dir}" fetch -q --deepen=1`
+
+        # If all goes well, this will be the commit hash of hermes at the time of the merge base
+        commit = `git --git-dir="#{hermes_git_dir}" rev-list -1 --before="#{timestamp}" HEAD`.strip
+        if commit.empty?
+            abort <<-EOS
+            [Hermes] Unable to find the Hermes commit hash at time #{timestamp}.
+            EOS
+        end
+    end
+
+    hermes_log("Using Hermes commit hash from the merge base with RNCore main: #{commit}")
+    return {:git => HERMES_GITHUB_URL, :commit => commit}
+end
+# macOS]
 
 # HELPERS
 
