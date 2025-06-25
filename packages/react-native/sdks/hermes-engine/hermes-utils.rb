@@ -20,14 +20,13 @@ module HermesEngineSourceType
     BUILD_FROM_GITHUB_TAG = :build_from_github_tag
     BUILD_FROM_GITHUB_MAIN = :build_from_github_main
     BUILD_FROM_LOCAL_SOURCE_DIR = :build_from_local_source_dir
-    BUILD_FROM_GITHUB_MERGE_BASE = :build_from_github_merge_base # [macOS]
 
     def HermesEngineSourceType.isPrebuilt(source_type)
         return source_type == LOCAL_PREBUILT_TARBALL || source_type == DOWNLOAD_PREBUILD_RELEASE_TARBALL || source_type == DOWNLOAD_PREBUILT_NIGHTLY_TARBALL
     end
 
     def HermesEngineSourceType.isFromSource(source_type)
-        return source_type == BUILD_FROM_GITHUB_COMMIT || source_type == BUILD_FROM_GITHUB_TAG || source_type == BUILD_FROM_GITHUB_MAIN || source_type == BUILD_FROM_LOCAL_SOURCE_DIR || source_type == BUILD_FROM_GITHUB_MERGE_BASE # [macOS] add BUILD_FROM_GITHUB_MERGE_BASE
+        return source_type == BUILD_FROM_GITHUB_COMMIT || source_type == BUILD_FROM_GITHUB_TAG || source_type == BUILD_FROM_GITHUB_MAIN || source_type == BUILD_FROM_LOCAL_SOURCE_DIR
     end
 end
 
@@ -73,12 +72,6 @@ def hermes_source_type(version, react_native_path)
     if nightly_artifact_exists(version)
         return HermesEngineSourceType::DOWNLOAD_PREBUILT_NIGHTLY_TARBALL
     end
-
-    # [macOS - react-native-macos's main branch needs an extra bit of logic
-    if version == "1000.0.0"
-        return HermesEngineSourceType::BUILD_FROM_GITHUB_MERGE_BASE
-    end
-    # macOS]
 
     return HermesEngineSourceType::BUILD_FROM_GITHUB_MAIN
 end
@@ -127,10 +120,6 @@ def podspec_source(source_type, version, react_native_path)
         return podspec_source_download_prebuild_release_tarball(react_native_path, version)
     when HermesEngineSourceType::DOWNLOAD_PREBUILT_NIGHTLY_TARBALL
         return podspec_source_download_prebuilt_nightly_tarball(version)
-    # [macOS
-    when HermesEngineSourceType::BUILD_FROM_GITHUB_MERGE_BASE
-        return podspec_source_build_from_github_merge_base()
-    # macOS]
     else
         abort "[Hermes] Unsupported or invalid source type provided: #{source_type}"
     end
@@ -189,46 +178,24 @@ def podspec_source_build_from_github_tag(react_native_path)
 end
 
 def podspec_source_build_from_github_main()
-    hermes_log("Using the latest commit from main.")
-    return {:git => HERMES_GITHUB_URL, :commit => `git ls-remote #{HERMES_GITHUB_URL} main | cut -f 1`.strip}
-end
+    # [macOS
+    # The logic for this is a bit different on macOS.
+    # Since react-native-macos lags slightly behind react-native, we can't always use
+    # the latest Hermes commit because Hermes and JSI don't always guarantee backwards compatibility.
+    # Instead, we take the commit hash of Hermes at the time of the merge base between us and RNCore.
 
-def podspec_source_download_prebuild_release_tarball(react_native_path, version)
-    url = release_tarball_url(version, :debug)
-    hermes_log("Using release tarball from URL: #{url}")
-    download_stable_hermes(react_native_path, version, :debug)
-    download_stable_hermes(react_native_path, version, :release)
-    return {:http => url}
-end
-
-def podspec_source_download_prebuilt_nightly_tarball(version)
-    url = nightly_tarball_url(version)
-    hermes_log("Using nightly tarball from URL: #{url}")
-    return {:http => url}
-end
-
-# [macOS
-# Hermes and JSI don't always guarantee backwards compatibility, so the safest option is to use
-# the commit hash of Hermes at the time of the merge base between us and RNCore.
-def podspec_source_build_from_github_merge_base()
-    rncore_main = `git ls-remote https://github.com/facebook/react-native.git main | cut -f 1`.strip
-    if rncore_main.empty?
-        abort <<-EOS
-        [Hermes] Unable to find the main branch commit hash of RNCore.
-        EOS
-    end
-
-    fetch_result = `git fetch -q https://github.com/facebook/react-native.git #{rncore_main}`
+    # We don't need ls-remote because react-native-macos is a fork of RNCore
+    fetch_result = `git fetch -q https://github.com/facebook/react-native.git`
     if $?.exitstatus != 0
         abort <<-EOS
-        [Hermes] Failed to fetch RNCore main commit (#{rncore_main}) into the local repository.
+        [Hermes] Failed to fetch RNCore into the local repository.
         EOS
     end
 
-    merge_base = `git merge-base #{rncore_main} HEAD`.strip
+    merge_base = `git merge-base FETCH_HEAD HEAD`.strip
     if merge_base.empty?
         abort <<-EOS
-        [Hermes] Unable to find the merge base between RNCore main (#{rncore_main}) and the current branch.
+        [Hermes] Unable to find the merge base between RNCore main and the current branch.
         EOS
     end
 
@@ -258,8 +225,22 @@ def podspec_source_build_from_github_merge_base()
 
     hermes_log("Using Hermes commit hash from the merge base with RNCore main: #{commit}")
     return {:git => HERMES_GITHUB_URL, :commit => commit}
+    # macOS]
 end
-# macOS]
+
+def podspec_source_download_prebuild_release_tarball(react_native_path, version)
+    url = release_tarball_url(version, :debug)
+    hermes_log("Using release tarball from URL: #{url}")
+    download_stable_hermes(react_native_path, version, :debug)
+    download_stable_hermes(react_native_path, version, :release)
+    return {:http => url}
+end
+
+def podspec_source_download_prebuilt_nightly_tarball(version)
+    url = nightly_tarball_url(version)
+    hermes_log("Using nightly tarball from URL: #{url}")
+    return {:http => url}
+end
 
 # HELPERS
 
