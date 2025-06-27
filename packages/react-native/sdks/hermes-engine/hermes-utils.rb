@@ -186,7 +186,33 @@ def podspec_source_build_from_github_main()
     # Since react-native-macos lags slightly behind facebook/react-native, we can't always use
     # the latest Hermes commit because Hermes and JSI don't always guarantee backwards compatibility.
     # Instead, we take the commit hash of Hermes at the time of the merge base with facebook/react-native.
+    commit = hermes_commit_at_merge_base()
+    hermes_log("Using Hermes commit from the merge base with facebook/react-native: #{commit}")
+    return {:git => HERMES_GITHUB_URL, :commit => commit}
+    # macOS]
+end
 
+def podspec_source_download_prebuild_release_tarball(react_native_path, version)
+    url = release_tarball_url(version, :debug)
+    hermes_log("Using release tarball from URL: #{url}")
+    download_stable_hermes(react_native_path, version, :debug)
+    download_stable_hermes(react_native_path, version, :release)
+    return {:http => url}
+end
+
+def podspec_source_download_prebuilt_nightly_tarball(version)
+    url = nightly_tarball_url(version)
+    hermes_log("Using nightly tarball from URL: #{url}")
+    return {:http => url}
+end
+
+# HELPERS
+
+def artifacts_dir()
+    return File.join(Pod::Config.instance.project_pods_root, "hermes-engine-artifacts")
+end
+
+def hermes_commit_at_merge_base()
     # We don't need ls-remote because react-native-macos is a fork of facebook/react-native
     fetch_result = `git fetch -q https://github.com/facebook/react-native.git`
     if $?.exitstatus != 0
@@ -226,29 +252,7 @@ def podspec_source_build_from_github_main()
         end
     end
 
-    hermes_log("Using Hermes commit hash from the merge base with facebook/react-native: #{commit}")
-    return {:git => HERMES_GITHUB_URL, :commit => commit}
-    # macOS]
-end
-
-def podspec_source_download_prebuild_release_tarball(react_native_path, version)
-    url = release_tarball_url(version, :debug)
-    hermes_log("Using release tarball from URL: #{url}")
-    download_stable_hermes(react_native_path, version, :debug)
-    download_stable_hermes(react_native_path, version, :release)
-    return {:http => url}
-end
-
-def podspec_source_download_prebuilt_nightly_tarball(version)
-    url = nightly_tarball_url(version)
-    hermes_log("Using nightly tarball from URL: #{url}")
-    return {:http => url}
-end
-
-# HELPERS
-
-def artifacts_dir()
-    return File.join(Pod::Config.instance.project_pods_root, "hermes-engine-artifacts")
+    return commit
 end
 
 def hermestag_file(react_native_path)
