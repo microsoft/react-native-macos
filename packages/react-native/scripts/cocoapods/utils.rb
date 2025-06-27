@@ -196,11 +196,9 @@ class ReactNativePodsUtils
 
     def self.add_build_settings_to_pod(installer, settings_name, settings_value, target_pod_name, configuration_type)
         # [macOS
-        valid_suffixes = [""]
-        if $RN_PLATFORMS != nil && $RN_PLATFORMS.length() >= 2
-            # Only apply suffixes if there are at least two platforms
-            valid_suffixes = $RN_PLATFORMS.map { |platform| "-#{platform}" }
-        end
+        # Since some RN projects might combine multiple platforms into the same Xcode project,
+        # we'll be much more forgiving with the pod name matching in react-native-macos.
+        valid_suffixes = ["", "-iOS", "-macOS", "-visionOS"]
         # macOS]
         installer.target_installation_results.pod_target_installation_results.each do |pod_name, target_installation_result|
             if valid_suffixes.any? { |suffix| pod_name.to_s == "#{target_pod_name}#{suffix}" } # [macOS]
