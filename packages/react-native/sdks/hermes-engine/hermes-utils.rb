@@ -178,6 +178,9 @@ def podspec_source_build_from_github_tag(react_native_path)
 end
 
 def podspec_source_build_from_github_main()
+    # hermes_log("Using the latest commit from main.")
+    # return {:git => HERMES_GITHUB_URL, :commit => `git ls-remote #{HERMES_GITHUB_URL} main | cut -f 1`.strip}
+
     # [macOS
     # The logic for this is a bit different on macOS.
     # Since react-native-macos lags slightly behind react-native, we can't always use
