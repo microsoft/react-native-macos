@@ -1,0 +1,44 @@
+/* Two-column hero header styles with RTL support */
+.heroHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  flex-direction: row;
+}
+
+.heroHeaderRow.rtl {
+  flex-direction: row-reverse;
+}
+
+.heroHeaderText {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: left;
+}
+
+.heroHeaderImage {
+  flex: 0 0 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.centered {
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .heroHeaderRow, .heroHeaderRow.rtl {
+    flex-direction: column !important;
+    gap: 1.5rem;
+    text-align: center;
+  }
+  .heroHeaderText {
+    text-align: center;
+  }
+  .heroHeaderImage {
+    justify-content: center;
+  }
+}
