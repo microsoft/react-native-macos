@@ -50,6 +50,54 @@ parameters:
         packager_platform: 'ios'
         new_arch_enabled: '1'
         use_hermes: '0'
+      - name: macos_debug_oldarch_hermes
+        friendly_name: 'macOS, Old Arch, Hermes'
+        sdk: macosx
+        configuration: Debug
+        scheme: RNTester-macOS
+        packager_platform: 'macos'
+        new_arch_enabled: '0'
+        use_hermes: '1'
+      - name: macos_debug_newarch_hermes
+        friendly_name: 'macOS, New Arch, Hermes'
+        sdk: macosx
+        configuration: Debug
+        scheme: RNTester-macOS
+        packager_platform: 'macos'
+        new_arch_enabled: '1'
+        use_hermes: '1'
+      - name: ios_debug_oldarch_hermes
+        friendly_name: 'iOS, Old Arch, Hermes'
+        sdk: iphonesimulator
+        configuration: Debug
+        scheme: RNTester
+        packager_platform: 'ios'
+        new_arch_enabled: '0'
+        use_hermes: '1'
+      - name: ios_debug_newarch_hermes
+        friendly_name: 'iOS, New Arch, Hermes'
+        sdk: iphonesimulator
+        configuration: Debug
+        scheme: RNTester
+        packager_platform: 'ios'
+        new_arch_enabled: '1'
+        use_hermes: '1'
+      - name: xros_debug_oldarch_hermes
+        friendly_name: 'xrOS, Old Arch, Hermes'
+        sdk: xrsimulator
+        configuration: Debug
+        scheme: RNTester-visionOS
+        packager_platform: 'ios'
+        new_arch_enabled: '0'
+        use_hermes: '1'
+      - name: xros_debug_newarch_hermes
+        friendly_name: 'xrOS, New Arch, Hermes'
+        sdk: xrsimulator
+        configuration: Debug
+        scheme: RNTester-visionOS
+        packager_platform: 'ios'
+        new_arch_enabled: '1'
+        use_hermes: '1'
 
 jobs:
   - ${{ each slice in parameters.appleBuildMatrix }}:
