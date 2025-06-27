@@ -1,0 +1,32 @@
+name: Build Website
+
+on:
+  workflow_call:
+    outputs:
+      build-path:
+        description: "Path to the build directory"
+        value: ${{ jobs.build.outputs.build-path }}
+
+jobs:
+  build:
+    name: "Build the website"
+    runs-on: ubuntu-24.04
+    outputs:
+      build-path: ./build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: yarn
+      - name: Build website
+        run: yarn build
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-build
+          path: ./build
+          retention-days: 1
