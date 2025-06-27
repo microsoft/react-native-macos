@@ -183,22 +183,22 @@ def podspec_source_build_from_github_main()
 
     # [macOS
     # The logic for this is a bit different on macOS.
-    # Since react-native-macos lags slightly behind react-native, we can't always use
+    # Since react-native-macos lags slightly behind facebook/react-native, we can't always use
     # the latest Hermes commit because Hermes and JSI don't always guarantee backwards compatibility.
-    # Instead, we take the commit hash of Hermes at the time of the merge base between us and RNCore.
+    # Instead, we take the commit hash of Hermes at the time of the merge base with facebook/react-native.
 
-    # We don't need ls-remote because react-native-macos is a fork of RNCore
+    # We don't need ls-remote because react-native-macos is a fork of facebook/react-native
     fetch_result = `git fetch -q https://github.com/facebook/react-native.git`
     if $?.exitstatus != 0
         abort <<-EOS
-        [Hermes] Failed to fetch RNCore into the local repository.
+        [Hermes] Failed to fetch facebook/react-native into the local repository.
         EOS
     end
 
     merge_base = `git merge-base FETCH_HEAD HEAD`.strip
     if merge_base.empty?
         abort <<-EOS
-        [Hermes] Unable to find the merge base between RNCore main and the current branch.
+        [Hermes] Unable to find the merge base between our HEAD and upstream's HEAD.
         EOS
     end
 
@@ -217,7 +217,7 @@ def podspec_source_build_from_github_main()
         `git clone -q --bare --shallow-since="#{timestamp}" #{HERMES_GITHUB_URL} "#{hermes_git_dir}"`
         `git --git-dir="#{hermes_git_dir}" fetch -q --deepen=1`
 
-        # If all goes well, this will be the commit hash of hermes at the time of the merge base
+        # If all goes well, this will be the commit hash of Hermes at the time of the merge base
         commit = `git --git-dir="#{hermes_git_dir}" rev-list -1 --before="#{timestamp}" HEAD`.strip
         if commit.empty?
             abort <<-EOS
@@ -226,7 +226,7 @@ def podspec_source_build_from_github_main()
         end
     end
 
-    hermes_log("Using Hermes commit hash from the merge base with RNCore main: #{commit}")
+    hermes_log("Using Hermes commit hash from the merge base with facebook/react-native: #{commit}")
     return {:git => HERMES_GITHUB_URL, :commit => commit}
     # macOS]
 end
