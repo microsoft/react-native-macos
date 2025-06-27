@@ -212,6 +212,7 @@ def artifacts_dir()
     return File.join(Pod::Config.instance.project_pods_root, "hermes-engine-artifacts")
 end
 
+# [macOS
 def hermes_commit_at_merge_base()
     # We don't need ls-remote because react-native-macos is a fork of facebook/react-native
     fetch_result = `git fetch -q https://github.com/facebook/react-native.git`
@@ -254,6 +255,7 @@ def hermes_commit_at_merge_base()
 
     return commit
 end
+# macOS]
 
 def hermestag_file(react_native_path)
     return File.join(react_native_path, "sdks", ".hermesversion")
