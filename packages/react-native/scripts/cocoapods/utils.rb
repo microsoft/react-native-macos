@@ -198,6 +198,7 @@ class ReactNativePodsUtils
         # [macOS
         # Since some RN projects might combine multiple platforms into the same Xcode project,
         # we'll be much more forgiving with the pod name matching in react-native-macos.
+        # Could be upstreamed as part of https://github.com/microsoft/react-native-macos/issues/2526.
         valid_suffixes = ["", "-iOS", "-macOS", "-visionOS"]
         # macOS]
         installer.target_installation_results.pod_target_installation_results.each do |pod_name, target_installation_result|
