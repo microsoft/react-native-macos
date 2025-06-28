@@ -24,7 +24,7 @@ concurrency:
 jobs:
   # Build job
   build:
-    uses: ./.github/workflows/microsoft/build-website.yml
+    uses: ./.github/workflows/microsoft-build-website.yml
 
   # Prepare for Pages deployment
   prepare-pages:
