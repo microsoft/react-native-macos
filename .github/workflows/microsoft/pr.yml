@@ -34,5 +34,5 @@ jobs:
   build-website:
     name: "Build the website"
     permissions: {}
-    uses: ./.github/workflows/build-website.yml
+    uses: ./.github/workflows/microsoft/build-website.yml
 

@@ -24,7 +24,7 @@ concurrency:
 jobs:
   # Build job
   build:
-    uses: ./.github/workflows/build-website.yml
+    uses: ./.github/workflows/microsoft/build-website.yml
 
   # Prepare for Pages deployment
   prepare-pages:
@@ -35,19 +35,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: website-build
-          path: ./build
+          path: ./docsite/build
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./build
+          path: ./docsite/build
 
   # Deployment job
   deploy:
     environment:
       name: github-pages
-      # ${{ steps.deployment.outputs.page_url }} points to https://microsoft.github.io/react-native-macos-docs/
-      # so let's override it to our preferred URL.
-      url: https://microsoft.github.io/react-native-macos/
     runs-on: ubuntu-24.04
     needs: prepare-pages
     steps:

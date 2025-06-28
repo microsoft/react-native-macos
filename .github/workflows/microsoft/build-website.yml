@@ -22,11 +22,13 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: yarn
+        working-directory: ./docsite
       - name: Build website
         run: yarn build
+        working-directory: ./docsite
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: website-build
-          path: ./build
+          path: ./docsite/build
           retention-days: 1
