@@ -22,8 +22,7 @@ end
 # package.json
 package = JSON.parse(File.read(File.join(react_native_path, "package.json")))
 # [macOS
-rn_version = package['version']
-version = findLatestVersionWithArtifact(rn_version) || rn_version
+version = findLatestVersionWithArtifact(package) || package['version']
 # macOS]
 
 source_type = hermes_source_type(version, react_native_path)
