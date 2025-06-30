@@ -13,8 +13,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "start": "yarn workspace react-native-macos exec react-native start",
-    "android": "yarn workspace react-native-macos exec react-native run-android --mode HermesDebug",
+    "start": "npx react-native-macos start",
+    "android": "npx react-native-macos run-android --mode HermesDebug",
     "install-android-jsc": "../../gradlew :packages:rn-tester:android:app:installJscDebug",
     "install-android-hermes": "../../gradlew :packages:rn-tester:android:app:installHermesDebug",
     "clean-android": "rm -rf android/app/build",
