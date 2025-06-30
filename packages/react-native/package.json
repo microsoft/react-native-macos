@@ -24,8 +24,7 @@
     "node": ">=18"
   },
   "bin": {
-    "react-native": "cli.js",
-    "react-native-macos": "cli.js"
+    "react-native": "cli.js"
   },
   "types": "types",
   "jest-junit": {
