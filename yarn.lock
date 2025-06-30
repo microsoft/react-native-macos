@@ -10672,7 +10672,7 @@ __metadata:
     "@types/react":
       optional: true
   bin:
-    react-native: cli.js
+    react-native-macos: cli.js
   languageName: unknown
   linkType: soft
 
