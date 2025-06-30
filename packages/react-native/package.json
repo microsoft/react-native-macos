@@ -23,7 +23,10 @@
   "engines": {
     "node": ">=18"
   },
-  "bin": "cli.js",
+  "bin": {
+    "react-native": "cli.js",
+    "react-native-macos": "cli.js"
+  },
   "types": "types",
   "jest-junit": {
     "outputDirectory": "reports/junit",
