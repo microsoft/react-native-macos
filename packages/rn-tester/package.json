@@ -13,8 +13,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "start": "npx react-native-macos start",
-    "android": "npx react-native-macos run-android --mode HermesDebug",
+    "start": "react-native-macos start",
+    "android": "react-native-macos run-android --mode HermesDebug",
     "install-android-jsc": "../../gradlew :packages:rn-tester:android:app:installJscDebug",
     "install-android-hermes": "../../gradlew :packages:rn-tester:android:app:installHermesDebug",
     "clean-android": "rm -rf android/app/build",
@@ -53,6 +53,7 @@
   "devDependencies": {
     "@react-native-community/cli": "15.0.0-alpha.2",
     "@react-native-community/cli-platform-android": "15.0.0-alpha.2",
-    "@react-native-community/cli-platform-ios": "15.0.0-alpha.2"
+    "@react-native-community/cli-platform-ios": "15.0.0-alpha.2",
+    "react-native-macos": "workspace:*"
   }
 }
