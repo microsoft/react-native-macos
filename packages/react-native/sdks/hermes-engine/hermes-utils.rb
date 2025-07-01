@@ -301,7 +301,7 @@ def findMatchingHermesVersion(package)
         return nil
     end
 
-    if packages['peerDependencies']
+    if package['peerDependencies']
         return package['peerDependencies']['react-native']
     end
 
