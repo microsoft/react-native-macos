@@ -21,14 +21,14 @@ end
 
 # package.json
 package = JSON.parse(File.read(File.join(react_native_path, "package.json")))
-version = findMatchingHermesVersion(package) || package['version'] # [macOS] Prefer special logic in findMatchingHermesVersion
+version = findMatchingHermesVersion(package) # [macOS] Use special logic instead of just package['version']
 
 source_type = hermes_source_type(version, react_native_path)
 source = podspec_source(source_type, version, react_native_path)
 
 Pod::Spec.new do |spec|
   spec.name        = "hermes-engine"
-  spec.version     = version
+  spec.version     = version || package['version'] # [macOS] If version is nil, fall back to package version so CocoaPods doesn't fail
   spec.summary     = "Hermes is a small and lightweight JavaScript engine optimized for running React Native."
   spec.description = "Hermes is a JavaScript engine optimized for fast start-up of React Native apps. It features ahead-of-time static optimization and compact bytecode."
   spec.homepage    = "https://hermesengine.dev"
