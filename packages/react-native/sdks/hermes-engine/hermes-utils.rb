@@ -298,14 +298,28 @@ end
 
 # [macOS react-native-macos does not publish macos specific hermes artifacts
 # so we attempt to find the latest patch version of the iOS artifacts and use that
-def findLatestVersionWithArtifact(package)
+def findMatchingHermesVersion(package)
     if package['version'] == "1000.0.0"
         # The main branch builds from source, so skip the artifact check
         return nil
     end
 
     # This assumes that whatever peer dependency we specify has an artifact
-    return package['peerDependencies']['react-native']
+    if packages['peerDependencies']
+        return package['peerDependencies']['react-native']
+    end
+
+    # See https://central.sonatype.org/search/rest-api-guide/ for details on query params
+    versionWithoutPatch = "#{version.match(/^(\d+\.\d+)/)}"
+    res, = Open3.capture3("curl -s https://search.maven.org/solrsearch/select?q=g:com.facebook.react+AND+a:react-native-artifacts+AND+v:#{versionWithoutPatch}.*&core=gav&rows=1&wt=json")
+    begin
+        wt = JSON.parse(res)
+    rescue
+        hermes_log("Failed to parse JSON from Maven search response:\n#{res}", :warning)
+        return nil
+    end
+    response = wt['response']
+    return response['docs'][0]['v'] unless response['numFound'] == 0
 end
 # macOS]
 
