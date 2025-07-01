@@ -2960,6 +2960,7 @@ __metadata:
     flow-enums-runtime: "npm:^0.0.6"
     invariant: "npm:^2.2.4"
     nullthrows: "npm:^1.1.1"
+    react-native-macos: "workspace:*"
   peerDependencies:
     react: 19.0.0
     react-native-macos: "workspace:*"
@@ -10673,6 +10674,7 @@ __metadata:
       optional: true
   bin:
     react-native: cli.js
+    react-native-macos: cli.js
   languageName: unknown
   linkType: soft
 
