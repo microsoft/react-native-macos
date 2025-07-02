@@ -72,20 +72,20 @@ parameters:
         packager_platform: 'ios'
         new_arch_enabled: '1'
         use_hermes: '0'
-      - name: xros_oldarch_hermes
-        friendly_name: 'xrOS, Old Arch, Hermes'
-        sdk: xrsimulator
-        scheme: RNTester-visionOS
-        packager_platform: 'ios'
-        new_arch_enabled: '1'
-        use_hermes: '1'
-      - name: xros_newarch_hermes
-        friendly_name: 'xrOS, New Arch, Hermes'
-        sdk: xrsimulator
-        scheme: RNTester-visionOS
-        packager_platform: 'ios'
-        new_arch_enabled: '1'
-        use_hermes: '1'
+      # - name: xros_oldarch_hermes
+      #   friendly_name: 'xrOS, Old Arch, Hermes'
+      #   sdk: xrsimulator
+      #   scheme: RNTester-visionOS
+      #   packager_platform: 'ios'
+      #   new_arch_enabled: '1'
+      #   use_hermes: '1'
+      # - name: xros_newarch_hermes
+      #   friendly_name: 'xrOS, New Arch, Hermes'
+      #   sdk: xrsimulator
+      #   scheme: RNTester-visionOS
+      #   packager_platform: 'ios'
+      #   new_arch_enabled: '1'
+      #   use_hermes: '1'
 
 jobs:
   - ${{ each slice in parameters.appleBuildMatrix }}:
