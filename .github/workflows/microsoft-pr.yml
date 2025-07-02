@@ -3,7 +3,7 @@ name: PR
 on:
   pull_request:
     types: [opened, synchronize, edited]
-    branches: [ "main" ]
+    branches: [ "main", "*-stable", "release/*" ]
 
 concurrency:
   # Ensure single build of a pull request. `main` should not be affected.
@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-commit:
+  lint-title:
     name: "Lint PR title"
     permissions: {}
     runs-on: ubuntu-latest
@@ -34,5 +34,34 @@ jobs:
   build-website:
     name: "Build the website"
     permissions: {}
+    if: github.base_ref == 'main'
     uses: ./.github/workflows/microsoft-build-website.yml
+  npm-publish-dry-run:
+    name: "NPM Publish (Dry Run)"
+    permissions: {}
+    runs-on: ubuntu-latest
+    env:
+      PUBLISH_TAG: 'latest'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Configure git
+        run: |
+          git config --global user.email "53619745+rnbot@users.noreply.github.com"
+          git config --global user.name "React-Native Bot"
+          git remote set-url origin https://rnbot:${{ secrets.GITHUB_TOKEN }}@github.com/microsoft/react-native-macos
+      - name: Install dependencies
+        run: yarn
+      - name: Verify release config
+        run: |
+          node .ado/scripts/prepublish-check.mjs --verbose --skip-auth --tag ${{ env.PUBLISH_TAG }}
 
+      - name: Version and publish packages (dry run)
+        run: |
+          echo "Target branch: ${{ github.base_ref }}"
+          yarn nx release --dry-run --verbose
