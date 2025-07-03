@@ -29,12 +29,12 @@ stages:
       - template: /.ado/jobs/npm-publish-dry-run.yml@self
 
   - stage: Validate_Peer_Dependency
-    displayName: 'Validate react-native Peer Dependency on Stable Branches'
+    displayName: 'Validate Peer Dependency'
     dependsOn: []
     condition: and(succeeded(), contains(variables['System.PullRequest.TargetBranch'], '-stable'))
     jobs:
-      - job: CheckPeerDependency
-        displayName: 'Check react-native in peerDependencies'
+      - job: CheckRNPeerDependency
+        displayName: 'react-native'
         pool:
           vmImage: $(vmImageApple)
         steps:
