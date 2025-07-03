@@ -28,6 +28,24 @@ stages:
       - template: /.ado/jobs/test-javascript.yml@self
       - template: /.ado/jobs/npm-publish-dry-run.yml@self
 
+  - stage: Validate_Peer_Dependency
+    displayName: 'Validate react-native Peer Dependency on Stable Branches'
+    dependsOn: []
+    condition: and(succeeded(), contains(variables['System.PullRequest.TargetBranch'], '-stable'))
+    jobs:
+      - job: CheckPeerDependency
+        displayName: 'Check react-native in peerDependencies'
+        pool:
+          vmImage: $(vmImageApple)
+        steps:
+          - script: |
+              set -eox pipefail
+              if ! jq -e '.peerDependencies["react-native"]' packages/react-native/package.json > /dev/null; then
+                echo "##vso[task.logissue type=error]react-native is not listed as a peerDependency in packages/react-native/package.json"
+                exit 1
+              fi
+            displayName: 'Validate peerDependency in package.json'
+
   # https://github.com/microsoft/react-native-macos/issues/2344
   # The Verdaccio server consistently hangs on creation, which is required for the integration tests
   # - stage: Integration
