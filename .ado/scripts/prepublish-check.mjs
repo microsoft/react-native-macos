@@ -138,9 +138,20 @@ function versionToNumber(version) {
  * @returns {string | undefined}
  */
 function getTargetBranch() {
-  // https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services
-  const adoTargetBranchName = process.env["SYSTEM_PULLREQUEST_TARGETBRANCH"];
-  return adoTargetBranchName?.replace(/^refs\/heads\//, "");
+  // Azure Pipelines
+  if (process.env["TF_BUILD"] === "True") {
+    // https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services
+    const targetBranch = process.env["SYSTEM_PULLREQUEST_TARGETBRANCH"];
+    return targetBranch?.replace(/^refs\/heads\//, "");
+  }
+
+  // GitHub Actions
+  if (process.env["GITHUB_ACTIONS"] === "true") {
+    // https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
+    return process.env["GITHUB_BASE_REF"];
+  }
+
+  return undefined;
 }
 
 /**
@@ -150,15 +161,32 @@ function getTargetBranch() {
  * @returns {string}
  */
 function getCurrentBranch(options) {
-  const adoTargetBranchName = getTargetBranch();
-  if (adoTargetBranchName) {
-    return adoTargetBranchName;
+  const targetBranch = getTargetBranch();
+  if (targetBranch) {
+    return targetBranch;
   }
 
-  // https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services
-  const adoSourceBranchName = process.env["BUILD_SOURCEBRANCHNAME"];
-  if (adoSourceBranchName) {
-    return adoSourceBranchName.replace(/^refs\/heads\//, "");
+  // Azure DevOps Pipelines
+  if (process.env["TF_BUILD"] === "True") {
+    // https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services
+    const sourceBranch = process.env["BUILD_SOURCEBRANCHNAME"];
+    if (sourceBranch) {
+      return sourceBranch.replace(/^refs\/heads\//, "");
+    }
+  }
+
+  // GitHub Actions
+  if (process.env["GITHUB_ACTIONS"] === "true") {
+    // https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
+    const headRef = process.env["GITHUB_HEAD_REF"];
+    if (headRef) {
+      return headRef; // For pull requests
+    }
+    
+    const ref = process.env["GITHUB_REF"];
+    if (ref) {
+      return ref.replace(/^refs\/heads\//, ""); // For push events
+    }
   }
 
   const { "mock-branch": mockBranch } = options;
