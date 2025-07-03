@@ -33,9 +33,8 @@ jobs:
           echo "$PR_TITLE" | npx @rnx-kit/commitlint-lite@2.0.0
   npm-publish-dry-run:
     name: "NPM Publish (Dry Run)"
-    runs-on: ubuntu-24.04
-    env:
-      PUBLISH_TAG: 'latest'
+    permissions: {}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,6 +43,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Read publish tag from nx.json
+        id: config
+        run: |
+          PUBLISH_TAG=$(jq -r '.release.version.generatorOptions.currentVersionResolverMetadata.tag' nx.json)
+          echo "publishTag=$PUBLISH_TAG" >> $GITHUB_OUTPUT
+          echo "Using publish tag from nx.json: $PUBLISH_TAG"
       - name: Configure git
         run: |
           git config --global user.email "53619745+rnbot@users.noreply.github.com"
@@ -53,7 +58,7 @@ jobs:
         run: yarn
       - name: Verify release config
         run: |
-          node .ado/scripts/prepublish-check.mjs --verbose --tag ${{ env.PUBLISH_TAG }}
+          node .ado/scripts/prepublish-check.mjs --verbose --skip-auth --tag ${{ steps.config.outputs.publishTag }}
       - name: Version and publish packages (dry run)
         run: |
           echo "Target branch: ${{ github.base_ref }}"
