@@ -3,7 +3,6 @@ import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as util from "node:util";
 
-const ADO_PUBLISH_PIPELINE = ".ado/templates/npm-publish-steps.yml";
 const NX_CONFIG_FILE = "nx.json";
 
 const NPM_DEFEAULT_REGISTRY = "https://registry.npmjs.org/"
@@ -243,23 +242,6 @@ function getTagForStableBranch(branch, { tag }, log) {
 }
 
 /**
- * @param {string} file
- * @param {string} tag
- * @returns {void}
- */
-function verifyPublishPipeline(file, tag) {
-  const data = fs.readFileSync(file, { encoding: "utf-8" });
-  const m = data.match(/publishTag: '(latest|next|nightly|v\d+\.\d+-stable)'/);
-  if (!m) {
-    throw new Error(`${file}: Could not find npm publish tag`);
-  }
-
-  if (m[1] !== tag) {
-    throw new Error(`${file}: 'publishTag' must be set to '${tag}'`);
-  }
-}
-
-/**
  * Verifies the configuration and enables publishing on CI.
  * @param {NxConfig} config
  * @param {string} currentBranch
@@ -324,8 +306,6 @@ function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNe
   } else {
     verifyNpmAuth();
   }
-
-  verifyPublishPipeline(ADO_PUBLISH_PIPELINE, tag);
 
   // Don't enable publishing in PRs
   if (!getTargetBranch()) {
