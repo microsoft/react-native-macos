@@ -8,6 +8,24 @@ import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
 
+function WindowsLink() {
+  return (
+    <div className={styles.windowsLinkWrapper}>
+      <Link
+        className={clsx(
+          'button button--secondary button--lg',
+          styles.windowsLink
+        )}
+        href="https://microsoft.github.io/react-native-windows"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Interested in Windows?
+      </Link>
+    </div>
+  );
+}
+
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
@@ -58,6 +76,7 @@ export default function Home(): ReactNode {
       <HomepageHeader />
       <main>
         <HomepageFeatures />
+        <WindowsLink />
       </main>
     </Layout>
   );

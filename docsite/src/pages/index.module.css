@@ -73,3 +73,17 @@
     margin-top: 1.5rem;
   }
 }
+
+.windowsLinkWrapper {
+  display: flex;
+  justify-content: center;
+  margin: 3rem 0;
+}
+
+.windowsLink {
+  transition: transform 0.2s ease;
+}
+
+.windowsLink:hover {
+  transform: translateY(-2px);
+}
