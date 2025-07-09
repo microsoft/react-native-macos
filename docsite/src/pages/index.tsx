@@ -20,14 +20,14 @@ function HomepageHeader() {
           <p className="hero__subtitle">{siteConfig.tagline}</p>
         </div>
         <div className={styles.heroImageCol}>
-          <img alt="React Native macOS mockup" src={"img/platform.png"} className={styles.heroImage} />
+          <img alt="React Native macOS mockup" src={'img/platform.png'} className={styles.heroImage} />
         </div>
       </div>
       <div className={styles.buttonsWrapper}>
         <div className={styles.buttons}>
           <Link
             className={clsx(
-              "button button--primary button--lg",
+              'button button--primary button--lg',
               styles.headerButton
             )}
             to="/docs/getting-started"
@@ -36,7 +36,7 @@ function HomepageHeader() {
           </Link>
           <Link
             className={clsx(
-              "button button--link button--lg",
+              'button button--link button--lg',
               styles.headerLink
             )}
             to="/docs/intro"
