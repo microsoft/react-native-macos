@@ -8,6 +8,24 @@ import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
 
+function WindowsLink() {
+  return (
+    <div className={styles.windowsLinkWrapper}>
+      <Link
+        className={clsx(
+          'button button--secondary button--lg',
+          styles.windowsLink
+        )}
+        href="https://microsoft.github.io/react-native-windows"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Interested in Windows?
+      </Link>
+    </div>
+  );
+}
+
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
@@ -20,14 +38,14 @@ function HomepageHeader() {
           <p className="hero__subtitle">{siteConfig.tagline}</p>
         </div>
         <div className={styles.heroImageCol}>
-          <img alt="React Native macOS mockup" src={"img/platform.png"} className={styles.heroImage} />
+          <img alt="React Native macOS mockup" src={'img/platform.png'} className={styles.heroImage} />
         </div>
       </div>
       <div className={styles.buttonsWrapper}>
         <div className={styles.buttons}>
           <Link
             className={clsx(
-              "button button--primary button--lg",
+              'button button--primary button--lg',
               styles.headerButton
             )}
             to="/docs/getting-started"
@@ -36,7 +54,7 @@ function HomepageHeader() {
           </Link>
           <Link
             className={clsx(
-              "button button--link button--lg",
+              'button button--link button--lg',
               styles.headerLink
             )}
             to="/docs/intro"
@@ -58,6 +76,7 @@ export default function Home(): ReactNode {
       <HomepageHeader />
       <main>
         <HomepageFeatures />
+        <WindowsLink />
       </main>
     </Layout>
   );
