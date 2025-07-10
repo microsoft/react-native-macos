@@ -58,6 +58,7 @@ function currentlyFocusedField(): ?number {
 }
 
 function focusInput(textField: ?HostInstance): void {
+  console.log('SAAD focusInput');
   if (currentlyFocusedInputRef !== textField && textField != null) {
     currentlyFocusedInputRef = textField;
   }
@@ -91,6 +92,7 @@ function blurField(textFieldID: ?number) {
  * noop if the text field was already focused or if the field is not editable
  */
 function focusTextInput(textField: ?HostInstance) {
+  console.log('SAAD focusTextInput');
   if (typeof textField === 'number') {
     if (__DEV__) {
       console.error(
@@ -103,7 +105,11 @@ function focusTextInput(textField: ?HostInstance) {
 
   if (textField != null) {
     const fieldCanBeFocused =
-      currentlyFocusedInputRef !== textField &&
+      // [macOS currentlyFocusedInputRef does not account for the fact that any arbritrary view can
+      // recieve focus on desktop. https://github.com/facebook/react-native/pull/52472/ fixes this,
+      // disable the check for now
+      // currentlyFocusedInputRef !== textField &&
+      // macOS]
       // $FlowFixMe - `currentProps` is missing in `NativeMethods`
       textField.currentProps?.editable !== false;
 
