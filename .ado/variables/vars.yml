@@ -1,6 +1,6 @@
+# See https://github.com/actions/runner-images/tree/main/images/macos for the latest macOS images and Xcode versions
+
 variables:
-  VmImageApple: macos-latest-internal
-  xcode_friendly_name: 'Xcode 16.2'
-  xcode_version: '/Applications/Xcode_16.2.app'
-  ios_version: '18.0'
-  ios_simulator: 'iPhone 16'
+  VmImageApple: macos-15
+  xcode_friendly_name: 'Xcode 16.3'
+  xcode_version: '/Applications/Xcode_16.3.0.app'
