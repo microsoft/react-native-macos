@@ -34,3 +34,21 @@ stages:
   #   jobs:
   #     - template: /.ado/jobs/test-react-native-macos-init.yml@self
   #     - template: /.ado/jobs/react-native-test-app-integration.yml@self
+
+  - stage: Validate_Peer_Dependency
+    displayName: 'Validate Peer Dependency'
+    dependsOn: []
+    condition: and(succeeded(), contains(variables['System.PullRequest.TargetBranch'], '-stable'))
+    jobs:
+      - job: CheckRNPeerDependency
+        displayName: 'react-native'
+        pool:
+          vmImage: $(vmImageApple)
+        steps:
+          - script: |
+              set -eox pipefail
+              if ! jq -e '.peerDependencies["react-native"]' packages/react-native/package.json > /dev/null; then
+                echo "##vso[task.logissue type=error]react-native is not listed as a peerDependency in packages/react-native/package.json"
+                exit 1
+              fi
+            displayName: 'Validate peerDependency in package.json'
