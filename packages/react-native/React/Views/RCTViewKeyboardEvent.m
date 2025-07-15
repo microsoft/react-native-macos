@@ -63,8 +63,6 @@
     return @"PageUp";
   } else if (code == NSPageDownFunctionKey) {
     return @"PageDown";
-  } else if (code == NSPageDownFunctionKey) {
-    return @"PageDown";
   } else if (code == NSF1FunctionKey) {
     return @"F1";
   } else if (code == NSF2FunctionKey) {
