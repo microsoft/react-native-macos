@@ -1,4 +1,4 @@
-# Change Log - @react-native-mac/virtualized-lists
+# Change Log - @react-native-macos/virtualized-lists
 
 This log was last generated on Wed, 06 Sep 2023 19:59:04 GMT and should not be manually modified.
 

@@ -111,7 +111,7 @@
   },
   "dependencies": {
     "@jest/create-cache-key-function": "^29.6.3",
-    "@react-native-mac/virtualized-lists": "workspace:*",
+    "@react-native-macos/virtualized-lists": "workspace:*",
     "@react-native/assets-registry": "0.77.0-main",
     "@react-native/codegen": "0.77.0-main",
     "@react-native/community-cli-plugin": "0.77.0-main",
