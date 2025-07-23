@@ -58,7 +58,6 @@ function currentlyFocusedField(): ?number {
 }
 
 function focusInput(textField: ?HostInstance): void {
-  console.log('SAAD focusInput');
   if (currentlyFocusedInputRef !== textField && textField != null) {
     currentlyFocusedInputRef = textField;
   }
