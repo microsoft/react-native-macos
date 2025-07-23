@@ -13,6 +13,14 @@ void ScrollViewEventEmitter::onScroll(const ScrollEvent& scrollEvent) const {
   dispatchUniqueEvent("scroll", std::make_shared<ScrollEvent>(scrollEvent));
 }
 
+void ScrollViewEventEmitter::experimental_onDiscreteScroll(
+    const ScrollEvent& scrollEvent) const {
+  dispatchEvent(
+      "scroll",
+      std::make_shared<ScrollEvent>(scrollEvent),
+      RawEvent::Category::Discrete);
+}
+
 void ScrollViewEventEmitter::onScrollToTop(
     const ScrollEvent& scrollEvent) const {
   dispatchUniqueEvent(
@@ -25,9 +33,8 @@ void ScrollViewEventEmitter::onScrollBeginDrag(
 }
 
 void ScrollViewEventEmitter::onScrollEndDrag(
-    const ScrollEndDragEvent& scrollEvent) const {
-  dispatchEvent(
-      "scrollEndDrag", std::make_shared<ScrollEndDragEvent>(scrollEvent));
+    const ScrollEvent& scrollEvent) const {
+  dispatchScrollViewEvent("scrollEndDrag", scrollEvent);
 }
 
 void ScrollViewEventEmitter::onMomentumScrollBegin(

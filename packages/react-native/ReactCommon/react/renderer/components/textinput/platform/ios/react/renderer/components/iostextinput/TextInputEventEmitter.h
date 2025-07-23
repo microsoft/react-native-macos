@@ -27,6 +27,11 @@ class TextInputEventEmitter : public ViewEventEmitter {
     int eventCount;
     Size layoutMeasurement;
     Float zoomScale;
+ #if TARGET_OS_OSX // [macOS
+    bool autoCorrectEnabled;
+    bool spellCheckEnabled;
+    bool grammarCheckEnabled;
+#endif // macOS]   
   };
 
   struct KeyPressMetrics {
@@ -43,6 +48,11 @@ class TextInputEventEmitter : public ViewEventEmitter {
   void onSubmitEditing(const Metrics& textInputMetrics) const;
   void onKeyPress(const KeyPressMetrics& keyPressMetrics) const;
   void onScroll(const Metrics& textInputMetrics) const;
+ #if TARGET_OS_OSX // [macOS
+  void onAutoCorrectChange(const Metrics& textInputMetrics) const;
+  void onSpellCheckChange(const Metrics& textInputMetrics) const;
+  void onGrammarCheckChange(const Metrics& textInputMetrics) const;
+ #endif // macOS]
 
  private:
   void dispatchTextInputEvent(

@@ -23,8 +23,8 @@ void RCTCopyBackedTextInput(
     RCTUIView<RCTBackedTextInputViewProtocol> *fromTextInput,
     RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput
 #else // [macOS
-    RCTUITextView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUITextView<RCTBackedTextInputViewProtocol> *toTextInput
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *fromTextInput,
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *toTextInput
 #endif // macOS]
 )
 {
@@ -32,6 +32,15 @@ void RCTCopyBackedTextInput(
   toTextInput.placeholder = fromTextInput.placeholder;
   toTextInput.placeholderColor = fromTextInput.placeholderColor;
   toTextInput.textContainerInset = fromTextInput.textContainerInset;
+
+#if TARGET_OS_OSX // [macOS
+  toTextInput.accessibilityElement = fromTextInput.accessibilityElement;
+  toTextInput.accessibilityHelp = fromTextInput.accessibilityHelp;
+  toTextInput.accessibilityIdentifier = fromTextInput.accessibilityIdentifier;
+  toTextInput.accessibilityLabel = fromTextInput.accessibilityLabel;
+  toTextInput.accessibilityRole = fromTextInput.accessibilityRole;
+  toTextInput.autoresizingMask = fromTextInput.autoresizingMask;
+#endif // macOS]
 #if TARGET_OS_IOS // [macOS] [visionOS]
   toTextInput.inputAccessoryView = fromTextInput.inputAccessoryView;
 #endif // [macOS] [visionOS]
@@ -60,7 +69,6 @@ void RCTCopyBackedTextInput(
   toTextInput.textContentType = fromTextInput.textContentType;
   toTextInput.smartInsertDeleteType = fromTextInput.smartInsertDeleteType;
   toTextInput.passwordRules = fromTextInput.passwordRules;
-  toTextInput.disableKeyboardShortcuts = fromTextInput.disableKeyboardShortcuts;
 
   [toTextInput setSelectedTextRange:fromTextInput.selectedTextRange notifyDelegate:NO];
 #endif // [macOS]
@@ -260,15 +268,6 @@ UITextContentType RCTUITextContentTypeFromString(const std::string &contentType)
         @"birthdateYear" : UITextContentTypeBirthdateYear,
       }];
     }
-
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 170400 /* __IPHONE_17_4 */
-    if (@available(iOS 17.4, *)) {
-      [mutableContentTypeMap addEntriesFromDictionary:@{
-        @"cellularEID" : UITextContentTypeCellularEID,
-        @"cellularIMEI" : UITextContentTypeCellularIMEI,
-      }];
-    }
-#endif
 #endif
 
     contentTypeMap = mutableContentTypeMap;

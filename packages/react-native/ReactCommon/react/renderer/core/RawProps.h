@@ -71,16 +71,7 @@ class RawProps final {
    * The support for explicit conversion to `folly::dynamic` is deprecated and
    * will be removed as soon Android implementation does not need it.
    */
-  explicit operator folly::dynamic() const;
-
-  /*
-   * Deprecated. Do not use.
-   * The support for explicit conversion to `folly::dynamic` is deprecated and
-   * will be removed as soon Android implementation does not need it.
-   */
-  folly::dynamic toDynamic(
-      const std::function<bool(const std::string&)>& filterObjectKeys =
-          nullptr) const;
+  explicit operator folly::dynamic() const noexcept;
 
   /*
    * Once called, Yoga style props will be filtered out during conversion to

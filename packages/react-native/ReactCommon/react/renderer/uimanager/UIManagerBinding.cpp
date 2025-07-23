@@ -7,7 +7,7 @@
 
 #include "UIManagerBinding.h"
 
-#include <cxxreact/TraceSection.h>
+#include <cxxreact/SystraceSection.h>
 #include <glog/logging.h>
 #include <jsi/JSIDynamic.h>
 #include <react/debug/react_native_assert.h>
@@ -18,6 +18,8 @@
 #include <react/renderer/uimanager/primitives.h>
 
 #include <utility>
+
+#include "bindingUtils.h"
 
 namespace facebook::react {
 
@@ -60,13 +62,40 @@ UIManagerBinding::~UIManagerBinding() {
                << this << ").";
 }
 
+jsi::Value UIManagerBinding::getInspectorDataForInstance(
+    jsi::Runtime& runtime,
+    const EventEmitter& eventEmitter) const {
+  auto eventTarget = eventEmitter.eventTarget_;
+  EventEmitter::DispatchMutex().lock();
+
+  if (!runtime.global().hasProperty(runtime, "__fbBatchedBridge") ||
+      !eventTarget) {
+    return jsi::Value::undefined();
+  }
+
+  eventTarget->retain(runtime);
+  auto instanceHandle = eventTarget->getInstanceHandle(runtime);
+  eventTarget->release(runtime);
+  EventEmitter::DispatchMutex().unlock();
+
+  if (instanceHandle.isUndefined()) {
+    return jsi::Value::undefined();
+  }
+
+  return callMethodOfModule(
+      runtime,
+      "ReactFabric",
+      "getInspectorDataForInstance",
+      {std::move(instanceHandle)});
+}
+
 void UIManagerBinding::dispatchEvent(
     jsi::Runtime& runtime,
     const EventTarget* eventTarget,
     const std::string& type,
     ReactEventPriority priority,
     const EventPayload& eventPayload) const {
-  TraceSection s("UIManagerBinding::dispatchEvent", "type", type);
+  SystraceSection s("UIManagerBinding::dispatchEvent", "type", type);
 
   if (eventPayload.getType() == EventPayloadType::PointerEvent) {
     auto pointerEvent = static_cast<const PointerEvent&>(eventPayload);
@@ -454,7 +483,9 @@ jsi::Value UIManagerBinding::get(
           uiManager->completeSurface(
               surfaceId,
               shadowNodeList,
-              {.enableStateReconciliation = true, .mountSynchronously = false});
+              {.enableStateReconciliation = true,
+               .mountSynchronously = false,
+               .shouldYield = nullptr});
 
           return jsi::Value::undefined();
         });

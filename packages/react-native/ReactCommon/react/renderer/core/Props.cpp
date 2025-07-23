@@ -7,40 +7,28 @@
 
 #include "Props.h"
 
+#include <folly/dynamic.h>
 #include <react/renderer/core/propsConversions.h>
-
-#include <react/featureflags/ReactNativeFeatureFlags.h>
-#include "DynamicPropsUtilities.h"
+#include <react/utils/CoreFeatures.h>
 
 namespace facebook::react {
 
 Props::Props(
     const PropsParserContext& context,
     const Props& sourceProps,
-    const RawProps& rawProps,
-    const std::function<bool(const std::string&)>& filterObjectKeys) {
-  initialize(context, sourceProps, rawProps, filterObjectKeys);
+    const RawProps& rawProps) {
+  initialize(context, sourceProps, rawProps);
 }
 
 void Props::initialize(
     const PropsParserContext& context,
     const Props& sourceProps,
-    const RawProps& rawProps,
-    [[maybe_unused]] const std::function<bool(const std::string&)>&
-        filterObjectKeys) {
-  nativeId = ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+    const RawProps& rawProps) {
+  nativeId = CoreFeatures::enablePropIteratorSetter
       ? sourceProps.nativeId
       : convertRawProp(context, rawProps, "nativeID", sourceProps.nativeId, {});
 #ifdef ANDROID
-  if (ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid()) {
-    auto& oldRawProps = sourceProps.rawProps;
-    auto newRawProps = rawProps.toDynamic(filterObjectKeys);
-    auto mergedRawProps = mergeDynamicProps(
-        oldRawProps, newRawProps, NullValueStrategy::Override);
-    this->rawProps = mergedRawProps;
-  } else {
-    this->rawProps = rawProps.toDynamic(filterObjectKeys);
-  }
+  this->rawProps = (folly::dynamic)rawProps;
 #endif
 }
 

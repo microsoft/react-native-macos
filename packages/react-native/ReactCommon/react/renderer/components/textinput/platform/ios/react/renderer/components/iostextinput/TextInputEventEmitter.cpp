@@ -117,8 +117,6 @@ static jsi::Value keyPressMetricsPayload(
       key = "Enter";
     } else if (keyPressMetrics.text.front() == '\t') {
       key = "Tab";
-    } else if (keyPressMetrics.text.front() == '\x1B') {
-      key = "Escape";
     } else {
       key = keyPressMetrics.text;
     }
@@ -173,6 +171,35 @@ void TextInputEventEmitter::onScroll(const Metrics& textInputMetrics) const {
     return textInputMetricsScrollPayload(runtime, textInputMetrics);
   });
 }
+
+#if TARGET_OS_OSX // [macOS
+void TextInputEventEmitter::onAutoCorrectChange(
+    const Metrics& textInputMetrics) const {
+  dispatchEvent("autoCorrectChange", [textInputMetrics](jsi::Runtime& runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "enabled", textInputMetrics.autoCorrectEnabled);
+    return payload;
+  });
+}
+
+void TextInputEventEmitter::onSpellCheckChange(
+    const Metrics& textInputMetrics) const {
+  dispatchEvent("spellCheckChange", [textInputMetrics](jsi::Runtime& runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "enabled", textInputMetrics.spellCheckEnabled);
+    return payload;
+  });
+}
+
+void TextInputEventEmitter::onGrammarCheckChange(
+    const Metrics& textInputMetrics) const {
+  dispatchEvent("grammarCheckChange", [textInputMetrics](jsi::Runtime& runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "enabled", textInputMetrics.grammarCheckEnabled);
+    return payload;
+  });
+}
+#endif // macOS]
 
 void TextInputEventEmitter::dispatchTextInputEvent(
     const std::string& name,
