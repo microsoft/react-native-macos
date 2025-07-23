@@ -14,8 +14,6 @@ namespace facebook::react {
 
 class ImageManager;
 
-extern const char ImageManagerKey[];
-
 /*
  * Descriptor for <Image> component.
  */

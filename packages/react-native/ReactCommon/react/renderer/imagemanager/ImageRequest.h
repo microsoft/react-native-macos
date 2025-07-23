@@ -31,8 +31,7 @@ class ImageRequest final {
   ImageRequest(
       ImageSource imageSource,
       std::shared_ptr<const ImageTelemetry> telemetry,
-      SharedFunction<> resumeFunction = {},
-      SharedFunction<> cancelationFunction = {});
+      SharedFunction<> cancelationFunction);
 
   /*
    * The move constructor.
@@ -43,6 +42,12 @@ class ImageRequest final {
    * `ImageRequest` does not support copying by design.
    */
   ImageRequest(const ImageRequest& other) = delete;
+
+  /*
+   * Calls cancel function if one is defined. Should be when downloading
+   * image isn't needed anymore. E.g. <ImageView /> was removed.
+   */
+  void cancel() const;
 
   /*
    * Returns the Image Source associated with the request.
@@ -84,6 +89,11 @@ class ImageRequest final {
    * Event coordinator associated with the request.
    */
   std::shared_ptr<const ImageResponseObserverCoordinator> coordinator_{};
+
+  /*
+   * Function we can call to cancel image request.
+   */
+  SharedFunction<> cancelRequest_;
 };
 
 } // namespace facebook::react

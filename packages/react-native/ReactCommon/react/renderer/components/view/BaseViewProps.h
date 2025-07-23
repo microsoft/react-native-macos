@@ -31,9 +31,7 @@ class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
   BaseViewProps(
       const PropsParserContext& context,
       const BaseViewProps& sourceProps,
-      const RawProps& rawProps,
-      const std::function<bool(const std::string&)>& filterObjectKeys =
-          nullptr);
+      const RawProps& rawProps);
 
   void setProp(
       const PropsParserContext& context,
@@ -53,12 +51,6 @@ class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
   CascadedBorderCurves borderCurves{}; // iOS only?
   CascadedBorderStyles borderStyles{};
 
-  // Outline
-  SharedColor outlineColor{};
-  Float outlineOffset{};
-  OutlineStyle outlineStyle{OutlineStyle::Solid};
-  Float outlineWidth{};
-
   // Shadow
   SharedColor shadowColor{};
   Size shadowOffset{0, -3};
@@ -73,8 +65,8 @@ class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
   // Filter
   std::vector<FilterFunction> filter{};
 
-  // Background Image
-  std::vector<BackgroundImage> backgroundImage{};
+  // Gradient
+  std::vector<GradientValue> backgroundImage{};
 
   // MixBlendMode
   BlendMode mixBlendMode{BlendMode::Normal};
@@ -107,6 +99,8 @@ class BaseViewProps : public YogaStylableProps, public AccessibilityProps {
   bool collapsableChildren{true};
 
   bool removeClippedSubviews{false};
+
+  LayoutConformance experimental_layoutConformance{};
 
 #pragma mark - Convenience Methods
 

@@ -15,11 +15,12 @@ using namespace facebook::react;
 
 + (CALayer *)gradientLayerWithSize:(CGSize)size gradient:(const LinearGradient &)gradient
 {
-  RCTUIGraphicsImageRenderer *renderer = [[RCTUIGraphicsImageRenderer alloc] initWithSize:size]; // [macOS]
+#if !TARGET_OS_OSX // macos does not support linear gradients
+  UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:size];
   const auto &direction = gradient.direction;
   const auto &colorStops = gradient.colorStops;
 
-  UIImage *gradientImage = [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
+  UIImage *gradientImage = [renderer imageWithActions:^(UIGraphicsImageRendererContext *_Nonnull rendererContext) {
     CGContextRef context = rendererContext.CGContext;
     NSMutableArray *colors = [NSMutableArray array];
     CGFloat locations[colorStops.size()];
@@ -56,13 +57,12 @@ using namespace facebook::react;
     }
     CGGradientRelease(cgGradient);
   }];
+#endif
 
   CALayer *gradientLayer = [CALayer layer];
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX // macos does not support linear gradients
   gradientLayer.contents = (__bridge id)gradientImage.CGImage;
-#else // [macOS
-  gradientLayer.contents = (__bridge id)UIImageGetCGImageRef(gradientImage);
-#endif // macOS]
+#endif
 
   return gradientLayer;
 }

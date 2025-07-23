@@ -11,7 +11,6 @@
 
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/imagemanager/ImageRequest.h>
-#include <react/renderer/imagemanager/ImageRequestParams.h>
 #include <react/renderer/imagemanager/primitives.h>
 #include <react/utils/ContextContainer.h>
 
@@ -33,12 +32,6 @@ class ImageManager {
   virtual ImageRequest requestImage(
       const ImageSource& imageSource,
       SurfaceId surfaceId) const;
-
-  virtual ImageRequest requestImage(
-      const ImageSource& imageSource,
-      SurfaceId surfaceId,
-      const ImageRequestParams& imageRequestParams,
-      Tag tag) const;
 
  private:
   void* self_{};

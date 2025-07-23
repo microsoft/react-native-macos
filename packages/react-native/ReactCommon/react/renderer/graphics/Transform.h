@@ -101,8 +101,7 @@ struct Transform {
    */
   static Transform FromTransformOperation(
       TransformOperation transformOperation,
-      const Size& size,
-      const Transform& transform = Transform::Identity());
+      const Size& size);
   static TransformOperation DefaultTransformOperation(
       TransformOperationType type);
 
@@ -157,10 +156,10 @@ struct Transform {
    * performs slerp between the two rotations, and a linear interpolation
    * of scale and translation.
    *
-   * @param animationProgress of the animation
-   * @param lhs start of the interpolation
-   * @param rhs end of the interpolation
-   * @return the Transformation
+   * @param progress
+   * @param lhs
+   * @param rhs
+   * @return
    */
   static Transform Interpolate(
       Float animationProgress,
