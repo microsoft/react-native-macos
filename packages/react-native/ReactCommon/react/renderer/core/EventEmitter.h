@@ -104,6 +104,8 @@ class EventEmitter {
   void dispatchUniqueEvent(std::string type, SharedEventPayload payload) const;
 
  private:
+  void toggleEventTargetOwnership_() const;
+
   friend class UIManagerBinding;
 
   mutable SharedEventTarget eventTarget_;

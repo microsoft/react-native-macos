@@ -7,7 +7,7 @@
 
 #include "EventEmitter.h"
 
-#include <cxxreact/TraceSection.h>
+#include <cxxreact/SystraceSection.h>
 #include <folly/dynamic.h>
 #include <jsi/JSIDynamic.h>
 #include <jsi/jsi.h>
@@ -89,7 +89,7 @@ void EventEmitter::dispatchEvent(
     std::string type,
     SharedEventPayload payload,
     RawEvent::Category category) const {
-  TraceSection s("EventEmitter::dispatchEvent", "type", type);
+  SystraceSection s("EventEmitter::dispatchEvent", "type", type);
 
   auto eventDispatcher = eventDispatcher_.lock();
   if (!eventDispatcher) {
@@ -114,7 +114,7 @@ void EventEmitter::dispatchUniqueEvent(
 void EventEmitter::dispatchUniqueEvent(
     std::string type,
     SharedEventPayload payload) const {
-  TraceSection s("EventEmitter::dispatchUniqueEvent");
+  SystraceSection s("EventEmitter::dispatchUniqueEvent");
 
   auto eventDispatcher = eventDispatcher_.lock();
   if (!eventDispatcher) {

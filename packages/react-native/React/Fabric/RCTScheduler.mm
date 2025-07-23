@@ -7,7 +7,7 @@
 
 #import "RCTScheduler.h"
 
-#import <cxxreact/TraceSection.h>
+#import <cxxreact/SystraceSection.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/animations/LayoutAnimationDriver.h>
 #import <react/renderer/componentregistry/ComponentDescriptorFactory.h>
@@ -106,7 +106,7 @@ class LayoutAnimationDelegateProxy : public LayoutAnimationStatusDelegate, publi
 @implementation RCTScheduler {
   std::unique_ptr<Scheduler> _scheduler;
   std::shared_ptr<LayoutAnimationDriver> _animationDriver;
-  std::unique_ptr<SchedulerDelegateProxy> _delegateProxy;
+  std::shared_ptr<SchedulerDelegateProxy> _delegateProxy;
   std::shared_ptr<LayoutAnimationDelegateProxy> _layoutAnimationDelegateProxy;
   std::unique_ptr<const PlatformRunLoopObserver> _uiRunLoopObserver;
 }
@@ -114,7 +114,7 @@ class LayoutAnimationDelegateProxy : public LayoutAnimationStatusDelegate, publi
 - (instancetype)initWithToolbox:(SchedulerToolbox)toolbox
 {
   if (self = [super init]) {
-    _delegateProxy = std::make_unique<SchedulerDelegateProxy>((__bridge void *)self);
+    _delegateProxy = std::make_shared<SchedulerDelegateProxy>((__bridge void *)self);
 
     if (ReactNativeFeatureFlags::enableLayoutAnimationsOnIOS()) {
       _layoutAnimationDelegateProxy = std::make_shared<LayoutAnimationDelegateProxy>((__bridge void *)self);

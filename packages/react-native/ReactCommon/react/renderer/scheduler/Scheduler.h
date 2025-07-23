@@ -11,6 +11,7 @@
 #include <mutex>
 
 #include <ReactCommon/RuntimeExecutor.h>
+#include <react/config/ReactNativeConfig.h>
 #include <react/performance/timeline/PerformanceEntryReporter.h>
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
@@ -52,6 +53,9 @@ class Scheduler final : public UIManagerDelegate {
   void registerSurface(const SurfaceHandler& surfaceHandler) const noexcept;
   void unregisterSurface(const SurfaceHandler& surfaceHandler) const noexcept;
 
+  InspectorData getInspectorDataForInstance(
+      const EventEmitter& eventEmitter) const noexcept;
+
   /*
    * This is broken. Please do not use.
    * `ComponentDescriptor`s are not designed to be used outside of `UIManager`,
@@ -81,7 +85,7 @@ class Scheduler final : public UIManagerDelegate {
 #pragma mark - UIManagerDelegate
 
   void uiManagerDidFinishTransaction(
-      std::shared_ptr<const MountingCoordinator> mountingCoordinator,
+      MountingCoordinator::Shared mountingCoordinator,
       bool mountSynchronously) override;
   void uiManagerDidCreateShadowNode(const ShadowNode& shadowNode) override;
   void uiManagerDidDispatchCommand(
@@ -116,6 +120,7 @@ class Scheduler final : public UIManagerDelegate {
   SharedComponentDescriptorRegistry componentDescriptorRegistry_;
   RuntimeExecutor runtimeExecutor_;
   std::shared_ptr<UIManager> uiManager_;
+  std::shared_ptr<const ReactNativeConfig> reactNativeConfig_;
 
   std::vector<std::shared_ptr<UIManagerCommitHook>> commitHooks_;
 
@@ -136,8 +141,6 @@ class Scheduler final : public UIManagerDelegate {
    * Must not be nullptr.
    */
   ContextContainer::Shared contextContainer_;
-
-  RuntimeScheduler* runtimeScheduler_{nullptr};
 };
 
 } // namespace facebook::react

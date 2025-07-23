@@ -14,7 +14,7 @@
 #import <React/RCTFollyConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
-#import <cxxreact/TraceSection.h>
+#import <cxxreact/SystraceSection.h>
 #import <react/renderer/components/root/RootShadowNode.h>
 #import <react/renderer/core/LayoutableShadowNode.h>
 #import <react/renderer/core/RawProps.h>
@@ -45,7 +45,7 @@ static void RCTPerformMountInstructions(
     RCTMountingTransactionObserverCoordinator &observerCoordinator,
     SurfaceId surfaceId)
 {
-  TraceSection s("RCTPerformMountInstructions");
+  SystraceSection s("RCTPerformMountInstructions");
 
   for (const auto &mutation : mutations) {
     switch (mutation.type) {
@@ -232,7 +232,7 @@ static void RCTPerformMountInstructions(
 
 - (void)initiateTransaction:(const MountingCoordinator &)mountingCoordinator
 {
-  TraceSection s("-[RCTMountingManager initiateTransaction:]");
+  SystraceSection s("-[RCTMountingManager initiateTransaction:]");
   RCTAssertMainQueue();
 
   if (_transactionInFlight) {
@@ -250,7 +250,7 @@ static void RCTPerformMountInstructions(
 
 - (void)performTransaction:(const MountingCoordinator &)mountingCoordinator
 {
-  TraceSection s("-[RCTMountingManager performTransaction:]");
+  SystraceSection s("-[RCTMountingManager performTransaction:]");
   RCTAssertMainQueue();
 
   auto surfaceId = mountingCoordinator.getSurfaceId();
