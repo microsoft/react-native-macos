@@ -91,7 +91,6 @@ function blurField(textFieldID: ?number) {
  * noop if the text field was already focused or if the field is not editable
  */
 function focusTextInput(textField: ?HostInstance) {
-  console.log('SAAD focusTextInput');
   if (typeof textField === 'number') {
     if (__DEV__) {
       console.error(
