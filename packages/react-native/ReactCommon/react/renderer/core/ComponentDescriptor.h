@@ -46,9 +46,7 @@ class ComponentDescriptor {
    */
   using Flavor = std::shared_ptr<const void>;
 
-  explicit ComponentDescriptor(
-      const ComponentDescriptorParameters& parameters,
-      RawPropsParser&& rawPropsParser = {});
+  ComponentDescriptor(const ComponentDescriptorParameters& parameters);
 
   virtual ~ComponentDescriptor() = default;
 
@@ -135,8 +133,8 @@ class ComponentDescriptor {
 
   EventDispatcher::Weak eventDispatcher_;
   std::shared_ptr<const ContextContainer> contextContainer_;
+  RawPropsParser rawPropsParser_{};
   Flavor flavor_;
-  RawPropsParser rawPropsParser_;
 
   /*
    * Called immediately after `ShadowNode` is created, cloned or state is
