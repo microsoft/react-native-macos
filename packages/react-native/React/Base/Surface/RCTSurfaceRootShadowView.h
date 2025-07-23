@@ -11,7 +11,7 @@
 
 @interface RCTSurfaceRootShadowView : RCTShadowView
 
-@property (nonatomic, assign, readonly) CGSize minimumSize;
+@property (nonatomic, assign, readwrite) CGSize minimumSize;
 @property (nonatomic, assign, readonly) CGSize maximumSize;
 
 - (void)setMinimumSize:(CGSize)size maximumSize:(CGSize)maximumSize;

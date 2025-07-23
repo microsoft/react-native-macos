@@ -9,9 +9,9 @@
 #import "RCTSampleTurboModulePlugin.h"
 
 #import <React/RCTAssert.h>
+#import <React/RCTUIKit.h> // [macOS]
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTTurboModuleWithJSIBindings.h>
-#import <React/RCTUIKit.h> // [macOS]
 
 using namespace facebook::react;
 

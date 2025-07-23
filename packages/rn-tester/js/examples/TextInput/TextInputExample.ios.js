@@ -21,6 +21,7 @@ import type {
   SettingChangeEvent,
 } from 'react-native/Libraries/Components/TextInput/TextInput'; // macOS]
 
+import RNTesterText from '../../components/RNTesterText';
 import ExampleTextInput from './ExampleTextInput';
 
 const TextInputSharedExamples = require('./TextInputSharedExamples.js');
@@ -32,6 +33,7 @@ const {
   StyleSheet,
   Switch,
   Text,
+  TextInput,
   View,
 } = require('react-native');
 const {Image, Platform} = require('react-native'); // [macOS]
@@ -41,7 +43,7 @@ class WithLabel extends React.Component<$FlowFixMeProps> {
     return (
       <View style={styles.labelContainer}>
         <View style={styles.label}>
-          <Text>{this.props.label}</Text>
+          <RNTesterText>{this.props.label}</RNTesterText>
         </View>
         {this.props.children}
       </View>
@@ -63,7 +65,9 @@ class TextInputAccessoryViewChangeTextExample extends React.Component<
     const inputAccessoryViewID = 'inputAccessoryView1';
     return (
       <View>
-        <Text>Set InputAccessoryView with ID & reset text:</Text>
+        <RNTesterText>
+          Set InputAccessoryView with ID & reset text:
+        </RNTesterText>
         <ExampleTextInput
           inputAccessoryViewID={inputAccessoryViewID}
           onChangeText={text => this.setState({text})}
@@ -103,7 +107,9 @@ class TextInputAccessoryViewChangeKeyboardExample extends React.Component<
     const inputAccessoryViewID = 'inputAccessoryView2';
     return (
       <View>
-        <Text>Set InputAccessoryView with ID & switch keyboard:</Text>
+        <RNTesterText>
+          Set InputAccessoryView with ID & switch keyboard:
+        </RNTesterText>
         {/* $FlowFixMe[incompatible-use] */}
         <ExampleTextInput
           inputAccessoryViewID={inputAccessoryViewID}
@@ -124,9 +130,9 @@ class TextInputAccessoryViewChangeKeyboardExample extends React.Component<
 }
 
 class TextInputAccessoryViewDefaultDoneButtonExample extends React.Component<
-  $ReadOnly<{|
+  $ReadOnly<{
     keyboardType: KeyboardType,
-  |}>,
+  }>,
   {text: string},
 > {
   constructor(props: void | $ReadOnly<{keyboardType: KeyboardType}>) {
@@ -185,7 +191,7 @@ class SecureEntryExample extends React.Component<$FlowFixMeProps, any> {
           onChangeText={text => this.setState({text})}
           value={this.state.text}
         />
-        <Text>Current text is: {this.state.text}</Text>
+        <RNTesterText>Current text is: {this.state.text}</RNTesterText>
         <View
           style={{
             flex: 1,
@@ -238,19 +244,19 @@ class AutogrowingTextInputExample extends React.Component<
     const {style, multiline, ...props} = this.props;
     return (
       <View>
-        <Text>Full width:</Text>
+        <RNTesterText>Full width:</RNTesterText>
         <Switch
           value={this.state.fullWidth}
           onValueChange={value => this.setState({fullWidth: value})}
         />
 
-        <Text>Multiline:</Text>
+        <RNTesterText>Multiline:</RNTesterText>
         <Switch
           value={this.state.multiline}
           onValueChange={value => this.setState({multiline: value})}
         />
 
-        <Text>TextInput:</Text>
+        <RNTesterText>TextInput:</RNTesterText>
         <ExampleTextInput
           value="prop"
           multiline={this.state.multiline}
@@ -261,13 +267,40 @@ class AutogrowingTextInputExample extends React.Component<
           }
           {...props}
         />
-        <Text>Plain text value representation:</Text>
-        <Text>{this.state.text}</Text>
-        <Text>Content Size: {JSON.stringify(this.state.contentSize)}</Text>
+        <RNTesterText>Plain text value representation:</RNTesterText>
+        <RNTesterText>{this.state.text}</RNTesterText>
+        <RNTesterText>
+          Content Size: {JSON.stringify(this.state.contentSize)}
+        </RNTesterText>
       </View>
     );
   }
 }
+
+const TextInputWithFocusButton = () => {
+  const inputToFocusRef = React.useRef<React.ElementRef<
+    typeof TextInput,
+  > | null>(null);
+  return (
+    <View>
+      <ExampleTextInput
+        ref={inputToFocusRef}
+        placeholder="height increases with content"
+        defaultValue="React Native enables you to build world-class application experiences on native platforms using a consistent developer experience based on JavaScript and React. The focus of React Native is on developer efficiency across all the platforms you care about - learn once, write anywhere. Facebook uses React Native in multiple production apps and will continue investing in React Native."
+        multiline={true}
+        enablesReturnKeyAutomatically={true}
+        returnKeyType="go"
+        style={[styles.multiline, styles.multilineExpandable]}
+      />
+      <Button
+        title="Focus"
+        onPress={() => {
+          inputToFocusRef.current?.focus();
+        }}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   multiline: {
@@ -485,6 +518,27 @@ const textInputExamples: Array<RNTesterModuleExample> = [
     },
   },
   {
+    title: 'Custom Input Accessory View Button Label',
+    render: function (): React.Node {
+      return (
+        <View>
+          <WithLabel label="Localized Label">
+            <ExampleTextInput
+              keyboardType="number-pad"
+              inputAccessoryViewButtonLabel="Presiona aquí para terminar"
+            />
+          </WithLabel>
+          <WithLabel label="Custom Label">
+            <ExampleTextInput
+              keyboardType="ascii-capable-number-pad"
+              inputAccessoryViewButtonLabel="Press here to finish"
+            />
+          </WithLabel>
+        </View>
+      );
+    },
+  },
+  {
     title: 'Nested content and `value` property',
     render: function (): React.Node {
       return (
@@ -658,6 +712,11 @@ const textInputExamples: Array<RNTesterModuleExample> = [
   {
     title: 'Multiline blur on submit',
     render: function (): React.Node {
+      const [value, setValue] = React.useState('');
+      const onSubmitEditing = React.useCallback(
+        () => Alert.alert('Alert', value),
+        [value],
+      );
       return (
         <View>
           <ExampleTextInput
@@ -666,9 +725,8 @@ const textInputExamples: Array<RNTesterModuleExample> = [
             returnKeyType="next"
             blurOnSubmit={true}
             multiline={true}
-            onSubmitEditing={event =>
-              Alert.alert('Alert', event.nativeEvent.text)
-            }
+            onChangeText={setValue}
+            onSubmitEditing={onSubmitEditing}
           />
         </View>
       );
@@ -761,7 +819,7 @@ const textInputExamples: Array<RNTesterModuleExample> = [
     render: function (): React.Node {
       return (
         <View>
-          <Text>Singleline TextInput</Text>
+          <RNTesterText>Singleline TextInput</RNTesterText>
           <View style={{height: 80}}>
             <ExampleTextInput
               style={{
@@ -780,8 +838,8 @@ const textInputExamples: Array<RNTesterModuleExample> = [
               placeholder="Placeholder defines intrinsic size"
             />
           </View>
-          <Text>Multiline TextInput</Text>
-          <View style={{height: 130}}>
+          <RNTesterText>Multiline TextInput</RNTesterText>
+          <View style={{height: 80}}>
             <ExampleTextInput
               style={{
                 position: 'absolute',
@@ -801,6 +859,7 @@ const textInputExamples: Array<RNTesterModuleExample> = [
               placeholder="Placeholder defines intrinsic size"
             />
           </View>
+          <RNTesterText>Multiline TextInput with flex</RNTesterText>
           <View>
             <ExampleTextInput
               style={{
@@ -936,6 +995,15 @@ const textInputExamples: Array<RNTesterModuleExample> = [
           <WithLabel label="birthdate">
             <ExampleTextInput textContentType="birthdate" />
           </WithLabel>
+          <WithLabel label="dateTime">
+            <ExampleTextInput textContentType="dateTime" />
+          </WithLabel>
+          <WithLabel label="flightNumber">
+            <ExampleTextInput textContentType="flightNumber" />
+          </WithLabel>
+          <WithLabel label="shipmentTrackingNumber">
+            <ExampleTextInput textContentType="shipmentTrackingNumber" />
+          </WithLabel>
         </View>
       );
     },
@@ -984,7 +1052,10 @@ const textInputExamples: Array<RNTesterModuleExample> = [
                 {Object.keys(textByCode).map(code => {
                   return (
                     <View key={code}>
-                      <Text style={{fontWeight: 'bold'}}>{`[${code}]`}</Text>
+                      <RNTesterText
+                        style={{
+                          fontWeight: 'bold',
+                        }}>{`[${code}]`}</RNTesterText>
                       <ExampleTextInput
                         multiline
                         lineBreakStrategyIOS={strategy}
@@ -1018,6 +1089,57 @@ const textInputExamples: Array<RNTesterModuleExample> = [
       );
     },
   },
+  {
+    title: 'Auto scroll cursor into view when focusing',
+    render: function (): React.Node {
+      return <TextInputWithFocusButton />;
+    },
+  },
+  {
+    title: 'Line Break Mode',
+    render: function (): React.Node {
+      const lineBreakMode = [
+        'wordWrapping',
+        'char',
+        'clip',
+        'head',
+        'middle',
+        'tail',
+      ];
+      const textByCode = {
+        en: 'verylongtext-dummydummydummydummydummydummydummydummydummydummydummydummy',
+        ko: '한글개행한글개행-한글개행한글개행한글개행한글개행한글개행한글개행한글개행한글개행한글개행한글개행',
+      };
+      return (
+        <View>
+          {lineBreakMode.map(strategy => {
+            return (
+              <View key={strategy} style={{marginBottom: 12}}>
+                <Text
+                  style={{
+                    backgroundColor: 'lightgrey',
+                  }}>{`Mode: ${strategy}`}</Text>
+                {Object.keys(textByCode).map(code => {
+                  return (
+                    <View key={code}>
+                      <RNTesterText
+                        style={{
+                          fontWeight: 'bold',
+                        }}>{`[${code}]`}</RNTesterText>
+                      <ExampleTextInput
+                        lineBreakModeIOS={strategy}
+                        defaultValue={textByCode[code]}
+                      />
+                    </View>
+                  );
+                })}
+              </View>
+            );
+          })}
+        </View>
+      );
+    },
+  },
 ];
 
 // [macOS
@@ -1033,6 +1155,12 @@ if (Platform.OS === 'macos') {
     {
       title: 'Clear text on submit - Multiline Textfield',
       render: function (): React.Node {
+        const [value, setValue] = React.useState('');
+        const onSubmitEditing = React.useCallback(
+          () => Alert.alert('Alert', value),
+          [value],
+        );
+
         return (
           <View>
             <Text>Default submit key (Enter):</Text>
@@ -1040,6 +1168,8 @@ if (Platform.OS === 'macos') {
               multiline={true}
               clearTextOnSubmit={true}
               style={styles.multiline}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
             <Text>Custom submit key (Enter): - same as above</Text>
             <ExampleTextInput
@@ -1047,6 +1177,8 @@ if (Platform.OS === 'macos') {
               clearTextOnSubmit={true}
               style={styles.multiline}
               submitKeyEvents={[{key: 'Enter'}]}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
             <Text>Custom submit key (CMD + Enter):</Text>
             <ExampleTextInput
@@ -1054,6 +1186,8 @@ if (Platform.OS === 'macos') {
               clearTextOnSubmit={true}
               style={styles.multiline}
               submitKeyEvents={[{key: 'Enter', metaKey: true}]}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
             <Text>Custom submit key (Shift + Enter):</Text>
             <ExampleTextInput
@@ -1061,6 +1195,8 @@ if (Platform.OS === 'macos') {
               clearTextOnSubmit={true}
               style={styles.multiline}
               submitKeyEvents={[{key: 'Enter', shiftKey: true}]}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
           </View>
         );

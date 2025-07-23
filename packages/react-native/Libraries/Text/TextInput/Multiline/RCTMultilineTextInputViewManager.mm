@@ -33,6 +33,19 @@ RCT_CUSTOM_VIEW_PROPERTY(pastedTypes, NSArray<NSPasteboardType>*, RCTUITextView)
     [view setReadablePasteBoardTypes: types];
   }
 }
+RCT_CUSTOM_VIEW_PROPERTY(disableWritingTools, BOOL, RCTMultilineTextInputView)
+{
+  if (@available(macOS 15.0, *)) {
+    NSTextView *textView = (NSTextView*)[view backedTextInputView];
+    NSWritingToolsBehavior currentWritingToolsBehavior = [textView writingToolsBehavior];
+    BOOL disable = json ? [RCTConvert BOOL:json] : NO;
+    if (disable && currentWritingToolsBehavior != NSWritingToolsBehaviorNone) {
+      [textView setWritingToolsBehavior:NSWritingToolsBehaviorNone];
+    } else if (currentWritingToolsBehavior == NSWritingToolsBehaviorNone) {
+      [textView setWritingToolsBehavior:NSWritingToolsBehaviorDefault];
+    }
+  }
+}
 #endif // macOS]
 
 @end

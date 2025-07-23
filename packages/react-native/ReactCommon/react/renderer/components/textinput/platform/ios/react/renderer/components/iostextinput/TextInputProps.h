@@ -40,12 +40,6 @@ class TextInputProps final : public BaseTextInputProps {
 
   bool onKeyPressSync{false};
   bool onChangeSync{false};
-
-  /*
-   * Accessors
-   */
-  TextAttributes getEffectiveTextAttributes(Float fontSizeMultiplier) const;
-  ParagraphAttributes getEffectiveParagraphAttributes() const;
 };
 
 } // namespace facebook::react

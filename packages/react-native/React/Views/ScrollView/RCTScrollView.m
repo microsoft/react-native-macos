@@ -382,6 +382,7 @@
   BOOL _allowNextScrollNoMatterWhat;
 #if TARGET_OS_OSX // [macOS
   BOOL _notifyDidScroll;
+  BOOL _disableScrollEvents;
   NSPoint _lastScrollPosition;
 #endif // macOS]
   CGRect _lastClippedToRect;
@@ -506,6 +507,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 #else // [macOS
     _scrollView.postsBoundsChangedNotifications = YES;
     _lastScrollPosition = NSZeroPoint;
+    _hasOverlayStyleIndicator = NO;
 #endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
@@ -531,21 +533,23 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 }
 
 #if TARGET_OS_OSX // [macOS
-- (BOOL)canBecomeKeyView
+- (void)setFrame:(NSRect)frame
 {
-  return [self focusable];
-}
+  /**
+   * Setting the frame on the scroll view will randomly generate between 0 and 4 scroll events. These events happen
+   * during the layout phase of the view which generates layout notifications that are sent through the bridge.
+   * Because the bridge is heavily used, the scroll events are throttled and reach the JS thread with a random delay.
+   * Because the scroll event stores the clip and content view size, delayed scroll events will submit stale layout
+   * information that can break virtual list implemenations.
+   * By disabling scroll events during the execution of the setFrame method and scheduling one notification on
+   * the next run loop, we can mitigate the delayed scroll event by sending it at a time where the bridge is not busy.
+  */
+  _disableScrollEvents = YES;
+  [super setFrame:frame];
+  _disableScrollEvents = NO;
 
-- (CGRect)focusRingMaskBounds
-{
-  return [self bounds];
-}
-
-- (void)drawFocusRingMask
-{
-  if (self.enableFocusRing) {
-    NSBezierPath *borderPath = [NSBezierPath bezierPathWithRoundedRect:self.bounds xRadius:2.0 yRadius:2.0];
-    [borderPath stroke];
+  if (self.window != nil && !self.window.inLiveResize) {
+    [self performSelector:@selector(scrollViewDocumentViewBoundsDidChange:) withObject:nil afterDelay:0];
   }
 }
 
@@ -572,7 +576,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)setInverted:(BOOL)inverted
 {
   BOOL changed = _inverted != inverted;
-  _inverted = inverted;  
+  _inverted = inverted;
   if (changed && _onInvertedDidChange) {
     _onInvertedDidChange(@{});
   }
@@ -582,8 +586,10 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 {
   if (hasOverlayStyle == true) {
     self.scrollView.scrollerStyle = NSScrollerStyleOverlay;
+    _hasOverlayStyleIndicator = YES;
   } else {
     self.scrollView.scrollerStyle = NSScrollerStyleLegacy;
+    _hasOverlayStyleIndicator = NO;
   }
 }
 #endif // macOS]
@@ -905,6 +911,10 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
 #if TARGET_OS_OSX // [macOS
 - (void)scrollViewDocumentViewBoundsDidChange:(__unused NSNotification *)notification
 {
+  if (_disableScrollEvents) {
+    return;
+  }
+
   if (_scrollView.centerContent) {
     // contentOffset setter dynamically centers content when _centerContent == YES
     [_scrollView setContentOffset:_scrollView.contentOffset];
@@ -958,11 +968,11 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 {
   NSTimeInterval now = CACurrentMediaTime();
   [self updateClippedSubviews];
-  
+
 #if TARGET_OS_OSX // [macOS
   /**
    * To check for effective scroll position changes, the comparison with lastScrollPosition should happen
-   * after updateClippedSubviews. updateClippedSubviews will update the display of the vertical/horizontal 
+   * after updateClippedSubviews. updateClippedSubviews will update the display of the vertical/horizontal
    * scrollers which can change the clipview bounds.
    * This change also ensures that no onScroll events are sent when the React setFrame call is running,
    * which could submit onScroll events while the content view was not setup yet.
@@ -973,7 +983,7 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
   }
   _lastScrollPosition = scrollView.contentView.bounds.origin;
 #endif // macOS]
-  
+
   /**
    * TODO: this logic looks wrong, and it may be because it is. Currently, if _scrollEventThrottle
    * is set to zero (the default), the "didScroll" event is only sent once per scroll, instead of repeatedly
@@ -1266,14 +1276,14 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 #endif // macOS]
       BOOL hasNewView = NO;
       if (horz) {
-        CGFloat leftInset = self.inverted ? self->_scrollView.contentInset.right : self->_scrollView.contentInset.left;
+        CGFloat leftInset = self.inverted ? self->_scrollView.contentInset.left : self->_scrollView.contentInset.right;
         CGFloat x = self->_scrollView.contentOffset.x + leftInset;
-        hasNewView = subview.frame.origin.x + subview.frame.size.width > x;
+        hasNewView = subview.frame.origin.x + subview.frame.size.width >= x;
       } else {
         CGFloat bottomInset =
-            self.inverted ? self->_scrollView.contentInset.top : self->_scrollView.contentInset.bottom;
+            self.inverted ? self->_scrollView.contentInset.bottom : self->_scrollView.contentInset.top;
         CGFloat y = self->_scrollView.contentOffset.y + bottomInset;
-        hasNewView = subview.frame.origin.y + subview.frame.size.height > y;
+        hasNewView = subview.frame.origin.y + subview.frame.size.height >= y;
       }
 #if !TARGET_OS_OSX // [macOS]
       if (hasNewView || ii == self->_contentView.subviews.count - 1) {
@@ -1356,7 +1366,7 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 - (void)keyDown:(NSEvent *)event {
 	if (![self handleKeyboardEvent:event]) {
 		[super keyDown:event];
-		
+
 		// AX: if a tab key was pressed and the first responder is currently clipped by the scroll view,
 		// automatically scroll to make the view visible to make it navigable via keyboard.
 		NSString *key = [RCTViewKeyboardEvent keyFromEvent:event];
@@ -1389,6 +1399,10 @@ static NSString *RCTStringForScrollerStyle(NSScrollerStyle scrollerStyle) {
 }
 
 - (void)preferredScrollerStyleDidChange:(__unused NSNotification *)notification {
+  if (_hasOverlayStyleIndicator == YES) {
+    self.scrollView.scrollerStyle = NSScrollerStyleOverlay;
+  }
+
   RCT_SEND_SCROLL_EVENT(onPreferredScrollerStyleDidChange, (@{ @"preferredScrollerStyle": RCTStringForScrollerStyle([NSScroller preferredScrollerStyle])}));
 }
 #endif // macOS]

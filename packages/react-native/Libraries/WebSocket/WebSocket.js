@@ -296,4 +296,4 @@ class WebSocket extends (EventTarget(...WEBSOCKET_EVENTS): typeof EventTarget) {
   }
 }
 
-module.exports = WebSocket;
+export default WebSocket;

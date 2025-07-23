@@ -35,6 +35,10 @@ export interface Spec extends TurboModule {
     onSuccess: (isReduceMotionEnabled: boolean) => void,
     onError: (error: Object) => void,
   ) => void;
+  +getCurrentDarkerSystemColorsState?: (
+    onSuccess: (isDarkerSystemColorsEnabled: boolean) => void,
+    onError: (error: Object) => void,
+  ) => void;
   +getCurrentPrefersCrossFadeTransitionsState?: (
     onSuccess: (prefersCrossFadeTransitions: boolean) => void,
     onError: (error: Object) => void,
@@ -47,7 +51,7 @@ export interface Spec extends TurboModule {
     onSuccess: (isScreenReaderEnabled: boolean) => void,
     onError: (error: Object) => void,
   ) => void;
-  +setAccessibilityContentSizeMultipliers: (JSMultipliers: {|
+  +setAccessibilityContentSizeMultipliers: (JSMultipliers: {
     +extraSmall?: ?number,
     +small?: ?number,
     +medium?: ?number,
@@ -60,7 +64,7 @@ export interface Spec extends TurboModule {
     +accessibilityExtraLarge?: ?number,
     +accessibilityExtraExtraLarge?: ?number,
     +accessibilityExtraExtraExtraLarge?: ?number,
-  |}) => void;
+  }) => void;
   +setAccessibilityFocus: (reactTag: number) => void;
   +announceForAccessibility: (announcement: string) => void;
   +announceForAccessibilityWithOptions?: (

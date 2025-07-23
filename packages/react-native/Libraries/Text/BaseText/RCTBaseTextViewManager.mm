@@ -60,6 +60,7 @@ RCT_REMAP_SHADOW_PROPERTY(textTransform, textAttributes.textTransform, RCTTextTr
 
 #if TARGET_OS_OSX // [macOS
 RCT_REMAP_SHADOW_PROPERTY(cursor, textAttributes.cursor, RCTCursor)
+RCT_REMAP_SHADOW_PROPERTY(href, textAttributes.href, NSString)
 #endif // macOS]
 
 @end

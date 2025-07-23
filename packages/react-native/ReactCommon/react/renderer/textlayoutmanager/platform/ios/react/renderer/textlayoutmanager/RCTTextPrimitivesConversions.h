@@ -49,13 +49,13 @@ inline static NSLineBreakStrategy RCTNSLineBreakStrategyFromLineBreakStrategy(
     case facebook::react::LineBreakStrategy::PushOut:
       return NSLineBreakStrategyPushOut;
     case facebook::react::LineBreakStrategy::HangulWordPriority:
-      if (@available(iOS 14.0, *)) {
+      if (@available(iOS 14.0, macOS 11.0, *)) { // [macOS]
         return NSLineBreakStrategyHangulWordPriority;
       } else {
         return NSLineBreakStrategyNone;
       }
     case facebook::react::LineBreakStrategy::Standard:
-      if (@available(iOS 14.0, *)) {
+      if (@available(iOS 14.0, macOS 11.0, *)) { // [macOS]
         return NSLineBreakStrategyStandard;
       } else {
         return NSLineBreakStrategyNone;
@@ -114,7 +114,8 @@ inline static NSUnderlineStyle RCTNSUnderlineStyleFromTextDecorationStyle(
 }
 
 // TODO: this file has some duplicates method, we can remove it
-inline static RCTUIColor *_Nullable RCTUIColorFromSharedColor(const facebook::react::SharedColor &sharedColor) // [macOS]
+inline static RCTUIColor *_Nullable RCTUIColorFromSharedColor(
+    const facebook::react::SharedColor &sharedColor) // [macOS]
 {
   return RCTPlatformColorFromColor(*sharedColor);
 }

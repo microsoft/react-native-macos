@@ -77,7 +77,7 @@ module.exports = {
     return require('../Core/ReactFiberErrorDialog').default;
   },
   get legacySendAccessibilityEvent(): legacySendAccessibilityEvent {
-    return require('../Components/AccessibilityInfo/legacySendAccessibilityEvent');
+    return require('../Components/AccessibilityInfo/legacySendAccessibilityEvent').default;
   },
   get RawEventEmitter(): RawEventEmitter {
     return require('../Core/RawEventEmitter').default;

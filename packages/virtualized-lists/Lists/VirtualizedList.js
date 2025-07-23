@@ -13,19 +13,18 @@ import type {ViewToken} from './ViewabilityHelper';
 import type {
   Item,
   Props,
-  RenderItemProps,
-  RenderItemType,
+  ListRenderItemInfo,
+  ListRenderItem,
   Separators,
 } from './VirtualizedListProps';
 import type {ScrollResponderType} from 'react-native/Libraries/Components/ScrollView/ScrollView';
 import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 import type {
-  LayoutEvent,
+  LayoutChangeEvent,
   ScrollEvent,
 } from 'react-native/Libraries/Types/CoreEventTypes';
 import type {KeyEvent} from 'react-native/Libraries/Types/CoreEventTypes'; // [macOS]
 
-import Batchinator from '../Interaction/Batchinator';
 import clamp from '../Utilities/clamp';
 import infoLog from '../Utilities/infoLog';
 import {CellRenderMask} from './CellRenderMask';
@@ -65,7 +64,7 @@ import {
   findNodeHandle,
 } from 'react-native';
 
-export type {RenderItemProps, RenderItemType, Separators};
+export type {ListRenderItemInfo, ListRenderItem, Separators};
 
 const ON_EDGE_REACHED_EPSILON = 0.001;
 
@@ -381,7 +380,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
 
   _registerAsNestedChild = (childList: {
     cellKey: string,
-    ref: React.ElementRef<typeof VirtualizedList>,
+    ref: VirtualizedList,
   }): void => {
     this._nestedChildLists.add(childList.ref, childList.cellKey);
     if (this._hasInteracted) {
@@ -389,9 +388,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     }
   };
 
-  _unregisterAsNestedChild = (childList: {
-    ref: React.ElementRef<typeof VirtualizedList>,
-  }): void => {
+  _unregisterAsNestedChild = (childList: {ref: VirtualizedList}): void => {
     this._nestedChildLists.remove(childList.ref);
   };
 
@@ -402,10 +399,6 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     this._checkProps(props);
 
     this._fillRateHelper = new FillRateHelper(this._listMetrics);
-    this._updateCellsToRenderBatcher = new Batchinator(
-      this._updateCellsToRender,
-      this.props.updateCellsBatchingPeriod ?? 50,
-    );
 
     if (this.props.viewabilityConfigCallbackPairs) {
       this._viewabilityTuples = this.props.viewabilityConfigCallbackPairs.map(
@@ -715,7 +708,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     if (this._isNestedWithSameOrientation()) {
       this.context.unregisterAsNestedChild({ref: this});
     }
-    this._updateCellsToRenderBatcher.dispose({abort: true});
+    clearTimeout(this._updateCellsToRenderTimeoutID);
     this._viewabilityTuples.forEach(tuple => {
       tuple.viewabilityHelper.dispose();
     });
@@ -1204,7 +1197,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    const {data, extraData} = this.props;
+    const {data, extraData, getItemLayout} = this.props;
     if (data !== prevProps.data || extraData !== prevProps.extraData) {
       // clear the viewableIndices cache to also trigger
       // the onViewableItemsChanged callback with the new data
@@ -1224,6 +1217,14 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     // is triggered with `this._hiPriInProgress = true`
     if (hiPriInProgress) {
       this._hiPriInProgress = false;
+    }
+
+    // We only call `onEndReached` after we render the last cell, but when
+    // getItemLayout is present, we can scroll past the last rendered cell, and
+    // never trigger a new layout or bounds change, so we need to check again
+    // after rendering more cells.
+    if (getItemLayout != null) {
+      this._maybeCallOnEdgeReached();
     }
   }
 
@@ -1265,7 +1266,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
   _scrollRef: ?React.ElementRef<any> = null;
   _sentStartForContentLength = 0;
   _sentEndForContentLength = 0;
-  _updateCellsToRenderBatcher: Batchinator;
+  _updateCellsToRenderTimeoutID: ?TimeoutID = null;
   _viewabilityTuples: Array<ViewabilityHelperCallbackTuple> = [];
 
   /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
@@ -1361,7 +1362,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
   };
 
   _onCellLayout = (
-    e: LayoutEvent,
+    e: LayoutChangeEvent,
     cellKey: string,
     cellIndex: number,
   ): void => {
@@ -1448,7 +1449,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     }
   }
 
-  _onLayout = (e: LayoutEvent) => {
+  _onLayout = (e: LayoutChangeEvent) => {
     if (this._isNestedWithSameOrientation()) {
       // Need to adjust our scroll metrics to be relative to our containing
       // VirtualizedList before we can make claims about list item viewability
@@ -1463,7 +1464,7 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     this._maybeCallOnEdgeReached();
   };
 
-  _onLayoutEmpty = (e: LayoutEvent) => {
+  _onLayoutEmpty = (e: LayoutChangeEvent) => {
     this.props.onLayout && this.props.onLayout(e);
   };
 
@@ -1471,12 +1472,12 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     return this._getCellKey() + '-footer';
   }
 
-  _onLayoutFooter = (e: LayoutEvent) => {
+  _onLayoutFooter = (e: LayoutChangeEvent) => {
     this._triggerRemeasureForChildListsInCell(this._getFooterCellKey());
     this._footerLength = this._selectLength(e.nativeEvent.layout);
   };
 
-  _onLayoutHeader = (e: LayoutEvent) => {
+  _onLayoutHeader = (e: LayoutChangeEvent) => {
     this._headerLength = this._selectLength(e.nativeEvent.layout);
   };
 
@@ -1651,6 +1652,14 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
       onEndReached,
       onEndReachedThreshold,
     } = this.props;
+    // Wait until we have real metrics
+    if (
+      !this._listMetrics.hasContentLength() ||
+      this._scrollMetrics.visibleLength === 0
+    ) {
+      return;
+    }
+
     // If we have any pending scroll updates it means that the scroll metrics
     // are out of date and we should not call any of the edge reached callbacks.
     if (this.state.pendingScrollUpdateCount > 0) {
@@ -1794,6 +1803,10 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     };
   };
 
+  unstable_onScroll(e: Object) {
+    this._onScroll(e);
+  }
+
   _onScroll = (e: Object) => {
     this._nestedChildLists.forEach(childList => {
       childList._onScroll(e);
@@ -1899,11 +1912,19 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
       this._hiPriInProgress = true;
       // Don't worry about interactions when scrolling quickly; focus on filling content as fast
       // as possible.
-      this._updateCellsToRenderBatcher.dispose({abort: true});
+      if (this._updateCellsToRenderTimeoutID != null) {
+        clearTimeout(this._updateCellsToRenderTimeoutID);
+        this._updateCellsToRenderTimeoutID = null;
+      }
       this._updateCellsToRender();
       return;
     } else {
-      this._updateCellsToRenderBatcher.schedule();
+      if (this._updateCellsToRenderTimeoutID == null) {
+        this._updateCellsToRenderTimeoutID = setTimeout(() => {
+          this._updateCellsToRenderTimeoutID = null;
+          this._updateCellsToRender();
+        }, this.props.updateCellsBatchingPeriod ?? 50);
+      }
     }
   }
 
@@ -1946,6 +1967,10 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     return hiPri;
   }
 
+  unstable_onScrollBeginDrag(e: ScrollEvent) {
+    this._onScrollBeginDrag(e);
+  }
+
   _onScrollBeginDrag = (e: ScrollEvent): void => {
     this._nestedChildLists.forEach(childList => {
       childList._onScrollBeginDrag(e);
@@ -1956,6 +1981,10 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     this._hasInteracted = true;
     this.props.onScrollBeginDrag && this.props.onScrollBeginDrag(e);
   };
+
+  unstable_onScrollEndDrag(e: ScrollEvent) {
+    this._onScrollEndDrag(e);
+  }
 
   _onScrollEndDrag = (e: ScrollEvent): void => {
     this._nestedChildLists.forEach(childList => {
@@ -1969,12 +1998,20 @@ class VirtualizedList extends StateSafePureComponent<Props, State> {
     this.props.onScrollEndDrag && this.props.onScrollEndDrag(e);
   };
 
+  unstable_onMomentumScrollBegin(e: ScrollEvent) {
+    this._onMomentumScrollBegin(e);
+  }
+
   _onMomentumScrollBegin = (e: ScrollEvent): void => {
     this._nestedChildLists.forEach(childList => {
       childList._onMomentumScrollBegin(e);
     });
     this.props.onMomentumScrollBegin && this.props.onMomentumScrollBegin(e);
   };
+
+  unstable_onMomentumScrollEnd(e: ScrollEvent) {
+    this._onMomentumScrollEnd(e);
+  }
 
   _onMomentumScrollEnd = (e: ScrollEvent): void => {
     this._nestedChildLists.forEach(childList => {
@@ -2154,4 +2191,4 @@ const styles = StyleSheet.create({
   },
 });
 
-module.exports = VirtualizedList;
+export default VirtualizedList;

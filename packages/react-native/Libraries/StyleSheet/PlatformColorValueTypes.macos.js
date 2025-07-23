@@ -82,7 +82,7 @@ const _normalizeColorObject = (
     // a macOS semantic color
     return color;
   } else if ('dynamic' in color && color.dynamic !== undefined) {
-    const normalizeColor = require('./normalizeColor');
+    const normalizeColor = require('./normalizeColor').default;
 
     // a dynamic, appearance aware color
     const dynamic = color.dynamic;
@@ -103,7 +103,7 @@ const _normalizeColorObject = (
     'colorWithSystemEffect' in color &&
     color.colorWithSystemEffect != null
   ) {
-    const normalizeColor = require('./normalizeColor');
+    const normalizeColor = require('./normalizeColor').default;
     const colorWithSystemEffect = color.colorWithSystemEffect;
     const colorObject: LocalNativeColorValue = {
       colorWithSystemEffect: {

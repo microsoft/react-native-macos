@@ -1,18 +1,41 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * On Apple TV, this implements back navigation using the TV remote's menu button.
- * On iOS, this just implements a stub.
- *
- * @flow
  * @format
+ * @flow
  */
 
-// [macOS]
+'use strict';
 
-/* $FlowFixMe allow macOS to share iOS file */
-const BackHandler = require('./BackHandler.ios');
+module.exports = require('../Components/UnimplementedViews/UnimplementedView');
+
+type BackPressEventName = 'backPress' | 'hardwareBackPress';
+
+function emptyFunction(): void {}
+
+type TBackHandler = {|
+  +exitApp: () => void,
+  +addEventListener: (
+    eventName: BackPressEventName,
+    handler: () => ?boolean,
+  ) => {remove: () => void, ...},
+  +removeEventListener: (
+    eventName: BackPressEventName,
+    handler: () => ?boolean,
+  ) => void,
+|};
+
+let BackHandler: TBackHandler = {
+  exitApp: emptyFunction,
+  addEventListener(_eventName: BackPressEventName, _handler: Function) {
+    return {
+      remove: emptyFunction,
+    };
+  },
+  removeEventListener(_eventName: BackPressEventName, _handler: Function) {},
+};
+
 module.exports = BackHandler;

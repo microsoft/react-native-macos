@@ -10,32 +10,25 @@
 
 'use strict';
 
-module.exports = require('../Components/UnimplementedViews/UnimplementedView');
-
 type BackPressEventName = 'backPress' | 'hardwareBackPress';
 
 function emptyFunction(): void {}
 
-type TBackHandler = {|
+type TBackHandler = {
   +exitApp: () => void,
   +addEventListener: (
     eventName: BackPressEventName,
     handler: () => ?boolean,
   ) => {remove: () => void, ...},
-  +removeEventListener: (
-    eventName: BackPressEventName,
-    handler: () => ?boolean,
-  ) => void,
-|};
+};
 
-let BackHandler: TBackHandler = {
+const BackHandler: TBackHandler = {
   exitApp: emptyFunction,
   addEventListener(_eventName: BackPressEventName, _handler: Function) {
     return {
       remove: emptyFunction,
     };
   },
-  removeEventListener(_eventName: BackPressEventName, _handler: Function) {},
 };
 
-module.exports = BackHandler;
+export default BackHandler;
