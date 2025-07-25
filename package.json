@@ -1,9 +1,9 @@
 {
-  "name": "@react-native-mac/monorepo",
+  "name": "@react-native-macos/monorepo",
   "private": true,
   "version": "1000.0.0",
   "license": "MIT",
-  "packageManager": "yarn@4.9.0",
+  "packageManager": "yarn@4.9.2",
   "scripts": {
     "android": "cd packages/rn-tester && npm run android",
     "build-android": "./gradlew :packages:react-native:ReactAndroid:build",
@@ -39,10 +39,8 @@
     "packages/*",
     "tools/*",
     "!packages/helloworld",
-    "// [macOS",
     "!packages/hermes-inspector-msggen",
-    "!packages/react-native-bots",
-    "// macOS]"
+    "!packages/react-native-bots"
   ],
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -53,7 +51,7 @@
     "@babel/preset-flow": "^7.24.7",
     "@definitelytyped/dtslint": "^0.0.127",
     "@jest/create-cache-key-function": "^29.6.3",
-    "@nx/js": "~20.0.0",
+    "@nx/js": "^21.2.4",
     "@react-native/metro-babel-transformer": "0.77.0-main",
     "@react-native/metro-config": "0.77.0-main",
     "@tsconfig/node18": "1.0.1",
@@ -98,7 +96,7 @@
     "micromatch": "^4.0.4",
     "node-fetch": "^2.2.0",
     "nullthrows": "^1.1.1",
-    "nx": "~20.0.0",
+    "nx": "21.2.4",
     "prettier": "2.8.8",
     "prettier-plugin-hermes-parser": "0.25.1",
     "react": "19.0.0",

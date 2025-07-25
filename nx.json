@@ -3,9 +3,7 @@
   "defaultBase": "main",
   "targetDefaults": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"]
     }
   },
   "release": {
@@ -16,21 +14,18 @@
       },
       "workspaceChangelog": false
     },
-    "projects": [
-      "packages/react-native",
-      "packages/virtualized-lists"
-    ],
-    "projectsRelationship": "independent",
+    "projects": ["packages/react-native", "packages/virtualized-lists"],
     "versionPlans": true,
     "version": {
-      "generator": "@react-native-mac/nx-release-version:release-version",
-      "generatorOptions": {
+      "versionActions": "@react-native-macos/nx-release-version",
+      "versionActionsOptions": {
         "currentVersionResolver": "registry",
         "currentVersionResolverMetadata": {
           "tag": "nightly"
         },
         "preid": "nightly"
-      }
+      },
+      "useLegacyVersioning": false
     }
   }
 }
