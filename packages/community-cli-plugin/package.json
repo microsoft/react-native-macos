@@ -23,8 +23,8 @@
     "dist"
   ],
   "dependencies": {
-    "@react-native/dev-middleware": "0.77.0-main",
-    "@react-native/metro-babel-transformer": "0.77.0-main",
+    "@react-native/dev-middleware": "workspace:*",
+    "@react-native/metro-babel-transformer": "workspace:*",
     "chalk": "^4.0.0",
     "debug": "^2.2.0",
     "invariant": "^2.2.4",
