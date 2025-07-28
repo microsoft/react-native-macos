@@ -110,6 +110,7 @@
     }
   },
   "dependencies": {
+    "@babel/core": "^7.25.2",
     "@jest/create-cache-key-function": "^29.6.3",
     "@react-native-macos/virtualized-lists": "workspace:*",
     "@react-native/assets-registry": "workspace:*",
@@ -164,5 +165,8 @@
         "jsSrcsDir": "src"
       }
     ]
+  },
+  "devDependencies": {
+    "react": "19.0.0"
   }
 }

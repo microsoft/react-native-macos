@@ -27,11 +27,12 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@react-native/babel-preset": "workspace:*",
+    "react": "19.0.0",
     "react-native-macos": "workspace:*"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native-macos": "*"
+    "react-native-macos": "workspace:*"
   },
   "codegenConfig": {
     "name": "OSSLibraryExampleSpec",

@@ -54,6 +54,7 @@
     "@react-native-community/cli": "15.0.0-alpha.2",
     "@react-native-community/cli-platform-android": "15.0.0-alpha.2",
     "@react-native-community/cli-platform-ios": "15.0.0-alpha.2",
+    "react": "19.0.0",
     "react-native-macos": "workspace:*"
   }
 }
