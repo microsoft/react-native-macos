@@ -63,7 +63,7 @@
     "babel-plugin-syntax-hermes-parser": "0.25.1",
     "babel-plugin-transform-define": "^2.1.4",
     "babel-plugin-transform-flow-enums": "^0.0.2",
-    "chalk": "^4.0.0",
+    "chalk": "^4.1.2",
     "clang-format": "^1.8.0",
     "connect": "^3.6.5",
     "deep-equal": "1.1.1",

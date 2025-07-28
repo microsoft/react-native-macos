@@ -25,7 +25,7 @@
   "dependencies": {
     "@react-native/dev-middleware": "workspace:*",
     "@react-native/metro-babel-transformer": "workspace:*",
-    "chalk": "^4.0.0",
+    "chalk": "^4.1.2",
     "debug": "^2.2.0",
     "invariant": "^2.2.4",
     "metro": "^0.81.0",

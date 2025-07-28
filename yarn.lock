@@ -2776,7 +2776,7 @@ __metadata:
     babel-plugin-syntax-hermes-parser: "npm:0.25.1"
     babel-plugin-transform-define: "npm:^2.1.4"
     babel-plugin-transform-flow-enums: "npm:^0.0.2"
-    chalk: "npm:^4.0.0"
+    chalk: "npm:^4.1.2"
     clang-format: "npm:^1.8.0"
     connect: "npm:^3.6.5"
     deep-equal: "npm:1.1.1"
@@ -2841,6 +2841,7 @@ __metadata:
   dependencies:
     invariant: "npm:^2.2.4"
     nullthrows: "npm:^1.1.1"
+    react: "npm:19.0.0"
     react-test-renderer: "npm:19.0.0"
   peerDependencies:
     "@types/react": ^19.0.0
@@ -2960,7 +2961,7 @@ __metadata:
     "@babel/plugin-transform-object-rest-spread": "npm:^7.24.7"
     "@babel/plugin-transform-optional-chaining": "npm:^7.24.8"
     "@babel/preset-env": "npm:^7.25.3"
-    chalk: "npm:^4.0.0"
+    chalk: "npm:^4.1.2"
     glob: "npm:^7.1.1"
     hermes-estree: "npm:0.25.1"
     hermes-parser: "npm:0.25.1"
@@ -2982,7 +2983,7 @@ __metadata:
   dependencies:
     "@react-native/dev-middleware": "workspace:*"
     "@react-native/metro-babel-transformer": "workspace:*"
-    chalk: "npm:^4.0.0"
+    chalk: "npm:^4.1.2"
     debug: "npm:^2.2.0"
     invariant: "npm:^2.2.4"
     metro: "npm:^0.81.0"
@@ -3145,10 +3146,11 @@ __metadata:
   dependencies:
     "@babel/core": "npm:^7.25.2"
     "@react-native/babel-preset": "workspace:*"
+    react: "npm:19.0.0"
     react-native-macos: "workspace:*"
   peerDependencies:
     react: "*"
-    react-native-macos: "*"
+    react-native-macos: "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -3180,6 +3182,7 @@ __metadata:
     flow-enums-runtime: "npm:^0.0.6"
     invariant: "npm:^2.2.4"
     nullthrows: "npm:^1.1.1"
+    react: "npm:19.0.0"
     react-native-macos: "workspace:*"
   peerDependencies:
     react: 19.0.0
@@ -5035,16 +5038,6 @@ __metadata:
     escape-string-regexp: "npm:^1.0.5"
     supports-color: "npm:^5.3.0"
   checksum: 10c0/e6543f02ec877732e3a2d1c3c3323ddb4d39fbab687c23f526e25bd4c6a9bf3b83a696e8c769d078e04e5754921648f7821b2a2acfd16c550435fd630026e073
-  languageName: node
-  linkType: hard
-
-"chalk@npm:^3":
-  version: 3.0.0
-  resolution: "chalk@npm:3.0.0"
-  dependencies:
-    ansi-styles: "npm:^4.1.0"
-    supports-color: "npm:^7.1.0"
-  checksum: 10c0/ee650b0a065b3d7a6fda258e75d3a86fc8e4effa55871da730a9e42ccb035bf5fd203525e5a1ef45ec2582ecc4f65b47eb11357c526b84dd29a14fb162c414d2
   languageName: node
   linkType: hard
 
@@ -10817,7 +10810,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "public-api@workspace:tools/api"
   dependencies:
-    chalk: "npm:^4.0.0"
+    chalk: "npm:^4.1.2"
     glob: "npm:^7.1.1"
     ini: "npm:^5.0.0"
   languageName: unknown
@@ -10918,7 +10911,7 @@ __metadata:
     "@types/semver": "npm:^7.1.0"
     "@types/valid-url": "npm:^1.0.2"
     "@types/yargs": "npm:^15.0.3"
-    chalk: "npm:^3"
+    chalk: "npm:^4.1.2"
     find-up: "npm:^4.1.0"
     just-scripts: "npm:^2.3.2"
     npm-registry-fetch: "npm:^14.0.0"
@@ -10935,6 +10928,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "react-native-macos@workspace:packages/react-native"
   dependencies:
+    "@babel/core": "npm:^7.25.2"
     "@jest/create-cache-key-function": "npm:^29.6.3"
     "@react-native-macos/virtualized-lists": "workspace:*"
     "@react-native/assets-registry": "workspace:*"
@@ -10949,7 +10943,7 @@ __metadata:
     babel-jest: "npm:^29.7.0"
     babel-plugin-syntax-hermes-parser: "npm:0.25.1"
     base64-js: "npm:^1.5.1"
-    chalk: "npm:^4.0.0"
+    chalk: "npm:^4.1.2"
     commander: "npm:^12.0.0"
     event-target-shim: "npm:^5.0.1"
     flow-enums-runtime: "npm:^0.0.6"
@@ -10962,6 +10956,7 @@ __metadata:
     nullthrows: "npm:^1.1.1"
     pretty-format: "npm:^29.7.0"
     promise: "npm:^8.3.0"
+    react: "npm:19.0.0"
     react-devtools-core: "npm:^6.0.1"
     react-refresh: "npm:^0.14.0"
     regenerator-runtime: "npm:^0.13.2"
