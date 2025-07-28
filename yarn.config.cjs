@@ -23,7 +23,7 @@ function expectReactNativePeerDependency({Yarn}) {
     }
 
     // Check if react-native-macos version is 1000.0.0 - implying we are on the main branch
-    const isMainBranch = rnmWorkspace.pkg.version === '1000.0.0';
+    const isMainBranch = rnmWorkspace.manifest.version === '1000.0.0';
     if (!isMainBranch) {
         const rnPeerDependency = rnmWorkspace.pkg.peerDependencies.get('react-native');
         if (!rnPeerDependency) {
@@ -47,7 +47,7 @@ function enforceReactNativeVersionConsistency({Yarn}) {
     }
 
     // Check if react-native-macos version is 1000.0.0 - implying we are on the main branch
-    const isMainBranch = rnmWorkspace.pkg.version === '1000.0.0';
+    const isMainBranch = rnmWorkspace.manifest.version === '1000.0.0';
     
     let targetVersion;
     if (isMainBranch) {
@@ -63,7 +63,16 @@ function enforceReactNativeVersionConsistency({Yarn}) {
     }    // Enforce this version on all @react-native/ scoped packages across all workspaces
     for (const dependency of Yarn.dependencies()) {
         if (dependency.ident.startsWith('@react-native/')) {
-            dependency.update(targetVersion);
+            // Check if the target package is private (not published)
+            const targetWorkspace = Yarn.workspace({ident: dependency.ident});
+            const isPrivatePackage = targetWorkspace && targetWorkspace.manifest.private;
+            
+            if (isPrivatePackage) {
+                // Private packages should always use workspace:* since they're not published
+                dependency.update('workspace:*');
+            } else {
+                dependency.update(targetVersion);
+            }
         }
     }
 }
@@ -81,7 +90,7 @@ function enforceReactNativeMacosVersionConsistency({Yarn}) {
         return;
     }
 
-    const targetVersion = rnmWorkspace.pkg.version;
+    const targetVersion = rnmWorkspace.manifest.version;
     if (!targetVersion) {
         rnmWorkspace.error('react-native-macos must have a version');
         return;
