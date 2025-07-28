@@ -1,6 +1,6 @@
 {
   "name": "@react-native/eslint-config",
-  "version": "0.77-main",
+  "version": "0.77.0-main",
   "private": true,
   "description": "ESLint config for React Native",
   "license": "MIT",
