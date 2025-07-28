@@ -22,8 +22,8 @@
     "find-up": "^4.1.0",
     "npm-registry-fetch": "^14.0.0",
     "prompts": "^2.3.0",
-    "semver": "^7.5.2",
-    "yargs": "^15.1.0"
+    "semver": "^7.7.2",
+    "yargs": "^17.6.2"
   },
   "devDependencies": {
     "@rnx-kit/tsconfig": "^2.0.0",
