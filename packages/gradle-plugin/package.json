@@ -1,6 +1,6 @@
 {
   "name": "@react-native/gradle-plugin",
-  "version": "workspace:*",
+  "version": "0.77-main",
   "private": true,
   "description": "Gradle Plugin for React Native",
   "license": "MIT",

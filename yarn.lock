@@ -2835,6 +2835,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@react-native-macos/popup-menu-android@workspace:*, @react-native-macos/popup-menu-android@workspace:packages/react-native-popup-menu-android":
+  version: 0.0.0-use.local
+  resolution: "@react-native-macos/popup-menu-android@workspace:packages/react-native-popup-menu-android"
+  dependencies:
+    "@react-native/codegen": "workspace:*"
+    nullthrows: "npm:^1.1.1"
+  peerDependencies:
+    "@types/react": ^19.0.0
+    react: "*"
+    react-native-macos: "workspace:*"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  languageName: unknown
+  linkType: soft
+
 "@react-native-macos/virtualized-lists@workspace:*, @react-native-macos/virtualized-lists@workspace:packages/virtualized-lists":
   version: 0.0.0-use.local
   resolution: "@react-native-macos/virtualized-lists@workspace:packages/virtualized-lists"
@@ -2847,8 +2863,11 @@ __metadata:
     "@types/react": ^19.0.0
     react: "*"
     react-native: "*"
+    react-native-macos: "workspace:*"
   peerDependenciesMeta:
     "@types/react":
+      optional: true
+    react-native:
       optional: true
   languageName: unknown
   linkType: soft
@@ -2991,7 +3010,7 @@ __metadata:
     metro-core: "npm:^0.81.0"
     metro-resolver: "npm:^0.81.0"
     readline: "npm:^1.3.0"
-    semver: "npm:^7.1.3"
+    semver: "npm:^7.7.2"
   peerDependencies:
     "@react-native-community/cli-server-api": "*"
   peerDependenciesMeta:
@@ -3154,22 +3173,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/popup-menu-android@workspace:*, @react-native/popup-menu-android@workspace:packages/react-native-popup-menu-android":
-  version: 0.0.0-use.local
-  resolution: "@react-native/popup-menu-android@workspace:packages/react-native-popup-menu-android"
-  dependencies:
-    "@react-native/codegen": "workspace:*"
-    nullthrows: "npm:^1.1.1"
-  peerDependencies:
-    "@types/react": ^19.0.0
-    react: "*"
-    react-native: "*"
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  languageName: unknown
-  linkType: soft
-
 "@react-native/tester@workspace:packages/rn-tester":
   version: 0.0.0-use.local
   resolution: "@react-native/tester@workspace:packages/rn-tester"
@@ -3177,8 +3180,8 @@ __metadata:
     "@react-native-community/cli": "npm:15.0.0-alpha.2"
     "@react-native-community/cli-platform-android": "npm:15.0.0-alpha.2"
     "@react-native-community/cli-platform-ios": "npm:15.0.0-alpha.2"
+    "@react-native-macos/popup-menu-android": "workspace:*"
     "@react-native/oss-library-example": "workspace:*"
-    "@react-native/popup-menu-android": "workspace:*"
     flow-enums-runtime: "npm:^0.0.6"
     invariant: "npm:^2.2.4"
     nullthrows: "npm:^1.1.1"
@@ -10916,9 +10919,9 @@ __metadata:
     just-scripts: "npm:^2.3.2"
     npm-registry-fetch: "npm:^14.0.0"
     prompts: "npm:^2.3.0"
-    semver: "npm:^7.5.2"
+    semver: "npm:^7.7.2"
     typescript: "npm:^5.6.3"
-    yargs: "npm:^15.1.0"
+    yargs: "npm:^17.6.2"
   bin:
     react-native-macos-init: ./bin.js
   languageName: unknown
@@ -10961,7 +10964,7 @@ __metadata:
     react-refresh: "npm:^0.14.0"
     regenerator-runtime: "npm:^0.13.2"
     scheduler: "npm:0.25.0"
-    semver: "npm:^7.1.3"
+    semver: "npm:^7.7.2"
     stacktrace-parser: "npm:^0.1.10"
     whatwg-fetch: "npm:^3.0.0"
     ws: "npm:^6.2.3"
@@ -11473,7 +11476,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:2 >=2.2.1 || 3.x || 4 || 5 || 7, semver@npm:^7.0.0, semver@npm:^7.1.3, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.5.2, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0":
+"semver@npm:2 >=2.2.1 || 3.x || 4 || 5 || 7, semver@npm:^7.0.0, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.5.2, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0":
   version: 7.6.3
   resolution: "semver@npm:7.6.3"
   bin:
@@ -11497,6 +11500,15 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 10c0/e3d79b609071caa78bcb6ce2ad81c7966a46a7431d9d58b8800cfa9cb6a63699b3899a0e4bcce36167a284578212d9ae6942b6929ba4aa5015c079a67751d42d
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.7.2":
+  version: 7.7.2
+  resolution: "semver@npm:7.7.2"
+  bin:
+    semver: bin/semver.js
+  checksum: 10c0/aca305edfbf2383c22571cb7714f48cadc7ac95371b4b52362fb8eeffdfbc0de0669368b82b2b15978f8848f01d7114da65697e56cd8c37b0dab8c58e543f9ea
   languageName: node
   linkType: hard
 

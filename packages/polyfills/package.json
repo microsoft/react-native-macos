@@ -1,6 +1,6 @@
 {
   "name": "@react-native/js-polyfills",
-  "version": "workspace:*",
+  "version": "0.77-main",
   "private": true,
   "description": "Polyfills for React Native.",
   "license": "MIT",

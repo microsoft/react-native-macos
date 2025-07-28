@@ -31,10 +31,14 @@
   "peerDependencies": {
     "@types/react": "^19.0.0",
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-macos": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@types/react": {
+      "optional": true
+    },
+    "react-native": {
       "optional": true
     }
   }

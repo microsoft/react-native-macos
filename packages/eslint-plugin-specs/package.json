@@ -1,6 +1,6 @@
 {
   "name": "@react-native/eslint-plugin-specs",
-  "version": "workspace:*",
+  "version": "0.77-main",
   "private": true,
   "description": "ESLint rules to validate NativeModule and Component Specs",
   "license": "MIT",
