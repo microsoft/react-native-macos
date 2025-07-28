@@ -3363,6 +3363,7 @@ __metadata:
     "@tsconfig/node18": "npm:1.0.1"
     "@types/react": "npm:^18.2.6"
     "@typescript-eslint/parser": "npm:^7.1.1"
+    "@yarnpkg/types": "npm:^4.0.1"
     ansi-styles: "npm:^4.2.1"
     babel-plugin-minify-dead-code-elimination: "npm:^0.5.2"
     babel-plugin-syntax-hermes-parser: "npm:0.23.1"
@@ -4655,6 +4656,15 @@ __metadata:
     js-yaml: "npm:^3.10.0"
     tslib: "npm:^2.4.0"
   checksum: 10c0/a0c340e13129643162423d7e666061c0b39b143bfad3fc5a74c7d92a30fd740f6665d41cd4e61832c20375889d793eea1d1d103cacb39ed68f7acd168add8c53
+  languageName: node
+  linkType: hard
+
+"@yarnpkg/types@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "@yarnpkg/types@npm:4.0.1"
+  dependencies:
+    tslib: "npm:^2.4.0"
+  checksum: 10c0/90226789475680ba599833571dd76c0718dd5b4c5022481263ef309d6a628f6246671cd6ca86e49c966ddefa7aca6ccef82240dc1476d2cea702ea5bee2a6b72
   languageName: node
   linkType: hard
 
