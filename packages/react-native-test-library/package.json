@@ -1,8 +1,8 @@
 {
   "name": "@react-native/oss-library-example",
-  "version": "0.78.3",
+  "version": "0.78.2",
   "private": true,
-  "description": "Package that includes native module exapmle, native component example, targets both the old and the new architecture. It should serve as an example of a real-world OSS library.",
+  "description": "Package that includes native module example, native component example, targets both the old and the new architecture. It should serve as an example of a real-world OSS library.",
   "license": "MIT",
   "homepage": "https://github.com/facebook/react-native.git",
   "repository": {
@@ -26,7 +26,7 @@
   ],
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@react-native/babel-preset": "workspace:*",
+    "@react-native/babel-preset": "0.78.2",
     "react-native-macos": "workspace:*"
   },
   "peerDependencies": {
