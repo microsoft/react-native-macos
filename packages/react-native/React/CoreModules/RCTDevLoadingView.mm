@@ -130,7 +130,7 @@ RCT_EXPORT_MODULE()
     self->_window.rootViewController = [UIViewController new];
 #else // [macOS
     self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
-                                               styleMask:NSWindowStyleMaskBorderless
+                                               styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskFullSizeContentView
                                                  backing:NSBackingStoreBuffered
                                                    defer:YES];
     [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
