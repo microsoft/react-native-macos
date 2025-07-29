@@ -19,7 +19,7 @@
     "prepare": "yarn run build"
   },
   "dependencies": {
-    "@react-native/codegen": "0.77.0-main"
+    "@react-native/codegen": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
