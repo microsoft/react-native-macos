@@ -52,8 +52,8 @@ jobs:
         id: config
         run: |
           PUBLISH_TAG=$(jq -r '.release.version.generatorOptions.currentVersionResolverMetadata.tag' nx.json)
-          echo "publishTag=$PUBLISH_TAG" >> $GITHUB_OUTPUT
-          echo "Using publish tag from nx.json: $PUBLISH_TAG"
+          echo "publishTag=${PUBLISH_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Using publish tag from nx.json: ${PUBLISH_TAG}"
       - name: Configure git
         run: |
           git config --global user.email "53619745+rnbot@users.noreply.github.com"
@@ -86,3 +86,196 @@ jobs:
         run: yarn
       - name: Check constraints
         run: yarn constraints
+
+  javascript-tests:
+    name: "JavaScript Tests"
+    permissions: {}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '23'
+      
+      - name: Install Homebrew dependencies
+        run: |
+          brew install xcbeautify ccache
+      
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.2'
+      
+      - name: Download Xcode Platforms
+        run: |
+          xcodebuild -downloadAllPlatforms
+          sudo xcodebuild -runFirstLaunch
+      
+      - name: Install npm dependencies
+        run: yarn install
+      
+      - name: Run tests
+        run: yarn test-ci
+      
+      - name: Flow type check
+        run: yarn flow-check
+      
+      - name: Lint
+        run: yarn lint
+      
+      - name: Format check
+        run: yarn format-check
+
+  build-test-rntester:
+    name: "Build RNTester - ${{ matrix.friendly_name }}"
+    permissions: {}
+    runs-on: macos-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos_debug_oldarch_jsc
+            friendly_name: 'macOS, Old Arch, JSC'
+            sdk: macosx
+            configuration: Debug
+            scheme: RNTester-macOS
+            packager_platform: 'macos'
+            new_arch_enabled: '0'
+            use_hermes: '0'
+          - name: macos_debug_newarch_jsc
+            friendly_name: 'macOS, New Arch, JSC'
+            sdk: macosx
+            configuration: Debug
+            scheme: RNTester-macOS
+            packager_platform: 'macos'
+            new_arch_enabled: '1'
+            use_hermes: '0'
+          - name: ios_debug_oldarch_jsc
+            friendly_name: 'iOS, Old Arch, JSC'
+            sdk: iphonesimulator
+            configuration: Debug
+            scheme: RNTester
+            packager_platform: 'ios'
+            new_arch_enabled: '0'
+            use_hermes: '0'
+          - name: ios_debug_newarch_jsc
+            friendly_name: 'iOS, New Arch, JSC'
+            sdk: iphonesimulator
+            configuration: Debug
+            scheme: RNTester
+            packager_platform: 'ios'
+            new_arch_enabled: '1'
+            use_hermes: '0'
+          - name: xros_debug_oldarch_jsc
+            friendly_name: 'xrOS, Old Arch, JSC'
+            sdk: xrsimulator
+            configuration: Debug
+            scheme: RNTester-visionOS
+            packager_platform: 'ios'
+            new_arch_enabled: '0'
+            use_hermes: '0'
+          - name: xros_debug_newarch_jsc
+            friendly_name: 'xrOS, New Arch, JSC'
+            sdk: xrsimulator
+            configuration: Debug
+            scheme: RNTester-visionOS
+            packager_platform: 'ios'
+            new_arch_enabled: '1'
+            use_hermes: '0'
+          - name: macos_debug_oldarch_hermes
+            friendly_name: 'macOS, Old Arch, Hermes'
+            sdk: macosx
+            configuration: Debug
+            scheme: RNTester-macOS
+            packager_platform: 'macos'
+            new_arch_enabled: '0'
+            use_hermes: '1'
+          - name: macos_debug_newarch_hermes
+            friendly_name: 'macOS, New Arch, Hermes'
+            sdk: macosx
+            configuration: Debug
+            scheme: RNTester-macOS
+            packager_platform: 'macos'
+            new_arch_enabled: '1'
+            use_hermes: '1'
+          - name: ios_debug_oldarch_hermes
+            friendly_name: 'iOS, Old Arch, Hermes'
+            sdk: iphonesimulator
+            configuration: Debug
+            scheme: RNTester
+            packager_platform: 'ios'
+            new_arch_enabled: '0'
+            use_hermes: '1'
+          - name: ios_debug_newarch_hermes
+            friendly_name: 'iOS, New Arch, Hermes'
+            sdk: iphonesimulator
+            configuration: Debug
+            scheme: RNTester
+            packager_platform: 'ios'
+            new_arch_enabled: '1'
+            use_hermes: '1'
+          - name: xros_debug_oldarch_hermes
+            friendly_name: 'xrOS, Old Arch, Hermes'
+            sdk: xrsimulator
+            configuration: Debug
+            scheme: RNTester-visionOS
+            packager_platform: 'ios'
+            new_arch_enabled: '0'
+            use_hermes: '1'
+          - name: xros_debug_newarch_hermes
+            friendly_name: 'xrOS, New Arch, Hermes'
+            sdk: xrsimulator
+            configuration: Debug
+            scheme: RNTester-visionOS
+            packager_platform: 'ios'
+            new_arch_enabled: '1'
+            use_hermes: '1'
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '23'
+      
+      - name: Install Homebrew dependencies
+        run: |
+          brew install xcbeautify ccache
+      
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.2'
+      
+      - name: Download Xcode Platforms
+        run: |
+          xcodebuild -downloadAllPlatforms
+          sudo xcodebuild -runFirstLaunch
+      
+      - name: Install npm dependencies
+        run: yarn install
+      
+      - name: Install Pods
+        working-directory: packages/rn-tester
+        env:
+          RCT_NEW_ARCH_ENABLED: ${{ matrix.new_arch_enabled }}
+          USE_HERMES: ${{ matrix.use_hermes }}
+        run: |
+          set -eox pipefail
+          bundle install
+          bundle exec pod install --verbose
+      
+      - name: Build ${{ matrix.scheme }}
+        env:
+          CCACHE_DISABLE: 1
+        run: |
+          set -eox pipefail
+          .ado/scripts/xcodebuild.sh packages/rn-tester/RNTesterPods.xcworkspace ${{ matrix.sdk }} ${{ matrix.configuration }} ${{ matrix.scheme }} build
