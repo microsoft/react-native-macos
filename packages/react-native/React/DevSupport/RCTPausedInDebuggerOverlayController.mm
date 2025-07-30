@@ -48,7 +48,6 @@
   messageLabel.font = [UIFont boldSystemFontOfSize:16];
   messageLabel.textColor = [RCTUIColor blackColor]; // [macOS]
   messageLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  
   RCTUIView *messageContainer = [[RCTUIView alloc] init]; // [macOS]
   [messageContainer addSubview:messageLabel];
   [NSLayoutConstraint activateConstraints:@[
@@ -81,13 +80,13 @@
 #if !TARGET_OS_OSX // [macOS]
   UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ messageContainer, resumeButton ]];
   stackView.backgroundColor = [UIColor colorWithRed:1 green:1 blue:0.757 alpha:1];
-  stackView.axis = UILayoutConstraintAxisHorizontal;
-  stackView.distribution = UIStackViewDistributionFill;
-  stackView.alignment = UIStackViewAlignmentCenter;
   stackView.layer.cornerRadius = 12;
   stackView.layer.borderWidth = 2;
   stackView.layer.borderColor = [UIColor colorWithRed:0.71 green:0.71 blue:0.62 alpha:1].CGColor;
   stackView.translatesAutoresizingMaskIntoConstraints = NO;
+  stackView.axis = UILayoutConstraintAxisHorizontal;
+  stackView.distribution = UIStackViewDistributionFill;
+  stackView.alignment = UIStackViewAlignmentCenter;
 
   UITapGestureRecognizer *gestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                                       action:@selector(handleResume:)];
@@ -97,10 +96,10 @@
   NSStackView *stackView = [NSStackView stackViewWithViews:@[ messageContainer, resumeButton ]];
   stackView.wantsLayer = YES;
   stackView.layer.backgroundColor = [NSColor colorWithRed:1 green:1 blue:0.757 alpha:1].CGColor;
+  stackView.translatesAutoresizingMaskIntoConstraints = NO;
   stackView.orientation = NSUserInterfaceLayoutOrientationHorizontal;
   stackView.distribution = NSStackViewDistributionFill;
   stackView.alignment = NSLayoutAttributeCenterY;
-  stackView.translatesAutoresizingMaskIntoConstraints = NO;
 
   NSClickGestureRecognizer *gestureRecognizer = [[NSClickGestureRecognizer alloc] initWithTarget:self
                                                                                          action:@selector(handleResume:)];
@@ -112,11 +111,7 @@
 
   [NSLayoutConstraint activateConstraints:@[
     [stackView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:12],
-    [stackView.topAnchor constraintEqualToAnchor:self.view.topAnchor constant:20],
-    [stackView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:20],
-    [stackView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-20],
-    [stackView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant:-20],
-    [stackView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+    [stackView.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
   ]];
 #else
   [self setView:stackView];
@@ -172,15 +167,17 @@
   [self hide];
 
   RCTPausedInDebuggerViewController *view = [[RCTPausedInDebuggerViewController alloc] init];
+#if !TARGET_OS_OSX // [macOS]
+  view.modalPresentationStyle = UIModalPresentationOverFullScreen;
   view.message = message;
   view.onResume = onResume;
   
-#if !TARGET_OS_OSX // [macOS]
-  view.modalPresentationStyle = UIModalPresentationOverFullScreen;
   [self.alertWindow makeKeyAndVisible];
   [self.alertWindow.rootViewController presentViewController:view animated:NO completion:nil];
 #else // [macOS]
   self.alertWindow.contentViewController = view;
+  view.message = message;
+  view.onResume = onResume;
   
   NSWindow *parentWindow = RCTKeyWindow();
   if (![[parentWindow sheets] doesContain:self->_alertWindow]) {
@@ -195,8 +192,8 @@
 {
 #if !TARGET_OS_OSX // [macOS]
   [_alertWindow setHidden:YES];
+
   _alertWindow.windowScene = nil;
-  _alertWindow = nil;
 #else // [macOS]
   NSWindow *parentWindow = RCTKeyWindow();
   if (parentWindow) {
@@ -207,8 +204,9 @@
       }
     }
   }
-  _alertWindow = nil;
 #endif // macOS]
+
+  _alertWindow = nil;
 }
 
 @end
