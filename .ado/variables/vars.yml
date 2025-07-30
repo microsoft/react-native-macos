@@ -2,5 +2,5 @@
 
 variables:
   VmImageApple: macos-15
-  xcode_friendly_name: 'Xcode 16.3'
-  xcode_version: '/Applications/Xcode_16.3.0.app'
+  xcode_friendly_name: 'Xcode 16.4'
+  xcode_version: '/Applications/Xcode_16.4.0.app'
