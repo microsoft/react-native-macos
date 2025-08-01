@@ -50,7 +50,8 @@ jobs:
     # Disable Nightly publishing on the main branch
     - ${{ if endsWith(variables['Build.SourceBranchName'], '-stable') }}:
       - script: |
-          echo "//registry.npmjs.org/:_authToken=$(npmAuthToken)" > ~/.npmrc
+          yarn config set npmPublishRegistry "https://registry.npmjs.org"
+          yarn config set npmAuthToken $(npmAuthToken)
           node .ado/scripts/prepublish-check.mjs --verbose --tag $(publishTag)
         displayName: Set and validate npm auth
         condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
@@ -76,6 +77,13 @@ jobs:
         condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
     - script: |
-        rm -f ~/.npmrc
-      displayName: Remove npmrc if it exists
+        # Check and unset npmAuthToken if it exists
+        if [ "$(yarn config npmAuthToken --json | jq -r '.effective')" != "null" ]; then
+          yarn config unset npmAuthToken
+        fi
+        # Check and unset npmPublishRegistry if it exists
+        if [ "$(yarn config npmPublishRegistry --json | jq -r '.effective')" != "null" ]; then
+          yarn config unset npmPublishRegistry
+        fi
+      displayName: Unset npm configuration
       condition: always()
