@@ -77,13 +77,7 @@ jobs:
         condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
     - script: |
-        # Check and unset npmAuthToken if it exists
-        if [ "$(yarn config npmAuthToken --json | jq -r '.effective')" != "null" ]; then
-          yarn config unset npmAuthToken
-        fi
-        # Check and unset npmPublishRegistry if it exists
-        if [ "$(yarn config npmPublishRegistry --json | jq -r '.effective')" != "null" ]; then
-          yarn config unset npmPublishRegistry
-        fi
+        yarn config unset npmAuthToken
+        yarn config unset npmPublishRegistry
       displayName: Unset npm configuration
       condition: always()
