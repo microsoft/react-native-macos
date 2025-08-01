@@ -1,0 +1,48 @@
+name: Setup the toolchain
+description: Sets up the toolchain for the project
+inputs:
+  node-version:
+    description: The version of Node to use
+    type: string
+    default: "20"
+  node-cache:
+    description: Cache global packages data
+    type: string
+    default: "yarn"
+  jdk-version:
+    description: The Java JDK version to use, if specified
+    type: number
+  platform:
+    description: The target platform to set up toolchain for
+    type: string
+runs:
+  using: composite
+  steps:
+    - name: Set up Ccache
+      id: setup-ccache
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' }}
+      run: |
+        podfile_lock="packages/test-app/${{ inputs.platform }}/Podfile.lock"
+        if [[ -f $(git rev-parse --show-toplevel)/.ccache/ccache.conf ]] && [[ -f "$podfile_lock" ]]; then
+          clang --version > .clang-version
+          input=$(find . -maxdepth 1 -name .clang-version -o -name .yarnrc.yml | sort)
+          echo "cache-key=$(cat "$podfile_lock" $input | shasum -a 256 | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+    - name: Set up Node.js
+      uses: actions/setup-node@v4.4.0
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: ${{ inputs.node-cache }}
+    - name: Set up JDK
+      if: ${{ inputs.jdk-version != 0 }}
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: ${{ inputs.jdk-version }}
+    - name: Cache /.ccache
+      if: ${{ steps.setup-ccache.outputs.cache-key }}
+      uses: actions/cache@v4
+      with:
+        path: .ccache
+        key: ${{ runner.os }}-${{ inputs.cache-key-prefix }}-ccache-${{ steps.setup-ccache.outputs.cache-key }}

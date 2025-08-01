@@ -20,7 +20,8 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
       # We lint the PR title instead of the commit message to avoid script injection attacks.
@@ -45,7 +46,8 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
       - name: Read publish tag from nx.json
@@ -79,7 +81,8 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
       - name: Install dependencies
@@ -97,9 +100,11 @@ jobs:
           filter: blob:none
           fetch-depth: 0
       
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '23'
+          platform: 'macos'
       
       - name: Install Homebrew dependencies
         run: |
@@ -117,16 +122,16 @@ jobs:
       - name: Install npm dependencies
         run: yarn install
       
-      - name: Run tests
+      - name: Run Jest tests
         run: yarn test-ci
       
-      - name: Flow type check
+      - name: Run Flow type checker
         run: yarn flow-check
       
-      - name: Lint
+      - name: Run ESLint
         run: yarn lint
       
-      - name: Format check
+      - name: Run Prettier format check
         run: yarn format-check
 
   build-test-rntester:
@@ -170,9 +175,11 @@ jobs:
           filter: blob:none
           fetch-depth: 0
       
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '23'
+          platform: ${{ matrix.platform }}
       
       - name: Install Homebrew dependencies
         run: |
