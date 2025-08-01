@@ -93,7 +93,7 @@ jobs:
   javascript-tests:
     name: "JavaScript Tests"
     permissions: {}
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -104,7 +104,6 @@ jobs:
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '23'
-          platform: 'macos'
       
       - name: Install npm dependencies
         run: yarn install
@@ -124,7 +123,7 @@ jobs:
   build-test-rntester:
     name: "Build RNTester - ${{ matrix.platform }}, ${{ matrix.arch }}, ${{ matrix.engine }}"
     permissions: {}
-    runs-on: macos-latest
+    runs-on: macos-15
     timeout-minutes: 90
     strategy:
       fail-fast: false
@@ -193,7 +192,7 @@ jobs:
   # test-react-native-macos-init:
   #   name: "Test react-native-macos init"
   #   permissions: {}
-  #   runs-on: macos-latest
+  #   runs-on: macos-15
   #   timeout-minutes: 60
   #   steps:
   #     - uses: actions/checkout@v4
@@ -263,7 +262,7 @@ jobs:
   # react-native-test-app-integration:
   #   name: "Test react-native-test-app integration"
   #   permissions: {}
-  #   runs-on: macos-latest
+  #   runs-on: macos-15
   #   timeout-minutes: 60
   #   steps:
   #     - uses: actions/checkout@v4
