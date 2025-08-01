@@ -106,19 +106,6 @@ jobs:
           node-version: '23'
           platform: 'macos'
       
-      - name: Install Homebrew dependencies
-        run: |
-          brew install xcbeautify ccache
-      
-      - name: Setup Xcode
-        run: |
-          sudo xcode-select --switch /Applications/Xcode_16.4.0.app
-      
-      - name: Download Xcode Platforms
-        run: |
-          xcodebuild -downloadAllPlatforms
-          sudo xcodebuild -runFirstLaunch
-      
       - name: Install npm dependencies
         run: yarn install
       
@@ -181,19 +168,6 @@ jobs:
           node-version: '23'
           platform: ${{ matrix.platform }}
       
-      - name: Install Homebrew dependencies
-        run: |
-          brew install xcbeautify ccache
-      
-      - name: Setup Xcode
-        run: |
-          sudo xcode-select --switch /Applications/Xcode_16.2.app
-      
-      - name: Download Xcode Platforms
-        run: |
-          xcodebuild -downloadAllPlatforms
-          sudo xcodebuild -runFirstLaunch
-      
       - name: Install npm dependencies
         run: yarn install
       
@@ -234,16 +208,6 @@ jobs:
   #       with:
   #         node-version: '23'
   #         platform: 'macos'
-  #     
-  #     - name: Install Homebrew dependencies
-  #       run: |
-  #         brew bundle --file .ado/Brewfile
-  #     
-  #     - name: Setup Xcode
-  #       run: |
-  #         sudo xcode-select --switch /Applications/Xcode_16.2.app
-  #         xcodebuild -downloadAllPlatforms
-  #         sudo xcodebuild -runFirstLaunch
   #     
   #     - name: Install npm dependencies
   #       run: yarn install
@@ -313,16 +277,6 @@ jobs:
   #       with:
   #         node-version: '23'
   #         platform: 'macos'
-  #     
-  #     - name: Install Homebrew dependencies
-  #       run: |
-  #         brew bundle --file .ado/Brewfile
-  #     
-  #     - name: Setup Xcode
-  #       run: |
-  #         sudo xcode-select --switch /Applications/Xcode_16.2.app
-  #         xcodebuild -downloadAllPlatforms
-  #         sudo xcodebuild -runFirstLaunch
   #     
   #     - name: Install npm dependencies
   #       run: yarn install

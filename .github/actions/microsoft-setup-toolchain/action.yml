@@ -15,12 +15,16 @@ inputs:
   platform:
     description: The target platform to set up toolchain for
     type: string
+  xcode-version:
+    description: The Xcode version to use (full path)
+    type: string
+    default: "/Applications/Xcode_16.4.app"
 runs:
   using: composite
   steps:
     - name: Set up Ccache
       id: setup-ccache
-      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' }}
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'xros' }}
       run: |
         podfile_lock="packages/test-app/${{ inputs.platform }}/Podfile.lock"
         if [[ -f $(git rev-parse --show-toplevel)/.ccache/ccache.conf ]] && [[ -f "$podfile_lock" ]]; then
@@ -40,6 +44,22 @@ runs:
       with:
         distribution: temurin
         java-version: ${{ inputs.jdk-version }}
+    - name: Install Homebrew dependencies (macOS/iOS)
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'xros' }}
+      run: |
+        brew install xcbeautify ccache
+      shell: bash
+    - name: Setup Xcode
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'xros' }}
+      run: |
+        sudo xcode-select --switch ${{ inputs.xcode-version }}
+      shell: bash
+    - name: Download Xcode Platforms
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'xros' }}
+      run: |
+        xcodebuild -downloadAllPlatforms
+        sudo xcodebuild -runFirstLaunch
+      shell: bash
     - name: Cache /.ccache
       if: ${{ steps.setup-ccache.outputs.cache-key }}
       uses: actions/cache@v4
