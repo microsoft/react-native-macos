@@ -107,7 +107,7 @@ jobs:
       
       - name: Setup Xcode
         run: |
-          sudo xcode-select --switch /Applications/Xcode_16.2.app
+          sudo xcode-select --switch /Applications/Xcode_16.4.0.app
       
       - name: Download Xcode Platforms
         run: |
