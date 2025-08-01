@@ -130,109 +130,38 @@ jobs:
         run: yarn format-check
 
   build-test-rntester:
-    name: "Build RNTester - ${{ matrix.friendly_name }}"
+    name: "Build RNTester - ${{ matrix.platform }}, ${{ matrix.arch }}, ${{ matrix.engine }}"
     permissions: {}
     runs-on: macos-latest
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
+        platform: [macos, ios, xros]
+        arch: [oldarch, newarch]
+        engine: [jsc, hermes]
         include:
-          - name: macos_debug_oldarch_jsc
-            friendly_name: 'macOS, Old Arch, JSC'
+          # Platform-specific properties
+          - platform: macos
             sdk: macosx
-            configuration: Debug
             scheme: RNTester-macOS
-            packager_platform: 'macos'
-            new_arch_enabled: '0'
-            use_hermes: '0'
-          - name: macos_debug_newarch_jsc
-            friendly_name: 'macOS, New Arch, JSC'
-            sdk: macosx
-            configuration: Debug
-            scheme: RNTester-macOS
-            packager_platform: 'macos'
-            new_arch_enabled: '1'
-            use_hermes: '0'
-          - name: ios_debug_oldarch_jsc
-            friendly_name: 'iOS, Old Arch, JSC'
+            packager_platform: macos
+          - platform: ios
             sdk: iphonesimulator
-            configuration: Debug
             scheme: RNTester
-            packager_platform: 'ios'
-            new_arch_enabled: '0'
-            use_hermes: '0'
-          - name: ios_debug_newarch_jsc
-            friendly_name: 'iOS, New Arch, JSC'
-            sdk: iphonesimulator
-            configuration: Debug
-            scheme: RNTester
-            packager_platform: 'ios'
-            new_arch_enabled: '1'
-            use_hermes: '0'
-          - name: xros_debug_oldarch_jsc
-            friendly_name: 'xrOS, Old Arch, JSC'
+            packager_platform: ios
+          - platform: xros
             sdk: xrsimulator
-            configuration: Debug
             scheme: RNTester-visionOS
-            packager_platform: 'ios'
+            packager_platform: ios
+          # Architecture-specific properties
+          - arch: oldarch
             new_arch_enabled: '0'
+          - arch: newarch
+            new_arch_enabled: '1'
+          - engine: jsc
             use_hermes: '0'
-          - name: xros_debug_newarch_jsc
-            friendly_name: 'xrOS, New Arch, JSC'
-            sdk: xrsimulator
-            configuration: Debug
-            scheme: RNTester-visionOS
-            packager_platform: 'ios'
-            new_arch_enabled: '1'
-            use_hermes: '0'
-          - name: macos_debug_oldarch_hermes
-            friendly_name: 'macOS, Old Arch, Hermes'
-            sdk: macosx
-            configuration: Debug
-            scheme: RNTester-macOS
-            packager_platform: 'macos'
-            new_arch_enabled: '0'
-            use_hermes: '1'
-          - name: macos_debug_newarch_hermes
-            friendly_name: 'macOS, New Arch, Hermes'
-            sdk: macosx
-            configuration: Debug
-            scheme: RNTester-macOS
-            packager_platform: 'macos'
-            new_arch_enabled: '1'
-            use_hermes: '1'
-          - name: ios_debug_oldarch_hermes
-            friendly_name: 'iOS, Old Arch, Hermes'
-            sdk: iphonesimulator
-            configuration: Debug
-            scheme: RNTester
-            packager_platform: 'ios'
-            new_arch_enabled: '0'
-            use_hermes: '1'
-          - name: ios_debug_newarch_hermes
-            friendly_name: 'iOS, New Arch, Hermes'
-            sdk: iphonesimulator
-            configuration: Debug
-            scheme: RNTester
-            packager_platform: 'ios'
-            new_arch_enabled: '1'
-            use_hermes: '1'
-          - name: xros_debug_oldarch_hermes
-            friendly_name: 'xrOS, Old Arch, Hermes'
-            sdk: xrsimulator
-            configuration: Debug
-            scheme: RNTester-visionOS
-            packager_platform: 'ios'
-            new_arch_enabled: '0'
-            use_hermes: '1'
-          - name: xros_debug_newarch_hermes
-            friendly_name: 'xrOS, New Arch, Hermes'
-            sdk: xrsimulator
-            configuration: Debug
-            scheme: RNTester-visionOS
-            packager_platform: 'ios'
-            new_arch_enabled: '1'
+          - engine: hermes
             use_hermes: '1'
     
     steps:
@@ -276,4 +205,4 @@ jobs:
           CCACHE_DISABLE: 1
         run: |
           set -eox pipefail
-          .ado/scripts/xcodebuild.sh packages/rn-tester/RNTesterPods.xcworkspace ${{ matrix.sdk }} ${{ matrix.configuration }} ${{ matrix.scheme }} build
+          .ado/scripts/xcodebuild.sh packages/rn-tester/RNTesterPods.xcworkspace ${{ matrix.sdk }} Debug ${{ matrix.scheme }} build
