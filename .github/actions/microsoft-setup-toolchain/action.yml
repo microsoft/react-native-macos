@@ -18,7 +18,7 @@ inputs:
   xcode-version:
     description: The Xcode version to use (full path)
     type: string
-    default: "/Applications/Xcode_16.4.app"
+    default: "/Applications/Xcode_16.4.0.app"
 runs:
   using: composite
   steps:
