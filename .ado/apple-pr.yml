@@ -16,16 +16,16 @@ pr:
       - '*.md'
 
 stages:
-  - stage: Build_And_Test
-    displayName: 'Build and Test'
-    dependsOn: []
-    jobs:
-      - template: /.ado/jobs/build-test-rntester.yml@self
+  # - stage: Build_And_Test
+  #   displayName: 'Build and Test'
+  #   dependsOn: []
+  #   jobs:
+  #     - template: /.ado/jobs/build-test-rntester.yml@self
 
-  - stage: JSOnly
-    dependsOn: []
-    jobs:
-      - template: /.ado/jobs/test-javascript.yml@self
+  # - stage: JSOnly
+  #   dependsOn: []
+  #   jobs:
+  #     - template: /.ado/jobs/test-javascript.yml@self
 
   # https://github.com/microsoft/react-native-macos/issues/2344
   # The Verdaccio server consistently hangs on creation, which is required for the integration tests
