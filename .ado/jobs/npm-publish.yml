@@ -9,7 +9,7 @@ jobs:
     - name: BUILDSECMON_OPT_IN
       value: true
     - name: USE_YARN_FOR_PUBLISH
-      value: true
+      value: false
     
   timeoutInMinutes: 90
   cancelTimeoutInMinutes: 5
