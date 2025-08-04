@@ -424,7 +424,6 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   if (oldViewProps.accessibilityElementsHidden != newViewProps.accessibilityElementsHidden) {
     self.accessibilityElement.accessibilityElementsHidden = newViewProps.accessibilityElementsHidden;
   }
-#endif // [macOS]
 
   // `accessibilityShowsLargeContentViewer`
   if (oldViewProps.accessibilityShowsLargeContentViewer != newViewProps.accessibilityShowsLargeContentViewer) {
@@ -445,6 +444,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
       self.largeContentTitle = RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityLargeContentTitle);
     }
   }
+#endif // [macOS]
 
   // `accessibilityTraits`
   if (oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
