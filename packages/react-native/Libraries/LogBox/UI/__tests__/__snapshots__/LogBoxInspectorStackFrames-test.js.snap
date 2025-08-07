@@ -153,8 +153,6 @@ exports[`LogBoxInspectorStackFrames should render stack frames with 1 frame coll
         enableFocusRing={true}
         focusable={true}
         onClick={[Function]}
-        onKeyDown={[Function]}
-        onKeyUp={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
         onResponderRelease={[Function]}

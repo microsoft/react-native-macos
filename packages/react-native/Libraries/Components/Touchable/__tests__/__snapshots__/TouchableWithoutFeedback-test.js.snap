@@ -16,8 +16,6 @@ exports[`TouchableWithoutFeedback renders correctly 1`] = `
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -45,8 +43,6 @@ exports[`TouchableWithoutFeedback with disabled state should be disabled when di
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -72,8 +68,6 @@ exports[`TouchableWithoutFeedback with disabled state should be disabled when di
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -99,8 +93,6 @@ exports[`TouchableWithoutFeedback with disabled state should disable button when
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -126,8 +118,6 @@ exports[`TouchableWithoutFeedback with disabled state should keep accessibilityS
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -153,8 +143,6 @@ exports[`TouchableWithoutFeedback with disabled state should overwrite accessibi
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
