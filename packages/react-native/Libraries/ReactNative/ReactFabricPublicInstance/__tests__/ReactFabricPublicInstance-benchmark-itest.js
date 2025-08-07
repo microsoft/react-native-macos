@@ -10,6 +10,7 @@
  */
 
 import '../../../Core/InitializeCore.js';
+import type ReactNativeDocument from '../../../../src/private/webapis/dom/nodes/ReactNativeDocument';
 import type {
   InternalInstanceHandle,
   ViewConfig,
@@ -17,7 +18,7 @@ import type {
 
 import ReactNativeElement from '../../../../src/private/webapis/dom/nodes/ReactNativeElement';
 import ReactFabricHostComponent from '../../../ReactNative/ReactFabricPublicInstance/ReactFabricHostComponent';
-import {unstable_benchmark} from '@react-native/fantom';
+import Fantom from '@react-native/fantom';
 
 // Create fake parameters for the class.
 const tag = 11;
@@ -29,14 +30,20 @@ const viewConfig: ViewConfig = {
 };
 // $FlowExpectedError[incompatible-type]
 const internalInstanceHandle: InternalInstanceHandle = {};
+// $FlowExpectedError[incompatible-type]
+const ownerDocument: ReactNativeDocument = {};
 
-unstable_benchmark
+/* eslint-disable no-new */
+Fantom.unstable_benchmark
   .suite('ReactNativeElement vs. ReactFabricHostComponent')
-  .add('ReactNativeElement', () => {
-    // eslint-disable-next-line no-new
-    new ReactNativeElement(tag, viewConfig, internalInstanceHandle);
+  .test('ReactNativeElement', () => {
+    new ReactNativeElement(
+      tag,
+      viewConfig,
+      internalInstanceHandle,
+      ownerDocument,
+    );
   })
-  .add('ReactFabricHostComponent', () => {
-    // eslint-disable-next-line no-new
+  .test('ReactFabricHostComponent', () => {
     new ReactFabricHostComponent(tag, viewConfig, internalInstanceHandle);
   });

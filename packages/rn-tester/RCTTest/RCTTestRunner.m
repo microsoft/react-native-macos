@@ -186,7 +186,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
     } else {
       bridge = [[RCTBridge alloc] initWithBundleURL:_scriptURL moduleProvider:_moduleProvider launchOptions:nil];
     }
-    [bridge.devSettings setIsDebuggingRemotely:_useJSDebugger];
     batchedBridge = [bridge batchedBridge];
 
 #if !TARGET_OS_OSX // [macOS]

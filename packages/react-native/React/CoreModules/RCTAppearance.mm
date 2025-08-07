@@ -10,7 +10,7 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTConstants.h>
 #import <React/RCTEventEmitter.h>
-#import <React/RCTUtils.h>
+#import <React/RCTTraitCollectionProxy.h>
 
 #import "CoreModulesPlugins.h"
 
@@ -116,7 +116,7 @@ NSString *RCTColorSchemePreference(NSAppearance *appearance)
 {
   if ((self = [super init])) {
 #if !TARGET_OS_OSX // [macOS]
-    UITraitCollection *traitCollection = RCTKeyWindow().traitCollection;
+    UITraitCollection *traitCollection = [RCTTraitCollectionProxy sharedInstance].currentTraitCollection;
     _currentColorScheme = RCTColorSchemePreference(traitCollection);
 #else // [macOS
   NSAppearance *appearance = RCTSharedApplication().appearance;
@@ -134,7 +134,7 @@ RCT_EXPORT_MODULE(Appearance)
 
 + (BOOL)requiresMainQueueSetup
 {
-  return YES;
+  return NO;
 }
 
 - (dispatch_queue_t)methodQueue
@@ -174,10 +174,7 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
 {
   if (!sIsAppearancePreferenceSet) {
 #if !TARGET_OS_OSX // [macOS
-    __block UITraitCollection *traitCollection = nil;
-    RCTUnsafeExecuteOnMainQueueSync(^{
-      traitCollection = RCTKeyWindow().traitCollection;
-    });
+    UITraitCollection *traitCollection = [RCTTraitCollectionProxy sharedInstance].currentTraitCollection;
     _currentColorScheme = RCTColorSchemePreference(traitCollection);
 #else // [macOS
     __block NSAppearance *appearance = nil;

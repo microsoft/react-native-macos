@@ -7,14 +7,13 @@
  * @flow strict-local
  * @format
  * @oncall react_native
- * @fantom_flags enableAccessToHostTreeInFabric:true
  */
 
 /* eslint-disable lint/sort-imports */
 import type IntersectionObserverType from '../IntersectionObserver';
 
-import DOMRectReadOnly from '../../dom/geometry/DOMRectReadOnly';
-import * as Fantom from '@react-native/fantom';
+import DOMRectReadOnly from '../../geometry/DOMRectReadOnly';
+import Fantom from '@react-native/fantom';
 import setUpIntersectionObserver from '../../../setup/setUpIntersectionObserver';
 import ReactNativeElement from '../../dom/nodes/ReactNativeElement';
 import IntersectionObserverEntry from '../IntersectionObserverEntry';
@@ -1507,16 +1506,18 @@ describe('IntersectionObserver', () => {
 
       const node = ensureReactNativeElement(maybeNode);
 
-      observer1 = new IntersectionObserver(() => {});
-      observer2 = new IntersectionObserver(() => {});
+      Fantom.runTask(() => {
+        observer1 = new IntersectionObserver(() => {});
+        observer2 = new IntersectionObserver(() => {});
 
-      observer1.observe(node);
-      observer2.observe(node);
+        observer1.observe(node);
+        observer2.observe(node);
 
-      observer1.unobserve(node);
+        observer1.unobserve(node);
 
-      // The second call shouldn't log errors (that would make the test fail).
-      observer2.unobserve(node);
+        // The second call shouldn't log errors (that would make the test fail).
+        observer2.unobserve(node);
+      });
     });
   });
 

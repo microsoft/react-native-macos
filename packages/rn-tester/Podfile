@@ -101,7 +101,7 @@ end
 # [visionOS
 target('RNTester-visionOS') do
   platform :visionos, min_visionos_version_supported # [visionOS]
-  pods('RNTester-visionOS')
+  # pods('RNTester-visionOS')
 end
 # visionOS]
 

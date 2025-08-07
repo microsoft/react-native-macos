@@ -220,7 +220,7 @@ class RewriteInvalidCharactersAndClearExample extends React.Component<
   }
 }
 
-type ExampleRef = {current: null | {focus(): void, ...}};
+type ExampleRef = {current: null | React.ElementRef<typeof ExampleTextInput>};
 
 class BlurOnSubmitExample extends React.Component<{...}> {
   ref1: ExampleRef = React.createRef();
@@ -506,10 +506,10 @@ class TokenizedTextExample extends React.Component<
 }
 
 type SelectionExampleState = {
-  selection: $ReadOnly<{|
+  selection: $ReadOnly<{
     start: number,
     end: number,
-  |}>,
+  }>,
   value: string,
   ...
 };

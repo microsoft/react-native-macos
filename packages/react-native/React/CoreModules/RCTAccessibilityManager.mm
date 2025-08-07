@@ -12,6 +12,7 @@
 #import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTEventDispatcherProtocol.h>
+#import <React/RCTInitialAccessibilityValuesProxy.h>
 #import <React/RCTLog.h>
 #import <React/RCTUIManager.h>
 
@@ -39,7 +40,7 @@ RCT_EXPORT_MODULE()
 
 + (BOOL)requiresMainQueueSetup
 {
-  return YES;
+  return NO;
 }
 
 - (instancetype)init
@@ -105,14 +106,15 @@ RCT_EXPORT_MODULE()
 #endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
-    self.contentSizeCategory = RCTSharedApplication().preferredContentSizeCategory;
-    _isBoldTextEnabled = UIAccessibilityIsBoldTextEnabled();
-    _isGrayscaleEnabled = UIAccessibilityIsGrayscaleEnabled();
-    _isInvertColorsEnabled = UIAccessibilityIsInvertColorsEnabled();
-    _isReduceMotionEnabled = UIAccessibilityIsReduceMotionEnabled();
-    _isDarkerSystemColorsEnabled = UIAccessibilityDarkerSystemColorsEnabled();
-    _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled();
-    _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
+    RCTInitialAccessibilityValuesProxy *initialValuesProxy = [RCTInitialAccessibilityValuesProxy sharedInstance];
+    self.contentSizeCategory = initialValuesProxy.preferredContentSizeCategory;
+    _isBoldTextEnabled = initialValuesProxy.isBoldTextEnabled;
+    _isGrayscaleEnabled = initialValuesProxy.isGrayscaleEnabled;
+    _isInvertColorsEnabled = initialValuesProxy.isInvertColorsEnabled;
+    _isReduceMotionEnabled = initialValuesProxy.isReduceMotionEnabled;
+    _isDarkerSystemColorsEnabled = initialValuesProxy.isDarkerSystemColorsEnabled;
+    _isReduceTransparencyEnabled = initialValuesProxy.isReduceTransparencyEnabled;
+    _isVoiceOverEnabled = initialValuesProxy.isVoiceOverEnabled;
     _isHighContrastEnabled = UIAccessibilityDarkerSystemColorsEnabled(); // [macOS] Implement high Contrast for iOS
 #else // [macOS
     NSWorkspace *sharedWorkspace = [NSWorkspace sharedWorkspace];
@@ -252,7 +254,7 @@ RCT_EXPORT_MODULE()
   BOOL newReduceMotionEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
   BOOL newReduceTransparencyEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
   BOOL newHighContrastEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldIncreaseContrast];
-  
+
 
   if (_isHighContrastEnabled != newHighContrastEnabled) {
     _isHighContrastEnabled = newHighContrastEnabled;
