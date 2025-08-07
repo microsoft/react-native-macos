@@ -17,7 +17,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@react-native/codegen": "0.77.2"
+    "@react-native/codegen": "0.77.3"
   },
   "peerDependencies": {
     "@types/react": "^18.2.6",
