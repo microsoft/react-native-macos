@@ -26,7 +26,7 @@
   ],
   "dependencies": {
     "@babel/traverse": "^7.25.3",
-    "@react-native/codegen": "0.77.3"
+    "@react-native/codegen": "0.77.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2"

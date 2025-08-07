@@ -2733,8 +2733,8 @@ __metadata:
     "@definitelytyped/dtslint": "npm:^0.0.127"
     "@jest/create-cache-key-function": "npm:^29.6.3"
     "@nx/js": "npm:^21.2.4"
-    "@react-native/metro-babel-transformer": "npm:0.77.3"
-    "@react-native/metro-config": "npm:0.77.3"
+    "@react-native/metro-babel-transformer": "npm:0.77.2"
+    "@react-native/metro-config": "npm:0.77.2"
     "@tsconfig/node18": "npm:1.0.1"
     "@types/react": "npm:^18.2.6"
     "@typescript-eslint/parser": "npm:^7.1.1"
@@ -2841,13 +2841,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/babel-plugin-codegen@npm:0.77.3, @react-native/babel-plugin-codegen@workspace:packages/babel-plugin-codegen":
+"@react-native/babel-plugin-codegen@workspace:packages/babel-plugin-codegen":
   version: 0.0.0-use.local
   resolution: "@react-native/babel-plugin-codegen@workspace:packages/babel-plugin-codegen"
   dependencies:
     "@babel/core": "npm:^7.25.2"
     "@babel/traverse": "npm:^7.25.3"
-    "@react-native/codegen": "npm:0.77.3"
+    "@react-native/codegen": "npm:0.77.2"
   languageName: unknown
   linkType: soft
 
@@ -2906,7 +2906,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/babel-preset@npm:0.77.3, @react-native/babel-preset@workspace:packages/react-native-babel-preset":
+"@react-native/babel-preset@workspace:packages/react-native-babel-preset":
   version: 0.0.0-use.local
   resolution: "@react-native/babel-preset@workspace:packages/react-native-babel-preset"
   dependencies:
@@ -2951,7 +2951,7 @@ __metadata:
     "@babel/plugin-transform-typescript": "npm:^7.25.2"
     "@babel/plugin-transform-unicode-regex": "npm:^7.24.7"
     "@babel/template": "npm:^7.25.0"
-    "@react-native/babel-plugin-codegen": "npm:0.77.3"
+    "@react-native/babel-plugin-codegen": "npm:0.77.2"
     babel-plugin-syntax-hermes-parser: "npm:0.25.1"
     babel-plugin-transform-flow-enums: "npm:^0.0.2"
     react-refresh: "npm:^0.14.0"
@@ -2974,7 +2974,7 @@ __metadata:
     "@babel/plugin-transform-object-rest-spread": "npm:^7.24.7"
     "@babel/plugin-transform-optional-chaining": "npm:^7.24.8"
     "@babel/preset-env": "npm:^7.25.3"
-    "@react-native/codegen": "npm:0.77.3"
+    "@react-native/codegen": "npm:0.77.2"
     "@types/jest": "npm:^29.5.3"
     jest: "npm:^29.6.3"
     rimraf: "npm:^3.0.2"
@@ -3000,7 +3000,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/codegen@npm:0.77.3, @react-native/codegen@workspace:packages/react-native-codegen":
+"@react-native/codegen@workspace:packages/react-native-codegen":
   version: 0.0.0-use.local
   resolution: "@react-native/codegen@workspace:packages/react-native-codegen"
   dependencies:
@@ -3058,8 +3058,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@react-native/community-cli-plugin@workspace:packages/community-cli-plugin"
   dependencies:
-    "@react-native/dev-middleware": "npm:0.77.3"
-    "@react-native/metro-babel-transformer": "npm:0.77.3"
+    "@react-native/dev-middleware": "npm:0.77.2"
+    "@react-native/metro-babel-transformer": "npm:0.77.2"
     chalk: "npm:^4.0.0"
     debug: "npm:^2.2.0"
     invariant: "npm:^2.2.4"
@@ -3090,7 +3090,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/debugger-frontend@npm:0.77.3, @react-native/debugger-frontend@workspace:packages/debugger-frontend":
+"@react-native/debugger-frontend@workspace:packages/debugger-frontend":
   version: 0.0.0-use.local
   resolution: "@react-native/debugger-frontend@workspace:packages/debugger-frontend"
   languageName: unknown
@@ -3116,12 +3116,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/dev-middleware@npm:0.77.3, @react-native/dev-middleware@workspace:packages/dev-middleware":
+"@react-native/dev-middleware@workspace:packages/dev-middleware":
   version: 0.0.0-use.local
   resolution: "@react-native/dev-middleware@workspace:packages/dev-middleware"
   dependencies:
     "@isaacs/ttlcache": "npm:^1.4.1"
-    "@react-native/debugger-frontend": "npm:0.77.3"
+    "@react-native/debugger-frontend": "npm:0.77.2"
     chrome-launcher: "npm:^0.15.2"
     chromium-edge-launcher: "npm:^0.2.0"
     connect: "npm:^3.6.5"
@@ -3144,7 +3144,7 @@ __metadata:
   dependencies:
     "@babel/core": "npm:^7.25.2"
     "@babel/eslint-parser": "npm:^7.25.1"
-    "@react-native/eslint-plugin": "npm:0.77.3"
+    "@react-native/eslint-plugin": "npm:0.77.2"
     "@typescript-eslint/eslint-plugin": "npm:^7.1.1"
     "@typescript-eslint/parser": "npm:^7.1.1"
     eslint: "npm:^8.57.0"
@@ -3168,7 +3168,7 @@ __metadata:
   dependencies:
     "@babel/core": "npm:^7.25.2"
     "@babel/plugin-transform-flow-strip-types": "npm:^7.25.2"
-    "@react-native/codegen": "npm:0.77.3"
+    "@react-native/codegen": "npm:0.77.2"
     babel-plugin-syntax-hermes-parser: "npm:0.25.1"
     hermes-eslint: "npm:0.25.1"
     make-dir: "npm:^2.1.0"
@@ -3177,7 +3177,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-plugin@npm:0.77.3, @react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native":
+"@react-native/eslint-plugin@npm:0.77.2":
+  version: 0.77.2
+  resolution: "@react-native/eslint-plugin@npm:0.77.2"
+  checksum: 10c0/bb5f07ff908db1bee2061e0605010f71b65ea97daeaf1db64b1f220bee50dab6d54d4781daf359628657266aa90a25b6f2eb07e514864db2c28254b070609ebd
+  languageName: node
+  linkType: hard
+
+"@react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native"
   dependencies:
@@ -3214,7 +3221,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/js-polyfills@npm:0.77.3, @react-native/js-polyfills@workspace:packages/polyfills":
+"@react-native/js-polyfills@workspace:packages/polyfills":
   version: 0.0.0-use.local
   resolution: "@react-native/js-polyfills@workspace:packages/polyfills"
   languageName: unknown
@@ -3234,12 +3241,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/metro-babel-transformer@npm:0.77.3, @react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer":
+"@react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer":
   version: 0.0.0-use.local
   resolution: "@react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer"
   dependencies:
     "@babel/core": "npm:^7.25.2"
-    "@react-native/babel-preset": "npm:0.77.3"
+    "@react-native/babel-preset": "npm:0.77.2"
     hermes-parser: "npm:0.25.1"
     nullthrows: "npm:^1.1.1"
   peerDependencies:
@@ -3247,12 +3254,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/metro-config@npm:0.77.3, @react-native/metro-config@workspace:packages/metro-config":
+"@react-native/metro-config@npm:0.77.2":
+  version: 0.77.2
+  resolution: "@react-native/metro-config@npm:0.77.2"
+  dependencies:
+    "@react-native/js-polyfills": "npm:0.77.2"
+    "@react-native/metro-babel-transformer": "npm:0.77.2"
+    metro-config: "npm:^0.81.3"
+    metro-runtime: "npm:^0.81.3"
+  checksum: 10c0/eb1df3c1d501c52a98699472849f5be388e28232f18215a2fc589af8e2c99e2e721c71bb04545f72dfaf70dfffbca13d6fa7b3b2aeb64a8875b8a389e13f02f0
+  languageName: node
+  linkType: hard
+
+"@react-native/metro-config@workspace:packages/metro-config":
   version: 0.0.0-use.local
   resolution: "@react-native/metro-config@workspace:packages/metro-config"
   dependencies:
-    "@react-native/js-polyfills": "npm:0.77.3"
-    "@react-native/metro-babel-transformer": "npm:0.77.3"
+    "@react-native/js-polyfills": "npm:0.77.2"
+    "@react-native/metro-babel-transformer": "npm:0.77.2"
     metro-config: "npm:^0.81.5"
     metro-runtime: "npm:^0.81.5"
   languageName: unknown
@@ -3276,7 +3295,7 @@ __metadata:
   resolution: "@react-native/oss-library-example@workspace:packages/react-native-test-library"
   dependencies:
     "@babel/core": "npm:^7.25.2"
-    "@react-native/babel-preset": "npm:0.77.3"
+    "@react-native/babel-preset": "npm:0.77.2"
     react-native-macos: "workspace:*"
   peerDependencies:
     react: "*"
@@ -3284,11 +3303,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/popup-menu-android@npm:0.77.3, @react-native/popup-menu-android@workspace:packages/react-native-popup-menu-android":
+"@react-native/popup-menu-android@npm:0.77.2":
+  version: 0.77.2
+  resolution: "@react-native/popup-menu-android@npm:0.77.2"
+  dependencies:
+    nullthrows: "npm:^1.1.1"
+  peerDependencies:
+    "@types/react": ^18.2.6
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/d756ec51ad1c0df21589156d46e05f26d018edea1267ee524a9fb097c22f4e75b83b84e3762445dc7639320ba0f6ebb662fb69669be0786b8ab0e72e79190e4e
+  languageName: node
+  linkType: hard
+
+"@react-native/popup-menu-android@workspace:packages/react-native-popup-menu-android":
   version: 0.0.0-use.local
   resolution: "@react-native/popup-menu-android@workspace:packages/react-native-popup-menu-android"
   dependencies:
-    "@react-native/codegen": "npm:0.77.3"
+    "@react-native/codegen": "npm:0.77.2"
     nullthrows: "npm:^1.1.1"
   peerDependencies:
     "@types/react": ^18.2.6
@@ -3321,7 +3356,7 @@ __metadata:
     "@react-native-community/cli-platform-android": "npm:15.0.0-alpha.2"
     "@react-native-community/cli-platform-ios": "npm:15.0.0-alpha.2"
     "@react-native/oss-library-example": "workspace:*"
-    "@react-native/popup-menu-android": "npm:0.77.3"
+    "@react-native/popup-menu-android": "npm:0.77.2"
     flow-enums-runtime: "npm:^0.0.6"
     invariant: "npm:^2.2.4"
     nullthrows: "npm:^1.1.1"
@@ -9714,7 +9749,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metro-runtime@npm:0.81.5, metro-runtime@npm:^0.81.5":
+"metro-runtime@npm:0.81.5, metro-runtime@npm:^0.81.3, metro-runtime@npm:^0.81.5":
   version: 0.81.5
   resolution: "metro-runtime@npm:0.81.5"
   dependencies:
@@ -11381,7 +11416,7 @@ __metadata:
   peerDependencies:
     "@types/react": ^18.2.6
     react: ^18.2.0
-    react-native: 0.77.2
+    react-native: 0.77.3
   peerDependenciesMeta:
     "@types/react":
       optional: true

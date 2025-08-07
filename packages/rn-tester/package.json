@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@react-native/oss-library-example": "workspace:*",
-    "@react-native/popup-menu-android": "0.77.3",
+    "@react-native/popup-menu-android": "0.77.2",
     "flow-enums-runtime": "^0.0.6",
     "invariant": "^2.2.4",
     "nullthrows": "^1.1.1"

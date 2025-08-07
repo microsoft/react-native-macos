@@ -102,7 +102,7 @@
   "peerDependencies": {
     "@types/react": "^18.2.6",
     "react": "^18.2.0",
-    "react-native": "0.77.2"
+    "react-native": "0.77.3"
   },
   "peerDependenciesMeta": {
     "@types/react": {
