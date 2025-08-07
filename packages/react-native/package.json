@@ -102,7 +102,7 @@
   "peerDependencies": {
     "@types/react": "^19.0.0",
     "react": "^19.0.0",
-    "react-native": "0.78.2"
+    "react-native": "0.78.3"
   },
   "peerDependenciesMeta": {
     "@types/react": {
@@ -112,12 +112,12 @@
   "dependencies": {
     "@jest/create-cache-key-function": "^29.6.3",
     "@react-native-macos/virtualized-lists": "0.78.5",
-    "@react-native/assets-registry": "0.78.2",
-    "@react-native/codegen": "0.78.2",
-    "@react-native/community-cli-plugin": "0.78.2",
-    "@react-native/gradle-plugin": "0.78.2",
-    "@react-native/js-polyfills": "0.78.2",
-    "@react-native/normalize-colors": "0.78.2",
+    "@react-native/assets-registry": "0.78.3",
+    "@react-native/codegen": "0.78.3",
+    "@react-native/community-cli-plugin": "0.78.3",
+    "@react-native/gradle-plugin": "0.78.3",
+    "@react-native/js-polyfills": "0.78.3",
+    "@react-native/normalize-colors": "0.78.3",
     "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",

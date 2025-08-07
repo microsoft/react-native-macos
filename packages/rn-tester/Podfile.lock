@@ -26,7 +26,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - NativeCxxModuleExample (0.78.1):
+  - NativeCxxModuleExample (0.78.3):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2024.11.18.00)
@@ -48,7 +48,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - OCMock (3.9.4)
-  - OSSLibraryExample (0.78.1):
+  - OSSLibraryExample (0.78.3):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2024.11.18.00)
