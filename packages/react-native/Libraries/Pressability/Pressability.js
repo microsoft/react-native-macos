@@ -577,7 +577,8 @@ export default class Pressability {
     }
 
     // [macOS
-    const keyboardEventHandlers = {
+    const keyboardEventHandlers =
+    Platform.OS !== 'macos' ? null : {
       onKeyDown: (event: KeyEvent): void => {
         const {onKeyDown} = this._config;
         if (onKeyDown != null) {
