@@ -187,148 +187,146 @@ jobs:
           set -eox pipefail
           .ado/scripts/xcodebuild.sh packages/rn-tester/RNTesterPods.xcworkspace ${{ matrix.sdk }} Debug ${{ matrix.scheme }} build
 
-  # Integration tests - currently disabled due to Verdaccio server hanging issues
-  # https://github.com/microsoft/react-native-macos/issues/2344
-  # test-react-native-macos-init:
-  #   name: "Test react-native-macos init"
-  #   permissions: {}
-  #   runs-on: macos-15
-  #   timeout-minutes: 60
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         filter: blob:none
-  #         fetch-depth: 0
-  #         lfs: false
-  #         clean: true
-  #     
-  #     - name: Setup toolchain
-  #       uses: ./.github/actions/microsoft-setup-toolchain
-  #       with:
-  #         node-version: '23'
-  #         platform: 'macos'
-  #     
-  #     - name: Install npm dependencies
-  #       run: yarn install
-  #     
-  #     - name: Build community CLI plugin
-  #       run: yarn build
-  #     
-  #     - name: Build react-native-macos-init
-  #       working-directory: packages/react-native-macos-init
-  #       run: yarn build
-  #     
-  #     - name: Start Verdaccio server
-  #       run: |
-  #         npx verdaccio --config .ado/verdaccio/config.yaml &
-  #         sleep 5
-  #     
-  #     - name: Configure npm for Verdaccio
-  #       run: .ado/scripts/verdaccio.sh init
-  #     
-  #     - name: Publish to Verdaccio
-  #       run: .ado/scripts/verdaccio.sh publish --branch origin/${{ github.base_ref }}
-  #     
-  #     - name: Export versions
-  #       run: node .ado/scripts/export-versions.mjs
-  #     
-  #     - name: Initialize new project
-  #       run: |
-  #         set -eox pipefail
-  #         npx --yes @react-native-community/cli init testcli --version $(cat .react_native_version) --skip-install
-  #       working-directory: ${{ runner.temp }}
-  #     
-  #     - name: Install dependencies in new project
-  #       working-directory: ${{ runner.temp }}/testcli
-  #       run: |
-  #         set -eox pipefail
-  #         yarn install --mode=update-lockfile
-  #         yarn install
-  #     
-  #     - name: Apply macOS template
-  #       working-directory: ${{ runner.temp }}/testcli
-  #       run: |
-  #         set -eox pipefail
-  #         ${{ github.workspace }}/.ado/scripts/verdaccio.sh configure
-  #         node ${{ github.workspace }}/packages/react-native-macos-init/bin.js --verbose --version latest --overwrite --prerelease
-  #         pod install --project-directory=macos
-  #     
-  #     - name: Build macOS app
-  #       working-directory: ${{ runner.temp }}/testcli
-  #       run: |
-  #         set -eox pipefail
-  #         npx react-native build-macos
+  test-react-native-macos-init:
+    name: "Test react-native-macos init"
+    permissions: {}
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+          lfs: false
+          clean: true
+      
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '23'
+          platform: 'macos'
+      
+      - name: Install npm dependencies
+        run: yarn install
+      
+      - name: Build community CLI plugin
+        run: yarn build
+      
+      - name: Build react-native-macos-init
+        working-directory: packages/react-native-macos-init
+        run: yarn build
+      
+      - name: Start Verdaccio server
+        run: |
+          npx verdaccio --config .ado/verdaccio/config.yaml &
+          sleep 5
+      
+      - name: Configure npm for Verdaccio
+        run: .ado/scripts/verdaccio.sh init
+      
+      - name: Publish to Verdaccio
+        run: .ado/scripts/verdaccio.sh publish --branch origin/${{ github.base_ref }}
+      
+      - name: Export versions
+        run: node .ado/scripts/export-versions.mjs
+      
+      - name: Initialize new project
+        run: |
+          set -eox pipefail
+          npx --yes @react-native-community/cli init testcli --version $(cat .react_native_version) --skip-install
+        working-directory: ${{ runner.temp }}
+      
+      - name: Install dependencies in new project
+        working-directory: ${{ runner.temp }}/testcli
+        run: |
+          set -eox pipefail
+          yarn install --mode=update-lockfile
+          yarn install
+      
+      - name: Apply macOS template
+        working-directory: ${{ runner.temp }}/testcli
+        run: |
+          set -eox pipefail
+          ${{ github.workspace }}/.ado/scripts/verdaccio.sh configure
+          node ${{ github.workspace }}/packages/react-native-macos-init/bin.js --verbose --version latest --overwrite --prerelease
+          pod install --project-directory=macos
+      
+      - name: Build macOS app
+        working-directory: ${{ runner.temp }}/testcli
+        run: |
+          set -eox pipefail
+          npx react-native build-macos
 
-  # react-native-test-app-integration:
-  #   name: "Test react-native-test-app integration"
-  #   permissions: {}
-  #   runs-on: macos-15
-  #   timeout-minutes: 60
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         filter: blob:none
-  #         fetch-depth: 0
-  #         clean: true
-  #     
-  #     - name: Setup toolchain
-  #       uses: ./.github/actions/microsoft-setup-toolchain
-  #       with:
-  #         node-version: '23'
-  #         platform: 'macos'
-  #     
-  #     - name: Install npm dependencies
-  #       run: yarn install
-  #     
-  #     - name: Build community CLI plugin
-  #       run: yarn build
-  #     
-  #     - name: Build react-native-macos-init
-  #       working-directory: packages/react-native-macos-init
-  #       run: yarn build
-  #     
-  #     - name: Start Verdaccio server
-  #       run: |
-  #         npx verdaccio --config .ado/verdaccio/config.yaml &
-  #         sleep 5
-  #     
-  #     - name: Configure npm for Verdaccio
-  #       run: .ado/scripts/verdaccio.sh init
-  #     
-  #     - name: Publish to Verdaccio
-  #       run: .ado/scripts/verdaccio.sh publish --branch origin/${{ github.base_ref }}
-  #     
-  #     - name: Clone react-native-test-app
-  #       run: |
-  #         git clone --filter=blob:none --progress https://github.com/microsoft/react-native-test-app.git
-  #     
-  #     - name: Export versions
-  #       run: node .ado/scripts/export-versions.mjs
-  #     
-  #     - name: Configure react-native-test-app dependencies
-  #       working-directory: react-native-test-app
-  #       run: |
-  #         npm run set-react-version $(cat ${{ github.workspace }}/.react_native_version) -- --overrides '{ "react-native-macos": "1000.0.0" }'
-  #     
-  #     - name: Install dependencies in test app
-  #       working-directory: react-native-test-app
-  #       run: |
-  #         set -eo pipefail
-  #         ${{ github.workspace }}/.ado/scripts/verdaccio.sh configure
-  #         yarn --no-immutable
-  #     
-  #     - name: Bundle JavaScript
-  #       working-directory: react-native-test-app/example
-  #       run: |
-  #         yarn build:macos || yarn build:macos
-  #     
-  #     - name: Install Pods
-  #       working-directory: react-native-test-app/example
-  #       run: |
-  #         rm -f macos/Podfile.lock
-  #         pod install --project-directory=macos
-  #     
-  #     - name: Build test app
-  #       working-directory: react-native-test-app/example
-  #       run: |
-  #         ../scripts/build/xcodebuild.sh macos/Example.xcworkspace build
+  react-native-test-app-integration:
+    name: "Test react-native-test-app integration"
+    permissions: {}
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+          clean: true
+      
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '23'
+          platform: 'macos'
+      
+      - name: Install npm dependencies
+        run: yarn install
+      
+      - name: Build community CLI plugin
+        run: yarn build
+      
+      - name: Build react-native-macos-init
+        working-directory: packages/react-native-macos-init
+        run: yarn build
+      
+      - name: Start Verdaccio server
+        run: |
+          npx verdaccio --config .ado/verdaccio/config.yaml &
+          sleep 5
+      
+      - name: Configure npm for Verdaccio
+        run: .ado/scripts/verdaccio.sh init
+      
+      - name: Publish to Verdaccio
+        run: .ado/scripts/verdaccio.sh publish --branch origin/${{ github.base_ref }}
+      
+      - name: Clone react-native-test-app
+        run: |
+          git clone --filter=blob:none --progress https://github.com/microsoft/react-native-test-app.git
+      
+      - name: Export versions
+        run: node .ado/scripts/export-versions.mjs
+      
+      - name: Configure react-native-test-app dependencies
+        working-directory: react-native-test-app
+        run: |
+          npm run set-react-version $(cat ${{ github.workspace }}/.react_native_version) -- --overrides '{ "react-native-macos": "1000.0.0" }'
+      
+      - name: Install dependencies in test app
+        working-directory: react-native-test-app
+        run: |
+          set -eo pipefail
+          ${{ github.workspace }}/.ado/scripts/verdaccio.sh configure
+          yarn --no-immutable
+      
+      - name: Bundle JavaScript
+        working-directory: react-native-test-app/example
+        run: |
+          yarn build:macos || yarn build:macos
+      
+      - name: Install Pods
+        working-directory: react-native-test-app/example
+        run: |
+          rm -f macos/Podfile.lock
+          pod install --project-directory=macos
+      
+      - name: Build test app
+        working-directory: react-native-test-app/example
+        run: |
+          ../scripts/build/xcodebuild.sh macos/Example.xcworkspace build
