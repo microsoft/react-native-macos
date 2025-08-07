@@ -10,6 +10,7 @@
 #import <React/RCTUIKit.h> // [macOS]
 #import "RCTArchConfiguratorProtocol.h"
 #import "RCTDependencyProvider.h"
+#import "RCTJSRuntimeConfiguratorProtocol.h"
 #import "RCTRootViewFactory.h"
 #import "RCTUIConfiguratorProtocol.h"
 
@@ -34,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
     RCTTurboModuleManagerDelegate,
     RCTComponentViewFactoryComponentProvider,
 #endif
+    RCTJSRuntimeConfiguratorProtocol,
     RCTArchConfiguratorProtocol>
 
 /// Return the bundle URL for the main bundle.
@@ -84,9 +86,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithDelegate:(id<RCTReactNativeFactoryDelegate>)delegate;
 
+- (void)startReactNativeWithModuleName:(NSString *)moduleName inWindow:(RCTPlatformWindow *_Nullable)window; // [macOS]
+
+- (void)startReactNativeWithModuleName:(NSString *)moduleName
+                              inWindow:(RCTPlatformWindow *_Nullable)window // [macOS]
+                         launchOptions:(NSDictionary *_Nullable)launchOptions;
+
+- (void)startReactNativeWithModuleName:(NSString *)moduleName
+                              inWindow:(RCTPlatformWindow *_Nullable)window // [macOS]
+                     initialProperties:(NSDictionary *_Nullable)initialProperties
+                         launchOptions:(NSDictionary *_Nullable)launchOptions;
+
 @property (nonatomic, nullable) RCTBridge *bridge;
-@property (nonatomic, strong, nullable) NSString *moduleName;
-@property (nonatomic, strong, nullable) NSDictionary *initialProps;
 @property (nonatomic, strong, nonnull) RCTRootViewFactory *rootViewFactory;
 
 @property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter;

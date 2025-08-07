@@ -45,8 +45,9 @@ RCT_EXPORT_MODULE();
 
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
 
-    _rootView = (RCTRootView *)[appDelegate.rootViewFactory viewWithModuleName:@"SetPropertiesExampleApp"
-                                                             initialProperties:@{@"color" : @"beige"}];
+    _rootView =
+        (RCTRootView *)[appDelegate.reactNativeFactory.rootViewFactory viewWithModuleName:@"SetPropertiesExampleApp"
+                                                                        initialProperties:@{@"color" : @"beige"}];
 
     // [macOS Github#1642: Suppress analyzer error of nonlocalized string
     NSString *buttonTitle = NSLocalizedString(@"Native Button", nil);

@@ -198,4 +198,4 @@ export default {
   forkEvent: AnimatedImplementation.forkEvent,
   unforkEvent: AnimatedImplementation.unforkEvent,
   Event: AnimatedEvent,
-};
+} as typeof AnimatedImplementation;

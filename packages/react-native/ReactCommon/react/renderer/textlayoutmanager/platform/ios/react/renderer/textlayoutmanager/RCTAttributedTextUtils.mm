@@ -138,6 +138,7 @@ inline static CGFloat RCTEffectiveFontSizeMultiplierFromTextAttributes(const Tex
 {
   if (textAttributes.allowFontScaling.value_or(true)) {
 #if !TARGET_OS_OSX // [macOS]
+    CGFloat fontSizeMultiplier = !isnan(textAttributes.fontSizeMultiplier) ? textAttributes.fontSizeMultiplier : 1.0;
     if (textAttributes.dynamicTypeRamp.has_value()) {
       DynamicTypeRamp dynamicTypeRamp = textAttributes.dynamicTypeRamp.value();
       UIFontMetrics *fontMetrics =
@@ -145,12 +146,13 @@ inline static CGFloat RCTEffectiveFontSizeMultiplierFromTextAttributes(const Tex
       // Using a specific font size reduces rounding errors from -scaledValueForValue:
       CGFloat requestedSize =
           isnan(textAttributes.fontSize) ? RCTBaseSizeForDynamicTypeRamp(dynamicTypeRamp) : textAttributes.fontSize;
-      return [fontMetrics scaledValueForValue:requestedSize] / requestedSize;
-    } else {
-      return textAttributes.fontSizeMultiplier;
+      fontSizeMultiplier = [fontMetrics scaledValueForValue:requestedSize] / requestedSize;
     }
+    CGFloat maxFontSizeMultiplier =
+        !isnan(textAttributes.maxFontSizeMultiplier) ? textAttributes.maxFontSizeMultiplier : 0.0;
+    return maxFontSizeMultiplier >= 1.0 ? fminf(maxFontSizeMultiplier, fontSizeMultiplier) : fontSizeMultiplier;
 #else // [macOS
-    return textAttributes.fontSizeMultiplier;
+      return textAttributes.fontSizeMultiplier;
 #endif // macOS]
   } else {
     return 1.0;
@@ -363,7 +365,7 @@ void RCTApplyBaselineOffset(NSMutableAttributedString *attributedText)
                             if (!font) {
                               return;
                             }
-    
+
                             maximumFontLineHeight = MAX(UIFontLineHeight(font), maximumFontLineHeight); // [macOS]
                           }];
 

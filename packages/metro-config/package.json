@@ -1,6 +1,6 @@
 {
   "name": "@react-native/metro-config",
-  "version": "0.77.0-main",
+  "version": "0.79.0-main",
   "private": true,
   "description": "Metro configuration for React Native.",
   "license": "MIT",
