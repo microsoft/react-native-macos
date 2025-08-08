@@ -66,7 +66,7 @@ jobs:
 
       - name: Build ${{ matrix.scheme }}
         env:
-          CCACHE_DISABLE: 1
+          USE_CCACHE: 1
         run: |
           set -eox pipefail
           .ado/scripts/xcodebuild.sh packages/rn-tester/RNTesterPods.xcworkspace ${{ matrix.sdk }} Debug ${{ matrix.scheme }} build
