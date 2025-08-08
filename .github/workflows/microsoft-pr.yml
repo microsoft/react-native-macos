@@ -218,14 +218,23 @@ jobs:
       
       - name: Start Verdaccio server
         run: |
-          npx verdaccio --config .ado/verdaccio/config.yaml &
-          sleep 5
+          set -euo pipefail
+          nohup npx verdaccio --config .ado/verdaccio/config.yaml >/dev/null 2>&1 &
+          echo $! > $RUNNER_TEMP/verdaccio.pid
+      - name: Wait for Verdaccio to be ready
+        run: node .ado/scripts/waitForVerdaccio.mjs http://localhost:4873
       
       - name: Configure npm for Verdaccio
         run: .ado/scripts/verdaccio.sh init
       
       - name: Publish to Verdaccio
         run: .ado/scripts/verdaccio.sh publish --branch origin/${{ github.base_ref }}
+      - name: Stop Verdaccio
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/verdaccio.pid" ]; then
+            kill "$(cat $RUNNER_TEMP/verdaccio.pid)" || true
+          fi
       
       - name: Export versions
         run: node .ado/scripts/export-versions.mjs
@@ -287,14 +296,23 @@ jobs:
       
       - name: Start Verdaccio server
         run: |
-          npx verdaccio --config .ado/verdaccio/config.yaml &
-          sleep 5
+          set -euo pipefail
+          nohup npx verdaccio --config .ado/verdaccio/config.yaml >/dev/null 2>&1 &
+          echo $! > $RUNNER_TEMP/verdaccio.pid
+      - name: Wait for Verdaccio to be ready
+        run: node .ado/scripts/waitForVerdaccio.mjs http://localhost:4873
       
       - name: Configure npm for Verdaccio
         run: .ado/scripts/verdaccio.sh init
       
       - name: Publish to Verdaccio
         run: .ado/scripts/verdaccio.sh publish --branch origin/${{ github.base_ref }}
+      - name: Stop Verdaccio
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/verdaccio.pid" ]; then
+            kill "$(cat $RUNNER_TEMP/verdaccio.pid)" || true
+          fi
       
       - name: Clone react-native-test-app
         run: |
