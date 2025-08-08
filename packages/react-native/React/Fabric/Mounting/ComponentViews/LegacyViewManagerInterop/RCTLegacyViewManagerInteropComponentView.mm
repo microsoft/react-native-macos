@@ -180,7 +180,7 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
     // Without this change, the new child will not be rendered right away because the didUpdateReactSubviews is not
     // called and the `finalizeUpdate` is not invoked.
     if ([childComponentView isKindOfClass:[RCTLegacyViewManagerInteropComponentView class]]) {
-      UIView *target = ((RCTLegacyViewManagerInteropComponentView *)childComponentView).contentView;
+      RCTPlatformView *target = ((RCTLegacyViewManagerInteropComponentView *)childComponentView).contentView; // [macOS]
       [_adapter.paperView insertReactSubview:target atIndex:index];
     } else {
       [_adapter.paperView insertReactSubview:childComponentView atIndex:index];
