@@ -13,6 +13,7 @@ case ${1-} in
   "init")
     npm set registry $NPM_REGISTRY
     scripts_root=$(cd -P "$(dirname $0)" && pwd)
+    node $scripts_root/waitForVerdaccio.mjs $NPM_REGISTRY
     node $scripts_root/npmAddUser.mjs user pass mail@nomail.com $NPM_REGISTRY
     ;;
 
