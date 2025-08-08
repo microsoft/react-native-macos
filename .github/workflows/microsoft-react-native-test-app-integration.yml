@@ -18,7 +18,7 @@ jobs:
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
-          node-version: '23'
+          node-version: '22'
           platform: 'macos'
 
       - name: Install npm dependencies

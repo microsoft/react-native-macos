@@ -1,63 +1,94 @@
-name: Setup the toolchain
+name: Setup toolchain
 description: Sets up the toolchain for the project
 inputs:
-  node-version:
-    description: The version of Node to use
-    type: string
-    default: "20"
-  node-cache:
-    description: Cache global packages data
-    type: string
-    default: "yarn"
-  jdk-version:
-    description: The Java JDK version to use, if specified
-    type: number
   platform:
     description: The target platform to set up toolchain for
-    type: string
-  xcode-version:
-    description: The Xcode version to use (full path)
-    type: string
-    default: "/Applications/Xcode_16.4.0.app"
+  project-root:
+    description: Root of the project
+  cache-key-prefix:
+    description: Prefix to add to the cache key
+  cache-npm-dependencies:
+    description: Caches npm dependencies (supports npm, yarn, pnpm v6.10+)
+    default: yarn
+  java-version:
+    description: Desired Java version
+    default: "17"
+  node-version:
+    description: Desired Node version
+    default: "22"
+  xcode-developer-dir:
+    description: Set the path for the active Xcode developer directory
 runs:
   using: composite
   steps:
     - name: Set up Ccache
       id: setup-ccache
-      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'xros' }}
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos' }}
       run: |
-        podfile_lock="packages/test-app/${{ inputs.platform }}/Podfile.lock"
+        podfile_lock="${{ inputs.project-root }}/${{ inputs.platform }}/Podfile.lock"
         if [[ -f $(git rev-parse --show-toplevel)/.ccache/ccache.conf ]] && [[ -f "$podfile_lock" ]]; then
+          if ! command -v ccache 1> /dev/null; then
+            brew install ccache
+          fi
+
+          CCACHE_HOME=$(dirname $(dirname $(which ccache)))/opt/ccache
+
+          echo "CCACHE_DIR=$(git rev-parse --show-toplevel)/.ccache" >> $GITHUB_ENV
+
+          echo "CC=${CCACHE_HOME}/libexec/clang" >> $GITHUB_ENV
+          echo "CXX=${CCACHE_HOME}/libexec/clang++" >> $GITHUB_ENV
+          echo "CMAKE_C_COMPILER_LAUNCHER=$(which ccache)" >> $GITHUB_ENV
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=$(which ccache)" >> $GITHUB_ENV
+
+          ccache --zero-stats 1> /dev/null
+
           clang --version > .clang-version
           input=$(find . -maxdepth 1 -name .clang-version -o -name .yarnrc.yml | sort)
           echo "cache-key=$(cat "$podfile_lock" $input | shasum -a 256 | awk '{ print $1 }')" >> $GITHUB_OUTPUT
         fi
       shell: bash
+    - name: Set up JDK
+      if: ${{ inputs.platform == 'android' || inputs.platform == 'node' }}
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: ${{ inputs.java-version }}
+    - name: Set up Gradle
+      if: ${{ inputs.platform == 'android' || inputs.platform == 'node' }}
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: wrapper
+        gradle-home-cache-excludes: |
+          caches
+          jdks
+    - name: Set up MSBuild
+      if: ${{ inputs.platform == 'windows' }}
+      uses: microsoft/setup-msbuild@v2
+    - name: Set up Ruby
+      if: ${{ runner.os != 'Windows' }}
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: "3.2.3"
+        bundler: Gemfile.lock
+        bundler-cache: true
     - name: Set up Node.js
       uses: actions/setup-node@v4.4.0
       with:
         node-version: ${{ inputs.node-version }}
-        cache: ${{ inputs.node-cache }}
-    - name: Set up JDK
-      if: ${{ inputs.jdk-version != 0 }}
-      uses: actions/setup-java@v4
-      with:
-        distribution: temurin
-        java-version: ${{ inputs.jdk-version }}
-    - name: Install Homebrew dependencies (macOS/iOS)
-      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'xros' }}
+        cache: ${{ inputs.cache-npm-dependencies }}
+        registry-url: https://registry.npmjs.org
+    - name: Set up Xcode
+      if: ${{ inputs.xcode-developer-dir != '' }}
       run: |
-        brew install xcbeautify ccache
+        sudo xcode-select --switch ${{ inputs.xcode-developer-dir }}
       shell: bash
-    - name: Setup Xcode
-      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'xros' }}
+    - name: Download visionOS SDK
+      if: ${{ inputs.platform == 'visionos' }}
       run: |
-        sudo xcode-select --switch ${{ inputs.xcode-version }}
-      shell: bash
-    - name: Download Xcode Platforms
-      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'xros' }}
-      run: |
-        xcodebuild -downloadAllPlatforms
+        # https://github.com/actions/runner-images/issues/10559
+        sudo xcodebuild -runFirstLaunch
+        sudo xcrun simctl list
+        sudo xcodebuild -downloadPlatform visionOS
         sudo xcodebuild -runFirstLaunch
       shell: bash
     - name: Cache /.ccache

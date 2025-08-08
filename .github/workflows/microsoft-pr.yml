@@ -103,7 +103,7 @@ jobs:
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
-          node-version: '23'
+          node-version: '22'
       
       - name: Install npm dependencies
         run: yarn install

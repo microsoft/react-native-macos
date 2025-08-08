@@ -24,7 +24,7 @@ jobs:
             sdk: iphonesimulator
             scheme: RNTester
             packager_platform: ios
-          - platform: xros
+          - platform: visionos
             sdk: xrsimulator
             scheme: RNTester-visionOS
             packager_platform: ios
@@ -47,7 +47,7 @@ jobs:
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
-          node-version: '23'
+          node-version: '22'
           platform: ${{ matrix.platform }}
 
       - name: Install npm dependencies
