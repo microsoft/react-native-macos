@@ -23,7 +23,7 @@ build_cmd=$(
 
 )
 
-if [[ "$CCACHE_DISABLE" != "1" ]]; then
+if [[ "$USE_CCACHE" == "1" ]]; then
   if ! command -v ccache 1> /dev/null; then
     brew install ccache
   fi
@@ -45,6 +45,6 @@ fi
 
 eval "$build_cmd" | xcbeautify --report junit
 
-if [[ "$CCACHE_DISABLE" != "1" ]]; then
+if [[ "$USE_CCACHE" == "1" ]]; then
   ccache --show-stats --verbose
 fi

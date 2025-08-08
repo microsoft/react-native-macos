@@ -20,7 +20,8 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
       # We lint the PR title instead of the commit message to avoid script injection attacks.
@@ -45,15 +46,16 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
       - name: Read publish tag from nx.json
         id: config
         run: |
           PUBLISH_TAG=$(jq -r '.release.version.generatorOptions.currentVersionResolverMetadata.tag' nx.json)
-          echo "publishTag=$PUBLISH_TAG" >> $GITHUB_OUTPUT
-          echo "Using publish tag from nx.json: $PUBLISH_TAG"
+          echo "publishTag=${PUBLISH_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Using publish tag from nx.json: ${PUBLISH_TAG}"
       - name: Configure git
         run: |
           git config --global user.email "53619745+rnbot@users.noreply.github.com"
@@ -79,10 +81,62 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
       - name: Install dependencies
         run: yarn
       - name: Check constraints
         run: yarn constraints
+
+  javascript-tests:
+    name: "JavaScript Tests"
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+      
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+      
+      - name: Install npm dependencies
+        run: yarn install
+      
+      - name: Run Jest tests
+        run: yarn test-ci
+      
+      - name: Run Flow type checker
+        run: yarn flow-check
+      
+      - name: Run ESLint
+        run: yarn lint
+      
+      - name: Run Prettier format check
+        run: yarn format-check
+
+  build-test-rntester:
+    name: "Build RNTester"
+    permissions: {}
+    uses: ./.github/workflows/microsoft-build-rntester.yml
+
+  test-react-native-macos-init:
+    name: "Test react-native-macos init"
+    permissions: {}
+    # https://github.com/microsoft/react-native-macos/issues/2344
+    # Run only for stable branches. Once nightlies are available, enable on main as well.
+    if: ${{ endsWith(github.base_ref, '-stable') }}
+    uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
+
+  react-native-test-app-integration:
+    name: "Test react-native-test-app integration"
+    permissions: {}
+    # https://github.com/microsoft/react-native-macos/issues/2344
+    # Run only for stable branches. Once nightlies are available, enable on main as well.
+    if: ${{ endsWith(github.base_ref, '-stable') }}
+    uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml

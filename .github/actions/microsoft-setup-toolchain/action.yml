@@ -1,0 +1,82 @@
+name: Setup toolchain
+description: Sets up the toolchain for the project
+inputs:
+  platform:
+    description: The target platform to set up toolchain for
+  project-root:
+    description: Root of the project
+  cache-key-prefix:
+    description: Prefix to add to the cache key
+  cache-npm-dependencies:
+    description: Caches npm dependencies (supports npm, yarn, pnpm v6.10+)
+    default: yarn
+  java-version:
+    description: Desired Java version
+    default: "17"
+  node-version:
+    description: Desired Node version
+    default: "22"
+  xcode-developer-dir:
+    description: Set the path for the active Xcode developer directory
+    default: "/Applications/Xcode_16.4.0.app"
+runs:
+  using: composite
+  steps:
+    - name: Set up Ccache
+      id: setup-ccache
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos' }}
+      run: |
+        podfile_lock="${{ inputs.project-root }}/${{ inputs.platform }}/Podfile.lock"
+        if [[ -f $(git rev-parse --show-toplevel)/.ccache/ccache.conf ]] && [[ -f "$podfile_lock" ]]; then
+          if ! command -v ccache 1> /dev/null; then
+            brew install ccache
+          fi
+
+          CCACHE_HOME=$(dirname $(dirname $(which ccache)))/opt/ccache
+
+          echo "CCACHE_DIR=$(git rev-parse --show-toplevel)/.ccache" >> $GITHUB_ENV
+
+          echo "CC=${CCACHE_HOME}/libexec/clang" >> $GITHUB_ENV
+          echo "CXX=${CCACHE_HOME}/libexec/clang++" >> $GITHUB_ENV
+          echo "CMAKE_C_COMPILER_LAUNCHER=$(which ccache)" >> $GITHUB_ENV
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=$(which ccache)" >> $GITHUB_ENV
+
+          ccache --zero-stats 1> /dev/null
+
+          clang --version > .clang-version
+          input=$(find . -maxdepth 1 -name .clang-version -o -name .yarnrc.yml | sort)
+          echo "cache-key=$(cat "$podfile_lock" $input | shasum -a 256 | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+    - name: Set up JDK
+      if: ${{ inputs.platform == 'android' || inputs.platform == 'node' }}
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: ${{ inputs.java-version }}
+    - name: Set up Node.js
+      uses: actions/setup-node@v4.4.0
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: ${{ inputs.cache-npm-dependencies }}
+        registry-url: https://registry.npmjs.org
+    - name: Set up Xcode
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos' }}
+      run: |
+        sudo xcode-select --switch ${{ inputs.xcode-developer-dir }}
+      shell: bash
+    - name: Download visionOS SDK
+      if: ${{ inputs.platform == 'visionos' }}
+      run: |
+        # https://github.com/actions/runner-images/issues/10559
+        sudo xcodebuild -runFirstLaunch
+        sudo xcrun simctl list
+        sudo xcodebuild -downloadPlatform visionOS
+        sudo xcodebuild -runFirstLaunch
+      shell: bash
+    - name: Cache /.ccache
+      if: ${{ steps.setup-ccache.outputs.cache-key }}
+      uses: actions/cache@v4
+      with:
+        path: .ccache
+        key: ${{ runner.os }}-${{ inputs.cache-key-prefix }}-ccache-${{ steps.setup-ccache.outputs.cache-key }}
