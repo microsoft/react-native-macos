@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos, ios, xros]
+        platform: [macos, ios, visionos]
         arch: [oldarch, newarch]
         engine: [jsc, hermes]
         include:
