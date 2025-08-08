@@ -1,6 +1,6 @@
 ---
-sidebar_label: 'Diff Tags'
-sidebar_position: 1
+sidebar_label: 'macOS Tags'
+sidebar_position: 2
 ---
 
 # How React Native macOS differs from React Native
