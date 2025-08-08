@@ -128,9 +128,15 @@ jobs:
   test-react-native-macos-init:
     name: "Test react-native-macos init"
     permissions: {}
+    # https://github.com/microsoft/react-native-macos/issues/2344
+    # Run only for stable branches. Once nightlies are available, enable on main as well.
+    if: ${{ endsWith(github.base_ref, '-stable') }}
     uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
 
   react-native-test-app-integration:
     name: "Test react-native-test-app integration"
     permissions: {}
+    # https://github.com/microsoft/react-native-macos/issues/2344
+    # Run only for stable branches. Once nightlies are available, enable on main as well.
+    if: ${{ endsWith(github.base_ref, '-stable') }}
     uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
