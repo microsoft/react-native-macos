@@ -61,7 +61,7 @@ runs:
         cache: ${{ inputs.cache-npm-dependencies }}
         registry-url: https://registry.npmjs.org
     - name: Set up Xcode
-      if: ${{ inputs.xcode-developer-dir != '' }}
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos' }}
       run: |
         sudo xcode-select --switch ${{ inputs.xcode-developer-dir }}
       shell: bash
