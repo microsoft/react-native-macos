@@ -159,8 +159,8 @@ export type EventHandlers = $ReadOnly<{|
   onBlur: (event: BlurEvent) => void,
   onClick: (event: PressEvent) => void,
   onFocus: (event: FocusEvent) => void,
-  onKeyDown: (event: KeyEvent) => void,
-  onKeyUp: (event: KeyEvent) => void,
+  onKeyDown?: (event: KeyEvent) => void,
+  onKeyUp?: (event: KeyEvent) => void,
   onMouseEnter?: (event: MouseEvent) => void,
   onMouseLeave?: (event: MouseEvent) => void,
   onPointerEnter?: (event: PointerEvent) => void,
@@ -717,8 +717,9 @@ export default class Pressability {
       return {
         ...focusEventHandlers,
         ...responderEventHandlers,
-        ...mouseEventHandlers,
+        // $FlowFixMe[exponential-spread] // [macOS]
         ...keyboardEventHandlers, // [macOS]
+        ...mouseEventHandlers,
       };
     }
   }
