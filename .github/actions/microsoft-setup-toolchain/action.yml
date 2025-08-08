@@ -53,24 +53,6 @@ runs:
       with:
         distribution: temurin
         java-version: ${{ inputs.java-version }}
-    - name: Set up Gradle
-      if: ${{ inputs.platform == 'android' || inputs.platform == 'node' }}
-      uses: gradle/actions/setup-gradle@v4
-      with:
-        gradle-version: wrapper
-        gradle-home-cache-excludes: |
-          caches
-          jdks
-    - name: Set up MSBuild
-      if: ${{ inputs.platform == 'windows' }}
-      uses: microsoft/setup-msbuild@v2
-    - name: Set up Ruby
-      if: ${{ runner.os != 'Windows' }}
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: "3.2.3"
-        bundler: Gemfile.lock
-        bundler-cache: true
     - name: Set up Node.js
       uses: actions/setup-node@v4.4.0
       with:

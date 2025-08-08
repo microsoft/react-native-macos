@@ -49,6 +49,7 @@ jobs:
         with:
           node-version: '22'
           platform: ${{ matrix.platform }}
+          project-root: 'packages/rn-tester'
 
       - name: Install npm dependencies
         run: yarn install
