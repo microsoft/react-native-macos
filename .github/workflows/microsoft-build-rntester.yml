@@ -1,0 +1,71 @@
+name: Build RNTester
+
+on:
+  workflow_call:
+
+jobs:
+  build-test-rntester:
+    name: "${{ matrix.platform }}, ${{ matrix.arch }}, ${{ matrix.engine }}"
+    runs-on: macos-15
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos, ios, xros]
+        arch: [oldarch, newarch]
+        engine: [jsc, hermes]
+        include:
+          # Platform-specific properties
+          - platform: macos
+            sdk: macosx
+            scheme: RNTester-macOS
+            packager_platform: macos
+          - platform: ios
+            sdk: iphonesimulator
+            scheme: RNTester
+            packager_platform: ios
+          - platform: xros
+            sdk: xrsimulator
+            scheme: RNTester-visionOS
+            packager_platform: ios
+          # Architecture-specific properties
+          - arch: oldarch
+            new_arch_enabled: '0'
+          - arch: newarch
+            new_arch_enabled: '1'
+          - engine: jsc
+            use_hermes: '0'
+          - engine: hermes
+            use_hermes: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '23'
+          platform: ${{ matrix.platform }}
+
+      - name: Install npm dependencies
+        run: yarn install
+
+      - name: Install Pods
+        working-directory: packages/rn-tester
+        env:
+          RCT_NEW_ARCH_ENABLED: ${{ matrix.new_arch_enabled }}
+          USE_HERMES: ${{ matrix.use_hermes }}
+        run: |
+          set -eox pipefail
+          bundle install
+          bundle exec pod install --verbose
+
+      - name: Build ${{ matrix.scheme }}
+        env:
+          CCACHE_DISABLE: 1
+        run: |
+          set -eox pipefail
+          .ado/scripts/xcodebuild.sh packages/rn-tester/RNTesterPods.xcworkspace ${{ matrix.sdk }} Debug ${{ matrix.scheme }} build
