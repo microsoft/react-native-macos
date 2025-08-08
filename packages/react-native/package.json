@@ -102,7 +102,7 @@
   "peerDependencies": {
     "@types/react": "^18.2.6",
     "react": "^18.2.0",
-    "react-native": "0.77.2"
+    "react-native": "0.77.3"
   },
   "peerDependenciesMeta": {
     "@types/react": {
@@ -112,12 +112,12 @@
   "dependencies": {
     "@jest/create-cache-key-function": "^29.6.3",
     "@react-native-macos/virtualized-lists": "0.77.6",
-    "@react-native/assets-registry": "0.77.2",
-    "@react-native/codegen": "0.77.2",
-    "@react-native/community-cli-plugin": "0.77.2",
-    "@react-native/gradle-plugin": "0.77.2",
-    "@react-native/js-polyfills": "0.77.2",
-    "@react-native/normalize-colors": "0.77.2",
+    "@react-native/assets-registry": "0.77.3",
+    "@react-native/codegen": "0.77.3",
+    "@react-native/community-cli-plugin": "0.77.3",
+    "@react-native/gradle-plugin": "0.77.3",
+    "@react-native/js-polyfills": "0.77.3",
+    "@react-native/normalize-colors": "0.77.3",
     "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
@@ -133,8 +133,8 @@
     "jest-environment-node": "^29.6.3",
     "jsc-android": "^250231.0.0",
     "memoize-one": "^5.0.0",
-    "metro-runtime": "^0.81.3",
-    "metro-source-map": "^0.81.3",
+    "metro-runtime": "^0.81.5",
+    "metro-source-map": "^0.81.5",
     "nullthrows": "^1.1.1",
     "pretty-format": "^29.7.0",
     "promise": "^8.3.0",

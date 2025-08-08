@@ -37,6 +37,8 @@ import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.common.annotations.VisibleForTesting
 import com.facebook.react.config.ReactFeatureFlags
+import com.facebook.react.uimanager.DisplayMetricsHolder
+import com.facebook.react.uimanager.DisplayMetricsHolder.getStatusBarHeightPx
 import com.facebook.react.uimanager.JSPointerDispatcher
 import com.facebook.react.uimanager.JSTouchDispatcher
 import com.facebook.react.uimanager.PixelUtil.pxToDp
@@ -49,6 +51,7 @@ import com.facebook.react.views.common.ContextUtils
 import com.facebook.react.views.view.ReactViewGroup
 import com.facebook.react.views.view.setStatusBarTranslucency
 import com.facebook.react.views.view.setSystemBarsTranslucency
+import com.facebook.yoga.annotations.DoNotStrip
 import java.util.Objects
 
 /**
@@ -119,6 +122,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
   private var createNewDialog = false
 
   init {
+    initStatusBarHeight(context)
     dialogRootViewGroup = DialogRootViewGroup(context)
   }
 
@@ -220,6 +224,15 @@ public class ReactModalHostView(context: ThemedReactContext) :
 
   private fun getCurrentActivity(): Activity? = (context as ThemedReactContext).currentActivity
 
+  private fun isFlagSecureSet(activity: Activity?): Boolean {
+    if (activity == null) {
+      return false
+    }
+
+    val flags = activity.window.attributes.flags
+    return (flags and WindowManager.LayoutParams.FLAG_SECURE) != 0
+  }
+
   /**
    * showOrUpdate will display the Dialog. It is called by the manager once all properties are set
    * because we need to know all of them before creating the Dialog. It is also smart during updates
@@ -292,6 +305,11 @@ public class ReactModalHostView(context: ThemedReactContext) :
     newDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     if (hardwareAccelerated) {
       newDialog.window?.addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
+    }
+    val flagSecureSet = isFlagSecureSet(currentActivity)
+    if (flagSecureSet) {
+      newDialog.window?.setFlags(
+          WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
     }
     if (currentActivity?.isFinishing == false) {
       newDialog.show()
@@ -395,6 +413,26 @@ public class ReactModalHostView(context: ThemedReactContext) :
 
   private companion object {
     private const val TAG = "ReactModalHost"
+
+    // We store the status bar height to be able to properly position
+    // the modal on the first render.
+    private var statusBarHeight = 0
+
+    private fun initStatusBarHeight(reactContext: ReactContext) {
+      statusBarHeight = getStatusBarHeightPx(reactContext.currentActivity)
+    }
+
+    @JvmStatic
+    @DoNotStrip
+    private fun getScreenDisplayMetricsWithoutInsets(): Long {
+      val displayMetrics = DisplayMetricsHolder.getScreenDisplayMetrics()
+      return encodeFloatsToLong(
+          displayMetrics.widthPixels.toFloat().pxToDp(),
+          (displayMetrics.heightPixels - statusBarHeight).toFloat().pxToDp())
+    }
+
+    private fun encodeFloatsToLong(width: Float, height: Float): Long =
+        (width.toRawBits().toLong()) shl 32 or (height.toRawBits().toLong())
   }
 
   /**
@@ -410,6 +448,7 @@ public class ReactModalHostView(context: ThemedReactContext) :
    */
   public class DialogRootViewGroup internal constructor(context: Context) :
       ReactViewGroup(context), RootView {
+
     internal var stateWrapper: StateWrapper? = null
     internal var eventDispatcher: EventDispatcher? = null
 
