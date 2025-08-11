@@ -1,0 +1,56 @@
+name: $(Date:yyyyMMdd).$(Rev:.r)
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+      - '*-stable'
+  paths:
+    exclude:
+      - package.json
+
+pr: none
+
+variables:
+  - group: React-native-macos Secrets
+  - group: InfoSec-SecurityResults
+  - name: tags
+    value: production,externalfacing
+      # CodeQL Still has not fixed their bug running on Apple ARM64 jobs where they inject x64 binaries into arm64 processes and just make it crash :(
+      # Only workaround for now is to disable CodeQL on Apple jobs.
+  - name: Codeql.Enabled
+    value: false
+  - template: /.ado/variables/vars.yml@self
+
+resources:
+  repositories:
+    - repository: OfficePipelineTemplates
+      type: git
+      name: 1ESPipelineTemplates/OfficePipelineTemplates
+      ref: refs/tags/release
+
+extends:
+  template: v1/Office.Official.PipelineTemplate.yml@OfficePipelineTemplates
+  parameters:
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: windows-latest
+      os: windows
+    sdl:
+      componentgovernance:
+        ignoreDirectories: $(Build.SourcesDirectory)/packages/helloworld
+      credscan:
+        suppressionsFile: .ado/CredScanSuppressions.json
+      eslint:
+        configuration: 'recommended'
+        parser: '@typescript-eslint/parser'
+        parserOptions: ''
+        enableExclusions: true
+        # Justification: js files in this repo are flow files. the built-in eslint does not support this. Adding a separate step to run the sdl rules for flow files.
+        exclusionPatterns: '**/*.js'
+    stages:
+      - stage: NPM
+        dependsOn: []
+        jobs:
+         - template: /.ado/jobs/npm-publish.yml@self

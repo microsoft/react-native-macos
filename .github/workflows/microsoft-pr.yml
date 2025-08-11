@@ -54,8 +54,8 @@ jobs:
         id: config
         run: |
           PUBLISH_TAG=$(jq -r '.release.version.generatorOptions.currentVersionResolverMetadata.tag' nx.json)
-          echo "publishTag=${PUBLISH_TAG}" >> "$GITHUB_OUTPUT"
-          echo "Using publish tag from nx.json: ${PUBLISH_TAG}"
+          echo "publishTag=$PUBLISH_TAG" >> $GITHUB_OUTPUT
+          echo "Using publish tag from nx.json: $PUBLISH_TAG"
       - name: Configure git
         run: |
           git config --global user.email "53619745+rnbot@users.noreply.github.com"
