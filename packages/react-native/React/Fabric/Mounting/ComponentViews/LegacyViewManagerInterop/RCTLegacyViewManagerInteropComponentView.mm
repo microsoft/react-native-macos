@@ -244,7 +244,7 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
     NSNumber *index = mountInstruction[kRCTLegacyInteropChildIndexKey];
     RCTUIView *childView = mountInstruction[kRCTLegacyInteropChildComponentKey]; // [macOS]
     if ([childView isKindOfClass:[RCTLegacyViewManagerInteropComponentView class]]) {
-      RCTUIView *target = ((RCTLegacyViewManagerInteropComponentView *)childView).contentView; // [macOS]
+      RCTPlatformView *target = ((RCTLegacyViewManagerInteropComponentView *)childView).contentView; // [macOS]
       [_adapter.paperView insertReactSubview:target atIndex:index.integerValue];
     } else {
       [_adapter.paperView insertReactSubview:childView atIndex:index.integerValue];
