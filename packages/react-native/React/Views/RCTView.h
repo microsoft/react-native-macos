@@ -179,7 +179,7 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) NSArray<RCTHandledKey*> *keyUpEvents;
 
 // Shadow Properties
-@property (nonatomic, strong) NSColor *shadowColor;
+@property (nonatomic, assign) CGColorRef shadowColor;
 @property (nonatomic, assign) CGFloat shadowOpacity;
 @property (nonatomic, assign) CGFloat shadowRadius;
 @property (nonatomic, assign) CGSize shadowOffset;

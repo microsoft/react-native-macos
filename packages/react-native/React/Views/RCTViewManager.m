@@ -254,7 +254,7 @@ RCT_REMAP_VIEW_PROPERTY(shadowOffset, layer.shadowOffset, CGSize)
 RCT_REMAP_VIEW_PROPERTY(shadowOpacity, layer.shadowOpacity, float)
 RCT_REMAP_VIEW_PROPERTY(shadowRadius, layer.shadowRadius, CGFloat)
 #else // [macOS
-RCT_EXPORT_VIEW_PROPERTY(shadowColor, NSColor)
+RCT_EXPORT_VIEW_PROPERTY(shadowColor, CGColor)
 RCT_EXPORT_VIEW_PROPERTY(shadowOffset, CGSize)
 RCT_EXPORT_VIEW_PROPERTY(shadowOpacity, CGFloat)
 RCT_EXPORT_VIEW_PROPERTY(shadowRadius, CGFloat)
