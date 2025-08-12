@@ -52,6 +52,7 @@ const validAttributesForNonEventProps = {
   cursor: true,
   draggedTypes: true,
   enableFocusRing: true,
+  focusable: true,
   tooltip: true,
   keyDownEvents: true,
   keyUpEvents: true,
