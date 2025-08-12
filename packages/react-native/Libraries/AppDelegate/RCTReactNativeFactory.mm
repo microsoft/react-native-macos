@@ -25,11 +25,6 @@
 #endif
 #import <React/RCTComponentViewFactory.h>
 #import <React/RCTComponentViewProtocol.h>
-#if USE_HERMES
-#import <ReactCommon/RCTHermesInstance.h>
-#else
-#import <ReactCommon/RCTJscInstance.h>
-#endif
 #import <react/nativemodule/defaults/DefaultTurboModules.h>
 
 #import "RCTDependencyProvider.h"
@@ -39,6 +34,7 @@ using namespace facebook::react;
 @interface RCTReactNativeFactory () <
     RCTComponentViewFactoryComponentProvider,
     RCTHostDelegate,
+    RCTJSRuntimeConfiguratorProtocol,
     RCTTurboModuleManagerDelegate>
 @end
 
@@ -67,6 +63,39 @@ using namespace facebook::react;
   return self;
 }
 
+- (void)startReactNativeWithModuleName:(NSString *)moduleName inWindow:(RCTPlatformWindow *_Nullable)window // [macOS]
+{
+  [self startReactNativeWithModuleName:moduleName inWindow:window initialProperties:nil launchOptions:nil];
+}
+
+- (void)startReactNativeWithModuleName:(NSString *)moduleName
+                              inWindow:(RCTPlatformWindow *_Nullable)window // [macOS]
+                         launchOptions:(NSDictionary *_Nullable)launchOptions
+{
+  [self startReactNativeWithModuleName:moduleName inWindow:window initialProperties:nil launchOptions:launchOptions];
+}
+
+- (void)startReactNativeWithModuleName:(NSString *)moduleName
+                              inWindow:(RCTPlatformWindow *_Nullable)window
+                     initialProperties:(NSDictionary *_Nullable)initialProperties
+                         launchOptions:(NSDictionary *_Nullable)launchOptions
+{
+  RCTUIView *rootView = [self.rootViewFactory viewWithModuleName:moduleName  // [macOS]
+                                            initialProperties:initialProperties
+                                                launchOptions:launchOptions];
+  UIViewController *rootViewController = [_delegate createRootViewController];
+  [_delegate setRootView:rootView toRootViewController:rootViewController];
+#if !TARGET_OS_OSX // [macOS]
+  window.rootViewController = rootViewController;
+  [window makeKeyAndVisible];
+#else // [macOS
+  rootViewController.view.frame = window.frame;
+  window.contentViewController = rootViewController;
+  [window makeKeyAndOrderFront:self];
+  [window center];
+#endif // macOS]
+}
+
 #pragma mark - RCTUIConfiguratorProtocol
 
 - (RCTColorSpace)defaultColorSpace
@@ -86,6 +115,13 @@ using namespace facebook::react;
   }
 
   return _delegate.bundleURL;
+}
+
+#pragma mark - RCTJSRuntimeConfiguratorProtocol
+
+- (JSRuntimeFactoryRef)createJSRuntimeFactory
+{
+  return [_delegate createJSRuntimeFactory];
 }
 
 #pragma mark - RCTArchConfiguratorProtocol
@@ -139,6 +175,14 @@ using namespace facebook::react;
 #else
   return RCTCoreModulesClassProvider(name);
 #endif
+}
+
+- (nullable id<RCTModuleProvider>)getModuleProvider:(const char *)name
+{
+  if ([_delegate respondsToSelector:@selector(getModuleProvider:)]) {
+    return [_delegate getModuleProvider:name];
+  }
+  return nil;
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
@@ -228,6 +272,23 @@ using namespace facebook::react;
     };
   }
 
+  if ([self.delegate respondsToSelector:@selector(loadSourceForBridge:onProgress:onComplete:)]) {
+    configuration.loadSourceForBridgeWithProgress =
+        ^(RCTBridge *_Nonnull bridge,
+          RCTSourceLoadProgressBlock _Nonnull onProgress,
+          RCTSourceLoadBlock _Nonnull loadCallback) {
+          [weakSelf.delegate loadSourceForBridge:bridge onProgress:onProgress onComplete:loadCallback];
+        };
+  }
+
+  if ([self.delegate respondsToSelector:@selector(loadSourceForBridge:withBlock:)]) {
+    configuration.loadSourceForBridge = ^(RCTBridge *_Nonnull bridge, RCTSourceLoadBlock _Nonnull loadCallback) {
+      [weakSelf.delegate loadSourceForBridge:bridge withBlock:loadCallback];
+    };
+  }
+
+  configuration.jsRuntimeConfiguratorDelegate = self;
+
   return [[RCTRootViewFactory alloc] initWithTurboModuleDelegate:self hostDelegate:self configuration:configuration];
 }
 
@@ -255,9 +316,12 @@ class RCTAppDelegateBridgelessFeatureFlags : public ReactNativeFeatureFlagsDefau
 
 - (void)_setUpFeatureFlags
 {
-  if ([self bridgelessEnabled]) {
-    ReactNativeFeatureFlags::override(std::make_unique<RCTAppDelegateBridgelessFeatureFlags>());
-  }
+  static dispatch_once_t setupFeatureFlagsToken;
+  dispatch_once(&setupFeatureFlagsToken, ^{
+    if ([self bridgelessEnabled]) {
+      ReactNativeFeatureFlags::override(std::make_unique<RCTAppDelegateBridgelessFeatureFlags>());
+    }
+  });
 }
 
 @end

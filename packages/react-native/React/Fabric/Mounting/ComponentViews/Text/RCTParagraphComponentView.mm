@@ -387,6 +387,10 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
 #endif // macOS]
 }
 
+- (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
+{
+  return nil;
+}
 
 - (void)drawRect:(CGRect)rect
 {
