@@ -634,14 +634,12 @@ RCT_VIEW_BORDER_RADIUS_PROPERTY(StartStart)
 RCT_REMAP_VIEW_PROPERTY(display, reactDisplay, YGDisplay)
 RCT_REMAP_VIEW_PROPERTY(zIndex, reactZIndex, NSInteger)
 
-// [macOS
+#if TARGET_OS_OSX // [macOS
+
+#pragma mark - macOS properties
+
 RCT_EXPORT_VIEW_PROPERTY(onFocus, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onBlur, RCTBubblingEventBlock)
-// macOS]
-
-
-#if TARGET_OS_OSX // [macOS
-#pragma mark - macOS properties
 
 RCT_EXPORT_VIEW_PROPERTY(onMouseEnter, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMouseLeave, RCTDirectEventBlock)
