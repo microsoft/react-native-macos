@@ -23,11 +23,6 @@
 #endif
 #import <React/RCTComponentViewFactory.h>
 #import <React/RCTComponentViewProtocol.h>
-#if USE_HERMES
-#import <ReactCommon/RCTHermesInstance.h>
-#else
-#import <ReactCommon/RCTJscInstance.h>
-#endif
 #import <react/nativemodule/defaults/DefaultTurboModules.h>
 
 using namespace facebook::react;
@@ -80,7 +75,6 @@ static NSString *sRCTAppDelegateMainWindowFrameAutoSaveName = @"RCTAppDelegateMa
 #endif // [visionOS]
   UIViewController *rootViewController = [self createRootViewController];
   [self setRootView:rootView toRootViewController:rootViewController];
-  _window.windowScene.delegate = self;
   _window.rootViewController = rootViewController;
   [_window makeKeyAndVisible];
 #else // [macOS
@@ -102,17 +96,6 @@ static NSString *sRCTAppDelegateMainWindowFrameAutoSaveName = @"RCTAppDelegateMa
   [self.window setFrameAutosaveName:sRCTAppDelegateMainWindowFrameAutoSaveName];
 #endif // macOS]
 }
-
-#pragma mark - UISceneDelegate
-#if !TARGET_OS_OSX // [macOS]
-- (void)windowScene:(UIWindowScene *)windowScene
-    didUpdateCoordinateSpace:(id<UICoordinateSpace>)previousCoordinateSpace
-        interfaceOrientation:(UIInterfaceOrientation)previousInterfaceOrientation
-             traitCollection:(UITraitCollection *)previousTraitCollection API_AVAILABLE(ios(13.0))
-{
-  [[NSNotificationCenter defaultCenter] postNotificationName:RCTWindowFrameDidChangeNotification object:self];
-}
-#endif // [macOS]
 
 - (RCTRootViewFactory *)rootViewFactory
 {

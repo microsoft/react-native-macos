@@ -53,6 +53,41 @@ val hermesDSYMReleaseArtifact: PublishArtifact =
       classifier = "hermes-framework-dSYM-release"
     }
 
+val reactNativeDependenciesDebugArtifactFile: RegularFile =
+    layout.projectDirectory.file("artifacts/ReactNativeDependenciesDebug.xcframework.tar.gz")
+val reactNativeDependenciesDebugArtifact: PublishArtifact =
+    artifacts.add("externalArtifacts", reactNativeDependenciesDebugArtifactFile) {
+      type = "tgz"
+      extension = "tar.gz"
+      classifier = "reactnative-dependencies-debug"
+    }
+
+val reactNativeDependenciesReleaseArtifactFile: RegularFile =
+    layout.projectDirectory.file("artifacts/ReactNativeDependenciesRelease.xcframework.tar.gz")
+val reactNativeDependenciesReleaseArtifact: PublishArtifact =
+    artifacts.add("externalArtifacts", reactNativeDependenciesReleaseArtifactFile) {
+      type = "tgz"
+      extension = "tar.gz"
+      classifier = "reactnative-dependencies-release"
+    }
+val reactNativeDependenciesDebugDSYMArtifactFile: RegularFile =
+    layout.projectDirectory.file("artifacts/ReactNativeDependenciesDebug.framework.dSYM.tar.gz")
+val reactNativeDependenciesDebugDSYMArtifact: PublishArtifact =
+    artifacts.add("externalArtifacts", reactNativeDependenciesDebugArtifactFile) {
+      type = "tgz"
+      extension = "tar.gz"
+      classifier = "reactnative-dependencies-debug-dSYM"
+    }
+
+val reactNativeDependenciesReleaseDSYMArtifactFile: RegularFile =
+    layout.projectDirectory.file("artifacts/ReactNativeDependenciesRelease.framework.dSYM.tar.gz")
+val reactNativeDependenciesReleaseDSYMArtifact: PublishArtifact =
+    artifacts.add("externalArtifacts", reactNativeDependenciesReleaseArtifactFile) {
+      type = "tgz"
+      extension = "tar.gz"
+      classifier = "reactnative-dependencies-release-dSYM"
+    }
+
 apply(from = "../publish.gradle")
 
 publishing {
@@ -63,6 +98,8 @@ publishing {
       artifact(hermesiOSReleaseArtifact)
       artifact(hermesDSYMDebugArtifact)
       artifact(hermesDSYMReleaseArtifact)
+      artifact(reactNativeDependenciesDebugArtifact)
+      artifact(reactNativeDependenciesReleaseArtifact)
     }
   }
 }

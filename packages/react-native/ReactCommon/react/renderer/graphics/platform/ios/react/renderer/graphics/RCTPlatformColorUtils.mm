@@ -9,6 +9,7 @@
 
 #import <Foundation/Foundation.h>
 #import <React/RCTUIKit.h> // [macOS]
+#import <react/renderer/graphics/HostPlatformColor.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
 #include <string>

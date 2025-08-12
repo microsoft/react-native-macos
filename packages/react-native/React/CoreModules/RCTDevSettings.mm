@@ -28,7 +28,6 @@
 static NSString *const kRCTDevSettingProfilingEnabled = @"profilingEnabled";
 static NSString *const kRCTDevSettingHotLoadingEnabled = @"hotLoadingEnabled";
 static NSString *const kRCTDevSettingIsInspectorShown = @"showInspector";
-static NSString *const kRCTDevSettingIsDebuggingRemotely = @"isDebuggingRemotely";
 static NSString *const kRCTDevSettingExecutorOverrideClass = @"executor-override";
 static NSString *const kRCTDevSettingShakeToShowDevMenu = @"shakeToShow";
 static NSString *const kRCTDevSettingIsPerfMonitorShown = @"RCTPerfMonitorKey";
@@ -137,9 +136,6 @@ static std::atomic<int> numInitializedModules{0};
 
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
   BOOL _isJSLoaded;
-#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  RCTHandlerToken _bridgeExecutorOverrideToken;
-#endif
 }
 
 @property (nonatomic, strong) Class executorClass;
@@ -197,18 +193,6 @@ RCT_EXPORT_MODULE()
 - (void)initialize
 {
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  if ([self _isBridgeMode]) {
-    RCTBridge *__weak weakBridge = self.bridge;
-    _bridgeExecutorOverrideToken = [[RCTPackagerConnection sharedPackagerConnection]
-        addNotificationHandler:^(id params) {
-          if (params != (id)kCFNull && [params[@"debug"] boolValue]) {
-            weakBridge.executorClass = objc_lookUpClass("RCTWebSocketExecutor");
-          }
-        }
-                         queue:dispatch_get_main_queue()
-                     forMethod:@"reload"];
-  }
-
   if (numInitializedModules++ == 0) {
     reloadToken = [[RCTPackagerConnection sharedPackagerConnection]
         addNotificationHandler:^(id params) {
@@ -269,10 +253,6 @@ RCT_EXPORT_MODULE()
 {
   [super invalidate];
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  if ([self _isBridgeMode]) {
-    [[RCTPackagerConnection sharedPackagerConnection] removeHandler:_bridgeExecutorOverrideToken];
-  }
-
   if (--numInitializedModules == 0) {
     [[RCTPackagerConnection sharedPackagerConnection] removeHandler:reloadToken];
 #if RCT_DEV_MENU
@@ -308,15 +288,6 @@ RCT_EXPORT_MODULE()
 #else
   return false;
 #endif // RCT_ENABLE_INSPECTOR
-}
-
-- (BOOL)isRemoteDebuggingAvailable
-{
-  if (RCTTurboModuleEnabled()) {
-    return NO;
-  }
-  Class jsDebuggingExecutorClass = objc_lookUpClass("RCTWebSocketExecutor");
-  return (jsDebuggingExecutorClass != nil);
 }
 
 - (BOOL)isHotLoadingAvailable
@@ -363,30 +334,6 @@ RCT_EXPORT_METHOD(setIsSecondaryClickToShowDevMenuEnabled:(BOOL)enabled)
   return [[self settingForKey:kRCTDevSettingSecondClickToShowDevMenu] boolValue];
 }
 // macOS]
-
-RCT_EXPORT_METHOD(setIsDebuggingRemotely:(BOOL)enabled)
-{
-  [self _updateSettingWithValue:@(enabled) forKey:kRCTDevSettingIsDebuggingRemotely];
-  [self _remoteDebugSettingDidChange];
-}
-
-- (BOOL)isDebuggingRemotely
-{
-  return [[self settingForKey:kRCTDevSettingIsDebuggingRemotely] boolValue];
-}
-
-- (void)_remoteDebugSettingDidChange
-{
-  // This value is passed as a command-line argument, so fall back to reading from NSUserDefaults directly
-  NSString *executorOverride = [[NSUserDefaults standardUserDefaults] stringForKey:kRCTDevSettingExecutorOverrideClass];
-  Class executorOverrideClass = executorOverride ? NSClassFromString(executorOverride) : nil;
-  if (executorOverrideClass) {
-    self.executorClass = executorOverrideClass;
-  } else {
-    BOOL enabled = self.isRemoteDebuggingAvailable && self.isDebuggingRemotely;
-    self.executorClass = enabled ? objc_getClass("RCTWebSocketExecutor") : nil;
-  }
-}
 
 RCT_EXPORT_METHOD(setProfilingEnabled : (BOOL)enabled)
 {
@@ -486,7 +433,7 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
     // support for custom executors in the dev menu. But right now this is
     // needed to prevent overriding a custom executor with the default if a
     // custom executor has been set directly on the bridge
-    if (executorClass == Nil && self.bridge.executorClass != objc_lookUpClass("RCTWebSocketExecutor")) {
+    if (executorClass == Nil) {
       return;
     }
 
@@ -544,7 +491,6 @@ RCT_EXPORT_METHOD(openDebugger)
  */
 - (void)_synchronizeAllSettings
 {
-  [self _remoteDebugSettingDidChange];
   [self _profilingSettingDidChange];
 }
 
@@ -606,10 +552,6 @@ RCT_EXPORT_MODULE()	// [macOS]
 {
   return NO;
 }
-- (BOOL)isRemoteDebuggingAvailable
-{
-  return NO;
-}
 + (BOOL)requiresMainQueueSetup
 {
   return NO;
@@ -628,9 +570,6 @@ RCT_EXPORT_MODULE()	// [macOS]
 {
 }
 - (void)setHotLoadingEnabled:(BOOL)isHotLoadingEnabled
-{
-}
-- (void)setIsDebuggingRemotely:(BOOL)isDebuggingRemotelyEnabled
 {
 }
 - (void)setProfilingEnabled:(BOOL)isProfilingEnabled

@@ -8,15 +8,15 @@
  * @format
  */
 
-import type {HostInstance} from '../../Renderer/shims/ReactNativeTypes';
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {____TextStyle_Internal as TextStyleInternal} from '../../StyleSheet/StyleSheetTypes';
 import type {
-  PressEvent,
+  GestureResponderEvent,
+  NativeSyntheticEvent,
   ScrollEvent,
-  SyntheticEvent,
 } from '../../Types/CoreEventTypes';
 import type {ViewProps} from '../View/ViewPropTypes';
-import type {TextInputType} from './TextInput.flow';
+import type {TextInputInstance, TextInputType} from './TextInput.flow';
 
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import usePressability from '../../Pressability/usePressability';
@@ -35,15 +35,6 @@ import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {useCallback, useLayoutEffect, useRef, useState} from 'react';
-
-type ReactRefSetter<T> = {current: null | T, ...} | ((ref: null | T) => mixed);
-type TextInputInstance = HostInstance & {
-  +clear: () => void,
-  +isFocused: () => boolean,
-  +getNativeRef: () => ?HostInstance,
-  +setSelection: (start: number, end: number) => void,
-  +setGhostText: (ghostText: ?string) => void, // [macOS]
-};
 
 let AndroidTextInput;
 let AndroidTextInputCommands;
@@ -67,76 +58,82 @@ if (Platform.OS === 'android') {
     require('./RCTMultilineTextInputNativeComponent').Commands;
 }
 
-export type ChangeEvent = SyntheticEvent<
-  $ReadOnly<{|
-    eventCount: number,
-    target: number,
-    text: string,
-  |}>,
->;
+export type TextInputChangeEventData = $ReadOnly<{
+  eventCount: number,
+  target: number,
+  text: string,
+}>;
 
-export type TextInputEvent = SyntheticEvent<
-  $ReadOnly<{|
+export type TextInputChangeEvent =
+  NativeSyntheticEvent<TextInputChangeEventData>;
+
+export type TextInputEvent = NativeSyntheticEvent<
+  $ReadOnly<{
     eventCount: number,
     previousText: string,
-    range: $ReadOnly<{|
+    range: $ReadOnly<{
       start: number,
       end: number,
-    |}>,
+    }>,
     target: number,
     text: string,
-  |}>,
+  }>,
 >;
 
-export type ContentSizeChangeEvent = SyntheticEvent<
-  $ReadOnly<{|
-    target: number,
-    contentSize: $ReadOnly<{|
-      width: number,
-      height: number,
-    |}>,
-  |}>,
->;
+export type TextInputContentSizeChangeEventData = $ReadOnly<{
+  target: number,
+  contentSize: $ReadOnly<{
+    width: number,
+    height: number,
+  }>,
+}>;
 
-type TargetEvent = SyntheticEvent<
-  $ReadOnly<{|
-    target: number,
-  |}>,
->;
+export type TextInputContentSizeChangeEvent =
+  NativeSyntheticEvent<TextInputContentSizeChangeEventData>;
 
-export type BlurEvent = TargetEvent;
-export type FocusEvent = TargetEvent;
+export type TargetEvent = $ReadOnly<{
+  target: number,
+}>;
 
-type Selection = $ReadOnly<{|
+export type TextInputFocusEventData = TargetEvent;
+
+export type TextInputBlurEvent = NativeSyntheticEvent<TextInputFocusEventData>;
+export type TextInputFocusEvent = NativeSyntheticEvent<TextInputFocusEventData>;
+
+type Selection = $ReadOnly<{
   start: number,
   end: number,
-|}>;
+}>;
 
-export type SelectionChangeEvent = SyntheticEvent<
-  $ReadOnly<{|
-    selection: Selection,
-    target: number,
-  |}>,
->;
+export type TextInputSelectionChangeEventData = $ReadOnly<{
+  ...TargetEvent,
+  selection: Selection,
+}>;
 
-export type KeyPressEvent = SyntheticEvent<
-  $ReadOnly<{|
-    key: string,
-    target?: ?number,
-    eventCount?: ?number,
-  |}>,
->;
+export type TextInputSelectionChangeEvent =
+  NativeSyntheticEvent<TextInputSelectionChangeEventData>;
 
-export type EditingEvent = SyntheticEvent<
-  $ReadOnly<{|
-    eventCount: number,
-    text: string,
-    target: number,
-  |}>,
->;
+type TextInputKeyPressEventData = $ReadOnly<{
+  ...TargetEvent,
+  key: string,
+  target?: ?number,
+  eventCount?: ?number,
+}>;
+
+export type TextInputKeyPressEvent =
+  NativeSyntheticEvent<TextInputKeyPressEventData>;
+
+export type TextInputEndEditingEventData = $ReadOnly<{
+  ...TargetEvent,
+  eventCount: number,
+  text: string,
+}>;
+
+export type TextInputEditingEvent =
+  NativeSyntheticEvent<TextInputEndEditingEventData>;
 
 // [macOS macOS-only
-export type SettingChangeEvent = SyntheticEvent<
+export type SettingChangeEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     autoCorrectEnabled: boolean,
     spellCheckEnabled: boolean,
@@ -144,7 +141,7 @@ export type SettingChangeEvent = SyntheticEvent<
   |}>,
 >;
 
-export type PasteEvent = SyntheticEvent<
+export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     dataTransfer: {|
       files: $ReadOnlyArray<{|
@@ -199,26 +196,31 @@ type DataDetectorTypesType =
 // macOS]
 
 export type KeyboardType =
-  // Cross Platform
   | 'default'
   | 'email-address'
   | 'numeric'
   | 'phone-pad'
   | 'number-pad'
   | 'decimal-pad'
-  | 'url'
-  // iOS-only
+  | 'url';
+
+export type KeyboardTypeIOS =
   | 'ascii-capable'
   | 'numbers-and-punctuation'
   | 'name-phone-pad'
   | 'twitter'
   | 'web-search'
   // iOS 10+ only
-  | 'ascii-capable-number-pad'
-  // Android-only
-  | 'visible-password';
+  | 'ascii-capable-number-pad';
 
-export type InputMode =
+export type KeyboardTypeAndroid = 'visible-password';
+
+export type KeyboardTypeOptions =
+  | KeyboardType
+  | KeyboardTypeIOS
+  | KeyboardTypeAndroid;
+
+export type InputModeOptions =
   | 'none'
   | 'text'
   | 'decimal'
@@ -228,23 +230,22 @@ export type InputMode =
   | 'email'
   | 'url';
 
-export type ReturnKeyType =
-  // Cross Platform
-  | 'done'
-  | 'go'
-  | 'next'
-  | 'search'
-  | 'send'
-  // Android-only
-  | 'none'
-  | 'previous'
-  // iOS-only
+export type ReturnKeyType = 'done' | 'go' | 'next' | 'search' | 'send';
+
+export type ReturnKeyTypeIOS =
   | 'default'
   | 'emergency-call'
   | 'google'
   | 'join'
   | 'route'
   | 'yahoo';
+
+export type ReturnKeyTypeAndroid = 'none' | 'previous';
+
+export type ReturnKeyTypeOptions =
+  | ReturnKeyType
+  | ReturnKeyTypeIOS
+  | ReturnKeyTypeAndroid;
 
 export type SubmitBehavior = 'submit' | 'blurAndSubmit' | 'newline';
 
@@ -298,21 +299,20 @@ export type TextContentType =
   | 'flightNumber'
   | 'shipmentTrackingNumber';
 
-export type enterKeyHintType =
-  // Cross Platform
-  | 'done'
-  | 'go'
-  | 'next'
-  | 'search'
-  | 'send'
-  // Android-only
-  | 'previous'
-  // iOS-only
-  | 'enter';
+export type EnterKeyHintTypeAndroid = 'previous';
+
+export type EnterKeyHintTypeIOS = 'enter';
+
+export type EnterKeyHintType = 'done' | 'go' | 'next' | 'search' | 'send';
+
+export type EnterKeyHintTypeOptions =
+  | EnterKeyHintType
+  | EnterKeyHintTypeAndroid
+  | EnterKeyHintTypeIOS;
 
 type PasswordRules = string;
 
-type IOSProps = $ReadOnly<{|
+export type TextInputIOSProps = $ReadOnly<{
   /**
    * If true, the keyboard shortcuts (undo/redo and copy buttons) are disabled. The default value is false.
    * @platform ios
@@ -450,7 +450,7 @@ type IOSProps = $ReadOnly<{|
    * @platform ios
    */
   smartInsertDelete?: ?boolean,
-|}>;
+}>;
 
 // [macOS
 type MacOSProps = $ReadOnly<{|
@@ -541,7 +541,7 @@ type MacOSProps = $ReadOnly<{|
 |}>;
 // macOS]
 
-type AndroidProps = $ReadOnly<{|
+export type TextInputAndroidProps = $ReadOnly<{
   /**
    * When provided it will set the color of the cursor (or "caret") in the component.
    * Unlike the behavior of `selectionColor` the cursor color will be set independently
@@ -626,16 +626,16 @@ type AndroidProps = $ReadOnly<{|
    * @platform android
    */
   underlineColorAndroid?: ?ColorValue,
-|}>;
+}>;
 
 export type PasteType = 'fileUrl' | 'image' | 'string'; // [macOS]
 export type PastedTypesType = PasteType | $ReadOnlyArray<PasteType>; // [macOS]
 
-export type Props = $ReadOnly<{|
-  ...$Diff<ViewProps, $ReadOnly<{|style: ?ViewStyleProp|}>>,
-  ...IOSProps,
+export type TextInputProps = $ReadOnly<{
+  ...$Diff<ViewProps, $ReadOnly<{style: ?ViewStyleProp}>>,
+  ...TextInputIOSProps,
   ...MacOSProps, // [macOS]
-  ...AndroidProps,
+  ...TextInputAndroidProps,
 
   /**
    * Can tell `TextInput` to automatically capitalize certain characters.
@@ -823,7 +823,7 @@ export type Props = $ReadOnly<{|
    */
   editable?: ?boolean,
 
-  forwardedRef?: ?ReactRefSetter<TextInputInstance>,
+  forwardedRef?: ?React.RefSetter<TextInputInstance>,
 
   /**
    * `enterKeyHint` defines what action label (or icon) to present for the enter key on virtual keyboards.
@@ -838,7 +838,7 @@ export type Props = $ReadOnly<{|
    * - `search`
    * - `send`
    */
-  enterKeyHint?: ?enterKeyHintType,
+  enterKeyHint?: ?EnterKeyHintTypeOptions,
 
   /**
    * `inputMode` works like the `inputmode` attribute in HTML, it determines which
@@ -855,7 +855,7 @@ export type Props = $ReadOnly<{|
    * - `email`
    * - `url`
    */
-  inputMode?: ?InputMode,
+  inputMode?: ?InputModeOptions,
 
   /**
    * Determines which keyboard to open, e.g.`numeric`.
@@ -887,7 +887,7 @@ export type Props = $ReadOnly<{|
    * - `visible-password`
    *
    */
-  keyboardType?: ?KeyboardType,
+  keyboardType?: ?KeyboardTypeOptions,
 
   /**
    * Specifies largest possible scale a font can reach when `allowFontScaling` is enabled.
@@ -913,12 +913,12 @@ export type Props = $ReadOnly<{|
   /**
    * Callback that is called when the text input is blurred.
    */
-  onBlur?: ?(e: BlurEvent) => mixed,
+  onBlur?: ?(e: TextInputBlurEvent) => mixed,
 
   /**
    * Callback that is called when the text input's text changes.
    */
-  onChange?: ?(e: ChangeEvent) => mixed,
+  onChange?: ?(e: TextInputChangeEvent) => mixed,
 
   /**
    * Callback that is called when the text input's text changes.
@@ -933,17 +933,17 @@ export type Props = $ReadOnly<{|
    *
    * Only called for multiline text inputs.
    */
-  onContentSizeChange?: ?(e: ContentSizeChangeEvent) => mixed,
+  onContentSizeChange?: ?(e: TextInputContentSizeChangeEvent) => mixed,
 
   /**
    * Callback that is called when text input ends.
    */
-  onEndEditing?: ?(e: EditingEvent) => mixed,
+  onEndEditing?: ?(e: TextInputEditingEvent) => mixed,
 
   /**
    * Callback that is called when the text input is focused.
    */
-  onFocus?: ?(e: FocusEvent) => void, // [macOS]
+  onFocus?: ?(e: TextInputFocusEvent) => void, // [macOS]
 
   /**
    * Callback that is called when a key is pressed.
@@ -952,35 +952,35 @@ export type Props = $ReadOnly<{|
    * the typed-in character otherwise including `' '` for space.
    * Fires before `onChange` callbacks.
    */
-  onKeyPress?: ?(e: KeyPressEvent) => mixed,
+  onKeyPress?: ?(e: TextInputKeyPressEvent) => mixed,
 
   /**
    * Called when a single tap gesture is detected.
    */
-  onPress?: ?(event: PressEvent) => mixed,
+  onPress?: ?(event: GestureResponderEvent) => mixed,
 
   /**
    * Called when a touch is engaged.
    */
-  onPressIn?: ?(event: PressEvent) => mixed,
+  onPressIn?: ?(event: GestureResponderEvent) => mixed,
 
   /**
    * Called when a touch is released.
    */
-  onPressOut?: ?(event: PressEvent) => mixed,
+  onPressOut?: ?(event: GestureResponderEvent) => mixed,
 
   /**
    * Callback that is called when the text input selection is changed.
    * This will be called with
    * `{ nativeEvent: { selection: { start, end } } }`.
    */
-  onSelectionChange?: ?(e: SelectionChangeEvent) => mixed,
+  onSelectionChange?: ?(e: TextInputSelectionChangeEvent) => mixed,
 
   /**
    * Callback that is called when the text input's submit button is pressed.
    * Invalid if `multiline={true}` is specified.
    */
-  onSubmitEditing?: ?(e: EditingEvent) => mixed,
+  onSubmitEditing?: ?(e: TextInputEditingEvent) => mixed,
 
   /**
    * Invoked on content scroll with `{ nativeEvent: { contentOffset: { x, y } } }`.
@@ -1038,7 +1038,7 @@ export type Props = $ReadOnly<{|
    * - `route`
    * - `yahoo`
    */
-  returnKeyType?: ?ReturnKeyType,
+  returnKeyType?: ?ReturnKeyTypeOptions,
 
   /**
    * If `true`, the text input obscures the text entered so that sensitive text
@@ -1050,10 +1050,10 @@ export type Props = $ReadOnly<{|
    * The start and end of the text input's selection. Set start and end to
    * the same value to position the cursor.
    */
-  selection?: ?$ReadOnly<{|
+  selection?: ?$ReadOnly<{
     start: number,
     end?: ?number,
-  |}>,
+  }>,
 
   /**
    * The highlight and cursor color of the text input.
@@ -1134,7 +1134,7 @@ export type Props = $ReadOnly<{|
    * unwanted edits without flicker.
    */
   value?: ?Stringish,
-|}>;
+}>;
 
 type ViewCommands = $NonMaybeType<
   | typeof AndroidTextInputCommands
@@ -1142,10 +1142,10 @@ type ViewCommands = $NonMaybeType<
   | typeof RCTSinglelineTextInputNativeCommands,
 >;
 
-type LastNativeSelection = {|
+type LastNativeSelection = {
   selection: Selection,
   mostRecentEventCount: number,
-|};
+};
 
 const emptyFunctionThatReturnsTrue = () => true;
 
@@ -1162,11 +1162,11 @@ function useTextInputStateSynchronization_STATE({
   text,
   viewCommands,
 }: {
-  props: Props,
+  props: TextInputProps,
   mostRecentEventCount: number,
   selection: ?Selection,
-  inputRef: React.RefObject<null | HostInstance>,
-  text: string,
+  inputRef: React.RefObject<null | TextInputInstance>,
+  text?: string,
   viewCommands: ViewCommands,
 }): {
   setLastNativeText: string => void,
@@ -1243,11 +1243,11 @@ function useTextInputStateSynchronization_REFS({
   text,
   viewCommands,
 }: {
-  props: Props,
+  props: TextInputProps,
   mostRecentEventCount: number,
   selection: ?Selection,
-  inputRef: React.RefObject<null | HostInstance>,
-  text: string,
+  inputRef: React.RefObject<null | TextInputInstance>,
+  text?: string,
   viewCommands: ViewCommands,
 }): {
   setLastNativeText: string => void,
@@ -1442,7 +1442,7 @@ function useTextInputStateSynchronization_REFS({
  * - `'transitInformation'`
  *
  */
-function InternalTextInput(props: Props): React.Node {
+function InternalTextInput(props: TextInputProps): React.Node {
   const {
     'aria-busy': ariaBusy,
     'aria-checked': ariaChecked,
@@ -1459,7 +1459,7 @@ function InternalTextInput(props: Props): React.Node {
     ...otherProps
   } = props;
 
-  const inputRef = useRef<null | HostInstance>(null);
+  const inputRef = useRef<null | TextInputInstance>(null);
 
   const selection: ?Selection =
     propsSelection == null
@@ -1474,7 +1474,7 @@ function InternalTextInput(props: Props): React.Node {
       ? props.value
       : typeof props.defaultValue === 'string'
         ? props.defaultValue
-        : '';
+        : undefined;
 
   const viewCommands =
     AndroidTextInputCommands ||
@@ -1514,7 +1514,8 @@ function InternalTextInput(props: Props): React.Node {
   }, []);
 
   const setLocalRef = useCallback(
-    (instance: TextInputInstance | null) => {
+    (instance: HostInstance | null) => {
+      // $FlowExpectedError[incompatible-type]
       inputRef.current = instance;
 
       /*
@@ -1540,7 +1541,7 @@ function InternalTextInput(props: Props): React.Node {
         before we can get to the long term breaking change.
       */
       if (instance != null) {
-        // $FlowFixMe[incompatible-use] - See the explanation above.
+        // $FlowFixMe[prop-missing] - See the explanation above.
         Object.assign(instance, {
           clear(): void {
             if (inputRef.current != null) {
@@ -1557,7 +1558,7 @@ function InternalTextInput(props: Props): React.Node {
           isFocused(): boolean {
             return TextInputState.currentlyFocusedInput() === inputRef.current;
           },
-          getNativeRef(): ?HostInstance {
+          getNativeRef(): ?TextInputInstance {
             return inputRef.current;
           },
           setSelection(start: number, end: number): void {
@@ -1584,9 +1585,10 @@ function InternalTextInput(props: Props): React.Node {
     [mostRecentEventCount, viewCommands],
   );
 
-  const ref = useMergeRefs<TextInputInstance>(setLocalRef, props.forwardedRef);
+  // $FlowExpectedError[incompatible-call]
+  const ref = useMergeRefs<HostInstance>(setLocalRef, props.forwardedRef);
 
-  const _onChange = (event: ChangeEvent) => {
+  const _onChange = (event: TextInputChangeEvent) => {
     const currentText = event.nativeEvent.text;
     props.onChange && props.onChange(event);
     props.onChangeText && props.onChangeText(currentText);
@@ -1605,7 +1607,7 @@ function InternalTextInput(props: Props): React.Node {
     setMostRecentEventCount(event.nativeEvent.eventCount);
   };
 
-  const _onSelectionChange = (event: SelectionChangeEvent) => {
+  const _onSelectionChange = (event: TextInputSelectionChangeEvent) => {
     props.onSelectionChange && props.onSelectionChange(event);
 
     if (inputRef.current == null) {
@@ -1620,14 +1622,14 @@ function InternalTextInput(props: Props): React.Node {
     });
   };
 
-  const _onFocus = (event: FocusEvent) => {
+  const _onFocus = (event: TextInputFocusEvent) => {
     TextInputState.focusInput(inputRef.current);
     if (props.onFocus) {
       props.onFocus(event);
     }
   };
 
-  const _onBlur = (event: BlurEvent) => {
+  const _onBlur = (event: TextInputBlurEvent) => {
     TextInputState.blurInput(inputRef.current);
     if (props.onBlur) {
       props.onBlur(event);
@@ -1681,7 +1683,7 @@ function InternalTextInput(props: Props): React.Node {
   const config = React.useMemo(
     () => ({
       hitSlop,
-      onPress: (event: PressEvent) => {
+      onPress: (event: GestureResponderEvent) => {
         onPress?.(event);
         if (editable !== false) {
           if (inputRef.current != null) {
@@ -1776,8 +1778,8 @@ function InternalTextInput(props: Props): React.Node {
 
     textInput = (
       <RCTTextInputView
-        // $FlowFixMe[incompatible-type] - Figure out imperative + forward refs.
-        ref={ref}
+        // Figure out imperative + forward refs.
+        ref={(ref: $FlowFixMe)}
         {...otherProps}
         {...eventHandlers}
         accessibilityState={_accessibilityState}
@@ -1788,6 +1790,7 @@ function InternalTextInput(props: Props): React.Node {
         focusable={tabIndex !== undefined ? !tabIndex : focusable}
         mostRecentEventCount={mostRecentEventCount}
         nativeID={id ?? props.nativeID}
+        numberOfLines={props.rows ?? props.numberOfLines}
         onBlur={_onBlur}
         onChange={_onChange}
         onContentSizeChange={props.onContentSizeChange}
@@ -1839,8 +1842,8 @@ function InternalTextInput(props: Props): React.Node {
        * match up exactly with the props for TextInput. This will need to get
        * fixed */
       <AndroidTextInput
-        // $FlowFixMe[incompatible-type] - Figure out imperative + forward refs.
-        ref={ref}
+        // Figure out imperative + forward refs.
+        ref={(ref: $FlowFixMe)}
         {...otherProps}
         {...colorProps}
         {...eventHandlers}
@@ -1977,7 +1980,6 @@ const autoCompleteWebToTextContentTypeMap = {
 const ExportedForwardRef: component(
   ref: React.RefSetter<TextInputInstance>,
   ...props: React.ElementConfig<typeof InternalTextInput>
-  // $FlowFixMe[incompatible-call]
 ) = React.forwardRef(function TextInput(
   {
     allowFontScaling = true,
@@ -1994,7 +1996,7 @@ const ExportedForwardRef: component(
     keyboardType,
     ...restProps
   },
-  forwardedRef: ReactRefSetter<TextInputInstance>,
+  forwardedRef: React.RefSetter<TextInputInstance>,
 ) {
   return (
     <InternalTextInput
@@ -2049,16 +2051,16 @@ ExportedForwardRef.State = {
   onTextInputBlur: TextInputState.blurInput, // [macOS]
 };
 
-export type TextInputComponentStatics = $ReadOnly<{|
-  State: $ReadOnly<{|
+export type TextInputComponentStatics = $ReadOnly<{
+  State: $ReadOnly<{
     currentlyFocusedInput: typeof TextInputState.currentlyFocusedInput,
     currentlyFocusedField: typeof TextInputState.currentlyFocusedField,
     focusTextInput: typeof TextInputState.focusTextInput,
     blurTextInput: typeof TextInputState.blurTextInput,
     onTextInputFocus: typeof TextInputState.focusInput, // [macOS]
     onTextInputBlur: typeof TextInputState.blurInput, // [macOS]
-  |}>,
-|}>;
+  }>,
+}>;
 
 const styles = StyleSheet.create({
   multilineDefault: {
@@ -2077,4 +2079,4 @@ const verticalAlignToTextAlignVerticalMap = {
 };
 
 // $FlowFixMe[unclear-type] Unclear type. Using `any` type is not safe.
-module.exports = ((ExportedForwardRef: any): TextInputType);
+export default ExportedForwardRef as any as TextInputType;

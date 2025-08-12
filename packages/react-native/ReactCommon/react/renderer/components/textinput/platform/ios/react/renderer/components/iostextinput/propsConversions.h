@@ -145,6 +145,13 @@ static TextInputTraits convertRawProp(
       defaultTraits.grammarCheck);
 #endif // macOS]
 
+  traits.dataDetectorTypes = convertRawProp(
+      context,
+      rawProps,
+      "dataDetectorTypes",
+      sourceTraits.dataDetectorTypes,
+      defaultTraits.dataDetectorTypes);
+
   return traits;
 }
 

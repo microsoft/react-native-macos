@@ -19,6 +19,6 @@ if (!global.alert) {
     // Require Alert on demand. Requiring it too early can lead to issues
     // with things like Platform not being fully initialized.
     // @flow // [macOS]
-    require('../Alert/Alert').alert('Alert', '' + text);
+    require('../Alert/Alert').default.alert('Alert', '' + text);
   };
 }

@@ -70,60 +70,61 @@ const packageJsonPath = path.join(
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath));
 const REACT_NATIVE = packageJson.name;
 
-const MODULES_PROTOCOLS_H_TEMPLATE_PATH = path.join(
+const TEMPLATES_FOLDER_PATH = path.join(
   REACT_NATIVE_PACKAGE_ROOT_FOLDER,
   'scripts',
   'codegen',
   'templates',
+);
+
+const MODULES_PROTOCOLS_H_TEMPLATE_PATH = path.join(
+  TEMPLATES_FOLDER_PATH,
   'RCTModulesConformingToProtocolsProviderH.template',
 );
 
 const MODULES_PROTOCOLS_MM_TEMPLATE_PATH = path.join(
-  REACT_NATIVE_PACKAGE_ROOT_FOLDER,
-  'scripts',
-  'codegen',
-  'templates',
+  TEMPLATES_FOLDER_PATH,
   'RCTModulesConformingToProtocolsProviderMM.template',
 );
 
 const THIRD_PARTY_COMPONENTS_H_TEMPLATE_PATH = path.join(
-  REACT_NATIVE_PACKAGE_ROOT_FOLDER,
-  'scripts',
-  'codegen',
-  'templates',
+  TEMPLATES_FOLDER_PATH,
   'RCTThirdPartyComponentsProviderH.template',
 );
 
 const THIRD_PARTY_COMPONENTS_MM_TEMPLATE_PATH = path.join(
-  REACT_NATIVE_PACKAGE_ROOT_FOLDER,
-  'scripts',
-  'codegen',
-  'templates',
+  TEMPLATES_FOLDER_PATH,
   'RCTThirdPartyComponentsProviderMM.template',
 );
 
+const MODULE_PROVIDERS_H_TEMPLATE_PATH = path.join(
+  TEMPLATES_FOLDER_PATH,
+  'RCTModuleProvidersH.template',
+);
+
+const MODULE_PROVIDERS_MM_TEMPLATE_PATH = path.join(
+  TEMPLATES_FOLDER_PATH,
+  'RCTModuleProvidersMM.template',
+);
+
 const APP_DEPENDENCY_PROVIDER_H_TEMPLATE_PATH = path.join(
-  REACT_NATIVE_PACKAGE_ROOT_FOLDER,
-  'scripts',
-  'codegen',
-  'templates',
+  TEMPLATES_FOLDER_PATH,
   'RCTAppDependencyProviderH.template',
 );
 
 const APP_DEPENDENCY_PROVIDER_MM_TEMPLATE_PATH = path.join(
-  REACT_NATIVE_PACKAGE_ROOT_FOLDER,
-  'scripts',
-  'codegen',
-  'templates',
+  TEMPLATES_FOLDER_PATH,
   'RCTAppDependencyProviderMM.template',
 );
 
 const APP_DEPENDENCY_PROVIDER_PODSPEC_TEMPLATE_PATH = path.join(
-  REACT_NATIVE_PACKAGE_ROOT_FOLDER,
-  'scripts',
-  'codegen',
-  'templates',
+  TEMPLATES_FOLDER_PATH,
   'ReactAppDependencyProvider.podspec.template',
+);
+
+const REACT_CODEGEN_PODSPEC_TEMPLATE_PATH = path.join(
+  TEMPLATES_FOLDER_PATH,
+  'ReactCodegen.podspec.template',
 );
 
 const codegenLog = (text, info = false) => {
@@ -686,6 +687,70 @@ function generateAppDependencyProvider(outputDir) {
   codegenLog(`Generated podspec: ${finalPathPodspec}`);
 }
 
+function generateRCTModuleProviders(
+  projectRoot,
+  pkgJson,
+  libraries,
+  outputDir,
+) {
+  fs.mkdirSync(outputDir, {recursive: true});
+  // Generate Header File
+  codegenLog('Generating RCTModulesProvider.h');
+  const templateH = fs.readFileSync(MODULE_PROVIDERS_H_TEMPLATE_PATH, 'utf8');
+  const finalPathH = path.join(outputDir, 'RCTModuleProviders.h');
+  fs.writeFileSync(finalPathH, templateH);
+  codegenLog(`Generated artifact: ${finalPathH}`);
+
+  codegenLog('Generating RCTModuleProviders.mm');
+  let modulesInLibraries = {};
+
+  let app = pkgJson.codegenConfig
+    ? {config: pkgJson.codegenConfig, libraryPath: projectRoot}
+    : null;
+  libraries
+    .concat(app)
+    .filter(Boolean)
+    .forEach(({config, libraryPath}) => {
+      if (
+        isReactNativeCoreLibrary(config.name) ||
+        config.type === 'components'
+      ) {
+        return;
+      }
+
+      const libraryName = JSON.parse(
+        fs.readFileSync(path.join(libraryPath, 'package.json')),
+      ).name;
+      if (config.ios?.modulesProvider) {
+        modulesInLibraries[libraryName] = Object.keys(
+          config.ios?.modulesProvider,
+        ).map(moduleName => {
+          return {
+            moduleName,
+            className: config.ios?.modulesProvider[moduleName],
+          };
+        });
+      }
+    });
+
+  const modulesMapping = Object.keys(modulesInLibraries)
+    .flatMap(library => {
+      const modules = modulesInLibraries[library];
+      return modules.map(({moduleName, className}) => {
+        return `\t\t@"${moduleName}": @"${className}", // ${library}`;
+      });
+    })
+    .join('\n');
+
+  // Generate implementation file
+  const templateMM = fs
+    .readFileSync(MODULE_PROVIDERS_MM_TEMPLATE_PATH, 'utf8')
+    .replace(/{moduleMapping}/, modulesMapping);
+  const finalPathMM = path.join(outputDir, 'RCTModuleProviders.mm');
+  fs.writeFileSync(finalPathMM, templateMM);
+  codegenLog(`Generated artifact: ${finalPathMM}`);
+}
+
 function generateRCTThirdPartyComponents(libraries, outputDir) {
   fs.mkdirSync(outputDir, {recursive: true});
   // Generate Header File
@@ -888,6 +953,70 @@ function generateFBReactNativeSpecIOS(projectRoot /*: string */) /*: void*/ {
   generateCode('', fbReactNativeSchemaInfo, false, ios);
 }
 
+function generateReactCodegenPodspec(
+  appPath,
+  appPkgJson,
+  outputPath,
+  baseOutputPath,
+) {
+  const inputFiles = getInputFiles(appPath, appPkgJson);
+  const codegenScript = codegenScripts(appPath, baseOutputPath);
+  const template = fs.readFileSync(REACT_CODEGEN_PODSPEC_TEMPLATE_PATH, 'utf8');
+  const finalPodspec = template
+    .replace(/{react-native-version}/, packageJson.version)
+    .replace(/{input-files}/, inputFiles)
+    .replace(/{codegen-script}/, codegenScript);
+  const finalPathPodspec = path.join(outputPath, 'ReactCodegen.podspec');
+  fs.writeFileSync(finalPathPodspec, finalPodspec);
+  codegenLog(`Generated podspec: ${finalPathPodspec}`);
+}
+
+function getInputFiles(appPath, appPkgJSon) {
+  const jsSrcsDir = appPkgJSon.codegenConfig?.jsSrcsDir;
+  if (!jsSrcsDir) {
+    return '[]';
+  }
+
+  const xcodeproj = String(
+    execSync(`find ${appPath} -type d -name "*.xcodeproj"`),
+  )
+    .trim()
+    .split('\n')
+    .filter(
+      projectPath =>
+        !projectPath.includes('/Pods/') && // exclude Pods/Pods.xcodeproj
+        !projectPath.includes('/node_modules/'), // exclude all the xcodeproj in node_modules of libraries
+    )[0];
+  const jsFiles = '-name "Native*.js" -or -name "*NativeComponent.js"';
+  const tsFiles = '-name "Native*.ts" -or -name "*NativeComponent.ts"';
+  const findCommand = `find ${path.join(appPath, jsSrcsDir)} -type f \\( ${jsFiles} -or ${tsFiles} \\)`;
+  const list = String(execSync(findCommand))
+    .trim()
+    .split('\n')
+    .sort()
+    .map(filepath => `"\${PODS_ROOT}/${path.relative(xcodeproj, filepath)}"`)
+    .join(',\n');
+  return `[${list}]`;
+}
+
+function codegenScripts(appPath, outputPath) {
+  const relativeAppPath = path.relative(outputPath, appPath);
+  return `<<-SCRIPT
+pushd "$PODS_ROOT/../" > /dev/null
+RCT_SCRIPT_POD_INSTALLATION_ROOT=$(pwd)
+popd >/dev/null
+
+export RCT_SCRIPT_RN_DIR="$RCT_SCRIPT_POD_INSTALLATION_ROOT/${path.relative(outputPath, REACT_NATIVE_PACKAGE_ROOT_FOLDER)}"
+export RCT_SCRIPT_APP_PATH="$RCT_SCRIPT_POD_INSTALLATION_ROOT/${relativeAppPath.length === 0 ? '.' : relativeAppPath}",
+export RCT_SCRIPT_OUTPUT_DIR="$RCT_SCRIPT_POD_INSTALLATION_ROOT",
+export RCT_SCRIPT_TYPE="withCodegenDiscovery",
+
+SCRIPT_PHASES_SCRIPT="$RCT_SCRIPT_RN_DIR/scripts/react_native_pods_utils/script_phases.sh"
+WITH_ENVIRONMENT="$RCT_SCRIPT_RN_DIR/scripts/xcode/with-environment.sh"
+/bin/sh -c "$WITH_ENVIRONMENT $SCRIPT_PHASES_SCRIPT"
+SCRIPT`;
+}
+
 // Execute
 
 /**
@@ -900,11 +1029,12 @@ function generateFBReactNativeSpecIOS(projectRoot /*: string */) /*: void*/ {
  * @parameter projectRoot: the directory with the app source code, where the package.json lives.
  * @parameter baseOutputPath: the base output path for the CodeGen.
  * @parameter targetPlatform: the target platform. Supported values: 'android', 'ios', 'all'.
+ * @parameter source: the source that is invoking codegen. Supported values: 'app', 'library'.
  * @throws If it can't find a config file for react-native.
  * @throws If it can't find a CodeGen configuration in the file.
  * @throws If it can't find a cli for the CodeGen.
  */
-function execute(projectRoot, targetPlatform, baseOutputPath) {
+function execute(projectRoot, targetPlatform, baseOutputPath, source) {
   try {
     codegenLog(`Analyzing ${path.join(projectRoot, 'package.json')}`);
 
@@ -952,9 +1082,19 @@ function execute(projectRoot, targetPlatform, baseOutputPath) {
         platform,
       );
 
-      generateRCTThirdPartyComponents(libraries, outputPath);
-      generateCustomURLHandlers(libraries, outputPath);
-      generateAppDependencyProvider(outputPath);
+      if (source === 'app') {
+        // These components are only required by apps, not by libraries
+        generateRCTThirdPartyComponents(libraries, outputPath);
+        generateRCTModuleProviders(projectRoot, pkgJson, libraries, outputPath);
+        generateCustomURLHandlers(libraries, outputPath);
+        generateAppDependencyProvider(outputPath);
+      }
+      generateReactCodegenPodspec(
+        projectRoot,
+        pkgJson,
+        outputPath,
+        baseOutputPath,
+      );
 
       cleanupEmptyFilesAndFolders(outputPath);
     }

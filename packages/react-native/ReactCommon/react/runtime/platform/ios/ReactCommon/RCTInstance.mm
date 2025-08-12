@@ -129,10 +129,29 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
           }];
     }
     _launchOptions = launchOptions;
+    if (ReactNativeFeatureFlags::enableJSRuntimeGCOnMemoryPressureOnIOS()) {
+#if !TARGET_OS_OSX // [macOS]
+      [[NSNotificationCenter defaultCenter] addObserver:self
+                                               selector:@selector(_handleMemoryWarning)
+                                                   name:UIApplicationDidReceiveMemoryWarningNotification
+                                                object:nil];
+#endif // [macOS]
+    }
 
     [self _start];
   }
   return self;
+}
+
+- (void)dealloc
+{
+  if (ReactNativeFeatureFlags::enableJSRuntimeGCOnMemoryPressureOnIOS()) {
+#if !TARGET_OS_OSX // [macOS]
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIApplicationDidReceiveMemoryWarningNotification
+                                                  object:nil];
+#endif // [macOS]
+  }
 }
 
 - (void)callFunctionOnJSModule:(NSString *)moduleName method:(NSString *)method args:(NSArray *)args
@@ -217,6 +236,14 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
   }
 
   return @[];
+}
+
+- (nullable id<RCTModuleProvider>)getModuleProvider:(const char *)name
+{
+  if ([_appTMMDelegate respondsToSelector:@selector(getModuleProvider:)]) {
+    return [_appTMMDelegate getModuleProvider:name];
+  }
+  return nil;
 }
 
 #pragma mark - Private
@@ -533,6 +560,15 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
     JS::NativeExceptionsManager::ExceptionData jsErrorData{errorData};
     id<NativeExceptionsManagerSpec> exceptionsManager = [_turboModuleManager moduleForName:"ExceptionsManager"];
     [exceptionsManager reportException:jsErrorData];
+  }
+}
+
+- (void)_handleMemoryWarning
+{
+  if (_valid) {
+    // Memory Pressure Unloading Level 15 represents TRIM_MEMORY_RUNNING_CRITICAL.
+    static constexpr int unloadLevel = 15;
+    _reactInstance->handleMemoryPressureJs(unloadLevel);
   }
 }
 
