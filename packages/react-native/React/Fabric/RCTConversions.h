@@ -83,6 +83,7 @@ inline UIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
   if ((accessibilityTraits & AccessibilityTraits::Image) != AccessibilityTraits::None) {
     result |= UIAccessibilityTraitImage;
   }
+  // not in macos
   if ((accessibilityTraits & AccessibilityTraits::Selected) != AccessibilityTraits::None) {
     result |= UIAccessibilityTraitSelected;
   }
@@ -98,24 +99,29 @@ inline UIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
   if ((accessibilityTraits & AccessibilityTraits::SummaryElement) != AccessibilityTraits::None) {
     result |= UIAccessibilityTraitSummaryElement;
   }
+  // not on macos
   if ((accessibilityTraits & AccessibilityTraits::NotEnabled) != AccessibilityTraits::None) {
     result |= UIAccessibilityTraitNotEnabled;
   }
+  // not on macos
   if ((accessibilityTraits & AccessibilityTraits::UpdatesFrequently) != AccessibilityTraits::None) {
     result |= UIAccessibilityTraitUpdatesFrequently;
   }
   if ((accessibilityTraits & AccessibilityTraits::SearchField) != AccessibilityTraits::None) {
     result |= UIAccessibilityTraitSearchField;
   }
+  // not on macos
   if ((accessibilityTraits & AccessibilityTraits::StartsMediaSession) != AccessibilityTraits::None) {
     result |= UIAccessibilityTraitStartsMediaSession;
   }
   if ((accessibilityTraits & AccessibilityTraits::Adjustable) != AccessibilityTraits::None) {
     result |= UIAccessibilityTraitAdjustable;
   }
+  // not on macos
   if ((accessibilityTraits & AccessibilityTraits::AllowsDirectInteraction) != AccessibilityTraits::None) {
     result |= UIAccessibilityTraitAllowsDirectInteraction;
   }
+  // not on macOS
   if ((accessibilityTraits & AccessibilityTraits::CausesPageTurn) != AccessibilityTraits::None) {
     result |= UIAccessibilityTraitCausesPageTurn;
   }
@@ -136,6 +142,7 @@ inline NSAccessibilityRole RCTUIAccessibilityRoleFromAccessibilityTraits(
 {
   using AccessibilityTraits = facebook::react::AccessibilityTraits;
   if ((accessibilityTraits & AccessibilityTraits::Button) != AccessibilityTraits::None) {
+    // check
     if ((accessibilityTraits & AccessibilityTraits::Bar) != AccessibilityTraits::None) {
       return NSAccessibilityToolbarRole;
     }
@@ -145,6 +152,7 @@ inline NSAccessibilityRole RCTUIAccessibilityRoleFromAccessibilityTraits(
     if ((accessibilityTraits & AccessibilityTraits::Menu) != AccessibilityTraits::None) {
       return NSAccessibilityMenuButtonRole;
     }
+    // check end
     return NSAccessibilityButtonRole;
   }
   if ((accessibilityTraits & AccessibilityTraits::Link) != AccessibilityTraits::None) {
@@ -162,6 +170,9 @@ inline NSAccessibilityRole RCTUIAccessibilityRoleFromAccessibilityTraits(
   if ((accessibilityTraits & AccessibilityTraits::SummaryElement) != AccessibilityTraits::None) {
     return NSAccessibilityStaticTextRole;
   }
+  if ((accessibilityTraits & AccessibilityTraits::UpdatesFrequently) != AccessibilityTraits::None) {
+    return NSAccessibilityProgressIndicatorRole;
+  }
   if ((accessibilityTraits & AccessibilityTraits::SearchField) != AccessibilityTraits::None) {
     return NSAccessibilityTextFieldRole;
   }
@@ -174,12 +185,11 @@ inline NSAccessibilityRole RCTUIAccessibilityRoleFromAccessibilityTraits(
   if ((accessibilityTraits & AccessibilityTraits::Switch) != AccessibilityTraits::None) {
     return NSAccessibilityCheckBoxRole;
   }
-  if ((accessibilityTraits & AccessibilityTraits::UpdatesFrequently) != AccessibilityTraits::None) {
-    return NSAccessibilityProgressIndicatorRole;
-  }
+  // macos only
   if ((accessibilityTraits & AccessibilityTraits::ComboBox) != AccessibilityTraits::None) {
     return NSAccessibilityComboBoxRole;
   }
+  // macos only
   if ((accessibilityTraits & AccessibilityTraits::Menu) != AccessibilityTraits::None) {
     if ((accessibilityTraits & AccessibilityTraits::Bar) != AccessibilityTraits::None) {
       return NSAccessibilityMenuBarRole;
@@ -201,11 +211,16 @@ inline NSAccessibilityRole RCTUIAccessibilityRoleFromAccessibilityTraits(
   if ((accessibilityTraits & AccessibilityTraits::SpinButton) != AccessibilityTraits::None) {
     return NSAccessibilityIncrementorRole;
   }
+  // Align with ARIA: `tablist` -> TabGroup
+  if ((accessibilityTraits & AccessibilityTraits::TabBar) != AccessibilityTraits::None) {
+    return NSAccessibilityTabGroupRole;
+  }
   if ((accessibilityTraits & AccessibilityTraits::Tab) != AccessibilityTraits::None) {
     if ((accessibilityTraits & AccessibilityTraits::List) != AccessibilityTraits::None) {
       return NSAccessibilityTabGroupRole;
     }
-    return NSAccessibilityButtonRole;
+    // Align with ARIA mapping where `tab` maps to a RadioButton.
+    return NSAccessibilityRadioButtonRole;
   }
   if ((accessibilityTraits & AccessibilityTraits::Disclosure) != AccessibilityTraits::None) {
     return NSAccessibilityDisclosureTriangleRole;
