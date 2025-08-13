@@ -114,6 +114,16 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig =
           topScrollToTop: {
             registrationName: 'onScrollToTop',
           },
+          // [macOS
+          ...(Platform.OS === 'macos' && {
+            topPreferredScrollerStyleDidChange: {
+              registrationName: 'onPreferredScrollerStyleDidChange',
+            },
+            topInvertedDidChange: {
+              registrationName: 'onInvertedDidChange',
+            },
+          }),
+          // macOS]
         },
         validAttributes: {
           alwaysBounceHorizontal: true,

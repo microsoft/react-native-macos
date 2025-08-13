@@ -32,6 +32,10 @@
 
 using namespace facebook::react;
 
+#if TARGET_OS_OSX // [macOS
+static NSString *sRCTAppDelegateMainWindowFrameAutoSaveName = @"RCTAppDelegateMainWindow";
+#endif // macOS]
+
 @implementation RCTAppDelegate
 
 - (instancetype)init
@@ -92,7 +96,10 @@ using namespace facebook::react;
   rootView.frame = frame;
   self.window.contentViewController = rootViewController;
   [self.window makeKeyAndOrderFront:self];
-  [self.window center];
+  if (![self.window setFrameUsingName:sRCTAppDelegateMainWindowFrameAutoSaveName]) {
+    [self.window center];
+  }
+  [self.window setFrameAutosaveName:sRCTAppDelegateMainWindowFrameAutoSaveName];
 #endif // macOS]
 }
 

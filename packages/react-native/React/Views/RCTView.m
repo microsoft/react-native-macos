@@ -725,7 +725,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 }
 
 #if TARGET_OS_OSX // [macOS
-- (void)setShadowColor:(NSColor *)shadowColor
+- (void)setShadowColor:(CGColorRef)shadowColor
 {
     if (_shadowColor != shadowColor)
     {
@@ -764,7 +764,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 -(void)didUpdateShadow
 {
     NSShadow *shadow = [NSShadow new];
-    shadow.shadowColor = [[self shadowColor] colorWithAlphaComponent:[self shadowOpacity]];
+    NSColor *baseShadowColor = [NSColor colorWithCGColor:_shadowColor];
+    shadow.shadowColor = [baseShadowColor colorWithAlphaComponent:[self shadowOpacity]];
     shadow.shadowOffset = [self shadowOffset];
     shadow.shadowBlurRadius = [self shadowRadius];
     [self setShadow:shadow];
