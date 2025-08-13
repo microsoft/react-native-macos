@@ -44,7 +44,7 @@ node .ado/scripts/prepublish-check.mjs --update
 Create a version plan for the version bump:
 
 ```sh
-yarn nx release plan --message 'Bump version to 0.77' --only-touched=false preminor
+yarn nx release plan --message 'create a new patch release' --only-touched=false patch
 ```
 
 Verify that the release plan correctly bumps published packages:

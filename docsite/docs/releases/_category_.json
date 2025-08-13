@@ -1,0 +1,6 @@
+{
+  "label": "Releases",
+  "position": 5,
+  "link": { "type": "generated-index", "description": "Release guide for react-native-macos" },
+  "collapsed": false
+}
