@@ -145,6 +145,7 @@ jobs:
 
   all:
     name: "All"
+    permissions: {}
     runs-on: ubuntu-latest
     needs:
       - lint-title
