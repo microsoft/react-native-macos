@@ -20,7 +20,8 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
       # We lint the PR title instead of the commit message to avoid script injection attacks.
@@ -31,11 +32,13 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           echo "$PR_TITLE" | npx @rnx-kit/commitlint-lite@2.0.0
+  
   build-website:
     name: "Build the website"
     permissions: {}
     if: github.base_ref == 'main'
     uses: ./.github/workflows/microsoft-build-website.yml
+
   npm-publish-dry-run:
     name: "NPM Publish (Dry Run)"
     permissions: {}
@@ -45,7 +48,8 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
       - name: Read publish tag from nx.json
@@ -79,10 +83,80 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
       - name: Install dependencies
         run: yarn
       - name: Check constraints
         run: yarn constraints
+
+  javascript-tests:
+    name: "JavaScript Tests"
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+      
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+      
+      - name: Install npm dependencies
+        run: yarn install
+      
+      - name: Run Jest tests
+        run: yarn test-ci
+      
+      - name: Run Flow type checker
+        run: yarn flow-check
+      
+      - name: Run ESLint
+        run: yarn lint
+      
+      - name: Run Prettier format check
+        run: yarn format-check
+
+  build-rntester:
+    name: "Build RNTester"
+    permissions: {}
+    uses: ./.github/workflows/microsoft-build-rntester.yml
+
+  test-react-native-macos-init:
+    name: "Test react-native-macos init"
+    permissions: {}
+    # https://github.com/microsoft/react-native-macos/issues/2344
+    # Run only for stable branches. Once nightlies are available, enable on main as well.
+    if: ${{ endsWith(github.base_ref, '-stable') }}
+    uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
+
+  react-native-test-app-integration:
+    name: "Test react-native-test-app integration"
+    permissions: {}
+    # https://github.com/microsoft/react-native-macos/issues/2344
+    # Run only for stable branches. Once nightlies are available, enable on main as well.
+    if: ${{ endsWith(github.base_ref, '-stable') }}
+    uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
+
+  all:
+    name: "All"
+    permissions: {}
+    runs-on: ubuntu-latest
+    needs:
+      - lint-title
+      - build-website
+      - npm-publish-dry-run
+      - yarn-constraints
+      - javascript-tests
+      - build-rntester
+      - test-react-native-macos-init
+      - react-native-test-app-integration
+    if: always()
+    steps:
+      - name: All required jobs passed
+        run: echo "All required jobs completed."
