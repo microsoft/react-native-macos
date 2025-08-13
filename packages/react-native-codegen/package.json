@@ -51,7 +51,7 @@
     "@babel/preset-env": "^7.25.3",
     "chalk": "^4.0.0",
     "hermes-estree": "0.25.1",
-    "micromatch": "^4.0.4",
+    "micromatch": "^4.0.8",
     "prettier": "2.8.8",
     "rimraf": "^3.0.2"
   },
