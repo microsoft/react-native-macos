@@ -162,6 +162,9 @@ inline NSAccessibilityRole RCTUIAccessibilityRoleFromAccessibilityTraits(
   if ((accessibilityTraits & AccessibilityTraits::SummaryElement) != AccessibilityTraits::None) {
     return NSAccessibilityStaticTextRole;
   }
+  if ((accessibilityTraits & AccessibilityTraits::UpdatesFrequently) != AccessibilityTraits::None) {
+    return NSAccessibilityProgressIndicatorRole;
+  }
   if ((accessibilityTraits & AccessibilityTraits::SearchField) != AccessibilityTraits::None) {
     return NSAccessibilityTextFieldRole;
   }
@@ -173,9 +176,6 @@ inline NSAccessibilityRole RCTUIAccessibilityRoleFromAccessibilityTraits(
   }
   if ((accessibilityTraits & AccessibilityTraits::Switch) != AccessibilityTraits::None) {
     return NSAccessibilityCheckBoxRole;
-  }
-  if ((accessibilityTraits & AccessibilityTraits::UpdatesFrequently) != AccessibilityTraits::None) {
-    return NSAccessibilityProgressIndicatorRole;
   }
   if ((accessibilityTraits & AccessibilityTraits::ComboBox) != AccessibilityTraits::None) {
     return NSAccessibilityComboBoxRole;
@@ -201,11 +201,14 @@ inline NSAccessibilityRole RCTUIAccessibilityRoleFromAccessibilityTraits(
   if ((accessibilityTraits & AccessibilityTraits::SpinButton) != AccessibilityTraits::None) {
     return NSAccessibilityIncrementorRole;
   }
+  if ((accessibilityTraits & AccessibilityTraits::TabBar) != AccessibilityTraits::None) {
+    return NSAccessibilityTabGroupRole;
+  }
   if ((accessibilityTraits & AccessibilityTraits::Tab) != AccessibilityTraits::None) {
     if ((accessibilityTraits & AccessibilityTraits::List) != AccessibilityTraits::None) {
       return NSAccessibilityTabGroupRole;
     }
-    return NSAccessibilityButtonRole;
+    return NSAccessibilityRadioButtonRole;
   }
   if ((accessibilityTraits & AccessibilityTraits::Disclosure) != AccessibilityTraits::None) {
     return NSAccessibilityDisclosureTriangleRole;
