@@ -32,11 +32,13 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           echo "$PR_TITLE" | npx @rnx-kit/commitlint-lite@2.0.0
+  
   build-website:
     name: "Build the website"
     permissions: {}
     if: github.base_ref == 'main'
     uses: ./.github/workflows/microsoft-build-website.yml
+
   npm-publish-dry-run:
     name: "NPM Publish (Dry Run)"
     permissions: {}
@@ -120,7 +122,7 @@ jobs:
       - name: Run Prettier format check
         run: yarn format-check
 
-  build-test-rntester:
+  build-rntester:
     name: "Build RNTester"
     permissions: {}
     uses: ./.github/workflows/microsoft-build-rntester.yml
@@ -140,3 +142,4 @@ jobs:
     # Run only for stable branches. Once nightlies are available, enable on main as well.
     if: ${{ endsWith(github.base_ref, '-stable') }}
     uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
+
