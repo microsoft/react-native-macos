@@ -133,7 +133,7 @@ export type TextInputEditingEvent =
   NativeSyntheticEvent<TextInputEndEditingEventData>;
 
 // [macOS macOS-only
-export type SettingChangeEvent = SyntheticEvent<
+export type SettingChangeEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     autoCorrectEnabled: boolean,
     spellCheckEnabled: boolean,
@@ -141,7 +141,7 @@ export type SettingChangeEvent = SyntheticEvent<
   |}>,
 >;
 
-export type PasteEvent = SyntheticEvent<
+export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     dataTransfer: {|
       files: $ReadOnlyArray<{|
@@ -943,7 +943,7 @@ export type TextInputProps = $ReadOnly<{
   /**
    * Callback that is called when the text input is focused.
    */
-  onFocus?: ?(e: TextInputFocusEvent) =>  void, // [macOS]
+  onFocus?: ?(e: TextInputFocusEvent) => void, // [macOS]
 
   /**
    * Callback that is called when a key is pressed.

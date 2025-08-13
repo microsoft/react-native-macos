@@ -98,7 +98,7 @@ export type TextInputEditingEvent =
   NativeSyntheticEvent<TextInputEndEditingEventData>;
 
 // [macOS macOS-only
-export type SettingChangeEvent = SyntheticEvent<
+export type SettingChangeEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     autoCorrectEnabled: boolean,
     spellCheckEnabled: boolean,
@@ -106,7 +106,7 @@ export type SettingChangeEvent = SyntheticEvent<
   |}>,
 >;
 
-export type PasteEvent = SyntheticEvent<
+export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     dataTransfer: {|
       files: $ReadOnlyArray<{|

@@ -100,7 +100,7 @@ declare class Alert {
   static promptMacOS(
     title: ?string,
     message?: ?string,
-    callbackOrButtons?: ?((text: string) => void) | Buttons,
+    callbackOrButtons?: ?((text: string) => void) | AlertButtons,
     type?: ?AlertType,
     defaultInputs?: DefaultInputsArray,
     modal?: ?boolean,
@@ -2702,14 +2702,14 @@ export type TextInputEndEditingEventData = $ReadOnly<{
 }>;
 export type TextInputEditingEvent =
   NativeSyntheticEvent<TextInputEndEditingEventData>;
-export type SettingChangeEvent = SyntheticEvent<
+export type SettingChangeEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     autoCorrectEnabled: boolean,
     spellCheckEnabled: boolean,
     grammarCheckEnabled: boolean,
   |}>,
 >;
-export type PasteEvent = SyntheticEvent<
+export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     dataTransfer: {|
       files: $ReadOnlyArray<{|
@@ -3110,14 +3110,14 @@ export type TextInputEndEditingEventData = $ReadOnly<{
 }>;
 export type TextInputEditingEvent =
   NativeSyntheticEvent<TextInputEndEditingEventData>;
-export type SettingChangeEvent = SyntheticEvent<
+export type SettingChangeEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     autoCorrectEnabled: boolean,
     spellCheckEnabled: boolean,
     grammarCheckEnabled: boolean,
   |}>,
 >;
-export type PasteEvent = SyntheticEvent<
+export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     dataTransfer: {|
       files: $ReadOnlyArray<{|
@@ -8513,7 +8513,7 @@ export type NativeScrollPoint = $ReadOnly<{
   y: number,
   x: number,
 }>;
-export type KeyEvent = SyntheticEvent<
+export type KeyEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     capsLockKey: boolean,
     shiftKey: boolean,
@@ -9581,6 +9581,10 @@ export { default as UTFSequence } from \\"./Libraries/UTFSequence\\";
 export { default as Vibration } from \\"./Libraries/Vibration/Vibration\\";
 export { default as DeviceEventEmitter } from \\"./Libraries/EventEmitter/RCTDeviceEventEmitter\\";
 export { DynamicColorIOS } from \\"./Libraries/StyleSheet/PlatformColorValueTypesIOS\\";
+export {
+  ColorWithSystemEffectMacOS,
+  DynamicColorMacOS,
+} from \\"./Libraries/StyleSheet/PlatformColorValueTypesMacOS\\";
 export { default as NativeAppEventEmitter } from \\"./Libraries/EventEmitter/RCTNativeAppEventEmitter\\";
 export { default as NativeModules } from \\"./Libraries/BatchedBridge/NativeModules\\";
 export { default as Platform } from \\"./Libraries/Utilities/Platform\\";

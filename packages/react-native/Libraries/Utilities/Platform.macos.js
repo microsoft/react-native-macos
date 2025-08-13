@@ -87,8 +87,8 @@ const Platform: PlatformType = {
     'macos' in spec
       ? spec.macos
       : 'native' in spec
-      ? spec.native
-      : spec.default,
+        ? spec.native
+        : spec.default,
 };
 
 export default Platform;

@@ -284,7 +284,7 @@ export type NativeScrollPoint = $ReadOnly<{
 }>;
 
 // [macOS
-export type KeyEvent = SyntheticEvent<
+export type KeyEvent = NativeSyntheticEvent<
   $ReadOnly<{|
     // Modifier keys
     capsLockKey: boolean,

@@ -104,6 +104,10 @@ export {default as Vibration} from './Libraries/Vibration/Vibration';
 
 export {default as DeviceEventEmitter} from './Libraries/EventEmitter/RCTDeviceEventEmitter';
 export {DynamicColorIOS} from './Libraries/StyleSheet/PlatformColorValueTypesIOS';
+export {
+  ColorWithSystemEffectMacOS,
+  DynamicColorMacOS,
+} from './Libraries/StyleSheet/PlatformColorValueTypesMacOS'; // [macOS]
 export {default as NativeAppEventEmitter} from './Libraries/EventEmitter/RCTNativeAppEventEmitter';
 export {default as NativeModules} from './Libraries/BatchedBridge/NativeModules';
 export {default as Platform} from './Libraries/Utilities/Platform';

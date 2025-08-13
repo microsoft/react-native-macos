@@ -276,7 +276,7 @@ class Alert {
   static promptMacOS(
     title: ?string,
     message?: ?string,
-    callbackOrButtons?: ?((text: string) => void) | Buttons,
+    callbackOrButtons?: ?((text: string) => void) | AlertButtons,
     type?: ?AlertType = 'plain-text',
     defaultInputs?: DefaultInputsArray,
     modal?: ?boolean,

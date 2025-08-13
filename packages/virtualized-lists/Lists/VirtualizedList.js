@@ -1494,7 +1494,7 @@ class VirtualizedList extends StateSafePureComponent<
   _selectRowAtIndex = (rowIndex: number) => {
     const prevIndex = this.state.selectedRowIndex;
     const newIndex = rowIndex;
-    this.setState({selectedRowIndex: newIndex});
+    this.setState<'selectedRowIndex'>({selectedRowIndex: newIndex});
 
     this.ensureItemAtIndexIsVisible(newIndex);
     if (prevIndex !== newIndex) {
