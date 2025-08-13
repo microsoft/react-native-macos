@@ -143,3 +143,19 @@ jobs:
     if: ${{ endsWith(github.base_ref, '-stable') }}
     uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
 
+  all:
+    name: "All"
+    runs-on: ubuntu-latest
+    needs:
+      - lint-title
+      - build-website
+      - npm-publish-dry-run
+      - yarn-constraints
+      - javascript-tests
+      - build-rntester
+      - test-react-native-macos-init
+      - react-native-test-app-integration
+    if: always()
+    steps:
+      - name: All required jobs passed
+        run: echo "All required jobs completed."
