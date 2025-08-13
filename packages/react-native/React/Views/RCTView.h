@@ -162,6 +162,9 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
  * macOS Properties
  */
 
+@property (nonatomic, copy) RCTBubblingEventBlock onFocus;
+@property (nonatomic, copy) RCTBubblingEventBlock onBlur;
+
 // `allowsVibrancy` is readonly on NSView, so let's create a new property to make it assignable
 // that we can set through JS and the getter for `allowsVibrancy` can read in RCTView.
 @property (nonatomic, assign) BOOL allowsVibrancyInternal;
@@ -176,16 +179,10 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) NSArray<RCTHandledKey*> *keyUpEvents;
 
 // Shadow Properties
-@property (nonatomic, strong) NSColor *shadowColor;
+@property (nonatomic, assign) CGColorRef shadowColor;
 @property (nonatomic, assign) CGFloat shadowOpacity;
 @property (nonatomic, assign) CGFloat shadowRadius;
 @property (nonatomic, assign) CGSize shadowOffset;
 #endif // macOS]
-
-/**
- * Common Focus Properties
- */
-@property (nonatomic, copy) RCTBubblingEventBlock onFocus;
-@property (nonatomic, copy) RCTBubblingEventBlock onBlur;
 
 @end

@@ -92,6 +92,9 @@ const RCTTextInputViewConfig = {
       registrationName: 'onKeyPressSync',
     },
     // [macOS
+    topPaste: {
+      registrationName: 'onPaste',
+    },
     topAutoCorrectChange: {
       registrationName: 'onAutoCorrectChange',
     },
@@ -182,6 +185,7 @@ const RCTTextInputViewConfig = {
       onChangeSync: true,
       onKeyPressSync: true,
       // [macOS
+      onSubmitEditing: true,
       onPaste: true,
       onAutoCorrectChange: true,
       onSpellCheckChange: true,
