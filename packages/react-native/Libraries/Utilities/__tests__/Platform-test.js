@@ -10,9 +10,9 @@
 
 'use strict';
 
-const PlatformAndroid = require('../Platform.android');
-const PlatformIOS = require('../Platform.ios');
-const PlatformMacOS = require('../Platform.macos'); // [macOS]
+const PlatformAndroid = require('../Platform.android').default;
+const PlatformIOS = require('../Platform.ios').default;
+const PlatformMacOS = require('../Platform.macos').default; // [macOS]
 
 describe('Platform', () => {
   describe('OS', () => {

@@ -361,7 +361,7 @@
 #if TARGET_OS_MACCATALYST || TARGET_OS_OSX // [macOS]
   return 0;
 #else
-  return RCTSharedApplication().delegate.window.safeAreaInsets.bottom;
+  return RCTKeyWindow().safeAreaInsets.bottom;
 #endif
 }
 

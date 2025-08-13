@@ -12,29 +12,30 @@
 
 import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 import type {
-  Layout,
-  LayoutEvent,
+  LayoutChangeEvent,
+  LayoutRectangle,
 } from 'react-native/Libraries/Types/CoreEventTypes';
 
 const React = require('react');
 const ReactNative = require('react-native');
-const deepDiffer = require('react-native/Libraries/Utilities/differ/deepDiffer');
+const deepDiffer =
+  require('react-native/Libraries/Utilities/differ/deepDiffer').default;
 
 const {Image, LayoutAnimation, StyleSheet, Text, View} = ReactNative;
 const {Platform} = ReactNative; // [macOS]
 const {TestModule} = ReactNative.NativeModules;
-function debug(...args: Array<void | Layout | string>) {
+function debug(...args: Array<void | LayoutRectangle | string>) {
   // console.log.apply(null, arguments);
 }
 
-type Props = $ReadOnly<{||}>;
+type Props = $ReadOnly<{}>;
 
 type State = {
   didAnimation: boolean,
   extraText?: string,
-  imageLayout?: Layout,
-  textLayout?: Layout,
-  viewLayout?: Layout,
+  imageLayout?: LayoutRectangle,
+  textLayout?: LayoutRectangle,
+  viewLayout?: LayoutRectangle,
   viewStyle?: ViewStyleProp,
   containerStyle?: ViewStyleProp,
   ...
@@ -111,7 +112,11 @@ class LayoutEventsTest extends React.Component<Props, State> {
     });
   };
 
-  compare(node: string, measured: Layout, onLayout?: ?Layout): void {
+  compare(
+    node: string,
+    measured: LayoutRectangle,
+    onLayout?: ?LayoutRectangle,
+  ): void {
     if (deepDiffer(measured, onLayout)) {
       const data = {measured, onLayout};
       throw new Error(
@@ -122,19 +127,19 @@ class LayoutEventsTest extends React.Component<Props, State> {
     }
   }
 
-  onViewLayout: (e: LayoutEvent) => void = (e: LayoutEvent) => {
+  onViewLayout: (e: LayoutChangeEvent) => void = (e: LayoutChangeEvent) => {
     // $FlowFixMe[incompatible-call]
     debug('received view layout event\n', e.nativeEvent);
     this.setState({viewLayout: e.nativeEvent.layout}, this.checkLayout);
   };
 
-  onTextLayout: (e: LayoutEvent) => void = (e: LayoutEvent) => {
+  onTextLayout: (e: LayoutChangeEvent) => void = (e: LayoutChangeEvent) => {
     // $FlowFixMe[incompatible-call]
     debug('received text layout event\n', e.nativeEvent);
     this.setState({textLayout: e.nativeEvent.layout}, this.checkLayout);
   };
 
-  onImageLayout: (e: LayoutEvent) => void = (e: LayoutEvent) => {
+  onImageLayout: (e: LayoutChangeEvent) => void = (e: LayoutChangeEvent) => {
     // $FlowFixMe[incompatible-call]
     debug('received image layout event\n', e.nativeEvent);
     this.setState({imageLayout: e.nativeEvent.layout}, this.checkLayout);
