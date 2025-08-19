@@ -1318,7 +1318,11 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
 #pragma mark - Accessibility
 
-- (RCTPlatformView *)accessibilityElement
+#if !TARGET_OS_OSX // [macOS]
+- (NSObject *)accessibilityElement
+#else // [macOS
+- (NSView *)accessibilityElement // macOS]
+#endif // macOS]
 {
   return self;
 }
