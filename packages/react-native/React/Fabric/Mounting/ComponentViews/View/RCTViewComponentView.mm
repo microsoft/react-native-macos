@@ -19,7 +19,6 @@
 #import <React/RCTCursor.h> // [macOS]
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
-#import <React/UIView+React.h> // [macOS]
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
@@ -399,11 +398,13 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     self.accessibilityElement.accessibilityLabel = RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityLabel);
   }
 
+#if !TARGET_OS_OSX // [macOS]
   // `accessibilityLanguage`
   if (oldViewProps.accessibilityLanguage != newViewProps.accessibilityLanguage) {
     self.accessibilityElement.accessibilityLanguage =
         RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityLanguage);
   }
+#endif // [macOS]
 
   // `accessibilityHint`
   if (oldViewProps.accessibilityHint != newViewProps.accessibilityHint) {
