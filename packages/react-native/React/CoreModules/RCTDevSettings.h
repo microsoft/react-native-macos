@@ -30,13 +30,6 @@
  */
 - (id)settingForKey:(NSString *)key;
 
-// [macOS
-/**
- * Returns all keys that are overridden
- */
-- (NSArray<NSString *> *)overridenKeys;
-// macOS]
-
 @end
 
 @protocol RCTDevSettingsInspectable <NSObject>
