@@ -34,7 +34,7 @@ enum class AccessibilityTraits : uint32_t {
   Header = (1 << 15),
   Switch = (1 << 16),
   TabBar = (1 << 17),
-// [macOS
+#if TARGET_OS_OSX  // [macOS
   ComboBox = (1 << 18),
   Menu = (1 << 19),
   PopUp = (1 << 20),
@@ -48,7 +48,7 @@ enum class AccessibilityTraits : uint32_t {
   Radio = (1 << 28),
   ScrollBar = (1 << 29),
   SpinButton = (1 << 30),
-// macOS]
+#endif // macOS]
 };
 
 constexpr enum AccessibilityTraits operator|(
