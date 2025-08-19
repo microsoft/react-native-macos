@@ -18,3 +18,4 @@ upstream        git@github.com:microsoft/react-native-macos.git (fetch)
 upstream        git@github.com:microsoft/react-native-macos.git (push)
 ```
 
+For an older version, of this guide, see [docs_archive/GitFlow](https://github.com/microsoft/react-native-macos/blob/85494dbbfc80621268a30c92df39f25d9fcfc98b/docs_archive/GitFlow.md)
