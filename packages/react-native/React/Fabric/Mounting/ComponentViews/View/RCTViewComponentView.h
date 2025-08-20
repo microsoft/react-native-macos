@@ -56,7 +56,11 @@ NS_ASSUME_NONNULL_BEGIN
  * transparent in favour of some subview.
  * Defaults to `self`.
  */
+#if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, strong, nullable, readonly) NSObject *accessibilityElement;
+#else // [macOS
+@property (nonatomic, strong, nullable, readonly) NSView *accessibilityElement;
+#endif // macOS]
 
 /**
  * Insets used when hit testing inside this view.
