@@ -1,3 +1,8 @@
+---
+sidebar_label: 'macOS Tags'
+sidebar_position: 2
+---
+
 # How React Native macOS differs from React Native
 
 React Native macOS elected to implement our fork via inline diffs of existing React Native code. This means additions and changes of extra code to support macOS, usually in the same file as the existing iOS or JS implementation.
