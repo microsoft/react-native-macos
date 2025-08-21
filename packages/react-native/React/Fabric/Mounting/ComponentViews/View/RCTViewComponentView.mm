@@ -19,7 +19,11 @@
 #import <React/RCTCursor.h> // [macOS]
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
-#import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <React/RCTView.h> // [macOS]
+#import <React/UIView+React.h> // [macOS]
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTViewKeyboardEvent.h> // [macOS]
+#endif // macOS]
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
 #import <react/renderer/components/view/ViewProps.h>
@@ -45,6 +49,10 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   BOOL _needsInvalidateLayer;
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
+  BOOL _hasMouseOver; // [macOS]
+  BOOL _hasClipViewBoundsObserver; // [macOS]
+  NSTrackingArea *_trackingArea; // [macOS]
+  NSCursor *_cursor; // [macOS]
   NSMutableArray<RCTUIView *> *_reactSubviews; // [macOS]
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
   RCTPlatformView *_containerView; // [macOS]
@@ -310,7 +318,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   
   // `cursor`
   if (oldViewProps.cursor != newViewProps.cursor) {
-    needsInvalidateLayer = YES;
+#if !TARGET_OS_OSX // [macOS]
+    needsInvalidateLayer = YES;  // `cursor`
+#else // [macOS
+    _cursor = NSCursorFromCursor(newViewProps.cursor);
+#endif // macOS]
   }
 
   // `cursor`
@@ -579,6 +591,45 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     needsInvalidateLayer = YES;
   }
 
+#if TARGET_OS_OSX // [macOS
+  // `focusable`
+  self.focusable = (bool)newViewProps.focusable;
+  // `enableFocusRing`
+  self.enableFocusRing = (bool)newViewProps.enableFocusRing;
+  
+  // `draggedTypes`
+  if (oldViewProps.draggedTypes != newViewProps.draggedTypes) {
+    if (oldViewProps.draggedTypes.has_value()) {
+      [self unregisterDraggedTypes];
+    }
+    
+    if (newViewProps.draggedTypes.has_value()) {
+      NSMutableArray<NSPasteboardType> *pasteboardTypes = [NSMutableArray new];
+      for (const auto &draggedType : *newViewProps.draggedTypes) {
+        if (draggedType == DraggedType::FileUrl) {
+          [pasteboardTypes addObject:NSFilenamesPboardType];
+        } else if (draggedType == DraggedType::Image) {
+          [pasteboardTypes addObject:NSPasteboardTypePNG];
+          [pasteboardTypes addObject:NSPasteboardTypeTIFF];
+        } else if (draggedType == DraggedType::String) {
+          [pasteboardTypes addObject:NSPasteboardTypeString];
+        }
+      }
+      [self registerForDraggedTypes:pasteboardTypes];
+    }
+  }
+  
+  // `tooltip`
+  if (oldViewProps.tooltip != newViewProps.tooltip) {
+    if (newViewProps.tooltip.has_value()) {
+      self.toolTip = RCTNSStringFromStringNilIfEmpty(newViewProps.tooltip.value());
+    } else {
+      self.toolTip = nil;
+    }
+  }
+  
+#endif // macOS]
+
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
 
   _props = std::static_pointer_cast<const ViewProps>(props);
@@ -641,6 +692,9 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   _needsInvalidateLayer = NO;
   [self invalidateLayer];
+
+  [self updateTrackingAreas];
+  [self updateClipViewBoundsObserverIfNeeded];
 }
 
 - (void)prepareForRecycle
@@ -824,61 +878,59 @@ static RCTBorderStyle RCTBorderStyleFromBorderStyle(BorderStyle borderStyle)
 }
 
 #if TARGET_OS_OSX // [macOS
-static RCTCursor RCTCursorFromCursor(Cursor cursor)
+static NSCursor *NSCursorFromCursor(Cursor cursor)
 {
   switch (cursor) {
-    case Cursor::Auto:
-      return RCTCursorAuto;
     case Cursor::Alias:
-      return RCTCursorAlias;
-    case Cursor::AllScroll:
-      return RCTCursorAllScroll;
-    case Cursor::Cell:
-      return RCTCursorCell;
-    case Cursor::ColResize:
-      return RCTCursorColResize;
-    case Cursor::ContextMenu:
-      return RCTCursorContextMenu;
+      return [NSCursor dragLinkCursor];
+    case Cursor::Arrow:
+      return [NSCursor arrowCursor];
+    case Cursor::Auto:
+      return [NSCursor arrowCursor];
+    case Cursor::ClosedHand:
+      return [NSCursor closedHandCursor];
+    case Cursor::ColumnResize:
+      return [NSCursor resizeLeftRightCursor];
+    case Cursor::ContextualMenu:
+      return [NSCursor contextualMenuCursor];
     case Cursor::Copy:
       return RCTCursorCopy;
     case Cursor::Crosshair:
       return RCTCursorCrosshair;
     case Cursor::Default:
-      return RCTCursorDefault;
-    case Cursor::EResize:
-      return RCTCursorEResize;
-    case Cursor::EWResize:
-      return RCTCursorEWResize;
+      return [NSCursor arrowCursor];
+    case Cursor::DisappearingItem:
+      return [NSCursor disappearingItemCursor];
+    case Cursor::DragCopy:
+      return [NSCursor dragCopyCursor];
+    case Cursor::DragLink:
+      return [NSCursor dragLinkCursor];
+    case Cursor::EastResize:
+      return [NSCursor resizeRightCursor];
     case Cursor::Grab:
       return RCTCursorGrab;
     case Cursor::Grabbing:
-      return RCTCursorGrabbing;
-    case Cursor::Help:
-      return RCTCursorHelp;
-    case Cursor::Move:
-      return RCTCursorMove;
-    case Cursor::NEResize:
-      return RCTCursorNEResize;
-    case Cursor::NESWResize:
-      return RCTCursorNESWResize;
-    case Cursor::NResize:
-      return RCTCursorNResize;
-    case Cursor::NSResize:
-      return RCTCursorNSResize;
-    case Cursor::NWResize:
-      return RCTCursorNWResize;
-    case Cursor::NWSEResize:
-      return RCTCursorNWSEResize;
+      return [NSCursor closedHandCursor];
+    case Cursor::IBeam:
+      return [NSCursor IBeamCursor];
+    case Cursor::IBeamCursorForVerticalLayout:
+      return [NSCursor IBeamCursorForVerticalLayout];
+    case Cursor::NorthResize:
+      return [NSCursor resizeUpCursor];
     case Cursor::NoDrop:
       return RCTCursorNoDrop;
     case Cursor::None:
       return RCTCursorNone;
     case Cursor::NotAllowed:
-      return RCTCursorNotAllowed;
+      return [NSCursor operationNotAllowedCursor];
+    case Cursor::OpenHand:
+      return [NSCursor openHandCursor];
+    case Cursor::OperationNotAllowed:
+      return [NSCursor operationNotAllowedCursor];
     case Cursor::Pointer:
-      return RCTCursorPointer;
-    case Cursor::Progress:
-      return RCTCursorProgress;
+      return [NSCursor pointingHandCursor];
+    case Cursor::PointingHand:
+      return [NSCursor pointingHandCursor];
     case Cursor::RowResize:
       return RCTCursorRowResize;
     case Cursor::SResize:
@@ -892,73 +944,24 @@ static RCTCursor RCTCursorFromCursor(Cursor cursor)
     case Cursor::Url:
       return RCTCursorUrl;
     case Cursor::VerticalText:
-      return RCTCursorVerticalText;
-    case Cursor::WResize:
-      return RCTCursorWResize;
-    case Cursor::Wait:
-      return RCTCursorWait;
-    case Cursor::ZoomIn:
-      return RCTCursorZoomIn;
-    case Cursor::ZoomOut:
-      return RCTCursorZoomOut;
+      return [NSCursor IBeamCursorForVerticalLayout];
+    case Cursor::WestResize:
+      return [NSCursor resizeLeftCursor];
+    case Cursor::ResizeDown:
+      return [NSCursor resizeDownCursor];
+    case Cursor::ResizeLeft:
+      return [NSCursor resizeLeftCursor];
+    case Cursor::ResizeLeftRight:
+      return [NSCursor resizeLeftRightCursor];
+    case Cursor::ResizeRight:
+      return [NSCursor resizeRightCursor];
+    case Cursor::ResizeUp:
+      return [NSCursor resizeUpCursor];
+    case Cursor::ResizeUpDown:
+      return [NSCursor resizeDownCursor];
   }
 }
 #endif // macOS]
-
-static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
-{
-  switch (outlineStyle) {
-    case OutlineStyle::Solid:
-      return RCTBorderStyleSolid;
-    case OutlineStyle::Dotted:
-      return RCTBorderStyleDotted;
-    case OutlineStyle::Dashed:
-      return RCTBorderStyleDashed;
-  }
-}
-
-- (BOOL)styleWouldClipOverflowInk
-{
-  const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
-  BOOL nonZeroBorderWidth = !(borderMetrics.borderWidths.isUniform() && borderMetrics.borderWidths.left == 0);
-  BOOL clipToPaddingBox = ReactNativeFeatureFlags::enableIOSViewClipToPaddingBox();
-  return _props->getClipsContentToBounds() &&
-      ((!_props->boxShadow.empty() || (clipToPaddingBox && nonZeroBorderWidth)) || _props->outlineWidth != 0);
-}
-
-// This UIView is the UIView that holds all subviews. It is sometimes not self
-// because we want to render "overflow ink" that extends beyond the bounds of
-// the view and is not affected by clipping.
-- (RCTUIView *)currentContainerView // [macOS]
-{
-  if (_useCustomContainerView) {
-    if (!_containerView) {
-      _containerView = [[RCTPlatformView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)]; // [macOS]
-      for (RCTPlatformView *subview in self.subviews) { // [macOS]
-        [_containerView addSubview:subview];
-      }
-      _containerView.clipsToBounds = self.clipsToBounds;
-      self.clipsToBounds = NO;
-      _containerView.layer.mask = self.layer.mask;
-      self.layer.mask = nil;
-      [self addSubview:_containerView];
-    }
-
-    return _containerView;
-  } else {
-    if (_containerView) {
-      for (RCTPlatformView *subview in _containerView.subviews) { // [macOS]
-        [self addSubview:subview];
-      }
-      self.clipsToBounds = _containerView.clipsToBounds;
-      self.layer.mask = _containerView.layer.mask;
-      [_containerView removeFromSuperview];
-      _containerView = nil;
-    }
-
-    return self;
-  }
-}
 
 - (void)invalidateLayer
 {
@@ -1510,6 +1513,421 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   }
 }
 
+#if TARGET_OS_OSX // [macOS
+
+#pragma mark - Focus Events
+
+- (BOOL)becomeFirstResponder
+{
+  if (![super becomeFirstResponder]) {
+    return NO;
+  }
+  
+  if (_eventEmitter) {
+    _eventEmitter->onFocus();
+  }
+  
+  return YES;
+}
+
+-  (BOOL)resignFirstResponder
+{
+  if (![super resignFirstResponder]) {
+    return NO;
+  }
+  
+  if (_eventEmitter) {
+    _eventEmitter->onBlur();
+  }
+  
+  return YES;
+}
+
+
+#pragma mark - Keyboard Events
+
+- (BOOL)handleKeyboardEvent:(NSEvent *)event {
+  BOOL keyDown = event.type == NSEventTypeKeyDown;
+  BOOL hasHandler = keyDown ? _props->macOSViewEvents[MacOSViewEvents::Offset::KeyDown]
+                            : _props->macOSViewEvents[MacOSViewEvents::Offset::KeyUp];
+  if (hasHandler) {
+    auto validKeys = keyDown ? _props->validKeysDown : _props->validKeysUp;
+
+    // If the view is focusable and the component didn't explicity set the validKeysDown or validKeysUp,
+    // allow enter/return and spacebar key events to mimic the behavior of native controls.
+    if (self.focusable && !validKeys.has_value()) {
+      validKeys = { { .key = "Enter" }, { .key = " " } };
+    }
+
+    // If there are no valid keys defined, no key event handling is required.
+    if (!validKeys.has_value()) {
+      return NO;
+    }
+    
+    // Convert the event to a KeyEvent
+    NSEventModifierFlags modifierFlags = event.modifierFlags;
+    facebook::react::KeyEvent keyEvent = {
+      .key = [[RCTViewKeyboardEvent keyFromEvent:event] UTF8String],
+      .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+      .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+      .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+      .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+      .capsLockKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCapsLock),
+      .numericPadKey = static_cast<bool>(modifierFlags & NSEventModifierFlagNumericPad),
+      .helpKey = static_cast<bool>(modifierFlags & NSEventModifierFlagHelp),
+      .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
+    };
+
+    BOOL shouldBlock = NO;
+    for (auto const &validKey : *validKeys) {
+      if (keyEvent == validKey) {
+        shouldBlock = YES;
+        break;
+      }
+    }
+
+    if (_eventEmitter && shouldBlock) {
+      if (keyDown) {
+        _eventEmitter->onKeyDown(keyEvent);
+      } else {
+        _eventEmitter->onKeyUp(keyEvent);
+      }
+      return YES;
+    }
+  }
+  
+  return NO;
+}
+
+- (void)keyDown:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyDown:event];
+  }
+}
+
+- (void)keyUp:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyUp:event];
+  }
+}
+
+
+#pragma mark - Drag and Drop Events
+
+enum DragEventType {
+  DragEnter,
+  DragLeave,
+  Drop,
+};
+
+- (void)buildDataTransferItems:(std::vector<DataTransferItem> &)dataTransferItems forPasteboard:(NSPasteboard *)pasteboard {
+  NSArray *fileNames = [pasteboard propertyListForType:NSFilenamesPboardType] ?: @[];
+  for (NSString *file in fileNames) {
+    NSURL *fileURL = [NSURL fileURLWithPath:file];
+    BOOL isDir = NO;
+    BOOL isValid = (![[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDir] || isDir) ? NO : YES;
+    if (isValid) {
+      
+      NSString *MIMETypeString = nil;
+      if (fileURL.pathExtension) {
+        CFStringRef fileExtension = (__bridge CFStringRef)fileURL.pathExtension;
+        CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, fileExtension, NULL);
+        if (UTI != NULL) {
+          CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass(UTI, kUTTagClassMIMEType);
+          CFRelease(UTI);
+          MIMETypeString = (__bridge_transfer NSString *)MIMEType;
+        }
+      }
+
+      NSNumber *fileSizeValue = nil;
+      NSError *fileSizeError = nil;
+      BOOL success = [fileURL getResourceValue:&fileSizeValue
+                                        forKey:NSURLFileSizeKey
+                                         error:&fileSizeError];
+
+      NSNumber *width = nil;
+      NSNumber *height = nil;
+      if ([MIMETypeString hasPrefix:@"image/"]) {
+        NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
+        width = @(image.size.width);
+        height = @(image.size.height);
+      }
+
+      DataTransferItem transferItem = {
+        .name = fileURL.lastPathComponent.UTF8String,
+        .kind = "file",
+        .type = MIMETypeString.UTF8String,
+        .uri = fileURL.path.UTF8String,
+      };
+      
+      if (success) {
+        transferItem.size = fileSizeValue.intValue;
+      }
+
+      if (width != nil) {
+        transferItem.width = width.intValue;
+      }
+      
+      if (height != nil) {
+        transferItem.height = height.intValue;
+      }
+      
+      dataTransferItems.push_back(transferItem);
+    }
+  }
+  
+  NSPasteboardType imageType = [pasteboard availableTypeFromArray:@[NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  if (imageType && fileNames.count == 0) {
+    NSString *MIMETypeString = imageType == NSPasteboardTypePNG ? @"image/png" : @"image/tiff";
+    NSData *imageData = [pasteboard dataForType:imageType];
+    NSImage *image = [[NSImage alloc] initWithData:imageData];
+    
+    DataTransferItem transferItem = {
+      .kind = "image",
+      .type = MIMETypeString.UTF8String,
+      .uri = RCTDataURL(MIMETypeString, imageData).absoluteString.UTF8String,
+      .size = imageData.length,
+      .width = image.size.width,
+      .height = image.size.height,
+    };
+
+    dataTransferItems.push_back(transferItem);
+  }
+}
+
+- (void)sendDragEvent:(DragEventType)eventType withLocation:(NSPoint)locationInWindow pasteboard:(NSPasteboard *)pasteboard {
+  if (!_eventEmitter) {
+    return;
+  }
+  
+  std::vector<DataTransferItem> dataTransferItems{};
+  [self buildDataTransferItems:dataTransferItems forPasteboard:pasteboard];
+
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
+
+  DragEvent dragEvent = {
+    {
+      .clientX = locationInView.x,
+      .clientY = locationInView.y,
+      .screenX = locationInWindow.x,
+      .screenY = locationInWindow.y,
+      .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+      .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+      .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+      .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+    },
+    .dataTransferItems = dataTransferItems,
+  };
+  
+  switch (eventType) {
+    case DragEnter:
+      _eventEmitter->onDragEnter(dragEvent);
+      break;
+    
+    case DragLeave:
+      _eventEmitter->onDragLeave(dragEvent);
+      break;
+    
+    case Drop:
+      _eventEmitter->onDrop(dragEvent);
+      break;
+  }
+}
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+  NSPasteboard *pboard = sender.draggingPasteboard;
+  NSDragOperation sourceDragMask = sender.draggingSourceOperationMask;
+
+  [self sendDragEvent:DragEnter withLocation:sender.draggingLocation pasteboard:pboard];
+
+  if ([pboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    if (sourceDragMask & NSDragOperationLink) {
+      return NSDragOperationLink;
+    } else if (sourceDragMask & NSDragOperationCopy) {
+      return NSDragOperationCopy;
+    }
+  }
+  return NSDragOperationNone;
+}
+
+- (void)draggingExited:(id<NSDraggingInfo>)sender
+{
+  [self sendDragEvent:DragLeave withLocation:sender.draggingLocation pasteboard:sender.draggingPasteboard];
+}
+
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+  [self sendDragEvent:Drop withLocation:sender.draggingLocation pasteboard:sender.draggingPasteboard];
+  return YES;
+}
+
+
+#pragma mark - Mouse Events
+
+enum MouseEventType {
+  MouseEnter,
+  MouseLeave,
+  DoubleClick,
+};
+
+- (void)sendMouseEvent:(MouseEventType)eventType {
+  if (!_eventEmitter) {
+    return;
+  }
+
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  
+  NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
+
+  MouseEvent mouseEvent = {
+    .clientX = locationInView.x,
+    .clientY = locationInView.y,
+    .screenX = locationInWindow.x,
+    .screenY = locationInWindow.y,
+    .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+    .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+    .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+    .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+  };
+  
+  switch (eventType) {
+    case MouseEnter:
+      _eventEmitter->onMouseEnter(mouseEvent);
+      break;
+
+    case MouseLeave:
+      _eventEmitter->onMouseLeave(mouseEvent);
+      break;
+
+    case DoubleClick:
+      _eventEmitter->onDoubleClick(mouseEvent);
+      break;
+  }
+}
+
+- (void)updateMouseOverIfNeeded
+{
+  // When an enclosing scrollview is scrolled using the scrollWheel or trackpad,
+  // the mouseExited: event does not get called on the view where mouseEntered: was previously called.
+  // This creates an unnatural pairing of mouse enter and exit events and can cause problems.
+  // We therefore explicitly check for this here and handle them by calling the appropriate callbacks.
+
+  BOOL hasMouseOver = _hasMouseOver;
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  BOOL insideBounds = NSPointInRect(locationInView, self.visibleRect);
+
+  // On macOS 14.0 visibleRect can be larger than the view bounds
+  insideBounds &= NSPointInRect(locationInView, self.bounds);
+
+  if (hasMouseOver && !insideBounds) {
+    hasMouseOver = NO;
+  } else if (!hasMouseOver && insideBounds) {
+    // The window's frame view must be used for hit testing against `locationInWindow`
+    NSView *hitView = [self.window.contentView.superview hitTest:locationInWindow];
+    hasMouseOver = [hitView isDescendantOf:self];
+  }
+
+  if (hasMouseOver != _hasMouseOver) {
+    _hasMouseOver = hasMouseOver;
+    [self sendMouseEvent:hasMouseOver ? MouseEnter : MouseLeave];
+  }
+}
+
+- (void)updateClipViewBoundsObserverIfNeeded
+{
+  // Subscribe to view bounds changed notification so that the view can be notified when a
+  // scroll event occurs either due to trackpad/gesture based scrolling or a scrollwheel event
+  // both of which would not cause the mouseExited to be invoked.
+
+  NSClipView *clipView = self.window ? self.enclosingScrollView.contentView : nil;
+  
+
+  BOOL hasMouseEventHandler = _props->macOSViewEvents[MacOSViewEvents::Offset::MouseEnter] ||
+    _props->macOSViewEvents[MacOSViewEvents::Offset::MouseLeave];
+
+  if (_hasClipViewBoundsObserver && (!clipView || !hasMouseEventHandler)) {
+    _hasClipViewBoundsObserver = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NSViewBoundsDidChangeNotification
+                                                  object:nil];
+  } else if (!_hasClipViewBoundsObserver && clipView && hasMouseEventHandler) {
+    _hasClipViewBoundsObserver = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(updateMouseOverIfNeeded)
+                                                 name:NSViewBoundsDidChangeNotification
+                                               object:clipView];
+    [self updateMouseOverIfNeeded];
+  }
+}
+
+- (void)viewDidMoveToWindow
+{
+  [self updateClipViewBoundsObserverIfNeeded];
+  [super viewDidMoveToWindow];
+}
+
+- (void)updateTrackingAreas
+{
+  if (_trackingArea) {
+    [self removeTrackingArea:_trackingArea];
+  }
+
+  if (
+    _props->macOSViewEvents[MacOSViewEvents::Offset::MouseEnter] ||
+    _props->macOSViewEvents[MacOSViewEvents::Offset::MouseLeave]
+  ) {
+    _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
+                                                 options:NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited
+                                                   owner:self
+                                                userInfo:nil];
+    [self addTrackingArea:_trackingArea];
+    [self updateMouseOverIfNeeded];
+  }
+
+  [super updateTrackingAreas];
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+  BOOL hasDoubleClickEventHandler = _props->macOSViewEvents[MacOSViewEvents::Offset::DoubleClick];
+  if (hasDoubleClickEventHandler && event.clickCount == 2) {
+    [self sendMouseEvent:DoubleClick];
+  } else {
+    [super mouseUp:event];
+  }
+}
+
+- (void)mouseEntered:(NSEvent *)event
+{
+  if (_hasMouseOver) {
+    return;
+  }
+
+  // The window's frame view must be used for hit testing against `locationInWindow`
+  NSView *hitView = [self.window.contentView.superview hitTest:event.locationInWindow];
+  if (![hitView isDescendantOf:self]) {
+    return;
+  }
+
+  _hasMouseOver = YES;
+  [self sendMouseEvent:MouseEnter];
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+  if (!_hasMouseOver) {
+    return;
+  }
+
+  _hasMouseOver = NO;
+  [self sendMouseEvent:MouseLeave];
+}
+#endif // macOS]
+
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
 {
   return _eventEmitter;
@@ -1518,6 +1936,11 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 - (NSString *)componentViewName_DO_NOT_USE_THIS_IS_BROKEN
 {
   return RCTNSStringFromString([[self class] componentDescriptorProvider].name);
+}
+
+- (BOOL)wantsUpdateLayer
+{
+  return YES;
 }
 
 @end

@@ -126,6 +126,8 @@ enum class Cursor : uint8_t {
   NoDrop,
   None,
   NotAllowed,
+  OpenHand,
+  OperationNotAllowed,
   Pointer,
   Progress,
   RowResize,
