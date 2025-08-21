@@ -13,13 +13,14 @@
 #include <react/renderer/core/LayoutMetrics.h>
 #include <react/renderer/core/ReactPrimitives.h>
 
-#include "TouchEventEmitter.h"
+#include "HostPlatformViewEventEmitter.h"
 
 namespace facebook::react {
 
-class BaseViewEventEmitter : public TouchEventEmitter {
+class BaseViewEventEmitter : public HostPlatformViewEventEmitter {
  public:
-  using TouchEventEmitter::TouchEventEmitter;
+  using HostPlatformViewEventEmitter::HostPlatformViewEventEmitter;
+
 
 #pragma mark - Accessibility
 

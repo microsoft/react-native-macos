@@ -20,6 +20,10 @@
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <React/UIView+React.h> // [macOS]
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTViewKeyboardEvent.h> // [macOS]
+#endif // macOS]
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
 #import <react/renderer/components/view/ViewProps.h>
@@ -45,6 +49,9 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   BOOL _needsInvalidateLayer;
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
+  BOOL _hasMouseOver; // [macOS]
+  BOOL _hasClipViewBoundsObserver; // [macOS]
+  NSTrackingArea *_trackingArea; // [macOS]
   NSMutableArray<RCTUIView *> *_reactSubviews; // [macOS]
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
   RCTPlatformView *_containerView; // [macOS]
@@ -579,6 +586,13 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     needsInvalidateLayer = YES;
   }
 
+#if TARGET_OS_OSX // [macOS
+  // `focusable`
+  self.focusable = (bool)newViewProps.focusable;
+  // `enableFocusRing`
+  self.enableFocusRing = (bool)newViewProps.enableFocusRing;
+#endif // macOS]
+
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
 
   _props = std::static_pointer_cast<const ViewProps>(props);
@@ -641,6 +655,9 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   _needsInvalidateLayer = NO;
   [self invalidateLayer];
+
+  [self updateTrackingAreas];
+  [self updateClipViewBoundsObserverIfNeeded];
 }
 
 - (void)prepareForRecycle
@@ -1509,6 +1526,210 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     return NO;
   }
 }
+
+#if TARGET_OS_OSX // [macOS
+
+#pragma mark - Keyboard Events
+
+- (BOOL)handleKeyboardEvent:(NSEvent *)event {
+  BOOL keyDown = event.type == NSEventTypeKeyDown;
+  BOOL hasHandler = keyDown ? _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::KeyDown]
+                            : _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::KeyUp];
+  if (hasHandler) {
+    auto validKeys = keyDown ? _props->validKeysDown : _props->validKeysUp;
+
+    // If the view is focusable and the component didn't explicity set the validKeysDown or validKeysUp,
+    // allow enter/return and spacebar key events to mimic the behavior of native controls.
+    if (self.focusable && !validKeys.has_value()) {
+      validKeys = { { .key = "Enter" }, { .key = " " } };
+    }
+    
+    // Convert the event to a KeyEvent
+    NSEventModifierFlags modifierFlags = event.modifierFlags;
+    facebook::react::KeyEvent keyEvent = {
+      .key = [[RCTViewKeyboardEvent keyFromEvent:event] UTF8String],
+      .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+      .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+      .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+      .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+      .capsLockKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCapsLock),
+      .numericPadKey = static_cast<bool>(modifierFlags & NSEventModifierFlagNumericPad),
+      .helpKey = static_cast<bool>(modifierFlags & NSEventModifierFlagHelp),
+      .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
+    };
+
+    BOOL shouldBlock = NO;
+    for (auto const &validKey : *validKeys) {
+      if (keyEvent == validKey) {
+        shouldBlock = YES;
+        break;
+      }
+    }
+
+    if (_eventEmitter && shouldBlock) {
+      if (keyDown) {
+        _eventEmitter->onKeyDown(keyEvent);
+      } else {
+        _eventEmitter->onKeyUp(keyEvent);
+      }
+      return YES;
+    }
+  }
+  
+  return NO;
+}
+
+- (void)keyDown:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyDown:event];
+  }
+}
+
+- (void)keyUp:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyUp:event];
+  }
+}
+
+
+#pragma mark - Mouse Events
+
+- (void)sendMouseEvent:(BOOL)isMouseOver {
+  if (!_eventEmitter) {
+    return;
+  }
+
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  
+  NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
+
+  MouseEvent mouseEvent = {
+    .clientX = locationInView.x,
+    .clientY = locationInView.y,
+    .screenX = locationInWindow.x,
+    .screenY = locationInWindow.y,
+    .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+    .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+    .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+    .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+  };
+  
+  if (isMouseOver) {
+    _eventEmitter->onMouseEnter(mouseEvent);
+  } else {
+    _eventEmitter->onMouseLeave(mouseEvent);
+  }
+}
+
+- (void)updateMouseOverIfNeeded
+{
+  // When an enclosing scrollview is scrolled using the scrollWheel or trackpad,
+  // the mouseExited: event does not get called on the view where mouseEntered: was previously called.
+  // This creates an unnatural pairing of mouse enter and exit events and can cause problems.
+  // We therefore explicitly check for this here and handle them by calling the appropriate callbacks.
+
+  BOOL hasMouseOver = _hasMouseOver;
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  BOOL insideBounds = NSPointInRect(locationInView, self.visibleRect);
+
+  // On macOS 14.0 visibleRect can be larger than the view bounds
+  insideBounds &= NSPointInRect(locationInView, self.bounds);
+
+  if (hasMouseOver && !insideBounds) {
+    hasMouseOver = NO;
+  } else if (!hasMouseOver && insideBounds) {
+    // The window's frame view must be used for hit testing against `locationInWindow`
+    NSView *hitView = [self.window.contentView.superview hitTest:locationInWindow];
+    hasMouseOver = [hitView isDescendantOf:self];
+  }
+
+  if (hasMouseOver != _hasMouseOver) {
+    _hasMouseOver = hasMouseOver;
+    [self sendMouseEvent:hasMouseOver];
+  }
+}
+
+- (void)updateClipViewBoundsObserverIfNeeded
+{
+  // Subscribe to view bounds changed notification so that the view can be notified when a
+  // scroll event occurs either due to trackpad/gesture based scrolling or a scrollwheel event
+  // both of which would not cause the mouseExited to be invoked.
+
+  NSClipView *clipView = self.window ? self.enclosingScrollView.contentView : nil;
+  
+  BOOL hasMouseEventHandler = _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseEnter] ||
+    _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseLeave];
+
+  if (_hasClipViewBoundsObserver && (!clipView || !hasMouseEventHandler)) {
+    _hasClipViewBoundsObserver = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NSViewBoundsDidChangeNotification
+                                                  object:nil];
+  } else if (!_hasClipViewBoundsObserver && clipView && hasMouseEventHandler) {
+    _hasClipViewBoundsObserver = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(updateMouseOverIfNeeded)
+                                                 name:NSViewBoundsDidChangeNotification
+                                               object:clipView];
+    [self updateMouseOverIfNeeded];
+  }
+}
+
+- (void)viewDidMoveToWindow
+{
+  [self updateClipViewBoundsObserverIfNeeded];
+  [super viewDidMoveToWindow];
+}
+
+- (void)updateTrackingAreas
+{
+  if (_trackingArea) {
+    [self removeTrackingArea:_trackingArea];
+  }
+
+  if (
+    _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseEnter] ||
+    _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseLeave]
+  ) {
+    _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
+                                                 options:NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited
+                                                   owner:self
+                                                userInfo:nil];
+    [self addTrackingArea:_trackingArea];
+    [self updateMouseOverIfNeeded];
+  }
+
+  [super updateTrackingAreas];
+}
+
+- (void)mouseEntered:(NSEvent *)event
+{
+  if (_hasMouseOver) {
+    return;
+  }
+
+  // The window's frame view must be used for hit testing against `locationInWindow`
+  NSView *hitView = [self.window.contentView.superview hitTest:event.locationInWindow];
+  if (![hitView isDescendantOf:self]) {
+    return;
+  }
+
+  _hasMouseOver = YES;
+  [self sendMouseEvent:_hasMouseOver];
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+  if (!_hasMouseOver) {
+    return;
+  }
+
+  _hasMouseOver = NO;
+  [self sendMouseEvent:_hasMouseOver];
+}
+#endif // macOS]
 
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
 {
