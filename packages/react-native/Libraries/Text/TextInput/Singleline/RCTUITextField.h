@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, assign, getter=isEditable) BOOL editable;
 #else // [macOS
-@property (assign, getter=isEditable) BOOL editable;
+@property (atomic, assign, getter=isEditable) BOOL editable;
 #endif // macOS]
 @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
 @property (nonatomic, strong, nullable) NSString *inputAccessoryViewID;
@@ -69,6 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) RCTUIColor *selectionColor;
 @property (weak, nullable) id<RCTUITextFieldDelegate> delegate;
 @property (nonatomic, assign) CGFloat pointScaleFactor;
+
+- (void)setReadablePasteBoardTypes:(NSArray<NSPasteboardType> *)readablePasteboardTypes;
 #endif // macOS]
 
 @property (nonatomic, getter=isGhostTextChanging) BOOL ghostTextChanging; // [macOS]

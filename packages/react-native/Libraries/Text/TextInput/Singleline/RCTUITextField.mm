@@ -99,6 +99,7 @@
 #endif // [macOS]
 #if TARGET_OS_OSX // [macOS
   BOOL _isUpdatingPlaceholderText;
+  NSArray<NSPasteboardType> *_readablePasteboardTypes;
 #endif // macOS]
 }
 
@@ -209,6 +210,11 @@
 }
 
 #if TARGET_OS_OSX // [macOS
+
+- (NSResponder *)responder
+{
+  return self;
+}
 
 + (Class)cellClass
 {
@@ -697,6 +703,13 @@
   if ([self.textInputDelegate textInputShouldHandleKeyEvent:event]) {
     [super keyUp:event];
   }
+}
+#endif // macOS]
+  
+#if TARGET_OS_OSX // [macOS
+- (void)setReadablePasteBoardTypes:(NSArray<NSPasteboardType> *)readablePasteboardTypes
+{
+  _readablePasteboardTypes = readablePasteboardTypes;
 }
 #endif // macOS]
 

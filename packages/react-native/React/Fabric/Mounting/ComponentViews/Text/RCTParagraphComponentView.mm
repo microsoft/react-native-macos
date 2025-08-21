@@ -10,7 +10,9 @@
 
 #if !TARGET_OS_OSX // [macOS]
 #import <MobileCoreServices/UTCoreTypes.h>
-#endif // [macOS]
+#else // [macOS
+#import <React/RCTSurfaceTouchHandler.h>
+#endif // macOS]
 
 #import <react/renderer/components/text/ParagraphComponentDescriptor.h>
 #import <react/renderer/components/text/ParagraphProps.h>
@@ -28,6 +30,30 @@
 #import <QuartzCore/QuartzCore.h> // [macOS]
 
 using namespace facebook::react;
+
+#if TARGET_OS_OSX // [macOS
+@interface RCTParagraphComponentUnfocusableTextView : NSTextView
+@end
+
+@implementation RCTParagraphComponentUnfocusableTextView
+
+- (BOOL)canBecomeKeyView
+{
+  return NO;
+}
+
+- (BOOL)resignFirstResponder
+{
+  // Don't relinquish first responder while selecting text.
+  if (self.selectable && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
+    return NO;
+  }
+
+  return [super resignFirstResponder];
+}
+
+@end
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 // ParagraphTextView is an auxiliary view we set as contentView so the drawing
@@ -56,17 +82,25 @@ using namespace facebook::react;
 @property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
 
 @end
-#endif // [macOS]
 
 @implementation RCTParagraphComponentView {
   ParagraphShadowNode::ConcreteState::Shared _state;
   ParagraphAttributes _paragraphAttributes;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
-#if !TARGET_OS_OSX // [macOS]
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
-#endif // macOS]
   RCTParagraphTextView *_textView;
 }
+#else // [macOS
+@interface RCTParagraphComponentView () <NSTextViewDelegate>
+@end
+
+@implementation RCTParagraphComponentView {
+  ParagraphShadowNode::ConcreteState::Shared _state;
+  ParagraphAttributes _paragraphAttributes;
+  RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
+  RCTParagraphComponentUnfocusableTextView *_textView;
+}
+#endif // macOS]
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -179,12 +213,18 @@ using namespace facebook::react;
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
 }
+#endif // macOS]
 
 - (void)prepareForRecycle
 {
   [super prepareForRecycle];
   _state.reset();
   _accessibilityProvider = nil;
+  
+#if TARGET_OS_OSX // [macOS
+  // Clear the text view to avoid displaying the previous text on recycle with undefined text content.
+  _textView.string = @"";
+#endif // macOS]
 }
 
 - (void)layoutSubviews
@@ -205,6 +245,7 @@ using namespace facebook::react;
   return self.attributedText.string;
 }
 
+#if !TARGET_OS_OSX // [macOS]
 - (BOOL)isAccessibilityElement
 {
   // All accessibility functionality of the component is implemented in `accessibilityElements` method below.
@@ -213,7 +254,6 @@ using namespace facebook::react;
   return NO;
 }
 
-#if !TARGET_OS_OSX // [macOS]
 - (NSArray *)accessibilityElements
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
@@ -325,14 +365,93 @@ using namespace facebook::react;
     [menuController showMenuFromView:self rect:self.bounds];
   }
 }
-#endif // [macOS]
+#else // [macOS
+- (NSView *)hitTest:(CGPoint)point withEvent:(NSEvent *)event
+{
+  // We will forward mouse click events to the NSTextView ourselves to prevent NSTextView from swallowing events that may be handled in JS (e.g. long press).
+  NSView *hitView = [super hitTest:point withEvent:event];
+  
+  NSEventType eventType = NSApp.currentEvent.type;
+  BOOL isMouseClickEvent = NSEvent.pressedMouseButtons > 0;
+  BOOL isMouseMoveEventType = eventType == NSEventTypeMouseMoved || eventType == NSEventTypeMouseEntered || eventType == NSEventTypeMouseExited || eventType == NSEventTypeCursorUpdate;
+  BOOL isMouseMoveEvent = !isMouseClickEvent && isMouseMoveEventType;
+  BOOL isTextViewClick = (hitView && hitView == _textView) && !isMouseMoveEvent;
+  
+  return isTextViewClick ? self : hitView;
+}
 
+- (NSView *)hitTest:(NSPoint)point
+{
+  return [self hitTest:point withEvent:NSApp.currentEvent];
+}
+
+- (void)mouseDown:(NSEvent *)event
+{
+  if (!_textView.selectable) {
+    [super mouseDown:event];
+    return;
+  }
+
+  // Double/triple-clicks should be forwarded to the NSTextView.
+  BOOL shouldForward = event.clickCount > 1;
+
+  if (!shouldForward) {
+    // Peek at next event to know if a selection should begin.
+    NSEvent *nextEvent = [self.window nextEventMatchingMask:NSEventMaskLeftMouseUp | NSEventMaskLeftMouseDragged
+                                                  untilDate:[NSDate distantFuture]
+                                                     inMode:NSEventTrackingRunLoopMode
+                                                    dequeue:NO];
+    shouldForward = nextEvent.type == NSEventTypeLeftMouseDragged;
+  }
+
+  if (shouldForward) {
+    NSView *contentView = self.window.contentView;
+    // -[NSView hitTest:] takes coordinates in a view's superview coordinate system.
+    NSPoint point = [contentView.superview convertPoint:event.locationInWindow fromView:nil];
+
+    // Start selection if we're still selectable and hit-testable.
+    if (_textView.selectable && [contentView hitTest:point] == self) {
+      [self.window makeFirstResponder:_textView];
+      [_textView mouseDown:event];
+    }
+  } else {
+    // Clear selection for single clicks.
+    _textView.selectedRange = NSMakeRange(NSNotFound, 0);
+  }
+}
+
+#pragma mark - Selection
+
+- (void)textDidEndEditing:(NSNotification *)notification
+{
+  _textView.selectedRange = NSMakeRange(NSNotFound, 0);
+}
+
+#endif // macOS]
+
+#if !TARGET_OS_OSX // [macOS]
 - (BOOL)canBecomeFirstResponder
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
   return paragraphProps.isSelectable;
 }
+#else
+- (BOOL)becomeFirstResponder
+{
+  if (![super becomeFirstResponder]) {
+    return NO;
+  }
 
+  return YES;
+}
+
+- (BOOL)canBecomeFirstResponder
+{
+  return self.focusable;
+}
+#endif // macOS]
+
+#if !TARGET_OS_OSX // [macOS]
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
@@ -347,6 +466,7 @@ using namespace facebook::react;
   return NO;
 #endif // macOS]
 }
+#endif // [macOS]
 
 - (void)copy:(id)sender
 {
