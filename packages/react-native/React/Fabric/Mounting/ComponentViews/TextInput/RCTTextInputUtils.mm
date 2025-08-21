@@ -23,8 +23,8 @@ void RCTCopyBackedTextInput(
     RCTUIView<RCTBackedTextInputViewProtocol> *fromTextInput,
     RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput
 #else // [macOS
-    RCTUITextView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUITextView<RCTBackedTextInputViewProtocol> *toTextInput
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *fromTextInput,
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *toTextInput
 #endif // macOS]
 )
 {
@@ -32,6 +32,15 @@ void RCTCopyBackedTextInput(
   toTextInput.placeholder = fromTextInput.placeholder;
   toTextInput.placeholderColor = fromTextInput.placeholderColor;
   toTextInput.textContainerInset = fromTextInput.textContainerInset;
+
+#if TARGET_OS_OSX // [macOS
+  toTextInput.accessibilityElement = fromTextInput.accessibilityElement;
+  toTextInput.accessibilityHelp = fromTextInput.accessibilityHelp;
+  toTextInput.accessibilityIdentifier = fromTextInput.accessibilityIdentifier;
+  toTextInput.accessibilityLabel = fromTextInput.accessibilityLabel;
+  toTextInput.accessibilityRole = fromTextInput.accessibilityRole;
+  toTextInput.autoresizingMask = fromTextInput.autoresizingMask;
+#endif // macOS]
 #if TARGET_OS_IOS // [macOS] [visionOS]
   toTextInput.inputAccessoryView = fromTextInput.inputAccessoryView;
 #endif // [macOS] [visionOS]
