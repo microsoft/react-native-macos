@@ -20,6 +20,8 @@ import invariant from 'invariant';
 import * as React from 'react';
 import {Platform, StyleSheet, View} from 'react-native'; // [macOS]
 
+const Platform = require('../Utilities/Platform'); // [macOS]
+
 export type Props<ItemT> = {
   CellRendererComponent?: ?React.ComponentType<CellRendererProps<ItemT>>,
   ItemSeparatorComponent: ?React.ComponentType<

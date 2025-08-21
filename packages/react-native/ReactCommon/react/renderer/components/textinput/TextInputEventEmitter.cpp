@@ -119,6 +119,10 @@ static jsi::Value keyPressMetricsPayload(
       key = "Enter";
     } else if (keyPressMetrics.text.front() == '\t') {
       key = "Tab";
+    // [macOS
+    } else if (keyPressMetrics.text.front() == '\x1B') {
+      key = "Escape";
+    // macOS]
     } else {
       key = keyPressMetrics.text;
     }
@@ -188,6 +192,11 @@ void TextInputEventEmitter::onSpellCheckChange(
 void TextInputEventEmitter::onGrammarCheckChange(
     const Metrics& textInputMetrics) const {
   dispatchTextInputEvent("grammarCheckChange", textInputMetrics);
+}
+
+void TextInputEventEmitter::onPaste(
+    const Metrics& textInputMetrics) const {
+  dispatchTextInputEvent("paste", textInputMetrics);
 }
 #endif // macOS]
 
