@@ -1,6 +1,6 @@
 {
   "name": "@react-native/popup-menu-android",
-  "version": "0.79.0-main",
+  "version": "0.79.6",
   "private": true,
   "description": "PopupMenu for the Android platform",
   "main": "index.js",
@@ -22,7 +22,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@react-native/codegen": "workspace:*"
+    "@react-native/codegen": "0.79.6"
   },
   "peerDependencies": {
     "@types/react": "^19.0.0",

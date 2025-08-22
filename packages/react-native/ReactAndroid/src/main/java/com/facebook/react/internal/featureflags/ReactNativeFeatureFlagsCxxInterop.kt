@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<08b51adfc7c09f0f26f2b3c8351cda01>>
+ * @generated SignedSource<<2151e5ec5d04924e742f37b527dc23b9>>
  */
 
 /**
@@ -98,9 +98,9 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun traceTurboModulePromiseRejectionsOnAndroid(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun useAlwaysAvailableJSErrorHandling(): Boolean
+  @DoNotStrip @JvmStatic public external fun updateRuntimeShadowNodeReferencesOnCommit(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun useEditTextStockAndroidFocusBehavior(): Boolean
+  @DoNotStrip @JvmStatic public external fun useAlwaysAvailableJSErrorHandling(): Boolean
 
   @DoNotStrip @JvmStatic public external fun useFabricInterop(): Boolean
 
@@ -109,6 +109,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun useOptimizedEventBatchingOnAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun useRawPropsJsiValue(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun useShadowNodeStateOnClone(): Boolean
 
   @DoNotStrip @JvmStatic public external fun useTurboModuleInterop(): Boolean
 

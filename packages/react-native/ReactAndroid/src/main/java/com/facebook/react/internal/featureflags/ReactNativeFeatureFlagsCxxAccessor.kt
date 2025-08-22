@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b59cecccbe734a126dcd20f76d0ce7c7>>
+ * @generated SignedSource<<9ecb711480b7d6c22bac380c28d035bc>>
  */
 
 /**
@@ -55,12 +55,13 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var removeTurboModuleManagerDelegateMutexCache: Boolean? = null
   private var throwExceptionInsteadOfDeadlockOnTurboModuleSetupDuringSyncRenderIOSCache: Boolean? = null
   private var traceTurboModulePromiseRejectionsOnAndroidCache: Boolean? = null
+  private var updateRuntimeShadowNodeReferencesOnCommitCache: Boolean? = null
   private var useAlwaysAvailableJSErrorHandlingCache: Boolean? = null
-  private var useEditTextStockAndroidFocusBehaviorCache: Boolean? = null
   private var useFabricInteropCache: Boolean? = null
   private var useNativeViewConfigsInBridgelessModeCache: Boolean? = null
   private var useOptimizedEventBatchingOnAndroidCache: Boolean? = null
   private var useRawPropsJsiValueCache: Boolean? = null
+  private var useShadowNodeStateOnCloneCache: Boolean? = null
   private var useTurboModuleInteropCache: Boolean? = null
   private var useTurboModulesCache: Boolean? = null
 
@@ -379,20 +380,20 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
+  override fun updateRuntimeShadowNodeReferencesOnCommit(): Boolean {
+    var cached = updateRuntimeShadowNodeReferencesOnCommitCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.updateRuntimeShadowNodeReferencesOnCommit()
+      updateRuntimeShadowNodeReferencesOnCommitCache = cached
+    }
+    return cached
+  }
+
   override fun useAlwaysAvailableJSErrorHandling(): Boolean {
     var cached = useAlwaysAvailableJSErrorHandlingCache
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.useAlwaysAvailableJSErrorHandling()
       useAlwaysAvailableJSErrorHandlingCache = cached
-    }
-    return cached
-  }
-
-  override fun useEditTextStockAndroidFocusBehavior(): Boolean {
-    var cached = useEditTextStockAndroidFocusBehaviorCache
-    if (cached == null) {
-      cached = ReactNativeFeatureFlagsCxxInterop.useEditTextStockAndroidFocusBehavior()
-      useEditTextStockAndroidFocusBehaviorCache = cached
     }
     return cached
   }
@@ -429,6 +430,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.useRawPropsJsiValue()
       useRawPropsJsiValueCache = cached
+    }
+    return cached
+  }
+
+  override fun useShadowNodeStateOnClone(): Boolean {
+    var cached = useShadowNodeStateOnCloneCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.useShadowNodeStateOnClone()
+      useShadowNodeStateOnCloneCache = cached
     }
     return cached
   }
