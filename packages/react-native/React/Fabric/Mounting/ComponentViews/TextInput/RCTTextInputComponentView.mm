@@ -109,11 +109,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
       [_backedTextInputView.defaultTextAttributes mutableCopy];
 
-#if !TARGET_OS_MACCATALYST
-  RCTWeakEventEmitterWrapper *eventEmitterWrapper = [RCTWeakEventEmitterWrapper new];
-  eventEmitterWrapper.eventEmitter = _eventEmitter;
-  defaultAttributes[RCTAttributedStringEventEmitterKey] = eventEmitterWrapper;
-#endif
+  defaultAttributes[RCTAttributedStringEventEmitterKey] = RCTWrapEventEmitter(_eventEmitter);
 
   _backedTextInputView.defaultTextAttributes = defaultAttributes;
 }
@@ -318,10 +314,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (newTextInputProps.textAttributes != oldTextInputProps.textAttributes) {
     NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
-#if !TARGET_OS_MACCATALYST
     defaultAttributes[RCTAttributedStringEventEmitterKey] =
         _backedTextInputView.defaultTextAttributes[RCTAttributedStringEventEmitterKey];
-#endif
     _backedTextInputView.defaultTextAttributes = defaultAttributes;
   }
 
@@ -842,6 +836,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)_restoreTextSelection
 {
+  [self _restoreTextSelectionAndIgnoreCaretChange:NO];
+}
+
+- (void)_restoreTextSelectionAndIgnoreCaretChange:(BOOL)ignore
+{
   const auto &selection = static_cast<const TextInputProps &>(*_props).selection;
   if (!selection.has_value()) {
     return;
@@ -851,6 +850,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
                                                    offset:selection->start];
   auto end = [_backedTextInputView positionFromPosition:_backedTextInputView.beginningOfDocument offset:selection->end];
   auto range = [_backedTextInputView textRangeFromPosition:start toPosition:end];
+  if (ignore && range.empty) {
+    return;
+  }
   [_backedTextInputView setSelectedTextRange:range notifyDelegate:YES];
 #endif // [macOS]
 }
@@ -867,19 +869,20 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   // Updating the UITextView attributedText, for example changing the lineHeight, the color or adding
   // a new paragraph with \n, causes the cursor to move to the end of the Text and scroll.
   // This is fixed by restoring the cursor position and scrolling to that position (iOS issue 652653).
-  if (selectedRange.empty) {
-    // Maintaining a cursor position relative to the end of the old text.
-    NSInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
-                                                          toPosition:selectedRange.start];
-    NSInteger offsetFromEnd = oldTextLength - offsetStart;
-    NSInteger newOffset = attributedString.string.length - offsetFromEnd;
-    UITextPosition *position = [_backedTextInputView positionFromPosition:_backedTextInputView.beginningOfDocument
-                                                                   offset:newOffset];
-    [_backedTextInputView setSelectedTextRange:[_backedTextInputView textRangeFromPosition:position toPosition:position]
-                                notifyDelegate:YES];
-    [_backedTextInputView scrollRangeToVisible:NSMakeRange(offsetStart, 0)];
-  }
-  [self _restoreTextSelection];
+  // Maintaining a cursor position relative to the end of the old text.
+  NSInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
+                                                        toPosition:selectedRange.start];
+  NSInteger offsetFromEnd = oldTextLength - offsetStart;
+  NSInteger newOffset = attributedString.string.length - offsetFromEnd;
+  UITextPosition *position = [_backedTextInputView positionFromPosition:_backedTextInputView.beginningOfDocument
+                                                                 offset:newOffset];
+  [_backedTextInputView setSelectedTextRange:[_backedTextInputView textRangeFromPosition:position toPosition:position]
+                              notifyDelegate:YES];
+  [_backedTextInputView scrollRangeToVisible:NSMakeRange(offsetStart, 0)];
+
+  // A zero-length selection range can cause the caret position to change on iOS,
+  // and we have already updated the caret position, so we can safely ignore caret changing in this place.
+  [self _restoreTextSelectionAndIgnoreCaretChange:YES];
   [self _updateTypingAttributes];
   _lastStringStateWasUpdatedWith = attributedString;
 #endif // [macOS]
