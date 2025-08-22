@@ -85,6 +85,10 @@ def use_react_native! (
   ENV['APP_PATH'] = app_path
   ENV['REACT_NATIVE_PATH'] = path
 
+  # We set RCT_SKIP_CODEGEN to true, if the user wants to skip the running Codegen step from Cocoapods.
+  # This is needed as part of our migration away from cocoapods
+  ENV['RCT_SKIP_CODEGEN'] = ENV['RCT_SKIP_CODEGEN'] == '1' || ENV['RCT_IGNORE_PODS_DEPRECATION'] == '1' ? '1' : '0'
+
   ReactNativePodsUtils.check_minimum_required_xcode()
 
   # Current target definition is provided by Cocoapods and it refers to the target
@@ -97,18 +101,18 @@ def use_react_native! (
   # Better to rely and enable this environment flag if the new architecture is turned on using flags.
   relative_path_from_current = Pod::Config.instance.installation_root.relative_path_from(Pathname.pwd)
   react_native_version = NewArchitectureHelper.extract_react_native_version(File.join(relative_path_from_current, path))
-  ENV['RCT_NEW_ARCH_ENABLED'] = NewArchitectureHelper.compute_new_arch_enabled(new_arch_enabled, react_native_version)
   fabric_enabled = fabric_enabled || NewArchitectureHelper.new_arch_enabled
 
   ENV['RCT_FABRIC_ENABLED'] = fabric_enabled ? "1" : "0"
   ENV['USE_HERMES'] = hermes_enabled ? "1" : "0"
   ENV['RCT_AGGREGATE_PRIVACY_FILES'] = privacy_file_aggregation_enabled ? "1" : "0"
+  ENV["RCT_NEW_ARCH_ENABLED"] = new_arch_enabled ? "1" : "0"
 
   prefix = path
 
   ReactNativePodsUtils.warn_if_not_on_arm64()
 
-  build_codegen!(prefix, relative_path_from_current)
+  Pod::UI.puts "Configuring the target with the #{new_arch_enabled ? "New" : "Legacy"} Architecture\n"
 
   # The Pods which should be included in all projects
   pod 'FBLazyVector', :path => "#{prefix}/Libraries/FBLazyVector"
@@ -117,6 +121,7 @@ def use_react_native! (
   pod 'React', :path => "#{prefix}/"
   pod 'React-Core', :path => "#{prefix}/"
   pod 'React-CoreModules', :path => "#{prefix}/React/CoreModules"
+  pod 'React-RCTRuntime', :path => "#{prefix}/React/Runtime"
   pod 'React-RCTAppDelegate', :path => "#{prefix}/Libraries/AppDelegate"
   pod 'React-RCTActionSheet', :path => "#{prefix}/Libraries/ActionSheetIOS"
   pod 'React-RCTAnimation', :path => "#{prefix}/Libraries/NativeAnimation"
@@ -142,6 +147,7 @@ def use_react_native! (
   pod 'React-jserrorhandler', :path => "#{prefix}/ReactCommon/jserrorhandler"
   pod 'RCTDeprecation', :path => "#{prefix}/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
   pod 'React-RCTFBReactNativeSpec', :path => "#{prefix}/React"
+  pod 'React-jsi', :path => "#{prefix}/ReactCommon/jsi"
 
   if hermes_enabled
     setup_hermes!(:react_native_path => prefix)
@@ -151,6 +157,7 @@ def use_react_native! (
 
   pod 'React-jsiexecutor', :path => "#{prefix}/ReactCommon/jsiexecutor"
   pod 'React-jsinspector', :path => "#{prefix}/ReactCommon/jsinspector-modern"
+  pod 'React-jsitooling', :path => "#{prefix}/ReactCommon/jsitooling"
   pod 'React-jsinspectortracing', :path => "#{prefix}/ReactCommon/jsinspector-modern/tracing"
 
   pod 'React-callinvoker', :path => "#{prefix}/ReactCommon/callinvoker"
@@ -158,9 +165,11 @@ def use_react_native! (
   pod 'React-timing', :path => "#{prefix}/ReactCommon/react/timing"
   pod 'React-runtimeexecutor', :path => "#{prefix}/ReactCommon/runtimeexecutor"
   pod 'React-runtimescheduler', :path => "#{prefix}/ReactCommon/react/renderer/runtimescheduler"
+  pod 'React-renderercss', :path => "#{prefix}/ReactCommon/react/renderer/css"
   pod 'React-rendererdebug', :path => "#{prefix}/ReactCommon/react/renderer/debug"
   pod 'React-rendererconsistency', :path => "#{prefix}/ReactCommon/react/renderer/consistency"
   pod 'React-perflogger', :path => "#{prefix}/ReactCommon/reactperflogger"
+  pod 'React-oscompat', :path => "#{prefix}/ReactCommon/oscompat"
   pod 'React-logger', :path => "#{prefix}/ReactCommon/logger"
   pod 'ReactCommon/turbomodule/core', :path => "#{prefix}/ReactCommon", :modular_headers => true
   pod 'React-NativeModulesApple', :path => "#{prefix}/ReactCommon/react/nativemodule/core/platform/ios", :modular_headers => true
@@ -376,6 +385,36 @@ def rct_cxx_language_standard()
   return Helpers::Constants.cxx_language_standard
 end
 
+def print_jsc_removal_message()
+  puts ''
+  puts '=============== JavaScriptCore is being moved ==============='.yellow
+  puts 'JavaScriptCore has been extracted from react-native core'.yellow
+  puts 'and will be removed in a future release. It can now be'.yellow
+  puts 'installed from `@react-native-community/javascriptcore`'.yellow
+  puts 'See: https://github.com/react-native-community/javascriptcore'.yellow
+  puts '============================================================='.yellow
+  puts ''
+end
+
+def print_cocoapods_deprecation_message()
+  if ENV["RCT_IGNORE_PODS_DEPRECATION"] == "1"
+    return
+  end
+
+  puts ''
+  puts '==================== DEPRECATION NOTICE ====================='.yellow
+  puts 'Calling `pod install` directly is deprecated in React Native'.yellow
+  puts 'because we are moving away from Cocoapods toward alternative'.yellow
+  puts 'solutions to build the project.'.yellow
+  puts '* If you are using Expo, please run:'.yellow
+  puts '`npx expo run:ios`'.yellow
+  puts '* If you are using the Community CLI, please run:'.yellow
+  puts '`yarn ios`'.yellow
+  puts '============================================================='.yellow
+  puts ''
+
+end
+
 # Function that executes after React Native has been installed to configure some flags and build settings.
 #
 # Parameters
@@ -393,13 +432,13 @@ def react_native_post_install(
 
   ReactNativePodsUtils.apply_mac_catalyst_patches(installer) if mac_catalyst_enabled
 
-  fabric_enabled = ENV['RCT_FABRIC_ENABLED'] == '1'
   hermes_enabled = ENV['USE_HERMES'] == '1'
   privacy_file_aggregation_enabled = ENV['RCT_AGGREGATE_PRIVACY_FILES'] == '1'
 
   if hermes_enabled
     ReactNativePodsUtils.set_gcc_preprocessor_definition_for_React_hermes(installer)
   end
+  ReactNativePodsUtils.set_gcc_preprocessor_definition_for_debugger(installer)
 
   ReactNativePodsUtils.fix_library_search_paths(installer)
   ReactNativePodsUtils.update_search_paths(installer)
@@ -425,6 +464,10 @@ def react_native_post_install(
   NewArchitectureHelper.set_clang_cxx_language_standard_if_needed(installer)
   NewArchitectureHelper.modify_flags_for_new_architecture(installer, NewArchitectureHelper.new_arch_enabled)
 
+  if ENV['USE_HERMES'] == '0' && ENV['USE_THIRD_PARTY_JSC'] != '1'
+    print_jsc_removal_message()
+  end
 
+  print_cocoapods_deprecation_message
   Pod::UI.puts "Pod install took #{Time.now.to_i - $START_TIME} [s] to run".green
 end

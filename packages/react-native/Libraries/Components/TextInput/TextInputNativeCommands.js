@@ -36,6 +36,6 @@ const supportedCommands = [
   'blur',
   'setTextAndSelection',
   'setGhostText',
-]; // [macOS]
+] as string[]; // [macOS]
 
 export default supportedCommands;

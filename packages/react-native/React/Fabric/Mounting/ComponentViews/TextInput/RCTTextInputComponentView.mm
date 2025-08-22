@@ -209,7 +209,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         newTextInputProps.traits.autoCorrect.value();
   }
 #endif // macOS]
-  
+
   if (newTextInputProps.traits.contextMenuHidden != oldTextInputProps.traits.contextMenuHidden) {
     _backedTextInputView.contextMenuHidden = newTextInputProps.traits.contextMenuHidden;
   }
@@ -217,6 +217,14 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (newTextInputProps.traits.editable != oldTextInputProps.traits.editable) {
     _backedTextInputView.editable = newTextInputProps.traits.editable;
   }
+
+#if !TARGET_OS_OSX // [macOS]
+  if (newTextInputProps.multiline &&
+      newTextInputProps.traits.dataDetectorTypes != oldTextInputProps.traits.dataDetectorTypes) {
+    _backedTextInputView.dataDetectorTypes =
+        RCTUITextViewDataDetectorTypesFromStringVector(newTextInputProps.traits.dataDetectorTypes);
+  }
+#endif // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.enablesReturnKeyAutomatically !=
@@ -229,7 +237,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         RCTUIKeyboardAppearanceFromKeyboardAppearance(newTextInputProps.traits.keyboardAppearance);
   }
 #endif // [macOS]
-  
+
 #if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.spellCheck != oldTextInputProps.traits.spellCheck) {
     _backedTextInputView.spellCheckingType =
@@ -241,7 +249,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         newTextInputProps.traits.spellCheck.value();
   }
 #endif // macOS]
-  
+
 #if TARGET_OS_OSX // [macOS
   if (newTextInputProps.traits.grammarCheck != oldTextInputProps.traits.grammarCheck && newTextInputProps.traits.grammarCheck.has_value()) {
     _backedTextInputView.grammarCheckingEnabled =
@@ -369,6 +377,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
            oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
 {
+  CGSize previousContentSize = _backedTextInputView.contentSize;
+
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
 
 #if TARGET_OS_OSX // [macOS
@@ -379,7 +389,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _backedTextInputView.textContainerInset =
       RCTUIEdgeInsetsFromEdgeInsets(layoutMetrics.contentInsets - layoutMetrics.borderWidth);
 
-  if (_eventEmitter) {
+  if (!CGSizeEqualToSize(previousContentSize, _backedTextInputView.contentSize) && _eventEmitter) {
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onContentSizeChange([self _textInputMetrics]);
   }
 }
@@ -546,7 +556,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 }
 
-- (void)grammarCheckingDidChange:(BOOL)enabled 
+- (void)grammarCheckingDidChange:(BOOL)enabled
 {
   if (_eventEmitter) {
     std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onGrammarCheckChange({.grammarCheckEnabled = static_cast<bool>(enabled)});

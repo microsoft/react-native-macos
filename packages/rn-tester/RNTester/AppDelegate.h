@@ -5,9 +5,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <RCTAppDelegate.h>
+#import <RCTDefaultReactNativeFactoryDelegate.h>
+#import <RCTReactNativeFactory.h>
 #import <React/RCTUIKit.h> // [macOS]
 
-@interface AppDelegate : RCTAppDelegate
+#if !TARGET_OS_OSX // [macOS]
+@interface AppDelegate : RCTDefaultReactNativeFactoryDelegate <UIApplicationDelegate>
+#else // [macOS
+@interface AppDelegate : RCTDefaultReactNativeFactoryDelegate <NSApplicationDelegate>
+#endif // macOS]
+
+@property (nonatomic, strong, nonnull) RCTPlatformWindow *window; // [macOS]
+@property (nonatomic, strong, nonnull) RCTReactNativeFactory *reactNativeFactory;
 
 @end

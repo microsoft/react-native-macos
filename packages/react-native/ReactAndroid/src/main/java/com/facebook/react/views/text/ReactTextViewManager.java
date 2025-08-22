@@ -18,9 +18,9 @@ import com.facebook.react.common.MapBuilder;
 import com.facebook.react.common.annotations.VisibleForTesting;
 import com.facebook.react.common.mapbuffer.MapBuffer;
 import com.facebook.react.internal.SystraceSection;
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.uimanager.IViewManagerWithChildren;
-import com.facebook.react.uimanager.ReactAccessibilityDelegate;
 import com.facebook.react.uimanager.ReactStylesDiffMap;
 import com.facebook.react.uimanager.StateWrapper;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -58,7 +58,9 @@ public class ReactTextViewManager
 
   public ReactTextViewManager(@Nullable ReactTextViewManagerCallback reactTextViewManagerCallback) {
     mReactTextViewManagerCallback = reactTextViewManagerCallback;
-    setupViewRecycling();
+    if (ReactNativeFeatureFlags.enableViewRecyclingForText()) {
+      setupViewRecycling();
+    }
   }
 
   @Override
@@ -81,6 +83,12 @@ public class ReactTextViewManager
   }
 
   @Override
+  protected void updateViewAccessibility(@NonNull ReactTextView view) {
+    ReactTextViewAccessibilityDelegate.Companion.setDelegate(
+        view, view.isFocusable(), view.getImportantForAccessibility());
+  }
+
+  @Override
   public ReactTextView createViewInstance(ThemedReactContext context) {
     return new ReactTextView(context);
   }
@@ -99,14 +107,13 @@ public class ReactTextViewManager
       // delegate so that these can be picked up by the accessibility system.
       ReactClickableSpan[] clickableSpans =
           spannable.getSpans(0, update.getText().length(), ReactClickableSpan.class);
-
-      if (clickableSpans.length > 0) {
-        view.setTag(
-            R.id.accessibility_links,
-            new ReactAccessibilityDelegate.AccessibilityLinks(clickableSpans, spannable));
-        ReactAccessibilityDelegate.resetDelegate(
-            view, view.isFocusable(), view.getImportantForAccessibility());
-      }
+      view.setTag(
+          R.id.accessibility_links,
+          clickableSpans.length > 0
+              ? new ReactTextViewAccessibilityDelegate.AccessibilityLinks(clickableSpans, spannable)
+              : null);
+      ReactTextViewAccessibilityDelegate.Companion.resetDelegate(
+          view, view.isFocusable(), view.getImportantForAccessibility());
     }
   }
 

@@ -91,4 +91,4 @@ const Platform: PlatformType = {
         : spec.default,
 };
 
-module.exports = Platform;
+export default Platform;

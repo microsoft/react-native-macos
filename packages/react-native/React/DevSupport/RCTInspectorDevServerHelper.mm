@@ -100,6 +100,9 @@ static NSString *getInspectorDeviceId()
 
 static NSURL *getInspectorDeviceUrl(NSURL *bundleURL)
 {
+  auto &inspectorFlags = facebook::react::jsinspector_modern::InspectorFlags::getInstance();
+  BOOL isProfilingBuild = inspectorFlags.getIsProfilingBuild();
+
 #if !TARGET_OS_OSX // [macOS]
   NSString *escapedDeviceName = [[[UIDevice currentDevice] name]
       stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLQueryAllowedCharacterSet];
@@ -112,11 +115,13 @@ static NSURL *getInspectorDeviceUrl(NSURL *bundleURL)
   NSString *escapedInspectorDeviceId = [getInspectorDeviceId()
       stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLQueryAllowedCharacterSet];
 
-  return [NSURL URLWithString:[NSString stringWithFormat:@"http://%@/inspector/device?name=%@&app=%@&device=%@",
-                                                         getServerHost(bundleURL),
-                                                         escapedDeviceName,
-                                                         escapedAppName,
-                                                         escapedInspectorDeviceId]];
+  return [NSURL
+      URLWithString:[NSString stringWithFormat:@"http://%@/inspector/device?name=%@&app=%@&device=%@&profiling=%@",
+                                               getServerHost(bundleURL),
+                                               escapedDeviceName,
+                                               escapedAppName,
+                                               escapedInspectorDeviceId,
+                                               isProfilingBuild ? @"true" : @"false"]];
 }
 
 @implementation RCTInspectorDevServerHelper
@@ -198,7 +203,7 @@ static void sendEventToAllConnections(NSString *event)
 
   // [macOS Add a lock around access to connection
   id<RCTInspectorPackagerConnectionProtocol> connection;
-  [connectionsLock lock]; 
+  [connectionsLock lock];
   connection = socketConnections[key];
    // macOS]
   if (!connection || !connection.isConnected) {

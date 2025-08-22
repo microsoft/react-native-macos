@@ -59,12 +59,10 @@
 
 #if !TARGET_OS_OSX // [macOS]
   UIButton *resumeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-  [resumeButton setImage:[UIImage systemImageNamed:@"forward.frame.fill"] forState:UIControlStateNormal];
+  UIImage *image = [UIImage systemImageNamed:@"forward.frame.fill"];
+  [resumeButton setImage:image forState:UIControlStateNormal];
+  [resumeButton setImage:image forState:UIControlStateDisabled];
   resumeButton.tintColor = [UIColor colorWithRed:0.37 green:0.37 blue:0.37 alpha:1];
-
-  resumeButton.configurationUpdateHandler = ^(UIButton *button) {
-    button.imageView.tintAdjustmentMode = UIViewTintAdjustmentModeNormal;
-  };
 
   resumeButton.enabled = NO;
 #else // [macOS

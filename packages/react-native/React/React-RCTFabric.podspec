@@ -98,14 +98,12 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-rendererdebug")
   add_dependency(s, "React-rendererconsistency")
   add_dependency(s, "React-runtimescheduler")
+  add_dependency(s, "React-RCTAnimation", :framework_name => 'RCTAnimation')
   add_dependency(s, "React-jsinspector", :framework_name => 'jsinspector_modern')
   add_dependency(s, "React-jsinspectortracing", :framework_name => 'jsinspector_moderntracing')
+  add_dependency(s, "React-renderercss")
 
-  if ENV["USE_HERMES"] == nil || ENV["USE_HERMES"] == "1"
-    s.dependency "hermes-engine"
-  else
-    s.dependency "React-jsc"
-  end
+  depend_on_js_engine(s)
 
   s.test_spec 'Tests' do |test_spec|
     test_spec.source_files = "Tests/**/*.{mm}"

@@ -411,7 +411,7 @@ export type GradientValue = {
   // Angle or direction enums
   direction?: string | undefined;
   colorStops: ReadonlyArray<{
-    color: ColorValue;
+    color: ColorValue | null;
     positions?: ReadonlyArray<string[]> | undefined;
   }>;
 };

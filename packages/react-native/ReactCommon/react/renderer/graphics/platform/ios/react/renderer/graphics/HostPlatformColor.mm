@@ -9,6 +9,8 @@
 
 #import <Foundation/Foundation.h>
 #import <React/RCTUIKit.h> // [macOS]
+#import <objc/runtime.h>
+#import <react/renderer/graphics/RCTPlatformColorUtils.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <string>
 
@@ -19,13 +21,30 @@ NS_ASSUME_NONNULL_BEGIN
 namespace facebook::react {
 
 namespace {
+
+bool UIColorIsP3ColorSpace(const std::shared_ptr<void> &uiColor)
+{
+  RCTUIColor *color = unwrapManagedObject(uiColor); // [macOS]
+  CGColorSpaceRef colorSpace = CGColorGetColorSpace(color.CGColor);
+
+  if (CGColorSpaceGetModel(colorSpace) == kCGColorSpaceModelRGB) {
+    CFStringRef name = CGColorSpaceGetName(colorSpace);
+    if (name != NULL && CFEqual(name, kCGColorSpaceDisplayP3)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 RCTUIColor *_Nullable UIColorFromInt32(int32_t intColor) // [macOS]
 {
   CGFloat a = CGFloat((intColor >> 24) & 0xFF) / 255.0;
   CGFloat r = CGFloat((intColor >> 16) & 0xFF) / 255.0;
   CGFloat g = CGFloat((intColor >> 8) & 0xFF) / 255.0;
   CGFloat b = CGFloat(intColor & 0xFF) / 255.0;
-  return [RCTUIColor colorWithRed:r green:g blue:b alpha:a]; // [macOS]
+
+  RCTUIColor *color = [RCTUIColor colorWithRed:r green:g blue:b alpha:a]; // [macOS]
+  return color;
 }
 
 RCTUIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColor &dynamicColor) // [macOS]
@@ -89,71 +108,143 @@ RCTUIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColo
   return nil;
 }
 
-int32_t ColorFromUIColor(RCTUIColor *color) // [macOS]
+int32_t ColorFromColorComponents(const facebook::react::ColorComponents &components)
 {
   float ratio = 255;
-  CGFloat rgba[4];
-#if !TARGET_OS_OSX // [macOS
-  [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-#else // [macOS
-  // [NSColor getRed:green:blue:alpha]` wil throw an exception if the colorspace is not SRGB,
-  [[color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]] getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-#endif // macOS]
-  return ((int32_t)round((float)rgba[3] * ratio) & 0xff) << 24 | ((int)round((float)rgba[0] * ratio) & 0xff) << 16 |
-      ((int)round((float)rgba[1] * ratio) & 0xff) << 8 | ((int)round((float)rgba[2] * ratio) & 0xff);
+  auto color = ((int32_t)round((float)components.alpha * ratio) & 0xff) << 24 |
+      ((int)round((float)components.red * ratio) & 0xff) << 16 |
+      ((int)round((float)components.green * ratio) & 0xff) << 8 | ((int)round((float)components.blue * ratio) & 0xff);
+  return color;
 }
 
-int32_t ColorFromUIColor(const std::shared_ptr<void> &uiColor)
+int32_t ColorFromUIColor(RCTUIColor *color) // [macOS]
+{
+  CGFloat rgba[4];
+  [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+  return ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
+}
+
+#if !TARGET_OS_OSX // [macOS]
+int32_t ColorFromUIColorForSpecificTraitCollection(
+    const std::shared_ptr<void> &uiColor,
+    UITraitCollection *traitCollection)
 {
   RCTUIColor *color = (RCTUIColor *)unwrapManagedObject(uiColor); // [macOS]
   if (color) {
-#if !TARGET_OS_OSX // [macOS]
-    UITraitCollection *currentTraitCollection = [UITraitCollection currentTraitCollection];
-    color = [color resolvedColorWithTraitCollection:currentTraitCollection];
-#endif // [macOS]
+    color = [color resolvedColorWithTraitCollection:traitCollection];
     return ColorFromUIColor(color);
   }
 
   return 0;
 }
+#endif // [macOS]
+
+int32_t ColorFromUIColor(const std::shared_ptr<void> &uiColor)
+{
+#if !TARGET_OS_OSX // [macOS]
+  return ColorFromUIColorForSpecificTraitCollection(uiColor, [UITraitCollection currentTraitCollection]);
+#else // [macOS
+  RCTUIColor *color = (RCTUIColor *)unwrapManagedObject(uiColor);
+  return ColorFromUIColor(color);
+#endif // macOS]
+}
 
 RCTUIColor *_Nullable UIColorFromComponentsColor(const facebook::react::ColorComponents &components) // [macOS]
 {
+  RCTUIColor *uiColor = nil; // [macOS]
   if (components.colorSpace == ColorSpace::DisplayP3) {
-    return [RCTUIColor colorWithDisplayP3Red:components.red // [macOS]
+    uiColor = [RCTUIColor colorWithDisplayP3Red:components.red // [macOS]
                                        green:components.green
                                         blue:components.blue
                                        alpha:components.alpha];
+  } else {
+    uiColor = [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha]; // [macOS]
   }
-  return [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha]; // [macOS]
+
+  return uiColor;
 }
+
+int32_t hashFromUIColor(const std::shared_ptr<void> &uiColor)
+{
+  if (uiColor == nullptr) {
+    return 0;
+  }
+
+#if TARGET_OS_OSX // [macOS]
+  return ColorFromUIColor(uiColor);
+#else // [macOS
+  static UITraitCollection *darkModeTraitCollection =
+      [UITraitCollection traitCollectionWithUserInterfaceStyle:UIUserInterfaceStyleDark];
+  auto darkColor = ColorFromUIColorForSpecificTraitCollection(uiColor, darkModeTraitCollection);
+
+  static UITraitCollection *lightModeTraitCollection =
+      [UITraitCollection traitCollectionWithUserInterfaceStyle:UIUserInterfaceStyleLight];
+  auto lightColor = ColorFromUIColorForSpecificTraitCollection(uiColor, lightModeTraitCollection);
+
+  static UITraitCollection *darkModeAccessibilityContrastTraitCollection =
+      [UITraitCollection traitCollectionWithTraitsFromCollections:@[
+        darkModeTraitCollection,
+        [UITraitCollection traitCollectionWithAccessibilityContrast:UIAccessibilityContrastHigh]
+      ]];
+  auto darkAccessibilityContrastColor =
+      ColorFromUIColorForSpecificTraitCollection(uiColor, darkModeAccessibilityContrastTraitCollection);
+
+  static UITraitCollection *lightModeAccessibilityContrastTraitCollection =
+      [UITraitCollection traitCollectionWithTraitsFromCollections:@[
+        lightModeTraitCollection,
+        [UITraitCollection traitCollectionWithAccessibilityContrast:UIAccessibilityContrastHigh]
+      ]];
+  auto lightAccessibilityContrastColor =
+      ColorFromUIColorForSpecificTraitCollection(uiColor, lightModeAccessibilityContrastTraitCollection);
+  return facebook::react::hash_combine(
+      darkColor,
+      lightColor,
+      darkAccessibilityContrastColor,
+      lightAccessibilityContrastColor,
+      UIColorIsP3ColorSpace(uiColor));
+#endif // macOS]
+}
+
 } // anonymous namespace
 
 Color::Color(int32_t color)
 {
   uiColor_ = wrapManagedObject(UIColorFromInt32(color));
+  uiColorHashValue_ = facebook::react::hash_combine(color, 0);
 }
 
 Color::Color(const DynamicColor &dynamicColor)
 {
   uiColor_ = wrapManagedObject(UIColorFromDynamicColor(dynamicColor));
+  uiColorHashValue_ = facebook::react::hash_combine(
+      dynamicColor.darkColor,
+      dynamicColor.lightColor,
+      dynamicColor.highContrastDarkColor,
+      dynamicColor.highContrastLightColor,
+      0);
 }
 
 Color::Color(const ColorComponents &components)
 {
   uiColor_ = wrapManagedObject(UIColorFromComponentsColor(components));
+  uiColorHashValue_ = facebook::react::hash_combine(
+      ColorFromColorComponents(components), components.colorSpace == ColorSpace::DisplayP3);
 }
 
 Color::Color(std::shared_ptr<void> uiColor)
 {
+  RCTUIColor *color = ((RCTUIColor *)unwrapManagedObject(uiColor)); // [macOS]
+  if (color) {
+    auto colorHash = hashFromUIColor(uiColor);
+    uiColorHashValue_ = colorHash;
+  }
   uiColor_ = std::move(uiColor);
 }
 
 bool Color::operator==(const Color &other) const
 {
   return (!uiColor_ && !other.uiColor_) ||
-      (uiColor_ && other.uiColor_ &&
-       [unwrapManagedObject(getUIColor()) isEqual:unwrapManagedObject(other.getUIColor())]);
+      (uiColor_ && other.uiColor_ && (uiColorHashValue_ == other.uiColorHashValue_));
 }
 
 bool Color::operator!=(const Color &other) const
@@ -172,6 +263,17 @@ float Color::getChannel(int channelId) const
   RCTUIColor *color = (__bridge RCTUIColor *)getUIColor().get(); // [macOS]
   [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
   return static_cast<float>(rgba[channelId]);
+}
+
+int32_t Color::getUIColorHash() const
+{
+  return uiColorHashValue_;
+}
+
+Color Color::createSemanticColor(std::vector<std::string> &semanticItems)
+{
+  auto semanticColor = RCTPlatformColorFromSemanticItems(semanticItems);
+  return Color(wrapManagedObject(semanticColor));
 }
 
 } // namespace facebook::react

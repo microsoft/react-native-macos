@@ -60,12 +60,12 @@
 {
   if (self.drawsBackground) {
     if (self.backgroundColor && self.backgroundColor.alphaComponent > 0) {
-      
+
       [self.backgroundColor set];
       NSRectFill(cellFrame);
     }
   }
-  
+
   [super drawInteriorWithFrame:[self titleRectForBounds:cellFrame] inView:controlView];
 }
 
@@ -106,10 +106,16 @@
 @dynamic delegate;
 #endif // macOS]
 
+// This should not be needed but internal build were failing without it.
+// This variable is unused.
+#if !TARGET_OS_OSX // [macOS
+@synthesize dataDetectorTypes;
+#endif // macOS]
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-        
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(_textDidChange)
                                                  name:UITextFieldTextDidChangeNotification
@@ -165,7 +171,7 @@
 }
 
 #endif // macOS]
-  
+
 #pragma mark - Accessibility
 
 #if !TARGET_OS_OSX // [macOS]
@@ -284,7 +290,7 @@
 {
   return ((RCTUITextFieldCell*)self.cell).selectionColor;
 }
-    
+
 - (void)setCursorColor:(NSColor *)cursorColor
 {
     ((RCTUITextFieldCell*)self.cell).insertionPointColor = cursorColor;
@@ -511,9 +517,9 @@
 {
   return [self textRectForBounds:bounds];
 }
-  
+
 #else // [macOS
-  
+
 #pragma mark - NSTextFieldDelegate methods
 
 - (void)textDidChange:(NSNotification *)notification
@@ -540,7 +546,7 @@
     [delegate textFieldEndEditing:self];
   }
 }
-  
+
 - (void)textViewDidChangeSelection:(NSNotification *)notification
 {
   id<RCTUITextFieldDelegate> delegate = self.delegate;
@@ -557,7 +563,7 @@
   }
   return NO;
 }
-  
+
 - (NSMenu *)textView:(NSTextView *)view menu:(NSMenu *)menu forEvent:(NSEvent *)event atIndex:(NSUInteger)charIndex
 {
   if (menu) {
@@ -617,7 +623,7 @@
   return [super performKeyEquivalent:event];
 }
 #endif // macOS]
-	
+
 #if !TARGET_OS_OSX // [macOS]
 - (void)setSelectedTextRange:(UITextRange *)selectedTextRange notifyDelegate:(BOOL)notifyDelegate
 {
@@ -648,7 +654,7 @@
     // so the adapter must not generate a notification for it.
     [_textInputDelegateAdapter skipNextTextInputDidChangeSelectionEventWithTextRange:selectedTextRange];
   }
-  
+
   [[self currentEditor] setSelectedRange:selectedTextRange];
 }
 
