@@ -21,7 +21,7 @@
       "versionActionsOptions": {
         "currentVersionResolver": "registry",
         "currentVersionResolverMetadata": {
-          "tag": "latest"
+          "tag": "v0.78-stable"
         }
       },
       "useLegacyVersioning": false
