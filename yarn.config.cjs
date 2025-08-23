@@ -9,108 +9,161 @@ const {defineConfig} = require('@yarnpkg/types');
  * @typedef {import('@yarnpkg/types').Yarn.Constraints.Dependency} Dependency
  */
 
+// Helpers
+
+// These packages in tools/ were private upstream in React Native and don't follow the same versioning as the public packages
+const PACKAGES_TO_IGNORE = ['@react-native/eslint', 'public-api'];
+
 /**
- * Enforce that react-native-macos declares a peer dependency on react-native on release branches,
- * except on the main branch, where there is no published version of React Native to align to.
+ * Get the React Native macOS workspace
  * @param {Context} context
+ * @returns {Workspace | null} Workspace
  */
-function expectReactNativePeerDependency({Yarn}) {
+const getReactNativeMacOSWorkspace = ({Yarn}) => {
     const rnmWorkspace = Yarn.workspace({ident: 'react-native-macos'});
     if (!rnmWorkspace) {
         // Report error on root workspace since react-native-macos doesn't exist
         Yarn.workspace().error('react-native-macos workspace must exist in the monorepo');
-        return;
     }
-
-    // Check if react-native-macos version is 1000.0.0 - implying we are on the main branch
-    const isMainBranch = rnmWorkspace.manifest.version === '1000.0.0';
-    if (!isMainBranch) {
-        const rnPeerDependency = rnmWorkspace.pkg.peerDependencies.get('react-native');
-        if (!rnPeerDependency) {
-            rnmWorkspace.error('react-native-macos must declare a peer dependency on react-native on release branches');
-        }
-    }
+    return rnmWorkspace;
 }
 
 /**
- * Enforce that all @react-native/ scoped packages use the same version
- * as the react-native peer dependency declared in react-native-macos.
- * On the main branch, enforce that we use workspace:* for @react-native/ packages.
+ * Get the peer dependency on react-native declared by react-native-macos
+ * @param {Context} context
+ * @returns {string | undefined} Peer dependency version
+ */
+const getReactNativePeerDependency = ({Yarn}) => {
+    const rnmWorkspace = getReactNativeMacOSWorkspace({Yarn});
+
+    const rnPeerDependency = rnmWorkspace?.pkg.peerDependencies.get('react-native');
+    if (!rnPeerDependency) {
+        rnmWorkspace?.error('react-native-macos must declare a peer dependency on react-native on release branches');
+    }
+    return rnPeerDependency;
+}
+
+/**
+ * // Check if react-native-macos version is 1000.0.0, implying we are on the main branch
+ * @param {Context} context
+ * @returns {boolean}
+ */
+const isMainBranch = ({Yarn}) => {
+    const rnmWorkspace = getReactNativeMacOSWorkspace({Yarn});
+    return rnmWorkspace?.manifest.version === '1000.0.0';
+}
+
+// Constraints
+
+/**
+ * Enforce that all @react-native/ scoped packages are private
+ * @param {Context} context
+ */
+function enforcePrivateReactNativeScopedPackages({Yarn}) {
+    for (const dependency of Yarn.dependencies()) {
+        if (dependency.ident.startsWith('@react-native/')) {
+            Yarn.workspace({ident: dependency.ident})?.set('private', true);
+        }
+    }  
+}
+
+/**
+ * Enforce that react-native-macos declares a peer dependency on react-native on release branches,
+ * and that this version is consistent across all @react-native/ scoped packages.
+ * Do not enforce on the main branch, where there is no published version of React Native to align to.
  * @param {Context} context
  */
 function enforceReactNativeVersionConsistency({Yarn}) {
-    const rnmWorkspace = Yarn.workspace({ident: 'react-native-macos'});
-    if (!rnmWorkspace) {
-        // Report error on root workspace since react-native-macos doesn't exist
-        Yarn.workspace().error('react-native-macos workspace must exist in the monorepo');
-        return;
-    }
+    if (!isMainBranch({Yarn})) {
+        const reactNativePeerDependency = getReactNativePeerDependency({Yarn});
 
-    // Check if react-native-macos version is 1000.0.0 - implying we are on the main branch
-    const isMainBranch = rnmWorkspace.manifest.version === '1000.0.0';
-    
-    let targetVersion;
-    if (isMainBranch) {
-        // On main branch, use workspace:* for @react-native/ packages
-        targetVersion = 'workspace:*';
-    } else {
-        const rnPeerDependency = rnmWorkspace.pkg.peerDependencies.get('react-native');
-        if (!rnPeerDependency) {
-            rnmWorkspace.error('react-native-macos must declare a peer dependency on react-native on release branches');
-            return;
-        }
-        targetVersion = rnPeerDependency;
-    }    // Enforce this version on all @react-native/ scoped packages across all workspaces
-    for (const dependency of Yarn.dependencies()) {
-        if (dependency.ident.startsWith('@react-native/')) {
-            // Check if the target package is private (not published)
-            const targetWorkspace = Yarn.workspace({ident: dependency.ident});
-            const isPrivatePackage = targetWorkspace && targetWorkspace.manifest.private;
-            
-            if (isPrivatePackage) {
-                // Private packages should always use workspace:* since they're not published
-                dependency.update('workspace:*');
-            } else {
-                dependency.update(targetVersion);
+        // Enforce this version on all @react-native/ scoped packages
+        for (const workspace of Yarn.workspaces()) {
+            if (workspace.ident?.startsWith('@react-native/') && !PACKAGES_TO_IGNORE.includes(workspace.ident)) {
+                workspace.set('version', reactNativePeerDependency);
             }
         }
     }
 }
 
 /**
- * Enforce that all @react-native-macos/ scoped packages use the same version
- * as react-native-macos, but only for non-private packages.
+ * Enforce that all @react-native/ scoped dependencies use the same version
+ * as the react-native peer dependency declared in react-native-macos.
+ * Do not enforce on the main branch, where there is no published version of React Native to align to.
+ * @param {Context} context
+ */
+function enforceReactNativeDependencyConsistency({Yarn}) {
+    for (const dependency of Yarn.dependencies()) {
+        if (dependency.ident.startsWith('@react-native/')) {                
+            if (!isMainBranch({Yarn})) {
+                const reactNativeVersion = getReactNativePeerDependency({Yarn});
+
+                const isRNM = dependency.workspace.ident === 'react-native-macos';
+                const isRNMForkedPackage = dependency.workspace.ident?.startsWith('@react-native-macos/');
+
+                if (isRNM || isRNMForkedPackage) {
+                    // Don't use `workspace:*` for packages we publish until nx release with Yarn 4 supports it.
+                    dependency.update(reactNativeVersion);
+                } else {
+                    dependency.update('workspace:*');
+                }
+            } else {
+                dependency.update('workspace:*');
+            }
+        }
+    }
+}
+
+/**
+ * Enforce that all public @react-native-macos/ scoped packages' versions 
+ * are consistent with react-native-macos
+ * Do not enforce on the main branch, where we do not publish nightlies yet.
  * @param {Context} context
  */
 function enforceReactNativeMacosVersionConsistency({Yarn}) {
-    const rnmWorkspace = Yarn.workspace({ident: 'react-native-macos'});
-    if (!rnmWorkspace) {
-        // Report error on root workspace since react-native-macos doesn't exist
-        Yarn.workspace().error('react-native-macos workspace must exist in the monorepo');
-        return;
-    }
+    if (!isMainBranch({Yarn})) {
+        const rnmWorkspace = getReactNativeMacOSWorkspace({Yarn});
+        const rnmVersion = rnmWorkspace?.manifest.version;
 
-    const targetVersion = rnmWorkspace.manifest.version;
-    if (!targetVersion) {
-        rnmWorkspace.error('react-native-macos must have a version');
-        return;
-    }
+        // Enforce this version on all non-private @react-native-macos/ scoped packages
+        for (const workspace of Yarn.workspaces()) {
+            const isReactNativeMacosScoped = workspace.ident && workspace.ident.startsWith('@react-native-macos/');
+            const isPrivate = workspace.manifest.private;
+            
+            if (isReactNativeMacosScoped && !isPrivate) {
+                workspace.set('version', rnmVersion);
+            }
+        }
+    }   
+}
 
-    // Enforce this version on all non-private @react-native-macos/ scoped packages
-    for (const workspace of Yarn.workspaces()) {
-        const isReactNativeMacosScoped = workspace.ident && workspace.ident.startsWith('@react-native-macos/');
-        const isPrivate = workspace.manifest.private;
-        
-        if (isReactNativeMacosScoped && !isPrivate) {
-            workspace.set('version', targetVersion);
+/**
+ * Enforce that all @react-native-macos/ scoped dependencies use the same version
+ * as the react-native-macos
+ * Do not enforce on the main branch, where there is no published version of React Native to align to.
+ * @param {Context} context
+ */
+function enforceReactNativeMacOSDependencyConsistency({Yarn}) {
+    const rnmWorkspace = getReactNativeMacOSWorkspace({Yarn});
+    const rnmVersion = rnmWorkspace?.manifest.version;
+
+    for (const dependency of Yarn.dependencies()) {
+        if (dependency.ident.startsWith('@react-native-macos/')) {
+            if (!isMainBranch({Yarn})) {
+                dependency.update(rnmVersion);
+            } else {
+                dependency.update('workspace:*');
+            }
         }
     }
 }
 
 module.exports = defineConfig({
   constraints: async ctx => {
-    expectReactNativePeerDependency(ctx);
+    enforcePrivateReactNativeScopedPackages(ctx);
     enforceReactNativeVersionConsistency(ctx);
+    enforceReactNativeDependencyConsistency(ctx);
     enforceReactNativeMacosVersionConsistency(ctx);
+    enforceReactNativeMacOSDependencyConsistency(ctx);
   },
 });
