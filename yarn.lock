@@ -2596,17 +2596,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/babel-plugin-codegen@npm:0.79.6, @react-native/babel-plugin-codegen@workspace:packages/babel-plugin-codegen":
+"@react-native/babel-plugin-codegen@workspace:*, @react-native/babel-plugin-codegen@workspace:packages/babel-plugin-codegen":
   version: 0.0.0-use.local
   resolution: "@react-native/babel-plugin-codegen@workspace:packages/babel-plugin-codegen"
   dependencies:
     "@babel/core": "npm:^7.25.2"
     "@babel/traverse": "npm:^7.25.3"
-    "@react-native/codegen": "npm:0.79.6"
+    "@react-native/codegen": "workspace:*"
   languageName: unknown
   linkType: soft
 
-"@react-native/babel-preset@npm:0.79.6, @react-native/babel-preset@workspace:packages/react-native-babel-preset":
+"@react-native/babel-preset@workspace:*, @react-native/babel-preset@workspace:packages/react-native-babel-preset":
   version: 0.0.0-use.local
   resolution: "@react-native/babel-preset@workspace:packages/react-native-babel-preset"
   dependencies:
@@ -2651,7 +2651,7 @@ __metadata:
     "@babel/plugin-transform-typescript": "npm:^7.25.2"
     "@babel/plugin-transform-unicode-regex": "npm:^7.24.7"
     "@babel/template": "npm:^7.25.0"
-    "@react-native/babel-plugin-codegen": "npm:0.79.6"
+    "@react-native/babel-plugin-codegen": "workspace:*"
     babel-plugin-syntax-hermes-parser: "npm:0.25.1"
     babel-plugin-transform-flow-enums: "npm:^0.0.2"
     react-refresh: "npm:^0.14.0"
@@ -2674,7 +2674,7 @@ __metadata:
     "@babel/plugin-transform-object-rest-spread": "npm:^7.24.7"
     "@babel/plugin-transform-optional-chaining": "npm:^7.24.8"
     "@babel/preset-env": "npm:^7.25.3"
-    "@react-native/codegen": "npm:0.79.6"
+    "@react-native/codegen": "workspace:*"
     "@types/jest": "npm:^29.5.3"
     jest: "npm:^29.7.0"
     rimraf: "npm:^3.0.2"
@@ -2683,7 +2683,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/codegen@npm:0.79.6, @react-native/codegen@workspace:packages/react-native-codegen":
+"@react-native/codegen@npm:0.79.6, @react-native/codegen@workspace:*, @react-native/codegen@workspace:packages/react-native-codegen":
   version: 0.0.0-use.local
   resolution: "@react-native/codegen@workspace:packages/react-native-codegen"
   dependencies:
@@ -2738,7 +2738,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@react-native/compatibility-check@workspace:packages/react-native-compatibility-check"
   dependencies:
-    "@react-native/codegen": "npm:0.79.6"
+    "@react-native/codegen": "workspace:*"
     flow-remove-types: "npm:^2.237.2"
     rimraf: "npm:^3.0.2"
   languageName: unknown
@@ -2783,7 +2783,7 @@ __metadata:
   dependencies:
     "@babel/core": "npm:^7.25.2"
     "@babel/eslint-parser": "npm:^7.25.1"
-    "@react-native/eslint-plugin": "npm:0.79.6"
+    "@react-native/eslint-plugin": "workspace:*"
     "@typescript-eslint/eslint-plugin": "npm:^7.1.1"
     "@typescript-eslint/parser": "npm:^7.1.1"
     eslint: "npm:^8.57.0"
@@ -2807,7 +2807,7 @@ __metadata:
   dependencies:
     "@babel/core": "npm:^7.25.2"
     "@babel/plugin-transform-flow-strip-types": "npm:^7.25.2"
-    "@react-native/codegen": "npm:0.79.6"
+    "@react-native/codegen": "workspace:*"
     babel-plugin-syntax-hermes-parser: "npm:0.25.1"
     hermes-eslint: "npm:0.25.1"
     make-dir: "npm:^2.1.0"
@@ -2816,7 +2816,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-plugin@npm:0.79.6, @react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native":
+"@react-native/eslint-plugin@workspace:*, @react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native"
   dependencies:
@@ -2848,18 +2848,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/js-polyfills@npm:0.79.6, @react-native/js-polyfills@workspace:packages/polyfills":
+"@react-native/js-polyfills@npm:0.79.6, @react-native/js-polyfills@workspace:*, @react-native/js-polyfills@workspace:packages/polyfills":
   version: 0.0.0-use.local
   resolution: "@react-native/js-polyfills@workspace:packages/polyfills"
   languageName: unknown
   linkType: soft
 
-"@react-native/metro-babel-transformer@npm:0.79.6, @react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer":
+"@react-native/metro-babel-transformer@npm:0.79.6, @react-native/metro-babel-transformer@workspace:*, @react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer":
   version: 0.0.0-use.local
   resolution: "@react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer"
   dependencies:
     "@babel/core": "npm:^7.25.2"
-    "@react-native/babel-preset": "npm:0.79.6"
+    "@react-native/babel-preset": "workspace:*"
     hermes-parser: "npm:0.25.1"
     nullthrows: "npm:^1.1.1"
   peerDependencies:
@@ -2871,8 +2871,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@react-native/metro-config@workspace:packages/metro-config"
   dependencies:
-    "@react-native/js-polyfills": "npm:0.79.6"
-    "@react-native/metro-babel-transformer": "npm:0.79.6"
+    "@react-native/js-polyfills": "workspace:*"
+    "@react-native/metro-babel-transformer": "workspace:*"
     metro-config: "npm:^0.82.0"
     metro-runtime: "npm:^0.82.0"
   languageName: unknown
@@ -2889,7 +2889,7 @@ __metadata:
   resolution: "@react-native/oss-library-example@workspace:packages/react-native-test-library"
   dependencies:
     "@babel/core": "npm:^7.25.2"
-    "@react-native/babel-preset": "npm:0.79.6"
+    "@react-native/babel-preset": "workspace:*"
     react-native: "npm:0.79.6"
   peerDependencies:
     react: "*"
@@ -2897,11 +2897,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/popup-menu-android@npm:0.79.6, @react-native/popup-menu-android@workspace:packages/react-native-popup-menu-android":
+"@react-native/popup-menu-android@workspace:*, @react-native/popup-menu-android@workspace:packages/react-native-popup-menu-android":
   version: 0.0.0-use.local
   resolution: "@react-native/popup-menu-android@workspace:packages/react-native-popup-menu-android"
   dependencies:
-    "@react-native/codegen": "npm:0.79.6"
+    "@react-native/codegen": "workspace:*"
     nullthrows: "npm:^1.1.1"
   peerDependencies:
     "@types/react": ^19.0.0
@@ -2921,7 +2921,7 @@ __metadata:
     "@react-native-community/cli-platform-android": "npm:15.0.0-alpha.2"
     "@react-native-community/cli-platform-ios": "npm:15.0.0-alpha.2"
     "@react-native/oss-library-example": "workspace:*"
-    "@react-native/popup-menu-android": "npm:0.79.6"
+    "@react-native/popup-menu-android": "workspace:*"
     commander: "npm:^12.0.0"
     flow-enums-runtime: "npm:^0.0.6"
     invariant: "npm:^2.2.4"
