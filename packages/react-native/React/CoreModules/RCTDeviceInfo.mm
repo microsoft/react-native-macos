@@ -191,6 +191,16 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
   CGSize screenSize = mainScreen.frame.size;
 #endif // macOS]
   RCTPlatformWindow *mainWindow = RCTKeyWindow(); // [macOS]
+  
+#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_VISION // [visionOS]
+  const CGFloat scale = mainScreen.scale;
+#else // [visionOS
+  CGFloat scale = [UITraitCollection currentTraitCollection].displayScale;
+#endif // visionOS]
+#else //  [macOS
+  const CGFloat scale = mainScreen != nil ? mainScreen.backingScaleFactor : [NSScreen mainScreen].backingScaleFactor;
+#endif // macOS]
 
   // We fallback to screen size if a key window is not found.
   CGSize windowSize = mainWindow ? mainWindow.bounds.size : screenSize;
@@ -222,9 +232,6 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
   // that accessibilityManager will eventually become available, js will eventually
   // be updated with the correct fontScale.
   CGFloat fontScale = accessibilityManager ? accessibilityManager.multiplier : 1.0;
-#else // [macOS
-  CGFloat fontScale = 1.0;
-#endif // macOS]
 
   return RCTExportedDimensions(fontScale);
 }
