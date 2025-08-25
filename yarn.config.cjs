@@ -60,11 +60,11 @@ const isMainBranch = ({Yarn}) => {
  * @param {Context} context
  */
 function enforcePrivateReactNativeScopedPackages({Yarn}) {
-    for (const dependency of Yarn.dependencies()) {
-        if (dependency.ident.startsWith('@react-native/')) {
-            Yarn.workspace({ident: dependency.ident})?.set('private', true);
+    for (const workspace of Yarn.workspaces()) {
+        if (workspace.ident?.startsWith('@react-native/') && !PACKAGES_TO_IGNORE.includes(workspace.ident)) {
+            workspace.set('private', true);
         }
-    }  
+    }
 }
 
 /**
