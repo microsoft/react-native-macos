@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e80434127379886a001ffcbace6ba619>>
+ * @generated SignedSource<<643c1fd24fbc1a77ef109e712023f9d5>>
  */
 
 /**
@@ -167,12 +167,12 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool useAlwaysAvailableJSErrorHandling() override {
+  bool updateRuntimeShadowNodeReferencesOnCommit() override {
     return false;
   }
 
-  bool useEditTextStockAndroidFocusBehavior() override {
-    return true;
+  bool useAlwaysAvailableJSErrorHandling() override {
+    return false;
   }
 
   bool useFabricInterop() override {
@@ -188,6 +188,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool useRawPropsJsiValue() override {
+    return false;
+  }
+
+  bool useShadowNodeStateOnClone() override {
     return false;
   }
 

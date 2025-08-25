@@ -199,6 +199,7 @@ function printDeprecationWarningIfNeeded(dependency) {
 function extractLibrariesFromConfigurationArray(configFile, dependencyPath) {
   return configFile.codegenConfig.libraries.map(config => {
     return {
+      name: config.name,
       config,
       libraryPath: dependencyPath,
     };
@@ -214,6 +215,7 @@ function extractLibrariesFromJSON(configFile, dependencyPath) {
     const config = configFile.codegenConfig;
     return [
       {
+        name: configFile.name,
         config,
         libraryPath: dependencyPath,
       },
@@ -326,22 +328,13 @@ function findExternalLibraries(pkgJson, projectRoot) {
   });
 }
 
-function findLibrariesFromReactNativeConfig(projectRoot) {
-  const rnConfigFileName = 'react-native.config.js';
-
+function findLibrariesFromReactNativeConfig(projectRoot, rnConfig) {
   codegenLog(
-    `Searching for codegen-enabled libraries in ${rnConfigFileName}`,
+    `Searching for codegen-enabled libraries in react-native.config.js`,
     true,
   );
 
-  const rnConfigFilePath = path.resolve(projectRoot, rnConfigFileName);
-
-  if (!fs.existsSync(rnConfigFilePath)) {
-    return [];
-  }
-  const rnConfig = require(rnConfigFilePath);
-
-  if (rnConfig.dependencies == null) {
+  if (!rnConfig.dependencies) {
     return [];
   }
   return Object.keys(rnConfig.dependencies).flatMap(name => {
@@ -363,6 +356,19 @@ function findLibrariesFromReactNativeConfig(projectRoot) {
 
     return extractLibrariesFromJSON(configFile, codegenConfigFileDir);
   });
+}
+
+/**
+ * Finds all disabled libraries by platform based the react native config.
+ *
+ * This is needed when selectively disabling libraries in react-native.config.js since codegen should exclude those libraries as well.
+ */
+function findDisabledLibrariesByPlatform(reactNativeConfig, platform) {
+  const dependencies = reactNativeConfig.dependencies ?? {};
+
+  return Object.keys(dependencies).filter(
+    dependency => dependencies[dependency].platforms?.[platform] === null,
+  );
 }
 
 function findProjectRootLibraries(pkgJson, projectRoot) {
@@ -593,7 +599,7 @@ function mustGenerateNativeCode(includeLibraryPath, schemaInfo) {
   );
 }
 
-function findCodegenEnabledLibraries(pkgJson, projectRoot) {
+function findCodegenEnabledLibraries(pkgJson, projectRoot, reactNativeConfig) {
   const projectLibraries = findProjectRootLibraries(pkgJson, projectRoot);
   if (pkgJsonIncludesGeneratedCode(pkgJson)) {
     return projectLibraries;
@@ -601,9 +607,19 @@ function findCodegenEnabledLibraries(pkgJson, projectRoot) {
     return [
       ...projectLibraries,
       ...findExternalLibraries(pkgJson, projectRoot),
-      ...findLibrariesFromReactNativeConfig(projectRoot),
+      ...findLibrariesFromReactNativeConfig(projectRoot, reactNativeConfig),
     ];
   }
+}
+
+function readReactNativeConfig(projectRoot) {
+  const rnConfigFilePath = path.resolve(projectRoot, 'react-native.config.js');
+
+  if (!fs.existsSync(rnConfigFilePath)) {
+    return {};
+  }
+
+  return require(rnConfigFilePath);
 }
 
 function generateCustomURLHandlers(libraries, outputDir) {
@@ -614,7 +630,7 @@ function generateCustomURLHandlers(libraries, outputDir) {
     )
     .filter(Boolean)
     .map(className => `@"${className}"`)
-    .join(',\n\t\t');
+    .join(',\n\t\t\t');
 
   const customImageDataDecoderClasses = libraries
     .flatMap(
@@ -623,7 +639,7 @@ function generateCustomURLHandlers(libraries, outputDir) {
     )
     .filter(Boolean)
     .map(className => `@"${className}"`)
-    .join(',\n\t\t');
+    .join(',\n\t\t\t');
 
   const customURLHandlerClasses = libraries
     .flatMap(
@@ -632,7 +648,7 @@ function generateCustomURLHandlers(libraries, outputDir) {
     )
     .filter(Boolean)
     .map(className => `@"${className}"`)
-    .join(',\n\t\t');
+    .join(',\n\t\t\t');
 
   const template = fs.readFileSync(MODULES_PROTOCOLS_MM_TEMPLATE_PATH, 'utf8');
   const finalMMFile = template
@@ -737,7 +753,7 @@ function generateRCTModuleProviders(
     .flatMap(library => {
       const modules = modulesInLibraries[library];
       return modules.map(({moduleName, className}) => {
-        return `\t\t@"${moduleName}": @"${className}", // ${library}`;
+        return `\t\t\t@"${moduleName}": @"${className}", // ${library}`;
       });
     })
     .join('\n');
@@ -806,7 +822,7 @@ function generateRCTThirdPartyComponents(libraries, outputDir) {
     .flatMap(library => {
       const components = componentsInLibraries[library];
       return components.map(({componentName, className}) => {
-        return `\t\t@"${componentName}": NSClassFromString(@"${className}"), // ${library}`;
+        return `\t\t\t@"${componentName}": NSClassFromString(@"${className}"), // ${library}`;
       });
     })
     .join('\n');
@@ -834,8 +850,11 @@ function findFilesWithExtension(filePath, extension) {
       return null;
     }
 
-    // Skip hidden folders, that starts with `.`
-    if (absolutePath.includes(`${path.sep}.`)) {
+    // Skip hidden folders, that starts with `.` but allow `.pnpm`
+    if (
+      absolutePath.includes(`${path.sep}.`) &&
+      !absolutePath.includes(`${path.sep}.pnpm`)
+    ) {
       return null;
     }
 
@@ -1007,9 +1026,9 @@ RCT_SCRIPT_POD_INSTALLATION_ROOT=$(pwd)
 popd >/dev/null
 
 export RCT_SCRIPT_RN_DIR="$RCT_SCRIPT_POD_INSTALLATION_ROOT/${path.relative(outputPath, REACT_NATIVE_PACKAGE_ROOT_FOLDER)}"
-export RCT_SCRIPT_APP_PATH="$RCT_SCRIPT_POD_INSTALLATION_ROOT/${relativeAppPath.length === 0 ? '.' : relativeAppPath}",
-export RCT_SCRIPT_OUTPUT_DIR="$RCT_SCRIPT_POD_INSTALLATION_ROOT",
-export RCT_SCRIPT_TYPE="withCodegenDiscovery",
+export RCT_SCRIPT_APP_PATH="$RCT_SCRIPT_POD_INSTALLATION_ROOT/${relativeAppPath.length === 0 ? '.' : relativeAppPath}"
+export RCT_SCRIPT_OUTPUT_DIR="$RCT_SCRIPT_POD_INSTALLATION_ROOT"
+export RCT_SCRIPT_TYPE="withCodegenDiscovery"
 
 SCRIPT_PHASES_SCRIPT="$RCT_SCRIPT_RN_DIR/scripts/react_native_pods_utils/script_phases.sh"
 WITH_ENVIRONMENT="$RCT_SCRIPT_RN_DIR/scripts/xcode/with-environment.sh"
@@ -1054,9 +1073,14 @@ function execute(projectRoot, targetPlatform, baseOutputPath, source) {
 
     buildCodegenIfNeeded();
 
-    const libraries = findCodegenEnabledLibraries(pkgJson, projectRoot);
+    const reactNativeConfig = readReactNativeConfig(projectRoot);
+    const codegenEnabledLibraries = findCodegenEnabledLibraries(
+      pkgJson,
+      projectRoot,
+      reactNativeConfig,
+    );
 
-    if (libraries.length === 0) {
+    if (codegenEnabledLibraries.length === 0) {
       codegenLog('No codegen-enabled libraries found.', true);
       return;
     }
@@ -1065,6 +1089,19 @@ function execute(projectRoot, targetPlatform, baseOutputPath, source) {
       targetPlatform === 'all' ? supportedPlatforms : [targetPlatform];
 
     for (const platform of platforms) {
+      const disabledLibraries = findDisabledLibrariesByPlatform(
+        reactNativeConfig,
+        platform,
+      );
+
+      const libraries = codegenEnabledLibraries.filter(
+        ({name}) => !disabledLibraries.includes(name),
+      );
+
+      if (!libraries.length) {
+        continue;
+      }
+
       const outputPath = computeOutputPath(
         projectRoot,
         baseOutputPath,
@@ -1082,19 +1119,19 @@ function execute(projectRoot, targetPlatform, baseOutputPath, source) {
         platform,
       );
 
-      if (source === 'app') {
-        // These components are only required by apps, not by libraries
+      if (source === 'app' && platform !== 'android') {
+        // These components are only required by apps, not by libraries. They are also Apple specific.
         generateRCTThirdPartyComponents(libraries, outputPath);
         generateRCTModuleProviders(projectRoot, pkgJson, libraries, outputPath);
         generateCustomURLHandlers(libraries, outputPath);
         generateAppDependencyProvider(outputPath);
+        generateReactCodegenPodspec(
+          projectRoot,
+          pkgJson,
+          outputPath,
+          baseOutputPath,
+        );
       }
-      generateReactCodegenPodspec(
-        projectRoot,
-        pkgJson,
-        outputPath,
-        baseOutputPath,
-      );
 
       cleanupEmptyFilesAndFolders(outputPath);
     }
