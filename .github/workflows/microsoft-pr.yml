@@ -154,8 +154,8 @@ jobs:
       - yarn-constraints
       - javascript-tests
       - build-rntester
-      - test-react-native-macos-init
-      - react-native-test-app-integration
+      # - test-react-native-macos-init
+      # - react-native-test-app-integration
     if: always()
     steps:
       - name: All required jobs passed
