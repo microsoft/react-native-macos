@@ -143,8 +143,8 @@ jobs:
   #   if: ${{ endsWith(github.base_ref, '-stable') }}
   #   uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
 
-  pr:
-    name: "All Checks"
+  PR:
+    name: "PR"
     permissions: {}
     runs-on: ubuntu-latest
     needs:
