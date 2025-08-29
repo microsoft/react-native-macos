@@ -104,6 +104,7 @@ async function buildBundleWithConfig(
     dev: args.dev,
     minify: args.minify !== undefined ? args.minify : !args.dev,
     platform: args.platform,
+    // $FlowIgnore[incompatible-type] // [macOS]
     unstable_transformProfile: args.unstableTransformProfile,
     customResolverOptions,
   };
@@ -125,6 +126,7 @@ async function buildBundleWithConfig(
     await bundleImpl.save(bundle, args, console.info);
 
     // Save the assets of the bundle
+    // $FlowIgnore[prop-missing] // [macOS]
     const outputAssets = await server.getAssets({
       ...Server.DEFAULT_BUNDLE_OPTIONS,
       ...requestOpts,

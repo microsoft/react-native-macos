@@ -1,6 +1,6 @@
 {
   "name": "@react-native/codegen",
-  "version": "0.79.0-main",
+  "version": "0.79.6",
   "private": true,
   "description": "Code generation tools for React Native",
   "license": "MIT",
@@ -30,11 +30,11 @@
     "lib"
   ],
   "dependencies": {
+    "@babel/core": "^7.25.2",
     "@babel/parser": "^7.25.3",
     "glob": "^7.1.1",
     "hermes-parser": "0.25.1",
     "invariant": "^2.2.4",
-    "jscodeshift": "^17.0.0",
     "nullthrows": "^1.1.1",
     "yargs": "^17.6.2"
   },
@@ -56,6 +56,6 @@
     "rimraf": "^3.0.2"
   },
   "peerDependencies": {
-    "@babel/preset-env": "^7.1.6"
+    "@babel/core": "*"
   }
 }

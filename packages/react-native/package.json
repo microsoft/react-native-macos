@@ -1,6 +1,6 @@
 {
   "name": "react-native-macos",
-  "version": "1000.0.0",
+  "version": "0.79.0",
   "description": "React Native for macOS",
   "license": "MIT",
   "repository": {
@@ -40,6 +40,7 @@
     "gradle.properties",
     "gradle/libs.versions.toml",
     "index.js",
+    "index.js.flow",
     "interface.js",
     "jest-preset.js",
     "jest",
@@ -102,7 +103,8 @@
   },
   "peerDependencies": {
     "@types/react": "^19.0.0",
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "react-native": "0.79.6"
   },
   "peerDependenciesMeta": {
     "@types/react": {
@@ -111,13 +113,14 @@
   },
   "dependencies": {
     "@jest/create-cache-key-function": "^29.7.0",
-    "@react-native-macos/virtualized-lists": "workspace:*",
-    "@react-native/assets-registry": "workspace:*",
-    "@react-native/codegen": "workspace:*",
-    "@react-native/community-cli-plugin": "workspace:*",
-    "@react-native/gradle-plugin": "workspace:*",
-    "@react-native/js-polyfills": "workspace:*",
-    "@react-native/normalize-colors": "workspace:*",
+    "@react-native-macos/virtualized-lists": "0.79.0",
+    "@react-native/assets-registry": "0.79.6",
+    "@react-native/codegen": "0.79.6",
+    "@react-native/community-cli-plugin": "0.79.6",
+    "@react-native/gradle-plugin": "0.79.6",
+    "@react-native/js-polyfills": "0.79.6",
+    "@react-native/normalize-colors": "0.79.6",
+    "@react-native/virtualized-lists": "0.79.6",
     "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
@@ -132,8 +135,8 @@
     "invariant": "^2.2.4",
     "jest-environment-node": "^29.7.0",
     "memoize-one": "^5.0.0",
-    "metro-runtime": "^0.81.0",
-    "metro-source-map": "^0.81.0",
+    "metro-runtime": "^0.82.0",
+    "metro-source-map": "^0.82.0",
     "nullthrows": "^1.1.1",
     "pretty-format": "^29.7.0",
     "promise": "^8.3.0",

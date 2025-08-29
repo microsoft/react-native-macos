@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "defaultBase": "main",
+  "defaultBase": "0.79-stable",
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"]
@@ -21,9 +21,9 @@
       "versionActionsOptions": {
         "currentVersionResolver": "registry",
         "currentVersionResolverMetadata": {
-          "tag": "nightly"
+          "tag": "next"
         },
-        "preid": "nightly"
+        "preid": "rc"
       },
       "useLegacyVersioning": false
     }

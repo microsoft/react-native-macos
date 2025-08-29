@@ -127,36 +127,34 @@ jobs:
     permissions: {}
     uses: ./.github/workflows/microsoft-build-rntester.yml
 
-  test-react-native-macos-init:
-    name: "Test react-native-macos init"
-    permissions: {}
-    # https://github.com/microsoft/react-native-macos/issues/2344
-    # Run only for stable branches. Once nightlies are available, enable on main as well.
-    if: ${{ endsWith(github.base_ref, '-stable') }}
-    uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
+  # https://github.com/microsoft/react-native-macos/issues/2344
+  # Disable these tests because verdaccio hangs
+  # test-react-native-macos-init:
+  #   name: "Test react-native-macos init"
+  #   permissions: {}
+  #   if: ${{ endsWith(github.base_ref, '-stable') }}
+  #   uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
 
-  react-native-test-app-integration:
-    name: "Test react-native-test-app integration"
-    permissions: {}
-    # https://github.com/microsoft/react-native-macos/issues/2344
-    # Run only for stable branches. Once nightlies are available, enable on main as well.
-    if: ${{ endsWith(github.base_ref, '-stable') }}
-    uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
+  # https://github.com/microsoft/react-native-macos/issues/2344
+  # Disable these tests because verdaccio hangs
+  # react-native-test-app-integration:
+  #   name: "Test react-native-test-app integration"
+  #   permissions: {}
+  #   if: ${{ endsWith(github.base_ref, '-stable') }}
+  #   uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
 
-  all:
-    name: "All"
+  PR:
+    name: "PR"
     permissions: {}
     runs-on: ubuntu-latest
     needs:
       - lint-title
-      - build-website
       - npm-publish-dry-run
       - yarn-constraints
       - javascript-tests
       - build-rntester
-      - test-react-native-macos-init
-      - react-native-test-app-integration
-    if: always()
+      # - test-react-native-macos-init
+      # - react-native-test-app-integration
     steps:
       - name: All required jobs passed
         run: echo "All required jobs completed."
