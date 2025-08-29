@@ -55,7 +55,7 @@
     "@react-native-community/cli-platform-ios": "15.0.0-alpha.2",
     "commander": "^12.0.0",
     "listr2": "^6.4.1",
-    "react-native-macos": "workspace:*",
+    "react-native-macos": "0.79.0-rc.0",
     "rxjs": "npm:@react-native-community/rxjs@6.5.4-custom"
   }
 }
