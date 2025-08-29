@@ -35,8 +35,7 @@
     "test-e2e-local-clean": "node ./scripts/release-testing/test-e2e-local-clean.js",
     "test-e2e-local": "node ./scripts/release-testing/test-e2e-local.js",
     "test-ios": "./scripts/objc-test.sh test",
-    "test-typescript-offline": "dtslint --localTs node_modules/typescript/lib  packages/react-native/types",
-    "test-typescript": "dtslint packages/react-native/types",
+    "test-typescript": "tsc -p packages/react-native/types/tsconfig.json",
     "test": "jest",
     "trigger-react-native-release": "node ./scripts/releases-local/trigger-react-native-release.js",
     "update-lock": "npx yarn-deduplicate"
@@ -55,7 +54,6 @@
     "@babel/plugin-transform-regenerator": "^7.20.0",
     "@babel/preset-env": "^7.20.0",
     "@babel/preset-flow": "^7.20.0",
-    "@definitelytyped/dtslint": "^0.0.127",
     "@jest/create-cache-key-function": "^29.6.3",
     "@pkgjs/parseargs": "^0.11.0",
     "@react-native/metro-babel-transformer": "0.74.89",
