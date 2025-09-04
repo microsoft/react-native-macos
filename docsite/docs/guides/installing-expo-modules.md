@@ -61,7 +61,7 @@ npx pod-install
 
 ### Configure Expo CLI for bundling on macOS
 
-We recommend using Expo CLI and related tooling configurations to bundle your app JavaScript code and assets. This adds support for using the `"main"` field in **package.json**. Not using Expo CLI for bundling may result in unexpected behavior. [Learn more about Expo CLI](/bare/using-expo-cli/).
+We recommend using Expo CLI and related tooling configurations to bundle your app JavaScript code and assets. This adds support for using the `"main"` field in **package.json**. Not using Expo CLI for bundling may result in unexpected behavior. [Learn more about Expo CLI](https://docs.expo.dev/bare/using-expo-cli/).
 
 #### Use babel-preset-expo in your babel.config.js
 ```diff babel.config.js
@@ -132,7 +132,7 @@ And add support the `"main"` field in **package.json** by making the following c
 
 ### Verifying installation
 
-You can verify that the installation was successful by logging a value from [`expo-constants`](/versions/latest/sdk/constants).
+You can verify that the installation was successful by logging a value from [`expo-constants`](https://docs.expo.dev/versions/latest/sdk/constants).
 
 - Run `npx expo install expo-constants`
 - Then, run `npx expo run` and modify your app JavaScript code to add the following:
@@ -150,17 +150,17 @@ Once the `expo` package is installed and configured in your project, you can use
 
 The following Expo modules are brought in as dependencies of the `expo` package:
 
-- [`expo-asset`](/versions/latest/sdk/asset) - A JavaScript-only package that builds around `expo-file-system` and provides a common foundation for assets across all Expo modules.
-- [`expo-constants`](/versions/latest/sdk/constants) - Provides access to the manifest.
-- [`expo-file-system`](/versions/latest/sdk/filesystem) - Interact with the device file system. Used by `expo-asset` and many other Expo modules. Commonly used directly by developers in application code.
-- [`expo-font`](/versions/latest/sdk/font) - Load fonts at runtime. This module is optional and can be safely removed, however; it is recommended if you use `expo-dev-client` for development and it is required by `@expo/vector-icons`.
-- [`expo-keep-awake`](/versions/latest/sdk/keep-awake) - Prevents your device from going to sleep while developing your app. This module is optional and can be safely removed.
+- [`expo-asset`](https://docs.expo.dev/versions/latest/sdk/asset) - A JavaScript-only package that builds around `expo-file-system` and provides a common foundation for assets across all Expo modules.
+- [`expo-constants`](https://docs.expo.dev/versions/latest/sdk/constants) - Provides access to the manifest.
+- [`expo-file-system`](https://docs.expo.dev/versions/latest/sdk/filesystem) - Interact with the device file system. Used by `expo-asset` and many other Expo modules. Commonly used directly by developers in application code.
+- [`expo-font`](https://docs.expo.dev/versions/latest/sdk/font) - Load fonts at runtime. This module is optional and can be safely removed, however; it is recommended if you use `expo-dev-client` for development and it is required by `@expo/vector-icons`.
+- [`expo-keep-awake`](https://docs.expo.dev/versions/latest/sdk/keep-awake) - Prevents your device from going to sleep while developing your app. This module is optional and can be safely removed.
 
 To exclude any of these modules, refer to the following guide on [excluding modules from autolinking](#excluding-specific-modules-from-autolinking).
 
 ### Excluding specific modules from autolinking
 
-If you need to exclude native code from Expo modules you are not using, but were installed by other dependencies, you can use the [`expo.autolinking.exclude`](/modules/autolinking/#exclude) property in **package.json**:
+If you need to exclude native code from Expo modules you are not using, but were installed by other dependencies, you can use the [`expo.autolinking.exclude`](https://docs.expo.dev/modules/autolinking/#exclude) property in **package.json**:
 
 ```json package.json
 {
