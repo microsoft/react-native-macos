@@ -62,6 +62,12 @@ void ViewShadowNode::initialize() noexcept {
       !viewProps.filter.empty() ||
       viewProps.mixBlendMode != BlendMode::Normal ||
       viewProps.isolation == Isolation::Isolate ||
+#if TARGET_OS_OSX // [macOS
+      viewProps.focusable ||
+      viewProps.enableFocusRing ||
+      viewProps.macOSViewEvents[MacOSViewEvents::Offset::MouseEnter] ||
+      viewProps.macOSViewEvents[MacOSViewEvents::Offset::MouseLeave] ||
+#endif // macOS]
       HostPlatformViewTraitsInitializer::formsStackingContext(viewProps);
 
   bool formsView = formsStackingContext ||
