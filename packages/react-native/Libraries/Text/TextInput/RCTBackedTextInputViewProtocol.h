@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) BOOL textWasPasted;
 #else // [macOS
 @property (nonatomic, assign) BOOL textWasPasted;
+@property (nonatomic, readonly) NSResponder *responder;
 #endif // macOS]
 @property (nonatomic, assign, readonly) BOOL dictationRecognizing;
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;

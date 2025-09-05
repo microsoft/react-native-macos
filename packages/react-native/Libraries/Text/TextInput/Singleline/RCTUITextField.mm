@@ -216,6 +216,11 @@
 
 #if TARGET_OS_OSX // [macOS
 
+- (NSResponder *)responder
+{
+  return self;
+}
+
 + (Class)cellClass
 {
   return RCTUITextFieldCell.class;
