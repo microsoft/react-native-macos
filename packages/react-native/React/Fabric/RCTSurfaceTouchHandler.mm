@@ -11,10 +11,64 @@
 #import <React/RCTUtils.h>
 #import <React/RCTViewComponentView.h>
 #import <React/RCTUIKit.h>
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTSurfaceHostingView.h>
+#endif // macOS]
+
 
 #import "RCTConversions.h"
 #import "RCTSurfacePointerHandler.h"
 #import "RCTTouchableComponentViewProtocol.h"
+
+
+#if TARGET_OS_OSX // [macOS
+@interface RCTSurfaceTouchHandler (Private)
+- (void)endFromEventTrackingLeftMouseUp:(NSEvent *)event;
+- (void)endFromEventTrackingRightMouseUp:(NSEvent *)event;
+@end
+
+@interface NSApplication (RCTSurfaceTouchHandlerOverride)
+- (NSEvent*)override_surface_nextEventMatchingMask:(NSEventMask)mask
+                                 untilDate:(NSDate*)expiration
+                                    inMode:(NSRunLoopMode)mode
+                                   dequeue:(BOOL)dequeue;
+@end
+
+@implementation NSApplication (RCTSurfaceTouchHandlerOverride)
+
++ (void)load
+{
+  RCTSwapInstanceMethods(self, @selector(nextEventMatchingMask:untilDate:inMode:dequeue:), @selector(override_surface_nextEventMatchingMask:untilDate:inMode:dequeue:));
+}
+
+- (NSEvent*)override_surface_nextEventMatchingMask:(NSEventMask)mask
+                                 untilDate:(NSDate*)expiration
+                                    inMode:(NSRunLoopMode)mode
+                                   dequeue:(BOOL)dequeue
+{
+  NSEvent* event = [self override_surface_nextEventMatchingMask:mask
+                                              untilDate:expiration
+                                                 inMode:mode
+                                                dequeue:dequeue];
+  if (dequeue && (event.type == NSEventTypeLeftMouseUp || event.type == NSEventTypeRightMouseUp || event.type == NSEventTypeOtherMouseUp)) {
+    RCTSurfaceTouchHandler *targetSurfaceTouchHandler = [RCTSurfaceTouchHandler surfaceTouchHandlerForEvent:event];
+    if (!targetSurfaceTouchHandler) {
+      [RCTSurfaceTouchHandler notifyOutsideViewMouseUp:event];
+    } else if (event.type == NSEventTypeRightMouseUp && [mode isEqualTo:NSEventTrackingRunLoopMode]) {
+      // If the event is consumed by an event tracking loop, we won't get the mouse up event
+      if (event.type == NSEventTypeLeftMouseUp) {
+        [targetSurfaceTouchHandler endFromEventTrackingLeftMouseUp:event];
+      } else if (event.type == NSEventTypeRightMouseUp) {
+        [targetSurfaceTouchHandler endFromEventTrackingRightMouseUp:event];
+      }
+    }
+  }
+
+  return event;
+}
+
+@end
+#endif // macOS]
 
 using namespace facebook::react;
 
@@ -207,7 +261,13 @@ struct PointerHasher {
     self.cancelsTouchesInView = NO;
     self.delaysTouchesBegan = NO; // This is default value.
     self.delaysTouchesEnded = NO;
-#endif // [macOS]
+#else // [macOS
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(endOutsideViewMouseUp:)
+                                                 name:RCTSurfaceTouchHandlerOutsideViewMouseUpNotification
+                                               object:[RCTSurfaceTouchHandler class]];
+#endif // macOS]
+
 
     self.delegate = self;
 
@@ -585,5 +645,225 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   [self setEnabled:NO];
   [self setEnabled:YES];
 }
+
+
+#if TARGET_OS_OSX // [macOS
+
+#pragma mark - macOS
+
++ (instancetype)surfaceTouchHandlerForEvent:(NSEvent *)event {
+  RCTPlatformView *hitView = [event.window.contentView.superview hitTest:event.locationInWindow];
+  return [self surfaceTouchHandlerForView:hitView];
+}
+
++ (instancetype)surfaceTouchHandlerForView:(RCTPlatformView *)view {
+  if ([view isKindOfClass:[RCTSurfaceHostingView class]]) {
+    // The RCTSurfaceTouchHandler is attached to surface's view.
+    view = (RCTPlatformView *)(((RCTSurfaceHostingView *)view).surface.view);
+  }
+
+  while (view) {
+    for (NSGestureRecognizer *gestureRecognizer in view.gestureRecognizers) {
+      if ([gestureRecognizer isKindOfClass:[self class]]) {
+        return (RCTSurfaceTouchHandler *)gestureRecognizer;
+      }
+    }
+
+    view = view.superview;
+  }
+
+  return nil;
+}
+
++ (void)notifyOutsideViewMouseUp:(NSEvent *)event {
+  [[NSNotificationCenter defaultCenter] postNotificationName:RCTSurfaceTouchHandlerOutsideViewMouseUpNotification
+                                                      object:self
+                                                    userInfo:@{@"event": event}];
+}
+
+- (void)endOutsideViewMouseUp:(NSNotification *)notification {
+  NSEvent *event = notification.userInfo[@"event"];
+
+  auto iterator = _activeTouches.find(event.eventNumber);
+  if (iterator == _activeTouches.end()) {
+    // A contextual menu click would generate a mouse up with a diffrent event
+    // and leave a touchable/pressable session open. This would cause touch end
+    // events from a modal window to end the touchable/pressable session and
+    // potentially trigger an onPress event. Hence the need to reset and cancel
+    // that session when a mouse up event was detected outside the touch handler
+    // view bounds.
+    [self reset];
+    return;
+  }
+
+  [self cancelTouchWithEvent:event];
+}
+
+- (void)endFromEventTrackingRightMouseUp:(NSEvent *)event
+{
+  auto iterator = _activeTouches.find(event.eventNumber);
+  if (iterator == _activeTouches.end()) {
+    return;
+  }
+
+  [self cancelTouchWithEvent:event];
+}
+
+- (void)cancelTouchWithEvent:(NSEvent *)event
+{
+  NSSet *touches = [NSSet setWithObject:event];
+  [self _updateTouches:touches];
+  [self _dispatchActiveTouches:[self _activeTouchesFromTouches:touches] eventType:RCTTouchEventTypeTouchCancel];
+  [self _unregisterTouches:touches];
+
+  self.state = NSGestureRecognizerStateCancelled;
+}
+#endif // macOS]
+
+#if !TARGET_OS_OSX
+- (void)hovering:(UIHoverGestureRecognizer *)recognizer API_AVAILABLE(ios(13.0))
+{
+  RCTUIView *listenerView = recognizer.view; // [macOS]
+  CGPoint clientLocation = [recognizer locationInView:listenerView];
+  CGPoint screenLocation = [listenerView convertPoint:clientLocation
+                                    toCoordinateSpace:listenerView.window.screen.coordinateSpace];
+
+  RCTUIView *targetView = [listenerView hitTest:clientLocation withEvent:nil]; // [macOS]
+  targetView = FindClosestFabricManagedTouchableView(targetView);
+
+  CGPoint offsetLocation = [recognizer locationInView:targetView];
+
+  UIKeyModifierFlags modifierFlags;
+  if (@available(iOS 13.4, *)) {
+    modifierFlags = recognizer.modifierFlags;
+  } else {
+    modifierFlags = 0;
+  }
+
+  PointerEvent event =
+      CreatePointerEventFromIncompleteHoverData(clientLocation, screenLocation, offsetLocation, modifierFlags);
+
+  NSOrderedSet<RCTReactTaggedView *> *eventPathViews = [self handleIncomingPointerEvent:event onView:targetView];
+  SharedTouchEventEmitter eventEmitter = GetTouchEmitterFromView(targetView, offsetLocation);
+  bool hasMoveEventListeners = IsAnyViewInPathListeningToEvent(eventPathViews, ViewEvents::Offset::PointerMove) ||
+      IsAnyViewInPathListeningToEvent(eventPathViews, ViewEvents::Offset::PointerMoveCapture);
+  if (eventEmitter != nil && hasMoveEventListeners) {
+    eventEmitter->onPointerMove(event);
+  }
+}
+#endif
+
+/**
+ * Private method which is used for tracking the location of pointer events to manage the entering/leaving events.
+ * The primary idea is that a pointer's presence & movement is dicated by a variety of underlying events such as down,
+ * move, and up — and they should all be treated the same when it comes to tracking the entering & leaving of pointers
+ * to views. This method accomplishes that by recieving the pointer event, the target view (can be null in cases when
+ * the event indicates that the pointer has left the screen entirely), and a block/callback where the underlying event
+ * should be fired.
+ */
+#if !TARGET_OS_OSX
+- (NSOrderedSet<RCTReactTaggedView *> *)handleIncomingPointerEvent:(PointerEvent)event
+                                                            onView:(nullable RCTUIView *)targetView // [macOS]
+{
+  int pointerId = event.pointerId;
+  CGPoint clientLocation = CGPointMake(event.clientPoint.x, event.clientPoint.y);
+
+  NSOrderedSet<RCTReactTaggedView *> *currentlyHoveredViews =
+      [_currentlyHoveredViewsPerPointer objectForKey:@(pointerId)];
+  if (currentlyHoveredViews == nil) {
+    currentlyHoveredViews = [NSOrderedSet orderedSet];
+  }
+
+  RCTReactTaggedView *targetTaggedView = [RCTReactTaggedView wrap:targetView];
+  RCTReactTaggedView *prevTargetTaggedView = [currentlyHoveredViews firstObject];
+  RCTUIView *prevTargetView = prevTargetTaggedView.view; // [macOS]
+
+  NSOrderedSet<RCTReactTaggedView *> *eventPathViews = GetTouchableViewsInPathToRoot(targetView);
+
+  // Out
+  if (prevTargetView != nil && prevTargetTaggedView.tag != targetTaggedView.tag) {
+    BOOL shouldEmitOutEvent = IsAnyViewInPathListeningToEvent(currentlyHoveredViews, ViewEvents::Offset::PointerOut);
+    SharedTouchEventEmitter eventEmitter =
+        GetTouchEmitterFromView(prevTargetView, [_rootComponentView convertPoint:clientLocation toView:prevTargetView]);
+    if (shouldEmitOutEvent && eventEmitter != nil) {
+      eventEmitter->onPointerOut(event);
+    }
+  }
+
+  // Leaving
+
+  // pointerleave events need to be emited from the deepest target to the root but
+  // we also need to efficiently keep track of if a view has a parent which is listening to the leave events,
+  // so we first iterate from the root to the target, collecting the views which need events fired for, of which
+  // we reverse iterate (now from target to root), actually emitting the events.
+  NSMutableOrderedSet<RCTUIView *> *viewsToEmitLeaveEventsTo = [NSMutableOrderedSet orderedSet]; // [macOS]
+
+  BOOL hasParentLeaveListener = NO;
+  for (RCTReactTaggedView *taggedView in [currentlyHoveredViews reverseObjectEnumerator]) {
+    RCTUIView *componentView = taggedView.view; // [macOS]
+
+    BOOL shouldEmitEvent = componentView != nil &&
+        (hasParentLeaveListener || IsViewListeningToEvent(taggedView, ViewEvents::Offset::PointerLeave));
+
+    if (shouldEmitEvent && ![eventPathViews containsObject:taggedView]) {
+      [viewsToEmitLeaveEventsTo addObject:componentView];
+    }
+
+    if (shouldEmitEvent && !hasParentLeaveListener) {
+      hasParentLeaveListener = YES;
+    }
+  }
+
+  for (RCTUIView *componentView in [viewsToEmitLeaveEventsTo reverseObjectEnumerator]) { // [macOS]
+    SharedTouchEventEmitter eventEmitter =
+        GetTouchEmitterFromView(componentView, [_rootComponentView convertPoint:clientLocation toView:componentView]);
+    if (eventEmitter != nil) {
+      eventEmitter->onPointerLeave(event);
+    }
+  }
+
+  // Over
+  if (targetView != nil && prevTargetTaggedView.tag != targetTaggedView.tag) {
+    BOOL shouldEmitOverEvent = IsAnyViewInPathListeningToEvent(eventPathViews, ViewEvents::Offset::PointerOver);
+    SharedTouchEventEmitter eventEmitter =
+        GetTouchEmitterFromView(targetView, [_rootComponentView convertPoint:clientLocation toView:targetView]);
+    if (shouldEmitOverEvent && eventEmitter != nil) {
+      eventEmitter->onPointerOver(event);
+    }
+  }
+
+  // Entering
+
+  // We only want to emit events to JS if there is a view that is currently listening to said event
+  // so we only send those event to the JS side if the element which has been entered is itself listening,
+  // or if one of its parents is listening in case those listeners care about the capturing phase. Adding the ability
+  // for native to distingusih between capturing listeners and not could be an optimization to futher reduce the number
+  // of events we send to JS
+  BOOL hasParentEnterListener = NO;
+  for (RCTReactTaggedView *taggedView in [eventPathViews reverseObjectEnumerator]) {
+    RCTUIView *componentView = taggedView.view; // [macOS]
+
+    BOOL shouldEmitEvent = componentView != nil &&
+        (hasParentEnterListener || IsViewListeningToEvent(taggedView, ViewEvents::Offset::PointerEnter));
+
+    if (shouldEmitEvent && ![currentlyHoveredViews containsObject:taggedView]) {
+      SharedTouchEventEmitter eventEmitter =
+          GetTouchEmitterFromView(componentView, [_rootComponentView convertPoint:clientLocation toView:componentView]);
+      if (eventEmitter != nil) {
+        eventEmitter->onPointerEnter(event);
+      }
+    }
+
+    if (shouldEmitEvent && !hasParentEnterListener) {
+      hasParentEnterListener = YES;
+    }
+  }
+
+  [_currentlyHoveredViewsPerPointer setObject:eventPathViews forKey:@(pointerId)];
+
+  return eventPathViews;
+}
+#endif
+
 
 @end
