@@ -764,7 +764,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 -(void)didUpdateShadow
 {
     NSShadow *shadow = [NSShadow new];
-    NSColor *baseShadowColor = [NSColor colorWithCGColor:_shadowColor];
+    NSColor *baseShadowColor = nil;
+    if (_shadowColor != NULL) {
+      baseShadowColor = [NSColor colorWithCGColor:_shadowColor];
+    }
     shadow.shadowColor = [baseShadowColor colorWithAlphaComponent:[self shadowOpacity]];
     shadow.shadowOffset = [self shadowOffset];
     shadow.shadowBlurRadius = [self shadowRadius];
