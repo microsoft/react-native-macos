@@ -59,10 +59,16 @@ void ViewShadowNode::initialize() noexcept {
       viewProps.accessibilityViewIsModal ||
       viewProps.importantForAccessibility != ImportantForAccessibility::Auto ||
       viewProps.removeClippedSubviews || viewProps.cursor != Cursor::Auto ||
-      !viewProps.filter.empty() ||
       viewProps.mixBlendMode != BlendMode::Normal ||
       viewProps.isolation == Isolation::Isolate ||
-      HostPlatformViewTraitsInitializer::formsStackingContext(viewProps);
+#if TARGET_OS_OSX // [macOS
+      viewProps.focusable ||
+      viewProps.enableFocusRing ||
+      viewProps.macOSViewEvents[MacOSViewEvents::Offset::MouseEnter] ||
+      viewProps.macOSViewEvents[MacOSViewEvents::Offset::MouseLeave] ||
+#endif // macOS]
+      HostPlatformViewTraitsInitializer::formsStackingContext(viewProps)
+      ;
 
   bool formsView = formsStackingContext ||
       isColorMeaningful(viewProps.backgroundColor) || hasBorder() ||

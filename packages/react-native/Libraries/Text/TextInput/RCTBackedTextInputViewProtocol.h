@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) BOOL textWasPasted;
 #else // [macOS
 @property (nonatomic, assign) BOOL textWasPasted;
+@property (nonatomic, readonly) NSResponder *responder;
+@property (nonatomic, assign) BOOL enableFocusRing;
 #endif // macOS]
 @property (nonatomic, assign, readonly) BOOL dictationRecognizing;
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
@@ -88,6 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_OSX // [macOS
 // UITextInput method for OSX
 - (CGSize)sizeThatFits:(CGSize)size;
+- (void)setReadablePasteBoardTypes:(NSArray<NSPasteboardType> *)readablePasteboardTypes;
 #endif // macOS]
 
 // This protocol disallows direct access to `text` property because

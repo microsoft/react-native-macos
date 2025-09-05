@@ -8,6 +8,7 @@
 #include "SurfaceTelemetry.h"
 
 #include <algorithm>
+#include <iterator>
 
 namespace facebook::react {
 

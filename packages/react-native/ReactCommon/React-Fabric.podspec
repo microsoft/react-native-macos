@@ -180,8 +180,15 @@ Pod::Spec.new do |s|
     ss.source_files         = "react/renderer/scheduler/**/*.{m,mm,cpp,h}"
     ss.header_dir           = "react/renderer/scheduler"
 
-    ss.dependency             "React-performancetimeline"
-    ss.dependency             "React-Fabric/observers/events"
+    ss.subspec "view" do |sss|
+      sss.dependency             folly_dep_name, folly_version
+      sss.dependency             "Yoga"
+      sss.compiler_flags       = folly_compiler_flags
+      sss.source_files         = "react/renderer/components/view/**/*.{m,mm,cpp,h}"
+      sss.exclude_files        = "react/renderer/components/view/tests", "react/renderer/components/view/platform/android", "react/renderer/components/view/platform/cxx"
+      sss.header_dir           = "react/renderer/components/view"
+      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/Headers/Private/Yoga\"" }
+    end
   end
 
   s.subspec "imagemanager" do |ss|
