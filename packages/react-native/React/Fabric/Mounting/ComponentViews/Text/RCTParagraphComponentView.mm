@@ -11,9 +11,6 @@
 #if !TARGET_OS_OSX // [macOS]
 #import <MobileCoreServices/UTCoreTypes.h>
 #endif // [macOS]
-#if TARGET_OS_OSX // [macOS
-#import <QuartzCore/CAShapeLayer.h>
-#endif // macOS]
 
 #import <react/renderer/components/text/ParagraphComponentDescriptor.h>
 #import <react/renderer/components/text/ParagraphProps.h>
@@ -28,15 +25,28 @@
 #import "RCTConversions.h"
 #import "RCTFabricComponentsPlugins.h"
 
+#import <QuartzCore/QuartzCore.h> // [macOS]
+
 using namespace facebook::react;
 
+#if !TARGET_OS_OSX // [macOS]
 // ParagraphTextView is an auxiliary view we set as contentView so the drawing
 // can happen on top of the layers manipulated by RCTViewComponentView (the parent view)
 @interface RCTParagraphTextView : RCTUIView // [macOS]
+#else // [macOS
+// On macOS, we also defer drawing to an NSTextView,
+// in order to get more native behaviors like text selection.
+@interface RCTParagraphTextView : NSTextView // [macOS]
+#endif // macOS]
 
 @property (nonatomic) ParagraphShadowNode::ConcreteState::Shared state;
 @property (nonatomic) ParagraphAttributes paragraphAttributes;
 @property (nonatomic) LayoutMetrics layoutMetrics;
+
+#if TARGET_OS_OSX // [macOS]
+/// UIKit compatibility shim that simply calls `[self setNeedsDisplay:YES]`
+- (void)setNeedsDisplay;
+#endif
 
 @end
 
@@ -46,9 +56,6 @@ using namespace facebook::react;
 @property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
 
 @end
-#else // [macOS
-@interface RCTParagraphComponentView ()
-@end
 #endif // [macOS]
 
 @implementation RCTParagraphComponentView {
@@ -57,7 +64,7 @@ using namespace facebook::react;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
 #if !TARGET_OS_OSX // [macOS]
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
-#endif // [macOS]
+#endif // macOS]
   RCTParagraphTextView *_textView;
 }
 
@@ -66,11 +73,30 @@ using namespace facebook::react;
   if (self = [super initWithFrame:frame]) {
     _props = ParagraphShadowNode::defaultSharedProps();
 
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX  // [macOS]
     self.opaque = NO;
-#endif // [macOS]
     _textView = [RCTParagraphTextView new];
     _textView.backgroundColor = RCTUIColor.clearColor; // [macOS]
+#else // [macOS
+    // Make the RCTParagraphComponentView accessible and available in the a11y hierarchy.
+    self.accessibilityElement = YES;
+    self.accessibilityRole = NSAccessibilityStaticTextRole;
+    // Fix blurry text on non-retina displays.
+    self.canDrawSubviewsIntoLayer = YES;
+    // The NSTextView is responsible for drawing text and managing selection.
+    _textView = [[RCTParagraphTextView alloc] initWithFrame:self.bounds];
+    // The RCTParagraphComponentUnfocusableTextView is only used for rendering and should not appear in the a11y hierarchy.
+    _textView.accessibilityElement = NO;
+    _textView.usesFontPanel = NO;
+    _textView.drawsBackground = NO;
+    _textView.linkTextAttributes = @{};
+    _textView.editable = NO;
+    _textView.selectable = NO;
+    _textView.verticallyResizable = NO;
+    _textView.layoutManager.usesFontLeading = NO;
+    self.contentView = _textView;
+    self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
+#endif // macOS]
     self.contentView = _textView;
   }
 
@@ -127,7 +153,9 @@ using namespace facebook::react;
     } else {
       [self disableContextMenu];
     }
-#endif // [macOS]
+#else // [macOS
+    _textView.selectable = newParagraphProps.isSelectable;
+#endif // macOS]
   }
 
   [super updateProps:props oldProps:oldProps];
@@ -185,7 +213,7 @@ using namespace facebook::react;
   return NO;
 }
 
-#if !TARGET_OS_OSX // [macOS
+#if !TARGET_OS_OSX // [macOS]
 - (NSArray *)accessibilityElements
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
@@ -221,12 +249,7 @@ using namespace facebook::react;
 {
   return [super accessibilityTraits] | UIAccessibilityTraitStaticText;
 }
-#else // [macOS
-- (NSAccessibilityRole)accessibilityRole
-{
-  return [super accessibilityRole] ?: NSAccessibilityStaticTextRole;
-}
-#endif // macOS]
+#endif // [macOS]
 
 #pragma mark - RCTTouchableComponentViewProtocol
 
@@ -310,7 +333,6 @@ using namespace facebook::react;
   return paragraphProps.isSelectable;
 }
 
-#if !TARGET_OS_OSX // [macOS]
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
@@ -319,9 +341,12 @@ using namespace facebook::react;
     return YES;
   }
 
+#if !TARGET_OS_OSX // [macOS]
   return [self.nextResponder canPerformAction:action withSender:sender];
+#else  // [macOS
+  return NO;
+#endif // macOS]
 }
-#endif // [macOS]
 
 - (void)copy:(id)sender
 {
@@ -357,10 +382,12 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
 }
 
 @implementation RCTParagraphTextView {
+#if !TARGET_OS_OSX // [macOS]
   CAShapeLayer *_highlightLayer;
+#endif // macOS]
 }
 
-- (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+- (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
 {
   return nil;
 }
@@ -382,6 +409,7 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
 
   CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
 
+#if !TARGET_OS_OSX // [macOS]
   [nativeTextLayoutManager drawAttributedString:_state->getData().attributedString
                             paragraphAttributes:_paragraphAttributes
                                           frame:frame
@@ -393,70 +421,54 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
                                     [self.layer addSublayer:self->_highlightLayer];
                                   }
                                   self->_highlightLayer.position = frame.origin;
-
-#if !TARGET_OS_OSX // [macOS]
                                   self->_highlightLayer.path = highlightPath.CGPath;
-#else // [macOS Update once our minimum is macOS 14
-                                  self->_highlightLayer.path = UIBezierPathCreateCGPathRef(highlightPath);
-#endif // macOS]
                                 } else {
                                   [self->_highlightLayer removeFromSuperlayer];
                                   self->_highlightLayer = nil;
                                 }
                               }];
-}
+#else // [macOS
+  NSTextStorage *textStorage = [nativeTextLayoutManager getTextStorageForAttributedString:_state->getData().attributedString paragraphAttributes:_paragraphAttributes size:frame.size];
 
-@end
+  NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
+  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+
+  [self replaceTextContainer:textContainer];
+
+  NSArray<NSLayoutManager *> *managers = [[textStorage layoutManagers] copy];
+  for (NSLayoutManager *manager in managers) {
+    [textStorage removeLayoutManager:manager];
+  }
+
+  self.minSize = frame.size;
+  self.maxSize = frame.size;
+  self.frame = frame;
+  [[self textStorage] setAttributedString:textStorage];
+
+  [super drawRect:rect];
+#endif
+}
 
 #if TARGET_OS_OSX // [macOS
-// Copied from RCTUIKit
-CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
+- (void)setNeedsDisplay
 {
-  CGPathRef immutablePath = NULL;
-  
-  // Draw the path elements.
-  NSInteger numElements = [bezierPath elementCount];
-  if (numElements > 0)
-  {
-    CGMutablePathRef    path = CGPathCreateMutable();
-    NSPoint             points[3];
-    BOOL                didClosePath = YES;
-    
-    for (NSInteger i = 0; i < numElements; i++)
-    {
-      switch ([bezierPath elementAtIndex:i associatedPoints:points])
-      {
-        case NSBezierPathElementMoveTo:
-          CGPathMoveToPoint(path, NULL, points[0].x, points[0].y);
-          break;
-          
-        case NSBezierPathElementLineTo:
-          CGPathAddLineToPoint(path, NULL, points[0].x, points[0].y);
-          didClosePath = NO;
-          break;
-          
-        case NSBezierPathElementCurveTo:
-          CGPathAddCurveToPoint(path, NULL, points[0].x, points[0].y,
-                                points[1].x, points[1].y,
-                                points[2].x, points[2].y);
-          didClosePath = NO;
-          break;
-          
-        case NSBezierPathElementClosePath:
-          CGPathCloseSubpath(path);
-          didClosePath = YES;
-          break;
-      }
-    }
-    
-    // Be sure the path is closed or Quartz may not do valid hit detection.
-    if (!didClosePath)
-      CGPathCloseSubpath(path);
-    
-    immutablePath = CGPathCreateCopy(path);
-    CGPathRelease(path);
+  [self setNeedsDisplay:YES];
+}
+
+- (BOOL)canBecomeKeyView
+{
+  return NO;
+}
+
+- (BOOL)resignFirstResponder
+{
+  // Don't relinquish first responder while selecting text.
+  if (self.selectable && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
+    return NO;
   }
-  
-  return immutablePath;
+
+  return [super resignFirstResponder];
 }
 #endif // macOS]
+
+@end
