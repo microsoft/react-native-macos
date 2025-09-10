@@ -21,9 +21,8 @@
       "versionActionsOptions": {
         "currentVersionResolver": "registry",
         "currentVersionResolverMetadata": {
-          "tag": "next"
-        },
-        "preid": "rc"
+          "tag": "latest"
+        }
       },
       "useLegacyVersioning": false
     }
