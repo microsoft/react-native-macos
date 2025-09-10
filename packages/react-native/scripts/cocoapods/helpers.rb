@@ -74,7 +74,7 @@ module Helpers
         end
         # [macOS
         def self.min_macos_version_supported
-            return '11.0'
+            return '14.0'
         end
         # macOS]
         # [visionOS
