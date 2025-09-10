@@ -11,6 +11,9 @@
 #if !TARGET_OS_OSX // [macOS]
 #import <MobileCoreServices/UTCoreTypes.h>
 #endif // [macOS]
+#if TARGET_OS_OSX // [macOS
+#import <QuartzCore/CAShapeLayer.h>
+#endif // macOS]
 
 #import <react/renderer/components/text/ParagraphComponentDescriptor.h>
 #import <react/renderer/components/text/ParagraphProps.h>
@@ -25,11 +28,8 @@
 #import "RCTConversions.h"
 #import "RCTFabricComponentsPlugins.h"
 
-#import <QuartzCore/QuartzCore.h> // [macOS]
-
 using namespace facebook::react;
 
-#if !TARGET_OS_OSX // [macOS]
 // ParagraphTextView is an auxiliary view we set as contentView so the drawing
 // can happen on top of the layers manipulated by RCTViewComponentView (the parent view)
 @interface RCTParagraphTextView : RCTUIView // [macOS]
@@ -39,20 +39,15 @@ using namespace facebook::react;
 @property (nonatomic) LayoutMetrics layoutMetrics;
 
 @end
-#else // [macOS
-#if TARGET_OS_OSX // [macOS
-// On macOS, we defer drawing to an NSTextView rather than a plan NSView, in order
-// to get more native behaviors like text selection. We make sure this NSTextView 
-// does not take focus.
-@interface RCTParagraphComponentUnfocusableTextView : NSTextView
-@end
-#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
 
 @property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
 
+@end
+#else // [macOS
+@interface RCTParagraphComponentView ()
 @end
 #endif // [macOS]
 
@@ -62,10 +57,8 @@ using namespace facebook::react;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
 #if !TARGET_OS_OSX // [macOS]
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
+#endif // [macOS]
   RCTParagraphTextView *_textView;
-#else // [macOS
-  RCTParagraphComponentUnfocusableTextView *_textView;
-#endif // macOS]
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -73,31 +66,12 @@ using namespace facebook::react;
   if (self = [super initWithFrame:frame]) {
     _props = ParagraphShadowNode::defaultSharedProps();
 
-#if !TARGET_OS_OSX  // [macOS]
+#if !TARGET_OS_OSX // [macOS]
     self.opaque = NO;
+#endif // [macOS]
     _textView = [RCTParagraphTextView new];
     _textView.backgroundColor = RCTUIColor.clearColor; // [macOS]
     self.contentView = _textView;
-#else // [macOS
-    // Make the RCTParagraphComponentView accessible and available in the a11y hierarchy.
-    self.accessibilityElement = YES;
-    self.accessibilityRole = NSAccessibilityStaticTextRole;
-    // Fix blurry text on non-retina displays.
-    self.canDrawSubviewsIntoLayer = YES;
-    // The NSTextView is responsible for drawing text and managing selection.
-    _textView = [[RCTParagraphComponentUnfocusableTextView alloc] initWithFrame:self.bounds];
-    // The RCTParagraphComponentUnfocusableTextView is only used for rendering and should not appear in the a11y hierarchy.
-    _textView.accessibilityElement = NO;
-    _textView.usesFontPanel = NO;
-    _textView.drawsBackground = NO;
-    _textView.linkTextAttributes = @{};
-    _textView.editable = NO;
-    _textView.selectable = NO;
-    _textView.verticallyResizable = NO;
-    _textView.layoutManager.usesFontLeading = NO;
-    self.contentView = _textView;
-    self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
-#endif // macOS]
   }
 
   return self;
@@ -153,9 +127,7 @@ using namespace facebook::react;
     } else {
       [self disableContextMenu];
     }
-#else // [macOS
-    _textView.selectable = newParagraphProps.isSelectable;
-#endif // macOS]
+#endif // [macOS]
   }
 
   [super updateProps:props oldProps:oldProps];
@@ -164,12 +136,9 @@ using namespace facebook::react;
 - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
 {
   _state = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state);
-#if !TARGET_OS_OSX // [macOS]
   _textView.state = _state;
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
-  [self _updateTextView];
-#endif // macOS]
 }
 
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
@@ -178,53 +147,10 @@ using namespace facebook::react;
   // Using stored `_layoutMetrics` as `oldLayoutMetrics` here to avoid
   // re-applying individual sub-values which weren't changed.
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:_layoutMetrics];
-#if !TARGET_OS_OSX // [macOS]
   _textView.layoutMetrics = _layoutMetrics;
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
-#else // [macOS
-  [self _updateTextView];
-#endif // macOS]
 }
-
-#if TARGET_OS_OSX // [macOS
-- (void)_updateTextView
-{
-  if (!_state) {
-    return;
-  }
-
-  auto textLayoutManager = _state->getData().paragraphLayoutManager.getTextLayoutManager();
-
-  if (!textLayoutManager) {
-    return;
-  }
-
-  RCTTextLayoutManager *nativeTextLayoutManager =
-      (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
-
-  CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
-
-  NSTextStorage *textStorage = [nativeTextLayoutManager getTextStorageForAttributedString:_state->getData().attributedString paragraphAttributes:_paragraphAttributes frame:frame];
-
-  NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
-  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
-
-  [_textView replaceTextContainer:textContainer];
-
-  NSArray<NSLayoutManager *> *managers = [[textStorage layoutManagers] copy];
-  for (NSLayoutManager *manager in managers) {
-    [textStorage removeLayoutManager:manager];
-  }
-
-  _textView.minSize = frame.size;
-  _textView.maxSize = frame.size;
-  _textView.frame = frame;
-  _textView.textStorage.attributedString = textStorage;
-
-  [self setNeedsDisplay];
-}
-#endif // macOS]
 
 - (void)prepareForRecycle
 {
@@ -259,7 +185,7 @@ using namespace facebook::react;
   return NO;
 }
 
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX // [macOS
 - (NSArray *)accessibilityElements
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
@@ -295,7 +221,12 @@ using namespace facebook::react;
 {
   return [super accessibilityTraits] | UIAccessibilityTraitStaticText;
 }
-#endif // [macOS]
+#else // [macOS
+- (NSAccessibilityRole)accessibilityRole
+{
+  return [super accessibilityRole] ?: NSAccessibilityStaticTextRole;
+}
+#endif // macOS]
 
 #pragma mark - RCTTouchableComponentViewProtocol
 
@@ -379,6 +310,7 @@ using namespace facebook::react;
   return paragraphProps.isSelectable;
 }
 
+#if !TARGET_OS_OSX // [macOS]
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
@@ -387,12 +319,9 @@ using namespace facebook::react;
     return YES;
   }
 
-#if !TARGET_OS_OSX // [macOS]
   return [self.nextResponder canPerformAction:action withSender:sender];
-#else  // [macOS
-  return NO;
-#endif // macOS]
 }
+#endif // [macOS]
 
 - (void)copy:(id)sender
 {
@@ -427,12 +356,11 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
   return RCTParagraphComponentView.class;
 }
 
-#if !TARGET_OS_OSX // [macOS]
 @implementation RCTParagraphTextView {
   CAShapeLayer *_highlightLayer;
 }
 
-- (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
+- (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
   return nil;
 }
@@ -465,7 +393,12 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
                                     [self.layer addSublayer:self->_highlightLayer];
                                   }
                                   self->_highlightLayer.position = frame.origin;
+
+#if !TARGET_OS_OSX // [macOS]
                                   self->_highlightLayer.path = highlightPath.CGPath;
+#else // [macOS Update once our minimum is macOS 14
+                                  self->_highlightLayer.path = UIBezierPathCreateCGPathRef(highlightPath);
+#endif // macOS]
                                 } else {
                                   [self->_highlightLayer removeFromSuperlayer];
                                   self->_highlightLayer = nil;
@@ -474,24 +407,56 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
 }
 
 @end
-#else // [macOS
+
 #if TARGET_OS_OSX // [macOS
-@implementation RCTParagraphComponentUnfocusableTextView
-
-- (BOOL)canBecomeKeyView
+// Copied from RCTUIKit
+CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *bezierPath)
 {
-  return NO;
-}
-
-- (BOOL)resignFirstResponder
-{
-  // Don't relinquish first responder while selecting text.
-  if (self.selectable && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
-    return NO;
+  CGPathRef immutablePath = NULL;
+  
+  // Draw the path elements.
+  NSInteger numElements = [bezierPath elementCount];
+  if (numElements > 0)
+  {
+    CGMutablePathRef    path = CGPathCreateMutable();
+    NSPoint             points[3];
+    BOOL                didClosePath = YES;
+    
+    for (NSInteger i = 0; i < numElements; i++)
+    {
+      switch ([bezierPath elementAtIndex:i associatedPoints:points])
+      {
+        case NSBezierPathElementMoveTo:
+          CGPathMoveToPoint(path, NULL, points[0].x, points[0].y);
+          break;
+          
+        case NSBezierPathElementLineTo:
+          CGPathAddLineToPoint(path, NULL, points[0].x, points[0].y);
+          didClosePath = NO;
+          break;
+          
+        case NSBezierPathElementCurveTo:
+          CGPathAddCurveToPoint(path, NULL, points[0].x, points[0].y,
+                                points[1].x, points[1].y,
+                                points[2].x, points[2].y);
+          didClosePath = NO;
+          break;
+          
+        case NSBezierPathElementClosePath:
+          CGPathCloseSubpath(path);
+          didClosePath = YES;
+          break;
+      }
+    }
+    
+    // Be sure the path is closed or Quartz may not do valid hit detection.
+    if (!didClosePath)
+      CGPathCloseSubpath(path);
+    
+    immutablePath = CGPathCreateCopy(path);
+    CGPathRelease(path);
   }
-
-  return [super resignFirstResponder];
+  
+  return immutablePath;
 }
-
-@end
 #endif // macOS]
