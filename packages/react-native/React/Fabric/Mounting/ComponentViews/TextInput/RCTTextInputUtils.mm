@@ -19,13 +19,8 @@ static NSAttributedString *RCTSanitizeAttributedString(NSAttributedString *attri
 }
 
 void RCTCopyBackedTextInput(
-#if !TARGET_OS_OSX // [macOS]
-    RCTUIView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput
-#else // [macOS
     RCTPlatformView<RCTBackedTextInputViewProtocol> *fromTextInput,
     RCTPlatformView<RCTBackedTextInputViewProtocol> *toTextInput
-#endif // macOS]
 )
 {
   toTextInput.attributedText = RCTSanitizeAttributedString(fromTextInput.attributedText);
