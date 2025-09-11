@@ -18,13 +18,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 void RCTCopyBackedTextInput(
-#if !TARGET_OS_OSX // [macOS]
-    RCTUIView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput
-#else // [macOS
-    RCTUITextView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUITextView<RCTBackedTextInputViewProtocol> *toTextInput
-#endif // macOS]
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *fromTextInput,
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *toTextInput
 );
 
 #if !TARGET_OS_OSX // [macOS]

@@ -679,7 +679,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     UITextRange *range = [_backedTextInputView textRangeFromPosition:startPosition toPosition:endPosition];
     [_backedTextInputView setSelectedTextRange:range notifyDelegate:NO];
   }
-#endif // [macOS]
+#else // [macOS
+  NSInteger startPosition = MIN(start, end);
+  NSInteger endPosition = MAX(start, end);
+  [_backedTextInputView setSelectedTextRange:NSMakeRange(startPosition, endPosition - startPosition) notifyDelegate:YES];
+#endif // macOS]
   _comingFromJS = NO;
 }
 
@@ -835,8 +839,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
                                                 toPosition:selectedTextRange.end];
   return AttributedString::Range{(int)start, (int)(end - start)};
 #else // [macOS
-  // [Fabric] Placeholder till we implement selection in Fabric
-  return AttributedString::Range({0, 1});
+  NSRange selectedTextRange = [_backedTextInputView selectedTextRange];
+  return AttributedString::Range{(int)selectedTextRange.location, (int)selectedTextRange.length};
 #endif // macOS]
 }
 
@@ -862,8 +866,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 #if !TARGET_OS_OSX // [macOS]
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
+#else
+  NSRange selectedRange = [_backedTextInputView selectedTextRange];
+#endif // macOS]
   NSInteger oldTextLength = _backedTextInputView.attributedText.string.length;
   _backedTextInputView.attributedText = attributedString;
+#if !TARGET_OS_OSX // [macOS]
   // Updating the UITextView attributedText, for example changing the lineHeight, the color or adding
   // a new paragraph with \n, causes the cursor to move to the end of the Text and scroll.
   // This is fixed by restoring the cursor position and scrolling to that position (iOS issue 652653).
@@ -882,7 +890,16 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [self _restoreTextSelection];
   [self _updateTypingAttributes];
   _lastStringStateWasUpdatedWith = attributedString;
-#endif // [macOS]
+#else // [macOS
+  if (selectedRange.length == 0) {
+    // Maintaining a cursor position relative to the end of the old text.
+    NSInteger start = selectedRange.location;
+    NSInteger offsetFromEnd = oldTextLength - start;
+    NSInteger newOffset = _backedTextInputView.attributedText.length - offsetFromEnd;
+    [_backedTextInputView setSelectedTextRange:NSMakeRange(newOffset, 0)
+                                      notifyDelegate:YES];
+  }
+#endif // macOS]
 }
 
 // Ensure that newly typed text will inherit any custom attributes. We follow the logic of RN Android, where attributes
