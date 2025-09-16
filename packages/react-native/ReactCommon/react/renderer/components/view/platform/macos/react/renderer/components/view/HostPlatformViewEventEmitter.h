@@ -12,15 +12,15 @@
 #include <react/renderer/components/view/BaseViewEventEmitter.h>
 
 namespace facebook::react {
-using HostPlatformViewEventEmitter = BaseViewEventEmitter;
-} // namespace facebook::react
+
+class HostPlatformViewEventEmitter : public BaseViewEventEmitter {
+ public:
+  using BaseViewEventEmitter::BaseViewEventEmitter;
 
 #pragma mark - Focus Events
 
-void HostPlatformViewEventEmitter::onFocus() const {
-  dispatchEvent("focus");
-}
+  void onFocus() const;
+  void onBlur() const;
+};
 
-void HostPlatformViewEventEmitter::onBlur() const {
-  dispatchEvent("blur");
-}
+} // namespace facebook::react

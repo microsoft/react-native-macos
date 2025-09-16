@@ -14,6 +14,8 @@
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
 
+#include "MacOSViewEvents.h"
+
 namespace facebook::react {
 
 class HostPlatformViewProps : public BaseViewProps {

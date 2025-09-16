@@ -14,6 +14,7 @@
 
 namespace facebook::react {
 
+// TODO: Windows names this "WindowsEvents" and drops "View". Should we?
 struct MacOSViewEvents {
   std::bitset<8> bits{}; // TODO: Windows sets this to 32.. should we be higher?
 
