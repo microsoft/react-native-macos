@@ -16,20 +16,20 @@ namespace facebook::react {
 
 // TODO: Windows names this "WindowsEvents" and drops "View". Should we?
 struct MacOSViewEvents {
-  std::bitset<8> bits{}; // TODO: Windows sets this to 32.. should we be higher?
+  std::bitset<64> bits{};
 
-  enum class Offset : uint8_t { // TODO: Windows sets this and others to std::size_t instead of uint8_t.. should we?
+  enum class Offset : std::size_t {
     // Focus Events
     Focus = 0,
     Blur = 1,
   };
 
   constexpr bool operator[](const Offset offset) const {
-    return bits[static_cast<uint8_t>(offset)];
+    return bits[static_cast<std::size_t >(offset)];
   }
 
-  std::bitset<8>::reference operator[](const Offset offset) {
-    return bits[static_cast<uint8_t>(offset)];
+  std::bitset<64>::reference operator[](const Offset offset) {
+    return bits[static_cast<std::size_t >(offset)];
   }
 };
 
