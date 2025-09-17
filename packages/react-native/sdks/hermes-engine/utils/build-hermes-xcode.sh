@@ -78,7 +78,9 @@ echo "Configure Apple framework"
   -DHERMES_ENABLE_BITCODE:BOOLEAN=false \
   -DHERMES_BUILD_APPLE_FRAMEWORK:BOOLEAN=true \
   -DHERMES_BUILD_SHARED_JSI:BOOLEAN=false \
-  -DHERMES_BUILD_APPLE_DSYM:BOOLEAN=true \
+  # [macOS Disable to support cmake 4
+  # https://github.com/facebook/hermes/pull/1669
+  # -DHERMES_BUILD_APPLE_DSYM:BOOLEAN=false \ macOS ]
   -DIMPORT_HERMESC:PATH="${hermesc_path}" \
   -DJSI_DIR="$jsi_path" \
   -DHERMES_RELEASE_VERSION="for RN $release_version" \
