@@ -17,7 +17,7 @@ inline bool formsStackingContext(const ViewProps& props) {
 }
 
 inline bool formsView(const ViewProps& props) {
-  return props.focusable || props.enableFocusRing;
+  return props.focusable;
 }
 
 } // namespace facebook::react::HostPlatformViewTraitsInitializer
