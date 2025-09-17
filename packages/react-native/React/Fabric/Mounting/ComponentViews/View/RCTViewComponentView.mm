@@ -1510,6 +1510,72 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   }
 }
 
+#if TARGET_OS_OSX // [macOS
+
+# pragma mark - Focus Ring
+
+- (CGRect)focusRingMaskBounds
+{
+  return [self bounds];
+}
+
+- (void)drawFocusRingMask
+{
+  if (_props->enableFocusRing) {
+    CGContextRef context = NSGraphicsContext.currentContext.CGContext;
+
+    const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
+    const RCTCornerInsets cornerInsets =
+        RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero);
+    CGPathRef path = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL);
+
+    CGContextAddPath(context, path);
+    CGContextFillPath(context);
+    CGPathRelease(path);
+  }
+}
+
+
+#pragma mark - Focus Events
+
+- (BOOL)needsPanelToBecomeKey {
+	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default. 
+	return false;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+  return _props->focusable || [super acceptsFirstResponder];
+}
+
+- (BOOL)becomeFirstResponder
+{
+  if (![super becomeFirstResponder]) {
+    return NO;
+  }
+  
+  if (_eventEmitter) {
+    _eventEmitter->onFocus();
+  }
+  
+  return YES;
+}
+
+-  (BOOL)resignFirstResponder
+{
+  if (![super resignFirstResponder]) {
+    return NO;
+  }
+  
+  if (_eventEmitter) {
+    _eventEmitter->onBlur();
+  }
+  
+  return YES;
+}
+  
+#endif // macOS]
+
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
 {
   return _eventEmitter;
