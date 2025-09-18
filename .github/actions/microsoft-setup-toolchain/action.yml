@@ -19,12 +19,16 @@ inputs:
   xcode-developer-dir:
     description: Set the path for the active Xcode developer directory
     default: "/Applications/Xcode_16.4.0.app"
+  enable-ccache:
+    description: Enable ccache for iOS/macOS/visionOS builds
+    default: "false"
+
 runs:
   using: composite
   steps:
     - name: Set up Ccache
       id: setup-ccache
-      if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos' }}
+      if: ${{ (inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos') && inputs.enable-ccache == 'true' }}
       run: |
         podfile_lock="${{ inputs.project-root }}/${{ inputs.platform }}/Podfile.lock"
         if [[ -f $(git rev-parse --show-toplevel)/.ccache/ccache.conf ]] && [[ -f "$podfile_lock" ]]; then
@@ -75,7 +79,7 @@ runs:
         sudo xcodebuild -runFirstLaunch
       shell: bash
     - name: Cache /.ccache
-      if: ${{ steps.setup-ccache.outputs.cache-key }}
+      if: ${{ inputs.enable-ccache == 'true' && steps.setup-ccache.outputs.cache-key }}
       uses: actions/cache@v4
       with:
         path: .ccache
