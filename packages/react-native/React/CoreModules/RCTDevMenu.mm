@@ -403,7 +403,7 @@ RCT_EXPORT_MODULE()
                       [alert setMessageText:@"Change packager location"];
                       [alert setInformativeText:@"Input packager IP, port and entrypoint"];
                       [alert addButtonWithTitle:@"Use bundled JS"];
-                      [alert setAlertStyle:NSWarningAlertStyle];
+                      [alert setAlertStyle:NSAlertStyleWarning];
                       [alert beginSheetModalForWindow:[NSApp keyWindow] completionHandler:nil];
 #endif // macOS]
                     }]];
@@ -452,7 +452,7 @@ RCT_EXPORT_METHOD(show)
 #else // [macOS
   NSMenu *menu = [self menu];
   NSWindow *window = [NSApp keyWindow];
-  NSEvent *event = [NSEvent mouseEventWithType:NSLeftMouseUp location:CGPointMake(0, 0) modifierFlags:0 timestamp:NSTimeIntervalSince1970 windowNumber:[window windowNumber]  context:nil eventNumber:0 clickCount:0 pressure:0.1];
+  NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseUp location:CGPointMake(0, 0) modifierFlags:0 timestamp:NSTimeIntervalSince1970 windowNumber:[window windowNumber]  context:nil eventNumber:0 clickCount:0 pressure:0.1];
   [NSMenu popUpContextMenu:menu withEvent:event forView:[window contentView]];
 #endif // macOS]
 
