@@ -1597,15 +1597,6 @@ NSMutableDictionary<NSNumber *, NSNumber *> *GetEventDispatchStateDictionary(NSE
   BOOL keyDown = event.type == NSEventTypeKeyDown;
   NSArray<RCTHandledKey *> *keyEvents = keyDown ? self.keyDownEvents : self.keyUpEvents;
 
-  // If the view is focusable and the component didn't explicity set the keyDownEvents or keyUpEvents,
-  // allow enter/return and spacebar key events to mimic the behavior of native controls.
-  if (self.focusable && keyEvents == nil) {
-    keyEvents = @[
-      [[RCTHandledKey alloc] initWithKey:@"Enter"],
-      [[RCTHandledKey alloc] initWithKey:@" "]
-    ];
-  }
-
   // If a view specifies a key, it will always be removed from the responder chain (i.e. "handled")
   *shouldBlock = [RCTHandledKey event:event matchesFilter:keyEvents];
 

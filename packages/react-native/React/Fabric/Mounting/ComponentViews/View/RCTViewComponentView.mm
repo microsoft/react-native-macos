@@ -1581,23 +1581,27 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 #pragma mark - Keyboard Events
 
+// This dictionary is attached to the NSEvent being handled so we can ensure we only dispatch it
+// once per RCTView\nativeTag. The reason we need to track this state is that certain React native
+// views such as RCTUITextView inherit from views (such as NSTextView) which may or may not
+// decide to bubble the event to the next responder, and we don't want to dispatch the same
+// event more than once (e.g. first from RCTUITextView, and then from it's parent RCTView).
+NSMutableDictionary<NSNumber *, NSNumber *> *GetEventDispatchStateDictionary(NSEvent *event) {
+	static const char *key = "RCTEventDispatchStateDictionary";
+	NSMutableDictionary<NSNumber *, NSNumber *> *dict = objc_getAssociatedObject(event, key);
+	if (dict == nil) {
+		dict = [NSMutableDictionary new];
+		objc_setAssociatedObject(event, key, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+	}
+	return dict;
+}
+
 - (BOOL)handleKeyboardEvent:(NSEvent *)event {
   BOOL keyDown = event.type == NSEventTypeKeyDown;
   BOOL hasHandler = keyDown ? _props->macOSViewEvents[MacOSViewEvents::Offset::KeyDown]
                             : _props->macOSViewEvents[MacOSViewEvents::Offset::KeyUp];
   if (hasHandler) {
-    auto validKeys = keyDown ? _props->validKeysDown : _props->validKeysUp;
-
-    // If the view is focusable and the component didn't explicity set the validKeysDown or validKeysUp,
-    // allow enter/return and spacebar key events to mimic the behavior of native controls.
-    if (self.focusable && !validKeys.has_value()) {
-      validKeys = { { .key = "Enter" }, { .key = " " } };
-    }
-
-    // If there are no valid keys defined, no key event handling is required.
-    if (!validKeys.has_value()) {
-      return NO;
-    }
+    auto keyEvents = keyDown ? _props->keyDownEvents : _props->keyUpEvents;
     
     // Convert the event to a KeyEvent
     NSEventModifierFlags modifierFlags = event.modifierFlags;

@@ -41,7 +41,7 @@ class HostPlatformViewProps : public BaseViewProps {
   bool focusable{false};
   bool enableFocusRing{true};
 
-  std::optional<std::vector<HandledKey>> validKeysDown{};
-  std::optional<std::vector<HandledKey>> validKeysUp{};
+  std::vector<HandledKeyEvent> keyDownEvents{};
+  std::vector<HandledKeyEvent> keyUpEvents{};
 };
 } // namespace facebook::react
