@@ -1538,7 +1538,8 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 #pragma mark - Focus Events
 
-- (BOOL)needsPanelToBecomeKey {
+- (BOOL)needsPanelToBecomeKey 
+{
 	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default. 
 	return false;
 }
