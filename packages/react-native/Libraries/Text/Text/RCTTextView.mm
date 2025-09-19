@@ -295,7 +295,7 @@
       [self.layer addSublayer:_highlightLayer];
     }
     _highlightLayer.position = _contentFrame.origin;
-    _highlightLayer.path = UIBezierPathCreateCGPathRef(highlightPath); // [macOS]
+    _highlightLayer.path = highlightPath.CGPath;
   } else {
     [_highlightLayer removeFromSuperlayer];
     _highlightLayer = nil;
