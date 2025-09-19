@@ -6,7 +6,7 @@ on:
 jobs:
   build-rntester:
     name: "${{ matrix.platform }}, ${{ matrix.arch }}, ${{ matrix.engine }}"
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 90
     strategy:
       fail-fast: false
