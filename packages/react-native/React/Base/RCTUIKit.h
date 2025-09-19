@@ -51,11 +51,6 @@ UIKIT_STATIC_INLINE void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath
   [path appendPath:appendPath];
 }
 
-UIKIT_STATIC_INLINE CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path)
-{
-  return [path CGPath];
-}
-
 //
 // substantially different types
 //
@@ -375,8 +370,6 @@ NSData *UIImageJPEGRepresentation(NSImage *image, CGFloat compressionQuality);
 UIBezierPath *UIBezierPathWithRoundedRect(CGRect rect, CGFloat cornerRadius);
 
 void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath);
-
-CGPathRef UIBezierPathCreateCGPathRef(UIBezierPath *path);
 
 //
 // substantially different types
