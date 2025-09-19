@@ -1583,8 +1583,8 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 - (BOOL)handleKeyboardEvent:(NSEvent *)event {
   BOOL keyDown = event.type == NSEventTypeKeyDown;
-  BOOL hasHandler = keyDown ? _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::KeyDown]
-                            : _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::KeyUp];
+  BOOL hasHandler = keyDown ? _props->macOSViewEvents[MacOSViewEvents::Offset::KeyDown]
+                            : _props->macOSViewEvents[MacOSViewEvents::Offset::KeyUp];
   if (hasHandler) {
     auto validKeys = keyDown ? _props->validKeysDown : _props->validKeysUp;
 
