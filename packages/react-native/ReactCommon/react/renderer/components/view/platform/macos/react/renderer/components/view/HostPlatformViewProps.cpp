@@ -65,23 +65,23 @@ HostPlatformViewProps::HostPlatformViewProps(
                     "tooltip",
                     sourceProps.tooltip,
                     {})),
-      validKeysDown(
+      keyDownEvents(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.validKeysDown
+              ? sourceProps.keyDownEvents
               : convertRawProp(
                     context,
                     rawProps,
-                    "validKeysDown",
-                    sourceProps.validKeysDown,
+                    "keyDownEvents",
+                    sourceProps.keyDownEvents,
                     {})),
-      validKeysUp(
+      keyUpEvents(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.validKeysUp
+              ? sourceProps.keyUpEvents
               : convertRawProp(
                     context,
                     rawProps,
-                    "validKeysUp",
-                    sourceProps.validKeysUp,
+                    "keyUpEvents",
+                    sourceProps.keyUpEvents,
                     {})){};
 
 #define VIEW_EVENT_CASE_MACOS(eventType)                           \
@@ -120,8 +120,8 @@ void HostPlatformViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
     RAW_SET_PROP_SWITCH_CASE_BASIC(draggedTypes);
     RAW_SET_PROP_SWITCH_CASE_BASIC(tooltip);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysDown);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysUp);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(keyDownEvents);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(keyUpEvents);
   }
 }
 
