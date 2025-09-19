@@ -16,7 +16,6 @@
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTBoxShadow.h>
 #import <React/RCTConversions.h>
-#import <React/RCTCursor.h> // [macOS]
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
@@ -29,6 +28,11 @@
 #ifdef RCT_DYNAMIC_FRAMEWORKS
 #import <React/RCTComponentViewFactory.h>
 #endif
+
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTCursor.h>
+#import <React/RCTViewKeyboardEvent.h>
+#endif // macOS]
 
 using namespace facebook::react;
 
@@ -1574,7 +1578,78 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   
   return YES;
 }
+
+#pragma mark - Keyboard Events
+
+// This dictionary is attached to the NSEvent being handled so we can ensure we only dispatch it
+// once per RCTView\nativeTag. The reason we need to track this state is that certain React native
+// views such as RCTUITextView inherit from views (such as NSTextView) which may or may not
+// decide to bubble the event to the next responder, and we don't want to dispatch the same
+// event more than once (e.g. first from RCTUITextView, and then from it's parent RCTView).
+NSMutableDictionary<NSNumber *, NSNumber *> *GetEventDispatchStateDictionary(NSEvent *event) {
+	static const char *key = "RCTEventDispatchStateDictionary";
+	NSMutableDictionary<NSNumber *, NSNumber *> *dict = objc_getAssociatedObject(event, key);
+	if (dict == nil) {
+		dict = [NSMutableDictionary new];
+		objc_setAssociatedObject(event, key, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+	}
+	return dict;
+}
+
+- (BOOL)handleKeyboardEvent:(NSEvent *)event {
+  BOOL keyDown = event.type == NSEventTypeKeyDown;
+  BOOL hasHandler = keyDown ? _props->macOSViewEvents[MacOSViewEvents::Offset::KeyDown]
+                            : _props->macOSViewEvents[MacOSViewEvents::Offset::KeyUp];
+  if (hasHandler) {
+    auto keyEvents = keyDown ? _props->keyDownEvents : _props->keyUpEvents;
+    
+    // Convert the event to a KeyEvent
+    NSEventModifierFlags modifierFlags = event.modifierFlags;
+    facebook::react::KeyEvent keyEvent = {
+      .key = [[RCTViewKeyboardEvent keyFromEvent:event] UTF8String],
+      .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+      .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+      .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+      .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+      .capsLockKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCapsLock),
+      .numericPadKey = static_cast<bool>(modifierFlags & NSEventModifierFlagNumericPad),
+      .helpKey = static_cast<bool>(modifierFlags & NSEventModifierFlagHelp),
+      .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
+    };
+
+    BOOL shouldBlock = NO;
+    for (auto const &validKey : *validKeys) {
+      if (keyEvent == validKey) {
+        shouldBlock = YES;
+        break;
+      }
+    }
+
+    if (shouldBlock) {
+      if (keyDown) {
+        _eventEmitter->onKeyDown(keyEvent);
+      } else {
+        _eventEmitter->onKeyUp(keyEvent);
+      }
+      return YES;
+    }
+  }
   
+  return NO;
+}
+
+- (void)keyDown:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyDown:event];
+  }
+}
+
+- (void)keyUp:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyUp:event];
+  }
+}
+
 #endif // macOS]
 
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
