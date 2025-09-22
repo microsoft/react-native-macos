@@ -1512,6 +1512,19 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 #if TARGET_OS_OSX // [macOS
 
+- (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args
+{
+  if ([commandName isEqualToString:@"focus"]) {
+    [self focus];
+    return;
+  }
+
+  if ([commandName isEqualToString:@"blur"]) {
+    [self blur];
+    return;
+  }
+}
+
 # pragma mark - Focus Ring
 
 - (CGRect)focusRingMaskBounds
@@ -1537,6 +1550,16 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 
 #pragma mark - Focus Events
+  
+- (void)focus
+{
+  [[self window] makeFirstResponder:self];
+}
+
+- (void)blur
+{
+  [[self window] resignFirstResponder];
+}
 
 - (BOOL)needsPanelToBecomeKey 
 {
