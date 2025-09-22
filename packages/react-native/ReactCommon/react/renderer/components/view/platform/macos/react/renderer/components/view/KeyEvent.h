@@ -5,8 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+ // [macOS]
+
 #pragma once
 
+#include <react/renderer/core/PropsParserContext.h>
+#include <react/renderer/core/propsConversions.h>
+#include <optional>
 #include <string>
 
 namespace facebook::react {
@@ -41,9 +46,10 @@ struct HandledKey {
   std::optional<bool> metaKey{};
 };
 
-inline static bool operator==(const HandledKey &lhs, const HandledKey &rhs) {
-  return lhs.key == rhs.key && lhs.altKey == rhs.altKey && lhs.ctrlKey == rhs.ctrlKey &&
-      lhs.shiftKey == rhs.shiftKey && lhs.metaKey == rhs.metaKey;
+inline static bool operator==(const HandledKey& lhs, const HandledKey& rhs) {
+  return lhs.key == rhs.key && lhs.altKey == rhs.altKey &&
+      lhs.ctrlKey == rhs.ctrlKey && lhs.shiftKey == rhs.shiftKey &&
+      lhs.metaKey == rhs.metaKey;
 }
 
 /**
@@ -96,18 +102,21 @@ struct KeyEvent {
   bool functionKey{false};
 };
 
-inline static bool operator==(const KeyEvent &lhs, const HandledKey &rhs) {
-  return lhs.key == rhs.key && 
-      (!rhs.altKey.has_value() || lhs.altKey == *rhs.altKey) && 
-      (!rhs.ctrlKey.has_value() || lhs.ctrlKey == *rhs.ctrlKey) && 
-      (!rhs.shiftKey.has_value() || lhs.shiftKey == *rhs.shiftKey) && 
+inline static bool operator==(const KeyEvent& lhs, const HandledKey& rhs) {
+  return lhs.key == rhs.key &&
+      (!rhs.altKey.has_value() || lhs.altKey == *rhs.altKey) &&
+      (!rhs.ctrlKey.has_value() || lhs.ctrlKey == *rhs.ctrlKey) &&
+      (!rhs.shiftKey.has_value() || lhs.shiftKey == *rhs.shiftKey) &&
       (!rhs.metaKey.has_value() || lhs.metaKey == *rhs.metaKey);
 }
 
-inline void fromRawValue(const PropsParserContext &context, const RawValue &value, HandledKey &result) {
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    HandledKey& result) {
   if (value.hasType<std::unordered_map<std::string, RawValue>>()) {
     auto map = static_cast<std::unordered_map<std::string, RawValue>>(value);
-    for (const auto &pair : map) {
+    for (const auto& pair : map) {
       if (pair.first == "key") {
         result.key = static_cast<std::string>(pair.second);
       } else if (pair.first == "altKey") {
