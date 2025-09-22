@@ -16,7 +16,7 @@
 
 #include <react/renderer/components/view/KeyEvent.h>
 
-#include "MacOSViewEvents.h"
+#include "HostPlatformViewEvents.h"
 
 namespace facebook::react {
 
@@ -34,7 +34,7 @@ class HostPlatformViewProps : public BaseViewProps {
       const char* propName,
       const RawValue& value);
 
-  MacOSViewEvents macOSViewEvents{};
+  HostPlatformViewEvents hostPlatformEvents{};
 
 #pragma mark - Props
 

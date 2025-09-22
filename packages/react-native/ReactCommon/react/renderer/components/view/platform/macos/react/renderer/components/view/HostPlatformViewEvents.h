@@ -14,7 +14,7 @@
 
 namespace facebook::react {
 
-struct MacOSViewEvents {
+struct HostPlatformViewEvents {
   std::bitset<64> bits{};
 
   enum class Offset : std::size_t {
@@ -36,21 +36,21 @@ struct MacOSViewEvents {
   }
 };
 
-inline static bool operator==(MacOSViewEvents const &lhs, MacOSViewEvents const &rhs) {
+inline static bool operator==(HostPlatformViewEvents const &lhs, HostPlatformViewEvents const &rhs) {
   return lhs.bits == rhs.bits;
 }
 
-inline static bool operator!=(MacOSViewEvents const &lhs, MacOSViewEvents const &rhs) {
+inline static bool operator!=(HostPlatformViewEvents const &lhs, HostPlatformViewEvents const &rhs) {
   return lhs.bits != rhs.bits;
 }
 
-static inline MacOSViewEvents convertRawProp(
+static inline HostPlatformViewEvents convertRawProp(
     const PropsParserContext &context,
     const RawProps &rawProps,
-    const MacOSViewEvents &sourceValue,
-    const MacOSViewEvents &defaultValue) {
-  MacOSViewEvents result{};
-  using Offset = MacOSViewEvents::Offset;
+    const HostPlatformViewEvents &sourceValue,
+    const HostPlatformViewEvents &defaultValue) {
+  HostPlatformViewEvents result{};
+  using Offset = HostPlatformViewEvents::Offset;
 
   // Focus Events
   result[Offset::Focus] =

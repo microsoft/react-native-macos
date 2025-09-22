@@ -22,13 +22,13 @@ HostPlatformViewProps::HostPlatformViewProps(
     const HostPlatformViewProps& sourceProps,
     const RawProps& rawProps)
     : BaseViewProps(context, sourceProps, rawProps),
-      macOSViewEvents(
+      hostPlatformEvents(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.macOSViewEvents
+              ? sourceProps.hostPlatformEvents
               : convertRawProp(
                     context, 
                     rawProps,
-                    sourceProps.macOSViewEvents,
+                    sourceProps.hostPlatformEvents,
                     {})),
       focusable(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
@@ -67,17 +67,17 @@ HostPlatformViewProps::HostPlatformViewProps(
                     sourceProps.validKeysUp,
                     {})) {}
 
-#define MACOS_VIEW_EVENT_CASE(eventType)                    \
-case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): {       \
-  const auto offset = MacOSViewEvents::Offset::eventType;   \
-  MacOSViewEvents defaultViewEvents{};                      \
-  bool res = defaultViewEvents[offset];                     \
-  if (value.hasValue()) {                                   \
-    fromRawValue(context, value, res);                      \
-  }                                                         \
-  macOSViewEvents[offset] = res;                              \
-  return;                                                   \
-}
+#define VIEW_EVENT_CASE_MACOS(eventType)                           \
+  case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): {            \
+    const auto offset = HostPlatformViewEvents::Offset::eventType; \
+    HostPlatformViewEvents defaultViewEvents{};                    \
+    bool res = defaultViewEvents[offset];                          \
+    if (value.hasValue()) {                                        \
+      fromRawValue(context, value, res);                           \
+    }                                                              \
+    hostPlatformEvents[offset] = res;                              \
+    return;                                                        \
+  }
 
 void HostPlatformViewProps::setProp(
     const PropsParserContext& context,
@@ -92,10 +92,10 @@ void HostPlatformViewProps::setProp(
   static auto defaults = HostPlatformViewProps{};
   
   switch (hash) {
-    MACOS_VIEW_EVENT_CASE(Focus);
-    MACOS_VIEW_EVENT_CASE(Blur);
-    MACOS_VIEW_EVENT_CASE(KeyDown);
-    MACOS_VIEW_EVENT_CASE(KeyUp);
+    VIEW_EVENT_CASE_MACOS(Focus);
+    VIEW_EVENT_CASE_MACOS(Blur);
+    VIEW_EVENT_CASE_MACOS(KeyDown);
+    VIEW_EVENT_CASE_MACOS(KeyUp);
     RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
     RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing);
     RAW_SET_PROP_SWITCH_CASE_OPTIONAL_VECTOR(validKeysDown);
