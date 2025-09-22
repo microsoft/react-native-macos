@@ -1605,56 +1605,47 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 #pragma mark - Keyboard Events
 
 - (BOOL)handleKeyboardEvent:(NSEvent *)event {
-  BOOL keyDown = event.type == NSEventTypeKeyDown;
-  BOOL hasHandler = keyDown ? _props->hostPlatformEvents[HostPlatformViewEvents::Offset::KeyDown]
-                            : _props->hostPlatformEvents[HostPlatformViewEvents::Offset::KeyUp];
-  if (hasHandler) {
-    auto validKeys = keyDown ? _props->validKeysDown : _props->validKeysUp;
+  BOOL isKeyDown = event.type == NSEventTypeKeyDown;
 
-    // If the view is focusable and the component didn't explicity set the validKeysDown or validKeysUp,
-    // allow enter/return and spacebar key events to mimic the behavior of native controls.
-    if (self.focusable && !validKeys.has_value()) {
-      validKeys = { { .key = "Enter" }, { .key = " " } };
+  // Convert the event to a KeyEvent
+  NSEventModifierFlags modifierFlags = event.modifierFlags;
+  facebook::react::KeyEvent keyEvent = {
+    .key = [[RCTViewKeyboardEvent keyFromEvent:event] UTF8String],
+    .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+    .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+    .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+    .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+    .capsLockKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCapsLock),
+    .numericPadKey = static_cast<bool>(modifierFlags & NSEventModifierFlagNumericPad),
+    .helpKey = static_cast<bool>(modifierFlags & NSEventModifierFlagHelp),
+    .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
+  };
+
+  // Emit the event to JS only once. Do not emit the event if it has already been emitted
+  // (I.E: if the event has bubbled up)
+  // TODO: Properly set this to true.
+  BOOL hasBeenEmitted = NO;
+  if (!hasBeenEmitted) {
+    if (isKeyDown) {
+      _eventEmitter->onKeyDown(keyEvent);
+    } else {
+      _eventEmitter->onKeyUp(keyEvent);
     }
+    hasBeenEmitted = YES;
+  } 
 
-    // If there are no valid keys defined, no key event handling is required.
-    if (!validKeys.has_value()) {
-      return NO;
-    }
-    
-    // Convert the event to a KeyEvent
-    NSEventModifierFlags modifierFlags = event.modifierFlags;
-    facebook::react::KeyEvent keyEvent = {
-      .key = [[RCTViewKeyboardEvent keyFromEvent:event] UTF8String],
-      .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
-      .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
-      .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
-      .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
-      .capsLockKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCapsLock),
-      .numericPadKey = static_cast<bool>(modifierFlags & NSEventModifierFlagNumericPad),
-      .helpKey = static_cast<bool>(modifierFlags & NSEventModifierFlagHelp),
-      .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
-    };
+  // If keyDownEvents or keyUpEvents specifies the event, block native handling of the event
+  BOOL shouldBlockNativeHandling = NO;
 
-    BOOL shouldBlock = NO;
-    for (auto const &validKey : *validKeys) {
-      if (keyEvent == validKey) {
-        shouldBlock = YES;
-        break;
-      }
-    }
-
-    if (shouldBlock) {
-      if (keyDown) {
-        _eventEmitter->onKeyDown(keyEvent);
-      } else {
-        _eventEmitter->onKeyUp(keyEvent);
-      }
-      return YES;
+  auto const& handledKeyEvents = isKeyDown ? _props->keyDownEvents : _props->keyUpEvents;
+  for (auto const& handledKeyEvent : handledKeyEvents) {
+    if (keyEvent == handledKeyEvent) {
+      shouldBlockNativeHandling = YES;
+      break;
     }
   }
-  
-  return NO;
+
+  return shouldBlockNativeHandling;
 }
 
 - (void)keyDown:(NSEvent *)event {
