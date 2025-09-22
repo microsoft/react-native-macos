@@ -48,23 +48,23 @@ HostPlatformViewProps::HostPlatformViewProps(
                     "enableFocusRing",
                     sourceProps.enableFocusRing,
                     {})),
-      validKeysDown(
+      keyDownEvents(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.validKeysDown
+              ? sourceProps.keyDownEvents
               : convertRawProp(
                     context,
                     rawProps,
-                    "validKeysDown",
-                    sourceProps.validKeysDown,
+                    "keyDownEvents",
+                    sourceProps.keyDownEvents,
                     {})),
-      validKeysUp(
+      keyUpEvents(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.validKeysUp
+              ? sourceProps.keyUpEvents
               : convertRawProp(
                     context,
                     rawProps,
                     "validKeysUp",
-                    sourceProps.validKeysUp,
+                    sourceProps.keyUpEvents,
                     {})) {}
 
 #define VIEW_EVENT_CASE_MACOS(eventType)                           \
@@ -98,8 +98,8 @@ void HostPlatformViewProps::setProp(
     VIEW_EVENT_CASE_MACOS(KeyUp);
     RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
     RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing);
-    RAW_SET_PROP_SWITCH_CASE_OPTIONAL_VECTOR(validKeysDown);
-    RAW_SET_PROP_SWITCH_CASE_OPTIONAL_VECTOR(validKeysUp);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(keyDownEvents);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(keyUpEvents);
   }
 }
 
