@@ -1623,8 +1623,24 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
   // Emit the event to JS only once. Do not emit the event if it has already been emitted
   // (I.E: if the event has bubbled up)
-  // TODO: Properly set this to true.
+  // Use associated object on NSEvent to track emission
+  static void *kRCTViewKeyboardEventEmittedKey = &kRCTViewKeyboardEventEmittedKey;
   BOOL hasBeenEmitted = NO;
+  NSNumber *emitted = objc_getAssociatedObject(event, kRCTViewKeyboardEventEmittedKey);
+  if (emitted && [emitted boolValue]) {
+    hasBeenEmitted = YES;
+  }
+
+  if (!hasBeenEmitted) {
+    if (isKeyDown) {
+      _eventEmitter->onKeyDown(keyEvent);
+    } else {
+      _eventEmitter->onKeyUp(keyEvent);
+    }
+    // Mark as emitted for this event
+    objc_setAssociatedObject(event, kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    hasBeenEmitted = YES;
+  }
   if (!hasBeenEmitted) {
     if (isKeyDown) {
       _eventEmitter->onKeyDown(keyEvent);
