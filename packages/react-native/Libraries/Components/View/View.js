@@ -53,10 +53,6 @@ const View: component(
       importantForAccessibility,
       nativeID,
       tabIndex,
-      // [macOS
-      keyDownEvents,
-      keyUpEvents,
-      // macOS]
       ...otherProps
     }: ViewProps,
     forwardedRef,
