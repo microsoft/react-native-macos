@@ -4096,6 +4096,8 @@ export type AccessibilityProps = $ReadOnly<{
 exports[`public API should not change unintentionally Libraries/Components/View/ViewNativeComponent.js 1`] = `
 "declare const ViewNativeComponent: HostComponent<Props>;
 interface NativeCommands {
+  +focus: () => void;
+  +blur: () => void;
   +hotspotUpdate: (viewRef: HostInstance, x: number, y: number) => void;
   +setPressed: (viewRef: HostInstance, pressed: boolean) => void;
 }
