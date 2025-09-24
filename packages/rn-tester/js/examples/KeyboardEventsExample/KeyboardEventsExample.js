@@ -17,7 +17,10 @@ const ReactNative = require('react-native');
 
 const {Button, ScrollView, StyleSheet, Text, TextInput, View} = ReactNative;
 
-function KeyEventExample(): React.Node {
+function KeyboardEventExample(): React.Node {
+
+  const viewRef = React.useRef<View>(null);
+
   // $FlowFixMe[missing-empty-array-annot]
   const [log, setLog] = React.useState([]);
 
@@ -83,6 +86,11 @@ function KeyEventExample(): React.Node {
     onKeyUp: handleKeyUp,
   };
 
+  React.useEffect(() => {
+    // Focus the first view on mount
+    viewRef.current?.focus();
+  }, []);
+
   return (
     <ScrollView>
       <View
@@ -96,7 +104,8 @@ function KeyEventExample(): React.Node {
         </Text>
         <View>
           <Text style={styles.text}>{viewText}</Text>
-          <View focusable={true} style={styles.row} {...viewKeyboardProps} />
+          <View
+           ref={viewRef} focusable={true} style={styles.row} {...viewKeyboardProps} />
           <Text style={styles.text}>{textInputText}</Text>
           <TextInput
             blurOnSubmit={false}
@@ -164,9 +173,9 @@ exports.title = 'Key Events';
 exports.description = 'Examples that show how Key events can be used.';
 exports.examples = [
   {
-    title: 'KeyEventExample',
+    title: 'Keyboard Event Example',
     render: function (): React.Node {
-      return <KeyEventExample />;
+      return <KeyboardEventExample />;
     },
   },
 ];
