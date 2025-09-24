@@ -1627,8 +1627,8 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   // when we call super, so let's emit the event only at the first responder. It would be
   // simpler to check `if (self == self.window.firstResponder), however, that does not account
   // for cases like TextInputComponentView, where the first responder may be a subview.
-  static void *kRCTViewKeyboardEventEmittedKey = &kRCTViewKeyboardEventEmittedKey;
-  NSNumber *emitted = objc_getAssociatedObject(event, kRCTViewKeyboardEventEmittedKey);
+  static const char kRCTViewKeyboardEventEmittedKey = 0;
+  NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
   BOOL alreadyEmitted = (emitted && [emitted boolValue]);
   if (!alreadyEmitted && _eventEmitter) {
     if (event.type == NSEventTypeKeyDown) {
@@ -1636,7 +1636,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     } else {
       _eventEmitter->onKeyUp(keyEvent);
     }
-    objc_setAssociatedObject(event, kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
 
   // If keyDownEvents or keyUpEvents specifies the event, block native handling of the event

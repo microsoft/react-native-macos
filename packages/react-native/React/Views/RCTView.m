@@ -1585,17 +1585,17 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
     @"Keyboard event must be keyDown, keyUp. Got type: %ld", (long)event.type);
 
   RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
-  
+
   // Emit the event to JS only once. By default, events, will bubble up the respnder chain
   // when we call super, so let's emit the event only at the first responder. It would be
   // simpler to check `if (self == self.window.firstResponder), however, that does not account
   // for cases like TextInputComponentView, where the first responder may be a subview.
-  static void *kRCTViewKeyboardEventEmittedKey = &kRCTViewKeyboardEventEmittedKey;
-  NSNumber *emitted = objc_getAssociatedObject(event, kRCTViewKeyboardEventEmittedKey);
+  static const char kRCTViewKeyboardEventEmittedKey = 0;
+  NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
   BOOL alreadyEmitted = (emitted && [emitted boolValue]);
   if (!alreadyEmitted && _eventDispatcher) {
     [_eventDispatcher sendEvent:keyboardEvent];
-    objc_setAssociatedObject(event, kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
 
   NSArray<RCTHandledKey *> *keyEvents = event.type == NSEventTypeKeyDown ? self.keyDownEvents : self.keyUpEvents;
