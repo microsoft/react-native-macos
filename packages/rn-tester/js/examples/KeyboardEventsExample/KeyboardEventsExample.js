@@ -18,7 +18,6 @@ const ReactNative = require('react-native');
 const {Button, ScrollView, StyleSheet, Text, TextInput, View} = ReactNative;
 
 function KeyboardEventExample(): React.Node {
-
   const viewRef = React.useRef<View>(null);
 
   // $FlowFixMe[missing-empty-array-annot]
@@ -105,7 +104,11 @@ function KeyboardEventExample(): React.Node {
         <View>
           <Text style={styles.text}>{viewText}</Text>
           <View
-           ref={viewRef} focusable={true} style={styles.row} {...viewKeyboardProps} />
+            ref={viewRef}
+            focusable={true}
+            style={styles.row}
+            {...viewKeyboardProps}
+          />
           <Text style={styles.text}>{textInputText}</Text>
           <TextInput
             blurOnSubmit={false}
