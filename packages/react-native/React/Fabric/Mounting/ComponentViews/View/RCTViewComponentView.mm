@@ -1630,7 +1630,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   static const char kRCTViewKeyboardEventEmittedKey = 0;
   NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
   BOOL alreadyEmitted = (emitted && [emitted boolValue]);
-  if (!alreadyEmitted && _eventEmitter) {
+  if (!alreadyEmitted) {
     if (event.type == NSEventTypeKeyDown) {
       _eventEmitter->onKeyDown(keyEvent);
     } else {

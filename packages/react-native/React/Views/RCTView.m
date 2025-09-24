@@ -1593,7 +1593,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   static const char kRCTViewKeyboardEventEmittedKey = 0;
   NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
   BOOL alreadyEmitted = (emitted && [emitted boolValue]);
-  if (!alreadyEmitted && _eventDispatcher) {
+  if (!alreadyEmitted) {
     [_eventDispatcher sendEvent:keyboardEvent];
     objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
