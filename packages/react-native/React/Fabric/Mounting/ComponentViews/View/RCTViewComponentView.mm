@@ -1605,7 +1605,9 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 #pragma mark - Keyboard Events
 
 - (BOOL)handleKeyboardEvent:(NSEvent *)event {
-  BOOL isKeyDown = event.type == NSEventTypeKeyDown;
+  RCTAssert(
+    event.type == NSEventTypeKeyDown || event.type == NSEventTypeKeyUp,
+    @"Keyboard event must be keyDown, keyUp. Got type: %ld", (long)event.type);
 
   // Convert the event to a KeyEvent
   NSEventModifierFlags modifierFlags = event.modifierFlags;
@@ -1621,39 +1623,26 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
   };
 
-  // Emit the event to JS only once. Do not emit the event if it has already been emitted
-  // (I.E: if the event has bubbled up)
-  // Use associated object on NSEvent to track emission
+  // Emit the event to JS only once. By default, events, will bubble up the respnder chain
+  // when we call super, so let's emit the event only at the first responder. It would be
+  // simpler to check `if (self == self.window.firstResponder), however, that does not account
+  // for cases like TextInputComponentView, where the first responder may be a subview.
   static void *kRCTViewKeyboardEventEmittedKey = &kRCTViewKeyboardEventEmittedKey;
-  BOOL hasBeenEmitted = NO;
   NSNumber *emitted = objc_getAssociatedObject(event, kRCTViewKeyboardEventEmittedKey);
-  if (emitted && [emitted boolValue]) {
-    hasBeenEmitted = YES;
-  }
-
-  if (!hasBeenEmitted) {
-    if (isKeyDown) {
+  BOOL alreadyEmitted = (emitted && [emitted boolValue]);
+  if (!alreadyEmitted && _eventEmitter) {
+    if (event.type == NSEventTypeKeyDown) {
       _eventEmitter->onKeyDown(keyEvent);
     } else {
       _eventEmitter->onKeyUp(keyEvent);
     }
-    // Mark as emitted for this event
     objc_setAssociatedObject(event, kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    hasBeenEmitted = YES;
   }
-  if (!hasBeenEmitted) {
-    if (isKeyDown) {
-      _eventEmitter->onKeyDown(keyEvent);
-    } else {
-      _eventEmitter->onKeyUp(keyEvent);
-    }
-    hasBeenEmitted = YES;
-  } 
 
   // If keyDownEvents or keyUpEvents specifies the event, block native handling of the event
   BOOL shouldBlockNativeHandling = NO;
 
-  auto const& handledKeyEvents = isKeyDown ? _props->keyDownEvents : _props->keyUpEvents;
+  auto const& handledKeyEvents = event.type == NSEventTypeKeyDown ? _props->keyDownEvents : _props->keyUpEvents;
   for (auto const& handledKeyEvent : handledKeyEvents) {
     if (keyEvent == handledKeyEvent) {
       shouldBlockNativeHandling = YES;
