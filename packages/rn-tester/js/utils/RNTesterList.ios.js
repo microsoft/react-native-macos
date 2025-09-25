@@ -30,31 +30,6 @@ const Components: Array<RNTesterModuleInfo> = [
     module: require('../examples/FlatList/FlatListExampleIndex').default,
     category: 'ListView',
   },
-  // [macOS
-  {
-    key: 'FocusEvents',
-    module: require('../examples/FocusEventsExample/FocusEventsExample'),
-  },
-  // [macOS Github#1412
-  {
-    key: 'FocusOnMount',
-    module: require('../examples/FocusOnMount/FocusOnMount'),
-  },
-  // macOS]
-  // [macOS
-  {
-    key: 'GhostText',
-    module: require('../examples/GhostText/GhostText'),
-  },
-  // macOS]
-  {
-    key: 'KeyboardEvents',
-    module: require('../examples/KeyboardEventsExample/KeyboardEventsExample'),
-  },
-  {
-    key: 'AccessibilityShowMenu',
-    module: require('../examples/AccessibilityShowMenu/AccessibilityShowMenu'),
-  }, // macOS]
   {
     key: 'ImageExample',
     module: require('../examples/Image/ImageExample'),
@@ -186,6 +161,32 @@ const Components: Array<RNTesterModuleInfo> = [
 ];
 
 const APIs: Array<RNTesterModuleInfo> = ([
+  // [macOS
+  {
+    key: 'FocusEvents',
+    module: require('../examples/FocusEventsExample/FocusEventsExample'),
+    category: 'macOS',
+  },
+  {
+    key: 'FocusOnMount',
+    module: require('../examples/FocusOnMount/FocusOnMount'),
+    category: 'macOS',
+  },
+  {
+    key: 'GhostText',
+    module: require('../examples/GhostText/GhostText'),
+    category: 'macOS',
+  },
+  {
+    key: 'KeyboardEvents',
+    module: require('../examples/KeyboardEventsExample/KeyboardEventsExample'),
+    category: 'macOS',
+  },
+  {
+    key: 'AccessibilityShowMenu',
+    module: require('../examples/AccessibilityShowMenu/AccessibilityShowMenu'),
+    category: 'macOS',
+  }, // macOS]
   {
     key: 'AccessibilityExample',
     module: require('../examples/Accessibility/AccessibilityExample'),
