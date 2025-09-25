@@ -10,22 +10,23 @@
 
 'use strict'; // [macOS]
 
+import type {KeyEvent} from 'react-native/Libraries/Types/CoreEventTypes';
 
 const React = require('react');
 const ReactNative = require('react-native');
 
-const {Button, Pressable, StyleSheet, Text, TextInput, View} = ReactNative;
+const {Button, Pressable, StyleSheet, Switch, Text, TextInput, View} = ReactNative;
 
 
-function BubblingExample() {
-  const ref = React.useRef(null);
-  const [eventLog, setEventLog] = React.useState([]);
-  const [stopPropagationEnabled, setStopPropagationEnabled] = React.useState(false);
+function BubblingExample(): React.Node {
+  const ref = React.useRef<React.ElementRef<typeof Pressable> | null>(null);
+  const [eventLog, setEventLog] = React.useState<Array<string>>([]);
+  const [stopPropagationEnabled, setStopPropagationEnabled] = React.useState<boolean>(false);
 
-  function appendEvent(eventName, source) {
+  function appendEvent(eventName: string, source?: string) {
     const limit = 12;
-    setEventLog(current => {
-      const prefix = source ? `${source}: ` : '';
+    setEventLog((current: Array<string>) => {
+      const prefix = source != null ? `${source}: ` : '';
       return [`${prefix}${eventName}`].concat(current.slice(0, limit - 1));
     });
   }
@@ -34,9 +35,9 @@ function BubblingExample() {
     <View style={{marginTop: 10}}>
       <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
         <Text style={{marginRight: 8}}>Stop Propagation in Box 2:</Text>
-        <ReactNative.Switch
+        <Switch
           value={stopPropagationEnabled}
-          onValueChange={setStopPropagationEnabled}
+          onValueChange={(value: boolean) => setStopPropagationEnabled(value)}
         />
       </View>
       <View
@@ -74,7 +75,9 @@ function BubblingExample() {
                 ]}
                 nativeID="keyboard_events_focusable"
                 focusable={true}
-                onPress={()=>{ref.current?.focus();}}
+                onPress={() => {
+                  ref.current?.focus();
+                }}
                 onKeyDown={ev => {
                   appendEvent(`keyDown: ${ev.nativeEvent.key}`, 'Focusable');
                   if (
@@ -82,7 +85,7 @@ function BubblingExample() {
                     ev.nativeEvent.metaKey === true
                   ) {
                     appendEvent('Key command: Clear event log', 'Focusable');
-                    setTimeout(() =>{
+                    setTimeout(() => {
                       setEventLog([]);
                     }, 0);
                   }
@@ -119,20 +122,18 @@ function BubblingExample() {
 }
 
 
-function KeyboardEventExample() {
-  const viewRef = React.useRef<View>(null);
-
-  // $FlowFixMe[missing-empty-array-annot]
-  const [log, setLog] = React.useState([]);
+function KeyboardEventExample(): React.Node {
+  const viewRef = React.useRef<React.ElementRef<typeof View> | null>(null);
+  const [log, setLog] = React.useState<Array<string>>([]);
 
   const clearLog = React.useCallback(() => {
     setLog([]);
   }, [setLog]);
 
   const appendLog = React.useCallback(
-  (line) => {
+    (line: string) => {
       const limit = 12;
-      let newLog = log.slice(0, limit - 1);
+      const newLog = log.slice(0, limit - 1);
       newLog.unshift(line);
       setLog(newLog);
     },
@@ -140,14 +141,14 @@ function KeyboardEventExample() {
   );
 
   const handleKeyDown = React.useCallback(
-  (e) => {
+    (e: KeyEvent) => {
       appendLog('Key Down:' + e.nativeEvent.key);
     },
     [appendLog],
   );
 
   const handleKeyUp = React.useCallback(
-  (e) => {
+    (e: KeyEvent) => {
       appendLog('Key Up:' + e.nativeEvent.key);
     },
     [appendLog],
@@ -193,63 +194,63 @@ function KeyboardEventExample() {
   }, []);
 
   return (
-      <View
-        style={{
-          padding: 10,
-        }}>
-        <Text>
-          Key events are called when a component detects a key press.To tab
-          between views on macOS: Enable System Preferences / Keyboard /
-          Shortcuts {'>'} Use keyboard navigation to move focus between controls.
-        </Text>
-        <View>
-          <Text style={styles.text}>{viewText}</Text>
-          <View
-            ref={viewRef}
-            focusable={true}
-            style={styles.input}
-            {...viewKeyboardProps}
-          />
-          <Text style={styles.text}>{textInputText}</Text>
-          <TextInput
-            blurOnSubmit={false}
-            placeholder={'Singleline textInput'}
-            multiline={false}
-            focusable={true}
-            style={styles.input}
-            {...textInputKeyboardProps}
-          />
-          <TextInput
-            placeholder={'Multiline textInput'}
-            multiline={true}
-            focusable={true}
-            style={styles.input}
-            {...textInputKeyboardProps}
-          />
-          <Text style={styles.text}>{textInputUnhandledText}</Text>
-          <TextInput
-            blurOnSubmit={false}
-            placeholder={'Singleline textInput'}
-            multiline={false}
-            focusable={true}
-            style={styles.input}
-            {...textInputunHandledKeyboardProps}
-          />
-          <TextInput
-            placeholder={'Multiline textInput'}
-            multiline={true}
-            focusable={true}
-            style={styles.input}
-            {...textInputunHandledKeyboardProps}
-          />
-          <Button
-            testID="event_clear_button"
-            onPress={clearLog}
-            title="Clear event log"
-          />
-          <Text>{'Events:\n' + log.join('\n')}</Text>
-        </View>
+    <View
+      style={{
+        padding: 10,
+      }}>
+      <Text>
+        Key events are called when a component detects a key press.To tab
+        between views on macOS: Enable System Preferences / Keyboard /
+        Shortcuts {'>'} Use keyboard navigation to move focus between controls.
+      </Text>
+      <View>
+        <Text style={styles.text}>{viewText}</Text>
+        <View
+          ref={viewRef}
+          focusable={true}
+          style={styles.input}
+          {...viewKeyboardProps}
+        />
+        <Text style={styles.text}>{textInputText}</Text>
+        <TextInput
+          blurOnSubmit={false}
+          placeholder={'Singleline textInput'}
+          multiline={false}
+          focusable={true}
+          style={styles.input}
+          {...textInputKeyboardProps}
+        />
+        <TextInput
+          placeholder={'Multiline textInput'}
+          multiline={true}
+          focusable={true}
+          style={styles.input}
+          {...textInputKeyboardProps}
+        />
+        <Text style={styles.text}>{textInputUnhandledText}</Text>
+        <TextInput
+          blurOnSubmit={false}
+          placeholder={'Singleline textInput'}
+          multiline={false}
+          focusable={true}
+          style={styles.input}
+          {...textInputunHandledKeyboardProps}
+        />
+        <TextInput
+          placeholder={'Multiline textInput'}
+          multiline={true}
+          focusable={true}
+          style={styles.input}
+          {...textInputunHandledKeyboardProps}
+        />
+        <Button
+          testID="event_clear_button"
+          onPress={clearLog}
+          title="Clear event log"
+        />
+        <Text>{'Events:\n' + log.join('\n')}</Text>
       </View>
+    </View>
   );
 }
 
@@ -269,8 +270,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   clearButton: {
-    fontSize: 12,
-    color: '#007AFF',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 4,
@@ -339,7 +338,7 @@ const styles = StyleSheet.create({
   },
   clearButtonText: {
     fontSize: 12,
-    color: '#333',
+    color: '#007AFF',
   },
   input: {
     height: 36,
@@ -364,13 +363,13 @@ exports.description = 'Examples that show how Key events can be used.';
 exports.examples = [
   {
     title: 'Bubbling Example',
-  render: function () {
+    render: function (): React.Node {
       return <BubblingExample />;
     },
   },
   {
     title: 'keyDownEvents / keyUpEvents',
-  render: function () {
+    render: function (): React.Node {
       return <KeyboardEventExample />;
     },
   },
