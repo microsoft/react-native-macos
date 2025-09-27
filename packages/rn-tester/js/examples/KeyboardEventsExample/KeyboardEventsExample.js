@@ -12,16 +12,23 @@
 
 import type {KeyEvent} from 'react-native/Libraries/Types/CoreEventTypes';
 
-const React = require('react');
-const ReactNative = require('react-native');
+import * as React from 'react';
 
-const {Button, Pressable, StyleSheet, Switch, Text, TextInput, View} = ReactNative;
-
+import {
+  Button,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 function BubblingExample(): React.Node {
   const ref = React.useRef<React.ElementRef<typeof Pressable> | null>(null);
   const [eventLog, setEventLog] = React.useState<Array<string>>([]);
-  const [stopPropagationEnabled, setStopPropagationEnabled] = React.useState<boolean>(false);
+  const [stopPropagationEnabled, setStopPropagationEnabled] =
+    React.useState<boolean>(false);
 
   function appendEvent(eventName: string, source?: string) {
     const limit = 12;
@@ -33,7 +40,8 @@ function BubblingExample(): React.Node {
 
   return (
     <View style={{marginTop: 10}}>
-      <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
+      <View
+        style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
         <Text style={{marginRight: 8}}>Stop Propagation in Box 2:</Text>
         <Switch
           value={stopPropagationEnabled}
@@ -97,9 +105,7 @@ function BubblingExample(): React.Node {
         </View>
       </View>
 
-      <View
-        testID="keyboard_events_example_console"
-        style={styles.eventLogBox}>
+      <View testID="keyboard_events_example_console" style={styles.eventLogBox}>
         <View style={styles.logHeaderRow}>
           <Text style={styles.logHeader}>Event Log</Text>
           <Pressable
@@ -120,7 +126,6 @@ function BubblingExample(): React.Node {
     </View>
   );
 }
-
 
 function KeyboardEventExample(): React.Node {
   const viewRef = React.useRef<React.ElementRef<typeof View> | null>(null);
@@ -200,8 +205,8 @@ function KeyboardEventExample(): React.Node {
       }}>
       <Text>
         Key events are called when a component detects a key press.To tab
-        between views on macOS: Enable System Preferences / Keyboard /
-        Shortcuts {'>'} Use keyboard navigation to move focus between controls.
+        between views on macOS: Enable System Preferences / Keyboard / Shortcuts{' '}
+        {'>'} Use keyboard navigation to move focus between controls.
       </Text>
       <View>
         <Text style={styles.text}>{viewText}</Text>
