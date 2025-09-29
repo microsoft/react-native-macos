@@ -130,7 +130,7 @@ inline void fromRawValue(
       }
     }
   } else if (value.hasType<std::string>()) {
-    result.key = (std::string)value;
+    result.key = static_cast<std::string>(value);
   }
 }
 
