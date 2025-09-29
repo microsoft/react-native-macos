@@ -1640,17 +1640,8 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   }
 
   // If keyDownEvents or keyUpEvents specifies the event, block native handling of the event
-  BOOL shouldBlockNativeHandling = NO;
-
   auto const& handledKeyEvents = event.type == NSEventTypeKeyDown ? _props->keyDownEvents : _props->keyUpEvents;
-  for (auto const& handledKeyEvent : handledKeyEvents) {
-    if (keyEvent == handledKeyEvent) {
-      shouldBlockNativeHandling = YES;
-      break;
-    }
-  }
-
-  return shouldBlockNativeHandling;
+  return std::find(handledKeyEvents.cbegin(), handledKeyEvents.cend(), keyEvent) != handledKeyEvents.cend();
 }
 
 - (void)keyDown:(NSEvent *)event {
