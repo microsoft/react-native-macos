@@ -49,9 +49,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   BOOL _needsInvalidateLayer;
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
-  BOOL _hasMouseOver; // [macOS]
-  BOOL _hasClipViewBoundsObserver; // [macOS]
-  NSTrackingArea *_trackingArea; // [macOS]
+#if TARGET_OS_OSX // [macOS
+  BOOL _hasMouseOver;
+  BOOL _hasClipViewBoundsObserver;
+  NSTrackingArea *_trackingArea;
+#endif // macOS]
   NSMutableArray<RCTUIView *> *_reactSubviews; // [macOS]
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
   RCTPlatformView *_containerView; // [macOS]
@@ -649,8 +651,10 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   _needsInvalidateLayer = NO;
   [self invalidateLayer];
 
+#if TARGET_OS_OSX // [macOS
   [self updateTrackingAreas];
   [self updateClipViewBoundsObserverIfNeeded];
+#endif // macOS]
 }
 
 - (void)prepareForRecycle
@@ -1730,8 +1734,9 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
   NSClipView *clipView = self.window ? self.enclosingScrollView.contentView : nil;
   
-  BOOL hasMouseEventHandler = _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseEnter] ||
-    _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseLeave];
+  BOOL hasMouseEventHandler =
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
 
   if (_hasClipViewBoundsObserver && (!clipView || !hasMouseEventHandler)) {
     _hasClipViewBoundsObserver = NO;
@@ -1760,10 +1765,11 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     [self removeTrackingArea:_trackingArea];
   }
 
-  if (
-    _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseEnter] ||
-    _props->macOSViewEvents[facebook::react::MacOSViewEvents::Offset::MouseLeave]
-  ) {
+  BOOL hasMouseEventHandler =
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
+
+  if (hasMouseEventHandler) {
     _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
                                                  options:NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited
                                                    owner:self
