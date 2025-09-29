@@ -63,7 +63,7 @@ HostPlatformViewProps::HostPlatformViewProps(
               : convertRawProp(
                     context,
                     rawProps,
-                    "validKeysUp",
+                    "keyUpEvents",
                     sourceProps.keyUpEvents,
                     {})) {}
 
