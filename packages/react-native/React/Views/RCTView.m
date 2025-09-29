@@ -1592,7 +1592,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   // for cases like TextInputComponentView, where the first responder may be a subview.
   static const char kRCTViewKeyboardEventEmittedKey = 0;
   NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
-  BOOL alreadyEmitted = (emitted && [emitted boolValue]);
+  BOOL alreadyEmitted = [emitted boolValue];
   if (!alreadyEmitted) {
     [_eventDispatcher sendEvent:keyboardEvent];
     objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
