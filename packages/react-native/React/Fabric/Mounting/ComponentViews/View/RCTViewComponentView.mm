@@ -1761,21 +1761,22 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 - (void)updateTrackingAreas
 {
-  if (_trackingArea) {
-    [self removeTrackingArea:_trackingArea];
-  }
-
   BOOL hasMouseEventHandler =
     _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
     _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
+  BOOL wouldRecreateIdenticalTrackingArea =
+    hasMouseEventHandler && _trackingArea && NSEqualRects(self.bounds, [_trackingArea rect]);
 
-  if (hasMouseEventHandler) {
-    _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
-                                                 options:NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited
-                                                   owner:self
-                                                userInfo:nil];
-    [self addTrackingArea:_trackingArea];
-    [self updateMouseOverIfNeeded];
+  if (!wouldRecreateIdenticalTrackingArea) {
+    [self removeTrackingArea:_trackingArea];
+    if (hasMouseEventHandler) {
+      _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
+                                                   options:NSTrackingActiveAlways|NSTrackingMouseEnteredAndExited
+                                                     owner:self
+                                                  userInfo:nil];
+      [self addTrackingArea:_trackingArea];
+      [self updateMouseOverIfNeeded];
+    }
   }
 
   [super updateTrackingAreas];
