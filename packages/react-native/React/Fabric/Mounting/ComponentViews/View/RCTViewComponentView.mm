@@ -1669,7 +1669,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 #pragma mark - Mouse Events
 
-- (void)sendMouseEvent:(BOOL)isMouseOver {
+- (void)emitMouseEvent {
   if (!_eventEmitter) {
     return;
   }
@@ -1690,7 +1690,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
   };
   
-  if (isMouseOver) {
+  if (_hasMouseOver) {
     _eventEmitter->onMouseEnter(mouseEvent);
   } else {
     _eventEmitter->onMouseLeave(mouseEvent);
@@ -1709,7 +1709,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
   BOOL insideBounds = NSPointInRect(locationInView, self.visibleRect);
 
-  // On macOS 14.0 visibleRect can be larger than the view bounds
+  // On macOS 14+ visibleRect can be larger than the view bounds
   insideBounds &= NSPointInRect(locationInView, self.bounds);
 
   if (hasMouseOver && !insideBounds) {
@@ -1722,7 +1722,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
   if (hasMouseOver != _hasMouseOver) {
     _hasMouseOver = hasMouseOver;
-    [self sendMouseEvent:hasMouseOver];
+    [self emitMouseEvent];
   }
 }
 
@@ -1795,7 +1795,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   }
 
   _hasMouseOver = YES;
-  [self sendMouseEvent:_hasMouseOver];
+  [self emitMouseEvent];
 }
 
 - (void)mouseExited:(NSEvent *)event
@@ -1805,7 +1805,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   }
 
   _hasMouseOver = NO;
-  [self sendMouseEvent:_hasMouseOver];
+  [self emitMouseEvent];
 }
 #endif // macOS]
 
