@@ -18,6 +18,18 @@ import {ConditionallyIgnoredEventHandlers} from './ViewConfigIgnore';
 
 const bubblingEventTypes = {
   ...PlatformBaseViewConfigIos.bubblingEventTypes,
+  topKeyDown: {
+    phasedRegistrationNames: {
+      captured: 'onKeyDownCapture',
+      bubbled: 'onKeyDown',
+    },
+  },
+  topKeyUp: {
+    phasedRegistrationNames: {
+      captured: 'onKeyUpCapture',
+      bubbled: 'onKeyUp',
+    },
+  },
 };
 
 const directEventTypes = {
@@ -30,12 +42,6 @@ const directEventTypes = {
   },
   topDrop: {
     registrationName: 'onDrop',
-  },
-  topKeyUp: {
-    registrationName: 'onKeyUp',
-  },
-  topKeyDown: {
-    registrationName: 'onKeyDown',
   },
   topMouseEnter: {
     registrationName: 'onMouseEnter',

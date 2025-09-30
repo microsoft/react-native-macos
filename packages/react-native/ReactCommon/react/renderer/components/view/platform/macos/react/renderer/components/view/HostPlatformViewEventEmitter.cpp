@@ -8,6 +8,7 @@
  // [macOS]
 
 #include <react/renderer/components/view/HostPlatformViewEventEmitter.h>
+#include <react/renderer/components/view/KeyEvent.h>
 
 namespace facebook::react {
 
@@ -19,6 +20,34 @@ void HostPlatformViewEventEmitter::onFocus() const {
 
 void HostPlatformViewEventEmitter::onBlur() const {
   dispatchEvent("blur");
+}
+
+#pragma mark - Keyboard Events
+
+static jsi::Value keyEventPayload(jsi::Runtime& runtime, const KeyEvent& event) {
+  auto payload = jsi::Object(runtime);
+  payload.setProperty(runtime, "key", jsi::String::createFromUtf8(runtime, event.key));
+  payload.setProperty(runtime, "ctrlKey", event.ctrlKey);
+  payload.setProperty(runtime, "shiftKey", event.shiftKey);
+  payload.setProperty(runtime, "altKey", event.altKey);
+  payload.setProperty(runtime, "metaKey", event.metaKey);
+  payload.setProperty(runtime, "capsLockKey", event.capsLockKey);
+  payload.setProperty(runtime, "numericPadKey", event.numericPadKey);
+  payload.setProperty(runtime, "helpKey", event.helpKey);
+  payload.setProperty(runtime, "functionKey", event.functionKey);
+  return payload;
+};
+
+void HostPlatformViewEventEmitter::onKeyDown(const KeyEvent& keyEvent) const {
+  dispatchEvent("keyDown", [keyEvent](jsi::Runtime& runtime) {
+    return keyEventPayload(runtime, keyEvent);
+  });
+}
+
+void HostPlatformViewEventEmitter::onKeyUp(const KeyEvent& keyEvent) const {
+  dispatchEvent("keyUp", [keyEvent](jsi::Runtime& runtime) {
+    return keyEventPayload(runtime, keyEvent);
+  });
 }
 
 } // namespace facebook::react

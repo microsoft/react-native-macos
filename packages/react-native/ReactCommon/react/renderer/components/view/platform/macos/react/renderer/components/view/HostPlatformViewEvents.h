@@ -14,13 +14,17 @@
 
 namespace facebook::react {
 
-struct MacOSViewEvents {
+struct HostPlatformViewEvents {
   std::bitset<64> bits{};
 
   enum class Offset : std::size_t {
     // Focus Events
     Focus = 0,
     Blur = 1,
+
+    // Keyboard Events
+    KeyDown = 2,
+    KeyUp = 3,
   };
 
   constexpr bool operator[](const Offset offset) const {
@@ -32,27 +36,31 @@ struct MacOSViewEvents {
   }
 };
 
-inline static bool operator==(MacOSViewEvents const &lhs, MacOSViewEvents const &rhs) {
+inline static bool operator==(HostPlatformViewEvents const &lhs, HostPlatformViewEvents const &rhs) {
   return lhs.bits == rhs.bits;
 }
 
-inline static bool operator!=(MacOSViewEvents const &lhs, MacOSViewEvents const &rhs) {
+inline static bool operator!=(HostPlatformViewEvents const &lhs, HostPlatformViewEvents const &rhs) {
   return lhs.bits != rhs.bits;
 }
 
-static inline MacOSViewEvents convertRawProp(
+static inline HostPlatformViewEvents convertRawProp(
     const PropsParserContext &context,
     const RawProps &rawProps,
-    const MacOSViewEvents &sourceValue,
-    const MacOSViewEvents &defaultValue) {
-  MacOSViewEvents result{};
-  using Offset = MacOSViewEvents::Offset;
+    const HostPlatformViewEvents &sourceValue,
+    const HostPlatformViewEvents &defaultValue) {
+  HostPlatformViewEvents result{};
+  using Offset = HostPlatformViewEvents::Offset;
 
   // Focus Events
   result[Offset::Focus] =
       convertRawProp(context, rawProps, "onFocus", sourceValue[Offset::Focus], defaultValue[Offset::Focus]);
   result[Offset::Blur] =
       convertRawProp(context, rawProps, "onBlur", sourceValue[Offset::Blur], defaultValue[Offset::Blur]);
+  result[Offset::KeyDown] =
+      convertRawProp(context, rawProps, "onKeyDown", sourceValue[Offset::KeyDown], defaultValue[Offset::KeyDown]);
+  result[Offset::KeyUp] =
+      convertRawProp(context, rawProps, "onKeyUp", sourceValue[Offset::KeyUp], defaultValue[Offset::KeyUp]);
 
   return result;
 }

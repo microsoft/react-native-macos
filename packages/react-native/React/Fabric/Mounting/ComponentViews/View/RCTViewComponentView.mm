@@ -16,7 +16,6 @@
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTBoxShadow.h>
 #import <React/RCTConversions.h>
-#import <React/RCTCursor.h> // [macOS]
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
@@ -29,6 +28,11 @@
 #ifdef RCT_DYNAMIC_FRAMEWORKS
 #import <React/RCTComponentViewFactory.h>
 #endif
+
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTCursor.h>
+#import <React/RCTViewKeyboardEvent.h>
+#endif // macOS]
 
 using namespace facebook::react;
 
@@ -1597,7 +1601,61 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   
   return YES;
 }
-  
+
+#pragma mark - Keyboard Events
+
+- (BOOL)handleKeyboardEvent:(NSEvent *)event {
+  RCTAssert(
+    event.type == NSEventTypeKeyDown || event.type == NSEventTypeKeyUp,
+    @"Keyboard event must be keyDown, keyUp. Got type: %ld", (long)event.type);
+
+  // Convert the event to a KeyEvent
+  NSEventModifierFlags modifierFlags = event.modifierFlags;
+  facebook::react::KeyEvent keyEvent = {
+    .key = [[RCTViewKeyboardEvent keyFromEvent:event] UTF8String],
+    .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+    .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+    .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+    .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+    .capsLockKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCapsLock),
+    .numericPadKey = static_cast<bool>(modifierFlags & NSEventModifierFlagNumericPad),
+    .helpKey = static_cast<bool>(modifierFlags & NSEventModifierFlagHelp),
+    .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
+  };
+
+  // Emit the event to JS only once. By default, events, will bubble up the respnder chain
+  // when we call super, so let's emit the event only at the first responder. It would be
+  // simpler to check `if (self == self.window.firstResponder), however, that does not account
+  // for cases like TextInputComponentView, where the first responder may be a subview.
+  static const char kRCTViewKeyboardEventEmittedKey = 0;
+  NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
+  BOOL alreadyEmitted = [emitted boolValue];
+  if (!alreadyEmitted) {
+    if (event.type == NSEventTypeKeyDown) {
+      _eventEmitter->onKeyDown(keyEvent);
+    } else {
+      _eventEmitter->onKeyUp(keyEvent);
+    }
+    objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  }
+
+  // If keyDownEvents or keyUpEvents specifies the event, block native handling of the event
+  auto const& handledKeyEvents = event.type == NSEventTypeKeyDown ? _props->keyDownEvents : _props->keyUpEvents;
+  return std::find(handledKeyEvents.cbegin(), handledKeyEvents.cend(), keyEvent) != handledKeyEvents.cend();
+}
+
+- (void)keyDown:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyDown:event];
+  }
+}
+
+- (void)keyUp:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyUp:event];
+  }
+}
+
 #endif // macOS]
 
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point

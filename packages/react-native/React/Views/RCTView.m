@@ -1578,63 +1578,31 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 
 #pragma mark - Keyboard Events
 
-// This dictionary is attached to the NSEvent being handled so we can ensure we only dispatch it
-// once per RCTView\nativeTag. The reason we need to track this state is that certain React native
-// views such as RCTUITextView inherit from views (such as NSTextView) which may or may not
-// decide to bubble the event to the next responder, and we don't want to dispatch the same
-// event more than once (e.g. first from RCTUITextView, and then from it's parent RCTView).
-NSMutableDictionary<NSNumber *, NSNumber *> *GetEventDispatchStateDictionary(NSEvent *event) {
-	static const char *key = "RCTEventDispatchStateDictionary";
-	NSMutableDictionary<NSNumber *, NSNumber *> *dict = objc_getAssociatedObject(event, key);
-	if (dict == nil) {
-		dict = [NSMutableDictionary new];
-		objc_setAssociatedObject(event, key, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-	}
-	return dict;
-}
-
-- (RCTViewKeyboardEvent*)keyboardEvent:(NSEvent*)event shouldBlock:(BOOL *)shouldBlock {
-  BOOL keyDown = event.type == NSEventTypeKeyDown;
-  NSArray<RCTHandledKey *> *keyEvents = keyDown ? self.keyDownEvents : self.keyUpEvents;
-
-  // If the view is focusable and the component didn't explicity set the keyDownEvents or keyUpEvents,
-  // allow enter/return and spacebar key events to mimic the behavior of native controls.
-  if (self.focusable && keyEvents == nil) {
-    keyEvents = @[
-      [[RCTHandledKey alloc] initWithKey:@"Enter"],
-      [[RCTHandledKey alloc] initWithKey:@" "]
-    ];
-  }
-
-  // If a view specifies a key, it will always be removed from the responder chain (i.e. "handled")
-  *shouldBlock = [RCTHandledKey event:event matchesFilter:keyEvents];
-
-  // If an event isn't being removed from the queue, we want to be sure we dispatch it
-  // only once for that view. See note for GetEventDispatchStateDictionary.
-  if (!*shouldBlock) {
-    NSNumber *tag = [self reactTag];
-    NSMutableDictionary<NSNumber *, NSNumber *> *dict = GetEventDispatchStateDictionary(event);
-
-    if ([dict[tag] boolValue]) {
-		return nil;
-	}
-
-	dict[tag] = @YES;
-  }
-
-  return [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
-}
-
 - (BOOL)handleKeyboardEvent:(NSEvent *)event {
-  if (event.type == NSEventTypeKeyDown ? self.onKeyDown : self.onKeyUp) {
-	BOOL shouldBlock = YES;
-    RCTViewKeyboardEvent *keyboardEvent = [self keyboardEvent:event shouldBlock:&shouldBlock];
-    if (keyboardEvent) {
-      [_eventDispatcher sendEvent:keyboardEvent];
-      return shouldBlock;
-    }
+  RCTAssert(
+    event.type == NSEventTypeKeyDown ||
+    event.type == NSEventTypeKeyUp,
+    @"Keyboard event must be keyDown, keyUp. Got type: %ld", (long)event.type);
+
+  RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
+
+  // Emit the event to JS only once. By default, events, will bubble up the respnder chain
+  // when we call super, so let's emit the event only at the first responder. It would be
+  // simpler to check `if (self == self.window.firstResponder), however, that does not account
+  // for cases like TextInputComponentView, where the first responder may be a subview.
+  static const char kRCTViewKeyboardEventEmittedKey = 0;
+  NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
+  BOOL alreadyEmitted = [emitted boolValue];
+  if (!alreadyEmitted) {
+    [_eventDispatcher sendEvent:keyboardEvent];
+    objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
-  return NO;
+
+  NSArray<RCTHandledKey *> *keyEvents = event.type == NSEventTypeKeyDown ? self.keyDownEvents : self.keyUpEvents;
+
+  BOOL shouldBlockNativeHandling = [RCTHandledKey event:event matchesFilter:keyEvents];
+
+  return shouldBlockNativeHandling;
 }
 
 - (void)keyDown:(NSEvent *)event {
