@@ -8289,8 +8289,6 @@ export type TextPropsMacOS = {
   tooltip?: ?string,
   focusable?: ?boolean,
   enableFocusRing?: ?boolean,
-  onMouseEnter?: ?(event: MouseEvent) => void,
-  onMouseLeave?: ?(event: MouseEvent) => void,
 };
 type TextBaseProps = $ReadOnly<{
   accessible?: ?boolean,
