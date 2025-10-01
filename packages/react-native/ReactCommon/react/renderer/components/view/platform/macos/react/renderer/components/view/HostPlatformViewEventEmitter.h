@@ -26,13 +26,13 @@ class HostPlatformViewEventEmitter : public BaseViewEventEmitter {
 
 #pragma mark - Keyboard Events
 
-  void onKeyDown(KeyEvent const &keyEvent) const;
-  void onKeyUp(KeyEvent const &keyEvent) const;
+  void onKeyDown(KeyEvent const& keyEvent) const;
+  void onKeyUp(KeyEvent const& keyEvent) const;
 
 #pragma mark - Mouse Events
 
-  void onMouseEnter(MouseEvent const &mouseEvent) const;
-  void onMouseLeave(MouseEvent const &mouseEvent) const;
+  void onMouseEnter(MouseEvent const& mouseEvent) const;
+  void onMouseLeave(MouseEvent const& mouseEvent) const;
 };
 
 } // namespace facebook::react
