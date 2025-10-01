@@ -49,6 +49,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   BOOL _needsInvalidateLayer;
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
+#if TARGET_OS_OSX // [macOS
+  BOOL _hasMouseOver;
+  BOOL _hasClipViewBoundsObserver;
+  NSTrackingArea *_trackingArea;
+#endif // macOS]
   NSMutableArray<RCTUIView *> *_reactSubviews; // [macOS]
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
   RCTPlatformView *_containerView; // [macOS]
@@ -645,6 +650,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   _needsInvalidateLayer = NO;
   [self invalidateLayer];
+
+#if TARGET_OS_OSX // [macOS
+  [self updateTrackingAreas];
+  [self updateClipViewBoundsObserverIfNeeded];
+#endif // macOS]
 }
 
 - (void)prepareForRecycle
@@ -1623,20 +1633,22 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
   };
 
-  // Emit the event to JS only once. By default, events, will bubble up the respnder chain
-  // when we call super, so let's emit the event only at the first responder. It would be
-  // simpler to check `if (self == self.window.firstResponder), however, that does not account
-  // for cases like TextInputComponentView, where the first responder may be a subview.
-  static const char kRCTViewKeyboardEventEmittedKey = 0;
-  NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
-  BOOL alreadyEmitted = [emitted boolValue];
-  if (!alreadyEmitted) {
-    if (event.type == NSEventTypeKeyDown) {
-      _eventEmitter->onKeyDown(keyEvent);
-    } else {
-      _eventEmitter->onKeyUp(keyEvent);
+  if (_eventEmitter) {
+    // Emit the event to JS only once. By default, events, will bubble up the respnder chain
+    // when we call super, so let's emit the event only at the first responder. It would be
+    // simpler to check `if (self == self.window.firstResponder), however, that does not account
+    // for cases like TextInputComponentView, where the first responder may be a subview.
+    static const char kRCTViewKeyboardEventEmittedKey = 0;
+    NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
+    BOOL alreadyEmitted = [emitted boolValue];
+    if (!alreadyEmitted) {
+      if (event.type == NSEventTypeKeyDown) {
+        _eventEmitter->onKeyDown(keyEvent);
+      } else {
+        _eventEmitter->onKeyUp(keyEvent);
+      }
+      objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
-    objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
 
   // If keyDownEvents or keyUpEvents specifies the event, block native handling of the event
@@ -1656,6 +1668,147 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   }
 }
 
+
+#pragma mark - Mouse Events
+
+- (void)emitMouseEvent {
+  if (!_eventEmitter) {
+    return;
+  }
+
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  
+  NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
+
+  MouseEvent mouseEvent = {
+    .clientX = locationInView.x,
+    .clientY = locationInView.y,
+    .screenX = locationInWindow.x,
+    .screenY = locationInWindow.y,
+    .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+    .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+    .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+    .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+  };
+  
+  if (_hasMouseOver) {
+    _eventEmitter->onMouseEnter(mouseEvent);
+  } else {
+    _eventEmitter->onMouseLeave(mouseEvent);
+  }
+}
+
+- (void)updateMouseOverIfNeeded
+{
+  // When an enclosing scrollview is scrolled using the scrollWheel or trackpad,
+  // the mouseExited: event does not get called on the view where mouseEntered: was previously called.
+  // This creates an unnatural pairing of mouse enter and exit events and can cause problems.
+  // We therefore explicitly check for this here and handle them by calling the appropriate callbacks.
+
+  BOOL hasMouseOver = _hasMouseOver;
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  BOOL insideBounds = NSPointInRect(locationInView, self.visibleRect);
+
+  // On macOS 14+ visibleRect can be larger than the view bounds
+  insideBounds &= NSPointInRect(locationInView, self.bounds);
+
+  if (hasMouseOver && !insideBounds) {
+    hasMouseOver = NO;
+  } else if (!hasMouseOver && insideBounds) {
+    // The window's frame view must be used for hit testing against `locationInWindow`
+    NSView *hitView = [self.window.contentView.superview hitTest:locationInWindow];
+    hasMouseOver = [hitView isDescendantOf:self];
+  }
+
+  if (hasMouseOver != _hasMouseOver) {
+    _hasMouseOver = hasMouseOver;
+    [self emitMouseEvent];
+  }
+}
+
+- (void)updateClipViewBoundsObserverIfNeeded
+{
+  // Subscribe to view bounds changed notification so that the view can be notified when a
+  // scroll event occurs either due to trackpad/gesture based scrolling or a scrollwheel event
+  // both of which would not cause the mouseExited to be invoked.
+
+  NSClipView *clipView = self.window ? self.enclosingScrollView.contentView : nil;
+  
+  BOOL hasMouseEventHandler =
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
+
+  if (_hasClipViewBoundsObserver && (!clipView || !hasMouseEventHandler)) {
+    _hasClipViewBoundsObserver = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NSViewBoundsDidChangeNotification
+                                                  object:nil];
+  } else if (!_hasClipViewBoundsObserver && clipView && hasMouseEventHandler) {
+    _hasClipViewBoundsObserver = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(updateMouseOverIfNeeded)
+                                                 name:NSViewBoundsDidChangeNotification
+                                               object:clipView];
+    [self updateMouseOverIfNeeded];
+  }
+}
+
+- (void)viewDidMoveToWindow
+{
+  [self updateClipViewBoundsObserverIfNeeded];
+  [super viewDidMoveToWindow];
+}
+
+- (void)updateTrackingAreas
+{
+  BOOL hasMouseEventHandler =
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
+  BOOL wouldRecreateIdenticalTrackingArea =
+    hasMouseEventHandler && _trackingArea && NSEqualRects(self.bounds, [_trackingArea rect]);
+
+  if (!wouldRecreateIdenticalTrackingArea) {
+    [self removeTrackingArea:_trackingArea];
+    if (hasMouseEventHandler) {
+      _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
+                                                   options:NSTrackingActiveAlways|NSTrackingMouseEnteredAndExited
+                                                     owner:self
+                                                  userInfo:nil];
+      [self addTrackingArea:_trackingArea];
+      [self updateMouseOverIfNeeded];
+    }
+  }
+
+  [super updateTrackingAreas];
+}
+
+- (void)mouseEntered:(NSEvent *)event
+{
+  if (_hasMouseOver) {
+    return;
+  }
+
+  // The window's frame view must be used for hit testing against `locationInWindow`
+  NSView *hitView = [self.window.contentView.superview hitTest:event.locationInWindow];
+  if (![hitView isDescendantOf:self]) {
+    return;
+  }
+
+  _hasMouseOver = YES;
+  [self emitMouseEvent];
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+  if (!_hasMouseOver) {
+    return;
+  }
+
+  _hasMouseOver = NO;
+  [self emitMouseEvent];
+}
 #endif // macOS]
 
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
