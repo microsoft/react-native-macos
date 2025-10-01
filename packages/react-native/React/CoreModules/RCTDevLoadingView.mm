@@ -150,7 +150,7 @@ RCT_EXPORT_MODULE()
 #if !TARGET_OS_OSX // [macOS]
     [self->_window.rootViewController.view addSubview:self->_container];
 #else // [macOS
-    [self->_window.contentViewController.view addSubview:self->_container];
+    [self->_window.contentView addSubview:self->_container];
 #endif // macOS]
     [self->_container addSubview:self->_label];
 
@@ -162,35 +162,50 @@ RCT_EXPORT_MODULE()
     self->_window.hidden = NO;
 
     [self->_window layoutIfNeeded];
+#endif // macOS]
 
-    [NSLayoutConstraint activateConstraints:@[
-      // Container constraints
-      [self->_container.topAnchor constraintEqualToAnchor:self->_window.rootViewController.view.topAnchor],
-      [self->_container.leadingAnchor constraintEqualToAnchor:self->_window.rootViewController.view.leadingAnchor],
-      [self->_container.trailingAnchor constraintEqualToAnchor:self->_window.rootViewController.view.trailingAnchor],
-      [self->_container.heightAnchor constraintEqualToConstant:height],
-
-      // Label constraints
-      [self->_label.centerXAnchor constraintEqualToAnchor:self->_container.centerXAnchor],
-      [self->_label.bottomAnchor constraintEqualToAnchor:self->_container.bottomAnchor constant:-5],
-    ]];
+    // Shared layout constraints
+    NSMutableArray *constraints = [NSMutableArray array];
+    
+    // Container constraints - shared across all platforms
+#if !TARGET_OS_OSX // [macOS]
+    RCTUIView *parentView = self->_window.rootViewController.view;
 #else // [macOS
-    self->_window.contentView = [[NSView alloc] init];
-    [self->_window.contentView addSubview:self->_container];
-    // Container constraints
-    [NSLayoutConstraint activateConstraints:@[
-      [self->_container.topAnchor constraintEqualToAnchor:self->_window.contentView.topAnchor],
-      [self->_container.leadingAnchor constraintEqualToAnchor:self->_window.contentView.leadingAnchor],
-      [self->_container.trailingAnchor constraintEqualToAnchor:self->_window.contentView.trailingAnchor],
-      [self->_container.bottomAnchor constraintEqualToAnchor:self->_window.contentView.bottomAnchor],
-      
-      // Label constraints
+    RCTUIView *parentView = self->_window.contentView;
+#endif // macOS]
+    
+    [constraints addObjectsFromArray:@[
+      [self->_container.topAnchor constraintEqualToAnchor:parentView.topAnchor],
+      [self->_container.leadingAnchor constraintEqualToAnchor:parentView.leadingAnchor],
+      [self->_container.trailingAnchor constraintEqualToAnchor:parentView.trailingAnchor],
+    ]];
+    
+#if !TARGET_OS_OSX // [macOS]
+    // iOS-specific: fixed height
+    [constraints addObject:[self->_container.heightAnchor constraintEqualToConstant:height]];
+#else // [macOS
+    // macOS-specific: fill entire contentView
+    [constraints addObject:[self->_container.bottomAnchor constraintEqualToAnchor:parentView.bottomAnchor]];
+#endif // macOS]
+    
+    // Label constraints - shared across all platforms
+    [constraints addObjectsFromArray:@[
       [self->_label.centerXAnchor constraintEqualToAnchor:self->_container.centerXAnchor],
-      [self->_label.centerYAnchor constraintEqualToAnchor:self->_container.centerYAnchor],
       [self->_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:self->_container.leadingAnchor constant:10],
       [self->_label.trailingAnchor constraintLessThanOrEqualToAnchor:self->_container.trailingAnchor constant:-10],
     ]];
     
+#if !TARGET_OS_OSX // [macOS]
+    // iOS: label aligned to bottom
+    [constraints addObject:[self->_label.bottomAnchor constraintEqualToAnchor:self->_container.bottomAnchor constant:-5]];
+#else // [macOS
+    // macOS: label vertically centered
+    [constraints addObject:[self->_label.centerYAnchor constraintEqualToAnchor:self->_container.centerYAnchor]];
+#endif // macOS]
+    
+    [NSLayoutConstraint activateConstraints:constraints];
+
+#if TARGET_OS_OSX // [macOS]
     if (![[RCTKeyWindow() sheets] doesContain:self->_window]) {
       [RCTKeyWindow() beginSheet:self->_window completionHandler:^(NSModalResponse returnCode) {
         [self->_window orderOut:self];
