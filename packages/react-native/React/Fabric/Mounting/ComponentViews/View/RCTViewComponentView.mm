@@ -591,13 +591,13 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 #if TARGET_OS_OSX // [macOS
     // `draggedTypes`
   if (oldViewProps.draggedTypes != newViewProps.draggedTypes) {
-    if (oldViewProps.draggedTypes.has_value()) {
+    if (!oldViewProps.draggedTypes.empty()) {
       [self unregisterDraggedTypes];
     }
-    
-    if (newViewProps.draggedTypes.has_value()) {
-      NSMutableArray<NSPasteboardType> *pasteboardTypes = [NSMutableArray new];
-      for (const auto &draggedType : *newViewProps.draggedTypes) {
+
+    if (!newViewProps.draggedTypes.empty()) {
+      NSMutableArray<NSPasteboardType> *pasteboardTypes = [NSMutableArray arrayWithCapacity:newViewProps.draggedTypes.size()];
+      for (const auto &draggedType : newViewProps.draggedTypes) {
         if (draggedType == "fileUrl") {
           [pasteboardTypes addObject:NSFilenamesPboardType];
         } else if (draggedType == "image") {
