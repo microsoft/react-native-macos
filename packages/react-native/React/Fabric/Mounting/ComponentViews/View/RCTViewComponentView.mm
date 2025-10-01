@@ -1633,20 +1633,22 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
   };
 
-  // Emit the event to JS only once. By default, events, will bubble up the respnder chain
-  // when we call super, so let's emit the event only at the first responder. It would be
-  // simpler to check `if (self == self.window.firstResponder), however, that does not account
-  // for cases like TextInputComponentView, where the first responder may be a subview.
-  static const char kRCTViewKeyboardEventEmittedKey = 0;
-  NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
-  BOOL alreadyEmitted = [emitted boolValue];
-  if (!alreadyEmitted && _eventEmitter) {
-    if (event.type == NSEventTypeKeyDown) {
-      _eventEmitter->onKeyDown(keyEvent);
-    } else {
-      _eventEmitter->onKeyUp(keyEvent);
+  if (_eventEmitter) {
+    // Emit the event to JS only once. By default, events, will bubble up the respnder chain
+    // when we call super, so let's emit the event only at the first responder. It would be
+    // simpler to check `if (self == self.window.firstResponder), however, that does not account
+    // for cases like TextInputComponentView, where the first responder may be a subview.
+    static const char kRCTViewKeyboardEventEmittedKey = 0;
+    NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
+    BOOL alreadyEmitted = [emitted boolValue];
+    if (!alreadyEmitted) {
+      if (event.type == NSEventTypeKeyDown) {
+        _eventEmitter->onKeyDown(keyEvent);
+      } else {
+        _eventEmitter->onKeyUp(keyEvent);
+      }
+      objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
-    objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
 
   // If keyDownEvents or keyUpEvents specifies the event, block native handling of the event
