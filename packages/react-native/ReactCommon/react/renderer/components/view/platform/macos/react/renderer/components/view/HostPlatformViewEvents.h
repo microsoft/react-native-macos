@@ -27,8 +27,8 @@ struct HostPlatformViewEvents {
     KeyUp = 3,
 
     // Mouse Events
-    MouseEnter = 2,
-    MouseLeave = 3,
+    MouseEnter = 4,
+    MouseLeave = 5,
   };
 
   constexpr bool operator[](const Offset offset) const {
