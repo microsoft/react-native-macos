@@ -242,7 +242,6 @@ export type NativeTouchEvent = $ReadOnly<{
    * The Y position of the touch, relative to the element
    */
   locationY: number,
-
   /**
    * The X position of the touch, relative to the screen
    */

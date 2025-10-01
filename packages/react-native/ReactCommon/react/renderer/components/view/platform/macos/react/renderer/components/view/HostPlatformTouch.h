@@ -12,5 +12,32 @@
 #include <react/renderer/components/view/BaseTouch.h>
 
 namespace facebook::react {
-using HostPlatformTouch = BaseTouch;
+
+struct HostPlatformTouch : public BaseTouch {
+  /*
+   * The button indicating which pointer is used.
+   */
+  int button;
+
+  /*
+   * A flag indicating if the alt key is pressed.
+   */
+  bool altKey;
+
+  /*
+   * A flag indicating if the control key is pressed.
+   */
+  bool ctrlKey;
+
+  /*
+   * A flag indicating if the shift key is pressed.
+   */
+  bool shiftKey;
+
+  /*
+   * A flag indicating if the meta key is pressed.
+   */
+  bool metaKey;
+};
+
 } // namespace facebook::react
