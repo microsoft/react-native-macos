@@ -32,6 +32,7 @@
 #if TARGET_OS_OSX // [macOS
 #import <React/RCTCursor.h>
 #import <React/RCTViewKeyboardEvent.h>
+#import <React/RCTUtils.h>
 #endif // macOS]
 
 using namespace facebook::react;
