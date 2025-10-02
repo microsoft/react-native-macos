@@ -1707,7 +1707,7 @@ enum DragEventType {
   for (NSString *file in fileNames) {
     NSURL *fileURL = [NSURL fileURLWithPath:file];
     BOOL isDir = NO;
-    BOOL isValid = (![[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDir] || isDir) ? NO : YES;
+    BOOL isValid = [[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDir] && !isDir;
     if (isValid) {
       
       NSString *MIMETypeString = nil;
@@ -1727,14 +1727,6 @@ enum DragEventType {
                                         forKey:NSURLFileSizeKey
                                          error:&fileSizeError];
 
-      NSNumber *width = nil;
-      NSNumber *height = nil;
-      if ([MIMETypeString hasPrefix:@"image/"]) {
-        NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
-        width = @(image.size.width);
-        height = @(image.size.height);
-      }
-
       DataTransferItem transferItem = {
         .name = fileURL.lastPathComponent.UTF8String,
         .kind = "file",
@@ -1746,12 +1738,10 @@ enum DragEventType {
         transferItem.size = fileSizeValue.intValue;
       }
 
-      if (width != nil) {
-        transferItem.width = width.intValue;
-      }
-      
-      if (height != nil) {
-        transferItem.height = height.intValue;
+      if ([MIMETypeString hasPrefix:@"image/"]) {
+        NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
+        transferItem.width = static_cast<int>(image.size.width);
+        transferItem.height = static_cast<int>(image.size.height);
       }
       
       dataTransferItems.push_back(transferItem);
@@ -1768,9 +1758,9 @@ enum DragEventType {
       .kind = "image",
       .type = MIMETypeString.UTF8String,
       .uri = RCTDataURL(MIMETypeString, imageData).absoluteString.UTF8String,
-      .size = imageData.length,
-      .width = image.size.width,
-      .height = image.size.height,
+      .size = static_cast<int>(imageData.length),
+      .width = static_cast<int>(image.size.width),
+      .height = static_cast<int>(image.size.height),
     };
 
     dataTransferItems.push_back(transferItem);
