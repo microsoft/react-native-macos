@@ -17,7 +17,6 @@ import type {
 import type {KeyboardTypeOptions} from 'react-native/Libraries/Components/TextInput/TextInput';
 // [macOS
 import type {
-  PasteEvent,
   SettingChangeEvent,
 } from 'react-native/Libraries/Components/TextInput/TextInput'; // macOS]
 
@@ -29,7 +28,6 @@ import {
   Alert,
   Button,
   InputAccessoryView,
-  Image, // [macOS]
   Platform, // [macOS]
   StyleSheet,
   Switch,
@@ -384,99 +382,6 @@ function SpellingAndGrammarEvents(): React.Node {
         onGrammarCheckChange={(event: SettingChangeEvent) =>
           setEnableGrammarCheck(event.nativeEvent.grammarCheckEnabled)
         }
-      />
-    </>
-  );
-}
-
-function OnDragEnterOnDragLeaveOnDrop(): React.Node {
-  // $FlowFixMe[missing-empty-array-annot]
-  const [log, setLog] = React.useState([]);
-  const appendLog = (line: string) => {
-    const limit = 6;
-    let newLog = log.slice(0, limit - 1);
-    newLog.unshift(line);
-    setLog(newLog);
-  };
-  return (
-    <>
-      <ExampleTextInput
-        multiline={false}
-        draggedTypes={'fileUrl'}
-        onDragEnter={e => appendLog('SinglelineEnter')}
-        onDragLeave={e => appendLog('SinglelineLeave')}
-        onDrop={e => appendLog('SinglelineDrop')}
-        style={styles.multiline}
-        placeholder="SINGLE LINE with onDragEnter|Leave() and onDrop()"
-      />
-      <ExampleTextInput
-        multiline={true}
-        draggedTypes={'fileUrl'}
-        onDragEnter={e => appendLog('MultilineEnter')}
-        onDragLeave={e => appendLog('MultilineLeave')}
-        onDrop={e => appendLog('MultilineDrop')}
-        style={styles.multiline}
-        placeholder="MULTI LINE with onDragEnter|Leave() and onDrop()"
-      />
-      <Text style={{height: 120}}>{log.join('\n')}</Text>
-      <ExampleTextInput
-        multiline={false}
-        style={styles.multiline}
-        placeholder="SINGLE LINE w/o onDragEnter|Leave() and onDrop()"
-      />
-      <ExampleTextInput
-        multiline={true}
-        style={styles.multiline}
-        placeholder="MULTI LINE w/o onDragEnter|Leave() and onDrop()"
-      />
-    </>
-  );
-}
-
-function OnPaste(): React.Node {
-  // $FlowFixMe[missing-empty-array-annot]
-  const [log, setLog] = React.useState([]);
-  const appendLog = (line: string) => {
-    const limit = 3;
-    let newLog = log.slice(0, limit - 1);
-    newLog.unshift(line);
-    setLog(newLog);
-  };
-  const [imageUri, setImageUri] = React.useState(
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z/C/HgAGgwJ/lK3Q6wAAAABJRU5ErkJggg==',
-  );
-  return (
-    <>
-      <ExampleTextInput
-        multiline={true}
-        style={styles.multiline}
-        onPaste={(e: PasteEvent) => {
-          appendLog(JSON.stringify(e.nativeEvent.dataTransfer.types));
-          setImageUri(e.nativeEvent.dataTransfer.files[0].uri);
-        }}
-        pastedTypes={['string']}
-        placeholder="MULTI LINE with onPaste() text from clipboard"
-      />
-      <ExampleTextInput
-        multiline={true}
-        style={styles.multiline}
-        onPaste={(e: PasteEvent) => {
-          appendLog(JSON.stringify(e.nativeEvent.dataTransfer.types));
-          setImageUri(e.nativeEvent.dataTransfer.files[0].uri);
-        }}
-        pastedTypes={['fileUrl', 'image', 'string']}
-        placeholder="MULTI LINE with onPaste() for PNG/TIFF images from clipboard or fileUrl (via Finder) and text from clipboard"
-      />
-      <Text style={{height: 30}}>{log.join('\n')}</Text>
-      <Image
-        source={{uri: imageUri}}
-        style={{
-          width: 128,
-          height: 128,
-          margin: 4,
-          borderWidth: 1,
-          borderColor: 'white',
-        }}
       />
     </>
   );
@@ -1231,19 +1136,6 @@ if (Platform.OS === 'macos') {
             />
           </View>
         );
-      },
-    },
-    {
-      title:
-        'onDragEnter, onDragLeave and onDrop - Single- & MultiLineTextInput',
-      render: function (): React.Node {
-        return <OnDragEnterOnDragLeaveOnDrop />;
-      },
-    },
-    {
-      title: 'onPaste - MultiLineTextInput',
-      render: function (): React.Node {
-        return <OnPaste />;
       },
     },
     {
