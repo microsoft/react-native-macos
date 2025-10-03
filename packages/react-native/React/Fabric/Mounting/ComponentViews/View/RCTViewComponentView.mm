@@ -1740,8 +1740,9 @@ enum DragEventType {
 
       if ([MIMETypeString hasPrefix:@"image/"]) {
         NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
-        transferItem.width = static_cast<int>(image.size.width);
-        transferItem.height = static_cast<int>(image.size.height);
+        CGImageRef cgImage = [image CGImageForProposedRect:nil context:nil hints:nil];
+        transferItem.width = static_cast<int>(CGImageGetWidth(cgImage));
+        transferItem.height = static_cast<int>(CGImageGetHeight(cgImage));
       }
       
       dataTransferItems.push_back(transferItem);
@@ -1753,6 +1754,7 @@ enum DragEventType {
     NSString *MIMETypeString = imageType == NSPasteboardTypePNG ? @"image/png" : @"image/tiff";
     NSData *imageData = [pasteboard dataForType:imageType];
     NSImage *image = [[NSImage alloc] initWithData:imageData];
+    CGImageRef cgImage = [image CGImageForProposedRect:nil context:nil hints:nil];
     
     NSString *dataURLString = RCTDataURL(MIMETypeString, imageData).absoluteString;
     
@@ -1761,8 +1763,8 @@ enum DragEventType {
       .type = MIMETypeString ? MIMETypeString.UTF8String : "",
       .uri = dataURLString ? dataURLString.UTF8String : "",
       .size = static_cast<int>(imageData.length),
-      .width = static_cast<int>(image.size.width),
-      .height = static_cast<int>(image.size.height),
+      .width = static_cast<int>(CGImageGetWidth(cgImage)),
+      .height = static_cast<int>(CGImageGetHeight(cgImage)),
     };
 
     dataTransferItems.push_back(transferItem);
