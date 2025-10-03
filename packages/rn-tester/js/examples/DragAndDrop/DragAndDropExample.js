@@ -29,7 +29,7 @@ function DragDropView(): React.Node {
   // $FlowFixMe[missing-empty-array-annot]
   const [log, setLog] = React.useState([]);
   const appendLog = (line: string) => {
-    const limit = 3;
+    const limit = 6;
     let newLog = log.slice(0, limit - 1);
     newLog.unshift(line);
     setLog(newLog);
@@ -55,7 +55,13 @@ function DragDropView(): React.Node {
           appendLog('onDrop');
           setIsDraggingOver(false);
           if (e.nativeEvent.dataTransfer.files && e.nativeEvent.dataTransfer.files[0]) {
-            setImageUri(e.nativeEvent.dataTransfer.files[0].uri);
+            const file = e.nativeEvent.dataTransfer.files[0];
+            if (file.type.startsWith('image/')) {
+              appendLog('Dropped image file: ' + file.name);
+            } else {
+              appendLog('Dropped file: ' + file.name);
+            }
+            setImageUri(file.uri);
           }
         }}
         style={{
