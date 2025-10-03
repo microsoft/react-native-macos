@@ -1767,10 +1767,13 @@ enum DragEventType {
   }
 }
 
-- (void)sendDragEvent:(DragEventType)eventType withLocation:(NSPoint)locationInWindow pasteboard:(NSPasteboard *)pasteboard {
+- (void)emitDragEvent:(DragEventType)eventType draggingInfo:(id<NSDraggingInfo>)sender {
   if (!_eventEmitter) {
     return;
   }
+  
+  NSPoint locationInWindow = sender.draggingLocation;
+  NSPasteboard *pasteboard = sender.draggingPasteboard;
   
   std::vector<DataTransferItem> dataTransferItems{};
   [self buildDataTransferItems:dataTransferItems forPasteboard:pasteboard];
@@ -1812,7 +1815,7 @@ enum DragEventType {
   NSPasteboard *pboard = sender.draggingPasteboard;
   NSDragOperation sourceDragMask = sender.draggingSourceOperationMask;
 
-  [self sendDragEvent:DragEnter withLocation:sender.draggingLocation pasteboard:pboard];
+  [self emitDragEvent:DragEnter draggingInfo:sender];
 
   if ([pboard availableTypeFromArray:self.registeredDraggedTypes]) {
     if (sourceDragMask & NSDragOperationLink) {
@@ -1826,12 +1829,12 @@ enum DragEventType {
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender
 {
-  [self sendDragEvent:DragLeave withLocation:sender.draggingLocation pasteboard:sender.draggingPasteboard];
+  [self emitDragEvent:DragLeave draggingInfo:sender];
 }
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
-  [self sendDragEvent:Drop withLocation:sender.draggingLocation pasteboard:sender.draggingPasteboard];
+  [self emitDragEvent:Drop draggingInfo:sender];
   return YES;
 }
 
