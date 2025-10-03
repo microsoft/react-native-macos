@@ -619,10 +619,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     std::vector<DataTransferItem> dataTransferItems{};
     [self buildDataTransferItems:dataTransferItems forPasteboard:pasteboard];
     
-    TextInputEventEmitter::PasteEvent pasteEvent = {
-      .dataTransferItems = dataTransferItems,
-    };
-    textInputEventEmitter.onPaste(pasteEvent);
+    textInputEventEmitter.onPaste({.dataTransferItems = dataTransferItems});
   }
 
   // Only allow pasting text.
