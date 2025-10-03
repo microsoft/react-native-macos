@@ -1728,10 +1728,10 @@ enum DragEventType {
                                          error:&fileSizeError];
 
       DataTransferItem transferItem = {
-        .name = fileURL.lastPathComponent.UTF8String,
+        .name = fileURL.lastPathComponent ? fileURL.lastPathComponent.UTF8String : "",
         .kind = "file",
-        .type = MIMETypeString.UTF8String,
-        .uri = fileURL.path.UTF8String,
+        .type = MIMETypeString ? MIMETypeString.UTF8String : "",
+        .uri = fileURL.path ? fileURL.path.UTF8String : "",
       };
       
       if (success) {
@@ -1754,10 +1754,12 @@ enum DragEventType {
     NSData *imageData = [pasteboard dataForType:imageType];
     NSImage *image = [[NSImage alloc] initWithData:imageData];
     
+    NSString *dataURLString = RCTDataURL(MIMETypeString, imageData).absoluteString;
+    
     DataTransferItem transferItem = {
       .kind = "image",
-      .type = MIMETypeString.UTF8String,
-      .uri = RCTDataURL(MIMETypeString, imageData).absoluteString.UTF8String,
+      .type = MIMETypeString ? MIMETypeString.UTF8String : "",
+      .uri = dataURLString ? dataURLString.UTF8String : "",
       .size = static_cast<int>(imageData.length),
       .width = static_cast<int>(image.size.width),
       .height = static_cast<int>(image.size.height),
