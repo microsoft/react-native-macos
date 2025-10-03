@@ -17,6 +17,10 @@
 #import <react/renderer/core/LayoutMetrics.h>
 #import <react/renderer/core/Props.h>
 
+#if TARGET_OS_OSX // [macOS
+#include <react/renderer/components/view/MouseEvent.h>
+#endif // macOS]
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -80,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)prepareForRecycle NS_REQUIRES_SUPER;
 
 #if TARGET_OS_OSX // [macOS
-- (void)buildDataTransferItems:(std::vector<DataTransferItem> &)dataTransferItems forPasteboard:(NSPasteboard *)pasteboard;
+- (void)buildDataTransferItems:(std::vector<facebook::react::DataTransferItem> &)dataTransferItems forPasteboard:(NSPasteboard *)pasteboard;
 #endif // macOS]
 
 /*
