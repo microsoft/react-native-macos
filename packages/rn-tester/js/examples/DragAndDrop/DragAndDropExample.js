@@ -54,8 +54,8 @@ function DragDropView(): React.Node {
         onDrop={e => {
           appendLog('onDrop');
           setIsDraggingOver(false);
-          if (e.nativeEvent.dataTransfer.files && e.nativeEvent.dataTransfer.files[0]) {
-            const file = e.nativeEvent.dataTransfer.files[0];
+          const file = e.nativeEvent.dataTransfer?.files?.[0];
+          if (file) {
             if (file.type.startsWith('image/')) {
               appendLog('Dropped image file: ' + file.name);
             } else {
@@ -164,7 +164,10 @@ function OnPaste(): React.Node {
         style={styles.multiline}
         onPaste={(e: PasteEvent) => {
           appendLog(JSON.stringify(e.nativeEvent.dataTransfer.types));
-          setImageUri(e.nativeEvent.dataTransfer.files[0].uri);
+          const file = e.nativeEvent.dataTransfer?.files?.[0];
+          if (file) {
+            setImageUri(file.uri);
+          }
         }}
         pastedTypes={['string']}
         placeholder="MULTI LINE with onPaste() text from clipboard"
@@ -174,7 +177,10 @@ function OnPaste(): React.Node {
         style={styles.multiline}
         onPaste={(e: PasteEvent) => {
           appendLog(JSON.stringify(e.nativeEvent.dataTransfer.types));
-          setImageUri(e.nativeEvent.dataTransfer.files[0].uri);
+          const file = e.nativeEvent.dataTransfer?.files?.[0];
+          if (file) {
+            setImageUri(file.uri);
+          }
         }}
         pastedTypes={['fileUrl', 'image', 'string']}
         placeholder="MULTI LINE with onPaste() for PNG/TIFF images from clipboard or fileUrl (via Finder) and text from clipboard"
