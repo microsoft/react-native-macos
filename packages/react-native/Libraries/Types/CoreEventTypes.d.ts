@@ -305,4 +305,26 @@ export interface NativeBlurEvent extends TargetedEvent {}
 export interface FocusEvent extends NativeSyntheticEvent<NativeFocusEvent> {}
 
 export interface BlueEvent extends NativeSyntheticEvent<NativeBlurEvent> {}
+
+// Drag and Drop types
+export interface DataTransferItem {
+  name: string;
+  kind: string;
+  type: string;
+  uri: string;
+  size?: number | undefined;
+  width?: number | undefined;
+  height?: number | undefined;
+}
+
+export interface DataTransfer {
+  files: ReadonlyArray<DataTransferItem>;
+  types: ReadonlyArray<string>;
+}
+
+export interface DragEvent extends MouseEvent {
+  nativeEvent: NativeMouseEvent & {
+    dataTransfer?: DataTransfer | undefined;
+  };
+}
 // macOS]
