@@ -12,6 +12,7 @@ import type {
   BlurEvent,
   // [macOS
   FocusEvent,
+  DragEvent,
   HandledKeyEvent,
   KeyEvent,
   GestureResponderEvent,
@@ -198,21 +199,21 @@ type PressableBaseProps = $ReadOnly<{
    *
    * @platform macos
    */
-  onDragEnter?: (event: MouseEvent) => void,
+  onDragEnter?: (event: DragEvent) => void,
 
   /**
    * Fired when a file is dragged out of the Pressable via the mouse.
    *
    * @platform macos
    */
-  onDragLeave?: (event: MouseEvent) => void,
+  onDragLeave?: (event: DragEvent) => void,
 
   /**
    * Fired when a file is dropped on the Pressable via the mouse.
    *
    * @platform macos
    */
-  onDrop?: (event: MouseEvent) => void,
+  onDrop?: (event: DragEvent) => void,
 
   /**
    * The types of dragged files that the Pressable will accept.

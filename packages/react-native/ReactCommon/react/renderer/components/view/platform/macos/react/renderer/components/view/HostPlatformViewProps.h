@@ -43,5 +43,7 @@ class HostPlatformViewProps : public BaseViewProps {
 
   std::vector<HandledKey> keyDownEvents{};
   std::vector<HandledKey> keyUpEvents{};
+
+  std::vector<std::string> draggedTypes{};
 };
 } // namespace facebook::react

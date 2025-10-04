@@ -370,3 +370,59 @@ export type MouseEvent = NativeSyntheticEvent<
     timestamp: number,
   }>,
 >;
+
+// // Base mouse event data shared between MouseEvent and DragEvent
+// export type NativeMouseEvent = $ReadOnly<{
+//   clientX: number,
+//   clientY: number,
+//   pageX: number,
+//   pageY: number,
+//   timestamp: number,
+//   screenX?: number,
+//   screenY?: number,
+//   altKey?: boolean,
+//   ctrlKey?: boolean,
+//   shiftKey?: boolean,
+//   metaKey?: boolean,
+// }>;
+
+// export type MouseEvent = NativeSyntheticEvent<
+//   $ReadOnly<{
+//     ...NativeMouseEvent,
+//     dataTransfer?: DataTransfer,
+//   }>,
+// >;
+
+// [macOS
+export type DataTransferItem = $ReadOnly<{
+  name: string,
+  kind: string,
+  type: string,
+  uri: string,
+  size?: number,
+  width?: number,
+  height?: number,
+}>;
+
+export type DataTransfer = $ReadOnly<{
+  files: $ReadOnlyArray<DataTransferItem>,
+  types: $ReadOnlyArray<string>,
+}>;
+
+export type DragEvent = NativeSyntheticEvent<
+  $ReadOnly<{
+    clientX: number,
+    clientY: number,
+    pageX: number,
+    pageY: number,
+    timestamp: number,
+    screenX?: number,
+    screenY?: number,
+    altKey?: boolean,
+    ctrlKey?: boolean,
+    shiftKey?: boolean,
+    metaKey?: boolean,
+    dataTransfer?: DataTransfer,
+  }>,
+>;
+// macOS]

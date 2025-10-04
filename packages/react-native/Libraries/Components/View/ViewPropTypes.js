@@ -16,6 +16,7 @@ import type {
   BlurEvent,
   FocusEvent,
   // [macOS]
+  DragEvent,
   HandledKeyEvent,
   KeyEvent,
   LayoutChangeEvent,
@@ -410,21 +411,21 @@ type MacOSViewProps = $ReadOnly<{|
    *
    * @platform macos
    */
-  onDragEnter?: (event: MouseEvent) => void,
+  onDragEnter?: (event: DragEvent) => void,
 
   /**
    * Fired when a file is dragged out of the view via the mouse.
    *
    * @platform macos
    */
-  onDragLeave?: (event: MouseEvent) => void,
+  onDragLeave?: (event: DragEvent) => void,
 
   /**
    * Fired when an element is dropped on a valid drop target
    *
    * @platform macos
    */
-  onDrop?: (event: MouseEvent) => void,
+  onDrop?: (event: DragEvent) => void,
 
   /**
    * Specifies the Tooltip for the view
