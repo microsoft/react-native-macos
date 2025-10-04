@@ -588,6 +588,17 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     needsInvalidateLayer = YES;
   }
 
+#if TARGET_OS_OSX // [macOS]
+  // `tooltip`
+  if (oldViewProps.tooltip != newViewProps.tooltip) {
+    if (newViewProps.tooltip.has_value()) {
+      self.toolTip = RCTNSStringFromStringNilIfEmpty(newViewProps.tooltip.value());
+    } else {
+      self.toolTip = nil;
+    }
+  }
+#endif // macOS]
+
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
 
   _props = std::static_pointer_cast<const ViewProps>(props);
