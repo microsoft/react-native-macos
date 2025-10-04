@@ -15,10 +15,7 @@ import type {
   RNTesterModuleExample,
 } from '../../types/RNTesterTypes';
 import type {KeyboardTypeOptions} from 'react-native/Libraries/Components/TextInput/TextInput';
-// [macOS
-import type {
-  SettingChangeEvent,
-} from 'react-native/Libraries/Components/TextInput/TextInput'; // macOS]
+import type {SettingChangeEvent} from 'react-native/Libraries/Components/TextInput/TextInput'; // [macOS]
 
 import RNTesterText from '../../components/RNTesterText';
 import ExampleTextInput from './ExampleTextInput';

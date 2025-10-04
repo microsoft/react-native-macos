@@ -24,7 +24,6 @@ const styles = StyleSheet.create({
   },
 });
 
-
 function DragDropView(): React.Node {
   // $FlowFixMe[missing-empty-array-annot]
   const [log, setLog] = React.useState([]);
@@ -75,7 +74,8 @@ function DragDropView(): React.Node {
           alignItems: 'center',
           marginVertical: 10,
         }}>
-        <Text style={{color: isDraggingOver ? '#1976d2' : '#666', fontSize: 14}}>
+        <Text
+          style={{color: isDraggingOver ? '#1976d2' : '#666', fontSize: 14}}>
           {isDraggingOver ? 'Release to drop' : 'Drop an image or file here'}
         </Text>
       </View>
@@ -85,7 +85,9 @@ function DragDropView(): React.Node {
           <Text style={{height: 90}}>{log.join('\n')}</Text>
         </View>
         <View style={{flex: 1}}>
-          <Text style={{fontWeight: 'bold', marginBottom: 4}}>Dropped Image:</Text>
+          <Text style={{fontWeight: 'bold', marginBottom: 4}}>
+            Dropped Image:
+          </Text>
           <Image
             source={{uri: imageUri}}
             style={{
@@ -202,7 +204,8 @@ function OnPaste(): React.Node {
 
 exports.title = 'Drag and Drop Events';
 exports.category = 'UI';
-exports.description = 'Demonstrates onDragEnter, onDragLeave, onDrop, and onPaste event handling in TextInput.';
+exports.description =
+  'Demonstrates onDragEnter, onDragLeave, onDrop, and onPaste event handling in TextInput.';
 exports.examples = [
   {
     title: 'Drag and Drop (View)',
