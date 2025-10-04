@@ -51,7 +51,6 @@ exports.examples = [
   {
     title: 'Button',
     description: ('Simple button to showcase tooltip.': string),
-    category: 'UI',
     render: function (): React.Node {
       return (
         <Button
