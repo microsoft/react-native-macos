@@ -98,9 +98,12 @@ NSString *RCTColorSchemePreference(NSAppearance *appearance)
     return RCTAppearanceColorSchemeLight;
   }
 
-  appearance = appearance ?: [NSApp effectiveAppearance];
+  __block NSAppearance *resolvedAppearance = appearance;
+  RCTUnsafeExecuteOnMainQueueSync(^{
+    resolvedAppearance = resolvedAppearance ?: [NSApp effectiveAppearance];
+  });
 
-  NSAppearanceName appearanceName = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+  NSAppearanceName appearanceName = [resolvedAppearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
   return appearances[appearanceName] ?: RCTAppearanceColorSchemeLight;
 }
 #endif // macOS]
@@ -119,7 +122,14 @@ NSString *RCTColorSchemePreference(NSAppearance *appearance)
     UITraitCollection *traitCollection = [RCTTraitCollectionProxy sharedInstance].currentTraitCollection;
     _currentColorScheme = RCTColorSchemePreference(traitCollection);
 #else // [macOS
-  NSAppearance *appearance = RCTSharedApplication().appearance;
+  // Initialize with a concrete NSAppearance, fetched safely on the main thread.
+  __block NSAppearance *appearance = nil;
+  RCTUnsafeExecuteOnMainQueueSync(^{
+    appearance = RCTSharedApplication().appearance ?: [NSApp effectiveAppearance];
+    if (!appearance) {
+      appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+    }
+  });
   _currentColorScheme = RCTColorSchemePreference(appearance);
 #endif // macOS]
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -173,7 +183,7 @@ RCT_EXPORT_METHOD(setColorScheme : (NSString *)style)
 RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
 {
   if (!sIsAppearancePreferenceSet) {
-#if !TARGET_OS_OSX // [macOS
+#if !TARGET_OS_OSX // [macOS]
     UITraitCollection *traitCollection = [RCTTraitCollectionProxy sharedInstance].currentTraitCollection;
     _currentColorScheme = RCTColorSchemePreference(traitCollection);
 #else // [macOS
