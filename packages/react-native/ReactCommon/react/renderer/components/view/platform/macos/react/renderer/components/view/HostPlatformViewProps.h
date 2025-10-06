@@ -16,6 +16,9 @@
 
 #include <react/renderer/components/view/KeyEvent.h>
 
+#include <optional>
+#include <string>
+
 #include "HostPlatformViewEvents.h"
 
 namespace facebook::react {
@@ -45,5 +48,7 @@ class HostPlatformViewProps : public BaseViewProps {
   std::vector<HandledKey> keyUpEvents{};
 
   std::vector<std::string> draggedTypes{};
+
+  std::optional<std::string> tooltip{};
 };
 } // namespace facebook::react

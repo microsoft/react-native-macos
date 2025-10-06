@@ -614,7 +614,15 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
       [self registerForDraggedTypes:pasteboardTypes];
     }
   }
-#endif // macOS]
+
+  // `tooltip`
+  if (oldViewProps.tooltip != newViewProps.tooltip) {
+    if (newViewProps.tooltip.has_value()) {
+      self.toolTip = RCTNSStringFromStringNilIfEmpty(newViewProps.tooltip.value());
+    } else {
+      self.toolTip = nil;
+    }
+  }
 
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
 

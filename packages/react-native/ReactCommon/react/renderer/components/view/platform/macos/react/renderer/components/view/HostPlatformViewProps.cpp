@@ -74,7 +74,16 @@ HostPlatformViewProps::HostPlatformViewProps(
                     rawProps,
                     "draggedTypes",
                     sourceProps.draggedTypes,
-                    {})) {};
+                    {})),
+      tooltip(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.tooltip
+              : convertRawProp(
+                   context,
+                   rawProps,
+                   "tooltip",
+                   sourceProps.tooltip,
+                   {})) {}
 
 #define VIEW_EVENT_CASE_MACOS(eventType)                           \
   case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): {            \
@@ -112,6 +121,7 @@ void HostPlatformViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(keyDownEvents);
     RAW_SET_PROP_SWITCH_CASE_BASIC(keyUpEvents);
     RAW_SET_PROP_SWITCH_CASE_BASIC(draggedTypes);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(tooltip);
   }
 }
 
