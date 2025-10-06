@@ -221,13 +221,10 @@ export interface NativePointerEvent extends NativeMouseEvent {
 export type PointerEvent = NativeSyntheticEvent<NativePointerEvent>;
 
 export type NativeTouchEvent = $ReadOnly<{
-  altKey?: ?boolean, // [macOS]
-  button?: ?number, // [macOS]
   /**
    * Array of all touch events that have changed since the last event
    */
   changedTouches: $ReadOnlyArray<NativeTouchEvent>,
-  ctrlKey?: ?boolean, // [macOS]
   /**
    * 3D Touch reported force
    * @platform ios
@@ -245,7 +242,7 @@ export type NativeTouchEvent = $ReadOnly<{
    * The Y position of the touch, relative to the element
    */
   locationY: number,
-  metaKey?: ?boolean, // [macOS]
+
   /**
    * The X position of the touch, relative to the screen
    */
@@ -254,7 +251,6 @@ export type NativeTouchEvent = $ReadOnly<{
    * The Y position of the touch, relative to the screen
    */
   pageY: number,
-  shiftKey?: ?boolean, // [macOS]
   /**
    * The node id of the element receiving the touch event
    */
@@ -267,6 +263,13 @@ export type NativeTouchEvent = $ReadOnly<{
    * Array of all current touches on the screen
    */
   touches: $ReadOnlyArray<NativeTouchEvent>,
+  // [macOS
+  ctrlKey?: ?boolean,
+  altKey?: ?boolean,
+  shiftKey?: ?boolean,
+  metaKey?: ?boolean,
+  button?: ?number,
+  // macOS]
 }>;
 
 export type GestureResponderEvent = ResponderSyntheticEvent<NativeTouchEvent>;
@@ -282,48 +285,6 @@ export type NativeScrollPoint = $ReadOnly<{
   y: number,
   x: number,
 }>;
-
-// [macOS
-export type KeyEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
-    // Modifier keys
-    capsLockKey: boolean,
-    shiftKey: boolean,
-    ctrlKey: boolean,
-    altKey: boolean,
-    metaKey: boolean,
-    numericPadKey: boolean,
-    helpKey: boolean,
-    functionKey: boolean,
-    // Key options
-    ArrowLeft: boolean,
-    ArrowRight: boolean,
-    ArrowUp: boolean,
-    ArrowDown: boolean,
-    key: string,
-  |}>,
->;
-
-/**
- * Represents a key that could be passed to `KeyDownEvents` and `KeyUpEvents`.
- *
- * `key` is the actual key, such as "a", or one of the special values:
- * "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
- * "Backspace", "Delete", "Home", "End", "PageUp", "PageDown".
- *
- * The rest are modifiers that when absent mean false.
- *
- * @platform macos
- */
-export type HandledKeyEvent = $ReadOnly<{|
-  altKey?: ?boolean,
-  ctrlKey?: ?boolean,
-  metaKey?: ?boolean,
-  shiftKey?: ?boolean,
-  key: string,
-|}>;
-
-// macOS]
 
 export type NativeScrollVelocity = $ReadOnly<{
   y: number,
@@ -371,28 +332,6 @@ export type MouseEvent = NativeSyntheticEvent<
   }>,
 >;
 
-// // Base mouse event data shared between MouseEvent and DragEvent
-// export type NativeMouseEvent = $ReadOnly<{
-//   clientX: number,
-//   clientY: number,
-//   pageX: number,
-//   pageY: number,
-//   timestamp: number,
-//   screenX?: number,
-//   screenY?: number,
-//   altKey?: boolean,
-//   ctrlKey?: boolean,
-//   shiftKey?: boolean,
-//   metaKey?: boolean,
-// }>;
-
-// export type MouseEvent = NativeSyntheticEvent<
-//   $ReadOnly<{
-//     ...NativeMouseEvent,
-//     dataTransfer?: DataTransfer,
-//   }>,
-// >;
-
 // [macOS
 export type DataTransferItem = $ReadOnly<{
   name: string,
@@ -416,13 +355,46 @@ export type DragEvent = NativeSyntheticEvent<
     pageX: number,
     pageY: number,
     timestamp: number,
-    screenX?: number,
-    screenY?: number,
-    altKey?: boolean,
-    ctrlKey?: boolean,
-    shiftKey?: boolean,
-    metaKey?: boolean,
     dataTransfer?: DataTransfer,
   }>,
 >;
+
+export type KeyEvent = NativeSyntheticEvent<
+  $ReadOnly<{|
+    // Modifier keys
+    capsLockKey: boolean,
+    shiftKey: boolean,
+    ctrlKey: boolean,
+    altKey: boolean,
+    metaKey: boolean,
+    numericPadKey: boolean,
+    helpKey: boolean,
+    functionKey: boolean,
+    // Key options
+    ArrowLeft: boolean,
+    ArrowRight: boolean,
+    ArrowUp: boolean,
+    ArrowDown: boolean,
+    key: string,
+  |}>,
+>;
+
+/**
+ * Represents a key that could be passed to `KeyDownEvents` and `KeyUpEvents`.
+ *
+ * `key` is the actual key, such as "a", or one of the special values:
+ * "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+ * "Backspace", "Delete", "Home", "End", "PageUp", "PageDown".
+ *
+ * The rest are modifiers that when absent mean false.
+ *
+ * @platform macos
+ */
+export type HandledKeyEvent = $ReadOnly<{|
+  ctrlKey?: ?boolean,
+  altKey?: ?boolean,
+  shiftKey?: ?boolean,
+  metaKey?: ?boolean,
+  key: string,
+|}>;
 // macOS]

@@ -8486,21 +8486,21 @@ export interface NativePointerEvent extends NativeMouseEvent {
 }
 export type PointerEvent = NativeSyntheticEvent<NativePointerEvent>;
 export type NativeTouchEvent = $ReadOnly<{
-  altKey?: ?boolean,
-  button?: ?number,
   changedTouches: $ReadOnlyArray<NativeTouchEvent>,
-  ctrlKey?: ?boolean,
   force?: number,
   identifier: number,
   locationX: number,
   locationY: number,
-  metaKey?: ?boolean,
   pageX: number,
   pageY: number,
-  shiftKey?: ?boolean,
   target: ?number,
   timestamp: number,
   touches: $ReadOnlyArray<NativeTouchEvent>,
+  ctrlKey?: ?boolean,
+  altKey?: ?boolean,
+  shiftKey?: ?boolean,
+  metaKey?: ?boolean,
+  button?: ?number,
 }>;
 export type GestureResponderEvent = ResponderSyntheticEvent<NativeTouchEvent>;
 export type NativeScrollRectangle = $ReadOnly<{
@@ -8513,30 +8513,6 @@ export type NativeScrollPoint = $ReadOnly<{
   y: number,
   x: number,
 }>;
-export type KeyEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
-    capsLockKey: boolean,
-    shiftKey: boolean,
-    ctrlKey: boolean,
-    altKey: boolean,
-    metaKey: boolean,
-    numericPadKey: boolean,
-    helpKey: boolean,
-    functionKey: boolean,
-    ArrowLeft: boolean,
-    ArrowRight: boolean,
-    ArrowUp: boolean,
-    ArrowDown: boolean,
-    key: string,
-  |}>,
->;
-export type HandledKeyEvent = $ReadOnly<{|
-  altKey?: ?boolean,
-  ctrlKey?: ?boolean,
-  metaKey?: ?boolean,
-  shiftKey?: ?boolean,
-  key: string,
-|}>;
 export type NativeScrollVelocity = $ReadOnly<{
   y: number,
   x: number,
@@ -8592,15 +8568,33 @@ export type DragEvent = NativeSyntheticEvent<
     pageX: number,
     pageY: number,
     timestamp: number,
-    screenX?: number,
-    screenY?: number,
-    altKey?: boolean,
-    ctrlKey?: boolean,
-    shiftKey?: boolean,
-    metaKey?: boolean,
     dataTransfer?: DataTransfer,
   }>,
 >;
+export type KeyEvent = NativeSyntheticEvent<
+  $ReadOnly<{|
+    capsLockKey: boolean,
+    shiftKey: boolean,
+    ctrlKey: boolean,
+    altKey: boolean,
+    metaKey: boolean,
+    numericPadKey: boolean,
+    helpKey: boolean,
+    functionKey: boolean,
+    ArrowLeft: boolean,
+    ArrowRight: boolean,
+    ArrowUp: boolean,
+    ArrowDown: boolean,
+    key: string,
+  |}>,
+>;
+export type HandledKeyEvent = $ReadOnly<{|
+  ctrlKey?: ?boolean,
+  altKey?: ?boolean,
+  shiftKey?: ?boolean,
+  metaKey?: ?boolean,
+  key: string,
+|}>;
 "
 `;
 
