@@ -15,7 +15,6 @@ import type {KeyEvent} from 'react-native/Libraries/Types/CoreEventTypes';
 import * as React from 'react';
 
 import {
-  Button,
   Pressable,
   StyleSheet,
   Switch,
@@ -128,132 +127,149 @@ function BubblingExample(): React.Node {
 }
 
 function KeyboardEventExample(): React.Node {
-  const viewRef = React.useRef<React.ElementRef<typeof View> | null>(null);
-  const [log, setLog] = React.useState<Array<string>>([]);
+  const pressableRef = React.useRef<React.ElementRef<typeof Pressable> | null>(null);
+  const [eventLog, setEventLog] = React.useState<Array<string>>([]);
 
-  const clearLog = React.useCallback(() => {
-    setLog([]);
-  }, [setLog]);
+  function appendEvent(eventName: string, source?: string) {
+    const limit = 12;
+    setEventLog((current: Array<string>) => {
+      const prefix = source != null ? `${source}: ` : '';
+      return [`${prefix}${eventName}`].concat(current.slice(0, limit - 1));
+    });
+  }
 
-  const appendLog = React.useCallback(
-    (line: string) => {
-      const limit = 12;
-      const newLog = log.slice(0, limit - 1);
-      newLog.unshift(line);
-      setLog(newLog);
-    },
-    [log, setLog],
-  );
-
-  const handleKeyDown = React.useCallback(
+  const handleSingleLineKeyDown = React.useCallback(
     (e: KeyEvent) => {
-      appendLog('Key Down:' + e.nativeEvent.key);
+      appendEvent(`keyDown: ${e.nativeEvent.key}`, 'Single-line TextInput');
     },
-    [appendLog],
+    [],
   );
 
-  const handleKeyUp = React.useCallback(
+  const handleSingleLineKeyUp = React.useCallback(
     (e: KeyEvent) => {
-      appendLog('Key Up:' + e.nativeEvent.key);
+      appendEvent(`keyUp: ${e.nativeEvent.key}`, 'Single-line TextInput');
     },
-    [appendLog],
+    [],
   );
 
-  const viewText =
-    "keyDownEvents: [{key: 'g'}, {key: 'Escape'}, {key: 'Enter'}, {key: 'ArrowLeft'}] \nkeyUpEvents: [{key: 'c'}, {key: 'd'}]";
-  const viewKeyboardProps = {
-    onKeyDown: handleKeyDown,
-    keyDownEvents: [
-      {key: 'g'},
-      {key: 'Escape'},
-      {key: 'Enter'},
-      {key: 'ArrowLeft'},
-    ],
-    onKeyUp: handleKeyUp,
-    keyUpEvents: [{key: 'c'}, {key: 'd'}],
-  };
+  const handleMultiLineKeyDown = React.useCallback(
+    (e: KeyEvent) => {
+      appendEvent(`keyDown: ${e.nativeEvent.key}`, 'Multi-line TextInput');
+    },
+    [],
+  );
 
-  const textInputText =
-    "keyDownEvents: [{key: 'ArrowRight'}, {key: 'ArrowDown'}, {key: 'Enter', ctrlKey: true}, \nkeyUpEvents: [{key: 'Escape'}, {key: 'Enter'}]";
-  const textInputKeyboardProps = {
-    onKeyDown: handleKeyDown,
-    keyDownEvents: [
-      {key: 'ArrowRight'},
-      {key: 'ArrowDown'},
-      {key: 'Enter', ctrlKey: true},
-    ],
-    onKeyUp: handleKeyUp,
-    keyUpEvents: [{key: 'Escape'}, {key: 'Enter'}],
-  };
+  const handleMultiLineKeyUp = React.useCallback(
+    (e: KeyEvent) => {
+      appendEvent(`keyUp: ${e.nativeEvent.key}`, 'Multi-line TextInput');
+    },
+    [],
+  );
 
-  const textInputUnhandledText =
-    "keyDownEvents: [{key: 'ArrowRight'}, {key: 'ArrowDown'}, {key: 'Enter', ctrlKey: true}, \nkeyUpEvents: [{key: 'Escape'}, {key: 'Enter'}]";
-  const textInputunHandledKeyboardProps = {
-    onKeyDown: handleKeyDown,
-    onKeyUp: handleKeyUp,
-  };
+  const handlePressableKeyDown = React.useCallback(
+    (e: KeyEvent) => {
+      appendEvent(`keyDown: ${e.nativeEvent.key}`, 'Focusable Pressable');
+    },
+    [],
+  );
 
-  React.useEffect(() => {
-    // Focus the first view on mount
-    viewRef.current?.focus();
-  }, []);
+  const handlePressableKeyUp = React.useCallback(
+    (e: KeyEvent) => {
+      appendEvent(`keyUp: ${e.nativeEvent.key}`, 'Focusable Pressable');
+    },
+    [],
+  );
 
   return (
-    <View
-      style={{
-        padding: 10,
-      }}>
-      <Text>
-        Key events are called when a component detects a key press.To tab
-        between views on macOS: Enable System Preferences / Keyboard / Shortcuts{' '}
-        {'>'} Use keyboard navigation to move focus between controls.
+    <View style={{marginTop: 10}}>
+      <Text style={styles.description}>
+        Examples of keyboard event handling with keyDownEvents and keyUpEvents arrays.
       </Text>
-      <View>
-        <Text style={styles.text}>{viewText}</Text>
-        <View
-          ref={viewRef}
-          focusable={true}
-          style={styles.input}
-          {...viewKeyboardProps}
-        />
-        <Text style={styles.text}>{textInputText}</Text>
+      
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>
+          Single-line TextInput (keyDownEvents: g, Escape, Enter, ArrowLeft)
+        </Text>
         <TextInput
-          blurOnSubmit={false}
-          placeholder={'Singleline textInput'}
-          multiline={false}
-          focusable={true}
-          style={styles.input}
-          {...textInputKeyboardProps}
+          style={styles.styledTextInput}
+          placeholder="Type here and press g, Escape, Enter, or ArrowLeft"
+          placeholderTextColor="#999"
+          onKeyDown={handleSingleLineKeyDown}
+          onKeyUp={handleSingleLineKeyUp}
+          keyDownEvents={[
+            {key: 'g'},
+            {key: 'Escape'},
+            {key: 'Enter'},
+            {key: 'ArrowLeft'},
+          ]}
+          keyUpEvents={[{key: 'c'}, {key: 'd'}]}
         />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>
+          Multi-line TextInput (keyDownEvents: ArrowRight, ArrowDown, Cmd+Enter)
+        </Text>
         <TextInput
-          placeholder={'Multiline textInput'}
+          style={[styles.styledTextInput, styles.multilineInput]}
+          placeholder="Multi-line input - try arrow keys and Cmd+Enter"
+          placeholderTextColor="#999"
           multiline={true}
+          onKeyDown={handleMultiLineKeyDown}
+          onKeyUp={handleMultiLineKeyUp}
+          keyDownEvents={[
+            {key: 'ArrowRight'},
+            {key: 'ArrowDown'},
+            {key: 'Enter', metaKey: true},
+          ]}
+          keyUpEvents={[{key: 'Escape'}, {key: 'Enter'}]}
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>
+          Focusable Pressable (keyDownEvents: Space, Enter, Tab, Backspace)
+        </Text>
+        <Pressable
+          ref={pressableRef}
+          style={({pressed}) => [
+            styles.focusablePressable,
+            pressed && styles.focusablePressablePressed,
+          ]}
           focusable={true}
-          style={styles.input}
-          {...textInputKeyboardProps}
-        />
-        <Text style={styles.text}>{textInputUnhandledText}</Text>
-        <TextInput
-          blurOnSubmit={false}
-          placeholder={'Singleline textInput'}
-          multiline={false}
-          focusable={true}
-          style={styles.input}
-          {...textInputunHandledKeyboardProps}
-        />
-        <TextInput
-          placeholder={'Multiline textInput'}
-          multiline={true}
-          focusable={true}
-          style={styles.input}
-          {...textInputunHandledKeyboardProps}
-        />
-        <Button
-          testID="event_clear_button"
-          onPress={clearLog}
-          title="Clear event log"
-        />
-        <Text>{'Events:\n' + log.join('\n')}</Text>
+          onKeyDown={handlePressableKeyDown}
+          onKeyUp={handlePressableKeyUp}
+          keyDownEvents={[
+            {key: 'Space'},
+            {key: 'Enter'},
+            {key: 'Tab'},
+            {key: 'Backspace'},
+          ]}
+          onPress={() => {
+            pressableRef.current?.focus();
+          }}
+        >
+          <Text style={styles.pressableText}>Click to focus, then press Space, Enter, Tab, or Backspace</Text>
+        </Pressable>
+      </View>
+
+      <View testID="keyboard_events_example_console" style={styles.eventLogBox}>
+        <View style={styles.logHeaderRow}>
+          <Text style={styles.logHeader}>Event Log</Text>
+          <Pressable
+            style={({pressed}) => [
+              styles.clearButton,
+              pressed && styles.clearButtonPressed,
+            ]}
+            onPress={() => setEventLog([])}>
+            <Text style={styles.clearButtonText}>Clear</Text>
+          </Pressable>
+        </View>
+        {eventLog.map((e, ii) => (
+          <Text key={ii} style={styles.logEntry}>
+            {e}
+          </Text>
+        ))}
       </View>
     </View>
   );
@@ -266,6 +282,7 @@ const styles = StyleSheet.create({
     height: 300,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#f0f0f0',
+    borderCurve: 'continuous',
     backgroundColor: '#f9f9f9',
   },
   logHeaderRow: {
@@ -360,6 +377,54 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 12,
     paddingBottom: 4,
+  },
+  description: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 6,
+  },
+  styledTextInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 14,
+    backgroundColor: '#fff',
+    minHeight: 36,
+  },
+  multilineInput: {
+    minHeight: 72,
+    textAlignVertical: 'top',
+  },
+  focusablePressable: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+    backgroundColor: '#f8f9fa',
+    minHeight: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  focusablePressablePressed: {
+    backgroundColor: '#e9ecef',
+    borderColor: '#007AFF',
+  },
+  pressableText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
   },
 });
 
