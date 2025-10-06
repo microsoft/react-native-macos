@@ -11,6 +11,9 @@
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
 #import <ranges>
+#if TARGET_OS_OSX // [macOS
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif // macOS]
 
 #import <React/RCTAssert.h>
 #import <React/RCTBorderDrawing.h>
@@ -1751,7 +1754,7 @@ enum DragEventType {
   
   NSPasteboardType imageType = [pasteboard availableTypeFromArray:@[NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
   if (imageType && fileNames.count == 0) {
-    NSString *MIMETypeString = imageType == NSPasteboardTypePNG ? @"image/png" : @"image/tiff";
+    NSString *MIMETypeString = imageType == NSPasteboardTypePNG ?[UTTypePNG preferredMIMEType] : [UTTypeTIFF preferredMIMEType];
     NSData *imageData = [pasteboard dataForType:imageType];
     NSImage *image = [[NSImage alloc] initWithData:imageData];
     CGImageRef cgImage = [image CGImageForProposedRect:nil context:nil hints:nil];
