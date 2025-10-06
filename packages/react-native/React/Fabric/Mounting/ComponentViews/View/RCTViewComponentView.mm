@@ -623,6 +623,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
       self.toolTip = nil;
     }
   }
+#endif // [macOS]
 
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
 
