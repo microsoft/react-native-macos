@@ -23,7 +23,7 @@ import {
   View,
 } from 'react-native';
 
-function formatKeyEvent(event) {
+function formatKeyEvent(event: any) {
   const modifiers = [];
   if (event.metaKey) {
     modifiers.push('Cmd');
@@ -42,7 +42,7 @@ function formatKeyEvent(event) {
   return `${modifierPrefix}${event.key}`;
 }
 
-function EventLog({eventLog, onClear}) {
+function EventLog({eventLog, onClear}: {eventLog: Array<string>, onClear: () => void}) {
   return (
     <View testID="keyboard_events_example_console" style={styles.eventLogBox}>
       <View style={styles.logHeaderRow}>
@@ -169,7 +169,7 @@ function KeyboardEventExample(): React.Node {
     });
   }
 
-  function isKeyBlocked(event, keyEvents) {
+  function isKeyBlocked(event: any, keyEvents: Array<any>) {
     return keyEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}) => {
       return event.key === key &&
         (metaKey ?? event.metaKey) === event.metaKey &&
