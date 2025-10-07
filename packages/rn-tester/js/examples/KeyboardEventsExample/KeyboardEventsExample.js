@@ -23,6 +23,25 @@ import {
   View,
 } from 'react-native';
 
+function formatKeyEvent(event) {
+  const modifiers = [];
+  if (event.metaKey) {
+    modifiers.push('Cmd');
+  }
+  if (event.ctrlKey) {
+    modifiers.push('Ctrl');
+  }
+  if (event.altKey) {
+    modifiers.push('Alt');
+  }
+  if (event.shiftKey) {
+    modifiers.push('Shift');
+  }
+
+  const modifierPrefix = modifiers.length > 0 ? `${modifiers.join('+')}+` : '';
+  return `${modifierPrefix}${event.key}`;
+}
+
 function BubblingExample(): React.Node {
   const ref = React.useRef<React.ElementRef<typeof Pressable> | null>(null);
   const [eventLog, setEventLog] = React.useState<Array<string>>([]);
@@ -51,14 +70,19 @@ function BubblingExample(): React.Node {
         style={styles.boxOuter}
         nativeID="Box 3"
         onKeyDown={ev => {
-          appendEvent(`keyDown: ${ev.nativeEvent.key}`, 'Box 3');
+          const keyDisplay = formatKeyEvent(ev.nativeEvent);
+          appendEvent(`keyDown: ${keyDisplay}`, 'Box 3');
         }}>
         <View
           style={styles.boxMiddle}
           nativeID="Box 2"
           onKeyDown={ev => {
+            const blockedKeys = ['f', 'g'];
+            const isBlocked = blockedKeys.includes(ev.nativeEvent.key);
+            const suffix = isBlocked ? ' (blocked)' : '';
+            const keyDisplay = formatKeyEvent(ev.nativeEvent);
             appendEvent(
-              `keyDown: ${ev.nativeEvent.key}`,
+              `keyDown: ${keyDisplay}${suffix}`,
               'Box 2 keyDownEvents=[f,g]',
             );
             if (stopPropagationEnabled) {
@@ -71,7 +95,8 @@ function BubblingExample(): React.Node {
             style={styles.boxInner}
             nativeID="Box 1"
             onKeyDown={ev => {
-              appendEvent(`keyDown: ${ev.nativeEvent.key}`, 'Box 1');
+              const keyDisplay = formatKeyEvent(ev.nativeEvent);
+              appendEvent(`keyDown: ${keyDisplay}`, 'Box 1');
             }}>
             <View style={[styles.centered]}>
               <Pressable
@@ -86,7 +111,8 @@ function BubblingExample(): React.Node {
                   ref.current?.focus();
                 }}
                 onKeyDown={ev => {
-                  appendEvent(`keyDown: ${ev.nativeEvent.key}`, 'Focusable');
+                  const keyDisplay = formatKeyEvent(ev.nativeEvent);
+                  appendEvent(`keyDown: ${keyDisplay}`, 'Focusable');
                   if (
                     ev.nativeEvent.key === 'k' &&
                     ev.nativeEvent.metaKey === true
@@ -127,7 +153,6 @@ function BubblingExample(): React.Node {
 }
 
 function KeyboardEventExample(): React.Node {
-  const pressableRef = React.useRef<React.ElementRef<typeof Pressable> | null>(null);
   const [eventLog, setEventLog] = React.useState<Array<string>>([]);
 
   function appendEvent(eventName: string, source?: string) {
@@ -138,47 +163,70 @@ function KeyboardEventExample(): React.Node {
     });
   }
 
+  function isKeyBlocked(event, keyEvents) {
+    return keyEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}) => {
+      return event.key === key &&
+        (metaKey ?? event.metaKey) === event.metaKey &&
+        (ctrlKey ?? event.ctrlKey) === event.ctrlKey &&
+        (altKey ?? event.altKey) === event.altKey &&
+        (shiftKey ?? event.shiftKey) === event.shiftKey;
+    });
+  }
+
   const handleSingleLineKeyDown = React.useCallback(
     (e: KeyEvent) => {
-      appendEvent(`keyDown: ${e.nativeEvent.key}`, 'Single-line TextInput');
+      const keyDownEvents = [
+        {key: 'g'},
+        {key: 'Escape'},
+        {key: 'Enter'},
+        {key: 'ArrowLeft'},
+      ];
+      const isBlocked = isKeyBlocked(e.nativeEvent, keyDownEvents);
+      const suffix = isBlocked ? ' (blocked)' : '';
+      const keyDisplay = formatKeyEvent(e.nativeEvent);
+      appendEvent(`keyDown: ${keyDisplay}${suffix}`, 'Single-line TextInput');
     },
     [],
   );
 
   const handleSingleLineKeyUp = React.useCallback(
     (e: KeyEvent) => {
-      appendEvent(`keyUp: ${e.nativeEvent.key}`, 'Single-line TextInput');
+      const keyUpEvents = [{key: 'c'}, {key: 'd'}];
+      const isBlocked = isKeyBlocked(e.nativeEvent, keyUpEvents);
+      const suffix = isBlocked ? ' (blocked)' : '';
+      const keyDisplay = formatKeyEvent(e.nativeEvent);
+      appendEvent(`keyUp: ${keyDisplay}${suffix}`, 'Single-line TextInput');
     },
     [],
   );
 
   const handleMultiLineKeyDown = React.useCallback(
     (e: KeyEvent) => {
-      appendEvent(`keyDown: ${e.nativeEvent.key}`, 'Multi-line TextInput');
+      const keyDownEvents = [
+        {key: 'ArrowRight'},
+        {key: 'ArrowDown'},
+        {key: 'Enter', metaKey: true},
+      ];
+      const isBlocked = isKeyBlocked(e.nativeEvent, keyDownEvents);
+      const suffix = isBlocked ? ' (blocked)' : '';
+      const keyDisplay = formatKeyEvent(e.nativeEvent);
+      appendEvent(`keyDown: ${keyDisplay}${suffix}`, 'Multi-line TextInput');
     },
     [],
   );
 
   const handleMultiLineKeyUp = React.useCallback(
     (e: KeyEvent) => {
-      appendEvent(`keyUp: ${e.nativeEvent.key}`, 'Multi-line TextInput');
+      const keyUpEvents = [{key: 'Escape'}, {key: 'Enter'}];
+      const isBlocked = isKeyBlocked(e.nativeEvent, keyUpEvents);
+      const suffix = isBlocked ? ' (blocked)' : '';
+      const keyDisplay = formatKeyEvent(e.nativeEvent);
+      appendEvent(`keyUp: ${keyDisplay}${suffix}`, 'Multi-line TextInput');
     },
     [],
   );
 
-  const handlePressableKeyDown = React.useCallback(
-    (e: KeyEvent) => {
-      appendEvent(`keyDown: ${e.nativeEvent.key}`, 'Focusable Pressable');
-    },
-    [],
-  );
 
-  const handlePressableKeyUp = React.useCallback(
-    (e: KeyEvent) => {
-      appendEvent(`keyUp: ${e.nativeEvent.key}`, 'Focusable Pressable');
-    },
-    [],
-  );
 
   return (
     <View style={{marginTop: 10}}>
