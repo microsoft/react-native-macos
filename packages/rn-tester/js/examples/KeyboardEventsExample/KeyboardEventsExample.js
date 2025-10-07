@@ -42,7 +42,13 @@ function formatKeyEvent(event: any) {
   return `${modifierPrefix}${event.key}`;
 }
 
-function EventLog({eventLog, onClear}: {eventLog: Array<string>, onClear: () => void}) {
+function EventLog({
+  eventLog,
+  onClear,
+}: {
+  eventLog: Array<string>,
+  onClear: () => void,
+}) {
   return (
     <View testID="keyboard_events_example_console" style={styles.eventLogBox}>
       <View style={styles.logHeaderRow}>
@@ -171,73 +177,62 @@ function KeyboardEventExample(): React.Node {
 
   function isKeyBlocked(event: any, keyEvents: Array<any>) {
     return keyEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}) => {
-      return event.key === key &&
+      return (
+        event.key === key &&
         (metaKey ?? event.metaKey) === event.metaKey &&
         (ctrlKey ?? event.ctrlKey) === event.ctrlKey &&
         (altKey ?? event.altKey) === event.altKey &&
-        (shiftKey ?? event.shiftKey) === event.shiftKey;
+        (shiftKey ?? event.shiftKey) === event.shiftKey
+      );
     });
   }
 
-  const handleSingleLineKeyDown = React.useCallback(
-    (e: KeyEvent) => {
-      const keyDownEvents = [
-        {key: 'g'},
-        {key: 'Escape'},
-        {key: 'Enter'},
-        {key: 'ArrowLeft'},
-      ];
-      const isBlocked = isKeyBlocked(e.nativeEvent, keyDownEvents);
-      const suffix = isBlocked ? ' (blocked)' : '';
-      const keyDisplay = formatKeyEvent(e.nativeEvent);
-      appendEvent(`keyDown: ${keyDisplay}${suffix}`, 'Single-line TextInput');
-    },
-    [],
-  );
+  const handleSingleLineKeyDown = React.useCallback((e: KeyEvent) => {
+    const keyDownEvents = [
+      {key: 'g'},
+      {key: 'Escape'},
+      {key: 'Enter'},
+      {key: 'ArrowLeft'},
+    ];
+    const isBlocked = isKeyBlocked(e.nativeEvent, keyDownEvents);
+    const suffix = isBlocked ? ' (blocked)' : '';
+    const keyDisplay = formatKeyEvent(e.nativeEvent);
+    appendEvent(`keyDown: ${keyDisplay}${suffix}`, 'Single-line TextInput');
+  }, []);
 
-  const handleSingleLineKeyUp = React.useCallback(
-    (e: KeyEvent) => {
-      const keyUpEvents = [{key: 'c'}, {key: 'd'}];
-      const isBlocked = isKeyBlocked(e.nativeEvent, keyUpEvents);
-      const suffix = isBlocked ? ' (blocked)' : '';
-      const keyDisplay = formatKeyEvent(e.nativeEvent);
-      appendEvent(`keyUp: ${keyDisplay}${suffix}`, 'Single-line TextInput');
-    },
-    [],
-  );
+  const handleSingleLineKeyUp = React.useCallback((e: KeyEvent) => {
+    const keyUpEvents = [{key: 'c'}, {key: 'd'}];
+    const isBlocked = isKeyBlocked(e.nativeEvent, keyUpEvents);
+    const suffix = isBlocked ? ' (blocked)' : '';
+    const keyDisplay = formatKeyEvent(e.nativeEvent);
+    appendEvent(`keyUp: ${keyDisplay}${suffix}`, 'Single-line TextInput');
+  }, []);
 
-  const handleMultiLineKeyDown = React.useCallback(
-    (e: KeyEvent) => {
-      const keyDownEvents = [
-        {key: 'ArrowRight'},
-        {key: 'ArrowDown'},
-        {key: 'Enter', metaKey: true},
-      ];
-      const isBlocked = isKeyBlocked(e.nativeEvent, keyDownEvents);
-      const suffix = isBlocked ? ' (blocked)' : '';
-      const keyDisplay = formatKeyEvent(e.nativeEvent);
-      appendEvent(`keyDown: ${keyDisplay}${suffix}`, 'Multi-line TextInput');
-    },
-    [],
-  );
+  const handleMultiLineKeyDown = React.useCallback((e: KeyEvent) => {
+    const keyDownEvents = [
+      {key: 'ArrowRight'},
+      {key: 'ArrowDown'},
+      {key: 'Enter', metaKey: true},
+    ];
+    const isBlocked = isKeyBlocked(e.nativeEvent, keyDownEvents);
+    const suffix = isBlocked ? ' (blocked)' : '';
+    const keyDisplay = formatKeyEvent(e.nativeEvent);
+    appendEvent(`keyDown: ${keyDisplay}${suffix}`, 'Multi-line TextInput');
+  }, []);
 
-  const handleMultiLineKeyUp = React.useCallback(
-    (e: KeyEvent) => {
-      const keyUpEvents = [{key: 'Escape'}, {key: 'Enter'}];
-      const isBlocked = isKeyBlocked(e.nativeEvent, keyUpEvents);
-      const suffix = isBlocked ? ' (blocked)' : '';
-      const keyDisplay = formatKeyEvent(e.nativeEvent);
-      appendEvent(`keyUp: ${keyDisplay}${suffix}`, 'Multi-line TextInput');
-    },
-    [],
-  );
-
-
+  const handleMultiLineKeyUp = React.useCallback((e: KeyEvent) => {
+    const keyUpEvents = [{key: 'Escape'}, {key: 'Enter'}];
+    const isBlocked = isKeyBlocked(e.nativeEvent, keyUpEvents);
+    const suffix = isBlocked ? ' (blocked)' : '';
+    const keyDisplay = formatKeyEvent(e.nativeEvent);
+    appendEvent(`keyUp: ${keyDisplay}${suffix}`, 'Multi-line TextInput');
+  }, []);
 
   return (
     <View style={{marginTop: 10}}>
       <Text style={styles.description}>
-        Examples of keyboard event handling with keyDownEvents and keyUpEvents arrays. Use to suppress native handling of specific keys.
+        Examples of keyboard event handling with keyDownEvents and keyUpEvents
+        arrays. Use to suppress native handling of specific keys.
       </Text>
 
       <View style={styles.inputContainer}>
