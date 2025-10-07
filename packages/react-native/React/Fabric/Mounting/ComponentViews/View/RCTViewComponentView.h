@@ -17,6 +17,10 @@
 #import <react/renderer/core/LayoutMetrics.h>
 #import <react/renderer/core/Props.h>
 
+#if TARGET_OS_OSX // [macOS
+#include <react/renderer/components/view/MouseEvent.h>
+#endif // macOS]
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
