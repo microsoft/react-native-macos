@@ -183,9 +183,9 @@ function KeyboardEventExample(): React.Node {
   return (
     <View style={{marginTop: 10}}>
       <Text style={styles.description}>
-        Examples of keyboard event handling with keyDownEvents and keyUpEvents arrays.
+        Examples of keyboard event handling with keyDownEvents and keyUpEvents arrays. Use to suppress native handling of specific keys.
       </Text>
-      
+
       <View style={styles.inputContainer}>
         <Text style={styles.inputLabel}>
           Single-line TextInput (keyDownEvents: g, Escape, Enter, ArrowLeft)
@@ -224,33 +224,6 @@ function KeyboardEventExample(): React.Node {
           ]}
           keyUpEvents={[{key: 'Escape'}, {key: 'Enter'}]}
         />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>
-          Focusable Pressable (keyDownEvents: Space, Enter, Tab, Backspace)
-        </Text>
-        <Pressable
-          ref={pressableRef}
-          style={({pressed}) => [
-            styles.focusablePressable,
-            pressed && styles.focusablePressablePressed,
-          ]}
-          focusable={true}
-          onKeyDown={handlePressableKeyDown}
-          onKeyUp={handlePressableKeyUp}
-          keyDownEvents={[
-            {key: 'Space'},
-            {key: 'Enter'},
-            {key: 'Tab'},
-            {key: 'Backspace'},
-          ]}
-          onPress={() => {
-            pressableRef.current?.focus();
-          }}
-        >
-          <Text style={styles.pressableText}>Click to focus, then press Space, Enter, Tab, or Backspace</Text>
-        </Pressable>
       </View>
 
       <View testID="keyboard_events_example_console" style={styles.eventLogBox}>
