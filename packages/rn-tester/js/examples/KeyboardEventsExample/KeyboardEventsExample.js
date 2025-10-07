@@ -42,6 +42,29 @@ function formatKeyEvent(event) {
   return `${modifierPrefix}${event.key}`;
 }
 
+function EventLog({eventLog, onClear}) {
+  return (
+    <View testID="keyboard_events_example_console" style={styles.eventLogBox}>
+      <View style={styles.logHeaderRow}>
+        <Text style={styles.logHeader}>Event Log</Text>
+        <Pressable
+          style={({pressed}) => [
+            styles.clearButton,
+            pressed && styles.clearButtonPressed,
+          ]}
+          onPress={onClear}>
+          <Text style={styles.clearButtonText}>Clear</Text>
+        </Pressable>
+      </View>
+      {eventLog.map((e, ii) => (
+        <Text key={ii} style={styles.logEntry}>
+          {e}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
 function BubblingExample(): React.Node {
   const ref = React.useRef<React.ElementRef<typeof Pressable> | null>(null);
   const [eventLog, setEventLog] = React.useState<Array<string>>([]);
@@ -130,24 +153,7 @@ function BubblingExample(): React.Node {
         </View>
       </View>
 
-      <View testID="keyboard_events_example_console" style={styles.eventLogBox}>
-        <View style={styles.logHeaderRow}>
-          <Text style={styles.logHeader}>Event Log</Text>
-          <Pressable
-            style={({pressed}) => [
-              styles.clearButton,
-              pressed && styles.clearButtonPressed,
-            ]}
-            onPress={() => setEventLog([])}>
-            <Text style={styles.clearButtonText}>Clear</Text>
-          </Pressable>
-        </View>
-        {eventLog.map((e, ii) => (
-          <Text key={ii} style={styles.logEntry}>
-            {e}
-          </Text>
-        ))}
-      </View>
+      <EventLog eventLog={eventLog} onClear={() => setEventLog([])} />
     </View>
   );
 }
@@ -274,24 +280,7 @@ function KeyboardEventExample(): React.Node {
         />
       </View>
 
-      <View testID="keyboard_events_example_console" style={styles.eventLogBox}>
-        <View style={styles.logHeaderRow}>
-          <Text style={styles.logHeader}>Event Log</Text>
-          <Pressable
-            style={({pressed}) => [
-              styles.clearButton,
-              pressed && styles.clearButtonPressed,
-            ]}
-            onPress={() => setEventLog([])}>
-            <Text style={styles.clearButtonText}>Clear</Text>
-          </Pressable>
-        </View>
-        {eventLog.map((e, ii) => (
-          <Text key={ii} style={styles.logEntry}>
-            {e}
-          </Text>
-        ))}
-      </View>
+      <EventLog eventLog={eventLog} onClear={() => setEventLog([])} />
     </View>
   );
 }
