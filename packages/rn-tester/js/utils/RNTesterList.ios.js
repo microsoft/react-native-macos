@@ -253,6 +253,11 @@ const APIs: Array<RNTesterModuleInfo> = ([
     module: require('../examples/DisplayContents/DisplayContentsExample')
       .default,
   },
+  {
+    key: 'DragAndDropExample',
+    category: 'UI',
+    module: require('../examples/DragAndDrop/DragAndDropExample'),
+  },
   // Only show the link for the example if the API is available.
   // $FlowExpectedError[cannot-resolve-name]
   typeof IntersectionObserver === 'function'

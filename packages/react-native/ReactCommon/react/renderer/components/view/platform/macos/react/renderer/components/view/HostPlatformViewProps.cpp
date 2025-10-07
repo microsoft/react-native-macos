@@ -66,6 +66,15 @@ HostPlatformViewProps::HostPlatformViewProps(
                     "keyUpEvents",
                     sourceProps.keyUpEvents,
                     {})),
+      draggedTypes(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.draggedTypes
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "draggedTypes",
+                    sourceProps.draggedTypes,
+                    {})),
       tooltip(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
               ? sourceProps.tooltip
@@ -111,6 +120,7 @@ void HostPlatformViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing);
     RAW_SET_PROP_SWITCH_CASE_BASIC(keyDownEvents);
     RAW_SET_PROP_SWITCH_CASE_BASIC(keyUpEvents);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(draggedTypes);
     RAW_SET_PROP_SWITCH_CASE_BASIC(tooltip);
   }
 }
