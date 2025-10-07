@@ -21,6 +21,7 @@ import {
   Text,
   TextInput,
   View,
+  // Image,
 } from 'react-native';
 
 function formatKeyEvent(event: any) {
@@ -280,6 +281,55 @@ function KeyboardEventExample(): React.Node {
   );
 }
 
+function OnPaste(): React.Node {
+  // $FlowFixMe[missing-empty-array-annot]
+  const [log, setLog] = React.useState([]);
+  const appendLog = (line: string) => {
+    const limit = 3;
+    let newLog = log.slice(0, limit - 1);
+    newLog.unshift(line);
+    setLog(newLog);
+  };
+  const [imageUri, setImageUri] = React.useState(
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z/C/HgAGgwJ/lK3Q6wAAAABJRU5ErkJggg==',
+  );
+  return (
+    <>
+      <TextInput
+        multiline={true}
+        style={styles.multiline}
+        onPaste={(e: PasteEvent) => {
+          appendLog(JSON.stringify(e.nativeEvent.dataTransfer.types));
+          setImageUri(e.nativeEvent.dataTransfer.files[0].uri);
+        }}
+        pastedTypes={['string']}
+        placeholder="MULTI LINE with onPaste() text from clipboard"
+      />
+      <TextInput
+        multiline={true}
+        style={styles.multiline}
+        onPaste={(e: PasteEvent) => {
+          appendLog(JSON.stringify(e.nativeEvent.dataTransfer.types));
+          setImageUri(e.nativeEvent.dataTransfer.files[0].uri);
+        }}
+        pastedTypes={['fileUrl', 'image', 'string']}
+        placeholder="MULTI LINE with onPaste() for PNG/TIFF images from clipboard or fileUrl (via Finder) and text from clipboard"
+      />
+      <Text style={{height: 30}}>{log.join('\n')}</Text>
+      {/* <Image
+        source={{uri: imageUri}}
+        style={{
+          width: 128,
+          height: 128,
+          margin: 4,
+          borderWidth: 1,
+          borderColor: 'white',
+        }}
+      /> */}
+    </>
+  );
+}
+
 const styles = StyleSheet.create({
   eventLogBox: {
     padding: 10,
@@ -446,6 +496,12 @@ exports.examples = [
     title: 'keyDownEvents / keyUpEvents',
     render: function (): React.Node {
       return <KeyboardEventExample />;
+    },
+  },
+  {
+    title: 'onPaste',
+    render: function (): React.Node {
+      return <onPaste />;
     },
   },
 ];
