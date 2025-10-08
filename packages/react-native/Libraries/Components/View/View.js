@@ -151,8 +151,8 @@ const View: component(
             : importantForAccessibility
         }
         nativeID={id ?? nativeID}
-        onKeyDown={_onKeyDown} // [macOS]
-        onKeyUp={_onKeyUp} // [macOS]
+        {...(otherProps.onKeyDown && {onKeyDown: _onKeyDown})} // [macOS]
+        {...(otherProps.onKeyUp && {onKeyUp: _onKeyUp})} // [macOS]
         ref={forwardedRef}
       />
     );

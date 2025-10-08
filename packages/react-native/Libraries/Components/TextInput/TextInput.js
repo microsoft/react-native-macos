@@ -1863,8 +1863,8 @@ function InternalTextInput(props: TextInputProps): React.Node {
         onChange={_onChange}
         onContentSizeChange={props.onContentSizeChange}
         onFocus={_onFocus}
-        onKeyDown={_onKeyDown} // [macOS]
-        onKeyUp={_onKeyUp} // [macOS]
+        {...(otherProps.onKeyDown && {onKeyDown: _onKeyDown})} // [macOS]
+        {...(otherProps.onKeyUp && {onKeyUp: _onKeyUp})} // [macOS]
         onScroll={_onScroll}
         onSelectionChange={_onSelectionChange}
         onSelectionChangeShouldSetResponder={emptyFunctionThatReturnsTrue}

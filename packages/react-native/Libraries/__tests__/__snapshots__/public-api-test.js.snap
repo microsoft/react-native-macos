@@ -3429,6 +3429,10 @@ export type TextInputProps = $ReadOnly<{
   submitBehavior?: ?SubmitBehavior,
   style?: ?TextStyleProp,
   value?: ?Stringish,
+  keyDownEvents?: ?$ReadOnlyArray<HandledKeyEvent>,
+  keyUpEvents?: ?$ReadOnlyArray<HandledKeyEvent>,
+  onKeyDown?: ?(e: KeyEvent) => mixed,
+  onKeyUp?: ?(e: KeyEvent) => mixed,
 }>;
 export type TextInputComponentStatics = $ReadOnly<{
   State: $ReadOnly<{
