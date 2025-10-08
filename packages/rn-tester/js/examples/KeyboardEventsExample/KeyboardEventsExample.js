@@ -87,6 +87,20 @@ function BubblingExample(): React.Node {
 
   return (
     <View style={{marginTop: 10}}>
+      <View style={{marginBottom: 12, padding: 12, backgroundColor: '#f5f5f7', borderRadius: 8, borderWidth: 1, borderColor: '#e5e5e7'}}>
+        <Text style={{fontSize: 14, fontWeight: '600', marginBottom: 6, color: '#1d1d1f'}}>
+          Event Bubbling Behavior:
+        </Text>
+        <Text style={{fontSize: 12, marginBottom: 3, color: '#424245'}}>
+          • Pressable won't bubble Space or Enter keys
+        </Text>
+        <Text style={{fontSize: 12, marginBottom: 3, color: '#424245'}}>
+          • Keys 'f' and 'g' won't bubble past Box 2 (handled by keyDownEvents)
+        </Text>
+        <Text style={{fontSize: 12, color: '#424245'}}>
+          • If "Stop Propagation" is enabled, no events bubble past 'f' and 'g' in JS
+        </Text>
+      </View>
       <View
         style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
         <Text style={{marginRight: 8}}>Stop Propagation in Box 2:</Text>
