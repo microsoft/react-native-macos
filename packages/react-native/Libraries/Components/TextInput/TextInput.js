@@ -1704,7 +1704,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
         event.stopPropagation();
       }
     }
-    props.onKeyUp && props.onKeyUp(event);
+    props.onKeyUp?.(event);
   };
   // macOS]
 
