@@ -68,4 +68,3 @@ class TextInputEventEmitter : public ViewEventEmitter {
 };
 
 } // namespace facebook::react
-
