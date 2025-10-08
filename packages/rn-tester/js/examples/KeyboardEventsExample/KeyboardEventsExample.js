@@ -25,9 +25,6 @@ import {
 
 function formatKeyEvent(event: any) {
   const modifiers = [];
-  if (event.metaKey) {
-    modifiers.push('Cmd');
-  }
   if (event.ctrlKey) {
     modifiers.push('Ctrl');
   }
@@ -36,6 +33,9 @@ function formatKeyEvent(event: any) {
   }
   if (event.shiftKey) {
     modifiers.push('Shift');
+  }
+  if (event.metaKey) {
+    modifiers.push('Meta');
   }
 
   const modifierPrefix = modifiers.length > 0 ? `${modifiers.join('+')}+` : '';
