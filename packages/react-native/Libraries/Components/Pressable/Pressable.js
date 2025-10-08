@@ -308,7 +308,6 @@ function Pressable(
     onKeyDown,
     onKeyUp,
     keyDownEvents,
-    keyUpEvents,
     acceptsFirstMouse,
     mouseDownCanMoveWindow,
     enableFocusRing,
@@ -353,8 +352,6 @@ function Pressable(
 
   const accessibilityLabel = ariaLabel ?? props.accessibilityLabel;
 
-  const _keyDownEvents = keyDownEvents ?? [{key: ' '}, {key: 'Enter'}];
-
   const restPropsWithDefaults: React.ElementConfig<typeof View> = {
     ...restProps,
     ...android_rippleConfig?.viewProps,
@@ -370,7 +367,7 @@ function Pressable(
     // [macOS
     acceptsFirstMouse: acceptsFirstMouse !== false && !disabled,
     enableFocusRing: enableFocusRing !== false && !disabled,
-    keyDownEvents: _keyDownEvents,
+    keyDownEvents: keyDownEvents ?? [{key: ' '}, {key: 'Enter'}],
     mouseDownCanMoveWindow: false,
     // macOS]
   };
