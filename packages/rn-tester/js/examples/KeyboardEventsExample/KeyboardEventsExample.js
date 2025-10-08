@@ -46,10 +46,10 @@ function isKeyBlocked(
 ) {
   return keyEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}) => (
     event.nativeEvent.key === key &&
-    (metaKey ?? false) === event.nativeEvent.metaKey &&
-    (ctrlKey ?? false) === event.nativeEvent.ctrlKey &&
-    (altKey ?? false) === event.nativeEvent.altKey &&
-    (shiftKey ?? false) === event.nativeEvent.shiftKey
+    Boolean(metaKey) === event.nativeEvent.metaKey &&
+    Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+    Boolean(altKey) === event.nativeEvent.altKey &&
+    Boolean(shiftKey) === event.nativeEvent.shiftKey
   ));
 }
 
@@ -109,7 +109,7 @@ function BubblingExample(): React.Node {
           • Keys 'f' and 'g' won't bubble past Box 2 (handled by keyDownEvents)
         </Text>
         <Text style={{fontSize: 12, color: '#424245'}}>
-          • Shift+f and Shift+g will bubble
+          • Ctrl+f and Ctrl+g will bubble
         </Text>
       </View>
       <View
