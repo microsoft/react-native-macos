@@ -353,7 +353,7 @@ function Pressable(
 
   const accessibilityLabel = ariaLabel ?? props.accessibilityLabel;
 
-  const keyDownEvents = keyDownEvents ?? [{key: 'Space'}, {key: 'Enter'}];
+  const _keyDownEvents = keyDownEvents ?? [{key: ' '}, {key: 'Enter'}];
 
   const restPropsWithDefaults: React.ElementConfig<typeof View> = {
     ...restProps,
@@ -370,7 +370,7 @@ function Pressable(
     // [macOS
     acceptsFirstMouse: acceptsFirstMouse !== false && !disabled,
     enableFocusRing: enableFocusRing !== false && !disabled,
-    keyDownEvents,
+    keyDownEvents: _keyDownEvents,
     mouseDownCanMoveWindow: false,
     // macOS]
   };
