@@ -1690,7 +1690,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
   };
 
   const _onKeyUp = (event: KeyEvent) => {
-    if (props.keyUpEvents && event.isPropagationStopped() !== true) {
+    if (props.keyUpEvents && !event.isPropagationStopped()) {
       const isHandled = props.keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
         return (
           event.nativeEvent.key === key &&
