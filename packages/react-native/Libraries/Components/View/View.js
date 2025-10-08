@@ -115,7 +115,7 @@ const View: component(
     };
 
     const _onKeyUp = (event: KeyEvent) => {
-      if (otherProps.keyUpEvents && event.isPropagationStopped() !== true) {
+      if (otherProps.keyUpEvents && !event.isPropagationStopped()) {
         const isHandled = otherProps.keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
