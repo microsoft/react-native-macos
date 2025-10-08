@@ -1686,7 +1686,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
         event.stopPropagation();
       }
     }
-    props.onKeyDown && props.onKeyDown(event);
+    props.onKeyDown?.(event);
   };
 
   const _onKeyUp = (event: KeyEvent) => {
