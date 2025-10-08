@@ -129,7 +129,7 @@ const View: component(
           event.stopPropagation();
         }
       }
-      otherProps.onKeyUp && otherProps.onKeyUp(event);
+      otherProps.onKeyUp?.(event);
     };
     // macOS]
 
