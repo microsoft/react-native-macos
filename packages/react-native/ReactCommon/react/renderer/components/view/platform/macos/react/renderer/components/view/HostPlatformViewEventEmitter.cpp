@@ -80,9 +80,9 @@ void HostPlatformViewEventEmitter::onMouseLeave(const MouseEvent& mouseEvent) co
 
 #pragma mark - Drag and Drop Events
 
-jsi::Value HostPlatformViewEventEmitter::dataTransferPayload(
+static jsi::Value dataTransferPayload(
     jsi::Runtime& runtime,
-    std::vector<DataTransferItem> const& dataTransferItems) {
+    const std::vector<DataTransferItem>& dataTransferItems) {
   auto filesArray = jsi::Array(runtime, dataTransferItems.size());
   auto itemsArray = jsi::Array(runtime, dataTransferItems.size());
   auto typesArray = jsi::Array(runtime, dataTransferItems.size());
@@ -124,7 +124,8 @@ static jsi::Value dragEventPayload(
     jsi::Runtime& runtime,
     const DragEvent& event) {
   auto payload = mouseEventPayload(runtime, event);
-  auto dataTransferObject = HostPlatformViewEventEmitter::dataTransferPayload(runtime, event.dataTransferItems);
+  auto dataTransferObject =
+      dataTransferPayload(runtime, event.dataTransferItems);
   payload.setProperty(runtime, "dataTransfer", dataTransferObject);
   return payload;
 }
