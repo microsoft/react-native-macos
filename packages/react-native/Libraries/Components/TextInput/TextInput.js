@@ -1676,10 +1676,10 @@ function InternalTextInput(props: TextInputProps): React.Node {
       const isHandled = props.keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
         return (
           event.nativeEvent.key === key &&
-          (metaKey ?? event.nativeEvent.metaKey) === event.nativeEvent.metaKey &&
-          (ctrlKey ?? event.nativeEvent.ctrlKey) === event.nativeEvent.ctrlKey &&
-          (altKey ?? event.nativeEvent.altKey) === event.nativeEvent.altKey &&
-          (shiftKey ?? event.nativeEvent.shiftKey) === event.nativeEvent.shiftKey
+          (metaKey ?? false) === event.nativeEvent.metaKey &&
+          (ctrlKey ?? false) === event.nativeEvent.ctrlKey &&
+          (altKey ?? false) === event.nativeEvent.altKey &&
+          (shiftKey ?? false) === event.nativeEvent.shiftKey
         );
       });
       if (isHandled) {
@@ -1694,10 +1694,10 @@ function InternalTextInput(props: TextInputProps): React.Node {
       const isHandled = props.keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
         return (
           event.nativeEvent.key === key &&
-          (metaKey ?? event.nativeEvent.metaKey) === event.nativeEvent.metaKey &&
-          (ctrlKey ?? event.nativeEvent.ctrlKey) === event.nativeEvent.ctrlKey &&
-          (altKey ?? event.nativeEvent.altKey) === event.nativeEvent.altKey &&
-          (shiftKey ?? event.nativeEvent.shiftKey) === event.nativeEvent.shiftKey
+          (metaKey ?? false) === event.nativeEvent.metaKey &&
+          (ctrlKey ?? false) === event.nativeEvent.ctrlKey &&
+          (altKey ?? false) === event.nativeEvent.altKey &&
+          (shiftKey ?? false) === event.nativeEvent.shiftKey
         );
       });
       if (isHandled) {
