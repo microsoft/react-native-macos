@@ -111,7 +111,7 @@ const View: component(
           event.stopPropagation();
         }
       }
-      otherProps.onKeyDown && otherProps.onKeyDown(event);
+      otherProps.onKeyDown?.(event);
     };
 
     const _onKeyUp = (event: KeyEvent) => {
