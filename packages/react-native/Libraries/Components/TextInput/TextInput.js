@@ -1674,15 +1674,17 @@ function InternalTextInput(props: TextInputProps): React.Node {
   const _onKeyDown = (event: KeyEvent) => {
     const keyDownEvents = props.keyDownEvents;
     if (keyDownEvents != null && !event.isPropagationStopped()) {
-      const isHandled = keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
-        return (
-          event.nativeEvent.key === key &&
-          Boolean(metaKey) === event.nativeEvent.metaKey &&
-          Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-          Boolean(altKey) === event.nativeEvent.altKey &&
-          Boolean(shiftKey) === event.nativeEvent.shiftKey
-        );
-      });
+      const isHandled = keyDownEvents.some(
+        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+          return (
+            event.nativeEvent.key === key &&
+            Boolean(metaKey) === event.nativeEvent.metaKey &&
+            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+            Boolean(altKey) === event.nativeEvent.altKey &&
+            Boolean(shiftKey) === event.nativeEvent.shiftKey
+          );
+        },
+      );
       if (isHandled === true) {
         event.stopPropagation();
       }
@@ -1693,15 +1695,17 @@ function InternalTextInput(props: TextInputProps): React.Node {
   const _onKeyUp = (event: KeyEvent) => {
     const keyUpEvents = props.keyUpEvents;
     if (keyUpEvents != null && !event.isPropagationStopped()) {
-      const isHandled = keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
-        return (
-          event.nativeEvent.key === key &&
-          Boolean(metaKey) === event.nativeEvent.metaKey &&
-          Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-          Boolean(altKey) === event.nativeEvent.altKey &&
-          Boolean(shiftKey) === event.nativeEvent.shiftKey
-        );
-      });
+      const isHandled = keyUpEvents.some(
+        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+          return (
+            event.nativeEvent.key === key &&
+            Boolean(metaKey) === event.nativeEvent.metaKey &&
+            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+            Boolean(altKey) === event.nativeEvent.altKey &&
+            Boolean(shiftKey) === event.nativeEvent.shiftKey
+          );
+        },
+      );
       if (isHandled === true) {
         event.stopPropagation();
       }

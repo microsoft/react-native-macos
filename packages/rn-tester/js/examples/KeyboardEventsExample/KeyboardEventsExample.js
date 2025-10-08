@@ -38,17 +38,15 @@ function formatKeyEvent(event: KeyEvent) {
   return `${modifierPrefix}${event.nativeEvent.key}`;
 }
 
-function isKeyBlocked(
-  event: KeyEvent,
-  keyEvents: Array<HandledKeyEvent>,
-) {
-  return keyEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}) => (
-    event.nativeEvent.key === key &&
-    Boolean(metaKey) === event.nativeEvent.metaKey &&
-    Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-    Boolean(altKey) === event.nativeEvent.altKey &&
-    Boolean(shiftKey) === event.nativeEvent.shiftKey
-  ));
+function isKeyBlocked(event: KeyEvent, keyEvents: Array<HandledKeyEvent>) {
+  return keyEvents.some(
+    ({key, metaKey, ctrlKey, altKey, shiftKey}) =>
+      event.nativeEvent.key === key &&
+      Boolean(metaKey) === event.nativeEvent.metaKey &&
+      Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+      Boolean(altKey) === event.nativeEvent.altKey &&
+      Boolean(shiftKey) === event.nativeEvent.shiftKey,
+  );
 }
 
 const BOX2_KEY_DOWN_EVENTS = [{key: 'f'}, {key: 'g'}];
@@ -96,12 +94,27 @@ function BubblingExample(): React.Node {
 
   return (
     <View style={{marginTop: 10}}>
-      <View style={{marginBottom: 12, padding: 12, backgroundColor: '#f5f5f7', borderRadius: 8, borderWidth: 1, borderColor: '#e5e5e7'}}>
-        <Text style={{fontSize: 14, fontWeight: '600', marginBottom: 6, color: '#1d1d1f'}}>
+      <View
+        style={{
+          marginBottom: 12,
+          padding: 12,
+          backgroundColor: '#f5f5f7',
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: '#e5e5e7',
+        }}>
+        <Text
+          style={{
+            fontSize: 14,
+            fontWeight: '600',
+            marginBottom: 6,
+            color: '#1d1d1f',
+          }}>
           Event Bubbling Behavior:
         </Text>
         <Text style={{fontSize: 12, marginBottom: 3, color: '#424245'}}>
-          • Pressable won't bubble Space or Enter keys, it handles those by default
+          • Pressable won't bubble Space or Enter keys, it handles those by
+          default
         </Text>
         <Text style={{fontSize: 12, marginBottom: 3, color: '#424245'}}>
           • Keys 'f' and 'g' won't bubble past Box 2 (handled by keyDownEvents)
