@@ -101,10 +101,10 @@ const View: component(
         const isHandled = otherProps.keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
-            (metaKey ?? false) === event.nativeEvent.metaKey &&
-            (ctrlKey ?? false) === event.nativeEvent.ctrlKey &&
-            (altKey ?? false) === event.nativeEvent.altKey &&
-            (shiftKey ?? false) === event.nativeEvent.shiftKey
+            Boolean(metaKey) === event.nativeEvent.metaKey &&
+            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+            Boolean(altKey) === event.nativeEvent.altKey &&
+            Boolean(shiftKey) === event.nativeEvent.shiftKey
           );
         });
         if (isHandled) {
@@ -119,10 +119,10 @@ const View: component(
         const isHandled = otherProps.keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
-            (metaKey ?? false) === event.nativeEvent.metaKey &&
-            (ctrlKey ?? false) === event.nativeEvent.ctrlKey &&
-            (altKey ?? false) === event.nativeEvent.altKey &&
-            (shiftKey ?? false) === event.nativeEvent.shiftKey
+            Boolean(metaKey) === event.nativeEvent.metaKey &&
+            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+            Boolean(altKey) === event.nativeEvent.altKey &&
+            Boolean(shiftKey) === event.nativeEvent.shiftKey
           );
         });
         if (isHandled) {
