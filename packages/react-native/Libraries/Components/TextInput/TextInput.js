@@ -12,8 +12,8 @@ import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {____TextStyle_Internal as TextStyleInternal} from '../../StyleSheet/StyleSheetTypes';
 import type {
   GestureResponderEvent,
-  KeyEvent,
-  HandledKeyEvent,
+  KeyEvent, // [macOS]
+  HandledKeyEvent, // [macOS]
   NativeSyntheticEvent,
   ScrollEvent,
 } from '../../Types/CoreEventTypes';
@@ -1670,7 +1670,8 @@ function InternalTextInput(props: TextInputProps): React.Node {
     props.onScroll && props.onScroll(event);
   };
 
-  const _keyDown = (event: KeyEvent) => {
+  // [macOS
+  const _onKeyDown = (event: KeyEvent) => {
     if (props.keyDownEvents && event.isPropagationStopped() !== true) {
       const isHandled = props.keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
         return (
@@ -1688,7 +1689,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
     props.onKeyDown && props.onKeyDown(event);
   };
 
-  const _keyUp = (event: KeyEvent) => {
+  const _onKeyUp = (event: KeyEvent) => {
     if (props.keyUpEvents && event.isPropagationStopped() !== true) {
       const isHandled = props.keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
         return (
@@ -1705,6 +1706,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
     }
     props.onKeyUp && props.onKeyUp(event);
   };
+  // macOS]
 
   let textInput = null;
 
@@ -1861,8 +1863,8 @@ function InternalTextInput(props: TextInputProps): React.Node {
         onChange={_onChange}
         onContentSizeChange={props.onContentSizeChange}
         onFocus={_onFocus}
-        onKeyDown={_keyDown} // [macOS]
-        onKeyUp={_keyUp} // [macOS]
+        onKeyDown={_onKeyDown} // [macOS]
+        onKeyUp={_onKeyUp} // [macOS]
         onScroll={_onScroll}
         onSelectionChange={_onSelectionChange}
         onSelectionChangeShouldSetResponder={emptyFunctionThatReturnsTrue}

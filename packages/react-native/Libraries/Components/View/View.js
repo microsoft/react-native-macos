@@ -13,7 +13,7 @@ import type {ViewProps} from './ViewPropTypes';
 import TextAncestor from '../../Text/TextAncestor';
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
-import type { KeyEvent, HandledKeyEvent } from '../../Types/CoreEventTypes';
+import type { KeyEvent, HandledKeyEvent } from '../../Types/CoreEventTypes'; // [macOS]
 
 export type Props = ViewProps;
 
@@ -95,7 +95,8 @@ const View: component(
       };
     }
 
-    const _keyDown = (event: KeyEvent) => {
+    // [macOS
+    const _onKeyDown = (event: KeyEvent) => {
       if (otherProps.keyDownEvents && event.isPropagationStopped() !== true) {
         const isHandled = otherProps.keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
@@ -113,7 +114,7 @@ const View: component(
       otherProps.onKeyDown && otherProps.onKeyDown(event);
     };
 
-    const _keyUp = (event: KeyEvent) => {
+    const _onKeyUp = (event: KeyEvent) => {
       if (otherProps.keyUpEvents && event.isPropagationStopped() !== true) {
         const isHandled = otherProps.keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
@@ -130,6 +131,7 @@ const View: component(
       }
       otherProps.onKeyUp && otherProps.onKeyUp(event);
     };
+    // macOS]
 
     const actualView = (
       <ViewNativeComponent
@@ -149,8 +151,8 @@ const View: component(
             : importantForAccessibility
         }
         nativeID={id ?? nativeID}
-        onKeyDown={_keyDown}
-        onKeyUp={_keyUp}
+        onKeyDown={_onKeyDown} // [macOS]
+        onKeyUp={_onKeyUp} // [macOS]
         ref={forwardedRef}
       />
     );
