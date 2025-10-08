@@ -1672,8 +1672,9 @@ function InternalTextInput(props: TextInputProps): React.Node {
 
   // [macOS
   const _onKeyDown = (event: KeyEvent) => {
-    if (props.keyDownEvents && !event.isPropagationStopped()) {
-      const isHandled = props.keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+    const keyDownEvents = props.keyDownEvents;
+    if (keyDownEvents != null && !event.isPropagationStopped()) {
+      const isHandled = keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
         return (
           event.nativeEvent.key === key &&
           Boolean(metaKey) === event.nativeEvent.metaKey &&
@@ -1682,7 +1683,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
           Boolean(shiftKey) === event.nativeEvent.shiftKey
         );
       });
-      if (isHandled) {
+      if (isHandled === true) {
         event.stopPropagation();
       }
     }
@@ -1690,8 +1691,9 @@ function InternalTextInput(props: TextInputProps): React.Node {
   };
 
   const _onKeyUp = (event: KeyEvent) => {
-    if (props.keyUpEvents && !event.isPropagationStopped()) {
-      const isHandled = props.keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+    const keyUpEvents = props.keyUpEvents;
+    if (keyUpEvents != null && !event.isPropagationStopped()) {
+      const isHandled = keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
         return (
           event.nativeEvent.key === key &&
           Boolean(metaKey) === event.nativeEvent.metaKey &&
@@ -1700,7 +1702,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
           Boolean(shiftKey) === event.nativeEvent.shiftKey
         );
       });
-      if (isHandled) {
+      if (isHandled === true) {
         event.stopPropagation();
       }
     }
@@ -1863,6 +1865,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
         onChange={_onChange}
         onContentSizeChange={props.onContentSizeChange}
         onFocus={_onFocus}
+        // $FlowFixMe[exponential-spread]
         {...(otherProps.onKeyDown && {onKeyDown: _onKeyDown})} // [macOS]
         {...(otherProps.onKeyUp && {onKeyUp: _onKeyUp})} // [macOS]
         onScroll={_onScroll}

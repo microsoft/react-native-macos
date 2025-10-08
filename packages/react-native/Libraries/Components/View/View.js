@@ -97,8 +97,9 @@ const View: component(
 
     // [macOS
     const _onKeyDown = (event: KeyEvent) => {
-      if (otherProps.keyDownEvents && !event.isPropagationStopped()) {
-        const isHandled = otherProps.keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+      const keyDownEvents = otherProps.keyDownEvents;
+      if (keyDownEvents != null && !event.isPropagationStopped()) {
+        const isHandled = keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
             Boolean(metaKey) === event.nativeEvent.metaKey &&
@@ -107,7 +108,7 @@ const View: component(
             Boolean(shiftKey) === event.nativeEvent.shiftKey
           );
         });
-        if (isHandled) {
+        if (isHandled === true) {
           event.stopPropagation();
         }
       }
@@ -115,8 +116,9 @@ const View: component(
     };
 
     const _onKeyUp = (event: KeyEvent) => {
-      if (otherProps.keyUpEvents && !event.isPropagationStopped()) {
-        const isHandled = otherProps.keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+      const keyUpEvents = otherProps.keyUpEvents;
+      if (keyUpEvents != null && !event.isPropagationStopped()) {
+        const isHandled = keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
             Boolean(metaKey) === event.nativeEvent.metaKey &&
@@ -125,7 +127,7 @@ const View: component(
             Boolean(shiftKey) === event.nativeEvent.shiftKey
           );
         });
-        if (isHandled) {
+        if (isHandled === true) {
           event.stopPropagation();
         }
       }
@@ -151,6 +153,7 @@ const View: component(
             : importantForAccessibility
         }
         nativeID={id ?? nativeID}
+        // $FlowFixMe[exponential-spread]
         {...(otherProps.onKeyDown && {onKeyDown: _onKeyDown})} // [macOS]
         {...(otherProps.onKeyUp && {onKeyUp: _onKeyUp})} // [macOS]
         ref={forwardedRef}
