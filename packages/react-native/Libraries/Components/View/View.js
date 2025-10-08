@@ -97,7 +97,7 @@ const View: component(
 
     // [macOS
     const _onKeyDown = (event: KeyEvent) => {
-      if (otherProps.keyDownEvents && event.isPropagationStopped() !== true) {
+      if (otherProps.keyDownEvents && !event.isPropagationStopped()) {
         const isHandled = otherProps.keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
