@@ -13,6 +13,7 @@ import type {ViewProps} from './ViewPropTypes';
 import TextAncestor from '../../Text/TextAncestor';
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
+import type { KeyEvent, HandledKeyEvent } from '../../Types/CoreEventTypes';
 
 export type Props = ViewProps;
 
@@ -94,6 +95,42 @@ const View: component(
       };
     }
 
+    const _keyDown = (event: KeyEvent) => {
+      if (otherProps.keyDownEvents && event.isPropagationStopped() !== true) {
+        const isHandled = otherProps.keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+          return (
+            event.nativeEvent.key === key &&
+            (metaKey ?? event.nativeEvent.metaKey) === event.nativeEvent.metaKey &&
+            (ctrlKey ?? event.nativeEvent.ctrlKey) === event.nativeEvent.ctrlKey &&
+            (altKey ?? event.nativeEvent.altKey) === event.nativeEvent.altKey &&
+            (shiftKey ?? event.nativeEvent.shiftKey) === event.nativeEvent.shiftKey
+          );
+        });
+        if (isHandled) {
+          event.stopPropagation();
+        }
+      }
+      otherProps.onKeyDown && otherProps.onKeyDown(event);
+    };
+
+    const _keyUp = (event: KeyEvent) => {
+      if (otherProps.keyUpEvents && event.isPropagationStopped() !== true) {
+        const isHandled = otherProps.keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+          return (
+            event.nativeEvent.key === key &&
+            (metaKey ?? event.nativeEvent.metaKey) === event.nativeEvent.metaKey &&
+            (ctrlKey ?? event.nativeEvent.ctrlKey) === event.nativeEvent.ctrlKey &&
+            (altKey ?? event.nativeEvent.altKey) === event.nativeEvent.altKey &&
+            (shiftKey ?? event.nativeEvent.shiftKey) === event.nativeEvent.shiftKey
+          );
+        });
+        if (isHandled) {
+          event.stopPropagation();
+        }
+      }
+      otherProps.onKeyUp && otherProps.onKeyUp(event);
+    };
+
     const actualView = (
       <ViewNativeComponent
         {...otherProps}
@@ -112,6 +149,8 @@ const View: component(
             : importantForAccessibility
         }
         nativeID={id ?? nativeID}
+        onKeyDown={_keyDown}
+        onKeyUp={_keyUp}
         ref={forwardedRef}
       />
     );

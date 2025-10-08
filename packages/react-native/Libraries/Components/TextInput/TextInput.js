@@ -12,6 +12,8 @@ import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {____TextStyle_Internal as TextStyleInternal} from '../../StyleSheet/StyleSheetTypes';
 import type {
   GestureResponderEvent,
+  KeyEvent,
+  HandledKeyEvent,
   NativeSyntheticEvent,
   ScrollEvent,
 } from '../../Types/CoreEventTypes';
@@ -1134,6 +1136,34 @@ export type TextInputProps = $ReadOnly<{
    * unwanted edits without flicker.
    */
   value?: ?Stringish,
+
+  // [macOS
+  /**
+   * An array of key events that should be handled by the TextInput.
+   * When a key event matches one of these specifications, event propagation will be stopped.
+   * @platform macos
+   */
+  keyDownEvents?: ?$ReadOnlyArray<HandledKeyEvent>,
+
+  /**
+   * An array of key events that should be handled by the TextInput.
+   * When a key event matches one of these specifications, event propagation will be stopped.
+   * @platform macos
+   */
+  keyUpEvents?: ?$ReadOnlyArray<HandledKeyEvent>,
+
+  /**
+   * Callback that is called when a key is pressed down.
+   * @platform macos
+   */
+  onKeyDown?: ?(e: KeyEvent) => mixed,
+
+  /**
+   * Callback that is called when a key is released.
+   * @platform macos
+   */
+  onKeyUp?: ?(e: KeyEvent) => mixed,
+  // macOS]
 }>;
 
 type ViewCommands = $NonMaybeType<
@@ -1640,6 +1670,42 @@ function InternalTextInput(props: TextInputProps): React.Node {
     props.onScroll && props.onScroll(event);
   };
 
+  const _keyDown = (event: KeyEvent) => {
+    if (props.keyDownEvents && event.isPropagationStopped() !== true) {
+      const isHandled = props.keyDownEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+        return (
+          event.nativeEvent.key === key &&
+          (metaKey ?? event.nativeEvent.metaKey) === event.nativeEvent.metaKey &&
+          (ctrlKey ?? event.nativeEvent.ctrlKey) === event.nativeEvent.ctrlKey &&
+          (altKey ?? event.nativeEvent.altKey) === event.nativeEvent.altKey &&
+          (shiftKey ?? event.nativeEvent.shiftKey) === event.nativeEvent.shiftKey
+        );
+      });
+      if (isHandled) {
+        event.stopPropagation();
+      }
+    }
+    props.onKeyDown && props.onKeyDown(event);
+  };
+
+  const _keyUp = (event: KeyEvent) => {
+    if (props.keyUpEvents && event.isPropagationStopped() !== true) {
+      const isHandled = props.keyUpEvents.some(({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+        return (
+          event.nativeEvent.key === key &&
+          (metaKey ?? event.nativeEvent.metaKey) === event.nativeEvent.metaKey &&
+          (ctrlKey ?? event.nativeEvent.ctrlKey) === event.nativeEvent.ctrlKey &&
+          (altKey ?? event.nativeEvent.altKey) === event.nativeEvent.altKey &&
+          (shiftKey ?? event.nativeEvent.shiftKey) === event.nativeEvent.shiftKey
+        );
+      });
+      if (isHandled) {
+        event.stopPropagation();
+      }
+    }
+    props.onKeyUp && props.onKeyUp(event);
+  };
+
   let textInput = null;
 
   const multiline = props.multiline ?? false;
@@ -1795,8 +1861,8 @@ function InternalTextInput(props: TextInputProps): React.Node {
         onChange={_onChange}
         onContentSizeChange={props.onContentSizeChange}
         onFocus={_onFocus}
-        onKeyDown={props.onKeyDown} // [macOS]
-        onKeyUp={props.onKeyUp} // [macOS]
+        onKeyDown={_keyDown} // [macOS]
+        onKeyUp={_keyUp} // [macOS]
         onScroll={_onScroll}
         onSelectionChange={_onSelectionChange}
         onSelectionChangeShouldSetResponder={emptyFunctionThatReturnsTrue}

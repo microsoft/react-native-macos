@@ -353,12 +353,11 @@ function Pressable(
 
   const accessibilityLabel = ariaLabel ?? props.accessibilityLabel;
 
+  const keyDownEvents = keyDownEvents ?? [{key: 'Space'}, {key: 'Enter'}];
+
   const restPropsWithDefaults: React.ElementConfig<typeof View> = {
     ...restProps,
     ...android_rippleConfig?.viewProps,
-    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [macOS]
-    mouseDownCanMoveWindow: false, // [macOS]
-    enableFocusRing: enableFocusRing !== false && !disabled,
     accessible: accessible !== false,
     accessibilityViewIsModal:
       restProps['aria-modal'] ?? restProps.accessibilityViewIsModal,
@@ -368,6 +367,12 @@ function Pressable(
     focusable: focusable !== false && !disabled, // macOS]
     accessibilityValue,
     hitSlop,
+    // [macOS
+    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled,
+    enableFocusRing: enableFocusRing !== false && !disabled,
+    keyDownEvents,
+    mouseDownCanMoveWindow: false,
+    // macOS]
   };
 
   const config = useMemo(
