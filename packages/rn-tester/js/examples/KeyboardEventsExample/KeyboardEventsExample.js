@@ -21,7 +21,6 @@ import {
   Text,
   TextInput,
   View,
-  // Image,
 } from 'react-native';
 
 function formatKeyEvent(event: any) {
@@ -280,7 +279,6 @@ function KeyboardEventExample(): React.Node {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   eventLogBox: {
