@@ -137,7 +137,9 @@ static jsi::Value pasteMetricsPayload(
     jsi::Runtime& runtime,
     const TextInputEventEmitter::PasteMetrics& pasteMetrics) {
   auto payload = jsi::Object(runtime);
-  auto dataTransferObject = HostPlatformViewEventEmitter::dataTransferPayload(runtime, pasteMetrics.dataTransferItems);
+  auto dataTransferObject = HostPlatformViewEventEmitter::dataTransferPayload(
+    runtime,
+    pasteMetrics.dataTransfer);
   payload.setProperty(runtime, "dataTransfer", dataTransferObject);
   return payload;
 };

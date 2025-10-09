@@ -40,7 +40,9 @@ class HostPlatformViewEventEmitter : public BaseViewEventEmitter {
   void onDragLeave(DragEvent const& dragEvent) const;
   void onDrop(DragEvent const& dragEvent) const;
 
-  static jsi::Value dataTransferPayload(jsi::Runtime& runtime, std::vector<DataTransferItem> const& dataTransferItems);
+  static jsi::Value dataTransferPayload(
+    jsi::Runtime& runtime,
+    DataTransfer const& dataTransfer);
 
 };
 

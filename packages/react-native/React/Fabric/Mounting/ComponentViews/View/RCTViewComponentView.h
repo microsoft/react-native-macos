@@ -85,7 +85,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_OSX // [macOS
 - (BOOL)handleKeyboardEvent:(NSEvent *)event;
-- (void)buildDataTransferItems:(std::vector<facebook::react::DataTransferItem> &)dataTransferItems forPasteboard:(NSPasteboard *)pasteboard;
+- (facebook::react::DataTransfer)dataTransferForPasteboard:(NSPasteboard *)pasteboard;
 #endif // macOS]
 
 /*

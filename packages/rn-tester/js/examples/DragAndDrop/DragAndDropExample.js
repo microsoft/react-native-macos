@@ -55,7 +55,8 @@ function DragDropView(): React.Node {
           setIsDraggingOver(false);
           const file = e.nativeEvent.dataTransfer?.files?.[0];
           if (file) {
-            if (file.type.startsWith('image/')) {
+            const fileType = file.type;
+            if (fileType != null && fileType.startsWith('image/')) {
               appendLog('Dropped image file: ' + file.name);
             } else {
               appendLog('Dropped file: ' + file.name);

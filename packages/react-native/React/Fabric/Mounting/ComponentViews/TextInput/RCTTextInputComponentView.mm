@@ -616,10 +616,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   // If there's a fileType that is of interest, notify JS. Also blocks notifying JS if it's a text paste
   if (_eventEmitter && fileType != nil && [pastedTypes containsObject:fileType]) {
     auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
-    std::vector<DataTransferItem> dataTransferItems{};
-    [self buildDataTransferItems:dataTransferItems forPasteboard:pasteboard];
-    
-    textInputEventEmitter.onPaste({.dataTransferItems = dataTransferItems});
+  DataTransfer dataTransfer = [self dataTransferForPasteboard:pasteboard];
+  textInputEventEmitter.onPaste({.dataTransfer = std::move(dataTransfer)});
   }
 
   // Only allow pasting text.

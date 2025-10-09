@@ -82,34 +82,73 @@ void HostPlatformViewEventEmitter::onMouseLeave(const MouseEvent& mouseEvent) co
 
 jsi::Value HostPlatformViewEventEmitter::dataTransferPayload(
     jsi::Runtime& runtime,
-    const std::vector<DataTransferItem>& dataTransferItems) {
-  auto filesArray = jsi::Array(runtime, dataTransferItems.size());
-  auto itemsArray = jsi::Array(runtime, dataTransferItems.size());
-  auto typesArray = jsi::Array(runtime, dataTransferItems.size());
-  int i = 0;
-  for (const auto& transferItem : dataTransferItems) {
+    DataTransfer const& dataTransfer) {
+  const auto& files = dataTransfer.files;
+  const auto& items = dataTransfer.items;
+  const auto& types = dataTransfer.types;
+  auto filesArray = jsi::Array(runtime, files.size());
+  auto itemsArray = jsi::Array(runtime, items.size());
+  auto maxEntries = std::max(files.size(), std::max(items.size(), types.size()));
+  auto typesArray = jsi::Array(runtime, maxEntries);
+
+  for (size_t fileIndex = 0; fileIndex < files.size(); ++fileIndex) {
+    const auto& fileItem = files[fileIndex];
     auto fileObject = jsi::Object(runtime);
-    fileObject.setProperty(runtime, "name", transferItem.name);
-    fileObject.setProperty(runtime, "type", transferItem.type);
-    fileObject.setProperty(runtime, "uri", transferItem.uri);
-    if (transferItem.size.has_value()) {
-      fileObject.setProperty(runtime, "size", *transferItem.size);
+    fileObject.setProperty(runtime, "name", fileItem.name);
+    if (!fileItem.type.empty()) {
+      fileObject.setProperty(runtime, "type", fileItem.type);
+    } else {
+      fileObject.setProperty(runtime, "type", jsi::Value::null());
     }
-    if (transferItem.width.has_value()) {
-      fileObject.setProperty(runtime, "width", *transferItem.width);
+    fileObject.setProperty(runtime, "uri", fileItem.uri);
+    if (fileItem.size.has_value()) {
+      fileObject.setProperty(runtime, "size", *fileItem.size);
     }
-    if (transferItem.height.has_value()) {
-      fileObject.setProperty(runtime, "height", *transferItem.height);
+    if (fileItem.width.has_value()) {
+      fileObject.setProperty(runtime, "width", *fileItem.width);
     }
-    filesArray.setValueAtIndex(runtime, i, fileObject);
+    if (fileItem.height.has_value()) {
+      fileObject.setProperty(runtime, "height", *fileItem.height);
+    }
+    filesArray.setValueAtIndex(runtime, static_cast<int>(fileIndex), fileObject);
+  }
 
+  for (size_t itemIndex = 0; itemIndex < items.size(); ++itemIndex) {
+    const auto& item = items[itemIndex];
     auto itemObject = jsi::Object(runtime);
-    itemObject.setProperty(runtime, "kind", transferItem.kind);
-    itemObject.setProperty(runtime, "type", transferItem.type);
-    itemsArray.setValueAtIndex(runtime, i, itemObject);
+    itemObject.setProperty(runtime, "kind", item.kind);
+    if (!item.type.empty()) {
+      itemObject.setProperty(runtime, "type", item.type);
+    } else {
+      itemObject.setProperty(runtime, "type", jsi::Value::null());
+    }
+    itemsArray.setValueAtIndex(runtime, static_cast<int>(itemIndex), itemObject);
+  }
 
-    typesArray.setValueAtIndex(runtime, i, transferItem.type);
-    i++;
+  for (size_t typeIndex = 0; typeIndex < maxEntries; ++typeIndex) {
+    if (typeIndex < types.size()) {
+      const auto& typeEntry = types[typeIndex];
+      if (!typeEntry.empty()) {
+        typesArray.setValueAtIndex(
+            runtime,
+            static_cast<int>(typeIndex),
+            jsi::String::createFromUtf8(runtime, typeEntry));
+        continue;
+      }
+    }
+
+    const std::string* fallbackType = nullptr;
+    if (typeIndex < items.size() && !items[typeIndex].type.empty()) {
+      fallbackType = &items[typeIndex].type;
+    } else if (typeIndex < files.size() && !files[typeIndex].type.empty()) {
+      fallbackType = &files[typeIndex].type;
+    }
+
+    if (fallbackType != nullptr) {
+      typesArray.setValueAtIndex(runtime, static_cast<int>(typeIndex), jsi::String::createFromUtf8(runtime, *fallbackType));
+    } else {
+      typesArray.setValueAtIndex(runtime, static_cast<int>(typeIndex), jsi::Value::null());
+    }
   }
 
   auto dataTransferObject = jsi::Object(runtime);
@@ -124,7 +163,9 @@ static jsi::Value dragEventPayload(
     jsi::Runtime& runtime,
     const DragEvent& event) {
   auto payload = mouseEventPayload(runtime, event);
-  auto dataTransferObject = HostPlatformViewEventEmitter::dataTransferPayload(runtime, event.dataTransferItems);
+  auto dataTransferObject = HostPlatformViewEventEmitter::dataTransferPayload(
+    runtime,
+    event.dataTransfer);
   payload.setProperty(runtime, "dataTransfer", dataTransferObject);
   return payload;
 }

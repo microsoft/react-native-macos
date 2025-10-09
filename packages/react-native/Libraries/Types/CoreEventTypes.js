@@ -333,19 +333,24 @@ export type MouseEvent = NativeSyntheticEvent<
 >;
 
 // [macOS
-export type DataTransferItem = $ReadOnly<{
+export type DataTransferFile = $ReadOnly<{
   name: string,
-  kind: string,
-  type: string,
+  type: ?string,
   uri: string,
   size?: number,
   width?: number,
   height?: number,
 }>;
 
+export type DataTransferItem = $ReadOnly<{
+  kind: string,
+  type: ?string,
+}>;
+
 export type DataTransfer = $ReadOnly<{
-  files: $ReadOnlyArray<DataTransferItem>,
-  types: $ReadOnlyArray<string>,
+  files: $ReadOnlyArray<DataTransferFile>,
+  items: $ReadOnlyArray<DataTransferItem>,
+  types: $ReadOnlyArray<?string>,
 }>;
 
 export type DragEvent = NativeSyntheticEvent<
