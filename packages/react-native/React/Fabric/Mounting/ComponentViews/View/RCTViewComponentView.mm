@@ -1756,7 +1756,7 @@ enum DragEventType {
         fileEntry.size = fileSizeValue.intValue;
       }
 
-      if (MIMETypeString != nil && [MIMETypeString hasPrefix:@"image/"]) {
+      if ([MIMETypeString hasPrefix:@"image/"]) {
         NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
         CGImageRef cgImage = [image CGImageForProposedRect:nil context:nil hints:nil];
         fileEntry.width = static_cast<int>(CGImageGetWidth(cgImage));
