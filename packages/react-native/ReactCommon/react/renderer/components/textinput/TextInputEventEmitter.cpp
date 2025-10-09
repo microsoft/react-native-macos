@@ -132,6 +132,17 @@ static jsi::Value keyPressMetricsPayload(
   return payload;
 };
 
+#if TARGET_OS_OSX // [macOS
+static jsi::Value pasteMetricsPayload(
+    jsi::Runtime& runtime,
+    const TextInputEventEmitter::PasteMetrics& pasteMetrics) {
+  auto payload = jsi::Object(runtime);
+  auto dataTransferObject = HostPlatformViewEventEmitter::dataTransferPayload(runtime, pasteMetrics.dataTransferItems);
+  payload.setProperty(runtime, "dataTransfer", dataTransferObject);
+  return payload;
+};
+#endif // macOS]
+
 void TextInputEventEmitter::onFocus(const Metrics& textInputMetrics) const {
   dispatchTextInputEvent("focus", textInputMetrics);
 }
@@ -195,9 +206,9 @@ void TextInputEventEmitter::onGrammarCheckChange(
 }
 
 void TextInputEventEmitter::onPaste(
-    const Metrics& textInputMetrics) const {
-  dispatchEvent("paste", [textInputMetrics](jsi::Runtime& runtime) {
-    return dataTransferPayload(runtime, textInputMetrics.dataTransferItems);
+    const PasteMetrics& pasteMetrics) const {
+  dispatchEvent("paste", [pasteMetrics](jsi::Runtime& runtime) {
+    return pasteMetricsPayload(runtime, pasteMetrics);
   });
 }
 #endif // macOS]

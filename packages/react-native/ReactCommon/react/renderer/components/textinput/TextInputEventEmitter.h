@@ -32,7 +32,6 @@ class TextInputEventEmitter : public ViewEventEmitter {
     bool autoCorrectEnabled;
     bool spellCheckEnabled;
     bool grammarCheckEnabled;
-    std::vector<DataTransferItem> dataTransferItems;
 #endif // macOS]
   };
 
@@ -40,6 +39,12 @@ class TextInputEventEmitter : public ViewEventEmitter {
     std::string text;
     int eventCount;
   };
+  
+#if TARGET_OS_OSX // [macOS
+  struct PasteMetrics {
+    std::vector<DataTransferItem> dataTransferItems;
+  };
+#endif // macOS]
 
   void onFocus(const Metrics& textInputMetrics) const;
   void onBlur(const Metrics& textInputMetrics) const;
@@ -54,7 +59,7 @@ class TextInputEventEmitter : public ViewEventEmitter {
   void onAutoCorrectChange(const Metrics& textInputMetrics) const;
   void onSpellCheckChange(const Metrics& textInputMetrics) const;
   void onGrammarCheckChange(const Metrics& textInputMetrics) const;
-  void onPaste(const Metrics& textInputMetrics) const;
+  void onPaste(const PasteMetrics& pasteMetrics) const;
  #endif // macOS]
 
  private:
