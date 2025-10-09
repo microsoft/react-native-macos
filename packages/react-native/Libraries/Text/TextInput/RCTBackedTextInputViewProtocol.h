@@ -88,6 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_OSX // [macOS
 // UITextInput method for OSX
 - (CGSize)sizeThatFits:(CGSize)size;
+- (void)setReadablePasteBoardTypes:(NSArray<NSPasteboardType> *)readablePasteboardTypes;
 #endif // macOS]
 
 // This protocol disallows direct access to `text` property because

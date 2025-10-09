@@ -344,6 +344,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.disableKeyboardShortcuts = newTextInputProps.disableKeyboardShortcuts;
   }
 
+#if TARGET_OS_OSX // [macOS
+  if (newTextInputProps.traits.pastedTypes!= oldTextInputProps.traits.pastedTypes) {
+    NSArray<NSPasteboardType> *types = RCTPasteboardTypeArrayFromProps(newTextInputProps.traits.pastedTypes);
+    [_backedTextInputView setReadablePasteBoardTypes:types];
+  }
+#endif // macOS]
+
   [super updateProps:props oldProps:oldProps];
 
 #if TARGET_OS_IOS // [macOS] [visionOS]
@@ -602,7 +609,19 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 }
 
 - (BOOL)textInputShouldHandlePaste:(nonnull id<RCTBackedTextInputViewProtocol>)sender {
-  return YES;
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  NSPasteboardType fileType = [pasteboard availableTypeFromArray:@[NSFilenamesPboardType, NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  NSArray<NSPasteboardType>* pastedTypes = ((RCTUITextView*) _backedTextInputView).readablePasteboardTypes;
+      
+  // If there's a fileType that is of interest, notify JS. Also blocks notifying JS if it's a text paste
+  if (_eventEmitter && fileType != nil && [pastedTypes containsObject:fileType]) {
+    auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
+  DataTransfer dataTransfer = [self dataTransferForPasteboard:pasteboard];
+  textInputEventEmitter.onPaste({.dataTransfer = std::move(dataTransfer)});
+  }
+
+  // Only allow pasting text.
+  return fileType == nil;
 }
 
 #endif // macOS]

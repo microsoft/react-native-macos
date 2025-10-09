@@ -56,9 +56,8 @@ struct MouseEvent {
   bool metaKey{false};
 };
 
-struct DataTransferItem {
+struct DataTransferFile {
   std::string name{};
-  std::string kind{};
   std::string type{};
   std::string uri{};
   std::optional<int> size{};
@@ -66,8 +65,19 @@ struct DataTransferItem {
   std::optional<int> height{};
 };
 
+struct DataTransferItem {
+  std::string kind{};
+  std::string type{};
+};
+
+struct DataTransfer {
+  std::vector<DataTransferFile> files{};
+  std::vector<DataTransferItem> items{};
+  std::vector<std::string> types{};
+};
+
 struct DragEvent : MouseEvent {
-  std::vector<DataTransferItem> dataTransferItems;
+  DataTransfer dataTransfer;
 };
 
 } // namespace facebook::react

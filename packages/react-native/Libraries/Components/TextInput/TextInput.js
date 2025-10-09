@@ -11,6 +11,7 @@
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {____TextStyle_Internal as TextStyleInternal} from '../../StyleSheet/StyleSheetTypes';
 import type {
+  DataTransfer,
   GestureResponderEvent,
   KeyEvent, // [macOS]
   HandledKeyEvent, // [macOS]
@@ -145,20 +146,7 @@ export type SettingChangeEvent = NativeSyntheticEvent<
 
 export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
-    dataTransfer: {|
-      files: $ReadOnlyArray<{|
-        height: number,
-        size: number,
-        type: string,
-        uri: string,
-        width: number,
-      |}>,
-      items: $ReadOnlyArray<{|
-        kind: string,
-        type: string,
-      |}>,
-      types: $ReadOnlyArray<string>,
-    |},
+    dataTransfer: DataTransfer,
   |}>,
 >;
 

@@ -2711,20 +2711,7 @@ export type SettingChangeEvent = NativeSyntheticEvent<
 >;
 export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
-    dataTransfer: {|
-      files: $ReadOnlyArray<{|
-        height: number,
-        size: number,
-        type: string,
-        uri: string,
-        width: number,
-      |}>,
-      items: $ReadOnlyArray<{|
-        kind: string,
-        type: string,
-      |}>,
-      types: $ReadOnlyArray<string>,
-    |},
+    dataTransfer: DataTransfer,
   |}>,
 >;
 export type SubmitKeyEvent = $ReadOnly<{|
@@ -3119,20 +3106,7 @@ export type SettingChangeEvent = NativeSyntheticEvent<
 >;
 export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
-    dataTransfer: {|
-      files: $ReadOnlyArray<{|
-        height: number,
-        size: number,
-        type: string,
-        uri: string,
-        width: number,
-      |}>,
-      items: $ReadOnlyArray<{|
-        kind: string,
-        type: string,
-      |}>,
-      types: $ReadOnlyArray<string>,
-    |},
+    dataTransfer: DataTransfer,
   |}>,
 >;
 export type SubmitKeyEvent = $ReadOnly<{|
@@ -8552,18 +8526,22 @@ export type MouseEvent = NativeSyntheticEvent<
     timestamp: number,
   }>,
 >;
-export type DataTransferItem = $ReadOnly<{
+export type DataTransferFile = $ReadOnly<{
   name: string,
-  kind: string,
-  type: string,
+  type: ?string,
   uri: string,
   size?: number,
   width?: number,
   height?: number,
 }>;
+export type DataTransferItem = $ReadOnly<{
+  kind: string,
+  type: ?string,
+}>;
 export type DataTransfer = $ReadOnly<{
-  files: $ReadOnlyArray<DataTransferItem>,
-  types: $ReadOnlyArray<string>,
+  files: $ReadOnlyArray<DataTransferFile>,
+  items: $ReadOnlyArray<DataTransferItem>,
+  types: $ReadOnlyArray<?string>,
 }>;
 export type DragEvent = NativeSyntheticEvent<
   $ReadOnly<{

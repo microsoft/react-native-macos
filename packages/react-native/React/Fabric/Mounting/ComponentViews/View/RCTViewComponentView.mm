@@ -623,7 +623,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
       self.toolTip = nil;
     }
   }
-#endif // [macOS]
+#endif // macOS]
 
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
 
@@ -1714,7 +1714,12 @@ enum DragEventType {
   Drop,
 };
 
-- (void)buildDataTransferItems:(std::vector<DataTransferItem> &)dataTransferItems forPasteboard:(NSPasteboard *)pasteboard {
+- (DataTransfer)dataTransferForPasteboard:(NSPasteboard *)pasteboard {
+  DataTransfer dataTransfer{};
+  auto &files = dataTransfer.files;
+  auto &items = dataTransfer.items;
+  auto &types = dataTransfer.types;
+
   NSArray *fileNames = [pasteboard propertyListForType:NSFilenamesPboardType] ?: @[];
   for (NSString *file in fileNames) {
     NSURL *fileURL = [NSURL fileURLWithPath:file];
@@ -1739,25 +1744,31 @@ enum DragEventType {
                                         forKey:NSURLFileSizeKey
                                          error:&fileSizeError];
 
-      DataTransferItem transferItem = {
+      std::string typeString = MIMETypeString != nil ? [MIMETypeString UTF8String] : "";
+
+      DataTransferFile fileEntry = {
         .name = fileURL.lastPathComponent ? fileURL.lastPathComponent.UTF8String : "",
-        .kind = "file",
-        .type = MIMETypeString ? MIMETypeString.UTF8String : "",
+        .type = typeString,
         .uri = fileURL.path ? fileURL.path.UTF8String : "",
       };
-      
+
       if (success) {
-        transferItem.size = fileSizeValue.intValue;
+        fileEntry.size = fileSizeValue.intValue;
       }
 
       if ([MIMETypeString hasPrefix:@"image/"]) {
         NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
         CGImageRef cgImage = [image CGImageForProposedRect:nil context:nil hints:nil];
-        transferItem.width = static_cast<int>(CGImageGetWidth(cgImage));
-        transferItem.height = static_cast<int>(CGImageGetHeight(cgImage));
+        fileEntry.width = static_cast<int>(CGImageGetWidth(cgImage));
+        fileEntry.height = static_cast<int>(CGImageGetHeight(cgImage));
       }
-      
-      dataTransferItems.push_back(transferItem);
+
+      files.push_back(fileEntry);
+      items.push_back({
+          .kind = "file",
+          .type = typeString,
+      });
+      types.push_back(typeString);
     }
   }
   
@@ -1769,18 +1780,26 @@ enum DragEventType {
     CGImageRef cgImage = [image CGImageForProposedRect:nil context:nil hints:nil];
     
     NSString *dataURLString = RCTDataURL(MIMETypeString, imageData).absoluteString;
+    std::string typeString = MIMETypeString != nil ? [MIMETypeString UTF8String] : "";
     
-    DataTransferItem transferItem = {
-      .kind = "image",
-      .type = MIMETypeString ? MIMETypeString.UTF8String : "",
+    DataTransferFile fileEntry = {
+      .name = "",
+      .type = typeString,
       .uri = dataURLString ? dataURLString.UTF8String : "",
-      .size = static_cast<int>(imageData.length),
-      .width = static_cast<int>(CGImageGetWidth(cgImage)),
-      .height = static_cast<int>(CGImageGetHeight(cgImage)),
     };
 
-    dataTransferItems.push_back(transferItem);
+    fileEntry.size = static_cast<int>(imageData.length);
+    fileEntry.width = static_cast<int>(CGImageGetWidth(cgImage));
+    fileEntry.height = static_cast<int>(CGImageGetHeight(cgImage));
+
+    files.push_back(fileEntry);
+    items.push_back({
+        .kind = "image",
+        .type = typeString,
+    });
+    types.push_back(typeString);
   }
+  return dataTransfer;
 }
 
 - (void)emitDragEvent:(DragEventType)eventType draggingInfo:(id<NSDraggingInfo>)sender {
@@ -1791,8 +1810,7 @@ enum DragEventType {
   NSPoint locationInWindow = sender.draggingLocation;
   NSPasteboard *pasteboard = sender.draggingPasteboard;
   
-  std::vector<DataTransferItem> dataTransferItems{};
-  [self buildDataTransferItems:dataTransferItems forPasteboard:pasteboard];
+  DataTransfer dataTransfer = [self dataTransferForPasteboard:pasteboard];
 
   NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
   NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
@@ -1808,7 +1826,7 @@ enum DragEventType {
       .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
       .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
     },
-    .dataTransferItems = dataTransferItems,
+    .dataTransfer = dataTransfer,
   };
   
   switch (eventType) {

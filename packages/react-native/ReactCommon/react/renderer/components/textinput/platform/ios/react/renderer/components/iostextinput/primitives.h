@@ -83,6 +83,14 @@ class Selection final {
   int end{0};
 };
 
+#if TARGET_OS_OSX // [macOS
+enum class PastedTypesType {
+  FileUrl,
+  Image,
+  String,
+};
+#endif // macOS]
+
 /*
  * Controls features of text inputs.
  */
@@ -220,13 +228,20 @@ class TextInputTraits final {
    */
   std::optional<bool> smartInsertDelete{};
 
-#ifdef TARGET_OS_OSX // [macOS
+#if TARGET_OS_OSX // [macOS
   /*
    * Can be empty (`null` in JavaScript) which means `default`.
    * maOS
    * Default value: `empty` (`null`).
    */
   std::optional<bool> grammarCheck{};
+
+  /*
+   * List of pastable types
+   * macOS-only
+   * Default value: `empty list`
+   */
+  std::vector<PastedTypesType> pastedTypes{};
 #endif // macOS]
 };
 
