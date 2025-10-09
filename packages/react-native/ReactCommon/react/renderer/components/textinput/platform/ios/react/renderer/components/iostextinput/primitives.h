@@ -228,7 +228,7 @@ class TextInputTraits final {
    */
   std::optional<bool> smartInsertDelete{};
 
-#ifdef TARGET_OS_OSX // [macOS
+#if TARGET_OS_OSX // [macOS
   /*
    * Can be empty (`null` in JavaScript) which means `default`.
    * maOS

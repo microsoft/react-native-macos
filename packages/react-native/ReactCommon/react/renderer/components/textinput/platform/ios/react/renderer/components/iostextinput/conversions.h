@@ -217,7 +217,7 @@ inline void fromRawValue(
   abort();
 }
 
-#ifdef TARGET_OS_OSX // [macOS
+#if TARGET_OS_OSX // [macOS
 inline void fromRawValue(
     const PropsParserContext &context,
     const RawValue &value,
