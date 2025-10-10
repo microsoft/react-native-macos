@@ -128,10 +128,6 @@ const Components: Array<RNTesterModuleInfo> = [
     category: 'Basic',
   },
   {
-    key: 'TooltipExample',
-    module: require('../examples/Tooltip/TooltipExample'),
-  },
-  {
     key: 'TouchableExample',
     module: require('../examples/Touchable/TouchableExample'),
   },
@@ -185,6 +181,11 @@ const APIs: Array<RNTesterModuleInfo> = ([
   {
     key: 'AccessibilityShowMenu',
     module: require('../examples/AccessibilityShowMenu/AccessibilityShowMenu'),
+    category: 'macOS',
+  },
+  {
+    key: 'TooltipExample',
+    module: require('../examples/Tooltip/TooltipExample'),
     category: 'macOS',
   }, // macOS]
   {
@@ -251,6 +252,11 @@ const APIs: Array<RNTesterModuleInfo> = ([
     category: 'UI',
     module: require('../examples/DisplayContents/DisplayContentsExample')
       .default,
+  },
+  {
+    key: 'DragAndDropExample',
+    category: 'UI',
+    module: require('../examples/DragAndDrop/DragAndDropExample'),
   },
   // Only show the link for the example if the API is available.
   // $FlowExpectedError[cannot-resolve-name]

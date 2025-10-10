@@ -14,6 +14,10 @@
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
 #import <react/renderer/graphics/Transform.h>
 
+#if TARGET_OS_OSX // [macOS
+#import <react/renderer/components/iostextinput/primitives.h>
+#endif // macOS]
+
 NS_ASSUME_NONNULL_BEGIN
 
 inline NSString *RCTNSStringFromString(
@@ -280,5 +284,30 @@ inline facebook::react::LayoutDirection RCTLayoutDirection(BOOL isRTL)
 {
   return isRTL ? facebook::react::LayoutDirection::RightToLeft : facebook::react::LayoutDirection::LeftToRight;
 }
+
+#if TARGET_OS_OSX // [macOS
+inline NSArray<NSPasteboardType> *RCTPasteboardTypeArrayFromProps(const std::vector<facebook::react::PastedTypesType> &pastedTypes)
+{
+  NSMutableArray<NSPasteboardType> *types = [NSMutableArray new];
+  
+  for (const auto &type : pastedTypes) {
+    switch (type) {
+      case facebook::react::PastedTypesType::FileUrl:
+        [types addObjectsFromArray:@[NSFilenamesPboardType]];
+        break;
+      case facebook::react::PastedTypesType::Image:
+        [types addObjectsFromArray:@[NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+        break;
+      case facebook::react::PastedTypesType::String:
+        [types addObjectsFromArray:@[NSPasteboardTypeString]];
+        break;
+      default:
+        break;
+    }
+  }
+    
+  return [types copy];
+}
+#endif // macOS]
 
 NS_ASSUME_NONNULL_END

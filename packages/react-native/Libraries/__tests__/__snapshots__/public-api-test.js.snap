@@ -1744,9 +1744,9 @@ type PressableBaseProps = $ReadOnly<{
   enableFocusRing?: ?boolean,
   allowsVibrancy?: ?boolean,
   tooltip?: ?string,
-  onDragEnter?: (event: MouseEvent) => void,
-  onDragLeave?: (event: MouseEvent) => void,
-  onDrop?: (event: MouseEvent) => void,
+  onDragEnter?: (event: DragEvent) => void,
+  onDragLeave?: (event: DragEvent) => void,
+  onDrop?: (event: DragEvent) => void,
   draggedTypes?: ?DraggedTypesType,
   style?:
     | ViewStyleProp
@@ -2711,20 +2711,7 @@ export type SettingChangeEvent = NativeSyntheticEvent<
 >;
 export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
-    dataTransfer: {|
-      files: $ReadOnlyArray<{|
-        height: number,
-        size: number,
-        type: string,
-        uri: string,
-        width: number,
-      |}>,
-      items: $ReadOnlyArray<{|
-        kind: string,
-        type: string,
-      |}>,
-      types: $ReadOnlyArray<string>,
-    |},
+    dataTransfer: DataTransfer,
   |}>,
 >;
 export type SubmitKeyEvent = $ReadOnly<{|
@@ -3119,20 +3106,7 @@ export type SettingChangeEvent = NativeSyntheticEvent<
 >;
 export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
-    dataTransfer: {|
-      files: $ReadOnlyArray<{|
-        height: number,
-        size: number,
-        type: string,
-        uri: string,
-        width: number,
-      |}>,
-      items: $ReadOnlyArray<{|
-        kind: string,
-        type: string,
-      |}>,
-      types: $ReadOnlyArray<string>,
-    |},
+    dataTransfer: DataTransfer,
   |}>,
 >;
 export type SubmitKeyEvent = $ReadOnly<{|
@@ -3429,6 +3403,10 @@ export type TextInputProps = $ReadOnly<{
   submitBehavior?: ?SubmitBehavior,
   style?: ?TextStyleProp,
   value?: ?Stringish,
+  keyDownEvents?: ?$ReadOnlyArray<HandledKeyEvent>,
+  keyUpEvents?: ?$ReadOnlyArray<HandledKeyEvent>,
+  onKeyDown?: ?(e: KeyEvent) => mixed,
+  onKeyUp?: ?(e: KeyEvent) => mixed,
 }>;
 export type TextInputComponentStatics = $ReadOnly<{
   State: $ReadOnly<{
@@ -3774,9 +3752,9 @@ exports[`public API should not change unintentionally Libraries/Components/Touch
   tooltip?: ?string,
   onMouseEnter?: (event: MouseEvent) => void,
   onMouseLeave?: (event: MouseEvent) => void,
-  onDragEnter?: (event: MouseEvent) => void,
-  onDragLeave?: (event: MouseEvent) => void,
-  onDrop?: (event: MouseEvent) => void,
+  onDragEnter?: (event: DragEvent) => void,
+  onDragLeave?: (event: DragEvent) => void,
+  onDrop?: (event: DragEvent) => void,
   draggedTypes?: ?DraggedTypesType,
 };
 export type TouchableWithoutFeedbackPropsAndroid = {
@@ -3841,7 +3819,7 @@ declare export default typeof UnimplementedView;
 `;
 
 exports[`public API should not change unintentionally Libraries/Components/View/DraggedType.js 1`] = `
-"export type DraggedType = \\"fileUrl\\";
+"export type DraggedType = \\"fileUrl\\" | \\"image\\" | \\"string\\";
 export type DraggedTypesType = DraggedType | $ReadOnlyArray<DraggedType>;
 declare module.exports: { DraggedTypes: $FlowFixMe };
 "
@@ -4212,9 +4190,9 @@ export type ViewPropsIOS = $ReadOnly<{
   shouldRasterizeIOS?: ?boolean,
 }>;
 type MacOSViewProps = $ReadOnly<{|
-  onDragEnter?: (event: MouseEvent) => void,
-  onDragLeave?: (event: MouseEvent) => void,
-  onDrop?: (event: MouseEvent) => void,
+  onDragEnter?: (event: DragEvent) => void,
+  onDragLeave?: (event: DragEvent) => void,
+  onDrop?: (event: DragEvent) => void,
   tooltip?: ?string,
   acceptsFirstMouse?: ?boolean,
   mouseDownCanMoveWindow?: ?boolean,
@@ -8486,21 +8464,21 @@ export interface NativePointerEvent extends NativeMouseEvent {
 }
 export type PointerEvent = NativeSyntheticEvent<NativePointerEvent>;
 export type NativeTouchEvent = $ReadOnly<{
-  altKey?: ?boolean,
-  button?: ?number,
   changedTouches: $ReadOnlyArray<NativeTouchEvent>,
-  ctrlKey?: ?boolean,
   force?: number,
   identifier: number,
   locationX: number,
   locationY: number,
-  metaKey?: ?boolean,
   pageX: number,
   pageY: number,
-  shiftKey?: ?boolean,
   target: ?number,
   timestamp: number,
   touches: $ReadOnlyArray<NativeTouchEvent>,
+  ctrlKey?: ?boolean,
+  altKey?: ?boolean,
+  shiftKey?: ?boolean,
+  metaKey?: ?boolean,
+  button?: ?number,
 }>;
 export type GestureResponderEvent = ResponderSyntheticEvent<NativeTouchEvent>;
 export type NativeScrollRectangle = $ReadOnly<{
@@ -8513,30 +8491,6 @@ export type NativeScrollPoint = $ReadOnly<{
   y: number,
   x: number,
 }>;
-export type KeyEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
-    capsLockKey: boolean,
-    shiftKey: boolean,
-    ctrlKey: boolean,
-    altKey: boolean,
-    metaKey: boolean,
-    numericPadKey: boolean,
-    helpKey: boolean,
-    functionKey: boolean,
-    ArrowLeft: boolean,
-    ArrowRight: boolean,
-    ArrowUp: boolean,
-    ArrowDown: boolean,
-    key: string,
-  |}>,
->;
-export type HandledKeyEvent = $ReadOnly<{|
-  altKey?: ?boolean,
-  ctrlKey?: ?boolean,
-  metaKey?: ?boolean,
-  shiftKey?: ?boolean,
-  key: string,
-|}>;
 export type NativeScrollVelocity = $ReadOnly<{
   y: number,
   x: number,
@@ -8572,6 +8526,57 @@ export type MouseEvent = NativeSyntheticEvent<
     timestamp: number,
   }>,
 >;
+export type DataTransferFile = $ReadOnly<{
+  name: string,
+  type: ?string,
+  uri: string,
+  size?: number,
+  width?: number,
+  height?: number,
+}>;
+export type DataTransferItem = $ReadOnly<{
+  kind: string,
+  type: ?string,
+}>;
+export type DataTransfer = $ReadOnly<{
+  files: $ReadOnlyArray<DataTransferFile>,
+  items: $ReadOnlyArray<DataTransferItem>,
+  types: $ReadOnlyArray<?string>,
+}>;
+export type DragEvent = NativeSyntheticEvent<
+  $ReadOnly<{
+    clientX: number,
+    clientY: number,
+    pageX: number,
+    pageY: number,
+    timestamp: number,
+    dataTransfer?: DataTransfer,
+  }>,
+>;
+export type KeyEvent = NativeSyntheticEvent<
+  $ReadOnly<{|
+    capsLockKey: boolean,
+    shiftKey: boolean,
+    ctrlKey: boolean,
+    altKey: boolean,
+    metaKey: boolean,
+    numericPadKey: boolean,
+    helpKey: boolean,
+    functionKey: boolean,
+    ArrowLeft: boolean,
+    ArrowRight: boolean,
+    ArrowUp: boolean,
+    ArrowDown: boolean,
+    key: string,
+  |}>,
+>;
+export type HandledKeyEvent = $ReadOnly<{|
+  ctrlKey?: ?boolean,
+  altKey?: ?boolean,
+  shiftKey?: ?boolean,
+  metaKey?: ?boolean,
+  key: string,
+|}>;
 "
 `;
 

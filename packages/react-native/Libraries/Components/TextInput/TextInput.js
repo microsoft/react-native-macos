@@ -11,7 +11,10 @@
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {____TextStyle_Internal as TextStyleInternal} from '../../StyleSheet/StyleSheetTypes';
 import type {
+  DataTransfer,
   GestureResponderEvent,
+  KeyEvent, // [macOS]
+  HandledKeyEvent, // [macOS]
   NativeSyntheticEvent,
   ScrollEvent,
 } from '../../Types/CoreEventTypes';
@@ -143,20 +146,7 @@ export type SettingChangeEvent = NativeSyntheticEvent<
 
 export type PasteEvent = NativeSyntheticEvent<
   $ReadOnly<{|
-    dataTransfer: {|
-      files: $ReadOnlyArray<{|
-        height: number,
-        size: number,
-        type: string,
-        uri: string,
-        width: number,
-      |}>,
-      items: $ReadOnlyArray<{|
-        kind: string,
-        type: string,
-      |}>,
-      types: $ReadOnlyArray<string>,
-    |},
+    dataTransfer: DataTransfer,
   |}>,
 >;
 
@@ -1134,6 +1124,34 @@ export type TextInputProps = $ReadOnly<{
    * unwanted edits without flicker.
    */
   value?: ?Stringish,
+
+  // [macOS
+  /**
+   * An array of key events that should be handled by the TextInput.
+   * When a key event matches one of these specifications, event propagation will be stopped.
+   * @platform macos
+   */
+  keyDownEvents?: ?$ReadOnlyArray<HandledKeyEvent>,
+
+  /**
+   * An array of key events that should be handled by the TextInput.
+   * When a key event matches one of these specifications, event propagation will be stopped.
+   * @platform macos
+   */
+  keyUpEvents?: ?$ReadOnlyArray<HandledKeyEvent>,
+
+  /**
+   * Callback that is called when a key is pressed down.
+   * @platform macos
+   */
+  onKeyDown?: ?(e: KeyEvent) => mixed,
+
+  /**
+   * Callback that is called when a key is released.
+   * @platform macos
+   */
+  onKeyUp?: ?(e: KeyEvent) => mixed,
+  // macOS]
 }>;
 
 type ViewCommands = $NonMaybeType<
@@ -1640,6 +1658,50 @@ function InternalTextInput(props: TextInputProps): React.Node {
     props.onScroll && props.onScroll(event);
   };
 
+  // [macOS
+  const _onKeyDown = (event: KeyEvent) => {
+    const keyDownEvents = props.keyDownEvents;
+    if (keyDownEvents != null && !event.isPropagationStopped()) {
+      const isHandled = keyDownEvents.some(
+        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+          return (
+            event.nativeEvent.key === key &&
+            Boolean(metaKey) === event.nativeEvent.metaKey &&
+            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+            Boolean(altKey) === event.nativeEvent.altKey &&
+            Boolean(shiftKey) === event.nativeEvent.shiftKey
+          );
+        },
+      );
+      if (isHandled === true) {
+        event.stopPropagation();
+      }
+    }
+    props.onKeyDown?.(event);
+  };
+
+  const _onKeyUp = (event: KeyEvent) => {
+    const keyUpEvents = props.keyUpEvents;
+    if (keyUpEvents != null && !event.isPropagationStopped()) {
+      const isHandled = keyUpEvents.some(
+        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+          return (
+            event.nativeEvent.key === key &&
+            Boolean(metaKey) === event.nativeEvent.metaKey &&
+            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+            Boolean(altKey) === event.nativeEvent.altKey &&
+            Boolean(shiftKey) === event.nativeEvent.shiftKey
+          );
+        },
+      );
+      if (isHandled === true) {
+        event.stopPropagation();
+      }
+    }
+    props.onKeyUp?.(event);
+  };
+  // macOS]
+
   let textInput = null;
 
   const multiline = props.multiline ?? false;
@@ -1795,8 +1857,9 @@ function InternalTextInput(props: TextInputProps): React.Node {
         onChange={_onChange}
         onContentSizeChange={props.onContentSizeChange}
         onFocus={_onFocus}
-        onKeyDown={props.onKeyDown} // [macOS]
-        onKeyUp={props.onKeyUp} // [macOS]
+        // $FlowFixMe[exponential-spread]
+        {...(otherProps.onKeyDown && {onKeyDown: _onKeyDown})} // [macOS]
+        {...(otherProps.onKeyUp && {onKeyUp: _onKeyUp})} // [macOS]
         onScroll={_onScroll}
         onSelectionChange={_onSelectionChange}
         onSelectionChangeShouldSetResponder={emptyFunctionThatReturnsTrue}
