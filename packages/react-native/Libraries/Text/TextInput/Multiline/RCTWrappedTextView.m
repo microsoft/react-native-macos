@@ -58,17 +58,14 @@
     [self addSubview:_scrollView];
     
     // a register for those notifications on the content view.
-  #if !TARGET_OS_OSX // [macOS]
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(boundsDidChange:)
                                                  name:NSViewBoundsDidChangeNotification
                                                object:_scrollView.contentView];
-  #else // [macOS
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(scrollViewDidScroll:)
                                                  name:NSViewBoundsDidChangeNotification
                                                object:_scrollView.contentView];
-  #endif // macOS]
   }
 
   return self;
