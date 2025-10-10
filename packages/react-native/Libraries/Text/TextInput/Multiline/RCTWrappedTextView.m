@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Microsoft Corporation.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-#if TARGET_OS_OSX // [macOS
+ // [macOS]
+
+#if TARGET_OS_OSX
 
 #import <React/RCTWrappedTextView.h>
 
@@ -185,10 +187,10 @@
 // This method is there to match the textContainerInset property on RCTUITextField
 - (void)setTextContainerInset:(UIEdgeInsets)textContainerInsets
 {
-  // RCTUITextView has logic in setTextContainerInset[s] to convert th UIEdgeInsets to a valid NSSize struct
+  // RCTUITextView has logic in setTextContainerInset[s] to convert the UIEdgeInsets to a valid NSSize struct
   _forwardingTextView.textContainerInsets = textContainerInsets;
 }
 
 @end
 
-#endif // macOS]
+#endif // TARGET_OS_OSX

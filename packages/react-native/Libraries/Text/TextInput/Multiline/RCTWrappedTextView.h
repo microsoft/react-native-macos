@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Microsoft Corporation.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-#if TARGET_OS_OSX // [macOS
+// [macOS]
+
+#if TARGET_OS_OSX 
 
 #import <React/RCTUIKit.h>
 
@@ -25,4 +27,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-#endif // macOS]
+#endif // TARGET_OS_OSX
