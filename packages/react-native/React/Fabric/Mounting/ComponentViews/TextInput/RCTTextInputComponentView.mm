@@ -16,6 +16,9 @@
 #import <React/RCTUITextField.h>
 #import <React/RCTUITextView.h>
 #import <React/RCTUtils.h>
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTWrappedTextView.h>
+#endif // macOS]
 
 #import "RCTConversions.h"
 #import "RCTTextInputNativeCommands.h"
@@ -86,7 +89,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     const auto &defaultProps = TextInputShadowNode::defaultSharedProps();
     _props = defaultProps;
 
+#if !TARGET_OS_OSX // [macOS]
     _backedTextInputView = defaultProps->multiline ? [RCTUITextView new] : [RCTUITextField new];
+#else // [macOS
+    _backedTextInputView = defaultProps->multiline ? [[RCTWrappedTextView alloc] initWithFrame:self.bounds] : [RCTUITextField new];
+#endif // macOS]
     _backedTextInputView.textInputDelegate = self;
     _ignoreNextTextInputCall = NO;
     _comingFromJS = NO;
@@ -672,7 +679,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [_backedTextInputView resignFirstResponder];
 #else // [macOS
   NSWindow *window = [_backedTextInputView window];
-  if ([window firstResponder] == _backedTextInputView) {
+  if ([window firstResponder] == _backedTextInputView.responder) {
     [window makeFirstResponder:nil];
   }
 #endif // macOS]
@@ -967,7 +974,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
   RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new];
 #else // [macOS
-  RCTUITextView<RCTBackedTextInputViewProtocol> *backedTextInputView = [RCTUITextView new];
+  RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTWrappedTextView new] : [RCTUITextField new];
 #endif // macOS]
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
