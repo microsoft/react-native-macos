@@ -11,12 +11,14 @@
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
 #import <ranges>
+#if TARGET_OS_OSX // [macOS
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif // macOS]
 
 #import <React/RCTAssert.h>
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTBoxShadow.h>
 #import <React/RCTConversions.h>
-#import <React/RCTCursor.h> // [macOS]
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
@@ -29,6 +31,12 @@
 #ifdef RCT_DYNAMIC_FRAMEWORKS
 #import <React/RCTComponentViewFactory.h>
 #endif
+
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTCursor.h>
+#import <React/RCTViewKeyboardEvent.h>
+#import <React/RCTUtils.h>
+#endif // macOS]
 
 using namespace facebook::react;
 
@@ -45,6 +53,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   BOOL _needsInvalidateLayer;
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
+#if TARGET_OS_OSX // [macOS
+  BOOL _hasMouseOver;
+  BOOL _hasClipViewBoundsObserver;
+  NSTrackingArea *_trackingArea;
+#endif // macOS]
   NSMutableArray<RCTUIView *> *_reactSubviews; // [macOS]
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
   RCTPlatformView *_containerView; // [macOS]
@@ -579,6 +592,39 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     needsInvalidateLayer = YES;
   }
 
+#if TARGET_OS_OSX // [macOS
+    // `draggedTypes`
+  if (oldViewProps.draggedTypes != newViewProps.draggedTypes) {
+    if (!oldViewProps.draggedTypes.empty()) {
+      [self unregisterDraggedTypes];
+    }
+
+    if (!newViewProps.draggedTypes.empty()) {
+      NSMutableArray<NSPasteboardType> *pasteboardTypes = [NSMutableArray arrayWithCapacity:newViewProps.draggedTypes.size()];
+      for (const auto &draggedType : newViewProps.draggedTypes) {
+        if (draggedType == "fileUrl") {
+          [pasteboardTypes addObject:NSFilenamesPboardType];
+        } else if (draggedType == "image") {
+          [pasteboardTypes addObject:NSPasteboardTypePNG];
+          [pasteboardTypes addObject:NSPasteboardTypeTIFF];
+        } else if (draggedType == "string") {
+          [pasteboardTypes addObject:NSPasteboardTypeString];
+        }
+      }
+      [self registerForDraggedTypes:pasteboardTypes];
+    }
+  }
+
+  // `tooltip`
+  if (oldViewProps.tooltip != newViewProps.tooltip) {
+    if (newViewProps.tooltip.has_value()) {
+      self.toolTip = RCTNSStringFromStringNilIfEmpty(newViewProps.tooltip.value());
+    } else {
+      self.toolTip = nil;
+    }
+  }
+#endif // macOS]
+
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
 
   _props = std::static_pointer_cast<const ViewProps>(props);
@@ -641,6 +687,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   _needsInvalidateLayer = NO;
   [self invalidateLayer];
+
+#if TARGET_OS_OSX // [macOS
+  [self updateTrackingAreas];
+  [self updateClipViewBoundsObserverIfNeeded];
+#endif // macOS]
 }
 
 - (void)prepareForRecycle
@@ -1597,7 +1648,371 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   
   return YES;
 }
+
+#pragma mark - Keyboard Events
+
+- (BOOL)handleKeyboardEvent:(NSEvent *)event {
+  RCTAssert(
+    event.type == NSEventTypeKeyDown || event.type == NSEventTypeKeyUp,
+    @"Keyboard event must be keyDown, keyUp. Got type: %ld", (long)event.type);
+
+  // Convert the event to a KeyEvent
+  NSEventModifierFlags modifierFlags = event.modifierFlags;
+  facebook::react::KeyEvent keyEvent = {
+    .key = [[RCTViewKeyboardEvent keyFromEvent:event] UTF8String],
+    .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+    .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+    .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+    .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+    .capsLockKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCapsLock),
+    .numericPadKey = static_cast<bool>(modifierFlags & NSEventModifierFlagNumericPad),
+    .helpKey = static_cast<bool>(modifierFlags & NSEventModifierFlagHelp),
+    .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
+  };
+
+  if (_eventEmitter) {
+    // Emit the event to JS only once. By default, events, will bubble up the respnder chain
+    // when we call super, so let's emit the event only at the first responder. It would be
+    // simpler to check `if (self == self.window.firstResponder), however, that does not account
+    // for cases like TextInputComponentView, where the first responder may be a subview.
+    static const char kRCTViewKeyboardEventEmittedKey = 0;
+    NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
+    BOOL alreadyEmitted = [emitted boolValue];
+    if (!alreadyEmitted) {
+      if (event.type == NSEventTypeKeyDown) {
+        _eventEmitter->onKeyDown(keyEvent);
+      } else {
+        _eventEmitter->onKeyUp(keyEvent);
+      }
+      objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+  }
+
+  // If keyDownEvents or keyUpEvents specifies the event, block native handling of the event
+  auto const& handledKeyEvents = event.type == NSEventTypeKeyDown ? _props->keyDownEvents : _props->keyUpEvents;
+  return std::find(handledKeyEvents.cbegin(), handledKeyEvents.cend(), keyEvent) != handledKeyEvents.cend();
+}
+
+- (void)keyDown:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyDown:event];
+  }
+}
+
+- (void)keyUp:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyUp:event];
+  }
+}
+
+
+#pragma mark - Drag and Drop Events
+
+enum DragEventType {
+  DragEnter,
+  DragLeave,
+  Drop,
+};
+
+- (DataTransfer)dataTransferForPasteboard:(NSPasteboard *)pasteboard {
+  DataTransfer dataTransfer{};
+  auto &files = dataTransfer.files;
+  auto &items = dataTransfer.items;
+  auto &types = dataTransfer.types;
+
+  NSArray *fileNames = [pasteboard propertyListForType:NSFilenamesPboardType] ?: @[];
+  for (NSString *file in fileNames) {
+    NSURL *fileURL = [NSURL fileURLWithPath:file];
+    BOOL isDir = NO;
+    BOOL isValid = [[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDir] && !isDir;
+    if (isValid) {
+      
+      NSString *MIMETypeString = nil;
+      if (fileURL.pathExtension) {
+        CFStringRef fileExtension = (__bridge CFStringRef)fileURL.pathExtension;
+        CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, fileExtension, NULL);
+        if (UTI != NULL) {
+          CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass(UTI, kUTTagClassMIMEType);
+          CFRelease(UTI);
+          MIMETypeString = (__bridge_transfer NSString *)MIMEType;
+        }
+      }
+
+      NSNumber *fileSizeValue = nil;
+      NSError *fileSizeError = nil;
+      BOOL success = [fileURL getResourceValue:&fileSizeValue
+                                        forKey:NSURLFileSizeKey
+                                         error:&fileSizeError];
+
+      std::string typeString = MIMETypeString != nil ? [MIMETypeString UTF8String] : "";
+
+      DataTransferFile fileEntry = {
+        .name = fileURL.lastPathComponent ? fileURL.lastPathComponent.UTF8String : "",
+        .type = typeString,
+        .uri = fileURL.path ? fileURL.path.UTF8String : "",
+      };
+
+      if (success) {
+        fileEntry.size = fileSizeValue.intValue;
+      }
+
+      if ([MIMETypeString hasPrefix:@"image/"]) {
+        NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
+        CGImageRef cgImage = [image CGImageForProposedRect:nil context:nil hints:nil];
+        fileEntry.width = static_cast<int>(CGImageGetWidth(cgImage));
+        fileEntry.height = static_cast<int>(CGImageGetHeight(cgImage));
+      }
+
+      files.push_back(fileEntry);
+      items.push_back({
+          .kind = "file",
+          .type = typeString,
+      });
+      types.push_back(typeString);
+    }
+  }
   
+  NSPasteboardType imageType = [pasteboard availableTypeFromArray:@[NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  if (imageType && fileNames.count == 0) {
+    NSString *MIMETypeString = imageType == NSPasteboardTypePNG ?[UTTypePNG preferredMIMEType] : [UTTypeTIFF preferredMIMEType];
+    NSData *imageData = [pasteboard dataForType:imageType];
+    NSImage *image = [[NSImage alloc] initWithData:imageData];
+    CGImageRef cgImage = [image CGImageForProposedRect:nil context:nil hints:nil];
+    
+    NSString *dataURLString = RCTDataURL(MIMETypeString, imageData).absoluteString;
+    std::string typeString = MIMETypeString != nil ? [MIMETypeString UTF8String] : "";
+    
+    DataTransferFile fileEntry = {
+      .name = "",
+      .type = typeString,
+      .uri = dataURLString ? dataURLString.UTF8String : "",
+    };
+
+    fileEntry.size = static_cast<int>(imageData.length);
+    fileEntry.width = static_cast<int>(CGImageGetWidth(cgImage));
+    fileEntry.height = static_cast<int>(CGImageGetHeight(cgImage));
+
+    files.push_back(fileEntry);
+    items.push_back({
+        .kind = "image",
+        .type = typeString,
+    });
+    types.push_back(typeString);
+  }
+  return dataTransfer;
+}
+
+- (void)emitDragEvent:(DragEventType)eventType draggingInfo:(id<NSDraggingInfo>)sender {
+  if (!_eventEmitter) {
+    return;
+  }
+  
+  NSPoint locationInWindow = sender.draggingLocation;
+  NSPasteboard *pasteboard = sender.draggingPasteboard;
+  
+  DataTransfer dataTransfer = [self dataTransferForPasteboard:pasteboard];
+
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
+
+  DragEvent dragEvent = {
+    {
+      .clientX = locationInView.x,
+      .clientY = locationInView.y,
+      .screenX = locationInWindow.x,
+      .screenY = locationInWindow.y,
+      .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+      .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+      .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+      .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+    },
+    .dataTransfer = dataTransfer,
+  };
+  
+  switch (eventType) {
+    case DragEnter:
+      _eventEmitter->onDragEnter(dragEvent);
+      break;
+    
+    case DragLeave:
+      _eventEmitter->onDragLeave(dragEvent);
+      break;
+    
+    case Drop:
+      _eventEmitter->onDrop(dragEvent);
+      break;
+  }
+}
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+  NSPasteboard *pboard = sender.draggingPasteboard;
+  NSDragOperation sourceDragMask = sender.draggingSourceOperationMask;
+
+  [self emitDragEvent:DragEnter draggingInfo:sender];
+
+  if ([pboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    if (sourceDragMask & NSDragOperationLink) {
+      return NSDragOperationLink;
+    } else if (sourceDragMask & NSDragOperationCopy) {
+      return NSDragOperationCopy;
+    }
+  }
+  return NSDragOperationNone;
+}
+
+- (void)draggingExited:(id<NSDraggingInfo>)sender
+{
+  [self emitDragEvent:DragLeave draggingInfo:sender];
+}
+
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+  [self emitDragEvent:Drop draggingInfo:sender];
+  return YES;
+}
+
+
+#pragma mark - Mouse Events
+
+- (void)emitMouseEvent {
+  if (!_eventEmitter) {
+    return;
+  }
+
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  
+  NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
+
+  MouseEvent mouseEvent = {
+    .clientX = locationInView.x,
+    .clientY = locationInView.y,
+    .screenX = locationInWindow.x,
+    .screenY = locationInWindow.y,
+    .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+    .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+    .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+    .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+  };
+  
+  if (_hasMouseOver) {
+    _eventEmitter->onMouseEnter(mouseEvent);
+  } else {
+    _eventEmitter->onMouseLeave(mouseEvent);
+  }
+}
+
+- (void)updateMouseOverIfNeeded
+{
+  // When an enclosing scrollview is scrolled using the scrollWheel or trackpad,
+  // the mouseExited: event does not get called on the view where mouseEntered: was previously called.
+  // This creates an unnatural pairing of mouse enter and exit events and can cause problems.
+  // We therefore explicitly check for this here and handle them by calling the appropriate callbacks.
+
+  BOOL hasMouseOver = _hasMouseOver;
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  BOOL insideBounds = NSPointInRect(locationInView, self.visibleRect);
+
+  // On macOS 14+ visibleRect can be larger than the view bounds
+  insideBounds &= NSPointInRect(locationInView, self.bounds);
+
+  if (hasMouseOver && !insideBounds) {
+    hasMouseOver = NO;
+  } else if (!hasMouseOver && insideBounds) {
+    // The window's frame view must be used for hit testing against `locationInWindow`
+    NSView *hitView = [self.window.contentView.superview hitTest:locationInWindow];
+    hasMouseOver = [hitView isDescendantOf:self];
+  }
+
+  if (hasMouseOver != _hasMouseOver) {
+    _hasMouseOver = hasMouseOver;
+    [self emitMouseEvent];
+  }
+}
+
+- (void)updateClipViewBoundsObserverIfNeeded
+{
+  // Subscribe to view bounds changed notification so that the view can be notified when a
+  // scroll event occurs either due to trackpad/gesture based scrolling or a scrollwheel event
+  // both of which would not cause the mouseExited to be invoked.
+
+  NSClipView *clipView = self.window ? self.enclosingScrollView.contentView : nil;
+  
+  BOOL hasMouseEventHandler =
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
+
+  if (_hasClipViewBoundsObserver && (!clipView || !hasMouseEventHandler)) {
+    _hasClipViewBoundsObserver = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NSViewBoundsDidChangeNotification
+                                                  object:nil];
+  } else if (!_hasClipViewBoundsObserver && clipView && hasMouseEventHandler) {
+    _hasClipViewBoundsObserver = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(updateMouseOverIfNeeded)
+                                                 name:NSViewBoundsDidChangeNotification
+                                               object:clipView];
+    [self updateMouseOverIfNeeded];
+  }
+}
+
+- (void)viewDidMoveToWindow
+{
+  [self updateClipViewBoundsObserverIfNeeded];
+  [super viewDidMoveToWindow];
+}
+
+- (void)updateTrackingAreas
+{
+  BOOL hasMouseEventHandler =
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
+  BOOL wouldRecreateIdenticalTrackingArea =
+    hasMouseEventHandler && _trackingArea && NSEqualRects(self.bounds, [_trackingArea rect]);
+
+  if (!wouldRecreateIdenticalTrackingArea) {
+    [self removeTrackingArea:_trackingArea];
+    if (hasMouseEventHandler) {
+      _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
+                                                   options:NSTrackingActiveAlways|NSTrackingMouseEnteredAndExited
+                                                     owner:self
+                                                  userInfo:nil];
+      [self addTrackingArea:_trackingArea];
+      [self updateMouseOverIfNeeded];
+    }
+  }
+
+  [super updateTrackingAreas];
+}
+
+- (void)mouseEntered:(NSEvent *)event
+{
+  if (_hasMouseOver) {
+    return;
+  }
+
+  // The window's frame view must be used for hit testing against `locationInWindow`
+  NSView *hitView = [self.window.contentView.superview hitTest:event.locationInWindow];
+  if (![hitView isDescendantOf:self]) {
+    return;
+  }
+
+  _hasMouseOver = YES;
+  [self emitMouseEvent];
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+  if (!_hasMouseOver) {
+    return;
+  }
+
+  _hasMouseOver = NO;
+  [self emitMouseEvent];
+}
 #endif // macOS]
 
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
@@ -1608,6 +2023,11 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 - (NSString *)componentViewName_DO_NOT_USE_THIS_IS_BROKEN
 {
   return RCTNSStringFromString([[self class] componentDescriptorProvider].name);
+}
+
+- (BOOL)wantsUpdateLayer
+{
+  return YES;
 }
 
 @end

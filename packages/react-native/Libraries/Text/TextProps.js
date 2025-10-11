@@ -146,20 +146,6 @@ export type TextPropsMacOS = {
    * @platform macos
    */
   enableFocusRing?: ?boolean,
-
-  /**
-   * This event is called when the mouse hovers over this component.
-   *
-   * @platform macos
-   */
-  onMouseEnter?: ?(event: MouseEvent) => void,
-
-  /**
-   * This event is called when the mouse moves off of this component.
-   *
-   * @platform macos
-   */
-  onMouseLeave?: ?(event: MouseEvent) => void,
 };
 // macOS]
 

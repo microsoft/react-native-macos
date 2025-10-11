@@ -13,8 +13,8 @@ import type {EdgeInsetsOrSizeProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {
   BlurEvent,
   FocusEvent,
-  // [macOS]
-  MouseEvent,
+  MouseEvent, // [macOS]
+  DragEvent, // [macOS]
   GestureResponderEvent,
   LayoutChangeEvent,
 } from '../../Types/CoreEventTypes';
@@ -36,9 +36,9 @@ export type TouchableWithoutFeedbackPropsIOS = {
   tooltip?: ?string,
   onMouseEnter?: (event: MouseEvent) => void,
   onMouseLeave?: (event: MouseEvent) => void,
-  onDragEnter?: (event: MouseEvent) => void,
-  onDragLeave?: (event: MouseEvent) => void,
-  onDrop?: (event: MouseEvent) => void,
+  onDragEnter?: (event: DragEvent) => void,
+  onDragLeave?: (event: DragEvent) => void,
+  onDrop?: (event: DragEvent) => void,
   draggedTypes?: ?DraggedTypesType,
   // macOS]
 };

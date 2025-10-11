@@ -169,12 +169,18 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 // that we can set through JS and the getter for `allowsVibrancy` can read in RCTView.
 @property (nonatomic, assign) BOOL allowsVibrancyInternal;
 
+@property (nonatomic, copy) RCTDirectEventBlock onMouseEnter;
+@property (nonatomic, copy) RCTDirectEventBlock onMouseLeave;
+@property (nonatomic, copy) RCTDirectEventBlock onDragEnter;
+@property (nonatomic, copy) RCTDirectEventBlock onDragLeave;
+@property (nonatomic, copy) RCTDirectEventBlock onDrop;
+
 // Keyboarding events
 // NOTE does not properly work with single line text inputs (most key downs). This is because those are
 // presumably handled by the window's field editor. To make it work, we'd need to look into providing
 // a custom field editor for NSTextField controls.
-@property (nonatomic, copy) RCTDirectEventBlock onKeyDown;
-@property (nonatomic, copy) RCTDirectEventBlock onKeyUp;
+@property (nonatomic, copy) RCTBubblingEventBlock onKeyDown;
+@property (nonatomic, copy) RCTBubblingEventBlock onKeyUp;
 @property (nonatomic, copy) NSArray<RCTHandledKey*> *keyDownEvents;
 @property (nonatomic, copy) NSArray<RCTHandledKey*> *keyUpEvents;
 

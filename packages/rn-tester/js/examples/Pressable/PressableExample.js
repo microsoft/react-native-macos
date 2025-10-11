@@ -127,6 +127,10 @@ function PressableFeedbackEvents() {
           onHoverOut={() => appendEvent('hoverOut')}
           onFocus={() => appendEvent('focus')}
           onBlur={() => appendEvent('blur')}
+          onDragEnter={() => appendEvent('dragEnter')}
+          onDragLeave={() => appendEvent('dragLeave')}
+          onDrop={() => appendEvent('drop')}
+          draggedTypes={'fileUrl'}
           // macOS]
           onPress={() => appendEvent('press')}
           onPressIn={() => appendEvent('pressIn')}

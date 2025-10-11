@@ -13,6 +13,7 @@ import type {ViewProps} from './ViewPropTypes';
 import TextAncestor from '../../Text/TextAncestor';
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
+import type {KeyEvent, HandledKeyEvent} from '../../Types/CoreEventTypes'; // [macOS]
 
 export type Props = ViewProps;
 
@@ -53,10 +54,6 @@ const View: component(
       importantForAccessibility,
       nativeID,
       tabIndex,
-      // [macOS
-      keyDownEvents,
-      keyUpEvents,
-      // macOS]
       ...otherProps
     }: ViewProps,
     forwardedRef,
@@ -98,6 +95,50 @@ const View: component(
       };
     }
 
+    // [macOS
+    const _onKeyDown = (event: KeyEvent) => {
+      const keyDownEvents = otherProps.keyDownEvents;
+      if (keyDownEvents != null && !event.isPropagationStopped()) {
+        const isHandled = keyDownEvents.some(
+          ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+            return (
+              event.nativeEvent.key === key &&
+              Boolean(metaKey) === event.nativeEvent.metaKey &&
+              Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+              Boolean(altKey) === event.nativeEvent.altKey &&
+              Boolean(shiftKey) === event.nativeEvent.shiftKey
+            );
+          },
+        );
+        if (isHandled === true) {
+          event.stopPropagation();
+        }
+      }
+      otherProps.onKeyDown?.(event);
+    };
+
+    const _onKeyUp = (event: KeyEvent) => {
+      const keyUpEvents = otherProps.keyUpEvents;
+      if (keyUpEvents != null && !event.isPropagationStopped()) {
+        const isHandled = keyUpEvents.some(
+          ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+            return (
+              event.nativeEvent.key === key &&
+              Boolean(metaKey) === event.nativeEvent.metaKey &&
+              Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+              Boolean(altKey) === event.nativeEvent.altKey &&
+              Boolean(shiftKey) === event.nativeEvent.shiftKey
+            );
+          },
+        );
+        if (isHandled === true) {
+          event.stopPropagation();
+        }
+      }
+      otherProps.onKeyUp?.(event);
+    };
+    // macOS]
+
     const actualView = (
       <ViewNativeComponent
         {...otherProps}
@@ -116,6 +157,9 @@ const View: component(
             : importantForAccessibility
         }
         nativeID={id ?? nativeID}
+        // $FlowFixMe[exponential-spread]
+        {...(otherProps.onKeyDown && {onKeyDown: _onKeyDown})} // [macOS]
+        {...(otherProps.onKeyUp && {onKeyUp: _onKeyUp})} // [macOS]
         ref={forwardedRef}
       />
     );

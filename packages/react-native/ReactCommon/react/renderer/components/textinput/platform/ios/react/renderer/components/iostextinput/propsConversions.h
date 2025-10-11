@@ -136,13 +136,19 @@ static TextInputTraits convertRawProp(
       sourceTraits.smartInsertDelete,
       defaultTraits.smartInsertDelete);
 
-#ifdef TARGET_OS_OSX // [macOS
+#if TARGET_OS_OSX // [macOS
   traits.grammarCheck = convertRawProp(
       context,
       rawProps,
       "grammarCheck",
       sourceTraits.grammarCheck,
       defaultTraits.grammarCheck);
+  traits.pastedTypes = convertRawProp(
+      context,
+      rawProps,
+      "pastedTypes",
+      sourceTraits.pastedTypes,
+      defaultTraits.pastedTypes);
 #endif // macOS]
 
   traits.dataDetectorTypes = convertRawProp(

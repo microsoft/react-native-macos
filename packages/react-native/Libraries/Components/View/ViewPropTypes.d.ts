@@ -13,6 +13,7 @@ import {GestureResponderHandlers} from '../../../types/public/ReactNativeRendere
 import {StyleProp} from '../../StyleSheet/StyleSheet';
 import {ViewStyle} from '../../StyleSheet/StyleSheetTypes';
 import {
+  DragEvent,
   HandledKeyEvent,
   KeyEvent,
   LayoutChangeEvent,
@@ -108,7 +109,7 @@ export interface ViewPropsAndroid {
   tabIndex?: 0 | -1 | undefined;
 }
 
-export type DraggedType = 'fileUrl';
+export type DraggedType = 'fileUrl' | 'image' | 'string';
 export type DraggedTypesType = DraggedType | DraggedType[];
 
 export interface ViewPropsMacOS {
@@ -118,9 +119,9 @@ export interface ViewPropsMacOS {
   enableFocusRing?: boolean | undefined;
   onMouseEnter?: ((event: MouseEvent) => void) | undefined;
   onMouseLeave?: ((event: MouseEvent) => void) | undefined;
-  onDragEnter?: ((event: MouseEvent) => void) | undefined;
-  onDragLeave?: ((event: MouseEvent) => void) | undefined;
-  onDrop?: ((event: MouseEvent) => void) | undefined;
+  onDragEnter?: ((event: DragEvent) => void) | undefined;
+  onDragLeave?: ((event: DragEvent) => void) | undefined;
+  onDrop?: ((event: DragEvent) => void) | undefined;
   onKeyDown?: ((event: KeyEvent) => void) | undefined;
   onKeyUp?: ((event: KeyEvent) => void) | undefined;
   keyDownEvents?: HandledKeyEvent[] | undefined;

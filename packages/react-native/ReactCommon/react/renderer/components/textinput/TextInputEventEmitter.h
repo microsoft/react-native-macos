@@ -9,6 +9,9 @@
 
 #include <react/renderer/attributedstring/AttributedString.h>
 #include <react/renderer/components/view/ViewEventEmitter.h>
+#if TARGET_OS_OSX // [macOS
+#include <react/renderer/components/view/MouseEvent.h>
+#endif // macOS]
 
 namespace facebook::react {
 
@@ -32,13 +35,19 @@ class TextInputEventEmitter : public ViewEventEmitter {
     bool autoCorrectEnabled;
     bool spellCheckEnabled;
     bool grammarCheckEnabled;
-#endif // macOS]   
+#endif // macOS]
   };
 
   struct KeyPressMetrics {
     std::string text;
     int eventCount;
   };
+  
+#if TARGET_OS_OSX // [macOS
+  struct PasteMetrics {
+    DataTransfer dataTransfer;
+  };
+#endif // macOS]
 
   void onFocus(const Metrics& textInputMetrics) const;
   void onBlur(const Metrics& textInputMetrics) const;
@@ -53,6 +62,7 @@ class TextInputEventEmitter : public ViewEventEmitter {
   void onAutoCorrectChange(const Metrics& textInputMetrics) const;
   void onSpellCheckChange(const Metrics& textInputMetrics) const;
   void onGrammarCheckChange(const Metrics& textInputMetrics) const;
+  void onPaste(const PasteMetrics& pasteMetrics) const;
  #endif // macOS]
 
  private:

@@ -12,6 +12,7 @@ import type {
   BlurEvent,
   // [macOS
   FocusEvent,
+  DragEvent,
   HandledKeyEvent,
   KeyEvent,
   GestureResponderEvent,
@@ -198,21 +199,21 @@ type PressableBaseProps = $ReadOnly<{
    *
    * @platform macos
    */
-  onDragEnter?: (event: MouseEvent) => void,
+  onDragEnter?: (event: DragEvent) => void,
 
   /**
    * Fired when a file is dragged out of the Pressable via the mouse.
    *
    * @platform macos
    */
-  onDragLeave?: (event: MouseEvent) => void,
+  onDragLeave?: (event: DragEvent) => void,
 
   /**
    * Fired when a file is dropped on the Pressable via the mouse.
    *
    * @platform macos
    */
-  onDrop?: (event: MouseEvent) => void,
+  onDrop?: (event: DragEvent) => void,
 
   /**
    * The types of dragged files that the Pressable will accept.
@@ -307,7 +308,6 @@ function Pressable(
     onKeyDown,
     onKeyUp,
     keyDownEvents,
-    keyUpEvents,
     acceptsFirstMouse,
     mouseDownCanMoveWindow,
     enableFocusRing,
@@ -355,9 +355,6 @@ function Pressable(
   const restPropsWithDefaults: React.ElementConfig<typeof View> = {
     ...restProps,
     ...android_rippleConfig?.viewProps,
-    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled, // [macOS]
-    mouseDownCanMoveWindow: false, // [macOS]
-    enableFocusRing: enableFocusRing !== false && !disabled,
     accessible: accessible !== false,
     accessibilityViewIsModal:
       restProps['aria-modal'] ?? restProps.accessibilityViewIsModal,
@@ -367,6 +364,12 @@ function Pressable(
     focusable: focusable !== false && !disabled, // macOS]
     accessibilityValue,
     hitSlop,
+    // [macOS
+    acceptsFirstMouse: acceptsFirstMouse !== false && !disabled,
+    enableFocusRing: enableFocusRing !== false && !disabled,
+    keyDownEvents: keyDownEvents ?? [{key: ' '}, {key: 'Enter'}],
+    mouseDownCanMoveWindow: false,
+    // macOS]
   };
 
   const config = useMemo(
