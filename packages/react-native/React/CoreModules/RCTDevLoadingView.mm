@@ -150,7 +150,7 @@ RCT_EXPORT_MODULE()
 #if !TARGET_OS_OSX // [macOS]
     [self->_window.rootViewController.view addSubview:self->_container];
 #else // [macOS
-    [self->_window.contentViewController.view addSubview:self->_container];
+    [self->_window.contentView addSubview:self->_container];
 #endif // macOS]
     [self->_container addSubview:self->_label];
 
@@ -175,8 +175,6 @@ RCT_EXPORT_MODULE()
       [self->_label.bottomAnchor constraintEqualToAnchor:self->_container.bottomAnchor constant:-5],
     ]];
 #else // [macOS
-    self->_window.contentView = [[NSView alloc] init];
-    [self->_window.contentView addSubview:self->_container];
     // Container constraints
     [NSLayoutConstraint activateConstraints:@[
       [self->_container.topAnchor constraintEqualToAnchor:self->_window.contentView.topAnchor],
