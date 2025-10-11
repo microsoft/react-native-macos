@@ -7,11 +7,8 @@
 
 #include "HostPlatformViewProps.h"
 
-#include <algorithm>
-
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/view/conversions.h>
-#include <react/renderer/components/view/propsConversions.h>
 #include <react/renderer/core/graphicsConversions.h>
 #include <react/renderer/core/propsConversions.h>
 
@@ -26,18 +23,9 @@ HostPlatformViewProps::HostPlatformViewProps(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
               ? sourceProps.hostPlatformEvents
               : convertRawProp(
-                    context, 
-                    rawProps,
-                    sourceProps.hostPlatformEvents,
-                    {})),
-      focusable(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.focusable
-              : convertRawProp(
                     context,
                     rawProps,
-                    "focusable",
-                    sourceProps.focusable,
+                    sourceProps.hostPlatformEvents,
                     {})),
       enableFocusRing(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
@@ -47,24 +35,15 @@ HostPlatformViewProps::HostPlatformViewProps(
                     rawProps,
                     "enableFocusRing",
                     sourceProps.enableFocusRing,
-                    {})),
-      keyDownEvents(
+                    true)),
+      focusable(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.keyDownEvents
+              ? sourceProps.focusable
               : convertRawProp(
                     context,
                     rawProps,
-                    "keyDownEvents",
-                    sourceProps.keyDownEvents,
-                    {})),
-      keyUpEvents(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.keyUpEvents
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "keyUpEvents",
-                    sourceProps.keyUpEvents,
+                    "focusable",
+                    sourceProps.focusable,
                     {})),
       draggedTypes(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
@@ -79,11 +58,29 @@ HostPlatformViewProps::HostPlatformViewProps(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
               ? sourceProps.tooltip
               : convertRawProp(
-                   context,
-                   rawProps,
-                   "tooltip",
-                   sourceProps.tooltip,
-                   {})) {}
+                    context,
+                    rawProps,
+                    "tooltip",
+                    sourceProps.tooltip,
+                    {})),
+      validKeysDown(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.validKeysDown
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "validKeysDown",
+                    sourceProps.validKeysDown,
+                    {})),
+      validKeysUp(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.validKeysUp
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "validKeysUp",
+                    sourceProps.validKeysUp,
+                    {})){};
 
 #define VIEW_EVENT_CASE_MACOS(eventType)                           \
   case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): {            \
@@ -106,24 +103,22 @@ void HostPlatformViewProps::setProp(
   // call all super::setProp methods, since multiple structs may
   // reuse the same values.
   BaseViewProps::setProp(context, hash, propName, value);
-  
+
   static auto defaults = HostPlatformViewProps{};
-  
+
   switch (hash) {
-    VIEW_EVENT_CASE_MACOS(Focus);
-    VIEW_EVENT_CASE_MACOS(Blur);
+    VIEW_EVENT_CASE_MACOS(DoubleClick);
     VIEW_EVENT_CASE_MACOS(KeyDown);
     VIEW_EVENT_CASE_MACOS(KeyUp);
     VIEW_EVENT_CASE_MACOS(MouseEnter);
     VIEW_EVENT_CASE_MACOS(MouseLeave);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(keyDownEvents);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(keyUpEvents);
     RAW_SET_PROP_SWITCH_CASE_BASIC(draggedTypes);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
     RAW_SET_PROP_SWITCH_CASE_BASIC(tooltip);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysDown);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(validKeysUp);
   }
 }
-
 
 } // namespace facebook::react

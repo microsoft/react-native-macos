@@ -119,12 +119,12 @@ const Components: Array<RNTesterModuleInfo> = [
   },
   {
     key: 'TextExample',
-    module: require('../examples/Text/TextExample.ios'),
+    module: require('../examples/Text/TextExample'),
     category: 'Basic',
   },
   {
     key: 'TextInputExample',
-    module: require('../examples/TextInput/TextInputExample.ios'),
+    module: require('../examples/TextInput/TextInputExample'),
     category: 'Basic',
   },
   {

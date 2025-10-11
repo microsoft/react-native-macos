@@ -13,9 +13,8 @@
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
 
-#import <React/RCTTouchHandler.h> // [macOS]
-
 #if TARGET_OS_OSX // [macOS
+#import <React/RCTTouchHandler.h> // [macOS]
 
 #if RCT_SUBCLASS_SECURETEXTFIELD
 #define RCTUITextFieldCell RCTUISecureTextFieldCell
@@ -575,6 +574,11 @@
   if (menu) {
     [[RCTTouchHandler touchHandlerForView:self] willShowMenuWithEvent:event];
   }
+
+  RCTHideMenuItemsWithFilterPredicate(menu, ^bool(NSMenuItem *item) {
+    // hide font menu option
+    return RCTMenuItemHasSubmenuItemWithAction(item, @selector(orderFrontFontPanel:));
+  });
 
   return menu;
 }

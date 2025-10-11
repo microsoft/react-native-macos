@@ -13,13 +13,16 @@
 namespace facebook::react::HostPlatformViewTraitsInitializer {
 
 inline bool formsStackingContext(const ViewProps& props) {
-  return false;
+  constexpr decltype(HostPlatformViewEvents::bits) mouseEventMask = {
+      (1 << (int)HostPlatformViewEvents::Offset::MouseEnter) |
+      (1 << (int)HostPlatformViewEvents::Offset::MouseLeave) |
+      (1 << (int)HostPlatformViewEvents::Offset::DoubleClick)};
+  return (props.hostPlatformEvents.bits & mouseEventMask).any() ||
+      props.tooltip;
 }
 
 inline bool formsView(const ViewProps& props) {
-  return props.focusable ||
-         props.hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
-         props.hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
+  return props.focusable;
 }
 
 } // namespace facebook::react::HostPlatformViewTraitsInitializer

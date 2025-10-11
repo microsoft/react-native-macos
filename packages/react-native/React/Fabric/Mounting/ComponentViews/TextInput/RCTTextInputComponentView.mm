@@ -13,19 +13,17 @@
 
 #import <React/RCTBackedTextInputViewProtocol.h>
 #import <React/RCTScrollViewComponentView.h>
-
 #if !TARGET_OS_OSX // [macOS]
 #import <React/RCTUITextField.h>
 #else // [macOS
 #include <React/RCTUITextField.h>
 #include <React/RCTUISecureTextField.h>
 #endif // macOS]
-
 #import <React/RCTUITextView.h>
 #import <React/RCTUtils.h>
 #if TARGET_OS_OSX // [macOS
-#import <React/RCTWrappedTextView.h>
 #import <React/RCTViewKeyboardEvent.h>
+#import <React/RCTWrappedTextView.h>
 #endif // macOS]
 
 #import "RCTConversions.h"
@@ -143,12 +141,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
       [_backedTextInputView becomeFirstResponder];
 #else // [macOS
-      NSWindow *window = [_backedTextInputView window];
+      NSWindow *window = _backedTextInputView.window;
       if (window) {
         [window makeFirstResponder:_backedTextInputView.responder];
       }
-#endif // macOS]
-      [self scrollCursorIntoView];
+#endif // [macOS]
     }
     _didMoveToWindow = YES;
 #if TARGET_OS_IOS // [macOS] [visionOS]
@@ -721,11 +718,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // [macOS]
 {
   if (_eventEmitter) {
-#if !TARGET_OS_OSX // [macOS]
-    static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetrics]);
-#else // [macOS
-    TextInputMetrics metrics = [self _textInputMetrics]; // [macOS]
 
+    TextInputEventEmitter::Metrics metrics = [self _textInputMetrics]; // [macOS]
+
+#if TARGET_OS_OSX // [macOS
     CGPoint contentOffset = scrollView.contentOffset;
     metrics.contentOffset = {contentOffset.x, contentOffset.y};
 
@@ -740,10 +736,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
     CGFloat zoomScale = scrollView.zoomScale ?: 1;
     metrics.zoomScale = zoomScale;
-
-    static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll(metrics);
 #endif // macOS]
-  }
+
+    std::static_pointer_cast<MacOSTextInputEventEmitter const>(_eventEmitter)->onScroll(metrics); // [macOS]
+}
 }
 
 #pragma mark - Native Commands
@@ -819,7 +815,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   NSInteger startPosition = MIN(start, end);
   NSInteger endPosition = MAX(start, end);
   [_backedTextInputView setSelectedTextRange:NSMakeRange(startPosition, endPosition - startPosition) notifyDelegate:YES];
-#endif // macOS]
+#endif // [macOS]
   _comingFromJS = NO;
 }
 
@@ -1010,8 +1006,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
 #else
-  NSRange selectedRange = [_backedTextInputView selectedTextRange];
+  NSRange selection = [_backedTextInputView selectedTextRange];
 #endif // macOS]
+  NSAttributedString *oldAttributedText = [_backedTextInputView.attributedText copy];
   NSInteger oldTextLength = _backedTextInputView.attributedText.string.length;
   _backedTextInputView.attributedText = attributedString;
 #if !TARGET_OS_OSX // [macOS]
@@ -1119,7 +1116,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView = secureTextEntry ? [RCTUISecureTextField new] : [RCTUITextField new];
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
-  
+
   // Copy the text field specific properties if we came from a single line input before the switch
   if ([_backedTextInputView isKindOfClass:[RCTUITextField class]]) {
     RCTUITextField *previousTextField = (RCTUITextField *)_backedTextInputView;

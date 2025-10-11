@@ -1,32 +1,22 @@
 /*
- * Copyright (c) Microsoft Corporation.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
- // [macOS]
-
-#include <react/renderer/components/view/HostPlatformViewEventEmitter.h>
-#include <react/renderer/components/view/KeyEvent.h>
+#include "HostPlatformViewEventEmitter.h"
 
 namespace facebook::react {
 
-#pragma mark - Focus Events
-
-void HostPlatformViewEventEmitter::onFocus() const {
-  dispatchEvent("focus");
-}
-
-void HostPlatformViewEventEmitter::onBlur() const {
-  dispatchEvent("blur");
-}
-
 #pragma mark - Keyboard Events
 
-static jsi::Value keyEventPayload(jsi::Runtime& runtime, const KeyEvent& event) {
+static jsi::Value keyEventPayload(
+    jsi::Runtime& runtime,
+    const KeyEvent& event) {
   auto payload = jsi::Object(runtime);
-  payload.setProperty(runtime, "key", jsi::String::createFromUtf8(runtime, event.key));
+  payload.setProperty(
+      runtime, "key", jsi::String::createFromUtf8(runtime, event.key));
   payload.setProperty(runtime, "ctrlKey", event.ctrlKey);
   payload.setProperty(runtime, "shiftKey", event.shiftKey);
   payload.setProperty(runtime, "altKey", event.altKey);
@@ -52,8 +42,9 @@ void HostPlatformViewEventEmitter::onKeyUp(const KeyEvent& keyEvent) const {
 
 #pragma mark - Mouse Events
 
-// Returns an Object instead of value as we read and modify it in dragEventPayload.
-static jsi::Object mouseEventPayload(jsi::Runtime& runtime, const MouseEvent& event) {
+static jsi::Object mouseEventPayload(
+    jsi::Runtime& runtime,
+    const MouseEvent& event) {
   auto payload = jsi::Object(runtime);
   payload.setProperty(runtime, "clientX", event.clientX);
   payload.setProperty(runtime, "clientY", event.clientY);
@@ -66,89 +57,59 @@ static jsi::Object mouseEventPayload(jsi::Runtime& runtime, const MouseEvent& ev
   return payload;
 };
 
-void HostPlatformViewEventEmitter::onMouseEnter(const MouseEvent& mouseEvent) const {
-  dispatchEvent("mouseEnter", [mouseEvent](jsi::Runtime &runtime) { 
-    return mouseEventPayload(runtime, mouseEvent); 
+void HostPlatformViewEventEmitter::onMouseEnter(
+    const MouseEvent& mouseEvent) const {
+  dispatchEvent("mouseEnter", [mouseEvent](jsi::Runtime& runtime) {
+    return mouseEventPayload(runtime, mouseEvent);
   });
 }
 
-void HostPlatformViewEventEmitter::onMouseLeave(const MouseEvent& mouseEvent) const {
-  dispatchEvent("mouseLeave", [mouseEvent](jsi::Runtime &runtime) { 
-    return mouseEventPayload(runtime, mouseEvent); 
+void HostPlatformViewEventEmitter::onMouseLeave(
+    const MouseEvent& mouseEvent) const {
+  dispatchEvent("mouseLeave", [mouseEvent](jsi::Runtime& runtime) {
+    return mouseEventPayload(runtime, mouseEvent);
+  });
+}
+
+void HostPlatformViewEventEmitter::onDoubleClick(
+    const MouseEvent& mouseEvent) const {
+  dispatchEvent("doubleClick", [mouseEvent](jsi::Runtime& runtime) {
+    return mouseEventPayload(runtime, mouseEvent);
   });
 }
 
 #pragma mark - Drag and Drop Events
 
-jsi::Value HostPlatformViewEventEmitter::dataTransferPayload(
+static jsi::Value dataTransferPayload(
     jsi::Runtime& runtime,
-    DataTransfer const& dataTransfer) {
-  const auto& files = dataTransfer.files;
-  const auto& items = dataTransfer.items;
-  const auto& types = dataTransfer.types;
-  auto filesArray = jsi::Array(runtime, files.size());
-  auto itemsArray = jsi::Array(runtime, items.size());
-  auto maxEntries = std::max(files.size(), std::max(items.size(), types.size()));
-  auto typesArray = jsi::Array(runtime, maxEntries);
-
-  for (size_t fileIndex = 0; fileIndex < files.size(); ++fileIndex) {
-    const auto& fileItem = files[fileIndex];
+    const std::vector<DataTransferItem>& dataTransferItems) {
+  auto filesArray = jsi::Array(runtime, dataTransferItems.size());
+  auto itemsArray = jsi::Array(runtime, dataTransferItems.size());
+  auto typesArray = jsi::Array(runtime, dataTransferItems.size());
+  int i = 0;
+  for (const auto& transferItem : dataTransferItems) {
     auto fileObject = jsi::Object(runtime);
-    fileObject.setProperty(runtime, "name", fileItem.name);
-    if (!fileItem.type.empty()) {
-      fileObject.setProperty(runtime, "type", fileItem.type);
-    } else {
-      fileObject.setProperty(runtime, "type", jsi::Value::null());
+    fileObject.setProperty(runtime, "name", transferItem.name);
+    fileObject.setProperty(runtime, "type", transferItem.type);
+    fileObject.setProperty(runtime, "uri", transferItem.uri);
+    if (transferItem.size.has_value()) {
+      fileObject.setProperty(runtime, "size", *transferItem.size);
     }
-    fileObject.setProperty(runtime, "uri", fileItem.uri);
-    if (fileItem.size.has_value()) {
-      fileObject.setProperty(runtime, "size", *fileItem.size);
+    if (transferItem.width.has_value()) {
+      fileObject.setProperty(runtime, "width", *transferItem.width);
     }
-    if (fileItem.width.has_value()) {
-      fileObject.setProperty(runtime, "width", *fileItem.width);
+    if (transferItem.height.has_value()) {
+      fileObject.setProperty(runtime, "height", *transferItem.height);
     }
-    if (fileItem.height.has_value()) {
-      fileObject.setProperty(runtime, "height", *fileItem.height);
-    }
-    filesArray.setValueAtIndex(runtime, static_cast<int>(fileIndex), fileObject);
-  }
+    filesArray.setValueAtIndex(runtime, i, fileObject);
 
-  for (size_t itemIndex = 0; itemIndex < items.size(); ++itemIndex) {
-    const auto& item = items[itemIndex];
     auto itemObject = jsi::Object(runtime);
-    itemObject.setProperty(runtime, "kind", item.kind);
-    if (!item.type.empty()) {
-      itemObject.setProperty(runtime, "type", item.type);
-    } else {
-      itemObject.setProperty(runtime, "type", jsi::Value::null());
-    }
-    itemsArray.setValueAtIndex(runtime, static_cast<int>(itemIndex), itemObject);
-  }
+    itemObject.setProperty(runtime, "kind", transferItem.kind);
+    itemObject.setProperty(runtime, "type", transferItem.type);
+    itemsArray.setValueAtIndex(runtime, i, itemObject);
 
-  for (size_t typeIndex = 0; typeIndex < maxEntries; ++typeIndex) {
-    if (typeIndex < types.size()) {
-      const auto& typeEntry = types[typeIndex];
-      if (!typeEntry.empty()) {
-        typesArray.setValueAtIndex(
-            runtime,
-            static_cast<int>(typeIndex),
-            jsi::String::createFromUtf8(runtime, typeEntry));
-        continue;
-      }
-    }
-
-    const std::string* fallbackType = nullptr;
-    if (typeIndex < items.size() && !items[typeIndex].type.empty()) {
-      fallbackType = &items[typeIndex].type;
-    } else if (typeIndex < files.size() && !files[typeIndex].type.empty()) {
-      fallbackType = &files[typeIndex].type;
-    }
-
-    if (fallbackType != nullptr) {
-      typesArray.setValueAtIndex(runtime, static_cast<int>(typeIndex), jsi::String::createFromUtf8(runtime, *fallbackType));
-    } else {
-      typesArray.setValueAtIndex(runtime, static_cast<int>(typeIndex), jsi::Value::null());
-    }
+    typesArray.setValueAtIndex(runtime, i, transferItem.type);
+    i++;
   }
 
   auto dataTransferObject = jsi::Object(runtime);
@@ -163,29 +124,40 @@ static jsi::Value dragEventPayload(
     jsi::Runtime& runtime,
     const DragEvent& event) {
   auto payload = mouseEventPayload(runtime, event);
-  auto dataTransferObject = HostPlatformViewEventEmitter::dataTransferPayload(
-    runtime,
-    event.dataTransfer);
+  auto dataTransferObject =
+      dataTransferPayload(runtime, event.dataTransferItems);
   payload.setProperty(runtime, "dataTransfer", dataTransferObject);
   return payload;
 }
 
-void HostPlatformViewEventEmitter::onDragEnter(DragEvent const& dragEvent) const {
-  dispatchEvent("dragEnter", [dragEvent](jsi::Runtime &runtime) {
+void HostPlatformViewEventEmitter::onDragEnter(
+    const DragEvent& dragEvent) const {
+  dispatchEvent("dragEnter", [dragEvent](jsi::Runtime& runtime) {
     return dragEventPayload(runtime, dragEvent);
   });
 }
 
-void HostPlatformViewEventEmitter::onDragLeave(DragEvent const& dragEvent) const {
-  dispatchEvent("dragLeave", [dragEvent](jsi::Runtime &runtime) {
+void HostPlatformViewEventEmitter::onDragLeave(
+    const DragEvent& dragEvent) const {
+  dispatchEvent("dragLeave", [dragEvent](jsi::Runtime& runtime) {
     return dragEventPayload(runtime, dragEvent);
   });
 }
 
-void HostPlatformViewEventEmitter::onDrop(DragEvent const& dragEvent) const {
-  dispatchEvent("drop", [dragEvent](jsi::Runtime &runtime) {
+void HostPlatformViewEventEmitter::onDrop(const DragEvent& dragEvent) const {
+  dispatchEvent("drop", [dragEvent](jsi::Runtime& runtime) {
     return dragEventPayload(runtime, dragEvent);
   });
+}
+
+#pragma mark - Focus Events
+
+void HostPlatformViewEventEmitter::onFocus() const {
+  dispatchEvent("focus");
+}
+
+void HostPlatformViewEventEmitter::onBlur() const {
+  dispatchEvent("blur");
 }
 
 } // namespace facebook::react

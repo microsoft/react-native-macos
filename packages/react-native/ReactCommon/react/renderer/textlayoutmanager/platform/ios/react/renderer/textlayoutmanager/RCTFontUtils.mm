@@ -352,7 +352,7 @@ UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
 #if !TARGET_OS_OSX // [macOS]
         fontNames = [UIFont fontNamesForFamilyName:font.familyName];
 #else // [macOS
-        fontNames = RCTFontNamesForFamilyName(font.familyName);
+        fontNames = @[];
 #endif // macOS]
         fontWeight = fontWeight ?: RCTGetFontWeight(font);
       } else {

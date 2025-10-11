@@ -9,14 +9,20 @@
 
 #import <React/RCTFrameUpdate.h>
 
+#if TARGET_OS_OSX // [macOS
+static NSString *const RCTTouchHandlerOutsideViewMouseUpNotification = @"RCTTouchHandlerOutsideViewMouseUpNotification";
+#endif // macOS]
+
 @class RCTBridge;
 
 @interface RCTTouchHandler : UIGestureRecognizer
+@property (class, nonatomic, assign) BOOL notifyOutsideViewEvents; // [macOS]
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge NS_DESIGNATED_INITIALIZER;
 
 - (void)attachToView:(RCTUIView *)view; // [macOS]
 - (void)detachFromView:(RCTUIView *)view; // [macOS]
++ (void)notifyOutsideViewMouseUp:(NSEvent *) event; // [macOS]
 
 - (void)cancel;
 
@@ -26,6 +32,7 @@
 
 - (void)willShowMenuWithEvent:(NSEvent *)event;
 - (void)cancelTouchWithEvent:(NSEvent *)event;
+- (void)willShowMenu;
 #endif // macOS]
 
 @end

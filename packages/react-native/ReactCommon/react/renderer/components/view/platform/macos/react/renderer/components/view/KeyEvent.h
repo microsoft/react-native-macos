@@ -1,11 +1,9 @@
 /*
- * Copyright (c) Microsoft Corporation.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
- // [macOS]
 
 #pragma once
 
@@ -130,7 +128,7 @@ inline void fromRawValue(
       }
     }
   } else if (value.hasType<std::string>()) {
-    result.key = static_cast<std::string>(value);
+    result.key = (std::string)value;
   }
 }
 

@@ -8,15 +8,12 @@
  * @format
  */
 
-import type {HostInstance} from '../../../src/private/types/HostInstance';
+import type {HostInstance} from '../../Renderer/shims/ReactNativeTypes';
 import type {____TextStyle_Internal as TextStyleInternal} from '../../StyleSheet/StyleSheetTypes';
 import type {
-  DataTransfer,
   GestureResponderEvent,
-  KeyEvent, // [macOS]
-  HandledKeyEvent, // [macOS]
-  NativeSyntheticEvent,
   ScrollEvent,
+  NativeSyntheticEvent,
 } from '../../Types/CoreEventTypes';
 import type {ViewProps} from '../View/ViewPropTypes';
 import type {TextInputInstance, TextInputType} from './TextInput.flow';
@@ -38,6 +35,15 @@ import invariant from 'invariant';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {useCallback, useLayoutEffect, useRef, useState} from 'react';
+
+type ReactRefSetter<T> = {current: null | T, ...} | ((ref: null | T) => mixed);
+type TextInputInstance = HostInstance & {
+  +clear: () => void,
+  +isFocused: () => boolean,
+  +getNativeRef: () => ?HostInstance,
+  +setSelection: (start: number, end: number) => void,
+  +setGhostText: (ghostText: ?string) => void, // [macOS]
+};
 
 let AndroidTextInput;
 let AndroidTextInputCommands;
@@ -116,11 +122,11 @@ export type TextInputSelectionChangeEventData = $ReadOnly<{
 export type TextInputSelectionChangeEvent =
   NativeSyntheticEvent<TextInputSelectionChangeEventData>;
 
-type TextInputKeyPressEventData = $ReadOnly<{
+export type TextInputKeyPressEventData = $ReadOnly<{
   ...TargetEvent,
   key: string,
   target?: ?number,
-  eventCount?: ?number,
+  eventCount: number,
 }>;
 
 export type TextInputKeyPressEvent =
@@ -137,27 +143,38 @@ export type TextInputEditingEvent =
 
 // [macOS macOS-only
 export type SettingChangeEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
-    autoCorrectEnabled: boolean,
-    spellCheckEnabled: boolean,
-    grammarCheckEnabled: boolean,
-  |}>,
+  $ReadOnly<{
+    enabled: boolean,
+  }>,
 >;
 
 export type PasteEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
-    dataTransfer: DataTransfer,
-  |}>,
+  $ReadOnly<{
+    dataTransfer: {
+      files: $ReadOnlyArray<{
+        height: number,
+        size: number,
+        type: string,
+        uri: string,
+        width: number,
+      }>,
+      items: $ReadOnlyArray<{
+        kind: string,
+        type: string,
+      }>,
+      types: $ReadOnlyArray<string>,
+    },
+  }>,
 >;
 
-export type SubmitKeyEvent = $ReadOnly<{|
+export type SubmitKeyEvent = $ReadOnly<{
   key: string,
   altKey?: ?boolean,
   ctrlKey?: ?boolean,
   metaKey?: ?boolean,
   shiftKey?: ?boolean,
   functionKey?: ?boolean,
-|}>;
+}>;
 // macOS]
 
 // [macOS
@@ -304,12 +321,6 @@ type PasswordRules = string;
 
 export type TextInputIOSProps = $ReadOnly<{
   /**
-   * If true, the keyboard shortcuts (undo/redo and copy buttons) are disabled. The default value is false.
-   * @platform ios
-   */
-  disableKeyboardShortcuts?: ?boolean,
-
-  /**
    * When the clear button should appear on the right side of the text view.
    * This property is supported only for single-line TextInput component.
    * @platform ios
@@ -443,7 +454,7 @@ export type TextInputIOSProps = $ReadOnly<{
 }>;
 
 // [macOS
-type MacOSProps = $ReadOnly<{|
+export type TextInputMacOSProps = $ReadOnly<{
   /**
    * If `true`, clears the text field synchronously before `onSubmitEditing` is emitted.
    *
@@ -528,7 +539,7 @@ type MacOSProps = $ReadOnly<{|
    * @platform macos
    */
   tooltip?: ?string,
-|}>;
+}>;
 // macOS]
 
 export type TextInputAndroidProps = $ReadOnly<{
@@ -624,7 +635,7 @@ export type PastedTypesType = PasteType | $ReadOnlyArray<PasteType>; // [macOS]
 export type TextInputProps = $ReadOnly<{
   ...$Diff<ViewProps, $ReadOnly<{style: ?ViewStyleProp}>>,
   ...TextInputIOSProps,
-  ...MacOSProps, // [macOS]
+  ...TextInputMacOSProps, // [macOS]
   ...TextInputAndroidProps,
 
   /**
@@ -1124,34 +1135,6 @@ export type TextInputProps = $ReadOnly<{
    * unwanted edits without flicker.
    */
   value?: ?Stringish,
-
-  // [macOS
-  /**
-   * An array of key events that should be handled by the TextInput.
-   * When a key event matches one of these specifications, event propagation will be stopped.
-   * @platform macos
-   */
-  keyDownEvents?: ?$ReadOnlyArray<HandledKeyEvent>,
-
-  /**
-   * An array of key events that should be handled by the TextInput.
-   * When a key event matches one of these specifications, event propagation will be stopped.
-   * @platform macos
-   */
-  keyUpEvents?: ?$ReadOnlyArray<HandledKeyEvent>,
-
-  /**
-   * Callback that is called when a key is pressed down.
-   * @platform macos
-   */
-  onKeyDown?: ?(e: KeyEvent) => mixed,
-
-  /**
-   * Callback that is called when a key is released.
-   * @platform macos
-   */
-  onKeyUp?: ?(e: KeyEvent) => mixed,
-  // macOS]
 }>;
 
 type ViewCommands = $NonMaybeType<
@@ -1183,8 +1166,8 @@ function useTextInputStateSynchronization_STATE({
   props: TextInputProps,
   mostRecentEventCount: number,
   selection: ?Selection,
-  inputRef: React.RefObject<null | TextInputInstance>,
-  text?: string,
+  inputRef: React.RefObject<null | HostInstance>,
+  text: string,
   viewCommands: ViewCommands,
 }): {
   setLastNativeText: string => void,
@@ -1264,8 +1247,8 @@ function useTextInputStateSynchronization_REFS({
   props: TextInputProps,
   mostRecentEventCount: number,
   selection: ?Selection,
-  inputRef: React.RefObject<null | TextInputInstance>,
-  text?: string,
+  inputRef: React.RefObject<null | HostInstance>,
+  text: string,
   viewCommands: ViewCommands,
 }): {
   setLastNativeText: string => void,
@@ -1477,7 +1460,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
     ...otherProps
   } = props;
 
-  const inputRef = useRef<null | TextInputInstance>(null);
+  const inputRef = useRef<null | HostInstance>(null);
 
   const selection: ?Selection =
     propsSelection == null
@@ -1572,13 +1555,6 @@ function InternalTextInput(props: TextInputProps): React.Node {
               );
             }
           },
-          // TODO: Fix this returning true on null === null, when no input is focused
-          isFocused(): boolean {
-            return TextInputState.currentlyFocusedInput() === inputRef.current;
-          },
-          getNativeRef(): ?TextInputInstance {
-            return inputRef.current;
-          },
           setSelection(start: number, end: number): void {
             if (inputRef.current != null) {
               viewCommands.setTextAndSelection(
@@ -1589,6 +1565,13 @@ function InternalTextInput(props: TextInputProps): React.Node {
                 end,
               );
             }
+          },
+          // TODO: Fix this returning true on null === null, when no input is focused
+          isFocused(): boolean {
+            return TextInputState.currentlyFocusedInput() === inputRef.current;
+          },
+          getNativeRef(): ?HostInstance {
+            return inputRef.current;
           },
           // [macOS
           setGhostText(ghostText: ?string): void {
@@ -2043,6 +2026,7 @@ const autoCompleteWebToTextContentTypeMap = {
 const ExportedForwardRef: component(
   ref: React.RefSetter<TextInputInstance>,
   ...props: React.ElementConfig<typeof InternalTextInput>
+  // $FlowFixMe[incompatible-call]
 ) = React.forwardRef(function TextInput(
   {
     allowFontScaling = true,
@@ -2120,8 +2104,6 @@ export type TextInputComponentStatics = $ReadOnly<{
     currentlyFocusedField: typeof TextInputState.currentlyFocusedField,
     focusTextInput: typeof TextInputState.focusTextInput,
     blurTextInput: typeof TextInputState.blurTextInput,
-    onTextInputFocus: typeof TextInputState.focusInput, // [macOS]
-    onTextInputBlur: typeof TextInputState.blurInput, // [macOS]
   }>,
 }>;
 

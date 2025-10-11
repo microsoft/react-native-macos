@@ -27,9 +27,8 @@
 
 using namespace facebook::react;
 
-#if TARGET_OS_OSX // [macOS
-static NSString *sRCTAppDelegateMainWindowFrameAutoSaveName = @"RCTAppDelegateMainWindow";
-#endif // macOS]
+@interface RCTAppDelegate () <RCTComponentViewFactoryComponentProvider, RCTHostDelegate>
+@end
 
 @implementation RCTAppDelegate
 
@@ -119,7 +118,140 @@ static NSString *sRCTAppDelegateMainWindowFrameAutoSaveName = @"RCTAppDelegateMa
 
 - (void)setBridgeAdapter:(RCTSurfacePresenterBridgeAdapter *)bridgeAdapter
 {
-  self.reactNativeFactory.rootViewFactory.bridgeAdapter = bridgeAdapter;
+  self.rootViewFactory.bridgeAdapter = bridgeAdapter;
+}
+
+#pragma mark - RCTTurboModuleManagerDelegate
+
+- (Class)getModuleClassFromName:(const char *)name
+{
+#if RN_DISABLE_OSS_PLUGIN_HEADER
+  return RCTTurboModulePluginClassProvider(name);
+#else
+  return RCTCoreModulesClassProvider(name);
+#endif
+}
+
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
+                                                      jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
+{
+  return facebook::react::DefaultTurboModules::getTurboModule(name, jsInvoker);
+}
+
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
+                                                     initParams:
+                                                         (const facebook::react::ObjCTurboModule::InitParams &)params
+{
+  return nullptr;
+}
+
+- (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass
+{
+  return RCTAppSetupDefaultModuleFromClass(moduleClass);
+}
+
+#pragma mark - RCTComponentViewFactoryComponentProvider
+
+- (NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents
+{
+  return @{};
+}
+
+- (RCTRootViewFactory *)createRCTRootViewFactory
+{
+  __weak __typeof(self) weakSelf = self;
+  RCTBundleURLBlock bundleUrlBlock = ^{
+    RCTAppDelegate *strongSelf = weakSelf;
+    return strongSelf.bundleURL;
+  };
+
+  RCTRootViewFactoryConfiguration *configuration =
+      [[RCTRootViewFactoryConfiguration alloc] initWithBundleURLBlock:bundleUrlBlock
+                                                       newArchEnabled:self.fabricEnabled
+                                                   turboModuleEnabled:self.turboModuleEnabled
+                                                    bridgelessEnabled:self.bridgelessEnabled];
+
+  configuration.createRootViewWithBridge = ^RCTPlatformView *(RCTBridge *bridge, NSString *moduleName, NSDictionary *initProps) { // [macOS]
+    return [weakSelf createRootViewWithBridge:bridge moduleName:moduleName initProps:initProps];
+  };
+
+  configuration.createBridgeWithDelegate = ^RCTBridge *(id<RCTBridgeDelegate> delegate, NSDictionary *launchOptions) {
+    return [weakSelf createBridgeWithDelegate:delegate launchOptions:launchOptions];
+  };
+
+  configuration.customizeRootView = ^(RCTPlatformView *_Nonnull rootView) { // [macOS]
+    [weakSelf customizeRootView:(RCTRootView *)rootView];
+  };
+
+  configuration.sourceURLForBridge = ^NSURL *_Nullable(RCTBridge *_Nonnull bridge)
+  {
+    return [weakSelf sourceURLForBridge:bridge];
+  };
+
+  configuration.hostDidStartBlock = ^(RCTHost *_Nonnull host) {
+    [weakSelf hostDidStart:host];
+  };
+
+  configuration.hostDidReceiveJSErrorStackBlock =
+      ^(RCTHost *_Nonnull host,
+        NSArray<NSDictionary<NSString *, id> *> *_Nonnull stack,
+        NSString *_Nonnull message,
+        NSUInteger exceptionId,
+        BOOL isFatal) {
+        [weakSelf host:host didReceiveJSErrorStack:stack message:message exceptionId:exceptionId isFatal:isFatal];
+      };
+
+  if ([self respondsToSelector:@selector(extraModulesForBridge:)]) {
+    configuration.extraModulesForBridge = ^NSArray<id<RCTBridgeModule>> *_Nonnull(RCTBridge *_Nonnull bridge)
+    {
+      return [weakSelf extraModulesForBridge:bridge];
+    };
+  }
+
+  if ([self respondsToSelector:@selector(extraLazyModuleClassesForBridge:)]) {
+    configuration.extraLazyModuleClassesForBridge =
+        ^NSDictionary<NSString *, Class> *_Nonnull(RCTBridge *_Nonnull bridge)
+    {
+      return [weakSelf extraLazyModuleClassesForBridge:bridge];
+    };
+  }
+
+  if ([self respondsToSelector:@selector(bridge:didNotFindModule:)]) {
+    configuration.bridgeDidNotFindModule = ^BOOL(RCTBridge *_Nonnull bridge, NSString *_Nonnull moduleName) {
+      return [weakSelf bridge:bridge didNotFindModule:moduleName];
+    };
+  }
+
+  return [[RCTRootViewFactory alloc] initWithConfiguration:configuration andTurboModuleManagerDelegate:self];
+}
+
+#pragma mark - Feature Flags
+
+class RCTAppDelegateBridgelessFeatureFlags : public ReactNativeFeatureFlagsDefaults {
+ public:
+  bool enableBridgelessArchitecture() override
+  {
+    return true;
+  }
+  bool enableFabricRenderer() override
+  {
+    return true;
+  }
+  bool useTurboModules() override
+  {
+    return true;
+  }
+  bool useNativeViewConfigsInBridgelessMode() override
+  {
+    return true;
+  }
+};
+
+- (void)_setUpFeatureFlags
+{
+  if ([self bridgelessEnabled]) {
+    facebook::react::ReactNativeFeatureFlags::override(std::make_unique<RCTAppDelegateBridgelessFeatureFlags>());
+  }
 }
 
 @end

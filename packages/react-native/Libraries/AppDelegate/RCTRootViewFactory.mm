@@ -262,16 +262,11 @@
 
 - (std::shared_ptr<facebook::react::JSRuntimeFactory>)createJSRuntimeFactory
 {
-  if (_configuration.jsRuntimeConfiguratorDelegate == nil) {
-    [NSException raise:@"RCTReactNativeFactoryDelegate::createJSRuntimeFactory not implemented"
-                format:@"Delegate must implement a valid createJSRuntimeFactory method"];
-    return nullptr;
-  }
-
-  auto jsRuntimeFactory = [_configuration.jsRuntimeConfiguratorDelegate createJSRuntimeFactory];
-
-  return std::shared_ptr<facebook::react::JSRuntimeFactory>(
-      reinterpret_cast<facebook::react::JSRuntimeFactory *>(jsRuntimeFactory), &js_runtime_factory_destroy);
+#if USE_HERMES
+  return std::make_shared<facebook::react::RCTHermesInstance>(nullptr, /* allocInOldGenBeforeTTI */ false);
+#else
+  return std::make_shared<facebook::react::RCTJscInstance>();
+#endif
 }
 
 - (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge

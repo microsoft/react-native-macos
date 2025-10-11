@@ -7,9 +7,9 @@
 
 #pragma once
 
+#include <react/renderer/components/iostextinput/MacOSTextInputEventEmitter.h>
 #include <react/renderer/components/iostextinput/TextInputProps.h>
 #include <react/renderer/components/textinput/BaseTextInputShadowNode.h>
-#include <react/renderer/components/textinput/TextInputEventEmitter.h>
 #include <react/renderer/components/textinput/TextInputState.h>
 
 namespace facebook::react {
@@ -22,7 +22,7 @@ extern const char TextInputComponentName[];
 class TextInputShadowNode final : public BaseTextInputShadowNode<
                                       TextInputComponentName,
                                       TextInputProps,
-                                      TextInputEventEmitter,
+                                      MacOSTextInputEventEmitter,
                                       TextInputState> {
  public:
   using BaseTextInputShadowNode::BaseTextInputShadowNode;

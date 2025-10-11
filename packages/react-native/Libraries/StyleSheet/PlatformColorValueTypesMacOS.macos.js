@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -14,11 +14,6 @@
 
 import type {ColorValue} from './StyleSheet';
 
-import {
-  ColorWithSystemEffectMacOSPrivate,
-  DynamicColorMacOSPrivate,
-} from './PlatformColorValueTypes.macos';
-
 export type DynamicColorMacOSTuple = {
   light: ColorValue,
   dark: ColorValue,
@@ -29,12 +24,7 @@ export type DynamicColorMacOSTuple = {
 export const DynamicColorMacOS = (
   tuple: DynamicColorMacOSTuple,
 ): ColorValue => {
-  return DynamicColorMacOSPrivate({
-    light: tuple.light,
-    dark: tuple.dark,
-    highContrastLight: tuple.highContrastLight,
-    highContrastDark: tuple.highContrastDark,
-  });
+  throw new Error('DynamicColorMacOS is not available on this platform.');
 };
 
 export type SystemEffectMacOS =
@@ -48,5 +38,7 @@ export const ColorWithSystemEffectMacOS = (
   color: ColorValue,
   effect: SystemEffectMacOS,
 ): ColorValue => {
-  return ColorWithSystemEffectMacOSPrivate(color, effect);
+  throw new Error(
+    'ColorWithSystemEffectMacOS is not available on this platform.',
+  );
 };

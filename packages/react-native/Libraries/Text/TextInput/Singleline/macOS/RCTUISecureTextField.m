@@ -5,10 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// [macOS]
-
-#if TARGET_OS_OSX
 #define RCT_SUBCLASS_SECURETEXTFIELD 1
-#endif
 
 #include "../RCTUITextField.mm"

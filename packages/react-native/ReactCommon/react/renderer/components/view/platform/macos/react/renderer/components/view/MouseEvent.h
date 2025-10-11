@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/renderer/graphics/Geometry.h>
+#include <react/renderer/graphics/Float.h>
 
 namespace facebook::react {
 
@@ -19,7 +19,7 @@ struct MouseEvent {
    * Pointer horizontal location in target view.
    */
   Float clientX{0};
-  
+
   /**
    * Pointer vertical location in target view.
    */
@@ -29,7 +29,7 @@ struct MouseEvent {
    * Pointer horizontal location in window.
    */
   Float screenX{0};
-  
+
   /**
    * Pointer vertical location in window.
    */
@@ -56,8 +56,9 @@ struct MouseEvent {
   bool metaKey{false};
 };
 
-struct DataTransferFile {
+struct DataTransferItem {
   std::string name{};
+  std::string kind{};
   std::string type{};
   std::string uri{};
   std::optional<int> size{};
@@ -65,19 +66,8 @@ struct DataTransferFile {
   std::optional<int> height{};
 };
 
-struct DataTransferItem {
-  std::string kind{};
-  std::string type{};
-};
-
-struct DataTransfer {
-  std::vector<DataTransferFile> files{};
-  std::vector<DataTransferItem> items{};
-  std::vector<std::string> types{};
-};
-
 struct DragEvent : MouseEvent {
-  DataTransfer dataTransfer;
+  std::vector<DataTransferItem> dataTransferItems;
 };
 
 } // namespace facebook::react

@@ -303,6 +303,31 @@ function KeyboardShortcutsExample() {
   );
 }
 
+const TextInputWithFocusButton = () => {
+  const inputToFocusRef = React.useRef<React.ElementRef<
+    typeof TextInput,
+  > | null>(null);
+  return (
+    <View>
+      <ExampleTextInput
+        ref={inputToFocusRef}
+        placeholder="height increases with content"
+        defaultValue="React Native enables you to build world-class application experiences on native platforms using a consistent developer experience based on JavaScript and React. The focus of React Native is on developer efficiency across all the platforms you care about - learn once, write anywhere. Facebook uses React Native in multiple production apps and will continue investing in React Native."
+        multiline={true}
+        enablesReturnKeyAutomatically={true}
+        returnKeyType="go"
+        style={[styles.multiline, styles.multilineExpandable]}
+      />
+      <Button
+        title="Focus"
+        onPress={() => {
+          inputToFocusRef.current?.focus();
+        }}
+      />
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   multiline: {
     height: 50,
@@ -621,6 +646,11 @@ const textInputExamples: Array<RNTesterModuleExample> = [
   {
     title: 'Multiline blur on submit',
     render: function (): React.Node {
+      const [value, setValue] = React.useState('');
+      const onSubmitEditing = React.useCallback(
+        () => Alert.alert('Alert', value),
+        [value],
+      );
       return (
         <View>
           <ExampleTextInput
@@ -629,9 +659,8 @@ const textInputExamples: Array<RNTesterModuleExample> = [
             returnKeyType="next"
             blurOnSubmit={true}
             multiline={true}
-            onSubmitEditing={event =>
-              Alert.alert('Alert', event.nativeEvent.text)
-            }
+            onChangeText={setValue}
+            onSubmitEditing={onSubmitEditing}
           />
         </View>
       );
@@ -1102,6 +1131,12 @@ if (Platform.OS === 'macos') {
     {
       title: 'Clear text on submit - Multiline Textfield',
       render: function (): React.Node {
+        const [value, setValue] = React.useState('');
+        const onSubmitEditing = React.useCallback(
+          () => Alert.alert('Alert', value),
+          [value],
+        );
+
         return (
           <View>
             <Text>Default submit key (Enter):</Text>
@@ -1109,6 +1144,8 @@ if (Platform.OS === 'macos') {
               multiline={true}
               clearTextOnSubmit={true}
               style={styles.multiline}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
             <Text>Custom submit key (Enter): - same as above</Text>
             <ExampleTextInput
@@ -1116,6 +1153,8 @@ if (Platform.OS === 'macos') {
               clearTextOnSubmit={true}
               style={styles.multiline}
               submitKeyEvents={[{key: 'Enter'}]}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
             <Text>Custom submit key (CMD + Enter):</Text>
             <ExampleTextInput
@@ -1123,6 +1162,8 @@ if (Platform.OS === 'macos') {
               clearTextOnSubmit={true}
               style={styles.multiline}
               submitKeyEvents={[{key: 'Enter', metaKey: true}]}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
             <Text>Custom submit key (Shift + Enter):</Text>
             <ExampleTextInput
@@ -1130,6 +1171,8 @@ if (Platform.OS === 'macos') {
               clearTextOnSubmit={true}
               style={styles.multiline}
               submitKeyEvents={[{key: 'Enter', shiftKey: true}]}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
           </View>
         );

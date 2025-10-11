@@ -221,6 +221,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
   textNeedsUpdate = ([self textOf:attributedTextCopy equals:backedTextInputViewTextCopy] == NO);
 
+#if TARGET_OS_OSX // [macOS
+  // If we are in a language that uses conversion (e.g. Japanese), ignore updates if we have unconverted text.
+  if ([self.backedTextInputView hasMarkedText]) {
+    textNeedsUpdate = NO;
+  }
+#endif // [macOS
+
   if ((eventLag == 0 || self.backedTextInputView.ghostTextChanging) && textNeedsUpdate) { // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     UITextRange *selection = self.backedTextInputView.selectedTextRange;
@@ -229,6 +236,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 #endif // macOS]
     NSAttributedString *oldAttributedText = [self.backedTextInputView.attributedText copy];
     NSInteger oldTextLength = oldAttributedText.string.length;
+    NSInteger oldSelectionStart = selection.location; // [macOS]
+    NSInteger oldSelectionEnd = selection.location + selection.length; // [macOS]
 
     // Ghost text changes should not be part of the undo stack
     if (!self.backedTextInputView.ghostTextChanging) {
@@ -238,6 +247,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
       [self.backedTextInputView.undoManager registerUndoWithTarget:self handler:^(RCTBaseTextInputView *strongSelf) {
         strongSelf.attributedText = oldAttributedTextWithoutGhostText;
         [strongSelf textInputDidChange];
+        [strongSelf setSelectionStart:oldSelectionStart selectionEnd:oldSelectionEnd]; // [macOS]
       }];
     }
 
@@ -315,7 +325,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   NSInteger length = end - selection.start;
   NSRange selectedTextRange = NSMakeRange(start, length);
 #endif // macOS]
-  
+
   NSInteger eventLag = _nativeEventCount - _mostRecentEventCount;
   if (eventLag == 0 && !RCTTextSelectionEqual(previousSelectedTextRange, selectedTextRange)) { // [macOS]
     [backedTextInputView setSelectedTextRange:selectedTextRange notifyDelegate:NO];
@@ -341,7 +351,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 #else // [macOS
   NSInteger startPosition = MIN(start, end);
   NSInteger endPosition = MAX(start, end);
-  [self.backedTextInputView setSelectedTextRange:NSMakeRange(startPosition, endPosition - startPosition) notifyDelegate:NO];
+  [self.backedTextInputView setSelectedTextRange:NSMakeRange(startPosition, endPosition - startPosition) notifyDelegate:YES];
 #endif // macOS]
 }
 
@@ -605,7 +615,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
       }
     }
   }
-  
+
   if (shouldSubmit) {
     if (_onSubmitEditing) {
       _onSubmitEditing(@{});
@@ -706,7 +716,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
         [backedTextInputView setSelectedTextRange:NSMakeRange(range.location + allowedLength, 0)
                                    notifyDelegate:YES];
 #endif // macOS]
-        
+
         [self textInputDidChange];
       }
 
@@ -761,17 +771,20 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 {
   self.ghostText = nil; // [macOS]
 
-  if (!_onSelectionChange || self.backedTextInputView.ghostTextChanging) { // [macOS]
-    return;
-  }
+  // Run this async to match iOS order of events where we get the onChange first and then onSelectionChange.
+  dispatch_async(dispatch_get_main_queue(), ^{ // [macOS]
+    if (!_onSelectionChange || self.backedTextInputView.ghostTextChanging) {
+      return;
+    }
 
-  RCTTextSelection *selection = self.selection;
+    RCTTextSelection *selection = self.selection;
 
-  _onSelectionChange(@{
-    @"selection" : @{
-      @"start" : @(selection.start),
-      @"end" : @(selection.end),
-    },
+    _onSelectionChange(@{
+      @"selection": @{
+        @"start": @(selection.start),
+        @"end": @(selection.end),
+      },
+    });
   });
 }
 
@@ -834,7 +847,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   NSPasteboardType fileType = [pasteboard availableTypeFromArray:@[NSFilenamesPboardType, NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
   NSArray<NSPasteboardType>* pastedTypes = ((RCTUITextView*) self.backedTextInputView).readablePasteboardTypes;
-      
+
   // If there's a fileType that is of interest, notify JS. Also blocks notifying JS if it's a text paste
   if (_onPaste && fileType != nil && [pastedTypes containsObject:fileType]) {
     _onPaste([self dataTransferInfoFromPasteboard:pasteboard]);

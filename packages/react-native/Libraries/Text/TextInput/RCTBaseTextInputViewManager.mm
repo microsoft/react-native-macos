@@ -161,6 +161,10 @@ RCT_EXPORT_METHOD(setTextAndSelection
     if (eventLag != 0) {
       return;
     }
+    if (!value) { // [macOS]
+      [view setSelectionStart:start selectionEnd:end];
+      return;
+    }
     RCTExecuteOnUIManagerQueue(^{
       RCTBaseTextInputShadowView *shadowView =
           (RCTBaseTextInputShadowView *)[self.bridge.uiManager shadowViewForReactTag:viewTag];

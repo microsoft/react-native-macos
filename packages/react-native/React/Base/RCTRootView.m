@@ -204,6 +204,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 #endif // macOS]
 }
 
+#if TARGET_OS_OSX // [macOS
+- (void)viewDidEndLiveResize {
+  [super viewDidEndLiveResize];
+  [self setNeedsLayout];
+}
+#endif // macOS]
+
 - (void)setLoadingView:(RCTUIView *)loadingView // [macOS]
 {
   _loadingView = loadingView;

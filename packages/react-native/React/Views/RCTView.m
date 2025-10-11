@@ -197,6 +197,20 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 
+#if TARGET_OS_OSX // [macOS
+- (void)setFrame:(NSRect)frame
+{
+  [super setFrame:frame];
+
+  // On macOS Sonoma, assigning the tool tip will set up a tracking rect based on the view's current frame. Since the
+  // tool tip can be assigned before it was layed out, the tracking rect would stay at NSZeroRect. We fix this by
+  // clearing and reassigning the tool tip to force update the internally created tracking rect with the new frame.
+  NSString *toolTip = self.toolTip;
+  self.toolTip = nil;
+  self.toolTip = toolTip;
+}
+#endif // macOS]
+
 - (void)setReactLayoutDirection:(UIUserInterfaceLayoutDirection)layoutDirection
 {
   if (_reactLayoutDirection != layoutDirection) {
@@ -776,59 +790,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     [self setShadow:shadow];
 }
 
-- (void)viewDidMoveToWindow
+- (void)setOnDoubleClick:(RCTDirectEventBlock)onDoubleClick
 {
-  // Subscribe to view bounds changed notification so that the view can be notified when a
-  // scroll event occurs either due to trackpad/gesture based scrolling or a scrollwheel event
-  // both of which would not cause the mouseExited to be invoked.
-
-  if ([self window] == nil) {
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:NSViewBoundsDidChangeNotification
-                                                  object:nil];
+  if (_onDoubleClick != onDoubleClick) {
+    _onDoubleClick = [onDoubleClick copy];
   }
-  else if ([[self enclosingScrollView] contentView] != nil) {
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(viewBoundsChanged:)
-                                                 name:NSViewBoundsDidChangeNotification
-                                               object:[[self enclosingScrollView] contentView]];
-  }
-
-  [self reactViewDidMoveToWindow]; // [macOS] Github#1412
-
-  [super viewDidMoveToWindow];
 }
-
-- (void)viewBoundsChanged:(NSNotification*)__unused inNotif
-{
-  // When an enclosing scrollview is scrolled using the scrollWheel or trackpad,
-  // the mouseExited: event does not get called on the view where mouseEntered: was previously called.
-  // This creates an unnatural pairing of mouse enter and exit events and can cause problems.
-  // We therefore explicitly check for this here and handle them by calling the appropriate callbacks.
-
-  if (!_hasMouseOver && self.onMouseEnter)
-  {
-    NSPoint locationInWindow = [[self window] mouseLocationOutsideOfEventStream];
-    NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
-
-    if (NSPointInRect(locationInView, [self bounds]))
-    {
-      _hasMouseOver = YES;
-
-      [self sendMouseEventWithBlock:self.onMouseEnter
-                       locationInfo:[self locationInfoFromDraggingLocation:locationInWindow]
-                      modifierFlags:0
-                     additionalData:nil];
-    }
-  }
-  else if (_hasMouseOver && self.onMouseLeave)
-  {
-    NSPoint locationInWindow = [[self window] mouseLocationOutsideOfEventStream];
-    NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
-
-    if (!NSPointInRect(locationInView, [self bounds]))
-    {
-      _hasMouseOver = NO;
 
       [self sendMouseEventWithBlock:self.onMouseLeave
                        locationInfo:[self locationInfoFromDraggingLocation:locationInWindow]
@@ -1222,7 +1189,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 #else // [macOS
   const RCTBorderColors borderColors = [self borderColors];
 #endif // macOS]
-  BOOL useIOSBorderRendering = 
+  BOOL useIOSBorderRendering =
     RCTCornerRadiiAreEqualAndSymmetrical(cornerRadii) &&
     RCTBorderInsetsAreEqual(borderInsets) &&
     RCTBorderColorsAreEqual(borderColors) &&
@@ -1501,10 +1468,16 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   }
 }
 
-- (BOOL)needsPanelToBecomeKey
-{
-	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default. 
+#pragma mark - Responder Chain
+
+- (BOOL)needsPanelToBecomeKey {
+	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default.
 	return false;
+}
+
+- (BOOL)canBecomeKeyView
+{
+  return self.focusable;
 }
 
 - (BOOL)acceptsFirstResponder
@@ -1512,48 +1485,16 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 	return [self focusable] || [super acceptsFirstResponder];
 }
 
-- (void)updateTrackingAreas
+- (void)mouseUp:(NSEvent *)event
 {
-  BOOL hasMouseHoverEvent = self.onMouseEnter || self.onMouseLeave;
-  BOOL wouldRecreateIdenticalTrackingArea = hasMouseHoverEvent && _trackingArea && NSEqualRects(self.bounds, [_trackingArea rect]);
-
-  if (!wouldRecreateIdenticalTrackingArea) {
-    if (_trackingArea) {
-      [self removeTrackingArea:_trackingArea];
-    }
-
-    if (hasMouseHoverEvent) {
-      _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
-                                                   options:NSTrackingActiveAlways|NSTrackingMouseEnteredAndExited
-                                                     owner:self
-                                                  userInfo:nil];
-      [self addTrackingArea:_trackingArea];
-    }
+  if (_onDoubleClick && event.clickCount == 2){
+    _onDoubleClick(nil);
+  } else {
+    [super mouseUp:event];
   }
-
-  [super updateTrackingAreas];
 }
 
-- (void)mouseEntered:(NSEvent *)event
-{
-  _hasMouseOver = YES;
-  [self sendMouseEventWithBlock:self.onMouseEnter
-                   locationInfo:[self locationInfoFromEvent:event]
-                  modifierFlags:event.modifierFlags
-                 additionalData:nil];
-}
-
-- (void)mouseExited:(NSEvent *)event
-{
-  _hasMouseOver = NO;
-  [self sendMouseEventWithBlock:self.onMouseLeave
-                   locationInfo:[self locationInfoFromEvent:event]
-                  modifierFlags:event.modifierFlags
-                 additionalData:nil];
-}
-
-- (BOOL)mouseDownCanMoveWindow
-{
+- (BOOL)mouseDownCanMoveWindow {
 	return _mouseDownCanMoveWindow;
 }
 
@@ -1625,7 +1566,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
     BOOL isDir = NO;
     BOOL isValid = (![[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDir] || isDir) ? NO : YES;
     if (isValid) {
-      
+
       NSString *MIMETypeString = nil;
       if (fileURL.pathExtension) {
         CFStringRef fileExtension = (__bridge CFStringRef)fileURL.pathExtension;

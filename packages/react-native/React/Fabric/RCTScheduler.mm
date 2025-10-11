@@ -114,7 +114,7 @@ class LayoutAnimationDelegateProxy : public LayoutAnimationStatusDelegate, publi
 - (instancetype)initWithToolbox:(SchedulerToolbox)toolbox
 {
   if (self = [super init]) {
-    _delegateProxy = std::make_unique<SchedulerDelegateProxy>((__bridge void *)self);
+    _delegateProxy = std::make_shared<SchedulerDelegateProxy>((__bridge void *)self);
 
     if (ReactNativeFeatureFlags::enableLayoutAnimationsOnIOS()) {
       _layoutAnimationDelegateProxy = std::make_shared<LayoutAnimationDelegateProxy>((__bridge void *)self);

@@ -238,14 +238,6 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
   return @[];
 }
 
-- (nullable id<RCTModuleProvider>)getModuleProvider:(const char *)name
-{
-  if ([_appTMMDelegate respondsToSelector:@selector(getModuleProvider:)]) {
-    return [_appTMMDelegate getModuleProvider:name];
-  }
-  return nil;
-}
-
 #pragma mark - Private
 
 - (void)_start
@@ -339,14 +331,15 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
 
   // This enables RCTViewRegistry in modules to return UIViews from its viewForReactTag method
   __weak RCTSurfacePresenter *weakSurfacePresenter = _surfacePresenter;
-  [_bridgeModuleDecorator.viewRegistry_DEPRECATED setBridgelessComponentViewProvider:^RCTPlatformView *(NSNumber *reactTag) { // [macOS]
-    RCTSurfacePresenter *strongSurfacePresenter = weakSurfacePresenter;
-    if (strongSurfacePresenter == nil) {
-      return nil;
-    }
+  [_bridgeModuleDecorator.viewRegistry_DEPRECATED
+      setBridgelessComponentViewProvider:^RCTPlatformView *(NSNumber *reactTag) { // [macOS]
+        RCTSurfacePresenter *strongSurfacePresenter = weakSurfacePresenter;
+        if (strongSurfacePresenter == nil) {
+          return nil;
+        }
 
-    return [strongSurfacePresenter findComponentViewWithTag_DO_NOT_USE_DEPRECATED:reactTag.integerValue];
-  }];
+        return [strongSurfacePresenter findComponentViewWithTag_DO_NOT_USE_DEPRECATED:reactTag.integerValue];
+      }];
 
   // DisplayLink is used to call timer callbacks.
   _displayLink = [RCTDisplayLink new];
@@ -551,24 +544,11 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
                             name:errorData[@"name"]
                   componentStack:errorData[@"componentStack"]
                      exceptionId:error.id
-#if TARGET_OS_OSX // [macOS Use boolValue for isFatal to ensure type safety
-                     isFatal:[errorData[@"isFatal"] boolValue] // Explicitly convert to BOOL to avoid compiler errors on macOS
-#else
-                     isFatal:errorData[@"isFatal"]
-#endif // macOS]
+                         isFatal:error.isFatal // [macOS] TODO(T210743757): Remove fork
                        extraData:errorData[@"extraData"]]) {
     JS::NativeExceptionsManager::ExceptionData jsErrorData{errorData};
     id<NativeExceptionsManagerSpec> exceptionsManager = [_turboModuleManager moduleForName:"ExceptionsManager"];
     [exceptionsManager reportException:jsErrorData];
-  }
-}
-
-- (void)_handleMemoryWarning
-{
-  if (_valid) {
-    // Memory Pressure Unloading Level 15 represents TRIM_MEMORY_RUNNING_CRITICAL.
-    static constexpr int unloadLevel = 15;
-    _reactInstance->handleMemoryPressureJs(unloadLevel);
   }
 }
 

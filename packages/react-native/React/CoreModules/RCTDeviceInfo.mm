@@ -16,9 +16,7 @@
 #import <React/RCTInvalidating.h>
 #import <React/RCTKeyWindowValuesProxy.h>
 #import <React/RCTUtils.h>
-#import <React/RCTWindowSafeAreaProxy.h>
-#import "UIView+React.h" // [macOS]
-#import <atomic>
+#import <React/UIView+React.h> // [macOS]
 
 #import "CoreModulesPlugins.h"
 
@@ -117,11 +115,12 @@ RCT_EXPORT_MODULE()
 
 - (void)_cleanupObservers
 {
+#if !TARGET_OS_OSX // [macOS]
   [[NSNotificationCenter defaultCenter] removeObserver:self
                                                   name:RCTAccessibilityManagerDidUpdateMultiplierNotification
                                                 object:[_moduleRegistry moduleForName:"AccessibilityManager"]];
-
   [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
+#endif
 
   [[NSNotificationCenter defaultCenter] removeObserver:self name:RCTUserInterfaceStyleDidChangeNotification object:nil];
 
@@ -135,9 +134,10 @@ RCT_EXPORT_MODULE()
 static BOOL RCTIsIPhoneNotched()
 {
   static BOOL isIPhoneNotched = NO;
-  static dispatch_once_t onceToken;
 
 #if TARGET_OS_IOS
+  static dispatch_once_t onceToken;
+
   dispatch_once(&onceToken, ^{
     // 20pt is the top safeArea value in non-notched devices
     isIPhoneNotched = [RCTWindowSafeAreaProxy sharedInstance].currentSafeAreaInsets.top > 20;
@@ -202,12 +202,12 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 
 - (NSDictionary *)_exportedDimensions
 {
+#if !TARGET_OS_OSX // [macOS]
   RCTAssert(!_invalidated, @"Failed to get exported dimensions: RCTDeviceInfo has been invalidated");
   RCTAssert(_moduleRegistry, @"Failed to get exported dimensions: RCTModuleRegistry is nil");
   RCTAccessibilityManager *accessibilityManager =
       (RCTAccessibilityManager *)[_moduleRegistry moduleForName:"AccessibilityManager"];
   RCTAssert(accessibilityManager, @"Failed to get exported dimensions: AccessibilityManager is nil");
-#if !TARGET_OS_OSX // [macOS]
   CGFloat fontScale = accessibilityManager ? accessibilityManager.multiplier : 1.0;
 #else // [macOS
   CGFloat fontScale = 1.0;

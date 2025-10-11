@@ -8,9 +8,10 @@
 #pragma once
 
 #include <react/renderer/components/textinput/basePrimitives.h>
+#include <react/renderer/components/view/KeyEvent.h>
 #include <optional>
 #include <string>
-#include <vector>
+#include <vector> // [macOS]
 
 namespace facebook::react {
 
@@ -228,6 +229,27 @@ class TextInputTraits final {
    * Default value: `<empty string>` (no rules).
    */
   std::string passwordRules{};
+
+  /*
+   * List of key combinations that should submit.
+   * macOS
+   * Default value: `empty` applies as 'Enter' key.
+   */
+  std::vector<KeyEvent> submitKeyEvents{};
+
+  /*
+   * When set to `true`, the text will be cleared after the submit.
+   * macOS-only
+   * Default value: `false`
+   */
+  bool clearTextOnSubmit{false};
+
+  /*
+   * Can be empty (`null` in JavaScript) which means `default`.
+   * maOS
+   * Default value: `empty` (`null`).
+   */
+  std::optional<bool> grammarCheck{};
 
   /*
    * If `false`, the iOS system will not insert an extra space after a paste

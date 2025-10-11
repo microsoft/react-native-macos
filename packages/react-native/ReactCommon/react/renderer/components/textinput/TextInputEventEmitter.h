@@ -9,9 +9,6 @@
 
 #include <react/renderer/attributedstring/AttributedString.h>
 #include <react/renderer/components/view/ViewEventEmitter.h>
-#if TARGET_OS_OSX // [macOS
-#include <react/renderer/components/view/MouseEvent.h>
-#endif // macOS]
 
 namespace facebook::react {
 
@@ -30,24 +27,12 @@ class TextInputEventEmitter : public ViewEventEmitter {
     int eventCount;
     Size layoutMeasurement;
     Float zoomScale;
-    Tag target;
- #if TARGET_OS_OSX // [macOS
-    bool autoCorrectEnabled;
-    bool spellCheckEnabled;
-    bool grammarCheckEnabled;
-#endif // macOS]
   };
 
   struct KeyPressMetrics {
     std::string text;
     int eventCount;
   };
-  
-#if TARGET_OS_OSX // [macOS
-  struct PasteMetrics {
-    DataTransfer dataTransfer;
-  };
-#endif // macOS]
 
   void onFocus(const Metrics& textInputMetrics) const;
   void onBlur(const Metrics& textInputMetrics) const;
@@ -58,12 +43,6 @@ class TextInputEventEmitter : public ViewEventEmitter {
   void onSubmitEditing(const Metrics& textInputMetrics) const;
   void onKeyPress(const KeyPressMetrics& keyPressMetrics) const;
   void onScroll(const Metrics& textInputMetrics) const;
- #if TARGET_OS_OSX // [macOS
-  void onAutoCorrectChange(const Metrics& textInputMetrics) const;
-  void onSpellCheckChange(const Metrics& textInputMetrics) const;
-  void onGrammarCheckChange(const Metrics& textInputMetrics) const;
-  void onPaste(const PasteMetrics& pasteMetrics) const;
- #endif // macOS]
 
  private:
   void dispatchTextInputEvent(

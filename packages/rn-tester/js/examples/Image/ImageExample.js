@@ -169,6 +169,11 @@ const NetworkImageCallbackExample = ({
         <Image
           source={prefetchedSource}
           style={[styles.base, styles.visibleOverflow]}
+          onError={event => {
+            this._loadEventFired(
+              `✘ onError "${event.nativeEvent.error}" (+${Date.now() - mountTime}ms)`,
+            );
+          }}
           onLoadStart={() =>
             _loadEventFired(
               `✔ (prefetched) onLoadStart (+${Date.now() - mountTime}ms)`,

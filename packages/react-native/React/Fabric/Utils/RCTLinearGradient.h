@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTUIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 #import <react/renderer/components/view/ViewProps.h>
 
 NS_ASSUME_NONNULL_BEGIN

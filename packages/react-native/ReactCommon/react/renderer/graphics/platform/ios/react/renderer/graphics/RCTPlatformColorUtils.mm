@@ -161,7 +161,7 @@ static RCTUIColor *_Nullable _UIColorFromSemanticString(NSString *semanticString
         return _UIColorFromHexValue(fallbackRGB);
       }
     } else {
-      Class uiColorClass = [RCTUIColor class]; // [macOS]
+      Class uiColorClass = [RCTUIColor class];
       IMP imp = [uiColorClass methodForSelector:objcColorSelector];
       id (*getUIColor)(id, SEL) = ((id(*)(id, SEL))imp);
       id colorObject = getUIColor(uiColorClass, objcColorSelector);

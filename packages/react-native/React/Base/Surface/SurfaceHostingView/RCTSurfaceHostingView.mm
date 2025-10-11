@@ -43,8 +43,10 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
     _stage = surface.stage;
     [self _updateViews];
 
+#if !TARGET_OS_OSX // [macOS]
     // For backward compatibility with RCTRootView, set a color here instead of transparent (OS default).
     self.backgroundColor = [RCTUIColor whiteColor]; // [macOS]
+#endif // [macOS]
   }
 
   return self;
@@ -138,6 +140,15 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
 {
   _autoHideDisabled = disabled;
 }
+
+#pragma mark - NSView
+
+#if TARGET_OS_OSX // [macOS
+- (void)viewDidEndLiveResize {
+  [super viewDidEndLiveResize];
+  [self setNeedsLayout];
+}
+#endif // macOS]
 
 #pragma mark - isActivityIndicatorViewVisible
 

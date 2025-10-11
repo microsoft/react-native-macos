@@ -32,12 +32,12 @@ const Platform: PlatformType = {
     isTesting: boolean,
     isDisableAnimations?: boolean,
     osVersion: string,
-    reactNativeVersion: {|
+    reactNativeVersion: {
       major: number,
       minor: number,
       patch: number,
       prerelease: ?number,
-    |},
+    },
     systemName: string,
     isMacCatalyst?: boolean,
   |} {

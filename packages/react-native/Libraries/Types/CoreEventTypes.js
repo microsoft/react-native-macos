@@ -220,152 +220,77 @@ export interface NativePointerEvent extends NativeMouseEvent {
 
 export type PointerEvent = NativeSyntheticEvent<NativePointerEvent>;
 
-export type NativeTouchEvent = $ReadOnly<{
-  /**
-   * Array of all touch events that have changed since the last event
-   */
-  changedTouches: $ReadOnlyArray<NativeTouchEvent>,
-  /**
-   * 3D Touch reported force
-   * @platform ios
-   */
-  force?: number,
-  /**
-   * The ID of the touch
-   */
-  identifier: number,
-  /**
-   * The X position of the touch, relative to the element
-   */
-  locationX: number,
-  /**
-   * The Y position of the touch, relative to the element
-   */
-  locationY: number,
-
-  /**
-   * The X position of the touch, relative to the screen
-   */
-  pageX: number,
-  /**
-   * The Y position of the touch, relative to the screen
-   */
-  pageY: number,
-  /**
-   * The node id of the element receiving the touch event
-   */
-  target: ?number,
-  /**
-   * A time identifier for the touch, useful for velocity calculation
-   */
-  timestamp: number,
-  /**
-   * Array of all current touches on the screen
-   */
-  touches: $ReadOnlyArray<NativeTouchEvent>,
-  // [macOS
-  ctrlKey?: ?boolean,
-  altKey?: ?boolean,
-  shiftKey?: ?boolean,
-  metaKey?: ?boolean,
-  button?: ?number,
-  // macOS]
-}>;
-
-export type GestureResponderEvent = ResponderSyntheticEvent<NativeTouchEvent>;
-
-export type NativeScrollRectangle = $ReadOnly<{
-  bottom: number,
-  left: number,
-  right: number,
-  top: number,
-}>;
-
-export type NativeScrollPoint = $ReadOnly<{
-  y: number,
-  x: number,
-}>;
-
-export type NativeScrollVelocity = $ReadOnly<{
-  y: number,
-  x: number,
-}>;
-
-export type NativeScrollSize = $ReadOnly<{
-  height: number,
-  width: number,
-}>;
-
-export type NativeScrollEvent = $ReadOnly<{
-  contentInset: NativeScrollRectangle,
-  contentOffset: NativeScrollPoint,
-  contentSize: NativeScrollSize,
-  layoutMeasurement: NativeScrollSize,
-  velocity?: NativeScrollVelocity,
-  zoomScale?: number,
-  responderIgnoreScroll?: boolean,
-  preferredScrollerStyle?: string, // [macOS]
-  /**
-   * @platform ios
-   */
-  targetContentOffset?: NativeScrollPoint,
-}>;
-
-export type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
-
-export type TargetedEvent = $ReadOnly<{
-  target: number,
-  ...
-}>;
-
-export type BlurEvent = NativeSyntheticEvent<TargetedEvent>;
-
-export type FocusEvent = NativeSyntheticEvent<TargetedEvent>;
-
-export type MouseEvent = NativeSyntheticEvent<
+export type GestureResponderEvent = ResponderSyntheticEvent<
   $ReadOnly<{
-    clientX: number,
-    clientY: number,
+    altKey?: ?boolean, // [macOS]
+    button?: ?number, // [macOS]
+    changedTouches: $ReadOnlyArray<
+      $PropertyType<GestureResponderEvent, 'nativeEvent'>,
+    >,
+    ctrlKey?: ?boolean, // [macOS]
+    force?: number,
+    identifier: number,
+    locationX: number,
+    locationY: number,
+    metaKey?: ?boolean, // [macOS]
     pageX: number,
     pageY: number,
     timestamp: number,
+    touches: $ReadOnlyArray<
+      $PropertyType<GestureResponderEvent, 'nativeEvent'>,
+    >,
+  }>,
+>;
+
+export type ScrollEvent = NativeSyntheticEvent<
+  $ReadOnly<{
+    contentInset: $ReadOnly<{
+      bottom: number,
+      left: number,
+      right: number,
+      top: number,
+    }>,
+    contentOffset: $ReadOnly<{
+      y: number,
+      x: number,
+    }>,
+    contentSize: $ReadOnly<{
+      height: number,
+      width: number,
+    }>,
+    layoutMeasurement: $ReadOnly<{
+      height: number,
+      width: number,
+    }>,
+    targetContentOffset?: $ReadOnly<{
+      y: number,
+      x: number,
+    }>,
+    velocity?: $ReadOnly<{
+      y: number,
+      x: number,
+    }>,
+    zoomScale?: number,
+    responderIgnoreScroll?: boolean,
+    preferredScrollerStyle?: string, // [macOS]
+  }>,
+>;
+
+export type BlurEvent = NativeSyntheticEvent<
+  $ReadOnly<{
+    target: number,
+  }>,
+>;
+
+export type FocusEvent = NativeSyntheticEvent<
+  $ReadOnly<{
+    target: number,
   }>,
 >;
 
 // [macOS
-export type DataTransferFile = $ReadOnly<{
-  name: string,
-  type: ?string,
-  uri: string,
-  size?: number,
-  width?: number,
-  height?: number,
-}>;
-
-export type DataTransferItem = $ReadOnly<{
-  kind: string,
-  type: ?string,
-}>;
-
-export type DataTransfer = $ReadOnly<{
-  files: $ReadOnlyArray<DataTransferFile>,
-  items: $ReadOnlyArray<DataTransferItem>,
-  types: $ReadOnlyArray<?string>,
-}>;
-
-export type DragEvent = NativeSyntheticEvent<
-  $ReadOnly<{
-    clientX: number,
-    clientY: number,
-    pageX: number,
-    pageY: number,
-    timestamp: number,
-    dataTransfer?: DataTransfer,
-  }>,
->;
-
 export type KeyEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
+  $ReadOnly<{
     // Modifier keys
     capsLockKey: boolean,
     shiftKey: boolean,
@@ -381,7 +306,7 @@ export type KeyEvent = NativeSyntheticEvent<
     ArrowUp: boolean,
     ArrowDown: boolean,
     key: string,
-  |}>,
+  }>,
 >;
 
 /**
@@ -395,11 +320,23 @@ export type KeyEvent = NativeSyntheticEvent<
  *
  * @platform macos
  */
-export type HandledKeyEvent = $ReadOnly<{|
+export type HandledKeyEvent = $ReadOnly<{
+  altKey?: ?boolean,
   ctrlKey?: ?boolean,
   altKey?: ?boolean,
   shiftKey?: ?boolean,
   metaKey?: ?boolean,
   key: string,
-|}>;
+}>;
+
 // macOS]
+
+export type MouseEvent = NativeSyntheticEvent<
+  $ReadOnly<{
+    clientX: number,
+    clientY: number,
+    pageX: number,
+    pageY: number,
+    timestamp: number,
+  }>,
+>;

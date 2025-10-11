@@ -7,9 +7,6 @@
 
 // [macOS]
 
-#if TARGET_OS_OSX
 #define RCT_SUBCLASS_SECURETEXTFIELD 1
-#endif
 
 #include <React/RCTUITextField.h>
-
