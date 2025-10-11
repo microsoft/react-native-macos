@@ -150,7 +150,7 @@ RCT_EXPORT_MODULE()
 #if !TARGET_OS_OSX // [macOS]
     [self->_window.rootViewController.view addSubview:self->_container];
 #else // [macOS
-    [self->_window.contentViewController.view addSubview:self->_container];
+    [self->_window.contentView addSubview:self->_container];
 #endif // macOS]
     [self->_container addSubview:self->_label];
 
@@ -175,6 +175,20 @@ RCT_EXPORT_MODULE()
       [self->_label.bottomAnchor constraintEqualToAnchor:self->_container.bottomAnchor constant:-5],
     ]];
 #else // [macOS
+    // Container constraints
+    [NSLayoutConstraint activateConstraints:@[
+      [self->_container.topAnchor constraintEqualToAnchor:self->_window.contentView.topAnchor],
+      [self->_container.leadingAnchor constraintEqualToAnchor:self->_window.contentView.leadingAnchor],
+      [self->_container.trailingAnchor constraintEqualToAnchor:self->_window.contentView.trailingAnchor],
+      [self->_container.bottomAnchor constraintEqualToAnchor:self->_window.contentView.bottomAnchor],
+      
+      // Label constraints
+      [self->_label.centerXAnchor constraintEqualToAnchor:self->_container.centerXAnchor],
+      [self->_label.centerYAnchor constraintEqualToAnchor:self->_container.centerYAnchor],
+      [self->_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:self->_container.leadingAnchor constant:10],
+      [self->_label.trailingAnchor constraintLessThanOrEqualToAnchor:self->_container.trailingAnchor constant:-10],
+    ]];
+    
     if (![[RCTKeyWindow() sheets] doesContain:self->_window]) {
       [RCTKeyWindow() beginSheet:self->_window completionHandler:^(NSModalResponse returnCode) {
         [self->_window orderOut:self];
