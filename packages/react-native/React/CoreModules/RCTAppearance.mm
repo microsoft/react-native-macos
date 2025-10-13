@@ -134,7 +134,11 @@ RCT_EXPORT_MODULE(Appearance)
 
 + (BOOL)requiresMainQueueSetup
 {
+#if !TARGET_OS_OSX // [macOS]
   return NO;
+#else // [macOS
+  return YES;
+#endif // macOS]
 }
 
 - (dispatch_queue_t)methodQueue
