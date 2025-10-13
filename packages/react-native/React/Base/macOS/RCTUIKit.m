@@ -129,6 +129,7 @@ void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath)
   BOOL _clipsToBounds;
   BOOL _userInteractionEnabled;
   BOOL _mouseDownCanMoveWindow;
+  BOOL _respondsToDisplayLayer;
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key
@@ -158,6 +159,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     self->_userInteractionEnabled = YES;
     self->_enableFocusRing = YES;
     self->_mouseDownCanMoveWindow = YES;
+    self->_respondsToDisplayLayer = [self respondsToSelector:@selector(displayLayer:)];
   }
   return self;
 }
@@ -259,7 +261,12 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     // so it has to be reset from the view's NSColor ivar.
     [layer setBackgroundColor:[_backgroundColor CGColor]];
   }
-  [(id<CALayerDelegate>)self displayLayer:layer];
+
+  // In Fabric, wantsUpdateLayer is always enabled and doesn't guarantee that
+  // the instance has a displayLayer method.
+  if (_respondsToDisplayLayer) {
+    [(id<CALayerDelegate>)self displayLayer:layer];
+  }
 }
 
 - (void)drawRect:(CGRect)rect
