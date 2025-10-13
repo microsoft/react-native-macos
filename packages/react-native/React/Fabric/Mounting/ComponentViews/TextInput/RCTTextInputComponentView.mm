@@ -923,19 +923,15 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       .selectionRange = [self _selectionRange],
       .eventCount = static_cast<int>(_mostRecentEventCount),
 #if !TARGET_OS_OSX // [macOS]
-      .contentOffset = Point{},
-      .contentInset = EdgeInsets{},
-#else // [macOS
       .contentOffset = RCTPointFromCGPoint(_backedTextInputView.contentOffset),
       .contentInset = RCTEdgeInsetsFromUIEdgeInsets(_backedTextInputView.contentInset),
+#else // [macOS
+      .contentOffset = {.x = 0, .y = 0},
+      .contentInset = EdgeInsets{},
 #endif // macOS]
       .contentSize = RCTSizeFromCGSize(_backedTextInputView.contentSize),
       .layoutMeasurement = RCTSizeFromCGSize(_backedTextInputView.bounds.size),
-#if !TARGET_OS_OSX // [macOS]
       .zoomScale = 1,
-#else // [macOS
-      .zoomScale = _backedTextInputView.zoomScale,
-#endif // macOS]
   };
 }
 
@@ -946,7 +942,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   if (scrollView) {
     metrics.contentOffset = RCTPointFromCGPoint(scrollView.contentOffset);
-    metrics.contentInset = RCTEdgeInsetsFromUIEdgeInsets(scrollView.contentInset);
+    metrics.contentInse  t = RCTEdgeInsetsFromUIEdgeInsets(scrollView.contentInset);
     metrics.contentSize = RCTSizeFromCGSize(scrollView.contentSize);
     metrics.layoutMeasurement = RCTSizeFromCGSize(scrollView.bounds.size);
     metrics.zoomScale = scrollView.zoomScale ?: 1;
