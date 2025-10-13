@@ -223,7 +223,7 @@ inline void fromRawValue(
     fromRawValue(context, tmp_metaKey->second, result.metaKey);
   }
   auto tmp_functionKey = map.find("functionKey");
-  if (tmp_functionKey  != map.end()) {
+  if (tmp_functionKey != map.end()) {
     fromRawValue(context, tmp_functionKey->second, result.functionKey);
   }
 }

@@ -40,7 +40,7 @@ static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
 #endif // [macOS]
 
 #if TARGET_OS_OSX // [macOS
-static const NSString *kEscapeKeyCode = @"\x1B";
+static NSString *kEscapeKeyCode = @"\x1B";
 #endif // macOS]
 
 
