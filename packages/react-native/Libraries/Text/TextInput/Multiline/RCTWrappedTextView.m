@@ -67,11 +67,6 @@
   return self;
 }
 
-- (void)dealloc
-{
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 - (BOOL)isFlipped
 {
   return YES;
