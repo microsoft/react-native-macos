@@ -942,7 +942,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   if (scrollView) {
     metrics.contentOffset = RCTPointFromCGPoint(scrollView.contentOffset);
-    metrics.contentInse  t = RCTEdgeInsetsFromUIEdgeInsets(scrollView.contentInset);
+    metrics.contentInset = RCTEdgeInsetsFromUIEdgeInsets(scrollView.contentInset);
     metrics.contentSize = RCTSizeFromCGSize(scrollView.contentSize);
     metrics.layoutMeasurement = RCTSizeFromCGSize(scrollView.bounds.size);
     metrics.zoomScale = scrollView.zoomScale ?: 1;
