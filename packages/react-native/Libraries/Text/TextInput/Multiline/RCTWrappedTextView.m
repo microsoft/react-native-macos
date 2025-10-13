@@ -144,13 +144,8 @@
 
 - (void)setScrollEnabled:(BOOL)scrollEnabled
 {
-  if (scrollEnabled) {
-    _scrollView.scrollEnabled = YES;
-    [_clipView setConstrainScrolling:NO];
-  } else {
-    _scrollView.scrollEnabled = NO;
-    [_clipView setConstrainScrolling:YES];
-  }
+  _scrollView.scrollEnabled = scrollEnabled;
+  [_clipView setConstrainScrolling:!scrollEnabled];
 }
 
 - (BOOL)shouldShowVerticalScrollbar
