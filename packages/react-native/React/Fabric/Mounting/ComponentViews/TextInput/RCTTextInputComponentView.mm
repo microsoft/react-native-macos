@@ -648,17 +648,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)textInputDidCancel
 {
   if (_eventEmitter) {
-    KeyPressMetrics keyPressMetrics;
-    keyPressMetrics.text = RCTStringFromNSString(@"\x1B"); // Escape key
-    keyPressMetrics.eventCount = _mostRecentEventCount;
 
     auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
-    auto const &props = *std::static_pointer_cast<TextInputProps const>(_props);
-    if (props.onKeyPressSync) {
-      textInputEventEmitter.onKeyPressSync(keyPressMetrics);
-    } else {
-      textInputEventEmitter.onKeyPress(keyPressMetrics);
-    }
+    textInputEventEmitter.onKeyPress({
+      .text = RCTStringFromNSString(@"\x1B"), // Escape key
+      .eventCount = static_cast<int>(_mostRecentEventCount),
+    });
   }
   
   [self textInputDidEndEditing];
@@ -724,7 +719,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetrics]);
 #else // [macOS
-    TextInputMetrics metrics = [self _textInputMetrics]; // [macOS]
+    auto metrics = [self _textInputMetrics];
 
     CGPoint contentOffset = scrollView.contentOffset;
     metrics.contentOffset = {contentOffset.x, contentOffset.y};
