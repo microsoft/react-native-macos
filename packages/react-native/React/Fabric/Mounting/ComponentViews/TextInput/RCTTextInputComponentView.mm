@@ -724,24 +724,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetrics]);
 #else // [macOS
-    auto metrics = [self _textInputMetrics];
-
-    CGPoint contentOffset = scrollView.contentOffset;
-    metrics.contentOffset = {contentOffset.x, contentOffset.y};
-
-    UIEdgeInsets contentInset = scrollView.contentInset;
-    metrics.contentInset = {contentInset.left, contentInset.top, contentInset.right, contentInset.bottom};
-
-    CGSize contentSize = scrollView.contentSize;
-    metrics.contentSize = {contentSize.width, contentSize.height};
-
-    CGSize layoutMeasurement = scrollView.bounds.size;
-    metrics.layoutMeasurement = {layoutMeasurement.width, layoutMeasurement.height};
-
-    CGFloat zoomScale = scrollView.zoomScale ?: 1;
-    metrics.zoomScale = zoomScale;
-
-    static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll(metrics);
+  static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetricsWithScrollView:scrollView]);
 #endif // macOS]
   }
 }
@@ -940,16 +923,39 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       .selectionRange = [self _selectionRange],
       .eventCount = static_cast<int>(_mostRecentEventCount),
 #if !TARGET_OS_OSX // [macOS]
+      .contentOffset = Point{},
+      .contentInset = EdgeInsets{},
+#else // [macOS
       .contentOffset = RCTPointFromCGPoint(_backedTextInputView.contentOffset),
       .contentInset = RCTEdgeInsetsFromUIEdgeInsets(_backedTextInputView.contentInset),
-#endif // [macOS]
+#endif // macOS]
       .contentSize = RCTSizeFromCGSize(_backedTextInputView.contentSize),
       .layoutMeasurement = RCTSizeFromCGSize(_backedTextInputView.bounds.size),
 #if !TARGET_OS_OSX // [macOS]
+      .zoomScale = 1,
+#else // [macOS
       .zoomScale = _backedTextInputView.zoomScale,
-#endif // [macOS]
+#endif // macOS]
   };
 }
+
+#if TARGET_OS_OSX // [macOS
+- (TextInputEventEmitter::Metrics)_textInputMetricsWithScrollView:(RCTUIScrollView *)scrollView
+{
+  TextInputEventEmitter::Metrics metrics = [self _textInputMetrics];
+
+  if (scrollView) {
+    metrics.contentOffset = RCTPointFromCGPoint(scrollView.contentOffset);
+    metrics.contentInset = RCTEdgeInsetsFromUIEdgeInsets(scrollView.contentInset);
+    metrics.contentSize = RCTSizeFromCGSize(scrollView.contentSize);
+    metrics.layoutMeasurement = RCTSizeFromCGSize(scrollView.bounds.size);
+    metrics.zoomScale = scrollView.zoomScale ?: 1;
+  }
+
+  return metrics;
+}
+#endif // macOS]
+
 
 - (void)_updateState
 {
