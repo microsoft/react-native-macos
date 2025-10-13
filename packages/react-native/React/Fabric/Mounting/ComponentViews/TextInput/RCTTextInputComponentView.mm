@@ -39,6 +39,11 @@
 static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
 #endif // [macOS]
 
+#if TARGET_OS_OSX // [macOS
+static const NSString *kEscapeKeyCode = @"\x1B";
+#endif // macOS]
+
+
 using namespace facebook::react;
 
 @interface RCTTextInputComponentView () <RCTBackedTextInputDelegate, RCTTextInputViewProtocol>
@@ -144,9 +149,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       [_backedTextInputView becomeFirstResponder];
 #else // [macOS
       NSWindow *window = [_backedTextInputView window];
-      if (window) {
-        [window makeFirstResponder:_backedTextInputView.responder];
-      }
+      [window makeFirstResponder:_backedTextInputView.responder];
 #endif // macOS]
       [self scrollCursorIntoView];
     }
@@ -615,20 +618,23 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       && ![keyEvent[@"functionKey"] boolValue]; // Default clearTextOnSubmit key 
   } else {
     NSString *keyValue = keyEvent[@"key"];
-    NSUInteger keyValueLength = [keyValue lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-    std::string key = std::string([keyValue UTF8String], keyValueLength);
-    for (auto const &submitKeyEvent : props.traits.submitKeyEvents) {
-      if (
-        submitKeyEvent.key == key &&
-        submitKeyEvent.altKey == [keyEvent[@"altKey"] boolValue] &&
-        submitKeyEvent.shiftKey == [keyEvent[@"shiftKey"] boolValue] &&
-        submitKeyEvent.ctrlKey == [keyEvent[@"ctrlKey"] boolValue] &&
-        submitKeyEvent.metaKey == [keyEvent[@"metaKey"] boolValue] &&
-        submitKeyEvent.functionKey == [keyEvent[@"functionKey"] boolValue]
-      ) {
-        shouldSubmit = YES;
-        break;
-      }
+    const char *keyCString = [keyValue UTF8String];
+    if (keyCString != nullptr) {
+      std::string_view key(keyCString);
+      const bool altKey = [keyEvent[@"altKey"] boolValue];
+      const bool shiftKey = [keyEvent[@"shiftKey"] boolValue];
+      const bool ctrlKey = [keyEvent[@"ctrlKey"] boolValue];
+      const bool metaKey = [keyEvent[@"metaKey"] boolValue];
+      const bool functionKey = [keyEvent[@"functionKey"] boolValue];
+
+    shouldSubmit = std::any_of(
+      props.traits.submitKeyEvents.begin(),
+      props.traits.submitKeyEvents.end(),
+      [&](auto const &submitKeyEvent) {
+        return submitKeyEvent.key == key && submitKeyEvent.altKey == altKey &&
+          submitKeyEvent.shiftKey == shiftKey && submitKeyEvent.ctrlKey == ctrlKey &&
+          submitKeyEvent.metaKey == metaKey && submitKeyEvent.functionKey == functionKey;
+      });
     }
   }
   
@@ -648,10 +654,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)textInputDidCancel
 {
   if (_eventEmitter) {
-
     auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
     textInputEventEmitter.onKeyPress({
-      .text = RCTStringFromNSString(@"\x1B"), // Escape key
+      .text = RCTStringFromNSString(kEscapeKeyCode),
       .eventCount = static_cast<int>(_mostRecentEventCount),
     });
   }
