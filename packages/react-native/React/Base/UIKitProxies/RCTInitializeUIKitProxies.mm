@@ -10,6 +10,9 @@
 #import "RCTKeyWindowValuesProxy.h"
 #import "RCTTraitCollectionProxy.h"
 #import "RCTWindowSafeAreaProxy.h"
+#if TARGET_OS_OSX // [macOS
+#import "RCTAppearanceProxy.h"
+#endif // macOS]
 
 void RCTInitializeUIKitProxies(void)
 {
@@ -19,7 +22,9 @@ void RCTInitializeUIKitProxies(void)
 #if !TARGET_OS_OSX // [macOS]
     [[RCTTraitCollectionProxy sharedInstance] startObservingTraitCollection];
     [[RCTInitialAccessibilityValuesProxy sharedInstance] recordAccessibilityValues];
-#endif // [macOS]
+#else // [macOS
+    [[RCTAppearanceProxy sharedInstance] startObservingAppearance];
+#endif // macOS]
     [[RCTKeyWindowValuesProxy sharedInstance] startObservingWindowSizeIfNecessary];
   });
 }
