@@ -78,6 +78,14 @@ typedef dispatch_block_t RCTImageLoaderCancellationBlock;
  */
 - (BOOL)shouldCacheLoadedImages;
 
+#if TARGET_OS_OSX // [macOS
+/**
+ * If defined, the image loading of the RCTImageLoader will be used to load the image using
+ * the returned URL. This allows rewriting the URL before the image loader starts the request.
+ */
+- (NSURL *)defaultLoadingURL:(NSURL *)requestURL;
+#endif // macOS]
+
 @end
 
 NS_ASSUME_NONNULL_END
