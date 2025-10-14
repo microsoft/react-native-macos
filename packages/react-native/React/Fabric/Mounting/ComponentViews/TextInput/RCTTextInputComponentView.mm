@@ -724,7 +724,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetrics]);
 #else // [macOS
-  static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetricsWithScrollView:scrollView]);
+    static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetricsWithScrollView:scrollView]);
 #endif // macOS]
   }
 }
