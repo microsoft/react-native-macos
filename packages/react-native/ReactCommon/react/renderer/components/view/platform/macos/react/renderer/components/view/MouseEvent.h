@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Microsoft Corporation.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/renderer/graphics/Geometry.h>
+#include <react/renderer/graphics/Float.h>
 
 namespace facebook::react {
 
@@ -19,7 +19,7 @@ struct MouseEvent {
    * Pointer horizontal location in target view.
    */
   Float clientX{0};
-  
+
   /**
    * Pointer vertical location in target view.
    */
@@ -29,7 +29,7 @@ struct MouseEvent {
    * Pointer horizontal location in window.
    */
   Float screenX{0};
-  
+
   /**
    * Pointer vertical location in window.
    */
