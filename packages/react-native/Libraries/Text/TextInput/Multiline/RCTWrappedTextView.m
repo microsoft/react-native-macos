@@ -62,6 +62,10 @@
                                              selector:@selector(boundsDidChange:)
                                                  name:NSViewBoundsDidChangeNotification
                                                object:_scrollView.contentView];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(scrollViewDidScroll:)
+                                                 name:NSViewBoundsDidChangeNotification
+                                               object:_scrollView.contentView];
   }
 
   return self;
@@ -132,6 +136,13 @@
 #pragma mark -
 #pragma mark Scrolling control
 
+#if TARGET_OS_OSX // [macOS
+- (void)scrollViewDidScroll:(NSNotification *)notification
+{
+  [self.textInputDelegate scrollViewDidScroll:_scrollView];
+}
+#endif // macOS]
+
 - (BOOL)scrollEnabled
 {
   return _scrollView.isScrollEnabled;
@@ -179,6 +190,19 @@
 {
   // RCTUITextView has logic in setTextContainerInset[s] to convert the UIEdgeInsets to a valid NSSize struct
   _forwardingTextView.textContainerInsets = textContainerInsets;
+}
+
+#pragma mark -
+#pragma mark Focus ring
+
+- (BOOL)enableFocusRing
+{
+  return _scrollView.enableFocusRing;
+}
+
+- (void)setEnableFocusRing:(BOOL)enableFocusRing 
+{
+  _scrollView.enableFocusRing = enableFocusRing;
 }
 
 @end

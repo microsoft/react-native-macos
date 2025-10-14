@@ -27,6 +27,15 @@ void RCTCopyBackedTextInput(
   toTextInput.placeholder = fromTextInput.placeholder;
   toTextInput.placeholderColor = fromTextInput.placeholderColor;
   toTextInput.textContainerInset = fromTextInput.textContainerInset;
+
+#if TARGET_OS_OSX // [macOS
+  toTextInput.accessibilityElement = fromTextInput.accessibilityElement;
+  toTextInput.accessibilityHelp = fromTextInput.accessibilityHelp;
+  toTextInput.accessibilityIdentifier = fromTextInput.accessibilityIdentifier;
+  toTextInput.accessibilityLabel = fromTextInput.accessibilityLabel;
+  toTextInput.accessibilityRole = fromTextInput.accessibilityRole;
+  toTextInput.autoresizingMask = fromTextInput.autoresizingMask;
+#endif // macOS]
 #if TARGET_OS_IOS // [macOS] [visionOS]
   toTextInput.inputAccessoryView = fromTextInput.inputAccessoryView;
 #endif // [macOS] [visionOS]
@@ -94,9 +103,7 @@ UIKeyboardAppearance RCTUIKeyboardAppearanceFromKeyboardAppearance(KeyboardAppea
       return UIKeyboardAppearanceDark;
   }
 }
-#endif // [macOS]
 
-#if !TARGET_OS_OSX // [macOS]
 UITextSpellCheckingType RCTUITextSpellCheckingTypeFromOptionalBool(std::optional<bool> spellCheck)
 {
   return spellCheck.has_value() ? (*spellCheck ? UITextSpellCheckingTypeYes : UITextSpellCheckingTypeNo)
