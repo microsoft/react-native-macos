@@ -206,17 +206,13 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
     traitCollection = userInfo[RCTUserInterfaceStyleDidChangeNotificationTraitCollectionKey];
   }
   NSString *newColorScheme = RCTColorSchemePreference(traitCollection);
-  if (![_currentColorScheme isEqualToString:newColorScheme]) {
-    _currentColorScheme = newColorScheme;
-    [self sendEventWithName:@"appearanceChanged" body:@{ @"colorScheme" : newColorScheme }];
-  }
 #else // [macOS
   NSString *newColorScheme = RCTColorSchemePreference([RCTAppearanceProxy sharedInstance].currentAppearance);
+#endif // macOS]
   if (![_currentColorScheme isEqualToString:newColorScheme]) {
     _currentColorScheme = newColorScheme;
     [self sendEventWithName:@"appearanceChanged" body:@{ @"colorScheme" : newColorScheme }];
   }
-#endif // macOS]
 }
 
 #pragma mark - RCTEventEmitter
