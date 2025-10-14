@@ -189,7 +189,7 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
     UITraitCollection *traitCollection = [RCTTraitCollectionProxy sharedInstance].currentTraitCollection;
     _currentColorScheme = RCTColorSchemePreference(traitCollection);
 #else // [macOS
-  NSAppearance *appearance = [RCTAppearanceProxy sharedInstance].currentAppearance;
+    NSAppearance *appearance = [RCTAppearanceProxy sharedInstance].currentAppearance;
     _currentColorScheme = RCTColorSchemePreference(appearance);
 #endif // macOS]
   }
