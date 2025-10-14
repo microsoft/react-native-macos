@@ -154,6 +154,8 @@ RCT_EXPORT_METHOD(canOpenURL
 RCT_EXPORT_METHOD(getInitialURL : (RCTPromiseResolveBlock)resolve reject : (__unused RCTPromiseRejectBlock)reject)
 {
   NSURL *initialURL = nil;
+#pragma clang diagnostic push // [macOS]
+#pragma clang diagnostic ignored "-Wdeprecated-declarations" // [macOS]
   if (self.bridge.launchOptions[UIApplicationLaunchOptionsURLKey]) {
     initialURL = self.bridge.launchOptions[UIApplicationLaunchOptionsURLKey];
   } else {
@@ -163,6 +165,7 @@ RCT_EXPORT_METHOD(getInitialURL : (RCTPromiseResolveBlock)resolve reject : (__un
       initialURL = ((NSUserActivity *)userActivityDictionary[@"UIApplicationLaunchOptionsUserActivityKey"]).webpageURL;
     }
   }
+#pragma clang diagnostic pop // [macOS]
   resolve(RCTNullIfNil(initialURL.absoluteString));
 }
 
