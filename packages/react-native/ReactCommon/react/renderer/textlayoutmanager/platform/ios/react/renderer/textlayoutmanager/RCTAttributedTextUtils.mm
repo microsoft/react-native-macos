@@ -104,6 +104,7 @@ inline static UIFontTextStyle RCTUIFontTextStyleForDynamicTypeRamp(const Dynamic
 }
 #endif // [macOS]
 
+#if !TARGET_OS_OSX // [macOS]
 inline static CGFloat RCTBaseSizeForDynamicTypeRamp(const DynamicTypeRamp &dynamicTypeRamp)
 {
   // Values taken from
@@ -133,6 +134,7 @@ inline static CGFloat RCTBaseSizeForDynamicTypeRamp(const DynamicTypeRamp &dynam
       return 34.0;
   }
 }
+#endif // [macOS]
 
 inline static CGFloat RCTEffectiveFontSizeMultiplierFromTextAttributes(const TextAttributes &textAttributes)
 {

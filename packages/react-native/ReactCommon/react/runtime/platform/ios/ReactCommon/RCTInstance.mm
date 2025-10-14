@@ -551,10 +551,10 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
                             name:errorData[@"name"]
                   componentStack:errorData[@"componentStack"]
                      exceptionId:error.id
-#if TARGET_OS_OSX // [macOS Use boolValue for isFatal to ensure type safety
-                     isFatal:[errorData[@"isFatal"] boolValue] // Explicitly convert to BOOL to avoid compiler errors on macOS
-#else
-                     isFatal:errorData[@"isFatal"]
+#if !TARGET_OS_OSX // [macOS Use boolValue for isFatal to ensure type safety // [macOS]
+                         isFatal:errorData[@"isFatal"]
+#else // [macOS
+                         isFatal:[errorData[@"isFatal"] boolValue] // Explicitly convert to BOOL to avoid compiler errors on macOS
 #endif // macOS]
                        extraData:errorData[@"extraData"]]) {
     JS::NativeExceptionsManager::ExceptionData jsErrorData{errorData};

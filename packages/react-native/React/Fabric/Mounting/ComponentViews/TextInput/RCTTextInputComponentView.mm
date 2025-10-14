@@ -24,8 +24,8 @@
 #import <React/RCTUITextView.h>
 #import <React/RCTUtils.h>
 #if TARGET_OS_OSX // [macOS
-#import <React/RCTWrappedTextView.h>
 #import <React/RCTViewKeyboardEvent.h>
+#import <React/RCTWrappedTextView.h>
 #endif // macOS]
 
 #import "RCTConversions.h"
@@ -1121,7 +1121,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView = secureTextEntry ? [RCTUISecureTextField new] : [RCTUITextField new];
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
-  
+
   // Copy the text field specific properties if we came from a single line input before the switch
   if ([_backedTextInputView isKindOfClass:[RCTUITextField class]]) {
     RCTUITextField *previousTextField = (RCTUITextField *)_backedTextInputView;

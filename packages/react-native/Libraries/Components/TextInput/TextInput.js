@@ -137,11 +137,9 @@ export type TextInputEditingEvent =
 
 // [macOS macOS-only
 export type SettingChangeEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
-    autoCorrectEnabled: boolean,
-    spellCheckEnabled: boolean,
-    grammarCheckEnabled: boolean,
-  |}>,
+  $ReadOnly<{
+    enabled: boolean,
+  }>,
 >;
 
 export type PasteEvent = NativeSyntheticEvent<
@@ -150,14 +148,14 @@ export type PasteEvent = NativeSyntheticEvent<
   |}>,
 >;
 
-export type SubmitKeyEvent = $ReadOnly<{|
+export type SubmitKeyEvent = $ReadOnly<{
   key: string,
   altKey?: ?boolean,
   ctrlKey?: ?boolean,
   metaKey?: ?boolean,
   shiftKey?: ?boolean,
   functionKey?: ?boolean,
-|}>;
+}>;
 // macOS]
 
 // [macOS
@@ -443,7 +441,7 @@ export type TextInputIOSProps = $ReadOnly<{
 }>;
 
 // [macOS
-type MacOSProps = $ReadOnly<{|
+export type TextInputMacOSProps = $ReadOnly<{
   /**
    * If `true`, clears the text field synchronously before `onSubmitEditing` is emitted.
    *
@@ -528,7 +526,7 @@ type MacOSProps = $ReadOnly<{|
    * @platform macos
    */
   tooltip?: ?string,
-|}>;
+}>;
 // macOS]
 
 export type TextInputAndroidProps = $ReadOnly<{
@@ -624,7 +622,7 @@ export type PastedTypesType = PasteType | $ReadOnlyArray<PasteType>; // [macOS]
 export type TextInputProps = $ReadOnly<{
   ...$Diff<ViewProps, $ReadOnly<{style: ?ViewStyleProp}>>,
   ...TextInputIOSProps,
-  ...MacOSProps, // [macOS]
+  ...TextInputMacOSProps, // [macOS]
   ...TextInputAndroidProps,
 
   /**
@@ -2043,6 +2041,7 @@ const autoCompleteWebToTextContentTypeMap = {
 const ExportedForwardRef: component(
   ref: React.RefSetter<TextInputInstance>,
   ...props: React.ElementConfig<typeof InternalTextInput>
+  // $FlowFixMe[incompatible-call]
 ) = React.forwardRef(function TextInput(
   {
     allowFontScaling = true,

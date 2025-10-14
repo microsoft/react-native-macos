@@ -26,21 +26,21 @@ const Platform: PlatformType = {
     return this.constants.osVersion;
   },
   // $FlowFixMe[unsafe-getters-setters]
-  get constants(): {|
+  get constants(): {
     forceTouchAvailable: boolean,
     interfaceIdiom: string,
     isTesting: boolean,
     isDisableAnimations?: boolean,
     osVersion: string,
-    reactNativeVersion: {|
+    reactNativeVersion: {
       major: number,
       minor: number,
       patch: number,
-      prerelease: ?number,
-    |},
+      prerelease: ?string,
+    },
     systemName: string,
     isMacCatalyst?: boolean,
-  |} {
+  } {
     // $FlowFixMe[object-this-reference]
     if (this.__constants == null) {
       // $FlowFixMe[object-this-reference]
@@ -84,11 +84,7 @@ const Platform: PlatformType = {
   },
   select: <T>(spec: PlatformSelectSpec<T>): T =>
     // $FlowFixMe[incompatible-return]
-    'macos' in spec
-      ? spec.macos
-      : 'native' in spec
-        ? spec.native
-        : spec.default,
+    'macos' in spec ? spec.macos : 'native' in spec ? spec.native : spec.default,
 };
 
 export default Platform;

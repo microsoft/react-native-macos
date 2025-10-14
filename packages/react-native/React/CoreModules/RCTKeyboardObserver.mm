@@ -85,6 +85,7 @@ IMPLEMENT_KEYBOARD_HANDLER(keyboardDidChangeFrame)
 
 @end
 
+#if !TARGET_OS_OSX // [macOS]
 NS_INLINE NSDictionary *RCTRectDictionaryValue(CGRect rect)
 {
   return @{
@@ -94,7 +95,6 @@ NS_INLINE NSDictionary *RCTRectDictionaryValue(CGRect rect)
     @"height" : @(rect.size.height),
   };
 }
-#if !TARGET_OS_OSX // [macOS]
 static NSString *RCTAnimationNameForCurve(UIViewAnimationCurve curve)
 {
   switch (curve) {

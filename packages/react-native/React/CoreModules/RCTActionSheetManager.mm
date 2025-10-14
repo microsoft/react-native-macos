@@ -37,7 +37,7 @@ using namespace facebook::react;
 {
   /* Unlike UIAlertAction (which takes a block for it's action), NSMenuItem takes a selector.
    * That selector no longer has has access to the method argument `callback`, so we must save it
-   * as an instance variable, that we can access in `menuItemDidTap`. We must do this as well for 
+   * as an instance variable, that we can access in `menuItemDidTap`. We must do this as well for
    * `failureCallback` and `successCallback`.
    */
   NSMapTable *_callbacks;
@@ -145,7 +145,9 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
   NSArray<NSNumber *> *disabledButtonIndices;
   NSInteger cancelButtonIndex =
       options.cancelButtonIndex() ? [RCTConvert NSInteger:@(*options.cancelButtonIndex())] : -1;
+#if !TARGET_OS_OSX // [macOS] Unused on macOS
   NSArray<NSNumber *> *destructiveButtonIndices;
+#endif // [macOS]
   if (options.disabledButtonIndices()) {
     disabledButtonIndices = RCTConvertVecToArray(*options.disabledButtonIndices(), ^id(double element) {
       return @(element);
@@ -337,9 +339,13 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
       RCTConvertOptionalVecToArray(options.excludedActivityTypes(), ^id(NSString *element) {
         return element;
       });
+#if !TARGET_OS_OSX // [macOS]
   NSString *userInterfaceStyle = [RCTConvert NSString:options.userInterfaceStyle()];
+#endif // [macOS]
   NSNumber *anchorViewTag = [RCTConvert NSNumber:options.anchor() ? @(*options.anchor()) : nil];
+#if !TARGET_OS_OSX // [macOS]
   RCTUIColor *tintColor = [RCTConvert RCTUIColor:options.tintColor() ? @(*options.tintColor()) : nil]; // [macOS]
+#endif // [macOS]
 
   dispatch_async(dispatch_get_main_queue(), ^{
     if (message) {
@@ -451,7 +457,7 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
     service.subject = _sharingSubject;
   }
 }
-  
+
 - (void)sharingService:(NSSharingService *)sharingService didFailToShareItems:(NSArray *)items error:(NSError *)error
 {
   _failureCallback(@[RCTJSErrorFromNSError(error)]);
@@ -469,7 +475,7 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
   NSString *activityType = [sharingService.description substringWithRange:range];
   _successCallback(@[@YES, RCTNullIfNil(activityType)]);
 }
-  
+
 - (NSArray<NSSharingService *> *)sharingServicePicker:(__unused NSSharingServicePicker *)sharingServicePicker sharingServicesForItems:(__unused NSArray *)items proposedSharingServices:(NSArray<NSSharingService *> *)proposedServices
 {
   return [proposedServices filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSSharingService *service, __unused NSDictionary<NSString *,id> * _Nullable bindings) {
@@ -477,7 +483,7 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
   }]];
 }
 #endif // macOS]
-  
+
 - (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
 {
   return std::make_shared<NativeActionSheetManagerSpecJSI>(params);

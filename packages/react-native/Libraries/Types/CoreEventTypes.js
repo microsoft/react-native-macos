@@ -364,8 +364,9 @@ export type DragEvent = NativeSyntheticEvent<
   }>,
 >;
 
+// [macOS
 export type KeyEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
+  $ReadOnly<{
     // Modifier keys
     capsLockKey: boolean,
     shiftKey: boolean,
@@ -381,7 +382,7 @@ export type KeyEvent = NativeSyntheticEvent<
     ArrowUp: boolean,
     ArrowDown: boolean,
     key: string,
-  |}>,
+  }>,
 >;
 
 /**
@@ -395,11 +396,11 @@ export type KeyEvent = NativeSyntheticEvent<
  *
  * @platform macos
  */
-export type HandledKeyEvent = $ReadOnly<{|
+export type HandledKeyEvent = $ReadOnly<{
   ctrlKey?: ?boolean,
   altKey?: ?boolean,
   shiftKey?: ?boolean,
   metaKey?: ?boolean,
   key: string,
-|}>;
+}>;
 // macOS]

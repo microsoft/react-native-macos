@@ -8,9 +8,10 @@
 #pragma once
 
 #include <react/renderer/components/textinput/basePrimitives.h>
+#include <react/renderer/components/view/KeyEvent.h> // [macOS]
 #include <optional>
 #include <string>
-#include <vector>
+#include <vector> // [macOS]
 
 namespace facebook::react {
 
