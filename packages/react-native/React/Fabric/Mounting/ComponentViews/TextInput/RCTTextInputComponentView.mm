@@ -627,13 +627,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       const bool metaKey = [keyEvent[@"metaKey"] boolValue];
       const bool functionKey = [keyEvent[@"functionKey"] boolValue];
 
-    shouldSubmit = std::any_of(
-      props.traits.submitKeyEvents.begin(),
-      props.traits.submitKeyEvents.end(),
-      [&](auto const &submitKeyEvent) {
-        return submitKeyEvent.key == key && submitKeyEvent.altKey == altKey &&
-          submitKeyEvent.shiftKey == shiftKey && submitKeyEvent.ctrlKey == ctrlKey &&
-          submitKeyEvent.metaKey == metaKey && submitKeyEvent.functionKey == functionKey;
+      shouldSubmit = std::any_of(
+        props.traits.submitKeyEvents.begin(),
+        props.traits.submitKeyEvents.end(),
+        [&](auto const &submitKeyEvent) {
+          return submitKeyEvent.key == key && submitKeyEvent.altKey == altKey &&
+            submitKeyEvent.shiftKey == shiftKey && submitKeyEvent.ctrlKey == ctrlKey &&
+            submitKeyEvent.metaKey == metaKey && submitKeyEvent.functionKey == functionKey;
       });
     }
   }
