@@ -328,6 +328,7 @@
   BOOL _allowNextScrollNoMatterWhat;
 #if TARGET_OS_OSX // [macOS
   BOOL _notifyDidScroll;
+  BOOL _disableScrollEvents;
   NSPoint _lastScrollPosition;
 #endif // macOS]
   CGRect _lastClippedToRect;
@@ -570,8 +571,28 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
 
 - (void)setFrame:(CGRect)frame
 {
+#if !TARGET_OS_OSX // [macOS]
   [super setFrame:frame];
+#else // [macOS
+  /**
+   * Setting the frame on the scroll view will randomly generate between 0 and 4 scroll events. These events happen
+   * during the layout phase of the view which generates layout notifications that are sent through the bridge.
+   * Because the bridge is heavily used, the scroll events are throttled and reach the JS thread with a random delay.
+   * Because the scroll event stores the clip and content view size, delayed scroll events will submit stale layout
+   * information that can break virtual list implemenations.
+   * By disabling scroll events during the execution of the setFrame method and scheduling one notification on
+   * the next run loop, we can mitigate the delayed scroll event by sending it at a time where the bridge is not busy.
+  */
+  _disableScrollEvents = YES;
+  [super setFrame:frame];
+  _disableScrollEvents = NO;
+
+  if (self.window != nil && !self.window.inLiveResize) {
+    [self performSelector:@selector(scrollViewDocumentViewBoundsDidChange:) withObject:nil afterDelay:0];
+  }
+#endif // macOS]
   [self centerContentIfNeeded];
+
 }
 
 - (void)insertReactSubview:(RCTUIView *)view atIndex:(NSInteger)atIndex // [macOS]
@@ -867,6 +888,10 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
 #if TARGET_OS_OSX // [macOS
 - (void)scrollViewDocumentViewBoundsDidChange:(__unused NSNotification *)notification
 {
+  if (_disableScrollEvents) {
+    return;
+  }
+
   if (_scrollView.centerContent) {
     // contentOffset setter dynamically centers content when _centerContent == YES
     [_scrollView setContentOffset:_scrollView.contentOffset];
