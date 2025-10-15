@@ -641,6 +641,7 @@ RCT_REMAP_VIEW_PROPERTY(zIndex, reactZIndex, NSInteger)
 RCT_EXPORT_VIEW_PROPERTY(onFocus, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onBlur, RCTBubblingEventBlock)
 
+RCT_EXPORT_VIEW_PROPERTY(onDoubleClick, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMouseEnter, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMouseLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragEnter, RCTDirectEventBlock)

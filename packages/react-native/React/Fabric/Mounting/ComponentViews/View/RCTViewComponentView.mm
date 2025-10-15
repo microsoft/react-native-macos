@@ -1875,7 +1875,14 @@ enum DragEventType {
 
 #pragma mark - Mouse Events
 
-- (void)emitMouseEvent {
+enum MouseEventType {
+  MouseEnter,
+  MouseLeave,
+  DoubleClick,
+};
+
+- (void)emitMouseEvent:(MouseEventType)eventType
+{
   if (!_eventEmitter) {
     return;
   }
@@ -1896,10 +1903,18 @@ enum DragEventType {
     .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
   };
   
-  if (_hasMouseOver) {
-    _eventEmitter->onMouseEnter(mouseEvent);
-  } else {
-    _eventEmitter->onMouseLeave(mouseEvent);
+  switch (eventType) {
+    case MouseEnter:
+      _eventEmitter->onMouseEnter(mouseEvent);
+      break;
+
+    case MouseLeave:
+      _eventEmitter->onMouseLeave(mouseEvent);
+      break;
+
+    case DoubleClick:
+      _eventEmitter->onDoubleClick(mouseEvent);
+      break;
   }
 }
 
@@ -1928,7 +1943,7 @@ enum DragEventType {
 
   if (hasMouseOver != _hasMouseOver) {
     _hasMouseOver = hasMouseOver;
-    [self emitMouseEvent];
+    [self emitMouseEvent:hasMouseOver ? MouseEnter : MouseLeave];
   }
 }
 
@@ -2001,7 +2016,7 @@ enum DragEventType {
   }
 
   _hasMouseOver = YES;
-  [self emitMouseEvent];
+  [self emitMouseEvent:MouseEnter];
 }
 
 - (void)mouseExited:(NSEvent *)event
@@ -2011,7 +2026,17 @@ enum DragEventType {
   }
 
   _hasMouseOver = NO;
-  [self emitMouseEvent];
+  [self emitMouseEvent:MouseLeave];
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+  BOOL hasDoubleClickEventHandler = _props->hostPlatformEvents[HostPlatformViewEvents::Offset::DoubleClick];
+  if (hasDoubleClickEventHandler && event.clickCount == 2) {
+    [self emitMouseEvent :DoubleClick];
+  } else {
+    [super mouseUp:event];
+  }
 }
 #endif // macOS]
 

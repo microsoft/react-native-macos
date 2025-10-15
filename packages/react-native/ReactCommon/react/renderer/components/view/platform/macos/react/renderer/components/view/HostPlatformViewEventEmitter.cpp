@@ -67,14 +67,20 @@ static jsi::Object mouseEventPayload(jsi::Runtime& runtime, const MouseEvent& ev
 };
 
 void HostPlatformViewEventEmitter::onMouseEnter(const MouseEvent& mouseEvent) const {
-  dispatchEvent("mouseEnter", [mouseEvent](jsi::Runtime &runtime) { 
+  dispatchEvent("mouseEnter", [mouseEvent](jsi::Runtime& runtime) { 
     return mouseEventPayload(runtime, mouseEvent); 
   });
 }
 
 void HostPlatformViewEventEmitter::onMouseLeave(const MouseEvent& mouseEvent) const {
-  dispatchEvent("mouseLeave", [mouseEvent](jsi::Runtime &runtime) { 
+  dispatchEvent("mouseLeave", [mouseEvent](jsi::Runtime& runtime) { 
     return mouseEventPayload(runtime, mouseEvent); 
+  });
+}
+
+void HostPlatformViewEventEmitter::onDoubleClick(const MouseEvent& mouseEvent) const {
+  dispatchEvent("doubleClick", [mouseEvent](jsi::Runtime& runtime) {
+    return mouseEventPayload(runtime, mouseEvent);
   });
 }
 
@@ -170,20 +176,20 @@ static jsi::Value dragEventPayload(
   return payload;
 }
 
-void HostPlatformViewEventEmitter::onDragEnter(DragEvent const& dragEvent) const {
-  dispatchEvent("dragEnter", [dragEvent](jsi::Runtime &runtime) {
+void HostPlatformViewEventEmitter::onDragEnter(const DragEvent& dragEvent) const {
+  dispatchEvent("dragEnter", [dragEvent](jsi::Runtime& runtime) {
     return dragEventPayload(runtime, dragEvent);
   });
 }
 
-void HostPlatformViewEventEmitter::onDragLeave(DragEvent const& dragEvent) const {
-  dispatchEvent("dragLeave", [dragEvent](jsi::Runtime &runtime) {
+void HostPlatformViewEventEmitter::onDragLeave(const DragEvent& dragEvent) const {
+  dispatchEvent("dragLeave", [dragEvent](jsi::Runtime& runtime) {
     return dragEventPayload(runtime, dragEvent);
   });
 }
 
-void HostPlatformViewEventEmitter::onDrop(DragEvent const& dragEvent) const {
-  dispatchEvent("drop", [dragEvent](jsi::Runtime &runtime) {
+void HostPlatformViewEventEmitter::onDrop(const DragEvent& dragEvent) const {
+  dispatchEvent("drop", [dragEvent](jsi::Runtime& runtime) {
     return dragEventPayload(runtime, dragEvent);
   });
 }

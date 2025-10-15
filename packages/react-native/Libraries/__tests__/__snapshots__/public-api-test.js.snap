@@ -3866,6 +3866,7 @@ exports[`public API should not change unintentionally Libraries/Components/View/
   focusable: true,
   onMouseEnter: true,
   onMouseLeave: true,
+  onDoubleClick: true,
   onDragEnter: true,
   onDragLeave: true,
   onDrop: true,
@@ -4106,6 +4107,7 @@ export type KeyboardEventProps = $ReadOnly<{|
 type MouseEventProps = $ReadOnly<{
   onMouseEnter?: ?(event: MouseEvent) => void,
   onMouseLeave?: ?(event: MouseEvent) => void,
+  onDoubleClick?: ?(event: MouseEvent) => void,
 }>;
 type PointerEventProps = $ReadOnly<{
   onClick?: ?(event: PointerEvent) => void,
