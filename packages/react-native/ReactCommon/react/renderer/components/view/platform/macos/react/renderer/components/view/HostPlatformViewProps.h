@@ -50,5 +50,9 @@ class HostPlatformViewProps : public BaseViewProps {
   std::vector<std::string> draggedTypes{};
 
   std::optional<std::string> tooltip{};
+
+  bool acceptsFirstMouse{false};
+  bool allowsVibrancy{false};
+  bool mouseDownCanMoveWindow{true};
 };
 } // namespace facebook::react
