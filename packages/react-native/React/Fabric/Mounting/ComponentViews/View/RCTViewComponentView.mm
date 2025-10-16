@@ -152,7 +152,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     [self invalidateLayer];
   }
 }
-#else // [macOS SAAD
+#else // [macOS
 - (void)viewDidChangeEffectiveAppearance
 {
   [super viewDidChangeEffectiveAppearance];
@@ -1562,7 +1562,6 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 }
 
 #if TARGET_OS_OSX // [macOS
-
 - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args
 {
   if ([commandName isEqualToString:@"focus"]) {
