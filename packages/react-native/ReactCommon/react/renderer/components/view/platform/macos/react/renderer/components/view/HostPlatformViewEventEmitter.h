@@ -26,24 +26,23 @@ class HostPlatformViewEventEmitter : public BaseViewEventEmitter {
 
 #pragma mark - Keyboard Events
 
-  void onKeyDown(KeyEvent const& keyEvent) const;
-  void onKeyUp(KeyEvent const& keyEvent) const;
+  void onKeyDown(const KeyEvent& keyEvent) const;
+  void onKeyUp(const KeyEvent& keyEvent) const;
 
 #pragma mark - Mouse Events
 
-  void onMouseEnter(MouseEvent const& mouseEvent) const;
-  void onMouseLeave(MouseEvent const& mouseEvent) const;
+  void onMouseEnter(const MouseEvent& mouseEvent) const;
+  void onMouseLeave(const MouseEvent& mouseEvent) const;
+  void onDoubleClick(const MouseEvent& mouseEvent) const;
 
 #pragma mark - Drag and Drop Events
 
-  void onDragEnter(DragEvent const& dragEvent) const;
-  void onDragLeave(DragEvent const& dragEvent) const;
-  void onDrop(DragEvent const& dragEvent) const;
-
+  void onDragEnter(const DragEvent& dragEvent) const;
+  void onDragLeave(const DragEvent& dragEvent) const;
+  void onDrop(const DragEvent& dragEvent) const;
   static jsi::Value dataTransferPayload(
     jsi::Runtime& runtime,
-    DataTransfer const& dataTransfer);
-
+    const DataTransfer& dataTransfer);
 };
 
 } // namespace facebook::react

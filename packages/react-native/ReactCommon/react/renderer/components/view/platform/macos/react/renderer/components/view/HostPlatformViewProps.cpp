@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Microsoft Corporation.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -26,7 +26,7 @@ HostPlatformViewProps::HostPlatformViewProps(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
               ? sourceProps.hostPlatformEvents
               : convertRawProp(
-                    context, 
+                    context,
                     rawProps,
                     sourceProps.hostPlatformEvents,
                     {})),
@@ -106,9 +106,9 @@ void HostPlatformViewProps::setProp(
   // call all super::setProp methods, since multiple structs may
   // reuse the same values.
   BaseViewProps::setProp(context, hash, propName, value);
-  
+
   static auto defaults = HostPlatformViewProps{};
-  
+
   switch (hash) {
     VIEW_EVENT_CASE_MACOS(Focus);
     VIEW_EVENT_CASE_MACOS(Blur);
@@ -116,6 +116,7 @@ void HostPlatformViewProps::setProp(
     VIEW_EVENT_CASE_MACOS(KeyUp);
     VIEW_EVENT_CASE_MACOS(MouseEnter);
     VIEW_EVENT_CASE_MACOS(MouseLeave);
+    VIEW_EVENT_CASE_MACOS(DoubleClick);
     RAW_SET_PROP_SWITCH_CASE_BASIC(focusable);
     RAW_SET_PROP_SWITCH_CASE_BASIC(enableFocusRing);
     RAW_SET_PROP_SWITCH_CASE_BASIC(keyDownEvents);
@@ -124,6 +125,5 @@ void HostPlatformViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(tooltip);
   }
 }
-
 
 } // namespace facebook::react

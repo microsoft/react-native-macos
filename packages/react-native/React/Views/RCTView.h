@@ -174,6 +174,7 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 @property (nonatomic, copy) RCTDirectEventBlock onDragEnter;
 @property (nonatomic, copy) RCTDirectEventBlock onDragLeave;
 @property (nonatomic, copy) RCTDirectEventBlock onDrop;
+@property (nonatomic, copy) RCTDirectEventBlock onDoubleClick;
 
 // Keyboarding events
 // NOTE does not properly work with single line text inputs (most key downs). This is because those are

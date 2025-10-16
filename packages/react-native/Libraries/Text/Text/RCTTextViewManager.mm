@@ -35,6 +35,8 @@ RCT_EXPORT_SHADOW_PROPERTY(onTextLayout, RCTDirectEventBlock)
 
 RCT_EXPORT_VIEW_PROPERTY(selectable, BOOL)
 
+RCT_EXPORT_OSX_VIEW_PROPERTY(focusable, BOOL)
+
 - (void)setBridge:(RCTBridge *)bridge
 {
   [super setBridge:bridge];

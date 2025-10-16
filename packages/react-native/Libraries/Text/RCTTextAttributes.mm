@@ -111,6 +111,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
       textAttributes->_textTransform != RCTTextTransformUndefined ? textAttributes->_textTransform : _textTransform;
 #if TARGET_OS_OSX // [macOS
   _cursor = textAttributes->_cursor != RCTCursorAuto ? textAttributes->_cursor : _cursor;
+  _href = textAttributes->_href ?: _href;
 #endif // macOS]
 }
 
@@ -236,6 +237,9 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
 #if TARGET_OS_OSX // [macOS
   if (_cursor != RCTCursorAuto) {
     attributes[NSCursorAttributeName] = NSCursorFromRCTCursor(_cursor);
+  }
+  if (_href) {
+    attributes[NSLinkAttributeName] = [RCTConvert NSURL:_href];
   }
 #endif // macOS]
 

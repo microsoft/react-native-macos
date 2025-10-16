@@ -197,6 +197,20 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 
+#if TARGET_OS_OSX // [macOS
+- (void)setFrame:(NSRect)frame
+{
+  [super setFrame:frame];
+
+  // On macOS Sonoma, assigning the tool tip will set up a tracking rect based on the view's current frame. Since the
+  // tool tip can be assigned before it was layed out, the tracking rect would stay at NSZeroRect. We fix this by
+  // clearing and reassigning the tool tip to force update the internally created tracking rect with the new frame.
+  NSString *toolTip = self.toolTip;
+  self.toolTip = nil;
+  self.toolTip = toolTip;
+}
+#endif // macOS]
+
 - (void)setReactLayoutDirection:(UIUserInterfaceLayoutDirection)layoutDirection
 {
   if (_reactLayoutDirection != layoutDirection) {
@@ -1222,7 +1236,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 #else // [macOS
   const RCTBorderColors borderColors = [self borderColors];
 #endif // macOS]
-  BOOL useIOSBorderRendering = 
+  BOOL useIOSBorderRendering =
     RCTCornerRadiiAreEqualAndSymmetrical(cornerRadii) &&
     RCTBorderInsetsAreEqual(borderInsets) &&
     RCTBorderColorsAreEqual(borderColors) &&
@@ -1501,9 +1515,11 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   }
 }
 
+#pragma mark - Responder Chain
+
 - (BOOL)needsPanelToBecomeKey
 {
-	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default. 
+	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default.
 	return false;
 }
 
@@ -1550,6 +1566,15 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
                    locationInfo:[self locationInfoFromEvent:event]
                   modifierFlags:event.modifierFlags
                  additionalData:nil];
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+  if (_onDoubleClick && event.clickCount == 2){
+    _onDoubleClick(nil);
+  } else {
+    [super mouseUp:event];
+  }
 }
 
 - (BOOL)mouseDownCanMoveWindow
@@ -1625,7 +1650,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
     BOOL isDir = NO;
     BOOL isValid = (![[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDir] || isDir) ? NO : YES;
     if (isValid) {
-      
+
       NSString *MIMETypeString = nil;
       if (fileURL.pathExtension) {
         CFStringRef fileExtension = (__bridge CFStringRef)fileURL.pathExtension;
