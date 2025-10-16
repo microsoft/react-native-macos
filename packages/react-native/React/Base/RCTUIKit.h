@@ -635,8 +635,18 @@ typedef void (^RCTUIGraphicsImageDrawingActions)(RCTUIGraphicsImageRendererConte
 
 - (instancetype)initWithSize:(CGSize)size;
 - (instancetype)initWithSize:(CGSize)size format:(RCTUIGraphicsImageRendererFormat *)format;
-- (NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions;
-
+- (NSImage *)imageWithActions:(RCTUIGraphicsImageDrawingActions)actions;
+@property (nonatomic, copy) RCTUIGraphicsImageDrawingActions actions;
 @end
 NS_ASSUME_NONNULL_END
 #endif
+
+#if TARGET_OS_OSX // [macOS
+// TextViews implementing this protocol can extend the native text menu
+@protocol ExtensibleNativeMenuProtocol
+
+@required
+@property (nonatomic, strong) NSArray<NSMenuItem *> * _Nullable additionalMenuItems;
+
+@end
+#endif // macOS]

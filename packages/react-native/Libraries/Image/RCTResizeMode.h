@@ -8,21 +8,12 @@
 #import <React/RCTConvert.h>
 
 typedef NS_ENUM(NSInteger, RCTResizeMode) {
-#if !TARGET_OS_OSX // [macOS]
   RCTResizeModeCover = UIViewContentModeScaleAspectFill,
   RCTResizeModeContain = UIViewContentModeScaleAspectFit,
   RCTResizeModeStretch = UIViewContentModeScaleToFill,
   RCTResizeModeCenter = UIViewContentModeCenter,
-  RCTResizeModeRepeat = -1, // Use negative values to avoid
   RCTResizeModeNone = UIViewContentModeTopLeft,
-#else // [macOS
-  RCTResizeModeCover = -2, // Not supported by NSImageView
-  RCTResizeModeContain = NSImageScaleProportionallyUpOrDown,
-  RCTResizeModeStretch = NSImageScaleAxesIndependently,
-  RCTResizeModeCenter = -3, // assumes NSImageAlignmentCenter
-  RCTResizeModeRepeat = -1,
-  RCTResizeModeNone = NSImageScaleNone,
-#endif // macOS]
+  RCTResizeModeRepeat = -1, // Use negative values to avoid conflicts with iOS enum values.
 };
 
 static inline RCTResizeMode RCTResizeModeFromUIViewContentMode(UIViewContentMode mode)

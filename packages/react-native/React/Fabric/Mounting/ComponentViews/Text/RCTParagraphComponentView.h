@@ -14,7 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 /*
  * UIView class for <Paragraph> component.
  */
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTParagraphComponentView : RCTViewComponentView
+#else // [macOS
+@interface RCTParagraphComponentView : RCTViewComponentView <ExtensibleNativeMenuProtocol>
+#endif // macOS]
 
 /*
  * Returns an `NSAttributedString` representing the content of the component.

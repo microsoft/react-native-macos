@@ -621,6 +621,11 @@ const textInputExamples: Array<RNTesterModuleExample> = [
   {
     title: 'Multiline blur on submit',
     render: function (): React.Node {
+      const [value, setValue] = React.useState('');
+      const onSubmitEditing = React.useCallback(
+        () => Alert.alert('Alert', value),
+        [value],
+      );
       return (
         <View>
           <ExampleTextInput
@@ -629,9 +634,8 @@ const textInputExamples: Array<RNTesterModuleExample> = [
             returnKeyType="next"
             blurOnSubmit={true}
             multiline={true}
-            onSubmitEditing={event =>
-              Alert.alert('Alert', event.nativeEvent.text)
-            }
+            onChangeText={setValue}
+            onSubmitEditing={onSubmitEditing}
           />
         </View>
       );
@@ -1102,6 +1106,12 @@ if (Platform.OS === 'macos') {
     {
       title: 'Clear text on submit - Multiline Textfield',
       render: function (): React.Node {
+        const [value, setValue] = React.useState('');
+        const onSubmitEditing = React.useCallback(
+          () => Alert.alert('Alert', value),
+          [value],
+        );
+
         return (
           <View>
             <Text>Default submit key (Enter):</Text>
@@ -1109,6 +1119,8 @@ if (Platform.OS === 'macos') {
               multiline={true}
               clearTextOnSubmit={true}
               style={styles.multiline}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
             <Text>Custom submit key (Enter): - same as above</Text>
             <ExampleTextInput
@@ -1116,6 +1128,8 @@ if (Platform.OS === 'macos') {
               clearTextOnSubmit={true}
               style={styles.multiline}
               submitKeyEvents={[{key: 'Enter'}]}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
             <Text>Custom submit key (CMD + Enter):</Text>
             <ExampleTextInput
@@ -1123,6 +1137,8 @@ if (Platform.OS === 'macos') {
               clearTextOnSubmit={true}
               style={styles.multiline}
               submitKeyEvents={[{key: 'Enter', metaKey: true}]}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
             <Text>Custom submit key (Shift + Enter):</Text>
             <ExampleTextInput
@@ -1130,6 +1146,8 @@ if (Platform.OS === 'macos') {
               clearTextOnSubmit={true}
               style={styles.multiline}
               submitKeyEvents={[{key: 'Enter', shiftKey: true}]}
+              onChangeText={setValue}
+              onSubmitEditing={onSubmitEditing}
             />
           </View>
         );

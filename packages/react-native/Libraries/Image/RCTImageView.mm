@@ -144,6 +144,9 @@ static NSDictionary *onLoadParamsForSource(RCTImageSource *source)
     _bridge = bridge;
 #if TARGET_OS_OSX // [macOS
     self.wantsLayer = YES;
+    _resizeMode = RCTResizeModeCover;
+    _imageView.contentMode = (UIViewContentMode)RCTResizeModeCover;
+    [_imageView unregisterDraggedTypes];
 #endif // macOS]
     _imageView = [RCTUIImageViewAnimated new];
     _imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -195,10 +198,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
 #else // [macOS
     image.capInsets = _capInsets;
     image.resizingMode = NSImageResizingModeTile;
-  } else if (_resizeMode == RCTResizeModeCover) {
-    if (!NSEqualSizes(self.bounds.size, NSZeroSize)) {
-      image = RCTFillImagePreservingAspectRatio(image, self.bounds.size, self.window.backingScaleFactor ?: 1.0);
-    }
 #endif // macOS]
   } else if (!UIEdgeInsetsEqualToEdgeInsets(UIEdgeInsetsZero, _capInsets)) {
     // Applying capInsets of 0 will switch the "resizingMode" of the image to "tile" which is undesired
@@ -284,21 +283,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
     if (_resizeMode == RCTResizeModeRepeat) {
       // Repeat resize mode is handled by the UIImage. Use scale to fill
       // so the repeated image fills the UIImageView.
-#if !TARGET_OS_OSX // [macOS]
       _imageView.contentMode = UIViewContentModeScaleToFill;
-#else // [macOS
-      _imageView.imageScaling = NSImageScaleAxesIndependently;
-#endif // macOS]
     } else {
-#if !TARGET_OS_OSX // [macOS]
       _imageView.contentMode = (UIViewContentMode)resizeMode;
-#else // [macOS
-      // This relies on having previously resampled the image to a size that exceeds the image view.
-      if (resizeMode == RCTResizeModeCover) {
-        resizeMode = RCTResizeModeCenter;
-      }
-      _imageView.imageScaling = (NSImageScaling)resizeMode;
-#endif // macOS]
     }
 
     if ([self shouldReloadImageSourceAfterResize]) {
@@ -566,7 +553,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
          !RCTShouldReloadImageForSizeChange(_targetSize, idealSize)) // [macOS
 #if TARGET_OS_OSX
          // Since macOS doen't support UIViewContentModeScaleAspectFill, we have to manually resample the image
-         // If we're in cover mode we need to ensure that the image is re-sampled to the correct size when the container size (shrinking 
+         // If we're in cover mode we need to ensure that the image is re-sampled to the correct size when the container size (shrinking
          // being the most obvious case) otherwise we will end up in a state an image will not properly scale inside its container
          && (RCTResizeModeFromUIViewContentMode(_imageView.contentMode) != RCTResizeModeCover ||
             (imageSize.width == idealSize.width && imageSize.height == idealSize.height))
@@ -617,13 +604,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
     [self reloadImage];
   }
 }
-    
+
 #if TARGET_OS_OSX // [macOS
 - (void)viewDidChangeBackingProperties
 {
   [self reloadImage];
 }
-  
+
 - (RCTPlatformView *)reactAccessibilityElement
 {
   return _imageView;

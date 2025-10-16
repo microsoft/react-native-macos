@@ -147,7 +147,7 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
     _containerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [_scrollView setDocumentView:_containerView];
 #endif // macOS]
-    
+
 #if !TARGET_OS_OSX // [macOS]
     [self.scrollViewDelegateSplitter addDelegate:self];
 #endif // [macOS]
@@ -274,6 +274,38 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   return curve << 16;
 }
 #endif
+
+#if TARGET_OS_OSX // [macOS
+- (void)viewDidMoveToWindow
+{
+  [super viewDidMoveToWindow];
+
+  NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
+  if (self.window == nil) {
+    // Unregister scrollview's clipview bounds change notifications
+    [defaultCenter removeObserver:self
+                             name:NSViewBoundsDidChangeNotification
+                           object:_scrollView.contentView];
+  } else {
+    // Register for scrollview's clipview bounds change notifications so we can track scrolling
+    [defaultCenter addObserver:self
+                      selector:@selector(scrollViewDocumentViewBoundsDidChange:)
+                          name:NSViewBoundsDidChangeNotification
+                        object:_scrollView.contentView]; // NSClipView
+  }
+}
+
+- (void)setContentInset:(UIEdgeInsets)contentInset
+{
+  if (UIEdgeInsetsEqualToEdgeInsets(contentInset, _contentInset)) {
+    return;
+  }
+
+  _contentInset = contentInset;
+  _scrollView.contentInset = contentInset;
+  _scrollView.scrollIndicatorInsets = contentInset;
+}
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 - (RCTGenericDelegateSplitter<id<UIScrollViewDelegate>> *)scrollViewDelegateSplitter
@@ -406,7 +438,11 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   MAP_SCROLL_VIEW_PROP(zoomScale);
 
   if (oldScrollViewProps.contentInset != newScrollViewProps.contentInset) {
+#if !TARGET_OS_OSX // [macOS]
     _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+#else // [macOS
+    self.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+#endif // macOS]
   }
 
   RCTEnhancedScrollView *scrollView = (RCTEnhancedScrollView *)_scrollView;
@@ -450,7 +486,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     _shouldUpdateContentInsetAdjustmentBehavior = NO;
   }
 #endif // [macOS]
-    
+
   MAP_SCROLL_VIEW_PROP(disableIntervalMomentum);
   MAP_SCROLL_VIEW_PROP(snapToInterval);
 
@@ -635,6 +671,22 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _prevFirstVisibleFrame = CGRectZero;
   _firstVisibleView = nil;
 }
+
+#if TARGET_OS_OSX // [macOS
+#pragma mark - NSScrollView scroll notification
+
+- (void)scrollViewDocumentViewBoundsDidChange:(__unused NSNotification *)notification
+{
+  RCTEnhancedScrollView *scrollView = _scrollView;
+
+  if (scrollView.centerContent) {
+    // Update content centering through contentOffset setter
+    [scrollView setContentOffset:scrollView.contentOffset];
+  }
+
+  [self scrollViewDidScroll:scrollView];
+}
+#endif // macOS]
 
 #pragma mark - UIScrollViewDelegate
 
@@ -859,9 +911,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
 - (void)flashScrollIndicators
 {
-#if !TARGET_OS_OSX // [macOS]
-  [_scrollView flashScrollIndicators];
-#endif // [macOS]
+  [(RCTEnhancedScrollView *)_scrollView flashScrollIndicators]; // [macOS]
 }
 
 - (void)scrollTo:(double)x y:(double)y animated:(BOOL)animated
@@ -960,7 +1010,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   [self _forceDispatchNextScrollEvent];
 
-  [_scrollView setContentOffset:offset animated:animated];
+  [(RCTEnhancedScrollView *)_scrollView setContentOffset:offset animated:animated]; // [macOS]
 
   if (!animated) {
     // When not animated, the expected workflow in ``scrollViewDidEndScrollingAnimation`` after scrolling is not going
@@ -971,9 +1021,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
 - (void)zoomToRect:(CGRect)rect animated:(BOOL)animated
 {
-#if !TARGET_OS_OSX // [macOS]
-  [_scrollView zoomToRect:rect animated:animated];
-#endif // [macOS]
+  [(RCTEnhancedScrollView *)_scrollView zoomToRect:rect animated:animated]; // [macOS]
 }
 
 #if !TARGET_OS_OSX // [macOS]

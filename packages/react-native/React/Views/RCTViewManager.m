@@ -254,7 +254,7 @@ RCT_REMAP_VIEW_PROPERTY(shadowOffset, layer.shadowOffset, CGSize)
 RCT_REMAP_VIEW_PROPERTY(shadowOpacity, layer.shadowOpacity, float)
 RCT_REMAP_VIEW_PROPERTY(shadowRadius, layer.shadowRadius, CGFloat)
 #else // [macOS
-RCT_EXPORT_VIEW_PROPERTY(shadowColor, CGColor)
+RCT_EXPORT_VIEW_PROPERTY(shadowColor, UIColor)
 RCT_EXPORT_VIEW_PROPERTY(shadowOffset, CGSize)
 RCT_EXPORT_VIEW_PROPERTY(shadowOpacity, CGFloat)
 RCT_EXPORT_VIEW_PROPERTY(shadowRadius, CGFloat)
@@ -335,7 +335,7 @@ RCT_CUSTOM_VIEW_PROPERTY(role, UIAccessibilityTraits, RCTView)
   view.reactAccessibilityElement.accessibilityTraits |= view.reactAccessibilityElement.role
       ? view.reactAccessibilityElement.roleTraits
       : view.reactAccessibilityElement.accessibilityRole ? view.reactAccessibilityElement.accessibilityRoleTraits
-                                                         : (defaultView.accessibilityTraits & AccessibilityRolesMask);                        
+                                                         : (defaultView.accessibilityTraits & AccessibilityRolesMask);
 }
 #else // [macOS
 - (void) updateAccessibilityRole:(RCTView *)view withDefaultView:(RCTView *)defaultView
@@ -638,9 +638,7 @@ RCT_REMAP_VIEW_PROPERTY(zIndex, reactZIndex, NSInteger)
 
 #pragma mark - macOS properties
 
-RCT_EXPORT_VIEW_PROPERTY(onFocus, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onBlur, RCTBubblingEventBlock)
-
+RCT_EXPORT_VIEW_PROPERTY(onDoubleClick, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMouseEnter, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMouseLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragEnter, RCTDirectEventBlock)

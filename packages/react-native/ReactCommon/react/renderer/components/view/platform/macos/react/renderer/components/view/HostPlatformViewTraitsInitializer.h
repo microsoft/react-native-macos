@@ -13,12 +13,7 @@
 namespace facebook::react::HostPlatformViewTraitsInitializer {
 
 inline bool formsStackingContext(const ViewProps& props) {
-  constexpr decltype(HostPlatformViewEvents::bits) mouseEventMask = {
-      (1 << (int)HostPlatformViewEvents::Offset::MouseEnter) |
-      (1 << (int)HostPlatformViewEvents::Offset::MouseLeave) |
-      (1 << (int)HostPlatformViewEvents::Offset::DoubleClick)};
-  return (props.hostPlatformEvents.bits & mouseEventMask).any() ||
-      props.tooltip;
+    return false;
 }
 
 inline bool formsView(const ViewProps& props) {

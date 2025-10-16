@@ -7,10 +7,7 @@
 
 #import "RCTLinearGradient.h"
 
-#import <React/RCTAnimationUtils.h>
 #import <React/RCTConversions.h>
-#include <react/renderer/graphics/ValueUnit.h>
-#import <react/utils/FloatComparison.h>
 
 using namespace facebook::react;
 
@@ -18,9 +15,25 @@ using namespace facebook::react;
 
 + (CALayer *)gradientLayerWithSize:(CGSize)size gradient:(const LinearGradient &)gradient
 {
-  RCTUIGraphicsImageRenderer *renderer = [[RCTUIGraphicsImageRenderer alloc] initWithSize:size]; // [macOS]
+#if !TARGET_OS_OSX // macos does not support linear gradients
+  UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:size];
   const auto &direction = gradient.direction;
-  UIImage *gradientImage = [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
+  const auto &colorStops = gradient.colorStops;
+
+  UIImage *gradientImage = [renderer imageWithActions:^(UIGraphicsImageRendererContext *_Nonnull rendererContext) {
+    CGContextRef context = rendererContext.CGContext;
+    NSMutableArray *colors = [NSMutableArray array];
+    CGFloat locations[colorStops.size()];
+
+    for (size_t i = 0; i < colorStops.size(); ++i) {
+      const auto &colorStop = colorStops[i];
+      CGColorRef cgColor = RCTCreateCGColorRefFromSharedColor(colorStop.color);
+      [colors addObject:(__bridge id)cgColor];
+      locations[i] = colorStop.position;
+    }
+
+    CGGradientRef cgGradient = CGGradientCreateWithColors(NULL, (__bridge CFArrayRef)colors, locations);
+
     CGPoint startPoint;
     CGPoint endPoint;
 
@@ -37,25 +50,6 @@ using namespace facebook::react;
       endPoint = CGPointMake(0.0, size.height);
     }
 
-    CGFloat dx = endPoint.x - startPoint.x;
-    CGFloat dy = endPoint.y - startPoint.y;
-    CGFloat gradientLineLength = sqrt(dx * dx + dy * dy);
-    const auto processedStops = getFixedColorStops(gradient.colorStops, gradientLineLength);
-    const auto colorStops = processColorTransitionHints(processedStops);
-
-    CGContextRef context = rendererContext.CGContext;
-    NSMutableArray *colors = [NSMutableArray array];
-    CGFloat locations[colorStops.size()];
-
-    for (size_t i = 0; i < colorStops.size(); ++i) {
-      const auto &colorStop = colorStops[i];
-      CGColorRef cgColor = RCTCreateCGColorRefFromSharedColor(colorStop.color);
-      [colors addObject:(__bridge id)cgColor];
-      locations[i] = std::max(std::min(colorStop.position.value(), 1.0), 0.0);
-    }
-
-    CGGradientRef cgGradient = CGGradientCreateWithColors(NULL, (__bridge CFArrayRef)colors, locations);
-
     CGContextDrawLinearGradient(context, cgGradient, startPoint, endPoint, 0);
 
     for (id color in colors) {
@@ -63,13 +57,12 @@ using namespace facebook::react;
     }
     CGGradientRelease(cgGradient);
   }];
+#endif
 
   CALayer *gradientLayer = [CALayer layer];
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX // macos does not support linear gradients
   gradientLayer.contents = (__bridge id)gradientImage.CGImage;
-#else // [macOS
-  gradientLayer.contents = (__bridge id)UIImageGetCGImageRef(gradientImage);
-#endif // macOS]
+#endif
 
   return gradientLayer;
 }
