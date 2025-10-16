@@ -276,25 +276,6 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 #endif
 
 #if TARGET_OS_OSX // [macOS
-- (void)viewDidMoveToWindow
-{
-  [super viewDidMoveToWindow];
-
-  NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
-  if (self.window == nil) {
-    // Unregister scrollview's clipview bounds change notifications
-    [defaultCenter removeObserver:self
-                             name:NSViewBoundsDidChangeNotification
-                           object:_scrollView.contentView];
-  } else {
-    // Register for scrollview's clipview bounds change notifications so we can track scrolling
-    [defaultCenter addObserver:self
-                      selector:@selector(scrollViewDocumentViewBoundsDidChange:)
-                          name:NSViewBoundsDidChangeNotification
-                        object:_scrollView.contentView]; // NSClipView
-  }
-}
-
 - (void)setContentInset:(UIEdgeInsets)contentInset
 {
   if (UIEdgeInsetsEqualToEdgeInsets(contentInset, _contentInset)) {
@@ -827,9 +808,25 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [super didMoveToWindow];
 #else // [macOS
 - (void)viewDidMoveToWindow // [macOS]
+#endif // [macOS]
 {
   [super viewDidMoveToWindow];
-#endif // [macOS]
+
+#if TARGET_OS_OSX // [macOS
+  NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
+  if (self.window == nil) {
+    // Unregister scrollview's clipview bounds change notifications
+    [defaultCenter removeObserver:self
+                             name:NSViewBoundsDidChangeNotification
+                           object:_scrollView.contentView];
+  } else {
+    // Register for scrollview's clipview bounds change notifications so we can track scrolling
+    [defaultCenter addObserver:self
+                      selector:@selector(scrollViewDocumentViewBoundsDidChange:)
+                          name:NSViewBoundsDidChangeNotification
+                        object:_scrollView.contentView]; // NSClipView
+  }
+#endif // macOS]
 
   if (!self.window) {
     // The view is being removed, ensure that the scroll end event is dispatched
