@@ -57,6 +57,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   BOOL _hasMouseOver;
   BOOL _hasClipViewBoundsObserver;
   NSTrackingArea *_trackingArea;
+  BOOL _allowsVibrancy;
 #endif // macOS]
   NSMutableArray<RCTUIView *> *_reactSubviews; // [macOS]
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
@@ -81,6 +82,10 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 #endif // [macOS]
     _useCustomContainerView = NO;
     _removeClippedSubviews = NO;
+#if TARGET_OS_OSX // [macOS
+    _allowsVibrancy = NO;
+    self.mouseDownCanMoveWindow = YES;
+#endif // macOS]
   }
   return self;
 }
@@ -140,6 +145,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     NSCursor *cursor = NSCursorFromRCTCursor(RCTCursorFromCursor(_props->cursor));
     [self addCursorRect:self.bounds cursor:cursor];
   }
+}
+
+- (BOOL)allowsVibrancy
+{
+  return _allowsVibrancy;
 }
 #endif // macOS]
 
@@ -593,6 +603,21 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   }
 
 #if TARGET_OS_OSX // [macOS
+  // `acceptsFirstMouse`
+  if (oldViewProps.acceptsFirstMouse != newViewProps.acceptsFirstMouse) {
+    self.acceptsFirstMouse = newViewProps.acceptsFirstMouse;
+  }
+
+  // `mouseDownCanMoveWindow`
+  if (oldViewProps.mouseDownCanMoveWindow != newViewProps.mouseDownCanMoveWindow) {
+    self.mouseDownCanMoveWindow = newViewProps.mouseDownCanMoveWindow;
+  }
+
+  // `allowsVibrancy`
+  if (oldViewProps.allowsVibrancy != newViewProps.allowsVibrancy) {
+    _allowsVibrancy = newViewProps.allowsVibrancy;
+  }
+
     // `draggedTypes`
   if (oldViewProps.draggedTypes != newViewProps.draggedTypes) {
     if (!oldViewProps.draggedTypes.empty()) {
@@ -712,6 +737,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   _isJSResponder = NO;
   _removeClippedSubviews = NO;
   _reactSubviews = [NSMutableArray new];
+#if TARGET_OS_OSX // [macOS
+    _allowsVibrancy = NO;
+    self.acceptsFirstMouse = NO;
+    self.mouseDownCanMoveWindow = YES;
+#endif // macOS]
 }
 
 - (void)setPropKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN:(NSSet<NSString *> *_Nullable)props
