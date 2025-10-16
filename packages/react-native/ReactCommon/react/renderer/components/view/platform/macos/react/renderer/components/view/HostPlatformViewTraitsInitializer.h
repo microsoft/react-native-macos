@@ -13,13 +13,14 @@
 namespace facebook::react::HostPlatformViewTraitsInitializer {
 
 inline bool formsStackingContext(const ViewProps& props) {
-  return false;
+  return props.allowsVibrancy ||
+         props.mouseDownCanMoveWindow ||
+         props.acceptsFirstMouse ||
+         props.hostPlatformEvents.bits.any();
 }
 
 inline bool formsView(const ViewProps& props) {
-  return props.focusable ||
-         props.hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
-         props.hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
+  return props.focusable;
 }
 
 } // namespace facebook::react::HostPlatformViewTraitsInitializer

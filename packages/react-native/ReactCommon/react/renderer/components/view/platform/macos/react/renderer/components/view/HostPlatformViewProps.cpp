@@ -83,7 +83,34 @@ HostPlatformViewProps::HostPlatformViewProps(
                    rawProps,
                    "tooltip",
                    sourceProps.tooltip,
-                   {})) {}
+                   {})),
+      acceptsFirstMouse(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.acceptsFirstMouse
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "acceptsFirstMouse",
+                    sourceProps.acceptsFirstMouse,
+                    {})),
+      allowsVibrancy(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.allowsVibrancy
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "allowsVibrancy",
+                    sourceProps.allowsVibrancy,
+                    {})),
+      mouseDownCanMoveWindow(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.mouseDownCanMoveWindow
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "mouseDownCanMoveWindow",
+                    sourceProps.mouseDownCanMoveWindow,
+                    {})) {}
 
 #define VIEW_EVENT_CASE_MACOS(eventType)                           \
   case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): {            \
@@ -123,6 +150,9 @@ void HostPlatformViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(keyUpEvents);
     RAW_SET_PROP_SWITCH_CASE_BASIC(draggedTypes);
     RAW_SET_PROP_SWITCH_CASE_BASIC(tooltip);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(acceptsFirstMouse);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(allowsVibrancy);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(mouseDownCanMoveWindow);
   }
 }
 
