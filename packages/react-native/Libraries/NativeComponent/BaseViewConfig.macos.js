@@ -34,6 +34,9 @@ const bubblingEventTypes = {
 
 const directEventTypes = {
   ...PlatformBaseViewConfigIos.directEventTypes,
+  topDoubleClick: {
+    registrationName: 'onDoubleClick',
+  },
   topDragEnter: {
     registrationName: 'onDragEnter',
   },
@@ -68,6 +71,7 @@ const validAttributesForNonEventProps = {
 // Props for bubbling and direct events
 const validAttributesForEventProps = ConditionallyIgnoredEventHandlers({
   onBlur: true,
+  onDoubleClick: true,
   onDragEnter: true,
   onDragLeave: true,
   onDrop: true,

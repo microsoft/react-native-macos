@@ -29,6 +29,7 @@ struct HostPlatformViewEvents {
     // Mouse Events
     MouseEnter = 4,
     MouseLeave = 5,
+    DoubleClick = 6,
   };
 
   constexpr bool operator[](const Offset offset) const {
@@ -71,6 +72,8 @@ static inline HostPlatformViewEvents convertRawProp(
       convertRawProp(context, rawProps, "onMouseEnter", sourceValue[Offset::MouseEnter], defaultValue[Offset::MouseEnter]);
   result[Offset::MouseLeave] =
       convertRawProp(context, rawProps, "onMouseLeave", sourceValue[Offset::MouseLeave], defaultValue[Offset::MouseLeave]);
+  result[Offset::DoubleClick] =
+      convertRawProp(context, rawProps, "onDoubleClick", sourceValue[Offset::DoubleClick], defaultValue[Offset::DoubleClick]);
 
   return result;
 }

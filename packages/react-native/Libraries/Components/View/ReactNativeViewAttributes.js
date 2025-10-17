@@ -46,6 +46,7 @@ const UIView = {
   focusable: true,
   onMouseEnter: true,
   onMouseLeave: true,
+  onDoubleClick: true,
   onDragEnter: true,
   onDragLeave: true,
   onDrop: true,

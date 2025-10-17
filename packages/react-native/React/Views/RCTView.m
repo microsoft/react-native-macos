@@ -1552,6 +1552,15 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
                  additionalData:nil];
 }
 
+- (void)mouseUp:(NSEvent *)event
+{
+  if (_onDoubleClick && event.clickCount == 2){
+    _onDoubleClick(nil);
+  } else {
+    [super mouseUp:event];
+  }
+}
+
 - (BOOL)mouseDownCanMoveWindow
 {
 	return _mouseDownCanMoveWindow;
