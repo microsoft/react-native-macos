@@ -7,7 +7,11 @@
 
 package com.facebook.react.uimanager.layoutanimation
 
+import com.facebook.react.common.annotations.internal.LegacyArchitecture
+import com.facebook.react.common.annotations.internal.LegacyArchitectureLogLevel
+
 /** Interface for an animation type that takes care of updating the view layout. */
+@LegacyArchitecture(logLevel = LegacyArchitectureLogLevel.ERROR)
 internal interface LayoutHandlingAnimation {
   /**
    * Notifies the animation of a layout update in case one occurs during the animation. This avoids
@@ -20,4 +24,13 @@ internal interface LayoutHandlingAnimation {
    * @param height the new height value for the view
    */
   fun onLayoutUpdate(x: Int, y: Int, width: Int, height: Int)
+
+  /**
+   * Returns whether the animation is valid and should be used. Because layout animations generally
+   * hold {@link java.lang.ref.WeakReference<android.view.View>} objects, it's possible that the
+   * view has been garbage collected. In this case, the animation should not be used.
+   *
+   * @return true if the animation is valid and can be used, false otherwise
+   */
+  fun isValid(): Boolean
 }

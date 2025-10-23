@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e80434127379886a001ffcbace6ba619>>
+ * @generated SignedSource<<7b5caffd8f748384aa32ed6e153ee9c1>>
  */
 
 /**
@@ -31,11 +31,39 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool animatedShouldSignalBatch() override {
+    return false;
+  }
+
+  bool cxxNativeAnimatedEnabled() override {
+    return false;
+  }
+
+  bool cxxNativeAnimatedRemoveJsSync() override {
+    return false;
+  }
+
+  bool disableMainQueueSyncDispatchIOS() override {
+    return false;
+  }
+
   bool disableMountItemReorderingAndroid() override {
     return false;
   }
 
+  bool disableTextLayoutManagerCacheAndroid() override {
+    return false;
+  }
+
+  bool enableAccessibilityOrder() override {
+    return false;
+  }
+
   bool enableAccumulatedUpdatesInRawPropsAndroid() override {
+    return false;
+  }
+
+  bool enableAndroidTextMeasurementOptimizations() override {
     return false;
   }
 
@@ -44,6 +72,18 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableCppPropsIteratorSetter() override {
+    return false;
+  }
+
+  bool enableCustomFocusSearchOnClippedElementsAndroid() override {
+    return true;
+  }
+
+  bool enableDestroyShadowTreeRevisionAsync() override {
+    return false;
+  }
+
+  bool enableDoubleMeasurementFixAndroid() override {
     return false;
   }
 
@@ -59,15 +99,23 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool enableFixForParentTagDuringReparenting() override {
+    return false;
+  }
+
+  bool enableFontScaleChangesUpdatingLayout() override {
+    return false;
+  }
+
+  bool enableIOSTextBaselineOffsetPerLine() override {
+    return false;
+  }
+
   bool enableIOSViewClipToPaddingBox() override {
     return false;
   }
 
-  bool enableImagePrefetchingAndroid() override {
-    return false;
-  }
-
-  bool enableJSRuntimeGCOnMemoryPressureOnIOS() override {
+  bool enableInteropViewManagerClassLookUpOptimizationIOS() override {
     return false;
   }
 
@@ -79,7 +127,15 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return true;
   }
 
-  bool enableLongTaskAPI() override {
+  bool enableMainQueueCoordinatorOnIOS() override {
+    return false;
+  }
+
+  bool enableMainQueueModulesOnIOS() override {
+    return false;
+  }
+
+  bool enableModuleArgumentNSNullConversionIOS() override {
     return false;
   }
 
@@ -87,11 +143,15 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableNewBackgroundAndBorderDrawables() override {
+  bool enableNetworkEventReporting() override {
     return false;
   }
 
-  bool enablePreciseSchedulingForPremountItemsOnAndroid() override {
+  bool enableNewBackgroundAndBorderDrawables() override {
+    return true;
+  }
+
+  bool enablePreparedTextLayout() override {
     return false;
   }
 
@@ -99,15 +159,11 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableReportEventPaintTime() override {
+  bool enableResourceTimingAPI() override {
     return false;
   }
 
   bool enableSynchronousStateUpdates() override {
-    return false;
-  }
-
-  bool enableUIConsistency() override {
     return false;
   }
 
@@ -127,19 +183,19 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return true;
   }
 
-  bool excludeYogaFromRawProps() override {
+  bool enableVirtualViewDebugFeatures() override {
     return false;
   }
 
-  bool fixDifferentiatorEmittingUpdatesWithWrongParentTag() override {
-    return true;
+  bool enableVirtualViewRenderState() override {
+    return false;
+  }
+
+  bool enableVirtualViewWindowFocusDetection() override {
+    return false;
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
-    return false;
-  }
-
-  bool fixMountingCoordinatorReportedPendingTransactionsOnAndroid() override {
     return false;
   }
 
@@ -151,19 +207,19 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool lazyAnimationCallbacks() override {
+  bool hideOffscreenVirtualViewsOnIOS() override {
     return false;
   }
 
-  bool removeTurboModuleManagerDelegateMutex() override {
-    return false;
-  }
-
-  bool throwExceptionInsteadOfDeadlockOnTurboModuleSetupDuringSyncRenderIOS() override {
-    return false;
+  double preparedTextCacheSize() override {
+    return 200.0;
   }
 
   bool traceTurboModulePromiseRejectionsOnAndroid() override {
+    return false;
+  }
+
+  bool updateRuntimeShadowNodeReferencesOnCommit() override {
     return false;
   }
 
@@ -171,12 +227,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool useEditTextStockAndroidFocusBehavior() override {
-    return true;
-  }
-
   bool useFabricInterop() override {
-    return false;
+    return true;
   }
 
   bool useNativeViewConfigsInBridgelessMode() override {
@@ -191,12 +243,20 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool useShadowNodeStateOnClone() override {
+    return false;
+  }
+
   bool useTurboModuleInterop() override {
     return false;
   }
 
   bool useTurboModules() override {
     return false;
+  }
+
+  double virtualViewPrerenderRatio() override {
+    return 5.0;
   }
 };
 

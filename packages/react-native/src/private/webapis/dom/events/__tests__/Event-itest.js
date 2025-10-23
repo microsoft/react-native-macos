@@ -6,13 +6,12 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
  */
 
-import '../../../../../../Libraries/Core/InitializeCore.js';
+import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import Event from '../Event';
-import {setInPassiveListenerFlag} from '../internals/EventInternals';
+import Event from 'react-native/src/private/webapis/dom/events/Event';
+import {setInPassiveListenerFlag} from 'react-native/src/private/webapis/dom/events/internals/EventInternals';
 
 describe('Event', () => {
   it('provides read-only constants for event phases', () => {

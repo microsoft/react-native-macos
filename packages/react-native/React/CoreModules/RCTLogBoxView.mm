@@ -12,7 +12,9 @@
 #import <React/RCTSurfaceHostingView.h>
 
 @implementation RCTLogBoxView {
+#ifndef RCT_FIT_RM_OLD_RUNTIME
   RCTSurface *_surface;
+#endif // RCT_FIT_RM_OLD_RUNTIME
 #if TARGET_OS_OSX // [macOS
   NSWindow *_window;
 #endif // macOS]
@@ -44,6 +46,7 @@
 #endif // macOS]
 }
 
+#ifndef RCT_FIT_RM_OLD_RUNTIME
 - (instancetype)initWithWindow:(RCTPlatformWindow *)window bridge:(RCTBridge *)bridge // [macOS]
 {
   RCTErrorNewArchitectureValidation(RCTNotAllowedInFabricWithoutLegacy, @"RCTLogBoxView", nil);
@@ -73,6 +76,7 @@
 
   return self;
 }
+#endif // RCT_FIT_RM_OLD_RUNTIME
 
 - (instancetype)initWithWindow:(RCTPlatformWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter // [macOS]
 {
@@ -100,7 +104,9 @@
 - (void)layoutSubviews
 {
   [super layoutSubviews];
+#ifndef RCT_FIT_RM_OLD_RUNTIME
   [_surface setSize:self.frame.size];
+#endif // RCT_FIT_RM_OLD_RUNTIME
 }
 #else // [macOS
 - (void)layoutIfNeeded

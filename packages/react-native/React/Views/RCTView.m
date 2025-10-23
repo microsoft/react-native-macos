@@ -300,11 +300,14 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     return label;
   }
 #if TARGET_OS_OSX // [macOS
-  // calling super.accessibilityLabel above on macOS causes the return value of this accessor to be ignored by VoiceOver.
-  // Calling the super's setAccessibilityLabel with nil ensures that the return value of this accessor is used by VoiceOver.
-  [super setAccessibilityLabel:nil];
+    // calling super.accessibilityLabel above on macOS causes the return value of this accessor to be ignored by VoiceOver.
+    // Calling the super's setAccessibilityLabel with nil ensures that the return value of this accessor is used by VoiceOver.
+    [super setAccessibilityLabel:nil];
 #endif // macOS]
-  return RCTRecursiveAccessibilityLabel(self);
+  if (self.isAccessibilityElement) {
+    return RCTRecursiveAccessibilityLabel(self);
+  }
+  return nil;
 }
 
 - (NSArray<UIAccessibilityCustomAction *> *)accessibilityCustomActions
@@ -1320,7 +1323,7 @@ static void RCTUpdateShadowPathForView(RCTView *view)
       // If view has a solid background color, calculate shadow path from border
       const RCTCornerRadii cornerRadii = [view cornerRadii];
       const RCTCornerInsets cornerInsets = RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero);
-      CGPathRef shadowPath = RCTPathCreateWithRoundedRect(view.bounds, cornerInsets, NULL);
+      CGPathRef shadowPath = RCTPathCreateWithRoundedRect(view.bounds, cornerInsets, NULL, NO);
       view.layer.shadowPath = shadowPath;
       CGPathRelease(shadowPath);
 
@@ -1351,9 +1354,9 @@ static void RCTUpdateHoverStyleForView(RCTView *view)
       // Due to an Apple bug, it seems on iOS, `[UIShape shapeWithBezierPath:]` needs to
       // be calculated in the superviews' coordinate space (view.frame). This is not true
       // on other platforms like visionOS.
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(view.frame, cornerInsets, NULL);
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(view.frame, cornerInsets, NULL, NO);
 #else // TARGET_OS_VISION
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(view.bounds, cornerInsets, NULL);
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(view.bounds, cornerInsets, NULL, NO);
 #endif
       UIBezierPath *bezierPath = [UIBezierPath bezierPathWithCGPath:borderPath];
       CGPathRelease(borderPath);
@@ -1380,7 +1383,7 @@ static void RCTUpdateHoverStyleForView(RCTView *view)
     } else {
       CAShapeLayer *shapeLayer = [CAShapeLayer layer];
       CGPathRef path =
-          RCTPathCreateWithRoundedRect(self.bounds, RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero), NULL);
+          RCTPathCreateWithRoundedRect(self.bounds, RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero), NULL, NO);
       shapeLayer.path = path;
       CGPathRelease(path);
       mask = shapeLayer;

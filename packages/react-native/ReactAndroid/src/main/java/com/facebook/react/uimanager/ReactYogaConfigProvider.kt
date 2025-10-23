@@ -7,11 +7,18 @@
 
 package com.facebook.react.uimanager
 
+import com.facebook.react.common.annotations.internal.LegacyArchitecture
+import com.facebook.react.common.annotations.internal.LegacyArchitectureLogLevel
+import com.facebook.react.common.annotations.internal.LegacyArchitectureLogger
 import com.facebook.yoga.YogaConfig
 import com.facebook.yoga.YogaConfigFactory
 import com.facebook.yoga.YogaErrata
 
+@LegacyArchitecture(logLevel = LegacyArchitectureLogLevel.ERROR)
 internal object ReactYogaConfigProvider {
+  init {
+    LegacyArchitectureLogger.assertLegacyArchitecture("ReactYogaConfigProvider")
+  }
 
   val yogaConfig: YogaConfig by
       lazy(LazyThreadSafetyMode.NONE) {

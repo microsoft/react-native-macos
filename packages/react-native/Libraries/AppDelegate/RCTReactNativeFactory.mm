@@ -13,8 +13,9 @@
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTHost.h>
 #import <objc/runtime.h>
-#import <react/featureflags/ReactNativeFeatureFlags.h>
-#import <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
+#import <react/featureflags/ReactNativeFeatureFlagsOverridesOSSCanary.h>
+#import <react/featureflags/ReactNativeFeatureFlagsOverridesOSSExperimental.h>
+#import <react/featureflags/ReactNativeFeatureFlagsOverridesOSSStable.h>
 #import <react/renderer/graphics/ColorComponents.h>
 #import "RCTAppSetupUtils.h"
 
@@ -42,14 +43,18 @@ using namespace facebook::react;
 
 - (instancetype)initWithDelegate:(id<RCTReactNativeFactoryDelegate>)delegate
 {
+  return [self initWithDelegate:delegate releaseLevel:Stable];
+}
+
+- (instancetype)initWithDelegate:(id<RCTReactNativeFactoryDelegate>)delegate releaseLevel:(RCTReleaseLevel)releaseLevel
+{
   if (self = [super init]) {
     self.delegate = delegate;
-    [self _setUpFeatureFlags];
+    [self _setUpFeatureFlags:releaseLevel];
 
     auto newArchEnabled = [self newArchEnabled];
     auto fabricEnabled = [self fabricEnabled];
 
-    RCTSetNewArchEnabled(newArchEnabled);
     [RCTColorSpaceUtils applyDefaultColorSpace:[self defaultColorSpace]];
     RCTEnableTurboModule([self turboModuleEnabled]);
 
@@ -131,12 +136,7 @@ using namespace facebook::react;
   if ([_delegate respondsToSelector:@selector(newArchEnabled)]) {
     return _delegate.newArchEnabled;
   }
-
-#if RCT_NEW_ARCH_ENABLED
-  return YES;
-#else
-  return NO;
-#endif
+  return RCTIsNewArchEnabled();
 }
 
 - (BOOL)fabricEnabled
@@ -197,7 +197,23 @@ using namespace facebook::react;
 
 - (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass
 {
+#if USE_OSS_CODEGEN
+  if (self.delegate.dependencyProvider == nil) {
+    [NSException raise:@"ReactNativeFactoryDelegate dependencyProvider is nil"
+                format:@"Delegate must provide a valid dependencyProvider"];
+  }
+#endif
+
   return RCTAppSetupDefaultModuleFromClass(moduleClass, self.delegate.dependencyProvider);
+}
+
+- (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge
+{
+  if ([_delegate respondsToSelector:@selector(extraModulesForBridge:)]) {
+    return [_delegate extraModulesForBridge:bridge];
+  }
+
+  return @[];
 }
 
 #pragma mark - RCTComponentViewFactoryComponentProvider
@@ -218,6 +234,17 @@ using namespace facebook::react;
   if ([_delegate respondsToSelector:@selector(hostDidStart:)]) {
     [_delegate hostDidStart:host];
   }
+}
+
+- (NSArray<NSString *> *)unstableModulesRequiringMainQueueSetup
+{
+#if RN_DISABLE_OSS_PLUGIN_HEADER
+  return RCTTurboModulePluginUnstableModulesRequiringMainQueueSetup();
+#else
+  return self.delegate.dependencyProvider
+      ? RCTAppSetupUnstableModulesRequiringMainQueueSetup(self.delegate.dependencyProvider)
+      : @[];
+#endif
 }
 
 - (RCTRootViewFactory *)createRCTRootViewFactory
@@ -294,32 +321,36 @@ using namespace facebook::react;
 
 #pragma mark - Feature Flags
 
-class RCTAppDelegateBridgelessFeatureFlags : public ReactNativeFeatureFlagsDefaults {
- public:
-  bool enableBridgelessArchitecture() override
-  {
-    return true;
-  }
-  bool enableFabricRenderer() override
-  {
-    return true;
-  }
-  bool useTurboModules() override
-  {
-    return true;
-  }
-  bool useNativeViewConfigsInBridgelessMode() override
-  {
-    return true;
-  }
-};
-
-- (void)_setUpFeatureFlags
+- (void)_setUpFeatureFlags:(RCTReleaseLevel)releaseLevel
 {
+  static BOOL initialized = NO;
+  static RCTReleaseLevel chosenReleaseLevel;
+  NSLog(@"_setUpFeatureFlags called with release level %li", releaseLevel);
+  if (!initialized) {
+    chosenReleaseLevel = releaseLevel;
+    initialized = YES;
+  } else if (chosenReleaseLevel != releaseLevel) {
+    [NSException
+         raise:@"RCTReactNativeFactory::_setUpFeatureFlags releaseLevel mismatch between React Native instances"
+        format:@"The releaseLevel (%li) of the new instance does not match the previous instance's releaseLevel (%li)",
+               releaseLevel,
+               chosenReleaseLevel];
+  }
+
   static dispatch_once_t setupFeatureFlagsToken;
   dispatch_once(&setupFeatureFlagsToken, ^{
-    if ([self bridgelessEnabled]) {
-      ReactNativeFeatureFlags::override(std::make_unique<RCTAppDelegateBridgelessFeatureFlags>());
+    switch (releaseLevel) {
+      case Stable:
+        if ([self bridgelessEnabled]) {
+          ReactNativeFeatureFlags::override(std::make_unique<ReactNativeFeatureFlagsOverridesOSSStable>());
+        }
+        break;
+      case Canary:
+        ReactNativeFeatureFlags::override(std::make_unique<ReactNativeFeatureFlagsOverridesOSSCanary>());
+        break;
+      case Experimental:
+        ReactNativeFeatureFlags::override(std::make_unique<ReactNativeFeatureFlagsOverridesOSSExperimental>());
+        break;
     }
   });
 }

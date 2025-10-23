@@ -46,8 +46,7 @@ public abstract class BaseViewManagerDelegate<
           mViewManager.setAccessibilityValue(view, value as ReadableMap?)
 
       ViewProps.BACKGROUND_COLOR ->
-          mViewManager.setBackgroundColor(
-              view, if (value == null) 0 else ColorPropConverter.getColor(value, view.context))
+          mViewManager.setBackgroundColor(view, ColorPropConverter.getColor(value, view.context, 0))
 
       ViewProps.BORDER_RADIUS ->
           mViewManager.setBorderRadius(
@@ -78,11 +77,13 @@ public abstract class BaseViewManagerDelegate<
       ViewProps.MIX_BLEND_MODE -> mViewManager.setMixBlendMode(view, value as String?)
 
       ViewProps.SHADOW_COLOR ->
-          mViewManager.setShadowColor(
-              view, if (value == null) 0 else ColorPropConverter.getColor(value, view.context))
+          mViewManager.setShadowColor(view, ColorPropConverter.getColor(value, view.context, 0))
 
       ViewProps.IMPORTANT_FOR_ACCESSIBILITY ->
           mViewManager.setImportantForAccessibility(view, value as String?)
+
+      ViewProps.SCREEN_READER_FOCUSABLE ->
+          mViewManager.setScreenReaderFocusable(view, value as Boolean? ?: false)
 
       ViewProps.ROLE -> mViewManager.setRole(view, value as String?)
       ViewProps.NATIVE_ID -> mViewManager.setNativeId(view, value as String?)
@@ -90,9 +91,7 @@ public abstract class BaseViewManagerDelegate<
         val dynamicFromObject: Dynamic = DynamicFromObject(value)
         mViewManager.setAccessibilityLabelledBy(view, dynamicFromObject)
       }
-
       ViewProps.OPACITY -> mViewManager.setOpacity(view, (value as Double?)?.toFloat() ?: 1.0f)
-
       ViewProps.OUTLINE_COLOR -> mViewManager.setOutlineColor(view, value as Int?)
 
       ViewProps.OUTLINE_OFFSET ->
@@ -147,6 +146,5 @@ public abstract class BaseViewManagerDelegate<
   }
 
   @Suppress("ACCIDENTAL_OVERRIDE")
-  public override fun receiveCommand(view: T, commandName: String, args: ReadableArray?): Unit =
-      Unit
+  public override fun receiveCommand(view: T, commandName: String, args: ReadableArray): Unit = Unit
 }

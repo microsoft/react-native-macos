@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 import type {EventSubscription} from '../../vendor/emitter/EventEmitter';
@@ -103,7 +103,7 @@ type KeyboardEventDefinitions = {
  *```
  */
 
-class Keyboard {
+class KeyboardImpl {
   _currentlyShowing: ?KeyboardEvent;
 
   _emitter: NativeEventEmitter<KeyboardEventDefinitions> =
@@ -150,7 +150,7 @@ class Keyboard {
    */
   addListener<K: $Keys<KeyboardEventDefinitions>>(
     eventType: K,
-    listener: (...$ElementType<KeyboardEventDefinitions, K>) => mixed,
+    listener: (...KeyboardEventDefinitions[K]) => mixed,
     context?: mixed,
   ): EventSubscription {
     return this._emitter.addListener(eventType, listener);
@@ -204,4 +204,6 @@ class Keyboard {
   }
 }
 
-export default (new Keyboard(): Keyboard);
+const Keyboard: KeyboardImpl = new KeyboardImpl();
+
+export default Keyboard;
