@@ -6,13 +6,12 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
  */
 
-import '../../../../../../Libraries/Core/InitializeCore.js';
+import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import CustomEvent from '../CustomEvent';
-import Event from '../Event';
+import CustomEvent from 'react-native/src/private/webapis/dom/events/CustomEvent';
+import Event from 'react-native/src/private/webapis/dom/events/Event';
 
 describe('CustomEvent', () => {
   it('extends Event', () => {

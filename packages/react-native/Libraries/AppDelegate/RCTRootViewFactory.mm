@@ -32,6 +32,7 @@
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #import <react/runtime/JSRuntimeFactory.h>
+#import <react/runtime/JSRuntimeFactoryCAPI.h>
 
 @implementation RCTRootViewFactoryConfiguration
 
@@ -132,9 +133,7 @@
   return [self viewWithModuleName:moduleName initialProperties:nil launchOptions:nil];
 }
 
-- (RCTPlatformView *)viewWithModuleName:(NSString *)moduleName // [macOS]
-              initialProperties:(NSDictionary *)initProps
-                 launchOptions:(NSDictionary *)launchOptions
+- (void)initializeReactHostWithLaunchOptions:(NSDictionary *)launchOptions
 {
   if (_configuration.bridgelessEnabled) {
     // Enable TurboModule interop by default in Bridgeless mode
@@ -142,7 +141,20 @@
     RCTEnableTurboModuleInteropBridgeProxy(YES);
 
     [self createReactHostIfNeeded:launchOptions];
+    return;
+  }
 
+  [self createBridgeIfNeeded:launchOptions];
+  [self createBridgeAdapterIfNeeded];
+}
+
+- (RCTPlatformView *)viewWithModuleName:(NSString *)moduleName // [macOS]
+                      initialProperties:(NSDictionary *)initProps
+                          launchOptions:(NSDictionary *)launchOptions
+{
+  [self initializeReactHostWithLaunchOptions:launchOptions];
+
+  if (_configuration.bridgelessEnabled) {
     RCTFabricSurface *surface = [self.reactHost createSurfaceWithModuleName:moduleName initialProperties:initProps];
 
     RCTSurfaceHostingProxyRootView *surfaceHostingProxyRootView =
@@ -156,9 +168,6 @@
     }
     return surfaceHostingProxyRootView;
   }
-
-  [self createBridgeIfNeeded:launchOptions];
-  [self createBridgeAdapterIfNeeded];
 
   RCTPlatformView *rootView; // [macOS]
   if (_configuration.createRootViewWithBridge != nil) {

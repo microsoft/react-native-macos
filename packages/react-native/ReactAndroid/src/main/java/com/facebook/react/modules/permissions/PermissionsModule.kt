@@ -38,7 +38,7 @@ public class PermissionsModule(reactContext: ReactApplicationContext?) :
    * permission had been granted, false otherwise. See [Activity.checkSelfPermission].
    */
   public override fun checkPermission(permission: String, promise: Promise): Unit {
-    val context = getReactApplicationContext().getBaseContext()
+    val context = reactApplicationContext.baseContext
     promise.resolve(context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
   }
 
@@ -48,7 +48,7 @@ public class PermissionsModule(reactContext: ReactApplicationContext?) :
    * message is only displayed if the user has revoked this permission once before, and if the
    * permission dialog will be shown to the user (the user can choose to not be shown that dialog
    * again). For devices before Android M, this always returns false. See
-   * [permissionAwareActivity.shouldShowRequestPermissionRationale].
+   * [PermissionAwareActivity.shouldShowRequestPermissionRationale].
    */
   public override fun shouldShowRequestPermissionRationale(
       permission: String,
@@ -80,7 +80,7 @@ public class PermissionsModule(reactContext: ReactApplicationContext?) :
           object : Callback {
             override operator fun invoke(vararg args: Any?) {
               val results = args[0] as IntArray
-              if (results.size > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
+              if (results.isNotEmpty() && results[0] == PackageManager.PERMISSION_GRANTED) {
                 promise.resolve(GRANTED)
               } else {
                 val callbackActivity = args[1] as PermissionAwareActivity
@@ -175,7 +175,7 @@ public class PermissionsModule(reactContext: ReactApplicationContext?) :
 
   private val permissionAwareActivity: PermissionAwareActivity
     get() {
-      val activity = getCurrentActivity()
+      val activity = reactApplicationContext.getCurrentActivity()
       checkNotNull(activity) { "Tried to use permissions API while not attached to an Activity." }
       check(activity is PermissionAwareActivity) {
         ("Tried to use permissions API but the host Activity doesn't implement PermissionAwareActivity.")

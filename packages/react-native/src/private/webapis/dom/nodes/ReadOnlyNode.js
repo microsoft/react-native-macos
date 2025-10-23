@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 // flowlint unsafe-getters-setters:off
@@ -15,7 +15,7 @@ import type {InstanceHandle} from './internals/NodeInternals';
 import type ReactNativeDocument from './ReactNativeDocument';
 import type ReadOnlyElement from './ReadOnlyElement';
 
-import * as ReactNativeFeatureFlags from '../../../featureflags/ReactNativeFeatureFlags';
+import {setPlatformObject} from '../../webidl/PlatformObjects';
 import {createNodeList} from '../oldstylecollections/NodeList';
 import {
   getNativeNodeReference,
@@ -188,25 +188,12 @@ export default class ReadOnlyNode {
   }
 
   getRootNode(): ReadOnlyNode {
-    if (ReactNativeFeatureFlags.enableDOMDocumentAPI()) {
-      if (this.isConnected) {
-        // If this is the document node, then the root node is itself.
-        return this.ownerDocument ?? this;
-      }
-
-      return this;
-    } else {
-      // eslint-disable-next-line consistent-this
-      let lastKnownParent: ReadOnlyNode = this;
-      let nextPossibleParent: ?ReadOnlyNode = this.parentNode;
-
-      while (nextPossibleParent != null) {
-        lastKnownParent = nextPossibleParent;
-        nextPossibleParent = nextPossibleParent.parentNode;
-      }
-
-      return lastKnownParent;
+    if (this.isConnected) {
+      // If this is the document node, then the root node is itself.
+      return this.ownerDocument ?? this;
     }
+
+    return this;
   }
 
   hasChildNodes(): boolean {
@@ -300,6 +287,8 @@ export default class ReadOnlyNode {
    */
   static DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC: number = 32;
 }
+
+setPlatformObject(ReadOnlyNode);
 
 export function getChildNodes(
   node: ReadOnlyNode,

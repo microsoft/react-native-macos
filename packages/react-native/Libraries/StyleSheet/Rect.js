@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict
+ * @format
  */
 
 export type Rect = $ReadOnly<{
@@ -15,6 +15,7 @@ export type Rect = $ReadOnly<{
   top?: ?number,
 }>;
 
+export type Insets = Rect;
 export type RectOrSize = Rect | number;
 
 export function createSquare(size: number): Rect {

@@ -10,22 +10,17 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTConstants.h>
 #import <React/RCTEventEmitter.h>
-#import <React/RCTTraitCollectionProxy.h>
 
 #import "CoreModulesPlugins.h"
 
 #if TARGET_OS_OSX // [macOS
 #import <React/RCTUtils.h>
-
-#import "RCTAppearanceProxy.h"
 #endif // macOS]
 
 using namespace facebook::react;
 
 NSString *const RCTAppearanceColorSchemeLight = @"light";
 NSString *const RCTAppearanceColorSchemeDark = @"dark";
-
-static BOOL sIsAppearancePreferenceSet = NO;
 
 static BOOL sAppearancePreferenceEnabled = YES;
 void RCTEnableAppearancePreference(BOOL enabled)
@@ -70,11 +65,6 @@ NSString *RCTColorSchemePreference(UITraitCollection *traitCollection)
   if (!sAppearancePreferenceEnabled) {
     // Return the default if the app doesn't allow different color schemes.
     return RCTAppearanceColorSchemeLight;
-  }
-
-  if (appearances[@(traitCollection.userInterfaceStyle)]) {
-    sIsAppearancePreferenceSet = YES;
-    return appearances[@(traitCollection.userInterfaceStyle)];
   }
 
   if (!traitCollection) {
@@ -122,10 +112,10 @@ NSString *RCTColorSchemePreference(NSAppearance *appearance)
 {
   if ((self = [super init])) {
 #if !TARGET_OS_OSX // [macOS]
-    UITraitCollection *traitCollection = [RCTTraitCollectionProxy sharedInstance].currentTraitCollection;
+    UITraitCollection *traitCollection = RCTKeyWindow().traitCollection;
     _currentColorScheme = RCTColorSchemePreference(traitCollection);
 #else // [macOS
-  NSAppearance *appearance = [RCTAppearanceProxy sharedInstance].currentAppearance;
+  NSAppearance *appearance = [RCTKeyWindow().currentAppearance;
   _currentColorScheme = RCTColorSchemePreference(appearance);
 #endif // macOS]
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -140,11 +130,7 @@ RCT_EXPORT_MODULE(Appearance)
 
 + (BOOL)requiresMainQueueSetup
 {
-#if !TARGET_OS_OSX // [macOS]
-  return NO;
-#else // [macOS
   return YES;
-#endif // macOS]
 }
 
 - (dispatch_queue_t)methodQueue
@@ -184,30 +170,25 @@ RCT_EXPORT_METHOD(setColorScheme : (NSString *)style)
 
 RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
 {
-  if (!sIsAppearancePreferenceSet) {
-#if !TARGET_OS_OSX // [macOS
-    UITraitCollection *traitCollection = [RCTTraitCollectionProxy sharedInstance].currentTraitCollection;
-    _currentColorScheme = RCTColorSchemePreference(traitCollection);
-#else // [macOS
-    NSAppearance *appearance = [RCTAppearanceProxy sharedInstance].currentAppearance;
-    _currentColorScheme = RCTColorSchemePreference(appearance);
-#endif // macOS]
-  }
   return _currentColorScheme;
 }
 
 
 - (void)appearanceChanged:(NSNotification *)notification
 {
-#if !TARGET_OS_OSX // [macOS
   NSDictionary *userInfo = [notification userInfo];
+#if !TARGET_OS_OSX // [macOS
   UITraitCollection *traitCollection = nil;
   if (userInfo) {
     traitCollection = userInfo[RCTUserInterfaceStyleDidChangeNotificationTraitCollectionKey];
   }
   NSString *newColorScheme = RCTColorSchemePreference(traitCollection);
 #else // [macOS
-  NSString *newColorScheme = RCTColorSchemePreference([RCTAppearanceProxy sharedInstance].currentAppearance);
+  NSAppearance *appearance = nil;
+  if (userInfo) {
+    appearance = userInfo[RCTUserInterfaceStyleDidChangeNotificationAppearanceKey];
+  }
+  NSString *newColorScheme = RCTColorSchemePreference(appearance);
 #endif // macOS]
   if (![_currentColorScheme isEqualToString:newColorScheme]) {
     _currentColorScheme = newColorScheme;

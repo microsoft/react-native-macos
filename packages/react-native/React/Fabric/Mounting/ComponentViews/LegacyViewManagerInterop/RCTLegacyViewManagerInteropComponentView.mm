@@ -231,13 +231,11 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
     _adapter = [[RCTLegacyViewManagerInteropCoordinatorAdapter alloc] initWithCoordinator:[self _coordinator]
                                                                                  reactTag:self.reactTag.integerValue];
 #endif // macOS]
-
-    _adapter.eventInterceptor = ^(std::string eventName, folly::dynamic event) {
+    _adapter.eventInterceptor = ^(std::string eventName, folly::dynamic &&event) {
       if (weakSelf) {
         __typeof(self) strongSelf = weakSelf;
-        const auto &eventEmitter =
-            static_cast<const LegacyViewManagerInteropViewEventEmitter &>(*strongSelf->_eventEmitter);
-        eventEmitter.dispatchEvent(eventName, event);
+        const auto &eventEmitter = static_cast<const ViewEventEmitter &>(*strongSelf->_eventEmitter);
+        eventEmitter.dispatchEvent(eventName, std::move(event));
       }
     };
     // Set props immediately. This is required to set the initial state of the view.
