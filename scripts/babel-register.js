@@ -6,11 +6,11 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
  */
 
 const {
   PACKAGES_DIR,
+  PRIVATE_DIR,
   RN_INTEGRATION_TESTS_RUNNER_DIR,
   SCRIPTS_DIR,
 } = require('./consts');
@@ -43,6 +43,7 @@ function registerForMonorepo() {
   } else {
     require('metro-babel-register')([
       PACKAGES_DIR,
+      PRIVATE_DIR,
       SCRIPTS_DIR,
       RN_INTEGRATION_TESTS_RUNNER_DIR,
     ]);

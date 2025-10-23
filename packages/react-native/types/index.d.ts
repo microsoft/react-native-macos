@@ -68,8 +68,7 @@
 /// <reference path="modules/BatchedBridge.d.ts" />
 /// <reference path="modules/Codegen.d.ts" />
 /// <reference path="modules/Devtools.d.ts" />
-/// <reference types="../src/types/globals.d.ts" />
-/// <reference path="modules/LaunchScreen.d.ts" />
+/// <reference path="../src/types/globals.d.ts" />
 
 export * from '../Libraries/ActionSheetIOS/ActionSheetIOS';
 export * from '../Libraries/Alert/Alert';
@@ -140,10 +139,11 @@ export * from '../Libraries/StyleSheet/processColor';
 export * from '../Libraries/Text/Text';
 export * from '../Libraries/TurboModule/RCTExport';
 export * as TurboModuleRegistry from '../Libraries/TurboModule/TurboModuleRegistry';
+export * as CodegenTypes from '../Libraries/Types/CodegenTypesNamespace';
 export * from '../Libraries/Types/CoreEventTypes';
 export * from '../Libraries/Utilities/Appearance';
 export * from '../Libraries/Utilities/BackHandler';
-export * from '../src/private/devmenu/DevMenu';
+export * from '../src/private/devsupport/devmenu/DevMenu';
 export * from '../Libraries/Utilities/DevSettings';
 export * from '../Libraries/Utilities/Dimensions';
 export * from '../Libraries/Utilities/PixelRatio';
@@ -159,3 +159,6 @@ export * from './public/DeprecatedPropertiesAlias';
 export * from './public/Insets';
 export * from './public/ReactNativeRenderer';
 export * from './public/ReactNativeTypes';
+
+export {default as codegenNativeCommands} from '../Libraries/Utilities/codegenNativeCommands';
+export {default as codegenNativeComponent} from '../Libraries/Utilities/codegenNativeComponent';

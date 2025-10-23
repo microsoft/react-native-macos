@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow
+ * @format
  */
 
 'use strict';
@@ -13,6 +13,7 @@
 import type {HostInstance} from 'react-native';
 
 import {RNTesterThemeContext} from '../../components/RNTesterTheme';
+import {createRef} from 'react';
 
 const ScreenshotManager = require('../../../NativeModuleExample/NativeScreenshotManager');
 const React = require('react');
@@ -207,7 +208,7 @@ class ActionSheetAnchorExample extends React.Component<
     clicked: 'none',
   };
 
-  anchorRef: {current: null | HostInstance} = React.createRef();
+  anchorRef: {current: null | HostInstance} = createRef();
 
   render(): React.Node {
     return (
@@ -241,7 +242,7 @@ class ActionSheetAnchorExample extends React.Component<
         cancelButtonIndex: CANCEL_INDEX,
         destructiveButtonIndex: DESTRUCTIVE_INDEX,
         anchor: this.anchorRef.current
-          ? findNodeHandle(this.anchorRef.current)
+          ? findNodeHandle<$FlowFixMe>(this.anchorRef.current)
           : undefined,
       },
       buttonIndex => {
@@ -434,7 +435,7 @@ class ShareScreenshotAnchorExample extends React.Component<
     text: '',
   };
 
-  anchorRef: {current: null | HostInstance} = React.createRef();
+  anchorRef: {current: null | HostInstance} = createRef();
 
   render(): React.Node {
     return (
@@ -471,7 +472,7 @@ class ShareScreenshotAnchorExample extends React.Component<
             url: uri,
             excludedActivityTypes: ['com.apple.UIKit.activity.PostToTwitter'],
             anchor: this.anchorRef.current
-              ? findNodeHandle(this.anchorRef.current)
+              ? findNodeHandle<$FlowFixMe>(this.anchorRef.current)
               : undefined,
           },
           error => Alert.alert('Error', error?.message),

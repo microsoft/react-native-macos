@@ -31,7 +31,7 @@ using CommitMode = ShadowTree::CommitMode;
  * of calling, the function returns `nullptr` (as an indication that no
  * additional work is required).
  */
-static ShadowNode::Unshared progressState(const ShadowNode& shadowNode) {
+static std::shared_ptr<ShadowNode> progressState(const ShadowNode& shadowNode) {
   auto isStateChanged = false;
   auto areChildrenChanged = false;
 
@@ -43,7 +43,7 @@ static ShadowNode::Unshared progressState(const ShadowNode& shadowNode) {
     }
   }
 
-  auto newChildren = ShadowNode::ListOfShared{};
+  auto newChildren = std::vector<std::shared_ptr<const ShadowNode>>{};
   if (!shadowNode.getChildren().empty()) {
     auto index = size_t{0};
     for (const auto& childNode : shadowNode.getChildren()) {
@@ -66,9 +66,11 @@ static ShadowNode::Unshared progressState(const ShadowNode& shadowNode) {
 
   return shadowNode.clone({
       ShadowNodeFragment::propsPlaceholder(),
-      areChildrenChanged ? std::make_shared<const ShadowNode::ListOfShared>(
-                               std::move(newChildren))
-                         : ShadowNodeFragment::childrenPlaceholder(),
+      areChildrenChanged
+          ? std::make_shared<
+                const std::vector<std::shared_ptr<const ShadowNode>>>(
+                std::move(newChildren))
+          : ShadowNodeFragment::childrenPlaceholder(),
       isStateChanged ? newState : ShadowNodeFragment::statePlaceholder(),
   });
 }
@@ -78,7 +80,7 @@ static ShadowNode::Unshared progressState(const ShadowNode& shadowNode) {
  * The function uses a given base tree to exclude unchanged (equal) parts
  * of the three from the traversing.
  */
-static ShadowNode::Unshared progressState(
+static std::shared_ptr<ShadowNode> progressState(
     const ShadowNode& shadowNode,
     const ShadowNode& baseShadowNode) {
   // The intuition behind the complexity:
@@ -102,7 +104,7 @@ static ShadowNode::Unshared progressState(
 
   auto& children = shadowNode.getChildren();
   auto& baseChildren = baseShadowNode.getChildren();
-  auto newChildren = ShadowNode::ListOfShared{};
+  auto newChildren = std::vector<std::shared_ptr<const ShadowNode>>{};
 
   auto childrenSize = children.size();
   auto baseChildrenSize = baseChildren.size();
@@ -153,9 +155,11 @@ static ShadowNode::Unshared progressState(
 
   return shadowNode.clone({
       ShadowNodeFragment::propsPlaceholder(),
-      areChildrenChanged ? std::make_shared<const ShadowNode::ListOfShared>(
-                               std::move(newChildren))
-                         : ShadowNodeFragment::childrenPlaceholder(),
+      areChildrenChanged
+          ? std::make_shared<
+                const std::vector<std::shared_ptr<const ShadowNode>>>(
+                std::move(newChildren))
+          : ShadowNodeFragment::childrenPlaceholder(),
       isStateChanged ? newState : ShadowNodeFragment::statePlaceholder(),
   });
 }
@@ -167,10 +171,9 @@ ShadowTree::ShadowTree(
     const ShadowTreeDelegate& delegate,
     const ContextContainer& contextContainer)
     : surfaceId_(surfaceId), delegate_(delegate) {
-  static auto globalRootComponentDescriptor =
-      std::make_unique<const RootComponentDescriptor>(
-          ComponentDescriptorParameters{
-              EventDispatcher::Shared{}, nullptr, nullptr});
+  static RootComponentDescriptor globalRootComponentDescriptor(
+      ComponentDescriptorParameters{
+          EventDispatcher::Shared{}, nullptr, nullptr});
 
   const auto props = std::make_shared<const RootProps>(
       PropsParserContext{surfaceId, contextContainer},
@@ -178,11 +181,11 @@ ShadowTree::ShadowTree(
       layoutConstraints,
       layoutContext);
 
-  auto family = globalRootComponentDescriptor->createFamily(
+  auto family = globalRootComponentDescriptor.createFamily(
       {surfaceId, surfaceId, nullptr});
 
   auto rootShadowNode = std::static_pointer_cast<const RootShadowNode>(
-      globalRootComponentDescriptor->createShadowNode(
+      globalRootComponentDescriptor.createShadowNode(
           ShadowNodeFragment{
               /* .props = */ props,
           },
@@ -289,7 +292,7 @@ CommitStatus ShadowTree::tryCommit(
 
   // Run commit hooks.
   newRootShadowNode = delegate_.shadowTreeWillCommit(
-      *this, oldRootShadowNode, newRootShadowNode);
+      *this, oldRootShadowNode, newRootShadowNode, commitOptions);
 
   if (!newRootShadowNode) {
     return CommitStatus::Cancelled;
@@ -319,7 +322,8 @@ CommitStatus ShadowTree::tryCommit(
       std::scoped_lock dispatchLock(EventEmitter::DispatchMutex());
       updateMountedFlag(
           currentRevision_.rootShadowNode->getChildren(),
-          newRootShadowNode->getChildren());
+          newRootShadowNode->getChildren(),
+          commitOptions.source);
     }
 
     telemetry.didCommit();
@@ -358,7 +362,8 @@ void ShadowTree::mount(ShadowTreeRevision revision, bool mountSynchronously)
 
 void ShadowTree::commitEmptyTree() const {
   commit(
-      [](const RootShadowNode& oldRootShadowNode) -> RootShadowNode::Unshared {
+      [](const RootShadowNode& oldRootShadowNode)
+          -> std::shared_ptr<RootShadowNode> {
         return std::make_shared<RootShadowNode>(
             oldRootShadowNode,
             ShadowNodeFragment{
