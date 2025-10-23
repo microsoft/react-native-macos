@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 import type {EventSubscription} from '../vendor/emitter/EventEmitter';
@@ -15,6 +15,8 @@ import typeof INativeAppearance from './NativeAppearance';
 import NativeEventEmitter from '../EventEmitter/NativeEventEmitter';
 import EventEmitter from '../vendor/emitter/EventEmitter';
 import invariant from 'invariant';
+
+export type {AppearancePreferences};
 
 type Appearance = {
   colorScheme: ?ColorSchemeName,

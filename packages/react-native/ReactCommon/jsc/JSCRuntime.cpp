@@ -18,8 +18,7 @@
 #include <sstream>
 #include <thread>
 
-namespace facebook {
-namespace jsc {
+namespace facebook::jsc {
 
 namespace detail {
 class ArgsConverter;
@@ -1612,5 +1611,4 @@ std::unique_ptr<jsi::Runtime> makeJSCRuntime(const facebook::jsc::RuntimeConfig&
 }
 // macOS]
 
-} // namespace jsc
-} // namespace facebook
+} // namespace facebook::jsc

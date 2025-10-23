@@ -4,17 +4,16 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @fantom_mode opt
  * @flow strict-local
  * @format
- * @oncall react_native
- * @fantom_mode opt
  */
 
-import '../../../../../Libraries/Core/InitializeCore.js';
+import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type Performance from '../Performance';
+import type Performance from 'react-native/src/private/webapis/performance/Performance';
 
-import Fantom from '@react-native/fantom';
+import * as Fantom from '@react-native/fantom';
 
 declare var performance: Performance;
 

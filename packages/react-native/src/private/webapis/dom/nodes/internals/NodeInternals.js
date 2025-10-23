@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 import type {InternalInstanceHandle} from '../../../../../../Libraries/Renderer/shims/ReactNativeTypes';
@@ -128,6 +128,12 @@ export function getNativeElementReference(
 ): ?NativeElementReference {
   // $FlowExpectedError[incompatible-cast] We know ReadOnlyElement instances provide InternalInstanceHandle
   const instanceHandle = getInstanceHandle(node) as InternalInstanceHandle;
+
+  if (isReactNativeDocumentElementInstanceHandle(instanceHandle)) {
+    return getNativeElementReferenceFromReactNativeDocumentElementInstanceHandle(
+      instanceHandle,
+    );
+  }
 
   // $FlowExpectedError[incompatible-return]
   return getRendererProxy().getNodeFromInternalInstanceHandle(instanceHandle);

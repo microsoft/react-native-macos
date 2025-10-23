@@ -6,19 +6,17 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
- * @fantom_flags enableLongTaskAPI:true
  */
 
-import type Performance from '../Performance';
+import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import setUpPerformanceObserver from '../../../setup/setUpPerformanceObserver';
-import ensureInstance from '../../../utilities/ensureInstance';
-import {PerformanceObserver} from '../PerformanceObserver';
-import {PerformanceMark} from '../UserTiming';
-import Fantom from '@react-native/fantom';
+import type Performance from 'react-native/src/private/webapis/performance/Performance';
 
-import '../../../../../Libraries/Core/InitializeCore.js';
+import ensureInstance from '../../../__tests__/utilities/ensureInstance';
+import * as Fantom from '@react-native/fantom';
+import setUpPerformanceObserver from 'react-native/src/private/setup/setUpPerformanceObserver';
+import {PerformanceObserver} from 'react-native/src/private/webapis/performance/PerformanceObserver';
+import {PerformanceMark} from 'react-native/src/private/webapis/performance/UserTiming';
 
 setUpPerformanceObserver();
 

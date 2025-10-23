@@ -11,7 +11,7 @@
 'use strict';
 
 import type {
-  LayoutAnimationConfig as LayoutAnimationConfig_,
+  LayoutAnimationConfig,
   LayoutAnimationProperty,
   LayoutAnimationType,
 } from '../Renderer/shims/ReactNativeTypes';
@@ -20,16 +20,16 @@ import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNa
 import {getFabricUIManager} from '../ReactNative/FabricUIManager';
 import Platform from '../Utilities/Platform';
 
+const UIManager = require('../ReactNative/UIManager').default;
+
 export type {
   LayoutAnimationType,
   LayoutAnimationProperty,
   LayoutAnimationAnimationConfig as LayoutAnimationAnim,
 } from '../Renderer/shims/ReactNativeTypes';
 
-const UIManager = require('../ReactNative/UIManager').default;
-
 // Reexport type
-export type LayoutAnimationConfig = LayoutAnimationConfig_;
+export type {LayoutAnimationConfig} from '../Renderer/shims/ReactNativeTypes';
 
 export type LayoutAnimationTypes = $ReadOnly<{
   [type in LayoutAnimationType]: type,
@@ -45,7 +45,7 @@ type OnAnimationDidFailCallback = () => void;
 let isLayoutAnimationEnabled: boolean =
   ReactNativeFeatureFlags.isLayoutAnimationEnabled();
 
-function setEnabled(value: boolean) {
+function setLayoutAnimationEnabled(value: boolean) {
   isLayoutAnimationEnabled = isLayoutAnimationEnabled;
 }
 
@@ -115,7 +115,7 @@ function configureNext(
   }
 }
 
-function create(
+function createLayoutAnimation(
   duration: number,
   type?: LayoutAnimationType,
   property?: LayoutAnimationProperty,
@@ -129,12 +129,16 @@ function create(
 }
 
 const Presets = {
-  easeInEaseOut: (create(
+  easeInEaseOut: (createLayoutAnimation(
     300,
     'easeInEaseOut',
     'opacity',
   ): LayoutAnimationConfig),
-  linear: (create(500, 'linear', 'opacity'): LayoutAnimationConfig),
+  linear: (createLayoutAnimation(
+    500,
+    'linear',
+    'opacity',
+  ): LayoutAnimationConfig),
   spring: ({
     duration: 700,
     create: {
@@ -180,7 +184,7 @@ const LayoutAnimation = {
   /**
    * Helper for creating a config for `configureNext`.
    */
-  create,
+  create: createLayoutAnimation,
   Types: Object.freeze({
     spring: 'spring',
     linear: 'linear',
@@ -208,7 +212,7 @@ const LayoutAnimation = {
   spring: (configureNext.bind(null, Presets.spring): (
     onAnimationDidEnd?: OnAnimationDidEndCallback,
   ) => void),
-  setEnabled,
+  setEnabled: setLayoutAnimationEnabled,
 };
 
 export default LayoutAnimation;

@@ -114,10 +114,6 @@ void TextAttributes::apply(TextAttributes textAttributes) {
       ? textAttributes.accessibilityRole
       : accessibilityRole;
   role = textAttributes.role.has_value() ? textAttributes.role : role;
-
-  textAlignVertical = textAttributes.textAlignVertical.has_value()
-      ? textAttributes.textAlignVertical
-      : textAlignVertical;
 }
 
 #pragma mark - Operators
@@ -133,7 +129,6 @@ bool TextAttributes::operator==(const TextAttributes& rhs) const {
              allowFontScaling,
              dynamicTypeRamp,
              alignment,
-             textAlignVertical,
              baseWritingDirection,
              lineBreakStrategy,
              textDecorationColor,
@@ -157,7 +152,6 @@ bool TextAttributes::operator==(const TextAttributes& rhs) const {
              rhs.allowFontScaling,
              rhs.dynamicTypeRamp,
              rhs.alignment,
-             rhs.textAlignVertical,
              rhs.baseWritingDirection,
              rhs.lineBreakStrategy,
              rhs.textDecorationColor,
@@ -178,10 +172,6 @@ bool TextAttributes::operator==(const TextAttributes& rhs) const {
       floatEquality(letterSpacing, rhs.letterSpacing) &&
       floatEquality(lineHeight, rhs.lineHeight) &&
       floatEquality(textShadowRadius, rhs.textShadowRadius);
-}
-
-bool TextAttributes::operator!=(const TextAttributes& rhs) const {
-  return !(*this == rhs);
 }
 
 TextAttributes TextAttributes::defaultTextAttributes() {
@@ -243,7 +233,7 @@ SharedDebugStringConvertibleList TextAttributes::getDebugProps() const {
       debugStringConvertibleItem(
           "alignment", alignment, textAttributes.alignment),
       debugStringConvertibleItem(
-          "baseWritingDirection",
+          "writingDirection",
           baseWritingDirection,
           textAttributes.baseWritingDirection),
       debugStringConvertibleItem(
@@ -291,11 +281,6 @@ SharedDebugStringConvertibleList TextAttributes::getDebugProps() const {
           accessibilityRole,
           textAttributes.accessibilityRole),
       debugStringConvertibleItem("role", role, textAttributes.role),
-
-      debugStringConvertibleItem(
-          "textAlignVertical",
-          textAlignVertical,
-          textAttributes.textAlignVertical),
   };
 }
 #endif
