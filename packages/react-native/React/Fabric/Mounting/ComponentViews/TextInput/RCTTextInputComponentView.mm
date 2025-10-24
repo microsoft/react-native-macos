@@ -17,15 +17,15 @@
 #if !TARGET_OS_OSX // [macOS]
 #import <React/RCTUITextField.h>
 #else // [macOS
-#include <React/RCTUISecureTextField.h>
 #include <React/RCTUITextField.h>
+#include <React/RCTUISecureTextField.h>
 #endif // macOS]
 
 #import <React/RCTUITextView.h>
 #import <React/RCTUtils.h>
 #if TARGET_OS_OSX // [macOS
-#import <React/RCTViewKeyboardEvent.h>
 #import <React/RCTWrappedTextView.h>
+#import <React/RCTViewKeyboardEvent.h>
 #endif // macOS]
 
 #import "RCTConversions.h"
@@ -42,6 +42,7 @@ static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
 #if TARGET_OS_OSX // [macOS
 static NSString *kEscapeKeyCode = @"\x1B";
 #endif // macOS]
+
 
 using namespace facebook::react;
 
@@ -104,8 +105,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
     _backedTextInputView = defaultProps->multiline ? [RCTUITextView new] : [RCTUITextField new];
 #else // [macOS
-    _backedTextInputView =
-        defaultProps->multiline ? [[RCTWrappedTextView alloc] initWithFrame:self.bounds] : [RCTUITextField new];
+    _backedTextInputView = defaultProps->multiline ? [[RCTWrappedTextView alloc] initWithFrame:self.bounds] : [RCTUITextField new];
 #endif // macOS]
     _backedTextInputView.textInputDelegate = self;
     _ignoreNextTextInputCall = NO;
@@ -221,6 +221,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     [self _setMultiline:newTextInputProps.multiline];
   }
 
+
 #if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.autocapitalizationType != oldTextInputProps.traits.autocapitalizationType) {
     _backedTextInputView.autocapitalizationType =
@@ -234,9 +235,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         RCTUITextAutocorrectionTypeFromOptionalBool(newTextInputProps.traits.autoCorrect);
   }
 #else // [macOS
-  if (newTextInputProps.traits.autoCorrect != oldTextInputProps.traits.autoCorrect &&
-      newTextInputProps.traits.autoCorrect.has_value()) {
-    _backedTextInputView.automaticSpellingCorrectionEnabled = newTextInputProps.traits.autoCorrect.value();
+  if (newTextInputProps.traits.autoCorrect != oldTextInputProps.traits.autoCorrect && newTextInputProps.traits.autoCorrect.has_value()) {
+    _backedTextInputView.automaticSpellingCorrectionEnabled =
+        newTextInputProps.traits.autoCorrect.value();
   }
 #endif // macOS]
 
@@ -274,16 +275,16 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         RCTUITextSpellCheckingTypeFromOptionalBool(newTextInputProps.traits.spellCheck);
   }
 #else // [macOS
-  if (newTextInputProps.traits.spellCheck != oldTextInputProps.traits.spellCheck &&
-      newTextInputProps.traits.spellCheck.has_value()) {
-    _backedTextInputView.continuousSpellCheckingEnabled = newTextInputProps.traits.spellCheck.value();
+  if (newTextInputProps.traits.spellCheck != oldTextInputProps.traits.spellCheck && newTextInputProps.traits.spellCheck.has_value()) {
+    _backedTextInputView.continuousSpellCheckingEnabled =
+        newTextInputProps.traits.spellCheck.value();
   }
 #endif // macOS]
 
 #if TARGET_OS_OSX // [macOS
-  if (newTextInputProps.traits.grammarCheck != oldTextInputProps.traits.grammarCheck &&
-      newTextInputProps.traits.grammarCheck.has_value()) {
-    _backedTextInputView.grammarCheckingEnabled = newTextInputProps.traits.grammarCheck.value();
+  if (newTextInputProps.traits.grammarCheck != oldTextInputProps.traits.grammarCheck && newTextInputProps.traits.grammarCheck.has_value()) {
+    _backedTextInputView.grammarCheckingEnabled =
+        newTextInputProps.traits.grammarCheck.value();
   }
 #endif // macOS]
 
@@ -379,7 +380,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 
 #if TARGET_OS_OSX // [macOS
-  if (newTextInputProps.traits.pastedTypes != oldTextInputProps.traits.pastedTypes) {
+  if (newTextInputProps.traits.pastedTypes!= oldTextInputProps.traits.pastedTypes) {
     NSArray<NSPasteboardType> *types = RCTPasteboardTypeArrayFromProps(newTextInputProps.traits.pastedTypes);
     [_backedTextInputView setReadablePasteBoardTypes:types];
   }
@@ -606,35 +607,30 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 }
 
 #if TARGET_OS_OSX // [macOS
-- (void)setEnableFocusRing:(BOOL)enableFocusRing
-{
+- (void)setEnableFocusRing:(BOOL)enableFocusRing {
   [super setEnableFocusRing:enableFocusRing];
   if ([_backedTextInputView respondsToSelector:@selector(setEnableFocusRing:)]) {
     [_backedTextInputView setEnableFocusRing:enableFocusRing];
   }
 }
 
-- (void)automaticSpellingCorrectionDidChange:(BOOL)enabled
-{
+- (void)automaticSpellingCorrectionDidChange:(BOOL)enabled {
   if (_eventEmitter) {
-    std::static_pointer_cast<const TextInputEventEmitter>(_eventEmitter)
-        ->onAutoCorrectChange({.autoCorrectEnabled = static_cast<bool>(enabled)});
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onAutoCorrectChange({.autoCorrectEnabled = static_cast<bool>(enabled)});
   }
 }
 
 - (void)continuousSpellCheckingDidChange:(BOOL)enabled
 {
   if (_eventEmitter) {
-    std::static_pointer_cast<const TextInputEventEmitter>(_eventEmitter)
-        ->onSpellCheckChange({.spellCheckEnabled = static_cast<bool>(enabled)});
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onSpellCheckChange({.spellCheckEnabled = static_cast<bool>(enabled)});
   }
 }
 
 - (void)grammarCheckingDidChange:(BOOL)enabled
 {
   if (_eventEmitter) {
-    std::static_pointer_cast<const TextInputEventEmitter>(_eventEmitter)
-        ->onGrammarCheckChange({.grammarCheckEnabled = static_cast<bool>(enabled)});
+    std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onGrammarCheckChange({.grammarCheckEnabled = static_cast<bool>(enabled)});
   }
 }
 
@@ -642,11 +638,14 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 {
   BOOL shouldSubmit = NO;
   NSDictionary *keyEvent = [RCTViewKeyboardEvent bodyFromEvent:event];
-  const auto &props = *std::static_pointer_cast<const TextInputProps>(_props);
+  auto const &props = *std::static_pointer_cast<TextInputProps const>(_props);
   if (props.traits.submitKeyEvents.empty()) {
-    shouldSubmit = [keyEvent[@"key"] isEqualToString:@"Enter"] && ![keyEvent[@"altKey"] boolValue] &&
-        ![keyEvent[@"shiftKey"] boolValue] && ![keyEvent[@"ctrlKey"] boolValue] && ![keyEvent[@"metaKey"] boolValue] &&
-        ![keyEvent[@"functionKey"] boolValue]; // Default clearTextOnSubmit key
+    shouldSubmit = [keyEvent[@"key"] isEqualToString:@"Enter"]
+      && ![keyEvent[@"altKey"] boolValue]
+      && ![keyEvent[@"shiftKey"] boolValue]
+      && ![keyEvent[@"ctrlKey"] boolValue]
+      && ![keyEvent[@"metaKey"] boolValue]
+      && ![keyEvent[@"functionKey"] boolValue]; // Default clearTextOnSubmit key 
   } else {
     NSString *keyValue = keyEvent[@"key"];
     const char *keyCString = [keyValue UTF8String];
@@ -659,17 +658,19 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       const bool functionKey = [keyEvent[@"functionKey"] boolValue];
 
       shouldSubmit = std::any_of(
-          props.traits.submitKeyEvents.begin(), props.traits.submitKeyEvents.end(), [&](const auto &submitKeyEvent) {
-            return submitKeyEvent.key == key && submitKeyEvent.altKey == altKey &&
-                submitKeyEvent.shiftKey == shiftKey && submitKeyEvent.ctrlKey == ctrlKey &&
-                submitKeyEvent.metaKey == metaKey && submitKeyEvent.functionKey == functionKey;
-          });
+        props.traits.submitKeyEvents.begin(),
+        props.traits.submitKeyEvents.end(),
+        [&](auto const &submitKeyEvent) {
+          return submitKeyEvent.key == key && submitKeyEvent.altKey == altKey &&
+            submitKeyEvent.shiftKey == shiftKey && submitKeyEvent.ctrlKey == ctrlKey &&
+            submitKeyEvent.metaKey == metaKey && submitKeyEvent.functionKey == functionKey;
+      });
     }
   }
-
+  
   if (shouldSubmit) {
     if (_eventEmitter) {
-      const auto &textInputEventEmitter = *std::static_pointer_cast<const TextInputEventEmitter>(_eventEmitter);
+      auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
       textInputEventEmitter.onSubmitEditing([self _textInputMetrics]);
     }
 
@@ -683,33 +684,30 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)textInputDidCancel
 {
   if (_eventEmitter) {
-    const auto &textInputEventEmitter = *std::static_pointer_cast<const TextInputEventEmitter>(_eventEmitter);
+    auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
     textInputEventEmitter.onKeyPress({
-        .text = RCTStringFromNSString(kEscapeKeyCode),
-        .eventCount = static_cast<int>(_mostRecentEventCount),
+      .text = RCTStringFromNSString(kEscapeKeyCode),
+      .eventCount = static_cast<int>(_mostRecentEventCount),
     });
   }
-
+  
   [self textInputDidEndEditing];
 }
 
-- (NSDragOperation)textInputDraggingEntered:(nonnull id<NSDraggingInfo>)draggingInfo
-{
+- (NSDragOperation)textInputDraggingEntered:(nonnull id<NSDraggingInfo>)draggingInfo {
   if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
     return [self draggingEntered:draggingInfo];
   }
   return NSDragOperationNone;
 }
 
-- (void)textInputDraggingExited:(nonnull id<NSDraggingInfo>)draggingInfo
-{
+- (void)textInputDraggingExited:(nonnull id<NSDraggingInfo>)draggingInfo {
   if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
     [self draggingExited:draggingInfo];
   }
 }
 
-- (BOOL)textInputShouldHandleDragOperation:(nonnull id<NSDraggingInfo>)draggingInfo
-{
+- (BOOL)textInputShouldHandleDragOperation:(nonnull id<NSDraggingInfo>)draggingInfo {
   if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
     [self performDragOperation:draggingInfo];
     return NO;
@@ -718,33 +716,28 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   return YES;
 }
 
-- (BOOL)textInputShouldHandleDeleteBackward:(nonnull id<RCTBackedTextInputViewProtocol>)sender
-{
+- (BOOL)textInputShouldHandleDeleteBackward:(nonnull id<RCTBackedTextInputViewProtocol>)sender {
   return YES;
 }
 
-- (BOOL)textInputShouldHandleDeleteForward:(nonnull id<RCTBackedTextInputViewProtocol>)sender
-{
+- (BOOL)textInputShouldHandleDeleteForward:(nonnull id<RCTBackedTextInputViewProtocol>)sender {
   return YES;
 }
 
-- (BOOL)textInputShouldHandleKeyEvent:(nonnull NSEvent *)event
-{
+- (BOOL)textInputShouldHandleKeyEvent:(nonnull NSEvent *)event {
   return ![self handleKeyboardEvent:event];
 }
 
-- (BOOL)textInputShouldHandlePaste:(nonnull id<RCTBackedTextInputViewProtocol>)sender
-{
+- (BOOL)textInputShouldHandlePaste:(nonnull id<RCTBackedTextInputViewProtocol>)sender {
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-  NSPasteboardType fileType =
-      [pasteboard availableTypeFromArray:@[ NSFilenamesPboardType, NSPasteboardTypePNG, NSPasteboardTypeTIFF ]];
-  NSArray<NSPasteboardType> *pastedTypes = ((RCTUITextView *)_backedTextInputView).readablePasteboardTypes;
-
+  NSPasteboardType fileType = [pasteboard availableTypeFromArray:@[NSFilenamesPboardType, NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  NSArray<NSPasteboardType>* pastedTypes = ((RCTUITextView*) _backedTextInputView).readablePasteboardTypes;
+      
   // If there's a fileType that is of interest, notify JS. Also blocks notifying JS if it's a text paste
   if (_eventEmitter && fileType != nil && [pastedTypes containsObject:fileType]) {
-    const auto &textInputEventEmitter = *std::static_pointer_cast<const TextInputEventEmitter>(_eventEmitter);
-    DataTransfer dataTransfer = [self dataTransferForPasteboard:pasteboard];
-    textInputEventEmitter.onPaste({.dataTransfer = std::move(dataTransfer)});
+    auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
+  DataTransfer dataTransfer = [self dataTransferForPasteboard:pasteboard];
+  textInputEventEmitter.onPaste({.dataTransfer = std::move(dataTransfer)});
   }
 
   // Only allow pasting text.
@@ -761,8 +754,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetrics]);
 #else // [macOS
-    static_cast<const TextInputEventEmitter &>(*_eventEmitter)
-        .onScroll([self _textInputMetricsWithScrollView:scrollView]);
+    static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetricsWithScrollView:scrollView]);
 #endif // macOS]
   }
 }
@@ -839,8 +831,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #else // [macOS
   NSInteger startPosition = MIN(start, end);
   NSInteger endPosition = MAX(start, end);
-  [_backedTextInputView setSelectedTextRange:NSMakeRange(startPosition, endPosition - startPosition)
-                              notifyDelegate:YES];
+  [_backedTextInputView setSelectedTextRange:NSMakeRange(startPosition, endPosition - startPosition) notifyDelegate:YES];
 #endif // macOS]
   _comingFromJS = NO;
 }
@@ -991,6 +982,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 }
 #endif // macOS]
 
+
 - (void)_updateState
 {
   if (!_state) {
@@ -1079,7 +1071,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     NSInteger start = selectedRange.location;
     NSInteger offsetFromEnd = oldTextLength - start;
     NSInteger newOffset = _backedTextInputView.attributedText.length - offsetFromEnd;
-    [_backedTextInputView setSelectedTextRange:NSMakeRange(newOffset, 0) notifyDelegate:YES];
+    [_backedTextInputView setSelectedTextRange:NSMakeRange(newOffset, 0)
+                                      notifyDelegate:YES];
   }
 #endif // macOS]
 }
@@ -1122,11 +1115,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 {
   [_backedTextInputView removeFromSuperview];
 #if !TARGET_OS_OSX // [macOS]
-  RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView =
-      multiline ? [RCTUITextView new] : [RCTUITextField new];
+  RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new];
 #else // [macOS
-  RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView =
-      multiline ? [RCTWrappedTextView new] : [RCTUITextField new];
+  RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTWrappedTextView new] : [RCTUITextField new];
 #endif // macOS]
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
@@ -1157,11 +1148,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)_setSecureTextEntry:(BOOL)secureTextEntry
 {
   [_backedTextInputView removeFromSuperview];
-  RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView =
-      secureTextEntry ? [RCTUISecureTextField new] : [RCTUITextField new];
+  RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView = secureTextEntry ? [RCTUISecureTextField new] : [RCTUITextField new];
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
-
+  
   // Copy the text field specific properties if we came from a single line input before the switch
   if ([_backedTextInputView isKindOfClass:[RCTUITextField class]]) {
     RCTUITextField *previousTextField = (RCTUITextField *)_backedTextInputView;
@@ -1199,16 +1189,17 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   BOOL shouldFallbackToBareTextComparison =
 #if !TARGET_OS_OSX // [macOS]
-      [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"dictation"] ||
-      [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"ko-KR"] ||
-      _backedTextInputView.markedTextRange || _backedTextInputView.isSecureTextEntry ||
+  [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"dictation"] ||
+  [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"ko-KR"] ||
+  _backedTextInputView.markedTextRange ||
+  _backedTextInputView.isSecureTextEntry ||
 #else // [macOS
-      // There are multiple Korean input sources (2-Set, 3-Set, etc). Check substring instead instead
-      [[[_backedTextInputView inputContext] selectedKeyboardInputSource]
-          containsString:@"com.apple.inputmethod.Korean"] ||
-      [_backedTextInputView hasMarkedText] || [_backedTextInputView isKindOfClass:[NSSecureTextField class]] ||
+  // There are multiple Korean input sources (2-Set, 3-Set, etc). Check substring instead instead
+  [[[_backedTextInputView inputContext] selectedKeyboardInputSource] containsString:@"com.apple.inputmethod.Korean"] ||
+  [_backedTextInputView hasMarkedText] ||
+  [_backedTextInputView isKindOfClass:[NSSecureTextField class]] ||
 #endif // macOS]
-      fontHasBeenUpdatedBySystem;
+  fontHasBeenUpdatedBySystem;
 
   if (shouldFallbackToBareTextComparison) {
     return [newText.string isEqualToString:oldText.string];
