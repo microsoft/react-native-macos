@@ -15,6 +15,9 @@
 
 #if __has_include(<React/RCTDevMenu.h>) && RCT_DEV
 #import <React/RCTDevMenu.h>
+#import <React/RCTSurfacePresenter.h>
+#import <react/utils/ContextContainer.h>
+#import <react/utils/ManagedObjectWrapper.h>
 #endif
 
 @interface RCTSurfaceHostingView ()
@@ -287,11 +290,30 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
 {
   NSMenu *menu = nil;
 #if __has_include(<React/RCTDevMenu.h>) && RCT_DEV
-  // In Fabric/bridgeless mode, trigger the dev menu via notification
-  // This is bridge-independent and works without accessing the bridge
-  [[NSNotificationCenter defaultCenter] postNotificationName:RCTShowDevMenuNotification object:nil];
-  // Return nil as the menu will be shown programmatically via notification
-  return nil;
+  // Try to get DevMenu from the contextContainer via the surface presenter
+  // This works in Fabric architecture where DevMenu is stored in contextContainer
+  if ([self.surface respondsToSelector:@selector(surfacePresenter)]) {
+    RCTSurfacePresenter *surfacePresenter = [self.surface performSelector:@selector(surfacePresenter)];
+    if (surfacePresenter) {
+      auto contextContainer = surfacePresenter.contextContainer;
+      if (contextContainer) {
+        auto optionalDevMenu = contextContainer->find<std::shared_ptr<void>>("RCTDevMenu");
+        if (optionalDevMenu) {
+          RCTDevMenu *devMenu = facebook::react::unwrapManagedObject(optionalDevMenu.value());
+          if (devMenu) {
+            menu = [devMenu menu];
+          }
+        }
+      }
+    }
+  }
+  
+  // Fall back to notification-based approach if contextContainer access fails
+  if (menu == nil) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:RCTShowDevMenuNotification object:nil];
+    // Return nil as the menu will be shown programmatically via notification
+    return nil;
+  }
 #endif
   
   if (menu == nil) {
