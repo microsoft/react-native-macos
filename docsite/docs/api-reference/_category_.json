@@ -1,0 +1,9 @@
+{
+  "label": "API Reference",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "API reference for macOS-specific props and events in React Native macOS."
+  },
+  "collapsed": false
+}
