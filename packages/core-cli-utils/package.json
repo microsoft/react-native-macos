@@ -4,16 +4,16 @@
   "private": true,
   "description": "React Native CLI library for Frameworks to build on",
   "license": "MIT",
-  "main": "./dist/index.flow.js",
+  "main": "./src/index.flow.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/facebook/react-native.git",
     "directory": "packages/core-cli-utils"
   },
   "exports": {
-    ".": "./dist/index.js",
+    ".": "./src/index.js",
     "./package.json": "./package.json",
-    "./version.js": "./dist/public/version.js"
+    "./version.js": "./src/public/version.js"
   },
   "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/core-cli-utils#readme",
   "keywords": [

@@ -190,3 +190,4 @@ fix_*.patch
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 # macOS]
+packages/react-native-compatibility-check/dist/
