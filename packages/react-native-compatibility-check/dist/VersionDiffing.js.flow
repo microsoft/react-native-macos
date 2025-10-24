@@ -1,0 +1,71 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
+ * @format
+ */
+
+import type { ComparisonResult } from "./ComparisonResult";
+import type {
+  DiffSet,
+  DiffSummary,
+  ErrorStore,
+  ObjectTypeChangeStore,
+  SchemaDiff,
+} from "./DiffResults";
+import type {
+  CompleteTypeAnnotation,
+  SchemaType,
+} from "@react-native/codegen/src/CodegenSchema";
+
+type BoundaryDirection = "toNative" | "fromNative" | "both";
+
+// Exported for testing
+declare export const removedPropertiesMessage: "Object removed required properties expected by native";
+declare export const addedPropertiesMessage: "Object added required properties, which native will not provide";
+declare export const stricterPropertiesMessage: "Property made strict, but native may not provide it";
+declare export const tooOptionalPropertiesMessage: "Property made optional, but native requires it";
+declare export const removedUnionMessage: "Union removed items, but native may still provide them";
+declare export const addedUnionMessage: "Union added items, but native will not expect/support them";
+declare export const removedEnumMessage: "Enum removed items, but native may still provide them";
+declare export const addedEnumMessage: "Enum added items, but native will not expect/support them";
+declare export const removedIntersectionMessage: "Intersection removed items, but native may still require properties contained in them";
+declare export const addedIntersectionMessage: "Intersection added items, but native may not provide all required attributes";
+declare export const toNativeVoidChangeMessage: "Native may not be able to safely handle presence of type";
+declare export const typeNullableChangeMessage: "Type made nullable, but native requires it";
+declare export const fromNativeVoidChangeMessage: "Type set to void but native may still provide a value";
+declare export const typeNonNullableChangeMessage: "Type made non-nullable, but native might provide null still";
+declare export function assessComparisonResult(
+  newTypes: Set<{
+    typeName: string,
+    typeInformation: CompleteTypeAnnotation,
+    ...
+  }>,
+  deprecatedTypes: Set<{
+    typeName: string,
+    typeInformation: CompleteTypeAnnotation,
+    ...
+  }>,
+  incompatibleChanges: Set<ErrorStore>,
+  objectTypeChanges: Set<ObjectTypeChangeStore>
+): (
+  typeName: string,
+  newType: CompleteTypeAnnotation,
+  oldType: ?CompleteTypeAnnotation,
+  difference: ComparisonResult,
+  oldDirection: BoundaryDirection
+) => void;
+
+declare export function hasUpdatesTypes(diff: DiffSet): boolean;
+
+declare export function hasCodegenUpdatesTypes(diff: DiffSet): boolean;
+
+declare export function buildSchemaDiff(
+  newerSchemaSet: SchemaType,
+  olderSchemaSet: SchemaType
+): Set<SchemaDiff>;
+
+declare export function summarizeDiffSet(diffs: Set<SchemaDiff>): DiffSummary;

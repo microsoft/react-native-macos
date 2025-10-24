@@ -1,0 +1,34 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow strict-local
+ * @format
+ */
+
+import type { TypeComparisonError } from "./ComparisonResult";
+import type {
+  DiffSummary,
+  ErrorStore,
+  FormattedDiffSummary,
+  FormattedErrorStore,
+  NativeSpecErrorStore,
+} from "./DiffResults";
+declare export function formatErrorMessage(
+  error: TypeComparisonError,
+  indent: number
+): string;
+
+declare export function formatErrorStore(
+  errorStore: ErrorStore
+): FormattedErrorStore;
+
+declare export function formatNativeSpecErrorStore(
+  specError: NativeSpecErrorStore
+): Array<FormattedErrorStore>;
+
+declare export function formatDiffSet(
+  summary: DiffSummary
+): FormattedDiffSummary;
