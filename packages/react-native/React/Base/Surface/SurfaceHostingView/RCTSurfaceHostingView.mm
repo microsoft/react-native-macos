@@ -13,6 +13,13 @@
 #import "RCTSurfaceView.h"
 #import "RCTUtils.h"
 
+#if __has_include(<React/RCTDevMenu.h>) && RCT_DEV
+#import <React/RCTDevMenu.h>
+#import <React/RCTSurfacePresenter.h>
+#import <react/utils/ContextContainer.h>
+#import <react/utils/ManagedObjectWrapper.h>
+#endif
+
 @interface RCTSurfaceHostingView ()
 
 @property (nonatomic, assign) BOOL isActivityIndicatorViewVisible;
@@ -277,5 +284,43 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
     [self _invalidateLayout];
   });
 }
+
+#if TARGET_OS_OSX // [macOS
+- (NSMenu *)menuForEvent:(NSEvent *)event
+{
+  NSMenu *menu = nil;
+#if __has_include(<React/RCTDevMenu.h>) && RCT_DEV
+  // Try to get DevMenu from the contextContainer via the surface presenter
+  // This works in Fabric architecture where DevMenu is stored in contextContainer
+  if ([self.surface respondsToSelector:@selector(surfacePresenter)]) {
+    RCTSurfacePresenter *surfacePresenter = [self.surface performSelector:@selector(surfacePresenter)];
+    if (surfacePresenter) {
+      auto contextContainer = surfacePresenter.contextContainer;
+      if (contextContainer) {
+        auto optionalDevMenu = contextContainer->find<std::shared_ptr<void>>("RCTDevMenu");
+        if (optionalDevMenu) {
+          RCTDevMenu *devMenu = facebook::react::unwrapManagedObject(optionalDevMenu.value());
+          if (devMenu) {
+            menu = [devMenu menu];
+          }
+        }
+      }
+    }
+  }
+  
+  // Fall back to notification-based approach if contextContainer access fails
+  if (menu == nil) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:RCTShowDevMenuNotification object:nil];
+    // Return nil as the menu will be shown programmatically via notification
+    return nil;
+  }
+#endif
+  
+  if (menu == nil) {
+    menu = [super menuForEvent:event];
+  }
+  return menu;
+}
+#endif // macOS]
 
 @end

@@ -18,6 +18,10 @@
 #import <React/RCTSurfacePresenter.h>
 #import <React/RCTSurfacePresenterStub.h>
 
+#if __has_include(<React/RCTDevMenu.h>) && RCT_DEV
+#import <React/RCTDevMenu.h>
+#endif
+
 #import <ReactCommon/RuntimeExecutor.h>
 #import <react/utils/ContextContainer.h>
 #import <react/utils/ManagedObjectWrapper.h>
@@ -39,6 +43,15 @@ static ContextContainer::Shared RCTContextContainerFromBridge(RCTBridge *bridge)
 
   contextContainer->insert("Bridge", wrapManagedObjectWeakly(bridge));
   contextContainer->insert("RCTImageLoader", wrapManagedObject((id<RCTImageLoaderWithAttributionProtocol>)imageLoader));
+  
+#if __has_include(<React/RCTDevMenu.h>) && RCT_DEV
+  // Add DevMenu to contextContainer for Fabric views to access
+  RCTDevMenu *devMenu = [bridge devMenu];
+  if (devMenu) {
+    contextContainer->insert("RCTDevMenu", wrapManagedObject(devMenu));
+  }
+#endif
+  
   return contextContainer;
 }
 
