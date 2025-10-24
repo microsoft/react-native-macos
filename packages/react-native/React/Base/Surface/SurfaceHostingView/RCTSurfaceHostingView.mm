@@ -287,25 +287,11 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
 {
   NSMenu *menu = nil;
 #if __has_include(<React/RCTDevMenu.h>) && RCT_DEV
-  // Try to get the dev menu from the bridge if available
-  // In Fabric with bridge mode, RCTSurface (but not RCTFabricSurface) has a bridge
-  if ([self.surface isKindOfClass:[RCTSurface class]]) {
-    RCTSurface *surface = (RCTSurface *)self.surface;
-    // Use performSelector to access the bridge since it's not a public property
-    if ([surface respondsToSelector:@selector(bridge)]) {
-      RCTBridge *bridge = [surface performSelector:@selector(bridge)];
-      if (bridge) {
-        menu = [[bridge devMenu] menu];
-      }
-    }
-  }
-  
-  // Fall back to notification-based approach for bridgeless mode or if bridge access failed
-  if (menu == nil) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:RCTShowDevMenuNotification object:nil];
-    // Return nil as the menu will be shown programmatically via notification
-    return nil;
-  }
+  // In Fabric/bridgeless mode, trigger the dev menu via notification
+  // This is bridge-independent and works without accessing the bridge
+  [[NSNotificationCenter defaultCenter] postNotificationName:RCTShowDevMenuNotification object:nil];
+  // Return nil as the menu will be shown programmatically via notification
+  return nil;
 #endif
   
   if (menu == nil) {
