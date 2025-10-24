@@ -164,33 +164,6 @@ RCTUIColor *_Nullable UIColorFromComponentsColor(const facebook::react::ColorCom
   return uiColor;
 }
 
-#if TARGET_OS_OSX // [macOS
-RCTUIColor *_Nullable UIColorFromColorWithSystemEffect(
-    RCTUIColor *baseColor,
-    const std::string &systemEffectString) // [macOS]
-{
-  if (baseColor == nil) {
-    return nil;
-  }
-  
-  NSColor *colorWithEffect = baseColor;
-  if (!systemEffectString.empty()) {
-    if (systemEffectString == "none") {
-      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectNone];
-    } else if (systemEffectString == "pressed") {
-      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectPressed];
-    } else if (systemEffectString == "deepPressed") {
-      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectDeepPressed];
-    } else if (systemEffectString == "disabled") {
-      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectDisabled];
-    } else if (systemEffectString == "rollover") {
-      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectRollover];
-    }
-  }
-  return colorWithEffect;
-}
-#endif // macOS]
-
 int32_t hashFromUIColor(const std::shared_ptr<void> &uiColor)
 {
   if (uiColor == nullptr) {

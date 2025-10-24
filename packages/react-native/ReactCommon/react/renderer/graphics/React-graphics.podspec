@@ -24,7 +24,10 @@ boost_config = get_boost_config()
 boost_compiler_flags = boost_config[:compiler_flags]
 
 Pod::Spec.new do |s|
-  source_files = "*.{m,mm,cpp,h}", "platform/ios/**/*.{m,mm,cpp,h}"
+  # [macOS Use platform specific sources
+  ios_source_files = "*.{m,mm,cpp,h}", "platform/ios/**/*.{m,mm,cpp,h}"
+  macos_source_files = "*.{m,mm,cpp,h}", "platform/ios/**/*.{m,mm,cpp,h}", "platform/macos/**/*.{m,mm,cpp,h}"
+  # macOS]
   header_search_paths = [
     "\"$(PODS_ROOT)/boost\"",
     "\"$(PODS_TARGET_SRCROOT)/../../../\"",
@@ -43,7 +46,11 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.compiler_flags         = folly_compiler_flags + ' ' + boost_compiler_flags
-  s.source_files           = source_files
+  # [macOS Use platform specific sources  
+  s.ios.source_files       = ios_source_files
+  s.visionos.source_files  = ios_source_files
+  s.osx.source_files       = macos_source_files
+  # macOS]
   s.header_dir             = "react/renderer/graphics"
   # [macOS Restrict UIKit to iOS and visionOS
   s.ios.framework = "UIKit" 
@@ -54,7 +61,7 @@ Pod::Spec.new do |s|
   if ENV['USE_FRAMEWORKS']
     s.module_name            = "React_graphics"
     s.header_mappings_dir  = "../../.."
-    header_search_paths = header_search_paths + ["\"$(PODS_TARGET_SRCROOT)/platform/ios\""]
+    header_search_paths = header_search_paths + ["\"$(PODS_TARGET_SRCROOT)/platform/ios\"", "\"$(PODS_TARGET_SRCROOT)/platform/macos\""] # [macOS]
   end
 
   s.pod_target_xcconfig  = { "USE_HEADERMAP" => "NO",
