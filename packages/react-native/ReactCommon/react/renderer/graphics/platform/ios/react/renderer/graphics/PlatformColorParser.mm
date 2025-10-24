@@ -7,6 +7,7 @@
 
 #import "PlatformColorParser.h"
 
+#import <React/RCTUIKit.h> // [macOS]
 #import <react/renderer/core/RawValue.h>
 #import <react/renderer/graphics/HostPlatformColor.h>
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
@@ -17,6 +18,13 @@
 using namespace facebook::react;
 
 NS_ASSUME_NONNULL_BEGIN
+
+#if TARGET_OS_OSX // [macOS
+// Forward declaration for ColorWithSystemEffect helper
+RCTUIColor *_Nullable UIColorFromColorWithSystemEffect(
+    RCTUIColor *baseColor,
+    const std::string &systemEffectString);
+#endif // macOS]
 
 namespace facebook::react {
 
@@ -63,6 +71,27 @@ SharedColor parsePlatformColor(const ContextContainer &contextContainer, int32_t
       auto dynamicItems = (std::unordered_map<std::string, RawValue>)items.at("dynamic");
       return RCTPlatformColorComponentsFromDynamicItems(contextContainer, surfaceId, dynamicItems);
     }
+#if TARGET_OS_OSX // [macOS
+    else if (
+        items.find("colorWithSystemEffect") != items.end() &&
+        items.at("colorWithSystemEffect").hasType<std::unordered_map<std::string, RawValue>>()) {
+      auto colorWithSystemEffectItems = (std::unordered_map<std::string, RawValue>)items.at("colorWithSystemEffect");
+      if (colorWithSystemEffectItems.find("baseColor") != colorWithSystemEffectItems.end() &&
+          colorWithSystemEffectItems.find("systemEffect") != colorWithSystemEffectItems.end() &&
+          colorWithSystemEffectItems.at("systemEffect").hasType<std::string>()) {
+        SharedColor baseColorShared{};
+        fromRawValue(contextContainer, surfaceId, colorWithSystemEffectItems.at("baseColor"), baseColorShared);
+        if (baseColorShared) {
+          RCTUIColor *baseColor = RCTPlatformColorFromColor(*baseColorShared);
+          std::string systemEffect = (std::string)colorWithSystemEffectItems.at("systemEffect");
+          RCTUIColor *colorWithEffect = UIColorFromColorWithSystemEffect(baseColor, systemEffect);
+          if (colorWithEffect != nil) {
+            return SharedColor(Color(wrapManagedObject(colorWithEffect)));
+          }
+        }
+      }
+    }
+#endif // macOS]
   }
 
   return clearColor();
