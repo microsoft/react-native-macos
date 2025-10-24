@@ -13,6 +13,10 @@
 #import "RCTSurfaceView.h"
 #import "RCTUtils.h"
 
+#if __has_include(<React/RCTDevMenu.h>) && RCT_DEV
+#import <React/RCTDevMenu.h>
+#endif
+
 @interface RCTSurfaceHostingView ()
 
 @property (nonatomic, assign) BOOL isActivityIndicatorViewVisible;
@@ -277,5 +281,26 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
     [self _invalidateLayout];
   });
 }
+
+#if TARGET_OS_OSX // [macOS
+- (NSMenu *)menuForEvent:(NSEvent *)event
+{
+  NSMenu *menu = nil;
+#if __has_include(<React/RCTDevMenu.h>) && RCT_DEV
+  // In Fabric/bridgeless mode, we trigger the dev menu via notification
+  // This is bridge-independent and works in both bridge and bridgeless modes
+  [[NSNotificationCenter defaultCenter] postNotificationName:RCTShowDevMenuNotification object:nil];
+  
+  // Note: The DevMenu will display itself via the notification handler
+  // We return nil here as the menu is shown programmatically
+  return nil;
+#endif
+  
+  if (menu == nil) {
+    menu = [super menuForEvent:event];
+  }
+  return menu;
+}
+#endif // macOS]
 
 @end
