@@ -1,12 +1,15 @@
 /*
- * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Microsoft Corporation.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
+// [macOS]
+
 #import "PlatformColorParser.h"
 
+#import <React/RCTUIKit.h>
 #import <react/renderer/core/RawValue.h>
 #import <react/renderer/graphics/HostPlatformColor.h>
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
@@ -17,6 +20,11 @@
 using namespace facebook::react;
 
 NS_ASSUME_NONNULL_BEGIN
+
+// Forward declaration for ColorWithSystemEffect helper
+RCTUIColor *_Nullable UIColorFromColorWithSystemEffect(
+    RCTUIColor *baseColor,
+    const std::string &systemEffectString);
 
 namespace facebook::react {
 
@@ -62,6 +70,24 @@ SharedColor parsePlatformColor(const ContextContainer &contextContainer, int32_t
         items.at("dynamic").hasType<std::unordered_map<std::string, RawValue>>()) {
       auto dynamicItems = (std::unordered_map<std::string, RawValue>)items.at("dynamic");
       return RCTPlatformColorComponentsFromDynamicItems(contextContainer, surfaceId, dynamicItems);
+    } else if (
+        items.find("colorWithSystemEffect") != items.end() &&
+        items.at("colorWithSystemEffect").hasType<std::unordered_map<std::string, RawValue>>()) {
+      auto colorWithSystemEffectItems = (std::unordered_map<std::string, RawValue>)items.at("colorWithSystemEffect");
+      if (colorWithSystemEffectItems.find("baseColor") != colorWithSystemEffectItems.end() &&
+          colorWithSystemEffectItems.find("systemEffect") != colorWithSystemEffectItems.end() &&
+          colorWithSystemEffectItems.at("systemEffect").hasType<std::string>()) {
+        SharedColor baseColorShared{};
+        fromRawValue(contextContainer, surfaceId, colorWithSystemEffectItems.at("baseColor"), baseColorShared);
+        if (baseColorShared) {
+          RCTUIColor *baseColor = RCTPlatformColorFromColor(*baseColorShared);
+          std::string systemEffect = (std::string)colorWithSystemEffectItems.at("systemEffect");
+          RCTUIColor *colorWithEffect = UIColorFromColorWithSystemEffect(baseColor, systemEffect);
+          if (colorWithEffect != nil) {
+            return SharedColor(Color(wrapManagedObject(colorWithEffect)));
+          }
+        }
+      }
     }
   }
 
