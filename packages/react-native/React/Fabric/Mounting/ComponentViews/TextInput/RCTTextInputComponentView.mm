@@ -432,6 +432,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     // Note: Setting clipsToBounds ensures Core Animation border rendering is used,
     // which properly displays with the native text field subview on macOS
     self.clipsToBounds = YES;
+  } else {
+    // Reset clipsToBounds when no borders are present
+    self.clipsToBounds = NO;
   }
 #endif // macOS]
 
@@ -461,6 +464,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _ignoreNextTextInputCall = NO;
   _didMoveToWindow = NO;
   [_backedTextInputView resignFirstResponder];
+#if TARGET_OS_OSX // [macOS
+  // Reset clipsToBounds to prevent state leakage in recycled components
+  self.clipsToBounds = NO;
+#endif // macOS]
 }
 
 #pragma mark - RCTBackedTextInputDelegate
