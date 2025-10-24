@@ -113,6 +113,14 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _didMoveToWindow = NO;
     _originalTypingAttributes = [_backedTextInputView.typingAttributes copy];
 
+#if TARGET_OS_OSX // [macOS
+    // Ensure the backing text view doesn't interfere with border rendering
+    // by making sure it doesn't draw outside its bounds
+    if (_backedTextInputView.layer) {
+      _backedTextInputView.layer.masksToBounds = YES;
+    }
+#endif // macOS]
+
     [self addSubview:_backedTextInputView];
 #if TARGET_OS_IOS // [macOS] [visionOS]
     [self initializeReturnKeyType];
@@ -413,6 +421,24 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 {
   CGSize previousContentSize = _backedTextInputView.contentSize;
 
+#if TARGET_OS_OSX // [macOS
+  // On macOS, ensure proper border rendering by enabling clip to bounds
+  // when borders are present. This forces Core Animation border rendering
+  // which displays correctly with the native text field subview.
+  const auto &props = static_cast<const TextInputProps &>(*_props);
+  const auto borderMetrics = props.resolveBorderMetrics(layoutMetrics);
+  BOOL hasBorder = borderMetrics.borderWidths.left > 0 || borderMetrics.borderWidths.right > 0 ||
+      borderMetrics.borderWidths.top > 0 || borderMetrics.borderWidths.bottom > 0;
+  if (hasBorder) {
+    // Note: Setting clipsToBounds ensures Core Animation border rendering is used,
+    // which properly displays with the native text field subview on macOS
+    self.clipsToBounds = YES;
+  } else {
+    // Reset clipsToBounds when no borders are present
+    self.clipsToBounds = NO;
+  }
+#endif // macOS]
+
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
 
 #if TARGET_OS_OSX // [macOS
@@ -439,6 +465,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _ignoreNextTextInputCall = NO;
   _didMoveToWindow = NO;
   [_backedTextInputView resignFirstResponder];
+#if TARGET_OS_OSX // [macOS
+  // Reset clipsToBounds to prevent state leakage in recycled components
+  self.clipsToBounds = NO;
+#endif // macOS]
 }
 
 #pragma mark - RCTBackedTextInputDelegate
