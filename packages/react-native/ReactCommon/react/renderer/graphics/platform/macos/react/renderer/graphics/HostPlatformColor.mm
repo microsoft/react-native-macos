@@ -22,8 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 namespace facebook::react {
 
-namespace {
-
 RCTUIColor *_Nullable UIColorFromColorWithSystemEffect(
     RCTUIColor *baseColor,
     const std::string &systemEffectString)
@@ -48,8 +46,6 @@ RCTUIColor *_Nullable UIColorFromColorWithSystemEffect(
   }
   return colorWithEffect;
 }
-
-} // anonymous namespace
 
 } // namespace facebook::react
 

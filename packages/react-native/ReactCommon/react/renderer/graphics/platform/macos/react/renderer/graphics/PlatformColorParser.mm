@@ -9,7 +9,6 @@
 
 #import "PlatformColorParser.h"
 
-#import <React/RCTUIKit.h>
 #import <react/renderer/core/RawValue.h>
 #import <react/renderer/graphics/HostPlatformColor.h>
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
