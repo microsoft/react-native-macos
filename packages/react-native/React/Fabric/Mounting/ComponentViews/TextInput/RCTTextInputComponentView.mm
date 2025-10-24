@@ -420,6 +420,21 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 {
   CGSize previousContentSize = _backedTextInputView.contentSize;
 
+#if TARGET_OS_OSX // [macOS
+  // On macOS, ensure proper border rendering by enabling clip to bounds
+  // when borders are present. This forces Core Animation border rendering
+  // which displays correctly with the native text field subview.
+  const auto &props = static_cast<const TextInputProps &>(*_props);
+  const auto borderMetrics = props.resolveBorderMetrics(layoutMetrics);
+  BOOL hasBorder = borderMetrics.borderWidths.left > 0 || borderMetrics.borderWidths.right > 0 ||
+      borderMetrics.borderWidths.top > 0 || borderMetrics.borderWidths.bottom > 0;
+  if (hasBorder) {
+    // Note: Setting clipsToBounds ensures Core Animation border rendering is used,
+    // which properly displays with the native text field subview on macOS
+    self.clipsToBounds = YES;
+  }
+#endif // macOS]
+
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
 
 #if TARGET_OS_OSX // [macOS
