@@ -288,13 +288,14 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
   NSMenu *menu = nil;
 #if __has_include(<React/RCTDevMenu.h>) && RCT_DEV
   // Try to get the dev menu from the bridge if available
-  // The contextContainer stores the bridge, but we access it through the surface for simplicity
-  if ([self.surface respondsToSelector:@selector(bridge)]) {
-    id bridge = [self.surface performSelector:@selector(bridge)];
-    if (bridge && [bridge respondsToSelector:@selector(devMenu)]) {
-      id devMenu = [bridge performSelector:@selector(devMenu)];
-      if (devMenu && [devMenu respondsToSelector:@selector(menu)]) {
-        menu = [devMenu performSelector:@selector(menu)];
+  // In Fabric with bridge mode, RCTSurface (but not RCTFabricSurface) has a bridge
+  if ([self.surface isKindOfClass:[RCTSurface class]]) {
+    RCTSurface *surface = (RCTSurface *)self.surface;
+    // Use performSelector to access the bridge since it's not a public property
+    if ([surface respondsToSelector:@selector(bridge)]) {
+      RCTBridge *bridge = [surface performSelector:@selector(bridge)];
+      if (bridge) {
+        menu = [[bridge devMenu] menu];
       }
     }
   }
