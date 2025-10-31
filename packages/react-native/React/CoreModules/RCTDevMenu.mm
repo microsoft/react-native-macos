@@ -442,11 +442,13 @@ RCT_EXPORT_MODULE()
                                         NSString *port = portTextField.stringValue;
                                         NSString *bundleRoot = entrypointTextField.stringValue;
 
+                                        // If both IP and port are empty, reset to default
                                         if (ipAddress.length == 0 && port.length == 0) {
                                           [weakSelf setDefaultJSBundle];
                                           return;
                                         }
 
+                                        // Parse and validate port number
                                         NSNumberFormatter *formatter = [NSNumberFormatter new];
                                         formatter.numberStyle = NSNumberFormatterDecimalStyle;
                                         NSNumber *portNumber = [formatter numberFromString:port];
@@ -454,6 +456,7 @@ RCT_EXPORT_MODULE()
                                           portNumber = [NSNumber numberWithInt:RCT_METRO_PORT];
                                         }
 
+                                        // Set the bundler location - matches iOS behavior
                                         [RCTBundleURLProvider sharedSettings].jsLocation =
                                             [NSString stringWithFormat:@"%@:%d", ipAddress, portNumber.intValue];
 
