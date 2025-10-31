@@ -127,8 +127,7 @@ RCT_EXPORT_MODULE()
 {
 #if !TARGET_OS_OSX // [macOS]
   // We're swizzling here because it's poor form to override methods in a category,
-  RCTOriginalUIWindowMotionEndedWithEventImp = (MotionEndedWithEventImpType)RCTSwapInstanceMethods(
-      [UIWindow class], @selector(motionEnded:withEvent:), @selector(RCT_motionEnded:withEvent:)); // [macOS]
+  RCTOriginalUIWindowMotionEndedWithEventImp = (MotionEndedWithEventImpType) RCTSwapInstanceMethods([UIWindow class], @selector(motionEnded:withEvent:), @selector(RCT_motionEnded:withEvent:)); // [macOS]
 #endif // [macOS]
 }
 
