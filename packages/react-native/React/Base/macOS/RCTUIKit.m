@@ -526,20 +526,6 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 @end
 
-BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
-{
-  // NSViews are always clipped to bounds
-  BOOL clipsToBounds = YES;
-
-  // But see if UIView overrides that behavior
-  if ([view respondsToSelector:@selector(clipsToBounds)])
-  {
-    clipsToBounds = [(id)view clipsToBounds];
-  }
-
-  return clipsToBounds;
-}
-
 @implementation RCTClipView
 
 - (instancetype)initWithFrame:(NSRect)frameRect
@@ -741,16 +727,6 @@ BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
   }
   
   return self;
-}
-
-- (BOOL)clipsToBounds
-{
-  return [[self layer] masksToBounds];
-}
-
-- (void)setClipsToBounds:(BOOL)clipsToBounds
-{
-  [[self layer] setMasksToBounds:clipsToBounds];
 }
 
 - (void)setContentMode:(UIViewContentMode)contentMode

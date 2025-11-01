@@ -55,7 +55,7 @@ const UIAccessibilityTraits SwitchAccessibilityTrait = 0x20000000000001;
   // we do support clipsToBounds, so if that's enabled
   // we'll update the clipping
 
-  if (RCTUIViewSetClipsToBounds(self) && self.subviews.count > 0) { // [macOS]
+  if (self.clipsToBounds && self.subviews.count > 0) {
     clipRect = [clipView convertRect:clipRect toView:self];
     clipRect = CGRectIntersection(clipRect, self.bounds);
     clipView = self;
@@ -77,7 +77,7 @@ const UIAccessibilityTraits SwitchAccessibilityTrait = 0x20000000000001;
   CGRect clipRect = self.bounds;
   // We will only look for a clipping view up the view hierarchy until we hit the root view.
   while (testView) {
-    if (RCTUIViewSetClipsToBounds(testView)) { // [macOS]
+    if (testView.clipsToBounds) {
       if (clipView) {
         CGRect testRect = [clipView convertRect:clipRect toView:testView];
         if (!CGRectContainsRect(testView.bounds, testRect)) {

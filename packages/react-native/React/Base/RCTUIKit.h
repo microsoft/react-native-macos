@@ -65,11 +65,6 @@ UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *
   return [view hitTest:point withEvent:event];
 }
 
-UIKIT_STATIC_INLINE BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view)
-{
-  return view.clipsToBounds;
-}
-
 UIKIT_STATIC_INLINE void RCTUIViewSetContentModeRedraw(UIView *view)
 {
   view.contentMode = UIViewContentModeRedraw;
@@ -398,8 +393,6 @@ void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath);
 
 - (void)setNeedsDisplay;
 
-// FUTURE: When Xcode 14 is no longer supported (CI is building with Xcode 15), we can remove this override since it's now declared on NSView
-@property BOOL clipsToBounds;
 @property (nonatomic, copy) NSColor *backgroundColor;
 @property (nonatomic) CGAffineTransform transform;
 
@@ -461,8 +454,6 @@ NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPo
   NSPoint pointInSuperview = superview != nil ? [view convertPoint:point toView:superview] : point;
   return [view hitTest:pointInSuperview];
 }
-
-BOOL RCTUIViewSetClipsToBounds(RCTPlatformView *view);
 
 NS_INLINE void RCTUIViewSetContentModeRedraw(RCTPlatformView *view)
 {
@@ -604,8 +595,6 @@ typedef UIImageView RCTUIImageView;
 #else
 @interface RCTUIImageView : NSImageView
 NS_ASSUME_NONNULL_BEGIN
-// FUTURE: When Xcode 14 is no longer supported (CI is building with Xcode 15), we can remove this override since it's now declared on NSView
-@property (assign) BOOL clipsToBounds;
 @property (nonatomic, strong) RCTUIColor *tintColor;
 @property (nonatomic, assign) UIViewContentMode contentMode;
 NS_ASSUME_NONNULL_END
