@@ -127,7 +127,8 @@ RCT_EXPORT_MODULE()
 {
 #if !TARGET_OS_OSX // [macOS]
   // We're swizzling here because it's poor form to override methods in a category,
-  RCTOriginalUIWindowMotionEndedWithEventImp = (MotionEndedWithEventImpType) RCTSwapInstanceMethods([UIWindow class], @selector(motionEnded:withEvent:), @selector(RCT_motionEnded:withEvent:)); // [macOS]
+  RCTOriginalUIWindowMotionEndedWithEventImp = (MotionEndedWithEventImpType)RCTSwapInstanceMethods(
+      [UIWindow class], @selector(motionEnded:withEvent:), @selector(RCT_motionEnded:withEvent:)); // [macOS]
 #endif // [macOS]
 }
 
@@ -341,6 +342,37 @@ RCT_EXPORT_MODULE()
                       return @"Configure Bundler";
                     }
                     handler:^{
+                      // Shared callback for applying bundler configuration
+                      void (^applyBundlerConfig)(NSString *, NSString *, NSString *) =
+                          ^(NSString *ipAddress, NSString *port, NSString *bundleRoot) {
+                            // If both IP and port are empty, reset to default
+                            if (ipAddress.length == 0 && port.length == 0) {
+                              [weakSelf setDefaultJSBundle];
+                              return;
+                            }
+
+                            // Parse and validate port number
+                            NSNumberFormatter *formatter = [NSNumberFormatter new];
+                            formatter.numberStyle = NSNumberFormatterDecimalStyle;
+                            NSNumber *portNumber = [formatter numberFromString:port];
+                            if (portNumber == nil) {
+                              portNumber = [NSNumber numberWithInt:RCT_METRO_PORT];
+                            }
+
+                            // Set the bundler location
+                            [RCTBundleURLProvider sharedSettings].jsLocation =
+                                [NSString stringWithFormat:@"%@:%d", ipAddress, portNumber.intValue];
+
+                            if (bundleRoot.length == 0) {
+                              [bundleManager resetBundleURL];
+                            } else {
+                              bundleManager.bundleURL =
+                                  [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:bundleRoot];
+                            }
+
+                            RCTTriggerReloadCommandListeners(@"Dev menu - apply changes");
+                          };
+
 #if !TARGET_OS_OSX // [macOS]
                       UIAlertController *alertController = [UIAlertController
                           alertControllerWithTitle:@"Configure Bundler"
@@ -364,28 +396,8 @@ RCT_EXPORT_MODULE()
                                                   UITextField *ipTextField = textfields[0];
                                                   UITextField *portTextField = textfields[1];
                                                   UITextField *bundleRootTextField = textfields[2];
-                                                  NSString *bundleRoot = bundleRootTextField.text;
-                                                  if (ipTextField.text.length == 0 && portTextField.text.length == 0) {
-                                                    [weakSelf setDefaultJSBundle];
-                                                    return;
-                                                  }
-                                                  NSNumberFormatter *formatter = [NSNumberFormatter new];
-                                                  formatter.numberStyle = NSNumberFormatterDecimalStyle;
-                                                  NSNumber *portNumber =
-                                                      [formatter numberFromString:portTextField.text];
-                                                  if (portNumber == nil) {
-                                                    portNumber = [NSNumber numberWithInt:RCT_METRO_PORT];
-                                                  }
-                                                  [RCTBundleURLProvider sharedSettings].jsLocation = [NSString
-                                                      stringWithFormat:@"%@:%d", ipTextField.text, portNumber.intValue];
-                                                  if (bundleRoot.length == 0) {
-                                                    [bundleManager resetBundleURL];
-                                                  } else {
-                                                    bundleManager.bundleURL = [[RCTBundleURLProvider sharedSettings]
-                                                        jsBundleURLForBundleRoot:bundleRoot];
-                                                  }
-
-                                                  RCTTriggerReloadCommandListeners(@"Dev menu - apply changes");
+                                                  applyBundlerConfig(
+                                                      ipTextField.text, portTextField.text, bundleRootTextField.text);
                                                 }]];
                       [alertController addAction:[UIAlertAction actionWithTitle:@"Reset to Default"
                                                                           style:UIAlertActionStyleDefault
@@ -437,36 +449,10 @@ RCT_EXPORT_MODULE()
                                     completionHandler:^(NSModalResponse response) {
                                       if (response == NSAlertFirstButtonReturn) {
                                         // Apply Changes
-                                        NSString *ipAddress = ipTextField.stringValue;
-                                        NSString *port = portTextField.stringValue;
-                                        NSString *bundleRoot = entrypointTextField.stringValue;
-
-                                        // If both IP and port are empty, reset to default
-                                        if (ipAddress.length == 0 && port.length == 0) {
-                                          [weakSelf setDefaultJSBundle];
-                                          return;
-                                        }
-
-                                        // Parse and validate port number
-                                        NSNumberFormatter *formatter = [NSNumberFormatter new];
-                                        formatter.numberStyle = NSNumberFormatterDecimalStyle;
-                                        NSNumber *portNumber = [formatter numberFromString:port];
-                                        if (portNumber == nil) {
-                                          portNumber = [NSNumber numberWithInt:RCT_METRO_PORT];
-                                        }
-
-                                        // Set the bundler location - matches iOS behavior
-                                        [RCTBundleURLProvider sharedSettings].jsLocation =
-                                            [NSString stringWithFormat:@"%@:%d", ipAddress, portNumber.intValue];
-
-                                        if (bundleRoot.length == 0) {
-                                          [bundleManager resetBundleURL];
-                                        } else {
-                                          bundleManager.bundleURL = [[RCTBundleURLProvider sharedSettings]
-                                              jsBundleURLForBundleRoot:bundleRoot];
-                                        }
-
-                                        RCTTriggerReloadCommandListeners(@"Dev menu - apply changes");
+                                        applyBundlerConfig(
+                                            ipTextField.stringValue,
+                                            portTextField.stringValue,
+                                            entrypointTextField.stringValue);
                                       } else if (response == NSAlertSecondButtonReturn) {
                                         // Reset to Default
                                         [weakSelf setDefaultJSBundle];
