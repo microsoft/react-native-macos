@@ -1,11 +1,11 @@
 ---
-sidebar_label: 'View Props (macOS)'
+sidebar_label: 'Props'
 sidebar_position: 1
 ---
 
-# View Props (macOS)
+# Props
 
-React Native macOS extends the standard React Native View component with additional props that are specific to macOS. These props allow you to customize the behavior and appearance of views to take advantage of macOS-specific features.
+React Native macOS extends the standard React Native `<View>` component with additional props that are specific to macOS. These props allow you to customize the behavior and appearance of views to take advantage of macOS-specific features.
 
 ## Props
 
@@ -29,7 +29,7 @@ Enables the vibrancy effect for the view, allowing it to blend with the content 
 | ---- | ------- |
 | bool | `false` |
 
-When `true`, the view will use macOS vibrancy effects, creating a translucent appearance that adapts to the content behind the window.
+When `true`, the view will use macOS vibrancy effects, creating a translucent appearance that adapts to the content behind the window. This makes a difference when content is placed on top of a native [NSVisualEffectView](https://developer.apple.com/documentation/appkit/nsvisualeffectview), such as with the native module [VibrancyView](https://github.com/microsoft/fluentui-react-native/tree/main/packages/experimental/VibrancyView)
 
 ---
 
@@ -41,7 +41,7 @@ Specifies the mouse cursor to display when hovering over the view.
 | ------ |
 | string |
 
-Sets the cursor style. Common values include `'pointer'`, `'default'`, `'text'`, etc.
+Sets the cursor style. This extends the React Native prop to support a larger range of the W3C cursor types supported on web.
 
 ---
 
@@ -53,7 +53,7 @@ Specifies the types of dragged content that the view accepts for drag and drop o
 | --------------- |
 | array of string |
 
-An array of UTI (Uniform Type Identifier) strings that the view will accept. For example: `['public.file-url', 'public.text']`.
+An array of UTI (Uniform Type Identifier) strings that the view will accept. Currently supported: `['fileUrl', 'image', 'string']`.
 
 ---
 
@@ -71,7 +71,7 @@ When `true`, macOS will draw the standard focus ring around the view when it rec
 
 ### `focusable`
 
-Determines whether the view can receive keyboard focus.
+Determines whether the view can receive keyboard focus. This prop has been extended from React Native Core to support all views.
 
 | Type | Default |
 | ---- | ------- |

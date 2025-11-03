@@ -1,21 +1,128 @@
 ---
-sidebar_label: 'View Events (macOS)'
+sidebar_label: 'Events'
 sidebar_position: 2
 ---
 
-# View Events (macOS)
+# Events
 
 React Native macOS extends the standard React Native View component with additional events that are specific to macOS. These events allow you to respond to macOS-specific user interactions such as keyboard input, mouse movements, drag and drop operations, and more.
 
-## Events
+## Focus
+
+This event is useful for implementing custom focus management and showing focus-specific UI elements. For these to fire, the prop [focusable](view-props#focusable) must be set.
+
+### `onFocus`
+
+Fired when the view receives focus.
+
+---
 
 ### `onBlur`
 
-Fired when the view loses focus.
+Fired when the view loses focus. This is supported for all Views
 
-**Event Data:** Standard focus event
+---
 
-This event is useful for implementing custom focus management and validation logic when a view loses keyboard focus.
+
+## Keyboard
+
+### `onKeyDown`
+
+Fired when a key is pressed while the view has focus.
+
+**Event Data:** Key event with the following properties:
+- `key`: The key value (aligned with [W3C UI Events](https://www.w3.org/TR/uievents-key/))
+- `altKey`: Whether Alt/Option key is pressed
+- `ctrlKey`: Whether Control key is pressed
+- `shiftKey`: Whether Shift key is pressed
+- `metaKey`: Whether Command key is pressed
+- `capsLockKey`: Whether Caps Lock is active
+- `numericPadKey`: Whether the key is on the numeric keypad
+- `helpKey`: Whether Help key is pressed
+- `functionKey`: Whether a function key is pressed
+
+:::note
+To receive key events, the view must have `focusable={true}` set, and you should specify which keys to handle using the `keyDownEvents` prop.
+:::
+
+Example:
+```javascript
+<View
+  focusable={true}
+  keyDownEvents=[
+    { key: 'Enter' },
+    { key: 's', metaKey: true }
+  ]
+  onKeyDown={(event) => {
+    const { key, metaKey } = event.nativeEvent;
+    if (key === 'Enter') {
+      console.log('Enter pressed');
+    } else if (key === 's' && metaKey) {
+      console.log('Command+S pressed');
+    }
+  }}
+>
+  <Text>Press Enter or Cmd+S</Text>
+</View>
+```
+
+---
+
+### `onKeyUp`
+
+Fired when a key is released while the view has focus.
+
+**Event Data:** Key event (same format as `onKeyDown`)
+
+:::note
+To receive key events, the view must have `focusable={true}` set, and you should specify which keys to handle using the `keyUpEvents` prop.
+:::
+
+---
+
+## Mouse
+
+### `onMouseEnter`
+
+Fired when the mouse cursor enters the view's bounds.
+
+**Event Data:** Mouse event with the following properties:
+- `clientX`: Horizontal position in the target view
+- `clientY`: Vertical position in the target view
+- `screenX`: Horizontal position in the window
+- `screenY`: Vertical position in the window
+- `altKey`: Whether Alt/Option key is pressed
+- `ctrlKey`: Whether Control key is pressed
+- `shiftKey`: Whether Shift key is pressed
+- `metaKey`: Whether Command key is pressed
+
+Example:
+```javascript
+<View onMouseEnter={(event) => {
+  console.log('Mouse entered at', event.nativeEvent.clientX, event.nativeEvent.clientY);
+}}>
+  <Text>Hover over me</Text>
+</View>
+```
+
+---
+
+### `onMouseLeave`
+
+Fired when the mouse cursor leaves the view's bounds.
+
+**Event Data:** Mouse event (same format as `onMouseEnter`)
+
+Example:
+```javascript
+<View
+  onMouseEnter={() => setIsHovered(true)}
+  onMouseLeave={() => setIsHovered(false)}
+  style={{ backgroundColor: isHovered ? 'lightblue' : 'white' }}
+>
+  <Text>Hover state example</Text>
+</View>
+```
 
 ---
 
@@ -101,114 +208,6 @@ Example:
 
 ---
 
-### `onFocus`
-
-Fired when the view receives focus.
-
-**Event Data:** Standard focus event
-
-This event is useful for implementing custom focus management and showing focus-specific UI elements.
-
----
-
-### `onKeyDown`
-
-Fired when a key is pressed while the view has focus.
-
-**Event Data:** Key event with the following properties:
-- `key`: The key value (aligned with [W3C UI Events](https://www.w3.org/TR/uievents-key/))
-- `altKey`: Whether Alt/Option key is pressed
-- `ctrlKey`: Whether Control key is pressed
-- `shiftKey`: Whether Shift key is pressed
-- `metaKey`: Whether Command key is pressed
-- `capsLockKey`: Whether Caps Lock is active
-- `numericPadKey`: Whether the key is on the numeric keypad
-- `helpKey`: Whether Help key is pressed
-- `functionKey`: Whether a function key is pressed
-
-:::note
-To receive key events, the view must have `focusable={true}` set, and you should specify which keys to handle using the `keyDownEvents` prop.
-:::
-
-Example:
-```javascript
-<View
-  focusable={true}
-  keyDownEvents={[
-    { key: 'Enter' },
-    { key: 's', metaKey: true }
-  ]}
-  onKeyDown={(event) => {
-    const { key, metaKey } = event.nativeEvent;
-    if (key === 'Enter') {
-      console.log('Enter pressed');
-    } else if (key === 's' && metaKey) {
-      console.log('Command+S pressed');
-    }
-  }}
->
-  <Text>Press Enter or Cmd+S</Text>
-</View>
-```
-
----
-
-### `onKeyUp`
-
-Fired when a key is released while the view has focus.
-
-**Event Data:** Key event (same format as `onKeyDown`)
-
-:::note
-To receive key events, the view must have `focusable={true}` set, and you should specify which keys to handle using the `keyUpEvents` prop.
-:::
-
----
-
-### `onMouseEnter`
-
-Fired when the mouse cursor enters the view's bounds.
-
-**Event Data:** Mouse event with the following properties:
-- `clientX`: Horizontal position in the target view
-- `clientY`: Vertical position in the target view
-- `screenX`: Horizontal position in the window
-- `screenY`: Vertical position in the window
-- `altKey`: Whether Alt/Option key is pressed
-- `ctrlKey`: Whether Control key is pressed
-- `shiftKey`: Whether Shift key is pressed
-- `metaKey`: Whether Command key is pressed
-
-Example:
-```javascript
-<View onMouseEnter={(event) => {
-  console.log('Mouse entered at', event.nativeEvent.clientX, event.nativeEvent.clientY);
-}}>
-  <Text>Hover over me</Text>
-</View>
-```
-
----
-
-### `onMouseLeave`
-
-Fired when the mouse cursor leaves the view's bounds.
-
-**Event Data:** Mouse event (same format as `onMouseEnter`)
-
-Example:
-```javascript
-<View
-  onMouseEnter={() => setIsHovered(true)}
-  onMouseLeave={() => setIsHovered(false)}
-  style={{ backgroundColor: isHovered ? 'lightblue' : 'white' }}
->
-  <Text>Hover state example</Text>
-</View>
-```
-
----
-
 ## Complete Example
 
 Here's a comprehensive example showing multiple macOS-specific events:
@@ -262,14 +261,7 @@ function MacOSEventsExample() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  interactiveView: {
-    width: 300,
+
     height: 200,
     backgroundColor: 'white',
     borderWidth: 2,
@@ -287,8 +279,3 @@ const styles = StyleSheet.create({
 
 export default MacOSEventsExample;
 ```
-
-## See Also
-
-- [View Props (macOS)](./view-props.md) - macOS-specific props for View components
-- [React Native View Component](https://reactnative.dev/docs/view) - Base View component documentation
