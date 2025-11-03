@@ -20,9 +20,19 @@ struct DynamicColor {
   int32_t highContrastDarkColor = 0;
 };
 
+#if TARGET_OS_OSX // [macOS
+struct ColorWithSystemEffect {
+  int32_t color = 0;
+  std::string effect;
+};
+#endif // macOS]
+
 struct Color {
   Color(int32_t color);
   Color(const DynamicColor& dynamicColor);
+#if TARGET_OS_OSX // [macOS
+  Color(const ColorWithSystemEffect& colorWithSystemEffect);
+#endif // macOS]
   Color(const ColorComponents& components);
   Color() : uiColor_(nullptr){};
   int32_t getColor() const;

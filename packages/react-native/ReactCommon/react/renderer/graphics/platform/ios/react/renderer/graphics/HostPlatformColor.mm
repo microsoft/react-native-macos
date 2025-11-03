@@ -20,6 +20,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 namespace facebook::react {
 
+#if TARGET_OS_OSX // [macOS
+RCTUIColor *_Nullable UIColorFromColorWithSystemEffect(
+    RCTUIColor *baseColor,
+    const std::string &systemEffectString)
+{
+  if (baseColor == nil) {
+    return nil;
+  }
+
+  NSColor *colorWithEffect = baseColor;
+  if (!systemEffectString.empty()) {
+    if (systemEffectString == "none") {
+      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectNone];
+    } else if (systemEffectString == "pressed") {
+      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectPressed];
+    } else if (systemEffectString == "deepPressed") {
+      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectDeepPressed];
+    } else if (systemEffectString == "disabled") {
+      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectDisabled];
+    } else if (systemEffectString == "rollover") {
+      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectRollover];
+    }
+  }
+  return colorWithEffect;
+}
+#endif // macOS]
+
 namespace {
 
 bool UIColorIsP3ColorSpace(const std::shared_ptr<void> &uiColor)
@@ -223,6 +250,21 @@ Color::Color(const DynamicColor &dynamicColor)
       dynamicColor.highContrastLightColor,
       0);
 }
+
+#if TARGET_OS_OSX // [macOS
+Color::Color(const ColorWithSystemEffect &colorWithSystemEffect)
+{
+  RCTUIColor *baseColor = UIColorFromInt32(colorWithSystemEffect.color);
+  RCTUIColor *colorWithEffect =
+      UIColorFromColorWithSystemEffect(baseColor, colorWithSystemEffect.effect);
+  if (colorWithEffect != nil) {
+    uiColor_ = wrapManagedObject(colorWithEffect);
+  }
+  uiColorHashValue_ = facebook::react::hash_combine(
+      colorWithSystemEffect.color,
+      std::hash<std::string>{}(colorWithSystemEffect.effect));
+}
+#endif // macOS
 
 Color::Color(const ColorComponents &components)
 {
