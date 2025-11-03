@@ -47,6 +47,19 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'api',
+        path: 'api',
+        routeBasePath: 'api',
+        sidebarPath: './sidebarsApi.ts',
+        editUrl: docsiteUrl + "/",
+      },
+    ],
+  ],
+
   themeConfig: {
     image: 'img/react-logo.svg',
     navbar: {
@@ -61,6 +74,13 @@ const config: Config = {
           sidebarId: 'docsSidebar',
           position: 'left',
           label: 'Docs',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'apiSidebar',
+          docsPluginId: 'api',
+          position: 'left',
+          label: 'API',
         },
         {
           label: "Blog",
