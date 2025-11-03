@@ -404,9 +404,74 @@ RCT_EXPORT_MODULE()
                       NSAlert *alert = [NSAlert new];
                       [alert setMessageText:@"Change packager location"];
                       [alert setInformativeText:@"Input packager IP, port and entrypoint"];
-                      [alert addButtonWithTitle:@"Use bundled JS"];
-                      [alert setAlertStyle:NSWarningAlertStyle];
-                      [alert beginSheetModalForWindow:[NSApp keyWindow] completionHandler:nil];
+
+                      // Create accessory view with text fields
+                      NSView *accessoryView = [[NSView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 90.0)];
+
+                      // IP Address text field
+                      NSTextField *ipTextField = [[NSTextField alloc] initWithFrame:NSMakeRect(0.0, 60.0, 300.0, 22.0)];
+                      ipTextField.placeholderString = @"0.0.0.0";
+                      ipTextField.cell.scrollable = YES;
+                      [accessoryView addSubview:ipTextField];
+
+                      // Port text field
+                      NSTextField *portTextField =
+                          [[NSTextField alloc] initWithFrame:NSMakeRect(0.0, 30.0, 300.0, 22.0)];
+                      portTextField.placeholderString = @"8081";
+                      portTextField.cell.scrollable = YES;
+                      [accessoryView addSubview:portTextField];
+
+                      // Entrypoint text field
+                      NSTextField *entrypointTextField =
+                          [[NSTextField alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 22.0)];
+                      entrypointTextField.placeholderString = @"index";
+                      entrypointTextField.cell.scrollable = YES;
+                      [accessoryView addSubview:entrypointTextField];
+
+                      alert.accessoryView = accessoryView;
+
+                      [alert addButtonWithTitle:@"Apply Changes"];
+                      [alert addButtonWithTitle:@"Reset to Default"];
+                      [alert addButtonWithTitle:@"Cancel"];
+                      [alert setAlertStyle:NSAlertStyleWarning];
+
+                      [alert beginSheetModalForWindow:[NSApp keyWindow]
+                                    completionHandler:^(NSModalResponse response) {
+                                      if (response == NSAlertFirstButtonReturn) {
+                                        // Apply Changes
+                                        NSString *ipAddress = ipTextField.stringValue;
+                                        NSString *port = portTextField.stringValue;
+                                        NSString *bundleRoot = entrypointTextField.stringValue;
+
+                                        if (ipAddress.length == 0 && port.length == 0) {
+                                          [weakSelf setDefaultJSBundle];
+                                          return;
+                                        }
+
+                                        NSNumberFormatter *formatter = [NSNumberFormatter new];
+                                        formatter.numberStyle = NSNumberFormatterDecimalStyle;
+                                        NSNumber *portNumber = [formatter numberFromString:port];
+                                        if (portNumber == nil) {
+                                          portNumber = [NSNumber numberWithInt:RCT_METRO_PORT];
+                                        }
+
+                                        [RCTBundleURLProvider sharedSettings].jsLocation =
+                                            [NSString stringWithFormat:@"%@:%d", ipAddress, portNumber.intValue];
+
+                                        if (bundleRoot.length == 0) {
+                                          [bundleManager resetBundleURL];
+                                        } else {
+                                          bundleManager.bundleURL = [[RCTBundleURLProvider sharedSettings]
+                                              jsBundleURLForBundleRoot:bundleRoot];
+                                        }
+
+                                        RCTTriggerReloadCommandListeners(@"Dev menu - apply changes");
+                                      } else if (response == NSAlertSecondButtonReturn) {
+                                        // Reset to Default
+                                        [weakSelf setDefaultJSBundle];
+                                      }
+                                      // Cancel - do nothing
+                                    }];
 #endif // macOS]
                     }]];
 
@@ -454,7 +519,15 @@ RCT_EXPORT_METHOD(show)
 #else // [macOS
   NSMenu *menu = [self menu];
   NSWindow *window = [NSApp keyWindow];
-  NSEvent *event = [NSEvent mouseEventWithType:NSLeftMouseUp location:CGPointMake(0, 0) modifierFlags:0 timestamp:NSTimeIntervalSince1970 windowNumber:[window windowNumber]  context:nil eventNumber:0 clickCount:0 pressure:0.1];
+  NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseUp
+                                      location:CGPointMake(0, 0)
+                                 modifierFlags:0
+                                     timestamp:NSTimeIntervalSince1970
+                                  windowNumber:[window windowNumber]
+                                       context:nil
+                                   eventNumber:0
+                                    clickCount:0
+                                      pressure:0.1];
   [NSMenu popUpContextMenu:menu withEvent:event forView:[window contentView]];
 #endif // macOS]
 
@@ -486,8 +559,9 @@ RCT_EXPORT_METHOD(show)
 
       menu = [NSMenu new];
 
-      NSMutableAttributedString *attributedTitle = [[NSMutableAttributedString alloc]initWithString:title];
-      [attributedTitle setAttributes: @{ NSFontAttributeName : [NSFont menuFontOfSize:0] } range: NSMakeRange(0, [attributedTitle length])];
+      NSMutableAttributedString *attributedTitle = [[NSMutableAttributedString alloc] initWithString:title];
+      [attributedTitle setAttributes:@{NSFontAttributeName : [NSFont menuFontOfSize:0]}
+                               range:NSMakeRange(0, [attributedTitle length])];
       NSMenuItem *titleItem = [NSMenuItem new];
       [titleItem setAttributedTitle:attributedTitle];
       [menu addItem:titleItem];
@@ -496,7 +570,9 @@ RCT_EXPORT_METHOD(show)
 
       NSArray<RCTDevMenuItem *> *items = [self _menuItemsToPresent];
       for (RCTDevMenuItem *item in items) {
-        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[item title] action:@selector(menuItemSelected:) keyEquivalent:@""];
+        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[item title]
+                                                          action:@selector(menuItemSelected:)
+                                                   keyEquivalent:@""];
         [menuItem setTarget:self];
         [menuItem setRepresentedObject:item];
         [menu addItem:menuItem];
@@ -507,7 +583,7 @@ RCT_EXPORT_METHOD(show)
   return nil;
 }
 
--(void)menuItemSelected:(id)sender
+- (void)menuItemSelected:(id)sender
 {
   NSMenuItem *menuItem = (NSMenuItem *)sender;
   RCTDevMenuItem *item = (RCTDevMenuItem *)[menuItem representedObject];
