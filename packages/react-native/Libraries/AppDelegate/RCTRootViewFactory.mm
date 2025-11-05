@@ -25,13 +25,21 @@
 #import <React/RCTComponentViewProtocol.h>
 #import <React/RCTFabricSurface.h>
 #import <React/RCTSurfaceHostingProxyRootView.h>
+#import <React/RCTSurfaceHostingView+Private.h> // [macOS]
 #import <React/RCTSurfacePresenter.h>
+
+#if TARGET_OS_OSX && __has_include("RCTDevMenu.h") // [macOS]
+#import "RCTDevMenu.h"
+#endif // [macOS]
 #import <ReactCommon/RCTHost+Internal.h>
 #import <ReactCommon/RCTHost.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #import <react/runtime/JSRuntimeFactory.h>
+#import <react/utils/ManagedObjectWrapper.h>
+
+using namespace facebook::react;
 
 @implementation RCTRootViewFactoryConfiguration
 
@@ -151,6 +159,18 @@
 #if !TARGET_OS_OSX // [macOS]
     surfaceHostingProxyRootView.backgroundColor = [UIColor systemBackgroundColor];
 #endif // [macOS]
+
+    [surfaceHostingProxyRootView setContextContainer:_contextContainer]; // [macOS]
+
+#if TARGET_OS_OSX && __has_include("RCTDevMenu.h") && RCT_DEV
+    // Insert dev menu for macOS context menu access in bridgeless mode
+    RCTDevMenu *devMenu = [self.reactHost.moduleRegistry moduleForClass:[RCTDevMenu class]];
+    if (devMenu) {
+      _contextContainer->erase("RCTDevMenu");
+      _contextContainer->insert("RCTDevMenu", wrapManagedObject(devMenu));
+    }
+#endif
+
     if (_configuration.customizeRootView != nil) {
       _configuration.customizeRootView(surfaceHostingProxyRootView);
     }
@@ -186,6 +206,12 @@
 #if !TARGET_OS_OSX // [macOS]
   rootView.backgroundColor = [UIColor systemBackgroundColor];
 #endif // [macOS]
+  
+  // Set context container if this is a Fabric-enabled RCTSurfaceHostingView (or subclass)
+  if (enableFabric && [rootView isKindOfClass:[RCTSurfaceHostingView class]]) {
+    [(RCTSurfaceHostingView *)rootView setContextContainer:_contextContainer];
+  }
+  
   return rootView;
 }
 
@@ -202,6 +228,16 @@
                                             jsInvoker:callInvoker];
     _contextContainer->erase("RuntimeScheduler");
     _contextContainer->insert("RuntimeScheduler", _runtimeScheduler);
+    
+#if TARGET_OS_OSX && __has_include("RCTDevMenu.h") && RCT_DEV
+    // Insert dev menu for macOS context menu access using proper moduleForClass pattern
+    RCTDevMenu *devMenu = [bridge moduleForClass:[RCTDevMenu class]];
+    if (devMenu) {
+      _contextContainer->erase("RCTDevMenu");
+      _contextContainer->insert("RCTDevMenu", wrapManagedObject(devMenu));
+    }
+#endif
+    
     return RCTAppSetupDefaultJsExecutorFactory(bridge, turboModuleManager, _runtimeScheduler);
   } else {
     return RCTAppSetupJsExecutorFactoryForOldArch(bridge, _runtimeScheduler);

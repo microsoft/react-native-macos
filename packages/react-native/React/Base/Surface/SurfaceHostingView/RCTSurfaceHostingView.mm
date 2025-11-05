@@ -6,12 +6,21 @@
  */
 
 #import "RCTSurfaceHostingView.h"
+#import "RCTSurfaceHostingView+Private.h" // [macOS]
 #import "RCTConstants.h"
 #import "RCTDefines.h"
 #import "RCTSurface.h"
 #import "RCTSurfaceDelegate.h"
 #import "RCTSurfaceView.h"
 #import "RCTUtils.h"
+
+#if TARGET_OS_OSX && __has_include("RCTDevMenu.h") // [macOS]
+#import "RCTDevMenu.h"
+#import "RCTBridgeProxy.h"
+#import <react/utils/ManagedObjectWrapper.h>
+
+using namespace facebook::react;
+#endif // [macOS]
 
 @interface RCTSurfaceHostingView ()
 
@@ -25,6 +34,7 @@
   RCTPlatformView *_Nullable _surfaceView; // [macOS]
   RCTSurfaceStage _stage;
   BOOL _autoHideDisabled;
+  facebook::react::ContextContainer::Shared _contextContainer; // [macOS]
 }
 
 RCT_NOT_IMPLEMENTED(-(instancetype)init)
@@ -134,6 +144,19 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
   _sizeMeasureMode = sizeMeasureMode;
   [self _invalidateLayout];
 }
+
+// [macOS 
+- (facebook::react::ContextContainer::Shared)contextContainer
+{
+  return _contextContainer;
+}
+
+- (void)setContextContainer:(facebook::react::ContextContainer::Shared)contextContainer
+{
+  _contextContainer = contextContainer;
+}
+// macOS]
+
 - (void)disableActivityIndicatorAutoHide:(BOOL)disabled
 {
   _autoHideDisabled = disabled;
@@ -277,5 +300,45 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
     [self _invalidateLayout];
   });
 }
+
+#pragma mark - Context Menu
+
+#if TARGET_OS_OSX // [macOS]
+- (NSMenu *)menuForEvent:(NSEvent *)event
+{
+  NSMenu *menu = nil;
+  
+#if __has_include("RCTDevMenu.h") && RCT_DEV
+  // Try to get dev menu from context container
+  if (_contextContainer) {
+    auto devMenuOptional = _contextContainer->find<std::shared_ptr<void>>("RCTDevMenu");
+    if (devMenuOptional.has_value()) {
+      RCTDevMenu *devMenu = unwrapManagedObject(*devMenuOptional);
+      if (devMenu && [devMenu respondsToSelector:@selector(menu)]) {
+        menu = [devMenu menu];
+      }
+    }
+  }
+  
+  // Fallback: try legacy bridge access if surface has bridge
+  if (menu == nil && [_surface respondsToSelector:@selector(bridge)]) {
+    RCTBridge *bridge = [_surface performSelector:@selector(bridge)];
+    if (bridge && [bridge respondsToSelector:@selector(devMenu)]) {
+      RCTDevMenu *devMenu = [bridge devMenu];
+      if (devMenu && [devMenu respondsToSelector:@selector(menu)]) {
+        menu = [devMenu menu];
+      }
+    }
+  }
+#endif
+  
+  // Fall back to super's menu if no dev menu available
+  if (menu == nil) {
+    menu = [super menuForEvent:event];
+  }
+  
+  return menu;
+}
+#endif // [macOS]
 
 @end
