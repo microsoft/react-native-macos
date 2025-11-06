@@ -14,13 +14,11 @@
 #import "RCTSurfaceView.h"
 #import "RCTUtils.h"
 
-#if TARGET_OS_OSX && __has_include("RCTDevMenu.h") // [macOS]
+#if TARGET_OS_OSX && __has_include("RCTDevMenu.h") // [macOS
 #import "RCTDevMenu.h"
 #import "RCTBridgeProxy.h"
 #import <react/utils/ManagedObjectWrapper.h>
-
-using namespace facebook::react;
-#endif // [macOS]
+#endif // macOS]
 
 @interface RCTSurfaceHostingView ()
 
@@ -145,7 +143,7 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
   [self _invalidateLayout];
 }
 
-// [macOS 
+#if TARGET_OS_OSX // [macOS 
 - (facebook::react::ContextContainer::Shared)contextContainer
 {
   return _contextContainer;
@@ -155,7 +153,7 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
 {
   _contextContainer = contextContainer;
 }
-// macOS]
+#endif // macOS]
 
 - (void)disableActivityIndicatorAutoHide:(BOOL)disabled
 {
@@ -301,9 +299,10 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
   });
 }
 
+#if TARGET_OS_OSX // [macOS]
+
 #pragma mark - Context Menu
 
-#if TARGET_OS_OSX // [macOS]
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
   NSMenu *menu = nil;

@@ -11,7 +11,6 @@
 #import <React/RCTSurfaceProtocol.h>
 #import <React/RCTSurfaceSizeMeasureMode.h>
 #import <React/RCTSurfaceStage.h>
-// #import <react/utils/ContextContainer.h> // [macOS]
 
 @class RCTBridge;
 @class RCTSurface;
