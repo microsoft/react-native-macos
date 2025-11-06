@@ -6,7 +6,6 @@
  */
 
 #import "RCTSurfaceHostingView.h"
-#import "RCTSurfaceHostingView+Private.h" // [macOS]
 #import "RCTConstants.h"
 #import "RCTDefines.h"
 #import "RCTSurface.h"
@@ -31,7 +30,6 @@
   RCTPlatformView *_Nullable _surfaceView; // [macOS]
   RCTSurfaceStage _stage;
   BOOL _autoHideDisabled;
-  facebook::react::ContextContainer::Shared _contextContainer; // [macOS]
 }
 
 RCT_NOT_IMPLEMENTED(-(instancetype)init)
@@ -141,18 +139,6 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
   _sizeMeasureMode = sizeMeasureMode;
   [self _invalidateLayout];
 }
-
-#if TARGET_OS_OSX // [macOS 
-- (facebook::react::ContextContainer::Shared)contextContainer
-{
-  return _contextContainer;
-}
-
-- (void)setContextContainer:(facebook::react::ContextContainer::Shared)contextContainer
-{
-  _contextContainer = contextContainer;
-}
-#endif // macOS]
 
 - (void)disableActivityIndicatorAutoHide:(BOOL)disabled
 {
@@ -304,16 +290,13 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
 
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
-#if RCT_DEV_MENU && __has_include("RCTDevMenu.h")
-  if (_contextContainer) {
-    auto devMenuOptional = _contextContainer->find<std::shared_ptr<void>>("RCTDevMenu");
-    if (devMenuOptional.has_value()) {
-      RCTDevMenu *devMenu = facebook::react::unwrapManagedObject(*devMenuOptional);
-      if (devMenu) {
-        return [devMenu menu];
-      }
-    }
+#if __has_include("RCTDevMenu.h") && RCT_DEV
+  // Try direct dev menu property first (simplest approach)
+  if (_devMenu) {
+    return [_devMenu menu];
   }
+  
+
 #endif
 
   return [super menuForEvent:event];

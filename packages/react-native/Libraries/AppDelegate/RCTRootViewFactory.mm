@@ -34,9 +34,7 @@
 #import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #import <react/runtime/JSRuntimeFactory.h>
 
-#if TARGET_OS_OSX && __has_include("RCTDevMenu.h") // [macOS
-#import <React/RCTSurfaceHostingView+Private.h>
-#import <react/utils/ManagedObjectWrapper.h>
+#if RCT_DEV_MENU // [macOS
 #import "RCTDevMenu.h"
 #endif // macOS]
 
@@ -159,14 +157,12 @@
     surfaceHostingProxyRootView.backgroundColor = [UIColor systemBackgroundColor];
 #endif // [macOS]
 
-#if TARGET_OS_OSX && __has_include("RCTDevMenu.h") && RCT_DEV
+#if RCT_DEV_MENU // [macOS
     RCTDevMenu *devMenu = [self.reactHost.moduleRegistry moduleForClass:[RCTDevMenu class]];
     if (devMenu) {
-      _contextContainer->erase("RCTDevMenu");
-      _contextContainer->insert("RCTDevMenu", facebook::react::wrapManagedObject(devMenu));
+      surfaceHostingProxyRootView.devMenu = devMenu;
     }
-    [surfaceHostingProxyRootView setContextContainer:_contextContainer]; // [macOS]
-#endif
+#endif // macOS]
 
     if (_configuration.customizeRootView != nil) {
       _configuration.customizeRootView(surfaceHostingProxyRootView);
@@ -200,15 +196,19 @@
 {
   BOOL enableFabric = _configuration.fabricEnabled;
   RCTPlatformView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, enableFabric); // [macOS]
+  
+#if RCT_DEV_MENU // [macOS
+  if (enableFabric && [rootView isKindOfClass:[RCTSurfaceHostingView class]]) {
+    RCTDevMenu *devMenu = [bridge moduleForClass:[RCTDevMenu class]];
+    if (devMenu) {
+      [(RCTSurfaceHostingView *)rootView setDevMenu:devMenu];
+    }
+  }
+#endif // macOS]
+  
 #if !TARGET_OS_OSX // [macOS]
   rootView.backgroundColor = [UIColor systemBackgroundColor];
 #endif // [macOS]
-  
-#if TARGET_OS_OSX // [macOS
-  if (enableFabric && [rootView isKindOfClass:[RCTSurfaceHostingView class]]) {
-    [(RCTSurfaceHostingView *)rootView setContextContainer:_contextContainer];
-  }
-#endif // macOS]
 
   return rootView;
 }
@@ -226,15 +226,6 @@
                                             jsInvoker:callInvoker];
     _contextContainer->erase("RuntimeScheduler");
     _contextContainer->insert("RuntimeScheduler", _runtimeScheduler);
-    
-#if TARGET_OS_OSX && __has_include("RCTDevMenu.h") && RCT_DEV
-    // Insert dev menu for macOS context menu access using proper moduleForClass pattern
-    RCTDevMenu *devMenu = [bridge moduleForClass:[RCTDevMenu class]];
-    if (devMenu) {
-      _contextContainer->erase("RCTDevMenu");
-      _contextContainer->insert("RCTDevMenu", facebook::react::wrapManagedObject(devMenu));
-    }
-#endif
     
     return RCTAppSetupDefaultJsExecutorFactory(bridge, turboModuleManager, _runtimeScheduler);
   } else {
