@@ -16,7 +16,6 @@
 
 #if TARGET_OS_OSX && __has_include("RCTDevMenu.h") // [macOS
 #import "RCTDevMenu.h"
-#import "RCTBridgeProxy.h"
 #import <react/utils/ManagedObjectWrapper.h>
 #endif // macOS]
 
@@ -299,45 +298,26 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
   });
 }
 
-#if TARGET_OS_OSX // [macOS]
+#if TARGET_OS_OSX // [macOS
 
 #pragma mark - Context Menu
 
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
-  NSMenu *menu = nil;
-  
-#if __has_include("RCTDevMenu.h") && RCT_DEV
-  // Try to get dev menu from context container
+#if RCT_DEV_MENU && __has_include("RCTDevMenu.h")
   if (_contextContainer) {
     auto devMenuOptional = _contextContainer->find<std::shared_ptr<void>>("RCTDevMenu");
     if (devMenuOptional.has_value()) {
-      RCTDevMenu *devMenu = unwrapManagedObject(*devMenuOptional);
-      if (devMenu && [devMenu respondsToSelector:@selector(menu)]) {
-        menu = [devMenu menu];
-      }
-    }
-  }
-  
-  // Fallback: try legacy bridge access if surface has bridge
-  if (menu == nil && [_surface respondsToSelector:@selector(bridge)]) {
-    RCTBridge *bridge = [_surface performSelector:@selector(bridge)];
-    if (bridge && [bridge respondsToSelector:@selector(devMenu)]) {
-      RCTDevMenu *devMenu = [bridge devMenu];
-      if (devMenu && [devMenu respondsToSelector:@selector(menu)]) {
-        menu = [devMenu menu];
+      RCTDevMenu *devMenu = facebook::react::unwrapManagedObject(*devMenuOptional);
+      if (devMenu) {
+        return [devMenu menu];
       }
     }
   }
 #endif
-  
-  // Fall back to super's menu if no dev menu available
-  if (menu == nil) {
-    menu = [super menuForEvent:event];
-  }
-  
-  return menu;
+
+  return [super menuForEvent:event];
 }
-#endif // [macOS]
+#endif // macOS]
 
 @end

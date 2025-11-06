@@ -163,7 +163,7 @@
     RCTDevMenu *devMenu = [self.reactHost.moduleRegistry moduleForClass:[RCTDevMenu class]];
     if (devMenu) {
       _contextContainer->erase("RCTDevMenu");
-      _contextContainer->insert("RCTDevMenu", wrapManagedObject(devMenu));
+      _contextContainer->insert("RCTDevMenu", facebook::react::wrapManagedObject(devMenu));
     }
     [surfaceHostingProxyRootView setContextContainer:_contextContainer]; // [macOS]
 #endif
@@ -232,7 +232,7 @@
     RCTDevMenu *devMenu = [bridge moduleForClass:[RCTDevMenu class]];
     if (devMenu) {
       _contextContainer->erase("RCTDevMenu");
-      _contextContainer->insert("RCTDevMenu", wrapManagedObject(devMenu));
+      _contextContainer->insert("RCTDevMenu", facebook::react::wrapManagedObject(devMenu));
     }
 #endif
     
