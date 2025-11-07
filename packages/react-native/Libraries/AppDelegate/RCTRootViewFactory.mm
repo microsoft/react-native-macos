@@ -26,7 +26,6 @@
 #import <React/RCTFabricSurface.h>
 #import <React/RCTSurfaceHostingProxyRootView.h>
 #import <React/RCTSurfacePresenter.h>
-
 #import <ReactCommon/RCTHost+Internal.h>
 #import <ReactCommon/RCTHost.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
@@ -51,7 +50,7 @@
 - (instancetype)initWithBundleURLBlock:(RCTBundleURLBlock)bundleURLBlock newArchEnabled:(BOOL)newArchEnabled
 {
   return [self initWithBundleURLBlock:bundleURLBlock
-                       newArchEnabled:newArchEnabled
+                       newArchEnabled:newArchEnabledx
                    turboModuleEnabled:newArchEnabled
                     bridgelessEnabled:newArchEnabled];
 }
@@ -209,7 +208,6 @@
 #if !TARGET_OS_OSX // [macOS]
   rootView.backgroundColor = [UIColor systemBackgroundColor];
 #endif // [macOS]
-
   return rootView;
 }
 
@@ -226,7 +224,6 @@
                                             jsInvoker:callInvoker];
     _contextContainer->erase("RuntimeScheduler");
     _contextContainer->insert("RuntimeScheduler", _runtimeScheduler);
-    
     return RCTAppSetupDefaultJsExecutorFactory(bridge, turboModuleManager, _runtimeScheduler);
   } else {
     return RCTAppSetupJsExecutorFactoryForOldArch(bridge, _runtimeScheduler);

@@ -14,10 +14,9 @@
 
 @class RCTBridge;
 @class RCTSurface;
-
-#if RCT_DEV_MENU// [macOS]
+#if RCT_DEV_MENU // [macOS
 @class RCTDevMenu;
-#endif // [macOS]
+#endif // macOS]
 
 typedef RCTPlatformView *_Nullable (^RCTSurfaceHostingViewActivityIndicatorViewFactory)(void); // [macOS]
 

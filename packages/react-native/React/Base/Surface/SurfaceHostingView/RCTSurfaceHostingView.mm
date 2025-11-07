@@ -13,9 +13,8 @@
 #import "RCTSurfaceView.h"
 #import "RCTUtils.h"
 
-#if TARGET_OS_OSX && __has_include("RCTDevMenu.h") // [macOS
+#if RCT_DEV_MENU // [macOS
 #import "RCTDevMenu.h"
-#import <react/utils/ManagedObjectWrapper.h>
 #endif // macOS]
 
 @interface RCTSurfaceHostingView ()
