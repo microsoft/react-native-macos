@@ -50,7 +50,7 @@
 - (instancetype)initWithBundleURLBlock:(RCTBundleURLBlock)bundleURLBlock newArchEnabled:(BOOL)newArchEnabled
 {
   return [self initWithBundleURLBlock:bundleURLBlock
-                       newArchEnabled:newArchEnabledx
+                       newArchEnabled:newArchEnabled
                    turboModuleEnabled:newArchEnabled
                     bridgelessEnabled:newArchEnabled];
 }
