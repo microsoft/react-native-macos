@@ -494,9 +494,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
   NSMenu *menu = nil;
-#if __has_include("RCTDevMenu.h") && RCT_DEV
+#if RCT_DEV_MENU
   menu = [[_bridge devMenu] menu];
-#endif
+#endif // RCT_DEV_MENU
   if (menu == nil) {
     menu = [super menuForEvent:event];
   }

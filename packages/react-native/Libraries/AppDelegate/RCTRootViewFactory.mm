@@ -33,6 +33,10 @@
 #import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #import <react/runtime/JSRuntimeFactory.h>
 
+#if RCT_DEV_MENU // [macOS
+#import "RCTDevMenu.h"
+#endif // macOS]
+
 @implementation RCTRootViewFactoryConfiguration
 
 - (instancetype)initWithBundleURL:(NSURL *)bundleURL newArchEnabled:(BOOL)newArchEnabled
@@ -151,6 +155,14 @@
 #if !TARGET_OS_OSX // [macOS]
     surfaceHostingProxyRootView.backgroundColor = [UIColor systemBackgroundColor];
 #endif // [macOS]
+
+#if RCT_DEV_MENU // [macOS
+    RCTDevMenu *devMenu = [self.reactHost.moduleRegistry moduleForClass:[RCTDevMenu class]];
+    if (devMenu) {
+      surfaceHostingProxyRootView.devMenu = devMenu;
+    }
+#endif // macOS]
+
     if (_configuration.customizeRootView != nil) {
       _configuration.customizeRootView(surfaceHostingProxyRootView);
     }
@@ -183,6 +195,16 @@
 {
   BOOL enableFabric = _configuration.fabricEnabled;
   RCTPlatformView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, enableFabric); // [macOS]
+  
+#if RCT_DEV_MENU // [macOS
+  if (enableFabric && [rootView isKindOfClass:[RCTSurfaceHostingView class]]) {
+    RCTDevMenu *devMenu = [bridge moduleForClass:[RCTDevMenu class]];
+    if (devMenu) {
+      [(RCTSurfaceHostingView *)rootView setDevMenu:devMenu];
+    }
+  }
+#endif // macOS]
+  
 #if !TARGET_OS_OSX // [macOS]
   rootView.backgroundColor = [UIColor systemBackgroundColor];
 #endif // [macOS]
