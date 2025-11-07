@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-rntester:
-    name: "${{ matrix.platform }}, ${{ matrix.arch }}, ${{ matrix.engine }}"
+    name: "${{ matrix.platform }}, ${{ matrix.arch }}"
     runs-on: macos-26
     timeout-minutes: 90
     strategy:
@@ -13,7 +13,6 @@ jobs:
       matrix:
         platform: [macos, ios, visionos]
         arch: [oldarch, newarch]
-        engine: [jsc, hermes]
         include:
           # Platform-specific properties
           - platform: macos
@@ -33,10 +32,6 @@ jobs:
             new_arch_enabled: '0'
           - arch: newarch
             new_arch_enabled: '1'
-          - engine: jsc
-            use_hermes: '0'
-          - engine: hermes
-            use_hermes: '1'
 
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +53,6 @@ jobs:
         working-directory: packages/rn-tester
         env:
           RCT_NEW_ARCH_ENABLED: ${{ matrix.new_arch_enabled }}
-          USE_HERMES: ${{ matrix.use_hermes }}
         run: |
           set -eox pipefail
           bundle install
