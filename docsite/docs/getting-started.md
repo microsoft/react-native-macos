@@ -56,7 +56,7 @@ This will build your app and launch it automatically. A Metro bundler window wil
 The first run may take a while since it involves building the entire project and all dependencies. Subsequent runs will be much faster!
 :::
 
-For more detailed information about CLI commands and build options, see the [CLI Commands](./cli-commands.md) and [Building and Running](./guides/building-and-running.md) guides.
+For more detailed information about CLI commands and build options, see the [CLI Commands](./cli-commands.md).
 
 ## Next Steps
 
