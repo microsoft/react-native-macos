@@ -1,5 +1,10 @@
-require_relative '../node_modules/react-native-macos/scripts/react_native_pods'
-require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+autolinking_script = File.expand_path('../node_modules/react-native-macos/scripts/cocoapods/autolinking.rb', __dir__)
+if File.exist?(autolinking_script)
+  require_relative '../node_modules/react-native-macos/scripts/cocoapods/autolinking'
+else
+  require_relative '../node_modules/react-native-macos/scripts/react_native_pods'
+  require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+end
 
 prepare_react_native_project!
 
