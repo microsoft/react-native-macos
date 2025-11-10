@@ -37,14 +37,25 @@ npx react-native-macos-init
 
 ## Running a React Native macOS App
 
-- **Without using Xcode**:
-  In your React Native macOS project directory, run:
+### Quick Start
 
-  ```
-  npx react-native run-macos
-  ```
+In your React Native macOS project directory, run:
 
-- **Using Xcode**:
-  Open `macos\test.xcworkspace` in Xcode or run `xed -b macos`; `yarn start`. Hit the Run button.
+```bash
+npx react-native run-macos
+```
 
-A new Command Prompt window will open with the React packager as well as a `react-native-macos` app. This step may take a while during first run since it involves building the entire project and all dependencies. You can now start developing! 🎉
+This will build your app and launch it automatically. A Metro bundler window will also open to serve your JavaScript code.
+
+### Alternative Methods
+
+- **Using Xcode**: Open `macos/{YourProject}.xcworkspace` in Xcode or run `xed -b macos`, then hit the Run button.
+- **Build only**: Use `npx react-native build-macos` to build without launching.
+
+:::tip
+The first run may take a while since it involves building the entire project and all dependencies. Subsequent runs will be much faster!
+:::
+
+For more detailed information about CLI commands and build options, see the [CLI Commands](./cli-commands.md).
+
+Happy coding! 🎉
