@@ -1,10 +1,19 @@
-autolinking_script = File.expand_path('../node_modules/react-native-macos/scripts/cocoapods/autolinking.rb', __dir__)
-if File.exist?(autolinking_script)
-  require_relative '../node_modules/react-native-macos/scripts/cocoapods/autolinking'
-else
-  require_relative '../node_modules/react-native-macos/scripts/react_native_pods'
-  require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
-end
+require 'pathname'
+
+modules_root = Pathname.new(__dir__).parent
+modules_root = modules_root.parent until modules_root.join('node_modules').directory? || modules_root.root?
+node_modules = modules_root.join('node_modules')
+
+autolinking_script = node_modules.join('react-native-macos/scripts/cocoapods/autolinking.rb')
+legacy_script = node_modules.join('react-native-macos/scripts/react_native_pods.rb')
+native_modules_script = node_modules.join('@react-native-community/cli-platform-ios/native_modules.rb')
+
+# @react-native-community/cli v14+ (React Native 0.75+) moved the autolinking script into react-native itself.
+if autolinking_script.file?
+  require autolinking_script.to_s
+elsif legacy_script.file? && native_modules_script.file?
+  require legacy_script.to_s
+  require native_modules_script.to_s
 
 prepare_react_native_project!
 
