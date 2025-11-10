@@ -58,12 +58,4 @@ The first run may take a while since it involves building the entire project and
 
 For more detailed information about CLI commands and build options, see the [CLI Commands](./cli-commands.md).
 
-## Next Steps
-
-Now that you have your React Native macOS app running, you can:
-
-- Explore the [guides](./guides/) for advanced development topics
-- Learn about [native development](./guides/native-development.md) for macOS-specific features
-- Check out the [API documentation](../api/intro.md) for available components and APIs
-
 Happy coding! 🎉
