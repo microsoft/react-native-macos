@@ -69,15 +69,46 @@ We recommend using Expo CLI and related tooling configurations to bundle your ap
 +  presets: ['babel-preset-expo'],
 ```
 
-#### Extend expo/metro-config in your metro.config.js
+#### Extend expo/metro-config in your metro.config.js and resolve react-native-macos
 
 ```diff metro.config.js
 -const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
-+const { getDefaultConfig } = require('expo/metro-config');
-+const { mergeConfig } = require('@react-native/metro-config');
++const {getDefaultConfig} = require('expo/metro-config');
 
  /**
   * Metro configuration
+
+-const config = {};
++const config = getDefaultConfig(__dirname);
+
+-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
++config.resolver.resolveRequest = (context, moduleName, platform) => {
++  if (
++    platform === 'macos' &&
++    (moduleName === 'react-native' || moduleName.startsWith('react-native/'))
++  ) {
++    const newModuleName = moduleName.replace(
++      'react-native',
++      'react-native-macos',
++    );
++    return context.resolveRequest(context, newModuleName, platform);
++  }
++  return context.resolveRequest(context, moduleName, platform);
++};
++
++const originalGetModulesRunBeforeMainModule =
++  config.serializer.getModulesRunBeforeMainModule;
++config.serializer.getModulesRunBeforeMainModule = () => {
++  try {
++    return [
++      require.resolve('react-native/Libraries/Core/InitializeCore'),
++      require.resolve('react-native-macos/Libraries/Core/InitializeCore'),
++    ];
++  } catch {}
++  return originalGetModulesRunBeforeMainModule();
++};
++
++module.exports = config;
 ```
 
 #### Configure macOS project to bundle with Expo CLI
@@ -127,6 +158,12 @@ And add support the `"main"` field in **package.json** by making the following c
  #endif
 ```
 
+Finally, to start the Metro bundler using Expo CLI, run: `npx expo start` or replace your existing `start` command in `package.json`:
+
+```diff package.json
+-  "start": "react-native start",
++  "start": "expo start",
+```
 
 ## Usage
 
