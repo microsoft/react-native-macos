@@ -1,24 +1,15 @@
 require 'pathname'
 
-modules_root = Pathname.new(__dir__).parent
-modules_root = modules_root.parent until modules_root.join('node_modules').directory? || modules_root.root?
-node_modules = modules_root.join('node_modules')
-
-autolinking_script = node_modules.join('react-native-macos/scripts/cocoapods/autolinking.rb')
-legacy_script = node_modules.join('react-native-macos/scripts/react_native_pods.rb')
-native_modules_script = node_modules.join('@react-native-community/cli-platform-ios/native_modules.rb')
-
-# @react-native-community/cli v14+ (React Native 0.75+) moved the autolinking script into react-native itself.
-if autolinking_script.file?
-  require autolinking_script.to_s
-elsif legacy_script.file? && native_modules_script.file?
-  require legacy_script.to_s
-  require native_modules_script.to_s
+ws_dir = Pathname.new(__dir__)
+ws_dir = ws_dir.parent until
+  File.exist?("#{ws_dir}/node_modules/react-native-macos/scripts/react_native_pods.rb") ||
+  ws_dir.expand_path.to_s == '/'
+require "#{ws_dir}/node_modules/react-native-macos/scripts/react_native_pods.rb"
 
 prepare_react_native_project!
 
 target 'HelloWorld-macOS' do
-  platform :macos, '11.0'
+  platform :macos, '14.0'
   use_native_modules!
 
   # Flags change depending on the env values.
