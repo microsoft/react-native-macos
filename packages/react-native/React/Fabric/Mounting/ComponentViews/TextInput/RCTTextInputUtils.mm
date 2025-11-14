@@ -65,6 +65,7 @@ void RCTCopyBackedTextInput(
   toTextInput.smartInsertDeleteType = fromTextInput.smartInsertDeleteType;
   toTextInput.passwordRules = fromTextInput.passwordRules;
   toTextInput.disableKeyboardShortcuts = fromTextInput.disableKeyboardShortcuts;
+  toTextInput.acceptDragAndDropTypes = fromTextInput.acceptDragAndDropTypes;
 
   [toTextInput setSelectedTextRange:fromTextInput.selectedTextRange notifyDelegate:NO];
 #endif // [macOS]

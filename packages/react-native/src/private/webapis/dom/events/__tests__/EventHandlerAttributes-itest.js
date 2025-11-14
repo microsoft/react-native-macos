@@ -6,21 +6,20 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
  */
 
 // flowlint unsafe-getters-setters:off
 
-import '../../../../../../Libraries/Core/InitializeCore.js';
+import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import type {EventCallback} from '../EventTarget';
+import type {EventCallback} from 'react-native/src/private/webapis/dom/events/EventTarget';
 
-import Event from '../Event';
+import Event from 'react-native/src/private/webapis/dom/events/Event';
 import {
   getEventHandlerAttribute,
   setEventHandlerAttribute,
-} from '../EventHandlerAttributes';
-import EventTarget from '../EventTarget';
+} from 'react-native/src/private/webapis/dom/events/EventHandlerAttributes';
+import EventTarget from 'react-native/src/private/webapis/dom/events/EventTarget';
 
 class EventTargetSubclass extends EventTarget {
   get oncustomevent(): EventCallback | null {

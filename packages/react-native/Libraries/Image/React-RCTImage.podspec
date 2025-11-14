@@ -16,12 +16,7 @@ else
   source[:tag] = "v#{version}"
 end
 
-folly_config = get_folly_config()
-folly_compiler_flags = folly_config[:compiler_flags]
-folly_version = folly_config[:version]
-
 header_search_paths = [
-  "\"$(PODS_ROOT)/RCT-Folly\"",
   "\"${PODS_ROOT}/Headers/Public/ReactCodegen/react/renderer/components\"",
 ]
 
@@ -35,15 +30,16 @@ Pod::Spec.new do |s|
   s.license                = package["license"]
   s.author                 = "Meta Platforms, Inc. and its affiliates"
   s.platforms              = min_supported_versions
-  s.compiler_flags         = folly_compiler_flags + ' -Wno-nullability-completeness'
+  s.compiler_flags         = '-Wno-nullability-completeness'
   s.source                 = source
-  s.source_files           = "*.{m,mm}"
+  s.source_files           = podspec_sources("*.{m,mm}", "**/*.h")
   s.preserve_paths         = "package.json", "LICENSE", "LICENSE-docs"
   s.header_dir             = "RCTImage"
   s.pod_target_xcconfig    = {
                                "USE_HEADERMAP" => "YES",
                                "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
-                               "HEADER_SEARCH_PATHS" => header_search_paths.join(' ')
+                               "HEADER_SEARCH_PATHS" => header_search_paths.join(' '),
+                               "DEFINES_MODULE" => "YES"
                              }
   # [macOS Restrict UIKit to iOS and visionOS
   s.ios.framework              = ["Accelerate", "UIKit", "QuartzCore", "ImageIO", "CoreGraphics"]
@@ -51,7 +47,6 @@ Pod::Spec.new do |s|
   s.osx.framework              = ["Accelerate", "Appkit", "QuartzCore", "ImageIO", "CoreGraphics"]
   # macOS]
 
-  s.dependency "RCT-Folly", folly_version
   s.dependency "RCTTypeSafety"
   s.dependency "React-jsi"
   s.dependency "React-Core/RCTImageHeaders"
@@ -61,4 +56,5 @@ Pod::Spec.new do |s|
   add_dependency(s, "ReactCommon", :subspec => "turbomodule/core", :additional_framework_paths => ["react/nativemodule/core"])
   add_dependency(s, "React-NativeModulesApple")
 
+  add_rn_third_party_dependencies(s)
 end

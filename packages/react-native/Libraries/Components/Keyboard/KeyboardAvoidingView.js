@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
@@ -24,6 +24,7 @@ import AccessibilityInfo from '../AccessibilityInfo/AccessibilityInfo';
 import View from '../View/View';
 import Keyboard from './Keyboard';
 import * as React from 'react';
+import {createRef} from 'react';
 
 export type KeyboardAvoidingViewProps = $ReadOnly<{
   ...ViewProps,
@@ -51,7 +52,7 @@ export type KeyboardAvoidingViewProps = $ReadOnly<{
   keyboardVerticalOffset?: number,
 }>;
 
-type State = {
+type KeyboardAvoidingViewState = {
   bottom: number,
 };
 
@@ -61,7 +62,7 @@ type State = {
  */
 class KeyboardAvoidingView extends React.Component<
   KeyboardAvoidingViewProps,
-  State,
+  KeyboardAvoidingViewState,
 > {
   _frame: ?ViewLayout = null;
   _keyboardEvent: ?KeyboardEvent = null;
@@ -73,7 +74,7 @@ class KeyboardAvoidingView extends React.Component<
   constructor(props: KeyboardAvoidingViewProps) {
     super(props);
     this.state = {bottom: 0};
-    this.viewRef = React.createRef();
+    this.viewRef = createRef();
   }
 
   async _relativeKeyboardHeight(
@@ -178,7 +179,10 @@ class KeyboardAvoidingView extends React.Component<
     }
   };
 
-  componentDidUpdate(_: KeyboardAvoidingViewProps, prevState: State): void {
+  componentDidUpdate(
+    _: KeyboardAvoidingViewProps,
+    prevState: KeyboardAvoidingViewState,
+  ): void {
     const enabled = this.props.enabled ?? true;
     if (enabled && this._bottom !== prevState.bottom) {
       this.setState({bottom: this._bottom});

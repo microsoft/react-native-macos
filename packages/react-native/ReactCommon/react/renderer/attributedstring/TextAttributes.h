@@ -86,8 +86,6 @@ class TextAttributes : public DebugStringConvertible {
   std::optional<AccessibilityRole> accessibilityRole{};
   std::optional<Role> role{};
 
-  std::optional<TextAlignmentVertical> textAlignVertical{};
-
 #pragma mark - Operations
 
   void apply(TextAttributes textAttributes);
@@ -95,7 +93,6 @@ class TextAttributes : public DebugStringConvertible {
 #pragma mark - Operators
 
   bool operator==(const TextAttributes& rhs) const;
-  bool operator!=(const TextAttributes& rhs) const;
 
 #pragma mark - DebugStringConvertible
 
@@ -128,7 +125,6 @@ struct hash<facebook::react::TextAttributes> {
         textAttributes.textTransform,
         textAttributes.lineHeight,
         textAttributes.alignment,
-        textAttributes.textAlignVertical,
         textAttributes.baseWritingDirection,
         textAttributes.lineBreakStrategy,
         textAttributes.lineBreakMode,
