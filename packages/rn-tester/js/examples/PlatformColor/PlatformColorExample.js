@@ -122,6 +122,100 @@ function PlatformColorsExample() {
         {label: 'clear', color: PlatformColor('clear')},
         {label: 'customColor', color: PlatformColor('customColor')},
       ];
+    // [macOS
+    } else if (Platform.OS === 'macos') {
+      colors = [
+        // https://developer.apple.com/documentation/appkit/nscolor
+        // Text Colors
+        {label: 'labelColor', color: PlatformColor('labelColor')},
+        {
+          label: 'secondaryLabelColor',
+          color: PlatformColor('secondaryLabelColor'),
+        },
+        {
+          label: 'tertiaryLabelColor',
+          color: PlatformColor('tertiaryLabelColor'),
+        },
+        {
+          label: 'quaternaryLabelColor',
+          color: PlatformColor('quaternaryLabelColor'),
+        },
+        {label: 'textColor', color: PlatformColor('textColor')},
+        {
+          label: 'placeholderTextColor',
+          color: PlatformColor('placeholderTextColor'),
+        },
+        {
+          label: 'selectedTextColor',
+          color: PlatformColor('selectedTextColor'),
+        },
+        {
+          label: 'selectedTextBackgroundColor',
+          color: PlatformColor('selectedTextBackgroundColor'),
+        },
+        // Window and Control Colors
+        {
+          label: 'windowBackgroundColor',
+          color: PlatformColor('windowBackgroundColor'),
+        },
+        {
+          label: 'underPageBackgroundColor',
+          color: PlatformColor('underPageBackgroundColor'),
+        },
+        {
+          label: 'controlBackgroundColor',
+          color: PlatformColor('controlBackgroundColor'),
+        },
+        {
+          label: 'selectedControlColor',
+          color: PlatformColor('selectedControlColor'),
+        },
+        {
+          label: 'keyboardFocusIndicatorColor',
+          color: PlatformColor('keyboardFocusIndicatorColor'),
+        },
+        // System Colors
+        {
+          label: 'systemBlueColor',
+          color: PlatformColor('systemBlueColor'),
+        },
+        {
+          label: 'systemBrownColor',
+          color: PlatformColor('systemBrownColor'),
+        },
+        {
+          label: 'systemGreenColor',
+          color: PlatformColor('systemGreenColor'),
+        },
+        {
+          label: 'systemOrangeColor',
+          color: PlatformColor('systemOrangeColor'),
+        },
+        {
+          label: 'systemPinkColor',
+          color: PlatformColor('systemPinkColor'),
+        },
+        {
+          label: 'systemPurpleColor',
+          color: PlatformColor('systemPurpleColor'),
+        },
+        {
+          label: 'systemRedColor',
+          color: PlatformColor('systemRedColor'),
+        },
+        {
+          label: 'systemYellowColor',
+          color: PlatformColor('systemYellowColor'),
+        },
+        // Accents and Grays
+        {
+          label: 'controlAccentColor',
+          color: PlatformColor('controlAccentColor'),
+        },
+        {label: 'separatorColor', color: PlatformColor('separatorColor')},
+        {label: 'gridColor', color: PlatformColor('gridColor')},
+        {label: 'windowFrameColor', color: PlatformColor('windowFrameColor')},
+      ]; // macOS]
     } else if (Platform.OS === 'android') {
       colors = [
         {label: '?attr/colorAccent', color: PlatformColor('?attr/colorAccent')},

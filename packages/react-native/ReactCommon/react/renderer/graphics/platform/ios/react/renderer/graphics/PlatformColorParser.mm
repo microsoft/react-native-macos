@@ -62,6 +62,24 @@ SharedColor parsePlatformColor(const ContextContainer &contextContainer, int32_t
         items.at("dynamic").hasType<std::unordered_map<std::string, RawValue>>()) {
       auto dynamicItems = (std::unordered_map<std::string, RawValue>)items.at("dynamic");
       return RCTPlatformColorComponentsFromDynamicItems(contextContainer, surfaceId, dynamicItems);
+#if TARGET_OS_OSX // [macOS
+    } else if (
+        items.find("colorWithSystemEffect") != items.end() &&
+        items.at("colorWithSystemEffect").hasType<std::unordered_map<std::string, RawValue>>()) {
+      auto colorWithSystemEffectItems =
+          (std::unordered_map<std::string, RawValue>)items.at("colorWithSystemEffect");
+      if (colorWithSystemEffectItems.find("baseColor") != colorWithSystemEffectItems.end() &&
+          colorWithSystemEffectItems.find("systemEffect") != colorWithSystemEffectItems.end() &&
+          colorWithSystemEffectItems.at("systemEffect").hasType<std::string>()) {
+        SharedColor baseColorShared{};
+        fromRawValue(contextContainer, surfaceId, colorWithSystemEffectItems.at("baseColor"), baseColorShared);
+        if (baseColorShared) {
+          std::string systemEffect = (std::string)colorWithSystemEffectItems.at("systemEffect");
+          auto baseColor = (*baseColorShared).getColor();
+          return SharedColor(Color(ColorWithSystemEffect{baseColor, systemEffect}));
+        }
+      }
+#endif // macOS]
     }
   }
 
