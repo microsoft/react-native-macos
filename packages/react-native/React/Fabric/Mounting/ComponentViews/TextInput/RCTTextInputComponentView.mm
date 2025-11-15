@@ -113,6 +113,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _didMoveToWindow = NO;
     _originalTypingAttributes = [_backedTextInputView.typingAttributes copy];
 
+#if TARGET_OS_OSX // [macOS
+    [self setClipsToBounds:YES];
+#endif // macOS]
+
     [self addSubview:_backedTextInputView];
 #if TARGET_OS_IOS // [macOS] [visionOS]
     [self initializeReturnKeyType];
