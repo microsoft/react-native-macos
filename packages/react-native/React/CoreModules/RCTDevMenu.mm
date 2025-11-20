@@ -100,10 +100,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
 @end
 
 #if !TARGET_OS_OSX // [macOS]
-
 typedef void (^RCTDevMenuAlertActionHandler)(UIAlertAction *action);
-
-#endif // [macOS]
+#else // [macOS
+typedef void (^RCTDevMenuAlertActionHandler)(NSModalResponse response);
+#endif // macOS]
 
 @interface RCTDevMenu () <RCTBridgeModule, RCTInvalidating, NativeDevMenuSpec>
 
@@ -112,6 +112,8 @@ typedef void (^RCTDevMenuAlertActionHandler)(UIAlertAction *action);
 @implementation RCTDevMenu {
 #if !TARGET_OS_OSX // [macOS]
   UIAlertController *_actionSheet;
+#else // [macOS
+  NSAlert *_alert;
 #endif // [macOS]
   NSMutableArray<RCTDevMenuItem *> *_extraMenuItems;
 }
@@ -249,12 +251,16 @@ RCT_EXPORT_MODULE()
     [self show];
   }
 }
+#endif // macOS]
 
 - (BOOL)isActionSheetShown
 {
+#if !TARGET_OS_OSX // [macOS]
   return _actionSheet != nil;
+#else // [macOS
+  return _alert != nil;
+#endif // macOS]
 }
-#endif // [macOS]
 
 - (void)addItem:(NSString *)title handler:(void (^)(void))handler
 {
@@ -404,9 +410,73 @@ RCT_EXPORT_MODULE()
                       NSAlert *alert = [NSAlert new];
                       [alert setMessageText:@"Change packager location"];
                       [alert setInformativeText:@"Input packager IP, port and entrypoint"];
-                      [alert addButtonWithTitle:@"Use bundled JS"];
-                      [alert setAlertStyle:NSWarningAlertStyle];
-                      [alert beginSheetModalForWindow:[NSApp keyWindow] completionHandler:nil];
+
+                      // Create accessory view with text fields
+                      NSView *accessoryView = [[NSView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 90.0)];
+
+                      // IP Address text field
+                      NSTextField *ipTextField = [[NSTextField alloc] initWithFrame:NSMakeRect(0.0, 60.0, 300.0, 22.0)];
+                      ipTextField.placeholderString = @"0.0.0.0";
+                      ipTextField.cell.scrollable = YES;
+                      [accessoryView addSubview:ipTextField];
+
+                      // Port text field
+                      NSTextField *portTextField =
+                          [[NSTextField alloc] initWithFrame:NSMakeRect(0.0, 30.0, 300.0, 22.0)];
+                      portTextField.placeholderString = @"8081";
+                      portTextField.cell.scrollable = YES;
+                      [accessoryView addSubview:portTextField];
+
+                      // Entrypoint text field
+                      NSTextField *entrypointTextField =
+                          [[NSTextField alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 22.0)];
+                      entrypointTextField.placeholderString = @"index";
+                      entrypointTextField.cell.scrollable = YES;
+                      [accessoryView addSubview:entrypointTextField];
+
+                      alert.accessoryView = accessoryView;
+
+                      [alert addButtonWithTitle:@"Apply Changes"];
+                      [alert addButtonWithTitle:@"Reset to Default"];
+                      [alert addButtonWithTitle:@"Cancel"];
+                      [alert setAlertStyle:NSAlertStyleWarning];
+
+                      NSModalResponse response = [alert runModal];
+                      
+                      if (response == NSAlertFirstButtonReturn) {
+                        // Apply Changes
+                        NSString *ipAddress = ipTextField.stringValue;
+                        NSString *port = portTextField.stringValue;
+                        NSString *bundleRoot = entrypointTextField.stringValue;
+
+                        if (ipAddress.length == 0 && port.length == 0) {
+                          [weakSelf setDefaultJSBundle];
+                          return;
+                        }
+
+                        NSNumberFormatter *formatter = [NSNumberFormatter new];
+                        formatter.numberStyle = NSNumberFormatterDecimalStyle;
+                        NSNumber *portNumber = [formatter numberFromString:port];
+                        if (portNumber == nil) {
+                          portNumber = [NSNumber numberWithInt:RCT_METRO_PORT];
+                        }
+
+                        [RCTBundleURLProvider sharedSettings].jsLocation =
+                            [NSString stringWithFormat:@"%@:%d", ipAddress, portNumber.intValue];
+
+                        if (bundleRoot.length == 0) {
+                          [bundleManager resetBundleURL];
+                        } else {
+                          bundleManager.bundleURL = [[RCTBundleURLProvider sharedSettings]
+                              jsBundleURLForBundleRoot:bundleRoot];
+                        }
+
+                        RCTTriggerReloadCommandListeners(@"Dev menu - apply changes");
+                      } else if (response == NSAlertSecondButtonReturn) {
+                        // Reset to Default
+                        [weakSelf setDefaultJSBundle];
+                      }
+                      // Cancel - do nothing
 #endif // macOS]
                     }]];
 
@@ -420,19 +490,29 @@ RCT_EXPORT_METHOD(show)
   if (_actionSheet || RCTRunningInAppExtension()) {
     return;
   }
+#else // [macOS
+  if (_alert) {
+    return;
+  }
+#endif // [macOS]
 
   NSString *bridgeDescription = _bridge.bridgeDescription;
   NSString *description =
       bridgeDescription.length > 0 ? [NSString stringWithFormat:@"Running %@", bridgeDescription] : nil;
 
+#if !TARGET_OS_OSX // [macOS]
   // On larger devices we don't have an anchor point for the action sheet
   UIAlertControllerStyle style = [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone
       ? UIAlertControllerStyleActionSheet
       : UIAlertControllerStyleAlert;
+#else // [macOS
+  NSAlertStyle style = NSAlertStyleInformational;
+#endif // macOS]
 
   NSString *devMenuType = [self.bridge isKindOfClass:RCTBridge.class] ? @"Bridge" : @"Bridgeless";
   NSString *devMenuTitle = [NSString stringWithFormat:@"React Native Dev Menu (%@)", devMenuType];
 
+#if !TARGET_OS_OSX // [macOS]
   _actionSheet = [UIAlertController alertControllerWithTitle:devMenuTitle message:description preferredStyle:style];
 
   NSArray<RCTDevMenuItem *> *items = [self _menuItemsToPresent];
@@ -450,12 +530,38 @@ RCT_EXPORT_METHOD(show)
 
   _presentedItems = items;
   [RCTPresentedViewController() presentViewController:_actionSheet animated:YES completion:nil];
-
 #else // [macOS
-  NSMenu *menu = [self menu];
-  NSWindow *window = [NSApp keyWindow];
-  NSEvent *event = [NSEvent mouseEventWithType:NSLeftMouseUp location:CGPointMake(0, 0) modifierFlags:0 timestamp:NSTimeIntervalSince1970 windowNumber:[window windowNumber]  context:nil eventNumber:0 clickCount:0 pressure:0.1];
-  [NSMenu popUpContextMenu:menu withEvent:event forView:[window contentView]];
+  _alert = [NSAlert new];
+  [_alert setMessageText:devMenuTitle];
+  [_alert setInformativeText:description];
+  [_alert setAlertStyle:NSAlertStyleInformational];
+
+  NSArray<RCTDevMenuItem *> *items = [self _menuItemsToPresent];
+  for (RCTDevMenuItem *item in items) {
+    [_alert addButtonWithTitle:item.title];
+  }
+
+  [_alert addButtonWithTitle:@"Cancel"];
+
+  _presentedItems = items;
+  
+  // If Invoked from Metro, both the key window and main window may be nil, so we fallback to the first window in that case
+  NSWindow *window = RCTKeyWindow() ?: [NSApp mainWindow] ?: [[NSApp windows] firstObject];
+
+
+  [_alert beginSheetModalForWindow:window completionHandler:^(NSModalResponse response) {
+    // Button responses are NSAlertFirstButtonReturn, NSAlertSecondButtonReturn, etc.
+    // The last button (Cancel) will have response = NSAlertFirstButtonReturn + menuItems.count
+    NSInteger buttonIndex = response - NSAlertFirstButtonReturn;
+
+    RCTDevMenuItem *selectedItem = nil;
+    if (buttonIndex >= 0 && buttonIndex < self->_presentedItems.count) {
+      // Execute the corresponding menu item
+      selectedItem = self->_presentedItems[buttonIndex];
+    }
+    RCTDevMenuAlertActionHandler handler = [self alertActionHandlerForDevItem:selectedItem];
+    handler(response);
+  }];
 #endif // macOS]
 
   [_callableJSModules invokeModule:@"RCTNativeAppEventEmitter" method:@"emit" withArgs:@[ @"RCTDevMenuShown" ]];
@@ -473,41 +579,51 @@ RCT_EXPORT_METHOD(show)
   };
 }
 #else // [macOS
+- (RCTDevMenuAlertActionHandler)alertActionHandlerForDevItem:(RCTDevMenuItem *__nullable)item
+{
+  return ^(NSModalResponse response) {
+    if (item) {
+      [item callHandler];
+    }
+    
+    self->_alert = nil;
+  };
+}
+#endif // [macOS]
+
+#if TARGET_OS_OSX // [macOS
 - (NSMenu *)menu
 {
-  if ([_bridge.devSettings isSecondaryClickToShowDevMenuEnabled]) {
-    NSMenu *menu = nil;
-    if (_bridge) {
-      NSString *desc = _bridge.bridgeDescription;
-      if (desc.length == 0) {
-        desc = NSStringFromClass([_bridge class]);
-      }
-      NSString *title = [NSString stringWithFormat:@"React Native: Development\n(%@)", desc];
-
-      menu = [NSMenu new];
-
-      NSMutableAttributedString *attributedTitle = [[NSMutableAttributedString alloc]initWithString:title];
-      [attributedTitle setAttributes: @{ NSFontAttributeName : [NSFont menuFontOfSize:0] } range: NSMakeRange(0, [attributedTitle length])];
-      NSMenuItem *titleItem = [NSMenuItem new];
-      [titleItem setAttributedTitle:attributedTitle];
-      [menu addItem:titleItem];
-
-      [menu addItem:[NSMenuItem separatorItem]];
-
-      NSArray<RCTDevMenuItem *> *items = [self _menuItemsToPresent];
-      for (RCTDevMenuItem *item in items) {
-        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[item title] action:@selector(menuItemSelected:) keyEquivalent:@""];
-        [menuItem setTarget:self];
-        [menuItem setRepresentedObject:item];
-        [menu addItem:menuItem];
-      }
+  if ([((RCTDevSettings *)[_moduleRegistry moduleForName:"DevSettings"]) isSecondaryClickToShowDevMenuEnabled]) {
+    NSMenu *menu = [NSMenu new];
+    
+    NSString *devMenuType = [self.bridge isKindOfClass:RCTBridge.class] ? @"Bridge" : @"Bridgeless";
+    NSString *devMenuTitle = [NSString stringWithFormat:@"React Native Dev Menu (%@)", devMenuType];
+    
+    NSMenuItem *titleItem = [NSMenuItem sectionHeaderWithTitle:devMenuTitle];
+    if (@available(macOS 14.4, *)) {
+      NSString *bridgeDescription = _bridge.bridgeDescription;
+      NSString *description =
+      bridgeDescription.length > 0 ? [NSString stringWithFormat:@"Running %@", bridgeDescription] : nil;
+      [titleItem setSubtitle:description];
+    }
+    [menu addItem:titleItem];
+    
+    NSArray<RCTDevMenuItem *> *items = [self _menuItemsToPresent];
+    for (RCTDevMenuItem *item in items) {
+      NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[item title]
+                                                        action:@selector(menuItemSelected:)
+                                                 keyEquivalent:@""];
+      [menuItem setTarget:self];
+      [menuItem setRepresentedObject:item];
+      [menu addItem:menuItem];
     }
     return menu;
   }
   return nil;
 }
 
--(void)menuItemSelected:(id)sender
+- (void)menuItemSelected:(id)sender
 {
   NSMenuItem *menuItem = (NSMenuItem *)sender;
   RCTDevMenuItem *item = (RCTDevMenuItem *)[menuItem representedObject];
