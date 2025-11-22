@@ -128,33 +128,21 @@ RCT_EXPORT_MODULE()
     self->_window = [[UIWindow alloc] initWithWindowScene:mainWindow.windowScene];
     self->_window.windowLevel = UIWindowLevelStatusBar + 1;
     self->_window.rootViewController = [UIViewController new];
-#else // [macOS
-    self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
-                                               styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskFullSizeContentView
-                                                 backing:NSBackingStoreBuffered
-                                                   defer:YES];
-    [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
-#endif // macOS]
 
-    self->_container = [[RCTUIView alloc] init]; // [macOS]
+    self->_container = [[UIView alloc] init];
     self->_container.backgroundColor = backgroundColor;
     self->_container.translatesAutoresizingMaskIntoConstraints = NO;
 
-    self->_label = [[RCTUILabel alloc] init]; // [macOS]
+    self->_label = [[UILabel alloc] init];
     self->_label.translatesAutoresizingMaskIntoConstraints = NO;
     self->_label.font = [UIFont monospacedDigitSystemFontOfSize:12.0 weight:UIFontWeightRegular];
     self->_label.textAlignment = NSTextAlignmentCenter;
     self->_label.textColor = color;
     self->_label.text = message;
 
-#if !TARGET_OS_OSX // [macOS]
     [self->_window.rootViewController.view addSubview:self->_container];
-#else // [macOS
-    [self->_window.contentView addSubview:self->_container];
-#endif // macOS]
     [self->_container addSubview:self->_label];
 
-#if !TARGET_OS_OSX // [macOS]
     CGFloat topSafeAreaHeight = mainWindow.safeAreaInsets.top;
     CGFloat height = topSafeAreaHeight + 25;
     self->_window.frame = CGRectMake(0, 0, mainWindow.frame.size.width, height);
@@ -175,6 +163,31 @@ RCT_EXPORT_MODULE()
       [self->_label.bottomAnchor constraintEqualToAnchor:self->_container.bottomAnchor constant:-5],
     ]];
 #else // [macOS
+    if (!self->_label) {
+      self->_label = [[RCTUILabel alloc] init]; // [macOS]
+      self->_label.translatesAutoresizingMaskIntoConstraints = NO;
+      self->_label.font = [UIFont monospacedDigitSystemFontOfSize:12.0 weight:UIFontWeightRegular];
+      self->_label.textAlignment = NSTextAlignmentCenter;
+    }
+    self->_label.textColor = color;
+    self->_label.text = message;
+
+    if (!self->_container) {
+      self->_container = [[RCTUIView alloc] init]; // [macOS]
+      self->_container.translatesAutoresizingMaskIntoConstraints = NO;
+      [self->_container addSubview:self->_label];
+    }
+    self->_container.backgroundColor = backgroundColor;
+    
+    if (!self->_window) {
+      self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
+                                                styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskFullSizeContentView
+                                                  backing:NSBackingStoreBuffered
+                                                    defer:YES];
+      [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
+      [self->_window.contentView addSubview:self->_container];
+    }
+    
     // Container constraints
     [NSLayoutConstraint activateConstraints:@[
       [self->_container.topAnchor constraintEqualToAnchor:self->_window.contentView.topAnchor],
