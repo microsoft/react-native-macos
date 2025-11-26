@@ -48,6 +48,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   __weak CALayer *_borderLayer;
   CALayer *_outlineLayer;
   CALayer *_boxShadowLayer;
+#if TARGET_OS_OSX // [macOS
+  UIImage *_boxShadowImage; // Strong reference to keep CGImage valid for layer.contents
+  UIImage *_borderImage;    // Strong reference to keep CGImage valid for layer.contents
+  UIImage *_outlineImage;   // Strong reference to keep CGImage valid for layer.contents
+#endif // macOS]
   CALayer *_filterLayer;
   NSMutableArray<CALayer *> *_backgroundImageLayers;
   BOOL _needsInvalidateLayer;
@@ -832,15 +837,28 @@ static RCTCornerRadii RCTCreateOutlineCornerRadiiFromBorderRadii(const BorderRad
 }
 
 // To be used for CSS properties like `border` and `outline`.
+// On macOS, outImage is set to the generated UIImage so the caller can keep a strong reference.
 static void RCTAddContourEffectToLayer(
     CALayer *layer,
     const RCTCornerRadii &cornerRadii,
     const RCTBorderColors &contourColors,
     const UIEdgeInsets &contourInsets,
-    const RCTBorderStyle &contourStyle)
+    const RCTBorderStyle &contourStyle
+#if TARGET_OS_OSX
+    , UIImage * __strong *outImage // [macOS]
+#endif
+    )
 {
   UIImage *image = RCTGetBorderImage(
       contourStyle, layer.bounds.size, cornerRadii, contourInsets, contourColors, [RCTUIColor clearColor], NO); // [macOS]
+
+#if TARGET_OS_OSX // [macOS
+  // Return the image to the caller so they can keep a strong reference.
+  // This prevents the CGImage from being deallocated while the layer uses it.
+  if (outImage) {
+    *outImage = image;
+  }
+#endif // macOS]
 
   if (image == nil) {
     layer.contents = nil;
@@ -854,7 +872,14 @@ static void RCTAddContourEffectToLayer(
     layer.contents = (id)image.CGImage;
     layer.contentsScale = image.scale;
 #else // [macOS
-    layer.contents = (__bridge id) UIImageGetCGImageRef(image);
+    // Force the lazy NSImage to render by locking focus.
+    // NSImage created with imageWithSize:flipped:drawingHandler: is lazy -
+    // the drawing handler isn't called until the image is actually drawn.
+    // We need to force rendering before extracting the CGImage.
+    [image lockFocus];
+    [image unlockFocus];
+    
+    layer.contents = (__bridge id)UIImageGetCGImageRef(image);
     layer.contentsScale = UIImageGetScale(image);
 #endif // macOS]
 
@@ -1050,8 +1075,10 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 
 #if TARGET_OS_OSX // [macOS
-  // clipsToBounds is stubbed out on macOS because it's not part of NSView
-  layer.masksToBounds = self.clipsToBounds;
+  // clipsToBounds is stubbed out on macOS because it's not part of NSView.
+  // Only set masksToBounds if there's no boxShadow - otherwise the shadow
+  // sublayer (which extends beyond bounds) would be clipped.
+  layer.masksToBounds = _props->boxShadow.empty() && self.clipsToBounds;
 #endif // macOS]
 
   const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
@@ -1171,6 +1198,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   if (useCoreAnimationBorderRendering) {
     [_borderLayer removeFromSuperlayer];
     _borderLayer = nil;
+#if TARGET_OS_OSX
+    _borderImage = nil; // [macOS] Clear image reference when not using custom border layer
+#endif
 
     layer.borderWidth = (CGFloat)borderMetrics.borderWidths.left;
     RCTUIColor *borderColor = RCTUIColorFromSharedColor(borderMetrics.borderColors.left); // [macOS]
@@ -1184,11 +1214,13 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     if (!_borderLayer) {
       CALayer *borderLayer = [CALayer new];
       borderLayer.zPosition = BACKGROUND_COLOR_ZPOSITION + 1;
-      borderLayer.frame = layer.bounds;
       borderLayer.magnificationFilter = kCAFilterNearest;
       [layer addSublayer:borderLayer];
       _borderLayer = borderLayer;
     }
+    
+    // Always update frame in case view resized
+    _borderLayer.frame = layer.bounds;
 
     layer.borderWidth = 0;
     layer.borderColor = nil;
@@ -1201,12 +1233,19 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
         RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
         borderColors,
         RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths),
-        RCTBorderStyleFromBorderStyle(borderMetrics.borderStyles.left));
+        RCTBorderStyleFromBorderStyle(borderMetrics.borderStyles.left)
+#if TARGET_OS_OSX
+        , &_borderImage // [macOS] Keep strong reference to prevent CGImage deallocation
+#endif
+        );
   }
 
   // outline
   [_outlineLayer removeFromSuperlayer];
   _outlineLayer = nil;
+#if TARGET_OS_OSX
+  _outlineImage = nil; // [macOS] Clear image reference when outline is removed
+#endif
   if (_props->outlineWidth != 0) {
     if (!_outlineLayer) {
       CALayer *outlineLayer = [CALayer new];
@@ -1231,7 +1270,11 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
           RCTCreateOutlineCornerRadiiFromBorderRadii(borderMetrics.borderRadii, _props->outlineWidth),
           RCTBorderColors{outlineColor, outlineColor, outlineColor, outlineColor},
           UIEdgeInsets{_props->outlineWidth, _props->outlineWidth, _props->outlineWidth, _props->outlineWidth},
-          RCTBorderStyleFromOutlineStyle(_props->outlineStyle));
+          RCTBorderStyleFromOutlineStyle(_props->outlineStyle)
+#if TARGET_OS_OSX
+          , &_outlineImage // [macOS] Keep strong reference to prevent CGImage deallocation
+#endif
+          );
     }
   }
 
@@ -1286,6 +1329,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   // box shadow
   [_boxShadowLayer removeFromSuperlayer];
   _boxShadowLayer = nil;
+#if TARGET_OS_OSX // [macOS
+  _boxShadowImage = nil;  // Release previous image
+#endif // macOS]
   if (!_props->boxShadow.empty()) {
     _boxShadowLayer = [CALayer layer];
     [self.layer addSublayer:_boxShadowLayer];
@@ -1301,6 +1347,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 #if !TARGET_OS_OSX // [macOS]
     _boxShadowLayer.contents = (id)boxShadowImage.CGImage;
 #else // [macOS
+    // Keep a strong reference to the NSImage so that the CGImage it provides
+    // (via UIImageGetCGImageRef) remains valid while the layer uses it.
+    _boxShadowImage = boxShadowImage;
     _boxShadowLayer.contents = (__bridge id)UIImageGetCGImageRef(boxShadowImage);
 #endif // macOS]
   }
