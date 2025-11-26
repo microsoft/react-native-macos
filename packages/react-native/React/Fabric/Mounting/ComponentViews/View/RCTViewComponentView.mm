@@ -1214,13 +1214,15 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     if (!_borderLayer) {
       CALayer *borderLayer = [CALayer new];
       borderLayer.zPosition = BACKGROUND_COLOR_ZPOSITION + 1;
+      borderLayer.frame = layer.bounds;
       borderLayer.magnificationFilter = kCAFilterNearest;
       [layer addSublayer:borderLayer];
       _borderLayer = borderLayer;
     }
-    
-    // Always update frame in case view resized
+#if TARGET_OS_OSX // [macOS
+    // Update frame on every call in case view was resized
     _borderLayer.frame = layer.bounds;
+#endif // macOS]
 
     layer.borderWidth = 0;
     layer.borderColor = nil;
