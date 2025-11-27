@@ -854,7 +854,9 @@ static void RCTAddContourEffectToLayer(
     layer.contents = (id)image.CGImage;
     layer.contentsScale = image.scale;
 #else // [macOS
-    layer.contents = (__bridge id) UIImageGetCGImageRef(image);
+    // RCTUIImage caches its CGImage, so it stays valid as long as the image is alive.
+    // The image is retained by the layer.contents assignment.
+    layer.contents = (__bridge id)image.CGImage;
     layer.contentsScale = UIImageGetScale(image);
 #endif // macOS]
 
@@ -1015,10 +1017,20 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   if (_useCustomContainerView) {
     if (!_containerView) {
       _containerView = [[RCTPlatformView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)]; // [macOS]
+#if TARGET_OS_OSX // [macOS
+      _containerView.wantsLayer = YES;
+#endif // macOS]
       for (RCTPlatformView *subview in self.subviews) { // [macOS]
         [_containerView addSubview:subview];
       }
+#if !TARGET_OS_OSX // [macOS]
       _containerView.clipsToBounds = self.clipsToBounds;
+#else // [macOS
+      // On macOS, clipsToBounds doesn't automatically set layer.masksToBounds
+      // like it does on iOS, so we need to set it directly.
+      _containerView.clipsToBounds = _props->getClipsContentToBounds();
+      _containerView.layer.masksToBounds = _props->getClipsContentToBounds();
+#endif // macOS]
       self.clipsToBounds = NO;
       _containerView.layer.mask = self.layer.mask;
       self.layer.mask = nil;
@@ -1050,8 +1062,15 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 
 #if TARGET_OS_OSX // [macOS
-  // clipsToBounds is stubbed out on macOS because it's not part of NSView
-  layer.masksToBounds = self.clipsToBounds;
+  // On macOS, clipsToBounds doesn't automatically set layer.masksToBounds like iOS does.
+  // When _useCustomContainerView is true (boxShadow + overflow:hidden), the container
+  // view handles clipping children while the main layer stays unclipped for the shadow.
+  // The container view's masksToBounds is set in currentContainerView getter.
+  if (_useCustomContainerView) {
+    layer.masksToBounds = NO;
+  } else {
+    layer.masksToBounds = _props->getClipsContentToBounds();
+  }
 #endif // macOS]
 
   const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
@@ -1189,6 +1208,10 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       [layer addSublayer:borderLayer];
       _borderLayer = borderLayer;
     }
+#if TARGET_OS_OSX // [macOS
+    // Update frame on every call in case view was resized
+    _borderLayer.frame = layer.bounds;
+#endif // macOS]
 
     layer.borderWidth = 0;
     layer.borderColor = nil;
@@ -1289,7 +1312,8 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   if (!_props->boxShadow.empty()) {
     _boxShadowLayer = [CALayer layer];
     [self.layer addSublayer:_boxShadowLayer];
-    _boxShadowLayer.zPosition = _borderLayer.zPosition;
+    // Box shadow should be behind all content but still visible
+    _boxShadowLayer.zPosition = BACKGROUND_COLOR_ZPOSITION - 1;
     _boxShadowLayer.frame = RCTGetBoundingRect(_props->boxShadow, self.layer.bounds.size);
 
     UIImage *boxShadowImage = RCTGetBoxShadowImage(
@@ -1301,7 +1325,8 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 #if !TARGET_OS_OSX // [macOS]
     _boxShadowLayer.contents = (id)boxShadowImage.CGImage;
 #else // [macOS
-    _boxShadowLayer.contents = (__bridge id)UIImageGetCGImageRef(boxShadowImage);
+    // RCTUIImage caches its CGImage, so it stays valid as long as the image is alive.
+    _boxShadowLayer.contents = (__bridge id)boxShadowImage.CGImage;
 #endif // macOS]
   }
 
