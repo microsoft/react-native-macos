@@ -264,7 +264,6 @@ extern "C" {
 
 // UIGraphics.h
 CGContextRef UIGraphicsGetCurrentContext(void);
-CGImageRef UIImageGetCGImageRef(NSImage *image);
 
 #ifdef __cplusplus
 }
@@ -330,7 +329,14 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 #define UIApplication NSApplication
 
 // UIImage
-@compatibility_alias UIImage NSImage;
+// RCTUIImage is a subclass of NSImage that caches its CGImage representation.
+// This is needed because NSImage's CGImageForProposedRect: returns a new autoreleased
+// CGImage each time, which causes issues when used with CALayer.contents.
+@interface RCTUIImage : NSImage
+@property (nonatomic, readonly, nullable) CGImageRef CGImage;
+@end
+
+@compatibility_alias UIImage RCTUIImage;
 
 typedef NS_ENUM(NSInteger, UIImageRenderingMode) {
     UIImageRenderingModeAlwaysOriginal,
@@ -338,20 +344,24 @@ typedef NS_ENUM(NSInteger, UIImageRenderingMode) {
 };
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
-CGFloat UIImageGetScale(NSImage *image);
 
-CGImageRef UIImageGetCGImageRef(NSImage *image);
+CGFloat UIImageGetScale(RCTUIImage *image);
+CGImageRef UIImageGetCGImageRef(RCTUIImage *image);
 
-NS_INLINE UIImage *UIImageWithContentsOfFile(NSString *filePath)
+#ifdef __cplusplus
+}
+#endif
+
+NS_INLINE RCTUIImage *UIImageWithContentsOfFile(NSString *filePath)
 {
-  return [[NSImage alloc] initWithContentsOfFile:filePath];
+  return [[RCTUIImage alloc] initWithContentsOfFile:filePath];
 }
 
-NS_INLINE UIImage *UIImageWithData(NSData *imageData)
+NS_INLINE RCTUIImage *UIImageWithData(NSData *imageData)
 {
-  return [[NSImage alloc] initWithData:imageData];
+  return [[RCTUIImage alloc] initWithData:imageData];
 }
 
 NSData *UIImagePNGRepresentation(NSImage *image);
@@ -624,7 +634,7 @@ typedef void (^RCTUIGraphicsImageDrawingActions)(RCTUIGraphicsImageRendererConte
 
 - (instancetype)initWithSize:(CGSize)size;
 - (instancetype)initWithSize:(CGSize)size format:(RCTUIGraphicsImageRendererFormat *)format;
-- (NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions;
+- (RCTUIImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions;
 
 @end
 NS_ASSUME_NONNULL_END

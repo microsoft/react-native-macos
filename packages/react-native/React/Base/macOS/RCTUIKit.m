@@ -57,7 +57,7 @@ NSImage *UIGraphicsGetImageFromCurrentImageContext(void)
 
 // UIImage
 
-CGFloat UIImageGetScale(NSImage *image)
+CGFloat UIImageGetScale(RCTUIImage *image)
 {
   if (image == nil) {
     return 0.0;
@@ -76,9 +76,33 @@ CGFloat UIImageGetScale(NSImage *image)
   return 1.0;
 }
 
-CGImageRef __nullable UIImageGetCGImageRef(NSImage *image)
+// RCTUIImage - NSImage subclass with cached CGImage
+
+@implementation RCTUIImage {
+  CGImageRef _cachedCGImage;
+}
+
+- (void)dealloc {
+  if (_cachedCGImage != NULL) {
+    CGImageRelease(_cachedCGImage);
+  }
+}
+
+- (CGImageRef)CGImage {
+  if (_cachedCGImage == NULL) {
+    CGImageRef cgImage = [self CGImageForProposedRect:NULL context:NULL hints:NULL];
+    if (cgImage != NULL) {
+      _cachedCGImage = CGImageRetain(cgImage);
+    }
+  }
+  return _cachedCGImage;
+}
+
+@end
+
+CGImageRef __nullable UIImageGetCGImageRef(RCTUIImage *image)
 {
-  return [image CGImageForProposedRect:NULL context:NULL hints:NULL];
+  return image.CGImage;
 }
 
 static NSData *NSImageDataForFileType(NSImage *image, NSBitmapImageFileType fileType, NSDictionary<NSString *, id> *properties)
@@ -825,22 +849,54 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     return self;
 }
 
-- (nonnull NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions {
-    NSImage *image = [NSImage imageWithSize:_size
-                                    flipped:YES
-                             drawingHandler:^BOOL(NSRect dstRect) {
-        RCTUIGraphicsImageRendererContext *context = [NSGraphicsContext currentContext];
-        if (self->_format.opaque) {
-            CGContextSetAlpha([context CGContext], 1.0);
-        }
-        actions(context);
-        return YES;
-    }];
+- (nonnull RCTUIImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions {
+    // Create an RCTUIImage which caches its CGImage for efficient layer.contents usage.
+    // We draw into a bitmap context and create the image from that.
     
-    // Force the image to render immediately by locking focus.
-    // This creates the backing store and makes CGImageForProposedRect work reliably.
-    [image lockFocus];
-    [image unlockFocus];
+    CGFloat scale = _format.scale > 0 ? _format.scale : [[NSScreen mainScreen] backingScaleFactor];
+    NSInteger pixelWidth = (NSInteger)(_size.width * scale);
+    NSInteger pixelHeight = (NSInteger)(_size.height * scale);
+    
+    if (pixelWidth <= 0 || pixelHeight <= 0) {
+        return [[RCTUIImage alloc] initWithSize:_size];
+    }
+    
+    // Create a bitmap context
+    NSBitmapImageRep *bitmapRep = [[NSBitmapImageRep alloc]
+        initWithBitmapDataPlanes:NULL
+                      pixelsWide:pixelWidth
+                      pixelsHigh:pixelHeight
+                   bitsPerSample:8
+                 samplesPerPixel:4
+                        hasAlpha:YES
+                        isPlanar:NO
+                  colorSpaceName:NSCalibratedRGBColorSpace
+                     bytesPerRow:0
+                    bitsPerPixel:0];
+    
+    bitmapRep.size = _size;
+    
+    NSGraphicsContext *context = [NSGraphicsContext graphicsContextWithBitmapImageRep:bitmapRep];
+    [NSGraphicsContext saveGraphicsState];
+    [NSGraphicsContext setCurrentContext:context];
+    
+    // Flip the context to match iOS coordinate system (origin at top-left)
+    CGContextRef cgContext = [context CGContext];
+    CGContextTranslateCTM(cgContext, 0, _size.height);
+    CGContextScaleCTM(cgContext, 1.0, -1.0);
+    
+    if (_format.opaque) {
+        CGContextSetAlpha(cgContext, 1.0);
+    }
+    
+    // Execute the drawing actions
+    actions(context);
+    
+    [NSGraphicsContext restoreGraphicsState];
+    
+    // Create an RCTUIImage from the bitmap representation
+    RCTUIImage *image = [[RCTUIImage alloc] initWithSize:_size];
+    [image addRepresentation:bitmapRep];
     
     return image;
 }
