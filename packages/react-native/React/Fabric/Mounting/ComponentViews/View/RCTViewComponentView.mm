@@ -872,13 +872,6 @@ static void RCTAddContourEffectToLayer(
     layer.contents = (id)image.CGImage;
     layer.contentsScale = image.scale;
 #else // [macOS
-    // Force the lazy NSImage to render by locking focus.
-    // NSImage created with imageWithSize:flipped:drawingHandler: is lazy -
-    // the drawing handler isn't called until the image is actually drawn.
-    // We need to force rendering before extracting the CGImage.
-    [image lockFocus];
-    [image unlockFocus];
-    
     layer.contents = (__bridge id)UIImageGetCGImageRef(image);
     layer.contentsScale = UIImageGetScale(image);
 #endif // macOS]
@@ -1367,10 +1360,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 #else // [macOS
     // Keep a strong reference to the NSImage so that the CGImage it provides
     // (via UIImageGetCGImageRef) remains valid while the layer uses it.
-    // The image is lazy - force it to render before extracting CGImage.
     _boxShadowImage = boxShadowImage;
-    [_boxShadowImage lockFocus];
-    [_boxShadowImage unlockFocus];
     _boxShadowLayer.contents = (__bridge id)UIImageGetCGImageRef(_boxShadowImage);
 #endif // macOS]
   }

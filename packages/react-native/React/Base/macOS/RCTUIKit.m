@@ -826,11 +826,9 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 }
 
 - (nonnull NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions {
-
     NSImage *image = [NSImage imageWithSize:_size
                                     flipped:YES
                              drawingHandler:^BOOL(NSRect dstRect) {
-        
         RCTUIGraphicsImageRendererContext *context = [NSGraphicsContext currentContext];
         if (self->_format.opaque) {
             CGContextSetAlpha([context CGContext], 1.0);
@@ -838,6 +836,12 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
         actions(context);
         return YES;
     }];
+    
+    // Force the image to render immediately by locking focus.
+    // This creates the backing store and makes CGImageForProposedRect work reliably.
+    [image lockFocus];
+    [image unlockFocus];
+    
     return image;
 }
 
