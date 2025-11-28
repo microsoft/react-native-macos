@@ -25,7 +25,6 @@
 #import <React/RCTDevSettings.h>
 #import <React/RCTDisplayLink.h>
 #import <React/RCTEventDispatcherProtocol.h>
-#import <React/RCTFollyConvert.h>
 #import <React/RCTLog.h>
 #import <React/RCTLogBox.h>
 #import <React/RCTModuleData.h>
@@ -36,11 +35,13 @@
 #import <ReactCommon/RCTTurboModuleManager.h>
 #import <ReactCommon/RuntimeExecutor.h>
 #import <cxxreact/ReactMarker.h>
+#import <jsinspector-modern/InspectorFlags.h>
 #import <jsinspector-modern/ReactCdp.h>
 #import <jsireact/JSIExecutor.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/runtimescheduler/RuntimeSchedulerCallInvoker.h>
 #import <react/utils/ContextContainer.h>
+#import <react/utils/FollyConvert.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
 #import "ObjCTimerRegistry.h"
@@ -69,6 +70,35 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
   sRuntimeDiagnosticFlags = [flags copy];
 }
 
+@interface RCTBridgelessDisplayLinkModuleHolder : NSObject <RCTDisplayLinkModuleHolder>
+- (instancetype)initWithModule:(id<RCTBridgeModule>)module;
+@end
+
+@implementation RCTBridgelessDisplayLinkModuleHolder {
+  id<RCTBridgeModule> _module;
+}
+- (instancetype)initWithModule:(id<RCTBridgeModule>)module
+{
+  _module = module;
+  return self;
+}
+
+- (id<RCTBridgeModule>)instance
+{
+  return _module;
+}
+
+- (Class)moduleClass
+{
+  return [_module class];
+}
+
+- (dispatch_queue_t)methodQueue
+{
+  return _module.methodQueue;
+}
+@end
+
 @interface RCTInstance () <RCTTurboModuleManagerDelegate>
 @end
 
@@ -85,6 +115,7 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
   std::atomic<bool> _valid;
   RCTJSThreadManager *_jsThreadManager;
   NSDictionary *_launchOptions;
+  void (^_waitUntilModuleSetupComplete)();
 
   // APIs supporting interop with native modules and view managers
   RCTBridgeModuleDecorator *_bridgeModuleDecorator;
@@ -129,14 +160,12 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
           }];
     }
     _launchOptions = launchOptions;
-    if (ReactNativeFeatureFlags::enableJSRuntimeGCOnMemoryPressureOnIOS()) {
 #if !TARGET_OS_OSX // [macOS]
-      [[NSNotificationCenter defaultCenter] addObserver:self
-                                               selector:@selector(_handleMemoryWarning)
-                                                   name:UIApplicationDidReceiveMemoryWarningNotification
-                                                object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_handleMemoryWarning)
+                                                 name:UIApplicationDidReceiveMemoryWarningNotification
+                                               object:nil];
 #endif // [macOS]
-    }
 
     [self _start];
   }
@@ -145,13 +174,11 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
 
 - (void)dealloc
 {
-  if (ReactNativeFeatureFlags::enableJSRuntimeGCOnMemoryPressureOnIOS()) {
 #if !TARGET_OS_OSX // [macOS]
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:UIApplicationDidReceiveMemoryWarningNotification
-                                                  object:nil];
+  [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                  name:UIApplicationDidReceiveMemoryWarningNotification
+                                                object:nil];
 #endif // [macOS]
-  }
 }
 
 - (void)callFunctionOnJSModule:(NSString *)moduleName method:(NSString *)method args:(NSArray *)args
@@ -317,6 +344,38 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
   // Initialize RCTModuleRegistry so that TurboModules can require other TurboModules.
   [_bridgeModuleDecorator.moduleRegistry setTurboModuleRegistry:_turboModuleManager];
 
+  if (ReactNativeFeatureFlags::enableMainQueueModulesOnIOS()) {
+    /**
+     * Some native modules need to capture uikit objects on the main thread.
+     * Start initializing those modules on the main queue here. The JavaScript thread
+     * will wait until this module init finishes, before executing the js bundle.
+     */
+    NSArray<NSString *> *modulesRequiringMainQueueSetup = [_delegate unstableModulesRequiringMainQueueSetup];
+
+    std::shared_ptr<std::mutex> mutex = std::make_shared<std::mutex>();
+    std::shared_ptr<std::condition_variable> cv = std::make_shared<std::condition_variable>();
+    std::shared_ptr<bool> isReady = std::make_shared<bool>(false);
+
+    _waitUntilModuleSetupComplete = ^{
+      std::unique_lock<std::mutex> lock(*mutex);
+      cv->wait(lock, [isReady] { return *isReady; });
+    };
+
+    // TODO(T218039767): Integrate perf logging into main queue module init
+    RCTExecuteOnMainQueue(^{
+      for (NSString *moduleName in modulesRequiringMainQueueSetup) {
+        [self->_bridgeModuleDecorator.moduleRegistry moduleForName:[moduleName UTF8String]];
+      }
+
+      RCTScreenSize();
+      RCTScreenScale();
+
+      std::lock_guard<std::mutex> lock(*mutex);
+      *isReady = true;
+      cv->notify_all();
+    });
+  }
+
   RCTLogSetBridgelessModuleRegistry(_bridgeModuleDecorator.moduleRegistry);
   RCTLogSetBridgelessCallableJSModules(_bridgeModuleDecorator.callableJSModules);
 
@@ -351,8 +410,10 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
   // DisplayLink is used to call timer callbacks.
   _displayLink = [RCTDisplayLink new];
 
+  auto &inspectorFlags = jsinspector_modern::InspectorFlags::getInstance();
   ReactInstance::JSRuntimeFlags options = {
-      .isProfiling = false, .runtimeDiagnosticFlags = [RCTInstanceRuntimeDiagnosticFlags() UTF8String]};
+      .isProfiling = inspectorFlags.getIsProfilingBuild(),
+      .runtimeDiagnosticFlags = [RCTInstanceRuntimeDiagnosticFlags() UTF8String]};
   _reactInstance->initializeRuntime(options, [=](jsi::Runtime &runtime) {
     __strong __typeof(self) strongSelf = weakSelf;
     if (!strongSelf) {
@@ -372,13 +433,8 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
     [strongSelf->_delegate instance:strongSelf didInitializeRuntime:runtime];
 
     // Set up Display Link
-    RCTModuleData *timingModuleData = [[RCTModuleData alloc] initWithModuleInstance:timing
-                                                                             bridge:nil
-                                                                     moduleRegistry:nil
-                                                            viewRegistry_DEPRECATED:nil
-                                                                      bundleManager:nil
-                                                                  callableJSModules:nil];
-    [strongSelf->_displayLink registerModuleForFrameUpdates:timing withModuleData:timingModuleData];
+    id<RCTDisplayLinkModuleHolder> moduleHolder = [[RCTBridgelessDisplayLinkModuleHolder alloc] initWithModule:timing];
+    [strongSelf->_displayLink registerModuleForFrameUpdates:timing withModuleHolder:moduleHolder];
     [strongSelf->_displayLink addToRunLoop:[NSRunLoop currentRunLoop]];
 
     // Attempt to load bundle synchronously, fallback to asynchronously.
@@ -477,7 +533,6 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
 
         if (error) {
           [strongSelf handleBundleLoadingError:error];
-          [strongSelf invalidate];
           return;
         }
         // DevSettings module is needed by _loadScriptFromSource's callback so prior initialization is required
@@ -487,7 +542,28 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
         // Set up hot module reloading in Dev only.
         [strongSelf->_performanceLogger markStopForTag:RCTPLScriptDownload];
         [devSettings setupHMRClientWithBundleURL:sourceURL];
+#if RCT_DEV
+        [strongSelf _logOldArchitectureWarnings];
+#endif
       }];
+}
+
+- (void)_logOldArchitectureWarnings
+{
+  if (!RCTAreLegacyLogsEnabled()) {
+    return;
+  }
+
+  NSArray<NSString *> *modulesInOldArchMode = [getModulesLoadedWithOldArch() copy];
+  if (modulesInOldArchMode.count > 0) {
+    NSMutableString *moduleList = [NSMutableString new];
+    for (NSString *moduleName in modulesInOldArchMode) {
+      [moduleList appendFormat:@"- %@\n", moduleName];
+    }
+    RCTLogWarn(
+        @"The following modules have been registered using a RCT_EXPORT_MODULE. That's a Legacy Architecture API. Please migrate to the new approach as described in the https://reactnative.dev/docs/next/turbo-native-modules-introduction#register-the-native-module-in-your-app website or open a PR in the library repository:\n%@",
+        moduleList);
+  }
 }
 
 - (void)_loadScriptFromSource:(RCTSource *)source
@@ -499,9 +575,16 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
 
   auto script = std::make_unique<NSDataBigString>(source.data);
   const auto *url = deriveSourceURL(source.url).UTF8String;
-  _reactInstance->loadScript(std::move(script), url, [](jsi::Runtime &_) {
+
+  auto beforeLoad = [waitUntilModuleSetupComplete = self->_waitUntilModuleSetupComplete](jsi::Runtime &_) {
+    if (waitUntilModuleSetupComplete) {
+      waitUntilModuleSetupComplete();
+    }
+  };
+  auto afterLoad = [](jsi::Runtime &_) {
     [[NSNotificationCenter defaultCenter] postNotificationName:@"RCTInstanceDidLoadBundle" object:nil];
-  });
+  };
+  _reactInstance->loadScript(std::move(script), url, beforeLoad, afterLoad);
 }
 
 - (void)_handleJSError:(const JsErrorHandler::ProcessedError &)error withRuntime:(jsi::Runtime &)runtime
@@ -551,10 +634,10 @@ void RCTInstanceSetRuntimeDiagnosticFlags(NSString *flags)
                             name:errorData[@"name"]
                   componentStack:errorData[@"componentStack"]
                      exceptionId:error.id
-#if TARGET_OS_OSX // [macOS Use boolValue for isFatal to ensure type safety
-                     isFatal:[errorData[@"isFatal"] boolValue] // Explicitly convert to BOOL to avoid compiler errors on macOS
-#else
-                     isFatal:errorData[@"isFatal"]
+#if !TARGET_OS_OSX // [macOS]
+                         isFatal:errorData[@"isFatal"]
+#else // [macOS Use boolValue for isFatal to ensure type safety
+                         isFatal:[errorData[@"isFatal"] boolValue]
 #endif // macOS]
                        extraData:errorData[@"extraData"]]) {
     JS::NativeExceptionsManager::ExceptionData jsErrorData{errorData};

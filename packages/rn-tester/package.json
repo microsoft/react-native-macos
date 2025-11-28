@@ -1,6 +1,6 @@
 {
   "name": "@react-native/tester",
-  "version": "0.79.0-main",
+  "version": "0.81.0-main",
   "private": true,
   "description": "React Native tester app.",
   "license": "MIT",
@@ -10,22 +10,23 @@
     "directory": "packages/rn-tester"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">= 22.14.0"
   },
   "scripts": {
     "start": "react-native-macos start",
-    "android": "react-native-macos run-android --mode HermesDebug",
-    "install-android-jsc": "../../gradlew :packages:rn-tester:android:app:installJscDebug",
-    "install-android-hermes": "../../gradlew :packages:rn-tester:android:app:installHermesDebug",
+    "android": "react-native-macos run-android",
+    "install-android-jsc": "../../gradlew :packages:rn-tester:android:app:installDebug",
+    "install-android-hermes": "../../gradlew :packages:rn-tester:android:app:installDebug",
     "clean-android": "rm -rf android/app/build",
     "prepare-ios": "node ./cli.js bootstrap ios",
-    "clean-ios": "rm -rf build/generated/ios Pods Podfile.lock",
-    "e2e-build-android": "../../gradlew :packages:rn-tester:android:app:installHermesRelease -PreactNativeArchitectures=arm64-v8a",
+    "clean-ios": "rm -rf build/generated/ios Pods Podfile.lock RNTesterPods.xcworkspace/ ../react-native-codegen/lib/",
+    "e2e-build-android": "../../gradlew :packages:rn-tester:android:app:installRelease -PreactNativeArchitectures=arm64-v8a",
     "e2e-build-ios": "./scripts/maestro-build-ios.sh",
     "e2e-test-android": "maestro test .maestro/ -e APP_ID=com.facebook.react.uiapp",
     "e2e-test-ios": "./scripts/maestro-test-ios.sh"
   },
   "dependencies": {
+    "@react-native/new-app-screen": "workspace:*",
     "@react-native/oss-library-example": "workspace:*",
     "@react-native/popup-menu-android": "workspace:*",
     "flow-enums-runtime": "^0.0.6",
@@ -33,7 +34,7 @@
     "nullthrows": "^1.1.1"
   },
   "peerDependencies": {
-    "react": "19.0.0",
+    "react": "19.1.0",
     "react-native-macos": "workspace:*"
   },
   "codegenConfig": {
@@ -44,15 +45,22 @@
       "javaPackageName": "com.facebook.fbreact.specs"
     },
     "ios": {
-      "componentProvider": {
-        "RNTMyNativeView": "RNTMyNativeViewComponentView"
+      "modules": {
+        "SampleTurboModule": {
+          "unstableRequiresMainQueueSetup": true
+        }
+      },
+      "components": {
+        "RNTMyNativeView": {
+          "className": "RNTMyNativeViewComponentView"
+        }
       }
     }
   },
   "devDependencies": {
-    "@react-native-community/cli": "15.0.0-alpha.2",
-    "@react-native-community/cli-platform-android": "15.0.0-alpha.2",
-    "@react-native-community/cli-platform-ios": "15.0.0-alpha.2",
+    "@react-native-community/cli": "20.0.0-alpha.0",
+    "@react-native-community/cli-platform-android": "20.0.0-alpha.0",
+    "@react-native-community/cli-platform-ios": "20.0.0-alpha.0",
     "commander": "^12.0.0",
     "listr2": "^6.4.1",
     "react-native-macos": "workspace:*",

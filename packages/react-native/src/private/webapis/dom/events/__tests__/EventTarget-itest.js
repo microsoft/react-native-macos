@@ -6,15 +6,14 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
  */
 
-import '../../../../../../Libraries/Core/InitializeCore.js';
+import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import Event from '../Event';
-import EventTarget from '../EventTarget';
-import {dispatchTrustedEvent} from '../internals/EventTargetInternals';
 import createEventTargetHierarchyWithDepth from './createEventTargetHierarchyWithDepth';
+import Event from 'react-native/src/private/webapis/dom/events/Event';
+import EventTarget from 'react-native/src/private/webapis/dom/events/EventTarget';
+import {dispatchTrustedEvent} from 'react-native/src/private/webapis/dom/events/internals/EventTargetInternals';
 
 let listenerCallOrder = 0;
 

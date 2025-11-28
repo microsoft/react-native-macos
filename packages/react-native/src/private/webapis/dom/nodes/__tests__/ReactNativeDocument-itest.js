@@ -6,36 +6,33 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
  */
 
-import '../../../../../../Libraries/Core/InitializeCore.js';
+import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import View from '../../../../../../Libraries/Components/View/View';
-import ensureInstance from '../../../../utilities/ensureInstance';
-import ReactNativeDocument from '../ReactNativeDocument';
-import ReactNativeElement from '../ReactNativeElement';
-import ReadOnlyNode from '../ReadOnlyNode';
-import Fantom from '@react-native/fantom';
+import type {HostInstance} from 'react-native';
+
+import ensureInstance from '../../../../__tests__/utilities/ensureInstance';
+import isUnreachable from '../../../../__tests__/utilities/isUnreachable';
+import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
+import {createRef} from 'react';
+import {View} from 'react-native';
+import ReactNativeDocument from 'react-native/src/private/webapis/dom/nodes/ReactNativeDocument';
+import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
+import ReadOnlyNode from 'react-native/src/private/webapis/dom/nodes/ReadOnlyNode';
 
 describe('ReactNativeDocument', () => {
   it('is connected until the surface is destroyed', () => {
-    let lastNode;
+    const nodeRef = createRef<HostInstance>();
 
     const root = Fantom.createRoot();
     Fantom.runTask(() => {
-      root.render(
-        <View
-          ref={node => {
-            lastNode = node;
-          }}
-        />,
-      );
+      root.render(<View ref={nodeRef} />);
     });
 
-    const element = ensureInstance(lastNode, ReactNativeElement);
+    const element = ensureInstance(nodeRef.current, ReactNativeElement);
     const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
 
     expect(document.isConnected).toBe(true);
@@ -54,20 +51,14 @@ describe('ReactNativeDocument', () => {
   });
 
   it('allows traversal as a regular node', () => {
-    let lastNode;
+    const nodeRef = createRef<HostInstance>();
 
     const root = Fantom.createRoot();
     Fantom.runTask(() => {
-      root.render(
-        <View
-          ref={node => {
-            lastNode = node;
-          }}
-        />,
-      );
+      root.render(<View ref={nodeRef} />);
     });
 
-    const element = ensureInstance(lastNode, ReactNativeElement);
+    const element = ensureInstance(nodeRef.current, ReactNativeElement);
     const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
 
     expect(document.childNodes.length).toBe(1);
@@ -79,20 +70,14 @@ describe('ReactNativeDocument', () => {
   });
 
   it('allows traversal through document-specific methods', () => {
-    let lastNode;
+    const nodeRef = createRef<HostInstance>();
 
     const root = Fantom.createRoot();
     Fantom.runTask(() => {
-      root.render(
-        <View
-          ref={node => {
-            lastNode = node;
-          }}
-        />,
-      );
+      root.render(<View ref={nodeRef} />);
     });
 
-    const element = ensureInstance(lastNode, ReactNativeElement);
+    const element = ensureInstance(nodeRef.current, ReactNativeElement);
     const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
 
     expect(document.childElementCount).toBe(1);
@@ -103,20 +88,14 @@ describe('ReactNativeDocument', () => {
   });
 
   it('implements the abstract methods from ReadOnlyNode', () => {
-    let lastNode;
+    const nodeRef = createRef<HostInstance>();
 
     const root = Fantom.createRoot();
     Fantom.runTask(() => {
-      root.render(
-        <View
-          ref={node => {
-            lastNode = node;
-          }}
-        />,
-      );
+      root.render(<View ref={nodeRef} />);
     });
 
-    const element = ensureInstance(lastNode, ReactNativeElement);
+    const element = ensureInstance(nodeRef.current, ReactNativeElement);
     const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
 
     expect(document.nodeName).toBe('#document');
@@ -125,21 +104,44 @@ describe('ReactNativeDocument', () => {
     expect(document.textContent).toBe(null);
   });
 
+  it('provides a documentElement node that behaves like a regular element', () => {
+    const nodeRef = createRef<HostInstance>();
+
+    const root = Fantom.createRoot({
+      viewportWidth: 200,
+      viewportHeight: 100,
+      viewportOffsetX: 111,
+      viewportOffsetY: 222,
+    });
+    Fantom.runTask(() => {
+      root.render(<View ref={nodeRef} />);
+    });
+
+    const element = ensureInstance(nodeRef.current, ReactNativeElement);
+    const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
+
+    const {x, y, width, height} =
+      document.documentElement.getBoundingClientRect();
+
+    expect(x).toBe(111);
+    expect(y).toBe(222);
+    expect(width).toBe(200);
+    expect(height).toBe(100);
+
+    expect(document.documentElement.offsetParent).toBe(null);
+    expect(document.documentElement.offsetTop).toBe(0);
+    expect(document.documentElement.offsetLeft).toBe(0);
+  });
+
   it('implements compareDocumentPosition correctly', () => {
-    let lastNode;
+    const nodeRef = createRef<HostInstance>();
 
     const root = Fantom.createRoot();
     Fantom.runTask(() => {
-      root.render(
-        <View
-          ref={node => {
-            lastNode = node;
-          }}
-        />,
-      );
+      root.render(<View ref={nodeRef} />);
     });
 
-    const element = ensureInstance(lastNode, ReactNativeElement);
+    const element = ensureInstance(nodeRef.current, ReactNativeElement);
     const document = ensureInstance(element.ownerDocument, ReactNativeDocument);
     const documentElement = document.documentElement;
 
@@ -179,17 +181,11 @@ describe('ReactNativeDocument', () => {
   });
 
   it('is released when the root is destroyed', () => {
-    let lastNode;
+    const nodeRef = createRef<HostInstance>();
 
     const root = Fantom.createRoot();
     Fantom.runTask(() => {
-      root.render(
-        <View
-          ref={node => {
-            lastNode = node;
-          }}
-        />,
-      );
+      root.render(<View ref={nodeRef} />);
     });
 
     let maybeWeakNode;
@@ -197,29 +193,27 @@ describe('ReactNativeDocument', () => {
     Fantom.runTask(() => {
       maybeWeakDocument = new WeakRef(
         ensureInstance(
-          ensureInstance(lastNode, ReactNativeElement).ownerDocument,
+          ensureInstance(nodeRef.current, ReactNativeElement).ownerDocument,
           ReactNativeDocument,
         ),
       );
-      maybeWeakNode = new WeakRef(ensureInstance(lastNode, ReactNativeElement));
+      maybeWeakNode = new WeakRef(
+        ensureInstance(nodeRef.current, ReactNativeElement),
+      );
     });
 
     const weakDocument = nullthrows(maybeWeakDocument);
-    expect(weakDocument.deref()).toBeInstanceOf(ReactNativeDocument);
-
     const weakNode = nullthrows(maybeWeakNode);
-    expect(weakNode.deref()).toBeInstanceOf(ReactNativeElement);
+
+    expect(isUnreachable(weakDocument)).toBe(false);
+    expect(isUnreachable(weakNode)).toBe(false);
 
     Fantom.runTask(() => {
       root.destroy();
     });
 
-    Fantom.runTask(() => {
-      global.gc();
-    });
-
-    expect(lastNode).toBe(null);
-    expect(weakNode.deref()).toBe(undefined);
-    expect(weakDocument.deref()).toBe(undefined);
+    expect(nodeRef.current).toBe(null);
+    expect(isUnreachable(weakDocument)).toBe(true);
+    expect(isUnreachable(weakNode)).toBe(true);
   });
 });

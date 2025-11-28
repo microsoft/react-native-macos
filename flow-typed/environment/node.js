@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @flow
  * @format
- * @oncall flow
  */
 
 // Adapted from https://github.com/flow-typed/flow-typed/blob/main/definitions/environments/node/flow_v0.261.x-/node.js
@@ -2381,7 +2381,11 @@ declare class readline$Interface extends events$EventEmitter {
   close(): void;
   pause(): void;
   prompt(preserveCursor?: boolean): void;
-  question(query: string, callback: (answer: string) => void): void;
+  question(
+    query: string,
+    optionsOrCallback: {|signal?: AbortSignal|} | ((answer: string) => void),
+    callback?: (answer: string) => void,
+  ): void;
   resume(): void;
   setPrompt(prompt: string): void;
   write(
@@ -2399,29 +2403,38 @@ declare class readline$Interface extends events$EventEmitter {
 
 declare module 'readline' {
   declare var Interface: typeof readline$Interface;
-  declare function clearLine(stream: stream$Stream, dir: -1 | 1 | 0): void;
-  declare function clearScreenDown(stream: stream$Stream): void;
+  declare function clearLine(
+    stream: stream$Stream,
+    dir: -1 | 1 | 0,
+    callback?: () => void,
+  ): void;
+  declare function clearScreenDown(
+    stream: stream$Stream,
+    callback?: () => void,
+  ): void;
   declare function createInterface(opts: {
+    completer?: readline$InterfaceCompleter,
+    crlfDelay?: number,
+    escapeCodeTimeout?: number,
+    historySize?: number,
     input: stream$Readable,
     output?: ?stream$Stream,
-    completer?: readline$InterfaceCompleter,
-    terminal?: boolean,
-    historySize?: number,
     prompt?: string,
-    crlfDelay?: number,
     removeHistoryDuplicates?: boolean,
-    escapeCodeTimeout?: number,
+    terminal?: boolean,
     ...
   }): readline$Interface;
   declare function cursorTo(
     stream: stream$Stream,
     x?: number,
     y?: number,
+    callback?: () => void,
   ): void;
   declare function moveCursor(
     stream: stream$Stream,
     dx: number,
     dy: number,
+    callback?: () => void,
   ): void;
   declare function emitKeypressEvents(
     stream: stream$Stream,
@@ -3216,6 +3229,73 @@ declare module 'util' {
     isWebAssemblyCompiledModule: (value: mixed) => boolean,
     ...
   };
+
+  declare type BackgroundColors =
+    | 'bgBlack'
+    | 'bgBlackBright'
+    | 'bgBlue'
+    | 'bgBlueBright'
+    | 'bgCyan'
+    | 'bgCyanBright'
+    | 'bgGray'
+    | 'bgGreen'
+    | 'bgGreenBright'
+    | 'bgGrey'
+    | 'bgMagenta'
+    | 'bgMagentaBright'
+    | 'bgRed'
+    | 'bgRedBright'
+    | 'bgWhite'
+    | 'bgWhiteBright'
+    | 'bgYellow'
+    | 'bgYellowBright';
+
+  declare type ForegroundColors =
+    | 'black'
+    | 'blackBright'
+    | 'blue'
+    | 'blueBright'
+    | 'cyan'
+    | 'cyanBright'
+    | 'gray'
+    | 'green'
+    | 'greenBright'
+    | 'grey'
+    | 'magenta'
+    | 'magentaBright'
+    | 'red'
+    | 'redBright'
+    | 'white'
+    | 'whiteBright'
+    | 'yellow'
+    | 'yellowBright';
+
+  declare type Modifiers =
+    | 'blink'
+    | 'bold'
+    | 'dim'
+    | 'doubleunderline'
+    | 'framed'
+    | 'hidden'
+    | 'inverse'
+    | 'italic'
+    | 'overlined'
+    | 'reset'
+    | 'strikethrough'
+    | 'underline';
+
+  declare function styleText(
+    format:
+      | ForegroundColors
+      | BackgroundColors
+      | Modifiers
+      | $ReadOnlyArray<ForegroundColors | BackgroundColors | Modifiers>,
+    text: string,
+    options?: $ReadOnly<{
+      stream?: ?stream$Stream,
+      validStream?: ?boolean,
+    }>,
+  ): string;
 }
 
 type vm$ScriptOptions = {

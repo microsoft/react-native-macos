@@ -6,7 +6,6 @@
  *
  * @flow
  * @format
- * @oncall react_native
  */
 
 /*::
@@ -31,7 +30,8 @@ export type Define = $ReadOnly<{
 export type Settings = $ReadOnly<{
   headerSearchPaths?: $ReadOnlyArray<string>,
   defines?: $ReadOnlyArray<Define>,
-  compilerFlags?: $ReadOnlyArray<string>,
+  cCompilerFlags?: $ReadOnlyArray<string>,
+  cxxCompilerFlags?: $ReadOnlyArray<string>,
   linkedLibraries?: $ReadOnlyArray<string>,
   publicHeaderFiles: string,
   linkerSettings?: $ReadOnlyArray<string>
