@@ -10,10 +10,8 @@
 
 // [macOS]
 
-import type {
-  Platform as PlatformType,
-  PlatformSelectSpec,
-} from './Platform.flow';
+import type {PlatformSelectSpec, PlatformType} from './PlatformTypes';
+
 
 import NativePlatformConstantsMacOS from './NativePlatformConstantsMacOS';
 

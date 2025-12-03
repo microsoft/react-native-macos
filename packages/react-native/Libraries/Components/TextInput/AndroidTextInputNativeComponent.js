@@ -10,11 +10,7 @@
 
 import type {HostComponent} from '../../../src/private/types/HostComponent';
 import type {PartialViewConfig} from '../../Renderer/shims/ReactNativeTypes';
-import type {
-  ColorValue,
-  TextStyleProp,
-  ViewStyleProp,
-} from '../../StyleSheet/StyleSheet';
+import type {ColorValue, TextStyleProp} from '../../StyleSheet/StyleSheet';
 import type {
   BubblingEventHandler,
   DirectEventHandler,
@@ -67,10 +63,10 @@ export type ReturnKeyType =
 
 export type SubmitBehavior = 'submit' | 'blurAndSubmit' | 'newline';
 
-export type NativeProps = $ReadOnly<{
+export type AndroidTextInputNativeProps = $ReadOnly<{
   // This allows us to inherit everything from ViewProps except for style (see below)
   // This must be commented for Fabric codegen to work.
-  ...$Diff<ViewProps, $ReadOnly<{style: ?ViewStyleProp}>>,
+  ...Omit<ViewProps, 'style'>,
 
   /**
    * Android props after this
@@ -610,7 +606,7 @@ export type NativeProps = $ReadOnly<{
   text?: ?string,
 }>;
 
-type NativeType = HostComponent<NativeProps>;
+type NativeType = HostComponent<AndroidTextInputNativeProps>;
 
 type NativeCommands = TextInputNativeCommands<NativeType>;
 
@@ -621,22 +617,10 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
 export const __INTERNAL_VIEW_CONFIG: PartialViewConfig = {
   uiViewClassName: 'AndroidTextInput',
   bubblingEventTypes: {
-    topBlur: {
-      phasedRegistrationNames: {
-        bubbled: 'onBlur',
-        captured: 'onBlurCapture',
-      },
-    },
     topEndEditing: {
       phasedRegistrationNames: {
         bubbled: 'onEndEditing',
         captured: 'onEndEditingCapture',
-      },
-    },
-    topFocus: {
-      phasedRegistrationNames: {
-        bubbled: 'onFocus',
-        captured: 'onFocusCapture',
       },
     },
     topKeyPress: {
@@ -658,6 +642,7 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig = {
     },
   },
   validAttributes: {
+    acceptDragAndDropTypes: true,
     maxFontSizeMultiplier: true,
     adjustsFontSizeToFit: true,
     minimumFontScale: true,
@@ -740,10 +725,11 @@ export const __INTERNAL_VIEW_CONFIG: PartialViewConfig = {
   },
 };
 
-let AndroidTextInputNativeComponent = NativeComponentRegistry.get<NativeProps>(
-  'AndroidTextInput',
-  () => __INTERNAL_VIEW_CONFIG,
-);
+let AndroidTextInputNativeComponent =
+  NativeComponentRegistry.get<AndroidTextInputNativeProps>(
+    'AndroidTextInput',
+    () => __INTERNAL_VIEW_CONFIG,
+  );
 
 // flowlint-next-line unclear-type:off
-export default ((AndroidTextInputNativeComponent: any): HostComponent<NativeProps>);
+export default ((AndroidTextInputNativeComponent: any): HostComponent<AndroidTextInputNativeProps>);

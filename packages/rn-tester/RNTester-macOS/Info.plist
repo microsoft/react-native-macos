@@ -48,5 +48,7 @@
 	<string>Photo library access needed for some tests.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 </dict>
 </plist>

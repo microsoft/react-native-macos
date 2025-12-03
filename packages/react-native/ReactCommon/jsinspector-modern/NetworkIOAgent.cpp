@@ -11,7 +11,12 @@
 #include "Base64.h"
 #include "Utf8.h"
 
+#include <jsinspector-modern/network/NetworkReporter.h>
+
+#include <sstream>
+#include <tuple>
 #include <utility>
+#include <variant>
 
 namespace facebook::react::jsinspector_modern {
 
@@ -267,8 +272,26 @@ bool NetworkIOAgent::handleRequest(
   }
 
   if (InspectorFlags::getInstance().getNetworkInspectionEnabled()) {
+    auto& networkReporter = NetworkReporter::getInstance();
+
+    // @cdp Network.enable support is experimental.
     if (req.method == "Network.enable") {
+      networkReporter.setFrontendChannel(frontendChannel_);
+      networkReporter.enableDebugging();
       frontendChannel_(cdp::jsonResult(req.id));
+      return true;
+    }
+
+    // @cdp Network.disable support is experimental.
+    if (req.method == "Network.disable") {
+      networkReporter.disableDebugging();
+      frontendChannel_(cdp::jsonResult(req.id));
+      return true;
+    }
+
+    // @cdp Network.getResponseBody support is experimental.
+    if (req.method == "Network.getResponseBody") {
+      handleGetResponseBody(req);
       return true;
     }
   }
@@ -446,6 +469,57 @@ void NetworkIOAgent::handleIoClose(const cdp::PreparsedRequest& req) {
     streams_->erase(it->first);
     frontendChannel_(cdp::jsonResult(requestId));
   }
+}
+
+void NetworkIOAgent::handleGetResponseBody(const cdp::PreparsedRequest& req) {
+  long long requestId = req.id;
+  if (!req.params.isObject()) {
+    frontendChannel_(cdp::jsonError(
+        requestId,
+        cdp::ErrorCode::InvalidParams,
+        "Invalid params: not an object."));
+    return;
+  }
+  if ((req.params.count("requestId") == 0u) ||
+      !req.params.at("requestId").isString()) {
+    frontendChannel_(cdp::jsonError(
+        requestId,
+        cdp::ErrorCode::InvalidParams,
+        "Invalid params: requestId is missing or not a string."));
+    return;
+  }
+
+  auto& networkReporter = NetworkReporter::getInstance();
+
+  if (!networkReporter.isDebuggingEnabled()) {
+    frontendChannel_(cdp::jsonError(
+        requestId,
+        cdp::ErrorCode::InvalidRequest,
+        "Invalid request: The \"Network\" domain is not enabled."));
+    return;
+  }
+
+  auto storedResponse =
+      networkReporter.getResponseBody(req.params.at("requestId").asString());
+
+  if (!storedResponse) {
+    frontendChannel_(cdp::jsonError(
+        requestId,
+        cdp::ErrorCode::InternalError,
+        "Internal error: Could not retrieve response body for the given requestId."));
+    return;
+  }
+
+  std::string responseBody;
+  bool base64Encoded = false;
+  std::tie(responseBody, base64Encoded) = *storedResponse;
+
+  auto result = GetResponseBodyResult{
+      .body = responseBody,
+      .base64Encoded = base64Encoded,
+  };
+
+  frontendChannel_(cdp::jsonResult(requestId, result.toDynamic()));
 }
 
 } // namespace facebook::react::jsinspector_modern

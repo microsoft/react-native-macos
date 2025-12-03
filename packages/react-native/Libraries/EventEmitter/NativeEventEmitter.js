@@ -24,10 +24,15 @@ interface NativeModule {
   removeListeners(count: number): void;
 }
 
-export type {EventSubscription};
+/** @deprecated Use `EventSubscription` instead. */
+type EmitterSubscription = EventSubscription;
+
+export type {EventSubscription, EmitterSubscription};
+/** @deprecated Use `EventSubscription` instead. */
+export type NativeEventSubscription = EventSubscription;
 
 // $FlowFixMe[unclear-type] unclear type of events
-type UnsafeObject = Object;
+type UnsafeNativeEventObject = Object;
 
 /**
  * `NativeEventEmitter` is intended for use by Native Modules to emit events to
@@ -41,14 +46,14 @@ type UnsafeObject = Object;
  */
 export default class NativeEventEmitter<
   TEventToArgsMap: $ReadOnly<
-    Record<string, $ReadOnlyArray<UnsafeObject>>,
-  > = $ReadOnly<Record<string, $ReadOnlyArray<UnsafeObject>>>,
+    Record<string, $ReadOnlyArray<UnsafeNativeEventObject>>,
+  > = $ReadOnly<Record<string, $ReadOnlyArray<UnsafeNativeEventObject>>>,
 > implements IEventEmitter<TEventToArgsMap>
 {
   _nativeModule: ?NativeModule;
 
-  constructor(nativeModule: ?NativeModule) {
-    if (Platform.OS === 'ios' || Platform.OS === 'macos' /* [macOS] */) {
+  constructor(nativeModule?: ?NativeModule) {
+    if (Platform.OS === 'ios' || Platform.OS === 'macos') { // [macOS]
       invariant(
         nativeModule != null,
         '`new NativeEventEmitter()` requires a non-null argument.',
@@ -80,7 +85,7 @@ export default class NativeEventEmitter<
 
   addListener<TEvent: $Keys<TEventToArgsMap>>(
     eventType: TEvent,
-    listener: (...args: $ElementType<TEventToArgsMap, TEvent>) => mixed,
+    listener: (...args: TEventToArgsMap[TEvent]) => mixed,
     context?: mixed,
   ): EventSubscription {
     this._nativeModule?.addListener(eventType);
@@ -104,7 +109,7 @@ export default class NativeEventEmitter<
 
   emit<TEvent: $Keys<TEventToArgsMap>>(
     eventType: TEvent,
-    ...args: $ElementType<TEventToArgsMap, TEvent>
+    ...args: TEventToArgsMap[TEvent]
   ): void {
     // Generally, `RCTDeviceEventEmitter` is directly invoked. But this is
     // included for completeness.

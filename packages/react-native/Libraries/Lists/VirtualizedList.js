@@ -13,11 +13,13 @@
 import VirtualizedLists from '@react-native-macos/virtualized-lists'; // [macOS]
 
 type VirtualizedListType = typeof VirtualizedLists.VirtualizedList;
-const VirtualizedList: VirtualizedListType = VirtualizedLists.VirtualizedList;
+const VirtualizedListComponent: VirtualizedListType =
+  VirtualizedLists.VirtualizedList;
 
 export type {
   ListRenderItemInfo,
   ListRenderItem,
   Separators,
+  VirtualizedListProps,
 } from '@react-native-macos/virtualized-lists'; // [macOS]
-export default VirtualizedList;
+export default VirtualizedListComponent;
