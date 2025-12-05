@@ -8,22 +8,33 @@
 #import "RCTPlatformColorUtils.h"
 
 #import <Foundation/Foundation.h>
+#import <TargetConditionals.h>
 #import <React/RCTUIKit.h> // [macOS]
+#if TARGET_OS_OSX // [macOS
+#import <AppKit/AppKit.h>
+#endif // macOS]
 #import <react/renderer/graphics/HostPlatformColor.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
 #include <string>
+#include <vector>
 
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const kColorSuffix = @"Color";
 static NSString *const kFallbackARGBKey = @"fallback-argb";
+#if TARGET_OS_OSX // [macOS
+static NSString *const kFallbackKey = @"fallback";
+static NSString *const kSelectorKey = @"selector";
+static NSString *const kIndexKey = @"index";
+#endif // macOS]
 
 static NSDictionary<NSString *, NSDictionary *> *_PlatformColorSelectorsDict()
 {
   static NSDictionary<NSString *, NSDictionary *> *dict;
   static dispatch_once_t once_token;
   dispatch_once(&once_token, ^(void) {
+#if !TARGET_OS_OSX // [macOS]
     dict = @{
       // https://developer.apple.com/documentation/uikit/uicolor/ui_element_colors
       // Label Colors
@@ -130,6 +141,105 @@ static NSDictionary<NSString *, NSDictionary *> *_PlatformColorSelectorsDict()
         kFallbackARGBKey : @(0x00000000) // iOS 13.0
       },
     };
+#else // [macOS
+    NSMutableDictionary<NSString *, NSDictionary *> *map = [@{
+      // https://developer.apple.com/documentation/appkit/nscolor/ui_element_colors
+      // Label Colors
+      @"labelColor": @{},
+      @"secondaryLabelColor": @{},
+      @"tertiaryLabelColor": @{},
+      @"quaternaryLabelColor": @{},
+      // Text Colors
+      @"textColor": @{},
+      @"placeholderTextColor": @{},
+      @"selectedTextColor": @{},
+      @"textBackgroundColor": @{},
+      @"selectedTextBackgroundColor": @{},
+      @"keyboardFocusIndicatorColor": @{},
+      @"unemphasizedSelectedTextColor": @{
+        kFallbackKey: @"selectedTextColor"
+      },
+      @"unemphasizedSelectedTextBackgroundColor": @{
+        kFallbackKey: @"textBackgroundColor"
+      },
+      // Content Colors
+      @"linkColor": @{},
+      @"separatorColor": @{
+        kFallbackKey: @"gridColor"
+      },
+      @"selectedContentBackgroundColor": @{
+        kFallbackKey: @"alternateSelectedControlColor"
+      },
+      @"unemphasizedSelectedContentBackgroundColor": @{
+        kFallbackKey: @"secondarySelectedControlColor"
+      },
+      // Menu Colors
+      @"selectedMenuItemTextColor": @{},
+      // Table Colors
+      @"gridColor": @{},
+      @"headerTextColor": @{},
+      @"alternatingEvenContentBackgroundColor": @{
+        kSelectorKey: @"alternatingContentBackgroundColors",
+        kIndexKey: @0,
+        kFallbackKey: @"controlAlternatingRowBackgroundColors"
+      },
+      @"alternatingOddContentBackgroundColor": @{
+        kSelectorKey: @"alternatingContentBackgroundColors",
+        kIndexKey: @1,
+        kFallbackKey: @"controlAlternatingRowBackgroundColors"
+      },
+      // Control Colors
+      @"controlAccentColor": @{
+        kFallbackKey: @"controlColor"
+      },
+      @"controlColor": @{},
+      @"controlBackgroundColor": @{},
+      @"controlTextColor": @{},
+      @"disabledControlTextColor": @{},
+      @"selectedControlColor": @{},
+      @"selectedControlTextColor": @{},
+      @"alternateSelectedControlTextColor": @{},
+      @"scrubberTexturedBackgroundColor": @{},
+      // Window Colors
+      @"windowBackgroundColor": @{},
+      @"windowFrameTextColor": @{},
+      @"underPageBackgroundColor": @{},
+      // Highlights and Shadows
+      @"findHighlightColor": @{
+        kFallbackKey: @"highlightColor"
+      },
+      @"highlightColor": @{},
+      @"shadowColor": @{},
+      // https://developer.apple.com/documentation/appkit/nscolor/standard_colors
+      // Standard Colors
+      @"systemBlueColor": @{},
+      @"systemBrownColor": @{},
+      @"systemGrayColor": @{},
+      @"systemGreenColor": @{},
+      @"systemOrangeColor": @{},
+      @"systemPinkColor": @{},
+      @"systemPurpleColor": @{},
+      @"systemRedColor": @{},
+      @"systemYellowColor": @{},
+      // Transparent Color
+      @"clearColor" : @{},
+    } mutableCopy];
+
+    NSMutableDictionary<NSString *, NSDictionary *> *aliases = [NSMutableDictionary new];
+    for (NSString *objcSelector in map) {
+      NSMutableDictionary *entry = [map[objcSelector] mutableCopy];
+      if ([entry objectForKey:kSelectorKey] == nil) {
+        entry[kSelectorKey] = objcSelector;
+      }
+      if ([objcSelector hasSuffix:kColorSuffix]) {
+        NSString *swiftSelector = [objcSelector substringToIndex:[objcSelector length] - [kColorSuffix length]];
+        aliases[swiftSelector] = entry;
+      }
+    }
+    [map addEntriesFromDictionary:aliases];
+
+    dict = [map copy];
+#endif // macOS]
   });
   return dict;
 }
@@ -154,21 +264,59 @@ static RCTUIColor *_Nullable _UIColorFromSemanticString(NSString *semanticString
   NSDictionary<NSString *, NSDictionary *> *platformColorSelectorsDict = _PlatformColorSelectorsDict();
   NSDictionary<NSString *, id> *colorInfo = platformColorSelectorsDict[platformColorString];
   if (colorInfo) {
+#if !TARGET_OS_OSX // [macOS]
     SEL objcColorSelector = NSSelectorFromString([platformColorString stringByAppendingString:kColorSuffix]);
-    if (![RCTUIColor respondsToSelector:objcColorSelector]) { // [macOS]
+    if (![RCTUIColor respondsToSelector:objcColorSelector]) {
       NSNumber *fallbackRGB = colorInfo[kFallbackARGBKey];
       if (fallbackRGB) {
         return _UIColorFromHexValue(fallbackRGB);
       }
     } else {
-      Class uiColorClass = [RCTUIColor class]; // [macOS]
+      Class uiColorClass = [RCTUIColor class];
       IMP imp = [uiColorClass methodForSelector:objcColorSelector];
       id (*getUIColor)(id, SEL) = ((id(*)(id, SEL))imp);
       id colorObject = getUIColor(uiColorClass, objcColorSelector);
-      if ([colorObject isKindOfClass:[RCTUIColor class]]) { // [macOS]
+      if ([colorObject isKindOfClass:[RCTUIColor class]]) {
         return colorObject;
       }
     }
+#else // [macOS
+    NSString *selectorName = colorInfo[kSelectorKey];
+    if (selectorName == nil) {
+      selectorName = [platformColorString stringByAppendingString:kColorSuffix];
+    }
+
+    SEL objcColorSelector = NSSelectorFromString(selectorName);
+    if (![RCTUIColor respondsToSelector:objcColorSelector]) {
+      NSNumber *fallbackRGB = colorInfo[kFallbackARGBKey];
+      if (fallbackRGB) {
+        return _UIColorFromHexValue(fallbackRGB);
+      }
+      NSString *fallbackColorName = colorInfo[kFallbackKey];
+      if (fallbackColorName) {
+        return _UIColorFromSemanticString(fallbackColorName);
+      }
+    } else {
+      Class colorClass = [RCTUIColor class];
+      IMP imp = [colorClass methodForSelector:objcColorSelector];
+      id (*getColor)(id, SEL) = ((id(*)(id, SEL))imp);
+      id colorObject = getColor(colorClass, objcColorSelector);
+      if ([colorObject isKindOfClass:[NSArray class]]) {
+        NSNumber *index = colorInfo[kIndexKey];
+        if (index != nil) {
+          NSArray *colors = colorObject;
+          NSUInteger idx = [index unsignedIntegerValue];
+          if (idx < colors.count) {
+            colorObject = colors[idx];
+          }
+        }
+      }
+
+      if ([colorObject isKindOfClass:[RCTUIColor class]]) {
+        return colorObject;
+      }
+    }
+#endif
   }
   return nil;
 }
