@@ -17,7 +17,7 @@
 - (instancetype)initWithBridge:(RCTBridge *)bridge NS_DESIGNATED_INITIALIZER;
 
 @property (nonatomic, assign) UIEdgeInsets capInsets;
-@property (nonatomic, strong) UIImage *defaultImage;
+@property (nonatomic, strong) RCTPlatformImage *defaultImage; // [macOS]
 @property (nonatomic, assign) UIImageRenderingMode renderingMode;
 @property (nonatomic, copy) NSArray<RCTImageSource *> *imageSources;
 @property (nonatomic, assign) CGFloat blurRadius;

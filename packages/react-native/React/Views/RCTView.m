@@ -1269,7 +1269,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
     return;
   }
 
-  UIImage *image = RCTGetBorderImage(
+  RCTPlatformImage *image = RCTGetBorderImage( // [macOS]
       _borderStyle, layer.bounds.size, cornerRadii, borderInsets, borderColors, backgroundColor, self.clipsToBounds);
 
   layer.backgroundColor = NULL;

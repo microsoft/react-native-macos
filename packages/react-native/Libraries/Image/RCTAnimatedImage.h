@@ -11,12 +11,12 @@
 @property (nonatomic, assign, readonly) NSUInteger animatedImageFrameCount;
 @property (nonatomic, assign, readonly) NSUInteger animatedImageLoopCount;
 
-- (nullable UIImage *)animatedImageFrameAtIndex:(NSUInteger)index;
+- (nullable RCTPlatformImage *)animatedImageFrameAtIndex:(NSUInteger)index; // [macOS]
 - (NSTimeInterval)animatedImageDurationAtIndex:(NSUInteger)index;
 
 @end
 
-@interface RCTAnimatedImage : UIImage <RCTAnimatedImage>
+@interface RCTAnimatedImage : RCTPlatformImage <RCTAnimatedImage> // [macOS]
 // [macOS
 // This is a known initializer for UIImage, but needs to be exposed publicly for macOS since
 // this is not a known initializer for NSImage

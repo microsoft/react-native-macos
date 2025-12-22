@@ -49,7 +49,7 @@ RCT_EXPORT_MODULE()
                                          partialLoadHandler:(RCTImageLoaderPartialLoadBlock)partialLoadHandler
                                           completionHandler:(RCTImageLoaderCompletionBlock)completionHandler
 {
-  UIImage *image = RCTImageFromLocalAssetURL(imageURL);
+  RCTPlatformImage *image = RCTImageFromLocalAssetURL(imageURL); // [macOS]
   if (image) {
     if (progressHandler) {
       progressHandler(1, 1);

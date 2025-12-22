@@ -21,7 +21,7 @@ RCTImageResponseObserverProxy::RCTImageResponseObserverProxy(id<RCTImageResponse
 
 void RCTImageResponseObserverProxy::didReceiveImage(const ImageResponse &imageResponse) const
 {
-  UIImage *image = (UIImage *)unwrapManagedObject(imageResponse.getImage());
+  RCTPlatformImage *image = (RCTPlatformImage *)unwrapManagedObject(imageResponse.getImage()); // [macOS]
   id metadata = unwrapManagedObject(imageResponse.getMetadata());
   id<RCTImageResponseDelegate> delegate = delegate_;
   auto this_ = this;

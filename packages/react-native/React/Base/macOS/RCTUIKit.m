@@ -756,12 +756,12 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   }
 }
 
-- (UIImage *)image
+- (RCTPlatformImage *)image
 {
   return [[self layer] contents];
 }
 
-- (void)setImage:(UIImage *)image
+- (void)setImage:(RCTPlatformImage *)image
 {
   CALayer *layer = [self layer];
   

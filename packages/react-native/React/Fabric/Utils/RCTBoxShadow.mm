@@ -281,7 +281,7 @@ static void renderInsetShadows(
   CGContextRestoreGState(context);
 }
 
-UIImage *RCTGetBoxShadowImage(
+RCTPlatformImage *RCTGetBoxShadowImage( // [macOS]
     const std::vector<BoxShadow> &shadows,
     RCTCornerRadii cornerRadii,
     UIEdgeInsets edgeInsets,
@@ -293,7 +293,7 @@ UIImage *RCTGetBoxShadowImage(
   RCTUIGraphicsImageRenderer *const renderer = [[RCTUIGraphicsImageRenderer alloc] initWithSize:boundingRect.size
                                                                                    format:rendererFormat];
   // macOS]
-  UIImage *const boxShadowImage =
+  RCTPlatformImage *const boxShadowImage = // [macOS]
       [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
         auto [outsetShadows, insetShadows] = splitBoxShadowsByInset(shadows);
         const CGContextRef context = rendererContext.CGContext;

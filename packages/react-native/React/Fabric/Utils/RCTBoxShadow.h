@@ -12,7 +12,7 @@
 #import <React/RCTUIKit.h>
 #import <react/renderer/graphics/BoxShadow.h>
 
-RCT_EXTERN UIImage *RCTGetBoxShadowImage(
+RCT_EXTERN RCTPlatformImage *RCTGetBoxShadowImage( // [macOS]
     const std::vector<facebook::react::BoxShadow> &shadows,
     RCTCornerRadii cornerRadii,
     UIEdgeInsets edgeInsets,

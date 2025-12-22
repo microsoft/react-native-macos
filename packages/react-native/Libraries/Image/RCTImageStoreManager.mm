@@ -108,7 +108,7 @@ RCT_EXPORT_MODULE()
   });
 }
 
-- (void)storeImage:(UIImage *)image withBlock:(void (^)(NSString *imageTag))block
+- (void)storeImage:(RCTPlatformImage *)image withBlock:(void (^)(NSString *imageTag))block // [macOS]
 {
   RCTAssertParam(block);
   dispatch_async([self _getAsyncQueue], ^{
@@ -236,7 +236,7 @@ RCT_EXPORT_METHOD(addImageFromBase64
 
 @implementation RCTImageStoreManager (Deprecated)
 
-- (NSString *)storeImage:(UIImage *)image
+- (NSString *)storeImage:(RCTPlatformImage *)image // [macOS]
 {
   RCTAssertMainQueue();
   RCTLogWarn(
@@ -248,7 +248,7 @@ RCT_EXPORT_METHOD(addImageFromBase64
   return imageTag;
 }
 
-- (UIImage *)imageForTag:(NSString *)imageTag
+- (RCTPlatformImage *)imageForTag:(NSString *)imageTag // [macOS]
 {
   RCTAssertMainQueue();
   RCTLogWarn(
@@ -260,7 +260,7 @@ RCT_EXPORT_METHOD(addImageFromBase64
   return UIImageWithData(imageData); // [macOS]
 }
 
-- (void)getImageForTag:(NSString *)imageTag withBlock:(void (^)(UIImage *image))block
+- (void)getImageForTag:(NSString *)imageTag withBlock:(void (^)(RCTPlatformImage *image))block // [macOS]
 {
   RCTAssertParam(block);
   dispatch_async([self _getAsyncQueue], ^{

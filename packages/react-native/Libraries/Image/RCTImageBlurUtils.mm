@@ -10,7 +10,7 @@
 #import <React/RCTUIKit.h> // [macOS]
 #import <React/RCTUtils.h> // [macOS]
 
-UIImage *RCTBlurredImageWithRadius(UIImage *inputImage, CGFloat radius)
+RCTPlatformImage *RCTBlurredImageWithRadius(RCTPlatformImage *inputImage, CGFloat radius) // [macOS]
 {
   CGImageRef imageRef = UIImageGetCGImageRef(inputImage); // [macOS]
   CGFloat imageScale = UIImageGetScale(inputImage); // [macOS]

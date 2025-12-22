@@ -186,7 +186,7 @@ typedef NSArray UIColorArray __deprecated_msg("Use NSArray<UIColor *>");
  * If you need to pass image references, try to use `RCTImageSource` and then
  * `RCTImageLoader` instead of converting directly to a UIImage.
  */
-+ (UIImage *)UIImage:(id)json;
++ (RCTPlatformImage *)UIImage:(id)json; // [macOS]
 + (CGImageRef)CGImage:(id)json CF_RETURNS_NOT_RETAINED;
 
 @end

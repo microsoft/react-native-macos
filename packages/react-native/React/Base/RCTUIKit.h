@@ -59,6 +59,8 @@ UIKIT_STATIC_INLINE void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath
 #define RCTPlatformView UIView
 #define RCTUIView UIView
 #define RCTUIScrollView UIScrollView
+#define RCTPlatformImage UIImage
+
 
 UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
@@ -113,6 +115,8 @@ NS_ASSUME_NONNULL_END
 #import <AppKit/AppKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+#define RCTPlatformImage NSImage
 
 //
 // semantically equivalent constants
@@ -330,8 +334,6 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 #define UIApplication NSApplication
 
 // UIImage
-@compatibility_alias UIImage NSImage;
-
 typedef NS_ENUM(NSInteger, UIImageRenderingMode) {
     UIImageRenderingModeAlwaysOriginal,
     UIImageRenderingModeAlwaysTemplate,
@@ -344,12 +346,12 @@ CGFloat UIImageGetScale(NSImage *image);
 
 CGImageRef UIImageGetCGImageRef(NSImage *image);
 
-NS_INLINE UIImage *UIImageWithContentsOfFile(NSString *filePath)
+NS_INLINE NSImage *UIImageWithContentsOfFile(NSString *filePath)
 {
   return [[NSImage alloc] initWithContentsOfFile:filePath];
 }
 
-NS_INLINE UIImage *UIImageWithData(NSData *imageData)
+NS_INLINE NSImage *UIImageWithData(NSData *imageData)
 {
   return [[NSImage alloc] initWithData:imageData];
 }

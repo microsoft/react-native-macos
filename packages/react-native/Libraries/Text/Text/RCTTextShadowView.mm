@@ -169,10 +169,10 @@
 
 - (NSAttributedString *)attributedTextWithMeasuredAttachmentsThatFitSize:(CGSize)size
 {
-  static UIImage *placeholderImage;
+  static RCTPlatformImage *placeholderImage; // [macOS]
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    placeholderImage = [UIImage new];
+    placeholderImage = [RCTPlatformImage new]; // [macOS]
   });
 
   NSMutableAttributedString *attributedText =
