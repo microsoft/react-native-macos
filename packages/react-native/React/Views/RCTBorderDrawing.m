@@ -191,7 +191,7 @@ RCTMakeUIGraphicsImageRenderer(CGSize size, RCTUIColor *backgroundColor, BOOL ha
   return renderer;
 }
 
-static RCTPlatformImage *RCTGetSolidBorderImage( // [macOS]
+static RCTUIImage *RCTGetSolidBorderImage( // [macOS]
     RCTCornerRadii cornerRadii,
     CGSize viewSize,
     UIEdgeInsets borderInsets,
@@ -231,7 +231,7 @@ static RCTPlatformImage *RCTGetSolidBorderImage( // [macOS]
 
   RCTUIGraphicsImageRenderer *const imageRenderer =
       RCTMakeUIGraphicsImageRenderer(size, backgroundColor, hasCornerRadii, drawToEdge);
-  RCTPlatformImage *image = [imageRenderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
+  RCTUIImage *image = [imageRenderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
     const CGContextRef context = rendererContext.CGContext;
     const CGRect rect = {.size = size};
     CGPathRef path = RCTPathCreateOuterOutline(drawToEdge, rect, cornerRadii);
@@ -461,7 +461,7 @@ static RCTPlatformImage *RCTGetSolidBorderImage( // [macOS]
 // of gradients _along_ a path (NB: clipping a path and drawing a linear gradient
 // is _not_ equivalent).
 
-static RCTPlatformImage *RCTGetDashedOrDottedBorderImage( // [macOS]
+static RCTUIImage *RCTGetDashedOrDottedBorderImage( // [macOS]
     RCTBorderStyle borderStyle,
     RCTCornerRadii cornerRadii,
     CGSize viewSize,
@@ -525,7 +525,7 @@ static RCTPlatformImage *RCTGetDashedOrDottedBorderImage( // [macOS]
   }];
 }
 
-RCTPlatformImage *RCTGetBorderImage( // [macOS]
+RCTUIImage *RCTGetBorderImage( // [macOS]
     RCTBorderStyle borderStyle,
     CGSize viewSize,
     RCTCornerRadii cornerRadii,

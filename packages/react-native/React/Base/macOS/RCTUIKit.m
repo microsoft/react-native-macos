@@ -76,8 +76,43 @@ CGFloat UIImageGetScale(NSImage *image)
   return 1.0;
 }
 
+// RCTUIImage - NSImage subclass with cached CGImage
+
+@implementation RCTUIImage {
+  CGImageRef _cachedCGImage;
+}
+
+- (void)dealloc {
+  if (_cachedCGImage != NULL) {
+    CGImageRelease(_cachedCGImage);
+  }
+}
+
+- (CGImageRef)CGImage {
+  if (_cachedCGImage == NULL) {
+    CGImageRef cgImage = [self CGImageForProposedRect:NULL context:NULL hints:NULL];
+    if (cgImage != NULL) {
+      _cachedCGImage = CGImageRetain(cgImage);
+    }
+  }
+  return _cachedCGImage;
+}
+
+- (CGFloat)scale {
+  return UIImageGetScale(self);
+}
+
+@end
+
 CGImageRef __nullable UIImageGetCGImageRef(NSImage *image)
 {
+  // If it's an RCTUIImage, use the cached CGImage property
+  if ([image isKindOfClass:[RCTUIImage class]]) {
+    return ((RCTUIImage *)image).CGImage;
+  }
+  
+  // Otherwise, fall back to the standard NSImage method
+  // Note: This returns an autoreleased CGImageRef
   return [image CGImageForProposedRect:NULL context:NULL hints:NULL];
 }
 
@@ -825,11 +860,10 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     return self;
 }
 
-- (nonnull NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions {
-
-    NSImage *image = [NSImage imageWithSize:_size
-                                    flipped:YES
-                             drawingHandler:^BOOL(NSRect dstRect) {
+- (nonnull RCTUIImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions {
+    RCTUIImage *image = [RCTUIImage imageWithSize:_size
+                                           flipped:YES
+                                    drawingHandler:^BOOL(NSRect dstRect) {
         
         RCTUIGraphicsImageRendererContext *context = [NSGraphicsContext currentContext];
         if (self->_format.opaque) {
@@ -838,6 +872,12 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
         actions(context);
         return YES;
     }];
+
+    // Calling these in succession forces the image to render its contents immediately,
+    // rather than deferring until later.
+    [image lockFocus];
+    [image unlockFocus];
+    
     return image;
 }
 
