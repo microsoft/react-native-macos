@@ -35,13 +35,13 @@ static NSUInteger RCTDeviceFreeMemory(void)
 @interface RCTUIImageViewAnimated () <CALayerDelegate, RCTDisplayRefreshable>
 
 @property (nonatomic, assign) NSUInteger maxBufferSize;
-@property (nonatomic, strong, readwrite) UIImage *currentFrame;
+@property (nonatomic, strong, readwrite) RCTPlatformImage *currentFrame; // [macOS]
 @property (nonatomic, assign, readwrite) NSUInteger currentFrameIndex;
 @property (nonatomic, assign, readwrite) NSUInteger currentLoopCount;
 @property (nonatomic, assign) NSUInteger totalFrameCount;
 @property (nonatomic, assign) NSUInteger totalLoopCount;
-@property (nonatomic, strong) UIImage<RCTAnimatedImage> *animatedImage;
-@property (nonatomic, strong) NSMutableDictionary<NSNumber *, UIImage *> *frameBuffer;
+@property (nonatomic, strong) RCTPlatformImage<RCTAnimatedImage> *animatedImage; // [macOS]
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, RCTPlatformImage *> *frameBuffer; // [macOS]
 @property (nonatomic, assign) NSTimeInterval currentTime;
 @property (nonatomic, assign) BOOL bufferMiss;
 @property (nonatomic, assign) NSUInteger maxBufferCount;
@@ -90,7 +90,7 @@ static NSUInteger RCTDeviceFreeMemory(void)
   dispatch_semaphore_signal(self.lock);
 }
 
-- (void)setImage:(UIImage *)image
+- (void)setImage:(RCTPlatformImage *)image // [macOS]
 {
   if (self.image == image) {
     return;
@@ -150,7 +150,7 @@ static NSUInteger RCTDeviceFreeMemory(void)
   return _fetchQueue;
 }
 
-- (NSMutableDictionary<NSNumber *, UIImage *> *)frameBuffer
+- (NSMutableDictionary<NSNumber *, RCTPlatformImage *> *)frameBuffer // [macOS]
 {
   if (!_frameBuffer) {
     _frameBuffer = [NSMutableDictionary dictionary];

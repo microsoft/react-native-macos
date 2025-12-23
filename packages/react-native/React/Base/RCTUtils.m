@@ -874,7 +874,7 @@ static NSBundle *bundleForPath(NSString *key)
   return bundleCache[key];
 }
 
-UIImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL)
+RCTPlatformImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL) // [macOS]
 {
   if (![imageURL.scheme isEqualToString:@"file"]) {
     // We only want to check for local file assets
@@ -889,7 +889,7 @@ UIImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL)
 }
 
 #if TARGET_OS_OSX // [macOS
-static NSCache<NSURL *, UIImage *> *RCTLocalImageCache(void)
+static NSCache<NSURL *, RCTPlatformImage *> *RCTLocalImageCache(void) // [macOS]
 {
   static NSCache *imageCache;
   static dispatch_once_t onceToken;
@@ -901,13 +901,13 @@ static NSCache<NSURL *, UIImage *> *RCTLocalImageCache(void)
 }
 #endif // macOS]
 
-UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
+RCTPlatformImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL) // [macOS]
 {
   NSString *imageName = RCTBundlePathForURL(imageURL);
 #if TARGET_OS_OSX // [macOS
   NSURL *bundleImageURL = nil;
 
-  UIImage *cachedImage = [RCTLocalImageCache() objectForKey:imageURL];
+  RCTPlatformImage *cachedImage = [RCTLocalImageCache() objectForKey:imageURL]; // [macOS]
   if (cachedImage) {
     return cachedImage;
   }
@@ -939,7 +939,7 @@ UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
   imageName = [imageName stringByDeletingPathExtension];
 #endif // macOS]
 
-  UIImage *image = nil;
+  RCTPlatformImage *image = nil; // [macOS]
   if (imageName) {
     if (bundle) {
 #if !TARGET_OS_OSX // [macOS]
@@ -948,7 +948,7 @@ UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL)
       image = (bundleImageURL == nil) ? [bundle imageForResource:imageName] : [[NSImage alloc] initWithContentsOfURL:bundleImageURL];
 #endif // macOS]
     } else {
-      image = [UIImage imageNamed:imageName];
+      image = [RCTPlatformImage imageNamed:imageName]; // [macOS]
     }
   }
 

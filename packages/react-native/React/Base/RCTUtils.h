@@ -162,12 +162,12 @@ RCT_EXTERN BOOL RCTIsLocalAssetURL(NSURL *__nullable imageURL);
 
 // Returns an UIImage for a local image asset. Returns nil if the URL
 // does not correspond to a local asset.
-RCT_EXTERN UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL);
+RCT_EXTERN RCTPlatformImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL); // [macOS]
 
 // Only used in case when RCTImageFromLocalAssetURL fails to get an image
 // This method basically checks for the image in the bundle location, instead
 // of the CodePush location
-RCT_EXTERN UIImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL);
+RCT_EXTERN RCTPlatformImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL); // [macOS]
 
 // Creates a new, unique temporary file path with the specified extension
 RCT_EXTERN NSString *__nullable RCTTempFilePath(NSString *__nullable extension, NSError **error);

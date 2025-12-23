@@ -127,7 +127,7 @@ static NSDictionary *onLoadParamsForSource(RCTImageSource *source)
   // Whether the latest change of props requires the image to be reloaded
   BOOL _needsReload;
 
-  UIImage *_image; // [macOS]
+  RCTPlatformImage *_image; // [macOS]
 
   RCTUIImageViewAnimated *_imageView;
 
@@ -175,7 +175,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
 
-- (void)updateWithImage:(UIImage *)image
+- (void)updateWithImage:(RCTPlatformImage *)image // [macOS]
 {
   if (!image) {
     _imageView.image = nil;
@@ -223,7 +223,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
   _imageView.image = image;
 }
 
-- (void)setImage:(UIImage *)image
+- (void)setImage:(RCTPlatformImage *)image // [macOS]
 {
   image = image ?: _defaultImage;
   if (image != self.image) {
@@ -232,7 +232,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
   }
 }
 
-- (UIImage *)image
+- (RCTPlatformImage *)image // [macOS]
 {
   return _image ?: _imageView.image; // [macOS]
 }
@@ -421,7 +421,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
     }
 
     __weak RCTImageView *weakSelf = self;
-    RCTImageLoaderPartialLoadBlock partialLoadHandler = ^(UIImage *image) {
+    RCTImageLoaderPartialLoadBlock partialLoadHandler = ^(RCTPlatformImage *image) { // [macOS]
       [weakSelf imageLoaderLoadedImage:image error:nil forImageSource:source partial:YES];
     };
 
@@ -437,7 +437,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
       imageScale = source.scale;
     }
 
-    RCTImageLoaderCompletionBlockWithMetadata completionHandler = ^(NSError *error, UIImage *loadedImage, id metadata) {
+    RCTImageLoaderCompletionBlockWithMetadata completionHandler = ^(NSError *error, RCTPlatformImage *loadedImage, id metadata) { // [macOS]
       [weakSelf imageLoaderLoadedImage:loadedImage error:error forImageSource:source partial:NO];
     };
 
@@ -464,7 +464,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
   }
 }
 
-- (void)imageLoaderLoadedImage:(UIImage *)loadedImage
+- (void)imageLoaderLoadedImage:(RCTPlatformImage *)loadedImage // [macOS]
                          error:(NSError *)error
                 forImageSource:(RCTImageSource *)source
                        partial:(BOOL)isPartialLoad
@@ -494,7 +494,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
   }
 
   __weak RCTImageView *weakSelf = self;
-  void (^setImageBlock)(UIImage *) = ^(UIImage *image) {
+  void (^setImageBlock)(RCTPlatformImage *) = ^(RCTPlatformImage *image) { // [macOS]
     RCTImageView *strongSelf = weakSelf;
     if (!strongSelf) {
       return;
@@ -525,7 +525,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
     // Blur on a background thread to avoid blocking interaction
     CGFloat blurRadius = self.blurRadius;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-      UIImage *blurredImage = RCTBlurredImageWithRadius(loadedImage, blurRadius);
+      RCTPlatformImage *blurredImage = RCTBlurredImageWithRadius(loadedImage, blurRadius); // [macOS]
       RCTExecuteOnMainQueue(^{
         setImageBlock(blurredImage);
       });

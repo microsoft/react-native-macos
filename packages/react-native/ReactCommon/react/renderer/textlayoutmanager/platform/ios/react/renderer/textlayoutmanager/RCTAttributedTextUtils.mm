@@ -382,7 +382,7 @@ void RCTApplyBaselineOffset(NSMutableAttributedString *attributedText)
 
 static NSMutableAttributedString *RCTNSAttributedStringFragmentFromFragment(
     const AttributedString::Fragment &fragment,
-    UIImage *placeholderImage)
+    RCTPlatformImage *placeholderImage) // [macOS]
 {
   if (fragment.isAttachment()) {
     auto layoutMetrics = fragment.parentShadowView.layoutMetrics;
@@ -411,7 +411,7 @@ static NSMutableAttributedString *RCTNSAttributedStringFragmentFromFragment(
 
 static NSMutableAttributedString *RCTNSAttributedStringFragmentWithAttributesFromFragment(
     const AttributedString::Fragment &fragment,
-    UIImage *placeholderImage)
+    RCTPlatformImage *placeholderImage) // [macOS]
 {
   auto nsAttributedStringFragment = RCTNSAttributedStringFragmentFromFragment(fragment, placeholderImage);
 
@@ -433,10 +433,10 @@ static NSMutableAttributedString *RCTNSAttributedStringFragmentWithAttributesFro
 
 NSAttributedString *RCTNSAttributedStringFromAttributedString(const AttributedString &attributedString)
 {
-  static UIImage *placeholderImage;
+  static RCTPlatformImage *placeholderImage; // [macOS]
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    placeholderImage = [UIImage new];
+    placeholderImage = [RCTPlatformImage new]; // [macOS]
   });
 
   NSMutableAttributedString *nsAttributedString = [NSMutableAttributedString new];

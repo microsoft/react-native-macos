@@ -1713,7 +1713,7 @@ RCT_ARRAY_CONVERTER(RCTHandledKey);
 @implementation RCTConvert (Deprecated)
 
 /* This method is only used when loading images synchronously, e.g. for tabbar icons */
-+ (UIImage *)UIImage:(id)json
++ (RCTPlatformImage *)UIImage:(id)json // [macOS]
 {
   if (!json) {
     return nil;
@@ -1724,7 +1724,7 @@ RCT_ARRAY_CONVERTER(RCTHandledKey);
     return nil;
   }
 
-  __block UIImage *image;
+  __block RCTPlatformImage *image; // [macOS]
   if (!RCTIsMainQueue()) {
     // It seems that none of the UIImage loading methods can be guaranteed
     // thread safe, so we'll pick the lesser of two evils here and block rather

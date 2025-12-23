@@ -20,7 +20,7 @@ using namespace facebook::react;
 {
   RCTUIGraphicsImageRenderer *renderer = [[RCTUIGraphicsImageRenderer alloc] initWithSize:size]; // [macOS]
   const auto &direction = gradient.direction;
-  UIImage *gradientImage = [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
+  RCTPlatformImage *gradientImage = [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull rendererContext) { // [macOS]
     CGPoint startPoint;
     CGPoint endPoint;
 

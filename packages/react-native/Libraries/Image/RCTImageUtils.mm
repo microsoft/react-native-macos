@@ -260,7 +260,7 @@ BOOL RCTUpscalingRequired(
   }
 }
 
-UIImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSize, CGFloat destScale, RCTResizeMode resizeMode)
+RCTPlatformImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSize, CGFloat destScale, RCTResizeMode resizeMode) // [macOS]
 {
   CGImageSourceRef sourceRef = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
   if (!sourceRef) {
@@ -338,7 +338,7 @@ NSDictionary<NSString *, id> *__nullable RCTGetImageMetadata(NSData *data)
   return (__bridge_transfer id)imageProperties;
 }
 
-NSData *__nullable RCTGetImageData(UIImage *image, float quality)
+NSData *__nullable RCTGetImageData(RCTPlatformImage *image, float quality) // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
   CGImageRef cgImage = image.CGImage;
@@ -377,7 +377,7 @@ NSData *__nullable RCTGetImageData(UIImage *image, float quality)
   return (__bridge_transfer NSData *)imageData;
 }
 
-UIImage *__nullable RCTTransformImage(UIImage *image, CGSize destSize, CGFloat destScale, CGAffineTransform transform)
+RCTPlatformImage *__nullable RCTTransformImage(RCTPlatformImage *image, CGSize destSize, CGFloat destScale, CGAffineTransform transform) // [macOS]
 {
   if (destSize.width <= 0 | destSize.height <= 0 || destScale <= 0) {
     return nil;
@@ -417,7 +417,7 @@ BOOL RCTUIImageHasAlpha(UIImage *image)
   return RCTImageHasAlpha(image.CGImage);
 }
 #else // [macOS
-BOOL RCTUIImageHasAlpha(UIImage *image)
+BOOL RCTUIImageHasAlpha(NSImage *image)
 {
   for (NSImageRep *imageRep in image.representations) {
     if (imageRep.hasAlpha) {

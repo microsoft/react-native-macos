@@ -839,7 +839,7 @@ static void RCTAddContourEffectToLayer(
     const UIEdgeInsets &contourInsets,
     const RCTBorderStyle &contourStyle)
 {
-  UIImage *image = RCTGetBorderImage(
+  RCTPlatformImage *image = RCTGetBorderImage( // [macOS]
       contourStyle, layer.bounds.size, cornerRadii, contourInsets, contourColors, [RCTUIColor clearColor], NO); // [macOS]
 
   if (image == nil) {
@@ -1292,7 +1292,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     _boxShadowLayer.zPosition = _borderLayer.zPosition;
     _boxShadowLayer.frame = RCTGetBoundingRect(_props->boxShadow, self.layer.bounds.size);
 
-    UIImage *boxShadowImage = RCTGetBoxShadowImage(
+    RCTPlatformImage *boxShadowImage = RCTGetBoxShadowImage( // [macOS]
         _props->boxShadow,
         RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
         RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths),

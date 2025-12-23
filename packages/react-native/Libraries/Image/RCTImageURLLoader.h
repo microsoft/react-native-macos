@@ -13,13 +13,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef void (^RCTImageLoaderProgressBlock)(int64_t progress, int64_t total);
-typedef void (^RCTImageLoaderPartialLoadBlock)(UIImage *image);
-typedef void (^RCTImageLoaderCompletionBlock)(NSError *_Nullable error, UIImage *_Nullable image);
+typedef void (^RCTImageLoaderPartialLoadBlock)(RCTPlatformImage *image); // [macOS]
+typedef void (^RCTImageLoaderCompletionBlock)(NSError *_Nullable error, RCTPlatformImage *_Nullable image); // [macOS]
 // Metadata is passed as a id in an additional parameter because there are forks of RN without this parameter,
 // and the complexity of RCTImageLoader would make using protocols here difficult to typecheck.
 typedef void (^RCTImageLoaderCompletionBlockWithMetadata)(
     NSError *_Nullable error,
-    UIImage *_Nullable image,
+    RCTPlatformImage *_Nullable image, // [macOS]
     id _Nullable metadata);
 typedef dispatch_block_t RCTImageLoaderCancellationBlock;
 
