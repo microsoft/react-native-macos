@@ -1045,8 +1045,15 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 
 #if TARGET_OS_OSX // [macOS
-  // clipsToBounds is stubbed out on macOS because it's not part of NSView
-  layer.masksToBounds = self.clipsToBounds;
+  // On macOS, clipsToBounds doesn't automatically set layer.masksToBounds like iOS does.
+  // When _useCustomContainerView is true (boxShadow + overflow:hidden), the container
+  // view handles clipping children while the main layer stays unclipped for the shadow.
+  // The container view's masksToBounds is set in currentContainerView getter.
+  if (_useCustomContainerView) {
+    layer.masksToBounds = NO;
+  } else {
+    layer.masksToBounds = _props->getClipsContentToBounds();
+  }
 #endif // macOS]
 
   const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
