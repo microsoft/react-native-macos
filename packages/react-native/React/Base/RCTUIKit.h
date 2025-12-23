@@ -60,7 +60,7 @@ UIKIT_STATIC_INLINE void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath
 #define RCTUIView UIView
 #define RCTUIScrollView UIScrollView
 #define RCTPlatformImage UIImage
-
+#define RCTUIImage UIImage
 
 UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
@@ -268,7 +268,6 @@ extern "C" {
 
 // UIGraphics.h
 CGContextRef UIGraphicsGetCurrentContext(void);
-CGImageRef UIImageGetCGImageRef(NSImage *image);
 
 #ifdef __cplusplus
 }
@@ -334,17 +333,29 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 #define UIApplication NSApplication
 
 // UIImage
+// RCTUIImage is a subclass of NSImage that caches its CGImage representation.
+// This is needed because NSImage's CGImageForProposedRect: returns a new autoreleased
+// CGImage each time, which causes issues when used with CALayer.contents.
+@interface RCTUIImage : NSImage
+@property (nonatomic, readonly, nullable) CGImageRef CGImage;
+@property (nonatomic, readonly) CGFloat scale;
+@end
+
 typedef NS_ENUM(NSInteger, UIImageRenderingMode) {
     UIImageRenderingModeAlwaysOriginal,
     UIImageRenderingModeAlwaysTemplate,
 };
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
-CGFloat UIImageGetScale(NSImage *image);
 
+CGFloat UIImageGetScale(NSImage *image);
 CGImageRef UIImageGetCGImageRef(NSImage *image);
+
+#ifdef __cplusplus
+}
+#endif
 
 NS_INLINE NSImage *UIImageWithContentsOfFile(NSString *filePath)
 {
@@ -626,7 +637,7 @@ typedef void (^RCTUIGraphicsImageDrawingActions)(RCTUIGraphicsImageRendererConte
 
 - (instancetype)initWithSize:(CGSize)size;
 - (instancetype)initWithSize:(CGSize)size format:(RCTUIGraphicsImageRendererFormat *)format;
-- (NSImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions;
+- (RCTUIImage *)imageWithActions:(NS_NOESCAPE RCTUIGraphicsImageDrawingActions)actions;
 
 @end
 NS_ASSUME_NONNULL_END
