@@ -83,6 +83,7 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
         cache: ${{ inputs.cache-npm-dependencies }}
+        registry-url: https://registry.npmjs.org
     - name: Set up Xcode
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos' }}
       run: |
