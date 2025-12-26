@@ -9,6 +9,7 @@
 
 @implementation RCTViewAccessibilityElement
 
+#if !TARGET_OS_OSX // [macOS]
 - (instancetype)initWithView:(RCTViewComponentView *)view
 {
   if (self = [super initWithAccessibilityContainer:view]) {
@@ -79,5 +80,6 @@
 {
   return _view.accessibilityRespondsToUserInteraction;
 }
+#endif // [macOS]
 
 @end

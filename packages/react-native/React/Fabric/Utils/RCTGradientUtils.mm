@@ -233,7 +233,7 @@ static std::vector<ProcessedColorStop> processColorTransitionHints(const std::ve
     auto leftColor = RCTUIColorFromSharedColor(leftSharedColor);
     auto rightColor = RCTUIColorFromSharedColor(rightSharedColor);
     NSArray<NSNumber *> *inputRange = @[ @0.0, @1.0 ];
-    NSArray<UIColor *> *outputRange = @[ leftColor, rightColor ];
+    NSArray<RCTUIColor *> *outputRange = @[ leftColor, rightColor ]; // [macOS]
 
     for (auto &newStop : newStops) {
       auto pointRelativeOffset = (newStop.position.value() - offsetLeft) / totalDist;
@@ -384,9 +384,9 @@ static std::vector<ProcessedColorStop> processColorTransitionHints(const std::ve
   // To fix this, we detect when a color stop is transparent black and replace it with
   // a transparent version of the *previous* color stop. This creates a smooth fade-out effect
   // by only interpolating the alpha channel, matching web and Android behavior.
-  UIColor *lastColor = nil;
+  RCTUIColor *lastColor = nil; // [macOS]
   for (const auto &colorStop : colorStops) {
-    UIColor *currentColor = RCTUIColorFromSharedColor(colorStop.color);
+    RCTUIColor *currentColor = RCTUIColorFromSharedColor(colorStop.color); // [macOS]
 
     CGFloat red = 0.0;
     CGFloat green = 0.0;

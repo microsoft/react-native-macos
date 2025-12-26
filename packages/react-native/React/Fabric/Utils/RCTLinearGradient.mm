@@ -7,6 +7,7 @@
 
 #import "RCTLinearGradient.h"
 
+#import <QuartzCore/QuartzCore.h> // [macOS]
 #import <React/RCTAnimationUtils.h>
 #import <React/RCTConversions.h>
 #include <react/renderer/graphics/ValueUnit.h>

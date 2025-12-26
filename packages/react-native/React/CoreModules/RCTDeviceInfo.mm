@@ -34,7 +34,7 @@ using namespace facebook::react;
   std::atomic<BOOL> _invalidated;
   NSDictionary *_constants;
 
-  __weak UIWindow *_applicationWindow;
+  __weak RCTPlatformWindow *_applicationWindow; // [macOS]
 }
 
 static NSString *const kFrameKeyPath = @"frame";
@@ -198,7 +198,7 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
 #endif // macOS]
 
   // We fallback to screen size if a key window is not found.
-  CGSize windowSize = mainWindow ? mainWindow.bounds.size : screenSize;
+  CGSize windowSize = mainWindow ? mainWindow.frame.size : screenSize; //[macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 #if !TARGET_OS_VISION // [visionOS]

@@ -47,11 +47,16 @@ static NSString *kEscapeKeyCode = @"\x1B";
 
 using namespace facebook::react;
 
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTTextInputComponentView () <
     RCTBackedTextInputDelegate,
     RCTTextInputViewProtocol,
     UIDropInteractionDelegate>
 @end
+#else // [macOS
+@interface RCTTextInputComponentView () <RCTBackedTextInputDelegate, RCTTextInputViewProtocol>
+@end
+#endif // macOS]
 
 static NSSet<NSNumber *> *returnKeyTypesSet;
 
@@ -164,6 +169,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [self _restoreTextSelection];
 }
 
+#if !TARGET_OS_OSX // [macOS]
 // TODO: replace with registerForTraitChanges once iOS 17.0 is the lowest supported version
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
 {
@@ -177,6 +183,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
   }
 }
+#endif // [macOS] 
 
 - (void)reactUpdateResponderOffsetForScrollView:(RCTScrollViewComponentView *)scrollView
 {
@@ -641,7 +648,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       && ![keyEvent[@"shiftKey"] boolValue]
       && ![keyEvent[@"ctrlKey"] boolValue]
       && ![keyEvent[@"metaKey"] boolValue]
-      && ![keyEvent[@"functionKey"] boolValue]; // Default clearTextOnSubmit key 
+      && ![keyEvent[@"functionKey"] boolValue]; // Default clearTextOnSubmit key
   } else {
     NSString *keyValue = keyEvent[@"key"];
     const char *keyCString = [keyValue UTF8String];
@@ -663,7 +670,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       });
     }
   }
-  
+
   if (shouldSubmit) {
     if (_eventEmitter) {
       auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
@@ -686,7 +693,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
       .eventCount = static_cast<int>(_mostRecentEventCount),
     });
   }
-  
+
   [self textInputDidEndEditing];
 }
 
@@ -728,7 +735,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   NSPasteboardType fileType = [pasteboard availableTypeFromArray:@[NSFilenamesPboardType, NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
   NSArray<NSPasteboardType>* pastedTypes = ((RCTUITextView*) _backedTextInputView).readablePasteboardTypes;
-      
+
   // If there's a fileType that is of interest, notify JS. Also blocks notifying JS if it's a text paste
   if (_eventEmitter && fileType != nil && [pastedTypes containsObject:fileType]) {
     auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
@@ -1160,7 +1167,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView = secureTextEntry ? [RCTUISecureTextField new] : [RCTUITextField new];
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
-  
+
   // Copy the text field specific properties if we came from a single line input before the switch
   if ([_backedTextInputView isKindOfClass:[RCTUITextField class]]) {
     RCTUITextField *previousTextField = (RCTUITextField *)_backedTextInputView;
