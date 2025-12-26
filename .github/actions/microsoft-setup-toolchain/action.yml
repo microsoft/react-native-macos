@@ -46,6 +46,7 @@ runs:
         
         echo "Installing cmake 3.31.6 from custom tap..."
         brew install "$tap_name/cmake"
+        cmake --version
       shell: bash
     - name: Set up Ccache
       id: setup-ccache
