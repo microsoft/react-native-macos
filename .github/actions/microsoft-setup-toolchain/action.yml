@@ -18,7 +18,7 @@ inputs:
     default: "22"
   xcode-developer-dir:
     description: Set the path for the active Xcode developer directory
-    default: "/Applications/Xcode_16.4.0.app"
+    default: "/Applications/Xcode_26.1.app"
 runs:
   using: composite
   steps:
@@ -46,6 +46,7 @@ runs:
         
         echo "Installing cmake 3.31.6 from custom tap..."
         brew install "$tap_name/cmake"
+        cmake --version
       shell: bash
     - name: Set up Ccache
       id: setup-ccache

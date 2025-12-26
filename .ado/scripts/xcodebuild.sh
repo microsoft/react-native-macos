@@ -43,7 +43,8 @@ if ! command -v xcbeautify 1> /dev/null; then
   brew install xcbeautify
 fi
 
-eval "$build_cmd" | xcbeautify --report junit
+cmake --version
+eval "$build_cmd" # | xcbeautify --report junit
 
 if [[ "$USE_CCACHE" == "1" ]]; then
   ccache --show-stats --verbose
