@@ -39,8 +39,10 @@ NSString *__nullable RCTHomePathForURL(NSURL *__nullable URL);
 // Determines if a given image URL refers to a image in Home directory (~)
 BOOL RCTIsHomeAssetURL(NSURL *__nullable imageURL);
 
+#if !TARGET_OS_OSX // [macOS]
 // Returns the current device's orientation
 UIDeviceOrientation RCTDeviceOrientation(void);
+#endif // [macOS]
 
 // Whether the New Architecture is enabled or not
 BOOL RCTIsNewArchEnabled(void)
@@ -362,6 +364,8 @@ static void RCTUnsafeExecuteOnMainQueueOnceSync(dispatch_once_t *onceToken, disp
 
   dispatch_sync(dispatch_get_main_queue(), executeOnce);
 }
+
+#if !TARGET_OS_OSX // [macOS]
 
 CGFloat RCTScreenScale(void)
 {

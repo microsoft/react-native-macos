@@ -7,7 +7,7 @@
 
 #import "RCTViewComponentView.h"
 
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,7 +17,11 @@ NS_ASSUME_NONNULL_BEGIN
  * themselves in `accessibilityElements` without actually being an accessibility
  * element. If it were, then iOS would not call into `accessibilityElements`.
  */
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTViewAccessibilityElement : UIAccessibilityElement
+#else // [macOS
+@interface RCTViewAccessibilityElement : NSAccessibilityElement
+#endif // macOS]
 
 @property (readonly) RCTViewComponentView *view;
 

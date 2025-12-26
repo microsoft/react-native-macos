@@ -540,10 +540,12 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     }
   }
 
+#if !TARGET_OS_OSX // [macOS]
   if (oldViewProps.accessibilityRespondsToUserInteraction != newViewProps.accessibilityRespondsToUserInteraction) {
     self.accessibilityElement.accessibilityRespondsToUserInteraction =
         newViewProps.accessibilityRespondsToUserInteraction;
   }
+#endif // [macOS]
 
   // `testId`
   if (oldViewProps.testId != newViewProps.testId) {
@@ -1434,6 +1436,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   return self;
 }
 
+#if !TARGET_OS_OSX // [macOS
 - (NSArray<NSObject *> *)accessibilityElements
 {
   if ([_accessibilityOrderNativeIDs count] <= 0) {
@@ -1472,12 +1475,13 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
   return _accessibilityElements;
 }
+#endif // macOS]
 
-+ (void)collectAccessibilityElements:(UIView *)view
-                      intoDictionary:(NSMutableDictionary<NSString *, UIView *> *)dict
++ (void)collectAccessibilityElements:(RCTUIView *)view // [macOS]
+                      intoDictionary:(NSMutableDictionary<NSString *, RCTUIView *> *)dict // [macOS]
                            nativeIds:(NSSet<NSString *> *)nativeIds
 {
-  for (UIView *subview in view.subviews) {
+  for (RCTUIView *subview in view.subviews) { // [macOS]
     if ([subview isKindOfClass:[RCTViewComponentView class]] &&
         [nativeIds containsObject:((RCTViewComponentView *)subview).nativeId]) {
       [dict setObject:subview forKey:((RCTViewComponentView *)subview).nativeId];
@@ -1730,7 +1734,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
     const RCTCornerInsets cornerInsets =
         RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero);
-    CGPathRef path = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL);
+    CGPathRef path = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL, NO); // [macOS]
 
     CGContextAddPath(context, path);
     CGContextFillPath(context);

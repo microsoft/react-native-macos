@@ -11,5 +11,5 @@
 // [macOS]
 
 /* $FlowFixMe allow macOS to share iOS file */
-import {ReactDevToolsSettingsManager} from 'ReactDevToolsSettingsManager.ios';
+import * as ReactDevToolsSettingsManager from './ReactDevToolsSettingsManager.ios';
 module.exports = ReactDevToolsSettingsManager;

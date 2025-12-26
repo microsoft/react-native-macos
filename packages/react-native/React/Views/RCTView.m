@@ -1484,7 +1484,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   if ([self enableFocusRing]) {
     CGContextRef context = NSGraphicsContext.currentContext.CGContext;
     RCTCornerInsets cornerInsets = RCTGetCornerInsets(self.cornerRadii, NSEdgeInsetsZero);
-    CGPathRef path = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL);
+    CGPathRef path = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL, NO);
 
     CGContextAddPath(context, path);
     CGContextFillPath(context);

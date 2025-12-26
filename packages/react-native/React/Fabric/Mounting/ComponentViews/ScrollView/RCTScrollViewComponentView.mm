@@ -512,16 +512,20 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   }];
 }
 
-- (UIView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event
+- (RCTUIView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
 {
   // This is the same algorithm as in the RCTViewComponentView with the exception of
   // skipping the immediate child (_containerView) and checking grandchildren instead.
   // This prevents issues with touches outside of _containerView being ignored even
   // if they are within the bounds of the _containerView's children.
 
+#if !TARGET_OS_OSX // [macOS]
   if (!self.userInteractionEnabled || self.hidden || self.alpha < 0.01) {
-    return nil;
-  }
+#else // [macOS
+    if (!self.userInteractionEnabled || self.hidden) {
+#endif // macOS]
+      return nil;
+    }
 
   BOOL isPointInside = [self pointInside:point withEvent:event];
 
@@ -533,8 +537,8 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     return nil;
   }
 
-  for (UIView *subview in [_containerView.subviews reverseObjectEnumerator]) {
-    UIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event];
+  for (RCTUIView *subview in [_containerView.subviews reverseObjectEnumerator]) { // [macOS]
+    RCTUIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event]; // [macOS]
     if (hitView) {
       return hitView;
     }

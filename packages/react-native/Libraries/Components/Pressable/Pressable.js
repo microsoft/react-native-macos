@@ -317,8 +317,6 @@ function Pressable({
     onPressMove,
     onPressOut,
     // [macOS
-    onFocus,
-    onBlur,
     onKeyDown,
     onKeyUp,
     keyDownEvents,
@@ -428,8 +426,6 @@ function Pressable({
         }
       },
       // [macOS
-      onFocus,
-      onBlur,
       onKeyDown,
       onKeyUp,
       // macOS]
@@ -453,8 +449,6 @@ function Pressable({
       onPressMove,
       onPressOut,
       // [macOS
-      onFocus,
-      onBlur,
       onKeyDown,
       onKeyUp,
       // macOS]

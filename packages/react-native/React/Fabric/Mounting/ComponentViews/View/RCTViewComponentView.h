@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
            oldLayoutMetrics:(const facebook::react::LayoutMetrics &)oldLayoutMetrics NS_REQUIRES_SUPER;
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask NS_REQUIRES_SUPER;
 - (void)prepareForRecycle NS_REQUIRES_SUPER;
-- (UIView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event;
+- (RCTUIView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event; // [macOS]
 
 /*
  * This is the label that would be coopted by another element
