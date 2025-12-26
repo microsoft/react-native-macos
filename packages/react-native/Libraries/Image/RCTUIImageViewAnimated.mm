@@ -94,7 +94,8 @@ static NSUInteger RCTDeviceFreeMemory(void)
   if (image == thisImage) {
     return;
   }
-
+  
+#if !TARGET_OS_OSX // [macOS]
   [self stop];
   [self resetAnimatedImage];
 
@@ -128,6 +129,9 @@ static NSUInteger RCTDeviceFreeMemory(void)
   }
 
   super.image = image;
+#else // [macOS
+  [super setImage:image];
+#endif // macOS]
 }
 
 #pragma mark - Private

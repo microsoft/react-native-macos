@@ -36,7 +36,10 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   if (self = [super init]) {
     _backedTextInputView = backedTextInputView;
     backedTextInputView.delegate = self;
+    
+#if !TARGET_OS_OSX // [macOS]
     backedTextInputView.textDropDelegate = self;
+#endif // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
     [_backedTextInputView addTarget:self
@@ -181,6 +184,8 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   [_backedTextInputView.textInputDelegate textInputDidChangeSelection];
 }
 
+
+#if !TARGET_OS_OSX // [macOS]
 #pragma mark - UITextDropDelegate
 
 - (UITextDropEditability)textDroppableView:(UIView<UITextDroppable> *)textDroppableView
@@ -216,6 +221,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return true;
   }
 }
+#endif // macOS]
 
 #if TARGET_OS_OSX // [macOS
 
@@ -297,7 +303,11 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
 
 #pragma mark - RCTBackedTextViewDelegateAdapter (for UITextView)
 
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTBackedTextViewDelegateAdapter () <UITextViewDelegate, UITextDropDelegate>
+#else // [macOS
+@interface RCTBackedTextViewDelegateAdapter () <UITextViewDelegate>
+#endif // macOS]
 @end
 
 @implementation RCTBackedTextViewDelegateAdapter {
@@ -322,7 +332,9 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   if (self = [super init]) {
     _backedTextInputView = backedTextInputView;
     backedTextInputView.delegate = self;
+#if !TARGET_OS_OSX // [macOS]
     backedTextInputView.textDropDelegate = self;
+#endif // [macOS]
   }
 
   return self;
@@ -535,6 +547,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   [_backedTextInputView.textInputDelegate textInputDidChangeSelection];
 }
 
+#if !TARGET_OS_OSX // [macOS]
 #pragma mark - UITextDropDelegate
 
 - (UITextDropEditability)textDroppableView:(UIView<UITextDroppable> *)textDroppableView
@@ -570,5 +583,6 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return true;
   }
 }
+#endif // macOS]
 
 @end
