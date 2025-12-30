@@ -839,7 +839,7 @@ static void RCTAddContourEffectToLayer(
     const UIEdgeInsets &contourInsets,
     const RCTBorderStyle &contourStyle)
 {
-  RCTPlatformImage *image = RCTGetBorderImage( // [macOS]
+  RCTUIImage *image = RCTGetBorderImage( // [macOS]
       contourStyle, layer.bounds.size, cornerRadii, contourInsets, contourColors, [RCTUIColor clearColor], NO); // [macOS]
 
   if (image == nil) {
@@ -850,13 +850,8 @@ static void RCTAddContourEffectToLayer(
     CGRect contentsCenter = CGRect{
         CGPoint{imageCapInsets.left / imageSize.width, imageCapInsets.top / imageSize.height},
         CGSize{(CGFloat)1.0 / imageSize.width, (CGFloat)1.0 / imageSize.height}};
-#if !TARGET_OS_OSX // [macOS]
     layer.contents = (id)image.CGImage;
     layer.contentsScale = image.scale;
-#else // [macOS
-    layer.contents = (__bridge id) UIImageGetCGImageRef(image);
-    layer.contentsScale = UIImageGetScale(image);
-#endif // macOS]
 
     BOOL isResizable = !UIEdgeInsetsEqualToEdgeInsets(image.capInsets, UIEdgeInsetsZero);
     if (isResizable) {
@@ -1050,8 +1045,15 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 
 #if TARGET_OS_OSX // [macOS
-  // clipsToBounds is stubbed out on macOS because it's not part of NSView
-  layer.masksToBounds = self.clipsToBounds;
+  // On macOS, clipsToBounds doesn't automatically set layer.masksToBounds like iOS does.
+  // When _useCustomContainerView is true (boxShadow + overflow:hidden), the container
+  // view handles clipping children while the main layer stays unclipped for the shadow.
+  // The container view's masksToBounds is set in currentContainerView getter.
+  if (_useCustomContainerView) {
+    layer.masksToBounds = NO;
+  } else {
+    layer.masksToBounds = _props->getClipsContentToBounds();
+  }
 #endif // macOS]
 
   const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
@@ -1292,17 +1294,13 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     _boxShadowLayer.zPosition = _borderLayer.zPosition;
     _boxShadowLayer.frame = RCTGetBoundingRect(_props->boxShadow, self.layer.bounds.size);
 
-    RCTPlatformImage *boxShadowImage = RCTGetBoxShadowImage( // [macOS]
+    RCTUIImage *boxShadowImage = RCTGetBoxShadowImage( // [macOS]
         _props->boxShadow,
         RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
         RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths),
         self.layer.bounds.size);
 
-#if !TARGET_OS_OSX // [macOS]
     _boxShadowLayer.contents = (id)boxShadowImage.CGImage;
-#else // [macOS
-    _boxShadowLayer.contents = (__bridge id)UIImageGetCGImageRef(boxShadowImage);
-#endif // macOS]
   }
 
   // clipping
