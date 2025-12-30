@@ -7,8 +7,8 @@
 
 #import <React/RCTUIKit.h> // [macOS]
 
-@interface UIImage (Compare)
+@interface RCTPlatformImage (Compare) // [macOS]
 
-- (BOOL)compareWithImage:(UIImage *)image;
+- (BOOL)compareWithImage:(RCTPlatformImage *)image;
 
 @end
