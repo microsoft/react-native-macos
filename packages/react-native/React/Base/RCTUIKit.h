@@ -332,13 +332,23 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 // UIApplication
 #define UIApplication NSApplication
 
-// UIImage
-// RCTUIImage is a subclass of NSImage that caches its CGImage representation.
-// This is needed because NSImage's CGImageForProposedRect: returns a new autoreleased
-// CGImage each time, which causes issues when used with CALayer.contents.
+/**
+ * An NSImage subclass that caches its CGImage representation.
+ *
+ * RCTUIImage solves an issue where NSImage's `CGImageForProposedRect:` returns a new
+ * autoreleased CGImage each time it's called. When assigned to `CALayer.contents`, these
+ * autoreleased CGImages get deallocated when the autorelease pool drains, causing rendering
+ * issues (e.g., blank borders and shadows).
+ *
+ * @warning Treat RCTUIImage instances as immutable after creation. Do not modify the image's
+ * representations or properties after accessing the CGImage property.
+ */
 @interface RCTUIImage : NSImage
+
 @property (nonatomic, readonly, nullable) CGImageRef CGImage;
+
 @property (nonatomic, readonly) CGFloat scale;
+
 @end
 
 typedef NS_ENUM(NSInteger, UIImageRenderingMode) {
