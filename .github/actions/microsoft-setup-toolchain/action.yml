@@ -18,7 +18,7 @@ inputs:
     default: "22"
   xcode-developer-dir:
     description: Set the path for the active Xcode developer directory
-    default: "/Applications/Xcode_16.4.0.app"
+    default: "/Applications/Xcode.app"
 runs:
   using: composite
   steps:
