@@ -147,7 +147,6 @@ RCT_EXPORT_MODULE()
 {
   [self emitEvent:kStatusBarFrameWillChange forNotification:notification];
 }
-#endif
 
 RCT_EXPORT_METHOD(getHeight : (RCTResponseSenderBlock)callback)
 {

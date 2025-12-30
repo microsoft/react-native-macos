@@ -403,10 +403,12 @@ CGFloat RCTFontSizeMultiplier(void)
   return mapping[RCTSharedApplication().preferredContentSizeCategory].floatValue;
 }
 
+#if TARGET_OS_IOS // [visionOS]
 UIDeviceOrientation RCTDeviceOrientation(void)
 {
   return [[UIDevice currentDevice] orientation];
 }
+#endif // visionOS]
 
 CGSize RCTScreenSize(void)
 {
@@ -422,12 +424,16 @@ CGSize RCTScreenSize(void)
       portraitSize = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
     });
   });
-
+#if TARGET_OS_IOS // [visionOS]
   if (UIDeviceOrientationIsLandscape(RCTDeviceOrientation())) {
     return CGSizeMake(portraitSize.height, portraitSize.width);
   } else {
     return CGSizeMake(portraitSize.width, portraitSize.height);
   }
+#else // [visionOS
+  return CGSizeMake(portraitSize.width, portraitSize.height);
+#endif // visionOS]
+
 }
 #else // [macOS
 CGFloat RCTScreenScale(void)

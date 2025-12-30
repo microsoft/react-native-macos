@@ -188,7 +188,7 @@ static NSDictionary *RCTExportedDimensions(CGFloat fontScale)
   UIScreen *mainScreen = UIScreen.mainScreen;
   CGSize screenSize = mainScreen.bounds.size;
 #else // [visionOS
-  CGSize screenSize = NSZeroSize;
+  CGSize screenSize = CGSizeZero;
 #endif // visionOS]
   UIView *mainWindow = RCTKeyWindow();
 #else // [macOS
