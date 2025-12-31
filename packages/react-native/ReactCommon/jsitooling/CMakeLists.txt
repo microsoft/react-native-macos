@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"ReactNative\")
 
-file(GLOB jsitooling_SRC CONFIGURE_DEPENDS react/runtime/*.cpp)
+file(GLOB jsitooling_SRC react/runtime/*.cpp)
 add_library(jsitooling OBJECT ${jsitooling_SRC})
 
 target_include_directories(jsitooling

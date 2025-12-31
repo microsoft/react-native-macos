@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB rrc_native_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB rrc_native_SRC *.cpp)
 add_library(rrc_native OBJECT ${rrc_native_SRC})
 
 target_include_directories(rrc_native PUBLIC ${REACT_COMMON_DIR})

@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB react_renderer_css_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_renderer_css_SRC *.cpp)
 
 # We need to create library as INTERFACE if it is header only
 if("${react_renderer_css_SRC}" STREQUAL "")

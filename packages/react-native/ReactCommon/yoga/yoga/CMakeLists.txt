@@ -18,7 +18,7 @@ set(YOGA_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 include(${YOGA_ROOT}/cmake/project-defaults.cmake)
 
 
-file(GLOB SOURCES CONFIGURE_DEPENDS
+file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/**/*.cpp)
 

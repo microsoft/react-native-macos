@@ -12,7 +12,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 ENABLE_LANGUAGE(ASM)
 file(GLOB_RECURSE
         boostasm_SRC
-        CONFIGURE_DEPENDS
+       
         ${CMAKE_CURRENT_SOURCE_DIR}/asm/${ANDROID_ABI}/*.S)
 add_library(boost STATIC ${boostasm_SRC})
 

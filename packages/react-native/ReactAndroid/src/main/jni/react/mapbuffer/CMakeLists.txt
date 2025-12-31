@@ -10,7 +10,7 @@ include(${REACT_ANDROID_DIR}/src/main/jni/first-party/jni-lib-merge/SoMerging-ut
 
 add_compile_options(-fexceptions -frtti -std=c++20 -Wall -DLOG_TAG=\"Fabric\")
 
-file(GLOB mapbuffer_SRC CONFIGURE_DEPENDS
+file(GLOB mapbuffer_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/react/common/mapbuffer/*.cpp)
 
 add_library(mapbufferjni OBJECT ${mapbuffer_SRC})

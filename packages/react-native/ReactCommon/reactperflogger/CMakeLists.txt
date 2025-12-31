@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic)
 
 
-file(GLOB reactperflogger_SRC CONFIGURE_DEPENDS
+file(GLOB reactperflogger_SRC
         reactperflogger/*.cpp
         fusebox/*.cpp)
 add_library(reactperflogger OBJECT ${reactperflogger_SRC})

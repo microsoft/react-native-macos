@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB react_utils_SRC CONFIGURE_DEPENDS *.cpp *.mm)
+file(GLOB react_utils_SRC *.cpp *.mm)
 add_library(react_utils OBJECT ${react_utils_SRC})
 
 target_include_directories(react_utils PUBLIC ${REACT_COMMON_DIR})

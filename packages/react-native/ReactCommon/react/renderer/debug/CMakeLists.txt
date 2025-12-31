@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB react_renderer_debug_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_renderer_debug_SRC *.cpp)
 add_library(react_renderer_debug OBJECT ${react_renderer_debug_SRC})
 
 target_include_directories(react_renderer_debug PUBLIC ${REACT_COMMON_DIR})

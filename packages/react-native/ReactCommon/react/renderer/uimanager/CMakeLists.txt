@@ -15,7 +15,7 @@ add_compile_options(
         -Wno-unused-local-typedef
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB react_renderer_uimanager_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_renderer_uimanager_SRC *.cpp)
 add_library(react_renderer_uimanager OBJECT ${react_renderer_uimanager_SRC})
 
 target_include_directories(react_renderer_uimanager PUBLIC ${REACT_COMMON_DIR})

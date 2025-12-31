@@ -14,7 +14,7 @@ add_compile_options(
         -Wall
         -Wpedantic)
 
-file(GLOB jsinspector_tracing_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB jsinspector_tracing_SRC *.cpp)
 
 add_library(jsinspector_tracing OBJECT ${jsinspector_tracing_SRC})
 target_merge_so(jsinspector_tracing)

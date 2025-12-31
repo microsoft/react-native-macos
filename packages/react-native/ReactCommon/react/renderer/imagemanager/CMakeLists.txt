@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB react_renderer_imagemanager_SRC CONFIGURE_DEPENDS
+file(GLOB react_renderer_imagemanager_SRC
         *.cpp
         platform/android/react/renderer/imagemanager/*.cpp)
 

@@ -15,7 +15,7 @@ add_compile_options(
         -DFOLLY_NO_CONFIG=1
         -DLOG_TAG=\"ReactNative\")
 
-file(GLOB sampleturbomodule_SRC CONFIGURE_DEPENDS ReactCommon/*.cpp)
+file(GLOB sampleturbomodule_SRC ReactCommon/*.cpp)
 add_library(sampleturbomodule STATIC ${sampleturbomodule_SRC})
 
 target_include_directories(sampleturbomodule PUBLIC .)

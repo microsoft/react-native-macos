@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB rrc_view_SRC CONFIGURE_DEPENDS
+file(GLOB rrc_view_SRC
         *.cpp
         platform/android/react/renderer/components/view/*.cpp)
 

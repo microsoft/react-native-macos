@@ -8,7 +8,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 add_compile_options(-fexceptions)
 
-file(GLOB oscompat_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB oscompat_SRC *.cpp)
 add_library(oscompat OBJECT ${oscompat_SRC})
 
 target_include_directories(oscompat PUBLIC .)

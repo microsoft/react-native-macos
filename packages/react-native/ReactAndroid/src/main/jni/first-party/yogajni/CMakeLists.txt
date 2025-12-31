@@ -15,7 +15,7 @@ add_compile_options(
         -std=c++20
         -O3)
 
-file(GLOB yoga_SRC CONFIGURE_DEPENDS jni/*.cpp)
+file(GLOB yoga_SRC jni/*.cpp)
 add_library(yoga OBJECT ${yoga_SRC})
 
 target_include_directories(yoga PUBLIC jni)

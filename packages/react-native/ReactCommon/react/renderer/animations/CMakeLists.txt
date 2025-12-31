@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB react_renderer_animations_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_renderer_animations_SRC *.cpp)
 add_library(react_renderer_animations STATIC ${react_renderer_animations_SRC})
 
 target_include_directories(react_renderer_animations PUBLIC ${REACT_COMMON_DIR})

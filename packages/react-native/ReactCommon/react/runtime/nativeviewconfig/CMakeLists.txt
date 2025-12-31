@@ -8,7 +8,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 add_compile_options(-std=c++20)
 
-file(GLOB_RECURSE bridgeless_nativeviewconfig_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB_RECURSE bridgeless_nativeviewconfig_SRC *.cpp)
 add_library(
         bridgelessnativeviewconfig
         OBJECT

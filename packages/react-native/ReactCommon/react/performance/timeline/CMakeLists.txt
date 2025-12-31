@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"ReactNative\")
 
-file(GLOB react_performance_timeline_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_performance_timeline_SRC *.cpp)
 add_library(react_performance_timeline OBJECT ${react_performance_timeline_SRC})
 
 target_include_directories(react_performance_timeline PUBLIC ${REACT_COMMON_DIR})

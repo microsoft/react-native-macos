@@ -15,7 +15,7 @@ add_compile_options(
         -DLOG_TAG=\"ReactNative\")
 
 
-file(GLOB react_nativemodule_core_SRC CONFIGURE_DEPENDS
+file(GLOB react_nativemodule_core_SRC
         ReactCommon/*.cpp
         platform/android/ReactCommon/*.cpp)
 add_library(react_nativemodule_core

@@ -10,7 +10,7 @@ add_compile_options(-fvisibility=hidden -fexceptions -frtti)
 
 include(${REACT_ANDROID_DIR}/src/main/jni/first-party/jni-lib-merge/SoMerging-utils.cmake)
 
-file(GLOB jscinstance_SRC CONFIGURE_DEPENDS "*.cpp")
+file(GLOB jscinstance_SRC "*.cpp")
 
 add_library(jscinstance OBJECT ${jscinstance_SRC})
 

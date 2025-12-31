@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB react_renderer_observers_events_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_renderer_observers_events_SRC *.cpp)
 add_library(react_renderer_observers_events OBJECT ${react_renderer_observers_events_SRC})
 
 target_include_directories(react_renderer_observers_events PUBLIC ${REACT_COMMON_DIR})

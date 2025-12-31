@@ -13,7 +13,7 @@ add_compile_options(
         -Wno-unused-lambda-capture
         -DLOG_TAG=\"ReactNative\")
 
-file(GLOB react_cxxreact_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_cxxreact_SRC *.cpp)
 add_library(react_cxxreact OBJECT ${react_cxxreact_SRC})
 
 target_include_directories(react_cxxreact PUBLIC ${REACT_COMMON_DIR})

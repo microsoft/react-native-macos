@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB react_renderer_uimanager_consistency_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_renderer_uimanager_consistency_SRC *.cpp)
 add_library(react_renderer_uimanager_consistency OBJECT ${react_renderer_uimanager_consistency_SRC})
 
 target_include_directories(react_renderer_uimanager_consistency PUBLIC ${REACT_COMMON_DIR})

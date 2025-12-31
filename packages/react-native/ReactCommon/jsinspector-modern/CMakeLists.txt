@@ -14,7 +14,7 @@ add_compile_options(
 
 include(${REACT_ANDROID_DIR}/src/main/jni/first-party/jni-lib-merge/SoMerging-utils.cmake)
 
-file(GLOB jsinspector_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB jsinspector_SRC *.cpp)
 # jsinspector contains singletons that hold app-global state (InspectorFlags, InspectorImpl).
 # Placing it in a shared library makes the singletons safe to use from arbitrary shared libraries
 # (even ones that don't depend on one another).

@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB rrc_legacyviewmanagerinterop_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB rrc_legacyviewmanagerinterop_SRC *.cpp)
 add_library(rrc_legacyviewmanagerinterop OBJECT ${rrc_legacyviewmanagerinterop_SRC})
 
 target_include_directories(rrc_legacyviewmanagerinterop PUBLIC ${REACT_COMMON_DIR})

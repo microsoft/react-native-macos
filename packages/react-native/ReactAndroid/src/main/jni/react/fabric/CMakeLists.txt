@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.13)
 
 include(${REACT_ANDROID_DIR}/src/main/jni/first-party/jni-lib-merge/SoMerging-utils.cmake)
 
-file(GLOB fabricjni_SRCS CONFIGURE_DEPENDS *.cpp)
+file(GLOB fabricjni_SRCS *.cpp)
 
 add_library(
         fabricjni

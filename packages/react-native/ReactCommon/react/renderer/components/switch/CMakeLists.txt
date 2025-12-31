@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-file(GLOB rrc_switch_SRCS CONFIGURE_DEPENDS androidswitch/react/renderer/components/androidswitch/*.cpp)
+file(GLOB rrc_switch_SRCS androidswitch/react/renderer/components/androidswitch/*.cpp)
 
 add_library(
         rrc_switch

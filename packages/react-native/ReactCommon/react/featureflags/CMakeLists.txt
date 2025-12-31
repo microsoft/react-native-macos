@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"ReactNative\")
 
-file(GLOB react_featureflags_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_featureflags_SRC *.cpp)
 add_library(react_featureflags OBJECT ${react_featureflags_SRC})
 
 target_include_directories(react_featureflags PUBLIC ${REACT_COMMON_DIR})

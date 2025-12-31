@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB rrc_unimplementedview_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB rrc_unimplementedview_SRC *.cpp)
 add_library(rrc_unimplementedview STATIC ${rrc_unimplementedview_SRC})
 
 target_include_directories(rrc_unimplementedview PUBLIC ${REACT_COMMON_DIR})

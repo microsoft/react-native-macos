@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB rrc_progressbar_SRC CONFIGURE_DEPENDS android/react/renderer/components/progressbar/*.cpp)
+file(GLOB rrc_progressbar_SRC android/react/renderer/components/progressbar/*.cpp)
 add_library(rrc_progressbar OBJECT ${rrc_progressbar_SRC})
 
 target_include_directories(rrc_progressbar

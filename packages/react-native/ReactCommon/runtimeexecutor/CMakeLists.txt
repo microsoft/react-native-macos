@@ -13,7 +13,7 @@ add_compile_options(
         -Wall
         -Wpedantic)
 
-file(GLOB_RECURSE runtimeexecutor_SRC CONFIGURE_DEPENDS *.cpp *.h)
+file(GLOB_RECURSE runtimeexecutor_SRC *.cpp *.h)
 
 add_library(runtimeexecutor OBJECT ${runtimeexecutor_SRC})
 

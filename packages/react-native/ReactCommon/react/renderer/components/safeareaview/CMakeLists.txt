@@ -6,7 +6,7 @@
 cmake_minimum_required(VERSION 3.13)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
-file(GLOB rrc_safeareaview_SRCS CONFIGURE_DEPENDS *.cpp)
+file(GLOB rrc_safeareaview_SRCS *.cpp)
 
 add_library(
         rrc_safeareaview

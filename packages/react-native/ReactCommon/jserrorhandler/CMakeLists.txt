@@ -8,7 +8,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 add_compile_options(-std=c++20)
 
-file(GLOB js_error_handler_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB js_error_handler_SRC *.cpp)
 add_library(
         jserrorhandler
         OBJECT

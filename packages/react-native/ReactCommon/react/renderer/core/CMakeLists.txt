@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"Fabric\")
 
-file(GLOB react_renderer_core_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_renderer_core_SRC *.cpp)
 add_library(react_renderer_core OBJECT ${react_renderer_core_SRC})
 
 target_include_directories(react_renderer_core PUBLIC ${REACT_COMMON_DIR})

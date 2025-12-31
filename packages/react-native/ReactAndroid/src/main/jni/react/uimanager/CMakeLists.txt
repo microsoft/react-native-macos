@@ -10,7 +10,7 @@ add_compile_options(-fexceptions -frtti -std=c++20 -Wall -DLOG_TAG=\"ReactNative
 
 include(${REACT_ANDROID_DIR}/src/main/jni/first-party/jni-lib-merge/SoMerging-utils.cmake)
 
-file(GLOB uimanagerjni_SRC CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file(GLOB uimanagerjni_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 add_library(uimanagerjni
         OBJECT
             ${uimanagerjni_SRC}

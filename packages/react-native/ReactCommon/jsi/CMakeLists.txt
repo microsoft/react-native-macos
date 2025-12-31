@@ -17,7 +17,7 @@ add_compile_options(
         -Wno-unused-lambda-capture
         -DLOG_TAG=\"ReactNative\")
 
-file(GLOB jsi_SRC CONFIGURE_DEPENDS jsi/*.cpp)
+file(GLOB jsi_SRC jsi/*.cpp)
 add_library(jsi SHARED ${jsi_SRC})
 
 target_include_directories(jsi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

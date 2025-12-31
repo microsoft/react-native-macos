@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"ReactNative\")
 
-file(GLOB react_nativemodule_dom_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_nativemodule_dom_SRC *.cpp)
 add_library(react_nativemodule_dom
         OBJECT
             ${react_nativemodule_dom_SRC}

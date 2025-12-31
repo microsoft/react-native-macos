@@ -6,7 +6,7 @@
 cmake_minimum_required(VERSION 3.13)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
-file(GLOB reactnativejni_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB reactnativejni_SRC *.cpp)
 
 add_compile_options(
         -fexceptions

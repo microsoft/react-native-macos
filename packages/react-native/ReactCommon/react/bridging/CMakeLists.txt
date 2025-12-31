@@ -14,7 +14,7 @@ add_compile_options(
         -Wpedantic
         -DLOG_TAG=\"ReactNative\")
 
-file(GLOB react_bridging_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB react_bridging_SRC *.cpp)
 
 add_library(react_bridging OBJECT ${react_bridging_SRC})
 
