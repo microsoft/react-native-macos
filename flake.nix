@@ -7,11 +7,18 @@
     system = "aarch64-darwin";
     pkgs = import nixpkgs { inherit system; };
     ruby = pkgs.ruby_3_3;
-    rubyPackages = pkgs.ruby_3_3Packages;
+    rubyPackages = pkgs.rubyPackages_3_3;
+    cmake_3_26 = pkgs.cmake.overrideAttrs (old: {
+      version = "3.26.4";
+      src = pkgs.fetchurl {
+        url = "https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4.tar.gz";
+        sha256 = "sha256-MTtogMKRvU/jHAqlHW5iZZKCpSHmlfMNXMDSWrvVwgg=";
+      };
+    });
   in {
     devShells.${system}.ci-macos = pkgs.mkShell {
       packages = with pkgs; [
-        cmake
+        cmake_3_26
         nodejs_22
         yarn
         pkg-config
