@@ -11,7 +11,7 @@
   in {
     devShells.${system}.ci-macos = pkgs.mkShell {
       packages = with pkgs; [
-        cmake_3_31
+        cmake
         nodejs_22
         yarn
         pkg-config
