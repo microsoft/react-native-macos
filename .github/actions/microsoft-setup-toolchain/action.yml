@@ -25,7 +25,7 @@ runs:
     - name: Install cmake
       uses: jwlawson/actions-setup-cmake@v2
       with:
-        cmake-version: '3.31.9'
+        cmake-version: '3.26.4'
     - name: Set up Ccache
       id: setup-ccache
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos' }}
