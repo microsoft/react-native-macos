@@ -8,7 +8,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 add_compile_options(-std=c++20)
 
-file(GLOB_RECURSE hermes_executor_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB_RECURSE hermes_executor_SRC *.cpp)
 add_library(
         hermes_executor_common
         OBJECT

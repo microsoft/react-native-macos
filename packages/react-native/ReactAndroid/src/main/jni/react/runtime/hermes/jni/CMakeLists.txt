@@ -8,7 +8,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 include(${REACT_ANDROID_DIR}/src/main/jni/first-party/jni-lib-merge/SoMerging-utils.cmake)
 
-file(GLOB_RECURSE hermes_instance_jni_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB_RECURSE hermes_instance_jni_SRC *.cpp)
 
 add_library(hermesinstancejni
         OBJECT

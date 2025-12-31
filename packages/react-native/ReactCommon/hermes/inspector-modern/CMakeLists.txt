@@ -6,7 +6,7 @@
 cmake_minimum_required(VERSION 3.13)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
-file(GLOB hermesinspectormodern_SRC CONFIGURE_DEPENDS chrome/*.cpp)
+file(GLOB hermesinspectormodern_SRC chrome/*.cpp)
 
 add_library(hermes_inspector_modern
         OBJECT

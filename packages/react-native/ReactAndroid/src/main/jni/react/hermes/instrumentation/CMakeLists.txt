@@ -6,7 +6,7 @@
 cmake_minimum_required(VERSION 3.13)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
-file(GLOB_RECURSE jsijniprofiler_SRC CONFIGURE_DEPENDS *.cpp)
+file(GLOB_RECURSE jsijniprofiler_SRC *.cpp)
 
 include(${REACT_ANDROID_DIR}/src/main/jni/first-party/jni-lib-merge/SoMerging-utils.cmake)
 
