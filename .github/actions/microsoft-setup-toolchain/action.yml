@@ -22,51 +22,46 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Pin cmake version
+    - name: Install Nix (mac toolchain)
       if: ${{ inputs.platform == 'macos' || inputs.platform == 'ios' || inputs.platform == 'visionos' }}
+      uses: DeterminateSystems/nix-installer-action@v12
+      with:
+        extra-conf: |
+          accept-flake-config = true
+
+    - name: Enable Nix cache
+      if: ${{ inputs.platform == 'macos' || inputs.platform == 'ios' || inputs.platform == 'visionos' }}
+      uses: DeterminateSystems/magic-nix-cache-action@v7
+
+    - name: Export Nix devshell env
+      if: ${{ inputs.platform == 'macos' || inputs.platform == 'ios' || inputs.platform == 'visionos' }}
+      env:
+        ENV_OUT: ${{ runner.temp }}/nix-dev-env
       run: |
-        brew uninstall cmake
-        # Copied from https://github.com/actions/runner-images/pull/12791
-        # Pin cmake to 3.31.6 due to a backward compatibility issue
-        # https://github.com/actions/runner-images/issues/11926
-        cmake_commit="b4e46db74e74a8c1650b38b1da222284ce1ec5ce"
-        tap_name="local/pinned"
-        
-        echo "Creating local tap (no git)..."
-        brew tap-new --no-git "$tap_name" >/dev/null
-        
-        cmake_formula_dir="$(brew --repo "$tap_name")/Formula"
-        mkdir -p "$cmake_formula_dir"
-        
-        cmake_rb_link="https://raw.githubusercontent.com/Homebrew/homebrew-core/$cmake_commit/Formula/c/cmake.rb"
-        cmake_rb_path="$cmake_formula_dir/cmake.rb"
-        
-        echo "Downloading cmake.rb from $cmake_rb_link"
-        curl -fsSL "$cmake_rb_link" -o "$cmake_rb_path"
-        
-        echo "Installing cmake 3.31.6 from custom tap..."
-        brew install "$tap_name/cmake"
+        set -eo pipefail
+        nix print-dev-env .#ci-macos --json \
+          | jq -r '.variables | to_entries[] | select(.name|IN("PATH","CPATH","LIBRARY_PATH","PKG_CONFIG_PATH","SSL_CERT_FILE","MACOSX_DEPLOYMENT_TARGET","CMAKE_PREFIX_PATH")) | "\(.name)=\(.value.value)"' \
+          > "$ENV_OUT"
+        cat "$ENV_OUT" >> "$GITHUB_ENV"
       shell: bash
+
     - name: Set up Ccache
       id: setup-ccache
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos' }}
       run: |
         podfile_lock="${{ inputs.project-root }}/${{ inputs.platform }}/Podfile.lock"
         if [[ -f $(git rev-parse --show-toplevel)/.ccache/ccache.conf ]] && [[ -f "$podfile_lock" ]]; then
-          if ! command -v ccache 1> /dev/null; then
-            brew install ccache
-          fi
-
-          CCACHE_HOME=$(dirname $(dirname $(which ccache)))/opt/ccache
-
           echo "CCACHE_DIR=$(git rev-parse --show-toplevel)/.ccache" >> $GITHUB_ENV
 
-          echo "CC=${CCACHE_HOME}/libexec/clang" >> $GITHUB_ENV
-          echo "CXX=${CCACHE_HOME}/libexec/clang++" >> $GITHUB_ENV
-          echo "CMAKE_C_COMPILER_LAUNCHER=$(which ccache)" >> $GITHUB_ENV
-          echo "CMAKE_CXX_COMPILER_LAUNCHER=$(which ccache)" >> $GITHUB_ENV
-
-          ccache --zero-stats 1> /dev/null
+          if command -v ccache 1> /dev/null; then
+            echo "CC=ccache clang" >> $GITHUB_ENV
+            echo "CXX=ccache clang++" >> $GITHUB_ENV
+            echo "CMAKE_C_COMPILER_LAUNCHER=$(which ccache)" >> $GITHUB_ENV
+            echo "CMAKE_CXX_COMPILER_LAUNCHER=$(which ccache)" >> $GITHUB_ENV
+            ccache --zero-stats 1> /dev/null
+          else
+            echo "ccache not found; skipping ccache setup" >&2
+          fi
 
           clang --version > .clang-version
           input=$(find . -maxdepth 1 -name .clang-version -o -name .yarnrc.yml | sort)
@@ -88,6 +83,10 @@ runs:
     - name: Set up Xcode
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos' }}
       run: |
+        if [ ! -d "${{ inputs.xcode-developer-dir }}" ]; then
+          echo "Requested Xcode path ${{ inputs.xcode-developer-dir }} not found" >&2
+          exit 1
+        fi
         sudo xcode-select --switch ${{ inputs.xcode-developer-dir }}
       shell: bash
     - name: Download visionOS SDK
