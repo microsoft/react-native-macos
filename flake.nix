@@ -7,7 +7,10 @@
     system = "aarch64-darwin";
     pkgs = import nixpkgs { inherit system; };
     ruby = pkgs.ruby_3_3;
-    rubyPackages = pkgs.rubyPackages_3_3;
+    rubyWithGems = ruby.withPackages (ps: [
+      ps.bundler
+      ps.cocoapods
+    ]);
     cmake_3_26 = pkgs.cmake.overrideAttrs (old: {
       version = "3.26.4";
       src = pkgs.fetchurl {
@@ -27,9 +30,7 @@
         xcbeautify
         git
         python3
-        ruby
-        rubyPackages.bundler
-        rubyPackages.cocoapods
+        rubyWithGems
       ];
 
       shellHook = ''
