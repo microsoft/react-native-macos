@@ -55,6 +55,11 @@ jobs:
           RCT_NEW_ARCH_ENABLED: ${{ matrix.new_arch_enabled }}
         run: |
           set -eox pipefail
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.base_ref }}" == "main" ]]; then
+            yarn add @react-native-community/javascriptcore
+            export USE_HERMES=0
+            export USE_THIRD_PARTY_JSC=1
+          fi
           bundle install
           bundle exec pod install --verbose
 
