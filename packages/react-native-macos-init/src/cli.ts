@@ -299,7 +299,7 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
 
       const pkgmgr = isProjectUsingYarn(process.cwd())
         ? `yarn add${verbose ? '' : ' --silent'}`
-        : `npm install --save${verbose ? '' : ' --silent'}`;
+        : `npm install --save --legacy-peer-deps${verbose ? '' : ' --silent'}`;
       const execOptions = verbose ? {stdio: 'inherit' as const} : {};
       execSync(`${pkgmgr} "${MACOSPKG}@${version}"`, execOptions);
 
