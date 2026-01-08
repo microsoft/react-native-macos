@@ -186,8 +186,10 @@ def podspec_source_build_from_github_main()
     # Since react-native-macos lags slightly behind facebook/react-native, we can't always use
     # the latest Hermes commit because Hermes and JSI don't always guarantee backwards compatibility.
     # Instead, we take the commit hash of Hermes at the time of the merge base with facebook/react-native.
-    commit = hermes_commit_at_merge_base()
-    hermes_log("Using Hermes commit from the merge base with facebook/react-native: #{commit}")
+    tuple = hermes_commit_at_merge_base()
+    commit = tuple[:commit]
+    timestamp = tuple[:timestamp]
+    hermes_log("Using Hermes commit from the merge base with facebook/react-native: #{commit} and timestamp: #{timestamp}")
     return {:git => HERMES_GITHUB_URL, :commit => commit}
     # macOS]
 end
@@ -251,7 +253,7 @@ def hermes_commit_at_merge_base()
         end
     end
 
-    return commit
+    return { :commit => commit, :timestamp => timestamp}
 end
 # macOS]
 
