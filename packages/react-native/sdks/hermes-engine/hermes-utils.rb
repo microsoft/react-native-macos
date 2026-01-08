@@ -186,8 +186,10 @@ def podspec_source_build_from_github_main()
     # Since react-native-macos lags slightly behind facebook/react-native, we can't always use
     # the latest Hermes commit because Hermes and JSI don't always guarantee backwards compatibility.
     # Instead, we take the commit hash of Hermes at the time of the merge base with facebook/react-native.
-    commit = hermes_commit_at_merge_base()
-    hermes_log("Using Hermes commit from the merge base with facebook/react-native: #{commit}")
+    tuple = hermes_commit_at_merge_base()
+    commit = tuple[:commit]
+    timestamp = tuple[:timestamp]
+    hermes_log("Using Hermes commit from the merge base with facebook/react-native: #{commit} and timestamp: #{timestamp}")
     return {:git => HERMES_GITHUB_URL, :commit => commit}
     # macOS]
 end
@@ -239,21 +241,19 @@ def hermes_commit_at_merge_base()
     commit = nil
     Dir.mktmpdir do |tmpdir|
         hermes_git_dir = File.join(tmpdir, "hermes.git")
-        # Unfortunately we can't use git rev-list on HERMES_GITHUB_URL directly since we're not in that repo.
-        # Instead, we create a shallow clone to avoid downloading the entire history.
-        `git clone -q --bare --shallow-since="#{timestamp}" #{HERMES_GITHUB_URL} "#{hermes_git_dir}"`
-        `git --git-dir="#{hermes_git_dir}" fetch -q --deepen=1`
+        # Explicitly use Hermes 'main' branch since the default branch changed to 'static_h' (Hermes V1)
+        `git clone -q --bare --filter=blob:none --single-branch --branch main #{HERMES_GITHUB_URL} "#{hermes_git_dir}"`
 
-        # If all goes well, this will be the commit hash of Hermes at the time of the merge base
-        commit = `git --git-dir="#{hermes_git_dir}" rev-list -1 --before="#{timestamp}" HEAD`.strip
+        # If all goes well, this will be the commit hash of Hermes at the time of the merge base on branch 'main'
+        commit = `git --git-dir="#{hermes_git_dir}" rev-list -1 --before="#{timestamp}" refs/heads/main`.strip
         if commit.empty?
             abort <<-EOS
-            [Hermes] Unable to find the Hermes commit hash at time #{timestamp}.
+            [Hermes] Unable to find the Hermes commit hash at time #{timestamp} on branch 'main'.
             EOS
         end
     end
 
-    return commit
+    return { :commit => commit, :timestamp => timestamp}
 end
 # macOS]
 
