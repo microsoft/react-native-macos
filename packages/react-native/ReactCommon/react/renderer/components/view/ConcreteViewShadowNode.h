@@ -118,7 +118,6 @@ class ConcreteViewShadowNode : public ConcreteShadowNode<
       BaseShadowNode::orderIndex_ = 0;
     }
 
-#if !TARGET_OS_OSX // [macOS]
     bool isKeyboardFocusable =
         HostPlatformViewTraitsInitializer::isKeyboardFocusable(props) ||
         props.accessible;
@@ -128,7 +127,6 @@ class ConcreteViewShadowNode : public ConcreteShadowNode<
     } else {
       BaseShadowNode::traits_.unset(ShadowNodeTraits::Trait::KeyboardFocusable);
     }
-#endif // [macOS]
   }
 };
 
