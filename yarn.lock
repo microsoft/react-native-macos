@@ -3573,7 +3573,7 @@ __metadata:
     semver: "npm:^7.1.3"
   peerDependencies:
     "@react-native-community/cli": "*"
-    "@react-native/metro-config": "*"
+    "@react-native/metro-config": "workspace:*"
   peerDependenciesMeta:
     "@react-native-community/cli":
       optional: true

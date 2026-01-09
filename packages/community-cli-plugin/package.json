@@ -37,7 +37,7 @@
   },
   "peerDependencies": {
     "@react-native-community/cli": "*",
-    "@react-native/metro-config": "*"
+    "@react-native/metro-config": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@react-native-community/cli": {
