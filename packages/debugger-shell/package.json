@@ -35,5 +35,6 @@
   },
   "devDependencies": {
     "semver": "^7.1.3"
-  }
+  },
+  "private": true
 }

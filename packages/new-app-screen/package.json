@@ -1,5 +1,6 @@
 {
   "name": "@react-native/new-app-screen",
+  "private": true,
   "version": "0.81.0-main",
   "description": "NewAppScreen component for React Native",
   "keywords": [
@@ -18,7 +19,6 @@
   "files": [
     "src"
   ],
-  "dependencies": {},
   "peerDependencies": {
     "@types/react": "^19.1.0",
     "react": "*",
