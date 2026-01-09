@@ -357,6 +357,45 @@ static RCTPlatformImage *RCTResizeImageIfNeeded(RCTPlatformImage *image, CGSize 
   return image;
 }
 
+/*
+ * This function abstracts away the migration from loadImageForURL to loadImageURL by handling checking whether
+ * the interface responds to the new function signature and calling the appropriate function based on the result.
+ */
+static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
+    id<RCTImageURLLoader> loadHandler,
+    NSURL *imageURL,
+    CGSize size,
+    CGFloat scale,
+    RCTResizeMode resizeMode,
+    RCTImageLoaderProgressBlock progressHandler,
+    RCTImageLoaderPartialLoadBlock partialLoadHandler,
+    RCTImageLoaderCompletionBlockWithMetadata completionHandler)
+{
+  if ([loadHandler respondsToSelector:@selector(loadImageForURL:
+                                                           size:scale:resizeMode:progressHandler:partialLoadHandler
+                                                               :completionHandlerWithMetadata:)]) {
+    return [loadHandler loadImageForURL:imageURL
+                                   size:size
+                                  scale:scale
+                             resizeMode:resizeMode
+                        progressHandler:progressHandler
+                     partialLoadHandler:partialLoadHandler
+          completionHandlerWithMetadata:^(NSError *error, UIImage *image, id metadata) {
+            completionHandler(error, image, metadata);
+          }];
+  } else {
+    return [loadHandler loadImageForURL:imageURL
+                                   size:size
+                                  scale:scale
+                             resizeMode:resizeMode
+                        progressHandler:progressHandler
+                     partialLoadHandler:partialLoadHandler
+                      completionHandler:^(NSError *error, UIImage *image) {
+                        completionHandler(error, image, nil);
+                      }];
+  }
+}
+
 #pragma mark - RCTImageLoaderProtocol 2/3
 
 - (nullable RCTImageLoaderCancellationBlock)loadImageWithURLRequest:(NSURLRequest *)imageURLRequest
@@ -612,15 +651,18 @@ static RCTPlatformImage *RCTResizeImageIfNeeded(RCTPlatformImage *image, CGSize 
              completionHandler(error, image, metadata, nil);
            }];
     }
-    RCTImageLoaderCancellationBlock cb = [loadHandler loadImageForURL:request.URL
-                                                                 size:size
-                                                                scale:scale
-                                                           resizeMode:resizeMode
-                                                      progressHandler:progressHandler
-                                                   partialLoadHandler:partialLoadHandler
-                                                    completionHandler:^(NSError *error, RCTPlatformImage *image) { // [macOS]
-                                                      completionHandler(error, image, nil, nil);
-                                                    }];
+
+    RCTImageLoaderCancellationBlock cb = RCTLoadImageURLFromLoader(
+        loadHandler,
+        request.URL,
+        size,
+        scale,
+        resizeMode,
+        progressHandler,
+        partialLoadHandler,
+        ^(NSError *error, UIImage *image, id metadata) {
+          completionHandler(error, image, metadata, nil);
+        });
     return [[RCTImageURLLoaderRequest alloc] initWithRequestId:nil imageURL:request.URL cancellationBlock:cb];
   }
 
@@ -654,15 +696,17 @@ static RCTPlatformImage *RCTResizeImageIfNeeded(RCTPlatformImage *image, CGSize 
              }];
         cancelLoadLocal = loaderRequest.cancellationBlock;
       } else {
-        cancelLoadLocal = [loadHandler loadImageForURL:request.URL
-                                                  size:size
-                                                 scale:scale
-                                            resizeMode:resizeMode
-                                       progressHandler:progressHandler
-                                    partialLoadHandler:partialLoadHandler
-                                     completionHandler:^(NSError *error, RCTPlatformImage *image) { // [macOS]
-                                       completionHandler(error, image, nil, nil);
-                                     }];
+        cancelLoadLocal = RCTLoadImageURLFromLoader(
+            loadHandler,
+            request.URL,
+            size,
+            scale,
+            resizeMode,
+            progressHandler,
+            partialLoadHandler,
+            ^(NSError *error, UIImage *image, id metadata) {
+              completionHandler(error, image, metadata, nil);
+            });
       }
       [cancelLoadLock lock];
       cancelLoad = cancelLoadLocal;
@@ -913,7 +957,7 @@ static RCTPlatformImage *RCTResizeImageIfNeeded(RCTPlatformImage *image, CGSize 
 {
   id<RCTImageURLLoader> loadHandler = [self imageURLLoaderForURL:url];
   if ([loadHandler respondsToSelector:@selector(shouldEnablePerfLogging)]) {
-    return [(id<RCTImageURLLoaderWithAttribution>)loadHandler shouldEnablePerfLogging];
+    return [(id<RCTImageLoaderLoggable>)loadHandler shouldEnablePerfLogging];
   }
   return NO;
 }

@@ -12,7 +12,6 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTConvert.h>
 #import <React/RCTFabricSurface.h>
-#import <React/RCTInitializeUIKitProxies.h>
 #import <React/RCTInspectorDevServerHelper.h>
 #import <React/RCTInspectorNetworkHelper.h>
 #import <React/RCTInspectorUtils.h>
@@ -22,6 +21,7 @@
 #import <React/RCTPausedInDebuggerOverlayController.h>
 #import <React/RCTPerformanceLogger.h>
 #import <React/RCTReloadCommand.h>
+#import <React/RCTUtils.h>
 #import <jsinspector-modern/InspectorFlags.h>
 #import <jsinspector-modern/InspectorInterfaces.h>
 #import <jsinspector-modern/ReactCdp.h>
@@ -48,12 +48,17 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
   jsinspector_modern::HostTargetMetadata getMetadata() override
   {
     auto metadata = [RCTInspectorUtils getHostMetadata];
+#if TARGET_OS_IPHONE
+    NSString *osName = [[UIDevice currentDevice] systemName];
+#else
+    NSString *osName = @"macOS";
+#endif
 
     return {
         .appDisplayName = [metadata.appDisplayName UTF8String],
         .appIdentifier = [metadata.appIdentifier UTF8String],
         .deviceName = [metadata.deviceName UTF8String],
-        .integrationName = [[NSString stringWithFormat:@"%@ Bridgeless (RCTHost)", metadata.platform] UTF8String],
+        .integrationName = [[NSString stringWithFormat:@"%@ Bridgeless (RCTHost)", osName] UTF8String],
         .platform = [metadata.platform UTF8String],
         .reactNativeVersion = [metadata.reactNativeVersion UTF8String],
     };
@@ -190,8 +195,8 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
                                        andSetter:bundleURLSetter
                                 andDefaultGetter:defaultBundleURLGetter];
 
-    // Listen to reload commands
-    dispatch_async(dispatch_get_main_queue(), ^{
+    RCTExecuteOnMainQueue(^{
+      // Listen to reload commands
       RCTRegisterReloadCommandListener(self);
     });
 
@@ -249,7 +254,6 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
                                              mode:(DisplayMode)displayMode
                                 initialProperties:(NSDictionary *)properties
 {
-  RCTInitializeUIKitProxies();
   RCTFabricSurface *surface = [[RCTFabricSurface alloc] initWithSurfacePresenter:self.surfacePresenter
                                                                       moduleName:moduleName
                                                                initialProperties:properties];
@@ -305,6 +309,14 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
 }
 
 #pragma mark - RCTInstanceDelegate
+
+- (NSArray<NSString *> *)unstableModulesRequiringMainQueueSetup
+{
+  if ([_hostDelegate respondsToSelector:@selector(unstableModulesRequiringMainQueueSetup)]) {
+    return [_hostDelegate unstableModulesRequiringMainQueueSetup];
+  }
+  return @[];
+}
 
 - (BOOL)instance:(RCTInstance *)instance
     didReceiveJSErrorStack:(NSArray<NSDictionary<NSString *, id> *> *)stack

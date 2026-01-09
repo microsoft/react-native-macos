@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow
+ * @format
  */
 
 'use strict';
@@ -321,6 +321,8 @@ exports.examples = [
 ];
 
 if (Platform.OS === 'ios') {
+  /* $FlowFixMe[incompatible-call] error found during natural inference roll-
+   * out. See https://fburl.com/workplace/tc9m3tcf */
   exports.examples.push({
     title: '[iOS Only] Custom background colors can be set',
     render(): React.MixedElement {

@@ -4,10 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
+import type {HostInstance} from '../../src/private/types/HostInstance';
 import type {ViewProps} from '../Components/View/ViewPropTypes';
 import type {RootTag} from '../ReactNative/RootTag';
 import type {DirectEventHandler} from '../Types/CodegenTypes';
@@ -15,11 +16,10 @@ import type {DirectEventHandler} from '../Types/CodegenTypes';
 import NativeEventEmitter from '../EventEmitter/NativeEventEmitter';
 import {type ColorValue} from '../StyleSheet/StyleSheet';
 import {type EventSubscription} from '../vendor/emitter/EventEmitter';
-import ModalInjection from './ModalInjection';
 import NativeModalManager from './NativeModalManager';
 import RCTModalHostView from './RCTModalHostViewNativeComponent';
 import VirtualizedLists from '@react-native-macos/virtualized-lists'; // [macOS]
-import React from 'react';
+import * as React from 'react';
 
 const ScrollView = require('../Components/ScrollView/ScrollView').default;
 const View = require('../Components/View/View').default;
@@ -35,6 +35,8 @@ const VirtualizedListContextResetter =
 type ModalEventDefinitions = {
   modalDismissed: [{modalID: number}],
 };
+
+export type PublicModalInstance = HostInstance;
 
 const ModalEventEmitter =
   Platform.OS === 'ios' && NativeModalManager != null
@@ -84,9 +86,9 @@ export type ModalBaseProps = {
    */
   visible?: ?boolean,
   /**
-   * The `onRequestClose` callback is called when the user taps the hardware back button on Android or the menu button on Apple TV.
+   * The `onRequestClose` callback is called when the user taps the hardware back button on Android, dismisses the sheet using a gesture on iOS (when `allowSwipeDismissal` is set to true) or the menu button on Apple TV.
    *
-   * This is required on Apple TV and Android.
+   * This is required on iOS and Android.
    */
   // onRequestClose?: (event: NativeSyntheticEvent<any>) => void;
   onRequestClose?: ?DirectEventHandler<null>,
@@ -101,6 +103,11 @@ export type ModalBaseProps = {
    * Defaults to `white` if not provided and transparent is `false`. Ignored if `transparent` is `true`.
    */
   backdropColor?: ColorValue,
+
+  /**
+   * A ref to the native Modal component.
+   */
+  modalRef?: React.RefSetter<PublicModalInstance>,
 };
 
 export type ModalPropsIOS = {
@@ -140,6 +147,12 @@ export type ModalPropsIOS = {
   //   | ((event: NativeSyntheticEvent<any>) => void)
   //   | undefined;
   onOrientationChange?: ?DirectEventHandler<OrientationChangeEvent>,
+
+  /**
+   * Controls whether the modal can be dismissed by swiping down on iOS.
+   * This requires you to implement the `onRequestClose` prop to handle the dismissal.
+   */
+  allowSwipeDismissal?: ?boolean,
 };
 
 export type ModalPropsAndroid = {
@@ -185,16 +198,26 @@ function confirmProps(props: ModalProps) {
         'Modal with translucent navigation bar and without translucent status bar is not supported.',
       );
     }
+
+    if (
+      Platform.OS === 'ios' &&
+      props.allowSwipeDismissal === true &&
+      !props.onRequestClose
+    ) {
+      console.warn(
+        'Modal requires the onRequestClose prop when used with `allowSwipeDismissal`. This is necessary to prevent state corruption.',
+      );
+    }
   }
 }
 
 // Create a state to track whether the Modal is rendering or not.
 // This is the only prop that controls whether the modal is rendered or not.
-type State = {
+type ModalState = {
   isRendered: boolean,
 };
 
-class Modal extends React.Component<ModalProps, State> {
+class Modal extends React.Component<ModalProps, ModalState> {
   static defaultProps: {hardwareAccelerated: boolean, visible: boolean} = {
     visible: true,
     hardwareAccelerated: false,
@@ -301,6 +324,8 @@ class Modal extends React.Component<ModalProps, State> {
 
     return (
       <RCTModalHostView
+        /* $FlowFixMe[incompatible-type] Natural Inference rollout. See
+         * https://fburl.com/workplace/6291gfvu */
         animationType={animationType}
         presentationStyle={presentationStyle}
         transparent={this.props.transparent}
@@ -308,6 +333,7 @@ class Modal extends React.Component<ModalProps, State> {
         onRequestClose={this.props.onRequestClose}
         onShow={this.props.onShow}
         onDismiss={onDismiss}
+        ref={this.props.modalRef}
         visible={this.props.visible}
         statusBarTranslucent={this.props.statusBarTranslucent}
         navigationBarTranslucent={this.props.navigationBarTranslucent}
@@ -317,6 +343,7 @@ class Modal extends React.Component<ModalProps, State> {
         onStartShouldSetResponder={this._shouldSetResponder}
         supportedOrientations={this.props.supportedOrientations}
         onOrientationChange={this.props.onOrientationChange}
+        allowSwipeDismissal={this.props.allowSwipeDismissal}
         testID={this.props.testID}>
         <VirtualizedListContextResetter>
           <ScrollView.Context.Provider value={null}>
@@ -343,6 +370,8 @@ const styles = StyleSheet.create({
   modal: {
     position: 'absolute',
   },
+  /* $FlowFixMe[incompatible-call] Natural Inference rollout. See
+   * https://fburl.com/workplace/6291gfvu */
   container: {
     /* $FlowFixMe[invalid-computed-prop] (>=0.111.0 site=react_native_fb) This
      * comment suppresses an error found when Flow v0.111 was deployed. To see
@@ -354,7 +383,25 @@ const styles = StyleSheet.create({
   },
 });
 
-const ExportedModal: React.ComponentType<React.ElementConfig<typeof Modal>> =
-  ModalInjection.unstable_Modal ?? Modal;
+type ModalRefProps = $ReadOnly<{
+  ref?: React.RefSetter<PublicModalInstance>,
+}>;
 
-export default ExportedModal;
+// NOTE: This wrapper component is necessary because `Modal` is a class
+// component and we need to map `ref` to a differently named prop. This can be
+// removed when `Modal` is a functional component.
+function Wrapper({
+  ref,
+  ...props
+}: {
+  ...ModalRefProps,
+  ...ModalProps,
+}): React.Node {
+  return <Modal {...props} modalRef={ref} />;
+}
+
+Wrapper.displayName = 'Modal';
+// $FlowExpectedError[prop-missing]
+Wrapper.Context = VirtualizedListContextResetter;
+
+export default Wrapper;

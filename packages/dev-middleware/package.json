@@ -1,6 +1,6 @@
 {
   "name": "@react-native/dev-middleware",
-  "version": "0.79.0-main",
+  "version": "0.81.0-main",
   "private": true,
   "description": "Dev server middleware for React Native",
   "keywords": [
@@ -28,7 +28,7 @@
     "chrome-launcher": "^0.15.2",
     "chromium-edge-launcher": "^0.2.0",
     "connect": "^3.6.5",
-    "debug": "^2.2.0",
+    "debug": "^4.4.0",
     "invariant": "^2.2.4",
     "nullthrows": "^1.1.1",
     "open": "^7.0.3",
@@ -36,7 +36,7 @@
     "ws": "^6.2.3"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">= 22.14.0"
   },
   "devDependencies": {
     "selfsigned": "^2.4.1",

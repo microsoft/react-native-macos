@@ -56,6 +56,12 @@ RCTAppSetupDefaultRootView(RCTBridge *bridge, NSString *moduleName, NSDictionary
   return [[RCTRootView alloc] initWithBridge:bridge moduleName:moduleName initialProperties:initialProperties];
 }
 
+NSArray<NSString *> *RCTAppSetupUnstableModulesRequiringMainQueueSetup(id<RCTDependencyProvider> dependencyProvider)
+{
+  // For oss, insert core main queue setup modules here
+  return dependencyProvider ? dependencyProvider.unstableModulesRequiringMainQueueSetup : @[];
+}
+
 id<RCTTurboModule> RCTAppSetupDefaultModuleFromClass(Class moduleClass, id<RCTDependencyProvider> dependencyProvider)
 {
   // private block used to filter out modules depending on protocol conformance
@@ -141,16 +147,10 @@ std::unique_ptr<facebook::react::JSExecutorFactory> RCTAppSetupDefaultJsExecutor
     }
     [turboModuleManager installJSBindings:runtime];
   };
-#if USE_HERMES
+#if USE_THIRD_PARTY_JSC != 1
   return std::make_unique<facebook::react::HermesExecutorFactory>(
       facebook::react::RCTJSIExecutorRuntimeInstaller(runtimeInstallerLambda));
-#elif USE_THIRD_PARTY_JSC != 1
-  return std::make_unique<facebook::react::JSCExecutorFactory>(
-      facebook::react::RCTJSIExecutorRuntimeInstaller(runtimeInstallerLambda));
-#else
-  throw std::runtime_error("No JSExecutorFactory specified.");
-  return nullptr;
-#endif // USE_HERMES
+#endif
 }
 
 std::unique_ptr<facebook::react::JSExecutorFactory> RCTAppSetupJsExecutorFactoryForOldArch(
@@ -165,14 +165,8 @@ std::unique_ptr<facebook::react::JSExecutorFactory> RCTAppSetupJsExecutorFactory
       facebook::react::RuntimeSchedulerBinding::createAndInstallIfNeeded(runtime, runtimeScheduler);
     }
   };
-#if USE_HERMES
+#if USE_THIRD_PARTY_JSC != 1
   return std::make_unique<facebook::react::HermesExecutorFactory>(
       facebook::react::RCTJSIExecutorRuntimeInstaller(runtimeInstallerLambda));
-#elif USE_THIRD_PARTY_JSC != 1
-  return std::make_unique<facebook::react::JSCExecutorFactory>(
-      facebook::react::RCTJSIExecutorRuntimeInstaller(runtimeInstallerLambda));
-#else
-  throw std::runtime_error("No JSExecutorFactory specified.");
-  return nullptr;
-#endif // USE_HERMES
+#endif
 }

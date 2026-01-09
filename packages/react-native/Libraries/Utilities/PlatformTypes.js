@@ -16,10 +16,16 @@ export type PlatformOSType =
   | 'web'
   | 'native';
 
-export type PlatformSelectSpec<T> = {
-  default?: T,
-  [PlatformOSType]: T,
+type OptionalPlatformSelectSpec<T> = {
+  [key in PlatformOSType]?: T, // eslint-disable-line no-unused-vars
 };
+
+export type PlatformSelectSpec<T> =
+  | {
+      ...OptionalPlatformSelectSpec<T>,
+      default: T,
+    }
+  | OptionalPlatformSelectSpec<T>;
 
 type IOSPlatform = {
   __constants: null,
@@ -156,6 +162,8 @@ type MacOSPlatform = {
 type WebPlatform = {
   OS: 'web',
   // $FlowFixMe[unsafe-getters-setters]
+  get Version(): void,
+  // $FlowFixMe[unsafe-getters-setters]
   get constants(): {
     reactNativeVersion: {
       major: number,
@@ -173,7 +181,7 @@ type WebPlatform = {
   select: <T>(spec: PlatformSelectSpec<T>) => T,
 };
 
-export type Platform =
+export type PlatformType =
   | IOSPlatform
   | AndroidPlatform
   | WindowsPlatform

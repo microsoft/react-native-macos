@@ -22,7 +22,9 @@
 
 - (void)createRootViewController:(RCTUIView *)view; // [macOS]
 
+#ifndef RCT_FIT_RM_OLD_RUNTIME
 - (instancetype)initWithWindow:(RCTPlatformWindow *)window bridge:(RCTBridge *)bridge; // [macOS]
+#endif // RCT_FIT_RM_OLD_RUNTIME
 - (instancetype)initWithWindow:(RCTPlatformWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter; // [macOS]
 
 - (void)show;

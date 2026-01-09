@@ -6,34 +6,37 @@
  */
 
 #include "RuntimeScheduler_Modern.h"
-#include "SchedulerPriorityUtils.h"
 
+#include <ReactCommon/RuntimeExecutorSyncUIThreadUtils.h>
 #include <cxxreact/TraceSection.h>
-#include <jsinspector-modern/tracing/EventLoopTaskReporter.h>
+#include <jsinspector-modern/tracing/EventLoopReporter.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/consistency/ScopedShadowTreeRevisionLock.h>
 #include <react/timing/primitives.h>
 #include <react/utils/OnScopeExit.h>
-#include <utility>
 
 namespace facebook::react {
 
 namespace {
-std::chrono::milliseconds getResolvedTimeoutForIdleTask(
-    std::chrono::milliseconds customTimeout) {
+HighResDuration getResolvedTimeoutForIdleTask(HighResDuration customTimeout) {
   return customTimeout <
           timeoutForSchedulerPriority(SchedulerPriority::IdlePriority)
       ? timeoutForSchedulerPriority(SchedulerPriority::LowPriority) +
           customTimeout
       : customTimeout;
 }
+
+int64_t durationToMilliseconds(HighResDuration duration) {
+  return duration.toNanoseconds() / static_cast<int64_t>(1e6);
+}
+
 } // namespace
 
 #pragma mark - Public
 
 RuntimeScheduler_Modern::RuntimeScheduler_Modern(
     RuntimeExecutor runtimeExecutor,
-    std::function<RuntimeSchedulerTimePoint()> now,
+    std::function<HighResTimeStamp()> now,
     RuntimeSchedulerTaskErrorHandler onTaskError)
     : runtimeExecutor_(std::move(runtimeExecutor)),
       now_(std::move(now)),
@@ -47,13 +50,6 @@ void RuntimeScheduler_Modern::scheduleWork(RawCallback&& callback) noexcept {
 std::shared_ptr<Task> RuntimeScheduler_Modern::scheduleTask(
     SchedulerPriority priority,
     jsi::Function&& callback) noexcept {
-  TraceSection s(
-      "RuntimeScheduler::scheduleTask",
-      "priority",
-      serialize(priority),
-      "callbackType",
-      "jsi::Function");
-
   auto expirationTime = now_() + timeoutForSchedulerPriority(priority);
   auto task =
       std::make_shared<Task>(priority, std::move(callback), expirationTime);
@@ -66,13 +62,6 @@ std::shared_ptr<Task> RuntimeScheduler_Modern::scheduleTask(
 std::shared_ptr<Task> RuntimeScheduler_Modern::scheduleTask(
     SchedulerPriority priority,
     RawCallback&& callback) noexcept {
-  TraceSection s(
-      "RuntimeScheduler::scheduleTask",
-      "priority",
-      serialize(priority),
-      "callbackType",
-      "RawCallback");
-
   auto expirationTime = now_() + timeoutForSchedulerPriority(priority);
   auto task =
       std::make_shared<Task>(priority, std::move(callback), expirationTime);
@@ -84,11 +73,11 @@ std::shared_ptr<Task> RuntimeScheduler_Modern::scheduleTask(
 
 std::shared_ptr<Task> RuntimeScheduler_Modern::scheduleIdleTask(
     jsi::Function&& callback,
-    RuntimeSchedulerTimeout customTimeout) noexcept {
+    HighResDuration customTimeout) noexcept {
   TraceSection s(
       "RuntimeScheduler::scheduleIdleTask",
       "customTimeout",
-      customTimeout.count(),
+      durationToMilliseconds(customTimeout),
       "callbackType",
       "jsi::Function");
 
@@ -104,11 +93,11 @@ std::shared_ptr<Task> RuntimeScheduler_Modern::scheduleIdleTask(
 
 std::shared_ptr<Task> RuntimeScheduler_Modern::scheduleIdleTask(
     RawCallback&& callback,
-    RuntimeSchedulerTimeout customTimeout) noexcept {
+    HighResDuration customTimeout) noexcept {
   TraceSection s(
       "RuntimeScheduler::scheduleIdleTask",
       "customTimeout",
-      customTimeout.count(),
+      durationToMilliseconds(customTimeout),
       "callbackType",
       "RawCallback");
 
@@ -122,11 +111,9 @@ std::shared_ptr<Task> RuntimeScheduler_Modern::scheduleIdleTask(
 }
 
 bool RuntimeScheduler_Modern::getShouldYield() noexcept {
-  std::shared_lock lock(schedulingMutex_);
+  markYieldingOpportunity(now_());
 
-  if (ReactNativeFeatureFlags::enableLongTaskAPI()) {
-    markYieldingOpportunity(now_());
-  }
+  std::shared_lock lock(schedulingMutex_);
 
   return syncTaskRequests_ > 0 ||
       (!taskQueue_.empty() && taskQueue_.top().get() != currentTask_);
@@ -141,7 +128,7 @@ SchedulerPriority RuntimeScheduler_Modern::getCurrentPriorityLevel()
   return currentPriority_;
 }
 
-RuntimeSchedulerTimePoint RuntimeScheduler_Modern::now() const noexcept {
+HighResTimeStamp RuntimeScheduler_Modern::now() const noexcept {
   return now_();
 }
 
@@ -165,13 +152,12 @@ void RuntimeScheduler_Modern::executeNowOnTheSameThread(
 
   syncTaskRequests_++;
   executeSynchronouslyOnSameThread_CAN_DEADLOCK(
-      runtimeExecutor_,
-      [this, currentTime, &task](jsi::Runtime& runtime) mutable {
+      runtimeExecutor_, [&](jsi::Runtime& runtime) mutable {
         TraceSection s2("RuntimeScheduler::executeNowOnTheSameThread callback");
 
         syncTaskRequests_--;
         runtimePtr = &runtime;
-        runEventLoopTick(runtime, task, currentTime);
+        runEventLoopTick(runtime, task);
         runtimePtr = nullptr;
       });
 
@@ -223,9 +209,22 @@ void RuntimeScheduler_Modern::setEventTimingDelegate(
   eventTimingDelegate_ = eventTimingDelegate;
 }
 
+void RuntimeScheduler_Modern::setIntersectionObserverDelegate(
+    RuntimeSchedulerIntersectionObserverDelegate*
+        intersectionObserverDelegate) {
+  intersectionObserverDelegate_ = intersectionObserverDelegate;
+}
+
 #pragma mark - Private
 
 void RuntimeScheduler_Modern::scheduleTask(std::shared_ptr<Task> task) {
+  TraceSection s(
+      "RuntimeScheduler::scheduleTask",
+      "priority",
+      serialize(task->priority),
+      "id",
+      task->id);
+
   bool shouldScheduleEventLoop = false;
 
   {
@@ -249,37 +248,29 @@ void RuntimeScheduler_Modern::scheduleTask(std::shared_ptr<Task> task) {
 }
 
 void RuntimeScheduler_Modern::scheduleEventLoop() {
-  runtimeExecutor_(
-      [this](jsi::Runtime& runtime) { runEventLoop(runtime, false); });
+  runtimeExecutor_([this](jsi::Runtime& runtime) { runEventLoop(runtime); });
 }
 
-void RuntimeScheduler_Modern::runEventLoop(
-    jsi::Runtime& runtime,
-    bool onlyExpired) {
+void RuntimeScheduler_Modern::runEventLoop(jsi::Runtime& runtime) {
   TraceSection s("RuntimeScheduler::runEventLoop");
 
   auto previousPriority = currentPriority_;
 
-  auto currentTime = now_();
   // `selectTask` must be called unconditionaly to ensure that
   // `isEventLoopScheduled_` is set to false and the event loop resume
   // correctly if a synchronous task is scheduled.
   // Unit test normalTaskYieldsToSynchronousAccessAndResumes covers this
   // scenario.
-  auto topPriorityTask = selectTask(currentTime, onlyExpired);
+  auto topPriorityTask = selectTask();
   while (topPriorityTask && syncTaskRequests_ == 0) {
-    runEventLoopTick(runtime, *topPriorityTask, currentTime);
-
-    currentTime = now_();
-    topPriorityTask = selectTask(currentTime, onlyExpired);
+    runEventLoopTick(runtime, *topPriorityTask);
+    topPriorityTask = selectTask();
   }
 
   currentPriority_ = previousPriority;
 }
 
-std::shared_ptr<Task> RuntimeScheduler_Modern::selectTask(
-    RuntimeSchedulerTimePoint currentTime,
-    bool onlyExpired) {
+std::shared_ptr<Task> RuntimeScheduler_Modern::selectTask() {
   // We need a unique lock here because we'll also remove executed tasks from
   // the top of the queue.
   std::unique_lock lock(schedulingMutex_);
@@ -294,11 +285,7 @@ std::shared_ptr<Task> RuntimeScheduler_Modern::selectTask(
   }
 
   if (!taskQueue_.empty()) {
-    auto task = taskQueue_.top();
-    auto didUserCallbackTimeout = task->expirationTime <= currentTime;
-    if (!onlyExpired || didUserCallbackTimeout) {
-      return task;
-    }
+    return taskQueue_.top();
   }
 
   return nullptr;
@@ -306,11 +293,10 @@ std::shared_ptr<Task> RuntimeScheduler_Modern::selectTask(
 
 void RuntimeScheduler_Modern::runEventLoopTick(
     jsi::Runtime& runtime,
-    Task& task,
-    RuntimeSchedulerTimePoint taskStartTime) {
+    Task& task) {
   TraceSection s("RuntimeScheduler::runEventLoopTick");
-  [[maybe_unused]] jsinspector_modern::tracing::EventLoopTaskReporter
-      performanceReporter;
+  jsinspector_modern::tracing::EventLoopReporter performanceReporter(
+      jsinspector_modern::tracing::EventLoopPhase::Task);
 
   ScopedShadowTreeRevisionLock revisionLock(
       shadowTreeRevisionConsistencyManager_);
@@ -318,11 +304,9 @@ void RuntimeScheduler_Modern::runEventLoopTick(
   currentTask_ = &task;
   currentPriority_ = task.priority;
 
-  if (ReactNativeFeatureFlags::enableLongTaskAPI()) {
-    lastYieldingOpportunity_ = taskStartTime;
-    longestPeriodWithoutYieldingOpportunity_ =
-        std::chrono::milliseconds::zero();
-  }
+  auto taskStartTime = now_();
+  lastYieldingOpportunity_ = taskStartTime;
+  longestPeriodWithoutYieldingOpportunity_ = HighResDuration::zero();
 
   auto didUserCallbackTimeout = task.expirationTime <= taskStartTime;
   executeTask(runtime, task, didUserCallbackTimeout);
@@ -330,11 +314,9 @@ void RuntimeScheduler_Modern::runEventLoopTick(
   // "Perform a microtask checkpoint" step.
   performMicrotaskCheckpoint(runtime);
 
-  if (ReactNativeFeatureFlags::enableLongTaskAPI()) {
-    auto taskEndTime = now_();
-    markYieldingOpportunity(taskEndTime);
-    reportLongTasks(task, taskStartTime, taskEndTime);
-  }
+  auto taskEndTime = now_();
+  markYieldingOpportunity(taskEndTime);
+  reportLongTasks(task, taskStartTime, taskEndTime);
 
   // "Update the rendering" step.
   updateRendering();
@@ -350,9 +332,18 @@ void RuntimeScheduler_Modern::runEventLoopTick(
 void RuntimeScheduler_Modern::updateRendering() {
   TraceSection s("RuntimeScheduler::updateRendering");
 
-  if (eventTimingDelegate_ != nullptr &&
-      ReactNativeFeatureFlags::enableReportEventPaintTime()) {
-    eventTimingDelegate_->dispatchPendingEventTimingEntries(
+  // This is the integration of the Event Timing API in the Event Loop.
+  // See https://w3c.github.io/event-timing/#sec-modifications-HTML
+  const auto eventTimingDelegate = eventTimingDelegate_.load();
+  if (eventTimingDelegate != nullptr) {
+    eventTimingDelegate->dispatchPendingEventTimingEntries(
+        surfaceIdsWithPendingRenderingUpdates_);
+  }
+
+  // This is the integration of the Intersection Observer API in the Event Loop.
+  // See
+  if (intersectionObserverDelegate_ != nullptr) {
+    intersectionObserverDelegate_->updateIntersectionObservations(
         surfaceIdsWithPendingRenderingUpdates_);
   }
 
@@ -373,6 +364,8 @@ void RuntimeScheduler_Modern::executeTask(
     bool didUserCallbackTimeout) const {
   TraceSection s(
       "RuntimeScheduler::executeTask",
+      "id",
+      task.id,
       "priority",
       serialize(task.priority),
       "didUserCallbackTimeout",
@@ -403,11 +396,13 @@ void RuntimeScheduler_Modern::executeTask(
  */
 void RuntimeScheduler_Modern::performMicrotaskCheckpoint(
     jsi::Runtime& runtime) {
-  TraceSection s("RuntimeScheduler::performMicrotaskCheckpoint");
-
   if (performingMicrotaskCheckpoint_) {
     return;
   }
+
+  TraceSection s("RuntimeScheduler::performMicrotaskCheckpoint");
+  jsinspector_modern::tracing::EventLoopReporter performanceReporter(
+      jsinspector_modern::tracing::EventLoopPhase::Microtasks);
 
   performingMicrotaskCheckpoint_ = true;
   OnScopeExit restoreFlag([&]() { performingMicrotaskCheckpoint_ = false; });
@@ -440,24 +435,22 @@ void RuntimeScheduler_Modern::performMicrotaskCheckpoint(
 
 void RuntimeScheduler_Modern::reportLongTasks(
     const Task& /*task*/,
-    RuntimeSchedulerTimePoint startTime,
-    RuntimeSchedulerTimePoint endTime) {
+    HighResTimeStamp startTime,
+    HighResTimeStamp endTime) {
   auto reporter = performanceEntryReporter_;
   if (reporter == nullptr) {
     return;
   }
 
-  auto checkedDurationMs =
-      chronoToDOMHighResTimeStamp(longestPeriodWithoutYieldingOpportunity_);
-  if (checkedDurationMs >= LONG_TASK_DURATION_THRESHOLD_MS) {
-    auto durationMs = chronoToDOMHighResTimeStamp(endTime - startTime);
-    auto startTimeMs = chronoToDOMHighResTimeStamp(startTime);
-    reporter->reportLongTask(startTimeMs, durationMs);
+  if (longestPeriodWithoutYieldingOpportunity_ >=
+      LONG_TASK_DURATION_THRESHOLD) {
+    auto duration = endTime - startTime;
+    reporter->reportLongTask(startTime, duration);
   }
 }
 
 void RuntimeScheduler_Modern::markYieldingOpportunity(
-    RuntimeSchedulerTimePoint currentTime) {
+    HighResTimeStamp currentTime) {
   auto currentPeriod = currentTime - lastYieldingOpportunity_;
   if (currentPeriod > longestPeriodWithoutYieldingOpportunity_) {
     longestPeriodWithoutYieldingOpportunity_ = currentPeriod;

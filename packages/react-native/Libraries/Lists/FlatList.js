@@ -15,6 +15,7 @@ import type {
   ListRenderItemInfo,
   ViewabilityConfigCallbackPair,
   ViewToken,
+  VirtualizedListProps,
 } from '@react-native-macos/virtualized-lists'; // [macOS]
 
 import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
@@ -22,7 +23,7 @@ import {type ScrollResponderType} from '../Components/ScrollView/ScrollView';
 import View from '../Components/View/View';
 import VirtualizedLists from '@react-native-macos/virtualized-lists'; // [macOS]
 import memoizeOne from 'memoize-one';
-import React from 'react';
+import * as React from 'react';
 
 const StyleSheet = require('../StyleSheet/StyleSheet').default;
 const deepDiffer = require('../Utilities/differ/deepDiffer').default;
@@ -32,14 +33,14 @@ const invariant = require('invariant');
 const VirtualizedList = VirtualizedLists.VirtualizedList;
 const defaultKeyExtractor = VirtualizedLists.keyExtractor;
 
-type RequiredProps<ItemT> = {
+type RequiredFlatListProps<ItemT> = {
   /**
    * An array (or array-like list) of items to render. Other data types can be
    * used by targeting VirtualizedList directly.
    */
   data: ?$ReadOnly<$ArrayLike<ItemT>>,
 };
-type OptionalProps<ItemT> = {
+type OptionalFlatListProps<ItemT> = {
   /**
    * Takes an item from `data` and renders it into the list. Example usage:
    *
@@ -169,7 +170,7 @@ type OptionalProps<ItemT> = {
   /**
    * See `ScrollView` for flow type and further documentation.
    */
-  fadingEdgeLength?: ?number,
+  fadingEdgeLength?: ?number | {start: number, end: number},
   /**
    * Enable an optimization to memoize the item renderer to prevent unnecessary rerenders.
    */
@@ -201,24 +202,19 @@ function isArrayLike(data: mixed): boolean {
 }
 
 type FlatListBaseProps<ItemT> = {
-  ...RequiredProps<ItemT>,
-  ...OptionalProps<ItemT>,
+  ...RequiredFlatListProps<ItemT>,
+  ...OptionalFlatListProps<ItemT>,
 };
 
-type VirtualizedListProps = React.ElementConfig<typeof VirtualizedList>;
-
 export type FlatListProps<ItemT> = {
-  ...$Diff<
+  ...Omit<
     VirtualizedListProps,
-    {
-      data: $PropertyType<VirtualizedListProps, 'data'>,
-      getItem: $PropertyType<VirtualizedListProps, 'getItem'>,
-      getItemCount: $PropertyType<VirtualizedListProps, 'getItemCount'>,
-      getItemLayout: $PropertyType<VirtualizedListProps, 'getItemLayout'>,
-      renderItem: $PropertyType<VirtualizedListProps, 'renderItem'>,
-      keyExtractor: $PropertyType<VirtualizedListProps, 'keyExtractor'>,
-      ...
-    },
+    | 'data'
+    | 'getItem'
+    | 'getItemCount'
+    | 'getItemLayout'
+    | 'renderItem'
+    | 'keyExtractor',
   >,
   ...FlatListBaseProps<ItemT>,
   ...

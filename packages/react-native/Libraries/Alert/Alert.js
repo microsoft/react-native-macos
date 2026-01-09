@@ -4,14 +4,14 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow
+ * @format
  */
 
 import type {DialogOptions} from '../NativeModules/specs/NativeDialogManagerAndroid';
 
 import Platform from '../Utilities/Platform';
-import RCTAlertManager from './RCTAlertManager';
+import {alertWithArgs} from './RCTAlertManager';
 
 /**
  * @platform ios
@@ -143,12 +143,15 @@ class Alert {
         if (action === constants.buttonClicked) {
           if (buttonKey === constants.buttonNeutral) {
             // $FlowFixMe[incompatible-type]
+            // $FlowFixMe[incompatible-use]
             buttonNeutral.onPress && buttonNeutral.onPress();
           } else if (buttonKey === constants.buttonNegative) {
             // $FlowFixMe[incompatible-type]
+            // $FlowFixMe[incompatible-use]
             buttonNegative.onPress && buttonNegative.onPress();
           } else if (buttonKey === constants.buttonPositive) {
             // $FlowFixMe[incompatible-type]
+            // $FlowFixMe[incompatible-use]
             buttonPositive.onPress && buttonPositive.onPress();
           }
         } else if (action === constants.dismissed) {
@@ -199,7 +202,7 @@ class Alert {
         });
       }
 
-      RCTAlertManager.alertWithArgs(
+      alertWithArgs(
         {
           title: title || '',
           message: message || undefined,

@@ -45,7 +45,7 @@ extra["publishing_version"] = project.findProperty("VERSION_NAME")?.toString()!!
 // This is the version of CMake we're requesting to the Android SDK to use.
 // If missing it will be downloaded automatically. Only CMake versions shipped with the
 // Android SDK are supported (you can find them listed in the SDK Manager of Android Studio).
-val cmakeVersion = System.getenv("CMAKE_VERSION") ?: "3.22.1"
+val cmakeVersion = System.getenv("CMAKE_VERSION") ?: "3.30.5"
 
 extra["cmake_version"] = cmakeVersion
 
@@ -70,7 +70,6 @@ val FAST_FLOAT_VERSION = libs.versions.fastFloat.get()
 val FMT_VERSION = libs.versions.fmt.get()
 val FOLLY_VERSION = libs.versions.folly.get()
 val GLOG_VERSION = libs.versions.glog.get()
-val GTEST_VERSION = libs.versions.gtest.get()
 
 val preparePrefab by
     tasks.registering(PreparePrefabHeadersTask::class) {
@@ -88,8 +87,6 @@ val preparePrefab by
                       // hermes_executor
                       // This prefab targets is used by Expo & Reanimated
                       Pair("../ReactCommon/hermes/inspector-modern/", "hermes/inspector-modern/"),
-                      // jscexecutor
-                      Pair("../ReactCommon/jsc/", "jsc/"),
                       // fabricjni
                       Pair("src/main/jni/react/fabric", "react/fabric/"),
                       // glog
@@ -237,10 +234,6 @@ val preparePrefab by
                   "hermestooling",
                   // hermes_executor
                   Pair("../ReactCommon/hermes/inspector-modern/", "hermes/inspector-modern/")),
-              PrefabPreprocessingEntry(
-                  "jsctooling",
-                  // jsc
-                  Pair("../ReactCommon/jsc/", "jsc/")),
           ))
       outputDir.set(prefabHeadersDir)
     }
@@ -378,26 +371,6 @@ val downloadGlog by
       dest(downloadGlogDest)
     }
 
-val downloadGtestDest = File(downloadsDir, "gtest.tar.gz")
-val downloadGtest by
-    tasks.registering(Download::class) {
-      dependsOn(createNativeDepsDirectories)
-      src("https://github.com/google/googletest/archive/refs/tags/release-${GTEST_VERSION}.tar.gz")
-      onlyIfModified(true)
-      overwrite(false)
-      retries(5)
-      quiet(true)
-      dest(downloadGtestDest)
-    }
-
-val prepareGtest by
-    tasks.registering(Copy::class) {
-      dependsOn(if (dependenciesPath != null) emptyList() else listOf(downloadGtest))
-      from(dependenciesPath ?: tarTree(downloadGtestDest))
-      eachFile { path = path.substringAfter("/") }
-      into(File(thirdPartyNdkDir, "googletest"))
-    }
-
 val prepareGlog by
     tasks.registering(PrepareGlogTask::class) {
       dependsOn(if (dependenciesPath != null) emptyList() else listOf(downloadGlog))
@@ -405,6 +378,19 @@ val prepareGlog by
       glogThirdPartyJniPath.set(project.file("src/main/jni/third-party/glog/"))
       glogVersion.set(GLOG_VERSION)
       outputDir.set(File(thirdPartyNdkDir, "glog"))
+    }
+
+// Tasks used by Fantom to download the Native 3p dependencies used.
+val prepareNative3pDependencies by
+    tasks.registering {
+      dependsOn(
+          prepareBoost,
+          prepareDoubleConversion,
+          prepareFastFloat,
+          prepareFmt,
+          prepareFolly,
+          prepareGlog,
+      )
     }
 
 val prepareKotlinBuildScriptModel by
@@ -522,6 +508,7 @@ android {
     buildConfigField("boolean", "UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE", "false")
 
     resValue("integer", "react_native_dev_server_port", reactNativeDevServerPort())
+    resValue("string", "react_native_dev_server_ip", "localhost")
 
     testApplicationId = "com.facebook.react.tests.gradle"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -534,13 +521,13 @@ android {
             "-DREACT_BUILD_DIR=$buildDir",
             "-DANDROID_STL=c++_shared",
             "-DANDROID_TOOLCHAIN=clang",
-            "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
+            "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
+            "-DCMAKE_POLICY_DEFAULT_CMP0069=NEW")
 
         targets(
             "reactnative",
             "jsi",
             "hermestooling",
-            "jsctooling",
         )
       }
     }
@@ -554,29 +541,12 @@ android {
     }
   }
 
-  buildTypes {
-    debug {
-      externalNativeBuild {
-        cmake {
-          // We want to build Gtest suite only for the debug variant.
-          targets("reactnative_unittest")
-        }
-      }
-    }
-  }
-
   tasks
       .getByName("preBuild")
       .dependsOn(
           buildCodegenCLI,
           "generateCodegenArtifactsFromSchema",
-          prepareBoost,
-          prepareDoubleConversion,
-          prepareFastFloat,
-          prepareFmt,
-          prepareFolly,
-          prepareGlog,
-          prepareGtest,
+          prepareNative3pDependencies,
           preparePrefab)
   tasks.getByName("generateCodegenSchemaFromJavaScript").dependsOn(buildCodegenCLI)
   prepareKotlinBuildScriptModel.dependsOn("preBuild")
@@ -606,10 +576,9 @@ android {
     resources.excludes.add("META-INF/LICENSE")
     // We intentionally don't want to bundle any JS Runtime inside the Android AAR
     // we produce. The reason behind this is that we want to allow users to pick the
-    // JS engine by specifying a dependency on either `hermes-engine` or `android-jsc`
+    // JS engine by specifying a dependency on either `hermes-engine` or other engines
     // that will include the necessary .so files to load.
     jniLibs.excludes.add("**/libhermes.so")
-    jniLibs.excludes.add("**/libjsc.so")
   }
 
   buildFeatures {
@@ -622,7 +591,6 @@ android {
     create("jsi") { headers = File(prefabHeadersDir, "jsi").absolutePath }
     create("reactnative") { headers = File(prefabHeadersDir, "reactnative").absolutePath }
     create("hermestooling") { headers = File(prefabHeadersDir, "hermestooling").absolutePath }
-    create("jsctooling") { headers = File(prefabHeadersDir, "jsctooling").absolutePath }
   }
 
   publishing {
@@ -667,10 +635,9 @@ dependencies {
   compileOnly(libs.javax.annotation.api)
   api(libs.javax.inject)
 
-  // It's up to the consumer to decide if hermes/jsc should be included or not.
-  // Therefore hermes-engine and jsc are compileOnly dependencies.
+  // It's up to the consumer to decide if hermes or other engines should be included or not.
+  // Therefore hermes-engine is a compileOnly dependencies.
   compileOnly(project(":packages:react-native:ReactAndroid:hermes-engine"))
-  compileOnly(libs.jsc.android)
 
   testImplementation(libs.junit)
   testImplementation(libs.assertj)
@@ -681,9 +648,7 @@ dependencies {
 }
 
 react {
-  // TODO: The library name is chosen for parity with Fabric components & iOS
-  // This should be changed to a more generic name, e.g. `ReactCoreSpec`.
-  libraryName = "rncore"
+  libraryName = "FBReactNativeSpec"
   jsRootDir = file("../src")
 }
 

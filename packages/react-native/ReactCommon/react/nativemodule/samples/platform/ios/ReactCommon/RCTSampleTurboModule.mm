@@ -9,16 +9,19 @@
 #import "RCTSampleTurboModulePlugin.h"
 
 #import <React/RCTAssert.h>
+#import <React/RCTInitializing.h>
 #import <React/RCTUtils.h>
 #import <ReactCommon/RCTTurboModuleWithJSIBindings.h>
 #import <React/RCTUIKit.h> // [macOS]
 
 using namespace facebook::react;
 
-@interface RCTSampleTurboModule () <RCTTurboModuleWithJSIBindings>
+@interface RCTSampleTurboModule () <RCTTurboModuleWithJSIBindings, RCTInitializing>
 @end
 
-@implementation RCTSampleTurboModule
+@implementation RCTSampleTurboModule {
+  NSDictionary *_constants;
+}
 
 // Backward-compatible export
 RCT_EXPORT_MODULE()
@@ -27,6 +30,27 @@ RCT_EXPORT_MODULE()
 + (BOOL)requiresMainQueueSetup
 {
   return YES;
+}
+
+- (void)initialize
+{
+#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_VISION // [visionOS]
+    UIScreen *mainScreen = UIScreen.mainScreen;
+    CGSize screenSize = mainScreen.bounds.size;
+#else // [visionOS
+	CGSize screenSize = CGSizeZero;
+#endif // visionOS]
+#else // [macOS
+    NSScreen *mainScreen = NSScreen.mainScreen;
+    CGSize screenSize = mainScreen.frame.size;
+#endif // macOS]
+
+  _constants = @{
+    @"const1" : @YES,
+    @"const2" : @(screenSize.width),
+    @"const3" : @"something",
+  };
 }
 
 - (dispatch_queue_t)methodQueue
@@ -49,28 +73,7 @@ RCT_EXPORT_MODULE()
 
 - (NSDictionary *)getConstants
 {
-  __block NSDictionary *constants;
-  RCTUnsafeExecuteOnMainQueueSync(^{
-#if !TARGET_OS_OSX // [macOS]
-#if !TARGET_OS_VISION // [visionOS]
-    UIScreen *mainScreen = UIScreen.mainScreen;
-    CGSize screenSize = mainScreen.bounds.size;
-#else // [visionOS
-	CGSize screenSize = CGSizeZero;
-#endif // visionOS]
-#else // [macOS
-    NSScreen *mainScreen = NSScreen.mainScreen;
-    CGSize screenSize = mainScreen.frame.size;
-#endif // macOS]
-
-    constants = @{
-      @"const1" : @YES,
-      @"const2" : @(screenSize.width),
-      @"const3" : @"something",
-    };
-  });
-
-  return constants;
+  return _constants;
 }
 
 // TODO: Remove once fully migrated to TurboModule.

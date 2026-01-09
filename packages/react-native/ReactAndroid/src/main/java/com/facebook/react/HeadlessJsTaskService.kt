@@ -17,7 +17,7 @@ import android.os.PowerManager
 import android.os.PowerManager.WakeLock
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.UiThreadUtil
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
 import com.facebook.react.jstasks.HeadlessJsTaskConfig
 import com.facebook.react.jstasks.HeadlessJsTaskContext.Companion.getInstance
 import com.facebook.react.jstasks.HeadlessJsTaskEventListener
@@ -49,7 +49,7 @@ public abstract class HeadlessJsTaskService : Service(), HeadlessJsTaskEventList
   }
 
   /**
-   * Called from [.onStartCommand] to create a [HeadlessJsTaskConfig] for this intent.
+   * Called from [onStartCommand] to create a [HeadlessJsTaskConfig] for this intent.
    *
    * @return a [HeadlessJsTaskConfig] to be used with [startTask], or `null` to ignore this command.
    */
@@ -116,16 +116,16 @@ public abstract class HeadlessJsTaskService : Service(), HeadlessJsTaskEventList
     get() = (application as ReactApplication).reactNativeHost
 
   /**
-   * Get the [ReactHost] used by this app. By default, assumes [.getApplication] is an instance of
-   * [ReactApplication] and calls [ReactApplication.getReactHost]. This method assumes it is called
-   * in new architecture and returns null if not.
+   * Get the [ReactHost] used by this app. By default, assumes [getApplication] is an instance of
+   * [ReactApplication] and calls [ReactApplication.reactHost]. This method assumes it is called in
+   * new architecture and returns null if not.
    */
   protected val reactHost: ReactHost?
     get() = (application as ReactApplication).reactHost
 
   protected val reactContext: ReactContext?
     get() {
-      if (ReactNativeFeatureFlags.enableBridgelessArchitecture()) {
+      if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
         val reactHost =
             checkNotNull(reactHost) { "ReactHost is not initialized in New Architecture" }
         return reactHost.currentReactContext
@@ -136,7 +136,7 @@ public abstract class HeadlessJsTaskService : Service(), HeadlessJsTaskEventList
     }
 
   private fun createReactContextAndScheduleTask(taskConfig: HeadlessJsTaskConfig) {
-    if (ReactNativeFeatureFlags.enableBridgelessArchitecture()) {
+    if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
       val reactHost = checkNotNull(reactHost)
       reactHost.addReactInstanceEventListener(
           object : ReactInstanceEventListener {
@@ -166,6 +166,7 @@ public abstract class HeadlessJsTaskService : Service(), HeadlessJsTaskEventList
      * Acquire a wake lock to ensure the device doesn't go to sleep while processing background
      * tasks.
      */
+    @JvmStatic
     @SuppressLint("WakelockTimeout")
     public fun acquireWakeLockNow(context: Context) {
       if (wakeLock == null || wakeLock?.isHeld == false) {

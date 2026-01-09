@@ -13,6 +13,7 @@ import com.facebook.proguard.annotations.DoNotStrip
 /** Callback impl that calls directly into the cxx bridge. Created from C++. */
 @DoNotStrip
 public class CxxCallbackImpl @DoNotStrip private constructor() : HybridClassBase(), Callback {
+
   override fun invoke(vararg args: Any?) {
     nativeInvoke(Arguments.fromJavaArgs(args))
   }

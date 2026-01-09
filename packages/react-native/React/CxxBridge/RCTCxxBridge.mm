@@ -23,7 +23,6 @@
 #import <React/RCTCxxUtils.h>
 #import <React/RCTDevSettings.h>
 #import <React/RCTDisplayLink.h>
-#import <React/RCTFollyConvert.h>
 #import <React/RCTJavaScriptLoader.h>
 #import <React/RCTLog.h>
 #import <React/RCTModuleData.h>
@@ -44,12 +43,11 @@
 #import <cxxreact/ReactMarker.h>
 #import <jsinspector-modern/ReactCdp.h>
 #import <jsireact/JSIExecutor.h>
+#import <react/utils/FollyConvert.h>
 #import <reactperflogger/BridgeNativeModulePerfLogger.h>
 
-#if USE_HERMES
+#if !defined(USE_HERMES) || USE_HERMES == 1
 #import <reacthermes/HermesExecutorFactory.h>
-#elif USE_THIRD_PARTY_JSC != 1
-#import "JSCExecutorFactory.h"
 #endif
 #import "RCTJSIExecutorRuntimeInstaller.h"
 
@@ -64,6 +62,8 @@
 #if RCT_DEV_MENU && __has_include(<React/RCTDevLoadingViewProtocol.h>)
 #import <React/RCTDevLoadingViewProtocol.h>
 #endif
+
+#ifndef RCT_FIT_RM_OLD_RUNTIME
 
 static NSString *const RCTJSThreadName = @"com.facebook.react.JavaScript";
 
@@ -190,6 +190,37 @@ struct RCTInstanceCallback : public InstanceCallback {
     [bridge_ batchDidComplete];
   }
 };
+
+@interface RCTBridgeDisplayLinkModuleHolder : NSObject <RCTDisplayLinkModuleHolder>
+- (instancetype)initWithModuleData:(RCTModuleData *)moduleData;
+@end
+
+@implementation RCTBridgeDisplayLinkModuleHolder {
+  RCTModuleData *_moduleData;
+}
+
+- (instancetype)initWithModuleData:(RCTModuleData *)moduleData
+{
+  _moduleData = moduleData;
+  return self;
+}
+
+- (id<RCTBridgeModule>)instance
+{
+  return _moduleData.instance;
+}
+
+- (Class)moduleClass
+{
+  return _moduleData.moduleClass;
+}
+
+- (dispatch_queue_t)methodQueue
+{
+  return _moduleData.methodQueue;
+}
+
+@end
 
 @implementation RCTCxxBridge {
   BOOL _didInvalidate;
@@ -450,12 +481,8 @@ struct RCTInstanceCallback : public InstanceCallback {
     }
     if (!executorFactory) {
       auto installBindings = RCTJSIExecutorRuntimeInstaller(nullptr);
-#if USE_HERMES
+#if !defined(USE_HERMES) || USE_HERMES == 1
       executorFactory = std::make_shared<HermesExecutorFactory>(installBindings);
-#elif USE_THIRD_PARTY_JSC != 1
-      executorFactory = std::make_shared<JSCExecutorFactory>(installBindings);
-#else
-      throw std::runtime_error("No JSExecutorFactory specified.");
 #endif
     }
   } else {
@@ -1007,7 +1034,9 @@ struct RCTInstanceCallback : public InstanceCallback {
 
 - (void)registerModuleForFrameUpdates:(id<RCTBridgeModule>)module withModuleData:(RCTModuleData *)moduleData
 {
-  [_displayLink registerModuleForFrameUpdates:module withModuleData:moduleData];
+  id<RCTDisplayLinkModuleHolder> moduleHolder =
+      [[RCTBridgeDisplayLinkModuleHolder alloc] initWithModuleData:moduleData];
+  [_displayLink registerModuleForFrameUpdates:module withModuleHolder:moduleHolder];
 }
 
 - (void)executeSourceCode:(NSData *)sourceCode withSourceURL:(NSURL *)url sync:(BOOL)sync
@@ -1121,7 +1150,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithBundleURL
 /**
  * Prevent super from calling setUp (that'd create another batchedBridge)
  */
-- (void)setUp {}
+- (void)setUp
+{
+}
 
 - (Class)executorClass
 {
@@ -1470,27 +1501,15 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithBundleURL
 
 - (void)batchDidComplete
 {
-  if (RCTBridgeModuleBatchDidCompleteDisabled()) {
-    id uiManager = [self moduleForName:@"UIManager"];
-    if ([uiManager respondsToSelector:@selector(batchDidComplete)] &&
-        [uiManager respondsToSelector:@selector(methodQueue)]) {
+  // TODO #12592471: batchDidComplete is only used by RCTUIManager,
+  // can we eliminate this special case?
+  for (RCTModuleData *moduleData in _moduleDataByID) {
+    if (moduleData.implementsBatchDidComplete) {
       [self
           dispatchBlock:^{
-            [uiManager batchDidComplete];
+            [moduleData.instance batchDidComplete];
           }
-                  queue:[uiManager methodQueue]];
-    }
-  } else {
-    // TODO #12592471: batchDidComplete is only used by RCTUIManager,
-    // can we eliminate this special case?
-    for (RCTModuleData *moduleData in _moduleDataByID) {
-      if (moduleData.implementsBatchDidComplete) {
-        [self
-            dispatchBlock:^{
-              [moduleData.instance batchDidComplete];
-            }
-                    queue:moduleData.methodQueue];
-      }
+                  queue:moduleData.methodQueue];
     }
   }
 }
@@ -1578,3 +1597,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithBundleURL
 }
 
 @end
+
+#else // RCT_FIT_RM_OLD_RUNTIME
+@implementation RCTCxxBridge
+@end
+#endif // RCT_FIT_RM_OLD_RUNTIME

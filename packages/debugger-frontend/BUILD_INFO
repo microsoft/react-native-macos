@@ -1,8 +1,8 @@
-@generated SignedSource<<347069bf171def94f2e48bf1e82bb02d>>
-Git revision: 97e9912605ce73b06f67fc607c1a5c434a67d6de
+@generated SignedSource<<8c4db6a5e1ba269169ac93cc53f95538>>
+Git revision: 51a91a2ad62e7f585912ed314a350a72de84d6ed
 Built with --nohooks: false
 Is local checkout: false
-Remote URL: https://github.com/facebookexperimental/rn-chrome-devtools-frontend
+Remote URL: https://github.com/facebook/react-native-devtools-frontend
 Remote branch: main
 GN build args (overrides only): 
   is_official_build = true
