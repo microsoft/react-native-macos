@@ -12,11 +12,10 @@ import type {HostInstance} from '../../src/private/types/HostInstance';
 import type {
   BlurEvent,
   FocusEvent,
-  KeyEvent,
   GestureResponderEvent,
   MouseEvent,
-  // [macOS]
 } from '../Types/CoreEventTypes';
+import type {KeyEvent} from '../Types/CoreEventTypes'; // [macOS]
 
 import SoundManager from '../Components/Sound/SoundManager';
 import ReactNativeFeatureFlags from '../ReactNative/ReactNativeFeatureFlags';

@@ -15,18 +15,20 @@ import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import type {
   BlurEvent,
   FocusEvent,
-  // [macOS]
-  DragEvent,
-  HandledKeyEvent,
-  KeyEvent,
   GestureResponderEvent,
   LayoutChangeEvent,
   LayoutRectangle,
   MouseEvent,
   PointerEvent,
-  GestureResponderEvent,
-  ScrollEvent, // [macOS]
 } from '../../Types/CoreEventTypes';
+// [macOS
+import type {
+  DragEvent,
+  HandledKeyEvent,
+  KeyEvent,
+  ScrollEvent,
+} from '../../Types/CoreEventTypes';
+// macOS]
 import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
 import type {
   AccessibilityActionEvent,

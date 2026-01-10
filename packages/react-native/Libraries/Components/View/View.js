@@ -8,8 +8,8 @@
  * @format
  */
 
+import type {HandledKeyEvent, KeyEvent} from '../../Types/CoreEventTypes'; // [macOS]
 import type {ViewProps} from './ViewPropTypes';
-import type {KeyEvent, HandledKeyEvent} from 'react-native'; // [macOS]
 
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import TextAncestorContext from '../../Text/TextAncestorContext';
@@ -31,6 +31,51 @@ export default component View(
   const hasTextAncestor = use(TextAncestorContext);
 
   let actualView;
+
+  // [macOS
+  const _onKeyDown = (event: KeyEvent) => {
+    const keyDownEvents = props.keyDownEvents;
+    if (keyDownEvents != null && !event.isPropagationStopped()) {
+      const isHandled = keyDownEvents.some(
+        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+          return (
+            event.nativeEvent.key === key &&
+            Boolean(metaKey) === event.nativeEvent.metaKey &&
+            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+            Boolean(altKey) === event.nativeEvent.altKey &&
+            Boolean(shiftKey) === event.nativeEvent.shiftKey
+          );
+        },
+      );
+      if (isHandled === true) {
+        event.stopPropagation();
+      }
+    }
+    props.onKeyDown?.(event);
+  };
+
+  const _onKeyUp = (event: KeyEvent) => {
+    const keyUpEvents = props.keyUpEvents;
+    if (keyUpEvents != null && !event.isPropagationStopped()) {
+      const isHandled = keyUpEvents.some(
+        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
+          return (
+            event.nativeEvent.key === key &&
+            Boolean(metaKey) === event.nativeEvent.metaKey &&
+            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+            Boolean(altKey) === event.nativeEvent.altKey &&
+            Boolean(shiftKey) === event.nativeEvent.shiftKey
+          );
+        },
+      );
+      if (isHandled === true) {
+        event.stopPropagation();
+      }
+    }
+    props.onKeyUp?.(event);
+  };
+  // macOS]
+
   if (ReactNativeFeatureFlags.reduceDefaultPropsInView()) {
     const {
       accessibilityState,
@@ -116,50 +161,6 @@ export default component View(
         text: ariaValueText ?? accessibilityValue?.text,
       };
     }
-
-    // [macOS
-    const _onKeyDown = (event: KeyEvent) => {
-      const keyDownEvents = otherProps.keyDownEvents;
-      if (keyDownEvents != null && !event.isPropagationStopped()) {
-        const isHandled = keyDownEvents.some(
-          ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
-            return (
-              event.nativeEvent.key === key &&
-              Boolean(metaKey) === event.nativeEvent.metaKey &&
-              Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-              Boolean(altKey) === event.nativeEvent.altKey &&
-              Boolean(shiftKey) === event.nativeEvent.shiftKey
-            );
-          },
-        );
-        if (isHandled === true) {
-          event.stopPropagation();
-        }
-      }
-      otherProps.onKeyDown?.(event);
-    };
-
-    const _onKeyUp = (event: KeyEvent) => {
-      const keyUpEvents = otherProps.keyUpEvents;
-      if (keyUpEvents != null && !event.isPropagationStopped()) {
-        const isHandled = keyUpEvents.some(
-          ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
-            return (
-              event.nativeEvent.key === key &&
-              Boolean(metaKey) === event.nativeEvent.metaKey &&
-              Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-              Boolean(altKey) === event.nativeEvent.altKey &&
-              Boolean(shiftKey) === event.nativeEvent.shiftKey
-            );
-          },
-        );
-        if (isHandled === true) {
-          event.stopPropagation();
-        }
-      }
-      otherProps.onKeyUp?.(event);
-    };
-    // macOS]
 
     actualView =
       ref == null ? (

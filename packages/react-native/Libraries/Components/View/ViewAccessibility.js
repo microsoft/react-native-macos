@@ -54,7 +54,7 @@ export type AccessibilityRole =
   | 'drawerlayout'
   | 'slidingdrawer'
   | 'iconmenu'
-  | 'menubutton'; // [macOS]
+  | 'menubutton' // [macOS]
   | string;
 
 // Role types for web

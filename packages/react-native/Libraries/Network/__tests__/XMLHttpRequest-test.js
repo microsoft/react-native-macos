@@ -21,7 +21,8 @@ jest.unmock('../../Utilities/Platform');
 jest.mock('../../Utilities/GlobalPerformanceLogger');
 let requestId = 1;
 function setRequestId(id: number) {
-  if (Platform.OS === 'ios' || Platform.OS === 'macos') { // [macOS]
+  if (Platform.OS === 'ios' || Platform.OS === 'macos') {
+    // [macOS]
     return;
   }
   requestId = id;

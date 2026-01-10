@@ -222,7 +222,7 @@ class Alert {
       );
       // [macOS
     } else if (Platform.OS === 'macos') {
-      const defaultInputs = [{default: defaultValue}];
+      const defaultInputs: DefaultInputsArray = [{default: defaultValue}];
       Alert.promptMacOS(title, message, callbackOrButtons, type, defaultInputs);
     }
     // macOS]
@@ -300,7 +300,7 @@ class Alert {
       });
     }
 
-    RCTAlertManager.alertWithArgs(
+    alertWithArgs(
       {
         title: title || undefined,
         message: message || undefined,

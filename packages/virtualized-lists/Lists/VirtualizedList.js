@@ -23,8 +23,8 @@ import type {
   ScrollResponderType,
   StyleProp,
   ViewStyle,
-  KeyEvent, // [macOS]
 } from 'react-native';
+import type {KeyEvent} from 'react-native/Libraries/Types/CoreEventTypes'; // [macOS]
 
 import clamp from '../Utilities/clamp';
 import infoLog from '../Utilities/infoLog';

@@ -175,7 +175,7 @@ let BaseImage: AbstractImageIOS = ({
         return (
           <ImageViewNativeComponent
             accessibilityState={_accessibilityState}
-            accessibilityRole={accessibilityRole || 'image'} // [macOS]
+            accessibilityRole={accessibilityRole ?? 'image'} // [macOS]
             {...restProps}
             accessible={props.alt !== undefined ? true : props.accessible}
             accessibilityLabel={accessibilityLabel ?? props.alt}

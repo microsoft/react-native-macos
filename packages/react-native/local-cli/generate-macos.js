@@ -1,3 +1,4 @@
+// @noflow
 'use strict';
 
 const {

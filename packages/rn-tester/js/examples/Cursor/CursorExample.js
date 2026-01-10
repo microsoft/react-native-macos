@@ -8,6 +8,8 @@
  * @format
  */
 
+import type {CursorValue} from 'react-native/Libraries/StyleSheet/StyleSheetTypes';
+
 import * as React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
@@ -89,7 +91,7 @@ function CursorExampleViewFlattening(): React.Node {
 
 // [macOS
 
-function BoxWithCursor({cursor}) {
+function BoxWithCursor({cursor}: {cursor: CursorValue}): React.Node {
   return (
     <View style={{cursor, padding: 10, borderWidth: 1}}>
       <Text style={{fontSize: 11}}>{cursor}</Text>
@@ -97,8 +99,8 @@ function BoxWithCursor({cursor}) {
   );
 }
 
-function CursorExampleMacOS() {
-  const cursors = [
+function CursorExampleMacOS(): React.Node {
+  const cursors: Array<CursorValue> = [
     'auto',
     'alias',
     'all-scroll',

@@ -10,17 +10,19 @@
 
 import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import type {
-  BlurEvent,
-  // [macOS
-  FocusEvent,
-  DragEvent,
-  HandledKeyEvent,
-  KeyEvent,
   GestureResponderEvent,
   LayoutChangeEvent,
   MouseEvent,
-  // macOS]
 } from '../../Types/CoreEventTypes';
+// [macOS
+import type {
+  BlurEvent,
+  DragEvent,
+  FocusEvent,
+  HandledKeyEvent,
+  KeyEvent,
+} from '../../Types/CoreEventTypes';
+// macOS]
 import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
 import type {ViewProps} from '../View/ViewPropTypes';
 

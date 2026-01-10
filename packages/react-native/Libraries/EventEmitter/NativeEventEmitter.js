@@ -53,7 +53,8 @@ export default class NativeEventEmitter<
   _nativeModule: ?NativeModule;
 
   constructor(nativeModule?: ?NativeModule) {
-    if (Platform.OS === 'ios' || Platform.OS === 'macos') { // [macOS]
+    if (Platform.OS === 'ios' || Platform.OS === 'macos') {
+      // [macOS]
       invariant(
         nativeModule != null,
         '`new NativeEventEmitter()` requires a non-null argument.',

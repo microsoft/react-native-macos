@@ -13,6 +13,7 @@ import PlatformAndroid from '../Platform.android';
 // $FlowFixMe[missing-platform-support]
 import PlatformIOS from '../Platform.ios';
 // $FlowFixMe[missing-platform-support]
+// $FlowFixMe[cannot-resolve-module]
 import PlatformMacOS from '../Platform.macos'; // [macOS]
 
 describe('Platform', () => {

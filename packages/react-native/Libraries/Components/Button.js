@@ -11,17 +11,15 @@
 'use strict';
 
 import type {TextStyleProp, ViewStyleProp} from '../StyleSheet/StyleSheet';
-import type {
-  GestureResponderEvent,
-  BlurEvent,
-  FocusEvent,
-} from '../Types/CoreEventTypes'; // [macOS]
+import type {GestureResponderEvent} from '../Types/CoreEventTypes';
+import type {BlurEvent, FocusEvent} from '../Types/CoreEventTypes'; // [macOS]
 import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
+  AccessibilityRole,
+  // [macOS]
   AccessibilityState,
-} from './View/ViewAccessibility';
-import type {AccessibilityRole} from './View/ViewAccessibility'; // [macOS]
+} from './View/ViewAccessibility'; // [macOS]
 
 import StyleSheet, {type ColorValue} from '../StyleSheet/StyleSheet';
 import Text from '../Text/Text';

@@ -14,7 +14,8 @@ import type {
   RNTesterModule,
   RNTesterModuleExample,
 } from '../../types/RNTesterTypes';
-import type {KeyboardTypeOptions, SettingChangeEvent} from 'react-native'; // [macOS]
+import type {KeyboardTypeOptions} from 'react-native';
+import type {SettingChangeEvent} from 'react-native/Libraries/Components/TextInput/TextInput.flow'; // [macOS]
 
 import RNTesterText from '../../components/RNTesterText';
 import ExampleTextInput from './ExampleTextInput';
@@ -25,13 +26,13 @@ import {
   Alert,
   Button,
   InputAccessoryView,
-  Platform, // [macOS]
   StyleSheet,
   Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import {Platform} from 'react-native'; // [macOS]
 
 class WithLabel extends React.Component<$FlowFixMeProps> {
   render(): React.Node {

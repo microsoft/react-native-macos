@@ -193,7 +193,7 @@ module.exports = {
     return require('./Libraries/Utilities/codegenNativeComponent').default;
   },
   // [macOS
-    get ColorWithSystemEffectMacOS() {
+  get ColorWithSystemEffectMacOS() {
     return require('./Libraries/StyleSheet/PlatformColorValueTypesMacOS')
       .ColorWithSystemEffectMacOS;
   }, // macOS]
@@ -218,8 +218,8 @@ module.exports = {
   },
   // [macOS
   get DynamicColorMacOS() {
-  return require('./Libraries/StyleSheet/PlatformColorValueTypesMacOS')
-    .DynamicColorMacOS;
+    return require('./Libraries/StyleSheet/PlatformColorValueTypesMacOS')
+      .DynamicColorMacOS;
   },
   // macOS]
   get Easing() {
