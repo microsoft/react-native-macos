@@ -1006,7 +1006,10 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
       },
       animated?: boolean, // deprecated, put this inside the rect argument instead
     ) => {
-      invariant(Platform.OS === 'ios' || Platform.OS === 'macos', 'zoomToRect is not implemented'); // [macOS]
+      invariant(
+        Platform.OS === 'ios' || Platform.OS === 'macos', // [macOS]
+        'zoomToRect is not implemented',
+      );
       if ('animated' in rect) {
         this._animated = rect.animated;
         delete rect.animated;

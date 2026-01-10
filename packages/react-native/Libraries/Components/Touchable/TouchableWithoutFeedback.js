@@ -13,12 +13,12 @@ import type {EdgeInsetsOrSizeProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {
   BlurEvent,
   FocusEvent,
-  MouseEvent, // [macOS]
-  DragEvent, // [macOS]
   GestureResponderEvent,
   LayoutChangeEvent,
 } from '../../Types/CoreEventTypes';
 // [macOS
+import type {DragEvent, MouseEvent} from '../../Types/CoreEventTypes';
+// macOS]
 import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
 
 import View from '../../Components/View/View';

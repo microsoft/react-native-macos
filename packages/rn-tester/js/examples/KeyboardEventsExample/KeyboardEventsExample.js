@@ -10,13 +10,12 @@
 
 'use strict'; // [macOS]
 
-import * as React from 'react';
-
 import type {
   HandledKeyEvent,
   KeyEvent,
 } from 'react-native/Libraries/Types/CoreEventTypes';
 
+import * as React from 'react';
 import {Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
 
 function formatKeyEvent(event: KeyEvent) {

@@ -16,7 +16,7 @@ import type {
   SectionBase as _SectionBase,
   SectionData,
   VirtualizedSectionListProps,
-} from '@react-native/virtualized-lists';
+} from '@react-native-macos/virtualized-lists'; // [macOS]
 
 import Platform from '../Utilities/Platform';
 import VirtualizedLists from '@react-native-macos/virtualized-lists'; // [macOS]

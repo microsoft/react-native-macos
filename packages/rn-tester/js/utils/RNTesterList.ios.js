@@ -165,7 +165,8 @@ const APIs: Array<RNTesterModuleInfo> = ([
   // [macOS
   {
     key: 'FocusEvents',
-    module: require('../examples/FocusEventsExample/FocusEventsExample'),
+    module: require('../examples/FocusEventsExample/FocusEventsExample')
+      .default,
     category: 'macOS',
   },
   {
@@ -192,7 +193,7 @@ const APIs: Array<RNTesterModuleInfo> = ([
     key: 'TooltipExample',
     module: require('../examples/Tooltip/TooltipExample'),
     category: 'macOS',
-  }, 
+  },
   {
     key: 'DragAndDropExample',
     category: 'UI',

@@ -18,7 +18,8 @@ import RNTesterText from '../../components/RNTesterText';
 import ImageCapInsetsExample from './ImageCapInsetsExample';
 import React from 'react';
 import {useEffect, useState} from 'react';
-import {Image, ImageBackground, Platform, StyleSheet, Text, View} from 'react-native'; // [macOS]
+import {Image, ImageBackground, StyleSheet, Text, View} from 'react-native';
+import {Platform} from 'react-native'; // [macOS]
 
 const IMAGE1 =
   'https://www.facebook.com/assets/fb_lite_messaging/E2EE-settings@3x.png';

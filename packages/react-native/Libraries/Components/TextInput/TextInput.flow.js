@@ -10,13 +10,19 @@
 
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {
-  DataTransfer, // [macOS]
   BlurEvent,
   FocusEvent,
   GestureResponderEvent,
   NativeSyntheticEvent,
   ScrollEvent,
 } from '../../Types/CoreEventTypes';
+// [macOS
+import type {
+  DataTransfer,
+  HandledKeyEvent,
+  KeyEvent,
+} from '../../Types/CoreEventTypes';
+// macOS]
 import type {ViewProps} from '../View/ViewPropTypes';
 
 import {type ColorValue, type TextStyleProp} from '../../StyleSheet/StyleSheet';

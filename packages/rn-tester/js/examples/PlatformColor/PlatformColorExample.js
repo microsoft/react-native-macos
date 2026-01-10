@@ -13,13 +13,13 @@ import type {ColorValue} from 'react-native';
 import RNTesterText from '../../components/RNTesterText';
 import React from 'react';
 import {
-  ColorWithSystemEffectMacOS, // [macOS]
   DynamicColorIOS,
   Platform,
   PlatformColor,
   StyleSheet,
   View,
 } from 'react-native';
+import {ColorWithSystemEffectMacOS, DynamicColorMacOS} from 'react-native'; // [macOS]
 
 function PlatformColorsExample() {
   function createTable() {
@@ -200,7 +200,8 @@ function PlatformColorsExample() {
 
 function FallbackColorsExample() {
   let color: {label?: string, color?: ColorValue} = {};
-  if (Platform.OS === 'ios' || Platform.OS === 'macos') { // [macOS]
+  if (Platform.OS === 'ios' || Platform.OS === 'macos') {
+    // [macOS]
     color = {
       label: "PlatformColor('bogus', 'systemGreenColor')",
       color: PlatformColor('bogus', 'systemGreenColor'),

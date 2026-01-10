@@ -11,15 +11,14 @@
 import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {____TextStyle_Internal as TextStyleInternal} from '../../StyleSheet/StyleSheetTypes';
 import type {
-  DataTransfer, // [macOS]
   BlurEvent,
   FocusEvent,
   GestureResponderEvent,
-  KeyEvent, // [macOS]
-  HandledKeyEvent, // [macOS]
-  NativeSyntheticEvent,
   ScrollEvent,
 } from '../../Types/CoreEventTypes';
+// [macOS
+import type {HandledKeyEvent, KeyEvent} from '../../Types/CoreEventTypes';
+// macOS]
 import type {
   AutoCapitalize,
   EnterKeyHintType,
@@ -44,9 +43,7 @@ import type {
   TextInputContentSizeChangeEvent,
   TextInputEditingEvent,
   TextInputEndEditingEvent,
-  SettingChangeEvent, // [macOS]
-  PasteEvent, // [macOS]
-  SubmitKeyEvent, // [macOS]
+  // [macOS]
   TextInputEvent,
   TextInputFocusEvent,
   TextInputInstance,
