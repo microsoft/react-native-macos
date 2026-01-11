@@ -4,6 +4,7 @@
  * Licensed under the MIT License.
  * @format
  */
+// @noflow
 'use strict';
 
 /**
@@ -37,6 +38,7 @@
 const chalk = require('chalk');
 const child_process = require('child_process');
 const path = require('path');
+
 const {logger, CLIError, getDefaultUserTerminal} = (() => {
   const cli = require.resolve('@react-native-community/cli/package.json');
   const options = {paths: [path.dirname(cli)]};

@@ -16,6 +16,8 @@ export type DraggedType = 'fileUrl' | 'image' | 'string';
 
 export type DraggedTypesType = DraggedType | $ReadOnlyArray<DraggedType>;
 
-module.exports = {
-  DraggedTypes: ['fileUrl', 'image', 'string'],
-};
+export const DraggedTypes: $ReadOnlyArray<DraggedType> = [
+  'fileUrl',
+  'image',
+  'string',
+];

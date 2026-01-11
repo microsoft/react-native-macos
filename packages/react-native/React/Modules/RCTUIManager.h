@@ -19,8 +19,6 @@
  */
 RCT_EXTERN NSString *const RCTUIManagerWillUpdateViewsDueToContentSizeMultiplierChangeNotification;
 
-void RCTTraverseViewNodes(id<RCTComponent> view, void (^block)(id<RCTComponent>)); // [macOS]
-
 @class RCTLayoutAnimationGroup;
 @class RCTUIManagerObserverCoordinator;
 

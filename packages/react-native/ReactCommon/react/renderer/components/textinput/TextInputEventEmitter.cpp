@@ -13,7 +13,8 @@ namespace facebook::react {
 
 static jsi::Value textInputMetricsPayload(
     jsi::Runtime& runtime,
-    const TextInputEventEmitter::Metrics& textInputMetrics) {
+    const TextInputEventEmitter::Metrics& textInputMetrics,
+    bool includeSelectionState) {
   auto payload = jsi::Object(runtime);
 
   payload.setProperty(
@@ -25,7 +26,7 @@ static jsi::Value textInputMetricsPayload(
 
   payload.setProperty(runtime, "eventCount", textInputMetrics.eventCount);
 
-  {
+  if (includeSelectionState) {
     auto selection = jsi::Object(runtime);
     selection.setProperty(
         runtime, "start", textInputMetrics.selectionRange.location);
@@ -165,7 +166,7 @@ void TextInputEventEmitter::onContentSizeChange(
 
 void TextInputEventEmitter::onSelectionChange(
     const Metrics& textInputMetrics) const {
-  dispatchTextInputEvent("selectionChange", textInputMetrics);
+  dispatchTextInputEvent("selectionChange", textInputMetrics, true);
 }
 
 void TextInputEventEmitter::onEndEditing(
@@ -217,10 +218,13 @@ void TextInputEventEmitter::onPaste(
 
 void TextInputEventEmitter::dispatchTextInputEvent(
     const std::string& name,
-    const Metrics& textInputMetrics) const {
-  dispatchEvent(name, [textInputMetrics](jsi::Runtime& runtime) {
-    return textInputMetricsPayload(runtime, textInputMetrics);
-  });
+    const Metrics& textInputMetrics,
+    bool includeSelectionState) const {
+  dispatchEvent(
+      name, [includeSelectionState, textInputMetrics](jsi::Runtime& runtime) {
+        return textInputMetricsPayload(
+            runtime, textInputMetrics, includeSelectionState);
+      });
 }
 
 void TextInputEventEmitter::dispatchTextInputContentSizeChangeEvent(

@@ -14,6 +14,7 @@
 
 const React = require('react');
 const ReactNative = require('react-native');
+
 const {Text, View, StyleSheet, Platform} = ReactNative;
 
 class ViewFocusRingExample extends React.Component<{}> {

@@ -10,8 +10,8 @@
 
 'use strict';
 
-import type {Domain} from '../../src/private/debugging/setUpFuseboxReactDevToolsDispatcher';
-import type {Spec as NativeReactDevToolsRuntimeSettingsModuleSpec} from '../../src/private/fusebox/specs/NativeReactDevToolsRuntimeSettingsModule';
+import type {Domain} from '../../src/private/devsupport/rndevtools/setUpFuseboxReactDevToolsDispatcher';
+import type {Spec as NativeReactDevToolsRuntimeSettingsModuleSpec} from '../../src/private/devsupport/rndevtools/specs/NativeReactDevToolsRuntimeSettingsModule';
 
 if (__DEV__) {
   if (typeof global.queueMicrotask !== 'function') {
@@ -31,18 +31,18 @@ if (__DEV__) {
 
 if (__DEV__) {
   // Register dispatcher on global, which can be used later by Chrome DevTools frontend
-  require('../../src/private/debugging/setUpFuseboxReactDevToolsDispatcher');
+  require('../../src/private/devsupport/rndevtools/setUpFuseboxReactDevToolsDispatcher');
   const {
     initialize,
     connectToDevTools,
     connectWithCustomMessagingProtocol,
   } = require('react-devtools-core');
 
-  const reactDevToolsSettingsManager = require('../../src/private/debugging/ReactDevToolsSettingsManager');
+  const reactDevToolsSettingsManager = require('../../src/private/devsupport/rndevtools/ReactDevToolsSettingsManager');
   const serializedHookSettings =
     reactDevToolsSettingsManager.getGlobalHookSettings();
   const maybeReactDevToolsRuntimeSettingsModuleModule =
-    require('../../src/private/fusebox/specs/NativeReactDevToolsRuntimeSettingsModule').default;
+    require('../../src/private/devsupport/rndevtools/specs/NativeReactDevToolsRuntimeSettingsModule').default;
 
   let hookSettings = null;
   if (serializedHookSettings != null) {
@@ -143,10 +143,7 @@ if (__DEV__) {
       // Get hostname from development server (packager)
       const devServer = getDevServer();
       const host = devServer.bundleLoadedFromServer
-        ? devServer.url
-            .replace(/https?:\/\//, '')
-            .replace(/\/$/, '')
-            .split(':')[0]
+        ? guessHostFromDevServerUrl(devServer.url)
         : 'localhost';
 
       // Read the optional global variable for backward compatibility.
@@ -258,4 +255,24 @@ function readReloadAndProfileConfig(
     onReloadAndProfile,
     onReloadAndProfileFlagsReset,
   };
+}
+
+/**
+ * This is a bad, no good, broken hack to get the host from a dev server URL for the purposes
+ * of connecting to the legacy React DevTools socket (for the standalone react-devtools package).
+ * It has too many bugs to list. Please don't use it in new code.
+ *
+ * The correct implementation would just be `return new URL(url).host`, but React Native does not
+ * ship with a spec-compliant `URL` class yet. Alternatively, this can be deleted when we delete
+ * `connectToWSBasedReactDevToolsFrontend`.
+ */
+function guessHostFromDevServerUrl(url: string): string {
+  const hopefullyHostAndPort = url
+    .replace(/https?:\/\//, '')
+    .replace(/\/$/, '');
+  // IPv6 addresses contain colons, so the split(':') below will return garbage.
+  if (hopefullyHostAndPort.includes(']')) {
+    return hopefullyHostAndPort.split(']')[0] + ']';
+  }
+  return hopefullyHostAndPort.split(':')[0];
 }

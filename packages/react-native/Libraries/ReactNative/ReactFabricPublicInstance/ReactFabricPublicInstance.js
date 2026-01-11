@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 /**
@@ -71,10 +71,7 @@ function getReadOnlyTextClass(): Class<ReadOnlyTextT> {
 }
 
 export function createPublicRootInstance(rootTag: RootTag): PublicRootInstance {
-  if (
-    ReactNativeFeatureFlags.enableAccessToHostTreeInFabric() &&
-    ReactNativeFeatureFlags.enableDOMDocumentAPI()
-  ) {
+  if (ReactNativeFeatureFlags.enableAccessToHostTreeInFabric()) {
     const ReactNativeDocumentModule = getReactNativeDocumentModule();
 
     // $FlowExpectedError[incompatible-return]

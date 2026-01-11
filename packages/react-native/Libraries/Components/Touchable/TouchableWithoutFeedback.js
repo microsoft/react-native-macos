@@ -13,12 +13,12 @@ import type {EdgeInsetsOrSizeProp} from '../../StyleSheet/EdgeInsetsPropType';
 import type {
   BlurEvent,
   FocusEvent,
-  MouseEvent, // [macOS]
-  DragEvent, // [macOS]
   GestureResponderEvent,
   LayoutChangeEvent,
 } from '../../Types/CoreEventTypes';
 // [macOS
+import type {DragEvent, MouseEvent} from '../../Types/CoreEventTypes';
+// macOS]
 import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
 
 import View from '../../Components/View/View';
@@ -27,7 +27,7 @@ import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
 import {type ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import * as React from 'react';
-import {useMemo} from 'react';
+import {cloneElement, useMemo} from 'react';
 
 export type TouchableWithoutFeedbackPropsIOS = {
   // [macOS
@@ -177,7 +177,7 @@ const PASSTHROUGH_PROPS = [
   'tooltip',
   // macOS]
   'testID',
-];
+] as const;
 
 /**
  * Do not use unless you have a very good reason.
@@ -318,5 +318,5 @@ export default function TouchableWithoutFeedback(
   }
 
   // $FlowFixMe[incompatible-call]
-  return React.cloneElement(element, elementProps, ...children);
+  return cloneElement(element, elementProps, ...children);
 }
