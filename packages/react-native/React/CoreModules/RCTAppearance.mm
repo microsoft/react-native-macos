@@ -115,7 +115,7 @@ NSString *RCTColorSchemePreference(NSAppearance *appearance)
     UITraitCollection *traitCollection = RCTKeyWindow().traitCollection;
     _currentColorScheme = RCTColorSchemePreference(traitCollection);
 #else // [macOS
-  NSAppearance *appearance = [RCTKeyWindow().currentAppearance;
+  NSAppearance *appearance = RCTKeyWindow().effectiveAppearance;
   _currentColorScheme = RCTColorSchemePreference(appearance);
 #endif // macOS]
     [[NSNotificationCenter defaultCenter] addObserver:self

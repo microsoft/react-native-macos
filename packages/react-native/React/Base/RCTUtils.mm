@@ -39,8 +39,10 @@ NSString *__nullable RCTHomePathForURL(NSURL *__nullable URL);
 // Determines if a given image URL refers to a image in Home directory (~)
 BOOL RCTIsHomeAssetURL(NSURL *__nullable imageURL);
 
+#if !TARGET_OS_OSX // [macOS]
 // Returns the current device's orientation
 UIDeviceOrientation RCTDeviceOrientation(void);
+#endif // [macOS]
 
 // Whether the New Architecture is enabled or not
 BOOL RCTIsNewArchEnabled(void)
@@ -363,6 +365,8 @@ static void RCTUnsafeExecuteOnMainQueueOnceSync(dispatch_once_t *onceToken, disp
   dispatch_sync(dispatch_get_main_queue(), executeOnce);
 }
 
+#if !TARGET_OS_OSX // [macOS]
+
 CGFloat RCTScreenScale(void)
 {
   static dispatch_once_t onceTokenScreenScale;
@@ -399,10 +403,12 @@ CGFloat RCTFontSizeMultiplier(void)
   return mapping[RCTSharedApplication().preferredContentSizeCategory].floatValue;
 }
 
+#if TARGET_OS_IOS // [visionOS]
 UIDeviceOrientation RCTDeviceOrientation(void)
 {
   return [[UIDevice currentDevice] orientation];
 }
+#endif // visionOS]
 
 CGSize RCTScreenSize(void)
 {
@@ -418,12 +424,16 @@ CGSize RCTScreenSize(void)
       portraitSize = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
     });
   });
-
+#if TARGET_OS_IOS // [visionOS]
   if (UIDeviceOrientationIsLandscape(RCTDeviceOrientation())) {
     return CGSizeMake(portraitSize.height, portraitSize.width);
   } else {
     return CGSizeMake(portraitSize.width, portraitSize.height);
   }
+#else // [visionOS
+  return CGSizeMake(portraitSize.width, portraitSize.height);
+#endif // visionOS]
+
 }
 #else // [macOS
 CGFloat RCTScreenScale(void)

@@ -7,6 +7,7 @@
 
 #import "RCTBoxShadow.h"
 
+#import <QuartzCore/QuartzCore.h> // [macOS]
 #import <React/RCTConversions.h>
 
 #import <react/renderer/graphics/Color.h>
@@ -65,7 +66,15 @@ static CALayer *initBoxShadowLayer(const BoxShadow &shadow, CGSize layerSize)
   // with the radius. This is an eyeballed adjustment that has the blur looking
   // more like the web.
   shadowLayer.shadowRadius = shadow.blurRadius / 2;
+#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_VISION // [visionOS]
   shadowLayer.contentsScale = [UIScreen mainScreen].scale;
+#else // [visionOS
+  shadowLayer.contentsScale = [UITraitCollection currentTraitCollection].displayScale;
+#endif // visionOS]
+#else // [macOS
+  shadowLayer.contentsScale = [NSScreen mainScreen].backingScaleFactor;
+#endif // macOS]
 
   return shadowLayer;
 }
@@ -84,7 +93,15 @@ RCTGetOutsetBoxShadowLayer(const facebook::react::BoxShadow &shadow, RCTCornerRa
   shadowLayer.shadowPath = shadowRectPath;
 
   CAShapeLayer *mask = [CAShapeLayer new];
+#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_VISION // [visionOS]
   [mask setContentsScale:[UIScreen mainScreen].scale];
+#else // [visionOS
+  [mask setContentsScale:[UITraitCollection currentTraitCollection].displayScale];
+#endif // visionOS]
+#else // [macOS
+  [mask setContentsScale:[NSScreen mainScreen].backingScaleFactor];
+#endif // macOS]
   CGMutablePathRef path = CGPathCreateMutable();
   CGPathRef layerPath =
       RCTPathCreateWithRoundedRect(shadowLayer.bounds, RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero), nil, NO);

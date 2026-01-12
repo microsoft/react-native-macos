@@ -540,10 +540,12 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     }
   }
 
+#if !TARGET_OS_OSX // [macOS]
   if (oldViewProps.accessibilityRespondsToUserInteraction != newViewProps.accessibilityRespondsToUserInteraction) {
     self.accessibilityElement.accessibilityRespondsToUserInteraction =
         newViewProps.accessibilityRespondsToUserInteraction;
   }
+#endif // [macOS]
 
   // `testId`
   if (oldViewProps.testId != newViewProps.testId) {
@@ -779,7 +781,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   return _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
 }
 
-- (RCTUIView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
+- (RCTPlatformView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
 {
   // This is a classic textbook implementation of `hitTest:` with a couple of improvements:
   //   * It does not stop algorithm if some touch is outside the view
@@ -790,7 +792,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 #if !TARGET_OS_OSX // [macOS]
   if (!self.userInteractionEnabled || self.hidden || self.alpha < 0.01) {
 #else // [macOS
-  if (!self.userInteractionEnabled || self.hidden) {
+  if (!self.userInteractionEnabled || self.hidden || self.alphaValue < 0.01 ) {
 #endif // macOS]
     return nil;
   }
@@ -805,8 +807,8 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     return nil;
   }
 
-  for (RCTUIView *subview in [self.subviews reverseObjectEnumerator]) { // [macOS]
-    RCTUIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event]; // [macOS]
+  for (RCTPlatformView *subview in [self.subviews reverseObjectEnumerator]) { // [macOS]
+    RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, [subview convertPoint:point fromView:self], event); // [macOS]
     if (hitView) {
       return hitView;
     }
@@ -815,7 +817,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   return isPointInside ? self : nil;
 }
 
-- (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
+- (RCTPlatformView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
 {
   switch (_props->pointerEvents) {
     case PointerEventsMode::Auto:
@@ -825,7 +827,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     case PointerEventsMode::BoxOnly:
       return [self pointInside:point withEvent:event] ? self : nil;
     case PointerEventsMode::BoxNone:
-      RCTUIView *view = [self betterHitTest:point withEvent:event]; // [macOS]
+      RCTPlatformView *view = [self betterHitTest:point withEvent:event]; // [macOS]
       return view != self ? view : nil;
   }
 }
@@ -1115,9 +1117,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       // rendering incorrectly on iOS, iOS apps in compatibility mode on visionOS, but not on visionOS.
       // To work around this, for iOS, we can calculate the border path based on `view.frame` (the
       // superview's coordinate space) instead of view.bounds.
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.frame, cornerInsets, NULL);
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.frame, cornerInsets, NULL, NO);
 #else // TARGET_OS_VISION
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL);
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL, NO);
 #endif
       UIBezierPath *bezierPath = [UIBezierPath bezierPathWithCGPath:borderPath];
       CGPathRelease(borderPath);
@@ -1434,6 +1436,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   return self;
 }
 
+#if !TARGET_OS_OSX // [macOS
 - (NSArray<NSObject *> *)accessibilityElements
 {
   if ([_accessibilityOrderNativeIDs count] <= 0) {
@@ -1472,12 +1475,13 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
   return _accessibilityElements;
 }
+#endif // macOS]
 
-+ (void)collectAccessibilityElements:(UIView *)view
-                      intoDictionary:(NSMutableDictionary<NSString *, UIView *> *)dict
++ (void)collectAccessibilityElements:(RCTUIView *)view // [macOS]
+                      intoDictionary:(NSMutableDictionary<NSString *, RCTUIView *> *)dict // [macOS]
                            nativeIds:(NSSet<NSString *> *)nativeIds
 {
-  for (UIView *subview in view.subviews) {
+  for (RCTUIView *subview in view.subviews) { // [macOS]
     if ([subview isKindOfClass:[RCTViewComponentView class]] &&
         [nativeIds containsObject:((RCTViewComponentView *)subview).nativeId]) {
       [dict setObject:subview forKey:((RCTViewComponentView *)subview).nativeId];
@@ -1730,7 +1734,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
     const RCTCornerInsets cornerInsets =
         RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero);
-    CGPathRef path = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL);
+    CGPathRef path = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL, NO); // [macOS]
 
     CGContextAddPath(context, path);
     CGContextFillPath(context);

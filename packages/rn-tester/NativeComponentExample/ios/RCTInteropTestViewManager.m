@@ -12,7 +12,7 @@
 
 RCT_EXPORT_MODULE(InteropTestView)
 
-- (UIView *)view
+- (RCTPlatformView *)view // [macOS]
 {
   return [[InteropTestView alloc] init];
 }

@@ -67,6 +67,7 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
   return YES;
 }
 
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTVirtualViewComponentView () <UIScrollViewDelegate>
 @end
 
@@ -382,3 +383,4 @@ Class<RCTComponentViewProtocol> VirtualViewCls(void)
 {
   return RCTVirtualViewComponentView.class;
 }
+#endif // [macOS]

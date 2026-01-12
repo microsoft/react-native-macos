@@ -380,7 +380,7 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
                              resizeMode:resizeMode
                         progressHandler:progressHandler
                      partialLoadHandler:partialLoadHandler
-          completionHandlerWithMetadata:^(NSError *error, UIImage *image, id metadata) {
+          completionHandlerWithMetadata:^(NSError *error, RCTPlatformImage *image, id metadata) { // [macOS]
             completionHandler(error, image, metadata);
           }];
   } else {
@@ -390,7 +390,7 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
                              resizeMode:resizeMode
                         progressHandler:progressHandler
                      partialLoadHandler:partialLoadHandler
-                      completionHandler:^(NSError *error, UIImage *image) {
+                      completionHandler:^(NSError *error, RCTPlatformImage *image) { // [macOS]
                         completionHandler(error, image, nil);
                       }];
   }
@@ -660,7 +660,7 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
         resizeMode,
         progressHandler,
         partialLoadHandler,
-        ^(NSError *error, UIImage *image, id metadata) {
+        ^(NSError *error, RCTPlatformImage *image, id metadata) {
           completionHandler(error, image, metadata, nil);
         });
     return [[RCTImageURLLoaderRequest alloc] initWithRequestId:nil imageURL:request.URL cancellationBlock:cb];
@@ -704,7 +704,7 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
             resizeMode,
             progressHandler,
             partialLoadHandler,
-            ^(NSError *error, UIImage *image, id metadata) {
+            ^(NSError *error, RCTPlatformImage *image, id metadata) { // [macOS]
               completionHandler(error, image, metadata, nil);
             });
       }

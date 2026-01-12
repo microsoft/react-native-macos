@@ -90,11 +90,12 @@ static NSUInteger RCTDeviceFreeMemory(void)
 
 - (void)setImage:(RCTPlatformImage *)image // [macOS]
 {
-  UIImage *thisImage = self.animatedImage != nil ? self.animatedImage : super.image;
+  RCTPlatformImage *thisImage = self.animatedImage != nil ? self.animatedImage : super.image; // [macOS]
   if (image == thisImage) {
     return;
   }
-
+  
+#if !TARGET_OS_OSX // [macOS]
   [self stop];
   [self resetAnimatedImage];
 
@@ -128,6 +129,9 @@ static NSUInteger RCTDeviceFreeMemory(void)
   }
 
   super.image = image;
+#else // [macOS
+  [super setImage:image];
+#endif // macOS]
 }
 
 #pragma mark - Private

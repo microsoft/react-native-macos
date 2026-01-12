@@ -291,7 +291,6 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
     eventEmitter->onRequestClose({});
   }
 }
-#endif // [macOS]
 
 - (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController
 {
@@ -302,6 +301,7 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
     eventEmitter->onRequestClose({});
   }
 }
+#endif // [macOS]
 
 @end
 
