@@ -37,7 +37,7 @@
  @param error An error to log in an XCTAssert() macro if the method fails (missing reference image, images differ, etc).
  @returns YES if the comparison (or saving of the reference image) succeeded.
  */
-- (BOOL)compareSnapshotOfView:(RCTUIView *)view // [macOS]
+- (BOOL)compareSnapshotOfView:(RCTPlatformView *)view // [macOS]
      referenceImagesDirectory:(NSString *)referenceImagesDirectory
                    identifier:(NSString *)identifier
                         error:(NSError **)errorPtr;

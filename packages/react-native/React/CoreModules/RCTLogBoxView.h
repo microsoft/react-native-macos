@@ -20,7 +20,7 @@
 - (instancetype)initWithFrame:(CGRect)frame;
 #endif // [macOS]
 
-- (void)createRootViewController:(RCTUIView *)view; // [macOS]
+- (void)createRootViewController:(RCTPlatformView *)view; // [macOS]
 
 #ifndef RCT_FIT_RM_OLD_RUNTIME
 - (instancetype)initWithWindow:(RCTPlatformWindow *)window bridge:(RCTBridge *)bridge; // [macOS]

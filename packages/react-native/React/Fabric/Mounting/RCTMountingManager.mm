@@ -160,7 +160,7 @@ static void RCTPerformMountInstructions(
   _contextContainer = contextContainer;
 }
 
-- (void)attachSurfaceToView:(RCTUIView *)view surfaceId:(SurfaceId)surfaceId // [macOS]
+- (void)attachSurfaceToView:(RCTPlatformView *)view surfaceId:(SurfaceId)surfaceId // [macOS]
 {
   RCTAssertMainQueue();
 
@@ -171,7 +171,7 @@ static void RCTPerformMountInstructions(
   [view addSubview:rootViewDescriptor.view];
 }
 
-- (void)detachSurfaceFromView:(RCTUIView *)view surfaceId:(SurfaceId)surfaceId // [macOS]
+- (void)detachSurfaceFromView:(RCTPlatformView *)view surfaceId:(SurfaceId)surfaceId // [macOS]
 {
   RCTAssertMainQueue();
   RCTComponentViewDescriptor rootViewDescriptor = [_componentViewRegistry componentViewDescriptorWithTag:surfaceId];

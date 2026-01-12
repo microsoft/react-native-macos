@@ -120,10 +120,10 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
   CGFloat _endDraggingSensitivityMultiplier;
 }
 
-+ (RCTScrollViewComponentView *_Nullable)findScrollViewComponentViewForView:(RCTUIView *)view // [macOS]
++ (RCTScrollViewComponentView *_Nullable)findScrollViewComponentViewForView:(RCTPlatformView *)view // [macOS]
 {
   do {
-    view = (RCTUIView *)view.superview; // [macOS]
+    view = (RCTPlatformView *)view.superview; // [macOS]
   } while (view != nil && ![view isKindOfClass:[RCTScrollViewComponentView class]]);
   return (RCTScrollViewComponentView *)view;
 }
@@ -877,7 +877,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _updateStateWithContentOffset];
 }
 
-- (RCTUIView *)viewForZoomingInScrollView:(__unused RCTUIScrollView *)scrollView // [macOS]
+- (RCTPlatformView *)viewForZoomingInScrollView:(__unused RCTUIScrollView *)scrollView // [macOS]
 {
   return _containerView;
 }

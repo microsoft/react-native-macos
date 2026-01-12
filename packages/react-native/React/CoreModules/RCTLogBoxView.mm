@@ -31,7 +31,7 @@
 }
 #endif // [macOS]
 
-- (void)createRootViewController:(RCTUIView *)view // [macOS]
+- (void)createRootViewController:(RCTPlatformView *)view // [macOS]
 {
   RCTPlatformViewController *_rootViewController = [RCTPlatformViewController new]; // [macOS]
   _rootViewController.view = view;

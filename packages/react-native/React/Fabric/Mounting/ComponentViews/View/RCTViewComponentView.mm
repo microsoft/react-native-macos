@@ -1477,11 +1477,11 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 }
 #endif // macOS]
 
-+ (void)collectAccessibilityElements:(RCTUIView *)view // [macOS]
-                      intoDictionary:(NSMutableDictionary<NSString *, RCTUIView *> *)dict // [macOS]
++ (void)collectAccessibilityElements:(RCTPlatformView *)view // [macOS]
+                      intoDictionary:(NSMutableDictionary<NSString *, RCTPlatformView *> *)dict // [macOS]
                            nativeIds:(NSSet<NSString *> *)nativeIds
 {
-  for (RCTUIView *subview in view.subviews) { // [macOS]
+  for (RCTPlatformView *subview in view.subviews) { // [macOS]
     if ([subview isKindOfClass:[RCTViewComponentView class]] &&
         [nativeIds containsObject:((RCTViewComponentView *)subview).nativeId]) {
       [dict setObject:subview forKey:((RCTViewComponentView *)subview).nativeId];

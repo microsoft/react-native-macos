@@ -37,12 +37,12 @@ NS_ASSUME_NONNULL_BEGIN
  * influence the intrinsic size of the view and cannot be measured using UIView/UIKit layout API.
  * Must be called on the main thead.
  */
-- (void)attachSurfaceToView:(RCTUIView *)view surfaceId:(facebook::react::SurfaceId)surfaceId; // [macOS]
+- (void)attachSurfaceToView:(RCTPlatformView *)view surfaceId:(facebook::react::SurfaceId)surfaceId; // [macOS]
 
 /**
  * Stops designating the view as a rendering viewport of a React Native surface.
  */
-- (void)detachSurfaceFromView:(RCTUIView *)view surfaceId:(facebook::react::SurfaceId)surfaceId; // [macOS]
+- (void)detachSurfaceFromView:(RCTPlatformView *)view surfaceId:(facebook::react::SurfaceId)surfaceId; // [macOS]
 
 /**
  * Schedule a mounting transaction to be performed on the main thread.

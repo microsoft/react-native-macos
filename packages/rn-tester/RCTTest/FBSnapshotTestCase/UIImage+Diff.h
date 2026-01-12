@@ -7,8 +7,8 @@
 
 #import <React/RCTUIKit.h> // [macOS]
 
-@interface UIImage (Diff)
+@interface RCTPlatformImage (Diff)
 
-- (UIImage *)diffWithImage:(UIImage *)image;
+- (RCTPlatformImage *)diffWithImage:(RCTPlatformImage *)image;
 
 @end

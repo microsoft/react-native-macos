@@ -35,7 +35,7 @@ using namespace facebook::react;
                  layoutManager:(RCTTextLayoutManager *)layoutManager
            paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                          frame:(CGRect)frame
-                          view:(RCTUIView *)view // [macOS]
+                          view:(RCTPlatformView *)view // [macOS]
 {
   if (self = [super init]) {
     _attributedString = attributedString;

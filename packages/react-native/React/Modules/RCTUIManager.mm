@@ -552,7 +552,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   [self _executeBlockWithShadowView:block forTag:rootView.reactTag];
 }
 
-- (void)setLocalData:(NSObject *)localData forView:(RCTUIView *)view // [macOS]
+- (void)setLocalData:(NSObject *)localData forView:(RCTPlatformView *)view // [macOS]
 {
   RCTAssertMainQueue();
   [self
@@ -575,7 +575,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   return view;
 }
 
-- (void)setNativeID:(NSString *)nativeID forView:(RCTUIView *)view // [macOS]
+- (void)setNativeID:(NSString *)nativeID forView:(RCTPlatformView *)view // [macOS]
 {
   if (!nativeID || !view) {
     return;
@@ -589,7 +589,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
   });
 }
 
-- (void)setSize:(CGSize)size forView:(RCTUIView *)view // [macOS]
+- (void)setSize:(CGSize)size forView:(RCTPlatformView *)view // [macOS]
 {
   RCTAssertMainQueue();
   [self
@@ -604,7 +604,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
                            forTag:view.reactTag];
 }
 
-- (void)setIntrinsicContentSize:(CGSize)intrinsicContentSize forView:(RCTUIView *)view // [macOS]
+- (void)setIntrinsicContentSize:(CGSize)intrinsicContentSize forView:(RCTPlatformView *)view // [macOS]
 {
   RCTAssertMainQueue();
   [self
