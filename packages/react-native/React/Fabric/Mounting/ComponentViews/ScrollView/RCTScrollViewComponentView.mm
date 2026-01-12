@@ -279,12 +279,10 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 }
 #endif
 
-#if !TARGET_OS_OSX // [macOS]
-- (RCTGenericDelegateSplitter<id<UIScrollViewDelegate>> *)scrollViewDelegateSplitter
+- (RCTGenericDelegateSplitter<id<RCTUIScrollViewDelegate>> *)scrollViewDelegateSplitter
 {
   return ((RCTEnhancedScrollView *)_scrollView).delegateSplitter;
 }
-#endif // [macOS]
 
 #pragma mark - RCTMountingTransactionObserving
 
@@ -1015,17 +1013,15 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 #endif // [macOS]
 }
 
-#if !TARGET_OS_OSX // [macOS]
-- (void)addScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener
+- (void)addScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener // [macOS]
 {
   [self.scrollViewDelegateSplitter addDelegate:scrollListener];
 }
 
-- (void)removeScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener
+- (void)removeScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener // [macOS]
 {
   [self.scrollViewDelegateSplitter removeDelegate:scrollListener];
 }
-#endif // [macOS]
 
 #pragma mark - Maintain visible content position
 

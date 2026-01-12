@@ -7,25 +7,13 @@
 
 #import "RCTEnhancedScrollView.h"
 #import <React/RCTUtils.h>
-#import <React/RCTScrollableProtocol.h> // [macOS]
-#import <React/RCTAutoInsetsProtocol.h> // [macOS]
 #import <react/utils/FloatComparison.h>
 
-@interface RCTEnhancedScrollView () <
-#if !TARGET_OS_OSX // [macOS]
-    UIScrollViewDelegate
-#else // [macOS
-    RCTScrollableProtocol, RCTAutoInsetsProtocol
-#endif // macOS]
->
+@interface RCTEnhancedScrollView () <RCTUIScrollViewDelegate> // [macOS]
 @end
 
 @implementation RCTEnhancedScrollView {
-#if !TARGET_OS_OSX // [macOS]
-  __weak id<UIScrollViewDelegate> _publicDelegate;
-#else// [macOS
-  __weak id<RCTScrollableProtocol, RCTAutoInsetsProtocol> _publicDelegate;
-#endif // macOS]
+  __weak id<RCTUIScrollViewDelegate> _publicDelegate; // [macOS]
   BOOL _isSetContentOffsetDisabled;
 }
 
@@ -53,13 +41,13 @@
     // because this attribute affects a position of vertical scrollbar; we don't want this
     // scrollbar flip because we also flip it with whole `UIScrollView` flip.
     self.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+#endif // [macOS]
 
     __weak __typeof(self) weakSelf = self;
     _delegateSplitter = [[RCTGenericDelegateSplitter alloc] initWithDelegateUpdateBlock:^(id delegate) {
       [weakSelf setPrivateDelegate:delegate];
     }];
     [_delegateSplitter addDelegate:self];
-#endif // [macOS]
   }
 
   return self;
@@ -140,18 +128,17 @@
 
 #pragma mark - RCTGenericDelegateSplitter
 
-#if !TARGET_OS_OSX // [macOS]
-- (void)setPrivateDelegate:(id<UIScrollViewDelegate>)delegate
+- (void)setPrivateDelegate:(id<RCTUIScrollViewDelegate>)delegate // [macOS]
 {
   [super setDelegate:delegate];
 }
 
-- (id<UIScrollViewDelegate>)delegate
+- (id<RCTUIScrollViewDelegate>)delegate // [macOS]
 {
   return _publicDelegate;
 }
 
-- (void)setDelegate:(id<UIScrollViewDelegate>)delegate
+- (void)setDelegate:(id<RCTUIScrollViewDelegate>)delegate // [macOS]
 {
   if (_publicDelegate == delegate) {
     return;
@@ -169,7 +156,6 @@
     [_delegateSplitter addDelegate:_publicDelegate];
   }
 }
-#endif // [macOS]
 
 #pragma mark - UIScrollViewDelegate
 

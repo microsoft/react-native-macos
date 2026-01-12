@@ -59,6 +59,7 @@ UIKIT_STATIC_INLINE void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath
 #define RCTPlatformView UIView
 #define RCTUIView UIView
 #define RCTUIScrollView UIScrollView
+#define RCTUIScrollViewDelegate UIScrollViewDelegate
 #define RCTPlatformImage UIImage
 #define RCTUIImage UIImage
 
@@ -441,6 +442,17 @@ void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath);
 
 // UIScrollView
 
+@class RCTUIScrollView;
+
+/**
+ * Protocol for objects that want to listen to scroll events on macOS.
+ * This mirrors the relevant parts of UIScrollViewDelegate for cross-platform compatibility.
+ */
+@protocol RCTUIScrollViewDelegate <NSObject>
+@optional
+- (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView;
+@end
+
 @interface RCTUIScrollView : NSScrollView
 
 // UIScrollView properties missing in NSScrollView
@@ -458,6 +470,7 @@ void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath);
 // macOS specific properties
 @property (nonatomic, assign) BOOL enableFocusRing;
 @property (nonatomic, assign, getter=isScrollEnabled) BOOL scrollEnabled;
+@property (nonatomic, weak, nullable) id<RCTUIScrollViewDelegate> delegate;
 
 - (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated;
 

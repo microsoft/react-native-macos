@@ -415,9 +415,21 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   if (self = [super initWithFrame:frame]) {
     self.scrollEnabled = YES;
     self.drawsBackground = NO;
+    self.contentView.postsBoundsChangedNotifications = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_rctuiHandleBoundsDidChange:)
+                                                 name:NSViewBoundsDidChangeNotification
+                                               object:self.contentView];
   }
   
   return self;
+}
+
+- (void)_rctuiHandleBoundsDidChange:(NSNotification *)notification
+{
+  if ([_delegate respondsToSelector:@selector(scrollViewDidScroll:)]) {
+    [_delegate scrollViewDidScroll:self];
+  }
 }
 
 - (void)setEnableFocusRing:(BOOL)enableFocusRing {

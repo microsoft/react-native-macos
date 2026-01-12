@@ -67,8 +67,7 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
   return YES;
 }
 
-#if !TARGET_OS_OSX // [macOS]
-@interface RCTVirtualViewComponentView () <UIScrollViewDelegate>
+@interface RCTVirtualViewComponentView () <RCTUIScrollViewDelegate> // [macOS]
 @end
 
 @implementation RCTVirtualViewComponentView {
@@ -119,7 +118,7 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
 
 - (RCTScrollViewComponentView *)getParentScrollViewComponentView
 {
-  UIView *view = self.superview;
+  RCTPlatformView *view = self.superview; // [macOS]
   while (view != nil) {
     if ([view isKindOfClass:[RCTScrollViewComponentView class]]) {
       return (RCTScrollViewComponentView *)view;
@@ -149,6 +148,7 @@ static BOOL sIsAccessibilityUsed = NO;
   }
 }
 
+#if !TARGET_OS_OSX // [macOS]
 - (NSInteger)accessibilityElementCount
 {
   // From empirical testing, method `accessibilityElementCount` is called lazily only
@@ -164,6 +164,14 @@ static BOOL sIsAccessibilityUsed = NO;
   [self _unhideIfNeeded];
   return [super focusItemsInRect:rect];
 }
+#else // [macOS
+- (NSArray *)accessibilityChildren
+{
+  // On macOS, accessibilityChildren is called when accessibility is used.
+  [self _unhideIfNeeded];
+  return [super accessibilityChildren];
+}
+#endif // macOS]
 
 - (void)prepareForRecycle
 {
@@ -191,9 +199,17 @@ static BOOL sIsAccessibilityUsed = NO;
   [self dispatchOnModeChangeIfNeeded:YES];
 }
 
+#if !TARGET_OS_OSX // [macOS]
 - (void)didMoveToWindow
+#else // [macOS
+- (void)viewDidMoveToWindow
+#endif // macOS]
 {
+#if !TARGET_OS_OSX // [macOS]
   [super didMoveToWindow];
+#else // [macOS
+  [super viewDidMoveToWindow];
+#endif // macOS]
 
   if (_lastParentScrollViewComponentView) {
     [_lastParentScrollViewComponentView removeScrollListener:self];
@@ -213,7 +229,7 @@ static BOOL sIsAccessibilityUsed = NO;
   }
 }
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+- (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // [macOS]
 {
   [self dispatchOnModeChangeIfNeeded:NO];
 }
@@ -224,8 +240,12 @@ static BOOL sIsAccessibilityUsed = NO;
     return;
   }
 
-  UIScrollView *scrollView = _lastParentScrollViewComponentView.scrollView;
+  RCTUIScrollView *scrollView = _lastParentScrollViewComponentView.scrollView; // [macOS]
+#if !TARGET_OS_OSX // [macOS]
   CGRect targetRect = [self convertRect:self.bounds toView:scrollView];
+#else // [macOS
+  CGRect targetRect = [self convertRect:self.bounds toView:scrollView.documentView];
+#endif // macOS]
 
   // While scrolling, the `targetRect` does not change, so we don't check for changed `targetRect` in that case.
   if (checkForTargetRectChange) {
@@ -383,4 +403,3 @@ Class<RCTComponentViewProtocol> VirtualViewCls(void)
 {
   return RCTVirtualViewComponentView.class;
 }
-#endif // [macOS]
