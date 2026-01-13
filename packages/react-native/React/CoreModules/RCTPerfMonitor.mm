@@ -5,8 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#if !TARGET_OS_OSX // [macOS]
-
 #import <React/RCTDefines.h>
 
 #import "CoreModulesPlugins.h"
@@ -30,6 +28,8 @@
 #import <React/RCTRootView.h>
 #import <React/RCTUIManager.h>
 #import <React/RCTUtils.h>
+#import <React/RCTPlatformDisplayLink.h> // [macOS]
+#import <React/RCTUIKit.h> // [macOS]
 #import <ReactCommon/RCTTurboModule.h>
 
 #if __has_include(<React/RCTDevMenu.h>)
@@ -62,22 +62,30 @@ static vm_size_t RCTGetResidentMemorySize(void)
   return memoryUsageInByte;
 }
 
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTPerfMonitor
     : NSObject <RCTBridgeModule, RCTTurboModule, RCTInvalidating, UITableViewDataSource, UITableViewDelegate>
+#else // [macOS
+@interface RCTPerfMonitor
+    : NSObject <RCTBridgeModule, RCTTurboModule, RCTInvalidating, NSTableViewDataSource, NSTableViewDelegate>
+#endif // macOS]
 
 #if __has_include(<React/RCTDevMenu.h>)
 @property (nonatomic, strong, readonly) RCTDevMenuItem *devMenuItem;
 #endif
-@property (nonatomic, strong, readonly) UIPanGestureRecognizer *gestureRecognizer;
-@property (nonatomic, strong, readonly) UIView *container;
-@property (nonatomic, strong, readonly) UILabel *memory;
-@property (nonatomic, strong, readonly) UILabel *heap;
-@property (nonatomic, strong, readonly) UILabel *views;
-@property (nonatomic, strong, readonly) UITableView *metrics;
+@property (nonatomic, strong, readonly) RCTUIPanGestureRecognizer *gestureRecognizer; // [macOS]
+@property (nonatomic, strong, readonly) RCTPlatformView *container; // [macOS]
+#if TARGET_OS_OSX // [macOS
+@property (nonatomic, strong, readonly) NSWindow *containerWindow;
+@property (nonatomic, strong, readonly) NSScrollView *metricsScrollView;
+#endif // macOS]
+@property (nonatomic, strong, readonly) RCTUILabel *memory; // [macOS]
+@property (nonatomic, strong, readonly) RCTUILabel *heap; // [macOS]
+@property (nonatomic, strong, readonly) RCTUILabel *views; // [macOS]
 @property (nonatomic, strong, readonly) RCTFPSGraph *jsGraph;
 @property (nonatomic, strong, readonly) RCTFPSGraph *uiGraph;
-@property (nonatomic, strong, readonly) UILabel *jsGraphLabel;
-@property (nonatomic, strong, readonly) UILabel *uiGraphLabel;
+@property (nonatomic, strong, readonly) RCTUILabel *jsGraphLabel; // [macOS]
+@property (nonatomic, strong, readonly) RCTUILabel *uiGraphLabel; // [macOS]
 
 @end
 
@@ -85,20 +93,26 @@ static vm_size_t RCTGetResidentMemorySize(void)
 #if __has_include(<React/RCTDevMenu.h>)
   RCTDevMenuItem *_devMenuItem;
 #endif
-  UIPanGestureRecognizer *_gestureRecognizer;
-  UIView *_container;
-  UILabel *_memory;
-  UILabel *_heap;
-  UILabel *_views;
-  UILabel *_uiGraphLabel;
-  UILabel *_jsGraphLabel;
+  RCTUIPanGestureRecognizer *_gestureRecognizer; // [macOS]
+  RCTPlatformView *_container; // [macOS]
+#if !TARGET_OS_OSX // [macOS]
   UITableView *_metrics;
+#else // [macOS
+  NSWindow *_containerWindow;
+  NSScrollView *_metricsScrollView;
+  NSTableView *_metrics;
+#endif // macOS]
+  RCTUILabel *_memory; // [macOS]
+  RCTUILabel *_heap; // [macOS]
+  RCTUILabel *_views; // [macOS]
+  RCTUILabel *_uiGraphLabel; // [macOS]
+  RCTUILabel *_jsGraphLabel; // [macOS]
 
   RCTFPSGraph *_uiGraph;
   RCTFPSGraph *_jsGraph;
 
-  CADisplayLink *_uiDisplayLink;
-  CADisplayLink *_jsDisplayLink;
+  RCTPlatformDisplayLink *_uiDisplayLink; // [macOS]
+  RCTPlatformDisplayLink *_jsDisplayLink; // [macOS]
 
   NSUInteger _heapSize;
 
@@ -161,37 +175,24 @@ RCT_EXPORT_MODULE()
 }
 #endif
 
-- (UIPanGestureRecognizer *)gestureRecognizer
+- (RCTUIPanGestureRecognizer *)gestureRecognizer // [macOS]
 {
   if (!_gestureRecognizer) {
-    _gestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(gesture:)];
+    _gestureRecognizer = [[RCTUIPanGestureRecognizer alloc] initWithTarget:self action:@selector(gesture:)];
   }
 
   return _gestureRecognizer;
 }
 
-- (UIView *)container
-{
-  if (!_container) {
-    UIEdgeInsets safeInsets = RCTKeyWindow().safeAreaInsets;
-
-    _container =
-        [[UIView alloc] initWithFrame:CGRectMake(safeInsets.left, safeInsets.top, 180, RCTPerfMonitorBarHeight)];
-    _container.layer.borderWidth = 2;
-    _container.layer.borderColor = [UIColor lightGrayColor].CGColor;
-    [_container addGestureRecognizer:self.gestureRecognizer];
-    [_container addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap)]];
-
-    _container.backgroundColor = [UIColor systemBackgroundColor];
-  }
-
-  return _container;
-}
-
-- (UILabel *)memory
+- (RCTUILabel *)memory // [macOS]
 {
   if (!_memory) {
-    _memory = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 44, RCTPerfMonitorBarHeight)];
+#if !TARGET_OS_OSX // [macOS]
+    _memory = [[RCTUILabel alloc] initWithFrame:CGRectMake(0, 0, 44, RCTPerfMonitorBarHeight)];
+#else // [macOS
+    _memory = [[RCTUILabel alloc] initWithFrame:CGRectMake(2, 0, 58, RCTPerfMonitorBarHeight)];
+    _memory.autoresizingMask = NSViewMinYMargin;
+#endif // macOS]
     _memory.font = [UIFont systemFontOfSize:12];
     _memory.numberOfLines = 3;
     _memory.textAlignment = NSTextAlignmentCenter;
@@ -200,10 +201,15 @@ RCT_EXPORT_MODULE()
   return _memory;
 }
 
-- (UILabel *)heap
+- (RCTUILabel *)heap // [macOS]
 {
   if (!_heap) {
-    _heap = [[UILabel alloc] initWithFrame:CGRectMake(44, 0, 44, RCTPerfMonitorBarHeight)];
+#if !TARGET_OS_OSX // [macOS]
+    _heap = [[RCTUILabel alloc] initWithFrame:CGRectMake(44, 0, 44, RCTPerfMonitorBarHeight)];
+#else // [macOS
+    _heap = [[RCTUILabel alloc] initWithFrame:CGRectMake(60, 0, 58, RCTPerfMonitorBarHeight)];
+    _heap.autoresizingMask = NSViewMinYMargin;
+#endif // macOS]
     _heap.font = [UIFont systemFontOfSize:12];
     _heap.numberOfLines = 3;
     _heap.textAlignment = NSTextAlignmentCenter;
@@ -212,10 +218,15 @@ RCT_EXPORT_MODULE()
   return _heap;
 }
 
-- (UILabel *)views
+- (RCTUILabel *)views // [macOS]
 {
   if (!_views) {
-    _views = [[UILabel alloc] initWithFrame:CGRectMake(88, 0, 44, RCTPerfMonitorBarHeight)];
+#if !TARGET_OS_OSX // [macOS]
+    _views = [[RCTUILabel alloc] initWithFrame:CGRectMake(88, 0, 44, RCTPerfMonitorBarHeight)];
+#else // [macOS
+    _views = [[RCTUILabel alloc] initWithFrame:CGRectMake(118, 0, 52, RCTPerfMonitorBarHeight)];
+    _views.autoresizingMask = NSViewMinYMargin;
+#endif // macOS]
     _views.font = [UIFont systemFontOfSize:12];
     _views.numberOfLines = 3;
     _views.textAlignment = NSTextAlignmentCenter;
@@ -227,7 +238,12 @@ RCT_EXPORT_MODULE()
 - (RCTFPSGraph *)uiGraph
 {
   if (!_uiGraph) {
-    _uiGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(134, 14, 40, 30) color:[UIColor lightGrayColor]];
+#if !TARGET_OS_OSX // [macOS]
+    _uiGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(134, 14, 40, 30) color:[RCTUIColor lightGrayColor]];
+#else // [macOS
+    _uiGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(175, 14, 46, 30) color:[RCTUIColor lightGrayColor]];
+    _uiGraph.autoresizingMask = NSViewMinYMargin;
+#endif // macOS]
   }
   return _uiGraph;
 }
@@ -235,15 +251,25 @@ RCT_EXPORT_MODULE()
 - (RCTFPSGraph *)jsGraph
 {
   if (!_jsGraph) {
-    _jsGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(178, 14, 40, 30) color:[UIColor lightGrayColor]];
+#if !TARGET_OS_OSX // [macOS]
+    _jsGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(178, 14, 40, 30) color:[RCTUIColor lightGrayColor]];
+#else // [macOS
+    _jsGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(226, 14, 46, 30) color:[RCTUIColor lightGrayColor]];
+    _jsGraph.autoresizingMask = NSViewMinYMargin;
+#endif // macOS]
   }
   return _jsGraph;
 }
 
-- (UILabel *)uiGraphLabel
+- (RCTUILabel *)uiGraphLabel // [macOS]
 {
   if (!_uiGraphLabel) {
-    _uiGraphLabel = [[UILabel alloc] initWithFrame:CGRectMake(134, 3, 40, 10)];
+#if !TARGET_OS_OSX // [macOS]
+    _uiGraphLabel = [[RCTUILabel alloc] initWithFrame:CGRectMake(134, 3, 40, 10)];
+#else // [macOS
+    _uiGraphLabel = [[RCTUILabel alloc] initWithFrame:CGRectMake(175, 3, 46, 12)];
+    _uiGraphLabel.autoresizingMask = NSViewMinYMargin;
+#endif // macOS]
     _uiGraphLabel.font = [UIFont systemFontOfSize:11];
     _uiGraphLabel.textAlignment = NSTextAlignmentCenter;
     _uiGraphLabel.text = @"UI";
@@ -252,16 +278,40 @@ RCT_EXPORT_MODULE()
   return _uiGraphLabel;
 }
 
-- (UILabel *)jsGraphLabel
+- (RCTUILabel *)jsGraphLabel // [macOS]
 {
   if (!_jsGraphLabel) {
-    _jsGraphLabel = [[UILabel alloc] initWithFrame:CGRectMake(178, 3, 38, 10)];
+#if !TARGET_OS_OSX // [macOS]
+    _jsGraphLabel = [[RCTUILabel alloc] initWithFrame:CGRectMake(178, 3, 38, 10)];
+#else // [macOS
+    _jsGraphLabel = [[RCTUILabel alloc] initWithFrame:CGRectMake(226, 3, 46, 12)];
+    _jsGraphLabel.autoresizingMask = NSViewMinYMargin;
+#endif // macOS]
     _jsGraphLabel.font = [UIFont systemFontOfSize:11];
     _jsGraphLabel.textAlignment = NSTextAlignmentCenter;
     _jsGraphLabel.text = @"JS";
   }
 
   return _jsGraphLabel;
+}
+
+#if !TARGET_OS_OSX // [macOS]
+- (RCTPlatformView *)container // [macOS]
+{
+  if (!_container) {
+    UIEdgeInsets safeInsets = RCTKeyWindow().safeAreaInsets;
+
+    _container =
+        [[RCTPlatformView alloc] initWithFrame:CGRectMake(safeInsets.left, safeInsets.top, 180, RCTPerfMonitorBarHeight)]; // [macOS]
+    _container.layer.borderWidth = 2;
+    _container.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    [_container addGestureRecognizer:self.gestureRecognizer];
+    [_container addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap)]];
+
+    _container.backgroundColor = [UIColor systemBackgroundColor];
+  }
+
+  return _container;
 }
 
 - (UITableView *)metrics
@@ -301,7 +351,7 @@ RCT_EXPORT_MODULE()
 
   [RCTKeyWindow() addSubview:self.container];
 
-  _uiDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(threadUpdate:)];
+  _uiDisplayLink = [RCTPlatformDisplayLink displayLinkWithTarget:self selector:@selector(threadUpdate:)]; // [macOS]
   [_uiDisplayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
 
   self.container.frame =
@@ -311,7 +361,7 @@ RCT_EXPORT_MODULE()
 
   [_bridge
       dispatchBlock:^{
-        self->_jsDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(threadUpdate:)];
+        self->_jsDisplayLink = [RCTPlatformDisplayLink displayLinkWithTarget:self selector:@selector(threadUpdate:)]; // [macOS]
         [self->_jsDisplayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
       }
               queue:RCTJSThread];
@@ -338,6 +388,161 @@ RCT_EXPORT_MODULE()
   _uiDisplayLink = nil;
   _jsDisplayLink = nil;
 }
+
+#else // [macOS
+
+- (NSWindow *)containerWindow
+{
+  if (!_containerWindow) {
+    CGFloat windowWidth = 300;
+    // Initial frame - will be repositioned when attached to parent
+    NSRect frame = NSMakeRect(0, 0, windowWidth, RCTPerfMonitorBarHeight);
+    _containerWindow = [[NSWindow alloc] initWithContentRect:frame
+                                                   styleMask:NSWindowStyleMaskBorderless
+                                                     backing:NSBackingStoreBuffered
+                                                       defer:NO];
+    _containerWindow.level = NSFloatingWindowLevel;
+    _containerWindow.backgroundColor = [NSColor windowBackgroundColor];
+    _containerWindow.opaque = NO;
+    _containerWindow.hasShadow = YES;
+    _containerWindow.movableByWindowBackground = YES;
+  }
+  return _containerWindow;
+}
+
+- (RCTPlatformView *)container
+{
+  if (!_container) {
+    _container = self.containerWindow.contentView;
+    _container.wantsLayer = YES;
+    _container.layer.borderWidth = 2;
+    _container.layer.borderColor = [NSColor lightGrayColor].CGColor;
+    
+    NSClickGestureRecognizer *clickRecognizer = [[NSClickGestureRecognizer alloc] initWithTarget:self action:@selector(tap)];
+    [_container addGestureRecognizer:clickRecognizer];
+  }
+
+  return _container;
+}
+
+- (NSScrollView *)metricsScrollView
+{
+  if (!_metricsScrollView) {
+    // Use expanded height since this is only added when expanding
+    CGFloat expandedHeight = RCTPerfMonitorExpandHeight - RCTPerfMonitorBarHeight;
+    _metricsScrollView = [[NSScrollView alloc] initWithFrame:CGRectMake(
+                                                      0,
+                                                      0,
+                                                      300,
+                                                      expandedHeight)];
+    _metricsScrollView.hasVerticalScroller = YES;
+    _metricsScrollView.autoresizingMask = NSViewWidthSizable; // Only resize width, not height - leave room for bar at top
+    _metricsScrollView.documentView = self.metrics;
+    
+    // Add click recognizer so tapping on scroll view also toggles expand/collapse
+    NSClickGestureRecognizer *clickRecognizer = [[NSClickGestureRecognizer alloc] initWithTarget:self action:@selector(tap)];
+    [_metricsScrollView addGestureRecognizer:clickRecognizer];
+  }
+  return _metricsScrollView;
+}
+
+- (NSTableView *)metrics
+{
+  if (!_metrics) {
+    _metrics = [[NSTableView alloc] initWithFrame:CGRectMake(0, 0, 300, 200)];
+    
+    NSTableColumn *column = [[NSTableColumn alloc] initWithIdentifier:RCTPerfMonitorCellIdentifier];
+    column.width = 300;
+    [_metrics addTableColumn:column];
+    
+    _metrics.dataSource = self;
+    _metrics.delegate = self;
+    _metrics.headerView = nil;
+    _metrics.rowHeight = 20;
+  }
+
+  return _metrics;
+}
+
+- (void)show
+{
+  if (_containerWindow.isVisible) {
+    return;
+  }
+
+  [self.container addSubview:self.memory];
+  [self.container addSubview:self.heap];
+  [self.container addSubview:self.views];
+  [self.container addSubview:self.uiGraph];
+  [self.container addSubview:self.uiGraphLabel];
+  [self.container addSubview:self.jsGraph];
+  [self.container addSubview:self.jsGraphLabel];
+
+  [self redirectLogs];
+
+  RCTJSCSetOption("logGC=1");
+
+  [self updateStats];
+
+  // Attach to the key window
+  NSWindow *parentWindow = RCTKeyWindow();
+  if (parentWindow) {
+    // Position at top-left of parent window's content area
+    NSRect parentFrame = parentWindow.frame;
+    NSRect contentRect = [parentWindow contentRectForFrameRect:parentFrame];
+    CGFloat xPos = contentRect.origin.x + 10;
+    CGFloat yPos = contentRect.origin.y + contentRect.size.height - RCTPerfMonitorBarHeight - 10;
+    NSRect perfFrame = self.containerWindow.frame;
+    perfFrame.origin = NSMakePoint(xPos, yPos);
+    [self.containerWindow setFrame:perfFrame display:YES];
+    
+    // Add as child window so it moves with parent
+    [parentWindow addChildWindow:self.containerWindow ordered:NSWindowAbove];
+  }
+  
+  [self.containerWindow orderFront:nil];
+
+  _uiDisplayLink = [RCTPlatformDisplayLink displayLinkWithTarget:self selector:@selector(threadUpdate:)];
+  [_uiDisplayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+
+  [_bridge
+      dispatchBlock:^{
+        self->_jsDisplayLink = [RCTPlatformDisplayLink displayLinkWithTarget:self selector:@selector(threadUpdate:)];
+        [self->_jsDisplayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+      }
+              queue:RCTJSThread];
+}
+
+- (void)hide
+{
+  if (!_containerWindow.isVisible) {
+    return;
+  }
+
+  // Remove from parent window if attached
+  NSWindow *parentWindow = _containerWindow.parentWindow;
+  if (parentWindow) {
+    [parentWindow removeChildWindow:_containerWindow];
+  }
+
+  [self.containerWindow orderOut:nil];
+  _containerWindow = nil;
+  _container = nil;
+  _jsGraph = nil;
+  _uiGraph = nil;
+
+  RCTJSCSetOption("logGC=0");
+
+  [self stopLogs];
+
+  [_uiDisplayLink invalidate];
+  [_jsDisplayLink invalidate];
+
+  _uiDisplayLink = nil;
+  _jsDisplayLink = nil;
+}
+
+#endif // macOS]
 
 - (void)redirectLogs
 {
@@ -415,6 +620,7 @@ RCT_EXPORT_MODULE()
 
 - (void)updateStats
 {
+#if !TARGET_OS_OSX // [macOS]
   NSDictionary<NSNumber *, UIView *> *views = [_bridge.uiManager valueForKey:@"viewRegistry"];
   NSUInteger viewCount = views.count;
   NSUInteger visibleViewCount = 0;
@@ -442,18 +648,48 @@ RCT_EXPORT_MODULE()
       [strongSelf updateStats];
     }
   });
+#else // [macOS
+  NSDictionary<NSNumber *, NSView *> *views = [_bridge.uiManager valueForKey:@"viewRegistry"];
+  NSUInteger viewCount = views.count;
+  NSUInteger visibleViewCount = 0;
+  for (NSView *view in views.allValues) {
+    if (view.window || view.superview.window) {
+      visibleViewCount++;
+    }
+  }
+
+  double mem = (double)RCTGetResidentMemorySize() / 1024 / 1024;
+  self.memory.text = [NSString stringWithFormat:@"RAM\n%.1lfMB", mem];
+  self.heap.text = [NSString stringWithFormat:@"JSC\n%.1lfMB", (double)_heapSize / 1024];
+  self.views.text =
+      [NSString stringWithFormat:@"Views\n%lu/%lu", (unsigned long)visibleViewCount, (unsigned long)viewCount];
+
+  __weak __typeof__(self) weakSelf = self;
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    __strong __typeof__(weakSelf) strongSelf = weakSelf;
+    if (strongSelf && strongSelf->_containerWindow.isVisible) {
+      [strongSelf updateStats];
+    }
+  });
+#endif // macOS]
 }
 
-- (void)gesture:(UIPanGestureRecognizer *)gestureRecognizer
+- (void)gesture:(RCTUIPanGestureRecognizer *)gestureRecognizer // [macOS]
 {
+#if !TARGET_OS_OSX // [macOS]
   CGPoint translation = [gestureRecognizer translationInView:self.container.superview];
   self.container.center = CGPointMake(self.container.center.x + translation.x, self.container.center.y + translation.y);
   [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:self.container.superview];
+#else // [macOS
+  // Window dragging is handled by movableByWindowBackground on macOS
+  (void)gestureRecognizer;
+#endif // macOS]
 }
 
 - (void)tap
 {
   [self loadPerformanceLoggerData];
+#if !TARGET_OS_OSX // [macOS]
   if (CGRectIsEmpty(_storedMonitorFrame)) {
     UIEdgeInsets safeInsets = RCTKeyWindow().safeAreaInsets;
     _storedMonitorFrame =
@@ -469,9 +705,47 @@ RCT_EXPORT_MODULE()
                      self.container.frame = self->_storedMonitorFrame;
                      self->_storedMonitorFrame = tmp;
                    }];
+#else // [macOS
+  if (CGRectIsEmpty(_storedMonitorFrame)) {
+    // First tap: expand
+    // Save current collapsed frame
+    NSRect collapsedFrame = self.containerWindow.frame;
+    _storedMonitorFrame = collapsedFrame;
+    
+    // Calculate expanded frame - keep top-left corner fixed, expand downward
+    // In macOS coords, origin is bottom-left, so we need to move origin.y down
+    CGFloat heightDelta = RCTPerfMonitorExpandHeight - collapsedFrame.size.height;
+    NSRect expandedFrame = NSMakeRect(
+        collapsedFrame.origin.x,
+        collapsedFrame.origin.y - heightDelta,
+        300,
+        RCTPerfMonitorExpandHeight);
+    
+    [self.container addSubview:self.metricsScrollView];
+    
+    [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+      context.duration = 0.25;
+      [self.containerWindow.animator setFrame:expandedFrame display:YES];
+    }];
+  } else {
+    // Second tap: collapse
+    [_metrics reloadData];
+    
+    // Hide the scroll view when collapsing
+    [_metricsScrollView removeFromSuperview];
+    
+    NSRect collapsedFrame = _storedMonitorFrame;
+    _storedMonitorFrame = CGRectZero; // Reset so next tap expands again
+    
+    [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+      context.duration = 0.25;
+      [self.containerWindow.animator setFrame:collapsedFrame display:YES];
+    }];
+  }
+#endif // macOS]
 }
 
-- (void)threadUpdate:(CADisplayLink *)displayLink
+- (void)threadUpdate:(RCTPlatformDisplayLink *)displayLink // [macOS]
 {
   RCTFPSGraph *graph = displayLink == _jsDisplayLink ? _jsGraph : _uiGraph;
   [graph onTick:displayLink.timestamp];
@@ -497,6 +771,7 @@ RCT_EXPORT_MODULE()
   _perfLoggerMarks = [data copy];
 }
 
+#if !TARGET_OS_OSX // [macOS]
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(__unused UITableView *)tableView
@@ -532,6 +807,39 @@ RCT_EXPORT_MODULE()
   return 20;
 }
 
+#else // [macOS
+#pragma mark - NSTableViewDataSource
+
+- (NSInteger)numberOfRowsInTableView:(__unused NSTableView *)tableView
+{
+  return _perfLoggerMarks.count;
+}
+
+#pragma mark - NSTableViewDelegate
+
+- (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+  NSTextField *cell = [tableView makeViewWithIdentifier:RCTPerfMonitorCellIdentifier owner:self];
+  if (!cell) {
+    cell = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    cell.identifier = RCTPerfMonitorCellIdentifier;
+    cell.bezeled = NO;
+    cell.drawsBackground = NO;
+    cell.editable = NO;
+    cell.selectable = NO;
+  }
+  cell.stringValue = _perfLoggerMarks[row];
+  cell.font = [NSFont systemFontOfSize:12];
+  return cell;
+}
+
+- (CGFloat)tableView:(__unused NSTableView *)tableView heightOfRow:(__unused NSInteger)row
+{
+  return 20;
+}
+
+#endif // macOS]
+
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {
@@ -559,5 +867,3 @@ Class RCTPerfMonitorCls(void)
   return nil;
 #endif
 }
-
-#endif // [macOS]
