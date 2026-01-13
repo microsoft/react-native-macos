@@ -24,6 +24,11 @@ NS_ASSUME_NONNULL_BEGIN
 #endif // macOS]
 
 @property (readonly) RCTViewComponentView *view;
+#if TARGET_OS_OSX // [macOS
+@property (nonatomic, assign) RCTUIAccessibilityTraits accessibilityTraits;
+
+@property (nonatomic, assign) BOOL isAccessibilityElement;
+#endif // macOS]
 
 - (instancetype)initWithView:(RCTViewComponentView *)view;
 

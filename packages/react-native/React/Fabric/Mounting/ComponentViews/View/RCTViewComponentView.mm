@@ -499,7 +499,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     self.accessibilityElement.accessibilityTraits =
         RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
 #else // [macOS
-    self.accessibilityElement.accessibilityRole = RCTUIAccessibilityRoleFromAccessibilityTraits(newViewProps.accessibilityTraits);
+    // On macOS, accessibilityElement returns self (NSView*) which doesn't have accessibilityTraits.
+    // Set role directly on self based on traits.
+    RCTUIAccessibilityTraits traits = RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
+    self.accessibilityRole = RCTAccessibilityRoleFromTraits(traits);
+    self.accessibilityEnabled = (traits & RCTUIAccessibilityTraitNotEnabled) == 0;
 #endif // macOS]
   }
 
@@ -1436,7 +1440,6 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   return self;
 }
 
-#if !TARGET_OS_OSX // [macOS
 - (NSArray<NSObject *> *)accessibilityElements
 {
   if ([_accessibilityOrderNativeIDs count] <= 0) {
@@ -1450,7 +1453,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     return _accessibilityElements;
   }
 
-  NSMutableDictionary<NSString *, UIView *> *nativeIdToView = [NSMutableDictionary new];
+  NSMutableDictionary<NSString *, RCTPlatformView *> *nativeIdToView = [NSMutableDictionary new]; // [macOS]
 
   [RCTViewComponentView collectAccessibilityElements:self
                                       intoDictionary:nativeIdToView
@@ -1466,7 +1469,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       _axElementDescribingSelf.isAccessibilityElement = [super isAccessibilityElement];
       [_accessibilityElements addObject:_axElementDescribingSelf];
     } else {
-      UIView *viewWithMatchingNativeId = [nativeIdToView objectForKey:nsStringChildId];
+      RCTPlatformView *viewWithMatchingNativeId = [nativeIdToView objectForKey:nsStringChildId]; // [macOS]
       if (viewWithMatchingNativeId) {
         [_accessibilityElements addObject:viewWithMatchingNativeId];
       }
@@ -1475,7 +1478,6 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
   return _accessibilityElements;
 }
-#endif // macOS]
 
 + (void)collectAccessibilityElements:(RCTPlatformView *)view // [macOS]
                       intoDictionary:(NSMutableDictionary<NSString *, RCTPlatformView *> *)dict // [macOS]

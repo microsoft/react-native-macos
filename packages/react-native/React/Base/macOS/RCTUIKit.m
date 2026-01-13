@@ -333,6 +333,16 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 @synthesize userInteractionEnabled = _userInteractionEnabled;
 
+- (NSArray *)accessibilityElements
+{
+  return self.accessibilityChildren;
+}
+
+- (void)setAccessibilityElements:(NSArray *)accessibilityElements
+{
+  self.accessibilityChildren = accessibilityElements;
+}
+
 - (NSView *)hitTest:(CGPoint)point withEvent:(__unused UIEvent *)event
 {
 // [macOS
