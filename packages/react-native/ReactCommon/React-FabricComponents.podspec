@@ -128,7 +128,11 @@ Pod::Spec.new do |s|
       sss.source_files         = podspec_sources(
                                   ["react/renderer/components/switch/iosswitch/**/*.{m,mm,cpp,h}"],
                                   ["react/renderer/components/switch/iosswitch/**/*.h"])
-      sss.exclude_files        = "react/renderer/components/switch/iosswitch/**/MacOS*.{m,mm,cpp,h}"
+      # [macOS
+      sss.ios.exclude_files       = "react/renderer/components/switch/iosswitch/**/MacOS*.{m,mm,cpp,h}"
+      sss.visionos.exclude_files  = "react/renderer/components/switch/iosswitch/**/MacOS*.{m,mm,cpp,h}"
+      sss.macos.exclude_files     = "react/renderer/components/switch/iosswitch/**/IOS*.{m,mm,cpp,h}"
+      # macOS]
       sss.header_dir           = "react/renderer/components/switch/"
     end
 
