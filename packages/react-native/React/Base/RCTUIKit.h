@@ -62,6 +62,7 @@ UIKIT_STATIC_INLINE void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath
 #define RCTUIScrollViewDelegate UIScrollViewDelegate
 #define RCTPlatformImage UIImage
 #define RCTUIImage UIImage
+#define RCTUIPanGestureRecognizer UIPanGestureRecognizer
 
 UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
@@ -422,6 +423,7 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
 // UIGestureRecognizer
 #define UIGestureRecognizer NSGestureRecognizer
 #define UIGestureRecognizerDelegate NSGestureRecognizerDelegate
+#define RCTUIPanGestureRecognizer NSPanGestureRecognizer
 
 // UIApplication
 #define UIApplication NSApplication
