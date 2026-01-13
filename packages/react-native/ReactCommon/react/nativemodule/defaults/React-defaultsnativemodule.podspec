@@ -38,15 +38,13 @@ Pod::Spec.new do |s|
                                "OTHER_CFLAGS" => "$(inherited)",
                                "DEFINES_MODULE" => "YES" }
 
-  if ENV['USE_FRAMEWORKS']
-    s.module_name            = "React_defaultsnativemodule"
-    s.header_mappings_dir  = "../.."
-  end
+  resolve_use_frameworks(s, header_mappings_dir: "../..", module_name: "React_defaultsnativemodule")
 
   s.dependency "React-jsi"
   s.dependency "React-jsiexecutor"
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
+  add_rncore_dependency(s)
 
   s.dependency "React-domnativemodule"
   s.dependency "React-featureflagsnativemodule"

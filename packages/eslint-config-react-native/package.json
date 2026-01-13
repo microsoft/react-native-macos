@@ -1,7 +1,6 @@
 {
   "name": "@react-native/eslint-config",
-  "version": "0.81.0-main",
-  "private": true,
+  "version": "0.81.5",
   "description": "ESLint config for React Native",
   "license": "MIT",
   "repository": {
@@ -17,7 +16,7 @@
   ],
   "bugs": "https://github.com/facebook/react-native/issues",
   "engines": {
-    "node": ">= 22.14.0"
+    "node": ">= 20.19.4"
   },
   "main": "index.js",
   "dependencies": {
@@ -41,5 +40,6 @@
   "devDependencies": {
     "eslint": "^8.57.0",
     "prettier": "2.8.8"
-  }
+  },
+  "private": true
 }

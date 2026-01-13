@@ -1,7 +1,6 @@
 {
   "name": "@react-native/eslint-plugin-specs",
-  "version": "0.81.0-main",
-  "private": true,
+  "version": "0.81.5",
   "description": "ESLint rules to validate NativeModule and Component Specs",
   "license": "MIT",
   "repository": {
@@ -37,6 +36,7 @@
     "hermes-eslint": "0.29.1"
   },
   "engines": {
-    "node": ">= 22.14.0"
-  }
+    "node": ">= 20.19.4"
+  },
+  "private": true
 }

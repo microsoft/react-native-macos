@@ -1,6 +1,6 @@
 {
   "name": "@react-native/cxx-public-api",
-  "version": "0.0.1",
+  "version": "0.81.5",
   "description": "Captures the Objective-C / C++ public API of React Native",
   "main": "public-api.js",
   "files": [
@@ -10,9 +10,9 @@
   ],
   "repository": "https://reactnative.dev/",
   "license": "MIT",
-  "private": true,
   "dependencies": {
     "glob": "^7.1.1",
     "ini": "^5.0.0"
-  }
+  },
+  "private": true
 }

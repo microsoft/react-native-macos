@@ -1,6 +1,6 @@
 {
   "name": "react-native-macos",
-  "version": "1000.0.0",
+  "version": "0.81.0-rc0",
   "description": "React Native for macOS",
   "license": "MIT",
   "repository": {
@@ -21,7 +21,7 @@
   ],
   "bugs": "https://github.com/facebook/react-native/issues",
   "engines": {
-    "node": ">= 22.14.0"
+    "node": ">= 20.19.4"
   },
   "bin": {
     "react-native": "cli.js",
@@ -79,6 +79,7 @@
   "files": [
     "build.gradle.kts",
     "cli.js",
+    "flow",
     "gradle.properties",
     "gradle/libs.versions.toml",
     "index.js",
@@ -108,6 +109,7 @@
     "ReactCommon",
     "README.md",
     "rn-get-polyfills.js",
+    "scripts/replace-rncore-version.js",
     "scripts/bundle.js",
     "scripts/cocoapods",
     "scripts/codegen",
@@ -153,8 +155,9 @@
     "featureflags": "node ./scripts/featureflags/index.js"
   },
   "peerDependencies": {
-    "@types/react": "^19.1.0",
-    "react": "^19.1.0"
+    "@types/react": "^19.1.4",
+    "react": "^19.1.4",
+    "react-native": "0.81.5"
   },
   "peerDependenciesMeta": {
     "@types/react": {
@@ -163,13 +166,13 @@
   },
   "dependencies": {
     "@jest/create-cache-key-function": "^29.7.0",
-    "@react-native-macos/virtualized-lists": "workspace:*",
-    "@react-native/assets-registry": "workspace:*",
-    "@react-native/codegen": "workspace:*",
-    "@react-native/community-cli-plugin": "workspace:*",
-    "@react-native/gradle-plugin": "workspace:*",
-    "@react-native/js-polyfills": "workspace:*",
-    "@react-native/normalize-colors": "workspace:*",
+    "@react-native-macos/virtualized-lists": "0.81.0-rc0",
+    "@react-native/assets-registry": "0.81.5",
+    "@react-native/codegen": "0.81.5",
+    "@react-native/community-cli-plugin": "0.81.5",
+    "@react-native/gradle-plugin": "0.81.5",
+    "@react-native/js-polyfills": "0.81.5",
+    "@react-native/normalize-colors": "0.81.5",
     "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
@@ -182,8 +185,8 @@
     "invariant": "^2.2.4",
     "jest-environment-node": "^29.7.0",
     "memoize-one": "^5.0.0",
-    "metro-runtime": "^0.82.5",
-    "metro-source-map": "^0.82.5",
+    "metro-runtime": "^0.83.1",
+    "metro-source-map": "^0.83.1",
     "nullthrows": "^1.1.1",
     "pretty-format": "^29.7.0",
     "promise": "^8.3.0",

@@ -41,10 +41,7 @@ Pod::Spec.new do |s|
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
     "DEFINES_MODULE" => "YES"}
 
-  if ENV['USE_FRAMEWORKS']
-    s.module_name = module_name
-    s.header_mappings_dir = "../.."
-  end
+  resolve_use_frameworks(s, header_mappings_dir: "../..", module_name: module_name)
 
   add_dependency(s, "React-jsinspectorcdp", :framework_name => 'jsinspector_moderncdp')
   add_dependency(s, "React-featureflags")
@@ -52,4 +49,5 @@ Pod::Spec.new do |s|
   s.dependency "React-timing"
 
   add_rn_third_party_dependencies(s)
+  add_rncore_dependency(s)
 end

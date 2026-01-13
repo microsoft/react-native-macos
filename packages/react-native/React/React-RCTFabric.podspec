@@ -78,6 +78,7 @@ Pod::Spec.new do |s|
     "react/renderer/components/scrollview/platform/cxx",
     "react/renderer/components/text/platform/cxx",
     "react/renderer/components/textinput/platform/ios",
+    "react/renderer/components/switch/iosswitch",
   ]);
 
   add_dependency(s, "React-graphics", :additional_framework_paths => ["react/renderer/graphics/platform/ios"])
@@ -100,6 +101,7 @@ Pod::Spec.new do |s|
 
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
+  add_rncore_dependency(s)
 
   s.test_spec 'Tests' do |test_spec|
     test_spec.source_files = podspec_sources("Tests/**/*.{mm}", "")

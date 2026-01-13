@@ -1,7 +1,6 @@
 {
   "name": "@react-native/compatibility-check",
-  "version": "0.81.0-main",
-  "private": true,
+  "version": "0.81.5",
   "description": "Check a React Native app's boundary between JS and Native for incompatibilities",
   "license": "MIT",
   "repository": {
@@ -20,7 +19,7 @@
   ],
   "bugs": "https://github.com/facebook/react-native/issues",
   "engines": {
-    "node": ">= 22.14.0"
+    "node": ">= 20.19.4"
   },
   "exports": {
     ".": "./src/index.js",
@@ -35,5 +34,6 @@
   "devDependencies": {
     "flow-remove-types": "^2.237.2",
     "rimraf": "^3.0.2"
-  }
+  },
+  "private": true
 }
