@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
  * Attaches (and detaches) a view to the touch handler.
  * The receiver does not retain the provided view.
  */
-- (void)attachToView:(RCTUIView *)view; // [macOS]
-- (void)detachFromView:(RCTUIView *)view; // [macOS]
+- (void)attachToView:(RCTPlatformView *)view; // [macOS]
+- (void)detachFromView:(RCTPlatformView *)view; // [macOS]
 
 /*
  * Offset of the attached view relative to the root component in points.

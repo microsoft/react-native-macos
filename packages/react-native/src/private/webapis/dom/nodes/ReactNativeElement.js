@@ -4,29 +4,27 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 // flowlint unsafe-getters-setters:off
 
 import type {
   InternalInstanceHandle,
-  Node as ShadowNode,
   ViewConfig,
 } from '../../../../../Libraries/Renderer/shims/ReactNativeTypes';
 import type {
   HostInstance,
-  LegacyHostInstanceMethods,
   MeasureInWindowOnSuccessCallback,
   MeasureLayoutOnSuccessCallback,
   MeasureOnSuccessCallback,
+  NativeMethods,
 } from '../../../types/HostInstance';
 import type {InstanceHandle} from './internals/NodeInternals';
 import type ReactNativeDocument from './ReactNativeDocument';
 
 import TextInputState from '../../../../../Libraries/Components/TextInput/TextInputState';
-import {getFabricUIManager} from '../../../../../Libraries/ReactNative/FabricUIManager';
 import {create as createAttributePayload} from '../../../../../Libraries/ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload';
 import warnForStyleProps from '../../../../../Libraries/ReactNative/ReactFabricPublicInstance/warnForStyleProps';
 import {
@@ -37,7 +35,6 @@ import {
 } from './internals/NodeInternals';
 import ReadOnlyElement, {getBoundingClientRect} from './ReadOnlyElement';
 import NativeDOM from './specs/NativeDOM';
-import nullthrows from 'nullthrows';
 
 const noop = () => {};
 
@@ -60,10 +57,7 @@ const noop = () => {};
 // was slower than this method because the engine has to create an object than
 // we then discard to create a new one.
 
-class ReactNativeElement
-  extends ReadOnlyElement
-  implements LegacyHostInstanceMethods
-{
+class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
   // These need to be accessible from `ReactFabricPublicInstanceUtils`.
   __nativeTag: number;
   __internalInstanceHandle: InstanceHandle;
@@ -156,18 +150,14 @@ class ReactNativeElement
   measure(callback: MeasureOnSuccessCallback) {
     const node = getNativeElementReference(this);
     if (node != null) {
-      // $FlowExpectedError[incompatible-type] This is an element instance so the native node reference is always a shadow node.
-      const shadowNode: ShadowNode = node;
-      nullthrows(getFabricUIManager()).measure(shadowNode, callback);
+      NativeDOM.measure(node, callback);
     }
   }
 
   measureInWindow(callback: MeasureInWindowOnSuccessCallback) {
     const node = getNativeElementReference(this);
     if (node != null) {
-      // $FlowExpectedError[incompatible-type] This is an element instance so the native node reference is always a shadow node.
-      const shadowNode: ShadowNode = node;
-      nullthrows(getFabricUIManager()).measureInWindow(shadowNode, callback);
+      NativeDOM.measureInWindow(node, callback);
     }
   }
 
@@ -190,14 +180,9 @@ class ReactNativeElement
     const fromStateNode = getNativeElementReference(relativeToNativeNode);
 
     if (toStateNode != null && fromStateNode != null) {
-      // $FlowExpectedError[incompatible-type] This is an element instance so the native node reference is always a shadow node.
-      const toStateShadowNode: ShadowNode = toStateNode;
-      // $FlowExpectedError[incompatible-type] This is an element instance so the native node reference is always a shadow node.
-      const fromStateShadowNode: ShadowNode = fromStateNode;
-
-      nullthrows(getFabricUIManager()).measureLayout(
-        toStateShadowNode,
-        fromStateShadowNode,
+      NativeDOM.measureLayout(
+        toStateNode,
+        fromStateNode,
         onFail != null ? onFail : noop,
         onSuccess != null ? onSuccess : noop,
       );
@@ -217,12 +202,7 @@ class ReactNativeElement
     const node = getNativeElementReference(this);
 
     if (node != null && updatePayload != null) {
-      // $FlowExpectedError[incompatible-type] This is an element instance so the native node reference is always a shadow node.
-      const shadowNode: ShadowNode = node;
-      nullthrows(getFabricUIManager()).setNativeProps(
-        shadowNode,
-        updatePayload,
-      );
+      NativeDOM.setNativeProps(node, updatePayload);
     }
   }
 }

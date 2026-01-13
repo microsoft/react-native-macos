@@ -6,10 +6,7 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
  */
 
-import * as Animated from './AnimatedExports';
-
+export * as default from './AnimatedExports';
 export type {CompositeAnimation, Numeric} from './AnimatedImplementation';
-export default Animated;

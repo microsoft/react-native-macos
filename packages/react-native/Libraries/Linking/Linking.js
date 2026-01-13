@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 import type {EventSubscription} from '../vendor/emitter/EventEmitter';
@@ -38,7 +38,7 @@ class LinkingImpl extends NativeEventEmitter<LinkingEventDefinitions> {
    */
   addEventListener<K: $Keys<LinkingEventDefinitions>>(
     eventType: K,
-    listener: (...$ElementType<LinkingEventDefinitions, K>) => mixed,
+    listener: (...LinkingEventDefinitions[K]) => mixed,
   ): EventSubscription {
     return this.addListener(eventType, listener);
   }

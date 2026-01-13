@@ -12,7 +12,7 @@
 
 // [macOS
 
-import type {PasteEvent} from 'react-native/Libraries/Components/TextInput/TextInput';
+import type {PasteEvent} from 'react-native/Libraries/Components/TextInput/TextInput.flow';
 
 import ExampleTextInput from '../TextInput/ExampleTextInput';
 import React from 'react';

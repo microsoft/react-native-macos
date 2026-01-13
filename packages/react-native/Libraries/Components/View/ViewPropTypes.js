@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 'use strict';
@@ -15,24 +15,27 @@ import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import type {
   BlurEvent,
   FocusEvent,
-  // [macOS]
-  DragEvent,
-  HandledKeyEvent,
-  KeyEvent,
+  GestureResponderEvent,
   LayoutChangeEvent,
   LayoutRectangle,
   MouseEvent,
   PointerEvent,
-  GestureResponderEvent,
-  ScrollEvent,
-  // [macOS]
 } from '../../Types/CoreEventTypes';
+// [macOS
+import type {
+  DragEvent,
+  HandledKeyEvent,
+  KeyEvent,
+  ScrollEvent,
+} from '../../Types/CoreEventTypes';
+// macOS]
 import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
 import type {
   AccessibilityActionEvent,
   AccessibilityProps,
 } from './ViewAccessibility';
-import type {Node} from 'react';
+
+import * as React from 'react';
 
 export type ViewLayout = LayoutRectangle;
 export type ViewLayoutEvent = LayoutChangeEvent;
@@ -328,6 +331,7 @@ export type ViewPropsAndroid = $ReadOnly<{
    * Whether to force the Android TV focus engine to move focus to this view.
    *
    * @platform android
+   * @deprecated Use `focusable` instead
    */
   hasTVPreferredFocus?: ?boolean,
 
@@ -392,6 +396,51 @@ export type ViewPropsAndroid = $ReadOnly<{
    * @platform android
    */
   onClick?: ?(event: GestureResponderEvent) => mixed,
+}>;
+
+export type TVViewPropsIOS = $ReadOnly<{
+  /**
+   * *(Apple TV only)* When set to true, this view will be focusable
+   * and navigable using the Apple TV remote.
+   *
+   * @platform ios
+   */
+  isTVSelectable?: boolean,
+
+  /**
+   * *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
+   *
+   * @platform ios
+   */
+  hasTVPreferredFocus?: boolean,
+
+  /**
+   * *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
+   *
+   * @platform ios
+   */
+  tvParallaxShiftDistanceX?: number,
+
+  /**
+   * *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
+   *
+   * @platform ios
+   */
+  tvParallaxShiftDistanceY?: number,
+
+  /**
+   * *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 0.05.
+   *
+   * @platform ios
+   */
+  tvParallaxTiltAngle?: number,
+
+  /**
+   * *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 1.0.
+   *
+   * @platform ios
+   */
+  tvParallaxMagnification?: number,
 }>;
 
 export type ViewPropsIOS = $ReadOnly<{
@@ -489,7 +538,7 @@ type MacOSViewProps = $ReadOnly<{|
 // macOS]
 
 type ViewBaseProps = $ReadOnly<{
-  children?: Node,
+  children?: React.Node,
   style?: ?ViewStyleProp,
 
   /**
@@ -575,6 +624,13 @@ type ViewBaseProps = $ReadOnly<{
    * See https://reactnative.dev/docs/view#removeclippedsubviews
    */
   removeClippedSubviews?: ?boolean,
+
+  /**
+   * Defines the order in which descendant elements receive accessibility focus.
+   * The elements in the array represent nativeID values for the respective
+   * descendant elements.
+   */
+  experimental_accessibilityOrder?: ?Array<string>,
 }>;
 
 export type ViewProps = $ReadOnly<{

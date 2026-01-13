@@ -40,7 +40,7 @@
   return CGSizeZero;
 }
 
-- (void)insertSubview:(RCTUIView *)view atIndex:(NSInteger)index // [macOS]
+- (void)insertSubview:(RCTPlatformView *)view atIndex:(NSInteger)index // [macOS]
 {
   [_safeAreaContainer insertSubview:view atIndex:index];
 }

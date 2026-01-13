@@ -52,6 +52,7 @@ RCT_REMAP_NOT_OSX_VIEW_PROPERTY(spellCheck, backedTextInputView.spellCheckingTyp
 RCT_REMAP_OSX_VIEW_PROPERTY(spellCheck, backedTextInputView.continuousSpellCheckingEnabled, BOOL) // [macOS]
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(caretHidden, backedTextInputView.caretHidden, BOOL) // [macOS]
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(clearButtonMode, backedTextInputView.clearButtonMode, UITextFieldViewMode) // [macOS]
+RCT_REMAP_VIEW_PROPERTY(scrollEnabled, backedTextInputView.scrollEnabled, BOOL)
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(secureTextEntry, backedTextInputView.secureTextEntry, BOOL) // [macOS]
 RCT_REMAP_NOT_OSX_VIEW_PROPERTY(smartInsertDelete, backedTextInputView.smartInsertDeleteType, UITextSmartInsertDeleteType) // [macOS]
 RCT_EXPORT_VIEW_PROPERTY(autoFocus, BOOL)
@@ -66,6 +67,9 @@ RCT_EXPORT_VIEW_PROPERTY(inputAccessoryViewID, NSString)
 RCT_EXPORT_VIEW_PROPERTY(inputAccessoryViewButtonLabel, NSString)
 RCT_EXPORT_VIEW_PROPERTY(textContentType, NSString)
 RCT_EXPORT_VIEW_PROPERTY(passwordRules, NSString)
+RCT_EXPORT_VIEW_PROPERTY(mostRecentEventCount, NSInteger)
+RCT_EXPORT_VIEW_PROPERTY(disableKeyboardShortcuts, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(acceptDragAndDropTypes, NSArray<NSString *>)
 
 #if TARGET_OS_OSX // [macOS
 RCT_EXPORT_VIEW_PROPERTY(onAutoCorrectChange, RCTDirectEventBlock);
@@ -87,10 +91,6 @@ RCT_EXPORT_VIEW_PROPERTY(onKeyPressSync, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onChangeSync, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onSelectionChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onScroll, RCTDirectEventBlock)
-
-RCT_EXPORT_VIEW_PROPERTY(mostRecentEventCount, NSInteger)
-
-RCT_EXPORT_VIEW_PROPERTY(disableKeyboardShortcuts, BOOL)
 
 RCT_EXPORT_SHADOW_PROPERTY(text, NSString)
 RCT_EXPORT_SHADOW_PROPERTY(placeholder, NSString)

@@ -15,8 +15,8 @@
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge NS_DESIGNATED_INITIALIZER;
 
-- (void)attachToView:(RCTUIView *)view; // [macOS]
-- (void)detachFromView:(RCTUIView *)view; // [macOS]
+- (void)attachToView:(RCTPlatformView *)view; // [macOS]
+- (void)detachFromView:(RCTPlatformView *)view; // [macOS]
 
 - (void)cancel;
 
