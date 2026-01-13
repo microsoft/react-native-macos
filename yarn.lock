@@ -3616,7 +3616,7 @@ __metadata:
   resolution: "@react-native/debugger-shell@workspace:packages/debugger-shell"
   dependencies:
     cross-spawn: "npm:^7.0.6"
-    electron: "npm:36.3.0"
+    electron: "npm:36.8.1"
     semver: "npm:^7.1.3"
   languageName: unknown
   linkType: soft
@@ -6800,16 +6800,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:36.3.0":
-  version: 36.3.0
-  resolution: "electron@npm:36.3.0"
+"electron@npm:36.8.1":
+  version: 36.8.1
+  resolution: "electron@npm:36.8.1"
   dependencies:
     "@electron/get": "npm:^2.0.0"
     "@types/node": "npm:^22.7.7"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10c0/d429f11a4158f0211df9e5d94a7b02a89519a8f6a5b242ccbaa4dc887788237b216d3c3351f42da02ddcfcf9d27eb7abba28dd079b37b98ec53fef33789d7e46
+  checksum: 10c0/a683f2276b460c404b8ea5d819c2282cdb5a963c5569eabac8accffca01432111d847860726f04e87277b7dcbe3099201afbe2f752c99918683c37734cef86da
   languageName: node
   linkType: hard
 
