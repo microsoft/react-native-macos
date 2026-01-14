@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<aebe2ba2618903a0ac2df06f18df8c75>>
+ * @generated SignedSource<<45e1b08fd2438b27af82591b5cfa5744>>
  */
 
 /**
@@ -279,6 +279,11 @@ double NativeReactNativeFeatureFlags::preparedTextCacheSize(
   return ReactNativeFeatureFlags::preparedTextCacheSize();
 }
 
+bool NativeReactNativeFeatureFlags::preventShadowTreeCommitExhaustion(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::preventShadowTreeCommitExhaustion();
+}
+
 bool NativeReactNativeFeatureFlags::traceTurboModulePromiseRejectionsOnAndroid(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::traceTurboModulePromiseRejectionsOnAndroid();
@@ -297,6 +302,16 @@ bool NativeReactNativeFeatureFlags::useAlwaysAvailableJSErrorHandling(
 bool NativeReactNativeFeatureFlags::useFabricInterop(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::useFabricInterop();
+}
+
+bool NativeReactNativeFeatureFlags::useNativeEqualsInNativeReadableArrayAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::useNativeEqualsInNativeReadableArrayAndroid();
+}
+
+bool NativeReactNativeFeatureFlags::useNativeTransformHelperAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::useNativeTransformHelperAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::useNativeViewConfigsInBridgelessMode(

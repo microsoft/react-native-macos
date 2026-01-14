@@ -1,7 +1,6 @@
 {
   "name": "@react-native/normalize-colors",
-  "version": "0.81.0-main",
-  "private": true,
+  "version": "0.81.5",
   "description": "Color normalization for React Native.",
   "license": "MIT",
   "repository": {
@@ -24,5 +23,6 @@
     "!**/__fixtures__/**",
     "!**/__mocks__/**",
     "!**/__tests__/**"
-  ]
+  ],
+  "private": true
 }

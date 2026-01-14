@@ -628,10 +628,12 @@ NS_ASSUME_NONNULL_END
 typedef UIApplication RCTUIApplication;
 typedef UIWindow RCTPlatformWindow;
 typedef UIViewController RCTPlatformViewController;
+typedef UISwitch RCTPlatformSwitch;
 #else
 typedef NSApplication RCTUIApplication;
 typedef NSWindow RCTPlatformWindow;
 typedef NSViewController RCTPlatformViewController;
+typedef NSSwitch RCTPlatformSwitch;
 #endif
 
 //

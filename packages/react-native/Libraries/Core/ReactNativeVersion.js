@@ -15,8 +15,8 @@ export const version: $ReadOnly<{
   patch: number,
   prerelease: string | null,
 }> = {
-  major: 1000,
-  minor: 0,
-  patch: 0,
+  major: 0,
+  minor: 81,
+  patch: 5,
   prerelease: null,
 };

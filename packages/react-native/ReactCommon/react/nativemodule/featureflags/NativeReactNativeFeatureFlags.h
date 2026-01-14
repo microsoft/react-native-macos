@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f3336bad491a91abb3af7e8fcd7e5938>>
+ * @generated SignedSource<<d1862a9ce3cfeda5d140941fcd3b25bc>>
  */
 
 /**
@@ -130,6 +130,8 @@ class NativeReactNativeFeatureFlags
 
   double preparedTextCacheSize(jsi::Runtime& runtime);
 
+  bool preventShadowTreeCommitExhaustion(jsi::Runtime& runtime);
+
   bool traceTurboModulePromiseRejectionsOnAndroid(jsi::Runtime& runtime);
 
   bool updateRuntimeShadowNodeReferencesOnCommit(jsi::Runtime& runtime);
@@ -137,6 +139,10 @@ class NativeReactNativeFeatureFlags
   bool useAlwaysAvailableJSErrorHandling(jsi::Runtime& runtime);
 
   bool useFabricInterop(jsi::Runtime& runtime);
+
+  bool useNativeEqualsInNativeReadableArrayAndroid(jsi::Runtime& runtime);
+
+  bool useNativeTransformHelperAndroid(jsi::Runtime& runtime);
 
   bool useNativeViewConfigsInBridgelessMode(jsi::Runtime& runtime);
 

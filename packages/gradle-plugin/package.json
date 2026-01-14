@@ -1,7 +1,6 @@
 {
   "name": "@react-native/gradle-plugin",
-  "version": "0.81.0-main",
-  "private": true,
+  "version": "0.81.5",
   "description": "Gradle Plugin for React Native",
   "license": "MIT",
   "repository": {
@@ -17,7 +16,7 @@
   ],
   "bugs": "https://github.com/facebook/react-native/issues",
   "engines": {
-    "node": ">= 22.14.0"
+    "node": ">= 20.19.4"
   },
   "scripts": {
     "build": "./gradlew build",
@@ -35,5 +34,6 @@
     "settings-plugin",
     "shared",
     "shared-testutil"
-  ]
+  ],
+  "private": true
 }

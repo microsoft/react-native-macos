@@ -543,6 +543,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    preventShadowTreeCommitExhaustion: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2025-07-23',
+        description:
+          'Enables a new mechanism in ShadowTree to prevent problems caused by multiple threads trying to commit concurrently. If a thread tries to commit a few times unsuccessfully, it will acquire a lock and try again.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
+    },
     traceTurboModulePromiseRejectionsOnAndroid: {
       defaultValue: false,
       metadata: {
@@ -583,6 +594,27 @@ const definitions: FeatureFlagDefinitions = {
         purpose: 'release',
       },
       ossReleaseStage: 'none',
+    },
+    useNativeEqualsInNativeReadableArrayAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2025-07-15',
+        description:
+          'Use a native implementation of equals in NativeReadableArray.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
+    },
+    useNativeTransformHelperAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2025-07-15',
+        description: 'Use a native implementation of TransformHelper',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
     },
     useNativeViewConfigsInBridgelessMode: {
       defaultValue: false,

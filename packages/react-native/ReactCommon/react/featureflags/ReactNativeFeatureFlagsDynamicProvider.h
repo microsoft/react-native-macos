@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e78150be120e3fdf02f9420abce23bfc>>
+ * @generated SignedSource<<244db790cc754f31402981967cd902b5>>
  */
 
 /**
@@ -468,6 +468,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::preparedTextCacheSize();
   }
 
+  bool preventShadowTreeCommitExhaustion() override {
+    auto value = values_["preventShadowTreeCommitExhaustion"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::preventShadowTreeCommitExhaustion();
+  }
+
   bool traceTurboModulePromiseRejectionsOnAndroid() override {
     auto value = values_["traceTurboModulePromiseRejectionsOnAndroid"];
     if (!value.isNull()) {
@@ -502,6 +511,24 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::useFabricInterop();
+  }
+
+  bool useNativeEqualsInNativeReadableArrayAndroid() override {
+    auto value = values_["useNativeEqualsInNativeReadableArrayAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::useNativeEqualsInNativeReadableArrayAndroid();
+  }
+
+  bool useNativeTransformHelperAndroid() override {
+    auto value = values_["useNativeTransformHelperAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::useNativeTransformHelperAndroid();
   }
 
   bool useNativeViewConfigsInBridgelessMode() override {

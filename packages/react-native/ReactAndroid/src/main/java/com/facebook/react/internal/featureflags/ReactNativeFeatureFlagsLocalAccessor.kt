@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<356261385b837def94ac5a4ca7ffd05d>>
+ * @generated SignedSource<<b04948c792c5db63decf1df80d3a867e>>
  */
 
 /**
@@ -71,10 +71,13 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var fuseboxNetworkInspectionEnabledCache: Boolean? = null
   private var hideOffscreenVirtualViewsOnIOSCache: Boolean? = null
   private var preparedTextCacheSizeCache: Double? = null
+  private var preventShadowTreeCommitExhaustionCache: Boolean? = null
   private var traceTurboModulePromiseRejectionsOnAndroidCache: Boolean? = null
   private var updateRuntimeShadowNodeReferencesOnCommitCache: Boolean? = null
   private var useAlwaysAvailableJSErrorHandlingCache: Boolean? = null
   private var useFabricInteropCache: Boolean? = null
+  private var useNativeEqualsInNativeReadableArrayAndroidCache: Boolean? = null
+  private var useNativeTransformHelperAndroidCache: Boolean? = null
   private var useNativeViewConfigsInBridgelessModeCache: Boolean? = null
   private var useOptimizedEventBatchingOnAndroidCache: Boolean? = null
   private var useRawPropsJsiValueCache: Boolean? = null
@@ -553,6 +556,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
     return cached
   }
 
+  override fun preventShadowTreeCommitExhaustion(): Boolean {
+    var cached = preventShadowTreeCommitExhaustionCache
+    if (cached == null) {
+      cached = currentProvider.preventShadowTreeCommitExhaustion()
+      accessedFeatureFlags.add("preventShadowTreeCommitExhaustion")
+      preventShadowTreeCommitExhaustionCache = cached
+    }
+    return cached
+  }
+
   override fun traceTurboModulePromiseRejectionsOnAndroid(): Boolean {
     var cached = traceTurboModulePromiseRejectionsOnAndroidCache
     if (cached == null) {
@@ -589,6 +602,26 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.useFabricInterop()
       accessedFeatureFlags.add("useFabricInterop")
       useFabricInteropCache = cached
+    }
+    return cached
+  }
+
+  override fun useNativeEqualsInNativeReadableArrayAndroid(): Boolean {
+    var cached = useNativeEqualsInNativeReadableArrayAndroidCache
+    if (cached == null) {
+      cached = currentProvider.useNativeEqualsInNativeReadableArrayAndroid()
+      accessedFeatureFlags.add("useNativeEqualsInNativeReadableArrayAndroid")
+      useNativeEqualsInNativeReadableArrayAndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun useNativeTransformHelperAndroid(): Boolean {
+    var cached = useNativeTransformHelperAndroidCache
+    if (cached == null) {
+      cached = currentProvider.useNativeTransformHelperAndroid()
+      accessedFeatureFlags.add("useNativeTransformHelperAndroid")
+      useNativeTransformHelperAndroidCache = cached
     }
     return cached
   }

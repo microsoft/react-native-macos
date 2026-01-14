@@ -1,9 +1,9 @@
 {
   "name": "@react-native/eslint-plugin-monorepo",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.81.5",
   "main": "index.js",
   "dependencies": {
     "jsonc-eslint-parser": "^2.3.0"
-  }
+  },
+  "private": true
 }

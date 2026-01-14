@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7b5caffd8f748384aa32ed6e153ee9c1>>
+ * @generated SignedSource<<1a54000b8eb51cb91304902c7f722d45>>
  */
 
 /**
@@ -215,6 +215,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return 200.0;
   }
 
+  bool preventShadowTreeCommitExhaustion() override {
+    return false;
+  }
+
   bool traceTurboModulePromiseRejectionsOnAndroid() override {
     return false;
   }
@@ -229,6 +233,14 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
 
   bool useFabricInterop() override {
     return true;
+  }
+
+  bool useNativeEqualsInNativeReadableArrayAndroid() override {
+    return false;
+  }
+
+  bool useNativeTransformHelperAndroid() override {
+    return false;
   }
 
   bool useNativeViewConfigsInBridgelessMode() override {

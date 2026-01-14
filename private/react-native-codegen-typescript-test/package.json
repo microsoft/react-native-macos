@@ -1,11 +1,10 @@
 {
   "name": "@react-native/codegen-typescript-test",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.81.5",
   "description": "TypeScript related unit test for @react-native/codegen",
   "license": "MIT",
   "engines": {
-    "node": ">= 22.14.0"
+    "node": ">= 20.19.4"
   },
   "scripts": {
     "build": "yarn clean && node scripts/build.js --verbose && tsc",
@@ -32,5 +31,6 @@
   },
   "peerDependencies": {
     "@babel/preset-env": "^7.1.6"
-  }
+  },
+  "private": true
 }

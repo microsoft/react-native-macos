@@ -32,10 +32,7 @@ Pod::Spec.new do |s|
                             "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                             "DEFINES_MODULE" => "YES" }
 
-  if ENV['USE_FRAMEWORKS']
-    s.header_mappings_dir     = './'
-    s.module_name             = 'React_Fabric'
-  end
+  resolve_use_frameworks(s, header_mappings_dir: "./", module_name: "React_Fabric")
 
   s.dependency "React-jsiexecutor"
   s.dependency "RCTRequired"
@@ -56,6 +53,7 @@ Pod::Spec.new do |s|
 
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
+  add_rncore_dependency(s)
 
   s.subspec "animations" do |ss|
     ss.source_files         = podspec_sources("react/renderer/animations/**/*.{m,mm,cpp,h}", "react/renderer/animations/**/*.{h}")

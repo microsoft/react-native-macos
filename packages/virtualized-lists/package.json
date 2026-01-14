@@ -1,7 +1,6 @@
 {
   "name": "@react-native-macos/virtualized-lists",
-  "version": "0.81.0-main",
-  "private": true,
+  "version": "0.81.0-rc0",
   "description": "Virtualized lists for React Native macOS.",
   "license": "MIT",
   "repository": {
@@ -18,7 +17,7 @@
   ],
   "bugs": "https://github.com/facebook/react-native/issues",
   "engines": {
-    "node": ">= 22.14.0"
+    "node": ">= 20.19.4"
   },
   "exports": {
     ".": {
@@ -49,10 +48,10 @@
     "nullthrows": "^1.1.1"
   },
   "devDependencies": {
-    "react-test-renderer": "19.1.0"
+    "react-test-renderer": "19.1.4"
   },
   "peerDependencies": {
-    "@types/react": "^19.1.0",
+    "@types/react": "^19.1.4",
     "react": "*",
     "react-native": "*"
   },

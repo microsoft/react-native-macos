@@ -24,7 +24,7 @@ import {use} from 'react';
  *
  * @see https://reactnative.dev/docs/view
  */
-export default component View(
+component View(
   ref?: React.RefSetter<React.ElementRef<typeof ViewNativeComponent>>,
   ...props: ViewProps
 ) {
@@ -262,3 +262,7 @@ export default component View(
   }
   return actualView;
 }
+
+View.displayName = 'View';
+
+export default View;

@@ -461,6 +461,22 @@ CGSize RCTViewportSize(void)
 #endif // macOS]
 }
 
+CGSize RCTSwitchSize(void)
+{
+  static CGSize rctSwitchSize;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    RCTUnsafeExecuteOnMainQueueSync(^{
+      CGSize switchSize = [RCTPlatformSwitch new].intrinsicContentSize; // [macOS]
+      // Apple does not take into account the thumb border when returning the
+      // width of the UISwitch component, so we are adding 2 pixels for the border
+      // which is not customizable and it is the same for legacy and liquid glass.
+      rctSwitchSize = CGSizeMake(switchSize.width + 2, switchSize.height);
+    });
+  });
+  return rctSwitchSize;
+}
+
 CGFloat RCTRoundPixelValue(CGFloat value)
 {
   CGFloat scale = RCTScreenScale();

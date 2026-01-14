@@ -1,7 +1,6 @@
 {
   "name": "@react-native/core-cli-utils",
-  "version": "0.81.0-main",
-  "private": true,
+  "version": "0.81.5",
   "description": "React Native CLI library for Frameworks to build on",
   "license": "MIT",
   "main": "./src/index.flow.js",
@@ -22,9 +21,10 @@
   ],
   "bugs": "https://github.com/facebook/react-native/issues",
   "engines": {
-    "node": ">= 22.14.0"
+    "node": ">= 20.19.4"
   },
   "files": [
     "dist"
-  ]
+  ],
+  "private": true
 }

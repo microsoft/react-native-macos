@@ -1094,6 +1094,21 @@ const textInputExamples: Array<RNTesterModuleExample> = [
       );
     },
   },
+  {
+    title: 'Accessibility',
+    render: function (): React.Node {
+      return (
+        <View>
+          <WithLabel label="accessibilityLabel">
+            <ExampleTextInput accessibilityLabel="This is Accessibility Label" />
+          </WithLabel>
+          <WithLabel label="aria-label">
+            <ExampleTextInput aria-label="This is Aria Label" />
+          </WithLabel>
+        </View>
+      );
+    },
+  },
 ];
 
 // [macOS

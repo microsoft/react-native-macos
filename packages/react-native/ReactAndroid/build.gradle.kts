@@ -112,6 +112,8 @@ val preparePrefab by
                       Pair(
                           "../ReactCommon/react/renderer/animations/",
                           "react/renderer/animations/"),
+                      // react_renderer_bridging
+                      Pair("../ReactCommon/react/renderer/bridging/", "react/renderer/bridging/"),
                       // react_renderer_componentregistry
                       Pair(
                           "../ReactCommon/react/renderer/componentregistry/",
@@ -596,13 +598,22 @@ android {
   publishing {
     multipleVariants {
       withSourcesJar()
-      includeBuildTypeValues("debug", "release")
+      includeBuildTypeValues("debug", "release", "debugOptimized")
     }
   }
 
   testOptions {
     unitTests { isIncludeAndroidResources = true }
     targetSdk = libs.versions.targetSdk.get().toInt()
+  }
+
+  buildTypes {
+    create("debugOptimized") {
+      initWith(getByName("debug"))
+      externalNativeBuild {
+        cmake { arguments("-DCMAKE_BUILD_TYPE=Release", "-DREACT_NATIVE_DEBUG_OPTIMIZED=True") }
+      }
+    }
   }
 }
 

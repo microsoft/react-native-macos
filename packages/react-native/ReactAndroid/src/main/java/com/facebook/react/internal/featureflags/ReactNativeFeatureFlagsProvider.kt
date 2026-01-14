@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8abf9bfb81265ae0c840457eb6c199bd>>
+ * @generated SignedSource<<21704207ce520def05b05f89dfba1048>>
  */
 
 /**
@@ -117,6 +117,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun preparedTextCacheSize(): Double
 
+  @DoNotStrip public fun preventShadowTreeCommitExhaustion(): Boolean
+
   @DoNotStrip public fun traceTurboModulePromiseRejectionsOnAndroid(): Boolean
 
   @DoNotStrip public fun updateRuntimeShadowNodeReferencesOnCommit(): Boolean
@@ -124,6 +126,10 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun useAlwaysAvailableJSErrorHandling(): Boolean
 
   @DoNotStrip public fun useFabricInterop(): Boolean
+
+  @DoNotStrip public fun useNativeEqualsInNativeReadableArrayAndroid(): Boolean
+
+  @DoNotStrip public fun useNativeTransformHelperAndroid(): Boolean
 
   @DoNotStrip public fun useNativeViewConfigsInBridgelessMode(): Boolean
 

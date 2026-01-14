@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<48fa8921cc2947a713974c9926e1d806>>
+ * @generated SignedSource<<10d708ce4449eede46d750a1ed48d02e>>
  */
 
 /**
@@ -117,6 +117,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun preparedTextCacheSize(): Double = 200.0
 
+  override fun preventShadowTreeCommitExhaustion(): Boolean = false
+
   override fun traceTurboModulePromiseRejectionsOnAndroid(): Boolean = false
 
   override fun updateRuntimeShadowNodeReferencesOnCommit(): Boolean = false
@@ -124,6 +126,10 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun useAlwaysAvailableJSErrorHandling(): Boolean = false
 
   override fun useFabricInterop(): Boolean = true
+
+  override fun useNativeEqualsInNativeReadableArrayAndroid(): Boolean = false
+
+  override fun useNativeTransformHelperAndroid(): Boolean = false
 
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = false
 

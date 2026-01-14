@@ -1,7 +1,6 @@
 {
   "name": "@react-native/oss-library-example",
-  "version": "0.81.0-main",
-  "private": true,
+  "version": "0.81.5",
   "description": "Package that includes native module exapmle, native component example, targets both the old and the new architecture. It should serve as an example of a real-world OSS library.",
   "license": "MIT",
   "homepage": "https://github.com/facebook/react-native.git",
@@ -50,5 +49,6 @@
         "SampleNativeComponent": "RCTSampleNativeComponentComponentView"
       }
     }
-  }
+  },
+  "private": true
 }
