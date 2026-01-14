@@ -67,6 +67,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Verify release config
+        id: prepublish
         run: |
           node .ado/scripts/prepublish-check.mjs --verbose --skip-auth --tag ${{ steps.config.outputs.publishTag }}
 
@@ -74,6 +75,18 @@ jobs:
         run: |
           echo "Target branch: ${{ github.base_ref }}"
           yarn nx release --dry-run --verbose
+          
+          # Show what additional tags would be applied
+          if [ -n "${{ steps.prepublish.outputs.additionalTags }}" ]; then
+            echo ""
+            echo "=== Additional dist-tags that would be applied ==="
+            VERSION=$(jq -r '.version' ./packages/react-native/package.json)
+            IFS=',' read -ra TAGS <<< "${{ steps.prepublish.outputs.additionalTags }}"
+            for tag in "${TAGS[@]}"; do
+              echo "  @react-native-macos/virtualized-lists@$VERSION -> $tag"
+              echo "  react-native-macos@$VERSION -> $tag"
+            done
+          fi
   
   yarn-constraints:
     name: "Check Yarn Constraints"
