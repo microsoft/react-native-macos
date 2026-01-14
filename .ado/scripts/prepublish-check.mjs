@@ -27,9 +27,8 @@ const RNMACOS_NEXT = "react-native-macos@next";
  *   verbose?: boolean;
  * }} Options;
  * @typedef {{
- *   npmTag: string;
+ *   npmTags: string[];
  *   prerelease?: string;
- *   isNewTag?: boolean;
  * }} TagInfo;
  */
 
@@ -264,7 +263,12 @@ function getPublishedVersion(tag) {
 }
 
 /**
- * Returns the npm tag and prerelease identifier for the specified branch.
+ * Returns the npm tags and prerelease identifier for the specified branch.
+ *
+ * The first tag in the array is used for the initial publish. When promoting
+ * to `latest`, also includes additional tags to apply:
+ * - The version-specific stable tag (e.g., `v0.81-stable`)
+ * - The `next` tag if the current `next` version is lower
  *
  * @privateRemarks
  * Note that the current implementation treats minor versions as major. If
@@ -276,50 +280,60 @@ function getPublishedVersion(tag) {
  * @param {typeof info} log
  * @returns {TagInfo}
  */
-function getTagForStableBranch(branch, { tag }, log) {
+function getTagsForStableBranch(branch, { tag }, log) {
   if (!isStableBranch(branch)) {
     throw new Error("Expected a stable branch");
   }
 
   const latestVersion = getPublishedVersion("latest");
+  const nextVersion = getPublishedVersion("next");
   const currentVersion = versionToNumber(branch);
 
   log(`${RNMACOS_LATEST}: ${latestVersion}`);
+  log(`${RNMACOS_NEXT}: ${nextVersion}`);
   log(`Current version: ${currentVersion}`);
 
   // Patching latest version
   if (currentVersion === latestVersion) {
-    const npmTag = "latest";
-    log(`Expected npm tag: ${npmTag}`);
-    return { npmTag };
+    const versionTag = "v" + branch;
+    log(`Expected npm tags: latest, ${versionTag}`);
+    return { npmTags: ["latest", versionTag] };
   }
 
   // Demoting or patching an older stable version
   if (currentVersion < latestVersion) {
     const npmTag = "v" + branch;
-    log(`Expected npm tag: ${npmTag}`);
-    // If we're demoting a branch, we will need to create a new tag. This will
-    // make Nx trip if we don't specify a fallback. In all other scenarios, the
-    // tags should exist and therefore prefer it to fail.
-    return { npmTag, isNewTag: true };
+    log(`Expected npm tags: ${npmTag}`);
+    return { npmTags: [npmTag] };
   }
 
   // Publishing a new latest version
   if (tag === "latest") {
-    log(`Expected npm tag: ${tag}`);
-    return { npmTag: tag };
+    // When promoting to latest, also add the version-specific stable tag
+    const versionTag = "v" + branch;
+    const npmTags = ["latest", versionTag];
+    
+    // Also add "next" tag if the current next version is lower
+    if (currentVersion > nextVersion) {
+      npmTags.push(NPM_TAG_NEXT);
+    }
+    
+    log(`Expected npm tags: ${npmTags.join(", ")}`);
+    return { npmTags };
   }
 
   // Publishing a release candidate
-  const nextVersion = getPublishedVersion("next");
-  log(`${RNMACOS_NEXT}: ${nextVersion}`);
-  log(`Expected npm tag: ${NPM_TAG_NEXT}`);
+  if (currentVersion > latestVersion) {
+    log(`Expected npm tags: ${NPM_TAG_NEXT}`);
 
-  if (currentVersion < nextVersion) {
-    throw new Error(`Current version cannot be a release candidate because it is too old: ${currentVersion} < ${nextVersion}`);
+    if (currentVersion < nextVersion) {
+      throw new Error(`Current version cannot be a release candidate because it is too old: ${currentVersion} < ${nextVersion}`);
+    }
+
+    return { npmTags: [NPM_TAG_NEXT], prerelease: "rc" };
   }
 
-  return { npmTag: NPM_TAG_NEXT, prerelease: "rc" };
+  throw new Error(`Unexpected state: currentVersion=${currentVersion}, latestVersion=${latestVersion}, nextVersion=${nextVersion}, tag=${tag}`);
 }
 
 /**
@@ -330,11 +344,13 @@ function getTagForStableBranch(branch, { tag }, log) {
  * @param {Options} options
  * @returns {asserts config is NxConfig["release"]}
  */
-function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNewTag }, options) {
+function enablePublishing(config, currentBranch, { npmTags, prerelease }, options) {
   /** @type {string[]} */
   const errors = [];
 
   const { defaultBase, release } = config;
+  const primaryTag = npmTags[0];
+  const additionalTags = npmTags.slice(1);
 
   // `defaultBase` determines what we diff against when looking for tags or
   // released version and must therefore be set to either the main branch or one
@@ -358,23 +374,10 @@ function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNe
 
   // What the published version should be tagged as e.g., "latest" or "nightly".
   const currentVersionResolverMetadata = /** @type {{ tag?: string }} */ (versionActionsOptions.currentVersionResolverMetadata || {});
-  if (currentVersionResolverMetadata.tag !== tag) {
-    errors.push(`'release.version.versionActionsOptions.currentVersionResolverMetadata.tag' must be set to '${tag}'`);
+  if (currentVersionResolverMetadata.tag !== primaryTag) {
+    errors.push(`'release.version.versionActionsOptions.currentVersionResolverMetadata.tag' must be set to '${primaryTag}'`);
     versionActionsOptions.currentVersionResolverMetadata ??= {};
-    /** @type {any} */ (versionActionsOptions.currentVersionResolverMetadata).tag = tag;
-  }
-
-  // If we're demoting a branch, we will need to create a new tag. This will
-  // make Nx trip if we don't specify a fallback. In all other scenarios, the
-  // tags should exist and therefore prefer it to fail.
-  if (isNewTag) {
-    if (versionActionsOptions.fallbackCurrentVersionResolver !== "disk") {
-      errors.push("'release.version.versionActionsOptions.fallbackCurrentVersionResolver' must be set to 'disk'");
-      versionActionsOptions.fallbackCurrentVersionResolver = "disk";
-    }
-  } else if (typeof versionActionsOptions.fallbackCurrentVersionResolver === "string") {
-    errors.push("'release.version.versionActionsOptions.fallbackCurrentVersionResolver' must be removed");
-    versionActionsOptions.fallbackCurrentVersionResolver = undefined;
+    /** @type {any} */ (versionActionsOptions.currentVersionResolverMetadata).tag = primaryTag;
   }
 
   if (errors.length > 0) {
@@ -391,6 +394,17 @@ function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNe
   // Don't enable publishing in PRs
   if (!getTargetBranch()) {
     enablePublishingOnAzurePipelines();
+    
+    // Output additional tags as pipeline/workflow variable
+    if (additionalTags.length > 0) {
+      const tagsValue = additionalTags.join(",");
+      // Azure Pipelines
+      console.log(`##vso[task.setvariable variable=additionalTags]${tagsValue}`);
+      // GitHub Actions
+      if (process.env["GITHUB_OUTPUT"]) {
+        fs.appendFileSync(process.env["GITHUB_OUTPUT"], `additionalTags=${tagsValue}\n`);
+      }
+    }
   }
 }
 
@@ -410,10 +424,10 @@ function main(options) {
   const config = loadNxConfig(NX_CONFIG_FILE);
   try {
     if (isMainBranch(branch)) {
-      const info = { npmTag: NPM_TAG_NIGHTLY, prerelease: NPM_TAG_NIGHTLY };
+      const info = { npmTags: [NPM_TAG_NIGHTLY], prerelease: NPM_TAG_NIGHTLY };
       enablePublishing(config, branch, info, options);
     } else if (isStableBranch(branch)) {
-      const tag = getTagForStableBranch(branch, options, logger);
+      const tag = getTagsForStableBranch(branch, options, logger);
       enablePublishing(config, branch, tag, options);
     }
   } catch (e) {
