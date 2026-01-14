@@ -3402,16 +3402,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native-macos/nx-release-version@workspace:packages/nx-release-version":
-  version: 0.0.0-use.local
-  resolution: "@react-native-macos/nx-release-version@workspace:packages/nx-release-version"
-  dependencies:
-    "@nx/js": "npm:^21.4.1"
-    "@rnx-kit/tsconfig": "npm:^2.0.0"
-    typescript: "npm:^5.6.3"
-  languageName: unknown
-  linkType: soft
-
 "@react-native-macos/virtualized-lists@npm:0.81.0-rc0, @react-native-macos/virtualized-lists@workspace:packages/virtualized-lists":
   version: 0.0.0-use.local
   resolution: "@react-native-macos/virtualized-lists@workspace:packages/virtualized-lists"
