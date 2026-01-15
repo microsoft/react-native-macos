@@ -387,20 +387,20 @@ function enablePublishing(config, currentBranch, { npmTags, prerelease }, option
     verifyNpmAuth();
   }
 
+  // Output additional tags as pipeline/workflow variable
+  if (additionalTags.length > 0) {
+    const tagsValue = additionalTags.join(",");
+    // Azure Pipelines
+    console.log(`##vso[task.setvariable variable=additionalTags]${tagsValue}`);
+    // GitHub Actions
+    if (process.env["GITHUB_OUTPUT"]) {
+      fs.appendFileSync(process.env["GITHUB_OUTPUT"], `additionalTags=${tagsValue}\n`);
+    }
+  }
+
   // Don't enable publishing in PRs
   if (!getTargetBranch()) {
     enablePublishingOnAzurePipelines();
-    
-    // Output additional tags as pipeline/workflow variable
-    if (additionalTags.length > 0) {
-      const tagsValue = additionalTags.join(",");
-      // Azure Pipelines
-      console.log(`##vso[task.setvariable variable=additionalTags]${tagsValue}`);
-      // GitHub Actions
-      if (process.env["GITHUB_OUTPUT"]) {
-        fs.appendFileSync(process.env["GITHUB_OUTPUT"], `additionalTags=${tagsValue}\n`);
-      }
-    }
   }
 }
 
