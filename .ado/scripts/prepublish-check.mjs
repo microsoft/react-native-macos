@@ -323,17 +323,14 @@ function getTagsForStableBranch(branch, { tag }, log) {
   }
 
   // Publishing a release candidate
-  if (currentVersion > latestVersion) {
-    log(`Expected npm tags: ${NPM_TAG_NEXT}`);
+  // currentVersion > latestVersion
+  log(`Expected npm tags: ${NPM_TAG_NEXT}`);
 
-    if (currentVersion < nextVersion) {
-      throw new Error(`Current version cannot be a release candidate because it is too old: ${currentVersion} < ${nextVersion}`);
-    }
-
-    return { npmTags: [NPM_TAG_NEXT], prerelease: "rc" };
+  if (currentVersion < nextVersion) {
+    throw new Error(`Current version cannot be a release candidate because it is too old: ${currentVersion} < ${nextVersion}`);
   }
 
-  throw new Error(`Unexpected state: currentVersion=${currentVersion}, latestVersion=${latestVersion}, nextVersion=${nextVersion}, tag=${tag}`);
+  return { npmTags: [NPM_TAG_NEXT], prerelease: "rc" };
 }
 
 /**
@@ -349,8 +346,7 @@ function enablePublishing(config, currentBranch, { npmTags, prerelease }, option
   const errors = [];
 
   const { defaultBase, release } = config;
-  const primaryTag = npmTags[0];
-  const additionalTags = npmTags.slice(1);
+  const [primaryTag, ...additionalTags] = npmTags;
 
   // `defaultBase` determines what we diff against when looking for tags or
   // released version and must therefore be set to either the main branch or one
