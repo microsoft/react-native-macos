@@ -49,16 +49,7 @@ jobs:
         yarn nx release --dry-run --verbose
         
         # Show what additional tags would be applied
-        if [ -n "$(additionalTags)" ]; then
-          echo ""
-          echo "=== Additional dist-tags that would be applied ==="
-          VERSION=$(jq -r '.version' ./packages/react-native/package.json)
-          IFS=',' read -ra TAGS <<< "$(additionalTags)"
-          for tag in "${TAGS[@]}"; do
-            echo "  @react-native-macos/virtualized-lists@$VERSION -> $tag"
-            echo "  react-native-macos@$VERSION -> $tag"
-          done
-        fi
+        node .ado/scripts/apply-additional-tags.mjs --tags "$(additionalTags)" --dry-run
       displayName: Version and publish packages (dry run)
       condition: and(succeeded(), ne(variables['publish_react_native_macos'], '1'))
 
@@ -96,22 +87,7 @@ jobs:
         condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
       - script: |
-          set -eox pipefail
-          if [[ -z "$(additionalTags)" ]]; then
-            echo "No additional tags to apply"
-            exit 0
-          fi
-          
-          # Get the version from package.json
-          VERSION=$(jq -r '.version' ./packages/react-native/package.json)
-          
-          # Apply additional tags
-          IFS=',' read -ra TAGS <<< "$(additionalTags)"
-          for tag in "${TAGS[@]}"; do
-            echo "Adding dist-tag '$tag' to packages"
-            npm dist-tag add "@react-native-macos/virtualized-lists@$VERSION" "$tag" --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
-            npm dist-tag add "react-native-macos@$VERSION"                    "$tag" --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
-          done
+          node .ado/scripts/apply-additional-tags.mjs --tags "$(additionalTags)" --token "$(npmAuthToken)"
         displayName: Apply additional dist-tags
         condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 

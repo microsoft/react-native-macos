@@ -77,16 +77,7 @@ jobs:
           yarn nx release --dry-run --verbose
           
           # Show what additional tags would be applied
-          if [ -n "${{ steps.prepublish.outputs.additionalTags }}" ]; then
-            echo ""
-            echo "=== Additional dist-tags that would be applied ==="
-            VERSION=$(jq -r '.version' ./packages/react-native/package.json)
-            IFS=',' read -ra TAGS <<< "${{ steps.prepublish.outputs.additionalTags }}"
-            for tag in "${TAGS[@]}"; do
-              echo "  @react-native-macos/virtualized-lists@$VERSION -> $tag"
-              echo "  react-native-macos@$VERSION -> $tag"
-            done
-          fi
+          node .ado/scripts/apply-additional-tags.mjs --tags "${{ steps.prepublish.outputs.additionalTags }}" --dry-run
   
   yarn-constraints:
     name: "Check Yarn Constraints"
