@@ -5,26 +5,5 @@
     "build": {
       "dependsOn": ["^build"]
     }
-  },
-  "release": {
-    "changelog": {
-      "projectChangelogs": {
-        "file": false,
-        "createRelease": "github"
-      },
-      "workspaceChangelog": false
-    },
-    "projects": ["packages/react-native", "packages/virtualized-lists"],
-    "versionPlans": true,
-    "version": {
-      "versionActions": "@react-native-macos/nx-release-version",
-      "versionActionsOptions": {
-        "currentVersionResolver": "registry",
-        "currentVersionResolverMetadata": {
-          "tag": "latest"
-        }
-      },
-      "useLegacyVersioning": false
-    }
   }
 }
