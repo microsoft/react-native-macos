@@ -53,12 +53,6 @@ jobs:
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
-      - name: Read publish tag from nx.json
-        id: config
-        run: |
-          PUBLISH_TAG=$(jq -r '.release.version.generatorOptions.currentVersionResolverMetadata.tag' nx.json)
-          echo "publishTag=$PUBLISH_TAG" >> $GITHUB_OUTPUT
-          echo "Using publish tag from nx.json: $PUBLISH_TAG"
       - name: Configure git
         run: |
           git config --global user.email "53619745+rnbot@users.noreply.github.com"
@@ -66,14 +60,10 @@ jobs:
           git remote set-url origin https://rnbot:${{ secrets.GITHUB_TOKEN }}@github.com/microsoft/react-native-macos
       - name: Install dependencies
         run: yarn
-      - name: Verify release config
+      - name: Release (dry run)
         run: |
-          node .ado/scripts/prepublish-check.mjs --verbose --skip-auth --tag ${{ steps.config.outputs.publishTag }}
-
-      - name: Version and publish packages (dry run)
-        run: |
-          echo "Target branch: ${{ github.base_ref }}"
-          yarn nx release --dry-run --verbose
+          RELEASE_TAG=$(tail -1 .ado/release-config.yml)
+          node .ado/scripts/release.mjs --dry-run --verbose --tag "$RELEASE_TAG"
   
   yarn-constraints:
     name: "Check Yarn Constraints"

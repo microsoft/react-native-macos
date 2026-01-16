@@ -1,0 +1,5 @@
+# Release tag for react-native-macos
+# Set to "latest" to promote this branch to @latest on npm
+# Set to "next" to publish release candidates
+# Set to "stable" otherwise (releases continue automatically)
+stable

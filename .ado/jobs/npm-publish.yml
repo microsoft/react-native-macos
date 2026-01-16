@@ -8,8 +8,6 @@ jobs:
   variables:
     - name: BUILDSECMON_OPT_IN
       value: true
-    - name: USE_YARN_FOR_PUBLISH
-      value: false
     
   timeoutInMinutes: 90
   cancelTimeoutInMinutes: 5
@@ -27,70 +25,26 @@ jobs:
     - template: /.ado/templates/configure-git.yml@self
 
     - script: |
-        PUBLISH_TAG=$(jq -r '.release.version.versionActionsOptions.currentVersionResolverMetadata.tag' nx.json)
-        if [ -z "$PUBLISH_TAG" ] || [ "$PUBLISH_TAG" = "null" ]; then
-          echo "Error: Failed to read publish tag from nx.json"
-          exit 1
-        fi
-        echo "##vso[task.setvariable variable=publishTag]$PUBLISH_TAG"
-        echo "Using publish tag from nx.json: $PUBLISH_TAG"
-      displayName: Read publish tag from nx.json
-
-    - script: |
         yarn install
       displayName: Install npm dependencies
 
     - script: |
-        node .ado/scripts/prepublish-check.mjs --verbose --skip-auth --tag $(publishTag)
-      displayName: Verify release config
-
-    - script: |
-        echo Target branch: $(System.PullRequest.TargetBranch)
-        yarn nx release --dry-run --verbose
-      displayName: Version and publish packages (dry run)
+        node .ado/scripts/release.mjs --dry-run --verbose
+      displayName: Release (dry run)
       condition: and(succeeded(), ne(variables['publish_react_native_macos'], '1'))
 
     # Disable Nightly publishing on the main branch
     - ${{ if endsWith(variables['Build.SourceBranchName'], '-stable') }}:
       - script: |
           git switch $(Build.SourceBranchName)
-          yarn nx release --skip-publish --verbose
+          RELEASE_TAG=$(tail -1 .ado/release-config.yml)
+          node .ado/scripts/release.mjs --verbose --tag "$RELEASE_TAG" --token "$(npmAuthToken)"
         env:
           GITHUB_TOKEN: $(githubAuthToken)
-        displayName: Version Packages and Github Release
-        condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
-
-      - script: |
-          set -eox pipefail
-          if [[ -f .rnm-publish ]]; then
-            # https://github.com/microsoft/react-native-macos/issues/2580
-            # `nx release publish` gets confused by the output of RNM's prepack script.
-            # Let's call publish directly instead on the packages we want to publish.
-            # yarn nx release publish --tag $(publishTag) --excludeTaskDependencies
-            if [ "$(USE_YARN_FOR_PUBLISH)" = "true" ]; then
-              echo "Configuring yarn for npm publishing"
-              yarn config set npmPublishRegistry "https://registry.npmjs.org"
-              yarn config set npmAuthToken $(npmAuthToken)
-              echo "Publishing with yarn npm publish"
-              yarn ./packages/virtualized-lists npm publish --tag $(publishTag)
-              yarn ./packages/react-native npm publish --tag $(publishTag)
-            else
-              echo "Publishing with npm publish"
-              npm publish ./packages/virtualized-lists --tag $(publishTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
-              npm publish ./packages/react-native      --tag $(publishTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
-            fi
-          fi
-        displayName: Publish packages
+        displayName: Release
         condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
     - script: |
-        if [ "$(USE_YARN_FOR_PUBLISH)" = "true" ]; then
-          echo "Cleaning up yarn npm configuration"
-          yarn config unset npmAuthToken || true
-          yarn config unset npmPublishRegistry || true
-        else
-          echo "Cleaning up npm configuration"
-          rm -f ~/.npmrc
-        fi
+        rm -f ~/.npmrc
       displayName: Remove NPM auth configuration
       condition: always()
