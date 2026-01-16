@@ -295,14 +295,14 @@ function getTagsForStableBranch(branch, { tag }, log) {
 
   // Patching latest version
   if (currentVersion === latestVersion) {
-    const versionTag = "v" + branch;
+    const versionTag = branch;
     log(`Expected npm tags: latest, ${versionTag}`);
     return { npmTags: ["latest", versionTag] };
   }
 
   // Demoting or patching an older stable version
   if (currentVersion < latestVersion) {
-    const npmTag = "v" + branch;
+    const npmTag = branch;
     log(`Expected npm tags: ${npmTag}`);
     return { npmTags: [npmTag] };
   }
@@ -310,7 +310,7 @@ function getTagsForStableBranch(branch, { tag }, log) {
   // Publishing a new latest version
   if (tag === "latest") {
     // When promoting to latest, also add the version-specific stable tag
-    const versionTag = "v" + branch;
+    const versionTag = branch;
     const npmTags = ["latest", versionTag];
     
     // Also add "next" tag if the current next version is lower
