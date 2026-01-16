@@ -47,6 +47,9 @@ jobs:
     - script: |
         echo Target branch: $(System.PullRequest.TargetBranch)
         yarn nx release --dry-run --verbose
+        
+        # Show what additional tags would be applied
+        node .ado/scripts/apply-additional-tags.mjs --tags "$(additionalTags)" --dry-run
       displayName: Version and publish packages (dry run)
       condition: and(succeeded(), ne(variables['publish_react_native_macos'], '1'))
 
@@ -81,6 +84,11 @@ jobs:
             fi
           fi
         displayName: Publish packages
+        condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
+
+      - script: |
+          node .ado/scripts/apply-additional-tags.mjs --tags "$(additionalTags)" --token "$(npmAuthToken)"
+        displayName: Apply additional dist-tags
         condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
     - script: |
