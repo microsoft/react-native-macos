@@ -37,7 +37,8 @@ jobs:
     - ${{ if endsWith(variables['Build.SourceBranchName'], '-stable') }}:
       - script: |
           git switch $(Build.SourceBranchName)
-          node .ado/scripts/release.mjs --verbose --token "$(npmAuthToken)"
+          RELEASE_TAG=$(tail -1 .ado/release-config.yml)
+          node .ado/scripts/release.mjs --verbose --tag "$RELEASE_TAG" --token "$(npmAuthToken)"
         env:
           GITHUB_TOKEN: $(githubAuthToken)
         displayName: Release

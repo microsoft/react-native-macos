@@ -23,6 +23,7 @@ import { ReleaseClient } from "nx/release/index.js";
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..");
 
 const NPM_REGISTRY = "https://registry.npmjs.org/";
+const NPM_TAG_LATEST = "latest";
 const NPM_TAG_NEXT = "next";
 const NPM_TAG_NIGHTLY = "nightly";
 
@@ -45,15 +46,9 @@ const ARTIFACT_FILES = [
  *   "dry-run"?: boolean;
  *   "mock-branch"?: string;
  *   "skip-auth"?: boolean;
- *   tag?: string;
  *   token?: string;
  *   verbose?: boolean;
  * }} Options;
- *
- * @typedef {{
- *   npmTags: string[];
- *   prerelease?: string;
- * }} TagInfo;
  */
 
 // ============================================================================
@@ -211,9 +206,6 @@ async function updateReactNativeArtifacts(version, dryRun) {
 
   await doUpdate(version);
 
-  // Create the .rnm-publish marker file
-  fs.writeFileSync(path.join(REPO_ROOT, ".rnm-publish"), "");
-
   success("Updated React Native artifacts");
   console.table(ARTIFACT_FILES.map((file) => ({ file })));
 }
@@ -224,7 +216,7 @@ async function updateReactNativeArtifacts(version, dryRun) {
  * @param {boolean} dryRun
  */
 function commitArtifactChanges(version, dryRun) {
-  const filesToCommit = [...ARTIFACT_FILES, ".rnm-publish"];
+  const filesToCommit = [...ARTIFACT_FILES];
 
   info("Staging artifact changes...");
 
@@ -265,7 +257,13 @@ function commitArtifactChanges(version, dryRun) {
 // ============================================================================
 
 /**
- * @typedef {"NIGHTLY" | "PATCH_LATEST" | "PATCH_OLD" | "PROMOTE_TO_LATEST" | "RELEASE_CANDIDATE" | "NOT_RELEASE_BRANCH"} ReleaseState
+ * @typedef {"NIGHTLY" | "STABLE_LATEST" | "STABLE_NEW" | "STABLE_OLD" | "NOT_RELEASE_BRANCH"} ReleaseState
+ *
+ * NIGHTLY: main branch, publishes to @nightly
+ * STABLE_LATEST: stable branch at current @latest version
+ * STABLE_NEW: stable branch newer than @latest (RC or promoting to latest)
+ * STABLE_OLD: stable branch older than @latest
+ * NOT_RELEASE_BRANCH: not a release branch
  */
 
 /**
@@ -278,12 +276,12 @@ function commitArtifactChanges(version, dryRun) {
  */
 
 /**
- * Determines the release state based on branch, versions, and options
+ * Determines the release state based on branch and published versions.
  * @param {string} branch
- * @param {Options} options
+ * @param {typeof getPublishedVersion} [getVersion] - For testing
  * @returns {ReleaseStateInfo}
  */
-function getReleaseState(branch, options) {
+function getReleaseState(branch, getVersion = getPublishedVersion) {
   if (isMainBranch(branch)) {
     return { state: "NIGHTLY", currentVersion: 0, latestVersion: 0, nextVersion: 0 };
   }
@@ -292,82 +290,93 @@ function getReleaseState(branch, options) {
     return { state: "NOT_RELEASE_BRANCH", currentVersion: 0, latestVersion: 0, nextVersion: 0 };
   }
 
-  const latestVersion = getPublishedVersion("latest");
-  const nextVersion = getPublishedVersion("next");
+  const latestVersion = getVersion(NPM_TAG_LATEST);
+  const nextVersion = getVersion(NPM_TAG_NEXT);
   const currentVersion = versionToNumber(branch);
 
   /** @type {ReleaseState} */
   let state;
-  if (currentVersion === latestVersion) {
-    state = "PATCH_LATEST";
-  } else if (currentVersion < latestVersion) {
-    state = "PATCH_OLD";
-  } else if (options.tag === "latest") {
-    state = "PROMOTE_TO_LATEST";
+  if (currentVersion > latestVersion) {
+    state = "STABLE_NEW";
+  } else if (currentVersion === latestVersion) {
+    state = "STABLE_LATEST";
   } else {
-    state = "RELEASE_CANDIDATE";
+    state = "STABLE_OLD";
   }
 
   return { state, currentVersion, latestVersion, nextVersion };
 }
 
 /**
- * Gets npm tags based on release state
+ * Gets the Nx release configuration based on release state.
+ * This determines what tag to resolve current version from and the preid.
+ *
+ * Key insight: preid is only used by Nx for prerelease bumps (prepatch, prerelease).
+ * For stable bumps (patch, minor), Nx ignores preid. So we can always set it.
+ *
+ * @param {ReleaseStateInfo} stateInfo
  * @param {string} branch
- * @param {Options} options
- * @param {typeof info} log
- * @returns {TagInfo | null}
+ * @returns {{ resolveFromTag: string; preid?: string } | null}
  */
-function getTagInfo(branch, options, log) {
-  const { state, currentVersion, latestVersion, nextVersion } = getReleaseState(
-    branch,
-    options
-  );
-
-  log(`react-native-macos@latest: ${latestVersion}`);
-  log(`react-native-macos@next: ${nextVersion}`);
-  log(`Current version: ${currentVersion}`);
-  log(`Release state: ${state}`);
-
-  switch (state) {
+function getNxConfig(stateInfo, branch) {
+  switch (stateInfo.state) {
     case "NIGHTLY":
-      log(`Expected npm tags: ${NPM_TAG_NIGHTLY}`);
-      return { npmTags: [NPM_TAG_NIGHTLY], prerelease: NPM_TAG_NIGHTLY };
+      return { resolveFromTag: NPM_TAG_NIGHTLY, preid: NPM_TAG_NIGHTLY };
 
-    case "PATCH_LATEST": {
-      const versionTag = "v" + branch;
-      log(`Expected npm tags: latest, ${versionTag}`);
-      return { npmTags: ["latest", versionTag] };
-    }
+    case "STABLE_NEW":
+      // New version - resolve from @next (for RC continuation or promotion)
+      // preid="rc" is only used if version plan is prepatch/prerelease
+      return { resolveFromTag: NPM_TAG_NEXT, preid: "rc" };
 
-    case "PATCH_OLD": {
-      const npmTag = "v" + branch;
-      log(`Expected npm tags: ${npmTag}`);
-      return { npmTags: [npmTag] };
-    }
+    case "STABLE_LATEST":
+      return { resolveFromTag: NPM_TAG_LATEST };
 
-    case "PROMOTE_TO_LATEST": {
-      const versionTag = "v" + branch;
-      const npmTags = ["latest", versionTag];
-      if (currentVersion > nextVersion) {
-        npmTags.push(NPM_TAG_NEXT);
-      }
-      log(`Expected npm tags: ${npmTags.join(", ")}`);
-      return { npmTags };
-    }
-
-    case "RELEASE_CANDIDATE":
-      if (currentVersion < nextVersion) {
-        throw new Error(
-          `Current version cannot be a release candidate because it is too old: ${currentVersion} < ${nextVersion}`
-        );
-      }
-      log(`Expected npm tags: ${NPM_TAG_NEXT}`);
-      return { npmTags: [NPM_TAG_NEXT], prerelease: "rc" };
+    case "STABLE_OLD":
+      return { resolveFromTag: "v" + branch };
 
     case "NOT_RELEASE_BRANCH":
     default:
       return null;
+  }
+}
+
+/**
+ * Determines npm publish tags based on the new version after Nx versioning.
+ * @param {string} newVersion - The version produced by Nx (e.g., "0.81.0-rc.0" or "0.81.1")
+ * @param {string} branch - Current branch name
+ * @param {typeof getPublishedVersion} [getVersion] - For testing
+ * @returns {string[]} - Array of npm tags to publish to
+ */
+function getPublishTags(newVersion, branch, getVersion = getPublishedVersion) {
+  // Nightly releases
+  if (newVersion.includes("-nightly")) {
+    return [NPM_TAG_NIGHTLY];
+  }
+
+  // RC releases go to @next
+  if (newVersion.includes("-rc")) {
+    return [NPM_TAG_NEXT];
+  }
+
+  // Stable release - determine tags based on version comparison
+  const currentVersion = versionToNumber(newVersion);
+  const latestVersion = getVersion(NPM_TAG_LATEST);
+  const nextVersion = getVersion(NPM_TAG_NEXT);
+  const versionTag = "v" + branch;
+
+  if (currentVersion > latestVersion) {
+    // New latest - add @latest, version tag, and @next if newer than @next
+    const tags = [NPM_TAG_LATEST, versionTag];
+    if (currentVersion > nextVersion) {
+      tags.push(NPM_TAG_NEXT);
+    }
+    return tags;
+  } else if (currentVersion === latestVersion) {
+    // Patch to current latest
+    return [NPM_TAG_LATEST, versionTag];
+  } else {
+    // Patch to old version
+    return [versionTag];
   }
 }
 
@@ -526,7 +535,7 @@ async function main(options) {
   const verbose = options.verbose ?? false;
   const log = verbose ? info : () => {};
 
-  // Determine branch and tag info
+  // Determine branch
   const branch = getCurrentBranch(options);
   if (!branch) {
     error("Could not determine current branch");
@@ -535,17 +544,28 @@ async function main(options) {
 
   info(`Branch: ${branch}`);
 
-  const tagInfo = getTagInfo(branch, options, log);
-  if (!tagInfo) {
+  // Determine release state from branch and version plans
+  const stateInfo = getReleaseState(branch);
+  log(`react-native-macos@latest: ${stateInfo.latestVersion}`);
+  log(`react-native-macos@next: ${stateInfo.nextVersion}`);
+  log(`Current branch version: ${stateInfo.currentVersion}`);
+  log(`Release state: ${stateInfo.state}`);
+
+  if (stateInfo.state === "NOT_RELEASE_BRANCH") {
     info(`Branch '${branch}' is not a release branch, skipping release`);
     return 0;
   }
 
-  const [primaryTag, ...additionalTags] = tagInfo.npmTags;
+  // Get Nx configuration based on state
+  const nxConfig = getNxConfig(stateInfo, branch);
+  if (!nxConfig) {
+    info("No Nx configuration for this release state");
+    return 0;
+  }
 
-  info(`Primary npm tag: ${primaryTag}`);
-  if (additionalTags.length > 0) {
-    info(`Additional npm tags: ${additionalTags.join(", ")}`);
+  log(`Resolving current version from: @${nxConfig.resolveFromTag}`);
+  if (nxConfig.preid) {
+    log(`Prerelease ID: ${nxConfig.preid}`);
   }
 
   // Verify npm auth (unless skipped or dry-run)
@@ -555,30 +575,27 @@ async function main(options) {
     info("Skipped npm auth validation");
   }
 
-  // Create Nx Release client with full configuration
-  // All release config is here - nx.json is ignored for release
-  const releaseClient = new ReleaseClient(
-    {
-      changelog: {
-        projectChangelogs: {
-          file: false,
-          createRelease: "github",
-        },
-        workspaceChangelog: false,
+  // Create Nx Release client with configuration derived from state
+  const releaseClient = new ReleaseClient({
+    changelog: {
+      projectChangelogs: {
+        file: false,
+        createRelease: "github",
       },
-      projects: ["packages/react-native", "packages/virtualized-lists"],
-      versionPlans: true,
-      version: {
-        versionActionsOptions: {
-          currentVersionResolver: "registry",
-          currentVersionResolverMetadata: {
-            tag: primaryTag,
-          },
-          ...(tagInfo.prerelease && { preid: tagInfo.prerelease }),
+      workspaceChangelog: false,
+    },
+    projects: ["packages/react-native", "packages/virtualized-lists"],
+    versionPlans: true,
+    version: {
+      versionActionsOptions: {
+        currentVersionResolver: "registry",
+        currentVersionResolverMetadata: {
+          tag: nxConfig.resolveFromTag,
         },
+        ...(nxConfig.preid && { preid: nxConfig.preid }),
       },
     },
-  );
+  });
 
   // Phase 1: Version
   info("Running version phase...");
@@ -594,36 +611,25 @@ async function main(options) {
   );
 
   if (!hasVersionChanges) {
-    info("No version changes detected");
-
-    // Still show what would happen if we were to release
-    if (dryRun) {
-      info("=== Would publish with the following tags ===");
-      console.log(`  Primary tag: ${primaryTag}`);
-      if (additionalTags.length > 0) {
-        console.log(`  Additional tags: ${additionalTags.join(", ")}`);
-      }
-      for (const { name } of PACKAGES) {
-        console.log(`  ${name} -> ${primaryTag}`);
-        for (const tag of additionalTags) {
-          console.log(`  ${name} -> ${tag}`);
-        }
-      }
-    }
-
+    info("No version changes detected (no version plans to apply)");
     return 0;
   }
 
-  // Get the new version from the version data
   const newVersion =
-    workspaceVersion ||
-    Object.values(projectsVersionData)[0]?.newVersion ||
-    "";
+    workspaceVersion ?? Object.values(projectsVersionData)[0]?.newVersion ?? "";
 
   info(`New version: ${newVersion}`);
 
+  // Determine publish tags from the new version
+  const publishTags = getPublishTags(newVersion, branch);
+  const [primaryTag, ...additionalTags] = publishTags;
+
+  info(`Primary npm tag: ${primaryTag}`);
+  if (additionalTags.length > 0) {
+    info(`Additional npm tags: ${additionalTags.join(", ")}`);
+  }
+
   // Phase 1.5: Update React Native artifacts
-  // This replaces the custom nx-release-version executor
   await updateReactNativeArtifacts(newVersion, dryRun);
 
   // Commit the artifact changes (amend the version commit)
@@ -680,45 +686,42 @@ async function main(options) {
 }
 
 // ============================================================================
-// CLI
+// CLI (only run when executed directly, not when imported)
 // ============================================================================
 
-const { values } = util.parseArgs({
-  args: process.argv.slice(2),
-  options: {
-    "dry-run": {
-      type: "boolean",
-      default: false,
+if (process.argv[1]?.endsWith("release.mjs")) {
+  const { values } = util.parseArgs({
+    args: process.argv.slice(2),
+    options: {
+      "dry-run": {
+        type: "boolean",
+        default: false,
+      },
+      help: {
+        type: "boolean",
+        short: "h",
+        default: false,
+      },
+      "mock-branch": {
+        type: "string",
+      },
+      "skip-auth": {
+        type: "boolean",
+        default: false,
+      },
+      token: {
+        type: "string",
+      },
+      verbose: {
+        type: "boolean",
+        default: false,
+      },
     },
-    help: {
-      type: "boolean",
-      short: "h",
-      default: false,
-    },
-    "mock-branch": {
-      type: "string",
-    },
-    "skip-auth": {
-      type: "boolean",
-      default: false,
-    },
-    tag: {
-      type: "string",
-      default: NPM_TAG_NEXT,
-    },
-    token: {
-      type: "string",
-    },
-    verbose: {
-      type: "boolean",
-      default: false,
-    },
-  },
-  strict: true,
-});
+    strict: true,
+  });
 
-if (values.help) {
-  console.log(`
+  if (values.help) {
+    console.log(`
 Usage: node release.mjs [options]
 
 Unified release script for react-native-macos packages.
@@ -727,34 +730,39 @@ Options:
   --dry-run         Run without publishing (default: false)
   --mock-branch     Override branch detection (for testing)
   --skip-auth       Skip npm auth verification
-  --tag             Primary npm tag (default: ${NPM_TAG_NEXT})
   --token           npm auth token
   --verbose         Enable verbose logging
   -h, --help        Show this help message
 
-Branch-based release tags:
-  main branch       -> nightly
-  X.Y-stable branch -> latest, next (if state=latest)
-                    -> next (if state=next)
-                    -> rc, next (if state=rc)
+Release behavior:
+  main branch       -> nightly release (publishes to @nightly)
+  X.Y-stable branch -> behavior depends on version plans:
+    - prepatch/prerelease plan -> RC release (publishes to @next)
+    - patch/minor plan -> stable release (publishes to @latest or version tag)
+
+The npm publish tags are determined automatically from the new version:
+  - Version with -nightly suffix -> @nightly
+  - Version with -rc suffix -> @next
+  - Stable version newer than @latest -> @latest + version tag
+  - Stable version equal to @latest -> @latest + version tag
+  - Stable version older than @latest -> version tag only
 `);
-  process.exit(0);
+    process.exit(0);
+  }
+
+  main(values).then((code) => {
+    process.exit(code);
+  }).catch((e) => {
+    error(e.message);
+    process.exit(1);
+  });
 }
 
-main(values).then((code) => {
-  process.exit(code);
-}).catch((e) => {
-  error(e.message);
-  process.exit(1);
-});
-
-// Export for testing
 export {
   isMainBranch,
   isStableBranch,
   versionToNumber,
   getReleaseState,
-  getTagInfo,
-  NPM_TAG_NEXT,
-  NPM_TAG_NIGHTLY,
+  getNxConfig,
+  getPublishTags,
 };
