@@ -246,7 +246,7 @@ let reactJsErrorHandler = RNTarget(
 let reactGraphicsApple = RNTarget(
   name: .reactGraphicsApple,
   path: "ReactCommon/react/renderer/graphics/platform/ios",
-  linkedFrameworks: ["UIKit", "CoreGraphics"],
+  linkedFrameworks: ["CoreGraphics"],
   dependencies: [.reactDebug, .jsi, .reactUtils, .reactNativeDependencies]
 )
 
@@ -376,7 +376,6 @@ let reactFabric = RNTarget(
     "components/view/tests",
     "components/view/platform/android",
     "components/view/platform/windows",
-    "components/view/platform/macos",
     "components/scrollview/tests",
     "components/scrollview/platform/android",
     "mounting/tests",
@@ -420,16 +419,13 @@ let reactFabricComponents = RNTarget(
     "components/modal/platform/cxx",
     "components/view/platform/android",
     "components/view/platform/windows",
-    "components/view/platform/macos",
     "components/textinput/platform/android",
     "components/text/platform/android",
-    "components/textinput/platform/macos",
     "components/text/tests",
     "textlayoutmanager/tests",
     "textlayoutmanager/platform/android",
     "textlayoutmanager/platform/cxx",
     "textlayoutmanager/platform/windows",
-    "textlayoutmanager/platform/macos",
     "conponents/rncore", // this was the old folder where RN Core Components were generated. If you ran codegen in the past, you might have some files in it that might make the build fail.
   ],
   dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging],
@@ -587,7 +583,7 @@ let targets = [
 
 let package = Package(
   name: react,
-  platforms: [.iOS(.v15), .macCatalyst(SupportedPlatform.MacCatalystVersion.v13)],
+  platforms: [.iOS(.v15), .macOS(.v14), .macCatalyst(SupportedPlatform.MacCatalystVersion.v13)],
   products: [
     .library(
       name: react,
@@ -792,6 +788,13 @@ extension Target {
         .define("USE_HERMES", to: "1"),
       ] + defines + cxxCommonHeaderPaths
 
+    // Platform-specific framework linking
+    var conditionalLinkerSettings: [LinkerSetting] = linkerSettings
+    if name == "React-graphics-Apple" {
+      conditionalLinkerSettings.append(.linkedFramework("UIKit", .when(platforms: [.iOS, .visionOS])))
+      conditionalLinkerSettings.append(.linkedFramework("AppKit", .when(platforms: [.macOS])))
+    }
+
     return .target(
       name: name,
       dependencies: dependencies,
@@ -800,7 +803,7 @@ extension Target {
       sources: sources,
       publicHeadersPath: publicHeadersPath,
       cxxSettings: cxxSettings,
-      linkerSettings: linkerSettings
+      linkerSettings: conditionalLinkerSettings
     )
   }
 }
