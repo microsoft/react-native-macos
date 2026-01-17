@@ -326,14 +326,12 @@ RCT_EXPORT_MODULE()
                          }]];
   }
 
-#if !TARGET_OS_OSX // [macOS]
   id perfMonitorItemOpaque = [_moduleRegistry moduleForName:"PerfMonitor"];
   SEL devMenuItem = @selector(devMenuItem);
   if ([perfMonitorItemOpaque respondsToSelector:devMenuItem]) {
     RCTDevMenuItem *perfMonitorItem = [perfMonitorItemOpaque devMenuItem];
     [items addObject:perfMonitorItem];
   }
-#endif // [macOS]
 
   [items
       addObject:[RCTDevMenuItem

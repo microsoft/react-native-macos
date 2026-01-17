@@ -5,24 +5,26 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#if !TARGET_OS_OSX // [macOS
-
 #import <React/RCTFPSGraph.h>
 
 #import <React/RCTAssert.h>
+#import <React/RCTUIKit.h> // [macOS]
+#if TARGET_OS_OSX // [macOS
+#import <QuartzCore/QuartzCore.h>
+#endif // macOS]
 
 #if RCT_DEV
 
 @interface RCTFPSGraph ()
 
 @property (nonatomic, strong, readonly) CAShapeLayer *graph;
-@property (nonatomic, strong, readonly) UILabel *label;
+@property (nonatomic, strong, readonly) RCTUILabel *label; // [macOS]
 
 @end
 
 @implementation RCTFPSGraph {
   CAShapeLayer *_graph;
-  UILabel *_label;
+  RCTUILabel *_label; // [macOS]
 
   CGFloat *_frames;
   RCTUIColor *_color; // [macOS]
@@ -40,6 +42,9 @@
 - (instancetype)initWithFrame:(CGRect)frame color:(RCTUIColor *)color // [macOS]
 {
   if ((self = [super initWithFrame:frame])) {
+#if TARGET_OS_OSX // [macOS
+    self.wantsLayer = YES;
+#endif // macOS]
     _frameCount = -1;
     _prevTime = -1;
     _maxFPS = 0;
@@ -76,10 +81,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   return _graph;
 }
 
-- (UILabel *)label
+- (RCTUILabel *)label // [macOS]
 {
   if (!_label) {
-    _label = [[UILabel alloc] initWithFrame:self.bounds];
+    _label = [[RCTUILabel alloc] initWithFrame:self.bounds];
     _label.font = [UIFont boldSystemFontOfSize:13];
     _label.textAlignment = NSTextAlignmentCenter;
   }
@@ -128,5 +133,3 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 @end
 
 #endif
-
-#endif // macOS]
