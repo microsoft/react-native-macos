@@ -13,10 +13,10 @@ For information around how to set up:
 
 ## Install React Native for macOS
 
-Remember to call `@react-native-community/cli init` from the place you want your project directory to live. Be sure to use the same minor version between React Native and React Native macOS. We'll use `^0.79.0`
+Remember to call `@react-native-community/cli init` from the place you want your project directory to live. Be sure to use the same minor version between React Native and React Native macOS. We'll use `^0.79.6`
 
 ```
-npx @react-native-community/cli init <projectName> --version 0.79
+npx @react-native-community/cli init <projectName> --version 0.79.6
 ```
 
 ### Navigate into this newly created directory
