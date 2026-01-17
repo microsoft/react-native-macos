@@ -132,6 +132,11 @@ jobs:
     permissions: {}
     uses: ./.github/workflows/microsoft-build-rntester.yml
 
+  build-spm-macos:
+    name: "Build SPM macOS"
+    permissions: {}
+    uses: ./.github/workflows/prebuild-macos-core.yml
+
   # https://github.com/microsoft/react-native-macos/issues/2344
   # Disable these tests because verdaccio hangs
   # test-react-native-macos-init:
@@ -158,6 +163,7 @@ jobs:
       - yarn-constraints
       - javascript-tests
       - build-rntester
+      - build-spm-macos
       # - test-react-native-macos-init
       # - react-native-test-app-integration
     steps:
