@@ -22,17 +22,17 @@ jobs:
         with:
           key: v1-macos-core-${{ matrix.slice }}-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift') }}-${{ hashFiles('packages/react-native/scripts/ios-prebuild/setup.js') }}
           path: packages/react-native/
-      - name: Setup node.js
+      - name: Setup toolchain
         if: steps.restore-macos-slice.outputs.cache-hit != 'true'
-        uses: ./.github/actions/setup-node
-      - name: Setup xcode
-        if: steps.restore-macos-slice.outputs.cache-hit != 'true'
-        uses: ./.github/actions/setup-xcode
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
-          xcode-version: '16.2.0'
+          platform: macos
+          node-version: '22'
+          xcode-developer-dir: '/Applications/Xcode_16.2.0.app'
       - name: Yarn Install
         if: steps.restore-macos-slice.outputs.cache-hit != 'true'
-        uses: ./.github/actions/yarn-install
+        run: yarn install
+        shell: bash
       - name: Download Hermes
         if: steps.restore-macos-slice.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
@@ -136,17 +136,17 @@ jobs:
         with:
           path: packages/react-native/.build/output/xcframeworks
           key: v1-macos-core-xcframework-${{ matrix.flavor }}-${{ hashFiles('packages/react-native/Package.swift') }}-${{ hashFiles('packages/react-native/scripts/ios-prebuild/setup.js') }}
-      - name: Setup node.js
+      - name: Setup toolchain
         if: steps.restore-macos-xcframework.outputs.cache-hit != 'true'
-        uses: ./.github/actions/setup-node
-      - name: Setup xcode
-        if: steps.restore-macos-xcframework.outputs.cache-hit != 'true'
-        uses: ./.github/actions/setup-xcode
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
-          xcode-version: '16.2.0'
+          platform: macos
+          node-version: '22'
+          xcode-developer-dir: '/Applications/Xcode_16.2.0.app'
       - name: Yarn Install
         if: steps.restore-macos-xcframework.outputs.cache-hit != 'true'
-        uses: ./.github/actions/yarn-install
+        run: yarn install
+        shell: bash
       - name: Download slice artifacts
         if: steps.restore-macos-xcframework.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
