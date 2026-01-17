@@ -56,7 +56,7 @@ jobs:
       - name: Read publish tag from nx.json
         id: config
         run: |
-          PUBLISH_TAG=$(jq -r '.release.version.generatorOptions.currentVersionResolverMetadata.tag' nx.json)
+          PUBLISH_TAG=$(jq -r '.release.version.versionActionsOptions.currentVersionResolverMetadata.tag' nx.json)
           echo "publishTag=$PUBLISH_TAG" >> $GITHUB_OUTPUT
           echo "Using publish tag from nx.json: $PUBLISH_TAG"
       - name: Configure git
@@ -67,6 +67,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Verify release config
+        id: prepublish
         run: |
           node .ado/scripts/prepublish-check.mjs --verbose --skip-auth --tag ${{ steps.config.outputs.publishTag }}
 
@@ -74,6 +75,9 @@ jobs:
         run: |
           echo "Target branch: ${{ github.base_ref }}"
           yarn nx release --dry-run --verbose
+          
+          # Show what additional tags would be applied
+          node .ado/scripts/apply-additional-tags.mjs --tags "${{ steps.prepublish.outputs.additionalTags }}" --dry-run
   
   yarn-constraints:
     name: "Check Yarn Constraints"
