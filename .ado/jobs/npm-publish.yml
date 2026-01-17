@@ -24,6 +24,11 @@ jobs:
       fetchFilter: blob:none
       persistCredentials: true
 
+    - task: UseNode@1
+      inputs:
+        version: '22.22.0'
+      displayName: 'Use Node.js 22.22.0'
+
     - template: /.ado/templates/configure-git.yml@self
 
     - script: |
