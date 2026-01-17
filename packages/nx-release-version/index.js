@@ -39,7 +39,7 @@ async function runSetVersion() {
       'react',
       'modules',
       'systeminfo',
-      'ReactNativeVersion.java',
+      'ReactNativeVersion.kt',
     ),
     path.join(REPO_ROOT,
       'packages',
