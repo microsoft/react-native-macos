@@ -95,6 +95,7 @@ jobs:
           ls -lR packages/react-native/third-party/
       - name: Setup the workspace
         if: steps.restore-macos-slice.outputs.cache-hit != 'true'
+        continue-on-error: true
         shell: bash
         run: |
           cd packages/react-native
