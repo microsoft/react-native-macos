@@ -73,6 +73,12 @@ jobs:
         if: steps.restore-macos-slice.outputs.cache-hit != 'true'
         shell: bash
         run: |
+          # Check if ReactNativeDependencies tarball exists
+          if [ ! -f /tmp/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz ]; then
+            echo "ReactNativeDependencies tarball not found, skipping extraction"
+            exit 0
+          fi
+
           # Extract ReactNativeDependencies
           tar -xzf /tmp/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz -C /tmp/third-party/
 
