@@ -35,6 +35,7 @@ jobs:
         shell: bash
       - name: Download Hermes
         if: steps.restore-macos-slice.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: hermes-darwin-bin-${{ matrix.flavor }}
@@ -63,6 +64,7 @@ jobs:
           echo "Found Hermes tarball at $TARBALL_PATH"
           echo "HERMES_ENGINE_TARBALL_PATH=$TARBALL_PATH" >> $GITHUB_ENV
       - name: Download ReactNativeDependencies
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
