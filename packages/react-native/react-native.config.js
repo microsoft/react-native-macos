@@ -71,10 +71,9 @@ try {
 // [macOS
 let apple;
 try {
-  const projectRoot = {paths: [process.cwd()]};
   const iosPath = require.resolve(
     '@react-native-community/cli-platform-ios',
-    projectRoot,
+    {paths: [process.cwd()]},
   );
   // $FlowFixMe[untyped-import]
   apple = findCommunityPlatformPackage(
