@@ -205,7 +205,7 @@
       {
         "name": "FBReactNativeSpec",
         "type": "all",
-        "ios": {
+        "macos": {
           "modules": {
             "AccessibilityManager": {
               "unstableRequiresMainQueueSetup": true
