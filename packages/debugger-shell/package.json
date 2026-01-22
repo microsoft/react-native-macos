@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "cross-spawn": "^7.0.6",
-    "electron": "36.3.0"
+    "electron": "36.8.1"
   },
   "devDependencies": {
     "semver": "^7.1.3"
