@@ -54,8 +54,8 @@ const colors = (() => {
   return { bold: passthrough, dim: passthrough };
 })();
 
-const {logger, CLIError, getDefaultUserTerminal} = (() => {
-  const cli = require.resolve('@react-native-community/cli/package.json');
+const {logger, CLIError, getDefaultUserTerminal} = ((projectRoot = process.cwd()) => {
+  const cli = require.resolve('@react-native-community/cli/package.json', {paths: [projectRoot]});
   const options = {paths: [path.dirname(cli)]};
   const tools = require.resolve('@react-native-community/cli-tools', options);
   return require(tools);
