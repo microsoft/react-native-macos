@@ -372,7 +372,7 @@ function parseiOSAnnotations(
 ) /*: {[string]: $FlowFixMe} */ {
   const mLibraryMap = {} /*:: as {[string]: $FlowFixMe} */;
   const cLibraryMap = {} /*:: as {[string]: $FlowFixMe} */;
-  const map = {};
+  const map = {} /*:: as {[string]: $FlowFixMe} */; // [macOS]
 
   for (const library of libraries) {
     const iosConfig = library?.config?.ios;
@@ -406,6 +406,40 @@ function parseiOSAnnotations(
       }
     }
   }
+  // [macOS
+  // Allow react-native-macos to override react-native modules/components
+  const isAllowedOverride = (libraryNames /*: Set<string> */) => {
+    const names = Array.from(libraryNames);
+    return (
+      names.length === 2 &&
+      names.includes('react-native') &&
+      names.includes('react-native-macos')
+    );
+  };
+
+  // Merge entries with react-native-macos taking precedence over react-native
+  for (const [moduleName, libraryNames] of Object.entries(mLibraryMap)) {
+    if (isAllowedOverride(libraryNames)) {
+      // Remove the module from react-native, keep only react-native-macos
+      if (map['react-native']?.modules?.[moduleName]) {
+        delete map['react-native'].modules[moduleName];
+      }
+      // Update the library map to only contain react-native-macos
+      mLibraryMap[moduleName] = new Set(['react-native-macos']);
+    }
+  }
+
+  for (const [componentName, libraryNames] of Object.entries(cLibraryMap)) {
+    if (isAllowedOverride(libraryNames)) {
+      // Remove the component from react-native, keep only react-native-macos
+      if (map['react-native']?.components?.[componentName]) {
+        delete map['react-native'].components[componentName];
+      }
+      // Update the library map to only contain react-native-macos
+      cLibraryMap[componentName] = new Set(['react-native-macos']);
+    }
+  }
+  // macOS]
 
   const moduleConflicts = Object.entries(mLibraryMap)
     .filter(([_, libraryNames]) => libraryNames.size > 1)
