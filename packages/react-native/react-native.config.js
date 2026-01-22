@@ -71,10 +71,16 @@ try {
 // [macOS
 let apple;
 try {
-  const startDir = process.cwd();
-  const iosPath = require.resolve('@react-native-community/cli-platform-ios', {paths: [startDir]});
+  const projectRoot = {paths: [process.cwd()]};
+  const iosPath = require.resolve(
+    '@react-native-community/cli-platform-ios',
+    projectRoot,
+  );
   // $FlowFixMe[untyped-import]
-  apple = findCommunityPlatformPackage('@react-native-community/cli-platform-apple', iosPath);
+  apple = findCommunityPlatformPackage(
+    '@react-native-community/cli-platform-apple',
+    iosPath,
+  );
 } catch {
   if (verbose) {
     console.warn(
