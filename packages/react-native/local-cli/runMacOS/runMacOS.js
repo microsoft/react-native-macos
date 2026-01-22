@@ -35,12 +35,27 @@
  * }} ProjectConfig
  */
 
-const chalk = require('chalk');
-const child_process = require('child_process');
-const path = require('path');
+const child_process = require('node:child_process');
+const path = require('node:path');
 
-const {logger, CLIError, getDefaultUserTerminal} = (() => {
-  const cli = require.resolve('@react-native-community/cli/package.json');
+const colors = (() => {
+  const {WriteStream} = require('node:tty');
+  if (WriteStream.prototype.hasColors() &&
+    !process.env.NODE_TEST_CONTEXT &&
+    process.env.NODE_ENV !== 'test'
+  ) {
+    return {
+      bold: (s) => '\u001B[1m' + s + '\u001B[22m',
+      dim: (s) => '\u001B[2m' + s + '\u001B[22m',
+    }
+  }
+
+  const passthrough = (s) => s;
+  return { bold: passthrough, dim: passthrough };
+})();
+
+const {logger, CLIError, getDefaultUserTerminal} = ((projectRoot = process.cwd()) => {
+  const cli = require.resolve('@react-native-community/cli/package.json', {paths: [projectRoot]});
   const options = {paths: [path.dirname(cli)]};
   const tools = require.resolve('@react-native-community/cli-tools', options);
   return require(tools);
@@ -92,7 +107,7 @@ function parseArgs(ctx, args) {
   logger.info(
     `Found Xcode ${
       xcodeProject.isWorkspace ? 'workspace' : 'project'
-    } "${chalk.bold(xcodeProject.name)}"`,
+    } "${colors.bold(xcodeProject.name)}"`,
   );
 
   return {sourceDir, xcodeProject, scheme};
@@ -146,7 +161,7 @@ async function run(sourceDir, xcodeProject, scheme, args) {
     .trim();
 
   logger.info(
-    `Launching app "${chalk.bold(bundleID)}" from "${chalk.bold(appPath)}"`,
+    `Launching app "${colors.bold(bundleID)}" from "${colors.bold(appPath)}"`,
   );
 
   child_process.exec(
@@ -179,7 +194,7 @@ function buildProject(sourceDir, xcodeProject, scheme, args) {
       scheme,
     ];
     logger.info(
-      `Building ${chalk.dim(
+      `Building ${colors.dim(
         `(using "xcodebuild ${xcodebuildArgs.join(' ')}")`,
       )}`,
     );
