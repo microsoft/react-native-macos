@@ -140,7 +140,7 @@ jobs:
   build-react-native-dependencies:
     name: "Build ReactNativeDependencies"
     permissions: {}
-    uses: ./.github/workflows/prebuild-ios-dependencies.yml
+    uses: ./.github/workflows/build-react-native-dependencies-pr.yml
 
   build-spm-macos:
     name: "Build SPM macOS"
