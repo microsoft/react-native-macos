@@ -41,8 +41,8 @@ const path = require('node:path');
 const colors = (() => {
   const {WriteStream} = require('node:tty');
   if (WriteStream.prototype.hasColors() &&
-    !process.env['NODE_TEST_CONTEXT'] &&
-    process.env['NODE_ENV'] !== 'test'
+    !process.env.NODE_TEST_CONTEXT &&
+    process.env.NODE_ENV !== 'test'
   ) {
     return {
       bold: (s) => '\u001B[1m' + s + '\u001B[22m',
