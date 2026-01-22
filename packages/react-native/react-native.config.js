@@ -71,8 +71,10 @@ try {
 // [macOS
 let apple;
 try {
+  const startDir = process.cwd();
+  const iosPath = require.resolve('@react-native-community/cli-platform-ios', {paths: [startDir]});
   // $FlowFixMe[untyped-import]
-  apple = require('@react-native-community/cli-platform-apple');
+  apple = findCommunityPlatformPackage('@react-native-community/cli-platform-apple', iosPath);
 } catch {
   if (verbose) {
     console.warn(
@@ -156,7 +158,7 @@ if (android != null) {
 
 // [macOS
 config.commands.push(...macosCommands);
-if (apple != null) {
+if (apple) {
   config.platforms.macos = {
     linkConfig: () => {
       return {
