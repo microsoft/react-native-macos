@@ -132,11 +132,21 @@ jobs:
     permissions: {}
     uses: ./.github/workflows/microsoft-build-rntester.yml
 
-  # TODO: Re-enable once Hermes and ReactNativeDependencies build jobs are set up
-  # build-spm-macos:
-  #   name: "Build SPM macOS"
-  #   permissions: {}
-  #   uses: ./.github/workflows/prebuild-macos-core.yml
+  build-hermes-macos:
+    name: "Build Hermes for macOS"
+    permissions: {}
+    uses: ./.github/workflows/build-hermes-macos-spm.yml
+
+  build-react-native-dependencies:
+    name: "Build ReactNativeDependencies"
+    permissions: {}
+    uses: ./.github/workflows/prebuild-ios-dependencies.yml
+
+  build-spm-macos:
+    name: "Build SPM macOS"
+    permissions: {}
+    needs: [build-hermes-macos, build-react-native-dependencies]
+    uses: ./.github/workflows/prebuild-macos-core.yml
 
   # https://github.com/microsoft/react-native-macos/issues/2344
   # Disable these tests because verdaccio hangs
@@ -164,7 +174,7 @@ jobs:
       - yarn-constraints
       - javascript-tests
       - build-rntester
-      # - build-spm-macos  # TODO: Re-enable once prerequisites are set up
+      - build-spm-macos
       # - test-react-native-macos-init
       # - react-native-test-app-integration
     steps:

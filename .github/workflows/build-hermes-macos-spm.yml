@@ -1,0 +1,141 @@
+name: Build Hermes for macOS SPM
+
+on:
+  workflow_call:
+    outputs:
+      hermes-version:
+        description: "The version of Hermes that was built"
+        value: ${{ jobs.prepare_hermes_workspace.outputs.hermes-version }}
+      react-native-version:
+        description: "The version of React Native"
+        value: ${{ jobs.prepare_hermes_workspace.outputs.react-native-version }}
+
+jobs:
+  prepare_hermes_workspace:
+    runs-on: ubuntu-latest
+    env:
+      HERMES_WS_DIR: /tmp/hermes
+      HERMES_VERSION_FILE: packages/react-native/sdks/.hermesversion
+      # Use the Hermes commit at the merge base with facebook/react-native
+      HERMES_COMMIT: e0fc67142ec0763c6b6153ca2bf96df815539782
+    outputs:
+      react-native-version: ${{ steps.prepare-hermes-workspace.outputs.react-native-version }}
+      hermes-version: ${{ steps.prepare-hermes-workspace.outputs.hermes-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Prepare Hermes Workspace
+        id: prepare-hermes-workspace
+        uses: ./.github/actions/prepare-hermes-workspace
+        with:
+          hermes-ws-dir: ${{ env.HERMES_WS_DIR }}
+          hermes-version-file: ${{ env.HERMES_VERSION_FILE }}
+
+  build_hermesc_apple:
+    runs-on: macos-14
+    needs: prepare_hermes_workspace
+    env:
+      HERMES_WS_DIR: /tmp/hermes
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build HermesC Apple
+        uses: ./.github/actions/build-hermesc-apple
+        with:
+          hermes-version: ${{ needs.prepare_hermes_workspace.outputs.hermes-version }}
+          react-native-version: ${{ needs.prepare_hermes_workspace.outputs.react-native-version }}
+
+  build_macos_slice:
+    runs-on: macos-14
+    needs: [build_hermesc_apple, prepare_hermes_workspace]
+    env:
+      HERMES_WS_DIR: /tmp/hermes
+      HERMES_TARBALL_ARTIFACTS_DIR: /tmp/hermes/hermes-runtime-darwin
+      HERMES_OSXBIN_ARTIFACTS_DIR: /tmp/hermes/osx-bin
+      MAC_DEPLOYMENT_TARGET: "10.15"
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [Debug, Release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build macOS Slice
+        uses: ./.github/actions/build-apple-slices-hermes
+        with:
+          flavor: ${{ matrix.flavor }}
+          slice: macosx
+          hermes-version: ${{ needs.prepare_hermes_workspace.outputs.hermes-version }}
+          react-native-version: ${{ needs.prepare_hermes_workspace.outputs.react-native-version }}
+
+  package_hermes_macos:
+    runs-on: macos-14
+    needs: [build_macos_slice, prepare_hermes_workspace]
+    env:
+      HERMES_WS_DIR: /tmp/hermes
+      HERMES_TARBALL_ARTIFACTS_DIR: /tmp/hermes/hermes-runtime-darwin
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [Debug, Release]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          platform: macos
+          node-version: '22'
+      - name: Download macOS slice
+        uses: actions/download-artifact@v4
+        with:
+          name: slice-macosx-${{ matrix.flavor }}
+          path: ./packages/react-native/sdks/hermes/
+      - name: Unzip slice
+        shell: bash
+        run: |
+          cd ./packages/react-native/sdks/hermes
+          tar -xzv -f build_macosx_${{ matrix.flavor }}.tar.gz
+          mv build_macosx_${{ matrix.flavor }} build_macosx
+      - name: Prepare destroot folder
+        shell: bash
+        run: |
+          cd ./packages/react-native/sdks/hermes || exit 1
+          chmod +x ./utils/build-apple-framework.sh
+          . ./utils/build-apple-framework.sh
+          prepare_dest_root_for_ci
+      - name: Create framework for macOS
+        shell: bash
+        run: |
+          cd ./packages/react-native/sdks/hermes || exit 1
+          echo "[HERMES] Creating the macOS framework"
+          chmod +x ./utils/build-ios-framework.sh
+          # Only build for macOS, not the full iOS framework
+          ./utils/build-ios-framework.sh build_framework
+          chmod +x ./destroot/bin/hermesc
+      - name: Package Hermes macOS tarball
+        shell: bash
+        run: |
+          BUILD_TYPE="${{ matrix.flavor }}"
+          echo "Packaging Hermes for macOS $BUILD_TYPE build type"
+
+          TARBALL_OUTPUT_DIR=$(mktemp -d /tmp/hermes-tarball-output-XXXXXXXX)
+
+          TARBALL_FILENAME=$(node ./packages/react-native/scripts/hermes/get-tarball-name.js --buildType "$BUILD_TYPE")
+
+          TARBALL_OUTPUT_PATH=$(node ./packages/react-native/scripts/hermes/create-tarball.js \
+            --inputDir ./packages/react-native/sdks/hermes \
+            --buildType "$BUILD_TYPE" \
+            --outputDir $TARBALL_OUTPUT_DIR)
+
+          echo "Hermes tarball saved to $TARBALL_OUTPUT_PATH"
+
+          mkdir -p $HERMES_TARBALL_ARTIFACTS_DIR
+          cp $TARBALL_OUTPUT_PATH $HERMES_TARBALL_ARTIFACTS_DIR/.
+
+          ls -lh $HERMES_TARBALL_ARTIFACTS_DIR
+      - name: Upload Hermes tarball
+        uses: actions/upload-artifact@v4.3.4
+        with:
+          name: hermes-darwin-bin-${{ matrix.flavor }}
+          path: /tmp/hermes/hermes-runtime-darwin/hermes-ios-${{ matrix.flavor }}.tar.gz
