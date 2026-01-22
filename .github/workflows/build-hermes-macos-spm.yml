@@ -24,6 +24,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+          cache-npm-dependencies: ''
+      - name: Install dependencies
+        run: yarn install
       - name: Prepare Hermes Workspace
         id: prepare-hermes-workspace
         uses: ./.github/actions/prepare-hermes-workspace
