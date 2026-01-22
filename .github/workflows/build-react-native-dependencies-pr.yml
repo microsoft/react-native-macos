@@ -15,6 +15,8 @@ jobs:
         with:
           platform: macos
           node-version: '22'
+      - name: Install dependencies
+        run: yarn install
       - name: Restore cache if present
         id: restore-rn-deps
         uses: actions/cache/restore@v4
@@ -59,6 +61,8 @@ jobs:
         with:
           platform: macos
           node-version: '22'
+      - name: Install dependencies
+        run: yarn install
       - name: Restore slice folder
         id: restore-slice-folder
         uses: actions/cache/restore@v4
@@ -107,6 +111,8 @@ jobs:
         with:
           platform: macos
           node-version: '22'
+      - name: Install dependencies
+        run: yarn install
       - name: Restore XCFramework
         id: restore-xcframework
         uses: actions/cache/restore@v4
