@@ -1,7 +1,7 @@
 // @ts-check
 
 // @noflow
-const {REPO_ROOT} = require('../../scripts/consts');
+const {REPO_ROOT} = require('../../scripts/shared/consts');
 const {afterAllProjectsVersioned: baseAfterAllProjectsVersioned, default: JsVersionActions} = require('@nx/js/src/release/version-actions');
 const fs = require('node:fs');
 const path = require('node:path');
