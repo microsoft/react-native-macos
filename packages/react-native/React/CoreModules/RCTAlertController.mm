@@ -26,8 +26,10 @@
     UIWindowScene *scene = RCTKeyWindow().windowScene;
     if (scene != nil) {
       _alertWindow = [[UIWindow alloc] initWithWindowScene:scene];
+#if !TARGET_OS_VISION // [visionOS]
     } else {
       _alertWindow = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+#endif // [visionOS]
     }
 
     if (_alertWindow != nullptr) {

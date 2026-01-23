@@ -518,9 +518,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _lastStringStateWasUpdatedWith = nil;
   _ignoreNextTextInputCall = NO;
   _didMoveToWindow = NO;
+#if !TARGET_OS_OSX && !TARGET_OS_VISION // [macOS] [visionOS]
   _backedTextInputView.inputAccessoryViewID = nil;
   _backedTextInputView.inputAccessoryView = nil;
   _hasInputAccessoryView = false;
+#endif // [macOS] [visionOS]
 #if TARGET_OS_OSX // [macOS
   _ghostText = nil;
   _ghostTextPosition = 0;
