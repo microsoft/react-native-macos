@@ -157,6 +157,14 @@ component View(
       text: ariaValueText ?? accessibilityValue?.text,
     };
   }
+  // [macOS
+  if(otherProps.onKeyDown){
+    processedProps.onKeyDown = _onKeyDown;
+  }
+  if(otherProps.onKeyUp){
+    processedProps.onKeyUp = _onKeyUp;
+  }
+  // macOS]
 
   const actualView =
     ref == null ? (
