@@ -6,14 +6,14 @@
  */
 
 #import <React/RCTVirtualViewMode.h>
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol RCTVirtualViewProtocol <NSObject>
 
 - (NSString *)virtualViewID;
-- (CGRect)containerRelativeRect:(UIView *)view;
+- (CGRect)containerRelativeRect:(RCTPlatformView *)view; // [macOS]
 - (void)onModeChange:(RCTVirtualViewMode)newMode targetRect:(CGRect)targetRect thresholdRect:(CGRect)thresholdRect;
 @end
 

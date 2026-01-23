@@ -813,7 +813,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   BOOL isPointInside = [self pointInside:point withEvent:event];
 
-  UIView *currentContainerView = self.currentContainerView;
+  RCTPlatformView *currentContainerView = self.currentContainerView; // [macOS]
 
   BOOL clipsToBounds = false; // [macOS]
 
@@ -1051,19 +1051,19 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 // `blur` applied, we need to wrap it in a SwiftUI view to render the effect.
 // In this case, `effectiveContentView` will be the content view inside the
 // SwiftUI wrapper.
-- (UIView *)effectiveContentView
+- (RCTPlatformView *)effectiveContentView // [macOS]
 {
   if (!ReactNativeFeatureFlags::enableSwiftUIBasedFilters()) {
     return self;
   }
 
-  UIView *effectiveContentView = self;
+  RCTPlatformView *effectiveContentView = self; // [macOS]
 
   if (self.styleNeedsSwiftUIContainer) {
     if (_swiftUIWrapper == nullptr) {
       _swiftUIWrapper = [RCTSwiftUIContainerViewWrapper new];
-      UIView *swiftUIContentView = [[UIView alloc] init];
-      for (UIView *subview = nullptr in self.subviews) {
+      RCTPlatformView *swiftUIContentView = [[RCTPlatformView alloc] init]; // [macOS]
+      for (RCTPlatformView *subview = nullptr in self.subviews) { // [macOS]
         [swiftUIContentView addSubview:subview];
       }
       swiftUIContentView.clipsToBounds = self.clipsToBounds;
@@ -1080,8 +1080,8 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     effectiveContentView = _swiftUIWrapper.contentView;
   } else {
     if (_swiftUIWrapper != nullptr) {
-      UIView *swiftUIContentView = _swiftUIWrapper.contentView;
-      for (UIView *subview = nullptr in swiftUIContentView.subviews) {
+      RCTPlatformView *swiftUIContentView = _swiftUIWrapper.contentView; // [macOS]
+      for (RCTPlatformView *subview = nullptr in swiftUIContentView.subviews) { // [macOS]
         [self addSubview:subview];
       }
       self.clipsToBounds = swiftUIContentView.clipsToBounds;
@@ -1102,7 +1102,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 // the view and is not affected by clipping.
 - (RCTUIView *)currentContainerView // [macOS]
 {
-  UIView *effectiveContentView = self.effectiveContentView;
+  RCTPlatformView *effectiveContentView = self.effectiveContentView; // [macOS]
 
   if (_useCustomContainerView) {
     if (!_containerView) {
@@ -1348,7 +1348,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       if (primitive.type == FilterType::DropShadow) {
         if (_swiftUIWrapper != nullptr && std::holds_alternative<DropShadowParams>(primitive.parameters)) {
           const auto &dropShadowParams = std::get<DropShadowParams>(primitive.parameters);
-          UIColor *shadowColor = RCTUIColorFromSharedColor(dropShadowParams.color);
+          RCTUIColor *shadowColor = RCTUIColorFromSharedColor(dropShadowParams.color); // [macOS]
           [_swiftUIWrapper updateDropShadow:@(dropShadowParams.standardDeviation)
                                           x:@(dropShadowParams.offsetX)
                                           y:@(dropShadowParams.offsetY)
@@ -1835,19 +1835,6 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 #if TARGET_OS_OSX // [macOS
 
-- (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args
-{
-  if ([commandName isEqualToString:@"focus"]) {
-    [self focus];
-    return;
-  }
-
-  if ([commandName isEqualToString:@"blur"]) {
-    [self blur];
-    return;
-  }
-}
-
 # pragma mark - Focus Ring
 
 - (CGRect)focusRingMaskBounds
@@ -1871,19 +1858,6 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   }
 }
 
-
-#pragma mark - Focus Events
-
-- (void)focus
-{
-  [[self window] makeFirstResponder:self];
-}
-
-- (void)blur
-{
-  [[self window] resignFirstResponder];
-}
-
 - (BOOL)needsPanelToBecomeKey
 {
 	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default.
@@ -1893,32 +1867,6 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 - (BOOL)acceptsFirstResponder
 {
   return _props->focusable || [super acceptsFirstResponder];
-}
-
-- (BOOL)becomeFirstResponder
-{
-  if (![super becomeFirstResponder]) {
-    return NO;
-  }
-
-  if (_eventEmitter) {
-    _eventEmitter->onFocus();
-  }
-
-  return YES;
-}
-
--  (BOOL)resignFirstResponder
-{
-  if (![super resignFirstResponder]) {
-    return NO;
-  }
-
-  if (_eventEmitter) {
-    _eventEmitter->onBlur();
-  }
-
-  return YES;
 }
 
 #pragma mark - Keyboard Events
@@ -2341,7 +2289,7 @@ enum MouseEventType {
   return NO;
 }
 
-- (void)transferVisualPropertiesFromView:(UIView *)sourceView toView:(UIView *)destinationView
+- (void)transferVisualPropertiesFromView:(RCTPlatformView *)sourceView toView:(RCTPlatformView *)destinationView // [macOS]
 {
   // shadow
   destinationView.layer.shadowColor = sourceView.layer.shadowColor;
@@ -2369,7 +2317,9 @@ enum MouseEventType {
   // corner
   destinationView.layer.cornerRadius = sourceView.layer.cornerRadius;
   sourceView.layer.cornerRadius = 0;
+#if !TARGET_OS_OSX // [macOS]
   destinationView.layer.cornerCurve = sourceView.layer.cornerCurve;
+#endif // [macOS]
 
   // custom layers
   if (_borderLayer != nullptr) {
@@ -2409,11 +2359,17 @@ enum MouseEventType {
 
 - (void)focus
 {
+#if TARGET_OS_OSX // [macOS
+  [[self window] makeFirstResponder:self];
+#endif // macOS]
   [self becomeFirstResponder];
 }
 
 - (void)blur
 {
+#if TARGET_OS_OSX // [macOS
+  [[self window] resignFirstResponder];
+#endif // macOS]
   [self resignFirstResponder];
 }
 

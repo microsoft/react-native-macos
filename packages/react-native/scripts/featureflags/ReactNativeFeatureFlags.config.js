@@ -347,7 +347,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enableImperativeFocus: {
-      defaultValue: false,
+      defaultValue: true, // [macOS]
       metadata: {
         dateAdded: '2024-09-13',
         description:
