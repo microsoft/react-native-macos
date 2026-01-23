@@ -8,14 +8,19 @@
 #if !TARGET_OS_OSX // [macOS]
 #import <UIKit/UIKit.h>
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import <React/RCTComponent.h>
 #import <React/RCTScrollableProtocol.h>
 
-@interface RCTRefreshControl : UIRefreshControl <RCTCustomRefreshControlProtocol>
+__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
+@interface RCTRefreshControl : UIRefreshControl<RCTCustomRefreshControlProtocol>
 
 @property (nonatomic, copy) NSString *title;
 @property (nonatomic, copy) RCTDirectEventBlock onRefresh;
 @property (nonatomic, weak) RCTUIScrollView *scrollView; // [macOS]
 
 @end
+#endif // RCT_REMOVE_LEGACY_ARCH
+
 #endif // [macOS]

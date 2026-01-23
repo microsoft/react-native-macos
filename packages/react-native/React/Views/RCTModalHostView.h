@@ -8,6 +8,8 @@
 #if !TARGET_OS_OSX // [macOS]
 #import <UIKit/UIKit.h>
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import <React/RCTInvalidating.h>
 #import <React/RCTModalHostViewManager.h>
 #import <React/RCTView.h>
@@ -17,7 +19,8 @@
 
 @protocol RCTModalHostViewInteractor;
 
-@interface RCTModalHostView : RCTUIView <RCTInvalidating, UIAdaptivePresentationControllerDelegate> // [macOS]
+__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
+@interface RCTModalHostView : RCTUIView<RCTInvalidating, UIAdaptivePresentationControllerDelegate> // [macOS]
 
 @property (nonatomic, copy) NSString *animationType;
 @property (nonatomic, assign) UIModalPresentationStyle presentationStyle;
@@ -57,3 +60,5 @@
 
 @end
 #endif // [macOS]
+
+#endif // RCT_REMOVE_LEGACY_ARCH

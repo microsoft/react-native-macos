@@ -7,11 +7,11 @@
 
 #pragma once
 
-#include <functional>
-#include <limits>
-
 #include <react/renderer/graphics/ColorComponents.h>
 #include <react/renderer/graphics/HostPlatformColor.h>
+
+#include <functional>
+#include <string>
 
 #ifdef RN_SERIALIZABLE_STATE
 #include <folly/dynamic.h>
@@ -33,38 +33,45 @@ class SharedColor {
 
   SharedColor(Color color) : color_(color) {}
 
-  Color& operator*() {
+  Color &operator*()
+  {
     return color_;
   }
 
-  const Color& operator*() const {
+  const Color &operator*() const
+  {
     return color_;
   }
 
-  bool operator==(const SharedColor& otherColor) const {
+  bool operator==(const SharedColor &otherColor) const
+  {
     return color_ == otherColor.color_;
   }
 
-  bool operator!=(const SharedColor& otherColor) const {
+  bool operator!=(const SharedColor &otherColor) const
+  {
     return color_ != otherColor.color_;
   }
 
-  operator bool() const {
+  operator bool() const
+  {
     return color_ != HostPlatformColor::UndefinedColor;
   }
+
+  std::string toString() const noexcept;
 
  private:
   Color color_;
 };
 
-bool isColorMeaningful(const SharedColor& color) noexcept;
+bool isColorMeaningful(const SharedColor &color) noexcept;
 SharedColor colorFromComponents(ColorComponents components);
 ColorComponents colorComponentsFromColor(SharedColor color);
 
-uint8_t alphaFromColor(SharedColor color);
-uint8_t redFromColor(SharedColor color);
-uint8_t greenFromColor(SharedColor color);
-uint8_t blueFromColor(SharedColor color);
+uint8_t alphaFromColor(SharedColor color) noexcept;
+uint8_t redFromColor(SharedColor color) noexcept;
+uint8_t greenFromColor(SharedColor color) noexcept;
+uint8_t blueFromColor(SharedColor color) noexcept;
 SharedColor colorFromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 SharedColor clearColor();
@@ -72,7 +79,8 @@ SharedColor blackColor();
 SharedColor whiteColor();
 
 #ifdef RN_SERIALIZABLE_STATE
-inline folly::dynamic toDynamic(const SharedColor& sharedColor) {
+inline folly::dynamic toDynamic(const SharedColor &sharedColor)
+{
   return *sharedColor;
 }
 #endif
@@ -81,7 +89,8 @@ inline folly::dynamic toDynamic(const SharedColor& sharedColor) {
 
 template <>
 struct std::hash<facebook::react::SharedColor> {
-  size_t operator()(const facebook::react::SharedColor& color) const {
+  size_t operator()(const facebook::react::SharedColor &color) const
+  {
     return std::hash<facebook::react::Color>{}(*color);
   }
 };

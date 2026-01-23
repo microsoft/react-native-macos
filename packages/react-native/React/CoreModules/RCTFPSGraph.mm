@@ -41,7 +41,7 @@
 
 - (instancetype)initWithFrame:(CGRect)frame color:(RCTUIColor *)color // [macOS]
 {
-  if ((self = [super initWithFrame:frame])) {
+  if ((self = [super initWithFrame:frame]) != nullptr) {
 #if TARGET_OS_OSX // [macOS
     self.wantsLayer = YES;
 #endif // macOS]
@@ -71,7 +71,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
 - (CAShapeLayer *)graph
 {
-  if (!_graph) {
+  if (_graph == nullptr) {
     _graph = [CAShapeLayer new];
     _graph.frame = self.bounds;
     _graph.backgroundColor = [_color colorWithAlphaComponent:0.2].CGColor;
@@ -83,7 +83,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
 - (RCTUILabel *)label // [macOS]
 {
-  if (!_label) {
+  if (_label == nullptr) {
     _label = [[RCTUILabel alloc] initWithFrame:self.bounds];
     _label.font = [UIFont boldSystemFontOfSize:13];
     _label.textAlignment = NSTextAlignmentCenter;

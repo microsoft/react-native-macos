@@ -8,8 +8,10 @@
 #import <React/RCTConvert.h>
 #import <React/RCTViewManager.h>
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
 #if !TARGET_OS_OSX // [macOS]
-@interface RCTConvert (UIScrollView)
+__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
+@interface RCTConvert(UIScrollView)
 
 #if TARGET_OS_IOS // [visionOS]
 + (UIScrollViewKeyboardDismissMode)UIScrollViewKeyboardDismissMode:(id)json;
@@ -18,6 +20,9 @@
 @end
 #endif // [macOS]
 
+__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
 @interface RCTScrollViewManager : RCTViewManager
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_ARCH

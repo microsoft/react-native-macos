@@ -50,7 +50,7 @@ export type SectionBase<SectionItemT, SectionT = DefaultVirtualizedSectionT> = {
     },
     ...
   }) => null | React.MixedElement,
-  ItemSeparatorComponent?: ?React.ComponentType<any>,
+  ItemSeparatorComponent?: ?(React.ComponentType<any> | React.MixedElement),
   keyExtractor?: (item: ?SectionItemT, index?: ?number) => string,
   ...
 };
@@ -156,7 +156,13 @@ class VirtualizedSectionList<
         .getCellMetricsApprox(index - params.itemIndex, listRef.props);
       viewOffset += frame.length;
     }
-    const toIndexParams = {
+    const toIndexParams: {
+      animated?: ?boolean,
+      index: number,
+      viewOffset?: number,
+      viewPosition?: number,
+      ...
+    } = {
       ...params,
       viewOffset,
       index,
@@ -238,7 +244,7 @@ class VirtualizedSectionList<
         // We intend for there to be overflow by one on both ends of the list.
         // This will be for headers and footers. When returning a header or footer
         // item the section itself is the item.
-        // $FlowIgnore[incompatible-return]
+        // $FlowFixMe[incompatible-type]
         return section;
       } else if (itemIdx < itemCount) {
         // If we are in the bounds of the list's data then return the item.
@@ -445,7 +451,7 @@ class VirtualizedSectionList<
     index: number,
     info?: ?Object,
     listItemCount: number,
-  ): ?React.ComponentType<any> {
+  ): ?(React.ComponentType<any> | React.MixedElement) {
     info = info || this._subExtractor(index);
     if (!info) {
       return null;
@@ -483,8 +489,8 @@ type ItemWithSeparatorCommonProps<ItemT> = $ReadOnly<{
 
 type ItemWithSeparatorProps<ItemT> = $ReadOnly<{
   ...ItemWithSeparatorCommonProps<ItemT>,
-  LeadingSeparatorComponent: ?React.ComponentType<any>,
-  SeparatorComponent: ?React.ComponentType<any>,
+  LeadingSeparatorComponent: ?(React.ComponentType<any> | React.MixedElement),
+  SeparatorComponent: ?(React.ComponentType<any> | React.MixedElement),
   cellKey: string,
   index: number,
   item: ItemT,
@@ -548,7 +554,7 @@ function ItemWithSeparator<ItemT>(
 
   useEffect(() => {
     setSelfHighlightCallback(cellKey, setSeparatorHighlighted);
-    // $FlowFixMe[incompatible-call]
+    // $FlowFixMe[incompatible-type]
     setSelfUpdatePropsCallback(cellKey, setSeparatorProps);
 
     return () => {
@@ -599,18 +605,30 @@ function ItemWithSeparator<ItemT>(
     section,
     separators,
   });
-  const leadingSeparator = LeadingSeparatorComponent != null && (
-    <LeadingSeparatorComponent
-      highlighted={leadingSeparatorHiglighted}
-      {...leadingSeparatorProps}
-    />
-  );
-  const separator = SeparatorComponent != null && (
-    <SeparatorComponent
-      highlighted={separatorHighlighted}
-      {...separatorProps}
-    />
-  );
+  const leadingSeparator =
+    LeadingSeparatorComponent != null &&
+    ((React.isValidElement(LeadingSeparatorComponent) ? (
+      LeadingSeparatorComponent
+    ) : (
+      // $FlowFixMe[not-a-component]
+      // $FlowFixMe[incompatible-type]
+      <LeadingSeparatorComponent
+        highlighted={leadingSeparatorHiglighted}
+        {...leadingSeparatorProps}
+      />
+    )): any);
+  const separator =
+    SeparatorComponent != null &&
+    ((React.isValidElement(SeparatorComponent) ? (
+      SeparatorComponent
+    ) : (
+      // $FlowFixMe[not-a-component]
+      // $FlowFixMe[incompatible-type]
+      <SeparatorComponent
+        highlighted={separatorHighlighted}
+        {...separatorProps}
+      />
+    )): any);
   const RenderSeparator = leadingSeparator || separator;
   const firstSeparator = inverted === false ? leadingSeparator : separator;
   const secondSeparator = inverted === false ? separator : leadingSeparator;
@@ -631,7 +649,7 @@ const VirtualizedSectionListComponent = VirtualizedSectionList as component<
     DefaultVirtualizedSectionT,
   > = DefaultVirtualizedSectionT,
 >(
-  ref: React.RefSetter<
+  ref?: React.RefSetter<
     interface {
       getListRef(): ?VirtualizedList,
       scrollToLocation(params: ScrollToLocationParamsType): void,

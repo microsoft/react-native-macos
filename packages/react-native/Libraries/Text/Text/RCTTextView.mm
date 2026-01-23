@@ -7,7 +7,9 @@
 
 #import <React/RCTTextView.h>
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
 #if !TARGET_OS_OSX // [macOS]
+
 #import <MobileCoreServices/UTCoreTypes.h>
 #endif // [macOS]
 
@@ -253,8 +255,8 @@
                                               usingBlock:^(CGRect enclosingRect, __unused BOOL *anotherStop) {
                                                 // [macOS
                                                 UIBezierPath *path = UIBezierPathWithRoundedRect(
-                                                  CGRectInset(enclosingRect, -2, -2), 
-                                                  2); 
+                                                  CGRectInset(enclosingRect, -2, -2),
+                                                  2);
                                                 // [macOS]
                                                 if (highlightPath) {
 #if !TARGET_OS_OSX // [macOS]
@@ -407,13 +409,13 @@
 {
   // We will forward mouse click events to the NSTextView ourselves to prevent NSTextView from swallowing events that may be handled in JS (e.g. long press).
   NSView *hitView = [super hitTest:point];
-  
+
   NSEventType eventType = NSApp.currentEvent.type;
   BOOL isMouseClickEvent = NSEvent.pressedMouseButtons > 0;
   BOOL isMouseMoveEventType = eventType == NSEventTypeMouseMoved || eventType == NSEventTypeMouseEntered || eventType == NSEventTypeMouseExited || eventType == NSEventTypeCursorUpdate;
   BOOL isMouseMoveEvent = !isMouseClickEvent && isMouseMoveEventType;
   BOOL isTextViewClick = (hitView && hitView == _textView) && !isMouseMoveEvent;
-  
+
   return isTextViewClick ? self : hitView;
 }
 
@@ -516,7 +518,7 @@
   if (_selectable && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
     return NO;
   }
-  
+
   return [super resignFirstResponder];
 }
 
@@ -565,3 +567,5 @@
 }
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_ARCH

@@ -50,45 +50,45 @@ class ReactHost {
       std::shared_ptr<IDevUIDelegate> devUIDelegate = nullptr,
       TurboModuleManagerDelegates turboModuleManagerDelegates = {},
       std::shared_ptr<SurfaceDelegate> logBoxSurfaceDelegate = nullptr,
-      std::shared_ptr<NativeAnimatedNodesManagerProvider>
-          animatedNodesManagerProvider = nullptr,
-      ReactInstance::BindingsInstallFunc bindingsInstallFunc =
-          nullptr) noexcept;
-  ReactHost(const ReactHost&) = delete;
-  ReactHost& operator=(const ReactHost&) = delete;
-  ReactHost(ReactHost&&) noexcept = delete;
-  ReactHost& operator=(ReactHost&&) noexcept = delete;
+      std::shared_ptr<NativeAnimatedNodesManagerProvider> animatedNodesManagerProvider = nullptr,
+      ReactInstance::BindingsInstallFunc bindingsInstallFunc = nullptr);
+  ReactHost(const ReactHost &) = delete;
+  ReactHost &operator=(const ReactHost &) = delete;
+  ReactHost(ReactHost &&) noexcept = delete;
+  ReactHost &operator=(ReactHost &&) noexcept = delete;
   ~ReactHost() noexcept;
 
-  bool loadScript(const std::string& bundlePath, const std::string& sourcePath);
+  bool loadScript(const std::string &bundlePath, const std::string &sourcePath) noexcept;
+
+  void openDebugger();
 
   void startSurface(
       SurfaceId surfaceId,
-      const std::string& moduleName /* can be empty */,
-      const folly::dynamic& initialProps,
-      const LayoutConstraints& layoutConstraints,
-      const LayoutContext& layoutContext = {});
+      const std::string &moduleName /* can be empty */,
+      const folly::dynamic &initialProps,
+      const LayoutConstraints &layoutConstraints,
+      const LayoutContext &layoutContext = {}) noexcept;
 
   void setSurfaceConstraints(
       SurfaceId surfaceId,
-      const LayoutConstraints& layoutConstraints,
-      const LayoutContext& layoutContext);
+      const LayoutConstraints &layoutConstraints,
+      const LayoutContext &layoutContext) noexcept;
 
-  void stopSurface(SurfaceId surfaceId);
+  void stopSurface(SurfaceId surfaceId) noexcept;
 
-  void stopAllSurfaces();
+  void stopAllSurfaces() noexcept;
 
   bool isSurfaceRunning(SurfaceId surfaceId) const noexcept;
 
   std::unordered_set<SurfaceId> getRunningSurfaces() const noexcept;
 
-  void runOnScheduler(std::function<void(Scheduler& scheduler)>&& task) const;
+  void runOnScheduler(std::function<void(Scheduler &scheduler)> &&task) const;
 
   void runOnRuntimeScheduler(
-      std::function<void(jsi::Runtime& runtime)>&& task,
-      SchedulerPriority priority = SchedulerPriority::NormalPriority) const;
+      std::function<void(jsi::Runtime &runtime)> &&task,
+      SchedulerPriority priority = SchedulerPriority::NormalPriority) const noexcept;
 
-  void emitDeviceEvent(folly::dynamic&& args);
+  void emitDeviceEvent(folly::dynamic &&args);
 
  private:
   void createReactInstance();
@@ -96,7 +96,7 @@ class ReactHost {
   void reloadReactInstance();
 
   bool loadScriptFromDevServer();
-  bool loadScriptFromBundlePath(const std::string& bundlePath);
+  bool loadScriptFromBundlePath(const std::string &bundlePath);
 
   const ReactInstanceConfig reactInstanceConfig_;
   std::unique_ptr<ReactInstanceData> reactInstanceData_;
@@ -111,8 +111,7 @@ class ReactHost {
   std::shared_ptr<Inspector> inspector_;
   std::unique_ptr<PackagerConnection> packagerConnection_;
 
-  std::shared_ptr<AnimatedMountingOverrideDelegate>
-      animatedMountingOverrideDelegate_;
+  std::shared_ptr<AnimatedMountingOverrideDelegate> animatedMountingOverrideDelegate_;
 };
 
 } // namespace facebook::react

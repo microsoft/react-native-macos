@@ -33,6 +33,7 @@
 #import "RCTTextInputNativeCommands.h"
 #import "RCTTextInputUtils.h"
 
+#import <limits>
 #import "RCTFabricComponentsPlugins.h"
 
 #if !TARGET_OS_OSX // [macOS]
@@ -183,7 +184,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
   }
 }
-#endif // [macOS] 
+#endif // [macOS]
 
 - (void)reactUpdateResponderOffsetForScrollView:(RCTScrollViewComponentView *)scrollView
 {
@@ -471,6 +472,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _lastStringStateWasUpdatedWith = nil;
   _ignoreNextTextInputCall = NO;
   _didMoveToWindow = NO;
+  _backedTextInputView.inputAccessoryViewID = nil;
+  _backedTextInputView.inputAccessoryView = nil;
+  _hasInputAccessoryView = false;
   [_backedTextInputView resignFirstResponder];
 }
 
@@ -541,7 +545,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     }
   }
 
-  if (props.maxLength) {
+  if (props.maxLength < std::numeric_limits<int>::max()) {
     NSInteger allowedLength = props.maxLength - _backedTextInputView.attributedText.string.length + range.length;
 
     if (allowedLength > 0 && text.length > allowedLength) {
@@ -1012,7 +1016,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
                                                   toPosition:selectedTextRange.start];
   NSInteger end = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
                                                 toPosition:selectedTextRange.end];
-  return AttributedString::Range{(int)start, (int)(end - start)};
+  return AttributedString::Range{.location = (int)start, .length = (int)(end - start)};
 #else // [macOS
   NSRange selectedTextRange = [_backedTextInputView selectedTextRange];
   return AttributedString::Range{(int)selectedTextRange.location, (int)selectedTextRange.length};

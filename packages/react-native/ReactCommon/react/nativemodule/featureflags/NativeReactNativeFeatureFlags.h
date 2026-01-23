@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f3336bad491a91abb3af7e8fcd7e5938>>
+ * @generated SignedSource<<99624bd7682ad34476ac395e8acc43c7>>
  */
 
 /**
@@ -28,7 +28,7 @@
 namespace facebook::react {
 
 class NativeReactNativeFeatureFlags
-    : public NativeReactNativeFeatureFlagsCxxSpecJSI {
+    : public NativeReactNativeFeatureFlagsCxxSpec<NativeReactNativeFeatureFlags> {
  public:
   NativeReactNativeFeatureFlags(std::shared_ptr<CallInvoker> jsInvoker);
 
@@ -38,21 +38,27 @@ class NativeReactNativeFeatureFlags
 
   bool commonTestFlagWithoutNativeImplementation(jsi::Runtime& runtime);
 
-  bool animatedShouldSignalBatch(jsi::Runtime& runtime);
+  bool cdpInteractionMetricsEnabled(jsi::Runtime& runtime);
 
   bool cxxNativeAnimatedEnabled(jsi::Runtime& runtime);
 
   bool cxxNativeAnimatedRemoveJsSync(jsi::Runtime& runtime);
 
-  bool disableMainQueueSyncDispatchIOS(jsi::Runtime& runtime);
+  bool disableEarlyViewCommandExecution(jsi::Runtime& runtime);
+
+  bool disableFabricCommitInCXXAnimated(jsi::Runtime& runtime);
 
   bool disableMountItemReorderingAndroid(jsi::Runtime& runtime);
+
+  bool disableOldAndroidAttachmentMetricsWorkarounds(jsi::Runtime& runtime);
 
   bool disableTextLayoutManagerCacheAndroid(jsi::Runtime& runtime);
 
   bool enableAccessibilityOrder(jsi::Runtime& runtime);
 
   bool enableAccumulatedUpdatesInRawPropsAndroid(jsi::Runtime& runtime);
+
+  bool enableAndroidLinearText(jsi::Runtime& runtime);
 
   bool enableAndroidTextMeasurementOptimizations(jsi::Runtime& runtime);
 
@@ -66,13 +72,13 @@ class NativeReactNativeFeatureFlags
 
   bool enableDoubleMeasurementFixAndroid(jsi::Runtime& runtime);
 
+  bool enableEagerMainQueueModulesOnIOS(jsi::Runtime& runtime);
+
   bool enableEagerRootViewAttachment(jsi::Runtime& runtime);
 
   bool enableFabricLogs(jsi::Runtime& runtime);
 
   bool enableFabricRenderer(jsi::Runtime& runtime);
-
-  bool enableFixForParentTagDuringReparenting(jsi::Runtime& runtime);
 
   bool enableFontScaleChangesUpdatingLayout(jsi::Runtime& runtime);
 
@@ -80,7 +86,17 @@ class NativeReactNativeFeatureFlags
 
   bool enableIOSViewClipToPaddingBox(jsi::Runtime& runtime);
 
+  bool enableImagePrefetchingAndroid(jsi::Runtime& runtime);
+
+  bool enableImagePrefetchingOnUiThreadAndroid(jsi::Runtime& runtime);
+
+  bool enableImmediateUpdateModeForContentOffsetChanges(jsi::Runtime& runtime);
+
+  bool enableImperativeFocus(jsi::Runtime& runtime);
+
   bool enableInteropViewManagerClassLookUpOptimizationIOS(jsi::Runtime& runtime);
+
+  bool enableKeyEvents(jsi::Runtime& runtime);
 
   bool enableLayoutAnimationsOnAndroid(jsi::Runtime& runtime);
 
@@ -88,15 +104,11 @@ class NativeReactNativeFeatureFlags
 
   bool enableMainQueueCoordinatorOnIOS(jsi::Runtime& runtime);
 
-  bool enableMainQueueModulesOnIOS(jsi::Runtime& runtime);
-
   bool enableModuleArgumentNSNullConversionIOS(jsi::Runtime& runtime);
 
   bool enableNativeCSSParsing(jsi::Runtime& runtime);
 
   bool enableNetworkEventReporting(jsi::Runtime& runtime);
-
-  bool enableNewBackgroundAndBorderDrawables(jsi::Runtime& runtime);
 
   bool enablePreparedTextLayout(jsi::Runtime& runtime);
 
@@ -104,21 +116,31 @@ class NativeReactNativeFeatureFlags
 
   bool enableResourceTimingAPI(jsi::Runtime& runtime);
 
-  bool enableSynchronousStateUpdates(jsi::Runtime& runtime);
+  bool enableSwiftUIBasedFilters(jsi::Runtime& runtime);
 
   bool enableViewCulling(jsi::Runtime& runtime);
 
   bool enableViewRecycling(jsi::Runtime& runtime);
 
+  bool enableViewRecyclingForImage(jsi::Runtime& runtime);
+
+  bool enableViewRecyclingForScrollView(jsi::Runtime& runtime);
+
   bool enableViewRecyclingForText(jsi::Runtime& runtime);
 
   bool enableViewRecyclingForView(jsi::Runtime& runtime);
+
+  bool enableVirtualViewClippingWithoutScrollViewClipping(jsi::Runtime& runtime);
+
+  bool enableVirtualViewContainerStateExperimental(jsi::Runtime& runtime);
 
   bool enableVirtualViewDebugFeatures(jsi::Runtime& runtime);
 
   bool enableVirtualViewRenderState(jsi::Runtime& runtime);
 
   bool enableVirtualViewWindowFocusDetection(jsi::Runtime& runtime);
+
+  bool enableWebPerformanceAPIsByDefault(jsi::Runtime& runtime);
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact(jsi::Runtime& runtime);
 
@@ -128,7 +150,23 @@ class NativeReactNativeFeatureFlags
 
   bool hideOffscreenVirtualViewsOnIOS(jsi::Runtime& runtime);
 
+  bool overrideBySynchronousMountPropsAtMountingAndroid(jsi::Runtime& runtime);
+
+  bool perfIssuesEnabled(jsi::Runtime& runtime);
+
+  bool perfMonitorV2Enabled(jsi::Runtime& runtime);
+
   double preparedTextCacheSize(jsi::Runtime& runtime);
+
+  bool preventShadowTreeCommitExhaustion(jsi::Runtime& runtime);
+
+  bool shouldPressibilityUseW3CPointerEventsForHover(jsi::Runtime& runtime);
+
+  bool shouldTriggerResponderTransferOnScrollAndroid(jsi::Runtime& runtime);
+
+  bool skipActivityIdentityAssertionOnHostPause(jsi::Runtime& runtime);
+
+  bool sweepActiveTouchOnChildNativeGesturesAndroid(jsi::Runtime& runtime);
 
   bool traceTurboModulePromiseRejectionsOnAndroid(jsi::Runtime& runtime);
 
@@ -138,6 +176,10 @@ class NativeReactNativeFeatureFlags
 
   bool useFabricInterop(jsi::Runtime& runtime);
 
+  bool useNativeEqualsInNativeReadableArrayAndroid(jsi::Runtime& runtime);
+
+  bool useNativeTransformHelperAndroid(jsi::Runtime& runtime);
+
   bool useNativeViewConfigsInBridgelessMode(jsi::Runtime& runtime);
 
   bool useOptimizedEventBatchingOnAndroid(jsi::Runtime& runtime);
@@ -146,9 +188,17 @@ class NativeReactNativeFeatureFlags
 
   bool useShadowNodeStateOnClone(jsi::Runtime& runtime);
 
+  bool useSharedAnimatedBackend(jsi::Runtime& runtime);
+
+  bool useTraitHiddenOnAndroid(jsi::Runtime& runtime);
+
   bool useTurboModuleInterop(jsi::Runtime& runtime);
 
   bool useTurboModules(jsi::Runtime& runtime);
+
+  double viewCullingOutsetRatio(jsi::Runtime& runtime);
+
+  double virtualViewHysteresisRatio(jsi::Runtime& runtime);
 
   double virtualViewPrerenderRatio(jsi::Runtime& runtime);
 };

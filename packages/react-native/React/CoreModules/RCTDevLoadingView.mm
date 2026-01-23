@@ -88,14 +88,6 @@ RCT_EXPORT_MODULE()
       dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), self->_initialMessageBlock);
 }
 
-- (void)hideBannerAfter:(CGFloat)delay
-{
-  // Cancel previous hide call after the delay.
-  [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hide) object:nil];
-  // Set new hide call after a delay.
-  [self performSelector:@selector(hide) withObject:nil afterDelay:delay];
-}
-
 - (void)showMessage:(NSString *)message color:(RCTUIColor *)color backgroundColor:(RCTUIColor *)backgroundColor // [macOS]
 {
   if (!RCTDevLoadingViewGetEnabled() || _hiding) {
@@ -132,6 +124,9 @@ RCT_EXPORT_MODULE()
     self->_container = [[UIView alloc] init];
     self->_container.backgroundColor = backgroundColor;
     self->_container.translatesAutoresizingMaskIntoConstraints = NO;
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hide)];
+    [self->_container addGestureRecognizer:tapGesture];
+    self->_container.userInteractionEnabled = YES;
 
     self->_label = [[UILabel alloc] init];
     self->_label.translatesAutoresizingMaskIntoConstraints = NO;
@@ -178,7 +173,7 @@ RCT_EXPORT_MODULE()
       [self->_container addSubview:self->_label];
     }
     self->_container.backgroundColor = backgroundColor;
-    
+
     if (!self->_window) {
       self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
                                                 styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskFullSizeContentView
@@ -187,36 +182,33 @@ RCT_EXPORT_MODULE()
       [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
       [self->_window.contentView addSubview:self->_container];
     }
-    
+
     // Container constraints
     [NSLayoutConstraint activateConstraints:@[
       [self->_container.topAnchor constraintEqualToAnchor:self->_window.contentView.topAnchor],
       [self->_container.leadingAnchor constraintEqualToAnchor:self->_window.contentView.leadingAnchor],
       [self->_container.trailingAnchor constraintEqualToAnchor:self->_window.contentView.trailingAnchor],
       [self->_container.bottomAnchor constraintEqualToAnchor:self->_window.contentView.bottomAnchor],
-      
+
       // Label constraints
       [self->_label.centerXAnchor constraintEqualToAnchor:self->_container.centerXAnchor],
       [self->_label.centerYAnchor constraintEqualToAnchor:self->_container.centerYAnchor],
       [self->_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:self->_container.leadingAnchor constant:10],
       [self->_label.trailingAnchor constraintLessThanOrEqualToAnchor:self->_container.trailingAnchor constant:-10],
     ]];
-    
+
     if (![[RCTKeyWindow() sheets] doesContain:self->_window]) {
       [RCTKeyWindow() beginSheet:self->_window completionHandler:^(NSModalResponse returnCode) {
         [self->_window orderOut:self];
       }];
     }
 #endif // macOS]
-
-    [self hideBannerAfter:15.0];
   });
 }
 
-RCT_EXPORT_METHOD(showMessage
-                  : (NSString *)message withColor
-                  : (NSNumber *__nonnull)color withBackgroundColor
-                  : (NSNumber *__nonnull)backgroundColor)
+RCT_EXPORT_METHOD(
+    showMessage : (NSString *)message withColor : (NSNumber *__nonnull)color withBackgroundColor : (NSNumber *__nonnull)
+        backgroundColor)
 {
   [self showMessage:message color:[RCTConvert UIColor:color] backgroundColor:[RCTConvert UIColor:backgroundColor]];
 }

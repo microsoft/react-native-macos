@@ -37,7 +37,7 @@ using namespace facebook::react;
 {
   /* Unlike UIAlertAction (which takes a block for it's action), NSMenuItem takes a selector.
    * That selector no longer has has access to the method argument `callback`, so we must save it
-   * as an instance variable, that we can access in `menuItemDidTap`. We must do this as well for 
+   * as an instance variable, that we can access in `menuItemDidTap`. We must do this as well for
    * `failureCallback` and `successCallback`.
    */
   NSMapTable *_callbacks;
@@ -52,7 +52,7 @@ using namespace facebook::react;
 - (instancetype)init
 {
   self = [super init];
-  if (self) {
+  if (self != nullptr) {
 #if !TARGET_OS_OSX // [macOS]
     _alertControllers = [NSMutableArray new];
 #else // [macOS
@@ -80,13 +80,23 @@ RCT_EXPORT_MODULE()
   alertController.modalPresentationStyle = UIModalPresentationPopover;
   UIView *sourceView = parentViewController.view;
 
-  if (anchorViewTag) {
+  if (anchorViewTag != nullptr) {
     sourceView = [self.viewRegistry_DEPRECATED viewForReactTag:anchorViewTag];
   } else {
     alertController.popoverPresentationController.permittedArrowDirections = 0;
   }
-  alertController.popoverPresentationController.sourceView = sourceView;
-  alertController.popoverPresentationController.sourceRect = sourceView.bounds;
+
+  if ([UIDevice.currentDevice userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+    // These information only make sense for iPad, where the action sheet needs
+    // to be presented from a specific anchor point.
+    // Before iOS 26, if these information were passed on an iOS app, the action sheet
+    // was ignoring them. after iOS 26, they are took into consideration and the
+    // sheet behavior changes, for example the user can interact with the background
+    // By applying these informations only to the iPad use case, we revert to the previous
+    // behavior.
+    alertController.popoverPresentationController.sourceView = sourceView;
+    alertController.popoverPresentationController.sourceRect = sourceView.bounds;
+  }
   [parentViewController presentViewController:alertController animated:YES completion:nil];
 }
 #else // [macOS
@@ -124,9 +134,9 @@ RCT_EXPORT_MODULE()
 }
 #endif // [macOS]
 
-RCT_EXPORT_METHOD(showActionSheetWithOptions
-                  : (JS::NativeActionSheetManager::SpecShowActionSheetWithOptionsOptions &)options callback
-                  : (RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(
+    showActionSheetWithOptions : (JS::NativeActionSheetManager::SpecShowActionSheetWithOptionsOptions &)
+        options callback : (RCTResponseSenderBlock)callback)
 {
 #if !TARGET_OS_OSX // [macOS]
   if (RCTRunningInAppExtension()) {
@@ -240,8 +250,15 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
                                                                callback(@[ @(localIndex) ]);
                                                              }
                                                            }];
-      if (isCancelButtonIndex) {
+      if (isCancelButtonIndex && cancelButtonTintColor != NULL) {
         [actionButton setValue:cancelButtonTintColor forKey:@"titleTextColor"];
+      } else if (style != UIAlertActionStyleDestructive) {
+        // iOS 26 does not apply the tint color automatically to all the buttons.
+        // So we ca forcibly apply the tint color to all the buttons that are not
+        // destructive (which usually have a different tint color) nor they are
+        // cancel buttons (which might have a different tint color).
+        // This makes the Action Sheet behave as in iOS < 26.
+        [actionButton setValue:tintColor forKey:@"titleTextColor"];
       }
       [alertController addAction:actionButton];
 #else // [macOS
@@ -258,13 +275,13 @@ RCT_EXPORT_METHOD(showActionSheetWithOptions
       index++;
     }
 
-    if (disabledButtonIndices) {
+    if (disabledButtonIndices != nullptr) {
       for (NSNumber *disabledButtonIndex in disabledButtonIndices) {
         if ([disabledButtonIndex integerValue] < buttons.count) {
 #if !TARGET_OS_OSX // [macOS]
           UIAlertAction *action = alertController.actions[[disabledButtonIndex integerValue]];
           [action setEnabled:false];
-          if (disabledButtonTintColor) {
+          if (disabledButtonTintColor != nullptr) {
             [action setValue:disabledButtonTintColor forKey:@"titleTextColor"];
           }
 #else // [macOS
@@ -317,10 +334,10 @@ RCT_EXPORT_METHOD(dismissActionSheet)
 #endif // [macOS]
 }
 
-RCT_EXPORT_METHOD(showShareActionSheetWithOptions
-                  : (JS::NativeActionSheetManager::SpecShowShareActionSheetWithOptionsOptions &)options failureCallback
-                  : (RCTResponseSenderBlock)failureCallback successCallback
-                  : (RCTResponseSenderBlock)successCallback)
+RCT_EXPORT_METHOD(
+    showShareActionSheetWithOptions : (JS::NativeActionSheetManager::SpecShowShareActionSheetWithOptionsOptions &)
+        options failureCallback : (RCTResponseSenderBlock)failureCallback successCallback : (RCTResponseSenderBlock)
+            successCallback)
 {
 #if !TARGET_OS_OSX // [macOS]
   if (RCTRunningInAppExtension()) {
@@ -342,14 +359,14 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
   RCTUIColor *tintColor = [RCTConvert RCTUIColor:options.tintColor() ? @(*options.tintColor()) : nil]; // [macOS]
 
   dispatch_async(dispatch_get_main_queue(), ^{
-    if (message) {
+    if (message != nullptr) {
       [items addObject:message];
     }
-    if (URL) {
+    if (URL != nullptr) {
       if ([URL.scheme.lowercaseString isEqualToString:@"data"]) {
         NSError *error;
         NSData *data = [NSData dataWithContentsOfURL:URL options:(NSDataReadingOptions)0 error:&error];
-        if (!data) {
+        if (data == nullptr) {
           failureCallback(@[ RCTJSErrorFromNSError(error) ]);
           return;
         }
@@ -371,14 +388,14 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
     picker.delegate = self;
 #endif // macOS]
 
-    if (subject) {
+    if (subject != nullptr) {
 #if !TARGET_OS_OSX // [macOS]
       [shareController setValue:subject forKey:@"subject"];
 #else // [macOS
       self->_sharingSubject = subject;
 #endif // macOS]
     }
-    if (excludedActivityTypes) {
+    if (excludedActivityTypes != nullptr) {
 #if !TARGET_OS_OSX // [macOS]
       shareController.excludedActivityTypes = excludedActivityTypes;
 #else // [macOS
@@ -397,7 +414,7 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
     UIViewController *controller = RCTPresentedViewController();
     shareController.completionWithItemsHandler =
         ^(NSString *activityType, BOOL completed, __unused NSArray *returnedItems, NSError *activityError) {
-          if (activityError) {
+          if (activityError != nullptr) {
             failureCallback(@[ RCTJSErrorFromNSError(activityError) ]);
           } else if (completed || activityType == nil) {
             successCallback(@[ @(completed), RCTNullIfNil(activityType) ]);
@@ -451,7 +468,7 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
     service.subject = _sharingSubject;
   }
 }
-  
+
 - (void)sharingService:(NSSharingService *)sharingService didFailToShareItems:(NSArray *)items error:(NSError *)error
 {
   _failureCallback(@[RCTJSErrorFromNSError(error)]);
@@ -469,7 +486,7 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
   NSString *activityType = [sharingService.description substringWithRange:range];
   _successCallback(@[@YES, RCTNullIfNil(activityType)]);
 }
-  
+
 - (NSArray<NSSharingService *> *)sharingServicePicker:(__unused NSSharingServicePicker *)sharingServicePicker sharingServicesForItems:(__unused NSArray *)items proposedSharingServices:(NSArray<NSSharingService *> *)proposedServices
 {
   return [proposedServices filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSSharingService *service, __unused NSDictionary<NSString *,id> * _Nullable bindings) {
@@ -477,7 +494,7 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
   }]];
 }
 #endif // macOS]
-  
+
 - (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params
 {
   return std::make_shared<NativeActionSheetManagerSpecJSI>(params);

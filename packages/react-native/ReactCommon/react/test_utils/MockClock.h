@@ -11,16 +11,16 @@
 
 class MockClock {
  public:
-  typedef std::chrono::
-      time_point<std::chrono::steady_clock, std::chrono::nanoseconds>
-          time_point;
+  using time_point = std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>;
 
-  static time_point now() noexcept {
+  static time_point now() noexcept
+  {
     return time_;
   }
 
   template <typename TDuration>
-  static void advance_by(const TDuration duration) {
+  static void advance_by(const TDuration duration)
+  {
     time_ += duration;
   }
 

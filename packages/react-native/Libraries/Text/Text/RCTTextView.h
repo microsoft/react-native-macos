@@ -8,10 +8,13 @@
 #import <React/RCTComponent.h>
 #import <React/RCTEventDispatcher.h> // [macOS]
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import <React/RCTUIKit.h> // [macOS]
 
 NS_ASSUME_NONNULL_BEGIN
 
+__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
 @interface RCTTextView : RCTUIView // [macOS]
 
 - (instancetype)initWithEventDispatcher:(id<RCTEventDispatcherProtocol>)eventDispatcher; // [macOS]
@@ -30,3 +33,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // RCT_REMOVE_LEGACY_ARCH

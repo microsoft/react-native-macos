@@ -41,7 +41,7 @@ static NSString *const RCTPerfMonitorCellIdentifier = @"RCTPerfMonitorCellIdenti
 static const CGFloat RCTPerfMonitorBarHeight = 50;
 static const CGFloat RCTPerfMonitorExpandHeight = 250;
 
-typedef BOOL (*RCTJSCSetOptionType)(const char *);
+using RCTJSCSetOptionType = BOOL (*)(const char *);
 
 NSArray<NSString *> *LabelsForRCTPerformanceLoggerTags();
 
@@ -150,7 +150,7 @@ RCT_EXPORT_MODULE()
 #if __has_include(<React/RCTDevMenu.h>)
 - (RCTDevMenuItem *)devMenuItem
 {
-  if (!_devMenuItem) {
+  if (_devMenuItem == nullptr) {
     __weak __typeof__(self) weakSelf = self;
     __weak RCTDevSettings *devSettings = [[self bridge] devSettings]; // [macOS]
     if (devSettings.isPerfMonitorShown) {
@@ -177,8 +177,8 @@ RCT_EXPORT_MODULE()
 
 - (RCTUIPanGestureRecognizer *)gestureRecognizer // [macOS]
 {
-  if (!_gestureRecognizer) {
-    _gestureRecognizer = [[RCTUIPanGestureRecognizer alloc] initWithTarget:self action:@selector(gesture:)];
+  if (_gestureRecognizer == nullptr) {
+    _gestureRecognizer = [[RCTUIPanGestureRecognizer alloc] initWithTarget:self action:@selector(gesture:)]; // [macOS]
   }
 
   return _gestureRecognizer;
@@ -186,7 +186,7 @@ RCT_EXPORT_MODULE()
 
 - (RCTUILabel *)memory // [macOS]
 {
-  if (!_memory) {
+  if (_memory == nullptr) {
 #if !TARGET_OS_OSX // [macOS]
     _memory = [[RCTUILabel alloc] initWithFrame:CGRectMake(0, 0, 44, RCTPerfMonitorBarHeight)];
 #else // [macOS
@@ -203,7 +203,7 @@ RCT_EXPORT_MODULE()
 
 - (RCTUILabel *)heap // [macOS]
 {
-  if (!_heap) {
+  if (_heap == nullptr) {
 #if !TARGET_OS_OSX // [macOS]
     _heap = [[RCTUILabel alloc] initWithFrame:CGRectMake(44, 0, 44, RCTPerfMonitorBarHeight)];
 #else // [macOS
@@ -220,7 +220,7 @@ RCT_EXPORT_MODULE()
 
 - (RCTUILabel *)views // [macOS]
 {
-  if (!_views) {
+  if (_views == nullptr) {
 #if !TARGET_OS_OSX // [macOS]
     _views = [[RCTUILabel alloc] initWithFrame:CGRectMake(88, 0, 44, RCTPerfMonitorBarHeight)];
 #else // [macOS
@@ -237,7 +237,7 @@ RCT_EXPORT_MODULE()
 
 - (RCTFPSGraph *)uiGraph
 {
-  if (!_uiGraph) {
+  if (_uiGraph == nullptr) {
 #if !TARGET_OS_OSX // [macOS]
     _uiGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(134, 14, 40, 30) color:[RCTUIColor lightGrayColor]];
 #else // [macOS
@@ -250,7 +250,7 @@ RCT_EXPORT_MODULE()
 
 - (RCTFPSGraph *)jsGraph
 {
-  if (!_jsGraph) {
+  if (_jsGraph == nullptr) {
 #if !TARGET_OS_OSX // [macOS]
     _jsGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(178, 14, 40, 30) color:[RCTUIColor lightGrayColor]];
 #else // [macOS
@@ -263,7 +263,7 @@ RCT_EXPORT_MODULE()
 
 - (RCTUILabel *)uiGraphLabel // [macOS]
 {
-  if (!_uiGraphLabel) {
+  if (_uiGraphLabel == nullptr) {
 #if !TARGET_OS_OSX // [macOS]
     _uiGraphLabel = [[RCTUILabel alloc] initWithFrame:CGRectMake(134, 3, 40, 10)];
 #else // [macOS
@@ -280,7 +280,7 @@ RCT_EXPORT_MODULE()
 
 - (RCTUILabel *)jsGraphLabel // [macOS]
 {
-  if (!_jsGraphLabel) {
+  if (_jsGraphLabel == nullptr) {
 #if !TARGET_OS_OSX // [macOS]
     _jsGraphLabel = [[RCTUILabel alloc] initWithFrame:CGRectMake(178, 3, 38, 10)];
 #else // [macOS
@@ -316,7 +316,7 @@ RCT_EXPORT_MODULE()
 
 - (UITableView *)metrics
 {
-  if (!_metrics) {
+  if (_metrics == nullptr) {
     _metrics = [[UITableView alloc] initWithFrame:CGRectMake(
                                                       0,
                                                       RCTPerfMonitorBarHeight,
@@ -333,7 +333,7 @@ RCT_EXPORT_MODULE()
 
 - (void)show
 {
-  if (_container) {
+  if (_container != nullptr) {
     return;
   }
 
@@ -369,7 +369,7 @@ RCT_EXPORT_MODULE()
 
 - (void)hide
 {
-  if (!_container) {
+  if (_container == nullptr) {
     return;
   }
 
@@ -417,7 +417,7 @@ RCT_EXPORT_MODULE()
     _container.wantsLayer = YES;
     _container.layer.borderWidth = 2;
     _container.layer.borderColor = [NSColor lightGrayColor].CGColor;
-    
+
     NSClickGestureRecognizer *clickRecognizer = [[NSClickGestureRecognizer alloc] initWithTarget:self action:@selector(tap)];
     [_container addGestureRecognizer:clickRecognizer];
   }
@@ -438,7 +438,7 @@ RCT_EXPORT_MODULE()
     _metricsScrollView.hasVerticalScroller = YES;
     _metricsScrollView.autoresizingMask = NSViewWidthSizable; // Only resize width, not height - leave room for bar at top
     _metricsScrollView.documentView = self.metrics;
-    
+
     // Add click recognizer so tapping on scroll view also toggles expand/collapse
     NSClickGestureRecognizer *clickRecognizer = [[NSClickGestureRecognizer alloc] initWithTarget:self action:@selector(tap)];
     [_metricsScrollView addGestureRecognizer:clickRecognizer];
@@ -450,11 +450,11 @@ RCT_EXPORT_MODULE()
 {
   if (!_metrics) {
     _metrics = [[NSTableView alloc] initWithFrame:CGRectMake(0, 0, 300, 200)];
-    
+
     NSTableColumn *column = [[NSTableColumn alloc] initWithIdentifier:RCTPerfMonitorCellIdentifier];
     column.width = 300;
     [_metrics addTableColumn:column];
-    
+
     _metrics.dataSource = self;
     _metrics.delegate = self;
     _metrics.headerView = nil;
@@ -495,11 +495,11 @@ RCT_EXPORT_MODULE()
     NSRect perfFrame = self.containerWindow.frame;
     perfFrame.origin = NSMakePoint(xPos, yPos);
     [self.containerWindow setFrame:perfFrame display:YES];
-    
+
     // Add as child window so it moves with parent
     [parentWindow addChildWindow:self.containerWindow ordered:NSWindowAbove];
   }
-  
+
   [self.containerWindow orderFront:nil];
 
   _uiDisplayLink = [RCTPlatformDisplayLink displayLinkWithTarget:self selector:@selector(threadUpdate:)];
@@ -567,7 +567,7 @@ RCT_EXPORT_MODULE()
   dispatch_io_set_low_water(_io, 20);
 
   dispatch_io_read(_io, 0, SIZE_MAX, _queue, ^(__unused bool done, dispatch_data_t data, __unused int error) {
-    if (!data) {
+    if (data == nullptr) {
       return;
     }
 
@@ -598,7 +598,7 @@ RCT_EXPORT_MODULE()
     GCRegex = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:nil];
   });
 
-  if (_remaining) {
+  if (_remaining != nullptr) {
     log = [_remaining stringByAppendingString:log];
     _remaining = nil;
   }
@@ -611,7 +611,7 @@ RCT_EXPORT_MODULE()
 
   for (NSString *line in lines) {
     NSTextCheckingResult *match = [GCRegex firstMatchInString:line options:0 range:NSMakeRange(0, line.length)];
-    if (match) {
+    if (match != nullptr) {
       NSString *heapSizeStr = [line substringWithRange:[match rangeAtIndex:2]];
       _heapSize = [heapSizeStr integerValue];
     }
@@ -625,7 +625,7 @@ RCT_EXPORT_MODULE()
   NSUInteger viewCount = views.count;
   NSUInteger visibleViewCount = 0;
   for (UIView *view in views.allValues) {
-    if (view.window || view.superview.window) {
+    if ((view.window != nullptr) || (view.superview.window != nullptr)) {
       visibleViewCount++;
     }
   }
@@ -644,7 +644,7 @@ RCT_EXPORT_MODULE()
   __weak __typeof__(self) weakSelf = self;
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
     __strong __typeof__(weakSelf) strongSelf = weakSelf;
-    if (strongSelf && strongSelf->_container.superview) {
+    if ((strongSelf != nullptr) && (strongSelf->_container.superview != nullptr)) {
       [strongSelf updateStats];
     }
   });
@@ -711,7 +711,7 @@ RCT_EXPORT_MODULE()
     // Save current collapsed frame
     NSRect collapsedFrame = self.containerWindow.frame;
     _storedMonitorFrame = collapsedFrame;
-    
+
     // Calculate expanded frame - keep top-left corner fixed, expand downward
     // In macOS coords, origin is bottom-left, so we need to move origin.y down
     CGFloat heightDelta = RCTPerfMonitorExpandHeight - collapsedFrame.size.height;
@@ -720,9 +720,9 @@ RCT_EXPORT_MODULE()
         collapsedFrame.origin.y - heightDelta,
         300,
         RCTPerfMonitorExpandHeight);
-    
+
     [self.container addSubview:self.metricsScrollView];
-    
+
     [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
       context.duration = 0.25;
       [self.containerWindow.animator setFrame:expandedFrame display:YES];
@@ -730,13 +730,13 @@ RCT_EXPORT_MODULE()
   } else {
     // Second tap: collapse
     [_metrics reloadData];
-    
+
     // Hide the scroll view when collapsing
     [_metricsScrollView removeFromSuperview];
-    
+
     NSRect collapsedFrame = _storedMonitorFrame;
     _storedMonitorFrame = CGRectZero; // Reset so next tap expands again
-    
+
     [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
       context.duration = 0.25;
       [self.containerWindow.animator setFrame:collapsedFrame display:YES];
@@ -789,7 +789,7 @@ RCT_EXPORT_MODULE()
   UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:RCTPerfMonitorCellIdentifier
                                                           forIndexPath:indexPath];
 
-  if (!cell) {
+  if (cell == nullptr) {
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
                                   reuseIdentifier:RCTPerfMonitorCellIdentifier];
   }

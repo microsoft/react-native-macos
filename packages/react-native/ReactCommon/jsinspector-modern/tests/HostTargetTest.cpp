@@ -180,9 +180,10 @@ TEST_F(HostTargetProtocolTest, PageReloadMethod) {
 
   EXPECT_CALL(
       hostTargetDelegate_,
-      onReload(Eq(HostTargetDelegate::PageReloadRequest{
-          .ignoreCache = std::nullopt,
-          .scriptToEvaluateOnLoad = std::nullopt})))
+      onReload(
+          Eq(HostTargetDelegate::PageReloadRequest{
+              .ignoreCache = std::nullopt,
+              .scriptToEvaluateOnLoad = std::nullopt})))
       .RetiresOnSaturation();
   EXPECT_CALL(fromPage(), onMessage(JsonEq(R"({
                                                "id": 1,
@@ -196,8 +197,10 @@ TEST_F(HostTargetProtocolTest, PageReloadMethod) {
 
   EXPECT_CALL(
       hostTargetDelegate_,
-      onReload(Eq(HostTargetDelegate::PageReloadRequest{
-          .ignoreCache = true, .scriptToEvaluateOnLoad = "alert('hello');"})))
+      onReload(
+          Eq(HostTargetDelegate::PageReloadRequest{
+              .ignoreCache = true,
+              .scriptToEvaluateOnLoad = "alert('hello');"})))
       .RetiresOnSaturation();
   EXPECT_CALL(fromPage(), onMessage(JsonEq(R"({
                                                "id": 2,
@@ -642,7 +645,7 @@ TEST_F(HostTargetTest, HostCommands) {
                     std::unique_ptr<RuntimeAgentDelegate::ExportedState>
                         exportedState,
                     const ExecutionContextDescription& context,
-                    RuntimeExecutor runtimeExecutor) {
+                    const RuntimeExecutor& runtimeExecutor) {
         auto delegate = runtimeAgentDelegates_.make_unique(
             std::move(frontendChannel),
             sessionState,
@@ -1417,7 +1420,7 @@ TEST_F(HostTargetTest, NetworkLoadNetworkResourceNotImplementedByDelegate) {
           Field(&LoadNetworkResourceRequest::url, "http://example.com"), _))
       .Times(1)
       .WillOnce([](const LoadNetworkResourceRequest& /*params*/,
-                   ScopedExecutor<NetworkRequestListener> /*executor*/) {
+                   const ScopedExecutor<NetworkRequestListener>& /*executor*/) {
         throw NotImplementedException(
             "This delegate does not implement loadNetworkResource.");
       })
@@ -1499,6 +1502,28 @@ TEST_F(HostTargetTest, NetworkLoadNetworkResource3xx) {
   executor([](NetworkRequestListener& listener) {
     listener.onHeaders(301, Headers{{"Location", "/new"}});
   });
+}
+
+TEST_F(HostTargetTest, IOReadSizeValidation) {
+  connect();
+
+  InSequence s;
+
+  EXPECT_CALL(fromPage(), onMessage(JsonEq(R"({
+                                            "id": 1,
+                                            "error": {
+                                              "message": "Invalid params: size cannot be greater than 10MB.",
+                                              "code": -32602
+                                            }
+                                          })")));
+  toPage_->sendMessage(R"({
+        "id": 1,
+        "method": "IO.read",
+        "params": {
+          "handle": "0",
+          "size": 134217728
+        }
+      })");
 }
 
 } // namespace facebook::react::jsinspector_modern

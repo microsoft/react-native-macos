@@ -28,7 +28,7 @@ import {
 const forceTouchAvailable =
   (Platform.OS === 'ios' && Platform.constants.forceTouchAvailable) || false;
 
-class TouchableHighlightBox extends React.Component<{...}, $FlowFixMeState> {
+class TouchableHighlightBox extends React.Component<{...}, $FlowFixMe> {
   state: any | {timesPressed: number} = {
     timesPressed: 0,
   };
@@ -82,10 +82,7 @@ class TouchableHighlightBox extends React.Component<{...}, $FlowFixMeState> {
   }
 }
 
-class TouchableWithoutFeedbackBox extends React.Component<
-  {...},
-  $FlowFixMeState,
-> {
+class TouchableWithoutFeedbackBox extends React.Component<{...}, $FlowFixMe> {
   state: any | {timesPressed: number} = {
     timesPressed: 0,
   };
@@ -125,7 +122,7 @@ class TouchableWithoutFeedbackBox extends React.Component<
   }
 }
 
-class TextOnPressBox extends React.Component<{...}, $FlowFixMeState> {
+class TextOnPressBox extends React.Component<{...}, $FlowFixMe> {
   state: any | {timesPressed: number} = {
     timesPressed: 0,
   };
@@ -160,7 +157,7 @@ class TextOnPressBox extends React.Component<{...}, $FlowFixMeState> {
   }
 }
 
-class TouchableFeedbackEvents extends React.Component<{...}, $FlowFixMeState> {
+class TouchableFeedbackEvents extends React.Component<{...}, $FlowFixMe> {
   state: any | {eventLog: Array<string>} = {
     eventLog: [],
   };
@@ -201,7 +198,7 @@ class TouchableFeedbackEvents extends React.Component<{...}, $FlowFixMeState> {
   };
 }
 
-class TouchableDelayEvents extends React.Component<{...}, $FlowFixMeState> {
+class TouchableDelayEvents extends React.Component<{...}, $FlowFixMe> {
   state: any | {eventLog: Array<string>} = {
     eventLog: [],
   };
@@ -242,7 +239,7 @@ class TouchableDelayEvents extends React.Component<{...}, $FlowFixMeState> {
   };
 }
 
-class ForceTouchExample extends React.Component<{...}, $FlowFixMeState> {
+class ForceTouchExample extends React.Component<{...}, $FlowFixMe> {
   state: any | {force: number} = {
     force: 0,
   };
@@ -276,7 +273,7 @@ class ForceTouchExample extends React.Component<{...}, $FlowFixMeState> {
   }
 }
 
-class TouchableHitSlop extends React.Component<{...}, $FlowFixMeState> {
+class TouchableHitSlop extends React.Component<{...}, $FlowFixMe> {
   state: any | {timesPressed: number} = {
     timesPressed: 0,
   };
@@ -686,7 +683,9 @@ function TouchableOnFocus() {
   const toggleFocus = () => {
     isFocused
       ? setFocusStatus('This touchable is focused')
-      : setIsFocused('This touchable is not focused') &&
+      : /* $FlowFixMe[constant-condition] Error discovered during Constant
+         * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
+        setIsFocused('This touchable is not focused') &&
         setIsBlurred('This item has lost focus, onBlur called');
   };
   const focusTouchable = () => {

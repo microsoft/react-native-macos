@@ -15,14 +15,23 @@ try {
 } catch {
   isMetaInternal = false;
 }
+
+let additionalConfig /*: $ReadOnly<{
+  appVersionHash: ?string,
+}> */ = {
+  appVersionHash: null,
+};
+
 if (isMetaInternal) {
-  // $FlowIgnore[cannot-resolve-module] - not resolvable in OSS
-  require('./metainternal/build-binary-setup');
+  // $FlowFixMe[cannot-resolve-module] - not resolvable in OSS
+  ({additionalConfig} = require('./metainternal/build-binary-setup'));
 }
 
 const {packager} = require('@electron/packager');
 const fs = require('fs');
 const path = require('path');
+const signedsource = require('signedsource');
+const util = require('util');
 
 const APP_NAME = 'React Native DevTools';
 const COMPANY_NAME = 'Meta Platforms Technologies LLC';
@@ -44,6 +53,26 @@ async function main() {
   if (!pkg.main.startsWith('./dist/')) {
     throw new Error('Package not built yet. Run scripts/build/build.js first.');
   }
+
+  const IGNORE_PREFIXES = [
+    'src',
+    'dist/node',
+    'metainternal/build-mac',
+    '__tests__',
+  ].map(
+    dirRelativeToPackageRoot =>
+      path.join(PACKAGE_ROOT, dirRelativeToPackageRoot) + path.sep,
+  );
+  const IGNORE_FILES = [
+    'BUCK',
+    'README.md',
+    'dist/electron/BuildInfo.js.tpl',
+  ].map(fileRelativeToPackageRoot =>
+    path.join(PACKAGE_ROOT, fileRelativeToPackageRoot),
+  );
+
+  await writeBuildInfo();
+
   await packager({
     dir: PACKAGE_ROOT,
     icon: path.join(PACKAGE_ROOT, 'src/electron/resources/icon'),
@@ -64,7 +93,30 @@ async function main() {
       OriginalFilename: `${APP_NAME}.exe`,
     },
     overwrite: true,
+    ignore: [
+      ...IGNORE_PREFIXES.map(prefix => new RegExp('^' + escapeRegex(prefix))),
+      ...IGNORE_FILES.map(file => new RegExp('^' + escapeRegex(file) + '$')),
+    ],
   });
+}
+
+async function writeBuildInfo() {
+  const template = await fs.promises.readFile(
+    path.join(PACKAGE_ROOT, 'src/electron/BuildInfo.js.tpl'),
+    'utf8',
+  );
+  const buildInfo = signedsource.signFile(
+    util.format(
+      template,
+      signedsource.getSigningToken(),
+      // revision
+      JSON.stringify(additionalConfig.appVersionHash),
+    ),
+  );
+  await fs.promises.writeFile(
+    path.join(PACKAGE_ROOT, 'dist/electron/BuildInfo.js'),
+    buildInfo,
+  );
 }
 
 if (require.main === module) {
@@ -72,4 +124,8 @@ if (require.main === module) {
     console.error(err);
     process.exitCode = 1;
   });
+}
+
+function escapeRegex(str /*: string */) /*: string */ {
+  return str.replace(/[-[\]\\/{}()*+?.^$|]/g, '\\$&');
 }

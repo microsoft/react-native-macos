@@ -10,6 +10,7 @@
 
 'use strict';
 
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {
   ViewLayout,
   ViewLayoutEvent,
@@ -168,4 +169,4 @@ exports.examples = [
       return <LayoutEventExample />;
     },
   },
-];
+] as Array<RNTesterModuleExample>;

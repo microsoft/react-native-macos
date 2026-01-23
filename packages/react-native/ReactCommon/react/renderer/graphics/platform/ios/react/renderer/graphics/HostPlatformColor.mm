@@ -29,7 +29,7 @@ bool UIColorIsP3ColorSpace(const std::shared_ptr<void> &uiColor)
 
   if (CGColorSpaceGetModel(colorSpace) == kCGColorSpaceModelRGB) {
     CFStringRef name = CGColorSpaceGetName(colorSpace);
-    if (name != NULL && CFEqual(name, kCGColorSpaceDisplayP3)) {
+    if (name != NULL && (CFEqual(name, kCGColorSpaceDisplayP3) != 0u)) {
       return true;
     }
   }
@@ -121,7 +121,8 @@ int32_t ColorFromUIColor(RCTUIColor *color) // [macOS]
 {
   CGFloat rgba[4];
   [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-  return ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
+  return ColorFromColorComponents(
+      {.red = (float)rgba[0], .green = (float)rgba[1], .blue = (float)rgba[2], .alpha = (float)rgba[3]});
 }
 
 #if !TARGET_OS_OSX // [macOS]
@@ -130,7 +131,7 @@ int32_t ColorFromUIColorForSpecificTraitCollection(
     UITraitCollection *traitCollection)
 {
   RCTUIColor *color = (RCTUIColor *)unwrapManagedObject(uiColor); // [macOS]
-  if (color) {
+  if (color != nullptr) {
     color = [color resolvedColorWithTraitCollection:traitCollection];
     return ColorFromUIColor(color);
   }
@@ -234,7 +235,7 @@ Color::Color(const ColorComponents &components)
 Color::Color(std::shared_ptr<void> uiColor)
 {
   RCTUIColor *color = ((RCTUIColor *)unwrapManagedObject(uiColor)); // [macOS]
-  if (color) {
+  if (color != nullptr) {
     auto colorHash = hashFromUIColor(uiColor);
     uiColorHashValue_ = colorHash;
   }
