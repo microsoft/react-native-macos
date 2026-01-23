@@ -8,8 +8,8 @@
  * @format
  */
 
-import type {CursorValue} from 'react-native/Libraries/StyleSheet/StyleSheetTypes';
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+import type {CursorValue} from 'react-native/Libraries/StyleSheet/StyleSheetTypes';
 
 import * as React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
