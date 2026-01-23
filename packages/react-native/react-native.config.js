@@ -88,7 +88,7 @@ try {
 }
 
 // $FlowFixMe[untyped-import]
-const macosCommands = require('./local-cli/runMacOS/runMacOS');
+const {macosCommands} = require('./local-cli/runMacOS/runMacOS.mjs');
 const {
   bundleCommand,
   startCommand,
