@@ -73,26 +73,26 @@ component View(
   };
   // macOS]
 
-    const {
-      accessibilityState,
-      accessibilityValue,
-      'aria-busy': ariaBusy,
-      'aria-checked': ariaChecked,
-      'aria-disabled': ariaDisabled,
-      'aria-expanded': ariaExpanded,
-      'aria-hidden': ariaHidden,
-      'aria-label': ariaLabel,
-      'aria-labelledby': ariaLabelledBy,
-      'aria-live': ariaLive,
-      'aria-selected': ariaSelected,
-      'aria-valuemax': ariaValueMax,
-      'aria-valuemin': ariaValueMin,
-      'aria-valuenow': ariaValueNow,
-      'aria-valuetext': ariaValueText,
-      id,
-      tabIndex,
-      ...otherProps
-    } = props;
+  const {
+    accessibilityState,
+    accessibilityValue,
+    'aria-busy': ariaBusy,
+    'aria-checked': ariaChecked,
+    'aria-disabled': ariaDisabled,
+    'aria-expanded': ariaExpanded,
+    'aria-hidden': ariaHidden,
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledBy,
+    'aria-live': ariaLive,
+    'aria-selected': ariaSelected,
+    'aria-valuemax': ariaValueMax,
+    'aria-valuemin': ariaValueMin,
+    'aria-valuenow': ariaValueNow,
+    'aria-valuetext': ariaValueText,
+    id,
+    tabIndex,
+    ...otherProps
+  } = props;
 
   // Since we destructured props, we can now treat it as mutable
   const processedProps = otherProps as {...ViewProps};
@@ -158,10 +158,10 @@ component View(
     };
   }
   // [macOS
-  if(otherProps.onKeyDown){
+  if (otherProps.onKeyDown) {
     processedProps.onKeyDown = _onKeyDown;
   }
-  if(otherProps.onKeyUp){
+  if (otherProps.onKeyUp) {
     processedProps.onKeyUp = _onKeyUp;
   }
   // macOS]
