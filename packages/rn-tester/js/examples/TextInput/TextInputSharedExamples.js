@@ -922,7 +922,7 @@ function AutogrowingTextInputExample({
   );
 }
 
-module.exports = ([
+module.exports = [
   {
     title: 'Auto-focus & select text on focus',
     render: function (): React.Node {
@@ -1295,4 +1295,4 @@ module.exports = ([
       );
     },
   },
-]: Array<RNTesterModuleExample>);
+] as Array<RNTesterModuleExample>;

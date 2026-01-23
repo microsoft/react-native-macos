@@ -12,6 +12,7 @@
 
 // [macOS
 
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {PasteEvent} from 'react-native/Libraries/Components/TextInput/TextInput.flow';
 
 import ExampleTextInput from '../TextInput/ExampleTextInput';
@@ -226,6 +227,6 @@ exports.examples = [
       return <OnPaste />;
     },
   },
-];
+] as Array<RNTesterModuleExample>;
 
 // macOS]

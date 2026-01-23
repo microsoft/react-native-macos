@@ -494,8 +494,8 @@ function CustomRippleRadius() {
 }
 
 // [macOS
-class TouchableHover extends React.Component<{}, $FlowFixMeState> {
-  state: any | {hoverOver: boolean} = {
+class TouchableHover extends React.Component<{}, {hoverOver: boolean}> {
+  state: {hoverOver: boolean} = {
     hoverOver: false,
   };
 
@@ -533,8 +533,8 @@ class TouchableHover extends React.Component<{}, $FlowFixMeState> {
   };
 }
 
-class TouchableMouseEvents extends React.Component<{}, $FlowFixMeState> {
-  state: any | {eventLog: Array<string>} = {
+class TouchableMouseEvents extends React.Component<{}, {eventLog: Array<string>}> {
+  state: {eventLog: Array<string>} = {
     eventLog: [],
   };
 
