@@ -336,23 +336,6 @@ def resolve_url_redirects(url)
     return (`curl -Ls -o /dev/null -w %{url_effective} \"#{url}\"`)
 end
 
-# [macOS
-# Tries to find a suitable Hermes version for a given react-native-macos package.
-# For stable branches, we prefer this to be specified as a peer dependency.
-def findMatchingHermesVersion(package)
-    if package['version'] == "1000.0.0"
-        # The main branch builds from source, so skip this check
-        return nil
-    end
-
-    if package['peerDependencies']
-        return package['peerDependencies']['react-native']
-    end
-
-    hermes_log("No matching Hermes version found. Defaulting to main branch, which may be unreliable.")
-end
-# macOS]
-
 # This function checks that Hermes artifact exists.
 # As of now it should check it on the Maven repo.
 #
