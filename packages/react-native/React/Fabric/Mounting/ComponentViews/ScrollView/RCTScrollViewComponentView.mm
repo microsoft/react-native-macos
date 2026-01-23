@@ -702,6 +702,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   }
 }
 
+#if !TARGET_OS_OSX // [macOS]
 - (NSInteger)accessibilityElementCount
 {
   // From empirical testing, method `accessibilityElementCount` is called lazily only
@@ -722,6 +723,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _disableViewCullingIfNecessary];
   return [super focusItemsInRect:rect];
 }
+#endif // macOS]
 
 - (void)_updateStateWithContentOffset
 {
@@ -745,8 +747,12 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
         }
         auto newData = oldData;
         newData.contentOffset = contentOffset;
+#if !TARGET_OS_OSX // [macOS]
         newData.disableViewCulling =
             UIAccessibilityIsVoiceOverRunning() || UIAccessibilityIsSwitchControlRunning() || isAccessibilityAPIUsed;
+#else // [macOS
+        newData.disableViewCulling = isAccessibilityAPIUsed;
+#endif // macOS]
         return std::make_shared<const ScrollViewShadowNode::ConcreteState::Data>(newData);
       },
       enableImmediateUpdateModeForContentOffsetChanges ? EventQueue::UpdateMode::unstable_Immediate

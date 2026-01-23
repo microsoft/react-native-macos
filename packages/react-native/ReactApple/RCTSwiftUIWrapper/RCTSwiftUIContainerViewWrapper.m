@@ -9,6 +9,14 @@
 
 @import RCTSwiftUI;
 
+#if TARGET_OS_OSX // [macOS
+typedef NSView RCTPlatformView;
+typedef NSColor RCTUIColor;
+#else // macOS]
+typedef UIView RCTPlatformView;
+typedef UIColor RCTUIColor;
+#endif // [macOS]
+
 @interface RCTSwiftUIContainerViewWrapper ()
 @property (nonatomic, strong) RCTSwiftUIContainerView *swiftContainerView;
 @end
@@ -23,12 +31,12 @@
   return self;
 }
 
-- (UIView *_Nullable)contentView
+- (RCTPlatformView *_Nullable)contentView // [macOS]
 {
   return [self.swiftContainerView contentView];
 }
 
-- (UIView *_Nullable)hostingView
+- (RCTPlatformView *_Nullable)hostingView // [macOS]
 {
   return [self.swiftContainerView hostingView];
 }
@@ -38,7 +46,7 @@
   [self.swiftContainerView resetStyles];
 }
 
-- (void)updateContentView:(UIView *)view
+- (void)updateContentView:(RCTPlatformView *)view // [macOS]
 {
   return [self.swiftContainerView updateContentView:view];
 }
@@ -68,7 +76,7 @@
   [self.swiftContainerView updateHueRotate:degrees];
 }
 
-- (void)updateDropShadow:(NSNumber *)standardDeviation x:(NSNumber *)x y:(NSNumber *)y color:(UIColor *)color
+- (void)updateDropShadow:(NSNumber *)standardDeviation x:(NSNumber *)x y:(NSNumber *)y color:(RCTUIColor *)color // [macOS]
 {
   [self.swiftContainerView updateDropShadowWithStandardDeviation:standardDeviation x:x y:y color:color];
 }

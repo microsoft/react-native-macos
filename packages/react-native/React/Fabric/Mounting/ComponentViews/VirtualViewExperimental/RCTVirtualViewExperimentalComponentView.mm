@@ -100,6 +100,7 @@ using namespace facebook::react;
  */
 static BOOL sIsAccessibilityUsed = NO;
 
+#if !TARGET_OS_OSX // [macOS]
 - (NSInteger)accessibilityElementCount
 {
   // From empirical testing, method `accessibilityElementCount` is called lazily only
@@ -115,6 +116,7 @@ static BOOL sIsAccessibilityUsed = NO;
   [self _unhideIfNeeded];
   return [super focusItemsInRect:rect];
 }
+#endif // [macOS]
 
 - (NSString *)virtualViewID
 {
@@ -163,7 +165,7 @@ static BOOL sIsAccessibilityUsed = NO;
   }
 }
 
-- (CGRect)containerRelativeRect:(UIView *)scrollView
+- (CGRect)containerRelativeRect:(RCTPlatformView *)scrollView // [macOS]
 {
   // Return the view's position relative to its container (the scroll view)
   return [self convertRect:self.bounds toView:scrollView];
@@ -250,7 +252,7 @@ static BOOL sIsAccessibilityUsed = NO;
 
 - (id<RCTVirtualViewContainerProtocol>)_getParentVirtualViewContainer
 {
-  UIView *view = self.superview;
+  RCTPlatformView *view = self.superview; // [macOS]
   while (view != nil) {
     if ([view respondsToSelector:@selector(virtualViewContainerState)]) {
       return (id<RCTVirtualViewContainerProtocol>)view;
