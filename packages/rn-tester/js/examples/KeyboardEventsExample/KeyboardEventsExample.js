@@ -10,6 +10,7 @@
 
 'use strict'; // [macOS]
 
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {
   HandledKeyEvent,
   KeyEvent,
@@ -48,7 +49,7 @@ function isKeyBlocked(event: KeyEvent, keyEvents: Array<HandledKeyEvent>) {
   );
 }
 
-const BOX2_KEY_DOWN_EVENTS = [{key: 'f'}, {key: 'g'}];
+const BOX2_KEY_DOWN_EVENTS: Array<HandledKeyEvent> = [{key: 'f'}, {key: 'g'}];
 
 function EventLog({
   eventLog,
@@ -206,7 +207,7 @@ function KeyboardEventExample(): React.Node {
       {key: 'Escape'},
       {key: 'Enter'},
       {key: 'ArrowLeft'},
-    ];
+    ] as Array<HandledKeyEvent>;
     const isBlocked = isKeyBlocked(event, keyDownEvents);
     const suffix = isBlocked ? ' (blocked)' : '';
     const keyDisplay = formatKeyEvent(event);
@@ -214,7 +215,7 @@ function KeyboardEventExample(): React.Node {
   }, []);
 
   const handleSingleLineKeyUp = React.useCallback((event: KeyEvent) => {
-    const keyUpEvents = [{key: 'c'}, {key: 'd'}];
+    const keyUpEvents = [{key: 'c'}, {key: 'd'}] as Array<HandledKeyEvent>;
     const isBlocked = isKeyBlocked(event, keyUpEvents);
     const suffix = isBlocked ? ' (blocked)' : '';
     const keyDisplay = formatKeyEvent(event);
@@ -226,7 +227,7 @@ function KeyboardEventExample(): React.Node {
       {key: 'ArrowRight'},
       {key: 'ArrowDown'},
       {key: 'Enter', metaKey: true},
-    ];
+    ] as Array<HandledKeyEvent>;
     const isBlocked = isKeyBlocked(event, keyDownEvents);
     const suffix = isBlocked ? ' (blocked)' : '';
     const keyDisplay = formatKeyEvent(event);
@@ -234,7 +235,10 @@ function KeyboardEventExample(): React.Node {
   }, []);
 
   const handleMultiLineKeyUp = React.useCallback((event: KeyEvent) => {
-    const keyUpEvents = [{key: 'Escape'}, {key: 'Enter'}];
+    const keyUpEvents = [
+      {key: 'Escape'},
+      {key: 'Enter'},
+    ] as Array<HandledKeyEvent>;
     const isBlocked = isKeyBlocked(event, keyUpEvents);
     const suffix = isBlocked ? ' (blocked)' : '';
     const keyDisplay = formatKeyEvent(event);
@@ -468,4 +472,4 @@ exports.examples = [
       return <KeyboardEventExample />;
     },
   },
-];
+] as Array<RNTesterModuleExample>;

@@ -10,6 +10,8 @@
 
 'use strict'; // [macOS]
 
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+
 const React = require('react');
 const ReactNative = require('react-native');
 
@@ -253,4 +255,4 @@ exports.examples = [
       return <GhostTextExample />;
     },
   },
-];
+] as Array<RNTesterModuleExample>;

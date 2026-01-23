@@ -44,7 +44,7 @@ class ScreenshotExample extends React.Component<{...}, $FlowFixMe> {
 
   // [macOS] alert needs two string arguments, passing an error results in crashing
   takeScreenshot = () => {
-    if (ScreenshotManager !== undefined && ScreenshotManager !== null) {
+    if (ScreenshotManager !== undefined) {
       ScreenshotManager.takeScreenshot('window', {format: 'jpeg', quality: 0.8}) // See UIManager.js for options
         .then(uri => this.setState({uri}))
         .catch(error =>

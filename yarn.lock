@@ -3857,7 +3857,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/debugger-shell@npm:0.83.0-main, @react-native/debugger-shell@workspace:packages/debugger-shell":
+"@react-native/debugger-shell@workspace:*, @react-native/debugger-shell@workspace:packages/debugger-shell":
   version: 0.0.0-use.local
   resolution: "@react-native/debugger-shell@workspace:packages/debugger-shell"
   dependencies:
@@ -3874,7 +3874,7 @@ __metadata:
   dependencies:
     "@isaacs/ttlcache": "npm:^1.4.1"
     "@react-native/debugger-frontend": "workspace:*"
-    "@react-native/debugger-shell": "npm:0.83.0-main"
+    "@react-native/debugger-shell": "workspace:*"
     chrome-launcher: "npm:^0.15.2"
     chromium-edge-launcher: "npm:^0.2.0"
     connect: "npm:^3.6.5"

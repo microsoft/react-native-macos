@@ -216,7 +216,7 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       : horizontal
         ? [styles.row, inversionStyle]
         : inversionStyle;
-    let result = !CellRendererComponent ? ( // [macOS]
+    let result: any = !CellRendererComponent ? ( // [macOS]
       <View
         style={cellStyle}
         onFocusCapture={this._onCellFocusCapture}
