@@ -533,7 +533,10 @@ class TouchableHover extends React.Component<{}, {hoverOver: boolean}> {
   };
 }
 
-class TouchableMouseEvents extends React.Component<{}, {eventLog: Array<string>}> {
+class TouchableMouseEvents extends React.Component<
+  {},
+  {eventLog: Array<string>},
+> {
   state: {eventLog: Array<string>} = {
     eventLog: [],
   };

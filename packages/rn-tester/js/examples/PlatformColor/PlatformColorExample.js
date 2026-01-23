@@ -608,7 +608,7 @@ exports.examples = [
       return <VariantColorsExample />;
     },
   },
-    {
+  {
     title: 'Reacts to Appearance Changes',
     render(): React.MixedElement {
       return <ReactsToAppearanceChangesExample />;
