@@ -6,30 +6,49 @@
  */
 
 import SwiftUI
+#if os(macOS) // [macOS
+import AppKit
+#else
 import UIKit
+#endif // macOS]
+
+#if os(macOS) // [macOS
+public typealias RCTPlatformView = NSView
+public typealias RCTUIColor = NSColor
+public typealias RCTPlatformHostingController = NSHostingController
+#else
+public typealias RCTPlatformView = UIView
+public typealias RCTUIColor = UIColor
+public typealias RCTPlatformHostingController = UIHostingController
+#endif // macOS]
 
 @MainActor @objc public class RCTSwiftUIContainerView: NSObject {
   private var containerViewModel = ContainerViewModel()
-  private var hostingController: UIHostingController<SwiftUIContainerView>?
+  private var hostingController: RCTPlatformHostingController<SwiftUIContainerView>? // [macOS]
 
   @objc public override init() {
     super.init()
-    hostingController = UIHostingController(rootView: SwiftUIContainerView(viewModel: containerViewModel))
+    hostingController = RCTPlatformHostingController(rootView: SwiftUIContainerView(viewModel: containerViewModel)) // [macOS]
     guard let view = hostingController?.view else {
       return
     }
+#if os(macOS) // [macOS
+    view.wantsLayer = true
+    view.layer?.backgroundColor = NSColor.clear.cgColor
+#else // macOS]
     view.backgroundColor = .clear
+#endif // [macOS]
   }
 
-  @objc public func updateContentView(_ view: UIView) {
+  @objc public func updateContentView(_ view: RCTPlatformView) { // [macOS]
     containerViewModel.contentView = view
   }
 
-  @objc public func hostingView() -> UIView? {
+  @objc public func hostingView() -> RCTPlatformView? { // [macOS]
     return hostingController?.view
   }
 
-  @objc public func contentView() -> UIView? {
+  @objc public func contentView() -> RCTPlatformView? { // [macOS]
     return containerViewModel.contentView
   }
 
@@ -42,7 +61,7 @@ import UIKit
     containerViewModel.grayscale = CGFloat(grayscale.floatValue)
   }
 
-  @objc public func updateDropShadow(standardDeviation: NSNumber, x: NSNumber, y: NSNumber, color: UIColor) {
+  @objc public func updateDropShadow(standardDeviation: NSNumber, x: NSNumber, y: NSNumber, color: RCTUIColor) { // [macOS]
     containerViewModel.shadowRadius = CGFloat(standardDeviation.floatValue)
     containerViewModel.shadowX = CGFloat(x.floatValue)
     containerViewModel.shadowY = CGFloat(y.floatValue)
@@ -101,7 +120,7 @@ class ContainerViewModel: ObservableObject {
   // hue-rotate filter properties
   @Published var hueRotationDegrees: CGFloat = 0
 
-  @Published var contentView: UIView?
+  @Published var contentView: RCTPlatformView? // [macOS]
 }
 
 struct SwiftUIContainerView: View {
@@ -109,7 +128,7 @@ struct SwiftUIContainerView: View {
 
   var body: some View {
     if let contentView = viewModel.contentView {
-      UIViewWrapper(view: contentView)
+      PlatformViewWrapper(view: contentView) // [macOS]
         .blur(radius: viewModel.blurRadius)
         .grayscale(viewModel.grayscale)
         .shadow(color: viewModel.shadowColor, radius: viewModel.shadowRadius, x: viewModel.shadowX, y: viewModel.shadowY)
@@ -120,7 +139,19 @@ struct SwiftUIContainerView: View {
   }
 }
 
-struct UIViewWrapper: UIViewRepresentable {
+#if os(macOS) // [macOS
+struct PlatformViewWrapper: NSViewRepresentable {
+  let view: NSView
+
+  func makeNSView(context: Context) -> NSView {
+    return view
+  }
+
+  func updateNSView(_ nsView: NSView, context: Context) {
+  }
+}
+#else
+struct PlatformViewWrapper: UIViewRepresentable {
   let view: UIView
 
   func makeUIView(context: Context) -> UIView {
@@ -130,3 +161,4 @@ struct UIViewWrapper: UIViewRepresentable {
   func updateUIView(_ uiView: UIView, context: Context) {
   }
 }
+#endif // macOS]

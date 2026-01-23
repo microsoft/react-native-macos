@@ -6,7 +6,7 @@
  */
 
 #import <React/RCTUtils.h>
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 #include "AppleSwitchShadowNode.h"
 
 namespace facebook::react {

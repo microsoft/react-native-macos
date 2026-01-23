@@ -463,7 +463,7 @@ function findDisabledLibrariesByPlatform(
 
 function findReactNativeRootPath(projectRoot /* : string */) /* : string */ {
   const reactNativePackageJsonPath = require.resolve(
-    path.join('react-native', 'package.json'),
+    path.join('react-native-macos', 'package.json'), // [macOS]
     {
       paths: [projectRoot],
     },

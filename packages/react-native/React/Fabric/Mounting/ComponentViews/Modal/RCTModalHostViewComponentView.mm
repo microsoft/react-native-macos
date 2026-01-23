@@ -98,7 +98,7 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
 
 @interface RCTModalHostViewComponentView () <RCTFabricModalHostViewControllerDelegate>
 
-@property (nonatomic, weak) UIView *accessibilityFocusedView;
+@property (nonatomic, weak) RCTPlatformView *accessibilityFocusedView; // [macOS]
 
 @end
 

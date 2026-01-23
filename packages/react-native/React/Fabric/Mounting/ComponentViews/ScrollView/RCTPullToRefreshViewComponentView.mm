@@ -117,9 +117,11 @@ using namespace facebook::react;
 #endif // [macOS]
   }
 
+#if !TARGET_OS_OSX // [macOS]
   if (_recycled || newConcreteProps.zIndex != oldConcreteProps.zIndex) {
     _refreshControl.layer.zPosition = newConcreteProps.zIndex.value_or(0);
   }
+#endif // [macOS]
 
   _recycled = NO;
 }
@@ -170,6 +172,7 @@ using namespace facebook::react;
 {
   [super layoutSubviews];
 
+#if !TARGET_OS_OSX // [macOS]
   // Attempts to begin refreshing before the initial layout are ignored by _refreshControl. So if the control is
   // refreshing when mounted, we need to call beginRefreshing in layoutSubviews or it won't work.
   if (self.window) {
@@ -179,6 +182,7 @@ using namespace facebook::react;
       [self beginRefreshingProgrammatically];
     }
   }
+#endif // [macOS]
 }
 
 #if !TARGET_OS_OSX // [macOS]

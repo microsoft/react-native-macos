@@ -26,7 +26,7 @@ RCTPlatformImage *RCTBlurredImageWithRadius(RCTPlatformImage *inputImage, CGFloa
   // convert to ARGB if it isn't
   if (CGImageGetBitsPerPixel(imageRef) != 32 || (((CGImageGetBitmapInfo(imageRef) & kCGBitmapAlphaInfoMask)) == 0u)) {
     RCTUIGraphicsImageRendererFormat *const rendererFormat = [RCTUIGraphicsImageRendererFormat defaultFormat]; // [macOS]
-    rendererFormat.scale = inputImage.scale;
+    rendererFormat.scale = UIImageGetScale(inputImage); // [macOS]
     RCTUIGraphicsImageRenderer *const renderer = [[RCTUIGraphicsImageRenderer alloc] initWithSize:inputImage.size // [macOS]
                                                                                      format:rendererFormat];
 

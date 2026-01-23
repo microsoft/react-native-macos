@@ -163,7 +163,7 @@
   return;
 }
 
-- (UIView *)viewWithModuleName:(NSString *)moduleName
+- (RCTPlatformView *)viewWithModuleName:(NSString *)moduleName // [macOS]
              initialProperties:(NSDictionary *)initialProperties
                  launchOptions:(NSDictionary *)launchOptions
 {
@@ -214,7 +214,7 @@
   RCTPlatformView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, YES); // [macOS]
 
 #if RCT_DEV_MENU // [macOS
-  if (enableFabric && [rootView isKindOfClass:[RCTSurfaceHostingView class]]) {
+  if ([rootView isKindOfClass:[RCTSurfaceHostingView class]]) {
     RCTDevMenu *devMenu = [bridge moduleForClass:[RCTDevMenu class]];
     if (devMenu) {
       [(RCTSurfaceHostingView *)rootView setDevMenu:devMenu];

@@ -554,9 +554,9 @@ RCT_EXPORT_METHOD(show)
   NSAlertStyle style = NSAlertStyleInformational;
 #endif // macOS]
 
+#if !TARGET_OS_OSX // [macOS]
   _actionSheet = [UIAlertController alertControllerWithTitle:@"React Native Dev Menu" message:nil preferredStyle:style];
 
-#if !TARGET_OS_OSX // [macOS]
   NSAttributedString *title =
       [[NSAttributedString alloc] initWithString:@"React Native Dev Menu"
                                       attributes:@{NSFontAttributeName : [UIFont boldSystemFontOfSize:17]}];
@@ -581,8 +581,7 @@ RCT_EXPORT_METHOD(show)
   [RCTPresentedViewController() presentViewController:_actionSheet animated:YES completion:nil];
 #else // [macOS
   _alert = [NSAlert new];
-  [_alert setMessageText:devMenuTitle];
-  [_alert setInformativeText:description];
+  [_alert setMessageText:@"React Native Dev Menu"];
   [_alert setAlertStyle:NSAlertStyleInformational];
 
   NSArray<RCTDevMenuItem *> *items = [self _menuItemsToPresent];

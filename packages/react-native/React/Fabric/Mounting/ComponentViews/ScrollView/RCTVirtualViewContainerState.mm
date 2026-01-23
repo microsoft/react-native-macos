@@ -8,7 +8,7 @@
 #import <React/RCTLog.h>
 #import <React/RCTScrollViewComponentView.h>
 #import <React/RCTVirtualViewMode.h>
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 
 #import "RCTVirtualViewContainerState.h"
@@ -62,7 +62,7 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
   return YES;
 }
 
-@interface RCTVirtualViewContainerState () <UIScrollViewDelegate>
+@interface RCTVirtualViewContainerState () <RCTUIScrollViewDelegate> // [macOS]
 @end
 
 @interface RCTVirtualViewContainerState () {
@@ -181,9 +181,9 @@ static BOOL CGRectOverlaps(CGRect rect1, CGRect rect2)
   }
 }
 
-#pragma mark - UIScrollViewDelegate
+#pragma mark - RCTUIScrollViewDelegate // [macOS]
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+- (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // [macOS]
 {
   [self _updateModes:nil];
 }
