@@ -1,9 +1,8 @@
 {
   "name": "@react-native/metro-babel-transformer",
-  "version": "0.79.0-main",
+  "version": "0.81.0-main",
   "private": true,
   "description": "Babel transformer for React Native applications.",
-  "main": "src/index.js",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/facebook/react-native.git",
@@ -15,16 +14,25 @@
     "metro"
   ],
   "license": "MIT",
+  "engines": {
+    "node": ">= 22.14.0"
+  },
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "README.md",
+    "!**/__docs__/**",
+    "!**/__fixtures__/**",
+    "!**/__mocks__/**",
+    "!**/__tests__/**"
+  ],
   "dependencies": {
     "@babel/core": "^7.25.2",
     "@react-native/babel-preset": "workspace:*",
-    "hermes-parser": "0.25.1",
+    "hermes-parser": "0.29.1",
     "nullthrows": "^1.1.1"
   },
   "peerDependencies": {
     "@babel/core": "*"
-  },
-  "engines": {
-    "node": ">=18"
   }
 }

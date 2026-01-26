@@ -10,8 +10,7 @@
 #include <jsi/jsi.h>
 #include <memory.h>
 
-namespace facebook {
-namespace jsc {
+namespace facebook::jsc {
 
 // [macOS
 struct RuntimeConfig {
@@ -24,5 +23,4 @@ std::unique_ptr<jsi::Runtime> makeJSCRuntime();
 
 std::unique_ptr<jsi::Runtime> makeJSCRuntime(const facebook::jsc::RuntimeConfig& rc); // [macOS]
 
-} // namespace jsc
-} // namespace facebook
+} // namespace facebook::jsc

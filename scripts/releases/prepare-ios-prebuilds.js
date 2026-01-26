@@ -6,7 +6,6 @@
  *
  * @flow
  * @format
- * @oncall react_native
  */
 
 const {buildDepenencies} = require('./ios-prebuild/build');
@@ -65,6 +64,7 @@ async function main() {
       cli.dependencies,
       rootFolder,
       buildFolder,
+      cli.identity,
     );
   }
 
@@ -73,6 +73,5 @@ async function main() {
 }
 
 if (require.main === module) {
-  // eslint-disable-next-line no-void
   void main();
 }

@@ -7,16 +7,18 @@
 
 package com.facebook.react
 
-import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.facebook.react.internal.PrivateReactExtension
 import com.facebook.react.tasks.GenerateAutolinkingNewArchitecturesFileTask
 import com.facebook.react.tasks.GenerateCodegenArtifactsTask
 import com.facebook.react.tasks.GenerateCodegenSchemaTask
+import com.facebook.react.tasks.GenerateEntryPointTask
 import com.facebook.react.tasks.GeneratePackageListTask
 import com.facebook.react.utils.AgpConfiguratorUtils.configureBuildConfigFieldsForApp
 import com.facebook.react.utils.AgpConfiguratorUtils.configureBuildConfigFieldsForLibraries
-import com.facebook.react.utils.AgpConfiguratorUtils.configureDevPorts
+import com.facebook.react.utils.AgpConfiguratorUtils.configureDevServerLocation
 import com.facebook.react.utils.AgpConfiguratorUtils.configureNamespaceForLibraries
 import com.facebook.react.utils.BackwardCompatUtils.configureBackwardCompatibilityReactMap
 import com.facebook.react.utils.DependencyUtils.configureDependencies
@@ -70,11 +72,11 @@ class ReactPlugin : Plugin<Project> {
 
       configureReactNativeNdk(project, extension)
       configureBuildConfigFieldsForApp(project, extension)
-      configureDevPorts(project)
+      configureDevServerLocation(project)
       configureBackwardCompatibilityReactMap(project)
       configureJavaToolChains(project)
 
-      project.extensions.getByType(AndroidComponentsExtension::class.java).apply {
+      project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java).apply {
         onVariants(selector().all()) { variant ->
           project.configureReactTasks(variant = variant, config = extension)
         }
@@ -113,7 +115,8 @@ class ReactPlugin : Plugin<Project> {
 
   /** This function configures Android resources - in this case just the bundle */
   private fun configureResources(project: Project, reactExtension: ReactExtension) {
-    project.extensions.getByType(AndroidComponentsExtension::class.java).finalizeDsl { ext ->
+    project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java).finalizeDsl {
+        ext ->
       val bundleFileExtension = reactExtension.bundleAssetName.get().substringAfterLast('.', "")
       if (!reactExtension.enableBundleCompression.get() && bundleFileExtension.isNotBlank()) {
         ext.androidResources.noCompress.add(bundleFileExtension)
@@ -214,8 +217,16 @@ class ReactPlugin : Plugin<Project> {
     // This equivalent to this DSL:
     //
     // android { sourceSets { main { java { srcDirs += "$generatedSrcDir/java" } } } }
-    project.extensions.getByType(AndroidComponentsExtension::class.java).finalizeDsl { ext ->
-      ext.sourceSets.getByName("main").java.srcDir(generatedSrcDir.get().dir("java").asFile)
+    if (isLibrary) {
+      project.extensions.getByType(LibraryAndroidComponentsExtension::class.java).finalizeDsl { ext
+        ->
+        ext.sourceSets.getByName("main").java.srcDir(generatedSrcDir.get().dir("java").asFile)
+      }
+    } else {
+      project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java).finalizeDsl {
+          ext ->
+        ext.sourceSets.getByName("main").java.srcDir(generatedSrcDir.get().dir("java").asFile)
+      }
     }
 
     // `preBuild` is one of the base tasks automatically registered by AGP.
@@ -248,6 +259,16 @@ class ReactPlugin : Plugin<Project> {
               task.generatedOutputDirectory.set(generatedAutolinkingJavaDir)
             }
 
+    // We add a task called generateAutolinkingPackageList to do not clash with the existing task
+    // called generatePackageList. This can to be renamed once we unlink the rn <-> cli
+    // dependency.
+    val generateEntryPointTask =
+        project.tasks.register(
+            "generateReactNativeEntryPoint", GenerateEntryPointTask::class.java) { task ->
+              task.autolinkInputFile.set(rootGeneratedAutolinkingFile)
+              task.generatedOutputDirectory.set(generatedAutolinkingJavaDir)
+            }
+
     if (project.isNewArchEnabled(extension)) {
       // For New Arch, we also need to generate code for C++ Autolinking
       val generateAutolinkingNewArchitectureFilesTask =
@@ -262,13 +283,16 @@ class ReactPlugin : Plugin<Project> {
           .dependsOn(generateAutolinkingNewArchitectureFilesTask)
     }
 
-    // We let generateAutolinkingPackageList depend on the preBuild task so it's executed before
+    // We let generateAutolinkingPackageList and generateEntryPoint depend on the preBuild task so
+    // it's executed before
     // everything else.
-    project.tasks.named("preBuild", Task::class.java).dependsOn(generatePackageListTask)
+    project.tasks
+        .named("preBuild", Task::class.java)
+        .dependsOn(generatePackageListTask, generateEntryPointTask)
 
     // We tell Android Gradle Plugin that inside /build/generated/autolinking/src/main/java there
     // are sources to be compiled as well.
-    project.extensions.getByType(AndroidComponentsExtension::class.java).apply {
+    project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java).apply {
       onVariants(selector().all()) { variant ->
         variant.sources.java?.addStaticSourceDirectory(
             generatedAutolinkingJavaDir.get().asFile.absolutePath)

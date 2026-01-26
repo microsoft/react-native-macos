@@ -97,6 +97,7 @@
   NSArray<UIBarButtonItemGroup *> *_initialValueLeadingBarButtonGroups;
   NSArray<UIBarButtonItemGroup *> *_initialValueTrailingBarButtonGroups;
 #endif // [macOS]
+  NSArray<NSString *> *_acceptDragAndDropTypes;
 #if TARGET_OS_OSX // [macOS
   BOOL _isUpdatingPlaceholderText;
   NSArray<NSPasteboardType> *_readablePasteboardTypes;
@@ -188,6 +189,16 @@
 }
 
 #pragma mark - Properties
+
+- (void)setAcceptDragAndDropTypes:(NSArray<NSString *> *)acceptDragAndDropTypes
+{
+  _acceptDragAndDropTypes = acceptDragAndDropTypes;
+}
+
+- (nullable NSArray<NSString *> *)acceptDragAndDropTypes
+{
+  return _acceptDragAndDropTypes;
+}
 
 - (void)setTextContainerInset:(UIEdgeInsets)textContainerInset
 {

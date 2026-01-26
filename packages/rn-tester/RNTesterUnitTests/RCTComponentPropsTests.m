@@ -46,7 +46,7 @@
 
 RCT_EXPORT_MODULE()
 
-- (RCTUIView *)view // [macOS]
+- (RCTPlatformView *)view // [macOS]
 {
   RCTPropsTestView *view = [RCTPropsTestView new];
   view.integerProp = 57;

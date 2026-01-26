@@ -7,9 +7,9 @@
 
 #import "UIImage+Diff.h"
 
-@implementation UIImage (Diff)
+@implementation RCTPlatformImage (Diff)
 
-- (UIImage *)diffWithImage:(UIImage *)image
+- (RCTPlatformImage *)diffWithImage:(RCTPlatformImage *)image
 {
   if (!image) {
     return nil;

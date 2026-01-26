@@ -15,14 +15,16 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.Window;
 import androidx.annotation.Nullable;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.common.annotations.DeprecatedInNewArchitecture;
 import com.facebook.react.interfaces.fabric.ReactSurface;
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
+import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags;
 import com.facebook.react.modules.core.PermissionListener;
+import com.facebook.react.views.view.WindowUtilKt;
 import com.facebook.systrace.Systrace;
 
 /**
@@ -57,7 +59,7 @@ public class ReactActivityDelegate {
 
   /**
    * Public API to populate the launch options that will be passed to React. Here you can customize
-   * the values that will be passed as `initialProperties` to the Renderer.
+   * the values that will be passed as 'initialProperties' to the Renderer.
    *
    * @return Either null or a key-value map as a Bundle
    */
@@ -116,15 +118,23 @@ public class ReactActivityDelegate {
 
   public void onCreate(Bundle savedInstanceState) {
     Systrace.traceSection(
-        Systrace.TRACE_TAG_REACT_JAVA_BRIDGE,
+        Systrace.TRACE_TAG_REACT,
         "ReactActivityDelegate.onCreate::init",
         () -> {
           String mainComponentName = getMainComponentName();
           final Bundle launchOptions = composeLaunchOptions();
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isWideColorGamutEnabled()) {
-            mActivity.getWindow().setColorMode(ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT);
+          if (mActivity != null) {
+            Window window = mActivity.getWindow();
+            if (window != null) {
+              if (WindowUtilKt.isEdgeToEdgeFeatureFlagOn()) {
+                WindowUtilKt.enableEdgeToEdge(window);
+              }
+              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isWideColorGamutEnabled()) {
+                window.setColorMode(ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT);
+              }
+            }
           }
-          if (ReactNativeFeatureFlags.enableBridgelessArchitecture()) {
+          if (ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
             mReactDelegate =
                 new ReactDelegate(
                     getPlainActivity(), getReactHost(), mainComponentName, launchOptions);
@@ -267,7 +277,7 @@ public class ReactActivityDelegate {
    * @return true if Fabric is enabled for this Activity, false otherwise.
    */
   protected boolean isFabricEnabled() {
-    return ReactNativeFeatureFlags.enableFabricRenderer();
+    return ReactNativeNewArchitectureFeatureFlags.enableFabricRenderer();
   }
 
   /**

@@ -4,10 +4,15 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @flow strict-local
  * @format
  */
 
 'use strict';
+
+/*::
+import type {Command} from '@react-native-community/cli-types';
+ */
 
 // React Native shouldn't be exporting itself like this, the Community Template should be be directly
 // depending on and injecting:
@@ -18,9 +23,12 @@
 //
 // This is a temporary workaround.
 
-const verbose = process.env.DEBUG && process.env.DEBUG.includes('react-native');
+const verbose = Boolean(process.env.DEBUG?.includes('react-native'));
 
-function findCommunityPlatformPackage(spec, startDir = process.cwd()) {
+function findCommunityPlatformPackage(
+  spec /*: string */,
+  startDir /*: string */ = process.cwd(),
+) {
   // In monorepos, we cannot make any assumptions on where
   // `@react-native-community/*` gets installed. The safest way to find it
   // (barring adding an optional peer dependency) is to start from the project
@@ -30,6 +38,7 @@ function findCommunityPlatformPackage(spec, startDir = process.cwd()) {
   // root. This is also what `@react-native-community/cli` assumes (see
   // https://github.com/react-native-community/cli/blob/14.x/packages/cli-tools/src/findProjectRoot.ts).
   const main = require.resolve(spec, {paths: [startDir]});
+  // $FlowIgnore[unsupported-syntax]
   return require(main);
 }
 
@@ -62,7 +71,14 @@ try {
 // [macOS
 let apple;
 try {
-  apple = require('@react-native-community/cli-platform-apple');
+  const iosPath = require.resolve('@react-native-community/cli-platform-ios', {
+    paths: [process.cwd()],
+  });
+  // $FlowFixMe[untyped-import]
+  apple = findCommunityPlatformPackage(
+    '@react-native-community/cli-platform-apple',
+    iosPath,
+  );
 } catch {
   if (verbose) {
     console.warn(
@@ -70,18 +86,20 @@ try {
     );
   }
 }
-// macOS]
 
-const macosCommands = require('./local-cli/runMacOS/runMacOS'); // [macOS]
-const commands = [];
-
+// $FlowFixMe[untyped-import]
+const macosCommands = require('./local-cli/runMacOS/runMacOS');
 const {
   bundleCommand,
   startCommand,
 } = require('@react-native/community-cli-plugin');
+
+// macOS]
+const commands /*: Array<Command> */ = [];
+
 commands.push(bundleCommand, startCommand);
 
-const codegenCommand = {
+const codegenCommand /*: Command */ = {
   name: 'codegen',
   options: [
     {
@@ -118,7 +136,12 @@ commands.push(codegenCommand);
 
 const config = {
   commands,
-  platforms: {},
+  platforms: {} /*:: as {[string]: $ReadOnly<{
+      projectConfig: mixed,
+      dependencyConfig: mixed,
+      linkConfig?: mixed,
+      npmPackageName?: mixed,
+    }>} */,
 };
 
 if (ios != null) {
@@ -139,40 +162,36 @@ if (android != null) {
 
 // [macOS
 config.commands.push(...macosCommands);
-config.platforms.macos = {
-  linkConfig: () => {
-    return {
-      isInstalled: (
-        _projectConfig /*ProjectConfig*/,
-        _package /*string*/,
-        _dependencyConfig /*DependencyConfig*/,
-      ) => false /*boolean*/,
-      register: (
-        _package /*string*/,
-        _dependencyConfig /*DependencyConfig*/,
-        _obj /*Object*/,
-        _projectConfig /*ProjectConfig*/,
-      ) => {},
-      unregister: (
-        _package /*string*/,
-        _dependencyConfig /*DependencyConfig*/,
-        _projectConfig /*ProjectConfig*/,
-        _dependencyConfigs /*Array<DependencyConfig>*/,
-      ) => {},
-      copyAssets: (
-        _assets /*string[]*/,
-        _projectConfig /*ProjectConfig*/,
-      ) => {},
-      unlinkAssets: (
-        _assets /*string[]*/,
-        _projectConfig /*ProjectConfig*/,
-      ) => {},
-    };
-  },
-  projectConfig: apple.getProjectConfig({platformName: 'macos'}),
-  dependencyConfig: apple.getProjectConfig({platformName: 'macos'}),
-  npmPackageName: 'react-native-macos',
-};
+if (apple) {
+  config.platforms.macos = {
+    linkConfig: () => {
+      return {
+        isInstalled: (
+          _projectConfig /*: mixed */,
+          _package /*: mixed */,
+          _dependencyConfig /*: mixed */,
+        ) => false,
+        register: (
+          _package /*: mixed */,
+          _dependencyConfig /*: mixed */,
+          _obj /*: mixed */,
+          _projectConfig /*: mixed */,
+        ) => {},
+        unregister: (
+          _package /*: mixed */,
+          _dependencyConfig /*: mixed */,
+          _projectConfig /*: mixed */,
+          _dependencyConfigs /*: mixed */,
+        ) => {},
+        copyAssets: (_assets /*: mixed */, _projectConfig /*: mixed */) => {},
+        unlinkAssets: (_assets /*: mixed */, _projectConfig /*: mixed */) => {},
+      };
+    },
+    projectConfig: apple.getProjectConfig({platformName: 'macos'}),
+    dependencyConfig: apple.getProjectConfig({platformName: 'macos'}),
+    npmPackageName: 'react-native-macos',
+  };
+}
 // macOS]
 
 module.exports = config;

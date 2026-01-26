@@ -12,6 +12,7 @@
 #import <React/RCTConstants.h>
 #import <React/RCTScrollEvent.h>
 
+#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/scrollview/RCTComponentViewHelpers.h>
 #import <react/renderer/components/scrollview/ScrollViewComponentDescriptor.h>
 #import <react/renderer/components/scrollview/ScrollViewEventEmitter.h>
@@ -67,6 +68,9 @@ static UIScrollViewIndicatorStyle RCTUIScrollViewIndicatorStyleFromProps(const S
 static void
 RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NSInteger tag, NSString *eventName) // [macOS]
 {
+  if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled()) {
+    return;
+  }
   static uint16_t coalescingKey = 0;
   RCTScrollEvent *scrollEvent = [[RCTScrollEvent alloc] initWithEventName:eventName
                                                                  reactTag:[NSNumber numberWithInt:tag]
@@ -116,10 +120,10 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
   CGFloat _endDraggingSensitivityMultiplier;
 }
 
-+ (RCTScrollViewComponentView *_Nullable)findScrollViewComponentViewForView:(RCTUIView *)view // [macOS]
++ (RCTScrollViewComponentView *_Nullable)findScrollViewComponentViewForView:(RCTPlatformView *)view // [macOS]
 {
   do {
-    view = (RCTUIView *)view.superview; // [macOS]
+    view = (RCTPlatformView *)view.superview; // [macOS]
   } while (view != nil && ![view isKindOfClass:[RCTScrollViewComponentView class]]);
   return (RCTScrollViewComponentView *)view;
 }
@@ -275,12 +279,10 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 }
 #endif
 
-#if !TARGET_OS_OSX // [macOS]
-- (RCTGenericDelegateSplitter<id<UIScrollViewDelegate>> *)scrollViewDelegateSplitter
+- (RCTGenericDelegateSplitter<id<RCTUIScrollViewDelegate>> *)scrollViewDelegateSplitter
 {
   return ((RCTEnhancedScrollView *)_scrollView).delegateSplitter;
 }
-#endif // [macOS]
 
 #pragma mark - RCTMountingTransactionObserving
 
@@ -506,6 +508,41 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _preserveContentOffsetIfNeededWithBlock:^{
     self->_scrollView.contentSize = contentSize;
   }];
+}
+
+- (RCTPlatformView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
+{
+  // This is the same algorithm as in the RCTViewComponentView with the exception of
+  // skipping the immediate child (_containerView) and checking grandchildren instead.
+  // This prevents issues with touches outside of _containerView being ignored even
+  // if they are within the bounds of the _containerView's children.
+
+#if !TARGET_OS_OSX // [macOS]
+  if (!self.userInteractionEnabled || self.hidden || self.alpha < 0.01) {
+#else // [macOS
+    if (!self.userInteractionEnabled || self.hidden || self.alphaValue < 0.01  ) {
+#endif // macOS]
+      return nil;
+    }
+
+  BOOL isPointInside = [self pointInside:point withEvent:event];
+
+  BOOL clipsToBounds = _containerView.clipsToBounds;
+
+  clipsToBounds = clipsToBounds || _layoutMetrics.overflowInset == EdgeInsets{};
+
+  if (clipsToBounds && !isPointInside) {
+    return nil;
+  }
+
+  for (RCTPlatformView *subview in [_containerView.subviews reverseObjectEnumerator]) { // [macOS]
+    RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, [subview convertPoint:point fromView:self], event); // [macOS]
+    if (hitView) {
+      return hitView;
+    }
+  }
+
+  return isPointInside ? self : nil;
 }
 
 /*
@@ -838,7 +875,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _updateStateWithContentOffset];
 }
 
-- (RCTUIView *)viewForZoomingInScrollView:(__unused RCTUIScrollView *)scrollView // [macOS]
+- (RCTPlatformView *)viewForZoomingInScrollView:(__unused RCTUIScrollView *)scrollView // [macOS]
 {
   return _containerView;
 }
@@ -976,17 +1013,15 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 #endif // [macOS]
 }
 
-#if !TARGET_OS_OSX // [macOS]
-- (void)addScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener
+- (void)addScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener // [macOS]
 {
   [self.scrollViewDelegateSplitter addDelegate:scrollListener];
 }
 
-- (void)removeScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener
+- (void)removeScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener // [macOS]
 {
   [self.scrollViewDelegateSplitter removeDelegate:scrollListener];
 }
-#endif // [macOS]
 
 #pragma mark - Maintain visible content position
 

@@ -22,5 +22,7 @@
 	<string>Copyright © 2019 Facebook. All rights reserved.</string>
 	<key>NSPrincipalClass</key>
 	<string></string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 </dict>
 </plist>

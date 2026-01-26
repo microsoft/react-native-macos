@@ -12,11 +12,10 @@ import type {HostInstance} from '../../src/private/types/HostInstance';
 import type {
   BlurEvent,
   FocusEvent,
-  KeyEvent,
   GestureResponderEvent,
   MouseEvent,
-  // [macOS]
 } from '../Types/CoreEventTypes';
+import type {KeyEvent} from '../Types/CoreEventTypes'; // [macOS]
 
 import SoundManager from '../Components/Sound/SoundManager';
 import ReactNativeFeatureFlags from '../ReactNative/ReactNativeFeatureFlags';
@@ -256,7 +255,7 @@ const Transitions = Object.freeze({
     LEAVE_PRESS_RECT: 'NOT_RESPONDER',
     LONG_PRESS_DETECTED: 'NOT_RESPONDER',
   },
-});
+} as const);
 
 const isActiveSignal = (signal: TouchState) =>
   signal === 'RESPONDER_ACTIVE_PRESS_IN' ||
@@ -895,7 +894,7 @@ export default class Pressability {
   };
 
   _isTouchWithinResponderRegion(
-    touch: $PropertyType<GestureResponderEvent, 'nativeEvent'>,
+    touch: GestureResponderEvent['nativeEvent'],
     responderRegion: $ReadOnly<{
       bottom: number,
       left: number,

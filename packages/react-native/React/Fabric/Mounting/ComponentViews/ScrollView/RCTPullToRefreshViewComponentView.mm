@@ -7,10 +7,10 @@
 
 #import "RCTPullToRefreshViewComponentView.h"
 
-#import <react/renderer/components/rncore/ComponentDescriptors.h>
-#import <react/renderer/components/rncore/EventEmitters.h>
-#import <react/renderer/components/rncore/Props.h>
-#import <react/renderer/components/rncore/RCTComponentViewHelpers.h>
+#import <react/renderer/components/FBReactNativeSpec/ComponentDescriptors.h>
+#import <react/renderer/components/FBReactNativeSpec/EventEmitters.h>
+#import <react/renderer/components/FBReactNativeSpec/Props.h>
+#import <react/renderer/components/FBReactNativeSpec/RCTComponentViewHelpers.h>
 
 #import <React/RCTConversions.h>
 #import <React/RCTRefreshableProtocol.h>
@@ -76,11 +76,11 @@ using namespace facebook::react;
 {
   // Prop updates are ignored by _refreshControl until after the initial layout, so just store them in _props until then
   if (_isBeforeInitialLayout) {
-    _props = std::static_pointer_cast<const PullToRefreshViewProps>(props); // [macOS]
+    _props = std::static_pointer_cast<const PullToRefreshViewProps>(props);
     return;
   }
 
-  const auto &oldConcreteProps = static_cast<const PullToRefreshViewProps &>(*oldProps);
+  const auto &oldConcreteProps = static_cast<const PullToRefreshViewProps &>(*_props);
   const auto &newConcreteProps = static_cast<const PullToRefreshViewProps &>(*props);
 
   if (newConcreteProps.tintColor != oldConcreteProps.tintColor) {

@@ -4,14 +4,15 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow
+ * @format
  */
 
 'use strict';
 
 import RNTesterText from './RNTesterText';
 import React from 'react';
+import {memo} from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -168,7 +169,7 @@ class SeparatorComponent extends React.PureComponent<{...}> {
   }
 }
 
-const LoadingComponent: React.ComponentType<{}> = React.memo(() => (
+const LoadingComponent: React.ComponentType<{}> = memo(() => (
   <View style={styles.loadingContainer}>
     <ActivityIndicator />
   </View>
@@ -390,18 +391,18 @@ const styles = StyleSheet.create({
   },
   // [macOS
   selectedItem: {
-    backgroundColor: Platform.select({
-      macos: PlatformColor('selectedContentBackgroundColor'),
-      default: 'blue',
-    }),
+    backgroundColor:
+      Platform.OS === 'macos'
+        ? PlatformColor('selectedContentBackgroundColor')
+        : 'blue',
   },
   selectedItemText: {
     // This was the closest UI Element color that looked right...
     // https://developer.apple.com/documentation/appkit/nscolor/ui_element_colors
-    color: Platform.select({
-      macos: PlatformColor('selectedMenuItemTextColor'),
-      default: 'white',
-    }),
+    color:
+      Platform.OS === 'macos'
+        ? PlatformColor('selectedMenuItemTextColor')
+        : 'white',
   },
   // macOS]
   loadingContainer: {

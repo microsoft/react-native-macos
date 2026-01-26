@@ -4,10 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
+import typeof CustomEvent from '../../src/private/webapis/dom/events/CustomEvent';
 import typeof BatchedBridge from '../BatchedBridge/BatchedBridge';
 import typeof legacySendAccessibilityEvent from '../Components/AccessibilityInfo/legacySendAccessibilityEvent';
 import typeof TextInputState from '../Components/TextInput/TextInputState';
@@ -15,7 +16,6 @@ import typeof ExceptionsManager from '../Core/ExceptionsManager';
 import typeof RawEventEmitter from '../Core/RawEventEmitter';
 import typeof ReactFiberErrorDialog from '../Core/ReactFiberErrorDialog';
 import typeof RCTEventEmitter from '../EventEmitter/RCTEventEmitter';
-import typeof CustomEvent from '../Events/CustomEvent';
 import typeof {
   createPublicInstance,
   createPublicRootInstance,
@@ -41,7 +41,7 @@ export type {
   HostInstance as PublicInstance,
 
   // These types are only necessary for Paper
-  LegacyHostInstanceMethods as LegacyPublicInstance,
+  NativeMethods as LegacyPublicInstance,
   MeasureOnSuccessCallback,
   MeasureInWindowOnSuccessCallback,
   MeasureLayoutOnSuccessCallback,
@@ -51,6 +51,7 @@ export type {PublicRootInstance} from '../ReactNative/ReactFabricPublicInstance/
 export type PublicTextInstance = ReturnType<createPublicTextInstance>;
 
 // flowlint unsafe-getters-setters:off
+// eslint-disable-next-line @react-native/monorepo/no-commonjs-exports
 module.exports = {
   get BatchedBridge(): BatchedBridge {
     return require('../BatchedBridge/BatchedBridge').default;
@@ -99,7 +100,7 @@ module.exports = {
     return require('../Core/RawEventEmitter').default;
   },
   get CustomEvent(): CustomEvent {
-    return require('../Events/CustomEvent').default;
+    return require('../../src/private/webapis/dom/events/CustomEvent').default;
   },
   get createAttributePayload(): createAttributePayload {
     return require('../ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload')

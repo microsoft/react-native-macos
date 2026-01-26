@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @noflow
 
 /**
  * Copyright (c) Microsoft Corporation.

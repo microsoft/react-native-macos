@@ -6,14 +6,14 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
  */
 
-import '../../Core/InitializeCore.js';
-import View from '../../Components/View/View';
-import Fantom from '@react-native/fantom';
+import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
+
+import * as Fantom from '@react-native/fantom';
 import * as React from 'react';
 import {Suspense, startTransition} from 'react';
+import {View} from 'react-native';
 
 let resolveFunction: (() => void) | null = null;
 
@@ -185,8 +185,6 @@ describe('Suspense', () => {
     expect(resolveFunction).toBeNull();
   });
 
-  // TODO(T207868872): this test only succeeds with enableFabricCompleteRootInCommitPhase enabled.
-  // enableFabricCompleteRootInCommitPhase is hardcoded to true in the testing environment.
   it('shows stale data while transition is happening', () => {
     cache.clear();
     cache.set(SquareId.Green, {color: 'green'});

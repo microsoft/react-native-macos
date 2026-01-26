@@ -135,6 +135,7 @@ public class ReactAccessibilityDelegate extends ExploreByTouchHelper {
   @Override
   public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfoCompat info) {
     super.onInitializeAccessibilityNodeInfo(host, info);
+
     if (host.getTag(R.id.accessibility_state_expanded) != null) {
       final boolean accessibilityStateExpanded =
           (boolean) host.getTag(R.id.accessibility_state_expanded);
@@ -308,7 +309,7 @@ public class ReactAccessibilityDelegate extends ExploreByTouchHelper {
                 }
 
                 @Override
-                protected WritableMap getEventData() {
+                public WritableMap getEventData() {
                   return event;
                 }
               });

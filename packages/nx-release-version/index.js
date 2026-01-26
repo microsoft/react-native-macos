@@ -1,7 +1,8 @@
 // @ts-check
 
+// @noflow
 const {REPO_ROOT} = require('../../scripts/consts');
-const {default: JsVersionActions, afterAllProjectsVersioned: baseAfterAllProjectsVersioned} = require('@nx/js/src/release/version-actions');
+const {afterAllProjectsVersioned: baseAfterAllProjectsVersioned, default: JsVersionActions} = require('@nx/js/src/release/version-actions');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -38,7 +39,7 @@ async function runSetVersion() {
       'react',
       'modules',
       'systeminfo',
-      'ReactNativeVersion.java',
+      'ReactNativeVersion.kt',
     ),
     path.join(REPO_ROOT,
       'packages',

@@ -12,12 +12,9 @@ import type {PartialViewConfig} from '../../Renderer/shims/ReactNativeTypes';
 
 import {ConditionallyIgnoredEventHandlers} from '../../NativeComponent/ViewConfigIgnore';
 
-type PartialViewConfigWithoutName = $Rest<
-  PartialViewConfig,
-  {uiViewClassName: string},
->;
+type PartialViewConfigWithoutName = Omit<PartialViewConfig, 'uiViewClassName'>;
 
-const RCTTextInputViewConfig = {
+const RCTTextInputViewConfig: PartialViewConfigWithoutName = {
   bubblingEventTypes: {
     topBlur: {
       phasedRegistrationNames: {
@@ -107,6 +104,7 @@ const RCTTextInputViewConfig = {
     // macOS]
   },
   validAttributes: {
+    acceptDragAndDropTypes: true,
     dynamicTypeRamp: true,
     fontSize: true,
     fontWeight: true,
