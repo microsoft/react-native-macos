@@ -7,32 +7,25 @@
 
 #pragma once
 
-#include <cassert>
-#include <string>
-
 #include <jsi/jsi.h>
-#include <react/bridging/CallbackWrapper.h>
 #include <react/bridging/LongLivedObject.h>
+#include <cassert>
+#include <functional>
+#include <string>
 
 namespace facebook::react {
 
-jsi::Object deepCopyJSIObject(jsi::Runtime& rt, const jsi::Object& obj);
-jsi::Array deepCopyJSIArray(jsi::Runtime& rt, const jsi::Array& arr);
-
 struct Promise : public LongLivedObject {
-  Promise(jsi::Runtime& rt, jsi::Function resolve, jsi::Function reject);
+  Promise(jsi::Runtime &rt, jsi::Function resolve, jsi::Function reject);
 
-  void resolve(const jsi::Value& result);
-  void reject(const std::string& error);
+  void resolve(const jsi::Value &result);
+  void reject(const std::string &message);
 
   jsi::Function resolve_;
   jsi::Function reject_;
 };
 
-using PromiseSetupFunctionType =
-    std::function<void(jsi::Runtime& rt, std::shared_ptr<Promise>)>;
-jsi::Value createPromiseAsJSIValue(
-    jsi::Runtime& rt,
-    PromiseSetupFunctionType&& func);
+using PromiseSetupFunctionType = std::function<void(jsi::Runtime &rt, std::shared_ptr<Promise>)>;
+jsi::Value createPromiseAsJSIValue(jsi::Runtime &rt, PromiseSetupFunctionType &&func);
 
 } // namespace facebook::react

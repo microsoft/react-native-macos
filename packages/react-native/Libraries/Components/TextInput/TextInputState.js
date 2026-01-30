@@ -92,7 +92,7 @@ function focusTextInput(textField: ?HostInstance) {
       // disable the check for now
       (Platform.OS === 'macos' || currentlyFocusedInputRef !== textField) &&
       // macOS]
-      // $FlowFixMe - `currentProps` is missing in `NativeMethods`
+      // $FlowFixMe[prop-missing] - `currentProps` is missing in `NativeMethods`
       textField.currentProps?.editable !== false;
 
     if (!fieldCanBeFocused) {

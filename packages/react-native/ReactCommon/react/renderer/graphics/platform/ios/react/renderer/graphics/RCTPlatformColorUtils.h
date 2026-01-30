@@ -15,8 +15,6 @@ struct ColorComponents;
 struct Color;
 } // namespace facebook::react
 
-facebook::react::ColorComponents RCTPlatformColorComponentsFromSemanticItems(
-    std::vector<std::string>& semanticItems);
-RCTUIColor* RCTPlatformColorFromSemanticItems( // [macOS]
-    std::vector<std::string>& semanticItems);
-RCTUIColor* RCTPlatformColorFromColor(const facebook::react::Color& color); // [macOS]
+facebook::react::ColorComponents RCTPlatformColorComponentsFromSemanticItems(std::vector<std::string> &semanticItems);
+RCTUIColor *RCTPlatformColorFromSemanticItems(std::vector<std::string> &semanticItems); // [macOS]
+RCTUIColor *RCTPlatformColorFromColor(const facebook::react::Color &color); // [macOS]

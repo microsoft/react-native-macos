@@ -14,7 +14,6 @@
 #import <React/RCTLinkingManager.h>
 #import <ReactCommon/RCTSampleTurboModule.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
-#import <ReactCommon/SampleTurboCxxModule.h>
 
 #import <React/RCTPushNotificationManager.h>
 
@@ -28,6 +27,10 @@
 #import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
 #else
 #define USE_OSS_CODEGEN 0
+#endif
+
+#if RCT_DEV_MENU
+#import <React/RCTDevMenu.h>
 #endif
 
 #if !TARGET_OS_OSX // [macOS]
@@ -50,6 +53,15 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
   self.reactNativeFactory = [[RCTReactNativeFactory alloc] initWithDelegate:self];
 #if USE_OSS_CODEGEN
   self.dependencyProvider = [RCTAppDependencyProvider new];
+#endif
+
+#if RCT_DEV_MENU
+
+  RCTDevMenuConfiguration *devMenuConfiguration = [[RCTDevMenuConfiguration alloc] initWithDevMenuEnabled:true
+                                                                                      shakeGestureEnabled:true
+                                                                                 keyboardShortcutsEnabled:true];
+  [self.reactNativeFactory setDevMenuConfiguration:devMenuConfiguration];
+
 #endif
 
 #if !TARGET_OS_OSX // [macOS]
@@ -108,10 +120,6 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
                                                       jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
 {
-  if (name == std::string([@"SampleTurboCxxModule" UTF8String])) {
-    return std::make_shared<facebook::react::SampleTurboCxxModule>(jsInvoker);
-  }
-
   if (name == facebook::react::NativeCxxModuleExample::kModuleName) {
     return std::make_shared<facebook::react::NativeCxxModuleExample>(jsInvoker);
   }
@@ -167,7 +175,7 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
 
 - (BOOL)newArchEnabled
 {
-  return [super newArchEnabled];
+  return YES;
 }
 
 #pragma mark - RCTComponentViewFactoryComponentProvider

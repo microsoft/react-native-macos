@@ -22,9 +22,9 @@
 
 - (void)createRootViewController:(RCTPlatformView *)view; // [macOS]
 
-#ifndef RCT_FIT_RM_OLD_RUNTIME
+#ifndef RCT_REMOVE_LEGACY_ARCH
 - (instancetype)initWithWindow:(RCTPlatformWindow *)window bridge:(RCTBridge *)bridge; // [macOS]
-#endif // RCT_FIT_RM_OLD_RUNTIME
+#endif // RCT_REMOVE_LEGACY_ARCH
 - (instancetype)initWithWindow:(RCTPlatformWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter; // [macOS]
 
 - (void)show;

@@ -7,30 +7,34 @@
 
 #pragma once
 
-#include <fbjni/fbjni.h>
-
-#include <react/common/mapbuffer/JReadableMapBuffer.h>
-#include <react/jni/ReadableNativeMap.h>
 #include <react/renderer/imagemanager/ImageRequest.h>
 #include <react/renderer/imagemanager/ImageRequestParams.h>
 #include <react/utils/ContextContainer.h>
-
-#include <utility>
+#include <memory>
+#include <unordered_map>
+#include <vector>
 
 namespace facebook::react {
 
 class ImageFetcher {
  public:
-  ImageFetcher(ContextContainer::Shared contextContainer)
-      : contextContainer_(std::move(contextContainer)) {}
+  ImageFetcher(std::shared_ptr<const ContextContainer> contextContainer);
+  ~ImageFetcher() = default;
+  ImageFetcher(const ImageFetcher &) = delete;
+  ImageFetcher &operator=(const ImageFetcher &) = delete;
+  ImageFetcher(ImageFetcher &&) = delete;
+  ImageFetcher &operator=(ImageFetcher &&) = delete;
 
   ImageRequest requestImage(
-      const ImageSource& imageSource,
-      const ImageRequestParams& imageRequestParams,
+      const ImageSource &imageSource,
       SurfaceId surfaceId,
-      Tag tag) const;
+      const ImageRequestParams &imageRequestParams,
+      Tag tag);
 
  private:
-  ContextContainer::Shared contextContainer_;
+  void flushImageRequests();
+
+  std::unordered_map<SurfaceId, std::vector<ImageRequestItem>> items_;
+  std::shared_ptr<const ContextContainer> contextContainer_;
 };
 } // namespace facebook::react

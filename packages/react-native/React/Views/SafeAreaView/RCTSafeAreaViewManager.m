@@ -8,6 +8,8 @@
 #if !TARGET_OS_OSX // [macOS]
 #import "RCTSafeAreaViewManager.h"
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import "RCTSafeAreaShadowView.h"
 #import "RCTSafeAreaView.h"
 #import "RCTUIManager.h"
@@ -27,4 +29,6 @@ RCT_EXPORT_MODULE()
 }
 
 @end
+#endif // RCT_REMOVE_LEGACY_ARCH
+
 #endif // [macOS]

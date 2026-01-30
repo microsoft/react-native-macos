@@ -24,11 +24,11 @@ RCTPlatformImage *RCTBlurredImageWithRadius(RCTPlatformImage *inputImage, CGFloa
   }
 
   // convert to ARGB if it isn't
-  if (CGImageGetBitsPerPixel(imageRef) != 32 || !((CGImageGetBitmapInfo(imageRef) & kCGBitmapAlphaInfoMask))) {
+  if (CGImageGetBitsPerPixel(imageRef) != 32 || (((CGImageGetBitmapInfo(imageRef) & kCGBitmapAlphaInfoMask)) == 0u)) {
     RCTUIGraphicsImageRendererFormat *const rendererFormat = [RCTUIGraphicsImageRendererFormat defaultFormat]; // [macOS]
     rendererFormat.scale = UIImageGetScale(inputImage); // [macOS]
     RCTUIGraphicsImageRenderer *const renderer = [[RCTUIGraphicsImageRenderer alloc] initWithSize:inputImage.size // [macOS]
-                                                                                           format:rendererFormat];
+                                                                                     format:rendererFormat];
 
     imageRef = [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull context) { // [macOS]
 #if !TARGET_OS_OSX // [macOS]
@@ -38,17 +38,19 @@ RCTPlatformImage *RCTBlurredImageWithRadius(RCTPlatformImage *inputImage, CGFloa
 #endif // macOS]
                }].CGImage;
   }
-  vImage_Buffer buffer1, buffer2;
+
+  vImage_Buffer buffer1;
+  vImage_Buffer buffer2;
   buffer1.width = buffer2.width = CGImageGetWidth(imageRef);
   buffer1.height = buffer2.height = CGImageGetHeight(imageRef);
   buffer1.rowBytes = buffer2.rowBytes = CGImageGetBytesPerRow(imageRef);
   size_t bytes = buffer1.rowBytes * buffer1.height;
   buffer1.data = malloc(bytes);
-  if (!buffer1.data) {
+  if (buffer1.data == nullptr) {
     return inputImage;
   }
   buffer2.data = malloc(bytes);
-  if (!buffer2.data) {
+  if (buffer2.data == nullptr) {
     free(buffer1.data);
     return inputImage;
   }
@@ -68,7 +70,7 @@ RCTPlatformImage *RCTBlurredImageWithRadius(RCTPlatformImage *inputImage, CGFloa
     return inputImage;
   }
   void *tempBuffer = malloc(tempBufferSize);
-  if (!tempBuffer) {
+  if (tempBuffer == nullptr) {
     free(buffer1.data);
     free(buffer2.data);
     return inputImage;

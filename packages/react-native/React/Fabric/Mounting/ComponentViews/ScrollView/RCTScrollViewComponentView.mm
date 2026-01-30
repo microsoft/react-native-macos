@@ -24,6 +24,7 @@
 #import "RCTCustomPullToRefreshViewProtocol.h"
 #import "RCTEnhancedScrollView.h"
 #import "RCTFabricComponentsPlugins.h"
+#import "RCTVirtualViewContainerState.h"
 
 using namespace facebook::react;
 
@@ -116,8 +117,20 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
 
   CGRect _prevFirstVisibleFrame;
   __weak RCTPlatformView *_firstVisibleView; // [macOS]
+  NSInteger _firstVisibleViewTag;
 
   CGFloat _endDraggingSensitivityMultiplier;
+
+  // A flag indicating that accessibility API is used.
+  // It is not restored to the default value in prepareForRecycle.
+  // Once an accessibility API is used, view culling will be disabled for the entire session.
+  BOOL _isAccessibilityAPIUsed;
+
+  // Flag to temporarily disable maintainVisibleContentPosition adjustments during immediate state updates
+  // to prevent conflicts between immediate content offset updates and visible content position logic
+  BOOL _avoidAdjustmentForMaintainVisibleContentPosition;
+
+  RCTVirtualViewContainerState *_virtualViewContainerState;
 }
 
 + (RCTScrollViewComponentView *_Nullable)findScrollViewComponentViewForView:(RCTPlatformView *)view // [macOS]
@@ -142,6 +155,7 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
     _isUserTriggeredScrolling = NO;
     _shouldUpdateContentInsetAdjustmentBehavior = YES;
     _automaticallyAdjustKeyboardInsets = NO;
+    _isAccessibilityAPIUsed = NO;
     [self addSubview:_scrollView];
 
     _containerView = [[RCTUIView alloc] initWithFrame:CGRectZero]; // [macOS]
@@ -151,7 +165,7 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
     _containerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [_scrollView setDocumentView:_containerView];
 #endif // macOS]
-    
+
 #if !TARGET_OS_OSX // [macOS]
     [self.scrollViewDelegateSplitter addDelegate:self];
 #endif // [macOS]
@@ -452,7 +466,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     _shouldUpdateContentInsetAdjustmentBehavior = NO;
   }
 #endif // [macOS]
-    
+
   MAP_SCROLL_VIEW_PROP(disableIntervalMomentum);
   MAP_SCROLL_VIEW_PROP(snapToInterval);
 
@@ -628,24 +642,74 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   return metrics;
 }
 
+/**
+ * When use of accessibility APIs is detected, view culling is disabled to make accessibility work correctly.
+ */
+- (void)_disableViewCullingIfNecessary
+{
+  if (!_isAccessibilityAPIUsed) {
+    _isAccessibilityAPIUsed = YES;
+    [self _updateStateWithContentOffset];
+  }
+}
+
+#if !TARGET_OS_OSX // [macOS]
+- (NSInteger)accessibilityElementCount
+{
+  // From empirical testing, method `accessibilityElementCount` is called lazily only
+  // when accessibility is used.
+  // Why we don't use UIAccessibilitySwitchControlStatusDidChangeNotification and
+  // UIAccessibilityVoiceOverStatusDidChangeNotification? The notifications are not called when using Accessibility
+  // Inspector. We anticipate developers will want to debug accessbility with Accessibility Inspector and don't want to
+  // break that developer workflow with view culling. Therefore, we are using API use detection to disable view culling
+  // instead of the notifications.
+  [self _disableViewCullingIfNecessary];
+  return [super accessibilityElementCount];
+}
+
+- (NSArray<id<UIFocusItem>> *)focusItemsInRect:(CGRect)rect
+{
+  // From empirical testing, method `focusItemsInRect:` is called lazily only
+  // when keyboard navigation is used.
+  [self _disableViewCullingIfNecessary];
+  return [super focusItemsInRect:rect];
+}
+#endif // macOS]
+
 - (void)_updateStateWithContentOffset
 {
   if (!_state) {
     return;
   }
 
+  BOOL enableImmediateUpdateModeForContentOffsetChanges =
+      ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges();
+
+  _avoidAdjustmentForMaintainVisibleContentPosition = enableImmediateUpdateModeForContentOffsetChanges;
+
   auto contentOffset = RCTPointFromCGPoint(_scrollView.contentOffset);
+  BOOL isAccessibilityAPIUsed = _isAccessibilityAPIUsed;
   _state->updateState(
-      [contentOffset](
+      [contentOffset, isAccessibilityAPIUsed](
           const ScrollViewShadowNode::ConcreteState::Data &oldData) -> ScrollViewShadowNode::ConcreteState::SharedData {
-        if (oldData.contentOffset == contentOffset) {
-          // avoid doing a state update if content offset didn't change.
+        if (oldData.contentOffset == contentOffset && oldData.disableViewCulling == isAccessibilityAPIUsed) {
+          // avoid doing a state update if content offset and use of accessibility didn't change.
           return nullptr;
         }
         auto newData = oldData;
         newData.contentOffset = contentOffset;
+#if !TARGET_OS_OSX // [macOS]
+        newData.disableViewCulling =
+            UIAccessibilityIsVoiceOverRunning() || UIAccessibilityIsSwitchControlRunning() || isAccessibilityAPIUsed;
+#else // [macOS
+        newData.disableViewCulling = isAccessibilityAPIUsed;
+#endif // macOS]
         return std::make_shared<const ScrollViewShadowNode::ConcreteState::Data>(newData);
-      });
+      },
+      enableImmediateUpdateModeForContentOffsetChanges ? EventQueue::UpdateMode::unstable_Immediate
+                                                       : EventQueue::UpdateMode::Asynchronous);
+
+  _avoidAdjustmentForMaintainVisibleContentPosition = NO;
 }
 
 - (void)prepareForRecycle
@@ -671,6 +735,8 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _contentView = nil;
   _prevFirstVisibleFrame = CGRectZero;
   _firstVisibleView = nil;
+  _firstVisibleViewTag = 0;
+  _virtualViewContainerState = nil;
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -952,6 +1018,10 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
 - (void)_remountChildrenIfNeeded
 {
+  if (ReactNativeFeatureFlags::enableViewCulling()) {
+    return;
+  }
+
   CGPoint contentOffset = _scrollView.contentOffset;
 
   if (std::abs(_contentOffsetWhenClipped.x - contentOffset.x) < kClippingLeeway &&
@@ -967,6 +1037,10 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)_remountChildren
 {
 #if !TARGET_OS_OSX // [macOS]
+  if (ReactNativeFeatureFlags::enableViewCulling()) {
+    return;
+  }
+
   [_scrollView updateClippedSubviewsWithClipRect:CGRectInset(_scrollView.bounds, -kClippingLeeway, -kClippingLeeway)
                                   relativeToView:_scrollView];
 #endif // [macOS]
@@ -1028,7 +1102,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)_prepareForMaintainVisibleScrollPosition
 {
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
-  if (!props.maintainVisibleContentPosition) {
+  if (!props.maintainVisibleContentPosition || _avoidAdjustmentForMaintainVisibleContentPosition) {
     return;
   }
 
@@ -1046,6 +1120,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     if (hasNewView || ii == _contentView.subviews.count - 1) {
       _prevFirstVisibleFrame = subview.frame;
       _firstVisibleView = subview;
+      _firstVisibleViewTag = subview.tag;
       break;
     }
   }
@@ -1054,8 +1129,15 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)_adjustForMaintainVisibleContentPosition
 {
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
-  if (!props.maintainVisibleContentPosition) {
+  if (!props.maintainVisibleContentPosition || _avoidAdjustmentForMaintainVisibleContentPosition) {
     return;
+  }
+
+  if (ReactNativeFeatureFlags::enableViewCulling()) {
+    // Abort if the first visible view has changed (different tag)
+    if (_firstVisibleView && _firstVisibleView.tag != _firstVisibleViewTag) {
+      return;
+    }
   }
 
   std::optional<int> autoscrollThreshold = props.maintainVisibleContentPosition.value().autoscrollToTopThreshold;
@@ -1089,6 +1171,16 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
       }
     }
   }
+}
+
+#pragma mark - RCTVirtualViewContainerProtocol
+
+- (RCTVirtualViewContainerState *)virtualViewContainerState
+{
+  if (!_virtualViewContainerState) {
+    _virtualViewContainerState = [[RCTVirtualViewContainerState alloc] initWithScrollView:self];
+  }
+  return _virtualViewContainerState;
 }
 
 @end

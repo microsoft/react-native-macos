@@ -23,9 +23,16 @@
 - (UIWindow *)alertWindow
 {
   if (_alertWindow == nil) {
-    _alertWindow = [[UIWindow alloc] initWithWindowScene:RCTKeyWindow().windowScene];
+    UIWindowScene *scene = RCTKeyWindow().windowScene;
+    if (scene != nil) {
+      _alertWindow = [[UIWindow alloc] initWithWindowScene:scene];
+#if !TARGET_OS_VISION // [visionOS]
+    } else {
+      _alertWindow = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+#endif // [visionOS]
+    }
 
-    if (_alertWindow) {
+    if (_alertWindow != nullptr) {
       _alertWindow.rootViewController = [UIViewController new];
       _alertWindow.windowLevel = UIWindowLevelAlert + 1;
     }
@@ -39,7 +46,7 @@
   UIUserInterfaceStyle style = self.overrideUserInterfaceStyle;
   if (style == UIUserInterfaceStyleUnspecified) {
     UIUserInterfaceStyle overriddenStyle = RCTKeyWindow().overrideUserInterfaceStyle;
-    style = overriddenStyle ? overriddenStyle : UIUserInterfaceStyleUnspecified;
+    style = (overriddenStyle != 0) ? overriddenStyle : UIUserInterfaceStyleUnspecified;
   }
 
   self.overrideUserInterfaceStyle = style;

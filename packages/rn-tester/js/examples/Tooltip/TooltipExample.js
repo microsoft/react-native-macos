@@ -10,6 +10,8 @@
 
 'use strict';
 
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+
 const React = require('react');
 const {
   Button,
@@ -94,4 +96,4 @@ exports.examples = [
       return <TextInput style={styles.textInput} tooltip={'Name'} />;
     },
   },
-];
+] as Array<RNTesterModuleExample>;

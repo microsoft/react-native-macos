@@ -13,6 +13,14 @@
 
 namespace facebook::react::jsinspector_modern::tracing {
 
+using ProcessId = uint64_t;
+using ThreadId = uint64_t;
+/**
+ * The ID for the JavaScript Sampling Profile. There can be multiple Profiles
+ * during a single session, in case RuntimeTarget is re-initialized.
+ */
+using RuntimeProfileId = uint16_t;
+
 /**
  * A trace event to send to the debugger frontend, as defined by the Trace Event
  * Format.
@@ -23,7 +31,7 @@ struct TraceEvent {
    * Optional. Serialized as a string, usually is hexadecimal number.
    * https://github.com/ChromeDevTools/devtools-frontend/blob/99a9104ae974f8caa63927e356800f6762cdbf25/front_end/models/trace/helpers/Trace.ts#L198-L201
    */
-  std::optional<uint32_t> id;
+  std::optional<uint32_t> id{};
 
   /** The name of the event, as displayed in the Trace Viewer. */
   std::string name;
@@ -44,11 +52,17 @@ struct TraceEvent {
   /** The tracing clock timestamp of the event, in microseconds (µs). */
   HighResTimeStamp ts;
 
-  /** The process ID for the process that output this event. */
-  uint64_t pid;
+  /** The ID for the process that output this event. */
+  ProcessId pid;
 
-  /** The thread ID for the process that output this event. */
-  uint64_t tid;
+  /**
+   * The scope of the event, either global (g), process (p), or thread (t).
+   * Only applicable to instant events ("ph": "i").
+   */
+  std::optional<char> s{};
+
+  /** The ID for the thread that output this event. */
+  ThreadId tid;
 
   /** Any arguments provided for the event. */
   folly::dynamic args = folly::dynamic::object();
@@ -57,7 +71,7 @@ struct TraceEvent {
    * The duration of the event, in microseconds (µs). Only applicable to
    * complete events ("ph": "X").
    */
-  std::optional<HighResDuration> dur;
+  std::optional<HighResDuration> dur{};
 };
 
 } // namespace facebook::react::jsinspector_modern::tracing

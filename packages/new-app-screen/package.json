@@ -1,7 +1,7 @@
 {
   "name": "@react-native/new-app-screen",
   "private": true,
-  "version": "0.81.0-main",
+  "version": "0.83.0-main",
   "description": "NewAppScreen component for React Native",
   "keywords": [
     "react-native"
@@ -30,6 +30,6 @@
     }
   },
   "engines": {
-    "node": ">= 22.14.0"
+    "node": ">= 20.19.4"
   }
 }

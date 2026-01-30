@@ -38,16 +38,14 @@ Pod::Spec.new do |s|
                                "HEADER_SEARCH_PATHS" => header_search_paths.join(' '),
                                "DEFINES_MODULE" => "YES" }
 
-  if ENV['USE_FRAMEWORKS']
-    s.module_name            = "React_microtasksnativemodule"
-    s.header_mappings_dir  = "../.."
-  end
+  resolve_use_frameworks(s, header_mappings_dir: "../..", module_name: "React_microtasksnativemodule")
 
   s.dependency "React-jsi"
   s.dependency "React-jsiexecutor"
 
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
+  add_rncore_dependency(s)
 
   s.dependency "ReactCommon/turbomodule/core"
   add_dependency(s, "React-RCTFBReactNativeSpec")

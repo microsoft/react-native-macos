@@ -7,6 +7,8 @@
 
 #import <React/RCTBaseTextInputView.h>
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
 #import <React/RCTEventDispatcherProtocol.h>
@@ -1211,3 +1213,5 @@ static BOOL findMismatch(NSString *first, NSString *second, NSRange *firstRange,
 #endif // macOS]
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_ARCH

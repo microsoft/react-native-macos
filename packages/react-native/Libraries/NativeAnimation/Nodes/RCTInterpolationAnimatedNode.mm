@@ -86,7 +86,7 @@ NSString *RCTInterpolateString(
 
 - (instancetype)initWithTag:(NSNumber *)tag config:(NSDictionary<NSString *, id> *)config
 {
-  if ((self = [super initWithTag:tag config:config])) {
+  if ((self = [super initWithTag:tag config:config]) != nullptr) {
     _inputRange = config[@"inputRange"];
 
     NSArray *outputRangeConfig = config[@"outputRange"];
@@ -104,7 +104,7 @@ NSString *RCTInterpolateString(
       switch (_outputType) {
         case RCTInterpolationOutputColor: {
           RCTUIColor *color = [RCTConvert UIColor:value]; // [macOS]
-          [outputRange addObject:color ? color : [RCTUIColor whiteColor]]; // [macOS]
+          [outputRange addObject:(color != nullptr) ? color : [RCTUIColor whiteColor]]; // [macOS]
           break;
         }
         case RCTInterpolationOutputString:
@@ -141,7 +141,7 @@ NSString *RCTInterpolateString(
 - (void)performUpdate
 {
   [super performUpdate];
-  if (!_parentNode) {
+  if (_parentNode == nullptr) {
     return;
   }
 

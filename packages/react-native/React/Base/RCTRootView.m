@@ -36,7 +36,7 @@
 
 NSString *const RCTContentDidAppearNotification = @"RCTContentDidAppearNotification";
 
-#ifndef RCT_FIT_RM_OLD_RUNTIME
+#ifndef RCT_REMOVE_LEGACY_ARCH
 
 @implementation RCTRootView {
   RCTBridge *_bridge;
@@ -531,7 +531,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
 @end
 
-#else // RCT_FIT_RM_OLD_RUNTIME
+#else // RCT_REMOVE_LEGACY_ARCH
 
 @implementation RCTRootView
 - (nonnull instancetype)initWithFrame:(CGRect)frame
@@ -559,4 +559,4 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
 @end
 
-#endif // RCT_FIT_RM_OLD_RUNTIME
+#endif // RCT_REMOVE_LEGACY_ARCH

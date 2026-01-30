@@ -17,8 +17,8 @@ import type {
 } from '../Types/CoreEventTypes';
 import type {KeyEvent} from '../Types/CoreEventTypes'; // [macOS]
 
+import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
 import SoundManager from '../Components/Sound/SoundManager';
-import ReactNativeFeatureFlags from '../ReactNative/ReactNativeFeatureFlags';
 import UIManager from '../ReactNative/UIManager';
 import {type RectOrSize, normalizeRect} from '../StyleSheet/Rect';
 import {type PointerEvent} from '../Types/CoreEventTypes';
@@ -593,9 +593,9 @@ export default class Pressability {
                 event.defaultPrevented !== true
               ) {
                 const {onPress, onPressIn} = this._config;
-                // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+                // $FlowFixMe[incompatible-type]: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
                 onPressIn && onPressIn(event);
-                // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+                // $FlowFixMe[incompatible-type]: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
                 onPress && onPress(event);
               }
             },
@@ -611,7 +611,7 @@ export default class Pressability {
                 event.defaultPrevented !== true
               ) {
                 const {onPressOut} = this._config;
-                // $FlowFixMe: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+                // $FlowFixMe[incompatible-type]: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
                 onPressOut && onPressOut(event);
               }
             },
