@@ -9,6 +9,7 @@
 
 #import <objc/runtime.h>
 #import <algorithm>
+#import <mutex> // [macOS]
 #import <vector>
 
 #import <React/RCTAssert.h>

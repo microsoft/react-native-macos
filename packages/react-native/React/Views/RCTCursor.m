@@ -8,6 +8,7 @@
 // [macOS]
 
 #import <Foundation/Foundation.h>
+#import <React/RCTUIKit.h>
 #import "RCTCursor.h"
 
 #if defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 150000 /* __MAC_15_0 */

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <react/renderer/graphics/Geometry.h>
+#include <react/renderer/graphics/Float.h> // [macOS]
 
 namespace facebook::react {
 
