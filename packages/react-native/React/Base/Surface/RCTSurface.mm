@@ -465,7 +465,7 @@
     // right after the semaphore signals.
 
     // Atomic variant of `_waitingForMountingStageOnMainQueue = YES;`
-    atomic_store(&_waitingForMountingStageOnMainQueue, 1); // [macOS]
+    atomic_store(&_waitingForMountingStageOnMainQueue, 1); // [macOS] C++23 compatibility
   }
 
   dispatch_semaphore_t semaphore;
@@ -488,7 +488,7 @@
   auto timeoutOccurred = dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, timeout * NSEC_PER_SEC));
 
   // Atomic equivalent of `_waitingForMountingStageOnMainQueue = NO;`.
-  atomic_store(&_waitingForMountingStageOnMainQueue, 0); // [macOS]
+  atomic_store(&_waitingForMountingStageOnMainQueue, 0); // [macOS] C++23 compatibility
 
   if (!timeoutOccurred) {
     // Balancing the semaphore.
@@ -546,7 +546,7 @@
 {
   if (atomic_load(&_waitingForMountingStageOnMainQueue) && (self.stage & RCTSurfaceStageSurfaceDidInitialLayout)) {
     // Atomic equivalent of `_waitingForMountingStageOnMainQueue = NO;`.
-    atomic_store(&_waitingForMountingStageOnMainQueue, 0); // [macOS]
+    atomic_store(&_waitingForMountingStageOnMainQueue, 0); // [macOS] C++23 compatibility
 
     {
       std::lock_guard<std::mutex> lock(_mutex);
