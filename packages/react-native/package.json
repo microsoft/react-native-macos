@@ -1,6 +1,6 @@
 {
   "name": "react-native-macos",
-  "version": "0.81.1",
+  "version": "0.81.2",
   "description": "React Native for macOS",
   "license": "MIT",
   "repository": {
@@ -166,7 +166,7 @@
   },
   "dependencies": {
     "@jest/create-cache-key-function": "^29.7.0",
-    "@react-native-macos/virtualized-lists": "0.81.1",
+    "@react-native-macos/virtualized-lists": "0.81.2",
     "@react-native/assets-registry": "0.81.5",
     "@react-native/codegen": "0.81.5",
     "@react-native/community-cli-plugin": "0.81.5",
