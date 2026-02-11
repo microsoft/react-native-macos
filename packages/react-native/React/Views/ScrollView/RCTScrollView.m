@@ -318,7 +318,7 @@
 @implementation RCTScrollView {
   id<RCTEventDispatcherProtocol> _eventDispatcher;
   CGRect _prevFirstVisibleFrame;
-  __weak RCTUIView *_firstVisibleView; // [macOS]
+  __weak RCTPlatformView *_firstVisibleView; // [macOS]
   RCTCustomScrollView *_scrollView;
 #if !TARGET_OS_OSX // [macOS]
   UIView *_contentView;
@@ -940,17 +940,15 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
   _scrollView.contentInset = UIEdgeInsetsMake(top, left, top, left);
 }
 
-#if !TARGET_OS_OSX // [macOS]
-- (void)addScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener
+- (void)addScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener // [macOS]
 {
   [_scrollListeners addObject:scrollListener];
 }
 
-- (void)removeScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener
+- (void)removeScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener // [macOS]
 {
   [_scrollListeners removeObject:scrollListener];
 }
-#endif // [macOS]
 
 - (void)scrollViewDidScroll:(RCTCustomScrollView *)scrollView // [macOS]
 {

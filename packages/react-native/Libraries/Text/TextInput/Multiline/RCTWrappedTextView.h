@@ -18,7 +18,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RCTWrappedTextView : RCTPlatformView <RCTBackedTextInputViewProtocol>
+@interface RCTWrappedTextView : RCTPlatformView <RCTBackedTextInputViewProtocol, RCTBackedTextInputDelegate, NSTextViewDelegate> // [macOS]
 
 @property (nonatomic, weak) id<RCTBackedTextInputDelegate> textInputDelegate;
 @property (assign) BOOL hideVerticalScrollIndicator;

@@ -442,6 +442,7 @@ RCT_CUSTOM_VIEW_PROPERTY(pointerEvents, RCTPointerEvents, RCTView)
       // Unspecified values do not.
       // This wouldn't override a container view's `userInteractionEnabled = NO`
       view.userInteractionEnabled = YES;
+      break; // [macOS]
     case RCTPointerEventsNone:
       view.userInteractionEnabled = NO;
       break;
