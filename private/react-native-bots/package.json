@@ -1,6 +1,6 @@
 {
   "name": "@react-native/bots",
-  "version": "0.81.5",
+  "version": "0.81.6",
   "license": "MIT",
   "engines": {
     "node": ">= 20.19.4"
