@@ -123,11 +123,13 @@ Pod::Spec.new do |s|
       sss.header_dir           = "react/renderer/components/view"
     end
 
-    ss.subspec "scrollview" do |sss|
-      sss.source_files         = podspec_sources("react/renderer/components/scrollview/**/*.{m,mm,cpp,h}", "react/renderer/components/scrollview/**/*.{h}")
-      sss.header_dir           = "react/renderer/components/scrollview"
-      sss.exclude_files        = "react/renderer/components/scrollview/tests", "react/renderer/components/scrollview/platform/android"
-    end
+    # [macOS This subspec seems to be a duplicate of the same component in React-FabricComponents, leading to duplicate symbol errors internally.
+    # ss.subspec "scrollview" do |sss|
+    #   sss.source_files         = podspec_sources("react/renderer/components/scrollview/**/*.{m,mm,cpp,h}", "react/renderer/components/scrollview/**/*.{h}")
+    #   sss.header_dir           = "react/renderer/components/scrollview"
+    #   sss.exclude_files        = "react/renderer/components/scrollview/tests", "react/renderer/components/scrollview/platform/android"
+    # end
+    # macOS]
 
     ss.subspec "legacyviewmanagerinterop" do |sss|
       sss.source_files         = podspec_sources("react/renderer/components/legacyviewmanagerinterop/**/*.{m,mm,cpp,h}", "react/renderer/components/legacyviewmanagerinterop/**/*.{h}")
