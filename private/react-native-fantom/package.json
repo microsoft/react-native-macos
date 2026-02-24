@@ -1,6 +1,6 @@
 {
   "name": "@react-native/fantom",
-  "version": "0.81.5",
+  "version": "0.81.6",
   "main": "src/index.js",
   "description": "Internal integration testing and benchmarking tool for React Native",
   "scripts": {
