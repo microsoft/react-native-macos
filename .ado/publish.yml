@@ -38,7 +38,8 @@ extends:
       os: windows
     sdl:
       componentgovernance:
-        ignoreDirectories: $(Build.SourcesDirectory)/packages/helloworld
+        # Justification: helloworld is a test app, we don't publish docsite on stable branches
+        ignoreDirectories: $(Build.SourcesDirectory)/packages/helloworld,$(Build.SourcesDirectory)/docsite
       credscan:
         suppressionsFile: .ado/CredScanSuppressions.json
       eslint:
