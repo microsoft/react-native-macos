@@ -13,6 +13,7 @@
 #endif // [macOS]
 #if TARGET_OS_OSX // [macOS
 #import <QuartzCore/CAShapeLayer.h>
+#import <React/RCTTouchHandler.h>
 #endif // macOS]
 
 #import <React/RCTViewAccessibilityElement.h>
@@ -38,8 +39,27 @@ using namespace facebook::react;
 @property (nonatomic) ParagraphShadowNode::ConcreteState::Shared state;
 @property (nonatomic) ParagraphAttributes paragraphAttributes;
 @property (nonatomic) LayoutMetrics layoutMetrics;
+#if TARGET_OS_OSX // [macOS
+@property (nonatomic) BOOL drawingDisabled;
+#endif // macOS]
 
 @end
+
+#if TARGET_OS_OSX // [macOS
+// Prevent this NSTextView from participating in the key view loop directly.
+// The parent RCTParagraphComponentView manages focus instead.
+@interface RCTParagraphSelectionTextView : NSTextView
+@end
+
+@implementation RCTParagraphSelectionTextView
+
+- (BOOL)canBecomeKeyView
+{
+  return NO;
+}
+
+@end
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
@@ -48,7 +68,7 @@ using namespace facebook::react;
 
 @end
 #else // [macOS
-@interface RCTParagraphComponentView ()
+@interface RCTParagraphComponentView () <NSTextViewDelegate>
 @end
 #endif // [macOS]
 
@@ -57,7 +77,9 @@ using namespace facebook::react;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
 #if !TARGET_OS_OSX // [macOS]
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
-#endif // [macOS]
+#else // [macOS
+  NSTextView *_selectableTextView;
+#endif // macOS]
   RCTParagraphTextView *_textView;
 }
 
@@ -127,7 +149,13 @@ using namespace facebook::react;
     } else {
       [self disableContextMenu];
     }
-#endif // [macOS]
+#else // [macOS
+    if (newParagraphProps.isSelectable) {
+      [self _enableSelection];
+    } else {
+      [self _disableSelection];
+    }
+#endif // macOS]
   }
 
   [super updateProps:props oldProps:oldProps];
@@ -138,6 +166,10 @@ using namespace facebook::react;
   _textView.state = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state);
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
+
+#if TARGET_OS_OSX // [macOS
+  [self _updateSelectableTextViewIfNeeded];
+#endif // macOS]
 }
 
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
@@ -156,6 +188,9 @@ using namespace facebook::react;
   [super prepareForRecycle];
   _textView.state = nullptr;
   _accessibilityProvider = nil;
+#if TARGET_OS_OSX // [macOS
+  [self _disableSelection];
+#endif // macOS]
 }
 
 - (void)layoutSubviews
@@ -163,6 +198,13 @@ using namespace facebook::react;
   [super layoutSubviews];
 
   _textView.frame = self.bounds;
+
+#if TARGET_OS_OSX // [macOS
+  if (_selectableTextView) {
+    CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+    _selectableTextView.frame = frame;
+  }
+#endif // macOS]
 }
 
 #pragma mark - Accessibility
@@ -397,6 +439,182 @@ using namespace facebook::react;
 #endif // macOS]
 }
 
+#pragma mark - macOS Selection Support
+
+#if TARGET_OS_OSX // [macOS
+
+- (void)_enableSelection
+{
+  if (_selectableTextView) {
+    return;
+  }
+
+  CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+  _selectableTextView = [[RCTParagraphSelectionTextView alloc] initWithFrame:frame];
+  _selectableTextView.delegate = self;
+  _selectableTextView.usesFontPanel = NO;
+  _selectableTextView.drawsBackground = NO;
+  _selectableTextView.editable = NO;
+  _selectableTextView.selectable = YES;
+  _selectableTextView.verticallyResizable = NO;
+  _selectableTextView.layoutManager.usesFontLeading = NO;
+
+  // Disable the NSTextView's own drawing — RCTParagraphTextView handles rendering.
+  // The NSTextView is only used for selection and cursor management.
+  _selectableTextView.textContainerInset = NSZeroSize;
+  _selectableTextView.textContainer.lineFragmentPadding = 0.0;
+
+  [self addSubview:_selectableTextView];
+
+  [self _updateSelectableTextViewIfNeeded];
+  self.focusable = YES;
+}
+
+- (void)_disableSelection
+{
+  if (!_selectableTextView) {
+    return;
+  }
+
+  [_selectableTextView removeFromSuperview];
+  _selectableTextView = nil;
+  _textView.drawingDisabled = NO;
+  [_textView setNeedsDisplay];
+}
+
+- (void)_updateSelectableTextViewIfNeeded
+{
+  if (!_selectableTextView || !_textView.state) {
+    return;
+  }
+
+  const auto &stateData = _textView.state->getData();
+  auto textLayoutManager = stateData.layoutManager.lock();
+  if (!textLayoutManager) {
+    return;
+  }
+
+  RCTTextLayoutManager *nativeTextLayoutManager =
+      (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
+  CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+
+  NSTextStorage *textStorage = [nativeTextLayoutManager getTextStorageForAttributedString:stateData.attributedString
+                                                                      paragraphAttributes:_paragraphAttributes
+                                                                                     size:frame.size];
+
+  // Replace the text container so the NSTextView uses the same layout as our rendering.
+  NSLayoutManager *layoutManager = textStorage.layoutManagers.firstObject;
+  NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+  [_selectableTextView replaceTextContainer:textContainer];
+
+  // Sync the text content into the NSTextView's own text storage.
+  _selectableTextView.textStorage.attributedString = textStorage;
+
+  _selectableTextView.minSize = frame.size;
+  _selectableTextView.maxSize = frame.size;
+  _selectableTextView.frame = frame;
+
+  // Now that the NSTextView handles rendering, disable RCTParagraphTextView drawing.
+  _textView.drawingDisabled = YES;
+  [_textView setNeedsDisplay];
+}
+
+#pragma mark - macOS Mouse Event Handling
+
+- (NSView *)hitTest:(NSPoint)point
+{
+  NSView *hitView = [super hitTest:point];
+
+  if (!_selectableTextView) {
+    return hitView;
+  }
+
+  // Intercept clicks on the NSTextView so we can manage selection ourselves,
+  // preventing it from swallowing events that may be handled in JS (e.g. onPress).
+  NSEventType eventType = NSApp.currentEvent.type;
+  BOOL isMouseClickEvent = NSEvent.pressedMouseButtons > 0;
+  BOOL isMouseMoveEventType = eventType == NSEventTypeMouseMoved ||
+      eventType == NSEventTypeMouseEntered ||
+      eventType == NSEventTypeMouseExited ||
+      eventType == NSEventTypeCursorUpdate;
+  BOOL isMouseMoveEvent = !isMouseClickEvent && isMouseMoveEventType;
+  BOOL isTextViewClick = (hitView && hitView == _selectableTextView) && !isMouseMoveEvent;
+
+  return isTextViewClick ? self : hitView;
+}
+
+- (void)rightMouseDown:(NSEvent *)event
+{
+  if (!_selectableTextView) {
+    [super rightMouseDown:event];
+    return;
+  }
+
+  [[RCTTouchHandler touchHandlerForView:self] cancelTouchWithEvent:event];
+  [_selectableTextView rightMouseDown:event];
+}
+
+- (void)mouseDown:(NSEvent *)event
+{
+  if (!_selectableTextView) {
+    [super mouseDown:event];
+    return;
+  }
+
+  // Double/triple-clicks should be forwarded to the NSTextView for word/line selection.
+  BOOL shouldForward = event.clickCount > 1;
+
+  if (!shouldForward) {
+    // Peek at next event to know if a drag (selection) is beginning.
+    NSEvent *nextEvent = [self.window nextEventMatchingMask:NSEventMaskLeftMouseUp | NSEventMaskLeftMouseDragged
+                                                  untilDate:[NSDate distantFuture]
+                                                     inMode:NSEventTrackingRunLoopMode
+                                                    dequeue:NO];
+    shouldForward = nextEvent.type == NSEventTypeLeftMouseDragged;
+  }
+
+  if (shouldForward) {
+    NSView *contentView = self.window.contentView;
+    NSPoint point = [contentView.superview convertPoint:event.locationInWindow fromView:nil];
+
+    if ([contentView hitTest:point] == self) {
+      [[RCTTouchHandler touchHandlerForView:self] cancelTouchWithEvent:event];
+      [self.window makeFirstResponder:_selectableTextView];
+      [_selectableTextView mouseDown:event];
+    }
+  } else {
+    // Clear selection for single clicks.
+    _selectableTextView.selectedRange = NSMakeRange(NSNotFound, 0);
+  }
+}
+
+#pragma mark - NSTextViewDelegate
+
+- (void)textDidEndEditing:(NSNotification *)notification
+{
+  _selectableTextView.selectedRange = NSMakeRange(NSNotFound, 0);
+}
+
+#pragma mark - macOS Responder Chain
+
+- (BOOL)acceptsFirstResponder
+{
+  const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
+  return paragraphProps.isSelectable || [super acceptsFirstResponder];
+}
+
+- (BOOL)resignFirstResponder
+{
+  // Don't relinquish first responder while selecting text.
+  if (_selectableTextView && NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
+    return NO;
+  }
+
+  return [super resignFirstResponder];
+}
+
+#endif // macOS]
+
 @end
 
 Class<RCTComponentViewProtocol> RCTParagraphCls(void)
@@ -418,6 +636,14 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
   if (!_state) {
     return;
   }
+
+#if TARGET_OS_OSX // [macOS
+  // When an NSTextView is handling rendering for selection support,
+  // skip drawing here to avoid double-rendering.
+  if (_drawingDisabled) {
+    return;
+  }
+#endif // macOS]
 
   const auto &stateData = _state->getData();
   auto textLayoutManager = stateData.layoutManager.lock();
