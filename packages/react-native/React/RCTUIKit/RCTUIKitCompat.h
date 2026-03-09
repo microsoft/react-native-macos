@@ -12,45 +12,47 @@
 #include <TargetConditionals.h>
 
 #if !TARGET_OS_OSX
-
 #import <UIKit/UIKit.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-// UIView
-#define RCTPlatformView UIView
-#define RCTUIView UIView
-#define RCTUIScrollView UIScrollView
-#define RCTUIScrollViewDelegate UIScrollViewDelegate
-#define RCTPlatformImage UIImage
-#define RCTUIImage UIImage
-#define RCTUIPanGestureRecognizer UIPanGestureRecognizer
-
-// UIColor.h
-#define RCTUIColor UIColor
-
-NS_ASSUME_NONNULL_END
-
-#else // TARGET_OS_OSX [
-
+#else
 #import <AppKit/AppKit.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define RCTPlatformImage NSImage
+// MARK: - Color
 
-//
-// semantically equivalent constants
-//
+#if !TARGET_OS_OSX
+#define RCTPlatformColor UIColor
+#else
+#define RCTPlatformColor NSColor
+#endif
 
-// UIApplication.h/NSApplication.h
+// Backward compatibility
+#define RCTUIColor RCTPlatformColor
+
+// MARK: - Event types
+
+#if TARGET_OS_OSX
+#define UIEvent NSEvent
+#define UITouchType NSTouchType
+#define UIEventButtonMask NSEventButtonMask
+#define UIKeyModifierFlags NSEventModifierFlags
+#endif
+
+// MARK: - Application notifications
+
+#if TARGET_OS_OSX
 #define UIApplicationDidBecomeActiveNotification      NSApplicationDidBecomeActiveNotification
 #define UIApplicationDidEnterBackgroundNotification   NSApplicationDidHideNotification
 #define UIApplicationDidFinishLaunchingNotification   NSApplicationDidFinishLaunchingNotification
 #define UIApplicationWillResignActiveNotification     NSApplicationWillResignActiveNotification
-#define UIApplicationWillEnterForegroundNotification  NSApplicationWillUnhideNotification  
+#define UIApplicationWillEnterForegroundNotification  NSApplicationWillUnhideNotification
+#endif
 
-// UIFontDescriptor.h/NSFontDescriptor.h
+// MARK: - Font constants
+
+#if TARGET_OS_OSX
+
 #define UIFontDescriptorFamilyAttribute          NSFontFamilyAttribute;
 #define UIFontDescriptorNameAttribute            NSFontNameAttribute;
 #define UIFontDescriptorFaceAttribute            NSFontFaceAttribute;
@@ -80,88 +82,17 @@ NS_ASSUME_NONNULL_BEGIN
 #define UIFontDescriptorSystemDesignRounded      NSFontDescriptorSystemDesignRounded
 #define UIFontDescriptorSystemDesignMonospaced   NSFontDescriptorSystemDesignMonospaced
 
+#endif // TARGET_OS_OSX
 
-// RCTActivityIndicatorView.h
-#define UIActivityIndicatorView NSProgressIndicator
+// MARK: - Font type compatibility
 
+#if TARGET_OS_OSX
 
-// UIGeometry.h/NSGeometry.h
-#define UIEdgeInsetsZero NSEdgeInsetsZero
-
-// UIView.h/NSLayoutConstraint.h
-#define UIViewNoIntrinsicMetric -1
-// NSViewNoIntrinsicMetric is defined to -1 but is only available on macOS 10.11 and higher.  On previous versions it was NSViewNoInstrinsicMetric (misspelled) and also defined to -1.
-
-// UIInterface.h/NSUserInterfaceLayout.h
-#define UIUserInterfaceLayoutDirection NSUserInterfaceLayoutDirection
-
-//
-// semantically equivalent enums
-//
-
-// UIGestureRecognizer.h/NSGestureRecognizer.h
-enum
-{
-  UIGestureRecognizerStatePossible    = NSGestureRecognizerStatePossible,
-  UIGestureRecognizerStateBegan       = NSGestureRecognizerStateBegan,
-  UIGestureRecognizerStateChanged     = NSGestureRecognizerStateChanged,
-  UIGestureRecognizerStateEnded       = NSGestureRecognizerStateEnded,
-  UIGestureRecognizerStateCancelled   = NSGestureRecognizerStateCancelled,
-  UIGestureRecognizerStateFailed      = NSGestureRecognizerStateFailed,
-  UIGestureRecognizerStateRecognized  = NSGestureRecognizerStateRecognized,
-};
-
-// UIFontDescriptor.h/NSFontDescriptor.h
-enum
-{
-  UIFontDescriptorTraitItalic    = NSFontItalicTrait,
-  UIFontDescriptorTraitBold      = NSFontBoldTrait,
-  UIFontDescriptorTraitCondensed = NSFontCondensedTrait,
-};
-
-// UIView.h/NSView.h
-enum : NSUInteger
-{
-  UIViewAutoresizingNone                 = NSViewNotSizable,
-  UIViewAutoresizingFlexibleLeftMargin   = NSViewMinXMargin,
-  UIViewAutoresizingFlexibleWidth        = NSViewWidthSizable,
-  UIViewAutoresizingFlexibleRightMargin  = NSViewMaxXMargin,
-  UIViewAutoresizingFlexibleTopMargin    = NSViewMinYMargin,
-  UIViewAutoresizingFlexibleHeight       = NSViewHeightSizable,
-  UIViewAutoresizingFlexibleBottomMargin = NSViewMaxYMargin,
-};
-
-// UIView/NSView.h
-typedef NS_ENUM(NSInteger, UIViewContentMode) {
-  UIViewContentModeScaleAspectFill = NSViewLayerContentsPlacementScaleProportionallyToFill,
-  UIViewContentModeScaleAspectFit  = NSViewLayerContentsPlacementScaleProportionallyToFit,
-  UIViewContentModeScaleToFill     = NSViewLayerContentsPlacementScaleAxesIndependently,
-  UIViewContentModeCenter          = NSViewLayerContentsPlacementCenter,
-  UIViewContentModeTopLeft         = NSViewLayerContentsPlacementTopLeft,
-};
-
-// UIInterface.h/NSUserInterfaceLayout.h
-enum : NSInteger
-{
-	UIUserInterfaceLayoutDirectionLeftToRight = NSUserInterfaceLayoutDirectionLeftToRight,
-	UIUserInterfaceLayoutDirectionRightToLeft = NSUserInterfaceLayoutDirectionRightToLeft,
-};
-
-// RCTActivityIndicatorView.h
-typedef NS_ENUM(NSInteger, UIActivityIndicatorViewStyle) {
-  UIActivityIndicatorViewStyleLarge,
-  UIActivityIndicatorViewStyleMedium,
-};
-
-// UIColor.h/NSColor.h
-#define RCTUIColor NSColor
-
-// UIFont.h/NSFont.h
-// Both NSFont and UIFont are toll-free bridged to CTFontRef so we'll assume they're semantically equivalent
+// Both NSFont and UIFont are toll-free bridged to CTFontRef
 @compatibility_alias UIFont NSFont;
-
-// UIViewController.h/NSViewController.h
-@compatibility_alias UIViewController NSViewController;
+@compatibility_alias UIFontDescriptor NSFontDescriptor;
+typedef NSFontSymbolicTraits UIFontDescriptorSymbolicTraits;
+typedef NSFontWeight UIFontWeight;
 
 NS_INLINE NSFont *UIFontWithSize(NSFont *font, CGFloat pointSize)
 {
@@ -173,13 +104,19 @@ NS_INLINE CGFloat UIFontLineHeight(NSFont *font)
   return ceilf(font.ascender + ABS(font.descender) + font.leading);
 }
 
-// UIFontDescriptor.h/NSFontDescriptor.h
-// Both NSFontDescriptor and UIFontDescriptor are toll-free bridged to CTFontDescriptorRef so we'll assume they're semantically equivalent
-@compatibility_alias UIFontDescriptor NSFontDescriptor;
-typedef NSFontSymbolicTraits UIFontDescriptorSymbolicTraits;
-typedef NSFontWeight UIFontWeight;
+#endif // TARGET_OS_OSX
 
-// UIGeometry.h/NSGeometry.h
+// MARK: - View controller
+
+#if TARGET_OS_OSX
+@compatibility_alias UIViewController NSViewController;
+#endif
+
+// MARK: - Geometry
+
+#if TARGET_OS_OSX
+
+#define UIEdgeInsetsZero NSEdgeInsetsZero
 typedef NSEdgeInsets UIEdgeInsets;
 
 NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat bottom, CGFloat right)
@@ -187,39 +124,103 @@ NS_INLINE NSEdgeInsets UIEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat botto
   return NSEdgeInsetsMake(top, left, bottom, right);
 }
 
-//
-// functionally equivalent types
-//
+#endif // TARGET_OS_OSX
 
-// These types have the same purpose but may differ semantically. Use with care!
+// MARK: - Misc constants
 
-#define UIEvent NSEvent
-#define UITouchType NSTouchType
-#define UIEventButtonMask NSEventButtonMask
-#define UIKeyModifierFlags NSEventModifierFlags
+#if TARGET_OS_OSX
+#define UIActivityIndicatorView NSProgressIndicator
+#define UIViewNoIntrinsicMetric -1
+#define UIUserInterfaceLayoutDirection NSUserInterfaceLayoutDirection
+#endif
 
-// UIGestureRecognizer
-#define UIGestureRecognizer NSGestureRecognizer
-#define UIGestureRecognizerDelegate NSGestureRecognizerDelegate
-#define RCTUIPanGestureRecognizer NSPanGestureRecognizer
+// MARK: - Enums
 
-// UIApplication
-#define UIApplication NSApplication
+#if TARGET_OS_OSX
 
-NS_ASSUME_NONNULL_END
+// UIGestureRecognizer states
+enum
+{
+  UIGestureRecognizerStatePossible    = NSGestureRecognizerStatePossible,
+  UIGestureRecognizerStateBegan       = NSGestureRecognizerStateBegan,
+  UIGestureRecognizerStateChanged     = NSGestureRecognizerStateChanged,
+  UIGestureRecognizerStateEnded       = NSGestureRecognizerStateEnded,
+  UIGestureRecognizerStateCancelled   = NSGestureRecognizerStateCancelled,
+  UIGestureRecognizerStateFailed      = NSGestureRecognizerStateFailed,
+  UIGestureRecognizerStateRecognized  = NSGestureRecognizerStateRecognized,
+};
 
-#endif // ] TARGET_OS_OSX
+// UIFontDescriptor symbolic traits
+enum
+{
+  UIFontDescriptorTraitItalic    = NSFontItalicTrait,
+  UIFontDescriptorTraitBold      = NSFontBoldTrait,
+  UIFontDescriptorTraitCondensed = NSFontCondensedTrait,
+};
 
-//
-// Cross-platform typedefs
-//
+// UIView autoresizing
+enum : NSUInteger
+{
+  UIViewAutoresizingNone                 = NSViewNotSizable,
+  UIViewAutoresizingFlexibleLeftMargin   = NSViewMinXMargin,
+  UIViewAutoresizingFlexibleWidth        = NSViewWidthSizable,
+  UIViewAutoresizingFlexibleRightMargin  = NSViewMaxXMargin,
+  UIViewAutoresizingFlexibleTopMargin    = NSViewMinYMargin,
+  UIViewAutoresizingFlexibleHeight       = NSViewHeightSizable,
+  UIViewAutoresizingFlexibleBottomMargin = NSViewMaxYMargin,
+};
+
+// UIViewContentMode
+typedef NS_ENUM(NSInteger, UIViewContentMode) {
+  UIViewContentModeScaleAspectFill = NSViewLayerContentsPlacementScaleProportionallyToFill,
+  UIViewContentModeScaleAspectFit  = NSViewLayerContentsPlacementScaleProportionallyToFit,
+  UIViewContentModeScaleToFill     = NSViewLayerContentsPlacementScaleAxesIndependently,
+  UIViewContentModeCenter          = NSViewLayerContentsPlacementCenter,
+  UIViewContentModeTopLeft         = NSViewLayerContentsPlacementTopLeft,
+};
+
+// UIUserInterfaceLayoutDirection
+enum : NSInteger
+{
+	UIUserInterfaceLayoutDirectionLeftToRight = NSUserInterfaceLayoutDirectionLeftToRight,
+	UIUserInterfaceLayoutDirectionRightToLeft = NSUserInterfaceLayoutDirectionRightToLeft,
+};
+
+// UIActivityIndicatorViewStyle
+typedef NS_ENUM(NSInteger, UIActivityIndicatorViewStyle) {
+  UIActivityIndicatorViewStyleLarge,
+  UIActivityIndicatorViewStyleMedium,
+};
+
+#endif // TARGET_OS_OSX
+
+// MARK: - Gesture recognizer
 
 #if !TARGET_OS_OSX
-typedef UIApplication RCTUIApplication;
+#define RCTPlatformPanGestureRecognizer UIPanGestureRecognizer
+#else
+#define UIGestureRecognizer NSGestureRecognizer
+#define UIGestureRecognizerDelegate NSGestureRecognizerDelegate
+#define RCTPlatformPanGestureRecognizer NSPanGestureRecognizer
+#define UIApplication NSApplication
+#endif
+
+// Backward compatibility
+#define RCTUIPanGestureRecognizer RCTPlatformPanGestureRecognizer
+
+// MARK: - Cross-platform typedefs
+
+#if !TARGET_OS_OSX
+typedef UIApplication RCTPlatformApplication;
 typedef UIWindow RCTPlatformWindow;
 typedef UIViewController RCTPlatformViewController;
 #else
-typedef NSApplication RCTUIApplication;
+typedef NSApplication RCTPlatformApplication;
 typedef NSWindow RCTPlatformWindow;
 typedef NSViewController RCTPlatformViewController;
 #endif
+
+// Backward compatibility
+#define RCTUIApplication RCTPlatformApplication
+
+NS_ASSUME_NONNULL_END

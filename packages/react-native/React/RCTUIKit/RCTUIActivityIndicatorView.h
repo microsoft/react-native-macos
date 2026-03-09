@@ -20,7 +20,7 @@ typedef UIActivityIndicatorView RCTUIActivityIndicatorView;
 NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UIActivityIndicatorViewStyle activityIndicatorViewStyle;
 @property (nonatomic, assign) BOOL hidesWhenStopped;
-@property (nullable, readwrite, nonatomic, strong) RCTUIColor *color;
+@property (nullable, readwrite, nonatomic, strong) RCTPlatformColor *color;
 @property (nonatomic, readonly, getter=isAnimating) BOOL animating;
 
 - (void)startAnimating;

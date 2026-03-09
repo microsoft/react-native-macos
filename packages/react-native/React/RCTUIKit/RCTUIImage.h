@@ -14,38 +14,19 @@
 #import <React/RCTUIKitCompat.h>
 
 #if !TARGET_OS_OSX
-
 #import <UIKit/UIKit.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-UIKIT_STATIC_INLINE CGFloat UIImageGetScale(UIImage *image)
-{
-  return image.scale;
-}
-
-UIKIT_STATIC_INLINE CGImageRef UIImageGetCGImageRef(UIImage *image)
-{
-	return image.CGImage;
-}
-
-UIKIT_STATIC_INLINE UIImage *UIImageWithContentsOfFile(NSString *filePath)
-{
-  return [UIImage imageWithContentsOfFile:filePath];
-}
-
-UIKIT_STATIC_INLINE UIImage *UIImageWithData(NSData *imageData)
-{
-  return [UIImage imageWithData:imageData];
-}
-
-NS_ASSUME_NONNULL_END
-
-#else // TARGET_OS_OSX [
-
+#define RCTPlatformImage UIImage
+#define RCTUIImage UIImage
+#else
 #import <AppKit/AppKit.h>
+#define RCTPlatformImage NSImage
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
+
+// MARK: - RCTUIImage class (macOS only)
+
+#if TARGET_OS_OSX
 
 /**
  * An NSImage subclass that caches its CGImage representation.
@@ -71,6 +52,24 @@ typedef NS_ENUM(NSInteger, UIImageRenderingMode) {
     UIImageRenderingModeAlwaysTemplate,
 };
 
+#endif // TARGET_OS_OSX
+
+// MARK: - Image helper functions
+
+#if !TARGET_OS_OSX
+
+UIKIT_STATIC_INLINE CGFloat UIImageGetScale(UIImage *image)
+{
+  return image.scale;
+}
+
+UIKIT_STATIC_INLINE CGImageRef UIImageGetCGImageRef(UIImage *image)
+{
+	return image.CGImage;
+}
+
+#else // TARGET_OS_OSX
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -82,6 +81,24 @@ CGImageRef __nullable UIImageGetCGImageRef(NSImage *image);
 }
 #endif
 
+#endif
+
+// MARK: - Image creation helpers
+
+#if !TARGET_OS_OSX
+
+UIKIT_STATIC_INLINE UIImage *UIImageWithContentsOfFile(NSString *filePath)
+{
+  return [UIImage imageWithContentsOfFile:filePath];
+}
+
+UIKIT_STATIC_INLINE UIImage *UIImageWithData(NSData *imageData)
+{
+  return [UIImage imageWithData:imageData];
+}
+
+#else // TARGET_OS_OSX
+
 NS_INLINE NSImage *UIImageWithContentsOfFile(NSString *filePath)
 {
   return [[NSImage alloc] initWithContentsOfFile:filePath];
@@ -92,9 +109,13 @@ NS_INLINE NSImage *UIImageWithData(NSData *imageData)
   return [[NSImage alloc] initWithData:imageData];
 }
 
+#endif
+
+// MARK: - Image encoding (macOS only)
+
+#if TARGET_OS_OSX
 NSData *UIImagePNGRepresentation(NSImage *image);
 NSData *UIImageJPEGRepresentation(NSImage *image, CGFloat compressionQuality);
+#endif
 
 NS_ASSUME_NONNULL_END
-
-#endif // ] TARGET_OS_OSX

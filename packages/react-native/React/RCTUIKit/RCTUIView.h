@@ -14,35 +14,22 @@
 #import <React/RCTUIKitCompat.h>
 
 #if !TARGET_OS_OSX
-
 #import <UIKit/UIKit.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
-{
-  return [view hitTest:point withEvent:event];
-}
-
-UIKIT_STATIC_INLINE void RCTUIViewSetContentModeRedraw(UIView *view)
-{
-  view.contentMode = UIViewContentModeRedraw;
-}
-
-UIKIT_STATIC_INLINE BOOL RCTUIViewIsDescendantOfView(RCTPlatformView *view, RCTPlatformView *parent)
-{
-  return [view isDescendantOfView:parent];
-}
-
-NS_ASSUME_NONNULL_END
-
-#else // TARGET_OS_OSX [
-
+#else
 #import <AppKit/AppKit.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
-// UIView
+// MARK: - RCTPlatformView / RCTUIView
+
+#if !TARGET_OS_OSX
+
+#define RCTPlatformView UIView
+#define RCTUIView UIView
+
+#else // TARGET_OS_OSX
+
 #define RCTPlatformView NSView
 
 @interface RCTUIView : RCTPlatformView
@@ -97,6 +84,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+#endif // TARGET_OS_OSX
+
+// MARK: - View utility functions
+
+#if !TARGET_OS_OSX
+
+UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
+{
+  return [view hitTest:point withEvent:event];
+}
+
+UIKIT_STATIC_INLINE void RCTUIViewSetContentModeRedraw(UIView *view)
+{
+  view.contentMode = UIViewContentModeRedraw;
+}
+
+UIKIT_STATIC_INLINE BOOL RCTUIViewIsDescendantOfView(RCTPlatformView *view, RCTPlatformView *parent)
+{
+  return [view isDescendantOfView:parent];
+}
+
+#else // TARGET_OS_OSX
 
 NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
 {
@@ -116,6 +125,6 @@ NS_INLINE BOOL RCTUIViewIsDescendantOfView(RCTPlatformView *view, RCTPlatformVie
   return [view isDescendantOf:parent];
 }
 
-NS_ASSUME_NONNULL_END
+#endif
 
-#endif // ] TARGET_OS_OSX
+NS_ASSUME_NONNULL_END

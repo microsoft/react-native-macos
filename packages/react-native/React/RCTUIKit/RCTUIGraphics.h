@@ -12,10 +12,34 @@
 #include <TargetConditionals.h>
 
 #if !TARGET_OS_OSX
-
 #import <UIKit/UIKit.h>
+#else
+#import <AppKit/AppKit.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
+
+// MARK: - UIGraphicsGetCurrentContext
+
+#if TARGET_OS_OSX
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+CGContextRef UIGraphicsGetCurrentContext(void);
+
+#ifdef __cplusplus
+}
+#endif
+#endif // TARGET_OS_OSX
+
+// MARK: - UIBezierPath helpers
+
+#if TARGET_OS_OSX
+@compatibility_alias UIBezierPath NSBezierPath;
+#endif
+
+#if !TARGET_OS_OSX
 
 UIKIT_STATIC_INLINE UIBezierPath *UIBezierPathWithRoundedRect(CGRect rect, CGFloat cornerRadius)
 {
@@ -27,32 +51,12 @@ UIKIT_STATIC_INLINE void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath
   [path appendPath:appendPath];
 }
 
-NS_ASSUME_NONNULL_END
-
-#else // TARGET_OS_OSX [
-
-#import <AppKit/AppKit.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// UIGraphics.h
-CGContextRef UIGraphicsGetCurrentContext(void);
-
-#ifdef __cplusplus
-}
-#endif // __cpusplus
-
-// UIBezierPath
-@compatibility_alias UIBezierPath NSBezierPath;
+#else // TARGET_OS_OSX
 
 UIBezierPath *UIBezierPathWithRoundedRect(CGRect rect, CGFloat cornerRadius);
 
 void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath);
 
-NS_ASSUME_NONNULL_END
+#endif
 
-#endif // ] TARGET_OS_OSX
+NS_ASSUME_NONNULL_END

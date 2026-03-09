@@ -12,10 +12,16 @@
 #include <TargetConditionals.h>
 
 #if !TARGET_OS_OSX
-
 #import <UIKit/UIKit.h>
+#else
+#import <AppKit/AppKit.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
+
+// MARK: - NSValue geometry helpers
+
+#if !TARGET_OS_OSX
 
 UIKIT_STATIC_INLINE NSValue *NSValueWithCGRect(CGRect rect)
 {
@@ -32,15 +38,31 @@ UIKIT_STATIC_INLINE CGRect CGRectValue(NSValue *value)
   return [value CGRectValue];
 }
 
-NS_ASSUME_NONNULL_END
+#else // TARGET_OS_OSX
 
-#else // TARGET_OS_OSX [
+NS_INLINE NSValue *NSValueWithCGRect(CGRect rect)
+{
+  return [NSValue valueWithBytes:&rect objCType:@encode(CGRect)];
+}
 
-#import <AppKit/AppKit.h>
+NS_INLINE NSValue *NSValueWithCGSize(CGSize size)
+{
+  return [NSValue valueWithBytes:&size objCType:@encode(CGSize)];
+}
 
-NS_ASSUME_NONNULL_BEGIN
+NS_INLINE CGRect CGRectValue(NSValue *value)
+{
+  CGRect rect = CGRectZero;
+  [value getValue:&rect];
+  return rect;
+}
 
-// UIGeometry.h/NSGeometry.h
+#endif
+
+// MARK: - macOS-only UIKit geometry shims
+
+#if TARGET_OS_OSX
+
 NS_INLINE CGRect UIEdgeInsetsInsetRect(CGRect rect, NSEdgeInsets insets)
 {
 	rect.origin.x    += insets.left;
@@ -65,23 +87,6 @@ NS_INLINE NSString *NSStringFromCGRect(CGRect rect)
 	return NSStringFromRect(NSRectFromCGRect(rect));
 }
 
-NS_INLINE NSValue *NSValueWithCGRect(CGRect rect)
-{
-  return [NSValue valueWithBytes:&rect objCType:@encode(CGRect)];
-}
-
-NS_INLINE NSValue *NSValueWithCGSize(CGSize size)
-{
-  return [NSValue valueWithBytes:&size objCType:@encode(CGSize)];
-}
-
-NS_INLINE CGRect CGRectValue(NSValue *value)
-{
-  CGRect rect = CGRectZero;
-  [value getValue:&rect];
-  return rect;
-}
+#endif // TARGET_OS_OSX
 
 NS_ASSUME_NONNULL_END
-
-#endif // ] TARGET_OS_OSX
