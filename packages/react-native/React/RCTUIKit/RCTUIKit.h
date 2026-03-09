@@ -14,6 +14,12 @@
 #import <React/RCTUIGraphics.h>
 #import <React/RCTUIImage.h>
 #import <React/RCTUIView.h>
-#import <React/RCTUIControls.h>
+#import <React/RCTUIScrollView.h>
+#import <React/RCTUISlider.h>
+#import <React/RCTUILabel.h>
+#import <React/RCTUISwitch.h>
+#import <React/RCTUIActivityIndicatorView.h>
+#import <React/RCTUITouch.h>
+#import <React/RCTUIImageView.h>
 #import <React/RCTUIGraphicsImageRenderer.h>
 #import <React/RCTPlatformDisplayLink.h>
