@@ -86,7 +86,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: - Font type compatibility
 
-#if TARGET_OS_OSX
+#if !TARGET_OS_OSX
+
+UIKIT_STATIC_INLINE UIFont *UIFontWithSize(UIFont *font, CGFloat pointSize)
+{
+  return [font fontWithSize:pointSize];
+}
+
+UIKIT_STATIC_INLINE CGFloat UIFontLineHeight(UIFont *font)
+{
+  return font.lineHeight;
+}
+
+#else // TARGET_OS_OSX
 
 // Both NSFont and UIFont are toll-free bridged to CTFontRef
 @compatibility_alias UIFont NSFont;

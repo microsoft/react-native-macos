@@ -339,7 +339,7 @@ RCT_EXPORT_METHOD(showShareActionSheetWithOptions
       });
   NSString *userInterfaceStyle = [RCTConvert NSString:options.userInterfaceStyle()];
   NSNumber *anchorViewTag = [RCTConvert NSNumber:options.anchor() ? @(*options.anchor()) : nil];
-  RCTUIColor *tintColor = [RCTConvert RCTUIColor:options.tintColor() ? @(*options.tintColor()) : nil]; // [macOS]
+  RCTPlatformColor *tintColor = [RCTConvert RCTPlatformColor:options.tintColor() ? @(*options.tintColor()) : nil]; // [macOS]
 
   dispatch_async(dispatch_get_main_queue(), ^{
     if (message) {

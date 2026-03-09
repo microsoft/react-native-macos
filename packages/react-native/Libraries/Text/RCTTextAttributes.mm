@@ -18,9 +18,9 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
 @implementation RCTTextAttributes
 
 // [macOS
-+ (RCTUIColor *)defaultForegroundColor
++ (RCTPlatformColor *)defaultForegroundColor
 {
-  return [RCTUIColor labelColor];
+  return [RCTPlatformColor labelColor];
 }
 // macOS]
 
@@ -175,7 +175,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   }
 
   // Colors
-  RCTUIColor *effectiveForegroundColor = self.effectiveForegroundColor; // [macOS]
+  RCTPlatformColor *effectiveForegroundColor = self.effectiveForegroundColor; // [macOS]
 
   if (_foregroundColor || !isnan(_opacity)) {
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
@@ -275,9 +275,9 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   }
 }
 
-- (RCTUIColor *)effectiveForegroundColor // [macOS]
+- (RCTPlatformColor *)effectiveForegroundColor // [macOS]
 {
-  RCTUIColor *effectiveForegroundColor = _foregroundColor ?: [RCTUIColor blackColor]; // [macOS]
+  RCTPlatformColor *effectiveForegroundColor = _foregroundColor ?: [RCTPlatformColor blackColor]; // [macOS]
 
   if (!isnan(_opacity)) {
     effectiveForegroundColor =
@@ -287,16 +287,16 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
   return effectiveForegroundColor;
 }
 
-- (RCTUIColor *)effectiveBackgroundColor // [macOS]
+- (RCTPlatformColor *)effectiveBackgroundColor // [macOS]
 {
-  RCTUIColor *effectiveBackgroundColor = _backgroundColor; // ?: [[UIColor whiteColor] colorWithAlphaComponent:0]; // [macOS]
+  RCTPlatformColor *effectiveBackgroundColor = _backgroundColor; // ?: [[UIColor whiteColor] colorWithAlphaComponent:0]; // [macOS]
 
   if (effectiveBackgroundColor && !isnan(_opacity)) {
     effectiveBackgroundColor =
         [effectiveBackgroundColor colorWithAlphaComponent:CGColorGetAlpha(effectiveBackgroundColor.CGColor) * _opacity];
   }
 
-  return effectiveBackgroundColor ?: [RCTUIColor clearColor]; // [macOS]
+  return effectiveBackgroundColor ?: [RCTPlatformColor clearColor]; // [macOS]
 }
 
 static NSString *capitalizeText(NSString *text)

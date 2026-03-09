@@ -25,8 +25,8 @@ extern NSString *const RCTTextAttributesTagAttributeName;
 @interface RCTTextAttributes : NSObject <NSCopying>
 
 // Color
-@property (nonatomic, strong, nullable) RCTUIColor *foregroundColor; // [macOS]
-@property (nonatomic, strong, nullable) RCTUIColor *backgroundColor; // [macOS]
+@property (nonatomic, strong, nullable) RCTPlatformColor *foregroundColor; // [macOS]
+@property (nonatomic, strong, nullable) RCTPlatformColor *backgroundColor; // [macOS]
 @property (nonatomic, assign) CGFloat opacity;
 // Font
 @property (nonatomic, copy, nullable) NSString *fontFamily;
@@ -46,13 +46,13 @@ extern NSString *const RCTTextAttributesTagAttributeName;
 @property (nonatomic, assign) NSLineBreakStrategy lineBreakStrategy;
 @property (nonatomic, assign) NSLineBreakMode lineBreakMode;
 // Decoration
-@property (nonatomic, strong, nullable) RCTUIColor *textDecorationColor; // [macOS]
+@property (nonatomic, strong, nullable) RCTPlatformColor *textDecorationColor; // [macOS]
 @property (nonatomic, assign) NSUnderlineStyle textDecorationStyle;
 @property (nonatomic, assign) RCTTextDecorationLineType textDecorationLine;
 // Shadow
 @property (nonatomic, assign) CGSize textShadowOffset;
 @property (nonatomic, assign) CGFloat textShadowRadius;
-@property (nonatomic, strong, nullable) RCTUIColor *textShadowColor; // [macOS]
+@property (nonatomic, strong, nullable) RCTPlatformColor *textShadowColor; // [macOS]
 // Special
 @property (nonatomic, assign) BOOL isHighlighted;
 @property (nonatomic, strong, nullable) NSNumber *tag;
@@ -92,8 +92,8 @@ extern NSString *const RCTTextAttributesTagAttributeName;
 /**
  * Foreground and background colors with opacity and right defaults.
  */
-- (RCTUIColor *)effectiveForegroundColor; // [macOS]
-- (RCTUIColor *)effectiveBackgroundColor; // [macOS]
+- (RCTPlatformColor *)effectiveForegroundColor; // [macOS]
+- (RCTPlatformColor *)effectiveBackgroundColor; // [macOS]
 
 /**
  * Text transformed per 'none', 'uppercase', 'lowercase', 'capitalize'

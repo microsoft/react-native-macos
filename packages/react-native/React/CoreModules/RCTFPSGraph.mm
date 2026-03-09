@@ -27,7 +27,7 @@
   RCTUILabel *_label; // [macOS]
 
   CGFloat *_frames;
-  RCTUIColor *_color; // [macOS]
+  RCTPlatformColor *_color; // [macOS]
 
   NSTimeInterval _prevTime;
   NSUInteger _frameCount;
@@ -39,7 +39,7 @@
   CGFloat _scale;
 }
 
-- (instancetype)initWithFrame:(CGRect)frame color:(RCTUIColor *)color // [macOS]
+- (instancetype)initWithFrame:(CGRect)frame color:(RCTPlatformColor *)color // [macOS]
 {
   if ((self = [super initWithFrame:frame])) {
 #if TARGET_OS_OSX // [macOS

@@ -109,15 +109,15 @@ typedef NSURL RCTFileURL;
 
 + (CGAffineTransform)CGAffineTransform:(id)json;
 
-+ (RCTUIColor *)UIColorWithRed:(CGFloat)red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha; // [macOS]
-+ (RCTUIColor *)UIColorWithRed:(CGFloat)red // [macOS]
++ (RCTPlatformColor *)UIColorWithRed:(CGFloat)red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha; // [macOS]
++ (RCTPlatformColor *)UIColorWithRed:(CGFloat)red // [macOS]
                          green:(CGFloat)green
                           blue:(CGFloat)blue
                          alpha:(CGFloat)alpha
                  andColorSpace:(RCTColorSpace)colorSpace;
 + (RCTColorSpace)RCTColorSpaceFromString:(NSString *)colorSpace;
-+ (RCTUIColor *)UIColor:(id)json; // [macOS]
-+ (RCTUIColor *)NSColor:(id)json; // [macOS]
++ (RCTPlatformColor *)UIColor:(id)json; // [macOS]
++ (RCTPlatformColor *)NSColor:(id)json; // [macOS]
 + (CGColorRef)CGColor:(id)json CF_RETURNS_NOT_RETAINED;
 
 + (YGValue)YGValue:(id)json;
@@ -129,7 +129,7 @@ typedef NSURL RCTFileURL;
 + (NSArray<NSURL *> *)NSURLArray:(id)json;
 + (NSArray<RCTFileURL *> *)RCTFileURLArray:(id)json;
 + (NSArray<NSNumber *> *)NSNumberArray:(id)json;
-+ (NSArray<RCTUIColor *> *)UIColorArray:(id)json; // [macOS]
++ (NSArray<RCTPlatformColor *> *)UIColorArray:(id)json; // [macOS]
 #if TARGET_OS_OSX // [macOS
 + (NSArray<NSPasteboardType> *)NSPasteboardTypeArray:(id)json;
 #endif // macOS]

@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL textWasPasted;
 #endif // macOS]
 @property (nonatomic, assign, readonly) BOOL dictationRecognizing;
-@property (nonatomic, strong, nullable) RCTUIColor *placeholderColor; // [macOS]
+@property (nonatomic, strong, nullable) RCTPlatformColor *placeholderColor; // [macOS]
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
 #if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, assign, getter=isEditable) BOOL editable;
@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, getter=isContinuousSpellCheckingEnabled) BOOL continuousSpellCheckingEnabled;
 @property (nonatomic, getter=isGrammarCheckingEnabled) BOOL grammarCheckingEnabled;
 @property (nonatomic, assign) BOOL enableFocusRing;
-@property (nonatomic, strong, nullable) RCTUIColor *selectionColor;
+@property (nonatomic, strong, nullable) RCTPlatformColor *selectionColor;
 @property (weak, nullable) id<RCTUITextFieldDelegate> delegate;
 @property (nonatomic, assign) CGFloat pointScaleFactor;
 

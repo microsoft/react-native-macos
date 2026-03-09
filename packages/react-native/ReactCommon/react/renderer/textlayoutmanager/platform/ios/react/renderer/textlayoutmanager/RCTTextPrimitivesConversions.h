@@ -114,7 +114,7 @@ inline static NSUnderlineStyle RCTNSUnderlineStyleFromTextDecorationStyle(
 }
 
 // TODO: this file has some duplicates method, we can remove it
-inline static RCTUIColor *_Nullable RCTUIColorFromSharedColor(const facebook::react::SharedColor &sharedColor) // [macOS]
+inline static RCTPlatformColor *_Nullable RCTUIColorFromSharedColor(const facebook::react::SharedColor &sharedColor) // [macOS]
 {
   return RCTPlatformColorFromColor(*sharedColor);
 }

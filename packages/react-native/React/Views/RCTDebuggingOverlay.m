@@ -44,7 +44,7 @@
   for (NSDictionary *update in updates) {
     NSNumber *identifier = [RCTConvert NSNumber:update[@"id"]];
     NSDictionary *nodeRectangle = update[@"rectangle"];
-    RCTUIColor *nodeColor = [RCTConvert RCTUIColor:update[@"color"]]; // [macOS]
+    RCTPlatformColor *nodeColor = [RCTConvert RCTPlatformColor:update[@"color"]]; // [macOS]
 
     CGRect rect = [RCTConvert CGRect:nodeRectangle];
 
@@ -72,7 +72,7 @@
     }
 
     RCTUIView *box = [[RCTUIView alloc] initWithFrame:rect];
-    box.backgroundColor = [RCTUIColor clearColor]; // [macOS]
+    box.backgroundColor = [RCTPlatformColor clearColor]; // [macOS]
 
     box.layer.borderWidth = 2.0f;
     box.layer.borderColor = nodeColor.CGColor;
@@ -101,7 +101,7 @@
 
   for (NSDictionary *rectangle in rectangles) {
     RCTUIView *view = [[RCTUIView alloc] initWithFrame:[RCTConvert CGRect:rectangle]]; // [macOS]
-    view.backgroundColor = [RCTUIColor colorWithRed:200 / 255.0 green:230 / 255.0 blue:255 / 255.0 alpha:0.8]; // [macOS]
+    view.backgroundColor = [RCTPlatformColor colorWithRed:200 / 255.0 green:230 / 255.0 blue:255 / 255.0 alpha:0.8]; // [macOS]
     [self addSubview:view];
     [_highlightedElements addObject:view];
   }

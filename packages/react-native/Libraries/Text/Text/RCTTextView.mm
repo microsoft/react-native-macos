@@ -271,7 +271,7 @@
   if (highlightPath) {
     if (!_highlightLayer) {
       _highlightLayer = [CAShapeLayer layer];
-      _highlightLayer.fillColor = [RCTUIColor colorWithWhite:0 alpha:0.25].CGColor; // [macOS]
+      _highlightLayer.fillColor = [RCTPlatformColor colorWithWhite:0 alpha:0.25].CGColor; // [macOS]
       [self.layer addSublayer:_highlightLayer];
     }
     _highlightLayer.position = _contentFrame.origin;
