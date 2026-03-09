@@ -75,6 +75,7 @@ Pod::Spec.new do |s|
       "React/Tests/**/*",
       "React/Inspector/**/*",
       "React/Runtime/**/*",
+      "React/RCTUIKit/**/*",
     ]
 
     # The default is use hermes,  we don't have jsc installed
@@ -114,6 +115,7 @@ Pod::Spec.new do |s|
     end
   end
 
+  s.dependency "React-RCTUIKit"
   s.dependency "React-cxxreact"
   s.dependency "React-perflogger"
   s.dependency "React-jsi"

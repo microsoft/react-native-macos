@@ -132,6 +132,7 @@ def use_react_native! (
   if !ReactNativeCoreUtils.build_rncore_from_source()
     pod 'React-Core-prebuilt', :podspec => "#{prefix}/React-Core-prebuilt.podspec", :modular_headers => true
   end
+  pod 'React-RCTUIKit', :path => "#{prefix}/"
   pod 'React-Core', :path => "#{prefix}/"
   pod 'React-CoreModules', :path => "#{prefix}/React/CoreModules"
   pod 'React-RCTRuntime', :path => "#{prefix}/React/Runtime"

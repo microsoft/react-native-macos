@@ -1,0 +1,19 @@
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+// [macOS]
+// Umbrella header for RCTUIKit — the UIKit/AppKit compatibility layer.
+
+#import <React/RCTUIKitCompat.h>
+#import <React/RCTUIAccessibilityTraits.h>
+#import <React/RCTUIGeometry.h>
+#import <React/RCTUIGraphics.h>
+#import <React/RCTUIImage.h>
+#import <React/RCTUIView.h>
+#import <React/RCTUIControls.h>
+#import <React/RCTUIGraphicsImageRenderer.h>
+#import <React/RCTPlatformDisplayLink.h>
