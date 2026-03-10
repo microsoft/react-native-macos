@@ -63,22 +63,29 @@ RCT_EXTERN_C_END
  */
 @protocol RCTBridgeModule <NSObject>
 
+#if RCT_MODULE_NO_SELF_LOAD
+#define RCT_EXPORT_MODULE_LOAD
+#else
+#define RCT_EXPORT_MODULE_LOAD              \
+  +(void)load                               \
+  {                                         \
+    RCTRegisterModule(self);                \
+  }
+#endif
+
 /**
  * Place this macro in your class implementation to automatically register
  * your module with the bridge when it loads. The optional js_name argument
  * will be used as the JS module name. If omitted, the JS module name will
  * match the Objective-C class name.
  */
-#define RCT_EXPORT_MODULE(js_name)          \
+#define RCT_EXPORT_MODULE(js_name)     \
   RCT_EXTERN void RCTRegisterModule(Class); \
   +(NSString *)moduleName                   \
   {                                         \
     return @ #js_name;                      \
   }                                         \
-  +(void)load                               \
-  {                                         \
-    RCTRegisterModule(self);                \
-  }
+RCT_EXPORT_MODULE_LOAD
 
 /**
  * Same as RCT_EXPORT_MODULE, but uses __attribute__((constructor)) for module

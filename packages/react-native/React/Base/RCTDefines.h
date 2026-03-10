@@ -23,6 +23,15 @@
 #endif
 
 /**
+ * The RCT_MODULE_NO_SELF_LOAD macro can be used to disable module self-registration
+ * via +load methods. When enabled, modules are registered by RCTBridge instead.
+ * This can improve performance during module lazy-loading.
+ */
+#ifndef RCT_MODULE_NO_SELF_LOAD
+#define RCT_MODULE_NO_SELF_LOAD 0
+#endif
+
+/**
  * The RCT_DEBUG macro can be used to exclude error checking and logging code
  * from release builds to improve performance and reduce binary size.
  */
