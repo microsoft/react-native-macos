@@ -1,4 +1,4 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
+# Copyright (c) Microsoft Corporation.
 #
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   s.summary                = "UIKit/AppKit compatibility layer for React Native macOS."
   s.homepage               = "https://reactnative.dev/"
   s.license                = package["license"]
-  s.author                 = "Meta Platforms, Inc. and its affiliates"
+  s.author                 = "Microsoft Corporation"
   s.platforms              = min_supported_versions
   s.source                 = source
   s.source_files           = podspec_sources(
@@ -35,9 +35,7 @@ Pod::Spec.new do |s|
                                "DEFINES_MODULE" => "YES",
                                "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                              }
-  # [macOS Restrict UIKit to iOS and visionOS
   s.ios.framework          = "UIKit"
   s.visionos.framework     = "UIKit"
   s.osx.framework          = "AppKit"
-  # macOS]
 end
