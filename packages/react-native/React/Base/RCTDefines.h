@@ -22,6 +22,7 @@
 #define RCT_EXTERN_C_END
 #endif
 
+// [macOS
 /**
  * The RCT_MODULE_NO_SELF_LOAD macro can be used to disable module self-registration
  * via +load methods. When enabled, modules are registered by RCTBridge instead.
@@ -30,6 +31,7 @@
 #ifndef RCT_MODULE_NO_SELF_LOAD
 #define RCT_MODULE_NO_SELF_LOAD 0
 #endif
+// macOS]
 
 /**
  * The RCT_DEBUG macro can be used to exclude error checking and logging code

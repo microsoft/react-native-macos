@@ -63,6 +63,7 @@ RCT_EXTERN_C_END
  */
 @protocol RCTBridgeModule <NSObject>
 
+// [macOS
 #if RCT_MODULE_NO_SELF_LOAD
 #define RCT_EXPORT_MODULE_LOAD
 #else
@@ -72,6 +73,7 @@ RCT_EXTERN_C_END
     RCTRegisterModule(self);                \
   }
 #endif
+// macOS]
 
 /**
  * Place this macro in your class implementation to automatically register
@@ -85,7 +87,7 @@ RCT_EXTERN_C_END
   {                                         \
     return @ #js_name;                      \
   }                                         \
-RCT_EXPORT_MODULE_LOAD
+RCT_EXPORT_MODULE_LOAD // [macOS]
 
 /**
  * Same as RCT_EXPORT_MODULE, but uses __attribute__((constructor)) for module

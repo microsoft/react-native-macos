@@ -32,6 +32,7 @@
 #import "RCTReloadCommand.h"
 #import "RCTUtils.h"
 
+// [macOS
 /**
  * List of core React Native modules.
  *
@@ -101,10 +102,12 @@ static NSArray<NSString *> *moduleClassNames = @[
   @"RCTVirtualTextViewManager",
   @"RCTVibration",
 ];
+// macOS]
 
 static NSMutableArray<Class> *RCTModuleClasses;
 static dispatch_queue_t RCTModuleClassesSyncQueue;
 
+// [macOS
 /**
  * Make sure ModuleClassesSyncQueue is initialized before any referring functions are called.
  */
@@ -174,9 +177,11 @@ static void RCTCheckForUnregisteredModules(NSArray<Class> *registeredClasses)
     }
   });
 }
+// macOS]
 
 NSArray<Class> *RCTGetModuleClasses(void)
 {
+  // [macOS
   RCTEnsureModuleClassesInitialized();
 
 #if RCT_MODULE_NO_SELF_LOAD
@@ -201,16 +206,21 @@ NSArray<Class> *RCTGetModuleClasses(void)
 
   return finalResult;
 #else
+  // macOS]
   __block NSArray<Class> *result;
   dispatch_sync(RCTModuleClassesSyncQueue, ^{
     result = [RCTModuleClasses copy];
   });
 
+  // [macOS
   // Check for misconfigured external modules
   RCTCheckForUnregisteredModules(result);
+  // macOS]
 
   return result;
+  // [macOS
 #endif //RCT_MODULE_NO_SELF_LOAD
+  // macOS]
 }
 
 NSSet<NSString *> *getCoreModuleClasses(void);
@@ -219,7 +229,7 @@ NSSet<NSString *> *getCoreModuleClasses(void)
   static NSSet<NSString *> *coreModuleClasses = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    coreModuleClasses = [NSSet setWithArray:moduleClassNames];
+    coreModuleClasses = [NSSet setWithArray:moduleClassNames]; // [macOS]
   });
 
   return coreModuleClasses;
@@ -255,7 +265,7 @@ void RCTRegisterModule(Class moduleClass)
     addModuleLoadedWithOldArch([moduleClass description]);
   }
 
-  RCTEnsureModuleClassesInitialized();
+  RCTEnsureModuleClassesInitialized(); // [macOS]
 
   RCTAssert(
       [moduleClass conformsToProtocol:@protocol(RCTBridgeModule)],
