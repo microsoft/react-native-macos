@@ -79,7 +79,7 @@ RCT_EXTERN_C_END
  * will be used as the JS module name. If omitted, the JS module name will
  * match the Objective-C class name.
  */
-#define RCT_EXPORT_MODULE(js_name)     \
+#define RCT_EXPORT_MODULE(js_name)          \
   RCT_EXTERN void RCTRegisterModule(Class); \
   +(NSString *)moduleName                   \
   {                                         \
