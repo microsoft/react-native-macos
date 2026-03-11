@@ -15,11 +15,11 @@
 
 #if !TARGET_OS_OSX
 #import <UIKit/UIKit.h>
-#define RCTPlatformImage UIImage
-#define RCTUIImage UIImage
+@compatibility_alias RCTPlatformImage UIImage;
+@compatibility_alias RCTUIImage UIImage;
 #else
 #import <AppKit/AppKit.h>
-#define RCTPlatformImage NSImage
+@compatibility_alias RCTPlatformImage NSImage;
 #endif
 
 NS_ASSUME_NONNULL_BEGIN

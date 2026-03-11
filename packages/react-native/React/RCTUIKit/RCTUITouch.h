@@ -13,7 +13,7 @@
 
 #if !TARGET_OS_OSX
 #import <UIKit/UIKit.h>
-typedef UITouch RCTUITouch;
+@compatibility_alias RCTUITouch UITouch;
 #else
 #import <AppKit/AppKit.h>
 @interface RCTUITouch : NSEvent

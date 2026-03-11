@@ -14,7 +14,7 @@
 #import <React/RCTUIKitCompat.h>
 
 #if !TARGET_OS_OSX
-typedef UISlider RCTUISlider;
+@compatibility_alias RCTUISlider UISlider;
 #else
 @protocol RCTUISliderDelegate;
 

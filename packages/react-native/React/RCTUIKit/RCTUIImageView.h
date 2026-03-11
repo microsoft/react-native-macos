@@ -15,7 +15,7 @@
 #import <React/RCTUIImage.h>
 
 #if !TARGET_OS_OSX
-typedef UIImageView RCTUIImageView;
+@compatibility_alias RCTUIImageView UIImageView;
 #else
 @interface RCTUIImageView : NSImageView
 NS_ASSUME_NONNULL_BEGIN

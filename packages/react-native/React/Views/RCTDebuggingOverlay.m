@@ -44,7 +44,7 @@
   for (NSDictionary *update in updates) {
     NSNumber *identifier = [RCTConvert NSNumber:update[@"id"]];
     NSDictionary *nodeRectangle = update[@"rectangle"];
-    RCTPlatformColor *nodeColor = [RCTConvert RCTPlatformColor:update[@"color"]]; // [macOS]
+    RCTPlatformColor *nodeColor = [RCTConvert UIColor:update[@"color"]]; // [macOS]
 
     CGRect rect = [RCTConvert CGRect:nodeRectangle];
 

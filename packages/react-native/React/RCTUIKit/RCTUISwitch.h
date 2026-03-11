@@ -14,7 +14,7 @@
 #import <React/RCTUIKitCompat.h>
 
 #if !TARGET_OS_OSX
-typedef UISwitch RCTUISwitch;
+@compatibility_alias RCTUISwitch UISwitch;
 #else
 @interface RCTUISwitch : NSSwitch
 NS_ASSUME_NONNULL_BEGIN

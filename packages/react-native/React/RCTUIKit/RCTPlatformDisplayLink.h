@@ -11,7 +11,7 @@
 
 #if !TARGET_OS_OSX
 #import <QuartzCore/CADisplayLink.h>
-#define RCTPlatformDisplayLink CADisplayLink
+@compatibility_alias RCTPlatformDisplayLink CADisplayLink;
 #else
 
 #import <Foundation/Foundation.h>

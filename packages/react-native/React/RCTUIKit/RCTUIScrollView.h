@@ -17,7 +17,7 @@
 
 #import <UIKit/UIKit.h>
 
-#define RCTUIScrollView UIScrollView
+@compatibility_alias RCTUIScrollView UIScrollView;
 #define RCTUIScrollViewDelegate UIScrollViewDelegate
 
 #else // TARGET_OS_OSX [

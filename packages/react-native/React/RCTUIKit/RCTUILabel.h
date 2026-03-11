@@ -14,7 +14,7 @@
 #import <React/RCTUIKitCompat.h>
 
 #if !TARGET_OS_OSX
-typedef UILabel RCTUILabel;
+@compatibility_alias RCTUILabel UILabel;
 #else
 @interface RCTUILabel : NSTextField
 NS_ASSUME_NONNULL_BEGIN

@@ -25,12 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if !TARGET_OS_OSX
 
-#define RCTPlatformView UIView
-#define RCTUIView UIView
+@compatibility_alias RCTPlatformView UIView;
+@compatibility_alias RCTUIView UIView;
 
 #else // TARGET_OS_OSX
 
-#define RCTPlatformView NSView
+@compatibility_alias RCTPlatformView NSView;
 
 @interface RCTUIView : RCTPlatformView
 

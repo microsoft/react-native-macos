@@ -22,13 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: - Color
 
 #if !TARGET_OS_OSX
-#define RCTPlatformColor UIColor
+@compatibility_alias RCTPlatformColor UIColor;
+@compatibility_alias RCTUIColor UIColor;
 #else
-#define RCTPlatformColor NSColor
+@compatibility_alias RCTPlatformColor NSColor;
+@compatibility_alias RCTUIColor NSColor;
 #endif
-
-// Backward compatibility
-#define RCTUIColor RCTPlatformColor
 
 // MARK: - Event types
 
@@ -209,30 +208,28 @@ typedef NS_ENUM(NSInteger, UIActivityIndicatorViewStyle) {
 // MARK: - Gesture recognizer
 
 #if !TARGET_OS_OSX
-#define RCTPlatformPanGestureRecognizer UIPanGestureRecognizer
+@compatibility_alias RCTPlatformPanGestureRecognizer UIPanGestureRecognizer;
+@compatibility_alias RCTUIPanGestureRecognizer UIPanGestureRecognizer;
 #else
 #define UIGestureRecognizer NSGestureRecognizer
 #define UIGestureRecognizerDelegate NSGestureRecognizerDelegate
-#define RCTPlatformPanGestureRecognizer NSPanGestureRecognizer
-#define UIApplication NSApplication
+@compatibility_alias RCTPlatformPanGestureRecognizer NSPanGestureRecognizer;
+@compatibility_alias RCTUIPanGestureRecognizer NSPanGestureRecognizer;
+@compatibility_alias UIApplication NSApplication;
 #endif
-
-// Backward compatibility
-#define RCTUIPanGestureRecognizer RCTPlatformPanGestureRecognizer
 
 // MARK: - Cross-platform typedefs
 
 #if !TARGET_OS_OSX
-typedef UIApplication RCTPlatformApplication;
-typedef UIWindow RCTPlatformWindow;
-typedef UIViewController RCTPlatformViewController;
+@compatibility_alias RCTPlatformApplication UIApplication;
+@compatibility_alias RCTPlatformWindow UIWindow;
+@compatibility_alias RCTPlatformViewController UIViewController;
+@compatibility_alias RCTUIApplication UIApplication;
 #else
-typedef NSApplication RCTPlatformApplication;
-typedef NSWindow RCTPlatformWindow;
-typedef NSViewController RCTPlatformViewController;
+@compatibility_alias RCTPlatformApplication NSApplication;
+@compatibility_alias RCTPlatformWindow NSWindow;
+@compatibility_alias RCTPlatformViewController NSViewController;
+@compatibility_alias RCTUIApplication NSApplication;
 #endif
-
-// Backward compatibility
-#define RCTUIApplication RCTPlatformApplication
 
 NS_ASSUME_NONNULL_END

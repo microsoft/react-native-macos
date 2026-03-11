@@ -14,7 +14,7 @@
 #import <React/RCTUIKitCompat.h>
 
 #if !TARGET_OS_OSX
-typedef UIActivityIndicatorView RCTUIActivityIndicatorView;
+@compatibility_alias RCTUIActivityIndicatorView UIActivityIndicatorView;
 #else
 @interface RCTUIActivityIndicatorView : NSProgressIndicator
 NS_ASSUME_NONNULL_BEGIN
