@@ -451,11 +451,7 @@ CGSize RCTSwitchSize(void)
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     RCTUnsafeExecuteOnMainQueueSync(^{
-#if !TARGET_OS_OSX // [macOS]
-      rctSwitchSize = [UISwitch new].intrinsicContentSize;
-#else // [macOS
-      rctSwitchSize = [NSSwitch new].intrinsicContentSize;
-#endif // macOS]
+      rctSwitchSize = [RCTPlatformSwitch new].intrinsicContentSize; // [macOS]
     });
   });
   return rctSwitchSize;
