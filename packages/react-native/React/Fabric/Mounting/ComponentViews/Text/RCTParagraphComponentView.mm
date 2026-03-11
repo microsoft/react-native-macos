@@ -70,7 +70,7 @@ using namespace facebook::react;
     self.opaque = NO;
 #endif // [macOS]
     _textView = [RCTParagraphTextView new];
-    _textView.backgroundColor = RCTUIColor.clearColor; // [macOS]
+    _textView.backgroundColor = RCTPlatformColor.clearColor; // [macOS]
     self.contentView = _textView;
   }
 
@@ -437,7 +437,7 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
                                 if (highlightPath) {
                                   if (!self->_highlightLayer) {
                                     self->_highlightLayer = [CAShapeLayer layer];
-                                    self->_highlightLayer.fillColor = [RCTUIColor colorWithWhite:0 alpha:0.25].CGColor; // [macOS]
+                                    self->_highlightLayer.fillColor = [RCTPlatformColor colorWithWhite:0 alpha:0.25].CGColor; // [macOS]
                                     [self.layer addSublayer:self->_highlightLayer];
                                   }
                                   self->_highlightLayer.position = frame.origin;

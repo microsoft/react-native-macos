@@ -99,16 +99,16 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 /**
  * Border colors (actually retained).
  */
-@property (nonatomic, strong) RCTUIColor *borderTopColor;
-@property (nonatomic, strong) RCTUIColor *borderRightColor;
-@property (nonatomic, strong) RCTUIColor *borderBottomColor;
-@property (nonatomic, strong) RCTUIColor *borderLeftColor;
-@property (nonatomic, strong) RCTUIColor *borderStartColor;
-@property (nonatomic, strong) RCTUIColor *borderEndColor;
-@property (nonatomic, strong) RCTUIColor *borderColor;
-@property (nonatomic, strong) RCTUIColor *borderBlockColor;
-@property (nonatomic, strong) RCTUIColor *borderBlockEndColor;
-@property (nonatomic, strong) RCTUIColor *borderBlockStartColor;
+@property (nonatomic, strong) RCTPlatformColor *borderTopColor;
+@property (nonatomic, strong) RCTPlatformColor *borderRightColor;
+@property (nonatomic, strong) RCTPlatformColor *borderBottomColor;
+@property (nonatomic, strong) RCTPlatformColor *borderLeftColor;
+@property (nonatomic, strong) RCTPlatformColor *borderStartColor;
+@property (nonatomic, strong) RCTPlatformColor *borderEndColor;
+@property (nonatomic, strong) RCTPlatformColor *borderColor;
+@property (nonatomic, strong) RCTPlatformColor *borderBlockColor;
+@property (nonatomic, strong) RCTPlatformColor *borderBlockEndColor;
+@property (nonatomic, strong) RCTPlatformColor *borderBlockStartColor;
 
 /**
  * Border widths.

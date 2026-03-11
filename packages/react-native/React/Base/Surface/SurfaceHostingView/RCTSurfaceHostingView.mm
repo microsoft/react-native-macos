@@ -48,7 +48,7 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
     [self _updateViews];
 
     // For backward compatibility with RCTRootView, set a color here instead of transparent (OS default).
-    self.backgroundColor = [RCTUIColor whiteColor]; // [macOS]
+    self.backgroundColor = [RCTPlatformColor whiteColor]; // [macOS]
   }
 
   return self;

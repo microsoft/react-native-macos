@@ -142,9 +142,9 @@ inline static UIFont *RCTEffectiveFontFromTextAttributes(const TextAttributes &t
   return RCTFontWithFontProperties(fontProperties);
 }
 
-inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const TextAttributes &textAttributes) // [macOS]
+inline static RCTPlatformColor *RCTEffectiveForegroundColorFromTextAttributes(const TextAttributes &textAttributes) // [macOS]
 {
-  RCTUIColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ? RCTUIColorFromSharedColor(textAttributes.foregroundColor) : [RCTUIColor blackColor]; // [macOS]
+  RCTPlatformColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ? RCTUIColorFromSharedColor(textAttributes.foregroundColor) : [RCTPlatformColor blackColor]; // [macOS]
 
   if (!isnan(textAttributes.opacity)) {
     effectiveForegroundColor = [effectiveForegroundColor
@@ -154,16 +154,16 @@ inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const Te
   return effectiveForegroundColor;
 }
 
-inline static RCTUIColor *RCTEffectiveBackgroundColorFromTextAttributes(const TextAttributes &textAttributes) // [macOS]
+inline static RCTPlatformColor *RCTEffectiveBackgroundColorFromTextAttributes(const TextAttributes &textAttributes) // [macOS]
 {
-  RCTUIColor *effectiveBackgroundColor = RCTUIColorFromSharedColor(textAttributes.backgroundColor); // [macOS]
+  RCTPlatformColor *effectiveBackgroundColor = RCTUIColorFromSharedColor(textAttributes.backgroundColor); // [macOS]
 
   if (effectiveBackgroundColor && !isnan(textAttributes.opacity)) {
     effectiveBackgroundColor = [effectiveBackgroundColor
         colorWithAlphaComponent:CGColorGetAlpha(effectiveBackgroundColor.CGColor) * textAttributes.opacity];
   }
 
-  return effectiveBackgroundColor ? effectiveBackgroundColor : [RCTUIColor clearColor]; // [macOS]
+  return effectiveBackgroundColor ? effectiveBackgroundColor : [RCTPlatformColor clearColor]; // [macOS]
 }
 
 NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttributes(
@@ -178,7 +178,7 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   }
 
   // Colors
-  RCTUIColor *effectiveForegroundColor = RCTEffectiveForegroundColorFromTextAttributes(textAttributes); // [macOS]
+  RCTPlatformColor *effectiveForegroundColor = RCTEffectiveForegroundColorFromTextAttributes(textAttributes); // [macOS]
 
   if (textAttributes.foregroundColor || !isnan(textAttributes.opacity)) {
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
@@ -245,7 +245,7 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
     NSUnderlineStyle style = RCTNSUnderlineStyleFromTextDecorationStyle(
         textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid));
 
-    RCTUIColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor); // [macOS]
+    RCTPlatformColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor); // [macOS]
 
     // Underline
     if (textDecorationLineType == TextDecorationLineType::Underline ||

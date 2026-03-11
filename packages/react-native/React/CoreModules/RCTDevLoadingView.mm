@@ -96,7 +96,7 @@ RCT_EXPORT_MODULE()
   [self performSelector:@selector(hide) withObject:nil afterDelay:delay];
 }
 
-- (void)showMessage:(NSString *)message color:(RCTUIColor *)color backgroundColor:(RCTUIColor *)backgroundColor // [macOS]
+- (void)showMessage:(NSString *)message color:(RCTPlatformColor *)color backgroundColor:(RCTPlatformColor *)backgroundColor // [macOS]
 {
   if (!RCTDevLoadingViewGetEnabled() || _hiding) {
     return;
@@ -271,12 +271,12 @@ RCT_EXPORT_METHOD(hide)
     return;
   }
 
-  RCTUIColor *color = [RCTUIColor whiteColor]; // [macOS]
-  RCTUIColor *backgroundColor = [RCTUIColor colorWithHue:105 saturation:0 brightness:.25 alpha:1]; // [macOS]
+  RCTPlatformColor *color = [RCTPlatformColor whiteColor]; // [macOS]
+  RCTPlatformColor *backgroundColor = [RCTPlatformColor colorWithHue:105 saturation:0 brightness:.25 alpha:1]; // [macOS]
 
   if ([self isDarkModeEnabled]) {
-    color = [RCTUIColor colorWithHue:208 saturation:0.03 brightness:.14 alpha:1]; // [macOS]
-    backgroundColor = [RCTUIColor colorWithHue:0 saturation:0 brightness:0.98 alpha:1]; // [macOS]
+    color = [RCTPlatformColor colorWithHue:208 saturation:0.03 brightness:.14 alpha:1]; // [macOS]
+    backgroundColor = [RCTPlatformColor colorWithHue:0 saturation:0 brightness:0.98 alpha:1]; // [macOS]
   }
 
   [self showMessage:message color:color backgroundColor:backgroundColor];
@@ -287,12 +287,12 @@ RCT_EXPORT_METHOD(hide)
   // [macOS isDarkModeEnabled should only be run on the main thread
   __weak __typeof(self) weakSelf = self;
   RCTExecuteOnMainQueue(^{
-    RCTUIColor *color = [RCTUIColor whiteColor]; // [macOS]
-    RCTUIColor *backgroundColor = [RCTUIColor blackColor]; // [macOS]
+    RCTPlatformColor *color = [RCTPlatformColor whiteColor]; // [macOS]
+    RCTPlatformColor *backgroundColor = [RCTPlatformColor blackColor]; // [macOS]
 
     if ([weakSelf isDarkModeEnabled]) {
-      color = [RCTUIColor blackColor]; // [macOS]
-      backgroundColor = [RCTUIColor whiteColor]; // [macOS]
+      color = [RCTPlatformColor blackColor]; // [macOS]
+      backgroundColor = [RCTPlatformColor whiteColor]; // [macOS]
     }
 
     NSString *message = [NSString stringWithFormat:@"Connect to %@ to develop JavaScript.", RCT_PACKAGER_NAME];
@@ -357,7 +357,7 @@ RCT_EXPORT_METHOD(hide)
 + (void)setEnabled:(BOOL)enabled
 {
 }
-- (void)showMessage:(NSString *)message color:(RCTUIColor *)color backgroundColor:(RCTUIColor *)backgroundColor // [macOS] RCTUIColor
+- (void)showMessage:(NSString *)message color:(RCTPlatformColor *)color backgroundColor:(RCTPlatformColor *)backgroundColor // [macOS] RCTPlatformColor
 {
 }
 - (void)showMessage:(NSString *)message withColor:(NSNumber *)color withBackgroundColor:(NSNumber *)backgroundColor

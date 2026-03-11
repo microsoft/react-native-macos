@@ -9,7 +9,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "RCTPlatformDisplayLink.h" // [macOS]
+#import <React/RCTPlatformDisplayLink.h> // [macOS]
 #import "RCTAssert.h"
 #import "RCTBridgeModule.h"
 #import "RCTFrameUpdate.h"

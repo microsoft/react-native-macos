@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
+/*
+ * Copyright (c) Microsoft Corporation.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -11,7 +11,7 @@
 
 #if !TARGET_OS_OSX
 #import <QuartzCore/CADisplayLink.h>
-#define RCTPlatformDisplayLink CADisplayLink
+@compatibility_alias RCTPlatformDisplayLink CADisplayLink;
 #else
 
 #import <Foundation/Foundation.h>

@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy, nullable) NSAttributedString *attributedText;
 @property (nonatomic, copy, nullable) NSString *placeholder;
-@property (nonatomic, strong, nullable) RCTUIColor *placeholderColor; // [macOS]
+@property (nonatomic, strong, nullable) RCTPlatformColor *placeholderColor; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, assign, readonly) BOOL textWasPasted;
 #else // [macOS

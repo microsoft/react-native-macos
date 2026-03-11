@@ -70,7 +70,7 @@
   }
 }
 
-- (void)setColor:(RCTUIColor*)color
+- (void)setColor:(RCTPlatformColor*)color
 {
   if (_color != color) {
     _color = color;

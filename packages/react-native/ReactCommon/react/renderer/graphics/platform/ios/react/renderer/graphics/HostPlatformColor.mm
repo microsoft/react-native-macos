@@ -24,7 +24,7 @@ namespace {
 
 bool UIColorIsP3ColorSpace(const std::shared_ptr<void> &uiColor)
 {
-  RCTUIColor *color = unwrapManagedObject(uiColor); // [macOS]
+  RCTPlatformColor *color = unwrapManagedObject(uiColor); // [macOS]
   CGColorSpaceRef colorSpace = CGColorGetColorSpace(color.CGColor);
 
   if (CGColorSpaceGetModel(colorSpace) == kCGColorSpaceModelRGB) {
@@ -36,28 +36,28 @@ bool UIColorIsP3ColorSpace(const std::shared_ptr<void> &uiColor)
   return false;
 }
 
-RCTUIColor *_Nullable UIColorFromInt32(int32_t intColor) // [macOS]
+RCTPlatformColor *_Nullable UIColorFromInt32(int32_t intColor) // [macOS]
 {
   CGFloat a = CGFloat((intColor >> 24) & 0xFF) / 255.0;
   CGFloat r = CGFloat((intColor >> 16) & 0xFF) / 255.0;
   CGFloat g = CGFloat((intColor >> 8) & 0xFF) / 255.0;
   CGFloat b = CGFloat(intColor & 0xFF) / 255.0;
 
-  RCTUIColor *color = [RCTUIColor colorWithRed:r green:g blue:b alpha:a]; // [macOS]
+  RCTPlatformColor *color = [RCTPlatformColor colorWithRed:r green:g blue:b alpha:a]; // [macOS]
   return color;
 }
 
-RCTUIColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColor &dynamicColor) // [macOS]
+RCTPlatformColor *_Nullable UIColorFromDynamicColor(const facebook::react::DynamicColor &dynamicColor) // [macOS]
 {
   int32_t light = dynamicColor.lightColor;
   int32_t dark = dynamicColor.darkColor;
   int32_t highContrastLight = dynamicColor.highContrastLightColor;
   int32_t highContrastDark = dynamicColor.highContrastDarkColor;
 
-  RCTUIColor *lightColor = UIColorFromInt32(light); // [macOS]
-  RCTUIColor *darkColor = UIColorFromInt32(dark); // [macOS]
-  RCTUIColor *highContrastLightColor = UIColorFromInt32(highContrastLight); // [macOS]
-  RCTUIColor *highContrastDarkColor = UIColorFromInt32(highContrastDark); // [macOS]
+  RCTPlatformColor *lightColor = UIColorFromInt32(light); // [macOS]
+  RCTPlatformColor *darkColor = UIColorFromInt32(dark); // [macOS]
+  RCTPlatformColor *highContrastLightColor = UIColorFromInt32(highContrastLight); // [macOS]
+  RCTPlatformColor *highContrastDarkColor = UIColorFromInt32(highContrastDark); // [macOS]
 
   if (lightColor != nil && darkColor != nil) {
 #if !TARGET_OS_OSX // [macOS]
@@ -117,7 +117,7 @@ int32_t ColorFromColorComponents(const facebook::react::ColorComponents &compone
   return color;
 }
 
-int32_t ColorFromUIColor(RCTUIColor *color) // [macOS]
+int32_t ColorFromUIColor(RCTPlatformColor *color) // [macOS]
 {
   CGFloat rgba[4];
   [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
@@ -129,7 +129,7 @@ int32_t ColorFromUIColorForSpecificTraitCollection(
     const std::shared_ptr<void> &uiColor,
     UITraitCollection *traitCollection)
 {
-  RCTUIColor *color = (RCTUIColor *)unwrapManagedObject(uiColor); // [macOS]
+  RCTPlatformColor *color = (RCTPlatformColor *)unwrapManagedObject(uiColor); // [macOS]
   if (color) {
     color = [color resolvedColorWithTraitCollection:traitCollection];
     return ColorFromUIColor(color);
@@ -144,21 +144,21 @@ int32_t ColorFromUIColor(const std::shared_ptr<void> &uiColor)
 #if !TARGET_OS_OSX // [macOS]
   return ColorFromUIColorForSpecificTraitCollection(uiColor, [UITraitCollection currentTraitCollection]);
 #else // [macOS
-  RCTUIColor *color = (RCTUIColor *)unwrapManagedObject(uiColor);
+  RCTPlatformColor *color = (RCTPlatformColor *)unwrapManagedObject(uiColor);
   return ColorFromUIColor(color);
 #endif // macOS]
 }
 
-RCTUIColor *_Nullable UIColorFromComponentsColor(const facebook::react::ColorComponents &components) // [macOS]
+RCTPlatformColor *_Nullable UIColorFromComponentsColor(const facebook::react::ColorComponents &components) // [macOS]
 {
-  RCTUIColor *uiColor = nil; // [macOS]
+  RCTPlatformColor *uiColor = nil; // [macOS]
   if (components.colorSpace == ColorSpace::DisplayP3) {
-    uiColor = [RCTUIColor colorWithDisplayP3Red:components.red // [macOS]
+    uiColor = [RCTPlatformColor colorWithDisplayP3Red:components.red // [macOS]
                                        green:components.green
                                         blue:components.blue
                                        alpha:components.alpha];
   } else {
-    uiColor = [RCTUIColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha]; // [macOS]
+    uiColor = [RCTPlatformColor colorWithRed:components.red green:components.green blue:components.blue alpha:components.alpha]; // [macOS]
   }
 
   return uiColor;
@@ -233,7 +233,7 @@ Color::Color(const ColorComponents &components)
 
 Color::Color(std::shared_ptr<void> uiColor)
 {
-  RCTUIColor *color = ((RCTUIColor *)unwrapManagedObject(uiColor)); // [macOS]
+  RCTPlatformColor *color = ((RCTPlatformColor *)unwrapManagedObject(uiColor)); // [macOS]
   if (color) {
     auto colorHash = hashFromUIColor(uiColor);
     uiColorHashValue_ = colorHash;
@@ -260,7 +260,7 @@ int32_t Color::getColor() const
 float Color::getChannel(int channelId) const
 {
   CGFloat rgba[4];
-  RCTUIColor *color = (__bridge RCTUIColor *)getUIColor().get(); // [macOS]
+  RCTPlatformColor *color = (__bridge RCTPlatformColor *)getUIColor().get(); // [macOS]
   [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
   return static_cast<float>(rgba[channelId]);
 }

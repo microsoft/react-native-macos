@@ -66,8 +66,8 @@ RCT_EXPORT_MODULE();
 #else
     _currentSizeTextView.string = currentSizeTextViewString;
 #endif // macOS]
-    _currentSizeTextView.textColor = [RCTUIColor blackColor]; // [macOS]
-    _currentSizeTextView.backgroundColor = [RCTUIColor whiteColor]; // [macOS]
+    _currentSizeTextView.textColor = [RCTPlatformColor blackColor]; // [macOS]
+    _currentSizeTextView.backgroundColor = [RCTPlatformColor whiteColor]; // [macOS]
     _currentSizeTextView.font = [UIFont boldSystemFontOfSize:10];
 
     _resizableRootView.delegate = self;
