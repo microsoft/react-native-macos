@@ -723,6 +723,23 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _disableViewCullingIfNecessary];
   return [super focusItemsInRect:rect];
 }
+#else // [macOS
+- (NSArray *)accessibilityChildren
+{
+  // macOS equivalent of accessibilityElementCount: VoiceOver calls accessibilityChildren
+  // to enumerate child elements. Detecting this API use allows us to disable view culling
+  // when Accessibility Inspector or VoiceOver is active.
+  [self _disableViewCullingIfNecessary];
+  return [super accessibilityChildren];
+}
+
+- (id)accessibilityHitTest:(NSPoint)point
+{
+  // macOS equivalent of focusItemsInRect: VoiceOver calls accessibilityHitTest:
+  // when navigating spatially.
+  [self _disableViewCullingIfNecessary];
+  return [super accessibilityHitTest:point];
+}
 #endif // macOS]
 
 - (void)_updateStateWithContentOffset
@@ -751,7 +768,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
         newData.disableViewCulling =
             UIAccessibilityIsVoiceOverRunning() || UIAccessibilityIsSwitchControlRunning() || isAccessibilityAPIUsed;
 #else // [macOS
-        newData.disableViewCulling = isAccessibilityAPIUsed;
+        newData.disableViewCulling = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled] || isAccessibilityAPIUsed;
 #endif // macOS]
         return std::make_shared<const ScrollViewShadowNode::ConcreteState::Data>(newData);
       },
