@@ -100,10 +100,13 @@ RCT_EXPORT_MODULE_LOAD // [macOS]
   {                                                                                 \
     return @ #js_name;                                                              \
   }                                                                                 \
+  _Pragma("clang diagnostic push")                                                  \
+  _Pragma("clang diagnostic ignored \"-Wglobal-constructors\"")                     \
   __attribute__((constructor)) static void RCT_CONCAT(initialize_, objc_name)(void) \
   {                                                                                 \
     RCTRegisterModule([objc_name class]);                                           \
-  }
+  }                                                                                 \
+  _Pragma("clang diagnostic pop")
 
 // Implemented by RCT_EXPORT_MODULE
 + (NSString *)moduleName;
