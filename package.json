@@ -120,11 +120,13 @@
     "debug": ">=3.1.0",
     "eslint-plugin-react-hooks": "6.1.0-canary-12bc60f5-20250613",
     "react-is": "19.1.0",
-    "readable-stream": "^4.0.0 <4.4.2"
+    "readable-stream": "^4.0.0 <4.4.2",
+    "tar": "npm:7.5.10"
   },
   "_justification": {
     "debug": "ReDoS vulnerability in older versions, plus the dependents that pull in debug@<1.0.0 haven't been updated in years",
     "eslint-plugin-react-hooks": "Aligns linting with React 19 behaviour while upstream stabilizes the release",
-    "readable-stream": "Eliminates dependency on outdated string_decoder component"
+    "readable-stream": "Eliminates dependency on outdated string_decoder component",
+    "tar": "tar <=6.2.1 is vulnerable to CVE-2024-28863; node-gyp and cacache transitively pull tar 6.x"
   }
 }
