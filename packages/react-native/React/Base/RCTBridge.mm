@@ -120,63 +120,6 @@ static void RCTEnsureModuleClassesInitialized(void)
         dispatch_queue_create("com.facebook.react.ModuleClassesSyncQueue", DISPATCH_QUEUE_CONCURRENT);
   });
 }
-
-/**
- * Checks for unregistered modules that conform to RCTBridgeModule protocol.
- * This detects misconfiguration where external modules are compiled with
- * RCT_MODULE_NO_SELF_LOAD=1 but aren't in the moduleClassNames list.
- */
-static void RCTCheckForUnregisteredModules(NSArray<Class> *registeredClasses)
-{
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    NSMutableSet<Class> *registeredSet = [NSMutableSet setWithArray:registeredClasses];
-
-    // Get all loaded classes
-    int numClasses = objc_getClassList(NULL, 0);
-    if (numClasses <= 0) {
-      return;
-    }
-
-    Class *classes = (Class *)malloc(sizeof(Class) * numClasses);
-    numClasses = objc_getClassList(classes, numClasses);
-
-    NSMutableArray<NSString *> *unregisteredModules = [NSMutableArray new];
-
-    // Check each class that conforms to RCTBridgeModule
-    for (int i = 0; i < numClasses; i++) {
-      Class cls = classes[i];
-
-      // Skip if already registered
-      if ([registeredSet containsObject:cls]) {
-        continue;
-      }
-
-      // Check if class conforms to RCTBridgeModule protocol
-      if (class_conformsToProtocol(cls, @protocol(RCTBridgeModule))) {
-        // Skip if it's a core module that will be added
-        NSString *className = NSStringFromClass(cls);
-        if ([moduleClassNames containsObject:className]) {
-          continue;
-        }
-
-        [unregisteredModules addObject:className];
-      }
-    }
-
-    free(classes);
-
-    // Log warning if unregistered modules found
-    if ([unregisteredModules count] > 0) {
-      RCTLogWarn(@"⚠️ Detected unregistered RCTBridgeModule classes: %@\n"
-                 @"These modules may have been compiled with RCT_MODULE_NO_SELF_LOAD=1 "
-                 @"but are not in the core moduleClassNames list.\n"
-                 @"To fix: Either compile all modules with RCT_MODULE_NO_SELF_LOAD=0, "
-                 @"or add external modules to moduleClassNames in RCTBridge.mm",
-                 [unregisteredModules componentsJoinedByString:@", "]);
-    }
-  });
-}
 // macOS]
 
 NSArray<Class> *RCTGetModuleClasses(void)
@@ -201,9 +144,6 @@ NSArray<Class> *RCTGetModuleClasses(void)
 
   NSArray<Class> *finalResult = [result copy];
 
-  // Check for misconfigured external modules
-  RCTCheckForUnregisteredModules(finalResult);
-
   return finalResult;
 #else
   // macOS]
@@ -211,11 +151,6 @@ NSArray<Class> *RCTGetModuleClasses(void)
   dispatch_sync(RCTModuleClassesSyncQueue, ^{
     result = [RCTModuleClasses copy];
   });
-
-  // [macOS
-  // Check for misconfigured external modules
-  RCTCheckForUnregisteredModules(result);
-  // macOS]
 
   return result;
   // [macOS
