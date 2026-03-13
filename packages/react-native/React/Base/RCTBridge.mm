@@ -32,15 +32,130 @@
 #import "RCTReloadCommand.h"
 #import "RCTUtils.h"
 
+// [macOS
+/**
+ * List of core React Native modules.
+ *
+ * When RCT_MODULE_NO_SELF_LOAD is set to non-zero, module self-registration via +load is disabled.
+ * Instead, RCTBridge will register these modules at initialization time.
+ */
+static NSArray<NSString *> *moduleClassNames = @[
+  @"RCTViewManager",
+  @"RCTActivityIndicatorViewManager",
+  @"RCTDebuggingOverlayManager",
+  @"RCTModalHostViewManager",
+  @"RCTModalManager",
+  @"RCTRefreshControlManager",
+  @"RCTSafeAreaViewManager",
+  @"RCTScrollContentViewManager",
+  @"RCTScrollViewManager",
+  @"RCTSwitchManager",
+  @"RCTUIManager",
+  @"RCTAccessibilityManager",
+  @"RCTActionSheetManager",
+  @"RCTAlertManager",
+  @"RCTAppearance",
+  @"RCTAppState",
+  @"RCTClipboard",
+  @"RCTDeviceInfo",
+  @"RCTDevLoadingView",
+  @"RCTDevMenu",
+  @"RCTDevSettings",
+  @"RCTDevToolsRuntimeSettingsModule",
+  @"RCTEventDispatcher",
+  @"RCTExceptionsManager",
+  @"RCTI18nManager",
+  @"RCTKeyboardObserver",
+  @"RCTLogBox",
+  @"RCTPerfMonitor",
+  @"RCTPlatform",
+  @"RCTRedBox",
+  @"RCTSourceCode",
+  @"RCTStatusBarManager",
+  @"RCTTiming",
+  @"RCTWebSocketModule",
+  @"RCTNativeAnimatedModule",
+  @"RCTNativeAnimatedTurboModule",
+  @"RCTBlobManager",
+  @"RCTFileReaderModule",
+  @"RCTBundleAssetImageLoader",
+  @"RCTGIFImageDecoder",
+  @"RCTImageEditingManager",
+  @"RCTImageLoader",
+  @"RCTImageStoreManager",
+  @"RCTImageViewManager",
+  @"RCTLocalAssetImageLoader",
+  @"RCTLinkingManager",
+  @"RCTDataRequestHandler",
+  @"RCTFileRequestHandler",
+  @"RCTHTTPRequestHandler",
+  @"RCTNetworking",
+  @"RCTPushNotificationManager",
+  @"RCTSettingsManager",
+  @"RCTBaseTextViewManager",
+  @"RCTBaseTextInputViewManager",
+  @"RCTInputAccessoryViewManager",
+  @"RCTMultilineTextInputViewManager",
+  @"RCTRawTextViewManager",
+  @"RCTSinglelineTextInputViewManager",
+  @"RCTTextViewManager",
+  @"RCTVirtualTextViewManager",
+  @"RCTVibration",
+];
+// macOS]
+
 static NSMutableArray<Class> *RCTModuleClasses;
 static dispatch_queue_t RCTModuleClassesSyncQueue;
+
+// [macOS
+/**
+ * Make sure ModuleClassesSyncQueue is initialized before any referring functions are called.
+ */
+static void RCTEnsureModuleClassesInitialized(void)
+{
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    RCTModuleClasses = [NSMutableArray new];
+    RCTModuleClassesSyncQueue =
+        dispatch_queue_create("com.facebook.react.ModuleClassesSyncQueue", DISPATCH_QUEUE_CONCURRENT);
+  });
+}
+// macOS]
+
 NSArray<Class> *RCTGetModuleClasses(void)
 {
+  // [macOS
+  RCTEnsureModuleClassesInitialized();
+
+#if RCT_MODULE_NO_SELF_LOAD
+  // When RCT_MODULE_NO_SELF_LOAD is enabled, modules don't self-register via +load
+  // Add core React Native modules here instead
+  __block NSMutableArray<Class> *result;
+  dispatch_sync(RCTModuleClassesSyncQueue, ^{
+    result = [RCTModuleClasses mutableCopy];
+  });
+
+  for (NSString *className in moduleClassNames) {
+    Class cls = NSClassFromString(className);
+    if (cls != nil) {
+      [result addObject:cls];
+    }
+  }
+
+  NSArray<Class> *finalResult = [result copy];
+
+  return finalResult;
+#else
+  // macOS]
   __block NSArray<Class> *result;
   dispatch_sync(RCTModuleClassesSyncQueue, ^{
     result = [RCTModuleClasses copy];
   });
+
   return result;
+  // [macOS
+#endif //RCT_MODULE_NO_SELF_LOAD
+  // macOS]
 }
 
 NSSet<NSString *> *getCoreModuleClasses(void);
@@ -49,69 +164,7 @@ NSSet<NSString *> *getCoreModuleClasses(void)
   static NSSet<NSString *> *coreModuleClasses = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    coreModuleClasses = [NSSet setWithArray:@[
-      @"RCTViewManager",
-      @"RCTActivityIndicatorViewManager",
-      @"RCTDebuggingOverlayManager",
-      @"RCTModalHostViewManager",
-      @"RCTModalManager",
-      @"RCTRefreshControlManager",
-      @"RCTSafeAreaViewManager",
-      @"RCTScrollContentViewManager",
-      @"RCTScrollViewManager",
-      @"RCTSwitchManager",
-      @"RCTUIManager",
-      @"RCTAccessibilityManager",
-      @"RCTActionSheetManager",
-      @"RCTAlertManager",
-      @"RCTAppearance",
-      @"RCTAppState",
-      @"RCTClipboard",
-      @"RCTDeviceInfo",
-      @"RCTDevLoadingView",
-      @"RCTDevMenu",
-      @"RCTDevSettings",
-      @"RCTDevToolsRuntimeSettingsModule",
-      @"RCTEventDispatcher",
-      @"RCTExceptionsManager",
-      @"RCTI18nManager",
-      @"RCTKeyboardObserver",
-      @"RCTLogBox",
-      @"RCTPerfMonitor",
-      @"RCTPlatform",
-      @"RCTRedBox",
-      @"RCTSourceCode",
-      @"RCTStatusBarManager",
-      @"RCTTiming",
-      @"RCTWebSocketModule",
-      @"RCTNativeAnimatedModule",
-      @"RCTNativeAnimatedTurboModule",
-      @"RCTBlobManager",
-      @"RCTFileReaderModule",
-      @"RCTBundleAssetImageLoader",
-      @"RCTGIFImageDecoder",
-      @"RCTImageEditingManager",
-      @"RCTImageLoader",
-      @"RCTImageStoreManager",
-      @"RCTImageViewManager",
-      @"RCTLocalAssetImageLoader",
-      @"RCTLinkingManager",
-      @"RCTDataRequestHandler",
-      @"RCTFileRequestHandler",
-      @"RCTHTTPRequestHandler",
-      @"RCTNetworking",
-      @"RCTPushNotificationManager",
-      @"RCTSettingsManager",
-      @"RCTBaseTextViewManager",
-      @"RCTBaseTextInputViewManager",
-      @"RCTInputAccessoryViewManager",
-      @"RCTMultilineTextInputViewManager",
-      @"RCTRawTextViewManager",
-      @"RCTSinglelineTextInputViewManager",
-      @"RCTTextViewManager",
-      @"RCTVirtualTextViewManager",
-      @"RCTVibration",
-    ]];
+    coreModuleClasses = [NSSet setWithArray:moduleClassNames]; // [macOS]
   });
 
   return coreModuleClasses;
@@ -146,12 +199,8 @@ void RCTRegisterModule(Class moduleClass)
       ![getCoreModuleClasses() containsObject:[moduleClass description]]) {
     addModuleLoadedWithOldArch([moduleClass description]);
   }
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    RCTModuleClasses = [NSMutableArray new];
-    RCTModuleClassesSyncQueue =
-        dispatch_queue_create("com.facebook.react.ModuleClassesSyncQueue", DISPATCH_QUEUE_CONCURRENT);
-  });
+
+  RCTEnsureModuleClassesInitialized(); // [macOS]
 
   RCTAssert(
       [moduleClass conformsToProtocol:@protocol(RCTBridgeModule)],
