@@ -3,7 +3,7 @@
 
 const {
   copyProjectTemplateAndReplace,
-  installDependencies,
+  runPodInstall,
   printFinishMessage,
 } = require('./generator-macos');
 const fs = require('fs');
@@ -21,8 +21,6 @@ function generateMacOS (projectDir, name, options) {
     fs.mkdirSync(projectDir);
   }
 
-  installDependencies(options);
-
   copyProjectTemplateAndReplace(
     path.join(__dirname, 'generator-macos', 'templates'),
     projectDir,
@@ -30,6 +28,7 @@ function generateMacOS (projectDir, name, options) {
     { overwrite: options.overwrite }
   );
 
+  runPodInstall(options);
   printFinishMessage(name);
 }
 

@@ -105,15 +105,38 @@ function schemePath(basename, platform) {
 /**
  * @param {{ verbose?: boolean }=} options
  */
-function installDependencies(options) {
-  const cwd = process.cwd();
+function runPodInstall(options) {
+  const verbose = options && options.verbose;
+  console.log(`\nRunning ${chalk.bold('pod install --project-directory=macos')}...`);
+  try {
+    // Check if pod is available
+    childProcess.execSync('which pod', { stdio: 'ignore' });
+  } catch {
+    console.warn(
+      chalk.yellow(
+        `\n${chalk.bold('CocoaPods')} not found. Please install it and run:\n` +
+        `  ${chalk.cyan('pod install --project-directory=macos')}\n`
+      )
+    );
+    return;
+  }
 
-  // Install dependencies using correct package manager
-  const isYarn = fs.existsSync(path.join(cwd, 'yarn.lock'));
-
-  /** @type {{ stdio?: 'inherit' }} */
-  const execOptions = options && options.verbose ? { stdio: 'inherit' } : {};
-  childProcess.execSync(isYarn ? 'yarn' : 'npm i', execOptions);
+  try {
+    /** @type {{ stdio?: 'inherit' }} */
+    const execOptions = verbose ? { stdio: 'inherit' } : {};
+    childProcess.execSync('pod install --project-directory=macos', execOptions);
+    console.log(chalk.green('Successfully installed CocoaPods dependencies.'));
+  } catch (e) {
+    if (!verbose && e.stderr) {
+      console.error(e.stderr.toString());
+    }
+    console.warn(
+      chalk.yellow(
+        `\n${chalk.bold('pod install')} failed. You can retry manually:\n` +
+        `  ${chalk.cyan('pod install --project-directory=macos')}\n`
+      )
+    );
+  }
 }
 
 /**
@@ -122,14 +145,15 @@ function installDependencies(options) {
 function printFinishMessage(newProjectName) {
   console.log(`
   ${chalk.blue(`Run instructions for ${chalk.bold('macOS')}`)}:
-    • pod install --project-directory=macos
-    • npx react-native run-macos
-    • yarn start:macos
+    • ${chalk.cyan('npx react-native run-macos')}
+
+  To start the Metro bundler separately:
+    • ${chalk.cyan('npx react-native start')}
 `);
 }
 
 module.exports = {
   copyProjectTemplateAndReplace,
-  installDependencies,
+  runPodInstall,
   printFinishMessage,
 };
