@@ -3,7 +3,6 @@
 
 const {
   copyProjectTemplateAndReplace,
-  runPodInstall,
   printFinishMessage,
 } = require('./generator-macos');
 const fs = require('fs');
@@ -28,7 +27,6 @@ function generateMacOS (projectDir, name, options) {
     { overwrite: options.overwrite }
   );
 
-  runPodInstall(options);
   printFinishMessage(name);
 }
 

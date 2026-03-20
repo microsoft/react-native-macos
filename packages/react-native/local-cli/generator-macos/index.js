@@ -7,9 +7,7 @@ const {
   copyAndReplaceAll,
   createDir,
 } = require('../generator-common');
-const chalk = require('chalk');
-const childProcess = require('child_process');
-const fs = require('fs');
+const { styleText } = require('node:util');
 const path = require('path');
 
 const macOSDir = 'macos';
@@ -103,57 +101,20 @@ function schemePath(basename, platform) {
 }
 
 /**
- * @param {{ verbose?: boolean }=} options
- */
-function runPodInstall(options) {
-  const verbose = options && options.verbose;
-  console.log(`\nRunning ${chalk.bold('pod install --project-directory=macos')}...`);
-  try {
-    // Check if pod is available
-    childProcess.execSync('which pod', { stdio: 'ignore' });
-  } catch {
-    console.warn(
-      chalk.yellow(
-        `\n${chalk.bold('CocoaPods')} not found. Please install it and run:\n` +
-        `  ${chalk.cyan('pod install --project-directory=macos')}\n`
-      )
-    );
-    return;
-  }
-
-  try {
-    /** @type {{ stdio?: 'inherit' }} */
-    const execOptions = verbose ? { stdio: 'inherit' } : {};
-    childProcess.execSync('pod install --project-directory=macos', execOptions);
-    console.log(chalk.green('Successfully installed CocoaPods dependencies.'));
-  } catch (e) {
-    if (!verbose && e.stderr) {
-      console.error(e.stderr.toString());
-    }
-    console.warn(
-      chalk.yellow(
-        `\n${chalk.bold('pod install')} failed. You can retry manually:\n` +
-        `  ${chalk.cyan('pod install --project-directory=macos')}\n`
-      )
-    );
-  }
-}
-
-/**
  * @param {string} newProjectName
  */
 function printFinishMessage(newProjectName) {
   console.log(`
-  ${chalk.blue(`Run instructions for ${chalk.bold('macOS')}`)}:
-    • ${chalk.cyan('npx react-native run-macos')}
+  ${styleText('blue', `Run instructions for ${styleText('bold', 'macOS')}`)}:
+    • ${styleText('cyan', 'pod install --project-directory=macos')}
+    • ${styleText('cyan', 'npx react-native run-macos')}
 
   To start the Metro bundler separately:
-    • ${chalk.cyan('npx react-native start')}
+    • ${styleText('cyan', 'npx react-native start')}
 `);
 }
 
 module.exports = {
   copyProjectTemplateAndReplace,
-  runPodInstall,
   printFinishMessage,
 };
