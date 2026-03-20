@@ -220,6 +220,41 @@ function printError(message: string, ...optionalParams: any[]) {
   console.error(chalk.red(chalk.bold(message)), ...optionalParams);
 }
 
+/**
+ * Checks if the resolved react-native-macos version's peer dependency on
+ * react-native is compatible with the installed version. Warns if not.
+ */
+async function validatePeerDependencies(
+  macosVersion: string,
+  installedRNVersion: string,
+): Promise<void> {
+  try {
+    const npmResponse = await npmFetch.json(`${MACOSPKG}/${macosVersion}`, {
+      registry: getNpmRegistryUrl(),
+    });
+    const peerDeps = (npmResponse as any).peerDependencies;
+    if (peerDeps && peerDeps[RNPKG]) {
+      const requiredRN = peerDeps[RNPKG];
+      if (!semver.satisfies(installedRNVersion, requiredRN)) {
+        console.warn(
+          chalk.yellow(
+            `\n${chalk.bold('Warning:')} ${printPkg(
+              MACOSPKG,
+              macosVersion,
+            )} requires ${printPkg(RNPKG, requiredRN)}, ` +
+              `but you have ${printPkg(
+                RNPKG,
+                installedRNVersion,
+              )} installed.\n`,
+          ),
+        );
+      }
+    }
+  } catch {
+    // Non-fatal — if we can't check, proceed anyway
+  }
+}
+
 (async () => {
   try {
     const {overwrite, verbose} = argv;
@@ -288,6 +323,11 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
       }
     }
 
+    await validatePeerDependencies(
+      reactNativeMacOSResolvedVersion,
+      reactNativeVersion,
+    );
+
     const pkgLatest = printPkg(MACOSPKG, version);
 
     if (reactNativeMacOSResolvedVersion !== reactNativeMacOSVersion) {
@@ -298,10 +338,31 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
       );
 
       const pkgmgr = isProjectUsingYarn(process.cwd())
-        ? `yarn add${verbose ? '' : ' --silent'}`
-        : `npm install --save${verbose ? '' : ' --silent'}`;
+        ? 'yarn add'
+        : 'npm install --save';
       const execOptions = verbose ? {stdio: 'inherit' as const} : {};
-      execSync(`${pkgmgr} "${MACOSPKG}@${version}"`, execOptions);
+
+      try {
+        execSync(`${pkgmgr} "${MACOSPKG}@${version}"`, execOptions);
+      } catch (e: any) {
+        // When not verbose, execSync captures output in the error object
+        if (!verbose) {
+          if (e.stderr) {
+            console.error(e.stderr.toString());
+          }
+          if (e.stdout) {
+            console.log(e.stdout.toString());
+          }
+        }
+        printError(
+          `Failed to install ${printPkg(MACOSPKG, version)}.\n` +
+            `This can happen if there is a peer dependency mismatch between ` +
+            `${RNPKG} and ${MACOSPKG}.\n` +
+            `Check that your installed version of ${chalk.yellow(RNPKG)} is compatible ` +
+            `with ${printPkg(MACOSPKG, version)}.`,
+        );
+        process.exit(EXITCODE_UNKNOWN_ERROR);
+      }
 
       console.log(`${pkgLatest} ${chalk.green('successfully installed!')}`);
     } else {
