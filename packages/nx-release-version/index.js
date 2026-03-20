@@ -64,6 +64,16 @@ async function runSetVersion() {
       'Core',
       'ReactNativeVersion.js',
     ),
+    path.join(
+      REPO_ROOT,
+      'packages',
+      'react-native',
+      'scripts',
+      'codegen',
+      '__tests__',
+      '__snapshots__',
+      'generate-artifacts-executor-test.js.snap',
+    ),
   ];
 }
 
