@@ -7,7 +7,7 @@ const {
   copyAndReplaceAll,
   createDir,
 } = require('../generator-common');
-const chalk = require('chalk');
+const { styleText } = require('node:util');
 const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -107,15 +107,15 @@ function schemePath(basename, platform) {
  */
 function runPodInstall(options) {
   const verbose = options && options.verbose;
-  console.log(`\nRunning ${chalk.bold('pod install --project-directory=macos')}...`);
+  console.log(`\nRunning ${styleText('bold', 'pod install --project-directory=macos')}...`);
   try {
     // Check if pod is available
     childProcess.execSync('which pod', { stdio: 'ignore' });
   } catch {
     console.warn(
-      chalk.yellow(
-        `\n${chalk.bold('CocoaPods')} not found. Please install it and run:\n` +
-        `  ${chalk.cyan('pod install --project-directory=macos')}\n`
+      styleText('yellow',
+        `\n${styleText('bold', 'CocoaPods')} not found. Please install it and run:\n` +
+        `  ${styleText('cyan', 'pod install --project-directory=macos')}\n`
       )
     );
     return;
@@ -125,15 +125,15 @@ function runPodInstall(options) {
     /** @type {{ stdio?: 'inherit' }} */
     const execOptions = verbose ? { stdio: 'inherit' } : {};
     childProcess.execSync('pod install --project-directory=macos', execOptions);
-    console.log(chalk.green('Successfully installed CocoaPods dependencies.'));
+    console.log(styleText('green', 'Successfully installed CocoaPods dependencies.'));
   } catch (e) {
     if (!verbose && e.stderr) {
       console.error(e.stderr.toString());
     }
     console.warn(
-      chalk.yellow(
-        `\n${chalk.bold('pod install')} failed. You can retry manually:\n` +
-        `  ${chalk.cyan('pod install --project-directory=macos')}\n`
+      styleText('yellow',
+        `\n${styleText('bold', 'pod install')} failed. You can retry manually:\n` +
+        `  ${styleText('cyan', 'pod install --project-directory=macos')}\n`
       )
     );
   }
@@ -144,11 +144,11 @@ function runPodInstall(options) {
  */
 function printFinishMessage(newProjectName) {
   console.log(`
-  ${chalk.blue(`Run instructions for ${chalk.bold('macOS')}`)}:
-    • ${chalk.cyan('npx react-native run-macos')}
+  ${styleText('blue', `Run instructions for ${styleText('bold', 'macOS')}`)}:
+    • ${styleText('cyan', 'npx react-native run-macos')}
 
   To start the Metro bundler separately:
-    • ${chalk.cyan('npx react-native start')}
+    • ${styleText('cyan', 'npx react-native start')}
 `);
 }
 

@@ -18,7 +18,6 @@
   },
   "bin": "./bin.js",
   "dependencies": {
-    "chalk": "^3",
     "find-up": "^4.1.0",
     "npm-registry-fetch": "^14.0.0",
     "prompts": "^2.3.0",
@@ -27,7 +26,7 @@
   },
   "devDependencies": {
     "@rnx-kit/tsconfig": "^2.0.0",
-    "@types/chalk": "^2.2.0",
+    "@types/node": "^22.0.0",
     "@types/npm-registry-fetch": "^8.0.0",
     "@types/prompts": "^2.0.3",
     "@types/semver": "^7.1.0",
