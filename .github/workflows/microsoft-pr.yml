@@ -132,13 +132,11 @@ jobs:
     permissions: {}
     uses: ./.github/workflows/microsoft-build-rntester.yml
 
-  # https://github.com/microsoft/react-native-macos/issues/2344
-  # Disable these tests because verdaccio hangs
-  # test-react-native-macos-init:
-  #   name: "Test react-native-macos init"
-  #   permissions: {}
-  #   if: ${{ endsWith(github.base_ref, '-stable') }}
-  #   uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
+  test-react-native-macos-init:
+    name: "Test react-native-macos init"
+    permissions: {}
+    if: ${{ endsWith(github.base_ref, '-stable') }}
+    uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
 
   # https://github.com/microsoft/react-native-macos/issues/2344
   # Disable these tests because verdaccio hangs
@@ -158,7 +156,7 @@ jobs:
       - yarn-constraints
       - javascript-tests
       - build-rntester
-      # - test-react-native-macos-init
+      - test-react-native-macos-init
       # - react-native-test-app-integration
     steps:
       - name: All required jobs passed

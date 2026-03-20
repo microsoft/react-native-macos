@@ -32,42 +32,32 @@ jobs:
         working-directory: packages/react-native-macos-init
         run: yarn build
 
-      - name: Start Verdaccio server
+      - name: Determine React Native version
+        id: rn-version
         run: |
-          set -euo pipefail
-          nohup npx --yes verdaccio --config .ado/verdaccio/config.yaml >/dev/null 2>&1 &
-          echo $! > $RUNNER_TEMP/verdaccio.pid
-      - name: Wait for Verdaccio to be ready
-        run: node .ado/scripts/waitForVerdaccio.mjs http://localhost:4873
-
-      - name: Configure npm for Verdaccio
-        run: .ado/scripts/verdaccio.sh init
-
-      - name: Publish to Verdaccio
-        run: .ado/scripts/verdaccio.sh publish --branch origin/${{ github.base_ref }}
-
-      - name: Export versions
-        run: node .ado/scripts/export-versions.mjs
+          RN_VERSION=$(node -e "
+            const pkg = require('./packages/react-native/package.json');
+            console.log(pkg.peerDependencies['react-native']);
+          ")
+          echo "version=$RN_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Initialize new project
         run: |
           set -eox pipefail
-          npx --yes @react-native-community/cli init testcli --version $(cat .react_native_version) --skip-install
+          npx --yes @react-native-community/cli init testcli --version ${{ steps.rn-version.outputs.version }}
         working-directory: ${{ runner.temp }}
 
-      - name: Install dependencies in new project
+      - name: Install local react-native-macos
         working-directory: ${{ runner.temp }}/testcli
         run: |
           set -eox pipefail
-          yarn install --mode=update-lockfile
-          yarn install
+          npm install ${{ github.workspace }}/packages/react-native
 
       - name: Apply macOS template
         working-directory: ${{ runner.temp }}/testcli
         run: |
           set -eox pipefail
-          ${{ github.workspace }}/.ado/scripts/verdaccio.sh configure
-          node ${{ github.workspace }}/packages/react-native-macos-init/bin.js --verbose --version latest --overwrite --prerelease
+          node ${{ github.workspace }}/packages/react-native-macos-init/bin.js --verbose --overwrite --prerelease
           pod install --project-directory=macos
 
       - name: Build macOS app
@@ -75,10 +65,3 @@ jobs:
         run: |
           set -eox pipefail
           npx react-native build-macos
-
-      - name: Stop Verdaccio
-        if: always()
-        run: |
-          if [ -f "$RUNNER_TEMP/verdaccio.pid" ]; then
-            kill "$(cat $RUNNER_TEMP/verdaccio.pid)" || true
-          fi
