@@ -78,10 +78,6 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 @interface RCTParagraphSelectableTextView : UITextView
 #endif
 
-@property (nonatomic) ParagraphShadowNode::ConcreteState::Shared state;
-@property (nonatomic) ParagraphAttributes paragraphAttributes;
-@property (nonatomic) LayoutMetrics layoutMetrics;
-
 @end
 // macOS]
 
@@ -138,13 +134,11 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
 - (NSAttributedString *_Nullable)attributedText
 {
-  // Prefer the selectable text view's state if active, otherwise fall back to the default text view.
-  ParagraphShadowNode::ConcreteState::Shared state = _selectableTextView ? _selectableTextView.state : _textView.state;
-  if (!state) {
+  if (!_textView.state) {
     return nil;
   }
 
-  return RCTNSAttributedStringFromAttributedString(state->getData().attributedString);
+  return RCTNSAttributedStringFromAttributedString(_textView.state->getData().attributedString);
 }
 
 #pragma mark - RCTComponentViewProtocol
@@ -182,14 +176,11 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
 - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
 {
-  auto concreteState = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state);
-
-  _textView.state = concreteState;
+  _textView.state = std::static_pointer_cast<const ParagraphShadowNode::ConcreteState>(state);
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
 
   if (_selectableTextView) {
-    _selectableTextView.state = concreteState;
     [self _syncSelectableTextStorage];
   }
 }
@@ -205,7 +196,6 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   [self setNeedsLayout];
 
   if (_selectableTextView) {
-    _selectableTextView.layoutMetrics = _layoutMetrics;
     [self _syncSelectableTextStorage];
   }
 }
@@ -240,9 +230,6 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   }
 
   _selectableTextView = [[RCTParagraphSelectableTextView alloc] initWithFrame:self.bounds];
-  _selectableTextView.state = _textView.state;
-  _selectableTextView.paragraphAttributes = _paragraphAttributes;
-  _selectableTextView.layoutMetrics = _textView.layoutMetrics;
 
 #if TARGET_OS_OSX // [macOS
   _selectableTextView.delegate = self;
@@ -296,11 +283,11 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
 - (void)_syncSelectableTextStorage
 {
-  if (!_selectableTextView || !_selectableTextView.state) {
+  if (!_selectableTextView || !_textView.state) {
     return;
   }
 
-  const auto &stateData = _selectableTextView.state->getData();
+  const auto &stateData = _textView.state->getData();
   auto textLayoutManager = stateData.layoutManager.lock();
   if (!textLayoutManager) {
     return;
@@ -369,12 +356,11 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   // If the component is not `accessible`, we return an empty array.
   // We do this because logically all nested <Text> components represent the content of the <Paragraph> component;
   // in other words, all nested <Text> components individually have no sense without the <Paragraph>.
-  ParagraphShadowNode::ConcreteState::Shared state = _selectableTextView ? _selectableTextView.state : _textView.state;
-  if (!state || !paragraphProps.accessible) {
+  if (!_textView.state || !paragraphProps.accessible) {
     return [NSArray new];
   }
 
-  auto &data = state->getData();
+  auto &data = _textView.state->getData();
 
   if (![_accessibilityProvider isUpToDate:data.attributedString]) {
     auto textLayoutManager = data.layoutManager.lock();
@@ -451,7 +437,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
 {
-  ParagraphShadowNode::ConcreteState::Shared state = _selectableTextView ? _selectableTextView.state : _textView.state;
+  const auto &state = _textView.state;
   if (!state) {
     return _eventEmitter;
   }
