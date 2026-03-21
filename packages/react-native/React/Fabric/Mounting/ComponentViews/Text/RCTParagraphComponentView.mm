@@ -738,11 +738,9 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
 
 #else
 
-- (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
-{
-  // Let the parent RCTParagraphComponentView handle touch routing.
-  return nil;
-}
+// On iOS, let UITextView handle touches natively for selection support.
+// No hitTest override needed — UITextView's built-in gesture recognizers
+// handle long-press-to-select and other selection interactions.
 
 #endif
 
