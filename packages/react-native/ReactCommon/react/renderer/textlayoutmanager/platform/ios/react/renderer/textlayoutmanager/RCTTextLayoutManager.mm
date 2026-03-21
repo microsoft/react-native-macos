@@ -438,6 +438,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   return TextMeasurement{{size.width, size.height}, attachments};
 }
 
+// [macOS iOS
 - (NSTextStorage *)getTextStorageForAttributedString:(AttributedString)attributedString
                                  paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                                                 size:(CGSize)size
@@ -449,5 +450,6 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
 
   return textStorage;
 }
+// macOS iOS]
 
 @end

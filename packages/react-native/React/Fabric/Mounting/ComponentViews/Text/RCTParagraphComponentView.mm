@@ -163,11 +163,14 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   _textView.paragraphAttributes = _paragraphAttributes;
 
   if (newParagraphProps.isSelectable != oldParagraphProps.isSelectable) {
+    // [macOS Replaced enableContextMenu/disableContextMenu with _enableSelection/_disableSelection
+    // to swap in a native text view that supports text selection.
     if (newParagraphProps.isSelectable) {
       [self _enableSelection];
     } else {
       [self _disableSelection];
     }
+    // macOS]
   }
 
   [super updateProps:props oldProps:oldProps];
@@ -180,7 +183,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   [self setNeedsLayout];
 
   if (_selectableTextView) {
-    [self _syncSelectableTextStorage];
+    [self updateSelectableTextStorage];
   }
 }
 
@@ -195,7 +198,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   [self setNeedsLayout];
 
   if (_selectableTextView) {
-    [self _syncSelectableTextStorage];
+    [self updateSelectableTextStorage];
   }
 }
 
@@ -249,7 +252,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 #endif // macOS]
 
   // Sync text content into the native text view.
-  [self _syncSelectableTextStorage];
+  [self updateSelectableTextStorage];
 
   // Swap: remove the default text view, install the selectable one.
   [_textView removeFromSuperview];
@@ -280,7 +283,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   [_textView setNeedsDisplay];
 }
 
-- (void)_syncSelectableTextStorage
+- (void)updateSelectableTextStorage
 {
   if (!_selectableTextView || !_textView.state) {
     return;
