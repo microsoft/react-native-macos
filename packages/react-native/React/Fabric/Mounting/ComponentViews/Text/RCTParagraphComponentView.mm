@@ -29,15 +29,16 @@
 #import "RCTConversions.h"
 #import "RCTFabricComponentsPlugins.h"
 
-#import <React/RCTSurfaceTouchHandler.h> // [macOS]
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTSurfaceTouchHandler.h>
+#endif // macOS]
 
 using namespace facebook::react;
 
-#pragma mark - Touch Cancellation Helper
-
-// Cancel React Native's touch handling by finding the RCTSurfaceTouchHandler
+// [macOS Cancel React Native's touch handling by finding the RCTSurfaceTouchHandler
 // gesture recognizer in the view hierarchy and toggling its enabled state.
 // This matches what RCTSurfaceTouchHandler._cancelTouches does internally.
+#if TARGET_OS_OSX
 static void RCTCancelTouchesForView(RCTPlatformView *view)
 {
   while (view) {
@@ -51,12 +52,13 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
     view = view.superview;
   }
 }
+#endif
+// macOS]
 
 #pragma mark - RCTParagraphTextView (default, non-selectable)
 
 // ParagraphTextView is an auxiliary view we set as contentView so the drawing
-// can happen on top of the layers manipulated by RCTViewComponentView (the parent view).
-// Used when selectable={false} (the default).
+// can happen on top of the layers manipulated by RCTViewComponentView (the parent view)
 @interface RCTParagraphTextView : RCTUIView // [macOS]
 
 @property (nonatomic) ParagraphShadowNode::ConcreteState::Shared state;
@@ -65,16 +67,14 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
 @end
 
-#pragma mark - RCTParagraphSelectableTextView (selectable)
-
-// Platform-native text view used when selectable={true}.
+// [macOS Platform-native text view used when selectable={true}.
 // Handles both text rendering and native text selection.
-#if TARGET_OS_OSX // [macOS
+#if TARGET_OS_OSX
 @interface RCTParagraphSelectableTextView : NSTextView
 
 - (void)setNeedsDisplay;
 
-#else // macOS]
+#else
 @interface RCTParagraphSelectableTextView : UITextView
 #endif
 
@@ -83,6 +83,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 @property (nonatomic) LayoutMetrics layoutMetrics;
 
 @end
+// macOS]
 
 #pragma mark - RCTParagraphComponentView
 
@@ -95,16 +96,16 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 #else // [macOS
 @interface RCTParagraphComponentView () <NSTextViewDelegate>
 @end
-#endif // [macOS]
+#endif // macOS]
 
 @implementation RCTParagraphComponentView {
   ParagraphAttributes _paragraphAttributes;
   RCTParagraphComponentAccessibilityProvider *_accessibilityProvider;
 #if !TARGET_OS_OSX // [macOS]
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
-#endif // macOS]
+#endif // [macOS]
   RCTParagraphTextView *_textView;
-  RCTParagraphSelectableTextView *_selectableTextView;
+  RCTParagraphSelectableTextView *_selectableTextView; // [macOS]
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -114,7 +115,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
 #if !TARGET_OS_OSX // [macOS]
     self.opaque = NO;
-#endif // macOS]
+#endif // [macOS]
     _textView = [RCTParagraphTextView new];
     _textView.backgroundColor = RCTPlatformColor.clearColor; // [macOS]
     self.contentView = _textView;
@@ -259,7 +260,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   _selectableTextView.textContainerInset = UIEdgeInsetsZero;
   _selectableTextView.textContainer.lineFragmentPadding = 0;
   _selectableTextView.backgroundColor = [UIColor clearColor];
-#endif
+#endif // macOS]
 
   // Sync text content into the native text view.
   [self _syncSelectableTextStorage];
@@ -271,7 +272,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 #if !TARGET_OS_OSX // [macOS]
   // On iOS, also enable the context menu (long press to copy).
   [self enableContextMenu];
-#endif // macOS]
+#endif // [macOS]
 }
 
 - (void)_disableSelection
@@ -282,7 +283,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
 #if !TARGET_OS_OSX // [macOS]
   [self disableContextMenu];
-#endif // macOS]
+#endif // [macOS]
 
   // Swap back: remove the selectable text view, restore the default one.
   [_selectableTextView removeFromSuperview];
@@ -333,7 +334,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   // On iOS, set the attributed text directly. UITextView manages its own layout.
   _selectableTextView.attributedText = textStorage;
   _selectableTextView.frame = frame;
-#endif
+#endif // macOS]
 }
 
 #pragma mark - Accessibility
@@ -360,7 +361,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   return NO;
 }
 
-#if !TARGET_OS_OSX // [macOS
+#if !TARGET_OS_OSX // [macOS]
 - (NSArray *)accessibilityElements
 {
   const auto &paragraphProps = static_cast<const ParagraphProps &>(*_props);
@@ -720,11 +721,12 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
 
 @end
 
+// [macOS
 #pragma mark - RCTParagraphSelectableTextView Implementation
 
 @implementation RCTParagraphSelectableTextView
 
-#if TARGET_OS_OSX // [macOS
+#if TARGET_OS_OSX
 
 - (void)setNeedsDisplay
 {
@@ -748,7 +750,7 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
   return [super resignFirstResponder];
 }
 
-#else // macOS]
+#else
 
 - (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
@@ -759,3 +761,4 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
 #endif
 
 @end
+// macOS]
