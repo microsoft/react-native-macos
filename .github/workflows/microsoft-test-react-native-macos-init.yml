@@ -1,0 +1,67 @@
+name: Test react-native-macos init
+
+on:
+  workflow_call:
+
+jobs:
+  test-react-native-macos-init:
+    name: "Test react-native-macos init"
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+          lfs: false
+          clean: true
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+          platform: 'macos'
+
+      - name: Install npm dependencies
+        run: yarn install
+
+      - name: Build community CLI plugin
+        run: yarn build
+
+      - name: Build react-native-macos-init
+        working-directory: packages/react-native-macos-init
+        run: yarn build
+
+      - name: Determine React Native version
+        id: rn-version
+        run: |
+          RN_VERSION=$(node -e "
+            const pkg = require('./packages/react-native/package.json');
+            console.log(pkg.peerDependencies['react-native']);
+          ")
+          echo "version=$RN_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Initialize new project
+        run: |
+          set -eox pipefail
+          npx --yes @react-native-community/cli init testcli --version ${{ steps.rn-version.outputs.version }}
+        working-directory: ${{ runner.temp }}
+
+      - name: Install local react-native-macos
+        working-directory: ${{ runner.temp }}/testcli
+        run: |
+          set -eox pipefail
+          npm install ${{ github.workspace }}/packages/react-native
+
+      - name: Apply macOS template
+        working-directory: ${{ runner.temp }}/testcli
+        run: |
+          set -eox pipefail
+          node ${{ github.workspace }}/packages/react-native-macos-init/bin.js --verbose --overwrite --prerelease
+          pod install --project-directory=macos
+
+      - name: Build macOS app
+        working-directory: ${{ runner.temp }}/testcli
+        run: |
+          set -eox pipefail
+          npx react-native build-macos

@@ -13,7 +13,7 @@
 
 RCT_EXPORT_MODULE()
 
-- (RCTUIView *)view // [macOS]
+- (RCTPlatformView *)view // [macOS]
 {
   return [[RCTMultilineTextInputView alloc] initWithBridge:self.bridge];
 }

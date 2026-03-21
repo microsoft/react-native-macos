@@ -4,29 +4,22 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {ImageProps} from 'react-native/Libraries/Image/ImageProps';
-import type {LayoutEvent} from 'react-native/Libraries/Types/CoreEventTypes';
+import type {ImageProps, LayoutChangeEvent} from 'react-native';
 
 import RNTesterButton from '../../components/RNTesterButton';
 import RNTesterText from '../../components/RNTesterText';
 import ImageCapInsetsExample from './ImageCapInsetsExample';
 import React from 'react';
-import {
-  Image,
-  ImageBackground,
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native'; // [macOS]
-import * as ReactNativeFeatureFlags from 'react-native/src/private/featureflags/ReactNativeFeatureFlags';
+import {useEffect, useState} from 'react';
+import {Image, ImageBackground, StyleSheet, Text, View} from 'react-native';
+import {Platform} from 'react-native'; // [macOS]
 
 const IMAGE1 =
   'https://www.facebook.com/assets/fb_lite_messaging/E2EE-settings@3x.png';
@@ -38,18 +31,18 @@ const base64Icon =
 const IMAGE_PREFETCH_URL = `${IMAGE1}?r=1&t=${Date.now()}`;
 const prefetchTask = Image.prefetch(IMAGE_PREFETCH_URL);
 
-type ImageSource = $ReadOnly<{|
+type ImageSource = $ReadOnly<{
   uri: string,
-|}>;
+}>;
 
-type BlobImageProps = $ReadOnly<{|
+type BlobImageProps = $ReadOnly<{
   url: string,
-|}>;
+}>;
 
 const BlobImage = ({url}: BlobImageProps): React.Node => {
-  const [objectURL, setObjectURL] = React.useState<?string>(null);
+  const [objectURL, setObjectURL] = useState<?string>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // $FlowFixMe[unused-promise]
     (async () => {
       const result = await fetch(url);
@@ -65,11 +58,11 @@ const BlobImage = ({url}: BlobImageProps): React.Node => {
   );
 };
 
-type BlobImageExampleState = {||};
+type BlobImageExampleState = {};
 
-type BlobImageExampleProps = $ReadOnly<{|
+type BlobImageExampleProps = $ReadOnly<{
   urls: string[],
-|}>;
+}>;
 
 class BlobImageExample extends React.Component<
   BlobImageExampleProps,
@@ -86,20 +79,20 @@ class BlobImageExample extends React.Component<
   }
 }
 
-type NetworkImageCallbackExampleProps = $ReadOnly<{|
+type NetworkImageCallbackExampleProps = $ReadOnly<{
   source: ImageSource,
   prefetchedSource: ImageSource,
-|}>;
+}>;
 
 const NetworkImageCallbackExample = ({
   source,
   prefetchedSource,
 }: NetworkImageCallbackExampleProps): React.Node => {
-  const [events, setEvents] = React.useState<$ReadOnlyArray<string>>([]);
-  const [startLoadPrefetched, setStartLoadPrefetched] = React.useState(false);
-  const [mountTime, setMountTime] = React.useState(Date.now());
+  const [events, setEvents] = useState<$ReadOnlyArray<string>>([]);
+  const [startLoadPrefetched, setStartLoadPrefetched] = useState(false);
+  const [mountTime, setMountTime] = useState(Date.now());
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMountTime(Date.now());
   }, []);
 
@@ -202,11 +195,11 @@ const NetworkImageCallbackExample = ({
   );
 };
 
-type NetworkImageExampleState = {|
+type NetworkImageExampleState = {
   error: ?string,
   loading: boolean,
   progress: $ReadOnlyArray<number>,
-|};
+};
 
 class NetworkImageExample extends React.Component<
   ImageProps,
@@ -250,14 +243,14 @@ class NetworkImageExample extends React.Component<
   }
 }
 
-type ImageSizeExampleState = {|
+type ImageSizeExampleState = {
   width: number,
   height: number,
-|};
+};
 
-type ImageSizeExampleProps = $ReadOnly<{|
+type ImageSizeExampleProps = $ReadOnly<{
   source: ImageSource,
-|}>;
+}>;
 
 class ImageSizeExample extends React.Component<
   ImageSizeExampleProps,
@@ -287,12 +280,12 @@ class ImageSizeExample extends React.Component<
   }
 }
 
-type MultipleSourcesExampleState = {|
+type MultipleSourcesExampleState = {
   width: number,
   height: number,
-|};
+};
 
-type MultipleSourcesExampleProps = $ReadOnly<{||}>;
+type MultipleSourcesExampleProps = $ReadOnly<{}>;
 
 class MultipleSourcesExample extends React.Component<
   MultipleSourcesExampleProps,
@@ -363,11 +356,11 @@ class MultipleSourcesExample extends React.Component<
   }
 }
 
-type LoadingIndicatorSourceExampleState = {|
+type LoadingIndicatorSourceExampleState = {
   imageHash: number,
-|};
+};
 
-type LoadingIndicatorSourceExampleProps = $ReadOnly<{||}>;
+type LoadingIndicatorSourceExampleProps = $ReadOnly<{}>;
 
 class LoadingIndicatorSourceExample extends React.Component<
   LoadingIndicatorSourceExampleProps,
@@ -411,11 +404,11 @@ class LoadingIndicatorSourceExample extends React.Component<
   }
 }
 
-type FadeDurationExampleState = {|
+type FadeDurationExampleState = {
   imageHash: number,
-|};
+};
 
-type FadeDurationExampleProps = $ReadOnly<{||}>;
+type FadeDurationExampleProps = $ReadOnly<{}>;
 
 class FadeDurationExample extends React.Component<
   FadeDurationExampleProps,
@@ -452,13 +445,13 @@ class FadeDurationExample extends React.Component<
   }
 }
 
-type OnLayoutExampleState = {|
+type OnLayoutExampleState = {
   width: number,
   height: number,
   layoutHandlerMessage: string,
-|};
+};
 
-type OnLayoutExampleProps = $ReadOnly<{||}>;
+type OnLayoutExampleProps = $ReadOnly<{}>;
 
 class OnLayoutExample extends React.Component<
   OnLayoutExampleProps,
@@ -470,7 +463,7 @@ class OnLayoutExample extends React.Component<
     layoutHandlerMessage: 'No Message',
   };
 
-  onLayoutHandler = (event: LayoutEvent) => {
+  onLayoutHandler = (event: LayoutChangeEvent) => {
     this.setState({
       width: this.state.width,
       height: this.state.height,
@@ -547,11 +540,11 @@ class OnLayoutExample extends React.Component<
   }
 }
 
-type OnPartialLoadExampleState = {|
+type OnPartialLoadExampleState = {
   hasLoaded: boolean,
-|};
+};
 
-type OnPartialLoadExampleProps = $ReadOnly<{||}>;
+type OnPartialLoadExampleProps = $ReadOnly<{}>;
 
 class OnPartialLoadExample extends React.Component<
   OnPartialLoadExampleProps,
@@ -586,10 +579,8 @@ class OnPartialLoadExample extends React.Component<
 }
 
 const VectorDrawableExample = () => {
-  const isEnabled = ReactNativeFeatureFlags.loadVectorDrawablesOnImages();
   return (
     <View style={styles.flex} testID="vector-drawable-example">
-      <RNTesterText>Enabled: {isEnabled ? 'true' : 'false'}</RNTesterText>
       <View style={styles.horizontal}>
         <Image
           source={require('../../assets/ic_android.xml')}
@@ -605,8 +596,8 @@ const VectorDrawableExample = () => {
   );
 };
 
-function CacheControlAndroidExample(): React.Node {
-  const [reload, setReload] = React.useState(0);
+function CacheControlExample(): React.Node {
+  const [reload, setReload] = useState(0);
 
   const onReload = () => {
     setReload(prevReload => prevReload + 1);
@@ -1064,44 +1055,13 @@ exports.examples = [
   },
   {
     title: 'Cache Policy',
-    description:
-      ('First image has never been loaded before and is instructed not to load unless in cache.' +
-        'Placeholder image from above will stay. Second image is the same but forced to load regardless of' +
-        ' local cache state.': string),
-    render: function (): React.Node {
-      return (
-        <View style={styles.horizontal}>
-          <Image
-            defaultSource={require('../../assets/bunny.png')}
-            source={{
-              uri: smallImage.uri + '?cacheBust=notinCache' + Date.now(),
-              cache: 'only-if-cached',
-            }}
-            style={styles.base}
-          />
-          <Image
-            defaultSource={require('../../assets/bunny.png')}
-            source={{
-              uri: smallImage.uri + '?cacheBust=notinCache' + Date.now(),
-              cache: 'reload',
-            }}
-            style={styles.base}
-          />
-        </View>
-      );
-    },
-    platform: ['ios', 'macos'], // [macOS]
-  },
-  {
-    title: 'Cache Policy',
     description: `- First image will be loaded and cached.
 - Second image is the same but will be reloaded if re-rendered as the cache policy is set to reload.
-- Third image will never be loaded as the cache policy is set to only-if-cached and the image has not been loaded before.
-  `,
+- Third image will try to load from the cache first and only use the network if the cached version is unavailable.
+- Fourth image will never be loaded as the cache policy is set to only-if-cached and the image has not been loaded before.`,
     render: function (): React.Node {
-      return <CacheControlAndroidExample />;
+      return <CacheControlExample />;
     },
-    platform: 'android',
   },
   {
     title: 'Borders',

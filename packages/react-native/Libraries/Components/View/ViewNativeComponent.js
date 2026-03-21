@@ -8,10 +8,8 @@
  * @format
  */
 
-import type {
-  HostComponent,
-  HostInstance,
-} from '../../Renderer/shims/ReactNativeTypes';
+import type {HostComponent} from '../../../src/private/types/HostComponent';
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 
 import * as NativeComponentRegistry from '../../NativeComponent/NativeComponentRegistry';
 import codegenNativeCommands from '../../Utilities/codegenNativeCommands';
@@ -23,12 +21,14 @@ const ViewNativeComponent: HostComponent<Props> =
   }));
 
 interface NativeCommands {
+  +focus: () => void; // [macOS]
+  +blur: () => void; // [macOS]
   +hotspotUpdate: (viewRef: HostInstance, x: number, y: number) => void;
   +setPressed: (viewRef: HostInstance, pressed: boolean) => void;
 }
 
 export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
-  supportedCommands: ['hotspotUpdate', 'setPressed'],
+  supportedCommands: ['focus', 'blur', 'hotspotUpdate', 'setPressed'], // [macOS]
 });
 
 export default ViewNativeComponent;

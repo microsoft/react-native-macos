@@ -13,15 +13,21 @@ import {GestureResponderHandlers} from '../../../types/public/ReactNativeRendere
 import {StyleProp} from '../../StyleSheet/StyleSheet';
 import {ViewStyle} from '../../StyleSheet/StyleSheetTypes';
 import {
-  HandledKeyEvent,
-  KeyEvent,
+  DragEvent, // [macOS]
+  HandledKeyEvent, // [macOS]
+  KeyEvent, // [macOS]
+  BlurEvent,
+  FocusEvent,
   LayoutChangeEvent,
-  MouseEvent,
+  MouseEvent, // [macOS]
   PointerEvents,
 } from '../../Types/CoreEventTypes';
 import {Touchable} from '../Touchable/Touchable';
 import {AccessibilityProps} from './ViewAccessibility';
 
+/**
+ * @deprecated These properties are not implemented natively.
+ */
 export interface TVViewPropsIOS {
   /**
    * *(Apple TV only)* When set to true, this view will be focusable
@@ -35,6 +41,7 @@ export interface TVViewPropsIOS {
    * *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
    *
    * @platform ios
+   * @deprecated Use `focusable` instead
    */
   hasTVPreferredFocus?: boolean | undefined;
 
@@ -83,18 +90,18 @@ export interface ViewPropsIOS extends TVViewPropsIOS {
 
 export interface ViewPropsAndroid {
   /**
-   * Views that are only used to layout their children or otherwise don't draw anything
-   * may be automatically removed from the native hierarchy as an optimization.
-   * Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+   * Callback that is called when the view is blurred.
+   *
+   * Note: This will only be called if the view is focusable.
    */
-  collapsable?: boolean | undefined;
+  onBlur?: ((e: BlurEvent) => void) | null | undefined;
 
   /**
-   * Setting to false prevents direct children of the view from being removed
-   * from the native view hierarchy, similar to the effect of setting
-   * `collapsable={false}` on each child.
+   * Callback that is called when the view is focused.
+   *
+   * Note: This will only be called if the view is focusable.
    */
-  collapsableChildren?: boolean | undefined;
+  onFocus?: ((e: FocusEvent) => void) | null | undefined;
 
   /**
    * Whether this view should render itself (and all of its children) into a single hardware texture on the GPU.
@@ -122,7 +129,7 @@ export interface ViewPropsAndroid {
   tabIndex?: 0 | -1 | undefined;
 }
 
-export type DraggedType = 'fileUrl';
+export type DraggedType = 'fileUrl' | 'image' | 'string';
 export type DraggedTypesType = DraggedType | DraggedType[];
 
 export interface ViewPropsMacOS {
@@ -132,9 +139,10 @@ export interface ViewPropsMacOS {
   enableFocusRing?: boolean | undefined;
   onMouseEnter?: ((event: MouseEvent) => void) | undefined;
   onMouseLeave?: ((event: MouseEvent) => void) | undefined;
-  onDragEnter?: ((event: MouseEvent) => void) | undefined;
-  onDragLeave?: ((event: MouseEvent) => void) | undefined;
-  onDrop?: ((event: MouseEvent) => void) | undefined;
+  onDoubleClick?: ((event: MouseEvent) => void) | undefined;
+  onDragEnter?: ((event: DragEvent) => void) | undefined;
+  onDragLeave?: ((event: DragEvent) => void) | undefined;
+  onDrop?: ((event: DragEvent) => void) | undefined;
   onKeyDown?: ((event: KeyEvent) => void) | undefined;
   onKeyUp?: ((event: KeyEvent) => void) | undefined;
   keyDownEvents?: HandledKeyEvent[] | undefined;
@@ -238,4 +246,18 @@ export interface ViewProps
    * Used to reference react managed views from native code.
    */
   nativeID?: string | undefined;
+
+  /**
+   * Views that are only used to layout their children or otherwise don't draw anything
+   * may be automatically removed from the native hierarchy as an optimization.
+   * Set this property to false to disable this optimization and ensure that this View exists in the native view hierarchy.
+   */
+  collapsable?: boolean | undefined;
+
+  /**
+   * Setting to false prevents direct children of the view from being removed
+   * from the native view hierarchy, similar to the effect of setting
+   * `collapsable={false}` on each child.
+   */
+  collapsableChildren?: boolean | undefined;
 }

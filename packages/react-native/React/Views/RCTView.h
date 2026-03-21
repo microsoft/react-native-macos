@@ -99,16 +99,16 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
 /**
  * Border colors (actually retained).
  */
-@property (nonatomic, strong) RCTUIColor *borderTopColor;
-@property (nonatomic, strong) RCTUIColor *borderRightColor;
-@property (nonatomic, strong) RCTUIColor *borderBottomColor;
-@property (nonatomic, strong) RCTUIColor *borderLeftColor;
-@property (nonatomic, strong) RCTUIColor *borderStartColor;
-@property (nonatomic, strong) RCTUIColor *borderEndColor;
-@property (nonatomic, strong) RCTUIColor *borderColor;
-@property (nonatomic, strong) RCTUIColor *borderBlockColor;
-@property (nonatomic, strong) RCTUIColor *borderBlockEndColor;
-@property (nonatomic, strong) RCTUIColor *borderBlockStartColor;
+@property (nonatomic, strong) RCTPlatformColor *borderTopColor;
+@property (nonatomic, strong) RCTPlatformColor *borderRightColor;
+@property (nonatomic, strong) RCTPlatformColor *borderBottomColor;
+@property (nonatomic, strong) RCTPlatformColor *borderLeftColor;
+@property (nonatomic, strong) RCTPlatformColor *borderStartColor;
+@property (nonatomic, strong) RCTPlatformColor *borderEndColor;
+@property (nonatomic, strong) RCTPlatformColor *borderColor;
+@property (nonatomic, strong) RCTPlatformColor *borderBlockColor;
+@property (nonatomic, strong) RCTPlatformColor *borderBlockEndColor;
+@property (nonatomic, strong) RCTPlatformColor *borderBlockStartColor;
 
 /**
  * Border widths.
@@ -162,30 +162,34 @@ extern const UIAccessibilityTraits SwitchAccessibilityTrait;
  * macOS Properties
  */
 
+@property (nonatomic, copy) RCTBubblingEventBlock onFocus;
+@property (nonatomic, copy) RCTBubblingEventBlock onBlur;
+
 // `allowsVibrancy` is readonly on NSView, so let's create a new property to make it assignable
 // that we can set through JS and the getter for `allowsVibrancy` can read in RCTView.
 @property (nonatomic, assign) BOOL allowsVibrancyInternal;
+
+@property (nonatomic, copy) RCTDirectEventBlock onMouseEnter;
+@property (nonatomic, copy) RCTDirectEventBlock onMouseLeave;
+@property (nonatomic, copy) RCTDirectEventBlock onDragEnter;
+@property (nonatomic, copy) RCTDirectEventBlock onDragLeave;
+@property (nonatomic, copy) RCTDirectEventBlock onDrop;
+@property (nonatomic, copy) RCTDirectEventBlock onDoubleClick;
 
 // Keyboarding events
 // NOTE does not properly work with single line text inputs (most key downs). This is because those are
 // presumably handled by the window's field editor. To make it work, we'd need to look into providing
 // a custom field editor for NSTextField controls.
-@property (nonatomic, copy) RCTDirectEventBlock onKeyDown;
-@property (nonatomic, copy) RCTDirectEventBlock onKeyUp;
+@property (nonatomic, copy) RCTBubblingEventBlock onKeyDown;
+@property (nonatomic, copy) RCTBubblingEventBlock onKeyUp;
 @property (nonatomic, copy) NSArray<RCTHandledKey*> *keyDownEvents;
 @property (nonatomic, copy) NSArray<RCTHandledKey*> *keyUpEvents;
 
 // Shadow Properties
-@property (nonatomic, strong) NSColor *shadowColor;
+@property (nonatomic, assign) CGColorRef shadowColor;
 @property (nonatomic, assign) CGFloat shadowOpacity;
 @property (nonatomic, assign) CGFloat shadowRadius;
 @property (nonatomic, assign) CGSize shadowOffset;
 #endif // macOS]
-
-/**
- * Common Focus Properties
- */
-@property (nonatomic, copy) RCTBubblingEventBlock onFocus;
-@property (nonatomic, copy) RCTBubblingEventBlock onBlur;
 
 @end

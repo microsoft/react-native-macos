@@ -3,7 +3,6 @@ import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as util from "node:util";
 
-const ADO_PUBLISH_PIPELINE = ".ado/templates/npm-publish-steps.yml";
 const NX_CONFIG_FILE = "nx.json";
 
 const NPM_DEFEAULT_REGISTRY = "https://registry.npmjs.org/"
@@ -13,13 +12,11 @@ const RNMACOS_LATEST = "react-native-macos@latest";
 const RNMACOS_NEXT = "react-native-macos@next";
 
 /**
- * @typedef {import("nx/src/command-line/release/version").ReleaseVersionGeneratorSchema} ReleaseVersionGeneratorSchema;
+ * @typedef {import("nx/src/config/nx-json").NxReleaseVersionConfiguration} NxReleaseVersionConfiguration;
  * @typedef {{
  *   defaultBase: string;
  *   release: {
- *     version: {
- *       generatorOptions: ReleaseVersionGeneratorSchema;
- *     };
+ *     version: NxReleaseVersionConfiguration;
  *   };
  * }} NxConfig;
  * @typedef {{
@@ -30,9 +27,8 @@ const RNMACOS_NEXT = "react-native-macos@next";
  *   verbose?: boolean;
  * }} Options;
  * @typedef {{
- *   npmTag: string;
+ *   npmTags: string[];
  *   prerelease?: string;
- *   isNewTag?: boolean;
  * }} TagInfo;
  */
 
@@ -91,35 +87,90 @@ function loadNxConfig(configFile) {
   return JSON.parse(nx);
 }
 
+/**
+ * Detects whether to use npm or yarn to publish based on .npmrc existence
+ * @returns {boolean} true if npm should be used, false if yarn should be used
+ * @throws {Error} if neither .npmrc nor .yarnrc.yml exists
+ */
+function shouldUseNpm() {
+  const hasNpmrc = fs.existsSync('.npmrc');
+  const hasYarnrc = fs.existsSync('.yarnrc.yml');
+  
+  if (!hasNpmrc && !hasYarnrc) {
+    error('No package manager configuration found. Expected either .npmrc or .yarnrc.yml file.');
+    throw new Error('No package manager configuration found');
+  }
+  
+  if (hasNpmrc && hasYarnrc) {
+    // If both exist, prefer npm (could be changed based on project preference)
+    info('Both .npmrc and .yarnrc.yml found, using npm configuration');
+    return true;
+  }
+  
+  return hasNpmrc;
+}
+
 function verifyNpmAuth(registry = NPM_DEFEAULT_REGISTRY) {
-  const npmErrorRegex = /npm error code (\w+)/;
+  const useNpm = shouldUseNpm();
   const spawnOptions = {
     stdio: /** @type {const} */ ("pipe"),
     shell: true,
     windowsVerbatimArguments: true,
   };
 
-  const whoamiArgs = ["whoami", "--registry", registry];
-  const whoami = spawnSync("npm", whoamiArgs, spawnOptions);
-  if (whoami.status !== 0) {
-    const error = whoami.stderr.toString();
-    const m = error.match(npmErrorRegex);
-    switch (m && m[1]) {
-      case "EINVALIDNPMTOKEN":
-        throw new Error(`Invalid auth token for npm registry: ${registry}`);
-      case "ENEEDAUTH":
-        throw new Error(`Missing auth token for npm registry: ${registry}`);
-      default:
-        throw new Error(error);
+  if (useNpm) {
+    info("Using npm for authentication (found .npmrc)");
+    const npmErrorRegex = /npm error code (\w+)/;
+    
+    const whoamiArgs = ["whoami", "--registry", registry];
+    const whoami = spawnSync("npm", whoamiArgs, spawnOptions);
+    if (whoami.status !== 0) {
+      const error = whoami.stderr.toString();
+      const m = error.match(npmErrorRegex);
+      const errorCode = m && m[1];
+      switch (errorCode) {
+        case "EINVALIDNPMTOKEN":
+          throw new Error(`Invalid auth token for npm registry: ${registry}`);
+        case "ENEEDAUTH":
+          throw new Error(`Missing auth token for npm registry: ${registry}`);
+        default:
+          throw new Error(error);
+      }
     }
-  }
 
-  const tokenArgs = ["token", "list", "--registry", registry];
-  const token = spawnSync("npm", tokenArgs, spawnOptions);
-  if (token.status !== 0) {
-    const error = token.stderr.toString();
-    const m = error.match(npmErrorRegex);
-    throw new Error(m ? `Auth token for '${registry}' returned error code ${m[1]}` : error);
+    const tokenArgs = ["token", "list", "--registry", registry];
+    const token = spawnSync("npm", tokenArgs, spawnOptions);
+    if (token.status !== 0) {
+      const error = token.stderr.toString();
+      const m = error.match(npmErrorRegex);
+      const errorCode = m && m[1];
+      
+      // E403 means the token doesn't have permission to list tokens, but that's
+      // not required for publishing. Only fail for other error codes.
+      if (errorCode === "E403") {
+        info(`Token verification skipped: token doesn't have permission to list tokens (${errorCode})`);
+      } else {
+        throw new Error(m ? `Auth token for '${registry}' returned error code ${errorCode}` : error);
+      }
+    }
+  } else {
+    info("Using yarn for authentication (no .npmrc found)");
+    
+    const whoamiArgs = ["npm", "whoami", "--publish"];
+    const whoami = spawnSync("yarn", whoamiArgs, spawnOptions);
+    if (whoami.status !== 0) {
+      const errorOutput =
+        whoami.stderr.toString().trim() ||
+        whoami.stdout.toString().trim() ||
+        'No error message available';
+      
+      // Provide more context about the yarn authentication failure
+      throw new Error(`Yarn authentication failed (exit code ${whoami.status}): ${errorOutput}`);
+    }
+
+    // Skip token listing for yarn since it doesn't support npm token commands
+    // The whoami check above is sufficient to verify authentication
+    info("Skipping token list check when using yarn (not required for publishing)");
   }
 }
 
@@ -139,9 +190,20 @@ function versionToNumber(version) {
  * @returns {string | undefined}
  */
 function getTargetBranch() {
-  // https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services
-  const adoTargetBranchName = process.env["SYSTEM_PULLREQUEST_TARGETBRANCH"];
-  return adoTargetBranchName?.replace(/^refs\/heads\//, "");
+  // Azure Pipelines
+  if (process.env["TF_BUILD"] === "True") {
+    // https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services
+    const targetBranch = process.env["SYSTEM_PULLREQUEST_TARGETBRANCH"];
+    return targetBranch?.replace(/^refs\/heads\//, "");
+  }
+
+  // GitHub Actions
+  if (process.env["GITHUB_ACTIONS"] === "true") {
+    // https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
+    return process.env["GITHUB_BASE_REF"];
+  }
+
+  return undefined;
 }
 
 /**
@@ -151,15 +213,32 @@ function getTargetBranch() {
  * @returns {string}
  */
 function getCurrentBranch(options) {
-  const adoTargetBranchName = getTargetBranch();
-  if (adoTargetBranchName) {
-    return adoTargetBranchName;
+  const targetBranch = getTargetBranch();
+  if (targetBranch) {
+    return targetBranch;
   }
 
-  // https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services
-  const adoSourceBranchName = process.env["BUILD_SOURCEBRANCHNAME"];
-  if (adoSourceBranchName) {
-    return adoSourceBranchName.replace(/^refs\/heads\//, "");
+  // Azure DevOps Pipelines
+  if (process.env["TF_BUILD"] === "True") {
+    // https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables-devops-services
+    const sourceBranch = process.env["BUILD_SOURCEBRANCHNAME"];
+    if (sourceBranch) {
+      return sourceBranch.replace(/^refs\/heads\//, "");
+    }
+  }
+
+  // GitHub Actions
+  if (process.env["GITHUB_ACTIONS"] === "true") {
+    // https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
+    const headRef = process.env["GITHUB_HEAD_REF"];
+    if (headRef) {
+      return headRef; // For pull requests
+    }
+    
+    const ref = process.env["GITHUB_REF"];
+    if (ref) {
+      return ref.replace(/^refs\/heads\//, ""); // For push events
+    }
   }
 
   const { "mock-branch": mockBranch } = options;
@@ -184,7 +263,12 @@ function getPublishedVersion(tag) {
 }
 
 /**
- * Returns the npm tag and prerelease identifier for the specified branch.
+ * Returns the npm tags and prerelease identifier for the specified branch.
+ *
+ * The first tag in the array is used for the initial publish. When promoting
+ * to `latest`, also includes additional tags to apply:
+ * - The version-specific stable tag (e.g., `v0.81-stable`)
+ * - The `next` tag if the current `next` version is lower
  *
  * @privateRemarks
  * Note that the current implementation treats minor versions as major. If
@@ -196,67 +280,57 @@ function getPublishedVersion(tag) {
  * @param {typeof info} log
  * @returns {TagInfo}
  */
-function getTagForStableBranch(branch, { tag }, log) {
+function getTagsForStableBranch(branch, { tag }, log) {
   if (!isStableBranch(branch)) {
     throw new Error("Expected a stable branch");
   }
 
   const latestVersion = getPublishedVersion("latest");
+  const nextVersion = getPublishedVersion("next");
   const currentVersion = versionToNumber(branch);
 
   log(`${RNMACOS_LATEST}: ${latestVersion}`);
+  log(`${RNMACOS_NEXT}: ${nextVersion}`);
   log(`Current version: ${currentVersion}`);
 
   // Patching latest version
   if (currentVersion === latestVersion) {
-    const npmTag = "latest";
-    log(`Expected npm tag: ${npmTag}`);
-    return { npmTag };
+    const versionTag = branch;
+    log(`Expected npm tags: latest, ${versionTag}`);
+    return { npmTags: ["latest", versionTag] };
   }
 
   // Demoting or patching an older stable version
   if (currentVersion < latestVersion) {
-    const npmTag = "v" + branch;
-    log(`Expected npm tag: ${npmTag}`);
-    // If we're demoting a branch, we will need to create a new tag. This will
-    // make Nx trip if we don't specify a fallback. In all other scenarios, the
-    // tags should exist and therefore prefer it to fail.
-    return { npmTag, isNewTag: true };
+    const npmTag = branch;
+    log(`Expected npm tags: ${npmTag}`);
+    return { npmTags: [npmTag] };
   }
 
   // Publishing a new latest version
   if (tag === "latest") {
-    log(`Expected npm tag: ${tag}`);
-    return { npmTag: tag };
+    // When promoting to latest, also add the version-specific stable tag
+    const versionTag = branch;
+    const npmTags = ["latest", versionTag];
+    
+    // Also add "next" tag if the current next version is lower
+    if (currentVersion > nextVersion) {
+      npmTags.push(NPM_TAG_NEXT);
+    }
+    
+    log(`Expected npm tags: ${npmTags.join(", ")}`);
+    return { npmTags };
   }
 
   // Publishing a release candidate
-  const nextVersion = getPublishedVersion("next");
-  log(`${RNMACOS_NEXT}: ${nextVersion}`);
-  log(`Expected npm tag: ${NPM_TAG_NEXT}`);
+  // currentVersion > latestVersion
+  log(`Expected npm tags: ${NPM_TAG_NEXT}`);
 
   if (currentVersion < nextVersion) {
     throw new Error(`Current version cannot be a release candidate because it is too old: ${currentVersion} < ${nextVersion}`);
   }
 
-  return { npmTag: NPM_TAG_NEXT, prerelease: "rc" };
-}
-
-/**
- * @param {string} file
- * @param {string} tag
- * @returns {void}
- */
-function verifyPublishPipeline(file, tag) {
-  const data = fs.readFileSync(file, { encoding: "utf-8" });
-  const m = data.match(/publishTag: '(latest|next|nightly|v\d+\.\d+-stable)'/);
-  if (!m) {
-    throw new Error(`${file}: Could not find npm publish tag`);
-  }
-
-  if (m[1] !== tag) {
-    throw new Error(`${file}: 'publishTag' must be set to '${tag}'`);
-  }
+  return { npmTags: [NPM_TAG_NEXT], prerelease: "rc" };
 }
 
 /**
@@ -267,11 +341,12 @@ function verifyPublishPipeline(file, tag) {
  * @param {Options} options
  * @returns {asserts config is NxConfig["release"]}
  */
-function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNewTag }, options) {
+function enablePublishing(config, currentBranch, { npmTags, prerelease }, options) {
   /** @type {string[]} */
   const errors = [];
 
   const { defaultBase, release } = config;
+  const [primaryTag, ...additionalTags] = npmTags;
 
   // `defaultBase` determines what we diff against when looking for tags or
   // released version and must therefore be set to either the main branch or one
@@ -282,36 +357,23 @@ function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNe
   }
 
   // Determines whether we need to add "nightly" or "rc" to the version string.
-  const { generatorOptions } = release.version;
-  if (generatorOptions.preid !== prerelease) {
+  const { versionActionsOptions = {} } = release.version;
+  if (versionActionsOptions.preid !== prerelease) {
     if (prerelease) {
-      errors.push(`'release.version.generatorOptions.preid' must be set to '${prerelease}'`);
-      generatorOptions.preid = prerelease;
+      errors.push(`'release.version.versionActionsOptions.preid' must be set to '${prerelease}'`);
+      versionActionsOptions.preid = prerelease;
     } else {
-      errors.push(`'release.version.generatorOptions.preid' must be removed`);
-      generatorOptions.preid = undefined;
+      errors.push(`'release.version.versionActionsOptions.preid' must be removed`);
+      versionActionsOptions.preid = undefined;
     }
   }
 
   // What the published version should be tagged as e.g., "latest" or "nightly".
-  const { currentVersionResolverMetadata } = generatorOptions;
-  if (currentVersionResolverMetadata?.tag !== tag) {
-    errors.push(`'release.version.generatorOptions.currentVersionResolverMetadata.tag' must be set to '${tag}'`);
-    generatorOptions.currentVersionResolverMetadata ??= {};
-    generatorOptions.currentVersionResolverMetadata.tag = tag;
-  }
-
-  // If we're demoting a branch, we will need to create a new tag. This will
-  // make Nx trip if we don't specify a fallback. In all other scenarios, the
-  // tags should exist and therefore prefer it to fail.
-  if (isNewTag) {
-    if (generatorOptions.fallbackCurrentVersionResolver !== "disk") {
-      errors.push("'release.version.generatorOptions.fallbackCurrentVersionResolver' must be set to 'disk'");
-      generatorOptions.fallbackCurrentVersionResolver = "disk";
-    }
-  } else if (typeof generatorOptions.fallbackCurrentVersionResolver === "string") {
-    errors.push("'release.version.generatorOptions.fallbackCurrentVersionResolver' must be removed");
-    generatorOptions.fallbackCurrentVersionResolver = undefined;
+  const currentVersionResolverMetadata = /** @type {{ tag?: string }} */ (versionActionsOptions.currentVersionResolverMetadata || {});
+  if (currentVersionResolverMetadata.tag !== primaryTag) {
+    errors.push(`'release.version.versionActionsOptions.currentVersionResolverMetadata.tag' must be set to '${primaryTag}'`);
+    versionActionsOptions.currentVersionResolverMetadata ??= {};
+    /** @type {any} */ (versionActionsOptions.currentVersionResolverMetadata).tag = primaryTag;
   }
 
   if (errors.length > 0) {
@@ -325,7 +387,16 @@ function enablePublishing(config, currentBranch, { npmTag: tag, prerelease, isNe
     verifyNpmAuth();
   }
 
-  verifyPublishPipeline(ADO_PUBLISH_PIPELINE, tag);
+  // Output additional tags as pipeline/workflow variable
+  if (additionalTags.length > 0) {
+    const tagsValue = additionalTags.join(",");
+    // Azure Pipelines
+    console.log(`##vso[task.setvariable variable=additionalTags]${tagsValue}`);
+    // GitHub Actions
+    if (process.env["GITHUB_OUTPUT"]) {
+      fs.appendFileSync(process.env["GITHUB_OUTPUT"], `additionalTags=${tagsValue}\n`);
+    }
+  }
 
   // Don't enable publishing in PRs
   if (!getTargetBranch()) {
@@ -349,10 +420,10 @@ function main(options) {
   const config = loadNxConfig(NX_CONFIG_FILE);
   try {
     if (isMainBranch(branch)) {
-      const info = { npmTag: NPM_TAG_NIGHTLY, prerelease: NPM_TAG_NIGHTLY };
+      const info = { npmTags: [NPM_TAG_NIGHTLY], prerelease: NPM_TAG_NIGHTLY };
       enablePublishing(config, branch, info, options);
     } else if (isStableBranch(branch)) {
-      const tag = getTagForStableBranch(branch, options, logger);
+      const tag = getTagsForStableBranch(branch, options, logger);
       enablePublishing(config, branch, tag, options);
     }
   } catch (e) {

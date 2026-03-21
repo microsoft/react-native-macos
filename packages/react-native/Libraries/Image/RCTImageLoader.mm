@@ -26,7 +26,7 @@
 
 using namespace facebook::react;
 
-static NSInteger RCTImageBytesForImage(UIImage *image)
+static NSInteger RCTImageBytesForImage(RCTPlatformImage *image) // [macOS]
 {
   CGFloat imageScale = 1.0;
 #if !TARGET_OS_OSX // [macOS] no .scale prop on NSImage
@@ -89,7 +89,7 @@ static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLRespo
 
 @end
 
-@implementation UIImage (React)
+@implementation RCTPlatformImage (React) // [macOS]
 
 - (NSInteger)reactDecodedImageBytes
 {
@@ -345,7 +345,7 @@ RCT_EXPORT_MODULE()
   return nil;
 }
 
-static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scale, RCTResizeMode resizeMode)
+static RCTPlatformImage *RCTResizeImageIfNeeded(RCTPlatformImage *image, CGSize size, CGFloat scale, RCTResizeMode resizeMode) // [macOS]
 {
   if (CGSizeEqualToSize(size, CGSizeZero) || CGSizeEqualToSize(image.size, CGSizeZero) ||
       CGSizeEqualToSize(image.size, size)) {
@@ -355,6 +355,45 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
   CGAffineTransform transform = RCTTransformFromTargetRect(image.size, targetSize);
   image = RCTTransformImage(image, size, scale, transform);
   return image;
+}
+
+/*
+ * This function abstracts away the migration from loadImageForURL to loadImageURL by handling checking whether
+ * the interface responds to the new function signature and calling the appropriate function based on the result.
+ */
+static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
+    id<RCTImageURLLoader> loadHandler,
+    NSURL *imageURL,
+    CGSize size,
+    CGFloat scale,
+    RCTResizeMode resizeMode,
+    RCTImageLoaderProgressBlock progressHandler,
+    RCTImageLoaderPartialLoadBlock partialLoadHandler,
+    RCTImageLoaderCompletionBlockWithMetadata completionHandler)
+{
+  if ([loadHandler respondsToSelector:@selector(loadImageForURL:
+                                                           size:scale:resizeMode:progressHandler:partialLoadHandler
+                                                               :completionHandlerWithMetadata:)]) {
+    return [loadHandler loadImageForURL:imageURL
+                                   size:size
+                                  scale:scale
+                             resizeMode:resizeMode
+                        progressHandler:progressHandler
+                     partialLoadHandler:partialLoadHandler
+          completionHandlerWithMetadata:^(NSError *error, RCTPlatformImage *image, id metadata) { // [macOS]
+            completionHandler(error, image, metadata);
+          }];
+  } else {
+    return [loadHandler loadImageForURL:imageURL
+                                   size:size
+                                  scale:scale
+                             resizeMode:resizeMode
+                        progressHandler:progressHandler
+                     partialLoadHandler:partialLoadHandler
+                      completionHandler:^(NSError *error, RCTPlatformImage *image) { // [macOS]
+                        completionHandler(error, image, nil);
+                      }];
+  }
 }
 
 #pragma mark - RCTImageLoaderProtocol 2/3
@@ -419,7 +458,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
       attribution:{}
       progressBlock:progressBlock
       partialLoadBlock:partialLoadBlock
-      completionBlock:^(NSError *error, UIImage *image, id metadata) {
+      completionBlock:^(NSError *error, RCTPlatformImage *image, id metadata) { // [macOS]
         completionBlock(error, image);
       }];
   return ^{
@@ -523,7 +562,15 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
 
     // Add missing png extension
     if (request.URL.fileURL && request.URL.pathExtension.length == 0) {
-      mutableRequest.URL = [request.URL URLByAppendingPathExtension:@"png"];
+      // Check if there exists a file with that url on disk already
+      // This should fix issue https://github.com/facebook/react-native/issues/46870
+      if ([[NSFileManager defaultManager] fileExistsAtPath:request.URL.path]) {
+        mutableRequest.URL = request.URL;
+      } else {
+        // This is the default behavior in case there is no file on disk with no extension.
+        // We assume that the extension is `png`.
+        mutableRequest.URL = [request.URL URLByAppendingPathExtension:@"png"];
+      }
     }
     if (_redirectDelegate != nil) {
       mutableRequest.URL = [_redirectDelegate redirectAssetsURL:mutableRequest.URL];
@@ -547,7 +594,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
   }
 
   if (cacheResult && partialLoadHandler) {
-    UIImage *image = [[self imageCache] imageForUrl:request.URL.absoluteString
+    RCTPlatformImage *image = [[self imageCache] imageForUrl:request.URL.absoluteString // [macOS]
                                                size:size
                                               scale:scale
                                          resizeMode:resizeMode];
@@ -569,7 +616,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
 
         // If we've received an image, we should try to set it synchronously,
         // if it's data, do decoding on a background thread.
-        if (RCTIsMainQueue() && ![imageOrData isKindOfClass:[UIImage class]]) {
+        if (RCTIsMainQueue() && ![imageOrData isKindOfClass:[RCTPlatformImage class]]) { // [macOS]
           // Most loaders do not return on the main thread, so caller is probably not
           // expecting it, and may do expensive post-processing in the callback
           dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -600,19 +647,22 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
                  attribution:attributionCopy
              progressHandler:progressHandler
           partialLoadHandler:partialLoadHandler
-           completionHandler:^(NSError *error, UIImage *image, id metadata) {
+           completionHandler:^(NSError *error, RCTPlatformImage *image, id metadata) { // [macOS]
              completionHandler(error, image, metadata, nil);
            }];
     }
-    RCTImageLoaderCancellationBlock cb = [loadHandler loadImageForURL:request.URL
-                                                                 size:size
-                                                                scale:scale
-                                                           resizeMode:resizeMode
-                                                      progressHandler:progressHandler
-                                                   partialLoadHandler:partialLoadHandler
-                                                    completionHandler:^(NSError *error, UIImage *image) {
-                                                      completionHandler(error, image, nil, nil);
-                                                    }];
+
+    RCTImageLoaderCancellationBlock cb = RCTLoadImageURLFromLoader(
+        loadHandler,
+        request.URL,
+        size,
+        scale,
+        resizeMode,
+        progressHandler,
+        partialLoadHandler,
+        ^(NSError *error, RCTPlatformImage *image, id metadata) {
+          completionHandler(error, image, metadata, nil);
+        });
     return [[RCTImageURLLoaderRequest alloc] initWithRequestId:nil imageURL:request.URL cancellationBlock:cb];
   }
 
@@ -641,26 +691,28 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
                    attribution:attributionCopy
                progressHandler:progressHandler
             partialLoadHandler:partialLoadHandler
-             completionHandler:^(NSError *error, UIImage *image, id metadata) {
+             completionHandler:^(NSError *error, RCTPlatformImage *image, id metadata) { // [macOS]
                completionHandler(error, image, metadata, nil);
              }];
         cancelLoadLocal = loaderRequest.cancellationBlock;
       } else {
-        cancelLoadLocal = [loadHandler loadImageForURL:request.URL
-                                                  size:size
-                                                 scale:scale
-                                            resizeMode:resizeMode
-                                       progressHandler:progressHandler
-                                    partialLoadHandler:partialLoadHandler
-                                     completionHandler:^(NSError *error, UIImage *image) {
-                                       completionHandler(error, image, nil, nil);
-                                     }];
+        cancelLoadLocal = RCTLoadImageURLFromLoader(
+            loadHandler,
+            request.URL,
+            size,
+            scale,
+            resizeMode,
+            progressHandler,
+            partialLoadHandler,
+            ^(NSError *error, RCTPlatformImage *image, id metadata) { // [macOS]
+              completionHandler(error, image, metadata, nil);
+            });
       }
       [cancelLoadLock lock];
       cancelLoad = cancelLoadLocal;
       [cancelLoadLock unlock];
     } else {
-      UIImage *image;
+      RCTPlatformImage *image; // [macOS]
       if (cacheResult) {
         image = [[strongSelf imageCache] imageForUrl:request.URL.absoluteString
                                                 size:size
@@ -850,7 +902,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
           return;
         }
 
-        if (!imageOrData || [imageOrData isKindOfClass:[UIImage class]]) {
+        if (!imageOrData || [imageOrData isKindOfClass:[RCTPlatformImage class]]) { // [macOS]
           [cancelLoadLock lock];
           cancelLoad = nil;
           [cancelLoadLock unlock];
@@ -858,7 +910,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
           return;
         }
 
-        RCTImageLoaderCompletionBlock decodeCompletionHandler = ^(NSError *error_, UIImage *image) {
+        RCTImageLoaderCompletionBlock decodeCompletionHandler = ^(NSError *error_, RCTPlatformImage *image) { // [macOS]
           if (cacheResult && image) {
             // Store decoded image in cache
             [[strongSelf imageCache] addImageToCache:image
@@ -905,7 +957,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
 {
   id<RCTImageURLLoader> loadHandler = [self imageURLLoaderForURL:url];
   if ([loadHandler respondsToSelector:@selector(shouldEnablePerfLogging)]) {
-    return [(id<RCTImageURLLoaderWithAttribution>)loadHandler shouldEnablePerfLogging];
+    return [(id<RCTImageLoaderLoggable>)loadHandler shouldEnablePerfLogging];
   }
   return NO;
 }
@@ -963,7 +1015,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
   }
 
   auto cancelled = std::make_shared<std::atomic<int>>(0);
-  void (^completionHandler)(NSError *, UIImage *) = ^(NSError *error, UIImage *image) {
+  void (^completionHandler)(NSError *, RCTPlatformImage *) = ^(NSError *error, RCTPlatformImage *image) { // [macOS]
     if (RCTIsMainQueue()) {
       // Most loaders do not return on the main thread, so caller is probably not
       // expecting it, and may do expensive post-processing in the callback
@@ -998,7 +1050,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
       dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if (!std::atomic_load(cancelled.get())) {
           // Decompress the image data (this may be CPU and memory intensive)
-          UIImage *image = RCTDecodeImageWithData(data, size, scale, resizeMode);
+          RCTPlatformImage *image = RCTDecodeImageWithData(data, size, scale, resizeMode); // [macOS]
 
 #if !TARGET_OS_OSX && RCT_DEV // [macOS]
           CGSize imagePixelSize = RCTSizeInPixels(image.size, UIImageGetScale(image)); // [macOS]
@@ -1093,7 +1145,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
               break;
           }
         } else {
-          UIImage *image = imageOrData;
+          RCTPlatformImage *image = imageOrData; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
           CGFloat imageScale = image.scale;
 #else // [macOS
@@ -1187,7 +1239,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image, CGSize size, CGFloat scal
 {
   __block RCTImageLoaderCancellationBlock requestToken;
   requestToken = [self loadImageWithURLRequest:request
-                                      callback:^(NSError *error, UIImage *image) {
+                                      callback:^(NSError *error, RCTPlatformImage *image) { // [macOS]
                                         if (error) {
                                           [delegate URLRequest:requestToken didCompleteWithError:error];
                                           return;
@@ -1297,7 +1349,7 @@ RCT_EXPORT_METHOD(prefetchImageWithMetadata
                                 }
                   progressBlock:nil
                partialLoadBlock:nil
-                completionBlock:^(NSError *error, UIImage *image, id completionMetadata) {
+                completionBlock:^(NSError *error, RCTPlatformImage *image, id completionMetadata) { // [macOS]
                   if (error) {
                     reject(@"E_PREFETCH_FAILURE", nil, error);
                     return;

@@ -7,9 +7,9 @@
 
 #import "UIImage+Diff.h"
 
-@implementation UIImage (Diff)
+@implementation RCTPlatformImage (Diff)
 
-- (UIImage *)diffWithImage:(UIImage *)image
+- (RCTPlatformImage *)diffWithImage:(RCTPlatformImage *)image
 {
   if (!image) {
     return nil;
@@ -28,7 +28,7 @@
     CGContextBeginTransparencyLayer(context, NULL);
     [image drawInRect:CGRectMake(0, 0, image.size.width, image.size.height)];
     CGContextSetBlendMode(context, kCGBlendModeDifference);
-    CGContextSetFillColorWithColor(context, [RCTUIColor whiteColor].CGColor);
+    CGContextSetFillColorWithColor(context, [RCTPlatformColor whiteColor].CGColor);
     CGContextFillRect(context, CGRectMake(0, 0, self.size.width, self.size.height));
     CGContextEndTransparencyLayer(context);
   }];

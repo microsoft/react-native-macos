@@ -24,6 +24,7 @@
   NSArray<UIBarButtonItemGroup *> *_initialValueLeadingBarButtonGroups;
   NSArray<UIBarButtonItemGroup *> *_initialValueTrailingBarButtonGroups;
 #endif // [macOS]
+  NSArray<NSString *> *_acceptDragAndDropTypes;
 #if TARGET_OS_OSX // [macOS
   NSArray<NSPasteboardType> *_readablePasteboardTypes;
 #endif // macOS]
@@ -41,10 +42,10 @@ static NSFont *defaultPlaceholderFont(void)
 }
 #endif // macOS]
 
-static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
+static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
 {
   // Default placeholder color from UITextField.
-  return [RCTUIColor placeholderTextColor]; // [macOS]
+  return [RCTPlatformColor placeholderTextColor]; // [macOS]
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -67,8 +68,8 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
 
     _textInputDelegateAdapter = [[RCTBackedTextViewDelegateAdapter alloc] initWithTextView:self];
 
-    self.backgroundColor = [RCTUIColor clearColor]; // [macOS]
-    self.textColor = [RCTUIColor blackColor]; // [macOS]
+    self.backgroundColor = [RCTPlatformColor clearColor]; // [macOS]
+    self.textColor = [RCTPlatformColor blackColor]; // [macOS]
     // This line actually removes 5pt (default value) left and right padding in UITextView.
 #if !TARGET_OS_OSX // [macOS]
     self.textContainer.lineFragmentPadding = 0;
@@ -132,13 +133,23 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
 
 #pragma mark - Properties
 
+- (void)setAcceptDragAndDropTypes:(NSArray<NSString *> *)acceptDragAndDropTypes
+{
+  _acceptDragAndDropTypes = acceptDragAndDropTypes;
+}
+
+- (nullable NSArray<NSString *> *)acceptDragAndDropTypes
+{
+  return _acceptDragAndDropTypes;
+}
+
 - (void)setPlaceholder:(NSString *)placeholder
 {
   _placeholder = placeholder;
   [self _updatePlaceholder];
 }
 
-- (void)setPlaceholderColor:(RCTUIColor *)placeholderColor // [macOS]
+- (void)setPlaceholderColor:(RCTPlatformColor *)placeholderColor // [macOS]
 {
   _placeholderColor = placeholderColor;
   [self _updatePlaceholder];
@@ -163,16 +174,16 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
   [_textInputDelegate grammarCheckingDidChange:self.isGrammarCheckingEnabled];
 }
 
-- (void)setSelectionColor:(RCTUIColor *)selectionColor
+- (void)setSelectionColor:(RCTPlatformColor *)selectionColor
 {
   NSMutableDictionary *selectTextAttributes = self.selectedTextAttributes.mutableCopy;
   selectTextAttributes[NSBackgroundColorAttributeName] = selectionColor ?: [NSColor selectedControlColor];
   self.selectedTextAttributes = selectTextAttributes.copy;
 }
 
-- (RCTUIColor*)selectionColor
+- (RCTPlatformColor*)selectionColor
 {
-  return (RCTUIColor*)self.selectedTextAttributes[NSBackgroundColorAttributeName];
+  return (RCTPlatformColor*)self.selectedTextAttributes[NSBackgroundColorAttributeName];
 }
 
 - (void)setCursorColor:(NSColor *)cursorColor

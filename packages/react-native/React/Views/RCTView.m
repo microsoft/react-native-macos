@@ -55,7 +55,7 @@ const UIAccessibilityTraits SwitchAccessibilityTrait = 0x20000000000001;
   // we do support clipsToBounds, so if that's enabled
   // we'll update the clipping
 
-  if (RCTUIViewSetClipsToBounds(self) && self.subviews.count > 0) { // [macOS]
+  if (self.clipsToBounds && self.subviews.count > 0) {
     clipRect = [clipView convertRect:clipRect toView:self];
     clipRect = CGRectIntersection(clipRect, self.bounds);
     clipView = self;
@@ -77,7 +77,7 @@ const UIAccessibilityTraits SwitchAccessibilityTrait = 0x20000000000001;
   CGRect clipRect = self.bounds;
   // We will only look for a clipping view up the view hierarchy until we hit the root view.
   while (testView) {
-    if (RCTUIViewSetClipsToBounds(testView)) { // [macOS]
+    if (testView.clipsToBounds) {
       if (clipView) {
         CGRect testRect = [clipView convertRect:clipRect toView:testView];
         if (!CGRectContainsRect(testView.bounds, testRect)) {
@@ -137,9 +137,11 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 }
 
 @implementation RCTView {
-  RCTUIColor *_backgroundColor; // [macOS]
+  RCTPlatformColor *_backgroundColor; // [macOS]
   id<RCTEventDispatcherProtocol> _eventDispatcher; // [macOS]
 #if TARGET_OS_OSX // [macOS
+  NSTrackingArea *_trackingArea;
+  BOOL _hasMouseOver;
   BOOL _mouseDownCanMoveWindow;
 #endif // macOS]
   NSMutableDictionary<NSString *, NSDictionary *> *accessibilityActionsNameMap;
@@ -298,11 +300,14 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     return label;
   }
 #if TARGET_OS_OSX // [macOS
-  // calling super.accessibilityLabel above on macOS causes the return value of this accessor to be ignored by VoiceOver.
-  // Calling the super's setAccessibilityLabel with nil ensures that the return value of this accessor is used by VoiceOver.
-  [super setAccessibilityLabel:nil];
+    // calling super.accessibilityLabel above on macOS causes the return value of this accessor to be ignored by VoiceOver.
+    // Calling the super's setAccessibilityLabel with nil ensures that the return value of this accessor is used by VoiceOver.
+    [super setAccessibilityLabel:nil];
 #endif // macOS]
-  return RCTRecursiveAccessibilityLabel(self);
+  if (self.isAccessibilityElement) {
+    return RCTRecursiveAccessibilityLabel(self);
+  }
+  return nil;
 }
 
 - (NSArray<UIAccessibilityCustomAction *> *)accessibilityCustomActions
@@ -725,7 +730,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 }
 
 #if TARGET_OS_OSX // [macOS
-- (void)setShadowColor:(NSColor *)shadowColor
+- (void)setShadowColor:(CGColorRef)shadowColor
 {
     if (_shadowColor != shadowColor)
     {
@@ -764,13 +769,77 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 -(void)didUpdateShadow
 {
     NSShadow *shadow = [NSShadow new];
-    shadow.shadowColor = [[self shadowColor] colorWithAlphaComponent:[self shadowOpacity]];
+    NSColor *baseShadowColor = nil;
+    if (_shadowColor != NULL) {
+      baseShadowColor = [NSColor colorWithCGColor:_shadowColor];
+    }
+    shadow.shadowColor = [baseShadowColor colorWithAlphaComponent:[self shadowOpacity]];
     shadow.shadowOffset = [self shadowOffset];
     shadow.shadowBlurRadius = [self shadowRadius];
     [self setShadow:shadow];
 }
 
+- (void)viewDidMoveToWindow
+{
+  // Subscribe to view bounds changed notification so that the view can be notified when a
+  // scroll event occurs either due to trackpad/gesture based scrolling or a scrollwheel event
+  // both of which would not cause the mouseExited to be invoked.
 
+  if ([self window] == nil) {
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NSViewBoundsDidChangeNotification
+                                                  object:nil];
+  }
+  else if ([[self enclosingScrollView] contentView] != nil) {
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(viewBoundsChanged:)
+                                                 name:NSViewBoundsDidChangeNotification
+                                               object:[[self enclosingScrollView] contentView]];
+  }
+
+  [self reactViewDidMoveToWindow]; // [macOS] Github#1412
+
+  [super viewDidMoveToWindow];
+}
+
+- (void)viewBoundsChanged:(NSNotification*)__unused inNotif
+{
+  // When an enclosing scrollview is scrolled using the scrollWheel or trackpad,
+  // the mouseExited: event does not get called on the view where mouseEntered: was previously called.
+  // This creates an unnatural pairing of mouse enter and exit events and can cause problems.
+  // We therefore explicitly check for this here and handle them by calling the appropriate callbacks.
+
+  if (!_hasMouseOver && self.onMouseEnter)
+  {
+    NSPoint locationInWindow = [[self window] mouseLocationOutsideOfEventStream];
+    NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+
+    if (NSPointInRect(locationInView, [self bounds]))
+    {
+      _hasMouseOver = YES;
+
+      [self sendMouseEventWithBlock:self.onMouseEnter
+                       locationInfo:[self locationInfoFromDraggingLocation:locationInWindow]
+                      modifierFlags:0
+                     additionalData:nil];
+    }
+  }
+  else if (_hasMouseOver && self.onMouseLeave)
+  {
+    NSPoint locationInWindow = [[self window] mouseLocationOutsideOfEventStream];
+    NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+
+    if (!NSPointInRect(locationInView, [self bounds]))
+    {
+      _hasMouseOver = NO;
+
+      [self sendMouseEventWithBlock:self.onMouseLeave
+                       locationInfo:[self locationInfoFromDraggingLocation:locationInWindow]
+                      modifierFlags:0
+                     additionalData:nil];
+    }
+  }
+}
 #endif // macOS]
 
 #pragma mark - Statics for dealing with layoutGuides
@@ -951,12 +1020,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 
 #pragma mark - Borders
 
-- (RCTUIColor *)backgroundColor // [macOS] RCTUIColor
+- (RCTPlatformColor *)backgroundColor // [macOS] RCTPlatformColor
 {
   return _backgroundColor;
 }
 
-- (void)setBackgroundColor:(RCTUIColor *)backgroundColor // macOS RCTUIColor
+- (void)setBackgroundColor:(RCTPlatformColor *)backgroundColor // macOS RCTPlatformColor
 {
   if ([_backgroundColor isEqual:backgroundColor]) {
     return;
@@ -1076,12 +1145,12 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 {
   const BOOL isRTL = _reactLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft;
 
-  RCTUIColor *directionAwareBorderLeftColor = nil;
-  RCTUIColor *directionAwareBorderRightColor = nil;
+  RCTPlatformColor *directionAwareBorderLeftColor = nil;
+  RCTPlatformColor *directionAwareBorderRightColor = nil;
 
   if ([[RCTI18nUtil sharedInstance] doLeftAndRightSwapInRTL]) {
-    RCTUIColor *borderStartColor = _borderStartColor ?: _borderLeftColor; // macOS RCTUIColor
-    RCTUIColor *borderEndColor = _borderEndColor ?: _borderRightColor; // macOS RCTUIColor
+    RCTPlatformColor *borderStartColor = _borderStartColor ?: _borderLeftColor; // macOS RCTPlatformColor
+    RCTPlatformColor *borderEndColor = _borderEndColor ?: _borderRightColor; // macOS RCTPlatformColor
 
     directionAwareBorderLeftColor = isRTL ? borderEndColor : borderStartColor;
     directionAwareBorderRightColor = isRTL ? borderStartColor : borderEndColor;
@@ -1090,9 +1159,9 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
     directionAwareBorderRightColor = (isRTL ? _borderStartColor : _borderEndColor) ?: _borderRightColor;
   }
 
-  RCTUIColor *borderColor = _borderColor;
-  RCTUIColor *borderTopColor = _borderTopColor;
-  RCTUIColor *borderBottomColor = _borderBottomColor;
+  RCTPlatformColor *borderColor = _borderColor;
+  RCTPlatformColor *borderTopColor = _borderTopColor;
+  RCTPlatformColor *borderBottomColor = _borderBottomColor;
 
   if (_borderBlockColor) {
     borderTopColor = _borderBlockColor;
@@ -1175,9 +1244,9 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   // correctly clip the subviews.
 
 #if !TARGET_OS_OSX // [macOS]
-  RCTUIColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
+  RCTPlatformColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
 #else // [macOS
-  RCTUIColor *backgroundColor = _backgroundColor;
+  RCTPlatformColor *backgroundColor = _backgroundColor;
 #endif // macOS]
 
 #if TARGET_OS_OSX // [macOS
@@ -1203,7 +1272,7 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
     return;
   }
 
-  UIImage *image = RCTGetBorderImage(
+  RCTUIImage *image = RCTGetBorderImage( // [macOS]
       _borderStyle, layer.bounds.size, cornerRadii, borderInsets, borderColors, backgroundColor, self.clipsToBounds);
 
   layer.backgroundColor = NULL;
@@ -1254,7 +1323,7 @@ static void RCTUpdateShadowPathForView(RCTView *view)
       // If view has a solid background color, calculate shadow path from border
       const RCTCornerRadii cornerRadii = [view cornerRadii];
       const RCTCornerInsets cornerInsets = RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero);
-      CGPathRef shadowPath = RCTPathCreateWithRoundedRect(view.bounds, cornerInsets, NULL);
+      CGPathRef shadowPath = RCTPathCreateWithRoundedRect(view.bounds, cornerInsets, NULL, NO);
       view.layer.shadowPath = shadowPath;
       CGPathRelease(shadowPath);
 
@@ -1285,9 +1354,9 @@ static void RCTUpdateHoverStyleForView(RCTView *view)
       // Due to an Apple bug, it seems on iOS, `[UIShape shapeWithBezierPath:]` needs to
       // be calculated in the superviews' coordinate space (view.frame). This is not true
       // on other platforms like visionOS.
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(view.frame, cornerInsets, NULL);
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(view.frame, cornerInsets, NULL, NO);
 #else // TARGET_OS_VISION
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(view.bounds, cornerInsets, NULL);
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(view.bounds, cornerInsets, NULL, NO);
 #endif
       UIBezierPath *bezierPath = [UIBezierPath bezierPathWithCGPath:borderPath];
       CGPathRelease(borderPath);
@@ -1314,7 +1383,7 @@ static void RCTUpdateHoverStyleForView(RCTView *view)
     } else {
       CAShapeLayer *shapeLayer = [CAShapeLayer layer];
       CGPathRef path =
-          RCTPathCreateWithRoundedRect(self.bounds, RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero), NULL);
+          RCTPathCreateWithRoundedRect(self.bounds, RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero), NULL, NO);
       shapeLayer.path = path;
       CGPathRelease(path);
       mask = shapeLayer;
@@ -1327,9 +1396,9 @@ static void RCTUpdateHoverStyleForView(RCTView *view)
 
 #pragma mark Border Color
 
-// macOS RCTUIColor
+// macOS RCTPlatformColor
 #define setBorderColor(side)                       \
-  -(void)setBorder##side##Color : (RCTUIColor *)color \
+  -(void)setBorder##side##Color : (RCTPlatformColor *)color \
   {                                                \
     if ([_border##side##Color isEqual:color]) {    \
       return;                                      \
@@ -1415,7 +1484,7 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   if ([self enableFocusRing]) {
     CGContextRef context = NSGraphicsContext.currentContext.CGContext;
     RCTCornerInsets cornerInsets = RCTGetCornerInsets(self.cornerRadii, NSEdgeInsetsZero);
-    CGPathRef path = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL);
+    CGPathRef path = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL, NO);
 
     CGContextAddPath(context, path);
     CGContextFillPath(context);
@@ -1435,7 +1504,8 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
   }
 }
 
-- (BOOL)needsPanelToBecomeKey {
+- (BOOL)needsPanelToBecomeKey
+{
 	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default. 
 	return false;
 }
@@ -1445,16 +1515,115 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 	return [self focusable] || [super acceptsFirstResponder];
 }
 
-- (BOOL)mouseDownCanMoveWindow {
+- (void)updateTrackingAreas
+{
+  BOOL hasMouseHoverEvent = self.onMouseEnter || self.onMouseLeave;
+  BOOL wouldRecreateIdenticalTrackingArea = hasMouseHoverEvent && _trackingArea && NSEqualRects(self.bounds, [_trackingArea rect]);
+
+  if (!wouldRecreateIdenticalTrackingArea) {
+    if (_trackingArea) {
+      [self removeTrackingArea:_trackingArea];
+    }
+
+    if (hasMouseHoverEvent) {
+      _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
+                                                   options:NSTrackingActiveAlways|NSTrackingMouseEnteredAndExited
+                                                     owner:self
+                                                  userInfo:nil];
+      [self addTrackingArea:_trackingArea];
+    }
+  }
+
+  [super updateTrackingAreas];
+}
+
+- (void)mouseEntered:(NSEvent *)event
+{
+  _hasMouseOver = YES;
+  [self sendMouseEventWithBlock:self.onMouseEnter
+                   locationInfo:[self locationInfoFromEvent:event]
+                  modifierFlags:event.modifierFlags
+                 additionalData:nil];
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+  _hasMouseOver = NO;
+  [self sendMouseEventWithBlock:self.onMouseLeave
+                   locationInfo:[self locationInfoFromEvent:event]
+                  modifierFlags:event.modifierFlags
+                 additionalData:nil];
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+  if (_onDoubleClick && event.clickCount == 2){
+    _onDoubleClick(nil);
+  } else {
+    [super mouseUp:event];
+  }
+}
+
+- (BOOL)mouseDownCanMoveWindow
+{
 	return _mouseDownCanMoveWindow;
 }
 
-- (void)setMouseDownCanMoveWindow:(BOOL)mouseDownCanMoveWindow {
+- (void)setMouseDownCanMoveWindow:(BOOL)mouseDownCanMoveWindow
+{
 	_mouseDownCanMoveWindow = mouseDownCanMoveWindow;
 }
 
-- (BOOL)allowsVibrancy {
+- (BOOL)allowsVibrancy
+{
   return _allowsVibrancyInternal;
+}
+
+- (NSDictionary*)locationInfoFromEvent:(NSEvent*)event
+{
+  NSPoint locationInWindow = event.locationInWindow;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+
+  return @{@"screenX": @(locationInWindow.x),
+           @"screenY": @(locationInWindow.y),
+           @"clientX": @(locationInView.x),
+           @"clientY": @(locationInView.y)
+           };
+}
+
+- (void)sendMouseEventWithBlock:(RCTDirectEventBlock)block
+                   locationInfo:(NSDictionary*)locationInfo
+                  modifierFlags:(NSEventModifierFlags)modifierFlags
+                 additionalData:(NSDictionary*)additionalData
+{
+  if (block == nil) {
+    return;
+  }
+  
+  NSMutableDictionary *body = [NSMutableDictionary new];
+  
+  if (modifierFlags & NSEventModifierFlagShift) {
+    body[@"shiftKey"] = @YES;
+  }
+  if (modifierFlags & NSEventModifierFlagControl) {
+    body[@"ctrlKey"] = @YES;
+  }
+  if (modifierFlags & NSEventModifierFlagOption) {
+    body[@"altKey"] = @YES;
+  }
+  if (modifierFlags & NSEventModifierFlagCommand) {
+    body[@"metaKey"] = @YES;
+  }
+
+  if (locationInfo) {
+    [body addEntriesFromDictionary:locationInfo];
+  }
+
+  if (additionalData) {
+    [body addEntriesFromDictionary:additionalData];
+  }
+
+  block(body);
 }
 
 - (NSDictionary*)dataTransferInfoFromPasteboard:(NSPasteboard*)pasteboard
@@ -1535,6 +1704,17 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
                               @"types": types}};
 }
 
+- (NSDictionary*)locationInfoFromDraggingLocation:(NSPoint)locationInWindow
+{
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+
+  return @{@"screenX": @(locationInWindow.x),
+           @"screenY": @(locationInWindow.y),
+           @"clientX": @(locationInView.x),
+           @"clientY": @(locationInView.y)
+           };
+}
+
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
 {
   NSPasteboard *pboard = sender.draggingPasteboard;
@@ -1574,63 +1754,31 @@ setBorderColor() setBorderColor(Top) setBorderColor(Right) setBorderColor(Bottom
 
 #pragma mark - Keyboard Events
 
-// This dictionary is attached to the NSEvent being handled so we can ensure we only dispatch it
-// once per RCTView\nativeTag. The reason we need to track this state is that certain React native
-// views such as RCTUITextView inherit from views (such as NSTextView) which may or may not
-// decide to bubble the event to the next responder, and we don't want to dispatch the same
-// event more than once (e.g. first from RCTUITextView, and then from it's parent RCTView).
-NSMutableDictionary<NSNumber *, NSNumber *> *GetEventDispatchStateDictionary(NSEvent *event) {
-	static const char *key = "RCTEventDispatchStateDictionary";
-	NSMutableDictionary<NSNumber *, NSNumber *> *dict = objc_getAssociatedObject(event, key);
-	if (dict == nil) {
-		dict = [NSMutableDictionary new];
-		objc_setAssociatedObject(event, key, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-	}
-	return dict;
-}
-
-- (RCTViewKeyboardEvent*)keyboardEvent:(NSEvent*)event shouldBlock:(BOOL *)shouldBlock {
-  BOOL keyDown = event.type == NSEventTypeKeyDown;
-  NSArray<RCTHandledKey *> *keyEvents = keyDown ? self.keyDownEvents : self.keyUpEvents;
-
-  // If the view is focusable and the component didn't explicity set the keyDownEvents or keyUpEvents,
-  // allow enter/return and spacebar key events to mimic the behavior of native controls.
-  if (self.focusable && keyEvents == nil) {
-    keyEvents = @[
-      [[RCTHandledKey alloc] initWithKey:@"Enter"],
-      [[RCTHandledKey alloc] initWithKey:@" "]
-    ];
-  }
-
-  // If a view specifies a key, it will always be removed from the responder chain (i.e. "handled")
-  *shouldBlock = [RCTHandledKey event:event matchesFilter:keyEvents];
-
-  // If an event isn't being removed from the queue, we want to be sure we dispatch it
-  // only once for that view. See note for GetEventDispatchStateDictionary.
-  if (!*shouldBlock) {
-    NSNumber *tag = [self reactTag];
-    NSMutableDictionary<NSNumber *, NSNumber *> *dict = GetEventDispatchStateDictionary(event);
-
-    if ([dict[tag] boolValue]) {
-		return nil;
-	}
-
-	dict[tag] = @YES;
-  }
-
-  return [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
-}
-
 - (BOOL)handleKeyboardEvent:(NSEvent *)event {
-  if (event.type == NSEventTypeKeyDown ? self.onKeyDown : self.onKeyUp) {
-	BOOL shouldBlock = YES;
-    RCTViewKeyboardEvent *keyboardEvent = [self keyboardEvent:event shouldBlock:&shouldBlock];
-    if (keyboardEvent) {
-      [_eventDispatcher sendEvent:keyboardEvent];
-      return shouldBlock;
-    }
+  RCTAssert(
+    event.type == NSEventTypeKeyDown ||
+    event.type == NSEventTypeKeyUp,
+    @"Keyboard event must be keyDown, keyUp. Got type: %ld", (long)event.type);
+
+  RCTViewKeyboardEvent *keyboardEvent = [RCTViewKeyboardEvent keyEventFromEvent:event reactTag:self.reactTag];
+
+  // Emit the event to JS only once. By default, events, will bubble up the respnder chain
+  // when we call super, so let's emit the event only at the first responder. It would be
+  // simpler to check `if (self == self.window.firstResponder), however, that does not account
+  // for cases like TextInputComponentView, where the first responder may be a subview.
+  static const char kRCTViewKeyboardEventEmittedKey = 0;
+  NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
+  BOOL alreadyEmitted = [emitted boolValue];
+  if (!alreadyEmitted) {
+    [_eventDispatcher sendEvent:keyboardEvent];
+    objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
-  return NO;
+
+  NSArray<RCTHandledKey *> *keyEvents = event.type == NSEventTypeKeyDown ? self.keyDownEvents : self.keyUpEvents;
+
+  BOOL shouldBlockNativeHandling = [RCTHandledKey event:event matchesFilter:keyEvents];
+
+  return shouldBlockNativeHandling;
 }
 
 - (void)keyDown:(NSEvent *)event {

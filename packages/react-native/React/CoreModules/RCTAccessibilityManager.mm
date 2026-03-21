@@ -113,7 +113,6 @@ RCT_EXPORT_MODULE()
     _isDarkerSystemColorsEnabled = UIAccessibilityDarkerSystemColorsEnabled();
     _isReduceTransparencyEnabled = UIAccessibilityIsReduceTransparencyEnabled();
     _isVoiceOverEnabled = UIAccessibilityIsVoiceOverRunning();
-    _isHighContrastEnabled = UIAccessibilityDarkerSystemColorsEnabled(); // [macOS] Implement high Contrast for iOS
 #else // [macOS
     NSWorkspace *sharedWorkspace = [NSWorkspace sharedWorkspace];
     _isInvertColorsEnabled = [sharedWorkspace accessibilityDisplayShouldInvertColors];
@@ -252,7 +251,7 @@ RCT_EXPORT_MODULE()
   BOOL newReduceMotionEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
   BOOL newReduceTransparencyEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
   BOOL newHighContrastEnabled = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldIncreaseContrast];
-  
+
 
   if (_isHighContrastEnabled != newHighContrastEnabled) {
     _isHighContrastEnabled = newHighContrastEnabled;

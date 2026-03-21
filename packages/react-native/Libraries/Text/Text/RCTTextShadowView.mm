@@ -85,24 +85,16 @@
 
   NSNumber *tag = self.reactTag;
   NSMutableArray<NSNumber *> *descendantViewTags = [NSMutableArray new];
-  NSMutableArray<NSNumber *> *virtualSubviewTags = [NSMutableArray new]; // [macOS]
+  [textStorage enumerateAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
+                          inRange:NSMakeRange(0, textStorage.length)
+                          options:0
+                       usingBlock:^(RCTShadowView *shadowView, NSRange range, __unused BOOL *stop) {
+                         if (!shadowView) {
+                           return;
+                         }
 
-// [macOS - Enumerate embedded shadow views and virtual subviews in one loop
-  [textStorage enumerateAttributesInRange:NSMakeRange(0, textStorage.length)
-                                  options:0
-                               usingBlock:^(NSDictionary<NSAttributedStringKey, id> *_Nonnull attrs, NSRange range, __unused BOOL * _Nonnull stop) {
-    id embeddedViewAttribute = attrs[RCTBaseTextShadowViewEmbeddedShadowViewAttributeName];
-    if ([embeddedViewAttribute isKindOfClass:[RCTShadowView class]]) {
-      RCTShadowView *embeddedShadowView = (RCTShadowView *)embeddedViewAttribute;
-      [descendantViewTags addObject:embeddedShadowView.reactTag];
-    }
-
-    id tagAttribute = attrs[RCTTextAttributesTagAttributeName];
-    if ([tagAttribute isKindOfClass:[NSNumber class]] && ![tagAttribute isEqualToNumber:tag]) {
-      [virtualSubviewTags addObject:tagAttribute];
-    }
-  }];
-// macOS]
+                         [descendantViewTags addObject:shadowView.reactTag];
+                       }];
 
   [_bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
     RCTTextView *textView = (RCTTextView *)viewRegistry[tag];
@@ -121,25 +113,11 @@
           [descendantViews addObject:descendantView];
         }];
 
-// [macOS
-    NSMutableArray<RCTVirtualTextView *> *virtualSubviews = [NSMutableArray arrayWithCapacity:virtualSubviewTags.count];
-    [virtualSubviewTags
-        enumerateObjectsUsingBlock:^(NSNumber *_Nonnull virtualSubviewTag, NSUInteger index, BOOL *_Nonnull stop) {
-          RCTPlatformView *virtualSubview = viewRegistry[virtualSubviewTag];
-          if ([virtualSubview isKindOfClass:[RCTVirtualTextView class]]) {
-            [virtualSubviews addObject:(RCTVirtualTextView *)virtualSubview];
-          }
-        }];
-// macOS]
-
     // Removing all references to Shadow Views to avoid unnecessary retaining.
     [textStorage removeAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
                            range:NSMakeRange(0, textStorage.length)];
 
-    [textView setTextStorage:textStorage
-                contentFrame:contentFrame
-             descendantViews:descendantViews
-             virtualSubviews:virtualSubviews]; // [macOS]
+    [textView setTextStorage:textStorage contentFrame:contentFrame descendantViews:descendantViews];
   }];
 }
 
@@ -191,10 +169,10 @@
 
 - (NSAttributedString *)attributedTextWithMeasuredAttachmentsThatFitSize:(CGSize)size
 {
-  static UIImage *placeholderImage;
+  static RCTPlatformImage *placeholderImage; // [macOS]
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    placeholderImage = [UIImage new];
+    placeholderImage = [RCTPlatformImage new]; // [macOS]
   });
 
   NSMutableAttributedString *attributedText =

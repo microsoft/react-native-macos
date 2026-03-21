@@ -25,10 +25,8 @@
 - (void)scrollToEnd:(BOOL)animated;
 - (void)zoomToRect:(CGRect)rect animated:(BOOL)animated;
 
-#if !TARGET_OS_OSX // [macOS]
-- (void)addScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener;
-- (void)removeScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener;
-#endif // [macOS]
+- (void)addScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener; // [macOS]
+- (void)removeScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener; // [macOS]
 
 @end
 

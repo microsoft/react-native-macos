@@ -69,6 +69,11 @@ using namespace facebook::react;
   [super updateProps:props oldProps:oldProps];
 }
 
+- (NSObject *)accessibilityElement
+{
+  return _imageView;
+}
+
 - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
 {
   RCTAssert(state, @"`state` must not be null.");
@@ -119,7 +124,7 @@ using namespace facebook::react;
 
 #pragma mark - RCTImageResponseDelegate
 
-- (void)didReceiveImage:(UIImage *)image metadata:(id)metadata fromObserver:(const void *)observer
+- (void)didReceiveImage:(RCTPlatformImage *)image metadata:(id)metadata fromObserver:(const void *)observer // [macOS]
 {
   if (!_eventEmitter || !_state) {
     // Notifications are delivered asynchronously and might arrive after the view is already recycled.
@@ -160,7 +165,7 @@ using namespace facebook::react;
     // Blur on a background thread to avoid blocking interaction.
     CGFloat blurRadius = imageProps.blurRadius;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-      UIImage *blurredImage = RCTBlurredImageWithRadius(image, blurRadius);
+      RCTPlatformImage *blurredImage = RCTBlurredImageWithRadius(image, blurRadius); // [macOS]
       RCTExecuteOnMainQueue(^{
         self->_imageView.image = blurredImage;
       });

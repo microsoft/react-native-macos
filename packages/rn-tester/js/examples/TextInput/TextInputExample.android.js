@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 'use strict';
@@ -18,10 +18,11 @@ import type {
 import ExampleTextInput from './ExampleTextInput';
 import TextInputSharedExamples from './TextInputSharedExamples';
 import React from 'react';
+import {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
 const ToggleDefaultPaddingExample = (): React.Node => {
-  const [hasPadding, setHasPadding] = React.useState(false);
+  const [hasPadding, setHasPadding] = useState(false);
 
   return (
     <View>
@@ -118,19 +119,21 @@ const examples: Array<RNTesterModuleExample> = [
             defaultValue="Font Weight (default)"
             style={[styles.singleLine]}
           />
-          {[
-            'normal',
-            'bold',
-            '900',
-            800,
-            '700',
-            '600',
-            '500',
-            '400',
-            '300',
-            '200',
-            '100',
-          ].map(fontWeight => (
+          {(
+            [
+              'normal',
+              'bold',
+              '900',
+              800,
+              '700',
+              '600',
+              '500',
+              '400',
+              '300',
+              '200',
+              '100',
+            ] as const
+          ).map(fontWeight => (
             <ExampleTextInput
               defaultValue={`Font Weight (${fontWeight})`}
               key={fontWeight}
@@ -306,6 +309,59 @@ const examples: Array<RNTesterModuleExample> = [
     },
   },
   {
+    title: 'allowFontScaling attribute',
+    render: function (): React.Node {
+      return (
+        <View>
+          <Text>
+            By default, text will respect Text Size accessibility setting on
+            Android. It means that all font sizes will be increased or decreased
+            depending on the value of the Text Size setting in the OS's Settings
+            app.
+          </Text>
+          <ExampleTextInput
+            placeholder="allowFontScaling = false"
+            allowFontScaling={false}
+          />
+          <ExampleTextInput
+            style={{marginTop: 10}}
+            placeholder="allowFontScaling = false"
+            allowFontScaling={true}
+          />
+        </View>
+      );
+    },
+  },
+  {
+    title: 'maxFontSizeMultiplier attribute',
+    name: 'maxFontSizeMultiplier',
+    render(): React.Node {
+      return (
+        <View testID={'max-font-size-multiplier'}>
+          <Text>
+            When allowFontScaling is enabled, you can use the
+            maxFontSizeMultiplier prop to set an upper limit on how much the
+            font size will be scaled.
+          </Text>
+          <ExampleTextInput
+            allowFontScaling={true}
+            maxFontSizeMultiplier={1}
+            placeholder="This text will not scale up (max 1x)"
+            style={{marginTop: 10}}
+            testID={'non-scalable-text-input'}
+          />
+          <ExampleTextInput
+            allowFontScaling={true}
+            maxFontSizeMultiplier={1.5}
+            placeholder="This text will scale up (max 1.5x)"
+            style={{marginTop: 10}}
+            testID={'scalable-text-input'}
+          />
+        </View>
+      );
+    },
+  },
+  {
     title: 'Text Auto Complete',
     render: function (): React.Node {
       return (
@@ -335,7 +391,7 @@ const examples: Array<RNTesterModuleExample> = [
         'done',
         'previous',
         'next',
-      ];
+      ] as const;
       const returnKeyLabels = ['Compile', 'React Native'];
       const returnKeyExamples = returnKeyTypes.map(type => {
         return (

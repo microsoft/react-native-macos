@@ -5,263 +5,147 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @flow
+ * @flow strict-local
  */
-
-'use strict';
 
 // [macOS]
 
-const React = require('react');
-const ReactNative = require('react-native');
-const {Button, PlatformColor, StyleSheet, Text, View, TextInput, Platform} =
-  ReactNative;
+import type {RNTesterModule} from '../../types/RNTesterTypes';
 
-type State = {
-  eventStream: string,
-};
+import * as React from 'react';
+import {useState} from 'react';
+import {
+  Button,
+  Platform,
+  PlatformColor,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
-class FocusEventExample extends React.Component<{}, State> {
-  state: State = {
-    eventStream: '',
+const FocusEventExample = (): React.Node => {
+  const [eventStream, setEventStream] = useState('');
+
+  const appendEvent = (eventName: string) => {
+    setEventStream(prev => prev + '\n' + eventName);
   };
 
-  render(): React.Node {
-    return (
+  return (
+    <View>
+      <Text>
+        Focus events are called when a component receives or loses focus. This
+        can be acquired by manually focusing components
+        {Platform.OS === 'macos' ? ' or using tab-based nav' : ''}
+      </Text>
       <View>
-        <Text>
-          Focus events are called when a component receives or loses focus. This
-          can be acquired by manually focusing components
-          {Platform.OS === 'macos' ? ' or using tab-based nav' : ''}
-        </Text>
-        <View>
+        <TextInput
+          onFocus={() => appendEvent('TextInput Focus')}
+          onBlur={() => appendEvent('TextInput Blur')}
+          placeholder={'TextInput'}
+          placeholderTextColor={
+            Platform.OS === 'macos' ? PlatformColor('textColor') : 'black'
+          }
+          style={styles.textInput}
+        />
+
+        {
+          // Only test View on MacOS, since canBecomeFirstResponder is false on all iOS, therefore we can't focus
+          Platform.OS === 'macos' ? (
+            <View
+              focusable={true}
+              onFocus={() => appendEvent('View Focus')}
+              onBlur={() => appendEvent('View Blur')}>
+              <Text>Focusable View</Text>
+            </View>
+          ) : null
+        }
+
+        <View
+          onFocus={() =>
+            appendEvent('Nested Singleline TextInput Parent Focus')
+          }
+          onBlur={() => appendEvent('Nested Singleline TextInput Parent Blur')}>
           <TextInput
-            onFocus={() => {
-              this.setState(prevState => ({
-                eventStream: prevState.eventStream + '\nTextInput Focus',
-              }));
-            }}
-            onBlur={() => {
-              this.setState(prevState => ({
-                eventStream: prevState.eventStream + '\nTextInput Blur',
-              }));
-            }}
-            placeholder={'TextInput'}
+            onFocus={() => appendEvent('Nested Singleline TextInput Focus')}
+            onBlur={() => appendEvent('Nested Singleline TextInput Blur')}
+            style={styles.textInput}
+            placeholder={'Nested Singleline TextInput'}
             placeholderTextColor={
               Platform.OS === 'macos' ? PlatformColor('textColor') : 'black'
             }
-            style={styles.textInput}
           />
-
-          {
-            // Only test View on MacOS, since canBecomeFirstResponder is false on all iOS, therefore we can't focus
-            Platform.OS === 'macos' ? (
-              <View
-                focusable={true}
-                onFocus={() => {
-                  this.setState(prevState => ({
-                    eventStream: prevState.eventStream + '\nView Focus',
-                  }));
-                }}
-                onBlur={() => {
-                  this.setState(prevState => ({
-                    eventStream: prevState.eventStream + '\nView Blur',
-                  }));
-                }}>
-                <Text>Focusable View</Text>
-              </View>
-            ) : null
-          }
-
-          <View
-            onFocus={() => {
-              this.setState(prevState => ({
-                eventStream:
-                  prevState.eventStream +
-                  '\nNested Singleline TextInput Parent Focus',
-              }));
-            }}
-            onBlur={() => {
-              this.setState(prevState => ({
-                eventStream:
-                  prevState.eventStream +
-                  '\nNested Singleline TextInput Parent Blur',
-              }));
-            }}>
-            <TextInput
-              onFocus={() => {
-                this.setState(prevState => ({
-                  eventStream:
-                    prevState.eventStream +
-                    '\nNested Singleline TextInput Focus',
-                }));
-              }}
-              onBlur={() => {
-                this.setState(prevState => ({
-                  eventStream:
-                    prevState.eventStream +
-                    '\nNested Singleline TextInput Blur',
-                }));
-              }}
-              style={styles.textInput}
-              placeholder={'Nested Singleline TextInput'}
-              placeholderTextColor={
-                Platform.OS === 'macos' ? PlatformColor('textColor') : 'black'
-              }
-            />
-          </View>
-
-          {
-            // Only test View on MacOS, since canBecomeFirstResponder is false on all iOS, therefore we can't focus
-            Platform.OS === 'macos' ? (
-              <View>
-                <View
-                  onFocus={() => {
-                    this.setState(prevState => ({
-                      eventStream:
-                        prevState.eventStream + '\nDescendent Button Focus',
-                    }));
-                  }}
-                  onBlur={() => {
-                    this.setState(prevState => ({
-                      eventStream:
-                        prevState.eventStream + '\nDescendent Button Blur',
-                    }));
-                  }}>
-                  <View>
-                    <Button
-                      title="Button whose ancestor has onFocus/onBlur"
-                      onPress={() => {}}
-                    />
-                  </View>
-                </View>
-                <View
-                  onFocus={() => {
-                    this.setState(prevState => ({
-                      eventStream:
-                        prevState.eventStream + '\nDescendent Button Focus',
-                    }));
-                  }}
-                  onBlur={() => {
-                    this.setState(prevState => ({
-                      eventStream:
-                        prevState.eventStream + '\nDescendent Button Blur',
-                    }));
-                  }}>
-                  <View>
-                    <Button
-                      title="Button with onFocus/onBlur and ancestor has onFocus/onBlur"
-                      onPress={() => {}}
-                      onFocus={() => {
-                        this.setState(prevState => ({
-                          eventStream: prevState.eventStream + '\nButton Focus',
-                        }));
-                      }}
-                      onBlur={() => {
-                        this.setState(prevState => ({
-                          eventStream: prevState.eventStream + '\nButton Blur',
-                        }));
-                      }}
-                    />
-                  </View>
-                </View>
-                <View
-                  onFocus={() => {
-                    this.setState(prevState => ({
-                      eventStream:
-                        prevState.eventStream + '\nDescendent Text Focus',
-                    }));
-                  }}
-                  onBlur={() => {
-                    this.setState(prevState => ({
-                      eventStream:
-                        prevState.eventStream + '\nDescendent Text Blur',
-                    }));
-                  }}>
-                  <View>
-                    <Text selectable={true}>Selectable text</Text>
-                  </View>
-                </View>
-                <View
-                  onFocus={() => {
-                    this.setState(prevState => ({
-                      eventStream:
-                        prevState.eventStream + '\nNested View Parent Focus',
-                    }));
-                  }}
-                  onBlur={() => {
-                    this.setState(prevState => ({
-                      eventStream:
-                        prevState.eventStream + '\nNested View Parent Blur',
-                    }));
-                  }}>
-                  <View
-                    focusable={true}
-                    onFocus={() => {
-                      this.setState(prevState => ({
-                        eventStream:
-                          prevState.eventStream + '\nNested View Focus',
-                      }));
-                    }}
-                    onBlur={() => {
-                      this.setState(prevState => ({
-                        eventStream:
-                          prevState.eventStream + '\nNested View Blur',
-                      }));
-                    }}>
-                    <Text>Nested Focusable View</Text>
-                  </View>
-                </View>
-              </View>
-            ) : null
-          }
-
-          <View
-            onFocus={() => {
-              this.setState(prevState => ({
-                eventStream:
-                  prevState.eventStream +
-                  '\nNested Multiline TextInput Parent Focus',
-              }));
-            }}
-            onBlur={() => {
-              this.setState(prevState => ({
-                eventStream:
-                  prevState.eventStream +
-                  '\nNested Multiline TextInput Parent Blur',
-              }));
-            }}>
-            <TextInput
-              onFocus={() => {
-                this.setState(prevState => ({
-                  eventStream:
-                    prevState.eventStream +
-                    '\nNested Multiline TextInput Focus',
-                }));
-              }}
-              onBlur={() => {
-                this.setState(prevState => ({
-                  eventStream:
-                    prevState.eventStream + '\nNested Multiline TextInput Blur',
-                }));
-              }}
-              style={styles.textInput}
-              multiline={true}
-              placeholder={'Nested Multiline TextInput'}
-              placeholderTextColor={
-                Platform.OS === 'macos' ? PlatformColor('textColor') : 'black'
-              }
-            />
-          </View>
-
-          <Text>{'Events: ' + this.state.eventStream + '\n\n'}</Text>
         </View>
-      </View>
-    );
-  }
-}
 
-var styles = StyleSheet.create({
+        {
+          // Only test View on MacOS, since canBecomeFirstResponder is false on all iOS, therefore we can't focus
+          Platform.OS === 'macos' ? (
+            <View>
+              <View
+                onFocus={() => appendEvent('Descendent Button Focus')}
+                onBlur={() => appendEvent('Descendent Button Blur')}>
+                <View>
+                  <Button
+                    title="Button whose ancestor has onFocus/onBlur"
+                    onPress={() => {}}
+                  />
+                </View>
+              </View>
+              <View
+                onFocus={() => appendEvent('Descendent Button Focus')}
+                onBlur={() => appendEvent('Descendent Button Blur')}>
+                <View>
+                  <Button
+                    title="Button with onFocus/onBlur and ancestor has onFocus/onBlur"
+                    onPress={() => {}}
+                    onFocus={() => appendEvent('Button Focus')}
+                    onBlur={() => appendEvent('Button Blur')}
+                  />
+                </View>
+              </View>
+              <View
+                onFocus={() => appendEvent('Descendent Text Focus')}
+                onBlur={() => appendEvent('Descendent Text Blur')}>
+                <View>
+                  <Text selectable={true}>Selectable text</Text>
+                </View>
+              </View>
+              <View
+                onFocus={() => appendEvent('Nested View Parent Focus')}
+                onBlur={() => appendEvent('Nested View Parent Blur')}>
+                <View
+                  focusable={true}
+                  onFocus={() => appendEvent('Nested View Focus')}
+                  onBlur={() => appendEvent('Nested View Blur')}>
+                  <Text>Nested Focusable View</Text>
+                </View>
+              </View>
+            </View>
+          ) : null
+        }
+
+        <View
+          onFocus={() => appendEvent('Nested Multiline TextInput Parent Focus')}
+          onBlur={() => appendEvent('Nested Multiline TextInput Parent Blur')}>
+          <TextInput
+            onFocus={() => appendEvent('Nested Multiline TextInput Focus')}
+            onBlur={() => appendEvent('Nested Multiline TextInput Blur')}
+            style={styles.textInput}
+            multiline={true}
+            placeholder={'Nested Multiline TextInput'}
+            placeholderTextColor={
+              Platform.OS === 'macos' ? PlatformColor('textColor') : 'black'
+            }
+          />
+        </View>
+
+        <Text>{'Events: ' + eventStream + '\n\n'}</Text>
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
   textInput: {
     ...Platform.select({
       macos: {
@@ -280,13 +164,15 @@ var styles = StyleSheet.create({
   },
 });
 
-exports.title = 'Focus Events';
-exports.description = 'Examples that show how Focus events can be used.';
-exports.examples = [
-  {
-    title: 'FocusEventExample',
-    render: function (): React.Node {
-      return <FocusEventExample />;
+export default ({
+  title: 'Focus Events',
+  description: 'Examples that show how Focus events can be used.',
+  examples: [
+    {
+      title: 'FocusEventExample',
+      render: function (): React.Node {
+        return <FocusEventExample />;
+      },
     },
-  },
-];
+  ],
+}: RNTesterModule);

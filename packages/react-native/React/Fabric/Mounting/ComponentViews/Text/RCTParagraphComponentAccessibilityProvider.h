@@ -19,7 +19,7 @@
                  layoutManager:(RCTTextLayoutManager *)layoutManager
            paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
                          frame:(CGRect)frame
-                          view:(RCTUIView *)view; // [macOS]
+                          view:(RCTPlatformView *)view; // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 /*

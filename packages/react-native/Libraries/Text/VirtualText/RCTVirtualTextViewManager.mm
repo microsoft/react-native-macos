@@ -13,7 +13,7 @@
 
 RCT_EXPORT_MODULE(RCTVirtualText)
 
-- (RCTUIView *)view // [macOS]
+- (RCTPlatformView *)view // [macOS]
 {
   return [RCTVirtualTextView new];
 }

@@ -51,7 +51,7 @@ using namespace facebook::react;
 
   NSURLRequest *request = NSURLRequestFromImageSource(imageSource);
 
-  auto completionBlock = ^(NSError *error, UIImage *image, id metadata) {
+  auto completionBlock = ^(NSError *error, RCTPlatformImage *image, id metadata) { // [macOS]
     auto observerCoordinator = weakObserverCoordinator.lock();
     if (!observerCoordinator) {
       return;

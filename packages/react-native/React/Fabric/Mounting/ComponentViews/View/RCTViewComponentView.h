@@ -17,6 +17,10 @@
 #import <react/renderer/core/LayoutMetrics.h>
 #import <react/renderer/core/Props.h>
 
+#if TARGET_OS_OSX // [macOS
+#include <react/renderer/components/view/MouseEvent.h>
+#endif // macOS]
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -56,7 +60,11 @@ NS_ASSUME_NONNULL_BEGIN
  * transparent in favour of some subview.
  * Defaults to `self`.
  */
+#if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, strong, nullable, readonly) NSObject *accessibilityElement;
+#else // [macOS
+@property (nonatomic, strong, nullable, readonly) NSView *accessibilityElement;
+#endif // macOS]
 
 /**
  * Insets used when hit testing inside this view.
@@ -74,6 +82,22 @@ NS_ASSUME_NONNULL_BEGIN
            oldLayoutMetrics:(const facebook::react::LayoutMetrics &)oldLayoutMetrics NS_REQUIRES_SUPER;
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask NS_REQUIRES_SUPER;
 - (void)prepareForRecycle NS_REQUIRES_SUPER;
+- (RCTPlatformView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event; // [macOS]
+
+/*
+ * This is the label that would be coopted by another element
+ */
+- (NSString *)accessibilityLabelForCoopting;
+
+/*
+ * This View has no label and will look to coopt something below it
+ */
+- (BOOL)wantsToCooptLabel;
+
+#if TARGET_OS_OSX // [macOS
+- (BOOL)handleKeyboardEvent:(NSEvent *)event;
+- (facebook::react::DataTransfer)dataTransferForPasteboard:(NSPasteboard *)pasteboard;
+#endif // macOS]
 
 /*
  * This is a fragment of temporary workaround that we need only temporary and will get rid of soon.

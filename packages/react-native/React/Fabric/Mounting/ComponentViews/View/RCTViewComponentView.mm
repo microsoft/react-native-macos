@@ -6,19 +6,23 @@
  */
 
 #import "RCTViewComponentView.h"
+#import "RCTViewAccessibilityElement.h"
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
 #import <ranges>
+#if TARGET_OS_OSX // [macOS
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif // macOS]
 
 #import <React/RCTAssert.h>
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTBoxShadow.h>
 #import <React/RCTConversions.h>
-#import <React/RCTCursor.h> // [macOS]
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
+#import <React/RCTRadialGradient.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/view/ViewComponentDescriptor.h>
 #import <react/renderer/components/view/ViewEventEmitter.h>
@@ -30,25 +34,40 @@
 #import <React/RCTComponentViewFactory.h>
 #endif
 
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTCursor.h>
+#import <React/RCTViewKeyboardEvent.h>
+#import <React/RCTUtils.h>
+#endif // macOS]
+
 using namespace facebook::react;
 
 const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
 @implementation RCTViewComponentView {
-  RCTUIColor *_backgroundColor; // [macOS]
+  RCTPlatformColor *_backgroundColor; // [macOS]
   CALayer *_backgroundColorLayer;
   __weak CALayer *_borderLayer;
   CALayer *_outlineLayer;
-  CALayer *_boxShadowLayer;
+  NSMutableArray<CALayer *> *_boxShadowLayers;
   CALayer *_filterLayer;
   NSMutableArray<CALayer *> *_backgroundImageLayers;
   BOOL _needsInvalidateLayer;
   BOOL _isJSResponder;
   BOOL _removeClippedSubviews;
+#if TARGET_OS_OSX // [macOS
+  BOOL _hasMouseOver;
+  BOOL _hasClipViewBoundsObserver;
+  NSTrackingArea *_trackingArea;
+  BOOL _allowsVibrancy;
+#endif // macOS]
   NSMutableArray<RCTUIView *> *_reactSubviews; // [macOS]
   NSSet<NSString *> *_Nullable _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
   RCTPlatformView *_containerView; // [macOS]
   BOOL _useCustomContainerView;
+  NSMutableSet<NSString *> *_accessibilityOrderNativeIDs;
+  NSMutableArray<NSObject *> *_accessibilityElements;
+  RCTViewAccessibilityElement *_axElementDescribingSelf;
 }
 
 #ifdef RCT_DYNAMIC_FRAMEWORKS
@@ -67,6 +86,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     self.multipleTouchEnabled = YES;
 #endif // [macOS]
     _useCustomContainerView = NO;
+    _removeClippedSubviews = NO;
+#if TARGET_OS_OSX // [macOS
+    _allowsVibrancy = NO;
+    self.mouseDownCanMoveWindow = YES;
+#endif // macOS]
   }
   return self;
 }
@@ -107,12 +131,12 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   return CGRectContainsPoint(hitFrame, point);
 }
 
-- (RCTUIColor *)backgroundColor // [macOS]
+- (RCTPlatformColor *)backgroundColor // [macOS]
 {
   return _backgroundColor;
 }
 
-- (void)setBackgroundColor:(RCTUIColor *)backgroundColor // [macOS]
+- (void)setBackgroundColor:(RCTPlatformColor *)backgroundColor // [macOS]
 {
   _backgroundColor = backgroundColor;
 }
@@ -126,6 +150,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     NSCursor *cursor = NSCursorFromRCTCursor(RCTCursorFromCursor(_props->cursor));
     [self addCursorRect:self.bounds cursor:cursor];
   }
+}
+
+- (BOOL)allowsVibrancy
+{
+  return _allowsVibrancy;
 }
 #endif // macOS]
 
@@ -142,7 +171,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 - (void)viewDidChangeEffectiveAppearance
 {
   [super viewDidChangeEffectiveAppearance];
-  
+
   [self invalidateLayer];
 }
 #endif // macOS]
@@ -261,10 +290,13 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     needsInvalidateLayer = YES;
   }
 
-  if (oldViewProps.removeClippedSubviews != newViewProps.removeClippedSubviews) {
-    _removeClippedSubviews = newViewProps.removeClippedSubviews;
-    if (_removeClippedSubviews && self.currentContainerView.subviews.count > 0) {
-      _reactSubviews = [NSMutableArray arrayWithArray:self.currentContainerView.subviews];
+  // Disable `removeClippedSubviews` when Fabric View Culling is enabled.
+  if (!ReactNativeFeatureFlags::enableViewCulling()) {
+    if (oldViewProps.removeClippedSubviews != newViewProps.removeClippedSubviews) {
+      _removeClippedSubviews = newViewProps.removeClippedSubviews;
+      if (_removeClippedSubviews && self.currentContainerView.subviews.count > 0) {
+        _reactSubviews = [NSMutableArray arrayWithArray:self.currentContainerView.subviews];
+      }
     }
   }
 
@@ -276,7 +308,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   // `shadowColor`
   if (oldViewProps.shadowColor != newViewProps.shadowColor) {
-    RCTUIColor *shadowColor = RCTUIColorFromSharedColor(newViewProps.shadowColor); // [macOS]
+    RCTPlatformColor *shadowColor = RCTUIColorFromSharedColor(newViewProps.shadowColor); // [macOS]
     self.layer.shadowColor = shadowColor.CGColor;
     needsInvalidateLayer = YES;
   }
@@ -303,7 +335,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   if (oldViewProps.backfaceVisibility != newViewProps.backfaceVisibility) {
     self.layer.doubleSided = newViewProps.backfaceVisibility == BackfaceVisibility::Visible;
   }
-  
+
   // `cursor`
   if (oldViewProps.cursor != newViewProps.cursor) {
     needsInvalidateLayer = YES;
@@ -384,10 +416,13 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     self.nativeId = RCTNSStringFromStringNilIfEmpty(newViewProps.nativeId);
   }
 
-#if !TARGET_OS_OSX // [macOS]
   // `accessible`
   if (oldViewProps.accessible != newViewProps.accessible) {
+#if !TARGET_OS_OSX // [macOS]
     self.accessibilityElement.isAccessibilityElement = newViewProps.accessible;
+#else // [macOS
+    self.accessibilityElement.accessibilityElement = newViewProps.accessible;
+#endif // macOS]
   }
 
   // `accessibilityLabel`
@@ -395,17 +430,24 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     self.accessibilityElement.accessibilityLabel = RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityLabel);
   }
 
+#if !TARGET_OS_OSX // [macOS]
   // `accessibilityLanguage`
   if (oldViewProps.accessibilityLanguage != newViewProps.accessibilityLanguage) {
     self.accessibilityElement.accessibilityLanguage =
         RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityLanguage);
   }
+#endif // [macOS]
 
   // `accessibilityHint`
   if (oldViewProps.accessibilityHint != newViewProps.accessibilityHint) {
+#if !TARGET_OS_OSX // [macOS]
     self.accessibilityElement.accessibilityHint = RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityHint);
+#else // [macOS
+    self.accessibilityElement.accessibilityHelp = RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityHint);
+#endif // macOS]
   }
 
+#if !TARGET_OS_OSX // [macOS]
   // `accessibilityViewIsModal`
   if (oldViewProps.accessibilityViewIsModal != newViewProps.accessibilityViewIsModal) {
     self.accessibilityElement.accessibilityViewIsModal = newViewProps.accessibilityViewIsModal;
@@ -435,13 +477,37 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
       self.largeContentTitle = RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityLargeContentTitle);
     }
   }
+#endif // [macOS]
+
+  // `accessibilityOrder`
+  if (oldViewProps.accessibilityOrder != newViewProps.accessibilityOrder &&
+      ReactNativeFeatureFlags::enableAccessibilityOrder()) {
+    // Creating a set since a lot of logic requires lookups in here. However,
+    // we still need to preserve the orginal order. So just read from props
+    // if need to access that
+    _accessibilityOrderNativeIDs = [NSMutableSet new];
+    for (const std::string &childId : newViewProps.accessibilityOrder) {
+      [_accessibilityOrderNativeIDs addObject:RCTNSStringFromString(childId)];
+    }
+
+    _accessibilityElements = [NSMutableArray new];
+  }
 
   // `accessibilityTraits`
   if (oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
+#if !TARGET_OS_OSX // [macOS]
     self.accessibilityElement.accessibilityTraits =
         RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
+#else // [macOS
+    // On macOS, accessibilityElement returns self (NSView*) which doesn't have accessibilityTraits.
+    // Set role directly on self based on traits.
+    RCTUIAccessibilityTraits traits = RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
+    self.accessibilityRole = RCTAccessibilityRoleFromTraits(traits);
+    self.accessibilityEnabled = (traits & RCTUIAccessibilityTraitNotEnabled) == 0;
+#endif // macOS]
   }
 
+#if !TARGET_OS_OSX // [macOS]
   // `accessibilityState`
   if (oldViewProps.accessibilityState != newViewProps.accessibilityState) {
     self.accessibilityTraits &= ~(UIAccessibilityTraitNotEnabled | UIAccessibilityTraitSelected);
@@ -458,6 +524,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   if (oldViewProps.accessibilityIgnoresInvertColors != newViewProps.accessibilityIgnoresInvertColors) {
     self.accessibilityIgnoresInvertColors = newViewProps.accessibilityIgnoresInvertColors;
   }
+#endif // [macOS]
 
   // `accessibilityValue`
   if (oldViewProps.accessibilityValue != newViewProps.accessibilityValue) {
@@ -475,6 +542,12 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     } else {
       self.accessibilityElement.accessibilityValue = nil;
     }
+  }
+
+#if !TARGET_OS_OSX // [macOS]
+  if (oldViewProps.accessibilityRespondsToUserInteraction != newViewProps.accessibilityRespondsToUserInteraction) {
+    self.accessibilityElement.accessibilityRespondsToUserInteraction =
+        newViewProps.accessibilityRespondsToUserInteraction;
   }
 #endif // [macOS]
 
@@ -559,6 +632,54 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     needsInvalidateLayer = YES;
   }
 
+#if TARGET_OS_OSX // [macOS
+  // `acceptsFirstMouse`
+  if (oldViewProps.acceptsFirstMouse != newViewProps.acceptsFirstMouse) {
+    self.acceptsFirstMouse = newViewProps.acceptsFirstMouse;
+  }
+
+  // `mouseDownCanMoveWindow`
+  if (oldViewProps.mouseDownCanMoveWindow != newViewProps.mouseDownCanMoveWindow) {
+    self.mouseDownCanMoveWindow = newViewProps.mouseDownCanMoveWindow;
+  }
+
+  // `allowsVibrancy`
+  if (oldViewProps.allowsVibrancy != newViewProps.allowsVibrancy) {
+    _allowsVibrancy = newViewProps.allowsVibrancy;
+  }
+
+    // `draggedTypes`
+  if (oldViewProps.draggedTypes != newViewProps.draggedTypes) {
+    if (!oldViewProps.draggedTypes.empty()) {
+      [self unregisterDraggedTypes];
+    }
+
+    if (!newViewProps.draggedTypes.empty()) {
+      NSMutableArray<NSPasteboardType> *pasteboardTypes = [NSMutableArray arrayWithCapacity:newViewProps.draggedTypes.size()];
+      for (const auto &draggedType : newViewProps.draggedTypes) {
+        if (draggedType == "fileUrl") {
+          [pasteboardTypes addObject:NSFilenamesPboardType];
+        } else if (draggedType == "image") {
+          [pasteboardTypes addObject:NSPasteboardTypePNG];
+          [pasteboardTypes addObject:NSPasteboardTypeTIFF];
+        } else if (draggedType == "string") {
+          [pasteboardTypes addObject:NSPasteboardTypeString];
+        }
+      }
+      [self registerForDraggedTypes:pasteboardTypes];
+    }
+  }
+
+  // `tooltip`
+  if (oldViewProps.tooltip != newViewProps.tooltip) {
+    if (newViewProps.tooltip.has_value()) {
+      self.toolTip = RCTNSStringFromStringNilIfEmpty(newViewProps.tooltip.value());
+    } else {
+      self.toolTip = nil;
+    }
+  }
+#endif // macOS]
+
   _needsInvalidateLayer = _needsInvalidateLayer || needsInvalidateLayer;
 
   _props = std::static_pointer_cast<const ViewProps>(props);
@@ -621,6 +742,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   _needsInvalidateLayer = NO;
   [self invalidateLayer];
+
+#if TARGET_OS_OSX // [macOS
+  [self updateTrackingAreas];
+  [self updateClipViewBoundsObserverIfNeeded];
+#endif // macOS]
 }
 
 - (void)prepareForRecycle
@@ -641,6 +767,12 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   _isJSResponder = NO;
   _removeClippedSubviews = NO;
   _reactSubviews = [NSMutableArray new];
+  _accessibilityElements = [NSMutableArray new];
+#if TARGET_OS_OSX // [macOS
+    _allowsVibrancy = NO;
+    self.acceptsFirstMouse = NO;
+    self.mouseDownCanMoveWindow = YES;
+#endif // macOS]
 }
 
 - (void)setPropKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN:(NSSet<NSString *> *_Nullable)props
@@ -653,7 +785,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   return _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN;
 }
 
-- (RCTUIView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
+- (RCTPlatformView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
 {
   // This is a classic textbook implementation of `hitTest:` with a couple of improvements:
   //   * It does not stop algorithm if some touch is outside the view
@@ -664,7 +796,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 #if !TARGET_OS_OSX // [macOS]
   if (!self.userInteractionEnabled || self.hidden || self.alpha < 0.01) {
 #else // [macOS
-  if (!self.userInteractionEnabled || self.hidden) {
+  if (!self.userInteractionEnabled || self.hidden || self.alphaValue < 0.01 ) {
 #endif // macOS]
     return nil;
   }
@@ -679,8 +811,8 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     return nil;
   }
 
-  for (RCTUIView *subview in [self.subviews reverseObjectEnumerator]) { // [macOS]
-    RCTUIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event]; // [macOS]
+  for (RCTPlatformView *subview in [self.subviews reverseObjectEnumerator]) { // [macOS]
+    RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, [subview convertPoint:point fromView:self], event); // [macOS]
     if (hitView) {
       return hitView;
     }
@@ -689,7 +821,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   return isPointInside ? self : nil;
 }
 
-- (RCTUIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
+- (RCTPlatformView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
 {
   switch (_props->pointerEvents) {
     case PointerEventsMode::Auto:
@@ -699,7 +831,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     case PointerEventsMode::BoxOnly:
       return [self pointInside:point withEvent:event] ? self : nil;
     case PointerEventsMode::BoxNone:
-      RCTUIView *view = [self betterHitTest:point withEvent:event]; // [macOS]
+      RCTPlatformView *view = [self betterHitTest:point withEvent:event]; // [macOS]
       return view != self ? view : nil;
   }
 }
@@ -717,17 +849,18 @@ static RCTCornerRadii RCTCornerRadiiFromBorderRadii(BorderRadii borderRadii)
       .bottomRightVertical = (CGFloat)borderRadii.bottomRight.vertical};
 }
 
-static RCTCornerRadii RCTCreateOutlineCornerRadiiFromBorderRadii(const BorderRadii &borderRadii, CGFloat outlineWidth)
+static RCTCornerRadii
+RCTCreateOutlineCornerRadiiFromBorderRadii(const BorderRadii &borderRadii, CGFloat outlineWidth, CGFloat outlineOffset)
 {
   return RCTCornerRadii{
-      borderRadii.topLeft.horizontal != 0 ? borderRadii.topLeft.horizontal + outlineWidth : 0,
-      borderRadii.topLeft.vertical != 0 ? borderRadii.topLeft.vertical + outlineWidth : 0,
-      borderRadii.topRight.horizontal != 0 ? borderRadii.topRight.horizontal + outlineWidth : 0,
-      borderRadii.topRight.vertical != 0 ? borderRadii.topRight.vertical + outlineWidth : 0,
-      borderRadii.bottomLeft.horizontal != 0 ? borderRadii.bottomLeft.horizontal + outlineWidth : 0,
-      borderRadii.bottomLeft.vertical != 0 ? borderRadii.bottomLeft.vertical + outlineWidth : 0,
-      borderRadii.bottomRight.horizontal != 0 ? borderRadii.bottomRight.horizontal + outlineWidth : 0,
-      borderRadii.bottomRight.vertical != 0 ? borderRadii.bottomRight.vertical + outlineWidth : 0};
+      borderRadii.topLeft.horizontal != 0 ? borderRadii.topLeft.horizontal + outlineWidth + outlineOffset : 0,
+      borderRadii.topLeft.vertical != 0 ? borderRadii.topLeft.vertical + outlineWidth + outlineOffset : 0,
+      borderRadii.topRight.horizontal != 0 ? borderRadii.topRight.horizontal + outlineWidth + outlineOffset : 0,
+      borderRadii.topRight.vertical != 0 ? borderRadii.topRight.vertical + outlineWidth + outlineOffset : 0,
+      borderRadii.bottomLeft.horizontal != 0 ? borderRadii.bottomLeft.horizontal + outlineWidth + outlineOffset : 0,
+      borderRadii.bottomLeft.vertical != 0 ? borderRadii.bottomLeft.vertical + outlineWidth + outlineOffset : 0,
+      borderRadii.bottomRight.horizontal != 0 ? borderRadii.bottomRight.horizontal + outlineWidth + outlineOffset : 0,
+      borderRadii.bottomRight.vertical != 0 ? borderRadii.bottomRight.vertical + outlineWidth + outlineOffset : 0};
 }
 
 // To be used for CSS properties like `border` and `outline`.
@@ -738,8 +871,8 @@ static void RCTAddContourEffectToLayer(
     const UIEdgeInsets &contourInsets,
     const RCTBorderStyle &contourStyle)
 {
-  UIImage *image = RCTGetBorderImage(
-      contourStyle, layer.bounds.size, cornerRadii, contourInsets, contourColors, [RCTUIColor clearColor], NO); // [macOS]
+  RCTUIImage *image = RCTGetBorderImage( // [macOS]
+      contourStyle, layer.bounds.size, cornerRadii, contourInsets, contourColors, [RCTPlatformColor clearColor], NO); // [macOS]
 
   if (image == nil) {
     layer.contents = nil;
@@ -749,13 +882,8 @@ static void RCTAddContourEffectToLayer(
     CGRect contentsCenter = CGRect{
         CGPoint{imageCapInsets.left / imageSize.width, imageCapInsets.top / imageSize.height},
         CGSize{(CGFloat)1.0 / imageSize.width, (CGFloat)1.0 / imageSize.height}};
-#if !TARGET_OS_OSX // [macOS]
     layer.contents = (id)image.CGImage;
     layer.contentsScale = image.scale;
-#else // [macOS
-    layer.contents = (__bridge id) UIImageGetCGImageRef(image);
-    layer.contentsScale = UIImageGetScale(image);
-#endif // macOS]
 
     BOOL isResizable = !UIEdgeInsetsEqualToEdgeInsets(image.capInsets, UIEdgeInsetsZero);
     if (isResizable) {
@@ -949,8 +1077,15 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 
 #if TARGET_OS_OSX // [macOS
-  // clipsToBounds is stubbed out on macOS because it's not part of NSView
-  layer.masksToBounds = self.clipsToBounds;
+  // On macOS, clipsToBounds doesn't automatically set layer.masksToBounds like iOS does.
+  // When _useCustomContainerView is true (boxShadow + overflow:hidden), the container
+  // view handles clipping children while the main layer stays unclipped for the shadow.
+  // The container view's masksToBounds is set in currentContainerView getter.
+  if (_useCustomContainerView) {
+    layer.masksToBounds = NO;
+  } else {
+    layer.masksToBounds = _props->getClipsContentToBounds();
+  }
 #endif // macOS]
 
   const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
@@ -962,7 +1097,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       // If view has a solid background color, calculate shadow path from border.
       const RCTCornerInsets cornerInsets =
           RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero);
-      CGPathRef shadowPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, nil);
+      CGPathRef shadowPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, nil, NO);
       layer.shadowPath = shadowPath;
       CGPathRelease(shadowPath);
     } else {
@@ -972,7 +1107,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   } else {
     layer.shadowPath = nil;
   }
-  
+
 #if !TARGET_OS_OSX // [visionOS]
   // Stage 1.5. Cursor / Hover Effects
   if (@available(iOS 17.0, *)) {
@@ -986,14 +1121,14 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       // rendering incorrectly on iOS, iOS apps in compatibility mode on visionOS, but not on visionOS.
       // To work around this, for iOS, we can calculate the border path based on `view.frame` (the
       // superview's coordinate space) instead of view.bounds.
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.frame, cornerInsets, NULL);
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.frame, cornerInsets, NULL, NO);
 #else // TARGET_OS_VISION
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL);
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL, NO);
 #endif
       UIBezierPath *bezierPath = [UIBezierPath bezierPathWithCGPath:borderPath];
       CGPathRelease(borderPath);
       UIShape *shape = [UIShape shapeWithBezierPath:bezierPath];
-      
+
       hoverStyle = [UIHoverStyle styleWithEffect:[UIHoverAutomaticEffect effect] shape:shape];
     }
     [self setHoverStyle:hoverStyle];
@@ -1013,9 +1148,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       // rendering incorrectly on iOS, iOS apps in compatibility mode on visionOS, but not on visionOS.
       // To work around this, for iOS, we can calculate the border path based on `view.frame` (the
       // superview's coordinate space) instead of view.bounds.
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.frame, cornerInsets, NULL);
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.frame, cornerInsets, NULL, NO);
 #else // TARGET_OS_VISION
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL);
+      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL, NO);
 #endif
       UIBezierPath *bezierPath = [UIBezierPath bezierPathWithCGPath:borderPath];
       CGPathRelease(borderPath);
@@ -1040,9 +1175,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
   // background color
 #if !TARGET_OS_OSX // [macOS]
-  RCTUIColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
+  RCTPlatformColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
 #else // [macOS
-  RCTUIColor *backgroundColor = _backgroundColor;
+  RCTPlatformColor *backgroundColor = _backgroundColor;
 #endif // macOS]
   // The reason we sometimes do not set self.layer's backgroundColor is because
   // we want to support non-uniform border radii, which apple does not natively
@@ -1058,25 +1193,11 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     layer.backgroundColor = nil;
     if (!_backgroundColorLayer) {
       _backgroundColorLayer = [CALayer layer];
-      _backgroundColorLayer.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
       _backgroundColorLayer.zPosition = BACKGROUND_COLOR_ZPOSITION;
       [self.layer addSublayer:_backgroundColorLayer];
     }
-
+    [self shapeLayerToMatchView:_backgroundColorLayer borderMetrics:borderMetrics];
     _backgroundColorLayer.backgroundColor = backgroundColor.CGColor;
-    if (borderMetrics.borderRadii.isUniform()) {
-      _backgroundColorLayer.mask = nil;
-      _backgroundColorLayer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
-      _backgroundColorLayer.cornerCurve = CornerCurveFromBorderCurve(borderMetrics.borderCurves.topLeft);
-    } else {
-      CAShapeLayer *maskLayer =
-          [self createMaskLayer:self.bounds
-                   cornerInsets:RCTGetCornerInsets(
-                                    RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero)];
-      _backgroundColorLayer.mask = maskLayer;
-      _backgroundColorLayer.cornerRadius = 0;
-    }
-
     [_backgroundColorLayer removeAllAnimations];
   }
 
@@ -1086,7 +1207,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     _borderLayer = nil;
 
     layer.borderWidth = (CGFloat)borderMetrics.borderWidths.left;
-    RCTUIColor *borderColor = RCTUIColorFromSharedColor(borderMetrics.borderColors.left); // [macOS]
+    RCTPlatformColor *borderColor = RCTUIColorFromSharedColor(borderMetrics.borderColors.left); // [macOS]
     layer.borderColor = borderColor.CGColor;
     layer.cornerRadius = (CGFloat)borderMetrics.borderRadii.topLeft.horizontal;
 
@@ -1133,15 +1254,16 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
         layer.bounds, -_props->outlineOffset - _props->outlineWidth, -_props->outlineOffset - _props->outlineWidth);
 
     if (borderMetrics.borderRadii.isUniform() && borderMetrics.borderRadii.topLeft.horizontal == 0) {
-      RCTUIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
+      RCTPlatformColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
       _outlineLayer.borderWidth = _props->outlineWidth;
       _outlineLayer.borderColor = outlineColor.CGColor;
     } else {
-      RCTUIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
+      RCTPlatformColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
 
       RCTAddContourEffectToLayer(
           _outlineLayer,
-          RCTCreateOutlineCornerRadiiFromBorderRadii(borderMetrics.borderRadii, _props->outlineWidth),
+          RCTCreateOutlineCornerRadiiFromBorderRadii(
+              borderMetrics.borderRadii, _props->outlineWidth, _props->outlineOffset),
           RCTBorderColors{outlineColor, outlineColor, outlineColor, outlineColor},
           UIEdgeInsets{_props->outlineWidth, _props->outlineWidth, _props->outlineWidth, _props->outlineWidth},
           RCTBorderStyleFromOutlineStyle(_props->outlineStyle));
@@ -1165,20 +1287,13 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     }
 
     _filterLayer = [CALayer layer];
-    _filterLayer.frame = CGRectMake(0, 0, layer.frame.size.width, layer.frame.size.height);
+    [self shapeLayerToMatchView:_filterLayer borderMetrics:borderMetrics];
     _filterLayer.compositingFilter = @"multiplyBlendMode";
-    _filterLayer.backgroundColor = [RCTUIColor colorWithRed:multiplicativeBrightness // [macOS]
+    _filterLayer.backgroundColor = [RCTPlatformColor colorWithRed:multiplicativeBrightness // [macOS]
                                                       green:multiplicativeBrightness
                                                        blue:multiplicativeBrightness
                                                       alpha:self.layer.opacity]
                                        .CGColor;
-    if (borderMetrics.borderRadii.isUniform()) {
-      _filterLayer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
-    } else {
-      RCTCornerInsets cornerInsets =
-          RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero);
-      _filterLayer.mask = [self createMaskLayer:self.bounds cornerInsets:cornerInsets];
-    }
     // So that this layer is always above any potential sublayers this view may
     // add
     _filterLayer.zPosition = CGFLOAT_MAX;
@@ -1194,24 +1309,18 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
         const auto &linearGradient = std::get<LinearGradient>(backgroundImage);
         CALayer *backgroundImageLayer = [RCTLinearGradient gradientLayerWithSize:self.layer.bounds.size
                                                                         gradient:linearGradient];
-        backgroundImageLayer.frame = layer.bounds;
+        [self shapeLayerToMatchView:backgroundImageLayer borderMetrics:borderMetrics];
         backgroundImageLayer.masksToBounds = YES;
-        // To make border radius work with gradient layers
-        if (borderMetrics.borderRadii.isUniform()) {
-          backgroundImageLayer.cornerRadius = layer.cornerRadius;
-          backgroundImageLayer.cornerCurve = layer.cornerCurve;
-          backgroundImageLayer.mask = nil;
-        } else {
-          CAShapeLayer *maskLayer =
-              [self createMaskLayer:self.bounds
-                       cornerInsets:RCTGetCornerInsets(
-                                        RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero)];
-          backgroundImageLayer.mask = maskLayer;
-          backgroundImageLayer.cornerRadius = 0;
-        }
-
         backgroundImageLayer.zPosition = BACKGROUND_COLOR_ZPOSITION;
-
+        [self.layer addSublayer:backgroundImageLayer];
+        [_backgroundImageLayers addObject:backgroundImageLayer];
+      } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {
+        const auto &radialGradient = std::get<RadialGradient>(backgroundImage);
+        CALayer *backgroundImageLayer = [RCTRadialGradient gradientLayerWithSize:self.layer.bounds.size
+                                                                        gradient:radialGradient];
+        [self shapeLayerToMatchView:backgroundImageLayer borderMetrics:borderMetrics];
+        backgroundImageLayer.masksToBounds = YES;
+        backgroundImageLayer.zPosition = BACKGROUND_COLOR_ZPOSITION;
         [self.layer addSublayer:backgroundImageLayer];
         [_backgroundImageLayers addObject:backgroundImageLayer];
       }
@@ -1219,25 +1328,24 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 
   // box shadow
-  [_boxShadowLayer removeFromSuperlayer];
-  _boxShadowLayer = nil;
+  for (CALayer *boxShadowLayer in _boxShadowLayers) {
+    [boxShadowLayer removeFromSuperlayer];
+  }
+  [_boxShadowLayers removeAllObjects];
   if (!_props->boxShadow.empty()) {
-    _boxShadowLayer = [CALayer layer];
-    [self.layer addSublayer:_boxShadowLayer];
-    _boxShadowLayer.zPosition = _borderLayer.zPosition;
-    _boxShadowLayer.frame = RCTGetBoundingRect(_props->boxShadow, self.layer.frame.size);
-
-    UIImage *boxShadowImage = RCTGetBoxShadowImage(
-        _props->boxShadow,
-        RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
-        RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths),
-        layer);
-
-#if !TARGET_OS_OSX // [macOS]
-    _boxShadowLayer.contents = (id)boxShadowImage.CGImage;
-#else // [macOS
-    _boxShadowLayer.contents = (__bridge id)UIImageGetCGImageRef(boxShadowImage);
-#endif // macOS]
+    if (!_boxShadowLayers) {
+      _boxShadowLayers = [NSMutableArray new];
+    }
+    for (auto it = _props->boxShadow.rbegin(); it != _props->boxShadow.rend(); ++it) {
+      CALayer *shadowLayer = RCTGetBoxShadowLayer(
+          *it,
+          RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
+          RCTUIEdgeInsetsFromEdgeInsets(borderMetrics.borderWidths),
+          self.layer.bounds.size);
+      shadowLayer.zPosition = _borderLayer.zPosition;
+      [self.layer addSublayer:shadowLayer];
+      [_boxShadowLayers addObject:shadowLayer];
+    }
   }
 
   // clipping
@@ -1280,9 +1388,29 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 }
 
+// Shapes the given layer to match the shape of this View's layer. This is
+// basically just accounting for size, position, and border radius.
+- (void)shapeLayerToMatchView:(CALayer *)layer borderMetrics:(BorderMetrics)borderMetrics
+{
+  // Bounds is needed here to account for scaling transforms properly and ensure
+  // we do not scale twice
+  layer.frame = CGRectMake(0, 0, self.layer.bounds.size.width, self.layer.bounds.size.height);
+  if (borderMetrics.borderRadii.isUniform()) {
+    layer.mask = nil;
+    layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
+    layer.cornerCurve = CornerCurveFromBorderCurve(borderMetrics.borderCurves.topLeft);
+  } else {
+    CAShapeLayer *maskLayer = [self
+        createMaskLayer:self.bounds
+           cornerInsets:RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero)];
+    layer.mask = maskLayer;
+    layer.cornerRadius = 0;
+  }
+}
+
 - (CAShapeLayer *)createMaskLayer:(CGRect)bounds cornerInsets:(RCTCornerInsets)cornerInsets
 {
-  CGPathRef path = RCTPathCreateWithRoundedRect(bounds, cornerInsets, nil);
+  CGPathRef path = RCTPathCreateWithRoundedRect(bounds, cornerInsets, nil, NO);
   CAShapeLayer *maskLayer = [CAShapeLayer layer];
   maskLayer.path = path;
   CGPathRelease(path);
@@ -1303,9 +1431,65 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
 #pragma mark - Accessibility
 
+#if !TARGET_OS_OSX // [macOS]
 - (NSObject *)accessibilityElement
+#else // [macOS
+- (NSView *)accessibilityElement // macOS]
+#endif // macOS]
 {
   return self;
+}
+
+- (NSArray<NSObject *> *)accessibilityElements
+{
+  if ([_accessibilityOrderNativeIDs count] <= 0) {
+    return super.accessibilityElements;
+  }
+
+  // TODO: Currently this ignores changes to descendant nativeID's. While that should rarely, if ever happen, it's an
+  // edge case we should address. Currently this fixes some app deaths so landing this without addressing that edge case
+  // for now.
+  if ([_accessibilityElements count] > 0) {
+    return _accessibilityElements;
+  }
+
+  NSMutableDictionary<NSString *, RCTPlatformView *> *nativeIdToView = [NSMutableDictionary new]; // [macOS]
+
+  [RCTViewComponentView collectAccessibilityElements:self
+                                      intoDictionary:nativeIdToView
+                                           nativeIds:_accessibilityOrderNativeIDs];
+
+  for (auto childId : _props->accessibilityOrder) {
+    NSString *nsStringChildId = RCTNSStringFromString(childId);
+    // Special case to allow for self-referencing with accessibilityOrder
+    if ([nsStringChildId isEqualToString:self.nativeId]) {
+      if (!_axElementDescribingSelf) {
+        _axElementDescribingSelf = [[RCTViewAccessibilityElement alloc] initWithView:self];
+      }
+      _axElementDescribingSelf.isAccessibilityElement = [super isAccessibilityElement];
+      [_accessibilityElements addObject:_axElementDescribingSelf];
+    } else {
+      RCTPlatformView *viewWithMatchingNativeId = [nativeIdToView objectForKey:nsStringChildId]; // [macOS]
+      if (viewWithMatchingNativeId) {
+        [_accessibilityElements addObject:viewWithMatchingNativeId];
+      }
+    }
+  }
+
+  return _accessibilityElements;
+}
+
++ (void)collectAccessibilityElements:(RCTPlatformView *)view // [macOS]
+                      intoDictionary:(NSMutableDictionary<NSString *, RCTPlatformView *> *)dict // [macOS]
+                           nativeIds:(NSSet<NSString *> *)nativeIds
+{
+  for (RCTPlatformView *subview in view.subviews) { // [macOS]
+    if ([subview isKindOfClass:[RCTViewComponentView class]] &&
+        [nativeIds containsObject:((RCTViewComponentView *)subview).nativeId]) {
+      [dict setObject:subview forKey:((RCTViewComponentView *)subview).nativeId];
+    }
+    [RCTViewComponentView collectAccessibilityElements:subview intoDictionary:dict nativeIds:nativeIds];
+  }
 }
 
 static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
@@ -1322,7 +1506,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
         result = [NSMutableString string];
       }
       if (result.length > 0) {
-        [result appendString:@" "];
+        [result appendString:@", "];
       }
       [result appendString:label];
     }
@@ -1337,13 +1521,33 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     return label;
   }
 
-  return RCTRecursiveAccessibilityLabel(self.currentContainerView);
+  if (self.isAccessibilityElement) {
+    return RCTRecursiveAccessibilityLabel(self.currentContainerView);
+  }
+  return nil;
+}
+
+- (NSString *)accessibilityLabelForCoopting
+{
+  return super.accessibilityLabel;
+}
+
+- (BOOL)wantsToCooptLabel
+{
+  return !super.accessibilityLabel && super.isAccessibilityElement;
 }
 
 - (BOOL)isAccessibilityElement
 {
   if (self.contentView != nil) {
     return self.contentView.isAccessibilityElement;
+  }
+
+  // If we reference ourselves in accessibilityOrder then we will make a
+  // UIAccessibilityElement object to represent ourselves since returning YES
+  // here would mean iOS would not call into accessibilityElements
+  if ([_accessibilityOrderNativeIDs containsObject:self.nativeId]) {
+    return NO;
   }
 
   return [super isAccessibilityElement];
@@ -1502,6 +1706,485 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   }
 }
 
+#if TARGET_OS_OSX // [macOS
+
+- (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args
+{
+  if ([commandName isEqualToString:@"focus"]) {
+    [self focus];
+    return;
+  }
+
+  if ([commandName isEqualToString:@"blur"]) {
+    [self blur];
+    return;
+  }
+}
+
+# pragma mark - Focus Ring
+
+- (CGRect)focusRingMaskBounds
+{
+  return [self bounds];
+}
+
+- (void)drawFocusRingMask
+{
+  if (_props->enableFocusRing) {
+    CGContextRef context = NSGraphicsContext.currentContext.CGContext;
+
+    const auto borderMetrics = _props->resolveBorderMetrics(_layoutMetrics);
+    const RCTCornerInsets cornerInsets =
+        RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero);
+    CGPathRef path = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL, NO); // [macOS]
+
+    CGContextAddPath(context, path);
+    CGContextFillPath(context);
+    CGPathRelease(path);
+  }
+}
+
+
+#pragma mark - Focus Events
+
+- (void)focus
+{
+  [[self window] makeFirstResponder:self];
+}
+
+- (void)blur
+{
+  [[self window] resignFirstResponder];
+}
+
+- (BOOL)needsPanelToBecomeKey
+{
+	// We need to override this so that mouse clicks don't move keyboard focus on focusable views by default.
+	return false;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+  return _props->focusable || [super acceptsFirstResponder];
+}
+
+- (BOOL)becomeFirstResponder
+{
+  if (![super becomeFirstResponder]) {
+    return NO;
+  }
+
+  if (_eventEmitter) {
+    _eventEmitter->onFocus();
+  }
+
+  return YES;
+}
+
+-  (BOOL)resignFirstResponder
+{
+  if (![super resignFirstResponder]) {
+    return NO;
+  }
+
+  if (_eventEmitter) {
+    _eventEmitter->onBlur();
+  }
+
+  return YES;
+}
+
+#pragma mark - Keyboard Events
+
+- (BOOL)handleKeyboardEvent:(NSEvent *)event {
+  RCTAssert(
+    event.type == NSEventTypeKeyDown || event.type == NSEventTypeKeyUp,
+    @"Keyboard event must be keyDown, keyUp. Got type: %ld", (long)event.type);
+
+  // Convert the event to a KeyEvent
+  NSEventModifierFlags modifierFlags = event.modifierFlags;
+  facebook::react::KeyEvent keyEvent = {
+    .key = [[RCTViewKeyboardEvent keyFromEvent:event] UTF8String],
+    .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+    .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+    .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+    .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+    .capsLockKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCapsLock),
+    .numericPadKey = static_cast<bool>(modifierFlags & NSEventModifierFlagNumericPad),
+    .helpKey = static_cast<bool>(modifierFlags & NSEventModifierFlagHelp),
+    .functionKey = static_cast<bool>(modifierFlags & NSEventModifierFlagFunction),
+  };
+
+  if (_eventEmitter) {
+    // Emit the event to JS only once. By default, events, will bubble up the respnder chain
+    // when we call super, so let's emit the event only at the first responder. It would be
+    // simpler to check `if (self == self.window.firstResponder), however, that does not account
+    // for cases like TextInputComponentView, where the first responder may be a subview.
+    static const char kRCTViewKeyboardEventEmittedKey = 0;
+    NSNumber *emitted = objc_getAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey);
+    BOOL alreadyEmitted = [emitted boolValue];
+    if (!alreadyEmitted) {
+      if (event.type == NSEventTypeKeyDown) {
+        _eventEmitter->onKeyDown(keyEvent);
+      } else {
+        _eventEmitter->onKeyUp(keyEvent);
+      }
+      objc_setAssociatedObject(event, &kRCTViewKeyboardEventEmittedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+  }
+
+  // If keyDownEvents or keyUpEvents specifies the event, block native handling of the event
+  auto const& handledKeyEvents = event.type == NSEventTypeKeyDown ? _props->keyDownEvents : _props->keyUpEvents;
+  return std::find(handledKeyEvents.cbegin(), handledKeyEvents.cend(), keyEvent) != handledKeyEvents.cend();
+}
+
+- (void)keyDown:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyDown:event];
+  }
+}
+
+- (void)keyUp:(NSEvent *)event {
+  if (![self handleKeyboardEvent:event]) {
+    [super keyUp:event];
+  }
+}
+
+
+#pragma mark - Drag and Drop Events
+
+enum DragEventType {
+  DragEnter,
+  DragLeave,
+  Drop,
+};
+
+- (DataTransfer)dataTransferForPasteboard:(NSPasteboard *)pasteboard {
+  DataTransfer dataTransfer{};
+  auto &files = dataTransfer.files;
+  auto &items = dataTransfer.items;
+  auto &types = dataTransfer.types;
+
+  NSArray *fileNames = [pasteboard propertyListForType:NSFilenamesPboardType] ?: @[];
+  for (NSString *file in fileNames) {
+    NSURL *fileURL = [NSURL fileURLWithPath:file];
+    BOOL isDir = NO;
+    BOOL isValid = [[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDir] && !isDir;
+    if (isValid) {
+
+      NSString *MIMETypeString = nil;
+      if (fileURL.pathExtension) {
+        CFStringRef fileExtension = (__bridge CFStringRef)fileURL.pathExtension;
+        CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, fileExtension, NULL);
+        if (UTI != NULL) {
+          CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass(UTI, kUTTagClassMIMEType);
+          CFRelease(UTI);
+          MIMETypeString = (__bridge_transfer NSString *)MIMEType;
+        }
+      }
+
+      NSNumber *fileSizeValue = nil;
+      NSError *fileSizeError = nil;
+      BOOL success = [fileURL getResourceValue:&fileSizeValue
+                                        forKey:NSURLFileSizeKey
+                                         error:&fileSizeError];
+
+      std::string typeString = MIMETypeString != nil ? [MIMETypeString UTF8String] : "";
+
+      DataTransferFile fileEntry = {
+        .name = fileURL.lastPathComponent ? fileURL.lastPathComponent.UTF8String : "",
+        .type = typeString,
+        .uri = fileURL.path ? fileURL.path.UTF8String : "",
+      };
+
+      if (success) {
+        fileEntry.size = fileSizeValue.intValue;
+      }
+
+      if ([MIMETypeString hasPrefix:@"image/"]) {
+        NSImage *image = [[NSImage alloc] initWithContentsOfURL:fileURL];
+        CGImageRef cgImage = [image CGImageForProposedRect:nil context:nil hints:nil];
+        fileEntry.width = static_cast<int>(CGImageGetWidth(cgImage));
+        fileEntry.height = static_cast<int>(CGImageGetHeight(cgImage));
+      }
+
+      files.push_back(fileEntry);
+      items.push_back({
+          .kind = "file",
+          .type = typeString,
+      });
+      types.push_back(typeString);
+    }
+  }
+
+  NSPasteboardType imageType = [pasteboard availableTypeFromArray:@[NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  if (imageType && fileNames.count == 0) {
+    NSString *MIMETypeString = imageType == NSPasteboardTypePNG ?[UTTypePNG preferredMIMEType] : [UTTypeTIFF preferredMIMEType];
+    NSData *imageData = [pasteboard dataForType:imageType];
+    NSImage *image = [[NSImage alloc] initWithData:imageData];
+    CGImageRef cgImage = [image CGImageForProposedRect:nil context:nil hints:nil];
+
+    NSString *dataURLString = RCTDataURL(MIMETypeString, imageData).absoluteString;
+    std::string typeString = MIMETypeString != nil ? [MIMETypeString UTF8String] : "";
+
+    DataTransferFile fileEntry = {
+      .name = "",
+      .type = typeString,
+      .uri = dataURLString ? dataURLString.UTF8String : "",
+    };
+
+    fileEntry.size = static_cast<int>(imageData.length);
+    fileEntry.width = static_cast<int>(CGImageGetWidth(cgImage));
+    fileEntry.height = static_cast<int>(CGImageGetHeight(cgImage));
+
+    files.push_back(fileEntry);
+    items.push_back({
+        .kind = "image",
+        .type = typeString,
+    });
+    types.push_back(typeString);
+  }
+  return dataTransfer;
+}
+
+- (void)emitDragEvent:(DragEventType)eventType draggingInfo:(id<NSDraggingInfo>)sender {
+  if (!_eventEmitter) {
+    return;
+  }
+
+  NSPoint locationInWindow = sender.draggingLocation;
+  NSPasteboard *pasteboard = sender.draggingPasteboard;
+
+  DataTransfer dataTransfer = [self dataTransferForPasteboard:pasteboard];
+
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
+
+  DragEvent dragEvent = {
+    {
+      .clientX = locationInView.x,
+      .clientY = locationInView.y,
+      .screenX = locationInWindow.x,
+      .screenY = locationInWindow.y,
+      .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+      .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+      .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+      .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+    },
+    .dataTransfer = dataTransfer,
+  };
+
+  switch (eventType) {
+    case DragEnter:
+      _eventEmitter->onDragEnter(dragEvent);
+      break;
+
+    case DragLeave:
+      _eventEmitter->onDragLeave(dragEvent);
+      break;
+
+    case Drop:
+      _eventEmitter->onDrop(dragEvent);
+      break;
+  }
+}
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+  NSPasteboard *pboard = sender.draggingPasteboard;
+  NSDragOperation sourceDragMask = sender.draggingSourceOperationMask;
+
+  [self emitDragEvent:DragEnter draggingInfo:sender];
+
+  if ([pboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    if (sourceDragMask & NSDragOperationLink) {
+      return NSDragOperationLink;
+    } else if (sourceDragMask & NSDragOperationCopy) {
+      return NSDragOperationCopy;
+    }
+  }
+  return NSDragOperationNone;
+}
+
+- (void)draggingExited:(id<NSDraggingInfo>)sender
+{
+  [self emitDragEvent:DragLeave draggingInfo:sender];
+}
+
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+  [self emitDragEvent:Drop draggingInfo:sender];
+  return YES;
+}
+
+
+#pragma mark - Mouse Events
+
+enum MouseEventType {
+  MouseEnter,
+  MouseLeave,
+  DoubleClick,
+};
+
+- (void)emitMouseEvent:(MouseEventType)eventType
+{
+  if (!_eventEmitter) {
+    return;
+  }
+
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+
+  NSEventModifierFlags modifierFlags = self.window.currentEvent.modifierFlags;
+
+  MouseEvent mouseEvent = {
+    .clientX = locationInView.x,
+    .clientY = locationInView.y,
+    .screenX = locationInWindow.x,
+    .screenY = locationInWindow.y,
+    .altKey = static_cast<bool>(modifierFlags & NSEventModifierFlagOption),
+    .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
+    .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
+    .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+  };
+
+  switch (eventType) {
+    case MouseEnter:
+      _eventEmitter->onMouseEnter(mouseEvent);
+      break;
+
+    case MouseLeave:
+      _eventEmitter->onMouseLeave(mouseEvent);
+      break;
+
+    case DoubleClick:
+      _eventEmitter->onDoubleClick(mouseEvent);
+      break;
+  }
+}
+
+- (void)updateMouseOverIfNeeded
+{
+  // When an enclosing scrollview is scrolled using the scrollWheel or trackpad,
+  // the mouseExited: event does not get called on the view where mouseEntered: was previously called.
+  // This creates an unnatural pairing of mouse enter and exit events and can cause problems.
+  // We therefore explicitly check for this here and handle them by calling the appropriate callbacks.
+
+  BOOL hasMouseOver = _hasMouseOver;
+  NSPoint locationInWindow = self.window.mouseLocationOutsideOfEventStream;
+  NSPoint locationInView = [self convertPoint:locationInWindow fromView:nil];
+  BOOL insideBounds = NSPointInRect(locationInView, self.visibleRect);
+
+  // On macOS 14+ visibleRect can be larger than the view bounds
+  insideBounds &= NSPointInRect(locationInView, self.bounds);
+
+  if (hasMouseOver && !insideBounds) {
+    hasMouseOver = NO;
+  } else if (!hasMouseOver && insideBounds) {
+    // The window's frame view must be used for hit testing against `locationInWindow`
+    NSView *hitView = [self.window.contentView.superview hitTest:locationInWindow];
+    hasMouseOver = [hitView isDescendantOf:self];
+  }
+
+  if (hasMouseOver != _hasMouseOver) {
+    _hasMouseOver = hasMouseOver;
+    [self emitMouseEvent:hasMouseOver ? MouseEnter : MouseLeave];
+  }
+}
+
+- (void)updateClipViewBoundsObserverIfNeeded
+{
+  // Subscribe to view bounds changed notification so that the view can be notified when a
+  // scroll event occurs either due to trackpad/gesture based scrolling or a scrollwheel event
+  // both of which would not cause the mouseExited to be invoked.
+
+  NSClipView *clipView = self.window ? self.enclosingScrollView.contentView : nil;
+
+  BOOL hasMouseEventHandler =
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
+
+  if (_hasClipViewBoundsObserver && (!clipView || !hasMouseEventHandler)) {
+    _hasClipViewBoundsObserver = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NSViewBoundsDidChangeNotification
+                                                  object:nil];
+  } else if (!_hasClipViewBoundsObserver && clipView && hasMouseEventHandler) {
+    _hasClipViewBoundsObserver = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(updateMouseOverIfNeeded)
+                                                 name:NSViewBoundsDidChangeNotification
+                                               object:clipView];
+    [self updateMouseOverIfNeeded];
+  }
+}
+
+- (void)viewDidMoveToWindow
+{
+  [self updateClipViewBoundsObserverIfNeeded];
+  [super viewDidMoveToWindow];
+}
+
+- (void)updateTrackingAreas
+{
+  BOOL hasMouseEventHandler =
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] ||
+    _props->hostPlatformEvents[HostPlatformViewEvents::Offset::MouseLeave];
+  BOOL wouldRecreateIdenticalTrackingArea =
+    hasMouseEventHandler && _trackingArea && NSEqualRects(self.bounds, [_trackingArea rect]);
+
+  if (!wouldRecreateIdenticalTrackingArea) {
+    [self removeTrackingArea:_trackingArea];
+    if (hasMouseEventHandler) {
+      _trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds
+                                                   options:NSTrackingActiveAlways|NSTrackingMouseEnteredAndExited
+                                                     owner:self
+                                                  userInfo:nil];
+      [self addTrackingArea:_trackingArea];
+      [self updateMouseOverIfNeeded];
+    }
+  }
+
+  [super updateTrackingAreas];
+}
+
+- (void)mouseEntered:(NSEvent *)event
+{
+  if (_hasMouseOver) {
+    return;
+  }
+
+  // The window's frame view must be used for hit testing against `locationInWindow`
+  NSView *hitView = [self.window.contentView.superview hitTest:event.locationInWindow];
+  if (![hitView isDescendantOf:self]) {
+    return;
+  }
+
+  _hasMouseOver = YES;
+  [self emitMouseEvent:MouseEnter];
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+  if (!_hasMouseOver) {
+    return;
+  }
+
+  _hasMouseOver = NO;
+  [self emitMouseEvent:MouseLeave];
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+  BOOL hasDoubleClickEventHandler = _props->hostPlatformEvents[HostPlatformViewEvents::Offset::DoubleClick];
+  if (hasDoubleClickEventHandler && event.clickCount == 2) {
+    [self emitMouseEvent :DoubleClick];
+  } else {
+    [super mouseUp:event];
+  }
+}
+#endif // macOS]
+
 - (SharedTouchEventEmitter)touchEventEmitterAtPoint:(CGPoint)point
 {
   return _eventEmitter;
@@ -1510,6 +2193,11 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 - (NSString *)componentViewName_DO_NOT_USE_THIS_IS_BROKEN
 {
   return RCTNSStringFromString([[self class] componentDescriptorProvider].name);
+}
+
+- (BOOL)wantsUpdateLayer
+{
+  return YES;
 }
 
 @end

@@ -5,8 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <tgmath.h>
-
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 #import <React/RCTUIKit.h> // [macOS]
@@ -18,7 +16,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Whether the New Architecture is enabled or not
 RCT_EXTERN BOOL RCTIsNewArchEnabled(void);
-RCT_EXTERN void RCTSetNewArchEnabled(BOOL enabled);
+RCT_EXTERN void RCTSetNewArchEnabled(BOOL enabled) __attribute__((deprecated(
+    "This function is now no-op. You need to modify the Info.plist adding a RCTNewArchEnabled bool property to control whether the New Arch is enabled or not")));
+;
+
+// Whether React native should output logs for modules and components used
+// through the interop layers
+RCT_EXTERN BOOL RCTAreLegacyLogsEnabled(void);
 
 // JSON serialization/deserialization
 RCT_EXTERN NSString *__nullable RCTJSONStringify(id __nullable jsonObject, NSError **error);
@@ -43,9 +47,7 @@ RCT_EXTERN void RCTExecuteOnMainQueue(dispatch_block_t block);
 // Legacy function to execute the specified block on the main queue synchronously.
 // Please do not use this unless you know what you're doing.
 RCT_EXTERN void RCTUnsafeExecuteOnMainQueueSync(dispatch_block_t block);
-
-// Get screen scale, can be only used on main
-RCT_EXTERN void RCTComputeScreenScale(void);
+RCT_EXTERN void RCTUnsafeExecuteOnMainQueueSyncWithError(dispatch_block_t block, NSString *context);
 
 // Get screen metrics in a thread-safe way
 RCT_EXTERN CGFloat RCTScreenScale(void);
@@ -56,7 +58,6 @@ RCT_EXTERN CGSize RCTViewportSize(void);
 // Round float coordinates to nearest whole screen pixel (not point)
 RCT_EXTERN CGFloat RCTRoundPixelValue(CGFloat value);
 RCT_EXTERN CGFloat RCTCeilPixelValue(CGFloat value);
-RCT_EXTERN CGFloat RCTFloorPixelValue(CGFloat value);
 
 // Convert a size in points to pixels, rounded up to the nearest integral size
 RCT_EXTERN CGSize RCTSizeInPixels(CGSize pointSize, CGFloat scale);
@@ -91,7 +92,7 @@ RCT_EXTERN BOOL RCTRunningInAppExtension(void);
 #endif // [macOS]
 
 // Returns the shared UIApplication instance, or nil if running in an App Extension
-RCT_EXTERN RCTUIApplication *__nullable RCTSharedApplication(void); // [macOS]
+RCT_EXTERN RCTPlatformApplication *__nullable RCTSharedApplication(void); // [macOS]
 
 // Returns the current main window, useful if you need to access the root view
 // or view controller
@@ -162,12 +163,12 @@ RCT_EXTERN BOOL RCTIsLocalAssetURL(NSURL *__nullable imageURL);
 
 // Returns an UIImage for a local image asset. Returns nil if the URL
 // does not correspond to a local asset.
-RCT_EXTERN UIImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL);
+RCT_EXTERN RCTPlatformImage *__nullable RCTImageFromLocalAssetURL(NSURL *imageURL); // [macOS]
 
 // Only used in case when RCTImageFromLocalAssetURL fails to get an image
 // This method basically checks for the image in the bundle location, instead
 // of the CodePush location
-RCT_EXTERN UIImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL);
+RCT_EXTERN RCTPlatformImage *__nullable RCTImageFromLocalBundleAssetURL(NSURL *imageURL); // [macOS]
 
 // Creates a new, unique temporary file path with the specified extension
 RCT_EXTERN NSString *__nullable RCTTempFilePath(NSString *__nullable extension, NSError **error);

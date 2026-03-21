@@ -55,7 +55,7 @@ class AccessibilityShowMenu extends React.Component<{}> {
   }
 }
 
-exports.title = 'Accessibiltiy Show Menu action';
+exports.title = 'Accessibility Show Menu action';
 exports.description =
   'Examples that show how Accessibility Show Menu action can be used.';
 exports.examples = [

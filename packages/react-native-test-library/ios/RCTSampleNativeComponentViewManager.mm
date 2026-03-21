@@ -9,14 +9,16 @@
 #import <React/RCTUIManager.h>
 #import <React/RCTViewManager.h>
 
-static RCTUIColor *UIColorFromHexString(const std::string hexString) // [macOS]
+#import <string>
+
+static RCTPlatformColor *UIColorFromHexString(const std::string hexString) // [macOS]
 {
   unsigned rgbValue = 0;
   NSString *colorString = [NSString stringWithCString:hexString.c_str() encoding:[NSString defaultCStringEncoding]];
   NSScanner *scanner = [NSScanner scannerWithString:colorString];
   [scanner setScanLocation:1]; // bypass '#' character
   [scanner scanHexInt:&rgbValue];
-  return [RCTUIColor colorWithRed:((rgbValue & 0xFF0000) >> 16) / 255.0 // [macOS]
+  return [RCTPlatformColor colorWithRed:((rgbValue & 0xFF0000) >> 16) / 255.0 // [macOS]
                             green:((rgbValue & 0xFF00) >> 8) / 255.0
                              blue:(rgbValue & 0xFF) / 255.0
                             alpha:1.0];

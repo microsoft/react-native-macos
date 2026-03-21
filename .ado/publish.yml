@@ -21,7 +21,6 @@ variables:
       # Only workaround for now is to disable CodeQL on Apple jobs.
   - name: Codeql.Enabled
     value: false
-  - template: /.ado/variables/vars.yml@self
 
 resources:
   repositories:

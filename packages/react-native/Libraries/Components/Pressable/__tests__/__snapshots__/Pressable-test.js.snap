@@ -24,12 +24,20 @@ exports[`<Pressable /> should render as expected: should deep render when mocked
   collapsable={false}
   enableFocusRing={true}
   focusable={true}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
   mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -65,12 +73,20 @@ exports[`<Pressable /> should render as expected: should deep render when not mo
   collapsable={false}
   enableFocusRing={true}
   focusable={true}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
   mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -106,12 +122,20 @@ exports[`<Pressable disabled={true} /> should be disabled when disabled is true:
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
   mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -147,12 +171,20 @@ exports[`<Pressable disabled={true} /> should be disabled when disabled is true:
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
   mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -188,12 +220,20 @@ exports[`<Pressable disabled={true} accessibilityState={{}} /> should be disable
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
   mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -229,12 +269,20 @@ exports[`<Pressable disabled={true} accessibilityState={{}} /> should be disable
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
   mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -270,12 +318,20 @@ exports[`<Pressable disabled={true} accessibilityState={{checked: true}} /> shou
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
   mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -311,12 +367,20 @@ exports[`<Pressable disabled={true} accessibilityState={{checked: true}} /> shou
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
   mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -352,12 +416,20 @@ exports[`<Pressable disabled={true} accessibilityState={{disabled: false}} /> sh
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
   mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -393,12 +465,20 @@ exports[`<Pressable disabled={true} accessibilityState={{disabled: false}} /> sh
   collapsable={false}
   enableFocusRing={false}
   focusable={false}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
   mouseDownCanMoveWindow={false}
   onBlur={[Function]}
   onClick={[Function]}
   onFocus={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}

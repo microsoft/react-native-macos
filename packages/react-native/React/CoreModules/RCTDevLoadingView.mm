@@ -96,7 +96,7 @@ RCT_EXPORT_MODULE()
   [self performSelector:@selector(hide) withObject:nil afterDelay:delay];
 }
 
-- (void)showMessage:(NSString *)message color:(RCTUIColor *)color backgroundColor:(RCTUIColor *)backgroundColor // [macOS]
+- (void)showMessage:(NSString *)message color:(RCTPlatformColor *)color backgroundColor:(RCTPlatformColor *)backgroundColor // [macOS]
 {
   if (!RCTDevLoadingViewGetEnabled() || _hiding) {
     return;
@@ -128,33 +128,21 @@ RCT_EXPORT_MODULE()
     self->_window = [[UIWindow alloc] initWithWindowScene:mainWindow.windowScene];
     self->_window.windowLevel = UIWindowLevelStatusBar + 1;
     self->_window.rootViewController = [UIViewController new];
-#else // [macOS
-    self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
-                                               styleMask:NSWindowStyleMaskBorderless
-                                                 backing:NSBackingStoreBuffered
-                                                   defer:YES];
-    [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
-#endif // macOS]
 
-    self->_container = [[RCTUIView alloc] init]; // [macOS]
+    self->_container = [[UIView alloc] init];
     self->_container.backgroundColor = backgroundColor;
     self->_container.translatesAutoresizingMaskIntoConstraints = NO;
 
-    self->_label = [[RCTUILabel alloc] init]; // [macOS]
+    self->_label = [[UILabel alloc] init];
     self->_label.translatesAutoresizingMaskIntoConstraints = NO;
     self->_label.font = [UIFont monospacedDigitSystemFontOfSize:12.0 weight:UIFontWeightRegular];
     self->_label.textAlignment = NSTextAlignmentCenter;
     self->_label.textColor = color;
     self->_label.text = message;
 
-#if !TARGET_OS_OSX // [macOS]
     [self->_window.rootViewController.view addSubview:self->_container];
-#else // [macOS
-    [self->_window.contentViewController.view addSubview:self->_container];
-#endif // macOS]
     [self->_container addSubview:self->_label];
 
-#if !TARGET_OS_OSX // [macOS]
     CGFloat topSafeAreaHeight = mainWindow.safeAreaInsets.top;
     CGFloat height = topSafeAreaHeight + 25;
     self->_window.frame = CGRectMake(0, 0, mainWindow.frame.size.width, height);
@@ -175,6 +163,45 @@ RCT_EXPORT_MODULE()
       [self->_label.bottomAnchor constraintEqualToAnchor:self->_container.bottomAnchor constant:-5],
     ]];
 #else // [macOS
+    if (!self->_label) {
+      self->_label = [[RCTUILabel alloc] init]; // [macOS]
+      self->_label.translatesAutoresizingMaskIntoConstraints = NO;
+      self->_label.font = [UIFont monospacedDigitSystemFontOfSize:12.0 weight:UIFontWeightRegular];
+      self->_label.textAlignment = NSTextAlignmentCenter;
+    }
+    self->_label.textColor = color;
+    self->_label.text = message;
+
+    if (!self->_container) {
+      self->_container = [[RCTUIView alloc] init]; // [macOS]
+      self->_container.translatesAutoresizingMaskIntoConstraints = NO;
+      [self->_container addSubview:self->_label];
+    }
+    self->_container.backgroundColor = backgroundColor;
+    
+    if (!self->_window) {
+      self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
+                                                styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskFullSizeContentView
+                                                  backing:NSBackingStoreBuffered
+                                                    defer:YES];
+      [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
+      [self->_window.contentView addSubview:self->_container];
+    }
+    
+    // Container constraints
+    [NSLayoutConstraint activateConstraints:@[
+      [self->_container.topAnchor constraintEqualToAnchor:self->_window.contentView.topAnchor],
+      [self->_container.leadingAnchor constraintEqualToAnchor:self->_window.contentView.leadingAnchor],
+      [self->_container.trailingAnchor constraintEqualToAnchor:self->_window.contentView.trailingAnchor],
+      [self->_container.bottomAnchor constraintEqualToAnchor:self->_window.contentView.bottomAnchor],
+      
+      // Label constraints
+      [self->_label.centerXAnchor constraintEqualToAnchor:self->_container.centerXAnchor],
+      [self->_label.centerYAnchor constraintEqualToAnchor:self->_container.centerYAnchor],
+      [self->_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:self->_container.leadingAnchor constant:10],
+      [self->_label.trailingAnchor constraintLessThanOrEqualToAnchor:self->_container.trailingAnchor constant:-10],
+    ]];
+    
     if (![[RCTKeyWindow() sheets] doesContain:self->_window]) {
       [RCTKeyWindow() beginSheet:self->_window completionHandler:^(NSModalResponse returnCode) {
         [self->_window orderOut:self];
@@ -244,12 +271,12 @@ RCT_EXPORT_METHOD(hide)
     return;
   }
 
-  RCTUIColor *color = [RCTUIColor whiteColor]; // [macOS]
-  RCTUIColor *backgroundColor = [RCTUIColor colorWithHue:105 saturation:0 brightness:.25 alpha:1]; // [macOS]
+  RCTPlatformColor *color = [RCTPlatformColor whiteColor]; // [macOS]
+  RCTPlatformColor *backgroundColor = [RCTPlatformColor colorWithHue:105 saturation:0 brightness:.25 alpha:1]; // [macOS]
 
   if ([self isDarkModeEnabled]) {
-    color = [RCTUIColor colorWithHue:208 saturation:0.03 brightness:.14 alpha:1]; // [macOS]
-    backgroundColor = [RCTUIColor colorWithHue:0 saturation:0 brightness:0.98 alpha:1]; // [macOS]
+    color = [RCTPlatformColor colorWithHue:208 saturation:0.03 brightness:.14 alpha:1]; // [macOS]
+    backgroundColor = [RCTPlatformColor colorWithHue:0 saturation:0 brightness:0.98 alpha:1]; // [macOS]
   }
 
   [self showMessage:message color:color backgroundColor:backgroundColor];
@@ -260,12 +287,12 @@ RCT_EXPORT_METHOD(hide)
   // [macOS isDarkModeEnabled should only be run on the main thread
   __weak __typeof(self) weakSelf = self;
   RCTExecuteOnMainQueue(^{
-    RCTUIColor *color = [RCTUIColor whiteColor]; // [macOS]
-    RCTUIColor *backgroundColor = [RCTUIColor blackColor]; // [macOS]
+    RCTPlatformColor *color = [RCTPlatformColor whiteColor]; // [macOS]
+    RCTPlatformColor *backgroundColor = [RCTPlatformColor blackColor]; // [macOS]
 
     if ([weakSelf isDarkModeEnabled]) {
-      color = [RCTUIColor blackColor]; // [macOS]
-      backgroundColor = [RCTUIColor whiteColor]; // [macOS]
+      color = [RCTPlatformColor blackColor]; // [macOS]
+      backgroundColor = [RCTPlatformColor whiteColor]; // [macOS]
     }
 
     NSString *message = [NSString stringWithFormat:@"Connect to %@ to develop JavaScript.", RCT_PACKAGER_NAME];
@@ -330,7 +357,7 @@ RCT_EXPORT_METHOD(hide)
 + (void)setEnabled:(BOOL)enabled
 {
 }
-- (void)showMessage:(NSString *)message color:(RCTUIColor *)color backgroundColor:(RCTUIColor *)backgroundColor // [macOS] RCTUIColor
+- (void)showMessage:(NSString *)message color:(RCTPlatformColor *)color backgroundColor:(RCTPlatformColor *)backgroundColor // [macOS] RCTPlatformColor
 {
 }
 - (void)showMessage:(NSString *)message withColor:(NSNumber *)color withBackgroundColor:(NSNumber *)backgroundColor

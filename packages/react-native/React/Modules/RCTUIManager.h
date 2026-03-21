@@ -19,8 +19,6 @@
  */
 RCT_EXTERN NSString *const RCTUIManagerWillUpdateViewsDueToContentSizeMultiplierChangeNotification;
 
-void RCTTraverseViewNodes(id<RCTComponent> view, void (^block)(id<RCTComponent>)); // [macOS]
-
 @class RCTLayoutAnimationGroup;
 @class RCTUIManagerObserverCoordinator;
 
@@ -73,7 +71,7 @@ void RCTTraverseViewNodes(id<RCTComponent> view, void (^block)(id<RCTComponent>)
  * the shadow view.
  * Please respect one-directional data flow of React.
  */
-- (void)setLocalData:(NSObject *)localData forView:(RCTUIView *)view; // [macOS]
+- (void)setLocalData:(NSObject *)localData forView:(RCTPlatformView *)view; // [macOS]
 
 /**
  * Set the size of a view. This might be in response to a screen rotation
@@ -143,7 +141,7 @@ void RCTTraverseViewNodes(id<RCTComponent> view, void (^block)(id<RCTComponent>)
  * @param nativeID the id reference to native component relative to root view.
  * @param view the view that is tagged with nativeID as its nativeID prop.
  */
-- (void)setNativeID:(NSString *)nativeID forView:(RCTUIView *)view; // [macOS]
+- (void)setNativeID:(NSString *)nativeID forView:(RCTPlatformView *)view; // [macOS]
 
 /**
  * The view that is currently first responder, according to the JS context.

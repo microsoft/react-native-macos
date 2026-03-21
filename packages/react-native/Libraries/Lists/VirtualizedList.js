@@ -10,14 +10,16 @@
 
 'use strict';
 
-import {typeof VirtualizedList as VirtualizedListType} from '@react-native-mac/virtualized-lists'; // [macOS]
+import VirtualizedLists from '@react-native-macos/virtualized-lists'; // [macOS]
 
-const VirtualizedList: VirtualizedListType =
-  require('@react-native-mac/virtualized-lists').VirtualizedList; // [macOS]
+type VirtualizedListType = typeof VirtualizedLists.VirtualizedList;
+const VirtualizedListComponent: VirtualizedListType =
+  VirtualizedLists.VirtualizedList;
 
 export type {
-  RenderItemProps,
-  RenderItemType,
+  ListRenderItemInfo,
+  ListRenderItem,
   Separators,
-} from '@react-native-mac/virtualized-lists'; // [macOS]
-module.exports = VirtualizedList;
+  VirtualizedListProps,
+} from '@react-native-macos/virtualized-lists'; // [macOS]
+export default VirtualizedListComponent;

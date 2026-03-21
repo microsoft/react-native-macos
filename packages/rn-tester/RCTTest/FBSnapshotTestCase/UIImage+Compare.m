@@ -7,9 +7,9 @@
 
 #import "UIImage+Compare.h"
 
-@implementation UIImage (Compare)
+@implementation RCTPlatformImage (Compare) // [macOS[
 
-- (BOOL)compareWithImage:(UIImage *)image
+- (BOOL)compareWithImage:(RCTPlatformImage *)image // [macOS]
 {
   NSAssert(CGSizeEqualToSize(self.size, image.size), @"Images must be same size.");
 

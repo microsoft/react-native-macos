@@ -127,7 +127,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
   NSDictionary<NSAttributedStringKey, id> *textAttributes = [[_textAttributes effectiveTextAttributes] mutableCopy];
   if ([textAttributes valueForKey:NSForegroundColorAttributeName] == nil) {
-    [textAttributes setValue:[RCTUIColor blackColor] forKey:NSForegroundColorAttributeName]; // [macOS]
+    [textAttributes setValue:[RCTPlatformColor blackColor] forKey:NSForegroundColorAttributeName]; // [macOS]
   }
 
     backedTextInputView.defaultTextAttributes = textAttributes;
@@ -1071,7 +1071,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   NSMutableDictionary<NSAttributedStringKey, id> *textAttributes =
       [backedTextInputView.defaultTextAttributes mutableCopy] ?: [NSMutableDictionary new];
 
-  [textAttributes setValue:backedTextInputView.placeholderColor ?: [RCTUIColor placeholderTextColor]
+  [textAttributes setValue:backedTextInputView.placeholderColor ?: [RCTPlatformColor placeholderTextColor]
                     forKey:NSForegroundColorAttributeName];
 
   return textAttributes;

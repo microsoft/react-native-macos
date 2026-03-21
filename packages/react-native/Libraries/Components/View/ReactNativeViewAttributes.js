@@ -46,6 +46,7 @@ const UIView = {
   focusable: true,
   onMouseEnter: true,
   onMouseLeave: true,
+  onDoubleClick: true,
   onDragEnter: true,
   onDragLeave: true,
   onDrop: true,
@@ -73,4 +74,4 @@ const ReactNativeViewAttributes = {
   RCTView: RCTView,
 };
 
-module.exports = ReactNativeViewAttributes;
+export default ReactNativeViewAttributes;

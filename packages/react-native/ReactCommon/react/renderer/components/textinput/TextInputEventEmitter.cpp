@@ -5,13 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <react/renderer/components/view/HostPlatformViewEventEmitter.h>
+
 #include "TextInputEventEmitter.h"
 
 namespace facebook::react {
 
 static jsi::Value textInputMetricsPayload(
     jsi::Runtime& runtime,
-    const TextInputEventEmitter::Metrics& textInputMetrics) {
+    const TextInputEventEmitter::Metrics& textInputMetrics,
+    bool includeSelectionState) {
   auto payload = jsi::Object(runtime);
 
   payload.setProperty(
@@ -23,7 +26,7 @@ static jsi::Value textInputMetricsPayload(
 
   payload.setProperty(runtime, "eventCount", textInputMetrics.eventCount);
 
-  {
+  if (includeSelectionState) {
     auto selection = jsi::Object(runtime);
     selection.setProperty(
         runtime, "start", textInputMetrics.selectionRange.location);
@@ -119,6 +122,8 @@ static jsi::Value keyPressMetricsPayload(
       key = "Enter";
     } else if (keyPressMetrics.text.front() == '\t') {
       key = "Tab";
+    } else if (keyPressMetrics.text.front() == '\x1B') {
+      key = "Escape";
     } else {
       key = keyPressMetrics.text;
     }
@@ -127,6 +132,19 @@ static jsi::Value keyPressMetricsPayload(
       runtime, "key", jsi::String::createFromUtf8(runtime, key));
   return payload;
 };
+
+#if TARGET_OS_OSX // [macOS
+static jsi::Value pasteMetricsPayload(
+    jsi::Runtime& runtime,
+    const TextInputEventEmitter::PasteMetrics& pasteMetrics) {
+  auto payload = jsi::Object(runtime);
+  auto dataTransferObject = HostPlatformViewEventEmitter::dataTransferPayload(
+    runtime,
+    pasteMetrics.dataTransfer);
+  payload.setProperty(runtime, "dataTransfer", dataTransferObject);
+  return payload;
+};
+#endif // macOS]
 
 void TextInputEventEmitter::onFocus(const Metrics& textInputMetrics) const {
   dispatchTextInputEvent("focus", textInputMetrics);
@@ -148,7 +166,7 @@ void TextInputEventEmitter::onContentSizeChange(
 
 void TextInputEventEmitter::onSelectionChange(
     const Metrics& textInputMetrics) const {
-  dispatchTextInputEvent("selectionChange", textInputMetrics);
+  dispatchTextInputEvent("selectionChange", textInputMetrics, true);
 }
 
 void TextInputEventEmitter::onEndEditing(
@@ -189,14 +207,24 @@ void TextInputEventEmitter::onGrammarCheckChange(
     const Metrics& textInputMetrics) const {
   dispatchTextInputEvent("grammarCheckChange", textInputMetrics);
 }
+
+void TextInputEventEmitter::onPaste(
+    const PasteMetrics& pasteMetrics) const {
+  dispatchEvent("paste", [pasteMetrics](jsi::Runtime& runtime) {
+    return pasteMetricsPayload(runtime, pasteMetrics);
+  });
+}
 #endif // macOS]
 
 void TextInputEventEmitter::dispatchTextInputEvent(
     const std::string& name,
-    const Metrics& textInputMetrics) const {
-  dispatchEvent(name, [textInputMetrics](jsi::Runtime& runtime) {
-    return textInputMetricsPayload(runtime, textInputMetrics);
-  });
+    const Metrics& textInputMetrics,
+    bool includeSelectionState) const {
+  dispatchEvent(
+      name, [includeSelectionState, textInputMetrics](jsi::Runtime& runtime) {
+        return textInputMetricsPayload(
+            runtime, textInputMetrics, includeSelectionState);
+      });
 }
 
 void TextInputEventEmitter::dispatchTextInputContentSizeChangeEvent(

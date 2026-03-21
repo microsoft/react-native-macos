@@ -34,7 +34,7 @@
 
 RCT_EXPORT_MODULE()
 
-- (RCTUIView *)view // [macOS]
+- (RCTPlatformView *)view // [macOS]
 {
   return [RCTSnapshotView new];
 }

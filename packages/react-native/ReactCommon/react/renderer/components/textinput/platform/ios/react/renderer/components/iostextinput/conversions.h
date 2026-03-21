@@ -34,7 +34,7 @@ inline void fromRawValue(
     result = AutocapitalizationType::Characters;
     return;
   }
-  abort();
+  result = AutocapitalizationType::None;
 }
 
 inline void fromRawValue(
@@ -54,7 +54,7 @@ inline void fromRawValue(
     result = KeyboardAppearance::Dark;
     return;
   }
-  abort();
+  result = KeyboardAppearance::Default;
 }
 
 inline void fromRawValue(
@@ -122,7 +122,7 @@ inline void fromRawValue(
     result = ReturnKeyType::Continue;
     return;
   }
-  abort();
+  result = ReturnKeyType::Default;
 }
 
 inline void fromRawValue(
@@ -146,7 +146,7 @@ inline void fromRawValue(
     result = TextInputAccessoryVisibilityMode::Always;
     return;
   }
-  abort();
+  result = TextInputAccessoryVisibilityMode::Never;
 }
 
 inline void fromRawValue(
@@ -214,7 +214,29 @@ inline void fromRawValue(
     result = KeyboardType::VisiblePassword;
     return;
   }
+  result = KeyboardType::Default;
+}
+
+#if TARGET_OS_OSX // [macOS
+inline void fromRawValue(
+    const PropsParserContext &context,
+    const RawValue &value,
+    PastedTypesType &result) {
+  auto string = (std::string)value;
+  if (string == "fileUrl") {
+    result = PastedTypesType::FileUrl;
+    return;
+  }
+  if (string == "image") {
+    result = PastedTypesType::Image;
+    return;
+  }
+  if (string == "string") {
+    result = PastedTypesType::String;
+    return;
+  }
   abort();
 }
+#endif // macOS]
 
 } // namespace facebook::react

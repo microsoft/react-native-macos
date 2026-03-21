@@ -15,8 +15,6 @@ exports[`TouchableHighlight renders correctly 1`] = `
   enableFocusRing={true}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -51,8 +49,6 @@ exports[`TouchableHighlight with disabled state should be disabled when disabled
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -84,8 +80,6 @@ exports[`TouchableHighlight with disabled state should be disabled when disabled
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -117,8 +111,6 @@ exports[`TouchableHighlight with disabled state should disable button when acces
   enableFocusRing={true}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -151,8 +143,6 @@ exports[`TouchableHighlight with disabled state should keep accessibilityState w
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -184,8 +174,6 @@ exports[`TouchableHighlight with disabled state should overwrite accessibilitySt
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}

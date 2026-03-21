@@ -33,11 +33,16 @@ interface TextLayoutLine {
 }
 
 /**
- * @see TextProps.onTextLayout
+ * @deprecated Use `TextLayoutEvent` instead.
  */
 export interface TextLayoutEventData extends TargetedEvent {
   lines: TextLayoutLine[];
 }
+
+/**
+ * @see TextProps.onTextLayout
+ */
+export type TextLayoutEvent = NativeSyntheticEvent<TextLayoutEventData>;
 
 // Similar to React.SyntheticEvent except for nativeEvent
 export interface NativeSyntheticEvent<T>
@@ -243,6 +248,10 @@ export interface TargetedEvent {
   target: number;
 }
 
+export type BlurEvent = NativeSyntheticEvent<TargetedEvent>;
+
+export type FocusEvent = NativeSyntheticEvent<TargetedEvent>;
+
 export interface PointerEvents {
   onPointerEnter?: ((event: PointerEvent) => void) | undefined;
   onPointerEnterCapture?: ((event: PointerEvent) => void) | undefined;
@@ -305,4 +314,31 @@ export interface NativeBlurEvent extends TargetedEvent {}
 export interface FocusEvent extends NativeSyntheticEvent<NativeFocusEvent> {}
 
 export interface BlueEvent extends NativeSyntheticEvent<NativeBlurEvent> {}
+
+// Drag and Drop types
+export interface DataTransferFile {
+  name: string;
+  type: string | null | undefined;
+  uri: string;
+  size?: number | undefined;
+  width?: number | undefined;
+  height?: number | undefined;
+}
+
+export interface DataTransferItem {
+  kind: string;
+  type: string | null | undefined;
+}
+
+export interface DataTransfer {
+  files: ReadonlyArray<DataTransferFile>;
+  items: ReadonlyArray<DataTransferItem>;
+  types: ReadonlyArray<string | null | undefined>;
+}
+
+export interface DragEvent extends MouseEvent {
+  nativeEvent: NativeMouseEvent & {
+    dataTransfer?: DataTransfer | undefined;
+  };
+}
 // macOS]

@@ -32,7 +32,7 @@
  #endif // macOS]
  @property (nonatomic, assign, readonly) BOOL dictationRecognizing;
  @property (nonatomic, copy, nullable) NSString *placeholder;
- @property (nonatomic, strong, nullable) RCTUIColor *placeholderColor; // [macOS]
+ @property (nonatomic, strong, nullable) RCTPlatformColor *placeholderColor; // [macOS]
  
  @property (nonatomic, assign) CGFloat preferredMaxLayoutWidth;
  
@@ -51,8 +51,8 @@
  
  #if TARGET_OS_OSX // [macOS
  @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
- @property (nonatomic, strong, nullable) RCTUIColor *selectionColor;
- @property (nonatomic, strong, nullable) RCTUIColor *cursorColor;
+ @property (nonatomic, strong, nullable) RCTPlatformColor *selectionColor;
+ @property (nonatomic, strong, nullable) RCTPlatformColor *cursorColor;
  @property (nonatomic, assign) UIEdgeInsets textContainerInsets;
  @property (nonatomic, copy) NSString *text;
  @property (nonatomic, assign) NSTextAlignment textAlignment;

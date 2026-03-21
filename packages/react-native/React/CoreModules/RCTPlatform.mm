@@ -10,6 +10,7 @@
 #import <React/RCTUIKit.h> // [macOS]
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
+#import <React/RCTInitializing.h>
 #import <React/RCTUtils.h>
 #import <React/RCTVersion.h>
 
@@ -45,16 +46,52 @@ static NSString *interfaceIdiom() {
 }
 #endif // macOS]
 
-@interface RCTPlatform () <NativePlatformConstantsIOSSpec>
+@interface RCTPlatform () <NativePlatformConstantsIOSSpec, RCTInitializing>
 @end
 
-@implementation RCTPlatform
+@implementation RCTPlatform {
+  ModuleConstants<JS::NativePlatformConstantsIOS::Constants> _constants;
+}
 
 RCT_EXPORT_MODULE(PlatformConstants)
 
 + (BOOL)requiresMainQueueSetup
 {
   return YES;
+}
+
+- (void)initialize
+{
+#if !TARGET_OS_OSX // [macOS]
+  UIDevice *device = [UIDevice currentDevice];
+#else // [macOS]
+  NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+  NSOperatingSystemVersion osVersion = [[NSProcessInfo processInfo] operatingSystemVersion];
+#endif // [macOS]
+  auto versions = RCTGetReactNativeVersion();
+  _constants = typedConstants<JS::NativePlatformConstantsIOS::Constants>({
+      .forceTouchAvailable = RCTForceTouchAvailable() ? true : false,
+#if !TARGET_OS_OSX // [macOS]
+      .osVersion = [device systemVersion],
+      .systemName = [device systemName],
+      .interfaceIdiom = interfaceIdiom([device userInterfaceIdiom]),
+#else // [macOS
+      .osVersion = [NSString stringWithFormat:@"%ld.%ld.%ld", osVersion.majorVersion, osVersion.minorVersion, osVersion.patchVersion],
+      .systemName = [processInfo operatingSystemVersionString],
+      .interfaceIdiom = interfaceIdiom(),
+#endif // macOS]
+      .isTesting = RCTRunningInTestEnvironment() ? true : false,
+      .reactNativeVersion = JS::NativePlatformConstantsIOS::ConstantsReactNativeVersion::Builder(
+          {.minor = [versions[@"minor"] doubleValue],
+           .major = [versions[@"major"] doubleValue],
+           .patch = [versions[@"patch"] doubleValue],
+           .prerelease = [versions[@"prerelease"] isKindOfClass:[NSNull class]] ? nullptr : versions[@"prerelease"]}),
+#if TARGET_OS_MACCATALYST
+      .isMacCatalyst = true,
+#else
+      .isMacCatalyst = false,
+#endif
+  });
 }
 
 - (dispatch_queue_t)methodQueue
@@ -65,46 +102,12 @@ RCT_EXPORT_MODULE(PlatformConstants)
 // TODO: Use the generated struct return type.
 - (ModuleConstants<JS::NativePlatformConstantsIOS::Constants>)constantsToExport
 {
-  return (ModuleConstants<JS::NativePlatformConstantsIOS::Constants>)[self getConstants];
+  return _constants;
 }
 
 - (ModuleConstants<JS::NativePlatformConstantsIOS::Constants>)getConstants
 {
-  __block ModuleConstants<JS::NativePlatformConstantsIOS::Constants> constants;
-  RCTUnsafeExecuteOnMainQueueSync(^{
-#if !TARGET_OS_OSX // [macOS]
-    UIDevice *device = [UIDevice currentDevice];
-#else // [macOS]
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSOperatingSystemVersion osVersion = [[NSProcessInfo processInfo] operatingSystemVersion];
-#endif // [macOS]
-    auto versions = RCTGetReactNativeVersion();
-    constants = typedConstants<JS::NativePlatformConstantsIOS::Constants>({
-        .forceTouchAvailable = RCTForceTouchAvailable() ? true : false,
-#if !TARGET_OS_OSX // [macOS]
-        .osVersion = [device systemVersion],
-        .systemName = [device systemName],
-        .interfaceIdiom = interfaceIdiom([device userInterfaceIdiom]),
-#else // [macOS
-        .osVersion = [NSString stringWithFormat:@"%ld.%ld.%ld", osVersion.majorVersion, osVersion.minorVersion, osVersion.patchVersion],
-        .systemName = [processInfo operatingSystemVersionString],
-        .interfaceIdiom = interfaceIdiom(),
-#endif // macOS]
-        .isTesting = RCTRunningInTestEnvironment() ? true : false,
-        .reactNativeVersion = JS::NativePlatformConstantsIOS::ConstantsReactNativeVersion::Builder(
-            {.minor = [versions[@"minor"] doubleValue],
-             .major = [versions[@"major"] doubleValue],
-             .patch = [versions[@"patch"] doubleValue],
-             .prerelease = [versions[@"prerelease"] isKindOfClass:[NSNull class]] ? nullptr : versions[@"prerelease"]}),
-#if TARGET_OS_MACCATALYST
-        .isMacCatalyst = true,
-#else
-        .isMacCatalyst = false,
-#endif
-    });
-  });
-
-  return constants;
+  return _constants;
 }
 
 - (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params

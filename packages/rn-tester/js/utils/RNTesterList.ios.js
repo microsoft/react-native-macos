@@ -4,14 +4,13 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow
+ * @format
  */
-
-'use strict';
 
 import type {RNTesterModule, RNTesterModuleInfo} from '../types/RNTesterTypes';
 
+import * as RNTesterListFbInternal from './RNTesterListFbInternal';
 import ReactNativeFeatureFlags from 'react-native/Libraries/ReactNative/ReactNativeFeatureFlags';
 
 const Components: Array<RNTesterModuleInfo> = [
@@ -30,31 +29,6 @@ const Components: Array<RNTesterModuleInfo> = [
     module: require('../examples/FlatList/FlatListExampleIndex').default,
     category: 'ListView',
   },
-  // [macOS
-  {
-    key: 'FocusEvents',
-    module: require('../examples/FocusEventsExample/FocusEventsExample'),
-  },
-  // [macOS Github#1412
-  {
-    key: 'FocusOnMount',
-    module: require('../examples/FocusOnMount/FocusOnMount'),
-  },
-  // macOS]
-  // [macOS
-  {
-    key: 'GhostText',
-    module: require('../examples/GhostText/GhostText'),
-  },
-  // macOS]
-  {
-    key: 'KeyboardEvents',
-    module: require('../examples/KeyboardEventsExample/KeyboardEventsExample'),
-  },
-  {
-    key: 'AccessibilityShowMenu',
-    module: require('../examples/AccessibilityShowMenu/AccessibilityShowMenu'),
-  }, // macOS]
   {
     key: 'ImageExample',
     module: require('../examples/Image/ImageExample'),
@@ -153,10 +127,6 @@ const Components: Array<RNTesterModuleInfo> = [
     category: 'Basic',
   },
   {
-    key: 'TooltipExample',
-    module: require('../examples/Tooltip/TooltipExample'),
-  },
-  {
     key: 'TouchableExample',
     module: require('../examples/Touchable/TouchableExample'),
   },
@@ -175,6 +145,11 @@ const Components: Array<RNTesterModuleInfo> = [
     module: require('../examples/NewArchitecture/NewArchitectureExample'),
   },
   {
+    key: 'FabricInteropLayer',
+    category: 'UI',
+    module: require('../examples/FabricInteropLayer/FabricInteropLayer'),
+  },
+  {
     key: 'PerformanceComparisonExample',
     category: 'Basic',
     module: require('../examples/Performance/PerformanceComparisonExample'),
@@ -183,9 +158,51 @@ const Components: Array<RNTesterModuleInfo> = [
     key: 'OSSLibraryExample',
     module: require('../examples/OSSLibraryExample/OSSLibraryExample'),
   },
+  ...RNTesterListFbInternal.Components,
 ];
 
 const APIs: Array<RNTesterModuleInfo> = ([
+  // [macOS
+  {
+    key: 'FocusEvents',
+    module: require('../examples/FocusEventsExample/FocusEventsExample')
+      .default,
+    category: 'macOS',
+  },
+  {
+    key: 'FocusOnMount',
+    module: require('../examples/FocusOnMount/FocusOnMount'),
+    category: 'macOS',
+  },
+  {
+    key: 'GhostText',
+    module: require('../examples/GhostText/GhostText'),
+    category: 'macOS',
+  },
+  {
+    key: 'KeyboardEvents',
+    module: require('../examples/KeyboardEventsExample/KeyboardEventsExample'),
+    category: 'macOS',
+  },
+  {
+    key: 'AccessibilityShowMenu',
+    module: require('../examples/AccessibilityShowMenu/AccessibilityShowMenu'),
+    category: 'macOS',
+  },
+  {
+    key: 'TooltipExample',
+    module: require('../examples/Tooltip/TooltipExample'),
+    category: 'macOS',
+  },
+  {
+    key: 'DragAndDropExample',
+    category: 'UI',
+    module: require('../examples/DragAndDrop/DragAndDropExample'),
+  },
+  {
+    key: 'Focus Ring',
+    module: require('../examples/FocusRing/FocusRingExample'),
+  }, // macOS]
   {
     key: 'AccessibilityExample',
     module: require('../examples/Accessibility/AccessibilityExample'),
@@ -222,6 +239,11 @@ const APIs: Array<RNTesterModuleInfo> = ([
     module: require('../examples/AppState/AppStateExample'),
   },
   {
+    key: 'URLExample',
+    category: 'Basic',
+    module: require('../examples/Urls/UrlExample'),
+  },
+  {
     key: 'BorderExample',
     module: require('../examples/Border/BorderExample').default,
   },
@@ -251,14 +273,6 @@ const APIs: Array<RNTesterModuleInfo> = ([
     module: require('../examples/DisplayContents/DisplayContentsExample')
       .default,
   },
-  // Only show the link for the example if the API is available.
-  typeof IntersectionObserver === 'function'
-    ? {
-        key: 'IntersectionObserver',
-        category: 'UI',
-        module: require('../examples/IntersectionObserver/IntersectionObserverIndex'),
-      }
-    : null,
   {
     key: 'InvalidPropsExample',
     module: require('../examples/InvalidProps/InvalidPropsExample'),
@@ -279,13 +293,6 @@ const APIs: Array<RNTesterModuleInfo> = ([
     key: 'LinkingExample',
     module: require('../examples/Linking/LinkingExample'),
   },
-  typeof MutationObserver === 'function'
-    ? {
-        key: 'MutationObserver',
-        category: 'UI',
-        module: require('../examples/MutationObserver/MutationObserverIndex'),
-      }
-    : null,
   {
     key: 'NativeAnimationsExample',
     module: require('../examples/NativeAnimation/NativeAnimationsExample'),
@@ -339,8 +346,14 @@ const APIs: Array<RNTesterModuleInfo> = ([
     module: require('../examples/Filter/FilterExample'),
   },
   {
-    key: 'LinearGradient',
+    key: 'LinearGradientExample',
+    category: 'UI',
     module: require('../examples/LinearGradient/LinearGradientExample'),
+  },
+  {
+    key: 'RadialGradientExample',
+    category: 'UI',
+    module: require('../examples/RadialGradient/RadialGradientExample'),
   },
   {
     key: 'MixBlendModeExample',
@@ -370,17 +383,7 @@ const APIs: Array<RNTesterModuleInfo> = ([
     key: 'XHRExample',
     module: require('../examples/XHR/XHRExample'),
   },
-  {
-    key: 'PerformanceApiExample',
-    category: 'Basic',
-    module: require('../examples/Performance/PerformanceApiExample'),
-  },
-  // [macOS
-  {
-    key: 'Focus Ring',
-    module: require('../examples/FocusRing/FocusRingExample'),
-  },
-  // macOS]
+  ...RNTesterListFbInternal.APIs,
 ]: Array<?RNTesterModuleInfo>).filter(Boolean);
 
 if (ReactNativeFeatureFlags.shouldEmitW3CPointerEvents()) {

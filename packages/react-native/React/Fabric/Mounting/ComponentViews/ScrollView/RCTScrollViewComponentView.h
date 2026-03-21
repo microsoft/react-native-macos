@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*
  * Finds and returns the closet RCTScrollViewComponentView component to the given view
  */
-+ (nullable RCTScrollViewComponentView *)findScrollViewComponentViewForView:(RCTUIView *)view; // [macOS]
++ (nullable RCTScrollViewComponentView *)findScrollViewComponentViewForView:(RCTPlatformView *)view; // [macOS]
 
 /*
  * Returns an actual UIScrollView that this component uses under the hood.
@@ -51,10 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
 /*
  * Returns a delegate splitter that can be used to subscribe for UIScrollView delegate.
  */
-#if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, strong, readonly)
-    RCTGenericDelegateSplitter<id<UIScrollViewDelegate>> *scrollViewDelegateSplitter;
-#endif // [macOS]
+    RCTGenericDelegateSplitter<id<RCTUIScrollViewDelegate>> *scrollViewDelegateSplitter;
 
 @end
 

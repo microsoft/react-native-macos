@@ -57,7 +57,7 @@ static BOOL CGColorsAreEqual(CGColorRef color1, CGColorRef color2)
         errorMessage = message;
       });
 
-  RCTUIColor *value = [RCTConvert UIColor:json]; // [macOS]
+  RCTPlatformColor *value = [RCTConvert UIColor:json]; // [macOS]
 
   RCTSetLogFunction(defaultLogFunction);
 
@@ -69,8 +69,8 @@ static BOOL CGColorsAreEqual(CGColorRef color1, CGColorRef color2)
 - (void)testFallbackColor
 {
   id json = RCTJSONParse(@"{ \"semantic\": \"unitTestFallbackColorIOS\" }", nil);
-  RCTUIColor *value = [RCTConvert UIColor:json]; // [macOS]
-  XCTAssertTrue(CGColorsAreEqual([value CGColor], [[RCTUIColor blueColor] CGColor])); // [macOS]
+  RCTPlatformColor *value = [RCTConvert UIColor:json]; // [macOS]
+  XCTAssertTrue(CGColorsAreEqual([value CGColor], [[RCTPlatformColor blueColor] CGColor])); // [macOS]
 }
 
 #if !TARGET_OS_OSX // [macOS]
@@ -79,7 +79,7 @@ static BOOL CGColorsAreEqual(CGColorRef color1, CGColorRef color2)
   // 0        == 0x00000000 == black
   // 16777215 == 0x00FFFFFF == white
   id json = RCTJSONParse(@"{ \"dynamic\": { \"light\":0, \"dark\":16777215 } }", nil);
-  RCTUIColor *value = [RCTConvert RCTUIColor:json]; // [macOS]
+  RCTPlatformColor *value = [RCTConvert RCTPlatformColor:json]; // [macOS]
   XCTAssertNotNil(value);
 
   id savedTraitCollection = [UITraitCollection currentTraitCollection];
@@ -109,7 +109,7 @@ static BOOL CGColorsAreEqual(CGColorRef color1, CGColorRef color2)
   id json = RCTJSONParse(
       @"{ \"dynamic\": { \"light\": { \"semantic\": \"systemRedColor\" }, \"dark\":{ \"semantic\": \"systemBlueColor\" } } }",
       nil);
-  RCTUIColor *value = [RCTConvert UIColor:json]; // [macOS]
+  RCTPlatformColor *value = [RCTConvert UIColor:json]; // [macOS]
   XCTAssertNotNil(value);
 
   id savedTraitCollection = [UITraitCollection currentTraitCollection];
@@ -178,7 +178,7 @@ static BOOL CGColorsAreEqual(CGColorRef color1, CGColorRef color2)
 
   for (NSString *semanticColor in semanticColors) {
     id json = RCTJSONParse([NSString stringWithFormat:@"{ \"semantic\": \"%@\" }", semanticColor], nil);
-    RCTUIColor *value = [RCTConvert UIColor:json]; // [macOS]
+    RCTPlatformColor *value = [RCTConvert UIColor:json]; // [macOS]
     XCTAssertNotNil(value);
 
     NSNumber *fallback = [semanticColors objectForKey:semanticColor];

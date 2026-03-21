@@ -59,7 +59,7 @@ extern NSString *const FBReferenceImageFilePathKey;
  etc).
  @returns YES if the comparison (or saving of the reference image) succeeded.
  */
-- (BOOL)compareSnapshotOfView:(RCTUIView *)view // [macOS]
+- (BOOL)compareSnapshotOfView:(RCTPlatformView *)view // [macOS]
                      selector:(SEL)selector
                    identifier:(NSString *)identifier
                         error:(NSError **)errorPtr;
@@ -76,7 +76,7 @@ extern NSString *const FBReferenceImageFilePathKey;
  @param error An error, if this methods returns nil, the error will be something useful.
  @returns An image.
  */
-- (UIImage *)referenceImageForSelector:(SEL)selector identifier:(NSString *)identifier error:(NSError **)error;
+- (RCTPlatformImage *)referenceImageForSelector:(SEL)selector identifier:(NSString *)identifier error:(NSError **)error;
 
 /**
  Saves a reference image.
@@ -85,7 +85,7 @@ extern NSString *const FBReferenceImageFilePathKey;
  @param errorPtr An error, if this methods returns NO, the error will be something useful.
  @returns An image.
  */
-- (BOOL)saveReferenceImage:(UIImage *)image
+- (BOOL)saveReferenceImage:(RCTPlatformImage *)image // [macOS]
                   selector:(SEL)selector
                 identifier:(NSString *)identifier
                      error:(NSError **)errorPtr;
@@ -97,7 +97,7 @@ extern NSString *const FBReferenceImageFilePathKey;
  @param errorPtr An error that indicates why the comparison failed if it does.
  @returns YES if the comparison succeeded and the images are the same.
  */
-- (BOOL)compareReferenceImage:(UIImage *)referenceImage toImage:(UIImage *)image error:(NSError **)errorPtr;
+- (BOOL)compareReferenceImage:(RCTPlatformImage *)referenceImage toImage:(RCTPlatformImage *)image error:(NSError **)errorPtr;
 
 /**
  Saves the reference image and the test image to `failedOutputDirectory`.
@@ -108,8 +108,8 @@ extern NSString *const FBReferenceImageFilePathKey;
  @param errorPtr An error that indicates why the comparison failed if it does.
  @returns YES if the save succeeded.
  */
-- (BOOL)saveFailedReferenceImage:(UIImage *)referenceImage
-                       testImage:(UIImage *)testImage
+- (BOOL)saveFailedReferenceImage:(RCTPlatformImage *)referenceImage // [macOS]
+                       testImage:(RCTPlatformImage *)testImage // [macOS]
                         selector:(SEL)selector
                       identifier:(NSString *)identifier
                            error:(NSError **)errorPtr;

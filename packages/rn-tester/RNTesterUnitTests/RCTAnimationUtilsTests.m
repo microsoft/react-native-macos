@@ -98,15 +98,15 @@ static CGFloat RCTSimpleInterpolation(CGFloat value, NSArray<NSNumber *> *inputR
 - (void)testColorInterpolation
 {
   NSArray<NSNumber *> *input = @[ @0, @1 ];
-  NSArray<RCTUIColor *> *output = @[ [RCTUIColor redColor], [RCTUIColor blueColor] ]; // [macOS]
+  NSArray<RCTPlatformColor *> *output = @[ [RCTPlatformColor redColor], [RCTPlatformColor blueColor] ]; // [macOS]
   uint32_t value;
   value = RCTInterpolateColorInRange(0, input, output);
-  XCTAssertEqualObjects([RCTConvert UIColor:@(value)], [RCTUIColor redColor]); // [macOS]
+  XCTAssertEqualObjects([RCTConvert UIColor:@(value)], [RCTPlatformColor redColor]); // [macOS]
   value = RCTInterpolateColorInRange(0.5, input, output);
   XCTAssertEqualObjects(
-      [RCTConvert UIColor:@(value)], [RCTUIColor colorWithRed:128. / 255 green:0 blue:128. / 255 alpha:1]); // [macOS]
+      [RCTConvert UIColor:@(value)], [RCTPlatformColor colorWithRed:128. / 255 green:0 blue:128. / 255 alpha:1]); // [macOS]
   value = RCTInterpolateColorInRange(1, input, output);
-  XCTAssertEqualObjects([RCTConvert UIColor:@(value)], [RCTUIColor blueColor]); // [macOS]
+  XCTAssertEqualObjects([RCTConvert UIColor:@(value)], [RCTPlatformColor blueColor]); // [macOS]
 }
 
 - (void)testStringInterpolation

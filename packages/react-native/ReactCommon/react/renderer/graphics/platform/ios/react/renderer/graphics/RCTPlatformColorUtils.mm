@@ -9,6 +9,7 @@
 
 #import <Foundation/Foundation.h>
 #import <React/RCTUIKit.h> // [macOS]
+#import <react/renderer/graphics/HostPlatformColor.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
 #include <string>
@@ -133,7 +134,7 @@ static NSDictionary<NSString *, NSDictionary *> *_PlatformColorSelectorsDict()
   return dict;
 }
 
-static RCTUIColor *_UIColorFromHexValue(NSNumber *hexValue) // [macOS]
+static RCTPlatformColor *_UIColorFromHexValue(NSNumber *hexValue) // [macOS]
 {
   NSUInteger hexIntValue = [hexValue unsignedIntegerValue];
 
@@ -142,10 +143,10 @@ static RCTUIColor *_UIColorFromHexValue(NSNumber *hexValue) // [macOS]
   CGFloat blue = ((CGFloat)((hexIntValue & 0xFF00) >> 8)) / 255.0;
   CGFloat alpha = ((CGFloat)(hexIntValue & 0xFF)) / 255.0;
 
-  return [RCTUIColor colorWithRed:red green:green blue:blue alpha:alpha]; // [macOS]
+  return [RCTPlatformColor colorWithRed:red green:green blue:blue alpha:alpha]; // [macOS]
 }
 
-static RCTUIColor *_Nullable _UIColorFromSemanticString(NSString *semanticString) // [macOS]
+static RCTPlatformColor *_Nullable _UIColorFromSemanticString(NSString *semanticString) // [macOS]
 {
   NSString *platformColorString = [semanticString hasSuffix:kColorSuffix]
       ? [semanticString substringToIndex:[semanticString length] - [kColorSuffix length]]
@@ -154,17 +155,17 @@ static RCTUIColor *_Nullable _UIColorFromSemanticString(NSString *semanticString
   NSDictionary<NSString *, id> *colorInfo = platformColorSelectorsDict[platformColorString];
   if (colorInfo) {
     SEL objcColorSelector = NSSelectorFromString([platformColorString stringByAppendingString:kColorSuffix]);
-    if (![RCTUIColor respondsToSelector:objcColorSelector]) { // [macOS]
+    if (![RCTPlatformColor respondsToSelector:objcColorSelector]) { // [macOS]
       NSNumber *fallbackRGB = colorInfo[kFallbackARGBKey];
       if (fallbackRGB) {
         return _UIColorFromHexValue(fallbackRGB);
       }
     } else {
-      Class uiColorClass = [RCTUIColor class]; // [macOS]
+      Class uiColorClass = [RCTPlatformColor class]; // [macOS]
       IMP imp = [uiColorClass methodForSelector:objcColorSelector];
       id (*getUIColor)(id, SEL) = ((id(*)(id, SEL))imp);
       id colorObject = getUIColor(uiColorClass, objcColorSelector);
-      if ([colorObject isKindOfClass:[RCTUIColor class]]) { // [macOS]
+      if ([colorObject isKindOfClass:[RCTPlatformColor class]]) { // [macOS]
         return colorObject;
       }
     }
@@ -179,7 +180,7 @@ static inline NSString *_NSStringFromCString(
   return [NSString stringWithCString:string.c_str() encoding:encoding];
 }
 
-static inline facebook::react::ColorComponents _ColorComponentsFromUIColor(RCTUIColor *color) // [macOS]
+static inline facebook::react::ColorComponents _ColorComponentsFromUIColor(RCTPlatformColor *color) // [macOS]
 {
   CGFloat rgba[4];
 #if TARGET_OS_OSX // [macOS
@@ -194,11 +195,11 @@ facebook::react::ColorComponents RCTPlatformColorComponentsFromSemanticItems(std
   return _ColorComponentsFromUIColor(RCTPlatformColorFromSemanticItems(semanticItems));
 }
 
-RCTUIColor *RCTPlatformColorFromSemanticItems(std::vector<std::string> &semanticItems) // [macOS]
+RCTPlatformColor *RCTPlatformColorFromSemanticItems(std::vector<std::string> &semanticItems) // [macOS]
 {
   for (const auto &semanticCString : semanticItems) {
     NSString *semanticNSString = _NSStringFromCString(semanticCString);
-    RCTUIColor *uiColor = [RCTUIColor colorNamed:semanticNSString]; // [macOS]
+    RCTPlatformColor *uiColor = [RCTPlatformColor colorNamed:semanticNSString]; // [macOS]
     if (uiColor != nil) {
       return uiColor;
     }
@@ -208,12 +209,12 @@ RCTUIColor *RCTPlatformColorFromSemanticItems(std::vector<std::string> &semantic
     }
   }
 
-  return RCTUIColor.clearColor; // [macOS]
+  return RCTPlatformColor.clearColor; // [macOS]
 }
 
-RCTUIColor *RCTPlatformColorFromColor(const facebook::react::Color &color) // [macOS]
+RCTPlatformColor *RCTPlatformColorFromColor(const facebook::react::Color &color) // [macOS]
 {
-  return (RCTUIColor *)facebook::react::unwrapManagedObject(color.getUIColor()); // [macOS]
+  return (RCTPlatformColor *)facebook::react::unwrapManagedObject(color.getUIColor()); // [macOS]
 }
 
 NS_ASSUME_NONNULL_END

@@ -10,7 +10,7 @@
 #import <React/RCTUIKit.h> // [macOS]
 #import <React/RCTUtils.h> // [macOS]
 
-UIImage *RCTBlurredImageWithRadius(UIImage *inputImage, CGFloat radius)
+RCTPlatformImage *RCTBlurredImageWithRadius(RCTPlatformImage *inputImage, CGFloat radius) // [macOS]
 {
   CGImageRef imageRef = UIImageGetCGImageRef(inputImage); // [macOS]
   CGFloat imageScale = UIImageGetScale(inputImage); // [macOS]
@@ -30,16 +30,13 @@ UIImage *RCTBlurredImageWithRadius(UIImage *inputImage, CGFloat radius)
     RCTUIGraphicsImageRenderer *const renderer = [[RCTUIGraphicsImageRenderer alloc] initWithSize:inputImage.size // [macOS]
                                                                                            format:rendererFormat];
 
+    imageRef = [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull context) { // [macOS]
 #if !TARGET_OS_OSX // [macOS]
-    imageRef = [renderer imageWithActions:^(UIGraphicsImageRendererContext *_Nonnull context) {
                  [inputImage drawAtPoint:CGPointZero];
-               }].CGImage;
 #else // [macOS
-    NSImage *image = [renderer imageWithActions:^(RCTUIGraphicsImageRendererContext *_Nonnull context) {
-      [inputImage drawAtPoint:CGPointZero fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0];
-    }];
-    imageRef = UIImageGetCGImageRef(image);
+                 [inputImage drawAtPoint:CGPointZero fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0];
 #endif // macOS]
+               }].CGImage;
   }
   vImage_Buffer buffer1, buffer2;
   buffer1.width = buffer2.width = CGImageGetWidth(imageRef);

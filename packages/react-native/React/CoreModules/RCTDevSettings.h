@@ -30,13 +30,6 @@
  */
 - (id)settingForKey:(NSString *)key;
 
-// [macOS
-/**
- * Returns all keys that are overridden
- */
-- (NSArray<NSString *> *)overridenKeys;
-// macOS]
-
 @end
 
 @protocol RCTDevSettingsInspectable <NSObject>
@@ -54,13 +47,7 @@
 - (instancetype)initWithDataSource:(id<RCTDevSettingsDataSource>)dataSource;
 
 @property (nonatomic, readonly) BOOL isHotLoadingAvailable;
-@property (nonatomic, readonly) BOOL isRemoteDebuggingAvailable;
 @property (nonatomic, readonly) BOOL isDeviceDebuggingAvailable;
-
-/**
- * Whether the bridge is connected to a remote JS executor.
- */
-@property (nonatomic, assign) BOOL isDebuggingRemotely;
 
 /*
  * Whether shaking will show RCTDevMenu. The menu is enabled by default if RCT_DEV=1, but

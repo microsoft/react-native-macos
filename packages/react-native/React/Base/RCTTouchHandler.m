@@ -83,14 +83,14 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)coder)
 #endif // macOS]
 
-- (void)attachToView:(RCTUIView *)view // [macOS]
+- (void)attachToView:(RCTPlatformView *)view // [macOS]
 {
   RCTAssert(self.view == nil, @"RCTTouchHandler already has attached view.");
 
   [view addGestureRecognizer:self];
 }
 
-- (void)detachFromView:(RCTUIView *)view // [macOS]
+- (void)detachFromView:(RCTPlatformView *)view // [macOS]
 {
   RCTAssertParam(view);
   RCTAssert(self.view == view, @"RCTTouchHandler attached to another view.");

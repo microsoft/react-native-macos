@@ -9,6 +9,7 @@
 #import "CoreModulesPlugins.h"
 
 #import <React/RCTEventDispatcherProtocol.h>
+#import <React/RCTInitializing.h>
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
 
@@ -49,10 +50,12 @@ RCT_ENUM_CONVERTER(
 @end
 #endif // [macOS]
 
-@interface RCTStatusBarManager () <NativeStatusBarManagerIOSSpec>
+@interface RCTStatusBarManager () <NativeStatusBarManagerIOSSpec, RCTInitializing>
 @end
 
-@implementation RCTStatusBarManager
+@implementation RCTStatusBarManager {
+  facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> _constants;
+}
 
 #if !TARGET_OS_OSX // [macOS]
 static BOOL RCTViewControllerBasedStatusBarAppearance()
@@ -76,7 +79,18 @@ RCT_EXPORT_MODULE()
   return YES;
 }
 
-#if TARGET_OS_OSX // [macOS]
+- (void)initialize
+{
+  _constants = facebook::react::typedConstants<JS::NativeStatusBarManagerIOS::Constants>({
+#if !TARGET_OS_OSX // [macOS]
+      .HEIGHT = RCTUIStatusBarManager().statusBarFrame.size.height,
+#else // [macOS
+      .HEIGHT = 0,
+#endif // macOS]
+      .DEFAULT_BACKGROUND_COLOR = std::nullopt,
+  });
+}
+
 - (NSArray<NSString *> *)supportedEvents
 {
   return @[ kStatusBarFrameDidChange, kStatusBarFrameWillChange ];
@@ -86,6 +100,8 @@ RCT_EXPORT_MODULE()
 {
 #if TARGET_OS_IOS // [visionOS]
   NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   [nc addObserver:self
          selector:@selector(applicationDidChangeStatusBarFrame:)
              name:UIApplicationDidChangeStatusBarFrameNotification
@@ -95,6 +111,7 @@ RCT_EXPORT_MODULE()
              name:UIApplicationWillChangeStatusBarFrameNotification
            object:nil];
 #endif // [visionOS]
+#pragma clang diagnostic pop
 }
 
 - (void)stopObserving
@@ -105,7 +122,10 @@ RCT_EXPORT_MODULE()
 - (void)emitEvent:(NSString *)eventName forNotification:(NSNotification *)notification
 {
 #if TARGET_OS_IOS // [visionOS]
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   CGRect frame = [notification.userInfo[UIApplicationStatusBarFrameUserInfoKey] CGRectValue];
+#pragma clang diagnostic pop
   NSDictionary *event = @{
     @"frame" : @{
       @"x" : @(frame.origin.x),
@@ -127,7 +147,6 @@ RCT_EXPORT_MODULE()
 {
   [self emitEvent:kStatusBarFrameWillChange forNotification:notification];
 }
-#endif
 
 RCT_EXPORT_METHOD(getHeight : (RCTResponseSenderBlock)callback)
 {
@@ -199,19 +218,7 @@ RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible)
 
 - (facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants>)getConstants
 {
-  __block facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> constants;
-  RCTUnsafeExecuteOnMainQueueSync(^{
-    constants = facebook::react::typedConstants<JS::NativeStatusBarManagerIOS::Constants>({
-#if !TARGET_OS_OSX // [macOS]
-        .HEIGHT = RCTUIStatusBarManager().statusBarFrame.size.height,
-#else // [macOS
-        .HEIGHT = 0,
-#endif // macOS]
-        .DEFAULT_BACKGROUND_COLOR = std::nullopt,
-    });
-  });
-
-  return constants;
+  return _constants;
 }
 
 - (facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants>)constantsToExport

@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow
+ * @format
  */
 
 import type {SectionData} from '../types/RNTesterTypes';
@@ -174,6 +174,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: 0,
     height: 35,
+    ...(Platform.OS === 'macos' && {
+      paddingVertical: 5,
+      height: undefined,
+    }),
     flex: 1,
     alignSelf: 'center',
     paddingLeft: 35,

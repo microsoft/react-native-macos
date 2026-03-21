@@ -574,7 +574,7 @@ static inline void RCTApplyTransformationAccordingLayoutDirection(
   [self centerContentIfNeeded];
 }
 
-- (void)insertReactSubview:(RCTUIView *)view atIndex:(NSInteger)atIndex // [macOS]
+- (void)insertReactSubview:(RCTPlatformView *)view atIndex:(NSInteger)atIndex // [macOS]
 {
   [super insertReactSubview:view atIndex:atIndex];
 #if !TARGET_OS_OSX // [macOS]

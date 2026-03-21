@@ -14,6 +14,9 @@
 
 @class RCTBridge;
 @class RCTSurface;
+#if RCT_DEV_MENU // [macOS
+@class RCTDevMenu;
+#endif // macOS]
 
 typedef RCTPlatformView *_Nullable (^RCTSurfaceHostingViewActivityIndicatorViewFactory)(void); // [macOS]
 
@@ -63,6 +66,14 @@ NS_ASSUME_NONNULL_BEGIN
  * @param disabled if `YES`, the auto-hide is disabled. Otherwise the loading view will be hidden automatically
  */
 - (void)disableActivityIndicatorAutoHide:(BOOL)disabled;
+
+#if RCT_DEV_MENU // [macOS
+/**
+ * Dev menu for macOS context menu access.
+ */
+@property (nonatomic, strong, nullable) RCTDevMenu *devMenu;
+#endif // macOS]
+
 @end
 
 NS_ASSUME_NONNULL_END
