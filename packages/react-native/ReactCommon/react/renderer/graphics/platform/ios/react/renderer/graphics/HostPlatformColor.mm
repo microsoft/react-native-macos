@@ -120,7 +120,21 @@ int32_t ColorFromColorComponents(const facebook::react::ColorComponents &compone
 int32_t ColorFromUIColor(RCTPlatformColor *color) // [macOS]
 {
   CGFloat rgba[4];
+#if TARGET_OS_OSX // [macOS
+  // Resolve dynamic/semantic colors against the current effective appearance
+  // so that dark mode colors are correctly extracted.
+  NSAppearance *previousAppearance = NSAppearance.currentAppearance;
+  NSAppearance.currentAppearance = [NSApp effectiveAppearance];
+  NSColor *resolvedColor = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+  if (resolvedColor) {
+    [resolvedColor getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+  } else {
+    [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+  }
+  NSAppearance.currentAppearance = previousAppearance;
+#else // macOS]
   [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+#endif
   return ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
 }
 
@@ -170,9 +184,33 @@ std::size_t hashFromUIColor(const std::shared_ptr<void> &uiColor)
     return 0;
   }
 
-#if TARGET_OS_OSX // [macOS]
-  return ColorFromUIColor(uiColor);
-#else // [macOS
+#if TARGET_OS_OSX // [macOS
+  // Hash both light and dark appearance colors to properly distinguish
+  // dynamic colors that change with appearance.
+  RCTPlatformColor *color = (RCTPlatformColor *)unwrapManagedObject(uiColor);
+  int32_t darkColor = 0;
+  int32_t lightColor = 0;
+  NSAppearance *previousAppearance = NSAppearance.currentAppearance;
+
+  NSAppearance.currentAppearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
+  NSColor *darkResolved = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+  if (darkResolved) {
+    CGFloat rgba[4];
+    [darkResolved getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+    darkColor = ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
+  }
+
+  NSAppearance.currentAppearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+  NSColor *lightResolved = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+  if (lightResolved) {
+    CGFloat rgba[4];
+    [lightResolved getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+    lightColor = ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
+  }
+
+  NSAppearance.currentAppearance = previousAppearance;
+  return facebook::react::hash_combine(darkColor, lightColor);
+#else // macOS]
   static UITraitCollection *darkModeTraitCollection =
       [UITraitCollection traitCollectionWithUserInterfaceStyle:UIUserInterfaceStyleDark];
   auto darkColor = ColorFromUIColorForSpecificTraitCollection(uiColor, darkModeTraitCollection);
