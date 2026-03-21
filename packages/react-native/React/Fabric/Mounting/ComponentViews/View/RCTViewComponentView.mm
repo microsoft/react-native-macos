@@ -713,10 +713,10 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
       layoutMetrics.frame.size != oldLayoutMetrics.frame.size) {
     auto newTransform = _props->resolveTransform(layoutMetrics);
     CATransform3D caTransform = RCTCATransform3DFromTransformMatrix(newTransform);
-#if TARGET_OS_OSX // [macOS
-    self.transform3D = caTransform;
-#else
-    self.layer.transform = caTransform;
+#if !TARGET_OS_OSX // [macOS]
+    self.layer.transform = RCTCATransform3DFromTransformMatrix(newTransform);
+#else // [macOS
+    self.transform3D = RCTCATransform3DFromTransformMatrix(newTransform);
 #endif // macOS]
   }
 }
