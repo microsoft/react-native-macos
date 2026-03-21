@@ -68,7 +68,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
 // [macOS Platform-native text view used when selectable={true}.
 // Handles both text rendering and native text selection.
-#if TARGET_OS_OSX
+#if TARGET_OS_OSX // [macOS
 @interface RCTParagraphSelectableTextView : NSTextView
 
 - (void)setNeedsDisplay;
