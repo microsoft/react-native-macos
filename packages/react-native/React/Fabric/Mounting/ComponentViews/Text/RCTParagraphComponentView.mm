@@ -35,27 +35,26 @@
 
 using namespace facebook::react;
 
-// [macOS Cancel React Native's touch handling by finding the RCTSurfaceTouchHandler
+#if TARGET_OS_OSX // [macOS
+// Cancel React Native's touch handling by finding the RCTSurfaceTouchHandler
 // gesture recognizer in the view hierarchy and toggling its enabled state.
 // This matches what RCTSurfaceTouchHandler._cancelTouches does internally.
-#if TARGET_OS_OSX
 static void RCTCancelTouchesForView(RCTPlatformView *view)
 {
   while (view) {
-    for (id gr in view.gestureRecognizers) {
-      if ([gr isKindOfClass:[RCTSurfaceTouchHandler class]]) {
-        [gr setEnabled:NO];
-        [gr setEnabled:YES];
+    for (id gestureHandler in view.gestureRecognizers) {
+      if ([gestureHandler isKindOfClass:[RCTSurfaceTouchHandler class]]) {
+        [gestureHandler setEnabled:NO];
+        [gestureHandler setEnabled:YES];
         return;
       }
     }
     view = view.superview;
   }
 }
-#endif
-// macOS]
+#endif // macOS]
 
-#pragma mark - RCTParagraphTextView (default, non-selectable)
+#pragma mark - RCTParagraphTextView (default, non-selectable) // [macOS]
 
 // ParagraphTextView is an auxiliary view we set as contentView so the drawing
 // can happen on top of the layers manipulated by RCTViewComponentView (the parent view)
@@ -81,7 +80,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 @end
 // macOS]
 
-#pragma mark - RCTParagraphComponentView
+#pragma mark - RCTParagraphComponentView // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
