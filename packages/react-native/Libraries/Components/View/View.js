@@ -147,6 +147,8 @@ const View: React.AbstractComponent<
         passthroughAllKeyEvents={_passthroughAllKeyEvents}
         validKeysDown={_validKeysDown}
         validKeysUp={_validKeysUp}
+        keyDownEvents={keyDownEvents}
+        keyUpEvents={keyUpEvents}
         // macOS]
         ref={forwardedRef}
       />
