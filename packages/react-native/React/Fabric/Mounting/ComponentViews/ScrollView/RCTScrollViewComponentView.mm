@@ -536,7 +536,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   }
 
   for (RCTPlatformView *subview in [_containerView.subviews reverseObjectEnumerator]) { // [macOS]
-    RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, [subview convertPoint:point fromView:self], event); // [macOS]
+    RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, point, self, event); // [macOS]
     if (hitView) {
       return hitView;
     }

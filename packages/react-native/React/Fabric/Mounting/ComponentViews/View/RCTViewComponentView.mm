@@ -368,16 +368,10 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     auto newTransform = newViewProps.resolveTransform(_layoutMetrics);
     CATransform3D caTransform = RCTCATransform3DFromTransformMatrix(newTransform);
 #if TARGET_OS_OSX // [macOS
-    CGPoint anchorPoint = self.layer.anchorPoint;
-    if (CGPointEqualToPoint(anchorPoint, CGPointZero) && !CATransform3DEqualToTransform(caTransform, CATransform3DIdentity)) {
-      // https://developer.apple.com/documentation/quartzcore/calayer/1410817-anchorpoint
-      // This compensates for the fact that layer.anchorPoint is {0, 0} instead of {0.5, 0.5} on macOS for some reason.
-      CATransform3D originAdjust = CATransform3DTranslate(CATransform3DIdentity, self.frame.size.width / 2, self.frame.size.height / 2, 0);
-      caTransform = CATransform3DConcat(CATransform3DConcat(CATransform3DInvert(originAdjust), caTransform), originAdjust);
-    }
-#endif // macOS]
-
+    self.transform3D = caTransform;
+#else
     self.layer.transform = caTransform;
+#endif // macOS]
     // Enable edge antialiasing in rotation, skew, or perspective transforms
     self.layer.allowsEdgeAntialiasing = caTransform.m12 != 0.0f || caTransform.m21 != 0.0f || caTransform.m34 != 0.0f;
   }
@@ -718,7 +712,12 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   if ((_props->transformOrigin.isSet() || _props->transform.operations.size() > 0) &&
       layoutMetrics.frame.size != oldLayoutMetrics.frame.size) {
     auto newTransform = _props->resolveTransform(layoutMetrics);
-    self.layer.transform = RCTCATransform3DFromTransformMatrix(newTransform);
+    CATransform3D caTransform = RCTCATransform3DFromTransformMatrix(newTransform);
+#if TARGET_OS_OSX // [macOS
+    self.transform3D = caTransform;
+#else
+    self.layer.transform = caTransform;
+#endif // macOS]
   }
 }
 
@@ -812,7 +811,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   }
 
   for (RCTPlatformView *subview in [self.subviews reverseObjectEnumerator]) { // [macOS]
-    RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, [subview convertPoint:point fromView:self], event); // [macOS]
+    RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, point, self, event); // [macOS]
     if (hitView) {
       return hitView;
     }
