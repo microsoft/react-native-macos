@@ -25,10 +25,10 @@ export const Screens = {
 } as const;
 
 export const initialNavigationState: RNTesterNavigationState = {
-  activeModuleKey: 'PlaygroundExample',
-  activeModuleTitle: 'Playground',
+  activeModuleKey: null,
+  activeModuleTitle: null,
   activeModuleExampleKey: null,
-  screen: Screens.PLAYGROUNDS,
+  screen: Screens.COMPONENTS,
   recentlyUsed: {components: [], apis: []},
   hadDeepLink: false,
 };

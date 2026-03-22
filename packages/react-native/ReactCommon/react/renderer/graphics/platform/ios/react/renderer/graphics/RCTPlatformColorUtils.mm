@@ -316,7 +316,7 @@ static RCTPlatformColor *_Nullable _UIColorFromSemanticString(NSString *semantic
         return colorObject;
       }
     }
-#endif
+#endif // macOS]
   }
   return nil;
 }
@@ -342,7 +342,7 @@ static inline facebook::react::ColorComponents _ColorComponentsFromUIColor(RCTPl
   [finalColor getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
 #else // macOS]
   [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-#endif
+#endif // macOS]
   return {(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]};
 }
 
