@@ -8,16 +8,12 @@
 #import "RCTPlatformColorUtils.h"
 
 #import <Foundation/Foundation.h>
-#import <TargetConditionals.h>
 #import <React/RCTUIKit.h> // [macOS]
-#if TARGET_OS_OSX // [macOS
-#import <AppKit/AppKit.h>
-#endif // macOS]
 #import <react/renderer/graphics/HostPlatformColor.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
 #include <string>
-#include <vector>
+#include <vector> // [macOS]
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -266,17 +262,17 @@ static RCTPlatformColor *_Nullable _UIColorFromSemanticString(NSString *semantic
   if (colorInfo) {
 #if !TARGET_OS_OSX // [macOS]
     SEL objcColorSelector = NSSelectorFromString([platformColorString stringByAppendingString:kColorSuffix]);
-    if (![RCTPlatformColor respondsToSelector:objcColorSelector]) {
+    if (![RCTPlatformColor respondsToSelector:objcColorSelector]) { // [macOS]
       NSNumber *fallbackRGB = colorInfo[kFallbackARGBKey];
       if (fallbackRGB) {
         return _UIColorFromHexValue(fallbackRGB);
       }
     } else {
-      Class uiColorClass = [RCTPlatformColor class];
+      Class uiColorClass = [RCTPlatformColor class]; // [macOS]
       IMP imp = [uiColorClass methodForSelector:objcColorSelector];
       id (*getUIColor)(id, SEL) = ((id(*)(id, SEL))imp);
       id colorObject = getUIColor(uiColorClass, objcColorSelector);
-      if ([colorObject isKindOfClass:[RCTPlatformColor class]]) {
+      if ([colorObject isKindOfClass:[RCTPlatformColor class]]) { // [macOS]
         return colorObject;
       }
     }
@@ -331,7 +327,9 @@ static inline NSString *_NSStringFromCString(
 static inline facebook::react::ColorComponents _ColorComponentsFromUIColor(RCTPlatformColor *color) // [macOS]
 {
   CGFloat rgba[4];
-#if TARGET_OS_OSX // [macOS
+#if !TARGET_OS_OSX // [macOS]
+  [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+#else // [macOS
   // Resolve dynamic/semantic colors against the current effective appearance
   // so that dark mode colors are correctly extracted.
   NSAppearance *previousAppearance = NSAppearance.currentAppearance;
@@ -340,8 +338,6 @@ static inline facebook::react::ColorComponents _ColorComponentsFromUIColor(RCTPl
   NSAppearance.currentAppearance = previousAppearance;
   NSColor *finalColor = resolvedColor ?: [color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
   [finalColor getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-#else // macOS]
-  [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
 #endif // macOS]
   return {(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]};
 }
