@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
   if ENV['USE_FRAMEWORKS']
     s.module_name            = "React_graphics"
     s.header_mappings_dir  = "../../.."
-    header_search_paths = header_search_paths + ["\"$(PODS_TARGET_SRCROOT)/platform/ios\""]
+    header_search_paths = header_search_paths + ["\"$(PODS_TARGET_SRCROOT)/platform/ios\"", "\"$(PODS_TARGET_SRCROOT)/platform/macos\""] # [macOS]
   end
 
   s.pod_target_xcconfig  = { "USE_HEADERMAP" => "NO",
