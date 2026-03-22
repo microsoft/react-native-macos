@@ -1177,18 +1177,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 #if !TARGET_OS_OSX // [macOS]
   RCTPlatformColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
 #else // [macOS
-  // Resolve dynamic/semantic colors against the current effective appearance
-  // so that dark mode colors are correctly applied.
   RCTPlatformColor *backgroundColor = _backgroundColor;
-  if (_backgroundColor) {
-    NSAppearance *previousAppearance = NSAppearance.currentAppearance;
-    NSAppearance.currentAppearance = self.effectiveAppearance ?: [NSApp effectiveAppearance];
-    NSColor *resolved = [_backgroundColor colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
-    NSAppearance.currentAppearance = previousAppearance;
-    if (resolved) {
-      backgroundColor = resolved;
-    }
-  }
 #endif // macOS]
   // The reason we sometimes do not set self.layer's backgroundColor is because
   // we want to support non-uniform border radii, which apple does not natively
