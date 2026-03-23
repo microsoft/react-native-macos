@@ -366,11 +366,10 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
        oldViewProps.transformOrigin != newViewProps.transformOrigin) &&
       ![_propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN containsObject:@"transform"]) {
     auto newTransform = newViewProps.resolveTransform(_layoutMetrics);
-    CATransform3D caTransform = RCTCATransform3DFromTransformMatrix(newTransform);
-#if TARGET_OS_OSX // [macOS
-    self.transform3D = caTransform;
-#else
-    self.layer.transform = caTransform;
+#if !TARGET_OS_OSX // [macOS]
+    self.layer.transform = RCTCATransform3DFromTransformMatrix(newTransform);
+#else // [macOS
+    self.transform3D = RCTCATransform3DFromTransformMatrix(newTransform);
 #endif // macOS]
     // Enable edge antialiasing in rotation, skew, or perspective transforms
     self.layer.allowsEdgeAntialiasing = caTransform.m12 != 0.0f || caTransform.m21 != 0.0f || caTransform.m34 != 0.0f;
@@ -712,7 +711,6 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   if ((_props->transformOrigin.isSet() || _props->transform.operations.size() > 0) &&
       layoutMetrics.frame.size != oldLayoutMetrics.frame.size) {
     auto newTransform = _props->resolveTransform(layoutMetrics);
-    CATransform3D caTransform = RCTCATransform3DFromTransformMatrix(newTransform);
 #if !TARGET_OS_OSX // [macOS]
     self.layer.transform = RCTCATransform3DFromTransformMatrix(newTransform);
 #else // [macOS
