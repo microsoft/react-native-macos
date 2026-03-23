@@ -47,7 +47,24 @@
     // NSScrollView.automaticallyAdjustsContentInsets (default YES) adds contentInset.top to push content below the toolbar.
     // However, React Native doesn't know about this native contentInset adjustments,causing some caltulation issues  
     self.automaticallyAdjustsContentInsets = NO;
-#endif // [macOS]
+#if !TARGET_OS_OSX // [macOS]
+// We set the default behavior to "never" so that iOS
+// doesn't do weird things to UIScrollView insets automatically
+// and keeps it as an opt-in behavior.
+self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+#else // [macOS
+    // Similar to iOS's contentInsetAdjustmentBehavior fix
+    // For example: When using NSWindowStyleMaskFullSizeContentView (hidden title bar) and ScrollView as root,
+    // NSScrollView.automaticallyAdjustsContentInsets (default YES) adds contentInset.top to push content below the toolbar.
+    // However, React Native doesn't know about this native contentInset adjustments,causing some caltulation issues  
+    self.automaticallyAdjustsContentInsets = NO;
+#endif // macOS]
+
+// We intentionally force `UIScrollView`s `semanticContentAttribute` to `LTR` here
+// because this attribute affects a position of vertical scrollbar; we don't want this
+// scrollbar flip because we also flip it with whole `UIScrollView` flip.
+self.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+
 
     __weak __typeof(self) weakSelf = self;
     _delegateSplitter = [[RCTGenericDelegateSplitter alloc] initWithDelegateUpdateBlock:^(id delegate) {
