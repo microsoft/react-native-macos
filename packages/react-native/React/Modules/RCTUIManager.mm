@@ -1186,7 +1186,7 @@ RCT_EXPORT_METHOD(findSubviewIn
 {
   [self addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
     RCTPlatformView *view = viewRegistry[reactTag]; // [macOS]
-    RCTPlatformView *target = RCTUIViewHitTestWithEvent(view, point, nil); // [macOS]
+    RCTPlatformView *target = RCTUIViewHitTestWithEvent(view, point, view, nil); // [macOS]
     CGRect frame = [target convertRect:target.bounds toView:view];
 
     while (target.reactTag == nil && target.superview != nil) {
