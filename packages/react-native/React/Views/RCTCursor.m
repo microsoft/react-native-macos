@@ -7,7 +7,6 @@
 
 // [macOS]
 
-#import <Foundation/Foundation.h>
 #import <React/RCTUIKit.h>
 #import "RCTCursor.h"
 

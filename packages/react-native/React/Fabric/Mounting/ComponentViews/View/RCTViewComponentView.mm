@@ -341,11 +341,6 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     needsInvalidateLayer = YES;
   }
 
-  // `cursor`
-  if (oldViewProps.cursor != newViewProps.cursor) {
-    needsInvalidateLayer = YES;
-  }
-
   // `shouldRasterize`
   if (oldViewProps.shouldRasterize != newViewProps.shouldRasterize) {
     self.layer.shouldRasterize = newViewProps.shouldRasterize;
