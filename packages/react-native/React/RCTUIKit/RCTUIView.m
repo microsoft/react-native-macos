@@ -9,6 +9,7 @@
 
 #if TARGET_OS_OSX
 
+#import <QuartzCore/QuartzCore.h>
 #import <React/RCTUIView.h>
 
 // UIView
@@ -21,6 +22,8 @@
   BOOL _userInteractionEnabled;
   BOOL _mouseDownCanMoveWindow;
   BOOL _respondsToDisplayLayer;
+  CATransform3D _transform3D;
+  BOOL _hasCustomTransform3D;
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key
@@ -51,6 +54,8 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     self->_enableFocusRing = YES;
     self->_mouseDownCanMoveWindow = YES;
     self->_respondsToDisplayLayer = [self respondsToSelector:@selector(displayLayer:)];
+    self->_transform3D = CATransform3DIdentity;
+    self->_hasCustomTransform3D = NO;
   }
   return self;
 }
@@ -127,20 +132,46 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 - (void)setTransform:(CGAffineTransform)transform
 {
-  self.layer.affineTransform = transform;
+  self.transform3D = CATransform3DMakeAffineTransform(transform);
+}
+
+- (CATransform3D)transform3D
+{
+  return _transform3D;
+}
+
+- (void)setTransform3D:(CATransform3D)transform3D
+{
+  // On macOS, layer.anchorPoint defaults to {0, 0} instead of {0.5, 0.5} on iOS.
+  // Compensate so transforms are applied from the view's center as expected.
+  CGPoint anchorPoint = self.layer.anchorPoint;
+  if (CGPointEqualToPoint(anchorPoint, CGPointZero) && !CATransform3DEqualToTransform(transform3D, CATransform3DIdentity)) {
+    CATransform3D originAdjust = CATransform3DTranslate(CATransform3DIdentity, self.frame.size.width / 2, self.frame.size.height / 2, 0);
+    transform3D = CATransform3DConcat(CATransform3DConcat(CATransform3DInvert(originAdjust), transform3D), originAdjust);
+  }
+
+  _transform3D = transform3D;
+  _hasCustomTransform3D = !CATransform3DEqualToTransform(transform3D, CATransform3DIdentity);
+  self.layer.transform = transform3D;
 }
 
 - (NSView *)hitTest:(NSPoint)point
 {
-  // IMPORTANT point is passed in super coordinates by OSX, but expected to be passed in local coordinates
-  NSView *superview = [self superview];
-  NSPoint pointInSelf = superview != nil ? [self convertPoint:point fromView:superview] : point;
-  return [self hitTest:pointInSelf withEvent:nil];
+  // NSView's hitTest: receives a point in superview coordinates. Convert to local
+  // coordinates using CALayer, which correctly accounts for layer.transform.
+  // NSView's convertPoint:fromView: does NOT account for layer transforms.
+  CGPoint localPoint;
+  if (self.layer.superlayer) {
+    localPoint = [self.layer convertPoint:point fromLayer:self.layer.superlayer];
+  } else {
+    localPoint = point;
+  }
+  return [self hitTest:localPoint withEvent:nil];
 }
 
 - (BOOL)wantsUpdateLayer
 {
-  return [self respondsToSelector:@selector(displayLayer:)];
+  return _respondsToDisplayLayer || _hasCustomTransform3D;
 }
 
 - (void)updateLayer
@@ -153,8 +184,13 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     [layer setBackgroundColor:[_backgroundColor CGColor]];
   }
 
-  // In Fabric, wantsUpdateLayer is always enabled and doesn't guarantee that
-  // the instance has a displayLayer method.
+  // On macOS, AppKit's layer-backed view system resets layer.transform to identity
+  // during its layout/display cycle because NSView has no built-in transform property
+  // (unlike UIView on iOS). We must re-apply the stored transform after each cycle.
+  if (_hasCustomTransform3D && !CATransform3DEqualToTransform(layer.transform, _transform3D)) {
+    layer.transform = _transform3D;
+  }
+
   if (_respondsToDisplayLayer) {
     [(id<CALayerDelegate>)self displayLayer:layer];
   }

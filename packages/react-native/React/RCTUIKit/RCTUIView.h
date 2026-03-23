@@ -56,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy) NSColor *backgroundColor;
 @property (nonatomic) CGAffineTransform transform;
+@property (nonatomic) CATransform3D transform3D;
 
 /**
  * Specifies whether the view should receive the mouse down event when the
@@ -75,7 +76,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign) BOOL enableFocusRing;
 
-// [macOS
 /**
  * iOS compatibility shim. On macOS, this forwards to accessibilityChildren.
  */
@@ -90,9 +90,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if !TARGET_OS_OSX
 
-UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
+UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, RCTPlatformView *fromView, __unused UIEvent *__nullable event)
 {
-  return [view hitTest:point withEvent:event];
+  return [view hitTest:[view convertPoint:point fromView:fromView] withEvent:event];
 }
 
 UIKIT_STATIC_INLINE void RCTUIViewSetContentModeRedraw(UIView *view)
@@ -107,11 +107,15 @@ UIKIT_STATIC_INLINE BOOL RCTUIViewIsDescendantOfView(RCTPlatformView *view, RCTP
 
 #else // TARGET_OS_OSX
 
-NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
+// Use CALayer coordinate conversion which correctly accounts for layer.transform.
+// NSView's convertPoint:fromView: does not account for layer transforms on macOS.
+// IMPORTANT -- NSView's hitTest: expects a point in the superview's coordinate space,
+// so we convert from fromView → superview using CALayer, which handles layer transforms correctly.
+// This allows hit testing to work correctly between nested RCTUIViews and plain NSViews.
+NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, RCTPlatformView *fromView, __unused UIEvent *__nullable event)
 {
-  // [macOS IMPORTANT -- point is in local coordinate space, but OSX expects super coordinate space for hitTest:
   NSView *superview = [view superview];
-  NSPoint pointInSuperview = superview != nil ? [view convertPoint:point toView:superview] : point;
+  NSPoint pointInSuperview = superview != nil ? [superview.layer convertPoint:point fromLayer:fromView.layer] : point;
   return [view hitTest:pointInSuperview];
 }
 

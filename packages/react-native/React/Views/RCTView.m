@@ -257,8 +257,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
     // of the hit view will return YES from -pointInside:withEvent:). See:
     //  - https://developer.apple.com/library/ios/qa/qa2013/qa1812.html
     for (RCTUIView *subview in [sortedSubviews reverseObjectEnumerator]) { // [macOS]
-      CGPoint pointForHitTest = [subview convertPoint:point fromView:self];
-      hitSubview = RCTUIViewHitTestWithEvent(subview, pointForHitTest, event); // macOS]
+      hitSubview = RCTUIViewHitTestWithEvent(subview, point, self, event); // [macOS]
       if (hitSubview != nil) {
         break;
       }
