@@ -137,7 +137,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 }
 
 @implementation RCTView {
-  RCTUIColor *_backgroundColor; // [macOS]
+  RCTPlatformColor *_backgroundColor; // [macOS]
   id<RCTEventDispatcherProtocol> _eventDispatcher; // [macOS]
 #if TARGET_OS_OSX // [macOS
   NSTrackingArea *_trackingArea;
@@ -1020,12 +1020,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 
 #pragma mark - Borders
 
-- (RCTUIColor *)backgroundColor // [macOS] RCTUIColor
+- (RCTPlatformColor *)backgroundColor // [macOS] RCTPlatformColor
 {
   return _backgroundColor;
 }
 
-- (void)setBackgroundColor:(RCTUIColor *)backgroundColor // macOS RCTUIColor
+- (void)setBackgroundColor:(RCTPlatformColor *)backgroundColor // macOS RCTPlatformColor
 {
   if ([_backgroundColor isEqual:backgroundColor]) {
     return;
@@ -1145,12 +1145,12 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
 {
   const BOOL isRTL = _reactLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft;
 
-  RCTUIColor *directionAwareBorderLeftColor = nil;
-  RCTUIColor *directionAwareBorderRightColor = nil;
+  RCTPlatformColor *directionAwareBorderLeftColor = nil;
+  RCTPlatformColor *directionAwareBorderRightColor = nil;
 
   if ([[RCTI18nUtil sharedInstance] doLeftAndRightSwapInRTL]) {
-    RCTUIColor *borderStartColor = _borderStartColor ?: _borderLeftColor; // macOS RCTUIColor
-    RCTUIColor *borderEndColor = _borderEndColor ?: _borderRightColor; // macOS RCTUIColor
+    RCTPlatformColor *borderStartColor = _borderStartColor ?: _borderLeftColor; // macOS RCTPlatformColor
+    RCTPlatformColor *borderEndColor = _borderEndColor ?: _borderRightColor; // macOS RCTPlatformColor
 
     directionAwareBorderLeftColor = isRTL ? borderEndColor : borderStartColor;
     directionAwareBorderRightColor = isRTL ? borderStartColor : borderEndColor;
@@ -1159,9 +1159,9 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
     directionAwareBorderRightColor = (isRTL ? _borderStartColor : _borderEndColor) ?: _borderRightColor;
   }
 
-  RCTUIColor *borderColor = _borderColor;
-  RCTUIColor *borderTopColor = _borderTopColor;
-  RCTUIColor *borderBottomColor = _borderBottomColor;
+  RCTPlatformColor *borderColor = _borderColor;
+  RCTPlatformColor *borderTopColor = _borderTopColor;
+  RCTPlatformColor *borderBottomColor = _borderBottomColor;
 
   if (_borderBlockColor) {
     borderTopColor = _borderBlockColor;
@@ -1244,9 +1244,9 @@ static CGFloat RCTDefaultIfNegativeTo(CGFloat defaultValue, CGFloat x)
   // correctly clip the subviews.
 
 #if !TARGET_OS_OSX // [macOS]
-  RCTUIColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
+  RCTPlatformColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
 #else // [macOS
-  RCTUIColor *backgroundColor = _backgroundColor;
+  RCTPlatformColor *backgroundColor = _backgroundColor;
 #endif // macOS]
 
 #if TARGET_OS_OSX // [macOS
@@ -1396,9 +1396,9 @@ static void RCTUpdateHoverStyleForView(RCTView *view)
 
 #pragma mark Border Color
 
-// macOS RCTUIColor
+// macOS RCTPlatformColor
 #define setBorderColor(side)                       \
-  -(void)setBorder##side##Color : (RCTUIColor *)color \
+  -(void)setBorder##side##Color : (RCTPlatformColor *)color \
   {                                                \
     if ([_border##side##Color isEqual:color]) {    \
       return;                                      \

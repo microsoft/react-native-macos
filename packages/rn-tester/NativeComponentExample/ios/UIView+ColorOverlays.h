@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setBackgroundColorWithColorString:(NSString *)colorString;
 - (void)addColorOverlays:(const NSArray *)overlayColors;
 - (void)removeOverlays;
-+ (RCTUIColor *)RCTUIColorFromHexString:(const std::string)hexString; // [macOS]
++ (RCTPlatformColor *)RCTUIColorFromHexString:(const std::string)hexString; // [macOS]
 
 @end
 

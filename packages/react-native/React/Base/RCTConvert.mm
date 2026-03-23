@@ -976,10 +976,10 @@ static NSDictionary<NSString *, NSDictionary *> *RCTSemanticColorsMap(void)
 /** Returns a UIColor based on a semantic color name.
  *  Returns nil if the semantic color name is invalid.
  */
-static RCTUIColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
+static RCTPlatformColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
 {
   NSDictionary<NSString *, NSDictionary *> *colorMap = RCTSemanticColorsMap();
-  RCTUIColor *color = nil;
+  RCTPlatformColor *color = nil;
   NSDictionary<NSString *, id> *colorInfo = colorMap[semanticColorName];
   if (colorInfo) {
     NSString *semanticColorSelector = colorInfo[RCTSelector];
@@ -987,7 +987,7 @@ static RCTUIColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
       semanticColorSelector = semanticColorName;
     }
     SEL selector = NSSelectorFromString(semanticColorSelector);
-    if (![RCTUIColor respondsToSelector:selector]) {
+    if (![RCTPlatformColor respondsToSelector:selector]) {
       NSNumber *fallbackRGB = colorInfo[RCTFallbackARGB];
       if (fallbackRGB != nil) {
         RCTAssert([fallbackRGB isKindOfClass:[NSNumber class]], @"fallback ARGB is not a number");
@@ -996,12 +996,12 @@ static RCTUIColor *RCTColorFromSemanticColorName(NSString *semanticColorName)
       semanticColorSelector = colorInfo[RCTFallback];
       selector = NSSelectorFromString(semanticColorSelector);
     }
-    RCTAssert ([RCTUIColor respondsToSelector:selector], @"RCTUIColor does not respond to a semantic color selector.");
-    Class klass = [RCTUIColor class];
+    RCTAssert ([RCTPlatformColor respondsToSelector:selector], @"RCTPlatformColor does not respond to a semantic color selector.");
+    Class klass = [RCTPlatformColor class];
     IMP imp = [klass methodForSelector:selector];
     id (*getSemanticColorObject)(id, SEL) = (id(*)(id, SEL))imp;
     id colorObject = getSemanticColorObject(klass, selector);
-    if ([colorObject isKindOfClass:[RCTUIColor class]]) {
+    if ([colorObject isKindOfClass:[RCTPlatformColor class]]) {
       color = colorObject;
     } else if ([colorObject isKindOfClass:[NSArray class]]) {
       NSArray *colors = colorObject;
@@ -1048,21 +1048,21 @@ void RCTSetDefaultColorSpace(RCTColorSpace colorSpace)
   _defaultColorSpace = colorSpace;
 }
 
-+ (RCTUIColor *)UIColorWithRed:(CGFloat)red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha // [macOS]
++ (RCTPlatformColor *)UIColorWithRed:(CGFloat)red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha // [macOS]
 {
   RCTColorSpace space = RCTGetDefaultColorSpace();
   return [self UIColorWithRed:red green:green blue:blue alpha:alpha andColorSpace:space];
 }
-+ (RCTUIColor *)UIColorWithRed:(CGFloat)red // [macOS]
++ (RCTPlatformColor *)UIColorWithRed:(CGFloat)red // [macOS]
                         green:(CGFloat)green
                           blue:(CGFloat)blue
                          alpha:(CGFloat)alpha
                  andColorSpace:(RCTColorSpace)colorSpace
 {
   if (colorSpace == RCTColorSpaceDisplayP3) {
-    return [RCTUIColor colorWithDisplayP3Red:red green:green blue:blue alpha:alpha]; // [macOS]
+    return [RCTPlatformColor colorWithDisplayP3Red:red green:green blue:blue alpha:alpha]; // [macOS]
   }
-  return [RCTUIColor colorWithRed:red green:green blue:blue alpha:alpha]; // [macOS]
+  return [RCTPlatformColor colorWithRed:red green:green blue:blue alpha:alpha]; // [macOS]
 }
 
 + (RCTColorSpace)RCTColorSpaceFromString:(NSString *)colorSpace
@@ -1102,7 +1102,7 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
 #endif // TARGET_OS_OSX
 // macOS]
 
-+ (RCTUIColor *)UIColor:(id)json // [macOS]
++ (RCTPlatformColor *)UIColor:(id)json // [macOS]
 {
   if (!json) {
     return nil;
@@ -1135,7 +1135,7 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
     } else if ((value = [dictionary objectForKey:@"semantic"])) {
       if ([value isKindOfClass:[NSString class]]) {
         NSString *semanticName = value;
-        RCTUIColor *color = [RCTUIColor colorNamed:semanticName]; // [macOS]
+        RCTPlatformColor *color = [RCTPlatformColor colorNamed:semanticName]; // [macOS]
         if (color != nil) {
           return color;
         }
@@ -1148,7 +1148,7 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
         return color;
       } else if ([value isKindOfClass:[NSArray class]]) {
         for (id name in value) {
-          RCTUIColor *color = [RCTUIColor colorNamed:name]; // [macOS]
+          RCTPlatformColor *color = [RCTPlatformColor colorNamed:name]; // [macOS]
           if (color != nil) {
             return color;
           }
@@ -1169,13 +1169,13 @@ static NSColor *RCTColorWithSystemEffect(NSColor* color, NSString *systemEffectS
     } else if ((value = [dictionary objectForKey:@"dynamic"])) {
       NSDictionary *appearances = value;
       id light = [appearances objectForKey:@"light"];
-      RCTUIColor *lightColor = [RCTConvert UIColor:light];
+      RCTPlatformColor *lightColor = [RCTConvert UIColor:light];
       id dark = [appearances objectForKey:@"dark"];
-      RCTUIColor *darkColor = [RCTConvert UIColor:dark]; // [macOS]
+      RCTPlatformColor *darkColor = [RCTConvert UIColor:dark]; // [macOS]
       id highContrastLight = [appearances objectForKey:@"highContrastLight"];
-      RCTUIColor *highContrastLightColor = [RCTConvert UIColor:highContrastLight]; // [macOS]
+      RCTPlatformColor *highContrastLightColor = [RCTConvert UIColor:highContrastLight]; // [macOS]
       id highContrastDark = [appearances objectForKey:@"highContrastDark"];
-      RCTUIColor *highContrastDarkColor = [RCTConvert UIColor:highContrastDark]; // [macOS]
+      RCTPlatformColor *highContrastDarkColor = [RCTConvert UIColor:highContrastDark]; // [macOS]
       if (lightColor != nil && darkColor != nil) {
 #if !TARGET_OS_OSX // [macOS]
         UIColor *color = [UIColor colorWithDynamicProvider:^UIColor *_Nonnull(UITraitCollection *_Nonnull collection) {
@@ -1304,7 +1304,7 @@ NSArray *RCTConvertArrayValue(SEL type, id json)
 
 RCT_ARRAY_CONVERTER(NSURL)
 RCT_ARRAY_CONVERTER(RCTFileURL)
-RCT_ARRAY_CONVERTER(RCTUIColor) // [macOS]
+RCT_ARRAY_CONVERTER(RCTPlatformColor) // [macOS]
 
 /**
  * This macro is used for creating converter functions for directly

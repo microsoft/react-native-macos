@@ -120,14 +120,14 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
 }
 
 // Required for the remoteNotificationsRegistered event.
-- (void)application:(__unused RCTUIApplication *)application
+- (void)application:(__unused RCTPlatformApplication *)application
     didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
 {
   [RCTPushNotificationManager didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
 }
 
 // Required for the remoteNotificationRegistrationError event.
-- (void)application:(__unused RCTUIApplication *)application
+- (void)application:(__unused RCTPlatformApplication *)application
     didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
 {
   [RCTPushNotificationManager didFailToRegisterForRemoteNotificationsWithError:error];

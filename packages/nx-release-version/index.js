@@ -39,7 +39,7 @@ async function runSetVersion() {
       'react',
       'modules',
       'systeminfo',
-      'ReactNativeVersion.java',
+      'ReactNativeVersion.kt',
     ),
     path.join(REPO_ROOT,
       'packages',
@@ -63,6 +63,16 @@ async function runSetVersion() {
       'Libraries',
       'Core',
       'ReactNativeVersion.js',
+    ),
+    path.join(
+      REPO_ROOT,
+      'packages',
+      'react-native',
+      'scripts',
+      'codegen',
+      '__tests__',
+      '__snapshots__',
+      'generate-artifacts-executor-test.js.snap',
     ),
   ];
 }

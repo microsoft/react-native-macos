@@ -201,7 +201,7 @@ static CGPathRef RCTPathCreateOuterOutline(BOOL drawToEdge, CGRect rect, RCTCorn
 }
 
 static RCTUIGraphicsImageRenderer * // [macOS]
-RCTMakeUIGraphicsImageRenderer(CGSize size, RCTUIColor *backgroundColor, BOOL hasCornerRadii, BOOL drawToEdge) // [macOS]
+RCTMakeUIGraphicsImageRenderer(CGSize size, RCTPlatformColor *backgroundColor, BOOL hasCornerRadii, BOOL drawToEdge) // [macOS]
 {
   const CGFloat alpha = CGColorGetAlpha(backgroundColor.CGColor);
   const BOOL opaque = (drawToEdge || !hasCornerRadii) && alpha == 1.0;
@@ -216,7 +216,7 @@ static RCTUIImage *RCTGetSolidBorderImage( // [macOS]
     CGSize viewSize,
     UIEdgeInsets borderInsets,
     RCTBorderColors borderColors,
-    RCTUIColor *backgroundColor, // [macOS]
+    RCTPlatformColor *backgroundColor, // [macOS]
     BOOL drawToEdge)
 {
   const BOOL hasCornerRadii = RCTCornerRadiiAreAboveThreshold(cornerRadii);
@@ -338,7 +338,7 @@ static RCTUIImage *RCTGetSolidBorderImage( // [macOS]
         }
       }
 
-      RCTUIColor *currentColor = nil; // [macOS]
+      RCTPlatformColor *currentColor = nil; // [macOS]
 
       // RIGHT
       if (borderInsets.right > 0) {
@@ -488,7 +488,7 @@ static RCTUIImage *RCTGetDashedOrDottedBorderImage( // [macOS]
     CGSize viewSize,
     UIEdgeInsets borderInsets,
     RCTBorderColors borderColors,
-    RCTUIColor *backgroundColor, // [macOS]
+    RCTPlatformColor *backgroundColor, // [macOS]
     BOOL drawToEdge)
 {
   NSCParameterAssert(borderStyle == RCTBorderStyleDashed || borderStyle == RCTBorderStyleDotted);
@@ -565,7 +565,7 @@ static RCTUIImage *RCTGetDashedOrDottedBorderImage( // [macOS]
     CGContextSetLineWidth(context, lineWidth);
     CGContextSetLineDash(context, 0, dashLengths, sizeof(dashLengths) / sizeof(*dashLengths));
 
-    CGContextSetStrokeColorWithColor(context, [RCTUIColor yellowColor].CGColor); // [macOS]
+    CGContextSetStrokeColorWithColor(context, [RCTPlatformColor yellowColor].CGColor); // [macOS]
 
     CGContextAddPath(context, path);
     CGContextSetStrokeColorWithColor(context, borderColors.top.CGColor);
@@ -581,7 +581,7 @@ RCTUIImage *RCTGetBorderImage( // [macOS]
     RCTCornerRadii cornerRadii,
     UIEdgeInsets borderInsets,
     RCTBorderColors borderColors,
-    RCTUIColor *backgroundColor, // [macOS]
+    RCTPlatformColor *backgroundColor, // [macOS]
     BOOL drawToEdge)
 {
   switch (borderStyle) {

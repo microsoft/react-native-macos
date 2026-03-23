@@ -5,9 +5,9 @@
  * @format
  */
 
-import chalk from 'chalk';
 import {execSync} from 'child_process';
 import * as findUp from 'find-up';
+import {styleText} from 'node:util';
 import * as fs from 'fs';
 import * as npmFetch from 'npm-registry-fetch';
 import prompts from 'prompts';
@@ -60,7 +60,9 @@ function getNpmRegistryUrl(): string {
 }
 
 function getReactNativeAppName() {
-  console.log(`Reading ${chalk.cyan('application name')} from package.json…`);
+  console.log(
+    `Reading ${styleText('cyan', 'application name')} from package.json…`,
+  );
   const cwd = process.cwd();
   const pkgJsonPath = findUp.sync('package.json', {cwd});
   if (!pkgJsonPath) {
@@ -73,7 +75,9 @@ function getReactNativeAppName() {
   if (!name) {
     const appJsonPath = findUp.sync('app.json', {cwd});
     if (appJsonPath) {
-      console.log(`Reading ${chalk.cyan('application name')} from app.json…`);
+      console.log(
+        `Reading ${styleText('cyan', 'application name')} from app.json…`,
+      );
       name = JSON.parse(fs.readFileSync(appJsonPath, 'utf8')).name;
     }
   }
@@ -84,7 +88,9 @@ function getReactNativeAppName() {
 }
 
 function getPackageVersion(packageName: string, exitOnError: boolean = true) {
-  console.log(`Reading ${chalk.cyan(packageName)} version from node_modules…`);
+  console.log(
+    `Reading ${styleText('cyan', packageName)} version from node_modules…`,
+  );
 
   try {
     const pkgJsonPath = require.resolve(`${packageName}/package.json`, {
@@ -112,8 +118,8 @@ function getReactNativeMacOSVersion() {
 }
 
 function errorOutOnUnsupportedVersionOfReactNative(rnVersion: string): never {
-  const version = chalk.cyan(rnVersion);
-  const supportedVersions = chalk.cyan('>=0.60');
+  const version = styleText('cyan', rnVersion);
+  const supportedVersions = styleText('cyan', '>=0.60');
   printError(
     `Unsupported version of ${RNPKG}: ${version}\n${MACOSPKG} supports ${RNPKG} versions ${supportedVersions}`,
   );
@@ -208,8 +214,8 @@ function isProjectUsingYarn(cwd: string) {
  * Outputs decorated version of the package for the CLI
  */
 function printPkg(name: string, version?: string) {
-  return `${chalk.yellow(name)}${
-    version ? `${chalk.grey('@')}${chalk.cyan(version)}` : ''
+  return `${styleText('yellow', name)}${
+    version ? `${styleText('gray', '@')}${styleText('cyan', version)}` : ''
   }`;
 }
 
@@ -217,7 +223,43 @@ function printPkg(name: string, version?: string) {
  * Prints decorated version of console.error to the CLI
  */
 function printError(message: string, ...optionalParams: any[]) {
-  console.error(chalk.red(chalk.bold(message)), ...optionalParams);
+  console.error(styleText(['red', 'bold'], message), ...optionalParams);
+}
+
+/**
+ * Checks if the resolved react-native-macos version's peer dependency on
+ * react-native is compatible with the installed version. Warns if not.
+ */
+async function validatePeerDependencies(
+  macosVersion: string,
+  installedRNVersion: string,
+): Promise<void> {
+  try {
+    const npmResponse = await npmFetch.json(`${MACOSPKG}/${macosVersion}`, {
+      registry: getNpmRegistryUrl(),
+    });
+    const peerDeps = (npmResponse as any).peerDependencies;
+    if (peerDeps && peerDeps[RNPKG]) {
+      const requiredRN = peerDeps[RNPKG];
+      if (!semver.satisfies(installedRNVersion, requiredRN)) {
+        console.warn(
+          styleText(
+            'yellow',
+            `\n${styleText('bold', 'Warning:')} ${printPkg(
+              MACOSPKG,
+              macosVersion,
+            )} requires ${printPkg(RNPKG, requiredRN)}, ` +
+              `but you have ${printPkg(
+                RNPKG,
+                installedRNVersion,
+              )} installed.\n`,
+          ),
+        );
+      }
+    }
+  } catch {
+    // Non-fatal — if we can't check, proceed anyway
+  }
 }
 
 (async () => {
@@ -243,29 +285,38 @@ function printError(message: string, ...optionalParams: any[]) {
 
     if (!argv.version) {
       console.log(
-        `Latest matching version of ${chalk.green(MACOSPKG)} for ${printPkg(
-          RNPKG,
-          reactNativeVersion,
-        )} is ${printPkg(MACOSPKG, reactNativeMacOSResolvedVersion)}.`,
+        `Latest matching version of ${styleText(
+          'green',
+          MACOSPKG,
+        )} for ${printPkg(RNPKG, reactNativeVersion)} is ${printPkg(
+          MACOSPKG,
+          reactNativeMacOSResolvedVersion,
+        )}.`,
       );
 
       if (semver.prerelease(reactNativeMacOSResolvedVersion)) {
         console.warn(
           `
-${printPkg(MACOSPKG, reactNativeMacOSResolvedVersion)} is a ${chalk.bgYellow(
+${printPkg(MACOSPKG, reactNativeMacOSResolvedVersion)} is a ${styleText(
+            'bgYellow',
             'pre-release',
           )} version.
 The latest supported version is ${printPkg(
             MACOSPKG,
             reactNativeMacOSLatestVersion,
           )}.
-You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
+You can either downgrade your version of ${styleText(
+            'yellow',
+            RNPKG,
+          )} to ${styleText(
+            'cyan',
             getMatchingReactNativeSemVerForReactNativeMacOSVersion(
               reactNativeMacOSLatestVersion,
             ),
-          )}, or continue with a ${chalk.bgYellow(
+          )}, or continue with a ${styleText(
+            'bgYellow',
             'pre-release',
-          )} version of ${chalk.yellow(MACOSPKG)}.
+          )} version of ${styleText('yellow', MACOSPKG)}.
 `,
         );
 
@@ -288,6 +339,11 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
       }
     }
 
+    await validatePeerDependencies(
+      reactNativeMacOSResolvedVersion,
+      reactNativeVersion,
+    );
+
     const pkgLatest = printPkg(MACOSPKG, version);
 
     if (reactNativeMacOSResolvedVersion !== reactNativeMacOSVersion) {
@@ -298,15 +354,44 @@ You can either downgrade your version of ${chalk.yellow(RNPKG)} to ${chalk.cyan(
       );
 
       const pkgmgr = isProjectUsingYarn(process.cwd())
-        ? `yarn add${verbose ? '' : ' --silent'}`
-        : `npm install --save${verbose ? '' : ' --silent'}`;
+        ? 'yarn add'
+        : 'npm install --save';
       const execOptions = verbose ? {stdio: 'inherit' as const} : {};
-      execSync(`${pkgmgr} "${MACOSPKG}@${version}"`, execOptions);
 
-      console.log(`${pkgLatest} ${chalk.green('successfully installed!')}`);
+      try {
+        execSync(`${pkgmgr} "${MACOSPKG}@${version}"`, execOptions);
+      } catch (e: any) {
+        // When not verbose, execSync captures output in the error object
+        if (!verbose) {
+          if (e.stderr) {
+            console.error(e.stderr.toString());
+          }
+          if (e.stdout) {
+            console.log(e.stdout.toString());
+          }
+        }
+        printError(
+          `Failed to install ${printPkg(MACOSPKG, version)}.\n` +
+            `This can happen if there is a peer dependency mismatch between ` +
+            `${RNPKG} and ${MACOSPKG}.\n` +
+            `Check that your installed version of ${styleText(
+              'yellow',
+              RNPKG,
+            )} is compatible ` +
+            `with ${printPkg(MACOSPKG, version)}.`,
+        );
+        process.exit(EXITCODE_UNKNOWN_ERROR);
+      }
+
+      console.log(
+        `${pkgLatest} ${styleText('green', 'successfully installed!')}`,
+      );
     } else {
       console.log(
-        `${chalk.green('Latest version')} of ${pkgLatest} already installed.`,
+        `${styleText(
+          'green',
+          'Latest version',
+        )} of ${pkgLatest} already installed.`,
       );
     }
 

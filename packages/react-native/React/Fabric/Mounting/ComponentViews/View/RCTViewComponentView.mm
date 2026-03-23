@@ -45,7 +45,7 @@ using namespace facebook::react;
 const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
 @implementation RCTViewComponentView {
-  RCTUIColor *_backgroundColor; // [macOS]
+  RCTPlatformColor *_backgroundColor; // [macOS]
   CALayer *_backgroundColorLayer;
   __weak CALayer *_borderLayer;
   CALayer *_outlineLayer;
@@ -131,12 +131,12 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   return CGRectContainsPoint(hitFrame, point);
 }
 
-- (RCTUIColor *)backgroundColor // [macOS]
+- (RCTPlatformColor *)backgroundColor // [macOS]
 {
   return _backgroundColor;
 }
 
-- (void)setBackgroundColor:(RCTUIColor *)backgroundColor // [macOS]
+- (void)setBackgroundColor:(RCTPlatformColor *)backgroundColor // [macOS]
 {
   _backgroundColor = backgroundColor;
 }
@@ -308,7 +308,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   // `shadowColor`
   if (oldViewProps.shadowColor != newViewProps.shadowColor) {
-    RCTUIColor *shadowColor = RCTUIColorFromSharedColor(newViewProps.shadowColor); // [macOS]
+    RCTPlatformColor *shadowColor = RCTUIColorFromSharedColor(newViewProps.shadowColor); // [macOS]
     self.layer.shadowColor = shadowColor.CGColor;
     needsInvalidateLayer = YES;
   }
@@ -872,7 +872,7 @@ static void RCTAddContourEffectToLayer(
     const RCTBorderStyle &contourStyle)
 {
   RCTUIImage *image = RCTGetBorderImage( // [macOS]
-      contourStyle, layer.bounds.size, cornerRadii, contourInsets, contourColors, [RCTUIColor clearColor], NO); // [macOS]
+      contourStyle, layer.bounds.size, cornerRadii, contourInsets, contourColors, [RCTPlatformColor clearColor], NO); // [macOS]
 
   if (image == nil) {
     layer.contents = nil;
@@ -1175,9 +1175,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
   // background color
 #if !TARGET_OS_OSX // [macOS]
-  RCTUIColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
+  RCTPlatformColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
 #else // [macOS
-  RCTUIColor *backgroundColor = _backgroundColor;
+  RCTPlatformColor *backgroundColor = _backgroundColor;
 #endif // macOS]
   // The reason we sometimes do not set self.layer's backgroundColor is because
   // we want to support non-uniform border radii, which apple does not natively
@@ -1207,7 +1207,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     _borderLayer = nil;
 
     layer.borderWidth = (CGFloat)borderMetrics.borderWidths.left;
-    RCTUIColor *borderColor = RCTUIColorFromSharedColor(borderMetrics.borderColors.left); // [macOS]
+    RCTPlatformColor *borderColor = RCTUIColorFromSharedColor(borderMetrics.borderColors.left); // [macOS]
     layer.borderColor = borderColor.CGColor;
     layer.cornerRadius = (CGFloat)borderMetrics.borderRadii.topLeft.horizontal;
 
@@ -1254,11 +1254,11 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
         layer.bounds, -_props->outlineOffset - _props->outlineWidth, -_props->outlineOffset - _props->outlineWidth);
 
     if (borderMetrics.borderRadii.isUniform() && borderMetrics.borderRadii.topLeft.horizontal == 0) {
-      RCTUIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
+      RCTPlatformColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
       _outlineLayer.borderWidth = _props->outlineWidth;
       _outlineLayer.borderColor = outlineColor.CGColor;
     } else {
-      RCTUIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
+      RCTPlatformColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
 
       RCTAddContourEffectToLayer(
           _outlineLayer,
@@ -1289,7 +1289,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     _filterLayer = [CALayer layer];
     [self shapeLayerToMatchView:_filterLayer borderMetrics:borderMetrics];
     _filterLayer.compositingFilter = @"multiplyBlendMode";
-    _filterLayer.backgroundColor = [RCTUIColor colorWithRed:multiplicativeBrightness // [macOS]
+    _filterLayer.backgroundColor = [RCTPlatformColor colorWithRed:multiplicativeBrightness // [macOS]
                                                       green:multiplicativeBrightness
                                                        blue:multiplicativeBrightness
                                                       alpha:self.layer.opacity]

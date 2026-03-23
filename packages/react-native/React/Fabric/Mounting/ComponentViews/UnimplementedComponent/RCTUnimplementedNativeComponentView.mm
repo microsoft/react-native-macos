@@ -24,14 +24,14 @@ using namespace facebook::react;
 
     CGRect bounds = self.bounds;
     _label = [[RCTUILabel alloc] initWithFrame:bounds];  // [macOS]
-    _label.backgroundColor = [RCTUIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.3];
+    _label.backgroundColor = [RCTPlatformColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.3];
 #if !TARGET_OS_OSX // [macOS]
     _label.layoutMargins = UIEdgeInsetsMake(12, 12, 12, 12);
 #endif // [macOS]
     _label.lineBreakMode = NSLineBreakByWordWrapping;
     _label.numberOfLines = 0;
     _label.textAlignment = NSTextAlignmentCenter;
-    _label.textColor = [RCTUIColor whiteColor]; // [macOS]
+    _label.textColor = [RCTPlatformColor whiteColor]; // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
     self.contentView = _label;

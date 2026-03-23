@@ -56,7 +56,7 @@ jobs:
       - name: Read publish tag from nx.json
         id: config
         run: |
-          PUBLISH_TAG=$(jq -r '.release.version.generatorOptions.currentVersionResolverMetadata.tag' nx.json)
+          PUBLISH_TAG=$(jq -r '.release.version.versionActionsOptions.currentVersionResolverMetadata.tag' nx.json)
           echo "publishTag=$PUBLISH_TAG" >> $GITHUB_OUTPUT
           echo "Using publish tag from nx.json: $PUBLISH_TAG"
       - name: Configure git
@@ -67,6 +67,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Verify release config
+        id: prepublish
         run: |
           node .ado/scripts/prepublish-check.mjs --verbose --skip-auth --tag ${{ steps.config.outputs.publishTag }}
 
@@ -74,6 +75,9 @@ jobs:
         run: |
           echo "Target branch: ${{ github.base_ref }}"
           yarn nx release --dry-run --verbose
+          
+          # Show what additional tags would be applied
+          node .ado/scripts/apply-additional-tags.mjs --tags "${{ steps.prepublish.outputs.additionalTags }}" --dry-run
   
   yarn-constraints:
     name: "Check Yarn Constraints"
@@ -128,13 +132,11 @@ jobs:
     permissions: {}
     uses: ./.github/workflows/microsoft-build-rntester.yml
 
-  # https://github.com/microsoft/react-native-macos/issues/2344
-  # Disable these tests because verdaccio hangs
-  # test-react-native-macos-init:
-  #   name: "Test react-native-macos init"
-  #   permissions: {}
-  #   if: ${{ endsWith(github.base_ref, '-stable') }}
-  #   uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
+  test-react-native-macos-init:
+    name: "Test react-native-macos init"
+    permissions: {}
+    if: ${{ endsWith(github.base_ref, '-stable') }}
+    uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
 
   # https://github.com/microsoft/react-native-macos/issues/2344
   # Disable these tests because verdaccio hangs
@@ -154,7 +156,7 @@ jobs:
       - yarn-constraints
       - javascript-tests
       - build-rntester
-      # - test-react-native-macos-init
+      - test-react-native-macos-init
       # - react-native-test-app-integration
     steps:
       - name: All required jobs passed

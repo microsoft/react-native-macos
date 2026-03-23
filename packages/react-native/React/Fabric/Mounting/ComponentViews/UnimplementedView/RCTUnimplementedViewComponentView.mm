@@ -30,11 +30,11 @@ using namespace facebook::react;
     _props = UnimplementedViewShadowNode::defaultSharedProps();
 
     _label = [[RCTUILabel alloc] initWithFrame:self.bounds];
-    _label.backgroundColor = [RCTUIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.3];
+    _label.backgroundColor = [RCTPlatformColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.3];
     _label.lineBreakMode = NSLineBreakByCharWrapping;
     _label.numberOfLines = 0;
     _label.textAlignment = NSTextAlignmentCenter;
-    _label.textColor = [RCTUIColor whiteColor];
+    _label.textColor = [RCTPlatformColor whiteColor];
 #if !TARGET_OS_OSX // [macOS]
     _label.allowsDefaultTighteningForTruncation = YES;
     _label.adjustsFontSizeToFitWidth = YES;

@@ -18,7 +18,8 @@
  * (which depends on the `react-native` package).
  */
 const PACKAGE_CONSTRAINTS = {
-  '@react-native/monorepo': {
+  // [macOS] Use fork package names instead of upstream names
+  '@react-native-macos/monorepo': {
     disallowed: [
       {
         property: 'dependencies',
@@ -27,7 +28,7 @@ const PACKAGE_CONSTRAINTS = {
       },
     ],
   },
-  'react-native': {
+  'react-native-macos': {
     disallowed: [
       {
         property: 'devDependencies',

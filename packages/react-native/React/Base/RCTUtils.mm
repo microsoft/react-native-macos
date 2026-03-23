@@ -633,7 +633,7 @@ BOOL RCTRunningInAppExtension(void)
 }
 #endif // [macOS]
 
-RCTUIApplication *__nullable RCTSharedApplication(void) // [macOS]
+RCTPlatformApplication *__nullable RCTSharedApplication(void) // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
   if (RCTRunningInAppExtension()) {

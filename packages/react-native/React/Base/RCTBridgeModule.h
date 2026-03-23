@@ -63,6 +63,18 @@ RCT_EXTERN_C_END
  */
 @protocol RCTBridgeModule <NSObject>
 
+// [macOS
+#if RCT_MODULE_NO_SELF_LOAD
+#define RCT_EXPORT_MODULE_LOAD
+#else
+#define RCT_EXPORT_MODULE_LOAD              \
+  +(void)load                               \
+  {                                         \
+    RCTRegisterModule(self);                \
+  }
+#endif
+// macOS]
+
 /**
  * Place this macro in your class implementation to automatically register
  * your module with the bridge when it loads. The optional js_name argument
@@ -75,10 +87,7 @@ RCT_EXTERN_C_END
   {                                         \
     return @ #js_name;                      \
   }                                         \
-  +(void)load                               \
-  {                                         \
-    RCTRegisterModule(self);                \
-  }
+RCT_EXPORT_MODULE_LOAD // [macOS]
 
 /**
  * Same as RCT_EXPORT_MODULE, but uses __attribute__((constructor)) for module
@@ -91,10 +100,13 @@ RCT_EXTERN_C_END
   {                                                                                 \
     return @ #js_name;                                                              \
   }                                                                                 \
+  _Pragma("clang diagnostic push")                                                  \
+  _Pragma("clang diagnostic ignored \"-Wglobal-constructors\"")                     \
   __attribute__((constructor)) static void RCT_CONCAT(initialize_, objc_name)(void) \
   {                                                                                 \
     RCTRegisterModule([objc_name class]);                                           \
-  }
+  }                                                                                 \
+  _Pragma("clang diagnostic pop")
 
 // Implemented by RCT_EXPORT_MODULE
 + (NSString *)moduleName;

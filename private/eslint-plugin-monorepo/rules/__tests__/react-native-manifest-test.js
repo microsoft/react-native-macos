@@ -36,8 +36,9 @@ ruleTester.run('react-native-manifest', rule, {
       }),
     },
     {
+      // [macOS] Use fork package names
       code: JSON.stringify({
-        name: '@react-native/monorepo',
+        name: '@react-native-macos/monorepo',
         devDependencies: {
           dependencyB: '1.0.0',
         },
@@ -45,7 +46,7 @@ ruleTester.run('react-native-manifest', rule, {
     },
     {
       code: JSON.stringify({
-        name: 'react-native',
+        name: 'react-native-macos',
         dependencies: {
           dependencyA: '1.0.0',
         },
@@ -54,8 +55,9 @@ ruleTester.run('react-native-manifest', rule, {
   ],
   invalid: [
     {
+      // [macOS] Use fork package names
       code: JSON.stringify({
-        name: '@react-native/monorepo',
+        name: '@react-native-macos/monorepo',
         dependencies: {
           dependencyA: '1.0.0',
         },
@@ -73,7 +75,7 @@ ruleTester.run('react-native-manifest', rule, {
     },
     {
       code: JSON.stringify({
-        name: 'react-native',
+        name: 'react-native-macos',
         devDependencies: {
           dependencyA: '1.0.0',
         },

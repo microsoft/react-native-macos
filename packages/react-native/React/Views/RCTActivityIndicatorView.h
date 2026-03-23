@@ -12,7 +12,7 @@
 #if TARGET_OS_OSX // [macOS
 @property (nonatomic, assign) UIActivityIndicatorViewStyle activityIndicatorViewStyle;
 @property (nonatomic, assign) BOOL hidesWhenStopped;
-@property (nullable, readwrite, nonatomic, strong) RCTUIColor *color; // [macOS]
+@property (nullable, readwrite, nonatomic, strong) RCTPlatformColor *color; // [macOS]
 @property (nonatomic, readonly, getter=isAnimating) BOOL animating;
 - (void)startAnimating;
 - (void)stopAnimating;

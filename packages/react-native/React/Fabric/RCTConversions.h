@@ -39,7 +39,7 @@ inline std::string RCTStringFromNSString(NSString *string)
   return std::string{string.UTF8String ?: ""};
 }
 
-inline RCTUIColor *_Nullable RCTUIColorFromSharedColor(const facebook::react::SharedColor &sharedColor) // [macOS]
+inline RCTPlatformColor *_Nullable RCTUIColorFromSharedColor(const facebook::react::SharedColor &sharedColor) // [macOS]
 {
   return RCTPlatformColorFromColor(*sharedColor);
 }

@@ -46,7 +46,7 @@
   messageLabel.numberOfLines = 0;
 #endif // [macOS]
   messageLabel.font = [UIFont boldSystemFontOfSize:16];
-  messageLabel.textColor = [RCTUIColor blackColor]; // [macOS]
+  messageLabel.textColor = [RCTPlatformColor blackColor]; // [macOS]
   messageLabel.translatesAutoresizingMaskIntoConstraints = NO;
   RCTUIView *messageContainer = [[RCTUIView alloc] init]; // [macOS]
   [messageContainer addSubview:messageLabel];

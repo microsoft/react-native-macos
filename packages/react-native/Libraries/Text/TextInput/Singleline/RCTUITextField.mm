@@ -29,8 +29,8 @@
 @property (nonatomic, getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled;
 @property (nonatomic, getter=isContinuousSpellCheckingEnabled) BOOL continuousSpellCheckingEnabled;
 @property (nonatomic, getter=isGrammarCheckingEnabled) BOOL grammarCheckingEnabled;
-@property (nonatomic, strong, nullable) RCTUIColor *selectionColor;
-@property (nonatomic, strong, nullable) RCTUIColor *insertionPointColor;
+@property (nonatomic, strong, nullable) RCTPlatformColor *selectionColor;
+@property (nonatomic, strong, nullable) RCTPlatformColor *insertionPointColor;
 
 @end
 
@@ -298,12 +298,12 @@
   return ((RCTUITextFieldCell*)self.cell).isGrammarCheckingEnabled;
 }
 
-- (void)setSelectionColor:(RCTUIColor *)selectionColor
+- (void)setSelectionColor:(RCTPlatformColor *)selectionColor
 {
   ((RCTUITextFieldCell*)self.cell).selectionColor = selectionColor;
 }
 
-- (RCTUIColor*)selectionColor
+- (RCTPlatformColor*)selectionColor
 {
   return ((RCTUITextFieldCell*)self.cell).selectionColor;
 }
@@ -313,7 +313,7 @@
     ((RCTUITextFieldCell*)self.cell).insertionPointColor = cursorColor;
 }
 
-- (RCTUIColor*)cursorColor
+- (RCTPlatformColor*)cursorColor
 {
   return ((RCTUITextFieldCell*)self.cell).insertionPointColor;
 }
@@ -361,7 +361,7 @@
 #endif
 } // macOS]
 
-- (void)setPlaceholderColor:(RCTUIColor *)placeholderColor // [macOS]
+- (void)setPlaceholderColor:(RCTPlatformColor *)placeholderColor // [macOS]
 {
   _placeholderColor = placeholderColor;
   [self _updatePlaceholder];
@@ -467,7 +467,7 @@
   NSMutableDictionary<NSAttributedStringKey, id> *textAttributes =
       [_defaultTextAttributes mutableCopy] ?: [NSMutableDictionary new];
 
-    [textAttributes setValue:self.placeholderColor ?: [RCTUIColor placeholderTextColor]
+    [textAttributes setValue:self.placeholderColor ?: [RCTPlatformColor placeholderTextColor]
                       forKey:NSForegroundColorAttributeName]; // [macOS]
 
   return textAttributes;

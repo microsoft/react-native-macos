@@ -73,7 +73,7 @@ static vm_size_t RCTGetResidentMemorySize(void)
 #if __has_include(<React/RCTDevMenu.h>)
 @property (nonatomic, strong, readonly) RCTDevMenuItem *devMenuItem;
 #endif
-@property (nonatomic, strong, readonly) RCTUIPanGestureRecognizer *gestureRecognizer; // [macOS]
+@property (nonatomic, strong, readonly) RCTPlatformPanGestureRecognizer *gestureRecognizer; // [macOS]
 @property (nonatomic, strong, readonly) RCTPlatformView *container; // [macOS]
 #if TARGET_OS_OSX // [macOS
 @property (nonatomic, strong, readonly) NSWindow *containerWindow;
@@ -93,7 +93,7 @@ static vm_size_t RCTGetResidentMemorySize(void)
 #if __has_include(<React/RCTDevMenu.h>)
   RCTDevMenuItem *_devMenuItem;
 #endif
-  RCTUIPanGestureRecognizer *_gestureRecognizer; // [macOS]
+  RCTPlatformPanGestureRecognizer *_gestureRecognizer; // [macOS]
   RCTPlatformView *_container; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
   UITableView *_metrics;
@@ -175,10 +175,10 @@ RCT_EXPORT_MODULE()
 }
 #endif
 
-- (RCTUIPanGestureRecognizer *)gestureRecognizer // [macOS]
+- (RCTPlatformPanGestureRecognizer *)gestureRecognizer // [macOS]
 {
   if (!_gestureRecognizer) {
-    _gestureRecognizer = [[RCTUIPanGestureRecognizer alloc] initWithTarget:self action:@selector(gesture:)];
+    _gestureRecognizer = [[RCTPlatformPanGestureRecognizer alloc] initWithTarget:self action:@selector(gesture:)];
   }
 
   return _gestureRecognizer;
@@ -239,9 +239,9 @@ RCT_EXPORT_MODULE()
 {
   if (!_uiGraph) {
 #if !TARGET_OS_OSX // [macOS]
-    _uiGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(134, 14, 40, 30) color:[RCTUIColor lightGrayColor]];
+    _uiGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(134, 14, 40, 30) color:[RCTPlatformColor lightGrayColor]];
 #else // [macOS
-    _uiGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(175, 14, 46, 30) color:[RCTUIColor lightGrayColor]];
+    _uiGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(175, 14, 46, 30) color:[RCTPlatformColor lightGrayColor]];
     _uiGraph.autoresizingMask = NSViewMinYMargin;
 #endif // macOS]
   }
@@ -252,9 +252,9 @@ RCT_EXPORT_MODULE()
 {
   if (!_jsGraph) {
 #if !TARGET_OS_OSX // [macOS]
-    _jsGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(178, 14, 40, 30) color:[RCTUIColor lightGrayColor]];
+    _jsGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(178, 14, 40, 30) color:[RCTPlatformColor lightGrayColor]];
 #else // [macOS
-    _jsGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(226, 14, 46, 30) color:[RCTUIColor lightGrayColor]];
+    _jsGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(226, 14, 46, 30) color:[RCTPlatformColor lightGrayColor]];
     _jsGraph.autoresizingMask = NSViewMinYMargin;
 #endif // macOS]
   }
@@ -674,7 +674,7 @@ RCT_EXPORT_MODULE()
 #endif // macOS]
 }
 
-- (void)gesture:(RCTUIPanGestureRecognizer *)gestureRecognizer // [macOS]
+- (void)gesture:(RCTPlatformPanGestureRecognizer *)gestureRecognizer // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
   CGPoint translation = [gestureRecognizer translationInView:self.container.superview];

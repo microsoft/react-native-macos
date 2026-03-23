@@ -40,7 +40,7 @@ RCT_CUSTOM_VIEW_PROPERTY(size, UIActivityIndicatorViewStyle, RCTActivityIndicato
     Setting activityIndicatorViewStyle overrides the color, so restore the original color
     after setting the indicator style.
   */
-  RCTUIColor *oldColor = view.color; // [macOS]
+  RCTPlatformColor *oldColor = view.color; // [macOS]
   view.activityIndicatorViewStyle =
       json ? [RCTConvert UIActivityIndicatorViewStyle:json] : defaultView.activityIndicatorViewStyle;
   view.color = oldColor;

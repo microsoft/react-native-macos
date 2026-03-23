@@ -28,7 +28,7 @@
     self.hideVerticalScrollIndicator = NO;
 
     _scrollView = [[RCTUIScrollView alloc] initWithFrame:self.bounds];
-    _scrollView.backgroundColor = [RCTUIColor clearColor];
+    _scrollView.backgroundColor = [RCTPlatformColor clearColor];
     _scrollView.drawsBackground = NO;
     _scrollView.borderType = NSNoBorder;
     _scrollView.hasHorizontalRuler = NO;
