@@ -152,15 +152,14 @@ int32_t ColorFromUIColor(RCTPlatformColor *color) // [macOS]
 #else // [macOS
   // Resolve dynamic/semantic colors against the current effective appearance
   // so that dark mode colors are correctly extracted.
-  NSAppearance *previousAppearance = NSAppearance.currentAppearance;
-  NSAppearance.currentAppearance = [NSApp effectiveAppearance];
-  NSColor *resolvedColor = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
-  if (resolvedColor) {
-    [resolvedColor getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-  } else {
-    [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-  }
-  NSAppearance.currentAppearance = previousAppearance;
+  [[NSApp effectiveAppearance] performAsCurrentDrawingAppearance:^{
+    NSColor *resolvedColor = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+    if (resolvedColor) {
+      [resolvedColor getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+    } else {
+      [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+    }
+  }];
 #endif // macOS]
   return ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
 }
@@ -245,27 +244,27 @@ std::size_t hashFromUIColor(const std::shared_ptr<void> &uiColor)
   // Hash both light and dark appearance colors to properly distinguish
   // dynamic colors that change with appearance.
   RCTPlatformColor *color = (RCTPlatformColor *)unwrapManagedObject(uiColor);
-  int32_t darkColor = 0;
-  int32_t lightColor = 0;
-  NSAppearance *previousAppearance = NSAppearance.currentAppearance;
+  __block int32_t darkColor = 0;
+  __block int32_t lightColor = 0;
 
-  NSAppearance.currentAppearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
-  NSColor *darkResolved = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
-  if (darkResolved) {
-    CGFloat rgba[4];
-    [darkResolved getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-    darkColor = ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
-  }
+  [[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] performAsCurrentDrawingAppearance:^{
+    NSColor *resolved = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+    if (resolved) {
+      CGFloat rgba[4];
+      [resolved getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+      darkColor = ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
+    }
+  }];
 
-  NSAppearance.currentAppearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
-  NSColor *lightResolved = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
-  if (lightResolved) {
-    CGFloat rgba[4];
-    [lightResolved getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-    lightColor = ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
-  }
+  [[NSAppearance appearanceNamed:NSAppearanceNameAqua] performAsCurrentDrawingAppearance:^{
+    NSColor *resolved = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+    if (resolved) {
+      CGFloat rgba[4];
+      [resolved getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+      lightColor = ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
+    }
+  }];
 
-  NSAppearance.currentAppearance = previousAppearance;
   return facebook::react::hash_combine(darkColor, lightColor);
 #endif // macOS]
 }
