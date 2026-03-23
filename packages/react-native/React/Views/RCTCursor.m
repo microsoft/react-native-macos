@@ -8,6 +8,9 @@
 // [macOS]
 
 #import <Foundation/Foundation.h>
+#if TARGET_OS_OSX // [macOS
+#import <AppKit/AppKit.h>
+#endif // macOS]
 #import "RCTCursor.h"
 
 #if defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 150000 /* __MAC_15_0 */

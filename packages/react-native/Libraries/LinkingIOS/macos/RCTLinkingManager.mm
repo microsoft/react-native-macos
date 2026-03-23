@@ -7,12 +7,16 @@
 
 // [macOS]
 
-#import "RCTLinkingManager.h"
+#import <TargetConditionals.h>
+#if TARGET_OS_OSX // [macOS]
+
+#import <React/RCTLinkingManager.h>
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
+#import <React/RCTLog.h>
 #import <React/RCTUtils.h>
 
 #import "RCTLinkingPlugins.h"
@@ -22,6 +26,9 @@ NSString *const RCTOpenURLNotification = @"RCTOpenURLNotification";
 static NSString *initialURL = nil;
 static BOOL moduleInitalized = NO;
 static BOOL alwaysForegroundLastWindow = YES;
+
+@interface RCTLinkingManager () <NativeLinkingManagerSpec>
+@end
 
 static void postNotificationWithURL(NSString *url, id sender)
 {
@@ -116,8 +123,34 @@ RCT_EXPORT_METHOD(getInitialURL:(RCTPromiseResolveBlock)resolve
 {
     resolve(RCTNullIfNil(initialURL));
 }
+
+RCT_EXPORT_METHOD(openSettings:(RCTPromiseResolveBlock)resolve
+                  reject:(__unused RCTPromiseRejectBlock)reject)
+{
+  // macOS doesn't have a direct equivalent of UIApplicationOpenSettingsURLString
+  // Open System Preferences instead
+  [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"x-apple.systempreferences:"]];
+  resolve(nil);
+}
+
+RCT_EXPORT_METHOD(sendIntent:(NSString *)action
+                  extras:(NSArray *_Nullable)extras
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+  RCTLogError(@"Not implemented: %@", NSStringFromSelector(_cmd));
+}
+
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
+{
+  return std::make_shared<facebook::react::NativeLinkingManagerSpecJSI>(params);
+}
+
 @end
 
 Class RCTLinkingManagerCls(void) {
   return RCTLinkingManager.class;
 }
+
+#endif // TARGET_OS_OSX [macOS]

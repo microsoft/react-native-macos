@@ -5,6 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <TargetConditionals.h>
+#if !TARGET_OS_OSX // [macOS]
+
 #import <React/RCTLinkingManager.h>
 
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
@@ -205,3 +208,5 @@ Class RCTLinkingManagerCls(void)
 {
   return RCTLinkingManager.class;
 }
+
+#endif // !TARGET_OS_OSX [macOS]
