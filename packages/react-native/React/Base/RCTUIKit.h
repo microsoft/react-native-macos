@@ -378,6 +378,12 @@ NS_INLINE NSAccessibilityRole RCTAccessibilityRoleFromTraits(RCTUIAccessibilityT
 // UIColor.h/NSColor.h
 #define RCTUIColor NSColor
 
+@interface NSColor (RCTAppearanceResolving)
+/// Resolve a dynamic/semantic NSColor for a specific appearance, analogous to
+/// UIColor's -resolvedColorWithTraitCollection: on iOS.
+- (NSColor *)resolvedColorWithAppearance:(NSAppearance *)appearance;
+@end
+
 // UIFont.h/NSFont.h
 // Both NSFont and UIFont are toll-free bridged to CTFontRef so we'll assume they're semantically equivalent
 @compatibility_alias UIFont NSFont;

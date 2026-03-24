@@ -941,4 +941,25 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 
 @end
 
+// NSColor (RCTAppearanceResolving)
+
+@implementation NSColor (RCTAppearanceResolving)
+
+- (NSColor *)resolvedColorWithAppearance:(NSAppearance *)appearance
+{
+  __block NSColor *resolved = self;
+  [appearance performAsCurrentDrawingAppearance:^{
+    CGColorRef cgColor = self.CGColor;
+    if (cgColor) {
+      NSColor *fromCG = [NSColor colorWithCGColor:cgColor];
+      if (fromCG) {
+        resolved = fromCG;
+      }
+    }
+  }];
+  return resolved;
+}
+
+@end
+
 #endif
