@@ -27,6 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
 #else
 @compatibility_alias RCTPlatformColor NSColor;
 @compatibility_alias RCTUIColor NSColor;
+
+@interface NSColor (RCTAppearanceResolving)
+/// Resolve a dynamic/semantic NSColor for a specific appearance, analogous to
+/// UIColor's -resolvedColorWithTraitCollection: on iOS.
+- (NSColor *)resolvedColorWithAppearance:(NSAppearance *)appearance;
+@end
+
 #endif
 
 // MARK: - Event types

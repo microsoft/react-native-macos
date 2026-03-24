@@ -20,6 +20,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 namespace facebook::react {
 
+#if TARGET_OS_OSX // [macOS
+RCTPlatformColor *_Nullable UIColorFromColorWithSystemEffect(
+    RCTUIColor *baseColor,
+    const std::string &systemEffectString)
+{
+  if (baseColor == nil) {
+    return nil;
+  }
+
+  NSColor *colorWithEffect = baseColor;
+  if (!systemEffectString.empty()) {
+    if (systemEffectString == "none") {
+      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectNone];
+    } else if (systemEffectString == "pressed") {
+      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectPressed];
+    } else if (systemEffectString == "deepPressed") {
+      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectDeepPressed];
+    } else if (systemEffectString == "disabled") {
+      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectDisabled];
+    } else if (systemEffectString == "rollover") {
+      colorWithEffect = [baseColor colorWithSystemEffect:NSColorSystemEffectRollover];
+    }
+  }
+  return colorWithEffect;
+}
+#endif // macOS]
+
 namespace {
 
 bool UIColorIsP3ColorSpace(const std::shared_ptr<void> &uiColor)
@@ -104,7 +131,6 @@ RCTPlatformColor *_Nullable UIColorFromDynamicColor(const facebook::react::Dynam
   } else {
     return nil;
   }
-
   return nil;
 }
 
@@ -120,7 +146,11 @@ int32_t ColorFromColorComponents(const facebook::react::ColorComponents &compone
 int32_t ColorFromUIColor(RCTPlatformColor *color) // [macOS]
 {
   CGFloat rgba[4];
+#if !TARGET_OS_OSX // [macOS]
   [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
+#else // [macOS
+  [[color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]] getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha: &rgba[3]];
+#endif // macOS]
   return ColorFromColorComponents({(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]});
 }
 
@@ -137,6 +167,21 @@ int32_t ColorFromUIColorForSpecificTraitCollection(
 
   return 0;
 }
+#else // [macOS
+int32_t ColorFromUIColorForSpecificAppearance(
+    const std::shared_ptr<void> &uiColor,
+    NSAppearance *appearance)
+{
+  RCTPlatformColor *color = (RCTPlatformColor *)unwrapManagedObject(uiColor);
+  if (color) {
+    __block int32_t resolvedColorInt = 0;
+    [appearance performAsCurrentDrawingAppearance:^{
+      resolvedColorInt = ColorFromUIColor(color);
+    }];
+    return resolvedColorInt;
+  }
+  return 0;
+}
 #endif // [macOS]
 
 int32_t ColorFromUIColor(const std::shared_ptr<void> &uiColor)
@@ -144,8 +189,7 @@ int32_t ColorFromUIColor(const std::shared_ptr<void> &uiColor)
 #if !TARGET_OS_OSX // [macOS]
   return ColorFromUIColorForSpecificTraitCollection(uiColor, [UITraitCollection currentTraitCollection]);
 #else // [macOS
-  RCTPlatformColor *color = (RCTPlatformColor *)unwrapManagedObject(uiColor);
-  return ColorFromUIColor(color);
+  return ColorFromUIColorForSpecificAppearance(uiColor, [NSApp effectiveAppearance]);
 #endif // macOS]
 }
 
@@ -170,9 +214,7 @@ std::size_t hashFromUIColor(const std::shared_ptr<void> &uiColor)
     return 0;
   }
 
-#if TARGET_OS_OSX // [macOS]
-  return ColorFromUIColor(uiColor);
-#else // [macOS
+#if !TARGET_OS_OSX // [macOS]
   static UITraitCollection *darkModeTraitCollection =
       [UITraitCollection traitCollectionWithUserInterfaceStyle:UIUserInterfaceStyleDark];
   auto darkColor = ColorFromUIColorForSpecificTraitCollection(uiColor, darkModeTraitCollection);
@@ -202,6 +244,15 @@ std::size_t hashFromUIColor(const std::shared_ptr<void> &uiColor)
       darkAccessibilityContrastColor,
       lightAccessibilityContrastColor,
       UIColorIsP3ColorSpace(uiColor));
+#else // [macOS
+  // Hash both light and dark appearance colors to properly distinguish
+  // dynamic colors that change with appearance.
+  auto darkColor = ColorFromUIColorForSpecificAppearance(
+      uiColor, [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]);
+  auto lightColor = ColorFromUIColorForSpecificAppearance(
+      uiColor, [NSAppearance appearanceNamed:NSAppearanceNameAqua]);
+
+  return facebook::react::hash_combine(darkColor, lightColor);
 #endif // macOS]
 }
 
@@ -223,6 +274,21 @@ Color::Color(const DynamicColor &dynamicColor)
       dynamicColor.highContrastLightColor,
       0);
 }
+
+#if TARGET_OS_OSX // [macOS
+Color::Color(const ColorWithSystemEffect &colorWithSystemEffect)
+{
+  RCTUIColor *baseColor = UIColorFromInt32(colorWithSystemEffect.color);
+  RCTUIColor *colorWithEffect =
+      UIColorFromColorWithSystemEffect(baseColor, colorWithSystemEffect.effect);
+  if (colorWithEffect != nil) {
+    uiColor_ = wrapManagedObject(colorWithEffect);
+  }
+  uiColorHashValue_ = facebook::react::hash_combine(
+      colorWithSystemEffect.color,
+      std::hash<std::string>{}(colorWithSystemEffect.effect));
+}
+#endif // macOS]
 
 Color::Color(const ColorComponents &components)
 {
