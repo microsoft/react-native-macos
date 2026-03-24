@@ -1177,7 +1177,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 #if !TARGET_OS_OSX // [macOS]
   RCTPlatformColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
 #else // [macOS
-  RCTPlatformColor *backgroundColor = _backgroundColor;
+  RCTPlatformColor *backgroundColor = [_backgroundColor resolvedColorWithAppearance:self.effectiveAppearance];
 #endif // macOS]
   // The reason we sometimes do not set self.layer's backgroundColor is because
   // we want to support non-uniform border radii, which apple does not natively
@@ -1208,6 +1208,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
     layer.borderWidth = (CGFloat)borderMetrics.borderWidths.left;
     RCTPlatformColor *borderColor = RCTUIColorFromSharedColor(borderMetrics.borderColors.left); // [macOS]
+#if TARGET_OS_OSX // [macOS
+    borderColor = [borderColor resolvedColorWithAppearance:self.effectiveAppearance];
+#endif // macOS]
     layer.borderColor = borderColor.CGColor;
     layer.cornerRadius = (CGFloat)borderMetrics.borderRadii.topLeft.horizontal;
 
@@ -1229,6 +1232,12 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     layer.cornerRadius = 0;
 
     RCTBorderColors borderColors = RCTCreateRCTBorderColorsFromBorderColors(borderMetrics.borderColors);
+#if TARGET_OS_OSX // [macOS
+    borderColors.top = [borderColors.top resolvedColorWithAppearance:self.effectiveAppearance];
+    borderColors.left = [borderColors.left resolvedColorWithAppearance:self.effectiveAppearance];
+    borderColors.bottom = [borderColors.bottom resolvedColorWithAppearance:self.effectiveAppearance];
+    borderColors.right = [borderColors.right resolvedColorWithAppearance:self.effectiveAppearance];
+#endif // macOS]
 
     RCTAddContourEffectToLayer(
         _borderLayer,
@@ -1255,10 +1264,16 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
     if (borderMetrics.borderRadii.isUniform() && borderMetrics.borderRadii.topLeft.horizontal == 0) {
       RCTPlatformColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
+#if TARGET_OS_OSX // [macOS
+      outlineColor = [outlineColor resolvedColorWithAppearance:self.effectiveAppearance];
+#endif // macOS]
       _outlineLayer.borderWidth = _props->outlineWidth;
       _outlineLayer.borderColor = outlineColor.CGColor;
     } else {
       RCTPlatformColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
+#if TARGET_OS_OSX // [macOS
+      outlineColor = [outlineColor resolvedColorWithAppearance:self.effectiveAppearance];
+#endif // macOS]
 
       RCTAddContourEffectToLayer(
           _outlineLayer,

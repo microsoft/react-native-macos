@@ -327,18 +327,7 @@ static inline NSString *_NSStringFromCString(
 static inline facebook::react::ColorComponents _ColorComponentsFromUIColor(RCTPlatformColor *color) // [macOS]
 {
   CGFloat rgba[4];
-#if !TARGET_OS_OSX // [macOS]
   [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-#else // [macOS
-  // Resolve dynamic/semantic colors against the current effective appearance
-  // so that dark mode colors are correctly extracted.
-  NSAppearance *previousAppearance = NSAppearance.currentAppearance;
-  NSAppearance.currentAppearance = [NSApp effectiveAppearance];
-  NSColor *resolvedColor = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
-  NSAppearance.currentAppearance = previousAppearance;
-  NSColor *finalColor = resolvedColor ?: [color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-  [finalColor getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-#endif // macOS]
   return {(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]};
 }
 
