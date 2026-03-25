@@ -32,10 +32,6 @@ Pod::Spec.new do |s|
   s.compiler_flags         = '-Wno-nullability-completeness'
   s.source                 = source
   s.source_files           = podspec_sources("*.{m,mm}", "")
-# [macOS
-  s.osx.exclude_files      = "RCTLinkingManager.mm"
-  s.osx.source_files       = "macos/RCTLinkingManager.mm"
-# macOS]
   s.preserve_paths         = "package.json", "LICENSE", "LICENSE-docs"
   s.header_dir             = "RCTLinking"
   s.pod_target_xcconfig    = {
