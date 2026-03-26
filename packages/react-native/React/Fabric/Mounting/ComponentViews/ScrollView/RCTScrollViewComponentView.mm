@@ -95,6 +95,15 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
     RCTScrollableProtocol,
     RCTEnhancedScrollViewOverridingDelegate>
 
+- (void)_preserveContentOffsetIfNeededWithBlock:(void (^)())block;
+- (void)_remountChildrenIfNeeded;
+- (void)_remountChildren;
+- (void)_forceDispatchNextScrollEvent;
+- (void)_handleScrollEndIfNeeded;
+- (void)_handleFinishedScrolling:(RCTUIScrollView *)scrollView;
+- (void)_prepareForMaintainVisibleScrollPosition;
+- (void)_adjustForMaintainVisibleContentPosition;
+
 @end
 
 @implementation RCTScrollViewComponentView {
@@ -845,9 +854,9 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [super didMoveToWindow];
 #else // [macOS
 - (void)viewDidMoveToWindow // [macOS]
-#endif // [macOS]
 {
   [super viewDidMoveToWindow];
+#endif // [macOS]
 
 #if TARGET_OS_OSX // [macOS
   NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
