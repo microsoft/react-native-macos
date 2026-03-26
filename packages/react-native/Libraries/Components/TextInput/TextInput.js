@@ -61,6 +61,9 @@ import StyleSheet, {type TextStyleProp} from '../../StyleSheet/StyleSheet';
 import Text from '../../Text/Text';
 import TextAncestorContext from '../../Text/TextAncestorContext';
 import Platform from '../../Utilities/Platform';
+import normalizeLegacyHandledKeyEvents, {
+  type LegacyHandledKeyEvent,
+} from '../../Utilities/normalizeLegacyHandledKeyEvents';
 import useMergeRefs from '../../Utilities/useMergeRefs';
 import TextInputState from './TextInputState';
 import invariant from 'invariant';
@@ -386,6 +389,13 @@ function useTextInputStateSynchronization({
  *
  */
 function InternalTextInput(props: TextInputProps): React.Node {
+  const validKeysDown =
+    ((props: any).validKeysDown: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
+  const validKeysUp =
+    ((props: any).validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
+  const propsWithoutLegacyKeyProps = ({...props}: any);
+  delete propsWithoutLegacyKeyProps.validKeysDown;
+  delete propsWithoutLegacyKeyProps.validKeysUp;
   const {
     'aria-busy': ariaBusy,
     'aria-checked': ariaChecked,
@@ -400,7 +410,17 @@ function InternalTextInput(props: TextInputProps): React.Node {
     selectionHandleColor,
     cursorColor,
     ...otherProps
-  } = props;
+  } = propsWithoutLegacyKeyProps;
+  const normalizedKeyDownEvents =
+    propsWithoutLegacyKeyProps.keyDownEvents ??
+    normalizeLegacyHandledKeyEvents(validKeysDown);
+  const normalizedKeyUpEvents =
+    propsWithoutLegacyKeyProps.keyUpEvents ??
+    normalizeLegacyHandledKeyEvents(validKeysUp);
+  const isUsingLegacyKeyDownProp =
+    propsWithoutLegacyKeyProps.keyDownEvents == null && validKeysDown != null;
+  const isUsingLegacyKeyUpProp =
+    propsWithoutLegacyKeyProps.keyUpEvents == null && validKeysUp != null;
 
   const inputRef = useRef<null | TextInputInstance>(null);
 
@@ -582,9 +602,9 @@ function InternalTextInput(props: TextInputProps): React.Node {
 
   // [macOS
   const _onKeyDown = (event: KeyEvent) => {
-    const keyDownEvents = props.keyDownEvents;
-    if (keyDownEvents != null && !event.isPropagationStopped()) {
-      const isHandled = keyDownEvents.some(
+    let isHandled = false;
+    if (normalizedKeyDownEvents != null && !event.isPropagationStopped()) {
+      isHandled = normalizedKeyDownEvents.some(
         ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
@@ -595,17 +615,19 @@ function InternalTextInput(props: TextInputProps): React.Node {
           );
         },
       );
-      if (isHandled === true) {
+      if (isHandled === true && !isUsingLegacyKeyDownProp) {
         event.stopPropagation();
       }
     }
-    props.onKeyDown?.(event);
+    if (!isUsingLegacyKeyDownProp || isHandled) {
+      propsWithoutLegacyKeyProps.onKeyDown?.(event);
+    }
   };
 
   const _onKeyUp = (event: KeyEvent) => {
-    const keyUpEvents = props.keyUpEvents;
-    if (keyUpEvents != null && !event.isPropagationStopped()) {
-      const isHandled = keyUpEvents.some(
+    let isHandled = false;
+    if (normalizedKeyUpEvents != null && !event.isPropagationStopped()) {
+      isHandled = normalizedKeyUpEvents.some(
         ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
@@ -616,11 +638,13 @@ function InternalTextInput(props: TextInputProps): React.Node {
           );
         },
       );
-      if (isHandled === true) {
+      if (isHandled === true && !isUsingLegacyKeyUpProp) {
         event.stopPropagation();
       }
     }
-    props.onKeyUp?.(event);
+    if (!isUsingLegacyKeyUpProp || isHandled) {
+      propsWithoutLegacyKeyProps.onKeyUp?.(event);
+    }
   };
   // macOS]
 
@@ -773,6 +797,8 @@ function InternalTextInput(props: TextInputProps): React.Node {
         caretHidden={caretHidden}
         dataDetectorTypes={props.dataDetectorTypes}
         focusable={tabIndex !== undefined ? !tabIndex : focusable}
+        keyDownEvents={normalizedKeyDownEvents}
+        keyUpEvents={normalizedKeyUpEvents}
         mostRecentEventCount={mostRecentEventCount}
         nativeID={id ?? props.nativeID}
         numberOfLines={props.rows ?? props.numberOfLines}

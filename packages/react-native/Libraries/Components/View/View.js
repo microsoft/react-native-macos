@@ -13,6 +13,9 @@ import type {ViewProps} from './ViewPropTypes';
 
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import TextAncestorContext from '../../Text/TextAncestorContext';
+import normalizeLegacyHandledKeyEvents, {
+  type LegacyHandledKeyEvent,
+} from '../../Utilities/normalizeLegacyHandledKeyEvents';
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
 import {use} from 'react';
@@ -29,14 +32,31 @@ export default component View(
   ...props: ViewProps
 ) {
   const hasTextAncestor = use(TextAncestorContext);
+  const validKeysDown =
+    ((props: any).validKeysDown: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
+  const validKeysUp =
+    ((props: any).validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
+  const propsWithoutLegacyKeyProps = ({...props}: any);
+  delete propsWithoutLegacyKeyProps.validKeysDown;
+  delete propsWithoutLegacyKeyProps.validKeysUp;
+  const normalizedKeyDownEvents =
+    propsWithoutLegacyKeyProps.keyDownEvents ??
+    normalizeLegacyHandledKeyEvents(validKeysDown);
+  const normalizedKeyUpEvents =
+    propsWithoutLegacyKeyProps.keyUpEvents ??
+    normalizeLegacyHandledKeyEvents(validKeysUp);
+  const isUsingLegacyKeyDownProp =
+    propsWithoutLegacyKeyProps.keyDownEvents == null && validKeysDown != null;
+  const isUsingLegacyKeyUpProp =
+    propsWithoutLegacyKeyProps.keyUpEvents == null && validKeysUp != null;
 
   let actualView;
 
   // [macOS
   const _onKeyDown = (event: KeyEvent) => {
-    const keyDownEvents = props.keyDownEvents;
-    if (keyDownEvents != null && !event.isPropagationStopped()) {
-      const isHandled = keyDownEvents.some(
+    let isHandled = false;
+    if (normalizedKeyDownEvents != null && !event.isPropagationStopped()) {
+      isHandled = normalizedKeyDownEvents.some(
         ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
@@ -47,17 +67,19 @@ export default component View(
           );
         },
       );
-      if (isHandled === true) {
+      if (isHandled === true && !isUsingLegacyKeyDownProp) {
         event.stopPropagation();
       }
     }
-    props.onKeyDown?.(event);
+    if (!isUsingLegacyKeyDownProp || isHandled) {
+      propsWithoutLegacyKeyProps.onKeyDown?.(event);
+    }
   };
 
   const _onKeyUp = (event: KeyEvent) => {
-    const keyUpEvents = props.keyUpEvents;
-    if (keyUpEvents != null && !event.isPropagationStopped()) {
-      const isHandled = keyUpEvents.some(
+    let isHandled = false;
+    if (normalizedKeyUpEvents != null && !event.isPropagationStopped()) {
+      isHandled = normalizedKeyUpEvents.some(
         ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
@@ -68,11 +90,13 @@ export default component View(
           );
         },
       );
-      if (isHandled === true) {
+      if (isHandled === true && !isUsingLegacyKeyUpProp) {
         event.stopPropagation();
       }
     }
-    props.onKeyUp?.(event);
+    if (!isUsingLegacyKeyUpProp || isHandled) {
+      propsWithoutLegacyKeyProps.onKeyUp?.(event);
+    }
   };
   // macOS]
 
@@ -96,10 +120,19 @@ export default component View(
       id,
       tabIndex,
       ...otherProps
-    } = props;
+    } = propsWithoutLegacyKeyProps;
 
     // Since we destructured props, we can now treat it as mutable
     const processedProps = otherProps as {...ViewProps};
+
+    processedProps.keyDownEvents = normalizedKeyDownEvents;
+    processedProps.keyUpEvents = normalizedKeyUpEvents;
+    if (processedProps.onKeyDown != null) {
+      processedProps.onKeyDown = _onKeyDown;
+    }
+    if (processedProps.onKeyUp != null) {
+      processedProps.onKeyUp = _onKeyUp;
+    }
 
     const parsedAriaLabelledBy = ariaLabelledBy?.split(/\s*,\s*/g);
     if (parsedAriaLabelledBy !== undefined) {
@@ -195,7 +228,7 @@ export default component View(
       nativeID,
       tabIndex,
       ...otherProps
-    } = props;
+    } = propsWithoutLegacyKeyProps;
     const _accessibilityLabelledBy =
       ariaLabelledBy?.split(/\s*,\s*/g) ?? accessibilityLabelledBy;
 
@@ -247,6 +280,8 @@ export default component View(
             : importantForAccessibility
         }
         nativeID={id ?? nativeID}
+        keyDownEvents={normalizedKeyDownEvents}
+        keyUpEvents={normalizedKeyUpEvents}
         // $FlowFixMe[exponential-spread]
         {...(otherProps.onKeyDown && {onKeyDown: _onKeyDown})} // [macOS]
         {...(otherProps.onKeyUp && {onKeyUp: _onKeyUp})} // [macOS]

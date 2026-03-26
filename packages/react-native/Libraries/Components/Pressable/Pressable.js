@@ -381,7 +381,11 @@ function Pressable({
     // [macOS
     acceptsFirstMouse: acceptsFirstMouse !== false && !disabled,
     enableFocusRing: enableFocusRing !== false && !disabled,
-    keyDownEvents: keyDownEvents ?? [{key: ' '}, {key: 'Enter'}],
+    keyDownEvents:
+      keyDownEvents ??
+      (((props: any).validKeysDown: mixed) == null
+        ? [{key: ' '}, {key: 'Enter'}]
+        : undefined),
     mouseDownCanMoveWindow: false,
     // macOS]
   };
