@@ -42,6 +42,10 @@
     // scrollbar flip because we also flip it with whole `UIScrollView` flip.
     self.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
 #else // [macOS
+    // Similar to iOS's contentInsetAdjustmentBehavior fix
+    // For example: When using NSWindowStyleMaskFullSizeContentView (hidden title bar) and ScrollView as root,
+    // NSScrollView.automaticallyAdjustsContentInsets (default YES) adds contentInset.top to push content below the toolbar.
+    // However, React Native doesn't know about this native contentInset adjustments,causing some caltulation issues  
     self.automaticallyAdjustsContentInsets = NO;
     self.hasHorizontalScroller = YES;
     self.hasVerticalScroller = YES;
