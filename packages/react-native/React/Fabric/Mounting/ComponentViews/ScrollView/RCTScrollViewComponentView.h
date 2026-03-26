@@ -54,6 +54,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly)
     RCTGenericDelegateSplitter<id<RCTUIScrollViewDelegate>> *scrollViewDelegateSplitter;
 
+#if TARGET_OS_OSX // [macOS
+@property (nonatomic, assign) UIEdgeInsets contentInset;
+#endif // macOS]
+
 @end
 
 /*
