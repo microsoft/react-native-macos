@@ -410,6 +410,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     NSArray<NSPasteboardType> *types = RCTPasteboardTypeArrayFromProps(newTextInputProps.traits.pastedTypes);
     [_backedTextInputView setReadablePasteBoardTypes:types];
   }
+
+  if (newTextInputProps.enableFocusRing != oldTextInputProps.enableFocusRing) {
+    if ([_backedTextInputView respondsToSelector:@selector(setEnableFocusRing:)]) {
+      [_backedTextInputView setEnableFocusRing:newTextInputProps.enableFocusRing];
+    }
+  }
 #endif // macOS]
 
   [super updateProps:props oldProps:oldProps];
