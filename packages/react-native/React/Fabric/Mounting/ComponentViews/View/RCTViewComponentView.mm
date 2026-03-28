@@ -167,7 +167,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     [self invalidateLayer];
   }
 }
-#else // [macOS SAAD
+#else // [macOS
 - (void)viewDidChangeEffectiveAppearance
 {
   [super viewDidChangeEffectiveAppearance];
@@ -341,11 +341,6 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     needsInvalidateLayer = YES;
   }
 
-  // `cursor`
-  if (oldViewProps.cursor != newViewProps.cursor) {
-    needsInvalidateLayer = YES;
-  }
-
   // `shouldRasterize`
   if (oldViewProps.shouldRasterize != newViewProps.shouldRasterize) {
     self.layer.shouldRasterize = newViewProps.shouldRasterize;
@@ -367,17 +362,12 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
       ![_propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN containsObject:@"transform"]) {
     auto newTransform = newViewProps.resolveTransform(_layoutMetrics);
     CATransform3D caTransform = RCTCATransform3DFromTransformMatrix(newTransform);
-#if TARGET_OS_OSX // [macOS
-    CGPoint anchorPoint = self.layer.anchorPoint;
-    if (CGPointEqualToPoint(anchorPoint, CGPointZero) && !CATransform3DEqualToTransform(caTransform, CATransform3DIdentity)) {
-      // https://developer.apple.com/documentation/quartzcore/calayer/1410817-anchorpoint
-      // This compensates for the fact that layer.anchorPoint is {0, 0} instead of {0.5, 0.5} on macOS for some reason.
-      CATransform3D originAdjust = CATransform3DTranslate(CATransform3DIdentity, self.frame.size.width / 2, self.frame.size.height / 2, 0);
-      caTransform = CATransform3DConcat(CATransform3DConcat(CATransform3DInvert(originAdjust), caTransform), originAdjust);
-    }
+#if !TARGET_OS_OSX // [macOS]
+    self.layer.transform = caTransform;
+#else // [macOS
+    self.transform3D = caTransform;
 #endif // macOS]
 
-    self.layer.transform = caTransform;
     // Enable edge antialiasing in rotation, skew, or perspective transforms
     self.layer.allowsEdgeAntialiasing = caTransform.m12 != 0.0f || caTransform.m21 != 0.0f || caTransform.m34 != 0.0f;
   }
@@ -718,7 +708,11 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   if ((_props->transformOrigin.isSet() || _props->transform.operations.size() > 0) &&
       layoutMetrics.frame.size != oldLayoutMetrics.frame.size) {
     auto newTransform = _props->resolveTransform(layoutMetrics);
+#if !TARGET_OS_OSX // [macOS]
     self.layer.transform = RCTCATransform3DFromTransformMatrix(newTransform);
+#else // [macOS
+    self.transform3D = RCTCATransform3DFromTransformMatrix(newTransform);
+#endif // macOS]
   }
 }
 
@@ -812,7 +806,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   }
 
   for (RCTPlatformView *subview in [self.subviews reverseObjectEnumerator]) { // [macOS]
-    RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, [subview convertPoint:point fromView:self], event); // [macOS]
+    RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, point, self, event); // [macOS]
     if (hitView) {
       return hitView;
     }
@@ -1177,7 +1171,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 #if !TARGET_OS_OSX // [macOS]
   RCTUIColor *backgroundColor = [_backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
 #else // [macOS
-  RCTUIColor *backgroundColor = _backgroundColor;
+  RCTUIColor *backgroundColor = [_backgroundColor resolvedColorWithAppearance:self.effectiveAppearance];
 #endif // macOS]
   // The reason we sometimes do not set self.layer's backgroundColor is because
   // we want to support non-uniform border radii, which apple does not natively
@@ -1208,6 +1202,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
     layer.borderWidth = (CGFloat)borderMetrics.borderWidths.left;
     RCTUIColor *borderColor = RCTUIColorFromSharedColor(borderMetrics.borderColors.left); // [macOS]
+#if TARGET_OS_OSX // [macOS
+    borderColor = [borderColor resolvedColorWithAppearance:self.effectiveAppearance];
+#endif // macOS]
     layer.borderColor = borderColor.CGColor;
     layer.cornerRadius = (CGFloat)borderMetrics.borderRadii.topLeft.horizontal;
 
@@ -1229,6 +1226,12 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     layer.cornerRadius = 0;
 
     RCTBorderColors borderColors = RCTCreateRCTBorderColorsFromBorderColors(borderMetrics.borderColors);
+#if TARGET_OS_OSX // [macOS
+    borderColors.top = [borderColors.top resolvedColorWithAppearance:self.effectiveAppearance];
+    borderColors.left = [borderColors.left resolvedColorWithAppearance:self.effectiveAppearance];
+    borderColors.bottom = [borderColors.bottom resolvedColorWithAppearance:self.effectiveAppearance];
+    borderColors.right = [borderColors.right resolvedColorWithAppearance:self.effectiveAppearance];
+#endif // macOS]
 
     RCTAddContourEffectToLayer(
         _borderLayer,
@@ -1255,10 +1258,16 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
     if (borderMetrics.borderRadii.isUniform() && borderMetrics.borderRadii.topLeft.horizontal == 0) {
       RCTUIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
+#if TARGET_OS_OSX // [macOS
+      outlineColor = [outlineColor resolvedColorWithAppearance:self.effectiveAppearance];
+#endif // macOS]
       _outlineLayer.borderWidth = _props->outlineWidth;
       _outlineLayer.borderColor = outlineColor.CGColor;
     } else {
       RCTUIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
+#if TARGET_OS_OSX // [macOS
+      outlineColor = [outlineColor resolvedColorWithAppearance:self.effectiveAppearance];
+#endif // macOS]
 
       RCTAddContourEffectToLayer(
           _outlineLayer,
@@ -1707,7 +1716,6 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 }
 
 #if TARGET_OS_OSX // [macOS
-
 - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args
 {
   if ([commandName isEqualToString:@"focus"]) {

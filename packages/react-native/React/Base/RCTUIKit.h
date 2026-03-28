@@ -64,9 +64,9 @@ UIKIT_STATIC_INLINE void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath
 #define RCTUIImage UIImage
 #define RCTUIPanGestureRecognizer UIPanGestureRecognizer
 
-UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
+UIKIT_STATIC_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, RCTPlatformView *fromView, __unused UIEvent *__nullable event)
 {
-  return [view hitTest:point withEvent:event];
+  return [view hitTest:[view convertPoint:point fromView:fromView] withEvent:event];
 }
 
 UIKIT_STATIC_INLINE void RCTUIViewSetContentModeRedraw(UIView *view)
@@ -98,6 +98,7 @@ UIKIT_STATIC_INLINE CGRect CGRectValue(NSValue *value)
 // semantically equivalent types
 //
 
+#define RCTPlatformColor UIColor
 #define RCTUIColor UIColor
 
 // [macOS RCTUIAccessibilityTraits - typedef to UIAccessibilityTraits on iOS
@@ -376,7 +377,14 @@ NS_INLINE NSAccessibilityRole RCTAccessibilityRoleFromTraits(RCTUIAccessibilityT
 // macOS]
 
 // UIColor.h/NSColor.h
+#define RCTPlatformColor NSColor
 #define RCTUIColor NSColor
+
+@interface NSColor (RCTAppearanceResolving)
+/// Resolve a dynamic/semantic NSColor for a specific appearance, analogous to
+/// UIColor's -resolvedColorWithTraitCollection: on iOS.
+- (NSColor *)resolvedColorWithAppearance:(NSAppearance *)appearance;
+@end
 
 // UIFont.h/NSFont.h
 // Both NSFont and UIFont are toll-free bridged to CTFontRef so we'll assume they're semantically equivalent
@@ -514,6 +522,7 @@ void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath);
 
 @property (nonatomic, copy) NSColor *backgroundColor;
 @property (nonatomic) CGAffineTransform transform;
+@property (nonatomic) CATransform3D transform3D;
 
 /**
  * Specifies whether the view should receive the mouse down event when the
@@ -533,12 +542,10 @@ void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath);
  */
 @property (nonatomic, assign) BOOL enableFocusRing;
 
-// [macOS
 /**
  * iOS compatibility shim. On macOS, this forwards to accessibilityChildren.
  */
 @property (nonatomic, copy) NSArray *accessibilityElements;
-// macOS]
 
 @end
 
@@ -585,11 +592,15 @@ void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath);
 @end
 
 
-NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, __unused UIEvent *__nullable event)
+// Use CALayer coordinate conversion which correctly accounts for layer.transform.
+// NSView's convertPoint:fromView: does not account for layer transforms on macOS.
+// IMPORTANT -- NSView's hitTest: expects a point in the superview's coordinate space,
+// so we convert from fromView → superview using CALayer, which handles layer transforms correctly.
+// This allows hit testing to work correctly between nested RCTUIViews and plain NSViews.
+NS_INLINE RCTPlatformView *RCTUIViewHitTestWithEvent(RCTPlatformView *view, CGPoint point, RCTPlatformView *fromView, __unused UIEvent *__nullable event)
 {
-  // [macOS IMPORTANT -- point is in local coordinate space, but OSX expects super coordinate space for hitTest:
   NSView *superview = [view superview];
-  NSPoint pointInSuperview = superview != nil ? [view convertPoint:point toView:superview] : point;
+  NSPoint pointInSuperview = superview != nil ? [superview.layer convertPoint:point fromLayer:fromView.layer] : point;
   return [view hitTest:pointInSuperview];
 }
 
