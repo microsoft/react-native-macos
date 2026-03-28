@@ -98,6 +98,7 @@ UIKIT_STATIC_INLINE CGRect CGRectValue(NSValue *value)
 // semantically equivalent types
 //
 
+#define RCTPlatformColor UIColor
 #define RCTUIColor UIColor
 
 // [macOS RCTUIAccessibilityTraits - typedef to UIAccessibilityTraits on iOS
@@ -376,6 +377,7 @@ NS_INLINE NSAccessibilityRole RCTAccessibilityRoleFromTraits(RCTUIAccessibilityT
 // macOS]
 
 // UIColor.h/NSColor.h
+#define RCTPlatformColor NSColor
 #define RCTUIColor NSColor
 
 @interface NSColor (RCTAppearanceResolving)
