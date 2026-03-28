@@ -6,6 +6,7 @@ on:
   issue_comment:
     types: [created]
   pull_request:
+    branches: [main]
     types: [synchronize]
 
 permissions:
