@@ -127,7 +127,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
   NSDictionary<NSAttributedStringKey, id> *textAttributes = [[_textAttributes effectiveTextAttributes] mutableCopy];
   if ([textAttributes valueForKey:NSForegroundColorAttributeName] == nil) {
-    [textAttributes setValue:[RCTPlatformColor blackColor] forKey:NSForegroundColorAttributeName]; // [macOS]
+    [textAttributes setValue:[RCTPlatformColor labelColor] forKey:NSForegroundColorAttributeName]; // [macOS]
   }
 
     backedTextInputView.defaultTextAttributes = textAttributes;

@@ -144,7 +144,7 @@ inline static UIFont *RCTEffectiveFontFromTextAttributes(const TextAttributes &t
 
 inline static RCTPlatformColor *RCTEffectiveForegroundColorFromTextAttributes(const TextAttributes &textAttributes) // [macOS]
 {
-  RCTPlatformColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ? RCTUIColorFromSharedColor(textAttributes.foregroundColor) : [RCTPlatformColor blackColor]; // [macOS]
+  RCTPlatformColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ?: [RCTPlatformColor labelColor]; // [macOS]
 
   if (!isnan(textAttributes.opacity)) {
     effectiveForegroundColor = [effectiveForegroundColor
@@ -181,6 +181,9 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   RCTPlatformColor *effectiveForegroundColor = RCTEffectiveForegroundColorFromTextAttributes(textAttributes); // [macOS]
 
   if (textAttributes.foregroundColor || !isnan(textAttributes.opacity)) {
+    attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
+  } else {
+    // [macOS] Apply dynamic default (labelColor) so text adapts to dark mode
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
   }
 
