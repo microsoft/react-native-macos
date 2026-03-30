@@ -182,9 +182,6 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
 
   if (textAttributes.foregroundColor || !isnan(textAttributes.opacity)) {
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
-  } else {
-    // [macOS] Apply dynamic default (labelColor) so text adapts to dark mode
-    attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
   }
 
   if (textAttributes.backgroundColor || !isnan(textAttributes.opacity)) {

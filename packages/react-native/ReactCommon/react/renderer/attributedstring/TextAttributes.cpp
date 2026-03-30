@@ -178,10 +178,7 @@ TextAttributes TextAttributes::defaultTextAttributes() {
   static auto textAttributes = [] {
     auto textAttributes = TextAttributes{};
     // Non-obvious (can be different among platforms) default text attributes.
-    // [macOS textAttributes.foregroundColor = blackColor();
-    // Leave foregroundColor unset so each platform can apply a dynamic default
-    // (e.g. labelColor) that adapts to light/dark mode.
-    // macOS]
+    textAttributes.foregroundColor = defaultForegroundTextColor(); // [macOS]
     textAttributes.backgroundColor = clearColor();
     textAttributes.fontSize = 14.0;
     textAttributes.fontSizeMultiplier = 1.0;
