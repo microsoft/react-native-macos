@@ -16,9 +16,7 @@ import type {
   GestureResponderEvent,
   ScrollEvent,
 } from '../../Types/CoreEventTypes';
-// [macOS
-import type {HandledKeyEvent, KeyEvent} from '../../Types/CoreEventTypes';
-// macOS]
+// [macOS]
 import type {
   AutoCapitalize,
   EnterKeyHintType,
@@ -62,8 +60,9 @@ import Text from '../../Text/Text';
 import TextAncestorContext from '../../Text/TextAncestorContext';
 import Platform from '../../Utilities/Platform';
 // [macOS
-import normalizeLegacyHandledKeyEvents, {
-  type LegacyHandledKeyEvent,
+import processLegacyKeyProps, {
+  hasLegacyKeyProps,
+  stripLegacyKeyProps,
 } from '../../Utilities/normalizeLegacyHandledKeyEvents';
 // macOS]
 import useMergeRefs from '../../Utilities/useMergeRefs';
@@ -391,18 +390,15 @@ function useTextInputStateSynchronization({
  *
  */
 function InternalTextInput(props: TextInputProps): React.Node {
-  // [macOS Legacy keyboard event compat
+  // [macOS Legacy keyboard event compat — to remove, delete this block and its import
+  const usingLegacyKeyboardProps = hasLegacyKeyProps(props);
   // $FlowFixMe[unclear-type]
-  const validKeysDown = ((props: any).validKeysDown: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
-  // $FlowFixMe[unclear-type]
-  const validKeysUp = ((props: any).validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
-  // $FlowFixMe[unclear-type]
-  const passthroughAllKeyEvents = ((props: any).passthroughAllKeyEvents: ?boolean);
-  // $FlowFixMe[unclear-type]
-  const propsWithoutLegacyKeyProps = ({...props}: any);
-  delete propsWithoutLegacyKeyProps.validKeysDown;
-  delete propsWithoutLegacyKeyProps.validKeysUp;
-  delete propsWithoutLegacyKeyProps.passthroughAllKeyEvents;
+  const propsWithoutLegacyKeyProps = usingLegacyKeyboardProps ? ({...props}: any) : props;
+  if (usingLegacyKeyboardProps) {
+    stripLegacyKeyProps(propsWithoutLegacyKeyProps);
+  }
+  const legacy = usingLegacyKeyboardProps ? processLegacyKeyProps(props) : null;
+  // macOS]
   const {
     'aria-busy': ariaBusy,
     'aria-checked': ariaChecked,
@@ -418,27 +414,6 @@ function InternalTextInput(props: TextInputProps): React.Node {
     cursorColor,
     ...otherProps
   } = propsWithoutLegacyKeyProps;
-  const hasModernKeyDown = propsWithoutLegacyKeyProps.keyDownEvents != null;
-  const hasModernKeyUp = propsWithoutLegacyKeyProps.keyUpEvents != null;
-  const legacyPassthrough =
-    passthroughAllKeyEvents === true && !hasModernKeyDown;
-  const gateKeyDown =
-    !hasModernKeyDown && validKeysDown != null && !legacyPassthrough;
-  const gateKeyUp =
-    !hasModernKeyUp && validKeysUp != null && !legacyPassthrough;
-  const normalizedKeyDownEvents =
-    propsWithoutLegacyKeyProps.keyDownEvents ??
-    normalizeLegacyHandledKeyEvents(validKeysDown);
-  const normalizedKeyUpEvents =
-    propsWithoutLegacyKeyProps.keyUpEvents ??
-    normalizeLegacyHandledKeyEvents(validKeysUp);
-  const nativeKeyDownEvents = legacyPassthrough
-    ? undefined
-    : normalizedKeyDownEvents;
-  const nativeKeyUpEvents = legacyPassthrough
-    ? undefined
-    : normalizedKeyUpEvents;
-  // macOS]
 
   const inputRef = useRef<null | TextInputInstance>(null);
 
@@ -618,53 +593,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
     props.onScroll && props.onScroll(event);
   };
 
-  // [macOS
-  const _onKeyDown = (event: KeyEvent) => {
-    let isHandled = false;
-    if (normalizedKeyDownEvents != null && !event.isPropagationStopped()) {
-      isHandled = normalizedKeyDownEvents.some(
-        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
-          return (
-            event.nativeEvent.key === key &&
-            Boolean(metaKey) === event.nativeEvent.metaKey &&
-            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-            Boolean(altKey) === event.nativeEvent.altKey &&
-            Boolean(shiftKey) === event.nativeEvent.shiftKey
-          );
-        },
-      );
-      if (isHandled === true && hasModernKeyDown) {
-        event.stopPropagation();
-      }
-    }
-    if (!gateKeyDown || isHandled) {
-      propsWithoutLegacyKeyProps.onKeyDown?.(event);
-    }
-  };
-
-  const _onKeyUp = (event: KeyEvent) => {
-    let isHandled = false;
-    if (normalizedKeyUpEvents != null && !event.isPropagationStopped()) {
-      isHandled = normalizedKeyUpEvents.some(
-        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
-          return (
-            event.nativeEvent.key === key &&
-            Boolean(metaKey) === event.nativeEvent.metaKey &&
-            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-            Boolean(altKey) === event.nativeEvent.altKey &&
-            Boolean(shiftKey) === event.nativeEvent.shiftKey
-          );
-        },
-      );
-      if (isHandled === true && hasModernKeyUp) {
-        event.stopPropagation();
-      }
-    }
-    if (!gateKeyUp || isHandled) {
-      propsWithoutLegacyKeyProps.onKeyUp?.(event);
-    }
-  };
-  // macOS]
+  // macOS] (legacy key handlers are in processLegacyKeyProps)
 
   let textInput = null;
 
@@ -815,8 +744,8 @@ function InternalTextInput(props: TextInputProps): React.Node {
         caretHidden={caretHidden}
         dataDetectorTypes={props.dataDetectorTypes}
         focusable={tabIndex !== undefined ? !tabIndex : focusable}
-        keyDownEvents={nativeKeyDownEvents}
-        keyUpEvents={nativeKeyUpEvents}
+        {...(legacy != null && {keyDownEvents: legacy.keyDownEvents})}
+        {...(legacy != null && {keyUpEvents: legacy.keyUpEvents})}
         mostRecentEventCount={mostRecentEventCount}
         nativeID={id ?? props.nativeID}
         numberOfLines={props.rows ?? props.numberOfLines}
@@ -825,8 +754,8 @@ function InternalTextInput(props: TextInputProps): React.Node {
         onContentSizeChange={props.onContentSizeChange}
         onFocus={_onFocus}
         // $FlowFixMe[exponential-spread]
-        {...(otherProps.onKeyDown && {onKeyDown: _onKeyDown})} // [macOS]
-        {...(otherProps.onKeyUp && {onKeyUp: _onKeyUp})} // [macOS]
+        {...(legacy?.onKeyDown != null && {onKeyDown: legacy.onKeyDown})} // [macOS]
+        {...(legacy?.onKeyUp != null && {onKeyUp: legacy.onKeyUp})} // [macOS]
         onScroll={_onScroll}
         onSelectionChange={_onSelectionChange}
         onSelectionChangeShouldSetResponder={emptyFunctionThatReturnsTrue}

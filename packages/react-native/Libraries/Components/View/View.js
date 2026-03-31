@@ -8,14 +8,14 @@
  * @format
  */
 
-import type {HandledKeyEvent, KeyEvent} from '../../Types/CoreEventTypes'; // [macOS]
 import type {ViewProps} from './ViewPropTypes';
 
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import TextAncestorContext from '../../Text/TextAncestorContext';
 // [macOS
-import normalizeLegacyHandledKeyEvents, {
-  type LegacyHandledKeyEvent,
+import processLegacyKeyProps, {
+  hasLegacyKeyProps,
+  stripLegacyKeyProps,
 } from '../../Utilities/normalizeLegacyHandledKeyEvents';
 // macOS]
 import ViewNativeComponent from './ViewNativeComponent';
@@ -34,85 +34,14 @@ export default component View(
   ...props: ViewProps
 ) {
   const hasTextAncestor = use(TextAncestorContext);
-  // [macOS Legacy keyboard event compat
+  // [macOS Legacy keyboard event compat — to remove, delete this block and its import
+  const usingLegacyKeyboardProps = hasLegacyKeyProps(props);
   // $FlowFixMe[unclear-type]
-  const validKeysDown = ((props: any).validKeysDown: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
-  // $FlowFixMe[unclear-type]
-  const validKeysUp = ((props: any).validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
-  // $FlowFixMe[unclear-type]
-  const passthroughAllKeyEvents = ((props: any).passthroughAllKeyEvents: ?boolean);
-  // $FlowFixMe[unclear-type]
-  const propsWithoutLegacyKeyProps = ({...props}: any);
-  delete propsWithoutLegacyKeyProps.validKeysDown;
-  delete propsWithoutLegacyKeyProps.validKeysUp;
-  delete propsWithoutLegacyKeyProps.passthroughAllKeyEvents;
-  const hasModernKeyDown = propsWithoutLegacyKeyProps.keyDownEvents != null;
-  const hasModernKeyUp = propsWithoutLegacyKeyProps.keyUpEvents != null;
-  const legacyPassthrough =
-    passthroughAllKeyEvents === true && !hasModernKeyDown;
-  const gateKeyDown =
-    !hasModernKeyDown && validKeysDown != null && !legacyPassthrough;
-  const gateKeyUp =
-    !hasModernKeyUp && validKeysUp != null && !legacyPassthrough;
-  const normalizedKeyDownEvents =
-    propsWithoutLegacyKeyProps.keyDownEvents ??
-    normalizeLegacyHandledKeyEvents(validKeysDown);
-  const normalizedKeyUpEvents =
-    propsWithoutLegacyKeyProps.keyUpEvents ??
-    normalizeLegacyHandledKeyEvents(validKeysUp);
-  const nativeKeyDownEvents = legacyPassthrough
-    ? undefined
-    : normalizedKeyDownEvents;
-  const nativeKeyUpEvents = legacyPassthrough
-    ? undefined
-    : normalizedKeyUpEvents;
-
-  let actualView;
-  const _onKeyDown = (event: KeyEvent) => {
-    let isHandled = false;
-    if (normalizedKeyDownEvents != null && !event.isPropagationStopped()) {
-      isHandled = normalizedKeyDownEvents.some(
-        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
-          return (
-            event.nativeEvent.key === key &&
-            Boolean(metaKey) === event.nativeEvent.metaKey &&
-            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-            Boolean(altKey) === event.nativeEvent.altKey &&
-            Boolean(shiftKey) === event.nativeEvent.shiftKey
-          );
-        },
-      );
-      if (isHandled === true && hasModernKeyDown) {
-        event.stopPropagation();
-      }
-    }
-    if (!gateKeyDown || isHandled) {
-      propsWithoutLegacyKeyProps.onKeyDown?.(event);
-    }
-  };
-
-  const _onKeyUp = (event: KeyEvent) => {
-    let isHandled = false;
-    if (normalizedKeyUpEvents != null && !event.isPropagationStopped()) {
-      isHandled = normalizedKeyUpEvents.some(
-        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
-          return (
-            event.nativeEvent.key === key &&
-            Boolean(metaKey) === event.nativeEvent.metaKey &&
-            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-            Boolean(altKey) === event.nativeEvent.altKey &&
-            Boolean(shiftKey) === event.nativeEvent.shiftKey
-          );
-        },
-      );
-      if (isHandled === true && hasModernKeyUp) {
-        event.stopPropagation();
-      }
-    }
-    if (!gateKeyUp || isHandled) {
-      propsWithoutLegacyKeyProps.onKeyUp?.(event);
-    }
-  };
+  const propsWithoutLegacyKeyProps = usingLegacyKeyboardProps ? ({...props}: any) : props;
+  if (usingLegacyKeyboardProps) {
+    stripLegacyKeyProps(propsWithoutLegacyKeyProps);
+  }
+  const legacy = usingLegacyKeyboardProps ? processLegacyKeyProps(props) : null;
   // macOS]
 
   if (ReactNativeFeatureFlags.reduceDefaultPropsInView()) {
@@ -140,13 +69,15 @@ export default component View(
     // Since we destructured props, we can now treat it as mutable
     const processedProps = otherProps as {...ViewProps};
 
-    processedProps.keyDownEvents = nativeKeyDownEvents;
-    processedProps.keyUpEvents = nativeKeyUpEvents;
-    if (processedProps.onKeyDown != null) {
-      processedProps.onKeyDown = _onKeyDown;
-    }
-    if (processedProps.onKeyUp != null) {
-      processedProps.onKeyUp = _onKeyUp;
+    if (legacy != null) {
+      processedProps.keyDownEvents = legacy.keyDownEvents;
+      processedProps.keyUpEvents = legacy.keyUpEvents;
+      if (legacy.onKeyDown != null) {
+        processedProps.onKeyDown = legacy.onKeyDown;
+      }
+      if (legacy.onKeyUp != null) {
+        processedProps.onKeyUp = legacy.onKeyUp;
+      }
     }
 
     const parsedAriaLabelledBy = ariaLabelledBy?.split(/\s*,\s*/g);
@@ -295,11 +226,11 @@ export default component View(
             : importantForAccessibility
         }
         nativeID={id ?? nativeID}
-        keyDownEvents={nativeKeyDownEvents}
-        keyUpEvents={nativeKeyUpEvents}
+        {...(legacy != null && {keyDownEvents: legacy.keyDownEvents})} // [macOS]
+        {...(legacy != null && {keyUpEvents: legacy.keyUpEvents})} // [macOS]
         // $FlowFixMe[exponential-spread]
-        {...(otherProps.onKeyDown && {onKeyDown: _onKeyDown})} // [macOS]
-        {...(otherProps.onKeyUp && {onKeyUp: _onKeyUp})} // [macOS]
+        {...(legacy?.onKeyDown != null && {onKeyDown: legacy.onKeyDown})} // [macOS]
+        {...(legacy?.onKeyUp != null && {onKeyUp: legacy.onKeyUp})} // [macOS]
         ref={ref}
       />
     );
