@@ -383,7 +383,10 @@ function Pressable({
     enableFocusRing: enableFocusRing !== false && !disabled,
     keyDownEvents:
       keyDownEvents ??
-      (((props: any).validKeysDown: mixed) == null
+      // $FlowFixMe[unclear-type] Legacy props not in type definitions
+      (((props: any).validKeysDown: mixed) == null &&
+      // $FlowFixMe[unclear-type]
+      ((props: any).passthroughAllKeyEvents: mixed) !== true
         ? [{key: ' '}, {key: 'Enter'}]
         : undefined),
     mouseDownCanMoveWindow: false,

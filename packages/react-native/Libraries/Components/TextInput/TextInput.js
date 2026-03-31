@@ -61,9 +61,11 @@ import StyleSheet, {type TextStyleProp} from '../../StyleSheet/StyleSheet';
 import Text from '../../Text/Text';
 import TextAncestorContext from '../../Text/TextAncestorContext';
 import Platform from '../../Utilities/Platform';
+// [macOS
 import normalizeLegacyHandledKeyEvents, {
   type LegacyHandledKeyEvent,
 } from '../../Utilities/normalizeLegacyHandledKeyEvents';
+// macOS]
 import useMergeRefs from '../../Utilities/useMergeRefs';
 import TextInputState from './TextInputState';
 import invariant from 'invariant';
@@ -389,13 +391,18 @@ function useTextInputStateSynchronization({
  *
  */
 function InternalTextInput(props: TextInputProps): React.Node {
-  const validKeysDown =
-    ((props: any).validKeysDown: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
-  const validKeysUp =
-    ((props: any).validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
+  // [macOS Legacy keyboard event compat
+  // $FlowFixMe[unclear-type]
+  const validKeysDown = ((props: any).validKeysDown: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
+  // $FlowFixMe[unclear-type]
+  const validKeysUp = ((props: any).validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
+  // $FlowFixMe[unclear-type]
+  const passthroughAllKeyEvents = ((props: any).passthroughAllKeyEvents: ?boolean);
+  // $FlowFixMe[unclear-type]
   const propsWithoutLegacyKeyProps = ({...props}: any);
   delete propsWithoutLegacyKeyProps.validKeysDown;
   delete propsWithoutLegacyKeyProps.validKeysUp;
+  delete propsWithoutLegacyKeyProps.passthroughAllKeyEvents;
   const {
     'aria-busy': ariaBusy,
     'aria-checked': ariaChecked,
@@ -411,16 +418,27 @@ function InternalTextInput(props: TextInputProps): React.Node {
     cursorColor,
     ...otherProps
   } = propsWithoutLegacyKeyProps;
+  const hasModernKeyDown = propsWithoutLegacyKeyProps.keyDownEvents != null;
+  const hasModernKeyUp = propsWithoutLegacyKeyProps.keyUpEvents != null;
+  const legacyPassthrough =
+    passthroughAllKeyEvents === true && !hasModernKeyDown;
+  const gateKeyDown =
+    !hasModernKeyDown && validKeysDown != null && !legacyPassthrough;
+  const gateKeyUp =
+    !hasModernKeyUp && validKeysUp != null && !legacyPassthrough;
   const normalizedKeyDownEvents =
     propsWithoutLegacyKeyProps.keyDownEvents ??
     normalizeLegacyHandledKeyEvents(validKeysDown);
   const normalizedKeyUpEvents =
     propsWithoutLegacyKeyProps.keyUpEvents ??
     normalizeLegacyHandledKeyEvents(validKeysUp);
-  const isUsingLegacyKeyDownProp =
-    propsWithoutLegacyKeyProps.keyDownEvents == null && validKeysDown != null;
-  const isUsingLegacyKeyUpProp =
-    propsWithoutLegacyKeyProps.keyUpEvents == null && validKeysUp != null;
+  const nativeKeyDownEvents = legacyPassthrough
+    ? undefined
+    : normalizedKeyDownEvents;
+  const nativeKeyUpEvents = legacyPassthrough
+    ? undefined
+    : normalizedKeyUpEvents;
+  // macOS]
 
   const inputRef = useRef<null | TextInputInstance>(null);
 
@@ -615,11 +633,11 @@ function InternalTextInput(props: TextInputProps): React.Node {
           );
         },
       );
-      if (isHandled === true && !isUsingLegacyKeyDownProp) {
+      if (isHandled === true && hasModernKeyDown) {
         event.stopPropagation();
       }
     }
-    if (!isUsingLegacyKeyDownProp || isHandled) {
+    if (!gateKeyDown || isHandled) {
       propsWithoutLegacyKeyProps.onKeyDown?.(event);
     }
   };
@@ -638,11 +656,11 @@ function InternalTextInput(props: TextInputProps): React.Node {
           );
         },
       );
-      if (isHandled === true && !isUsingLegacyKeyUpProp) {
+      if (isHandled === true && hasModernKeyUp) {
         event.stopPropagation();
       }
     }
-    if (!isUsingLegacyKeyUpProp || isHandled) {
+    if (!gateKeyUp || isHandled) {
       propsWithoutLegacyKeyProps.onKeyUp?.(event);
     }
   };
@@ -797,8 +815,8 @@ function InternalTextInput(props: TextInputProps): React.Node {
         caretHidden={caretHidden}
         dataDetectorTypes={props.dataDetectorTypes}
         focusable={tabIndex !== undefined ? !tabIndex : focusable}
-        keyDownEvents={normalizedKeyDownEvents}
-        keyUpEvents={normalizedKeyUpEvents}
+        keyDownEvents={nativeKeyDownEvents}
+        keyUpEvents={nativeKeyUpEvents}
         mostRecentEventCount={mostRecentEventCount}
         nativeID={id ?? props.nativeID}
         numberOfLines={props.rows ?? props.numberOfLines}

@@ -13,9 +13,11 @@ import type {ViewProps} from './ViewPropTypes';
 
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import TextAncestorContext from '../../Text/TextAncestorContext';
+// [macOS
 import normalizeLegacyHandledKeyEvents, {
   type LegacyHandledKeyEvent,
 } from '../../Utilities/normalizeLegacyHandledKeyEvents';
+// macOS]
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
 import {use} from 'react';
@@ -32,27 +34,40 @@ export default component View(
   ...props: ViewProps
 ) {
   const hasTextAncestor = use(TextAncestorContext);
-  const validKeysDown =
-    ((props: any).validKeysDown: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
-  const validKeysUp =
-    ((props: any).validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
+  // [macOS Legacy keyboard event compat
+  // $FlowFixMe[unclear-type]
+  const validKeysDown = ((props: any).validKeysDown: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
+  // $FlowFixMe[unclear-type]
+  const validKeysUp = ((props: any).validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent>);
+  // $FlowFixMe[unclear-type]
+  const passthroughAllKeyEvents = ((props: any).passthroughAllKeyEvents: ?boolean);
+  // $FlowFixMe[unclear-type]
   const propsWithoutLegacyKeyProps = ({...props}: any);
   delete propsWithoutLegacyKeyProps.validKeysDown;
   delete propsWithoutLegacyKeyProps.validKeysUp;
+  delete propsWithoutLegacyKeyProps.passthroughAllKeyEvents;
+  const hasModernKeyDown = propsWithoutLegacyKeyProps.keyDownEvents != null;
+  const hasModernKeyUp = propsWithoutLegacyKeyProps.keyUpEvents != null;
+  const legacyPassthrough =
+    passthroughAllKeyEvents === true && !hasModernKeyDown;
+  const gateKeyDown =
+    !hasModernKeyDown && validKeysDown != null && !legacyPassthrough;
+  const gateKeyUp =
+    !hasModernKeyUp && validKeysUp != null && !legacyPassthrough;
   const normalizedKeyDownEvents =
     propsWithoutLegacyKeyProps.keyDownEvents ??
     normalizeLegacyHandledKeyEvents(validKeysDown);
   const normalizedKeyUpEvents =
     propsWithoutLegacyKeyProps.keyUpEvents ??
     normalizeLegacyHandledKeyEvents(validKeysUp);
-  const isUsingLegacyKeyDownProp =
-    propsWithoutLegacyKeyProps.keyDownEvents == null && validKeysDown != null;
-  const isUsingLegacyKeyUpProp =
-    propsWithoutLegacyKeyProps.keyUpEvents == null && validKeysUp != null;
+  const nativeKeyDownEvents = legacyPassthrough
+    ? undefined
+    : normalizedKeyDownEvents;
+  const nativeKeyUpEvents = legacyPassthrough
+    ? undefined
+    : normalizedKeyUpEvents;
 
   let actualView;
-
-  // [macOS
   const _onKeyDown = (event: KeyEvent) => {
     let isHandled = false;
     if (normalizedKeyDownEvents != null && !event.isPropagationStopped()) {
@@ -67,11 +82,11 @@ export default component View(
           );
         },
       );
-      if (isHandled === true && !isUsingLegacyKeyDownProp) {
+      if (isHandled === true && hasModernKeyDown) {
         event.stopPropagation();
       }
     }
-    if (!isUsingLegacyKeyDownProp || isHandled) {
+    if (!gateKeyDown || isHandled) {
       propsWithoutLegacyKeyProps.onKeyDown?.(event);
     }
   };
@@ -90,11 +105,11 @@ export default component View(
           );
         },
       );
-      if (isHandled === true && !isUsingLegacyKeyUpProp) {
+      if (isHandled === true && hasModernKeyUp) {
         event.stopPropagation();
       }
     }
-    if (!isUsingLegacyKeyUpProp || isHandled) {
+    if (!gateKeyUp || isHandled) {
       propsWithoutLegacyKeyProps.onKeyUp?.(event);
     }
   };
@@ -125,8 +140,8 @@ export default component View(
     // Since we destructured props, we can now treat it as mutable
     const processedProps = otherProps as {...ViewProps};
 
-    processedProps.keyDownEvents = normalizedKeyDownEvents;
-    processedProps.keyUpEvents = normalizedKeyUpEvents;
+    processedProps.keyDownEvents = nativeKeyDownEvents;
+    processedProps.keyUpEvents = nativeKeyUpEvents;
     if (processedProps.onKeyDown != null) {
       processedProps.onKeyDown = _onKeyDown;
     }
@@ -280,8 +295,8 @@ export default component View(
             : importantForAccessibility
         }
         nativeID={id ?? nativeID}
-        keyDownEvents={normalizedKeyDownEvents}
-        keyUpEvents={normalizedKeyUpEvents}
+        keyDownEvents={nativeKeyDownEvents}
+        keyUpEvents={nativeKeyUpEvents}
         // $FlowFixMe[exponential-spread]
         {...(otherProps.onKeyDown && {onKeyDown: _onKeyDown})} // [macOS]
         {...(otherProps.onKeyUp && {onKeyUp: _onKeyUp})} // [macOS]

@@ -8,6 +8,8 @@
  * @format
  */
 
+// [macOS]
+
 import type {HandledKeyEvent} from '../Types/CoreEventTypes';
 
 export type LegacyHandledKeyEvent = string | HandledKeyEvent;
@@ -19,11 +21,12 @@ function expandLegacyHandledKeyEvent(
     return [legacyHandledKeyEvent];
   }
 
-  const expandedHandledKeyEvents = [];
-  for (const metaKey of [false, true]) {
-    for (const ctrlKey of [false, true]) {
-      for (const altKey of [false, true]) {
-        for (const shiftKey of [false, true]) {
+  const expandedHandledKeyEvents: Array<HandledKeyEvent> = [];
+  const bools: Array<boolean> = [false, true];
+  for (const metaKey of bools) {
+    for (const ctrlKey of bools) {
+      for (const altKey of bools) {
+        for (const shiftKey of bools) {
           expandedHandledKeyEvents.push({
             altKey,
             ctrlKey,
@@ -41,12 +44,12 @@ function expandLegacyHandledKeyEvent(
 
 export default function normalizeLegacyHandledKeyEvents(
   legacyHandledKeyEvents: ?$ReadOnlyArray<LegacyHandledKeyEvent>,
-): void | Array<HandledKeyEvent> {
+): void | $ReadOnlyArray<HandledKeyEvent> {
   if (legacyHandledKeyEvents == null) {
     return undefined;
   }
 
-  const normalizedHandledKeyEvents = [];
+  const normalizedHandledKeyEvents: Array<HandledKeyEvent> = [];
   for (const legacyHandledKeyEvent of legacyHandledKeyEvents) {
     normalizedHandledKeyEvents.push(
       ...expandLegacyHandledKeyEvent(legacyHandledKeyEvent),
