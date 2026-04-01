@@ -27,12 +27,26 @@ class ScrollViewShadowNode final : public ConcreteViewShadowNode<
                                        ScrollViewEventEmitter,
                                        ScrollViewState> {
  public:
-  using ConcreteViewShadowNode::ConcreteViewShadowNode;
+  ScrollViewShadowNode(
+      const ShadowNodeFragment& fragment,
+      const ShadowNodeFamily::Shared& family,
+      ShadowNodeTraits traits);
+  ScrollViewShadowNode(
+      const ShadowNode& sourceShadowNode,
+      const ShadowNodeFragment& fragment);
 
   static ScrollViewState initialStateData(
       const Props::Shared& props,
       const ShadowNodeFamily::Shared& family,
       const ComponentDescriptor& componentDescriptor);
+
+  // [macOS] Set the system scrollbar width (e.g. legacy scroller width on
+  // macOS). Called from native code at startup and when the system "Show scroll
+  // bars" preference changes. The value is read synchronously during Yoga
+  // layout, so the first layout pass is immediately correct — no state
+  // round-trip required. Thread-safe (uses atomic store/load).
+  static void setSystemScrollbarWidth(Float width);
+  static Float getSystemScrollbarWidth();
 
 #pragma mark - LayoutableShadowNode
 
@@ -42,6 +56,7 @@ class ScrollViewShadowNode final : public ConcreteViewShadowNode<
  private:
   void updateStateIfNeeded();
   void updateScrollContentOffsetIfNeeded();
+  void applyScrollbarPadding();
 };
 
 } // namespace facebook::react
