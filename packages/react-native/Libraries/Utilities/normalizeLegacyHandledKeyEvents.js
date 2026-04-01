@@ -36,7 +36,7 @@ function expandKey(entry: LegacyHandledKeyEvent): Array<HandledKeyEvent> {
 
 function normalize(
   legacy: ?$ReadOnlyArray<LegacyHandledKeyEvent>,
-): void | $ReadOnlyArray<HandledKeyEvent> {
+): void | Array<HandledKeyEvent> {
   if (legacy == null) {
     return undefined;
   }
@@ -62,8 +62,8 @@ function matchesEvent(
 }
 
 export type LegacyKeyResult = {
-  keyDownEvents: void | $ReadOnlyArray<HandledKeyEvent>,
-  keyUpEvents: void | $ReadOnlyArray<HandledKeyEvent>,
+  keyDownEvents: void | Array<HandledKeyEvent>,
+  keyUpEvents: void | Array<HandledKeyEvent>,
   onKeyDown: void | ((event: KeyEvent) => void),
   onKeyUp: void | ((event: KeyEvent) => void),
 };
