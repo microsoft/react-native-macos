@@ -392,22 +392,10 @@ function useTextInputStateSynchronization({
  *
  */
 function InternalTextInput(props: TextInputProps): React.Node {
-  // [macOS Legacy keyboard event compat — to remove, delete this block and its import
-  const usingLegacyKeyboardProps = hasLegacyKeyProps(props);
-  // $FlowFixMe[unclear-type]
-  const effectiveProps: any = usingLegacyKeyboardProps ? ({...props}: any) : props;
-  if (usingLegacyKeyboardProps) {
-    stripLegacyKeyProps(effectiveProps);
-    const legacy = processLegacyKeyProps(props);
-    effectiveProps.keyDownEvents = legacy.keyDownEvents;
-    effectiveProps.keyUpEvents = legacy.keyUpEvents;
-    if (legacy.onKeyDown != null) {
-      effectiveProps.onKeyDown = legacy.onKeyDown;
-    }
-    if (legacy.onKeyUp != null) {
-      effectiveProps.onKeyUp = legacy.onKeyUp;
-    }
-  }
+  // [macOS
+  const legacyKeyOverrides = hasLegacyKeyProps(props)
+    ? processLegacyKeyProps(props)
+    : null;
   // macOS]
   const {
     'aria-busy': ariaBusy,
@@ -423,7 +411,9 @@ function InternalTextInput(props: TextInputProps): React.Node {
     selectionHandleColor,
     cursorColor,
     ...otherProps
-  } = effectiveProps;
+    // $FlowFixMe[unclear-type]
+  } = ({...props, ...legacyKeyOverrides}: any); // [macOS]
+  stripLegacyKeyProps(otherProps); // [macOS]
 
   const inputRef = useRef<null | TextInputInstance>(null);
 
@@ -604,10 +594,14 @@ function InternalTextInput(props: TextInputProps): React.Node {
   };
 
   // [macOS
+  const _keyDownEvents = legacyKeyOverrides?.keyDownEvents ?? props.keyDownEvents;
+  const _keyUpEvents = legacyKeyOverrides?.keyUpEvents ?? props.keyUpEvents;
+  const _origOnKeyDown = legacyKeyOverrides?.onKeyDown ?? props.onKeyDown;
+  const _origOnKeyUp = legacyKeyOverrides?.onKeyUp ?? props.onKeyUp;
+
   const _onKeyDown = (event: KeyEvent) => {
-    const keyDownEvents = effectiveProps.keyDownEvents;
-    if (keyDownEvents != null && !event.isPropagationStopped()) {
-      const isHandled = keyDownEvents.some(
+    if (_keyDownEvents != null && !event.isPropagationStopped()) {
+      const isHandled = _keyDownEvents.some(
         ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
@@ -622,13 +616,12 @@ function InternalTextInput(props: TextInputProps): React.Node {
         event.stopPropagation();
       }
     }
-    effectiveProps.onKeyDown?.(event);
+    _origOnKeyDown?.(event);
   };
 
   const _onKeyUp = (event: KeyEvent) => {
-    const keyUpEvents = effectiveProps.keyUpEvents;
-    if (keyUpEvents != null && !event.isPropagationStopped()) {
-      const isHandled = keyUpEvents.some(
+    if (_keyUpEvents != null && !event.isPropagationStopped()) {
+      const isHandled = _keyUpEvents.some(
         ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
@@ -643,7 +636,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
         event.stopPropagation();
       }
     }
-    effectiveProps.onKeyUp?.(event);
+    _origOnKeyUp?.(event);
   };
   // macOS]
 
