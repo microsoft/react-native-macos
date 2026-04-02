@@ -60,12 +60,12 @@ import flattenStyle from '../../StyleSheet/flattenStyle';
 import StyleSheet, {type TextStyleProp} from '../../StyleSheet/StyleSheet';
 import Text from '../../Text/Text';
 import TextAncestorContext from '../../Text/TextAncestorContext';
-import Platform from '../../Utilities/Platform';
 // [macOS
 import processLegacyKeyProps, {
   hasLegacyKeyProps,
   stripLegacyKeyProps,
 } from '../../Utilities/normalizeLegacyHandledKeyEvents';
+import Platform from '../../Utilities/Platform';
 // macOS]
 import useMergeRefs from '../../Utilities/useMergeRefs';
 import TextInputState from './TextInputState';
