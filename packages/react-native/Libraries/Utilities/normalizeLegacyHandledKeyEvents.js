@@ -109,8 +109,7 @@ export default function processLegacyKeyProps(
 ): LegacyKeyResult {
   const validKeysDown: ?$ReadOnlyArray<LegacyHandledKeyEvent> =
     props.validKeysDown;
-  const validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent> =
-    props.validKeysUp;
+  const validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent> = props.validKeysUp;
   const passthroughAllKeyEvents: ?boolean = props.passthroughAllKeyEvents;
 
   const hasModernKeyDown = props.keyDownEvents != null;
@@ -123,10 +122,8 @@ export default function processLegacyKeyProps(
   const gateKeyUp =
     !hasModernKeyUp && validKeysUp != null && !legacyPassthrough;
 
-  const normalizedDown =
-    props.keyDownEvents ?? normalize(validKeysDown);
-  const normalizedUp =
-    props.keyUpEvents ?? normalize(validKeysUp);
+  const normalizedDown = props.keyDownEvents ?? normalize(validKeysDown);
+  const normalizedUp = props.keyUpEvents ?? normalize(validKeysUp);
 
   const keyDownEvents = legacyPassthrough ? undefined : normalizedDown;
   const keyUpEvents = legacyPassthrough ? undefined : normalizedUp;

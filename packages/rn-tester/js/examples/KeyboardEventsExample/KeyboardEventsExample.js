@@ -314,9 +314,9 @@ function LegacyValidKeysExample(): React.Node {
   return (
     <View style={{marginTop: 10}}>
       <Text style={styles.description}>
-        These components use the legacy validKeysDown / validKeysUp props. The JS
-        compat layer converts them to modern keyDownEvents / keyUpEvents under
-        the hood.
+        These components use the legacy validKeysDown / validKeysUp props. The
+        JS compat layer converts them to modern keyDownEvents / keyUpEvents
+        under the hood.
       </Text>
 
       <View style={styles.inputContainer}>

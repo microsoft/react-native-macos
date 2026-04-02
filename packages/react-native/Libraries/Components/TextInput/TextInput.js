@@ -594,7 +594,8 @@ function InternalTextInput(props: TextInputProps): React.Node {
   };
 
   // [macOS
-  const _keyDownEvents = legacyKeyOverrides?.keyDownEvents ?? props.keyDownEvents;
+  const _keyDownEvents =
+    legacyKeyOverrides?.keyDownEvents ?? props.keyDownEvents;
   const _keyUpEvents = legacyKeyOverrides?.keyUpEvents ?? props.keyUpEvents;
   const _origOnKeyDown = legacyKeyOverrides?.onKeyDown ?? props.onKeyDown;
   const _origOnKeyUp = legacyKeyOverrides?.onKeyUp ?? props.onKeyUp;
