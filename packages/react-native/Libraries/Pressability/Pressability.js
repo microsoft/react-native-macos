@@ -554,6 +554,14 @@ export default class Pressability {
           return;
         }
 
+        // [macOS Only fire onPress for primary (left) mouse button clicks.
+        // Non-primary buttons (right, middle) should not trigger onPress.
+        const button = event?.nativeEvent?.button;
+        if (button != null && button !== 0) {
+          return;
+        }
+        // macOS]
+
         // for non-pointer click events (e.g. accessibility clicks), we should only dispatch when we're the "real" target
         // in particular, we shouldn't respond to clicks from nested pressables
         if (event?.currentTarget !== event?.target) {

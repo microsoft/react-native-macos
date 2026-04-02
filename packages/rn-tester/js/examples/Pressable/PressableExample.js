@@ -131,6 +131,7 @@ function PressableFeedbackEvents() {
           onDragLeave={() => appendEvent('dragLeave')}
           onDrop={() => appendEvent('drop')}
           draggedTypes={'fileUrl'}
+          onAuxClick={() => appendEvent('auxClick')}
           onDoubleClick={() => appendEvent('doubleClick')}
           // macOS]
           onPress={() => appendEvent('press')}
