@@ -184,6 +184,30 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
 #endif // [macOS]
 }
 
+#if TARGET_OS_OSX // [macOS
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+
+  // On macOS, the _containerView is the NSScrollView's documentView and has autoresizingMask set so
+  // it fills the visible area before React's first layout pass. However, AppKit's autoresizing can
+  // corrupt the documentView's frame by adding the NSClipView's size delta to the container's
+  // dimensions (e.g., during initial tile or window resize), inflating it well beyond the correct
+  // content size. This produces massive horizontal and vertical overflow on first render.
+  //
+  // After React has set the content size via updateState:, we reset the documentView frame here to
+  // undo any autoresizing corruption. This runs after AppKit's layout (which triggers autoresizing),
+  // so it reliably corrects the frame.
+  if (!CGSizeEqualToSize(_contentSize, CGSizeZero)) {
+    CGRect containerFrame = _containerView.frame;
+    if (!CGSizeEqualToSize(containerFrame.size, _contentSize)) {
+      containerFrame.size = _contentSize;
+      _containerView.frame = containerFrame;
+    }
+  }
+}
+#endif // macOS]
+
 #if TARGET_OS_IOS
 - (void)_registerKeyboardListener
 {
