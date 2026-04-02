@@ -44,6 +44,7 @@ const UIView = {
   mouseDownCanMoveWindow: true,
   enableFocusRing: true,
   focusable: true,
+  onAuxClick: true,
   onMouseEnter: true,
   onMouseLeave: true,
   onDoubleClick: true,

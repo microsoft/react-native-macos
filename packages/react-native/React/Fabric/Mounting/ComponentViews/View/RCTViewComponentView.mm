@@ -2032,9 +2032,10 @@ enum MouseEventType {
   MouseEnter,
   MouseLeave,
   DoubleClick,
+  AuxClick,
 };
 
-- (void)emitMouseEvent:(MouseEventType)eventType
+- (void)emitMouseEvent:(MouseEventType)eventType button:(int)button
 {
   if (!_eventEmitter) {
     return;
@@ -2054,6 +2055,7 @@ enum MouseEventType {
     .ctrlKey = static_cast<bool>(modifierFlags & NSEventModifierFlagControl),
     .shiftKey = static_cast<bool>(modifierFlags & NSEventModifierFlagShift),
     .metaKey = static_cast<bool>(modifierFlags & NSEventModifierFlagCommand),
+    .button = button,
   };
 
   switch (eventType) {
@@ -2068,7 +2070,16 @@ enum MouseEventType {
     case DoubleClick:
       _eventEmitter->onDoubleClick(mouseEvent);
       break;
+
+    case AuxClick:
+      _eventEmitter->onAuxClick(mouseEvent);
+      break;
   }
+}
+
+- (void)emitMouseEvent:(MouseEventType)eventType
+{
+  [self emitMouseEvent:eventType button:0];
 }
 
 - (void)updateMouseOverIfNeeded
@@ -2189,6 +2200,16 @@ enum MouseEventType {
     [self emitMouseEvent :DoubleClick];
   } else {
     [super mouseUp:event];
+  }
+}
+
+- (void)rightMouseUp:(NSEvent *)event
+{
+  BOOL hasAuxClickEventHandler = _props->hostPlatformEvents[HostPlatformViewEvents::Offset::AuxClick];
+  if (hasAuxClickEventHandler) {
+    [self emitMouseEvent:AuxClick button:2];
+  } else {
+    [super rightMouseUp:event];
   }
 }
 #endif // macOS]

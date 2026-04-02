@@ -63,6 +63,7 @@ static jsi::Object mouseEventPayload(jsi::Runtime& runtime, const MouseEvent& ev
   payload.setProperty(runtime, "ctrlKey", event.ctrlKey);
   payload.setProperty(runtime, "shiftKey", event.shiftKey);
   payload.setProperty(runtime, "metaKey", event.metaKey);
+  payload.setProperty(runtime, "button", event.button);
   return payload;
 };
 
@@ -80,6 +81,12 @@ void HostPlatformViewEventEmitter::onMouseLeave(const MouseEvent& mouseEvent) co
 
 void HostPlatformViewEventEmitter::onDoubleClick(const MouseEvent& mouseEvent) const {
   dispatchEvent("doubleClick", [mouseEvent](jsi::Runtime& runtime) {
+    return mouseEventPayload(runtime, mouseEvent);
+  });
+}
+
+void HostPlatformViewEventEmitter::onAuxClick(const MouseEvent& mouseEvent) const {
+  dispatchEvent("auxClick", [mouseEvent](jsi::Runtime& runtime) {
     return mouseEventPayload(runtime, mouseEvent);
   });
 }
