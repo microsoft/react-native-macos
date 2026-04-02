@@ -139,7 +139,6 @@ export interface ViewPropsMacOS {
   enableFocusRing?: boolean | undefined;
   onMouseEnter?: ((event: MouseEvent) => void) | undefined;
   onMouseLeave?: ((event: MouseEvent) => void) | undefined;
-  onAuxClick?: ((event: MouseEvent) => void) | undefined;
   onDoubleClick?: ((event: MouseEvent) => void) | undefined;
   onDragEnter?: ((event: DragEvent) => void) | undefined;
   onDragLeave?: ((event: DragEvent) => void) | undefined;
