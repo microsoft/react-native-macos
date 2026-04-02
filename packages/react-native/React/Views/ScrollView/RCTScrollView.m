@@ -1429,6 +1429,14 @@ static NSString *RCTStringForScrollerStyle(NSScrollerStyle scrollerStyle) {
 
 - (void)preferredScrollerStyleDidChange:(__unused NSNotification *)notification {
   RCT_SEND_SCROLL_EVENT(onPreferredScrollerStyleDidChange, (@{ @"preferredScrollerStyle": RCTStringForScrollerStyle([NSScroller preferredScrollerStyle])}));
+
+  // When the system scrollbar style changes, force the scroll view to adopt the
+  // new style, re-tile, and trigger a content size update. The ScrollView's
+  // shadow view (RCTScrollViewShadowView) will detect the new scroller style on
+  // the next layout pass and update its padding accordingly.
+  _scrollView.scrollerStyle = [NSScroller preferredScrollerStyle];
+  [_scrollView tile];
+  [self updateContentSizeIfNeeded];
 }
 #endif // macOS]
 
