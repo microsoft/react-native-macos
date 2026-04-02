@@ -9,27 +9,9 @@
 
 #import <yoga/Yoga.h>
 
-#if TARGET_OS_OSX // [macOS
-#import "RCTScrollContentLocalData.h"
-#endif // macOS]
-
 #import "RCTUtils.h"
 
 @implementation RCTScrollContentShadowView
-
-#if TARGET_OS_OSX // [macOS
-- (void)setLocalData:(RCTScrollContentLocalData *)localData
-{
-  RCTAssert(
-      [localData isKindOfClass:[RCTScrollContentLocalData class]],
-      @"Local data object for `RCTScrollContentView` must be `RCTScrollContentLocalData` instance.");
-
-  super.marginEnd = (YGValue){localData.verticalScrollerWidth, YGUnitPoint};
-  super.marginBottom = (YGValue){localData.horizontalScrollerHeight, YGUnitPoint};
-
-  [self didSetProps:@[@"marginEnd", @"marginBottom"]];
-}
-#endif // macOS]
 
 - (void)layoutWithMetrics:(RCTLayoutMetrics)layoutMetrics layoutContext:(RCTLayoutContext)layoutContext
 {

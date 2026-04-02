@@ -12,6 +12,54 @@
 #import "RCTShadowView.h"
 #import "RCTUIManager.h"
 
+#if TARGET_OS_OSX // [macOS
+// Custom shadow view for ScrollView on macOS. Applies paddingEnd to account for
+// legacy (always-visible) scrollbar width so Yoga lays out children within the
+// actual visible area (clip view), not the full ScrollView frame.
+@interface RCTScrollViewShadowView : RCTShadowView
+@end
+
+@implementation RCTScrollViewShadowView
+
+- (instancetype)init
+{
+  if (self = [super init]) {
+    // Set scrollbar padding immediately so it's in place before the first Yoga
+    // layout pass. Without this, the first pass uses full width, then a second
+    // pass corrects it — causing a visible flicker.
+    [self applyScrollbarPadding];
+  }
+  return self;
+}
+
+- (void)applyScrollbarPadding
+{
+  CGFloat verticalScrollerWidth = 0;
+  if ([NSScroller preferredScrollerStyle] == NSScrollerStyleLegacy) {
+    verticalScrollerWidth = [NSScroller scrollerWidthForControlSize:NSControlSizeRegular
+                                                      scrollerStyle:NSScrollerStyleLegacy];
+  }
+
+  YGValue currentPaddingEnd = super.paddingEnd;
+  BOOL needsUpdate =
+      (currentPaddingEnd.unit != YGUnitPoint || currentPaddingEnd.value != verticalScrollerWidth);
+
+  if (needsUpdate) {
+    super.paddingEnd = (YGValue){verticalScrollerWidth, YGUnitPoint};
+    [self didSetProps:@[@"paddingEnd"]];
+  }
+}
+
+- (void)layoutWithMetrics:(RCTLayoutMetrics)layoutMetrics layoutContext:(RCTLayoutContext)layoutContext
+{
+  // Re-check on every layout pass in case the system scroller style changed.
+  [self applyScrollbarPadding];
+  [super layoutWithMetrics:layoutMetrics layoutContext:layoutContext];
+}
+
+@end
+#endif // macOS]
+
 #if !TARGET_OS_OSX // [macOS]
 @implementation RCTConvert (UIScrollView)
 
@@ -61,6 +109,13 @@ RCT_EXPORT_MODULE()
 {
   return [[RCTScrollView alloc] initWithEventDispatcher:self.bridge.eventDispatcher];
 }
+
+#if TARGET_OS_OSX // [macOS
+- (RCTShadowView *)shadowView
+{
+  return [RCTScrollViewShadowView new];
+}
+#endif // macOS]
 
 RCT_EXPORT_VIEW_PROPERTY(alwaysBounceHorizontal, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(alwaysBounceVertical, BOOL)

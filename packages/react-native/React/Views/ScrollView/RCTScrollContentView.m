@@ -10,11 +10,6 @@
 #import <React/RCTAssert.h>
 #import <React/UIView+React.h>
 
-#if TARGET_OS_OSX // [macOS
-#import <React/RCTUIManager.h>
-#import "RCTScrollContentLocalData.h"
-#endif // macOS]
-
 #import "RCTScrollView.h"
 
 @implementation RCTScrollContentView
@@ -44,22 +39,7 @@
 
   [scrollView updateContentSizeIfNeeded];
 #if TARGET_OS_OSX // [macOS
-  // On macOS scroll indicators may float over the content view like they do in iOS
-  // or depending on system preferences they may be outside of the content view
-  // which means the clip view will be smaller than the scroll view itself.
-  // In such cases the content view layout must shrink accordingly otherwise
-  // the contents will overflow causing the scroll indicators to appear unnecessarily.
   NSScrollView *platformScrollView = [scrollView scrollView];
-  if ([platformScrollView scrollerStyle] == NSScrollerStyleLegacy) {
-    BOOL contentHasHeight = platformScrollView.contentSize.height > 0;
-    CGFloat horizontalScrollerHeight = ([platformScrollView hasHorizontalScroller] && contentHasHeight) ? NSHeight([[platformScrollView horizontalScroller] frame]) : 0;
-    CGFloat verticalScrollerWidth = [platformScrollView hasVerticalScroller] ? NSWidth([[platformScrollView verticalScroller] frame]) : 0;
-
-    RCTScrollContentLocalData *localData = [[RCTScrollContentLocalData alloc] initWithVerticalScrollerWidth:verticalScrollerWidth horizontalScrollerHeight:horizontalScrollerHeight];
-
-    [[[scrollView bridge] uiManager] setLocalData:localData forView:self];
-  }
-
   if ([platformScrollView accessibilityRole] == NSAccessibilityTableRole) {
       NSMutableArray *subViews = [[NSMutableArray alloc] initWithCapacity:[[self subviews] count]];
       for (NSView *view in [self subviews]) {
