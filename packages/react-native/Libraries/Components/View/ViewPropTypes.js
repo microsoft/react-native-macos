@@ -130,12 +130,13 @@ export type KeyboardEventProps = $ReadOnly<{|
 type MouseEventProps = $ReadOnly<{
   onMouseEnter?: ?(event: MouseEvent) => void,
   onMouseLeave?: ?(event: MouseEvent) => void,
-  onAuxClick?: ?(event: MouseEvent) => void, // [macOS]
   onDoubleClick?: ?(event: MouseEvent) => void, // [macOS]
 }>;
 
 // Experimental/Work in Progress Pointer Event Callbacks (not yet ready for use)
 type PointerEventProps = $ReadOnly<{
+  onAuxClick?: ?(event: PointerEvent) => void,
+  onAuxClickCapture?: ?(event: PointerEvent) => void,
   onClick?: ?(event: PointerEvent) => void,
   onClickCapture?: ?(event: PointerEvent) => void,
   onPointerEnter?: ?(event: PointerEvent) => void,

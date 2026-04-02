@@ -3676,6 +3676,8 @@ declare type PlatformType =
   | WindowsPlatform
 declare type PointerEvent = NativeSyntheticEvent<NativePointerEvent>
 declare type PointerEventProps = {
+  readonly onAuxClick?: (event: PointerEvent) => void
+  readonly onAuxClickCapture?: (event: PointerEvent) => void
   readonly onClick?: (event: PointerEvent) => void
   readonly onClickCapture?: (event: PointerEvent) => void
   readonly onGotPointerCapture?: (e: PointerEvent) => void
