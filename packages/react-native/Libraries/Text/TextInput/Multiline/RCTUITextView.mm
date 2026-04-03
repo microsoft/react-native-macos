@@ -69,7 +69,7 @@ static RCTUIColor *defaultPlaceholderColor(void) // [macOS]
     _textInputDelegateAdapter = [[RCTBackedTextViewDelegateAdapter alloc] initWithTextView:self];
 
     self.backgroundColor = [RCTUIColor clearColor]; // [macOS]
-    self.textColor = [RCTUIColor blackColor]; // [macOS]
+    self.textColor = [RCTUIColor labelColor]; // [macOS]
     // This line actually removes 5pt (default value) left and right padding in UITextView.
 #if !TARGET_OS_OSX // [macOS]
     self.textContainer.lineFragmentPadding = 0;

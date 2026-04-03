@@ -293,6 +293,101 @@ function KeyboardEventExample(): React.Node {
   );
 }
 
+/**
+ * Tests legacy validKeysDown/validKeysUp compat layer.
+ * Exercises the JS shim that translates legacy props to modern keyDownEvents.
+ */
+function LegacyValidKeysExample(): React.Node {
+  const ref1 = React.useRef<React.ElementRef<typeof Pressable> | null>(null);
+  const ref2 = React.useRef<React.ElementRef<typeof Pressable> | null>(null);
+  const ref3 = React.useRef<React.ElementRef<typeof Pressable> | null>(null);
+  const [eventLog, setEventLog] = React.useState<Array<string>>([]);
+
+  function appendEvent(eventName: string, source?: string) {
+    const limit = 12;
+    setEventLog((current: Array<string>) => {
+      const prefix = source != null ? `${source}: ` : '';
+      return [`${prefix}${eventName}`].concat(current.slice(0, limit - 1));
+    });
+  }
+
+  return (
+    <View style={{marginTop: 10}}>
+      <Text style={styles.description}>
+        These components use the legacy validKeysDown / validKeysUp props. The
+        JS compat layer converts them to modern keyDownEvents / keyUpEvents
+        under the hood.
+      </Text>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>
+          validKeysDown: ['a', 'b', 'Enter'] (string format)
+        </Text>
+        {/* $FlowFixMe[prop-missing] Legacy props not in type definitions */}
+        <Pressable
+          ref={ref1}
+          focusable={true}
+          style={styles.focusablePressable}
+          validKeysDown={['a', 'b', 'Enter']}
+          onPress={() => ref1.current?.focus()}
+          onKeyDown={(event: KeyEvent) => {
+            appendEvent(`keyDown: ${formatKeyEvent(event)}`, 'String keys');
+          }}>
+          <Text style={styles.pressableText}>
+            Click to focus — press 'a', 'b', or Enter
+          </Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>
+          validKeysDown: [Cmd+s, Ctrl+z] (object format)
+        </Text>
+        {/* $FlowFixMe[prop-missing] Legacy props not in type definitions */}
+        <Pressable
+          ref={ref2}
+          focusable={true}
+          style={styles.focusablePressable}
+          validKeysDown={[
+            {key: 's', metaKey: true},
+            {key: 'z', ctrlKey: true},
+          ]}
+          onPress={() => ref2.current?.focus()}
+          onKeyDown={(event: KeyEvent) => {
+            appendEvent(`keyDown: ${formatKeyEvent(event)}`, 'Modifier keys');
+          }}>
+          <Text style={styles.pressableText}>
+            Click to focus — press Cmd+S or Ctrl+Z
+          </Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>
+          passthroughAllKeyEvents + validKeysDown: ['Enter']
+        </Text>
+        {/* $FlowFixMe[prop-missing] Legacy props not in type definitions */}
+        <Pressable
+          ref={ref3}
+          focusable={true}
+          style={styles.focusablePressable}
+          validKeysDown={['Enter']}
+          passthroughAllKeyEvents={true}
+          onPress={() => ref3.current?.focus()}
+          onKeyDown={(event: KeyEvent) => {
+            appendEvent(`keyDown: ${formatKeyEvent(event)}`, 'Passthrough');
+          }}>
+          <Text style={styles.pressableText}>
+            Click to focus — ALL keys should log
+          </Text>
+        </Pressable>
+      </View>
+
+      <EventLog eventLog={eventLog} onClear={() => setEventLog([])} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   eventLogBox: {
     padding: 10,
@@ -466,6 +561,12 @@ exports.examples = [
     title: 'keyDownEvents / keyUpEvents',
     render: function (): React.Node {
       return <KeyboardEventExample />;
+    },
+  },
+  {
+    title: 'Legacy validKeysDown / validKeysUp compat',
+    render: function (): React.Node {
+      return <LegacyValidKeysExample />;
     },
   },
 ];

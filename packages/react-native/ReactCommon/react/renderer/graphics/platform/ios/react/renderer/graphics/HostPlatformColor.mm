@@ -10,6 +10,7 @@
 #import <Foundation/Foundation.h>
 #import <React/RCTUIKit.h> // [macOS]
 #import <objc/runtime.h>
+#import <react/renderer/graphics/Color.h> // [macOS]
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <string>
@@ -341,6 +342,16 @@ Color Color::createSemanticColor(std::vector<std::string> &semanticItems)
   auto semanticColor = RCTPlatformColorFromSemanticItems(semanticItems);
   return Color(wrapManagedObject(semanticColor));
 }
+
+// [macOS
+SharedColor defaultForegroundTextColor() {
+  static SharedColor color = [] {
+    std::vector<std::string> items = {"labelColor"};
+    return SharedColor(Color::createSemanticColor(items));
+  }();
+  return color;
+}
+// macOS]
 
 } // namespace facebook::react
 

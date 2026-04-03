@@ -144,7 +144,7 @@ inline static UIFont *RCTEffectiveFontFromTextAttributes(const TextAttributes &t
 
 inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const TextAttributes &textAttributes) // [macOS]
 {
-  RCTUIColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ? RCTUIColorFromSharedColor(textAttributes.foregroundColor) : [RCTUIColor blackColor]; // [macOS]
+  RCTUIColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ?: [RCTUIColor labelColor]; // [macOS]
 
   if (!isnan(textAttributes.opacity)) {
     effectiveForegroundColor = [effectiveForegroundColor

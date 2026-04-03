@@ -277,7 +277,7 @@ NSString *const RCTTextAttributesTagAttributeName = @"RCTTextAttributesTagAttrib
 
 - (RCTUIColor *)effectiveForegroundColor // [macOS]
 {
-  RCTUIColor *effectiveForegroundColor = _foregroundColor ?: [RCTUIColor blackColor]; // [macOS]
+  RCTUIColor *effectiveForegroundColor = _foregroundColor ?: [RCTTextAttributes defaultForegroundColor]; // [macOS]
 
   if (!isnan(_opacity)) {
     effectiveForegroundColor =
