@@ -52,6 +52,18 @@ const RCTTextInputViewConfig: PartialViewConfigWithoutName = {
         captured: 'onSubmitEditingCapture',
       },
     },
+    topKeyDown: {
+      phasedRegistrationNames: {
+        bubbled: 'onKeyDown',
+        captured: 'onKeyDownCapture',
+      },
+    },
+    topKeyUp: {
+      phasedRegistrationNames: {
+        bubbled: 'onKeyUp',
+        captured: 'onKeyUpCapture',
+      },
+    },
     topTouchCancel: {
       phasedRegistrationNames: {
         bubbled: 'onTouchCancel',
@@ -173,6 +185,8 @@ const RCTTextInputViewConfig: PartialViewConfigWithoutName = {
     clearTextOnSubmit: true,
     grammarCheck: true,
     hideVerticalScrollIndicator: true,
+    keyDownEvents: true,
+    keyUpEvents: true,
     pastedTypes: true,
     submitKeyEvents: true,
     tooltip: true,
@@ -191,6 +205,8 @@ const RCTTextInputViewConfig: PartialViewConfigWithoutName = {
       onAutoCorrectChange: true,
       onSpellCheckChange: true,
       onGrammarCheckChange: true,
+      onKeyDown: true,
+      onKeyUp: true,
       // macOS]
     }),
     disableKeyboardShortcuts: true,

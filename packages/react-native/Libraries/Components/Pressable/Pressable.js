@@ -381,7 +381,14 @@ function Pressable({
     // [macOS
     acceptsFirstMouse: acceptsFirstMouse !== false && !disabled,
     enableFocusRing: enableFocusRing !== false && !disabled,
-    keyDownEvents: keyDownEvents ?? [{key: ' '}, {key: 'Enter'}],
+    keyDownEvents:
+      keyDownEvents ??
+      // $FlowFixMe[unclear-type] Legacy props not in type definitions
+      (((props: any).validKeysDown: mixed) == null &&
+      // $FlowFixMe[unclear-type]
+      ((props: any).passthroughAllKeyEvents: mixed) !== true
+        ? [{key: ' '}, {key: 'Enter'}]
+        : undefined),
     mouseDownCanMoveWindow: false,
     // macOS]
   };

@@ -13,6 +13,12 @@ import type {ViewProps} from './ViewPropTypes';
 
 import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import TextAncestorContext from '../../Text/TextAncestorContext';
+// [macOS
+import processLegacyKeyProps, {
+  hasLegacyKeyProps,
+  stripLegacyKeyProps,
+} from '../../Utilities/normalizeLegacyHandledKeyEvents';
+// macOS]
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
 import {use} from 'react';
@@ -30,13 +36,24 @@ export default component View(
 ) {
   const hasTextAncestor = use(TextAncestorContext);
 
+  // [macOS
+  const legacyKeyOverrides = hasLegacyKeyProps(props)
+    ? processLegacyKeyProps(props)
+    : null;
+  // macOS]
+
   let actualView;
 
   // [macOS
+  const _keyDownEvents =
+    legacyKeyOverrides?.keyDownEvents ?? props.keyDownEvents;
+  const _keyUpEvents = legacyKeyOverrides?.keyUpEvents ?? props.keyUpEvents;
+  const _origOnKeyDown = legacyKeyOverrides?.onKeyDown ?? props.onKeyDown;
+  const _origOnKeyUp = legacyKeyOverrides?.onKeyUp ?? props.onKeyUp;
+
   const _onKeyDown = (event: KeyEvent) => {
-    const keyDownEvents = props.keyDownEvents;
-    if (keyDownEvents != null && !event.isPropagationStopped()) {
-      const isHandled = keyDownEvents.some(
+    if (_keyDownEvents != null && !event.isPropagationStopped()) {
+      const isHandled = _keyDownEvents.some(
         ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
@@ -51,13 +68,12 @@ export default component View(
         event.stopPropagation();
       }
     }
-    props.onKeyDown?.(event);
+    _origOnKeyDown?.(event);
   };
 
   const _onKeyUp = (event: KeyEvent) => {
-    const keyUpEvents = props.keyUpEvents;
-    if (keyUpEvents != null && !event.isPropagationStopped()) {
-      const isHandled = keyUpEvents.some(
+    if (_keyUpEvents != null && !event.isPropagationStopped()) {
+      const isHandled = _keyUpEvents.some(
         ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
           return (
             event.nativeEvent.key === key &&
@@ -72,7 +88,7 @@ export default component View(
         event.stopPropagation();
       }
     }
-    props.onKeyUp?.(event);
+    _origOnKeyUp?.(event);
   };
   // macOS]
 
@@ -96,10 +112,12 @@ export default component View(
       id,
       tabIndex,
       ...otherProps
-    } = props;
+      // $FlowFixMe[unclear-type]
+    } = ({...props, ...legacyKeyOverrides}: any); // [macOS]
 
     // Since we destructured props, we can now treat it as mutable
     const processedProps = otherProps as {...ViewProps};
+    stripLegacyKeyProps(processedProps); // [macOS]
 
     const parsedAriaLabelledBy = ariaLabelledBy?.split(/\s*,\s*/g);
     if (parsedAriaLabelledBy !== undefined) {
@@ -195,7 +213,9 @@ export default component View(
       nativeID,
       tabIndex,
       ...otherProps
-    } = props;
+      // $FlowFixMe[unclear-type]
+    } = ({...props, ...legacyKeyOverrides}: any); // [macOS]
+    stripLegacyKeyProps(otherProps); // [macOS]
     const _accessibilityLabelledBy =
       ariaLabelledBy?.split(/\s*,\s*/g) ?? accessibilityLabelledBy;
 
