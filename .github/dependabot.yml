@@ -5,9 +5,9 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      docusaurus:
+      all:
         patterns:
-          - "@docusaurus/*"
+          - "*"
 
   # Only monitor packages we control — forked @react-native/* packages
   # should stay in sync via upstream merges.
@@ -19,8 +19,16 @@ updates:
       - "/packages/virtualized-lists"
     schedule:
       interval: "weekly"
+    groups:
+      all:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      all:
+        patterns:
+          - "*"
