@@ -10,6 +10,8 @@
 #include <react/renderer/graphics/ColorComponents.h>
 #include <react/utils/hash_combine.h>
 #include <cmath>
+#include <string>
+#include <vector>
 
 namespace facebook::react {
 
