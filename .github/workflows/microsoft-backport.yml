@@ -200,17 +200,10 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - name: Generate GitHub App token
-        uses: actions/create-github-app-token@v2
-        id: app-token
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-
       - name: Find linked backport PRs
         id: find-backports
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
           HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
@@ -233,6 +226,14 @@ jobs:
             # Write to a file to handle multiline
             echo "$BACKPORT_PRS" > /tmp/backport-prs.txt
           fi
+
+      - name: Generate GitHub App token
+        if: steps.find-backports.outputs.found == 'true'
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
 
       - name: Checkout
         if: steps.find-backports.outputs.found == 'true'
