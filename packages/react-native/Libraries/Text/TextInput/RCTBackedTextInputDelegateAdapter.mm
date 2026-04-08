@@ -8,7 +8,7 @@
 #import <React/RCTBackedTextInputDelegateAdapter.h>
 #import "RCTBackedTextInputViewProtocol.h" // [macOS
 #import "RCTBackedTextInputDelegate.h"
-#import "../RCTTextUIKit.h" // macOS]
+#import <React/RCTTextUIKit.h> // macOS]
 
 #pragma mark - RCTBackedTextFieldDelegateAdapter (for UITextField)
 
