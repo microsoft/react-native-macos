@@ -410,6 +410,16 @@ export default class Pressability {
   _touchActivateTime: ?number;
   _touchState: TouchState = 'NOT_RESPONDER';
 
+  // [macOS
+  /**
+   * Returns true if the button from a press event is the default (primary/left)
+   * button. A button value of 0 or undefined is considered the default button.
+   */
+  _isDefaultPressButton(button: ?number): boolean {
+    return !button;
+  }
+  // macOS]
+
   constructor(config: PressabilityConfig) {
     this.configure(config);
   }
@@ -556,8 +566,7 @@ export default class Pressability {
 
         // [macOS Only fire onPress for primary (left) mouse button clicks.
         // Non-primary buttons (right, middle) should not trigger onPress.
-        const button = event?.nativeEvent?.button;
-        if (button != null && button !== 0) {
+        if (!this._isDefaultPressButton(event?.nativeEvent?.button)) {
           return;
         }
         // macOS]
@@ -799,7 +808,12 @@ export default class Pressability {
 
     if (isPressInSignal(prevState) && signal === 'LONG_PRESS_DETECTED') {
       const {onLongPress} = this._config;
-      if (onLongPress != null) {
+      if (
+        onLongPress != null &&
+        this._isDefaultPressButton(
+          getTouchFromPressEvent(event).button,
+        ) /* [macOS] */
+      ) {
         onLongPress(event);
       }
     }
@@ -820,7 +834,12 @@ export default class Pressability {
         this._deactivate(event);
       }
       const {onLongPress, onPress, android_disableSound} = this._config;
-      if (onPress != null) {
+      if (
+        onPress != null &&
+        this._isDefaultPressButton(
+          getTouchFromPressEvent(event).button,
+        ) /* [macOS] */
+      ) {
         const isPressCanceledByLongPress =
           onLongPress != null && prevState === 'RESPONDER_ACTIVE_LONG_PRESS_IN';
         if (!isPressCanceledByLongPress) {
