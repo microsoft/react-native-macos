@@ -126,6 +126,34 @@ Example:
 
 ---
 
+### `onAuxClick`
+
+Fired when the user clicks on the view with a non-primary button (e.g., right-click or middle-click). This follows the [W3C `auxclick` event](https://developer.mozilla.org/en-US/docs/Web/API/Element/auxclick_event) specification.
+
+**Event Data:** Mouse event with the following properties:
+- `clientX`: Horizontal position in the target view
+- `clientY`: Vertical position in the target view
+- `screenX`: Horizontal position in the window
+- `screenY`: Vertical position in the window
+- `altKey`: Whether Alt/Option key is pressed
+- `ctrlKey`: Whether Control key is pressed
+- `shiftKey`: Whether Shift key is pressed
+- `metaKey`: Whether Command key is pressed
+- `button`: The button number that was pressed (2 for right-click)
+
+Example:
+```javascript
+<View onAuxClick={(event) => {
+  console.log('Right clicked, button:', event.nativeEvent.button);
+}}>
+  <Text>Right click me</Text>
+</View>
+```
+
+> **Note:** Right-clicking a `Pressable` will fire `onAuxClick` but will **not** trigger `onPress`. Only primary (left) button clicks trigger `onPress`.
+
+---
+
 ### `onDoubleClick`
 
 Fired when the user double-clicks on the view.
@@ -139,6 +167,7 @@ Fired when the user double-clicks on the view.
 - `ctrlKey`: Whether Control key is pressed
 - `shiftKey`: Whether Shift key is pressed
 - `metaKey`: Whether Command key is pressed
+- `button`: The button number that was pressed (0 for left-click)
 
 Example:
 ```javascript
