@@ -132,6 +132,11 @@ jobs:
     permissions: {}
     uses: ./.github/workflows/microsoft-build-rntester.yml
 
+  build-spm:
+    name: "Build SPM"
+    permissions: {}
+    uses: ./.github/workflows/microsoft-build-spm.yml
+
   test-react-native-macos-init:
     name: "Test react-native-macos init"
     permissions: {}
@@ -156,6 +161,7 @@ jobs:
       - yarn-constraints
       - javascript-tests
       - build-rntester
+      - build-spm
       - test-react-native-macos-init
       # - react-native-test-app-integration
     steps:
