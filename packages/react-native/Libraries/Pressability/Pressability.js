@@ -821,7 +821,14 @@ export default class Pressability {
     const isPrevActive = isActiveSignal(prevState);
     const isNextActive = isActiveSignal(nextState);
 
-    if (!isPrevActive && isNextActive) {
+    // [macOS Don't activate press visual feedback for non-primary mouse buttons
+    // (e.g. right-click, middle-click). They should fire onAuxClick, not onPress.
+    const isPrimaryButton = this._isDefaultPressButton(
+      getTouchFromPressEvent(event).button,
+    );
+    // macOS]
+
+    if (!isPrevActive && isNextActive && isPrimaryButton /* [macOS] */) {
       this._activate(event);
     } else if (isPrevActive && !isNextActive) {
       this._deactivate(event);
@@ -829,7 +836,7 @@ export default class Pressability {
 
     if (isPressInSignal(prevState) && signal === 'RESPONDER_RELEASE') {
       // If we never activated (due to delays), activate and deactivate now.
-      if (!isNextActive && !isPrevActive) {
+      if (!isNextActive && !isPrevActive && isPrimaryButton /* [macOS] */) {
         this._activate(event);
         this._deactivate(event);
       }

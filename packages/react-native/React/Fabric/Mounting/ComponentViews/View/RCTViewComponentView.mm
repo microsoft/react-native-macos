@@ -2031,6 +2031,7 @@ enum DragEventType {
 enum MouseEventType {
   MouseEnter,
   MouseLeave,
+  Click,
   DoubleClick,
   AuxClick,
 };
@@ -2065,6 +2066,10 @@ enum MouseEventType {
 
     case MouseLeave:
       _eventEmitter->onMouseLeave(mouseEvent);
+      break;
+
+    case Click:
+      _eventEmitter->onClick(mouseEvent);
       break;
 
     case DoubleClick:
@@ -2196,10 +2201,24 @@ enum MouseEventType {
 - (void)mouseUp:(NSEvent *)event
 {
   BOOL hasDoubleClickEventHandler = _props->hostPlatformEvents[HostPlatformViewEvents::Offset::DoubleClick];
+  BOOL hasClickEventHandler = _props->hostPlatformEvents[HostPlatformViewEvents::Offset::Click];
   if (hasDoubleClickEventHandler && event.clickCount == 2) {
-    [self emitMouseEvent :DoubleClick];
+    [self emitMouseEvent:DoubleClick];
+  } else if (hasClickEventHandler && event.clickCount == 1) {
+    [self emitMouseEvent:Click];
   } else {
     [super mouseUp:event];
+  }
+}
+
+- (void)rightMouseDown:(NSEvent *)event
+{
+  // Accept rightMouseDown to prevent the default NSView behavior of passing it
+  // up the responder chain (which can trigger a context menu modal loop that
+  // consumes rightMouseUp).
+  BOOL hasAuxClickEventHandler = _props->hostPlatformEvents[HostPlatformViewEvents::Offset::AuxClick];
+  if (!hasAuxClickEventHandler) {
+    [super rightMouseDown:event];
   }
 }
 
@@ -2210,6 +2229,25 @@ enum MouseEventType {
     [self emitMouseEvent:AuxClick button:2];
   } else {
     [super rightMouseUp:event];
+  }
+}
+
+- (void)otherMouseDown:(NSEvent *)event
+{
+  // Accept otherMouseDown so that otherMouseUp is delivered to this view.
+  BOOL hasAuxClickEventHandler = _props->hostPlatformEvents[HostPlatformViewEvents::Offset::AuxClick];
+  if (!hasAuxClickEventHandler) {
+    [super otherMouseDown:event];
+  }
+}
+
+- (void)otherMouseUp:(NSEvent *)event
+{
+  BOOL hasAuxClickEventHandler = _props->hostPlatformEvents[HostPlatformViewEvents::Offset::AuxClick];
+  if (hasAuxClickEventHandler) {
+    [self emitMouseEvent:AuxClick button:1];
+  } else {
+    [super otherMouseUp:event];
   }
 }
 #endif // macOS]
