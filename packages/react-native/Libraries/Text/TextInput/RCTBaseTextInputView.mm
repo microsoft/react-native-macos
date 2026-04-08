@@ -21,8 +21,11 @@
 #import <React/RCTTextAttributes.h>
 #import <React/RCTTextSelection.h>
 #import <React/RCTUITextView.h> // [macOS]
-#import "../RCTTextUIKit.h" // [macOS]
+#import <React/RCTTextUIKit.h> // [macOS]
 #import <React/RCTHandledKey.h> // [macOS]
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTUISecureTextField.h>
+#endif // macOS]
 
 /** Native iOS text field bottom keyboard offset amount */
 static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
@@ -194,7 +197,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   BOOL shouldFallbackToBareTextComparison =
     // There are multiple Korean input sources (2-Set, 3-Set, etc). Check substring instead instead
     [[[self.backedTextInputView inputContext] selectedKeyboardInputSource] containsString:@"com.apple.inputmethod.Korean"] ||
-    [self.backedTextInputView hasMarkedText] || [self.backedTextInputView isKindOfClass:[NSSecureTextField class]] ||
+    [self.backedTextInputView hasMarkedText] || [self.backedTextInputView isKindOfClass:[RCTUISecureTextField class]] ||
 #endif // macOS]
       fontHasBeenUpdatedBySystem;
 

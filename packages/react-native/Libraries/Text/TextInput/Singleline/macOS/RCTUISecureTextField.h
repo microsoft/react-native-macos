@@ -8,8 +8,10 @@
 // [macOS]
 
 #if TARGET_OS_OSX
-#define RCT_SUBCLASS_SECURETEXTFIELD 1
+
+#import <React/RCTUITextField.h>
+
+@interface RCTUISecureTextField : RCTUITextField
+@end
+
 #endif
-
-#include <React/RCTUITextField.h>
-
