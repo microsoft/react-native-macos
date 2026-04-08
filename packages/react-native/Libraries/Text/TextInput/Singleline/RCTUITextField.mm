@@ -17,12 +17,7 @@
 
 #if TARGET_OS_OSX // [macOS
 
-#if RCT_SUBCLASS_SECURETEXTFIELD
-#define RCTUITextFieldCell RCTUISecureTextFieldCell
-@interface RCTUISecureTextFieldCell : NSSecureTextFieldCell
-#else
 @interface RCTUITextFieldCell : NSTextFieldCell
-#endif
 
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
 @property (nonatomic, getter=isAutomaticTextReplacementEnabled) BOOL automaticTextReplacementEnabled;
@@ -35,11 +30,6 @@
 @end
 
 @implementation RCTUITextFieldCell
-
-- (void)setTextContainerInset:(UIEdgeInsets)textContainerInset
-{
-  _textContainerInset = textContainerInset;
-}
 
 - (NSRect)titleRectForBounds:(NSRect)rect
 {
@@ -58,12 +48,9 @@
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
-  if (self.drawsBackground) {
-    if (self.backgroundColor && self.backgroundColor.alphaComponent > 0) {
-
-      [self.backgroundColor set];
-      NSRectFill(cellFrame);
-    }
+  if (self.drawsBackground && self.backgroundColor && self.backgroundColor.alphaComponent > 0) {
+    [self.backgroundColor set];
+    NSRectFill(cellFrame);
   }
 
   [super drawInteriorWithFrame:[self titleRectForBounds:cellFrame] inView:controlView];
@@ -86,11 +73,7 @@
 @end
 #endif // macOS]
 
-#ifdef RCT_SUBCLASS_SECURETEXTFIELD
-@implementation RCTUISecureTextField {
-#else
 @implementation RCTUITextField {
-#endif
   RCTBackedTextFieldDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
 #if !TARGET_OS_OSX // [macOS]

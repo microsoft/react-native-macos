@@ -1219,7 +1219,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   // There are multiple Korean input sources (2-Set, 3-Set, etc). Check substring instead instead
   [[[_backedTextInputView inputContext] selectedKeyboardInputSource] containsString:@"com.apple.inputmethod.Korean"] ||
   [_backedTextInputView hasMarkedText] ||
-  [_backedTextInputView isKindOfClass:[NSSecureTextField class]] ||
+  [_backedTextInputView isKindOfClass:[RCTUISecureTextField class]] ||
 #endif // macOS]
   fontHasBeenUpdatedBySystem;
 
