@@ -20,11 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTUITextField : UITextField <RCTBackedTextInputViewProtocol>
 #else // [macOS
-#if RCT_SUBCLASS_SECURETEXTFIELD
-@interface RCTUISecureTextField : NSSecureTextField <RCTBackedTextInputViewProtocol>
-#else
 @interface RCTUITextField : NSTextField <RCTBackedTextInputViewProtocol>
-#endif // RCT_SUBCLASS_SECURETEXTFIELD
 #endif // macOS]
 
 
