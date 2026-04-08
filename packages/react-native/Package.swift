@@ -246,7 +246,13 @@ let reactJsErrorHandler = RNTarget(
 let reactGraphicsApple = RNTarget(
   name: .reactGraphicsApple,
   path: "ReactCommon/react/renderer/graphics/platform/ios",
-  linkedFrameworks: ["UIKit", "CoreGraphics"],
+  linkedFrameworks: ["CoreGraphics"],
+  // [macOS: UIKit on iOS/visionOS, AppKit on macOS
+  platformLinkerSettings: [
+    .linkedFramework("UIKit", .when(platforms: [.iOS, .visionOS])),
+    .linkedFramework("AppKit", .when(platforms: [.macOS])),
+  ],
+  // macOS]
   dependencies: [.reactDebug, .jsi, .reactUtils, .reactNativeDependencies]
 )
 
@@ -360,12 +366,21 @@ let reactCore = RNTarget(
     "ReactCommon/react/runtime/platform/ios", // explicit header search path to break circular dependency. RCTHost imports `RCTDefines.h` in ReactCore, ReacCore needs to import RCTHost
   ],
   linkedFrameworks: ["CoreServices"],
-  excludedPaths: ["Fabric", "Tests", "Resources", "Runtime/RCTJscInstanceFactory.mm", "I18n/strings", "CxxBridge/JSCExecutorFactory.mm", "CoreModules"],
-  dependencies: [.reactNativeDependencies, .reactCxxReact, .reactPerfLogger, .jsi, .reactJsiExecutor, .reactUtils, .reactFeatureFlags, .reactRuntimeScheduler, .yoga, .reactJsInspector, .reactJsiTooling, .rctDeprecation, .reactCoreRCTWebsocket, .reactRCTImage, .reactTurboModuleCore, .reactRCTText, .reactRCTBlob, .reactRCTAnimation, .reactRCTNetwork, .reactFabric, .hermesPrebuilt],
+  excludedPaths: ["Fabric", "Tests", "Resources", "Runtime/RCTJscInstanceFactory.mm", "I18n/strings", "CxxBridge/JSCExecutorFactory.mm", "CoreModules", "RCTUIKit"],
+  dependencies: [.reactNativeDependencies, .reactCxxReact, .reactPerfLogger, .jsi, .reactJsiExecutor, .reactUtils, .reactFeatureFlags, .reactRuntimeScheduler, .yoga, .reactJsInspector, .reactJsiTooling, .rctDeprecation, .reactCoreRCTWebsocket, .reactRCTImage, .reactTurboModuleCore, .reactRCTText, .reactRCTBlob, .reactRCTAnimation, .reactRCTNetwork, .reactFabric, .hermesPrebuilt, .reactRCTUIKit],
   sources: [".", "Runtime/RCTHermesInstanceFactory.mm"]
 )
 
 /// React-Fabric.podspec
+// [macOS: on macOS, use platform/macos view sources instead of platform/cxx
+#if os(macOS)
+let reactFabricViewPlatformSources = ["components/view/platform/macos"]
+let reactFabricViewPlatformExcludes = ["components/view/platform/cxx"]
+#else
+let reactFabricViewPlatformSources = ["components/view/platform/cxx"]
+let reactFabricViewPlatformExcludes = ["components/view/platform/macos"]
+#endif
+// macOS]
 let reactFabric = RNTarget(
   name: .reactFabric,
   path: "ReactCommon/react/renderer",
@@ -376,7 +391,8 @@ let reactFabric = RNTarget(
     "components/view/tests",
     "components/view/platform/android",
     "components/view/platform/windows",
-    "components/view/platform/macos",
+    // "components/view/platform/cxx", // [macOS] excluded on macOS, included on iOS/visionOS (see reactFabricViewPlatformExcludes)
+    // "components/view/platform/macos", // [macOS] excluded on iOS/visionOS, included on macOS (see reactFabricViewPlatformExcludes)
     "components/scrollview/tests",
     "components/scrollview/platform/android",
     "mounting/tests",
@@ -399,9 +415,9 @@ let reactFabric = RNTarget(
     "components/unimplementedview",
     "components/virtualview",
     "components/root/tests",
-  ],
+  ] + reactFabricViewPlatformExcludes, // [macOS]
   dependencies: [.reactNativeDependencies, .reactJsiExecutor, .rctTypesafety, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .reactRendererDebug, .reactGraphics, .yoga],
-  sources: ["animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/view/platform/cxx", "components/scrollview", "components/scrollview/platform/cxx", "components/legacyviewmanagerinterop", "dom", "scheduler", "mounting", "observers/events", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency"]
+  sources: ["animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/scrollview", "components/scrollview/platform/cxx", "components/legacyviewmanagerinterop", "dom", "scheduler", "mounting", "observers/events", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency"] + reactFabricViewPlatformSources // [macOS]
 )
 
 /// React-RCTFabric.podspec
@@ -420,16 +436,14 @@ let reactFabricComponents = RNTarget(
     "components/modal/platform/cxx",
     "components/view/platform/android",
     "components/view/platform/windows",
-    "components/view/platform/macos",
+    // "components/view/platform/macos", // [macOS] not needed here — sources don't include components/view
     "components/textinput/platform/android",
     "components/text/platform/android",
-    "components/textinput/platform/macos",
     "components/text/tests",
     "textlayoutmanager/tests",
     "textlayoutmanager/platform/android",
     "textlayoutmanager/platform/cxx",
     "textlayoutmanager/platform/windows",
-    "textlayoutmanager/platform/macos",
     "conponents/rncore", // this was the old folder where RN Core Components were generated. If you ran codegen in the past, you might have some files in it that might make the build fail.
   ],
   dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging],
@@ -524,6 +538,22 @@ let reactSettings = RNTarget(
   dependencies: [.reactTurboModuleCore, .yoga]
 )
 
+// [macOS
+/// React-RCTUIKit.podspec
+/// UIKit/AppKit compatibility layer for React Native macOS.
+let reactRCTUIKit = RNTarget(
+  name: .reactRCTUIKit,
+  path: "React/RCTUIKit",
+  // [macOS: UIKit on iOS/visionOS, AppKit on macOS
+  platformLinkerSettings: [
+    .linkedFramework("UIKit", .when(platforms: [.iOS, .visionOS])),
+    .linkedFramework("AppKit", .when(platforms: [.macOS])),
+  ],
+  // macOS]
+  excludedPaths: ["README.md"]
+)
+// macOS]
+
 // MARK: Target list
 let targets = [
   reactDebug,
@@ -581,13 +611,14 @@ let targets = [
   reactAppDelegate,
   reactSettings,
   reactRuntimeExecutor,
+  reactRCTUIKit, // [macOS]
 ]
 
 // MARK: Package object
 
 let package = Package(
   name: react,
-  platforms: [.iOS(.v15), .macCatalyst(SupportedPlatform.MacCatalystVersion.v13)],
+  platforms: [.iOS(.v15), .macOS(.v14) /* [macOS] */, .macCatalyst(SupportedPlatform.MacCatalystVersion.v13)],
   products: [
     .library(
       name: react,
@@ -628,14 +659,16 @@ class BinaryTarget: BaseTarget {
 
 class RNTarget: BaseTarget {
   let linkedFrameworks: [String]
+  let platformLinkerSettings: [LinkerSetting] // [macOS] Platform-conditional framework linking (e.g. UIKit vs AppKit)
   let excludedPaths: [String]
   let dependencies: [String]
   let sources: [String]?
   let publicHeadersPath: String?
   let defines: [CXXSetting]
 
-  init(name: String, path: String, searchPaths: [String] = [], linkedFrameworks: [String] = [], excludedPaths: [String] = [], dependencies: [String] = [], sources: [String]? = nil, publicHeadersPath: String? = ".", defines: [CXXSetting] = []) {
+  init(name: String, path: String, searchPaths: [String] = [], linkedFrameworks: [String] = [], platformLinkerSettings: [LinkerSetting] = [], excludedPaths: [String] = [], dependencies: [String] = [], sources: [String]? = nil, publicHeadersPath: String? = ".", defines: [CXXSetting] = []) {
     self.linkedFrameworks = linkedFrameworks
+    self.platformLinkerSettings = platformLinkerSettings
     self.excludedPaths = excludedPaths
     self.dependencies = dependencies
     self.sources = sources
@@ -671,7 +704,7 @@ class RNTarget: BaseTarget {
   override func target(targets: [BaseTarget]) -> Target {
     let searchPaths: [String] = self.headerSearchPaths(targets: targets)
 
-    let linkerSettings = self.linkedFrameworks.reduce([]) { $0 + [LinkerSetting.linkedFramework($1)] }
+    let linkerSettings = self.linkedFrameworks.reduce([]) { $0 + [LinkerSetting.linkedFramework($1)] } + self.platformLinkerSettings // [macOS]
 
     return Target.reactNativeTarget(
       name: self.name,
@@ -753,6 +786,7 @@ extension String {
   static let reactNativeModuleDom = "React-domnativemodule"
   static let reactAppDelegate = "React-RCTAppDelegate"
   static let reactSettings = "React-RCTSettings"
+  static let reactRCTUIKit = "React-RCTUIKit" // [macOS]
 }
 
 func relativeSearchPath(_ depth: Int, _ path: String) -> String {

@@ -17,7 +17,10 @@ import type {BuildFlavor, Destination, Platform} from './types';
 const platforms /*: $ReadOnlyArray<Platform> */ = [
   'ios',
   'ios-simulator',
+  'macos', // [macOS]
   'mac-catalyst',
+  'visionos', // [macOS]
+  'visionos-simulator', // [macOS]
 ];
 
 // CI can't use commas in cache keys, so 'macOS,variant=Mac Catalyst' was creating troubles
@@ -25,7 +28,10 @@ const platforms /*: $ReadOnlyArray<Platform> */ = [
 const platformToDestination /*: $ReadOnly<{|[Platform]: Destination|}> */ = {
   ios: 'iOS',
   'ios-simulator': 'iOS Simulator',
+  macos: 'macOS', // [macOS]
   'mac-catalyst': 'macOS,variant=Mac Catalyst',
+  visionos: 'xrOS', // [macOS]
+  'visionos-simulator': 'xrOS Simulator', // [macOS]
 };
 
 const cli = yargs
