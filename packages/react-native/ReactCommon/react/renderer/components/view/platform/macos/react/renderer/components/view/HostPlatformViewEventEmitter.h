@@ -33,7 +33,9 @@ class HostPlatformViewEventEmitter : public BaseViewEventEmitter {
 
   void onMouseEnter(MouseEvent const& mouseEvent) const;
   void onMouseLeave(MouseEvent const& mouseEvent) const;
+  void onClick(MouseEvent const& mouseEvent) const;
   void onDoubleClick(MouseEvent const& mouseEvent) const;
+  void onAuxClick(MouseEvent const& mouseEvent) const;
 
 #pragma mark - Drag and Drop Events
 

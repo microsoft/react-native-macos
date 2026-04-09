@@ -63,6 +63,10 @@ static jsi::Object mouseEventPayload(jsi::Runtime& runtime, const MouseEvent& ev
   payload.setProperty(runtime, "ctrlKey", event.ctrlKey);
   payload.setProperty(runtime, "shiftKey", event.shiftKey);
   payload.setProperty(runtime, "metaKey", event.metaKey);
+  payload.setProperty(runtime, "button", event.button);
+  // pointerType lets Pressability's onClick guard distinguish native click
+  // events from accessibility/responder-based clicks, avoiding double onPress.
+  payload.setProperty(runtime, "pointerType", "mouse");
   return payload;
 };
 
@@ -78,8 +82,20 @@ void HostPlatformViewEventEmitter::onMouseLeave(const MouseEvent& mouseEvent) co
   });
 }
 
+void HostPlatformViewEventEmitter::onClick(const MouseEvent& mouseEvent) const {
+  dispatchEvent("click", [mouseEvent](jsi::Runtime& runtime) {
+    return mouseEventPayload(runtime, mouseEvent);
+  });
+}
+
 void HostPlatformViewEventEmitter::onDoubleClick(const MouseEvent& mouseEvent) const {
   dispatchEvent("doubleClick", [mouseEvent](jsi::Runtime& runtime) {
+    return mouseEventPayload(runtime, mouseEvent);
+  });
+}
+
+void HostPlatformViewEventEmitter::onAuxClick(const MouseEvent& mouseEvent) const {
+  dispatchEvent("auxClick", [mouseEvent](jsi::Runtime& runtime) {
     return mouseEventPayload(runtime, mouseEvent);
   });
 }

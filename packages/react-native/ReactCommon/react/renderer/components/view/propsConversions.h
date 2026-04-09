@@ -830,6 +830,10 @@ static inline ViewEvents convertRawProp(
       "onPointerOutCapture",
       sourceValue[Offset::PointerOutCapture],
       defaultValue[Offset::PointerOutCapture]);
+  result[Offset::AuxClick] =
+      convertRawProp(context, rawProps, "onAuxClick", sourceValue[Offset::AuxClick], defaultValue[Offset::AuxClick]);
+  result[Offset::AuxClickCapture] = convertRawProp(
+      context, rawProps, "onAuxClickCapture", sourceValue[Offset::AuxClickCapture], defaultValue[Offset::AuxClickCapture]);
   result[Offset::Click] = convertRawProp(
       context,
       rawProps,

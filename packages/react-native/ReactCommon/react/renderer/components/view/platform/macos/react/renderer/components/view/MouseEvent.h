@@ -54,6 +54,14 @@ struct MouseEvent {
    * A flag indicating if the meta key is pressed.
    */
   bool metaKey{false};
+
+  /**
+   * The button number that was pressed when the mouse event was fired:
+   *  0 = primary button (usually the left button)
+   *  1 = auxiliary button (usually the middle/wheel button)
+   *  2 = secondary button (usually the right button)
+   */
+  int button{0};
 };
 
 struct DataTransferFile {
