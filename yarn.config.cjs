@@ -138,6 +138,22 @@ function enforceReactNativeMacosVersionConsistency({Yarn}) {
 }
 
 /**
+ * Enforce that all private @react-native-macos/ scoped packages use a fixed
+ * version of 1000.0.0, so they are decoupled from release versioning.
+ * @param {Context} context
+ */
+function enforceReactNativeMacosPrivatePackageVersion({Yarn}) {
+    for (const workspace of Yarn.workspaces()) {
+        const isReactNativeMacosScoped = workspace.ident && workspace.ident.startsWith('@react-native-macos/');
+        const isPrivate = workspace.manifest.private;
+
+        if (isReactNativeMacosScoped && isPrivate) {
+            workspace.set('version', '1000.0.0');
+        }
+    }
+}
+
+/**
  * Enforce that all @react-native-macos/ scoped dependencies use the same version
  * as the react-native-macos
  * Do not enforce on the main branch, where there is no published version of React Native to align to.
@@ -158,32 +174,13 @@ function enforceReactNativeMacOSDependencyConsistency({Yarn}) {
     }
 }
 
-/**
- * Enforce that private @react-native-macos/ scoped packages (i.e. internal
- * tooling that is not forked from upstream) have a fixed version of 0.1.0.
- * These packages do not track the react-native-macos release version.
- * @param {Context} context
- */
-function enforceReactNativeMacosPrivatePackageVersion({Yarn}) {
-    if (!isMainBranch({Yarn})) {
-        for (const workspace of Yarn.workspaces()) {
-            const isReactNativeMacosScoped = workspace.ident?.startsWith('@react-native-macos/');
-            const isPrivate = workspace.manifest.private;
-
-            if (isReactNativeMacosScoped && isPrivate) {
-                workspace.set('version', '0.1.0');
-            }
-        }
-    }
-}
-
 module.exports = defineConfig({
   constraints: async ctx => {
     enforcePrivateReactNativeScopedPackages(ctx);
     enforceReactNativeVersionConsistency(ctx);
     enforceReactNativeDependencyConsistency(ctx);
     enforceReactNativeMacosVersionConsistency(ctx);
-    enforceReactNativeMacOSDependencyConsistency(ctx);
     enforceReactNativeMacosPrivatePackageVersion(ctx);
+    enforceReactNativeMacOSDependencyConsistency(ctx);
   },
 });
