@@ -53,31 +53,37 @@ jobs:
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
-      - name: Read publish tag from nx.json
-        id: config
-        run: |
-          PUBLISH_TAG=$(jq -r '.release.version.versionActionsOptions.currentVersionResolverMetadata.tag' nx.json)
-          echo "publishTag=$PUBLISH_TAG" >> $GITHUB_OUTPUT
-          echo "Using publish tag from nx.json: $PUBLISH_TAG"
-      - name: Configure git
-        run: |
-          git config --global user.email "53619745+rnbot@users.noreply.github.com"
-          git config --global user.name "React-Native Bot"
-          git remote set-url origin https://rnbot:${{ secrets.GITHUB_TOKEN }}@github.com/microsoft/react-native-macos
       - name: Install dependencies
         run: yarn
-      - name: Verify release config
-        id: prepublish
+      - name: Show pending version bumps
+        run: yarn changeset status || true
+      - name: Build packages
+        run: yarn build
+      - name: Simulate publish (dry run)
         run: |
-          node .ado/scripts/prepublish-check.mjs --verbose --skip-auth --tag ${{ steps.config.outputs.publishTag }}
+          yarn workspaces foreach -vv --all --topological --no-private npm publish --tag dry-run --tolerate-republish --dry-run
 
-      - name: Version and publish packages (dry run)
-        run: |
-          echo "Target branch: ${{ github.base_ref }}"
-          yarn nx release --dry-run --verbose
-          
-          # Show what additional tags would be applied
-          node .ado/scripts/apply-additional-tags.mjs --tags "${{ steps.prepublish.outputs.additionalTags }}" --dry-run
+  check-changesets:
+    name: "Check for Changesets"
+    permissions: {}
+    runs-on: ubuntu-latest
+    # Only required for PRs targeting stable branches; skip the version bump PR itself
+    if: >-
+      ${{ endsWith(github.base_ref, '-stable')
+          && !startsWith(github.head_ref, 'changeset-release/') }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Validate changesets
+        run: yarn change:check
   
   yarn-constraints:
     name: "Check Yarn Constraints"
@@ -153,6 +159,7 @@ jobs:
     needs:
       - lint-title
       - npm-publish-dry-run
+      - check-changesets
       - yarn-constraints
       - javascript-tests
       - build-rntester

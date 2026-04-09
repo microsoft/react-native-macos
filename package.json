@@ -34,7 +34,11 @@
     "test": "jest",
     "fantom": "./scripts/fantom.sh",
     "trigger-react-native-release": "node ./scripts/releases-local/trigger-react-native-release.js",
-    "update-lock": "npx yarn-deduplicate"
+    "update-lock": "npx yarn-deduplicate",
+    "change": "node .github/scripts/change.mts",
+    "change:check": "node .github/scripts/change.mts --check",
+    "changeset": "changeset",
+    "changeset:version": "node .github/scripts/changeset-version-with-postbump.mts"
   },
   "workspaces": [
     "packages/*",
@@ -53,10 +57,10 @@
     "@babel/plugin-transform-regenerator": "^7.24.7",
     "@babel/preset-env": "^7.25.3",
     "@babel/preset-flow": "^7.24.7",
+    "@changesets/cli": "^2.28.1",
     "@electron/packager": "^18.3.6",
     "@jest/create-cache-key-function": "^29.7.0",
     "@microsoft/api-extractor": "^7.52.2",
-    "@nx/js": "^21.4.1",
     "@react-native/metro-babel-transformer": "workspace:*",
     "@react-native/metro-config": "workspace:*",
     "@tsconfig/node22": "22.0.2",
@@ -102,7 +106,6 @@
     "micromatch": "^4.0.4",
     "node-fetch": "^2.2.0",
     "nullthrows": "^1.1.1",
-    "nx": "21.4.1",
     "prettier": "2.8.8",
     "prettier-plugin-hermes-parser": "0.29.1",
     "react": "19.1.0",
@@ -114,7 +117,8 @@
     "temp-dir": "^2.0.0",
     "tinybench": "^3.1.0",
     "typescript": "5.8.3",
-    "ws": "^6.2.3"
+    "ws": "^6.2.3",
+    "zx": "^8.2.4"
   },
   "resolutions": {
     "@grpc/proto-loader": "^0.7.8",
