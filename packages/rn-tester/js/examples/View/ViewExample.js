@@ -768,6 +768,108 @@ function FocusBlurExample(): React.Node {
   );
 }
 
+// [macOS
+function MouseClickEventsExample(): React.Node {
+  const [eventLog, setEventLog] = useState<Array<string>>([]);
+
+  const appendEvent = (eventName: string) => {
+    setEventLog(prev => [eventName, ...prev.slice(0, 19)]);
+  };
+
+  return (
+    <View>
+      <View
+        style={mouseClickStyles.targetBox}
+        onAuxClick={e =>
+          appendEvent(`auxClick (button=${e.nativeEvent.button})`)
+        }
+        onDoubleClick={() => appendEvent('doubleClick')}
+        onMouseEnter={() => appendEvent('mouseEnter')}
+        onMouseLeave={() => appendEvent('mouseLeave')}>
+        <RNTesterText style={mouseClickStyles.targetText}>
+          Click Target
+        </RNTesterText>
+        <RNTesterText style={mouseClickStyles.hintText}>
+          Left-click, right-click, or double-click this box
+        </RNTesterText>
+      </View>
+      <Pressable
+        style={mouseClickStyles.pressableBox}
+        onAuxClick={e =>
+          appendEvent(`pressable auxClick (button=${e.nativeEvent.button})`)
+        }
+        onPress={() => appendEvent('pressable onPress')}
+        onDoubleClick={() => appendEvent('pressable doubleClick')}>
+        <RNTesterText style={mouseClickStyles.targetText}>
+          Pressable Target
+        </RNTesterText>
+        <RNTesterText style={mouseClickStyles.hintText}>
+          Right-click should fire auxClick but NOT onPress
+        </RNTesterText>
+      </Pressable>
+      <View style={mouseClickStyles.logBox}>
+        <RNTesterText style={mouseClickStyles.logHeader}>
+          Event Log:
+        </RNTesterText>
+        {eventLog.length === 0 ? (
+          <RNTesterText style={mouseClickStyles.logEntry}>
+            No events yet
+          </RNTesterText>
+        ) : (
+          eventLog.map((event, i) => (
+            <RNTesterText key={i} style={mouseClickStyles.logEntry}>
+              {event}
+            </RNTesterText>
+          ))
+        )}
+      </View>
+    </View>
+  );
+}
+
+const mouseClickStyles = StyleSheet.create({
+  targetBox: {
+    backgroundColor: '#527FE4',
+    borderRadius: 5,
+    padding: 20,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  pressableBox: {
+    backgroundColor: '#7B61FF',
+    borderRadius: 5,
+    padding: 20,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  targetText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  hintText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  logBox: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    padding: 10,
+    maxHeight: 200,
+  },
+  logHeader: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  logEntry: {
+    fontSize: 12,
+    fontFamily: Platform.OS === 'macos' ? 'Menlo' : 'monospace',
+    color: '#333',
+  },
+});
+// macOS]
+
 export default ({
   title: 'View',
   documentationURL: 'https://reactnative.dev/docs/view',
@@ -1436,6 +1538,12 @@ export default ({
       title: 'Focus/Blur',
       name: 'focus-blur',
       render: FocusBlurExample,
+    },
+    {
+      title: 'Mouse Click Events',
+      name: 'mouse-click-events',
+      platform: 'macos',
+      render: MouseClickEventsExample,
     },
   ],
 }: RNTesterModule);
