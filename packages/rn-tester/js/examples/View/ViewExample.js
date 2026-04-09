@@ -780,7 +780,9 @@ function MouseClickEventsExample(): React.Node {
     <View>
       <View
         style={mouseClickStyles.targetBox}
-        onAuxClick={e => appendEvent(`auxClick (button=${e.nativeEvent.button})`)}
+        onAuxClick={e =>
+          appendEvent(`auxClick (button=${e.nativeEvent.button})`)
+        }
         onDoubleClick={() => appendEvent('doubleClick')}
         onMouseEnter={() => appendEvent('mouseEnter')}
         onMouseLeave={() => appendEvent('mouseLeave')}>
