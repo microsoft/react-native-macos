@@ -1,13 +1,10 @@
 name: Backport
 # Creates backport PRs when someone comments "/backport <branch>" on a PR.
-# Also auto-updates existing backport PRs when the source PR is updated.
+# Updates existing backport PRs when someone comments "/update-backports" on a PR.
 
 on:
   issue_comment:
     types: [created]
-  pull_request:
-    branches: [main]
-    types: [synchronize]
 
 permissions:
   contents: read
@@ -191,10 +188,13 @@ jobs:
             echo "  5. gh pr create --base <target-branch>"
           fi
 
-  # ─── Job 2: Auto-update backport PRs when source PR is updated ───
+  # ─── Job 2: Update backport PRs via /update-backports comment ───
   update-backport:
     name: Update backport PRs
-    if: github.event_name == 'pull_request' && github.event.action == 'synchronize'
+    if: >
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request != '' &&
+      github.event.comment.body == '/update-backports'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -207,12 +207,31 @@ jobs:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
 
+      - name: React to comment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh api \
+            --method POST \
+            repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions \
+            -f content='+1'
+
+      - name: Get PR details
+        id: pr
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_URL: ${{ github.event.issue.pull_request.url }}
+        run: |
+          PR_DATA=$(gh api "$PR_URL")
+          echo "number=$(echo "$PR_DATA" | jq -r '.number')" >> "$GITHUB_OUTPUT"
+          echo "head_branch=$(echo "$PR_DATA" | jq -r '.head.ref')" >> "$GITHUB_OUTPUT"
+
       - name: Find linked backport PRs
         id: find-backports
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_BRANCH: ${{ steps.pr.outputs.head_branch }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
           REPO: ${{ github.repository }}
         run: |
           # Search for open PRs whose branch matches the pattern <version>/<head-branch>
@@ -226,6 +245,8 @@ jobs:
           if [ -z "$BACKPORT_PRS" ]; then
             echo "No backport PRs found for branch $HEAD_BRANCH"
             echo "found=false" >> "$GITHUB_OUTPUT"
+            gh pr comment "$PR_NUMBER" --repo "$REPO" \
+              --body ":information_source: No open backport PRs found for branch \`$HEAD_BRANCH\`."
           else
             echo "Found backport PRs:"
             echo "$BACKPORT_PRS"
@@ -251,12 +272,13 @@ jobs:
         if: steps.find-backports.outputs.found == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
           REPO: ${{ github.repository }}
         run: |
           # Get current commits from the source PR
           COMMITS=$(gh api "repos/$REPO/pulls/$PR_NUMBER/commits" --jq '.[].sha')
 
+          RESULTS=""
           while IFS= read -r LINE; do
             BP_NUMBER=$(echo "$LINE" | awk '{print $1}')
             BP_BRANCH=$(echo "$LINE" | awk '{print $2}')
@@ -280,14 +302,16 @@ jobs:
 
             if [ "$CHERRY_PICK_FAILED" = true ]; then
               echo "::warning::Cherry-pick failed while updating backport PR #$BP_NUMBER"
-              gh pr comment "$PR_NUMBER" --repo "$REPO" \
-                --body ":warning: Failed to auto-update backport PR #$BP_NUMBER to \`$BP_BASE\` due to conflicts. Manual update needed."
-              gh pr comment "$BP_NUMBER" --repo "$REPO" \
-                --body ":warning: Auto-update from source PR #$PR_NUMBER failed due to cherry-pick conflicts. Manual update needed."
+              RESULTS="$RESULTS\n- :x: #$BP_NUMBER (\`$BP_BASE\`): cherry-pick conflicts (manual update needed)"
             else
               git push -f origin "$BP_BRANCH"
               echo "Successfully updated backport PR #$BP_NUMBER"
+              RESULTS="$RESULTS\n- :white_check_mark: #$BP_NUMBER (\`$BP_BASE\`): updated"
             fi
 
             echo "::endgroup::"
           done < /tmp/backport-prs.txt
+
+          # Post summary comment
+          COMMENT_BODY="## Backport update results\n$RESULTS"
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body "$(echo -e "$COMMENT_BODY")"
