@@ -248,6 +248,8 @@ let reactGraphicsApple = RNTarget(
   path: "ReactCommon/react/renderer/graphics/platform/ios",
   linkedFrameworks: ["CoreGraphics"],
   // [macOS: UIKit on iOS/visionOS, AppKit on macOS
+  // Note: #if os(macOS) doesn't work here because Package.swift runs on the host,
+  // not the target. Use .when(platforms:) for cross-compilation support.
   platformLinkerSettings: [
     .linkedFramework("UIKit", .when(platforms: [.iOS, .visionOS])),
     .linkedFramework("AppKit", .when(platforms: [.macOS])),

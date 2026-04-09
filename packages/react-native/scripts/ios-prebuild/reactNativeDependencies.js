@@ -10,7 +10,11 @@
 
 /*:: import type {BuildFlavor} from './types'; */
 
-const {findMatchingHermesVersion} = require('./hermes'); // [macOS]
+const {
+  findMatchingHermesVersion,
+  findVersionAtMergeBase,
+  getLatestStableVersionFromNPM,
+} = require('./macosVersionResolver'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');
@@ -146,58 +150,6 @@ async function getNightlyVersionFromNPM() /*: Promise<string> */ {
   dependencyLog(`Using version ${latestNightly}`);
   return latestNightly;
 }
-
-// [macOS
-/**
- * Finds the upstream react-native version at the merge base with facebook/react-native.
- * Falls back to null if the version at merge base is also 1000.0.0 (i.e. merge base is
- * on upstream main, not a release branch).
- */
-function findVersionAtMergeBase() /*: ?string */ {
-  try {
-    // hermesCommitAtMergeBase() already fetches facebook/react-native, but we
-    // might not have FETCH_HEAD if this runs standalone. Fetch it.
-    execSync('git fetch -q https://github.com/facebook/react-native.git', {
-      stdio: 'pipe',
-      timeout: 60000,
-    });
-    const mergeBase = execSync('git merge-base FETCH_HEAD HEAD', {
-      encoding: 'utf8',
-    }).trim();
-    if (!mergeBase) {
-      return null;
-    }
-    // Read the package.json version at the merge base commit
-    const pkgJson = execSync(
-      `git show ${mergeBase}:packages/react-native/package.json`,
-      {encoding: 'utf8'},
-    );
-    const version = JSON.parse(pkgJson).version;
-    // If the merge base is also on main (1000.0.0), this doesn't help
-    if (version === '1000.0.0') {
-      return null;
-    }
-    return version;
-  } catch (_) {
-    return null;
-  }
-}
-
-async function getLatestStableVersionFromNPM() /*: Promise<string> */ {
-  const npmResponse /*: Response */ = await fetch(
-    'https://registry.npmjs.org/react-native/latest',
-  );
-
-  if (!npmResponse.ok) {
-    throw new Error(
-      `Couldn't get latest stable version from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
-    );
-  }
-
-  const json = await npmResponse.json();
-  return json.version;
-}
-// macOS]
 
 /*::
 type ReactNativeDependenciesEngineSourceType =

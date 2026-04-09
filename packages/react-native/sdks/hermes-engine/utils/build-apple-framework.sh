@@ -60,12 +60,7 @@ function get_mac_deployment_target {
 function build_host_hermesc {
   echo "Building hermesc"
   pushd "$HERMES_PATH" > /dev/null || exit 1
-    # Set a deployment target to prevent -Werror=unguarded-availability-new
-    # failures in LLVM's check_symbol_exists tests (macOS SDK headers contain
-    # availability annotations that error without a deployment target).
-    cmake -S . -B build_host_hermesc \
-      -DJSI_DIR="$JSI_PATH" \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING="${MAC_DEPLOYMENT_TARGET:-10.15}"
+    cmake -S . -B build_host_hermesc -DJSI_DIR="$JSI_PATH"
     cmake --build ./build_host_hermesc --target hermesc -j "${NUM_CORES}"
   popd > /dev/null || exit 1
 }

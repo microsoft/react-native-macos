@@ -1,4 +1,4 @@
-name: Build SPM
+name: Build SwiftPM
 
 on:
   workflow_call:
@@ -43,14 +43,14 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           key: hermes-v1-${{ steps.resolve.outputs.hermes-commit }}-Debug
-          path: /tmp/hermes-destroot
+          path: hermes-destroot
 
       - name: Upload cached Hermes artifacts
         if: steps.cache.outputs.cache-hit == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: hermes-artifacts
-          path: /tmp/hermes-destroot
+          path: hermes-destroot
           retention-days: 1
 
   build-hermesc:
@@ -68,17 +68,17 @@ jobs:
         run: sudo xcode-select --switch /Applications/Xcode_16.2.app
 
       - name: Clone Hermes
-        run: |
-          git clone --depth 1 https://github.com/facebook/hermes.git /tmp/hermes
-          cd /tmp/hermes
-          git fetch --depth 1 origin ${{ needs.resolve-hermes.outputs.hermes-commit }}
-          git checkout ${{ needs.resolve-hermes.outputs.hermes-commit }}
+        uses: actions/checkout@v4
+        with:
+          repository: facebook/hermes
+          ref: ${{ needs.resolve-hermes.outputs.hermes-commit }}
+          path: hermes
 
       - name: Build hermesc
-        working-directory: /tmp/hermes
+        working-directory: hermes
         env:
-          HERMES_PATH: /tmp/hermes
-          JSI_PATH: /tmp/hermes/API/jsi
+          HERMES_PATH: ${{ github.workspace }}/hermes
+          JSI_PATH: ${{ github.workspace }}/hermes/API/jsi
           MAC_DEPLOYMENT_TARGET: '14.0'
         run: |
           source $GITHUB_WORKSPACE/packages/react-native/sdks/hermes-engine/utils/build-apple-framework.sh
@@ -88,7 +88,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hermesc
-          path: /tmp/hermes/build_host_hermesc
+          path: hermes/build_host_hermesc
           retention-days: 1
 
   build-hermes-slice:
@@ -118,27 +118,27 @@ jobs:
           sudo xcodebuild -runFirstLaunch
 
       - name: Clone Hermes
-        run: |
-          git clone --depth 1 https://github.com/facebook/hermes.git /tmp/hermes
-          cd /tmp/hermes
-          git fetch --depth 1 origin ${{ needs.resolve-hermes.outputs.hermes-commit }}
-          git checkout ${{ needs.resolve-hermes.outputs.hermes-commit }}
+        uses: actions/checkout@v4
+        with:
+          repository: facebook/hermes
+          ref: ${{ needs.resolve-hermes.outputs.hermes-commit }}
+          path: hermes
 
       - name: Download hermesc
         uses: actions/download-artifact@v4
         with:
           name: hermesc
-          path: /tmp/hermes/build_host_hermesc
+          path: hermes/build_host_hermesc
 
       - name: Restore hermesc permissions
-        run: chmod +x /tmp/hermes/build_host_hermesc/bin/hermesc
+        run: chmod +x ${{ github.workspace }}/hermes/build_host_hermesc/bin/hermesc
 
       - name: Build Hermes slice (${{ matrix.slice }})
-        working-directory: /tmp/hermes
+        working-directory: hermes
         env:
           BUILD_TYPE: Debug
-          HERMES_PATH: /tmp/hermes
-          JSI_PATH: /tmp/hermes/API/jsi
+          HERMES_PATH: ${{ github.workspace }}/hermes
+          JSI_PATH: ${{ github.workspace }}/hermes/API/jsi
           IOS_DEPLOYMENT_TARGET: '15.1'
           MAC_DEPLOYMENT_TARGET: '14.0'
           XROS_DEPLOYMENT_TARGET: '1.0'
@@ -150,7 +150,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hermes-slice-${{ matrix.slice }}
-          path: /tmp/hermes/destroot
+          path: hermes/destroot
           retention-days: 1
 
   assemble-hermes:
@@ -172,26 +172,26 @@ jobs:
 
       - name: Assemble destroot from slices
         run: |
-          mkdir -p /tmp/hermes/destroot/Library/Frameworks
+          mkdir -p ${{ github.workspace }}/hermes/destroot/Library/Frameworks
           for slice_dir in /tmp/slices/hermes-slice-*; do
             slice_name=$(basename "$slice_dir" | sed 's/hermes-slice-//')
             echo "Copying slice: $slice_name"
-            cp -R "$slice_dir/Library/Frameworks/$slice_name" /tmp/hermes/destroot/Library/Frameworks/
+            cp -R "$slice_dir/Library/Frameworks/$slice_name" ${{ github.workspace }}/hermes/destroot/Library/Frameworks/
             # Copy include and bin directories (identical across slices, only need one copy)
-            if [ -d "$slice_dir/include" ] && [ ! -d /tmp/hermes/destroot/include ]; then
-              cp -R "$slice_dir/include" /tmp/hermes/destroot/
+            if [ -d "$slice_dir/include" ] && [ ! -d ${{ github.workspace }}/hermes/destroot/include ]; then
+              cp -R "$slice_dir/include" ${{ github.workspace }}/hermes/destroot/
             fi
             if [ -d "$slice_dir/bin" ]; then
-              cp -R "$slice_dir/bin" /tmp/hermes/destroot/
+              cp -R "$slice_dir/bin" ${{ github.workspace }}/hermes/destroot/
             fi
           done
           echo "Assembled destroot contents:"
-          ls -la /tmp/hermes/destroot/Library/Frameworks/
+          ls -la ${{ github.workspace }}/hermes/destroot/Library/Frameworks/
 
       - name: Create universal xcframework
-        working-directory: /tmp/hermes
+        working-directory: hermes
         env:
-          HERMES_PATH: /tmp/hermes
+          HERMES_PATH: ${{ github.workspace }}/hermes
         run: |
           source $GITHUB_WORKSPACE/packages/react-native/sdks/hermes-engine/utils/build-apple-framework.sh
           create_universal_framework "iphoneos" "iphonesimulator" "macosx" "xros" "xrsimulator"
@@ -200,13 +200,13 @@ jobs:
         uses: actions/cache/save@v4
         with:
           key: hermes-v1-${{ needs.resolve-hermes.outputs.hermes-commit }}-Debug
-          path: /tmp/hermes/destroot
+          path: hermes/destroot
 
       - name: Upload Hermes artifacts
         uses: actions/upload-artifact@v4
         with:
           name: hermes-artifacts
-          path: /tmp/hermes/destroot
+          path: hermes/destroot
           retention-days: 1
 
   build-spm:

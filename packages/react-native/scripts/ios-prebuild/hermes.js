@@ -8,10 +8,14 @@
  * @format
  */
 
+const {
+  findMatchingHermesVersion,
+  hermesCommitAtMergeBase,
+} = require('./macosVersionResolver'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');
-const os = require('os');
+const os = require('os'); // [macOS]
 const path = require('path');
 const stream = require('stream');
 const {promisify} = require('util');
@@ -22,124 +26,6 @@ const hermesLog = createLogger('Hermes');
 /*::
 import type {BuildFlavor, Destination, Platform} from './types';
 */
-
-// [macOS
-/**
- * For react-native-macos stable branches, maps the macOS package version
- * to the upstream react-native version using peerDependencies.
- * Returns null for version 1000.0.0 (main branch dev version).
- *
- * This is the JavaScript equivalent of the Ruby `findMatchingHermesVersion`
- * in sdks/hermes-engine/hermes-utils.rb.
- */
-function findMatchingHermesVersion(
-  packageJsonPath /*: string */,
-) /*: ?string */ {
-  const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-
-  if (pkg.version === '1000.0.0') {
-    hermesLog(
-      'Main branch detected (1000.0.0), no matching upstream Hermes version',
-    );
-    return null;
-  }
-
-  if (pkg.peerDependencies && pkg.peerDependencies['react-native']) {
-    const upstreamVersion = pkg.peerDependencies['react-native'];
-    hermesLog(
-      `Mapped macOS version ${pkg.version} to upstream RN version: ${upstreamVersion}`,
-    );
-    return upstreamVersion;
-  }
-
-  hermesLog(
-    'No matching Hermes version found in peerDependencies. Defaulting to package version.',
-  );
-  return null;
-}
-
-/**
- * Finds the Hermes commit at the merge base with facebook/react-native.
- * Used on the main branch (1000.0.0) where no prebuilt artifacts exist.
- *
- * Since react-native-macos lags slightly behind facebook/react-native, we can't always use
- * the latest Hermes commit because Hermes and JSI don't always guarantee backwards compatibility.
- * Instead, we take the commit hash of Hermes at the time of the merge base with facebook/react-native.
- *
- * This is the JavaScript equivalent of the Ruby `hermes_commit_at_merge_base`
- * in sdks/hermes-engine/hermes-utils.rb.
- */
-function hermesCommitAtMergeBase() /*: {| commit: string, timestamp: string |} */ {
-  const HERMES_GITHUB_URL = 'https://github.com/facebook/hermes.git';
-
-  // Fetch upstream react-native
-  hermesLog('Fetching facebook/react-native to find merge base...');
-  try {
-    execSync('git fetch -q https://github.com/facebook/react-native.git', {
-      stdio: 'pipe',
-    });
-  } catch (e) {
-    abort(
-      '[Hermes] Failed to fetch facebook/react-native into the local repository.',
-    );
-  }
-
-  // Find merge base between our HEAD and upstream's HEAD
-  const mergeBase = execSync('git merge-base FETCH_HEAD HEAD', {
-    encoding: 'utf8',
-  }).trim();
-  if (!mergeBase) {
-    abort(
-      "[Hermes] Unable to find the merge base between our HEAD and upstream's HEAD.",
-    );
-  }
-
-  // Get timestamp of merge base
-  const timestamp = execSync(`git show -s --format=%ci ${mergeBase}`, {
-    encoding: 'utf8',
-  }).trim();
-  if (!timestamp) {
-    abort(
-      `[Hermes] Unable to extract the timestamp for the merge base (${mergeBase}).`,
-    );
-  }
-
-  // Clone Hermes bare (minimal) into a temp directory and find the commit
-  hermesLog(
-    `Merge base timestamp: ${timestamp}. Cloning Hermes to find matching commit...`,
-  );
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-'));
-  const hermesGitDir = path.join(tmpDir, 'hermes.git');
-
-  try {
-    // Explicitly use Hermes 'main' branch since the default branch changed to 'static_h' (Hermes V1)
-    execSync(
-      `git clone -q --bare --filter=blob:none --single-branch --branch main ${HERMES_GITHUB_URL} "${hermesGitDir}"`,
-      {stdio: 'pipe', timeout: 120000},
-    );
-
-    // Find the Hermes commit at the time of the merge base on branch 'main'
-    const commit = execSync(
-      `git --git-dir="${hermesGitDir}" rev-list -1 --before="${timestamp}" refs/heads/main`,
-      {encoding: 'utf8'},
-    ).trim();
-
-    if (!commit) {
-      abort(
-        `[Hermes] Unable to find the Hermes commit hash at time ${timestamp} on branch 'main'.`,
-      );
-    }
-
-    hermesLog(
-      `Using Hermes commit from the merge base with facebook/react-native: ${commit} (timestamp: ${timestamp})`,
-    );
-    return {commit, timestamp};
-  } finally {
-    // Clean up temp directory
-    fs.rmSync(tmpDir, {recursive: true, force: true});
-  }
-}
-// macOS]
 
 /**
  * Downloads hermes artifacts from the specified version and build type. If you want to specify a specific
@@ -556,23 +442,19 @@ async function buildFromHermesCommit(
   const hermesDir = path.join(tmpDir, 'hermes');
 
   try {
-    // Clone Hermes at the identified commit
+    // Clone Hermes at the identified commit using the most efficient
+    // single-fetch pattern (see https://github.com/actions/checkout)
     hermesLog(`Cloning Hermes at commit ${commit}...`);
-    execSync(`git clone --depth 1 ${HERMES_GITHUB_URL} "${hermesDir}"`, {
-      stdio: 'inherit',
-      timeout: 300000,
-    });
-    execSync(`git -C "${hermesDir}" fetch --depth 1 origin ${commit}`, {
-      stdio: 'inherit',
-      timeout: 120000,
-    });
-    execSync(`git -C "${hermesDir}" checkout ${commit}`, {
+    execSync(`git init "${hermesDir}"`, {stdio: 'inherit'});
+    execSync(`git -C "${hermesDir}" remote add origin ${HERMES_GITHUB_URL}`, {
       stdio: 'inherit',
     });
+    execSync(
+      `git -C "${hermesDir}" fetch --no-tags --depth 1 origin +${commit}:refs/remotes/origin/main`,
+      {stdio: 'inherit', timeout: 300000},
+    );
+    execSync(`git -C "${hermesDir}" checkout main`, {stdio: 'inherit'});
 
-    // The build-ios-framework.sh script runs from the hermes directory.
-    // It sources build-apple-framework.sh which sets HERMES_PATH relative to itself,
-    // but we override it to point to the cloned Hermes repo.
     const reactNativeRoot = path.resolve(__dirname, '..', '..');
     const buildScript = path.join(
       reactNativeRoot,
@@ -582,23 +464,25 @@ async function buildFromHermesCommit(
       'build-ios-framework.sh',
     );
 
+    const buildEnv = {
+      ...process.env,
+      BUILD_TYPE: buildType,
+      HERMES_PATH: hermesDir,
+      JSI_PATH: path.join(hermesDir, 'API', 'jsi'),
+      REACT_NATIVE_PATH: reactNativeRoot,
+      // Deployment targets matching react-native-macos minimums
+      IOS_DEPLOYMENT_TARGET: '15.1',
+      MAC_DEPLOYMENT_TARGET: '14.0',
+      XROS_DEPLOYMENT_TARGET: '1.0',
+      RELEASE_VERSION: version,
+    };
+
     hermesLog(`Building Hermes frameworks (${buildType})...`);
     execSync(`bash "${buildScript}"`, {
       cwd: hermesDir,
       stdio: 'inherit',
       timeout: 3600000, // 60 minutes
-      env: {
-        ...process.env,
-        BUILD_TYPE: buildType,
-        HERMES_PATH: hermesDir,
-        JSI_PATH: path.join(hermesDir, 'API', 'jsi'),
-        REACT_NATIVE_PATH: reactNativeRoot,
-        // Deployment targets matching react-native-macos minimums
-        IOS_DEPLOYMENT_TARGET: '15.1',
-        MAC_DEPLOYMENT_TARGET: '14.0',
-        XROS_DEPLOYMENT_TARGET: '1.0',
-        RELEASE_VERSION: version,
-      },
+      env: buildEnv,
     });
 
     // Create tarball from the destroot (same structure as Maven artifacts)
@@ -651,6 +535,6 @@ function abort(message /*: string */) {
 
 module.exports = {
   prepareHermesArtifactsAsync,
-  findMatchingHermesVersion, // [macOS]
-  hermesCommitAtMergeBase, // [macOS]
+  findMatchingHermesVersion, // [macOS] re-exported from macosVersionResolver.js
+  hermesCommitAtMergeBase, // [macOS] re-exported from macosVersionResolver.js
 };
