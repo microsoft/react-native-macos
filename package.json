@@ -35,9 +35,10 @@
     "fantom": "./scripts/fantom.sh",
     "trigger-react-native-release": "node ./scripts/releases-local/trigger-react-native-release.js",
     "update-lock": "npx yarn-deduplicate",
+    "change": "node .github/scripts/change.mts",
+    "change:check": "node .github/scripts/change.mts --check",
     "changeset": "changeset",
-    "changeset:version": "node .github/scripts/changeset-version-with-postbump.mts",
-    "changeset:validate": "node .github/scripts/validate-changesets.mts"
+    "changeset:version": "node .github/scripts/changeset-version-with-postbump.mts"
   },
   "workspaces": [
     "packages/*",

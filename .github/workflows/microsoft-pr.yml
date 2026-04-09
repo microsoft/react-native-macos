@@ -61,14 +61,16 @@ jobs:
         run: yarn build
       - name: Simulate publish (dry run)
         run: |
-          yarn workspaces foreach -vv --all --topological --no-private npm publish --tag $(publishTag) --tolerate-republish --dry-run
+          yarn workspaces foreach -vv --all --topological --no-private npm publish --tag dry-run --tolerate-republish --dry-run
 
   check-changesets:
     name: "Check for Changesets"
     permissions: {}
     runs-on: ubuntu-latest
-    # Only required for PRs targeting stable branches
-    if: ${{ endsWith(github.base_ref, '-stable') }}
+    # Only required for PRs targeting stable branches; skip the version bump PR itself
+    if: >-
+      ${{ endsWith(github.base_ref, '-stable')
+          && !startsWith(github.head_ref, 'changeset-release/') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -81,7 +83,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
       - name: Validate changesets
-        run: yarn changeset:validate
+        run: yarn change:check
   
   yarn-constraints:
     name: "Check Yarn Constraints"

@@ -15,6 +15,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          filter: blob:none
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain

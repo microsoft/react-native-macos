@@ -6,11 +6,7 @@ import { updateReactNativeArtifacts } from '../../scripts/releases/set-rn-artifa
 echo('📦 Running changeset version...');
 await $`yarn changeset version`;
 
-// Step 2: Undo the commit changeset version made — changesets/action creates its own commit
-echo('🔙 Undoing changeset commit (keeping changes)...');
-await $`git reset --soft HEAD~1`;
-
-// Step 3: Update native artifacts to match the new react-native version
+// Step 2: Update native artifacts to match the new react-native version
 echo('\n🔄 Updating React Native native artifacts...');
 const { version } = fs.readJsonSync('packages/react-native/package.json');
 await updateReactNativeArtifacts(version);
