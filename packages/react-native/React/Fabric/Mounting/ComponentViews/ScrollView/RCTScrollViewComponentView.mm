@@ -157,7 +157,16 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
 #if !TARGET_OS_OSX // [macOS]
     [_scrollView addSubview:_containerView];
 #else // [macOS
-    _containerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    // Force overlay scrollbar style. Overlay scrollers float above content and
+    // don't reduce the clip view's visible area, so no layout compensation is
+    // needed. Legacy (always-visible) scrollbars sit inside the frame and would
+    // require padding adjustments in the Yoga shadow tree — avoiding that
+    // complexity is the main motivation for forcing overlay style.
+    _scrollView.scrollerStyle = NSScrollerStyleOverlay;
+    // Do NOT set autoresizingMask on the documentView. AppKit's autoresizing
+    // corrupts the documentView frame during tile/resize (adding the clip view's
+    // size delta to the container, inflating it beyond the actual content size).
+    // React manages the documentView frame directly via updateState:.
     [_scrollView setDocumentView:_containerView];
 #endif // macOS]
 
@@ -185,26 +194,12 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
 }
 
 #if TARGET_OS_OSX // [macOS
-- (void)layoutSubviews
+- (void)_preferredScrollerStyleDidChange:(NSNotification *)notification
 {
-  [super layoutSubviews];
-
-  // On macOS, the _containerView is the NSScrollView's documentView and has autoresizingMask set so
-  // it fills the visible area before React's first layout pass. However, AppKit's autoresizing can
-  // corrupt the documentView's frame by adding the NSClipView's size delta to the container's
-  // dimensions (e.g., during initial tile or window resize), inflating it well beyond the correct
-  // content size. This produces massive horizontal and vertical overflow on first render.
-  //
-  // After React has set the content size via updateState:, we reset the documentView frame here to
-  // undo any autoresizing corruption. This runs after AppKit's layout (which triggers autoresizing),
-  // so it reliably corrects the frame.
-  if (!CGSizeEqualToSize(_contentSize, CGSizeZero)) {
-    CGRect containerFrame = _containerView.frame;
-    if (!CGSizeEqualToSize(containerFrame.size, _contentSize)) {
-      containerFrame.size = _contentSize;
-      _containerView.frame = containerFrame;
-    }
-  }
+  // The user changed the system "Show scroll bars" preference. Re-force
+  // overlay style so legacy scrollbars don't appear and cause layout issues.
+  _scrollView.scrollerStyle = NSScrollerStyleOverlay;
+  [_scrollView tile];
 }
 #endif // macOS]
 
@@ -558,6 +553,11 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _preserveContentOffsetIfNeededWithBlock:^{
     self->_scrollView.contentSize = contentSize;
   }];
+
+#if TARGET_OS_OSX // [macOS
+  // Force the scroll view to re-evaluate which scrollers should be visible.
+  [_scrollView tile];
+#endif // macOS]
 }
 
 - (RCTPlatformView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
@@ -584,6 +584,20 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   if (clipsToBounds && !isPointInside) {
     return nil;
   }
+
+#if TARGET_OS_OSX // [macOS
+  // Check if the hit lands on a scrollbar (NSScroller) BEFORE checking content
+  // subviews. Scrollers are subviews of the NSScrollView, not the documentView
+  // (_containerView). They must be checked first because content views typically
+  // fill the entire visible area and would otherwise swallow scroller clicks.
+  if (isPointInside) {
+    NSPoint scrollViewPoint = [_scrollView convertPoint:point fromView:self];
+    NSView *scrollViewHit = [_scrollView hitTest:scrollViewPoint];
+    if ([scrollViewHit isKindOfClass:[NSScroller class]]) {
+      return (RCTPlatformView *)scrollViewHit;
+    }
+  }
+#endif // macOS]
 
   for (RCTPlatformView *subview in [_containerView.subviews reverseObjectEnumerator]) { // [macOS]
     RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, point, self, event); // [macOS]
@@ -889,12 +903,20 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     [defaultCenter removeObserver:self
                              name:NSViewBoundsDidChangeNotification
                            object:_scrollView.contentView];
+    [defaultCenter removeObserver:self
+                             name:NSPreferredScrollerStyleDidChangeNotification
+                           object:nil];
   } else {
     // Register for scrollview's clipview bounds change notifications so we can track scrolling
     [defaultCenter addObserver:self
                       selector:@selector(scrollViewDocumentViewBoundsDidChange:)
                           name:NSViewBoundsDidChangeNotification
                         object:_scrollView.contentView]; // NSClipView
+    // Re-force overlay style if the user changes the system "Show scroll bars" preference
+    [defaultCenter addObserver:self
+                      selector:@selector(_preferredScrollerStyleDidChange:)
+                          name:NSPreferredScrollerStyleDidChangeNotification
+                        object:nil];
   }
 #endif // macOS]
 
