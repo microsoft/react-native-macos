@@ -1,6 +1,7 @@
 {
   "name": "@react-native-macos/monorepo",
-  "version": "0.81.5",
+  "private": true,
+  "version": "1000.0.0",
   "license": "MIT",
   "packageManager": "yarn@4.13.0",
   "scripts": {
