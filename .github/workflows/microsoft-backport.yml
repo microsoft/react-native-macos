@@ -16,7 +16,8 @@ jobs:
     if: >
       github.event_name == 'issue_comment' &&
       github.event.issue.pull_request != '' &&
-      startsWith(github.event.comment.body, '/backport ')
+      startsWith(github.event.comment.body, '/backport ') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -194,7 +195,8 @@ jobs:
     if: >
       github.event_name == 'issue_comment' &&
       github.event.issue.pull_request != '' &&
-      github.event.comment.body == '/update-backports'
+      github.event.comment.body == '/update-backports' &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     permissions:
       contents: write
