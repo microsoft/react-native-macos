@@ -159,20 +159,17 @@ function enforceReactNativeMacOSDependencyConsistency({Yarn}) {
 }
 
 /**
- * Enforce that private @react-native-macos/ scoped packages (i.e. internal
- * tooling that is not forked from upstream) have a fixed version of 0.1.0.
- * These packages do not track the react-native-macos release version.
+ * Enforce that all private @react-native-macos/ scoped packages use a fixed
+ * version of 1000.0.0, so they are decoupled from release versioning.
  * @param {Context} context
  */
 function enforceReactNativeMacosPrivatePackageVersion({Yarn}) {
-    if (!isMainBranch({Yarn})) {
-        for (const workspace of Yarn.workspaces()) {
-            const isReactNativeMacosScoped = workspace.ident?.startsWith('@react-native-macos/');
-            const isPrivate = workspace.manifest.private;
+    for (const workspace of Yarn.workspaces()) {
+        const isReactNativeMacosScoped = workspace.ident?.startsWith('@react-native-macos/');
+        const isPrivate = workspace.manifest.private;
 
-            if (isReactNativeMacosScoped && isPrivate) {
-                workspace.set('version', '0.1.0');
-            }
+        if (isReactNativeMacosScoped && isPrivate) {
+            workspace.set('version', '1000.0.0');
         }
     }
 }
