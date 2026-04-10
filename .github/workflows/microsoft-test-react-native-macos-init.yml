@@ -26,7 +26,17 @@ jobs:
         run: yarn install
 
       - name: Build community CLI plugin
-        run: yarn build
+        run: |
+          yarn build
+          # yarn build rewrites package.json "exports" from ./src to ./dist
+          # for publishing. The dist/ files use ESM syntax that requires
+          # babel-register (only wired up in src/index.js). When the test
+          # project loads react-native-macos as a dependency via symlink,
+          # require('@react-native/community-cli-plugin') resolves to
+          # dist/index.js which fails to load, silently preventing the
+          # macos platform from being registered. Restore src exports so
+          # the monorepo's babel-register entry point is used.
+          git checkout -- packages/*/package.json
 
       - name: Build react-native-macos-init
         working-directory: packages/react-native-macos-init
