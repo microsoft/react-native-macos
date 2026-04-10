@@ -70,6 +70,21 @@ jobs:
           node ${{ github.workspace }}/packages/react-native-macos-init/bin.js --verbose --overwrite --prerelease
           pod install --project-directory=macos
 
+      - name: Debug config
+        working-directory: ${{ runner.temp }}/testcli
+        run: |
+          set -eox pipefail
+          echo "=== node_modules/react-native-macos symlink ==="
+          ls -la node_modules/react-native-macos
+          echo "=== community-cli-plugin exports ==="
+          node -e "console.log(require('${{ github.workspace }}/packages/community-cli-plugin/package.json').exports)"
+          echo "=== community-cli-plugin resolve ==="
+          node -e "console.log(require.resolve('@react-native/community-cli-plugin', {paths: [require.resolve('react-native-macos')]}))"
+          echo "=== cli.js config platforms ==="
+          node node_modules/react-native-macos/cli.js config 2>&1 | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log('platforms:', Object.keys(d.platforms))"
+          echo "=== direct config load ==="
+          node -e "process.chdir('${{ runner.temp }}/testcli'); const c = require('${{ github.workspace }}/packages/react-native/react-native.config.js'); console.log('platforms:', Object.keys(c.platforms))"
+
       - name: Build macOS app
         working-directory: ${{ runner.temp }}/testcli
         run: |
