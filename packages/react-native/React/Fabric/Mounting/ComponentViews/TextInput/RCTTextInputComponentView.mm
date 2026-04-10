@@ -9,7 +9,6 @@
 
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/iostextinput/TextInputComponentDescriptor.h>
-#import <react/renderer/graphics/Color.h> // [macOS]
 #import <react/renderer/textlayoutmanager/RCTAttributedTextUtils.h>
 #import <react/renderer/textlayoutmanager/TextLayoutManager.h>
 
@@ -176,20 +175,6 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   const auto &props = static_cast<const TextInputProps &>(*_props);
   NSMutableDictionary<NSAttributedStringKey, id> *attrs =
       RCTNSTextAttributesFromTextAttributes(props.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
-
-#if TARGET_OS_OSX
-  // The C++ color pipeline resolves dynamic colors (like labelColor) to static
-  // values at creation time, so re-calling RCTNSTextAttributesFromTextAttributes
-  // after an appearance change returns the same stale color. When the foreground
-  // color is the default (semantic labelColor, not a user-specified color),
-  // replace it with a fresh dynamic NSColor.labelColor so the text adapts to the
-  // current appearance. Explicit colors (e.g. "white", "red") are left as-is.
-  const auto &effectiveAttrs = props.getEffectiveTextAttributes(RCTFontSizeMultiplier());
-  facebook::react::SharedColor defaultColor = facebook::react::defaultForegroundTextColor();
-  if (!effectiveAttrs.foregroundColor || *effectiveAttrs.foregroundColor == *defaultColor) {
-    attrs[NSForegroundColorAttributeName] = [NSColor labelColor];
-  }
-#endif
 
   _backedTextInputView.defaultTextAttributes = attrs;
 
