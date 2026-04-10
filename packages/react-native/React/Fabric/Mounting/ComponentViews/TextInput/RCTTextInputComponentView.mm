@@ -202,12 +202,16 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (facebook::react::ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() &&
       UITraitCollection.currentTraitCollection.preferredContentSizeCategory !=
           previousTraitCollection.preferredContentSizeCategory) {
-    [self _updateDefaultTextAttributes];
+    const auto &newTextInputProps = static_cast<const TextInputProps &>(*_props);
+    _backedTextInputView.defaultTextAttributes =
+        RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
   }
 
-  if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) { // [macOS]
-    [self _updateDefaultTextAttributes]; // [macOS]
-  } // [macOS]
+  // [macOS
+  if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+    [self _updateDefaultTextAttributes];
+  }
+  // macOS]
 }
 #else // [macOS
 - (void)viewDidChangeEffectiveAppearance

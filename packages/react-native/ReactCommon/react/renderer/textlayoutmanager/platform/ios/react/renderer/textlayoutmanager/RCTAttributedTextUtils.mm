@@ -146,13 +146,14 @@ inline static RCTPlatformColor *RCTEffectiveForegroundColorFromTextAttributes(co
 {
   RCTPlatformColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ?: [RCTPlatformColor labelColor]; // [macOS]
 
-  // [macOS
-  // Skip colorWithAlphaComponent: when opacity is 1.0 — the multiplication is
-  // a no-op, but on macOS it has the side effect of converting dynamic system
-  // colors (like NSColor.labelColor) into static resolved colors, preventing
-  // them from adapting to appearance changes (light/dark mode).
+#if TARGET_OS_OSX // [macOS
+  // On macOS, colorWithAlphaComponent: converts dynamic system colors (like
+  // NSColor.labelColor) to static resolved colors, preventing them from
+  // adapting to appearance changes. Skip when opacity is 1.0 (a no-op).
   if (!isnan(textAttributes.opacity) && textAttributes.opacity != 1.0f) {
-  // macOS]
+#else // macOS]
+  if (!isnan(textAttributes.opacity)) {
+#endif
     effectiveForegroundColor = [effectiveForegroundColor
         colorWithAlphaComponent:CGColorGetAlpha(effectiveForegroundColor.CGColor) * textAttributes.opacity];
   }
@@ -164,7 +165,11 @@ inline static RCTPlatformColor *RCTEffectiveBackgroundColorFromTextAttributes(co
 {
   RCTPlatformColor *effectiveBackgroundColor = RCTUIColorFromSharedColor(textAttributes.backgroundColor); // [macOS]
 
-  if (effectiveBackgroundColor && !isnan(textAttributes.opacity) && textAttributes.opacity != 1.0f) { // [macOS]
+#if TARGET_OS_OSX // [macOS
+  if (effectiveBackgroundColor && !isnan(textAttributes.opacity) && textAttributes.opacity != 1.0f) {
+#else // macOS]
+  if (effectiveBackgroundColor && !isnan(textAttributes.opacity)) {
+#endif
     effectiveBackgroundColor = [effectiveBackgroundColor
         colorWithAlphaComponent:CGColorGetAlpha(effectiveBackgroundColor.CGColor) * textAttributes.opacity];
   }
