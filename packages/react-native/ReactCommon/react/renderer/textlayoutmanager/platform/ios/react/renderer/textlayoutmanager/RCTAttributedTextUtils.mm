@@ -194,16 +194,6 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   if (textAttributes.foregroundColor || !isnan(textAttributes.opacity)) {
     attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
   }
-#if TARGET_OS_OSX // [macOS
-  // On macOS, NSAttributedString defaults to black when no foreground color
-  // attribute is present, unlike iOS where the text view provides its own
-  // default. Always set the foreground color so that text is visible in both
-  // light and dark mode. RCTEffectiveForegroundColorFromTextAttributes falls
-  // back to the platform's dynamic labelColor when no color is specified.
-  else {
-    attributes[NSForegroundColorAttributeName] = effectiveForegroundColor;
-  }
-#endif // macOS]
 
   if (textAttributes.backgroundColor || !isnan(textAttributes.opacity)) {
     attributes[NSBackgroundColorAttributeName] = RCTEffectiveBackgroundColorFromTextAttributes(textAttributes);
