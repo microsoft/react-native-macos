@@ -52,19 +52,24 @@ jobs:
           npx --yes @react-native-community/cli init testcli --version ${{ steps.rn-version.outputs.version }}
         working-directory: ${{ runner.temp }}
 
+      - name: Pack local react-native-macos
+        working-directory: packages/react-native
+        run: |
+          set -eox pipefail
+          # Pack the local package into a tarball. This runs the "prepack"
+          # script which generates the FBReactNativeSpec codegen headers
+          # (React/FBReactNativeSpec/) that are shipped in published releases.
+          yarn pack -o ${{ runner.temp }}/react-native-macos.tgz
+
       - name: Install local react-native-macos
         working-directory: ${{ runner.temp }}/testcli
         run: |
           set -eox pipefail
-          # Pack the local package into a tarball first. This runs the
-          # "prepack" script which generates the FBReactNativeSpec codegen
-          # headers (React/FBReactNativeSpec/) that are shipped in published
-          # releases. Then install from the tarball so the test project
-          # matches a normal user's node_modules layout: no symlinks (which
-          # cause module instance duplication) and pre-generated codegen
-          # headers present (which the build relies on to skip regeneration).
-          yarn --cwd ${{ github.workspace }}/packages/react-native pack -o ${{ runner.temp }}/react-native-macos.tgz
-          yarn add ${{ runner.temp }}/react-native-macos.tgz
+          # Install from the tarball so the test project matches a normal
+          # user's node_modules layout: no symlinks (which cause module
+          # instance duplication) and pre-generated codegen headers present
+          # (which the build relies on to skip regeneration).
+          npm install ${{ runner.temp }}/react-native-macos.tgz
 
       - name: Apply macOS template
         working-directory: ${{ runner.temp }}/testcli
