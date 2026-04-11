@@ -59,7 +59,9 @@ jobs:
           # Pack the local package into a tarball. This runs the "prepack"
           # script which generates the FBReactNativeSpec codegen headers
           # (React/FBReactNativeSpec/) that are shipped in published releases.
-          yarn pack -o ${{ runner.temp }}/react-native-macos.tgz
+          # Use npm pack (not yarn pack) to preserve file permissions — yarn
+          # pack strips execute bits from shell scripts.
+          npm pack --pack-destination ${{ runner.temp }}
 
       - name: Install local react-native-macos
         working-directory: ${{ runner.temp }}/testcli
@@ -69,9 +71,7 @@ jobs:
           # user's node_modules layout: no symlinks (which cause module
           # instance duplication) and pre-generated codegen headers present
           # (which the build relies on to skip regeneration).
-          npm install ${{ runner.temp }}/react-native-macos.tgz
-          # yarn pack strips execute permissions from shell scripts
-          chmod +x node_modules/react-native-macos/scripts/*.sh node_modules/react-native-macos/scripts/xcode/*.sh
+          npm install ${{ runner.temp }}/react-native-macos-*.tgz
 
       - name: Apply macOS template
         working-directory: ${{ runner.temp }}/testcli
