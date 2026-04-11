@@ -26,7 +26,10 @@ jobs:
         run: yarn install
 
       - name: Build community CLI plugin
-        run: yarn build
+        run: |
+          yarn build
+          # yarn build rewrites package.json exports; restore them
+          git checkout -- packages/*/package.json
 
       - name: Build react-native-macos-init
         working-directory: packages/react-native-macos-init
@@ -47,11 +50,21 @@ jobs:
           npx --yes @react-native-community/cli init testcli --version ${{ steps.rn-version.outputs.version }}
         working-directory: ${{ runner.temp }}
 
+      - name: Pack local react-native-macos
+        working-directory: packages/react-native
+        run: |
+          set -eox pipefail
+          # Use a tarball instead of a direct path to avoid symlinks
+          yarn pack -o ${{ runner.temp }}/react-native-macos.tgz
+
       - name: Install local react-native-macos
         working-directory: ${{ runner.temp }}/testcli
         run: |
           set -eox pipefail
-          npm install ${{ github.workspace }}/packages/react-native
+          npm install ${{ runner.temp }}/react-native-macos.tgz
+          # yarn pack strips execute bits from shell scripts.
+          # publishConfig.executableFiles could fix this but doesn't support globs.
+          find node_modules/react-native-macos/scripts -name '*.sh' -exec chmod +x {} +
 
       - name: Apply macOS template
         working-directory: ${{ runner.temp }}/testcli
