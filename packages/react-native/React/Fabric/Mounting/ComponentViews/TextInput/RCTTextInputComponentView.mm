@@ -170,6 +170,30 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [self _restoreTextSelection];
 }
 
+// [macOS
+- (void)_updateDefaultTextAttributes
+{
+  const auto &props = static_cast<const TextInputProps &>(*_props);
+  NSMutableDictionary<NSAttributedStringKey, id> *attrs =
+      RCTNSTextAttributesFromTextAttributes(props.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
+
+  _backedTextInputView.defaultTextAttributes = attrs;
+
+  // Also update the existing attributed text so the visible text re-renders
+  // with the new color (defaultTextAttributes only affects newly typed text).
+  // Wrap in _comingFromJS to prevent textInputDidChange from pushing a state
+  // update back to the shadow tree, which would overwrite our fresh colors
+  // with the stale cached attributed string.
+  NSString *currentText = _backedTextInputView.attributedText.string;
+  if (currentText.length > 0) {
+    NSAttributedString *updated = [[NSAttributedString alloc] initWithString:currentText attributes:attrs];
+    _comingFromJS = YES;
+    _backedTextInputView.attributedText = updated;
+    _comingFromJS = NO;
+  }
+}
+// macOS]
+
 #if !TARGET_OS_OSX // [macOS]
 // TODO: replace with registerForTraitChanges once iOS 17.0 is the lowest supported version
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
@@ -183,8 +207,20 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.defaultTextAttributes =
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
   }
+
+  // [macOS
+  if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+    [self _updateDefaultTextAttributes];
+  }
+  // macOS]
 }
-#endif // [macOS] 
+#else // [macOS
+- (void)viewDidChangeEffectiveAppearance
+{
+  [super viewDidChangeEffectiveAppearance];
+  [self _updateDefaultTextAttributes];
+}
+#endif // macOS]
 
 - (void)reactUpdateResponderOffsetForScrollView:(RCTScrollViewComponentView *)scrollView
 {

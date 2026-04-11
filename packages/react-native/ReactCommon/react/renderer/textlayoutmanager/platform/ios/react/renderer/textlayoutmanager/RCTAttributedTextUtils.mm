@@ -146,7 +146,14 @@ inline static RCTUIColor *RCTEffectiveForegroundColorFromTextAttributes(const Te
 {
   RCTUIColor *effectiveForegroundColor = RCTUIColorFromSharedColor(textAttributes.foregroundColor) ?: [RCTUIColor labelColor]; // [macOS]
 
+#if TARGET_OS_OSX // [macOS
+  // On macOS, colorWithAlphaComponent: converts dynamic system colors (like
+  // NSColor.labelColor) to static resolved colors, preventing them from
+  // adapting to appearance changes. Skip when opacity is 1.0 (a no-op).
+  if (!isnan(textAttributes.opacity) && textAttributes.opacity != 1.0f) {
+#else // macOS]
   if (!isnan(textAttributes.opacity)) {
+#endif
     effectiveForegroundColor = [effectiveForegroundColor
         colorWithAlphaComponent:CGColorGetAlpha(effectiveForegroundColor.CGColor) * textAttributes.opacity];
   }
@@ -158,7 +165,11 @@ inline static RCTUIColor *RCTEffectiveBackgroundColorFromTextAttributes(const Te
 {
   RCTUIColor *effectiveBackgroundColor = RCTUIColorFromSharedColor(textAttributes.backgroundColor); // [macOS]
 
+#if TARGET_OS_OSX // [macOS
+  if (effectiveBackgroundColor && !isnan(textAttributes.opacity) && textAttributes.opacity != 1.0f) {
+#else // macOS]
   if (effectiveBackgroundColor && !isnan(textAttributes.opacity)) {
+#endif
     effectiveBackgroundColor = [effectiveBackgroundColor
         colorWithAlphaComponent:CGColorGetAlpha(effectiveBackgroundColor.CGColor) * textAttributes.opacity];
   }
