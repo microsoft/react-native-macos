@@ -29,13 +29,8 @@ jobs:
         run: |
           yarn build
           # yarn build rewrites package.json "exports" from ./src to ./dist
-          # for publishing. The dist/ files use ESM syntax that requires
-          # babel-register (only wired up in src/index.js). When the test
-          # project loads react-native-macos as a dependency via symlink,
-          # require('@react-native/community-cli-plugin') resolves to
-          # dist/index.js which fails to load, silently preventing the
-          # macos platform from being registered. Restore src exports so
-          # the monorepo's babel-register entry point is used.
+          # for publishing. Restore the original exports so that any
+          # monorepo tooling that still runs from source continues to work.
           git checkout -- packages/*/package.json
 
       - name: Build react-native-macos-init
@@ -61,7 +56,14 @@ jobs:
         working-directory: ${{ runner.temp }}/testcli
         run: |
           set -eox pipefail
-          npm install ${{ github.workspace }}/packages/react-native
+          # --install-links copies the package instead of symlinking it.
+          # Without this, Node follows the symlink's real path back to the
+          # monorepo for module resolution, causing bundle.js to load a
+          # different instance of @react-native/metro-config than the one
+          # the user's metro.config.js uses. The setFrameworkDefaults()
+          # call (which registers the "macos" platform) then targets the
+          # wrong instance, and xcodebuild fails with "Invalid platform".
+          npm install --install-links ${{ github.workspace }}/packages/react-native
 
       - name: Apply macOS template
         working-directory: ${{ runner.temp }}/testcli
@@ -69,21 +71,6 @@ jobs:
           set -eox pipefail
           node ${{ github.workspace }}/packages/react-native-macos-init/bin.js --verbose --overwrite --prerelease
           pod install --project-directory=macos
-
-      - name: Debug config
-        working-directory: ${{ runner.temp }}/testcli
-        run: |
-          set -eox pipefail
-          echo "=== node_modules/react-native-macos symlink ==="
-          ls -la node_modules/react-native-macos
-          echo "=== community-cli-plugin exports ==="
-          node -e "console.log(require('${{ github.workspace }}/packages/community-cli-plugin/package.json').exports)"
-          echo "=== community-cli-plugin resolve ==="
-          node -e "console.log(require.resolve('@react-native/community-cli-plugin', {paths: [require.resolve('react-native-macos')]}))"
-          echo "=== cli.js config platforms ==="
-          node node_modules/react-native-macos/cli.js config 2>&1 | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log('platforms:', Object.keys(d.platforms))"
-          echo "=== direct config load ==="
-          node -e "process.chdir('${{ runner.temp }}/testcli'); const c = require('${{ github.workspace }}/packages/react-native/react-native.config.js'); console.log('platforms:', Object.keys(c.platforms))"
 
       - name: Build macOS app
         working-directory: ${{ runner.temp }}/testcli
