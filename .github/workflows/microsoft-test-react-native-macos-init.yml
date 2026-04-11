@@ -28,9 +28,7 @@ jobs:
       - name: Build community CLI plugin
         run: |
           yarn build
-          # yarn build rewrites package.json "exports" from ./src to ./dist
-          # for publishing. Restore the original exports so that any
-          # monorepo tooling that still runs from source continues to work.
+          # yarn build rewrites package.json exports; restore them
           git checkout -- packages/*/package.json
 
       - name: Build react-native-macos-init
@@ -56,21 +54,15 @@ jobs:
         working-directory: packages/react-native
         run: |
           set -eox pipefail
-          # Pack the local package into a tarball. This runs the "prepack"
-          # script which generates the FBReactNativeSpec codegen headers
-          # (React/FBReactNativeSpec/) that are shipped in published releases.
+          # Use a tarball instead of a direct path to avoid symlinks
           yarn pack -o ${{ runner.temp }}/react-native-macos.tgz
 
       - name: Install local react-native-macos
         working-directory: ${{ runner.temp }}/testcli
         run: |
           set -eox pipefail
-          # Install from the tarball so the test project matches a normal
-          # user's node_modules layout: no symlinks (which cause module
-          # instance duplication) and pre-generated codegen headers present
-          # (which the build relies on to skip regeneration).
           npm install ${{ runner.temp }}/react-native-macos.tgz
-          # yarn pack strips execute permissions from shell scripts
+          # yarn pack strips execute bits from shell scripts
           find node_modules/react-native-macos/scripts -name '*.sh' -exec chmod +x {} +
 
       - name: Apply macOS template
