@@ -385,11 +385,9 @@ let reactCore = RNTarget(
 #if os(macOS)
 let reactFabricViewPlatformSources = ["components/view/platform/macos"]
 let reactFabricViewPlatformExcludes = ["components/view/platform/cxx"]
-let reactFabricComponentsSwitchExcludes = ["components/switch/iosswitch/react/renderer/components/switch/IOSSwitchShadowNode.mm"]
 #else
 let reactFabricViewPlatformExcludes = ["components/view/platform/macos"]
 let reactFabricViewPlatformSources = ["components/view/platform/cxx"]
-let reactFabricComponentsSwitchExcludes = ["components/switch/iosswitch/react/renderer/components/switch/MacOSSwitchShadowNode.mm"]
 #endif
 // macOS]
 let reactFabric = RNTarget(
@@ -448,7 +446,8 @@ let reactFabricComponents = RNTarget(
     "components/view/platform/android",
     "components/view/platform/windows",
     "components/view/platform/macos",
-    // "components/switch/iosswitch/.../MacOSSwitchShadowNode.mm" or "IOSSwitchShadowNode.mm" — [macOS] see reactFabricComponentsSwitchExcludes
+    // [macOS] Both IOSSwitchShadowNode.mm and MacOSSwitchShadowNode.mm are included;
+    // they use #if TARGET_OS_OSX guards internally so only the correct one compiles.
     "components/textinput/platform/android",
     "components/text/platform/android",
     "components/textinput/platform/macos",
@@ -459,7 +458,7 @@ let reactFabricComponents = RNTarget(
     "textlayoutmanager/platform/windows",
     "textlayoutmanager/platform/macos",
     "conponents/rncore", // this was the old folder where RN Core Components were generated. If you ran codegen in the past, you might have some files in it that might make the build fail.
-  ] + reactFabricComponentsSwitchExcludes, // [macOS]
+  ],
   dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging],
   sources: ["components/inputaccessory", "components/modal", "components/safeareaview", "components/text", "components/text/platform/cxx", "components/textinput", "components/textinput/platform/ios/", "components/unimplementedview", "components/virtualview", "textlayoutmanager", "textlayoutmanager/platform/ios", "components/switch/iosswitch"]
 )
