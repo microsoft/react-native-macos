@@ -8,9 +8,14 @@
  * @format
  */
 
+const {
+  findMatchingHermesVersion,
+  hermesCommitAtMergeBase,
+} = require('./macosVersionResolver'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');
+const os = require('os'); // [macOS]
 const path = require('path');
 const stream = require('stream');
 const {promisify} = require('util');
@@ -56,6 +61,29 @@ async function prepareHermesArtifactsAsync(
     // Resolve the version from the environment variable or use the default version
     let resolvedVersion = process.env.HERMES_VERSION ?? version;
 
+    // [macOS] Map macOS version to upstream RN version for artifact lookup.
+    // If no mapped version is found (main branch / 1000.0.0), allowBuildFromSource
+    // enables the fallback to hermesCommitAtMergeBase() when no prebuilt artifacts exist.
+    let allowBuildFromSource = false;
+    if (!process.env.HERMES_VERSION) {
+      const packageJsonPath = path.resolve(
+        __dirname,
+        '..',
+        '..',
+        'package.json',
+      );
+      const mappedVersion = findMatchingHermesVersion(packageJsonPath);
+      if (mappedVersion != null) {
+        hermesLog(
+          `Using mapped upstream version for Hermes lookup: ${mappedVersion}`,
+        );
+        resolvedVersion = mappedVersion;
+      } else {
+        allowBuildFromSource = true;
+      }
+    }
+    // macOS]
+
     if (resolvedVersion === 'nightly') {
       hermesLog('Using latest nightly tarball');
       const hermesVersion = await getNightlyVersionFromNPM();
@@ -74,7 +102,11 @@ async function prepareHermesArtifactsAsync(
       return artifactsPath;
     }
 
-    const sourceType = await hermesSourceType(resolvedVersion, buildType);
+    const sourceType = await hermesSourceType(
+      resolvedVersion,
+      buildType,
+      allowBuildFromSource,
+    );
     localPath = await resolveSourceFromSourceType(
       sourceType,
       resolvedVersion,
@@ -124,12 +156,14 @@ type HermesEngineSourceType =
   | 'local_prebuilt_tarball'
   | 'download_prebuild_tarball'
   | 'download_prebuilt_nightly_tarball'
+  | 'build_from_hermes_commit'
 */
 
 const HermesEngineSourceTypes = {
     LOCAL_PREBUILT_TARBALL: 'local_prebuilt_tarball',
     DOWNLOAD_PREBUILD_TARBALL: 'download_prebuild_tarball',
     DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: 'download_prebuilt_nightly_tarball',
+    BUILD_FROM_HERMES_COMMIT: 'build_from_hermes_commit', // [macOS]
   } /*:: as const */;
 
 /**
@@ -224,10 +258,16 @@ async function hermesArtifactExists(
 
 /**
  * Determines the source type for Hermes based on availability
+ *
+ * @param version - The resolved version string
+ * @param buildType - Debug or Release
+ * @param allowBuildFromSource - If true (macOS main branch), fall back to BUILD_FROM_HERMES_COMMIT
+ *   when no prebuilt artifacts exist. If false, fall back to nightly download (original behavior).
  */
 async function hermesSourceType(
   version /*: string */,
   buildType /*: BuildFlavor */,
+  allowBuildFromSource /*: boolean */ = false,
 ) /*: Promise<HermesEngineSourceType> */ {
   if (hermesEngineTarballEnvvarDefined()) {
     hermesLog('Using local prebuild tarball');
@@ -246,6 +286,16 @@ async function hermesSourceType(
     hermesLog('Using download prebuild nightly tarball');
     return HermesEngineSourceTypes.DOWNLOAD_PREBUILT_NIGHTLY_TARBALL;
   }
+
+  // [macOS] When on the macOS main branch (no mapped version, no explicit HERMES_VERSION),
+  // fall back to resolving the Hermes commit at the merge base with facebook/react-native.
+  if (allowBuildFromSource) {
+    hermesLog(
+      'No prebuilt Hermes artifact found. Will attempt to resolve from merge base with facebook/react-native.',
+    );
+    return HermesEngineSourceTypes.BUILD_FROM_HERMES_COMMIT;
+  }
+  // macOS]
 
   hermesLog(
     'Using download prebuild nightly tarball - this is a fallback and might not work.',
@@ -266,6 +316,8 @@ async function resolveSourceFromSourceType(
       return downloadPrebuildTarball(version, buildType, artifactsPath);
     case HermesEngineSourceTypes.DOWNLOAD_PREBUILT_NIGHTLY_TARBALL:
       return downloadPrebuiltNightlyTarball(version, buildType, artifactsPath);
+    case HermesEngineSourceTypes.BUILD_FROM_HERMES_COMMIT: // [macOS]
+      return buildFromHermesCommit(version, buildType, artifactsPath);
     default:
       abort(
         `[Hermes] Unsupported or invalid source type provided: ${sourceType}`,
@@ -372,6 +424,113 @@ async function downloadHermesTarball(
   return destPath;
 }
 
+// [macOS
+/**
+ * Handles the case where no prebuilt Hermes artifacts are available.
+ * Determines the Hermes commit at the merge base with facebook/react-native
+ * and provides actionable guidance for building Hermes.
+ */
+async function buildFromHermesCommit(
+  version /*: string */,
+  buildType /*: BuildFlavor */,
+  artifactsPath /*: string */,
+) /*: Promise<string> */ {
+  const {commit, timestamp} = hermesCommitAtMergeBase();
+  hermesLog(
+    `Building Hermes from source at commit ${commit} (merge base timestamp: ${timestamp})`,
+  );
+
+  const HERMES_GITHUB_URL = 'https://github.com/facebook/hermes.git';
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-build-'));
+  const hermesDir = path.join(tmpDir, 'hermes');
+
+  try {
+    // Clone Hermes at the identified commit using the most efficient
+    // single-fetch pattern (see https://github.com/actions/checkout)
+    hermesLog(`Cloning Hermes at commit ${commit}...`);
+    execSync(`git init "${hermesDir}"`, {stdio: 'inherit'});
+    execSync(`git -C "${hermesDir}" remote add origin ${HERMES_GITHUB_URL}`, {
+      stdio: 'inherit',
+    });
+    execSync(
+      `git -C "${hermesDir}" fetch --no-tags --depth 1 origin +${commit}:refs/remotes/origin/main`,
+      {stdio: 'inherit', timeout: 300000},
+    );
+    execSync(`git -C "${hermesDir}" checkout main`, {stdio: 'inherit'});
+
+    const reactNativeRoot = path.resolve(__dirname, '..', '..');
+    const buildScript = path.join(
+      reactNativeRoot,
+      'sdks',
+      'hermes-engine',
+      'utils',
+      'build-ios-framework.sh',
+    );
+
+    const buildEnv = {
+      ...process.env,
+      BUILD_TYPE: buildType,
+      HERMES_PATH: hermesDir,
+      JSI_PATH: path.join(hermesDir, 'API', 'jsi'),
+      REACT_NATIVE_PATH: reactNativeRoot,
+      // Deployment targets matching react-native-macos minimums
+      IOS_DEPLOYMENT_TARGET: '15.1',
+      MAC_DEPLOYMENT_TARGET: '14.0',
+      XROS_DEPLOYMENT_TARGET: '1.0',
+      RELEASE_VERSION: version,
+    };
+
+    hermesLog(`Building Hermes frameworks (${buildType})...`);
+    execSync(`bash "${buildScript}"`, {
+      cwd: hermesDir,
+      stdio: 'inherit',
+      timeout: 3600000, // 60 minutes
+      env: buildEnv,
+    });
+
+    // Create tarball from the destroot (same structure as Maven artifacts)
+    const tarballName = `hermes-ios-${buildType.toLowerCase()}.tar.gz`;
+    const tarballPath = path.join(artifactsPath, tarballName);
+    hermesLog('Creating Hermes tarball from build output...');
+    execSync(`tar -czf "${tarballPath}" -C "${hermesDir}" destroot`, {
+      stdio: 'inherit',
+    });
+
+    hermesLog(`Hermes built from source and packaged at ${tarballPath}`);
+    return tarballPath;
+  } catch (e) {
+    // Dump CMake error logs before cleanup for debugging
+    try {
+      const cmakeErrorLog = path.join(
+        hermesDir,
+        'build_host_hermesc',
+        'CMakeFiles',
+        'CMakeError.log',
+      );
+      if (fs.existsSync(cmakeErrorLog)) {
+        hermesLog('=== CMakeError.log ===');
+        hermesLog(fs.readFileSync(cmakeErrorLog, 'utf8'));
+      }
+    } catch (_) {
+      // ignore
+    }
+
+    abort(
+      `[Hermes] Failed to build Hermes from source at commit ${commit}.\n` +
+        `Error: ${e.message}\n` +
+        `To resolve, either:\n` +
+        `  1. Set HERMES_ENGINE_TARBALL_PATH to a local Hermes tarball path\n` +
+        `  2. Set HERMES_VERSION to an upstream RN version with published artifacts\n` +
+        `  3. Build Hermes manually from commit ${commit} and provide the tarball path via HERMES_ENGINE_TARBALL_PATH`,
+    );
+    return ''; // unreachable
+  } finally {
+    // Clean up
+    fs.rmSync(tmpDir, {recursive: true, force: true});
+  }
+}
+// macOS]
+
 function abort(message /*: string */) {
   hermesLog(message, 'error');
   throw new Error(message);
@@ -379,4 +538,6 @@ function abort(message /*: string */) {
 
 module.exports = {
   prepareHermesArtifactsAsync,
+  findMatchingHermesVersion, // [macOS] re-exported from macosVersionResolver.js
+  hermesCommitAtMergeBase, // [macOS] re-exported from macosVersionResolver.js
 };
