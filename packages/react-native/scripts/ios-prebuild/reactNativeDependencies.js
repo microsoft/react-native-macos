@@ -50,8 +50,6 @@ async function prepareReactNativeDependenciesArtifactsAsync(
   let resolvedVersion = process.env.RN_DEP_VERSION ?? version;
 
   // [macOS] Map macOS version to upstream RN version for artifact lookup.
-  // For stable branches, peerDependencies maps to the upstream version.
-  // For the main branch (1000.0.0), fall back to the latest stable RN release.
   if (!process.env.RN_DEP_VERSION) {
     const packageJsonPath = path.resolve(__dirname, '..', '..', 'package.json');
     const mappedVersion = findMatchingHermesVersion(packageJsonPath);

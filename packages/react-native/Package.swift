@@ -249,9 +249,8 @@ let reactJsErrorHandler = RNTarget(
 let reactGraphicsApple = RNTarget(
   name: .reactGraphicsApple,
   path: "ReactCommon/react/renderer/graphics/platform/ios",
-  linkedFrameworks: ["CoreGraphics"], // [macOS] UIKit removed; linked conditionally via platformLinkerSettings below
-  // [macOS] Package.swift evaluates on the host (macOS), not the target, so #if os(macOS) doesn't work for cross-compilation.
-  // not the target. Use .when(platforms:) for cross-compilation support.
+  linkedFrameworks: ["CoreGraphics"],
+  // [macOS] UIKit/AppKit linked conditionally for cross-compilation
   platformLinkerSettings: [
     .linkedFramework("UIKit", .when(platforms: [.iOS, .visionOS])),
     .linkedFramework("AppKit", .when(platforms: [.macOS])),
@@ -369,19 +368,18 @@ let reactCore = RNTarget(
     "ReactCommon/react/runtime/platform/ios", // explicit header search path to break circular dependency. RCTHost imports `RCTDefines.h` in ReactCore, ReacCore needs to import RCTHost
   ],
   linkedFrameworks: ["CoreServices"],
-  // [macOS] RCTUIKit is part of React-Core on 0.81 — add platform-conditional UIKit/AppKit linking
+  // [macOS]
   platformLinkerSettings: [
     .linkedFramework("UIKit", .when(platforms: [.iOS, .visionOS])),
     .linkedFramework("AppKit", .when(platforms: [.macOS])),
   ],
-  // macOS]
   excludedPaths: ["Fabric", "Tests", "Resources", "Runtime/RCTJscInstanceFactory.mm", "I18n/strings", "CxxBridge/JSCExecutorFactory.mm", "CoreModules"],
   dependencies: [.reactNativeDependencies, .reactCxxReact, .reactPerfLogger, .jsi, .reactJsiExecutor, .reactUtils, .reactFeatureFlags, .reactRuntimeScheduler, .yoga, .reactJsInspector, .reactJsiTooling, .rctDeprecation, .reactCoreRCTWebsocket, .reactRCTImage, .reactTurboModuleCore, .reactRCTText, .reactRCTBlob, .reactRCTAnimation, .reactRCTNetwork, .reactFabric, .hermesPrebuilt],
   sources: [".", "Runtime/RCTHermesInstanceFactory.mm"]
 )
 
 /// React-Fabric.podspec
-// [macOS: on macOS, use platform/macos view sources instead of platform/cxx
+// [macOS
 #if os(macOS)
 let reactFabricViewPlatformSources = ["components/view/platform/macos"]
 let reactFabricViewPlatformExcludes = ["components/view/platform/cxx"]
@@ -400,7 +398,7 @@ let reactFabric = RNTarget(
     "components/view/tests",
     "components/view/platform/android",
     "components/view/platform/windows",
-    // "components/view/platform/macos", // [macOS] moved to reactFabricViewPlatformExcludes for conditional exclusion
+    // "components/view/platform/macos", // [macOS]
     "components/scrollview/tests",
     "components/scrollview/platform/android",
     "mounting/tests",
@@ -445,8 +443,7 @@ let reactFabricComponents = RNTarget(
     "components/view/platform/android",
     "components/view/platform/windows",
     "components/view/platform/macos",
-    // [macOS] Both IOSSwitchShadowNode.mm and MacOSSwitchShadowNode.mm are included;
-    // they use #if TARGET_OS_OSX guards internally so only the correct one compiles.
+    // [macOS] Both switch files included; TARGET_OS_OSX guards select the correct one.
     "components/textinput/platform/android",
     "components/text/platform/android",
     "components/textinput/platform/macos",
@@ -654,7 +651,7 @@ class BinaryTarget: BaseTarget {
 
 class RNTarget: BaseTarget {
   let linkedFrameworks: [String]
-  let platformLinkerSettings: [LinkerSetting] // [macOS] Platform-conditional framework linking (e.g. UIKit vs AppKit)
+  let platformLinkerSettings: [LinkerSetting] // [macOS]
   let excludedPaths: [String]
   let dependencies: [String]
   let sources: [String]?
