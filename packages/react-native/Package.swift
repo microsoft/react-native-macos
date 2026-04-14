@@ -249,7 +249,7 @@ let reactJsErrorHandler = RNTarget(
 let reactGraphicsApple = RNTarget(
   name: .reactGraphicsApple,
   path: "ReactCommon/react/renderer/graphics/platform/ios",
-  linkedFrameworks: ["CoreGraphics"],
+  linkedFrameworks: ["CoreGraphics"], // [macOS] UIKit removed; linked conditionally via platformLinkerSettings below
   // [macOS] Package.swift evaluates on the host (macOS), not the target, so #if os(macOS) doesn't work for cross-compilation.
   // not the target. Use .when(platforms:) for cross-compilation support.
   platformLinkerSettings: [
@@ -400,8 +400,7 @@ let reactFabric = RNTarget(
     "components/view/tests",
     "components/view/platform/android",
     "components/view/platform/windows",
-    // "components/view/platform/cxx", // [macOS] excluded on macOS, included on iOS/visionOS (see reactFabricViewPlatformExcludes)
-    // "components/view/platform/macos", // [macOS] excluded on iOS/visionOS, included on macOS (see reactFabricViewPlatformExcludes)
+    // "components/view/platform/macos", // [macOS] moved to reactFabricViewPlatformExcludes for conditional exclusion
     "components/scrollview/tests",
     "components/scrollview/platform/android",
     "mounting/tests",

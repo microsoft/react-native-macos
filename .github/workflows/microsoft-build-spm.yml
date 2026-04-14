@@ -34,7 +34,7 @@ jobs:
         id: resolve
         working-directory: packages/react-native
         run: |
-          COMMIT=$(node -e "const {hermesCommitAtMergeBase} = require('./scripts/ios-prebuild/hermes'); console.log(hermesCommitAtMergeBase().commit);" 2>&1 | grep -E '^[0-9a-f]{40}$')
+          COMMIT=$(node -e "const {hermesCommitAtMergeBase} = require('./scripts/ios-prebuild/macosVersionResolver'); console.log(hermesCommitAtMergeBase().commit);" 2>&1 | grep -E '^[0-9a-f]{40}$')
           echo "hermes-commit=$COMMIT" >> "$GITHUB_OUTPUT"
           echo "Resolved Hermes commit: $COMMIT"
 
@@ -51,7 +51,7 @@ jobs:
         with:
           name: hermes-artifacts
           path: hermes-destroot
-          retention-days: 1
+          retention-days: 30
 
   build-hermesc:
     name: "Build hermesc"
@@ -89,7 +89,7 @@ jobs:
         with:
           name: hermesc
           path: hermes/build_host_hermesc
-          retention-days: 1
+          retention-days: 30
 
   build-hermes-slice:
     name: "Hermes ${{ matrix.slice }}"
@@ -151,7 +151,7 @@ jobs:
         with:
           name: hermes-slice-${{ matrix.slice }}
           path: hermes/destroot
-          retention-days: 1
+          retention-days: 30
 
   assemble-hermes:
     name: "Assemble Hermes xcframework"
@@ -207,7 +207,7 @@ jobs:
         with:
           name: hermes-artifacts
           path: hermes/destroot
-          retention-days: 1
+          retention-days: 30
 
   build-spm:
     name: "SPM ${{ matrix.platform }}"
