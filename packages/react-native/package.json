@@ -27,6 +27,27 @@
     "react-native": "cli.js",
     "react-native-macos": "cli.js"
   },
+  "publishConfig": {
+    "executableFiles": [
+      "scripts/find-node-for-xcode.sh",
+      "scripts/ios-configure-glog.sh",
+      "scripts/node-binary.sh",
+      "scripts/packager.sh",
+      "scripts/react-native-xcode.sh",
+      "scripts/react_native_pods_utils/script_phases.sh",
+      "scripts/update-ruby.sh",
+      "scripts/xcode/ccache-clang.sh",
+      "scripts/xcode/ccache-clang++.sh",
+      "scripts/xcode/with-environment.sh",
+      "sdks/hermes-engine/utils/build-apple-framework.sh",
+      "sdks/hermes-engine/utils/build-hermes-xcode.sh",
+      "sdks/hermes-engine/utils/build-hermesc-xcode.sh",
+      "sdks/hermes-engine/utils/build-ios-framework.sh",
+      "sdks/hermes-engine/utils/build-mac-framework.sh",
+      "sdks/hermes-engine/utils/copy-hermes-xcode.sh",
+      "sdks/hermes-engine/utils/create-dummy-hermes-xcframework.sh"
+    ]
+  },
   "main": "./index.js",
   "types": "types",
   "exports": {
