@@ -246,7 +246,7 @@ let reactJsErrorHandler = RNTarget(
 let reactGraphicsApple = RNTarget(
   name: .reactGraphicsApple,
   path: "ReactCommon/react/renderer/graphics/platform/ios",
-  linkedFrameworks: ["CoreGraphics"],
+  linkedFrameworks: ["CoreGraphics"], // [macOS] UIKit removed; linked conditionally via platformLinkerSettings below
   // [macOS: UIKit on iOS/visionOS, AppKit on macOS
   // Note: #if os(macOS) doesn't work here because Package.swift runs on the host,
   // not the target. Use .when(platforms:) for cross-compilation support.
@@ -368,8 +368,8 @@ let reactCore = RNTarget(
     "ReactCommon/react/runtime/platform/ios", // explicit header search path to break circular dependency. RCTHost imports `RCTDefines.h` in ReactCore, ReacCore needs to import RCTHost
   ],
   linkedFrameworks: ["CoreServices"],
-  excludedPaths: ["Fabric", "Tests", "Resources", "Runtime/RCTJscInstanceFactory.mm", "I18n/strings", "CxxBridge/JSCExecutorFactory.mm", "CoreModules", "RCTUIKit"],
-  dependencies: [.reactNativeDependencies, .reactCxxReact, .reactPerfLogger, .jsi, .reactJsiExecutor, .reactUtils, .reactFeatureFlags, .reactRuntimeScheduler, .yoga, .reactJsInspector, .reactJsiTooling, .rctDeprecation, .reactCoreRCTWebsocket, .reactRCTImage, .reactTurboModuleCore, .reactRCTText, .reactRCTBlob, .reactRCTAnimation, .reactRCTNetwork, .reactFabric, .hermesPrebuilt, .reactRCTUIKit],
+  excludedPaths: ["Fabric", "Tests", "Resources", "Runtime/RCTJscInstanceFactory.mm", "I18n/strings", "CxxBridge/JSCExecutorFactory.mm", "CoreModules", "RCTUIKit"], // [macOS] added RCTUIKit exclusion (separate target)
+  dependencies: [.reactNativeDependencies, .reactCxxReact, .reactPerfLogger, .jsi, .reactJsiExecutor, .reactUtils, .reactFeatureFlags, .reactRuntimeScheduler, .yoga, .reactJsInspector, .reactJsiTooling, .rctDeprecation, .reactCoreRCTWebsocket, .reactRCTImage, .reactTurboModuleCore, .reactRCTText, .reactRCTBlob, .reactRCTAnimation, .reactRCTNetwork, .reactFabric, .hermesPrebuilt, .reactRCTUIKit], // [macOS] added .reactRCTUIKit
   sources: [".", "Runtime/RCTHermesInstanceFactory.mm"]
 )
 
@@ -393,8 +393,7 @@ let reactFabric = RNTarget(
     "components/view/tests",
     "components/view/platform/android",
     "components/view/platform/windows",
-    // "components/view/platform/cxx", // [macOS] excluded on macOS, included on iOS/visionOS (see reactFabricViewPlatformExcludes)
-    // "components/view/platform/macos", // [macOS] excluded on iOS/visionOS, included on macOS (see reactFabricViewPlatformExcludes)
+    // "components/view/platform/macos", // [macOS] moved to reactFabricViewPlatformExcludes for conditional exclusion
     "components/scrollview/tests",
     "components/scrollview/platform/android",
     "mounting/tests",
@@ -440,12 +439,14 @@ let reactFabricComponents = RNTarget(
     "components/view/platform/windows",
     // "components/view/platform/macos", // [macOS] not needed here — sources don't include components/view
     "components/textinput/platform/android",
+    // "components/textinput/platform/macos", // [macOS] removed — directory does not exist
     "components/text/platform/android",
     "components/text/tests",
     "textlayoutmanager/tests",
     "textlayoutmanager/platform/android",
     "textlayoutmanager/platform/cxx",
     "textlayoutmanager/platform/windows",
+    // "textlayoutmanager/platform/macos", // [macOS] removed — directory does not exist
     "conponents/rncore", // this was the old folder where RN Core Components were generated. If you ran codegen in the past, you might have some files in it that might make the build fail.
   ],
   dependencies: [.reactNativeDependencies, .reactCore, .reactJsiExecutor, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .yoga, .reactRendererDebug, .reactGraphics, .reactFabric, .reactTurboModuleBridging],
