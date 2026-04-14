@@ -4,9 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * [macOS] This file is specific to react-native-macos and has no upstream equivalent.
- * It handles version resolution for macOS fork branches where the package version
- * differs from upstream react-native.
+ * [macOS] Handles version resolution for macOS fork branches.
  *
  * @flow
  * @format

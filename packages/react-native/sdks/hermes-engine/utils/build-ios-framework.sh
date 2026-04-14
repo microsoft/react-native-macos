@@ -20,7 +20,7 @@ function get_architecture {
       echo "arm64"
     elif [[ $1 == "appletvsimulator" ]]; then
       echo "x86_64;arm64"
-    elif [[ $1 == "catalyst" || $1 == "macosx" ]]; then # [macOS] added macosx
+    elif [[ $1 == "catalyst" || $1 == "macosx" ]]; then # [macOS]
       echo "x86_64;arm64"
     else
       echo "Error: unknown architecture passed $1"
@@ -57,7 +57,7 @@ function build_framework {
 # group the frameworks together to create a universal framework
 function build_universal_framework {
     if [ ! -d destroot/Library/Frameworks/universal/hermes.xcframework ]; then
-        create_universal_framework "macosx" "iphoneos" "iphonesimulator" "catalyst" "xros" "xrsimulator" "appletvos" "appletvsimulator" # [macOS] added macosx
+        create_universal_framework "macosx" "iphoneos" "iphonesimulator" "catalyst" "xros" "xrsimulator" "appletvos" "appletvsimulator" # [macOS]
     else
         echo "Skipping; Clean \"destroot\" to rebuild".
     fi

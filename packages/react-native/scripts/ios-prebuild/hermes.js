@@ -62,8 +62,6 @@ async function prepareHermesArtifactsAsync(
     let resolvedVersion = process.env.HERMES_VERSION ?? version;
 
     // [macOS] Map macOS version to upstream RN version for artifact lookup.
-    // If no mapped version is found (main branch / 1000.0.0), allowBuildFromSource
-    // enables the fallback to hermesCommitAtMergeBase() when no prebuilt artifacts exist.
     let allowBuildFromSource = false;
     if (!process.env.HERMES_VERSION) {
       const packageJsonPath = path.resolve(
@@ -279,8 +277,7 @@ async function hermesSourceType(
     return HermesEngineSourceTypes.DOWNLOAD_PREBUILT_NIGHTLY_TARBALL;
   }
 
-  // [macOS] When on the macOS main branch (no mapped version, no explicit HERMES_VERSION),
-  // fall back to resolving the Hermes commit at the merge base with facebook/react-native.
+  // [macOS] Fall back to building Hermes from the merge-base commit.
   if (allowBuildFromSource) {
     hermesLog(
       'No prebuilt Hermes artifact found. Will attempt to resolve from merge base with facebook/react-native.',
@@ -486,7 +483,10 @@ async function buildFromHermesCommit(
     const tarballName = `hermes-ios-${buildType.toLowerCase()}.tar.gz`;
     const tarballPath = path.join(artifactsPath, tarballName);
     hermesLog('Creating Hermes tarball from build output...');
-    execSync(`tar -czf "${tarballPath}" -C "${hermesDir}" destroot`, inheritStdio);
+    execSync(
+      `tar -czf "${tarballPath}" -C "${hermesDir}" destroot`,
+      inheritStdio,
+    );
 
     hermesLog(`Hermes built from source and packaged at ${tarballPath}`);
     return tarballPath;
