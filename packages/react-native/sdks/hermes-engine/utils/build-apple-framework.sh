@@ -12,7 +12,8 @@ CURR_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 IMPORT_HERMESC_PATH=${HERMES_OVERRIDE_HERMESC_PATH:-$PWD/build_host_hermesc/ImportHermesc.cmake}
 BUILD_TYPE=${BUILD_TYPE:-Debug}
 
-HERMES_PATH="$CURR_SCRIPT_DIR/.."
+# [macOS]
+HERMES_PATH=${HERMES_PATH:-"$CURR_SCRIPT_DIR/.."}
 REACT_NATIVE_PATH=${REACT_NATIVE_PATH:-$CURR_SCRIPT_DIR/../../..}
 
 NUM_CORES=$(sysctl -n hw.ncpu)

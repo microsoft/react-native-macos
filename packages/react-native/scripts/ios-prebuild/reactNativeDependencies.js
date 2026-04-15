@@ -10,6 +10,11 @@
 
 /*:: import type {BuildFlavor} from './types'; */
 
+const {
+  findMatchingHermesVersion,
+  findVersionAtMergeBase,
+  getLatestStableVersionFromNPM,
+} = require('./macosVersionResolver'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');
@@ -43,6 +48,33 @@ async function prepareReactNativeDependenciesArtifactsAsync(
 
   // Resolve the version from the environment variable or use the default version
   let resolvedVersion = process.env.RN_DEP_VERSION ?? version;
+
+  // [macOS] Map macOS version to upstream RN version for artifact lookup.
+  if (!process.env.RN_DEP_VERSION) {
+    const packageJsonPath = path.resolve(__dirname, '..', '..', 'package.json');
+    const mappedVersion = findMatchingHermesVersion(packageJsonPath);
+    if (mappedVersion != null) {
+      dependencyLog(
+        `Using mapped upstream version for ReactNativeDependencies lookup: ${mappedVersion}`,
+      );
+      resolvedVersion = mappedVersion;
+    } else if (resolvedVersion === '1000.0.0') {
+      const versionAtMergeBase = findVersionAtMergeBase();
+      if (versionAtMergeBase != null) {
+        dependencyLog(
+          `Main branch detected. Using upstream version at merge base for ReactNativeDependencies: ${versionAtMergeBase}`,
+        );
+        resolvedVersion = versionAtMergeBase;
+      } else {
+        const latestStable = await getLatestStableVersionFromNPM();
+        dependencyLog(
+          `Main branch detected. Using latest stable RN version for ReactNativeDependencies: ${latestStable}`,
+        );
+        resolvedVersion = latestStable;
+      }
+    }
+  }
+  // macOS]
 
   if (resolvedVersion === 'nightly') {
     dependencyLog('Using latest nightly tarball');

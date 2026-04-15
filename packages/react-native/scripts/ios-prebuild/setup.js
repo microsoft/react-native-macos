@@ -145,6 +145,7 @@ async function setup(
   link('Libraries/LinkingIOS', 'React');
   link('Libraries/Settings', 'React');
 
+  link('React/RCTUIKit', 'React'); // [macOS]
   link('Libraries/PushNotificationIOS', 'React');
   link('Libraries/Settings', 'React');
   link('Libraries/Vibration', 'React');
@@ -184,6 +185,16 @@ async function setup(
     'ReactCommon/react/renderer/components/view/platform/cxx',
     'ReactCommon/react/renderer/components/view',
   );
+  // [macOS - link macOS-specific view platform headers
+  link(
+    'ReactCommon/react/renderer/components/view/platform/macos',
+    'ReactCommon/react/renderer/components/view',
+  );
+  link(
+    'ReactCommon/react/renderer/components/view/platform/macos',
+    'react/renderer/components/view',
+  );
+  // macOS]
   link('ReactCommon/react/renderer/mounting');
   link('ReactCommon/react/renderer/attributedstring');
   link('ReactCommon/runtimeexecutor/ReactCommon', 'ReactCommon');

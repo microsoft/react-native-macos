@@ -1,0 +1,256 @@
+name: Build SwiftPM
+
+on:
+  workflow_call:
+
+jobs:
+  resolve-hermes:
+    name: "Resolve Hermes"
+    runs-on: macos-15
+    timeout-minutes: 10
+    outputs:
+      hermes-commit: ${{ steps.resolve.outputs.hermes-commit }}
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+
+      - name: Setup Xcode
+        run: sudo xcode-select --switch /Applications/Xcode_16.2.app
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: '22'
+          cache: yarn
+          registry-url: https://registry.npmjs.org
+
+      - name: Install npm dependencies
+        run: yarn install
+
+      - name: Resolve Hermes commit at merge base
+        id: resolve
+        working-directory: packages/react-native
+        run: |
+          COMMIT=$(node -e "const {hermesCommitAtMergeBase} = require('./scripts/ios-prebuild/macosVersionResolver'); console.log(hermesCommitAtMergeBase().commit);" 2>&1 | grep -E '^[0-9a-f]{40}$')
+          echo "hermes-commit=$COMMIT" >> "$GITHUB_OUTPUT"
+          echo "Resolved Hermes commit: $COMMIT"
+
+      - name: Restore Hermes cache
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          key: hermes-v1-${{ steps.resolve.outputs.hermes-commit }}-Debug
+          path: hermes-destroot
+
+      - name: Upload cached Hermes artifacts
+        if: steps.cache.outputs.cache-hit == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermes-artifacts
+          path: hermes-destroot
+          retention-days: 30
+
+  build-hermesc:
+    name: "Build hermesc"
+    if: ${{ needs.resolve-hermes.outputs.cache-hit != 'true' }}
+    needs: resolve-hermes
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+
+      - name: Setup Xcode
+        run: sudo xcode-select --switch /Applications/Xcode_16.2.app
+
+      - name: Clone Hermes
+        uses: actions/checkout@v4
+        with:
+          repository: facebook/hermes
+          ref: ${{ needs.resolve-hermes.outputs.hermes-commit }}
+          path: hermes
+
+      - name: Build hermesc
+        working-directory: hermes
+        env:
+          HERMES_PATH: ${{ github.workspace }}/hermes
+          JSI_PATH: ${{ github.workspace }}/hermes/API/jsi
+          MAC_DEPLOYMENT_TARGET: '14.0'
+        run: |
+          source $GITHUB_WORKSPACE/packages/react-native/sdks/hermes-engine/utils/build-apple-framework.sh
+          build_host_hermesc
+
+      - name: Upload hermesc artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermesc
+          path: hermes/build_host_hermesc
+          retention-days: 30
+
+  build-hermes-slice:
+    name: "Hermes ${{ matrix.slice }}"
+    if: ${{ needs.resolve-hermes.outputs.cache-hit != 'true' }}
+    needs: [resolve-hermes, build-hermesc]
+    runs-on: macos-15
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        slice: [iphoneos, iphonesimulator, macosx, xros, xrsimulator]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+
+      - name: Setup Xcode
+        run: sudo xcode-select --switch /Applications/Xcode_16.2.app
+
+      - name: Download visionOS SDK
+        if: ${{ matrix.slice == 'xros' || matrix.slice == 'xrsimulator' }}
+        run: |
+          sudo xcodebuild -runFirstLaunch
+          sudo xcrun simctl list
+          sudo xcodebuild -downloadPlatform visionOS
+          sudo xcodebuild -runFirstLaunch
+
+      - name: Clone Hermes
+        uses: actions/checkout@v4
+        with:
+          repository: facebook/hermes
+          ref: ${{ needs.resolve-hermes.outputs.hermes-commit }}
+          path: hermes
+
+      - name: Download hermesc
+        uses: actions/download-artifact@v4
+        with:
+          name: hermesc
+          path: hermes/build_host_hermesc
+
+      - name: Restore hermesc permissions
+        run: chmod +x ${{ github.workspace }}/hermes/build_host_hermesc/bin/hermesc
+
+      - name: Build Hermes slice (${{ matrix.slice }})
+        working-directory: hermes
+        env:
+          BUILD_TYPE: Debug
+          HERMES_PATH: ${{ github.workspace }}/hermes
+          JSI_PATH: ${{ github.workspace }}/hermes/API/jsi
+          IOS_DEPLOYMENT_TARGET: '15.1'
+          MAC_DEPLOYMENT_TARGET: '14.0'
+          XROS_DEPLOYMENT_TARGET: '1.0'
+          RELEASE_VERSION: '1000.0.0'
+        run: |
+          bash $GITHUB_WORKSPACE/packages/react-native/sdks/hermes-engine/utils/build-ios-framework.sh "${{ matrix.slice }}"
+
+      - name: Upload slice artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermes-slice-${{ matrix.slice }}
+          path: hermes/destroot
+          retention-days: 30
+
+  assemble-hermes:
+    name: "Assemble Hermes xcframework"
+    if: ${{ needs.resolve-hermes.outputs.cache-hit != 'true' }}
+    needs: [resolve-hermes, build-hermes-slice]
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+
+      - name: Download all slice artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: hermes-slice-*
+          path: /tmp/slices
+
+      - name: Assemble destroot from slices
+        run: |
+          mkdir -p ${{ github.workspace }}/hermes/destroot/Library/Frameworks
+          for slice_dir in /tmp/slices/hermes-slice-*; do
+            slice_name=$(basename "$slice_dir" | sed 's/hermes-slice-//')
+            echo "Copying slice: $slice_name"
+            cp -R "$slice_dir/Library/Frameworks/$slice_name" ${{ github.workspace }}/hermes/destroot/Library/Frameworks/
+            # Copy include and bin directories (identical across slices, only need one copy)
+            if [ -d "$slice_dir/include" ] && [ ! -d ${{ github.workspace }}/hermes/destroot/include ]; then
+              cp -R "$slice_dir/include" ${{ github.workspace }}/hermes/destroot/
+            fi
+            if [ -d "$slice_dir/bin" ]; then
+              cp -R "$slice_dir/bin" ${{ github.workspace }}/hermes/destroot/
+            fi
+          done
+          echo "Assembled destroot contents:"
+          ls -la ${{ github.workspace }}/hermes/destroot/Library/Frameworks/
+
+      - name: Create universal xcframework
+        working-directory: hermes
+        env:
+          HERMES_PATH: ${{ github.workspace }}/hermes
+        run: |
+          source $GITHUB_WORKSPACE/packages/react-native/sdks/hermes-engine/utils/build-apple-framework.sh
+          create_universal_framework "iphoneos" "iphonesimulator" "macosx" "xros" "xrsimulator"
+
+      - name: Save Hermes cache
+        uses: actions/cache/save@v4
+        with:
+          key: hermes-v1-${{ needs.resolve-hermes.outputs.hermes-commit }}-Debug
+          path: hermes/destroot
+
+      - name: Upload Hermes artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermes-artifacts
+          path: hermes/destroot
+          retention-days: 30
+
+  build-spm:
+    name: "SPM ${{ matrix.platform }}"
+    needs: [resolve-hermes, assemble-hermes]
+    # Run when upstream jobs succeeded or were skipped (cache hit)
+    if: ${{ always() && !cancelled() && !failure() }}
+    runs-on: macos-26
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, macos, visionos]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+          platform: ${{ matrix.platform }}
+
+      - name: Install npm dependencies
+        run: yarn install
+
+      - name: Download Hermes artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: hermes-artifacts
+          path: packages/react-native/.build/artifacts/hermes/destroot
+
+      - name: Create Hermes version marker
+        working-directory: packages/react-native
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "${VERSION}-Debug" > .build/artifacts/hermes/version.txt
+
+      - name: Setup SPM workspace (using prebuilt Hermes)
+        working-directory: packages/react-native
+        run: node scripts/ios-prebuild.js -s -f Debug
+
+      - name: Build SPM (${{ matrix.platform }})
+        working-directory: packages/react-native
+        run: node scripts/ios-prebuild.js -b -f Debug -p ${{ matrix.platform }}

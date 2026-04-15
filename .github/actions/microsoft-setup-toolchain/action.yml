@@ -19,13 +19,17 @@ inputs:
   xcode-developer-dir:
     description: Set the path for the active Xcode developer directory
     default: "/Applications/Xcode.app"
+  cmake-version:
+    description: CMake version to install. Set to 'system' to skip installation and use the runner's pre-installed cmake.
+    default: "3.31.9"
 runs:
   using: composite
   steps:
     - name: Install cmake
+      if: ${{ inputs.cmake-version != 'system' }}
       uses: jwlawson/actions-setup-cmake@v2
       with:
-        cmake-version: '3.31.9'
+        cmake-version: ${{ inputs.cmake-version }}
     - name: Set up Ccache
       id: setup-ccache
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'macos' || inputs.platform == 'visionos' }}
