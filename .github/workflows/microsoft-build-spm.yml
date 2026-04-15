@@ -219,7 +219,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ios, macos, visionos]
+        platform: [ios, ios-simulator, macos, visionos, visionos-simulator]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -255,3 +255,84 @@ jobs:
       - name: Build SPM (${{ matrix.platform }})
         working-directory: packages/react-native
         run: node scripts/ios-prebuild.js -b -f Debug -p ${{ matrix.platform }}
+
+      - name: Upload headers
+        uses: actions/upload-artifact@v4
+        with:
+          name: prebuild-macos-core-headers-Debug-${{ matrix.platform }}
+          path: packages/react-native/.build/headers
+
+      - name: Upload slice artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: prebuild-macos-core-slice-Debug-${{ matrix.platform }}
+          path: packages/react-native/.build/output/spm/Debug/Build/Products
+
+  compose-xcframework:
+    name: "Compose XCFramework (Debug)"
+    needs: [build-spm]
+    if: ${{ always() && !cancelled() && !failure() }}
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+          platform: ios
+
+      - name: Install npm dependencies
+        run: yarn install
+
+      - name: Download slice artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prebuild-macos-core-slice-Debug-*
+          path: packages/react-native/.build/output/spm/Debug/Build/Products
+          merge-multiple: true
+
+      - name: Download headers
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prebuild-macos-core-headers-Debug-*
+          path: packages/react-native/.build/headers
+          merge-multiple: true
+
+      - name: Verify downloaded artifacts
+        run: |
+          echo "=== Products directory ==="
+          ls -R packages/react-native/.build/output/spm/Debug/Build/Products/ | head -40
+          echo "=== Headers directory ==="
+          ls packages/react-native/.build/headers/ | head -20
+
+      - name: Create XCFramework
+        working-directory: packages/react-native
+        run: node scripts/ios-prebuild -c -f Debug
+
+      - name: Compress XCFramework
+        run: |
+          cd packages/react-native/.build/output/xcframeworks/Debug
+          tar -cz -f ../ReactCoreDebug.xcframework.tar.gz React.xcframework
+
+      - name: Compress dSYMs
+        run: |
+          cd packages/react-native/.build/output/xcframeworks/Debug/Symbols
+          tar -cz -f ../../ReactCoreDebug.framework.dSYM.tar.gz .
+
+      - name: Upload XCFramework
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReactCoreDebug.xcframework.tar.gz
+          path: packages/react-native/.build/output/xcframeworks/ReactCoreDebug.xcframework.tar.gz
+          retention-days: 14
+
+      - name: Upload dSYMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReactCoreDebug.framework.dSYM.tar.gz
+          path: packages/react-native/.build/output/xcframeworks/ReactCoreDebug.framework.dSYM.tar.gz
+          retention-days: 14
