@@ -5,6 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <TargetConditionals.h> // [macOS]
+#if !TARGET_OS_OSX // [macOS]
+
 #import <React/RCTUtils.h>
 #import <UIKit/UIKit.h>
 #include "AppleSwitchShadowNode.h"
@@ -26,3 +29,5 @@ Size SwitchShadowNode::measureContent(
 }
 
 } // namespace facebook::react
+
+#endif // !TARGET_OS_OSX [macOS]

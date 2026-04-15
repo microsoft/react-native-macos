@@ -12,12 +12,16 @@
 export type Platform =
   'ios' |
   'ios-simulator' |
-  'mac-catalyst';
+  'mac-catalyst' |
+  'macos' |        // [macOS]
+  'visionos';      // [macOS]
 
 export type Destination =
   'iOS' |
   'iOS Simulator' |
-  'macOS,variant=Mac Catalyst';
+  'macOS,variant=Mac Catalyst' |
+  'macOS' |        // [macOS]
+  'visionOS';      // [macOS]
 
 export type BuildFlavor = 'Debug' | 'Release';
 */
