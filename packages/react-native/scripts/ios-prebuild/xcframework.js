@@ -320,8 +320,24 @@ function extractDestinationFromPath(symbolPath /*: string */) /*: string */ {
     return 'catalyst';
   }
 
+  // [macOS
+  // Check xrsimulator before xros since 'xrsimulator' contains 'xros'
+  if (symbolPath.includes('xrsimulator')) {
+    return 'xrsimulator';
+  }
+
+  if (symbolPath.includes('xros')) {
+    return 'xros';
+  }
+
+  // macOS SPM builds output to "Debug/" (no platform suffix)
+  if (symbolPath.includes('/Debug/') || symbolPath.includes('/Release/')) {
+    return 'macosx';
+  }
+  // macOS]
+
   throw new Error(
-    `Impossible to extract destination from ${symbolPath}. Valid destinations are iphoneos, iphonesimulator and catalyst.`,
+    `Impossible to extract destination from ${symbolPath}. Valid destinations are iphoneos, iphonesimulator, catalyst, xros, xrsimulator and macosx.`,
   );
 }
 
