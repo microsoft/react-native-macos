@@ -62,9 +62,6 @@ jobs:
         run: |
           set -eox pipefail
           npm install ${{ runner.temp }}/react-native-macos.tgz
-          # yarn pack strips execute bits; publishConfig.executableFiles restores them
-          # at publish time, but we also chmod here for local CI packs.
-          find node_modules/react-native-macos/scripts -name '*.sh' -exec chmod +x {} +
 
       - name: Apply macOS template
         working-directory: ${{ runner.temp }}/testcli
