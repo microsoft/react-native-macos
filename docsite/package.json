@@ -47,9 +47,11 @@
   },
   "packageManager": "yarn@4.9.1",
   "resolutions": {
+    "serialize-javascript": "^7.0.3",
     "webpack": ">=5.104.1 <5.106.0"
   },
   "_resolution_justifications": {
+    "serialize-javascript": "Earlier versions of serialize-javascript are affected by GHSA-5c6j-r48x-rmvq, and it's a transitive dependency of docusaurus, of which we are already using the latest version.",
     "webpack": "Earlier versions of webpack are affected by CVE-2025-68458, but versions >=5.106.0 doesn't work with docusaurus, which is being worked on: https://github.com/facebook/docusaurus/issues/11923"
   }
 }
