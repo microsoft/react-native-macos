@@ -153,6 +153,7 @@ jobs:
 
   PR:
     name: "PR"
+    if: always()
     permissions: {}
     runs-on: ubuntu-latest
     needs:
@@ -165,5 +166,10 @@ jobs:
       - test-react-native-macos-init
       # - react-native-test-app-integration
     steps:
+      - name: Check for failures or cancellations
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: |
+          echo "One or more required jobs failed or were cancelled."
+          exit 1
       - name: All required jobs passed
-        run: echo "All required jobs completed."
+        run: echo "All required jobs completed successfully."
