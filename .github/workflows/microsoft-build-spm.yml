@@ -7,10 +7,11 @@ jobs:
   resolve-hermes:
     name: "Resolve Hermes"
     runs-on: macos-15
-    timeout-minutes: 10
+    timeout-minutes: 15
     outputs:
       hermes-commit: ${{ steps.resolve.outputs.hermes-commit }}
       cache-hit: ${{ steps.cache.outputs.cache-hit }}
+      upstream-has-macos: ${{ steps.check-upstream.outputs.upstream-has-macos }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,7 +31,41 @@ jobs:
       - name: Install npm dependencies
         run: yarn install
 
+      - name: Check if upstream Hermes includes macOS slices
+        id: check-upstream
+        working-directory: packages/react-native
+        run: |
+          node -e "
+            const {checkUpstreamHermesHasMacOS} = require('./scripts/ios-prebuild/macosVersionResolver');
+            checkUpstreamHermesHasMacOS('Debug').then(r => {
+              require('fs').writeFileSync('/tmp/hermes-check-result.json', JSON.stringify(r));
+            });
+          "
+          RESULT=$(cat /tmp/hermes-check-result.json)
+          HAS_MACOS=$(node -e "console.log(JSON.parse(process.argv[1]).hasMacOS)" "$RESULT")
+          echo "upstream-has-macos=$HAS_MACOS" >> "$GITHUB_OUTPUT"
+          echo "Upstream Hermes has macOS slices: $HAS_MACOS"
+
+          if [ "$HAS_MACOS" = "true" ]; then
+            TARBALL=$(node -e "console.log(JSON.parse(process.argv[1]).tarballPath || '')" "$RESULT")
+            if [ -n "$TARBALL" ] && [ -f "$TARBALL" ]; then
+              mkdir -p ${{ github.workspace }}/hermes-destroot
+              tar -xzf "$TARBALL" -C ${{ github.workspace }}/hermes-destroot --strip-components=2
+              echo "Extracted upstream Hermes to hermes-destroot"
+              ls -la ${{ github.workspace }}/hermes-destroot/
+            fi
+          fi
+
+      - name: Upload upstream Hermes as artifact
+        if: steps.check-upstream.outputs.upstream-has-macos == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermes-artifacts
+          path: hermes-destroot
+          retention-days: 30
+
       - name: Resolve Hermes commit at merge base
+        if: steps.check-upstream.outputs.upstream-has-macos != 'true'
         id: resolve
         working-directory: packages/react-native
         run: |
@@ -39,6 +74,7 @@ jobs:
           echo "Resolved Hermes commit: $COMMIT"
 
       - name: Restore Hermes cache
+        if: steps.check-upstream.outputs.upstream-has-macos != 'true'
         id: cache
         uses: actions/cache/restore@v4
         with:
@@ -46,7 +82,7 @@ jobs:
           path: hermes-destroot
 
       - name: Upload cached Hermes artifacts
-        if: steps.cache.outputs.cache-hit == 'true'
+        if: steps.check-upstream.outputs.upstream-has-macos != 'true' && steps.cache.outputs.cache-hit == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: hermes-artifacts
@@ -55,7 +91,7 @@ jobs:
 
   build-hermesc:
     name: "Build hermesc"
-    if: ${{ needs.resolve-hermes.outputs.cache-hit != 'true' }}
+    if: ${{ needs.resolve-hermes.outputs.upstream-has-macos != 'true' && needs.resolve-hermes.outputs.cache-hit != 'true' }}
     needs: resolve-hermes
     runs-on: macos-15
     timeout-minutes: 30
@@ -93,7 +129,7 @@ jobs:
 
   build-hermes-slice:
     name: "Hermes ${{ matrix.slice }}"
-    if: ${{ needs.resolve-hermes.outputs.cache-hit != 'true' }}
+    if: ${{ needs.resolve-hermes.outputs.upstream-has-macos != 'true' && needs.resolve-hermes.outputs.cache-hit != 'true' }}
     needs: [resolve-hermes, build-hermesc]
     runs-on: macos-15
     timeout-minutes: 45
@@ -155,7 +191,7 @@ jobs:
 
   assemble-hermes:
     name: "Assemble Hermes xcframework"
-    if: ${{ needs.resolve-hermes.outputs.cache-hit != 'true' }}
+    if: ${{ needs.resolve-hermes.outputs.upstream-has-macos != 'true' && needs.resolve-hermes.outputs.cache-hit != 'true' }}
     needs: [resolve-hermes, build-hermes-slice]
     runs-on: macos-15
     timeout-minutes: 15

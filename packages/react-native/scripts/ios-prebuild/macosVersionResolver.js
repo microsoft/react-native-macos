@@ -10,7 +10,7 @@
  * @format
  */
 
-const {createLogger} = require('./utils');
+const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');
 const os = require('os');
@@ -184,6 +184,145 @@ async function getLatestStableVersionFromNPM() /*: Promise<string> */ {
   return json.version;
 }
 
+/**
+ * Checks whether the upstream Hermes tarball (from Maven) already contains
+ * macOS slices. If it does, we can skip building Hermes from source entirely.
+ *
+ * Tries multiple version resolution strategies in order:
+ * 1. Mapped version from peerDependencies (stable branches)
+ * 2. Version at merge base with facebook/react-native (main branch)
+ * 3. Latest stable version from npm (last resort)
+ *
+ * Returns {hasMacOS: boolean, tarballPath?: string, version?: string}.
+ * When hasMacOS is true, tarballPath points to the downloaded tarball and
+ * version is the upstream version string used for the lookup.
+ */
+async function checkUpstreamHermesHasMacOS(
+  buildType /*: string */ = 'Debug',
+) /*: Promise<{| hasMacOS: boolean, tarballPath?: string, version?: string |}> */ {
+  const packageJsonPath = path.resolve(__dirname, '..', '..', 'package.json');
+
+  // Build a list of candidate versions to try (in priority order)
+  const candidates /*: string[] */ = [];
+
+  const mapped = findMatchingHermesVersion(packageJsonPath);
+  if (mapped != null) {
+    candidates.push(mapped);
+  }
+
+  const mergeBaseVersion = findVersionAtMergeBase();
+  if (mergeBaseVersion != null && !candidates.includes(mergeBaseVersion)) {
+    candidates.push(mergeBaseVersion);
+  }
+
+  try {
+    const latestStable = await getLatestStableVersionFromNPM();
+    if (!candidates.includes(latestStable)) {
+      candidates.push(latestStable);
+    }
+  } catch (_) {
+    // npm lookup failed, continue with what we have
+  }
+
+  if (candidates.length === 0) {
+    macosLog('Could not determine any upstream version to check Hermes tarball');
+    return {hasMacOS: false};
+  }
+
+  const mavenRepoUrl = 'https://repo1.maven.org/maven2';
+  const namespace = 'com/facebook/react';
+
+  for (const version of candidates) {
+    // Try both Maven release and nightly (Sonatype snapshot) URLs
+    const releaseUrl = `${mavenRepoUrl}/${namespace}/react-native-artifacts/${version}/react-native-artifacts-${version}-hermes-ios-${buildType.toLowerCase()}.tar.gz`;
+    const nightlyUrl = await computeNightlyTarballURL(
+      version,
+      buildType,
+      'react-native-artifacts',
+      `hermes-ios-${buildType.toLowerCase()}.tar.gz`,
+    );
+    const urlsToTry = [releaseUrl];
+    if (nightlyUrl) {
+      urlsToTry.push(nightlyUrl);
+    }
+
+    for (const tarballUrl of urlsToTry) {
+      macosLog(
+        `Checking upstream Hermes tarball (version: ${version}, ${buildType}) at ${tarballUrl}...`,
+      );
+
+      // Check if the tarball exists
+      try {
+        const headResponse = await fetch(tarballUrl, {method: 'HEAD'});
+        if (headResponse.status !== 200) {
+          macosLog(`Tarball not found, trying next URL...`);
+          continue;
+        }
+      } catch (_) {
+        macosLog('Failed to reach server, trying next URL...');
+        continue;
+      }
+
+      // Download the tarball to a temp directory
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-check-'));
+      const tarballPath = path.join(tmpDir, 'hermes-ios.tar.gz');
+
+      try {
+        macosLog(`Downloading upstream tarball...`);
+        const response = await fetch(tarballUrl);
+        if (!response.ok) {
+          macosLog(
+            `Download failed: ${response.status} ${response.statusText}`,
+          );
+          fs.rmSync(tmpDir, {recursive: true, force: true});
+          continue;
+        }
+
+        const buffer = await response.arrayBuffer();
+        fs.writeFileSync(tarballPath, Buffer.from(buffer));
+
+        // List tarball contents and check for macosx slice
+        const listing = execSync(`tar -tzf "${tarballPath}" 2>/dev/null`, {
+          encoding: 'utf8',
+          maxBuffer: 10 * 1024 * 1024,
+        });
+
+        const hasMacOS = listing
+          .split('\n')
+          .some(
+            entry => entry.includes('/macosx/') || entry.includes('/macosx'),
+          );
+
+        if (hasMacOS) {
+          macosLog(
+            `Upstream Hermes tarball (${version}) contains macOS slices — build from source can be skipped!`,
+          );
+          return {hasMacOS: true, tarballPath, version};
+        } else {
+          macosLog(
+            `Upstream Hermes tarball (${version}) does NOT contain macOS slices.`,
+          );
+          fs.rmSync(tmpDir, {recursive: true, force: true});
+          // Don't try other versions — if the tarball exists but lacks macOS,
+          // older versions won't help since macOS was always included.
+          return {hasMacOS: false};
+        }
+      } catch (e) {
+        macosLog(`Error checking tarball for ${version}: ${e.message}`);
+        try {
+          fs.rmSync(tmpDir, {recursive: true, force: true});
+        } catch (_) {}
+        continue;
+      }
+    }
+  }
+
+  macosLog(
+    'No upstream Hermes tarball found for any candidate version — will build from source.',
+  );
+  return {hasMacOS: false};
+}
+
 function abort(message /*: string */) {
   macosLog(message, 'error');
   throw new Error(message);
@@ -194,4 +333,5 @@ module.exports = {
   hermesCommitAtMergeBase,
   findVersionAtMergeBase,
   getLatestStableVersionFromNPM,
+  checkUpstreamHermesHasMacOS,
 };
