@@ -1,4 +1,4 @@
-name: Build SwiftPM
+name: Prebuild macOS Core
 
 on:
   workflow_call:
@@ -245,8 +245,8 @@ jobs:
           path: hermes/destroot
           retention-days: 30
 
-  build-spm:
-    name: "SPM ${{ matrix.platform }}"
+  build:
+    name: "Build ${{ matrix.platform }}"
     needs: [resolve-hermes, assemble-hermes]
     # Run when upstream jobs succeeded or were skipped (cache hit)
     if: ${{ always() && !cancelled() && !failure() }}
@@ -295,14 +295,14 @@ jobs:
         run: |
           echo "prebuilt-Debug" > .build/artifacts/hermes/version.txt
 
-      - name: Setup SPM workspace (using prebuilt Hermes)
+      - name: Setup workspace (using prebuilt Hermes)
         if: steps.cache-slice.outputs.cache-hit != 'true'
         working-directory: packages/react-native
         env:
           HERMES_VERSION: prebuilt
         run: node scripts/ios-prebuild.js -s -f Debug
 
-      - name: Build SPM (${{ matrix.platform }})
+      - name: Build (${{ matrix.platform }})
         if: steps.cache-slice.outputs.cache-hit != 'true'
         working-directory: packages/react-native
         run: node scripts/ios-prebuild.js -b -f Debug -p ${{ matrix.platform }}
@@ -330,7 +330,7 @@ jobs:
 
   compose-xcframework:
     name: "Compose XCFramework (Debug)"
-    needs: [build-spm]
+    needs: [build]
     if: ${{ always() && !cancelled() && !failure() }}
     runs-on: macos-26
     timeout-minutes: 30
