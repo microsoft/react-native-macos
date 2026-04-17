@@ -244,11 +244,12 @@ jobs:
       - name: Create Hermes version marker
         working-directory: packages/react-native
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "${VERSION}-Debug" > .build/artifacts/hermes/version.txt
+          echo "prebuilt-Debug" > .build/artifacts/hermes/version.txt
 
       - name: Setup SPM workspace (using prebuilt Hermes)
         working-directory: packages/react-native
+        env:
+          HERMES_VERSION: prebuilt
         run: node scripts/ios-prebuild.js -s -f Debug
 
       - name: Build SPM (${{ matrix.platform }})
