@@ -4,13 +4,13 @@ on:
   workflow_call:
 
 jobs:
-  build-hermes:
-    name: "Build Hermes"
-    uses: ./.github/workflows/microsoft-build-hermes.yml
+  resolve-hermes:
+    name: "Resolve Hermes"
+    uses: ./.github/workflows/microsoft-resolve-hermes.yml
 
   build:
     name: "Build ${{ matrix.platform }}"
-    needs: [build-hermes]
+    needs: [resolve-hermes]
     runs-on: macos-26
     timeout-minutes: 60
     strategy:

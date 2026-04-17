@@ -1,4 +1,4 @@
-name: Build Hermes
+name: Resolve Hermes
 
 on:
   workflow_call:
