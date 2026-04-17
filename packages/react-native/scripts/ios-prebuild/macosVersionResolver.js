@@ -10,6 +10,8 @@
  * @format
  */
 
+/*:: import type {BuildFlavor} from './types'; */
+
 const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');
@@ -198,7 +200,7 @@ async function getLatestStableVersionFromNPM() /*: Promise<string> */ {
  * version is the upstream version string used for the lookup.
  */
 async function checkUpstreamHermesHasMacOS(
-  buildType /*: string */ = 'Debug',
+  buildType /*: BuildFlavor */ = 'Debug',
 ) /*: Promise<{| hasMacOS: boolean, tarballPath?: string, version?: string |}> */ {
   const packageJsonPath = path.resolve(__dirname, '..', '..', 'package.json');
 
