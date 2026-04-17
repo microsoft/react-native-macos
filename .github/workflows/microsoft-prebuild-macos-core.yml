@@ -18,15 +18,11 @@ jobs:
           filter: blob:none
           fetch-depth: 0
 
-      - name: Setup Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_16.2.app
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4.4.0
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
-          cache: yarn
-          registry-url: https://registry.npmjs.org
+          platform: macos
 
       - name: Install npm dependencies
         run: yarn install
@@ -100,8 +96,11 @@ jobs:
         with:
           filter: blob:none
 
-      - name: Setup Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_16.2.app
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          platform: macos
+          cache-npm-dependencies: ''
 
       - name: Clone Hermes
         uses: actions/checkout@v4
@@ -137,21 +136,27 @@ jobs:
       fail-fast: false
       matrix:
         slice: [iphoneos, iphonesimulator, macosx, xros, xrsimulator]
+        include:
+          - slice: iphoneos
+            platform: ios
+          - slice: iphonesimulator
+            platform: ios
+          - slice: macosx
+            platform: macos
+          - slice: xros
+            platform: visionos
+          - slice: xrsimulator
+            platform: visionos
     steps:
       - uses: actions/checkout@v4
         with:
           filter: blob:none
 
-      - name: Setup Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_16.2.app
-
-      - name: Download visionOS SDK
-        if: ${{ matrix.slice == 'xros' || matrix.slice == 'xrsimulator' }}
-        run: |
-          sudo xcodebuild -runFirstLaunch
-          sudo xcrun simctl list
-          sudo xcodebuild -downloadPlatform visionOS
-          sudo xcodebuild -runFirstLaunch
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          platform: ${{ matrix.platform }}
+          cache-npm-dependencies: ''
 
       - name: Clone Hermes
         uses: actions/checkout@v4
