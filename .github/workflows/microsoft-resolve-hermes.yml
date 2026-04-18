@@ -1,9 +1,22 @@
+# Resolve Hermes — reusable workflow called by microsoft-prebuild-macos-core.yml
+#
+# Strategy (fast path first):
+#   1. Download upstream Hermes tarball from Maven
+#   2. If found → recompose xcframework (add macOS slice) → upload artifact → done
+#   3. If not found → resolve Hermes commit at merge base → check cache → upload if cached
+#
+# Build-from-source fallback (only when recomposed != true AND cache-hit != true):
+#   build-hermesc → build 5 platform slices in parallel → assemble universal xcframework
+#
 name: Resolve Hermes
 
 on:
   workflow_call:
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Fast path: download upstream tarball and recompose, or resolve commit + cache
+  # ---------------------------------------------------------------------------
   resolve-hermes:
     name: "Resolve Hermes"
     runs-on: macos-15
@@ -27,79 +40,27 @@ jobs:
       - name: Install npm dependencies
         run: yarn install
 
+      # Step 1: Try to download a prebuilt Hermes tarball from upstream Maven.
+      # Writes tarball= and version= to $GITHUB_OUTPUT if successful.
       - name: Download upstream Hermes tarball
         id: download
         working-directory: packages/react-native
-        run: |
-          node -e "
-            const {downloadUpstreamHermesTarball} = require('./scripts/ios-prebuild/macosVersionResolver');
-            downloadUpstreamHermesTarball('Debug').then(r => {
-              require('fs').writeFileSync('/tmp/hermes-download-result.json', JSON.stringify(r));
-            });
-          "
-          RESULT=$(cat /tmp/hermes-download-result.json)
-          if [ "$RESULT" != "null" ]; then
-            TARBALL=$(node -e "console.log(JSON.parse(process.argv[1]).tarballPath)" "$RESULT")
-            VERSION=$(node -e "console.log(JSON.parse(process.argv[1]).version)" "$RESULT")
-            echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
-            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-            echo "Downloaded upstream Hermes tarball for version $VERSION"
-          else
-            echo "No upstream tarball available"
-          fi
+        run: node scripts/ios-prebuild/microsoft-hermes.js download-hermes Debug
 
+      # Step 2: If tarball found, recompose the xcframework to include the macOS slice
+      # (or skip if macOS is already present in the universal xcframework).
+      # Writes recomposed=true/false to $GITHUB_OUTPUT.
       - name: Recompose xcframework with macOS slice
         id: recompose
         if: steps.download.outputs.tarball != ''
-        run: |
-          TARBALL="${{ steps.download.outputs.tarball }}"
+        working-directory: packages/react-native
+        run: >-
+          node scripts/ios-prebuild/microsoft-hermes.js
+          recompose-xcframework
+          "${{ steps.download.outputs.tarball }}"
+          "${{ github.workspace }}/hermes-destroot"
 
-          # Extract tarball
-          mkdir -p hermes-destroot
-          tar -xzf "$TARBALL" -C hermes-destroot --strip-components=2
-
-          echo "=== Upstream tarball contents ==="
-          ls -la hermes-destroot/Library/Frameworks/
-
-          # Collect existing frameworks from the universal xcframework
-          XCFW="hermes-destroot/Library/Frameworks/universal/hermes.xcframework"
-          FRAMEWORKS=()
-          for fw in "$XCFW"/*/hermes.framework; do
-            if [ -d "$fw" ]; then
-              echo "Found slice: $fw"
-              FRAMEWORKS+=(-framework "$fw")
-            fi
-          done
-
-          # Add standalone macOS framework
-          MAC_FW="hermes-destroot/Library/Frameworks/macosx/hermes.framework"
-          if [ -d "$MAC_FW" ]; then
-            echo "Found standalone macOS slice: $MAC_FW"
-            FRAMEWORKS+=(-framework "$MAC_FW")
-          else
-            echo "::error::Upstream tarball missing macosx/hermes.framework"
-            echo "recomposed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Create new xcframework at a temp path (can't overwrite in-place
-          # because the source frameworks live inside the old xcframework)
-          XCFW_NEW="hermes-destroot/Library/Frameworks/universal/hermes-new.xcframework"
-          echo "Creating new universal xcframework with ${#FRAMEWORKS[@]} frameworks..."
-          xcodebuild -create-xcframework "${FRAMEWORKS[@]}" \
-            -output "$XCFW_NEW" \
-            -allow-internal-distribution
-
-          # Swap in the new xcframework and clean up
-          rm -rf "$XCFW"
-          mv "$XCFW_NEW" "$XCFW"
-          rm -rf hermes-destroot/Library/Frameworks/macosx
-
-          echo "=== Recomposed xcframework ==="
-          ls -la "$XCFW"/
-
-          echo "recomposed=true" >> "$GITHUB_OUTPUT"
-
+      # Upload recomposed artifacts — the prebuild-macos-core workflow downloads these
       - name: Upload recomposed Hermes artifacts
         if: steps.recompose.outputs.recomposed == 'true'
         uses: actions/upload-artifact@v4
@@ -108,15 +69,13 @@ jobs:
           path: hermes-destroot
           retention-days: 30
 
-      # Fallback: resolve Hermes commit for build-from-source
+      # Step 3 (fallback): No upstream tarball — resolve the Hermes commit hash
+      # at the merge base with facebook/react-native and check the build cache.
       - name: Resolve Hermes commit at merge base
         if: steps.recompose.outputs.recomposed != 'true'
         id: resolve
         working-directory: packages/react-native
-        run: |
-          COMMIT=$(node -e "const {hermesCommitAtMergeBase} = require('./scripts/ios-prebuild/macosVersionResolver'); console.log(hermesCommitAtMergeBase().commit);" 2>&1 | grep -E '^[0-9a-f]{40}$')
-          echo "hermes-commit=$COMMIT" >> "$GITHUB_OUTPUT"
-          echo "Resolved Hermes commit: $COMMIT"
+        run: node scripts/ios-prebuild/microsoft-hermes.js resolve-commit
 
       - name: Restore Hermes cache
         if: steps.recompose.outputs.recomposed != 'true'
@@ -134,6 +93,10 @@ jobs:
           path: hermes-destroot
           retention-days: 30
 
+  # ---------------------------------------------------------------------------
+  # Build-from-source fallback — only runs when no recomposed or cached artifact
+  # Pipeline: hermesc (host compiler) → 5 platform slices → assemble xcframework
+  # ---------------------------------------------------------------------------
   build-hermesc:
     name: "Build hermesc"
     if: ${{ needs.resolve-hermes.outputs.recomposed != 'true' && needs.resolve-hermes.outputs.cache-hit != 'true' }}
