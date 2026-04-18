@@ -467,12 +467,6 @@ function InternalTextInput(props: TextInputProps): React.Node {
 
   const setLocalRef = useCallback(
     (instance: HostInstance | null) => {
-      if (__DEV__) {
-        console.log(
-          '[TextInput] setLocalRef called with:',
-          instance != null ? 'instance' : 'null',
-        );
-      }
       // $FlowExpectedError[incompatible-type]
       inputRef.current = instance;
 
