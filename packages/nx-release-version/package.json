@@ -15,7 +15,7 @@
     "directory": "packages/nx-release-version"
   },
   "dependencies": {
-    "@nx/js": "^21.4.1"
+    "@nx/js": "^22.6.5"
   },
   "devDependencies": {
     "@rnx-kit/tsconfig": "^2.0.0",
