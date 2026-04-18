@@ -187,26 +187,20 @@ async function getLatestStableVersionFromNPM() /*: Promise<string> */ {
 }
 
 /**
- * Checks whether the upstream Hermes tarball (from Maven) already contains
- * macOS slices. If it does, we can skip building Hermes from source entirely.
+ * Downloads the upstream Hermes tarball from Maven or Sonatype.
+ * The caller is responsible for extracting and recomposing the
+ * xcframework (e.g. adding the macOS slice to the universal).
  *
  * Tries multiple version resolution strategies in order:
  * 1. Mapped version from peerDependencies (stable branches)
  * 2. Version at merge base with facebook/react-native (main branch)
  * 3. Latest stable version from npm (last resort)
  *
- * Returns {hasMacSlice: boolean, tarballPath?: string, version?: string}.
- * When hasMacSlice is true, tarballPath points to the downloaded tarball and
- * version is the upstream version string used for the lookup.
- *
- * The check looks for a macOS platform entry inside the universal
- * hermes.xcframework (via its Info.plist), not just for a standalone
- * macosx/ directory. Upstream tarballs ship a standalone macosx/hermes.framework
- * but don't include it in the universal xcframework yet.
+ * Returns {tarballPath, version} on success, or null if no tarball is available.
  */
-async function checkUpstreamHermesHasMacSlice(
+async function downloadUpstreamHermesTarball(
   buildType /*: BuildFlavor */ = 'Debug',
-) /*: Promise<{| hasMacSlice: boolean, tarballPath?: string, version?: string |}> */ {
+) /*: Promise<?{| tarballPath: string, version: string |}> */ {
   const packageJsonPath = path.resolve(__dirname, '..', '..', 'package.json');
 
   // Build a list of candidate versions to try (in priority order)
@@ -232,8 +226,10 @@ async function checkUpstreamHermesHasMacSlice(
   }
 
   if (candidates.length === 0) {
-    macosLog('Could not determine any upstream version to check Hermes tarball');
-    return {hasMacSlice: false};
+    macosLog(
+      'Could not determine any upstream version to download Hermes tarball',
+    );
+    return null;
   }
 
   const mavenRepoUrl = 'https://repo1.maven.org/maven2';
@@ -255,74 +251,29 @@ async function checkUpstreamHermesHasMacSlice(
 
     for (const tarballUrl of urlsToTry) {
       macosLog(
-        `Checking upstream Hermes tarball (version: ${version}, ${buildType}) at ${tarballUrl}...`,
+        `Trying upstream Hermes tarball (version: ${version}, ${buildType}) at ${tarballUrl}...`,
       );
 
-      // Check if the tarball exists
       try {
-        const headResponse = await fetch(tarballUrl, {method: 'HEAD'});
-        if (headResponse.status !== 200) {
-          macosLog(`Tarball not found, trying next URL...`);
-          continue;
-        }
-      } catch (_) {
-        macosLog('Failed to reach server, trying next URL...');
-        continue;
-      }
-
-      // Download the tarball to a temp directory
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-check-'));
-      const tarballPath = path.join(tmpDir, 'hermes-ios.tar.gz');
-
-      try {
-        macosLog(`Downloading upstream tarball...`);
-        const response = await fetch(tarballUrl);
+        const response /*: Response */ = await fetch(tarballUrl);
         if (!response.ok) {
           macosLog(
-            `Download failed: ${response.status} ${response.statusText}`,
+            `Tarball not available: ${response.status} ${response.statusText}`,
           );
-          fs.rmSync(tmpDir, {recursive: true, force: true});
           continue;
         }
 
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-'));
+        const tarballPath = path.join(tmpDir, 'hermes-ios.tar.gz');
         const buffer = await response.arrayBuffer();
         fs.writeFileSync(tarballPath, Buffer.from(buffer));
 
-        // Extract the xcframework's Info.plist and check for a macOS
-        // platform entry. We can't just look for a macosx/ directory in
-        // the tarball — upstream ships a standalone macosx/hermes.framework
-        // but doesn't include macOS in the universal xcframework yet.
-        let hasMacSlice = false;
-        try {
-          const plist = execSync(
-            `tar -xzf "${tarballPath}" -O --wildcards '*/universal/hermes.xcframework/Info.plist' 2>/dev/null`,
-            {encoding: 'utf8', maxBuffer: 1024 * 1024},
-          );
-          hasMacSlice = plist.includes('macos') || plist.includes('macOS');
-        } catch (_) {
-          // Info.plist not found or extraction failed — no mac slice
-          macosLog('Could not extract xcframework Info.plist from tarball.');
-        }
-
-        if (hasMacSlice) {
-          macosLog(
-            `Upstream Hermes tarball (${version}) includes macOS in the universal xcframework — build from source can be skipped!`,
-          );
-          return {hasMacSlice: true, tarballPath, version};
-        } else {
-          macosLog(
-            `Upstream Hermes tarball (${version}) does NOT include macOS in the universal xcframework.`,
-          );
-          fs.rmSync(tmpDir, {recursive: true, force: true});
-          // Don't try other versions — if the tarball exists but lacks
-          // the mac slice, older versions won't have it either.
-          return {hasMacSlice: false};
-        }
+        macosLog(
+          `Downloaded upstream Hermes tarball (${version}) to ${tarballPath}`,
+        );
+        return {tarballPath, version};
       } catch (e) {
-        macosLog(`Error checking tarball for ${version}: ${e.message}`);
-        try {
-          fs.rmSync(tmpDir, {recursive: true, force: true});
-        } catch (_) {}
+        macosLog(`Error downloading tarball for ${version}: ${e.message}`);
         continue;
       }
     }
@@ -331,7 +282,7 @@ async function checkUpstreamHermesHasMacSlice(
   macosLog(
     'No upstream Hermes tarball found for any candidate version — will build from source.',
   );
-  return {hasMacSlice: false};
+  return null;
 }
 
 function abort(message /*: string */) {
@@ -344,5 +295,5 @@ module.exports = {
   hermesCommitAtMergeBase,
   findVersionAtMergeBase,
   getLatestStableVersionFromNPM,
-  checkUpstreamHermesHasMacSlice,
+  downloadUpstreamHermesTarball,
 };
