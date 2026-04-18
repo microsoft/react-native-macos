@@ -1,7 +1,7 @@
 # Resolve Hermes — reusable workflow called by microsoft-prebuild-macos-core.yml
 #
 # Strategy (fast path first):
-#   1. Download upstream Hermes tarball from Maven
+#   1. Download upstream Hermes tarball from Maven/Sonatype
 #   2. If found → recompose xcframework (add macOS slice) → upload artifact → done
 #   3. If not found → resolve Hermes commit at merge base → check cache → upload if cached
 #
@@ -40,12 +40,11 @@ jobs:
       - name: Install npm dependencies
         run: yarn install
 
-      # Step 1: Try to download a prebuilt Hermes tarball from upstream Maven.
+      # Step 1: Try to download a prebuilt Hermes tarball from upstream Maven/Sonatype.
       # Writes tarball= and version= to $GITHUB_OUTPUT if successful.
       - name: Download upstream Hermes tarball
         id: download
-        working-directory: packages/react-native
-        run: node scripts/ios-prebuild/microsoft-hermes.js download-hermes Debug
+        run: node .github/scripts/resolve-hermes.mts download-hermes Debug
 
       # Step 2: If tarball found, recompose the xcframework to include the macOS slice
       # (or skip if macOS is already present in the universal xcframework).
@@ -53,9 +52,8 @@ jobs:
       - name: Recompose xcframework with macOS slice
         id: recompose
         if: steps.download.outputs.tarball != ''
-        working-directory: packages/react-native
         run: >-
-          node scripts/ios-prebuild/microsoft-hermes.js
+          node .github/scripts/resolve-hermes.mts
           recompose-xcframework
           "${{ steps.download.outputs.tarball }}"
           "${{ github.workspace }}/hermes-destroot"
@@ -74,8 +72,7 @@ jobs:
       - name: Resolve Hermes commit at merge base
         if: steps.recompose.outputs.recomposed != 'true'
         id: resolve
-        working-directory: packages/react-native
-        run: node scripts/ios-prebuild/microsoft-hermes.js resolve-commit
+        run: node .github/scripts/resolve-hermes.mts resolve-commit
 
       - name: Restore Hermes cache
         if: steps.recompose.outputs.recomposed != 'true'
