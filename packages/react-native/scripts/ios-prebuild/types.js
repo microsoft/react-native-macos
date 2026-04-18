@@ -13,15 +13,17 @@ export type Platform =
   'ios' |
   'ios-simulator' |
   'mac-catalyst' |
-  'macos' |        // [macOS]
-  'visionos';      // [macOS]
+  'macos' |              // [macOS]
+  'visionos' |           // [macOS]
+  'visionos-simulator';  // [macOS]
 
 export type Destination =
   'iOS' |
   'iOS Simulator' |
   'macOS,variant=Mac Catalyst' |
-  'macOS' |        // [macOS]
-  'visionOS';      // [macOS]
+  'macOS' |              // [macOS]
+  'visionOS' |           // [macOS]
+  'visionOS Simulator';  // [macOS]
 
 export type BuildFlavor = 'Debug' | 'Release';
 */
