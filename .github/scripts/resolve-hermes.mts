@@ -10,6 +10,7 @@
  * Each command writes results to $GITHUB_OUTPUT for use in GitHub Actions.
  */
 import os from 'node:os';
+import { parseArgs } from 'node:util';
 import { $, echo, fs, path } from 'zx';
 
 // Import library functions from the react-native package
@@ -18,7 +19,7 @@ const {
   findVersionAtMergeBase,
   getLatestStableVersionFromNPM,
   hermesCommitAtMergeBase,
-} = require('../../packages/react-native/scripts/ios-prebuild/microsoft-resolveHermes.js');
+} = require('../../packages/react-native/scripts/ios-prebuild/microsoft-hermes.js');
 const {
   computeNightlyTarballURL,
 } = require('../../packages/react-native/scripts/ios-prebuild/utils.js');
@@ -130,6 +131,10 @@ async function downloadUpstreamHermesTarball(
  * NOTE: Once upstream Hermes includes macOS in the universal xcframework
  * natively, this function will detect the existing macOS slice and skip
  * the recompose. At that point, this step can be removed entirely.
+ * Tracking PRs:
+ *   - https://github.com/facebook/hermes/pull/1958
+ *   - https://github.com/facebook/hermes/pull/1970
+ *   - https://github.com/facebook/hermes/pull/1971
  */
 async function recomposeHermesXcframework(
   tarballPath: string,
@@ -201,32 +206,43 @@ async function recomposeHermesXcframework(
 
 // --- CLI dispatch ---
 
-const command = process.argv[2];
-const args = process.argv.slice(3);
+const { positionals } = parseArgs({
+  allowPositionals: true,
+  strict: false,
+});
 
-if (command === 'download-hermes') {
-  const buildType = args[0] || 'Debug';
-  const result = await downloadUpstreamHermesTarball(buildType);
-  if (result != null) {
-    setActionOutput('tarball', result.tarballPath);
-    setActionOutput('version', result.version);
-    echo(`Downloaded upstream Hermes tarball for version ${result.version}`);
-  } else {
-    echo('No upstream tarball available');
+const [command, ...args] = positionals;
+
+switch (command) {
+  case 'download-hermes': {
+    const buildType = args[0] || 'Debug';
+    const result = await downloadUpstreamHermesTarball(buildType);
+    if (result != null) {
+      setActionOutput('tarball', result.tarballPath);
+      setActionOutput('version', result.version);
+      echo(`Downloaded upstream Hermes tarball for version ${result.version}`);
+    } else {
+      echo('No upstream tarball available');
+    }
+    break;
   }
-} else if (command === 'recompose-xcframework') {
-  const [tarball, destroot] = args;
-  if (!tarball || !destroot) {
-    echo('Usage: node resolve-hermes.mts recompose-xcframework <tarball> <destroot>');
+  case 'recompose-xcframework': {
+    const [tarball, destroot] = args;
+    if (!tarball || !destroot) {
+      echo('Usage: node resolve-hermes.mts recompose-xcframework <tarball> <destroot>');
+      process.exit(1);
+    }
+    const recomposed = await recomposeHermesXcframework(tarball, destroot);
+    setActionOutput('recomposed', String(recomposed));
+    break;
+  }
+  case 'resolve-commit': {
+    const { commit } = hermesCommitAtMergeBase();
+    setActionOutput('hermes-commit', commit);
+    echo(`Resolved Hermes commit: ${commit}`);
+    break;
+  }
+  default:
+    echo(`Unknown command: ${command ?? '(none)'}. Available: download-hermes, recompose-xcframework, resolve-commit`);
     process.exit(1);
-  }
-  const recomposed = await recomposeHermesXcframework(tarball, destroot);
-  setActionOutput('recomposed', String(recomposed));
-} else if (command === 'resolve-commit') {
-  const { commit } = hermesCommitAtMergeBase();
-  setActionOutput('hermes-commit', commit);
-  echo(`Resolved Hermes commit: ${commit}`);
-} else {
-  echo(`Unknown command: ${command ?? '(none)'}. Available: download-hermes, recompose-xcframework, resolve-commit`);
-  process.exit(1);
 }
