@@ -11,7 +11,7 @@
 const {
   findMatchingHermesVersion,
   hermesCommitAtMergeBase,
-} = require('./macosVersionResolver'); // [macOS]
+} = require('./microsoft-resolveHermes'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');
