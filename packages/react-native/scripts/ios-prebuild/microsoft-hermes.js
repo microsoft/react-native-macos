@@ -4,7 +4,11 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * [macOS] Handles version resolution for macOS fork branches.
+ * [macOS] Resolves Hermes artifacts for macOS fork branches.
+ *
+ * Library functions for version resolution and resolving Hermes commits.
+ * The CI entry point that orchestrates downloading, recomposing, and
+ * caching is at .github/scripts/resolve-hermes.mts.
  *
  * @flow
  * @format

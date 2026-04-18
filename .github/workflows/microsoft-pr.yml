@@ -138,10 +138,10 @@ jobs:
     permissions: {}
     uses: ./.github/workflows/microsoft-build-rntester.yml
 
-  build-spm:
-    name: "Build SPM"
+  prebuild-macos-core:
+    name: "Prebuild macOS Core"
     permissions: {}
-    uses: ./.github/workflows/microsoft-build-spm.yml
+    uses: ./.github/workflows/microsoft-prebuild-macos-core.yml
 
   test-react-native-macos-init:
     name: "Test react-native-macos init"
@@ -169,7 +169,7 @@ jobs:
       - yarn-constraints
       - javascript-tests
       - build-rntester
-      - build-spm
+      - prebuild-macos-core
       - test-react-native-macos-init
       # - react-native-test-app-integration
     steps:
