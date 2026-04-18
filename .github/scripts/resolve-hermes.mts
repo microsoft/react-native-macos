@@ -9,19 +9,113 @@
  *
  * Each command writes results to $GITHUB_OUTPUT for use in GitHub Actions.
  */
+import os from 'node:os';
 import { $, echo, fs, path } from 'zx';
 
 // Import library functions from the react-native package
 const {
-  downloadUpstreamHermesTarball,
+  findMatchingHermesVersion,
+  findVersionAtMergeBase,
+  getLatestStableVersionFromNPM,
   hermesCommitAtMergeBase,
 } = require('../../packages/react-native/scripts/ios-prebuild/microsoft-resolveHermes.js');
+const {
+  computeNightlyTarballURL,
+} = require('../../packages/react-native/scripts/ios-prebuild/utils.js');
 
 function setActionOutput(key: string, value: string) {
   const outputFile = process.env.GITHUB_OUTPUT;
   if (outputFile) {
     fs.appendFileSync(outputFile, `${key}=${value}\n`);
   }
+}
+
+/**
+ * Downloads the upstream Hermes tarball from Maven or Sonatype.
+ *
+ * Tries multiple version resolution strategies in order:
+ * 1. Mapped version from peerDependencies (stable branches)
+ * 2. Version at merge base with facebook/react-native (main branch)
+ * 3. Latest stable version from npm (last resort)
+ *
+ * Returns {tarballPath, version} on success, or null if no tarball is available.
+ */
+async function downloadUpstreamHermesTarball(
+  buildType: string = 'Debug',
+): Promise<{ tarballPath: string; version: string } | null> {
+  const packageJsonPath = path.resolve(
+    import.meta.dirname!, '..', '..', 'packages', 'react-native', 'package.json',
+  );
+
+  // Build a list of candidate versions to try (in priority order)
+  const candidates: string[] = [];
+
+  const mapped = findMatchingHermesVersion(packageJsonPath);
+  if (mapped != null) {
+    candidates.push(mapped);
+  }
+
+  const mergeBaseVersion = findVersionAtMergeBase();
+  if (mergeBaseVersion != null && !candidates.includes(mergeBaseVersion)) {
+    candidates.push(mergeBaseVersion);
+  }
+
+  try {
+    const latestStable = await getLatestStableVersionFromNPM();
+    if (!candidates.includes(latestStable)) {
+      candidates.push(latestStable);
+    }
+  } catch {
+    // npm lookup failed, continue with what we have
+  }
+
+  if (candidates.length === 0) {
+    echo('Could not determine any upstream version to download Hermes tarball');
+    return null;
+  }
+
+  const mavenRepoUrl = 'https://repo1.maven.org/maven2';
+  const namespace = 'com/facebook/react';
+
+  for (const version of candidates) {
+    const releaseUrl = `${mavenRepoUrl}/${namespace}/react-native-artifacts/${version}/react-native-artifacts-${version}-hermes-ios-${buildType.toLowerCase()}.tar.gz`;
+    const nightlyUrl = await computeNightlyTarballURL(
+      version,
+      buildType,
+      'react-native-artifacts',
+      `hermes-ios-${buildType.toLowerCase()}.tar.gz`,
+    );
+    const urlsToTry = [releaseUrl];
+    if (nightlyUrl) {
+      urlsToTry.push(nightlyUrl);
+    }
+
+    for (const tarballUrl of urlsToTry) {
+      echo(`Trying upstream Hermes tarball (version: ${version}, ${buildType}) at ${tarballUrl}...`);
+
+      try {
+        const response = await fetch(tarballUrl);
+        if (!response.ok) {
+          echo(`Tarball not available: ${response.status} ${response.statusText}`);
+          continue;
+        }
+
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-'));
+        const tarballPath = path.join(tmpDir, 'hermes-ios.tar.gz');
+        const buffer = await response.arrayBuffer();
+        fs.writeFileSync(tarballPath, Buffer.from(buffer));
+
+        echo(`Downloaded upstream Hermes tarball (${version}) to ${tarballPath}`);
+        return { tarballPath, version };
+      } catch (e: any) {
+        echo(`Error downloading tarball for ${version}: ${e.message}`);
+        continue;
+      }
+    }
+  }
+
+  echo('No upstream Hermes tarball found for any candidate version — will build from source.');
+  return null;
 }
 
 /**
