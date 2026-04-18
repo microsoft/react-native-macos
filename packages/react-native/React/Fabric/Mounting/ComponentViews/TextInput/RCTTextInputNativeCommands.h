@@ -99,7 +99,8 @@ RCTTextInputHandleCommand(id<RCTTextInputViewProtocol> componentView, const NSSt
     return;
   }
 
-  if ([commandName isEqualToString:@"setGhostText"]) { // [macOS
+#if TARGET_OS_OSX // [macOS
+  if ([commandName isEqualToString:@"setGhostText"]) {
 #if RCT_DEBUG
     if ([args count] != 1) {
       RCTLogError(
@@ -112,7 +113,8 @@ RCTTextInputHandleCommand(id<RCTTextInputViewProtocol> componentView, const NSSt
     NSString *value = [arg0 isKindOfClass:[NSNull class]] ? nil : (NSString *)arg0;
     [componentView setGhostText:value];
     return;
-  } // macOS]
+  }
+#endif // macOS]
 
 #if RCT_DEBUG
   RCTLogError(@"%@ received command %@, which is not a supported command.", @"TextInput", commandName);
