@@ -6,13 +6,9 @@
  *
  * [macOS] Resolves Hermes artifacts for macOS fork branches.
  *
- * Handles downloading upstream Hermes tarballs, recomposing xcframeworks
- * to include the macOS slice, and resolving Hermes commits for
- * build-from-source fallback. Used as both a library and CLI:
- *
- *   node microsoft-resolveHermes.js download-hermes [Debug|Release]
- *   node microsoft-resolveHermes.js recompose-xcframework <tarball> <destroot>
- *   node microsoft-resolveHermes.js resolve-commit
+ * Library functions for version resolution, downloading upstream Hermes
+ * tarballs, and resolving Hermes commits. The CI entry point that
+ * orchestrates these is at .github/scripts/resolve-hermes.mts.
  *
  * @flow
  * @format
@@ -293,154 +289,9 @@ async function downloadUpstreamHermesTarball(
   return null;
 }
 
-/**
- * Extracts an upstream Hermes tarball and recomposes the xcframework to include
- * the macOS slice, if needed.
- *
- * Upstream tarballs ship a universal xcframework (iOS, simulator, catalyst,
- * tvOS, visionOS) plus a standalone macosx/hermes.framework. This function
- * merges the standalone macOS framework into the universal xcframework using
- * `xcodebuild -create-xcframework`.
- *
- * NOTE: Once upstream Hermes includes macOS in the universal xcframework
- * natively, this function will detect the existing macOS slice and skip
- * the recompose. At that point, this step can be removed entirely.
- *
- * Returns true if the xcframework was recomposed (or already had macOS),
- * false if the tarball is missing the macOS framework entirely.
- */
-function recomposeHermesXcframework(
-  tarballPath /*: string */,
-  destroot /*: string */,
-) /*: boolean */ {
-  // Extract tarball
-  fs.mkdirSync(destroot, {recursive: true});
-  execSync(`tar -xzf "${tarballPath}" -C "${destroot}" --strip-components=2`, {
-    stdio: 'inherit',
-  });
-
-  const frameworksDir = path.join(destroot, 'Library', 'Frameworks');
-  const xcfwPath = path.join(frameworksDir, 'universal', 'hermes.xcframework');
-
-  macosLog('Upstream tarball contents:');
-  execSync(`ls -la "${frameworksDir}"`, {stdio: 'inherit'});
-
-  // Check if macOS is already in the universal xcframework — if so, no recompose needed
-  const xcfwContents = fs.readdirSync(xcfwPath);
-  const hasMacSlice = xcfwContents.some(
-    entry => entry.startsWith('macos') && entry.includes('arm64'),
-  );
-  if (hasMacSlice) {
-    macosLog('macOS slice already present in universal xcframework, skipping recompose');
-    // Clean up standalone macOS dir if it exists
-    const standaloneMacDir = path.join(frameworksDir, 'macosx');
-    if (fs.existsSync(standaloneMacDir)) {
-      fs.rmSync(standaloneMacDir, {recursive: true, force: true});
-    }
-    return true;
-  }
-
-  // Check for standalone macOS framework
-  const standaloneMacFw = path.join(frameworksDir, 'macosx', 'hermes.framework');
-  if (!fs.existsSync(standaloneMacFw)) {
-    macosLog('Upstream tarball missing macosx/hermes.framework', 'error');
-    return false;
-  }
-
-  // Collect existing frameworks from inside the universal xcframework
-  const frameworks /*: string[] */ = [];
-  for (const entry of xcfwContents) {
-    const fwPath = path.join(xcfwPath, entry, 'hermes.framework');
-    if (fs.existsSync(fwPath) && fs.statSync(fwPath).isDirectory()) {
-      macosLog(`Found slice: ${fwPath}`);
-      frameworks.push('-framework', fwPath);
-    }
-  }
-
-  // Add the standalone macOS framework
-  macosLog(`Found standalone macOS slice: ${standaloneMacFw}`);
-  frameworks.push('-framework', standaloneMacFw);
-
-  // Build new xcframework at a temp path (frameworks reference paths inside the old xcfw)
-  const xcfwNew = path.join(frameworksDir, 'universal', 'hermes-new.xcframework');
-  macosLog(
-    `Creating new universal xcframework with ${frameworks.filter(f => f !== '-framework').length} slices...`,
-  );
-  execSync(
-    `xcodebuild -create-xcframework ${frameworks.map(f => `"${f}"`).join(' ')} -output "${xcfwNew}" -allow-internal-distribution`,
-    {stdio: 'inherit'},
-  );
-
-  // Swap in the recomposed xcframework
-  fs.rmSync(xcfwPath, {recursive: true, force: true});
-  fs.renameSync(xcfwNew, xcfwPath);
-
-  // Clean up standalone macOS dir (now included in universal)
-  fs.rmSync(path.join(frameworksDir, 'macosx'), {recursive: true, force: true});
-
-  macosLog('Recomposed xcframework:');
-  execSync(`ls -la "${xcfwPath}/"`, {stdio: 'inherit'});
-
-  return true;
-}
-
 function abort(message /*: string */) {
   macosLog(message, 'error');
   throw new Error(message);
-}
-
-/**
- * Appends a key=value pair to the GitHub Actions output file ($GITHUB_OUTPUT).
- * No-op if $GITHUB_OUTPUT is not set (e.g. running locally).
- */
-function setActionOutput(key /*: string */, value /*: string */) {
-  const outputFile = process.env.GITHUB_OUTPUT;
-  if (outputFile) {
-    fs.appendFileSync(outputFile, `${key}=${value}\n`);
-  }
-}
-
-// CLI entry point — writes results to $GITHUB_OUTPUT for GitHub Actions.
-// Usage:
-//   node microsoft-resolveHermes.js download-hermes [Debug|Release]
-//   node microsoft-resolveHermes.js recompose-xcframework <tarball> <destroot>
-//   node microsoft-resolveHermes.js resolve-commit
-if (require.main === module) {
-  const [command, ...args] = process.argv.slice(2);
-
-  if (command === 'download-hermes') {
-    const buildType = args[0] || 'Debug';
-    downloadUpstreamHermesTarball(buildType).then(result => {
-      if (result != null) {
-        setActionOutput('tarball', result.tarballPath);
-        setActionOutput('version', result.version);
-        macosLog(
-          `Downloaded upstream Hermes tarball for version ${result.version}`,
-        );
-      } else {
-        macosLog('No upstream tarball available');
-      }
-    });
-  } else if (command === 'recompose-xcframework') {
-    const [tarball, destroot] = args;
-    if (!tarball || !destroot) {
-      console.error(
-        'Usage: node microsoft-resolveHermes.js recompose-xcframework <tarball> <destroot>',
-      );
-      process.exit(1);
-    }
-    const recomposed = recomposeHermesXcframework(tarball, destroot);
-    setActionOutput('recomposed', String(recomposed));
-  } else if (command === 'resolve-commit') {
-    const {commit} = hermesCommitAtMergeBase();
-    setActionOutput('hermes-commit', commit);
-    macosLog(`Resolved Hermes commit: ${commit}`);
-  } else {
-    console.error(
-      `Unknown command: ${command ?? '(none)'}. Available: download-hermes, recompose-xcframework, resolve-commit`,
-    );
-    process.exit(1);
-  }
 }
 
 module.exports = {
@@ -449,5 +300,4 @@ module.exports = {
   findVersionAtMergeBase,
   getLatestStableVersionFromNPM,
   downloadUpstreamHermesTarball,
-  recomposeHermesXcframework,
 };
