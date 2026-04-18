@@ -184,6 +184,52 @@ async function getLatestStableVersionFromNPM() /*: Promise<string> */ {
   return json.version;
 }
 
+/**
+ * Downloads the upstream Hermes tarball from Maven for the mapped
+ * upstream version. Returns the tarball path and version on success,
+ * or null if no tarball is available.
+ *
+ * The caller is responsible for extracting and recomposing the
+ * xcframework (e.g. adding the macOS slice to the universal).
+ */
+async function downloadUpstreamHermesTarball(
+  buildType /*: string */ = 'Debug',
+) /*: Promise<?{| tarballPath: string, version: string |}> */ {
+  const packageJsonPath = path.resolve(__dirname, '..', '..', 'package.json');
+  const version = findMatchingHermesVersion(packageJsonPath);
+  if (version == null) {
+    macosLog('No upstream version found, cannot download tarball');
+    return null;
+  }
+
+  const mavenUrl = `https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/${version}/react-native-artifacts-${version}-hermes-ios-${buildType.toLowerCase()}.tar.gz`;
+
+  macosLog(
+    `Downloading upstream Hermes tarball (${version}) from ${mavenUrl}...`,
+  );
+
+  try {
+    const response /*: Response */ = await fetch(mavenUrl);
+    if (!response.ok) {
+      macosLog(
+        `Tarball not found: ${response.status} ${response.statusText}`,
+      );
+      return null;
+    }
+
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-'));
+    const tarballPath = path.join(tmpDir, 'hermes-ios.tar.gz');
+    const buffer = await response.arrayBuffer();
+    fs.writeFileSync(tarballPath, Buffer.from(buffer));
+
+    macosLog(`Downloaded upstream Hermes tarball to ${tarballPath}`);
+    return {tarballPath, version};
+  } catch (e) {
+    macosLog(`Error downloading tarball: ${e.message}`);
+    return null;
+  }
+}
+
 function abort(message /*: string */) {
   macosLog(message, 'error');
   throw new Error(message);
@@ -194,4 +240,5 @@ module.exports = {
   hermesCommitAtMergeBase,
   findVersionAtMergeBase,
   getLatestStableVersionFromNPM,
+  downloadUpstreamHermesTarball,
 };
