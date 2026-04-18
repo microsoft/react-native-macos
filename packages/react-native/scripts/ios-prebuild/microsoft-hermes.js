@@ -362,7 +362,7 @@ if (require.main === module) {
   switch (command) {
     case 'download-hermes': {
       const buildType = args[0] || 'Debug';
-      downloadUpstreamHermesTarball(buildType).then(result => {
+      void downloadUpstreamHermesTarball(buildType).then(result => {
         if (result != null) {
           setActionOutput('tarball', result.tarballPath);
           setActionOutput('version', result.version);
