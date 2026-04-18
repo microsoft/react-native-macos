@@ -2963,6 +2963,7 @@ __metadata:
     tinybench: "npm:^3.1.0"
     typescript: "npm:5.8.3"
     ws: "npm:^6.2.3"
+    zx: "npm:^8.2.4"
   languageName: unknown
   linkType: soft
 
@@ -14212,5 +14213,14 @@ __metadata:
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
+  languageName: node
+  linkType: hard
+
+"zx@npm:^8.2.4":
+  version: 8.8.5
+  resolution: "zx@npm:8.8.5"
+  bin:
+    zx: build/cli.js
+  checksum: 10c0/1273e4f72cfe35a59041aef5a56fd87318bc4e11947d101810b67e5c486ab30574042938728e8a15e085de985e762b8585fcdaab4cf87fd113153b63a5846611
   languageName: node
   linkType: hard
