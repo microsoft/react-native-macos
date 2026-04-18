@@ -15,8 +15,8 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@docusaurus/core": "3.8.1",
-    "@docusaurus/preset-classic": "3.8.1",
+    "@docusaurus/core": "3.10.0",
+    "@docusaurus/preset-classic": "3.10.0",
     "@mdx-js/react": "^3.0.0",
     "@types/react": "^19.0.0",
     "clsx": "^2.0.0",
@@ -25,9 +25,9 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.8.1",
-    "@docusaurus/tsconfig": "3.8.1",
-    "@docusaurus/types": "3.8.1",
+    "@docusaurus/module-type-aliases": "3.10.0",
+    "@docusaurus/tsconfig": "3.10.0",
+    "@docusaurus/types": "3.10.0",
     "typescript": "~5.8.3"
   },
   "browserslist": {
@@ -45,5 +45,13 @@
   "engines": {
     "node": ">=18.0"
   },
-  "packageManager": "yarn@4.9.1"
+  "packageManager": "yarn@4.9.1",
+  "resolutions": {
+    "serialize-javascript": "^7.0.3",
+    "webpack": ">=5.104.1 <5.106.0"
+  },
+  "_resolution_justifications": {
+    "serialize-javascript": "Earlier versions of serialize-javascript are affected by GHSA-5c6j-r48x-rmvq, and it's a transitive dependency of docusaurus, of which we are already using the latest version.",
+    "webpack": "Earlier versions of webpack are affected by CVE-2025-68458, but versions >=5.106.0 doesn't work with docusaurus, which is being worked on: https://github.com/facebook/docusaurus/issues/11923"
+  }
 }

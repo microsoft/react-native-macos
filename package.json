@@ -98,7 +98,7 @@
     "jest-diff": "^29.7.0",
     "jest-junit": "^10.0.0",
     "jest-snapshot": "^29.7.0",
-    "markdownlint-cli2": "^0.17.2",
+    "markdownlint-cli2": "^0.22.0",
     "markdownlint-rule-relative-links": "^3.0.0",
     "metro-babel-register": "^0.82.5",
     "metro-memory-fs": "^0.82.5",

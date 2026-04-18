@@ -38,7 +38,7 @@ extends:
       os: windows
     sdl:
       componentgovernance:
-        ignoreDirectories: $(Build.SourcesDirectory)/packages/helloworld
+        ignoreDirectories: $(Build.SourcesDirectory)/private/helloworld
       credscan:
         suppressionsFile: .ado/CredScanSuppressions.json
       eslint:
