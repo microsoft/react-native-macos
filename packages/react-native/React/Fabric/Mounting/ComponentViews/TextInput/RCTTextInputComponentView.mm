@@ -651,6 +651,14 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)textInputDidChangeSelection
 {
+#if TARGET_OS_OSX // [macOS
+  // Clear ghost text on any user selection change, matching Paper behavior.
+  // This prevents the user from selecting ghost text.
+  if (_ghostText != nil && !_comingFromJS && !_backedTextInputView.ghostTextChanging) {
+    [self setGhostText:nil];
+  }
+#endif // macOS]
+
   if (_comingFromJS) {
     return;
   }
@@ -970,7 +978,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [_backedTextInputView resignFirstResponder];
 #else // [macOS
   NSWindow *window = [_backedTextInputView window];
-  if ([window firstResponder] == _backedTextInputView.responder) {
+  // On macOS, when an NSTextField is focused, the window's firstResponder is the
+  // field editor (an NSTextView), not the text field itself. Check currentEditor
+  // to determine if the text field is actively being edited.
+  if ([_backedTextInputView isKindOfClass:[NSTextField class]] &&
+      [(NSTextField *)_backedTextInputView currentEditor] != nil) {
+    [window makeFirstResponder:nil];
+  } else if ([window firstResponder] == _backedTextInputView.responder) {
     [window makeFirstResponder:nil];
   }
 #endif // macOS]
