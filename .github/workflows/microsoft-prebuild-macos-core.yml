@@ -69,7 +69,7 @@ jobs:
         run: node scripts/ios-prebuild.js -b -f Debug -p ${{ matrix.platform }}
 
       - name: Save slice cache
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/0.81-stable' }}
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-stable') }}
         uses: actions/cache/save@v4
         with:
           key: v1-macos-core-${{ matrix.platform }}-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
@@ -162,7 +162,7 @@ jobs:
           tar -cz -f ../../ReactCoreDebug.framework.dSYM.tar.gz .
 
       - name: Save compose cache
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/0.81-stable' }}
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-stable') }}
         uses: actions/cache/save@v4
         with:
           key: v1-macos-core-xcframework-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
