@@ -82,14 +82,17 @@ jobs:
             exit 0
           fi
 
-          # Remove old xcframework and create new one with macOS included
-          rm -rf "$XCFW"
+          # Create new xcframework at a temp path (can't overwrite in-place
+          # because the source frameworks live inside the old xcframework)
+          XCFW_NEW="hermes-destroot/Library/Frameworks/universal/hermes-new.xcframework"
           echo "Creating new universal xcframework with ${#FRAMEWORKS[@]} frameworks..."
           xcodebuild -create-xcframework "${FRAMEWORKS[@]}" \
-            -output "$XCFW" \
+            -output "$XCFW_NEW" \
             -allow-internal-distribution
 
-          # Clean up standalone macOS dir (now included in universal)
+          # Swap in the new xcframework and clean up
+          rm -rf "$XCFW"
+          mv "$XCFW_NEW" "$XCFW"
           rm -rf hermes-destroot/Library/Frameworks/macosx
 
           echo "=== Recomposed xcframework ==="
