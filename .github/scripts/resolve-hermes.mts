@@ -9,11 +9,13 @@
  *
  * Each command writes results to $GITHUB_OUTPUT for use in GitHub Actions.
  */
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import { parseArgs } from 'node:util';
 import { $, echo, fs, path } from 'zx';
 
-// Import library functions from the react-native package
+// Use createRequire to import CommonJS modules from ESM context
+const require = createRequire(import.meta.url);
 const {
   findMatchingHermesVersion,
   findVersionAtMergeBase,
