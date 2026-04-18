@@ -397,14 +397,6 @@ static __weak RCTPlatformView *_pendingFocusView; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
   [self resignFirstResponder];
 #else // [macOS
-  // TODO: Fix blur for NSTextField (field editor mismatch) - uncomment after testing Fabric fix
-  // When an NSTextField is focused, the window's firstResponder is the field editor
-  // (an NSTextView), not the text field itself. Use currentEditor to check if focused.
-  // if ([self isKindOfClass:[NSTextField class]] && [(NSTextField *)self currentEditor] != nil) {
-  //   [[self window] makeFirstResponder:nil];
-  // } else if (self == [[self window] firstResponder]) {
-  //   [[self window] makeFirstResponder:nil];
-  // }
   if (self == [[self window] firstResponder]) {
     [[self window] makeFirstResponder:[[self window] nextResponder]];
   }

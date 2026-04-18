@@ -65,8 +65,10 @@ jest.unmock('../TextInput');
 
       expect(inputElement.isFocused).toBeInstanceOf(Function); // Would have prevented S168585
       expect(inputElement.clear).toBeInstanceOf(Function);
+      // [macOS
       expect(inputElement.setSelection).toBeInstanceOf(Function);
-      expect(inputElement.setGhostText).toBeInstanceOf(Function); // [macOS]
+      expect(inputElement.setGhostText).toBeInstanceOf(Function);
+      // macOS]
       // $FlowFixMe[method-unbinding]
       expect(inputElement.focus).toBeInstanceOf(jest.fn().constructor);
       // $FlowFixMe[method-unbinding]
