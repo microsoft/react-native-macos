@@ -195,13 +195,18 @@ async function getLatestStableVersionFromNPM() /*: Promise<string> */ {
  * 2. Version at merge base with facebook/react-native (main branch)
  * 3. Latest stable version from npm (last resort)
  *
- * Returns {hasMacOS: boolean, tarballPath?: string, version?: string}.
- * When hasMacOS is true, tarballPath points to the downloaded tarball and
+ * Returns {hasMacSlice: boolean, tarballPath?: string, version?: string}.
+ * When hasMacSlice is true, tarballPath points to the downloaded tarball and
  * version is the upstream version string used for the lookup.
+ *
+ * The check looks for a macOS platform entry inside the universal
+ * hermes.xcframework (via its Info.plist), not just for a standalone
+ * macosx/ directory. Upstream tarballs ship a standalone macosx/hermes.framework
+ * but don't include it in the universal xcframework yet.
  */
-async function checkUpstreamHermesHasMacOS(
+async function checkUpstreamHermesHasMacSlice(
   buildType /*: BuildFlavor */ = 'Debug',
-) /*: Promise<{| hasMacOS: boolean, tarballPath?: string, version?: string |}> */ {
+) /*: Promise<{| hasMacSlice: boolean, tarballPath?: string, version?: string |}> */ {
   const packageJsonPath = path.resolve(__dirname, '..', '..', 'package.json');
 
   // Build a list of candidate versions to try (in priority order)
@@ -228,7 +233,7 @@ async function checkUpstreamHermesHasMacOS(
 
   if (candidates.length === 0) {
     macosLog('Could not determine any upstream version to check Hermes tarball');
-    return {hasMacOS: false};
+    return {hasMacSlice: false};
   }
 
   const mavenRepoUrl = 'https://repo1.maven.org/maven2';
@@ -283,31 +288,35 @@ async function checkUpstreamHermesHasMacOS(
         const buffer = await response.arrayBuffer();
         fs.writeFileSync(tarballPath, Buffer.from(buffer));
 
-        // List tarball contents and check for macosx slice
-        const listing = execSync(`tar -tzf "${tarballPath}" 2>/dev/null`, {
-          encoding: 'utf8',
-          maxBuffer: 10 * 1024 * 1024,
-        });
-
-        const hasMacOS = listing
-          .split('\n')
-          .some(
-            entry => entry.includes('/macosx/') || entry.includes('/macosx'),
+        // Extract the xcframework's Info.plist and check for a macOS
+        // platform entry. We can't just look for a macosx/ directory in
+        // the tarball — upstream ships a standalone macosx/hermes.framework
+        // but doesn't include macOS in the universal xcframework yet.
+        let hasMacSlice = false;
+        try {
+          const plist = execSync(
+            `tar -xzf "${tarballPath}" -O --wildcards '*/universal/hermes.xcframework/Info.plist' 2>/dev/null`,
+            {encoding: 'utf8', maxBuffer: 1024 * 1024},
           );
+          hasMacSlice = plist.includes('macos') || plist.includes('macOS');
+        } catch (_) {
+          // Info.plist not found or extraction failed — no mac slice
+          macosLog('Could not extract xcframework Info.plist from tarball.');
+        }
 
-        if (hasMacOS) {
+        if (hasMacSlice) {
           macosLog(
-            `Upstream Hermes tarball (${version}) contains macOS slices — build from source can be skipped!`,
+            `Upstream Hermes tarball (${version}) includes macOS in the universal xcframework — build from source can be skipped!`,
           );
-          return {hasMacOS: true, tarballPath, version};
+          return {hasMacSlice: true, tarballPath, version};
         } else {
           macosLog(
-            `Upstream Hermes tarball (${version}) does NOT contain macOS slices.`,
+            `Upstream Hermes tarball (${version}) does NOT include macOS in the universal xcframework.`,
           );
           fs.rmSync(tmpDir, {recursive: true, force: true});
-          // Don't try other versions — if the tarball exists but lacks macOS,
-          // older versions won't help since macOS was always included.
-          return {hasMacOS: false};
+          // Don't try other versions — if the tarball exists but lacks
+          // the mac slice, older versions won't have it either.
+          return {hasMacSlice: false};
         }
       } catch (e) {
         macosLog(`Error checking tarball for ${version}: ${e.message}`);
@@ -322,7 +331,7 @@ async function checkUpstreamHermesHasMacOS(
   macosLog(
     'No upstream Hermes tarball found for any candidate version — will build from source.',
   );
-  return {hasMacOS: false};
+  return {hasMacSlice: false};
 }
 
 function abort(message /*: string */) {
@@ -335,5 +344,5 @@ module.exports = {
   hermesCommitAtMergeBase,
   findVersionAtMergeBase,
   getLatestStableVersionFromNPM,
-  checkUpstreamHermesHasMacOS,
+  checkUpstreamHermesHasMacSlice,
 };
