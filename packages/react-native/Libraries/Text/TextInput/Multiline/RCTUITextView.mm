@@ -328,14 +328,19 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
 #if !TARGET_OS_OSX // [macOS]
   [super setAttributedText:attributedText];
 #else // [macOS
-  // Break undo coalescing when the text is changed by JS (e.g. autocomplete),
-  // but not when ghost text is being inserted/removed — ghost text changes
-  // should not affect the undo stack.
-  if (!self.ghostTextChanging) {
+  if (self.ghostTextChanging) {
+    // Ghost text changes should not be on the undo stack. Disable undo
+    // registration around the text storage mutation so Cmd+Z skips over
+    // ghost text insertions/removals.
+    [self.undoManager disableUndoRegistration];
+    [self.textStorage setAttributedString:attributedText ?: [NSAttributedString new]];
+    [self.undoManager enableUndoRegistration];
+  } else {
+    // Break undo coalescing when the text is changed by JS (e.g. autocomplete).
     [self breakUndoCoalescing];
+    // Avoid Exception thrown while executing UI block: *** -[NSBigMutableString replaceCharactersInRange:withString:]: nil argument
+    [self.textStorage setAttributedString:attributedText ?: [NSAttributedString new]];
   }
-  // Avoid Exception thrown while executing UI block: *** -[NSBigMutableString replaceCharactersInRange:withString:]: nil argument
-  [self.textStorage setAttributedString:attributedText ?: [NSAttributedString new]];
 #endif // macOS]
   [self textDidChange];
 }
