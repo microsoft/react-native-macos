@@ -9,7 +9,7 @@ jobs:
     - name: BUILDSECMON_OPT_IN
       value: true
     - name: USE_YARN_FOR_PUBLISH
-      value: false
+      value: true
     
   timeoutInMinutes: 90
   cancelTimeoutInMinutes: 5
@@ -80,8 +80,8 @@ jobs:
               yarn config set npmPublishRegistry "https://registry.npmjs.org"
               yarn config set npmAuthToken $(npmAuthToken)
               echo "Publishing with yarn npm publish"
-              yarn ./packages/virtualized-lists npm publish --tag $(publishTag)
-              yarn ./packages/react-native npm publish --tag $(publishTag)
+              yarn ./packages/virtualized-lists npm publish --tolerate-republish --tag $(publishTag)
+              yarn ./packages/react-native npm publish      --tolerate-republish --tag $(publishTag)
             else
               echo "Publishing with npm publish"
               npm publish ./packages/virtualized-lists --tag $(publishTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
