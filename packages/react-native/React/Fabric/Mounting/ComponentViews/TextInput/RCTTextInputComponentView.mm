@@ -509,6 +509,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)textInputDidEndEditing
 {
+#if TARGET_OS_OSX // [macOS
+  [self setGhostText:nil];
+#endif // macOS]
+
   if (_eventEmitter) {
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onEndEditing([self _textInputMetrics]);
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onBlur([self _textInputMetrics]);
@@ -543,6 +547,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (NSString *)textInputShouldChangeText:(NSString *)text inRange:(NSRange)range
 {
+#if TARGET_OS_OSX // [macOS
+  // Clear ghost text before the text change so the undo manager's snapshot
+  // of the pre-edit state never contains ghost text.
+  [self setGhostText:nil];
+#endif // macOS]
+
   const auto &props = static_cast<const TextInputProps &>(*_props);
 
   if (!_backedTextInputView.textWasPasted) {
