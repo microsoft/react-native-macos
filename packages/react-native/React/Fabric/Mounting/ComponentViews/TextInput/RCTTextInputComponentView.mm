@@ -590,12 +590,15 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 #if TARGET_OS_OSX // [macOS
   if (_ghostText != nil) {
+    // Ghost text removal should not be part of the undo stack
+    [_backedTextInputView.undoManager disableUndoRegistration];
     NSAttributedString *attributedStringWithoutGhostText = [self removingGhostTextFromString:_backedTextInputView.attributedText strict:NO];
     if (attributedStringWithoutGhostText != nil && ![attributedStringWithoutGhostText isEqual:_backedTextInputView.attributedText]) {
       _backedTextInputView.attributedText = attributedStringWithoutGhostText;
     }
     _ghostText = nil;
     _ghostTextPosition = 0;
+    [_backedTextInputView.undoManager enableUndoRegistration];
   }
 #endif // macOS]
 
@@ -832,6 +835,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   _backedTextInputView.ghostTextChanging = YES;
 
+  // Ghost text changes should not be part of the undo stack.
+  // Disable undo registration while modifying the attributed text.
+  [_backedTextInputView.undoManager disableUndoRegistration];
+
   if (_ghostText != nil) {
     // When setGhostText: is called after making a standard edit, the ghost text may already be gone
     BOOL ghostTextMayAlreadyBeGone = newGhostText == nil;
@@ -856,6 +863,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     [_backedTextInputView setSelectedTextRange:NSMakeRange(_ghostTextPosition, 0) notifyDelegate:NO];
   }
 
+  [_backedTextInputView.undoManager enableUndoRegistration];
   _backedTextInputView.ghostTextChanging = NO;
 }
 
