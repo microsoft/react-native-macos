@@ -328,8 +328,12 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
 #if !TARGET_OS_OSX // [macOS]
   [super setAttributedText:attributedText];
 #else // [macOS
-  // Break undo coalescing when the text is changed by JS (e.g. autocomplete).
-  [self breakUndoCoalescing];
+  // Break undo coalescing when the text is changed by JS (e.g. autocomplete),
+  // but not when ghost text is being inserted/removed — ghost text changes
+  // should not affect the undo stack.
+  if (!self.ghostTextChanging) {
+    [self breakUndoCoalescing];
+  }
   // Avoid Exception thrown while executing UI block: *** -[NSBigMutableString replaceCharactersInRange:withString:]: nil argument
   [self.textStorage setAttributedString:attributedText ?: [NSAttributedString new]];
 #endif // macOS]
