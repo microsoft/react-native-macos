@@ -1,0 +1,67 @@
+name: Build RNTester (Prebuilt)
+
+on:
+  workflow_call:
+
+jobs:
+  build-rntester-prebuilt:
+    name: "Prebuilt ${{ matrix.platform }}, ${{ matrix.arch }}"
+    runs-on: macos-26
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos, ios]
+        arch: [newarch]
+        include:
+          # Platform-specific properties
+          - platform: macos
+            sdk: macosx
+            scheme: RNTester-macOS
+            packager_platform: macos
+          - platform: ios
+            sdk: iphonesimulator
+            scheme: RNTester
+            packager_platform: ios
+          # Architecture-specific properties
+          - arch: newarch
+            new_arch_enabled: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+          platform: ${{ matrix.platform }}
+          project-root: 'packages/rn-tester'
+
+      - name: Install npm dependencies
+        run: yarn install
+
+      - name: Download prebuilt xcframework
+        uses: actions/download-artifact@v4
+        with:
+          name: ReactCoreDebug.xcframework.tar.gz
+          path: /tmp/prebuilt
+
+      - name: Install Pods (with prebuilt)
+        working-directory: packages/rn-tester
+        env:
+          RCT_NEW_ARCH_ENABLED: ${{ matrix.new_arch_enabled }}
+          RCT_TESTONLY_RNCORE_TARBALL_PATH: /tmp/prebuilt/ReactCoreDebug.xcframework.tar.gz
+        run: |
+          set -eox pipefail
+          bundle install
+          bundle exec pod install --verbose
+
+      - name: Build ${{ matrix.scheme }}
+        env:
+          USE_CCACHE: 0
+        run: |
+          set -eox pipefail
+          .ado/scripts/xcodebuild.sh packages/rn-tester/RNTesterPods.xcworkspace ${{ matrix.sdk }} Debug ${{ matrix.scheme }} build

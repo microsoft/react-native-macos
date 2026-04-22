@@ -143,6 +143,12 @@ jobs:
     permissions: {}
     uses: ./.github/workflows/microsoft-prebuild-macos-core.yml
 
+  build-rntester-prebuilt:
+    name: "Build RNTester (Prebuilt)"
+    permissions: {}
+    needs: [prebuild-macos-core]
+    uses: ./.github/workflows/microsoft-build-rntester-prebuilt.yml
+
   test-react-native-macos-init:
     name: "Test react-native-macos init"
     permissions: {}
@@ -170,6 +176,7 @@ jobs:
       - javascript-tests
       - build-rntester
       - prebuild-macos-core
+      - build-rntester-prebuilt
       - test-react-native-macos-init
       # - react-native-test-app-integration
     steps:
