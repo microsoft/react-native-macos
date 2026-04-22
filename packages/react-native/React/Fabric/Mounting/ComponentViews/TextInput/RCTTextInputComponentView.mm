@@ -103,6 +103,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   BOOL _hasInputAccessoryView;
   CGSize _previousContentSize;
+#if TARGET_OS_OSX // [macOS
+  NSString *_ghostText;
+  NSInteger _ghostTextPosition;
+#endif // macOS]
 }
 
 #pragma mark - UIView overrides
@@ -514,6 +518,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _lastStringStateWasUpdatedWith = nil;
   _ignoreNextTextInputCall = NO;
   _didMoveToWindow = NO;
+#if TARGET_OS_OSX // [macOS
+  _ghostText = nil;
+  _ghostTextPosition = 0;
+#endif // macOS]
   [_backedTextInputView resignFirstResponder];
 }
 
@@ -538,6 +546,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)textInputDidEndEditing
 {
+#if TARGET_OS_OSX // [macOS
+  [self setGhostText:nil];
+#endif // macOS]
+
   if (_eventEmitter) {
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onEndEditing([self _textInputMetrics]);
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onBlur([self _textInputMetrics]);
@@ -572,6 +584,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (NSString *)textInputShouldChangeText:(NSString *)text inRange:(NSRange)range
 {
+#if TARGET_OS_OSX // [macOS
+  // Clear ghost text before the text change so the undo manager's snapshot
+  // of the pre-edit state never contains ghost text.
+  [self setGhostText:nil];
+#endif // macOS]
+
   const auto &props = static_cast<const TextInputProps &>(*_props);
 
   if (!_backedTextInputView.textWasPasted) {
@@ -617,6 +635,17 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     return;
   }
 
+#if TARGET_OS_OSX // [macOS
+  if (_ghostText != nil) {
+    NSAttributedString *attributedStringWithoutGhostText = [self removingGhostTextFromString:_backedTextInputView.attributedText strict:NO];
+    if (attributedStringWithoutGhostText != nil && ![attributedStringWithoutGhostText isEqual:_backedTextInputView.attributedText]) {
+      _backedTextInputView.attributedText = attributedStringWithoutGhostText;
+    }
+    _ghostText = nil;
+    _ghostTextPosition = 0;
+  }
+#endif // macOS]
+
   if (_ignoreNextTextInputCall && [_lastStringStateWasUpdatedWith isEqual:_backedTextInputView.attributedText]) {
     _ignoreNextTextInputCall = NO;
     return;
@@ -632,6 +661,14 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)textInputDidChangeSelection
 {
+#if TARGET_OS_OSX // [macOS
+  // Clear ghost text on any user selection change, matching Paper behavior.
+  // This prevents the user from selecting ghost text.
+  if (_ghostText != nil && !_comingFromJS && !_backedTextInputView.ghostTextChanging) {
+    [self setGhostText:nil];
+  }
+#endif // macOS]
+
   if (_comingFromJS) {
     return;
   }
@@ -805,6 +842,115 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 }
 
+#if TARGET_OS_OSX // [macOS
+#pragma mark - Ghost Text
+
+- (NSDictionary<NSAttributedStringKey, id> *)ghostTextAttributes
+{
+  NSMutableDictionary<NSAttributedStringKey, id> *textAttributes =
+      [_backedTextInputView.defaultTextAttributes mutableCopy] ?: [NSMutableDictionary new];
+
+  [textAttributes setValue:_backedTextInputView.placeholderColor ?: [RCTPlatformColor placeholderTextColor]
+                    forKey:NSForegroundColorAttributeName];
+
+  return textAttributes;
+}
+
+- (void)setGhostText:(NSString *)ghostText
+{
+  NSRange selectedRange = [_backedTextInputView selectedTextRange];
+  NSInteger selectionStart = selectedRange.location;
+  NSInteger selectionEnd = selectedRange.location + selectedRange.length;
+  NSString *newGhostText = ghostText.length > 0 ? ghostText : nil;
+
+  if (selectionStart != selectionEnd) {
+    newGhostText = nil;
+  }
+
+  if ((_ghostText == nil && newGhostText == nil) || [_ghostText isEqual:newGhostText]) {
+    return;
+  }
+
+  if (_backedTextInputView.ghostTextChanging) {
+    // look out for nested callbacks -- this can happen for example when selection changes in response to
+    // attributed text changing. Such callbacks are initiated by Apple, or we could suppress this other ways.
+    return;
+  }
+
+  _backedTextInputView.ghostTextChanging = YES;
+
+  if (_ghostText != nil) {
+    // When setGhostText: is called after making a standard edit, the ghost text may already be gone
+    BOOL ghostTextMayAlreadyBeGone = newGhostText == nil;
+    NSAttributedString *attributedStringWithoutGhostText = [self removingGhostTextFromString:_backedTextInputView.attributedText strict:!ghostTextMayAlreadyBeGone];
+
+    if (attributedStringWithoutGhostText != nil) {
+      _backedTextInputView.attributedText = attributedStringWithoutGhostText;
+      [_backedTextInputView setSelectedTextRange:NSMakeRange(selectionStart, selectionEnd - selectionStart) notifyDelegate:NO];
+    }
+  }
+
+  _ghostText = [newGhostText copy];
+  _ghostTextPosition = selectionStart;
+
+  if (_ghostText != nil) {
+    NSMutableAttributedString *attributedString = [_backedTextInputView.attributedText mutableCopy];
+    NSAttributedString *ghostAttributedString = [[NSAttributedString alloc] initWithString:_ghostText
+                                                                                attributes:self.ghostTextAttributes];
+
+    [attributedString insertAttributedString:ghostAttributedString atIndex:_ghostTextPosition];
+    _backedTextInputView.attributedText = attributedString;
+    [_backedTextInputView setSelectedTextRange:NSMakeRange(_ghostTextPosition, 0) notifyDelegate:NO];
+  }
+
+  _backedTextInputView.ghostTextChanging = NO;
+}
+
+/**
+ * Attempts to remove the ghost text from a provided string given our current state.
+ *
+ * If `strict` mode is enabled, this method assumes the ghost text exists exactly
+ * where we expect it to be. We assert and return `nil` if we don't find the expected ghost text.
+ * It's the responsibility of the caller to make sure the result isn't `nil`.
+ *
+ * If disabled, we allow for the possibility that the ghost text has already been removed,
+ * which can happen if a delegate callback is trying to remove ghost text after invoking `setAttributedText:`.
+ */
+- (NSAttributedString *)removingGhostTextFromString:(NSAttributedString *)string strict:(BOOL)strict
+{
+  if (_ghostText == nil) {
+    return string;
+  }
+
+  NSRange ghostTextRange = NSMakeRange(_ghostTextPosition, _ghostText.length);
+  NSMutableAttributedString *attributedString = [string mutableCopy];
+
+  if ([attributedString length] < NSMaxRange(ghostTextRange)) {
+    if (strict) {
+      RCTAssert(false, @"Ghost text not fully present in text view text");
+      return nil;
+    } else {
+      return string;
+    }
+  }
+
+  NSString *actualGhostText = [[attributedString attributedSubstringFromRange:ghostTextRange] string];
+
+  if (![actualGhostText isEqual:_ghostText]) {
+    if (strict) {
+      RCTAssert(false, @"Ghost text does not match text view text");
+      return nil;
+    } else {
+      return string;
+    }
+  }
+
+  [attributedString deleteCharactersInRange:ghostTextRange];
+  return attributedString;
+}
+
+#endif // macOS]
+
 #pragma mark - Native Commands
 
 - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args
@@ -842,7 +988,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [_backedTextInputView resignFirstResponder];
 #else // [macOS
   NSWindow *window = [_backedTextInputView window];
-  if ([window firstResponder] == _backedTextInputView.responder) {
+  // On macOS, when an NSTextField is focused, the window's firstResponder is the
+  // field editor (an NSTextView), not the text field itself. Check currentEditor
+  // to determine if the text field is actively being edited.
+  if ([_backedTextInputView isKindOfClass:[NSTextField class]] &&
+      [(NSTextField *)_backedTextInputView currentEditor] != nil) {
+    [window makeFirstResponder:nil];
+  } else if ([window firstResponder] == _backedTextInputView.responder) {
     [window makeFirstResponder:nil];
   }
 #endif // macOS]
@@ -881,7 +1033,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #else // [macOS
   NSInteger startPosition = MIN(start, end);
   NSInteger endPosition = MAX(start, end);
-  [_backedTextInputView setSelectedTextRange:NSMakeRange(startPosition, endPosition - startPosition) notifyDelegate:YES];
+  [_backedTextInputView setSelectedTextRange:NSMakeRange(startPosition, endPosition - startPosition) notifyDelegate:NO];
 #endif // macOS]
   _comingFromJS = NO;
 }
