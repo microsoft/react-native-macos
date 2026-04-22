@@ -18,6 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
                       value:(NSString *__nullable)value
                       start:(NSInteger)start
                         end:(NSInteger)end;
+#if TARGET_OS_OSX // [macOS
+- (void)setGhostText:(NSString *__nullable)ghostText;
+#endif // macOS]
 @end
 
 RCT_EXTERN inline void
@@ -95,6 +98,23 @@ RCTTextInputHandleCommand(id<RCTTextInputViewProtocol> componentView, const NSSt
     [componentView setTextAndSelection:eventCount value:value start:start end:end];
     return;
   }
+
+#if TARGET_OS_OSX // [macOS
+  if ([commandName isEqualToString:@"setGhostText"]) {
+#if RCT_DEBUG
+    if ([args count] != 1) {
+      RCTLogError(
+          @"%@ command %@ received %d arguments, expected %d.", @"TextInput", commandName, (int)[args count], 1);
+      return;
+    }
+#endif
+
+    NSObject *arg0 = args[0];
+    NSString *value = [arg0 isKindOfClass:[NSNull class]] ? nil : (NSString *)arg0;
+    [componentView setGhostText:value];
+    return;
+  }
+#endif // macOS]
 
 #if RCT_DEBUG
   RCTLogError(@"%@ received command %@, which is not a supported command.", @"TextInput", commandName);
