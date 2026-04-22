@@ -5,9 +5,11 @@ on:
 
 jobs:
   build-rntester:
-    name: "${{ matrix.platform }}, ${{ matrix.arch }}"
+    name: "${{ matrix.platform }}, ${{ matrix.arch }}${{ matrix.use_frameworks && ', DynamicFrameworks' || '' }}"
     runs-on: macos-26
     timeout-minutes: 90
+    # DynamicFrameworks is experimental; don't block PRs on it (matches upstream)
+    continue-on-error: ${{ matrix.use_frameworks == 'dynamic' }}
     strategy:
       fail-fast: false
       matrix:
@@ -32,6 +34,14 @@ jobs:
             new_arch_enabled: '0'
           - arch: newarch
             new_arch_enabled: '1'
+          # DynamicFrameworks variant (matches upstream test_ios_rntester_dynamic_frameworks)
+          - platform: ios
+            arch: newarch
+            sdk: iphonesimulator
+            scheme: RNTester
+            packager_platform: ios
+            new_arch_enabled: '1'
+            use_frameworks: dynamic
 
     steps:
       - uses: actions/checkout@v4
@@ -53,6 +63,7 @@ jobs:
         working-directory: packages/rn-tester
         env:
           RCT_NEW_ARCH_ENABLED: ${{ matrix.new_arch_enabled }}
+          USE_FRAMEWORKS: ${{ matrix.use_frameworks }}
         run: |
           set -eox pipefail
           bundle install

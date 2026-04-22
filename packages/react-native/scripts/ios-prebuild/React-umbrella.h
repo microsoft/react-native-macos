@@ -6,7 +6,11 @@
  */
 
 #ifdef __OBJC__
+#if !TARGET_OS_OSX // [macOS]
 #import <UIKit/UIKit.h>
+#else // [macOS
+#import <AppKit/AppKit.h>
+#endif // macOS]
 #else
 #ifndef FOUNDATION_EXPORT
 #if defined(__cplusplus)

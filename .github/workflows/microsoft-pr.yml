@@ -104,32 +104,36 @@ jobs:
         run: yarn constraints
 
   javascript-tests:
-    name: "JavaScript Tests"
+    name: "JavaScript Tests (Node ${{ matrix.node-version }})"
     permissions: {}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["24", "22"]
     steps:
       - uses: actions/checkout@v4
         with:
           filter: blob:none
           fetch-depth: 0
-      
+
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
-          node-version: '22'
-      
+          node-version: ${{ matrix.node-version }}
+
       - name: Install npm dependencies
         run: yarn install
-      
+
       - name: Run Jest tests
         run: yarn test-ci
-      
+
       - name: Run Flow type checker
         run: yarn flow-check
-      
+
       - name: Run ESLint
         run: yarn lint
-      
+
       - name: Run Prettier format check
         run: yarn format-check
 
