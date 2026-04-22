@@ -51,7 +51,7 @@ jobs:
       - name: Configure react-native-test-app dependencies
         working-directory: react-native-test-app
         run: |
-          npm run set-react-version ${{ steps.versions.outputs.react_native_version }} -- --overrides '{ "react-native-macos": "file:${{ runner.temp }}/react-native-macos.tgz" }'
+          yarn workspace react-native-test-app set-react-version ${{ steps.versions.outputs.react_native_version }} --overrides '{ "react-native-macos": "file:${{ runner.temp }}/react-native-macos.tgz" }'
 
       - name: Install dependencies in test app
         working-directory: react-native-test-app
@@ -60,17 +60,17 @@ jobs:
           yarn --no-immutable
 
       - name: Bundle JavaScript
-        working-directory: react-native-test-app/example
+        working-directory: react-native-test-app/packages/example-macos
         run: |
           yarn build:macos || yarn build:macos
 
       - name: Install Pods
-        working-directory: react-native-test-app/example
+        working-directory: react-native-test-app/packages/example-macos
         run: |
           rm -f macos/Podfile.lock
           pod install --project-directory=macos
 
       - name: Build test app
-        working-directory: react-native-test-app/example
+        working-directory: react-native-test-app/packages/example-macos
         run: |
-          ../scripts/build/xcodebuild.sh macos/Example.xcworkspace build
+          ../../scripts/xcodebuild.sh macos/Example.xcworkspace build
