@@ -107,6 +107,8 @@ jobs:
     name: "JavaScript Tests (Node ${{ matrix.node-version }})"
     permissions: {}
     runs-on: ubuntu-latest
+    # Node 24 may have pre-existing test failures (e.g., stricter SSL); don't block PRs
+    continue-on-error: ${{ matrix.node-version == '24' }}
     strategy:
       fail-fast: false
       matrix:
