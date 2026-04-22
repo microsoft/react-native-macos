@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos, ios]
+        platform: [macos, ios, visionos]
         arch: [newarch]
         include:
           # Platform-specific properties
@@ -22,6 +22,10 @@ jobs:
           - platform: ios
             sdk: iphonesimulator
             scheme: RNTester
+            packager_platform: ios
+          - platform: visionos
+            sdk: xrsimulator
+            scheme: RNTester-visionOS
             packager_platform: ios
           # Architecture-specific properties
           - arch: newarch
