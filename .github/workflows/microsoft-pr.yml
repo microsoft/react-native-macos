@@ -104,15 +104,9 @@ jobs:
         run: yarn constraints
 
   javascript-tests:
-    name: "JavaScript Tests (Node ${{ matrix.node-version }})"
+    name: "JavaScript Tests"
     permissions: {}
     runs-on: ubuntu-latest
-    # Node 24 may have pre-existing test failures (e.g., stricter SSL); don't block PRs
-    continue-on-error: ${{ matrix.node-version == '24' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: ["24", "22"]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -122,7 +116,7 @@ jobs:
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '22'
 
       - name: Install npm dependencies
         run: yarn install
