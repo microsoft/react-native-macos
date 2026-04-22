@@ -55,6 +55,8 @@ jobs:
 
       - name: Install dependencies in test app
         working-directory: react-native-test-app
+        env:
+          YARN_ENABLE_HARDENED_MODE: 0
         run: |
           set -eo pipefail
           yarn --no-immutable
