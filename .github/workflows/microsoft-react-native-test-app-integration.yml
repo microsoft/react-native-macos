@@ -57,6 +57,7 @@ jobs:
         working-directory: react-native-test-app
         env:
           YARN_ENABLE_HARDENED_MODE: 0
+          YARN_NPM_MINIMAL_AGE_GATE: 0
         run: |
           set -eo pipefail
           yarn --no-immutable
