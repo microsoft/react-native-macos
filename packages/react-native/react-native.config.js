@@ -71,8 +71,12 @@ try {
 // [macOS
 let apple;
 try {
+  const iosPath = require.resolve('@react-native-community/cli-platform-ios', {
+    paths: [process.cwd()],
+  });
   apple = findCommunityPlatformPackage(
     '@react-native-community/cli-platform-apple',
+    iosPath,
   );
 } catch {
   if (verbose) {
