@@ -53,15 +53,26 @@ jobs:
         run: |
           node scripts/internal/set-react-version.mts ${{ steps.versions.outputs.react_native_version }} --overrides '{ "react-native-macos": "file:${{ runner.temp }}/react-native-macos.tgz" }'
 
-      - name: Force react-native-macos resolution to local tarball
+      - name: Force react-native-macos to local tarball in all workspaces
         working-directory: react-native-test-app
         run: |
           node -e "
             const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.resolutions = pkg.resolutions || {};
-            pkg.resolutions['react-native-macos'] = 'file:${{ runner.temp }}/react-native-macos.tgz';
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            const tarball = 'file:${{ runner.temp }}/react-native-macos.tgz';
+
+            // Add root-level resolution
+            const root = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            root.resolutions = root.resolutions || {};
+            root.resolutions['react-native-macos'] = tarball;
+            fs.writeFileSync('package.json', JSON.stringify(root, null, 2) + '\n');
+
+            // Override direct dependency in example-macos
+            const exMacosPath = 'packages/example-macos/package.json';
+            const exMacos = JSON.parse(fs.readFileSync(exMacosPath, 'utf8'));
+            if (exMacos.dependencies && exMacos.dependencies['react-native-macos']) {
+              exMacos.dependencies['react-native-macos'] = tarball;
+              fs.writeFileSync(exMacosPath, JSON.stringify(exMacos, null, 2) + '\n');
+            }
           "
 
       - name: Install dependencies in test app
