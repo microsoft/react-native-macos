@@ -41,6 +41,12 @@ def list_native_modules!(config_command)
   project_config = config["project"]["macos"] || config["project"]["ios"] # [macOS]
   ios_project_root = Pathname.new(project_config["sourceDir"]) # [macOS]
   react_native_path = Pathname.new(config["reactNativePath"])
+  codegen_output_path = ios_project_root.join("build/generated/autolinking/autolinking.json")
+
+  # Write autolinking react-native-config output to codegen folder
+  FileUtils.mkdir_p(File.dirname(codegen_output_path))
+  File.write(codegen_output_path, json)
+
   found_pods = []
 
   packages.each do |package_name, package|

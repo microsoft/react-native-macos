@@ -118,6 +118,7 @@ const NSInteger RCTComponentViewRegistryRecyclePoolMaxSize = 1024;
   auto &recycledViews = _recyclePool[componentHandle];
 
   if (recycledViews.size() > RCTComponentViewRegistryRecyclePoolMaxSize || !componentViewDescriptor.shouldBeRecycled) {
+    [componentViewDescriptor.view invalidate];
     return;
   }
 

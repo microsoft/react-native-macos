@@ -31,6 +31,27 @@
 
 NSString *const RCTShowDevMenuNotification = @"RCTShowDevMenuNotification";
 
+@implementation RCTDevMenuConfiguration
+- (instancetype)initWithDevMenuEnabled:(BOOL)devMenuEnabled
+                   shakeGestureEnabled:(BOOL)shakeGestureEnabled
+              keyboardShortcutsEnabled:(BOOL)keyboardShortcutsEnabled
+{
+  if (self = [super init]) {
+    _devMenuEnabled = devMenuEnabled;
+    _shakeGestureEnabled = shakeGestureEnabled;
+    _keyboardShortcutsEnabled = keyboardShortcutsEnabled;
+  }
+  return self;
+}
+
++ (instancetype)defaultConfiguration
+{
+  return [[self alloc] initWithDevMenuEnabled:RCT_DEV_MENU
+                          shakeGestureEnabled:RCT_DEV_MENU
+                     keyboardShortcutsEnabled:RCT_DEV_MENU];
+}
+@end
+
 #if !TARGET_OS_OSX // [macOS]
 
 // [macOS
@@ -59,7 +80,7 @@ static MotionEndedWithEventImpType RCTOriginalUIWindowMotionEndedWithEventImp = 
 
 - (instancetype)initWithTitleBlock:(RCTDevMenuItemTitleBlock)titleBlock handler:(dispatch_block_t)handler
 {
-  if ((self = [super init])) {
+  if ((self = [super init]) != nullptr) {
     _titleBlock = [titleBlock copy];
     _handler = [handler copy];
   }
@@ -84,14 +105,14 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
 
 - (void)callHandler
 {
-  if (_handler) {
+  if (_handler != nullptr) {
     _handler();
   }
 }
 
 - (NSString *)title
 {
-  if (_titleBlock) {
+  if (_titleBlock != nullptr) {
     return _titleBlock();
   }
   return nil;
@@ -140,13 +161,15 @@ RCT_EXPORT_MODULE()
 
 - (instancetype)init
 {
-  if ((self = [super init])) {
+  if ((self = [super init]) != nullptr) {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showOnShake)
                                                  name:RCTShowDevMenuNotification
                                                object:nil];
     _extraMenuItems = [NSMutableArray new];
 
+    _keyboardShortcutsEnabled = true;
+    _devMenuEnabled = true;
     [self registerHotkeys];
   }
   return self;
@@ -182,7 +205,6 @@ RCT_EXPORT_MODULE()
 
   [commands unregisterKeyCommandWithInput:@"d" modifierFlags:UIKeyModifierCommand];
   [commands unregisterKeyCommandWithInput:@"i" modifierFlags:UIKeyModifierCommand];
-  [commands unregisterKeyCommandWithInput:@"n" modifierFlags:UIKeyModifierCommand];
 #endif
 }
 
@@ -192,10 +214,27 @@ RCT_EXPORT_MODULE()
   RCTKeyCommands *commands = [RCTKeyCommands sharedInstance];
 
   return [commands isKeyCommandRegisteredForInput:@"d" modifierFlags:UIKeyModifierCommand] &&
-      [commands isKeyCommandRegisteredForInput:@"i" modifierFlags:UIKeyModifierCommand] &&
-      [commands isKeyCommandRegisteredForInput:@"n" modifierFlags:UIKeyModifierCommand];
+      [commands isKeyCommandRegisteredForInput:@"i" modifierFlags:UIKeyModifierCommand];
 #else
   return NO;
+#endif
+}
+
+- (BOOL)isReloadCommandRegistered
+{
+#if TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST
+  RCTKeyCommands *commands = [RCTKeyCommands sharedInstance];
+  return [commands isKeyCommandRegisteredForInput:@"r" modifierFlags:UIKeyModifierCommand];
+#else
+  return NO;
+#endif
+}
+
+- (void)unregisterReloadCommand
+{
+#if TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST
+  RCTKeyCommands *commands = [RCTKeyCommands sharedInstance];
+  [commands unregisterKeyCommandWithInput:@"r" modifierFlags:UIKeyModifierCommand];
 #endif
 }
 
@@ -239,7 +278,7 @@ RCT_EXPORT_MODULE()
   if (_actionSheet.isBeingPresented || _actionSheet.beingDismissed) {
     return;
   }
-  if (_actionSheet) {
+  if (_actionSheet != nullptr) {
     [_actionSheet dismissViewControllerAnimated:YES
                                      completion:^(void) {
                                        self->_actionSheet = nil;
@@ -268,6 +307,17 @@ RCT_EXPORT_MODULE()
 - (void)addItem:(RCTDevMenuItem *)item
 {
   [_extraMenuItems addObject:item];
+}
+
+- (void)setKeyboardShortcutsEnabled:(BOOL)keyboardShortcutsEnabled
+{
+  if (_keyboardShortcutsEnabled != keyboardShortcutsEnabled) {
+    [self setHotkeysEnabled:keyboardShortcutsEnabled];
+
+    if (!keyboardShortcutsEnabled) {
+      [self disableReloadCommand];
+    }
+  }
 }
 
 - (void)setDefaultJSBundle
@@ -396,11 +446,14 @@ RCT_EXPORT_MODULE()
                                                                         handler:^(__unused UIAlertAction *action) {
                                                                           [weakSelf setDefaultJSBundle];
                                                                         }]];
-                      [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel"
-                                                                          style:UIAlertActionStyleCancel
-                                                                        handler:^(__unused UIAlertAction *action) {
-                                                                          return;
-                                                                        }]];
+                      UIAlertAction *configCancelAction =
+                          [UIAlertAction actionWithTitle:@"Cancel"
+                                                   style:UIAlertActionStyleCancel
+                                                 handler:^(__unused UIAlertAction *action) {
+                                                   return;
+                                                 }];
+                      [configCancelAction setValue:[UIColor systemRedColor] forKey:@"titleTextColor"];
+                      [alertController addAction:configCancelAction];
                       [RCTPresentedViewController() presentViewController:alertController animated:YES completion:NULL];
 #else // [macOS
                       NSAlert *alert = [NSAlert new];
@@ -438,7 +491,7 @@ RCT_EXPORT_MODULE()
                       [alert setAlertStyle:NSAlertStyleWarning];
 
                       NSModalResponse response = [alert runModal];
-                      
+
                       if (response == NSAlertFirstButtonReturn) {
                         // Apply Changes
                         NSString *ipAddress = ipTextField.stringValue;
@@ -483,7 +536,7 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_METHOD(show)
 {
 #if !TARGET_OS_OSX // [macOS]
-  if (_actionSheet || RCTRunningInAppExtension()) {
+  if ((_actionSheet != nullptr) || RCTRunningInAppExtension() || !_devMenuEnabled) {
     return;
   }
 #else // [macOS
@@ -491,10 +544,6 @@ RCT_EXPORT_METHOD(show)
     return;
   }
 #endif // [macOS]
-
-  NSString *bridgeDescription = _bridge.bridgeDescription;
-  NSString *description =
-      bridgeDescription.length > 0 ? [NSString stringWithFormat:@"Running %@", bridgeDescription] : nil;
 
 #if !TARGET_OS_OSX // [macOS]
   // On larger devices we don't have an anchor point for the action sheet
@@ -505,11 +554,13 @@ RCT_EXPORT_METHOD(show)
   NSAlertStyle style = NSAlertStyleInformational;
 #endif // macOS]
 
-  NSString *devMenuType = [self.bridge isKindOfClass:RCTBridge.class] ? @"Bridge" : @"Bridgeless";
-  NSString *devMenuTitle = [NSString stringWithFormat:@"React Native Dev Menu (%@)", devMenuType];
+  _actionSheet = [UIAlertController alertControllerWithTitle:@"React Native Dev Menu" message:nil preferredStyle:style];
 
 #if !TARGET_OS_OSX // [macOS]
-  _actionSheet = [UIAlertController alertControllerWithTitle:devMenuTitle message:description preferredStyle:style];
+  NSAttributedString *title =
+      [[NSAttributedString alloc] initWithString:@"React Native Dev Menu"
+                                      attributes:@{NSFontAttributeName : [UIFont boldSystemFontOfSize:17]}];
+  [_actionSheet setValue:title forKey:@"_attributedTitle"];
 
   NSArray<RCTDevMenuItem *> *items = [self _menuItemsToPresent];
   for (RCTDevMenuItem *item in items) {
@@ -520,9 +571,11 @@ RCT_EXPORT_METHOD(show)
     [_actionSheet addAction:action];
   }
 
-  [_actionSheet addAction:[UIAlertAction actionWithTitle:@"Cancel"
-                                                   style:UIAlertActionStyleCancel
-                                                 handler:[self alertActionHandlerForDevItem:nil]]];
+  UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel"
+                                                         style:UIAlertActionStyleCancel
+                                                       handler:[self alertActionHandlerForDevItem:nil]];
+  [cancelAction setValue:[UIColor systemRedColor] forKey:@"titleTextColor"];
+  [_actionSheet addAction:cancelAction];
 
   _presentedItems = items;
   [RCTPresentedViewController() presentViewController:_actionSheet animated:YES completion:nil];
@@ -540,7 +593,7 @@ RCT_EXPORT_METHOD(show)
   [_alert addButtonWithTitle:@"Cancel"];
 
   _presentedItems = items;
-  
+
   // If Invoked from Metro, both the key window and main window may be nil, so we fallback to the first window in that case
   NSWindow *window = RCTKeyWindow() ?: [NSApp mainWindow] ?: [[NSApp windows] firstObject];
 
@@ -567,7 +620,7 @@ RCT_EXPORT_METHOD(show)
 - (RCTDevMenuAlertActionHandler)alertActionHandlerForDevItem:(RCTDevMenuItem *__nullable)item
 {
   return ^(__unused UIAlertAction *action) {
-    if (item) {
+    if (item != nullptr) {
       [item callHandler];
     }
 
@@ -581,7 +634,7 @@ RCT_EXPORT_METHOD(show)
     if (item) {
       [item callHandler];
     }
-    
+
     self->_alert = nil;
   };
 }
@@ -592,10 +645,10 @@ RCT_EXPORT_METHOD(show)
 {
   if ([((RCTDevSettings *)[_moduleRegistry moduleForName:"DevSettings"]) isSecondaryClickToShowDevMenuEnabled]) {
     NSMenu *menu = [NSMenu new];
-    
+
     NSString *devMenuType = [self.bridge isKindOfClass:RCTBridge.class] ? @"Bridge" : @"Bridgeless";
     NSString *devMenuTitle = [NSString stringWithFormat:@"React Native Dev Menu (%@)", devMenuType];
-    
+
     NSMenuItem *titleItem = [NSMenuItem sectionHeaderWithTitle:devMenuTitle];
     if (@available(macOS 14.4, *)) {
       NSString *bridgeDescription = _bridge.bridgeDescription;
@@ -604,7 +657,7 @@ RCT_EXPORT_METHOD(show)
       [titleItem setSubtitle:description];
     }
     [menu addItem:titleItem];
-    
+
     NSArray<RCTDevMenuItem *> *items = [self _menuItemsToPresent];
     for (RCTDevMenuItem *item in items) {
       NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[item title]
@@ -639,7 +692,7 @@ RCT_EXPORT_METHOD(show)
 
 - (void)setShakeToShow:(BOOL)shakeToShow
 {
-  ((RCTDevSettings *)[_moduleRegistry moduleForName:"DevSettings"]).isShakeToShowDevMenuEnabled = shakeToShow;
+  [[_moduleRegistry moduleForName:"DevSettings"] setIsShakeToShowDevMenuEnabled:shakeToShow];
 }
 
 - (BOOL)shakeToShow
@@ -689,6 +742,13 @@ RCT_EXPORT_METHOD(setHotLoadingEnabled : (BOOL)enabled)
   return [self isHotkeysRegistered];
 }
 
+- (void)disableReloadCommand
+{
+  if ([self isReloadCommandRegistered]) {
+    [self unregisterReloadCommand];
+  }
+}
+
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {
@@ -700,6 +760,15 @@ RCT_EXPORT_METHOD(setHotLoadingEnabled : (BOOL)enabled)
 #else // Unavailable when not in dev mode
 
 @interface RCTDevMenu () <NativeDevMenuSpec>
+@end
+
+@implementation RCTDevMenuConfiguration
+
++ (instancetype)defaultConfiguration
+{
+  return nil;
+}
+
 @end
 
 @implementation RCTDevMenu
@@ -714,6 +783,10 @@ RCT_EXPORT_METHOD(setHotLoadingEnabled : (BOOL)enabled)
 {
 }
 - (void)addItem:(RCTDevMenu *)item
+{
+}
+
+- (void)disableReloadCommand
 {
 }
 

@@ -163,7 +163,8 @@ std::shared_ptr<ShadowNode> ShadowNode::clone(
   }
 }
 
-ContextContainer::Shared ShadowNode::getContextContainer() const {
+std::shared_ptr<const ContextContainer> ShadowNode::getContextContainer()
+    const {
   return family_->componentDescriptor_.getContextContainer();
 }
 
@@ -420,7 +421,7 @@ std::shared_ptr<ShadowNode> cloneMultipleRecursive(
   std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>> newChildren;
   auto count = childrenCount.at(family);
 
-  for (int i = 0; count > 0 && i < children.size(); i++) {
+  for (size_t i = 0; count > 0 && i < children.size(); i++) {
     const auto childFamily = &children[i]->getFamily();
     if (childrenCount.contains(childFamily)) {
       count--;

@@ -51,7 +51,7 @@ static CGRect insetRect(CGRect rect, CGFloat left, CGFloat top, CGFloat right, C
 static CGColorRef colorRefFromSharedColor(const SharedColor &color)
 {
   CGColorRef colorRef = RCTUIColorFromSharedColor(color).CGColor;
-  return colorRef ? colorRef : [RCTPlatformColor blackColor].CGColor; // [macOS]
+  return (colorRef != nullptr) ? colorRef : [RCTPlatformColor blackColor].CGColor; // [macOS]
 }
 
 static CALayer *initBoxShadowLayer(const BoxShadow &shadow, CGSize layerSize)

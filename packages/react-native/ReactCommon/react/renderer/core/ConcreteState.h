@@ -49,23 +49,22 @@ class ConcreteState : public State {
   /*
    * Creates an updated `State` object with given previous one and `data`.
    */
-  explicit ConcreteState(SharedData data, const State& previousState)
-      : State(std::move(data), previousState) {}
+  explicit ConcreteState(SharedData data, const State &previousState) : State(std::move(data), previousState) {}
 
   /*
    * Creates a first-of-its-family `State` object with given `family` and
    * `data`.
    */
-  explicit ConcreteState(SharedData data, ShadowNodeFamily::Weak family)
-      : State(std::move(data), std::move(family)) {}
+  explicit ConcreteState(SharedData data, ShadowNodeFamily::Weak family) : State(std::move(data), std::move(family)) {}
 
   ~ConcreteState() override = default;
 
   /*
    * Returns stored data.
    */
-  const Data& getData() const {
-    return *static_cast<const Data*>(data_.get());
+  const Data &getData() const
+  {
+    return *static_cast<const Data *>(data_.get());
   }
 
   /*
@@ -74,10 +73,13 @@ class ConcreteState : public State {
    * function for cases where a new value of data does not depend on an old
    * value.
    */
-  void updateState(Data&& newData) const {
-    updateState([data{std::move(newData)}](const Data& oldData) -> SharedData {
-      return std::make_shared<const Data>(data);
-    });
+  void updateState(Data &&newData, EventQueue::UpdateMode updateMode = EventQueue::UpdateMode::Asynchronous) const
+  {
+    updateState(
+        [data{std::move(newData)}](const Data & /*oldData*/) -> SharedData {
+          return std::make_shared<const Data>(data);
+        },
+        updateMode);
   }
 
   /*
@@ -89,7 +91,9 @@ class ConcreteState : public State {
    * return `nullptr`.
    */
   void updateState(
-      std::function<StateData::Shared(const Data& oldData)> callback) const {
+      std::function<StateData::Shared(const Data &oldData)> callback,
+      EventQueue::UpdateMode updateMode = EventQueue::UpdateMode::Asynchronous) const
+  {
     auto family = family_.lock();
 
     if (!family) {
@@ -98,25 +102,27 @@ class ConcreteState : public State {
       return;
     }
 
-    auto stateUpdate = StateUpdate{
-        family, [=](const StateData::Shared& oldData) -> StateData::Shared {
-          react_native_assert(oldData);
-          return callback(*static_cast<const Data*>(oldData.get()));
-        }};
+    auto stateUpdate = StateUpdate{family, [=](const StateData::Shared &oldData) -> StateData::Shared {
+                                     react_native_assert(oldData);
+                                     return callback(*static_cast<const Data *>(oldData.get()));
+                                   }};
 
-    family->dispatchRawState(std::move(stateUpdate));
+    family->dispatchRawState(std::move(stateUpdate), updateMode);
   }
 
 #if defined(RN_SERIALIZABLE_STATE)
-  folly::dynamic getDynamic() const override {
+  folly::dynamic getDynamic() const override
+  {
     return getData().getDynamic();
   }
 
-  void updateState(folly::dynamic&& data) const override {
+  void updateState(folly::dynamic &&data) const override
+  {
     updateState(Data(getData(), std::move(data)));
   }
 
-  MapBuffer getMapBuffer() const override {
+  MapBuffer getMapBuffer() const override
+  {
     if constexpr (StateDataWithMapBuffer<DataT>) {
       return getData().getMapBuffer();
     } else {
@@ -124,7 +130,8 @@ class ConcreteState : public State {
     }
   }
 
-  jni::local_ref<jobject> getJNIReference() const override {
+  jni::local_ref<jobject> getJNIReference() const override
+  {
     if constexpr (StateDataWithJNIReference<DataT>) {
       return getData().getJNIReference();
     } else {

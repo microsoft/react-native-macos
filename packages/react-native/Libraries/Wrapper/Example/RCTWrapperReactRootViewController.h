@@ -7,11 +7,14 @@
 
 #import <React/RCTUIKit.h> // [macOS]
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 @class RCTBridge;
 
 NS_ASSUME_NONNULL_BEGIN
 
 #if !TARGET_OS_OSX // [macOS]
+__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
 @interface RCTWrapperReactRootViewController : UIViewController
 #else
 @interface RCTWrapperReactRootViewController : NSViewController
@@ -22,3 +25,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // RCT_REMOVE_LEGACY_ARCH

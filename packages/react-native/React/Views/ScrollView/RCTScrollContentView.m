@@ -7,6 +7,8 @@
 
 #import "RCTScrollContentView.h"
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import <React/RCTAssert.h>
 #import <React/UIView+React.h>
 
@@ -75,3 +77,5 @@
 }
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_ARCH

@@ -39,10 +39,10 @@ Pod::Spec.new do |s|
   # macOS]
 
   if ENV['USE_FRAMEWORKS']
-    s.module_name            = "React_graphics"
-    s.header_mappings_dir  = "../../.."
     header_search_paths = header_search_paths + ["\"$(PODS_TARGET_SRCROOT)/platform/ios\""]
   end
+
+  resolve_use_frameworks(s, header_mappings_dir: "../../..", module_name: "React_graphics")
 
   s.pod_target_xcconfig  = { "USE_HEADERMAP" => "NO",
                              "HEADER_SEARCH_PATHS" => header_search_paths.join(" "),
@@ -55,4 +55,5 @@ Pod::Spec.new do |s|
   s.dependency "React-Core" # [macOS] Needed for RCTUIKit
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
+  add_rncore_dependency(s)
 end
