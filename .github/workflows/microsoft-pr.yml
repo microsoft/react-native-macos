@@ -112,24 +112,24 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      
+
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
-      
+
       - name: Install npm dependencies
         run: yarn install
-      
+
       - name: Run Jest tests
         run: yarn test-ci
-      
+
       - name: Run Flow type checker
         run: yarn flow-check
-      
+
       - name: Run ESLint
         run: yarn lint
-      
+
       - name: Run Prettier format check
         run: yarn format-check
 
@@ -142,6 +142,12 @@ jobs:
     name: "Prebuild macOS Core"
     permissions: {}
     uses: ./.github/workflows/microsoft-prebuild-macos-core.yml
+
+  build-rntester-prebuilt:
+    name: "Build RNTester (Prebuilt)"
+    permissions: {}
+    needs: [prebuild-macos-core]
+    uses: ./.github/workflows/microsoft-build-rntester-prebuilt.yml
 
   test-react-native-macos-init:
     name: "Test react-native-macos init"
@@ -170,6 +176,7 @@ jobs:
       - javascript-tests
       - build-rntester
       - prebuild-macos-core
+      - build-rntester-prebuilt
       - test-react-native-macos-init
       # - react-native-test-app-integration
     steps:
