@@ -33,10 +33,8 @@ Pod::Spec.new do |s|
     "USE_HEADERMAP" => "YES",
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
   }
-  if ENV['USE_FRAMEWORKS']
-    s.header_mappings_dir     = '../'
-    s.module_name             = 'React_jserrorhandler'
-  end
+
+  resolve_use_frameworks(s, header_mappings_dir: '../', module_name: "React_jserrorhandler")
 
   s.dependency "React-jsi"
   s.dependency "React-cxxreact"
@@ -49,5 +47,6 @@ Pod::Spec.new do |s|
   end
 
   add_rn_third_party_dependencies(s)
+  add_rncore_dependency(s)
 
 end

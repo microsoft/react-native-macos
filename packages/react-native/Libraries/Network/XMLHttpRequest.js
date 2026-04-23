@@ -14,7 +14,6 @@ import type {
   EventCallback,
   EventListener,
 } from '../../src/private/webapis/dom/events/EventTarget';
-import type Performance from '../../src/private/webapis/performance/Performance';
 import type {IPerformanceLogger} from '../Utilities/createPerformanceLogger';
 
 import Event from '../../src/private/webapis/dom/events/Event';
@@ -34,10 +33,7 @@ const RCTNetworking = require('./RCTNetworking').default;
 const base64 = require('base64-js');
 const invariant = require('invariant');
 
-declare var performance: Performance;
-
 const DEBUG_NETWORK_SEND_DELAY: false = false; // Set to a number of milliseconds when debugging
-const LABEL_FOR_MISSING_URL_FOR_PROFILING = 'Unknown URL';
 
 export type NativeResponseType = 'base64' | 'blob' | 'text';
 export type ResponseType =
@@ -138,7 +134,6 @@ class XMLHttpRequest extends EventTarget {
   static DONE: number = DONE;
 
   static _interceptor: ?XHRInterceptor = null;
-  static _profiling: boolean = false;
 
   UNSENT: number = UNSENT;
   OPENED: number = OPENED;
@@ -177,10 +172,6 @@ class XMLHttpRequest extends EventTarget {
 
   static __setInterceptor_DO_NOT_USE(interceptor: ?XHRInterceptor) {
     XMLHttpRequest._interceptor = interceptor;
-  }
-
-  static enableProfiling(enableProfiling: boolean): void {
-    XMLHttpRequest._profiling = enableProfiling;
   }
 
   constructor() {
@@ -385,17 +376,13 @@ class XMLHttpRequest extends EventTarget {
     if (requestId !== this._requestId) {
       return;
     }
+
     if (!this._response) {
       this._response = responseText;
     } else {
       this._response += responseText;
     }
 
-    if (XMLHttpRequest._profiling) {
-      performance.mark(
-        'Track:XMLHttpRequest:Incremental Data: ' + this._getMeasureURL(),
-      );
-    }
     XMLHttpRequest._interceptor &&
       XMLHttpRequest._interceptor.dataReceived(requestId, responseText);
 
@@ -440,13 +427,7 @@ class XMLHttpRequest extends EventTarget {
       this._clearSubscriptions();
       this._requestId = null;
       this.setReadyState(this.DONE);
-      if (XMLHttpRequest._profiling && this._startTime != null) {
-        const start = this._startTime;
-        performance.measure('Track:XMLHttpRequest:' + this._getMeasureURL(), {
-          start,
-          end: performance.now(),
-        });
-      }
+
       if (error) {
         XMLHttpRequest._interceptor &&
           XMLHttpRequest._interceptor.loadingFailed(requestId, error);
@@ -636,8 +617,6 @@ class XMLHttpRequest extends EventTarget {
         this._url,
         this._headers,
         data,
-        /* $FlowFixMe(>=0.78.0 site=react_native_android_fb) This issue was found
-         * when making Flow check .android.js files. */
         nativeResponseType,
         incrementalEvents,
         this.timeout,
@@ -646,6 +625,8 @@ class XMLHttpRequest extends EventTarget {
         this.withCredentials,
       );
     };
+    /* $FlowFixMe[constant-condition] Error discovered during Constant
+     * Condition roll out. See https://fburl.com/workplace/1v97vimq. */
     if (DEBUG_NETWORK_SEND_DELAY) {
       setTimeout(doSend, DEBUG_NETWORK_SEND_DELAY);
     } else {
@@ -714,12 +695,6 @@ class XMLHttpRequest extends EventTarget {
       this._incrementalEvents = true;
     }
     super.addEventListener(type, listener);
-  }
-
-  _getMeasureURL(): string {
-    return (
-      this._trackingName ?? this._url ?? LABEL_FOR_MISSING_URL_FOR_PROFILING
-    );
   }
 
   /*

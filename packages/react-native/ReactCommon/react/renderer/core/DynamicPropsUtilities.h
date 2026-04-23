@@ -31,7 +31,7 @@ enum class NullValueStrategy {
    * In case key is missing in source, value from patch will be ignored.
    *
    * Example:
-   * source:   {"key 1": "value 1"}
+   * source:   {"key": "value 1"}
    * patch:    {"key": "new value 1", "key 2": "new value 2"}
    * returned: {"key": "new value 1"}
    */
@@ -43,13 +43,9 @@ enum class NullValueStrategy {
  * represent a dictionary. It updates `source` with key/value pairs from
  * `patch`.
  */
-folly::dynamic mergeDynamicProps(
-    const folly::dynamic& source,
-    const folly::dynamic& patch,
-    NullValueStrategy nullValueStrategy);
+folly::dynamic
+mergeDynamicProps(const folly::dynamic &source, const folly::dynamic &patch, NullValueStrategy nullValueStrategy);
 
-folly::dynamic diffDynamicProps(
-    const folly::dynamic& oldProps,
-    const folly::dynamic& newProps);
+folly::dynamic diffDynamicProps(const folly::dynamic &oldProps, const folly::dynamic &newProps);
 
 } // namespace facebook::react

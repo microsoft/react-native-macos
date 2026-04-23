@@ -47,8 +47,7 @@ UIDeviceOrientation RCTDeviceOrientation(void);
 // Whether the New Architecture is enabled or not
 BOOL RCTIsNewArchEnabled(void)
 {
-  NSNumber *rctNewArchEnabled = (NSNumber *)[[NSBundle mainBundle] objectForInfoDictionaryKey:@"RCTNewArchEnabled"];
-  return rctNewArchEnabled == nil || rctNewArchEnabled.boolValue;
+  return YES;
 }
 void RCTSetNewArchEnabled(BOOL enabled)
 {
@@ -151,7 +150,7 @@ static id __nullable _RCTJSONParse(NSString *__nullable jsonString, BOOL isMutab
         if (strchr("{[", c)) {
           static const int options = (1 << 2); // loose unicode
           SEL selector = isMutable ? JSONKitMutableSelector : JSONKitSelector;
-          return ((id(*)(id, SEL, int, NSError **))objc_msgSend)(jsonString, selector, options, error);
+          return ((id (*)(id, SEL, int, NSError **))objc_msgSend)(jsonString, selector, options, error);
         }
         if (!strchr(" \r\n\t", c)) {
           break;
@@ -309,13 +308,6 @@ void RCTExecuteOnMainQueue(dispatch_block_t block)
 // unless you know what you are doing.
 void RCTUnsafeExecuteOnMainQueueSync(dispatch_block_t block)
 {
-  RCTUnsafeExecuteOnMainQueueSyncWithError(block, @"Sync dispatches to the main queue can deadlock React Native.");
-}
-
-// Please do not use this method
-// unless you know what you are doing.
-void RCTUnsafeExecuteOnMainQueueSyncWithError(dispatch_block_t block, NSString *context)
-{
   if (RCTIsMainQueue()) {
     block();
     return;
@@ -324,10 +316,6 @@ void RCTUnsafeExecuteOnMainQueueSyncWithError(dispatch_block_t block, NSString *
   if (ReactNativeFeatureFlags::enableMainQueueCoordinatorOnIOS()) {
     unsafeExecuteOnMainThreadSync(block);
     return;
-  }
-
-  if (ReactNativeFeatureFlags::disableMainQueueSyncDispatchIOS()) {
-    RCTLogError(@"RCTUnsafeExecuteOnMainQueueSync: %@", context);
   }
 
   dispatch_sync(dispatch_get_main_queue(), ^{
@@ -356,10 +344,6 @@ static void RCTUnsafeExecuteOnMainQueueOnceSync(dispatch_once_t *onceToken, disp
   if (ReactNativeFeatureFlags::enableMainQueueCoordinatorOnIOS()) {
     unsafeExecuteOnMainThreadSync(block);
     return;
-  }
-
-  if (ReactNativeFeatureFlags::disableMainQueueSyncDispatchIOS()) {
-    RCTLogError(@"RCTUnsafeExecuteOnMainQueueOnceSync: Sync dispatches to the main queue can deadlock React Native.");
   }
 
   dispatch_sync(dispatch_get_main_queue(), executeOnce);
@@ -459,6 +443,18 @@ CGSize RCTViewportSize(void)
 #else // [macOS
   return window ? window.frame.size : RCTScreenSize();
 #endif // macOS]
+}
+
+CGSize RCTSwitchSize(void)
+{
+  static CGSize rctSwitchSize;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    RCTUnsafeExecuteOnMainQueueSync(^{
+      rctSwitchSize = [UISwitch new].intrinsicContentSize;
+    });
+  });
+  return rctSwitchSize;
 }
 
 CGFloat RCTRoundPixelValue(CGFloat value)
@@ -765,7 +761,7 @@ NSURL *RCTDataURL(NSString *mimeType, NSData *data)
                                                [data base64EncodedStringWithOptions:(NSDataBase64EncodingOptions)0]]];
 }
 
-BOOL RCTIsGzippedData(NSData *__nullable); // exposed for unit testing purposes
+BOOL RCTIsGzippedData(NSData *__nullable /*data*/); // exposed for unit testing purposes
 BOOL RCTIsGzippedData(NSData *__nullable data)
 {
   UInt8 *bytes = (UInt8 *)data.bytes;
@@ -780,13 +776,13 @@ NSData *__nullable RCTGzipData(NSData *__nullable input, float level)
 
   void *libz = dlopen("/usr/lib/libz.dylib", RTLD_LAZY);
 
-  typedef int (*DeflateInit2_)(z_streamp, int, int, int, int, int, const char *, int);
+  using DeflateInit2_ = int (*)(z_streamp, int, int, int, int, int, const char *, int);
   DeflateInit2_ deflateInit2_ = (DeflateInit2_)dlsym(libz, "deflateInit2_");
 
-  typedef int (*Deflate)(z_streamp, int);
+  using Deflate = int (*)(z_streamp, int);
   Deflate deflate = (Deflate)dlsym(libz, "deflate");
 
-  typedef int (*DeflateEnd)(z_streamp);
+  using DeflateEnd = int (*)(z_streamp);
   DeflateEnd deflateEnd = (DeflateEnd)dlsym(libz, "deflateEnd");
 
   z_stream stream;

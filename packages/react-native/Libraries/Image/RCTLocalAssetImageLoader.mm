@@ -50,8 +50,8 @@ RCT_EXPORT_MODULE()
                                           completionHandler:(RCTImageLoaderCompletionBlock)completionHandler
 {
   RCTPlatformImage *image = RCTImageFromLocalAssetURL(imageURL); // [macOS]
-  if (image) {
-    if (progressHandler) {
+  if (image != nullptr) {
+    if (progressHandler != nullptr) {
       progressHandler(1, 1);
     }
     completionHandler(nil, image);

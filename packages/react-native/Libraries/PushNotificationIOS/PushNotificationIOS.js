@@ -212,7 +212,7 @@ class PushNotificationIOS {
       NativePushNotificationManagerIOS,
       'PushNotificationManager is not available.',
     );
-    // $FlowFixMe[prop-missing]
+    // $FlowFixMe[incompatible-type]
     NativePushNotificationManagerIOS.presentLocalNotification(details);
   }
 
@@ -237,7 +237,7 @@ class PushNotificationIOS {
       NativePushNotificationManagerIOS,
       'PushNotificationManager is not available.',
     );
-    // $FlowFixMe[prop-missing]
+    // $FlowFixMe[incompatible-type]
     NativePushNotificationManagerIOS.scheduleLocalNotification(details);
   }
 

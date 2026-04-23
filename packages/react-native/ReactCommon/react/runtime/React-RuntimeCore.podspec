@@ -33,10 +33,7 @@ Pod::Spec.new do |s|
                                 "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                                 "GCC_WARN_PEDANTIC" => "YES" }
 
-  if ENV['USE_FRAMEWORKS']
-    s.header_mappings_dir     = '../../'
-    s.module_name             = 'React_RuntimeCore'
-  end
+  resolve_use_frameworks(s, header_mappings_dir: "../..", module_name: "React_RuntimeCore")
 
   s.dependency "React-jsiexecutor"
   s.dependency "React-cxxreact"
@@ -52,6 +49,7 @@ Pod::Spec.new do |s|
 
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
+  add_rncore_dependency(s)
 
   s.dependency "React-jsinspector"
   add_dependency(s, "React-jsitooling", :framework_name => "JSITooling")

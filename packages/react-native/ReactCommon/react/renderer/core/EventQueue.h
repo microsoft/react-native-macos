@@ -25,28 +25,38 @@ namespace facebook::react {
  */
 class EventQueue {
  public:
-  EventQueue(
-      EventQueueProcessor eventProcessor,
-      std::unique_ptr<EventBeat> eventBeat);
+  /* The update mode is used to inform how to apply changes. */
+  enum class UpdateMode {
+    /** Apply the update off the main thread. */
+    Asynchronous,
+    /**
+     * Apply the update on the main thread.
+     * The immediate update mode will **immediately** block the executing thread
+     * applying updates.
+     */
+    unstable_Immediate,
+  };
+
+  EventQueue(EventQueueProcessor eventProcessor, std::unique_ptr<EventBeat> eventBeat);
 
   /*
    * Enqueues and (probably later) dispatch a given event.
    * Can be called on any thread.
    */
-  void enqueueEvent(RawEvent&& rawEvent) const;
+  void enqueueEvent(RawEvent &&rawEvent) const;
 
   /*
    * Enqueues and (probably later) dispatches a given event.
    * Deletes last RawEvent from the queue if it has the same type and target.
    * Can be called on any thread.
    */
-  void enqueueUniqueEvent(RawEvent&& rawEvent) const;
+  void enqueueUniqueEvent(RawEvent &&rawEvent) const;
 
   /*
    * Enqueues and (probably later) dispatch a given state update.
    * Can be called on any thread.
    */
-  void enqueueStateUpdate(StateUpdate&& stateUpdate) const;
+  void enqueueStateUpdate(StateUpdate &&stateUpdate, UpdateMode updateMode = UpdateMode::Asynchronous) const;
 
   /*
    * Experimental API exposed to support EventEmitter::experimental_flushSync.
@@ -60,9 +70,9 @@ class EventQueue {
    * Default implementation does nothing.
    */
   void onEnqueue() const;
-  void onBeat(jsi::Runtime& runtime) const;
+  void onBeat(jsi::Runtime &runtime) const;
 
-  void flushEvents(jsi::Runtime& runtime) const;
+  void flushEvents(jsi::Runtime &runtime) const;
   void flushStateUpdates() const;
 
   EventQueueProcessor eventProcessor_;

@@ -18,6 +18,10 @@ jobs:
         run: |
           git config --local user.email "bot@reactnative.dev"
           git config --local user.name "React Native Bot"
+      - name: Setup xcode
+        uses: ./.github/actions/setup-xcode
+        with:
+          platform: 'ios'
       - name: Extract branch name
         run: |
           TAG="${{ github.ref_name }}";

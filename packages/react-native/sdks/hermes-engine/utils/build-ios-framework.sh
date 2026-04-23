@@ -43,7 +43,7 @@ function get_deployment_target {
 # build a single framework
 # $1 is the target to build
 function build_framework {
-  if [ ! -d destroot/Library/Frameworks/universal/hermes.xcframework ]; then
+  if [ ! -d destroot/Library/Frameworks/universal/hermesvm.xcframework ]; then
     deployment_target=$(get_deployment_target "$1")
 
     architecture=$(get_architecture "$1")
@@ -56,7 +56,7 @@ function build_framework {
 
 # group the frameworks together to create a universal framework
 function build_universal_framework {
-    if [ ! -d destroot/Library/Frameworks/universal/hermes.xcframework ]; then
+    if [ ! -d destroot/Library/Frameworks/universal/hermesvm.xcframework ]; then
         create_universal_framework "macosx" "iphoneos" "iphonesimulator" "catalyst" "xros" "xrsimulator" "appletvos" "appletvsimulator" # [macOS]
     else
         echo "Skipping; Clean \"destroot\" to rebuild".
@@ -66,7 +66,7 @@ function build_universal_framework {
 # single function that builds sequentially iphoneos, iphonesimulator and catalyst
 # this is used to preserve backward compatibility
 function create_framework {
-    if [ ! -d destroot/Library/Frameworks/universal/hermes.xcframework ]; then
+    if [ ! -d destroot/Library/Frameworks/universal/hermesvm.xcframework ]; then
         build_framework "macosx" # [macOS]
         build_framework "iphoneos"
         build_framework "iphonesimulator"

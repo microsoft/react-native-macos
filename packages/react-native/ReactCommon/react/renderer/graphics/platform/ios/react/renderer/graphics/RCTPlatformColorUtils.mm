@@ -259,18 +259,18 @@ static RCTPlatformColor *_Nullable _UIColorFromSemanticString(NSString *semantic
       : semanticString;
   NSDictionary<NSString *, NSDictionary *> *platformColorSelectorsDict = _PlatformColorSelectorsDict();
   NSDictionary<NSString *, id> *colorInfo = platformColorSelectorsDict[platformColorString];
-  if (colorInfo) {
+  if (colorInfo != nullptr) {
 #if !TARGET_OS_OSX // [macOS]
     SEL objcColorSelector = NSSelectorFromString([platformColorString stringByAppendingString:kColorSuffix]);
     if (![RCTPlatformColor respondsToSelector:objcColorSelector]) { // [macOS]
       NSNumber *fallbackRGB = colorInfo[kFallbackARGBKey];
-      if (fallbackRGB) {
+      if (fallbackRGB != nullptr) {
         return _UIColorFromHexValue(fallbackRGB);
       }
     } else {
       Class uiColorClass = [RCTPlatformColor class]; // [macOS]
       IMP imp = [uiColorClass methodForSelector:objcColorSelector];
-      id (*getUIColor)(id, SEL) = ((id(*)(id, SEL))imp);
+      id (*getUIColor)(id, SEL) = ((id (*)(id, SEL))imp);
       id colorObject = getUIColor(uiColorClass, objcColorSelector);
       if ([colorObject isKindOfClass:[RCTPlatformColor class]]) { // [macOS]
         return colorObject;
@@ -328,7 +328,7 @@ static inline facebook::react::ColorComponents _ColorComponentsFromUIColor(RCTPl
 {
   CGFloat rgba[4];
   [color getRed:&rgba[0] green:&rgba[1] blue:&rgba[2] alpha:&rgba[3]];
-  return {(float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]};
+  return {.red = (float)rgba[0], .green = (float)rgba[1], .blue = (float)rgba[2], .alpha = (float)rgba[3]};
 }
 
 facebook::react::ColorComponents RCTPlatformColorComponentsFromSemanticItems(std::vector<std::string> &semanticItems)

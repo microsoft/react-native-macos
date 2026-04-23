@@ -57,8 +57,7 @@
                           moduleName:(NSString *)moduleName
                            initProps:(NSDictionary *)initProps
 {
-  BOOL enableFabric = self.fabricEnabled;
-  RCTUIView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, enableFabric);
+  RCTUIView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, YES);
 
 #if !TARGET_OS_OSX // [macOS]
   rootView.backgroundColor = [UIColor systemBackgroundColor];
@@ -83,7 +82,7 @@
 
 - (NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents
 {
-  return self.dependencyProvider ? self.dependencyProvider.thirdPartyFabricComponents : @{};
+  return (self.dependencyProvider != nullptr) ? self.dependencyProvider.thirdPartyFabricComponents : @{};
 }
 
 - (void)hostDidStart:(RCTHost *)host
@@ -92,13 +91,15 @@
 
 - (NSArray<NSString *> *)unstableModulesRequiringMainQueueSetup
 {
-  return self.dependencyProvider ? RCTAppSetupUnstableModulesRequiringMainQueueSetup(self.dependencyProvider) : @[];
+  return (self.dependencyProvider != nullptr)
+      ? RCTAppSetupUnstableModulesRequiringMainQueueSetup(self.dependencyProvider)
+      : @[];
 }
 
 - (nullable id<RCTModuleProvider>)getModuleProvider:(const char *)name
 {
   NSString *providerName = [NSString stringWithCString:name encoding:NSUTF8StringEncoding];
-  return self.dependencyProvider ? self.dependencyProvider.moduleProviders[providerName] : nullptr;
+  return (self.dependencyProvider != nullptr) ? self.dependencyProvider.moduleProviders[providerName] : nullptr;
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
@@ -111,22 +112,22 @@
 
 - (BOOL)newArchEnabled
 {
-  return RCTIsNewArchEnabled();
+  return YES;
 }
 
 - (BOOL)bridgelessEnabled
 {
-  return self.newArchEnabled;
+  return YES;
 }
 
 - (BOOL)fabricEnabled
 {
-  return self.newArchEnabled;
+  return YES;
 }
 
 - (BOOL)turboModuleEnabled
 {
-  return self.newArchEnabled;
+  return YES;
 }
 
 - (Class)getModuleClassFromName:(const char *)name

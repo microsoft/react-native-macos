@@ -9,6 +9,7 @@
  */
 
 import type {CursorValue} from 'react-native/Libraries/StyleSheet/StyleSheetTypes';
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import * as React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
@@ -180,4 +181,4 @@ exports.examples = [
     render: CursorExampleMacOS,
   },
   // macOS]
-];
+] as Array<RNTesterModuleExample>;

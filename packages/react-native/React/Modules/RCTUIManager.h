@@ -155,14 +155,6 @@ RCT_EXTERN NSString *const RCTUIManagerWillUpdateViewsDueToContentSizeMultiplier
 - (void)setNeedsLayout;
 
 /**
- * This method is used to extract the wrapped view
- * from a view that might be the Interop Layer view wrapper.
- * If the view passed as parameter is the Interop Layer wrapper, this method returns the wrapped view
- * Otherwise, it returns the view itself.
- */
-+ (RCTPlatformView *)paperViewOrCurrentView:(RCTPlatformView *)view; // [macOS]
-
-/**
  * Dedicated object for subscribing for UIManager events.
  * See `RCTUIManagerObserver` protocol for more details.
  */
@@ -210,6 +202,14 @@ RCT_EXTERN NSString *const RCTUIManagerWillUpdateViewsDueToContentSizeMultiplier
 @protocol RCTRendererInteropLayerAdapting
 - (RCTPlatformView *)paperView; // [macOS]
 @end
+
+/**
+ * This method is used to extract the wrapped view
+ * from a view that might be the Interop Layer view wrapper.
+ * If the view passed as parameter is the Interop Layer wrapper, this method returns the wrapped view
+ * Otherwise, it returns the view itself.
+ */
+RCT_EXTERN RCTPlatformView *RCTPaperViewOrCurrentView(RCTPlatformView *view); // [macOS]
 
 RCT_EXTERN NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
     NSMutableDictionary<NSString *, NSDictionary *> *directEvents,

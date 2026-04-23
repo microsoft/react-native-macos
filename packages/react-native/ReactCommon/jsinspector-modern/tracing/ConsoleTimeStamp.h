@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <jsi/JSIDynamic.h>
+#include <jsi/jsi.h>
 #include <react/timing/primitives.h>
 
 #include <cassert>
@@ -21,6 +23,8 @@ namespace facebook::react::jsinspector_modern::tracing {
 using ConsoleTimeStampEntry = std::variant<HighResTimeStamp, std::string>;
 
 // https://developer.chrome.com/docs/devtools/performance/extension#devtools_object
+// Although warning is not listed in Chrome DevTools announcement, it is
+// actually supported.
 enum class ConsoleTimeStampColor {
   Primary,
   PrimaryLight,
@@ -31,10 +35,12 @@ enum class ConsoleTimeStampColor {
   Tertiary,
   TertiaryLight,
   TertiaryDark,
+  Warning,
   Error,
 };
 
-inline std::string consoleTimeStampColorToString(ConsoleTimeStampColor color) {
+inline std::string consoleTimeStampColorToString(ConsoleTimeStampColor color)
+{
   switch (color) {
     case ConsoleTimeStampColor::Primary:
       return "primary";
@@ -54,6 +60,8 @@ inline std::string consoleTimeStampColorToString(ConsoleTimeStampColor color) {
       return "tertiary-light";
     case ConsoleTimeStampColor::TertiaryDark:
       return "tertiary-dark";
+    case ConsoleTimeStampColor::Warning:
+      return "warning";
     case ConsoleTimeStampColor::Error:
       return "error";
     default:
@@ -61,8 +69,8 @@ inline std::string consoleTimeStampColorToString(ConsoleTimeStampColor color) {
   }
 };
 
-inline std::optional<ConsoleTimeStampColor> getConsoleTimeStampColorFromString(
-    const std::string& str) {
+inline std::optional<ConsoleTimeStampColor> getConsoleTimeStampColorFromString(const std::string &str)
+{
   if (str == "primary") {
     return ConsoleTimeStampColor::Primary;
   } else if (str == "primary-light") {
@@ -81,11 +89,15 @@ inline std::optional<ConsoleTimeStampColor> getConsoleTimeStampColorFromString(
     return ConsoleTimeStampColor::TertiaryLight;
   } else if (str == "tertiary-dark") {
     return ConsoleTimeStampColor::TertiaryDark;
+  } else if (str == "warning") {
+    return ConsoleTimeStampColor::Warning;
   } else if (str == "error") {
     return ConsoleTimeStampColor::Error;
   } else {
     return std::nullopt;
   }
 };
+
+std::optional<folly::dynamic> getConsoleTimeStampDetailFromObject(jsi::Runtime &runtime, const jsi::Value &detailValue);
 
 }; // namespace facebook::react::jsinspector_modern::tracing

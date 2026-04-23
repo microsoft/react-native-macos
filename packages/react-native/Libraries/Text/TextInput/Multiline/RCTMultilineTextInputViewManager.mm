@@ -9,6 +9,8 @@
 #import <React/RCTMultilineTextInputViewManager.h>
 #import <React/RCTUITextView.h> // [macOS]
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 @implementation RCTMultilineTextInputViewManager
 
 RCT_EXPORT_MODULE()
@@ -36,3 +38,5 @@ RCT_CUSTOM_VIEW_PROPERTY(pastedTypes, NSArray<NSPasteboardType>*, RCTUITextView)
 #endif // macOS]
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_ARCH
