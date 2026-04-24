@@ -143,13 +143,11 @@ jobs:
     if: ${{ endsWith(github.base_ref, '-stable') }}
     uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
 
-  # https://github.com/microsoft/react-native-macos/issues/2344
-  # Disable these tests because verdaccio hangs
-  # react-native-test-app-integration:
-  #   name: "Test react-native-test-app integration"
-  #   permissions: {}
-  #   if: ${{ endsWith(github.base_ref, '-stable') }}
-  #   uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
+  react-native-test-app-integration:
+    name: "Test react-native-test-app integration"
+    permissions: {}
+    if: ${{ endsWith(github.base_ref, '-stable') }}
+    uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
 
   PR:
     name: "PR"
@@ -164,7 +162,7 @@ jobs:
       - build-rntester
       - prebuild-macos-core
       - test-react-native-macos-init
-      # - react-native-test-app-integration
+      - react-native-test-app-integration
     steps:
       - name: Check for failures or cancellations
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
