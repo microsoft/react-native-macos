@@ -23,68 +23,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       defer: false
     )
 
-    setupMainMenu()
+    NSApp.mainMenu = .standardMenu(appName: "HelloWorld")
 
     factory.startReactNative(withModuleName: "HelloWorld", in: window)
-  }
-
-  // MARK: - Menu Bar
-
-  private func setupMainMenu() {
-    let servicesMenu = NSMenu(title: "Services")
-
-    NSApp.mainMenu = NSMenu {
-      NSMenuItem {
-        NSMenu {
-          NSMenuItem("About HelloWorld", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)))
-          NSMenuItem.separator()
-          NSMenuItem("Services", submenu: servicesMenu)
-          NSMenuItem.separator()
-          NSMenuItem("Hide HelloWorld", action: #selector(NSApplication.hide(_:)), key: "h")
-          NSMenuItem("Hide Others", action: #selector(NSApplication.hideOtherApplications(_:)), key: "h")
-            .keyModifiers([.command, .option])
-          NSMenuItem("Show All", action: #selector(NSApplication.unhideAllApplications(_:)))
-          NSMenuItem.separator()
-          NSMenuItem("Quit HelloWorld", action: #selector(NSApplication.terminate(_:)), key: "q")
-        }
-      }
-      NSMenuItem {
-        NSMenu("Edit") {
-          NSMenuItem("Undo", action: Selector(("undo:")), key: "z")
-          NSMenuItem("Redo", action: Selector(("redo:")), key: "Z")
-          NSMenuItem.separator()
-          NSMenuItem("Cut", action: #selector(NSText.cut(_:)), key: "x")
-          NSMenuItem("Copy", action: #selector(NSText.copy(_:)), key: "c")
-          NSMenuItem("Paste", action: #selector(NSText.paste(_:)), key: "v")
-          NSMenuItem("Paste and Match Style", action: #selector(NSTextView.pasteAsPlainText(_:)), key: "V")
-            .keyModifiers([.command, .option])
-          NSMenuItem("Delete", action: #selector(NSText.delete(_:)))
-          NSMenuItem("Select All", action: #selector(NSText.selectAll(_:)), key: "a")
-        }
-      }
-      NSMenuItem {
-        NSMenu("View") {
-          NSMenuItem("Enter Full Screen", action: #selector(NSWindow.toggleFullScreen(_:)), key: "f")
-            .keyModifiers([.command, .control])
-        }
-      }
-      NSMenuItem {
-        NSMenu("Window") {
-          NSMenuItem("Close", action: #selector(NSWindow.performClose(_:)), key: "w")
-          NSMenuItem("Minimize", action: #selector(NSWindow.performMiniaturize(_:)), key: "m")
-          NSMenuItem("Zoom", action: #selector(NSWindow.performZoom(_:)))
-          NSMenuItem.separator()
-          NSMenuItem("Bring All to Front", action: #selector(NSApplication.arrangeInFront(_:)))
-        }
-      }
-      NSMenuItem {
-        NSMenu("Help") {}
-      }
-    }
-
-    NSApp.servicesMenu = servicesMenu
-    NSApp.windowsMenu = NSApp.mainMenu?.item(withTitle: "Window")?.submenu
-    NSApp.helpMenu = NSApp.mainMenu?.item(withTitle: "Help")?.submenu
   }
 }
 
@@ -104,52 +45,137 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
   }
 }
 
-// MARK: - Declarative Menu Builder
-
-/// A result builder that collects `NSMenuItem` instances into an array.
-@resultBuilder
-enum MenuBuilder {
-  static func buildBlock(_ items: NSMenuItem...) -> [NSMenuItem] {
-    Array(items)
-  }
-}
-
-/// A result builder that expects a single `NSMenu` expression.
-@resultBuilder
-enum SubMenuBuilder {
-  static func buildBlock(_ menu: NSMenu) -> NSMenu { menu }
-}
+// MARK: - Standard macOS Menu Bar
 
 extension NSMenu {
-  /// Creates an `NSMenu` with items provided by a ``MenuBuilder``.
-  convenience init(_ title: String = "", @MenuBuilder builder: () -> [NSMenuItem]) {
-    self.init(title: title)
-    self.items = builder()
-  }
-}
+  /// Creates a standard macOS menu bar with App, Edit, View, Window, and Help menus.
+  ///
+  /// This provides the default set of menu items that most macOS apps need, including
+  /// keyboard shortcuts for Quit (⌘Q), Close (⌘W), Copy (⌘C), Paste (⌘V), and others.
+  /// You can customize the returned menu by adding, removing, or modifying items.
+  static func standardMenu(appName: String) -> NSMenu {
+    let mainMenu = NSMenu()
 
-extension NSMenuItem {
-  /// Creates an `NSMenuItem` with a shorter parameter name for `keyEquivalent`
-  /// and an optional submenu.
-  convenience init(
-    _ title: String,
-    action: Selector? = nil,
+    mainMenu.addItem(appMenuItem(appName: appName))
+    mainMenu.addItem(editMenuItem())
+    mainMenu.addItem(viewMenuItem())
+    mainMenu.addItem(windowMenuItem())
+    mainMenu.addItem(helpMenuItem())
+
+    return mainMenu
+  }
+
+  // MARK: App Menu
+
+  private static func appMenuItem(appName: String) -> NSMenuItem {
+    let item = NSMenuItem()
+    let menu = NSMenu()
+
+    menu.addItem(title: "About \(appName)",
+                 action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)))
+    menu.addItem(.separator())
+
+    let servicesMenu = NSMenu(title: "Services")
+    let servicesItem = NSMenuItem(title: "Services", action: nil, keyEquivalent: "")
+    servicesItem.submenu = servicesMenu
+    menu.addItem(servicesItem)
+    NSApp.servicesMenu = servicesMenu
+    menu.addItem(.separator())
+
+    menu.addItem(title: "Hide \(appName)",
+                 action: #selector(NSApplication.hide(_:)), key: "h")
+    menu.addItem(title: "Hide Others",
+                 action: #selector(NSApplication.hideOtherApplications(_:)),
+                 key: "h", modifiers: [.command, .option])
+    menu.addItem(title: "Show All",
+                 action: #selector(NSApplication.unhideAllApplications(_:)))
+    menu.addItem(.separator())
+    menu.addItem(title: "Quit \(appName)",
+                 action: #selector(NSApplication.terminate(_:)), key: "q")
+
+    item.submenu = menu
+    return item
+  }
+
+  // MARK: Edit Menu
+
+  private static func editMenuItem() -> NSMenuItem {
+    let item = NSMenuItem()
+    let menu = NSMenu(title: "Edit")
+
+    menu.addItem(title: "Undo", action: Selector(("undo:")), key: "z")
+    menu.addItem(title: "Redo", action: Selector(("redo:")), key: "Z")
+    menu.addItem(.separator())
+    menu.addItem(title: "Cut", action: #selector(NSText.cut(_:)), key: "x")
+    menu.addItem(title: "Copy", action: #selector(NSText.copy(_:)), key: "c")
+    menu.addItem(title: "Paste", action: #selector(NSText.paste(_:)), key: "v")
+    menu.addItem(title: "Paste and Match Style",
+                 action: #selector(NSTextView.pasteAsPlainText(_:)),
+                 key: "v", modifiers: [.command, .option])
+    menu.addItem(title: "Delete", action: #selector(NSText.delete(_:)))
+    menu.addItem(title: "Select All", action: #selector(NSText.selectAll(_:)), key: "a")
+
+    item.submenu = menu
+    return item
+  }
+
+  // MARK: View Menu
+
+  private static func viewMenuItem() -> NSMenuItem {
+    let item = NSMenuItem()
+    let menu = NSMenu(title: "View")
+
+    menu.addItem(title: "Enter Full Screen",
+                 action: #selector(NSWindow.toggleFullScreen(_:)),
+                 key: "f", modifiers: [.command, .control])
+
+    item.submenu = menu
+    return item
+  }
+
+  // MARK: Window Menu
+
+  private static func windowMenuItem() -> NSMenuItem {
+    let item = NSMenuItem()
+    let menu = NSMenu(title: "Window")
+
+    menu.addItem(title: "Close", action: #selector(NSWindow.performClose(_:)), key: "w")
+    menu.addItem(title: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), key: "m")
+    menu.addItem(title: "Zoom", action: #selector(NSWindow.performZoom(_:)))
+    menu.addItem(.separator())
+    menu.addItem(title: "Bring All to Front",
+                 action: #selector(NSApplication.arrangeInFront(_:)))
+
+    NSApp.windowsMenu = menu
+
+    item.submenu = menu
+    return item
+  }
+
+  // MARK: Help Menu
+
+  private static func helpMenuItem() -> NSMenuItem {
+    let item = NSMenuItem()
+    let menu = NSMenu(title: "Help")
+
+    NSApp.helpMenu = menu
+
+    item.submenu = menu
+    return item
+  }
+
+  // MARK: Convenience
+
+  /// Adds a menu item with an optional keyboard shortcut and modifier keys.
+  @discardableResult
+  fileprivate func addItem(
+    title: String,
+    action: Selector?,
     key: String = "",
-    submenu: NSMenu? = nil
-  ) {
-    self.init(title: title, action: action, keyEquivalent: key)
-    self.submenu = submenu
-  }
-
-  /// Creates an `NSMenuItem` whose submenu is built by a ``SubMenuBuilder``.
-  convenience init(@SubMenuBuilder builder: () -> NSMenu) {
-    self.init(title: "", action: nil, keyEquivalent: "")
-    self.submenu = builder()
-  }
-
-  /// Sets custom modifier keys on this menu item and returns it for chaining.
-  func keyModifiers(_ modifiers: NSEvent.ModifierFlags) -> NSMenuItem {
-    keyEquivalentModifierMask = modifiers
-    return self
+    modifiers: NSEvent.ModifierFlags = .command
+  ) -> NSMenuItem {
+    let item = addItem(withTitle: title, action: action, keyEquivalent: key)
+    item.keyEquivalentModifierMask = modifiers
+    return item
   }
 }
