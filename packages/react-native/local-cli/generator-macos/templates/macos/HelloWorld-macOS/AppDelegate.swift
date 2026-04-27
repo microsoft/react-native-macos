@@ -22,11 +22,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   let reactNativeFactory: RCTReactNativeFactory
 
   override init() {
-    let delegate = ReactNativeDelegate()
-    delegate.dependencyProvider = RCTAppDependencyProvider()
-    reactNativeDelegate = delegate
-    reactNativeFactory = RCTReactNativeFactory(delegate: delegate)
     super.init()
+
+    let delegate = ReactNativeDelegate()
+    let factory = RCTReactNativeFactory(delegate: delegate)
+    delegate.dependencyProvider = RCTAppDependencyProvider()
+
+    reactNativeDelegate = delegate
+    reactNativeFactory = factory
   }
 }
 
