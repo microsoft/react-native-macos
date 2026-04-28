@@ -945,6 +945,11 @@ extension Target {
         .define("DEBUG", .when(configuration: .debug)),
         .define("NDEBUG", .when(configuration: .release)),
         .define("USE_HERMES", to: "1"),
+        // [macOS] The SPM build links against hermesvm.xcframework (HermesV1).
+        // Several headers (e.g. ReactCommon/hermes/inspector-modern/chrome/Registration.h)
+        // gate legacy inspector code on `!defined(HERMES_V1_ENABLED)`, matching what the
+        // CocoaPods path sets via cocoapods/utils.rb when RCT_HERMES_V1_ENABLED=1.
+        .define("HERMES_V1_ENABLED", to: "1"),
       ] + defines + cxxCommonHeaderPaths
 
     return .target(
