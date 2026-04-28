@@ -24,11 +24,13 @@ static NSUInteger RCTDeviceFreeMemory(void)
   vm_statistics_data_t vm_stat;
   kern_return_t kern;
   kern = host_page_size(host_port, &page_size);
-  if (kern != KERN_SUCCESS)
+  if (kern != KERN_SUCCESS) {
     return 0;
+  }
   kern = host_statistics(host_port, HOST_VM_INFO, (host_info_t)&vm_stat, &host_size);
-  if (kern != KERN_SUCCESS)
+  if (kern != KERN_SUCCESS) {
     return 0;
+  }
   return (vm_stat.free_count - vm_stat.speculative_count) * page_size;
 }
 
@@ -92,7 +94,7 @@ static NSUInteger RCTDeviceFreeMemory(void)
   if (image == thisImage) {
     return;
   }
-  
+
   [self stop];
   [self resetAnimatedImage];
 
@@ -284,8 +286,9 @@ static NSUInteger RCTDeviceFreeMemory(void)
   CGImageRef cgImage = [self.currentFrame CGImageForProposedRect:nil context:nil hints:nil];
   NSUInteger bytes = cgImage ? (CGImageGetBytesPerRow(cgImage) * CGImageGetHeight(cgImage)) : 0;
 #endif // macOS]
-  if (bytes == 0)
+  if (bytes == 0) {
     bytes = 1024;
+  }
 
   NSUInteger max = 0;
   if (self.maxBufferSize > 0) {

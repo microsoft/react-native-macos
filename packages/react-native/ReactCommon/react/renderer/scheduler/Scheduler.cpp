@@ -27,10 +27,9 @@ namespace facebook::react {
 Scheduler::Scheduler(
     const SchedulerToolbox& schedulerToolbox,
     UIManagerAnimationDelegate* animationDelegate,
-    SchedulerDelegate* delegate) {
-  runtimeExecutor_ = schedulerToolbox.runtimeExecutor;
-  contextContainer_ = schedulerToolbox.contextContainer;
-
+    SchedulerDelegate* delegate)
+    : runtimeExecutor_(schedulerToolbox.runtimeExecutor),
+      contextContainer_(schedulerToolbox.contextContainer) {
   // Creating a container for future `EventDispatcher` instance.
   eventDispatcher_ = std::make_shared<std::optional<const EventDispatcher>>();
 
@@ -39,11 +38,23 @@ Scheduler::Scheduler(
   auto performanceEntryReporter = PerformanceEntryReporter::getInstance();
   performanceEntryReporter_ = performanceEntryReporter;
 
+  if (ReactNativeFeatureFlags::enableBridgelessArchitecture() &&
+      ReactNativeFeatureFlags::cdpInteractionMetricsEnabled()) {
+    cdpMetricsReporter_.emplace(CdpMetricsReporter{runtimeExecutor_});
+    performanceEntryReporter_->addEventListener(&*cdpMetricsReporter_);
+  }
+
+  if (ReactNativeFeatureFlags::perfIssuesEnabled()) {
+    cdpPerfIssuesReporter_.emplace(CdpPerfIssuesReporter{runtimeExecutor_});
+    performanceEntryReporter_->addEventListener(&*cdpPerfIssuesReporter_);
+  }
+
   eventPerformanceLogger_ =
       std::make_shared<EventPerformanceLogger>(performanceEntryReporter_);
 
   auto uiManager =
       std::make_shared<UIManager>(runtimeExecutor_, contextContainer_);
+
   auto eventOwnerBox = std::make_shared<EventBeat::OwnerBox>();
   eventOwnerBox->owner = eventDispatcher_;
 
@@ -165,6 +176,13 @@ Scheduler::~Scheduler() {
   uiManager_->setDelegate(nullptr);
   uiManager_->setAnimationDelegate(nullptr);
 
+  if (cdpMetricsReporter_) {
+    performanceEntryReporter_->removeEventListener(&*cdpMetricsReporter_);
+  }
+  if (cdpPerfIssuesReporter_) {
+    performanceEntryReporter_->removeEventListener(&*cdpPerfIssuesReporter_);
+  }
+
   // Then, let's verify that the requirement was satisfied.
   auto surfaceIds = std::vector<SurfaceId>{};
   uiManager_->getShadowTreeRegistry().enumerate(
@@ -273,8 +291,8 @@ void Scheduler::uiManagerDidDispatchCommand(
     const std::shared_ptr<const ShadowNode>& shadowNode,
     const std::string& commandName,
     const folly::dynamic& args) {
-  TraceSection s("Scheduler::uiManagerDispatchCommand");
-
+  TraceSection s(
+      "Scheduler::uiManagerDispatchCommand", "commandName", commandName);
   if (delegate_ != nullptr) {
     auto shadowView = ShadowView(*shadowNode);
     runtimeScheduler_->scheduleRenderingUpdate(
@@ -348,7 +366,7 @@ void Scheduler::reportMount(SurfaceId surfaceId) const {
   uiManager_->reportMount(surfaceId);
 }
 
-ContextContainer::Shared Scheduler::getContextContainer() const {
+std::shared_ptr<const ContextContainer> Scheduler::getContextContainer() const {
   return contextContainer_;
 }
 

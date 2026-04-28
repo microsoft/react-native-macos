@@ -24,6 +24,7 @@
 @class RCTBridge;
 @protocol RCTComponentViewProtocol;
 @class RCTSurfacePresenterBridgeAdapter;
+@class RCTDevMenuConfiguration;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -56,7 +57,10 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
  *
  * @returns: a newly created instance of RCTBridge.
  */
-- (RCTBridge *)createBridgeWithDelegate:(id<RCTBridgeDelegate>)delegate launchOptions:(NSDictionary *)launchOptions;
+- (RCTBridge *)createBridgeWithDelegate:(id<RCTBridgeDelegate>)delegate
+                          launchOptions:(NSDictionary *)launchOptions
+    __attribute__((deprecated(
+        "createBridgeWithDelegate:launchOptions: is deprecated and will be removed when removing the legacy architecture.")));
 
 /**
  * It creates a `UIView` starting from a bridge, a module name and a set of initial properties.
@@ -71,8 +75,10 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
  * @returns: a UIView properly configured with a bridge for React Native.
  */
 - (RCTPlatformView *)createRootViewWithBridge:(RCTBridge *)bridge
-                                   moduleName:(NSString *)moduleName
-                                    initProps:(NSDictionary *)initProps;
+                          moduleName:(NSString *)moduleName
+                           initProps:(NSDictionary *)initProps
+    __attribute__((deprecated(
+        "createRootViewWithBridge:moduleName:initProps is deprecated and will be removed when removing the legacy architecture.")));
 
 /// This method returns a map of Component Descriptors and Components classes that needs to be registered in the
 /// new renderer. The Component Descriptor is a string which represent the name used in JS to refer to the native
@@ -101,12 +107,17 @@ typedef NS_ENUM(NSInteger, RCTReleaseLevel) { Canary, Experimental, Stable };
                      initialProperties:(NSDictionary *_Nullable)initialProperties
                          launchOptions:(NSDictionary *_Nullable)launchOptions;
 
-@property (nonatomic, nullable) RCTBridge *bridge;
+@property (nonatomic, nullable) RCTBridge *bridge
+    __attribute__((deprecated("The bridge is deprecated and will be removed when removing the legacy architecture.")));
 @property (nonatomic, strong, nonnull) RCTRootViewFactory *rootViewFactory;
 
-@property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter;
+@property (nonatomic, nullable) RCTSurfacePresenterBridgeAdapter *bridgeAdapter __attribute__((
+    deprecated("The bridgeAdapter is deprecated and will be removed when removing the legacy architecture.")));
+;
 
 @property (nonatomic, weak) id<RCTReactNativeFactoryDelegate> delegate;
+
+@property (nonatomic, nullable) RCTDevMenuConfiguration *devMenuConfiguration;
 
 @end
 

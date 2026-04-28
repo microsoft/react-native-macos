@@ -22,6 +22,10 @@
 
 namespace facebook::react {
 
+namespace {
+const int MAX_COMMIT_ATTEMPTS_BEFORE_LOCKING = 3;
+} // namespace
+
 using CommitStatus = ShadowTree::CommitStatus;
 using CommitMode = ShadowTree::CommitMode;
 
@@ -65,13 +69,14 @@ static std::shared_ptr<ShadowNode> progressState(const ShadowNode& shadowNode) {
   }
 
   return shadowNode.clone({
-      ShadowNodeFragment::propsPlaceholder(),
-      areChildrenChanged
+      .props = ShadowNodeFragment::propsPlaceholder(),
+      .children = areChildrenChanged
           ? std::make_shared<
                 const std::vector<std::shared_ptr<const ShadowNode>>>(
                 std::move(newChildren))
           : ShadowNodeFragment::childrenPlaceholder(),
-      isStateChanged ? newState : ShadowNodeFragment::statePlaceholder(),
+      .state =
+          isStateChanged ? newState : ShadowNodeFragment::statePlaceholder(),
   });
 }
 
@@ -154,13 +159,14 @@ static std::shared_ptr<ShadowNode> progressState(
   }
 
   return shadowNode.clone({
-      ShadowNodeFragment::propsPlaceholder(),
-      areChildrenChanged
+      .props = ShadowNodeFragment::propsPlaceholder(),
+      .children = areChildrenChanged
           ? std::make_shared<
                 const std::vector<std::shared_ptr<const ShadowNode>>>(
                 std::move(newChildren))
           : ShadowNodeFragment::childrenPlaceholder(),
-      isStateChanged ? newState : ShadowNodeFragment::statePlaceholder(),
+      .state =
+          isStateChanged ? newState : ShadowNodeFragment::statePlaceholder(),
   });
 }
 
@@ -173,7 +179,9 @@ ShadowTree::ShadowTree(
     : surfaceId_(surfaceId), delegate_(delegate) {
   static RootComponentDescriptor globalRootComponentDescriptor(
       ComponentDescriptorParameters{
-          EventDispatcher::Shared{}, nullptr, nullptr});
+          .eventDispatcher = EventDispatcher::Shared{},
+          .contextContainer = nullptr,
+          .flavor = nullptr});
 
   const auto props = std::make_shared<const RootProps>(
       PropsParserContext{surfaceId, contextContainer},
@@ -182,17 +190,19 @@ ShadowTree::ShadowTree(
       layoutContext);
 
   auto family = globalRootComponentDescriptor.createFamily(
-      {surfaceId, surfaceId, nullptr});
+      {.tag = surfaceId, .surfaceId = surfaceId, .instanceHandle = nullptr});
 
   auto rootShadowNode = std::static_pointer_cast<const RootShadowNode>(
       globalRootComponentDescriptor.createShadowNode(
           ShadowNodeFragment{
-              /* .props = */ props,
+              /* .props = */ .props = props,
           },
           family));
 
   currentRevision_ = ShadowTreeRevision{
-      rootShadowNode, INITIAL_REVISION, TransactionTelemetry{}};
+      .rootShadowNode = rootShadowNode,
+      .number = INITIAL_REVISION,
+      .telemetry = TransactionTelemetry{}};
 
   mountingCoordinator_ =
       std::make_shared<const MountingCoordinator>(currentRevision_);
@@ -210,7 +220,8 @@ void ShadowTree::setCommitMode(CommitMode commitMode) const {
   auto revision = ShadowTreeRevision{};
 
   {
-    std::unique_lock lock(commitMutex_);
+    ShadowTree::UniqueLock lock = uniqueCommitLock();
+
     if (commitMode_ == commitMode) {
       return;
     }
@@ -227,7 +238,7 @@ void ShadowTree::setCommitMode(CommitMode commitMode) const {
 }
 
 CommitMode ShadowTree::getCommitMode() const {
-  std::shared_lock lock(commitMutex_);
+  SharedLock lock = sharedCommitLock();
   return commitMode_;
 }
 
@@ -241,17 +252,32 @@ CommitStatus ShadowTree::commit(
     const CommitOptions& commitOptions) const {
   [[maybe_unused]] int attempts = 0;
 
-  while (true) {
-    attempts++;
-
-    auto status = tryCommit(transaction, commitOptions);
-    if (status != CommitStatus::Failed) {
-      return status;
+  if (ReactNativeFeatureFlags::preventShadowTreeCommitExhaustion()) {
+    while (attempts < MAX_COMMIT_ATTEMPTS_BEFORE_LOCKING) {
+      auto status = tryCommit(transaction, commitOptions);
+      if (status != CommitStatus::Failed) {
+        return status;
+      }
+      attempts++;
     }
 
-    // After multiple attempts, we failed to commit the transaction.
-    // Something internally went terribly wrong.
-    react_native_assert(attempts < 1024);
+    {
+      std::unique_lock lock(commitMutexRecursive_);
+      return tryCommit(transaction, commitOptions);
+    }
+  } else {
+    while (true) {
+      attempts++;
+
+      auto status = tryCommit(transaction, commitOptions);
+      if (status != CommitStatus::Failed) {
+        return status;
+      }
+
+      // After multiple attempts, we failed to commit the transaction.
+      // Something internally went terribly wrong.
+      react_native_assert(attempts < 1024);
+    }
   }
 }
 
@@ -269,7 +295,7 @@ CommitStatus ShadowTree::tryCommit(
 
   {
     // Reading `currentRevision_` in shared manner.
-    std::shared_lock lock(commitMutex_);
+    SharedLock lock = sharedCommitLock();
     commitMode = commitMode_;
     oldRevision = currentRevision_;
   }
@@ -310,7 +336,7 @@ CommitStatus ShadowTree::tryCommit(
 
   {
     // Updating `currentRevision_` in unique manner if it hasn't changed.
-    std::unique_lock lock(commitMutex_);
+    UniqueLock lock = uniqueCommitLock();
 
     if (currentRevision_.number != oldRevision.number) {
       return CommitStatus::Failed;
@@ -334,7 +360,9 @@ CommitStatus ShadowTree::tryCommit(
     newRootShadowNode->sealRecursive();
 
     newRevision = ShadowTreeRevision{
-        std::move(newRootShadowNode), newRevisionNumber, telemetry};
+        .rootShadowNode = std::move(newRootShadowNode),
+        .number = newRevisionNumber,
+        .telemetry = telemetry};
 
     currentRevision_ = newRevision;
   }
@@ -349,7 +377,7 @@ CommitStatus ShadowTree::tryCommit(
 }
 
 ShadowTreeRevision ShadowTree::getCurrentRevision() const {
-  std::shared_lock lock(commitMutex_);
+  SharedLock lock = sharedCommitLock();
   return currentRevision_;
 }
 
@@ -367,8 +395,9 @@ void ShadowTree::commitEmptyTree() const {
         return std::make_shared<RootShadowNode>(
             oldRootShadowNode,
             ShadowNodeFragment{
-                /* .props = */ ShadowNodeFragment::propsPlaceholder(),
-                /* .children = */ ShadowNode::emptySharedShadowNodeSharedList(),
+                /* .props = */ .props = ShadowNodeFragment::propsPlaceholder(),
+                /* .children = */ .children =
+                    ShadowNode::emptySharedShadowNodeSharedList(),
             });
       },
       {/* default commit options */});
@@ -395,6 +424,22 @@ void ShadowTree::emitLayoutEvents(
 
 void ShadowTree::notifyDelegatesOfUpdates() const {
   delegate_.shadowTreeDidFinishTransaction(mountingCoordinator_, true);
+}
+
+inline ShadowTree::UniqueLock ShadowTree::uniqueCommitLock() const {
+  if (ReactNativeFeatureFlags::preventShadowTreeCommitExhaustion()) {
+    return std::unique_lock{commitMutexRecursive_};
+  } else {
+    return std::unique_lock{commitMutex_};
+  }
+}
+
+inline ShadowTree::SharedLock ShadowTree::sharedCommitLock() const {
+  if (ReactNativeFeatureFlags::preventShadowTreeCommitExhaustion()) {
+    return std::unique_lock{commitMutexRecursive_};
+  } else {
+    return std::shared_lock{commitMutex_};
+  }
 }
 
 } // namespace facebook::react

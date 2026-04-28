@@ -8,6 +8,8 @@
 #import <React/RCTBaseTextViewManager.h>
 #import <React/RCTCursor.h> // [macOS]
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 @implementation RCTBaseTextViewManager
 
 RCT_EXPORT_MODULE(RCTBaseText)
@@ -63,3 +65,5 @@ RCT_REMAP_SHADOW_PROPERTY(cursor, textAttributes.cursor, RCTCursor)
 #endif // macOS]
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_ARCH

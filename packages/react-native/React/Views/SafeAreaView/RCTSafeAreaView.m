@@ -8,6 +8,8 @@
 #if !TARGET_OS_OSX // [macOS]
 #import "RCTSafeAreaView.h"
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import <React/RCTBridge.h>
 #import <React/RCTUIManager.h>
 
@@ -76,4 +78,6 @@ static BOOL UIEdgeInsetsEqualToEdgeInsetsWithThreshold(UIEdgeInsets insets1, UIE
 }
 
 @end
+#endif // RCT_REMOVE_LEGACY_ARCH
+
 #endif // [macOS]

@@ -47,7 +47,7 @@ extern
  * like any ordinary UIView. You can have multiple RCTRootViews on screen at
  * once, all controlled by the same JavaScript application.
  */
-@interface RCTRootView : RCTUIView // [macOS]
+__deprecated_msg("This API will be removed along with the legacy architecture.") @interface RCTRootView : RCTUIView // [macOS]
 
 /**
  * - Designated initializer -

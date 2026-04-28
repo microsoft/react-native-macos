@@ -10,12 +10,14 @@
 
 'use strict';
 
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+
 const ScreenshotManager = require('../../../NativeModuleExample/NativeScreenshotManager');
 const {RNTesterThemeContext} = require('../../components/RNTesterTheme');
 const React = require('react');
 const {Alert, Image, StyleSheet, Text, View} = require('react-native');
 
-class ScreenshotExample extends React.Component<{...}, $FlowFixMeState> {
+class ScreenshotExample extends React.Component<{...}, $FlowFixMe> {
   state: any | {uri: void} = {
     uri: undefined,
   };
@@ -42,7 +44,7 @@ class ScreenshotExample extends React.Component<{...}, $FlowFixMeState> {
 
   // [macOS] alert needs two string arguments, passing an error results in crashing
   takeScreenshot = () => {
-    if (ScreenshotManager !== undefined && ScreenshotManager !== null) {
+    if (ScreenshotManager !== undefined) {
       ScreenshotManager.takeScreenshot('window', {format: 'jpeg', quality: 0.8}) // See UIManager.js for options
         .then(uri => this.setState({uri}))
         .catch(error =>
@@ -81,4 +83,4 @@ exports.examples = [
       return <ScreenshotExample />;
     },
   },
-];
+] as Array<RNTesterModuleExample>;

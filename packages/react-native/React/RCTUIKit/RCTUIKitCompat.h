@@ -232,11 +232,13 @@ typedef NS_ENUM(NSInteger, UIActivityIndicatorViewStyle) {
 @compatibility_alias RCTPlatformWindow UIWindow;
 @compatibility_alias RCTPlatformViewController UIViewController;
 @compatibility_alias RCTUIApplication UIApplication;
+@compatibility_alias RCTPlatformSwitch UISwitch;
 #else
 @compatibility_alias RCTPlatformApplication NSApplication;
 @compatibility_alias RCTPlatformWindow NSWindow;
 @compatibility_alias RCTPlatformViewController NSViewController;
 @compatibility_alias RCTUIApplication NSApplication;
+@compatibility_alias RCTPlatformSwitch NSSwitch;
 #endif
 
 NS_ASSUME_NONNULL_END

@@ -98,6 +98,8 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
 
 @interface RCTModalHostViewComponentView () <RCTFabricModalHostViewControllerDelegate>
 
+@property (nonatomic, weak) RCTPlatformView *accessibilityFocusedView; // [macOS]
+
 @end
 
 @implementation RCTModalHostViewComponentView {
@@ -106,6 +108,7 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
   BOOL _shouldAnimatePresentation;
   BOOL _shouldPresent;
   BOOL _isPresented;
+  BOOL _modalInPresentation;
 }
 
 #if !TARGET_OS_OSX // [macOS]
@@ -116,6 +119,7 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
     _shouldAnimatePresentation = YES;
 
     _isPresented = NO;
+    _modalInPresentation = YES;
   }
 
   return self;
@@ -127,7 +131,7 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
     _viewController = [RCTFabricModalHostViewController new];
     _viewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     _viewController.delegate = self;
-    _viewController.modalInPresentation = YES;
+    _viewController.modalInPresentation = _modalInPresentation;
   }
   return _viewController;
 }
@@ -151,7 +155,9 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
 {
   BOOL shouldBePresented = !_isPresented && _shouldPresent && self.window;
   if (shouldBePresented) {
+    [self saveAccessibilityFocusedView];
     self.viewController.presentationController.delegate = self;
+    self.viewController.modalInPresentation = _modalInPresentation;
 
     _isPresented = YES;
     [self presentViewController:self.viewController
@@ -182,6 +188,8 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
                        if (eventEmitter) {
                          eventEmitter->onDismiss(ModalHostViewEventEmitter::OnDismiss{});
                        }
+
+                       [self restoreAccessibilityFocusedView];
                      }];
   }
 }
@@ -208,6 +216,23 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
 {
   [super didMoveToSuperview];
   [self ensurePresentedOnlyIfNeeded];
+}
+
+- (void)saveAccessibilityFocusedView
+{
+  id focusedElement = UIAccessibilityFocusedElement(nil);
+  if (focusedElement && [focusedElement isKindOfClass:[UIView class]]) {
+    self.accessibilityFocusedView = (UIView *)focusedElement;
+  }
+}
+
+- (void)restoreAccessibilityFocusedView
+{
+  id viewToFocus = self.accessibilityFocusedView;
+  if (viewToFocus) {
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, viewToFocus);
+    self.accessibilityFocusedView = nil;
+  }
 }
 
 #pragma mark - RCTFabricModalHostViewControllerDelegate
@@ -257,7 +282,8 @@ static ModalHostViewEventEmitter::OnOrientationChange onOrientationChangeStruct(
   self.viewController.modalPresentationStyle = presentationConfiguration(newProps);
 
   if (oldViewProps.allowSwipeDismissal != newProps.allowSwipeDismissal) {
-    self.viewController.modalInPresentation = !newProps.allowSwipeDismissal;
+    _modalInPresentation = !newProps.allowSwipeDismissal;
+    self.viewController.modalInPresentation = _modalInPresentation;
   }
 
   _shouldPresent = newProps.visible;

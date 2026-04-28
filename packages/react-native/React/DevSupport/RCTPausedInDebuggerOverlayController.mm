@@ -147,7 +147,7 @@
 #if !TARGET_OS_OSX // [macOS]
     _alertWindow = [[UIWindow alloc] initWithWindowScene:RCTKeyWindow().windowScene];
 
-    if (_alertWindow) {
+    if (_alertWindow != nullptr) {
       _alertWindow.rootViewController = [UIViewController new];
       _alertWindow.windowLevel = UIWindowLevelAlert + 1;
     }
