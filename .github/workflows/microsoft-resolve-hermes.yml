@@ -79,7 +79,7 @@ jobs:
         id: cache
         uses: actions/cache/restore@v4
         with:
-          key: hermes-v1-${{ steps.resolve.outputs.hermes-commit }}-Debug
+          key: hermesv1-engine-${{ steps.resolve.outputs.hermes-commit }}-Debug
           path: hermes-destroot
 
       - name: Upload cached Hermes artifacts
@@ -249,7 +249,7 @@ jobs:
       - name: Save Hermes cache
         uses: actions/cache/save@v4
         with:
-          key: hermes-v1-${{ needs.resolve-hermes.outputs.hermes-commit }}-Debug
+          key: hermesv1-engine-${{ needs.resolve-hermes.outputs.hermes-commit }}-Debug
           path: hermes/destroot
 
       - name: Upload Hermes artifacts
