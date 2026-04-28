@@ -125,8 +125,9 @@ async function downloadUpstreamHermesTarball(
  * Extracts an upstream Hermes tarball and recomposes the xcframework to include
  * the macOS slice, if needed.
  *
- * Upstream tarballs ship a universal xcframework (iOS, simulator, catalyst,
- * tvOS, visionOS) plus a standalone macosx/hermes.framework. This function
+ * As of RN 0.83, the Hermes binary product is `hermesvm` (HermesV1). Upstream
+ * tarballs ship a universal `hermesvm.xcframework` (iOS, simulator, catalyst,
+ * tvOS, visionOS) plus a standalone `macosx/hermesvm.framework`. This function
  * merges the standalone macOS framework into the universal xcframework using
  * `xcodebuild -create-xcframework`.
  *
@@ -147,7 +148,7 @@ async function recomposeHermesXcframework(
   await $`tar -xzf ${tarballPath} -C ${destroot} --strip-components=2`;
 
   const frameworksDir = path.join(destroot, 'Library', 'Frameworks');
-  const xcfwPath = path.join(frameworksDir, 'universal', 'hermes.xcframework');
+  const xcfwPath = path.join(frameworksDir, 'universal', 'hermesvm.xcframework');
 
   echo('Upstream tarball contents:');
   await $`ls -la ${frameworksDir}`;
@@ -167,16 +168,16 @@ async function recomposeHermesXcframework(
   }
 
   // Check for standalone macOS framework
-  const standaloneMacFw = path.join(frameworksDir, 'macosx', 'hermes.framework');
+  const standaloneMacFw = path.join(frameworksDir, 'macosx', 'hermesvm.framework');
   if (!fs.existsSync(standaloneMacFw)) {
-    echo('ERROR: Upstream tarball missing macosx/hermes.framework');
+    echo('ERROR: Upstream tarball missing macosx/hermesvm.framework');
     return false;
   }
 
   // Collect existing frameworks from inside the universal xcframework
   const frameworkArgs: string[] = [];
   for (const entry of xcfwContents) {
-    const fwPath = path.join(xcfwPath, entry, 'hermes.framework');
+    const fwPath = path.join(xcfwPath, entry, 'hermesvm.framework');
     if (fs.existsSync(fwPath) && fs.statSync(fwPath).isDirectory()) {
       echo(`Found slice: ${fwPath}`);
       frameworkArgs.push('-framework', fwPath);
@@ -188,7 +189,7 @@ async function recomposeHermesXcframework(
   frameworkArgs.push('-framework', standaloneMacFw);
 
   // Build new xcframework at a temp path (frameworks reference paths inside the old xcfw)
-  const xcfwNew = path.join(frameworksDir, 'universal', 'hermes-new.xcframework');
+  const xcfwNew = path.join(frameworksDir, 'universal', 'hermesvm-new.xcframework');
   const sliceCount = frameworkArgs.filter(f => f !== '-framework').length;
   echo(`Creating new universal xcframework with ${sliceCount} slices...`);
   await $`xcodebuild -create-xcframework ${frameworkArgs} -output ${xcfwNew} -allow-internal-distribution`;
