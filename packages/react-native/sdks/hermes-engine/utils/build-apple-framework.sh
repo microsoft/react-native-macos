@@ -163,11 +163,17 @@ function build_apple_framework {
     mkdir -p destroot/include/hermes/cdp
     cp API/hermes/cdp/*.h destroot/include/hermes/cdp
 
-    mkdir -p destroot/include/hermes/inspector
-    cp API/hermes/inspector/*.h destroot/include/hermes/inspector
+    # [macOS] HermesV1 (static_h) drops the legacy inspector headers in favour of
+    # API/hermes/cdp/. Skip the copy when the source directory has no headers.
+    if compgen -G "API/hermes/inspector/*.h" > /dev/null; then
+      mkdir -p destroot/include/hermes/inspector
+      cp API/hermes/inspector/*.h destroot/include/hermes/inspector
+    fi
 
-    mkdir -p destroot/include/hermes/inspector/chrome
-    cp API/hermes/inspector/chrome/*.h destroot/include/hermes/inspector/chrome
+    if compgen -G "API/hermes/inspector/chrome/*.h" > /dev/null; then
+      mkdir -p destroot/include/hermes/inspector/chrome
+      cp API/hermes/inspector/chrome/*.h destroot/include/hermes/inspector/chrome
+    fi
 
     mkdir -p destroot/include/jsi
     cp "$JSI_PATH"/jsi/*.h destroot/include/jsi
@@ -193,11 +199,17 @@ function prepare_dest_root_for_ci {
   mkdir -p destroot/include/hermes/cdp
   cp API/hermes/cdp/*.h destroot/include/hermes/cdp
 
-  mkdir -p destroot/include/hermes/inspector
-  cp API/hermes/inspector/*.h destroot/include/hermes/inspector
+  # [macOS] HermesV1 (static_h) drops the legacy inspector headers in favour of
+  # API/hermes/cdp/. Skip the copy when the source directory has no headers.
+  if compgen -G "API/hermes/inspector/*.h" > /dev/null; then
+    mkdir -p destroot/include/hermes/inspector
+    cp API/hermes/inspector/*.h destroot/include/hermes/inspector
+  fi
 
-  mkdir -p destroot/include/hermes/inspector/chrome
-  cp API/hermes/inspector/chrome/*.h destroot/include/hermes/inspector/chrome
+  if compgen -G "API/hermes/inspector/chrome/*.h" > /dev/null; then
+    mkdir -p destroot/include/hermes/inspector/chrome
+    cp API/hermes/inspector/chrome/*.h destroot/include/hermes/inspector/chrome
+  fi
 
   mkdir -p destroot/include/jsi
   cp "$JSI_PATH"/jsi/*.h destroot/include/jsi
