@@ -57,6 +57,29 @@ function findMatchingHermesVersion(
 }
 
 /**
+ * Reads the pinned HermesV1 tag from sdks/.hermesv1version.
+ *
+ * Returns a value like 'hermes-v250829098.0.2', which can be used as a git ref
+ * when checking out facebook/hermes for from-source builds. Returns null if the
+ * file is missing or empty.
+ */
+function hermesV1Tag() /*: ?string */ {
+  const tagFile = path.resolve(
+    __dirname,
+    '..',
+    '..',
+    'sdks',
+    '.hermesv1version',
+  );
+  try {
+    const tag = fs.readFileSync(tagFile, 'utf8').trim();
+    return tag.length > 0 ? tag : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
  * Finds the Hermes commit at the merge base with facebook/react-native.
  * Used on the main branch (1000.0.0) where no prebuilt artifacts exist.
  *
@@ -64,11 +87,15 @@ function findMatchingHermesVersion(
  * the latest Hermes commit because Hermes and JSI don't always guarantee backwards compatibility.
  * Instead, we take the commit hash of Hermes at the time of the merge base with facebook/react-native.
  *
+ * Hermes ships HermesV1 on the `static_h` branch as of RN 0.83, and the macOS fork's
+ * SPM build path consumes hermesvm — so we resolve against `static_h`, not `main`.
+ *
  * This is the JavaScript equivalent of the Ruby `hermes_commit_at_merge_base`
  * in sdks/hermes-engine/hermes-utils.rb.
  */
 function hermesCommitAtMergeBase() /*: {| commit: string, timestamp: string |} */ {
   const HERMES_GITHUB_URL = 'https://github.com/facebook/hermes.git';
+  const HERMES_BRANCH = 'static_h';
 
   // Fetch upstream react-native
   macosLog('Fetching facebook/react-native to find merge base...');
@@ -110,21 +137,20 @@ function hermesCommitAtMergeBase() /*: {| commit: string, timestamp: string |} *
   const hermesGitDir = path.join(tmpDir, 'hermes.git');
 
   try {
-    // Explicitly use Hermes 'main' branch since the default branch changed to 'static_h' (Hermes V1)
     execSync(
-      `git clone -q --bare --filter=blob:none --single-branch --branch main ${HERMES_GITHUB_URL} "${hermesGitDir}"`,
+      `git clone -q --bare --filter=blob:none --single-branch --branch ${HERMES_BRANCH} ${HERMES_GITHUB_URL} "${hermesGitDir}"`,
       {stdio: 'pipe', timeout: 120000},
     );
 
-    // Find the Hermes commit at the time of the merge base on branch 'main'
+    // Find the Hermes commit at the time of the merge base on the HermesV1 branch
     const commit = execSync(
-      `git --git-dir="${hermesGitDir}" rev-list -1 --before="${timestamp}" refs/heads/main`,
+      `git --git-dir="${hermesGitDir}" rev-list -1 --before="${timestamp}" refs/heads/${HERMES_BRANCH}`,
       {encoding: 'utf8'},
     ).trim();
 
     if (!commit) {
       abort(
-        `[Hermes] Unable to find the Hermes commit hash at time ${timestamp} on branch 'main'.`,
+        `[Hermes] Unable to find the Hermes commit hash at time ${timestamp} on branch '${HERMES_BRANCH}'.`,
       );
     }
 
@@ -196,6 +222,7 @@ function abort(message /*: string */) {
 module.exports = {
   findMatchingHermesVersion,
   hermesCommitAtMergeBase,
+  hermesV1Tag,
   findVersionAtMergeBase,
   getLatestStableVersionFromNPM,
 };
