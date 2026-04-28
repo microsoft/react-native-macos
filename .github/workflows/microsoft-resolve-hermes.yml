@@ -118,6 +118,8 @@ jobs:
           ref: ${{ needs.resolve-hermes.outputs.hermes-commit }}
           path: hermes
 
+      # HermesV1's CMakeLists requires CMAKE_BUILD_TYPE explicitly. The upstream
+      # `build_host_hermesc` helper doesn't set it, so we invoke cmake directly here.
       - name: Build hermesc
         working-directory: hermes
         env:
@@ -125,8 +127,8 @@ jobs:
           JSI_PATH: ${{ github.workspace }}/hermes/API/jsi
           MAC_DEPLOYMENT_TARGET: '14.0'
         run: |
-          source $GITHUB_WORKSPACE/packages/react-native/sdks/hermes-engine/utils/build-apple-framework.sh
-          build_host_hermesc
+          cmake -S . -B build_host_hermesc -DJSI_DIR="$JSI_PATH" -DCMAKE_BUILD_TYPE=Release
+          cmake --build ./build_host_hermesc --target hermesc -j "$(sysctl -n hw.ncpu)"
 
       - name: Upload hermesc artifact
         uses: actions/upload-artifact@v4
