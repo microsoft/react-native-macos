@@ -79,7 +79,7 @@ jobs:
         id: cache
         uses: actions/cache/restore@v4
         with:
-          key: hermes-v1-${{ steps.resolve.outputs.hermes-commit }}-Debug
+          key: hermesv1-engine-${{ steps.resolve.outputs.hermes-commit }}-Debug
           path: hermes-destroot
 
       - name: Upload cached Hermes artifacts
@@ -118,6 +118,8 @@ jobs:
           ref: ${{ needs.resolve-hermes.outputs.hermes-commit }}
           path: hermes
 
+      # HermesV1's CMakeLists requires CMAKE_BUILD_TYPE explicitly. The upstream
+      # `build_host_hermesc` helper doesn't set it, so we invoke cmake directly here.
       - name: Build hermesc
         working-directory: hermes
         env:
@@ -125,8 +127,8 @@ jobs:
           JSI_PATH: ${{ github.workspace }}/hermes/API/jsi
           MAC_DEPLOYMENT_TARGET: '14.0'
         run: |
-          source $GITHUB_WORKSPACE/packages/react-native/sdks/hermes-engine/utils/build-apple-framework.sh
-          build_host_hermesc
+          cmake -S . -B build_host_hermesc -DJSI_DIR="$JSI_PATH" -DCMAKE_BUILD_TYPE=Release
+          cmake --build ./build_host_hermesc --target hermesc -j "$(sysctl -n hw.ncpu)"
 
       - name: Upload hermesc artifact
         uses: actions/upload-artifact@v4
@@ -249,7 +251,7 @@ jobs:
       - name: Save Hermes cache
         uses: actions/cache/save@v4
         with:
-          key: hermes-v1-${{ needs.resolve-hermes.outputs.hermes-commit }}-Debug
+          key: hermesv1-engine-${{ needs.resolve-hermes.outputs.hermes-commit }}-Debug
           path: hermes/destroot
 
       - name: Upload Hermes artifacts
