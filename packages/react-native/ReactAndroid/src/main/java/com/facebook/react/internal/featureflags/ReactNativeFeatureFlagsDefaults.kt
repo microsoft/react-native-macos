@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<89c61520177334f93c65ff92c2fc74a6>>
+ * @generated SignedSource<<f073ef33f654cb5602407126a036c9b5>>
  */
 
 /**
@@ -89,7 +89,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = false
 
-  override fun enableImperativeFocus(): Boolean = false
+  override fun enableImperativeFocus(): Boolean = true
 
   override fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean = false
 
@@ -154,6 +154,10 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun preparedTextCacheSize(): Double = 200.0
 
   override fun preventShadowTreeCommitExhaustion(): Boolean = false
+
+  override fun redBoxV2Android(): Boolean = false
+
+  override fun redBoxV2IOS(): Boolean = false
 
   override fun shouldPressibilityUseW3CPointerEventsForHover(): Boolean = false
 
