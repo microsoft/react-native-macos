@@ -6,6 +6,17 @@
  */
 
 import SwiftUI
+// [macOS] Pull in the ObjC @compatibility_alias declarations for
+// `RCTPlatformView` (UIView/NSView) and `RCTUIColor` (UIColor/NSColor)
+// from RCTUIKit. Without this import the Swift file used to re-declare
+// these as local `public typealias`es, which shadowed the ObjC aliases
+// and forced every consumer of this module to choose between the Swift
+// and ObjC name. After the React-RCTUIKit pod dep is wired in
+// RCTSwiftUI.podspec, the import is the canonical source of truth.
+// `RCTPlatformHostingController` stays as a Swift typealias below — it
+// wraps NSHostingController / UIHostingController which are SwiftUI
+// generics and not in the ObjC compat layer.
+import React_RCTUIKit
 #if os(macOS) // [macOS
 import AppKit
 #else
@@ -13,12 +24,8 @@ import UIKit
 #endif // macOS]
 
 #if os(macOS) // [macOS
-public typealias RCTPlatformView = NSView
-public typealias RCTUIColor = NSColor
 public typealias RCTPlatformHostingController = NSHostingController
 #else
-public typealias RCTPlatformView = UIView
-public typealias RCTUIColor = UIColor
 public typealias RCTPlatformHostingController = UIHostingController
 #endif // macOS]
 
