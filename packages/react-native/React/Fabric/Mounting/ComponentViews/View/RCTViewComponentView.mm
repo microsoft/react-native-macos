@@ -1757,7 +1757,13 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 - (void)blur
 {
-  [[self window] resignFirstResponder];
+  // `NSWindow` does not implement `resignFirstResponder`; only NSResponder
+  // subclasses inherit it. Calling the selector on the window is a silent
+  // no-op, leaving programmatic `ref.blur()` from JS without effect. The
+  // correct AppKit equivalent is `makeFirstResponder:nil`, which clears
+  // the current first responder. Mirrors the working pattern at
+  // RCTTextInputComponentView.mm:995-997.
+  [[self window] makeFirstResponder:nil];
 }
 
 - (BOOL)needsPanelToBecomeKey
