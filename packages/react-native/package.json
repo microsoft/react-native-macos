@@ -110,6 +110,7 @@
     "local-cli",
     "React-Core.podspec",
     "React-Core-prebuilt.podspec",
+    "React-RCTUIKit.podspec",
     "react-native.config.js",
     "React.podspec",
     "React",
