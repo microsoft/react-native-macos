@@ -807,7 +807,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   BOOL isPointInside = [self pointInside:point withEvent:event];
 
-  UIView *currentContainerView = self.currentContainerView;
+  RCTPlatformView *currentContainerView = self.currentContainerView; // [macOS]
 
   BOOL clipsToBounds = false;
 
@@ -1045,8 +1045,18 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 // `blur` applied, we need to wrap it in a SwiftUI view to render the effect.
 // In this case, `effectiveContentView` will be the content view inside the
 // SwiftUI wrapper.
-- (UIView *)effectiveContentView
+//
+// macOS: SwiftUI-filter wrapping isn't yet ported (the wrapper assumes
+// UIKit's `UIView` / `RCTSwiftUIContainerViewWrapper` UIKit surface), so
+// the macOS path short-circuits to `return self`. When the SwiftUI port
+// lands for AppKit, gate the body on `enableSwiftUIBasedFilters()` &&
+// !TARGET_OS_OSX. Return type is `RCTPlatformView*` so the macOS caller
+// at currentContainerView compiles. [macOS]
+- (RCTPlatformView *)effectiveContentView // [macOS]
 {
+#if TARGET_OS_OSX // [macOS
+  return self;
+#else // macOS]
   if (!ReactNativeFeatureFlags::enableSwiftUIBasedFilters()) {
     return self;
   }
@@ -1089,6 +1099,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   }
 
   return effectiveContentView;
+#endif // [macOS]
 }
 
 // This UIView is the UIView that holds all subviews. It is sometimes not self
@@ -1096,7 +1107,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 // the view and is not affected by clipping.
 - (RCTUIView *)currentContainerView // [macOS]
 {
-  UIView *effectiveContentView = self.effectiveContentView;
+  RCTPlatformView *effectiveContentView = self.effectiveContentView; // [macOS]
 
   if (_useCustomContainerView) {
     if (!_containerView) {
@@ -1357,7 +1368,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       if (primitive.type == FilterType::DropShadow) {
         if (_swiftUIWrapper != nullptr && std::holds_alternative<DropShadowParams>(primitive.parameters)) {
           const auto &dropShadowParams = std::get<DropShadowParams>(primitive.parameters);
-          UIColor *shadowColor = RCTUIColorFromSharedColor(dropShadowParams.color);
+          RCTUIColor *shadowColor = RCTUIColorFromSharedColor(dropShadowParams.color); // [macOS]
           [_swiftUIWrapper updateDropShadow:@(dropShadowParams.standardDeviation)
                                           x:@(dropShadowParams.offsetX)
                                           y:@(dropShadowParams.offsetY)
@@ -2409,6 +2420,17 @@ enum MouseEventType {
   return NO;
 }
 
+#if !TARGET_OS_OSX // [macOS]
+// The block below is iOS-specific: SwiftUI-filter wrapping
+// (`transferVisualPropertiesFromView:`), `UIResponder` overrides
+// (`canBecomeFirstResponder`, `focus`, `blur`, `becomeFirstResponder`,
+// `resignFirstResponder`) and the `handleCommand:` shim that forwards into
+// them. The macOS branch above (between `#if TARGET_OS_OSX` at line 1846
+// and `#endif // macOS]` at line 2381) provides AppKit-flavored equivalents
+// for `focus`, `blur`, and the responder methods; SwiftUI-filter wrapping is
+// not yet ported to macOS (see `effectiveContentView` above, which short-
+// circuits on macOS). Without this guard the iOS code below is a duplicate
+// declaration on the macOS compile and uses unknown type `UIView`. [macOS]
 - (void)transferVisualPropertiesFromView:(UIView *)sourceView toView:(UIView *)destinationView
 {
   // shadow
@@ -2512,6 +2534,7 @@ enum MouseEventType {
 
   return YES;
 }
+#endif // [macOS]
 
 @end
 
