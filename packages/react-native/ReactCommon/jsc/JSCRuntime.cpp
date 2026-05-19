@@ -8,6 +8,12 @@
 #include "JSCRuntime.h"
 
 #include <JavaScriptCore/JavaScript.h>
+
+#if __has_feature(address_sanitizer)
+#define JSI_DISABLE_ASAN __attribute__((no_sanitize("address")))
+#else
+#define JSI_DISABLE_ASAN
+#endif
 #include <jsi/jsilib.h>
 #include <array>
 #include <atomic>
@@ -527,7 +533,7 @@ JSCRuntime::JSCSymbolValue::JSCSymbolValue(
 #endif
 }
 
-void JSCRuntime::JSCSymbolValue::invalidate() noexcept {
+void JSCRuntime::JSCSymbolValue::invalidate() noexcept JSI_DISABLE_ASAN {
 #ifndef NDEBUG
   counter_ -= 1;
 #endif
@@ -552,7 +558,7 @@ JSCRuntime::JSCStringValue::JSCStringValue(JSStringRef str)
     : str_(JSStringRetain(str)) {}
 #endif
 
-void JSCRuntime::JSCStringValue::invalidate() noexcept {
+void JSCRuntime::JSCStringValue::invalidate() noexcept JSI_DISABLE_ASAN {
   // These JSC{String,Object}Value objects are implicitly owned by the
   // {String,Object} objects, thus when a String/Object is destructed
   // the JSC{String,Object}Value should be released.
@@ -587,7 +593,7 @@ JSCRuntime::JSCObjectValue::JSCObjectValue(
 #endif
 }
 
-void JSCRuntime::JSCObjectValue::invalidate() noexcept {
+void JSCRuntime::JSCObjectValue::invalidate() noexcept JSI_DISABLE_ASAN {
 #ifndef NDEBUG
   counter_ -= 1;
 #endif
@@ -863,7 +869,7 @@ jsi::Object JSCRuntime::createObject(std::shared_ptr<jsi::HostObject> ho) {
     static void getPropertyNames(
         JSContextRef ctx,
         JSObjectRef object,
-        JSPropertyNameAccumulatorRef propertyNames) noexcept {
+        JSPropertyNameAccumulatorRef propertyNames) noexcept JSI_DISABLE_ASAN {
       JSC_UNUSED(ctx);
       auto proxy = static_cast<HostObjectProxy*>(JSObjectGetPrivate(object));
       auto& rt = proxy->runtime;
