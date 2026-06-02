@@ -963,7 +963,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [_backedTextInputView becomeFirstResponder];
 #else // [macOS
   NSWindow *window = [_backedTextInputView window];
-  [window makeFirstResponder:_backedTextInputView];
+  NSResponder *responder = [_backedTextInputView respondsToSelector:@selector(responder)]
+      ? _backedTextInputView.responder
+      : (NSResponder *)_backedTextInputView;
+  [window makeFirstResponder:responder];
 #endif // macOS]
 
   const auto &props = static_cast<const TextInputProps &>(*_props);
@@ -993,8 +996,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if ([_backedTextInputView isKindOfClass:[NSTextField class]] &&
       [(NSTextField *)_backedTextInputView currentEditor] != nil) {
     [window makeFirstResponder:nil];
-  } else if ([window firstResponder] == _backedTextInputView.responder) {
-    [window makeFirstResponder:nil];
+  } else {
+    NSResponder *responder = [_backedTextInputView respondsToSelector:@selector(responder)]
+        ? _backedTextInputView.responder
+        : (NSResponder *)_backedTextInputView;
+    if ([window firstResponder] == responder) {
+      [window makeFirstResponder:nil];
+    }
   }
 #endif // macOS]
 }
