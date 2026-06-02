@@ -49,6 +49,9 @@
     _forwardingTextView.textContainer.containerSize = NSMakeSize(FLT_MAX, FLT_MAX);
     _forwardingTextView.textContainer.widthTracksTextView = YES;
     _forwardingTextView.textInputDelegate = self;
+    if ([_forwardingTextView respondsToSelector:@selector(setEnableFocusRing:)]) {
+      [_forwardingTextView setEnableFocusRing:YES];
+    }
     
     _scrollView.documentView = _forwardingTextView;
     _scrollView.contentView.postsBoundsChangedNotifications = YES;
@@ -197,12 +200,19 @@
 
 - (BOOL)enableFocusRing
 {
+  if ([_forwardingTextView respondsToSelector:@selector(enableFocusRing)]) {
+    return [_forwardingTextView enableFocusRing];
+  }
+
   return _scrollView.enableFocusRing;
 }
 
 - (void)setEnableFocusRing:(BOOL)enableFocusRing 
 {
   _scrollView.enableFocusRing = enableFocusRing;
+  if ([_forwardingTextView respondsToSelector:@selector(setEnableFocusRing:)]) {
+    [_forwardingTextView setEnableFocusRing:enableFocusRing];
+  }
 }
 
 @end
