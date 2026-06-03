@@ -7,19 +7,19 @@ pipelines:
         credscan:
           lastModifiedDate: 2024-12-04
         eslint:
-          lastModifiedDate: 2024-12-04
+          lastModifiedDate: 2026-06-03
         bandit:
-          lastModifiedDate: 2024-12-04
+          lastModifiedDate: 2026-06-03
         psscriptanalyzer:
-          lastModifiedDate: 2024-12-04
+          lastModifiedDate: 2026-06-03
         armory:
-          lastModifiedDate: 2024-12-04
+          lastModifiedDate: 2026-06-03
       binary:
         credscan:
           lastModifiedDate: 2025-03-26
         binskim:
-          lastModifiedDate: 2025-03-26
+          lastModifiedDate: 2026-06-03
         prefast:
-          lastModifiedDate: 2025-03-26
+          lastModifiedDate: 2026-06-03
         roslyn:
-          lastModifiedDate: 2025-03-26
+          lastModifiedDate: 2026-06-03
