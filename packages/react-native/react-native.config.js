@@ -87,8 +87,17 @@ try {
   }
 }
 
+let macosCommands;
+try {
 // $FlowFixMe[untyped-import]
-const macosCommands = require('./local-cli/runMacOS/runMacOS');
+  macosCommands = require('./local-cli/runMacOS/runMacOS');
+} catch {
+  if (verbose) {
+    console.warn(
+      '@react-native-community/cli not found, the react-native.config.js may be unusable.',
+    );
+  }
+}
 const {
   bundleCommand,
   startCommand,
@@ -161,7 +170,9 @@ if (android != null) {
 }
 
 // [macOS
-config.commands.push(...macosCommands);
+if (macosCommands != null) {
+  config.commands.push(...macosCommands);
+}
 if (apple) {
   config.platforms.macos = {
     linkConfig: () => {
