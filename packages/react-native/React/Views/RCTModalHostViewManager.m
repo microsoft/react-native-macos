@@ -8,6 +8,8 @@
 #if !TARGET_OS_OSX // [macOS]
 #import "RCTModalHostViewManager.h"
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import "RCTBridge.h"
 #import "RCTModalHostView.h"
 #import "RCTModalHostViewController.h"
@@ -126,4 +128,6 @@ RCT_EXPORT_VIEW_PROPERTY(allowSwipeDismissal, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onDismiss, RCTDirectEventBlock)
 
 @end
+#endif // RCT_REMOVE_LEGACY_ARCH
+
 #endif // [macOS]

@@ -38,10 +38,7 @@ Pod::Spec.new do |s|
                                 "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                                 "GCC_WARN_PEDANTIC" => "YES" }
 
-  if ENV['USE_FRAMEWORKS']
-    s.header_mappings_dir     = './'
-    s.module_name             = 'React_RuntimeApple'
-  end
+  resolve_use_frameworks(s, header_mappings_dir: "./", module_name: "React_RuntimeApple")
 
   s.dependency "React-jsiexecutor"
   s.dependency "React-cxxreact"
@@ -71,4 +68,5 @@ Pod::Spec.new do |s|
   end
 
   add_rn_third_party_dependencies(s)
+  add_rncore_dependency(s)
 end

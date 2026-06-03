@@ -7,8 +7,11 @@
 
 #import <React/RCTUIKit.h> // [macOS]
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 NS_ASSUME_NONNULL_BEGIN
 
+__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
 @interface RCTWrapperViewControllerHostingView : RCTPlatformView // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
@@ -27,3 +30,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // RCT_REMOVE_LEGACY_ARCH

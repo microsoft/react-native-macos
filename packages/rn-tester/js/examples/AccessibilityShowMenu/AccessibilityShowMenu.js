@@ -12,6 +12,7 @@
 
 // [macOS]
 
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {AccessibilityActionEvent} from 'react-native/Libraries/Components/View/ViewAccessibility';
 
 const React = require('react');
@@ -65,4 +66,4 @@ exports.examples = [
       return <AccessibilityShowMenu />;
     },
   },
-];
+] as Array<RNTesterModuleExample>;

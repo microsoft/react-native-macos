@@ -9,9 +9,12 @@
 #import <React/RCTView.h>
 #import <React/RCTUIKit.h> // [macOS]
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 @class RCTBridge;
 @class RCTImageSource;
 
+__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
 @interface RCTImageView : RCTView
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge NS_DESIGNATED_INITIALIZER;
@@ -28,3 +31,5 @@
 @property (nonatomic, copy) NSColor *tintColor;
 #endif // macOS]
 @end
+
+#endif // RCT_REMOVE_LEGACY_ARCH

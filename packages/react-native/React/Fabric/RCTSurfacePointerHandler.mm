@@ -473,7 +473,7 @@ struct PointerHasher {
    * We hold the view weakly to prevent a retain cycle.
    */
   __weak RCTUIView *_rootComponentView; // [macOS]
-  RCTIdentifierPool<11> _identifierPool;
+  RCTIdentifierPool<17> _identifierPool;
 
 #if !TARGET_OS_OSX // [macOS]
   UIHoverGestureRecognizer *_mouseHoverRecognizer API_AVAILABLE(ios(13.0));

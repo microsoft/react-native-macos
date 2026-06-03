@@ -175,7 +175,7 @@ const LoadingComponent: React.ComponentType<{}> = memo(() => (
   </View>
 ));
 
-class ItemSeparatorComponent extends React.PureComponent<$FlowFixMeProps> {
+class ItemSeparatorComponent extends React.PureComponent<$FlowFixMe> {
   render(): React.Node {
     const style = this.props.highlighted
       ? [
@@ -187,7 +187,7 @@ class ItemSeparatorComponent extends React.PureComponent<$FlowFixMeProps> {
   }
 }
 
-class Spindicator extends React.PureComponent<$FlowFixMeProps> {
+class Spindicator extends React.PureComponent<$FlowFixMe> {
   render(): React.Node {
     return (
       <Animated.View

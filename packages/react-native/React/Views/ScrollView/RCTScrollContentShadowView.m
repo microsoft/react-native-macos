@@ -7,6 +7,8 @@
 
 #import "RCTScrollContentShadowView.h"
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import <yoga/Yoga.h>
 
 #if TARGET_OS_OSX // [macOS
@@ -47,3 +49,5 @@
 }
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_ARCH

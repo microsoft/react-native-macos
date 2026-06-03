@@ -110,19 +110,21 @@ static void computeFlexBasisForChild(
         FloatOptional(paddingAndBorderForAxis(
             child, FlexDirection::Row, direction, ownerWidth));
 
-    child->setLayoutComputedFlexBasis(yoga::maxOrDefined(
-        child->getResolvedDimension(
-            direction, Dimension::Width, ownerWidth, ownerWidth),
-        paddingAndBorder));
+    child->setLayoutComputedFlexBasis(
+        yoga::maxOrDefined(
+            child->getResolvedDimension(
+                direction, Dimension::Width, ownerWidth, ownerWidth),
+            paddingAndBorder));
   } else if (!isMainAxisRow && isColumnStyleDimDefined) {
     // The height is definite, so use that as the flex basis.
     const FloatOptional paddingAndBorder =
         FloatOptional(paddingAndBorderForAxis(
             child, FlexDirection::Column, direction, ownerWidth));
-    child->setLayoutComputedFlexBasis(yoga::maxOrDefined(
-        child->getResolvedDimension(
-            direction, Dimension::Height, ownerHeight, ownerWidth),
-        paddingAndBorder));
+    child->setLayoutComputedFlexBasis(
+        yoga::maxOrDefined(
+            child->getResolvedDimension(
+                direction, Dimension::Height, ownerHeight, ownerWidth),
+            paddingAndBorder));
   } else {
     // Compute the flex basis and hypothetical main size (i.e. the clamped flex
     // basis).
@@ -253,9 +255,10 @@ static void computeFlexBasisForChild(
         depth,
         generationCount);
 
-    child->setLayoutComputedFlexBasis(FloatOptional(yoga::maxOrDefined(
-        child->getLayout().measuredDimension(dimension(mainAxis)),
-        paddingAndBorderForAxis(child, mainAxis, direction, ownerWidth))));
+    child->setLayoutComputedFlexBasis(FloatOptional(
+        yoga::maxOrDefined(
+            child->getLayout().measuredDimension(dimension(mainAxis)),
+            paddingAndBorderForAxis(child, mainAxis, direction, ownerWidth))));
   }
   child->setLayoutComputedFlexBasisGeneration(generationCount);
 }
@@ -478,16 +481,19 @@ static void zeroOutLayoutRecursively(yoga::Node* const node) {
 }
 
 static void cleanupContentsNodesRecursively(yoga::Node* const node) {
-  for (auto child : node->getChildren()) {
-    if (child->style().display() == Display::Contents) {
-      child->getLayout() = {};
-      child->setLayoutDimension(0, Dimension::Width);
-      child->setLayoutDimension(0, Dimension::Height);
-      child->setHasNewLayout(true);
-      child->setDirty(false);
-      child->cloneChildrenIfNeeded();
+  if (node->hasContentsChildren()) [[unlikely]] {
+    node->cloneContentsChildrenIfNeeded();
+    for (auto child : node->getChildren()) {
+      if (child->style().display() == Display::Contents) {
+        child->getLayout() = {};
+        child->setLayoutDimension(0, Dimension::Width);
+        child->setLayoutDimension(0, Dimension::Height);
+        child->setHasNewLayout(true);
+        child->setDirty(false);
+        child->cloneChildrenIfNeeded();
 
-      cleanupContentsNodesRecursively(child);
+        cleanupContentsNodesRecursively(child);
+      }
     }
   }
 }

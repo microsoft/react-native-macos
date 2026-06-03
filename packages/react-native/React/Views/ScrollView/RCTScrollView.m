@@ -7,6 +7,8 @@
 
 #import "RCTScrollView.h"
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import <React/RCTUIKit.h> // [macOS]
 
 #import "RCTConvert.h"
@@ -527,7 +529,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)setInverted:(BOOL)inverted
 {
   BOOL changed = _inverted != inverted;
-  _inverted = inverted;  
+  _inverted = inverted;
   if (changed && _onInvertedDidChange) {
     _onInvertedDidChange(@{});
   }
@@ -955,7 +957,8 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
     return;
   }
 
-  CGFloat top = 0, left = 0;
+  CGFloat top = 0;
+  CGFloat left = 0;
   if (contentSize.width < boundsSize.width) {
     left = (boundsSize.width - contentSize.width) * 0.5f;
   }
@@ -981,11 +984,11 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 {
   NSTimeInterval now = CACurrentMediaTime();
   [self updateClippedSubviews];
-  
+
 #if TARGET_OS_OSX // [macOS
   /**
    * To check for effective scroll position changes, the comparison with lastScrollPosition should happen
-   * after updateClippedSubviews. updateClippedSubviews will update the display of the vertical/horizontal 
+   * after updateClippedSubviews. updateClippedSubviews will update the display of the vertical/horizontal
    * scrollers which can change the clipview bounds.
    * This change also ensures that no onScroll events are sent when the React setFrame call is running,
    * which could submit onScroll events while the content view was not setup yet.
@@ -996,7 +999,7 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
   }
   _lastScrollPosition = scrollView.contentView.bounds.origin;
 #endif // macOS]
-  
+
   /**
    * TODO: this logic looks wrong, and it may be because it is. Currently, if _scrollEventThrottle
    * is set to zero (the default), the "didScroll" event is only sent once per scroll, instead of repeatedly
@@ -1157,10 +1160,8 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
     @"targetContentOffset" : @{@"x" : @(targetContentOffset->x), @"y" : @(targetContentOffset->y)}
   };
   RCT_SEND_SCROLL_EVENT(onScrollEndDrag, userData);
-  RCT_FORWARD_SCROLL_EVENT(scrollViewWillEndDragging
-                           : scrollView withVelocity
-                           : velocity targetContentOffset
-                           : targetContentOffset);
+  RCT_FORWARD_SCROLL_EVENT(
+      scrollViewWillEndDragging : scrollView withVelocity : velocity targetContentOffset : targetContentOffset);
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
@@ -1397,7 +1398,7 @@ RCT_SCROLL_EVENT_HANDLER(scrollViewDidScrollToTop, onScrollToTop)
 - (void)keyDown:(NSEvent *)event {
 	if (![self handleKeyboardEvent:event]) {
 		[super keyDown:event];
-		
+
 		// AX: if a tab key was pressed and the first responder is currently clipped by the scroll view,
 		// automatically scroll to make the view visible to make it navigable via keyboard.
 		NSString *key = [RCTViewKeyboardEvent keyFromEvent:event];
@@ -1553,3 +1554,5 @@ void RCTSendFakeScrollEvent(id<RCTEventDispatcherProtocol> eventDispatcher, NSNu
                                                                 coalescingKey:0];
   [eventDispatcher sendEvent:fakeScrollEvent];
 }
+
+#endif // RCT_REMOVE_LEGACY_ARCH
