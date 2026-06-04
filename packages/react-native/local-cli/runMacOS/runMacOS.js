@@ -37,22 +37,12 @@
 
 const child_process = require('node:child_process');
 const path = require('node:path');
+const {styleText} = require('node:util');
 
-const colors = (() => {
-  const {WriteStream} = require('node:tty');
-  if (WriteStream.prototype.hasColors() &&
-    !process.env.NODE_TEST_CONTEXT &&
-    process.env.NODE_ENV !== 'test'
-  ) {
-    return {
-      bold: (s) => '\u001B[1m' + s + '\u001B[22m',
-      dim: (s) => '\u001B[2m' + s + '\u001B[22m',
-    }
-  }
-
-  const passthrough = (s) => s;
-  return { bold: passthrough, dim: passthrough };
-})();
+const colors = {
+  bold: (/** @type {string} */ s) => styleText('bold', s),
+  dim: (/** @type {string} */ s) => styleText('dim', s),
+};
 
 const {logger, CLIError, getDefaultUserTerminal} = ((projectRoot = process.cwd()) => {
   const cli = require.resolve('@react-native-community/cli/package.json', {paths: [projectRoot]});
