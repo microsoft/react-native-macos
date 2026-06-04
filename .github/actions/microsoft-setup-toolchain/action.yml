@@ -18,7 +18,7 @@ inputs:
     default: "22"
   xcode-developer-dir:
     description: Set the path for the active Xcode developer directory
-    default: "/Applications/Xcode.app"
+    default: "/Applications/Xcode_26.2.app"
   cmake-version:
     description: CMake version to install. Set to 'system' to skip installation and use the runner's pre-installed cmake.
     default: "3.31.9"
