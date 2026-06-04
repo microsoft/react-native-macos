@@ -23,7 +23,7 @@ RCT_EXPORT_MODULE()
   return shadowView;
 }
 
-- (RCTUIView *)view // [macOS]
+- (RCTPlatformView *)view // [macOS]
 {
   return [[RCTSinglelineTextInputView alloc] initWithBridge:self.bridge];
 }

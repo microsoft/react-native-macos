@@ -36,6 +36,8 @@
 
 NSString *const RCTContentDidAppearNotification = @"RCTContentDidAppearNotification";
 
+#ifndef RCT_FIT_RM_OLD_RUNTIME
+
 @implementation RCTRootView {
   RCTBridge *_bridge;
   NSString *_moduleName;
@@ -118,7 +120,7 @@ NSString *const RCTContentDidAppearNotification = @"RCTContentDidAppearNotificat
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithFrame : (CGRect)frame)
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
-- (RCTUIView *)view // [macOS]
+- (RCTPlatformView *)view // [macOS]
 {
   return self;
 }
@@ -203,6 +205,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   return NO; // commit 01aba7e8: Merged PR 94656: Enable keyboard accessibility and support for focus ring drawing for button, textfields etc
 #endif // macOS]
 }
+
+#if TARGET_OS_OSX // [macOS
+- (void)viewDidEndLiveResize {
+  [super viewDidEndLiveResize];
+  [self setNeedsLayout];
+}
+#endif // macOS]
 
 - (void)setLoadingView:(RCTUIView *)loadingView // [macOS]
 {
@@ -494,9 +503,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
   NSMenu *menu = nil;
-#if __has_include("RCTDevMenu.h") && RCT_DEV
+#if RCT_DEV_MENU
   menu = [[_bridge devMenu] menu];
-#endif
+#endif // RCT_DEV_MENU
   if (menu == nil) {
     menu = [super menuForEvent:event];
   }
@@ -528,3 +537,33 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 }
 
 @end
+
+#else // RCT_FIT_RM_OLD_RUNTIME
+
+@implementation RCTRootView
+- (nonnull instancetype)initWithFrame:(CGRect)frame
+                               bridge:(nonnull RCTBridge *)bridge
+                           moduleName:(nonnull NSString *)moduleName
+                    initialProperties:(nullable NSDictionary *)initialProperties
+{
+  return self;
+}
+
+- (nonnull instancetype)initWithBridge:(nonnull RCTBridge *)bridge
+                            moduleName:(nonnull NSString *)moduleName
+                     initialProperties:(nullable NSDictionary *)initialProperties
+{
+  return self;
+}
+
+- (nonnull instancetype)initWithBundleURL:(nonnull NSURL *)bundleURL
+                               moduleName:(nonnull NSString *)moduleName
+                        initialProperties:(nullable NSDictionary *)initialProperties
+                            launchOptions:(nullable NSDictionary *)launchOptions
+{
+  return self;
+}
+
+@end
+
+#endif // RCT_FIT_RM_OLD_RUNTIME

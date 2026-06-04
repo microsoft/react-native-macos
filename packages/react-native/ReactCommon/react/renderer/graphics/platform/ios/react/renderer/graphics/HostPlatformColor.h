@@ -10,6 +10,8 @@
 #include <react/renderer/graphics/ColorComponents.h>
 #include <react/utils/hash_combine.h>
 #include <cmath>
+#include <string>
+#include <vector>
 
 namespace facebook::react {
 
@@ -20,12 +22,26 @@ struct DynamicColor {
   int32_t highContrastDarkColor = 0;
 };
 
+#if TARGET_OS_OSX // [macOS
+struct ColorWithSystemEffect {
+  int32_t color = 0;
+  std::string effect;
+};
+#endif // macOS]
+
 struct Color {
   Color(int32_t color);
   Color(const DynamicColor& dynamicColor);
+#if TARGET_OS_OSX // [macOS
+  Color(const ColorWithSystemEffect& colorWithSystemEffect);
+#endif // macOS]
   Color(const ColorComponents& components);
-  Color(std::shared_ptr<void> uiColor);
+  Color() : uiColor_(nullptr){};
   int32_t getColor() const;
+  std::size_t getUIColorHash() const;
+
+  static Color createSemanticColor(std::vector<std::string>& semanticItems);
+
   std::shared_ptr<void> getUIColor() const {
     return uiColor_;
   }
@@ -48,7 +64,9 @@ struct Color {
   }
 
  private:
+  Color(std::shared_ptr<void> uiColor);
   std::shared_ptr<void> uiColor_;
+  std::size_t uiColorHashValue_;
 };
 
 namespace HostPlatformColor {
@@ -59,7 +77,7 @@ namespace HostPlatformColor {
 #define NO_DESTROY
 #endif
 
-NO_DESTROY static const facebook::react::Color UndefinedColor = Color(nullptr);
+NO_DESTROY static const facebook::react::Color UndefinedColor = Color();
 } // namespace HostPlatformColor
 
 inline Color
@@ -98,13 +116,15 @@ inline float blueFromHostPlatformColor(Color color) {
   return color.getChannel(2) * 255;
 }
 
+inline bool hostPlatformColorIsColorMeaningful(Color color) noexcept {
+  return alphaFromHostPlatformColor(color) > 0;
+}
+
 } // namespace facebook::react
 
 template <>
 struct std::hash<facebook::react::Color> {
   size_t operator()(const facebook::react::Color& color) const {
-    auto seed = size_t{0};
-    facebook::react::hash_combine(seed, color.getColor());
-    return seed;
+    return color.getUIColorHash();
   }
 };

@@ -79,6 +79,6 @@ CGFloat RCTBaseSizeForDynamicTypeRamp(RCTDynamicTypeRamp dynamicTypeRamp)
 
   NSNumber *baseSize =
       mapping[@(dynamicTypeRamp)] ?: @17; // Default to body size if we don't recognize the specified ramp
-  return CGFLOAT_IS_DOUBLE ? [baseSize doubleValue] : [baseSize floatValue];
+  return [baseSize doubleValue];
 }
 #endif // [macOS]

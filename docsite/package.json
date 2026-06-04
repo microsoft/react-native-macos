@@ -1,0 +1,57 @@
+{
+  "name": "react-native-macos-docs",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@docusaurus/core": "3.10.0",
+    "@docusaurus/preset-classic": "3.10.0",
+    "@mdx-js/react": "^3.0.0",
+    "@types/react": "^19.0.0",
+    "clsx": "^2.0.0",
+    "prism-react-renderer": "^2.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "3.10.0",
+    "@docusaurus/tsconfig": "3.10.0",
+    "@docusaurus/types": "3.10.0",
+    "typescript": "~5.8.3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 3 chrome version",
+      "last 3 firefox version",
+      "last 5 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0"
+  },
+  "packageManager": "yarn@4.9.1",
+  "resolutions": {
+    "serialize-javascript": "^7.0.3",
+    "webpack": ">=5.104.1 <5.106.0"
+  },
+  "_resolution_justifications": {
+    "serialize-javascript": "Earlier versions of serialize-javascript are affected by GHSA-5c6j-r48x-rmvq, and it's a transitive dependency of docusaurus, of which we are already using the latest version.",
+    "webpack": "Earlier versions of webpack are affected by CVE-2025-68458, but versions >=5.106.0 doesn't work with docusaurus, which is being worked on: https://github.com/facebook/docusaurus/issues/11923"
+  }
+}

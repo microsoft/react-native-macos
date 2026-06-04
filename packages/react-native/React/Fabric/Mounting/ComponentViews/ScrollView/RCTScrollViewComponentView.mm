@@ -12,6 +12,7 @@
 #import <React/RCTConstants.h>
 #import <React/RCTScrollEvent.h>
 
+#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/scrollview/RCTComponentViewHelpers.h>
 #import <react/renderer/components/scrollview/ScrollViewComponentDescriptor.h>
 #import <react/renderer/components/scrollview/ScrollViewEventEmitter.h>
@@ -67,6 +68,9 @@ static UIScrollViewIndicatorStyle RCTUIScrollViewIndicatorStyleFromProps(const S
 static void
 RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NSInteger tag, NSString *eventName) // [macOS]
 {
+  if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled()) {
+    return;
+  }
   static uint16_t coalescingKey = 0;
   RCTScrollEvent *scrollEvent = [[RCTScrollEvent alloc] initWithEventName:eventName
                                                                  reactTag:[NSNumber numberWithInt:tag]
@@ -90,6 +94,15 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
     RCTScrollViewProtocol,
     RCTScrollableProtocol,
     RCTEnhancedScrollViewOverridingDelegate>
+
+- (void)_preserveContentOffsetIfNeededWithBlock:(void (^)())block;
+- (void)_remountChildrenIfNeeded;
+- (void)_remountChildren;
+- (void)_forceDispatchNextScrollEvent;
+- (void)_handleScrollEndIfNeeded;
+- (void)_handleFinishedScrolling:(RCTUIScrollView *)scrollView;
+- (void)_prepareForMaintainVisibleScrollPosition;
+- (void)_adjustForMaintainVisibleContentPosition;
 
 @end
 
@@ -116,10 +129,10 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
   CGFloat _endDraggingSensitivityMultiplier;
 }
 
-+ (RCTScrollViewComponentView *_Nullable)findScrollViewComponentViewForView:(RCTUIView *)view // [macOS]
++ (RCTScrollViewComponentView *_Nullable)findScrollViewComponentViewForView:(RCTPlatformView *)view // [macOS]
 {
   do {
-    view = (RCTUIView *)view.superview; // [macOS]
+    view = (RCTPlatformView *)view.superview; // [macOS]
   } while (view != nil && ![view isKindOfClass:[RCTScrollViewComponentView class]]);
   return (RCTScrollViewComponentView *)view;
 }
@@ -144,10 +157,12 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
 #if !TARGET_OS_OSX // [macOS]
     [_scrollView addSubview:_containerView];
 #else // [macOS
-    _containerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    // Force overlay scrollbar style to avoid layout issues with legacy scrollbars.
+    _scrollView.scrollerStyle = NSScrollerStyleOverlay;
+    // Don't set autoresizingMask — AppKit corrupts the documentView frame during tile/resize.
     [_scrollView setDocumentView:_containerView];
 #endif // macOS]
-    
+
 #if !TARGET_OS_OSX // [macOS]
     [self.scrollViewDelegateSplitter addDelegate:self];
 #endif // [macOS]
@@ -170,6 +185,15 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
   [self.scrollViewDelegateSplitter removeAllDelegates];
 #endif // [macOS]
 }
+
+#if TARGET_OS_OSX // [macOS
+- (void)_preferredScrollerStyleDidChange:(NSNotification *)notification
+{
+  // Re-force overlay style when system preference changes.
+  _scrollView.scrollerStyle = NSScrollerStyleOverlay;
+  [_scrollView tile];
+}
+#endif // macOS]
 
 #if TARGET_OS_IOS
 - (void)_registerKeyboardListener
@@ -275,12 +299,23 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 }
 #endif
 
-#if !TARGET_OS_OSX // [macOS]
-- (RCTGenericDelegateSplitter<id<UIScrollViewDelegate>> *)scrollViewDelegateSplitter
+#if TARGET_OS_OSX // [macOS
+- (void)setContentInset:(UIEdgeInsets)contentInset
+{
+  if (UIEdgeInsetsEqualToEdgeInsets(contentInset, _contentInset)) {
+    return;
+  }
+
+  _contentInset = contentInset;
+  _scrollView.contentInset = contentInset;
+  _scrollView.scrollIndicatorInsets = contentInset;
+}
+#endif // macOS]
+
+- (RCTGenericDelegateSplitter<id<RCTUIScrollViewDelegate>> *)scrollViewDelegateSplitter
 {
   return ((RCTEnhancedScrollView *)_scrollView).delegateSplitter;
 }
-#endif // [macOS]
 
 #pragma mark - RCTMountingTransactionObserving
 
@@ -406,7 +441,11 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   MAP_SCROLL_VIEW_PROP(zoomScale);
 
   if (oldScrollViewProps.contentInset != newScrollViewProps.contentInset) {
+#if !TARGET_OS_OSX // [macOS]
     _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+#else // [macOS
+    self.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+#endif // macOS]
   }
 
   RCTEnhancedScrollView *scrollView = (RCTEnhancedScrollView *)_scrollView;
@@ -450,7 +489,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     _shouldUpdateContentInsetAdjustmentBehavior = NO;
   }
 #endif // [macOS]
-    
+
   MAP_SCROLL_VIEW_PROP(disableIntervalMomentum);
   MAP_SCROLL_VIEW_PROP(snapToInterval);
 
@@ -506,6 +545,53 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _preserveContentOffsetIfNeededWithBlock:^{
     self->_scrollView.contentSize = contentSize;
   }];
+}
+
+- (RCTPlatformView *)betterHitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
+{
+  // This is the same algorithm as in the RCTViewComponentView with the exception of
+  // skipping the immediate child (_containerView) and checking grandchildren instead.
+  // This prevents issues with touches outside of _containerView being ignored even
+  // if they are within the bounds of the _containerView's children.
+
+#if !TARGET_OS_OSX // [macOS]
+  if (!self.userInteractionEnabled || self.hidden || self.alpha < 0.01) {
+#else // [macOS
+    if (!self.userInteractionEnabled || self.hidden || self.alphaValue < 0.01  ) {
+#endif // macOS]
+      return nil;
+    }
+
+  BOOL isPointInside = [self pointInside:point withEvent:event];
+
+  BOOL clipsToBounds = _containerView.clipsToBounds;
+
+  clipsToBounds = clipsToBounds || _layoutMetrics.overflowInset == EdgeInsets{};
+
+  if (clipsToBounds && !isPointInside) {
+    return nil;
+  }
+
+#if TARGET_OS_OSX // [macOS
+  // Check scrollbars before content subviews — scrollers are NSScrollView children,
+  // not documentView children, so full-width content would swallow their clicks.
+  if (isPointInside) {
+    NSPoint scrollViewPoint = [_scrollView convertPoint:point fromView:self];
+    NSView *scrollViewHit = [_scrollView hitTest:scrollViewPoint];
+    if ([scrollViewHit isKindOfClass:[NSScroller class]]) {
+      return (RCTPlatformView *)scrollViewHit;
+    }
+  }
+#endif // macOS]
+
+  for (RCTPlatformView *subview in [_containerView.subviews reverseObjectEnumerator]) { // [macOS]
+    RCTPlatformView *hitView = RCTUIViewHitTestWithEvent(subview, point, self, event); // [macOS]
+    if (hitView) {
+      return hitView;
+    }
+  }
+
+  return isPointInside ? self : nil;
 }
 
 /*
@@ -635,6 +721,22 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _prevFirstVisibleFrame = CGRectZero;
   _firstVisibleView = nil;
 }
+
+#if TARGET_OS_OSX // [macOS
+#pragma mark - NSScrollView scroll notification
+
+- (void)scrollViewDocumentViewBoundsDidChange:(__unused NSNotification *)notification
+{
+  RCTEnhancedScrollView *scrollView = _scrollView;
+
+  if (scrollView.centerContent) {
+    // Update content centering through contentOffset setter
+    [scrollView setContentOffset:scrollView.contentOffset];
+  }
+
+  [self scrollViewDidScroll:scrollView];
+}
+#endif // macOS]
 
 #pragma mark - UIScrollViewDelegate
 
@@ -779,6 +881,29 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [super viewDidMoveToWindow];
 #endif // [macOS]
 
+#if TARGET_OS_OSX // [macOS
+  NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
+  if (self.window == nil) {
+    // Unregister scrollview's clipview bounds change notifications
+    [defaultCenter removeObserver:self
+                             name:NSViewBoundsDidChangeNotification
+                           object:_scrollView.contentView];
+    [defaultCenter removeObserver:self
+                             name:NSPreferredScrollerStyleDidChangeNotification
+                           object:nil];
+  } else {
+    // Register for scrollview's clipview bounds change notifications so we can track scrolling
+    [defaultCenter addObserver:self
+                      selector:@selector(scrollViewDocumentViewBoundsDidChange:)
+                          name:NSViewBoundsDidChangeNotification
+                        object:_scrollView.contentView]; // NSClipView
+    [defaultCenter addObserver:self
+                      selector:@selector(_preferredScrollerStyleDidChange:)
+                          name:NSPreferredScrollerStyleDidChangeNotification
+                        object:nil];
+  }
+#endif // macOS]
+
   if (!self.window) {
     // The view is being removed, ensure that the scroll end event is dispatched
     [self _handleScrollEndIfNeeded];
@@ -838,7 +963,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _updateStateWithContentOffset];
 }
 
-- (RCTUIView *)viewForZoomingInScrollView:(__unused RCTUIScrollView *)scrollView // [macOS]
+- (RCTPlatformView *)viewForZoomingInScrollView:(__unused RCTUIScrollView *)scrollView // [macOS]
 {
   return _containerView;
 }
@@ -861,6 +986,8 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 {
 #if !TARGET_OS_OSX // [macOS]
   [_scrollView flashScrollIndicators];
+#else // [macOS
+  [(RCTEnhancedScrollView *)_scrollView flashScrollers];
 #endif // [macOS]
 }
 
@@ -960,7 +1087,11 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   [self _forceDispatchNextScrollEvent];
 
+#if !TARGET_OS_OSX // [macOS]
   [_scrollView setContentOffset:offset animated:animated];
+#else // [macOS
+  [(RCTEnhancedScrollView *)_scrollView setContentOffset:offset animated:animated];
+#endif // macOS]
 
   if (!animated) {
     // When not animated, the expected workflow in ``scrollViewDidEndScrollingAnimation`` after scrolling is not going
@@ -973,20 +1104,20 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 {
 #if !TARGET_OS_OSX // [macOS]
   [_scrollView zoomToRect:rect animated:animated];
+#else // [macOS
+  [(RCTEnhancedScrollView *)_scrollView zoomToRect:rect animated:animated];
 #endif // [macOS]
 }
 
-#if !TARGET_OS_OSX // [macOS]
-- (void)addScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener
+- (void)addScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener // [macOS]
 {
   [self.scrollViewDelegateSplitter addDelegate:scrollListener];
 }
 
-- (void)removeScrollListener:(NSObject<UIScrollViewDelegate> *)scrollListener
+- (void)removeScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener // [macOS]
 {
   [self.scrollViewDelegateSplitter removeDelegate:scrollListener];
 }
-#endif // [macOS]
 
 #pragma mark - Maintain visible content position
 

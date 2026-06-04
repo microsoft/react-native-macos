@@ -1,8 +1,8 @@
+// @noflow
 'use strict';
 
 const {
   copyProjectTemplateAndReplace,
-  installDependencies,
   printFinishMessage,
 } = require('./generator-macos');
 const fs = require('fs');
@@ -19,8 +19,6 @@ function generateMacOS (projectDir, name, options) {
   if (!fs.existsSync(projectDir)) {
     fs.mkdirSync(projectDir);
   }
-
-  installDependencies(options);
 
   copyProjectTemplateAndReplace(
     path.join(__dirname, 'generator-macos', 'templates'),

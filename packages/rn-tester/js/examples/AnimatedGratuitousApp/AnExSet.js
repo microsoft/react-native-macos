@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow
+ * @format
  */
 
 'use strict';
@@ -22,13 +22,13 @@ const randColor = () => {
   return `rgb(${colors.join(',')})`;
 };
 
-type AnExSetProps = $ReadOnly<{|
+type AnExSetProps = $ReadOnly<{
   openVal: Animated.Value,
   containerLayout: {width: number, height: number},
   id: string,
   isActive: boolean,
   onDismiss: (velocity: number) => void,
-|}>;
+}>;
 
 const AnExSet = ({
   openVal,

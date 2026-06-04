@@ -6,26 +6,23 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
  */
 
 import type {Config} from '@react-native-community/cli-types';
-import type {Reporter} from 'metro/src/lib/reporting';
-import type {TerminalReportableEvent} from 'metro/src/lib/TerminalReporter';
-import typeof TerminalReporter from 'metro/src/lib/TerminalReporter';
+import type {Reporter, TerminalReportableEvent, TerminalReporter} from 'metro';
 
 import createDevMiddlewareLogger from '../../utils/createDevMiddlewareLogger';
 import isDevServerRunning from '../../utils/isDevServerRunning';
 import loadMetroConfig from '../../utils/loadMetroConfig';
 import * as version from '../../utils/version';
 import attachKeyHandlers from './attachKeyHandlers';
-import {createDevServerMiddleware, indexPageMiddleware} from './middleware';
+import {createDevServerMiddleware} from './middleware';
 import {createDevMiddleware} from '@react-native/dev-middleware';
-import chalk from 'chalk';
 import Metro from 'metro';
 import {Terminal} from 'metro-core';
 import path from 'path';
 import url from 'url';
+import {styleText} from 'util';
 
 export type StartCommandArgs = {
   assetPlugins?: string[],
@@ -44,6 +41,7 @@ export type StartCommandArgs = {
   config?: string,
   projectRoot?: string,
   interactive: boolean,
+  clientLogs: boolean,
 };
 
 async function runServer(
@@ -70,7 +68,10 @@ async function runServer(
   const devServerUrl = url.format({protocol, hostname, port});
 
   console.info(
-    chalk.blue(`\nWelcome to React Native v${cliConfig.reactNativeVersion}`),
+    styleText(
+      'blue',
+      `\nWelcome to React Native v${cliConfig.reactNativeVersion}`,
+    ),
   );
 
   const serverStatus = await isDevServerRunning(devServerUrl, projectRoot);
@@ -82,7 +83,7 @@ async function runServer(
     return;
   } else if (serverStatus === 'port_taken') {
     console.error(
-      `${chalk.red('error')}: Another process is running on port ${port}. Please terminate this ` +
+      `${styleText('red', 'error')}: Another process is running on port ${port}. Please terminate this ` +
         'process and try again, or use another port with "--port".',
     );
     return;
@@ -95,6 +96,11 @@ async function runServer(
     metroConfig.transformer.assetPlugins = args.assetPlugins.map(plugin =>
       require.resolve(plugin),
     );
+  }
+  // TODO(T214991636): Remove legacy Metro log forwarding
+  if (!args.clientLogs) {
+    // $FlowIgnore[cannot-write] Assigning to readonly property
+    metroConfig.server.forwardClientLogs = false;
   }
 
   let reportEvent: (event: TerminalReportableEvent) => void;
@@ -128,7 +134,7 @@ async function runServer(
         terminalReporter.update({
           type: 'unstable_server_log',
           level: 'info',
-          data: `Dev server ready. ${chalk.dim('Press Ctrl+C to exit.')}`,
+          data: `Dev server ready. ${styleText('dim', 'Press Ctrl+C to exit.')}`,
         });
         attachKeyHandlers({
           devServerUrl,
@@ -146,11 +152,7 @@ async function runServer(
     secure: args.https,
     secureCert: args.cert,
     secureKey: args.key,
-    unstable_extraMiddleware: [
-      communityMiddleware,
-      indexPageMiddleware,
-      middleware,
-    ],
+    unstable_extraMiddleware: [communityMiddleware, middleware],
     websocketEndpoints: {
       ...communityWebsocketEndpoints,
       ...websocketEndpoints,
@@ -174,9 +176,11 @@ async function runServer(
   await version.logIfUpdateAvailable(cliConfig, terminalReporter);
 }
 
-function getReporterImpl(customLogReporterPath?: string): TerminalReporter {
+function getReporterImpl(
+  customLogReporterPath?: string,
+): Class<TerminalReporter> {
   if (customLogReporterPath == null) {
-    return require('metro/src/lib/TerminalReporter');
+    return require('metro').TerminalReporter;
   }
   try {
     // First we let require resolve it, so we can require packages in node_modules

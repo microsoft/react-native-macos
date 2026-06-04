@@ -7,25 +7,13 @@
 
 #import "RCTEnhancedScrollView.h"
 #import <React/RCTUtils.h>
-#import <React/RCTScrollableProtocol.h> // [macOS]
-#import <React/RCTAutoInsetsProtocol.h> // [macOS]
 #import <react/utils/FloatComparison.h>
 
-@interface RCTEnhancedScrollView () <
-#if !TARGET_OS_OSX // [macOS]
-    UIScrollViewDelegate
-#else // [macOS
-    RCTScrollableProtocol, RCTAutoInsetsProtocol
-#endif // macOS]
->
+@interface RCTEnhancedScrollView () <RCTUIScrollViewDelegate> // [macOS]
 @end
 
 @implementation RCTEnhancedScrollView {
-#if !TARGET_OS_OSX // [macOS]
-  __weak id<UIScrollViewDelegate> _publicDelegate;
-#else// [macOS
-  __weak id<RCTScrollableProtocol, RCTAutoInsetsProtocol> _publicDelegate;
-#endif // macOS]
+  __weak id<RCTUIScrollViewDelegate> _publicDelegate; // [macOS]
   BOOL _isSetContentOffsetDisabled;
 }
 
@@ -53,13 +41,22 @@
     // because this attribute affects a position of vertical scrollbar; we don't want this
     // scrollbar flip because we also flip it with whole `UIScrollView` flip.
     self.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+#else // [macOS
+    // Similar to iOS's contentInsetAdjustmentBehavior fix
+    // For example: When using NSWindowStyleMaskFullSizeContentView (hidden title bar) and ScrollView as root,
+    // NSScrollView.automaticallyAdjustsContentInsets (default YES) adds contentInset.top to push content below the toolbar.
+    // However, React Native doesn't know about this native contentInset adjustments,causing some caltulation issues  
+    self.automaticallyAdjustsContentInsets = NO;
+    self.hasHorizontalScroller = YES;
+    self.hasVerticalScroller = YES;
+    self.autohidesScrollers = YES;
+#endif // macOS]
 
     __weak __typeof(self) weakSelf = self;
     _delegateSplitter = [[RCTGenericDelegateSplitter alloc] initWithDelegateUpdateBlock:^(id delegate) {
       [weakSelf setPrivateDelegate:delegate];
     }];
     [_delegateSplitter addDelegate:self];
-#endif // [macOS]
   }
 
   return self;
@@ -110,16 +107,83 @@
   if (_isSetContentOffsetDisabled) {
     return;
   }
+#if !TARGET_OS_OSX // [macOS]
   super.contentOffset = CGPointMake(
       RCTSanitizeNaNValue(contentOffset.x, @"scrollView.contentOffset.x"),
       RCTSanitizeNaNValue(contentOffset.y, @"scrollView.contentOffset.y"));
+#else // [macOS
+  if (!NSEqualPoints(contentOffset, self.documentVisibleRect.origin)) {
+    [self.contentView scrollToPoint:contentOffset];
+    [self reflectScrolledClipView:self.contentView];
+  }
+#endif // macOS]
 }
 
 - (void)setFrame:(CGRect)frame
 {
+#if !TARGET_OS_OSX // [macOS]
   [super setFrame:frame];
   [self centerContentIfNeeded];
+#else // [macOS
+  // Preserving and revalidating `contentOffset`.
+  CGPoint originalOffset = self.contentOffset;
+
+  [super setFrame:frame];
+
+  UIEdgeInsets contentInset = self.contentInset;
+  CGSize contentSize = self.contentSize;
+
+  // If contentSize has not been measured yet we can't check bounds.
+  if (CGSizeEqualToSize(contentSize, CGSizeZero)) {
+    self.contentOffset = originalOffset;
+  } else {
+    CGSize boundsSize = self.bounds.size;
+    CGFloat xMaxOffset = contentSize.width - boundsSize.width + contentInset.right;
+    CGFloat yMaxOffset = contentSize.height - boundsSize.height + contentInset.bottom;
+    // Make sure offset doesn't exceed bounds. This can happen on screen rotation.
+    if ((originalOffset.x >= -contentInset.left) && (originalOffset.x <= xMaxOffset) &&
+        (originalOffset.y >= -contentInset.top) && (originalOffset.y <= yMaxOffset)) {
+      return;
+    }
+    self.contentOffset = CGPointMake(
+        MAX(-contentInset.left, MIN(xMaxOffset, originalOffset.x)),
+        MAX(-contentInset.top, MIN(yMaxOffset, originalOffset.y)));
+  }
+#endif // macOS]
 }
+
+#if TARGET_OS_OSX // [macOS
+- (NSSize)contentSize
+{
+  if (!self.documentView) {
+    return [super contentSize];
+  }
+
+  return self.documentView.frame.size;
+}
+
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated
+{
+  if (animated) {
+    [NSAnimationContext beginGrouping];
+    [[NSAnimationContext currentContext] setDuration:0.3];
+    [[self.contentView animator] setBoundsOrigin:contentOffset];
+    [NSAnimationContext endGrouping];
+  } else {
+    self.contentOffset = contentOffset;
+  }
+}
+
+- (void)zoomToRect:(CGRect)rect animated:(BOOL)animated
+{
+  [self magnifyToFitRect:rect];
+}
+
+- (void)flashScrollIndicators
+{
+  [self flashScrollers];
+}
+#endif // macOS]
 
 - (void)didAddSubview:(RCTPlatformView *)subview // [macOS]
 {
@@ -140,18 +204,17 @@
 
 #pragma mark - RCTGenericDelegateSplitter
 
-#if !TARGET_OS_OSX // [macOS]
-- (void)setPrivateDelegate:(id<UIScrollViewDelegate>)delegate
+- (void)setPrivateDelegate:(id<RCTUIScrollViewDelegate>)delegate // [macOS]
 {
   [super setDelegate:delegate];
 }
 
-- (id<UIScrollViewDelegate>)delegate
+- (id<RCTUIScrollViewDelegate>)delegate // [macOS]
 {
   return _publicDelegate;
 }
 
-- (void)setDelegate:(id<UIScrollViewDelegate>)delegate
+- (void)setDelegate:(id<RCTUIScrollViewDelegate>)delegate // [macOS]
 {
   if (_publicDelegate == delegate) {
     return;
@@ -169,7 +232,6 @@
     [_delegateSplitter addDelegate:_publicDelegate];
   }
 }
-#endif // [macOS]
 
 #pragma mark - UIScrollViewDelegate
 

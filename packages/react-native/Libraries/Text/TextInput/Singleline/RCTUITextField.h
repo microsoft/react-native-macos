@@ -20,11 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTUITextField : UITextField <RCTBackedTextInputViewProtocol>
 #else // [macOS
-#if RCT_SUBCLASS_SECURETEXTFIELD
-@interface RCTUISecureTextField : NSSecureTextField <RCTBackedTextInputViewProtocol>
-#else
 @interface RCTUITextField : NSTextField <RCTBackedTextInputViewProtocol>
-#endif // RCT_SUBCLASS_SECURETEXTFIELD
 #endif // macOS]
 
 
@@ -40,12 +36,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL textWasPasted;
 #endif // macOS]
 @property (nonatomic, assign, readonly) BOOL dictationRecognizing;
-@property (nonatomic, strong, nullable) RCTUIColor *placeholderColor; // [macOS]
+@property (nonatomic, strong, nullable) RCTPlatformColor *placeholderColor; // [macOS]
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
 #if !TARGET_OS_OSX // [macOS]
 @property (nonatomic, assign, getter=isEditable) BOOL editable;
 #else // [macOS
-@property (assign, getter=isEditable) BOOL editable;
+@property (atomic, assign, getter=isEditable) BOOL editable;
 #endif // macOS]
 @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
 @property (nonatomic, strong, nullable) NSString *inputAccessoryViewID;
@@ -58,16 +54,19 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_OSX // [macOS
 @property (nonatomic, copy, nullable) NSString *text;
 @property (nonatomic, copy, nullable) NSAttributedString *attributedText;
-@property (nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *defaultTextAttributes;
+@property (nonatomic, strong, nullable) NSDictionary<NSAttributedStringKey, id> *defaultTextAttributes;
+@property (nullable, nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *typingAttributes;
 @property (nonatomic, assign) NSTextAlignment textAlignment;
 @property (nonatomic, getter=isAutomaticTextReplacementEnabled) BOOL automaticTextReplacementEnabled;
 @property (nonatomic, getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled;
 @property (nonatomic, getter=isContinuousSpellCheckingEnabled) BOOL continuousSpellCheckingEnabled;
 @property (nonatomic, getter=isGrammarCheckingEnabled) BOOL grammarCheckingEnabled;
 @property (nonatomic, assign) BOOL enableFocusRing;
-@property (nonatomic, strong, nullable) RCTUIColor *selectionColor;
+@property (nonatomic, strong, nullable) RCTPlatformColor *selectionColor;
 @property (weak, nullable) id<RCTUITextFieldDelegate> delegate;
 @property (nonatomic, assign) CGFloat pointScaleFactor;
+
+- (void)setReadablePasteBoardTypes:(NSArray<NSPasteboardType> *)readablePasteboardTypes;
 #endif // macOS]
 
 @property (nonatomic, getter=isGhostTextChanging) BOOL ghostTextChanging; // [macOS]

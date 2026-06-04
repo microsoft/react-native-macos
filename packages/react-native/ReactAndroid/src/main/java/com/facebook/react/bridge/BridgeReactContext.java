@@ -22,6 +22,9 @@ import com.facebook.react.common.annotations.DeprecatedInNewArchitecture;
 import com.facebook.react.common.annotations.FrameworkAPI;
 import com.facebook.react.common.annotations.UnstableReactNativeAPI;
 import com.facebook.react.common.annotations.VisibleForTesting;
+import com.facebook.react.common.annotations.internal.LegacyArchitecture;
+import com.facebook.react.common.annotations.internal.LegacyArchitectureLogLevel;
+import com.facebook.react.common.annotations.internal.LegacyArchitectureLogger;
 import com.facebook.react.turbomodule.core.interfaces.CallInvokerHolder;
 import java.util.Collection;
 
@@ -33,7 +36,13 @@ import java.util.Collection;
  */
 @DeprecatedInNewArchitecture
 @VisibleForTesting
+@LegacyArchitecture(logLevel = LegacyArchitectureLogLevel.ERROR)
 public class BridgeReactContext extends ReactApplicationContext {
+  static {
+    LegacyArchitectureLogger.assertLegacyArchitecture(
+        "BridgeReactContext", LegacyArchitectureLogLevel.ERROR);
+  }
+
   @DoNotStrip
   public interface RCTDeviceEventEmitter extends JavaScriptModule {
     void emit(@NonNull String eventName, @Nullable Object data);
@@ -96,9 +105,11 @@ public class BridgeReactContext extends ReactApplicationContext {
       }
       throw new IllegalStateException(EARLY_JS_ACCESS_EXCEPTION_MESSAGE);
     }
-    if (mInteropModuleRegistry != null
-        && mInteropModuleRegistry.shouldReturnInteropModule(jsInterface)) {
-      return mInteropModuleRegistry.getInteropModule(jsInterface);
+    if (mInteropModuleRegistry != null) {
+      T jsModule = mInteropModuleRegistry.getInteropModule(jsInterface);
+      if (jsModule != null) {
+        return jsModule;
+      }
     }
     return mCatalystInstance.getJSModule(jsInterface);
   }

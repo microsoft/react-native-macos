@@ -60,11 +60,7 @@
   
   switch (activityIndicatorViewStyle) {
     case UIActivityIndicatorViewStyleLarge:
-	  if (@available(macOS 11.0, *)) {
-		self.controlSize = NSControlSizeLarge;
-	  } else {
-		self.controlSize = NSControlSizeRegular;
-	  }
+      self.controlSize = NSControlSizeLarge;
       break;
     case UIActivityIndicatorViewStyleMedium:
       self.controlSize = NSControlSizeRegular;
@@ -74,7 +70,7 @@
   }
 }
 
-- (void)setColor:(RCTUIColor*)color
+- (void)setColor:(RCTPlatformColor*)color
 {
   if (_color != color) {
     _color = color;

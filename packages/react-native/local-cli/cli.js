@@ -6,7 +6,7 @@
  *
  * @format
  */
-
+// @noflow
 'use strict';
 
 var cli = require('@react-native-community/cli');

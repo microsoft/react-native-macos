@@ -69,7 +69,7 @@ For a full and detailed list of the system requirements and how to set up your d
 
 ## Getting Started
 
-See the [Getting Started Guide](https://microsoft.github.io/react-native-windows/docs/rnm-getting-started) on our React Native for Windows + macOS website to build your first React Native for macOS app.
+See the [Getting Started Guide](https://microsoft.github.io/react-native-macos/docs/getting-started) on our React Native for macOS website to build your first React Native for macOS app.
 
 ### Logging Issues
 
@@ -160,7 +160,4 @@ Larger discussions and proposals are discussed in [**@react-native-community/dis
 
 React Native is MIT licensed, as found in the [LICENSE][l] file.
 
-React Native documentation is Creative Commons licensed, as found in the [LICENSE-docs][ld] file.
-
 [l]: https://github.com/facebook/react-native/blob/main/LICENSE
-[ld]: https://github.com/facebook/react-native/blob/main/LICENSE-docs

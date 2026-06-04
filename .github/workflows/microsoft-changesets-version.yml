@@ -1,0 +1,46 @@
+name: Changesets Version Bump
+
+on:
+  push:
+    branches:
+      - "*-stable"
+  workflow_dispatch:
+
+jobs:
+  version:
+    name: Create Version Bump PR
+    runs-on: ubuntu-latest
+
+    if: ${{ github.repository == 'microsoft/react-native-macos' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          filter: blob:none
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate token for version PR
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-contents: write # for GH releases and Git tags (Changesets)
+          permission-pull-requests: write # version PRs (Changesets)
+
+      - name: Create Version Bump PR
+        uses: changesets/action@v1
+        with:
+          version: yarn changeset:version
+          createGithubReleases: false
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

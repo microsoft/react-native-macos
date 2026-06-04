@@ -34,6 +34,21 @@ enum class AccessibilityTraits : uint32_t {
   Header = (1 << 15),
   Switch = (1 << 16),
   TabBar = (1 << 17),
+#if TARGET_OS_OSX  // [macOS
+  ComboBox = (1 << 18),
+  Menu = (1 << 19),
+  PopUp = (1 << 20),
+  Bar = (1 << 21),
+  Item = (1 << 22),
+  Group = (1 << 23),
+  List = (1 << 24),
+  Tab = (1 << 25),
+  Table = (1 << 26),
+  Disclosure = (1 << 27),
+  Radio = (1 << 28),
+  ScrollBar = (1 << 29),
+  SpinButton = (1 << 30),
+#endif // macOS]
 };
 
 constexpr enum AccessibilityTraits operator|(
@@ -49,9 +64,30 @@ constexpr enum AccessibilityTraits operator&(
 }
 
 struct AccessibilityAction {
-  std::string name{""};
+  std::string name;
   std::optional<std::string> label{};
 };
+
+inline std::string toString(const AccessibilityAction& accessibilityAction) {
+  std::string result = accessibilityAction.name;
+  if (accessibilityAction.label.has_value()) {
+    result += ": '" + accessibilityAction.label.value() + "'";
+  }
+  return result;
+}
+
+inline std::string toString(
+    std::vector<AccessibilityAction> accessibilityActions) {
+  std::string result = "[";
+  for (size_t i = 0; i < accessibilityActions.size(); i++) {
+    result += toString(accessibilityActions[i]);
+    if (i < accessibilityActions.size() - 1) {
+      result += ", ";
+    }
+  }
+  result += "]";
+  return result;
+}
 
 inline static bool operator==(
     const AccessibilityAction& lhs,
@@ -135,6 +171,18 @@ enum class AccessibilityLiveRegion : uint8_t {
   Polite,
   Assertive,
 };
+
+inline std::string toString(
+    const AccessibilityLiveRegion& accessibilityLiveRegion) {
+  switch (accessibilityLiveRegion) {
+    case AccessibilityLiveRegion::None:
+      return "none";
+    case AccessibilityLiveRegion::Polite:
+      return "polite";
+    case AccessibilityLiveRegion::Assertive:
+      return "assertive";
+  }
+}
 
 enum class AccessibilityRole {
   None,

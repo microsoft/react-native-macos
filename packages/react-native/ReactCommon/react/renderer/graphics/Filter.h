@@ -13,7 +13,6 @@
 #include <string>
 #include <string_view>
 #include <variant>
-#include <vector>
 
 namespace facebook::react {
 
@@ -69,6 +68,31 @@ inline FilterType filterTypeFromString(std::string_view filterName) {
     return FilterType::DropShadow;
   } else {
     throw std::invalid_argument(std::string(filterName));
+  }
+}
+
+inline std::string toString(const FilterType& filterType) {
+  switch (filterType) {
+    case FilterType::Blur:
+      return "blur";
+    case FilterType::Brightness:
+      return "brightness";
+    case FilterType::Contrast:
+      return "contrast";
+    case FilterType::Grayscale:
+      return "grayscale";
+    case FilterType::HueRotate:
+      return "hueRotate";
+    case FilterType::Invert:
+      return "invert";
+    case FilterType::Opacity:
+      return "opacity";
+    case FilterType::Saturate:
+      return "saturate";
+    case FilterType::Sepia:
+      return "sepia";
+    case FilterType::DropShadow:
+      return "dropShadow";
   }
 }
 

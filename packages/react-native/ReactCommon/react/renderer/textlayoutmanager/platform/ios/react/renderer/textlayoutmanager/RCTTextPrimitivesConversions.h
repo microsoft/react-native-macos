@@ -107,14 +107,14 @@ inline static NSUnderlineStyle RCTNSUnderlineStyleFromTextDecorationStyle(
     case facebook::react::TextDecorationStyle::Double:
       return NSUnderlineStyleDouble;
     case facebook::react::TextDecorationStyle::Dashed:
-      return NSUnderlineStylePatternDash | NSUnderlineStyleSingle; // [macOS]
+      return NSUnderlineStylePatternDash | NSUnderlineStyleSingle;
     case facebook::react::TextDecorationStyle::Dotted:
-      return NSUnderlineStylePatternDot | NSUnderlineStyleSingle; // [macOS]
+      return NSUnderlineStylePatternDot | NSUnderlineStyleSingle;
   }
 }
 
 // TODO: this file has some duplicates method, we can remove it
-inline static RCTUIColor *_Nullable RCTUIColorFromSharedColor(const facebook::react::SharedColor &sharedColor) // [macOS]
+inline static RCTPlatformColor *_Nullable RCTUIColorFromSharedColor(const facebook::react::SharedColor &sharedColor) // [macOS]
 {
   return RCTPlatformColorFromColor(*sharedColor);
 }

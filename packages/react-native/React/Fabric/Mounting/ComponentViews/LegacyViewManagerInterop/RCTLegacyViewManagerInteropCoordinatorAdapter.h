@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) RCTPlatformView *paperView; // [macOS]
 
-@property (nonatomic, copy, nullable) void (^eventInterceptor)(std::string eventName, folly::dynamic event);
+@property (nonatomic, copy, nullable) void (^eventInterceptor)(std::string eventName, folly::dynamic &&event);
 
 - (void)setProps:(const folly::dynamic &)props;
 

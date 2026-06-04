@@ -16,10 +16,6 @@
 #import <react/utils/ManagedObjectWrapper.h>
 #import "RCTLegacyViewManagerInteropCoordinatorAdapter.h"
 
-#if TARGET_OS_OSX // [macOS
-#import <React/RCTView.h>
-#endif // macOS]
-
 using namespace facebook::react;
 
 static NSString *const kRCTLegacyInteropChildComponentKey = @"childComponentView";
@@ -101,8 +97,8 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
 
 + (NSMutableDictionary<NSString *, Class> *)_supportedLegacyViewComponents
 {
-  static NSMutableDictionary<NSString *, Class> *suppoerted = [NSMutableDictionary new];
-  return suppoerted;
+  static NSMutableDictionary<NSString *, Class> *supported = [NSMutableDictionary new];
+  return supported;
 }
 
 + (BOOL)isSupported:(NSString *)componentName
@@ -174,10 +170,24 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
 
 - (void)mountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // [macOS]
 {
-  [_viewsToBeMounted addObject:@{
-    kRCTLegacyInteropChildIndexKey : [NSNumber numberWithInteger:index],
-    kRCTLegacyInteropChildComponentKey : childComponentView
-  }];
+  if (_adapter && index == _adapter.paperView.reactSubviews.count) {
+    // This is a new child view that is being added to the end of the children array.
+    // After the children is added, we need to call didUpdateReactSubviews to make sure that it is rendered.
+    // Without this change, the new child will not be rendered right away because the didUpdateReactSubviews is not
+    // called and the `finalizeUpdate` is not invoked.
+    if ([childComponentView isKindOfClass:[RCTLegacyViewManagerInteropComponentView class]]) {
+      RCTUIView *target = ((RCTLegacyViewManagerInteropComponentView *)childComponentView).contentView; // [macOS]
+      [_adapter.paperView insertReactSubview:target atIndex:index];
+    } else {
+      [_adapter.paperView insertReactSubview:childComponentView atIndex:index];
+    }
+    [_adapter.paperView didUpdateReactSubviews];
+  } else {
+    [_viewsToBeMounted addObject:@{
+      kRCTLegacyInteropChildIndexKey : [NSNumber numberWithInteger:index],
+      kRCTLegacyInteropChildComponentKey : childComponentView
+    }];
+  }
 }
 
 - (void)unmountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // [macOS]
@@ -221,13 +231,11 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
     _adapter = [[RCTLegacyViewManagerInteropCoordinatorAdapter alloc] initWithCoordinator:[self _coordinator]
                                                                                  reactTag:self.reactTag.integerValue];
 #endif // macOS]
-
-    _adapter.eventInterceptor = ^(std::string eventName, folly::dynamic event) {
+    _adapter.eventInterceptor = ^(std::string eventName, folly::dynamic &&event) {
       if (weakSelf) {
         __typeof(self) strongSelf = weakSelf;
-        const auto &eventEmitter =
-            static_cast<const LegacyViewManagerInteropViewEventEmitter &>(*strongSelf->_eventEmitter);
-        eventEmitter.dispatchEvent(eventName, event);
+        const auto &eventEmitter = static_cast<const ViewEventEmitter &>(*strongSelf->_eventEmitter);
+        eventEmitter.dispatchEvent(eventName, std::move(event));
       }
     };
     // Set props immediately. This is required to set the initial state of the view.
@@ -244,7 +252,7 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
     NSNumber *index = mountInstruction[kRCTLegacyInteropChildIndexKey];
     RCTUIView *childView = mountInstruction[kRCTLegacyInteropChildComponentKey]; // [macOS]
     if ([childView isKindOfClass:[RCTLegacyViewManagerInteropComponentView class]]) {
-      RCTUIView *target = ((RCTLegacyViewManagerInteropComponentView *)childView).contentView; // [macOS]
+      RCTPlatformView *target = ((RCTLegacyViewManagerInteropComponentView *)childView).contentView; // [macOS]
       [_adapter.paperView insertReactSubview:target atIndex:index.integerValue];
     } else {
       [_adapter.paperView insertReactSubview:childView atIndex:index.integerValue];

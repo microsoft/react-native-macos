@@ -26,7 +26,7 @@
 
 RCT_EXPORT_MODULE();
 
-- (RCTUIView *)view // [macOS]
+- (RCTPlatformView *)view // [macOS]
 {
   return [FlexibleSizeExampleView new];
 }
@@ -50,8 +50,8 @@ RCT_EXPORT_MODULE();
 
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
 
-    _resizableRootView =
-        (RCTRootView *)[appDelegate.rootViewFactory viewWithModuleName:@"RootViewSizeFlexibilityExampleApp"];
+    _resizableRootView = (RCTRootView *)[appDelegate.reactNativeFactory.rootViewFactory
+        viewWithModuleName:@"RootViewSizeFlexibilityExampleApp"];
 
     [_resizableRootView setSizeFlexibility:RCTRootViewSizeFlexibilityHeight];
 
@@ -66,8 +66,8 @@ RCT_EXPORT_MODULE();
 #else
     _currentSizeTextView.string = currentSizeTextViewString;
 #endif // macOS]
-    _currentSizeTextView.textColor = [RCTUIColor blackColor]; // [macOS]
-    _currentSizeTextView.backgroundColor = [RCTUIColor whiteColor]; // [macOS]
+    _currentSizeTextView.textColor = [RCTPlatformColor blackColor]; // [macOS]
+    _currentSizeTextView.backgroundColor = [RCTPlatformColor whiteColor]; // [macOS]
     _currentSizeTextView.font = [UIFont boldSystemFontOfSize:10];
 
     _resizableRootView.delegate = self;

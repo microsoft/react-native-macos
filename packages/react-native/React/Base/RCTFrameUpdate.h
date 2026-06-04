@@ -6,7 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "RCTPlatformDisplayLink.h" // [macOS]
+#import <React/RCTPlatformDisplayLink.h> // [macOS]
 
 /**
  * Interface containing the information about the last screen refresh.

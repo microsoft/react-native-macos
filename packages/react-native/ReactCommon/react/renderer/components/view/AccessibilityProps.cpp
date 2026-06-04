@@ -46,6 +46,15 @@ AccessibilityProps::AccessibilityProps(
                     "accessibilityLabel",
                     sourceProps.accessibilityLabel,
                     "")),
+      accessibilityOrder(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.accessibilityOrder
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "experimental_accessibilityOrder",
+                    sourceProps.accessibilityOrder,
+                    {})),
       accessibilityLabelledBy(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
               ? sourceProps.accessibilityLabelledBy
@@ -145,6 +154,15 @@ AccessibilityProps::AccessibilityProps(
                     "accessibilityIgnoresInvertColors",
                     sourceProps.accessibilityIgnoresInvertColors,
                     false)),
+      accessibilityRespondsToUserInteraction(
+          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
+              ? sourceProps.accessibilityRespondsToUserInteraction
+              : convertRawProp(
+                    context,
+                    rawProps,
+                    "accessibilityRespondsToUserInteraction",
+                    sourceProps.accessibilityRespondsToUserInteraction,
+                    true)),
       onAccessibilityTap(
           ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
               ? sourceProps.onAccessibilityTap
@@ -246,6 +264,7 @@ void AccessibilityProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessible);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityState);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLabel);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityOrder);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLabelledBy);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityHint);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityLanguage);
@@ -256,6 +275,7 @@ void AccessibilityProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityViewIsModal);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityElementsHidden);
     RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityIgnoresInvertColors);
+    RAW_SET_PROP_SWITCH_CASE_BASIC(accessibilityRespondsToUserInteraction);
     RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityTap);
     RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityMagicTap);
     RAW_SET_PROP_SWITCH_CASE_BASIC(onAccessibilityEscape);
@@ -281,10 +301,37 @@ void AccessibilityProps::setProp(
 #pragma mark - DebugStringConvertible
 
 #if RN_DEBUG_STRING_CONVERTIBLE
+
 SharedDebugStringConvertibleList AccessibilityProps::getDebugProps() const {
   const auto& defaultProps = AccessibilityProps();
   return SharedDebugStringConvertibleList{
-      debugStringConvertibleItem("testId", testId, defaultProps.testId),
+      debugStringConvertibleItem("testID", testId, defaultProps.testId),
+      debugStringConvertibleItem(
+          "accessibilityRole",
+          accessibilityRole,
+          defaultProps.accessibilityRole),
+      debugStringConvertibleItem(
+          "accessible", accessible, defaultProps.accessible),
+      debugStringConvertibleItem(
+          "accessibilityActions",
+          accessibilityActions,
+          defaultProps.accessibilityActions),
+      debugStringConvertibleItem(
+          "accessibilityElementsHidden",
+          accessibilityElementsHidden,
+          defaultProps.accessibilityElementsHidden),
+      debugStringConvertibleItem(
+          "accessibilityHint",
+          accessibilityHint,
+          defaultProps.accessibilityHint),
+      debugStringConvertibleItem(
+          "accessibilityLabel",
+          accessibilityLabel,
+          defaultProps.accessibilityLabel),
+      debugStringConvertibleItem(
+          "accessibilityLiveRegion",
+          accessibilityLiveRegion,
+          defaultProps.accessibilityLiveRegion),
   };
 }
 #endif // RN_DEBUG_STRING_CONVERTIBLE

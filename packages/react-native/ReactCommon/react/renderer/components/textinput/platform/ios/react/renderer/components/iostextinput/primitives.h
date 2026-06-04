@@ -10,6 +10,7 @@
 #include <react/renderer/components/textinput/basePrimitives.h>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace facebook::react {
 
@@ -81,6 +82,24 @@ class Selection final {
   int start{0};
   int end{0};
 };
+
+#if TARGET_OS_OSX // [macOS
+enum class PastedTypesType {
+  FileUrl,
+  Image,
+  String,
+};
+
+class SubmitKeyEvent final {
+  public:
+    std::string key{};
+    bool altKey{false};
+    bool shiftKey{false};
+    bool ctrlKey{false};
+    bool metaKey{false};
+    bool functionKey{false};
+};
+#endif // macOS]
 
 /*
  * Controls features of text inputs.
@@ -193,6 +212,12 @@ class TextInputTraits final {
   bool selectTextOnFocus{false};
 
   /*
+   * iOS-only
+   * Default value: `empty` (`null`).
+   */
+  std::vector<std::string> dataDetectorTypes{};
+
+  /*
    * iOS-only (inherently iOS-specific)
    * Default value: `<empty string>` (default content type).
    */
@@ -213,13 +238,34 @@ class TextInputTraits final {
    */
   std::optional<bool> smartInsertDelete{};
 
-#ifdef TARGET_OS_OSX // [macOS
+#if TARGET_OS_OSX // [macOS
   /*
    * Can be empty (`null` in JavaScript) which means `default`.
-   * maOS
+   * macOS
    * Default value: `empty` (`null`).
    */
   std::optional<bool> grammarCheck{};
+
+  /*
+   * List of pastable types
+   * macOS-only
+   * Default value: `empty list`
+   */
+  std::vector<PastedTypesType> pastedTypes{};
+
+  /*
+   * List of key combinations that should submit.
+   * macOS-only
+   * Default value: `empty list` applies as 'Enter' key.
+  */
+  std::vector<SubmitKeyEvent> submitKeyEvents{};
+
+  /*
+   * When set to `true`, the text will be cleared after the submit.
+   * macOS-only
+   * Default value: `false`
+   */
+   bool clearTextOnSubmit{false};
 #endif // macOS]
 };
 

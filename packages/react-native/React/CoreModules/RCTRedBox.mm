@@ -361,7 +361,7 @@
 #if TARGET_OS_MACCATALYST || TARGET_OS_OSX // [macOS]
   return 0;
 #else
-  return RCTSharedApplication().delegate.window.safeAreaInsets.bottom;
+  return RCTKeyWindow().safeAreaInsets.bottom;
 #endif
 }
 
@@ -418,8 +418,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 {
 #if !TARGET_OS_OSX // [macOS]
   [self dismissViewControllerAnimated:YES completion:nil];
-#else // [macOS
-  [[RCTKeyWindow() contentViewController] dismissViewController:self];
+#else // [macOS]
+  if (self.presentingViewController) {
+    [[RCTKeyWindow() contentViewController] dismissViewController:self];
+  }
 #endif // macOS]
 }
 

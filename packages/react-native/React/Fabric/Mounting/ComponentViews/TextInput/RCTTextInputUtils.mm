@@ -19,19 +19,23 @@ static NSAttributedString *RCTSanitizeAttributedString(NSAttributedString *attri
 }
 
 void RCTCopyBackedTextInput(
-#if !TARGET_OS_OSX // [macOS]
-    RCTUIView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput
-#else // [macOS
-    RCTUITextView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUITextView<RCTBackedTextInputViewProtocol> *toTextInput
-#endif // macOS]
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *fromTextInput,
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *toTextInput
 )
 {
   toTextInput.attributedText = RCTSanitizeAttributedString(fromTextInput.attributedText);
   toTextInput.placeholder = fromTextInput.placeholder;
   toTextInput.placeholderColor = fromTextInput.placeholderColor;
   toTextInput.textContainerInset = fromTextInput.textContainerInset;
+
+#if TARGET_OS_OSX // [macOS
+  toTextInput.accessibilityElement = fromTextInput.accessibilityElement;
+  toTextInput.accessibilityHelp = fromTextInput.accessibilityHelp;
+  toTextInput.accessibilityIdentifier = fromTextInput.accessibilityIdentifier;
+  toTextInput.accessibilityLabel = fromTextInput.accessibilityLabel;
+  toTextInput.accessibilityRole = fromTextInput.accessibilityRole;
+  toTextInput.autoresizingMask = fromTextInput.autoresizingMask;
+#endif // macOS]
 #if TARGET_OS_IOS // [macOS] [visionOS]
   toTextInput.inputAccessoryView = fromTextInput.inputAccessoryView;
 #endif // [macOS] [visionOS]
@@ -61,6 +65,7 @@ void RCTCopyBackedTextInput(
   toTextInput.smartInsertDeleteType = fromTextInput.smartInsertDeleteType;
   toTextInput.passwordRules = fromTextInput.passwordRules;
   toTextInput.disableKeyboardShortcuts = fromTextInput.disableKeyboardShortcuts;
+  toTextInput.acceptDragAndDropTypes = fromTextInput.acceptDragAndDropTypes;
 
   [toTextInput setSelectedTextRange:fromTextInput.selectedTextRange notifyDelegate:NO];
 #endif // [macOS]
@@ -99,9 +104,7 @@ UIKeyboardAppearance RCTUIKeyboardAppearanceFromKeyboardAppearance(KeyboardAppea
       return UIKeyboardAppearanceDark;
   }
 }
-#endif // [macOS]
 
-#if !TARGET_OS_OSX // [macOS]
 UITextSpellCheckingType RCTUITextSpellCheckingTypeFromOptionalBool(std::optional<bool> spellCheck)
 {
   return spellCheck.has_value() ? (*spellCheck ? UITextSpellCheckingTypeYes : UITextSpellCheckingTypeNo)
@@ -288,4 +291,33 @@ UITextSmartInsertDeleteType RCTUITextSmartInsertDeleteTypeFromOptionalBool(std::
       ? (*smartInsertDelete ? UITextSmartInsertDeleteTypeYes : UITextSmartInsertDeleteTypeNo)
       : UITextSmartInsertDeleteTypeDefault;
 }
+
+UIDataDetectorTypes RCTUITextViewDataDetectorTypesFromStringVector(const std::vector<std::string> &dataDetectorTypes)
+{
+  static dispatch_once_t onceToken;
+  static NSDictionary<NSString *, NSNumber *> *dataDetectorTypesMap = nil;
+
+  dispatch_once(&onceToken, ^{
+    dataDetectorTypesMap = @{
+      @"link" : @(UIDataDetectorTypeLink),
+      @"phoneNumber" : @(UIDataDetectorTypePhoneNumber),
+      @"address" : @(UIDataDetectorTypeAddress),
+      @"calendarEvent" : @(UIDataDetectorTypeCalendarEvent),
+      @"trackingNumber" : @(UIDataDetectorTypeShipmentTrackingNumber),
+      @"flightNumber" : @(UIDataDetectorTypeFlightNumber),
+      @"lookupSuggestion" : @(UIDataDetectorTypeLookupSuggestion),
+      @"all" : @(UIDataDetectorTypeAll)
+    };
+  });
+
+  UIDataDetectorTypes ret = UIDataDetectorTypeNone;
+  for (const auto &dataType : dataDetectorTypes) {
+    NSNumber *val = dataDetectorTypesMap[RCTNSStringFromString(dataType)];
+    if (val) {
+      ret |= (UIDataDetectorTypes)val.unsignedIntValue;
+    }
+  }
+  return ret;
+}
+
 #endif // [macOS]

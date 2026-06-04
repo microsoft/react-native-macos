@@ -13,7 +13,7 @@
 
 RCT_EXPORT_MODULE(RCTRawText)
 
-- (RCTUIView *)view // [macOS]
+- (RCTPlatformView *)view // [macOS]
 {
   return [RCTUIView new]; // [macOS]
 }

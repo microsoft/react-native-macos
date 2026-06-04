@@ -7,15 +7,27 @@
 
 #import "RCTTextInputComponentView.h"
 
+#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/iostextinput/TextInputComponentDescriptor.h>
 #import <react/renderer/textlayoutmanager/RCTAttributedTextUtils.h>
 #import <react/renderer/textlayoutmanager/TextLayoutManager.h>
 
 #import <React/RCTBackedTextInputViewProtocol.h>
 #import <React/RCTScrollViewComponentView.h>
+
+#if !TARGET_OS_OSX // [macOS]
 #import <React/RCTUITextField.h>
+#else // [macOS
+#include <React/RCTUITextField.h>
+#include <React/RCTUISecureTextField.h>
+#endif // macOS]
+
 #import <React/RCTUITextView.h>
 #import <React/RCTUtils.h>
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTWrappedTextView.h>
+#import <React/RCTViewKeyboardEvent.h>
+#endif // macOS]
 
 #import "RCTConversions.h"
 #import "RCTTextInputNativeCommands.h"
@@ -28,10 +40,23 @@
 static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
 #endif // [macOS]
 
+#if TARGET_OS_OSX // [macOS
+static NSString *kEscapeKeyCode = @"\x1B";
+#endif // macOS]
+
+
 using namespace facebook::react;
 
+#if !TARGET_OS_OSX // [macOS]
+@interface RCTTextInputComponentView () <
+    RCTBackedTextInputDelegate,
+    RCTTextInputViewProtocol,
+    UIDropInteractionDelegate>
+@end
+#else // [macOS
 @interface RCTTextInputComponentView () <RCTBackedTextInputDelegate, RCTTextInputViewProtocol>
 @end
+#endif // macOS]
 
 static NSSet<NSNumber *> *returnKeyTypesSet;
 
@@ -76,6 +101,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   NSDictionary<NSAttributedStringKey, id> *_originalTypingAttributes;
 
   BOOL _hasInputAccessoryView;
+  CGSize _previousContentSize;
+#if TARGET_OS_OSX // [macOS
+  NSString *_ghostText;
+  NSInteger _ghostTextPosition;
+#endif // macOS]
 }
 
 #pragma mark - UIView overrides
@@ -86,12 +116,17 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     const auto &defaultProps = TextInputShadowNode::defaultSharedProps();
     _props = defaultProps;
 
+#if !TARGET_OS_OSX // [macOS]
     _backedTextInputView = defaultProps->multiline ? [RCTUITextView new] : [RCTUITextField new];
+#else // [macOS
+    _backedTextInputView = defaultProps->multiline ? [[RCTWrappedTextView alloc] initWithFrame:self.bounds] : [RCTUITextField new];
+#endif // macOS]
     _backedTextInputView.textInputDelegate = self;
     _ignoreNextTextInputCall = NO;
     _comingFromJS = NO;
     _didMoveToWindow = NO;
     _originalTypingAttributes = [_backedTextInputView.typingAttributes copy];
+    _previousContentSize = CGSizeZero;
 
     [self addSubview:_backedTextInputView];
 #if TARGET_OS_IOS // [macOS] [visionOS]
@@ -109,11 +144,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
       [_backedTextInputView.defaultTextAttributes mutableCopy];
 
-#if !TARGET_OS_MACCATALYST
-  RCTWeakEventEmitterWrapper *eventEmitterWrapper = [RCTWeakEventEmitterWrapper new];
-  eventEmitterWrapper.eventEmitter = _eventEmitter;
-  defaultAttributes[RCTAttributedStringEventEmitterKey] = eventEmitterWrapper;
-#endif
+  defaultAttributes[RCTAttributedStringEventEmitterKey] = RCTWrapEventEmitter(_eventEmitter);
 
   _backedTextInputView.defaultTextAttributes = defaultAttributes;
 }
@@ -127,7 +158,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     if (props.autoFocus) {
 #if !TARGET_OS_OSX // [macOS]
       [_backedTextInputView becomeFirstResponder];
-#endif // [macOS]
+#else // [macOS
+      NSWindow *window = [_backedTextInputView window];
+      [window makeFirstResponder:_backedTextInputView.responder];
+#endif // macOS]
       [self scrollCursorIntoView];
     }
     _didMoveToWindow = YES;
@@ -138,6 +172,58 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   [self _restoreTextSelection];
 }
+
+// [macOS
+- (void)_updateDefaultTextAttributes
+{
+  const auto &props = static_cast<const TextInputProps &>(*_props);
+  NSMutableDictionary<NSAttributedStringKey, id> *attrs =
+      RCTNSTextAttributesFromTextAttributes(props.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
+
+  _backedTextInputView.defaultTextAttributes = attrs;
+
+  // Also update the existing attributed text so the visible text re-renders
+  // with the new color (defaultTextAttributes only affects newly typed text).
+  // Wrap in _comingFromJS to prevent textInputDidChange from pushing a state
+  // update back to the shadow tree, which would overwrite our fresh colors
+  // with the stale cached attributed string.
+  NSString *currentText = _backedTextInputView.attributedText.string;
+  if (currentText.length > 0) {
+    NSAttributedString *updated = [[NSAttributedString alloc] initWithString:currentText attributes:attrs];
+    _comingFromJS = YES;
+    _backedTextInputView.attributedText = updated;
+    _comingFromJS = NO;
+  }
+}
+// macOS]
+
+#if !TARGET_OS_OSX // [macOS]
+// TODO: replace with registerForTraitChanges once iOS 17.0 is the lowest supported version
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
+{
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  if (facebook::react::ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout() &&
+      UITraitCollection.currentTraitCollection.preferredContentSizeCategory !=
+          previousTraitCollection.preferredContentSizeCategory) {
+    const auto &newTextInputProps = static_cast<const TextInputProps &>(*_props);
+    _backedTextInputView.defaultTextAttributes =
+        RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
+  }
+
+  // [macOS
+  if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+    [self _updateDefaultTextAttributes];
+  }
+  // macOS]
+}
+#else // [macOS
+- (void)viewDidChangeEffectiveAppearance
+{
+  [super viewDidChangeEffectiveAppearance];
+  [self _updateDefaultTextAttributes];
+}
+#endif // macOS]
 
 - (void)reactUpdateResponderOffsetForScrollView:(RCTScrollViewComponentView *)scrollView
 {
@@ -209,7 +295,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         newTextInputProps.traits.autoCorrect.value();
   }
 #endif // macOS]
-  
+
   if (newTextInputProps.traits.contextMenuHidden != oldTextInputProps.traits.contextMenuHidden) {
     _backedTextInputView.contextMenuHidden = newTextInputProps.traits.contextMenuHidden;
   }
@@ -217,6 +303,14 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (newTextInputProps.traits.editable != oldTextInputProps.traits.editable) {
     _backedTextInputView.editable = newTextInputProps.traits.editable;
   }
+
+#if !TARGET_OS_OSX // [macOS]
+  if (newTextInputProps.multiline &&
+      newTextInputProps.traits.dataDetectorTypes != oldTextInputProps.traits.dataDetectorTypes) {
+    _backedTextInputView.dataDetectorTypes =
+        RCTUITextViewDataDetectorTypesFromStringVector(newTextInputProps.traits.dataDetectorTypes);
+  }
+#endif // [macOS]
 
 #if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.enablesReturnKeyAutomatically !=
@@ -229,7 +323,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         RCTUIKeyboardAppearanceFromKeyboardAppearance(newTextInputProps.traits.keyboardAppearance);
   }
 #endif // [macOS]
-  
+
 #if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.spellCheck != oldTextInputProps.traits.spellCheck) {
     _backedTextInputView.spellCheckingType =
@@ -241,7 +335,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
         newTextInputProps.traits.spellCheck.value();
   }
 #endif // macOS]
-  
+
 #if TARGET_OS_OSX // [macOS
   if (newTextInputProps.traits.grammarCheck != oldTextInputProps.traits.grammarCheck && newTextInputProps.traits.grammarCheck.has_value()) {
     _backedTextInputView.grammarCheckingEnabled =
@@ -264,11 +358,15 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.scrollEnabled = newTextInputProps.traits.scrollEnabled;
   }
 
-#if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.secureTextEntry != oldTextInputProps.traits.secureTextEntry) {
+#if !TARGET_OS_OSX // [macOS]
     _backedTextInputView.secureTextEntry = newTextInputProps.traits.secureTextEntry;
+#else // [macOS
+    [self _setSecureTextEntry:newTextInputProps.traits.secureTextEntry];
+#endif // macOS]
   }
 
+#if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.traits.keyboardType != oldTextInputProps.traits.keyboardType) {
     _backedTextInputView.keyboardType = RCTUIKeyboardTypeFromKeyboardType(newTextInputProps.traits.keyboardType);
   }
@@ -310,10 +408,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (newTextInputProps.textAttributes != oldTextInputProps.textAttributes) {
     NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
-#if !TARGET_OS_MACCATALYST
     defaultAttributes[RCTAttributedStringEventEmitterKey] =
         _backedTextInputView.defaultTextAttributes[RCTAttributedStringEventEmitterKey];
-#endif
     _backedTextInputView.defaultTextAttributes = defaultAttributes;
   }
 
@@ -335,6 +431,32 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (newTextInputProps.disableKeyboardShortcuts != oldTextInputProps.disableKeyboardShortcuts) {
     _backedTextInputView.disableKeyboardShortcuts = newTextInputProps.disableKeyboardShortcuts;
   }
+
+  if (newTextInputProps.acceptDragAndDropTypes != oldTextInputProps.acceptDragAndDropTypes) {
+    if (!newTextInputProps.acceptDragAndDropTypes.has_value()) {
+      _backedTextInputView.acceptDragAndDropTypes = nil;
+    } else {
+      auto &vector = newTextInputProps.acceptDragAndDropTypes.value();
+      NSMutableArray<NSString *> *array = [NSMutableArray arrayWithCapacity:vector.size()];
+      for (const std::string &str : vector) {
+        [array addObject:[NSString stringWithUTF8String:str.c_str()]];
+      }
+      _backedTextInputView.acceptDragAndDropTypes = array;
+    }
+  }
+
+#if TARGET_OS_OSX // [macOS
+  if (newTextInputProps.traits.pastedTypes!= oldTextInputProps.traits.pastedTypes) {
+    NSArray<NSPasteboardType> *types = RCTPasteboardTypeArrayFromProps(newTextInputProps.traits.pastedTypes);
+    [_backedTextInputView setReadablePasteBoardTypes:types];
+  }
+
+  if (newTextInputProps.enableFocusRing != oldTextInputProps.enableFocusRing) {
+    if ([_backedTextInputView respondsToSelector:@selector(setEnableFocusRing:)]) {
+      [_backedTextInputView setEnableFocusRing:newTextInputProps.enableFocusRing];
+    }
+  }
+#endif // macOS]
 
   [super updateProps:props oldProps:oldProps];
 
@@ -379,7 +501,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _backedTextInputView.textContainerInset =
       RCTUIEdgeInsetsFromEdgeInsets(layoutMetrics.contentInsets - layoutMetrics.borderWidth);
 
-  if (_eventEmitter) {
+  if (!CGSizeEqualToSize(_previousContentSize, _backedTextInputView.contentSize) && _eventEmitter) {
+    _previousContentSize = _backedTextInputView.contentSize;
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onContentSizeChange([self _textInputMetrics]);
   }
 }
@@ -394,6 +517,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _lastStringStateWasUpdatedWith = nil;
   _ignoreNextTextInputCall = NO;
   _didMoveToWindow = NO;
+#if TARGET_OS_OSX // [macOS
+  _ghostText = nil;
+  _ghostTextPosition = 0;
+#endif // macOS]
   [_backedTextInputView resignFirstResponder];
 }
 
@@ -418,6 +545,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)textInputDidEndEditing
 {
+#if TARGET_OS_OSX // [macOS
+  [self setGhostText:nil];
+#endif // macOS]
+
   if (_eventEmitter) {
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onEndEditing([self _textInputMetrics]);
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onBlur([self _textInputMetrics]);
@@ -452,6 +583,12 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (NSString *)textInputShouldChangeText:(NSString *)text inRange:(NSRange)range
 {
+#if TARGET_OS_OSX // [macOS
+  // Clear ghost text before the text change so the undo manager's snapshot
+  // of the pre-edit state never contains ghost text.
+  [self setGhostText:nil];
+#endif // macOS]
+
   const auto &props = static_cast<const TextInputProps &>(*_props);
 
   if (!_backedTextInputView.textWasPasted) {
@@ -497,6 +634,17 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     return;
   }
 
+#if TARGET_OS_OSX // [macOS
+  if (_ghostText != nil) {
+    NSAttributedString *attributedStringWithoutGhostText = [self removingGhostTextFromString:_backedTextInputView.attributedText strict:NO];
+    if (attributedStringWithoutGhostText != nil && ![attributedStringWithoutGhostText isEqual:_backedTextInputView.attributedText]) {
+      _backedTextInputView.attributedText = attributedStringWithoutGhostText;
+    }
+    _ghostText = nil;
+    _ghostTextPosition = 0;
+  }
+#endif // macOS]
+
   if (_ignoreNextTextInputCall && [_lastStringStateWasUpdatedWith isEqual:_backedTextInputView.attributedText]) {
     _ignoreNextTextInputCall = NO;
     return;
@@ -512,6 +660,14 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)textInputDidChangeSelection
 {
+#if TARGET_OS_OSX // [macOS
+  // Clear ghost text on any user selection change, matching Paper behavior.
+  // This prevents the user from selecting ghost text.
+  if (_ghostText != nil && !_comingFromJS && !_backedTextInputView.ghostTextChanging) {
+    [self setGhostText:nil];
+  }
+#endif // macOS]
+
   if (_comingFromJS) {
     return;
   }
@@ -533,6 +689,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 }
 
 #if TARGET_OS_OSX // [macOS
+- (void)setEnableFocusRing:(BOOL)enableFocusRing {
+  [super setEnableFocusRing:enableFocusRing];
+  if ([_backedTextInputView respondsToSelector:@selector(setEnableFocusRing:)]) {
+    [_backedTextInputView setEnableFocusRing:enableFocusRing];
+  }
+}
+
 - (void)automaticSpellingCorrectionDidChange:(BOOL)enabled {
   if (_eventEmitter) {
     std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onAutoCorrectChange({.autoCorrectEnabled = static_cast<bool>(enabled)});
@@ -546,27 +709,93 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 }
 
-- (void)grammarCheckingDidChange:(BOOL)enabled 
+- (void)grammarCheckingDidChange:(BOOL)enabled
 {
   if (_eventEmitter) {
     std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter)->onGrammarCheckChange({.grammarCheckEnabled = static_cast<bool>(enabled)});
   }
 }
 
-- (BOOL)hasValidKeyDownOrValidKeyUp:(nonnull NSString *)key {
-  return YES;
+- (void)submitOnKeyDownIfNeeded:(nonnull NSEvent *)event
+{
+  BOOL shouldSubmit = NO;
+  NSDictionary *keyEvent = [RCTViewKeyboardEvent bodyFromEvent:event];
+  auto const &props = *std::static_pointer_cast<TextInputProps const>(_props);
+  if (props.traits.submitKeyEvents.empty()) {
+    shouldSubmit = [keyEvent[@"key"] isEqualToString:@"Enter"]
+      && ![keyEvent[@"altKey"] boolValue]
+      && ![keyEvent[@"shiftKey"] boolValue]
+      && ![keyEvent[@"ctrlKey"] boolValue]
+      && ![keyEvent[@"metaKey"] boolValue]
+      && ![keyEvent[@"functionKey"] boolValue]; // Default clearTextOnSubmit key
+  } else {
+    NSString *keyValue = keyEvent[@"key"];
+    const char *keyCString = [keyValue UTF8String];
+    if (keyCString != nullptr) {
+      std::string_view key(keyCString);
+      const bool altKey = [keyEvent[@"altKey"] boolValue];
+      const bool shiftKey = [keyEvent[@"shiftKey"] boolValue];
+      const bool ctrlKey = [keyEvent[@"ctrlKey"] boolValue];
+      const bool metaKey = [keyEvent[@"metaKey"] boolValue];
+      const bool functionKey = [keyEvent[@"functionKey"] boolValue];
+
+      shouldSubmit = std::any_of(
+        props.traits.submitKeyEvents.begin(),
+        props.traits.submitKeyEvents.end(),
+        [&](auto const &submitKeyEvent) {
+          return submitKeyEvent.key == key && submitKeyEvent.altKey == altKey &&
+            submitKeyEvent.shiftKey == shiftKey && submitKeyEvent.ctrlKey == ctrlKey &&
+            submitKeyEvent.metaKey == metaKey && submitKeyEvent.functionKey == functionKey;
+      });
+    }
+  }
+
+  if (shouldSubmit) {
+    if (_eventEmitter) {
+      auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
+      textInputEventEmitter.onSubmitEditing([self _textInputMetrics]);
+    }
+
+    if (props.traits.clearTextOnSubmit) {
+      _backedTextInputView.attributedText = nil;
+      [self textInputDidChange];
+    }
+  }
 }
 
-- (void)submitOnKeyDownIfNeeded:(nonnull NSEvent *)event {}
+- (void)textInputDidCancel
+{
+  if (_eventEmitter) {
+    auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
+    textInputEventEmitter.onKeyPress({
+      .text = RCTStringFromNSString(kEscapeKeyCode),
+      .eventCount = static_cast<int>(_mostRecentEventCount),
+    });
+  }
 
-- (void)textInputDidCancel {}
+  [self textInputDidEndEditing];
+}
 
 - (NSDragOperation)textInputDraggingEntered:(nonnull id<NSDraggingInfo>)draggingInfo {
+  if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    return [self draggingEntered:draggingInfo];
+  }
   return NSDragOperationNone;
 }
 
 - (void)textInputDraggingExited:(nonnull id<NSDraggingInfo>)draggingInfo {
-  return;
+  if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    [self draggingExited:draggingInfo];
+  }
+}
+
+- (BOOL)textInputShouldHandleDragOperation:(nonnull id<NSDraggingInfo>)draggingInfo {
+  if ([draggingInfo.draggingPasteboard availableTypeFromArray:self.registeredDraggedTypes]) {
+    [self performDragOperation:draggingInfo];
+    return NO;
+  }
+
+  return YES;
 }
 
 - (BOOL)textInputShouldHandleDeleteBackward:(nonnull id<RCTBackedTextInputViewProtocol>)sender {
@@ -577,16 +806,24 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   return YES;
 }
 
-- (BOOL)textInputShouldHandleDragOperation:(nonnull id<NSDraggingInfo>)draggingInfo {
-  return YES;
-}
-
 - (BOOL)textInputShouldHandleKeyEvent:(nonnull NSEvent *)event {
-  return YES;
+  return ![self handleKeyboardEvent:event];
 }
 
 - (BOOL)textInputShouldHandlePaste:(nonnull id<RCTBackedTextInputViewProtocol>)sender {
-  return YES;
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  NSPasteboardType fileType = [pasteboard availableTypeFromArray:@[NSFilenamesPboardType, NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+  NSArray<NSPasteboardType>* pastedTypes = ((RCTUITextView*) _backedTextInputView).readablePasteboardTypes;
+
+  // If there's a fileType that is of interest, notify JS. Also blocks notifying JS if it's a text paste
+  if (_eventEmitter && fileType != nil && [pastedTypes containsObject:fileType]) {
+    auto const &textInputEventEmitter = *std::static_pointer_cast<TextInputEventEmitter const>(_eventEmitter);
+  DataTransfer dataTransfer = [self dataTransferForPasteboard:pasteboard];
+  textInputEventEmitter.onPaste({.dataTransfer = std::move(dataTransfer)});
+  }
+
+  // Only allow pasting text.
+  return fileType == nil;
 }
 
 #endif // macOS]
@@ -596,9 +833,122 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (void)scrollViewDidScroll:(RCTUIScrollView *)scrollView // [macOS]
 {
   if (_eventEmitter) {
+#if !TARGET_OS_OSX // [macOS]
     static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetrics]);
+#else // [macOS
+    static_cast<const TextInputEventEmitter &>(*_eventEmitter).onScroll([self _textInputMetricsWithScrollView:scrollView]);
+#endif // macOS]
   }
 }
+
+#if TARGET_OS_OSX // [macOS
+#pragma mark - Ghost Text
+
+- (NSDictionary<NSAttributedStringKey, id> *)ghostTextAttributes
+{
+  NSMutableDictionary<NSAttributedStringKey, id> *textAttributes =
+      [_backedTextInputView.defaultTextAttributes mutableCopy] ?: [NSMutableDictionary new];
+
+  [textAttributes setValue:_backedTextInputView.placeholderColor ?: [RCTPlatformColor placeholderTextColor]
+                    forKey:NSForegroundColorAttributeName];
+
+  return textAttributes;
+}
+
+- (void)setGhostText:(NSString *)ghostText
+{
+  NSRange selectedRange = [_backedTextInputView selectedTextRange];
+  NSInteger selectionStart = selectedRange.location;
+  NSInteger selectionEnd = selectedRange.location + selectedRange.length;
+  NSString *newGhostText = ghostText.length > 0 ? ghostText : nil;
+
+  if (selectionStart != selectionEnd) {
+    newGhostText = nil;
+  }
+
+  if ((_ghostText == nil && newGhostText == nil) || [_ghostText isEqual:newGhostText]) {
+    return;
+  }
+
+  if (_backedTextInputView.ghostTextChanging) {
+    // look out for nested callbacks -- this can happen for example when selection changes in response to
+    // attributed text changing. Such callbacks are initiated by Apple, or we could suppress this other ways.
+    return;
+  }
+
+  _backedTextInputView.ghostTextChanging = YES;
+
+  if (_ghostText != nil) {
+    // When setGhostText: is called after making a standard edit, the ghost text may already be gone
+    BOOL ghostTextMayAlreadyBeGone = newGhostText == nil;
+    NSAttributedString *attributedStringWithoutGhostText = [self removingGhostTextFromString:_backedTextInputView.attributedText strict:!ghostTextMayAlreadyBeGone];
+
+    if (attributedStringWithoutGhostText != nil) {
+      _backedTextInputView.attributedText = attributedStringWithoutGhostText;
+      [_backedTextInputView setSelectedTextRange:NSMakeRange(selectionStart, selectionEnd - selectionStart) notifyDelegate:NO];
+    }
+  }
+
+  _ghostText = [newGhostText copy];
+  _ghostTextPosition = selectionStart;
+
+  if (_ghostText != nil) {
+    NSMutableAttributedString *attributedString = [_backedTextInputView.attributedText mutableCopy];
+    NSAttributedString *ghostAttributedString = [[NSAttributedString alloc] initWithString:_ghostText
+                                                                                attributes:self.ghostTextAttributes];
+
+    [attributedString insertAttributedString:ghostAttributedString atIndex:_ghostTextPosition];
+    _backedTextInputView.attributedText = attributedString;
+    [_backedTextInputView setSelectedTextRange:NSMakeRange(_ghostTextPosition, 0) notifyDelegate:NO];
+  }
+
+  _backedTextInputView.ghostTextChanging = NO;
+}
+
+/**
+ * Attempts to remove the ghost text from a provided string given our current state.
+ *
+ * If `strict` mode is enabled, this method assumes the ghost text exists exactly
+ * where we expect it to be. We assert and return `nil` if we don't find the expected ghost text.
+ * It's the responsibility of the caller to make sure the result isn't `nil`.
+ *
+ * If disabled, we allow for the possibility that the ghost text has already been removed,
+ * which can happen if a delegate callback is trying to remove ghost text after invoking `setAttributedText:`.
+ */
+- (NSAttributedString *)removingGhostTextFromString:(NSAttributedString *)string strict:(BOOL)strict
+{
+  if (_ghostText == nil) {
+    return string;
+  }
+
+  NSRange ghostTextRange = NSMakeRange(_ghostTextPosition, _ghostText.length);
+  NSMutableAttributedString *attributedString = [string mutableCopy];
+
+  if ([attributedString length] < NSMaxRange(ghostTextRange)) {
+    if (strict) {
+      RCTAssert(false, @"Ghost text not fully present in text view text");
+      return nil;
+    } else {
+      return string;
+    }
+  }
+
+  NSString *actualGhostText = [[attributedString attributedSubstringFromRange:ghostTextRange] string];
+
+  if (![actualGhostText isEqual:_ghostText]) {
+    if (strict) {
+      RCTAssert(false, @"Ghost text does not match text view text");
+      return nil;
+    } else {
+      return string;
+    }
+  }
+
+  [attributedString deleteCharactersInRange:ghostTextRange];
+  return attributedString;
+}
+
+#endif // macOS]
 
 #pragma mark - Native Commands
 
@@ -637,7 +987,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [_backedTextInputView resignFirstResponder];
 #else // [macOS
   NSWindow *window = [_backedTextInputView window];
-  if ([window firstResponder] == _backedTextInputView) {
+  // On macOS, when an NSTextField is focused, the window's firstResponder is the
+  // field editor (an NSTextView), not the text field itself. Check currentEditor
+  // to determine if the text field is actively being edited.
+  if ([_backedTextInputView isKindOfClass:[NSTextField class]] &&
+      [(NSTextField *)_backedTextInputView currentEditor] != nil) {
+    [window makeFirstResponder:nil];
+  } else if ([window firstResponder] == _backedTextInputView.responder) {
     [window makeFirstResponder:nil];
   }
 #endif // macOS]
@@ -668,8 +1024,16 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (startPosition && endPosition) {
     UITextRange *range = [_backedTextInputView textRangeFromPosition:startPosition toPosition:endPosition];
     [_backedTextInputView setSelectedTextRange:range notifyDelegate:NO];
+    // ensure we scroll to the selected position
+    NSInteger offsetEnd = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
+                                                        toPosition:range.end];
+    [_backedTextInputView scrollRangeToVisible:NSMakeRange(offsetEnd, 0)];
   }
-#endif // [macOS]
+#else // [macOS
+  NSInteger startPosition = MIN(start, end);
+  NSInteger endPosition = MAX(start, end);
+  [_backedTextInputView setSelectedTextRange:NSMakeRange(startPosition, endPosition - startPosition) notifyDelegate:NO];
+#endif // macOS]
   _comingFromJS = NO;
 }
 
@@ -792,14 +1156,33 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
       .contentOffset = RCTPointFromCGPoint(_backedTextInputView.contentOffset),
       .contentInset = RCTEdgeInsetsFromUIEdgeInsets(_backedTextInputView.contentInset),
-#endif // [macOS]
+#else // [macOS
+      .contentOffset = {.x = 0, .y = 0},
+      .contentInset = EdgeInsets{},
+#endif // macOS]
       .contentSize = RCTSizeFromCGSize(_backedTextInputView.contentSize),
       .layoutMeasurement = RCTSizeFromCGSize(_backedTextInputView.bounds.size),
-#if !TARGET_OS_OSX // [macOS]
-      .zoomScale = _backedTextInputView.zoomScale,
-#endif // [macOS]
+      .zoomScale = 1,
   };
 }
+
+#if TARGET_OS_OSX // [macOS
+- (TextInputEventEmitter::Metrics)_textInputMetricsWithScrollView:(RCTUIScrollView *)scrollView
+{
+  TextInputEventEmitter::Metrics metrics = [self _textInputMetrics];
+
+  if (scrollView) {
+    metrics.contentOffset = RCTPointFromCGPoint(scrollView.contentOffset);
+    metrics.contentInset = RCTEdgeInsetsFromUIEdgeInsets(scrollView.contentInset);
+    metrics.contentSize = RCTSizeFromCGSize(scrollView.contentSize);
+    metrics.layoutMeasurement = RCTSizeFromCGSize(scrollView.bounds.size);
+    metrics.zoomScale = scrollView.zoomScale ?: 1;
+  }
+
+  return metrics;
+}
+#endif // macOS]
+
 
 - (void)_updateState
 {
@@ -825,12 +1208,17 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
                                                 toPosition:selectedTextRange.end];
   return AttributedString::Range{(int)start, (int)(end - start)};
 #else // [macOS
-  // [Fabric] Placeholder till we implement selection in Fabric
-  return AttributedString::Range({0, 1});
+  NSRange selectedTextRange = [_backedTextInputView selectedTextRange];
+  return AttributedString::Range{(int)selectedTextRange.location, (int)selectedTextRange.length};
 #endif // macOS]
 }
 
 - (void)_restoreTextSelection
+{
+  [self _restoreTextSelectionAndIgnoreCaretChange:NO];
+}
+
+- (void)_restoreTextSelectionAndIgnoreCaretChange:(BOOL)ignore
 {
   const auto &selection = static_cast<const TextInputProps &>(*_props).selection;
   if (!selection.has_value()) {
@@ -841,38 +1229,62 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
                                                    offset:selection->start];
   auto end = [_backedTextInputView positionFromPosition:_backedTextInputView.beginningOfDocument offset:selection->end];
   auto range = [_backedTextInputView textRangeFromPosition:start toPosition:end];
+  if (ignore && range.empty) {
+    return;
+  }
   [_backedTextInputView setSelectedTextRange:range notifyDelegate:YES];
 #endif // [macOS]
 }
 
 - (void)_setAttributedString:(NSAttributedString *)attributedString
 {
+#if TARGET_OS_OSX // [macOS
+  // When the text view displays temporary content (e.g. completions, accents), do not update the attributed string.
+  if (_backedTextInputView.hasMarkedText) {
+    return;
+  }
+#endif // macOS]
+
   if ([self _textOf:attributedString equals:_backedTextInputView.attributedText]) {
     return;
   }
 #if !TARGET_OS_OSX // [macOS]
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
+#else
+  NSRange selectedRange = [_backedTextInputView selectedTextRange];
+#endif // macOS]
   NSInteger oldTextLength = _backedTextInputView.attributedText.string.length;
   _backedTextInputView.attributedText = attributedString;
+#if !TARGET_OS_OSX // [macOS]
   // Updating the UITextView attributedText, for example changing the lineHeight, the color or adding
   // a new paragraph with \n, causes the cursor to move to the end of the Text and scroll.
   // This is fixed by restoring the cursor position and scrolling to that position (iOS issue 652653).
-  if (selectedRange.empty) {
-    // Maintaining a cursor position relative to the end of the old text.
-    NSInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
-                                                          toPosition:selectedRange.start];
-    NSInteger offsetFromEnd = oldTextLength - offsetStart;
-    NSInteger newOffset = attributedString.string.length - offsetFromEnd;
-    UITextPosition *position = [_backedTextInputView positionFromPosition:_backedTextInputView.beginningOfDocument
-                                                                   offset:newOffset];
-    [_backedTextInputView setSelectedTextRange:[_backedTextInputView textRangeFromPosition:position toPosition:position]
-                                notifyDelegate:YES];
-    [_backedTextInputView scrollRangeToVisible:NSMakeRange(offsetStart, 0)];
-  }
-  [self _restoreTextSelection];
+  // Maintaining a cursor position relative to the end of the old text.
+  NSInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
+                                                        toPosition:selectedRange.start];
+  NSInteger offsetFromEnd = oldTextLength - offsetStart;
+  NSInteger newOffset = attributedString.string.length - offsetFromEnd;
+  UITextPosition *position = [_backedTextInputView positionFromPosition:_backedTextInputView.beginningOfDocument
+                                                                 offset:newOffset];
+  [_backedTextInputView setSelectedTextRange:[_backedTextInputView textRangeFromPosition:position toPosition:position]
+                              notifyDelegate:YES];
+  [_backedTextInputView scrollRangeToVisible:NSMakeRange(offsetStart, 0)];
+
+  // A zero-length selection range can cause the caret position to change on iOS,
+  // and we have already updated the caret position, so we can safely ignore caret changing in this place.
+  [self _restoreTextSelectionAndIgnoreCaretChange:YES];
   [self _updateTypingAttributes];
   _lastStringStateWasUpdatedWith = attributedString;
-#endif // [macOS]
+#else // [macOS
+  if (selectedRange.length == 0) {
+    // Maintaining a cursor position relative to the end of the old text.
+    NSInteger start = selectedRange.location;
+    NSInteger offsetFromEnd = oldTextLength - start;
+    NSInteger newOffset = _backedTextInputView.attributedText.length - offsetFromEnd;
+    [_backedTextInputView setSelectedTextRange:NSMakeRange(newOffset, 0)
+                                      notifyDelegate:YES];
+  }
+#endif // macOS]
 }
 
 // Ensure that newly typed text will inherit any custom attributes. We follow the logic of RN Android, where attributes
@@ -915,7 +1327,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 #if !TARGET_OS_OSX // [macOS]
   RCTUIView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTUITextView new] : [RCTUITextField new];
 #else // [macOS
-  RCTUITextView<RCTBackedTextInputViewProtocol> *backedTextInputView = [RCTUITextView new];
+  RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView = multiline ? [RCTWrappedTextView new] : [RCTUITextField new];
 #endif // macOS]
   backedTextInputView.frame = _backedTextInputView.frame;
   RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
@@ -939,6 +1351,27 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     // Hides keyboard, but keeps blinking cursor.
     _backedTextInputView.inputView = [UIView new];
   }
+}
+#endif // macOS]
+
+#if TARGET_OS_OSX // [macOS
+- (void)_setSecureTextEntry:(BOOL)secureTextEntry
+{
+  [_backedTextInputView removeFromSuperview];
+  RCTPlatformView<RCTBackedTextInputViewProtocol> *backedTextInputView = secureTextEntry ? [RCTUISecureTextField new] : [RCTUITextField new];
+  backedTextInputView.frame = _backedTextInputView.frame;
+  RCTCopyBackedTextInput(_backedTextInputView, backedTextInputView);
+
+  // Copy the text field specific properties if we came from a single line input before the switch
+  if ([_backedTextInputView isKindOfClass:[RCTUITextField class]]) {
+    RCTUITextField *previousTextField = (RCTUITextField *)_backedTextInputView;
+    RCTUITextField *newTextField = (RCTUITextField *)backedTextInputView;
+    newTextField.textAlignment = previousTextField.textAlignment;
+    newTextField.text = previousTextField.text;
+  }
+
+  _backedTextInputView = backedTextInputView;
+  [self addSubview:_backedTextInputView];
 }
 #endif // macOS]
 
@@ -974,7 +1407,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   // There are multiple Korean input sources (2-Set, 3-Set, etc). Check substring instead instead
   [[[_backedTextInputView inputContext] selectedKeyboardInputSource] containsString:@"com.apple.inputmethod.Korean"] ||
   [_backedTextInputView hasMarkedText] ||
-  [_backedTextInputView isKindOfClass:[NSSecureTextField class]] ||
+  [_backedTextInputView isKindOfClass:[RCTUISecureTextField class]] ||
 #endif // macOS]
   fontHasBeenUpdatedBySystem;
 

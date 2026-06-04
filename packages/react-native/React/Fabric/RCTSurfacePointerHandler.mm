@@ -513,7 +513,7 @@ struct PointerHasher {
 
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)action)
 
-- (void)attachToView:(RCTUIView *)view // [macOS]
+- (void)attachToView:(RCTPlatformView *)view // [macOS]
 {
   RCTAssert(self.view == nil, @"RCTSurfacePointerHandler already has an attached view.");
 
@@ -531,7 +531,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 #endif // [macOS]
 }
 
-- (void)detachFromView:(RCTUIView *)view // [macOS]
+- (void)detachFromView:(RCTPlatformView *)view // [macOS]
 {
   RCTAssertParam(view);
   RCTAssert(self.view == view, @"RCTSufracePointerHandler attached to another view.");
@@ -703,8 +703,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
         }
         case RCTPointerEventTypeEnd: {
           eventEmitter->onPointerUp(pointerEvent);
-          if (pointerEvent.isPrimary && pointerEvent.button == 0 && IsPointerWithinInitialTree(activePointer)) {
-            eventEmitter->onClick(std::move(pointerEvent));
+          if (pointerEvent.isPrimary && pointerEvent.button == 0) {
+            if (IsPointerWithinInitialTree(activePointer)) {
+              eventEmitter->onClick(std::move(pointerEvent));
+            }
+          } else if (IsPointerWithinInitialTree(activePointer)) {
+            eventEmitter->onAuxClick(std::move(pointerEvent));
           }
           break;
         }

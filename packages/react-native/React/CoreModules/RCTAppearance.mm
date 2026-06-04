@@ -10,16 +10,17 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTConstants.h>
 #import <React/RCTEventEmitter.h>
-#import <React/RCTUtils.h>
 
 #import "CoreModulesPlugins.h"
+
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTUtils.h>
+#endif // macOS]
 
 using namespace facebook::react;
 
 NSString *const RCTAppearanceColorSchemeLight = @"light";
 NSString *const RCTAppearanceColorSchemeDark = @"dark";
-
-static BOOL sIsAppearancePreferenceSet = NO;
 
 static BOOL sAppearancePreferenceEnabled = YES;
 void RCTEnableAppearancePreference(BOOL enabled)
@@ -64,11 +65,6 @@ NSString *RCTColorSchemePreference(UITraitCollection *traitCollection)
   if (!sAppearancePreferenceEnabled) {
     // Return the default if the app doesn't allow different color schemes.
     return RCTAppearanceColorSchemeLight;
-  }
-
-  if (appearances[@(traitCollection.userInterfaceStyle)]) {
-    sIsAppearancePreferenceSet = YES;
-    return appearances[@(traitCollection.userInterfaceStyle)];
   }
 
   if (!traitCollection) {
@@ -119,7 +115,7 @@ NSString *RCTColorSchemePreference(NSAppearance *appearance)
     UITraitCollection *traitCollection = RCTKeyWindow().traitCollection;
     _currentColorScheme = RCTColorSchemePreference(traitCollection);
 #else // [macOS
-  NSAppearance *appearance = RCTSharedApplication().appearance;
+  NSAppearance *appearance = RCTKeyWindow().effectiveAppearance;
   _currentColorScheme = RCTColorSchemePreference(appearance);
 #endif // macOS]
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -160,33 +156,20 @@ RCT_EXPORT_METHOD(setColorScheme : (NSString *)style)
     window.overrideUserInterfaceStyle = userInterfaceStyle;
   }
 #else // [macOS
-  NSAppearance *appearance = nil;
-  if ([style isEqualToString:@"light"]) {
-    appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
-  } else if ([style isEqualToString:@"dark"]) {
-    appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
-  }
-  RCTSharedApplication().appearance = appearance;
+  RCTExecuteOnMainQueue(^{
+    NSAppearance *appearance = nil;
+    if ([style isEqualToString:@"light"]) {
+      appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+    } else if ([style isEqualToString:@"dark"]) {
+      appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
+    }
+    RCTSharedApplication().appearance = appearance;
+  });
 #endif // macOS]
 }
 
 RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
 {
-  if (!sIsAppearancePreferenceSet) {
-#if !TARGET_OS_OSX // [macOS
-    __block UITraitCollection *traitCollection = nil;
-    RCTUnsafeExecuteOnMainQueueSync(^{
-      traitCollection = RCTKeyWindow().traitCollection;
-    });
-    _currentColorScheme = RCTColorSchemePreference(traitCollection);
-#else // [macOS
-    __block NSAppearance *appearance = nil;
-    RCTUnsafeExecuteOnMainQueueSync(^{
-      appearance = RCTKeyWindow().appearance;
-    });
-    _currentColorScheme = RCTColorSchemePreference(appearance);
-#endif // macOS]
-  }
   return _currentColorScheme;
 }
 
@@ -194,7 +177,7 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
 - (void)appearanceChanged:(NSNotification *)notification
 {
   NSDictionary *userInfo = [notification userInfo];
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX // [macOS
   UITraitCollection *traitCollection = nil;
   if (userInfo) {
     traitCollection = userInfo[RCTUserInterfaceStyleDidChangeNotificationTraitCollectionKey];
@@ -209,7 +192,7 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
 #endif // macOS]
   if (![_currentColorScheme isEqualToString:newColorScheme]) {
     _currentColorScheme = newColorScheme;
-    [self sendEventWithName:@"appearanceChanged" body:@{@"colorScheme" : newColorScheme}];
+    [self sendEventWithName:@"appearanceChanged" body:@{ @"colorScheme" : newColorScheme }];
   }
 }
 

@@ -17,6 +17,8 @@ import {
 import {ColorValue, StyleProp} from '../../StyleSheet/StyleSheet';
 import {TextStyle} from '../../StyleSheet/StyleSheetTypes';
 import {
+  BlurEvent,
+  FocusEvent,
   NativeSyntheticEvent,
   NativeTouchEvent,
   TargetedEvent,
@@ -564,7 +566,7 @@ export interface TextInputAndroidProps {
 }
 
 /**
- * @see TextInputProps.onFocus
+ * @deprecated Use `FocusEvent` instead
  */
 export interface TextInputFocusEventData extends TargetedEvent {
   text: string;
@@ -572,14 +574,26 @@ export interface TextInputFocusEventData extends TargetedEvent {
 }
 
 /**
- * @see TextInputProps.onScroll
+ * @see TextInputProps.onFocus
+ * @deprecated Use `FocusEvent` instead
+ */
+export type TextInputFocusEvent = NativeSyntheticEvent<TextInputFocusEventData>;
+
+/**
+ * @deprecated Use `TextInputScrollEvent` instead
  */
 export interface TextInputScrollEventData {
   contentOffset: {x: number; y: number};
 }
 
 /**
- * @see TextInputProps.onSelectionChange
+ * @see TextInputProps.onScroll
+ */
+export type TextInputScrollEvent =
+  NativeSyntheticEvent<TextInputScrollEventData>;
+
+/**
+ * @deprecated Use `TextInputSelectionChangeEvent` instead
  */
 export interface TextInputSelectionChangeEventData extends TargetedEvent {
   selection: {
@@ -589,14 +603,26 @@ export interface TextInputSelectionChangeEventData extends TargetedEvent {
 }
 
 /**
- * @see TextInputProps.onKeyPress
+ * @see TextInputProps.onSelectionChange
+ */
+export type TextInputSelectionChangeEvent =
+  NativeSyntheticEvent<TextInputSelectionChangeEventData>;
+
+/**
+ * @deprecated Use `TextInputKeyPressEvent` instead
  */
 export interface TextInputKeyPressEventData {
   key: string;
 }
 
 /**
- * @see TextInputProps.onChange
+ * @see TextInputProps.onKeyPress
+ */
+export type TextInputKeyPressEvent =
+  NativeSyntheticEvent<TextInputKeyPressEventData>;
+
+/**
+ * @deprecated Use `TextInputChangeEvent` instead
  */
 export interface TextInputChangeEventData extends TargetedEvent {
   eventCount: number;
@@ -604,25 +630,49 @@ export interface TextInputChangeEventData extends TargetedEvent {
 }
 
 /**
- * @see TextInputProps.onContentSizeChange
+ * @see TextInputProps.onChange
+ */
+export type TextInputChangeEvent =
+  NativeSyntheticEvent<TextInputChangeEventData>;
+
+/**
+ * @deprecated Use `TextInputContentSizeChangeEvent` instead
  */
 export interface TextInputContentSizeChangeEventData {
   contentSize: {width: number; height: number};
 }
 
 /**
- * @see TextInputProps.onEndEditing
+ * @see TextInputProps.onContentSizeChange
+ */
+export type TextInputContentSizeChangeEvent =
+  NativeSyntheticEvent<TextInputContentSizeChangeEventData>;
+
+/**
+ * @deprecated Use `TextInputEndEditingEvent` instead
  */
 export interface TextInputEndEditingEventData {
   text: string;
 }
 
 /**
- * @see TextInputProps.onSubmitEditing
+ * @see TextInputProps.onEndEditing
+ */
+export type TextInputEndEditingEvent =
+  NativeSyntheticEvent<TextInputEndEditingEventData>;
+
+/**
+ * @deprecated Use `TextInputSubmitEditingEvent` instead
  */
 export interface TextInputSubmitEditingEventData {
   text: string;
 }
+
+/**
+ * @see TextInputProps.onSubmitEditing
+ */
+export type TextInputSubmitEditingEvent =
+  NativeSyntheticEvent<TextInputSubmitEditingEventData>;
 
 /**
  * @see https://reactnative.dev/docs/textinput#props
@@ -871,17 +921,16 @@ export interface TextInputProps
 
   /**
    * Callback that is called when the text input is blurred
+   *
+   * Note: If you are trying to find the last value of TextInput, you can use the `onEndEditing`
+   * event, which is fired upon completion of editing.
    */
-  onBlur?:
-    | ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void)
-    | undefined;
+  onBlur?: ((e: BlurEvent) => void) | undefined;
 
   /**
    * Callback that is called when the text input's text changes.
    */
-  onChange?:
-    | ((e: NativeSyntheticEvent<TextInputChangeEventData>) => void)
-    | undefined;
+  onChange?: ((e: TextInputChangeEvent) => void) | undefined;
 
   /**
    * Callback that is called when the text input's text changes.
@@ -897,15 +946,13 @@ export interface TextInputProps
    * Only called for multiline text inputs.
    */
   onContentSizeChange?:
-    | ((e: NativeSyntheticEvent<TextInputContentSizeChangeEventData>) => void)
+    | ((e: TextInputContentSizeChangeEvent) => void)
     | undefined;
 
   /**
    * Callback that is called when text input ends.
    */
-  onEndEditing?:
-    | ((e: NativeSyntheticEvent<TextInputEndEditingEventData>) => void)
-    | undefined;
+  onEndEditing?: ((e: TextInputEndEditingEvent) => void) | undefined;
 
   /**
    * Called when a single tap gesture is detected.
@@ -927,23 +974,17 @@ export interface TextInputProps
   /**
    * Callback that is called when the text input is focused
    */
-  onFocus?:
-    | ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void)
-    | undefined;
+  onFocus?: ((e: FocusEvent) => void) | undefined;
 
   /**
    * Callback that is called when the text input selection is changed.
    */
-  onSelectionChange?:
-    | ((e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void)
-    | undefined;
+  onSelectionChange?: ((e: TextInputSelectionChangeEvent) => void) | undefined;
 
   /**
    * Callback that is called when the text input's submit button is pressed.
    */
-  onSubmitEditing?:
-    | ((e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void)
-    | undefined;
+  onSubmitEditing?: ((e: TextInputSubmitEditingEvent) => void) | undefined;
 
   /**
    * Invoked on content scroll with
@@ -951,9 +992,7 @@ export interface TextInputProps
    *
    * May also contain other properties from ScrollEvent but on Android contentSize is not provided for performance reasons.
    */
-  onScroll?:
-    | ((e: NativeSyntheticEvent<TextInputScrollEventData>) => void)
-    | undefined;
+  onScroll?: ((e: TextInputScrollEvent) => void) | undefined;
 
   /**
    * Callback that is called when a key is pressed.
@@ -964,9 +1003,7 @@ export interface TextInputProps
    * Fires before onChange callbacks.
    * Note: on Android only the inputs from soft keyboard are handled, not the hardware keyboard inputs.
    */
-  onKeyPress?:
-    | ((e: NativeSyntheticEvent<TextInputKeyPressEventData>) => void)
-    | undefined;
+  onKeyPress?: ((e: TextInputKeyPressEvent) => void) | undefined;
 
   /**
    * The string that will be rendered before text input has been entered
@@ -1040,6 +1077,12 @@ export interface TextInputProps
   inputAccessoryViewID?: string | undefined;
 
   /**
+   * An optional label that overrides the default input accessory view button label.
+   * @platform ios
+   */
+  inputAccessoryViewButtonLabel?: string | undefined;
+
+  /**
    * The value to show for the text input. TextInput is a controlled component,
    * which means the native value will be forced to match this value prop if provided.
    * For most uses this works great, but in some cases this may cause flickering - one common cause is preventing edits by keeping value the same.
@@ -1089,6 +1132,22 @@ interface TextInputState {
    * noop if it wasn't focused
    */
   blurTextInput(textField?: HostInstance): void;
+
+  // [macOS
+  /**
+   * @param textField ref of the text field that was focused
+   * Call on custom implementations of TextInput to notify the control was focused
+   * noop if it was already focused
+   */
+  onTextInputFocus(textField?: HostInstance): void;
+
+  /**
+   * @param textField ref of the text field that was blurred
+   * Call on custom implementations of TextInput to notify the control was blurred
+   * noop if it wasn't focused
+   */
+  onTextInputBlur(textField?: HostInstance): void;
+  // macOS]
 }
 
 /**

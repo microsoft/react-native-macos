@@ -71,7 +71,7 @@ static NSString *RCTCacheKeyForImage(NSString *imageTag, CGSize size, CGFloat sc
 }
 #endif // [macOS]
 
-- (void)addImageToCache:(UIImage *)image forKey:(NSString *)cacheKey
+- (void)addImageToCache:(RCTPlatformImage *)image forKey:(NSString *)cacheKey // [macOS]
 {
   if (!image) {
     return;
@@ -82,7 +82,7 @@ static NSString *RCTCacheKeyForImage(NSString *imageTag, CGSize size, CGFloat sc
   }
 }
 
-- (UIImage *)imageForUrl:(NSString *)url size:(CGSize)size scale:(CGFloat)scale resizeMode:(RCTResizeMode)resizeMode
+- (RCTPlatformImage *)imageForUrl:(NSString *)url size:(CGSize)size scale:(CGFloat)scale resizeMode:(RCTResizeMode)resizeMode // [macOS]
 {
   NSString *cacheKey = RCTCacheKeyForImage(url, size, scale, resizeMode);
   @synchronized(_cacheStaleTimes) {
@@ -99,7 +99,7 @@ static NSString *RCTCacheKeyForImage(NSString *imageTag, CGSize size, CGFloat sc
   return [_decodedImageCache objectForKey:cacheKey];
 }
 
-- (void)addImageToCache:(UIImage *)image
+- (void)addImageToCache:(RCTPlatformImage *)image // [macOS]
                     URL:(NSString *)url
                    size:(CGSize)size
                   scale:(CGFloat)scale

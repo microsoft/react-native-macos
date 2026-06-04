@@ -148,7 +148,7 @@
   return _frames[index].duration;
 }
 
-- (UIImage *)animatedImageFrameAtIndex:(NSUInteger)index
+- (RCTPlatformImage *)animatedImageFrameAtIndex:(NSUInteger)index // [macOS]
 {
   CGImageRef imageRef = CGImageSourceCreateImageAtIndex(_imageSource, index, NULL);
   if (!imageRef) {
@@ -157,7 +157,7 @@
 #if !TARGET_OS_OSX // [macOS]
   UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:_scale orientation:UIImageOrientationUp];
 #else // [macOS
-  UIImage *image = [[NSImage alloc] initWithCGImage:imageRef size:CGSizeMake(CGImageGetWidth(imageRef), CGImageGetHeight(imageRef))];
+  NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:CGSizeMake(CGImageGetWidth(imageRef), CGImageGetHeight(imageRef))];
 #endif // macOS]
   CGImageRelease(imageRef);
   return image;

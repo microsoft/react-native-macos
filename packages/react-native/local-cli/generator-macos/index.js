@@ -1,4 +1,5 @@
 // @ts-check
+// @noflow
 
 'use strict';
 
@@ -6,9 +7,7 @@ const {
   copyAndReplaceAll,
   createDir,
 } = require('../generator-common');
-const chalk = require('chalk');
-const childProcess = require('child_process');
-const fs = require('fs');
+const { styleText } = require('node:util');
 const path = require('path');
 
 const macOSDir = 'macos';
@@ -102,33 +101,20 @@ function schemePath(basename, platform) {
 }
 
 /**
- * @param {{ verbose?: boolean }=} options
- */
-function installDependencies(options) {
-  const cwd = process.cwd();
-
-  // Install dependencies using correct package manager
-  const isYarn = fs.existsSync(path.join(cwd, 'yarn.lock'));
-
-  /** @type {{ stdio?: 'inherit' }} */
-  const execOptions = options && options.verbose ? { stdio: 'inherit' } : {};
-  childProcess.execSync(isYarn ? 'yarn' : 'npm i', execOptions);
-}
-
-/**
  * @param {string} newProjectName
  */
 function printFinishMessage(newProjectName) {
   console.log(`
-  ${chalk.blue(`Run instructions for ${chalk.bold('macOS')}`)}:
-    • pod install --project-directory=macos
-    • npx react-native run-macos
-    • yarn start:macos
+  ${styleText('blue', `Run instructions for ${styleText('bold', 'macOS')}`)}:
+    • ${styleText('cyan', 'pod install --project-directory=macos')}
+    • ${styleText('cyan', 'npx react-native run-macos')}
+
+  To start the Metro bundler separately:
+    • ${styleText('cyan', 'npx react-native start')}
 `);
 }
 
 module.exports = {
   copyProjectTemplateAndReplace,
-  installDependencies,
   printFinishMessage,
 };

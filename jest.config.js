@@ -4,16 +4,19 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @flow strict
  * @format
  */
 
 'use strict';
 
+// $FlowFixMe[cannot-resolve-module]
+// $FlowFixMe[untyped-import]
 const {defaults} = require('jest-config');
 
 const PODS_LOCATIONS = [
   'packages/rn-tester/Pods',
-  'packages/helloworld/ios/Pods',
+  'private/helloworld/ios/Pods',
 ];
 
 module.exports = {
@@ -39,7 +42,7 @@ module.exports = {
     '<rootDir>/packages/react-native/Libraries/Renderer',
     '<rootDir>/packages/react-native/sdks/hermes/',
     ...PODS_LOCATIONS,
-  ],
+  ] /*:: as $ReadOnlyArray<string> */,
   transformIgnorePatterns: ['node_modules/(?!@react-native/)'],
   haste: {
     defaultPlatform: 'ios',
@@ -52,12 +55,15 @@ module.exports = {
     '^react-native$': '<rootDir>/packages/react-native/index.js',
   },
   // macOS]
-  moduleFileExtensions: ['fb.js'].concat(defaults.moduleFileExtensions),
+  moduleFileExtensions: [
+    'fb.js',
+    ...defaults.moduleFileExtensions,
+  ] /*:: as $ReadOnlyArray<string> */,
   modulePathIgnorePatterns: [
     'scripts/.*/__fixtures__/',
     '<rootDir>/packages/react-native/sdks/hermes/',
     ...PODS_LOCATIONS,
-  ],
+  ] /*:: as $ReadOnlyArray<string> */,
   unmockedModulePathPatterns: [
     'node_modules/react/',
     'packages/react-native/Libraries/Renderer',

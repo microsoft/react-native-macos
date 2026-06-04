@@ -10,4 +10,4 @@
 
 #import <React/RCTDefines.h>
 
-RCT_EXTERN UIImage *RCTBlurredImageWithRadius(UIImage *inputImage, CGFloat radius);
+RCT_EXTERN RCTPlatformImage *RCTBlurredImageWithRadius(RCTPlatformImage *inputImage, CGFloat radius); // [macOS]

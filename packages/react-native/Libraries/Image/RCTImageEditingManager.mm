@@ -60,7 +60,7 @@ RCT_EXPORT_METHOD(cropImage
 
   [[_moduleRegistry moduleForName:"ImageLoader"]
       loadImageWithURLRequest:imageRequest
-                     callback:^(NSError *error, UIImage *image) {
+                     callback:^(NSError *error, RCTPlatformImage *image) { // [macOS]
                        if (error) {
                          errorCallback(@[ RCTJSErrorFromNSError(error) ]);
                          return;
@@ -70,7 +70,7 @@ RCT_EXPORT_METHOD(cropImage
                        CGSize targetSize = rect.size;
                        CGRect targetRect = {{-rect.origin.x, -rect.origin.y}, image.size};
                        CGAffineTransform transform = RCTTransformFromTargetRect(image.size, targetRect);
-                       UIImage *croppedImage = RCTTransformImage(image, targetSize, UIImageGetScale(image), transform); // [macOS]
+                       RCTPlatformImage *croppedImage = RCTTransformImage(image, targetSize, UIImageGetScale(image), transform); // [macOS]
 
                        // Scale image
                        if (cropDataCopy.displaySize()) {

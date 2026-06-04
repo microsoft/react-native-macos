@@ -65,7 +65,7 @@ using namespace facebook::react;
    * T46024425 for more details.
    */
   dispatch_async(_backgroundSerialQueue, ^{
-    auto completionBlock = ^(NSError *error, UIImage *image, id metadata) {
+    auto completionBlock = ^(NSError *error, RCTPlatformImage *image, id metadata) { // [macOS]
       auto observerCoordinator = weakObserverCoordinator.lock();
       if (!observerCoordinator) {
         return;

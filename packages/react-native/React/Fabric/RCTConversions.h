@@ -14,6 +14,10 @@
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
 #import <react/renderer/graphics/Transform.h>
 
+#if TARGET_OS_OSX // [macOS
+#import <react/renderer/components/iostextinput/primitives.h>
+#endif // macOS]
+
 NS_ASSUME_NONNULL_BEGIN
 
 inline NSString *RCTNSStringFromString(
@@ -35,7 +39,7 @@ inline std::string RCTStringFromNSString(NSString *string)
   return std::string{string.UTF8String ?: ""};
 }
 
-inline RCTUIColor *_Nullable RCTUIColorFromSharedColor(const facebook::react::SharedColor &sharedColor) // [macOS]
+inline RCTPlatformColor *_Nullable RCTUIColorFromSharedColor(const facebook::react::SharedColor &sharedColor) // [macOS]
 {
   return RCTPlatformColorFromColor(*sharedColor);
 }
@@ -68,69 +72,71 @@ inline UIEdgeInsets RCTUIEdgeInsetsFromEdgeInsets(const facebook::react::EdgeIns
 
 #if !TARGET_OS_OSX // [macOS]
 const UIAccessibilityTraits AccessibilityTraitSwitch = 0x20000000000001;
+#endif // [macOS]
 
-inline UIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
+// [macOS
+inline RCTUIAccessibilityTraits RCTUIAccessibilityTraitsFromAccessibilityTraits(
     facebook::react::AccessibilityTraits accessibilityTraits)
 {
   using AccessibilityTraits = facebook::react::AccessibilityTraits;
-  UIAccessibilityTraits result = UIAccessibilityTraitNone;
+  RCTUIAccessibilityTraits result = RCTUIAccessibilityTraitNone;
   if ((accessibilityTraits & AccessibilityTraits::Button) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitButton;
+    result |= RCTUIAccessibilityTraitButton;
   }
   if ((accessibilityTraits & AccessibilityTraits::Link) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitLink;
+    result |= RCTUIAccessibilityTraitLink;
   }
   if ((accessibilityTraits & AccessibilityTraits::Image) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitImage;
+    result |= RCTUIAccessibilityTraitImage;
   }
   if ((accessibilityTraits & AccessibilityTraits::Selected) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitSelected;
+    result |= RCTUIAccessibilityTraitSelected;
   }
   if ((accessibilityTraits & AccessibilityTraits::PlaysSound) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitPlaysSound;
+    result |= RCTUIAccessibilityTraitPlaysSound;
   }
   if ((accessibilityTraits & AccessibilityTraits::KeyboardKey) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitKeyboardKey;
+    result |= RCTUIAccessibilityTraitKeyboardKey;
   }
   if ((accessibilityTraits & AccessibilityTraits::StaticText) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitStaticText;
+    result |= RCTUIAccessibilityTraitStaticText;
   }
   if ((accessibilityTraits & AccessibilityTraits::SummaryElement) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitSummaryElement;
+    result |= RCTUIAccessibilityTraitSummaryElement;
   }
   if ((accessibilityTraits & AccessibilityTraits::NotEnabled) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitNotEnabled;
+    result |= RCTUIAccessibilityTraitNotEnabled;
   }
   if ((accessibilityTraits & AccessibilityTraits::UpdatesFrequently) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitUpdatesFrequently;
+    result |= RCTUIAccessibilityTraitUpdatesFrequently;
   }
   if ((accessibilityTraits & AccessibilityTraits::SearchField) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitSearchField;
+    result |= RCTUIAccessibilityTraitSearchField;
   }
   if ((accessibilityTraits & AccessibilityTraits::StartsMediaSession) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitStartsMediaSession;
+    result |= RCTUIAccessibilityTraitStartsMediaSession;
   }
   if ((accessibilityTraits & AccessibilityTraits::Adjustable) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitAdjustable;
+    result |= RCTUIAccessibilityTraitAdjustable;
   }
   if ((accessibilityTraits & AccessibilityTraits::AllowsDirectInteraction) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitAllowsDirectInteraction;
+    result |= RCTUIAccessibilityTraitAllowsDirectInteraction;
   }
   if ((accessibilityTraits & AccessibilityTraits::CausesPageTurn) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitCausesPageTurn;
+    result |= RCTUIAccessibilityTraitCausesPageTurn;
   }
   if ((accessibilityTraits & AccessibilityTraits::Header) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitHeader;
+    result |= RCTUIAccessibilityTraitHeader;
   }
   if ((accessibilityTraits & AccessibilityTraits::Switch) != AccessibilityTraits::None) {
-    result |= AccessibilityTraitSwitch;
+    result |= RCTUIAccessibilityTraitSwitch;
   }
   if ((accessibilityTraits & AccessibilityTraits::TabBar) != AccessibilityTraits::None) {
-    result |= UIAccessibilityTraitTabBar;
+    result |= RCTUIAccessibilityTraitTabBar;
   }
   return result;
-};
-#endif // [macOS]
+}
+// macOS]
 
 inline CATransform3D RCTCATransform3DFromTransformMatrix(const facebook::react::Transform &transformMatrix)
 {
@@ -185,5 +191,30 @@ inline facebook::react::LayoutDirection RCTLayoutDirection(BOOL isRTL)
 {
   return isRTL ? facebook::react::LayoutDirection::RightToLeft : facebook::react::LayoutDirection::LeftToRight;
 }
+
+#if TARGET_OS_OSX // [macOS
+inline NSArray<NSPasteboardType> *RCTPasteboardTypeArrayFromProps(const std::vector<facebook::react::PastedTypesType> &pastedTypes)
+{
+  NSMutableArray<NSPasteboardType> *types = [NSMutableArray new];
+  
+  for (const auto &type : pastedTypes) {
+    switch (type) {
+      case facebook::react::PastedTypesType::FileUrl:
+        [types addObjectsFromArray:@[NSFilenamesPboardType]];
+        break;
+      case facebook::react::PastedTypesType::Image:
+        [types addObjectsFromArray:@[NSPasteboardTypePNG, NSPasteboardTypeTIFF]];
+        break;
+      case facebook::react::PastedTypesType::String:
+        [types addObjectsFromArray:@[NSPasteboardTypeString]];
+        break;
+      default:
+        break;
+    }
+  }
+    
+  return [types copy];
+}
+#endif // macOS]
 
 NS_ASSUME_NONNULL_END

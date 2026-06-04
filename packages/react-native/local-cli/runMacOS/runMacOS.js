@@ -4,6 +4,7 @@
  * Licensed under the MIT License.
  * @format
  */
+// @noflow
 'use strict';
 
 /**
@@ -34,11 +35,17 @@
  * }} ProjectConfig
  */
 
-const chalk = require('chalk');
-const child_process = require('child_process');
-const path = require('path');
-const {logger, CLIError, getDefaultUserTerminal} = (() => {
-  const cli = require.resolve('@react-native-community/cli/package.json');
+const child_process = require('node:child_process');
+const path = require('node:path');
+const {styleText} = require('node:util');
+
+const colors = {
+  bold: (/** @type {string} */ s) => styleText('bold', s),
+  dim: (/** @type {string} */ s) => styleText('dim', s),
+};
+
+const {logger, CLIError, getDefaultUserTerminal} = ((projectRoot = process.cwd()) => {
+  const cli = require.resolve('@react-native-community/cli/package.json', {paths: [projectRoot]});
   const options = {paths: [path.dirname(cli)]};
   const tools = require.resolve('@react-native-community/cli-tools', options);
   return require(tools);
@@ -90,7 +97,7 @@ function parseArgs(ctx, args) {
   logger.info(
     `Found Xcode ${
       xcodeProject.isWorkspace ? 'workspace' : 'project'
-    } "${chalk.bold(xcodeProject.name)}"`,
+    } "${colors.bold(xcodeProject.name)}"`,
   );
 
   return {sourceDir, xcodeProject, scheme};
@@ -144,7 +151,7 @@ async function run(sourceDir, xcodeProject, scheme, args) {
     .trim();
 
   logger.info(
-    `Launching app "${chalk.bold(bundleID)}" from "${chalk.bold(appPath)}"`,
+    `Launching app "${colors.bold(bundleID)}" from "${colors.bold(appPath)}"`,
   );
 
   child_process.exec(
@@ -177,7 +184,7 @@ function buildProject(sourceDir, xcodeProject, scheme, args) {
       scheme,
     ];
     logger.info(
-      `Building ${chalk.dim(
+      `Building ${colors.dim(
         `(using "xcodebuild ${xcodebuildArgs.join(' ')}")`,
       )}`,
     );

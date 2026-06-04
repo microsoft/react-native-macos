@@ -10,7 +10,7 @@ fi
 set -e
 
 # Given a specific target, retrieve the right architecture for it
-# $1 the target you want to build. Allowed values: iphoneos, iphonesimulator, catalyst, xros, xrsimulator
+# $1 the target you want to build. Allowed values: iphoneos, iphonesimulator, catalyst, macosx, xros, xrsimulator
 function get_architecture {
     if [[ $1 == "iphoneos" || $1 == "xros" ]]; then
       echo "arm64"
@@ -20,7 +20,7 @@ function get_architecture {
       echo "arm64"
     elif [[ $1 == "appletvsimulator" ]]; then
       echo "x86_64;arm64"
-    elif [[ $1 == "catalyst" ]]; then
+    elif [[ $1 == "catalyst" || $1 == "macosx" ]]; then # [macOS]
       echo "x86_64;arm64"
     else
       echo "Error: unknown architecture passed $1"
@@ -31,6 +31,10 @@ function get_architecture {
 function get_deployment_target {
     if [[ $1 == "xros" || $1 == "xrsimulator" ]]; then
       echo "$(get_visionos_deployment_target)"
+    # [macOS
+    elif [[ $1 == "macosx" ]]; then
+      echo "$(get_mac_deployment_target)"
+    # macOS]
     else # tvOS and iOS use the same deployment target
       echo "$(get_ios_deployment_target)"
     fi
@@ -53,7 +57,7 @@ function build_framework {
 # group the frameworks together to create a universal framework
 function build_universal_framework {
     if [ ! -d destroot/Library/Frameworks/universal/hermes.xcframework ]; then
-        create_universal_framework "iphoneos" "iphonesimulator" "catalyst" "xros" "xrsimulator" "appletvos" "appletvsimulator"
+        create_universal_framework "macosx" "iphoneos" "iphonesimulator" "catalyst" "xros" "xrsimulator" "appletvos" "appletvsimulator" # [macOS]
     else
         echo "Skipping; Clean \"destroot\" to rebuild".
     fi
@@ -63,6 +67,7 @@ function build_universal_framework {
 # this is used to preserve backward compatibility
 function create_framework {
     if [ ! -d destroot/Library/Frameworks/universal/hermes.xcframework ]; then
+        build_framework "macosx" # [macOS]
         build_framework "iphoneos"
         build_framework "iphonesimulator"
         build_framework "appletvos"

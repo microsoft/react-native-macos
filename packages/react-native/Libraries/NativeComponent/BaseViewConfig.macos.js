@@ -18,10 +18,25 @@ import {ConditionallyIgnoredEventHandlers} from './ViewConfigIgnore';
 
 const bubblingEventTypes = {
   ...PlatformBaseViewConfigIos.bubblingEventTypes,
+  topKeyDown: {
+    phasedRegistrationNames: {
+      captured: 'onKeyDownCapture',
+      bubbled: 'onKeyDown',
+    },
+  },
+  topKeyUp: {
+    phasedRegistrationNames: {
+      captured: 'onKeyUpCapture',
+      bubbled: 'onKeyUp',
+    },
+  },
 };
 
 const directEventTypes = {
   ...PlatformBaseViewConfigIos.directEventTypes,
+  topDoubleClick: {
+    registrationName: 'onDoubleClick',
+  },
   topDragEnter: {
     registrationName: 'onDragEnter',
   },
@@ -30,12 +45,6 @@ const directEventTypes = {
   },
   topDrop: {
     registrationName: 'onDrop',
-  },
-  topKeyUp: {
-    registrationName: 'onKeyUp',
-  },
-  topKeyDown: {
-    registrationName: 'onKeyDown',
   },
   topMouseEnter: {
     registrationName: 'onMouseEnter',
@@ -52,6 +61,7 @@ const validAttributesForNonEventProps = {
   cursor: true,
   draggedTypes: true,
   enableFocusRing: true,
+  focusable: true,
   tooltip: true,
   keyDownEvents: true,
   keyUpEvents: true,
@@ -61,6 +71,7 @@ const validAttributesForNonEventProps = {
 // Props for bubbling and direct events
 const validAttributesForEventProps = ConditionallyIgnoredEventHandlers({
   onBlur: true,
+  onDoubleClick: true,
   onDragEnter: true,
   onDragLeave: true,
   onDrop: true,

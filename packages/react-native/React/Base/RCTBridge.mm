@@ -32,15 +32,159 @@
 #import "RCTReloadCommand.h"
 #import "RCTUtils.h"
 
+// [macOS
+/**
+ * List of core React Native modules.
+ *
+ * When RCT_MODULE_NO_SELF_LOAD is set to non-zero, module self-registration via +load is disabled.
+ * Instead, RCTBridge will register these modules at initialization time.
+ */
+static NSArray<NSString *> *moduleClassNames = @[
+  @"RCTViewManager",
+  @"RCTActivityIndicatorViewManager",
+  @"RCTDebuggingOverlayManager",
+  @"RCTModalHostViewManager",
+  @"RCTModalManager",
+  @"RCTRefreshControlManager",
+  @"RCTSafeAreaViewManager",
+  @"RCTScrollContentViewManager",
+  @"RCTScrollViewManager",
+  @"RCTSwitchManager",
+  @"RCTUIManager",
+  @"RCTAccessibilityManager",
+  @"RCTActionSheetManager",
+  @"RCTAlertManager",
+  @"RCTAppearance",
+  @"RCTAppState",
+  @"RCTClipboard",
+  @"RCTDeviceInfo",
+  @"RCTDevLoadingView",
+  @"RCTDevMenu",
+  @"RCTDevSettings",
+  @"RCTDevToolsRuntimeSettingsModule",
+  @"RCTEventDispatcher",
+  @"RCTExceptionsManager",
+  @"RCTI18nManager",
+  @"RCTKeyboardObserver",
+  @"RCTLogBox",
+  @"RCTPerfMonitor",
+  @"RCTPlatform",
+  @"RCTRedBox",
+  @"RCTSourceCode",
+  @"RCTStatusBarManager",
+  @"RCTTiming",
+  @"RCTWebSocketModule",
+  @"RCTNativeAnimatedModule",
+  @"RCTNativeAnimatedTurboModule",
+  @"RCTBlobManager",
+  @"RCTFileReaderModule",
+  @"RCTBundleAssetImageLoader",
+  @"RCTGIFImageDecoder",
+  @"RCTImageEditingManager",
+  @"RCTImageLoader",
+  @"RCTImageStoreManager",
+  @"RCTImageViewManager",
+  @"RCTLocalAssetImageLoader",
+  @"RCTLinkingManager",
+  @"RCTDataRequestHandler",
+  @"RCTFileRequestHandler",
+  @"RCTHTTPRequestHandler",
+  @"RCTNetworking",
+  @"RCTPushNotificationManager",
+  @"RCTSettingsManager",
+  @"RCTBaseTextViewManager",
+  @"RCTBaseTextInputViewManager",
+  @"RCTInputAccessoryViewManager",
+  @"RCTMultilineTextInputViewManager",
+  @"RCTRawTextViewManager",
+  @"RCTSinglelineTextInputViewManager",
+  @"RCTTextViewManager",
+  @"RCTVirtualTextViewManager",
+  @"RCTVibration",
+];
+// macOS]
+
 static NSMutableArray<Class> *RCTModuleClasses;
 static dispatch_queue_t RCTModuleClassesSyncQueue;
+
+// [macOS
+/**
+ * Make sure ModuleClassesSyncQueue is initialized before any referring functions are called.
+ */
+static void RCTEnsureModuleClassesInitialized(void)
+{
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    RCTModuleClasses = [NSMutableArray new];
+    RCTModuleClassesSyncQueue =
+        dispatch_queue_create("com.facebook.react.ModuleClassesSyncQueue", DISPATCH_QUEUE_CONCURRENT);
+  });
+}
+// macOS]
+
 NSArray<Class> *RCTGetModuleClasses(void)
 {
+  // [macOS
+  RCTEnsureModuleClassesInitialized();
+
+#if RCT_MODULE_NO_SELF_LOAD
+  // When RCT_MODULE_NO_SELF_LOAD is enabled, modules don't self-register via +load
+  // Add core React Native modules here instead
+  __block NSMutableArray<Class> *result;
+  dispatch_sync(RCTModuleClassesSyncQueue, ^{
+    result = [RCTModuleClasses mutableCopy];
+  });
+
+  for (NSString *className in moduleClassNames) {
+    Class cls = NSClassFromString(className);
+    if (cls != nil) {
+      [result addObject:cls];
+    }
+  }
+
+  NSArray<Class> *finalResult = [result copy];
+
+  return finalResult;
+#else
+  // macOS]
   __block NSArray<Class> *result;
   dispatch_sync(RCTModuleClassesSyncQueue, ^{
     result = [RCTModuleClasses copy];
   });
+
   return result;
+  // [macOS
+#endif //RCT_MODULE_NO_SELF_LOAD
+  // macOS]
+}
+
+NSSet<NSString *> *getCoreModuleClasses(void);
+NSSet<NSString *> *getCoreModuleClasses(void)
+{
+  static NSSet<NSString *> *coreModuleClasses = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    coreModuleClasses = [NSSet setWithArray:moduleClassNames]; // [macOS]
+  });
+
+  return coreModuleClasses;
+}
+
+static NSMutableArray<NSString *> *modulesLoadedWithOldArch;
+void addModuleLoadedWithOldArch(NSString *);
+void addModuleLoadedWithOldArch(NSString *moduleName)
+{
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    modulesLoadedWithOldArch = [NSMutableArray new];
+  });
+
+  [modulesLoadedWithOldArch addObject:moduleName];
+}
+
+NSMutableArray<NSString *> *getModulesLoadedWithOldArch(void)
+{
+  return modulesLoadedWithOldArch;
 }
 
 /**
@@ -51,12 +195,12 @@ NSArray<Class> *RCTGetModuleClasses(void)
 void RCTRegisterModule(Class);
 void RCTRegisterModule(Class moduleClass)
 {
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    RCTModuleClasses = [NSMutableArray new];
-    RCTModuleClassesSyncQueue =
-        dispatch_queue_create("com.facebook.react.ModuleClassesSyncQueue", DISPATCH_QUEUE_CONCURRENT);
-  });
+  if (RCTAreLegacyLogsEnabled() && RCTIsNewArchEnabled() &&
+      ![getCoreModuleClasses() containsObject:[moduleClass description]]) {
+    addModuleLoadedWithOldArch([moduleClass description]);
+  }
+
+  RCTEnsureModuleClassesInitialized(); // [macOS]
 
   RCTAssert(
       [moduleClass conformsToProtocol:@protocol(RCTBridgeModule)],
@@ -160,17 +304,6 @@ void RCTEnableTurboModuleSyncVoidMethods(BOOL enabled)
   gTurboModuleEnableSyncVoidMethods = enabled;
 }
 
-static BOOL gBridgeModuleDisableBatchDidComplete = NO;
-BOOL RCTBridgeModuleBatchDidCompleteDisabled(void)
-{
-  return gBridgeModuleDisableBatchDidComplete;
-}
-
-void RCTDisableBridgeModuleBatchDidComplete(BOOL disabled)
-{
-  gBridgeModuleDisableBatchDidComplete = disabled;
-}
-
 BOOL kDispatchAccessibilityManagerInitOntoMain = NO;
 BOOL RCTUIManagerDispatchAccessibilityManagerInitOntoMain(void)
 {
@@ -182,6 +315,7 @@ void RCTUIManagerSetDispatchAccessibilityManagerInitOntoMain(BOOL enabled)
   kDispatchAccessibilityManagerInitOntoMain = enabled;
 }
 
+#ifndef RCT_FIT_RM_OLD_RUNTIME
 class RCTBridgeHostTargetDelegate : public facebook::react::jsinspector_modern::HostTargetDelegate {
  public:
   RCTBridgeHostTargetDelegate(RCTBridge *bridge)
@@ -314,6 +448,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
 
 - (void)dealloc
 {
+  RCTBridge *batchedBridge = self.batchedBridge;
   /**
    * This runs only on the main thread, but crashes the subclass
    * RCTAssertMainQueue();
@@ -333,7 +468,17 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
     RCTExecuteOnMainQueue(^{
       facebook::react::jsinspector_modern::getInspectorInstance().removePage(*inspectorPageId);
       inspectorPageId.reset();
-      inspectorTarget.reset();
+      // NOTE: RCTBridgeHostTargetDelegate holds a weak reference to RCTBridge.
+      // Conditionally call `inspectorTarget.reset()` to avoid a crash.
+      if (batchedBridge) {
+        [batchedBridge
+            dispatchBlock:^{
+              inspectorTarget.reset();
+            }
+                    queue:RCTJSThread];
+      } else {
+        inspectorTarget.reset();
+      }
     });
   }
 }
@@ -581,3 +726,110 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
   return _inspectorTarget.get();
 }
 @end
+#else // RCT_FIT_RM_OLD_RUNTIME
+@implementation RCTBridge
+- (instancetype)initWithDelegate:(id<RCTBridgeDelegate>)delegate launchOptions:(NSDictionary *)launchOptions
+{
+  return self;
+}
+
+- (instancetype)initWithBundleURL:(NSURL *)bundleURL
+                   moduleProvider:(__strong RCTBridgeModuleListProvider)block
+                    launchOptions:(NSDictionary *)launchOptions
+{
+  return self;
+}
+
+- (void)enqueueJSCall:(NSString *)moduleDotMethod args:(NSArray *)args
+{
+}
+
+- (void)enqueueJSCall:(NSString *)module
+               method:(NSString *)method
+                 args:(NSArray *)args
+           completion:(__strong dispatch_block_t)completion
+{
+}
+
+- (void)registerSegmentWithId:(NSUInteger)segmentId path:(NSString *)path
+{
+}
+
+- (id)moduleForName:(NSString *)moduleName
+{
+  return nil;
+}
+
+- (id)moduleForName:(NSString *)moduleName lazilyLoadIfNecessary:(BOOL)lazilyLoad
+{
+  return nil;
+}
+
+- (id)moduleForClass:(Class)moduleClass
+{
+  return nil;
+}
+
+- (void)setRCTTurboModuleRegistry:(id<RCTTurboModuleRegistry>)turboModuleRegistry
+{
+}
+
+- (RCTBridgeModuleDecorator *)bridgeModuleDecorator
+{
+  return nil;
+}
+
+- (NSArray *)modulesConformingToProtocol:(Protocol *)protocol
+{
+  return @[];
+}
+
+- (BOOL)moduleIsInitialized:(Class)moduleClass
+{
+  return NO;
+}
+
+- (void)reload __attribute__((deprecated("Use RCTReloadCommand instead")))
+{
+}
+
+- (void)reloadWithReason:(NSString *)reason __attribute__((deprecated("Use RCTReloadCommand instead")))
+{
+}
+
+- (void)onFastRefresh
+{
+}
+
+- (void)requestReload __attribute__((deprecated("Use RCTReloadCommand instead")))
+{
+}
+
+- (BOOL)isBatchActive
+{
+  return NO;
+}
+
+- (void)setUp
+{
+}
+
+- (void)enqueueCallback:(NSNumber *)cbID args:(NSArray *)args
+{
+}
+
++ (void)setCurrentBridge:(RCTBridge *)bridge
+{
+}
+
+- (void)invalidate
+{
+}
+
++ (instancetype)currentBridge
+{
+  return nil;
+}
+
+@end
+#endif // RCT_FIT_RM_OLD_RUNTIME

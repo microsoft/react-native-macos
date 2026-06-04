@@ -13,6 +13,10 @@
 #import "RCTSurfaceView.h"
 #import "RCTUtils.h"
 
+#if RCT_DEV_MENU // [macOS
+#import "RCTDevMenu.h"
+#endif // macOS]
+
 @interface RCTSurfaceHostingView ()
 
 @property (nonatomic, assign) BOOL isActivityIndicatorViewVisible;
@@ -44,7 +48,7 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
     [self _updateViews];
 
     // For backward compatibility with RCTRootView, set a color here instead of transparent (OS default).
-    self.backgroundColor = [RCTUIColor whiteColor]; // [macOS]
+    self.backgroundColor = [RCTPlatformColor whiteColor]; // [macOS]
   }
 
   return self;
@@ -134,10 +138,20 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
   _sizeMeasureMode = sizeMeasureMode;
   [self _invalidateLayout];
 }
+
 - (void)disableActivityIndicatorAutoHide:(BOOL)disabled
 {
   _autoHideDisabled = disabled;
 }
+
+#pragma mark - NSView
+
+#if TARGET_OS_OSX // [macOS
+- (void)viewDidEndLiveResize {
+  [super viewDidEndLiveResize];
+  [self setNeedsLayout];
+}
+#endif // macOS]
 
 #pragma mark - isActivityIndicatorViewVisible
 
@@ -213,6 +227,11 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
 {
   [super traitCollectionDidChange:previousTraitCollection];
+
+  if (RCTSharedApplication().applicationState == UIApplicationStateBackground) {
+    return;
+  }
+
   [[NSNotificationCenter defaultCenter]
       postNotificationName:RCTUserInterfaceStyleDidChangeNotification
                     object:self
@@ -272,5 +291,24 @@ RCT_NOT_IMPLEMENTED(-(nullable instancetype)initWithCoder : (NSCoder *)coder)
     [self _invalidateLayout];
   });
 }
+
+#if TARGET_OS_OSX // [macOS
+
+#pragma mark - Context Menu
+
+- (NSMenu *)menuForEvent:(NSEvent *)event
+{
+#if __has_include("RCTDevMenu.h") && RCT_DEV
+  // Try direct dev menu property first (simplest approach)
+  if (_devMenu) {
+    return [_devMenu menu];
+  }
+  
+
+#endif
+
+  return [super menuForEvent:event];
+}
+#endif // macOS]
 
 @end

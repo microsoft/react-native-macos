@@ -10,6 +10,8 @@
 
 @class RCTRootView;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @protocol RCTUIConfiguratorProtocol
 /**
  * The default `RCTColorSpace` for the app. It defaults to `RCTColorSpaceSRGB`.
@@ -54,3 +56,5 @@
  */
 - (void)setRootView:(RCTPlatformView *)rootView toRootViewController:(RCTPlatformViewController *)rootViewController; // [macOS]
 @end
+
+NS_ASSUME_NONNULL_END

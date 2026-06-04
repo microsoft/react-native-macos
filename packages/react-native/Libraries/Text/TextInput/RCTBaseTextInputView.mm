@@ -21,8 +21,11 @@
 #import <React/RCTTextAttributes.h>
 #import <React/RCTTextSelection.h>
 #import <React/RCTUITextView.h> // [macOS]
-#import "../RCTTextUIKit.h" // [macOS]
+#import <React/RCTTextUIKit.h> // [macOS]
 #import <React/RCTHandledKey.h> // [macOS]
+#if TARGET_OS_OSX // [macOS
+#import <React/RCTUISecureTextField.h>
+#endif // macOS]
 
 /** Native iOS text field bottom keyboard offset amount */
 static const CGFloat kSingleLineKeyboardBottomOffset = 15.0;
@@ -127,7 +130,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
   NSDictionary<NSAttributedStringKey, id> *textAttributes = [[_textAttributes effectiveTextAttributes] mutableCopy];
   if ([textAttributes valueForKey:NSForegroundColorAttributeName] == nil) {
-    [textAttributes setValue:[RCTUIColor blackColor] forKey:NSForegroundColorAttributeName]; // [macOS]
+    [textAttributes setValue:[RCTPlatformColor labelColor] forKey:NSForegroundColorAttributeName]; // [macOS]
   }
 
     backedTextInputView.defaultTextAttributes = textAttributes;
@@ -194,7 +197,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   BOOL shouldFallbackToBareTextComparison =
     // There are multiple Korean input sources (2-Set, 3-Set, etc). Check substring instead instead
     [[[self.backedTextInputView inputContext] selectedKeyboardInputSource] containsString:@"com.apple.inputmethod.Korean"] ||
-    [self.backedTextInputView hasMarkedText] || [self.backedTextInputView isKindOfClass:[NSSecureTextField class]] ||
+    [self.backedTextInputView hasMarkedText] || [self.backedTextInputView isKindOfClass:[RCTUISecureTextField class]] ||
 #endif // macOS]
       fontHasBeenUpdatedBySystem;
 
@@ -513,6 +516,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
 
 - (void)textInputDidBeginEditing
 {
+#if TARGET_OS_OSX // [macOS
+  if (_isCurrentlyEditing) {
+    return;
+  }
+  _isCurrentlyEditing = YES;
+#endif // macOS]
+  
   [_eventDispatcher sendTextEventWithType:RCTTextEventTypeFocus
                                  reactTag:self.reactTag
                                      text:[self.backedTextInputView.attributedText.string copy]
@@ -1064,7 +1074,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
   NSMutableDictionary<NSAttributedStringKey, id> *textAttributes =
       [backedTextInputView.defaultTextAttributes mutableCopy] ?: [NSMutableDictionary new];
 
-  [textAttributes setValue:backedTextInputView.placeholderColor ?: [RCTUIColor placeholderTextColor]
+  [textAttributes setValue:backedTextInputView.placeholderColor ?: [RCTPlatformColor placeholderTextColor]
                     forKey:NSForegroundColorAttributeName];
 
   return textAttributes;

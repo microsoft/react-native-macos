@@ -60,10 +60,10 @@ typedef struct RGBAPixel {
 
 #pragma mark - Public API
 
-- (UIImage *)referenceImageForSelector:(SEL)selector identifier:(NSString *)identifier error:(NSError **)errorPtr
+- (RCTPlatformImage *)referenceImageForSelector:(SEL)selector identifier:(NSString *)identifier error:(NSError **)errorPtr
 {
   NSString *filePath = [self _referenceFilePathForSelector:selector identifier:identifier];
-  UIImage *image = UIImageWithContentsOfFile(filePath); // [macOS]
+  RCTPlatformImage *image = UIImageWithContentsOfFile(filePath); // [macOS]
   if (nil == image && NULL != errorPtr) {
     BOOL exists = [_fileManager fileExistsAtPath:filePath];
     if (!exists) {
@@ -84,7 +84,7 @@ typedef struct RGBAPixel {
   return image;
 }
 
-- (BOOL)saveReferenceImage:(UIImage *)image
+- (BOOL)saveReferenceImage:(RCTPlatformImage *)image // [macOS]
                   selector:(SEL)selector
                 identifier:(NSString *)identifier
                      error:(NSError **)errorPtr
@@ -122,8 +122,8 @@ typedef struct RGBAPixel {
   return didWrite;
 }
 
-- (BOOL)saveFailedReferenceImage:(UIImage *)referenceImage
-                       testImage:(UIImage *)testImage
+- (BOOL)saveFailedReferenceImage:(RCTPlatformImage *)referenceImage // [macOS]
+                       testImage:(RCTPlatformImage *)testImage // [macOS]
                         selector:(SEL)selector
                       identifier:(NSString *)identifier
                            error:(NSError **)errorPtr
@@ -163,7 +163,7 @@ typedef struct RGBAPixel {
                                              identifier:identifier
                                            fileNameType:FBTestSnapshotFileNameTypeFailedTestDiff];
 
-  UIImage *diffImage = [referenceImage diffWithImage:testImage];
+  RCTPlatformImage *diffImage = [referenceImage diffWithImage:testImage];
   NSData *diffImageData = UIImagePNGRepresentation(diffImage);
 
   if (![diffImageData writeToFile:diffPath options:NSDataWritingAtomic error:errorPtr]) {
@@ -179,7 +179,7 @@ typedef struct RGBAPixel {
   return YES;
 }
 
-- (BOOL)compareReferenceImage:(UIImage *)referenceImage toImage:(UIImage *)image error:(NSError **)errorPtr
+- (BOOL)compareReferenceImage:(RCTPlatformImage *)referenceImage toImage:(RCTPlatformImage *)image error:(NSError **)errorPtr // [macOS]
 {
   if (CGSizeEqualToSize(referenceImage.size, image.size)) {
     BOOL imagesEqual = [referenceImage compareWithImage:image];
@@ -290,14 +290,14 @@ typedef NS_ENUM(NSInteger, FBTestSnapshotFileNameType) {
 
 #pragma mark - Private API
 
-- (BOOL)_performPixelComparisonWithView:(RCTUIView *)view // [macOS]
+- (BOOL)_performPixelComparisonWithView:(RCTPlatformView *)view // [macOS]
                                selector:(SEL)selector
                              identifier:(NSString *)identifier
                                   error:(NSError **)errorPtr
 {
-  UIImage *referenceImage = [self referenceImageForSelector:selector identifier:identifier error:errorPtr];
+  RCTPlatformImage *referenceImage = [self referenceImageForSelector:selector identifier:identifier error:errorPtr];
   if (nil != referenceImage) {
-    UIImage *snapshot = [self _snapshotView:view];
+    RCTPlatformImage *snapshot = [self _snapshotView:view];
     BOOL imagesSame = [self compareReferenceImage:referenceImage toImage:snapshot error:errorPtr];
     if (!imagesSame) {
       [self saveFailedReferenceImage:referenceImage
@@ -311,16 +311,16 @@ typedef NS_ENUM(NSInteger, FBTestSnapshotFileNameType) {
   return NO;
 }
 
-- (BOOL)_recordSnapshotOfView:(RCTUIView *)view // [macOS]
+- (BOOL)_recordSnapshotOfView:(RCTPlatformView *)view // [macOS]
                      selector:(SEL)selector
                    identifier:(NSString *)identifier
                         error:(NSError **)errorPtr
 {
-  UIImage *snapshot = [self _snapshotView:view];
+  RCTPlatformImage *snapshot = [self _snapshotView:view];
   return [self saveReferenceImage:snapshot selector:selector identifier:identifier error:errorPtr];
 }
 
-- (UIImage *)_snapshotView:(RCTUIView *)view // [macOS]
+- (RCTPlatformImage *)_snapshotView:(RCTPlatformView *)view // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
   [view layoutIfNeeded];
@@ -348,7 +348,7 @@ typedef NS_ENUM(NSInteger, FBTestSnapshotFileNameType) {
   // independent.
   NSBitmapImageRep *rep = [view bitmapImageRepForCachingDisplayInRect:bounds];
   [view cacheDisplayInRect:bounds toBitmapImageRep:rep];
-  UIImage *snapshot = [[NSImage alloc] initWithSize:bounds.size];
+  NSImage *snapshot = [[NSImage alloc] initWithSize:bounds.size];
   [snapshot addRepresentation:rep];
 
   return snapshot;

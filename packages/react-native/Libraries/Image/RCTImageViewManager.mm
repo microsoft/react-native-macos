@@ -100,7 +100,7 @@ RCT_EXPORT_METHOD(prefetchImage
                                                                             lazilyLoadIfNecessary:YES];
   [imageLoader loadImageWithURLRequest:request
                               priority:RCTImageLoaderPriorityPrefetch
-                              callback:^(NSError *error, UIImage *image) {
+                              callback:^(NSError *error, RCTPlatformImage *image) { // [macOS]
                                 if (error) {
                                   reject(@"E_PREFETCH_FAILURE", nil, error);
                                   return;

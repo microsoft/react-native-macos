@@ -18,13 +18,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 void RCTCopyBackedTextInput(
-#if !TARGET_OS_OSX // [macOS]
-    RCTUIView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUIView<RCTBackedTextInputViewProtocol> *toTextInput
-#else // [macOS
-    RCTUITextView<RCTBackedTextInputViewProtocol> *fromTextInput,
-    RCTUITextView<RCTBackedTextInputViewProtocol> *toTextInput
-#endif // macOS]
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *fromTextInput,
+    RCTPlatformView<RCTBackedTextInputViewProtocol> *toTextInput
 );
 
 #if !TARGET_OS_OSX // [macOS]
@@ -35,9 +30,7 @@ UITextAutocapitalizationType RCTUITextAutocapitalizationTypeFromAutocapitalizati
 
 UIKeyboardAppearance RCTUIKeyboardAppearanceFromKeyboardAppearance(
     facebook::react::KeyboardAppearance keyboardAppearance);
-#endif // [macOS]
 
-#if !TARGET_OS_OSX // [macOS]
 UITextSpellCheckingType RCTUITextSpellCheckingTypeFromOptionalBool(std::optional<bool> spellCheck);
 
 UITextFieldViewMode RCTUITextFieldViewModeFromTextInputAccessoryVisibilityMode(
@@ -52,6 +45,9 @@ UITextContentType RCTUITextContentTypeFromString(const std::string &contentType)
 UITextInputPasswordRules *RCTUITextInputPasswordRulesFromString(const std::string &passwordRules);
 
 UITextSmartInsertDeleteType RCTUITextSmartInsertDeleteTypeFromOptionalBool(std::optional<bool> smartInsertDelete);
+
+UIDataDetectorTypes RCTUITextViewDataDetectorTypesFromStringVector(const std::vector<std::string> &dataDetectorTypes);
+
 #endif // [macOS]
 
 NS_ASSUME_NONNULL_END

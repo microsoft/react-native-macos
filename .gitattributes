@@ -1,3 +1,4 @@
 # Ensure scripts always have Unix newlines, even on Windows.
 *.command  text eol=lf
 *.sh       text eol=lf
+*.js.flow linguist-language=JavaScript

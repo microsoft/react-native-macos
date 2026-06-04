@@ -12,12 +12,9 @@ import type {PartialViewConfig} from '../../Renderer/shims/ReactNativeTypes';
 
 import {ConditionallyIgnoredEventHandlers} from '../../NativeComponent/ViewConfigIgnore';
 
-type PartialViewConfigWithoutName = $Rest<
-  PartialViewConfig,
-  {uiViewClassName: string},
->;
+type PartialViewConfigWithoutName = Omit<PartialViewConfig, 'uiViewClassName'>;
 
-const RCTTextInputViewConfig = {
+const RCTTextInputViewConfig: PartialViewConfigWithoutName = {
   bubblingEventTypes: {
     topBlur: {
       phasedRegistrationNames: {
@@ -53,6 +50,18 @@ const RCTTextInputViewConfig = {
       phasedRegistrationNames: {
         bubbled: 'onSubmitEditing',
         captured: 'onSubmitEditingCapture',
+      },
+    },
+    topKeyDown: {
+      phasedRegistrationNames: {
+        bubbled: 'onKeyDown',
+        captured: 'onKeyDownCapture',
+      },
+    },
+    topKeyUp: {
+      phasedRegistrationNames: {
+        bubbled: 'onKeyUp',
+        captured: 'onKeyUpCapture',
       },
     },
     topTouchCancel: {
@@ -92,6 +101,9 @@ const RCTTextInputViewConfig = {
       registrationName: 'onKeyPressSync',
     },
     // [macOS
+    topPaste: {
+      registrationName: 'onPaste',
+    },
     topAutoCorrectChange: {
       registrationName: 'onAutoCorrectChange',
     },
@@ -104,12 +116,15 @@ const RCTTextInputViewConfig = {
     // macOS]
   },
   validAttributes: {
+    acceptDragAndDropTypes: true,
     dynamicTypeRamp: true,
     fontSize: true,
     fontWeight: true,
     fontVariant: true,
     // flowlint-next-line untyped-import:off
-    textShadowOffset: {diff: require('../../Utilities/differ/sizesDiffer')},
+    textShadowOffset: {
+      diff: require('../../Utilities/differ/sizesDiffer').default,
+    },
     allowFontScaling: true,
     fontStyle: true,
     textTransform: true,
@@ -151,6 +166,7 @@ const RCTTextInputViewConfig = {
     placeholder: true,
     autoCorrect: true,
     multiline: true,
+    numberOfLines: true,
     textContentType: true,
     maxLength: true,
     autoCapitalize: true,
@@ -169,6 +185,8 @@ const RCTTextInputViewConfig = {
     clearTextOnSubmit: true,
     grammarCheck: true,
     hideVerticalScrollIndicator: true,
+    keyDownEvents: true,
+    keyUpEvents: true,
     pastedTypes: true,
     submitKeyEvents: true,
     tooltip: true,
@@ -182,14 +200,17 @@ const RCTTextInputViewConfig = {
       onChangeSync: true,
       onKeyPressSync: true,
       // [macOS
+      onSubmitEditing: true,
       onPaste: true,
       onAutoCorrectChange: true,
       onSpellCheckChange: true,
       onGrammarCheckChange: true,
+      onKeyDown: true,
+      onKeyUp: true,
       // macOS]
     }),
     disableKeyboardShortcuts: true,
   },
 };
 
-module.exports = (RCTTextInputViewConfig: PartialViewConfigWithoutName);
+export default RCTTextInputViewConfig as PartialViewConfigWithoutName;

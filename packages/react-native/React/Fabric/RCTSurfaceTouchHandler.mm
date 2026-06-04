@@ -32,7 +32,7 @@ struct ActiveTouch {
   /*
    * A component view on which the touch was begun.
    */
-  __strong RCTUIView<RCTComponentViewProtocol> *componentView = nil; // [macOS]
+  __strong RCTPlatformView<RCTComponentViewProtocol> *componentView = nil; // [macOS]
 
   struct Hasher {
     size_t operator()(const ActiveTouch &activeTouch) const
@@ -52,7 +52,7 @@ struct ActiveTouch {
 static void UpdateActiveTouchWithUITouch(
     ActiveTouch &activeTouch,
     RCTUITouch *uiTouch, // [macOS]
-    RCTUIView *rootComponentView,  // [macOS]
+    RCTPlatformView *rootComponentView,  // [macOS]
     CGPoint rootViewOriginOffset) // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
@@ -105,7 +105,7 @@ static void UpdateActiveTouchWithUITouch(
 #endif // macOS]
 }
 
-static ActiveTouch CreateTouchWithUITouch(RCTUITouch *uiTouch, RCTUIView *rootComponentView, CGPoint rootViewOriginOffset) // [macOS]
+static ActiveTouch CreateTouchWithUITouch(RCTUITouch *uiTouch, RCTPlatformView *rootComponentView, CGPoint rootViewOriginOffset) // [macOS]
 {
   ActiveTouch activeTouch = {};
 
@@ -190,7 +190,7 @@ struct PointerHasher {
   /*
    * We hold the view weakly to prevent a retain cycle.
    */
-  __weak RCTUIView *_rootComponentView; // [macOS]
+  __weak RCTPlatformView *_rootComponentView; // [macOS]
   RCTIdentifierPool<11> _identifierPool;
 
   RCTSurfacePointerHandler *_pointerHandler;
@@ -221,7 +221,7 @@ struct PointerHasher {
 
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)action)
 
-- (void)attachToView:(RCTUIView *)view // [macOS]
+- (void)attachToView:(RCTPlatformView *)view // [macOS]
 {
   RCTAssert(self.view == nil, @"RCTTouchHandler already has attached view.");
 
@@ -233,7 +233,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
   }
 }
 
-- (void)detachFromView:(RCTUIView *)view // [macOS]
+- (void)detachFromView:(RCTPlatformView *)view // [macOS]
 {
   RCTAssertParam(view);
   RCTAssert(self.view == view, @"RCTTouchHandler attached to another view.");

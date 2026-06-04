@@ -17,29 +17,19 @@
 
 #if TARGET_OS_OSX // [macOS
 
-#if RCT_SUBCLASS_SECURETEXTFIELD
-#define RCTUITextFieldCell RCTUISecureTextFieldCell
-@interface RCTUISecureTextFieldCell : NSSecureTextFieldCell
-#else
 @interface RCTUITextFieldCell : NSTextFieldCell
-#endif
 
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
 @property (nonatomic, getter=isAutomaticTextReplacementEnabled) BOOL automaticTextReplacementEnabled;
 @property (nonatomic, getter=isAutomaticSpellingCorrectionEnabled) BOOL automaticSpellingCorrectionEnabled;
 @property (nonatomic, getter=isContinuousSpellCheckingEnabled) BOOL continuousSpellCheckingEnabled;
 @property (nonatomic, getter=isGrammarCheckingEnabled) BOOL grammarCheckingEnabled;
-@property (nonatomic, strong, nullable) RCTUIColor *selectionColor;
-@property (nonatomic, strong, nullable) RCTUIColor *insertionPointColor;
+@property (nonatomic, strong, nullable) RCTPlatformColor *selectionColor;
+@property (nonatomic, strong, nullable) RCTPlatformColor *insertionPointColor;
 
 @end
 
 @implementation RCTUITextFieldCell
-
-- (void)setTextContainerInset:(UIEdgeInsets)textContainerInset
-{
-  _textContainerInset = textContainerInset;
-}
 
 - (NSRect)titleRectForBounds:(NSRect)rect
 {
@@ -58,14 +48,11 @@
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
-  if (self.drawsBackground) {
-    if (self.backgroundColor && self.backgroundColor.alphaComponent > 0) {
-      
-      [self.backgroundColor set];
-      NSRectFill(cellFrame);
-    }
+  if (self.drawsBackground && self.backgroundColor && self.backgroundColor.alphaComponent > 0) {
+    [self.backgroundColor set];
+    NSRectFill(cellFrame);
   }
-  
+
   [super drawInteriorWithFrame:[self titleRectForBounds:cellFrame] inView:controlView];
 }
 
@@ -86,19 +73,17 @@
 @end
 #endif // macOS]
 
-#ifdef RCT_SUBCLASS_SECURETEXTFIELD
-@implementation RCTUISecureTextField {
-#else
 @implementation RCTUITextField {
-#endif
   RCTBackedTextFieldDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
 #if !TARGET_OS_OSX // [macOS]
   NSArray<UIBarButtonItemGroup *> *_initialValueLeadingBarButtonGroups;
   NSArray<UIBarButtonItemGroup *> *_initialValueTrailingBarButtonGroups;
 #endif // [macOS]
+  NSArray<NSString *> *_acceptDragAndDropTypes;
 #if TARGET_OS_OSX // [macOS
   BOOL _isUpdatingPlaceholderText;
+  NSArray<NSPasteboardType> *_readablePasteboardTypes;
 #endif // macOS]
 }
 
@@ -106,10 +91,16 @@
 @dynamic delegate;
 #endif // macOS]
 
+// This should not be needed but internal build were failing without it.
+// This variable is unused.
+#if !TARGET_OS_OSX // [macOS
+@synthesize dataDetectorTypes;
+#endif // macOS]
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-        
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(_textDidChange)
                                                  name:UITextFieldTextDidChangeNotification
@@ -161,11 +152,11 @@
 
 - (NSArray<NSAttributedStringKey> *)validAttributesForMarkedText
 {
-	return ((NSTextView *)self.currentEditor).validAttributesForMarkedText;
+	return ((NSTextView *)self.currentEditor).validAttributesForMarkedText ?: @[];
 }
 
 #endif // macOS]
-  
+
 #pragma mark - Accessibility
 
 #if !TARGET_OS_OSX // [macOS]
@@ -181,6 +172,16 @@
 }
 
 #pragma mark - Properties
+
+- (void)setAcceptDragAndDropTypes:(NSArray<NSString *> *)acceptDragAndDropTypes
+{
+  _acceptDragAndDropTypes = acceptDragAndDropTypes;
+}
+
+- (nullable NSArray<NSString *> *)acceptDragAndDropTypes
+{
+  return _acceptDragAndDropTypes;
+}
 
 - (void)setTextContainerInset:(UIEdgeInsets)textContainerInset
 {
@@ -209,6 +210,11 @@
 }
 
 #if TARGET_OS_OSX // [macOS
+
+- (NSResponder *)responder
+{
+  return self;
+}
 
 + (Class)cellClass
 {
@@ -275,22 +281,22 @@
   return ((RCTUITextFieldCell*)self.cell).isGrammarCheckingEnabled;
 }
 
-- (void)setSelectionColor:(RCTUIColor *)selectionColor
+- (void)setSelectionColor:(RCTPlatformColor *)selectionColor
 {
   ((RCTUITextFieldCell*)self.cell).selectionColor = selectionColor;
 }
 
-- (RCTUIColor*)selectionColor
+- (RCTPlatformColor*)selectionColor
 {
   return ((RCTUITextFieldCell*)self.cell).selectionColor;
 }
-    
+
 - (void)setCursorColor:(NSColor *)cursorColor
 {
     ((RCTUITextFieldCell*)self.cell).insertionPointColor = cursorColor;
 }
 
-- (RCTUIColor*)cursorColor
+- (RCTPlatformColor*)cursorColor
 {
   return ((RCTUITextFieldCell*)self.cell).insertionPointColor;
 }
@@ -338,7 +344,7 @@
 #endif
 } // macOS]
 
-- (void)setPlaceholderColor:(RCTUIColor *)placeholderColor // [macOS]
+- (void)setPlaceholderColor:(RCTPlatformColor *)placeholderColor // [macOS]
 {
   _placeholderColor = placeholderColor;
   [self _updatePlaceholder];
@@ -444,7 +450,7 @@
   NSMutableDictionary<NSAttributedStringKey, id> *textAttributes =
       [_defaultTextAttributes mutableCopy] ?: [NSMutableDictionary new];
 
-    [textAttributes setValue:self.placeholderColor ?: [RCTUIColor placeholderTextColor]
+    [textAttributes setValue:self.placeholderColor ?: [RCTPlatformColor placeholderTextColor]
                       forKey:NSForegroundColorAttributeName]; // [macOS]
 
   return textAttributes;
@@ -511,9 +517,9 @@
 {
   return [self textRectForBounds:bounds];
 }
-  
+
 #else // [macOS
-  
+
 #pragma mark - NSTextFieldDelegate methods
 
 - (void)textDidChange:(NSNotification *)notification
@@ -540,7 +546,7 @@
     [delegate textFieldEndEditing:self];
   }
 }
-  
+
 - (void)textViewDidChangeSelection:(NSNotification *)notification
 {
   id<RCTUITextFieldDelegate> delegate = self.delegate;
@@ -557,7 +563,7 @@
   }
   return NO;
 }
-  
+
 - (NSMenu *)textView:(NSTextView *)view menu:(NSMenu *)menu forEvent:(NSEvent *)event atIndex:(NSUInteger)charIndex
 {
   if (menu) {
@@ -617,7 +623,7 @@
   return [super performKeyEquivalent:event];
 }
 #endif // macOS]
-	
+
 #if !TARGET_OS_OSX // [macOS]
 - (void)setSelectedTextRange:(UITextRange *)selectedTextRange notifyDelegate:(BOOL)notifyDelegate
 {
@@ -648,7 +654,7 @@
     // so the adapter must not generate a notification for it.
     [_textInputDelegateAdapter skipNextTextInputDidChangeSelectionEventWithTextRange:selectedTextRange];
   }
-  
+
   [[self currentEditor] setSelectedRange:selectedTextRange];
 }
 
@@ -697,6 +703,13 @@
   if ([self.textInputDelegate textInputShouldHandleKeyEvent:event]) {
     [super keyUp:event];
   }
+}
+#endif // macOS]
+  
+#if TARGET_OS_OSX // [macOS
+- (void)setReadablePasteBoardTypes:(NSArray<NSPasteboardType> *)readablePasteboardTypes
+{
+  _readablePasteboardTypes = readablePasteboardTypes;
 }
 #endif // macOS]
 

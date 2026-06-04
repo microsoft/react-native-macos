@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
 
 import type {RNTesterModule} from '../../types/RNTesterTypes';
@@ -127,6 +127,12 @@ function PressableFeedbackEvents() {
           onHoverOut={() => appendEvent('hoverOut')}
           onFocus={() => appendEvent('focus')}
           onBlur={() => appendEvent('blur')}
+          onDragEnter={() => appendEvent('dragEnter')}
+          onDragLeave={() => appendEvent('dragLeave')}
+          onDrop={() => appendEvent('drop')}
+          draggedTypes={'fileUrl'}
+          onAuxClick={() => appendEvent('auxClick')}
+          onDoubleClick={() => appendEvent('doubleClick')}
           // macOS]
           onPress={() => appendEvent('press')}
           onPressIn={() => appendEvent('pressIn')}
@@ -477,6 +483,8 @@ const examples = [
             <Pressable
               android_ripple={{color: 'orange', borderless: true, radius: 30}}>
               <View>
+                {/* $FlowFixMe[incompatible-type] Natural Inference rollout.
+                 * See https://fburl.com/workplace/6291gfvu */}
                 <Text style={[styles.button, nativeFeedbackButton]}>
                   radius 30
                 </Text>
@@ -485,6 +493,8 @@ const examples = [
 
             <Pressable android_ripple={{borderless: true, radius: 150}}>
               <View>
+                {/* $FlowFixMe[incompatible-type] Natural Inference rollout.
+                 * See https://fburl.com/workplace/6291gfvu */}
                 <Text style={[styles.button, nativeFeedbackButton]}>
                   radius 150
                 </Text>
@@ -493,6 +503,8 @@ const examples = [
 
             <Pressable android_ripple={{borderless: false, radius: 70}}>
               <View style={styles.block}>
+                {/* $FlowFixMe[incompatible-type] Natural Inference rollout.
+                 * See https://fburl.com/workplace/6291gfvu */}
                 <Text style={[styles.button, nativeFeedbackButton]}>
                   radius 70, with border
                 </Text>
@@ -502,6 +514,8 @@ const examples = [
 
           <Pressable android_ripple={{borderless: false}}>
             <View style={styles.block}>
+              {/* $FlowFixMe[incompatible-type] Natural Inference rollout. See
+               * https://fburl.com/workplace/6291gfvu */}
               <Text style={[styles.button, nativeFeedbackButton]}>
                 with border, default color and radius
               </Text>
@@ -602,5 +616,7 @@ module.exports = ({
   category: 'UI',
   description: 'Component for making views pressable.',
   displayName: 'Pressable',
+  /* $FlowFixMe[incompatible-cast] Natural Inference rollout. See
+   * https://fburl.com/workplace/6291gfvu */
   examples,
 }: RNTesterModule);

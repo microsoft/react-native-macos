@@ -8,25 +8,19 @@
 #include "NativePerformance.h"
 
 #include <memory>
-#include <mutex>
 #include <unordered_map>
+#include <variant>
 
 #include <cxxreact/JSExecutor.h>
 #include <cxxreact/ReactMarker.h>
 #include <jsi/instrumentation.h>
-#include <jsinspector-modern/tracing/CdpTracing.h>
 #include <react/performance/timeline/PerformanceEntryReporter.h>
 #include <react/performance/timeline/PerformanceObserver.h>
-#include <reactperflogger/ReactPerfettoLogger.h>
 
 #include "NativePerformance.h"
 
 #ifdef RN_DISABLE_OSS_PLUGIN_HEADER
 #include "Plugins.h"
-#endif
-
-#ifdef WITH_PERFETTO
-#include <reactperflogger/ReactPerfetto.h>
 #endif
 
 std::shared_ptr<facebook::react::TurboModule> NativePerformanceModuleProvider(
@@ -38,33 +32,6 @@ std::shared_ptr<facebook::react::TurboModule> NativePerformanceModuleProvider(
 namespace facebook::react {
 
 namespace {
-
-#if defined(__clang__)
-#define NO_DESTROY [[clang::no_destroy]]
-#else
-#define NO_DESTROY
-#endif
-
-NO_DESTROY const std::string TRACK_PREFIX = "Track:";
-
-std::tuple<std::optional<std::string>, std::string_view> parseTrackName(
-    const std::string& name) {
-  // Until there's a standard way to pass through track information, parse it
-  // manually, e.g., "Track:Foo:Event name"
-  // https://github.com/w3c/user-timing/issues/109
-  std::optional<std::string> trackName;
-  std::string_view eventName(name);
-  if (name.starts_with(TRACK_PREFIX)) {
-    const auto trackNameDelimiter = name.find(':', TRACK_PREFIX.length());
-    if (trackNameDelimiter != std::string::npos) {
-      trackName = name.substr(
-          TRACK_PREFIX.length(), trackNameDelimiter - TRACK_PREFIX.length());
-      eventName = std::string_view(name).substr(trackNameDelimiter + 1);
-    }
-  }
-
-  return std::make_tuple(trackName, eventName);
-}
 
 class PerformanceObserverWrapper : public jsi::NativeState {
  public:
@@ -78,6 +45,50 @@ class PerformanceObserverWrapper : public jsi::NativeState {
 void sortEntries(std::vector<PerformanceEntry>& entries) {
   return std::stable_sort(
       entries.begin(), entries.end(), PerformanceEntrySorter{});
+}
+
+NativePerformanceEntry toNativePerformanceEntry(const PerformanceEntry& entry) {
+  auto nativeEntry = std::visit(
+      [](const auto& entryData) -> NativePerformanceEntry {
+        return {
+            .name = entryData.name,
+            .entryType = entryData.entryType,
+            .startTime = entryData.startTime,
+            .duration = entryData.duration,
+        };
+      },
+      entry);
+
+  if (std::holds_alternative<PerformanceEventTiming>(entry)) {
+    auto eventEntry = std::get<PerformanceEventTiming>(entry);
+    nativeEntry.processingStart = eventEntry.processingStart;
+    nativeEntry.processingEnd = eventEntry.processingEnd;
+    nativeEntry.interactionId = eventEntry.interactionId;
+  }
+  if (std::holds_alternative<PerformanceResourceTiming>(entry)) {
+    auto resourceEntry = std::get<PerformanceResourceTiming>(entry);
+    nativeEntry.fetchStart = resourceEntry.fetchStart;
+    nativeEntry.requestStart = resourceEntry.requestStart;
+    nativeEntry.connectStart = resourceEntry.connectStart;
+    nativeEntry.connectEnd = resourceEntry.connectEnd;
+    nativeEntry.responseStart = resourceEntry.responseStart;
+    nativeEntry.responseEnd = resourceEntry.responseEnd;
+    nativeEntry.responseStatus = resourceEntry.responseStatus;
+  }
+
+  return nativeEntry;
+}
+
+std::vector<NativePerformanceEntry> toNativePerformanceEntries(
+    std::vector<PerformanceEntry>& entries) {
+  std::vector<NativePerformanceEntry> result;
+  result.reserve(entries.size());
+
+  for (auto& entry : entries) {
+    result.emplace_back(toNativePerformanceEntry(entry));
+  }
+
+  return result;
 }
 
 const std::array<PerformanceEntryType, 2> ENTRY_TYPES_AVAILABLE_FROM_TIMELINE{
@@ -103,57 +114,63 @@ std::shared_ptr<PerformanceObserver> tryGetObserver(
 } // namespace
 
 NativePerformance::NativePerformance(std::shared_ptr<CallInvoker> jsInvoker)
-    : NativePerformanceCxxSpec(std::move(jsInvoker)) {
-#ifdef WITH_PERFETTO
-  initializePerfetto();
-#endif
+    : NativePerformanceCxxSpec(std::move(jsInvoker)) {}
+
+HighResTimeStamp NativePerformance::now(jsi::Runtime& /*rt*/) {
+  return HighResTimeStamp::now();
 }
 
-double NativePerformance::now(jsi::Runtime& /*rt*/) {
-  return JSExecutor::performanceNow();
-}
-
-double NativePerformance::markWithResult(
+HighResTimeStamp NativePerformance::markWithResult(
     jsi::Runtime& rt,
     std::string name,
-    std::optional<double> startTime) {
-  auto [trackName, eventName] = parseTrackName(name);
+    std::optional<HighResTimeStamp> startTime) {
   auto entry =
       PerformanceEntryReporter::getInstance()->reportMark(name, startTime);
-
-  ReactPerfettoLogger::mark(eventName, entry.startTime, trackName);
-
   return entry.startTime;
 }
 
-std::tuple<double, double> NativePerformance::measureWithResult(
-    jsi::Runtime& rt,
+std::tuple<HighResTimeStamp, HighResDuration>
+NativePerformance::measureWithResult(
+    jsi::Runtime& runtime,
     std::string name,
-    double startTime,
-    double endTime,
-    std::optional<double> duration,
+    HighResTimeStamp startTime,
+    HighResTimeStamp endTime,
+    std::optional<HighResDuration> duration,
     std::optional<std::string> startMark,
     std::optional<std::string> endMark) {
-  auto [trackName, eventName] = parseTrackName(name);
+  auto reporter = PerformanceEntryReporter::getInstance();
 
-  std::optional<jsinspector_modern::DevToolsTrackEntryPayload> trackMetadata;
-
-  if (trackName.has_value()) {
-    trackMetadata = {.track = trackName.value()};
+  HighResTimeStamp startTimeValue = startTime;
+  // If the start time mark name is specified, it takes precedence over the
+  // startTime parameter, which can be set to 0 by default from JavaScript.
+  if (startMark) {
+    if (auto startMarkBufferedTime = reporter->getMarkTime(*startMark)) {
+      startTimeValue = *startMarkBufferedTime;
+    } else {
+      throw jsi::JSError(
+          runtime, "The mark '" + *startMark + "' does not exist.");
+    }
   }
 
-  auto entry = PerformanceEntryReporter::getInstance()->reportMeasure(
-      eventName,
-      startTime,
-      endTime,
-      duration,
-      startMark,
-      endMark,
-      trackMetadata);
+  HighResTimeStamp endTimeValue = endTime;
+  // If the end time mark name is specified, it takes precedence over the
+  // startTime parameter, which can be set to 0 by default from JavaScript.
+  if (endMark) {
+    if (auto endMarkBufferedTime = reporter->getMarkTime(*endMark)) {
+      endTimeValue = *endMarkBufferedTime;
+    } else {
+      throw jsi::JSError(
+          runtime, "The mark '" + *endMark + "' does not exist.");
+    }
+  } else if (duration) {
+    endTimeValue = startTimeValue + *duration;
+  } else if (endTimeValue < startTimeValue) {
+    // The end time is not specified, take the current time, according to the
+    // standard
+    endTimeValue = reporter->getCurrentTimeStamp();
+  }
 
-  ReactPerfettoLogger::measure(
-      eventName, entry.startTime, entry.startTime + entry.duration, trackName);
-
+  auto entry = reporter->reportMeasure(name, startTime, endTime);
   return std::tuple{entry.startTime, entry.duration};
 }
 
@@ -181,7 +198,7 @@ void NativePerformance::clearMeasures(
   }
 }
 
-std::vector<PerformanceEntry> NativePerformance::getEntries(
+std::vector<NativePerformanceEntry> NativePerformance::getEntries(
     jsi::Runtime& /*rt*/) {
   std::vector<PerformanceEntry> entries;
 
@@ -191,10 +208,10 @@ std::vector<PerformanceEntry> NativePerformance::getEntries(
 
   sortEntries(entries);
 
-  return entries;
+  return toNativePerformanceEntries(entries);
 }
 
-std::vector<PerformanceEntry> NativePerformance::getEntriesByName(
+std::vector<NativePerformanceEntry> NativePerformance::getEntriesByName(
     jsi::Runtime& /*rt*/,
     std::string entryName,
     std::optional<PerformanceEntryType> entryType) {
@@ -214,10 +231,10 @@ std::vector<PerformanceEntry> NativePerformance::getEntriesByName(
 
   sortEntries(entries);
 
-  return entries;
+  return toNativePerformanceEntries(entries);
 }
 
-std::vector<PerformanceEntry> NativePerformance::getEntriesByType(
+std::vector<NativePerformanceEntry> NativePerformance::getEntriesByType(
     jsi::Runtime& /*rt*/,
     PerformanceEntryType entryType) {
   std::vector<PerformanceEntry> entries;
@@ -228,7 +245,7 @@ std::vector<PerformanceEntry> NativePerformance::getEntriesByType(
 
   sortEntries(entries);
 
-  return entries;
+  return toNativePerformanceEntries(entries);
 }
 
 std::vector<std::pair<std::string, uint32_t>> NativePerformance::getEventCounts(
@@ -329,7 +346,8 @@ void NativePerformance::observe(
     return;
   }
 
-  auto durationThreshold = options.durationThreshold.value_or(0.0);
+  auto durationThreshold =
+      options.durationThreshold.value_or(HighResDuration::zero());
 
   // observer of type multiple
   if (options.entryTypes.has_value()) {
@@ -363,7 +381,7 @@ void NativePerformance::disconnect(jsi::Runtime& rt, jsi::Object observerObj) {
   observer->disconnect();
 }
 
-std::vector<PerformanceEntry> NativePerformance::takeRecords(
+std::vector<NativePerformanceEntry> NativePerformance::takeRecords(
     jsi::Runtime& rt,
     jsi::Object observerObj,
     bool sort) {
@@ -379,7 +397,7 @@ std::vector<PerformanceEntry> NativePerformance::takeRecords(
   if (sort) {
     sortEntries(records);
   }
-  return records;
+  return toNativePerformanceEntries(records);
 }
 
 std::vector<PerformanceEntryType>

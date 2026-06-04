@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/docsite"
+    schedule:
+      interval: "weekly"
+    groups:
+      all:
+        patterns:
+          - "*"
+
+  # Only monitor packages we control — forked @react-native/* packages
+  # should stay in sync via upstream merges.
+  - package-ecosystem: "npm"
+    directories:
+      - "/packages/react-native"
+      - "/packages/react-native-macos-init"
+      - "/packages/nx-release-version"
+      - "/packages/virtualized-lists"
+    schedule:
+      interval: "weekly"
+    groups:
+      all:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      all:
+        patterns:
+          - "*"

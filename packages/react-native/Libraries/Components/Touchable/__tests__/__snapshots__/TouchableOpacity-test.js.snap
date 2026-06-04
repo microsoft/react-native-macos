@@ -25,8 +25,6 @@ exports[`TouchableOpacity renders correctly 1`] = `
   enableFocusRing={true}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -70,8 +68,6 @@ exports[`TouchableOpacity renders in disabled state when a disabled prop is pass
   enableFocusRing={false}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -115,8 +111,6 @@ exports[`TouchableOpacity renders in disabled state when a key disabled in acces
   enableFocusRing={true}
   focusable={false}
   onClick={[Function]}
-  onKeyDown={[Function]}
-  onKeyUp={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}

@@ -7,6 +7,8 @@
 
 #import "RCTRootContentView.h"
 
+#ifndef RCT_FIT_RM_OLD_RUNTIME
+
 #import "RCTBridge.h"
 #import "RCTConstants.h" // [macOS]
 #import "RCTPerformanceLogger.h"
@@ -152,3 +154,5 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (nonnull NSCoder *)aDecoder)
 }
 
 @end
+
+#endif // RCT_FIT_RM_OLD_RUNTIME

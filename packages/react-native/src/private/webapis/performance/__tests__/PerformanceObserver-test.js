@@ -6,23 +6,27 @@
  *
  * @flow strict-local
  * @format
- * @oncall react_native
  */
+
+import type Performance from '../Performance';
+import type {PerformanceEntryList} from '../PerformanceEntry';
 
 jest.mock(
   '../specs/NativePerformance',
   () => require('../specs/__mocks__/NativePerformanceMock').default,
 );
 
+declare var performance: Performance;
+
 describe('PerformanceObserver', () => {
+  let PerformanceObserver;
+
   beforeEach(() => {
     jest.resetModules();
 
-    const Performance = require('../Performance').default;
     // $FlowExpectedError[cannot-write]
-    global.performance = new Performance();
-    global.PerformanceObserver =
-      require('../PerformanceObserver').PerformanceObserver;
+    global.performance = new (require('../Performance').default)();
+    PerformanceObserver = require('../PerformanceObserver').PerformanceObserver;
   });
 
   it('prevents durationThreshold to be used together with entryTypes', async () => {

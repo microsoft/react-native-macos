@@ -51,7 +51,7 @@ RCT_EXPORT_VIEW_PROPERTY(selectable, BOOL)
 #endif // [macOS]
 }
 
-- (RCTUIView *)view // [macOS]
+- (RCTPlatformView *)view // [macOS]
 {
   return [[RCTTextView alloc] initWithEventDispatcher:self.bridge.eventDispatcher]; // [macOS]
 }

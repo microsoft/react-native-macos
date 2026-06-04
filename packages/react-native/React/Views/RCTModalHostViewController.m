@@ -23,8 +23,6 @@
     return nil;
   }
 
-  self.modalInPresentation = YES;
-
 #if !TARGET_OS_OSX // [macOS]
   _preferredStatusBarStyle = [RCTUIStatusBarManager() statusBarStyle];
   _preferredStatusBarHidden = [RCTUIStatusBarManager() isStatusBarHidden];

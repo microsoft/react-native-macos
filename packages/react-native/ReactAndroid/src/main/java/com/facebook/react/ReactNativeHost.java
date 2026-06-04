@@ -19,6 +19,9 @@ import com.facebook.react.common.LifecycleState;
 import com.facebook.react.common.SurfaceDelegate;
 import com.facebook.react.common.SurfaceDelegateFactory;
 import com.facebook.react.common.annotations.DeprecatedInNewArchitecture;
+import com.facebook.react.common.annotations.internal.LegacyArchitecture;
+import com.facebook.react.common.annotations.internal.LegacyArchitectureLogLevel;
+import com.facebook.react.common.annotations.internal.LegacyArchitectureLogger;
 import com.facebook.react.devsupport.DevSupportManagerFactory;
 import com.facebook.react.devsupport.interfaces.DevLoadingViewManager;
 import com.facebook.react.devsupport.interfaces.PausedInDebuggerOverlayManager;
@@ -34,7 +37,13 @@ import java.util.List;
     message =
         "This class will be replaced by com.facebook.react.ReactHost in the new architecture of"
             + " React Native.")
+@LegacyArchitecture(logLevel = LegacyArchitectureLogLevel.ERROR)
 public abstract class ReactNativeHost {
+
+  static {
+    LegacyArchitectureLogger.assertLegacyArchitecture(
+        "ReactNativeHost", LegacyArchitectureLogLevel.ERROR);
+  }
 
   private final Application mApplication;
   private @Nullable ReactInstanceManager mReactInstanceManager;
@@ -105,7 +114,6 @@ public abstract class ReactNativeHost {
             .setInitialLifecycleState(LifecycleState.BEFORE_CREATE)
             .setReactPackageTurboModuleManagerDelegateBuilder(
                 getReactPackageTurboModuleManagerDelegateBuilder())
-            .setJSEngineResolutionAlgorithm(getJSEngineResolutionAlgorithm())
             .setChoreographerProvider(getChoreographerProvider())
             .setPausedInDebuggerOverlayManager(getPausedInDebuggerOverlayManager());
 
@@ -231,14 +239,6 @@ public abstract class ReactNativeHost {
    * default ones, you'll want to include more packages here.
    */
   protected abstract List<ReactPackage> getPackages();
-
-  /**
-   * Returns the {@link JSEngineResolutionAlgorithm} to be used when loading the JS engine. If null,
-   * will try to load JSC first and fallback to Hermes if JSC is not available.
-   */
-  protected @Nullable JSEngineResolutionAlgorithm getJSEngineResolutionAlgorithm() {
-    return null;
-  }
 
   /**
    * Returns a custom implementation of ChoreographerProvider to be used this host. If null - React

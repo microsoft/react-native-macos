@@ -11,12 +11,12 @@
 
 @implementation RCTReactTaggedView
 
-+ (RCTReactTaggedView *)wrap:(RCTUIView *)view // [macOS]
++ (RCTReactTaggedView *)wrap:(RCTPlatformView *)view // [macOS]
 {
   return [[RCTReactTaggedView alloc] initWithView:view];
 }
 
-- (instancetype)initWithView:(RCTUIView *)view // [macOS]
+- (instancetype)initWithView:(RCTPlatformView *)view // [macOS]
 {
   if (self = [super init]) {
     _view = view;
@@ -25,7 +25,7 @@
   return self;
 }
 
-- (nullable RCTUIView *)view // [macOS]
+- (nullable RCTPlatformView *)view // [macOS]
 {
   if (_view.tag == _tag) {
     return _view;

@@ -67,7 +67,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   return super.surface.moduleName;
 }
 
-- (RCTUIView *)view // [macOS]
+- (RCTPlatformView *)view // [macOS]
 {
   return (RCTUIView *)super.surface.view; // [macOS]
 }

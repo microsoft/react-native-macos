@@ -8,8 +8,10 @@
 #pragma once
 
 #include <array>
+#include <string>
 #include <vector>
 
+#include <react/renderer/debug/flags.h>
 #include <react/renderer/graphics/Float.h>
 #include <react/renderer/graphics/Point.h>
 #include <react/renderer/graphics/RectangleEdges.h>
@@ -88,13 +90,6 @@ struct Transform {
 
   std::array<Float, 16> matrix{
       {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}};
-
-  /**
-   * For debugging only. Prints out the matrix.
-   */
-#if RN_DEBUG_STRING_CONVERTIBLE
-  static void print(const Transform& t, std::string prefix);
-#endif
 
   /*
    * Given a TransformOperation, return the proper transform.

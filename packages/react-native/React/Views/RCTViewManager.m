@@ -254,7 +254,7 @@ RCT_REMAP_VIEW_PROPERTY(shadowOffset, layer.shadowOffset, CGSize)
 RCT_REMAP_VIEW_PROPERTY(shadowOpacity, layer.shadowOpacity, float)
 RCT_REMAP_VIEW_PROPERTY(shadowRadius, layer.shadowRadius, CGFloat)
 #else // [macOS
-RCT_EXPORT_VIEW_PROPERTY(shadowColor, NSColor)
+RCT_EXPORT_VIEW_PROPERTY(shadowColor, CGColor)
 RCT_EXPORT_VIEW_PROPERTY(shadowOffset, CGSize)
 RCT_EXPORT_VIEW_PROPERTY(shadowOpacity, CGFloat)
 RCT_EXPORT_VIEW_PROPERTY(shadowRadius, CGFloat)
@@ -634,22 +634,21 @@ RCT_VIEW_BORDER_RADIUS_PROPERTY(StartStart)
 RCT_REMAP_VIEW_PROPERTY(display, reactDisplay, YGDisplay)
 RCT_REMAP_VIEW_PROPERTY(zIndex, reactZIndex, NSInteger)
 
-// [macOS
-RCT_EXPORT_VIEW_PROPERTY(onFocus, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onBlur, RCTBubblingEventBlock)
-// macOS]
-
-
 #if TARGET_OS_OSX // [macOS
+
 #pragma mark - macOS properties
 
+RCT_EXPORT_VIEW_PROPERTY(onFocus, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onBlur, RCTBubblingEventBlock)
+
+RCT_EXPORT_VIEW_PROPERTY(onDoubleClick, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMouseEnter, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMouseLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragEnter, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDragLeave, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onDrop, RCTDirectEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTDirectEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onKeyDown, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onKeyUp, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(keyDownEvents, NSArray<RCTHandledKey *>)
 RCT_EXPORT_VIEW_PROPERTY(keyUpEvents, NSArray<RCTHandledKey *>)
 
@@ -882,6 +881,7 @@ RCT_CUSTOM_VIEW_PROPERTY(onTouchEnd, BOOL, RCTView) {}
 RCT_CUSTOM_VIEW_PROPERTY(onTouchCancel, BOOL, RCTView) {}
 
 // Experimental/WIP Pointer Events (not yet ready for use)
+RCT_EXPORT_VIEW_PROPERTY(onAuxClick, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onClick, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onPointerCancel, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onPointerDown, RCTBubblingEventBlock)

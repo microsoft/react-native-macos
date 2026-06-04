@@ -36,6 +36,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : coder)
   if ((self = [super initWithFrame:CGRectZero])) {
     _bridge = bridge;
     _modalViewController = [RCTModalHostViewController new];
+    _modalViewController.modalInPresentation = YES;
     UIView *containerView = [UIView new];
     containerView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     _modalViewController.view = containerView;
@@ -49,6 +50,14 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : coder)
   }
 
   return self;
+}
+
+- (void)setAllowSwipeDismissal:(BOOL)allowSwipeDismissal
+{
+  if (_allowSwipeDismissal != allowSwipeDismissal) {
+    _allowSwipeDismissal = allowSwipeDismissal;
+    _modalViewController.modalInPresentation = !allowSwipeDismissal;
+  }
 }
 
 - (void)notifyForBoundsChange:(CGRect)newBounds
@@ -67,6 +76,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : coder)
 - (void)presentationControllerDidAttemptToDismiss:(UIPresentationController *)controller
 {
   if (_onRequestClose != nil) {
+    _onRequestClose(nil);
+  }
+}
+
+- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController
+{
+  if (_onRequestClose != nil && _allowSwipeDismissal) {
     _onRequestClose(nil);
   }
 }

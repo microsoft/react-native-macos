@@ -11,7 +11,7 @@
 
 - (void)setBackgroundColorWithColorString:(NSString *)colorString
 {
-  RCTUIColor *color = [RCTPlatformView RCTUIColorFromHexString:std::string([colorString UTF8String])]; // [macOS]
+  RCTPlatformColor *color = [RCTPlatformView RCTUIColorFromHexString:std::string([colorString UTF8String])]; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
   self.backgroundColor = color;
 #else // [macOS
@@ -28,7 +28,7 @@
     id colorString = [overlayColors objectAtIndex:i];
     CGRect rect = CGRectMake(viewBounds.origin.x + width * i, viewBounds.origin.y, width, viewBounds.size.height);
     RCTUIView *overlayView = [[RCTUIView alloc] initWithFrame:rect]; // [macOS]
-    RCTUIColor *color = [RCTPlatformView RCTUIColorFromHexString:std::string([colorString UTF8String])]; // [macOS]
+    RCTPlatformColor *color = [RCTPlatformView RCTUIColorFromHexString:std::string([colorString UTF8String])]; // [macOS]
     overlayView.backgroundColor = color;
     [self addSubview:overlayView];
   }
@@ -42,14 +42,14 @@
   }
 }
 
-+ (RCTUIColor *)RCTUIColorFromHexString:(const std::string)hexString // [macOS]
++ (RCTPlatformColor *)RCTUIColorFromHexString:(const std::string)hexString // [macOS]
 {
   unsigned rgbValue = 0;
   NSString *colorString = [NSString stringWithCString:hexString.c_str() encoding:[NSString defaultCStringEncoding]];
   NSScanner *scanner = [NSScanner scannerWithString:colorString];
   [scanner setScanLocation:1]; // bypass '#' character
   [scanner scanHexInt:&rgbValue];
-  return [RCTUIColor colorWithRed:((rgbValue & 0xFF0000) >> 16) / 255.0   // [macOS]
+  return [RCTPlatformColor colorWithRed:((rgbValue & 0xFF0000) >> 16) / 255.0   // [macOS]
                             green:((rgbValue & 0xFF00) >> 8) / 255.0
                              blue:(rgbValue & 0xFF) / 255.0
                             alpha:1.0];

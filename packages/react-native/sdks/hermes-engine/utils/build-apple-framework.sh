@@ -12,7 +12,8 @@ CURR_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 IMPORT_HERMESC_PATH=${HERMES_OVERRIDE_HERMESC_PATH:-$PWD/build_host_hermesc/ImportHermesc.cmake}
 BUILD_TYPE=${BUILD_TYPE:-Debug}
 
-HERMES_PATH="$CURR_SCRIPT_DIR/.."
+# [macOS]
+HERMES_PATH=${HERMES_PATH:-"$CURR_SCRIPT_DIR/.."}
 REACT_NATIVE_PATH=${REACT_NATIVE_PATH:-$CURR_SCRIPT_DIR/../../..}
 
 NUM_CORES=$(sysctl -n hw.ncpu)
@@ -102,7 +103,8 @@ function configure_apple_framework {
       -DHERMES_ENABLE_BITCODE:BOOLEAN=false \
       -DHERMES_BUILD_APPLE_FRAMEWORK:BOOLEAN=true \
       -DHERMES_BUILD_SHARED_JSI:BOOLEAN=false \
-      -DHERMES_BUILD_APPLE_DSYM:BOOLEAN=true \
+      -DCMAKE_CXX_FLAGS:STRING="-gdwarf" \
+      -DCMAKE_C_FLAGS:STRING="-gdwarf" \
       -DIMPORT_HERMESC:PATH="$IMPORT_HERMESC_PATH" \
       -DJSI_DIR="$JSI_PATH" \
       -DHERMES_RELEASE_VERSION="for RN $(get_release_version)" \
@@ -134,6 +136,8 @@ function build_apple_framework {
   pushd "$HERMES_PATH" > /dev/null || exit 1
     mkdir -p "destroot/Library/Frameworks/$1"
     cmake --build "./build_$1" --target libhermes -j "${NUM_CORES}"
+    # Produce the dSYM.
+    xcrun dsymutil "./build_$1/API/hermes/hermes.framework/hermes" -o "./build_$1/API/hermes/hermes.framework.dSYM"
     cp -R "./build_$1"/API/hermes/hermes.framework* "destroot/Library/Frameworks/$1"
 
     # In a MacOS build, also produce the hermes and hermesc CLI tools.

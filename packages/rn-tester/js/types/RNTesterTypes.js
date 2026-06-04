@@ -4,17 +4,15 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @format
  * @flow strict-local
+ * @format
  */
-
-import * as React from 'react';
 
 // [macOS] useful since RNTesterModuleExample.platform can either be
 // one of these strings or an array of said strings
 type RNTesterPlatform = 'ios' | 'android' | 'macos';
 
-export type RNTesterModuleExample = $ReadOnly<{|
+export type RNTesterModuleExample = $ReadOnly<{
   name?: string,
   title: string,
   platform?: RNTesterPlatform | Array<RNTesterPlatform>, // [macOS]
@@ -22,10 +20,10 @@ export type RNTesterModuleExample = $ReadOnly<{|
   expect?: string,
   hidden?: boolean,
   scrollable?: boolean,
-  render: ({testID?: ?string}) => React.Node,
-|}>;
+  render: component(),
+}>;
 
-export type RNTesterModule = $ReadOnly<{|
+export type RNTesterModule = $ReadOnly<{
   title: string,
   testTitle?: ?string,
   description: string,
@@ -37,15 +35,15 @@ export type RNTesterModule = $ReadOnly<{|
   category?: string,
   documentationURL?: string,
   showIndividualExamples?: boolean,
-|}>;
+}>;
 
-export type RNTesterModuleInfo = $ReadOnly<{|
+export type RNTesterModuleInfo = $ReadOnly<{
   key: string,
   module: RNTesterModule,
   category?: string,
   documentationURL?: string,
   exampleType?: 'components' | 'apis',
-|}>;
+}>;
 
 export type SectionData<T> = {
   key: string,
@@ -53,10 +51,10 @@ export type SectionData<T> = {
   data: Array<T>,
 };
 
-export type ExamplesList = $ReadOnly<{|
+export type ExamplesList = $ReadOnly<{
   components: $ReadOnlyArray<SectionData<RNTesterModuleInfo>>,
   apis: $ReadOnlyArray<SectionData<RNTesterModuleInfo>>,
-|}>;
+}>;
 
 export type ScreenTypes = 'components' | 'apis' | 'playgrounds' | null;
 
