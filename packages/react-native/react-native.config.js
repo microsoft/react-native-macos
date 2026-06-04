@@ -88,13 +88,15 @@ try {
 }
 
 let macosCommands;
+// Loading `runMacOS` requires `@react-native-community/cli`which is an
+// optional peer dependency and is not installed when using Expo CLI.
 try {
 // $FlowFixMe[untyped-import]
   macosCommands = require('./local-cli/runMacOS/runMacOS');
-} catch {
+} catch (e) {
   if (verbose) {
     console.warn(
-      '@react-native-community/cli not found, the react-native.config.js may be unusable.',
+      `Failed to load runMacOS commands, the react-native.config.js may be unusable: ${e instanceof Error ? e.message : String(e)}`,
     );
   }
 }
