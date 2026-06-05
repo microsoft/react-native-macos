@@ -87,8 +87,19 @@ try {
   }
 }
 
-// $FlowFixMe[untyped-import]
-const macosCommands = require('./local-cli/runMacOS/runMacOS');
+let macosCommands;
+// Loading `runMacOS` requires `@react-native-community/cli`which is an
+// optional peer dependency and is not installed when using Expo CLI.
+try {
+  // $FlowFixMe[untyped-import]
+  macosCommands = require('./local-cli/runMacOS/runMacOS');
+} catch (e) {
+  if (verbose) {
+    console.warn(
+      `Failed to load runMacOS commands, the react-native.config.js may be unusable: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
+}
 const {
   bundleCommand,
   startCommand,
@@ -161,7 +172,9 @@ if (android != null) {
 }
 
 // [macOS
-config.commands.push(...macosCommands);
+if (macosCommands != null) {
+  config.commands.push(...macosCommands);
+}
 if (apple) {
   config.platforms.macos = {
     linkConfig: () => {
