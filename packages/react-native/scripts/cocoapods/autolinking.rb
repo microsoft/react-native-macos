@@ -38,12 +38,13 @@ def list_native_modules!(config_command)
   config = JSON.parse(json)
 
   packages = config["dependencies"]
-  ios_project_root = Pathname.new(config["project"]["ios"]["sourceDir"])
+  project_config = config["project"]["macos"] || config["project"]["ios"] # [macOS]
+  ios_project_root = Pathname.new(project_config["sourceDir"]) # [macOS]
   react_native_path = Pathname.new(config["reactNativePath"])
   found_pods = []
 
   packages.each do |package_name, package|
-    next unless package_config = package["platforms"]["ios"]
+    next unless package_config = package["platforms"]["macos"] || package["platforms"]["ios"] # [macOS]
 
     name = package["name"]
     podspec_path = package_config["podspecPath"]
