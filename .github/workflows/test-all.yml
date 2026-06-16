@@ -11,7 +11,7 @@ on:
 jobs:
   set_release_type:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     outputs:
       RELEASE_TYPE: ${{ steps.set_release_type.outputs.RELEASE_TYPE }}
     env:
@@ -34,7 +34,7 @@ jobs:
           echo "Should I run E2E tests? ${{ inputs.run-e2e-tests }}"
 
   prebuild_apple_dependencies:
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     uses: ./.github/workflows/prebuild-ios-dependencies.yml
     secrets: inherit
 
@@ -475,7 +475,7 @@ jobs:
 
   test_js:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     strategy:
       fail-fast: false
       matrix:
@@ -490,7 +490,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
