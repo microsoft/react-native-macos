@@ -11,7 +11,7 @@ on:
 jobs:
   set_release_type:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     outputs:
       RELEASE_TYPE: ${{ steps.set_release_type.outputs.RELEASE_TYPE }}
     env:
@@ -35,7 +35,7 @@ jobs:
 
   check_code_changes:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     outputs:
       any_code_change: ${{ steps.filter_exclusions.outputs.any_code_change || github.event_name != 'pull_request' }}
       should_test_android: ${{ steps.filter_exclusions.outputs.should_test_android || github.event_name != 'pull_request' }}
@@ -546,7 +546,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    if: github.repository == 'facebook/react-native'
+    if: github.repository == 'react/react-native'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
