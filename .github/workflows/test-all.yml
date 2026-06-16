@@ -215,7 +215,7 @@ jobs:
           working-directory: /tmp/RNTestProject
 
   test_e2e_android_templateapp:
-    runs-on: 4-core-ubuntu
+    runs-on: ubuntu-latest
     needs: build_npm_package
     strategy:
       fail-fast: false
@@ -283,7 +283,7 @@ jobs:
           working-directory: /tmp/RNTestProject
 
   run_fantom_tests:
-    runs-on: 8-core-ubuntu
+    runs-on: ubuntu-latest
     needs: [set_release_type]
     container:
       image: reactnativecommunity/react-native-android:v20.0
@@ -302,7 +302,7 @@ jobs:
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
   build_android:
-    runs-on: 8-core-ubuntu
+    runs-on: ubuntu-latest
     needs: [set_release_type]
     container:
       image: reactnativecommunity/react-native-android:v20.0
@@ -321,7 +321,7 @@ jobs:
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
   test_e2e_android_rntester:
-    runs-on: 4-core-ubuntu
+    runs-on: ubuntu-latest
     needs: [build_android]
     strategy:
       fail-fast: false
@@ -351,7 +351,7 @@ jobs:
           flavor: ${{ matrix.flavor }}
 
   build_npm_package:
-    runs-on: 8-core-ubuntu
+    runs-on: ubuntu-latest
     needs:
       [
         set_release_type,
@@ -374,7 +374,7 @@ jobs:
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
   test_android_helloworld:
-    runs-on: 4-core-ubuntu
+    runs-on: ubuntu-latest
     needs: build_npm_package
     container:
       image: reactnativecommunity/react-native-android:v20.0
