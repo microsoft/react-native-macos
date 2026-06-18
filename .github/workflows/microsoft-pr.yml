@@ -3,7 +3,7 @@ name: PR
 on:
   pull_request:
     types: [opened, synchronize, edited]
-    branches: [ "main", "*-stable", "release/*" ]
+    branches: [ "main", "*-stable", "release/*", "0.83-merge" ]
 
 concurrency:
   # Ensure single build of a pull request. `main` should not be affected.
