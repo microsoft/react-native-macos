@@ -185,7 +185,8 @@ if (apple) {
     },
     projectConfig: apple.getProjectConfig({platformName: 'macos'}),
     dependencyConfig: apple.getProjectConfig({platformName: 'macos'}),
-    npmPackageName: 'react-native-macos',
+    npmPackageName: require('./scripts/codegen/generate-artifacts-executor/constants')
+      .REACT_NATIVE,
   };
 }
 // macOS]
