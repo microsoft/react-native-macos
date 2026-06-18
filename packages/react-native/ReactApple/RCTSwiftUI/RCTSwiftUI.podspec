@@ -30,6 +30,14 @@ Pod::Spec.new do |s|
   s.module_name            = "RCTSwiftUI"
   s.header_dir             = "RCTSwiftUI"
 
+  # [macOS] Expose the React_RCTUIKit clang module to Swift so
+  # RCTSwiftUIContainerView.swift can `import React_RCTUIKit` and pick up
+  # the ObjC `@compatibility_alias RCTUIColor → NSColor` / `RCTPlatformView`
+  # without re-declaring them as Swift typealiases. The dep is harmless on
+  # iOS (the umbrella headers are mostly typedef-only there); kept
+  # unconditional to preserve parity with the rest of the apple pods.
+  s.dependency "React-RCTUIKit"
+
   # Swift-specific configuration
   s.pod_target_xcconfig    = {
     "SWIFT_VERSION" => "5.0",
