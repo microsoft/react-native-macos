@@ -161,6 +161,38 @@ static BOOL sIsAccessibilityUsed = NO;
   [self _unhideIfNeeded];
   return [super accessibilityChildren];
 }
+
+- (BOOL)acceptsFirstResponder
+{
+  // Mirror of the iOS `focusItemsInRect:` hook for keyboard / Tab
+  // navigation. AppKit queries `acceptsFirstResponder` while walking
+  // the responder chain to compute the next Tab target. If this view
+  // is hidden via the `hideOffscreenVirtualViewsOnIOS` optimization,
+  // we unhide here so a subsequent Tab landing actually finds a real
+  // view to focus.
+  //
+  // Caveat: a fully `hidden=YES` view is excluded from AppKit's
+  // responder chain at the parent level, so `acceptsFirstResponder`
+  // will not be queried until the view becomes visible. This override
+  // therefore only catches the "visible but flagged offscreen" case
+  // where `_unhideIfNeeded` is a fast no-op anyway. The complete fix
+  // for Tab-into-fully-hidden views requires switching the hiding
+  // strategy from `self.hidden = YES` to something that keeps the
+  // view in the responder chain (e.g. zero-alpha / out-of-bounds
+  // frame) — out of scope here; tracked as a follow-up.
+  [self _unhideIfNeeded];
+  return [super acceptsFirstResponder];
+}
+
+- (id)accessibilityHitTest:(NSPoint)point
+{
+  // VoiceOver cursor / pointer-hover-with-VoiceOver path. Same
+  // rationale as `accessibilityChildren` above: a hit-test that
+  // would land on a flagged-offscreen virtual view should unhide
+  // it so the AX tree has a real element to return.
+  [self _unhideIfNeeded];
+  return [super accessibilityHitTest:point];
+}
 #endif // macOS]
 
 - (void)prepareForRecycle
