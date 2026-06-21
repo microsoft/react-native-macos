@@ -98,8 +98,9 @@ const AccessibilityInfo = {
    * See https://reactnative.dev/docs/accessibilityinfo#isBoldTextEnabled
    */
   isBoldTextEnabled(): Promise<boolean> {
-    // [macOS rework logic to return Promise.resolve(false) on macOS
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === 'android' || Platform.OS === 'macos' /* [macOS] */) {
+      return Promise.resolve(false);
+    } else {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerApple != null) {
           NativeAccessibilityManagerApple.getCurrentBoldTextState(
@@ -110,10 +111,7 @@ const AccessibilityInfo = {
           reject(new Error('NativeAccessibilityManagerIOS is not available'));
         }
       });
-    } else {
-      return Promise.resolve(false);
     }
-    // macOS]
   },
 
   /**
@@ -333,8 +331,9 @@ const AccessibilityInfo = {
    * See https://reactnative.dev/docs/accessibilityinfo#isReduceTransparencyEnabled
    */
   isReduceTransparencyEnabled(): Promise<boolean> {
-    // [macOS rework logic to return Promise.resolve(false) on macOS
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === 'android' || Platform.OS === 'macos' /* [macOS] */) {
+      return Promise.resolve(false);
+    } else {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerApple != null) {
           NativeAccessibilityManagerApple.getCurrentReduceTransparencyState(
@@ -345,10 +344,7 @@ const AccessibilityInfo = {
           reject(new Error('NativeAccessibilityManagerIOS is not available'));
         }
       });
-    } else {
-      return Promise.resolve(false);
     }
-    // macOS]
   },
 
   /**
