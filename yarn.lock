@@ -3139,7 +3139,7 @@ __metadata:
     temp-dir: "npm:^2.0.0"
     tinybench: "npm:^3.1.0"
     typescript: "npm:5.8.3"
-    ws: "npm:^6.2.3"
+    ws: "npm:^6.2.4"
     zx: "npm:^8.2.4"
   languageName: unknown
   linkType: soft
@@ -3370,7 +3370,7 @@ __metadata:
     serve-static: "npm:^1.16.2"
     undici: "npm:^6.24.0"
     wait-for-expect: "npm:^3.0.2"
-    ws: "npm:^6.2.3"
+    ws: "npm:^6.2.4"
   languageName: unknown
   linkType: soft
 
@@ -11935,7 +11935,7 @@ __metadata:
     semver: "npm:^7.1.3"
     stacktrace-parser: "npm:^0.1.10"
     whatwg-fetch: "npm:^3.0.0"
-    ws: "npm:^6.2.3"
+    ws: "npm:^6.2.4"
     yargs: "npm:^17.6.2"
   peerDependencies:
     "@types/react": ^19.1.0
@@ -13930,6 +13930,15 @@ __metadata:
   dependencies:
     async-limiter: "npm:~1.0.0"
   checksum: 10c0/56a35b9799993cea7ce2260197e7879f21bbbb194a967f31acbbda6f7f46ecda4365951966fb062044c95197e19fb2f053be6f65c172435455186835f494de41
+  languageName: node
+  linkType: hard
+
+"ws@npm:^6.2.4":
+  version: 6.2.4
+  resolution: "ws@npm:6.2.4"
+  dependencies:
+    async-limiter: "npm:~1.0.0"
+  checksum: 10c0/5c2b9474164f9cb68c7776a1d10b0461c186f3a69bffb1028fca33eba5ab7206a09173fb0b311d6c5a81c8cf148406f8deb0b7d899542ab8ca67407d99717dad
   languageName: node
   linkType: hard
 
