@@ -49,6 +49,7 @@ Pod::Spec.new do |spec|
                       'folly/lang/CString.cpp',
                       'folly/lang/Exception.cpp',
                       'folly/memory/ReentrantAllocator.cpp',
+                      'folly/memory/SanitizeLeak.cpp',
                       'folly/memory/detail/MallocImpl.cpp',
                       'folly/net/NetOps.cpp',
                       'folly/portability/SysUio.cpp',
