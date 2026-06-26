@@ -80,12 +80,12 @@ jobs:
               yarn config set npmPublishRegistry "https://registry.npmjs.org"
               yarn config set npmAuthToken $(npmAuthToken)
               echo "Publishing with yarn npm publish"
-              yarn ./packages/virtualized-lists npm publish --tolerate-republish --tag $(publishTag)
-              yarn ./packages/react-native npm publish      --tolerate-republish --tag $(publishTag)
+              yarn ./packages/virtualized-lists npm publish --access public --tolerate-republish --tag $(publishTag)
+              yarn ./packages/react-native npm publish      --access public --tolerate-republish --tag $(publishTag)
             else
               echo "Publishing with npm publish"
-              npm publish ./packages/virtualized-lists --tag $(publishTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
-              npm publish ./packages/react-native      --tag $(publishTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
+              npm publish ./packages/virtualized-lists --access public --tag $(publishTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
+              npm publish ./packages/react-native      --access public --tag $(publishTag) --registry https://registry.npmjs.org/ --//registry.npmjs.org/:_authToken=$(npmAuthToken)
             fi
           fi
         displayName: Publish packages
