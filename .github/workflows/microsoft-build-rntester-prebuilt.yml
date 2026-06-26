@@ -1,20 +1,18 @@
-name: Build RNTester
+name: Build RNTester (Prebuilt)
 
 on:
   workflow_call:
 
 jobs:
-  build-rntester:
-    name: "${{ matrix.platform }}, ${{ matrix.arch }}${{ matrix.use_frameworks && ', DynamicFrameworks' || '' }}"
+  build-rntester-prebuilt:
+    name: "Prebuilt ${{ matrix.platform }}, ${{ matrix.arch }}"
     runs-on: macos-26
-    timeout-minutes: 90
-    # DynamicFrameworks is experimental; don't block PRs on it (matches upstream)
-    continue-on-error: ${{ matrix.use_frameworks == 'dynamic' }}
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         platform: [macos, ios, visionos]
-        arch: [oldarch, newarch]
+        arch: [newarch]
         include:
           # Platform-specific properties
           - platform: macos
@@ -30,18 +28,8 @@ jobs:
             scheme: RNTester-visionOS
             packager_platform: ios
           # Architecture-specific properties
-          - arch: oldarch
-            new_arch_enabled: '0'
           - arch: newarch
             new_arch_enabled: '1'
-          # DynamicFrameworks variant (matches upstream test_ios_rntester_dynamic_frameworks)
-          - platform: ios
-            arch: newarch
-            sdk: iphonesimulator
-            scheme: RNTester
-            packager_platform: ios
-            new_arch_enabled: '1'
-            use_frameworks: dynamic
 
     steps:
       - uses: actions/checkout@v4
@@ -59,15 +47,19 @@ jobs:
       - name: Install npm dependencies
         run: yarn install
 
-      - name: Install Pods
+      - name: Download prebuilt xcframework
+        uses: actions/download-artifact@v4
+        with:
+          name: ReactCoreDebug.xcframework.tar.gz
+          path: /tmp/prebuilt
+
+      - name: Install Pods (with prebuilt)
         working-directory: packages/rn-tester
         env:
           RCT_NEW_ARCH_ENABLED: ${{ matrix.new_arch_enabled }}
+          RCT_TESTONLY_RNCORE_TARBALL_PATH: /tmp/prebuilt/ReactCoreDebug.xcframework.tar.gz
         run: |
           set -eox pipefail
-          if [[ -n "${{ matrix.use_frameworks }}" ]]; then
-            export USE_FRAMEWORKS="${{ matrix.use_frameworks }}"
-          fi
           bundle install
           bundle exec pod install --verbose
 
