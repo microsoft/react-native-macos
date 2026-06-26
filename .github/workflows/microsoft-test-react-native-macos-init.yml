@@ -57,19 +57,6 @@ jobs:
           # Use a tarball instead of a direct path to avoid symlinks
           yarn pack -o ${{ runner.temp }}/react-native-macos.tgz
 
-      - name: Pack local virtualized-lists
-        working-directory: packages/virtualized-lists
-        run: |
-          set -eox pipefail
-          # Keep local react-native-macos dependency graph self-contained
-          yarn pack -o ${{ runner.temp }}/react-native-macos-virtualized-lists.tgz
-
-      - name: Install local virtualized-lists
-        working-directory: ${{ runner.temp }}/testcli
-        run: |
-          set -eox pipefail
-          npm install ${{ runner.temp }}/react-native-macos-virtualized-lists.tgz
-
       - name: Install local react-native-macos
         working-directory: ${{ runner.temp }}/testcli
         run: |
