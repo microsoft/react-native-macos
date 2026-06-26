@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+// [macOS]
+
 #import <React/RCTComponentData.h>
 #import <React/RCTViewManager.h>
 #import <XCTest/XCTest.h>
