@@ -286,7 +286,7 @@ static RCTPropBlock createNSInvocationSetter(NSMethodSignature *typeSignature, S
 #define RCT_CASE(_value, _type)                                       \
   case _value: {                                                      \
     __block BOOL setDefaultValue = NO;                                \
-    __block _type defaultValue;                                       \
+    __block _type defaultValue{};                                     \
     _type (*convert)(id, SEL, id) = (__typeof(convert))objc_msgSend;  \
     _type (*get)(id, SEL) = (__typeof(get))objc_msgSend;              \
     void (*set)(id, SEL, _type) = (__typeof(set))objc_msgSend;        \
