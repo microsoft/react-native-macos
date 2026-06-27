@@ -47,7 +47,7 @@ jobs:
         condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
       - script: |
-          yarn workspaces foreach -vv --all --topological --no-private npm publish --tag $(publishTag) --tolerate-republish
+          yarn workspaces foreach -vv --all --topological --no-private npm publish --access public --tag $(publishTag) --tolerate-republish
         displayName: Publish packages
         condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
 
