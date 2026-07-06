@@ -61,10 +61,21 @@ function get_mac_deployment_target {
 function build_host_hermesc {
   echo "Building hermesc"
   pushd "$HERMES_PATH" > /dev/null || exit 1
-    cmake -S . -B build_host_hermesc -DJSI_DIR="$JSI_PATH"
-    cmake --build ./build_host_hermesc --target hermesc -j "${NUM_CORES}"
+    # [macOS] The host hermesc tools are always native macOS. On Xcode 26+, clang honors
+    # the *_DEPLOYMENT_TARGET environment variables and will mis-target this native build
+    # to visionOS when XROS_DEPLOYMENT_TARGET (or IOS/TVOS) is set in the environment
+    # (XROS takes precedence even if MACOSX_DEPLOYMENT_TARGET is also set), which breaks
+    # availability/atomics checks ("using sysroot for 'MacOSX' but targeting 'XR'"). Build
+    # the host tools in a subshell that forces a macOS target.
+    (
+      unset IOS_DEPLOYMENT_TARGET XROS_DEPLOYMENT_TARGET TVOS_DEPLOYMENT_TARGET
+      export MACOSX_DEPLOYMENT_TARGET="${MAC_DEPLOYMENT_TARGET:-$(get_mac_deployment_target)}"
+      cmake -S . -B build_host_hermesc -DJSI_DIR="$JSI_PATH"
+      cmake --build ./build_host_hermesc --target hermesc -j "${NUM_CORES}"
+    )
   popd > /dev/null || exit 1
 }
+# macOS]
 
 # Utility function to configure an Apple framework
 function configure_apple_framework {
