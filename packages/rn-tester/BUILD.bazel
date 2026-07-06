@@ -1,0 +1,69 @@
+# React Native macOS — Bazel vertical slice (draft / experimental)
+#
+# This BUILD file wires the end-to-end slice: bundle rn-tester's JS with Metro and
+# embed it into a macOS app that links the prebuilt React Native XCFrameworks.
+#
+# The targets are tagged `manual` (kept out of `//...`) because they depend on:
+#   * first-party workspace packages having BUILD files (so rules_js can link the
+#     react-native CLI for Metro), and
+#   * the prebuilt XCFrameworks produced by scripts/ios-prebuild.js.
+# See packages/rn-tester/bazel/README.md and docs/bazel.md.
+
+load("//tools/bazel/js:metro.bzl", "metro_bundle")
+load("//tools/bazel/apple:xcframeworks.bzl", "rn_imported_xcframeworks")
+load("@rules_apple//apple:macos.bzl", "macos_application")
+
+package(default_visibility = ["//visibility:private"])
+
+# All rn-tester JavaScript that Metro may pull into the bundle.
+filegroup(
+    name = "js_srcs",
+    srcs = glob(
+        ["js/**/*.js"],
+        allow_empty = False,
+    ) + [
+        "metro.config.js",
+        "package.json",
+    ],
+)
+
+# 1. JS bundle (Metro). Entry is the macOS variant of the rn-tester app.
+metro_bundle(
+    name = "rntester_macos_jsbundle",
+    srcs = [":js_srcs"],
+    config = "metro.config.js",
+    entry_point = "js/RNTesterApp.macos.js",
+    platform = "macos",
+    tags = ["manual"],
+)
+
+# 2. Prebuilt native code as importable XCFrameworks (from ios-prebuild).
+rn_imported_xcframeworks()
+
+# 3. App host — reuse rn-tester's existing AppDelegate + main.
+objc_library(
+    name = "rntester_macos_host",
+    srcs = [
+        "RNTester/AppDelegate.mm",
+        "RNTester/main.m",
+    ],
+    hdrs = ["RNTester/AppDelegate.h"],
+    tags = ["manual"],
+    deps = [
+        ":React",
+        ":ReactNativeDependencies",
+        ":hermes",
+    ],
+)
+
+# 4. macOS app: link native + embed the Metro bundle as an app resource
+#    (mirrors how Buck2's apple prelude ingests a js_bundle as an AppleResource).
+macos_application(
+    name = "RNTesterMacBazel",
+    bundle_id = "org.reactjs.native.RNTesterMacBazel",
+    infoplists = ["bazel/Info.plist"],
+    minimum_os_version = "11.0",
+    resources = [":rntester_macos_jsbundle"],
+    tags = ["manual"],
+    deps = [":rntester_macos_host"],
+)

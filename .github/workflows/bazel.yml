@@ -1,0 +1,51 @@
+# Experimental Bazel CI for react-native-macos.
+#
+# Today this verifies the rules_js *Berry fork* end to end: it builds/tests a target
+# whose node_modules are materialized from a Yarn Berry `yarn.lock` (translated to a
+# pnpm-lock by tools/bazel/berry, with no committed second lockfile). The macOS app
+# slice (rules_apple) is added incrementally — see docs/bazel.md.
+name: Bazel (experimental)
+
+on:
+  pull_request:
+    paths:
+      - "MODULE.bazel"
+      - ".bazelrc"
+      - ".bazelversion"
+      - ".bazelignore"
+      - "BUILD.bazel"
+      - "tools/bazel/**"
+      - "packages/**/BUILD.bazel"
+      - ".github/workflows/bazel.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bazel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  berry-fork:
+    name: rules_js Berry fork (JS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # Disk cache doubles as a simple GHA-backed Bazel remote cache. For a real
+      # remote cache at scale, point --remote_cache at BuildBuddy or a self-hosted
+      # bazel-remote (see docs/bazel.md).
+      - name: Cache Bazel
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/bazel-rnm-disk
+          key: bazel-berry-${{ runner.os }}-${{ hashFiles('MODULE.bazel', 'yarn.lock', 'tools/bazel/**') }}
+          restore-keys: |
+            bazel-berry-${{ runner.os }}-
+      - name: Test the Berry -> rules_js pipeline end to end
+        run: |
+          npx --yes @bazel/bazelisk test //tools/bazel/berry/example:verify \
+            --config=ci --test_output=errors

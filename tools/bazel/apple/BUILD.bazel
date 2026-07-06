@@ -1,0 +1,4 @@
+# Bazel helpers for building React Native's Apple targets (rules_apple / rules_swift).
+# See xcframeworks.bzl and docs/bazel.md.
+
+exports_files(["xcframeworks.bzl"])

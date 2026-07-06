@@ -1,0 +1,4 @@
+# Berry (Yarn v2+) yarn.lock -> pnpm-lock.yaml converter used by our rules_js
+# fork's patched npm_translate_lock. Kept dependency-free so it runs under a
+# bare Node in the repository rule.
+exports_files(["berry_to_pnpm_lock.mjs"])

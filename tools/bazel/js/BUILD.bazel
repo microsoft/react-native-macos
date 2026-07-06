@@ -1,0 +1,4 @@
+# Bazel macros for building React Native JavaScript (Metro). See metro.bzl.
+# Package marker so `//tools/bazel/js:metro.bzl` is loadable.
+
+exports_files(["metro.bzl"])
