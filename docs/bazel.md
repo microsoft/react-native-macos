@@ -101,13 +101,28 @@ BYONM remains a viable fallback.
 
 Two concrete blockers separate the current state from a running RNTester macOS app:
 
-1. **The macOS app is blocked by an external artifact gap.** `scripts/ios-prebuild.js`
-   cannot produce the XCFrameworks because the **Hermes nightly tarball 404s**
-   (`react-native-artifacts/0.87.0-nightly-…-hermes-ios-debug.tar.gz`). Without
-   `hermes.xcframework` / `React.xcframework` / `ReactNativeDependencies.xcframework`,
-   `macos_application` can't link. The app target is fully scaffolded and will build once
-   those XCFrameworks are available (e.g. a valid nightly, or a from-source Bazel build —
-   see the roadmap).
+1. **The macOS app needs the prebuilt XCFrameworks, which can't be produced *in this
+   environment* because the local Xcode is too new.** This is a toolchain/environment
+   issue, **not** a fork gap — react-native-macos already carries the patches that resolve
+   the correct Hermes for the branch (`scripts/ios-prebuild/microsoft-hermes.js`):
+   * On a **release branch**, `findMatchingHermesVersion` maps to the upstream RN version in
+     `peerDependencies` and ios-prebuild **downloads** a published Hermes artifact.
+   * On **main (`1000.0.0`)**, it returns `null` and **builds Hermes from source** at the
+     Hermes commit at the merge-base with facebook/react-native (`hermesCommitAtMergeBase`).
+
+   Building that from source here fails for two environment reasons:
+   * the default Homebrew CMake is **4.x**, too new for Hermes (use the installed
+     `cmake@3.26.4`); and, after that,
+   * **Xcode 26 / AppleClang 21** trips LLVM's `CheckAtomic` ("Host compiler appears to
+     require libatomic, but cannot find it"). The prebuild CI pins **Xcode 16.2 / 16.1**
+     (see `.github/workflows/prebuild-ios-core.yml`), which is what actually builds these
+     XCFrameworks. No Xcode 16.x is installed on this machine.
+
+   Net: on CI (Xcode 16.2) — or from a release branch that downloads prebuilt Hermes — the
+   XCFrameworks build and the `macos_application` links. Locally with only Xcode 26, the
+   from-source Hermes build can't complete. (An earlier revision of this doc wrongly blamed
+   a "Hermes nightly 404"; that was caused by forcing `HERMES_VERSION=nightly`, which
+   bypasses the macOS version-resolution patches — don't set that env var.)
 
 2. **The hermetic Bazel Metro bundle needs a dependency-closure step.** Two prerequisites:
    * `@react-native/codegen`'s `lib/` must be built (babel-plugin-codegen requires it):

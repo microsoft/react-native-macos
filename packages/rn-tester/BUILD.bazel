@@ -8,8 +8,9 @@
 #       - the Metro bundle needs the RN `react-native`->`react-native-macos` alias and a
 #         sandbox-safe config (bazel/bundle.js), @react-native/codegen `lib` built, and the
 #         full strict-deps closure assembled (rules_js does not hoist like Yarn);
-#       - the macOS app needs the prebuilt XCFrameworks, which currently cannot be produced
-#         here because the Hermes nightly tarball 404s (see docs/bazel.md).
+#       - the macOS app needs the prebuilt XCFrameworks; ios-prebuild resolves the correct
+#         Hermes (macOS patches) but building it from source needs Xcode 16.x (CI-pinned) --
+#         the local Xcode 26 trips LLVM CheckAtomic. See docs/bazel.md.
 
 load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_run_binary")
 load("@npm//:defs.bzl", "npm_link_all_packages")
