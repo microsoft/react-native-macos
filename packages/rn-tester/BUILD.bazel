@@ -1,19 +1,25 @@
 # React Native macOS — Bazel vertical slice (draft / experimental)
 #
-# This BUILD file wires the end-to-end slice: bundle rn-tester's JS with Metro and
-# embed it into a macOS app that links the prebuilt React Native XCFrameworks.
-#
-# The targets are tagged `manual` (kept out of `//...`) because they depend on:
-#   * first-party workspace packages having BUILD files (so rules_js can link the
-#     react-native CLI for Metro), and
-#   * the prebuilt XCFrameworks produced by scripts/ios-prebuild.js.
-# See packages/rn-tester/bazel/README.md and docs/bazel.md.
+# Status (see docs/bazel.md):
+#   * The rules_js Berry fork is GREEN (deps resolve/link from the Berry yarn.lock).
+#   * First-party workspace packages now expose `:pkg` targets so rules_js can link
+#     them; `bazel build //packages/react-native:pkg` builds.
+#   * The Metro bundle + macOS app targets below are tagged `manual` (WIP):
+#       - the Metro bundle needs the RN `react-native`->`react-native-macos` alias and a
+#         sandbox-safe config (bazel/bundle.js), @react-native/codegen `lib` built, and the
+#         full strict-deps closure assembled (rules_js does not hoist like Yarn);
+#       - the macOS app needs the prebuilt XCFrameworks, which currently cannot be produced
+#         here because the Hermes nightly tarball 404s (see docs/bazel.md).
 
-load("//tools/bazel/js:metro.bzl", "metro_bundle")
+load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_run_binary")
+load("@npm//:defs.bzl", "npm_link_all_packages")
 load("//tools/bazel/apple:xcframeworks.bzl", "rn_imported_xcframeworks")
 load("@rules_apple//apple:macos.bzl", "macos_application")
 
 package(default_visibility = ["//visibility:private"])
+
+# rn-tester's node_modules, linked by rules_js from the Berry yarn.lock.
+npm_link_all_packages(name = "node_modules")
 
 # All rn-tester JavaScript that Metro may pull into the bundle.
 filegroup(
@@ -23,18 +29,32 @@ filegroup(
         allow_empty = False,
     ) + [
         "metro.config.js",
+        "react-native.config.js",
         "package.json",
     ],
 )
 
+# NOTE: rules_js uses a strict, non-hoisted node_modules. Metro's bundling tooling
+# (metro, @react-native/metro-config, @react-native/metro-babel-transformer) are
+# transitive/root devDeps and are therefore NOT resolvable from rn-tester's node_modules.
+# To make this green, declare them as deps here (e.g. add them to rn-tester's package.json
+# and regenerate the Berry yarn.lock) so rules_js links the full closure. See docs/bazel.md.
+# The bundle runs via bazel/bundle.js (Metro's API) with the react-native alias applied.
+js_binary(
+    name = "bundler",
+    data = [":node_modules"],
+    entry_point = "bazel/bundle.js",
+    tags = ["manual"],
+)
+
 # 1. JS bundle (Metro). Entry is the macOS variant of the rn-tester app.
-metro_bundle(
+js_run_binary(
     name = "rntester_macos_jsbundle",
     srcs = [":js_srcs"],
-    config = "metro.config.js",
-    entry_point = "js/RNTesterApp.macos.js",
-    platform = "macos",
+    outs = ["RNTesterApp.macos.jsbundle"],
+    env = {"BUNDLE_OUT": "RNTesterApp.macos.jsbundle"},
     tags = ["manual"],
+    tool = ":bundler",
 )
 
 # 2. Prebuilt native code as importable XCFrameworks (from ios-prebuild).

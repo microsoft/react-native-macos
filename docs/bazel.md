@@ -89,18 +89,45 @@ BYONM remains a viable fallback.
   rules_js, and a Node program that `require`s the npm dep runs green.
 * On the **real monorepo** `yarn.lock`, `npm_translate_lock` parses the fork-generated
   lock and **fetches all 1333 packages** successfully.
+* **First-party workspace linking**: every workspace package now exposes a `:pkg` target
+  (`npm_package`) so rules_js can link it. `bazel build //packages/react-native:pkg`
+  builds; rn-tester's `node_modules` links `react-native-macos` (the package the repo
+  consumes as `react-native`).
+* **rn-tester's macOS JS bundle builds** (outside Bazel, proving the JS is bundleable):
+  after building the codegen lib, `react-native bundle --platform macos --entry-file
+  js/RNTesterApp.macos.js` produces a ~7 MB `RNTesterApp.macos.jsbundle` + 50 assets.
 
-## What's next (WIP, scaffolded)
+## End-to-end RN-Tester: status & remaining work
 
-* **First-party workspace linking**: `//:node_modules` (link *all* packages) needs a
-  `BUILD.bazel` in each of the ~33 workspace packages (the standard rules_js monorepo
-  adoption step). Until then the Metro bundle target is tagged `manual`.
-* **Metro bundle**: `//packages/rn-tester:rntester_macos_jsbundle` via the `metro_bundle`
-  macro (`tools/bazel/js/metro.bzl`) — a thin `js_run_binary` wrapper around the React
-  Native CLI `bundle` command (we drive Metro, we don't reimplement it).
+Two concrete blockers separate the current state from a running RNTester macOS app:
+
+1. **The macOS app is blocked by an external artifact gap.** `scripts/ios-prebuild.js`
+   cannot produce the XCFrameworks because the **Hermes nightly tarball 404s**
+   (`react-native-artifacts/0.87.0-nightly-…-hermes-ios-debug.tar.gz`). Without
+   `hermes.xcframework` / `React.xcframework` / `ReactNativeDependencies.xcframework`,
+   `macos_application` can't link. The app target is fully scaffolded and will build once
+   those XCFrameworks are available (e.g. a valid nightly, or a from-source Bazel build —
+   see the roadmap).
+
+2. **The hermetic Bazel Metro bundle needs a dependency-closure step.** Two prerequisites:
+   * `@react-native/codegen`'s `lib/` must be built (babel-plugin-codegen requires it):
+     `(cd packages/react-native-codegen && yarn build)`.
+   * rules_js uses a **strict, non-hoisted** `node_modules`. Metro's tooling (`metro`,
+     `@react-native/metro-config`, `@react-native/metro-babel-transformer`) are
+     transitive/root devDeps, so they are not resolvable from rn-tester's `node_modules`.
+     To make `//packages/rn-tester:rntester_macos_jsbundle` green, declare that tooling as
+     deps of the bundler (e.g. add them to rn-tester's `package.json` and regenerate the
+     Berry `yarn.lock`) so rules_js links the full closure. The bundle itself runs via
+     `packages/rn-tester/bazel/bundle.js` (Metro's API, with the
+     `react-native → react-native-macos` alias and a sandbox-safe config).
+
+## What's next (WIP, scaffolded — all `manual`)
+
+* **Metro bundle**: `//packages/rn-tester:rntester_macos_jsbundle` (`js_run_binary` around
+  `bazel/bundle.js`). Blocked only on the closure step above.
 * **macOS app**: `//packages/rn-tester:RNTesterMacBazel` (`macos_application`) links the
   imported XCFrameworks and embeds the Metro bundle as an app resource, reusing
-  rn-tester's existing `AppDelegate.mm`/`main.m`.
+  rn-tester's existing `AppDelegate.mm`/`main.m`. Blocked on the XCFrameworks (Hermes 404).
 
 ## Apple: prebuilt XCFrameworks (swappable seam)
 
