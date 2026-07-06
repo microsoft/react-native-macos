@@ -14,7 +14,6 @@
 
 load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_run_binary")
 load("@npm//:defs.bzl", "npm_link_all_packages")
-load("//tools/bazel/apple:xcframeworks.bzl", "rn_imported_xcframeworks")
 load("@rules_apple//apple:macos.bzl", "macos_application")
 
 package(default_visibility = ["//visibility:private"])
@@ -58,10 +57,11 @@ js_run_binary(
     tool = ":bundler",
 )
 
-# 2. Prebuilt native code as importable XCFrameworks (from ios-prebuild).
-rn_imported_xcframeworks()
-
-# 3. App host — reuse rn-tester's existing AppDelegate + main.
+# 3. App host. NOTE: rn-tester's real AppDelegate.mm pulls in rn-tester-specific native
+#    modules + codegen (NativeCxxModuleExample, RNTMyNativeViewComponentView,
+#    ReactAppDependencyProvider) that are NOT in the prebuilt XCFrameworks. A green app
+#    therefore needs either those built too, or a minimal RN macOS host. The imported
+#    XCFrameworks below DO build on Xcode 26 (bazel build @rn_prebuilt_xcframeworks//:React).
 objc_library(
     name = "rntester_macos_host",
     srcs = [
@@ -71,9 +71,9 @@ objc_library(
     hdrs = ["RNTester/AppDelegate.h"],
     tags = ["manual"],
     deps = [
-        ":React",
-        ":ReactNativeDependencies",
-        ":hermes",
+        "@rn_prebuilt_xcframeworks//:React",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies",
+        "@rn_prebuilt_xcframeworks//:hermes",
     ],
 )
 
