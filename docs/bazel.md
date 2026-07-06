@@ -101,28 +101,26 @@ BYONM remains a viable fallback.
 
 Two concrete blockers separate the current state from a running RNTester macOS app:
 
-1. **The macOS app needs the prebuilt XCFrameworks, which can't be produced *in this
-   environment* because the local Xcode is too new.** This is a toolchain/environment
-   issue, **not** a fork gap — react-native-macos already carries the patches that resolve
-   the correct Hermes for the branch (`scripts/ios-prebuild/microsoft-hermes.js`):
-   * On a **release branch**, `findMatchingHermesVersion` maps to the upstream RN version in
-     `peerDependencies` and ios-prebuild **downloads** a published Hermes artifact.
-   * On **main (`1000.0.0`)**, it returns `null` and **builds Hermes from source** at the
-     Hermes commit at the merge-base with facebook/react-native (`hermesCommitAtMergeBase`).
+1. **The macOS app needs the prebuilt XCFrameworks. The Xcode-26 Hermes build blocker has
+   been fixed here; the remaining cost is the (long) native build itself.** This was never a
+   fork gap — react-native-macos already carries the Hermes version-resolution patches
+   (`scripts/ios-prebuild/microsoft-hermes.js`): a release branch downloads a published
+   Hermes, and `main` (`1000.0.0`) builds Hermes from source at the Hermes commit at the
+   merge-base with facebook/react-native.
 
-   Building that from source here fails for two environment reasons:
-   * the default Homebrew CMake is **4.x**, too new for Hermes (use the installed
-     `cmake@3.26.4`); and, after that,
-   * **Xcode 26 / AppleClang 21** trips LLVM's `CheckAtomic` ("Host compiler appears to
-     require libatomic, but cannot find it"). The prebuild CI pins **Xcode 16.2 / 16.1**
-     (see `.github/workflows/prebuild-ios-core.yml`), which is what actually builds these
-     XCFrameworks. No Xcode 16.x is installed on this machine.
+   Building from source on **Xcode 26** originally failed because clang honors
+   `*_DEPLOYMENT_TARGET` env vars: `ios-prebuild` sets `XROS_DEPLOYMENT_TARGET` for the
+   cross-platform builds and it leaked into the **native** `build_host_hermesc` step, so
+   Xcode 26's clang mis-targeted the host tools to **visionOS** ("using sysroot for
+   'MacOSX' but targeting 'XR'"), failing llvh's `CheckAtomic`. Fixed in
+   `sdks/hermes-engine/utils/build-apple-framework.sh` by building the host tools with the
+   mobile deployment-target vars unset and `MACOSX_DEPLOYMENT_TARGET` set — verified:
+   `HAVE_CXX_ATOMICS_WITHOUT_LIB` now succeeds and Hermes compiles under Xcode 26.
 
-   Net: on CI (Xcode 16.2) — or from a release branch that downloads prebuilt Hermes — the
-   XCFrameworks build and the `macos_application` links. Locally with only Xcode 26, the
-   from-source Hermes build can't complete. (An earlier revision of this doc wrongly blamed
-   a "Hermes nightly 404"; that was caused by forcing `HERMES_VERSION=nightly`, which
-   bypasses the macOS version-resolution patches — don't set that env var.)
+   Two environment notes remain: use **CMake 3.x** (Hermes doesn't configure under the
+   Homebrew-default CMake 4.x; `cmake@3.26.4` works), and the full from-source build of
+   Hermes + ReactNativeDependencies + React across all Apple slices is long. Once those
+   XCFrameworks exist, the `macos_application` links them on Xcode 26.
 
 2. **The hermetic Bazel Metro bundle needs a dependency-closure step.** Two prerequisites:
    * `@react-native/codegen`'s `lib/` must be built (babel-plugin-codegen requires it):
