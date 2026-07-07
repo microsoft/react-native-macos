@@ -254,6 +254,11 @@ async function getProcessedSnapshotResult(
   const cleanedRollup = sourceRollup
     .replace(/\/\*[\s\S]*?\*\//gm, '') // Remove block comments
     .replace(/\\\\.*$/gm, '') // Remove inline comments
+    // Normalize module specifiers that resolved through node_modules back to a
+    // bare package name. Under Yarn's pnpm linker, API Extractor emits imports
+    // via the on-disk (symlinked) path, e.g.
+    // "../../react-native/node_modules/@react-native-macos/virtualized-lists".
+    .replace(/(from\s+["'])[^"']*\/node_modules\/([^"']+)(["'])/gm, '$1$2$3')
     .replace(/^\s+$/gm, '') // Clear whitespace-only lines
     .replace(/\n+/gm, '\n'); // Collapse empty lines
 
