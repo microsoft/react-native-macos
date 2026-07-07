@@ -27,7 +27,11 @@ Pod::Spec.new do |s|
     s.author                 = "Meta Platforms, Inc. and its affiliates"
     s.platforms              = min_supported_versions
     s.source                 = source
-    s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/Headers/Private/React-Core\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_featureflags.framework/Headers\"",
+    # [macOS] Generate per-platform-suffixed framework header search paths so headers
+    # resolve in multi-platform (iOS/macOS/visionOS) use_frameworks! workspaces.
+    nativemodules_header_search_paths = ["\"$(PODS_ROOT)/Headers/Private/React-Core\""]
+        .concat(create_header_search_path_for_frameworks("React-featureflags", framework_name: "React_featureflags").map { |search_path| "\"#{search_path}\"" })
+    s.pod_target_xcconfig    = { "HEADER_SEARCH_PATHS" => nativemodules_header_search_paths.join(" "),
                                 "USE_HEADERMAP" => "YES",
                                 "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                                 "GCC_WARN_PEDANTIC" => "YES" }

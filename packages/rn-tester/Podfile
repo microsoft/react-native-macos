@@ -21,6 +21,14 @@ end
 
 prepare_react_native_project!
 
+# [macOS] Declare the platforms this workspace targets *before* any podspecs are
+# evaluated. add_dependency() reads $RN_PLATFORMS at podspec-evaluation time to
+# generate per-platform framework header search paths (e.g. React-debug-iOS vs
+# React-debug-macOS). Setting it only in post_install (which runs later) leaves
+# those paths without a platform suffix, breaking header resolution under
+# use_frameworks! (e.g. 'react/debug/react_native_assert.h' file not found).
+$RN_PLATFORMS = %w[iOS macOS visionOS]
+
 IN_CI = ENV['CI'] == 'true'
 
 @prefix_path = "../react-native"
@@ -100,6 +108,5 @@ end
 # visionOS]
 
 post_install do |installer|
-  $RN_PLATFORMS = %w[iOS macOS visionOS] # [macOS]
   react_native_post_install(installer, @prefix_path, :mac_catalyst_enabled => false)
 end

@@ -495,6 +495,7 @@ def react_native_post_install(
   ReactNativePodsUtils.set_ccache_compiler_and_linker_build_settings(installer, react_native_path, ccache_enabled)
   ReactNativePodsUtils.updateOSDeploymentTarget(installer)
   ReactNativePodsUtils.set_dynamic_frameworks_flags(installer)
+  ReactNativePodsUtils.set_supported_platforms_for_frameworks(installer) # [macOS] Disambiguate per-platform framework targets in multi-platform workspaces
   ReactNativePodsUtils.add_ndebug_flag_to_pods_in_release(installer)
   SPM.apply_on_post_install(installer)
 
