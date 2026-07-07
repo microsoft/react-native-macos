@@ -30,6 +30,7 @@ Pod::Spec.new do |s|
   s.module_name            = "RCTSwiftUIWrapper"
   s.header_dir             = "RCTSwiftUIWrapper"
   s.dependency "RCTSwiftUI"
+  s.dependency "React-RCTUIKit" # [macOS]
   
   s.pod_target_xcconfig    = {
     "SWIFT_VERSION" => "5.0",

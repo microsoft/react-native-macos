@@ -6,21 +6,7 @@
  */
 
 import SwiftUI
-#if os(macOS) // [macOS
-import AppKit
-#else
-import UIKit
-#endif // macOS]
-
-#if os(macOS) // [macOS
-public typealias RCTPlatformView = NSView
-public typealias RCTUIColor = NSColor
-public typealias RCTPlatformHostingController = NSHostingController
-#else
-public typealias RCTPlatformView = UIView
-public typealias RCTUIColor = UIColor
-public typealias RCTPlatformHostingController = UIHostingController
-#endif // macOS]
+import React_RCTUIKit
 
 @MainActor @objc public class RCTSwiftUIContainerView: NSObject {
   private var containerViewModel = ContainerViewModel()
@@ -61,7 +47,7 @@ public typealias RCTPlatformHostingController = UIHostingController
     containerViewModel.grayscale = CGFloat(grayscale.floatValue)
   }
 
-  @objc public func updateDropShadow(standardDeviation: NSNumber, x: NSNumber, y: NSNumber, color: RCTUIColor) { // [macOS]
+  @objc public func updateDropShadow(standardDeviation: NSNumber, x: NSNumber, y: NSNumber, color: RCTPlatformColor) { // [macOS]
     containerViewModel.shadowRadius = CGFloat(standardDeviation.floatValue)
     containerViewModel.shadowX = CGFloat(x.floatValue)
     containerViewModel.shadowY = CGFloat(y.floatValue)
@@ -128,7 +114,7 @@ struct SwiftUIContainerView: View {
 
   var body: some View {
     if let contentView = viewModel.contentView {
-      PlatformViewWrapper(view: contentView) // [macOS]
+      RCTPlatformViewWrapper(view: contentView) // [macOS]
         .blur(radius: viewModel.blurRadius)
         .grayscale(viewModel.grayscale)
         .shadow(color: viewModel.shadowColor, radius: viewModel.shadowRadius, x: viewModel.shadowX, y: viewModel.shadowY)
@@ -139,26 +125,13 @@ struct SwiftUIContainerView: View {
   }
 }
 
-#if os(macOS) // [macOS
-struct PlatformViewWrapper: NSViewRepresentable {
-  let view: NSView
+struct RCTPlatformViewWrapper: RCTPlatformViewRepresentable { // [macOS]
+  let view: RCTPlatformView
 
-  func makeNSView(context: Context) -> NSView {
+  func makeRCTPlatformView(context: Context) -> RCTPlatformView { // [macOS]
     return view
   }
 
-  func updateNSView(_ nsView: NSView, context: Context) {
+  func updateRCTPlatformView(_ view: RCTPlatformView, context: Context) { // [macOS]
   }
 }
-#else
-struct PlatformViewWrapper: UIViewRepresentable {
-  let view: UIView
-
-  func makeUIView(context: Context) -> UIView {
-    return view
-  }
-
-  func updateUIView(_ uiView: UIView, context: Context) {
-  }
-}
-#endif // macOS]

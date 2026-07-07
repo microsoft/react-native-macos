@@ -9,14 +9,6 @@
 
 @import RCTSwiftUI;
 
-#if TARGET_OS_OSX // [macOS
-typedef NSView RCTPlatformView;
-typedef NSColor RCTUIColor;
-#else // macOS]
-typedef UIView RCTPlatformView;
-typedef UIColor RCTUIColor;
-#endif // [macOS]
-
 @interface RCTSwiftUIContainerViewWrapper ()
 @property (nonatomic, strong) RCTSwiftUIContainerView *swiftContainerView;
 @end
@@ -76,7 +68,7 @@ typedef UIColor RCTUIColor;
   [self.swiftContainerView updateHueRotate:degrees];
 }
 
-- (void)updateDropShadow:(NSNumber *)standardDeviation x:(NSNumber *)x y:(NSNumber *)y color:(RCTUIColor *)color // [macOS]
+- (void)updateDropShadow:(NSNumber *)standardDeviation x:(NSNumber *)x y:(NSNumber *)y color:(RCTPlatformColor *)color // [macOS]
 {
   [self.swiftContainerView updateDropShadowWithStandardDeviation:standardDeviation x:x y:y color:color];
 }
