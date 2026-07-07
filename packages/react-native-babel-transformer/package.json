@@ -34,8 +34,5 @@
   },
   "peerDependencies": {
     "@babel/core": "*"
-  },
-  "devDependencies": {
-    "metro-babel-transformer": "^0.82.5"
   }
 }

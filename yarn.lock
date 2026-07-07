@@ -3206,7 +3206,6 @@ __metadata:
   resolution: "@react-native/babel-plugin-codegen@workspace:packages/babel-plugin-codegen"
   dependencies:
     "@babel/core": "npm:^7.25.2"
-    "@babel/plugin-syntax-flow": "npm:^7.25.0"
     "@babel/traverse": "npm:^7.25.3"
     "@react-native/codegen": "workspace:*"
   languageName: unknown
@@ -3305,7 +3304,6 @@ __metadata:
   resolution: "@react-native/codegen@workspace:packages/react-native-codegen"
   dependencies:
     "@babel/core": "npm:^7.25.2"
-    "@babel/parser": "npm:^7.25.2"
     "@babel/plugin-syntax-dynamic-import": "npm:^7.8.3"
     "@babel/plugin-transform-class-properties": "npm:^7.25.4"
     "@babel/plugin-transform-flow-strip-types": "npm:^7.25.2"
@@ -3354,7 +3352,6 @@ __metadata:
   dependencies:
     "@react-native/codegen": "workspace:*"
     flow-remove-types: "npm:^2.237.2"
-    invariant: "npm:^2.2.4"
     rimraf: "npm:^3.0.2"
   languageName: unknown
   linkType: soft
@@ -3362,8 +3359,6 @@ __metadata:
 "@react-native/core-cli-utils@workspace:packages/core-cli-utils":
   version: 0.0.0-use.local
   resolution: "@react-native/core-cli-utils@workspace:packages/core-cli-utils"
-  dependencies:
-    metro: "npm:^0.82.5"
   languageName: unknown
   linkType: soft
 
@@ -3441,7 +3436,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin-monorepo@workspace:private/eslint-plugin-monorepo"
   dependencies:
-    hermes-estree: "npm:0.29.1"
     jsonc-eslint-parser: "npm:^2.3.0"
   languageName: unknown
   linkType: soft
@@ -3473,12 +3467,6 @@ __metadata:
 "@react-native/fantom@workspace:private/react-native-fantom":
   version: 0.0.0-use.local
   resolution: "@react-native/fantom@workspace:private/react-native-fantom"
-  dependencies:
-    jest-docblock: "npm:^29.7.0"
-    jest-message-util: "npm:^29.7.0"
-    metro: "npm:^0.82.5"
-    metro-config: "npm:^0.82.5"
-    source-map: "npm:^0.7.4"
   peerDependencies:
     jest: ^29.7.0
     jest-snapshot: ^29.7.0
@@ -3504,7 +3492,6 @@ __metadata:
     "@babel/core": "npm:^7.25.2"
     "@react-native/babel-preset": "workspace:*"
     hermes-parser: "npm:0.29.1"
-    metro-babel-transformer: "npm:^0.82.5"
     nullthrows: "npm:^1.1.1"
   peerDependencies:
     "@babel/core": "*"

@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "main": "index.js",
   "dependencies": {
-    "hermes-estree": "0.29.1",
     "jsonc-eslint-parser": "^2.3.0"
   }
 }

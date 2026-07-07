@@ -30,7 +30,6 @@
     "@react-native/codegen": "workspace:*"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/plugin-syntax-flow": "^7.25.0"
+    "@babel/core": "^7.25.2"
   }
 }
