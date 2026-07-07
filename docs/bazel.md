@@ -104,14 +104,13 @@ prebuilt-XCFramework link. Specifically:
   minimal `RCTReactNativeFactory` host, links the prebuilt React/hermes/ReactNativeDependencies
   XCFrameworks, and embeds the JS bundle. The resulting `.app` contains the arm64 binary,
   `Contents/Resources/RNTesterApp.macos.jsbundle`, and `Contents/Frameworks/hermes.framework`.
-* **The FULL rn-tester host also builds** — `:RNTesterMacBazelFull` links rn-tester's *real*
-  `RNTester/AppDelegate.mm` with the Bazel-built codegen (`RCTAppDependencyProvider` + AppSpecs
-  compiled into `//tools/bazel/react_native:rn_tester_appspecs_lib`), the C++ TurboModule
-  example (`NativeCxxModuleExample`), the sample TurboModules
-  (`//packages/react-native:sample_turbo_modules`), and the RCTLinking/RCTPushNotification
-  modules built from source (not in the prebuilt framework). `RN_DISABLE_OSS_PLUGIN_HEADER`
-  currently skips the Fabric `NativeComponentExample` (its sources use quoted plugin includes
-  not yet wired).
+* **The FULL rn-tester host also builds** — `:RNTesterMacBazelFull` links rn-tester's *real,
+  unmodified* `RNTester/AppDelegate.mm` with the Bazel-built codegen (`RCTAppDependencyProvider`
+  + AppSpecs compiled into `//tools/bazel/react_native:rn_tester_appspecs_lib`), the C++
+  TurboModule example (`NativeCxxModuleExample`), the Fabric `NativeComponentExample`
+  (`RNTMyNativeView`), the sample TurboModules (`//packages/react-native:sample_turbo_modules`),
+  and the RCTLinking/RCTPushNotification modules built from source (not in the prebuilt
+  framework). All example modules link in — no rn-tester source is modified or `#ifdef`'d out.
 
 ### Consuming the prebuilt XCFrameworks from Bazel (the header problem)
 
@@ -176,11 +175,10 @@ react-native-macos already carries the Hermes version-resolution patches
 
 ## What's next (increments)
 
-* **Fabric NativeComponentExample**: wire the codegen'd `RCTFabricComponentsPlugins.h` +
-  `RCTThirdPartyComponentsProvider` registration so the `RNTMyNativeView` example compiles
-  (drop `RN_DISABLE_OSS_PLUGIN_HEADER`).
 * **`bazel run`**: wire an ad-hoc-signed run so the app launches directly from Bazel.
 * **CI**: run the app build on the macos-26 runner reusing the prebuild artifacts.
+* **From source**: build the React/hermes/ReactNativeDependencies XCFrameworks in Bazel
+  (roadmap below) to drop the SPM prebuild + header reconstruction entirely.
 
 ## Apple: prebuilt XCFrameworks (swappable seam)
 

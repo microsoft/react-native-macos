@@ -51,6 +51,17 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+# rn-tester's Fabric NativeComponentExample quotes "RCTFabricComponentsPlugins.h",
+# the core Fabric component-provider header. Its impl is in React.xcframework; expose
+# the source header at its bare name so the quoted include resolves.
+cc_library(
+    name = "rct_fabric_components_plugins_hdr",
+    hdrs = ["React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.h"],
+    strip_include_prefix = "React/Fabric/Mounting/ComponentViews",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
 # rn-tester's real AppDelegate imports RCTLinkingManager + RCTPushNotificationManager,
 # which are separate RN modules NOT included in the prebuilt React.xcframework. Build
 # them from source and expose their headers as <React/...> (matching the podspec layout).
