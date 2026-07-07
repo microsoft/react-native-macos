@@ -347,13 +347,6 @@ static void RCTPerformMountInstructions(
 #if !TARGET_OS_OSX // [macOS]
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, componentView);
 #else // [macOS
-    // Move first-responder to the component view and post the
-    // AppKit-equivalent accessibility notification so VoiceOver picks
-    // up the focus change. Without this branch the Fabric path for
-    // `AccessibilityInfo.setAccessibilityFocus(reactTag)` silently
-    // no-ops on macOS — the old-arch path in
-    // RCTAccessibilityManager.mm:setAccessibilityFocus: does the
-    // equivalent work, which we mirror here.
     if (componentView != nil) {
       [[componentView window] makeFirstResponder:componentView];
       NSAccessibilityPostNotification(componentView, NSAccessibilityFocusedUIElementChangedNotification);
