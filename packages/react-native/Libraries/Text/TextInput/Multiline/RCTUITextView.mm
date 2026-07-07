@@ -275,6 +275,11 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
   [super setFocusRingType:self.focusRingType];
   [self setKeyboardFocusRingNeedsDisplayInRect:self.bounds];
 }
+
+- (BOOL)enableFocusRing
+{
+  return _enableFocusRing;
+}
 #endif // macOS]
 
 - (void)setDefaultTextAttributes:(NSDictionary<NSAttributedStringKey, id> *)defaultTextAttributes
