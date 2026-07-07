@@ -23,6 +23,7 @@
  */
 
 import fs from 'node:fs';
+import path from 'node:path';
 
 const REGISTRY = 'https://registry.npmjs.org';
 
@@ -166,14 +167,30 @@ function relPath(from, to) {
 // Conversion
 // ---------------------------------------------------------------------------
 
-function convert(syml) {
+function convert(syml, resolutions) {
   // Map every descriptor string -> its resolved entry.
   const descriptorToEntry = new Map();
   // Canonical package key `ident@version` -> entry (npm packages only).
   const packageEntries = new Map();
+  // ident -> [entries] (for single-version fallback resolution).
+  const nameToEntries = new Map();
   // Workspace entries: importer path -> entry.
   const workspaceByPath = new Map();
-  // ident@workspacePath (descriptor) resolution helper: descriptor -> workspace path.
+
+  // Yarn `resolutions` overrides. Berry rewrites matching descriptors, but dependency
+  // entries keep their original ranges, so we must apply resolutions when resolving.
+  const globalRes = new Map(); // ident -> override value (e.g. ">=3.1.0")
+  const specificRes = new Map(); // "ident@range" -> override value
+  for (const [k, v] of Object.entries(resolutions || {})) {
+    const at = k.indexOf('@', k.startsWith('@') ? 1 : 0);
+    if (at > 0) {
+      specificRes.set(k, v);
+    } else {
+      globalRes.set(k, v);
+    }
+  }
+  const normalizeResValue = v => (/^[a-z]+:/.test(v) ? v : 'npm:' + v);
+  let droppedCount = 0;
 
   const entries = [];
   for (const [rawKey, value] of Object.entries(syml)) {
@@ -219,14 +236,41 @@ function convert(syml) {
         }
       }
     }
+    if (entry.version || entry.kind === 'workspace') {
+      if (!nameToEntries.has(ident)) {
+        nameToEntries.set(ident, []);
+      }
+      nameToEntries.get(ident).push(entry);
+    }
   }
 
   // Resolve a `depName: rangeDescriptor` reference to either a snapshot key
-  // (`name@version`) or a `link:<relpath>` for workspace deps.
+  // (`name@version`) or a `link:<relpath>` for workspace deps. Handles Yarn
+  // `resolutions` overrides and falls back to a single resolved version.
   function resolveDep(fromPath, depName, rangeDescriptor) {
-    const descriptor = `${depName}@${rangeDescriptor}`;
-    const target = descriptorToEntry.get(descriptor);
+    // Yarn descriptors can carry insignificant trailing whitespace; normalize so a
+    // dependency range like "npm:^3.1.0 " matches the trimmed descriptor key.
+    rangeDescriptor = String(rangeDescriptor).trim();
+    let target = descriptorToEntry.get(`${depName}@${rangeDescriptor}`);
     if (!target) {
+      const specific = specificRes.get(`${depName}@${rangeDescriptor}`);
+      if (specific != null) {
+        target = descriptorToEntry.get(`${depName}@${normalizeResValue(specific)}`);
+      }
+    }
+    if (!target && globalRes.has(depName)) {
+      target = descriptorToEntry.get(`${depName}@${normalizeResValue(globalRes.get(depName))}`);
+    }
+    if (!target) {
+      // Single-version fallback: if the package resolves to exactly one version in the
+      // lock (common once resolutions/dedup collapse ranges), use it.
+      const list = nameToEntries.get(depName);
+      if (list && list.length === 1) {
+        target = list[0];
+      }
+    }
+    if (!target) {
+      droppedCount++;
       return null;
     }
     if (target.kind === 'workspace') {
@@ -239,6 +283,7 @@ function convert(syml) {
         ident: target.ident,
       };
     }
+    droppedCount++;
     return null;
   }
 
@@ -326,7 +371,7 @@ function convert(syml) {
     importers[importPath] = {dependencies: deps};
   }
 
-  return {importers, packages, snapshots};
+  return {importers, packages, snapshots, droppedCount};
 }
 
 // ---------------------------------------------------------------------------
@@ -460,11 +505,29 @@ function main() {
   }
   const text = fs.readFileSync(inPath, 'utf8');
   const syml = parseSyml(text);
-  const model = convert(syml);
+
+  // Load Yarn `resolutions` from the root package.json next to yarn.lock so we can
+  // apply them (Berry rewrites matching descriptors but keeps original dep ranges).
+  let resolutions = {};
+  try {
+    const rootPkgPath = path.join(path.dirname(path.resolve(inPath)), 'package.json');
+    if (fs.existsSync(rootPkgPath)) {
+      resolutions = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8')).resolutions || {};
+    }
+  } catch (_) {
+    // best effort
+  }
+
+  const model = convert(syml, resolutions);
   validate(model);
   fs.writeFileSync(outPath, toYaml(model));
   const nImporters = Object.keys(model.importers).length;
   const nPackages = Object.keys(model.packages).length;
+  if (model.droppedCount) {
+    console.error(
+      `berry_to_pnpm_lock: WARNING ${model.droppedCount} dependency edge(s) could not be resolved and were dropped`,
+    );
+  }
   console.error(
     `berry_to_pnpm_lock: wrote ${outPath} (${nImporters} importers, ${nPackages} packages)`,
   );

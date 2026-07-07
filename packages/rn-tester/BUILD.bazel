@@ -12,7 +12,7 @@
 #         Hermes (macOS patches) but building it from source needs Xcode 16.x (CI-pinned) --
 #         the local Xcode 26 trips LLVM CheckAtomic. See docs/bazel.md.
 
-load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_run_binary")
+load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_library", "js_run_binary")
 load("@npm//:defs.bzl", "npm_link_all_packages")
 load("@rules_apple//apple:macos.bzl", "macos_application")
 
@@ -22,7 +22,7 @@ package(default_visibility = ["//visibility:private"])
 npm_link_all_packages(name = "node_modules")
 
 # All rn-tester JavaScript that Metro may pull into the bundle.
-filegroup(
+js_library(
     name = "js_srcs",
     srcs = glob(
         ["js/**/*.js"],
@@ -52,7 +52,12 @@ js_run_binary(
     name = "rntester_macos_jsbundle",
     srcs = [":js_srcs"],
     outs = ["RNTesterApp.macos.jsbundle"],
-    env = {"BUNDLE_OUT": "RNTesterApp.macos.jsbundle"},
+    out_dirs = ["RNTesterApp_assets"],
+    env = {
+        "BUNDLE_OUT": "packages/rn-tester/RNTesterApp.macos.jsbundle",
+        "ASSETS_DEST": "packages/rn-tester/RNTesterApp_assets",
+        "RN_TESTER_ROOT": "packages/rn-tester",
+    },
     tags = ["manual"],
     tool = ":bundler",
 )

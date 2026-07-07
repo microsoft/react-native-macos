@@ -3536,6 +3536,8 @@ __metadata:
     "@react-native-community/cli": "npm:20.0.0"
     "@react-native-community/cli-platform-android": "npm:20.0.0"
     "@react-native-community/cli-platform-ios": "npm:20.0.0"
+    "@react-native/metro-babel-transformer": "workspace:*"
+    "@react-native/metro-config": "workspace:*"
     "@react-native/new-app-screen": "workspace:*"
     "@react-native/oss-library-example": "workspace:*"
     "@react-native/popup-menu-android": "workspace:*"
@@ -3543,7 +3545,9 @@ __metadata:
     flow-enums-runtime: "npm:^0.0.6"
     invariant: "npm:^2.2.4"
     listr2: "npm:^6.4.1"
+    metro: "npm:^0.82.5"
     nullthrows: "npm:^1.1.1"
+    react: "npm:19.1.0"
     react-native-macos: "workspace:*"
     rxjs: "npm:@react-native-community/rxjs@6.5.4-custom"
   peerDependencies:
