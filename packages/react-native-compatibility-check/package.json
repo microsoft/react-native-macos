@@ -30,7 +30,8 @@
     "dist"
   ],
   "dependencies": {
-    "@react-native/codegen": "workspace:*"
+    "@react-native/codegen": "workspace:*",
+    "invariant": "^2.2.4"
   },
   "devDependencies": {
     "flow-remove-types": "^2.237.2",

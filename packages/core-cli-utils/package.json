@@ -26,5 +26,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "devDependencies": {
+    "metro": "^0.82.5"
+  }
 }

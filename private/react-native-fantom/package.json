@@ -10,5 +10,12 @@
   "peerDependencies": {
     "jest": "^29.7.0",
     "jest-snapshot": "^29.7.0"
+  },
+  "dependencies": {
+    "jest-docblock": "^29.7.0",
+    "jest-message-util": "^29.7.0",
+    "metro": "^0.82.5",
+    "metro-config": "^0.82.5",
+    "source-map": "^0.7.4"
   }
 }
