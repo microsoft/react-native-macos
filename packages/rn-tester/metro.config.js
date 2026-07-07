@@ -10,8 +10,7 @@
 
 'use strict';
 
-const {getDefaultConfig} = require('@react-native/metro-config');
-const {mergeConfig} = require('metro-config');
+const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 const path = require('path');
 
 /**
@@ -39,6 +38,11 @@ const config = {
     blockList: [/..\/react-native\/sdks\/hermes/],
     extraNodeModules: {
       'react-native': path.resolve(__dirname, '../react-native'),
+      // [macOS] Under Yarn's pnpm linker, files inside the react-native-macos
+      // package self-reference via `react-native`, which Metro redirects to the
+      // real package name `react-native-macos`. That name isn't self-resolvable
+      // in pnpm's strict layout, so map it to the workspace explicitly.
+      'react-native-macos': path.resolve(__dirname, '../react-native'),
     },
     platforms: ['ios', 'macos', 'android'], // [macOS]
   },

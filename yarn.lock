@@ -387,7 +387,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/parser@npm:^7.29.7":
+"@babel/parser@npm:^7.25.2, @babel/parser@npm:^7.29.7":
   version: 7.29.7
   resolution: "@babel/parser@npm:7.29.7"
   dependencies:
@@ -1540,6 +1540,13 @@ __metadata:
   version: 7.28.6
   resolution: "@babel/runtime@npm:7.28.6"
   checksum: 10c0/358cf2429992ac1c466df1a21c1601d595c46930a13c1d4662fde908d44ee78ec3c183aaff513ecb01ef8c55c3624afe0309eeeb34715672dbfadb7feedb2c0d
+  languageName: node
+  linkType: hard
+
+"@babel/runtime@npm:^7.25.2":
+  version: 7.29.7
+  resolution: "@babel/runtime@npm:7.29.7"
+  checksum: 10c0/ca11572f7146b21e0bde6a9ed4bb6a89eafbee5f0944c7eb54d0d8a2dac962c33638a1d611e14faa71dfbb92b4b5f9236232208568a6b7d5c6f3f39ddb91771e
   languageName: node
   linkType: hard
 
@@ -3079,10 +3086,12 @@ __metadata:
     "@babel/plugin-transform-regenerator": "npm:^7.24.7"
     "@babel/preset-env": "npm:^7.25.3"
     "@babel/preset-flow": "npm:^7.24.7"
+    "@babel/runtime": "npm:^7.25.2"
     "@changesets/cli": "npm:^2.28.1"
     "@electron/packager": "npm:^18.3.6"
     "@jest/create-cache-key-function": "npm:^29.7.0"
     "@microsoft/api-extractor": "npm:^7.52.2"
+    "@react-native/babel-preset": "workspace:*"
     "@react-native/metro-babel-transformer": "workspace:*"
     "@react-native/metro-config": "workspace:*"
     "@tsconfig/node22": "npm:22.0.2"
@@ -3270,6 +3279,7 @@ __metadata:
   resolution: "@react-native/codegen@workspace:packages/react-native-codegen"
   dependencies:
     "@babel/core": "npm:^7.25.2"
+    "@babel/parser": "npm:^7.25.2"
     "@babel/plugin-syntax-dynamic-import": "npm:^7.8.3"
     "@babel/plugin-transform-class-properties": "npm:^7.25.4"
     "@babel/plugin-transform-flow-strip-types": "npm:^7.25.2"
