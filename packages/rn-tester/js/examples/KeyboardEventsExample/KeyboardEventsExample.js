@@ -318,8 +318,8 @@ function LegacyValidKeysExample(): React.Node {
   return (
     <View style={{marginTop: 10}}>
       <Text style={styles.description}>
-        These components use the legacy validKeysDown / validKeysUp props. The
-        JS compat layer converts them to modern keyDownEvents / keyUpEvents
+        These components use the DEPRECATED validKeysDown / validKeysUp props.
+        The JS compat layer converts them to modern keyDownEvents / keyUpEvents
         under the hood.
       </Text>
 
@@ -327,7 +327,7 @@ function LegacyValidKeysExample(): React.Node {
         <Text style={styles.inputLabel}>
           validKeysDown: ['a', 'b', 'Enter'] (string format)
         </Text>
-        {/* $FlowFixMe[prop-missing] Legacy props not in type definitions */}
+        {/* $FlowFixMe[incompatible-type] deprecated keyboard props not in type definitions */}
         <Pressable
           ref={ref1}
           focusable={true}
@@ -347,7 +347,7 @@ function LegacyValidKeysExample(): React.Node {
         <Text style={styles.inputLabel}>
           validKeysDown: [Cmd+s, Ctrl+z] (object format)
         </Text>
-        {/* $FlowFixMe[prop-missing] Legacy props not in type definitions */}
+        {/* $FlowFixMe[incompatible-type] Legacy props not in type definitions */}
         <Pressable
           ref={ref2}
           focusable={true}
@@ -370,7 +370,7 @@ function LegacyValidKeysExample(): React.Node {
         <Text style={styles.inputLabel}>
           passthroughAllKeyEvents + validKeysDown: ['Enter']
         </Text>
-        {/* $FlowFixMe[prop-missing] Legacy props not in type definitions */}
+        {/* $FlowFixMe[incompatible-type] Legacy props not in type definitions */}
         <Pressable
           ref={ref3}
           focusable={true}
