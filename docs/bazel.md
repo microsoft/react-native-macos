@@ -130,17 +130,28 @@ Two concrete blockers separate the current state from a running RNTester macOS a
    wiring those into the Bazel `macos_application` (rules_apple on Xcode 26) and embedding
    the JS bundle.
 
-2. **The hermetic Bazel Metro bundle needs a dependency-closure step.** Two prerequisites:
-   * `@react-native/codegen`'s `lib/` must be built (babel-plugin-codegen requires it):
-     `(cd packages/react-native-codegen && yarn build)`.
-   * rules_js uses a **strict, non-hoisted** `node_modules`. Metro's tooling (`metro`,
-     `@react-native/metro-config`, `@react-native/metro-babel-transformer`) are
-     transitive/root devDeps, so they are not resolvable from rn-tester's `node_modules`.
-     To make `//packages/rn-tester:rntester_macos_jsbundle` green, declare that tooling as
-     deps of the bundler (e.g. add them to rn-tester's `package.json` and regenerate the
-     Berry `yarn.lock`) so rules_js links the full closure. The bundle itself runs via
-     `packages/rn-tester/bazel/bundle.js` (Metro's API, with the
-     `react-native → react-native-macos` alias and a sandbox-safe config).
+2. **The hermetic Bazel Metro bundle** is close but not yet green. Progress + remaining:
+   * `@react-native/codegen`'s `lib/` must be built (babel-plugin-codegen requires it).
+   * The bundler tooling closure is now declared on rn-tester (`metro`,
+     `@react-native/metro-config`, `@react-native/metro-babel-transformer`, `react`) so
+     rules_js's strict, non-hoisted `node_modules` resolves it. The Berry→pnpm converter was
+     also fixed to apply Yarn `resolutions` (it had been silently dropping edges such as
+     `https-proxy-agent`'s `debug`), so the closure is now complete.
+   * **First-party packages must be consumed in built/`dist` form.** Their source entry
+     points (e.g. `@react-native/metro-config/src/index.js`) use `../../../scripts/babel-register`
+     to run the monorepo's Flow sources on the fly — which resolves under Yarn's symlinked
+     `node_modules` but not under rules_js's copied layout. Running `node scripts/build/build.js`
+     (which builds `dist/` and repoints `exports`→`dist`) makes Metro load fine; the Bazel
+     `npm_package` for first-party packages should run that build+prepack hermetically.
+   * **Metro file-map vs Bazel file layout.** With the above, Metro loads and resolves the
+     full first-party + third-party graph, but its file-map fails to hash the entry
+     ("Failed to get the SHA-1 for …/js/RNTesterApp.macos.js") — the crawler doesn't map
+     files in the Bazel `bin` layout (persists with `useWatchman:false`,
+     `unstable_enableSymlinks:true`, and no-sandbox). This is the last blocker for the JS
+     bundle and needs a Metro-config/rules_js file-materialization fix.
+
+   The bundle entry runs via `packages/rn-tester/bazel/bundle.js` (Metro's API + the
+   `react-native → react-native-macos` alias).
 
 ## What's next (WIP, scaffolded — all `manual`)
 
