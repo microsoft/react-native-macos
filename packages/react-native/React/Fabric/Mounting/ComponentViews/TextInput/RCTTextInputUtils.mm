@@ -58,16 +58,23 @@ void RCTCopyBackedTextInput(
   toTextInput.clearButtonMode = fromTextInput.clearButtonMode;
 #endif // [macOS]
   toTextInput.scrollEnabled = fromTextInput.scrollEnabled;
+  toTextInput.disableKeyboardShortcuts = fromTextInput.disableKeyboardShortcuts;
+  toTextInput.acceptDragAndDropTypes = fromTextInput.acceptDragAndDropTypes;
 #if !TARGET_OS_OSX // [macOS]
   toTextInput.secureTextEntry = fromTextInput.secureTextEntry;
   toTextInput.keyboardType = fromTextInput.keyboardType;
   toTextInput.textContentType = fromTextInput.textContentType;
   toTextInput.smartInsertDeleteType = fromTextInput.smartInsertDeleteType;
   toTextInput.passwordRules = fromTextInput.passwordRules;
-  toTextInput.disableKeyboardShortcuts = fromTextInput.disableKeyboardShortcuts;
-  toTextInput.acceptDragAndDropTypes = fromTextInput.acceptDragAndDropTypes;
 
   [toTextInput setSelectedTextRange:fromTextInput.selectedTextRange notifyDelegate:NO];
+#else // [macOS]
+  toTextInput.enableFocusRing = fromTextInput.enableFocusRing;
+  toTextInput.pointScaleFactor = fromTextInput.pointScaleFactor;
+  toTextInput.automaticSpellingCorrectionEnabled = fromTextInput.automaticSpellingCorrectionEnabled;
+  toTextInput.grammarCheckingEnabled = fromTextInput.grammarCheckingEnabled;
+  toTextInput.continuousSpellCheckingEnabled = fromTextInput.continuousSpellCheckingEnabled;
+  [toTextInput setSelectedTextRange:[fromTextInput selectedTextRange] notifyDelegate:NO];
 #endif // [macOS]
 }
 
