@@ -1,16 +1,18 @@
 # React Native macOS — Bazel vertical slice (draft / experimental)
 #
-# Status (see docs/bazel.md):
-#   * The rules_js Berry fork is GREEN (deps resolve/link from the Berry yarn.lock).
-#   * First-party workspace packages now expose `:pkg` targets so rules_js can link
-#     them; `bazel build //packages/react-native:pkg` builds.
-#   * The Metro bundle + macOS app targets below are tagged `manual` (WIP):
-#       - the Metro bundle needs the RN `react-native`->`react-native-macos` alias and a
-#         sandbox-safe config (bazel/bundle.js), @react-native/codegen `lib` built, and the
-#         full strict-deps closure assembled (rules_js does not hoist like Yarn);
-#       - the macOS app needs the prebuilt XCFrameworks; ios-prebuild resolves the correct
-#         Hermes (macOS patches) but building it from source needs Xcode 16.x (CI-pinned) --
-#         the local Xcode 26 trips LLVM CheckAtomic. See docs/bazel.md.
+# Status (see docs/bazel.md): this slice builds RNTester as a macOS app entirely
+# with Bazel on Xcode 26:
+#   * rules_js (Berry fork) drives Metro to produce the real rn-tester JS bundle
+#     (`:rntester_macos_jsbundle`, ~1.9MB).
+#   * The prebuilt React/hermes/ReactNativeDependencies XCFrameworks are imported and,
+#     because the SPM prebuild flattens React's headers, a canonical header tree is
+#     reconstructed (`@rn_prebuilt_xcframeworks//:React_headers`) and combined with the
+#     RN source C++ headers (`//packages/react-native:rn_cxx_headers`).
+#   * A minimal RCTReactNativeFactory host (`bazel/MinimalAppDelegate.mm`) compiles and
+#     links against those, and `:RNTesterMacBazel` (macos_application) embeds the bundle.
+#     `bazel build //packages/rn-tester:RNTesterMacBazel` produces a launchable .app.
+# App/native targets are tagged `manual` (they need the prebuilt XCFrameworks present)
+# so `bazel build //...` / CI stays green without them.
 
 load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_library", "js_run_binary")
 load("@npm//:defs.bzl", "npm_link_all_packages")
@@ -92,34 +94,38 @@ js_run_binary(
     tool = ":bundler",
 )
 
-# 3. App host. NOTE: rn-tester's real AppDelegate.mm pulls in rn-tester-specific native
+# 3. App host. The REAL rn-tester AppDelegate.mm pulls in rn-tester-specific native
 #    modules + codegen (NativeCxxModuleExample, RNTMyNativeViewComponentView,
-#    ReactAppDependencyProvider) that are NOT in the prebuilt XCFrameworks. A green app
-#    therefore needs either those built too, or a minimal RN macOS host. The imported
-#    XCFrameworks below DO build on Xcode 26 (bazel build @rn_prebuilt_xcframeworks//:React).
+#    ReactAppDependencyProvider) that are not in the prebuilt XCFrameworks. This slice
+#    ships a MINIMAL macOS host that boots RCTReactNativeFactory against the embedded
+#    Metro bundle, linking only the prebuilt XCFrameworks (+ the reconstructed React
+#    canonical header tree, :React_headers). See docs/bazel.md.
 objc_library(
-    name = "rntester_macos_host",
+    name = "rntester_macos_minimal_host",
     srcs = [
-        "RNTester/AppDelegate.mm",
-        "RNTester/main.m",
+        "bazel/MinimalAppDelegate.mm",
+        "bazel/minimal_main.m",
     ],
-    hdrs = ["RNTester/AppDelegate.h"],
+    hdrs = ["bazel/MinimalAppDelegate.h"],
     tags = ["manual"],
     deps = [
+        "//packages/react-native:rn_cxx_headers",
         "@rn_prebuilt_xcframeworks//:React",
+        "@rn_prebuilt_xcframeworks//:React_headers",
         "@rn_prebuilt_xcframeworks//:ReactNativeDependencies",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
         "@rn_prebuilt_xcframeworks//:hermes",
     ],
 )
 
-# 4. macOS app: link native + embed the Metro bundle as an app resource
+# 4. macOS app: link the minimal host + embed the Metro bundle as an app resource
 #    (mirrors how Buck2's apple prelude ingests a js_bundle as an AppleResource).
 macos_application(
     name = "RNTesterMacBazel",
     bundle_id = "org.reactjs.native.RNTesterMacBazel",
     infoplists = ["bazel/Info.plist"],
-    minimum_os_version = "11.0",
+    minimum_os_version = "14.0",
     resources = [":rntester_macos_jsbundle"],
     tags = ["manual"],
-    deps = [":rntester_macos_host"],
+    deps = [":rntester_macos_minimal_host"],
 )

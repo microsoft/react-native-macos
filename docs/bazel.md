@@ -84,82 +84,95 @@ BYONM remains a viable fallback.
 
 ## What works today (verified green)
 
+**`bazel build //packages/rn-tester:RNTesterMacBazel` produces a launchable macOS
+RNTester `.app`, built entirely by Bazel on Xcode 26** — JS bundle, native host, and
+prebuilt-XCFramework link. Specifically:
+
 * `bazel test //tools/bazel/berry/example:verify` — a self-contained proof: a real Berry
   `yarn.lock` (is-odd → is-number) is translated by the fork, fetched and linked by
   rules_js, and a Node program that `require`s the npm dep runs green.
 * On the **real monorepo** `yarn.lock`, `npm_translate_lock` parses the fork-generated
   lock and **fetches all 1333 packages** successfully.
-* **First-party workspace linking**: every workspace package now exposes a `:pkg` target
-  (`npm_package`) so rules_js can link it. `bazel build //packages/react-native:pkg`
-  builds; rn-tester's `node_modules` links `react-native-macos` (the package the repo
-  consumes as `react-native`).
-* **rn-tester's macOS JS bundle builds** (outside Bazel, proving the JS is bundleable):
-  after building the codegen lib, `react-native bundle --platform macos --entry-file
-  js/RNTesterApp.macos.js` produces a ~7 MB `RNTesterApp.macos.jsbundle` + 50 assets.
+* **First-party workspace linking**: every workspace package exposes a `:pkg` target
+  (`npm_package`) so rules_js can link it, including `react-native-macos` (consumed as
+  `react-native`).
+* **rn-tester's macOS JS bundle builds *in Bazel*** — `//packages/rn-tester:rntester_macos_jsbundle`
+  drives Metro (via `bazel/bundle.js`) to emit the real ~1.9 MB `RNTesterApp.macos.jsbundle`.
+* **Codegen in Bazel** — `//tools/bazel/react_native:rn_tester_appspecs` builds
+  `@react-native/codegen` hermetically and generates AppSpecs + `RCTAppDependencyProvider`.
+* **The macOS app links + assembles** — `:RNTesterMacBazel` (`macos_application`) compiles a
+  minimal `RCTReactNativeFactory` host, links the prebuilt React/hermes/ReactNativeDependencies
+  XCFrameworks, and embeds the JS bundle. The resulting `.app` contains the arm64 binary,
+  `Contents/Resources/RNTesterApp.macos.jsbundle`, and `Contents/Frameworks/hermes.framework`.
 
-## End-to-end RN-Tester: status & remaining work
+### Consuming the prebuilt XCFrameworks from Bazel (the header problem)
 
-Two concrete blockers separate the current state from a running RNTester macOS app:
+The SPM prebuild (`scripts/ios-prebuild.js`) flattens every SPM target's public headers into
+`React.xcframework/…/Headers/<Module>/<basename>.h` (e.g. `Headers/React_Core/RCTBridge.h`).
+But both the framework's own headers *and* app sources import them by canonical path
+(`<React/RCTBridge.h>`, `<react/renderer/graphics/Float.h>`, `<jsi/jsi.h>`,
+`<RCTReactNativeFactory.h>`), and the framework only ships a *partial* header set (the deep
+Fabric/renderer C++ headers are missing). So the framework is not directly consumable. This
+slice bridges it with two pieces:
 
-1. **The macOS app needs the prebuilt XCFrameworks. These now build on Xcode 26 with the
-   fixes in this branch** (verified end to end). This was never a fork gap —
-   react-native-macos already carries the Hermes version-resolution patches
-   (`scripts/ios-prebuild/microsoft-hermes.js`): a release branch downloads a published
-   Hermes; `main` (`1000.0.0`) builds Hermes from source at the merge-base commit.
+1. **`@rn_prebuilt_xcframeworks//:React_headers`** — a repo rule runs
+   `tools/bazel/apple/reconstruct_react_headers.py`, which scans the framework headers'
+   `#include <…>` directives and rebuilds a canonical `-I` symlink tree for the **Obj-C**
+   `<React/…>`, `<RCTDeprecation/…>`, `<RCTTypeSafety/…>`, `<RCTReactNativeFactory.h>` surface
+   (disambiguating basename collisions by path-segment match). It also carries the RN
+   `RCT_*` compile defines.
+2. **`//packages/react-native:rn_cxx_headers`** — the complete, canonically-nested **C++**
+   headers (`<react/renderer/…>`, `<ReactCommon/…>`, `<jsi/…>`, `<yoga/…>`) come from the RN
+   *source* tree (same `main` version as the binary), exposed via the podspec-equivalent
+   include roots (incl. the `platform/ios`, `platform/cxx`, and react-native-macos
+   `platform/macos` overrides). Third-party `<folly/…>` etc. come from the
+   `ReactNativeDependencies` xcframework's canonical `Headers/`.
 
-   Getting the from-source build working on **Xcode 26** required two fixes (both in this
-   branch) plus one environment note:
-   * **Host `hermesc` mis-targeted to visionOS.** `ios-prebuild` sets
-     `XROS_DEPLOYMENT_TARGET` for the cross-platform builds and it leaked into the *native*
-     `build_host_hermesc`; Xcode 26's clang honors it and built the host tools for visionOS
-     ("using sysroot for 'MacOSX' but targeting 'XR'"), failing llvh's `CheckAtomic`. Fixed
-     in `sdks/hermes-engine/utils/build-apple-framework.sh` (force a macOS target for the
-     host tools).
-   * **Upstream Hermes Mac Catalyst triple.** Hermes hardcodes an invalid universal
-     Catalyst triple (`-target x86_64-arm64-apple-ios…-macabi`) that Xcode 26's clang
-     rejects. This is a Hermes-upstream issue and Catalyst isn't needed for a macOS app, so
-     `build-ios-framework.sh` now accepts `HERMES_APPLE_PLATFORMS` to build a subset (e.g.
-     `macosx`).
-   * Use **CMake 3.x** (`cmake@3.26.4`); Hermes doesn't configure under the Homebrew-default
-     CMake 4.x.
+RN's new-architecture C++ requires **C++20** (`-std=c++20`, set in `.bazelrc`).
 
-   Verified on Xcode 26.4 with `HERMES_APPLE_PLATFORMS=macosx` and `cmake@3.26.4`:
-   `ios-prebuild.js -s/-b/-c` produces all three XCFrameworks —
-   `hermes.xcframework` (from source), `ReactNativeDependencies.xcframework` (downloaded
-   0.86.0), and `React.xcframework` (`** BUILD SUCCEEDED **`, macOS slice). What remains is
-   wiring those into the Bazel `macos_application` (rules_apple on Xcode 26) and embedding
-   the JS bundle.
+## End-to-end RN-Tester: how the app is built
 
-2. **The hermetic Bazel Metro bundle** is close but not yet green. Progress + remaining:
-   * `@react-native/codegen`'s `lib/` must be built (babel-plugin-codegen requires it).
-   * The bundler tooling closure is now declared on rn-tester (`metro`,
-     `@react-native/metro-config`, `@react-native/metro-babel-transformer`, `react`) so
-     rules_js's strict, non-hoisted `node_modules` resolves it. The Berry→pnpm converter was
-     also fixed to apply Yarn `resolutions` (it had been silently dropping edges such as
-     `https-proxy-agent`'s `debug`), so the closure is now complete.
-   * **First-party packages must be consumed in built/`dist` form.** Their source entry
-     points (e.g. `@react-native/metro-config/src/index.js`) use `../../../scripts/babel-register`
-     to run the monorepo's Flow sources on the fly — which resolves under Yarn's symlinked
-     `node_modules` but not under rules_js's copied layout. Running `node scripts/build/build.js`
-     (which builds `dist/` and repoints `exports`→`dist`) makes Metro load fine; the Bazel
-     `npm_package` for first-party packages should run that build+prepack hermetically.
-   * **Metro file-map vs Bazel file layout.** With the above, Metro loads and resolves the
-     full first-party + third-party graph, but its file-map fails to hash the entry
-     ("Failed to get the SHA-1 for …/js/RNTesterApp.macos.js") — the crawler doesn't map
-     files in the Bazel `bin` layout (persists with `useWatchman:false`,
-     `unstable_enableSymlinks:true`, and no-sandbox). This is the last blocker for the JS
-     bundle and needs a Metro-config/rules_js file-materialization fix.
+```
+Berry yarn.lock ──(rules_js fork)──▶ node_modules ──(Metro)──▶ RNTesterApp.macos.jsbundle
+prebuilt React.xcframework ──(reconstruct_react_headers.py)──▶ :React_headers (Obj-C hdrs)
+RN source ReactCommon/** ────────────────────────────────────▶ :rn_cxx_headers (C++ hdrs)
+   │
+   ▼
+bazel/MinimalAppDelegate.mm (RCTReactNativeFactory host)
+   │  + link React/hermes/ReactNativeDependencies XCFrameworks
+   ▼
+macos_application :RNTesterMacBazel  ──▶  RNTesterMacBazel.app (embeds the jsbundle)
+```
 
-   The bundle entry runs via `packages/rn-tester/bazel/bundle.js` (Metro's API + the
-   `react-native → react-native-macos` alias).
+The minimal host (`bazel/MinimalAppDelegate.mm` + `bazel/minimal_main.m`) boots
+`RCTReactNativeFactory` against the embedded bundle. It intentionally omits rn-tester's own
+native example modules (NativeCxxModuleExample / RNTMyNativeView) so the app links against
+only the prebuilt binaries; adding those (compiling the Phase B codegen + the example native
+code) is the natural next increment toward the *full* rn-tester `AppDelegate.mm`.
 
-## What's next (WIP, scaffolded — all `manual`)
+### Prebuilt XCFrameworks build on Xcode 26
 
-* **Metro bundle**: `//packages/rn-tester:rntester_macos_jsbundle` (`js_run_binary` around
-  `bazel/bundle.js`). Blocked only on the closure step above.
-* **macOS app**: `//packages/rn-tester:RNTesterMacBazel` (`macos_application`) links the
-  imported XCFrameworks and embeds the Metro bundle as an app resource, reusing
-  rn-tester's existing `AppDelegate.mm`/`main.m`. Blocked on the XCFrameworks (Hermes 404).
+react-native-macos already carries the Hermes version-resolution patches
+(`scripts/ios-prebuild/microsoft-hermes.js`): a release branch downloads a published Hermes;
+`main` (`1000.0.0`) builds Hermes from source at the merge-base commit. Getting that working on
+**Xcode 26** required two fixes in this branch:
+* **Host `hermesc` mis-targeted to visionOS.** `ios-prebuild` sets `XROS_DEPLOYMENT_TARGET`
+  for the cross-platform builds and it leaked into the *native* `build_host_hermesc`; Xcode 26's
+  clang honors it and built the host tools for visionOS, failing llvh's `CheckAtomic`. Fixed in
+  `sdks/hermes-engine/utils/build-apple-framework.sh` (force a macOS target for the host tools).
+* **Upstream Hermes Mac Catalyst triple.** Hermes hardcodes an invalid universal Catalyst
+  triple (`-target x86_64-arm64-apple-ios…-macabi`) that Xcode 26's clang rejects. Catalyst
+  isn't needed for a macOS app, so `build-ios-framework.sh` accepts `HERMES_APPLE_PLATFORMS`
+  to build a subset (e.g. `macosx`).
+* Use **CMake 3.x** (`cmake@3.26.4`); Hermes doesn't configure under Homebrew-default CMake 4.x.
+
+## What's next (increments)
+
+* **Full rn-tester host**: compile the Phase B codegen (`RCTAppDependencyProvider`, AppSpecs)
+  + the NativeCxxModuleExample / NativeComponentExample native code into libraries and swap the
+  minimal host for rn-tester's real `AppDelegate.mm`.
+* **`bazel run`**: wire an ad-hoc-signed run so the app launches directly from Bazel.
+* **CI**: run the app build on the macos-26 runner reusing the prebuild artifacts.
 
 ## Apple: prebuilt XCFrameworks (swappable seam)
 

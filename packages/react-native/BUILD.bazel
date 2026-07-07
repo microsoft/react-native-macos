@@ -6,6 +6,49 @@ load("@npm//:defs.bzl", "npm_link_all_packages")
 
 npm_link_all_packages()
 
+# Canonical C++ header roots from the RN source tree. The SPM-prebuilt
+# React.xcframework only exports a partial header set; the deep Fabric/renderer
+# C++ headers (e.g. <react/renderer/componentregistry/...>, <ReactCommon/RCTTurboModule.h>,
+# <yoga/...>) live only in ReactCommon/ in source. Exposing them on the include
+# path lets Bazel compile ObjC++/C++ that touches the new-architecture surface,
+# while still linking against the prebuilt binary (same `main` version).
+cc_library(
+    name = "rn_cxx_headers",
+    hdrs = glob(
+        [
+            "ReactCommon/**/*.h",
+            "ReactCommon/**/*.hpp",
+        ],
+        allow_empty = True,
+    ),
+    includes = [
+        "ReactCommon",
+        "ReactCommon/jsi",
+        "ReactCommon/callinvoker",
+        "ReactCommon/runtimeexecutor",
+        "ReactCommon/yoga",
+        "ReactCommon/react/nativemodule/core",
+        "ReactCommon/react/nativemodule/core/platform/ios",
+        "ReactCommon/react/runtime/platform/ios",
+        "ReactCommon/jsitooling",
+        "ReactCommon/jsiexecutor",
+        # Renderer platform overrides (Apple uses the ios graphics/text/image
+        # variants and the cxx view/text/scrollview variants; react-native-macos
+        # additionally provides a macos view override that takes precedence).
+        "ReactCommon/react/renderer/graphics/platform/ios",
+        "ReactCommon/react/renderer/imagemanager/platform/ios",
+        "ReactCommon/react/renderer/textlayoutmanager/platform/ios",
+        "ReactCommon/react/renderer/components/textinput/platform/ios",
+        "ReactCommon/react/utils/platform/ios",
+        "ReactCommon/react/renderer/components/view/platform/macos",
+        "ReactCommon/react/renderer/components/view/platform/cxx",
+        "ReactCommon/react/renderer/components/text/platform/cxx",
+        "ReactCommon/react/renderer/components/scrollview/platform/cxx",
+    ],
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
 npm_package(
     name = "pkg",
     srcs = glob(

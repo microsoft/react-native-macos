@@ -14,6 +14,10 @@ build --show_result=1
 # Apple: build macOS slices. Scoped in practice to the app target's transitions.
 build:macos --apple_platform_type=macos
 
+# React Native's new architecture C++ (Fabric/TurboModules) requires C++20.
+# This only affects C++/Obj-C++ compiles; the JS (rules_js) targets are unaffected.
+build --cxxopt=-std=c++20
+
 # CI convenience config.
 build:ci --color=yes
 build:ci --show_timestamps

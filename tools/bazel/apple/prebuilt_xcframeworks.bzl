@@ -39,6 +39,51 @@ def _prebuilt_xcframeworks_impl(rctx):
             name = name,
         ))
 
+    # ReactNativeDependencies ships canonical, nested third-party headers
+    # (folly/, boost/, glog/, fmt/, double-conversion/, fast_float/) at the
+    # xcframework root `Headers/`. Expose them on the include path so C++ sources
+    # that pull `<folly/...>` etc. compile.
+    if "ReactNativeDependencies" not in missing:
+        lines.append("""
+cc_library(
+    name = "ReactNativeDependencies_headers",
+    hdrs = glob(["ReactNativeDependencies.xcframework/Headers/**"], allow_empty = True),
+    includes = ["ReactNativeDependencies.xcframework/Headers"],
+)
+""")
+
+    # The React.xcframework flattens each SPM target's public headers into
+    # `Headers/<Module>/<basename>.h`, which breaks the canonical `<React/...>`,
+    # `<react/renderer/...>`, `<jsi/...>` imports used by both the framework's own
+    # headers and app sources. Reconstruct a canonical `-I` tree of symlinks so the
+    # headers are consumable from Bazel, and expose it as `:React_headers`.
+    if "React" not in missing:
+        script = rctx.path(Label("//tools/bazel/apple:reconstruct_react_headers.py"))
+        slice_dir = None
+        for entry in rctx.path("React.xcframework").readdir():
+            if entry.basename.startswith("macos-"):
+                slice_dir = entry.basename
+                break
+        if slice_dir:
+            fw_headers = "React.xcframework/{}/React.framework/Headers".format(slice_dir)
+            res = rctx.execute(["python3", str(script), fw_headers, "flat_headers"], quiet = True)
+            if res.return_code != 0:
+                fail("reconstruct_react_headers failed: {}".format(res.stderr))
+            lines.append("""
+cc_library(
+    name = "React_headers",
+    hdrs = glob(["flat_headers/**"], allow_empty = True),
+    includes = ["flat_headers"],
+    defines = [
+        "RCT_DEV=1",
+        "RCT_ENABLE_INSPECTOR=1",
+        "RCT_REMOTE_PROFILE=0",
+        "RCT_PROFILE=0",
+        "RCT_NEW_ARCH_ENABLED=1",
+    ],
+)
+""")
+
     if missing:
         # Emit a target that fails at build time with guidance, rather than failing analysis.
         msg = ("Prebuilt XCFrameworks not found: {}. Build them first with " +
