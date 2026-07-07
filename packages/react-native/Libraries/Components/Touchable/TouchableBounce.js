@@ -202,7 +202,11 @@ class TouchableBounce extends React.Component<
             this.props.enableFocusRing === true) &&
           !this.props.disabled
         }
-        focusable={this.props.focusable !== false && !this.props.disabled}
+        focusable={
+          this.props.focusable !== false &&
+          this.props.onPress !== undefined &&
+          !this.props.disabled
+        }
         tooltip={this.props.tooltip}
         onMouseEnter={this.props.onMouseEnter}
         onMouseLeave={this.props.onMouseLeave}
