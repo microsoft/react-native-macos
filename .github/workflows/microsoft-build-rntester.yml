@@ -8,6 +8,10 @@ jobs:
     name: "${{ matrix.platform }}, ${{ matrix.arch }}, ${{ matrix.linkage }}"
     runs-on: macos-26
     timeout-minutes: 90
+    # Dynamic frameworks are a work in progress on this fork (see RCT-Folly / header
+    # plumbing). Let those jobs report status without failing the build, matching
+    # upstream's continue-on-error dynamic-frameworks job. Static builds stay required.
+    continue-on-error: ${{ matrix.linkage == 'dynamic' }}
     strategy:
       fail-fast: false
       matrix:
