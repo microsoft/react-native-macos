@@ -29,6 +29,8 @@ cc_library(
         "ReactCommon/yoga",
         "ReactCommon/react/nativemodule/core",
         "ReactCommon/react/nativemodule/core/platform/ios",
+        "ReactCommon/react/nativemodule/samples",
+        "ReactCommon/react/nativemodule/samples/platform/ios",
         "ReactCommon/react/runtime/platform/ios",
         "ReactCommon/jsitooling",
         "ReactCommon/jsiexecutor",
@@ -47,6 +49,68 @@ cc_library(
     ],
     tags = ["manual"],
     visibility = ["//visibility:public"],
+)
+
+# rn-tester's real AppDelegate imports RCTLinkingManager + RCTPushNotificationManager,
+# which are separate RN modules NOT included in the prebuilt React.xcframework. Build
+# them from source and expose their headers as <React/...> (matching the podspec layout).
+cc_library(
+    name = "rct_linking_hdrs",
+    hdrs = ["Libraries/LinkingIOS/RCTLinkingManager.h"],
+    strip_include_prefix = "Libraries/LinkingIOS",
+    include_prefix = "React",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "rct_pushnotification_hdrs",
+    hdrs = [
+        "Libraries/PushNotificationIOS/RCTPushNotificationManager.h",
+        "Libraries/PushNotificationIOS/RCTPushNotificationPlugins.h",
+    ],
+    strip_include_prefix = "Libraries/PushNotificationIOS",
+    include_prefix = "React",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+objc_library(
+    name = "rntester_extra_rn_modules",
+    srcs = [
+        "Libraries/LinkingIOS/RCTLinkingManager.mm",
+        "Libraries/LinkingIOS/RCTLinkingPlugins.h",
+        "Libraries/PushNotificationIOS/RCTPushNotificationManager.mm",
+        "Libraries/PushNotificationIOS/RCTPushNotificationPlugins.h",
+        "Libraries/PushNotificationIOS/RCTPushNotificationPlugins.mm",
+    ],
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":rct_linking_hdrs",
+        ":rct_pushnotification_hdrs",
+        ":rn_cxx_headers",
+        "@rn_prebuilt_xcframeworks//:React",
+        "@rn_prebuilt_xcframeworks//:React_headers",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
+    ],
+)
+objc_library(
+    name = "sample_turbo_modules",
+    srcs = [
+        "ReactCommon/react/nativemodule/samples/ReactCommon/NativeSampleTurboCxxModuleSpecJSI.cpp",
+        "ReactCommon/react/nativemodule/samples/ReactCommon/SampleTurboCxxModule.cpp",
+        "ReactCommon/react/nativemodule/samples/platform/ios/ReactCommon/RCTNativeSampleTurboModuleSpec.mm",
+        "ReactCommon/react/nativemodule/samples/platform/ios/ReactCommon/RCTSampleTurboModule.mm",
+    ],
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":rn_cxx_headers",
+        "@rn_prebuilt_xcframeworks//:React",
+        "@rn_prebuilt_xcframeworks//:React_headers",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
+    ],
 )
 
 npm_package(

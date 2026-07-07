@@ -46,6 +46,12 @@ OBJC_REACT_MODULES = [
 # Modules whose (single) header is imported flat, e.g. `<RCTReactNativeFactory.h>`.
 FLAT_ROOT_MODULES = ["React_RCTAppDelegate"]
 
+# Header families that live in React_Core but are consumed via a `<Name/Name*.h>`
+# umbrella prefix (the core codegen spec). The framework references some of these
+# (so they get reconstructed by the scan) but not the umbrella header itself, which
+# is only pulled in by app/library sources — so map the whole family explicitly.
+SELF_NAMED_MODULES = ["FBReactNativeSpec"]
+
 INCLUDE_RE = re.compile(r'#\s*(?:import|include)\s*<([^>]+)>')
 
 # Canonical namespaces supplied from the RN *source* tree (complete, correctly
@@ -167,6 +173,13 @@ def main():
     for module, phys in all_headers:
         if module in FLAT_ROOT_MODULES:
             want(os.path.basename(phys), phys)
+
+    # 5c. Self-named umbrella families (e.g. `<FBReactNativeSpec/FBReactNativeSpec.h>`).
+    for module, phys in all_headers:
+        base = os.path.basename(phys)
+        for name in SELF_NAMED_MODULES:
+            if base.startswith(name):
+                want(name + "/" + base, phys)
 
     # 6. Materialize the symlink tree (relative links so the tree stays valid
     #    when relocated, e.g. inside a Bazel external repo).

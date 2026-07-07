@@ -129,3 +129,46 @@ macos_application(
     tags = ["manual"],
     deps = [":rntester_macos_minimal_host"],
 )
+
+# 5. FULL host: rn-tester's real RNTester/AppDelegate.mm + a programmatic main
+#    (bazel/real_main.m avoids a MainMenu.nib). It links the Bazel-built codegen
+#    (RCTAppDependencyProvider + AppSpecs), the C++ TurboModule example, and the sample
+#    TurboModules that the real AppDelegate's getTurboModule:/dependencyProvider need.
+#    RN_DISABLE_OSS_PLUGIN_HEADER skips the Fabric NativeComponentExample (its sources use
+#    quoted plugin includes not yet wired); everything else is the real rn-tester host.
+objc_library(
+    name = "rntester_macos_full_host",
+    srcs = [
+        "RNTester/AppDelegate.mm",
+        "bazel/real_main.m",
+    ],
+    hdrs = ["RNTester/AppDelegate.h"],
+    copts = ["-DRN_DISABLE_OSS_PLUGIN_HEADER"],
+    includes = ["RNTester"],
+    sdk_frameworks = ["UserNotifications"],
+    tags = ["manual"],
+    deps = [
+        "//packages/react-native:rn_cxx_headers",
+        "//packages/react-native:rntester_extra_rn_modules",
+        "//packages/react-native:sample_turbo_modules",
+        "//packages/rn-tester/NativeCxxModuleExample",
+        "//tools/bazel/react_native:rn_tester_appspecs_appdep_hdrs",
+        "//tools/bazel/react_native:rn_tester_appspecs_lib",
+        "//tools/bazel/react_native:rn_tester_appspecs_reactcodegen_hdrs",
+        "@rn_prebuilt_xcframeworks//:React",
+        "@rn_prebuilt_xcframeworks//:React_headers",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
+        "@rn_prebuilt_xcframeworks//:hermes",
+    ],
+)
+
+macos_application(
+    name = "RNTesterMacBazelFull",
+    bundle_id = "org.reactjs.native.RNTesterMacBazelFull",
+    infoplists = ["bazel/Info.plist"],
+    minimum_os_version = "14.0",
+    resources = [":rntester_macos_jsbundle"],
+    tags = ["manual"],
+    deps = [":rntester_macos_full_host"],
+)
