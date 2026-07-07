@@ -299,7 +299,13 @@ process.stdin.on('end', function () {
   //
   //   cat <(echo eslint; npm run lint --silent -- --format=json; echo flow; flow --json) | node code-analysis-bot.js
 
-  const lines = content.trim().split('\n');
+  // Each linter contributes a `converter-name` line followed by a line of JSON.
+  // Filter out blank lines so stray output (e.g. an extra newline emitted under
+  // Yarn's pnpm linker) doesn't shift the pairing and break parsing.
+  const lines = content
+    .trim()
+    .split('\n')
+    .filter(line => line.trim() !== '');
   for (let i = 0; i < Math.ceil(lines.length / 2); ++i) {
     const converter = converters[lines[i * 2]];
     if (!converter) {
