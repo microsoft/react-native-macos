@@ -802,7 +802,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   BOOL isPointInside = [self pointInside:point withEvent:event];
 
-  UIView *currentContainerView = self.currentContainerView;
+  RCTPlatformView *currentContainerView = self.currentContainerView; // [macOS]
 
   BOOL clipsToBounds = false;
 
@@ -1040,19 +1040,19 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 // `blur` applied, we need to wrap it in a SwiftUI view to render the effect.
 // In this case, `effectiveContentView` will be the content view inside the
 // SwiftUI wrapper.
-- (UIView *)effectiveContentView
+- (RCTPlatformView *)effectiveContentView // [macOS]
 {
   if (!ReactNativeFeatureFlags::enableSwiftUIBasedFilters()) {
     return self;
   }
 
-  UIView *effectiveContentView = self;
+  RCTPlatformView *effectiveContentView = self; // [macOS]
 
   if (self.styleNeedsSwiftUIContainer) {
     if (_swiftUIWrapper == nullptr) {
       _swiftUIWrapper = [RCTSwiftUIContainerViewWrapper new];
-      UIView *swiftUIContentView = [[UIView alloc] init];
-      for (UIView *subview = nullptr in self.subviews) {
+      RCTPlatformView *swiftUIContentView = [[RCTPlatformView alloc] init]; // [macOS]
+      for (RCTPlatformView *subview = nullptr in self.subviews) { // [macOS]
         [swiftUIContentView addSubview:subview];
       }
       swiftUIContentView.clipsToBounds = self.clipsToBounds;
@@ -1069,8 +1069,8 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     effectiveContentView = _swiftUIWrapper.contentView;
   } else {
     if (_swiftUIWrapper != nullptr) {
-      UIView *swiftUIContentView = _swiftUIWrapper.contentView;
-      for (UIView *subview = nullptr in swiftUIContentView.subviews) {
+      RCTPlatformView *swiftUIContentView = _swiftUIWrapper.contentView; // [macOS]
+      for (RCTPlatformView *subview = nullptr in swiftUIContentView.subviews) { // [macOS]
         [self addSubview:subview];
       }
       self.clipsToBounds = swiftUIContentView.clipsToBounds;
@@ -1091,7 +1091,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 // the view and is not affected by clipping.
 - (RCTUIView *)currentContainerView // [macOS]
 {
-  UIView *effectiveContentView = self.effectiveContentView;
+  RCTPlatformView *effectiveContentView = self.effectiveContentView; // [macOS]
 
   if (_useCustomContainerView) {
     if (!_containerView) {
@@ -1352,7 +1352,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       if (primitive.type == FilterType::DropShadow) {
         if (_swiftUIWrapper != nullptr && std::holds_alternative<DropShadowParams>(primitive.parameters)) {
           const auto &dropShadowParams = std::get<DropShadowParams>(primitive.parameters);
-          UIColor *shadowColor = RCTUIColorFromSharedColor(dropShadowParams.color);
+          RCTPlatformColor *shadowColor = RCTUIColorFromSharedColor(dropShadowParams.color); // [macOS]
           [_swiftUIWrapper updateDropShadow:@(dropShadowParams.standardDeviation)
                                           x:@(dropShadowParams.offsetX)
                                           y:@(dropShadowParams.offsetY)
@@ -2406,7 +2406,7 @@ enum MouseEventType {
   return NO;
 }
 
-- (void)transferVisualPropertiesFromView:(UIView *)sourceView toView:(UIView *)destinationView
+- (void)transferVisualPropertiesFromView:(RCTPlatformView *)sourceView toView:(RCTPlatformView *)destinationView // [macOS]
 {
   // shadow
   destinationView.layer.shadowColor = sourceView.layer.shadowColor;
@@ -2454,6 +2454,7 @@ enum MouseEventType {
   }
 }
 
+#if !TARGET_OS_OSX // [macOS] macOS provides its own focus/blur implementation in the TARGET_OS_OSX block above
 - (BOOL)canBecomeFirstResponder
 {
   return YES;
@@ -2509,6 +2510,7 @@ enum MouseEventType {
 
   return YES;
 }
+#endif // [macOS]
 
 @end
 
