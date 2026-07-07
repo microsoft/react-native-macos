@@ -26,6 +26,7 @@
 #endif // [macOS]
   NSArray<NSString *> *_acceptDragAndDropTypes;
 #if TARGET_OS_OSX // [macOS
+  BOOL _enableFocusRing;
   NSArray<NSPasteboardType> *_readablePasteboardTypes;
 #endif // macOS]
 }
@@ -64,6 +65,7 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
     // Fix blurry text on non-retina displays.
     self.canDrawSubviewsIntoLayer = YES;
     self.allowsUndo = YES;
+    _enableFocusRing = YES;
 #endif // macOS]
 
     _textInputDelegateAdapter = [[RCTBackedTextViewDelegateAdapter alloc] initWithTextView:self];
@@ -257,6 +259,26 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
   }
 
   return success;
+}
+
+- (NSFocusRingType)focusRingType
+{
+  return _enableFocusRing ? NSFocusRingTypeDefault : NSFocusRingTypeNone;
+}
+
+- (void)setEnableFocusRing:(BOOL)enableFocusRing
+{
+  if (_enableFocusRing != enableFocusRing) {
+    _enableFocusRing = enableFocusRing;
+  }
+
+  [super setFocusRingType:self.focusRingType];
+  [self setKeyboardFocusRingNeedsDisplayInRect:self.bounds];
+}
+
+- (BOOL)enableFocusRing
+{
+  return _enableFocusRing;
 }
 #endif // macOS]
 
