@@ -8,6 +8,49 @@
 import SwiftUI
 import React_RCTUIKit
 
+// [macOS
+// These SwiftUI platform types would ideally live with the other RCTPlatform* aliases in
+// React-RCTUIKit, but that module is Objective-C and SwiftPM can't mix Obj-C and Swift in one
+// target, so they live here in the consuming module for now.
+#if os(macOS)
+typealias RCTPlatformHostingController = NSHostingController
+#else
+typealias RCTPlatformHostingController = UIHostingController
+#endif
+
+#if os(macOS)
+protocol RCTPlatformViewRepresentable: NSViewRepresentable where NSViewType == RCTPlatformView {
+  func makeRCTPlatformView(context: Context) -> RCTPlatformView
+  func updateRCTPlatformView(_ view: RCTPlatformView, context: Context)
+}
+
+extension RCTPlatformViewRepresentable {
+  func makeNSView(context: Context) -> RCTPlatformView {
+    makeRCTPlatformView(context: context)
+  }
+
+  func updateNSView(_ nsView: RCTPlatformView, context: Context) {
+    updateRCTPlatformView(nsView, context: context)
+  }
+}
+#else
+protocol RCTPlatformViewRepresentable: UIViewRepresentable where UIViewType == RCTPlatformView {
+  func makeRCTPlatformView(context: Context) -> RCTPlatformView
+  func updateRCTPlatformView(_ view: RCTPlatformView, context: Context)
+}
+
+extension RCTPlatformViewRepresentable {
+  func makeUIView(context: Context) -> RCTPlatformView {
+    makeRCTPlatformView(context: context)
+  }
+
+  func updateUIView(_ uiView: RCTPlatformView, context: Context) {
+    updateRCTPlatformView(uiView, context: context)
+  }
+}
+#endif
+// macOS]
+
 @MainActor @objc public class RCTSwiftUIContainerView: NSObject {
   private var containerViewModel = ContainerViewModel()
   private var hostingController: RCTPlatformHostingController<SwiftUIContainerView>? // [macOS]

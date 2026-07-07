@@ -75,13 +75,14 @@ let reactOSCompat = RNTarget(
 
 let rctSwiftUI = RNTarget(
   name: .rctSwiftUI,
-  path: "ReactApple/RCTSwiftUI"
+  path: "ReactApple/RCTSwiftUI",
+  dependencies: [.reactRCTUIKit] // [macOS]
 )
 
 let rctSwiftUIWrapper = RNTarget(
   name: .rctSwiftUIWrapper,
   path: "ReactApple/RCTSwiftUIWrapper",
-  dependencies: [.rctSwiftUI]
+  dependencies: [.rctSwiftUI, .reactRCTUIKit] // [macOS]
 )
 
 // React-rendererconsistency.podspec
