@@ -25,8 +25,22 @@ npm_link_all_packages(name = "node_modules")
 js_library(
     name = "js_srcs",
     srcs = glob(
-        ["js/**/*.js"],
-        allow_empty = False,
+        [
+            "js/**/*.js",
+            "js/**/*.gif",
+            "js/**/*.jpeg",
+            "js/**/*.jpg",
+            "js/**/*.json",
+            "js/**/*.png",
+            "js/**/*.webp",
+            "js/**/*.xml",
+            "RCTTest/**/*.js",
+            "ReportFullyDrawnView/**/*.js",
+            "NativeComponentExample/js/**/*.js",
+            "NativeModuleExample/**/*.js",
+            "NativeCxxModuleExample/**/*.js",
+        ],
+        allow_empty = True,
     ) + [
         "metro.config.js",
         "react-native.config.js",
@@ -42,21 +56,37 @@ js_library(
 # The bundle runs via bazel/bundle.js (Metro's API) with the react-native alias applied.
 js_binary(
     name = "bundler",
-    data = [":node_modules"],
+    data = [
+        "//:.aspect_rules_js/node_modules/invariant@2.2.4",
+        ":node_modules",
+        "//:node_modules/@babel/core",
+    ],
     entry_point = "bazel/bundle.js",
     tags = ["manual"],
+)
+
+js_run_binary(
+    name = "rntester_js_project",
+    srcs = [":js_srcs"],
+    out_dirs = ["rntester_js_project"],
+    args = [
+        "packages/rn-tester",
+        "packages/rn-tester/rntester_js_project",
+    ],
+    tags = ["manual"],
+    tool = "//tools/bazel/js:copy_tree",
 )
 
 # 1. JS bundle (Metro). Entry is the macOS variant of the rn-tester app.
 js_run_binary(
     name = "rntester_macos_jsbundle",
-    srcs = [":js_srcs"],
+    srcs = [":rntester_js_project"],
     outs = ["RNTesterApp.macos.jsbundle"],
     out_dirs = ["RNTesterApp_assets"],
     env = {
         "BUNDLE_OUT": "packages/rn-tester/RNTesterApp.macos.jsbundle",
         "ASSETS_DEST": "packages/rn-tester/RNTesterApp_assets",
-        "RN_TESTER_ROOT": "packages/rn-tester",
+        "RN_TESTER_ROOT": "packages/rn-tester/rntester_js_project",
     },
     tags = ["manual"],
     tool = ":bundler",

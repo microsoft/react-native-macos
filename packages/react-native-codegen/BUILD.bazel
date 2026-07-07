@@ -1,24 +1,9 @@
-# Auto-generated first-party package target for rules_js linking.
 # Exposes this workspace package as `:pkg` so the root npm_link_all_packages can
-# link it into node_modules (needed to bundle first-party JS with Metro).
-load("@aspect_rules_js//npm:defs.bzl", "npm_package")
-load("@npm//:defs.bzl", "npm_link_all_packages")
+# link the built package into node_modules for Bazel-driven Metro bundling.
+load("//tools/bazel/js:first_party.bzl", "first_party_js_package")
 
-npm_link_all_packages()
-
-npm_package(
+first_party_js_package(
     name = "pkg",
-    srcs = glob(
-        ["**/*"],
-        exclude = [
-            "**/node_modules/**",
-            "**/.build/**",
-            "**/build/**",
-            "**/Pods/**",
-            "**/__tests__/**",
-            "**/*.bazel",
-        ],
-        allow_empty = True,
-    ),
+    build_kind = "codegen",
     visibility = ["//visibility:public"],
 )
