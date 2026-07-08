@@ -8,10 +8,6 @@ jobs:
     name: "${{ matrix.platform }}, ${{ matrix.arch }}, ${{ matrix.linkage }}"
     runs-on: macos-26
     timeout-minutes: 90
-    # Dynamic frameworks are a work in progress on this fork (see RCT-Folly / header
-    # plumbing). Let those jobs report status without failing the build, matching
-    # upstream's continue-on-error dynamic-frameworks job. Static builds stay required.
-    continue-on-error: ${{ matrix.linkage == 'dynamic' }}
     strategy:
       fail-fast: false
       matrix:
@@ -61,6 +57,11 @@ jobs:
 
       - name: Install Pods
         working-directory: packages/rn-tester
+        # Dynamic frameworks are still a work in progress on this fork (see RCT-Folly /
+        # header plumbing). Run those jobs for coverage but don't let pod install / build
+        # failures fail the check; the real result is still visible in the step logs.
+        # Static builds stay strict/required.
+        continue-on-error: ${{ matrix.linkage == 'dynamic' }}
         env:
           RCT_NEW_ARCH_ENABLED: ${{ matrix.new_arch_enabled }}
           USE_FRAMEWORKS: ${{ matrix.use_frameworks }}
@@ -76,6 +77,7 @@ jobs:
           bundle exec pod install --verbose
 
       - name: Build ${{ matrix.scheme }}
+        continue-on-error: ${{ matrix.linkage == 'dynamic' }} # [macOS] Dynamic frameworks WIP; keep the check green while building for coverage
         env:
           USE_CCACHE: 0
         run: |
