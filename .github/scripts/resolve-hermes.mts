@@ -125,11 +125,11 @@ async function downloadUpstreamHermesTarball(
  * Extracts an upstream Hermes tarball and recomposes the xcframework to include
  * the macOS slice, if needed.
  *
- * As of RN 0.83, the Hermes binary product is `hermesvm` (HermesV1). Upstream
- * tarballs ship a universal `hermesvm.xcframework` (iOS, simulator, catalyst,
- * tvOS, visionOS) plus a standalone `macosx/hermesvm.framework`. This function
- * merges the standalone macOS framework into the universal xcframework using
- * `xcodebuild -create-xcframework`.
+ * As of RN 0.83, upstream renamed the Hermes binary product from `hermes` to
+ * `hermesvm`. Upstream tarballs ship a universal `hermesvm.xcframework` (iOS,
+ * simulator, catalyst, tvOS, visionOS) plus a standalone `macosx/hermesvm.framework`.
+ * This function merges the standalone macOS framework into the universal
+ * xcframework using `xcodebuild -create-xcframework`.
  *
  * NOTE: Once upstream Hermes includes macOS in the universal xcframework
  * natively, this function will detect the existing macOS slice and skip

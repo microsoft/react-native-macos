@@ -251,22 +251,14 @@ def hermes_commit_at_merge_base()
     commit = nil
     Dir.mktmpdir do |tmpdir|
         hermes_git_dir = File.join(tmpdir, "hermes.git")
-        # Pick the Hermes branch that matches the engine variant we resolve at:
-        #   V1 (Hermes 0.83+ split package) lives on `static_h`
-        #   V0 (legacy) lives on `main`
-        # Without this gate, RCT_HERMES_V1_ENABLED=1 + from-source fallback
-        # (no Maven artifact, RCT_BUILD_HERMES_FROM_SOURCE=true) would clone
-        # V0 source while the rest of the podspec expects hermesvm.framework
-        # (V1) artifacts. Mirror of the same fix on the JS side in PR #2952.
-        hermes_branch = hermes_v1_enabled() ? "static_h" : "main"
-        `git clone -q --bare --filter=blob:none --single-branch --branch #{hermes_branch} #{HERMES_GITHUB_URL} "#{hermes_git_dir}"`
+        # Explicitly use Hermes 'main' branch since the default branch changed to 'static_h' (Hermes V1)
+        `git clone -q --bare --filter=blob:none --single-branch --branch main #{HERMES_GITHUB_URL} "#{hermes_git_dir}"`
 
-        # Resolve the Hermes commit at the time of the merge base on the
-        # chosen branch.
-        commit = `git --git-dir="#{hermes_git_dir}" rev-list -1 --before="#{timestamp}" refs/heads/#{hermes_branch}`.strip
+        # If all goes well, this will be the commit hash of Hermes at the time of the merge base on branch 'main'
+        commit = `git --git-dir="#{hermes_git_dir}" rev-list -1 --before="#{timestamp}" refs/heads/main`.strip
         if commit.empty?
             abort <<-EOS
-            [Hermes] Unable to find the Hermes commit hash at time #{timestamp} on branch '#{hermes_branch}'.
+            [Hermes] Unable to find the Hermes commit hash at time #{timestamp} on branch 'main'.
             EOS
         end
     end
