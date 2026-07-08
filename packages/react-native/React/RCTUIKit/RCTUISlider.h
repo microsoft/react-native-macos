@@ -11,7 +11,7 @@
 
 #include <TargetConditionals.h>
 
-#import <React/RCTUIKitCompat.h>
+#import <React_RCTUIKit/RCTUIKitCompat.h>
 
 #if !TARGET_OS_OSX
 @compatibility_alias RCTUISlider UISlider;

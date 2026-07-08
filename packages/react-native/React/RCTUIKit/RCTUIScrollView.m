@@ -9,7 +9,7 @@
 
 #if TARGET_OS_OSX
 
-#import <React/RCTUIScrollView.h>
+#import <React_RCTUIKit/RCTUIScrollView.h>
 
 // RCTUIScrollView
 

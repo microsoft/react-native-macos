@@ -9,7 +9,7 @@
 
 #if TARGET_OS_OSX
 
-#import <React/RCTUIImageView.h>
+#import <React_RCTUIKit/RCTUIImageView.h>
 
 #import <CoreImage/CIFilter.h>
 

@@ -146,6 +146,9 @@ async function setup(
   link('Libraries/Settings', 'React');
 
   link('React/RCTUIKit', 'React'); // [macOS]
+  // [macOS] RCTUIKit's own module namespace, so its internal <React_RCTUIKit/...>
+  // sibling imports resolve in the prebuild the same way <React/...> consumers do.
+  link('React/RCTUIKit', 'React_RCTUIKit'); // [macOS]
   link('Libraries/PushNotificationIOS', 'React');
   link('Libraries/Settings', 'React');
   link('Libraries/Vibration', 'React');

@@ -9,8 +9,8 @@
 
 #if TARGET_OS_OSX
 
-#import <React/RCTUIGraphicsImageRenderer.h>
-#import <React/RCTUIImage.h>
+#import <React_RCTUIKit/RCTUIGraphicsImageRenderer.h>
+#import <React_RCTUIKit/RCTUIImage.h>
 
 @implementation RCTUIGraphicsImageRendererFormat
 

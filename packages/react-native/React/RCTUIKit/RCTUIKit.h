@@ -8,18 +8,18 @@
 // [macOS]
 // Umbrella header for RCTUIKit — the UIKit/AppKit compatibility layer.
 
-#import <React/RCTUIKitCompat.h>
-#import <React/RCTUIAccessibilityTraits.h>
-#import <React/RCTUIGeometry.h>
-#import <React/RCTUIGraphics.h>
-#import <React/RCTUIImage.h>
-#import <React/RCTUIView.h>
-#import <React/RCTUIScrollView.h>
-#import <React/RCTUISlider.h>
-#import <React/RCTUILabel.h>
-#import <React/RCTUISwitch.h>
-#import <React/RCTUIActivityIndicatorView.h>
-#import <React/RCTUITouch.h>
-#import <React/RCTUIImageView.h>
-#import <React/RCTUIGraphicsImageRenderer.h>
-#import <React/RCTPlatformDisplayLink.h>
+#import <React_RCTUIKit/RCTUIKitCompat.h>
+#import <React_RCTUIKit/RCTUIAccessibilityTraits.h>
+#import <React_RCTUIKit/RCTUIGeometry.h>
+#import <React_RCTUIKit/RCTUIGraphics.h>
+#import <React_RCTUIKit/RCTUIImage.h>
+#import <React_RCTUIKit/RCTUIView.h>
+#import <React_RCTUIKit/RCTUIScrollView.h>
+#import <React_RCTUIKit/RCTUISlider.h>
+#import <React_RCTUIKit/RCTUILabel.h>
+#import <React_RCTUIKit/RCTUISwitch.h>
+#import <React_RCTUIKit/RCTUIActivityIndicatorView.h>
+#import <React_RCTUIKit/RCTUITouch.h>
+#import <React_RCTUIKit/RCTUIImageView.h>
+#import <React_RCTUIKit/RCTUIGraphicsImageRenderer.h>
+#import <React_RCTUIKit/RCTPlatformDisplayLink.h>

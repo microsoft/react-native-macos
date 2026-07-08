@@ -29,7 +29,7 @@ Pod::Spec.new do |s|
                                ["React/RCTUIKit/*.{h,m}"],
                                "React/RCTUIKit/*.h")
   s.public_header_files    = "React/RCTUIKit/*.h"
-  s.header_dir             = "React"
+  s.header_dir             = "React_RCTUIKit" # [macOS] Own namespace so <React_RCTUIKit/...> resolves consistently (static + frameworks); React-Core vends <React/...> forwarding aliases
   s.module_name            = "React_RCTUIKit"
   s.pod_target_xcconfig    = {
                                "DEFINES_MODULE" => "YES",
