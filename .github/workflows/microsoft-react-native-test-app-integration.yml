@@ -64,6 +64,12 @@ jobs:
             const root = JSON.parse(fs.readFileSync('package.json', 'utf8'));
             root.resolutions = root.resolutions || {};
             root.resolutions['react-native-macos'] = tarball;
+
+            // Pin @types/react to a single version so react-native-macos does
+            // not get virtualized twice (the test app tree carries both 19.1.x
+            // and 19.2.x, both satisfying its '^19.1.0' peer, which produces
+            // two virtual copies and trips the duplicate-dependency checker).
+            root.resolutions['@types/react'] = '~19.1.0';
             fs.writeFileSync('package.json', JSON.stringify(root, null, 2) + '\n');
 
             // Override direct dependency in example-macos
