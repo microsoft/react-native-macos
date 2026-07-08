@@ -1762,7 +1762,9 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 - (void)blur
 {
-  [[self window] resignFirstResponder];
+  if ([[self window] firstResponder] == self) {
+    [[self window] makeFirstResponder:nil];
+  }
 }
 
 - (BOOL)needsPanelToBecomeKey

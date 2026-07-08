@@ -346,7 +346,12 @@ static void RCTPerformMountInstructions(
     RCTUIView<RCTComponentViewProtocol> *componentView = [_componentViewRegistry findComponentViewWithTag:reactTag]; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, componentView);
-#endif // [macOS]
+#else // [macOS
+    if (componentView != nil) {
+      [[componentView window] makeFirstResponder:componentView];
+      NSAccessibilityPostNotification(componentView, NSAccessibilityFocusedUIElementChangedNotification);
+    }
+#endif // macOS]
   }
 }
 
