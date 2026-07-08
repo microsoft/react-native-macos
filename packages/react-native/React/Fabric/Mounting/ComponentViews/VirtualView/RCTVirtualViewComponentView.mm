@@ -171,6 +171,18 @@ static BOOL sIsAccessibilityUsed = NO;
   [self _unhideIfNeeded];
   return [super accessibilityChildren];
 }
+
+- (BOOL)acceptsFirstResponder
+{
+  [self _unhideIfNeeded];
+  return [super acceptsFirstResponder];
+}
+
+- (id)accessibilityHitTest:(NSPoint)point
+{
+  [self _unhideIfNeeded];
+  return [super accessibilityHitTest:point];
+}
 #endif // macOS]
 
 - (void)prepareForRecycle
