@@ -17,9 +17,6 @@ import { $, echo, fs, path } from 'zx';
 // Use createRequire to import CommonJS modules from ESM context
 const require = createRequire(import.meta.url);
 const {
-  hermesCommitAtMergeBase,
-} = require('../../packages/react-native/scripts/ios-prebuild/microsoft-hermes.js');
-const {
   computeNightlyTarballURL,
 } = require('../../packages/react-native/scripts/ios-prebuild/utils.js');
 
@@ -58,6 +55,30 @@ function resolveHermesArtifactVersion(): string | null {
         : 'HERMES_VERSION_NAME';
     const version = props[key];
     return version != null && version.length > 0 ? version : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Reads the pinned Hermes tag from the RN source checkout.
+ *
+ * RCT_HERMES_V1_ENABLED=1 opts into the V1 tag; otherwise use the default V0
+ * tag. These tags are valid refs in facebook/hermes and can be passed directly
+ * to actions/checkout.
+ */
+function resolveHermesTag(): string | null {
+  const tagFile =
+    process.env.RCT_HERMES_V1_ENABLED === '1'
+      ? '.hermesv1version'
+      : '.hermesversion';
+  const tagPath = path.resolve(
+    import.meta.dirname!, '..', '..',
+    'packages', 'react-native', 'sdks', tagFile,
+  );
+  try {
+    const tag = fs.readFileSync(tagPath, 'utf8').trim();
+    return tag.length > 0 ? tag : null;
   } catch {
     return null;
   }
@@ -249,9 +270,13 @@ switch (command) {
     break;
   }
   case 'resolve-commit': {
-    const { commit } = hermesCommitAtMergeBase();
-    setActionOutput('hermes-commit', commit);
-    echo(`Resolved Hermes commit: ${commit}`);
+    const tag = resolveHermesTag();
+    if (tag == null) {
+      echo('Could not read pinned Hermes tag from sdks/.hermesversion or sdks/.hermesv1version');
+      process.exit(1);
+    }
+    setActionOutput('hermes-commit', tag);
+    echo(`Resolved Hermes tag: ${tag}`);
     break;
   }
   default:
