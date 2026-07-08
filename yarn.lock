@@ -387,7 +387,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/parser@npm:^7.29.7":
+"@babel/parser@npm:^7.25.2, @babel/parser@npm:^7.29.7":
   version: 7.29.7
   resolution: "@babel/parser@npm:7.29.7"
   dependencies:
@@ -563,6 +563,17 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.0.0-0
   checksum: 10c0/4d34ca47044398665cbe0293baea7be230ca4090bc7981ffba5273402a215c95976c6f811c7b32f10b326cc6aab6886f26c29630c429aa45c3f350c5ccdfdbbf
+  languageName: node
+  linkType: hard
+
+"@babel/plugin-syntax-flow@npm:^7.25.0":
+  version: 7.29.7
+  resolution: "@babel/plugin-syntax-flow@npm:7.29.7"
+  dependencies:
+    "@babel/helper-plugin-utils": "npm:^7.29.7"
+  peerDependencies:
+    "@babel/core": ^7.0.0-0
+  checksum: 10c0/b2e330dd0dc535c7364937ce2b29a06065e60b1d523db75f36ab4fb89e4ba664e2230cbb1937b35712c9a0ebafc3358f323d6e6b22247d5ebad12fdd3e1f6e98
   languageName: node
   linkType: hard
 
@@ -1543,6 +1554,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.25.2":
+  version: 7.29.7
+  resolution: "@babel/runtime@npm:7.29.7"
+  checksum: 10c0/ca11572f7146b21e0bde6a9ed4bb6a89eafbee5f0944c7eb54d0d8a2dac962c33638a1d611e14faa71dfbb92b4b5f9236232208568a6b7d5c6f3f39ddb91771e
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.25.0, @babel/template@npm:^7.25.9, @babel/template@npm:^7.27.2, @babel/template@npm:^7.3.3":
   version: 7.27.2
   resolution: "@babel/template@npm:7.27.2"
@@ -1580,6 +1598,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/traverse@npm:^7.25.2, @babel/traverse@npm:^7.29.7":
+  version: 7.29.7
+  resolution: "@babel/traverse@npm:7.29.7"
+  dependencies:
+    "@babel/code-frame": "npm:^7.29.7"
+    "@babel/generator": "npm:^7.29.7"
+    "@babel/helper-globals": "npm:^7.29.7"
+    "@babel/parser": "npm:^7.29.7"
+    "@babel/template": "npm:^7.29.7"
+    "@babel/types": "npm:^7.29.7"
+    debug: "npm:^4.3.1"
+  checksum: 10c0/e256a1fbdb956555b76f3c285b1e453f6bedec8b3afb61751d99d933efd11c7d79caf5ddf2493570058a9f7deaa1b48324380d7c1aa1443fd9508becbf56331a
+  languageName: node
+  linkType: hard
+
 "@babel/traverse@npm:^7.25.3, @babel/traverse@npm:^7.25.9, @babel/traverse@npm:^7.27.1, @babel/traverse@npm:^7.28.3, @babel/traverse@npm:^7.28.4":
   version: 7.28.4
   resolution: "@babel/traverse@npm:7.28.4"
@@ -1592,21 +1625,6 @@ __metadata:
     "@babel/types": "npm:^7.28.4"
     debug: "npm:^4.3.1"
   checksum: 10c0/ee678fdd49c9f54a32e07e8455242390d43ce44887cea6567b233fe13907b89240c377e7633478a32c6cf1be0e17c2f7f3b0c59f0666e39c5074cc47b968489c
-  languageName: node
-  linkType: hard
-
-"@babel/traverse@npm:^7.29.7":
-  version: 7.29.7
-  resolution: "@babel/traverse@npm:7.29.7"
-  dependencies:
-    "@babel/code-frame": "npm:^7.29.7"
-    "@babel/generator": "npm:^7.29.7"
-    "@babel/helper-globals": "npm:^7.29.7"
-    "@babel/parser": "npm:^7.29.7"
-    "@babel/template": "npm:^7.29.7"
-    "@babel/types": "npm:^7.29.7"
-    debug: "npm:^4.3.1"
-  checksum: 10c0/e256a1fbdb956555b76f3c285b1e453f6bedec8b3afb61751d99d933efd11c7d79caf5ddf2493570058a9f7deaa1b48324380d7c1aa1443fd9508becbf56331a
   languageName: node
   linkType: hard
 
@@ -3075,18 +3093,28 @@ __metadata:
     "@babel/core": "npm:^7.25.2"
     "@babel/eslint-parser": "npm:^7.25.1"
     "@babel/generator": "npm:^7.25.0"
+    "@babel/parser": "npm:^7.25.2"
     "@babel/plugin-syntax-typescript": "npm:^7.25.4"
     "@babel/plugin-transform-regenerator": "npm:^7.24.7"
     "@babel/preset-env": "npm:^7.25.3"
     "@babel/preset-flow": "npm:^7.24.7"
+    "@babel/runtime": "npm:^7.25.2"
+    "@babel/traverse": "npm:^7.25.2"
+    "@babel/types": "npm:^7.25.2"
     "@changesets/cli": "npm:^2.28.1"
     "@electron/packager": "npm:^18.3.6"
     "@jest/create-cache-key-function": "npm:^29.7.0"
     "@microsoft/api-extractor": "npm:^7.52.2"
+    "@react-native/babel-preset": "workspace:*"
+    "@react-native/eslint-config": "workspace:*"
+    "@react-native/eslint-plugin": "workspace:*"
+    "@react-native/eslint-plugin-monorepo": "workspace:*"
+    "@react-native/eslint-plugin-specs": "workspace:*"
     "@react-native/metro-babel-transformer": "workspace:*"
     "@react-native/metro-config": "workspace:*"
     "@tsconfig/node22": "npm:22.0.2"
     "@types/react": "npm:^19.1.0"
+    "@typescript-eslint/eslint-plugin": "npm:^7.1.1"
     "@typescript-eslint/parser": "npm:^7.1.1"
     "@yarnpkg/types": "npm:^4.0.1"
     ansi-styles: "npm:^4.2.1"
@@ -3106,6 +3134,7 @@ __metadata:
     eslint-plugin-jest: "npm:^27.9.0"
     eslint-plugin-jsx-a11y: "npm:^6.6.0"
     eslint-plugin-react: "npm:^7.30.1"
+    eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-native: "npm:^4.0.0"
     eslint-plugin-redundant-undefined: "npm:^0.4.0"
     eslint-plugin-relay: "npm:^1.8.3"
@@ -3113,6 +3142,7 @@ __metadata:
     flow-bin: "npm:^0.275.0"
     glob: "npm:^7.1.1"
     hermes-eslint: "npm:0.29.1"
+    hermes-estree: "npm:0.29.1"
     hermes-transform: "npm:0.29.1"
     inquirer: "npm:^7.1.0"
     jest: "npm:^29.7.0"
@@ -3120,9 +3150,12 @@ __metadata:
     jest-diff: "npm:^29.7.0"
     jest-junit: "npm:^10.0.0"
     jest-snapshot: "npm:^29.7.0"
+    jsonc-eslint-parser: "npm:^2.3.0"
     markdownlint-cli2: "npm:^0.22.0"
     markdownlint-rule-relative-links: "npm:^3.0.0"
+    metro: "npm:^0.82.5"
     metro-babel-register: "npm:^0.82.5"
+    metro-config: "npm:^0.82.5"
     metro-memory-fs: "npm:^0.82.5"
     metro-transform-plugins: "npm:^0.82.5"
     micromatch: "npm:^4.0.4"
@@ -3140,6 +3173,7 @@ __metadata:
     tinybench: "npm:^3.1.0"
     typescript: "npm:5.8.3"
     ws: "npm:^6.2.3"
+    yargs: "npm:^17.6.2"
     zx: "npm:^8.2.4"
   languageName: unknown
   linkType: soft
@@ -3374,7 +3408,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-config@workspace:packages/eslint-config-react-native":
+"@react-native/eslint-config@workspace:*, @react-native/eslint-config@workspace:packages/eslint-config-react-native":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-config@workspace:packages/eslint-config-react-native"
   dependencies:
@@ -3398,7 +3432,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-plugin-monorepo@workspace:private/eslint-plugin-monorepo":
+"@react-native/eslint-plugin-monorepo@workspace:*, @react-native/eslint-plugin-monorepo@workspace:private/eslint-plugin-monorepo":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin-monorepo@workspace:private/eslint-plugin-monorepo"
   dependencies:
@@ -3406,7 +3440,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-plugin-specs@workspace:packages/eslint-plugin-specs":
+"@react-native/eslint-plugin-specs@workspace:*, @react-native/eslint-plugin-specs@workspace:packages/eslint-plugin-specs":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin-specs@workspace:packages/eslint-plugin-specs"
   dependencies:
@@ -10064,7 +10098,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metro-babel-transformer@npm:0.82.5":
+"metro-babel-transformer@npm:0.82.5, metro-babel-transformer@npm:^0.82.5":
   version: 0.82.5
   resolution: "metro-babel-transformer@npm:0.82.5"
   dependencies:
