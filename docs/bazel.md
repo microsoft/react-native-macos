@@ -21,6 +21,51 @@ XCFrameworks from source in Bazel too (see the roadmap).
   resource) is modeled explicitly, the way Meta does it in Buck2's `js`/`apple`
   preludes — but reusing Metro and rules_apple instead of reimplementing them.
 
+## Scope: where Bazel earns its keep here (and where it doesn't)
+
+Bazel is a *poor* choice for the JavaScript inner loop, and the critique in
+["Bazel is incompatible with JavaScript" (pow.rs)](https://pow.rs/blog/bazel-is-incompatible-with-javascript/)
+is largely fair **for that use case**. We hit its Problem 1 directly: rules_js uses a
+strict, **non-hoisted, copied** `node_modules`, which is exactly why this slice needs
+`tools/bazel/js/copy_tree.js` (to stage a symlink-free project dir Metro's file-map can
+hash) and `first_party.bzl` (to consume first-party packages in built `dist` form
+because their `src` entry points `require('../../../scripts/babel-register')` and escape
+the copied tree). That is real friction and real disk/IO cost.
+
+The important distinction: **we do not put the JS dev loop on Bazel.** `yarn`, Metro's
+dev server, Jest, and JS debugging stay exactly as they are — Bazel is opt-in
+(`manual`-tagged targets) and additive, so none of the day-to-day JS workflow is
+affected. What Bazel is actually for here is the thing the JS ecosystem tools
+(Turborepo/Nx/Lage) *cannot* do: run the **Apple toolchain**, link **XCFrameworks**,
+run **codegen**, and assemble a signed **`.app`** — one reproducible, remotely-cacheable
+graph over JS **and** native. Our build time is dominated by the native compiles
+(Hermes, React C++), which is precisely where Bazel's action cache / RBE pays off; the
+JS bundle is a small, leaf step.
+
+Design guardrails we adopt as a result:
+
+* **Keep the JS inner loop off Bazel.** Never make `bazel` a prerequisite for editing JS,
+  running Metro, or debugging. The article's strongest point.
+* **Consume artifacts at seams, don't re-Bazelify the world.** We already treat the
+  XCFrameworks as prebuilt inputs; the JS bundle can be treated the same way (build it
+  with plain Metro, feed the `.jsbundle` in) if the rules_js `node_modules` tax ever
+  outweighs the benefit of an in-graph bundle. Prefer the `:node_modules` glob over
+  hand-declaring individual packages (the article notes this keeps you correct).
+* **Stay a two-way door.** Everything is additive and `manual`; no forced repo-wide
+  migration. Adoption and *removal* are both cheap.
+* **Mind the single Bazel server.** Bazel is massively parallel *within* a build, but one
+  server per `--output_base` serializes separate `bazel` invocations ("Another Bazel
+  command is running…"). Use distinct `--output_base`s for parallel lanes/CI shards
+  rather than expecting two CLIs to share one. (The article's "single-threaded" framing
+  conflates these — intra-build parallelism is a Bazel strength.)
+* **Expect to enumerate outputs.** Declaring every generated file is inherent to Bazel's
+  model (we hit it with codegen — see `rn_codegen`'s explicit `_CODEGEN_OUTS`). Use
+  `out_dirs` TreeArtifacts where a step's outputs aren't statically known.
+
+Net: use **JS-native tools (Turborepo/Nx/Lage/pnpm) for the JS package graph and dev
+loop**, and **Bazel only for the native app slice** where it's genuinely better. They
+coexist — Turborepo can even run inside a Bazel monorepo.
+
 ## The single-source-of-truth lockfile problem (and the rules_js Berry fork)
 
 The repo uses **Yarn 4 (Berry)**; `yarn.lock` is `__metadata: version: 8`. We keep
