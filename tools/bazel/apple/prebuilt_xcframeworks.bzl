@@ -17,7 +17,10 @@ _REL_PATHS = {
 }
 
 # hermes ships as a dynamic framework; React + deps are static.
-_DYNAMIC = {"hermes": True}
+# The SPM prebuild ships all three as dynamic frameworks (dylibs), so they must be
+# imported as dynamic and embedded in the app's Contents/Frameworks (otherwise dyld
+# fails at launch with "Library not loaded: @rpath/React.framework/...").
+_DYNAMIC = {"React": True, "ReactNativeDependencies": True, "hermes": True}
 
 def _prebuilt_xcframeworks_impl(rctx):
     root = str(rctx.workspace_root)
