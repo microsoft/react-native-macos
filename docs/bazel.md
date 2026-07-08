@@ -242,6 +242,35 @@ giving a ready-made port map. Output the same `.xcframework`s via
   vs the SPM XCFrameworks, and land the heavy native compiles on the remote cache (the
   primary CI/local speedup).
 
+## Generating the `:pkg` BUILD files (no more boilerplate)
+
+Most workspace packages need exactly one Bazel target: a `:pkg` `npm_package` so
+`npm_link_all_packages` can link them into the copied `node_modules` (rules_js does
+not hoist like Yarn), which is what lets Metro bundle first-party JS. That was ~17
+identical 24-line `BUILD.bazel` files. Following the JS-ecosystem convention (derive
+the build metadata from `package.json` instead of hand-authoring it — see
+`docs`/research on Turborepo/Nx/Lage and Gazelle), those files are now **generated**:
+
+* `tools/bazel/js/workspace_package.bzl` — the `rn_workspace_package()` macro; each
+  generated `BUILD.bazel` is just a `load` + one call.
+* `tools/bazel/js/gen_package_builds.mjs` — reads the `workspaces` globs from the root
+  `package.json` and (re)writes the boilerplate files. It only owns *generator-owned*
+  files (those carrying its `@generated-by` marker, or pure legacy `:pkg` boilerplate);
+  any BUILD that declares other targets (`objc_library`, `cc_library`, `first_party`,
+  `macos_application`, `rn_codegen`, …) is treated as hand-owned and skipped — the same
+  "generate the 95%, allow local overrides" model as Gazelle's `# gazelle:` directives.
+
+```
+node tools/bazel/js/gen_package_builds.mjs            # refresh the boilerplate
+node tools/bazel/js/gen_package_builds.mjs --all      # also create any missing ones
+node tools/bazel/js/gen_package_builds.mjs --check     # CI: non-zero if stale
+```
+
+This is the incremental step toward full `bazel run //:gazelle`-style generation with
+the Aspect JS/TS Gazelle plugin (which would also infer first-party `deps` from
+imports); a custom Gazelle extension could later emit `rn_codegen`, the Metro bundle,
+and the prebuilt-XCFramework targets too.
+
 ## Layout
 
 ```
