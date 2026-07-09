@@ -28,13 +28,11 @@ function setActionOutput(key: string, value: string) {
 }
 
 /**
- * Reads the prebuilt Hermes artifact version from
+ * Reads the Hermes artifact version from
  * packages/react-native/sdks/hermes-engine/version.properties.
  *
- * Mirrors the upstream CocoaPods podspec: HERMES_V1_VERSION_NAME when
- * RCT_HERMES_V1_ENABLED=1, otherwise HERMES_VERSION_NAME (the RN 0.83 default,
- * V0). This is the Hermes version (e.g. '0.14.0') — which is how upstream keys
- * the prebuilt tarballs on Maven — not the react-native version.
+ * Returns HERMES_V1_VERSION_NAME when RCT_HERMES_V1_ENABLED=1, otherwise
+ * HERMES_VERSION_NAME. Returns null if the file or the key is missing.
  */
 function resolveHermesArtifactVersion(): string | null {
   const propsPath = path.resolve(
@@ -61,11 +59,9 @@ function resolveHermesArtifactVersion(): string | null {
 }
 
 /**
- * Reads the pinned Hermes tag from the RN source checkout.
- *
- * RCT_HERMES_V1_ENABLED=1 opts into the V1 tag; otherwise use the default V0
- * tag. These tags are valid refs in facebook/hermes and can be passed directly
- * to actions/checkout.
+ * Reads the pinned Hermes tag from packages/react-native/sdks/.hermesversion
+ * (or .hermesv1version when RCT_HERMES_V1_ENABLED=1). The value is a git tag in
+ * facebook/hermes. Returns null if the file is missing or empty.
  */
 function resolveHermesTag(): string | null {
   const tagFile =
@@ -85,18 +81,11 @@ function resolveHermesTag(): string | null {
 }
 
 /**
- * Downloads the upstream prebuilt Hermes tarball from Maven (release) or
- * Sonatype snapshots (nightly).
- *
- * Upstream publishes prebuilt Hermes under `com/facebook/hermes/hermes-ios/`,
- * keyed by the Hermes version from version.properties — matching the CocoaPods
- * `release_tarball_url` in sdks/hermes-engine/hermes-utils.rb. (The fork
- * previously queried `com/facebook/react/react-native-artifacts/<rn-version>`,
- * which has no Hermes classifier, so every resolve fell back to building Hermes
- * from source.)
+ * Downloads the prebuilt Hermes tarball from Maven (release) or Sonatype
+ * snapshots (nightly), under com/facebook/hermes/hermes-ios/<version>.
  *
  * Returns {tarballPath, version} on success, or null if no tarball is available
- * (callers then fall back to building Hermes from source).
+ * (callers then build Hermes from source).
  */
 async function downloadUpstreamHermesTarball(
   buildType: string = 'Debug',
@@ -155,11 +144,10 @@ async function downloadUpstreamHermesTarball(
  * Extracts an upstream Hermes tarball and recomposes the xcframework to include
  * the macOS slice, if needed.
  *
- * As of RN 0.83, upstream renamed the Hermes binary product from `hermes` to
- * `hermesvm`. Upstream tarballs ship a universal `hermesvm.xcframework` (iOS,
- * simulator, catalyst, tvOS, visionOS) plus a standalone `macosx/hermesvm.framework`.
- * This function merges the standalone macOS framework into the universal
- * xcframework using `xcodebuild -create-xcframework`.
+ * The tarball ships a universal `hermesvm.xcframework` (iOS, simulator,
+ * catalyst, tvOS, visionOS) plus a standalone `macosx/hermesvm.framework`. This
+ * merges the standalone macOS framework into the universal xcframework using
+ * `xcodebuild -create-xcframework`.
  *
  * NOTE: Once upstream Hermes includes macOS in the universal xcframework
  * natively, this function will detect the existing macOS slice and skip
