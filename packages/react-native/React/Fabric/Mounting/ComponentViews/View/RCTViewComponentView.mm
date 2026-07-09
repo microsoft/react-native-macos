@@ -762,11 +762,6 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   _removeClippedSubviews = NO;
   _reactSubviews = [NSMutableArray new];
   _accessibilityElements = [NSMutableArray new];
-#if TARGET_OS_OSX // [macOS
-    _allowsVibrancy = NO;
-    self.acceptsFirstMouse = NO;
-    self.mouseDownCanMoveWindow = YES;
-#endif // macOS]
 }
 
 - (void)setPropKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN:(NSSet<NSString *> *_Nullable)props
@@ -1762,7 +1757,9 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
 - (void)blur
 {
-  [[self window] resignFirstResponder];
+  if ([[self window] firstResponder] == self) {
+    [[self window] makeFirstResponder:nil];
+  }
 }
 
 - (BOOL)needsPanelToBecomeKey

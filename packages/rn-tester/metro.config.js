@@ -39,6 +39,7 @@ const config = {
     blockList: [/..\/react-native\/sdks\/hermes/],
     extraNodeModules: {
       'react-native': path.resolve(__dirname, '../react-native'),
+      'react-native-macos': path.resolve(__dirname, '../react-native'), // [macOS] resolve the react-native -> react-native-macos redirect in yarn pnpm mode
     },
     platforms: ['ios', 'macos', 'android'], // [macOS]
   },
