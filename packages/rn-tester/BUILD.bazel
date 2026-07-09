@@ -159,12 +159,19 @@ objc_library(
         "//tools/bazel/react_native:rn_tester_appspecs_appdep_hdrs",
         "//tools/bazel/react_native:rn_tester_appspecs_lib",
         "//tools/bazel/react_native:rn_tester_appspecs_reactcodegen_hdrs",
-        "@rn_prebuilt_xcframeworks//:React",
-        "@rn_prebuilt_xcframeworks//:React_headers",
         "@rn_prebuilt_xcframeworks//:ReactNativeDependencies",
         "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
         "@rn_prebuilt_xcframeworks//:hermes",
-    ],
+    ] + select({
+        "//:rn_from_source_enabled": [
+            "//packages/react-native:spm_React_RCTAppDelegate",
+            "@rn_source_headers//:headers",
+        ],
+        "//conditions:default": [
+            "@rn_prebuilt_xcframeworks//:React",
+            "@rn_prebuilt_xcframeworks//:React_headers",
+        ],
+    }),
 )
 
 macos_application(

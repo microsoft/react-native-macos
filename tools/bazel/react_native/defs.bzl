@@ -49,9 +49,11 @@ _CODEGEN_OUTS = _TOP_HEADERS + [_APPDEP_HEADER] + _FABRIC_HEADERS + _SOURCES + _
 
 _HEADER_DEPS = [
     '//packages/react-native:rn_cxx_headers',
-    '@rn_prebuilt_xcframeworks//:React_headers',
     '@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers',
-]
+] + select({
+    '//:rn_from_source_enabled': ['@rn_source_headers//:headers'],
+    '//conditions:default': ['@rn_prebuilt_xcframeworks//:React_headers'],
+})
 
 def rn_codegen(name, project_root, rn_tester_srcs, **kwargs):
     """Generate rn-tester's codegen (AppSpecs + providers) and compile it.

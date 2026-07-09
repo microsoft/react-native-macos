@@ -103,10 +103,17 @@ objc_library(
         ":rct_linking_hdrs",
         ":rct_pushnotification_hdrs",
         ":rn_cxx_headers",
-        "@rn_prebuilt_xcframeworks//:React",
-        "@rn_prebuilt_xcframeworks//:React_headers",
         "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
-    ],
+    ] + select({
+        "//:rn_from_source_enabled": [
+            "//tools/bazel/react_native:fbreactnativespec",
+            "@rn_source_headers//:headers",
+        ],
+        "//conditions:default": [
+            "@rn_prebuilt_xcframeworks//:React",
+            "@rn_prebuilt_xcframeworks//:React_headers",
+        ],
+    }),
 )
 objc_library(
     name = "sample_turbo_modules",
@@ -120,10 +127,14 @@ objc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":rn_cxx_headers",
-        "@rn_prebuilt_xcframeworks//:React",
-        "@rn_prebuilt_xcframeworks//:React_headers",
         "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
-    ],
+    ] + select({
+        "//:rn_from_source_enabled": ["@rn_source_headers//:headers"],
+        "//conditions:default": [
+            "@rn_prebuilt_xcframeworks//:React",
+            "@rn_prebuilt_xcframeworks//:React_headers",
+        ],
+    }),
 )
 
 npm_package(

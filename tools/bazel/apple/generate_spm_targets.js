@@ -120,7 +120,7 @@ function normalizeTarget(target) {
         : [],
     hdrs:
       target.type === 'regular'
-        ? sourcePatterns(target, ['.h', '.hh', '.hpp', '.inc'])
+        ? sourcePatterns(target, ['.def', '.h', '.hh', '.hpp', '.inc'])
         : [],
     excludes: excludePatterns(target),
     copts: [...new Set(copts)].sort(),

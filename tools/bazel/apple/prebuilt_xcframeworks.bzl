@@ -55,6 +55,18 @@ cc_library(
 )
 """)
 
+    if "hermes" not in missing:
+        hermes_headers = "{}/packages/react-native/.build/artifacts/hermes/destroot/include".format(root)
+        if rctx.path(hermes_headers).exists:
+            rctx.symlink(hermes_headers, "hermes_headers")
+            lines.append("""
+cc_library(
+    name = "hermes_headers",
+    hdrs = glob(["hermes_headers/**"], allow_empty = True),
+    includes = ["hermes_headers"],
+)
+""")
+
     # The React.xcframework flattens each SPM target's public headers into
     # `Headers/<Module>/<basename>.h`, which breaks the canonical `<React/...>`,
     # `<react/renderer/...>`, `<jsi/...>` imports used by both the framework's own

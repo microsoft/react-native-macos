@@ -6,5 +6,6 @@ exports_files([
     "prebuilt_xcframeworks.bzl",
     "reconstruct_react_headers.py",
     "spm_native_graph.bzl",
+    "source_headers.bzl",
     "xcframeworks.bzl",
 ])

@@ -53,6 +53,8 @@ FLAT_ROOT_MODULES = ["React_RCTAppDelegate"]
 SELF_NAMED_MODULES = ["FBReactNativeSpec"]
 
 INCLUDE_RE = re.compile(r'#\s*(?:import|include)\s*<([^>]+)>')
+SKIP_DIRS = frozenset([".build", "build", "node_modules", "Pods", "third-party"])
+SOURCE_EXTENSIONS = (".c", ".cc", ".cpp", ".h", ".hh", ".hpp", ".m", ".mm")
 
 # Canonical namespaces supplied from the RN *source* tree (complete, correctly
 # nested, siblings co-located) rather than the framework's flattened copy. Any
@@ -86,26 +88,34 @@ SOURCE_PREFIXES = frozenset([
 
 
 def main():
-    headers_dir, out_dir = os.path.abspath(sys.argv[1]), sys.argv[2]
+    headers_dir = os.path.realpath(sys.argv[1])
+    out_dir = os.path.realpath(sys.argv[2])
+    include_source_prefixes = "--include-source-prefixes" in sys.argv[3:]
 
     # 1. Index every physical header: basename -> [(module, abspath)].
     by_basename = {}
     all_headers = []
+    include_sources = []
     for module in sorted(os.listdir(headers_dir)):
+        if module in SKIP_DIRS:
+            continue
         mdir = os.path.join(headers_dir, module)
         if not os.path.isdir(mdir):
             continue
-        for root, _dirs, files in os.walk(mdir):
+        for root, dirs, files in os.walk(mdir):
+            dirs[:] = [name for name in dirs if name not in SKIP_DIRS]
             for f in files:
+                p = os.path.join(root, f)
+                if f.endswith(SOURCE_EXTENSIONS):
+                    include_sources.append(p)
                 if not f.endswith((".h", ".hpp", ".hh")):
                     continue
-                p = os.path.join(root, f)
                 all_headers.append((module, p))
                 by_basename.setdefault(f, []).append((module, p))
 
     # 2. Collect every canonical include path referenced anywhere.
     referenced = set()
-    for _module, p in all_headers:
+    for p in include_sources:
         try:
             with open(p, "r", errors="ignore") as fh:
                 for m in INCLUDE_RE.finditer(fh.read()):
@@ -121,15 +131,30 @@ def main():
     def rank_objc(module):
         return OBJC_REACT_MODULES.index(module) if module in OBJC_REACT_MODULES else 999
 
-    def pick(candidates, hint_segments):
+    def pick(candidates, hint_segments, canonical_rel):
         """Choose the best physical file for a canonical path."""
         if len(candidates) == 1:
             return candidates[0][1]
         # Prefer a module whose name matches a hint path segment.
         best, best_score = candidates[0][1], float("-inf")
+        canonical_parts = canonical_rel.replace("\\", "/").split("/")
         for module, phys in candidates:
             mtokens = module.lower().replace("react_", "").split("_")
-            score = sum(1 for seg in hint_segments if seg.lower() in mtokens or seg.lower() == module.lower())
+            physical_parts = phys.replace("\\", "/").split("/")
+            suffix_matches = 0
+            for expected, actual in zip(
+                reversed(canonical_parts),
+                reversed(physical_parts),
+            ):
+                if expected.lower() != actual.lower():
+                    break
+                suffix_matches += 1
+            score = suffix_matches * 1000
+            score += sum(
+                1
+                for seg in hint_segments
+                if seg.lower() in mtokens or seg.lower() == module.lower()
+            )
             # Tie-break toward canonical Obj-C ordering (React_Core first).
             score = score * 100 - rank_objc(module)
             if score > best_score:
@@ -145,14 +170,14 @@ def main():
     for rel in referenced:
         if "/" not in rel:
             continue
-        if rel.split("/")[0] in SOURCE_PREFIXES:
+        if not include_source_prefixes and rel.split("/")[0] in SOURCE_PREFIXES:
             continue
         base = os.path.basename(rel)
         cands = by_basename.get(base)
         if not cands:
             continue
         segs = rel.split("/")[:-1]
-        want(rel, pick(cands, segs))
+        want(rel, pick(cands, segs, rel))
 
     # 4. Flat `<React/...>` tree: every Obj-C React module header by basename.
     for module, phys in all_headers:
@@ -173,6 +198,46 @@ def main():
     for module, phys in all_headers:
         if module in FLAT_ROOT_MODULES:
             want(os.path.basename(phys), phys)
+
+    # Source-tree mode: AppDelegate headers are imported without a namespace
+    # (`<RCTReactNativeFactory.h>`). The prebuilt layout has a module directory
+    # for these; the source layout keeps them under Libraries/AppDelegate.
+    if include_source_prefixes:
+        for _module, phys in all_headers:
+            normalized = phys.replace(os.sep, "/")
+            if "/Libraries/AppDelegate/" in normalized:
+                want(os.path.basename(phys), phys)
+        # Source implementations frequently use bare quoted imports such as
+        # "RCTAssert.h". Put Obj-C public headers in the same canonical React/
+        # directory and expose that directory as an include root. Existing
+        # mappings discovered from explicit <React/...> imports win.
+        for module, phys in all_headers:
+            if module in ("Libraries", "React", "ReactApple"):
+                want("React/" + os.path.basename(phys), phys)
+        source_namespaces = {
+            "/Libraries/FBLazyVector/": "FBLazyVector",
+            "/Libraries/Required/": "RCTRequired",
+            "/Libraries/TypeSafety/": "RCTTypeSafety",
+            "/ReactApple/Libraries/RCTFoundation/RCTDeprecation/Exported/": "RCTDeprecation",
+        }
+        for _module, phys in all_headers:
+            normalized = phys.replace(os.sep, "/")
+            for source_fragment, namespace in source_namespaces.items():
+                if source_fragment in normalized:
+                    want(namespace + "/" + os.path.basename(phys), phys)
+        # Preserve quoted sibling includes after a physical header is projected
+        # into a canonical directory. For example, a projected
+        # react/performance/timeline/PerformanceEntryReporter.h includes
+        # "PerformanceEntryCircularBuffer.h".
+        for rel, phys in list(links.items()):
+            canonical_dir = os.path.dirname(rel)
+            physical_dir = os.path.dirname(phys)
+            for sibling in os.listdir(physical_dir):
+                if sibling.endswith((".h", ".hh", ".hpp")):
+                    want(
+                        os.path.join(canonical_dir, sibling),
+                        os.path.join(physical_dir, sibling),
+                    )
 
     # 5c. Self-named umbrella families (e.g. `<FBReactNativeSpec/FBReactNativeSpec.h>`).
     for module, phys in all_headers:

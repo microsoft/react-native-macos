@@ -27,7 +27,9 @@ objc_library(
         ":NativeCxxModuleExample_hdrs",
         "//packages/react-native:rn_cxx_headers",
         "//tools/bazel/react_native:rn_tester_appspecs_reactcodegen_hdrs",
-        "@rn_prebuilt_xcframeworks//:React_headers",
         "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
-    ],
+    ] + select({
+        "//:rn_from_source_enabled": ["@rn_source_headers//:headers"],
+        "//conditions:default": ["@rn_prebuilt_xcframeworks//:React_headers"],
+    }),
 )

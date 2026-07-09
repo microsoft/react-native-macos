@@ -7,8 +7,16 @@ _BINARY_DEPS = {
         "@rn_prebuilt_xcframeworks//:ReactNativeDependencies",
         "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
     ],
-    "hermes-prebuilt": ["@rn_prebuilt_xcframeworks//:hermes"],
+    "hermes-prebuilt": [
+        "@rn_prebuilt_xcframeworks//:hermes",
+        "@rn_prebuilt_xcframeworks//:hermes_headers",
+    ],
 }
+
+_SOURCE_HEADER_BRIDGE = [
+    "//tools/bazel/react_native:fbreactnativespec",
+    "@rn_source_headers//:headers",
+]
 
 def _target_labels(name):
     target = SPM_TARGETS[name]
@@ -44,11 +52,13 @@ def rn_spm_native_graph(visibility = ["//visibility:public"]):
                 exclude = target["excludes"],
                 allow_empty = True,
             ),
-            copts = target["copts"],
+            # C++20 is set with --per_file_copt in .bazelrc so it is not passed
+            # to plain Objective-C sources in mixed SwiftPM targets.
+            copts = [flag for flag in target["copts"] if flag != "-std=c++20"],
             defines = target["defines"] + target["debug_defines"],
             includes = target["includes"],
             sdk_frameworks = target["sdk_frameworks"],
             tags = ["manual"],
             visibility = visibility,
-            deps = _deps(target["deps"]),
+            deps = _SOURCE_HEADER_BRIDGE + _deps(target["deps"]),
         )

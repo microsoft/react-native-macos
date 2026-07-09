@@ -10,6 +10,7 @@ module(
 bazel_dep(name = "aspect_rules_js", version = "3.2.2")
 bazel_dep(name = "aspect_rules_ts", version = "3.8.11")
 bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "rules_nodejs", version = "6.7.5")
 
 # Local fork of rules_js: teach `npm_translate_lock` to read the Yarn Berry (v2+)
@@ -65,3 +66,7 @@ bazel_dep(name = "platforms", version = "1.1.0")
 # to Bazel so the macOS app slice can link them.
 rn_prebuilt = use_extension("//tools/bazel/apple:prebuilt_xcframeworks.bzl", "rn_prebuilt_xcframeworks_extension")
 use_repo(rn_prebuilt, "rn_prebuilt_xcframeworks")
+
+# Canonical header aliases generated directly from the React Native source tree.
+rn_source_headers = use_extension("//tools/bazel/apple:source_headers.bzl", "rn_source_headers_extension")
+use_repo(rn_source_headers, "rn_source_headers")
