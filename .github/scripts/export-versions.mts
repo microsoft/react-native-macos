@@ -7,7 +7,7 @@
  *   react_native_version  – the coerced major.minor React Native version (e.g. "0.79")
  */
 import * as fs from "node:fs";
-import { URL } from "node:url";
+import manifest from "../../packages/react-native/package.json" with { type: "json" };
 
 function coerce(version: string): string {
   const [major, minor = "0"] = version.split("-")[0].split(".");
@@ -24,12 +24,7 @@ function exportValue(name: string, value: string): void {
   }
 }
 
-const manifestPath = new URL(
-  "../../packages/react-native/package.json",
-  import.meta.url
-);
-const json = fs.readFileSync(manifestPath, { encoding: "utf-8" });
-const { dependencies, peerDependencies } = JSON.parse(json);
+const { dependencies, peerDependencies } = manifest;
 
 exportValue("react_version", peerDependencies["react"]);
 exportValue("react_native_version", coerce(dependencies["@react-native/codegen"]));
