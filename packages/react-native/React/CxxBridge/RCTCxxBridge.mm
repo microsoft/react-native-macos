@@ -1115,12 +1115,8 @@ struct RCTInstanceCallback : public InstanceCallback {
   _valid = NO;
   _moduleRegistryCreated = NO;
 
-  dispatch_async(dispatch_get_main_queue(), ^{
-    if (self->_jsMessageThread) {
-      // Make sure initializeBridge completed
-      self->_jsMessageThread->runOnQueueSync([] {});
-    }
-
+  // [macOS
+  void (^postFailToLoadNotification)(void) = ^{
     self->_reactInstance.reset();
     self->_jsMessageThread.reset();
 
@@ -1133,7 +1129,16 @@ struct RCTInstanceCallback : public InstanceCallback {
     }
 
     RCTFatal(error);
-  });
+  };
+
+  if (self->_jsMessageThread) {
+    // Make sure initializeBridge completed
+    self->_jsMessageThread->runOnQueue(
+        [postFailToLoadNotification] { dispatch_async(dispatch_get_main_queue(), postFailToLoadNotification); });
+  } else {
+    dispatch_async(dispatch_get_main_queue(), postFailToLoadNotification);
+  }
+  // macOS]
 }
 
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithDelegate
