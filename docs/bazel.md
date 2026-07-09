@@ -273,8 +273,14 @@ the repo's `enableScripts: false`), which is inert for Yarn and not published.
 
 ## Future roadmap: build the XCFrameworks from source in Bazel
 
-`Package.swift` already enumerates the full target graph (each `RNTarget` ↔ a podspec),
-giving a ready-made port map. Output the same `.xcframework`s via
+`Package.swift` already enumerates the full target graph (each `RNTarget` ↔ a podspec).
+`tools/bazel/apple/generate_spm_targets.js` now runs
+`swift package dump-package`, normalizes the resolved macOS target metadata, and writes
+`packages/react-native/bazel/spm_targets.bzl`. `rn_spm_native_graph()` turns those 56
+targets into `spm_*` Bazel libraries without adding BUILD files throughout the React
+source tree. The initial leaf targets (`Yoga`, `React-debug`, `React-jsi`, and
+`React-utils`) compile from source; bring the rest up leaf-first, then output the same
+`.xcframework`s via
 `apple_static_xcframework`, swapped in behind the P3 alias + `--//:rn_from_source`:
 
 * **FA — Hermes**: keep the prebuilt Hermes (`http_archive`) initially; optionally wrap

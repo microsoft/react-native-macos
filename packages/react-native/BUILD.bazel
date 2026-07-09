@@ -3,8 +3,10 @@
 # link it into node_modules (needed to bundle first-party JS with Metro).
 load("@aspect_rules_js//npm:defs.bzl", "npm_package")
 load("@npm//:defs.bzl", "npm_link_all_packages")
+load("//tools/bazel/apple:spm_native_graph.bzl", "rn_spm_native_graph")
 
 npm_link_all_packages()
+rn_spm_native_graph()
 
 # Canonical C++ header roots from the RN source tree. The SPM-prebuilt
 # React.xcframework only exports a partial header set; the deep Fabric/renderer
