@@ -149,9 +149,11 @@ async function downloadUpstreamHermesTarball(
  * merges the standalone macOS framework into the universal xcframework using
  * `xcodebuild -create-xcframework`.
  *
- * NOTE: Once upstream Hermes includes macOS in the universal xcframework
- * natively, this function will detect the existing macOS slice and skip
- * the recompose. At that point, this step can be removed entirely.
+ * NOTE: The universal xcframework gained a native macOS slice in Hermes V1
+ * 250829098.0.15 (facebook/hermes#1971); the V0 line (0.14.x) does not include
+ * it. When the tarball already contains a macOS slice this detects it and skips
+ * the recompose, so once the pinned versions include it natively this step can
+ * be removed entirely.
  * Tracking PRs:
  *   - https://github.com/facebook/hermes/pull/1958
  *   - https://github.com/facebook/hermes/pull/1970
