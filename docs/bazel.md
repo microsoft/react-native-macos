@@ -7,7 +7,8 @@ CocoaPods workflows are unchanged.
 
 ## Goal
 
-Prove a **full working vertical slice**: bundle rn-tester's JavaScript with Metro
+Provide a **full working vertical slice** at
+`//packages/rn-tester/RNTester-macOS:app`: bundle rn-tester's JavaScript with Metro
 (driven by Bazel via aspect-build `rules_js`) and link/embed it into a macOS app
 (`macos_application` via `rules_apple`) that consumes the prebuilt React Native
 XCFrameworks — an end-to-end `bazel run` of a macOS RN app. Longer term, build those
@@ -129,8 +130,8 @@ BYONM remains a viable fallback.
 
 ## What works today (verified green)
 
-**`bazel build //packages/rn-tester:RNTesterMacBazel` produces a launchable macOS
-RNTester `.app`, built entirely by Bazel on Xcode 26** — JS bundle, native host, and
+**`bazel build //packages/rn-tester/RNTester-macOS:app` produces a launchable macOS
+RNTester `.app` on Xcode 26** — JS bundle, native host, and
 prebuilt-XCFramework link. Specifically:
 
 * `bazel test //tools/bazel/berry/example:verify` — a self-contained proof: a real Berry
@@ -149,13 +150,15 @@ prebuilt-XCFramework link. Specifically:
   minimal `RCTReactNativeFactory` host, links the prebuilt React/hermes/ReactNativeDependencies
   XCFrameworks, and embeds the JS bundle. The resulting `.app` contains the arm64 binary,
   `Contents/Resources/RNTesterApp.macos.jsbundle`, and `Contents/Frameworks/hermes.framework`.
-* **The FULL rn-tester host also builds** — `:RNTesterMacBazelFull` links rn-tester's *real,
+* **The full rn-tester host builds and launches offline** — the canonical `:app` target
+  links rn-tester's *real,
   unmodified* `RNTester/AppDelegate.mm` with the Bazel-built codegen (`RCTAppDependencyProvider`
   + AppSpecs compiled into `//tools/bazel/react_native:rn_tester_appspecs_lib`), the C++
   TurboModule example (`NativeCxxModuleExample`), the Fabric `NativeComponentExample`
   (`RNTMyNativeView`), the sample TurboModules (`//packages/react-native:sample_turbo_modules`),
   and the RCTLinking/RCTPushNotification modules built from source (not in the prebuilt
-  framework). All example modules link in — no rn-tester source is modified or `#ifdef`'d out.
+  framework). Its embedded `main.jsbundle` contains the real native-example JS (no
+  stubs), and no rn-tester source is modified or `#ifdef`'d out.
 
 ### Consuming the prebuilt XCFrameworks from Bazel (the header problem)
 

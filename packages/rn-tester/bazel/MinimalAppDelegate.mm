@@ -28,7 +28,7 @@
 
 - (NSURL *)bundleURL
 {
-  return [[NSBundle mainBundle] URLForResource:@"RNTesterApp.macos" withExtension:@"jsbundle"];
+  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 }
 
 @end

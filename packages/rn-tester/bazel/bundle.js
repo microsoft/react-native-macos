@@ -145,9 +145,19 @@ function resolveRelativeFromFileSystem(originModulePath, moduleName, platform) {
   if (!moduleName.startsWith('.') && !path.isAbsolute(moduleName)) {
     return null;
   }
-  const basePath = path.isAbsolute(moduleName)
+  let basePath = path.isAbsolute(moduleName)
     ? moduleName
     : path.resolve(path.dirname(originModulePath), moduleName);
+  // RNTester examples use source-relative imports such as
+  // `../../../react-native/Libraries/...`. Staging RNTester under an output
+  // directory adds one path segment, so resolve those imports against the same
+  // react-native-macos package root used for the package alias.
+  const reactNativeRelative = moduleName
+    .replace(/\\/g, '/')
+    .match(/(?:^|\/)react-native\/(.+)$/);
+  if (reactNativeRelative != null) {
+    basePath = path.join(ALIASES.get('react-native'), reactNativeRelative[1]);
+  }
   const sourceExts = [
     `${platform}.js`,
     'native.js',

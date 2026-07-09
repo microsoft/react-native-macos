@@ -53,25 +53,3 @@ function copyDir(rel = '') {
 fs.rmSync(outRoot, {recursive: true, force: true});
 mkdirp(outRoot);
 copyDir();
-
-if (srcArg.replace(/\\/g, '/').endsWith('packages/rn-tester')) {
-  writeStub(
-    'NativeComponentExample/js/MyNativeView.js',
-    "import {View} from 'react-native';\nexport default View;\n",
-  );
-  writeStub(
-    'NativeModuleExample/NativeScreenshotManager.js',
-    "module.exports = {takeScreenshot: () => Promise.resolve(null)};\n",
-  );
-  writeStub(
-    'NativeCxxModuleExample/NativeCxxModuleExample.js',
-    "export const EnumInt = {IA: 23, IB: 42};\nexport const EnumNone = {NA: 0, NB: 1};\nexport const EnumStr = {SA: 's---a', SB: 's---b'};\nexport default null;\n",
-  );
-}
-
-function writeStub(rel, content) {
-  const dest = path.join(outRoot, rel);
-  mkdirp(path.dirname(dest));
-  fs.writeFileSync(dest, content);
-  fs.chmodSync(dest, 0o644);
-}

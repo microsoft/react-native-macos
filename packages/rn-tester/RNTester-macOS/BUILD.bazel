@@ -1,0 +1,8 @@
+"""Canonical Bazel entry point for the existing RNTester macOS app."""
+
+package(default_visibility = ["//visibility:public"])
+
+alias(
+    name = "app",
+    actual = "//packages/rn-tester:RNTesterMacBazelFull",
+)
