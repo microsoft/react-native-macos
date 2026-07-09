@@ -17,15 +17,16 @@
 
 'use strict';
 
-const fs = require('fs');
+const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 const crypto = require('crypto');
+const fs = require('fs');
+const Metro = require('metro');
+const DependencyGraph = require('metro/src/node-haste/DependencyGraph');
 const Module = require('module');
 const path = require('path');
-const Metro = require('metro');
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+
 
 const ALIASES = new Map();
-
 const originalResolveFilename = Module._resolveFilename;
 Module._resolveFilename = function (request, parent, isMain, options) {
   try {
@@ -65,7 +66,6 @@ Module._resolveFilename = function (request, parent, isMain, options) {
     throw error;
   }
 };
-
 function findAspectPackage(request) {
   const encoded = request.replace('/', '+');
   const aspectRoots = [
@@ -87,9 +87,7 @@ function findAspectPackage(request) {
   }
   return null;
 }
-
 const ASSET_EXTS = new Set(['gif', 'jpeg', 'jpg', 'png', 'webp', 'xml']);
-
 function resolveFromFileSystem(context, moduleName, platform) {
   try {
     return context.resolveRequest(context, moduleName, platform);
@@ -109,7 +107,6 @@ function resolveFromFileSystem(context, moduleName, platform) {
     throw error;
   }
 }
-
 function resolvePackageFromAspectTree(moduleName) {
   if (moduleName.startsWith('.') || path.isAbsolute(moduleName)) {
     return null;
@@ -144,7 +141,6 @@ function resolvePackageFromAspectTree(moduleName) {
   }
   return null;
 }
-
 function resolveRelativeFromFileSystem(originModulePath, moduleName, platform) {
   if (!moduleName.startsWith('.') && !path.isAbsolute(moduleName)) {
     return null;
@@ -196,7 +192,6 @@ function resolveRelativeFromFileSystem(originModulePath, moduleName, platform) {
   }
   return null;
 }
-
 function resolveAssetFiles(filePath) {
   const dir = path.dirname(filePath);
   const ext = path.extname(filePath);
@@ -211,8 +206,6 @@ function resolveAssetFiles(filePath) {
     .map(name => path.join(dir, name));
   return filePaths.length ? {type: 'assetFiles', filePaths} : null;
 }
-
-const DependencyGraph = require('metro/src/node-haste/DependencyGraph');
 const originalGetOrComputeSha1 = DependencyGraph.prototype.getOrComputeSha1;
 DependencyGraph.prototype.getOrComputeSha1 = async function (filename) {
   try {

@@ -1,8 +1,15 @@
 #!/usr/bin/env node
+/**
+ * @format
+ * @noflow
+ */
+
 'use strict';
 
 const fs = require('fs');
+const Module = require('module');
 const path = require('path');
+
 
 const cwd = process.cwd();
 const marker = `${path.sep}bazel-out${path.sep}`;
@@ -20,7 +27,6 @@ const bazelReactNativePackageRoot = path.join(
 const reactNativePackageRoot = fs.existsSync(bazelReactNativePackageRoot)
   ? bazelReactNativePackageRoot
   : path.join(workspaceRoot, 'packages/react-native');
-
 function prepareRnTesterProject() {
   const scratchProjectRoot = path.join(outputDir, '_rn_tester_project');
   fs.rmSync(scratchProjectRoot, {recursive: true, force: true});
@@ -85,7 +91,6 @@ function prepareRnTesterProject() {
 
   return scratchProjectRoot;
 }
-
 function mustEnv(name) {
   const value = process.env[name];
   if (!value) {
@@ -93,21 +98,17 @@ function mustEnv(name) {
   }
   return value;
 }
-
 function assertExists(relativePath) {
   const absolutePath = path.join(outputDir, relativePath);
   if (!fs.existsSync(absolutePath)) {
     throw new Error(`Expected codegen output missing: ${absolutePath}`);
   }
 }
-
 fs.mkdirSync(outputDir, {recursive: true});
 const scratchDir = path.join(outputDir, '_codegen_scratch');
 fs.rmSync(scratchDir, {recursive: true, force: true});
 fs.mkdirSync(scratchDir, {recursive: true});
 process.env.TMPDIR = scratchDir;
-
-const Module = require('module');
 process.env.NODE_PATH = [
   path.join(codegenLibDir, 'node_modules'),
   process.env.NODE_PATH || '',

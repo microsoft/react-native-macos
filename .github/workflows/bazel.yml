@@ -13,7 +13,10 @@ on:
       - ".bazelrc"
       - ".bazelversion"
       - ".bazelignore"
+      - ".yarnrc.yml"
       - "BUILD.bazel"
+      - "package.json"
+      - "yarn.lock"
       - "tools/bazel/**"
       - "packages/**/BUILD.bazel"
       - ".github/workflows/bazel.yml"
@@ -45,6 +48,8 @@ jobs:
           key: bazel-berry-${{ runner.os }}-${{ hashFiles('MODULE.bazel', 'yarn.lock', 'tools/bazel/**') }}
           restore-keys: |
             bazel-berry-${{ runner.os }}-
+      - name: Verify generated workspace BUILD files
+        run: node tools/bazel/js/gen_package_builds.mjs --all --check
       - name: Test the Berry -> rules_js pipeline end to end
         run: |
           npx --yes @bazel/bazelisk test //tools/bazel/berry/example:verify \

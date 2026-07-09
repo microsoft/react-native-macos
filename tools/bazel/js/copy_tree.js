@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * @format
+ * @noflow
  */
 
 'use strict';

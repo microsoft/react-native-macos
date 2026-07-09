@@ -45,12 +45,12 @@ const HAND_OWNED_TOKENS = [
 ];
 
 function isGeneratorOwned(text) {
+  // A generated file becomes hand-owned as soon as a contributor adds another
+  // target kind. Never let the marker authorize clobbering local overrides.
+  if (HAND_OWNED_TOKENS.some((token) => text.includes(token))) return false;
   if (text.includes(MARKER)) return true;
   // Legacy pure boilerplate: has an npm_package but no other target kinds.
-  if (text.includes('npm_package(') && !HAND_OWNED_TOKENS.some((t) => text.includes(t))) {
-    return true;
-  }
-  return false;
+  return text.includes('npm_package(');
 }
 
 // Expand the root package.json "workspaces" globs (supports `dir/*` and `!neg`).

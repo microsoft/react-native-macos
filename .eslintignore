@@ -14,5 +14,6 @@ packages/*/types_generated
 packages/debugger-frontend/dist/**/*
 packages/react-native-codegen/lib
 **/Pods/*
+bazel-*
 **/*.macos.js
 **/*.windows.js

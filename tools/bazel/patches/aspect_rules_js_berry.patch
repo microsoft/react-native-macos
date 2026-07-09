@@ -1,6 +1,6 @@
 --- a/npm/private/npm_translate_lock.bzl
 +++ b/npm/private/npm_translate_lock.bzl
-@@ -336,7 +336,67 @@
+@@ -336,7 +336,68 @@
          """),
      },
  )
@@ -46,8 +46,9 @@
 +    rctx.watch(converter)
 +
 +    pnpm_lock_path = rctx.path(attr.pnpm_lock)
-+    if pnpm_lock_path.exists:
-+        return  # already generated; delete pnpm-lock.yaml to refresh after yarn.lock changes
++    # The repository rule reruns when yarn_path or converter changes (rctx.watch
++    # above), so always regenerate. Returning when the output already exists leaves
++    # pnpm-lock.yaml stale after a yarn.lock edit.
 +    rctx.report_progress("Translating Berry yarn.lock -> pnpm-lock.yaml")
 +    result = rctx.execute(
 +        [
@@ -68,7 +69,7 @@
  def parse_and_verify_lock(rctx, mod, attr):
      """Helper to parse and validate the lockfile
  
-@@ -348,6 +408,8 @@
+@@ -348,6 +409,8 @@
          state, importers, and packages
      """
  

@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+/**
+ * @format
+ * @noflow
+ */
+
 'use strict';
 
 const fs = require('fs');

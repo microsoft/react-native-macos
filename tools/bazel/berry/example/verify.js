@@ -1,3 +1,8 @@
+/**
+ * @format
+ * @noflow
+ */
+
 // Green proof that the rules_js Berry fork works end to end:
 // this file is bundled/run by Bazel with node_modules materialized from a
 // Yarn *Berry* yarn.lock (translated by tools/bazel/berry/berry_to_pnpm_lock.mjs
