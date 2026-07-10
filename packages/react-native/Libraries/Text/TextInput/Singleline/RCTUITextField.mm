@@ -439,8 +439,8 @@
     self.inputAssistantItem.leadingBarButtonGroups = _initialValueLeadingBarButtonGroups;
     self.inputAssistantItem.trailingBarButtonGroups = _initialValueTrailingBarButtonGroups;
   }
-  _disableKeyboardShortcuts = disableKeyboardShortcuts;
 #endif
+  _disableKeyboardShortcuts = disableKeyboardShortcuts;
 }
 
 #pragma mark - Placeholder
