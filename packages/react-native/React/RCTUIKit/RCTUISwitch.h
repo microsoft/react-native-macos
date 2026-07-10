@@ -11,7 +11,7 @@
 
 #include <TargetConditionals.h>
 
-#import <React_RCTUIKit/RCTUIKitCompat.h>
+#import "RCTUIKitCompat.h"
 
 #if !TARGET_OS_OSX
 @compatibility_alias RCTUISwitch UISwitch;

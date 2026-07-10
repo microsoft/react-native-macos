@@ -11,7 +11,7 @@
 
 #include <TargetConditionals.h>
 
-#import <React_RCTUIKit/RCTUIImage.h>
+#import "RCTUIImage.h"
 
 #if !TARGET_OS_OSX
 

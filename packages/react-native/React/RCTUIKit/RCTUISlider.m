@@ -9,7 +9,7 @@
 
 #if TARGET_OS_OSX
 
-#import <React_RCTUIKit/RCTUISlider.h>
+#import "RCTUISlider.h"
 
 @implementation RCTUISlider {}
 

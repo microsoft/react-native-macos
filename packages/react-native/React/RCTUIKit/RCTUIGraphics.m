@@ -9,7 +9,7 @@
 
 #if TARGET_OS_OSX
 
-#import <React_RCTUIKit/RCTUIGraphics.h>
+#import "RCTUIGraphics.h"
 
 #import <objc/runtime.h>
 

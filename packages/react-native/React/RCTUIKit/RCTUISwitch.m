@@ -9,7 +9,7 @@
 
 #if TARGET_OS_OSX
 
-#import <React_RCTUIKit/RCTUISwitch.h>
+#import "RCTUISwitch.h"
 
 @implementation RCTUISwitch
 
