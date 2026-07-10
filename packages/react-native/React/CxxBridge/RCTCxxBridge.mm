@@ -1116,6 +1116,10 @@ struct RCTInstanceCallback : public InstanceCallback {
   _moduleRegistryCreated = NO;
 
   // [macOS
+  // The JS thread may be waiting on the main thread to finish initializing so
+  // we cannot call `_jsMessageThread->runOnQueueSync()` here without causing a
+  // deadlock. We haven't upstreamed this fix because as of writing, 0.87.0-rc.0
+  // is out and old arch is deprecated.
   void (^postFailToLoadNotification)(void) = ^{
     self->_reactInstance.reset();
     self->_jsMessageThread.reset();
