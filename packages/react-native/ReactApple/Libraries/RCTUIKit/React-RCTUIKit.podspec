@@ -5,7 +5,7 @@
 
 require "json"
 
-package = JSON.parse(File.read(File.join(__dir__, "package.json")))
+package = JSON.parse(File.read(File.join(__dir__, "..", "..", "..", "package.json")))
 version = package['version']
 
 source = { :git => 'https://github.com/facebook/react-native.git' }
@@ -25,10 +25,8 @@ Pod::Spec.new do |s|
   s.author                 = "Microsoft Corporation"
   s.platforms              = min_supported_versions
   s.source                 = source
-  s.source_files           = podspec_sources(
-                               ["React/RCTUIKit/*.{h,m}"],
-                               "React/RCTUIKit/*.h")
-  s.public_header_files    = "React/RCTUIKit/*.h"
+  s.source_files           = podspec_sources("*.{h,m}", "*.h")
+  s.public_header_files    = "*.h"
   s.header_dir             = "React_RCTUIKit" # [macOS] Own namespace so <React_RCTUIKit/...> resolves consistently (static + frameworks); React-Core vends <React/...> forwarding aliases
   s.module_name            = "React_RCTUIKit"
   s.pod_target_xcconfig    = {

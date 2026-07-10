@@ -365,7 +365,7 @@ let reactCore = RNTarget(
     "ReactCommon/react/runtime/platform/ios", // explicit header search path to break circular dependency. RCTHost imports `RCTDefines.h` in ReactCore, ReacCore needs to import RCTHost
   ],
   linkedFrameworks: ["CoreServices"],
-  excludedPaths: ["Fabric", "Tests", "Resources", "Runtime/RCTJscInstanceFactory.mm", "I18n/strings", "CxxBridge/JSCExecutorFactory.mm", "CoreModules", "RCTUIKit"], // [macOS]
+  excludedPaths: ["Fabric", "Tests", "Resources", "Runtime/RCTJscInstanceFactory.mm", "I18n/strings", "CxxBridge/JSCExecutorFactory.mm", "CoreModules"], // [macOS]
   dependencies: [.reactNativeDependencies, .reactCxxReact, .reactPerfLogger, .jsi, .reactJsiExecutor, .reactUtils, .reactFeatureFlags, .reactRuntimeScheduler, .yoga, .reactJsInspector, .reactJsiTooling, .rctDeprecation, .reactCoreRCTWebsocket, .reactRCTImage, .reactTurboModuleCore, .reactRCTText, .reactRCTBlob, .reactRCTAnimation, .reactRCTNetwork, .reactFabric, .hermesPrebuilt, .reactRCTUIKit], // [macOS]
   sources: [".", "Runtime/RCTHermesInstanceFactory.mm"]
 )
@@ -543,7 +543,7 @@ let reactSettings = RNTarget(
 /// UIKit/AppKit compatibility layer for React Native macOS.
 let reactRCTUIKit = RNTarget(
   name: .reactRCTUIKit,
-  path: "React/RCTUIKit",
+  path: "ReactApple/Libraries/RCTUIKit",
   // [macOS: UIKit on iOS/visionOS, AppKit on macOS
   platformLinkerSettings: [
     .linkedFramework("UIKit", .when(platforms: [.iOS, .visionOS])),
