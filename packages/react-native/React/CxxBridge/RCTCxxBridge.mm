@@ -1115,12 +1115,12 @@ struct RCTInstanceCallback : public InstanceCallback {
   _valid = NO;
   _moduleRegistryCreated = NO;
 
-  dispatch_async(dispatch_get_main_queue(), ^{
-    if (self->_jsMessageThread) {
-      // Make sure initializeBridge completed
-      self->_jsMessageThread->runOnQueueSync([] {});
-    }
-
+  // [macOS
+  // The JS thread may be waiting on the main thread to finish initializing so
+  // we cannot call `_jsMessageThread->runOnQueueSync()` here without causing a
+  // deadlock. We haven't upstreamed this fix because as of writing, 0.87.0-rc.0
+  // is out and old arch is deprecated.
+  void (^postFailToLoadNotification)(void) = ^{
     self->_reactInstance.reset();
     self->_jsMessageThread.reset();
 
@@ -1133,7 +1133,16 @@ struct RCTInstanceCallback : public InstanceCallback {
     }
 
     RCTFatal(error);
-  });
+  };
+
+  if (self->_jsMessageThread) {
+    // Make sure initializeBridge completed
+    self->_jsMessageThread->runOnQueue(
+        [postFailToLoadNotification] { dispatch_async(dispatch_get_main_queue(), postFailToLoadNotification); });
+  } else {
+    dispatch_async(dispatch_get_main_queue(), postFailToLoadNotification);
+  }
+  // macOS]
 }
 
 RCT_NOT_IMPLEMENTED(-(instancetype)initWithDelegate
