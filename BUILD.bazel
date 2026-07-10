@@ -3,7 +3,7 @@ load("@npm//:defs.bzl", "npm_link_all_packages")
 
 bool_flag(
     name = "rn_from_source",
-    build_setting_default = False,
+    build_setting_default = True,
     visibility = ["//visibility:public"],
 )
 

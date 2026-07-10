@@ -159,11 +159,12 @@ prebuilt-XCFramework link. Specifically:
   and the RCTLinking/RCTPushNotification modules built from source (not in the prebuilt
   framework). Its embedded `main.jsbundle` contains the real native-example JS (no
   stubs), and no rn-tester source is modified or `#ifdef`'d out.
-* **React can be linked from source** with
-  `bazel build //packages/rn-tester/RNTester-macOS:app --//:rn_from_source=true`.
-  This mode builds the generated 58-target SwiftPM graph, links the resulting static
+* **React is linked from source by default** with
+  `bazel build //packages/rn-tester/RNTester-macOS:app`.
+  This builds the generated 58-target SwiftPM graph, links the resulting static
   libraries into RNTester (no `React.framework` in the app), and launches offline.
-  Hermes and ReactNativeDependencies remain prebuilt bootstrap inputs.
+  Bazel downloads SHA-pinned, ABI-compatible Hermes and ReactNativeDependencies
+  bootstrap artifacts. Use `--//:rn_from_source=false` for the prebuilt-React canary.
 * **Resources are complete**: Metro copies its 45 image/XML assets (including all six
   bottom-nav icons), while rules_apple compiles the macOS asset catalog/storyboard and
   embeds `Assets.car`, `AppIcon.icns`, entitlements, and `PrivacyInfo.xcprivacy`.
@@ -244,6 +245,20 @@ react-native-macos already carries the Hermes version-resolution patches
 (`:React`, …). A future from-source build produces the *same* artifacts and drops in
 behind these aliases with a `--//:rn_from_source` flag.
 
+The default source mode does not require local XCFrameworks:
+
+* ReactNativeDependencies 0.86.0 is downloaded from Maven with SHA-256
+  `f6533c53527e75349346d07a2bba1a5cc1da4be8c41f93635a593047700b78f2`.
+* Hermes comes from the RN 0.81.0 artifact with SHA-256
+  `45ae8f9d4ec3e1e63813cd89487855c5dd6ebd1aeb196738008e16e16aa22fbe`.
+  RN 0.81.0's `.hermesversion` names the exact `e0fc67142ec…` commit selected by
+  react-native-macos's merge-base resolver. The archive's standalone macOS
+  `hermes.framework` is imported because its universal XCFramework contains Apple
+  mobile slices but no macOS slice.
+
+The manual prebuild below is only needed for the
+`--//:rn_from_source=false` prebuilt-React canary.
+
 Generate the XCFrameworks with:
 
 ```sh
@@ -288,8 +303,8 @@ the repo's `enableScripts: false`), which is inert for Yarn and not published.
 targets into `spm_*` Bazel libraries without adding BUILD files throughout the React
 source tree. The graph now compiles through the complete `spm_React` product (including a
 Bazel-generated `FBReactNativeSpec`) using a canonical header projection generated
-from source. `--//:rn_from_source=true` builds and launches RNTester but remains
-default-off until Hermes and ReactNativeDependencies are available from a fresh checkout.
+from source. Source mode is the default after validating a build and launch with all
+local XCFrameworks hidden; `--//:rn_from_source=false` keeps the prebuilt-React canary.
 Then output the same `.xcframework`s via
 `apple_static_xcframework`, swapped in behind the P3 alias + `--//:rn_from_source`:
 

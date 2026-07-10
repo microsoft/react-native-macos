@@ -327,7 +327,7 @@ let reactNativeModuleDom = RNTarget(
 /// RCTTypeSafety.podspec
 let rctTypesafety = RNTarget(
   name: .rctTypesafety,
-  path: "Libraries/Typesafety",
+  path: "Libraries/TypeSafety",
   searchPaths: [FBLazyVectorPath],
   dependencies: [.reactNativeDependencies, .yoga]
 )
