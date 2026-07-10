@@ -18,7 +18,8 @@ on:
       - "package.json"
       - "yarn.lock"
       - "tools/bazel/**"
-      - "packages/**/BUILD.bazel"
+      - "packages/react-native/**"
+      - "packages/rn-tester/**"
       - ".github/workflows/bazel.yml"
   workflow_dispatch: {}
 
@@ -54,3 +55,49 @@ jobs:
         run: |
           npx --yes @bazel/bazelisk test //tools/bazel/berry/example:verify \
             --config=ci --test_output=errors
+
+  rntester-macos:
+    name: RNTester macOS from source
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Cache Bazel
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/bazel-rnm-disk
+          key: bazel-rntester-macos-${{ hashFiles('MODULE.bazel', 'yarn.lock', 'packages/react-native/Package.swift', 'tools/bazel/**') }}
+          restore-keys: |
+            bazel-rntester-macos-
+
+      - name: Build RNTester from a clean checkout
+        run: |
+          test ! -e packages/react-native/.build/output/xcframeworks/Debug/React.xcframework
+          test ! -e packages/react-native/third-party/ReactNativeDependencies.xcframework
+          test ! -e packages/react-native/.build/artifacts/hermes/destroot
+          npx --yes @bazel/bazelisk build \
+            //packages/rn-tester/RNTester-macOS:app \
+            --config=ci
+
+      - name: Verify source-linked app
+        run: |
+          mkdir -p "$RUNNER_TEMP/rntester"
+          unzip -q bazel-bin/packages/rn-tester/RNTesterMacBazelFull.zip \
+            -d "$RUNNER_TEMP/rntester"
+          app="$RUNNER_TEMP/rntester/RNTesterMacBazelFull.app"
+          test -f "$app/Contents/Resources/main.jsbundle"
+          test -f "$app/Contents/Resources/Assets.car"
+          test -f "$app/Contents/Resources/PrivacyInfo.xcprivacy"
+          test "$(find "$app/Contents/Resources" -name 'bottom-nav-*.png' | wc -l | tr -d ' ')" = 6
+          test ! -e "$app/Contents/Frameworks/React.framework"
+          test -e "$app/Contents/Frameworks/hermes.framework"
+          test -e "$app/Contents/Frameworks/ReactNativeDependencies.framework"
+          ! otool -L "$app/Contents/MacOS/RNTesterMacBazelFull" | grep -q React.framework
+          codesign --verify --deep --strict "$app"

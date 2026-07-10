@@ -278,7 +278,10 @@ a supported Xcode via `DEVELOPER_DIR` / `--xcode_version`. Bazel is pinned to `8
 
 ## CI and remote cache
 
-`.github/workflows/bazel.yml` runs the green Berry-fork test on `ubuntu-latest`. It caches
+`.github/workflows/bazel.yml` runs the Berry-fork test on `ubuntu-latest` and the exact
+RNTester source-build command on `macos-26` from a clean checkout. The macOS job checks
+that no native artifacts exist before the build, then verifies the source-linked,
+signed app (frameworks, bundle, native asset catalog, and Metro tab icons). It caches
 Bazel's `--disk_cache` via `actions/cache` (a zero-infra remote-cache stand-in). For a
 real remote cache at scale, point `--remote_cache` at **BuildBuddy** (free tier: `grpcs`
 endpoint + API-key secret) or a self-hosted **bazel-remote** (GCS/S3): read-only on PRs,
