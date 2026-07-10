@@ -6,4 +6,4 @@
  */
 
 // [macOS] Compatibility header for existing <React/RCTPlatformDisplayLink.h> consumers.
-#import <React_RCTUIKit/RCTPlatformDisplayLink.h>
+#import <RCTUIKit/RCTPlatformDisplayLink.h>

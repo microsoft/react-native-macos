@@ -6,4 +6,4 @@
  */
 
 // [macOS] Compatibility umbrella for existing <React/RCTUIKit.h> consumers.
-#import <React_RCTUIKit/RCTUIKit.h>
+#import <RCTUIKit/RCTUIKit.h>

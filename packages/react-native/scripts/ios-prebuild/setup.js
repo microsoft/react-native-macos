@@ -146,6 +146,7 @@ async function setup(
   link('Libraries/Settings', 'React');
 
   link('ReactApple/Libraries/RCTUIKit', 'React'); // [macOS]
+  link('ReactApple/Libraries/RCTUIKit', 'RCTUIKit'); // [macOS]
   link('Libraries/PushNotificationIOS', 'React');
   link('Libraries/Settings', 'React');
   link('Libraries/Vibration', 'React');

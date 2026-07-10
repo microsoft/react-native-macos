@@ -786,7 +786,7 @@ extension String {
   static let reactNativeModuleDom = "React-domnativemodule"
   static let reactAppDelegate = "React-RCTAppDelegate"
   static let reactSettings = "React-RCTSettings"
-  static let reactRCTUIKit = "React-RCTUIKit" // [macOS]
+  static let reactRCTUIKit = "RCTUIKit" // [macOS]
 }
 
 func relativeSearchPath(_ depth: Int, _ path: String) -> String {
