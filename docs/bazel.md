@@ -159,6 +159,14 @@ prebuilt-XCFramework link. Specifically:
   and the RCTLinking/RCTPushNotification modules built from source (not in the prebuilt
   framework). Its embedded `main.jsbundle` contains the real native-example JS (no
   stubs), and no rn-tester source is modified or `#ifdef`'d out.
+* **React can be linked from source** with
+  `bazel build //packages/rn-tester/RNTester-macOS:app --//:rn_from_source=true`.
+  This mode builds the generated 58-target SwiftPM graph, links the resulting static
+  libraries into RNTester (no `React.framework` in the app), and launches offline.
+  Hermes and ReactNativeDependencies remain prebuilt bootstrap inputs.
+* **Resources are complete**: Metro copies its 45 image/XML assets (including all six
+  bottom-nav icons), while rules_apple compiles the macOS asset catalog/storyboard and
+  embeds `Assets.car`, `AppIcon.icns`, entitlements, and `PrivacyInfo.xcprivacy`.
 
 ### Consuming the prebuilt XCFrameworks from Bazel (the header problem)
 
@@ -278,10 +286,11 @@ the repo's `enableScripts: false`), which is inert for Yarn and not published.
 `swift package dump-package`, normalizes the resolved macOS target metadata, and writes
 `packages/react-native/bazel/spm_targets.bzl`. `rn_spm_native_graph()` turns those 56
 targets into `spm_*` Bazel libraries without adding BUILD files throughout the React
-source tree. The graph now compiles through `spm_React_RCTAppDelegate` (including a
+source tree. The graph now compiles through the complete `spm_React` product (including a
 Bazel-generated `FBReactNativeSpec`) using a canonical header projection generated
-from source. `--//:rn_from_source=true` is an experimental, default-off app wiring
-while that source mode is validated end to end. Then output the same `.xcframework`s via
+from source. `--//:rn_from_source=true` builds and launches RNTester but remains
+default-off until Hermes and ReactNativeDependencies are available from a fresh checkout.
+Then output the same `.xcframework`s via
 `apple_static_xcframework`, swapped in behind the P3 alias + `--//:rn_from_source`:
 
 * **FA — Hermes**: keep the prebuilt Hermes (`http_archive`) initially; optionally wrap

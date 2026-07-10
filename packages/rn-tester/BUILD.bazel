@@ -127,10 +127,16 @@ objc_library(
 #    (mirrors how Buck2's apple prelude ingests a js_bundle as an AppleResource).
 macos_application(
     name = "RNTesterMacBazel",
+    app_icons = ["//packages/rn-tester/RNTester-macOS:app_icons"],
     bundle_id = "org.reactjs.native.RNTesterMacBazel",
+    entitlements = "//packages/rn-tester/RNTester-macOS:RNTester_macOS.entitlements",
     infoplists = ["bazel/Info.plist"],
     minimum_os_version = "14.0",
-    resources = [":rntester_macos_jsbundle"],
+    resources = [
+        ":rntester_macos_jsbundle",
+        "PrivacyInfo.xcprivacy",
+        "//packages/rn-tester/RNTester-macOS:native_resources",
+    ],
     tags = ["manual"],
     deps = [":rntester_macos_minimal_host"],
 )
@@ -164,7 +170,7 @@ objc_library(
         "@rn_prebuilt_xcframeworks//:hermes",
     ] + select({
         "//:rn_from_source_enabled": [
-            "//packages/react-native:spm_React_RCTAppDelegate",
+            "//packages/react-native:spm_React",
             "@rn_source_headers//:headers",
         ],
         "//conditions:default": [
@@ -176,10 +182,16 @@ objc_library(
 
 macos_application(
     name = "RNTesterMacBazelFull",
+    app_icons = ["//packages/rn-tester/RNTester-macOS:app_icons"],
     bundle_id = "org.reactjs.native.RNTesterMacBazelFull",
+    entitlements = "//packages/rn-tester/RNTester-macOS:RNTester_macOS.entitlements",
     infoplists = ["bazel/Info.plist"],
     minimum_os_version = "14.0",
-    resources = [":rntester_macos_jsbundle"],
+    resources = [
+        ":rntester_macos_jsbundle",
+        "PrivacyInfo.xcprivacy",
+        "//packages/rn-tester/RNTester-macOS:native_resources",
+    ],
     tags = ["manual"],
     visibility = ["//packages/rn-tester/RNTester-macOS:__pkg__"],
     deps = [":rntester_macos_full_host"],

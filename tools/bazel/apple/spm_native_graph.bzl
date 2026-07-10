@@ -18,6 +18,12 @@ _SOURCE_HEADER_BRIDGE = [
     "@rn_source_headers//:headers",
 ]
 
+_SDK_FRAMEWORK_OVERRIDES = {
+    "React-Core": ["CoreImage", "QuartzCore"],
+    "React-RCTFabric": ["UniformTypeIdentifiers"],
+    "React-RCTUIKit": ["CoreVideo", "QuartzCore"],
+}
+
 def _target_labels(name):
     target = SPM_TARGETS[name]
     if target["type"] == "binary":
@@ -57,8 +63,21 @@ def rn_spm_native_graph(visibility = ["//visibility:public"]):
             copts = [flag for flag in target["copts"] if flag != "-std=c++20"],
             defines = target["defines"] + target["debug_defines"],
             includes = target["includes"],
-            sdk_frameworks = target["sdk_frameworks"],
+            sdk_frameworks = target["sdk_frameworks"] + _SDK_FRAMEWORK_OVERRIDES.get(name, []),
             tags = ["manual"],
             visibility = visibility,
             deps = _SOURCE_HEADER_BRIDGE + _deps(target["deps"]),
         )
+
+    # Package.swift's dynamic `React` product contains every regular target, not
+    # merely the dependency closure of React-RCTAppDelegate.
+    native.objc_library(
+        name = "spm_React",
+        tags = ["manual"],
+        visibility = visibility,
+        deps = [
+            ":" + target["bazel_name"]
+            for target in SPM_TARGETS.values()
+            if target["type"] == "regular"
+        ],
+    )

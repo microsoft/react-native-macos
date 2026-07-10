@@ -216,6 +216,25 @@ function resolveAssetFiles(filePath) {
     .map(name => path.join(dir, name));
   return filePaths.length ? {type: 'assetFiles', filePaths} : null;
 }
+
+function saveAssets(assets, assetsDest) {
+  for (const asset of assets) {
+    asset.scales.forEach((scale, index) => {
+      const suffix = scale === 1 ? '' : `@${scale}x`;
+      const relativeDir = asset.httpServerLocation
+        .slice(1)
+        .replace(/\.\.\//g, '_');
+      const destination = path.join(
+        assetsDest,
+        relativeDir,
+        `${asset.name}${suffix}.${asset.type}`,
+      );
+      fs.mkdirSync(path.dirname(destination), {recursive: true});
+      fs.copyFileSync(asset.files[index], destination);
+    });
+  }
+}
+
 const originalGetOrComputeSha1 = DependencyGraph.prototype.getOrComputeSha1;
 DependencyGraph.prototype.getOrComputeSha1 = async function (filename) {
   try {
@@ -277,7 +296,7 @@ async function main() {
   // Use `bundleOut` (verbatim) rather than `out`; Metro's runBuild rewrites
   // `out` through `.replace(/(\.js)?$/, '.js')`, which would turn our declared
   // Bazel output `RNTesterApp.macos.jsbundle` into `...jsbundle.js`.
-  await Metro.runBuild(config, {
+  const result = await Metro.runBuild(config, {
     entry: entryFile,
     platform: 'macos',
     dev: false,
@@ -286,6 +305,12 @@ async function main() {
     assets: Boolean(assetsDest),
     assetsDest,
   });
+  if (assetsDest != null) {
+    if (result.assets == null) {
+      throw new Error("Assets missing from Metro's runBuild result");
+    }
+    saveAssets(result.assets, assetsDest);
+  }
 }
 
 main().catch(err => {

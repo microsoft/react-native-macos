@@ -91,16 +91,19 @@ cc_library(
 objc_library(
     name = "rntester_extra_rn_modules",
     srcs = [
-        "Libraries/LinkingIOS/RCTLinkingManager.mm",
-        "Libraries/LinkingIOS/RCTLinkingPlugins.h",
         "Libraries/PushNotificationIOS/RCTPushNotificationManager.mm",
         "Libraries/PushNotificationIOS/RCTPushNotificationPlugins.h",
         "Libraries/PushNotificationIOS/RCTPushNotificationPlugins.mm",
-    ],
+    ] + select({
+        "//:rn_from_source_enabled": [],
+        "//conditions:default": [
+            "Libraries/LinkingIOS/RCTLinkingManager.mm",
+            "Libraries/LinkingIOS/RCTLinkingPlugins.h",
+        ],
+    }),
     tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
-        ":rct_linking_hdrs",
         ":rct_pushnotification_hdrs",
         ":rn_cxx_headers",
         "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
@@ -110,6 +113,7 @@ objc_library(
             "@rn_source_headers//:headers",
         ],
         "//conditions:default": [
+            ":rct_linking_hdrs",
             "@rn_prebuilt_xcframeworks//:React",
             "@rn_prebuilt_xcframeworks//:React_headers",
         ],
