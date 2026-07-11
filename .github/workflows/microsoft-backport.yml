@@ -44,8 +44,8 @@ jobs:
         env:
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          # Extract everything after "/backport " and split into branch names
-          BRANCHES=$(echo "$COMMENT_BODY" | head -1 | sed 's|^/backport ||' | xargs)
+          # GitHub comment bodies can use CRLF, so strip the trailing carriage return.
+          BRANCHES=$(printf '%s\n' "$COMMENT_BODY" | head -n 1 | tr -d '\r' | sed 's|^/backport ||' | xargs)
           if [ -z "$BRANCHES" ]; then
             echo "::error::No target branches specified"
             exit 1
