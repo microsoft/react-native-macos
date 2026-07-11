@@ -378,40 +378,9 @@ class ReactNativePodsUtils
         end
     end
 
-    # [macOS] When building with `use_frameworks!` in a workspace that targets
-    # multiple Apple platforms (e.g. RNTester with iOS, macOS and visionOS), every
-    # per-platform pod target produces a framework with the same product name
-    # (`hermes.framework`, `React_debug.framework`, ...). CocoaPods does not set
-    # `SUPPORTED_PLATFORMS` on those targets, so Xcode's implicit dependency
-    # resolution considers all of them candidates for a given `-framework` flag.
-    # That pulls the wrong-platform targets into the build, which makes linking
-    # ambiguous and triggers "Multiple commands produce" errors for the
-    # hermes-engine build script phases (whose declared output paths are identical
-    # across platforms). Constraining `SUPPORTED_PLATFORMS` to each target's own
-    # SDK makes implicit dependency resolution pick the single correct target.
-    def self.set_supported_platforms_for_frameworks(installer)
-        return if ENV['USE_FRAMEWORKS'] == nil
-
-        # Only relevant for multi-platform workspaces. $RN_PLATFORMS is set by the
-        # app's Podfile (see create_header_search_path_for_frameworks).
-        return if $RN_PLATFORMS == nil || $RN_PLATFORMS.length <= 1
-
-        sdkroot_to_supported_platforms = {
-            "iphoneos" => "iphoneos iphonesimulator",
-            "macosx" => "macosx",
-            "xros" => "xros xrsimulator",
-            "appletvos" => "appletvos appletvsimulator",
-        }
-
-        installer.pods_project.native_targets.each do |target|
-            target.build_configurations.each do |config|
-                supported_platforms = sdkroot_to_supported_platforms[config.build_settings["SDKROOT"]]
-                config.build_settings["SUPPORTED_PLATFORMS"] = supported_platforms if supported_platforms != nil
-            end
-        end
-
-        installer.pods_project.save
-    end
+    # ========= #
+    # Utilities #
+    # ========= #
 
     def self.extract_projects(installer)
         return installer.aggregate_targets

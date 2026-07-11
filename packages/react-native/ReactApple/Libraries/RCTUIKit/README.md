@@ -1,5 +1,7 @@
 # RCTUIKit
 
+<!-- [macOS] -->
+
 RCTUIKit is a UIKit/AppKit compatibility layer for React Native macOS. It lets the rest of the
 codebase use UIKit-style types and APIs on both iOS and macOS by providing:
 

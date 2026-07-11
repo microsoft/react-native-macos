@@ -28,13 +28,8 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.source_files           = podspec_sources("*.{cpp,h}", "*.h")
-  # [macOS] Generate per-platform-suffixed framework header search paths so headers
-  # resolve in multi-platform (iOS/macOS/visionOS) use_frameworks! workspaces.
-  cxxreact_framework_header_search_paths = create_header_search_path_for_frameworks("React-debug", framework_name: "React_debug")
-    .concat(create_header_search_path_for_frameworks("React-runtimeexecutor", framework_name: "React_runtimeexecutor"))
-    .map { |search_path| "\"#{search_path}\"" }
   s.pod_target_xcconfig    = {
-    "HEADER_SEARCH_PATHS" => cxxreact_framework_header_search_paths.join(" "),
+    "HEADER_SEARCH_PATHS" => "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers\"",
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
   }
   s.header_dir             = "cxxreact"

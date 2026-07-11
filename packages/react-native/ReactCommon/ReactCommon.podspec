@@ -63,13 +63,7 @@ Pod::Spec.new do |s|
 
     ss.subspec "core" do |sss|
       sss.source_files = podspec_sources("react/nativemodule/core/ReactCommon/**/*.{cpp,h}", "react/nativemodule/core/ReactCommon/**/*.h")
-      # [macOS] Generate per-platform-suffixed framework header search paths so headers
-      # resolve in multi-platform (iOS/macOS/visionOS) use_frameworks! workspaces.
-      core_framework_header_search_paths = ["\"$(PODS_TARGET_SRCROOT)/ReactCommon\""]
-        .concat(create_header_search_path_for_frameworks("React-debug", framework_name: "React_debug").map { |search_path| "\"#{search_path}\"" })
-        .concat(create_header_search_path_for_frameworks("React-featureflags", framework_name: "React_featureflags").map { |search_path| "\"#{search_path}\"" })
-        .concat(create_header_search_path_for_frameworks("React-utils", framework_name: "React_utils").map { |search_path| "\"#{search_path}\"" })
-      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => core_framework_header_search_paths.join(" ") }
+      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_featureflags.framework/Headers\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-utils/React_utils.framework/Headers\"" }
       sss.dependency "React-debug", version
       sss.dependency "React-featureflags", version
       sss.dependency "React-utils", version
