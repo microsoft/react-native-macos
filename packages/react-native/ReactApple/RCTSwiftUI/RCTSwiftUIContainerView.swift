@@ -6,7 +6,7 @@
  */
 
 import SwiftUI
-import React_RCTUIKit
+import RCTUIKit
 
 // [macOS
 // These SwiftUI platform types would ideally live with the other RCTPlatform* aliases in
