@@ -14,7 +14,7 @@ public object ReactNativeVersion {
   public val VERSION: Map<String, Any?> = mapOf(
     "major" to 0,
     "minor" to 81,
-    "patch" to 8,
+    "patch" to 9,
     "prerelease" to null
   )
 }
