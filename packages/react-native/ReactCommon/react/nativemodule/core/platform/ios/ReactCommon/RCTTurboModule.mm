@@ -470,7 +470,9 @@ void ObjCTurboModule::performVoidMethodInvocation(
     @try {
       [inv invokeWithTarget:strongModule];
     } @catch (NSException *exception) {
-      throw convertNSExceptionToJSError(runtime, exception, std::string{moduleName}, methodNameStr);
+      // Void methods are always async, re-throw instead of converting to
+      // JSError, same as the async branch in performMethodInvocation.
+      @throw exception;
     } @finally {
       [retainedObjectsForInvocation removeAllObjects];
     }
@@ -693,7 +695,7 @@ void ObjCTurboModule::setInvocationArg(
       SEL methodArgConversionSelector = getMethodArgConversionSelector(methodNameNSString, i);
 
       // Message dispatch logic from old infra (link:
-      // https://github.com/facebook/react-native/commit/6783694158057662fd7b11fc123c339b2b21bfe6#diff-263fc157dfce55895cdc16495b55d190R350)
+      // https://github.com/react/react-native/commit/6783694158057662fd7b11fc123c339b2b21bfe6#diff-263fc157dfce55895cdc16495b55d190R350)
       RCTManagedPointer *(*convert)(id, SEL, id) = (__typeof__(convert))objc_msgSend;
       RCTManagedPointer *box = convert([RCTCxxConvert class], methodArgConversionSelector, objCArg);
 

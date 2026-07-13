@@ -40,7 +40,7 @@ export type MeasureLayoutOnSuccessCallback = (
  * Note, however, that they are not available on composite components that aren't directly backed by a
  * native view. This will generally include most components that you define in your own app.
  * For more information, see [Direct Manipulation](https://reactnative.dev/docs/the-new-architecture/direct-manipulation-new-architecture).
- * @see https://github.com/facebook/react-native/blob/master/Libraries/Renderer/shims/ReactNativeTypes.js#L87
+ * @see https://github.com/react/react-native/blob/master/Libraries/Renderer/shims/ReactNativeTypes.js#L87
  */
 export interface NativeMethods {
   /**
@@ -123,7 +123,7 @@ export type NativeMethodsMixinType = NativeMethods;
 /**
  * Represents a native component, such as those returned from `requireNativeComponent`.
  *
- * @see https://github.com/facebook/react-native/blob/v0.62.0-rc.5/Libraries/Renderer/shims/ReactNativeTypes.js
+ * @see https://github.com/react/react-native/blob/v0.62.0-rc.5/Libraries/Renderer/shims/ReactNativeTypes.js
  *
  * @todo This should eventually be defined as an AbstractComponent, but that
  *       should first be introduced in the React typings.

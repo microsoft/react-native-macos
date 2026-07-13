@@ -95,6 +95,7 @@ let reactRendererConsistency = RNTarget(
 let reactDebug = RNTarget(
   name: .reactDebug,
   path: "ReactCommon/react/debug",
+  excludedPaths: ["tests", "redbox/tests"],
   dependencies: [.reactNativeDependencies]
 )
 /// React-jsi.podspec
@@ -103,7 +104,7 @@ let jsi = RNTarget(
   path: "ReactCommon/jsi",
   // JSI is a part of hermes-engine. Including them also in react-native will violate the One Definition Rule.
   // Precompiled binaries are only supported with hermes - so we can safely exclude the jsi.cpp file.
-  // https://github.com/facebook/react-native/issues/53257
+  // https://github.com/react/react-native/issues/53257
   excludedPaths: ["jsi/test", "jsi/jsi.cpp", "CMakeLists.txt", "jsi/CMakeLists.txt"],
   dependencies: [.reactNativeDependencies]
 )
@@ -321,7 +322,7 @@ let reactTurboModuleCore = RNTarget(
 let reactTurboModuleCoreDefaults = RNTarget(
   name: .reactTurboModuleCoreDefaults,
   path: "ReactCommon/react/nativemodule/defaults",
-  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactTurboModuleCore]
+  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactTurboModuleCore, .reactFabric]
 )
 
 /// React-microtasknativemodule.podspec
@@ -343,6 +344,20 @@ let reactWebPerformanceNativeModule = RNTarget(
   name: .reactWebPerformanceNativeModule,
   path: "ReactCommon/react/nativemodule/webperformance",
   dependencies: [.reactNativeDependencies, .reactCxxReact, .reactTurboModuleCore, .reactPerformanceTimeline]
+)
+
+/// React-intersectionobservernativemodule.podspec
+let reactIntersectionObserverNativeModule = RNTarget(
+  name: .reactIntersectionObserverNativeModule,
+  path: "ReactCommon/react/nativemodule/intersectionobserver",
+  dependencies: [.reactNativeDependencies, .reactCxxReact, .reactFabric, .reactTurboModuleBridging, .reactTurboModuleCore, .reactGraphics, .reactGraphicsApple, .reactRuntimeScheduler, .yoga]
+)
+
+/// React-mutationobservernativemodule.podspec
+let reactMutationObserverNativeModule = RNTarget(
+  name: .reactMutationObserverNativeModule,
+  path: "ReactCommon/react/nativemodule/mutationobserver",
+  dependencies: [.reactNativeDependencies, .reactCxxReact, .reactFabric, .reactTurboModuleBridging, .reactTurboModuleCore, .yoga]
 )
 
 /// React-featureflagnativemodule.podspec
@@ -379,7 +394,7 @@ let reactCoreModules = RNTarget(
   name: .reactCoreModules,
   path: "React/CoreModules",
   excludedPaths: ["PlatformStubs/RCTStatusBarManager.mm"],
-  dependencies: [.reactNativeDependencies, .jsi, .yoga, .reactTurboModuleCore]
+  dependencies: [.reactNativeDependencies, .jsi, .yoga, .reactTurboModuleCore, .reactFeatureFlags]
 )
 
 /// React-runtimeCore.podspec
@@ -399,7 +414,10 @@ let reactRuntimeApple = RNTarget(
   name: .reactRuntimeApple,
   path: "ReactCommon/react/runtime/platform/ios",
   excludedPaths: ["ReactCommon/RCTJscInstance.mm", "ReactCommon/metainternal"],
-  dependencies: [.reactNativeDependencies, .jsi, .reactPerfLogger, .reactCxxReact, .rctDeprecation, .yoga, .reactRuntime, .reactRCTFabric, .reactCoreModules, .reactTurboModuleCore, .hermesPrebuilt, .reactUtils]
+  dependencies: [.reactNativeDependencies, .jsi, .reactPerfLogger, .reactCxxReact, .rctDeprecation, .yoga, .reactRuntime, .reactRCTFabric, .reactCoreModules, .reactTurboModuleCore, .hermesPrebuilt, .reactUtils],
+  defines: [
+    CXXSetting.define("REACT_NATIVE_DEBUGGER_ENABLED", to: "1", .when(configuration: BuildConfiguration.debug))
+  ]
 )
 
 let publicHeadersPathForReactCore: String = BUILD_FROM_SOURCE ? "includes" : "."
@@ -467,7 +485,7 @@ let reactFabric = RNTarget(
     "components/root/tests",
   ] + reactFabricViewPlatformExcludes, // [macOS]
   dependencies: [.reactNativeDependencies, .reactJsiExecutor, .rctTypesafety, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .reactRendererDebug, .reactGraphics, .yoga],
-  sources: ["animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/scrollview", "components/scrollview/platform/cxx", "components/legacyviewmanagerinterop", "dom", "scheduler", "mounting", "observers/events", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency"] + reactFabricViewPlatformSources // [macOS]
+  sources: ["animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/scrollview", "components/scrollview/platform/cxx", "components/legacyviewmanagerinterop", "dom", "scheduler", "mounting", "observers/events", "observers/intersection", "observers/mutation", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency"] + reactFabricViewPlatformSources // [macOS]
 )
 
 let reactFabricInputAccessory = RNTarget(
@@ -602,7 +620,11 @@ let reactRCTBlob = RNTarget(
 let reactRCTNetwork = RNTarget(
   name: .reactRCTNetwork,
   path: "Libraries/Network",
-  dependencies: [.yoga, .jsi, .reactTurboModuleCore]
+  dependencies: [.yoga, .jsi, .reactTurboModuleCore],
+  defines: [
+    CXXSetting.define("REACT_NATIVE_DEBUGGER_ENABLED", to: "1", .when(configuration: BuildConfiguration.debug)),
+    CXXSetting.define("REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY", to: "1", .when(configuration: BuildConfiguration.debug)),
+  ]
 )
 
 /// React-RCTVibration.podspec
@@ -714,6 +736,8 @@ let targets = [
   reactTurboModuleCoreMicrotasks,
   reactIdleCallbacksNativeModule,
   reactWebPerformanceNativeModule,
+  reactIntersectionObserverNativeModule,
+  reactMutationObserverNativeModule,
   reactFeatureflagsNativemodule,
   reactNativeModuleDom,
   reactAppDelegate,
@@ -904,6 +928,8 @@ extension String {
   static let reactTurboModuleCoreMicrotasks = "ReactCommon/turbomodule/core/microtasks"
   static let reactIdleCallbacksNativeModule = "React-idlecallbacksnativemodule"
   static let reactWebPerformanceNativeModule = "React-webperformancenativemodule"
+  static let reactIntersectionObserverNativeModule = "React-intersectionobservernativemodule"
+  static let reactMutationObserverNativeModule = "React-mutationobservernativemodule"
   static let reactFeatureflagsNativemodule = "React-featureflagsnativemodule"
   static let reactNativeModuleDom = "React-domnativemodule"
   static let reactAppDelegate = "React-RCTAppDelegate"

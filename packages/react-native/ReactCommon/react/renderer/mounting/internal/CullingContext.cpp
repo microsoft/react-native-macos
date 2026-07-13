@@ -52,7 +52,7 @@ CullingContext CullingContext::adjustCullingContextIfNeeded(
           // In RTL, content offset is flipped horizontally.
           // We need to flip the culling context frame to match.
           // See:
-          // https://github.com/facebook/react-native/blob/c2f39cfdd87c32b9a59efe8a788b8a03f02b0ea0/packages/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm#L579
+          // https://github.com/react/react-native/blob/c2f39cfdd87c32b9a59efe8a788b8a03f02b0ea0/packages/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm#L579
           auto stateData = scrollViewShadowNode->getStateData();
           cullingContext.frame.origin.x =
               stateData.contentBoundingRect.size.width -

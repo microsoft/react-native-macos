@@ -368,6 +368,16 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableIntersectionObserverByDefault: {
+      defaultValue: false,
+      metadata: {
+        description:
+          'Enables the IntersectionObserver Web API in React Native.',
+        expectedReleaseValue: true,
+        purpose: 'release',
+      },
+      ossReleaseStage: 'canary',
+    },
     enableKeyEvents: {
       defaultValue: false,
       metadata: {
@@ -420,6 +430,15 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableMutationObserverByDefault: {
+      defaultValue: false,
+      metadata: {
+        description: 'Enables the MutationObserver Web API in React Native.',
+        expectedReleaseValue: true,
+        purpose: 'release',
+      },
+      ossReleaseStage: 'none',
+    },
     enableNativeCSSParsing: {
       defaultValue: false,
       metadata: {
@@ -432,14 +451,14 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enableNetworkEventReporting: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         description:
           'Enable network event reporting hooks in each native platform through `NetworkReporter`. This flag should be combined with `enableResourceTimingAPI` and `fuseboxNetworkInspectionEnabled` to enable end-to-end reporting behaviour via the Web Performance API and CDP debugging respectively.',
         expectedReleaseValue: true,
         purpose: 'release',
       },
-      ossReleaseStage: 'none',
+      ossReleaseStage: 'stable',
     },
     enablePreparedTextLayout: {
       defaultValue: false,
@@ -463,14 +482,14 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     enableResourceTimingAPI: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         description:
           'Enables the reporting of network resource timings through `PerformanceObserver`.',
         expectedReleaseValue: true,
         purpose: 'release',
       },
-      ossReleaseStage: 'none',
+      ossReleaseStage: 'stable',
     },
     enableSwiftUIBasedFilters: {
       defaultValue: false,
@@ -623,6 +642,16 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    fuseboxAssertSingleHostState: {
+      defaultValue: true,
+      metadata: {
+        description:
+          'Enable system assertion validating that Fusebox is configured with a single host. When set, the CDP backend will dynamically disable features (Perf and Network) in the event that multiple hosts are registered (undefined behaviour), and broadcast this over `ReactNativeApplication.systemStateChanged`.',
+        expectedReleaseValue: true,
+        purpose: 'operational',
+      },
+      ossReleaseStage: 'stable',
+    },
     fuseboxEnabledRelease: {
       defaultValue: false,
       metadata: {
@@ -633,12 +662,34 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    fuseboxNetworkInspectionEnabled: {
+    fuseboxFrameRecordingEnabled: {
       defaultValue: false,
+      metadata: {
+        dateAdded: '2026-03-05',
+        description:
+          'Enable frame timings and screenshots support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    fuseboxNetworkInspectionEnabled: {
+      defaultValue: true,
       metadata: {
         dateAdded: '2024-01-31',
         description:
           'Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'stable',
+    },
+    fuseboxScreenshotCaptureEnabled: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-04-01',
+        description:
+          'Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -708,6 +759,28 @@ const definitions: FeatureFlagDefinitions = {
         purpose: 'experimentation',
       },
       ossReleaseStage: 'experimental',
+    },
+    redBoxV2Android: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-03-25',
+        description:
+          'Use the redesigned RedBox error overlay on Android, styled to match the LogBox visual language.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    redBoxV2IOS: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-03-25',
+        description:
+          'Use the redesigned RedBox error overlay on iOS, styled to match the LogBox visual language.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
     },
     shouldPressibilityUseW3CPointerEventsForHover: {
       defaultValue: false,
