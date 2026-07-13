@@ -423,6 +423,7 @@
 
 - (void)setDisableKeyboardShortcuts:(BOOL)disableKeyboardShortcuts
 {
+  _disableKeyboardShortcuts = disableKeyboardShortcuts;
 #if TARGET_OS_IOS
   // Initialize the initial values only once
   if (_initialValueLeadingBarButtonGroups == nil) {
@@ -440,7 +441,6 @@
     self.inputAssistantItem.trailingBarButtonGroups = _initialValueTrailingBarButtonGroups;
   }
 #endif
-  _disableKeyboardShortcuts = disableKeyboardShortcuts;
 }
 
 #pragma mark - Placeholder

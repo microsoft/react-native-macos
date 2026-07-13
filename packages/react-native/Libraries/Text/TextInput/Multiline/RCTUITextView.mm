@@ -306,6 +306,7 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
 
 - (void)setDisableKeyboardShortcuts:(BOOL)disableKeyboardShortcuts
 {
+  _disableKeyboardShortcuts = disableKeyboardShortcuts;
 #if TARGET_OS_IOS
   // Initialize the initial values only once
   if (_initialValueLeadingBarButtonGroups == nil) {
@@ -323,7 +324,6 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
     self.inputAssistantItem.trailingBarButtonGroups = _initialValueTrailingBarButtonGroups;
   }
 #endif
-  _disableKeyboardShortcuts = disableKeyboardShortcuts;
 }
 
 #pragma mark - Overrides
