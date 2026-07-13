@@ -30,7 +30,7 @@ internal class ReactTextSelectionWatcher(private val editText: ReactEditText) : 
     // forward it on if we have new values
 
     // Apparently Android might call this with an end value that is less than the start value
-    // Lets normalize them. See https://github.com/facebook/react-native/issues/18579
+    // Lets normalize them. See https://github.com/react/react-native/issues/18579
     val realStart = min(start.toDouble(), end.toDouble()).toInt()
     val realEnd = max(start.toDouble(), end.toDouble()).toInt()
 

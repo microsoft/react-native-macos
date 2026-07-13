@@ -70,7 +70,7 @@ let artifacts;
 let branch;
 let baseTemporaryPath;
 
-const reactNativeRepo = 'https://api.github.com/repos/facebook/react-native/';
+const reactNativeRepo = 'https://api.github.com/repos/react/react-native/';
 const reactNativeActionsURL = `${reactNativeRepo}actions/runs`;
 
 async function _getActionRunsOnBranch() /*: Promise<WorkflowRuns> */ {
@@ -156,7 +156,7 @@ async function initialize(
 
   console.log(`\nUsing github workflow run ${testAllWorkflows[0].run_number}`);
   console.log(
-    `https://github.com/facebook/react-native/actions/runs/${testAllWorkflows[0].id}\n`,
+    `https://github.com/react/react-native/actions/runs/${testAllWorkflows[0].id}\n`,
   );
 
   let workflow = testAllWorkflows[0];

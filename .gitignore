@@ -183,6 +183,7 @@ fix_*.patch
 
 /packages/debugger-shell/build/
 /packages/*/dist/
+!/packages/debugger-frontend/dist/
 
 #[macOS
 # Yarn

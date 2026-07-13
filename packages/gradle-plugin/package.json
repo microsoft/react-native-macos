@@ -1,21 +1,21 @@
 {
   "name": "@react-native/gradle-plugin",
-  "version": "0.83.0-main",
+  "version": "0.83.10",
   "private": true,
   "description": "Gradle Plugin for React Native",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/gradle-plugin"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/gradle-plugin#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/gradle-plugin#readme",
   "keywords": [
     "gradle",
     "plugin",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
     "node": ">= 20.19.4"
   },

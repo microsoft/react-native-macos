@@ -32,7 +32,7 @@ export const Touchable: {
 };
 
 /**
- * @see https://github.com/facebook/react-native/blob/0.34-stable\Libraries\Components\Touchable\Touchable.js
+ * @see https://github.com/react/react-native/blob/0.34-stable\Libraries\Components\Touchable\Touchable.js
  */
 interface TouchableMixin {
   /**

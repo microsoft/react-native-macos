@@ -16,7 +16,7 @@ Array [
 
   Array [
     Object {
-+     \\"url\\": \\"https://github.com/facebook/react-native/releases/download/v1000.0.1/test-linux-x86_64\\",
++     \\"url\\": \\"https://github.com/react/react-native/releases/download/v1000.0.1/test-linux-x86_64\\",
 +   },
 +   Object {
       \\"url\\": \\"<serverUrl>\\",
@@ -35,7 +35,7 @@ exports[`writeReleaseAssetUrlsToDotSlashFile adds a new release asset provider i
     \\"linux-x86_64\\": {
       \\"providers\\": [
         {
-            \\"url\\": \\"https://github.com/facebook/react-native/releases/download/v1000.0.1/test-linux-x86_64\\"
+            \\"url\\": \\"https://github.com/react/react-native/releases/download/v1000.0.1/test-linux-x86_64\\"
         },
         {
             \\"url\\": \\"<serverUrl>\\"
@@ -91,10 +91,10 @@ Array [
   Array [
     Object {
 -     \\"url\\": \\"<serverUrl>\\",
-+     \\"url\\": \\"https://github.com/facebook/react-native/releases/download/v1000.0.1/test-linux-x86_64\\",
++     \\"url\\": \\"https://github.com/react/react-native/releases/download/v1000.0.1/test-linux-x86_64\\",
     },
     Object {
--     \\"url\\": \\"https://github.com/facebook/react-native/releases/download/v1000.0.0/test.tar.gz\\",
+-     \\"url\\": \\"https://github.com/react/react-native/releases/download/v1000.0.0/test.tar.gz\\",
 +     \\"url\\": \\"<serverUrl>\\",
     },
   ]",
@@ -111,7 +111,7 @@ exports[`writeReleaseAssetUrlsToDotSlashFile replaces the old release asset prov
     \\"linux-x86_64\\": {
       \\"providers\\": [
         {
-            \\"url\\": \\"https://github.com/facebook/react-native/releases/download/v1000.0.1/test-linux-x86_64\\"
+            \\"url\\": \\"https://github.com/react/react-native/releases/download/v1000.0.1/test-linux-x86_64\\"
         },
         {
             \\"url\\": \\"<serverUrl>\\"

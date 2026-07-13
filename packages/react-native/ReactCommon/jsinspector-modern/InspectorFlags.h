@@ -20,6 +20,12 @@ class InspectorFlags {
   static InspectorFlags &getInstance();
 
   /**
+   * Flag determining if the inspector backend should strictly assert that only
+   * a single host is registered.
+   */
+  bool getAssertSingleHostState() const;
+
+  /**
    * Flag determining if the modern CDP backend should be enabled.
    */
   bool getFuseboxEnabled() const;
@@ -29,6 +35,16 @@ class InspectorFlags {
    * (react_native.enable_fusebox_release).
    */
   bool getIsProfilingBuild() const;
+
+  /**
+   * Flag determining if Page.captureScreenshot CDP method is enabled.
+   */
+  bool getScreenshotCaptureEnabled() const;
+
+  /**
+   * Flag determining if frame recording (timings + screenshots) is enabled.
+   */
+  bool getFrameRecordingEnabled() const;
 
   /**
    * Flag determining if network inspection is enabled.
@@ -54,6 +70,9 @@ class InspectorFlags {
 
  private:
   struct Values {
+    bool assertSingleHostState;
+    bool screenshotCaptureEnabled;
+    bool frameRecordingEnabled;
     bool fuseboxEnabled;
     bool isProfilingBuild;
     bool networkInspectionEnabled;

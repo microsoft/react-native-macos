@@ -223,7 +223,7 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
             }
             ReadableType.Number -> {
               // We cannot know from JS if is an Integer or Double
-              // See: https://github.com/facebook/react-native/issues/4141
+              // See: https://github.com/react/react-native/issues/4141
               // We might need to find a workaround if this is really an issue
               val number = map.getDouble(EXTRA_MAP_KEY_FOR_VALUE)
               intent.putExtra(name, number)

@@ -1,22 +1,22 @@
 {
   "name": "@react-native/eslint-plugin",
-  "version": "0.83.0-main",
+  "version": "0.83.10",
   "private": true,
   "description": "ESLint rules for @react-native/eslint-config",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/eslint-plugin-react-native"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/eslint-plugin-react-native#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/eslint-plugin-react-native#readme",
   "keywords": [
     "eslint",
     "rules",
     "eslint-config",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "main": "index.js",
   "devDependencies": {
     "babel-plugin-syntax-hermes-parser": "0.32.0",

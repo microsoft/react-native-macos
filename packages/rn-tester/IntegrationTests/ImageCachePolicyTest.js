@@ -90,7 +90,7 @@ function ImageCachePolicyTest(): React.Node {
 
 const getImageSource = (cache: ImageURISource['cache']) => ({
   uri:
-    'https://raw.githubusercontent.com/facebook/react-native/HEAD/Libraries/NewAppScreen/components/logo.png?cacheBust=notinCache' +
+    'https://raw.githubusercontent.com/react/react-native/HEAD/Libraries/NewAppScreen/components/logo.png?cacheBust=notinCache' +
     Date.now(),
   cache,
 });
