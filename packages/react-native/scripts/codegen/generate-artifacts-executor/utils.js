@@ -269,6 +269,14 @@ function findExternalLibraries(
         return [];
       }
     }
+    // [macOS] Under Yarn's pnpm nodeLinker, a package whose `exports` blocks
+    // `./package.json` (e.g. commander, @react-native/new-app-screen) can't be
+    // found via `require.main.paths`, leaving `configFilePath` empty. Skip it
+    // rather than crashing on `fs.readFileSync('')` (matches upstream behavior
+    // for otherwise-unresolvable dependencies).
+    if (!configFilePath) {
+      return [];
+    }
     const configFile = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
     const codegenConfigFileDir = path.dirname(configFilePath);
     return extractLibrariesFromJSON(configFile, codegenConfigFileDir);
