@@ -6,7 +6,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <React/RCTUIKit.h> // [macOS]
+#import <RCTUIKit/RCTUIKit.h> // [macOS]
 
 NS_ASSUME_NONNULL_BEGIN
 
