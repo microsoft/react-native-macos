@@ -4239,6 +4239,7 @@ __metadata:
     hermes-transform: "npm:0.32.0"
     ini: "npm:^5.0.0"
     inquirer: "npm:^7.1.0"
+    invariant: "npm:^2.2.4"
     jest: "npm:^29.7.0"
     jest-config: "npm:^29.7.0"
     jest-diff: "npm:^29.7.0"
