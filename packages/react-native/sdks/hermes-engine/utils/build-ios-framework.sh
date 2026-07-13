@@ -57,7 +57,8 @@ function build_framework {
 # group the frameworks together to create a universal framework
 function build_universal_framework {
     if [ ! -d destroot/Library/Frameworks/universal/hermes.xcframework ]; then
-        create_universal_framework "macosx" "iphoneos" "iphonesimulator" "catalyst" "xros" "xrsimulator" "appletvos" "appletvsimulator" # [macOS]
+        # shellcheck disable=SC2086
+        create_universal_framework $HERMES_APPLE_PLATFORMS # [macOS]
     else
         echo "Skipping; Clean \"destroot\" to rebuild".
     fi
@@ -67,14 +68,11 @@ function build_universal_framework {
 # this is used to preserve backward compatibility
 function create_framework {
     if [ ! -d destroot/Library/Frameworks/universal/hermes.xcframework ]; then
-        build_framework "macosx" # [macOS]
-        build_framework "iphoneos"
-        build_framework "iphonesimulator"
-        build_framework "appletvos"
-        build_framework "appletvsimulator"
-        build_framework "catalyst"
-        build_framework "xros"
-        build_framework "xrsimulator"
+        # [macOS] Build only the requested Apple platforms (defaults to all).
+        for _hermes_platform in $HERMES_APPLE_PLATFORMS; do
+            build_framework "$_hermes_platform"
+        done
+        # macOS]
         build_universal_framework
     else
         echo "Skipping; Clean \"destroot\" to rebuild".
@@ -85,6 +83,14 @@ function create_framework {
 CURR_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 # shellcheck source=xplat/js/react-native-github/sdks/hermes-engine/utils/build-apple-framework.sh
 . "${CURR_SCRIPT_DIR}/build-apple-framework.sh"
+
+# [macOS] Apple platforms (slices) to build into hermes.xcframework. Defaults to all.
+# Override with the HERMES_APPLE_PLATFORMS env var (space-separated) to build a subset,
+# e.g. HERMES_APPLE_PLATFORMS="macosx" for a macOS-only build. Useful on Xcode 26+, where
+# the upstream Hermes Mac Catalyst target triple is rejected by the newer clang, and to
+# speed up macOS-only iteration.
+HERMES_APPLE_PLATFORMS="${HERMES_APPLE_PLATFORMS:-macosx iphoneos iphonesimulator catalyst xros xrsimulator appletvos appletvsimulator}"
+# macOS]
 
 if [[ -z $1 ]]; then
   create_framework

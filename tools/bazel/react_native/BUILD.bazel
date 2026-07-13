@@ -1,0 +1,177 @@
+load('@aspect_rules_js//js:defs.bzl', 'js_binary', 'js_run_binary')
+load('//tools/bazel/react_native:defs.bzl', 'rn_codegen')
+
+package(default_visibility = ['//visibility:public'])
+
+
+js_binary(
+    name = 'build_codegen_lib_bin',
+    data = [
+        '//packages/react-native-codegen:node_modules',
+        '//packages/react-native-codegen:node_modules/@babel/core',
+        '//packages/react-native-codegen:node_modules/@babel/plugin-syntax-dynamic-import',
+        '//packages/react-native-codegen:node_modules/@babel/plugin-transform-class-properties',
+        '//packages/react-native-codegen:node_modules/@babel/plugin-transform-flow-strip-types',
+        '//packages/react-native-codegen:node_modules/@babel/plugin-transform-nullish-coalescing-operator',
+        '//packages/react-native-codegen:node_modules/@babel/plugin-transform-optional-chaining',
+        '//packages/react-native-codegen:node_modules/hermes-estree',
+        '//packages/react-native-codegen:node_modules/hermes-parser',
+        '//packages/react-native-codegen:node_modules/invariant',
+        '//packages/react-native-codegen:node_modules/nullthrows',
+        '//packages/react-native-codegen:node_modules/glob',
+        '//packages/react-native-codegen:node_modules/micromatch',
+        '//packages/react-native-codegen:node_modules/prettier',
+        '//packages/react-native-codegen:node_modules/yargs',
+    ],
+    entry_point = 'build_codegen_lib.js',
+)
+
+js_run_binary(
+    name = 'codegen_lib',
+    srcs = ['//packages/react-native-codegen:pkg'],
+    out_dirs = ['codegen_lib'],
+    env = {
+        'OUTPUT_DIR': '$(RULEDIR)/codegen_lib',
+    },
+    tool = ':build_codegen_lib_bin',
+)
+
+js_binary(
+    name = 'codegen_runner_bin',
+    data = [
+        '//packages/react-native:node_modules',
+        '//packages/react-native:pkg',
+    ],
+    entry_point = 'codegen_runner.js',
+)
+
+js_binary(
+    name = 'fbreactnativespec_runner_bin',
+    data = [
+        '//packages/react-native:node_modules',
+        '//packages/react-native:pkg',
+    ],
+    entry_point = 'fbreactnativespec_runner.js',
+)
+
+js_run_binary(
+    name = 'fbreactnativespec_generated',
+    srcs = [
+        '//packages/react-native:pkg',
+        ':codegen_lib',
+    ],
+    outs = [
+        'fbreactnativespec/FBReactNativeSpec/FBReactNativeSpec-generated.mm',
+        'fbreactnativespec/FBReactNativeSpec/FBReactNativeSpec.h',
+        'fbreactnativespec/FBReactNativeSpecJSI-generated.cpp',
+        'fbreactnativespec/FBReactNativeSpecJSI.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/ComponentDescriptors.cpp',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/ComponentDescriptors.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/EventEmitters.cpp',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/EventEmitters.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/Props.cpp',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/Props.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/RCTComponentViewHelpers.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/ShadowNodes.cpp',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/ShadowNodes.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/States.cpp',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/States.h',
+    ],
+    env = {
+        'CODEGEN_LIB_DIR': '$(location :codegen_lib)',
+        'OUTPUT_DIR': '$(RULEDIR)/fbreactnativespec',
+    },
+    tool = ':fbreactnativespec_runner_bin',
+)
+
+cc_library(
+    name = 'fbreactnativespec_module_headers',
+    hdrs = ['fbreactnativespec/FBReactNativeSpec/FBReactNativeSpec.h'],
+    include_prefix = 'FBReactNativeSpec',
+    strip_include_prefix = 'fbreactnativespec/FBReactNativeSpec',
+)
+
+cc_library(
+    name = 'fbreactnativespec_jsi_headers',
+    hdrs = ['fbreactnativespec/FBReactNativeSpecJSI.h'],
+    include_prefix = 'FBReactNativeSpec',
+    strip_include_prefix = 'fbreactnativespec',
+)
+
+cc_library(
+    name = 'fbreactnativespec_component_headers',
+    hdrs = [
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/ComponentDescriptors.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/EventEmitters.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/Props.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/RCTComponentViewHelpers.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/ShadowNodes.h',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/States.h',
+    ],
+    strip_include_prefix = 'fbreactnativespec',
+)
+
+objc_library(
+    name = 'fbreactnativespec',
+    srcs = [
+        'fbreactnativespec/FBReactNativeSpec/FBReactNativeSpec-generated.mm',
+        'fbreactnativespec/FBReactNativeSpecJSI-generated.cpp',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/ComponentDescriptors.cpp',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/EventEmitters.cpp',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/Props.cpp',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/ShadowNodes.cpp',
+        'fbreactnativespec/react/renderer/components/FBReactNativeSpec/States.cpp',
+    ],
+    deps = [
+        ':fbreactnativespec_component_headers',
+        ':fbreactnativespec_jsi_headers',
+        ':fbreactnativespec_module_headers',
+        '@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers',
+        '@rn_source_headers//:headers',
+    ],
+)
+
+
+genrule(
+    name = 'copy_my_legacy_view_native_component',
+    srcs = ['//packages/rn-tester/NativeComponentExample:js/MyLegacyViewNativeComponent.js'],
+    outs = ['rn_tester_inputs/NativeComponentExample/js/MyLegacyViewNativeComponent.js'],
+    cmd = 'cp $(location //packages/rn-tester/NativeComponentExample:js/MyLegacyViewNativeComponent.js) $@',
+)
+
+genrule(
+    name = 'copy_my_native_view_native_component',
+    srcs = ['//packages/rn-tester/NativeComponentExample:js/MyNativeViewNativeComponent.js'],
+    outs = ['rn_tester_inputs/NativeComponentExample/js/MyNativeViewNativeComponent.js'],
+    cmd = 'cp $(location //packages/rn-tester/NativeComponentExample:js/MyNativeViewNativeComponent.js) $@',
+)
+
+genrule(
+    name = 'copy_native_cxx_module_example',
+    srcs = ['//packages/rn-tester/NativeCxxModuleExample:NativeCxxModuleExample.js'],
+    outs = ['rn_tester_inputs/NativeCxxModuleExample/NativeCxxModuleExample.js'],
+    cmd = 'cp $(location //packages/rn-tester/NativeCxxModuleExample:NativeCxxModuleExample.js) $@',
+)
+
+genrule(
+    name = 'copy_native_screenshot_manager',
+    srcs = ['//packages/rn-tester/NativeModuleExample:NativeScreenshotManager.js'],
+    outs = ['rn_tester_inputs/NativeModuleExample/NativeScreenshotManager.js'],
+    cmd = 'cp $(location //packages/rn-tester/NativeModuleExample:NativeScreenshotManager.js) $@',
+)
+
+filegroup(
+    name = 'rn_tester_codegen_inputs',
+    srcs = [
+        ':copy_my_legacy_view_native_component',
+        ':copy_my_native_view_native_component',
+        ':copy_native_cxx_module_example',
+        ':copy_native_screenshot_manager',
+    ],
+)
+
+rn_codegen(
+    name = 'rn_tester_appspecs',
+    project_root = 'packages/rn-tester',
+    rn_tester_srcs = [':rn_tester_codegen_inputs'],
+)

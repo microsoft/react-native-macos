@@ -1,0 +1,198 @@
+# React Native macOS — Bazel vertical slice (draft / experimental)
+#
+# Status (see docs/bazel.md): this slice builds RNTester as a macOS app entirely
+# with Bazel on Xcode 26:
+#   * rules_js (Berry fork) drives Metro to produce the real rn-tester JS bundle
+#     (`:rntester_macos_jsbundle`, ~1.9MB).
+#   * The prebuilt React/hermes/ReactNativeDependencies XCFrameworks are imported and,
+#     because the SPM prebuild flattens React's headers, a canonical header tree is
+#     reconstructed (`@rn_prebuilt_xcframeworks//:React_headers`) and combined with the
+#     RN source C++ headers (`//packages/react-native:rn_cxx_headers`).
+#   * A minimal RCTReactNativeFactory host (`bazel/MinimalAppDelegate.mm`) compiles and
+#     links against those, and `:RNTesterMacBazel` (macos_application) embeds the bundle.
+#     `bazel build //packages/rn-tester:RNTesterMacBazel` produces a launchable .app.
+# App/native targets are tagged `manual` (they need the prebuilt XCFrameworks present)
+# so `bazel build //...` / CI stays green without them.
+
+load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_library", "js_run_binary")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@rules_apple//apple:macos.bzl", "macos_application")
+
+package(default_visibility = ["//visibility:private"])
+
+# rn-tester's node_modules, linked by rules_js from the Berry yarn.lock.
+npm_link_all_packages(name = "node_modules")
+
+# All rn-tester JavaScript that Metro may pull into the bundle.
+js_library(
+    name = "js_srcs",
+    srcs = glob(
+        [
+            "js/**/*.js",
+            "js/**/*.gif",
+            "js/**/*.jpeg",
+            "js/**/*.jpg",
+            "js/**/*.json",
+            "js/**/*.png",
+            "js/**/*.webp",
+            "js/**/*.xml",
+            "RCTTest/**/*.js",
+            "ReportFullyDrawnView/**/*.js",
+            "NativeComponentExample/js/**/*.js",
+            "NativeModuleExample/**/*.js",
+            "NativeCxxModuleExample/**/*.js",
+        ],
+        allow_empty = True,
+    ) + [
+        "metro.config.js",
+        "react-native.config.js",
+        "package.json",
+    ],
+    deps = [
+        "//packages/rn-tester/NativeComponentExample:js_srcs",
+        "//packages/rn-tester/NativeCxxModuleExample:js_srcs",
+        "//packages/rn-tester/NativeModuleExample:js_srcs",
+    ],
+)
+
+# NOTE: rules_js uses a strict, non-hoisted node_modules. Metro's bundling tooling
+# (metro, @react-native/metro-config, @react-native/metro-babel-transformer) are
+# transitive/root devDeps and are therefore NOT resolvable from rn-tester's node_modules.
+# To make this green, declare them as deps here (e.g. add them to rn-tester's package.json
+# and regenerate the Berry yarn.lock) so rules_js links the full closure. See docs/bazel.md.
+# The bundle runs via bazel/bundle.js (Metro's API) with the react-native alias applied.
+js_binary(
+    name = "bundler",
+    data = [
+        "//:.aspect_rules_js/node_modules/invariant@2.2.4",
+        ":node_modules",
+        "//:node_modules/@babel/core",
+    ],
+    entry_point = "bazel/bundle.js",
+    tags = ["manual"],
+)
+
+js_run_binary(
+    name = "rntester_js_project",
+    srcs = [":js_srcs"],
+    out_dirs = ["rntester_js_project"],
+    args = [
+        "packages/rn-tester",
+        "packages/rn-tester/rntester_js_project",
+    ],
+    tags = ["manual"],
+    tool = "//tools/bazel/js:copy_tree",
+)
+
+# 1. JS bundle (Metro). Entry is the macOS variant of the rn-tester app.
+js_run_binary(
+    name = "rntester_macos_jsbundle",
+    srcs = [":rntester_js_project"],
+    outs = ["main.jsbundle"],
+    out_dirs = ["RNTesterApp_assets"],
+    env = {
+        "BUNDLE_OUT": "packages/rn-tester/main.jsbundle",
+        "ASSETS_DEST": "packages/rn-tester/RNTesterApp_assets",
+        "RN_TESTER_ROOT": "packages/rn-tester/rntester_js_project",
+    },
+    tags = ["manual"],
+    tool = ":bundler",
+)
+
+# 3. App host. The REAL rn-tester AppDelegate.mm pulls in rn-tester-specific native
+#    modules + codegen (NativeCxxModuleExample, RNTMyNativeViewComponentView,
+#    ReactAppDependencyProvider) that are not in the prebuilt XCFrameworks. This slice
+#    ships a MINIMAL macOS host that boots RCTReactNativeFactory against the embedded
+#    Metro bundle, linking only the prebuilt XCFrameworks (+ the reconstructed React
+#    canonical header tree, :React_headers). See docs/bazel.md.
+objc_library(
+    name = "rntester_macos_minimal_host",
+    srcs = [
+        "bazel/MinimalAppDelegate.mm",
+        "bazel/minimal_main.m",
+    ],
+    hdrs = ["bazel/MinimalAppDelegate.h"],
+    tags = ["manual"],
+    deps = [
+        "//packages/react-native:rn_cxx_headers",
+        "@rn_prebuilt_xcframeworks//:React",
+        "@rn_prebuilt_xcframeworks//:React_headers",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
+        "@rn_prebuilt_xcframeworks//:hermes",
+    ],
+)
+
+# 4. macOS app: link the minimal host + embed the Metro bundle as an app resource
+#    (mirrors how Buck2's apple prelude ingests a js_bundle as an AppleResource).
+macos_application(
+    name = "RNTesterMacBazel",
+    app_icons = ["//packages/rn-tester/RNTester-macOS:app_icons"],
+    bundle_id = "org.reactjs.native.RNTesterMacBazel",
+    entitlements = "//packages/rn-tester/RNTester-macOS:RNTester_macOS.entitlements",
+    infoplists = ["bazel/Info.plist"],
+    minimum_os_version = "14.0",
+    resources = [
+        ":rntester_macos_jsbundle",
+        "PrivacyInfo.xcprivacy",
+        "//packages/rn-tester/RNTester-macOS:native_resources",
+    ],
+    tags = ["manual"],
+    deps = [":rntester_macos_minimal_host"],
+)
+
+# 5. FULL host: rn-tester's real RNTester/AppDelegate.mm + a programmatic main
+#    (bazel/real_main.m avoids a MainMenu.nib). It links the Bazel-built codegen
+#    (RCTAppDependencyProvider + AppSpecs), the C++ TurboModule example, the Fabric
+#    NativeComponentExample (RNTMyNativeView), and the sample TurboModules that the real
+#    AppDelegate's getTurboModule:/dependencyProvider/thirdPartyFabricComponents need.
+objc_library(
+    name = "rntester_macos_full_host",
+    srcs = [
+        "RNTester/AppDelegate.mm",
+        "bazel/real_main.m",
+    ],
+    hdrs = ["RNTester/AppDelegate.h"],
+    includes = ["RNTester"],
+    sdk_frameworks = ["UserNotifications"],
+    tags = ["manual"],
+    deps = [
+        "//packages/react-native:rn_cxx_headers",
+        "//packages/react-native:rntester_extra_rn_modules",
+        "//packages/react-native:sample_turbo_modules",
+        "//packages/rn-tester/NativeComponentExample",
+        "//packages/rn-tester/NativeCxxModuleExample",
+        "//tools/bazel/react_native:rn_tester_appspecs_appdep_hdrs",
+        "//tools/bazel/react_native:rn_tester_appspecs_lib",
+        "//tools/bazel/react_native:rn_tester_appspecs_reactcodegen_hdrs",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
+        "@rn_prebuilt_xcframeworks//:hermes",
+    ] + select({
+        "//:rn_from_source_enabled": [
+            "//packages/react-native:spm_React",
+            "@rn_source_headers//:headers",
+        ],
+        "//conditions:default": [
+            "@rn_prebuilt_xcframeworks//:React",
+            "@rn_prebuilt_xcframeworks//:React_headers",
+        ],
+    }),
+)
+
+macos_application(
+    name = "RNTesterMacBazelFull",
+    app_icons = ["//packages/rn-tester/RNTester-macOS:app_icons"],
+    bundle_id = "org.reactjs.native.RNTesterMacBazelFull",
+    entitlements = "//packages/rn-tester/RNTester-macOS:RNTester_macOS.entitlements",
+    infoplists = ["bazel/Info.plist"],
+    minimum_os_version = "14.0",
+    resources = [
+        ":rntester_macos_jsbundle",
+        "PrivacyInfo.xcprivacy",
+        "//packages/rn-tester/RNTester-macOS:native_resources",
+    ],
+    tags = ["manual"],
+    visibility = ["//packages/rn-tester/RNTester-macOS:__pkg__"],
+    deps = [":rntester_macos_full_host"],
+)

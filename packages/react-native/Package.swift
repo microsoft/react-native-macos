@@ -277,11 +277,23 @@ let reactTurboModuleCore = RNTarget(
   dependencies: [.reactNativeDependencies, .reactDebug, .reactFeatureFlags, .reactUtils, .reactPerfLogger, .reactCxxReact, .reactTurboModuleBridging, .yoga, .reactRuntimeExecutor]
 )
 
+let reactDevToolsRuntimeSettings = RNTarget(
+  name: .reactDevToolsRuntimeSettings,
+  path: "ReactCommon/devtoolsruntimesettings",
+  dependencies: [.jsi]
+)
+
+let reactDevToolsRuntimeSettingsModule = RNTarget(
+  name: .reactDevToolsRuntimeSettingsModule,
+  path: "ReactCommon/react/nativemodule/devtoolsruntimesettings",
+  dependencies: [.jsi, .reactDevToolsRuntimeSettings, .reactTurboModuleCore]
+)
+
 /// React-defaultsnativemodule.podspec
 let reactTurboModuleCoreDefaults = RNTarget(
   name: .reactTurboModuleCoreDefaults,
   path: "ReactCommon/react/nativemodule/defaults",
-  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactTurboModuleCore]
+  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactTurboModuleCore, .reactDevToolsRuntimeSettingsModule]
 )
 
 /// React-microtasknativemodule.podspec
@@ -315,7 +327,7 @@ let reactNativeModuleDom = RNTarget(
 /// RCTTypeSafety.podspec
 let rctTypesafety = RNTarget(
   name: .rctTypesafety,
-  path: "Libraries/Typesafety",
+  path: "Libraries/TypeSafety",
   searchPaths: [FBLazyVectorPath],
   dependencies: [.reactNativeDependencies, .yoga]
 )
@@ -603,6 +615,8 @@ let targets = [
   reactCoreModules,
   reactTurboModuleBridging,
   reactTurboModuleCore,
+  reactDevToolsRuntimeSettings,
+  reactDevToolsRuntimeSettingsModule,
   reactTurboModuleCoreDefaults,
   reactTurboModuleCoreMicrotasks,
   reactIdleCallbacksNativeModule,
@@ -779,6 +793,8 @@ extension String {
   static let reactCoreModules = "React-CoreModules"
   static let reactTurboModuleBridging = "ReactCommon/turbomodule/bridging"
   static let reactTurboModuleCore = "ReactCommon/turbomodule/core"
+  static let reactDevToolsRuntimeSettings = "ReactCommon/devtoolsruntimesettings"
+  static let reactDevToolsRuntimeSettingsModule = "ReactCommon/turbomodule/devtoolsruntimesettings"
   static let reactTurboModuleCoreDefaults = "ReactCommon/turbomodule/core/defaults"
   static let reactTurboModuleCoreMicrotasks = "ReactCommon/turbomodule/core/microtasks"
   static let reactIdleCallbacksNativeModule = "React-idlecallbacksnativemodule"

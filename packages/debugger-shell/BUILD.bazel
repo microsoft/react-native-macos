@@ -1,0 +1,9 @@
+# Exposes this workspace package as `:pkg` so the root npm_link_all_packages can
+# link the built package into node_modules for Bazel-driven Metro bundling.
+load("//tools/bazel/js:first_party.bzl", "first_party_js_package")
+
+first_party_js_package(
+    name = "pkg",
+    build_kind = "monorepo",
+    visibility = ["//visibility:public"],
+)

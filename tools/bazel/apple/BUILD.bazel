@@ -1,0 +1,11 @@
+# Bazel helpers for building React Native's Apple targets (rules_apple / rules_swift).
+# See xcframeworks.bzl and docs/bazel.md.
+
+exports_files([
+    "generate_spm_targets.js",
+    "prebuilt_xcframeworks.bzl",
+    "reconstruct_react_headers.py",
+    "spm_native_graph.bzl",
+    "source_headers.bzl",
+    "xcframeworks.bzl",
+])

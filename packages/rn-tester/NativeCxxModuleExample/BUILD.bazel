@@ -1,0 +1,35 @@
+load("@aspect_rules_js//js:defs.bzl", "js_library")
+
+package(default_visibility = ['//visibility:public'])
+
+exports_files(glob(['**/*'], exclude = ['**/*.bazel'], allow_empty = True))
+
+js_library(
+    name = "js_srcs",
+    srcs = glob(["*.js"]),
+)
+
+# Header exposed to the app as <NativeCxxModuleExample/NativeCxxModuleExample.h>.
+cc_library(
+    name = "NativeCxxModuleExample_hdrs",
+    hdrs = ["NativeCxxModuleExample.h"],
+    include_prefix = "NativeCxxModuleExample",
+    tags = ["manual"],
+    deps = ["//tools/bazel/react_native:rn_tester_appspecs_reactcodegen_hdrs"],
+)
+
+# rn-tester's C++ TurboModule example (used by the app's getTurboModule:).
+objc_library(
+    name = "NativeCxxModuleExample",
+    srcs = ["NativeCxxModuleExample.cpp"],
+    tags = ["manual"],
+    deps = [
+        ":NativeCxxModuleExample_hdrs",
+        "//packages/react-native:rn_cxx_headers",
+        "//tools/bazel/react_native:rn_tester_appspecs_reactcodegen_hdrs",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
+    ] + select({
+        "//:rn_from_source_enabled": ["@rn_source_headers//:headers"],
+        "//conditions:default": ["@rn_prebuilt_xcframeworks//:React_headers"],
+    }),
+)

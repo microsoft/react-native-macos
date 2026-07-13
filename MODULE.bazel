@@ -1,0 +1,72 @@
+module(
+    name = "react_native_macos_monorepo",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+###############################################################################
+# JavaScript / Node toolchain (aspect-build rules_js)
+###############################################################################
+bazel_dep(name = "aspect_rules_js", version = "3.2.2")
+bazel_dep(name = "aspect_rules_ts", version = "3.8.11")
+bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "rules_nodejs", version = "6.7.5")
+
+# Local fork of rules_js: teach `npm_translate_lock` to read the Yarn Berry (v2+)
+# `yarn.lock` directly, so it stays the single source of truth (no committed
+# second lockfile). The patch swaps the `pnpm import` step for our bundled
+# Berry -> pnpm-lock converter (tools/bazel/berry/berry_to_pnpm_lock.mjs) when
+# the input yarn.lock is a Berry lockfile. See docs/bazel.md.
+single_version_override(
+    module_name = "aspect_rules_js",
+    patch_strip = 1,
+    patches = ["//tools/bazel/patches:aspect_rules_js_berry.patch"],
+    version = "3.2.2",
+)
+
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node", dev_dependency = True)
+node.toolchain(node_version = "22.14.0")
+
+npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm", dev_dependency = True)
+npm.npm_translate_lock(
+    name = "npm",
+    # The Berry yarn.lock is the single source of truth. Our rules_js patch
+    # converts it to an (uncommitted, gitignored) pnpm-lock.yaml at rule time
+    # before parsing, so update_pnpm_lock (pnpm import) is left off.
+    yarn_lock = "//:yarn.lock",
+    pnpm_lock = "//:pnpm-lock.yaml",
+    update_pnpm_lock = False,
+    verify_node_modules_ignored = "//:.bazelignore",
+    quiet = False,
+)
+use_repo(npm, "npm")
+
+# Self-contained green proof of the Berry fork (see tools/bazel/berry/example).
+npm.npm_translate_lock(
+    name = "npm_berry_example",
+    yarn_lock = "//tools/bazel/berry/example:yarn.lock",
+    pnpm_lock = "//tools/bazel/berry/example:pnpm-lock.yaml",
+    update_pnpm_lock = False,
+    verify_node_modules_ignored = "//:.bazelignore",
+    quiet = False,
+)
+use_repo(npm, "npm_berry_example")
+
+###############################################################################
+# Apple toolchain (rules_apple / rules_swift) — used by the macOS app slice
+###############################################################################
+bazel_dep(name = "rules_apple", version = "4.5.3")
+bazel_dep(name = "rules_swift", version = "3.6.1")
+bazel_dep(name = "apple_support", version = "2.7.0")
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "platforms", version = "1.1.0")
+
+# Expose the SPM-prebuilt React Native XCFrameworks (built by scripts/ios-prebuild.js)
+# to Bazel so the macOS app slice can link them.
+rn_prebuilt = use_extension("//tools/bazel/apple:prebuilt_xcframeworks.bzl", "rn_prebuilt_xcframeworks_extension")
+use_repo(rn_prebuilt, "rn_prebuilt_xcframeworks")
+
+# Canonical header aliases generated directly from the React Native source tree.
+rn_source_headers = use_extension("//tools/bazel/apple:source_headers.bzl", "rn_source_headers_extension")
+use_repo(rn_source_headers, "rn_source_headers")

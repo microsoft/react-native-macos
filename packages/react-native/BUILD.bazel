@@ -1,0 +1,166 @@
+# Auto-generated first-party package target for rules_js linking.
+# Exposes this workspace package as `:pkg` so the root npm_link_all_packages can
+# link it into node_modules (needed to bundle first-party JS with Metro).
+load("@aspect_rules_js//npm:defs.bzl", "npm_package")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("//tools/bazel/apple:spm_native_graph.bzl", "rn_spm_native_graph")
+
+npm_link_all_packages()
+rn_spm_native_graph()
+
+# Canonical C++ header roots from the RN source tree. The SPM-prebuilt
+# React.xcframework only exports a partial header set; the deep Fabric/renderer
+# C++ headers (e.g. <react/renderer/componentregistry/...>, <ReactCommon/RCTTurboModule.h>,
+# <yoga/...>) live only in ReactCommon/ in source. Exposing them on the include
+# path lets Bazel compile ObjC++/C++ that touches the new-architecture surface,
+# while still linking against the prebuilt binary (same `main` version).
+cc_library(
+    name = "rn_cxx_headers",
+    hdrs = glob(
+        [
+            "ReactCommon/**/*.h",
+            "ReactCommon/**/*.hpp",
+        ],
+        allow_empty = True,
+    ),
+    includes = [
+        "ReactCommon",
+        "ReactCommon/jsi",
+        "ReactCommon/callinvoker",
+        "ReactCommon/runtimeexecutor",
+        "ReactCommon/yoga",
+        "ReactCommon/react/nativemodule/core",
+        "ReactCommon/react/nativemodule/core/platform/ios",
+        "ReactCommon/react/nativemodule/samples",
+        "ReactCommon/react/nativemodule/samples/platform/ios",
+        "ReactCommon/react/runtime/platform/ios",
+        "ReactCommon/jsitooling",
+        "ReactCommon/jsiexecutor",
+        # Renderer platform overrides (Apple uses the ios graphics/text/image
+        # variants and the cxx view/text/scrollview variants; react-native-macos
+        # additionally provides a macos view override that takes precedence).
+        "ReactCommon/react/renderer/graphics/platform/ios",
+        "ReactCommon/react/renderer/imagemanager/platform/ios",
+        "ReactCommon/react/renderer/textlayoutmanager/platform/ios",
+        "ReactCommon/react/renderer/components/textinput/platform/ios",
+        "ReactCommon/react/utils/platform/ios",
+        "ReactCommon/react/renderer/components/view/platform/macos",
+        "ReactCommon/react/renderer/components/view/platform/cxx",
+        "ReactCommon/react/renderer/components/text/platform/cxx",
+        "ReactCommon/react/renderer/components/scrollview/platform/cxx",
+    ],
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+# rn-tester's Fabric NativeComponentExample quotes "RCTFabricComponentsPlugins.h",
+# the core Fabric component-provider header. Its impl is in React.xcframework; expose
+# the source header at its bare name so the quoted include resolves.
+cc_library(
+    name = "rct_fabric_components_plugins_hdr",
+    hdrs = ["React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.h"],
+    strip_include_prefix = "React/Fabric/Mounting/ComponentViews",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+# rn-tester's real AppDelegate imports RCTLinkingManager + RCTPushNotificationManager,
+# which are separate RN modules NOT included in the prebuilt React.xcframework. Build
+# them from source and expose their headers as <React/...> (matching the podspec layout).
+cc_library(
+    name = "rct_linking_hdrs",
+    hdrs = ["Libraries/LinkingIOS/RCTLinkingManager.h"],
+    strip_include_prefix = "Libraries/LinkingIOS",
+    include_prefix = "React",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "rct_pushnotification_hdrs",
+    hdrs = [
+        "Libraries/PushNotificationIOS/RCTPushNotificationManager.h",
+        "Libraries/PushNotificationIOS/RCTPushNotificationPlugins.h",
+    ],
+    strip_include_prefix = "Libraries/PushNotificationIOS",
+    include_prefix = "React",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+objc_library(
+    name = "rntester_extra_rn_modules",
+    srcs = [
+        "Libraries/PushNotificationIOS/RCTPushNotificationManager.mm",
+        "Libraries/PushNotificationIOS/RCTPushNotificationPlugins.h",
+        "Libraries/PushNotificationIOS/RCTPushNotificationPlugins.mm",
+    ] + select({
+        "//:rn_from_source_enabled": [],
+        "//conditions:default": [
+            "Libraries/LinkingIOS/RCTLinkingManager.mm",
+            "Libraries/LinkingIOS/RCTLinkingPlugins.h",
+        ],
+    }),
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":rct_pushnotification_hdrs",
+        ":rn_cxx_headers",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
+    ] + select({
+        "//:rn_from_source_enabled": [
+            "//tools/bazel/react_native:fbreactnativespec",
+            "@rn_source_headers//:headers",
+        ],
+        "//conditions:default": [
+            ":rct_linking_hdrs",
+            "@rn_prebuilt_xcframeworks//:React",
+            "@rn_prebuilt_xcframeworks//:React_headers",
+        ],
+    }),
+)
+objc_library(
+    name = "sample_turbo_modules",
+    srcs = [
+        "ReactCommon/react/nativemodule/samples/ReactCommon/NativeSampleTurboCxxModuleSpecJSI.cpp",
+        "ReactCommon/react/nativemodule/samples/ReactCommon/SampleTurboCxxModule.cpp",
+        "ReactCommon/react/nativemodule/samples/platform/ios/ReactCommon/RCTNativeSampleTurboModuleSpec.mm",
+        "ReactCommon/react/nativemodule/samples/platform/ios/ReactCommon/RCTSampleTurboModule.mm",
+    ],
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":rn_cxx_headers",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
+    ] + select({
+        "//:rn_from_source_enabled": ["@rn_source_headers//:headers"],
+        "//conditions:default": [
+            "@rn_prebuilt_xcframeworks//:React",
+            "@rn_prebuilt_xcframeworks//:React_headers",
+        ],
+    }),
+)
+
+npm_package(
+    name = "pkg",
+    srcs = glob(
+        ["**/*"],
+        exclude = [
+            "**/node_modules/**",
+            "**/.build/**",
+            "**/build/**",
+            "**/Pods/**",
+            "**/__tests__/**",
+            "**/*.bazel",
+        "React/**",
+        "ReactApple/**",
+        "ReactCommon/**",
+        "ReactAndroid/**",
+        "sdks/**",
+        "third-party/**",
+        "ReactCxxPlatform/**",
+        ],
+        allow_empty = True,
+    ),
+    visibility = ["//visibility:public"],
+)

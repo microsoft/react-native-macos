@@ -1,0 +1,10 @@
+load("@aspect_rules_js//js:defs.bzl", "js_library")
+
+package(default_visibility = ['//visibility:public'])
+
+exports_files(glob(['**/*'], exclude = ['**/*.bazel'], allow_empty = True))
+
+js_library(
+    name = "js_srcs",
+    srcs = glob(["*.js"]),
+)

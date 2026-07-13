@@ -1,0 +1,24 @@
+# react-native-macos Bazel configuration (draft / experimental)
+# See docs/bazel.md for the design and current status.
+
+# Our pnpm-lock.yaml is generated on the fly from the Berry yarn.lock by the
+# rules_js fork, so we don't pin the module resolution in MODULE.bazel.lock.
+common --lockfile_mode=off
+
+# Local disk cache (also the base for the GHA actions/cache remote cache).
+build --disk_cache=~/.cache/bazel-rnm-disk
+
+# Nicer output.
+build --show_result=1
+
+# Apple: build macOS slices. Scoped in practice to the app target's transitions.
+build:macos --apple_platform_type=macos
+
+# React Native's new architecture C++ (Fabric/TurboModules) requires C++20.
+# Scope the flag to C++/Obj-C++: objc_library also compiles plain `.m` files, and
+# clang rejects `-std=c++20` when it is passed to Objective-C.
+build --per_file_copt=.*\\.(cc|cpp|cxx|mm)$@-std=c++20
+
+# CI convenience config.
+build:ci --color=yes
+build:ci --show_timestamps

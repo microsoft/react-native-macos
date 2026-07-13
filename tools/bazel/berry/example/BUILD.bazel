@@ -1,0 +1,18 @@
+load("@aspect_rules_js//js:defs.bzl", "js_test")
+load("@npm_berry_example//:defs.bzl", "npm_link_all_packages")
+
+exports_files(["yarn.lock"])
+
+# Links node_modules resolved (by our rules_js Berry fork) from this example's
+# Yarn Berry yarn.lock. No committed pnpm-lock.yaml.
+npm_link_all_packages(name = "node_modules")
+
+# `bazel test //tools/bazel/berry/example:verify` proves the whole chain:
+# Berry yarn.lock -> berry_to_pnpm_lock.mjs -> patched npm_translate_lock ->
+# rules_js fetch + link -> a Node program requiring an npm dep runs green.
+js_test(
+    name = "verify",
+    size = "small",
+    data = [":node_modules/is-odd"],
+    entry_point = "verify.js",
+)

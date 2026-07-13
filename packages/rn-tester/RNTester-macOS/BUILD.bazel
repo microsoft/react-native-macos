@@ -1,0 +1,20 @@
+"""Canonical Bazel entry point for the existing RNTester macOS app."""
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "app_icons",
+    srcs = glob(["Assets.xcassets/**"]),
+)
+
+filegroup(
+    name = "native_resources",
+    srcs = ["Base.lproj/Main.storyboard"],
+)
+
+exports_files(["RNTester_macOS.entitlements"])
+
+alias(
+    name = "app",
+    actual = "//packages/rn-tester:RNTesterMacBazelFull",
+)

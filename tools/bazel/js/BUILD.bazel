@@ -1,0 +1,29 @@
+# Bazel macros for building React Native JavaScript (Metro). See metro.bzl.
+
+load("@aspect_rules_js//js:defs.bzl", "js_binary")
+
+exports_files([
+    "first_party.bzl",
+    "metro.bzl",
+])
+
+js_binary(
+    name = "build_first_party",
+    data = [
+        "//:node_modules/@babel/core",
+        "//:node_modules/@babel/preset-env",
+        "//:node_modules/@babel/preset-flow",
+        "//:node_modules/babel-plugin-minify-dead-code-elimination",
+        "//:node_modules/babel-plugin-syntax-hermes-parser",
+        "//:node_modules/babel-plugin-transform-define",
+        "//:node_modules/prettier",
+    ],
+    entry_point = "build_first_party.js",
+    visibility = ["//visibility:public"],
+)
+
+js_binary(
+    name = "copy_tree",
+    entry_point = "copy_tree.js",
+    visibility = ["//visibility:public"],
+)

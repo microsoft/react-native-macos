@@ -1,0 +1,19 @@
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+
+bool_flag(
+    name = "rn_from_source",
+    build_setting_default = True,
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "rn_from_source_enabled",
+    flag_values = {":rn_from_source": "true"},
+    visibility = ["//visibility:public"],
+)
+
+# Links the pnpm-resolved (from the Berry yarn.lock via our fork) node_modules
+# into the Bazel build graph. Downstream JS targets depend on
+# //:node_modules/<pkg>.
+npm_link_all_packages(name = "node_modules")

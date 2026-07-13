@@ -1,0 +1,46 @@
+load("@aspect_rules_js//js:defs.bzl", "js_library")
+
+package(default_visibility = ['//visibility:public'])
+
+exports_files(glob(['**/*'], exclude = ['**/*.bazel'], allow_empty = True))
+
+js_library(
+    name = "js_srcs",
+    srcs = glob(["js/**/*.js"]),
+)
+
+# rn-tester's Fabric component example (RNTMyNativeView). Consumed by the app's
+# thirdPartyFabricComponents via <RNTMyNativeViewComponentView.h>.
+objc_library(
+    name = "NativeComponentExample",
+    srcs = [
+        "ios/RCTInteropTestView.m",
+        "ios/RCTInteropTestViewManager.m",
+        "ios/RNTLegacyView.mm",
+        "ios/RNTMyLegacyNativeViewManager.mm",
+        "ios/RNTMyNativeViewCommon.mm",
+        "ios/RNTMyNativeViewComponentView.mm",
+        "ios/RNTMyNativeViewManager.mm",
+    ],
+    hdrs = [
+        "ios/RCTInteropTestView.h",
+        "ios/RCTInteropTestViewManager.h",
+        "ios/RNTLegacyView.h",
+        "ios/RNTMyNativeViewComponentView.h",
+        "ios/UIView+ColorOverlays.h",
+    ],
+    includes = ["ios"],
+    tags = ["manual"],
+    deps = [
+        "//packages/react-native:rct_fabric_components_plugins_hdr",
+        "//packages/react-native:rn_cxx_headers",
+        "//tools/bazel/react_native:rn_tester_appspecs_fabric_hdrs",
+        "@rn_prebuilt_xcframeworks//:ReactNativeDependencies_headers",
+    ] + select({
+        "//:rn_from_source_enabled": ["@rn_source_headers//:headers"],
+        "//conditions:default": [
+            "@rn_prebuilt_xcframeworks//:React",
+            "@rn_prebuilt_xcframeworks//:React_headers",
+        ],
+    }),
+)

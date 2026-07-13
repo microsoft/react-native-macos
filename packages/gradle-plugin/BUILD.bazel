@@ -1,0 +1,6 @@
+# @generated-by: tools/bazel/js/gen_package_builds.mjs
+# Edit the generator or the macro, not this file. Regenerate with:
+#   node tools/bazel/js/gen_package_builds.mjs
+load("//tools/bazel/js:workspace_package.bzl", "rn_workspace_package")
+
+rn_workspace_package()

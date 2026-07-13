@@ -1,0 +1,80 @@
+--- a/npm/private/npm_translate_lock.bzl
++++ b/npm/private/npm_translate_lock.bzl
+@@ -336,7 +336,68 @@
+         """),
+     },
+ )
++
++def _find_berry_converter(yarn_path):
++    # The converter lives at <repo-root>/tools/bazel/berry/berry_to_pnpm_lock.mjs.
++    # Walk up from the yarn.lock directory to locate it, so this works for lockfiles
++    # anywhere in the repo (root or nested example projects).
++    d = yarn_path.dirname
++    for _ in range(32):
++        candidate = d.get_child("tools").get_child("bazel").get_child("berry").get_child("berry_to_pnpm_lock.mjs")
++        if candidate.exists:
++            return candidate
++        parent = d.dirname
++        if parent == None or str(parent) == str(d):
++            break
++        d = parent
++    return None
++
++def _generate_pnpm_lock_from_berry(rctx, attr):
++    """rules_js Berry fork: generate pnpm-lock.yaml from a Yarn v2+ (Berry) yarn.lock.
++
++    aspect_rules_js normally shells out to `pnpm import` to translate a yarn.lock, but
++    `pnpm import` does not understand the Berry (v2+) lockfile format. When the input
++    yarn.lock is a Berry lockfile and the pnpm-lock.yaml does not yet exist, translate it
++    with our bundled dependency-free converter so the Berry yarn.lock can remain the single
++    source of truth (the generated pnpm-lock.yaml is gitignored, never committed). See
++    tools/bazel/berry/ and docs/bazel.md.
++    """
++    if not attr.yarn_lock or not attr.pnpm_lock:
++        return
++    yarn_path = rctx.path(attr.yarn_lock)
++    if not yarn_path.exists:
++        return
++    if "__metadata:" not in rctx.read(yarn_path):
++        return  # not a Berry lockfile; leave the normal pnpm import path in charge
++    converter = _find_berry_converter(yarn_path)
++    if converter == None:
++        fail("berry_to_pnpm_lock.mjs not found above yarn.lock at {}".format(yarn_path))
+ 
++    # Re-run this extension when the Berry lock or the converter change.
++    rctx.watch(yarn_path)
++    rctx.watch(converter)
++
++    pnpm_lock_path = rctx.path(attr.pnpm_lock)
++    # The repository rule reruns when yarn_path or converter changes (rctx.watch
++    # above), so always regenerate. Returning when the output already exists leaves
++    # pnpm-lock.yaml stale after a yarn.lock edit.
++    rctx.report_progress("Translating Berry yarn.lock -> pnpm-lock.yaml")
++    result = rctx.execute(
++        [
++            _host_node_path(rctx, attr),
++            converter,
++            yarn_path,
++            pnpm_lock_path,
++        ],
++        quiet = attr.quiet,
++    )
++    if result.return_code:
++        fail("berry_to_pnpm_lock conversion failed (status {}):\n{}\n{}".format(
++            result.return_code,
++            result.stdout,
++            result.stderr,
++        ))
++
+ def parse_and_verify_lock(rctx, mod, attr):
+     """Helper to parse and validate the lockfile
+ 
+@@ -348,6 +409,8 @@
+         state, importers, and packages
+     """
+ 
++    _generate_pnpm_lock_from_berry(rctx, attr)
++
+     state = npm_translate_lock_state.new(rctx, mod, attr)
+ 
+     if state.should_update_pnpm_lock():

@@ -1,0 +1,11 @@
+{
+  "name": "berry-fork-example",
+  "version": "0.0.0",
+  "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": []
+  },
+  "dependencies": {
+    "is-odd": "3.0.1"
+  }
+}
