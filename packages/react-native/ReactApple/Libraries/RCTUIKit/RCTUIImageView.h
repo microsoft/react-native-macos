@@ -11,8 +11,8 @@
 
 #include <TargetConditionals.h>
 
-#import <React/RCTUIKitCompat.h>
-#import <React/RCTUIImage.h>
+#import "RCTUIKitCompat.h"
+#import "RCTUIImage.h"
 
 #if !TARGET_OS_OSX
 @compatibility_alias RCTUIImageView UIImageView;

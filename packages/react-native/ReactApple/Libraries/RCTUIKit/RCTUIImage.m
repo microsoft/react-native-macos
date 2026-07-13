@@ -9,7 +9,7 @@
 
 #if TARGET_OS_OSX
 
-#import <React/RCTUIImage.h>
+#import "RCTUIImage.h"
 
 // UIImage
 

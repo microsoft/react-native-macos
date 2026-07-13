@@ -75,7 +75,6 @@ Pod::Spec.new do |s|
       "React/Tests/**/*",
       "React/Inspector/**/*",
       "React/Runtime/**/*",
-      "React/RCTUIKit/**/*", # [macOS]
     ]
 
     # The default is use hermes,  we don't have jsc installed

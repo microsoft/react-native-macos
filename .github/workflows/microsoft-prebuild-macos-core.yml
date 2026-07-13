@@ -27,7 +27,7 @@ jobs:
         id: cache-slice
         uses: actions/cache/restore@v4
         with:
-          key: v1-macos-core-${{ matrix.platform }}-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v1-macos-core-${{ matrix.platform }}-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
           path: |
             packages/react-native/.build/output/spm/Debug/Build/Products
             packages/react-native/.build/headers
@@ -72,7 +72,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-stable') }}
         uses: actions/cache/save@v4
         with:
-          key: v1-macos-core-${{ matrix.platform }}-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v1-macos-core-${{ matrix.platform }}-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
           path: |
             packages/react-native/.build/output/spm/Debug/Build/Products
             packages/react-native/.build/headers
@@ -104,7 +104,7 @@ jobs:
         id: cache-xcframework
         uses: actions/cache/restore@v4
         with:
-          key: v1-macos-core-xcframework-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v1-macos-core-xcframework-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
           path: |
             packages/react-native/.build/output/xcframeworks/ReactCoreDebug.xcframework.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactCoreDebug.framework.dSYM.tar.gz
@@ -165,7 +165,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-stable') }}
         uses: actions/cache/save@v4
         with:
-          key: v1-macos-core-xcframework-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v1-macos-core-xcframework-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
           path: |
             packages/react-native/.build/output/xcframeworks/ReactCoreDebug.xcframework.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactCoreDebug.framework.dSYM.tar.gz

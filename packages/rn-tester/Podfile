@@ -21,6 +21,12 @@ end
 
 prepare_react_native_project!
 
+# [macOS
+# add_dependency() reads this while evaluating podspecs to generate
+# per-platform framework header search paths for this multi-platform workspace.
+$RN_PLATFORMS = %w[iOS macOS visionOS]
+# macOS]
+
 IN_CI = ENV['CI'] == 'true'
 
 @prefix_path = "../react-native"
@@ -100,6 +106,25 @@ end
 # visionOS]
 
 post_install do |installer|
-  $RN_PLATFORMS = %w[iOS macOS visionOS] # [macOS]
   react_native_post_install(installer, @prefix_path, :mac_catalyst_enabled => false)
+
+  # [macOS
+  # Disambiguate same-named per-platform framework targets. Without
+  # SUPPORTED_PLATFORMS, Xcode can pull multiple Hermes targets into one build
+  # and their script phases declare duplicate outputs.
+  if USE_FRAMEWORKS
+    supported_platforms_by_sdk = {
+      "iphoneos" => "iphoneos iphonesimulator",
+      "macosx" => "macosx",
+      "xros" => "xros xrsimulator",
+    }
+    installer.pods_project.native_targets.each do |target|
+      target.build_configurations.each do |config|
+        supported_platforms = supported_platforms_by_sdk[config.build_settings["SDKROOT"]]
+        config.build_settings["SUPPORTED_PLATFORMS"] = supported_platforms if supported_platforms
+      end
+    end
+    installer.pods_project.save
+  end
+  # macOS]
 end

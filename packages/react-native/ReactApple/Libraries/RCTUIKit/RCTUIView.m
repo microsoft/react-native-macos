@@ -10,7 +10,7 @@
 #if TARGET_OS_OSX
 
 #import <QuartzCore/QuartzCore.h>
-#import <React/RCTUIView.h>
+#import "RCTUIView.h"
 
 // UIView
 

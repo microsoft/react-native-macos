@@ -3,9 +3,11 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+# [macOS]
+
 require "json"
 
-package = JSON.parse(File.read(File.join(__dir__, "package.json")))
+package = JSON.parse(File.read(File.join(__dir__, "..", "..", "..", "package.json")))
 version = package['version']
 
 source = { :git => 'https://github.com/facebook/react-native.git' }
@@ -25,12 +27,10 @@ Pod::Spec.new do |s|
   s.author                 = "Microsoft Corporation"
   s.platforms              = min_supported_versions
   s.source                 = source
-  s.source_files           = podspec_sources(
-                               ["React/RCTUIKit/*.{h,m}"],
-                               "React/RCTUIKit/*.h")
-  s.public_header_files    = "React/RCTUIKit/*.h"
-  s.header_dir             = "React"
-  s.module_name            = "React_RCTUIKit"
+  s.source_files           = podspec_sources("*.{h,m}", "*.h")
+  s.public_header_files    = "*.h"
+  s.header_dir             = "RCTUIKit"
+  s.module_name            = "RCTUIKit"
   s.pod_target_xcconfig    = {
                                "DEFINES_MODULE" => "YES",
                                "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
