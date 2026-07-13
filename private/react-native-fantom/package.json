@@ -8,7 +8,9 @@
     "build": "./build.sh"
   },
   "dependencies": {
-    "babel-plugin-istanbul": "^7.0.0"
+    "babel-plugin-istanbul": "^7.0.0",
+    "metro": "^0.83.3",
+    "metro-babel-transformer": "^0.83.3"
   },
   "peerDependencies": {
     "jest": "^29.7.0",
