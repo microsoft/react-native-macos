@@ -7,6 +7,8 @@
 
 #import <React/RCTUIKit.h> // [macOS]
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import <React/RCTAutoInsetsProtocol.h>
 #import <React/RCTDefines.h>
 #import <React/RCTEventDispatcherProtocol.h>
@@ -15,7 +17,8 @@
 
 @protocol UIScrollViewDelegate;
 
-@interface RCTScrollView : RCTView <
+__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
+@interface RCTScrollView : RCTView<
 #if TARGET_OS_IPHONE // [macOS
 	UIScrollViewDelegate,
 #endif
@@ -94,3 +97,5 @@
 @end
 
 RCT_EXTERN void RCTSendFakeScrollEvent(id<RCTEventDispatcherProtocol> eventDispatcher, NSNumber *reactTag);
+
+#endif // RCT_REMOVE_LEGACY_ARCH

@@ -17,12 +17,6 @@ import { $, echo, fs, path } from 'zx';
 // Use createRequire to import CommonJS modules from ESM context
 const require = createRequire(import.meta.url);
 const {
-  findMatchingHermesVersion,
-  findVersionAtMergeBase,
-  getLatestStableVersionFromNPM,
-  hermesCommitAtMergeBase,
-} = require('../../packages/react-native/scripts/ios-prebuild/microsoft-hermes.js');
-const {
   computeNightlyTarballURL,
 } = require('../../packages/react-native/scripts/ios-prebuild/utils.js');
 
@@ -34,90 +28,115 @@ function setActionOutput(key: string, value: string) {
 }
 
 /**
- * Downloads the upstream Hermes tarball from Maven or Sonatype.
+ * Reads the Hermes artifact version from
+ * packages/react-native/sdks/hermes-engine/version.properties.
  *
- * Tries multiple version resolution strategies in order:
- * 1. Mapped version from peerDependencies (stable branches)
- * 2. Version at merge base with facebook/react-native (main branch)
- * 3. Latest stable version from npm (last resort)
+ * Returns HERMES_V1_VERSION_NAME when RCT_HERMES_V1_ENABLED=1, otherwise
+ * HERMES_VERSION_NAME. Returns null if the file or the key is missing.
+ */
+function resolveHermesArtifactVersion(): string | null {
+  const propsPath = path.resolve(
+    import.meta.dirname!, '..', '..',
+    'packages', 'react-native', 'sdks', 'hermes-engine', 'version.properties',
+  );
+  try {
+    const props: Record<string, string> = {};
+    for (const line of fs.readFileSync(propsPath, 'utf8').split('\n')) {
+      const eq = line.indexOf('=');
+      if (eq > 0) {
+        props[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
+      }
+    }
+    const key =
+      process.env.RCT_HERMES_V1_ENABLED === '1'
+        ? 'HERMES_V1_VERSION_NAME'
+        : 'HERMES_VERSION_NAME';
+    const version = props[key];
+    return version != null && version.length > 0 ? version : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Reads the pinned Hermes tag from packages/react-native/sdks/.hermesversion
+ * (or .hermesv1version when RCT_HERMES_V1_ENABLED=1). The value is a git tag in
+ * facebook/hermes. Returns null if the file is missing or empty.
+ */
+function resolveHermesTag(): string | null {
+  const tagFile =
+    process.env.RCT_HERMES_V1_ENABLED === '1'
+      ? '.hermesv1version'
+      : '.hermesversion';
+  const tagPath = path.resolve(
+    import.meta.dirname!, '..', '..',
+    'packages', 'react-native', 'sdks', tagFile,
+  );
+  try {
+    const tag = fs.readFileSync(tagPath, 'utf8').trim();
+    return tag.length > 0 ? tag : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Downloads the prebuilt Hermes tarball from Maven (release) or Sonatype
+ * snapshots (nightly), under com/facebook/hermes/hermes-ios/<version>.
  *
- * Returns {tarballPath, version} on success, or null if no tarball is available.
+ * Returns {tarballPath, version} on success, or null if no tarball is available
+ * (callers then build Hermes from source).
  */
 async function downloadUpstreamHermesTarball(
   buildType: string = 'Debug',
 ): Promise<{ tarballPath: string; version: string } | null> {
-  const packageJsonPath = path.resolve(
-    import.meta.dirname!, '..', '..', 'packages', 'react-native', 'package.json',
-  );
-
-  // Build a list of candidate versions to try (in priority order)
-  const candidates: string[] = [];
-
-  const mapped = findMatchingHermesVersion(packageJsonPath);
-  if (mapped != null) {
-    candidates.push(mapped);
-  }
-
-  const mergeBaseVersion = findVersionAtMergeBase();
-  if (mergeBaseVersion != null && !candidates.includes(mergeBaseVersion)) {
-    candidates.push(mergeBaseVersion);
-  }
-
-  try {
-    const latestStable = await getLatestStableVersionFromNPM();
-    if (!candidates.includes(latestStable)) {
-      candidates.push(latestStable);
-    }
-  } catch {
-    // npm lookup failed, continue with what we have
-  }
-
-  if (candidates.length === 0) {
-    echo('Could not determine any upstream version to download Hermes tarball');
+  const version = resolveHermesArtifactVersion();
+  if (version == null) {
+    echo('Could not read Hermes version from sdks/hermes-engine/version.properties');
     return null;
   }
 
   const mavenRepoUrl = 'https://repo1.maven.org/maven2';
-  const namespace = 'com/facebook/react';
+  const namespace = 'com/facebook/hermes';
+  const flavor = buildType.toLowerCase();
 
-  for (const version of candidates) {
-    const releaseUrl = `${mavenRepoUrl}/${namespace}/react-native-artifacts/${version}/react-native-artifacts-${version}-hermes-ios-${buildType.toLowerCase()}.tar.gz`;
-    const nightlyUrl = await computeNightlyTarballURL(
-      version,
-      buildType,
-      'react-native-artifacts',
-      `hermes-ios-${buildType.toLowerCase()}.tar.gz`,
-    );
-    const urlsToTry = [releaseUrl];
-    if (nightlyUrl) {
-      urlsToTry.push(nightlyUrl);
-    }
+  const releaseUrl = `${mavenRepoUrl}/${namespace}/hermes-ios/${version}/hermes-ios-${version}-hermes-ios-${flavor}.tar.gz`;
+  const nightlyUrl = await computeNightlyTarballURL(
+    version,
+    buildType,
+    'hermes-ios',
+    `hermes-ios-${flavor}.tar.gz`,
+  );
 
-    for (const tarballUrl of urlsToTry) {
-      echo(`Trying upstream Hermes tarball (version: ${version}, ${buildType}) at ${tarballUrl}...`);
+  const urlsToTry = [releaseUrl];
+  if (nightlyUrl) {
+    urlsToTry.push(nightlyUrl);
+  }
 
-      try {
-        const response = await fetch(tarballUrl);
-        if (!response.ok) {
-          echo(`Tarball not available: ${response.status} ${response.statusText}`);
-          continue;
-        }
+  for (const tarballUrl of urlsToTry) {
+    echo(`Trying upstream Hermes tarball (version: ${version}, ${buildType}) at ${tarballUrl}...`);
 
-        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-'));
-        const tarballPath = path.join(tmpDir, 'hermes-ios.tar.gz');
-        const buffer = await response.arrayBuffer();
-        fs.writeFileSync(tarballPath, Buffer.from(buffer));
-
-        echo(`Downloaded upstream Hermes tarball (${version}) to ${tarballPath}`);
-        return { tarballPath, version };
-      } catch (e: any) {
-        echo(`Error downloading tarball for ${version}: ${e.message}`);
+    try {
+      const response = await fetch(tarballUrl);
+      if (!response.ok) {
+        echo(`Tarball not available: ${response.status} ${response.statusText}`);
         continue;
       }
+
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-'));
+      const tarballPath = path.join(tmpDir, 'hermes-ios.tar.gz');
+      const buffer = await response.arrayBuffer();
+      fs.writeFileSync(tarballPath, Buffer.from(buffer));
+
+      echo(`Downloaded upstream Hermes tarball (${version}) to ${tarballPath}`);
+      return { tarballPath, version };
+    } catch (e: any) {
+      echo(`Error downloading tarball for ${version}: ${e.message}`);
+      continue;
     }
   }
 
-  echo('No upstream Hermes tarball found for any candidate version — will build from source.');
+  echo('No upstream Hermes tarball found — will build from source.');
   return null;
 }
 
@@ -125,14 +144,16 @@ async function downloadUpstreamHermesTarball(
  * Extracts an upstream Hermes tarball and recomposes the xcframework to include
  * the macOS slice, if needed.
  *
- * Upstream tarballs ship a universal xcframework (iOS, simulator, catalyst,
- * tvOS, visionOS) plus a standalone macosx/hermes.framework. This function
+ * The tarball ships a universal `hermesvm.xcframework` (iOS, simulator,
+ * catalyst, tvOS, visionOS) plus a standalone `macosx/hermesvm.framework`. This
  * merges the standalone macOS framework into the universal xcframework using
  * `xcodebuild -create-xcframework`.
  *
- * NOTE: Once upstream Hermes includes macOS in the universal xcframework
- * natively, this function will detect the existing macOS slice and skip
- * the recompose. At that point, this step can be removed entirely.
+ * NOTE: The universal xcframework gained a native macOS slice in Hermes V1
+ * 250829098.0.15 (facebook/hermes#1971); the V0 line (0.14.x) does not include
+ * it. When the tarball already contains a macOS slice this detects it and skips
+ * the recompose, so once the pinned versions include it natively this step can
+ * be removed entirely.
  * Tracking PRs:
  *   - https://github.com/facebook/hermes/pull/1958
  *   - https://github.com/facebook/hermes/pull/1970
@@ -147,7 +168,7 @@ async function recomposeHermesXcframework(
   await $`tar -xzf ${tarballPath} -C ${destroot} --strip-components=2`;
 
   const frameworksDir = path.join(destroot, 'Library', 'Frameworks');
-  const xcfwPath = path.join(frameworksDir, 'universal', 'hermes.xcframework');
+  const xcfwPath = path.join(frameworksDir, 'universal', 'hermesvm.xcframework');
 
   echo('Upstream tarball contents:');
   await $`ls -la ${frameworksDir}`;
@@ -167,16 +188,16 @@ async function recomposeHermesXcframework(
   }
 
   // Check for standalone macOS framework
-  const standaloneMacFw = path.join(frameworksDir, 'macosx', 'hermes.framework');
+  const standaloneMacFw = path.join(frameworksDir, 'macosx', 'hermesvm.framework');
   if (!fs.existsSync(standaloneMacFw)) {
-    echo('ERROR: Upstream tarball missing macosx/hermes.framework');
+    echo('ERROR: Upstream tarball missing macosx/hermesvm.framework');
     return false;
   }
 
   // Collect existing frameworks from inside the universal xcframework
   const frameworkArgs: string[] = [];
   for (const entry of xcfwContents) {
-    const fwPath = path.join(xcfwPath, entry, 'hermes.framework');
+    const fwPath = path.join(xcfwPath, entry, 'hermesvm.framework');
     if (fs.existsSync(fwPath) && fs.statSync(fwPath).isDirectory()) {
       echo(`Found slice: ${fwPath}`);
       frameworkArgs.push('-framework', fwPath);
@@ -188,7 +209,7 @@ async function recomposeHermesXcframework(
   frameworkArgs.push('-framework', standaloneMacFw);
 
   // Build new xcframework at a temp path (frameworks reference paths inside the old xcfw)
-  const xcfwNew = path.join(frameworksDir, 'universal', 'hermes-new.xcframework');
+  const xcfwNew = path.join(frameworksDir, 'universal', 'hermesvm-new.xcframework');
   const sliceCount = frameworkArgs.filter(f => f !== '-framework').length;
   echo(`Creating new universal xcframework with ${sliceCount} slices...`);
   await $`xcodebuild -create-xcframework ${frameworkArgs} -output ${xcfwNew} -allow-internal-distribution`;
@@ -239,9 +260,13 @@ switch (command) {
     break;
   }
   case 'resolve-commit': {
-    const { commit } = hermesCommitAtMergeBase();
-    setActionOutput('hermes-commit', commit);
-    echo(`Resolved Hermes commit: ${commit}`);
+    const tag = resolveHermesTag();
+    if (tag == null) {
+      echo('Could not read pinned Hermes tag from sdks/.hermesversion or sdks/.hermesv1version');
+      process.exit(1);
+    }
+    setActionOutput('hermes-commit', tag);
+    echo(`Resolved Hermes tag: ${tag}`);
     break;
   }
   default:

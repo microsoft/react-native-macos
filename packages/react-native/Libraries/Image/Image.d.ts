@@ -11,7 +11,7 @@ import * as React from 'react';
 import {Constructor} from '../../types/private/Utilities';
 import {AccessibilityProps} from '../Components/View/ViewAccessibility';
 import {Insets} from '../../types/public/Insets';
-import {NativeMethods} from '../../types/public/ReactNativeTypes';
+import {HostInstance} from '../../types/public/ReactNativeTypes';
 import {ColorValue, StyleProp} from '../StyleSheet/StyleSheet';
 import {ImageStyle, ViewStyle} from '../StyleSheet/StyleSheetTypes';
 import {LayoutChangeEvent, NativeSyntheticEvent} from '../Types/CoreEventTypes';
@@ -343,7 +343,7 @@ export interface ImageSize {
 }
 
 declare class ImageComponent extends React.Component<ImageProps> {}
-declare const ImageBase: Constructor<NativeMethods> & typeof ImageComponent;
+declare const ImageBase: Constructor<HostInstance> & typeof ImageComponent;
 export class Image extends ImageBase {
   static getSize(uri: string): Promise<ImageSize>;
   static getSize(
@@ -389,6 +389,6 @@ export interface ImageBackgroundProps extends ImagePropsBase {
 }
 
 declare class ImageBackgroundComponent extends React.Component<ImageBackgroundProps> {}
-declare const ImageBackgroundBase: Constructor<NativeMethods> &
+declare const ImageBackgroundBase: Constructor<HostInstance> &
   typeof ImageBackgroundComponent;
 export class ImageBackground extends ImageBackgroundBase {}

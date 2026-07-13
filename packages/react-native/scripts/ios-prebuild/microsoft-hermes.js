@@ -4,11 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * [macOS] Resolves Hermes artifacts for macOS fork branches.
- *
- * Library functions for version resolution and resolving Hermes commits.
- * The CI entry point that orchestrates downloading, recomposing, and
- * caching is at .github/scripts/resolve-hermes.mts.
+ * [macOS] Library functions for resolving React Native versions used by
+ * Hermes-related dependency artifacts.
  *
  * @flow
  * @format
@@ -17,8 +14,6 @@
 const {createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');
-const os = require('os');
-const path = require('path');
 
 const macosLog = createLogger('macOS');
 
@@ -57,96 +52,14 @@ function findMatchingHermesVersion(
 }
 
 /**
- * Finds the Hermes commit at the merge base with facebook/react-native.
- * Used on the main branch (1000.0.0) where no prebuilt artifacts exist.
- *
- * Since react-native-macos lags slightly behind facebook/react-native, we can't always use
- * the latest Hermes commit because Hermes and JSI don't always guarantee backwards compatibility.
- * Instead, we take the commit hash of Hermes at the time of the merge base with facebook/react-native.
- *
- * This is the JavaScript equivalent of the Ruby `hermes_commit_at_merge_base`
- * in sdks/hermes-engine/hermes-utils.rb.
- */
-function hermesCommitAtMergeBase() /*: {| commit: string, timestamp: string |} */ {
-  const HERMES_GITHUB_URL = 'https://github.com/facebook/hermes.git';
-
-  // Fetch upstream react-native
-  macosLog('Fetching facebook/react-native to find merge base...');
-  try {
-    execSync('git fetch -q https://github.com/facebook/react-native.git', {
-      stdio: 'pipe',
-    });
-  } catch (e) {
-    abort(
-      '[Hermes] Failed to fetch facebook/react-native into the local repository.',
-    );
-  }
-
-  // Find merge base between our HEAD and upstream's HEAD
-  const mergeBase = execSync('git merge-base FETCH_HEAD HEAD', {
-    encoding: 'utf8',
-  }).trim();
-  if (!mergeBase) {
-    abort(
-      "[Hermes] Unable to find the merge base between our HEAD and upstream's HEAD.",
-    );
-  }
-
-  // Get timestamp of merge base
-  const timestamp = execSync(`git show -s --format=%ci ${mergeBase}`, {
-    encoding: 'utf8',
-  }).trim();
-  if (!timestamp) {
-    abort(
-      `[Hermes] Unable to extract the timestamp for the merge base (${mergeBase}).`,
-    );
-  }
-
-  // Clone Hermes bare (minimal) into a temp directory and find the commit
-  macosLog(
-    `Merge base timestamp: ${timestamp}. Cloning Hermes to find matching commit...`,
-  );
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-'));
-  const hermesGitDir = path.join(tmpDir, 'hermes.git');
-
-  try {
-    // Explicitly use Hermes 'main' branch since the default branch changed to 'static_h' (Hermes V1)
-    execSync(
-      `git clone -q --bare --filter=blob:none --single-branch --branch main ${HERMES_GITHUB_URL} "${hermesGitDir}"`,
-      {stdio: 'pipe', timeout: 120000},
-    );
-
-    // Find the Hermes commit at the time of the merge base on branch 'main'
-    const commit = execSync(
-      `git --git-dir="${hermesGitDir}" rev-list -1 --before="${timestamp}" refs/heads/main`,
-      {encoding: 'utf8'},
-    ).trim();
-
-    if (!commit) {
-      abort(
-        `[Hermes] Unable to find the Hermes commit hash at time ${timestamp} on branch 'main'.`,
-      );
-    }
-
-    macosLog(
-      `Using Hermes commit from the merge base with facebook/react-native: ${commit} (timestamp: ${timestamp})`,
-    );
-    return {commit, timestamp};
-  } finally {
-    // Clean up temp directory
-    fs.rmSync(tmpDir, {recursive: true, force: true});
-  }
-}
-
-/**
  * Finds the upstream react-native version at the merge base with facebook/react-native.
  * Falls back to null if the version at merge base is also 1000.0.0 (i.e. merge base is
  * on upstream main, not a release branch).
  */
 function findVersionAtMergeBase() /*: ?string */ {
   try {
-    // hermesCommitAtMergeBase() already fetches facebook/react-native, but we
-    // might not have FETCH_HEAD if this runs standalone. Fetch it.
+    // Ensure facebook/react-native is fetched so FETCH_HEAD is available when
+    // this runs standalone.
     execSync('git fetch -q https://github.com/facebook/react-native.git', {
       stdio: 'pipe',
       timeout: 60000,
@@ -188,14 +101,8 @@ async function getLatestStableVersionFromNPM() /*: Promise<string> */ {
   return json.version;
 }
 
-function abort(message /*: string */) {
-  macosLog(message, 'error');
-  throw new Error(message);
-}
-
 module.exports = {
   findMatchingHermesVersion,
-  hermesCommitAtMergeBase,
   findVersionAtMergeBase,
   getLatestStableVersionFromNPM,
 };

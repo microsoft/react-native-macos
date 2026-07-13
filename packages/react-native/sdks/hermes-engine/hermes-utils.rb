@@ -5,9 +5,6 @@
 
 require 'net/http'
 require 'rexml/document'
-require 'open3' # [macOS]
-require 'json' # [macOS]
-require 'tmpdir' # [macOS]
 
 HERMES_GITHUB_URL = "https://github.com/facebook/hermes.git"
 ENV_BUILD_FROM_SOURCE = "RCT_BUILD_HERMES_FROM_SOURCE"
@@ -86,6 +83,10 @@ end
 
 def hermes_commit_envvar_defined()
     return ENV.has_key?('HERMES_COMMIT')
+end
+
+def hermes_v1_enabled()
+    return ENV['RCT_HERMES_V1_ENABLED'] == "1"
 end
 
 def force_build_from_tag(react_native_path)
@@ -173,25 +174,19 @@ end
 
 def podspec_source_build_from_github_tag(react_native_path)
     tag = File.read(hermestag_file(react_native_path)).strip
-    hermes_log("Using tag difined in sdks/.hermesversion: #{tag}")
+
+    if hermes_v1_enabled()
+        hermes_log("Using tag defined in sdks/.hermesv1version: #{tag}")
+    else
+        hermes_log("Using tag defined in sdks/.hermesversion: #{tag}")
+    end
     return {:git => HERMES_GITHUB_URL, :tag => tag}
 end
 
 def podspec_source_build_from_github_main()
-    # hermes_log("Using the latest commit from main.")
-    # return {:git => HERMES_GITHUB_URL, :commit => `git ls-remote #{HERMES_GITHUB_URL} main | cut -f 1`.strip}
-
-    # [macOS
-    # The logic for this is a bit different on macOS.
-    # Since react-native-macos lags slightly behind facebook/react-native, we can't always use
-    # the latest Hermes commit because Hermes and JSI don't always guarantee backwards compatibility.
-    # Instead, we take the commit hash of Hermes at the time of the merge base with facebook/react-native.
-    tuple = hermes_commit_at_merge_base()
-    commit = tuple[:commit]
-    timestamp = tuple[:timestamp]
-    hermes_log("Using Hermes commit from the merge base with facebook/react-native: #{commit} and timestamp: #{timestamp}")
-    return {:git => HERMES_GITHUB_URL, :commit => commit}
-    # macOS]
+    branch = hermes_v1_enabled() ? "250829098.0.0-stable" : "main"
+    hermes_log("Using the latest commit from #{branch}.")
+    return {:git => HERMES_GITHUB_URL, :commit => `git ls-remote #{HERMES_GITHUB_URL} #{branch} | cut -f 1`.strip}
 end
 
 def podspec_source_download_prebuild_release_tarball(react_native_path, version)
@@ -214,59 +209,26 @@ def artifacts_dir()
     return File.join(Pod::Config.instance.project_pods_root, "hermes-engine-artifacts")
 end
 
-# [macOS
-def hermes_commit_at_merge_base()
-    # We don't need ls-remote because react-native-macos is a fork of facebook/react-native
-    fetch_result = `git fetch -q https://github.com/facebook/react-native.git`
-    if $?.exitstatus != 0
-        abort <<-EOS
-        [Hermes] Failed to fetch facebook/react-native into the local repository.
-        EOS
-    end
-
-    merge_base = `git merge-base FETCH_HEAD HEAD`.strip
-    if merge_base.empty?
-        abort <<-EOS
-        [Hermes] Unable to find the merge base between our HEAD and upstream's HEAD.
-        EOS
-    end
-
-    timestamp = `git show -s --format=%ci #{merge_base}`.strip
-    if timestamp.empty?
-        abort <<-EOS
-        [Hermes] Unable to extract the timestamp for the merge base (#{merge_base}).
-        EOS
-    end
-
-    commit = nil
-    Dir.mktmpdir do |tmpdir|
-        hermes_git_dir = File.join(tmpdir, "hermes.git")
-        # Explicitly use Hermes 'main' branch since the default branch changed to 'static_h' (Hermes V1)
-        `git clone -q --bare --filter=blob:none --single-branch --branch main #{HERMES_GITHUB_URL} "#{hermes_git_dir}"`
-
-        # If all goes well, this will be the commit hash of Hermes at the time of the merge base on branch 'main'
-        commit = `git --git-dir="#{hermes_git_dir}" rev-list -1 --before="#{timestamp}" refs/heads/main`.strip
-        if commit.empty?
-            abort <<-EOS
-            [Hermes] Unable to find the Hermes commit hash at time #{timestamp} on branch 'main'.
-            EOS
-        end
-    end
-
-    return { :commit => commit, :timestamp => timestamp}
-end
-# macOS]
-
 def hermestag_file(react_native_path)
-    return File.join(react_native_path, "sdks", ".hermesversion")
+    if hermes_v1_enabled()
+        return File.join(react_native_path, "sdks", ".hermesv1version")
+    else
+        return File.join(react_native_path, "sdks", ".hermesversion")
+    end
 end
 
 def release_tarball_url(version, build_type)
-    maven_repo_url = "https://repo1.maven.org/maven2"
-    namespace = "com/facebook/react"
+    ## You can use the `ENTERPRISE_REPOSITORY` variable to customise the base url from which artifacts will be downloaded.
+    ## The mirror's structure must be the same of the Maven repo the react-native core team publishes on Maven Central.
+    maven_repo_url =
+        ENV['ENTERPRISE_REPOSITORY'] != nil && ENV['ENTERPRISE_REPOSITORY'] != "" ?
+        ENV['ENTERPRISE_REPOSITORY'] :
+        "https://repo1.maven.org/maven2"
+
+    namespace = "com/facebook/hermes"
     # Sample url from Maven:
-    # https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.71.0/react-native-artifacts-0.71.0-hermes-ios-debug.tar.gz
-    return "#{maven_repo_url}/#{namespace}/react-native-artifacts/#{version}/react-native-artifacts-#{version}-hermes-ios-#{build_type.to_s}.tar.gz"
+    # https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/0.14.0/hermes-ios-0.14.0-hermes-ios-debug.tar.gz
+    return "#{maven_repo_url}/#{namespace}/hermes-ios/#{version}/hermes-ios-#{version}-hermes-ios-#{build_type.to_s}.tar.gz"
 end
 
 def download_stable_hermes(react_native_path, version, configuration)
@@ -288,9 +250,11 @@ def download_hermes_tarball(react_native_path, tarball_url, version, configurati
 end
 
 def nightly_tarball_url(version)
-  artifact_coordinate = "react-native-artifacts"
+  artifact_coordinate = "hermes-ios"
   artifact_name = "hermes-ios-debug.tar.gz"
-  xml_url = "https://central.sonatype.com/repository/maven-snapshots/com/facebook/react/#{artifact_coordinate}/#{version}-SNAPSHOT/maven-metadata.xml"
+  namespace = "com/facebook/hermes"
+
+  xml_url = "https://central.sonatype.com/repository/maven-snapshots/#{namespace}/#{artifact_coordinate}/#{version}-SNAPSHOT/maven-metadata.xml"
 
   begin # [macOS add exception handling
     response = Net::HTTP.get_response(URI(xml_url))
@@ -299,7 +263,7 @@ def nightly_tarball_url(version)
       timestamp = xml.elements['metadata/versioning/snapshot/timestamp'].text
       build_number = xml.elements['metadata/versioning/snapshot/buildNumber'].text
       full_version = "#{version}-#{timestamp}-#{build_number}"
-      final_url = "https://central.sonatype.com/repository/maven-snapshots/com/facebook/react/#{artifact_coordinate}/#{version}-SNAPSHOT/#{artifact_coordinate}-#{full_version}-#{artifact_name}"
+      final_url = "https://central.sonatype.com/repository/maven-snapshots/#{namespace}/#{artifact_coordinate}/#{version}-SNAPSHOT/#{artifact_coordinate}-#{full_version}-#{artifact_name}"
 
       return final_url
     else
@@ -313,23 +277,6 @@ end
 def resolve_url_redirects(url)
     return (`curl -Ls -o /dev/null -w %{url_effective} \"#{url}\"`)
 end
-
-# [macOS
-# Tries to find a suitable Hermes version for a given react-native-macos package.
-# For stable branches, we prefer this to be specified as a peer dependency.
-def findMatchingHermesVersion(package)
-    if package['version'] == "1000.0.0"
-        # The main branch builds from source, so skip this check
-        return nil
-    end
-
-    if package['peerDependencies']
-        return package['peerDependencies']['react-native']
-    end
-
-    hermes_log("No matching Hermes version found. Defaulting to main branch, which may be unreliable.")
-end
-# macOS]
 
 # This function checks that Hermes artifact exists.
 # As of now it should check it on the Maven repo.

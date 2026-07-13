@@ -9,17 +9,14 @@
 #import <jsi/jsi.h>
 #import <react/runtime/JSRuntimeFactory.h>
 
-namespace facebook {
-namespace react {
+namespace facebook::react {
 
 class RCTJscInstance : public JSRuntimeFactory {
  public:
   RCTJscInstance();
 
-  std::unique_ptr<JSRuntime> createJSRuntime(
-      std::shared_ptr<MessageQueueThread> msgQueueThread) noexcept override;
+  std::unique_ptr<JSRuntime> createJSRuntime(std::shared_ptr<MessageQueueThread> msgQueueThread) noexcept override;
 
-  ~RCTJscInstance(){};
+  ~RCTJscInstance() {};
 };
-} // namespace react
-} // namespace facebook
+} // namespace facebook::react

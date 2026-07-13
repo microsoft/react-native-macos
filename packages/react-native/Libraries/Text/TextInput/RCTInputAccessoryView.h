@@ -7,11 +7,16 @@
 
 #import <React/RCTUIKit.h> // [macOS]
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 @class RCTBridge;
 @class RCTInputAccessoryViewContent;
 
+__attribute__((deprecated("This API will be removed along with the legacy architecture.")))
 @interface RCTInputAccessoryView : RCTUIView // [macOS]
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge;
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_ARCH

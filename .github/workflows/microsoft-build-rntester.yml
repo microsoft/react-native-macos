@@ -5,14 +5,15 @@ on:
 
 jobs:
   build-rntester:
-    name: "${{ matrix.platform }}, ${{ matrix.arch }}, ${{ matrix.linkage }}"
+    name: "${{ matrix.platform }}, ${{ matrix.linkage }}"
     runs-on: macos-26
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
         platform: [macos, ios, visionos]
-        arch: [oldarch, newarch]
+        # React Native 0.83 removed the legacy architecture; the New Architecture
+        # is the only supported runtime path, so we only build/test new arch.
         linkage: [static, dynamic]
         include:
           # Platform-specific properties
@@ -28,11 +29,6 @@ jobs:
             sdk: xrsimulator
             scheme: RNTester-visionOS
             packager_platform: ios
-          # Architecture-specific properties
-          - arch: oldarch
-            new_arch_enabled: '0'
-          - arch: newarch
-            new_arch_enabled: '1'
           # Linkage-specific properties
           - linkage: static
             use_frameworks: ''
@@ -63,7 +59,7 @@ jobs:
         # Static builds stay strict/required.
         continue-on-error: ${{ matrix.linkage == 'dynamic' }}
         env:
-          RCT_NEW_ARCH_ENABLED: ${{ matrix.new_arch_enabled }}
+          RCT_NEW_ARCH_ENABLED: '1'
           USE_FRAMEWORKS: ${{ matrix.use_frameworks }}
         run: |
           set -eox pipefail

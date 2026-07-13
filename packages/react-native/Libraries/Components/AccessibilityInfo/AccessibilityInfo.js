@@ -98,8 +98,9 @@ const AccessibilityInfo = {
    * See https://reactnative.dev/docs/accessibilityinfo#isBoldTextEnabled
    */
   isBoldTextEnabled(): Promise<boolean> {
-    // [macOS rework logic to return Promise.resolve(false) on macOS
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === 'android') {
+      return Promise.resolve(false);
+    } else {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerApple != null) {
           NativeAccessibilityManagerApple.getCurrentBoldTextState(
@@ -107,13 +108,10 @@ const AccessibilityInfo = {
             reject,
           );
         } else {
-          reject(null);
+          reject(new Error('NativeAccessibilityManagerIOS is not available'));
         }
       });
-    } else {
-      return Promise.resolve(false);
     }
-    // macOS]
   },
 
   /**
@@ -130,7 +128,11 @@ const AccessibilityInfo = {
         if (NativeAccessibilityInfoAndroid?.isGrayscaleEnabled != null) {
           NativeAccessibilityInfoAndroid.isGrayscaleEnabled(resolve);
         } else {
-          reject(null);
+          reject(
+            new Error(
+              'NativeAccessibilityInfoAndroid.isGrayscaleEnabled is not available',
+            ),
+          );
         }
       });
     } else {
@@ -141,7 +143,7 @@ const AccessibilityInfo = {
             reject,
           );
         } else {
-          reject(null);
+          reject(new Error('AccessibilityInfo native module is not available'));
         }
       });
     }
@@ -183,7 +185,11 @@ const AccessibilityInfo = {
         if (NativeAccessibilityInfoAndroid?.isInvertColorsEnabled != null) {
           NativeAccessibilityInfoAndroid.isInvertColorsEnabled(resolve);
         } else {
-          reject(null);
+          reject(
+            new Error(
+              'NativeAccessibilityInfoAndroid.isInvertColorsEnabled is not available',
+            ),
+          );
         }
       });
     } else {
@@ -194,7 +200,7 @@ const AccessibilityInfo = {
             reject,
           );
         } else {
-          reject(null);
+          reject(new Error('AccessibilityInfo native module is not available'));
         }
       });
     }
@@ -214,7 +220,7 @@ const AccessibilityInfo = {
         if (NativeAccessibilityInfoAndroid != null) {
           NativeAccessibilityInfoAndroid.isReduceMotionEnabled(resolve);
         } else {
-          reject(null);
+          reject(new Error('AccessibilityInfo native module is not available'));
         }
       } else {
         if (NativeAccessibilityManagerApple != null) {
@@ -223,7 +229,7 @@ const AccessibilityInfo = {
             reject,
           );
         } else {
-          reject(null);
+          reject(new Error('NativeAccessibilityManagerIOS is not available'));
         }
       }
     });
@@ -241,7 +247,11 @@ const AccessibilityInfo = {
         if (NativeAccessibilityInfoAndroid?.isHighTextContrastEnabled != null) {
           NativeAccessibilityInfoAndroid.isHighTextContrastEnabled(resolve);
         } else {
-          reject(null);
+          reject(
+            new Error(
+              'NativeAccessibilityInfoAndroid.isHighTextContrastEnabled is not available',
+            ),
+          );
         }
       } else {
         return Promise.resolve(false);
@@ -269,7 +279,11 @@ const AccessibilityInfo = {
             reject,
           );
         } else {
-          reject(null);
+          reject(
+            new Error(
+              'NativeAccessibilityManagerIOS.getCurrentDarkerSystemColorsState is not available',
+            ),
+          );
         }
       }
     });
@@ -298,7 +312,11 @@ const AccessibilityInfo = {
             reject,
           );
         } else {
-          reject(null);
+          reject(
+            new Error(
+              'NativeAccessibilityManagerIOS.getCurrentPrefersCrossFadeTransitionsState is not available',
+            ),
+          );
         }
       }
     });
@@ -313,8 +331,9 @@ const AccessibilityInfo = {
    * See https://reactnative.dev/docs/accessibilityinfo#isReduceTransparencyEnabled
    */
   isReduceTransparencyEnabled(): Promise<boolean> {
-    // [macOS rework logic to return Promise.resolve(false) on macOS
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === 'android') {
+      return Promise.resolve(false);
+    } else {
       return new Promise((resolve, reject) => {
         if (NativeAccessibilityManagerApple != null) {
           NativeAccessibilityManagerApple.getCurrentReduceTransparencyState(
@@ -322,13 +341,10 @@ const AccessibilityInfo = {
             reject,
           );
         } else {
-          reject(null);
+          reject(new Error('NativeAccessibilityManagerIOS is not available'));
         }
       });
-    } else {
-      return Promise.resolve(false);
     }
-    // macOS]
   },
 
   /**
@@ -345,7 +361,7 @@ const AccessibilityInfo = {
         if (NativeAccessibilityInfoAndroid != null) {
           NativeAccessibilityInfoAndroid.isTouchExplorationEnabled(resolve);
         } else {
-          reject(null);
+          reject(new Error('NativeAccessibilityInfoAndroid is not available'));
         }
       } else {
         if (NativeAccessibilityManagerApple != null) {
@@ -354,7 +370,7 @@ const AccessibilityInfo = {
             reject,
           );
         } else {
-          reject(null);
+          reject(new Error('NativeAccessibilityManagerIOS is not available'));
         }
       }
     });
@@ -379,10 +395,18 @@ const AccessibilityInfo = {
         ) {
           NativeAccessibilityInfoAndroid.isAccessibilityServiceEnabled(resolve);
         } else {
-          reject(null);
+          reject(
+            new Error(
+              'NativeAccessibilityInfoAndroid.isAccessibilityServiceEnabled is not available',
+            ),
+          );
         }
       } else {
-        reject(null);
+        reject(
+          new Error(
+            'isAccessibilityServiceEnabled is only available on Android',
+          ),
+        );
       }
     });
   },
@@ -432,13 +456,13 @@ const AccessibilityInfo = {
    */
   addEventListener<K: $Keys<AccessibilityEventDefinitions>>(
     eventName: K,
-    // $FlowIssue[incompatible-type] - Flow bug with unions and generics (T128099423)
+    // $FlowFixMe[incompatible-type] - Flow bug with unions and generics (T128099423)
     handler: (...AccessibilityEventDefinitions[K]) => void,
   ): EventSubscription {
     const deviceEventName = EventNames.get(eventName);
     return deviceEventName == null
       ? {remove(): void {}}
-      : // $FlowFixMe[incompatible-call]
+      : // $FlowFixMe[incompatible-type]
         RCTDeviceEventEmitter.addListener(deviceEventName, handler);
   },
 

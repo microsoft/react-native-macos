@@ -49,21 +49,6 @@ NativeIntersectionObserver::NativeIntersectionObserver(
     std::shared_ptr<CallInvoker> jsInvoker)
     : NativeIntersectionObserverCxxSpec(std::move(jsInvoker)) {}
 
-void NativeIntersectionObserver::observe(
-    jsi::Runtime& runtime,
-    NativeIntersectionObserverObserveOptions options) {
-  observeV2(runtime, std::move(options));
-}
-
-void NativeIntersectionObserver::unobserve(
-    jsi::Runtime& runtime,
-    IntersectionObserverObserverId intersectionObserverId,
-    std::shared_ptr<const ShadowNode> targetShadowNode) {
-  auto token =
-      tokenFromShadowNodeFamily(runtime, targetShadowNode->getFamilyShared());
-  unobserveV2(runtime, intersectionObserverId, std::move(token));
-}
-
 jsi::Object NativeIntersectionObserver::observeV2(
     jsi::Runtime& runtime,
     NativeIntersectionObserverObserveOptions options) {
@@ -79,6 +64,7 @@ jsi::Object NativeIntersectionObserver::observeV2(
 
   auto thresholds = options.thresholds;
   auto rootThresholds = options.rootThresholds;
+  auto rootMargin = options.rootMargin;
   auto& uiManager = getUIManagerFromRuntime(runtime);
 
   intersectionObserverManager_.observe(
@@ -87,6 +73,7 @@ jsi::Object NativeIntersectionObserver::observeV2(
       shadowNodeFamily,
       thresholds,
       rootThresholds,
+      rootMargin,
       uiManager);
 
   return tokenFromShadowNodeFamily(runtime, shadowNodeFamily);

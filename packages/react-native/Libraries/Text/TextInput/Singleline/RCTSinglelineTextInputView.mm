@@ -7,6 +7,8 @@
 
 #import <React/RCTSinglelineTextInputView.h>
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #import <React/RCTBridge.h>
 
 #include <React/RCTUITextField.h>
@@ -100,3 +102,5 @@
 #endif // macOS]
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_ARCH

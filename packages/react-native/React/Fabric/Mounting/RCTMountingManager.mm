@@ -143,7 +143,7 @@ static void RCTPerformMountInstructions(
   RCTMountingTransactionObserverCoordinator _observerCoordinator;
   BOOL _transactionInFlight;
   BOOL _followUpTransactionRequired;
-  ContextContainer::Shared _contextContainer;
+  std::shared_ptr<const ContextContainer> _contextContainer;
 }
 
 - (instancetype)init
@@ -155,7 +155,7 @@ static void RCTPerformMountInstructions(
   return self;
 }
 
-- (void)setContextContainer:(ContextContainer::Shared)contextContainer
+- (void)setContextContainer:(std::shared_ptr<const ContextContainer>)contextContainer
 {
   _contextContainer = contextContainer;
 }
@@ -299,7 +299,7 @@ static void RCTPerformMountInstructions(
   SurfaceId surfaceId = RCTSurfaceIdForView(componentView);
   Props::Shared oldProps = [componentView props];
   Props::Shared newProps = componentDescriptor.cloneProps(
-      PropsParserContext{surfaceId, *_contextContainer.get()}, oldProps, RawProps(std::move(props)));
+      PropsParserContext{surfaceId, *_contextContainer}, oldProps, RawProps(std::move(props)));
 
   NSSet<NSString *> *propKeys = componentView.propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN ?: [NSSet new];
   propKeys = [propKeys setByAddingObjectsFromArray:propsKeysToBeUpdated];

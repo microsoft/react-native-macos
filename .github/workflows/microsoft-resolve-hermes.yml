@@ -3,7 +3,8 @@
 # Strategy (fast path first):
 #   1. Download upstream Hermes tarball from Maven/Sonatype
 #   2. If found → recompose xcframework (add macOS slice) → upload artifact → done
-#   3. If not found → resolve Hermes commit at merge base → check cache → upload if cached
+#   3. If not found → resolve pinned Hermes tag from sdks/.hermesversion or
+#      sdks/.hermesv1version → check cache → upload if cached
 #
 # Build-from-source fallback (only when recomposed != true AND cache-hit != true):
 #   build-hermesc → build 5 platform slices in parallel → assemble universal xcframework
@@ -67,9 +68,9 @@ jobs:
           path: hermes-destroot
           retention-days: 30
 
-      # Step 3 (fallback): No upstream tarball — resolve the Hermes commit hash
-      # at the merge base with facebook/react-native and check the build cache.
-      - name: Resolve Hermes commit at merge base
+      # Step 3 (fallback): No upstream tarball — resolve the pinned Hermes tag
+      # from sdks/.hermesversion or sdks/.hermesv1version and check the build cache.
+      - name: Resolve pinned Hermes tag
         if: steps.recompose.outputs.recomposed != 'true'
         id: resolve
         run: node .github/scripts/resolve-hermes.mts resolve-commit

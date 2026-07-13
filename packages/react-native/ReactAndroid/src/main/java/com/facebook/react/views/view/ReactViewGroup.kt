@@ -106,7 +106,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
         oldLeft: Int,
         oldTop: Int,
         oldRight: Int,
-        oldBottom: Int
+        oldBottom: Int,
     ) {
       if (parent?.removeClippedSubviews == true) {
         parent?.updateSubviewClipStatus(v)
@@ -130,14 +130,14 @@ public open class ReactViewGroup public constructor(context: Context?) :
    * those methods may return views that are not attached. This is risky but allows us to perform a
    * correct cleanup in `NativeViewHierarchyManager`.
    */
-  private var _removeClippedSubviews = false
+  internal var _removeClippedSubviews = false
 
   @Volatile private var inSubviewClippingLoop = false
   private var allChildren: Array<View?>? = null
   internal var allChildrenCount: Int = 0
     private set
 
-  private var clippingRect: Rect? = null
+  internal var clippingRect: Rect? = null
 
   public override var hitSlopRect: Rect? = null
   public override var pointerEvents: PointerEvents = PointerEvents.AUTO
@@ -153,6 +153,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
   private var accessibilityStateChangeListener:
       AccessibilityManager.AccessibilityStateChangeListener? =
       null
+  private var focusOnAttach = false
 
   init {
     initView()
@@ -212,6 +213,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
     updateBackgroundDrawable(null)
 
     resetPointerEvents()
+
+    // In case a focus was attempted but the view never attached, reset to false
+    focusOnAttach = false
   }
 
   private var _drawingOrderHelper: ViewGroupDrawingOrderHelper? = null
@@ -227,7 +231,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
     assertExplicitMeasureSpec(widthMeasureSpec, heightMeasureSpec)
 
     setMeasuredDimension(
-        MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec))
+        MeasureSpec.getSize(widthMeasureSpec),
+        MeasureSpec.getSize(heightMeasureSpec),
+    )
   }
 
   override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -254,7 +260,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
   }
 
   @Deprecated(
-      "setTranslucentBackgroundDrawable is deprecated since React Native 0.76.0 and will be removed in a future version")
+      "setTranslucentBackgroundDrawable is deprecated since React Native 0.76.0 and will be removed in a future version"
+  )
   public fun setTranslucentBackgroundDrawable(background: Drawable?) {
     setFeedbackUnderlay(this, background)
   }
@@ -326,7 +333,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
 
   @Deprecated(
       message = "setBorderRadius(Float) is deprecated and will be removed in the future.",
-      replaceWith = ReplaceWith("setBorderRadius(Float,LengthPercentage)"))
+      replaceWith = ReplaceWith("setBorderRadius(Float,LengthPercentage)"),
+  )
   public fun setBorderRadius(borderRadius: Float) {
     val radius =
         if (borderRadius.isNaN()) null
@@ -336,7 +344,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
 
   @Deprecated(
       message = "setBorderRadius(Float) is deprecated and will be removed in the future.",
-      replaceWith = ReplaceWith("setBorderRadius(Float,LengthPercentage)"))
+      replaceWith = ReplaceWith("setBorderRadius(Float,LengthPercentage)"),
+  )
   public fun setBorderRadius(borderRadius: Float, position: Int) {
     val radius =
         if (borderRadius.isNaN()) null
@@ -411,6 +420,19 @@ public open class ReactViewGroup public constructor(context: Context?) :
     updateClippingToRect(clippingRect, excludedViews)
   }
 
+  internal fun requestFocusFromJS() {
+    if (isAttachedToWindow) {
+      super.requestFocus(FOCUS_DOWN, null)
+    } else {
+      focusOnAttach = true
+    }
+  }
+
+  internal fun clearFocusFromJS() {
+    focusOnAttach = false
+    super.clearFocus()
+  }
+
   override fun endViewTransition(view: View) {
     super.endViewTransition(view)
     childrenRemovedWhileTransitioning?.remove(view.id)
@@ -426,7 +448,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
   private fun isChildRemovedWhileTransitioning(child: View): Boolean =
       childrenRemovedWhileTransitioning?.contains(child.id) == true
 
-  private fun updateClippingToRect(clippingRect: Rect, excludedViewsSet: Set<Int>? = null) {
+  internal fun updateClippingToRect(clippingRect: Rect, excludedViewsSet: Set<Int>? = null) {
     val childArray = checkNotNull(allChildren)
     inSubviewClippingLoop = true
     var clippedSoFar = 0
@@ -445,14 +467,16 @@ public open class ReactViewGroup public constructor(context: Context?) :
 
         throw IllegalStateException(
             "Invalid clipping state. i=$i clippedSoFar=$clippedSoFar count=$childCount allChildrenCount=$allChildrenCount recycleCount=$recycleCount realClippedSoFar=$realClippedSoFar uniqueViewsCount=${uniqueViews.size} excludedViews=${excludedViewsSet?.size ?: 0}",
-            ex)
+            ex,
+        )
       }
       if (isViewClipped(childArray[i], i)) {
         clippedSoFar++
       }
       if (i - clippedSoFar > childCount) {
         throw IllegalStateException(
-            "Invalid clipping state. i=$i clippedSoFar=$clippedSoFar count=$childCount allChildrenCount=$allChildrenCount recycleCount=$recycleCount  excludedViews=${excludedViewsSet?.size ?: 0}")
+            "Invalid clipping state. i=$i clippedSoFar=$clippedSoFar count=$childCount allChildrenCount=$allChildrenCount recycleCount=$recycleCount  excludedViews=${excludedViewsSet?.size ?: 0}"
+        )
       }
     }
     inSubviewClippingLoop = false
@@ -462,7 +486,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
       clippingRect: Rect,
       idx: Int,
       clippedSoFar: Int,
-      excludedViewsSet: Set<Int>? = null
+      excludedViewsSet: Set<Int>? = null,
   ) {
     assertOnUiThread()
 
@@ -483,11 +507,13 @@ public open class ReactViewGroup public constructor(context: Context?) :
       needUpdateClippingRecursive = true
     }
     // We don't want to clip a view that is currently focused at that might break focus navigation
-    if (!intersects &&
-        !isViewClipped(child, idx) &&
-        !isAnimating &&
-        child !== focusedChild &&
-        !shouldSkipView) {
+    if (
+        !intersects &&
+            !isViewClipped(child, idx) &&
+            !isAnimating &&
+            child !== focusedChild &&
+            !shouldSkipView
+    ) {
       setViewClipped(child, true)
       // We can try saving on invalidate call here as the view that we remove is out of visible area
       // therefore invalidation is not necessary.
@@ -555,6 +581,11 @@ public open class ReactViewGroup public constructor(context: Context?) :
     if (_removeClippedSubviews) {
       updateClippingRect()
     }
+
+    if (focusOnAttach) {
+      requestFocusFromJS()
+      focusOnAttach = false
+    }
   }
 
   private fun customDrawOrderDisabled(): Boolean {
@@ -602,7 +633,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
       if (expectedTag != tag) {
         logSoftException(
             ReactSoftExceptionLogger.Categories.RVG_ON_VIEW_REMOVED,
-            ReactNoCrashSoftException("View clipping tag mismatch: tag=$tag expected=$expectedTag"))
+            ReactNoCrashSoftException("View clipping tag mismatch: tag=$tag expected=$expectedTag"),
+        )
       }
     }
     if (_removeClippedSubviews) {
@@ -686,10 +718,13 @@ public open class ReactViewGroup public constructor(context: Context?) :
                 logSoftException(
                     ReactSoftExceptionLogger.Categories.CLIPPING_PROHIBITED_VIEW,
                     ReactNoCrashSoftException(
-                        "Child view has been added to Parent view in which it is clipped and not visible. This is not legal for this particular child view. Child: [${child.id}] $child Parent: [$id] ${toString()}"))
+                        "Child view has been added to Parent view in which it is clipped and not visible. This is not legal for this particular child view. Child: [${child.id}] $child Parent: [$id] ${toString()}"
+                    ),
+                )
               }
             }
-          })
+          }
+      )
     }
   }
 
@@ -740,7 +775,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
       logSoftException(
           ReactSoftExceptionLogger.Categories.RVG_IS_VIEW_CLIPPED,
           ReactNoCrashSoftException(
-              "View missing clipping tag: index=$index parentNull=${parent == null} parentThis=${parent === this} transitioning=$transitioning"))
+              "View missing clipping tag: index=$index parentNull=${parent == null} parentThis=${parent === this} transitioning=$transitioning"
+          ),
+      )
     }
     // fallback - should be transitioning or have no parent if the view was removed
     if (parent == null || transitioning) {
@@ -824,11 +861,13 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
 
   override fun setOverflowInset(left: Int, top: Int, right: Int, bottom: Int) {
-    if (needsIsolatedLayer(this) &&
-        (overflowInset.left != left ||
-            overflowInset.top != top ||
-            overflowInset.right != right ||
-            overflowInset.bottom != bottom)) {
+    if (
+        needsIsolatedLayer(this) &&
+            (overflowInset.left != left ||
+                overflowInset.top != top ||
+                overflowInset.right != right ||
+                overflowInset.bottom != bottom)
+    ) {
       invalidate()
     }
     overflowInset[left, top, right] = bottom
@@ -844,9 +883,11 @@ public open class ReactViewGroup public constructor(context: Context?) :
   }
 
   override fun draw(canvas: Canvas) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-        getUIManagerType(this) == UIManagerType.FABRIC &&
-        needsIsolatedLayer(this)) {
+    if (
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            getUIManagerType(this) == UIManagerType.FABRIC &&
+            needsIsolatedLayer(this)
+    ) {
       // Check if the view is a stacking context and has children, if it does, do the rendering
       // offscreen and then composite back. This follows the idea of group isolation on blending
       // https://www.w3.org/TR/compositing-1/#isolationblending
@@ -857,7 +898,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
           overflowInset.top.toFloat(),
           (width + -overflowInset.right).toFloat(),
           (height + -overflowInset.bottom).toFloat(),
-          null)
+          null,
+      )
       super.draw(canvas)
       canvas.restore()
     } else {
@@ -880,9 +922,11 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
 
     var mixBlendMode: BlendMode? = null
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-        getUIManagerType(this) == UIManagerType.FABRIC &&
-        needsIsolatedLayer(this)) {
+    if (
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            getUIManagerType(this) == UIManagerType.FABRIC &&
+            needsIsolatedLayer(this)
+    ) {
       mixBlendMode = child.getTag(R.id.mix_blend_mode) as? BlendMode
       if (mixBlendMode != null) {
         val p = Paint()
@@ -893,7 +937,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
             overflowInset.top.toFloat(),
             (width + -overflowInset.right).toFloat(),
             (height + -overflowInset.bottom).toFloat(),
-            p)
+            p,
+        )
       }
     }
 
@@ -940,18 +985,24 @@ public open class ReactViewGroup public constructor(context: Context?) :
   }
 
   override fun addChildrenForAccessibility(outChildren: ArrayList<View>) {
-    val axOrderParentOrderList =
-        (getTag(R.id.accessibility_order_parent) as ReactViewGroup?)?.axOrderList
+    val axOrderParent = getTag(R.id.accessibility_order_parent)
+    var axOrderParentOrderList: MutableList<String>? = null
+    if (axOrderParent is ReactViewGroup) {
+      axOrderParentOrderList = (axOrderParent as ReactViewGroup?)?.axOrderList
+    }
+
     val axOrder: MutableList<*>? = axOrderList
     if (axOrder != null) {
 
       val am: AccessibilityManager? =
-          this.getContext().getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager?
+          this.context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager?
       if (accessibilityStateChangeListener == null && am != null) {
         val newAccessibilityStateChangeListener =
             AccessibilityManager.AccessibilityStateChangeListener { enabled ->
               if (!enabled) {
-                ReactAxOrderHelper.restoreFocusability(this)
+                for (i in 0..<childCount) {
+                  ReactAxOrderHelper.restoreFocusability(getChildAt(i))
+                }
               }
             }
 
@@ -962,7 +1013,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
       val result = arrayOfNulls<View?>(axOrder.size)
 
       for (i in 0..<childCount) {
-        ReactAxOrderHelper.buildAxOrderList(getChildAt(i), axOrder, result)
+        ReactAxOrderHelper.buildAxOrderList(getChildAt(i), this, axOrder, result)
       }
 
       for (i in result.indices) {
@@ -984,7 +1035,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
         // If this view can coopt, turn the focusability off its children but add them to the tree
       } else if (isFocusable && (contentDescription == null || contentDescription == "")) {
         super.addChildrenForAccessibility(outChildren)
-        ReactAxOrderHelper.disableFocusForSubtree(this, axOrderParentOrderList)
+        for (i in 0..<childCount) {
+          ReactAxOrderHelper.disableFocusForSubtree(getChildAt(i), axOrderParentOrderList)
+        }
         // if this view is focusable and has a contentDescription then we don't care about its
         // descendants for accessibility
       } else if (isFocusable && !(contentDescription == null || contentDescription == "")) {

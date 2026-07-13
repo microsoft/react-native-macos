@@ -12,9 +12,9 @@
 #import <React/RCTSurfaceHostingView.h>
 
 @implementation RCTLogBoxView {
-#ifndef RCT_FIT_RM_OLD_RUNTIME
+#ifndef RCT_REMOVE_LEGACY_ARCH
   RCTSurface *_surface;
-#endif // RCT_FIT_RM_OLD_RUNTIME
+#endif // RCT_REMOVE_LEGACY_ARCH
 #if TARGET_OS_OSX // [macOS
   NSWindow *_window;
 #endif // macOS]
@@ -23,7 +23,7 @@
 #if !TARGET_OS_OSX // [macOS]
 - (instancetype)initWithFrame:(CGRect)frame
 {
-  if ((self = [super initWithFrame:frame])) {
+  if ((self = [super initWithFrame:frame]) != nullptr) {
     self.windowLevel = UIWindowLevelStatusBar - 1;
     self.backgroundColor = [UIColor clearColor];
   }
@@ -46,11 +46,9 @@
 #endif // macOS]
 }
 
-#ifndef RCT_FIT_RM_OLD_RUNTIME
+#ifndef RCT_REMOVE_LEGACY_ARCH
 - (instancetype)initWithWindow:(RCTPlatformWindow *)window bridge:(RCTBridge *)bridge // [macOS]
 {
-  RCTErrorNewArchitectureValidation(RCTNotAllowedInFabricWithoutLegacy, @"RCTLogBoxView", nil);
-
 #if !TARGET_OS_OSX // [macOS]
   self = [super initWithWindowScene:window.windowScene];
 
@@ -59,7 +57,7 @@
 #else // [macOS
   NSRect bounds = NSMakeRect(0, 0, 600, 800);
   self = [super initWithContentRect:bounds styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:YES];
-  
+
   self.level = NSStatusWindowLevel;
   self.backgroundColor = [NSColor clearColor];
 
@@ -68,7 +66,7 @@
 
   _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
   [_surface start];
-  
+
   if (![_surface synchronouslyWaitForStage:RCTSurfaceStageSurfaceDidInitialMounting timeout:1]) {
     RCTLogInfo(@"Failed to mount LogBox within 1s");
   }
@@ -76,17 +74,17 @@
 
   return self;
 }
-#endif // RCT_FIT_RM_OLD_RUNTIME
+#endif // RCT_REMOVE_LEGACY_ARCH
 
 - (instancetype)initWithWindow:(RCTPlatformWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
   self = [super initWithWindowScene:window.windowScene];
 #else // [macOS
-  self = [super initWithContentRect:NSMakeRect(0, 0, 600, 800)  
-                          styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskFullSizeContentView  
-                            backing:NSBackingStoreBuffered  
-                              defer:YES];  
+  self = [super initWithContentRect:NSMakeRect(0, 0, 600, 800)
+                          styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskFullSizeContentView
+                            backing:NSBackingStoreBuffered
+                              defer:YES];
   _window = window;
 #endif // macOS]
 
@@ -104,9 +102,9 @@
 - (void)layoutSubviews
 {
   [super layoutSubviews];
-#ifndef RCT_FIT_RM_OLD_RUNTIME
+#ifndef RCT_REMOVE_LEGACY_ARCH
   [_surface setSize:self.frame.size];
-#endif // RCT_FIT_RM_OLD_RUNTIME
+#endif // RCT_REMOVE_LEGACY_ARCH
 }
 #else // [macOS
 - (void)layoutIfNeeded
@@ -121,7 +119,9 @@
 #if !TARGET_OS_OSX // [macOS]
 - (void)dealloc
 {
+#if !TARGET_OS_MACCATALYST // sharedApplication.delegate is not available on Mac Catalyst
   [RCTSharedApplication().delegate.window makeKeyWindow];
+#endif
 }
 #endif // [macOS]
 
