@@ -1,5 +1,7 @@
 # RCTUIKit
 
+<!-- [macOS] -->
+
 RCTUIKit is a UIKit/AppKit compatibility layer for React Native macOS. It lets the rest of the
 codebase use UIKit-style types and APIs on both iOS and macOS by providing:
 
@@ -10,6 +12,10 @@ codebase use UIKit-style types and APIs on both iOS and macOS by providing:
   `UIImageGetScale`) that smooth over behavioral differences between the two frameworks.
 - **UIKit → AppKit shims** — Constants, enums, notifications, and font defines that let code
   written against UIKit compile on macOS without `#if` guards everywhere.
+
+The canonical module is `RCTUIKit`; import its umbrella as `<RCTUIKit/RCTUIKit.h>`. Existing
+`<React/RCTUIKit.h>` and `<React/RCTPlatformDisplayLink.h>` imports remain available as
+compatibility entry points.
 
 ## Naming convention: `RCTUI` vs `RCTPlatform`
 

@@ -9,7 +9,7 @@
 
 #if TARGET_OS_OSX
 
-#import <React/RCTUIActivityIndicatorView.h>
+#import "RCTUIActivityIndicatorView.h"
 
 #import <CoreImage/CIFilter.h>
 #import <CoreImage/CIVector.h>

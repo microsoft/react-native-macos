@@ -9,7 +9,7 @@
 
 #if TARGET_OS_OSX
 
-#import <React/RCTUILabel.h>
+#import "RCTUILabel.h"
 
 @implementation RCTUILabel {}
 

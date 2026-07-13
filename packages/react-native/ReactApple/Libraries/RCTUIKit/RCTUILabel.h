@@ -11,17 +11,16 @@
 
 #include <TargetConditionals.h>
 
-#import <React/RCTUIKitCompat.h>
+#import "RCTUIKitCompat.h"
 
 #if !TARGET_OS_OSX
-@compatibility_alias RCTUISwitch UISwitch;
+@compatibility_alias RCTUILabel UILabel;
 #else
-@interface RCTUISwitch : NSSwitch
+@interface RCTUILabel : NSTextField
 NS_ASSUME_NONNULL_BEGIN
-@property (nonatomic, getter=isOn) BOOL on;
-
-- (void)setOn:(BOOL)on animated:(BOOL)animated;
-
+@property(nonatomic, copy) NSString* _Nullable text;
+@property(nonatomic, assign) NSInteger numberOfLines;
+@property(nonatomic, assign) NSTextAlignment textAlignment;
 NS_ASSUME_NONNULL_END
 @end
 #endif
