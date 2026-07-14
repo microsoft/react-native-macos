@@ -10,6 +10,7 @@
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
 #include "InspectorFlags.h"
+#include "InspectorInterfaces.h"
 #include "NetworkIOAgent.h"
 #include "SessionState.h"
 #include "TracingAgent.h"
@@ -145,6 +146,19 @@ class HostAgent::Impl final {
     }
     if (InspectorFlags::getInstance().getNetworkInspectionEnabled()) {
       if (req.method == "Network.enable") {
+        auto& inspector = getInspectorInstance();
+        if (inspector.getSystemState().registeredHostsCount > 1) {
+          frontendChannel_(
+              cdp::jsonError(
+                  req.id,
+                  cdp::ErrorCode::InternalError,
+                  "The Network domain is unavailable when multiple React Native hosts are registered."));
+          return {
+              .isFinishedHandlingRequest = true,
+              .shouldSendOKResponse = false,
+          };
+        }
+
         sessionState_.isNetworkDomainEnabled = true;
 
         return {
@@ -184,6 +198,42 @@ class HostAgent::Impl final {
           .shouldSendOKResponse = true,
       };
     }
+    if (InspectorFlags::getInstance().getScreenshotCaptureEnabled()) {
+      if (req.method == "Page.captureScreenshot") {
+        std::optional<std::string> format;
+        std::optional<int> quality;
+
+        if (req.params.isObject()) {
+          if (req.params.count("format") != 0u) {
+            format = req.params.at("format").asString();
+          }
+          if (req.params.count("quality") != 0u) {
+            quality = static_cast<int>(req.params.at("quality").asInt());
+          }
+        }
+
+        auto base64Data = targetController_.getDelegate().captureScreenshot(
+            {.format = format, .quality = quality});
+
+        if (base64Data.has_value()) {
+          frontendChannel_(
+              cdp::jsonResult(
+                  req.id,
+                  folly::dynamic::object("data", std::move(*base64Data))));
+        } else {
+          frontendChannel_(
+              cdp::jsonError(
+                  req.id,
+                  cdp::ErrorCode::InternalError,
+                  "Failed to capture screenshot"));
+        }
+
+        return {
+            .isFinishedHandlingRequest = true,
+            .shouldSendOKResponse = false,
+        };
+      }
+    }
     if (req.method == "Overlay.setPausedInDebuggerMessage") {
       auto message =
           req.params.isObject() && (req.params.count("message") != 0u)
@@ -216,12 +266,17 @@ class HostAgent::Impl final {
           cdp::jsonNotification(
               "ReactNativeApplication.metadataUpdated",
               createHostMetadataPayload(hostMetadata_)));
+      auto& inspector = getInspectorInstance();
+      bool isSingleHost = inspector.getSystemState().registeredHostsCount <= 1;
+      if (!isSingleHost) {
+        emitSystemStateChanged(isSingleHost);
+      }
 
       auto stashedTraceRecording =
           targetController_.getDelegate()
-              .unstable_getTraceRecordingThatWillBeEmittedOnInitialization();
+              .unstable_getHostTracingProfileThatWillBeEmittedOnInitialization();
       if (stashedTraceRecording.has_value()) {
-        tracingAgent_.emitExternalTraceRecording(
+        tracingAgent_.emitExternalHostTracingProfile(
             std::move(stashedTraceRecording.value()));
       }
 
@@ -366,12 +421,21 @@ class HostAgent::Impl final {
     return fuseboxClientType_ == FuseboxClientType::Fusebox;
   }
 
-  void emitExternalTraceRecording(
-      tracing::TraceRecordingState traceRecording) const {
+  void emitExternalTracingProfile(
+      tracing::HostTracingProfile tracingProfile) const {
     assert(
         hasFuseboxClientConnected() &&
         "Attempted to emit a trace recording to a non-Fusebox client");
-    tracingAgent_.emitExternalTraceRecording(std::move(traceRecording));
+    tracingAgent_.emitExternalHostTracingProfile(std::move(tracingProfile));
+  }
+
+  void emitSystemStateChanged(bool isSingleHost) {
+    frontendChannel_(
+        cdp::jsonNotification(
+            "ReactNativeApplication.systemStateChanged",
+            folly::dynamic::object("isSingleHost", isSingleHost)));
+
+    frontendChannel_(cdp::jsonNotification("Network.disable"));
   }
 
  private:
@@ -478,8 +542,8 @@ class HostAgent::Impl final {
   bool hasFuseboxClientConnected() const {
     return false;
   }
-  void emitExternalTraceRecording(tracing::TraceRecordingState traceRecording) {
-  }
+  void emitExternalTracingProfile(tracing::HostTracingProfile tracingProfile) {}
+  void emitSystemStateChanged(bool isSingleHost) {}
 };
 
 #endif // REACT_NATIVE_DEBUGGER_ENABLED
@@ -514,9 +578,13 @@ bool HostAgent::hasFuseboxClientConnected() const {
   return impl_->hasFuseboxClientConnected();
 }
 
-void HostAgent::emitExternalTraceRecording(
-    tracing::TraceRecordingState traceRecording) const {
-  impl_->emitExternalTraceRecording(std::move(traceRecording));
+void HostAgent::emitExternalTracingProfile(
+    tracing::HostTracingProfile tracingProfile) const {
+  impl_->emitExternalTracingProfile(std::move(tracingProfile));
+}
+
+void HostAgent::emitSystemStateChanged(bool isSingleHost) const {
+  impl_->emitSystemStateChanged(isSingleHost);
 }
 
 #pragma mark - Tracing

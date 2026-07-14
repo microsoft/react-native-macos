@@ -37,7 +37,7 @@ function myDevServerImpl(args) {
 
 ## Included middleware
 
-`@react-native/dev-middleware` is designed for integrators such as [`@expo/dev-server`](https://www.npmjs.com/package/@expo/dev-server) and [`@react-native/community-cli-plugin`](https://github.com/facebook/react-native/tree/main/packages/community-cli-plugin). It provides a common default implementation for core React Native dev server responsibilities.
+`@react-native/dev-middleware` is designed for integrators such as [`@expo/dev-server`](https://www.npmjs.com/package/@expo/dev-server) and [`@react-native/community-cli-plugin`](https://github.com/react/react-native/tree/main/packages/community-cli-plugin). It provides a common default implementation for core React Native dev server responsibilities.
 
 We intend to keep this to a narrow set of functionality, based around:
 
@@ -94,7 +94,7 @@ React Native frameworks may pass an `unstable_experiments` option to `createDevM
 
 ### `unstable_experiments.enableStandaloneFuseboxShell`
 
-When `true`, the debugger frontend will launch in a standalone app shell (provided by the `@react-native/debugger-shell` package) rather than in a browser window. The standalone shell provides an improved experience and will become the default in a future version of React Native.
+Enables launching the debugger frontend in a standalone app shell (provided by the `@react-native/debugger-shell` package) rather than in a browser window. Since React Native 0.83 this defaults to `true`, and may be disabled by explicitly passing `false`.
 
 The shell is powered by a separate binary that is downloaded and cached in the background (immediately after the call to `createDevMiddleware`). If there is a problem downloading or invoking this binary for the first time, the debugger frontend will revert to launching in a browser window until the next time `createDevMiddleware` is called (typically, on the next dev server start).
 

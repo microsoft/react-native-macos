@@ -395,7 +395,7 @@ describe('components', () => {
     it('does not error (but it should) on arrays of two different objects', () => {
       // This doesn't fail because we don't store object alias info in the schema
       // These are just arrays of mixed. Someday someone should fix this. NativeModules support this.
-      // More info in https://github.com/facebook/react-native/pull/48476
+      // More info in https://github.com/react/react-native/pull/48476
       expect(
         compareTypes(
           nativeComponentAllTypesCommandLookup('methodCustomObjArray'),

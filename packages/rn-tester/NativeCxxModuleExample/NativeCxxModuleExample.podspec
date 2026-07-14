@@ -12,12 +12,12 @@ Pod::Spec.new do |s|
   s.version         = package["version"]
   s.summary         = package["description"]
   s.description     = "NativeCxxModuleExample"
-  s.homepage        = "https://github.com/facebook/react-native.git"
+  s.homepage        = "https://github.com/react/react-native.git"
   s.license         = "MIT"
   s.platforms       = min_supported_versions
   s.compiler_flags  = '-Wno-nullability-completeness'
   s.author          = "Meta Platforms, Inc. and its affiliates"
-  s.source          = { :git => "https://github.com/facebook/react-native.git", :tag => "#{s.version}" }
+  s.source          = { :git => "https://github.com/react/react-native.git", :tag => "#{s.version}" }
   s.source_files    = "*.{h,cpp}"
   s.requires_arc    = true
   s.pod_target_xcconfig = {

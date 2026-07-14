@@ -23,7 +23,7 @@ const defineLazyObjectProperty = require('./defineLazyObjectProperty').default;
  *
  *   global.XMLHttpRequest = global.originalXMLHttpRequest;
  *
- * @see https://github.com/facebook/react-native/issues/934
+ * @see https://github.com/react/react-native/issues/934
  */
 export function polyfillObjectProperty<T>(
   object: {...},

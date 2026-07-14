@@ -39,10 +39,12 @@ jobs:
         run: node .github/scripts/export-versions.mts
 
       - name: Pack local react-native-macos
-        working-directory: packages/react-native
         run: |
           set -eox pipefail
-          yarn pack -o ${{ runner.temp }}/react-native-macos.tgz
+          # The @react-native-macos/virtualized-lists workspace dependency is not
+          # published at the 1000.0.0 dev version, so pack it too and override it below.
+          (cd packages/react-native && yarn pack -o ${{ runner.temp }}/react-native-macos.tgz)
+          (cd packages/virtualized-lists && yarn pack -o ${{ runner.temp }}/virtualized-lists.tgz)
 
       - name: Clone react-native-test-app
         run: |
@@ -51,20 +53,24 @@ jobs:
       - name: Configure react-native-test-app dependencies
         working-directory: react-native-test-app/packages/example-macos
         run: |
-          node ../app/scripts/internal/set-react-version.mts ${{ steps.versions.outputs.react_native_version }} --overrides '{ "react-native-macos": "file:${{ runner.temp }}/react-native-macos.tgz" }'
+          node ../app/scripts/internal/set-react-version.mts ${{ steps.versions.outputs.react_native_version }} --overrides '{ "react-native-macos": "file:${{ runner.temp }}/react-native-macos.tgz", "@react-native-macos/virtualized-lists": "file:${{ runner.temp }}/virtualized-lists.tgz" }'
 
-      - name: Pin @types/react to avoid duplicate react-native-macos
+      - name: Pin dependencies to avoid resolution conflicts
         working-directory: react-native-test-app
         run: |
-          # The test app tree carries both @types/react 19.1.x (example-macos)
-          # and 19.2.x (app), both satisfying react-native-macos's peer. Under
-          # Yarn's pnpm nodeLinker this virtualizes react-native-macos twice and
-          # trips the metro duplicate-dependency checker. Pin to a single version.
+          # 1. The test app tree carries both @types/react 19.1.x (example-macos)
+          #    and 19.2.x (app), both satisfying react-native-macos's peer. Under
+          #    Yarn's pnpm nodeLinker this virtualizes react-native-macos twice and
+          #    trips the metro duplicate-dependency checker. Pin to a single version.
+          # 2. The packed react-native-macos depends on the unpublished
+          #    @react-native-macos/virtualized-lists@1000.0.0; --overrides only covers
+          #    the direct react-native-macos dep, so force the transitive one here.
           node -e "
             const fs = require('fs');
             const root = JSON.parse(fs.readFileSync('package.json', 'utf8'));
             root.resolutions = root.resolutions || {};
             root.resolutions['@types/react'] = '~19.1.0';
+            root.resolutions['@react-native-macos/virtualized-lists'] = 'file:${{ runner.temp }}/virtualized-lists.tgz';
             fs.writeFileSync('package.json', JSON.stringify(root, null, 2) + '\n');
           "
 

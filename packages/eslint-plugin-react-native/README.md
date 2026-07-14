@@ -1,6 +1,6 @@
 # @react-native/eslint-plugin
 
-This plugin is intended to be used in [`@react-native/eslint-config`](https://github.com/facebook/react-native/tree/HEAD/packages/eslint-config-react-native). You probably want to install that package instead.
+This plugin is intended to be used in [`@react-native/eslint-config`](https://github.com/react/react-native/tree/HEAD/packages/eslint-config-react-native). You probably want to install that package instead.
 
 ## Installation
 

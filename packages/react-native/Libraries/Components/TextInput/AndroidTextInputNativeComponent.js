@@ -553,7 +553,7 @@ export type AndroidTextInputNativeProps = $ReadOnly<{
    * - `borderBottomRightRadius`
    * - `borderBottomLeftRadius`
    *
-   * see [Issue#7070](https://github.com/facebook/react-native/issues/7070)
+   * see [Issue#7070](https://github.com/react/react-native/issues/7070)
    * for more detail.
    *
    * [Styles](docs/style.html)
