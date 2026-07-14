@@ -7,6 +7,11 @@
 
 #import "RCTFrameTimingsObserver.h"
 
+#if !TARGET_OS_OSX // [macOS] This screenshot-capturing observer relies on UIKit-only APIs
+                   // (UIScene/UIWindowScene/UIGraphicsImageRenderer/drawViewHierarchyInRect) and is
+                   // only instantiated on iOS (see RCTHost.mm, guarded by TARGET_OS_IPHONE). Provide a
+                   // no-op stub on macOS below so React-Core still compiles.
+
 #import <UIKit/UIKit.h>
 
 #import <mach/thread_act.h>
@@ -296,3 +301,24 @@ struct FrameData {
 }
 
 @end
+
+#else // [macOS] No-op stub: the frame-timings screenshot observer is iOS-only (see comment above).
+
+@implementation RCTFrameTimingsObserver
+
+- (instancetype)initWithScreenshotsEnabled:(BOOL)screenshotsEnabled callback:(RCTFrameTimingCallback)callback
+{
+  return [super init];
+}
+
+- (void)start
+{
+}
+
+- (void)stop
+{
+}
+
+@end
+
+#endif // [macOS]
