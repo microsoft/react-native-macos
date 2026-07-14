@@ -181,7 +181,7 @@ RCT_EXPORT_MODULE()
     
     if (!self->_window) {
       self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
-                                                styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskFullSizeContentView
+                                                styleMask:NSWindowStyleMaskBorderless
                                                   backing:NSBackingStoreBuffered
                                                     defer:YES];
       [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
