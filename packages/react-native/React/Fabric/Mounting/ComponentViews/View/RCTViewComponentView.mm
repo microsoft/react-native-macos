@@ -501,6 +501,9 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     RCTUIAccessibilityTraits traits = RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
     self.accessibilityRole = RCTAccessibilityRoleFromTraits(traits);
     self.accessibilityEnabled = (traits & RCTUIAccessibilityTraitNotEnabled) == 0;
+    if (_axElementDescribingSelf != nil) {
+      _axElementDescribingSelf.accessibilityTraits = traits;
+    }
 #endif // macOS]
   }
 
