@@ -413,7 +413,7 @@ export type KeyboardEventPayload = $ReadOnly<{
    * The key code of the key that was pressed. For example, F would be "KeyF"
    * @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
    */
-  code: string,
+  code?: string, // macOS does not currently emit a physical key code.
   altKey: boolean,
   ctrlKey: boolean,
   metaKey: boolean,
