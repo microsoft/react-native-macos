@@ -4,6 +4,6 @@
   "baseBranch": "origin/main",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "ignore": [],
+  "ignore": ["@react-native/tester"],
   "linked": []
 }
