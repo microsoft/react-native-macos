@@ -11,7 +11,7 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {KeyEvent, NativeSyntheticEvent} from 'react-native';
+import type {KeyDownEvent, KeyUpEvent} from 'react-native';
 
 import RNTesterButton from '../../components/RNTesterButton';
 import RNTesterText from '../../components/RNTesterText';
@@ -22,8 +22,15 @@ type KeyEventLog = {
   timeStamp: number,
   type: string,
   modifiers: string,
-  ...KeyEvent,
+  key: string,
+  code?: string,
+  altKey: boolean,
+  ctrlKey: boolean,
+  metaKey: boolean,
+  shiftKey: boolean,
 };
+
+type KeyboardEvent = KeyDownEvent | KeyUpEvent;
 
 function KeyEventExample(): React.Node {
   const [log, setLog] = useState<Array<KeyEventLog>>([]);
@@ -33,38 +40,40 @@ function KeyEventExample(): React.Node {
     setLog([]);
   }, []);
 
-  const appendLog = useCallback(
-    (eventType: string, e: NativeSyntheticEvent<KeyEvent>) => {
-      const nativeEvent = e.nativeEvent;
-      const modifiers = [];
-      if (nativeEvent.altKey) {
-        modifiers.push('Alt');
-      }
-      if (nativeEvent.ctrlKey) {
-        modifiers.push('Ctrl');
-      }
-      if (nativeEvent.metaKey) {
-        modifiers.push('Meta');
-      }
-      if (nativeEvent.shiftKey) {
-        modifiers.push('Shift');
-      }
+  const appendLog = useCallback((eventType: string, e: KeyboardEvent) => {
+    const nativeEvent = e.nativeEvent;
+    const modifiers = [];
+    if (nativeEvent.altKey) {
+      modifiers.push('Alt');
+    }
+    if (nativeEvent.ctrlKey) {
+      modifiers.push('Ctrl');
+    }
+    if (nativeEvent.metaKey) {
+      modifiers.push('Meta');
+    }
+    if (nativeEvent.shiftKey) {
+      modifiers.push('Shift');
+    }
 
-      const newEntry: KeyEventLog = {
-        ...nativeEvent,
-        timeStamp: e.timeStamp,
-        type: eventType,
-        modifiers: modifiers.length > 0 ? modifiers.join('+') : 'none',
-      };
+    const newEntry: KeyEventLog = {
+      key: nativeEvent.key,
+      code: nativeEvent.code,
+      altKey: nativeEvent.altKey,
+      ctrlKey: nativeEvent.ctrlKey,
+      metaKey: nativeEvent.metaKey,
+      shiftKey: nativeEvent.shiftKey,
+      timeStamp: e.timeStamp,
+      type: eventType,
+      modifiers: modifiers.length > 0 ? modifiers.join('+') : 'none',
+    };
 
-      const limit = 20;
+    const limit = 20;
 
-      setLog(oldLog => {
-        return [newEntry, ...oldLog.slice(0, limit - 1)];
-      });
-    },
-    [],
-  );
+    setLog(oldLog => {
+      return [newEntry, ...oldLog.slice(0, limit - 1)];
+    });
+  }, []);
 
   return (
     <ScrollView>
@@ -226,6 +235,7 @@ const styles = StyleSheet.create({
   },
 });
 
+// $FlowFixMe[incompatible-type] Platform-specific RNTester examples intentionally differ.
 export default {
   title: 'Key Events',
   description:
@@ -237,5 +247,6 @@ export default {
         return <KeyEventExample />;
       },
     },
+    // $FlowFixMe[incompatible-type] Platform-specific RNTester example lists intentionally differ.
   ] as Array<RNTesterModuleExample>,
 };

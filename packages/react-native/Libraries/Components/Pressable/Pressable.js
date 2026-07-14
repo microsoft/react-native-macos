@@ -20,7 +20,8 @@ import type {
   DragEvent,
   FocusEvent,
   HandledKeyEvent,
-  KeyEvent,
+  KeyDownEvent,
+  KeyUpEvent,
 } from '../../Types/CoreEventTypes';
 // macOS]
 import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
@@ -140,12 +141,12 @@ type PressableBaseProps = $ReadOnly<{
   /**
    * Called after a key down event is detected.
    */
-  onKeyDown?: ?(event: KeyEvent) => void,
+  onKeyDown?: ?(event: KeyDownEvent) => void,
 
   /**
    * Called after a key up event is detected.
    */
-  onKeyUp?: ?(event: KeyEvent) => void,
+  onKeyUp?: ?(event: KeyUpEvent) => void,
 
   /**
    * Array of keys to receive key down events for. These events have their default native behavior prevented.
@@ -160,6 +161,9 @@ type PressableBaseProps = $ReadOnly<{
    * @platform macos
    */
   keyUpEvents?: ?Array<HandledKeyEvent>,
+  validKeysDown?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  validKeysUp?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  passthroughAllKeyEvents?: ?boolean,
 
   /**
    * Specifies whether the view should receive the mouse down event when the

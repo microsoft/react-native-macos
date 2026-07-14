@@ -15,7 +15,7 @@ import type {
   GestureResponderEvent,
   MouseEvent,
 } from '../Types/CoreEventTypes';
-import type {KeyEvent} from '../Types/CoreEventTypes'; // [macOS]
+import type {KeyDownEvent, KeyUpEvent} from '../Types/CoreEventTypes'; // [macOS]
 
 import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
 import SoundManager from '../Components/Sound/SoundManager';
@@ -102,14 +102,14 @@ export type PressabilityConfig = $ReadOnly<{
    *
    * @platform macos
    */
-  onKeyDown?: ?(event: KeyEvent) => void,
+  onKeyDown?: ?(event: KeyDownEvent) => void,
 
   /*
    * Called after a key up event is detected.
    *
    * @platform macos
    */
-  onKeyUp?: ?(event: KeyEvent) => void,
+  onKeyUp?: ?(event: KeyUpEvent) => void,
   // macOS]
 
   /**
@@ -158,8 +158,8 @@ export type EventHandlers = $ReadOnly<{
   onBlur: (event: BlurEvent) => void,
   onClick: (event: GestureResponderEvent) => void,
   onFocus: (event: FocusEvent) => void,
-  onKeyDown?: (event: KeyEvent) => void,
-  onKeyUp?: (event: KeyEvent) => void,
+  onKeyDown?: (event: KeyDownEvent) => void,
+  onKeyUp?: (event: KeyUpEvent) => void,
   onMouseEnter?: (event: MouseEvent) => void,
   onMouseLeave?: (event: MouseEvent) => void,
   onPointerEnter?: (event: PointerEvent) => void,
@@ -597,7 +597,7 @@ export default class Pressability {
       Platform.OS !== 'macos'
         ? null
         : {
-            onKeyDown: (event: KeyEvent): void => {
+            onKeyDown: (event: KeyDownEvent): void => {
               const {onKeyDown} = this._config;
               if (onKeyDown != null) {
                 onKeyDown(event);
@@ -610,13 +610,13 @@ export default class Pressability {
                 event.defaultPrevented !== true
               ) {
                 const {onPress, onPressIn} = this._config;
-                // $FlowFixMe[incompatible-type]: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+                // $FlowFixMe[incompatible-type] PressEvents don't mesh with keyboarding APIs. Keep legacy keyboard behavior.
                 onPressIn && onPressIn(event);
-                // $FlowFixMe[incompatible-type]: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+                // $FlowFixMe[incompatible-type] PressEvents don't mesh with keyboarding APIs. Keep legacy keyboard behavior.
                 onPress && onPress(event);
               }
             },
-            onKeyUp: (event: KeyEvent): void => {
+            onKeyUp: (event: KeyUpEvent): void => {
               const {onKeyUp} = this._config;
               if (onKeyUp != null) {
                 onKeyUp(event);
@@ -628,7 +628,7 @@ export default class Pressability {
                 event.defaultPrevented !== true
               ) {
                 const {onPressOut} = this._config;
-                // $FlowFixMe[incompatible-type]: PressEvents don't mesh with keyboarding APIs. Keep legacy behavior of passing KeyEvents instead
+                // $FlowFixMe[incompatible-type] PressEvents don't mesh with keyboarding APIs. Keep legacy keyboard behavior.
                 onPressOut && onPressOut(event);
               }
             },
