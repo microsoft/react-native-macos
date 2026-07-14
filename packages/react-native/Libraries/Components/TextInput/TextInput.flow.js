@@ -20,7 +20,8 @@ import type {
 import type {
   DataTransfer,
   HandledKeyEvent,
-  KeyEvent,
+  KeyDownEvent,
+  KeyUpEvent,
 } from '../../Types/CoreEventTypes';
 // macOS]
 import type {ViewProps} from '../View/ViewPropTypes';
@@ -554,13 +555,13 @@ type TextInputMacOSProps = $ReadOnly<{|
    * Callback that is called when a key is pressed down.
    * @platform macos
    */
-  onKeyDown?: ?(e: KeyEvent) => mixed,
+  onKeyDown?: ?(e: KeyDownEvent) => mixed,
 
   /**
    * Callback that is called when a key is released.
    * @platform macos
    */
-  onKeyUp?: ?(e: KeyEvent) => mixed,
+  onKeyUp?: ?(e: KeyUpEvent) => mixed,
 |}>;
 // macOS]
 

@@ -8,7 +8,11 @@
  * @format
  */
 
-import type {HandledKeyEvent, KeyEvent} from '../../Types/CoreEventTypes'; // [macOS]
+import type {
+  HandledKeyEvent,
+  KeyDownEvent,
+  KeyUpEvent,
+} from '../../Types/CoreEventTypes'; // [macOS]
 import type {ViewProps} from './ViewPropTypes';
 
 import TextAncestorContext from '../../Text/TextAncestorContext';
@@ -30,7 +34,7 @@ component View(
   const hasTextAncestor = use(TextAncestorContext);
 
   // [macOS
-  const _onKeyDown = (event: KeyEvent) => {
+  const _onKeyDown = (event: KeyDownEvent) => {
     const keyDownEvents = props.keyDownEvents;
     if (keyDownEvents != null && !event.isPropagationStopped()) {
       const isHandled = keyDownEvents.some(
@@ -51,7 +55,7 @@ component View(
     props.onKeyDown?.(event);
   };
 
-  const _onKeyUp = (event: KeyEvent) => {
+  const _onKeyUp = (event: KeyUpEvent) => {
     const keyUpEvents = props.keyUpEvents;
     if (keyUpEvents != null && !event.isPropagationStopped()) {
       const isHandled = keyUpEvents.some(
