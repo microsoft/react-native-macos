@@ -292,9 +292,9 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
   [_adapter handleCommand:(NSString *)commandName args:(NSArray *)args];
 }
 
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+- (RCTPlatformView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event // [macOS]
 {
-  UIView *result = [super hitTest:point withEvent:event];
+  RCTPlatformView *result = [super hitTest:point withEvent:event]; // [macOS]
 
   if (result == self) {
     return nil;
