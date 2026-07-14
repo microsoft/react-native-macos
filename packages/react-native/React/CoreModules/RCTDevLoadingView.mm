@@ -65,11 +65,15 @@ RCT_EXPORT_MODULE()
 {
   [self clearInitialMessageDelay];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  UIWindow *window = _window;
+  RCTPlatformWindow *window = _window; // [macOS]
   _window = nil;
   if (window) {
     RCTExecuteOnMainQueue(^{
+#if !TARGET_OS_OSX // [macOS]
       window.hidden = YES;
+#else // [macOS]
+      [window orderOut:nil];
+#endif // [macOS]
     });
   }
 }
