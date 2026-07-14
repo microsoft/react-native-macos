@@ -39,10 +39,12 @@ jobs:
         run: node .github/scripts/export-versions.mts
 
       - name: Pack local react-native-macos
-        working-directory: packages/react-native
         run: |
           set -eox pipefail
-          yarn pack -o ${{ runner.temp }}/react-native-macos.tgz
+          # The @react-native-macos/virtualized-lists workspace dependency is not
+          # published at the 1000.0.0 dev version, so pack it too and override it below.
+          (cd packages/react-native && yarn pack -o ${{ runner.temp }}/react-native-macos.tgz)
+          (cd packages/virtualized-lists && yarn pack -o ${{ runner.temp }}/virtualized-lists.tgz)
 
       - name: Clone react-native-test-app
         run: |
@@ -51,7 +53,7 @@ jobs:
       - name: Configure react-native-test-app dependencies
         working-directory: react-native-test-app/packages/example-macos
         run: |
-          node ../app/scripts/internal/set-react-version.mts ${{ steps.versions.outputs.react_native_version }} --overrides '{ "react-native-macos": "file:${{ runner.temp }}/react-native-macos.tgz" }'
+          node ../app/scripts/internal/set-react-version.mts ${{ steps.versions.outputs.react_native_version }} --overrides '{ "react-native-macos": "file:${{ runner.temp }}/react-native-macos.tgz", "@react-native-macos/virtualized-lists": "file:${{ runner.temp }}/virtualized-lists.tgz" }'
 
       - name: Pin @types/react to avoid duplicate react-native-macos
         working-directory: react-native-test-app
