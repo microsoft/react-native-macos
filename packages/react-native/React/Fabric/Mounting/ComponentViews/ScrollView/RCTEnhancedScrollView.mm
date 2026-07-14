@@ -236,7 +236,7 @@
 
 #pragma mark - UIScrollViewDelegate
 
-- (void)scrollViewDidScroll:(__unused UIScrollView *)scrollView
+- (void)scrollViewDidScroll:(__unused RCTUIScrollView *)scrollView // [macOS]
 {
   // Empty implementation. This method exists to prevent crashes when the delegate splitter
   // forwards scrollViewDidScroll: messages to RCTEnhancedScrollView.

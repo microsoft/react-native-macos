@@ -7,6 +7,8 @@
 
 #import "RCTActivityIndicatorView.h"
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #if TARGET_OS_OSX // [macOS
 #import <CoreImage/CIFilter.h>
 #import <CoreImage/CIVector.h>
@@ -15,8 +17,6 @@
 @property (nonatomic, readwrite, getter=isAnimating) BOOL animating;
 @end
 #endif // macOS]
-
-#ifndef RCT_REMOVE_LEGACY_ARCH
 
 @implementation RCTActivityIndicatorView {
 }

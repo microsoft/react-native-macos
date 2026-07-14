@@ -265,6 +265,7 @@ RCT_EXPORT_MODULE()
     }
 #endif // macOS]
 
+#if !TARGET_OS_OSX // [macOS]
     // Add button-specific constraints if button exists
     if (self->_dismissButton != nullptr) {
       [constraints addObjectsFromArray:@[
@@ -282,6 +283,7 @@ RCT_EXPORT_MODULE()
 
     [self->_window layoutIfNeeded];
     self->_window.frame = CGRectMake(0, 0, mainWindow.frame.size.width, self->_container.frame.size.height);
+#endif // [macOS]
   });
 }
 
