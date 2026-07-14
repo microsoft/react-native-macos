@@ -115,37 +115,7 @@
   }
   _accessibilityTraits = accessibilityTraits;
 
-  // Map traits to AppKit accessibility role
-  // Order matters - more specific traits should be checked first
-  NSAccessibilityRole role = NSAccessibilityUnknownRole;
-
-  if (accessibilityTraits & RCTUIAccessibilityTraitSwitch) {
-    role = NSAccessibilityCheckBoxRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitButton) {
-    role = NSAccessibilityButtonRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitLink) {
-    role = NSAccessibilityLinkRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitImage) {
-    role = NSAccessibilityImageRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitKeyboardKey) {
-    role = NSAccessibilityButtonRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitHeader) {
-    role = NSAccessibilityStaticTextRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitStaticText) {
-    role = NSAccessibilityStaticTextRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitSummaryElement) {
-    role = NSAccessibilityStaticTextRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitSearchField) {
-    role = NSAccessibilityTextFieldRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitAdjustable) {
-    role = NSAccessibilitySliderRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitUpdatesFrequently) {
-    role = NSAccessibilityProgressIndicatorRole;
-  } else if (accessibilityTraits & RCTUIAccessibilityTraitTabBar) {
-    role = NSAccessibilityTabGroupRole;
-  }
-
-  [self setAccessibilityRole:role];
+  [self setAccessibilityRole:RCTAccessibilityRoleFromTraits(accessibilityTraits)];
 
   // State traits
   // Selected trait -> accessibilitySelected
@@ -178,7 +148,7 @@
 
 - (NSArray *)accessibilityChildren
 {
-  return _view.accessibilityChildren;
+  return nil;
 }
 #endif // macOS]
 
