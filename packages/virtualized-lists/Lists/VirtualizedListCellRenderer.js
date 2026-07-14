@@ -20,7 +20,7 @@ import {VirtualizedListCellContextProvider} from './VirtualizedListContext.js';
 import invariant from 'invariant';
 import * as React from 'react';
 import {isValidElement} from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 export type Props<ItemT> = {
   CellRendererComponent?: ?React.ComponentType<CellRendererProps<ItemT>>,
@@ -32,7 +32,6 @@ export type Props<ItemT> = {
   horizontal: ?boolean,
   index: number,
   inversionStyle: StyleProp<ViewStyle>,
-  isSelected: ?boolean, // [macOS]
   item: ItemT,
   onCellLayout?: (
     event: LayoutChangeEvent,
@@ -141,7 +140,6 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
     ListItemComponent: any,
     item: ItemT,
     index: number,
-    isSelected: ?boolean, // [macOS]
   ): React.Node {
     if (renderItem && ListItemComponent) {
       console.warn(
@@ -164,7 +162,6 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       return renderItem({
         item,
         index,
-        isSelected, // [macOS]
         separators: this._separators,
       });
     }
@@ -185,7 +182,6 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       item,
       index,
       inversionStyle,
-      isSelected, // [macOS]
       onCellLayout,
       renderItem,
     } = this.props;
@@ -194,7 +190,6 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       ListItemComponent,
       item,
       index,
-      isSelected, // [macOS]
     );
 
     // NOTE: that when this is a sticky header, `onLayout` will get automatically extracted and
@@ -213,7 +208,7 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
       : horizontal
         ? [styles.row, inversionStyle]
         : inversionStyle;
-    let result = !CellRendererComponent ? ( // [macOS]
+    const result = !CellRendererComponent ? (
       <View
         style={cellStyle}
         onFocusCapture={this._onCellFocusCapture}
@@ -233,11 +228,6 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
         {itemSeparator}
       </CellRendererComponent>
     );
-
-    if (Platform.OS === 'macos') {
-      // [macOS
-      result = React.cloneElement(result, {collapsable: false});
-    } // macOS]
 
     return (
       <VirtualizedListCellContextProvider cellKey={this.props.cellKey}>

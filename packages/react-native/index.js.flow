@@ -34,7 +34,11 @@ export type {
 } from './Libraries/Components/DrawerAndroid/DrawerLayoutAndroid';
 export {default as DrawerLayoutAndroid} from './Libraries/Components/DrawerAndroid/DrawerLayoutAndroid';
 
-export type {FlatListProps} from './Libraries/Lists/FlatList';
+export type {
+  FlatListProps,
+  FlatListRenderItem,
+  FlatListRenderItemInfo,
+} from './Libraries/Lists/FlatList';
 export {default as FlatList} from './Libraries/Lists/FlatList';
 
 export type {

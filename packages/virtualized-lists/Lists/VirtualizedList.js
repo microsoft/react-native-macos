@@ -24,7 +24,6 @@ import type {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import type {KeyEvent} from 'react-native/Libraries/Types/CoreEventTypes'; // [macOS]
 
 import clamp from '../Utilities/clamp';
 import infoLog from '../Utilities/infoLog';
@@ -87,7 +86,6 @@ type ViewabilityHelperCallbackTuple = {
 type State = {
   renderMask: CellRenderMask,
   cellsAroundViewport: {first: number, last: number},
-  selectedRowIndex: number, // [macOS]
   // Used to track items added at the start of the list for maintainVisibleContentPosition.
   firstVisibleItemKey: ?string,
   // When > 0 the scroll position available in JS is considered stale and should not be used.
@@ -287,29 +285,6 @@ class VirtualizedList extends StateSafePureComponent<
     }
   }
 
-  // [macOS
-  ensureItemAtIndexIsVisible(rowIndex: number) {
-    const frame = this._listMetrics.getCellMetricsApprox(rowIndex, this.props);
-    const visTop = this._scrollMetrics.offset;
-    const visLen = this._scrollMetrics.visibleLength;
-    const visEnd = visTop + visLen;
-    const contentLength = this._listMetrics.getContentLength();
-    const frameEnd = frame.offset + frame.length;
-
-    if (frameEnd > visEnd) {
-      const newOffset = Math.min(contentLength, visTop + (frameEnd - visEnd));
-      this.scrollToOffset({offset: newOffset});
-    } else if (frame.offset < visTop) {
-      const newOffset = Math.min(frame.offset, visTop - frame.length);
-      this.scrollToOffset({offset: newOffset});
-    }
-  }
-
-  selectRowAtIndex(rowIndex: number) {
-    this._selectRowAtIndex(rowIndex);
-  }
-  // macOS]
-
   recordInteraction() {
     this._nestedChildLists.forEach(childList => {
       childList.recordInteraction();
@@ -432,7 +407,6 @@ class VirtualizedList extends StateSafePureComponent<
     this.state = {
       cellsAroundViewport: initialRenderRegion,
       renderMask: VirtualizedList._createRenderMask(props, initialRenderRegion),
-      selectedRowIndex: this.props.initialSelectedIndex ?? -1, // [macOS]
       firstVisibleItemKey:
         this.props.getItemCount(this.props.data) > minIndexForVisible
           ? VirtualizedList._getItemKey(this.props, minIndexForVisible)
@@ -784,11 +758,6 @@ class VirtualizedList extends StateSafePureComponent<
     return {
       cellsAroundViewport: constrainedCells,
       renderMask: VirtualizedList._createRenderMask(newProps, constrainedCells),
-      // [macOS
-      selectedRowIndex: Math.max(
-        -1, // Used to indicate no row is selected
-        Math.min(prevState.selectedRowIndex, itemCount),
-      ), // macOS]
       firstVisibleItemKey: newFirstVisibleItemKey,
       pendingScrollUpdateCount:
         maintainVisibleContentPositionAdjustment != null
@@ -845,13 +814,6 @@ class VirtualizedList extends StateSafePureComponent<
           index={ii}
           inversionStyle={inversionStyle}
           item={item}
-          // [macOS
-          isSelected={
-            this.props.enableSelectionOnKeyPress &&
-            this.state.selectedRowIndex === ii
-              ? true
-              : false
-          } // macOS]
           key={key}
           prevCellKey={prevCellKey}
           onUpdateSeparators={this._onUpdateSeparators}
@@ -960,13 +922,13 @@ class VirtualizedList extends StateSafePureComponent<
     const {ListEmptyComponent, ListFooterComponent, ListHeaderComponent} =
       this.props;
     const {data, horizontal} = this.props;
-    // macOS natively supports inverted lists, thus not needing an inversion style
-    const inversionStyle =
-      this.props.inverted && Platform.OS !== 'macos' // [macOS]
-        ? horizontalOrDefault(this.props.horizontal)
-          ? styles.horizontallyInverted
+    const inversionStyle = this.props.inverted
+      ? horizontalOrDefault(this.props.horizontal)
+        ? styles.horizontallyInverted
+        : Platform.OS === 'macos' // [macOS]
+          ? null
           : styles.verticallyInverted
-        : null;
+      : null;
     const cells: Array<any | React.Node> = [];
     const stickyIndicesFromProps = new Set(this.props.stickyHeaderIndices);
     const stickyHeaderIndices = [];
@@ -1019,10 +981,8 @@ class VirtualizedList extends StateSafePureComponent<
         <ListEmptyComponent />
       )): any);
       cells.push(
-        // $FlowFixMe[prop-missing] React.Element internal inspection
         <VirtualizedListCellContextProvider
           cellKey={this._getCellKey() + '-empty'}
-          collapsable={Platform.OS !== 'macos'} // [macOS]
           key="$empty">
           {this._renderEmptyComponent(element, inversionStyle)}
         </VirtualizedListCellContextProvider>,
@@ -1072,7 +1032,6 @@ class VirtualizedList extends StateSafePureComponent<
             lastMetrics.offset + lastMetrics.length - firstMetrics.offset;
           cells.push(
             <View
-              collapsable={Platform.OS !== 'macos'} // [macOS]
               key={`$spacer-${section.first}`}
               // $FlowFixMe[incompatible-type]
               style={{[spacerKey]: spacerSize}}
@@ -1114,7 +1073,6 @@ class VirtualizedList extends StateSafePureComponent<
           cellKey={this._getFooterCellKey()}
           key="$footer">
           <View
-            collapsable={Platform.OS !== 'macos'} // [macOS]
             onLayout={this._onLayoutFooter}
             style={StyleSheet.compose(
               inversionStyle,
@@ -1315,25 +1273,6 @@ class VirtualizedList extends StateSafePureComponent<
   /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
    * LTI update could not be added via codemod */
   _defaultRenderScrollComponent = props => {
-    // [macOS
-    const preferredScrollerStyleDidChangeHandler =
-      this.props.onPreferredScrollerStyleDidChange;
-    const invertedDidChange = this.props.onInvertedDidChange;
-
-    let keyDownEvents = [
-      {key: 'ArrowUp'},
-      {key: 'ArrowDown'},
-      {key: 'Home'},
-      {key: 'End'},
-    ];
-
-    const keyboardNavigationProps = {
-      focusable: true,
-      keyDownEvents: keyDownEvents,
-      onKeyDown: this._handleKeyDown,
-    };
-    // macOS]
-
     const onRefresh = props.onRefresh;
     if (this._isNestedWithSameOrientation()) {
       // Prevent VirtualizedList._onContentSizeChange from being triggered by a bubbling onContentSizeChange event.
@@ -1351,14 +1290,7 @@ class VirtualizedList extends StateSafePureComponent<
         // $FlowFixMe[prop-missing] Invalid prop usage
         // $FlowFixMe[incompatible-use]
         <ScrollView
-          // [macOS
-          {...(props.enableSelectionOnKeyPress && keyboardNavigationProps)}
-          onInvertedDidChange={invertedDidChange}
-          onPreferredScrollerStyleDidChange={
-            preferredScrollerStyleDidChangeHandler
-          }
           {...props}
-          // macOS]
           refreshControl={
             props.refreshControl == null ? (
               <RefreshControl
@@ -1374,19 +1306,9 @@ class VirtualizedList extends StateSafePureComponent<
         />
       );
     } else {
-      return (
-        // $FlowFixMe[prop-missing] Invalid prop usage
-        // $FlowFixMe[incompatible-use]
-        <ScrollView
-          // [macOS
-          {...(props.enableSelectionOnKeyPress && keyboardNavigationProps)}
-          onInvertedDidChange={invertedDidChange}
-          onPreferredScrollerStyleDidChange={
-            preferredScrollerStyleDidChangeHandler
-          } // macOS]
-          {...props}
-        />
-      );
+      // $FlowFixMe[prop-missing] Invalid prop usage
+      // $FlowFixMe[incompatible-use]
+      return <ScrollView {...props} />;
     }
   };
 
@@ -1514,81 +1436,6 @@ class VirtualizedList extends StateSafePureComponent<
   _onLayoutHeader = (e: LayoutChangeEvent) => {
     this._headerLength = this._selectLength(e.nativeEvent.layout);
   };
-
-  // [macOS
-  _selectRowAtIndex = (rowIndex: number) => {
-    const prevIndex = this.state.selectedRowIndex;
-    const newIndex = rowIndex;
-    this.setState<'selectedRowIndex'>({selectedRowIndex: newIndex});
-
-    this.ensureItemAtIndexIsVisible(newIndex);
-    if (prevIndex !== newIndex) {
-      const item = this.props.getItem(this.props.data, newIndex);
-      if (this.props.onSelectionChanged) {
-        this.props.onSelectionChanged({
-          previousSelection: prevIndex,
-          newSelection: newIndex,
-          item: item,
-        });
-      }
-    }
-  };
-
-  _selectRowAboveIndex = (rowIndex: number) => {
-    const rowAbove = rowIndex > 0 ? rowIndex - 1 : rowIndex;
-    this._selectRowAtIndex(rowAbove);
-  };
-
-  _selectRowBelowIndex = (rowIndex: number) => {
-    const rowBelow =
-      rowIndex < this.state.cellsAroundViewport.last ? rowIndex + 1 : rowIndex;
-    this._selectRowAtIndex(rowBelow);
-  };
-
-  _handleKeyDown = (event: KeyEvent) => {
-    if (Platform.OS === 'macos') {
-      this.props.onKeyDown?.(event);
-      if (event.defaultPrevented) {
-        return;
-      }
-
-      const nativeEvent = event.nativeEvent;
-      const key = nativeEvent.key;
-
-      let selectedIndex = -1;
-      if (this.state.selectedRowIndex >= 0) {
-        selectedIndex = this.state.selectedRowIndex;
-      }
-
-      if (key === 'ArrowUp') {
-        if (nativeEvent.altKey) {
-          // Option+Up selects the first element
-          this._selectRowAtIndex(0);
-        } else {
-          this._selectRowAboveIndex(selectedIndex);
-        }
-      } else if (key === 'ArrowDown') {
-        if (nativeEvent.altKey) {
-          // Option+Down selects the last element
-          this._selectRowAtIndex(this.state.cellsAroundViewport.last);
-        } else {
-          this._selectRowBelowIndex(selectedIndex);
-        }
-      } else if (key === 'Enter') {
-        if (this.props.onSelectionEntered) {
-          const item = this.props.getItem(this.props.data, selectedIndex);
-          if (this.props.onSelectionEntered) {
-            this.props.onSelectionEntered(item);
-          }
-        }
-      } else if (key === 'Home') {
-        this.scrollToOffset({animated: true, offset: 0});
-      } else if (key === 'End') {
-        this.scrollToEnd({animated: true});
-      }
-    }
-  };
-  // macOS]
 
   // $FlowFixMe[missing-local-annot]
   _renderDebugOverlay() {

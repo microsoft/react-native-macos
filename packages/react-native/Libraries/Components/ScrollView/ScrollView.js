@@ -1744,7 +1744,8 @@ class ScrollView extends React.Component<ScrollViewProps, ScrollViewState> {
     // this is the case.
     const preserveChildren =
       this.props.maintainVisibleContentPosition != null ||
-      (Platform.OS === 'android' && this.props.snapToAlignment != null);
+      (Platform.OS === 'android' && this.props.snapToAlignment != null) ||
+      (Platform.OS === 'macos' && this.props.inverted === true); // [macOS]
 
     const contentContainer = (
       <NativeScrollContentView

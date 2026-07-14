@@ -72,7 +72,6 @@ type OptionalVirtualizedSectionListProps<
   renderItem?: (info: {
     item: ItemT,
     index: number,
-    isSelected: ?boolean, // [macOS]
     section: SectionT,
     separators: {
       highlight: () => void,

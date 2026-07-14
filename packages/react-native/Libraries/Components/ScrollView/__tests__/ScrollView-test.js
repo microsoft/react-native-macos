@@ -12,6 +12,7 @@
 
 const {create, unmount, update} = require('../../../../jest/renderer');
 const Text = require('../../../Text/Text').default;
+const Platform = require('../../../Utilities/Platform').default;
 const ReactNativeTestTools = require('../../../Utilities/ReactNativeTestTools');
 const View = require('../../View/View').default;
 const ScrollView = require('../ScrollView').default;
@@ -37,6 +38,22 @@ describe('ScrollView', () => {
         jest.dontMock('../ScrollView');
       },
     );
+  });
+
+  it('preserves children for native inversion', async () => {
+    jest.dontMock('../ScrollView');
+
+    const component = await create(
+      <ScrollView inverted={true}>
+        <View />
+      </ScrollView>,
+    );
+    const nativeScrollView = component.root.findByType('RCTScrollView');
+    const contentView = component.root.findByType('RCTScrollContentView');
+
+    expect(nativeScrollView.props.inverted).toBe(true);
+    expect(contentView.props.inverted).toBe(true);
+    expect(contentView.props.collapsableChildren).toBe(Platform.OS !== 'macos');
   });
 
   it('mocks native methods and instance methods', async () => {

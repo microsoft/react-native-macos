@@ -10,8 +10,8 @@
 
 import typeof ScrollViewNativeComponent from '../Components/ScrollView/ScrollViewNativeComponent';
 import type {ViewStyleProp} from '../StyleSheet/StyleSheet';
+import type {HandledKeyEvent, KeyEvent} from '../Types/CoreEventTypes';
 import type {
-  ListRenderItem,
   ListRenderItemInfo,
   ViewabilityConfigCallbackPair,
   ViewToken,
@@ -40,6 +40,17 @@ type RequiredFlatListProps<ItemT> = {
    */
   data: ?$ReadOnly<$ArrayLike<ItemT>>,
 };
+
+export type FlatListRenderItemInfo<ItemT> = {
+  ...ListRenderItemInfo<ItemT>,
+  isSelected: boolean,
+  ...
+};
+
+export type FlatListRenderItem<ItemT> = (
+  info: FlatListRenderItemInfo<ItemT>,
+) => React.Node;
+
 type OptionalFlatListProps<ItemT> = {
   /**
    * Takes an item from `data` and renders it into the list. Example usage:
@@ -67,7 +78,7 @@ type OptionalFlatListProps<ItemT> = {
    * `highlight` and `unhighlight` (which set the `highlighted: boolean` prop) are insufficient for
    * your use-case.
    */
-  renderItem?: ?ListRenderItem<ItemT>,
+  renderItem?: ?FlatListRenderItem<ItemT>,
 
   /**
    * Optional custom style for multi-item rows generated when numColumns > 1.
@@ -90,6 +101,23 @@ type OptionalFlatListProps<ItemT> = {
    * @platform macos
    */
   enableSelectionOnKeyPress?: ?boolean,
+  /**
+   * Called when the selected row changes.
+   *
+   * @platform macos
+   */
+  onSelectionChanged?: ?(info: {
+    previousSelection: number,
+    newSelection: number,
+    item: ?(ItemT | $ReadOnlyArray<ItemT>),
+    ...
+  }) => void,
+  /**
+   * Called when Enter is pressed on the selected row.
+   *
+   * @platform macos
+   */
+  onSelectionEntered?: ?(item: ?(ItemT | $ReadOnlyArray<ItemT>)) => void,
   // macOS]
   /**
    * A marker property for telling the list to re-render (since it implements `PureComponent`). If
@@ -143,7 +171,7 @@ type OptionalFlatListProps<ItemT> = {
   initialSelectedIndex?: ?number,
   // macOS]
   /**
-   * Reverses the direction of scroll. Uses native inversion on macOS and scale transforms of -1 elsewhere
+   * Reverses the direction of scroll. Uses native inversion on macOS and scale transforms of -1 elsewhere.
    */
   inverted?: ?boolean,
   /**
@@ -201,6 +229,16 @@ function isArrayLike(data: mixed): boolean {
   return typeof Object(data).length === 'number';
 }
 
+const SELECTION_KEY_DOWN_EVENTS: $ReadOnlyArray<HandledKeyEvent> = [
+  {key: 'ArrowUp'},
+  {key: 'ArrowUp', altKey: true},
+  {key: 'ArrowDown'},
+  {key: 'ArrowDown', altKey: true},
+  {key: 'Home'},
+  {key: 'End'},
+  {key: 'Enter'},
+];
+
 type FlatListBaseProps<ItemT> = {
   ...RequiredFlatListProps<ItemT>,
   ...OptionalFlatListProps<ItemT>,
@@ -218,6 +256,10 @@ export type FlatListProps<ItemT> = {
   >,
   ...FlatListBaseProps<ItemT>,
   ...
+};
+
+type FlatListState = {
+  selectedRowIndex: number,
 };
 
 /**
@@ -328,7 +370,10 @@ export type FlatListProps<ItemT> = {
  *
  * Also inherits [ScrollView Props](docs/scrollview.html#props), unless it is nested in another FlatList of same orientation.
  */
-class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
+class FlatList<ItemT = any> extends React.PureComponent<
+  FlatListProps<ItemT>,
+  FlatListState,
+> {
   /**
    * Scrolls to the end of the content. May be janky without `getItemLayout` prop.
    */
@@ -416,9 +461,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
    * @platform macos
    */
   selectRowAtIndex(index: number) {
-    if (this._listRef) {
-      this._listRef.selectRowAtIndex(index);
-    }
+    this._selectRowAtIndex(index);
   }
   // macOS]
 
@@ -458,6 +501,9 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
 
   constructor(props: FlatListProps<ItemT>) {
     super(props);
+    this.state = {
+      selectedRowIndex: props.initialSelectedIndex ?? -1,
+    };
     this._checkProps(this.props);
     if (this.props.viewabilityConfigCallbackPairs) {
       this._virtualizedListPairs =
@@ -512,13 +558,111 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     );
 
     this._checkProps(this.props);
+
+    const itemCount = this._getItemCount(this.props.data);
+    if (this.state.selectedRowIndex >= itemCount) {
+      this.setState({selectedRowIndex: itemCount - 1});
+    }
   }
 
   _listRef: ?VirtualizedList;
+  _selectionScrollPending: boolean = false;
   _virtualizedListPairs: Array<ViewabilityConfigCallbackPair> = [];
 
   _captureRef = (ref: ?VirtualizedList) => {
     this._listRef = ref;
+  };
+
+  _selectRowAtIndex = (index: number) => {
+    const itemCount = this._getItemCount(this.props.data);
+    invariant(
+      index >= 0 && index < itemCount,
+      `selectRowAtIndex out of range: requested index ${index} is out of 0 to ${
+        itemCount - 1
+      }`,
+    );
+
+    const previousSelection = this.state.selectedRowIndex;
+    this.setState({selectedRowIndex: index});
+    this._selectionScrollPending = true;
+    try {
+      this._listRef?.scrollToIndex({animated: false, index});
+    } finally {
+      this._selectionScrollPending = false;
+    }
+
+    if (previousSelection !== index) {
+      this.props.onSelectionChanged?.({
+        previousSelection,
+        newSelection: index,
+        item: this._getItem((this.props.data: any), index),
+      });
+    }
+  };
+
+  _handleSelectionKeyDown = (event: KeyEvent) => {
+    this.props.onKeyDown?.(event);
+    if (event.defaultPrevented || event.isDefaultPrevented()) {
+      return;
+    }
+
+    const itemCount = this._getItemCount(this.props.data);
+    const selectedRowIndex = this.state.selectedRowIndex;
+
+    switch (event.nativeEvent.key) {
+      case 'ArrowUp':
+        if (itemCount > 0) {
+          this._selectRowAtIndex(
+            event.nativeEvent.altKey
+              ? 0
+              : Math.max(0, selectedRowIndex < 0 ? 0 : selectedRowIndex - 1),
+          );
+        }
+        break;
+      case 'ArrowDown':
+        if (itemCount > 0) {
+          this._selectRowAtIndex(
+            event.nativeEvent.altKey
+              ? itemCount - 1
+              : Math.min(itemCount - 1, selectedRowIndex + 1),
+          );
+        }
+        break;
+      case 'Enter':
+        if (selectedRowIndex >= 0 && selectedRowIndex < itemCount) {
+          this.props.onSelectionEntered?.(
+            this._getItem((this.props.data: any), selectedRowIndex),
+          );
+        }
+        break;
+      case 'Home':
+        this.scrollToOffset({animated: true, offset: 0});
+        break;
+      case 'End':
+        this.scrollToEnd({animated: true});
+        break;
+    }
+  };
+
+  _handleSelectionScrollToIndexFailed = (info: {
+    index: number,
+    highestMeasuredFrameIndex: number,
+    averageItemLength: number,
+    ...
+  }) => {
+    if (this.props.onScrollToIndexFailed) {
+      this.props.onScrollToIndexFailed(info);
+    } else {
+      invariant(
+        this._selectionScrollPending,
+        'scrollToIndex should be used in conjunction with getItemLayout or onScrollToIndexFailed, ' +
+          'otherwise there is no way to know the location of offscreen indices or handle failures.',
+      );
+      this.scrollToOffset({
+        animated: false,
+        offset: info.averageItemLength * info.index,
+      });
+    }
   };
 
   // $FlowFixMe[missing-local-annot]
@@ -652,15 +796,17 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
 
   _renderer = (
     ListItemComponent: ?(React.ComponentType<any> | React.MixedElement),
-    renderItem: ?ListRenderItem<ItemT>,
+    renderItem: ?FlatListRenderItem<ItemT>,
     columnWrapperStyle: ?ViewStyleProp,
     numColumns: ?number,
     extraData: ?any,
+    enableSelectionOnKeyPress: boolean,
+    selectedRowIndex: number,
     // $FlowFixMe[missing-local-annot]
   ) => {
     const cols = numColumnsOrDefault(numColumns);
 
-    const render = (props: ListRenderItemInfo<ItemT>): React.Node => {
+    const render = (props: FlatListRenderItemInfo<ItemT>): React.Node => {
       if (ListItemComponent) {
         // $FlowFixMe[not-a-component] Component isn't valid
         // $FlowFixMe[incompatible-type-arg] Component isn't valid
@@ -675,6 +821,8 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
     };
 
     const renderProp = (info: ListRenderItemInfo<ItemT>) => {
+      const isSelected =
+        enableSelectionOnKeyPress && selectedRowIndex === info.index;
       if (cols > 1) {
         const {item, index} = info;
         invariant(
@@ -688,7 +836,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
                 // $FlowFixMe[incompatible-call]
                 item: it,
                 index: index * cols + kk,
-                isSelected: info.isSelected, // [macOS]
+                isSelected,
                 separators: info.separators,
               });
               return element != null ? (
@@ -698,7 +846,7 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
           </View>
         );
       } else {
-        return render(info);
+        return render({...info, isSelected});
       }
     };
 
@@ -715,10 +863,22 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
       columnWrapperStyle,
       removeClippedSubviews: _removeClippedSubviews,
       strictMode = false,
+      enableSelectionOnKeyPress = false,
+      focusable,
+      initialSelectedIndex: _initialSelectedIndex,
+      keyDownEvents,
+      onKeyDown,
+      onScrollToIndexFailed: _onScrollToIndexFailed,
+      onSelectionChanged: _onSelectionChanged,
+      onSelectionEntered: _onSelectionEntered,
       ...restProps
     } = this.props;
 
     const renderer = strictMode ? this._memoizedRenderer : this._renderer;
+    const selectionEnabled = enableSelectionOnKeyPress === true;
+    const selectionKeyDownEvents = selectionEnabled
+      ? [...SELECTION_KEY_DOWN_EVENTS, ...(keyDownEvents ?? [])]
+      : keyDownEvents;
 
     return (
       // $FlowFixMe[incompatible-exact] - `restProps` (`Props`) is inexact.
@@ -729,6 +889,10 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
         keyExtractor={this._keyExtractor}
         ref={this._captureRef}
         viewabilityConfigCallbackPairs={this._virtualizedListPairs}
+        focusable={selectionEnabled ? focusable ?? true : focusable}
+        keyDownEvents={selectionKeyDownEvents}
+        onKeyDown={selectionEnabled ? this._handleSelectionKeyDown : onKeyDown}
+        onScrollToIndexFailed={this._handleSelectionScrollToIndexFailed}
         removeClippedSubviews={removeClippedSubviewsOrDefault(
           _removeClippedSubviews,
         )}
@@ -738,6 +902,8 @@ class FlatList<ItemT = any> extends React.PureComponent<FlatListProps<ItemT>> {
           columnWrapperStyle,
           numColumns,
           this.props.extraData,
+          selectionEnabled,
+          this.state.selectedRowIndex,
         )}
       />
     );
