@@ -27,7 +27,6 @@ import type {
 import type {
   DragEvent,
   HandledKeyEvent,
-  KeyEvent,
   ScrollEvent,
 } from '../../Types/CoreEventTypes';
 // macOS]
@@ -106,12 +105,12 @@ export type KeyboardEventProps = $ReadOnly<{|
   /**
    * Called after a key down event is detected.
    */
-  onKeyDown?: ?(event: KeyEvent) => void,
+  onKeyDown?: ?(event: KeyDownEvent) => void,
 
   /**
    * Called after a key up event is detected.
    */
-  onKeyUp?: ?(event: KeyEvent) => void,
+  onKeyUp?: ?(event: KeyUpEvent) => void,
 
   /**
    * Array of keys to receive key down events for. These events have their default native behavior prevented.
@@ -126,6 +125,9 @@ export type KeyboardEventProps = $ReadOnly<{|
    * @platform macos
    */
   keyUpEvents?: ?Array<HandledKeyEvent>,
+  validKeysDown?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  validKeysUp?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  passthroughAllKeyEvents?: ?boolean,
 |}>;
 // macOS]
 

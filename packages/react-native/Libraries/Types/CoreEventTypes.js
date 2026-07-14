@@ -363,26 +363,6 @@ export type DragEvent = NativeSyntheticEvent<
   }>,
 >;
 
-export type KeyEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
-    // Modifier keys
-    capsLockKey: boolean,
-    shiftKey: boolean,
-    ctrlKey: boolean,
-    altKey: boolean,
-    metaKey: boolean,
-    numericPadKey: boolean,
-    helpKey: boolean,
-    functionKey: boolean,
-    // Key options
-    ArrowLeft: boolean,
-    ArrowRight: boolean,
-    ArrowUp: boolean,
-    ArrowDown: boolean,
-    key: string,
-  |}>,
->;
-
 /**
  * Represents a key that could be passed to `KeyDownEvents` and `KeyUpEvents`.
  *
@@ -428,8 +408,21 @@ export type KeyboardEventPayload = $ReadOnly<{
    * @see https://developer.mozilla.org/en-US/docs/Web/API/CompositionEvent/isComposing
    */
   isComposing?: boolean,
+  // [macOS
+  /** @platform macos */
+  capsLockKey?: boolean,
+  /** @platform macos */
+  numericPadKey?: boolean,
+  /** @platform macos */
+  helpKey?: boolean,
+  /** @platform macos */
+  functionKey?: boolean,
+  // macOS]
 }>;
 
 export type KeyUpEvent = NativeSyntheticEvent<KeyboardEventPayload>;
 
 export type KeyDownEvent = NativeSyntheticEvent<KeyboardEventPayload>;
+
+/** @deprecated Use KeyDownEvent or KeyUpEvent instead. */
+export type KeyEvent = KeyDownEvent;

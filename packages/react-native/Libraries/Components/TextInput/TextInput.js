@@ -17,7 +17,11 @@ import type {
   ScrollEvent,
 } from '../../Types/CoreEventTypes';
 // [macOS
-import type {HandledKeyEvent, KeyEvent} from '../../Types/CoreEventTypes';
+import type {
+  HandledKeyEvent,
+  KeyDownEvent,
+  KeyUpEvent,
+} from '../../Types/CoreEventTypes';
 // macOS]
 import type {
   AutoCapitalize,
@@ -606,7 +610,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
   const _origOnKeyDown = legacyKeyOverrides?.onKeyDown ?? props.onKeyDown;
   const _origOnKeyUp = legacyKeyOverrides?.onKeyUp ?? props.onKeyUp;
 
-  const _onKeyDown = (event: KeyEvent) => {
+  const _onKeyDown = (event: KeyDownEvent) => {
     if (_keyDownEvents != null && !event.isPropagationStopped()) {
       const isHandled = _keyDownEvents.some(
         ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
@@ -626,7 +630,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
     _origOnKeyDown?.(event);
   };
 
-  const _onKeyUp = (event: KeyEvent) => {
+  const _onKeyUp = (event: KeyUpEvent) => {
     if (_keyUpEvents != null && !event.isPropagationStopped()) {
       const isHandled = _keyUpEvents.some(
         ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
