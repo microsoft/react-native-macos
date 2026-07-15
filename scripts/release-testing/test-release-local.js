@@ -272,8 +272,9 @@ async function testRNTestProject(
       if (tarfile == null) {
         throw new Error("Couldn't find a zipped version of react-native");
       }
-      exec(
-        `cp ${path.join(reactNativePackagePath, tarfile)} ${newLocalNodeTGZ}`,
+      fs.copyFileSync(
+        path.join(reactNativePackagePath, tarfile),
+        newLocalNodeTGZ,
       );
     }
   }
