@@ -23,18 +23,7 @@ const RE_COMPONENT_STACK_LINE = /\n {4}(in|at) /;
 const RE_COMPONENT_STACK_LINE_GLOBAL = /\n {4}(in|at) /g;
 const RE_COMPONENT_STACK_LINE_OLD = / {4}in/;
 const RE_COMPONENT_STACK_LINE_NEW = / {4}at/;
-const RE_COMPONENT_STACK_LINE_STACK_FRAME = /@.*\n/;
-
-// "TransformError " (Optional) and either "SyntaxError: " or "ReferenceError: "
-// Capturing groups:
-// 1: error message
-// 2: file path
-// 3: line number
-// 4: column number
-// \n\n
-// 5: code frame
-const RE_BABEL_TRANSFORM_ERROR_FORMAT =
-  /^(?:TransformError )?(?:SyntaxError: |ReferenceError: )(.*): (.*) \((\d+):(\d+)\)\n\n([\s\S]+)/;
+const RE_COMPONENT_STACK_LINE_STACK_FRAME = /@[^\n]*\n/;
 
 // Capturing groups:
 // 1: component name
@@ -42,13 +31,13 @@ const RE_BABEL_TRANSFORM_ERROR_FORMAT =
 // 2: file path including extension
 // 3: line number
 const RE_COMPONENT_STACK_WITH_SOURCE =
-  /(.*) \(at (.*\.(?:js|jsx|ts|tsx)):([\d]+)\)/;
+  /(.*) \(at ([^:)]*\.(?:js|jsx|ts|tsx)):([\d]+)\)/;
 
 // Capturing groups:
 // 1: component name
 // "at"
 // 2: parent component name
-const RE_COMPONENT_STACK_NO_SOURCE = /(.*) \(created by .*\)/;
+const RE_COMPONENT_STACK_NO_SOURCE = /(.*) \(created by [^)]*\)/;
 
 // Capturing groups:
 // - non-capturing "TransformError " (optional)
@@ -59,18 +48,7 @@ const RE_COMPONENT_STACK_NO_SOURCE = /(.*) \(created by .*\)/;
 // 4: code frame, which includes code snippet indicators or terminal escape sequences for formatting.
 const RE_BABEL_CODE_FRAME_ERROR_FORMAT =
   // eslint-disable-next-line no-control-regex
-  /^(?:TransformError )?(?:.*):? (?:.*?)(\/.*): ([\s\S]+?)\n([ >]{2}[\d\s]+ \|[\s\S]+|\u{001b}[\s\S]+)/u;
-
-// Capturing groups:
-// - non-capturing "InternalError Metro has encountered an error:"
-// 1: error title
-// 2: error message
-// 3: file path
-// 4: line number
-// 5: column number
-// 6: code frame, which includes code snippet indicators or terminal escape sequences for formatting.
-const RE_METRO_ERROR_FORMAT =
-  /^(?:InternalError Metro has encountered an error:) (.*): (.*) \((\d+):(\d+)\)\n\n([\s\S]+)/u;
+  /^(?:TransformError )?(?:[^\n]*):? (?:[^\n/]*?)(\/[^\n:]*): ([\s\S]+?)\n([ >]{2}[\d\s]+ \|[\s\S]+|\u{001b}[\s\S]+)/u;
 
 // https://github.com/babel/babel/blob/33dbb85e9e9fe36915273080ecc42aee62ed0ade/packages/babel-code-frame/src/index.ts#L183-L184
 const RE_BABEL_CODE_FRAME_MARKER_PATTERN = new RegExp(
@@ -226,6 +204,60 @@ function isComponentStack(consoleArgument: string) {
   );
 }
 
+function parseErrorWithLocation(
+  message: string,
+  prefixes: $ReadOnlyArray<string>,
+  splitFromEnd: boolean,
+): ?[string, string, string, string, string] {
+  const prefix = prefixes.find(candidate => message.startsWith(candidate));
+  if (prefix == null) {
+    return null;
+  }
+
+  const codeFrameStart = message.indexOf('\n\n', prefix.length);
+  if (codeFrameStart === -1) {
+    return null;
+  }
+
+  const header = message.slice(prefix.length, codeFrameStart);
+  if (!header.endsWith(')')) {
+    return null;
+  }
+
+  const locationStart = header.lastIndexOf(' (');
+  if (locationStart === -1) {
+    return null;
+  }
+
+  const location = header.slice(locationStart + 2, -1);
+  const locationSeparator = location.indexOf(':');
+  if (locationSeparator === -1) {
+    return null;
+  }
+
+  const row = location.slice(0, locationSeparator);
+  const column = location.slice(locationSeparator + 1);
+  if (!/^\d+$/.test(row) || !/^\d+$/.test(column)) {
+    return null;
+  }
+
+  const body = header.slice(0, locationStart);
+  const fieldSeparator = splitFromEnd
+    ? body.lastIndexOf(': ')
+    : body.indexOf(': ');
+  if (fieldSeparator === -1) {
+    return null;
+  }
+
+  return [
+    body.slice(0, fieldSeparator),
+    body.slice(fieldSeparator + 2),
+    row,
+    column,
+    message.slice(codeFrameStart + 2),
+  ];
+}
+
 export function parseComponentStack(message: string): {
   type: ComponentStackType,
   stack: ComponentStack,
@@ -290,10 +322,13 @@ export function parseLogBoxException(
   const message =
     error.originalMessage != null ? error.originalMessage : 'Unknown';
 
-  const metroInternalError = message.match(RE_METRO_ERROR_FORMAT);
+  const metroInternalError = parseErrorWithLocation(
+    message,
+    ['InternalError Metro has encountered an error: '],
+    true,
+  );
   if (metroInternalError) {
-    const [content, fileName, row, column, codeFrame] =
-      metroInternalError.slice(1);
+    const [content, fileName, row, column, codeFrame] = metroInternalError;
 
     return {
       level: 'fatal',
@@ -319,11 +354,19 @@ export function parseLogBoxException(
     };
   }
 
-  const babelTransformError = message.match(RE_BABEL_TRANSFORM_ERROR_FORMAT);
+  const babelTransformError = parseErrorWithLocation(
+    message,
+    [
+      'TransformError SyntaxError: ',
+      'TransformError ReferenceError: ',
+      'SyntaxError: ',
+      'ReferenceError: ',
+    ],
+    false,
+  );
   if (babelTransformError) {
     // Transform errors are thrown from inside the Babel transformer.
-    const [fileName, content, row, column, codeFrame] =
-      babelTransformError.slice(1);
+    const [fileName, content, row, column, codeFrame] = babelTransformError;
 
     return {
       level: 'syntax',
