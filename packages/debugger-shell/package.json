@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "cross-spawn": "^7.0.6",
-    "electron": "^39.8.1",
     "fb-dotslash": "0.5.8"
   },
   "devDependencies": {
