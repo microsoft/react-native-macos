@@ -8,11 +8,12 @@
  * @format
  */
 
+import type {KeyDownEvent} from '../../Types/CoreEventTypes';
+
 import processLegacyKeyProps, {
   hasLegacyKeyProps,
   stripLegacyKeyProps,
 } from '../normalizeLegacyHandledKeyEvents';
-import type {KeyDownEvent} from '../../Types/CoreEventTypes';
 
 type Modifiers = $ReadOnly<{
   altKey?: boolean,
