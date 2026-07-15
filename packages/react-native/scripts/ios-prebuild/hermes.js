@@ -11,7 +11,7 @@
 const {recomposeHermesXCFramework} = require('./hermes-framework'); // [macOS]
 const {readHermesMetadata} = require('./hermes-version'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
-const {execSync} = require('child_process');
+const {execFileSync, execSync} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
@@ -96,7 +96,7 @@ async function prepareHermesArtifactsAsync(
   }
 
   // Extract the tar.gz
-  execSync(`tar -xzf "${localPath}" -C "${artifactsPath}"`, {
+  execFileSync('tar', ['-xzf', localPath, '-C', artifactsPath], {
     stdio: 'inherit',
   });
   // [macOS] All-Apple prebuilds require macOS; local overrides may omit it.
