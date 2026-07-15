@@ -60,16 +60,6 @@ export type HermesParsedStack = $ReadOnly<{
 }>;
 
 // Capturing groups:
-// 1. function name
-// 2. is this a native stack frame?
-// 3. is this a bytecode address or a source location?
-// 4. source URL (filename)
-// 5. line number (1 based)
-// 6. column number (1 based) or virtual offset (0 based)
-const RE_FRAME =
-  /^ {4}at (.+) \((?:(native)|(address at )?(.*):(\d+):(\d+))\)$/;
-
-// Capturing groups:
 // 1. count of skipped frames
 const RE_SKIPPED = /^ {4}... skipping (\d+) frames$/;
 const RE_COMPONENT_NO_STACK = /^ {4}at .*$/;
@@ -80,34 +70,69 @@ function isInternalBytecodeSourceUrl(sourceUrl: string): boolean {
 }
 
 function parseLine(line: string): ?HermesStackEntry {
-  const asFrame = line.match(RE_FRAME);
-  if (asFrame) {
+  const framePrefix = '    at ';
+  if (line.startsWith(framePrefix) && line.endsWith(')')) {
+    const frame = line.slice(framePrefix.length, -1);
+    const locationStart = frame.lastIndexOf(' (');
+    if (locationStart <= 0) {
+      return undefined;
+    }
+
+    const functionName = frame.slice(0, locationStart);
+    let location = frame.slice(locationStart + 2);
+    if (location === 'native') {
+      return {
+        type: 'FRAME',
+        functionName,
+        location: {type: 'NATIVE'},
+      };
+    }
+
+    let isBytecode = false;
+    const addressPrefix = 'address at ';
+    if (location.startsWith(addressPrefix)) {
+      isBytecode = true;
+      location = location.slice(addressPrefix.length);
+    }
+
+    const columnSeparator = location.lastIndexOf(':');
+    const lineSeparator = location.lastIndexOf(':', columnSeparator - 1);
+    if (lineSeparator < 0 || columnSeparator < 0) {
+      return undefined;
+    }
+
+    const sourceUrl = location.slice(0, lineSeparator);
+    const lineNumber = location.slice(lineSeparator + 1, columnSeparator);
+    const columnNumber = location.slice(columnSeparator + 1);
+    if (!/^\d+$/.test(lineNumber) || !/^\d+$/.test(columnNumber)) {
+      return undefined;
+    }
+
+    const line1Based = Number.parseInt(lineNumber, 10);
+    const columnOrOffset = Number.parseInt(columnNumber, 10);
     return {
       type: 'FRAME',
-      functionName: asFrame[1],
-      location:
-        asFrame[2] === 'native'
-          ? {type: 'NATIVE'}
-          : asFrame[3] === 'address at '
-            ? isInternalBytecodeSourceUrl(asFrame[4])
-              ? {
-                  type: 'INTERNAL_BYTECODE',
-                  sourceUrl: asFrame[4],
-                  line1Based: Number.parseInt(asFrame[5], 10),
-                  virtualOffset0Based: Number.parseInt(asFrame[6], 10),
-                }
-              : {
-                  type: 'BYTECODE',
-                  sourceUrl: asFrame[4],
-                  line1Based: Number.parseInt(asFrame[5], 10),
-                  virtualOffset0Based: Number.parseInt(asFrame[6], 10),
-                }
-            : {
-                type: 'SOURCE',
-                sourceUrl: asFrame[4],
-                line1Based: Number.parseInt(asFrame[5], 10),
-                column1Based: Number.parseInt(asFrame[6], 10),
-              },
+      functionName,
+      location: isBytecode
+        ? isInternalBytecodeSourceUrl(sourceUrl)
+          ? {
+              type: 'INTERNAL_BYTECODE',
+              sourceUrl,
+              line1Based,
+              virtualOffset0Based: columnOrOffset,
+            }
+          : {
+              type: 'BYTECODE',
+              sourceUrl,
+              line1Based,
+              virtualOffset0Based: columnOrOffset,
+            }
+        : {
+            type: 'SOURCE',
+            sourceUrl,
+            line1Based,
+            column1Based: columnOrOffset,
+          },
     };
   }
   const asSkipped = line.match(RE_SKIPPED);
