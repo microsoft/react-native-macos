@@ -1662,6 +1662,95 @@ Please follow the instructions at: fburl.com/rn-remote-assets`,
   macOS] */
 });
 
+describe('adversarial parser inputs', () => {
+  function createError(message: string): ExtendedExceptionData {
+    return {
+      id: 0,
+      isFatal: false,
+      isComponentError: false,
+      message,
+      originalMessage: message,
+      name: '',
+      componentStack: null,
+      stack: [],
+    };
+  }
+
+  it('handles long stack-frame-like component messages', () => {
+    expect(parseLogBoxLog([`Component@${'@'.repeat(5_000)}\n`])).toBeDefined();
+  });
+
+  it('handles long legacy component stacks with source markers', () => {
+    expect(
+      parseLogBoxLog([`Component (at ${'a (at '.repeat(3_000)}file.js:1)`]),
+    ).toBeDefined();
+  });
+
+  it('handles long legacy component stacks without sources', () => {
+    expect(
+      parseLogBoxLog([
+        `Component (created by ${'Component (created by '.repeat(3_000)})`,
+      ]),
+    ).toBeDefined();
+  });
+
+  it('handles long Metro and Babel error prefixes', () => {
+    expect(
+      parseLogBoxException(
+        createError(
+          `InternalError Metro has encountered an error: ${': value'.repeat(
+            3_000,
+          )}`,
+        ),
+      ),
+    ).toBeDefined();
+    expect(
+      parseLogBoxException(
+        createError(`SyntaxError: ${': value'.repeat(3_000)}`),
+      ),
+    ).toBeDefined();
+  });
+
+  it('preserves structured errors with parentheses in their messages', () => {
+    expect(
+      parseLogBoxException(
+        createError(
+          'TransformError SyntaxError: /path/file.js: Cannot use import() keyword (1:10)\n\n> 1 | import()',
+        ),
+      ),
+    ).toMatchObject({
+      level: 'syntax',
+      message: {content: 'Cannot use import() keyword'},
+      codeFrame: {
+        fileName: '/path/file.js',
+        location: {row: 1, column: 10},
+      },
+    });
+    expect(
+      parseLogBoxException(
+        createError(
+          'InternalError Metro has encountered an error: Cannot transform (require is not defined): /path/file.js (12:3)\n\n> 12 | require()',
+        ),
+      ),
+    ).toMatchObject({
+      level: 'fatal',
+      message: {content: 'Cannot transform (require is not defined)'},
+      codeFrame: {
+        fileName: '/path/file.js',
+        location: {row: 12, column: 3},
+      },
+    });
+  });
+
+  it('handles long malformed code-frame paths', () => {
+    expect(
+      parseLogBoxException(
+        createError(` ${'/'.repeat(5_000)}: message\n> 1 | code`),
+      ),
+    ).toBeDefined();
+  });
+});
+
 describe('withoutANSIColorStyles', () => {
   it('works with non-strings', () => {
     expect(withoutANSIColorStyles(null)).toEqual(null);
