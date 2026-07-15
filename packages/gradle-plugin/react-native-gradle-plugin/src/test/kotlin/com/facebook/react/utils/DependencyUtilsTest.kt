@@ -438,14 +438,14 @@ class DependencyUtilsTest {
     assertThat("com.facebook.react:react-android:0.42.0")
         .isEqualTo(dependencySubstitutions[0].second)
     assertThat(
-            "The react-native artifact was deprecated in favor of react-android due to https://github.com/facebook/react-native/issues/35210."
+            "The react-native artifact was deprecated in favor of react-android due to https://github.com/react/react-native/issues/35210."
         )
         .isEqualTo(dependencySubstitutions[0].third)
     assertThat("com.facebook.react:hermes-engine").isEqualTo(dependencySubstitutions[1].first)
     assertThat("com.facebook.hermes:hermes-android:0.42.0")
         .isEqualTo(dependencySubstitutions[1].second)
     assertThat(
-            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/facebook/react-native/issues/35210."
+            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/react/react-native/issues/35210."
         )
         .isEqualTo(dependencySubstitutions[1].third)
   }
@@ -462,14 +462,14 @@ class DependencyUtilsTest {
     assertThat("com.facebook.react:react-android:0.42.0")
         .isEqualTo(dependencySubstitutions[0].second)
     assertThat(
-            "The react-native artifact was deprecated in favor of react-android due to https://github.com/facebook/react-native/issues/35210."
+            "The react-native artifact was deprecated in favor of react-android due to https://github.com/react/react-native/issues/35210."
         )
         .isEqualTo(dependencySubstitutions[0].third)
     assertThat("com.facebook.react:hermes-engine").isEqualTo(dependencySubstitutions[1].first)
     assertThat("com.facebook.hermes:hermes-android:0.43.0")
         .isEqualTo(dependencySubstitutions[1].second)
     assertThat(
-            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/facebook/react-native/issues/35210."
+            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/react/react-native/issues/35210."
         )
         .isEqualTo(dependencySubstitutions[1].third)
   }
@@ -490,14 +490,14 @@ class DependencyUtilsTest {
     assertThat("com.facebook.react:react-native").isEqualTo(dependencySubstitutions[0].first)
     assertThat("io.github.test:react-android:0.42.0").isEqualTo(dependencySubstitutions[0].second)
     assertThat(
-            "The react-native artifact was deprecated in favor of react-android due to https://github.com/facebook/react-native/issues/35210."
+            "The react-native artifact was deprecated in favor of react-android due to https://github.com/react/react-native/issues/35210."
         )
         .isEqualTo(dependencySubstitutions[0].third)
     assertThat("com.facebook.react:hermes-engine").isEqualTo(dependencySubstitutions[1].first)
     assertThat("io.github.test.hermes:hermes-android:0.42.0")
         .isEqualTo(dependencySubstitutions[1].second)
     assertThat(
-            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/facebook/react-native/issues/35210."
+            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/react/react-native/issues/35210."
         )
         .isEqualTo(dependencySubstitutions[1].third)
     assertThat("com.facebook.react:hermes-android").isEqualTo(dependencySubstitutions[2].first)
@@ -533,14 +533,14 @@ class DependencyUtilsTest {
     assertThat("com.facebook.react:react-native").isEqualTo(dependencySubstitutions[0].first)
     assertThat("io.github.test:react-android:0.42.0").isEqualTo(dependencySubstitutions[0].second)
     assertThat(
-            "The react-native artifact was deprecated in favor of react-android due to https://github.com/facebook/react-native/issues/35210."
+            "The react-native artifact was deprecated in favor of react-android due to https://github.com/react/react-native/issues/35210."
         )
         .isEqualTo(dependencySubstitutions[0].third)
     assertThat("com.facebook.react:hermes-engine").isEqualTo(dependencySubstitutions[1].first)
     assertThat("io.github.test.hermes:hermes-android:0.43.0")
         .isEqualTo(dependencySubstitutions[1].second)
     assertThat(
-            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/facebook/react-native/issues/35210."
+            "The hermes-engine artifact was deprecated in favor of hermes-android due to https://github.com/react/react-native/issues/35210."
         )
         .isEqualTo(dependencySubstitutions[1].third)
     assertThat("com.facebook.react:hermes-android").isEqualTo(dependencySubstitutions[2].first)

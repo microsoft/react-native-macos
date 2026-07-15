@@ -631,7 +631,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
       // The native Android implementation removed the screen density from the
       // calculation, so squaring and a normalization value of
       // sqrt(5) produces an exact replica with iOS.
-      // For more information, see https://github.com/facebook/react-native/pull/18302
+      // For more information, see https://github.com/react/react-native/pull/18302
       float normalizedCameraDistance =
           sanitizeFloatPropertyValue(
               scale * scale * cameraDistance * CAMERA_DISTANCE_NORMALIZATION_MULTIPLIER);

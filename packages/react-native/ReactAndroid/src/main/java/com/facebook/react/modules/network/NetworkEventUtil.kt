@@ -15,12 +15,11 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.buildReadableArray
+import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import java.net.SocketTimeoutException
 import okhttp3.Headers
-import okhttp3.Protocol
 import okhttp3.Request
-import okhttp3.Response
 
 /**
  * Utility class for reporting network lifecycle events to JavaScript and InspectorNetworkReporter.
@@ -30,12 +29,21 @@ internal object NetworkEventUtil {
   fun onCreateRequest(devToolsRequestId: String, request: Request) {
     if (ReactNativeFeatureFlags.enableNetworkEventReporting()) {
       val headersMap = okHttpHeadersToMap(request.headers())
+      var requestBody = ""
+
+      if (ReactBuildConfig.DEBUG) {
+        // Debug build: Process request body for preview (CDP only)
+        requestBody =
+            (request.body() as? ProgressRequestBody)?.getBodyPreview()
+                ?: request.body()?.toString().orEmpty()
+      }
+
       InspectorNetworkReporter.reportRequestStart(
           devToolsRequestId,
           request.url().toString(),
           request.method(),
           headersMap,
-          request.body()?.toString().orEmpty(),
+          requestBody,
           request.body()?.contentLength() ?: 0,
       )
       InspectorNetworkReporter.reportConnectionTiming(devToolsRequestId, headersMap)
@@ -196,11 +204,12 @@ internal object NetworkEventUtil {
       requestId: Int,
       devToolsRequestId: String,
       requestUrl: String?,
-      response: Response,
+      statusCode: Int,
+      headers: Map<String, String>,
+      contentLength: Long,
   ) {
-    val headersMap = okHttpHeadersToMap(response.headers())
     val headersBundle = Bundle()
-    for ((headerName, headerValue) in headersMap) {
+    for ((headerName, headerValue) in headers) {
       headersBundle.putString(headerName, headerValue)
     }
 
@@ -208,16 +217,16 @@ internal object NetworkEventUtil {
       InspectorNetworkReporter.reportResponseStart(
           devToolsRequestId,
           requestUrl.orEmpty(),
-          response.code(),
-          headersMap,
-          response.body()?.contentLength() ?: 0,
+          statusCode,
+          headers,
+          contentLength,
       )
     }
     reactContext?.emitDeviceEvent(
         "didReceiveNetworkResponse",
         Arguments.createArray().apply {
           pushInt(requestId)
-          pushInt(response.code())
+          pushInt(statusCode)
           pushMap(Arguments.fromBundle(headersBundle))
           pushString(requestUrl)
         },
@@ -234,33 +243,35 @@ internal object NetworkEventUtil {
       headers: WritableMap?,
       url: String?,
   ) {
-    val headersBuilder = Headers.Builder()
+    val headersMap = mutableMapOf<String, String>()
     headers?.let { map ->
       val iterator = map.keySetIterator()
       while (iterator.hasNextKey()) {
         val key = iterator.nextKey()
         val value = map.getString(key)
         if (value != null) {
-          headersBuilder.add(key, value)
+          headersMap[key] = value
         }
       }
     }
+
+    val contentLength =
+        headersMap["Content-Length"]?.toLongOrNull()
+            ?: headersMap["content-length"]?.toLongOrNull()
+            ?: 0L
+
     onResponseReceived(
         reactContext,
         requestId,
         devToolsRequestId,
         url,
-        Response.Builder()
-            .protocol(Protocol.HTTP_1_1)
-            .request(Request.Builder().url(url.orEmpty()).build())
-            .headers(headersBuilder.build())
-            .code(statusCode)
-            .message("")
-            .build(),
+        statusCode,
+        headersMap,
+        contentLength,
     )
   }
 
-  private fun okHttpHeadersToMap(headers: Headers): Map<String, String> {
+  internal fun okHttpHeadersToMap(headers: Headers): Map<String, String> {
     val responseHeaders = mutableMapOf<String, String>()
     for (i in 0 until headers.size()) {
       val headerName = headers.name(i)

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6bd64914d0e2f0c727490a420496fbb0>>
+ * @generated SignedSource<<d4e9743710d91c1287986f2dab260e10>>
  */
 
 /**
@@ -194,6 +194,11 @@ bool NativeReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizat
   return ReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS();
 }
 
+bool NativeReactNativeFeatureFlags::enableIntersectionObserverByDefault(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableIntersectionObserverByDefault();
+}
+
 bool NativeReactNativeFeatureFlags::enableKeyEvents(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableKeyEvents();
@@ -217,6 +222,11 @@ bool NativeReactNativeFeatureFlags::enableMainQueueCoordinatorOnIOS(
 bool NativeReactNativeFeatureFlags::enableModuleArgumentNSNullConversionIOS(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableModuleArgumentNSNullConversionIOS();
+}
+
+bool NativeReactNativeFeatureFlags::enableMutationObserverByDefault(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableMutationObserverByDefault();
 }
 
 bool NativeReactNativeFeatureFlags::enableNativeCSSParsing(
@@ -314,14 +324,29 @@ bool NativeReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndR
   return ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact();
 }
 
+bool NativeReactNativeFeatureFlags::fuseboxAssertSingleHostState(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::fuseboxAssertSingleHostState();
+}
+
 bool NativeReactNativeFeatureFlags::fuseboxEnabledRelease(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fuseboxEnabledRelease();
 }
 
+bool NativeReactNativeFeatureFlags::fuseboxFrameRecordingEnabled(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled();
+}
+
 bool NativeReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled();
+}
+
+bool NativeReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled();
 }
 
 bool NativeReactNativeFeatureFlags::hideOffscreenVirtualViewsOnIOS(
@@ -352,6 +377,16 @@ double NativeReactNativeFeatureFlags::preparedTextCacheSize(
 bool NativeReactNativeFeatureFlags::preventShadowTreeCommitExhaustion(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::preventShadowTreeCommitExhaustion();
+}
+
+bool NativeReactNativeFeatureFlags::redBoxV2Android(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::redBoxV2Android();
+}
+
+bool NativeReactNativeFeatureFlags::redBoxV2IOS(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::redBoxV2IOS();
 }
 
 bool NativeReactNativeFeatureFlags::shouldPressibilityUseW3CPointerEventsForHover(

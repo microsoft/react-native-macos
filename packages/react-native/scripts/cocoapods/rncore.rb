@@ -233,7 +233,16 @@ class ReactNativeCoreUtils
 
             # Add the dSYMs folder to the framework folder
             rncore_log("  Adding dSYMs to framework tarball")
-            `(cd "$(dirname "#{dsyms_tmp_dir}")" && mkdir -p React.xcframework && cp -r "$(basename "#{dsyms_tmp_dir}")" React.xcframework/dSYMs && tar -rf "#{frameworkTarPath}" React.xcframework/dSYMs && rm -rf React.xcframework)`
+
+            # Move symbol bundles into each of the slices in the xcframework
+            # Example:
+            # move dSYMs/ios-arm64/. into React.xcframework/ios-arm64/React.framework/dSYMs/.
+            Dir.glob(File.join(dsyms_tmp_dir, "*")).each do |dsym_path|
+                slice_name = File.basename(dsym_path)
+                slice_dsym_dest = File.join("React.xcframework", slice_name, "React.framework", "dSYMs")
+                rncore_log("    Adding dSYM slice #{slice_name} into tarball at #{slice_dsym_dest}")
+                `(cd "#{File.dirname(frameworkTarPath)}" && mkdir -p "#{slice_dsym_dest}" && cp -R "#{dsym_path}/." "#{slice_dsym_dest}" && tar -rf "#{frameworkTarPath}" "#{slice_dsym_dest}")`
+            end
 
             # Now gzip the framework tarball again - remember to use the .tar file and not the .gz file
             rncore_log("  Packing #{Pathname.new(frameworkTarPath).relative_path_from(Pathname.pwd).to_s}")
@@ -245,6 +254,10 @@ class ReactNativeCoreUtils
 
             # Remove backup of original tarballs
             FileUtils.rm_f("#{frameworkTarball}.orig")
+
+            # Remove temp dSYMs folder and the temp Framework folder
+            FileUtils.rm_rf(dsyms_tmp_dir)
+            FileUtils.rm_rf(File.join(artifacts_dir, "React.xcframework"))
 
         rescue => e
             rncore_log("Failed to process dSYMs: #{e.message}", :error)
@@ -271,9 +284,10 @@ class ReactNativeCoreUtils
         return if dsym_bundles.empty?
 
         # Define source path mappings - from absolute build paths to relative framework paths
+        # Expand the path relative to the installation root (project root, parent of ios/)
+        react_native_absolute_path = File.expand_path(@@react_native_path, Pod::Config.instance.installation_root)
         mappings = [
-            # Make sure to make react_native_path absolute
-            ["/Users/runner/work/react-native/react-native/packages/react-native", "#{File.expand_path(@@react_native_path)}"],
+            ["/Users/runner/work/react-native/react-native/packages/react-native", react_native_absolute_path],
         ]
 
         dsym_bundles.each do |dsym_path| begin
@@ -372,18 +386,36 @@ class ReactNativeCoreUtils
         download_rncore_tarball(react_native_path, tarball_url, version, configuration, dsyms)
     end
 
-    def self.download_rncore_tarball(react_native_path, tarball_url, version, configuration, dsyms = false)
-        destination_path = configuration == nil ?
-            "#{artifacts_dir()}/reactnative-core-#{version}#{dsyms ? "-dSYM" : ""}.tar.gz" :
-            "#{artifacts_dir()}/reactnative-core-#{version}#{dsyms ? "-dSYM" : ""}-#{configuration}.tar.gz"
+    def self.shared_cache_dir()
+        return File.join(Dir.home, "Library", "Caches", "ReactNative")
+    end
 
-        unless File.exist?(destination_path)
-          # Download to a temporary file first so we don't cache incomplete downloads.
-          rncore_log("Downloading ReactNativeCore-prebuilt #{dsyms ? "dSYMs " : ""}#{configuration ? configuration.to_s : ""} tarball from #{tarball_url} to #{Pathname.new(destination_path).relative_path_from(Pathname.pwd).to_s}")
-          tmp_file = "#{artifacts_dir()}/reactnative-core.download"
-          `mkdir -p "#{artifacts_dir()}" && curl "#{tarball_url}" -Lo "#{tmp_file}" && mv "#{tmp_file}" "#{destination_path}"`
+    def self.download_rncore_tarball(react_native_path, tarball_url, version, configuration, dsyms = false)
+        filename = configuration == nil ?
+            "reactnative-core-#{version}#{dsyms ? "-dSYM" : ""}.tar.gz" :
+            "reactnative-core-#{version}#{dsyms ? "-dSYM" : ""}-#{configuration}.tar.gz"
+        destination_path = "#{artifacts_dir()}/#{filename}"
+
+        if File.exist?(destination_path)
+          rncore_log("Tarball #{filename} already exists in Pods. Skipping download.")
+          return destination_path
+        end
+
+        `mkdir -p "#{artifacts_dir()}"`
+
+        cached_path = File.join(shared_cache_dir(), filename)
+        if File.exist?(cached_path)
+          rncore_log("Cache hit: copying #{filename} from shared cache (#{shared_cache_dir()})")
+          FileUtils.cp(cached_path, destination_path)
         else
-          rncore_log("Using downloaded ReactNativeCore-prebuilt #{dsyms ? "dSYMs " : ""}#{configuration ? configuration.to_s : ""} tarball at #{Pathname.new(destination_path).relative_path_from(Pathname.pwd).to_s}")
+          rncore_log("Cache miss: downloading #{filename} from #{tarball_url}")
+          # Download to a temporary file first so we don't cache incomplete downloads.
+          tmp_file = "#{artifacts_dir()}/reactnative-core.download"
+          `curl "#{tarball_url}" -Lo "#{tmp_file}" && mv "#{tmp_file}" "#{destination_path}"`
+          # Save to shared cache for future use
+          `mkdir -p "#{shared_cache_dir()}"`
+          FileUtils.cp(destination_path, cached_path)
+          rncore_log("Saved #{filename} to shared cache (#{shared_cache_dir()})")
         end
 
         return destination_path

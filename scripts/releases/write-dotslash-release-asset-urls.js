@@ -134,7 +134,7 @@ function isPreviousReleaseAssetProvider(
   return (
     isHttpProvider(provider) &&
     provider.url.startsWith(
-      'https://github.com/facebook/react-native/releases/download/',
+      'https://github.com/react/react-native/releases/download/',
     )
   );
 }
@@ -146,7 +146,7 @@ function createReleaseAssetProvider(
   } /*: {releaseTag: string, suggestedFilename: string} */,
 ) /*: DotSlashProvider */ {
   return {
-    url: `https://github.com/facebook/react-native/releases/download/${encodeURIComponent(releaseTag)}/${encodeURIComponent(suggestedFilename)}`,
+    url: `https://github.com/react/react-native/releases/download/${encodeURIComponent(releaseTag)}/${encodeURIComponent(suggestedFilename)}`,
   };
 }
 

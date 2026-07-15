@@ -425,7 +425,7 @@ constructor(private val fpsListener: FpsListener? = null) :
     // be on the wrong side. Thus we are moving it to the other side, when the list
     // is inverted.
     // See also:
-    //  - https://github.com/facebook/react-native/issues/35350
+    //  - https://github.com/react/react-native/issues/35350
     //  - https://issuetracker.google.com/issues/287304310
     if (applyFix) {
       view.verticalScrollbarPosition = View.SCROLLBAR_POSITION_LEFT

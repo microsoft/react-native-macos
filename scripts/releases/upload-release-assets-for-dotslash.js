@@ -272,7 +272,7 @@ function parseReleaseAssetInfo(
     url: string,
   }
 */ {
-  const releaseAssetPrefix = `https://github.com/facebook/react-native/releases/download/${encodeURIComponent(releaseTag)}/`;
+  const releaseAssetPrefix = `https://github.com/react/react-native/releases/download/${encodeURIComponent(releaseTag)}/`;
 
   if (isHttpProvider(provider) && provider.url.startsWith(releaseAssetPrefix)) {
     return {

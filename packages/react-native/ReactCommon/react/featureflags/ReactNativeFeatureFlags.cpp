@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5d596cc470e66861d7c1b2ffbb15b268>>
+ * @generated SignedSource<<c7d08e6d97766cbb68db8772611530b5>>
  */
 
 /**
@@ -146,6 +146,10 @@ bool ReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS
   return getAccessor().enableInteropViewManagerClassLookUpOptimizationIOS();
 }
 
+bool ReactNativeFeatureFlags::enableIntersectionObserverByDefault() {
+  return getAccessor().enableIntersectionObserverByDefault();
+}
+
 bool ReactNativeFeatureFlags::enableKeyEvents() {
   return getAccessor().enableKeyEvents();
 }
@@ -164,6 +168,10 @@ bool ReactNativeFeatureFlags::enableMainQueueCoordinatorOnIOS() {
 
 bool ReactNativeFeatureFlags::enableModuleArgumentNSNullConversionIOS() {
   return getAccessor().enableModuleArgumentNSNullConversionIOS();
+}
+
+bool ReactNativeFeatureFlags::enableMutationObserverByDefault() {
+  return getAccessor().enableMutationObserverByDefault();
 }
 
 bool ReactNativeFeatureFlags::enableNativeCSSParsing() {
@@ -242,12 +250,24 @@ bool ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact()
   return getAccessor().fixMappingOfEventPrioritiesBetweenFabricAndReact();
 }
 
+bool ReactNativeFeatureFlags::fuseboxAssertSingleHostState() {
+  return getAccessor().fuseboxAssertSingleHostState();
+}
+
 bool ReactNativeFeatureFlags::fuseboxEnabledRelease() {
   return getAccessor().fuseboxEnabledRelease();
 }
 
+bool ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled() {
+  return getAccessor().fuseboxFrameRecordingEnabled();
+}
+
 bool ReactNativeFeatureFlags::fuseboxNetworkInspectionEnabled() {
   return getAccessor().fuseboxNetworkInspectionEnabled();
+}
+
+bool ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled() {
+  return getAccessor().fuseboxScreenshotCaptureEnabled();
 }
 
 bool ReactNativeFeatureFlags::hideOffscreenVirtualViewsOnIOS() {
@@ -272,6 +292,14 @@ double ReactNativeFeatureFlags::preparedTextCacheSize() {
 
 bool ReactNativeFeatureFlags::preventShadowTreeCommitExhaustion() {
   return getAccessor().preventShadowTreeCommitExhaustion();
+}
+
+bool ReactNativeFeatureFlags::redBoxV2Android() {
+  return getAccessor().redBoxV2Android();
+}
+
+bool ReactNativeFeatureFlags::redBoxV2IOS() {
+  return getAccessor().redBoxV2IOS();
 }
 
 bool ReactNativeFeatureFlags::shouldPressibilityUseW3CPointerEventsForHover() {
