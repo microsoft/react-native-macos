@@ -1678,11 +1678,15 @@ describe('adversarial parser inputs', () => {
 
   it('handles long stack-frame-like component messages', () => {
     expect(parseLogBoxLog([`Component@${'@'.repeat(5_000)}\n`])).toBeDefined();
+    expect(parseLogBoxLog([`Component@${'@'.repeat(5_000)}`])).toBeDefined();
   });
 
   it('handles long legacy component stacks with source markers', () => {
     expect(
       parseLogBoxLog([`Component (at ${'a (at '.repeat(3_000)}file.js:1)`]),
+    ).toBeDefined();
+    expect(
+      parseLogBoxLog([`Component (at ${'a (at '.repeat(3_000)}file.txt:1)`]),
     ).toBeDefined();
   });
 
