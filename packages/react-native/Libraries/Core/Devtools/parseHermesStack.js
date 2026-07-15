@@ -67,7 +67,7 @@ export type HermesParsedStack = $ReadOnly<{
 // 5. line number (1 based)
 // 6. column number (1 based) or virtual offset (0 based)
 const RE_FRAME =
-  /^ {4}at (.+?)(?: \((native)\)?| \((address at )?(.*?):(\d+):(\d+)\))$/;
+  /^ {4}at (.+) \((?:(native)|(address at )?(.*):(\d+):(\d+))\)$/;
 
 // Capturing groups:
 // 1. count of skipped frames

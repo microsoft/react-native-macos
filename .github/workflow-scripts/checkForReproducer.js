@@ -41,19 +41,23 @@ module.exports = async (github, context) => {
 
   // Look for Snack or a GH repo associated with the user that added an issue or comment
   const hasValidReproducer = entities.some(entity => {
+    const escapedLogin = escapeRegExp(entity.user.login);
     const hasPullRequestRepoLink = containsPattern(
       entity.body,
-      `https?:\/\/github\.com\/facebook\/react-native\/pull\/\d+\/?`,
+      /https?:\/\/github\.com\/facebook\/react-native\/pull\/\d+\/?/gm,
     );
 
     const hasExpoSnackLink = containsPattern(
       entity.body,
-      `https?:\\/\\/snack\\.expo\\.dev\\/[^\\s)\\]]+`,
+      /https?:\/\/snack\.expo\.dev\/[^\s)\]]+/gm,
     );
 
     const hasGithubRepoLink = containsPattern(
       entity.body,
-      `https?:\\/\\/github\\.com\\/(${entity.user.login})\\/[^/]+\\/?\\s?`,
+      new RegExp(
+        `https?:\\/\\/github\\.com\\/(${escapedLogin})\\/[^/]+\\/?\\s?`,
+        'gm',
+      ),
     );
     return hasPullRequestRepoLink || hasExpoSnackLink || hasGithubRepoLink;
   });
@@ -78,8 +82,11 @@ module.exports = async (github, context) => {
 };
 
 function containsPattern(body, pattern) {
-  const regexp = new RegExp(pattern, 'gm');
-  return body.search(regexp) !== -1;
+  return pattern.test(body);
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // Prevents the bot from responding when maintainer has changed the 'Needs: Repro' label

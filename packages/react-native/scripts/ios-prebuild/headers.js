@@ -26,7 +26,7 @@ const {globSync} = require('tinyglobby');
  *    - Captures: 'source1' as the first argument, ['sourceForPrebuilds1', 'sourceForPrebuilds2'] as the second argument.
  */
 const regex =
-  /podspec_sources\s*\(\s*((?:\[[^\]]*\]|"[^"]*"|'[^']*'|[^,])+)\s*,\s*((?:\[[^\]]*\]|"[^"]*"|'[^']*'|[^)])+)\s*\)/gs;
+  /podspec_sources\s*\(\s*(\[[^\]]*\]|"[^"]*"|'[^']*'|[^,['"()\s][^,]*)\s*,\s*(\[[^\]]*\]|"[^"]*"|'[^']*'|[^)['"(,\s][^)]*)\s*\)/gs;
 
 function getHeaderFilesFromPodspecs(
   rootFolder /*:string*/,
