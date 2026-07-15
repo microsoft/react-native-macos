@@ -16,7 +16,7 @@ const {
   getLatestStableVersionFromNPM,
 } = require('./microsoft-hermes'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
-const {execSync} = require('child_process');
+const {execFileSync} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
@@ -108,7 +108,7 @@ async function prepareReactNativeDependenciesArtifactsAsync(
   // Extract the tar.gz
   const tmpPath = '/tmp/react-native-dependencies';
   fs.mkdirSync(tmpPath, {recursive: true});
-  execSync(`tar -xzf "${localPath}" -C "${tmpPath}"`, {
+  execFileSync('tar', ['-xzf', localPath, '-C', tmpPath], {
     stdio: 'inherit',
   });
 
@@ -120,9 +120,13 @@ async function prepareReactNativeDependenciesArtifactsAsync(
     'ReactNativeDependencies.xcframework',
   );
   // Copy the extracted files to the artifacts folder
-  execSync(`cp -R "${xcframeworkSource}" "${artifactsPath}"`, {
-    stdio: 'inherit',
-  });
+  fs.cpSync(
+    xcframeworkSource,
+    path.join(artifactsPath, path.basename(xcframeworkSource)),
+    {
+      recursive: true,
+    },
+  );
 
   // Delete the tarball after extraction
   if (!process.env.HERMES_ENGINE_TARBALL_PATH) {
