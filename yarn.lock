@@ -4777,13 +4777,13 @@ __metadata:
     "@microsoft/api-extractor": "npm:^7.52.2"
     "@nx/js": "npm:^21.4.1"
     "@octokit/rest": "npm:^22.0.0"
-    "@react-native/babel-preset": "workspace:*"
-    "@react-native/eslint-config": "workspace:*"
-    "@react-native/eslint-plugin": "workspace:*"
-    "@react-native/eslint-plugin-monorepo": "workspace:*"
-    "@react-native/eslint-plugin-specs": "workspace:*"
-    "@react-native/metro-babel-transformer": "workspace:*"
-    "@react-native/metro-config": "workspace:*"
+    "@react-native/babel-preset": "npm:0.84.1"
+    "@react-native/eslint-config": "npm:0.84.1"
+    "@react-native/eslint-plugin": "npm:0.84.1"
+    "@react-native/eslint-plugin-monorepo": "npm:0.84.1"
+    "@react-native/eslint-plugin-specs": "npm:0.84.1"
+    "@react-native/metro-babel-transformer": "npm:0.84.1"
+    "@react-native/metro-config": "npm:0.84.1"
     "@tsconfig/node22": "npm:22.0.2"
     "@types/react": "npm:^19.1.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.36.0"
@@ -4859,7 +4859,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native-macos/virtualized-lists@workspace:*, @react-native-macos/virtualized-lists@workspace:packages/virtualized-lists":
+"@react-native-macos/virtualized-lists@npm:0.84.0-rc0, @react-native-macos/virtualized-lists@workspace:packages/virtualized-lists":
   version: 0.0.0-use.local
   resolution: "@react-native-macos/virtualized-lists@workspace:packages/virtualized-lists"
   dependencies:
@@ -4876,7 +4876,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/assets-registry@workspace:*, @react-native/assets-registry@workspace:packages/assets":
+"@react-native/assets-registry@npm:0.84.1, @react-native/assets-registry@workspace:packages/assets":
   version: 0.0.0-use.local
   resolution: "@react-native/assets-registry@workspace:packages/assets"
   languageName: unknown
@@ -4892,7 +4892,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/babel-preset@workspace:*, @react-native/babel-preset@workspace:packages/react-native-babel-preset":
+"@react-native/babel-preset@npm:0.84.1, @react-native/babel-preset@workspace:*, @react-native/babel-preset@workspace:packages/react-native-babel-preset":
   version: 0.0.0-use.local
   resolution: "@react-native/babel-preset@workspace:packages/react-native-babel-preset"
   dependencies:
@@ -4980,7 +4980,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/codegen@workspace:*, @react-native/codegen@workspace:packages/react-native-codegen":
+"@react-native/codegen@npm:0.84.1, @react-native/codegen@workspace:*, @react-native/codegen@workspace:packages/react-native-codegen":
   version: 0.0.0-use.local
   resolution: "@react-native/codegen@workspace:packages/react-native-codegen"
   dependencies:
@@ -5007,7 +5007,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/community-cli-plugin@workspace:*, @react-native/community-cli-plugin@workspace:packages/community-cli-plugin":
+"@react-native/community-cli-plugin@npm:0.84.1, @react-native/community-cli-plugin@workspace:packages/community-cli-plugin":
   version: 0.0.0-use.local
   resolution: "@react-native/community-cli-plugin@workspace:packages/community-cli-plugin"
   dependencies:
@@ -5087,7 +5087,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-config@workspace:*, @react-native/eslint-config@workspace:packages/eslint-config-react-native":
+"@react-native/eslint-config@npm:0.84.1, @react-native/eslint-config@workspace:packages/eslint-config-react-native":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-config@workspace:packages/eslint-config-react-native"
   dependencies:
@@ -5111,7 +5111,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-plugin-monorepo@workspace:*, @react-native/eslint-plugin-monorepo@workspace:private/eslint-plugin-monorepo":
+"@react-native/eslint-plugin-monorepo@npm:0.84.1, @react-native/eslint-plugin-monorepo@workspace:private/eslint-plugin-monorepo":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin-monorepo@workspace:private/eslint-plugin-monorepo"
   dependencies:
@@ -5119,7 +5119,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-plugin-specs@workspace:*, @react-native/eslint-plugin-specs@workspace:packages/eslint-plugin-specs":
+"@react-native/eslint-plugin-specs@npm:0.84.1, @react-native/eslint-plugin-specs@workspace:packages/eslint-plugin-specs":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin-specs@workspace:packages/eslint-plugin-specs"
   dependencies:
@@ -5134,7 +5134,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-plugin@workspace:*, @react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native":
+"@react-native/eslint-plugin@npm:0.84.1, @react-native/eslint-plugin@workspace:*, @react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native"
   dependencies:
@@ -5156,19 +5156,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/gradle-plugin@workspace:*, @react-native/gradle-plugin@workspace:packages/gradle-plugin":
+"@react-native/gradle-plugin@npm:0.84.1, @react-native/gradle-plugin@workspace:packages/gradle-plugin":
   version: 0.0.0-use.local
   resolution: "@react-native/gradle-plugin@workspace:packages/gradle-plugin"
   languageName: unknown
   linkType: soft
 
-"@react-native/js-polyfills@workspace:*, @react-native/js-polyfills@workspace:packages/polyfills":
+"@react-native/js-polyfills@npm:0.84.1, @react-native/js-polyfills@workspace:*, @react-native/js-polyfills@workspace:packages/polyfills":
   version: 0.0.0-use.local
   resolution: "@react-native/js-polyfills@workspace:packages/polyfills"
   languageName: unknown
   linkType: soft
 
-"@react-native/metro-babel-transformer@workspace:*, @react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer":
+"@react-native/metro-babel-transformer@npm:0.84.1, @react-native/metro-babel-transformer@workspace:*, @react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer":
   version: 0.0.0-use.local
   resolution: "@react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer"
   dependencies:
@@ -5181,7 +5181,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/metro-config@workspace:*, @react-native/metro-config@workspace:packages/metro-config":
+"@react-native/metro-config@npm:0.84.1, @react-native/metro-config@workspace:packages/metro-config":
   version: 0.0.0-use.local
   resolution: "@react-native/metro-config@workspace:packages/metro-config"
   dependencies:
@@ -5211,7 +5211,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/normalize-colors@workspace:*, @react-native/normalize-colors@workspace:packages/normalize-color":
+"@react-native/normalize-colors@npm:0.84.1, @react-native/normalize-colors@workspace:packages/normalize-color":
   version: 0.0.0-use.local
   resolution: "@react-native/normalize-colors@workspace:packages/normalize-color"
   languageName: unknown
@@ -5226,7 +5226,7 @@ __metadata:
     react-native-macos: "workspace:*"
   peerDependencies:
     react: "*"
-    react-native-macos: "*"
+    react-native-macos: 0.84.0-rc0
   languageName: unknown
   linkType: soft
 
@@ -14420,13 +14420,13 @@ __metadata:
   resolution: "react-native-macos@workspace:packages/react-native"
   dependencies:
     "@jest/create-cache-key-function": "npm:^29.7.0"
-    "@react-native-macos/virtualized-lists": "workspace:*"
-    "@react-native/assets-registry": "workspace:*"
-    "@react-native/codegen": "workspace:*"
-    "@react-native/community-cli-plugin": "workspace:*"
-    "@react-native/gradle-plugin": "workspace:*"
-    "@react-native/js-polyfills": "workspace:*"
-    "@react-native/normalize-colors": "workspace:*"
+    "@react-native-macos/virtualized-lists": "npm:0.84.0-rc0"
+    "@react-native/assets-registry": "npm:0.84.1"
+    "@react-native/codegen": "npm:0.84.1"
+    "@react-native/community-cli-plugin": "npm:0.84.1"
+    "@react-native/gradle-plugin": "npm:0.84.1"
+    "@react-native/js-polyfills": "npm:0.84.1"
+    "@react-native/normalize-colors": "npm:0.84.1"
     abort-controller: "npm:^3.0.0"
     anser: "npm:^1.4.9"
     ansi-regex: "npm:^5.0.0"
@@ -14459,6 +14459,7 @@ __metadata:
   peerDependencies:
     "@types/react": ^19.1.1
     react: ^19.2.3
+    react-native: 0.84.1
   peerDependenciesMeta:
     "@types/react":
       optional: true
