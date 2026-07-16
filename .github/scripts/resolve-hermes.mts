@@ -31,8 +31,8 @@ function setActionOutput(key: string, value: string) {
  * Reads the Hermes artifact version from
  * packages/react-native/sdks/hermes-engine/version.properties.
  *
- * Returns HERMES_V1_VERSION_NAME when RCT_HERMES_V1_ENABLED=1, otherwise
- * HERMES_VERSION_NAME. Returns null if the file or the key is missing.
+ * Returns HERMES_VERSION_NAME only when V1 is explicitly disabled, matching
+ * React Native 0.84's default-V1 behavior.
  */
 function resolveHermesArtifactVersion(): string | null {
   const propsPath = path.resolve(
@@ -48,9 +48,9 @@ function resolveHermesArtifactVersion(): string | null {
       }
     }
     const key =
-      process.env.RCT_HERMES_V1_ENABLED === '1'
-        ? 'HERMES_V1_VERSION_NAME'
-        : 'HERMES_VERSION_NAME';
+      process.env.RCT_HERMES_V1_ENABLED === '0'
+        ? 'HERMES_VERSION_NAME'
+        : 'HERMES_V1_VERSION_NAME';
     const version = props[key];
     return version != null && version.length > 0 ? version : null;
   } catch {
@@ -60,14 +60,14 @@ function resolveHermesArtifactVersion(): string | null {
 
 /**
  * Reads the pinned Hermes tag from packages/react-native/sdks/.hermesversion
- * (or .hermesv1version when RCT_HERMES_V1_ENABLED=1). The value is a git tag in
- * facebook/hermes. Returns null if the file is missing or empty.
+ * (or .hermesv1version unless V1 is explicitly disabled). The value is a git
+ * tag in facebook/hermes. Returns null if the file is missing or empty.
  */
 function resolveHermesTag(): string | null {
   const tagFile =
-    process.env.RCT_HERMES_V1_ENABLED === '1'
-      ? '.hermesv1version'
-      : '.hermesversion';
+    process.env.RCT_HERMES_V1_ENABLED === '0'
+      ? '.hermesversion'
+      : '.hermesv1version';
   const tagPath = path.resolve(
     import.meta.dirname!, '..', '..',
     'packages', 'react-native', 'sdks', tagFile,

@@ -59,12 +59,15 @@ async function prepareHermesArtifactsAsync(
   // Only check if the artifacts folder exists if we are not using a local tarball
   if (!localPath) {
     // Resolve the version from the environment variable or use the default version
-    let resolvedVersion = process.env.HERMES_VERSION ?? 'nightly';
+    let resolvedVersion = process.env.HERMES_VERSION ?? 'latest-v1';
 
     // [macOS] Map the fork version to an upstream release before falling
     // back to the Hermes commit at the React Native merge base.
     let allowBuildFromSource = false;
-    if (!process.env.HERMES_VERSION) {
+    if (
+      !process.env.HERMES_VERSION &&
+      process.env.RCT_HERMES_V1_ENABLED === '0'
+    ) {
       const packageJsonPath = path.resolve(
         __dirname,
         '..',
@@ -83,7 +86,11 @@ async function prepareHermesArtifactsAsync(
     }
     // macOS]
 
-    if (resolvedVersion === 'nightly') {
+    if (resolvedVersion === 'latest-v1') {
+      hermesLog('Using latest-v1 tarball');
+      const hermesVersion = await getLatestV1VersionFromNPM();
+      resolvedVersion = hermesVersion;
+    } else if (resolvedVersion === 'nightly') {
       hermesLog('Using latest nightly tarball');
       const hermesVersion = await getNightlyVersionFromNPM();
       resolvedVersion = hermesVersion;
@@ -133,6 +140,23 @@ async function prepareHermesArtifactsAsync(
   return artifactsPath;
 }
 
+async function getLatestV1VersionFromNPM() /*: Promise<string> */ {
+  const npmResponse /*: Response */ = await fetch(
+    'https://registry.npmjs.org/hermes-compiler/latest-v1',
+  );
+
+  if (!npmResponse.ok) {
+    throw new Error(
+      `Couldn't get a response from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
+    );
+  }
+
+  const json = await npmResponse.json();
+  const latestV1 = json.version;
+  hermesLog(`Using version ${latestV1}`);
+  return latestV1;
+}
+
 async function getNightlyVersionFromNPM() /*: Promise<string> */ {
   const npmResponse /*: Response */ = await fetch(
     'https://registry.npmjs.org/hermes-compiler/nightly',
@@ -140,7 +164,7 @@ async function getNightlyVersionFromNPM() /*: Promise<string> */ {
 
   if (!npmResponse.ok) {
     throw new Error(
-      `Couldn't get an answer from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
+      `Couldn't get a response from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
     );
   }
 
