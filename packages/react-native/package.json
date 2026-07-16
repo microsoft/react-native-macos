@@ -21,32 +21,11 @@
   ],
   "bugs": "https://github.com/facebook/react-native/issues",
   "engines": {
-    "node": ">= 22.11.0"
+    "node": "^20.19.4 || ^22.13.0 || ^24.3.0 || >= 25.0.0"
   },
   "bin": {
     "react-native": "cli.js",
     "react-native-macos": "cli.js"
-  },
-  "publishConfig": {
-    "executableFiles": [
-      "scripts/find-node-for-xcode.sh",
-      "scripts/ios-configure-glog.sh",
-      "scripts/node-binary.sh",
-      "scripts/packager.sh",
-      "scripts/react-native-xcode.sh",
-      "scripts/react_native_pods_utils/script_phases.sh",
-      "scripts/update-ruby.sh",
-      "scripts/xcode/ccache-clang.sh",
-      "scripts/xcode/ccache-clang++.sh",
-      "scripts/xcode/with-environment.sh",
-      "sdks/hermes-engine/utils/build-apple-framework.sh",
-      "sdks/hermes-engine/utils/build-hermes-xcode.sh",
-      "sdks/hermes-engine/utils/build-hermesc-xcode.sh",
-      "sdks/hermes-engine/utils/build-ios-framework.sh",
-      "sdks/hermes-engine/utils/build-mac-framework.sh",
-      "sdks/hermes-engine/utils/copy-hermes-xcode.sh",
-      "sdks/hermes-engine/utils/create-dummy-hermes-xcframework.sh"
-    ]
   },
   "main": "./index.js",
   "types": "types",
@@ -104,7 +83,6 @@
     "index.js.flow",
     "interface.js",
     "jest-preset.js",
-    "jest",
     "Libraries",
     "LICENSE",
     "React-Core.podspec",
@@ -128,6 +106,8 @@
     "rn-get-polyfills.js",
     "scripts/replace-rncore-version.js",
     "scripts/bundle.js",
+    "scripts/cocoapods",
+    "scripts/codegen",
     "scripts/compose-source-maps.js",
     "scripts/find-node-for-xcode.sh",
     "scripts/generate-codegen-artifacts.js",
@@ -150,6 +130,7 @@
     "scripts/xcode/with-environment.sh",
     "sdks/.hermesversion",
     "sdks/.hermesv1version",
+    "sdks/hermes-engine",
     "sdks/hermesc",
     "settings.gradle.kts",
     "src",
@@ -162,29 +143,26 @@
     "!**/__flowtests__/**",
     "!**/__mocks__/**",
     "!**/__tests__/**",
-    "!**/__typetests__/**",
-    "local-cli",
-    "scripts/cocoapods/**",
-    "scripts/codegen/**",
-    "scripts/update-ruby.sh",
-    "sdks/hermes-engine/**",
-    "React-RCTUIKit.podspec"
+    "!**/__typetests__/**"
   ],
   "scripts": {
     "prepack": "node ./scripts/prepack.js",
     "featureflags": "node ./scripts/featureflags/index.js"
   },
   "peerDependencies": {
+    "@react-native/jest-preset": "0.84.0-main",
     "@types/react": "^19.1.1",
     "react": "^19.2.3"
   },
   "peerDependenciesMeta": {
+    "@react-native/jest-preset": {
+      "optional": true
+    },
     "@types/react": {
       "optional": true
     }
   },
   "dependencies": {
-    "@jest/create-cache-key-function": "^29.7.0",
     "@react-native-macos/virtualized-lists": "workspace:*",
     "@react-native/assets-registry": "workspace:*",
     "@react-native/codegen": "workspace:*",
@@ -195,18 +173,16 @@
     "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
-    "babel-jest": "^29.7.0",
-    "babel-plugin-syntax-hermes-parser": "0.32.0",
+    "babel-plugin-syntax-hermes-parser": "0.33.3",
     "base64-js": "^1.5.1",
     "commander": "^12.0.0",
     "flow-enums-runtime": "^0.0.6",
     "glob": "^7.1.1",
     "hermes-compiler": "0.0.0",
     "invariant": "^2.2.4",
-    "jest-environment-node": "^29.7.0",
     "memoize-one": "^5.0.0",
-    "metro-runtime": "^0.83.3",
-    "metro-source-map": "^0.83.3",
+    "metro-runtime": "^0.84.0",
+    "metro-source-map": "^0.84.0",
     "nullthrows": "^1.1.1",
     "pretty-format": "^29.7.0",
     "promise": "^8.3.0",
@@ -251,6 +227,27 @@
         "android": {},
         "jsSrcsDir": "src"
       }
+    ]
+  },
+  "publishConfig": {
+    "executableFiles": [
+      "scripts/find-node-for-xcode.sh",
+      "scripts/ios-configure-glog.sh",
+      "scripts/node-binary.sh",
+      "scripts/packager.sh",
+      "scripts/react-native-xcode.sh",
+      "scripts/react_native_pods_utils/script_phases.sh",
+      "scripts/update-ruby.sh",
+      "scripts/xcode/ccache-clang.sh",
+      "scripts/xcode/ccache-clang++.sh",
+      "scripts/xcode/with-environment.sh",
+      "sdks/hermes-engine/utils/build-apple-framework.sh",
+      "sdks/hermes-engine/utils/build-hermes-xcode.sh",
+      "sdks/hermes-engine/utils/build-hermesc-xcode.sh",
+      "sdks/hermes-engine/utils/build-ios-framework.sh",
+      "sdks/hermes-engine/utils/build-mac-framework.sh",
+      "sdks/hermes-engine/utils/copy-hermes-xcode.sh",
+      "sdks/hermes-engine/utils/create-dummy-hermes-xcframework.sh"
     ]
   }
 }

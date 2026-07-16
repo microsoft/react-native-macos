@@ -30,7 +30,7 @@ import View from './View/View';
 import invariant from 'invariant';
 import * as React from 'react';
 
-export type ButtonProps = $ReadOnly<{
+export type ButtonProps = Readonly<{
   /**
     Text to display inside the button. On Android the given title will be
     converted to the uppercased form.
@@ -178,7 +178,7 @@ export type ButtonProps = $ReadOnly<{
    * Accessibility props.
    */
   accessible?: ?boolean,
-  accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
+  accessibilityActions?: ?ReadonlyArray<AccessibilityActionInfo>,
   onAccessibilityAction?: ?(event: AccessibilityActionEvent) => unknown,
   accessibilityState?: ?AccessibilityState,
 

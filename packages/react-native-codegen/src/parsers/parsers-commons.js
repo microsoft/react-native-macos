@@ -77,8 +77,8 @@ const {
 } = require('./utils');
 const invariant = require('invariant');
 
-export type CommandOptions = $ReadOnly<{
-  supportedCommands: $ReadOnlyArray<string>,
+export type CommandOptions = Readonly<{
+  supportedCommands: ReadonlyArray<string>,
 }>;
 
 // $FlowFixMe[unclear-type] TODO(T108222691): Use flow-types for @babel/parser
@@ -90,7 +90,7 @@ type ExtendedPropResult = {
 } | null;
 
 export type EventArgumentReturnType = {
-  argumentProps: ?$ReadOnlyArray<$FlowFixMe>,
+  argumentProps: ?ReadonlyArray<$FlowFixMe>,
   paperTopLevelNameDeprecated: ?$FlowFixMe,
   bubblingType: ?'direct' | 'bubble',
 };
@@ -592,10 +592,10 @@ function buildSchemaFromConfigType(
       if (parsingErrors.length > 0) {
         /**
          * TODO(T77968131): We have two options:
-         *  - Throw the first error, but indicate there are more then one errors.
+         *  - Throw the first error, but indicate there are more than one error.
          *  - Display all errors, nicely formatted.
          *
-         * For the time being, we're just throw the first error.
+         * For the time being, we're just throwing the first error.
          **/
 
         throw parsingErrors[0];
@@ -751,7 +751,7 @@ const buildModuleSchema = (
 ): NativeModuleSchema => {
   const language = parser.language();
   const types = parser.getTypes(ast);
-  const moduleSpecs = (Object.values(types): $ReadOnlyArray<$FlowFixMe>).filter(
+  const moduleSpecs = (Object.values(types): ReadonlyArray<$FlowFixMe>).filter(
     t => parser.isModuleInterface(t),
   );
 
@@ -793,7 +793,7 @@ const buildModuleSchema = (
         parser,
       )
     : {};
-  const properties: $ReadOnlyArray<$FlowFixMe> =
+  const properties: ReadonlyArray<$FlowFixMe> =
     language === 'Flow' ? moduleSpec.body.properties : moduleSpec.body.body;
 
   type PropertyShape =
@@ -1043,8 +1043,8 @@ function getCommandTypeNameAndOptionsExpression(
 }
 
 function propertyNames(
-  properties: $ReadOnlyArray<$FlowFixMe>,
-): $ReadOnlyArray<$FlowFixMe> {
+  properties: ReadonlyArray<$FlowFixMe>,
+): ReadonlyArray<$FlowFixMe> {
   return properties
     .map(property => property && property.key && property.key.name)
     .filter(Boolean);
@@ -1293,7 +1293,7 @@ function buildPropertiesForEvent(
 }
 
 function verifyPropNotAlreadyDefined(
-  props: $ReadOnlyArray<PropAST>,
+  props: ReadonlyArray<PropAST>,
   needleProp: PropAST,
 ) {
   const propName = needleProp.key.name;

@@ -27,7 +27,7 @@ import * as React from 'react';
 const extractSingleTouch = (nativeEvent: {
   +altKey?: ?boolean, // [macOS]
   +button?: ?number, // [macOS]
-  +changedTouches: $ReadOnlyArray<GestureResponderEvent['nativeEvent']>,
+  +changedTouches: ReadonlyArray<GestureResponderEvent['nativeEvent']>,
   +ctrlKey?: ?boolean, // [macOS]
   +force?: number,
   +identifier: number,
@@ -39,7 +39,7 @@ const extractSingleTouch = (nativeEvent: {
   +shiftKey?: ?boolean, // [macOS]
   +target: ?number,
   +timestamp: number,
-  +touches: $ReadOnlyArray<GestureResponderEvent['nativeEvent']>,
+  +touches: ReadonlyArray<GestureResponderEvent['nativeEvent']>,
 }) => {
   const touches = nativeEvent.touches;
   const changedTouches = nativeEvent.changedTouches;

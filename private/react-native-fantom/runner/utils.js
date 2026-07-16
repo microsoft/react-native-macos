@@ -26,7 +26,7 @@ export enum HermesVariant {
 
 export function getBuckOptionsForHermes(
   variant: HermesVariant,
-): $ReadOnlyArray<string> {
+): ReadonlyArray<string> {
   const baseOptions = EnvironmentOptions.enableJSMemoryInstrumentation
     ? ['-c hermes.memory_instrumentation=true']
     : [];
@@ -53,9 +53,13 @@ export function getHermesCompilerTarget(variant: HermesVariant): string {
 
 export function getBuckModesForPlatform(
   enableRelease: boolean = false,
-): $ReadOnlyArray<string> {
-  let mode = enableRelease ? 'opt' : 'dev';
+): ReadonlyArray<string> {
+  let modes = ['@//xplat/mode/react-native/granite'];
+  if (enableRelease) {
+    modes.push('@//xplat/mode/hermes/opt');
+  }
 
+  let mode = enableRelease ? 'opt' : 'dev';
   if (enableRelease) {
     if (EnvironmentOptions.enableASAN || EnvironmentOptions.enableTSAN) {
       printConsoleLog({
@@ -66,7 +70,7 @@ export function getBuckModesForPlatform(
       });
     }
   } else {
-    if (EnvironmentOptions.enableASAN) {
+    if (EnvironmentOptions.enableASAN && EnvironmentOptions.enableTSAN) {
       printConsoleLog({
         type: 'console-log',
         level: 'warn',
@@ -101,12 +105,8 @@ export function getBuckModesForPlatform(
       throw new Error(`Unsupported platform: ${os.platform()}`);
   }
 
-  return ['@//xplat/mode/react-native/granite', osPlatform];
-}
-
-// TODO: T240293839 Remove when we get rid of RN_USE_ANIMATION_BACKEND preprocessor flag
-export function getConfigForAnimationBackend(): $ReadOnlyArray<string> {
-  return ['-c rn.use_animationbackend=true'];
+  modes.push(osPlatform);
+  return modes;
 }
 
 export type AsyncCommandResult = {
@@ -131,7 +131,7 @@ export type SyncCommandResult = {
   stderr: string,
 };
 
-function maybeLogCommand(command: string, args: $ReadOnlyArray<string>): void {
+function maybeLogCommand(command: string, args: ReadonlyArray<string>): void {
   if (EnvironmentOptions.logCommands) {
     console.log(`RUNNING \`${command} ${args.join(' ')}\``);
   }
@@ -139,7 +139,7 @@ function maybeLogCommand(command: string, args: $ReadOnlyArray<string>): void {
 
 export function runCommand(
   command: string,
-  args: $ReadOnlyArray<string>,
+  args: ReadonlyArray<string>,
 ): AsyncCommandResult {
   maybeLogCommand(command, args);
 
@@ -183,7 +183,7 @@ export function runCommand(
 
 export function runCommandSync(
   command: string,
-  args: $ReadOnlyArray<string>,
+  args: ReadonlyArray<string>,
 ): SyncCommandResult {
   maybeLogCommand(command, args);
 

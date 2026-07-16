@@ -33,13 +33,13 @@ const ProtocolMethodTemplate = ({
   returnObjCType,
   methodName,
   params,
-}: $ReadOnly<{
+}: Readonly<{
   returnObjCType: string,
   methodName: string,
   params: string,
 }>) => `- (${returnObjCType})${methodName}${params};`;
 
-export type StructParameterRecord = $ReadOnly<{
+export type StructParameterRecord = Readonly<{
   paramIndex: number,
   structName: string,
 }>;
@@ -53,11 +53,11 @@ type ReturnJSType =
   | 'NumberKind'
   | 'StringKind';
 
-export type MethodSerializationOutput = $ReadOnly<{
+export type MethodSerializationOutput = Readonly<{
   methodName: string,
   protocolMethod: string,
   selector: string,
-  structParamRecords: $ReadOnlyArray<StructParameterRecord>,
+  structParamRecords: ReadonlyArray<StructParameterRecord>,
   returnJSType: ReturnJSType,
   argCount: number,
 }>;
@@ -67,7 +67,7 @@ function serializeMethod(
   property: NativeModulePropertyShape,
   structCollector: StructCollector,
   resolveAlias: AliasResolver,
-): $ReadOnlyArray<MethodSerializationOutput> {
+): ReadonlyArray<MethodSerializationOutput> {
   const {name: methodName, typeAnnotation: nullableTypeAnnotation} = property;
   const [propertyTypeAnnotation] = unwrapNullable(nullableTypeAnnotation);
   const {params} = propertyTypeAnnotation;
@@ -186,7 +186,7 @@ function getParamObjCType(
   structName: string,
   structCollector: StructCollector,
   resolveAlias: AliasResolver,
-): $ReadOnly<{objCType: string, isStruct: boolean}> {
+): Readonly<{objCType: string, isStruct: boolean}> {
   const {name: paramName, typeAnnotation: nullableTypeAnnotation} = param;
   const [typeAnnotation, nullable] = unwrapNullable(nullableTypeAnnotation);
   const isRequired = !param.optional && !nullable;
@@ -472,7 +472,7 @@ function serializeConstantsProtocolMethods(
   property: NativeModulePropertyShape,
   structCollector: StructCollector,
   resolveAlias: AliasResolver,
-): $ReadOnlyArray<MethodSerializationOutput> {
+): ReadonlyArray<MethodSerializationOutput> {
   const [propertyTypeAnnotation] = unwrapNullable(property.typeAnnotation);
   if (propertyTypeAnnotation.params.length !== 0) {
     throw new Error(

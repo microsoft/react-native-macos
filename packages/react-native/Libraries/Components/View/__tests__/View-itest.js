@@ -313,16 +313,8 @@ describe('<View>', () => {
           root.getRenderedOutput({props: ['pointerEvents']}).toJSX(),
         ).toEqual(null);
       });
-      it('box-only propagates to the mounting layer, does not unflatten', () => {
+      it('box-only propagates to the mounting layer, unflattens', () => {
         const root = Fantom.createRoot();
-
-        Fantom.runTask(() => {
-          root.render(<View collapsable={false} pointerEvents="box-only" />);
-        });
-
-        expect(
-          root.getRenderedOutput({props: ['pointerEvents']}).toJSX(),
-        ).toEqual(<rn-view pointerEvents="box-only" />);
 
         Fantom.runTask(() => {
           root.render(<View pointerEvents="box-only" />);
@@ -330,7 +322,7 @@ describe('<View>', () => {
 
         expect(
           root.getRenderedOutput({props: ['pointerEvents']}).toJSX(),
-        ).toEqual(null);
+        ).toEqual(<rn-view pointerEvents="box-only" />);
       });
       it('none propagates to the mounting layer, unflattens', () => {
         const root = Fantom.createRoot();
@@ -530,6 +522,115 @@ describe('<View>', () => {
           ).toEqual(null);
         });
       });
+      describe('aria-label', () => {
+        it('is mapped to accessibilityLabel', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-label="custom label" accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
+          ).toEqual(<rn-view accessibilityLabel="custom label" />);
+        });
+      });
+
+      describe('aria-live', () => {
+        it('is mapped to accessibilityLiveRegion', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-live="polite" accessible={true} />);
+          });
+
+          expect(
+            root
+              .getRenderedOutput({props: ['accessibilityLiveRegion']})
+              .toJSX(),
+          ).toEqual(<rn-view accessibilityLiveRegion="polite" />);
+        });
+      });
+
+      describe('aria-busy', () => {
+        it('is mapped to accessibilityState', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-busy={true} accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:true,expanded:null}" />,
+          );
+        });
+      });
+
+      describe('aria-disabled', () => {
+        it('is mapped to accessibilityState', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-disabled={true} accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:true,selected:false,checked:None,busy:false,expanded:null}" />,
+          );
+        });
+      });
+
+      describe('aria-expanded', () => {
+        it('is mapped to accessibilityState', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-expanded={true} accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:true}" />,
+          );
+        });
+      });
+
+      describe('aria-selected', () => {
+        it('is mapped to accessibilityState', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-selected={true} accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:true,checked:None,busy:false,expanded:null}" />,
+          );
+        });
+      });
+
+      describe('aria-checked', () => {
+        it('is mapped to accessibilityState', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-checked={true} accessible={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:false,checked:Checked,busy:false,expanded:null}" />,
+          );
+        });
+      });
     });
 
     describe('accessible', () => {
@@ -550,6 +651,22 @@ describe('<View>', () => {
 
         expect(root.getRenderedOutput({props: ['accessible']}).toJSX()).toEqual(
           <rn-view accessible="true" />,
+        );
+      });
+    });
+  });
+
+  describe('web compat props', () => {
+    describe('id', () => {
+      it('is mapped to nativeID', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(<View id="my-id" collapsable={false} />);
+        });
+
+        expect(root.getRenderedOutput({props: ['nativeID']}).toJSX()).toEqual(
+          <rn-view nativeID="my-id" />,
         );
       });
     });

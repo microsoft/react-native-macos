@@ -56,6 +56,7 @@ Pod::Spec.new do |s|
   add_rncore_dependency(s)
 
   s.subspec "animated" do |ss|
+    ss.dependency             "React-Fabric/animationbackend"
     ss.source_files         = podspec_sources("react/renderer/animated/**/*.{m,mm,cpp,h}", "react/renderer/animated/**/*.{h}")
     ss.exclude_files        = "react/renderer/animated/tests"
     ss.header_dir           = "react/renderer/animated"
@@ -95,6 +96,8 @@ Pod::Spec.new do |s|
       header_search_path = header_search_path + [
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/textlayoutmanager/platform/ios\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/scrollview/platform/cxx\"",
+        "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/scrollview/platform/ios\"",
+        "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/legacyviewmanagerinterop/platform/ios\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/text/platform/cxx\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/textinput/platform/ios\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/view/platform/cxx\"",
@@ -158,6 +161,7 @@ Pod::Spec.new do |s|
     ss.source_files         = podspec_sources("react/renderer/scheduler/**/*.{m,mm,cpp,h}", "react/renderer/scheduler/**/*.h")
     ss.header_dir           = "react/renderer/scheduler"
 
+    ss.dependency             "React-Fabric/animationbackend"
     ss.dependency             "React-performancecdpmetrics"
     ss.dependency             "React-performancetimeline"
     ss.dependency             "React-Fabric/observers/events"
@@ -186,12 +190,6 @@ Pod::Spec.new do |s|
       sss.exclude_files        = "react/renderer/observers/intersection/tests"
       sss.header_dir           = "react/renderer/observers/intersection"
     end
-  end
-
-  s.subspec "templateprocessor" do |ss|
-    ss.source_files         = podspec_sources("react/renderer/templateprocessor/**/*.{m,mm,cpp,h}", "react/renderer/templateprocessor/**/*.h")
-    ss.exclude_files        = "react/renderer/templateprocessor/tests"
-    ss.header_dir           = "react/renderer/templateprocessor"
   end
 
   s.subspec "telemetry" do |ss|
