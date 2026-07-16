@@ -473,7 +473,7 @@ let reactFabric = RNTarget(
     "components/root/tests",
   ] + reactFabricViewPlatformExcludes, // [macOS]
   dependencies: [.reactNativeDependencies, .reactJsiExecutor, .rctTypesafety, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .reactRendererDebug, .reactGraphics, .yoga],
-  sources: ["animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/view/platform/cxx", "components/scrollview", "components/scrollview/platform/cxx", "components/legacyviewmanagerinterop", "dom", "scheduler", "mounting", "observers/events", "observers/intersection", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency"] + reactFabricViewPlatformSources // [macOS]
+  sources: ["animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/scrollview", "components/scrollview/platform/cxx", "components/legacyviewmanagerinterop", "dom", "scheduler", "mounting", "observers/events", "observers/intersection", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency"] + reactFabricViewPlatformSources // [macOS]
 )
 
 let reactFabricInputAccessory = RNTarget(
