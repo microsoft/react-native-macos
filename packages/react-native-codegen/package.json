@@ -36,8 +36,8 @@
     "hermes-parser": "0.32.0",
     "invariant": "^2.2.4",
     "nullthrows": "^1.1.1",
-    "yargs": "^17.6.2",
-    "tinyglobby": "^0.2.15"
+    "tinyglobby": "^0.2.15",
+    "yargs": "^17.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
