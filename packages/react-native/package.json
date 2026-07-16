@@ -1,6 +1,6 @@
 {
   "name": "react-native-macos",
-  "version": "1000.0.0",
+  "version": "0.84.0-rc0",
   "description": "React Native for macOS",
   "license": "MIT",
   "repository": {
@@ -176,7 +176,8 @@
   },
   "peerDependencies": {
     "@types/react": "^19.1.1",
-    "react": "^19.2.3"
+    "react": "^19.2.3",
+    "react-native": "0.84.1"
   },
   "peerDependenciesMeta": {
     "@types/react": {
@@ -185,13 +186,13 @@
   },
   "dependencies": {
     "@jest/create-cache-key-function": "^29.7.0",
-    "@react-native-macos/virtualized-lists": "workspace:*",
-    "@react-native/assets-registry": "workspace:*",
-    "@react-native/codegen": "workspace:*",
-    "@react-native/community-cli-plugin": "workspace:*",
-    "@react-native/gradle-plugin": "workspace:*",
-    "@react-native/js-polyfills": "workspace:*",
-    "@react-native/normalize-colors": "workspace:*",
+    "@react-native-macos/virtualized-lists": "0.84.0-rc0",
+    "@react-native/assets-registry": "0.84.1",
+    "@react-native/codegen": "0.84.1",
+    "@react-native/community-cli-plugin": "0.84.1",
+    "@react-native/gradle-plugin": "0.84.1",
+    "@react-native/js-polyfills": "0.84.1",
+    "@react-native/normalize-colors": "0.84.1",
     "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",

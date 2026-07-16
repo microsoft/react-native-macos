@@ -1,6 +1,6 @@
 {
   "name": "@react-native/oss-library-example",
-  "version": "0.81.0-main",
+  "version": "0.84.1",
   "private": true,
   "description": "Package that includes native module exapmle, native component example, targets both the old and the new architecture. It should serve as an example of a real-world OSS library.",
   "license": "MIT",
@@ -31,7 +31,7 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native-macos": "*"
+    "react-native-macos": "0.84.0-rc0"
   },
   "codegenConfig": {
     "name": "OSSLibraryExampleSpec",
