@@ -366,9 +366,10 @@ function createModuleMapFile(outputPath /*: string */) {
 
 function getArchsFromFramework(frameworkPath /*:string*/) {
   try {
-    return execSync(`vtool -show-build ${frameworkPath}|grep platform`)
+    return execFileSync('vtool', ['-show-build', frameworkPath])
       .toString()
       .split('\n')
+      .filter(line => line.includes('platform'))
       .map(p => p.trim().split(' ')[1])
       .sort((a, b) => a.localeCompare(b))
       .join(' ');
