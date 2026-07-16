@@ -7,7 +7,9 @@
 
 #include "PerformanceTracer.h"
 #include "Timing.h"
+#include "TraceEventGenerator.h"
 #include "TraceEventSerializer.h"
+#include "TracingCategory.h"
 
 #include <jsinspector-modern/network/CdpNetwork.h>
 #include <jsinspector-modern/network/HttpUtils.h>
@@ -138,7 +140,7 @@ std::optional<std::vector<TraceEvent>> PerformanceTracer::stopTracing() {
   events.emplace_back(
       TraceEvent{
           .name = "TracingStartedInPage",
-          .cat = "disabled-by-default-devtools.timeline",
+          .cat = {Category::HiddenTimeline},
           .ph = 'I',
           .ts = currentTraceStartTime,
           .pid = processId_,
@@ -149,7 +151,7 @@ std::optional<std::vector<TraceEvent>> PerformanceTracer::stopTracing() {
   events.emplace_back(
       TraceEvent{
           .name = "ReactNative-TracingStopped",
-          .cat = "disabled-by-default-devtools.timeline",
+          .cat = {Category::HiddenTimeline},
           .ph = 'I',
           .ts = currentTraceEndTime,
           .pid = processId_,
@@ -187,7 +189,8 @@ void PerformanceTracer::reportMeasure(
     const std::string& name,
     HighResTimeStamp start,
     HighResDuration duration,
-    folly::dynamic&& detail) {
+    folly::dynamic&& detail,
+    std::optional<folly::dynamic> stackTrace) {
   if (!tracingAtomic_) {
     return;
   }
@@ -204,6 +207,7 @@ void PerformanceTracer::reportMeasure(
           .duration = duration,
           .detail = std::move(detail),
           .threadId = getCurrentThreadId(),
+          .stackTrace = std::move(stackTrace),
       });
 }
 
@@ -214,7 +218,8 @@ void PerformanceTracer::reportTimeStamp(
     std::optional<std::string> trackName,
     std::optional<std::string> trackGroup,
     std::optional<ConsoleTimeStampColor> color,
-    std::optional<folly::dynamic> detail) {
+    std::optional<folly::dynamic> detail,
+    std::optional<folly::dynamic> stackTrace) {
   if (!tracingAtomic_) {
     return;
   }
@@ -233,6 +238,7 @@ void PerformanceTracer::reportTimeStamp(
           .trackGroup = std::move(trackGroup),
           .color = std::move(color),
           .detail = std::move(detail),
+          .stackTrace = std::move(stackTrace),
           .threadId = getCurrentThreadId(),
       });
 }
@@ -306,6 +312,27 @@ void PerformanceTracer::reportResourceSendRequest(
       });
 }
 
+void PerformanceTracer::reportResourceReceivedData(
+    const std::string& devtoolsRequestId,
+    HighResTimeStamp start,
+    int encodedDataLength) {
+  if (!tracingAtomic_) {
+    return;
+  };
+
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!tracingAtomic_) {
+    return;
+  }
+
+  enqueueEvent(
+      PerformanceTracerResourceReceivedData{
+          .requestId = devtoolsRequestId,
+          .start = start,
+          .encodedDataLength = encodedDataLength,
+          .threadId = getCurrentThreadId()});
+}
+
 void PerformanceTracer::reportResourceReceiveResponse(
     const std::string& devtoolsRequestId,
     HighResTimeStamp start,
@@ -370,7 +397,7 @@ void PerformanceTracer::reportResourceFinish(
   return TraceEvent{
       .id = profileId,
       .name = "Profile",
-      .cat = "disabled-by-default-v8.cpu_profiler",
+      .cat = {Category::JavaScriptSampling},
       .ph = 'P',
       .ts = profileTimestamp,
       .pid = processId,
@@ -393,7 +420,7 @@ PerformanceTracer::constructRuntimeProfileChunkTraceEvent(
   return TraceEvent{
       .id = profileId,
       .name = "ProfileChunk",
-      .cat = "disabled-by-default-v8.cpu_profiler",
+      .cat = {Category::JavaScriptSampling},
       .ph = 'P',
       .ts = chunkTimestamp,
       .pid = processId,
@@ -525,7 +552,7 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
             events.emplace_back(
                 TraceEvent{
                     .name = "RunTask",
-                    .cat = "disabled-by-default-devtools.timeline",
+                    .cat = {Category::HiddenTimeline},
                     .ph = 'X',
                     .ts = event.start,
                     .pid = processId_,
@@ -537,7 +564,7 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
             events.emplace_back(
                 TraceEvent{
                     .name = "RunMicrotasks",
-                    .cat = "v8.execute",
+                    .cat = {Category::RuntimeExecution},
                     .ph = 'X',
                     .ts = event.start,
                     .pid = processId_,
@@ -557,7 +584,7 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
             events.emplace_back(
                 TraceEvent{
                     .name = std::move(event.name),
-                    .cat = "blink.user_timing",
+                    .cat = {Category::UserTiming},
                     .ph = 'I',
                     .ts = event.start,
                     .pid = processId_,
@@ -571,6 +598,10 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
               beginEventArgs =
                   folly::dynamic::object("detail", folly::toJson(event.detail));
             }
+            if (event.stackTrace) {
+              beginEventArgs["data"] = folly::dynamic::object(
+                  "rnStackTrace", std::move(*event.stackTrace));
+            }
 
             auto eventId = ++performanceMeasureCount_;
 
@@ -578,7 +609,7 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
                 TraceEvent{
                     .id = eventId,
                     .name = event.name,
-                    .cat = "blink.user_timing",
+                    .cat = {Category::UserTiming},
                     .ph = 'b',
                     .ts = event.start,
                     .pid = processId_,
@@ -589,7 +620,7 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
                 TraceEvent{
                     .id = eventId,
                     .name = std::move(event.name),
-                    .cat = "blink.user_timing",
+                    .cat = {Category::UserTiming},
                     .ph = 'e',
                     .ts = event.start + event.duration,
                     .pid = processId_,
@@ -629,7 +660,7 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
                 events.emplace_back(
                     TraceEvent{
                         .name = "TimeStamp",
-                        .cat = "devtools.timeline",
+                        .cat = {Category::Timeline},
                         .ph = 'I',
                         .ts = event.createdAt,
                         .pid = processId_,
@@ -660,11 +691,14 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
               }
               data["devtools"] = folly::toJson(devtoolsDetail);
             }
+            if (event.stackTrace) {
+              data["rnStackTrace"] = std::move(*event.stackTrace);
+            }
 
             events.emplace_back(
                 TraceEvent{
                     .name = "TimeStamp",
-                    .cat = "devtools.timeline",
+                    .cat = {Category::Timeline},
                     .ph = 'I',
                     .ts = event.createdAt,
                     .pid = processId_,
@@ -684,7 +718,24 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
             events.emplace_back(
                 TraceEvent{
                     .name = "ResourceSendRequest",
-                    .cat = "devtools.timeline",
+                    .cat = {Category::Timeline},
+                    .ph = 'I',
+                    .ts = event.start,
+                    .pid = processId_,
+                    .s = 't',
+                    .tid = event.threadId,
+                    .args = folly::dynamic::object("data", std::move(data)),
+                });
+          },
+          [&](PerformanceTracerResourceReceivedData&& event) {
+            folly::dynamic data = folly::dynamic::object(
+                "encodedDataLength", event.encodedDataLength)(
+                "requestId", std::move(event.requestId));
+
+            events.emplace_back(
+                TraceEvent{
+                    .name = "ResourceReceivedData",
+                    .cat = {Category::Timeline},
                     .ph = 'I',
                     .ts = event.start,
                     .pid = processId_,
@@ -710,7 +761,7 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
             events.emplace_back(
                 TraceEvent{
                     .name = "ResourceReceiveResponse",
-                    .cat = "devtools.timeline",
+                    .cat = {Category::Timeline},
                     .ph = 'I',
                     .ts = event.start,
                     .pid = processId_,
@@ -728,7 +779,7 @@ void PerformanceTracer::enqueueTraceEventsFromPerformanceTracerEvent(
             events.emplace_back(
                 TraceEvent{
                     .name = "ResourceFinish",
-                    .cat = "devtools.timeline",
+                    .cat = {Category::Timeline},
                     .ph = 'I',
                     .ts = event.start,
                     .pid = processId_,

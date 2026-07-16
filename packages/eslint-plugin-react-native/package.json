@@ -1,6 +1,6 @@
 {
   "name": "@react-native/eslint-plugin",
-  "version": "0.83.0-main",
+  "version": "0.84.0-main",
   "private": true,
   "description": "ESLint rules for @react-native/eslint-config",
   "license": "MIT",
@@ -23,6 +23,6 @@
     "hermes-eslint": "0.32.0"
   },
   "engines": {
-    "node": ">= 20.19.4"
+    "node": ">= 22.11.0"
   }
 }

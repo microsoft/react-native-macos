@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ab48ba86a7cf3cd35ec530a216aea774>>
+ * @generated SignedSource<<6bdc23594dd175a0bf4409c0e2f10552>>
  */
 
 /**
@@ -29,21 +29,25 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun cxxNativeAnimatedEnabled(): Boolean = false
 
-  override fun cxxNativeAnimatedRemoveJsSync(): Boolean = false
-
   override fun disableEarlyViewCommandExecution(): Boolean = false
 
-  override fun disableFabricCommitInCXXAnimated(): Boolean = false
+  override fun disableImageViewPreallocationAndroid(): Boolean = false
 
   override fun disableMountItemReorderingAndroid(): Boolean = false
 
   override fun disableOldAndroidAttachmentMetricsWorkarounds(): Boolean = true
 
+  override fun disableSubviewClippingAndroid(): Boolean = false
+
   override fun disableTextLayoutManagerCacheAndroid(): Boolean = false
+
+  override fun disableViewPreallocationAndroid(): Boolean = false
 
   override fun enableAccessibilityOrder(): Boolean = false
 
   override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = false
+
+  override fun enableAndroidAntialiasedBorderRadiusClipping(): Boolean = false
 
   override fun enableAndroidLinearText(): Boolean = false
 
@@ -63,6 +67,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableEagerRootViewAttachment(): Boolean = false
 
+  override fun enableExclusivePropsUpdateAndroid(): Boolean = false
+
   override fun enableFabricLogs(): Boolean = false
 
   override fun enableFabricRenderer(): Boolean = false
@@ -75,6 +81,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableImagePrefetchingAndroid(): Boolean = false
 
+  override fun enableImagePrefetchingJNIBatchingAndroid(): Boolean = false
+
   override fun enableImagePrefetchingOnUiThreadAndroid(): Boolean = false
 
   override fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = false
@@ -82,6 +90,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableImperativeFocus(): Boolean = false
 
   override fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean = false
+
+  override fun enableIntersectionObserverByDefault(): Boolean = false
 
   override fun enableKeyEvents(): Boolean = false
 
@@ -95,13 +105,11 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableNativeCSSParsing(): Boolean = false
 
-  override fun enableNetworkEventReporting(): Boolean = false
+  override fun enableNetworkEventReporting(): Boolean = true
 
   override fun enablePreparedTextLayout(): Boolean = false
 
   override fun enablePropsUpdateReconciliationAndroid(): Boolean = false
-
-  override fun enableResourceTimingAPI(): Boolean = false
 
   override fun enableSwiftUIBasedFilters(): Boolean = false
 
@@ -117,8 +125,6 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableViewRecyclingForView(): Boolean = true
 
-  override fun enableVirtualViewClippingWithoutScrollViewClipping(): Boolean = true
-
   override fun enableVirtualViewContainerStateExperimental(): Boolean = false
 
   override fun enableVirtualViewDebugFeatures(): Boolean = false
@@ -131,9 +137,13 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = false
 
+  override fun fixTextClippingAndroid15useBoundsForWidth(): Boolean = false
+
+  override fun fuseboxAssertSingleHostState(): Boolean = true
+
   override fun fuseboxEnabledRelease(): Boolean = false
 
-  override fun fuseboxNetworkInspectionEnabled(): Boolean = false
+  override fun fuseboxNetworkInspectionEnabled(): Boolean = true
 
   override fun hideOffscreenVirtualViewsOnIOS(): Boolean = false
 
@@ -149,11 +159,17 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun shouldPressibilityUseW3CPointerEventsForHover(): Boolean = false
 
+  override fun shouldResetClickableWhenRecyclingView(): Boolean = true
+
+  override fun shouldResetOnClickListenerWhenRecyclingView(): Boolean = true
+
+  override fun shouldSetEnabledBasedOnAccessibilityState(): Boolean = true
+
+  override fun shouldSetIsClickableByDefault(): Boolean = false
+
   override fun shouldTriggerResponderTransferOnScrollAndroid(): Boolean = false
 
   override fun skipActivityIdentityAssertionOnHostPause(): Boolean = false
-
-  override fun sweepActiveTouchOnChildNativeGesturesAndroid(): Boolean = true
 
   override fun traceTurboModulePromiseRejectionsOnAndroid(): Boolean = false
 
@@ -163,17 +179,11 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun useFabricInterop(): Boolean = true
 
-  override fun useNativeEqualsInNativeReadableArrayAndroid(): Boolean = true
-
-  override fun useNativeTransformHelperAndroid(): Boolean = true
-
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = false
-
-  override fun useOptimizedEventBatchingOnAndroid(): Boolean = false
 
   override fun useRawPropsJsiValue(): Boolean = true
 
-  override fun useShadowNodeStateOnClone(): Boolean = false
+  override fun useShadowNodeStateOnClone(): Boolean = true
 
   override fun useSharedAnimatedBackend(): Boolean = false
 

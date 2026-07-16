@@ -1,6 +1,6 @@
 {
   "name": "@react-native/tester",
-  "version": "0.83.0-main",
+  "version": "0.84.0-main",
   "private": true,
   "description": "React Native tester app.",
   "license": "MIT",
@@ -10,13 +10,12 @@
     "directory": "packages/rn-tester"
   },
   "engines": {
-    "node": ">= 20.19.4"
+    "node": ">= 22.11.0"
   },
   "scripts": {
     "start": "react-native-macos start",
     "android": "react-native-macos run-android",
-    "install-android-jsc": "../../gradlew :packages:rn-tester:android:app:installDebug",
-    "install-android-hermes": "../../gradlew :packages:rn-tester:android:app:installDebug",
+    "install-android": "../../gradlew :packages:rn-tester:android:app:installDebug",
     "clean-android": "rm -rf android/app/build",
     "prepare-ios": "node ./cli.js bootstrap ios",
     "clean-ios": "rm -rf build/generated/ios Pods Podfile.lock RNTesterPods.xcworkspace/ ../react-native-codegen/lib/",
@@ -33,7 +32,7 @@
     "nullthrows": "^1.1.1"
   },
   "peerDependencies": {
-    "react": "19.2.0",
+    "react": "19.2.3",
     "react-native-macos": "workspace:*"
   },
   "codegenConfig": {

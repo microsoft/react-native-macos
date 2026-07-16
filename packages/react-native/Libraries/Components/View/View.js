@@ -97,6 +97,15 @@ component View(
   // Since we destructured props, we can now treat it as mutable
   const processedProps = otherProps as {...ViewProps};
 
+  // [macOS
+  if (otherProps.onKeyDown != null) {
+    processedProps.onKeyDown = _onKeyDown;
+  }
+  if (otherProps.onKeyUp != null) {
+    processedProps.onKeyUp = _onKeyUp;
+  }
+  // macOS]
+
   const parsedAriaLabelledBy = ariaLabelledBy?.split(/\s*,\s*/g);
   if (parsedAriaLabelledBy !== undefined) {
     processedProps.accessibilityLabelledBy = parsedAriaLabelledBy;
@@ -157,14 +166,6 @@ component View(
       text: ariaValueText ?? accessibilityValue?.text,
     };
   }
-  // [macOS
-  if (otherProps.onKeyDown) {
-    processedProps.onKeyDown = _onKeyDown;
-  }
-  if (otherProps.onKeyUp) {
-    processedProps.onKeyUp = _onKeyUp;
-  }
-  // macOS]
 
   const actualView =
     ref == null ? (

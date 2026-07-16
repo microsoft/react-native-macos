@@ -236,6 +236,12 @@
 
 #pragma mark - UIScrollViewDelegate
 
+- (void)scrollViewDidScroll:(__unused UIScrollView *)scrollView
+{
+  // Empty implementation. This method exists to prevent crashes when the delegate splitter
+  // forwards scrollViewDidScroll: messages to RCTEnhancedScrollView.
+}
+
 - (void)scrollViewWillEndDragging:(RCTUIScrollView *)scrollView
                      withVelocity:(CGPoint)velocity
               targetContentOffset:(inout CGPoint *)targetContentOffset // [macOS]
