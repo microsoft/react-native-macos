@@ -10,9 +10,7 @@
 
 'use strict';
 
-const {
-  expandDirectoriesIntoFiles,
-} = require('../combine-js-to-schema.js');
+const {expandDirectoriesIntoFiles} = require('../combine-js-to-schema.js');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
