@@ -38,7 +38,7 @@ function findCommunityPlatformPackage(
   // root. This is also what `@react-native-community/cli` assumes (see
   // https://github.com/react-native-community/cli/blob/14.x/packages/cli-tools/src/findProjectRoot.ts).
   const main = require.resolve(spec, {paths: [startDir]});
-  // $FlowIgnore[unsupported-syntax]
+  // $FlowFixMe[unsupported-syntax]
   return require(main);
 }
 
@@ -74,6 +74,7 @@ try {
   const iosPath = require.resolve('@react-native-community/cli-platform-ios', {
     paths: [process.cwd()],
   });
+  // $FlowFixMe[untyped-import]
   apple = findCommunityPlatformPackage(
     '@react-native-community/cli-platform-apple',
     iosPath,
@@ -86,8 +87,19 @@ try {
   }
 }
 
-// $FlowFixMe[untyped-import]
-const macosCommands = require('./local-cli/runMacOS/runMacOS');
+let macosCommands;
+// Loading `runMacOS` requires `@react-native-community/cli`which is an
+// optional peer dependency and is not installed when using Expo CLI.
+try {
+  // $FlowFixMe[untyped-import]
+  macosCommands = require('./local-cli/runMacOS/runMacOS');
+} catch (e) {
+  if (verbose) {
+    console.warn(
+      `Failed to load runMacOS commands, the react-native.config.js may be unusable: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
+}
 const {
   bundleCommand,
   startCommand,
@@ -160,9 +172,17 @@ if (android != null) {
 }
 
 // [macOS
-config.commands.push(...macosCommands);
+if (macosCommands != null) {
+  config.commands.push(...macosCommands);
+}
 if (apple) {
+  const {
+    REACT_NATIVE: npmPackageName,
+  } = require('./scripts/codegen/generate-artifacts-executor/constants.js');
+  const macos = {platformName: 'macos'};
+  const visionos = {platformName: 'visionos'};
   config.platforms.macos = {
+    npmPackageName,
     linkConfig: () => {
       return {
         isInstalled: (
@@ -186,9 +206,13 @@ if (apple) {
         unlinkAssets: (_assets /*: mixed */, _projectConfig /*: mixed */) => {},
       };
     },
-    projectConfig: apple.getProjectConfig({platformName: 'macos'}),
-    dependencyConfig: apple.getProjectConfig({platformName: 'macos'}),
-    npmPackageName: 'react-native-macos',
+    projectConfig: apple.getProjectConfig(macos),
+    dependencyConfig: apple.getDependencyConfig(macos),
+  };
+  config.platforms.visionos = {
+    npmPackageName,
+    projectConfig: apple.getProjectConfig(visionos),
+    dependencyConfig: apple.getDependencyConfig(visionos),
   };
 }
 // macOS]
