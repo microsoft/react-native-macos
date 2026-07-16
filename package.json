@@ -42,8 +42,7 @@
     "change": "node .github/scripts/change.mts",
     "change:check": "node .github/scripts/change.mts --check",
     "changeset": "changeset",
-    "changeset:version": "node .github/scripts/changeset-version-with-postbump.mts",
-    "preinstall": "node ./scripts/try-set-nightly-hermes-compiler.js"
+    "changeset:version": "node .github/scripts/changeset-version-with-postbump.mts"
   },
   "workspaces": [
     "packages/*",
@@ -146,11 +145,11 @@
     "supports-color": "^7.1.0",
     "temp-dir": "^2.0.0",
     "tinybench": "^4.1.0",
+    "tinyglobby": "^0.2.15",
     "typescript": "5.8.3",
     "ws": "^7.5.10",
     "yargs": "^17.6.2",
-    "zx": "^8.2.4",
-    "tinyglobby": "^0.2.15"
+    "zx": "^8.2.4"
   },
   "resolutions": {
     "@grpc/proto-loader": "^0.7.8",
