@@ -68,6 +68,8 @@ function expandDirectoriesIntoFiles(
       }
       return globSync('**/*{,.fb}.{js,ts,tsx}', {
         expandDirectories: false,
+        followSymbolicLinks: false,
+        ignore: ['**/build/**', '**/node_modules/**', '**/Pods/**'],
         onlyFiles: true,
         absolute: true,
         cwd: file,
@@ -117,4 +119,5 @@ module.exports = {
   combineSchemas,
   combineSchemasInFileList,
   combineSchemasInFileListAndWriteToFile,
+  expandDirectoriesIntoFiles,
 };
