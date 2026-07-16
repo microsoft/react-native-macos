@@ -54,6 +54,14 @@ const propertiesPath = path.resolve(
 );
 const readFileSync = fs.readFileSync;
 fs.readFileSync = function (file, ...args) {
+  if (process.env.HERMES_TEST_REFS != null) {
+    const refs = JSON.parse(process.env.HERMES_TEST_REFS);
+    for (const [tagFile, ref] of Object.entries(refs)) {
+      if (file === path.resolve(propertiesPath, '../..', tagFile)) {
+        return ref;
+      }
+    }
+  }
   if (file === propertiesPath && process.env.HERMES_TEST_PROPERTIES != null) {
     if (process.env.HERMES_TEST_PROPERTIES === 'MISSING') {
       throw Object.assign(new Error(`ENOENT: ${propertiesPath}`), {

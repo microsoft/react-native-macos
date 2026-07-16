@@ -40,10 +40,11 @@ function setActionOutput(key: string, value: string) {
  *
  * Uses the same version key and validation as the local prebuild script.
  * A missing file permits a source build; malformed metadata must fail CI.
+ * Selects V1 unless RCT_HERMES_V1_ENABLED=0, matching React Native 0.84.
  */
 function resolveHermesArtifactVersion(): string | null {
   try {
-    const {version, versionKey} = readHermesMetadata('legacy-default');
+    const {version, versionKey} = readHermesMetadata('v1-default');
     echo(`Using ${versionKey}=${version}`);
     return version;
   } catch (error: any) {
@@ -56,12 +57,12 @@ function resolveHermesArtifactVersion(): string | null {
 
 /**
  * Reads the pinned Hermes ref from packages/react-native/sdks/.hermesversion
- * (or .hermesv1version when RCT_HERMES_V1_ENABLED=1). The value is a tag or commit in
+ * (or .hermesv1version unless V1 is explicitly disabled). The value is a tag or commit in
  * facebook/hermes. Returns null if the file is missing or empty.
  */
 function resolveHermesTag(): string | null {
   const {tagFile} = selectHermesMetadata(
-    'legacy-default', process.env.RCT_HERMES_V1_ENABLED,
+    'v1-default', process.env.RCT_HERMES_V1_ENABLED,
   );
   const tagPath = path.resolve(
     import.meta.dirname!, '..', '..',
