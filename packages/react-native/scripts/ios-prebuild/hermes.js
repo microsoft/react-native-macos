@@ -10,9 +10,11 @@
 
 const {recomposeHermesXCFramework} = require('./hermes-framework'); // [macOS]
 const {readHermesMetadata} = require('./hermes-version'); // [macOS]
+const {hermesCommitAtMergeBase} = require('./microsoft-hermes'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execFileSync} = require('child_process');
 const fs = require('fs');
+const os = require('os'); // [macOS]
 const path = require('path');
 const stream = require('stream');
 const {promisify} = require('util');
@@ -22,6 +24,7 @@ const hermesLog = createLogger('Hermes');
 
 /*::
 import type {BuildFlavor, Destination, Platform} from './types';
+type HermesSourceRevision = {|commit: string, timestamp: string|}; // [macOS]
 */
 
 /**
@@ -30,7 +33,8 @@ import type {BuildFlavor, Destination, Platform} from './types';
  * the .build/artifacts/hermes folder, but this can be overridden by setting the HERMES_ENGINE_TARBALL_PATH
  * environment variable. If this varuable is set, the script will use the local tarball instead of downloading it.
  * [macOS] Without an override, use the selected version.properties pin. Only an explicit
- * HERMES_VERSION=nightly resolves the npm nightly tag.
+ * HERMES_VERSION=nightly resolves the npm nightly tag. On the 0.84 fork, selected
+ * metadata 1000.0.0 requires a source build at the React Native merge-base timestamp.
  */
 async function prepareHermesArtifactsAsync(
   reactNativeVersion /*:string*/,
@@ -57,10 +61,18 @@ async function prepareHermesArtifactsAsync(
 
   // Only check if the artifacts folder exists if we are not using a local tarball
   if (!localPath) {
-    // Resolve the version from the environment variable or use the default version
     // [macOS] Hermes artifacts use the selected SDK pin, not the RN version.
+    const explicitVersion = process.env.HERMES_VERSION;
     let resolvedVersion =
-      process.env.HERMES_VERSION ?? readHermesMetadata().version;
+      explicitVersion ?? readHermesMetadata('legacy-default').version;
+    // This is the 0.84 fork's source sentinel, not a rule for every RN main
+    // package. Explicit versions (including 1000.0.0) remain artifact overrides.
+    const buildFromSource =
+      explicitVersion == null && resolvedVersion === '1000.0.0';
+    // Resolve before checking the cache so an upstream rebase invalidates it.
+    // Pass this same revision to the build rather than resolving it again.
+    const sourceRevision = buildFromSource ? hermesCommitAtMergeBase() : null;
+    // macOS]
 
     if (resolvedVersion === 'nightly') {
       hermesLog('Using latest nightly tarball');
@@ -72,7 +84,7 @@ async function prepareHermesArtifactsAsync(
     if (
       checkExistingVersion(
         versionFilePath,
-        resolvedVersion,
+        sourceRevision ? `source-${sourceRevision.commit}` : resolvedVersion, // [macOS]
         buildType,
         artifactsPath,
       )
@@ -80,12 +92,16 @@ async function prepareHermesArtifactsAsync(
       return artifactsPath;
     }
 
-    const sourceType = await hermesSourceType(resolvedVersion, buildType);
+    // [macOS] Do not probe Maven or resolve a nightly for the source sentinel.
+    const sourceType = buildFromSource
+      ? HermesEngineSourceTypes.BUILD_FROM_HERMES_COMMIT
+      : await hermesSourceType(resolvedVersion, buildType);
     localPath = await resolveSourceFromSourceType(
       sourceType,
       resolvedVersion,
       buildType,
       artifactsPath,
+      sourceRevision, // [macOS]
     );
   } else {
     hermesLog('Using local tarball, skipping artifacts folder check');
@@ -135,6 +151,7 @@ type HermesEngineSourceType =
   | 'local_prebuilt_tarball'
   | 'download_prebuild_tarball'
   | 'download_prebuilt_nightly_tarball'
+  | 'build_from_hermes_commit' // [macOS]
 */
 
 const HermesEngineSourceTypes /*:{
@@ -146,6 +163,7 @@ const HermesEngineSourceTypes /*:{
   LOCAL_PREBUILT_TARBALL: 'local_prebuilt_tarball',
   DOWNLOAD_PREBUILD_TARBALL: 'download_prebuild_tarball',
   DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: 'download_prebuilt_nightly_tarball',
+  BUILD_FROM_HERMES_COMMIT: 'build_from_hermes_commit', // [macOS]
 };
 
 /**
@@ -276,6 +294,7 @@ async function resolveSourceFromSourceType(
   version /*: string */,
   buildType /*: BuildFlavor */,
   artifactsPath /*: string*/,
+  sourceRevision /*: ?HermesSourceRevision */ = null, // [macOS]
 ) /*: Promise<string> */ {
   switch (sourceType) {
     case HermesEngineSourceTypes.LOCAL_PREBUILT_TARBALL:
@@ -284,6 +303,17 @@ async function resolveSourceFromSourceType(
       return downloadPrebuildTarball(version, buildType, artifactsPath);
     case HermesEngineSourceTypes.DOWNLOAD_PREBUILT_NIGHTLY_TARBALL:
       return downloadPrebuiltNightlyTarball(version, buildType, artifactsPath);
+    case HermesEngineSourceTypes.BUILD_FROM_HERMES_COMMIT: // [macOS]
+      if (sourceRevision != null) {
+        return buildFromHermesCommit(
+          version,
+          buildType,
+          artifactsPath,
+          sourceRevision,
+        );
+      }
+      abort('[Hermes] Missing resolved source revision');
+      return '';
     default:
       abort(
         `[Hermes] Unsupported or invalid source type provided: ${sourceType}`,
@@ -392,16 +422,17 @@ async function downloadHermesTarball(
 
 // [macOS
 /**
- * Handles the case where no prebuilt Hermes artifacts are available.
- * Determines the Hermes commit at the merge base with facebook/react-native
- * and provides actionable guidance for building Hermes.
+ * Builds the 0.84 fork's selected source-only Hermes metadata.
+ * Uses the Hermes revision resolved before the cache check and provides
+ * actionable guidance for building Hermes.
  */
 async function buildFromHermesCommit(
   version /*: string */,
   buildType /*: BuildFlavor */,
   artifactsPath /*: string */,
+  sourceRevision /*: HermesSourceRevision */,
 ) /*: Promise<string> */ {
-  const {commit, timestamp} = hermesCommitAtMergeBase();
+  const {commit, timestamp} = sourceRevision;
   hermesLog(
     `Building Hermes from source at commit ${commit} (merge base timestamp: ${timestamp})`,
   );
@@ -503,7 +534,7 @@ async function buildFromHermesCommit(
         `Error: ${e.message}\n` +
         `To resolve, either:\n` +
         `  1. Set HERMES_ENGINE_TARBALL_PATH to a local Hermes tarball path\n` +
-        `  2. Set HERMES_VERSION to an upstream RN version with published artifacts\n` +
+        `  2. Set HERMES_VERSION to a Hermes version with published artifacts\n` +
         `  3. Build Hermes manually from commit ${commit} and provide the tarball path via HERMES_ENGINE_TARBALL_PATH`,
     );
     return ''; // unreachable
