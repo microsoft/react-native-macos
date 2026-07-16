@@ -68,6 +68,10 @@ inline void updateProp(const PropName propName, BaseViewProps &viewProps, const 
       viewProps.transform = snapshot.props.transform;
       break;
 
+    case TRANSFORM_ORIGIN:
+      viewProps.transformOrigin = snapshot.props.transformOrigin;
+      break;
+
     case BORDER_RADII:
       viewProps.borderRadii = snapshot.props.borderRadii;
       break;
@@ -239,6 +243,54 @@ inline void updateProp(const PropName propName, BaseViewProps &viewProps, const 
     case MIN_WIDTH:
       viewProps.yogaStyle.setMinDimension(
           yoga::Dimension::Width, snapshot.props.yogaStyle.minDimension(yoga::Dimension::Width));
+      break;
+
+    case STYLE_OVERFLOW:
+      viewProps.yogaStyle.setOverflow(snapshot.props.yogaStyle.overflow());
+      break;
+
+    case POSITION_TYPE:
+      viewProps.yogaStyle.setPositionType(snapshot.props.yogaStyle.positionType());
+      break;
+
+    case Z_INDEX:
+      viewProps.zIndex = snapshot.props.zIndex;
+      break;
+
+    case DIRECTION:
+      viewProps.yogaStyle.setDirection(snapshot.props.yogaStyle.direction());
+      break;
+
+    case BORDER_CURVES:
+      viewProps.borderCurves = snapshot.props.borderCurves;
+      break;
+
+    case BORDER_STYLES:
+      viewProps.borderStyles = snapshot.props.borderStyles;
+      break;
+
+    case POINTER_EVENTS:
+      viewProps.pointerEvents = snapshot.props.pointerEvents;
+      break;
+
+    case ISOLATION:
+      viewProps.isolation = snapshot.props.isolation;
+      break;
+
+    case CURSOR:
+      viewProps.cursor = snapshot.props.cursor;
+      break;
+
+    case BOX_SHADOW:
+      viewProps.boxShadow = snapshot.props.boxShadow;
+      break;
+
+    case MIX_BLEND_MODE:
+      viewProps.mixBlendMode = snapshot.props.mixBlendMode;
+      break;
+
+    case BACKFACE_VISIBILITY:
+      viewProps.backfaceVisibility = snapshot.props.backfaceVisibility;
       break;
   }
 }
