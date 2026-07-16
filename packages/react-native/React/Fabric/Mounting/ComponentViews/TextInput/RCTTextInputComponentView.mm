@@ -518,11 +518,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _lastStringStateWasUpdatedWith = nil;
   _ignoreNextTextInputCall = NO;
   _didMoveToWindow = NO;
-#if !TARGET_OS_OSX && !TARGET_OS_VISION // [macOS] [visionOS]
   _backedTextInputView.inputAccessoryViewID = nil;
   _backedTextInputView.inputAccessoryView = nil;
   _hasInputAccessoryView = false;
-#endif // [macOS] [visionOS]
 #if TARGET_OS_OSX // [macOS
   _ghostText = nil;
   _ghostTextPosition = 0;
@@ -969,10 +967,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [_backedTextInputView becomeFirstResponder];
 #else // [macOS
   NSWindow *window = [_backedTextInputView window];
-  NSResponder *responder = [_backedTextInputView respondsToSelector:@selector(responder)]
-      ? _backedTextInputView.responder
-      : (NSResponder *)_backedTextInputView;
-  [window makeFirstResponder:responder];
+  [window makeFirstResponder:_backedTextInputView];
 #endif // macOS]
 
   const auto &props = static_cast<const TextInputProps &>(*_props);
@@ -1002,13 +997,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if ([_backedTextInputView isKindOfClass:[NSTextField class]] &&
       [(NSTextField *)_backedTextInputView currentEditor] != nil) {
     [window makeFirstResponder:nil];
-  } else {
-    NSResponder *responder = [_backedTextInputView respondsToSelector:@selector(responder)]
-        ? _backedTextInputView.responder
-        : (NSResponder *)_backedTextInputView;
-    if ([window firstResponder] == responder) {
-      [window makeFirstResponder:nil];
-    }
+  } else if ([window firstResponder] == _backedTextInputView.responder) {
+    [window makeFirstResponder:nil];
   }
 #endif // macOS]
 }

@@ -81,7 +81,8 @@ class PerformanceTracer {
       const std::string &name,
       HighResTimeStamp start,
       HighResDuration duration,
-      folly::dynamic &&detail = nullptr);
+      folly::dynamic &&detail = nullptr,
+      std::optional<folly::dynamic> stackTrace = nullptr);
 
   /**
    * Record a "TimeStamp" Trace Event - a labelled entry on Performance
@@ -97,7 +98,8 @@ class PerformanceTracer {
       std::optional<std::string> trackName = std::nullopt,
       std::optional<std::string> trackGroup = std::nullopt,
       std::optional<ConsoleTimeStampColor> color = std::nullopt,
-      std::optional<folly::dynamic> detail = std::nullopt);
+      std::optional<folly::dynamic> detail = std::nullopt,
+      std::optional<folly::dynamic> stackTrace = std::nullopt);
 
   /**
    * Record an Event Loop tick, which will be represented as an Event Loop task
@@ -133,6 +135,12 @@ class PerformanceTracer {
       const std::string &url,
       const std::string &requestMethod,
       const Headers &headers);
+
+  /**
+   * Record a "ResourceReceivedData" event.
+   * If not currently tracing, this is a no-op.
+   */
+  void reportResourceReceivedData(const std::string &devtoolsRequestId, HighResTimeStamp start, int encodedDataLength);
 
   /**
    * Record a "ResourceReceiveResponse" event. Paired with other "Resource*"
@@ -243,6 +251,7 @@ class PerformanceTracer {
     HighResDuration duration;
     folly::dynamic detail;
     ThreadId threadId;
+    std::optional<folly::dynamic> stackTrace;
     HighResTimeStamp createdAt = HighResTimeStamp::now();
   };
 
@@ -254,6 +263,7 @@ class PerformanceTracer {
     std::optional<std::string> trackGroup;
     std::optional<ConsoleTimeStampColor> color;
     std::optional<folly::dynamic> detail;
+    std::optional<folly::dynamic> stackTrace;
     ThreadId threadId;
     HighResTimeStamp createdAt = HighResTimeStamp::now();
   };
@@ -273,6 +283,14 @@ class PerformanceTracer {
     HighResTimeStamp start;
     int encodedDataLength;
     int decodedBodyLength;
+    ThreadId threadId;
+    HighResTimeStamp createdAt = HighResTimeStamp::now();
+  };
+
+  struct PerformanceTracerResourceReceivedData {
+    std::string requestId;
+    HighResTimeStamp start;
+    int encodedDataLength;
     ThreadId threadId;
     HighResTimeStamp createdAt = HighResTimeStamp::now();
   };
@@ -298,6 +316,7 @@ class PerformanceTracer {
       PerformanceTracerEventMeasure,
       PerformanceTracerResourceSendRequest,
       PerformanceTracerResourceReceiveResponse,
+      PerformanceTracerResourceReceivedData,
       PerformanceTracerResourceFinish>;
 
 #pragma mark - Private fields and methods

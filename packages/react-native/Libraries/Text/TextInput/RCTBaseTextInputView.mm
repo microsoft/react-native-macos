@@ -983,6 +983,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)decoder)
       return @"Join";
     case UIReturnKeyEmergencyCall:
       return @"Emergency Call";
+    case UIReturnKeyDefault:
+    case UIReturnKeyContinue:
+    case UIReturnKeyDone:
     default:
       return @"Done";
   }

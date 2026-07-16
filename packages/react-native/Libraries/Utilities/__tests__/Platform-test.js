@@ -29,11 +29,7 @@ describe('Platform', () => {
 
   describe('select', () => {
     it('should return platform specific value', () => {
-      const obj: PlatformSelectSpec<string> = {
-        ios: 'ios',
-        android: 'android',
-        macos: 'macos',
-      }; // [macOS]
+      const obj: PlatformSelectSpec<string> = {ios: 'ios', android: 'android', macos: 'macos'}; // [macOS]
       expect(PlatformIOS.select(obj)).toEqual(obj.ios);
       expect(PlatformAndroid.select(obj)).toEqual(obj.android);
       expect(PlatformMacOS.select(obj)).toEqual(obj.macos); // [macOS]
@@ -41,19 +37,12 @@ describe('Platform', () => {
 
     // [macOS
     it('should return correct platform given partial platform overrides', () => {
-      const iosSpecific = {
-        ios: 'ios',
-        native: 'native',
-      } as PlatformSelectSpec<string>;
-
+      const iosSpecific = {ios: 'ios', native: 'native'};
       expect(PlatformIOS.select(iosSpecific)).toEqual(iosSpecific.ios);
       expect(PlatformAndroid.select(iosSpecific)).toEqual(iosSpecific.native);
       expect(PlatformMacOS.select(iosSpecific)).toEqual(iosSpecific.native);
 
-      const androidSpecific = {
-        android: 'android',
-        native: 'native',
-      } as PlatformSelectSpec<string>;
+      const androidSpecific = {android: 'android', native: 'native'};
       expect(PlatformIOS.select(androidSpecific)).toEqual(
         androidSpecific.native,
       );
@@ -64,10 +53,7 @@ describe('Platform', () => {
         androidSpecific.native,
       );
 
-      const macosSpecific = {
-        macos: 'macos',
-        native: 'native',
-      } as PlatformSelectSpec<string>;
+      const macosSpecific = {macos: 'macos', native: 'native'};
       expect(PlatformIOS.select(macosSpecific)).toEqual(macosSpecific.native);
       expect(PlatformAndroid.select(macosSpecific)).toEqual(
         macosSpecific.native,

@@ -42,7 +42,8 @@
     "change": "node .github/scripts/change.mts",
     "change:check": "node .github/scripts/change.mts --check",
     "changeset": "changeset",
-    "changeset:version": "node .github/scripts/changeset-version-with-postbump.mts"
+    "changeset:version": "node .github/scripts/changeset-version-with-postbump.mts",
+    "preinstall": "node ./scripts/try-set-nightly-hermes-compiler.js"
   },
   "workspaces": [
     "packages/*",
@@ -103,12 +104,12 @@
     "eslint-plugin-jsx-a11y": "^6.6.0",
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-native": "^4.0.0",
+    "eslint-plugin-react-native": "^5.0.0",
     "eslint-plugin-redundant-undefined": "^0.4.0",
     "eslint-plugin-relay": "^1.8.3",
     "fb-dotslash": "0.5.8",
     "flow-api-translator": "0.32.0",
-    "flow-bin": "^0.289.0",
+    "flow-bin": "^0.295.0",
     "glob": "^7.1.1",
     "hermes-eslint": "0.32.0",
     "hermes-estree": "0.32.0",
@@ -137,8 +138,8 @@
     "nx": "21.4.1",
     "prettier": "3.6.2",
     "prettier-plugin-hermes-parser": "0.32.0",
-    "react": "19.2.0",
-    "react-test-renderer": "19.2.0",
+    "react": "19.2.3",
+    "react-test-renderer": "19.2.3",
     "rimraf": "^3.0.2",
     "shelljs": "^0.8.5",
     "signedsource": "^2.0.0",
@@ -148,7 +149,8 @@
     "typescript": "5.8.3",
     "ws": "^7.5.10",
     "yargs": "^17.6.2",
-    "zx": "^8.2.4"
+    "zx": "^8.2.4",
+    "tinyglobby": "^0.2.15"
   },
   "resolutions": {
     "@grpc/proto-loader": "^0.7.8",
@@ -162,7 +164,7 @@
     "minimatch@npm:9.0.3": "npm:9.0.9",
     "minimatch@npm:>=9.0.0 <10.0.0": "npm:9.0.9",
     "on-headers": "1.1.0",
-    "react-is": "19.2.0",
+    "react-is": "19.2.3",
     "readable-stream": "^4.0.0 <4.4.2",
     "shell-quote": "^1.7.3",
     "tough-cookie": "^4.1.3"

@@ -26,7 +26,7 @@ class TaskDispatchThread {
   using TaskFn = std::function<void()>;
   using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
-  TaskDispatchThread(std::string threadName = "", int priorityOffset = 0) noexcept;
+  TaskDispatchThread(std::string_view threadName = "", int priorityOffset = 0) noexcept;
 
   ~TaskDispatchThread() noexcept;
 
@@ -61,7 +61,7 @@ class TaskDispatchThread {
 
   void loop() noexcept;
 
-  std::mutex queueLock_;
+  std::mutex mutex_;
   std::condition_variable loopCv_;
   std::priority_queue<Task> queue_;
   std::atomic<bool> running_{true};
