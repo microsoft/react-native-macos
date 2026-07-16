@@ -180,10 +180,6 @@ fix_*.patch
 
 # [Experimental] Generated TS type definitions
 /packages/**/types_generated/
-
-/packages/debugger-shell/build/
-/packages/*/dist/
-
 #[macOS
 # Yarn
 .yarn/*

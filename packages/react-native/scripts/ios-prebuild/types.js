@@ -26,6 +26,8 @@ export type Destination =
   'xrOS Simulator';
 
 export type BuildFlavor = 'Debug' | 'Release';
+
+export type MavenSubGroup = 'hermes' | 'react';
 */
 
 module.exports = {};

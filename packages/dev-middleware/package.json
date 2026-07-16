@@ -1,6 +1,6 @@
 {
   "name": "@react-native/dev-middleware",
-  "version": "0.83.0-main",
+  "version": "0.84.0-main",
   "private": true,
   "description": "Dev server middleware for React Native",
   "keywords": [
@@ -25,6 +25,7 @@
   "dependencies": {
     "@isaacs/ttlcache": "^1.4.1",
     "@react-native/debugger-frontend": "workspace:*",
+    "@react-native/debugger-shell": "workspace:*",
     "chrome-launcher": "^0.15.2",
     "chromium-edge-launcher": "^0.2.0",
     "connect": "^3.6.5",
@@ -36,12 +37,21 @@
     "ws": "^7.5.10"
   },
   "engines": {
-    "node": ">= 20.19.4"
+    "node": ">= 22.11.0"
   },
   "devDependencies": {
     "@react-native/debugger-shell": "workspace:*",
-    "selfsigned": "^2.4.1",
+    "selfsigned": "^4.0.0",
     "undici": "^6.24.0",
     "wait-for-expect": "^3.0.2"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.js",
+      "./package.json": "./package.json"
+    }
+  },
+  "scripts": {
+    "prepack": "node ../../scripts/build/prepack.js"
   }
 }

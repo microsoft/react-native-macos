@@ -21,7 +21,7 @@ import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.facebook.react.R
-import com.facebook.react.devsupport.interfaces.TracingState
+import com.facebook.react.devsupport.inspector.TracingState
 import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.PixelUtil
 
@@ -50,12 +50,12 @@ internal class PerfMonitorOverlayView(
   }
 
   fun updateRecordingState(state: TracingState) {
-    if (state == TracingState.ENABLEDINCDPMODE) {
+    if (state == TracingState.ENABLED_IN_CDP_MODE) {
       dialog.hide()
       return
     }
 
-    if (state == TracingState.ENABLEDINBACKGROUNDMODE) {
+    if (state == TracingState.ENABLED_IN_BACKGROUND_MODE) {
       (statusIndicator.background as GradientDrawable).setColor(Color.RED)
       statusLabel.text = "Profiling Active"
       tooltipLabel.text =
@@ -120,12 +120,12 @@ internal class PerfMonitorOverlayView(
           setTextColor(Color.WHITE)
           typeface = TYPEFACE_BOLD
           val alertDrawable =
-              context.getDrawable(android.R.drawable.ic_dialog_alert)?.apply {
+              context.getDrawable(R.drawable.ic_perf_issue)?.apply {
                 setBounds(
                     0,
                     1,
-                    dpToPx(TEXT_SIZE_PRIMARY).toInt(),
-                    dpToPx(TEXT_SIZE_PRIMARY).toInt() + 1,
+                    dpToPx(ISSUE_ICON_SIZE).toInt(),
+                    dpToPx(ISSUE_ICON_SIZE).toInt() + 1,
                 )
               }
           setCompoundDrawables(alertDrawable, null, null, null)
@@ -214,6 +214,7 @@ internal class PerfMonitorOverlayView(
     private val COLOR_OVERLAY_BORDER = Color.parseColor("#6C6C6C")
     private val TEXT_SIZE_PRIMARY = 12f
     private val TEXT_SIZE_ACCESSORY = 10f
+    private val ISSUE_ICON_SIZE = 15f
     private val TYPEFACE_BOLD = Typeface.create("sans-serif", Typeface.BOLD)
   }
 }

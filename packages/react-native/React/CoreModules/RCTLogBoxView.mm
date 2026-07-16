@@ -112,7 +112,9 @@
   [super layoutIfNeeded];
   NSRect frame = NSMakeRect(self.frame.origin.x, self.frame.origin.y, 600, 800);
   [self setFrame:frame display:NO];
+#ifndef RCT_REMOVE_LEGACY_ARCH
   [_surface setSize:self.frame.size];
+#endif // RCT_REMOVE_LEGACY_ARCH
 }
 #endif // macOS]
 

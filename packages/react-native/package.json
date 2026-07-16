@@ -21,7 +21,7 @@
   ],
   "bugs": "https://github.com/facebook/react-native/issues",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": ">= 22.11.0"
   },
   "bin": {
     "react-native": "cli.js",
@@ -107,10 +107,8 @@
     "jest",
     "Libraries",
     "LICENSE",
-    "local-cli",
     "React-Core.podspec",
     "React-Core-prebuilt.podspec",
-    "React-RCTUIKit.podspec",
     "react-native.config.js",
     "React.podspec",
     "React",
@@ -130,8 +128,6 @@
     "rn-get-polyfills.js",
     "scripts/replace-rncore-version.js",
     "scripts/bundle.js",
-    "scripts/cocoapods/**",
-    "scripts/codegen/**",
     "scripts/compose-source-maps.js",
     "scripts/find-node-for-xcode.sh",
     "scripts/generate-codegen-artifacts.js",
@@ -148,13 +144,12 @@
     "scripts/react_native_pods_utils/script_phases.sh",
     "scripts/react_native_pods.rb",
     "scripts/react-native-xcode.sh",
-    "scripts/update-ruby.sh",
     "scripts/xcode/ccache-clang.sh",
     "scripts/xcode/ccache-clang++.sh",
     "scripts/xcode/ccache.conf",
     "scripts/xcode/with-environment.sh",
     "sdks/.hermesversion",
-    "sdks/hermes-engine/**",
+    "sdks/.hermesv1version",
     "sdks/hermesc",
     "settings.gradle.kts",
     "src",
@@ -167,7 +162,13 @@
     "!**/__flowtests__/**",
     "!**/__mocks__/**",
     "!**/__tests__/**",
-    "!**/__typetests__/**"
+    "!**/__typetests__/**",
+    "local-cli",
+    "scripts/cocoapods/**",
+    "scripts/codegen/**",
+    "scripts/update-ruby.sh",
+    "sdks/hermes-engine/**",
+    "React-RCTUIKit.podspec"
   ],
   "scripts": {
     "prepack": "node ./scripts/prepack.js",
@@ -175,7 +176,7 @@
   },
   "peerDependencies": {
     "@types/react": "^19.1.1",
-    "react": "^19.2.0"
+    "react": "^19.2.3"
   },
   "peerDependenciesMeta": {
     "@types/react": {
@@ -200,7 +201,7 @@
     "commander": "^12.0.0",
     "flow-enums-runtime": "^0.0.6",
     "glob": "^7.1.1",
-    "hermes-compiler": "0.14.0",
+    "hermes-compiler": "0.0.0",
     "invariant": "^2.2.4",
     "jest-environment-node": "^29.7.0",
     "memoize-one": "^5.0.0",
@@ -215,6 +216,7 @@
     "scheduler": "0.27.0",
     "semver": "^7.1.3",
     "stacktrace-parser": "^0.1.10",
+    "tinyglobby": "^0.2.15",
     "whatwg-fetch": "^3.0.0",
     "ws": "^7.5.10",
     "yargs": "^17.6.2"
