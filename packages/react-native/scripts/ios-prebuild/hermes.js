@@ -8,9 +8,14 @@
  * @format
  */
 
+const {
+  findMatchingHermesVersion,
+  hermesCommitAtMergeBase,
+} = require('./microsoft-hermes'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execFileSync} = require('child_process');
 const fs = require('fs');
+const os = require('os'); // [macOS]
 const path = require('path');
 const stream = require('stream');
 const {promisify} = require('util');
@@ -56,6 +61,28 @@ async function prepareHermesArtifactsAsync(
     // Resolve the version from the environment variable or use the default version
     let resolvedVersion = process.env.HERMES_VERSION ?? 'nightly';
 
+    // [macOS] Map the fork version to an upstream release before falling
+    // back to the Hermes commit at the React Native merge base.
+    let allowBuildFromSource = false;
+    if (!process.env.HERMES_VERSION) {
+      const packageJsonPath = path.resolve(
+        __dirname,
+        '..',
+        '..',
+        'package.json',
+      );
+      const mappedVersion = findMatchingHermesVersion(packageJsonPath);
+      if (mappedVersion != null) {
+        hermesLog(
+          `Using mapped upstream version for Hermes lookup: ${mappedVersion}`,
+        );
+        resolvedVersion = mappedVersion;
+      } else {
+        allowBuildFromSource = true;
+      }
+    }
+    // macOS]
+
     if (resolvedVersion === 'nightly') {
       hermesLog('Using latest nightly tarball');
       const hermesVersion = await getNightlyVersionFromNPM();
@@ -74,7 +101,11 @@ async function prepareHermesArtifactsAsync(
       return artifactsPath;
     }
 
-    const sourceType = await hermesSourceType(resolvedVersion, buildType);
+    const sourceType = await hermesSourceType(
+      resolvedVersion,
+      buildType,
+      allowBuildFromSource, // [macOS]
+    );
     localPath = await resolveSourceFromSourceType(
       sourceType,
       resolvedVersion,
@@ -124,6 +155,7 @@ type HermesEngineSourceType =
   | 'local_prebuilt_tarball'
   | 'download_prebuild_tarball'
   | 'download_prebuilt_nightly_tarball'
+  | 'build_from_hermes_commit' // [macOS]
 */
 
 const HermesEngineSourceTypes /*:{
@@ -135,6 +167,7 @@ const HermesEngineSourceTypes /*:{
   LOCAL_PREBUILT_TARBALL: 'local_prebuilt_tarball',
   DOWNLOAD_PREBUILD_TARBALL: 'download_prebuild_tarball',
   DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: 'download_prebuilt_nightly_tarball',
+  BUILD_FROM_HERMES_COMMIT: 'build_from_hermes_commit', // [macOS]
 };
 
 /**
@@ -234,6 +267,7 @@ async function hermesArtifactExists(
 async function hermesSourceType(
   version /*: string */,
   buildType /*: BuildFlavor */,
+  allowBuildFromSource /*: boolean */ = false, // [macOS]
 ) /*: Promise<HermesEngineSourceType> */ {
   if (hermesEngineTarballEnvvarDefined()) {
     hermesLog('Using local prebuild tarball');
@@ -252,6 +286,15 @@ async function hermesSourceType(
     hermesLog('Using download prebuild nightly tarball');
     return HermesEngineSourceTypes.DOWNLOAD_PREBUILT_NIGHTLY_TARBALL;
   }
+
+  // [macOS] Fall back to source at the React Native merge-base timestamp.
+  if (allowBuildFromSource) {
+    hermesLog(
+      'No prebuilt Hermes artifact found. Will resolve from the merge base with facebook/react-native.',
+    );
+    return HermesEngineSourceTypes.BUILD_FROM_HERMES_COMMIT;
+  }
+  // macOS]
 
   hermesLog(
     'Using download prebuild nightly tarball - this is a fallback and might not work.',
@@ -272,6 +315,8 @@ async function resolveSourceFromSourceType(
       return downloadPrebuildTarball(version, buildType, artifactsPath);
     case HermesEngineSourceTypes.DOWNLOAD_PREBUILT_NIGHTLY_TARBALL:
       return downloadPrebuiltNightlyTarball(version, buildType, artifactsPath);
+    case HermesEngineSourceTypes.BUILD_FROM_HERMES_COMMIT: // [macOS]
+      return buildFromHermesCommit(version, buildType, artifactsPath);
     default:
       abort(
         `[Hermes] Unsupported or invalid source type provided: ${sourceType}`,
