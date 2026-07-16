@@ -1,6 +1,6 @@
 {
   "name": "@react-native/compatibility-check",
-  "version": "0.84.0-main",
+  "version": "0.84.1",
   "private": true,
   "description": "Check a React Native app's boundary between JS and Native for incompatibilities",
   "license": "MIT",
