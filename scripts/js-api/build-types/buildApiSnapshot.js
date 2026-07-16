@@ -30,15 +30,15 @@ const osTempDir = require('temp-dir');
 const {globSync} = require('tinyglobby');
 const {styleText} = require('util');
 
-const inputFilesPostTransforms: $ReadOnlyArray<PluginObj<unknown>> = [
+const inputFilesPostTransforms: ReadonlyArray<PluginObj<unknown>> = [
   require('./transforms/typescript/renameDefaultExportedIdentifiers'),
   require('./transforms/typescript/stripUnstableApis'),
 ];
 
 const postTransforms = (
   options: BuildApiSnapshotOptions,
-  packages: $ReadOnlyArray<{directory: string, name: string}>,
-): $ReadOnlyArray<PluginObj<unknown>> => [
+  packages: ReadonlyArray<{directory: string, name: string}>,
+): ReadonlyArray<PluginObj<unknown>> => [
   require('./transforms/typescript/canonicalizeLocalPackageImports')(
     packages.map(pkg => pkg.name),
   ),
@@ -52,7 +52,7 @@ const postTransforms = (
   ),
 ];
 
-type BuildApiSnapshotOptions = $ReadOnly<{
+type BuildApiSnapshotOptions = Readonly<{
   validate: boolean,
   debugVersionAnnotations: boolean,
 }>;
@@ -193,7 +193,7 @@ async function findPackagesWithTypedef() {
 
 async function preparePackagesInTempDir(
   tempDirectory: string,
-  packages: $ReadOnlyArray<{directory: string, name: string}>,
+  packages: ReadonlyArray<{directory: string, name: string}>,
 ) {
   await generateConfigFiles(tempDirectory);
 
@@ -229,7 +229,7 @@ async function preparePackagesInTempDir(
  */
 async function rewriteLocalImports(
   tempDirectory: string,
-  packages: $ReadOnlyArray<{directory: string, name: string}>,
+  packages: ReadonlyArray<{directory: string, name: string}>,
 ) {
   const definitions = globSync('**/*.d.ts', {
     cwd: tempDirectory,

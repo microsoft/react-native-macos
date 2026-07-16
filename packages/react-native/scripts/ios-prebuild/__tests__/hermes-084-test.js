@@ -53,6 +53,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   savedEnv = Object.fromEntries(envKeys.map(key => [key, process.env[key]]));
   envKeys.forEach(key => delete process.env[key]);
+  // The 0.85 caller requires an explicit opt-out to exercise 0.84 legacy behavior.
+  process.env.RCT_HERMES_V1_ENABLED = '0';
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-084-test-'));
   artifacts = path.join(tmp, '.build/artifacts/hermes');
   versionFile = path.join(artifacts, 'version.txt');
@@ -122,13 +124,10 @@ function releaseUrl(version) {
   return `https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/${version}/hermes-ios-${version}-hermes-ios-debug.tar.gz`;
 }
 
-test.each([undefined, '0', '', 'true'])(
-  'selected legacy sentinel builds from the merge-base helper with flag %s',
-  async flag => {
-    if (flag != null) {
-      process.env.RCT_HERMES_V1_ENABLED = flag;
-    }
-    await prepareHermesArtifactsAsync('0.84.0', 'Debug');
+test.each(['0.84.0', '0.85.0', '1000.0.0'])(
+  'explicit legacy opt-out builds selected sentinel from the merge-base helper on RN %s',
+  async reactNativeVersion => {
+    await prepareHermesArtifactsAsync(reactNativeVersion, 'Debug');
     expect(global.fetch).not.toHaveBeenCalled();
     expect(findMatchingHermesVersion).not.toHaveBeenCalled();
     expect(hermesCommitAtMergeBase).toHaveBeenCalledTimes(1);

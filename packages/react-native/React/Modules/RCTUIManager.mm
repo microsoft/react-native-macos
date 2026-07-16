@@ -373,7 +373,6 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
 }
 #endif // [macOS] [visionOS]
 
-#if TARGET_OS_IOS
 - (void)namedOrientationDidChange
 {
   NSDictionary *orientationEvent = deviceOrientationEventBody([UIDevice currentDevice].orientation);
@@ -1297,7 +1296,7 @@ RCT_EXPORT_METHOD(
             [[RCTComposedViewRegistry alloc] initWithUIManager:strongSelf andRegistry:strongSelf->_viewRegistry];
         block(strongSelf, composedViewRegistry);
       }
-    } @catch (NSException *exception) {
+    } @catch (NSException *__unused exception) {
       RCTLogError(@"Exception thrown while executing UI block: %@", exception);
     }
   };

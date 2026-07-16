@@ -51,8 +51,12 @@ using namespace facebook::react;
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTTextInputComponentView () <
     RCTBackedTextInputDelegate,
-    RCTTextInputViewProtocol,
-    UIDropInteractionDelegate>
+    RCTTextInputViewProtocol
+#if !TARGET_OS_TV
+    ,
+    UIDropInteractionDelegate
+#endif
+    >
 @end
 #else // [macOS
 @interface RCTTextInputComponentView () <RCTBackedTextInputDelegate, RCTTextInputViewProtocol>
@@ -305,7 +309,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.editable = newTextInputProps.traits.editable;
   }
 
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
   if (newTextInputProps.multiline &&
       newTextInputProps.traits.dataDetectorTypes != oldTextInputProps.traits.dataDetectorTypes) {
     _backedTextInputView.dataDetectorTypes =
@@ -1118,6 +1122,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   _hasInputAccessoryView = shouldHaveInputAccessoryView;
 
+#if !TARGET_OS_TV
   if (shouldHaveInputAccessoryView) {
     NSString *buttonLabel = inputAccessoryViewButtonLabel != nil ? inputAccessoryViewButtonLabel
                                                                  : [self returnKeyTypeToString:returnKeyType];
@@ -1135,6 +1140,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   } else {
     _backedTextInputView.inputAccessoryView = nil;
   }
+#endif
 
   if (_backedTextInputView.isFirstResponder) {
     [_backedTextInputView reloadInputViews];

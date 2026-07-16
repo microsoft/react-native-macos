@@ -81,7 +81,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
 #pragma mark - RCTParagraphComponentView // [macOS]
 
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
 @interface RCTParagraphComponentView () <UIEditMenuInteractionDelegate>
 
 @property (nonatomic, nullable) UIEditMenuInteraction *editMenuInteraction API_AVAILABLE(ios(16.0));
@@ -466,6 +466,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 #pragma mark - Context Menu
 
 #if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_TV
 - (void)enableContextMenu
 {
   _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self
@@ -506,6 +507,15 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
     [menuController showMenuFromView:self rect:self.bounds];
   }
 }
+#else
+- (void)enableContextMenu
+{
+}
+
+- (void)disableContextMenu
+{
+}
+#endif
 #endif // [macOS]
 
 #pragma mark - macOS Mouse Event Handling

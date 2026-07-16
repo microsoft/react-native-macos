@@ -148,7 +148,7 @@ test.each(['Debug', 'Release'])(
   'uses checked-in metadata with the 1000.0.0 RN package for %s',
   async flavor => {
     properties = checkedInProperties;
-    const version = metadata.HERMES_VERSION_NAME;
+    const version = metadata.HERMES_V1_VERSION_NAME;
     expect(await prepareHermesArtifactsAsync('1000.0.0', flavor)).toBe(
       artifacts,
     );
@@ -166,18 +166,36 @@ test.each(['Debug', 'Release'])(
   },
 );
 
-test('selects V1 metadata only with flag 1', async () => {
-  properties = checkedInProperties;
-  process.env.RCT_HERMES_V1_ENABLED = '1';
-  await prepareHermesArtifactsAsync('0.83.1', 'Debug');
-  expect(global.fetch).toHaveBeenCalledWith(
-    releaseUrl(metadata.HERMES_V1_VERSION_NAME),
-  );
+test.each([undefined, '1', '', 'true'])(
+  '0.85 selects concrete V1 metadata with flag %s despite the legacy source sentinel',
+  async flag => {
+    properties =
+      'HERMES_VERSION_NAME=1000.0.0\nHERMES_V1_VERSION_NAME=234.5.67';
+    if (flag != null) {
+      process.env.RCT_HERMES_V1_ENABLED = flag;
+    }
+    await prepareHermesArtifactsAsync('0.85.0', 'Debug');
+    expect(global.fetch.mock.calls).toEqual([
+      [releaseUrl('234.5.67'), {method: 'HEAD'}],
+      [releaseUrl('234.5.67')],
+    ]);
+    expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
+  },
+);
+
+test('flag 0 selects concrete legacy metadata', async () => {
+  process.env.RCT_HERMES_V1_ENABLED = '0';
+  await prepareHermesArtifactsAsync('0.85.0', 'Debug');
+  expect(global.fetch.mock.calls).toEqual([
+    [releaseUrl('123.4.56'), {method: 'HEAD'}],
+    [releaseUrl('123.4.56')],
+  ]);
+  expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
 });
 
 test.each([
   '',
-  'HERMES_VERSION_NAME=^1.2.3',
+  'HERMES_VERSION_NAME=123.4.56\nHERMES_V1_VERSION_NAME=^1.2.3',
   Object.assign(new Error('missing version.properties'), {code: 'ENOENT'}),
 ])(
   'fails invalid or missing metadata before network or extraction: %s',
@@ -192,26 +210,29 @@ test.each([
   },
 );
 
-test('local tarball overrides invalid metadata and explicit nightly', async () => {
-  const tarball = path.join(tmp, 'local hermes.tar.gz');
-  fs.writeFileSync(tarball, 'local archive');
-  fs.mkdirSync(artifacts, {recursive: true});
-  fs.writeFileSync(versionFile, 'old-version');
-  process.env.HERMES_ENGINE_TARBALL_PATH = tarball;
-  process.env.HERMES_VERSION = 'nightly';
-  properties = '';
-  await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
-  expect(execFileSync).toHaveBeenCalledWith(
-    'tar',
-    ['-xzf', tarball, '-C', artifacts],
-    {stdio: 'inherit'},
-  );
-  expect(fs.existsSync(tarball)).toBe(true);
-  expect(fs.existsSync(versionFile)).toBe(false);
-  expect(fs.readFileSync).not.toHaveBeenCalledWith(propertiesPath, 'utf8');
-  expect(global.fetch).not.toHaveBeenCalled();
-  expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
-});
+test.each(['nightly', 'latest-v1'])(
+  'local tarball overrides invalid metadata and explicit %s',
+  async tag => {
+    const tarball = path.join(tmp, 'local hermes.tar.gz');
+    fs.writeFileSync(tarball, 'local archive');
+    fs.mkdirSync(artifacts, {recursive: true});
+    fs.writeFileSync(versionFile, 'old-version');
+    process.env.HERMES_ENGINE_TARBALL_PATH = tarball;
+    process.env.HERMES_VERSION = tag;
+    properties = '';
+    await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
+    expect(execFileSync).toHaveBeenCalledWith(
+      'tar',
+      ['-xzf', tarball, '-C', artifacts],
+      {stdio: 'inherit'},
+    );
+    expect(fs.existsSync(tarball)).toBe(true);
+    expect(fs.existsSync(versionFile)).toBe(false);
+    expect(fs.readFileSync).not.toHaveBeenCalledWith(propertiesPath, 'utf8');
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
+  },
+);
 
 test.each(['123.4.56', '1000.0.0'])(
   'explicit version %s bypasses metadata',
@@ -228,39 +249,47 @@ test.each(['123.4.56', '1000.0.0'])(
   },
 );
 
-test('only explicit nightly resolves the npm tag', async () => {
-  process.env.HERMES_VERSION = 'nightly';
-  properties = '';
-  global.fetch.mockResolvedValueOnce({
-    ok: true,
-    json: async () => ({version: '123.4.57'}),
-  });
-  await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
-  expect(global.fetch.mock.calls).toEqual([
-    ['https://registry.npmjs.org/hermes-compiler/nightly'],
-    [releaseUrl('123.4.57'), {method: 'HEAD'}],
-    [releaseUrl('123.4.57')],
-  ]);
-});
+test.each(['nightly', 'latest-v1'])(
+  'explicit %s resolves the npm tag',
+  async tag => {
+    process.env.HERMES_VERSION = tag;
+    properties = '';
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({version: '123.4.57'}),
+    });
+    await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
+    expect(global.fetch.mock.calls).toEqual([
+      [`https://registry.npmjs.org/hermes-compiler/${tag}`],
+      [releaseUrl('123.4.57'), {method: 'HEAD'}],
+      [releaseUrl('123.4.57')],
+    ]);
+    expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
+  },
+);
 
-test('an explicit nightly lookup failure does not use the default pin', async () => {
-  process.env.HERMES_VERSION = 'nightly';
-  global.fetch.mockResolvedValue({
-    ok: false,
-    status: 503,
-    statusText: 'Unavailable',
-  });
-  await expect(
-    prepareHermesArtifactsAsync('1000.0.0', 'Debug'),
-  ).rejects.toThrow("Couldn't get an answer from NPM: 503 Unavailable");
-  expect(global.fetch.mock.calls).toEqual([
-    ['https://registry.npmjs.org/hermes-compiler/nightly'],
-  ]);
-  expect(execFileSync).not.toHaveBeenCalled();
-  expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
-});
+test.each(['nightly', 'latest-v1'])(
+  'an explicit %s lookup failure does not use the default pin',
+  async tag => {
+    process.env.HERMES_VERSION = tag;
+    global.fetch.mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: 'Unavailable',
+    });
+    await expect(
+      prepareHermesArtifactsAsync('1000.0.0', 'Debug'),
+    ).rejects.toThrow("Couldn't get a response from NPM: 503 Unavailable");
+    expect(global.fetch.mock.calls).toEqual([
+      [`https://registry.npmjs.org/hermes-compiler/${tag}`],
+    ]);
+    expect(execFileSync).not.toHaveBeenCalled();
+    expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
+  },
+);
 
-test('the 0.84 caller builds selected metadata 1000.0.0 from source', async () => {
+test('the legacy opt-out builds selected metadata 1000.0.0 from source', async () => {
+  process.env.RCT_HERMES_V1_ENABLED = '0';
   properties = 'HERMES_VERSION_NAME=1000.0.0';
   expect(await prepareHermesArtifactsAsync('0.84.0', 'Debug')).toBe(artifacts);
   expect(global.fetch).not.toHaveBeenCalled();
@@ -284,8 +313,8 @@ test('the 0.84 caller builds selected metadata 1000.0.0 from source', async () =
 
 test('uses the selected pin for snapshot metadata and download', async () => {
   const base =
-    'https://central.sonatype.com/repository/maven-snapshots/com/facebook/hermes/hermes-ios/123.4.56-SNAPSHOT';
-  const url = `${base}/hermes-ios-123.4.56-20260101.010203-4-hermes-ios-debug.tar.gz`;
+    'https://central.sonatype.com/repository/maven-snapshots/com/facebook/hermes/hermes-ios/234.5.67-SNAPSHOT';
+  const url = `${base}/hermes-ios-234.5.67-20260101.010203-4-hermes-ios-debug.tar.gz`;
   global.fetch.mockImplementation(async (target, options) => {
     if (target.endsWith('/maven-metadata.xml')) {
       return {
@@ -301,7 +330,7 @@ test('uses the selected pin for snapshot metadata and download', async () => {
   });
   await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
   expect(global.fetch.mock.calls).toEqual([
-    [releaseUrl('123.4.56'), {method: 'HEAD'}],
+    [releaseUrl('234.5.67'), {method: 'HEAD'}],
     [`${base}/maven-metadata.xml`],
     [url, {method: 'HEAD'}],
     [`${base}/maven-metadata.xml`],
@@ -313,7 +342,7 @@ test('preserves the enterprise repository override', async () => {
   process.env.ENTERPRISE_REPOSITORY = 'https://mirror.example/maven';
   await prepareHermesArtifactsAsync('0.83.1', 'Release');
   expect(global.fetch).toHaveBeenCalledWith(
-    releaseUrl('123.4.56', 'release').replace(
+    releaseUrl('234.5.67', 'release').replace(
       'https://repo1.maven.org/maven2',
       process.env.ENTERPRISE_REPOSITORY,
     ),
@@ -327,14 +356,14 @@ test('reuses only the matching Hermes version, flag and flavor cache', async () 
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
   expect(global.fetch).not.toHaveBeenCalled();
   expect(execFileSync.mock.calls.map(([command]) => command)).toEqual(['plutil']);
-  properties = 'HERMES_VERSION_NAME=123.4.58\nHERMES_V1_VERSION_NAME=234.5.67';
+  properties = 'HERMES_VERSION_NAME=123.4.56\nHERMES_V1_VERSION_NAME=234.5.68';
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
-  expect(global.fetch).toHaveBeenCalledWith(releaseUrl('123.4.58'));
+  expect(global.fetch).toHaveBeenCalledWith(releaseUrl('234.5.68'));
   await prepareHermesArtifactsAsync('0.83.1', 'Release');
-  expect(global.fetch).toHaveBeenCalledWith(releaseUrl('123.4.58', 'release'));
-  process.env.RCT_HERMES_V1_ENABLED = '1';
+  expect(global.fetch).toHaveBeenCalledWith(releaseUrl('234.5.68', 'release'));
+  process.env.RCT_HERMES_V1_ENABLED = '0';
   await prepareHermesArtifactsAsync('0.83.1', 'Release');
-  expect(global.fetch).toHaveBeenCalledWith(releaseUrl('234.5.67', 'release'));
+  expect(global.fetch).toHaveBeenCalledWith(releaseUrl('123.4.56', 'release'));
 });
 
 test('unavailable artifacts fail without an npm or source fallback', async () => {
@@ -373,7 +402,7 @@ describe('macOS slice capabilities', () => {
       }
       if (source === 'cache') {
         populateExtractedFramework();
-        fs.writeFileSync(versionFile, '123.4.56-Debug');
+        fs.writeFileSync(versionFile, '234.5.67-Debug');
       }
       await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
       expect(execFileSync).toHaveBeenCalledWith(

@@ -117,7 +117,9 @@ public class FabricUIManager
 
   // The IS_DEVELOPMENT_ENVIRONMENT variable is used to log extra data when running fabric in a
   // development environment. DO NOT ENABLE THIS ON PRODUCTION OR YOU WILL BE FIRED!
+  @SuppressLint("ClownyBooleanExpression")
   public static final boolean IS_DEVELOPMENT_ENVIRONMENT = false && ReactBuildConfig.DEBUG;
+
   public @Nullable DevToolsReactPerfLogger mDevToolsReactPerfLogger;
 
   private static final DevToolsReactPerfLogger.DevToolsReactPerfLoggerListener FABRIC_PERF_LOGGER =
@@ -685,7 +687,9 @@ public class FabricUIManager
         preparedLayout.getLayout(),
         preparedLayout.getMaximumNumberOfLines(),
         preparedLayout.getVerticalOffset(),
-        reactTags);
+        reactTags,
+        preparedLayout.getTextBreakStrategy(),
+        preparedLayout.getJustificationMode());
   }
 
   @AnyThread
@@ -818,14 +822,15 @@ public class FabricUIManager
         ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_END, null, commitNumber);
   }
 
+  @SuppressLint("NotInvokedPrivateMethod")
   @SuppressWarnings("unused")
   @AnyThread
   @ThreadConfined(ANY)
   private void preallocateView(
       int rootTag,
       int reactTag,
-      final String componentName,
-      @Nullable Object props,
+      String componentName,
+      Object props,
       @Nullable Object stateWrapper,
       boolean isLayoutable) {
     mMountItemDispatcher.addPreAllocateMountItem(
@@ -838,6 +843,7 @@ public class FabricUIManager
             isLayoutable));
   }
 
+  @SuppressLint("NotInvokedPrivateMethod") // Called from C++ via JNI
   @SuppressWarnings("unused")
   @AnyThread
   @ThreadConfined(ANY)
@@ -871,6 +877,7 @@ public class FabricUIManager
    * to enforce execution order using {@link ReactChoreographer.CallbackType}. This method should
    * only be called as the result of a new tree being committed.
    */
+  @SuppressLint("NotInvokedPrivateMethod") // Called from C++ via JNI (Binding.cpp)
   @SuppressWarnings("unused")
   @AnyThread
   @ThreadConfined(ANY)
@@ -959,6 +966,25 @@ public class FabricUIManager
     }
   }
 
+  @SuppressWarnings("unused")
+  @AnyThread
+  @ThreadConfined(ANY)
+  private void scheduleReactRevisionMerge(int surfaceId) {
+    if (UiThreadUtil.isOnUiThread()) {
+      if (mBinding != null) {
+        mBinding.mergeReactRevision(surfaceId);
+      }
+    } else {
+      UiThreadUtil.runOnUiThread(
+          () -> {
+            FabricUIManagerBinding binding = mBinding;
+            if (binding != null) {
+              binding.mergeReactRevision(surfaceId);
+            }
+          });
+    }
+  }
+
   /**
    * This method initiates preloading of an image specified by ImageSource. It can later be consumed
    * by an ImageView.
@@ -1035,7 +1061,10 @@ public class FabricUIManager
     UiThreadUtil.assertOnUiThread();
 
     SurfaceMountingManager surfaceManager = mMountingManager.getSurfaceManagerForView(reactTag);
-    return surfaceManager == null ? null : surfaceManager.getView(reactTag);
+    if (surfaceManager == null || surfaceManager.isStopped()) {
+      return null;
+    }
+    return surfaceManager.getView(reactTag);
   }
 
   @Override
@@ -1050,11 +1079,11 @@ public class FabricUIManager
   }
 
   /**
-   * receiveEvent API that emits an event to C++. If `canCoalesceEvent` is true, that signals that
-   * C++ may coalesce the event optionally. Otherwise, coalescing can happen in Java before
+   * receiveEvent API that emits an event to C++. If {@code canCoalesceEvent} is true, that signals
+   * that C++ may coalesce the event optionally. Otherwise, coalescing can happen in Java before
    * emitting.
    *
-   * <p>`customCoalesceKey` is currently unused.
+   * <p>{@code customCoalesceKey} is currently unused.
    *
    * @param surfaceId
    * @param reactTag

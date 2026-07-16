@@ -31,11 +31,11 @@ const base64Icon =
 const IMAGE_PREFETCH_URL = `${IMAGE1}?r=1&t=${Date.now()}`;
 const prefetchTask = Image.prefetch(IMAGE_PREFETCH_URL);
 
-type ImageSource = $ReadOnly<{
+type ImageSource = Readonly<{
   uri: string,
 }>;
 
-type BlobImageProps = $ReadOnly<{
+type BlobImageProps = Readonly<{
   url: string,
 }>;
 
@@ -60,7 +60,7 @@ const BlobImage = ({url}: BlobImageProps): React.Node => {
 
 type BlobImageExampleState = {};
 
-type BlobImageExampleProps = $ReadOnly<{
+type BlobImageExampleProps = Readonly<{
   urls: string[],
 }>;
 
@@ -79,7 +79,7 @@ class BlobImageExample extends React.Component<
   }
 }
 
-type NetworkImageCallbackExampleProps = $ReadOnly<{
+type NetworkImageCallbackExampleProps = Readonly<{
   source: ImageSource,
   prefetchedSource: ImageSource,
 }>;
@@ -88,7 +88,7 @@ const NetworkImageCallbackExample = ({
   source,
   prefetchedSource,
 }: NetworkImageCallbackExampleProps): React.Node => {
-  const [events, setEvents] = useState<$ReadOnlyArray<string>>([]);
+  const [events, setEvents] = useState<ReadonlyArray<string>>([]);
   const [startLoadPrefetched, setStartLoadPrefetched] = useState(false);
   const [mountTime, setMountTime] = useState(Date.now());
 
@@ -198,7 +198,7 @@ const NetworkImageCallbackExample = ({
 type NetworkImageExampleState = {
   error: ?string,
   loading: boolean,
-  progress: $ReadOnlyArray<number>,
+  progress: ReadonlyArray<number>,
 };
 
 class NetworkImageExample extends React.Component<
@@ -248,7 +248,7 @@ type ImageSizeExampleState = {
   height: number,
 };
 
-type ImageSizeExampleProps = $ReadOnly<{
+type ImageSizeExampleProps = Readonly<{
   source: ImageSource,
 }>;
 
@@ -285,7 +285,7 @@ type MultipleSourcesExampleState = {
   height: number,
 };
 
-type MultipleSourcesExampleProps = $ReadOnly<{}>;
+type MultipleSourcesExampleProps = Readonly<{}>;
 
 class MultipleSourcesExample extends React.Component<
   MultipleSourcesExampleProps,
@@ -360,7 +360,7 @@ type LoadingIndicatorSourceExampleState = {
   imageHash: number,
 };
 
-type LoadingIndicatorSourceExampleProps = $ReadOnly<{}>;
+type LoadingIndicatorSourceExampleProps = Readonly<{}>;
 
 class LoadingIndicatorSourceExample extends React.Component<
   LoadingIndicatorSourceExampleProps,
@@ -408,7 +408,7 @@ type FadeDurationExampleState = {
   imageHash: number,
 };
 
-type FadeDurationExampleProps = $ReadOnly<{}>;
+type FadeDurationExampleProps = Readonly<{}>;
 
 class FadeDurationExample extends React.Component<
   FadeDurationExampleProps,
@@ -451,7 +451,7 @@ type OnLayoutExampleState = {
   layoutHandlerMessage: string,
 };
 
-type OnLayoutExampleProps = $ReadOnly<{}>;
+type OnLayoutExampleProps = Readonly<{}>;
 
 class OnLayoutExample extends React.Component<
   OnLayoutExampleProps,
@@ -544,7 +544,7 @@ type OnPartialLoadExampleState = {
   hasLoaded: boolean,
 };
 
-type OnPartialLoadExampleProps = $ReadOnly<{}>;
+type OnPartialLoadExampleProps = Readonly<{}>;
 
 class OnPartialLoadExample extends React.Component<
   OnPartialLoadExampleProps,
@@ -937,7 +937,7 @@ exports.examples = [
   {
     title: 'Multiple Image Source using the `srcSet` prop.',
     description:
-      ('A list of comma seperated uris along with scale are provided in `srcSet`.' +
+      ('A list of comma separated uris along with scale are provided in `srcSet`.' +
         'An appropriate value will be used based on the scale of the device.': string),
     render: function (): React.Node {
       return (
@@ -1192,10 +1192,7 @@ exports.examples = [
     render: function (): React.Node {
       return (
         <View style={styles.base}>
-          <Image
-            style={{...StyleSheet.absoluteFillObject}}
-            source={fullImage}
-          />
+          <Image style={{...StyleSheet.absoluteFill}} source={fullImage} />
           <Text style={styles.nestedText}>React</Text>
         </View>
       );

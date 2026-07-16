@@ -32,9 +32,10 @@ type HermesSourceRevision = {|commit: string, timestamp: string|}; // [macOS]
  * version of hermes, use the HERMES_VERSION environment variable. The path to the artifacts will be inside
  * the .build/artifacts/hermes folder, but this can be overridden by setting the HERMES_ENGINE_TARBALL_PATH
  * environment variable. If this varuable is set, the script will use the local tarball instead of downloading it.
- * [macOS] Without an override, use the selected version.properties pin. Only an explicit
- * HERMES_VERSION=nightly resolves the npm nightly tag. On the 0.84 fork, selected
- * metadata 1000.0.0 requires a source build at the React Native merge-base timestamp.
+ * [macOS] Without an override, use the selected version.properties pin with V1 enabled
+ * by default. RCT_HERMES_V1_ENABLED=0 selects legacy metadata. Explicit nightly and
+ * latest-v1 overrides resolve npm tags. Selected metadata 1000.0.0 retains the 0.84
+ * source build at the React Native merge-base timestamp.
  */
 async function prepareHermesArtifactsAsync(
   reactNativeVersion /*:string*/,
@@ -64,7 +65,7 @@ async function prepareHermesArtifactsAsync(
     // [macOS] Hermes artifacts use the selected SDK pin, not the RN version.
     const explicitVersion = process.env.HERMES_VERSION;
     let resolvedVersion =
-      explicitVersion ?? readHermesMetadata('legacy-default').version;
+      explicitVersion ?? readHermesMetadata('v1-default').version;
     // This is the 0.84 fork's source sentinel, not a rule for every RN main
     // package. Explicit versions (including 1000.0.0) remain artifact overrides.
     const buildFromSource =
@@ -74,7 +75,11 @@ async function prepareHermesArtifactsAsync(
     const sourceRevision = buildFromSource ? hermesCommitAtMergeBase() : null;
     // macOS]
 
-    if (resolvedVersion === 'nightly') {
+    if (resolvedVersion === 'latest-v1') {
+      hermesLog('Using latest-v1 tarball');
+      const hermesVersion = await getLatestV1VersionFromNPM();
+      resolvedVersion = hermesVersion;
+    } else if (resolvedVersion === 'nightly') {
       hermesLog('Using latest nightly tarball');
       const hermesVersion = await getNightlyVersionFromNPM();
       resolvedVersion = hermesVersion;
@@ -129,6 +134,23 @@ async function prepareHermesArtifactsAsync(
   return artifactsPath;
 }
 
+async function getLatestV1VersionFromNPM() /*: Promise<string> */ {
+  const npmResponse /*: Response */ = await fetch(
+    'https://registry.npmjs.org/hermes-compiler/latest-v1',
+  );
+
+  if (!npmResponse.ok) {
+    throw new Error(
+      `Couldn't get a response from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
+    );
+  }
+
+  const json = await npmResponse.json();
+  const latestV1 = json.version;
+  hermesLog(`Using version ${latestV1}`);
+  return latestV1;
+}
+
 async function getNightlyVersionFromNPM() /*: Promise<string> */ {
   const npmResponse /*: Response */ = await fetch(
     'https://registry.npmjs.org/hermes-compiler/nightly',
@@ -136,7 +158,7 @@ async function getNightlyVersionFromNPM() /*: Promise<string> */ {
 
   if (!npmResponse.ok) {
     throw new Error(
-      `Couldn't get an answer from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
+      `Couldn't get a response from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
     );
   }
 

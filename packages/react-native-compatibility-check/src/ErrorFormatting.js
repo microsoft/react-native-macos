@@ -32,6 +32,7 @@ export function formatErrorMessage(
 ): string {
   switch (error.type) {
     case 'PropertyComparisonError':
+      const propertyPreviousError = error.previousError;
       const formattedProperties = error.mismatchedProperties.map(
         individualPropertyError =>
           indentedLineStart(indent + 1) +
@@ -42,7 +43,14 @@ export function formatErrorMessage(
               formatErrorMessage(individualPropertyError.fault, indent + 2)
             : ''),
       );
-      return error.message + formattedProperties.join('');
+      return (
+        (propertyPreviousError != null
+          ? formatErrorMessage(propertyPreviousError, indent) +
+            indentedLineStart(indent + 1)
+          : '') +
+        error.message +
+        formattedProperties.join('')
+      );
     case 'PositionalComparisonError':
       const formattedPositionalChanges = error.erroneousItems.map(
         ([index, type]) =>
@@ -54,6 +62,7 @@ export function formatErrorMessage(
       );
       return error.message + formattedPositionalChanges.join('');
     case 'TypeAnnotationComparisonError':
+    case 'TypeInformationComparisonError':
       const previousError = error.previousError;
 
       return (
@@ -69,18 +78,6 @@ export function formatErrorMessage(
             '' +
             formatErrorMessage(previousError, indent + 2)
           : '')
-      );
-    case 'TypeInformationComparisonError':
-      // I'm not sure that this error type is possible with the codegen
-
-      return (
-        error.message +
-        indentedLineStart(indent + 1) +
-        '-- new: ' +
-        formatTypeAnnotation(error.newerType) +
-        indentedLineStart(indent + 1) +
-        '-- old: ' +
-        formatTypeAnnotation(error.olderType)
       );
     case 'MemberComparisonError':
       const formattedMembers = error.mismatchedMembers.map(
@@ -199,7 +196,13 @@ function formatTypeAnnotation(annotation: CompleteTypeAnnotation): string {
         ? `'${annotation.value}'`
         : annotation.value;
     case 'UnionTypeAnnotation':
-      const validUnionType = parseValidUnionType(annotation);
+      let validUnionType;
+      try {
+        validUnionType = parseValidUnionType(annotation);
+      } catch (_e: mixed) {
+        // parseValidUnionType throws for unsupported union types
+        return 'Union<mixed>';
+      }
       switch (validUnionType) {
         case 'boolean':
           if (
@@ -210,7 +213,7 @@ function formatTypeAnnotation(annotation: CompleteTypeAnnotation): string {
             return (
               '(' +
               // @lint-ignore-every FLOW_INCOMPATIBLE_TYPE_ARG
-              (annotation.types: $ReadOnlyArray<CompleteTypeAnnotation>)
+              (annotation.types: ReadonlyArray<CompleteTypeAnnotation>)
                 .map(boolLit => formatTypeAnnotation(boolLit))
                 .join(' | ') +
               ')'
@@ -226,7 +229,7 @@ function formatTypeAnnotation(annotation: CompleteTypeAnnotation): string {
             return (
               '(' +
               // @lint-ignore-every FLOW_INCOMPATIBLE_TYPE_ARG
-              (annotation.types: $ReadOnlyArray<CompleteTypeAnnotation>)
+              (annotation.types: ReadonlyArray<CompleteTypeAnnotation>)
                 .map(numLit => formatTypeAnnotation(numLit))
                 .join(' | ') +
               ')'
@@ -244,7 +247,7 @@ function formatTypeAnnotation(annotation: CompleteTypeAnnotation): string {
             return (
               '(' +
               // @lint-ignore-every FLOW_INCOMPATIBLE_TYPE_ARG
-              (annotation.types: $ReadOnlyArray<CompleteTypeAnnotation>)
+              (annotation.types: ReadonlyArray<CompleteTypeAnnotation>)
                 .map(stringLit => formatTypeAnnotation(stringLit))
                 .join(' | ') +
               ')'
@@ -335,7 +338,7 @@ export function formatDiffSet(summary: DiffSummary): FormattedDiffSummary {
       // nested errors
       formattedIncompat.incompatibleSpecs = incompat.incompatibleSpecs.reduce(
         (
-          formattedModuleErrors: $ReadOnlyArray<FormattedErrorStore>,
+          formattedModuleErrors: ReadonlyArray<FormattedErrorStore>,
           specErrorStore,
         ) =>
           formattedModuleErrors.concat(

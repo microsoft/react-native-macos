@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @flow strict-local
+ * @fantom_flags fixImageSrcDimensionPropagation:*
  * @format
- * @fantom_flags reduceDefaultPropsInImage:*
  */
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
@@ -37,51 +37,27 @@ describe('<Image>', () => {
           root.render(<Image />);
         });
 
-        if (ReactNativeFeatureFlags.reduceDefaultPropsInImage()) {
-          expect(root.getRenderedOutput().toJSX()).toEqual(
-            <rn-image
-              overflow="hidden"
-              resizeMode="cover"
-              source-scale="1"
-              source-type="remote"
-            />,
-          );
-        } else {
-          expect(root.getRenderedOutput().toJSX()).toEqual(
-            <rn-image
-              accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
-              overflow="hidden"
-              resizeMode="cover"
-              source-scale="1"
-              source-type="remote"
-            />,
-          );
-        }
+        expect(root.getRenderedOutput().toJSX()).toEqual(
+          <rn-image
+            overflow="hidden"
+            resizeMode="cover"
+            source-scale="1"
+            source-type="remote"
+          />,
+        );
 
         Fantom.runTask(() => {
           root.render(<Image src="" />);
         });
 
-        if (ReactNativeFeatureFlags.reduceDefaultPropsInImage()) {
-          expect(root.getRenderedOutput().toJSX()).toEqual(
-            <rn-image
-              overflow="hidden"
-              resizeMode="cover"
-              source-scale="1"
-              source-type="remote"
-            />,
-          );
-        } else {
-          expect(root.getRenderedOutput().toJSX()).toEqual(
-            <rn-image
-              accessibilityState="{disabled:false,selected:false,checked:None,busy:false,expanded:null}"
-              overflow="hidden"
-              resizeMode="cover"
-              source-scale="1"
-              source-type="remote"
-            />,
-          );
-        }
+        expect(root.getRenderedOutput().toJSX()).toEqual(
+          <rn-image
+            overflow="hidden"
+            resizeMode="cover"
+            source-scale="1"
+            source-type="remote"
+          />,
+        );
       });
     });
 
@@ -265,14 +241,26 @@ describe('<Image>', () => {
 
           Fantom.runTask(() => {
             root.render(
-              <Image referrerPolicy={referrerPolicy} src={LOGO_SOURCE.uri} />,
+              <>
+                <Image referrerPolicy={referrerPolicy} src={LOGO_SOURCE.uri} />
+                <Image referrerPolicy={referrerPolicy} source={LOGO_SOURCE} />
+              </>,
             );
           });
 
           expect(
             root.getRenderedOutput({props: ['source-header']}).toJSX(),
           ).toEqual(
-            <rn-image source-header-Referrer-Policy={referrerPolicy} />,
+            <>
+              <rn-image
+                key="0"
+                source-header-Referrer-Policy={referrerPolicy}
+              />
+              <rn-image
+                key="1"
+                source-header-Referrer-Policy={referrerPolicy}
+              />
+            </>,
           );
         });
       });
@@ -468,6 +456,44 @@ describe('<Image>', () => {
             source-type="remote"
             source-uri="https://reactnative.dev/img/tiny_logo.png"
           />,
+        );
+      });
+
+      it('merges dimension information into source', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <Image
+              src="https://reactnative.dev/img/tiny_logo.png"
+              width={40}
+              height={40}
+            />,
+          );
+        });
+
+        expect(
+          root
+            .getRenderedOutput({props: ['source', 'width', 'height']})
+            .toJSX(),
+        ).toEqual(
+          ReactNativeFeatureFlags.fixImageSrcDimensionPropagation() ? (
+            <rn-image
+              source-scale="1"
+              source-type="remote"
+              source-size="{40, 40}"
+              source-uri="https://reactnative.dev/img/tiny_logo.png"
+              width="40.000000"
+              height="40.000000"
+            />
+          ) : (
+            <rn-image
+              source-scale="1"
+              source-type="remote"
+              source-size="{40, 40}"
+              source-uri="https://reactnative.dev/img/tiny_logo.png"
+            />
+          ),
         );
       });
     });
