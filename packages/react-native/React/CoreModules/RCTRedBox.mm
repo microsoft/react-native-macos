@@ -136,8 +136,10 @@
   _stackTraceTableView.dataSource = self;
   _stackTraceTableView.backgroundColor = [RCTPlatformColor clearColor]; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_TV
   _stackTraceTableView.separatorColor = [UIColor colorWithWhite:1 alpha:0.3];
   _stackTraceTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+#endif
   _stackTraceTableView.indicatorStyle = UIScrollViewIndicatorStyleWhite;
 #else // [macOS
   _stackTraceTableView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -432,10 +434,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
       [fullStackTrace appendFormat:@"    %@\n", [self formatFrameSource:stackFrame]];
     }
   }
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
   UIPasteboard *pb = [UIPasteboard generalPasteboard];
   [pb setString:fullStackTrace];
-#else // [macOS
+#elif TARGET_OS_OSX // [macOS
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   [pasteboard clearContents];
   [pasteboard setString:fullStackTrace forType:NSPasteboardTypeString];

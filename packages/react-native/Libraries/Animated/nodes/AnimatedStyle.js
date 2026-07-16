@@ -19,7 +19,7 @@ import AnimatedObject from './AnimatedObject';
 import AnimatedTransform from './AnimatedTransform';
 import AnimatedWithChildren from './AnimatedWithChildren';
 
-export type AnimatedStyleAllowlist = $ReadOnly<{[string]: true}>;
+export type AnimatedStyleAllowlist = Readonly<{[string]: true}>;
 
 type FlatStyle = {[string]: unknown};
 type FlatStyleForWeb<TStyle: FlatStyle> = [unknown, TStyle];
@@ -28,7 +28,7 @@ function createAnimatedStyle(
   flatStyle: FlatStyle,
   allowlist: ?AnimatedStyleAllowlist,
   keepUnanimatedValues: boolean,
-): [$ReadOnlyArray<string>, $ReadOnlyArray<AnimatedNode>, {[string]: unknown}] {
+): [ReadonlyArray<string>, ReadonlyArray<AnimatedNode>, {[string]: unknown}] {
   const nodeKeys: Array<string> = [];
   const nodes: Array<AnimatedNode> = [];
   const style: {[string]: unknown} = {};
@@ -83,8 +83,8 @@ function createAnimatedStyle(
 
 export default class AnimatedStyle extends AnimatedWithChildren {
   _originalStyleForWeb: ?unknown;
-  _nodeKeys: $ReadOnlyArray<string>;
-  _nodes: $ReadOnlyArray<AnimatedNode>;
+  _nodeKeys: ReadonlyArray<string>;
+  _nodes: ReadonlyArray<AnimatedNode>;
   _style: {[string]: unknown};
 
   /**
@@ -113,8 +113,8 @@ export default class AnimatedStyle extends AnimatedWithChildren {
   }
 
   constructor(
-    nodeKeys: $ReadOnlyArray<string>,
-    nodes: $ReadOnlyArray<AnimatedNode>,
+    nodeKeys: ReadonlyArray<string>,
+    nodes: ReadonlyArray<AnimatedNode>,
     style: {[string]: unknown},
     originalStyleForWeb: ?unknown,
     config?: ?AnimatedNodeConfig,
@@ -253,6 +253,6 @@ export default class AnimatedStyle extends AnimatedWithChildren {
 // this shim when they do.
 // $FlowFixMe[method-unbinding]
 const _hasOwnProp = Object.prototype.hasOwnProperty;
-const hasOwn: (obj: $ReadOnly<{...}>, prop: string) => boolean =
+const hasOwn: (obj: Readonly<{...}>, prop: string) => boolean =
   // $FlowFixMe[method-unbinding]
   Object.hasOwn ?? ((obj, prop) => _hasOwnProp.call(obj, prop));

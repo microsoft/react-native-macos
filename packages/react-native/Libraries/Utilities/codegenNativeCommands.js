@@ -10,14 +10,14 @@
 
 const {dispatchCommand} = require('../ReactNative/RendererProxy');
 
-type NativeCommandsOptions<T = string> = $ReadOnly<{
-  supportedCommands: $ReadOnlyArray<T>,
+type NativeCommandsOptions<T = string> = Readonly<{
+  supportedCommands: ReadonlyArray<T>,
 }>;
 
 function codegenNativeCommands<T: interface {}>(
-  options: NativeCommandsOptions<$Keys<T>>,
+  options: NativeCommandsOptions<keyof T>,
 ): T {
-  const commandObj: {[$Keys<T>]: (...$ReadOnlyArray<unknown>) => void} = {};
+  const commandObj: {[keyof T]: (...ReadonlyArray<unknown>) => void} = {};
 
   options.supportedCommands.forEach(command => {
     // $FlowFixMe[missing-local-annot]

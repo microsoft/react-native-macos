@@ -134,7 +134,7 @@ export type {
   TextInputSubmitEditingEvent,
 };
 
-type TextInputStateType = $ReadOnly<{
+type TextInputStateType = Readonly<{
   /**
    * @deprecated Use currentlyFocusedInput
    * Returns the ID of the currently focused text field, if one exists
@@ -520,9 +520,13 @@ function InternalTextInput(props: TextInputProps): React.Node {
           getNativeRef(): ?TextInputInstance {
             return inputRef.current;
           },
-          // TODO: Fix this returning true on null === null, when no input is focused
           isFocused(): boolean {
-            return TextInputState.currentlyFocusedInput() === inputRef.current;
+            const currentlyFocusedInput =
+              TextInputState.currentlyFocusedInput();
+            return (
+              currentlyFocusedInput != null &&
+              currentlyFocusedInput === inputRef.current
+            );
           },
           setSelection(start: number, end: number): void {
             if (inputRef.current != null) {
@@ -1076,7 +1080,7 @@ TextInput.State = {
   onTextInputBlur: TextInputState.blurInput, // [macOS]
 };
 
-export type TextInputComponentStatics = $ReadOnly<{
+export type TextInputComponentStatics = Readonly<{
   State: TextInputStateType,
 }>;
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9406085adbc0685b473c868a27085cf8>>
+ * @generated SignedSource<<156d4f5f35037184b6fc61ff1d856028>>
  */
 
 /**
@@ -49,6 +49,12 @@ public object ReactNativeFeatureFlags {
   public fun cxxNativeAnimatedEnabled(): Boolean = accessor.cxxNativeAnimatedEnabled()
 
   /**
+   * When enabled, sets the default overflow style for Text components to hidden instead of visible.
+   */
+  @JvmStatic
+  public fun defaultTextToOverflowHidden(): Boolean = accessor.defaultTextToOverflowHidden()
+
+  /**
    * Dispatch view commands in mount item order.
    */
   @JvmStatic
@@ -65,12 +71,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun disableMountItemReorderingAndroid(): Boolean = accessor.disableMountItemReorderingAndroid()
-
-  /**
-   * Disable some workarounds for old Android versions in TextLayoutManager logic for retrieving attachment metrics
-   */
-  @JvmStatic
-  public fun disableOldAndroidAttachmentMetricsWorkarounds(): Boolean = accessor.disableOldAndroidAttachmentMetricsWorkarounds()
 
   /**
    * Force disable subview clipping for ReactViewGroup on Android
@@ -167,6 +167,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableExclusivePropsUpdateAndroid(): Boolean = accessor.enableExclusivePropsUpdateAndroid()
+
+  /**
+   * Enables Fabric commit branching to fix starvation problems and atomic JS updates.
+   */
+  @JvmStatic
+  public fun enableFabricCommitBranching(): Boolean = accessor.enableFabricCommitBranching()
 
   /**
    * This feature flag enables logs for Fabric.
@@ -349,22 +355,10 @@ public object ReactNativeFeatureFlags {
   public fun enableVirtualViewDebugFeatures(): Boolean = accessor.enableVirtualViewDebugFeatures()
 
   /**
-   * Enables reading render state when dispatching VirtualView events.
+   * Fix a use-after-free race condition in findShadowNodeByTag_DEPRECATED by using getCurrentRevision() instead of tryCommit() with a raw pointer.
    */
   @JvmStatic
-  public fun enableVirtualViewRenderState(): Boolean = accessor.enableVirtualViewRenderState()
-
-  /**
-   * Enables window focus detection for prioritizing VirtualView events.
-   */
-  @JvmStatic
-  public fun enableVirtualViewWindowFocusDetection(): Boolean = accessor.enableVirtualViewWindowFocusDetection()
-
-  /**
-   * Enable Web Performance APIs (Performance Timeline, User Timings, etc.) by default.
-   */
-  @JvmStatic
-  public fun enableWebPerformanceAPIsByDefault(): Boolean = accessor.enableWebPerformanceAPIsByDefault()
+  public fun fixFindShadowNodeByTagRaceCondition(): Boolean = accessor.fixFindShadowNodeByTagRaceCondition()
 
   /**
    * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
@@ -439,30 +433,6 @@ public object ReactNativeFeatureFlags {
   public fun shouldPressibilityUseW3CPointerEventsForHover(): Boolean = accessor.shouldPressibilityUseW3CPointerEventsForHover()
 
   /**
-   * Reset isClickable to false when recycling views on Android to avoid accessibility tools finding views with incorrect state after recycling.
-   */
-  @JvmStatic
-  public fun shouldResetClickableWhenRecyclingView(): Boolean = accessor.shouldResetClickableWhenRecyclingView()
-
-  /**
-   * Reset OnClickListener to null when recycling views on Android to avoid accessibility tools finding views with incorrect state after recycling.
-   */
-  @JvmStatic
-  public fun shouldResetOnClickListenerWhenRecyclingView(): Boolean = accessor.shouldResetOnClickListenerWhenRecyclingView()
-
-  /**
-   * Fix BaseViewManager to properly set view.setEnabled() based on accessibilityState.disabled.
-   */
-  @JvmStatic
-  public fun shouldSetEnabledBasedOnAccessibilityState(): Boolean = accessor.shouldSetEnabledBasedOnAccessibilityState()
-
-  /**
-   * Sets isClickable=true by default on all React Native views on Android to improve UI harvesting detection while maintaining focusable=false to preserve expected behavior.
-   */
-  @JvmStatic
-  public fun shouldSetIsClickableByDefault(): Boolean = accessor.shouldSetIsClickableByDefault()
-
-  /**
    * Do not emit touchcancel from Android ScrollView, instead native topScroll event will trigger responder transfer and terminate in RN renderer.
    */
   @JvmStatic
@@ -475,6 +445,12 @@ public object ReactNativeFeatureFlags {
   public fun skipActivityIdentityAssertionOnHostPause(): Boolean = accessor.skipActivityIdentityAssertionOnHostPause()
 
   /**
+   * Sync clipToPadding on Android views with the overflow property
+   */
+  @JvmStatic
+  public fun syncAndroidClipToPaddingWithOverflow(): Boolean = accessor.syncAndroidClipToPaddingWithOverflow()
+
+  /**
    * Enables storing js caller stack when creating promise in native module. This is useful in case of Promise rejection and tracing the cause.
    */
   @JvmStatic
@@ -485,6 +461,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun updateRuntimeShadowNodeReferencesOnCommit(): Boolean = accessor.updateRuntimeShadowNodeReferencesOnCommit()
+
+  /**
+   * When enabled, runtime shadow node references will be updated during the commit only on the allowed thread.
+   */
+  @JvmStatic
+  public fun updateRuntimeShadowNodeReferencesOnCommitThread(): Boolean = accessor.updateRuntimeShadowNodeReferencesOnCommitThread()
 
   /**
    * In Bridgeless mode, use the always available javascript error reporting pipeline.
@@ -505,16 +487,10 @@ public object ReactNativeFeatureFlags {
   public fun useNativeViewConfigsInBridgelessMode(): Boolean = accessor.useNativeViewConfigsInBridgelessMode()
 
   /**
-   * Instead of using folly::dynamic as internal representation in RawProps and RawValue, use jsi::Value
+   * When enabled, ReactScrollView will extend NestedScrollView instead of ScrollView on Android for improved nested scrolling support.
    */
   @JvmStatic
-  public fun useRawPropsJsiValue(): Boolean = accessor.useRawPropsJsiValue()
-
-  /**
-   * Use the state stored on the source shadow node when cloning it instead of reading in the most recent state on the shadow node family.
-   */
-  @JvmStatic
-  public fun useShadowNodeStateOnClone(): Boolean = accessor.useShadowNodeStateOnClone()
+  public fun useNestedScrollViewAndroid(): Boolean = accessor.useNestedScrollViewAndroid()
 
   /**
    * Use shared animation backend in C++ Animated
@@ -541,16 +517,22 @@ public object ReactNativeFeatureFlags {
   public fun useTurboModules(): Boolean = accessor.useTurboModules()
 
   /**
+   * Use std::unordered_map instead of TinyMap in the Differentiator for improved lookup performance.
+   */
+  @JvmStatic
+  public fun useUnorderedMapInDifferentiator(): Boolean = accessor.useUnorderedMapInDifferentiator()
+
+  /**
    * Outset the culling context frame with the provided ratio. The culling context frame size will be outset by width * ratio on the left and right, and height * ratio on the top and bottom.
    */
   @JvmStatic
   public fun viewCullingOutsetRatio(): Double = accessor.viewCullingOutsetRatio()
 
   /**
-   * Sets a hysteresis window for transition between prerender and hidden modes.
+   * Enable the View Transition API for animating transitions between views.
    */
   @JvmStatic
-  public fun virtualViewHysteresisRatio(): Double = accessor.virtualViewHysteresisRatio()
+  public fun viewTransitionEnabled(): Boolean = accessor.viewTransitionEnabled()
 
   /**
    * Initial prerender ratio for VirtualView.

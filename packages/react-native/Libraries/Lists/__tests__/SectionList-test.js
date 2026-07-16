@@ -8,8 +8,8 @@
  * @format
  */
 
-import {create} from '../../../jest/renderer';
 import SectionList from '../SectionList';
+import {create} from '@react-native/jest-preset/jest/renderer';
 import * as React from 'react';
 
 describe('SectionList', () => {
@@ -99,7 +99,7 @@ describe('SectionList', () => {
   });
 });
 
-function propStr(props: $ReadOnly<{[string]: $FlowFixMe}>) {
+function propStr(props: Readonly<{[string]: $FlowFixMe}>) {
   return Object.keys(props)
     .map(k => {
       const propObj = props[k] || {};

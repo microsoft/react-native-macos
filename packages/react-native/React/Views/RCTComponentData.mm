@@ -89,7 +89,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
   view.reactTag = tag;
   view.rootTag = rootTag;
 #if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_TV
   view.multipleTouchEnabled = YES;
+#endif
   view.userInteractionEnabled = YES; // required for touch handling
   view.layer.allowsGroupOpacity = YES; // required for touch handling
 #endif // [macOS]

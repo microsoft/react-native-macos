@@ -29,6 +29,7 @@
   BOOL _enableFocusRing;
   NSArray<NSPasteboardType> *_readablePasteboardTypes;
 #endif // macOS]
+  BOOL _disableKeyboardShortcuts;
 }
 
 #if !TARGET_OS_OSX // [macOS]
@@ -81,7 +82,7 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
     // on screen.
     self.textContainer.lineFragmentPadding = 1;
 #endif //macOS]
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
     self.scrollsToTop = NO;
 #endif // [macOS]
     self.scrollEnabled = YES;
@@ -324,6 +325,11 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
     self.inputAssistantItem.trailingBarButtonGroups = _initialValueTrailingBarButtonGroups;
   }
 #endif
+}
+
+- (BOOL)disableKeyboardShortcuts
+{
+  return _disableKeyboardShortcuts;
 }
 
 #pragma mark - Overrides
@@ -613,7 +619,7 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
 
 - (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder
 {
-#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 && !TARGET_OS_TV
   if (@available(iOS 17.0, *)) {
     if (_contextMenuHidden) {
       [builder removeMenuForIdentifier:UIMenuAutoFill];

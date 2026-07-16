@@ -447,6 +447,7 @@ RCT_ENUM_CONVERTER(
   return type;
 }
 
+#if !TARGET_OS_TV
 RCT_MULTI_ENUM_CONVERTER(
     UIDataDetectorTypes,
     (@{
@@ -462,6 +463,7 @@ RCT_MULTI_ENUM_CONVERTER(
     }),
     UIDataDetectorTypePhoneNumber,
     unsignedLongLongValue)
+#endif
 
 RCT_ENUM_CONVERTER(
     UIKeyboardAppearance,
@@ -519,8 +521,12 @@ RCT_ENUM_CONVERTER(
     UIModalPresentationStyle,
     (@{
       @"fullScreen" : @(UIModalPresentationFullScreen),
+#if !TARGET_OS_TV
       @"pageSheet" : @(UIModalPresentationPageSheet),
+#endif
+#if !TARGET_OS_TV || __TV_OS_VERSION_MIN_REQUIRED >= 260000
       @"formSheet" : @(UIModalPresentationFormSheet),
+#endif
       @"overFullScreen" : @(UIModalPresentationOverFullScreen),
     }),
     UIModalPresentationFullScreen,

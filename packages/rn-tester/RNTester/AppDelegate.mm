@@ -7,7 +7,9 @@
 
 #import "AppDelegate.h"
 
+#if !TARGET_OS_TV
 #import <UserNotifications/UserNotifications.h>
+#endif
 
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTDefines.h>
@@ -15,7 +17,9 @@
 #import <ReactCommon/RCTSampleTurboModule.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 
+#if !TARGET_OS_TV
 #import <React/RCTPushNotificationManager.h>
+#endif
 
 #import <NativeCxxModuleExample/NativeCxxModuleExample.h>
 #ifndef RN_DISABLE_OSS_PLUGIN_HEADER
@@ -39,8 +43,13 @@ NSString *kBundlePath = @"js/RNTesterApp.ios";
 NSString *kBundlePath = @"js/RNTesterApp.macos";
 #endif // macOS]
 
+#if !TARGET_OS_TV
 @interface AppDelegate () <UNUserNotificationCenterDelegate>
 @end
+#else
+@interface AppDelegate ()
+@end
+#endif
 
 @implementation AppDelegate
 
@@ -84,7 +93,9 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
                                         initialProperties:[self prepareInitialProps]
                                             launchOptions:launchOptions];
 
+#if !TARGET_OS_TV
   [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
+#endif
 
 #if !TARGET_OS_OSX // [macOS]
   return YES;
@@ -127,6 +138,7 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
   return [super getTurboModule:name jsInvoker:jsInvoker];
 }
 
+#if !TARGET_OS_TV
 // Required for the remoteNotificationsRegistered event.
 - (void)application:(__unused RCTPlatformApplication *)application
     didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
@@ -170,6 +182,7 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
   [RCTPushNotificationManager didReceiveNotification:notification];
   completionHandler();
 }
+#endif
 
 #pragma mark - New Arch Enabled settings
 

@@ -58,7 +58,6 @@ import com.facebook.react.uimanager.ReactClippingViewGroupHelper.calculateClippi
 import com.facebook.react.uimanager.ReactOverflowViewWithInset
 import com.facebook.react.uimanager.ReactPointerEventsView
 import com.facebook.react.uimanager.ReactZIndexedViewGroup
-import com.facebook.react.uimanager.ViewGroupDrawingOrderHelper
 import com.facebook.react.uimanager.common.UIManagerType
 import com.facebook.react.uimanager.common.ViewUtil.getUIManagerType
 import com.facebook.react.uimanager.style.BorderRadiusProp
@@ -167,6 +166,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
    */
   private fun initView() {
     clipChildren = false
+    if (ReactNativeFeatureFlags.syncAndroidClipToPaddingWithOverflow()) {
+      clipToPadding = false
+    }
 
     _removeClippedSubviews = false
     inSubviewClippingLoop = false
@@ -176,10 +178,10 @@ public open class ReactViewGroup public constructor(context: Context?) :
     hitSlopRect = null
     _overflow = Overflow.VISIBLE
     pointerEvents = PointerEvents.AUTO
+    ImportantForInteractionHelper.setImportantForInteraction(this, pointerEvents)
     childrenLayoutChangeListener = null
     onInterceptTouchEventListener = null
     needsOffscreenAlphaCompositing = false
-    _drawingOrderHelper = null
     backfaceOpacity = 1f
     backfaceVisible = true
     childrenRemovedWhileTransitioning = null
@@ -218,15 +220,6 @@ public open class ReactViewGroup public constructor(context: Context?) :
     // In case a focus was attempted but the view never attached, reset to false
     focusOnAttach = false
   }
-
-  private var _drawingOrderHelper: ViewGroupDrawingOrderHelper? = null
-  private val drawingOrderHelper: ViewGroupDrawingOrderHelper
-    get() {
-      if (_drawingOrderHelper == null) {
-        _drawingOrderHelper = ViewGroupDrawingOrderHelper(this)
-      }
-      return requireNotNull(_drawingOrderHelper)
-    }
 
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
     assertExplicitMeasureSpec(widthMeasureSpec, heightMeasureSpec)
@@ -598,36 +591,15 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
   }
 
-  private fun customDrawOrderDisabled(): Boolean {
-    if (id == NO_ID) {
-      return false
-    }
-
-    // Custom draw order is disabled for Fabric.
-    return getUIManagerType(id) == UIManagerType.FABRIC
-  }
-
   override fun onViewAdded(child: View) {
     assertOnUiThread()
     checkViewClippingTag(child, false)
-    if (!customDrawOrderDisabled()) {
-      drawingOrderHelper.handleAddView(child)
-      isChildrenDrawingOrderEnabled = drawingOrderHelper.shouldEnableCustomDrawingOrder()
-    } else {
-      isChildrenDrawingOrderEnabled = false
-    }
     super.onViewAdded(child)
   }
 
   override fun onViewRemoved(child: View) {
     assertOnUiThread()
     checkViewClippingTag(child, true)
-    if (!customDrawOrderDisabled()) {
-      drawingOrderHelper.handleRemoveView(child)
-      isChildrenDrawingOrderEnabled = drawingOrderHelper.shouldEnableCustomDrawingOrder()
-    } else {
-      isChildrenDrawingOrderEnabled = false
-    }
 
     // The parent might not be null in case the child is transitioning.
     if (child.parent != null) {
@@ -654,35 +626,18 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
   }
 
-  override fun getChildDrawingOrder(childCount: Int, index: Int): Int {
-    assertOnUiThread()
+  /**
+   * No-op implementation for backward compatibility. Z-order is now managed at the C++ layer in
+   * Fabric.
+   */
+  override fun getZIndexMappedChildIndex(index: Int): Int = index
 
-    return if (!customDrawOrderDisabled()) {
-      drawingOrderHelper.getChildDrawingOrder(childCount, index)
-    } else {
-      index
-    }
-  }
-
-  override fun getZIndexMappedChildIndex(index: Int): Int {
-    assertOnUiThread()
-
-    if (!customDrawOrderDisabled() && drawingOrderHelper.shouldEnableCustomDrawingOrder()) {
-      return drawingOrderHelper.getChildDrawingOrder(childCount, index)
-    }
-
-    // Fabric behavior
-    return index
-  }
-
+  /**
+   * No-op implementation for backward compatibility. Z-order is now managed at the C++ layer in
+   * Fabric.
+   */
   override fun updateDrawingOrder() {
-    if (customDrawOrderDisabled()) {
-      return
-    }
-
-    drawingOrderHelper.update()
-    isChildrenDrawingOrderEnabled = drawingOrderHelper.shouldEnableCustomDrawingOrder()
-    invalidate()
+    // No-op: Z-order is managed at the C++ layer
   }
 
   override fun dispatchSetPressed(pressed: Boolean) {
@@ -867,6 +822,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
           } else {
             Overflow.fromString(overflow)
           }
+      if (ReactNativeFeatureFlags.syncAndroidClipToPaddingWithOverflow()) {
+        clipToPadding = _overflow != Overflow.VISIBLE
+      }
       invalidate()
     }
 

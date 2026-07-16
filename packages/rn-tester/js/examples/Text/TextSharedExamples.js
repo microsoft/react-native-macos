@@ -80,7 +80,7 @@ function EmptyTextExample(): React.Node {
 function TextAndLayoutLinesJSON({
   testID,
   ellipsizeMode,
-}: $ReadOnly<{
+}: Readonly<{
   testID: string,
   ellipsizeMode: 'head' | 'tail' | 'middle' | 'clip',
 }>): React.Node {
@@ -271,4 +271,4 @@ export default [
     description: 'Shows the a11y behavior of Text with role="link"',
     render: TextWithLinkRoleExample,
   },
-] as $ReadOnlyArray<RNTesterModuleExample>;
+] as ReadonlyArray<RNTesterModuleExample>;

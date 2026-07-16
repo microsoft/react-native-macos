@@ -28,12 +28,12 @@ function buildCommandSchema(
   property: EventTypeAST,
   types: TypeDeclarationMap,
   parser: Parser,
-): $ReadOnly<{
+): Readonly<{
   name: string,
   optional: boolean,
   typeAnnotation: {
     type: 'FunctionTypeAnnotation',
-    params: $ReadOnlyArray<{
+    params: ReadonlyArray<{
       name: string,
       optional: boolean,
       typeAnnotation: CommandParamTypeAnnotation,
@@ -224,10 +224,10 @@ function getCommandArrayElementTypeType(
 }
 
 function getCommands(
-  commandTypeAST: $ReadOnlyArray<EventTypeAST>,
+  commandTypeAST: ReadonlyArray<EventTypeAST>,
   types: TypeDeclarationMap,
   parser: Parser,
-): $ReadOnlyArray<NamedShape<CommandTypeAnnotation>> {
+): ReadonlyArray<NamedShape<CommandTypeAnnotation>> {
   return commandTypeAST
     .filter(property => property.type === 'ObjectTypeProperty')
     .map(property => buildCommandSchema(property, types, parser))

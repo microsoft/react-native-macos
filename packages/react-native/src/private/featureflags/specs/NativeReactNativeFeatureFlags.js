@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<14b4f8916fccd1d255b4a260556d11da>>
+ * @generated SignedSource<<2955ab3f744af8b5cdf587312ba423d7>>
  * @flow strict
  * @noformat
  */
@@ -28,10 +28,10 @@ export interface Spec extends TurboModule {
   +commonTestFlagWithoutNativeImplementation?: () => boolean;
   +cdpInteractionMetricsEnabled?: () => boolean;
   +cxxNativeAnimatedEnabled?: () => boolean;
+  +defaultTextToOverflowHidden?: () => boolean;
   +disableEarlyViewCommandExecution?: () => boolean;
   +disableImageViewPreallocationAndroid?: () => boolean;
   +disableMountItemReorderingAndroid?: () => boolean;
-  +disableOldAndroidAttachmentMetricsWorkarounds?: () => boolean;
   +disableSubviewClippingAndroid?: () => boolean;
   +disableTextLayoutManagerCacheAndroid?: () => boolean;
   +disableViewPreallocationAndroid?: () => boolean;
@@ -48,6 +48,7 @@ export interface Spec extends TurboModule {
   +enableEagerMainQueueModulesOnIOS?: () => boolean;
   +enableEagerRootViewAttachment?: () => boolean;
   +enableExclusivePropsUpdateAndroid?: () => boolean;
+  +enableFabricCommitBranching?: () => boolean;
   +enableFabricLogs?: () => boolean;
   +enableFabricRenderer?: () => boolean;
   +enableFontScaleChangesUpdatingLayout?: () => boolean;
@@ -78,9 +79,7 @@ export interface Spec extends TurboModule {
   +enableViewRecyclingForView?: () => boolean;
   +enableVirtualViewContainerStateExperimental?: () => boolean;
   +enableVirtualViewDebugFeatures?: () => boolean;
-  +enableVirtualViewRenderState?: () => boolean;
-  +enableVirtualViewWindowFocusDetection?: () => boolean;
-  +enableWebPerformanceAPIsByDefault?: () => boolean;
+  +fixFindShadowNodeByTagRaceCondition?: () => boolean;
   +fixMappingOfEventPrioritiesBetweenFabricAndReact?: () => boolean;
   +fixTextClippingAndroid15useBoundsForWidth?: () => boolean;
   +fuseboxAssertSingleHostState?: () => boolean;
@@ -93,25 +92,23 @@ export interface Spec extends TurboModule {
   +preparedTextCacheSize?: () => number;
   +preventShadowTreeCommitExhaustion?: () => boolean;
   +shouldPressibilityUseW3CPointerEventsForHover?: () => boolean;
-  +shouldResetClickableWhenRecyclingView?: () => boolean;
-  +shouldResetOnClickListenerWhenRecyclingView?: () => boolean;
-  +shouldSetEnabledBasedOnAccessibilityState?: () => boolean;
-  +shouldSetIsClickableByDefault?: () => boolean;
   +shouldTriggerResponderTransferOnScrollAndroid?: () => boolean;
   +skipActivityIdentityAssertionOnHostPause?: () => boolean;
+  +syncAndroidClipToPaddingWithOverflow?: () => boolean;
   +traceTurboModulePromiseRejectionsOnAndroid?: () => boolean;
   +updateRuntimeShadowNodeReferencesOnCommit?: () => boolean;
+  +updateRuntimeShadowNodeReferencesOnCommitThread?: () => boolean;
   +useAlwaysAvailableJSErrorHandling?: () => boolean;
   +useFabricInterop?: () => boolean;
   +useNativeViewConfigsInBridgelessMode?: () => boolean;
-  +useRawPropsJsiValue?: () => boolean;
-  +useShadowNodeStateOnClone?: () => boolean;
+  +useNestedScrollViewAndroid?: () => boolean;
   +useSharedAnimatedBackend?: () => boolean;
   +useTraitHiddenOnAndroid?: () => boolean;
   +useTurboModuleInterop?: () => boolean;
   +useTurboModules?: () => boolean;
+  +useUnorderedMapInDifferentiator?: () => boolean;
   +viewCullingOutsetRatio?: () => number;
-  +virtualViewHysteresisRatio?: () => number;
+  +viewTransitionEnabled?: () => boolean;
   +virtualViewPrerenderRatio?: () => number;
 }
 

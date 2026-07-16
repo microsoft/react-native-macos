@@ -58,7 +58,7 @@ export interface Spec extends TurboModule {
 
   +getChildNodes: (
     nativeNodeReference: unknown /* NativeNodeReference */,
-  ) => $ReadOnlyArray<unknown> /* $ReadOnlyArray<InstanceHandle> */;
+  ) => ReadonlyArray<unknown> /* $ReadOnlyArray<InstanceHandle> */;
 
   +getElementById?: (
     nativeNodeReference: unknown /* NativeNodeReference */,
@@ -79,24 +79,24 @@ export interface Spec extends TurboModule {
 
   +getBorderWidth: (
     nativeElementReference: unknown /* NativeElementReference */,
-  ) => $ReadOnlyArray<number> /* [topWidth: number, rightWidth: number, bottomWidth: number, leftWidth: number] */;
+  ) => ReadonlyArray<number> /* [topWidth: number, rightWidth: number, bottomWidth: number, leftWidth: number] */;
 
   +getBoundingClientRect: (
     nativeElementReference: unknown /* NativeElementReference */,
     includeTransform: boolean,
-  ) => $ReadOnlyArray<number> /* [x: number, y: number, width: number, height: number] */;
+  ) => ReadonlyArray<number> /* [x: number, y: number, width: number, height: number] */;
 
   +getInnerSize: (
     nativeElementReference: unknown /* NativeElementReference */,
-  ) => $ReadOnlyArray<number> /* [width: number, height: number] */;
+  ) => ReadonlyArray<number> /* [width: number, height: number] */;
 
   +getScrollPosition: (
     nativeElementReference: unknown /* NativeElementReference */,
-  ) => $ReadOnlyArray<number> /* [scrollLeft: number, scrollTop: number] */;
+  ) => ReadonlyArray<number> /* [scrollLeft: number, scrollTop: number] */;
 
   +getScrollSize: (
     nativeElementReference: unknown /* NativeElementReference */,
-  ) => $ReadOnlyArray<number> /* [scrollWidth: number, scrollHeight: number] */;
+  ) => ReadonlyArray<number> /* [scrollWidth: number, scrollHeight: number] */;
 
   +getTagName: (
     nativeElementReference: unknown /* NativeElementReference */,
@@ -127,7 +127,7 @@ export interface Spec extends TurboModule {
 
   +getOffset: (
     nativeElementReference: unknown /* NativeElementReference */,
-  ) => $ReadOnlyArray<unknown> /* [offsetParent: ?InstanceHandle, top: number, left: number] */;
+  ) => ReadonlyArray<unknown> /* [offsetParent: ?InstanceHandle, top: number, left: number] */;
 
   /*
    * Special methods to handle the root node.
@@ -199,7 +199,7 @@ export interface RefinedSpec {
    */
   +getChildNodes: (
     nativeNodeReference: NativeNodeReference,
-  ) => $ReadOnlyArray<InstanceHandle>;
+  ) => ReadonlyArray<InstanceHandle>;
 
   /**
    * This is a React Native implementation of `Document.prototype.getElementById`
@@ -247,7 +247,7 @@ export interface RefinedSpec {
    */
   +getBorderWidth: (
     nativeElementReference: NativeElementReference,
-  ) => $ReadOnly<
+  ) => Readonly<
     [
       /* topWidth: */ number,
       /* rightWidth: */ number,
@@ -270,7 +270,7 @@ export interface RefinedSpec {
   +getBoundingClientRect: (
     nativeElementReference: NativeElementReference,
     includeTransform: boolean,
-  ) => $ReadOnly<
+  ) => Readonly<
     [
       /* x: */ number,
       /* y: */ number,
@@ -293,7 +293,7 @@ export interface RefinedSpec {
    */
   +getInnerSize: (
     nativeElementReference: NativeElementReference,
-  ) => $ReadOnly<[/* width: */ number, /* height: */ number]>;
+  ) => Readonly<[/* width: */ number, /* height: */ number]>;
 
   /**
    * This is a method to access scroll information for a shadow node, to
@@ -308,7 +308,7 @@ export interface RefinedSpec {
    */
   +getScrollPosition: (
     nativeElementReference: NativeElementReference,
-  ) => $ReadOnly<[/* scrollLeft: */ number, /* scrollTop: */ number]>;
+  ) => Readonly<[/* scrollLeft: */ number, /* scrollTop: */ number]>;
 
   /**
    *
@@ -324,7 +324,7 @@ export interface RefinedSpec {
    */
   +getScrollSize: (
     nativeElementReference: NativeElementReference,
-  ) => $ReadOnly<[/* scrollWidth: */ number, /* scrollHeight: */ number]>;
+  ) => Readonly<[/* scrollWidth: */ number, /* scrollHeight: */ number]>;
 
   /**
    * This is a method to access the normalized tag name of a shadow node, to
@@ -377,7 +377,7 @@ export interface RefinedSpec {
    */
   +getOffset: (
     nativeElementReference: NativeElementReference,
-  ) => $ReadOnly<
+  ) => Readonly<
     [
       /* offsetParent: */ ?InstanceHandle,
       /* top: */ number,

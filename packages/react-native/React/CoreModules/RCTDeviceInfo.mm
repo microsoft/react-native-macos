@@ -26,7 +26,7 @@ using namespace facebook::react;
 @end
 
 @implementation RCTDeviceInfo {
-#if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST && !TARGET_OS_OSX // [macOS]
   UIInterfaceOrientation _currentInterfaceOrientation;
 #endif // [macOS]
   NSDictionary *_currentInterfaceDimensions;
@@ -110,10 +110,11 @@ RCT_EXPORT_MODULE()
                                                name:UIApplicationDidBecomeActiveNotification
                                              object:nil];
 
-#if TARGET_OS_IOS
-
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
   _currentInterfaceOrientation = RCTKeyWindow().windowScene.interfaceOrientation;
+#endif
 
+#if TARGET_OS_IOS
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(interfaceFrameDidChange)
                                                name:UIDeviceOrientationDidChangeNotification
@@ -170,9 +171,9 @@ RCT_EXPORT_MODULE()
 static BOOL RCTIsIPhoneNotched()
 {
   static BOOL isIPhoneNotched = NO;
-  static dispatch_once_t onceToken;
 
 #if TARGET_OS_IOS
+  static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     RCTAssertMainQueue();
 

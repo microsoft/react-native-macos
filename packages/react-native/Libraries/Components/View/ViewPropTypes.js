@@ -41,7 +41,7 @@ import * as React from 'react';
 export type ViewLayout = LayoutRectangle;
 export type ViewLayoutEvent = LayoutChangeEvent;
 
-type DirectEventProps = $ReadOnly<{
+type DirectEventProps = Readonly<{
   /**
    * When `accessible` is true, the system will try to invoke this function
    * when the user performs an accessibility custom action.
@@ -101,7 +101,8 @@ type DirectEventProps = $ReadOnly<{
   onAccessibilityEscape?: ?() => unknown,
 }>;
 
-export type KeyboardEventProps = $ReadOnly<{|
+// [macOS]
+export type KeyboardEventProps = Readonly<{
   /**
    * Called after a key down event is detected.
    */
@@ -117,30 +118,28 @@ export type KeyboardEventProps = $ReadOnly<{|
    *
    * @platform macos
    */
-  keyDownEvents?: ?Array<HandledKeyEvent>,
+  keyDownEvents?: ?ReadonlyArray<HandledKeyEvent>,
 
   /**
    * Array of keys to receive key up events for. These events have their default native behavior prevented.
    *
    * @platform macos
    */
-  keyUpEvents?: ?Array<HandledKeyEvent>,
-  validKeysDown?: ?$ReadOnlyArray<string | HandledKeyEvent>,
-  validKeysUp?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  keyUpEvents?: ?ReadonlyArray<HandledKeyEvent>,
+  validKeysDown?: ?ReadonlyArray<string | HandledKeyEvent>,
+  validKeysUp?: ?ReadonlyArray<string | HandledKeyEvent>,
   passthroughAllKeyEvents?: ?boolean,
-|}>;
+}>;
 // macOS]
 
-type MouseEventProps = $ReadOnly<{
+type MouseEventProps = Readonly<{
   onMouseEnter?: ?(event: MouseEvent) => void,
   onMouseLeave?: ?(event: MouseEvent) => void,
   onDoubleClick?: ?(event: MouseEvent) => void, // [macOS]
 }>;
 
 // Experimental/Work in Progress Pointer Event Callbacks (not yet ready for use)
-type PointerEventProps = $ReadOnly<{
-  onAuxClick?: ?(event: PointerEvent) => void,
-  onAuxClickCapture?: ?(event: PointerEvent) => void,
+type PointerEventProps = Readonly<{
   onClick?: ?(event: PointerEvent) => void,
   onClickCapture?: ?(event: PointerEvent) => void,
   onPointerEnter?: ?(event: PointerEvent) => void,
@@ -165,21 +164,21 @@ type PointerEventProps = $ReadOnly<{
   onLostPointerCaptureCapture?: ?(e: PointerEvent) => void,
 }>;
 
-type FocusEventProps = $ReadOnly<{
+type FocusEventProps = Readonly<{
   onBlur?: ?(event: BlurEvent) => void,
   onBlurCapture?: ?(event: BlurEvent) => void,
   onFocus?: ?(event: FocusEvent) => void,
   onFocusCapture?: ?(event: FocusEvent) => void,
 }>;
 
-type KeyEventProps = $ReadOnly<{
+type KeyEventProps = Readonly<{
   onKeyDown?: ?(event: KeyDownEvent) => void,
   onKeyDownCapture?: ?(event: KeyDownEvent) => void,
   onKeyUp?: ?(event: KeyUpEvent) => void,
   onKeyUpCapture?: ?(event: KeyUpEvent) => void,
 }>;
 
-type TouchEventProps = $ReadOnly<{
+type TouchEventProps = Readonly<{
   onTouchCancel?: ?(e: GestureResponderEvent) => void,
   onTouchCancelCapture?: ?(e: GestureResponderEvent) => void,
   onTouchEnd?: ?(e: GestureResponderEvent) => void,
@@ -195,7 +194,7 @@ type TouchEventProps = $ReadOnly<{
  * `TouchableHighlight` or `TouchableOpacity`. Check out `Touchable.js`,
  * `ScrollResponder.js` and `ResponderEventPlugin.js` for more discussion.
  */
-export type GestureResponderHandlers = $ReadOnly<{
+export type GestureResponderHandlers = Readonly<{
   /**
    * Does this view want to "claim" touch responsiveness? This is called for
    * every touch move on the `View` when it is not the responder.
@@ -312,12 +311,12 @@ export type GestureResponderHandlers = $ReadOnly<{
   onStartShouldSetResponderCapture?: ?(e: GestureResponderEvent) => boolean,
 }>;
 
-type AndroidDrawableThemeAttr = $ReadOnly<{
+type AndroidDrawableThemeAttr = Readonly<{
   type: 'ThemeAttrAndroid',
   attribute: string,
 }>;
 
-type AndroidDrawableRipple = $ReadOnly<{
+type AndroidDrawableRipple = Readonly<{
   type: 'RippleAndroid',
   color?: ?number,
   borderless?: ?boolean,
@@ -326,7 +325,7 @@ type AndroidDrawableRipple = $ReadOnly<{
 
 type AndroidDrawable = AndroidDrawableThemeAttr | AndroidDrawableRipple;
 
-export type ViewPropsAndroid = $ReadOnly<{
+export type ViewPropsAndroid = Readonly<{
   nativeBackgroundAndroid?: ?AndroidDrawable,
   nativeForegroundAndroid?: ?AndroidDrawable,
 
@@ -411,7 +410,7 @@ export type ViewPropsAndroid = $ReadOnly<{
   onClick?: ?(event: GestureResponderEvent) => unknown,
 }>;
 
-export type TVViewPropsIOS = $ReadOnly<{
+export type TVViewPropsIOS = Readonly<{
   /**
    * *(Apple TV only)* When set to true, this view will be focusable
    * and navigable using the Apple TV remote.
@@ -456,7 +455,7 @@ export type TVViewPropsIOS = $ReadOnly<{
   tvParallaxMagnification?: number,
 }>;
 
-export type ViewPropsIOS = $ReadOnly<{
+export type ViewPropsIOS = Readonly<{
   /**
    * Whether this `View` should be rendered as a bitmap before compositing.
    *
@@ -468,7 +467,7 @@ export type ViewPropsIOS = $ReadOnly<{
 }>;
 
 // [macOS
-type MacOSViewProps = $ReadOnly<{|
+type MacOSViewProps = Readonly<{
   /**
    * Fired when a file is dragged into the view via the mouse.
    *
@@ -547,10 +546,10 @@ type MacOSViewProps = $ReadOnly<{|
    * @platform macos
    */
   inverted?: ?boolean,
-|}>;
+}>;
 // macOS]
 
-type ViewBaseProps = $ReadOnly<{
+type ViewBaseProps = Readonly<{
   children?: React.Node,
   style?: ?ViewStyleProp,
 
@@ -646,7 +645,7 @@ type ViewBaseProps = $ReadOnly<{
   experimental_accessibilityOrder?: ?Array<string>,
 }>;
 
-export type ViewProps = $ReadOnly<{
+export type ViewProps = Readonly<{
   ...DirectEventProps,
   ...GestureResponderHandlers,
   ...MouseEventProps,
