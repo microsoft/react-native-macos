@@ -10,7 +10,6 @@
 
 const {PACKAGES_DIR} = require('../../../../shared/consts');
 const {promises: fs} = require('fs');
-const glob = require('glob');
 const path = require('path');
 
 describe('simpleResolve workspace dependencies', () => {
@@ -28,7 +27,7 @@ describe('simpleResolve workspace dependencies', () => {
     async (isPrivate, main, entryPoint) => {
       const packagePath = path.join(PACKAGES_DIR, 'type-dependency');
       jest
-        .spyOn(glob, 'sync')
+        .spyOn(require('tinyglobby'), 'globSync')
         .mockReturnValue([path.join(packagePath, 'package.json')]);
       jest.spyOn(fs, 'readFile').mockResolvedValue(
         JSON.stringify({
