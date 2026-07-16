@@ -60,22 +60,21 @@ function getBuildPath(file, buildFolder) {
 
 async function buildFile(file, silent) {
   const destPath = getBuildPath(file, BUILD_DIR);
+  const relativePath = path.relative(PACKAGE_DIR, file);
 
   fs.mkdirSync(path.dirname(destPath), {recursive: true});
 
-  if (micromatch.isMatch(file, IGNORE_PATTERN)) {
+  if (micromatch.isMatch(relativePath, IGNORE_PATTERN)) {
     silent ||
       process.stdout.write(
-        styleText('dim', '  \u2022 ') +
-          path.relative(PACKAGE_DIR, file) +
-          ' (ignore)\n',
+        styleText('dim', '  \u2022 ') + relativePath + ' (ignore)\n',
       );
-  } else if (!micromatch.isMatch(file, JS_FILES_PATTERN)) {
+  } else if (!micromatch.isMatch(relativePath, JS_FILES_PATTERN)) {
     fs.createReadStream(file).pipe(fs.createWriteStream(destPath));
     silent ||
       process.stdout.write(
         styleText('red', '  \u2022 ') +
-          path.relative(PACKAGE_DIR, file) +
+          relativePath +
           styleText('red', ' \u21D2 ') +
           path.relative(PACKAGE_DIR, destPath) +
           ' (copy)' +
@@ -97,7 +96,7 @@ async function buildFile(file, silent) {
     silent ||
       process.stdout.write(
         styleText('green', '  \u2022 ') +
-          path.relative(PACKAGE_DIR, file) +
+          relativePath +
           styleText('green', ' \u21D2 ') +
           path.relative(PACKAGE_DIR, destPath) +
           '\n',
