@@ -684,8 +684,8 @@ RCTPlatformWindow *__nullable RCTKeyWindow(void) // [macOS]
 #endif // macOS]
 }
 
-#if !TARGET_OS_TV
 #if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_TV
 UIStatusBarManager *__nullable RCTUIStatusBarManager(void)
 {
   return RCTKeyWindow().windowScene.statusBarManager;
