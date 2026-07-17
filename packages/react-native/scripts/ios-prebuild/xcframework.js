@@ -17,9 +17,10 @@ const headers = require('./headers');
 const utils = require('./utils');
 const vfs = require('./vfs');
 const childProcess = require('child_process');
-const {execFileSync} = childProcess;
 const fs = require('fs');
 const path = require('path');
+
+const {execFileSync} = childProcess;
 
 const {getHeaderFilesFromPodspecs} = headers;
 const {createFolderIfNotExists, createLogger} = utils;
@@ -206,11 +207,16 @@ function buildXCFrameworks(
   );
   frameworkLog('Creating tar file: ' + tarFilePath);
   try {
-    execSync(
-      `tar -czf ${tarFilePath} -C ${path.dirname(outputPath)} React.xcframework`,
-      {
-        stdio: 'inherit',
-      },
+    execFileSync(
+      'tar',
+      [
+        '-czf',
+        tarFilePath,
+        '-C',
+        path.dirname(outputPath),
+        'React.xcframework',
+      ],
+      {stdio: 'inherit'},
     );
   } catch (error) {
     frameworkLog(

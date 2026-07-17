@@ -85,13 +85,14 @@ function getHeaderFilesFromPodspecs(
       //   podspec_sources(source_files, ["*.h", "platform/ios/**/*.h"])  # first arg is a variable
       //
       // Regex explanation:
-      //   podspec_sources\(              - match "podspec_sources("
+      //   podspec_sources\(\s*           - match "podspec_sources(" and whitespace
       //   (?:\[[^\]]*\]|"[^"]*"|[\w]+)   - first arg: either [...] or "..." or a variable name
       //   \s*,\s*                        - comma separator with optional whitespace
       //   (\[[^\]]*\]|"[^"]*")           - second arg (captured): either [...] or "..."
+      //   \s*                             - optional whitespace before the closing parenthesis
       //   \)                             - closing paren
       const headerPatternRegex =
-        /podspec_sources\((?:\[[^\]]*\]|"[^"]*"|\w+)\s*,\s*(\[[^\]]*\]|"[^"]*")\)/gm;
+        /podspec_sources\(\s*(?:\[[^\]]*\]|"[^"]*"|\w+)\s*,\s*(\[[^\]]*\]|"[^"]*")\s*\)/gm;
       const matches = [...fileContent.matchAll(headerPatternRegex)];
 
       // Also extract exclude_files patterns from the podspec
