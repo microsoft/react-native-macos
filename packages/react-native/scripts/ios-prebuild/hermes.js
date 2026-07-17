@@ -502,18 +502,22 @@ async function buildFromHermesCommit(
       'build-ios-framework.sh',
     );
 
-    const buildEnv = {
-      ...process.env,
-      BUILD_TYPE: buildType,
-      HERMES_PATH: hermesDir,
-      JSI_PATH: path.join(hermesDir, 'API', 'jsi'),
-      REACT_NATIVE_PATH: reactNativeRoot,
-      // Deployment targets matching react-native-macos minimums
-      IOS_DEPLOYMENT_TARGET: '15.1',
-      MAC_DEPLOYMENT_TARGET: '14.0',
-      XROS_DEPLOYMENT_TARGET: '1.0',
-      RELEASE_VERSION: version,
-    };
+    const buildEnv /*: {[string]: string | number | void} */ = {};
+    Object.keys(process.env).forEach(key => {
+      const value = process.env[key];
+      if (value != null) {
+        buildEnv[key] = String(value);
+      }
+    });
+    buildEnv.BUILD_TYPE = buildType;
+    buildEnv.HERMES_PATH = hermesDir;
+    buildEnv.JSI_PATH = path.join(hermesDir, 'API', 'jsi');
+    buildEnv.REACT_NATIVE_PATH = reactNativeRoot;
+    // Deployment targets matching react-native-macos minimums
+    buildEnv.IOS_DEPLOYMENT_TARGET = '15.1';
+    buildEnv.MAC_DEPLOYMENT_TARGET = '14.0';
+    buildEnv.XROS_DEPLOYMENT_TARGET = '1.0';
+    buildEnv.RELEASE_VERSION = version;
 
     hermesLog(`Building Hermes frameworks (${buildType})...`);
     execFileSync('bash', [buildScript], {
