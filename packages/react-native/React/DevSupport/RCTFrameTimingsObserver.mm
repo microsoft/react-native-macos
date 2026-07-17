@@ -7,6 +7,10 @@
 
 #import "RCTFrameTimingsObserver.h"
 
+#import <React/RCTDefines.h> // [macOS]
+
+#if !TARGET_OS_OSX // [macOS]
+
 #import <UIKit/UIKit.h>
 
 #import <mach/thread_act.h>
@@ -296,3 +300,5 @@ struct FrameData {
 }
 
 @end
+
+#endif // [macOS]
