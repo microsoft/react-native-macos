@@ -6,13 +6,24 @@
  */
 
 #import <React/RCTDefines.h>
+#import <React/RCTUIKit.h> // [macOS]
 
 #import "RCTRedBox+Internal.h"
 #import "RCTRedBox.h"
 
 #if RCT_DEV_MENU
 
-@interface RCTRedBoxController : UIViewController <RCTRedBoxControlling, UITableViewDelegate, UITableViewDataSource>
+@interface RCTRedBoxController
+    : RCTPlatformViewController < // [macOS
+      RCTRedBoxControlling,
+#if !TARGET_OS_OSX // [macOS
+      UITableViewDelegate,
+      UITableViewDataSource
+#else // [macOS
+      NSTableViewDelegate,
+      NSTableViewDataSource
+#endif // macOS]
+      >
 
 @property (nonatomic, weak) id<RCTRedBoxControllerActionDelegate> actionDelegate;
 

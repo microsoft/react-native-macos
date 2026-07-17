@@ -15,12 +15,15 @@
 #import <React/RCTJSStackFrame.h>
 #import <React/RCTRedBoxExtraDataViewController.h>
 #import <React/RCTReloadCommand.h>
+#import <React/RCTUIKit.h> // [macOS]
 #import <React/RCTUtils.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 
 #import "CoreModulesPlugins.h"
 #import "RCTRedBox+Internal.h"
+#if !TARGET_OS_OSX // [macOS]
 #import "RCTRedBox2Controller+Internal.h"
+#endif // [macOS]
 #import "RCTRedBoxController+Internal.h"
 
 #if RCT_DEV_MENU
@@ -194,9 +197,11 @@ RCT_EXPORT_MODULE()
     errorInfo = [self _customizeError:errorInfo];
 
     if (self->_controller == nullptr) {
-      if (facebook::react::ReactNativeFeatureFlags::redBoxV2IOS()) {
+      if (!TARGET_OS_OSX && facebook::react::ReactNativeFeatureFlags::redBoxV2IOS()) { // [macOS]
+#if !TARGET_OS_OSX // [macOS]
         self->_controller = [[RCTRedBox2Controller alloc] initWithCustomButtonTitles:self->_customButtonTitles
                                                                 customButtonHandlers:self->_customButtonHandlers];
+#endif // [macOS]
       } else {
         self->_controller = [[RCTRedBoxController alloc] initWithCustomButtonTitles:self->_customButtonTitles
                                                                customButtonHandlers:self->_customButtonHandlers];
@@ -214,11 +219,15 @@ RCT_EXPORT_MODULE()
 - (void)loadExtraDataViewController
 {
   dispatch_async(dispatch_get_main_queue(), ^{
-    UIViewController *controller = static_cast<UIViewController *>(self->_controller);
+#if !TARGET_OS_OSX // [macOS]
+    RCTPlatformViewController *controller = static_cast<RCTPlatformViewController *>(self->_controller); // [macOS]
     // Make sure the CMD+E shortcut doesn't call this twice
     if (self->_extraDataViewController != nil && ([controller presentedViewController] == nullptr)) {
       [controller presentViewController:self->_extraDataViewController animated:YES completion:nil];
     }
+#else // [macOS
+    // RCTRedBoxExtraDataViewController is not implemented for macOS.
+#endif // macOS]
   });
 }
 
@@ -239,7 +248,7 @@ RCT_EXPORT_METHOD(dismiss)
   [self dismiss];
 }
 
-- (void)redBoxController:(__unused UIViewController *)redBoxController
+- (void)redBoxController:(__unused RCTPlatformViewController *)redBoxController // [macOS]
     openStackFrameInEditor:(RCTJSStackFrame *)stackFrame
 {
   NSURL *const bundleURL = _overrideBundleURL ?: _bundleManager.bundleURL;
@@ -266,7 +275,7 @@ RCT_EXPORT_METHOD(dismiss)
   [self reloadFromRedBoxController:nil];
 }
 
-- (void)reloadFromRedBoxController:(__unused UIViewController *)redBoxController
+- (void)reloadFromRedBoxController:(__unused RCTPlatformViewController *)redBoxController // [macOS]
 {
   if (_overrideReloadAction) {
     _overrideReloadAction();
