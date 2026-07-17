@@ -6,6 +6,10 @@
  */
 
 #include "RCTLegacyViewManagerInteropCoordinator.h"
+#include <React/RCTDefines.h> // [macOS]
+
+#if TARGET_OS_OSX // [macOS
+
 #include <React/RCTBridge+Private.h>
 #include <React/RCTBridgeMethod.h>
 #include <React/RCTBridgeProxy.h>
@@ -220,3 +224,5 @@ using namespace facebook::react;
 }
 
 @end
+
+#endif // macOS]
