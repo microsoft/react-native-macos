@@ -12,7 +12,11 @@
 
 #if RCT_DEV_MENU
 
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTRedBoxController : UIViewController <RCTRedBoxControlling, UITableViewDelegate, UITableViewDataSource>
+#else // [macOS
+@interface RCTRedBoxController : NSViewController <RCTRedBoxControlling, NSTableViewDelegate, NSTableViewDataSource>
+#endif // macOS]
 
 @property (nonatomic, weak) id<RCTRedBoxControllerActionDelegate> actionDelegate;
 

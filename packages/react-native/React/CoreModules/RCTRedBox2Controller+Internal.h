@@ -13,6 +13,7 @@
 
 typedef void (^RCTRedBox2ButtonPressHandler)(void);
 
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTRedBox2Controller : UIViewController <RCTRedBox2Controlling, UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, weak) id<RCTRedBoxControllerActionDelegate> actionDelegate;
@@ -30,5 +31,6 @@ typedef void (^RCTRedBox2ButtonPressHandler)(void);
 
 - (void)dismiss;
 @end
+#endif // [macOS]
 
 #endif
