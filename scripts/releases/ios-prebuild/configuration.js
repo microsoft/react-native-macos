@@ -80,9 +80,9 @@ const dependencies /*: $ReadOnlyArray<Dependency> */ = [
   },
   {
     name: 'fmt',
-    version: '12.1.0', // [macOS]
+    version: '12.1.0',
     url: new URL(
-      'https://github.com/fmtlib/fmt/archive/refs/tags/12.1.0.tar.gz', // [macOS]
+      'https://github.com/fmtlib/fmt/archive/refs/tags/12.1.0.tar.gz',
     ),
     files: {
       sources: ['src/format.cc', 'include/fmt/*.h'],
