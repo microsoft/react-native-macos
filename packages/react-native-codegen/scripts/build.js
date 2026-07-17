@@ -60,7 +60,7 @@ function getBuildPath(file, buildFolder) {
 
 async function buildFile(file, silent) {
   const destPath = getBuildPath(file, BUILD_DIR);
-  const relativeFile = path.relative(PACKAGE_DIR, file);
+  const relativeFile = path.relative(PACKAGE_DIR, file); // [macOS]
 
   fs.mkdirSync(path.dirname(destPath), {recursive: true});
 
