@@ -134,15 +134,21 @@ Pod::Spec.new do |s|
       sss.dependency             "React-renderercss"
       sss.dependency             "Yoga"
       # [macOS
-      sss.source_files         = "react/renderer/components/view/**/*.{m,mm,cpp,h}"
-      sss.exclude_files        = "react/renderer/components/view/tests", "react/renderer/components/view/platform/android", "react/renderer/components/view/platform/windows"
-      sss.osx.exclude_files    = "react/renderer/components/view/platform/cxx/**/*"
-      non_macos_platform_files = "react/renderer/components/view/platform/macos/**/*"
-      sss.ios.exclude_files      = non_macos_platform_files
-      sss.tvos.exclude_files     = non_macos_platform_files
-      sss.visionos.exclude_files = non_macos_platform_files
+      common_view_sources = "react/renderer/components/view/*.{m,mm,cpp,h}"
+      common_view_headers = "react/renderer/components/view/*.{h}"
+      cxx_view_sources = "react/renderer/components/view/platform/cxx/**/*.{m,mm,cpp,h}"
+      macos_view_sources = "react/renderer/components/view/platform/macos/**/*.{m,mm,cpp,h}"
+      sss.source_files = podspec_sources(
+        [common_view_sources, cxx_view_sources],
+        common_view_headers,
+      )
+      sss.osx.source_files = podspec_sources(
+        [common_view_sources, macos_view_sources],
+        common_view_headers,
+      )
       # macOS]
       sss.header_dir           = "react/renderer/components/view"
+      sss.header_mappings_dir  = "react/renderer/components/view" # [macOS]
     end
 
     ss.subspec "scrollview" do |sss|
@@ -153,19 +159,12 @@ Pod::Spec.new do |s|
 
     ss.subspec "legacyviewmanagerinterop" do |sss|
       sss.source_files         = podspec_sources("react/renderer/components/legacyviewmanagerinterop/**/*.{m,mm,cpp,h}", "react/renderer/components/legacyviewmanagerinterop/**/*.{h}")
-      sss.exclude_files        = "react/renderer/components/legacyviewmanagerinterop/tests"
       # [macOS
-      sss.osx.exclude_files    = [
-        "react/renderer/components/legacyviewmanagerinterop/platform/ios/**/RCTLegacyViewManagerInteropCoordinator.h",
-        "react/renderer/components/legacyviewmanagerinterop/platform/ios/**/RCTLegacyViewManagerInteropCoordinator.mm",
-      ]
-      platform_coordinator_files = [
+      sss.exclude_files = [
+        "react/renderer/components/legacyviewmanagerinterop/tests",
         "react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h",
         "react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.mm",
       ]
-      sss.ios.exclude_files      = platform_coordinator_files
-      sss.tvos.exclude_files     = platform_coordinator_files
-      sss.visionos.exclude_files = platform_coordinator_files
       # macOS]
       sss.header_dir           = "react/renderer/components/legacyviewmanagerinterop"
     end
