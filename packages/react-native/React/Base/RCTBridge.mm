@@ -633,7 +633,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)init)
           }
           return strongSelf->_inspectorTarget->connect(std::move(remote));
         },
-        {.nativePageReloads = true, .prefersFuseboxFrontend = true});
+        {.nativePageReloads = true});
   }
 
   Class bridgeClass = self.bridgeClass;

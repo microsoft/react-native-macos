@@ -12,7 +12,7 @@
 // one of these strings or an array of said strings
 type RNTesterPlatform = 'ios' | 'android' | 'macos';
 
-export type RNTesterModuleExample = $ReadOnly<{
+export type RNTesterModuleExample = Readonly<{
   name?: string,
   title: string,
   platform?: RNTesterPlatform | Array<RNTesterPlatform>, // [macOS]
@@ -23,7 +23,7 @@ export type RNTesterModuleExample = $ReadOnly<{
   render: component(),
 }>;
 
-export type RNTesterModule = $ReadOnly<{
+export type RNTesterModule = Readonly<{
   title: string,
   testTitle?: ?string,
   description: string,
@@ -37,7 +37,7 @@ export type RNTesterModule = $ReadOnly<{
   showIndividualExamples?: boolean,
 }>;
 
-export type RNTesterModuleInfo = $ReadOnly<{
+export type RNTesterModuleInfo = Readonly<{
   key: string,
   module: RNTesterModule,
   category?: string,
@@ -51,9 +51,9 @@ export type SectionData<T> = {
   data: Array<T>,
 };
 
-export type ExamplesList = $ReadOnly<{
-  components: $ReadOnlyArray<SectionData<RNTesterModuleInfo>>,
-  apis: $ReadOnlyArray<SectionData<RNTesterModuleInfo>>,
+export type ExamplesList = Readonly<{
+  components: ReadonlyArray<SectionData<RNTesterModuleInfo>>,
+  apis: ReadonlyArray<SectionData<RNTesterModuleInfo>>,
 }>;
 
 export type ScreenTypes = 'components' | 'apis' | 'playgrounds' | null;

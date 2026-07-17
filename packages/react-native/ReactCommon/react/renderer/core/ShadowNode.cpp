@@ -7,7 +7,6 @@
 
 #include "ShadowNode.h"
 #include "DynamicPropsUtilities.h"
-#include "ShadowNodeFragment.h"
 
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
@@ -24,7 +23,7 @@ namespace facebook::react {
  * Runtime shadow node reference updates should only run from one thread at all
  * times to avoid having more than one shadow tree updating the current fiber
  * tree simultaneously. This thread_local flag allows enabling the updates for
- * choses threads.
+ * chosen threads.
  */
 thread_local bool useRuntimeShadowNodeReferenceUpdateOnThread{false}; // NOLINT
 
@@ -33,7 +32,12 @@ thread_local bool useRuntimeShadowNodeReferenceUpdateOnThread{false}; // NOLINT
   useRuntimeShadowNodeReferenceUpdateOnThread = isEnabled;
 }
 
-ShadowNode::SharedListOfShared ShadowNode::emptySharedShadowNodeSharedList() {
+/* static */ bool ShadowNode::getUseRuntimeShadowNodeReferenceUpdateOnThread() {
+  return useRuntimeShadowNodeReferenceUpdateOnThread;
+}
+
+std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>>
+ShadowNode::emptySharedShadowNodeSharedList() {
   static const auto emptySharedShadowNodeSharedList =
       std::make_shared<std::vector<std::shared_ptr<const ShadowNode>>>();
   return emptySharedShadowNodeSharedList;
@@ -96,7 +100,7 @@ ShadowNode::ShadowNode(
     child->family_->setParent(family_);
   }
 
-  updateTraitsIfNeccessary();
+  propagateUncullableTraitsFromChildren();
 
   // The first node of the family gets its state committed automatically.
   family_->setMostRecentState(state_);
@@ -112,27 +116,20 @@ ShadowNode::ShadowNode(
       props_(propsForClonedShadowNode(sourceShadowNode, fragment.props)),
       children_(
           fragment.children ? fragment.children : sourceShadowNode.children_),
-      state_(
-          fragment.state ? fragment.state
-                         : (ReactNativeFeatureFlags::useShadowNodeStateOnClone()
-                                ? sourceShadowNode.state_
-                                : sourceShadowNode.getMostRecentState())),
+      state_(fragment.state ? fragment.state : sourceShadowNode.state_),
       orderIndex_(sourceShadowNode.orderIndex_),
       family_(sourceShadowNode.family_),
       traits_(sourceShadowNode.traits_) {
 
   react_native_assert(props_);
   react_native_assert(children_);
-
-  // State could have been progressed above by checking
-  // `sourceShadowNode.getMostRecentState()`.
   traits_.set(ShadowNodeTraits::Trait::ChildrenAreShared);
 
   if (fragment.children) {
     for (const auto& child : *children_) {
       child->family_->setParent(family_);
     }
-    updateTraitsIfNeccessary();
+    propagateUncullableTraitsFromChildren();
   }
 }
 
@@ -154,7 +151,7 @@ std::shared_ptr<ShadowNode> ShadowNode::clone(
            .state = fragment.state});
       return clonedNode;
     } else {
-      // TODO: We might need to merge fragment.priops with
+      // TODO: We might need to merge fragment.props with
       // `family.nativeProps_DEPRECATED`.
       return componentDescriptor.cloneShadowNode(*this, fragment);
     }
@@ -248,7 +245,7 @@ void ShadowNode::appendChild(const std::shared_ptr<const ShadowNode>& child) {
   children.push_back(child);
 
   child->family_->setParent(family_);
-  updateTraitsIfNeccessary();
+  propagateUncullableTraitsFromChildren();
 }
 
 void ShadowNode::replaceChild(
@@ -282,7 +279,7 @@ void ShadowNode::replaceChild(
   }
 
   react_native_assert(false && "Child to replace was not found.");
-  updateTraitsIfNeccessary();
+  propagateUncullableTraitsFromChildren();
 }
 
 void ShadowNode::cloneChildrenIfShared() {
@@ -295,7 +292,7 @@ void ShadowNode::cloneChildrenIfShared() {
       *children_);
 }
 
-void ShadowNode::updateTraitsIfNeccessary() {
+void ShadowNode::propagateUncullableTraitsFromChildren() {
   if (ReactNativeFeatureFlags::enableViewCulling()) {
     if (traits_.check(ShadowNodeTraits::Trait::Unstable_uncullableView)) {
       return;
@@ -346,7 +343,9 @@ void ShadowNode::transferRuntimeShadowNodeReference(
   destinationShadowNode->runtimeShadowNodeReference_ =
       runtimeShadowNodeReference_;
 
-  if (!ReactNativeFeatureFlags::updateRuntimeShadowNodeReferencesOnCommit()) {
+  if (!ReactNativeFeatureFlags::updateRuntimeShadowNodeReferencesOnCommit() &&
+      !ReactNativeFeatureFlags::
+          updateRuntimeShadowNodeReferencesOnCommitThread()) {
     updateRuntimeShadowNodeReference(destinationShadowNode);
   }
 }
@@ -355,6 +354,8 @@ void ShadowNode::transferRuntimeShadowNodeReference(
     const std::shared_ptr<const ShadowNode>& destinationShadowNode,
     const ShadowNodeFragment& fragment) const {
   if ((ReactNativeFeatureFlags::updateRuntimeShadowNodeReferencesOnCommit() ||
+       ReactNativeFeatureFlags::
+           updateRuntimeShadowNodeReferencesOnCommitThread() ||
        useRuntimeShadowNodeReferenceUpdateOnThread) &&
       fragment.runtimeShadowNodeReference) {
     transferRuntimeShadowNodeReference(destinationShadowNode);
@@ -470,7 +471,7 @@ std::shared_ptr<ShadowNode> ShadowNode::cloneMultiple(
     }
   }
 
-  if (childrenCount.empty()) {
+  if (!childrenCount.contains(&this->getFamily())) {
     return nullptr;
   }
 

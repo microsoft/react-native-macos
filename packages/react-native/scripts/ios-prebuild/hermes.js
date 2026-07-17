@@ -59,9 +59,9 @@ async function prepareHermesArtifactsAsync(
   // Only check if the artifacts folder exists if we are not using a local tarball
   if (!localPath) {
     // Resolve the version from the environment variable or use the default version
-    let resolvedVersion = process.env.HERMES_VERSION ?? 'nightly';
+    let resolvedVersion = process.env.HERMES_VERSION ?? 'latest-v1';
 
-    // [macOS] Map the fork version to an upstream release before falling
+    // [macOS Map the fork version to an upstream release before falling
     // back to the Hermes commit at the React Native merge base.
     let allowBuildFromSource = false;
     if (!process.env.HERMES_VERSION) {
@@ -83,7 +83,11 @@ async function prepareHermesArtifactsAsync(
     }
     // macOS]
 
-    if (resolvedVersion === 'nightly') {
+    if (resolvedVersion === 'latest-v1') {
+      hermesLog('Using latest-v1 tarball');
+      const hermesVersion = await getLatestV1VersionFromNPM();
+      resolvedVersion = hermesVersion;
+    } else if (resolvedVersion === 'nightly') {
       hermesLog('Using latest nightly tarball');
       const hermesVersion = await getNightlyVersionFromNPM();
       resolvedVersion = hermesVersion;
@@ -133,6 +137,23 @@ async function prepareHermesArtifactsAsync(
   return artifactsPath;
 }
 
+async function getLatestV1VersionFromNPM() /*: Promise<string> */ {
+  const npmResponse /*: Response */ = await fetch(
+    'https://registry.npmjs.org/hermes-compiler/latest-v1',
+  );
+
+  if (!npmResponse.ok) {
+    throw new Error(
+      `Couldn't get a response from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
+    );
+  }
+
+  const json = await npmResponse.json();
+  const latestV1 = json.version;
+  hermesLog(`Using version ${latestV1}`);
+  return latestV1;
+}
+
 async function getNightlyVersionFromNPM() /*: Promise<string> */ {
   const npmResponse /*: Response */ = await fetch(
     'https://registry.npmjs.org/hermes-compiler/nightly',
@@ -140,7 +161,7 @@ async function getNightlyVersionFromNPM() /*: Promise<string> */ {
 
   if (!npmResponse.ok) {
     throw new Error(
-      `Couldn't get an answer from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
+      `Couldn't get a response from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
     );
   }
 
@@ -287,7 +308,7 @@ async function hermesSourceType(
     return HermesEngineSourceTypes.DOWNLOAD_PREBUILT_NIGHTLY_TARBALL;
   }
 
-  // [macOS] Fall back to source at the React Native merge-base timestamp.
+  // [macOS Fall back to source at the React Native merge-base timestamp.
   if (allowBuildFromSource) {
     hermesLog(
       'No prebuilt Hermes artifact found. Will resolve from the merge base with facebook/react-native.',
@@ -481,18 +502,22 @@ async function buildFromHermesCommit(
       'build-ios-framework.sh',
     );
 
-    const buildEnv = {
-      ...process.env,
-      BUILD_TYPE: buildType,
-      HERMES_PATH: hermesDir,
-      JSI_PATH: path.join(hermesDir, 'API', 'jsi'),
-      REACT_NATIVE_PATH: reactNativeRoot,
-      // Deployment targets matching react-native-macos minimums
-      IOS_DEPLOYMENT_TARGET: '15.1',
-      MAC_DEPLOYMENT_TARGET: '14.0',
-      XROS_DEPLOYMENT_TARGET: '1.0',
-      RELEASE_VERSION: version,
-    };
+    const buildEnv /*: {[string]: string | number | void} */ = {};
+    Object.keys(process.env).forEach(key => {
+      const value = process.env[key];
+      if (value != null) {
+        buildEnv[key] = String(value);
+      }
+    });
+    buildEnv.BUILD_TYPE = buildType;
+    buildEnv.HERMES_PATH = hermesDir;
+    buildEnv.JSI_PATH = path.join(hermesDir, 'API', 'jsi');
+    buildEnv.REACT_NATIVE_PATH = reactNativeRoot;
+    // Deployment targets matching react-native-macos minimums
+    buildEnv.IOS_DEPLOYMENT_TARGET = '15.1';
+    buildEnv.MAC_DEPLOYMENT_TARGET = '14.0';
+    buildEnv.XROS_DEPLOYMENT_TARGET = '1.0';
+    buildEnv.RELEASE_VERSION = version;
 
     hermesLog(`Building Hermes frameworks (${buildType})...`);
     execFileSync('bash', [buildScript], {

@@ -56,6 +56,7 @@ Pod::Spec.new do |s|
   add_rncore_dependency(s)
 
   s.subspec "animated" do |ss|
+    ss.dependency             "React-Fabric/animationbackend"
     ss.source_files         = podspec_sources("react/renderer/animated/**/*.{m,mm,cpp,h}", "react/renderer/animated/**/*.{h}")
     ss.exclude_files        = "react/renderer/animated/tests"
     ss.header_dir           = "react/renderer/animated"
@@ -95,6 +96,8 @@ Pod::Spec.new do |s|
       header_search_path = header_search_path + [
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/textlayoutmanager/platform/ios\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/scrollview/platform/cxx\"",
+        "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/scrollview/platform/ios\"",
+        "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/legacyviewmanagerinterop/platform/ios\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/text/platform/cxx\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/textinput/platform/ios\"",
         "\"$(PODS_TARGET_SRCROOT)/react/renderer/components/view/platform/cxx\"",
@@ -143,6 +146,19 @@ Pod::Spec.new do |s|
     ss.subspec "legacyviewmanagerinterop" do |sss|
       sss.source_files         = podspec_sources("react/renderer/components/legacyviewmanagerinterop/**/*.{m,mm,cpp,h}", "react/renderer/components/legacyviewmanagerinterop/**/*.{h}")
       sss.exclude_files        = "react/renderer/components/legacyviewmanagerinterop/tests"
+      # [macOS
+      sss.osx.exclude_files    = [
+        "react/renderer/components/legacyviewmanagerinterop/platform/ios/**/RCTLegacyViewManagerInteropCoordinator.h",
+        "react/renderer/components/legacyviewmanagerinterop/platform/ios/**/RCTLegacyViewManagerInteropCoordinator.mm",
+      ]
+      platform_coordinator_files = [
+        "react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h",
+        "react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.mm",
+      ]
+      sss.ios.exclude_files      = platform_coordinator_files
+      sss.tvos.exclude_files     = platform_coordinator_files
+      sss.visionos.exclude_files = platform_coordinator_files
+      # macOS]
       sss.header_dir           = "react/renderer/components/legacyviewmanagerinterop"
     end
   end
@@ -158,6 +174,7 @@ Pod::Spec.new do |s|
     ss.source_files         = podspec_sources("react/renderer/scheduler/**/*.{m,mm,cpp,h}", "react/renderer/scheduler/**/*.h")
     ss.header_dir           = "react/renderer/scheduler"
 
+    ss.dependency             "React-Fabric/animationbackend"
     ss.dependency             "React-performancecdpmetrics"
     ss.dependency             "React-performancetimeline"
     ss.dependency             "React-Fabric/observers/events"
@@ -186,12 +203,6 @@ Pod::Spec.new do |s|
       sss.exclude_files        = "react/renderer/observers/intersection/tests"
       sss.header_dir           = "react/renderer/observers/intersection"
     end
-  end
-
-  s.subspec "templateprocessor" do |ss|
-    ss.source_files         = podspec_sources("react/renderer/templateprocessor/**/*.{m,mm,cpp,h}", "react/renderer/templateprocessor/**/*.h")
-    ss.exclude_files        = "react/renderer/templateprocessor/tests"
-    ss.header_dir           = "react/renderer/templateprocessor"
   end
 
   s.subspec "telemetry" do |ss|

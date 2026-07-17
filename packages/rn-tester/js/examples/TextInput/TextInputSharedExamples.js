@@ -393,7 +393,14 @@ class TextEventsExample extends React.Component<{...}, $FlowFixMe> {
           onFocus={() => this.updateText('onFocus')}
           onBlur={() => this.updateText('onBlur')}
           onChange={event =>
-            this.updateText('onChange text: ' + event.nativeEvent.text)
+            this.updateText(
+              'onChange text: ' +
+                event.nativeEvent.text +
+                ', selection: ' +
+                (event.nativeEvent.selection != null
+                  ? JSON.stringify(event.nativeEvent.selection)
+                  : 'undefined'),
+            )
           }
           onContentSizeChange={event =>
             this.updateText(
@@ -493,7 +500,7 @@ class TokenizedTextExample extends React.Component<$FlowFixMe, $FlowFixMe> {
 }
 
 type SelectionExampleState = {
-  selection: $ReadOnly<{
+  selection: Readonly<{
     start: number,
     end: number,
   }>,
@@ -756,9 +763,9 @@ const TextStylesExample = memo(() => {
 });
 
 type TextStylesContainerProps = {
-  examples: $ReadOnlyArray<{
+  examples: ReadonlyArray<{
     name: string,
-    textStyles: $ReadOnlyArray<TextStyle>,
+    textStyles: ReadonlyArray<TextStyle>,
     multiline?: boolean,
   }>,
 };
@@ -801,7 +808,7 @@ function TextStylesContainer({examples}: TextStylesContainerProps) {
 
 type StyledTextInputProps = {
   name: string,
-  textStyles: $ReadOnlyArray<TextStyle>,
+  textStyles: ReadonlyArray<TextStyle>,
   styleOffset: number,
 };
 

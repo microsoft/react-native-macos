@@ -42,7 +42,7 @@ const HostFunctionTemplate = ({
   propertyName,
   jniSignature,
   jsReturnType,
-}: $ReadOnly<{
+}: Readonly<{
   hasteModuleName: string,
   propertyName: string,
   jniSignature: string,
@@ -58,10 +58,10 @@ const ModuleClassConstructorTemplate = ({
   hasteModuleName,
   eventEmitters,
   methods,
-}: $ReadOnly<{
+}: Readonly<{
   hasteModuleName: string,
-  eventEmitters: $ReadOnlyArray<NativeModuleEventEmitterShape>,
-  methods: $ReadOnlyArray<{
+  eventEmitters: ReadonlyArray<NativeModuleEventEmitterShape>,
+  methods: ReadonlyArray<{
     propertyName: string,
     argCount: number,
   }>,
@@ -94,7 +94,7 @@ ${methods
 const ModuleLookupTemplate = ({
   moduleName,
   hasteModuleName,
-}: $ReadOnly<{moduleName: string, hasteModuleName: string}>) => {
+}: Readonly<{moduleName: string, hasteModuleName: string}>) => {
   return `  if (moduleName == "${moduleName}") {
     return std::make_shared<${hasteModuleName}SpecJSI>(params);
   }`;
@@ -105,11 +105,11 @@ const FileTemplate = ({
   include,
   modules,
   moduleLookups,
-}: $ReadOnly<{
+}: Readonly<{
   libraryName: string,
   include: string,
   modules: string,
-  moduleLookups: $ReadOnlyArray<{
+  moduleLookups: ReadonlyArray<{
     hasteModuleName: string,
     moduleName: string,
   }>,
@@ -527,7 +527,7 @@ module.exports = {
       })
       .join('\n');
 
-    const moduleLookups: $ReadOnlyArray<{
+    const moduleLookups: ReadonlyArray<{
       hasteModuleName: string,
       moduleName: string,
     }> = Object.keys(nativeModules)

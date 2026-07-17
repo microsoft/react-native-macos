@@ -12,7 +12,9 @@
 
 @implementation RCTFabricModalHostViewController {
   CGRect _lastViewBounds;
+#if !TARGET_OS_TV
   RCTSurfaceTouchHandler *_touchHandler;
+#endif
 }
 
 #if !TARGET_OS_OSX // [macOS]
@@ -21,7 +23,9 @@
   if ((self = [super init]) == nullptr) {
     return nil;
   }
+#if !TARGET_OS_TV
   _touchHandler = [RCTSurfaceTouchHandler new];
+#endif
 
   return self;
 }
@@ -38,7 +42,9 @@
 - (void)loadView
 {
   self.view = [UIView new];
+#if !TARGET_OS_TV
   [_touchHandler attachToView:self.view];
+#endif
 }
 
 #if TARGET_OS_IOS // [visionOS]
@@ -48,18 +54,16 @@
 }
 #endif // [visionOS]
 
+- (BOOL)prefersStatusBarHidden
+{
+  return [RCTUIStatusBarManager() isStatusBarHidden];
+}
+
 - (void)viewDidDisappear:(BOOL)animated
 {
   [super viewDidDisappear:animated];
   _lastViewBounds = CGRectZero;
 }
-
-#if TARGET_OS_IOS // [visionOS]
-- (BOOL)prefersStatusBarHidden
-{
-  return [RCTUIStatusBarManager() isStatusBarHidden];
-}
-#endif // [visionOS]
 
 #if RCT_DEV && TARGET_OS_IOS
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations

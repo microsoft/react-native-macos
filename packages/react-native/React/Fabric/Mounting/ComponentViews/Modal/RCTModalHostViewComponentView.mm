@@ -78,9 +78,21 @@ static UIModalPresentationStyle presentationConfiguration(const ModalHostViewPro
     case ModalHostViewPresentationStyle::FullScreen:
       return UIModalPresentationFullScreen;
     case ModalHostViewPresentationStyle::PageSheet:
+#if !TARGET_OS_TV
       return UIModalPresentationPageSheet;
+#else
+      return UIModalPresentationFullScreen;
+#endif
     case ModalHostViewPresentationStyle::FormSheet:
+#if TARGET_OS_TV
+      if (@available(tvOS 26.0, *)) {
+        return UIModalPresentationFormSheet;
+      } else {
+        return UIModalPresentationFullScreen;
+      }
+#else
       return UIModalPresentationFormSheet;
+#endif
     case ModalHostViewPresentationStyle::OverFullScreen:
       return UIModalPresentationOverFullScreen;
   }

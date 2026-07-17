@@ -51,8 +51,12 @@ using namespace facebook::react;
 #if !TARGET_OS_OSX // [macOS]
 @interface RCTTextInputComponentView () <
     RCTBackedTextInputDelegate,
-    RCTTextInputViewProtocol,
-    UIDropInteractionDelegate>
+    RCTTextInputViewProtocol
+#if !TARGET_OS_TV
+    ,
+    UIDropInteractionDelegate
+#endif
+    >
 @end
 #else // [macOS
 @interface RCTTextInputComponentView () <RCTBackedTextInputDelegate, RCTTextInputViewProtocol>
@@ -305,7 +309,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.editable = newTextInputProps.traits.editable;
   }
 
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
   if (newTextInputProps.multiline &&
       newTextInputProps.traits.dataDetectorTypes != oldTextInputProps.traits.dataDetectorTypes) {
     _backedTextInputView.dataDetectorTypes =
@@ -1118,6 +1122,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   _hasInputAccessoryView = shouldHaveInputAccessoryView;
 
+#if !TARGET_OS_TV
   if (shouldHaveInputAccessoryView) {
     NSString *buttonLabel = inputAccessoryViewButtonLabel != nil ? inputAccessoryViewButtonLabel
                                                                  : [self returnKeyTypeToString:returnKeyType];
@@ -1135,6 +1140,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   } else {
     _backedTextInputView.inputAccessoryView = nil;
   }
+#endif
 
   if (_backedTextInputView.isFirstResponder) {
     [_backedTextInputView reloadInputViews];
@@ -1256,7 +1262,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 #if !TARGET_OS_OSX // [macOS]
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
-#else
+#else // [macOS
   NSRange selectedRange = [_backedTextInputView selectedTextRange];
 #endif // macOS]
   NSInteger oldTextLength = _backedTextInputView.attributedText.string.length;
@@ -1299,7 +1305,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 // https://github.com/facebook/react-native/blob/3102a58df38d96f3dacef0530e4dbb399037fcd2/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/text/internal/span/SetSpanOperation.kt#L30
 - (void)_updateTypingAttributes
 {
-#if !TARGET_OS_OSX // [macOS
+#if !TARGET_OS_OSX // [macOS]
   if (_backedTextInputView.attributedText.length > 0 && _backedTextInputView.selectedTextRange != nil) {
     NSUInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
                                                            toPosition:_backedTextInputView.selectedTextRange.start];
@@ -1315,7 +1321,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)scrollCursorIntoView
 {
-#if !TARGET_OS_OSX // [macOS
+#if !TARGET_OS_OSX // [macOS]
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
   if (selectedRange.empty) {
     NSInteger offsetStart = [_backedTextInputView offsetFromPosition:_backedTextInputView.beginningOfDocument
@@ -1358,7 +1364,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.inputView = [UIView new];
   }
 }
-#endif // macOS]
+#endif // [macOS]
 
 #if TARGET_OS_OSX // [macOS
 - (void)_setSecureTextEntry:(BOOL)secureTextEntry

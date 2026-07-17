@@ -23,7 +23,7 @@ export function isPlainObject(
   value: unknown,
   /* $FlowFixMe[incompatible-type-guard] - Flow does not know that the prototype
      and ReactElement checks preserve the type refinement of `value`. */
-): value is $ReadOnly<{[string]: unknown}> {
+): value is Readonly<{[string]: unknown}> {
   const proto =
     value !== null && typeof value === 'object'
       ? Object.getPrototypeOf(value)
@@ -87,7 +87,7 @@ function mapAnimatedNodes(value: any, fn: any => any, depth: number = 0): any {
 }
 
 export default class AnimatedObject extends AnimatedWithChildren {
-  _nodes: $ReadOnlyArray<AnimatedNode>;
+  _nodes: ReadonlyArray<AnimatedNode>;
   _value: unknown;
 
   /**
@@ -106,7 +106,7 @@ export default class AnimatedObject extends AnimatedWithChildren {
    * Should only be called by `AnimatedObject.from`.
    */
   constructor(
-    nodes: $ReadOnlyArray<AnimatedNode>,
+    nodes: ReadonlyArray<AnimatedNode>,
     value: unknown,
     config?: ?AnimatedNodeConfig,
   ) {

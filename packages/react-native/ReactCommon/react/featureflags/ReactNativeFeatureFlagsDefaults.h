@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b8b6163068152d88615813c0d80ed28b>>
+ * @generated SignedSource<<7f1c4037925fc37dcdcba51df968d503>>
  */
 
 /**
@@ -39,6 +39,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool defaultTextToOverflowHidden() override {
+    return true;
+  }
+
   bool disableEarlyViewCommandExecution() override {
     return false;
   }
@@ -49,10 +53,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
 
   bool disableMountItemReorderingAndroid() override {
     return false;
-  }
-
-  bool disableOldAndroidAttachmentMetricsWorkarounds() override {
-    return true;
   }
 
   bool disableSubviewClippingAndroid() override {
@@ -116,6 +116,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableExclusivePropsUpdateAndroid() override {
+    return false;
+  }
+
+  bool enableFabricCommitBranching() override {
     return false;
   }
 
@@ -239,16 +243,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableVirtualViewRenderState() override {
-    return true;
-  }
-
-  bool enableVirtualViewWindowFocusDetection() override {
+  bool fixFindShadowNodeByTagRaceCondition() override {
     return false;
-  }
-
-  bool enableWebPerformanceAPIsByDefault() override {
-    return true;
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
@@ -299,22 +295,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool shouldResetClickableWhenRecyclingView() override {
-    return true;
-  }
-
-  bool shouldResetOnClickListenerWhenRecyclingView() override {
-    return true;
-  }
-
-  bool shouldSetEnabledBasedOnAccessibilityState() override {
-    return true;
-  }
-
-  bool shouldSetIsClickableByDefault() override {
-    return false;
-  }
-
   bool shouldTriggerResponderTransferOnScrollAndroid() override {
     return false;
   }
@@ -323,11 +303,19 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool syncAndroidClipToPaddingWithOverflow() override {
+    return false;
+  }
+
   bool traceTurboModulePromiseRejectionsOnAndroid() override {
     return false;
   }
 
   bool updateRuntimeShadowNodeReferencesOnCommit() override {
+    return false;
+  }
+
+  bool updateRuntimeShadowNodeReferencesOnCommitThread() override {
     return false;
   }
 
@@ -343,12 +331,8 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool useRawPropsJsiValue() override {
-    return true;
-  }
-
-  bool useShadowNodeStateOnClone() override {
-    return true;
+  bool useNestedScrollViewAndroid() override {
+    return false;
   }
 
   bool useSharedAnimatedBackend() override {
@@ -367,12 +351,16 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool useUnorderedMapInDifferentiator() override {
+    return false;
+  }
+
   double viewCullingOutsetRatio() override {
     return 0.0;
   }
 
-  double virtualViewHysteresisRatio() override {
-    return 0.0;
+  bool viewTransitionEnabled() override {
+    return false;
   }
 
   double virtualViewPrerenderRatio() override {

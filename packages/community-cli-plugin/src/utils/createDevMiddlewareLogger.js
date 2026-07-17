@@ -10,7 +10,7 @@
 
 import type {TerminalReporter} from 'metro';
 
-type LoggerFn = (...message: $ReadOnlyArray<string>) => void;
+type LoggerFn = (...message: ReadonlyArray<string>) => void;
 
 /**
  * Create a dev-middleware logger object that will emit logs via Metro's
@@ -18,7 +18,7 @@ type LoggerFn = (...message: $ReadOnlyArray<string>) => void;
  */
 export default function createDevMiddlewareLogger(
   reporter: TerminalReporter,
-): $ReadOnly<{
+): Readonly<{
   info: LoggerFn,
   error: LoggerFn,
   warn: LoggerFn,

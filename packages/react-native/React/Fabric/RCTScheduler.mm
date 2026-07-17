@@ -7,6 +7,7 @@
 
 #import "RCTScheduler.h"
 
+#import <React/RCTUIKit.h> // [macOS]
 #import <cxxreact/TraceSection.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/animations/LayoutAnimationDriver.h>
@@ -34,6 +35,12 @@ class SchedulerDelegateProxy : public SchedulerDelegate {
   {
     RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
     [scheduler.delegate schedulerShouldRenderTransactions:mountingCoordinator];
+  }
+
+  void schedulerShouldMergeReactRevision(SurfaceId surfaceId) override
+  {
+    RCTScheduler *scheduler = (__bridge RCTScheduler *)scheduler_;
+    [scheduler.delegate schedulerShouldMergeReactRevision:surfaceId];
   }
 
   void schedulerDidRequestPreliminaryViewAllocation(const ShadowNode &shadowNode) override
@@ -113,6 +120,58 @@ class LayoutAnimationDelegateProxy : public LayoutAnimationStatusDelegate, publi
   void *scheduler_;
 };
 
+@interface RCTAnimationChoreographerDisplayLinkTarget : NSObject
+@property (nonatomic, assign) AnimationChoreographer *choreographer;
+- (void)displayLinkTick:(RCTPlatformDisplayLink *)sender; // [macOS]
+@end
+
+@implementation RCTAnimationChoreographerDisplayLinkTarget
+- (void)displayLinkTick:(RCTPlatformDisplayLink *)sender // [macOS]
+{
+  if (_choreographer != nullptr) {
+#if TARGET_OS_OSX // [macOS
+    _choreographer->onAnimationFrame(std::chrono::duration<double>(sender.timestamp + sender.duration));
+#else // [macOS]
+    _choreographer->onAnimationFrame(std::chrono::duration<double>(sender.targetTimestamp));
+#endif // macOS]
+  }
+}
+@end
+
+class RCTAnimationChoreographer : public AnimationChoreographer {
+  RCTPlatformDisplayLink *_animationDisplayLink; // [macOS]
+  RCTAnimationChoreographerDisplayLinkTarget *_displayLinkTarget;
+
+ public:
+  RCTAnimationChoreographer() : _displayLinkTarget([[RCTAnimationChoreographerDisplayLinkTarget alloc] init])
+  {
+    _displayLinkTarget.choreographer = this;
+  }
+  ~RCTAnimationChoreographer() override
+  {
+    if (_animationDisplayLink != nil) {
+      [_animationDisplayLink invalidate];
+      _animationDisplayLink = nil;
+    }
+    _displayLinkTarget.choreographer = nullptr;
+  }
+  void resume() override
+  {
+    if (_animationDisplayLink == nil) {
+      // [macOS
+      _animationDisplayLink = [RCTPlatformDisplayLink displayLinkWithTarget:_displayLinkTarget
+                                                                   selector:@selector(displayLinkTick:)];
+      // macOS]
+      [_animationDisplayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+    }
+    [_animationDisplayLink setPaused:NO];
+  }
+  void pause() override
+  {
+    [_animationDisplayLink setPaused:YES];
+  }
+};
+
 @implementation RCTScheduler {
   std::unique_ptr<Scheduler> _scheduler;
   std::shared_ptr<LayoutAnimationDriver> _animationDriver;
@@ -135,6 +194,10 @@ class LayoutAnimationDelegateProxy : public LayoutAnimationStatusDelegate, publi
           RunLoopObserver::Activity::BeforeWaiting, _layoutAnimationDelegateProxy);
 
       _uiRunLoopObserver->setDelegate(_layoutAnimationDelegateProxy.get());
+    }
+
+    if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+      toolbox.animationChoreographer = std::make_shared<RCTAnimationChoreographer>();
     }
 
     _scheduler = std::make_unique<Scheduler>(

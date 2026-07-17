@@ -16,6 +16,8 @@
 #import "RCTSurfacePointerHandler.h"
 #import "RCTTouchableComponentViewProtocol.h"
 
+#if !TARGET_OS_TV
+
 using namespace facebook::react;
 
 typedef NS_ENUM(NSInteger, RCTTouchEventType) {
@@ -591,3 +593,5 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithTarget : (id)target action : (SEL)act
 }
 
 @end
+
+#endif // !TARGET_OS_TV

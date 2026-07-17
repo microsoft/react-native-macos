@@ -59,6 +59,32 @@ static CGImagePropertyOrientation CGImagePropertyOrientationFromUIImageOrientati
 }
 #endif // [macOS]
 
+#if !TARGET_OS_OSX // [macOS]
+static UIImageOrientation UIImageOrientationFromCGImagePropertyOrientation(CGImagePropertyOrientation imageOrientation)
+{
+  switch (imageOrientation) {
+    case kCGImagePropertyOrientationUp:
+      return UIImageOrientationUp;
+    case kCGImagePropertyOrientationDown:
+      return UIImageOrientationDown;
+    case kCGImagePropertyOrientationLeft:
+      return UIImageOrientationLeft;
+    case kCGImagePropertyOrientationRight:
+      return UIImageOrientationRight;
+    case kCGImagePropertyOrientationUpMirrored:
+      return UIImageOrientationUpMirrored;
+    case kCGImagePropertyOrientationDownMirrored:
+      return UIImageOrientationDownMirrored;
+    case kCGImagePropertyOrientationLeftMirrored:
+      return UIImageOrientationLeftMirrored;
+    case kCGImagePropertyOrientationRightMirrored:
+      return UIImageOrientationRightMirrored;
+    default:
+      return UIImageOrientationUp;
+  }
+}
+#endif // [macOS]
+
 CGRect RCTTargetRect(CGSize sourceSize, CGSize destSize, CGFloat destScale, RCTResizeMode resizeMode)
 {
   if (CGSizeEqualToSize(destSize, CGSizeZero)) {
@@ -273,6 +299,7 @@ RCTPlatformImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSiz
   }
   NSNumber *width = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelWidth);
   NSNumber *height = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyPixelHeight);
+  NSNumber *orientationNum = (NSNumber *)CFDictionaryGetValue(imageProperties, kCGImagePropertyOrientation);
   CGSize sourceSize = {width.doubleValue, height.doubleValue};
   CFRelease(imageProperties);
 
@@ -301,12 +328,17 @@ RCTPlatformImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSiz
   CGImageRef imageRef;
   BOOL createThumbnail = targetPixelSize.width != 0 && targetPixelSize.height != 0 &&
       (sourceSize.width > targetPixelSize.width || sourceSize.height > targetPixelSize.height);
+#if !TARGET_OS_OSX // [macOS]
+  UIImageOrientation orientation = UIImageOrientationUp;
+#endif // [macOS]
 
   if (createThumbnail) {
     CGFloat maxPixelSize = fmax(targetPixelSize.width, targetPixelSize.height);
 
     // Get a thumbnail of the source image. This is usually slower than creating a full-sized image,
     // but takes up less memory once it's done.
+    // It rotates the image according to the orientation from metadata, so we'll pass `UIImageOrientationUp`
+    // to the `UIImage` initializer
     imageRef = CGImageSourceCreateThumbnailAtIndex(
         sourceRef, 0, (__bridge CFDictionaryRef) @{
           (id)kCGImageSourceShouldAllowFloat : @YES,
@@ -321,6 +353,16 @@ RCTPlatformImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSiz
         sourceRef, 0, (__bridge CFDictionaryRef) @{
           (id)kCGImageSourceShouldAllowFloat : @YES,
         });
+
+    // Unlike `CGImageSourceCreateThumbnailAtIndex` (with `kCGImageSourceCreateThumbnailWithTransform` set to YES),
+    // `CGImageSourceCreateImageAtIndex` doesn't rotate the image to keep the orientation, so we'll need to pass
+    // the actual orientation (if present) to the `UIImage` initializer
+#if !TARGET_OS_OSX // [macOS]
+    if (orientationNum) {
+      orientation = UIImageOrientationFromCGImagePropertyOrientation(
+          (CGImagePropertyOrientation)[orientationNum unsignedIntValue]);
+    }
+#endif // [macOS]
   }
 
   CFRelease(sourceRef);
@@ -330,9 +372,9 @@ RCTPlatformImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSiz
 
   // Return image
 #if !TARGET_OS_OSX // [macOS]
-  UIImage *image = [UIImage imageWithCGImage:imageRef scale:destScale orientation:UIImageOrientationUp];
+  UIImage *image = [UIImage imageWithCGImage:imageRef scale:destScale orientation:orientation];
 #else // [macOS
-	NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:targetSize];
+  NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:targetSize];
 #endif // macOS]
   CGImageRelease(imageRef);
   return image;

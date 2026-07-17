@@ -10,10 +10,14 @@
 
 import * as React from 'react';
 
-const {create, unmount, update} = require('../../../jest/renderer');
 const {PlatformColor} = require('../../StyleSheet/PlatformColorValueTypes');
 let Animated = require('../Animated').default;
 const AnimatedProps = require('../nodes/AnimatedProps').default;
+const {
+  create,
+  unmount,
+  update,
+} = require('@react-native/jest-preset/jest/renderer');
 const TestRenderer = require('react-test-renderer');
 
 // WORKAROUND: `jest.runAllTicks` skips tasks scheduled w/ `queueMicrotask`.
@@ -701,7 +705,7 @@ describe('Animated', () => {
       expect(cb).toBeCalledWith({finished: true});
     });
 
-    it('parellelizes well', () => {
+    it('parallelizes well', () => {
       const anim1 = {start: jest.fn()};
       const anim2 = {start: jest.fn()};
       const cb = jest.fn();

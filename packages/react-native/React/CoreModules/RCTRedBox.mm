@@ -143,8 +143,10 @@
   _stackTraceTableView.delegate = self;
   _stackTraceTableView.dataSource = self;
   _stackTraceTableView.backgroundColor = [UIColor clearColor];
+#if !TARGET_OS_TV
   _stackTraceTableView.separatorColor = [UIColor colorWithWhite:1 alpha:0.3];
   _stackTraceTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+#endif
   _stackTraceTableView.indicatorStyle = UIScrollViewIndicatorStyleWhite;
   [self.view addSubview:_stackTraceTableView];
 #else // [macOS
@@ -418,7 +420,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 {
 #if !TARGET_OS_OSX // [macOS]
   [self dismissViewControllerAnimated:YES completion:nil];
-#else // [macOS]
+#else // [macOS
   if (self.presentingViewController) {
     [[RCTKeyWindow() contentViewController] dismissViewController:self];
   }
@@ -458,10 +460,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
       [fullStackTrace appendFormat:@"    %@\n", [self formatFrameSource:stackFrame]];
     }
   }
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
   UIPasteboard *pb = [UIPasteboard generalPasteboard];
   [pb setString:fullStackTrace];
-#else // [macOS
+#elif TARGET_OS_OSX // [macOS
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   [pasteboard clearContents];
   [pasteboard setString:fullStackTrace forType:NSPasteboardTypeString];
@@ -525,7 +527,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 }
 #endif // macOS]
 
-#if !TARGET_OS_OSX
+#if !TARGET_OS_OSX // [macOS]
 - (UITableViewCell *)reuseCell:(UITableViewCell *)cell forErrorMessage:(NSString *)message
 {
   if (!cell) {
@@ -595,7 +597,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
   return cell;
 }
-#endif // [macOS]
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 - (UITableViewCell *)reuseCell:(UITableViewCell *)cell forStackFrame:(RCTJSStackFrame *)stackFrame
@@ -725,7 +727,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   }
 }
 
-#if !TARGET_OS_OSX // [macOS
+#if !TARGET_OS_OSX // [macOS]
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
   if (indexPath.section == 1) {
@@ -964,7 +966,7 @@ RCT_EXPORT_MODULE()
     }
 #else // [macOS
     // Do nothing, as we haven't implemented `RCTRedBoxExtraDataViewController` on macOS yet
-#endif // [macOS]
+#endif // macOS]
   });
 }
 

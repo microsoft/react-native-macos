@@ -13,6 +13,7 @@
 #include <cxxreact/TraceSection.h>
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/renderer/animationbackend/AnimationBackend.h>
 #include <react/renderer/componentregistry/ComponentDescriptorRegistry.h>
 #include <react/renderer/core/EventQueueProcessor.h>
 #include <react/renderer/core/LayoutContext.h>
@@ -55,6 +56,16 @@ Scheduler::Scheduler(
   auto uiManager =
       std::make_shared<UIManager>(runtimeExecutor_, contextContainer_);
 
+  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+    auto animationBackend = std::make_shared<AnimationBackend>(
+        schedulerToolbox.animationChoreographer, uiManager);
+
+    schedulerToolbox.animationChoreographer->setAnimationBackend(
+        animationBackend);
+
+    uiManager->unstable_setAnimationBackend(animationBackend);
+  }
+
   auto eventOwnerBox = std::make_shared<EventBeat::OwnerBox>();
   eventOwnerBox->owner = eventDispatcher_;
 
@@ -74,7 +85,7 @@ Scheduler::Scheduler(
 
   auto eventPipe = [uiManager](
                        jsi::Runtime& runtime,
-                       const EventTarget* eventTarget,
+                       EventTarget* eventTarget,
                        const std::string& type,
                        ReactEventPriority priority,
                        const EventPayload& payload) {
@@ -353,6 +364,22 @@ void Scheduler::uiManagerShouldAddEventListener(
 void Scheduler::uiManagerShouldRemoveEventListener(
     const std::shared_ptr<const EventListener>& listener) {
   removeEventListener(listener);
+}
+
+void Scheduler::uiManagerDidFinishReactCommit(const ShadowTree& shadowTree) {
+  auto surfaceId = shadowTree.getSurfaceId();
+  runtimeScheduler_->scheduleRenderingUpdate(
+      surfaceId, [surfaceId, uiManager = uiManager_]() {
+        uiManager->getShadowTreeRegistry().visit(
+            surfaceId,
+            [](const ShadowTree& tree) { tree.promoteReactRevision(); });
+      });
+}
+
+void Scheduler::uiManagerDidPromoteReactRevision(const ShadowTree& shadowTree) {
+  if (delegate_ != nullptr) {
+    delegate_->schedulerShouldMergeReactRevision(shadowTree.getSurfaceId());
+  }
 }
 
 void Scheduler::uiManagerDidStartSurface(const ShadowTree& shadowTree) {

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d7838e490a83e54bee2770b80951877a>>
+ * @generated SignedSource<<0bbe4d41581432dfad7adbc2db133d00>>
  */
 
 /**
@@ -55,6 +55,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool cxxNativeAnimatedEnabled();
 
   /**
+   * When enabled, sets the default overflow style for Text components to hidden instead of visible.
+   */
+  RN_EXPORT static bool defaultTextToOverflowHidden();
+
+  /**
    * Dispatch view commands in mount item order.
    */
   RN_EXPORT static bool disableEarlyViewCommandExecution();
@@ -68,11 +73,6 @@ class ReactNativeFeatureFlags {
    * Prevent FabricMountingManager from reordering mountItems, which may lead to invalid state on the UI thread
    */
   RN_EXPORT static bool disableMountItemReorderingAndroid();
-
-  /**
-   * Disable some workarounds for old Android versions in TextLayoutManager logic for retrieving attachment metrics
-   */
-  RN_EXPORT static bool disableOldAndroidAttachmentMetricsWorkarounds();
 
   /**
    * Force disable subview clipping for ReactViewGroup on Android
@@ -153,6 +153,11 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will disable Props 1.5 raw value merging when Props 2.0 is available.
    */
   RN_EXPORT static bool enableExclusivePropsUpdateAndroid();
+
+  /**
+   * Enables Fabric commit branching to fix starvation problems and atomic JS updates.
+   */
+  RN_EXPORT static bool enableFabricCommitBranching();
 
   /**
    * This feature flag enables logs for Fabric.
@@ -305,19 +310,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableVirtualViewDebugFeatures();
 
   /**
-   * Enables reading render state when dispatching VirtualView events.
+   * Fix a use-after-free race condition in findShadowNodeByTag_DEPRECATED by using getCurrentRevision() instead of tryCommit() with a raw pointer.
    */
-  RN_EXPORT static bool enableVirtualViewRenderState();
-
-  /**
-   * Enables window focus detection for prioritizing VirtualView events.
-   */
-  RN_EXPORT static bool enableVirtualViewWindowFocusDetection();
-
-  /**
-   * Enable Web Performance APIs (Performance Timeline, User Timings, etc.) by default.
-   */
-  RN_EXPORT static bool enableWebPerformanceAPIsByDefault();
+  RN_EXPORT static bool fixFindShadowNodeByTagRaceCondition();
 
   /**
    * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
@@ -380,26 +375,6 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool shouldPressibilityUseW3CPointerEventsForHover();
 
   /**
-   * Reset isClickable to false when recycling views on Android to avoid accessibility tools finding views with incorrect state after recycling.
-   */
-  RN_EXPORT static bool shouldResetClickableWhenRecyclingView();
-
-  /**
-   * Reset OnClickListener to null when recycling views on Android to avoid accessibility tools finding views with incorrect state after recycling.
-   */
-  RN_EXPORT static bool shouldResetOnClickListenerWhenRecyclingView();
-
-  /**
-   * Fix BaseViewManager to properly set view.setEnabled() based on accessibilityState.disabled.
-   */
-  RN_EXPORT static bool shouldSetEnabledBasedOnAccessibilityState();
-
-  /**
-   * Sets isClickable=true by default on all React Native views on Android to improve UI harvesting detection while maintaining focusable=false to preserve expected behavior.
-   */
-  RN_EXPORT static bool shouldSetIsClickableByDefault();
-
-  /**
    * Do not emit touchcancel from Android ScrollView, instead native topScroll event will trigger responder transfer and terminate in RN renderer.
    */
   RN_EXPORT static bool shouldTriggerResponderTransferOnScrollAndroid();
@@ -410,6 +385,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool skipActivityIdentityAssertionOnHostPause();
 
   /**
+   * Sync clipToPadding on Android views with the overflow property
+   */
+  RN_EXPORT static bool syncAndroidClipToPaddingWithOverflow();
+
+  /**
    * Enables storing js caller stack when creating promise in native module. This is useful in case of Promise rejection and tracing the cause.
    */
   RN_EXPORT static bool traceTurboModulePromiseRejectionsOnAndroid();
@@ -418,6 +398,11 @@ class ReactNativeFeatureFlags {
    * When enabled, runtime shadow node references will be updated during the commit. This allows running RSNRU from any thread without corrupting the renderer state.
    */
   RN_EXPORT static bool updateRuntimeShadowNodeReferencesOnCommit();
+
+  /**
+   * When enabled, runtime shadow node references will be updated during the commit only on the allowed thread.
+   */
+  RN_EXPORT static bool updateRuntimeShadowNodeReferencesOnCommitThread();
 
   /**
    * In Bridgeless mode, use the always available javascript error reporting pipeline.
@@ -435,14 +420,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool useNativeViewConfigsInBridgelessMode();
 
   /**
-   * Instead of using folly::dynamic as internal representation in RawProps and RawValue, use jsi::Value
+   * When enabled, ReactScrollView will extend NestedScrollView instead of ScrollView on Android for improved nested scrolling support.
    */
-  RN_EXPORT static bool useRawPropsJsiValue();
-
-  /**
-   * Use the state stored on the source shadow node when cloning it instead of reading in the most recent state on the shadow node family.
-   */
-  RN_EXPORT static bool useShadowNodeStateOnClone();
+  RN_EXPORT static bool useNestedScrollViewAndroid();
 
   /**
    * Use shared animation backend in C++ Animated
@@ -465,14 +445,19 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool useTurboModules();
 
   /**
+   * Use std::unordered_map instead of TinyMap in the Differentiator for improved lookup performance.
+   */
+  RN_EXPORT static bool useUnorderedMapInDifferentiator();
+
+  /**
    * Outset the culling context frame with the provided ratio. The culling context frame size will be outset by width * ratio on the left and right, and height * ratio on the top and bottom.
    */
   RN_EXPORT static double viewCullingOutsetRatio();
 
   /**
-   * Sets a hysteresis window for transition between prerender and hidden modes.
+   * Enable the View Transition API for animating transitions between views.
    */
-  RN_EXPORT static double virtualViewHysteresisRatio();
+  RN_EXPORT static bool viewTransitionEnabled();
 
   /**
    * Initial prerender ratio for VirtualView.

@@ -6,16 +6,24 @@
  */
 
 #import <React/RCTBackedTextInputDelegateAdapter.h>
-#import "RCTBackedTextInputViewProtocol.h" // [macOS
+// [macOS
+#import "RCTBackedTextInputViewProtocol.h"
 #import "RCTBackedTextInputDelegate.h"
-#import <React/RCTTextUIKit.h> // macOS]
+#import <React/RCTTextUIKit.h>
+// macOS]
 
 #pragma mark - RCTBackedTextFieldDelegateAdapter (for UITextField)
 
 static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingContext;
 
 #if !TARGET_OS_OSX // [macOS]
-@interface RCTBackedTextFieldDelegateAdapter () <UITextFieldDelegate, UITextDropDelegate>
+@interface RCTBackedTextFieldDelegateAdapter () <
+    UITextFieldDelegate
+#if !TARGET_OS_TV
+    ,
+    UITextDropDelegate
+#endif
+    >
 #else // [macOS
 @interface RCTBackedTextFieldDelegateAdapter () <RCTUITextFieldDelegate>
 #endif // macOS]
@@ -36,8 +44,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   if (self = [super init]) {
     _backedTextInputView = backedTextInputView;
     backedTextInputView.delegate = self;
-    
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
     backedTextInputView.textDropDelegate = self;
 #endif // [macOS]
 
@@ -184,8 +191,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   [_backedTextInputView.textInputDelegate textInputDidChangeSelection];
 }
 
-
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
 #pragma mark - UITextDropDelegate
 
 - (UITextDropEditability)textDroppableView:(UIView<UITextDroppable> *)textDroppableView
@@ -221,7 +227,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return true;
   }
 }
-#endif // macOS]
+#endif // [macOS]
 
 #if TARGET_OS_OSX // [macOS
 
@@ -299,12 +305,19 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
 }
 #endif // macOS]
 
+
 @end
 
 #pragma mark - RCTBackedTextViewDelegateAdapter (for UITextView)
 
 #if !TARGET_OS_OSX // [macOS]
-@interface RCTBackedTextViewDelegateAdapter () <UITextViewDelegate, UITextDropDelegate>
+@interface RCTBackedTextViewDelegateAdapter () <
+    UITextViewDelegate
+#if !TARGET_OS_TV
+    ,
+    UITextDropDelegate
+#endif
+    >
 #else // [macOS
 @interface RCTBackedTextViewDelegateAdapter () <UITextViewDelegate>
 #endif // macOS]
@@ -332,7 +345,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   if (self = [super init]) {
     _backedTextInputView = backedTextInputView;
     backedTextInputView.delegate = self;
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
     backedTextInputView.textDropDelegate = self;
 #endif // [macOS]
   }
@@ -547,7 +560,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
   [_backedTextInputView.textInputDelegate textInputDidChangeSelection];
 }
 
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
 #pragma mark - UITextDropDelegate
 
 - (UITextDropEditability)textDroppableView:(UIView<UITextDroppable> *)textDroppableView
@@ -583,6 +596,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return true;
   }
 }
-#endif // macOS]
+#endif // [macOS]
+
 
 @end

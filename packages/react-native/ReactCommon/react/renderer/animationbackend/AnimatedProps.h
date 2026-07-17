@@ -24,6 +24,7 @@ enum PropName {
   POSITION,
   FLEX,
   TRANSFORM,
+  TRANSFORM_ORIGIN,
   BACKGROUND_COLOR,
   SHADOW_COLOR,
   SHADOW_OFFSET,
@@ -51,7 +52,19 @@ enum PropName {
   MAX_HEIGHT,
   MAX_WIDTH,
   MIN_HEIGHT,
-  MIN_WIDTH
+  MIN_WIDTH,
+  STYLE_OVERFLOW,
+  POSITION_TYPE,
+  Z_INDEX,
+  DIRECTION,
+  BORDER_CURVES,
+  BORDER_STYLES,
+  POINTER_EVENTS,
+  ISOLATION,
+  CURSOR,
+  BOX_SHADOW,
+  MIX_BLEND_MODE,
+  BACKFACE_VISIBILITY
 };
 
 struct AnimatedPropBase {
@@ -243,6 +256,10 @@ inline void cloneProp(BaseViewProps &viewProps, const AnimatedPropBase &animated
       viewProps.transform = get<Transform>(animatedProp);
       break;
 
+    case TRANSFORM_ORIGIN:
+      viewProps.transformOrigin = get<TransformOrigin>(animatedProp);
+      break;
+
     case BACKGROUND_COLOR:
       viewProps.backgroundColor = get<SharedColor>(animatedProp);
       break;
@@ -353,6 +370,54 @@ inline void cloneProp(BaseViewProps &viewProps, const AnimatedPropBase &animated
 
     case MIN_WIDTH:
       viewProps.yogaStyle.setMinDimension(yoga::Dimension::Width, get<yoga::Style::SizeLength>(animatedProp));
+      break;
+
+    case STYLE_OVERFLOW:
+      viewProps.yogaStyle.setOverflow(get<yoga::Overflow>(animatedProp));
+      break;
+
+    case POSITION_TYPE:
+      viewProps.yogaStyle.setPositionType(get<yoga::PositionType>(animatedProp));
+      break;
+
+    case Z_INDEX:
+      viewProps.zIndex = get<std::optional<int>>(animatedProp);
+      break;
+
+    case DIRECTION:
+      viewProps.yogaStyle.setDirection(get<yoga::Direction>(animatedProp));
+      break;
+
+    case BORDER_CURVES:
+      viewProps.borderCurves = get<CascadedBorderCurves>(animatedProp);
+      break;
+
+    case BORDER_STYLES:
+      viewProps.borderStyles = get<CascadedBorderStyles>(animatedProp);
+      break;
+
+    case POINTER_EVENTS:
+      viewProps.pointerEvents = get<PointerEventsMode>(animatedProp);
+      break;
+
+    case ISOLATION:
+      viewProps.isolation = get<Isolation>(animatedProp);
+      break;
+
+    case CURSOR:
+      viewProps.cursor = get<Cursor>(animatedProp);
+      break;
+
+    case BOX_SHADOW:
+      viewProps.boxShadow = get<std::vector<BoxShadow>>(animatedProp);
+      break;
+
+    case MIX_BLEND_MODE:
+      viewProps.mixBlendMode = get<BlendMode>(animatedProp);
+      break;
+
+    case BACKFACE_VISIBILITY:
+      viewProps.backfaceVisibility = get<BackfaceVisibility>(animatedProp);
       break;
 
     default:
