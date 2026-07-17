@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<fefaf14f0291216b635ea0c356e9929c>>
+ * @generated SignedSource<<2aa191314924bd0f969fba0e64b86142>>
  */
 
 /**
@@ -106,6 +106,7 @@ class ReactNestedScrollView extends NestedScrollView
   private final VelocityHelper mVelocityHelper = new VelocityHelper();
   private final Rect mTempRect = new Rect();
   private final ValueAnimator DEFAULT_FLING_ANIMATOR = ObjectAnimator.ofInt(this, "scrollY", 0, 0);
+  private final @Nullable FpsListener mFpsListener;
 
   private Rect mOverflowInset;
   private @Nullable VirtualViewContainerState mVirtualViewContainerState;
@@ -118,7 +119,6 @@ class ReactNestedScrollView extends NestedScrollView
   private boolean mRemoveClippedSubviews;
   private boolean mScrollEnabled;
   private boolean mSendMomentumEvents;
-  private @Nullable FpsListener mFpsListener;
   private @Nullable String mScrollPerfTag;
   private @Nullable Drawable mEndBackground;
   private int mEndFillColor;
@@ -300,6 +300,7 @@ class ReactNestedScrollView extends NestedScrollView
     mScrollEnabled = scrollEnabled;
   }
 
+  @Override
   public boolean getScrollEnabled() {
     return mScrollEnabled;
   }
@@ -699,6 +700,7 @@ class ReactNestedScrollView extends NestedScrollView
       float vScroll = ev.getAxisValue(MotionEvent.AXIS_VSCROLL);
       if (vScroll != 0) {
         // Perform the scroll
+        enableFpsListener();
         boolean result = super.dispatchGenericMotionEvent(ev);
         // Schedule snap alignment to run after scrolling stops
         if (result
@@ -709,6 +711,7 @@ class ReactNestedScrollView extends NestedScrollView
           // Cancel any pending post-touch runnable and reschedule
           if (mPostTouchRunnable != null) {
             removeCallbacks(mPostTouchRunnable);
+            mPostTouchRunnable = null;
           }
           mPostTouchRunnable =
               new Runnable() {
@@ -722,9 +725,12 @@ class ReactNestedScrollView extends NestedScrollView
                     velocityY = 0;
                   }
                   flingAndSnap(velocityY);
+                  handlePostTouchScrolling(0, velocityY);
                 }
               };
           postOnAnimationDelayed(mPostTouchRunnable, ReactScrollViewHelper.MOMENTUM_DELAY);
+        } else {
+          handlePostTouchScrolling(0, 0);
         }
         return result;
       }
@@ -785,14 +791,6 @@ class ReactNestedScrollView extends NestedScrollView
     } finally {
       Systrace.endSection(Systrace.TRACE_TAG_REACT);
     }
-  }
-
-  @Override
-  public boolean getClipToPadding() {
-    if (ReactNativeFeatureFlags.syncAndroidClipToPaddingWithOverflow()) {
-      return mOverflow != Overflow.VISIBLE;
-    }
-    return super.getClipToPadding();
   }
 
   @Override
@@ -888,6 +886,7 @@ class ReactNestedScrollView extends NestedScrollView
   }
 
   @Nullable
+  @Override
   public StateWrapper getStateWrapper() {
     return mStateWrapper;
   }
@@ -1353,6 +1352,7 @@ class ReactNestedScrollView extends NestedScrollView
    * <p>`smoothScrollTo` changes `contentOffset` and we need to keep `contentOffset` in sync between
    * scroll view and state. Calling raw `smoothScrollTo` doesn't update state.
    */
+  @Override
   public void reactSmoothScrollTo(int x, int y) {
     ReactScrollViewHelper.smoothScrollTo(this, x, y);
     setPendingContentOffsets(x, y);
@@ -1463,10 +1463,6 @@ class ReactNestedScrollView extends NestedScrollView
       return;
     }
 
-    if (mMaintainVisibleContentPositionHelper != null) {
-      mMaintainVisibleContentPositionHelper.updateScrollPosition();
-    }
-
     if (isShown() && isContentReady()) {
       int currentScrollY = getScrollY();
       int maxScrollY = getMaxScrollY();
@@ -1524,11 +1520,12 @@ class ReactNestedScrollView extends NestedScrollView
    * and that you are **not** overriding the NestedScrollView content view to pass in a `translateY`
    * style. `translateY` must never be set from ReactJS while using this feature!
    */
-  public void setScrollAwayTopPaddingEnabledUnstable(int topPadding) {
-    setScrollAwayTopPaddingEnabledUnstable(topPadding, true);
+  public void setScrollAwayPaddingEnabledUnstable(int topPadding, int bottomPadding) {
+    setScrollAwayPaddingEnabledUnstable(topPadding, bottomPadding, true);
   }
 
-  public void setScrollAwayTopPaddingEnabledUnstable(int topPadding, boolean updateState) {
+  public void setScrollAwayPaddingEnabledUnstable(
+      int topPadding, int bottomPadding, boolean updateState) {
     int count = getChildCount();
 
     Assertions.assertCondition(
@@ -1545,17 +1542,18 @@ class ReactNestedScrollView extends NestedScrollView
       // Add the topPadding value as the bottom padding for the NestedScrollView.
       // Otherwise, we'll push down the contents of the scroll view down too
       // far off screen.
-      setPadding(0, 0, 0, topPadding);
+      setPadding(0, 0, 0, topPadding + bottomPadding);
     }
 
     if (updateState) {
-      updateScrollAwayState(topPadding);
+      updateScrollAwayState(topPadding, bottomPadding);
     }
     setRemoveClippedSubviews(mRemoveClippedSubviews);
   }
 
-  private void updateScrollAwayState(int scrollAwayPaddingTop) {
+  private void updateScrollAwayState(int scrollAwayPaddingTop, int scrollAwayPaddingBottom) {
     getReactScrollViewScrollState().setScrollAwayPaddingTop(scrollAwayPaddingTop);
+    getReactScrollViewScrollState().setScrollAwayPaddingBottom(scrollAwayPaddingBottom);
     ReactScrollViewHelper.forceUpdateState(this);
   }
 
@@ -1564,7 +1562,8 @@ class ReactNestedScrollView extends NestedScrollView
     mReactScrollViewScrollState = scrollState;
     if (ReactNativeFeatureFlags.enableViewCulling()
         || ReactNativeFeatureFlags.useTraitHiddenOnAndroid()) {
-      setScrollAwayTopPaddingEnabledUnstable(scrollState.getScrollAwayPaddingTop(), false);
+      setScrollAwayPaddingEnabledUnstable(
+          scrollState.getScrollAwayPaddingTop(), scrollState.getScrollAwayPaddingBottom(), false);
 
       Point scrollPosition = scrollState.getLastStateUpdateScroll();
       scrollTo(scrollPosition.x, scrollPosition.y);

@@ -33,4 +33,4 @@ export interface Spec extends TurboModule {
   +setIsSecondaryClickToShowDevMenuEnabled: (enabled: boolean) => void; // [macOS]
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>('DevSettings'): Spec);
+export default TurboModuleRegistry.getEnforcing<Spec>('DevSettings') as Spec;

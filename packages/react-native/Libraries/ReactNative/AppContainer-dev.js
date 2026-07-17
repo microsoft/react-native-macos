@@ -29,7 +29,7 @@ import {useRef} from 'react';
 
 const {useEffect, useState, useCallback} = React;
 
-const reactDevToolsHook: ReactDevToolsGlobalHook = (window: $FlowFixMe)
+const reactDevToolsHook: ReactDevToolsGlobalHook = (window as $FlowFixMe)
   .__REACT_DEVTOOLS_GLOBAL_HOOK__;
 
 // Required for React DevTools to view / edit React Native styles in Flipper.
@@ -100,7 +100,6 @@ const ReactDevToolsOverlayDeferred = ({
 
 const AppContainer = ({
   children,
-  fabric,
   initialProps,
   internal_excludeInspector = false,
   internal_excludeLogBox = false,
@@ -165,7 +164,7 @@ const AppContainer = ({
 
   if (WrapperComponent != null) {
     innerView = (
-      <WrapperComponent initialProps={initialProps} fabric={fabric === true}>
+      <WrapperComponent initialProps={initialProps}>
         {innerView}
       </WrapperComponent>
     );

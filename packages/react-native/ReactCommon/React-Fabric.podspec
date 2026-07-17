@@ -60,6 +60,7 @@ Pod::Spec.new do |s|
     ss.source_files         = podspec_sources("react/renderer/animated/**/*.{m,mm,cpp,h}", "react/renderer/animated/**/*.{h}")
     ss.exclude_files        = "react/renderer/animated/tests"
     ss.header_dir           = "react/renderer/animated"
+    ss.header_mappings_dir  = "react/renderer/animated"
   end
 
   s.subspec "animations" do |ss|
@@ -175,6 +176,7 @@ Pod::Spec.new do |s|
     ss.header_dir           = "react/renderer/scheduler"
 
     ss.dependency             "React-Fabric/animationbackend"
+    ss.dependency             "React-Fabric/viewtransition"
     ss.dependency             "React-performancecdpmetrics"
     ss.dependency             "React-performancetimeline"
     ss.dependency             "React-Fabric/observers/events"
@@ -186,6 +188,7 @@ Pod::Spec.new do |s|
   end
 
   s.subspec "mounting" do |ss|
+    ss.dependency             "React-jsinspectortracing"
     ss.source_files         = podspec_sources("react/renderer/mounting/**/*.{m,mm,cpp,h}", "react/renderer/mounting/**/*.h")
     ss.exclude_files        = "react/renderer/mounting/tests"
     ss.header_dir           = "react/renderer/mounting"
@@ -202,6 +205,12 @@ Pod::Spec.new do |s|
       sss.source_files         = podspec_sources("react/renderer/observers/intersection/**/*.{m,mm,cpp,h}", "react/renderer/observers/intersection/**/*.h")
       sss.exclude_files        = "react/renderer/observers/intersection/tests"
       sss.header_dir           = "react/renderer/observers/intersection"
+    end
+
+    ss.subspec "mutation" do |sss|
+      sss.source_files         = podspec_sources("react/renderer/observers/mutation/**/*.{m,mm,cpp,h}", "react/renderer/observers/mutation/**/*.h")
+      sss.exclude_files        = "react/renderer/observers/mutation/tests"
+      sss.header_dir           = "react/renderer/observers/mutation"
     end
   end
 
@@ -233,5 +242,10 @@ Pod::Spec.new do |s|
     ss.exclude_files        = "react/renderer/leakchecker/tests"
     ss.header_dir           = "react/renderer/leakchecker"
     ss.pod_target_xcconfig  = { "GCC_WARN_PEDANTIC" => "YES" }
+  end
+
+  s.subspec "viewtransition" do |ss|
+    ss.source_files         = podspec_sources("react/renderer/viewtransition/**/*.{m,mm,cpp,h}", "react/renderer/viewtransition/**/*.h")
+    ss.header_dir           = "react/renderer/viewtransition"
   end
 end

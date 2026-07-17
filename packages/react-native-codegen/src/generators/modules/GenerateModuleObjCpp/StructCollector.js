@@ -42,7 +42,7 @@ const {
   parseValidUnionType,
 } = require('../../Utils');
 
-type StructContext = 'CONSTANTS' | 'REGULAR';
+export type StructContext = 'CONSTANTS' | 'REGULAR';
 
 export type RegularStruct = Readonly<{
   context: 'REGULAR',
@@ -155,7 +155,7 @@ class StructCollector {
                 type: 'StringTypeAnnotation',
               });
             default:
-              (validUnionType: empty);
+              validUnionType as empty;
               throw new Error(`Unsupported union member types`);
           }
         } catch (ex) {
@@ -235,7 +235,7 @@ class StructCollector {
         });
         break;
       default:
-        (structContext: empty);
+        structContext as empty;
         throw new Error(`Detected an invalid struct context: ${structContext}`);
     }
   }

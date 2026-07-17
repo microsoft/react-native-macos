@@ -870,12 +870,12 @@ const mouseClickStyles = StyleSheet.create({
 });
 // macOS]
 
-export default ({
+export default {
   title: 'View',
   documentationURL: 'https://reactnative.dev/docs/view',
   category: 'Basic',
   description: ('Basic building block of all UI, examples that ' +
-    'demonstrate some of the many styles available.': string),
+    'demonstrate some of the many styles available.') as string,
   displayName: 'ViewExample',
   examples: [
     {
@@ -1546,4 +1546,4 @@ export default ({
       render: MouseClickEventsExample,
     },
   ],
-}: RNTesterModule);
+} as RNTesterModule;

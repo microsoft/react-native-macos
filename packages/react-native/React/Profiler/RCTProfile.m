@@ -13,13 +13,13 @@
 #import <objc/runtime.h>
 #import <stdatomic.h>
 
+#import <React/RCTDefines.h>
 #import <React/RCTUIKit.h> // [macOS]
 
 #import "RCTAssert.h"
 #import "RCTBridge+Private.h"
 #import "RCTBridge.h"
 #import "RCTComponentData.h"
-#import "RCTDefines.h"
 #import "RCTLog.h"
 #import "RCTModuleData.h"
 #import "RCTReloadCommand.h"
@@ -317,6 +317,7 @@ void RCTProfileHookModules(RCTBridge *bridge)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wtautological-pointer-compare"
+#pragma clang diagnostic ignored "-Wunreachable-code-return"
   if (RCTProfileTrampoline == NULL) {
     return;
   }

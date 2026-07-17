@@ -741,7 +741,14 @@ export interface TextInputProps
    * - `cc-exp-day`
    * - `cc-exp-month`
    * - `cc-exp-year`
+   * - `2fa-app-otp`
+   * - `email-otp`
+   * - `flight-confirmation-code`
+   * - `flight-number`
    * - `gender`
+   * - `gift-card-number`
+   * - `gift-card-pin`
+   * - `loyalty-account-number`
    * - `name-family`
    * - `name-given`
    * - `name-middle`
@@ -752,17 +759,23 @@ export interface TextInputProps
    * - `password-new`
    * - `postal-address`
    * - `postal-address-country`
+   * - `postal-address-dependent-locality`
    * - `postal-address-extended`
    * - `postal-address-extended-postal-code`
    * - `postal-address-locality`
    * - `postal-address-region`
+   * - `postal-address-unit`
+   * - `promo-code`
    * - `sms-otp`
    * - `tel-country-code`
    * - `tel-national`
    * - `tel-device`
+   * - `upi-vpa`
+   * - `wifi-password`
    * - `username-new`
    */
   autoComplete?:
+    | '2fa-app-otp'
     | 'additional-name'
     | 'address-line1'
     | 'address-line2'
@@ -784,11 +797,17 @@ export interface TextInputProps
     | 'country'
     | 'current-password'
     | 'email'
+    | 'email-otp'
+    | 'flight-confirmation-code'
+    | 'flight-number'
     | 'family-name'
     | 'gender'
+    | 'gift-card-number'
+    | 'gift-card-pin'
     | 'given-name'
     | 'honorific-prefix'
     | 'honorific-suffix'
+    | 'loyalty-account-number'
     | 'name'
     | 'name-family'
     | 'name-given'
@@ -805,18 +824,23 @@ export interface TextInputProps
     | 'password-new'
     | 'postal-address'
     | 'postal-address-country'
+    | 'postal-address-dependent-locality'
     | 'postal-address-extended'
     | 'postal-address-extended-postal-code'
     | 'postal-address-locality'
     | 'postal-address-region'
+    | 'postal-address-unit'
     | 'postal-code'
+    | 'promo-code'
     | 'street-address'
     | 'sms-otp'
     | 'tel'
     | 'tel-country-code'
     | 'tel-national'
     | 'tel-device'
+    | 'upi-vpa'
     | 'url'
+    | 'wifi-password'
     | 'username'
     | 'username-new'
     | 'off'

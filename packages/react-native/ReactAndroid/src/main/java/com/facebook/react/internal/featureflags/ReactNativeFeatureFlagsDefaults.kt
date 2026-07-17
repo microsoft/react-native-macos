@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<89c61520177334f93c65ff92c2fc74a6>>
+ * @generated SignedSource<<9e5b3192d1bec953c116d959ad63283d>>
  */
 
 /**
@@ -47,10 +47,6 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = false
 
-  override fun enableAndroidAntialiasedBorderRadiusClipping(): Boolean = false
-
-  override fun enableAndroidLinearText(): Boolean = false
-
   override fun enableAndroidTextMeasurementOptimizations(): Boolean = false
 
   override fun enableBridgelessArchitecture(): Boolean = false
@@ -60,6 +56,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableCustomFocusSearchOnClippedElementsAndroid(): Boolean = true
 
   override fun enableDestroyShadowTreeRevisionAsync(): Boolean = false
+
+  override fun enableDifferentiatorMutationVectorPreallocation(): Boolean = false
 
   override fun enableDoubleMeasurementFixAndroid(): Boolean = false
 
@@ -83,10 +81,6 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableImagePrefetchingAndroid(): Boolean = false
 
-  override fun enableImagePrefetchingJNIBatchingAndroid(): Boolean = false
-
-  override fun enableImagePrefetchingOnUiThreadAndroid(): Boolean = false
-
   override fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = false
 
   override fun enableImperativeFocus(): Boolean = false
@@ -105,13 +99,19 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableModuleArgumentNSNullConversionIOS(): Boolean = false
 
+  override fun enableMutationObserverByDefault(): Boolean = false
+
   override fun enableNativeCSSParsing(): Boolean = false
+
+  override fun enableNativeViewPropTransformations(): Boolean = false
 
   override fun enableNetworkEventReporting(): Boolean = true
 
   override fun enablePreparedTextLayout(): Boolean = false
 
   override fun enablePropsUpdateReconciliationAndroid(): Boolean = false
+
+  override fun enableSchedulerDelegateInvalidation(): Boolean = false
 
   override fun enableSwiftUIBasedFilters(): Boolean = false
 
@@ -131,21 +131,27 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableVirtualViewDebugFeatures(): Boolean = false
 
+  override fun fixDifferentiatorParentTagForUnflattenCase(): Boolean = false
+
   override fun fixFindShadowNodeByTagRaceCondition(): Boolean = false
 
   override fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = false
 
-  override fun fixTextClippingAndroid15useBoundsForWidth(): Boolean = false
+  override fun fixYogaFlexBasisFitContentInMainAxis(): Boolean = false
 
   override fun fuseboxAssertSingleHostState(): Boolean = true
 
   override fun fuseboxEnabledRelease(): Boolean = false
 
+  override fun fuseboxFrameRecordingEnabled(): Boolean = false
+
   override fun fuseboxNetworkInspectionEnabled(): Boolean = true
+
+  override fun fuseboxScreenshotCaptureEnabled(): Boolean = false
 
   override fun hideOffscreenVirtualViewsOnIOS(): Boolean = false
 
-  override fun overrideBySynchronousMountPropsAtMountingAndroid(): Boolean = false
+  override fun overrideBySynchronousMountPropsAtMountingAndroid(): Boolean = true
 
   override fun perfIssuesEnabled(): Boolean = false
 
@@ -155,13 +161,17 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun preventShadowTreeCommitExhaustion(): Boolean = false
 
+  override fun redBoxV2Android(): Boolean = false
+
+  override fun redBoxV2IOS(): Boolean = false
+
   override fun shouldPressibilityUseW3CPointerEventsForHover(): Boolean = false
 
   override fun shouldTriggerResponderTransferOnScrollAndroid(): Boolean = false
 
   override fun skipActivityIdentityAssertionOnHostPause(): Boolean = false
 
-  override fun syncAndroidClipToPaddingWithOverflow(): Boolean = false
+  override fun syncAndroidClipBoundsWithOverflow(): Boolean = false
 
   override fun traceTurboModulePromiseRejectionsOnAndroid(): Boolean = false
 
@@ -173,9 +183,13 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun useFabricInterop(): Boolean = true
 
+  override fun useLISAlgorithmInDifferentiator(): Boolean = false
+
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = false
 
   override fun useNestedScrollViewAndroid(): Boolean = false
+
+  override fun useOptimizedViewRegistryOnAndroid(): Boolean = false
 
   override fun useSharedAnimatedBackend(): Boolean = false
 

@@ -272,8 +272,12 @@ void UIManager::setSurfaceProps(
 ShadowTree::Unique UIManager::stopSurface(SurfaceId surfaceId) const {
   TraceSection s("UIManager::stopSurface");
 
-  // Stop any ongoing animations.
+  // Stop any ongoing layout animations.
   stopSurfaceForAnimationDelegate(surfaceId);
+
+  if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+    animationBackend_->clearRegistryOnSurfaceStop(surfaceId);
+  }
 
   // Waiting for all concurrent commits to be finished and unregistering the
   // `ShadowTree`.
@@ -486,6 +490,10 @@ void UIManager::sendAccessibilityEvent(
   if (delegate_ != nullptr) {
     delegate_->uiManagerDidSendAccessibilityEvent(shadowNode, eventType);
   }
+}
+
+UIManagerViewTransitionDelegate* UIManager::getViewTransitionDelegate() const {
+  return viewTransitionDelegate_;
 }
 
 void UIManager::configureNextLayoutAnimation(
@@ -706,6 +714,13 @@ void UIManager::stopSurfaceForAnimationDelegate(SurfaceId surfaceId) const {
 void UIManager::setNativeAnimatedDelegate(
     std::weak_ptr<UIManagerNativeAnimatedDelegate> delegate) {
   nativeAnimatedDelegate_ = delegate;
+}
+
+void UIManager::setViewTransitionDelegate(
+    UIManagerViewTransitionDelegate* delegate) {
+  if (ReactNativeFeatureFlags::viewTransitionEnabled()) {
+    viewTransitionDelegate_ = delegate;
+  }
 }
 
 void UIManager::unstable_setAnimationBackend(

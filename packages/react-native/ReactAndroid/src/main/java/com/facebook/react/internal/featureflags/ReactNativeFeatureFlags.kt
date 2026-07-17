@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<156d4f5f35037184b6fc61ff1d856028>>
+ * @generated SignedSource<<1eca66b21554b00725f2a9be894a0db9>>
  */
 
 /**
@@ -103,18 +103,6 @@ public object ReactNativeFeatureFlags {
   public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = accessor.enableAccumulatedUpdatesInRawPropsAndroid()
 
   /**
-   * Enable antialiased border radius clipping for Android API 28 and below using manual masking with Porter-Duff compositing
-   */
-  @JvmStatic
-  public fun enableAndroidAntialiasedBorderRadiusClipping(): Boolean = accessor.enableAndroidAntialiasedBorderRadiusClipping()
-
-  /**
-   * Enables linear text rendering on Android wherever subpixel text rendering is enabled
-   */
-  @JvmStatic
-  public fun enableAndroidLinearText(): Boolean = accessor.enableAndroidLinearText()
-
-  /**
    * Enables various optimizations throughout the path of measuring text on Android.
    */
   @JvmStatic
@@ -143,6 +131,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableDestroyShadowTreeRevisionAsync(): Boolean = accessor.enableDestroyShadowTreeRevisionAsync()
+
+  /**
+   * Pre-allocate mutation vectors in the Differentiator to reduce reallocation overhead during shadow view diffing.
+   */
+  @JvmStatic
+  public fun enableDifferentiatorMutationVectorPreallocation(): Boolean = accessor.enableDifferentiatorMutationVectorPreallocation()
 
   /**
    * When enabled a subset of components will avoid double measurement on Android.
@@ -211,18 +205,6 @@ public object ReactNativeFeatureFlags {
   public fun enableImagePrefetchingAndroid(): Boolean = accessor.enableImagePrefetchingAndroid()
 
   /**
-   * When enabled, Android will build and initiate image prefetch requests on ImageShadowNode::layout and batch them together in a single JNI call
-   */
-  @JvmStatic
-  public fun enableImagePrefetchingJNIBatchingAndroid(): Boolean = accessor.enableImagePrefetchingJNIBatchingAndroid()
-
-  /**
-   * When enabled, Android will initiate image prefetch requested on ImageShadowNode::layout on the UI thread
-   */
-  @JvmStatic
-  public fun enableImagePrefetchingOnUiThreadAndroid(): Boolean = accessor.enableImagePrefetchingOnUiThreadAndroid()
-
-  /**
    * Dispatches state updates for content offset changes synchronously on the main thread.
    */
   @JvmStatic
@@ -277,10 +259,22 @@ public object ReactNativeFeatureFlags {
   public fun enableModuleArgumentNSNullConversionIOS(): Boolean = accessor.enableModuleArgumentNSNullConversionIOS()
 
   /**
+   * Enables the MutationObserver Web API in React Native.
+   */
+  @JvmStatic
+  public fun enableMutationObserverByDefault(): Boolean = accessor.enableMutationObserverByDefault()
+
+  /**
    * Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing
    */
   @JvmStatic
   public fun enableNativeCSSParsing(): Boolean = accessor.enableNativeCSSParsing()
+
+  /**
+   * When enabled, View.js passes aria-*, id, and tabIndex props directly to native, relying on C++ prop parsing instead of JS-side transformations.
+   */
+  @JvmStatic
+  public fun enableNativeViewPropTransformations(): Boolean = accessor.enableNativeViewPropTransformations()
 
   /**
    * Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.
@@ -299,6 +293,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enablePropsUpdateReconciliationAndroid(): Boolean = accessor.enablePropsUpdateReconciliationAndroid()
+
+  /**
+   * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).
+   */
+  @JvmStatic
+  public fun enableSchedulerDelegateInvalidation(): Boolean = accessor.enableSchedulerDelegateInvalidation()
 
   /**
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.
@@ -355,6 +355,12 @@ public object ReactNativeFeatureFlags {
   public fun enableVirtualViewDebugFeatures(): Boolean = accessor.enableVirtualViewDebugFeatures()
 
   /**
+   * Fix incorrect parentTag passed as parentTagForUpdate in the unflatten-unflatten branch of calculateShadowViewMutationsFlattener, which causes UPDATE mutations to reference a parent being created in the same batch.
+   */
+  @JvmStatic
+  public fun fixDifferentiatorParentTagForUnflattenCase(): Boolean = accessor.fixDifferentiatorParentTagForUnflattenCase()
+
+  /**
    * Fix a use-after-free race condition in findShadowNodeByTag_DEPRECATED by using getCurrentRevision() instead of tryCommit() with a raw pointer.
    */
   @JvmStatic
@@ -367,10 +373,10 @@ public object ReactNativeFeatureFlags {
   public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = accessor.fixMappingOfEventPrioritiesBetweenFabricAndReact()
 
   /**
-   * Fix text clipping starting in Android 15 due to usage of useBoundsForWidth
+   * Fix flex basis computation to not apply FitContent constraint in the main axis for non-measure container nodes, preventing unnecessary re-measurement in scroll containers.
    */
   @JvmStatic
-  public fun fixTextClippingAndroid15useBoundsForWidth(): Boolean = accessor.fixTextClippingAndroid15useBoundsForWidth()
+  public fun fixYogaFlexBasisFitContentInMainAxis(): Boolean = accessor.fixYogaFlexBasisFitContentInMainAxis()
 
   /**
    * Enable system assertion validating that Fusebox is configured with a single host. When set, the CDP backend will dynamically disable features (Perf and Network) in the event that multiple hosts are registered (undefined behaviour), and broadcast this over `ReactNativeApplication.systemStateChanged`.
@@ -385,10 +391,22 @@ public object ReactNativeFeatureFlags {
   public fun fuseboxEnabledRelease(): Boolean = accessor.fuseboxEnabledRelease()
 
   /**
+   * Enable frame timings and screenshots support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
+   */
+  @JvmStatic
+  public fun fuseboxFrameRecordingEnabled(): Boolean = accessor.fuseboxFrameRecordingEnabled()
+
+  /**
    * Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.
    */
   @JvmStatic
   public fun fuseboxNetworkInspectionEnabled(): Boolean = accessor.fuseboxNetworkInspectionEnabled()
+
+  /**
+   * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
+   */
+  @JvmStatic
+  public fun fuseboxScreenshotCaptureEnabled(): Boolean = accessor.fuseboxScreenshotCaptureEnabled()
 
   /**
    * Hides offscreen VirtualViews on iOS by setting hidden = YES to avoid extra cost of views
@@ -427,6 +445,18 @@ public object ReactNativeFeatureFlags {
   public fun preventShadowTreeCommitExhaustion(): Boolean = accessor.preventShadowTreeCommitExhaustion()
 
   /**
+   * Use the redesigned RedBox error overlay on Android, styled to match the LogBox visual language.
+   */
+  @JvmStatic
+  public fun redBoxV2Android(): Boolean = accessor.redBoxV2Android()
+
+  /**
+   * Use the redesigned RedBox error overlay on iOS, styled to match the LogBox visual language.
+   */
+  @JvmStatic
+  public fun redBoxV2IOS(): Boolean = accessor.redBoxV2IOS()
+
+  /**
    * Function used to enable / disable Pressibility from using W3C Pointer Events for its hover callbacks
    */
   @JvmStatic
@@ -445,10 +475,10 @@ public object ReactNativeFeatureFlags {
   public fun skipActivityIdentityAssertionOnHostPause(): Boolean = accessor.skipActivityIdentityAssertionOnHostPause()
 
   /**
-   * Sync clipToPadding on Android views with the overflow property
+   * Override getClipBounds on Android views to return the padding box when overflow is hidden
    */
   @JvmStatic
-  public fun syncAndroidClipToPaddingWithOverflow(): Boolean = accessor.syncAndroidClipToPaddingWithOverflow()
+  public fun syncAndroidClipBoundsWithOverflow(): Boolean = accessor.syncAndroidClipBoundsWithOverflow()
 
   /**
    * Enables storing js caller stack when creating promise in native module. This is useful in case of Promise rejection and tracing the cause.
@@ -481,6 +511,12 @@ public object ReactNativeFeatureFlags {
   public fun useFabricInterop(): Boolean = accessor.useFabricInterop()
 
   /**
+   * Use Longest Increasing Subsequence algorithm in the Differentiator to minimize REMOVE/INSERT mutations during child list reconciliation.
+   */
+  @JvmStatic
+  public fun useLISAlgorithmInDifferentiator(): Boolean = accessor.useLISAlgorithmInDifferentiator()
+
+  /**
    * When enabled, the native view configs are used in bridgeless mode.
    */
   @JvmStatic
@@ -491,6 +527,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun useNestedScrollViewAndroid(): Boolean = accessor.useNestedScrollViewAndroid()
+
+  /**
+   * Use MutableIntObjectMap with ReadWriteLock instead of ConcurrentHashMap for the view registry in SurfaceMountingManager to reduce memory overhead and GC pressure.
+   */
+  @JvmStatic
+  public fun useOptimizedViewRegistryOnAndroid(): Boolean = accessor.useOptimizedViewRegistryOnAndroid()
 
   /**
    * Use shared animation backend in C++ Animated
