@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "babel-plugin-istanbul": "^7.0.0",
-    "metro": "^0.84.0",
+    "metro": "^0.84.3",
     "metro-babel-transformer": "^0.83.3"
   },
   "peerDependencies": {
