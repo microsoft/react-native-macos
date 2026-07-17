@@ -10,6 +10,9 @@
     "jsx": "react",
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
-    "paths": {"react-native": ["."]}
+    "paths": {
+      "react-native": ["."],
+      "react-native/*": ["../*"]
+    }
   }
 }
