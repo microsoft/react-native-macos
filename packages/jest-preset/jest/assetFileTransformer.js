@@ -19,7 +19,7 @@ const path = require('path');
 // NOTE: This file used to be at `react-native/jest/assetFileTransformer.js`
 // To keep the mock `testUri` paths the same, we create a fake path that outputs the same relative path as before
 const basePath = path.resolve(
-  require.resolve('react-native/package.json'),
+  require.resolve('react-native-macos/package.json'),
   '../jest/',
 );
 
