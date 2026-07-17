@@ -150,7 +150,7 @@
     "featureflags": "node ./scripts/featureflags/index.js"
   },
   "peerDependencies": {
-    "@react-native/jest-preset": "0.84.0-main",
+    "@react-native/jest-preset": "workspace:*",
     "@types/react": "^19.1.1",
     "react": "^19.2.3"
   },
