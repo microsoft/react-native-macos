@@ -14,7 +14,7 @@
 #if RCT_DEV_MENU
 
 @interface RCTRedBoxController
-    : RCTPlatformViewController < // [macOS
+    : RCTPlatformViewController < // [macOS]
       RCTRedBoxControlling,
 #if !TARGET_OS_OSX // [macOS
       UITableViewDelegate,
