@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<669708c311abe9ffc8f7783219e2baad>>
+ * @generated SignedSource<<499aedb10bae64c096e7ad2e096bdd1f>>
  */
 
 /**
@@ -65,6 +65,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableLayoutAnimationsOnIOSCache: Boolean? = null
   private var enableMainQueueCoordinatorOnIOSCache: Boolean? = null
   private var enableModuleArgumentNSNullConversionIOSCache: Boolean? = null
+  private var enableMutationObserverByDefaultCache: Boolean? = null
   private var enableNativeCSSParsingCache: Boolean? = null
   private var enableNetworkEventReportingCache: Boolean? = null
   private var enablePreparedTextLayoutCache: Boolean? = null
@@ -83,13 +84,17 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var fixTextClippingAndroid15useBoundsForWidthCache: Boolean? = null
   private var fuseboxAssertSingleHostStateCache: Boolean? = null
   private var fuseboxEnabledReleaseCache: Boolean? = null
+  private var fuseboxFrameRecordingEnabledCache: Boolean? = null
   private var fuseboxNetworkInspectionEnabledCache: Boolean? = null
+  private var fuseboxScreenshotCaptureEnabledCache: Boolean? = null
   private var hideOffscreenVirtualViewsOnIOSCache: Boolean? = null
   private var overrideBySynchronousMountPropsAtMountingAndroidCache: Boolean? = null
   private var perfIssuesEnabledCache: Boolean? = null
   private var perfMonitorV2EnabledCache: Boolean? = null
   private var preparedTextCacheSizeCache: Double? = null
   private var preventShadowTreeCommitExhaustionCache: Boolean? = null
+  private var redBoxV2AndroidCache: Boolean? = null
+  private var redBoxV2IOSCache: Boolean? = null
   private var shouldPressibilityUseW3CPointerEventsForHoverCache: Boolean? = null
   private var shouldTriggerResponderTransferOnScrollAndroidCache: Boolean? = null
   private var skipActivityIdentityAssertionOnHostPauseCache: Boolean? = null
@@ -520,6 +525,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
     return cached
   }
 
+  override fun enableMutationObserverByDefault(): Boolean {
+    var cached = enableMutationObserverByDefaultCache
+    if (cached == null) {
+      cached = currentProvider.enableMutationObserverByDefault()
+      accessedFeatureFlags.add("enableMutationObserverByDefault")
+      enableMutationObserverByDefaultCache = cached
+    }
+    return cached
+  }
+
   override fun enableNativeCSSParsing(): Boolean {
     var cached = enableNativeCSSParsingCache
     if (cached == null) {
@@ -700,12 +715,32 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
     return cached
   }
 
+  override fun fuseboxFrameRecordingEnabled(): Boolean {
+    var cached = fuseboxFrameRecordingEnabledCache
+    if (cached == null) {
+      cached = currentProvider.fuseboxFrameRecordingEnabled()
+      accessedFeatureFlags.add("fuseboxFrameRecordingEnabled")
+      fuseboxFrameRecordingEnabledCache = cached
+    }
+    return cached
+  }
+
   override fun fuseboxNetworkInspectionEnabled(): Boolean {
     var cached = fuseboxNetworkInspectionEnabledCache
     if (cached == null) {
       cached = currentProvider.fuseboxNetworkInspectionEnabled()
       accessedFeatureFlags.add("fuseboxNetworkInspectionEnabled")
       fuseboxNetworkInspectionEnabledCache = cached
+    }
+    return cached
+  }
+
+  override fun fuseboxScreenshotCaptureEnabled(): Boolean {
+    var cached = fuseboxScreenshotCaptureEnabledCache
+    if (cached == null) {
+      cached = currentProvider.fuseboxScreenshotCaptureEnabled()
+      accessedFeatureFlags.add("fuseboxScreenshotCaptureEnabled")
+      fuseboxScreenshotCaptureEnabledCache = cached
     }
     return cached
   }
@@ -766,6 +801,26 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.preventShadowTreeCommitExhaustion()
       accessedFeatureFlags.add("preventShadowTreeCommitExhaustion")
       preventShadowTreeCommitExhaustionCache = cached
+    }
+    return cached
+  }
+
+  override fun redBoxV2Android(): Boolean {
+    var cached = redBoxV2AndroidCache
+    if (cached == null) {
+      cached = currentProvider.redBoxV2Android()
+      accessedFeatureFlags.add("redBoxV2Android")
+      redBoxV2AndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun redBoxV2IOS(): Boolean {
+    var cached = redBoxV2IOSCache
+    if (cached == null) {
+      cached = currentProvider.redBoxV2IOS()
+      accessedFeatureFlags.add("redBoxV2IOS")
+      redBoxV2IOSCache = cached
     }
     return cached
   }

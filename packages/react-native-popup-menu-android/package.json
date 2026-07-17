@@ -1,6 +1,6 @@
 {
   "name": "@react-native/popup-menu-android",
-  "version": "0.85.0-main",
+  "version": "0.85.3",
   "description": "PopupMenu for the Android platform",
   "main": "index.js",
   "files": [
@@ -26,7 +26,7 @@
   "peerDependencies": {
     "@types/react": "^19.1.0",
     "react": "*",
-    "react-native": "*"
+    "react-native": "0.85.3"
   },
   "peerDependenciesMeta": {
     "@types/react": {
