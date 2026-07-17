@@ -37,8 +37,20 @@ describe('getHeaderFilesFromPodspecs', () => {
     );
 
     expect(getHeaderFilesFromPodspecs(directory)[podspec]).toEqual([
-      path.join(directory, 'Public.h'),
-      path.join(directory, 'Private.h'),
+      {
+        headerDir: '',
+        specName: 'Example',
+        headers: [
+          {
+            source: path.join(directory, 'Public.h'),
+            target: 'Public.h',
+          },
+          {
+            source: path.join(directory, 'Private.h'),
+            target: 'Private.h',
+          },
+        ],
+      },
     ]);
   });
 
