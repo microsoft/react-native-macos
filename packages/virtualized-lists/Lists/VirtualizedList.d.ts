@@ -14,7 +14,6 @@ import type {
   ScrollViewProps,
   LayoutChangeEvent,
   View,
-  ScrollResponderMixin,
   ScrollView,
 } from 'react-native';
 
@@ -71,16 +70,18 @@ export type ViewabilityConfigCallbackPairs = ViewabilityConfigCallbackPair[];
  * @see https://reactnative.dev/docs/flatlist#props
  */
 
+export interface Separators {
+  highlight: () => void;
+  unhighlight: () => void;
+  updateProps: (select: 'leading' | 'trailing', newProps: any) => void;
+}
+
 export interface ListRenderItemInfo<ItemT> {
   item: ItemT;
 
   index: number;
 
-  separators: {
-    highlight: () => void;
-    unhighlight: () => void;
-    updateProps: (select: 'leading' | 'trailing', newProps: any) => void;
-  };
+  separators: Separators;
 }
 
 export type ListRenderItem<ItemT> = (
@@ -135,19 +136,19 @@ export class VirtualizedList<ItemT> extends React.Component<
     | React.ComponentRef<typeof View>
     | null;
 
-  getScrollResponder: () => ScrollResponderMixin | null;
+  getScrollResponder: () => React.ComponentRef<typeof ScrollView> | null;
 }
 
 /**
  * @see https://reactnative.dev/docs/virtualizedlist#props
  */
 
-export interface VirtualizedListProps<ItemT>
+export interface VirtualizedListProps<ItemT = any>
   extends VirtualizedListWithoutRenderItemProps<ItemT> {
   renderItem: ListRenderItem<ItemT> | null | undefined;
 }
 
-export interface VirtualizedListWithoutRenderItemProps<ItemT>
+export interface VirtualizedListWithoutRenderItemProps<ItemT = any>
   extends ScrollViewProps {
   /**
    * Rendered in between each item, but not at the top or bottom
