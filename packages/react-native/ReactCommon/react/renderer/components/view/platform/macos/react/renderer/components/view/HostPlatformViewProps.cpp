@@ -5,6 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+// [macOS
+
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
+
+#if defined(__APPLE__) && TARGET_OS_OSX
+
 #include "HostPlatformViewProps.h"
 
 #include <algorithm>
@@ -160,3 +168,7 @@ void HostPlatformViewProps::setProp(
 
 
 } // namespace facebook::react
+
+#endif
+
+// macOS]

@@ -444,15 +444,6 @@ let reactCore = RNTarget(
 )
 
 /// React-Fabric.podspec
-// [macOS
-#if os(macOS)
-let reactFabricViewPlatformSources = ["components/view/platform/macos"]
-let reactFabricViewPlatformExcludes = ["components/view/platform/cxx"]
-#else
-let reactFabricViewPlatformSources = ["components/view/platform/cxx"]
-let reactFabricViewPlatformExcludes = ["components/view/platform/macos"]
-#endif
-// macOS]
 let reactFabric = RNTarget(
   name: .reactFabric,
   path: "ReactCommon/react/renderer",
@@ -463,8 +454,10 @@ let reactFabric = RNTarget(
     "core/tests",
     "components/view/tests",
     "components/view/platform/android",
+    "components/view/platform/tvos", // [macOS]
     "components/view/platform/windows",
-    // "components/view/platform/macos", // [macOS]
+    "components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h", // [macOS]
+    "components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.mm", // [macOS]
     "components/scrollview/tests",
     "components/scrollview/platform/android",
     "mounting/tests",
@@ -488,9 +481,9 @@ let reactFabric = RNTarget(
     "components/unimplementedview",
     "components/virtualview",
     "components/root/tests",
-  ] + reactFabricViewPlatformExcludes, // [macOS]
+  ], // [macOS]
   dependencies: [.reactNativeDependencies, .reactJsiExecutor, .rctTypesafety, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .reactRendererDebug, .reactGraphics, .yoga, .reactJsInspectorTracing],
-  sources: ["animated", "animationbackend", "animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/scrollview", "components/scrollview/platform/cxx", "components/scrollview/platform/ios", "components/legacyviewmanagerinterop", "components/legacyviewmanagerinterop/platform/ios", "dom", "scheduler", "mounting", "observers/events", "observers/intersection", "observers/mutation", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency", "viewtransition"] + reactFabricViewPlatformSources // [macOS]
+  sources: ["animated", "animationbackend", "animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/scrollview", "components/scrollview/platform/cxx", "components/scrollview/platform/ios", "components/legacyviewmanagerinterop", "components/legacyviewmanagerinterop/platform/ios", "dom", "scheduler", "mounting", "observers/events", "observers/intersection", "observers/mutation", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency", "viewtransition"] // [macOS]
 )
 
 let reactFabricInputAccessory = RNTarget(
