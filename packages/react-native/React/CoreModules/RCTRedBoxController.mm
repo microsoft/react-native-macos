@@ -411,14 +411,14 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 - (void)copyStack
 {
   NSMutableString *fullStackTrace;
-
+  
   if (_lastErrorMessage != nil) {
     fullStackTrace = [_lastErrorMessage mutableCopy];
     [fullStackTrace appendString:@"\n\n"];
   } else {
     fullStackTrace = [NSMutableString string];
   }
-
+  
   for (RCTJSStackFrame *stackFrame in _lastStackTrace) {
     [fullStackTrace appendString:[NSString stringWithFormat:@"%@\n", stackFrame.methodName]];
     if (stackFrame.file) {

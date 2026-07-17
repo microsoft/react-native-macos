@@ -21,7 +21,9 @@
 
 #import "CoreModulesPlugins.h"
 #import "RCTRedBox+Internal.h"
+#if !TARGET_OS_OSX // [macOS]
 #import "RCTRedBox2Controller+Internal.h"
+#endif // [macOS]
 #import "RCTRedBoxController+Internal.h"
 
 #if RCT_DEV_MENU
@@ -195,9 +197,11 @@ RCT_EXPORT_MODULE()
     errorInfo = [self _customizeError:errorInfo];
 
     if (self->_controller == nullptr) {
-      if (facebook::react::ReactNativeFeatureFlags::redBoxV2IOS()) {
+      if (!TARGET_OS_OSX && facebook::react::ReactNativeFeatureFlags::redBoxV2IOS()) { // [macOS]
+#if !TARGET_OS_OSX // [macOS]
         self->_controller = [[RCTRedBox2Controller alloc] initWithCustomButtonTitles:self->_customButtonTitles
                                                                 customButtonHandlers:self->_customButtonHandlers];
+#endif // [macOS]
       } else {
         self->_controller = [[RCTRedBoxController alloc] initWithCustomButtonTitles:self->_customButtonTitles
                                                                customButtonHandlers:self->_customButtonHandlers];

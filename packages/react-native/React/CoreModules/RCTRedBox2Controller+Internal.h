@@ -10,7 +10,7 @@
 
 #import "RCTRedBox+Internal.h"
 
-#if RCT_DEV_MENU
+#if RCT_DEV_MENU && !TARGET_OS_OSX // [macOS]
 
 typedef void (^RCTRedBox2ButtonPressHandler)(void);
 

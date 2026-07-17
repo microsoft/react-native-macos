@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <React/RCTDefines.h>
 #import <React/RCTUIKit.h> // [macOS]
 
 /**
@@ -26,3 +27,5 @@
 #endif // macOS]
 
 @end
+
+#endif // [macOS]

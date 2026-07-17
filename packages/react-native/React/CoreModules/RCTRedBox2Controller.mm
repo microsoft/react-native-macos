@@ -22,7 +22,7 @@
 // @lint-ignore-every CLANGTIDY clang-diagnostic-switch-default
 // NOTE: clang-diagnostic-switch-default conflicts with clang-diagnostic-switch-enum
 
-#if RCT_DEV_MENU
+#if RCT_DEV_MENU && !TARGET_OS_OSX // [macOS]
 
 #pragma mark - RCTRedBox2Controller
 
