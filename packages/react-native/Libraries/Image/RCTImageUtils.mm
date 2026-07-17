@@ -59,6 +59,7 @@ static CGImagePropertyOrientation CGImagePropertyOrientationFromUIImageOrientati
 }
 #endif // [macOS]
 
+#if !TARGET_OS_OSX // [macOS]
 static UIImageOrientation UIImageOrientationFromCGImagePropertyOrientation(CGImagePropertyOrientation imageOrientation)
 {
   switch (imageOrientation) {
@@ -82,6 +83,7 @@ static UIImageOrientation UIImageOrientationFromCGImagePropertyOrientation(CGIma
       return UIImageOrientationUp;
   }
 }
+#endif // [macOS]
 
 CGRect RCTTargetRect(CGSize sourceSize, CGSize destSize, CGFloat destScale, RCTResizeMode resizeMode)
 {
@@ -326,7 +328,9 @@ RCTPlatformImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSiz
   CGImageRef imageRef;
   BOOL createThumbnail = targetPixelSize.width != 0 && targetPixelSize.height != 0 &&
       (sourceSize.width > targetPixelSize.width || sourceSize.height > targetPixelSize.height);
+#if !TARGET_OS_OSX // [macOS]
   UIImageOrientation orientation = UIImageOrientationUp;
+#endif // [macOS]
 
   if (createThumbnail) {
     CGFloat maxPixelSize = fmax(targetPixelSize.width, targetPixelSize.height);
@@ -353,10 +357,12 @@ RCTPlatformImage *__nullable RCTDecodeImageWithData(NSData *data, CGSize destSiz
     // Unlike `CGImageSourceCreateThumbnailAtIndex` (with `kCGImageSourceCreateThumbnailWithTransform` set to YES),
     // `CGImageSourceCreateImageAtIndex` doesn't rotate the image to keep the orientation, so we'll need to pass
     // the actual orientation (if present) to the `UIImage` initializer
+#if !TARGET_OS_OSX // [macOS]
     if (orientationNum) {
       orientation = UIImageOrientationFromCGImagePropertyOrientation(
           (CGImagePropertyOrientation)[orientationNum unsignedIntValue]);
     }
+#endif // [macOS]
   }
 
   CFRelease(sourceRef);
