@@ -37,5 +37,8 @@
   "peerDependencies": {
     "react": "^19.2.3"
   },
+  "devDependencies": {
+    "react-native-macos": "workspace:*"
+  },
   "private": true
 }
