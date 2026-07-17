@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<536a5156deea17740dd24782bf79feb4>>
+ * @generated SignedSource<<42e555a40da280b24f84e3ee5b45051d>>
  */
 
 /**
@@ -81,10 +81,6 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableImagePrefetchingAndroid(): Boolean
 
-  @DoNotStrip public fun enableImagePrefetchingJNIBatchingAndroid(): Boolean
-
-  @DoNotStrip public fun enableImagePrefetchingOnUiThreadAndroid(): Boolean
-
   @DoNotStrip public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
@@ -114,6 +110,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enablePreparedTextLayout(): Boolean
 
   @DoNotStrip public fun enablePropsUpdateReconciliationAndroid(): Boolean
+
+  @DoNotStrip public fun enableSchedulerDelegateInvalidation(): Boolean
 
   @DoNotStrip public fun enableSwiftUIBasedFilters(): Boolean
 
@@ -190,6 +188,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun useNativeViewConfigsInBridgelessMode(): Boolean
 
   @DoNotStrip public fun useNestedScrollViewAndroid(): Boolean
+
+  @DoNotStrip public fun useOptimizedViewRegistryOnAndroid(): Boolean
 
   @DoNotStrip public fun useSharedAnimatedBackend(): Boolean
 

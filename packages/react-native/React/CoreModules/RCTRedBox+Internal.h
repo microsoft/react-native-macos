@@ -6,7 +6,7 @@
  */
 
 #import <React/RCTDefines.h>
-#import <React/RCTUIKit.h> // [macOS]
+#import <UIKit/UIKit.h>
 
 #if RCT_DEV_MENU
 
@@ -14,11 +14,8 @@
 
 @protocol RCTRedBoxControllerActionDelegate <NSObject>
 
-// [macOS
-- (void)redBoxController:(RCTPlatformViewController *)redBoxController
-    openStackFrameInEditor:(RCTJSStackFrame *)stackFrame;
-- (void)reloadFromRedBoxController:(RCTPlatformViewController *)redBoxController;
-// macOS]
+- (void)redBoxController:(UIViewController *)redBoxController openStackFrameInEditor:(RCTJSStackFrame *)stackFrame;
+- (void)reloadFromRedBoxController:(UIViewController *)redBoxController;
 - (void)loadExtraDataViewController;
 
 @end

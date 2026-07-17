@@ -22,8 +22,6 @@ jobs:
     name: "Resolve Hermes"
     runs-on: macos-15
     timeout-minutes: 15
-    env:
-      RCT_HERMES_V1_ENABLED: '1'
     outputs:
       hermes-commit: ${{ steps.resolve.outputs.hermes-commit }}
       cache-hit: ${{ steps.cache.outputs.cache-hit }}

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<3f44b628a681f0d005827f51f4ad885e>>
+ * @generated SignedSource<<1df283aec4b56f36271a187341e7103d>>
  */
 
 /**
@@ -94,10 +94,6 @@ class NativeReactNativeFeatureFlags
 
   bool enableImagePrefetchingAndroid(jsi::Runtime& runtime);
 
-  bool enableImagePrefetchingJNIBatchingAndroid(jsi::Runtime& runtime);
-
-  bool enableImagePrefetchingOnUiThreadAndroid(jsi::Runtime& runtime);
-
   bool enableImmediateUpdateModeForContentOffsetChanges(jsi::Runtime& runtime);
 
   bool enableImperativeFocus(jsi::Runtime& runtime);
@@ -127,6 +123,8 @@ class NativeReactNativeFeatureFlags
   bool enablePreparedTextLayout(jsi::Runtime& runtime);
 
   bool enablePropsUpdateReconciliationAndroid(jsi::Runtime& runtime);
+
+  bool enableSchedulerDelegateInvalidation(jsi::Runtime& runtime);
 
   bool enableSwiftUIBasedFilters(jsi::Runtime& runtime);
 
@@ -203,6 +201,8 @@ class NativeReactNativeFeatureFlags
   bool useNativeViewConfigsInBridgelessMode(jsi::Runtime& runtime);
 
   bool useNestedScrollViewAndroid(jsi::Runtime& runtime);
+
+  bool useOptimizedViewRegistryOnAndroid(jsi::Runtime& runtime);
 
   bool useSharedAnimatedBackend(jsi::Runtime& runtime);
 

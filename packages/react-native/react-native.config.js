@@ -176,13 +176,7 @@ if (macosCommands != null) {
   config.commands.push(...macosCommands);
 }
 if (apple) {
-  const {
-    REACT_NATIVE: npmPackageName,
-  } = require('./scripts/codegen/generate-artifacts-executor/constants.js');
-  const macos = {platformName: 'macos'};
-  const visionos = {platformName: 'visionos'};
   config.platforms.macos = {
-    npmPackageName,
     linkConfig: () => {
       return {
         isInstalled: (
@@ -206,13 +200,11 @@ if (apple) {
         unlinkAssets: (_assets /*: mixed */, _projectConfig /*: mixed */) => {},
       };
     },
-    projectConfig: apple.getProjectConfig(macos),
-    dependencyConfig: apple.getDependencyConfig(macos),
-  };
-  config.platforms.visionos = {
-    npmPackageName,
-    projectConfig: apple.getProjectConfig(visionos),
-    dependencyConfig: apple.getDependencyConfig(visionos),
+    projectConfig: apple.getProjectConfig({platformName: 'macos'}),
+    dependencyConfig: apple.getProjectConfig({platformName: 'macos'}),
+    npmPackageName:
+      require('./scripts/codegen/generate-artifacts-executor/constants')
+        .REACT_NATIVE,
   };
 }
 // macOS]

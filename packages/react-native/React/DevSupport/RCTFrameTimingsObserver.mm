@@ -7,9 +7,6 @@
 
 #import "RCTFrameTimingsObserver.h"
 
-#import <TargetConditionals.h> // [macOS]
-
-#if !TARGET_OS_OSX // [macOS]
 #import <UIKit/UIKit.h>
 
 #import <mach/thread_act.h>
@@ -299,25 +296,3 @@ struct FrameData {
 }
 
 @end
-
-#else // [macOS
-
-@implementation RCTFrameTimingsObserver
-
-- (instancetype)initWithScreenshotsEnabled:(__unused BOOL)screenshotsEnabled
-                                  callback:(__unused RCTFrameTimingCallback)callback
-{
-  return [super init];
-}
-
-- (void)start
-{
-}
-
-- (void)stop
-{
-}
-
-@end
-
-#endif // macOS]

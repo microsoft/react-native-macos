@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<276180c59a9dbf01b408a23bd8b21326>>
+ * @generated SignedSource<<3d1718afe5b2ed63a918ffe09a4a36b1>>
  */
 
 /**
@@ -143,20 +143,12 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableImagePrefetchingJNIBatchingAndroid() override {
-    return false;
-  }
-
-  bool enableImagePrefetchingOnUiThreadAndroid() override {
-    return false;
-  }
-
   bool enableImmediateUpdateModeForContentOffsetChanges() override {
     return false;
   }
 
   bool enableImperativeFocus() override {
-    return true;
+    return false;
   }
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS() override {
@@ -208,6 +200,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enablePropsUpdateReconciliationAndroid() override {
+    return false;
+  }
+
+  bool enableSchedulerDelegateInvalidation() override {
     return false;
   }
 
@@ -288,7 +284,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool overrideBySynchronousMountPropsAtMountingAndroid() override {
-    return false;
+    return true;
   }
 
   bool perfIssuesEnabled() override {
@@ -360,6 +356,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool useNestedScrollViewAndroid() override {
+    return false;
+  }
+
+  bool useOptimizedViewRegistryOnAndroid() override {
     return false;
   }
 

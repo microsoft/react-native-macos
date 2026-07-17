@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b55a79c9f84947fa4c12b04f15cfeefb>>
+ * @generated SignedSource<<ad7a835ef9cbe3a9a6121ac127038668>>
  */
 
 /**
@@ -142,14 +142,6 @@ bool ReactNativeFeatureFlags::enableImagePrefetchingAndroid() {
   return getAccessor().enableImagePrefetchingAndroid();
 }
 
-bool ReactNativeFeatureFlags::enableImagePrefetchingJNIBatchingAndroid() {
-  return getAccessor().enableImagePrefetchingJNIBatchingAndroid();
-}
-
-bool ReactNativeFeatureFlags::enableImagePrefetchingOnUiThreadAndroid() {
-  return getAccessor().enableImagePrefetchingOnUiThreadAndroid();
-}
-
 bool ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges() {
   return getAccessor().enableImmediateUpdateModeForContentOffsetChanges();
 }
@@ -208,6 +200,10 @@ bool ReactNativeFeatureFlags::enablePreparedTextLayout() {
 
 bool ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid() {
   return getAccessor().enablePropsUpdateReconciliationAndroid();
+}
+
+bool ReactNativeFeatureFlags::enableSchedulerDelegateInvalidation() {
+  return getAccessor().enableSchedulerDelegateInvalidation();
 }
 
 bool ReactNativeFeatureFlags::enableSwiftUIBasedFilters() {
@@ -360,6 +356,10 @@ bool ReactNativeFeatureFlags::useNativeViewConfigsInBridgelessMode() {
 
 bool ReactNativeFeatureFlags::useNestedScrollViewAndroid() {
   return getAccessor().useNestedScrollViewAndroid();
+}
+
+bool ReactNativeFeatureFlags::useOptimizedViewRegistryOnAndroid() {
+  return getAccessor().useOptimizedViewRegistryOnAndroid();
 }
 
 bool ReactNativeFeatureFlags::useSharedAnimatedBackend() {

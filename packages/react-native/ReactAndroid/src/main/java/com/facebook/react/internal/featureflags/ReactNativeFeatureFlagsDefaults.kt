@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<90749c9c722e07b00424c75f57f9c4a1>>
+ * @generated SignedSource<<9e5b3192d1bec953c116d959ad63283d>>
  */
 
 /**
@@ -81,13 +81,9 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableImagePrefetchingAndroid(): Boolean = false
 
-  override fun enableImagePrefetchingJNIBatchingAndroid(): Boolean = false
-
-  override fun enableImagePrefetchingOnUiThreadAndroid(): Boolean = false
-
   override fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = false
 
-  override fun enableImperativeFocus(): Boolean = true
+  override fun enableImperativeFocus(): Boolean = false
 
   override fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean = false
 
@@ -114,6 +110,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enablePreparedTextLayout(): Boolean = false
 
   override fun enablePropsUpdateReconciliationAndroid(): Boolean = false
+
+  override fun enableSchedulerDelegateInvalidation(): Boolean = false
 
   override fun enableSwiftUIBasedFilters(): Boolean = false
 
@@ -153,7 +151,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun hideOffscreenVirtualViewsOnIOS(): Boolean = false
 
-  override fun overrideBySynchronousMountPropsAtMountingAndroid(): Boolean = false
+  override fun overrideBySynchronousMountPropsAtMountingAndroid(): Boolean = true
 
   override fun perfIssuesEnabled(): Boolean = false
 
@@ -190,6 +188,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = false
 
   override fun useNestedScrollViewAndroid(): Boolean = false
+
+  override fun useOptimizedViewRegistryOnAndroid(): Boolean = false
 
   override fun useSharedAnimatedBackend(): Boolean = false
 

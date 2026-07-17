@@ -357,28 +357,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableImagePrefetchingJNIBatchingAndroid: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2025-11-10',
-        description:
-          'When enabled, Android will build and initiate image prefetch requests on ImageShadowNode::layout and batch them together in a single JNI call',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    enableImagePrefetchingOnUiThreadAndroid: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2025-09-02',
-        description:
-          'When enabled, Android will initiate image prefetch requested on ImageShadowNode::layout on the UI thread',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     enableImmediateUpdateModeForContentOffsetChanges: {
       defaultValue: false,
       metadata: {
@@ -535,6 +513,17 @@ const definitions: FeatureFlagDefinitions = {
         purpose: 'experimentation',
       },
       ossReleaseStage: 'none',
+    },
+    enableSchedulerDelegateInvalidation: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-05-04',
+        description:
+          'Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
     },
     enableSwiftUIBasedFilters: {
       defaultValue: false,
@@ -743,7 +732,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     overrideBySynchronousMountPropsAtMountingAndroid: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2025-09-04',
         description:
@@ -940,6 +929,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2026-01-16',
         description:
           'When enabled, ReactScrollView will extend NestedScrollView instead of ScrollView on Android for improved nested scrolling support.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    useOptimizedViewRegistryOnAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-04-28',
+        description:
+          'Use MutableIntObjectMap with ReadWriteLock instead of ConcurrentHashMap for the view registry in SurfaceMountingManager to reduce memory overhead and GC pressure.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },

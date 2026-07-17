@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "babel-plugin-istanbul": "^7.0.0",
-    "istanbul-lib-coverage": "^3.2.0",
     "metro": "^0.84.0",
     "metro-babel-transformer": "^0.83.3"
   },

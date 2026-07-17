@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<7853bedb8a11b20a633eb6579257b4bc>>
+ * @generated SignedSource<<23e79788b0820f61ba95288412367247>>
  */
 
 /**
@@ -306,24 +306,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableImagePrefetchingAndroid();
   }
 
-  bool enableImagePrefetchingJNIBatchingAndroid() override {
-    auto value = values_["enableImagePrefetchingJNIBatchingAndroid"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableImagePrefetchingJNIBatchingAndroid();
-  }
-
-  bool enableImagePrefetchingOnUiThreadAndroid() override {
-    auto value = values_["enableImagePrefetchingOnUiThreadAndroid"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableImagePrefetchingOnUiThreadAndroid();
-  }
-
   bool enableImmediateUpdateModeForContentOffsetChanges() override {
     auto value = values_["enableImmediateUpdateModeForContentOffsetChanges"];
     if (!value.isNull()) {
@@ -457,6 +439,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enablePropsUpdateReconciliationAndroid();
+  }
+
+  bool enableSchedulerDelegateInvalidation() override {
+    auto value = values_["enableSchedulerDelegateInvalidation"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableSchedulerDelegateInvalidation();
   }
 
   bool enableSwiftUIBasedFilters() override {
@@ -799,6 +790,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::useNestedScrollViewAndroid();
+  }
+
+  bool useOptimizedViewRegistryOnAndroid() override {
+    auto value = values_["useOptimizedViewRegistryOnAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::useOptimizedViewRegistryOnAndroid();
   }
 
   bool useSharedAnimatedBackend() override {
