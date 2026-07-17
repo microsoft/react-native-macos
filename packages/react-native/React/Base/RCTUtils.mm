@@ -41,7 +41,7 @@ BOOL RCTIsHomeAssetURL(NSURL *__nullable imageURL);
 
 #if !TARGET_OS_OSX // [macOS]
 // Returns the current device's orientation
-#if !TARGET_OS_TV
+#if TARGET_OS_IOS
 UIDeviceOrientation RCTDeviceOrientation(void);
 #endif
 #endif // [macOS]
@@ -393,7 +393,7 @@ CGFloat RCTFontSizeMultiplier(void)
   return mapping[RCTSharedApplication().preferredContentSizeCategory].floatValue;
 }
 
-#if !TARGET_OS_TV
+#if TARGET_OS_IOS
 UIDeviceOrientation RCTDeviceOrientation(void)
 {
   return [[UIDevice currentDevice] orientation];
@@ -414,15 +414,18 @@ CGSize RCTScreenSize(void)
       portraitSize = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
     });
   });
-#if !TARGET_OS_TV
+#if TARGET_OS_IOS
   if (UIDeviceOrientationIsLandscape(RCTDeviceOrientation())) {
     return CGSizeMake(portraitSize.height, portraitSize.width);
   } else {
     return CGSizeMake(portraitSize.width, portraitSize.height);
   }
-#else
+#elif TARGET_OS_TV
   // tvOS doesn't have device orientation, always return landscape size
   return CGSizeMake(portraitSize.height, portraitSize.width);
+#else
+  // visionOS does not expose device orientation.
+  return CGSizeMake(portraitSize.width, portraitSize.height);
 #endif
 }
 #else // [macOS

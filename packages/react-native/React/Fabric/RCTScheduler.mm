@@ -7,7 +7,7 @@
 
 #import "RCTScheduler.h"
 
-#import <QuartzCore/CADisplayLink.h>
+#import <React/RCTUIKit.h> // [macOS]
 #import <cxxreact/TraceSection.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/animations/LayoutAnimationDriver.h>
@@ -122,20 +122,24 @@ class LayoutAnimationDelegateProxy : public LayoutAnimationStatusDelegate, publi
 
 @interface RCTAnimationChoreographerDisplayLinkTarget : NSObject
 @property (nonatomic, assign) AnimationChoreographer *choreographer;
-- (void)displayLinkTick:(CADisplayLink *)sender;
+- (void)displayLinkTick:(RCTPlatformDisplayLink *)sender;
 @end
 
 @implementation RCTAnimationChoreographerDisplayLinkTarget
-- (void)displayLinkTick:(CADisplayLink *)sender
+- (void)displayLinkTick:(RCTPlatformDisplayLink *)sender
 {
   if (_choreographer != nullptr) {
+#if TARGET_OS_OSX
+    _choreographer->onAnimationFrame(std::chrono::duration<double>(sender.timestamp + sender.duration));
+#else
     _choreographer->onAnimationFrame(std::chrono::duration<double>(sender.targetTimestamp));
+#endif
   }
 }
 @end
 
 class RCTAnimationChoreographer : public AnimationChoreographer {
-  CADisplayLink *_animationDisplayLink;
+  RCTPlatformDisplayLink *_animationDisplayLink;
   RCTAnimationChoreographerDisplayLinkTarget *_displayLinkTarget;
 
  public:
@@ -154,8 +158,8 @@ class RCTAnimationChoreographer : public AnimationChoreographer {
   void resume() override
   {
     if (_animationDisplayLink == nil) {
-      _animationDisplayLink = [CADisplayLink displayLinkWithTarget:_displayLinkTarget
-                                                          selector:@selector(displayLinkTick:)];
+      _animationDisplayLink = [RCTPlatformDisplayLink displayLinkWithTarget:_displayLinkTarget
+                                                                   selector:@selector(displayLinkTick:)];
       [_animationDisplayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
     }
     [_animationDisplayLink setPaused:NO];
