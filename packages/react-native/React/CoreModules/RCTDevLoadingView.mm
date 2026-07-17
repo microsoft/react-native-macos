@@ -344,7 +344,7 @@ RCT_EXPORT_METHOD(hide)
           self->_dismissButton = nil;
           self->_hiding = false;
         }];
-#else // [macOS]
+#else // [macOS
     for (NSWindow *window in [RCTKeyWindow() sheets]) {
       if ([[window identifier] isEqualToString:sRCTDevLoadingViewWindowIdentifier]) {
         [RCTKeyWindow() endSheet:window];
