@@ -39,6 +39,9 @@ const AccessibilityInfo = {
   isHighTextContrastEnabled: jest.fn(() =>
     Promise.resolve(false),
   ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
+  isHighContrastEnabled: jest.fn(() =>
+    Promise.resolve(false),
+  ) as () => Promise<boolean>,
   isDarkerSystemColorsEnabled: jest.fn(() =>
     Promise.resolve(false),
   ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
