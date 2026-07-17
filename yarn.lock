@@ -4570,9 +4570,9 @@ __metadata:
     markdownlint-cli2: "npm:^0.22.0"
     markdownlint-rule-relative-links: "npm:^3.0.0"
     memfs: "npm:^4.38.2"
-    metro: "npm:^0.84.0"
+    metro: "npm:^0.84.3"
     metro-babel-register: "npm:^0.84.3"
-    metro-config: "npm:^0.84.0"
+    metro-config: "npm:^0.84.3"
     metro-memory-fs: "npm:^0.82.5"
     metro-transform-plugins: "npm:^0.84.3"
     micromatch: "npm:^4.0.4"
@@ -4875,7 +4875,7 @@ __metadata:
   resolution: "@react-native/fantom@workspace:private/react-native-fantom"
   dependencies:
     babel-plugin-istanbul: "npm:^7.0.0"
-    metro: "npm:^0.84.0"
+    metro: "npm:^0.84.3"
     metro-babel-transformer: "npm:^0.83.3"
   peerDependencies:
     jest: ^29.7.0
@@ -12289,18 +12289,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metro-babel-transformer@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-babel-transformer@npm:0.84.0"
-  dependencies:
-    "@babel/core": "npm:^7.25.2"
-    flow-enums-runtime: "npm:^0.0.6"
-    hermes-parser: "npm:0.33.3"
-    nullthrows: "npm:^1.1.1"
-  checksum: 10c0/8446a23594e7a59a3739d14f3011d2193292ded93c074094127f58e87e197199edf6cf6fe798e9f9dc51a30bb6bdb68e5a24f73c8d362e9ff0795110182c3b42
-  languageName: node
-  linkType: hard
-
 "metro-babel-transformer@npm:0.84.4":
   version: 0.84.4
   resolution: "metro-babel-transformer@npm:0.84.4"
@@ -12323,15 +12311,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metro-cache-key@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-cache-key@npm:0.84.0"
-  dependencies:
-    flow-enums-runtime: "npm:^0.0.6"
-  checksum: 10c0/800b898de31981e974d9d63ac74dc9d81532fe4d1e0b60db9ab61c769a57f12c22743a38cb736365c39782d87c834f08a3cf67eee1d5bdb5dc9abbe269403b83
-  languageName: node
-  linkType: hard
-
 "metro-cache-key@npm:0.84.4":
   version: 0.84.4
   resolution: "metro-cache-key@npm:0.84.4"
@@ -12350,18 +12329,6 @@ __metadata:
     https-proxy-agent: "npm:^7.0.5"
     metro-core: "npm:0.83.7"
   checksum: 10c0/81ae4b2d0d389d25b816bb2d59eb8baed5e1f03a727aa9bcecadb5547e949525f90af888c956fbd5ff4a732cf4dc48b6d903bab648d23dc1830135d820040825
-  languageName: node
-  linkType: hard
-
-"metro-cache@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-cache@npm:0.84.0"
-  dependencies:
-    exponential-backoff: "npm:^3.1.1"
-    flow-enums-runtime: "npm:^0.0.6"
-    https-proxy-agent: "npm:^7.0.5"
-    metro-core: "npm:0.84.0"
-  checksum: 10c0/f3927b945acc3cab191a52f7f9f0d607569d6b49541f5c552a42274347c5afab6d31cf673cff057595e7a3403f83ced76fb2843f736ab40aa213bfe607769185
   languageName: node
   linkType: hard
 
@@ -12393,22 +12360,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metro-config@npm:0.84.0, metro-config@npm:^0.84.0":
-  version: 0.84.0
-  resolution: "metro-config@npm:0.84.0"
-  dependencies:
-    connect: "npm:^3.6.5"
-    flow-enums-runtime: "npm:^0.0.6"
-    jest-validate: "npm:^29.7.0"
-    metro: "npm:0.84.0"
-    metro-cache: "npm:0.84.0"
-    metro-core: "npm:0.84.0"
-    metro-runtime: "npm:0.84.0"
-    yaml: "npm:^2.6.1"
-  checksum: 10c0/b6d13b833c157893405fd71c59edd984d4ec591f01de061a7248df220780a88c105b8aedc3efb541df5a0508e2ede9869b996323b9d5fb87b9fca484cd1b0737
-  languageName: node
-  linkType: hard
-
 "metro-config@npm:0.84.4, metro-config@npm:^0.84.3":
   version: 0.84.4
   resolution: "metro-config@npm:0.84.4"
@@ -12433,17 +12384,6 @@ __metadata:
     lodash.throttle: "npm:^4.1.1"
     metro-resolver: "npm:0.83.7"
   checksum: 10c0/cd267b2516ccce0cc152d12ff1f08073abec0a9b210779357a43f1a279acb3c3be0ff625de030da9a110aea45b70e36f14e13b846cb4fee8419fae67db2a53b4
-  languageName: node
-  linkType: hard
-
-"metro-core@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-core@npm:0.84.0"
-  dependencies:
-    flow-enums-runtime: "npm:^0.0.6"
-    lodash.throttle: "npm:^4.1.1"
-    metro-resolver: "npm:0.84.0"
-  checksum: 10c0/2aaf290c8062f625048da32d6fe8fbbeeee67111f7275d557fb9a98a7d970efb617d5f4d7320ec371fb4e814d525504597717764d9ff7690e72092fc14fdd01d
   languageName: node
   linkType: hard
 
@@ -12472,23 +12412,6 @@ __metadata:
     nullthrows: "npm:^1.1.1"
     walker: "npm:^1.0.7"
   checksum: 10c0/467729e9f607552504d9e1b9a8d81e5ea5a27f979f19a40360215773b38e1a3b563789047f06a5502cf5983aae922b3c52f5a7e0be8edc0b0bb747556e7d5af8
-  languageName: node
-  linkType: hard
-
-"metro-file-map@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-file-map@npm:0.84.0"
-  dependencies:
-    debug: "npm:^4.4.0"
-    fb-watchman: "npm:^2.0.0"
-    flow-enums-runtime: "npm:^0.0.6"
-    graceful-fs: "npm:^4.2.4"
-    invariant: "npm:^2.2.4"
-    jest-worker: "npm:^29.7.0"
-    micromatch: "npm:^4.0.4"
-    nullthrows: "npm:^1.1.1"
-    walker: "npm:^1.0.7"
-  checksum: 10c0/82943c21f155d4a354d6af8c82e0231e5ce74ad7fbd019f68e69200feb1c630b5137ddb60abede57eb3584ff23213c2f31c6863bca3cb4f54284b798120a0967
   languageName: node
   linkType: hard
 
@@ -12528,16 +12451,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metro-minify-terser@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-minify-terser@npm:0.84.0"
-  dependencies:
-    flow-enums-runtime: "npm:^0.0.6"
-    terser: "npm:^5.15.0"
-  checksum: 10c0/6e4504b3b6b8ca34d2ae92c79a1c142422c39d673af3c457f3caa4b61de9192c5df3ca6ba3ee5e809a9d44cc6dcfc990c03206f3c50a49a9493cde22f642a304
-  languageName: node
-  linkType: hard
-
 "metro-minify-terser@npm:0.84.4":
   version: 0.84.4
   resolution: "metro-minify-terser@npm:0.84.4"
@@ -12557,15 +12470,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metro-resolver@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-resolver@npm:0.84.0"
-  dependencies:
-    flow-enums-runtime: "npm:^0.0.6"
-  checksum: 10c0/b6bd7abd752829fed467e85e0c5bfcae42cd00cbde4e0ad29bbc1be79b3cbe109012b38992e54b87ea7f6729c18f1bfad3da65d031227728c76ba43ee739984e
-  languageName: node
-  linkType: hard
-
 "metro-resolver@npm:0.84.4, metro-resolver@npm:^0.84.3":
   version: 0.84.4
   resolution: "metro-resolver@npm:0.84.4"
@@ -12582,16 +12486,6 @@ __metadata:
     "@babel/runtime": "npm:^7.25.0"
     flow-enums-runtime: "npm:^0.0.6"
   checksum: 10c0/b9feb9cffdf4df086cea91d803529d706c1a212d0c6b9d138ef4985905cb9bd22f9861a77061364a397917b772d2ef722e465a5b198d6405f574481dfa35a9a7
-  languageName: node
-  linkType: hard
-
-"metro-runtime@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-runtime@npm:0.84.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.25.0"
-    flow-enums-runtime: "npm:^0.0.6"
-  checksum: 10c0/a995c45d09fbcff56c8053efecbfb93503822a8c636387444f8104382b0447694a44389703b9545b06c6ce1c1f1b6b515ea47cf9f6cf6da5e92858e2000fb9f5
   languageName: node
   linkType: hard
 
@@ -12619,23 +12513,6 @@ __metadata:
     source-map: "npm:^0.5.6"
     vlq: "npm:^1.0.0"
   checksum: 10c0/6c424f6258a2128bb4ae6e7591fb7ed1f79b042978397c24a1e35d8bdfcd8960655b3cdd0c4d8ff90f3055ce5b00eca5cb61b327720e7029b3f334fd8ae1776d
-  languageName: node
-  linkType: hard
-
-"metro-source-map@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-source-map@npm:0.84.0"
-  dependencies:
-    "@babel/traverse": "npm:^7.29.0"
-    "@babel/types": "npm:^7.29.0"
-    flow-enums-runtime: "npm:^0.0.6"
-    invariant: "npm:^2.2.4"
-    metro-symbolicate: "npm:0.84.0"
-    nullthrows: "npm:^1.1.1"
-    ob1: "npm:0.84.0"
-    source-map: "npm:^0.5.6"
-    vlq: "npm:^1.0.0"
-  checksum: 10c0/49cf3a233380eb08f0e63482e36fce37c789eec0f9657450cfdefba6eadb1e851d970ef73fc81d63038963762dfd14e7b5f576f2a10b922d9f6c39c886cedcf0
   languageName: node
   linkType: hard
 
@@ -12672,22 +12549,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metro-symbolicate@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-symbolicate@npm:0.84.0"
-  dependencies:
-    flow-enums-runtime: "npm:^0.0.6"
-    invariant: "npm:^2.2.4"
-    metro-source-map: "npm:0.84.0"
-    nullthrows: "npm:^1.1.1"
-    source-map: "npm:^0.5.6"
-    vlq: "npm:^1.0.0"
-  bin:
-    metro-symbolicate: src/index.js
-  checksum: 10c0/e6bb09f0ad55d037516fc593495e559ce705f6686b150183b882a156c10cee363258c81d16af1c47de9a14be96c5eb869301988a5846807c5f6dba0b698994eb
-  languageName: node
-  linkType: hard
-
 "metro-symbolicate@npm:0.84.4":
   version: 0.84.4
   resolution: "metro-symbolicate@npm:0.84.4"
@@ -12715,20 +12576,6 @@ __metadata:
     flow-enums-runtime: "npm:^0.0.6"
     nullthrows: "npm:^1.1.1"
   checksum: 10c0/2fce17ba1013e96278bd6800141ff050af0331a60c4c0dbc24f83c6b524806b6ff4089b36e3268c2315375211d16e875d644b7cbf2b23d43dc050047ec019556
-  languageName: node
-  linkType: hard
-
-"metro-transform-plugins@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-transform-plugins@npm:0.84.0"
-  dependencies:
-    "@babel/core": "npm:^7.25.2"
-    "@babel/generator": "npm:^7.29.1"
-    "@babel/template": "npm:^7.28.6"
-    "@babel/traverse": "npm:^7.29.0"
-    flow-enums-runtime: "npm:^0.0.6"
-    nullthrows: "npm:^1.1.1"
-  checksum: 10c0/a337a36033dda93acc82c50862d7dc4e70d485ae765d15884e19202826d734eff4f73aabc6e9b25d969ce910b0117371cb49924818506053af9f9d95a3ea09fe
   languageName: node
   linkType: hard
 
@@ -12764,27 +12611,6 @@ __metadata:
     metro-transform-plugins: "npm:0.83.7"
     nullthrows: "npm:^1.1.1"
   checksum: 10c0/a84e3bae6679826059d66bc9438f00292d93569bdefb4193bcbe4c9a72f5423d88d8d3da94389f95674674118af1ee233ac8a2b5b8279ff568c8becf4c609f1c
-  languageName: node
-  linkType: hard
-
-"metro-transform-worker@npm:0.84.0":
-  version: 0.84.0
-  resolution: "metro-transform-worker@npm:0.84.0"
-  dependencies:
-    "@babel/core": "npm:^7.25.2"
-    "@babel/generator": "npm:^7.29.1"
-    "@babel/parser": "npm:^7.29.0"
-    "@babel/types": "npm:^7.29.0"
-    flow-enums-runtime: "npm:^0.0.6"
-    metro: "npm:0.84.0"
-    metro-babel-transformer: "npm:0.84.0"
-    metro-cache: "npm:0.84.0"
-    metro-cache-key: "npm:0.84.0"
-    metro-minify-terser: "npm:0.84.0"
-    metro-source-map: "npm:0.84.0"
-    metro-transform-plugins: "npm:0.84.0"
-    nullthrows: "npm:^1.1.1"
-  checksum: 10c0/c06619dc2f618d9366cb61b9f072dc1f939447c9bf0328d439c3e806772730b24557169ae60c46510332d2c4ef369e0a9d83891af3240dda7bfa3754a36387d3
   languageName: node
   linkType: hard
 
@@ -12855,56 +12681,6 @@ __metadata:
   bin:
     metro: src/cli.js
   checksum: 10c0/f759631778ce2e8cd7e1338ec886ffa0e3d4cd8456d5a506c57e5212206519435a345bcac6334dac22b3adf188b34854688007ddb1669c65afbadf0a0eef431a
-  languageName: node
-  linkType: hard
-
-"metro@npm:0.84.0, metro@npm:^0.84.0":
-  version: 0.84.0
-  resolution: "metro@npm:0.84.0"
-  dependencies:
-    "@babel/code-frame": "npm:^7.29.0"
-    "@babel/core": "npm:^7.25.2"
-    "@babel/generator": "npm:^7.29.1"
-    "@babel/parser": "npm:^7.29.0"
-    "@babel/template": "npm:^7.28.6"
-    "@babel/traverse": "npm:^7.29.0"
-    "@babel/types": "npm:^7.29.0"
-    accepts: "npm:^2.0.0"
-    chalk: "npm:^4.0.0"
-    ci-info: "npm:^2.0.0"
-    connect: "npm:^3.6.5"
-    debug: "npm:^4.4.0"
-    error-stack-parser: "npm:^2.0.6"
-    flow-enums-runtime: "npm:^0.0.6"
-    graceful-fs: "npm:^4.2.4"
-    hermes-parser: "npm:0.33.3"
-    image-size: "npm:^1.0.2"
-    invariant: "npm:^2.2.4"
-    jest-worker: "npm:^29.7.0"
-    jsc-safe-url: "npm:^0.2.2"
-    lodash.throttle: "npm:^4.1.1"
-    metro-babel-transformer: "npm:0.84.0"
-    metro-cache: "npm:0.84.0"
-    metro-cache-key: "npm:0.84.0"
-    metro-config: "npm:0.84.0"
-    metro-core: "npm:0.84.0"
-    metro-file-map: "npm:0.84.0"
-    metro-resolver: "npm:0.84.0"
-    metro-runtime: "npm:0.84.0"
-    metro-source-map: "npm:0.84.0"
-    metro-symbolicate: "npm:0.84.0"
-    metro-transform-plugins: "npm:0.84.0"
-    metro-transform-worker: "npm:0.84.0"
-    mime-types: "npm:^3.0.1"
-    nullthrows: "npm:^1.1.1"
-    serialize-error: "npm:^2.1.0"
-    source-map: "npm:^0.5.6"
-    throat: "npm:^5.0.0"
-    ws: "npm:^7.5.10"
-    yargs: "npm:^17.6.2"
-  bin:
-    metro: src/cli.js
-  checksum: 10c0/24def0672ad99a4d5865ff881af53580ed25f413689e142f206d72b9894b2493f394afb006cc23e593ddb9a50b71c198c495b11b53329cdf4690389d817aea23
   languageName: node
   linkType: hard
 
@@ -13914,15 +13690,6 @@ __metadata:
   dependencies:
     flow-enums-runtime: "npm:^0.0.6"
   checksum: 10c0/b009d7a79b7ccf8db520acdc713a544a1ec379ae804438328080715c66944aa871551b8d7b1cf7cfb89cbe53bbab29f3345097c455259d7b7fe76b0891860187
-  languageName: node
-  linkType: hard
-
-"ob1@npm:0.84.0":
-  version: 0.84.0
-  resolution: "ob1@npm:0.84.0"
-  dependencies:
-    flow-enums-runtime: "npm:^0.0.6"
-  checksum: 10c0/4c8da63af5d69d172b2d12df67d2f5dbbb13c74ca940811941df9b92fbf62350f2a50cd00f3e5ef26dd902b2203c4e6c31a9e146e6ed267b13a1da5b32fe25b5
   languageName: node
   linkType: hard
 
