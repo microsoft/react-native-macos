@@ -1202,7 +1202,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     layer.shadowPath = nil;
   }
 
-#if !TARGET_OS_OSX && !TARGET_OS_TV && defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && \
+#if !TARGET_OS_TV && defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && \
     __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 /* __IPHONE_17_0 */
   // Stage 1.5. Cursor / Hover Effects
   if (@available(iOS 17.0, *)) {
