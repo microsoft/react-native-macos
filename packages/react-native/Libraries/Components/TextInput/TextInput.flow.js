@@ -185,7 +185,7 @@ type DataDetectorTypesType =
   | 'lookupSuggestion'
   | 'none'
   | 'all'
-  // [macOS macOS-only
+  // [macOS] macOS-only
   | 'ortography'
   | 'spelling'
   | 'grammar'

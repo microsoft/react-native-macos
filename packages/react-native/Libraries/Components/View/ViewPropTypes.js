@@ -101,7 +101,7 @@ type DirectEventProps = Readonly<{
   onAccessibilityEscape?: ?() => unknown,
 }>;
 
-// [macOS]
+// [macOS
 export type KeyboardEventProps = Readonly<{
   /**
    * Called after a key down event is detected.

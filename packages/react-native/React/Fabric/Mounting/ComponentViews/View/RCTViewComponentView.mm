@@ -161,7 +161,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 }
 #endif // macOS]
 
-#if !TARGET_OS_OSX
+#if !TARGET_OS_OSX // [macOS]
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
 {
   [super traitCollectionDidChange:previousTraitCollection];
@@ -1593,7 +1593,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 #if !TARGET_OS_OSX // [macOS]
 - (NSObject *)accessibilityElement
 #else // [macOS
-- (NSView *)accessibilityElement // macOS]
+- (NSView *)accessibilityElement // [macOS]
 #endif // macOS]
 {
   return self;

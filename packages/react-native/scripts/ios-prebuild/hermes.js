@@ -62,7 +62,7 @@ async function prepareHermesArtifactsAsync(
 
   // Only check if the artifacts folder exists if we are not using a local tarball
   if (!localPath) {
-    // [macOS] Hermes artifacts use the selected SDK pin, not the RN version.
+    // [macOS Hermes artifacts use the selected SDK pin, not the RN version.
     const explicitVersion = process.env.HERMES_VERSION;
     let resolvedVersion =
       explicitVersion ?? readHermesMetadata('v1-default').version;

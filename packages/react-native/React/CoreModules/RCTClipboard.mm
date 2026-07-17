@@ -46,9 +46,9 @@ RCT_EXPORT_METHOD(getString : (RCTPromiseResolveBlock)resolve reject : (__unused
 #elif TARGET_OS_OSX // [macOS
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   resolve(([pasteboard stringForType:NSPasteboardTypeString] ?: @""));
-#else
+#else // macOS]
   resolve(@"");
-#endif // macOS]
+#endif // [macOS]
 }
 
 - (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params

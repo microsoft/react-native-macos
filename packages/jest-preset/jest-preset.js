@@ -15,11 +15,11 @@ const path = require('path');
 module.exports = {
   haste: {
     defaultPlatform: 'ios',
-    platforms: ['android', 'ios', 'macos', 'native'],
+    platforms: ['android', 'ios', 'macos', 'native'], // [macOS]
   },
   moduleNameMapper: {
     '^react-native($|/.*)': `${path.dirname(
-      require.resolve('react-native-macos'),
+      require.resolve('react-native-macos'), // [macOS]
     )}/$1`,
   },
   resolver: require.resolve('./jest/resolver.js'),

@@ -91,6 +91,7 @@ function getHeaderFilesFromPodspecs(
       //   (\[[^\]]*\]|"[^"]*")           - second arg (captured): either [...] or "..."
       //   \s*                             - optional whitespace before the closing parenthesis
       //   \)                             - closing paren
+      // [macOS] Accept multiline podspec source declarations.
       const headerPatternRegex =
         /podspec_sources\(\s*(?:\[[^\]]*\]|"[^"]*"|\w+)\s*,\s*(\[[^\]]*\]|"[^"]*")\s*\)/gm;
       const matches = [...fileContent.matchAll(headerPatternRegex)];
