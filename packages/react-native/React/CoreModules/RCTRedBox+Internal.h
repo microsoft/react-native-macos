@@ -6,7 +6,7 @@
  */
 
 #import <React/RCTDefines.h>
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 
 #if RCT_DEV_MENU
 
