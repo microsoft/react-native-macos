@@ -24,6 +24,8 @@
 
 #if RCT_DEV_MENU
 
+#if !TARGET_OS_OSX // [macOS]
+
 #pragma mark - RCTRedBox2Controller
 
 // Color Palette (matching LogBoxStyle.js)
@@ -760,5 +762,7 @@ static const NSTimeInterval kAutoRetryInterval = 20.0;
 }
 
 @end
+
+#endif // [macOS]
 
 #endif
