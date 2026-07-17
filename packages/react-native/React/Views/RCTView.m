@@ -1009,6 +1009,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 
   return YES;
 }
+// macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection

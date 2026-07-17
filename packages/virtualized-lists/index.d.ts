@@ -7,6 +7,7 @@
  * @format
  */
 
+// [macOS
 import type * as React from 'react';
 import {
   VirtualizedList,
@@ -14,9 +15,11 @@ import {
   type VirtualizedListWithoutRenderItemProps,
   type ViewToken,
 } from './Lists/VirtualizedList';
+// macOS]
 
 export * from './Lists/VirtualizedList';
 
+// [macOS
 export type ListViewToken<ItemT = any> = ViewToken<ItemT>;
 
 export interface SectionBase<ItemT, SectionT = Record<string, unknown>> {
@@ -88,3 +91,4 @@ declare const VirtualizedLists: {
 };
 
 export default VirtualizedLists;
+// macOS]

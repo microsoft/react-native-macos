@@ -6,9 +6,11 @@
  */
 
 #import <React/RCTBackedTextInputDelegateAdapter.h>
-#import "RCTBackedTextInputViewProtocol.h" // [macOS
+// [macOS
+#import "RCTBackedTextInputViewProtocol.h"
 #import "RCTBackedTextInputDelegate.h"
-#import <React/RCTTextUIKit.h> // macOS]
+#import <React/RCTTextUIKit.h>
+// macOS]
 
 #pragma mark - RCTBackedTextFieldDelegateAdapter (for UITextField)
 
@@ -225,7 +227,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return true;
   }
 }
-#endif // macOS]
+#endif // [macOS]
 
 #if TARGET_OS_OSX // [macOS
 
@@ -594,7 +596,7 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return true;
   }
 }
-#endif // macOS]
+#endif // [macOS]
 
 
 @end

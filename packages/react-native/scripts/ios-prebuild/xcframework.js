@@ -20,7 +20,7 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const {execFileSync} = childProcess;
+const {execFileSync} = childProcess; // [macOS]
 
 const {getHeaderFilesFromPodspecs} = headers;
 const {createFolderIfNotExists, createLogger} = utils;
@@ -83,18 +83,22 @@ function buildXCFrameworks(
   }
 
   // Build the XCFrameworks by using each framework folder as input
+  // [macOS
   const buildArguments = ['-create-xcframework'];
   frameworkFolders.forEach(frameworkFolder => {
     buildArguments.push('-framework', frameworkFolder);
   });
   buildArguments.push('-output', outputPath, '-allow-internal-distribution');
+  // macOS]
 
   frameworkLog(`xcodebuild ${buildArguments.join(' ')}`);
   try {
+    // [macOS
     execFileSync('xcodebuild', buildArguments, {
       cwd: rootFolder,
       stdio: 'inherit',
     });
+    // macOS]
   } catch (error) {
     frameworkLog(
       `Error building XCFramework: ${error.message}. Check if the build was successful.`,
@@ -207,6 +211,7 @@ function buildXCFrameworks(
   );
   frameworkLog('Creating tar file: ' + tarFilePath);
   try {
+    // [macOS
     execFileSync(
       'tar',
       [
@@ -218,6 +223,7 @@ function buildXCFrameworks(
       ],
       {stdio: 'inherit'},
     );
+    // macOS]
   } catch (error) {
     frameworkLog(
       `Error creating tar file: ${error.message}. Check if the tar command is available.`,
@@ -276,11 +282,13 @@ function copySymbols(
         `  ${path.relative(outputPath, sourceSymbolPath)} → ${path.basename(targetFolder)}`,
       );
       fs.mkdirSync(targetSymbolPath, {recursive: true});
+      // [macOS
       fs.cpSync(
         sourceSymbolPath,
         path.join(targetSymbolPath, path.basename(sourceSymbolPath)),
         {recursive: true},
       );
+      // macOS]
     }
   });
 }
@@ -415,6 +423,7 @@ function createModuleMapFile(outputPath /*: string */) {
 
 function getArchsFromFramework(frameworkPath /*:string*/) {
   try {
+    // [macOS
     return execFileSync('vtool', ['-show-build', frameworkPath])
       .toString()
       .split('\n')
@@ -422,6 +431,7 @@ function getArchsFromFramework(frameworkPath /*:string*/) {
       .map(p => p.trim().split(' ')[1])
       .sort((a, b) => a.localeCompare(b))
       .join(' ');
+    // macOS]
   } catch (error) {
     return '';
   }
@@ -432,11 +442,13 @@ function signXCFramework(
   xcframeworkPath /*: string */,
 ) {
   frameworkLog('Signing XCFramework...');
+  // [macOS
   execFileSync(
     'codesign',
     ['--timestamp', '--sign', identity, xcframeworkPath],
     {stdio: 'inherit'},
   );
+  // macOS]
 }
 
 module.exports = {

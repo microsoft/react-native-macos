@@ -68,14 +68,14 @@ void RCTCopyBackedTextInput(
   toTextInput.passwordRules = fromTextInput.passwordRules;
 
   [toTextInput setSelectedTextRange:fromTextInput.selectedTextRange notifyDelegate:NO];
-#else // [macOS]
+#else // [macOS
   toTextInput.enableFocusRing = fromTextInput.enableFocusRing;
   toTextInput.pointScaleFactor = fromTextInput.pointScaleFactor;
   toTextInput.automaticSpellingCorrectionEnabled = fromTextInput.automaticSpellingCorrectionEnabled;
   toTextInput.grammarCheckingEnabled = fromTextInput.grammarCheckingEnabled;
   toTextInput.continuousSpellCheckingEnabled = fromTextInput.continuousSpellCheckingEnabled;
   [toTextInput setSelectedTextRange:[fromTextInput selectedTextRange] notifyDelegate:NO];
-#endif // [macOS]
+#endif // macOS]
 }
 
 #if !TARGET_OS_OSX // [macOS]

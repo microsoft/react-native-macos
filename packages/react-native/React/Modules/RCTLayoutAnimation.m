@@ -13,7 +13,7 @@
 
 #if !TARGET_OS_OSX // [macOS]
 static UIViewAnimationCurve _currentKeyboardAnimationCurve;
-#endif // [macOS]
+#endif
 
 #if !TARGET_OS_OSX // [macOS]
 static UIViewAnimationOptions UIViewAnimationOptionsFromRCTAnimationType(RCTAnimationType type)
@@ -76,9 +76,9 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
   NSDictionary *userInfo = notification.userInfo;
   _currentKeyboardAnimationCurve = [userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
 }
-#endif // [macOS]
-
 #endif
+
+#endif // [macOS]
 
 - (instancetype)initWithDuration:(NSTimeInterval)duration
                            delay:(NSTimeInterval)delay

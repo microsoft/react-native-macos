@@ -420,7 +420,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 {
 #if !TARGET_OS_OSX // [macOS]
   [self dismissViewControllerAnimated:YES completion:nil];
-#else // [macOS]
+#else // [macOS
   if (self.presentingViewController) {
     [[RCTKeyWindow() contentViewController] dismissViewController:self];
   }
@@ -527,7 +527,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 }
 #endif // macOS]
 
-#if !TARGET_OS_OSX
+#if !TARGET_OS_OSX // [macOS]
 - (UITableViewCell *)reuseCell:(UITableViewCell *)cell forErrorMessage:(NSString *)message
 {
   if (!cell) {
@@ -597,7 +597,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
   return cell;
 }
-#endif // [macOS]
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 - (UITableViewCell *)reuseCell:(UITableViewCell *)cell forStackFrame:(RCTJSStackFrame *)stackFrame
@@ -727,7 +727,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   }
 }
 
-#if !TARGET_OS_OSX // [macOS
+#if !TARGET_OS_OSX // [macOS]
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
   if (indexPath.section == 1) {
@@ -966,7 +966,7 @@ RCT_EXPORT_MODULE()
     }
 #else // [macOS
     // Do nothing, as we haven't implemented `RCTRedBoxExtraDataViewController` on macOS yet
-#endif // [macOS]
+#endif // macOS]
   });
 }
 
