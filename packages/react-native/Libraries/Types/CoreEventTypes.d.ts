@@ -314,14 +314,6 @@ export type KeyUpEvent = NativeSyntheticEvent<KeyboardEventPayload>;
 /** @deprecated Use KeyDownEvent or KeyUpEvent instead. */
 export type KeyEvent = KeyDownEvent;
 
-export interface NativeFocusEvent extends TargetedEvent {}
-
-export interface NativeBlurEvent extends TargetedEvent {}
-
-export interface FocusEvent extends NativeSyntheticEvent<NativeFocusEvent> {}
-
-export interface BlueEvent extends NativeSyntheticEvent<NativeBlurEvent> {}
-
 // Drag and Drop types
 export interface DataTransferFile {
   name: string;

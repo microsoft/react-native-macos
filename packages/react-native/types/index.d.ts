@@ -119,7 +119,23 @@ export * from '../Libraries/LayoutAnimation/LayoutAnimation';
 export * from '../Libraries/Linking/Linking';
 export * from '../Libraries/Lists/FlatList';
 export * from '../Libraries/Lists/SectionList';
-export * from '@react-native-macos/virtualized-lists'; // [macOS]
+export {
+  VirtualizedList,
+  type CellRendererProps,
+  type ListRenderItem,
+  type ListRenderItemInfo,
+  type ListViewToken,
+  type ScrollToLocationParamsType,
+  type SectionData,
+  type Separators,
+  type ViewToken,
+  type ViewabilityConfig,
+  type ViewabilityConfigCallbackPair,
+  type ViewabilityConfigCallbackPairs,
+  type VirtualizedListProps,
+  type VirtualizedListWithoutRenderItemProps,
+  type VirtualizedSectionListProps,
+} from '@react-native-macos/virtualized-lists'; // [macOS]
 export * from '../Libraries/LogBox/LogBox';
 export * from '../Libraries/Modal/Modal';
 export * as Systrace from '../Libraries/Performance/Systrace';
