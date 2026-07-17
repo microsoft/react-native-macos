@@ -61,8 +61,7 @@ async function prepareHermesArtifactsAsync(
     // Resolve the version from the environment variable or use the default version
     let resolvedVersion = process.env.HERMES_VERSION ?? 'latest-v1';
 
-    // [macOS Map the fork version to an upstream release before falling
-    // back to the Hermes commit at the React Native merge base.
+    // [macOS Pin Hermes V1 to the package compiler; map classic Hermes to RN.
     let allowBuildFromSource = false;
     if (!process.env.HERMES_VERSION) {
       const packageJsonPath = path.resolve(
@@ -71,14 +70,25 @@ async function prepareHermesArtifactsAsync(
         '..',
         'package.json',
       );
-      const mappedVersion = findMatchingHermesVersion(packageJsonPath);
-      if (mappedVersion != null) {
-        hermesLog(
-          `Using mapped upstream version for Hermes lookup: ${mappedVersion}`,
-        );
-        resolvedVersion = mappedVersion;
+      if (process.env.RCT_HERMES_V1_ENABLED === '0') {
+        const mappedVersion = findMatchingHermesVersion(packageJsonPath);
+        if (mappedVersion != null) {
+          hermesLog(
+            `Using mapped upstream version for Hermes lookup: ${mappedVersion}`,
+          );
+          resolvedVersion = mappedVersion;
+        } else {
+          allowBuildFromSource = true;
+        }
       } else {
-        allowBuildFromSource = true;
+        const packageJson = JSON.parse(
+          fs.readFileSync(packageJsonPath, 'utf8'),
+        );
+        const compilerVersion = packageJson.dependencies?.['hermes-compiler'];
+        if (compilerVersion != null && compilerVersion !== '0.0.0') {
+          hermesLog(`Using pinned Hermes V1 version: ${compilerVersion}`);
+          resolvedVersion = compilerVersion;
+        }
       }
     }
     // macOS]
@@ -128,6 +138,7 @@ async function prepareHermesArtifactsAsync(
   execFileSync('tar', ['-xzf', localPath, '-C', artifactsPath], {
     stdio: 'inherit',
   });
+  recomposeHermesXCFramework(artifactsPath); // [macOS]
 
   // Delete the tarball after extraction
   if (!process.env.HERMES_ENGINE_TARBALL_PATH) {
@@ -214,6 +225,7 @@ function checkExistingVersion(
   if (fs.existsSync(versionFilePath) && fs.existsSync(hermesXCFramework)) {
     const versionFileContent = fs.readFileSync(versionFilePath, 'utf8');
     if (versionFileContent.trim() === resolvedVersion) {
+      recomposeHermesXCFramework(artifactsPath); // [macOS]
       hermesLog(
         `Hermes artifacts already downloaded and up to date: ${artifactsPath}`,
       );
@@ -445,6 +457,72 @@ async function downloadHermesTarball(
 }
 
 // [macOS
+function recomposeHermesXCFramework(artifactsPath /*: string */) {
+  const frameworksPath = path.join(
+    artifactsPath,
+    'destroot',
+    'Library',
+    'Frameworks',
+  );
+  const xcframeworkPath = path.join(
+    frameworksPath,
+    'universal',
+    'hermesvm.xcframework',
+  );
+  const infoPath = path.join(xcframeworkPath, 'Info.plist');
+  const macOSFrameworkPath = path.join(
+    frameworksPath,
+    'macosx',
+    'hermesvm.framework',
+  );
+
+  if (!fs.existsSync(infoPath) || !fs.existsSync(macOSFrameworkPath)) {
+    return;
+  }
+
+  const info = JSON.parse(
+    execFileSync('plutil', ['-convert', 'json', '-o', '-', infoPath], {
+      encoding: 'utf8',
+    }),
+  );
+  if (
+    info.AvailableLibraries.some(
+      library => library.SupportedPlatform === 'macos',
+    )
+  ) {
+    return;
+  }
+
+  const frameworkArgs = info.AvailableLibraries.flatMap(library => [
+    '-framework',
+    path.join(xcframeworkPath, library.LibraryIdentifier, library.LibraryPath),
+  ]);
+  frameworkArgs.push('-framework', macOSFrameworkPath);
+
+  const replacementPath = path.join(
+    frameworksPath,
+    'universal',
+    'hermesvm-new.xcframework',
+  );
+  fs.rmSync(replacementPath, {recursive: true, force: true});
+  execFileSync(
+    'xcodebuild',
+    [
+      '-create-xcframework',
+      ...frameworkArgs,
+      '-output',
+      replacementPath,
+      '-allow-internal-distribution',
+    ],
+    {stdio: 'inherit'},
+  );
+  fs.rmSync(xcframeworkPath, {recursive: true, force: true});
+  fs.renameSync(replacementPath, xcframeworkPath);
+  hermesLog(
+    'Added the standalone macOS framework to the universal XCFramework',
+  );
+}
+
 /**
  * Handles the case where no prebuilt Hermes artifacts are available.
  * Determines the Hermes commit at the merge base with facebook/react-native
