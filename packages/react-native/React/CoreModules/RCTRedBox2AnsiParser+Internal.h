@@ -5,6 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#import <React/RCTDefines.h> // [macOS]
+
+#if !TARGET_OS_OSX // [macOS]
 #import <UIKit/UIKit.h>
 
 /**
@@ -20,3 +23,5 @@
                                            baseColor:(UIColor *)color;
 
 @end
+
+#endif // [macOS]

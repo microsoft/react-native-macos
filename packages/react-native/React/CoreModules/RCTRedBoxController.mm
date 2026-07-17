@@ -25,7 +25,7 @@
 @property (nonatomic) RCTRedBoxButtonPressHandler rct_handler;
 
 #if !TARGET_OS_OSX // [macOS]
-- (void)rct_addBlock:(RCTRedBoxButtonPressHandler)handler forControlEvents:(UIControlEvents)controlEvents
+- (void)rct_addBlock:(RCTRedBoxButtonPressHandler)handler forControlEvents:(UIControlEvents)controlEvents;
 #else // [macOS
 - (void)rct_addBlock:(RCTRedBoxButtonPressHandler)handler;
 #endif // macOS]
@@ -56,7 +56,7 @@
 }
 
 #if !TARGET_OS_OSX // [macOS]
-- (void)rct_addBlock:(RCTRedBoxButtonPressHandler)handler forControlEvents:(UIControlEvents)controlEvents;
+- (void)rct_addBlock:(RCTRedBoxButtonPressHandler)handler forControlEvents:(UIControlEvents)controlEvents
 #else // [macOS
 - (void)rct_addBlock:(RCTRedBoxButtonPressHandler)handler
 #endif // macOS]

@@ -10,6 +10,8 @@
 #import <React/RCTDefines.h>
 #import <react/debug/redbox/AnsiParser.h>
 
+#if !TARGET_OS_OSX // [macOS]
+
 #if RCT_DEV_MENU
 
 using facebook::react::unstable_redbox::AnsiColor;
@@ -53,3 +55,5 @@ static UIColor *RCTUIColorFromAnsiColor(const AnsiColor &c)
 @end
 
 #endif
+
+#endif // [macOS]
