@@ -354,7 +354,7 @@ RCT_EXPORT_METHOD(hide)
           self->_dismissButton = nil;
           self->_hiding = false;
         }];
-#else // [macOS]
+#else // [macOS
     for (NSWindow *window in NSApp.windows) {
       if ([[window identifier] isEqualToString:sRCTDevLoadingViewWindowIdentifier]) {
         [window.parentWindow removeChildWindow:window];
