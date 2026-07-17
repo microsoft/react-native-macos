@@ -37,6 +37,7 @@ describe('getHeaderFilesFromPodspecs', () => {
     );
 
     expect(getHeaderFilesFromPodspecs(directory)[podspec]).toEqual([
+      // [macOS
       {
         headerDir: '',
         specName: 'Example',
@@ -51,6 +52,7 @@ describe('getHeaderFilesFromPodspecs', () => {
           },
         ],
       },
+      // macOS]
     ]);
   });
 

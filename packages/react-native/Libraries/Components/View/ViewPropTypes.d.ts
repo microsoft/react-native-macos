@@ -130,6 +130,7 @@ export interface ViewPropsAndroid {
   tabIndex?: 0 | -1 | undefined;
 }
 
+// [macOS
 export type DraggedType = 'fileUrl' | 'image' | 'string';
 export type DraggedTypesType = DraggedType | DraggedType[];
 
@@ -155,6 +156,7 @@ export interface ViewPropsMacOS {
   passthroughAllKeyEvents?: boolean | undefined;
   draggedTypes?: DraggedTypesType | undefined;
 }
+// macOS]
 
 /**
  * @see https://reactnative.dev/docs/view#props

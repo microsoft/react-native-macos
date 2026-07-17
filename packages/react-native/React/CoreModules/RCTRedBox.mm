@@ -394,7 +394,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 {
 #if !TARGET_OS_OSX // [macOS]
   [self dismissViewControllerAnimated:YES completion:nil];
-#else // [macOS]
+#else // [macOS
   if (self.presentingViewController) {
     [[RCTKeyWindow() contentViewController] dismissViewController:self];
   }
@@ -522,7 +522,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
   return cell;
 }
-
 - (RCTUITableViewCell *)reuseCell:(RCTUITableViewCell *)cell forStackFrame:(RCTJSStackFrame *)stackFrame // [macOS]
 {
   if (!cell) {
@@ -849,7 +848,7 @@ RCT_EXPORT_MODULE()
     }
 #else // [macOS
     // Do nothing, as we haven't implemented `RCTRedBoxExtraDataViewController` on macOS yet
-#endif // [macOS]
+#endif // macOS]
   });
 }
 

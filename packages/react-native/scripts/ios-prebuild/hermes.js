@@ -61,7 +61,7 @@ async function prepareHermesArtifactsAsync(
     // Resolve the version from the environment variable or use the default version
     let resolvedVersion = process.env.HERMES_VERSION ?? 'latest-v1';
 
-    // [macOS] Map the fork version to an upstream release before falling
+    // [macOS Map the fork version to an upstream release before falling
     // back to the Hermes commit at the React Native merge base.
     let allowBuildFromSource = false;
     if (!process.env.HERMES_VERSION) {
@@ -308,7 +308,7 @@ async function hermesSourceType(
     return HermesEngineSourceTypes.DOWNLOAD_PREBUILT_NIGHTLY_TARBALL;
   }
 
-  // [macOS] Fall back to source at the React Native merge-base timestamp.
+  // [macOS Fall back to source at the React Native merge-base timestamp.
   if (allowBuildFromSource) {
     hermesLog(
       'No prebuilt Hermes artifact found. Will resolve from the merge base with facebook/react-native.',

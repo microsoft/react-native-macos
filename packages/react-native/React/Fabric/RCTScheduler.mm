@@ -122,24 +122,24 @@ class LayoutAnimationDelegateProxy : public LayoutAnimationStatusDelegate, publi
 
 @interface RCTAnimationChoreographerDisplayLinkTarget : NSObject
 @property (nonatomic, assign) AnimationChoreographer *choreographer;
-- (void)displayLinkTick:(RCTPlatformDisplayLink *)sender;
+- (void)displayLinkTick:(RCTPlatformDisplayLink *)sender; // [macOS]
 @end
 
 @implementation RCTAnimationChoreographerDisplayLinkTarget
-- (void)displayLinkTick:(RCTPlatformDisplayLink *)sender
+- (void)displayLinkTick:(RCTPlatformDisplayLink *)sender // [macOS]
 {
   if (_choreographer != nullptr) {
-#if TARGET_OS_OSX
+#if TARGET_OS_OSX // [macOS
     _choreographer->onAnimationFrame(std::chrono::duration<double>(sender.timestamp + sender.duration));
-#else
+#else // [macOS]
     _choreographer->onAnimationFrame(std::chrono::duration<double>(sender.targetTimestamp));
-#endif
+#endif // macOS]
   }
 }
 @end
 
 class RCTAnimationChoreographer : public AnimationChoreographer {
-  RCTPlatformDisplayLink *_animationDisplayLink;
+  RCTPlatformDisplayLink *_animationDisplayLink; // [macOS]
   RCTAnimationChoreographerDisplayLinkTarget *_displayLinkTarget;
 
  public:
@@ -158,8 +158,10 @@ class RCTAnimationChoreographer : public AnimationChoreographer {
   void resume() override
   {
     if (_animationDisplayLink == nil) {
+      // [macOS
       _animationDisplayLink = [RCTPlatformDisplayLink displayLinkWithTarget:_displayLinkTarget
                                                                    selector:@selector(displayLinkTick:)];
+      // macOS]
       [_animationDisplayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
     }
     [_animationDisplayLink setPaused:NO];

@@ -67,7 +67,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
 // [macOS Platform-native text view used when selectable={true}.
 // Handles both text rendering and native text selection.
-#if TARGET_OS_OSX // [macOS
+#if TARGET_OS_OSX
 @interface RCTParagraphSelectableTextView : NSTextView
 
 - (void)setNeedsDisplay;
@@ -241,7 +241,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   _selectableTextView.selectable = YES;
   _selectableTextView.verticallyResizable = NO;
   _selectableTextView.layoutManager.usesFontLeading = NO;
-#else // macOS]
+#else // [macOS]
   _selectableTextView.editable = NO;
   _selectableTextView.selectable = YES;
   _selectableTextView.scrollEnabled = NO;
@@ -318,7 +318,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   _selectableTextView.maxSize = frame.size;
   _selectableTextView.frame = frame;
   [[_selectableTextView textStorage] setAttributedString:textStorage];
-#else // macOS]
+#else // [macOS]
   // On iOS, set the attributed text directly. UITextView manages its own layout.
   _selectableTextView.attributedText = textStorage;
   _selectableTextView.frame = frame;

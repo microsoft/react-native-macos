@@ -25,20 +25,20 @@ typedef void (^InterceptorBlock)(std::string eventName, folly::dynamic &&event);
                           bridgeProxy:(nullable RCTBridgeProxy *)bridgeProxy
                 bridgelessInteropData:(RCTBridgeModuleDecorator *)bridgelessInteropData;
 
-- (RCTPlatformView *)createPaperViewWithTag:(NSInteger)tag;
+- (RCTPlatformView *)createPaperViewWithTag:(NSInteger)tag; // [macOS]
 
 - (void)addObserveForTag:(NSInteger)tag usingBlock:(InterceptorBlock)block;
 
 - (void)removeObserveForTag:(NSInteger)tag;
 
-- (void)setProps:(NSDictionary<NSString *, id> *)props forView:(RCTPlatformView *)view;
+- (void)setProps:(NSDictionary<NSString *, id> *)props forView:(RCTPlatformView *)view; // [macOS]
 
 - (NSString *)componentViewName;
 
 - (void)handleCommand:(NSString *)commandName
                  args:(NSArray *)args
              reactTag:(NSInteger)tag
-             paperView:(RCTPlatformView *)paperView;
+             paperView:(RCTPlatformView *)paperView; // [macOS]
 @end
 
 NS_ASSUME_NONNULL_END
