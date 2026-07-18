@@ -40,7 +40,7 @@ async function getBaseBranch(): Promise<string> {
   const repoPath = repoUrl.match(/github\.com[:/](.+?)(?:\.git)?$/)?.[1] ?? '';
 
   const remotes = (await $`git remote -v`.quiet()).stdout;
-  const remote = (repoPath && remotes.match(new RegExp(`^(\\S+)\\s+.*${repoPath}`, 'm'))?.[1]) ?? 'origin';
+  const remote = (repoPath && remotes.match(new RegExp(`^(\\S+)\\s+.*${repoPath}`, 'm'))?.[1]) || 'origin'; // [macOS]
 
   // In CI, use the PR target branch (e.g., origin/0.81-stable)
   if (process.env['GITHUB_BASE_REF']) {
