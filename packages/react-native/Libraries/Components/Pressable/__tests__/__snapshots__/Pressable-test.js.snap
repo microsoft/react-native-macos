@@ -100,6 +100,7 @@ exports[`<Pressable /> should render as expected: should deep render when not mo
 
 exports[`<Pressable android_ripple /> on Android should not crash with an unresolvable PlatformColor: should deep render when mocked (please verify output manually) 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -119,7 +120,19 @@ exports[`<Pressable android_ripple /> on Android should not crash with an unreso
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={true}
   focusable={true}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
+  mouseDownCanMoveWindow={false}
   nativeBackgroundAndroid={
     Object {
       "alpha": 0.5,
@@ -149,6 +162,7 @@ exports[`<Pressable android_ripple /> on Android should not crash with an unreso
 
 exports[`<Pressable android_ripple /> on Android should not crash with an unresolvable PlatformColor: should deep render when not mocked (please verify output manually) 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -168,7 +182,19 @@ exports[`<Pressable android_ripple /> on Android should not crash with an unreso
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={true}
   focusable={true}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
+  mouseDownCanMoveWindow={false}
   nativeBackgroundAndroid={
     Object {
       "alpha": 0.5,
@@ -198,6 +224,7 @@ exports[`<Pressable android_ripple /> on Android should not crash with an unreso
 
 exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndroid with PlatformColor and alpha: should deep render when mocked (please verify output manually) 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -217,7 +244,19 @@ exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndr
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={true}
   focusable={true}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
+  mouseDownCanMoveWindow={false}
   nativeBackgroundAndroid={
     Object {
       "alpha": 0.3,
@@ -247,6 +286,7 @@ exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndr
 
 exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndroid with PlatformColor and alpha: should deep render when not mocked (please verify output manually) 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -266,7 +306,19 @@ exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndr
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={true}
   focusable={true}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
+  mouseDownCanMoveWindow={false}
   nativeBackgroundAndroid={
     Object {
       "alpha": 0.3,
@@ -296,6 +348,7 @@ exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndr
 
 exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndroid with numeric color and alpha: should deep render when mocked (please verify output manually) 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -315,7 +368,19 @@ exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndr
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={true}
   focusable={true}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
+  mouseDownCanMoveWindow={false}
   nativeBackgroundAndroid={
     Object {
       "alpha": 0.5,
@@ -341,6 +406,7 @@ exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndr
 
 exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndroid with numeric color and alpha: should deep render when not mocked (please verify output manually) 1`] = `
 <View
+  acceptsFirstMouse={true}
   accessibilityState={
     Object {
       "busy": undefined,
@@ -360,7 +426,19 @@ exports[`<Pressable android_ripple /> on Android should set nativeBackgroundAndr
   }
   accessible={true}
   collapsable={false}
+  enableFocusRing={true}
   focusable={true}
+  keyDownEvents={
+    Array [
+      Object {
+        "key": " ",
+      },
+      Object {
+        "key": "Enter",
+      },
+    ]
+  }
+  mouseDownCanMoveWindow={false}
   nativeBackgroundAndroid={
     Object {
       "alpha": 0.5,
