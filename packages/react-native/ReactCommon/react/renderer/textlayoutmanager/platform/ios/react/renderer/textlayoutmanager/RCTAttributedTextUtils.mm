@@ -270,7 +270,6 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   if (textAttributes.textDecorationLineType.value_or(TextDecorationLineType::None) != TextDecorationLineType::None) {
     auto textDecorationLineType = textAttributes.textDecorationLineType.value();
     auto textDecorationStyleValue = textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid);
-    UIColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor);
 
     NSUnderlineStyle style = RCTNSUnderlineStyleFromTextDecorationStyle(
         textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid));
@@ -284,8 +283,9 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
         textDecorationStyleValue == TextDecorationStyle::Dotted ||
         textDecorationStyleValue == TextDecorationStyle::Dashed;
     if (needsCustomDrawing) {
-      UIColor *strokeColor = (textDecorationColor != nil) ? textDecorationColor
-                                                          : RCTUIColorFromSharedColor(textAttributes.foregroundColor);
+      RCTPlatformColor *strokeColor = (textDecorationColor != nil)
+          ? textDecorationColor
+          : RCTUIColorFromSharedColor(textAttributes.foregroundColor); // [macOS]
       NSMutableArray<NSString *> *lines = [NSMutableArray array];
       if (textDecorationLineType == TextDecorationLineType::Underline ||
           textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
@@ -300,7 +300,7 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
           : (textDecorationStyleValue == TextDecorationStyle::Dotted ? @"dotted" : @"dashed");
       attributes[RCTCustomDecorationAttributeName] = @{
         @"lines" : lines,
-        @"color" : (strokeColor != nil) ? strokeColor : [UIColor labelColor],
+        @"color" : (strokeColor != nil) ? strokeColor : [RCTPlatformColor labelColor], // [macOS]
         @"style" : styleKey
       };
     } else {

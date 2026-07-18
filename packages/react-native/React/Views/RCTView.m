@@ -17,6 +17,7 @@
 #import "RCTAutoInsetsProtocol.h"
 #import "RCTBorderCurve.h"
 #import "RCTBorderDrawing.h"
+#import "RCTFocusChangeEvent.h" // [macOS]
 #import "RCTI18nUtil.h"
 #import "RCTLocalizedString.h"
 #import "RCTLog.h"

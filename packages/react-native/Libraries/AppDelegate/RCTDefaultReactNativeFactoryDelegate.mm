@@ -33,12 +33,13 @@
   return nil;
 }
 
-- (UIViewController *)createRootViewController
+- (RCTPlatformViewController *)createRootViewController // [macOS]
 {
-  return [UIViewController new];
+  return [RCTPlatformViewController new]; // [macOS]
 }
 
-- (void)setRootView:(UIView *)rootView toRootViewController:(UIViewController *)rootViewController
+- (void)setRootView:(RCTPlatformView *)rootView // [macOS]
+    toRootViewController:(RCTPlatformViewController *)rootViewController
 {
   rootViewController.view = rootView;
 }
