@@ -5874,6 +5874,7 @@ exports[`retains batch render region when an item is appended 1`] = `
       />
     </View>
     <View
+      collapsable={true}
       style={
         Object {
           "height": 10,
