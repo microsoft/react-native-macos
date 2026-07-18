@@ -397,17 +397,14 @@ CGSize RCTScreenSize(void)
     RCTUnsafeExecuteOnMainQueueSync(^{
 #if TARGET_OS_IOS // [visionOS]
       CGSize screenSize = [UIScreen mainScreen].bounds.size;
-      size = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
-      cachedSize.store(size, std::memory_order_relaxed);
 #else // [visionOS
       CGSize screenSize = RCTKeyWindow().bounds.size;
 #endif // visionOS]
-      portraitSize = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
+      size = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
+      cachedSize.store(size, std::memory_order_relaxed);
     });
   }
 
-#if !TARGET_OS_TV
-  });
 #if TARGET_OS_IOS // [macOS]
   if (UIDeviceOrientationIsLandscape(RCTDeviceOrientation())) {
     return CGSizeMake(size.height, size.width);
@@ -417,12 +414,10 @@ CGSize RCTScreenSize(void)
 #elif TARGET_OS_TV // [macOS]
   // tvOS doesn't have device orientation, always return landscape size
   return CGSizeMake(size.height, size.width);
-#endif
-  return CGSizeMake(portraitSize.height, portraitSize.width);
-#else // [macOS
+#else // [visionOS
   // visionOS does not expose device orientation.
-  return CGSizeMake(portraitSize.width, portraitSize.height);
-#endif // macOS]
+  return CGSizeMake(size.width, size.height);
+#endif // [macOS] [visionOS]
 }
 #else // [macOS
 CGFloat RCTScreenScale(void)

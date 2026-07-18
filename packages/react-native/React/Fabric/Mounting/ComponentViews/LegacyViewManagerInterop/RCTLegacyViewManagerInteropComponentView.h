@@ -7,7 +7,6 @@
 
 #ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 
-#import <UIKit/UIKit.h>
 #import <React/RCTUIKit.h> // [macOS]
 
 #import <React/RCTViewComponentView.h>

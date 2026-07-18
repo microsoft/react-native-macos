@@ -48,6 +48,18 @@ using namespace facebook::react;
 
 const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
+@interface RCTViewComponentView ()
+
+- (void)updateAccessibilityElements;
+- (BOOL)styleNeedsSwiftUIContainer;
+- (void)transferVisualPropertiesFromView:(RCTPlatformView *)sourceView
+                                  toView:(RCTPlatformView *)destinationView;
+- (void)shapeLayerToMatchView:(CALayer *)layer borderMetrics:(BorderMetrics)borderMetrics;
+- (CAShapeLayer *)createMaskLayer:(CGRect)bounds cornerInsets:(RCTCornerInsets)cornerInsets;
+- (void)clearExistingBackgroundImageLayers;
+
+@end
+
 @implementation RCTViewComponentView {
   RCTPlatformColor *_backgroundColor; // [macOS]
   CALayer *_backgroundColorLayer;
@@ -847,7 +859,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 
   // Clean up box shadow layers to prevent cross-component contamination
   if (_boxShadowLayers != nullptr) {
-    for (CALayer *boxShadowLayer = nullptr in _boxShadowLayers) {
+    for (CALayer *boxShadowLayer in _boxShadowLayers) {
       [boxShadowLayer removeFromSuperlayer];
     }
     [_boxShadowLayers removeAllObjects];
@@ -1388,8 +1400,6 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     _outlineLayer.frame = CGRectInset(
         layer.bounds, -_props->outlineOffset - _props->outlineWidth, -_props->outlineOffset - _props->outlineWidth);
 
-    if (areBorderRadiiCircular(borderMetrics.borderRadii) && borderMetrics.borderRadii.topLeft.horizontal == 0) {
-      UIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor);
     if (borderMetrics.borderRadii.isUniform() && borderMetrics.borderRadii.topLeft.horizontal == 0) {
       RCTPlatformColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor); // [macOS]
 #if TARGET_OS_OSX // [macOS

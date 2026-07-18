@@ -244,7 +244,7 @@ using namespace facebook::react;
                                                    turboModuleEnabled:YES
                                                     bridgelessEnabled:YES];
 
-  configuration.customizeRootView = ^(UIView *_Nonnull rootView) {
+  configuration.customizeRootView = ^(RCTPlatformView *_Nonnull rootView) { // [macOS]
     [weakSelf.delegate customizeRootView:(RCTRootView *)rootView];
   };
 
