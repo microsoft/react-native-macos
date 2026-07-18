@@ -151,7 +151,7 @@
   },
   "dependencies": {
     "@react-native-macos/virtualized-lists": "workspace:*",
-    "@react-native/asset-utils": "0.87.0-main",
+    "@react-native/asset-utils": "workspace:*",
     "@react-native/codegen": "workspace:*",
     "@react-native/community-cli-plugin": "workspace:*",
     "@react-native/gradle-plugin": "workspace:*",

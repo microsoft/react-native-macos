@@ -4642,7 +4642,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/asset-utils@npm:0.87.0-main, @react-native/asset-utils@workspace:packages/asset-utils":
+"@react-native/asset-utils@workspace:*, @react-native/asset-utils@workspace:packages/asset-utils":
   version: 0.0.0-use.local
   resolution: "@react-native/asset-utils@workspace:packages/asset-utils"
   languageName: unknown
@@ -4775,7 +4775,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@react-native/community-cli-plugin@workspace:packages/community-cli-plugin"
   dependencies:
-    "@react-native/asset-utils": "npm:0.87.0-main"
+    "@react-native/asset-utils": "workspace:*"
     "@react-native/dev-middleware": "workspace:*"
     chalk: "npm:^4.0.0"
     debug: "npm:^4.4.0"
@@ -4804,7 +4804,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/core-cli-utils@npm:*, @react-native/core-cli-utils@workspace:private/core-cli-utils":
+"@react-native/core-cli-utils@workspace:*, @react-native/core-cli-utils@workspace:private/core-cli-utils":
   version: 0.0.0-use.local
   resolution: "@react-native/core-cli-utils@workspace:private/core-cli-utils"
   dependencies:
@@ -5033,7 +5033,7 @@ __metadata:
     "@react-native-community/cli": "npm:20.2.0"
     "@react-native-community/cli-platform-android": "npm:20.2.0"
     "@react-native-community/cli-platform-ios": "npm:20.2.0"
-    "@react-native/core-cli-utils": "npm:*"
+    "@react-native/core-cli-utils": "workspace:*"
     "@react-native/new-app-screen": "workspace:*"
     "@react-native/popup-menu-android": "workspace:*"
     commander: "npm:^12.0.0"
@@ -14675,7 +14675,7 @@ __metadata:
   resolution: "react-native-macos@workspace:packages/react-native"
   dependencies:
     "@react-native-macos/virtualized-lists": "workspace:*"
-    "@react-native/asset-utils": "npm:0.87.0-main"
+    "@react-native/asset-utils": "workspace:*"
     "@react-native/codegen": "workspace:*"
     "@react-native/community-cli-plugin": "workspace:*"
     "@react-native/gradle-plugin": "workspace:*"
