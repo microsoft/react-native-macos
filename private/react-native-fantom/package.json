@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "babel-plugin-istanbul": "^7.0.0",
+    "hermes-parser": "0.36.1",
     "metro": "^0.84.3",
     "metro-babel-transformer": "^0.84.3"
   },

@@ -176,8 +176,8 @@ type PressableBaseProps = Readonly<{
    * @platform macos
    */
   keyUpEvents?: ?Array<HandledKeyEvent>,
-  validKeysDown?: ?$ReadOnlyArray<string | HandledKeyEvent>,
-  validKeysUp?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  validKeysDown?: ?ReadonlyArray<string | HandledKeyEvent>,
+  validKeysUp?: ?ReadonlyArray<string | HandledKeyEvent>,
   passthroughAllKeyEvents?: ?boolean,
 
   /**
@@ -417,9 +417,9 @@ function Pressable({
     keyDownEvents:
       keyDownEvents ??
       // $FlowFixMe[unclear-type] Legacy props not in type definitions
-      (((props: any).validKeysDown: mixed) == null &&
+      (((props as any).validKeysDown as unknown) == null &&
       // $FlowFixMe[unclear-type]
-      ((props: any).passthroughAllKeyEvents: mixed) !== true
+      ((props as any).passthroughAllKeyEvents as unknown) !== true
         ? [{key: ' '}, {key: 'Enter'}]
         : undefined),
     mouseDownCanMoveWindow: false,

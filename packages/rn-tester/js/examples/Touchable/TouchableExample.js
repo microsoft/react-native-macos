@@ -929,7 +929,7 @@ exports.examples = [
     // [macOS
     title: 'Touchable Hover',
     description: ('<Touchable*> components reacts to mouse events ' +
-      'onMouseEnter and onMouseLeave': string),
+      'onMouseEnter and onMouseLeave') as string,
     render: function (): React.Node {
       return <TouchableHover />;
     },
@@ -937,7 +937,7 @@ exports.examples = [
   {
     title: 'Touchable feedback mouse events',
     description: ('<Touchable*> components reacts to mouse events ' +
-      'onPressIn, onPressOut, onDragEnter, onDragLeave, and onDrop': string),
+      'onPressIn, onPressOut, onDragEnter, onDragLeave, and onDrop') as string,
     render: function (): React.Node {
       return <TouchableMouseEvents />;
     },

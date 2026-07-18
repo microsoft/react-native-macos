@@ -41,7 +41,7 @@ function expandKey(entry: LegacyHandledKeyEvent): Array<HandledKeyEvent> {
 }
 
 function normalize(
-  legacy: ?$ReadOnlyArray<LegacyHandledKeyEvent>,
+  legacy: ?ReadonlyArray<LegacyHandledKeyEvent>,
 ): void | Array<HandledKeyEvent> {
   if (legacy == null) {
     return undefined;
@@ -54,7 +54,7 @@ function normalize(
 }
 
 function matchesEvent(
-  events: $ReadOnlyArray<HandledKeyEvent>,
+  events: ReadonlyArray<HandledKeyEvent>,
   event: KeyboardEvent,
 ): boolean {
   return events.some(
@@ -77,9 +77,9 @@ export type LegacyKeyResult = {
 /**
  * Returns true if the props contain legacy key props that need processing.
  */
-export function hasLegacyKeyProps(props: mixed): boolean {
+export function hasLegacyKeyProps(props: unknown): boolean {
   // $FlowFixMe[unclear-type]
-  const p = (props: any);
+  const p = props as any;
   return (
     p.validKeysDown != null ||
     p.validKeysUp != null ||
@@ -90,9 +90,9 @@ export function hasLegacyKeyProps(props: mixed): boolean {
 /**
  * Strips legacy props from a props object (mutates).
  */
-export function stripLegacyKeyProps(props: {+[string]: mixed}): void {
+export function stripLegacyKeyProps(props: {readonly [string]: unknown}): void {
   // $FlowFixMe[unclear-type]
-  const p = (props: any);
+  const p = props as any;
   delete p.validKeysDown;
   delete p.validKeysUp;
   delete p.passthroughAllKeyEvents;
@@ -113,9 +113,9 @@ export default function processLegacyKeyProps(
   // $FlowFixMe[unclear-type]
   props: any,
 ): LegacyKeyResult {
-  const validKeysDown: ?$ReadOnlyArray<LegacyHandledKeyEvent> =
+  const validKeysDown: ?ReadonlyArray<LegacyHandledKeyEvent> =
     props.validKeysDown;
-  const validKeysUp: ?$ReadOnlyArray<LegacyHandledKeyEvent> = props.validKeysUp;
+  const validKeysUp: ?ReadonlyArray<LegacyHandledKeyEvent> = props.validKeysUp;
   const passthroughAllKeyEvents: ?boolean = props.passthroughAllKeyEvents;
 
   const hasModernKeyDown = props.keyDownEvents != null;

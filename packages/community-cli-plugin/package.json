@@ -37,6 +37,7 @@
     "debug": "^4.4.0",
     "invariant": "^2.2.4",
     "metro": "^0.86.0",
+    "metro-config": "^0.86.0",
     "semver": "^7.1.3"
   },
   "devDependencies": {

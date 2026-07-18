@@ -15,7 +15,7 @@ import processLegacyKeyProps, {
   stripLegacyKeyProps,
 } from '../normalizeLegacyHandledKeyEvents';
 
-type Modifiers = $ReadOnly<{
+type Modifiers = Readonly<{
   altKey?: boolean,
   ctrlKey?: boolean,
   metaKey?: boolean,
@@ -23,7 +23,7 @@ type Modifiers = $ReadOnly<{
 }>;
 
 function createKeyEvent(key: string, modifiers?: Modifiers): KeyDownEvent {
-  return ({
+  return {
     nativeEvent: {
       key,
       altKey: modifiers?.altKey ?? false,
@@ -33,7 +33,7 @@ function createKeyEvent(key: string, modifiers?: Modifiers): KeyDownEvent {
     },
     isPropagationStopped: jest.fn(() => false),
     stopPropagation: jest.fn(),
-  }: $FlowFixMe);
+  } as $FlowFixMe;
 }
 
 describe('normalizeLegacyHandledKeyEvents', () => {
