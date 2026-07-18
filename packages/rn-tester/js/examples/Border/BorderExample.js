@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Border',
   category: 'UI',
   description: 'Demonstrates some of the border styles available to Views.',
@@ -624,4 +624,4 @@ export default ({
       },
     },
   ],
-}: RNTesterModule);
+} as RNTesterModule;

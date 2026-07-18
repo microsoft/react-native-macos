@@ -132,15 +132,14 @@ internal object TouchesHelper {
       }
 
       for (touchData in changedTouches) {
-        val eventData =
-            touchData?.let { td ->
-              val ed = td.copy()
-              val changedTouchesArray = getWritableArray(/* copyObjects */ true, changedTouches)
-              val touchesArray = getWritableArray(/* copyObjects */ true, touches)
-              ed.putArray(CHANGED_TOUCHES_KEY, changedTouchesArray)
-              ed.putArray(TOUCHES_KEY, touchesArray)
-              ed
-            }
+        val eventData = touchData?.let { td ->
+          val ed = td.copy()
+          val changedTouchesArray = getWritableArray(/* copyObjects */ true, changedTouches)
+          val touchesArray = getWritableArray(/* copyObjects */ true, touches)
+          ed.putArray(CHANGED_TOUCHES_KEY, changedTouchesArray)
+          ed.putArray(TOUCHES_KEY, touchesArray)
+          ed
+        }
 
         eventEmitter.receiveEvent(
             event.surfaceId,
@@ -150,6 +149,7 @@ internal object TouchesHelper {
             0,
             eventData,
             event.getEventCategory(),
+            event.timestampMs,
         )
       }
     } finally {

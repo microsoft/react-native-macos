@@ -14,7 +14,7 @@ const yargs = require('yargs');
 import type {BuildFlavor, Destination, Platform} from './types';
 */
 
-const platforms /*: $ReadOnlyArray<Platform> */ = [
+const platforms /*: ReadonlyArray<Platform> */ = [
   'ios',
   'ios-simulator',
   'macos', // [macOS]
@@ -25,7 +25,7 @@ const platforms /*: $ReadOnlyArray<Platform> */ = [
 
 // CI can't use commas in cache keys, so 'macOS,variant=Mac Catalyst' was creating troubles
 // This map that converts from platforms to valid Xcodebuild destinations.
-const platformToDestination /*: $ReadOnly<{|[Platform]: Destination|}> */ = {
+const platformToDestination /*: Readonly<{|[Platform]: Destination|}> */ = {
   ios: 'iOS',
   'ios-simulator': 'iOS Simulator',
   macos: 'macOS', // [macOS]
@@ -84,7 +84,7 @@ async function getCLIConfiguration() /*: Promise<?{|
     compose: boolean,
   |},
   flavor: BuildFlavor,
-  destinations: $ReadOnlyArray<Destination>,
+  destinations: ReadonlyArray<Destination>,
   identity: ?string,
 |}> */ {
   // Run input parsing

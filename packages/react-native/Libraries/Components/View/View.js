@@ -15,6 +15,7 @@ import type {
 } from '../../Types/CoreEventTypes'; // [macOS]
 import type {ViewProps} from './ViewPropTypes';
 
+import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import TextAncestorContext from '../../Text/TextAncestorContext';
 import ViewNativeComponent from './ViewNativeComponent';
 import * as React from 'react';
@@ -34,42 +35,36 @@ component View(
   const hasTextAncestor = use(TextAncestorContext);
 
   // [macOS
-  const _onKeyDown = (event: KeyDownEvent) => {
+  const onKeyDown = (event: KeyDownEvent) => {
     const keyDownEvents = props.keyDownEvents;
     if (keyDownEvents != null && !event.isPropagationStopped()) {
       const isHandled = keyDownEvents.some(
-        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
-          return (
-            event.nativeEvent.key === key &&
-            Boolean(metaKey) === event.nativeEvent.metaKey &&
-            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-            Boolean(altKey) === event.nativeEvent.altKey &&
-            Boolean(shiftKey) === event.nativeEvent.shiftKey
-          );
-        },
+        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) =>
+          event.nativeEvent.key === key &&
+          Boolean(metaKey) === event.nativeEvent.metaKey &&
+          Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+          Boolean(altKey) === event.nativeEvent.altKey &&
+          Boolean(shiftKey) === event.nativeEvent.shiftKey,
       );
-      if (isHandled === true) {
+      if (isHandled) {
         event.stopPropagation();
       }
     }
     props.onKeyDown?.(event);
   };
 
-  const _onKeyUp = (event: KeyUpEvent) => {
+  const onKeyUp = (event: KeyUpEvent) => {
     const keyUpEvents = props.keyUpEvents;
     if (keyUpEvents != null && !event.isPropagationStopped()) {
       const isHandled = keyUpEvents.some(
-        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) => {
-          return (
-            event.nativeEvent.key === key &&
-            Boolean(metaKey) === event.nativeEvent.metaKey &&
-            Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
-            Boolean(altKey) === event.nativeEvent.altKey &&
-            Boolean(shiftKey) === event.nativeEvent.shiftKey
-          );
-        },
+        ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) =>
+          event.nativeEvent.key === key &&
+          Boolean(metaKey) === event.nativeEvent.metaKey &&
+          Boolean(ctrlKey) === event.nativeEvent.ctrlKey &&
+          Boolean(altKey) === event.nativeEvent.altKey &&
+          Boolean(shiftKey) === event.nativeEvent.shiftKey,
       );
-      if (isHandled === true) {
+      if (isHandled) {
         event.stopPropagation();
       }
     }
@@ -77,105 +72,110 @@ component View(
   };
   // macOS]
 
-  const {
-    accessibilityState,
-    accessibilityValue,
-    'aria-busy': ariaBusy,
-    'aria-checked': ariaChecked,
-    'aria-disabled': ariaDisabled,
-    'aria-expanded': ariaExpanded,
-    'aria-hidden': ariaHidden,
-    'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledBy,
-    'aria-live': ariaLive,
-    'aria-selected': ariaSelected,
-    'aria-valuemax': ariaValueMax,
-    'aria-valuemin': ariaValueMin,
-    'aria-valuenow': ariaValueNow,
-    'aria-valuetext': ariaValueText,
-    id,
-    tabIndex,
-    ...otherProps
-  } = props;
+  let resolvedProps = props;
+  if (!ReactNativeFeatureFlags.enableNativeViewPropTransformations()) {
+    const {
+      accessibilityState,
+      accessibilityValue,
+      'aria-busy': ariaBusy,
+      'aria-checked': ariaChecked,
+      'aria-disabled': ariaDisabled,
+      'aria-expanded': ariaExpanded,
+      'aria-hidden': ariaHidden,
+      'aria-label': ariaLabel,
+      'aria-labelledby': ariaLabelledBy,
+      'aria-live': ariaLive,
+      'aria-selected': ariaSelected,
+      'aria-valuemax': ariaValueMax,
+      'aria-valuemin': ariaValueMin,
+      'aria-valuenow': ariaValueNow,
+      'aria-valuetext': ariaValueText,
+      id,
+      tabIndex,
+      ...otherProps
+    } = props;
 
-  // Since we destructured props, we can now treat it as mutable
-  const processedProps = otherProps as {...ViewProps};
+    const processedProps = otherProps as {...ViewProps};
+
+    const parsedAriaLabelledBy = ariaLabelledBy?.split(/\s*,\s*/g);
+    if (parsedAriaLabelledBy !== undefined) {
+      processedProps.accessibilityLabelledBy = parsedAriaLabelledBy;
+    }
+
+    if (ariaLabel !== undefined) {
+      processedProps.accessibilityLabel = ariaLabel;
+    }
+
+    if (ariaLive !== undefined) {
+      processedProps.accessibilityLiveRegion =
+        ariaLive === 'off' ? 'none' : ariaLive;
+    }
+
+    if (ariaHidden !== undefined) {
+      processedProps.accessibilityElementsHidden = ariaHidden;
+      if (ariaHidden === true) {
+        processedProps.importantForAccessibility = 'no-hide-descendants';
+      }
+    }
+
+    if (id !== undefined) {
+      processedProps.nativeID = id;
+    }
+
+    if (tabIndex !== undefined) {
+      processedProps.focusable = !tabIndex;
+    }
+
+    if (
+      accessibilityState != null ||
+      ariaBusy != null ||
+      ariaChecked != null ||
+      ariaDisabled != null ||
+      ariaExpanded != null ||
+      ariaSelected != null
+    ) {
+      processedProps.accessibilityState = {
+        busy: ariaBusy ?? accessibilityState?.busy,
+        checked: ariaChecked ?? accessibilityState?.checked,
+        disabled: ariaDisabled ?? accessibilityState?.disabled,
+        expanded: ariaExpanded ?? accessibilityState?.expanded,
+        selected: ariaSelected ?? accessibilityState?.selected,
+      };
+    }
+
+    if (
+      accessibilityValue != null ||
+      ariaValueMax != null ||
+      ariaValueMin != null ||
+      ariaValueNow != null ||
+      ariaValueText != null
+    ) {
+      processedProps.accessibilityValue = {
+        max: ariaValueMax ?? accessibilityValue?.max,
+        min: ariaValueMin ?? accessibilityValue?.min,
+        now: ariaValueNow ?? accessibilityValue?.now,
+        text: ariaValueText ?? accessibilityValue?.text,
+      };
+    }
+
+    resolvedProps = processedProps;
+  }
 
   // [macOS
-  if (otherProps.onKeyDown != null) {
-    processedProps.onKeyDown = _onKeyDown;
-  }
-  if (otherProps.onKeyUp != null) {
-    processedProps.onKeyUp = _onKeyUp;
+  if (resolvedProps.onKeyDown != null || resolvedProps.onKeyUp != null) {
+    resolvedProps = {
+      ...resolvedProps,
+      onKeyDown: resolvedProps.onKeyDown != null ? onKeyDown : undefined,
+      onKeyUp: resolvedProps.onKeyUp != null ? onKeyUp : undefined,
+    };
   }
   // macOS]
 
-  const parsedAriaLabelledBy = ariaLabelledBy?.split(/\s*,\s*/g);
-  if (parsedAriaLabelledBy !== undefined) {
-    processedProps.accessibilityLabelledBy = parsedAriaLabelledBy;
-  }
-
-  if (ariaLabel !== undefined) {
-    processedProps.accessibilityLabel = ariaLabel;
-  }
-
-  if (ariaLive !== undefined) {
-    processedProps.accessibilityLiveRegion =
-      ariaLive === 'off' ? 'none' : ariaLive;
-  }
-
-  if (ariaHidden !== undefined) {
-    processedProps.accessibilityElementsHidden = ariaHidden;
-    if (ariaHidden === true) {
-      processedProps.importantForAccessibility = 'no-hide-descendants';
-    }
-  }
-
-  if (id !== undefined) {
-    processedProps.nativeID = id;
-  }
-
-  if (tabIndex !== undefined) {
-    processedProps.focusable = !tabIndex;
-  }
-
-  if (
-    accessibilityState != null ||
-    ariaBusy != null ||
-    ariaChecked != null ||
-    ariaDisabled != null ||
-    ariaExpanded != null ||
-    ariaSelected != null
-  ) {
-    processedProps.accessibilityState = {
-      busy: ariaBusy ?? accessibilityState?.busy,
-      checked: ariaChecked ?? accessibilityState?.checked,
-      disabled: ariaDisabled ?? accessibilityState?.disabled,
-      expanded: ariaExpanded ?? accessibilityState?.expanded,
-      selected: ariaSelected ?? accessibilityState?.selected,
-    };
-  }
-
-  if (
-    accessibilityValue != null ||
-    ariaValueMax != null ||
-    ariaValueMin != null ||
-    ariaValueNow != null ||
-    ariaValueText != null
-  ) {
-    processedProps.accessibilityValue = {
-      max: ariaValueMax ?? accessibilityValue?.max,
-      min: ariaValueMin ?? accessibilityValue?.min,
-      now: ariaValueNow ?? accessibilityValue?.now,
-      text: ariaValueText ?? accessibilityValue?.text,
-    };
-  }
-
   const actualView =
     ref == null ? (
-      <ViewNativeComponent {...processedProps} />
+      <ViewNativeComponent {...resolvedProps} />
     ) : (
-      <ViewNativeComponent {...processedProps} ref={ref} />
+      <ViewNativeComponent {...resolvedProps} ref={ref} />
     );
 
   if (hasTextAncestor) {
