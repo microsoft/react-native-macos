@@ -12,15 +12,15 @@
 #include <cstdint>
 #include <string_view>
 
-#define REACT_NATIVE_VERSION_MAJOR 1000
-#define REACT_NATIVE_VERSION_MINOR 0
+#define REACT_NATIVE_VERSION_MAJOR 0
+#define REACT_NATIVE_VERSION_MINOR 86
 #define REACT_NATIVE_VERSION_PATCH 0
 
 namespace facebook::react {
 
 struct ReactNativeVersionType {
-  int32_t Major = 1000;
-  int32_t Minor = 0;
+  int32_t Major = 0;
+  int32_t Minor = 86;
   int32_t Patch = 0;
   std::string_view Prerelease = "";
 };
