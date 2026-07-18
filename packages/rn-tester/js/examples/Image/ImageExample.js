@@ -24,7 +24,8 @@ import {
   Image,
   ImageBackground,
   PixelRatio,
-  Platform, // [macOS]
+  Platform,
+  // [macOS]
   StyleSheet,
   Text,
   View,

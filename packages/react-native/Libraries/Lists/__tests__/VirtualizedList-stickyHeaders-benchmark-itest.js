@@ -11,8 +11,8 @@
 
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
-import * as Fantom from '@react-native/fantom';
 import VirtualizedList from '@react-native-macos/virtualized-lists/Lists/VirtualizedList'; // [macOS]
+import * as Fantom from '@react-native/fantom';
 
 const VIEWPORT_SIZE = 100;
 const ROW_COUNTS = [100000, 250000, 500000, 750000, 1000000];
