@@ -13,7 +13,6 @@ This module contains:
 
 from __future__ import annotations
 
-import os
 import re
 from dataclasses import dataclass
 
@@ -606,36 +605,6 @@ def create_enum_scope(snapshot: Snapshot, enum_def: compound.EnumdefType) -> Non
     """
     Create an enum scope in the snapshot.
     """
-    path = parse_qualified_path(enum_def.qualifiedname)
-    parent_scope = snapshot.ensure_scope(path[:-1])
-    existing_scope = parent_scope.inner_scopes.get(path[-1])
-    existing_location = existing_scope.location if existing_scope is not None else None
-    incoming_location = enum_def.location.file
-    generated_path_markers = (
-        "react/renderer/components/",
-        "FBReactNativeSpec/",
-    )
-    same_generated_header = existing_location is not None and (
-        any(
-            marker in existing_location
-            and marker in incoming_location
-            and existing_location.split(marker, 1)[1]
-            == incoming_location.split(marker, 1)[1]
-            for marker in generated_path_markers
-        )
-        or (
-            os.path.basename(existing_location) == os.path.basename(incoming_location)
-            and "React/FBReactNativeSpec/" in existing_location
-            and "ReactCodegen/" in incoming_location
-        )
-    )
-    if (
-        existing_scope is not None
-        and existing_scope.kind.name == "enum"
-        and (existing_location == incoming_location or same_generated_header)
-    ):
-        return
-
     scope = snapshot.create_enum(enum_def.qualifiedname)
     scope.kind.type = resolve_linked_text_name(enum_def.get_type())[0]
     scope.location = enum_def.location.file
