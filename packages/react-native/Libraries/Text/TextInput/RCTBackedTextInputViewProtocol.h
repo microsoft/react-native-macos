@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_END
 #endif // macOS]
 
 @protocol RCTBackedTextInputDelegate;
-@class RCTTextAttributes;
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -423,7 +423,7 @@ export type TextInputIOSProps = Readonly<{
 
   /**
    * Set line break strategy on iOS.
-   * @platform ios macos
+   * @platform ios
    */
   lineBreakStrategyIOS?: ?('none' | 'standard' | 'hangul-word' | 'push-out'),
 
@@ -667,6 +667,13 @@ export type TextInputAndroidProps = Readonly<{
    * @platform android
    */
   textBreakStrategy?: ?('simple' | 'highQuality' | 'balanced'),
+
+  /**
+   * Align the input text to the top, center, or bottom of the field.
+   * Defaults to `'auto'`.
+   * @platform android
+   */
+  textAlignVertical?: ?('auto' | 'top' | 'bottom' | 'center'),
 
   /**
    * The color of the `TextInput` underline.
@@ -1213,14 +1220,15 @@ type TextInputBaseProps = Readonly<{
   value?: ?Stringish,
 
   /**
-   * Align the input text to the left, center, or right sides of the input field.
+   * Align the input text to the left, center, right, start, or end side of the input field.
    */
-  textAlign?: ?('left' | 'center' | 'right'),
+  textAlign?: ?('left' | 'center' | 'right' | 'start' | 'end'),
 }>;
 
 export type PasteType = 'fileUrl' | 'image' | 'string'; // [macOS]
 export type PastedTypesType = PasteType | ReadonlyArray<PasteType>; // [macOS]
 
+/** @build-types emit-as-interface Uniwind compatibility */
 export type TextInputProps = Readonly<{
   ...Omit<ViewProps, 'style' | 'experimental_accessibilityOrder'>,
   ...TextInputIOSProps,
@@ -1234,9 +1242,18 @@ export type TextInputProps = Readonly<{
  * It isn't technically a class but this is the most elegant way to type it.
  */
 declare class _TextInputInstance extends ReactNativeElement {
+  /**
+   * Removes all text from the input.
+   */
   clear(): void;
+  /**
+   * Returns if the input is currently focused.
+   */
   isFocused(): boolean;
   getNativeRef(): ?ReactNativeElement;
+  /**
+   * Sets the start and end positions of text selection.
+   */
   setSelection(start: number, end: number): void;
   setGhostText(ghostText: ?string): void; // [macOS]
 }

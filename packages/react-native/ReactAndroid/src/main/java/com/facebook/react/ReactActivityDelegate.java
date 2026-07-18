@@ -22,6 +22,7 @@ import com.facebook.infer.annotation.Nullsafe;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.common.LifecycleState;
+import com.facebook.react.devsupport.LocalNetworkPermissionUtil;
 import com.facebook.react.interfaces.fabric.ReactSurface;
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags;
 import com.facebook.react.modules.core.PermissionListener;
@@ -168,7 +169,8 @@ public class ReactActivityDelegate {
                 };
           }
           if (mainComponentName != null) {
-            loadApp(mainComponentName);
+            LocalNetworkPermissionUtil.requestLocalNetworkAccessIfNeeded(
+                getPlainActivity(), () -> loadApp(mainComponentName));
           }
         });
   }
@@ -309,7 +311,7 @@ public class ReactActivityDelegate {
    * @return true if Fabric is enabled for this Activity, false otherwise.
    */
   protected boolean isFabricEnabled() {
-    return ReactNativeNewArchitectureFeatureFlags.enableFabricRenderer();
+    return true;
   }
 
   /**

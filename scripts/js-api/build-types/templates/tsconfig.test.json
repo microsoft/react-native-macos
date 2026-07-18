@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "esnext",
     "lib": ["es2020"],
+    "strict": false,
     "noImplicitAny": true,
     "noImplicitThis": true,
     "types": [],
@@ -12,5 +13,5 @@
     "moduleResolution": "bundler",
     "customConditions": ["react-native-strict-api"]
   },
-  "include": ["**/*.d.ts", "../types/__typetests__/**/*"]
+  "include": ["**/*.d.ts", "../__typetests__/**/*"]
 }

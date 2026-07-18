@@ -31,7 +31,7 @@ export type Args = {
 };
 
 export interface Spec extends TurboModule {
-  +alertWithArgs: (
+  readonly alertWithArgs: (
     args: Args,
     callback: (id: number, value: string) => void,
   ) => void;

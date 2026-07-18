@@ -454,6 +454,9 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   MAP_SCROLL_VIEW_PROP(zoomScale);
 
+  // When disabling centerContent, reset inset to prop value
+  // (enabling is handled automatically by the setCenterContent: setter)
+  if (oldScrollViewProps.centerContent && !newScrollViewProps.centerContent) {
   if (oldScrollViewProps.contentInset != newScrollViewProps.contentInset) {
 #if !TARGET_OS_OSX // [macOS]
     _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
@@ -462,11 +465,18 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 #endif // macOS]
   }
 
-  RCTEnhancedScrollView *scrollView = (RCTEnhancedScrollView *)_scrollView;
+  // Only apply contentInset from props if centerContent is disabled
+  // When centerContent is enabled, the inset is calculated by centerContentIfNeeded
+  if (oldScrollViewProps.contentInset != newScrollViewProps.contentInset && !newScrollViewProps.centerContent) {
+    _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+  }
   if (oldScrollViewProps.contentOffset != newScrollViewProps.contentOffset) {
     _scrollView.contentOffset = RCTCGPointFromPoint(newScrollViewProps.contentOffset);
   }
 
+  // RCTEnhancedScrollView specific props
+
+  auto *scrollView = (RCTEnhancedScrollView *)_scrollView;
   if (oldScrollViewProps.snapToAlignment != newScrollViewProps.snapToAlignment) {
     scrollView.snapToAlignment = RCTNSStringFromString(toString(newScrollViewProps.snapToAlignment));
   }
@@ -605,7 +615,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     }
   }
 
-  return isPointInside ? self : nil;
+  return isPointInside ? _scrollView : nil;
 }
 
 /*

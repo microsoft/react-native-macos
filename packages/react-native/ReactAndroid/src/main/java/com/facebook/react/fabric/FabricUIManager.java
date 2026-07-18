@@ -93,6 +93,8 @@ import com.facebook.react.uimanager.events.SynchronousEventReceiver;
 import com.facebook.react.views.text.PreparedLayout;
 import com.facebook.react.views.text.ReactTextViewManager;
 import com.facebook.react.views.text.ReactTextViewManagerCallback;
+import com.facebook.react.views.text.ReactTypefaceUtils;
+import com.facebook.react.views.text.TextEffectRegistry;
 import com.facebook.react.views.text.TextLayoutManager;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -178,6 +180,8 @@ public class FabricUIManager
   private final FabricEventDispatcher mEventDispatcher;
   private final MountItemDispatcher mMountItemDispatcher;
   private final ViewManagerRegistry mViewManagerRegistry;
+
+  private final TextEffectRegistry mTextEffectRegistry = new TextEffectRegistry();
 
   private final BatchEventDispatchedListener mBatchEventDispatchedListener;
 
@@ -444,7 +448,8 @@ public class FabricUIManager
 
       ReactMarker.addFabricListener(mDevToolsReactPerfLogger);
     }
-    if (ReactNativeNewArchitectureFeatureFlags.useFabricInterop()) {
+    if (!ReactBuildConfig.UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP
+        && ReactNativeNewArchitectureFeatureFlags.useFabricInterop()) {
       InteropEventEmitter interopEventEmitter = new InteropEventEmitter(mReactApplicationContext);
       mReactApplicationContext.internal_registerInteropModule(
           RCTEventEmitter.class, interopEventEmitter);
@@ -511,7 +516,8 @@ public class FabricUIManager
    * [addUiBlock] and [prependUiBlock] on UIManagerModule.
    */
   public void addUIBlock(UIBlock block) {
-    if (ReactNativeNewArchitectureFeatureFlags.useFabricInterop()) {
+    if (!ReactBuildConfig.UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP
+        && ReactNativeNewArchitectureFeatureFlags.useFabricInterop()) {
       InteropUIBlockListener listener = getInteropUIBlockListener();
       listener.addUIBlock(block);
     }
@@ -522,7 +528,8 @@ public class FabricUIManager
    * [addUiBlock] and [prependUiBlock] on UIManagerModule.
    */
   public void prependUIBlock(UIBlock block) {
-    if (ReactNativeNewArchitectureFeatureFlags.useFabricInterop()) {
+    if (!ReactBuildConfig.UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP
+        && ReactNativeNewArchitectureFeatureFlags.useFabricInterop()) {
       InteropUIBlockListener listener = getInteropUIBlockListener();
       listener.prependUIBlock(block);
     }
@@ -547,13 +554,15 @@ public class FabricUIManager
     return (NativeArray)
         TextLayoutManager.measureLines(
             mReactApplicationContext.getAssets(),
+            ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
             attributedString,
             paragraphAttributes,
             PixelUtil.toPixelFromDIP(width),
             PixelUtil.toPixelFromDIP(height),
             textViewManager instanceof ReactTextViewManagerCallback
                 ? (ReactTextViewManagerCallback) textViewManager
-                : null);
+                : null,
+            mTextEffectRegistry);
   }
 
   public int getColor(int surfaceId, String[] resourcePaths) {
@@ -632,6 +641,7 @@ public class FabricUIManager
 
     return TextLayoutManager.measureText(
         mReactApplicationContext.getAssets(),
+        ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
         attributedString,
         paragraphAttributes,
         getYogaSize(minWidth, maxWidth),
@@ -641,7 +651,8 @@ public class FabricUIManager
         textViewManager instanceof ReactTextViewManagerCallback
             ? (ReactTextViewManagerCallback) textViewManager
             : null,
-        attachmentsPositions);
+        attachmentsPositions,
+        mTextEffectRegistry);
   }
 
   @AnyThread
@@ -658,6 +669,7 @@ public class FabricUIManager
 
     return TextLayoutManager.createPreparedLayout(
         mReactApplicationContext.getAssets(),
+        ReactTypefaceUtils.getFontWeightAdjustment(mReactApplicationContext),
         attributedString,
         paragraphAttributes,
         getYogaSize(minWidth, maxWidth),
@@ -666,7 +678,8 @@ public class FabricUIManager
         getYogaMeasureMode(minHeight, maxHeight),
         textViewManager instanceof ReactTextViewManagerCallback
             ? (ReactTextViewManagerCallback) textViewManager
-            : null);
+            : null,
+        mTextEffectRegistry);
   }
 
   @AnyThread
@@ -698,6 +711,11 @@ public class FabricUIManager
         getYogaMeasureMode(minWidth, maxWidth),
         getYogaSize(minHeight, maxHeight),
         getYogaMeasureMode(minHeight, maxHeight));
+  }
+
+  @UnstableReactNativeAPI
+  public TextEffectRegistry getTextEffectRegistry() {
+    return mTextEffectRegistry;
   }
 
   /**
@@ -1199,42 +1217,22 @@ public class FabricUIManager
       return;
     }
 
-    EventEmitterWrapper eventEmitter = mMountingManager.getEventEmitter(surfaceId, reactTag);
-    if (eventEmitter == null) {
-      if (mMountingManager.getViewExists(reactTag)) {
-        // The view is pre-allocated and created. However, it hasn't been mounted yet. We will have
-        // access to the event emitter later when the view is mounted. For now just save the event
-        // in the view state and trigger it later.
-        mMountingManager.enqueuePendingEvent(
-            surfaceId,
-            reactTag,
-            eventName,
-            canCoalesceEvent,
-            params,
-            eventCategory,
-            eventTimestamp);
-      } else {
-        // This can happen if the view has disappeared from the screen (because of async events)
-        FLog.i(TAG, "Unable to invoke event: " + eventName + " for reactTag: " + reactTag);
-      }
-      return;
-    }
-
     if (experimentalIsSynchronous) {
       UiThreadUtil.assertOnUiThread();
-      // add() returns true only if there are no equivalent events already in the set
-      boolean firstEventForFrame =
-          mSynchronousEvents.add(new SynchronousEvent(surfaceId, reactTag, eventName));
-      if (firstEventForFrame) {
-        eventEmitter.dispatchEventSynchronously(eventName, params, eventTimestamp);
-      }
-    } else {
-      if (canCoalesceEvent) {
-        eventEmitter.dispatchUnique(eventName, params, eventTimestamp);
-      } else {
-        eventEmitter.dispatch(eventName, params, eventCategory, eventTimestamp);
+      EventEmitterWrapper eventEmitter = mMountingManager.getEventEmitter(surfaceId, reactTag);
+      if (eventEmitter != null) {
+        // add() returns true only if there are no equivalent events already in the set
+        boolean firstEventForFrame =
+            mSynchronousEvents.add(new SynchronousEvent(surfaceId, reactTag, eventName));
+        if (firstEventForFrame) {
+          eventEmitter.dispatchEventSynchronously(eventName, params, eventTimestamp);
+        }
+        return;
       }
     }
+
+    mMountingManager.dispatchEvent(
+        surfaceId, reactTag, eventName, canCoalesceEvent, params, eventCategory, eventTimestamp);
   }
 
   @Override
@@ -1628,6 +1626,10 @@ public class FabricUIManager
         throw ex;
       } finally {
         schedule();
+      }
+
+      if (ReactNativeFeatureFlags.useSharedAnimatedBackend() && mBinding != null) {
+        mBinding.driveAnimationBackend(frameTimeNanos);
       }
 
       mSynchronousEvents.clear();

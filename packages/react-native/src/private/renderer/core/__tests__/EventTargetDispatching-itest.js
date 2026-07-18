@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @fantom_flags enableNativeEventTargetEventDispatching:*
+ * @fantom_flags enableImperativeEvents:*
  * @flow strict-local
  * @format
  */
@@ -465,10 +466,13 @@ const {isOSS} = Fantom.getConstants();
     });
 
     // --- addEventListener / removeEventListener on refs ---
-    // These tests require EventTarget-based dispatching to be enabled,
-    // since addEventListener is only available when the flag is on.
+    // These tests require both `enableNativeEventTargetEventDispatching` and
+    // `enableImperativeEvents` to be enabled, since the public `addEventListener`
+    // API on element refs is only available when both flags are on. They are
+    // skipped for the other flag combinations.
 
-    (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()
+    (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching() &&
+      ReactNativeFeatureFlags.enableImperativeEvents()
       ? describe
       : describe.skip)('addEventListener / removeEventListener', () => {
       it('addEventListener on a ref receives dispatched events', () => {
@@ -915,7 +919,8 @@ const {isOSS} = Fantom.getConstants();
       },
     );
 
-    (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()
+    (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching() &&
+      ReactNativeFeatureFlags.enableImperativeEvents()
       ? it
       : it.skip)(
       'direct (non-bubbling) events do not propagate via addEventListener',
@@ -964,7 +969,8 @@ const {isOSS} = Fantom.getConstants();
       },
     );
 
-    (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()
+    (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching() &&
+      ReactNativeFeatureFlags.enableImperativeEvents()
       ? describe
       : describe.skip)('bubbling to document element and document', () => {
       it('event bubbles from child up to the document element', () => {
@@ -1322,21 +1328,6 @@ const {isOSS} = Fantom.getConstants();
     });
 
     describe('error handling', () => {
-      let originalConsoleError: typeof console.error;
-      let mockConsoleError: JestMockFn<$FlowFixMe, $FlowFixMe>;
-
-      beforeEach(() => {
-        originalConsoleError = console.error;
-        mockConsoleError = jest.fn();
-        // $FlowFixMe[cannot-write]
-        console.error = mockConsoleError;
-      });
-
-      afterEach(() => {
-        // $FlowFixMe[cannot-write]
-        console.error = originalConsoleError;
-      });
-
       it('error in event handler does not break dispatch to subsequent listeners', () => {
         const root = Fantom.createRoot();
         const childRef = React.createRef<React.ElementRef<typeof View>>();
@@ -1365,18 +1356,7 @@ const {isOSS} = Fantom.getConstants();
             },
           );
 
-        if (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()) {
-          // EventTarget-style dispatch catches per-listener errors and
-          // reports them via `console.error` (see `EventTarget.js`), so the
-          // dispatch itself does not throw.
-          dispatch();
-          expect(mockConsoleError).toHaveBeenCalled();
-        } else {
-          // Legacy dispatch surfaces the first per-handler error via
-          // Fantom's global handler, which re-throws synchronously after
-          // dispatch completes.
-          expect(dispatch).toThrow('handler error');
-        }
+        expect(dispatch).toThrow('handler error');
 
         // The parent bubble handler should still fire despite child's error
         expect(parentHandler).toHaveBeenCalledTimes(1);
@@ -1600,6 +1580,50 @@ const {isOSS} = Fantom.getConstants();
 
         expect(childSpy).toHaveBeenCalledTimes(1);
         expect(parentSpy).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('direct events (onLayout)', () => {
+      it('does not bubble onLayout to ancestor views via the onLayout prop', () => {
+        const root = Fantom.createRoot();
+
+        const childRef = React.createRef<React.ElementRef<typeof View>>();
+
+        const parentSpy = jest.fn();
+        const childSpy = jest.fn();
+
+        Fantom.runTask(() => {
+          root.render(
+            <View onLayout={parentSpy}>
+              <View ref={childRef} onLayout={childSpy} />
+            </View>,
+          );
+        });
+
+        // Flush the layout events emitted for both views during the initial
+        // layout pass so they are not conflated with the dispatch below.
+        Fantom.flushAllNativeEvents();
+
+        // Both onLayout handlers fired for their own layout during mount.
+        const childCallsBefore = childSpy.mock.calls.length;
+        const parentCallsBefore = parentSpy.mock.calls.length;
+
+        Fantom.dispatchNativeEvent(
+          childRef,
+          'onLayout',
+          {layout: {x: 0, y: 0, width: 100, height: 50}},
+          {
+            category: Fantom.NativeEventCategory.Discrete,
+          },
+        );
+
+        // Child's onLayout handler fires for the dispatched event
+        expect(childSpy.mock.calls.length - childCallsBefore).toBeGreaterThan(
+          0,
+        );
+        // Parent's onLayout prop handler does NOT fire from the child's event
+        // because layout is a direct (non-bubbling) event
+        expect(parentSpy.mock.calls.length - parentCallsBefore).toBe(0);
       });
     });
   },

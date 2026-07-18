@@ -44,7 +44,3 @@
 #endif // [macOS]
 
 @end
-
-__attribute__((deprecated("Use RCTCustomRefreshControlProtocol instead")))
-@protocol RCTCustomRefreshContolProtocol<RCTCustomRefreshControlProtocol>
-@end

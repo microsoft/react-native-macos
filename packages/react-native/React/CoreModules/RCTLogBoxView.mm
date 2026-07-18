@@ -12,9 +12,6 @@
 #import <React/RCTSurfaceHostingView.h>
 
 @implementation RCTLogBoxView {
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  RCTSurface *_surface;
-#endif // RCT_REMOVE_LEGACY_ARCH
 #if TARGET_OS_OSX // [macOS
   NSWindow *_window;
 #endif // macOS]
@@ -48,38 +45,6 @@
 #endif // macOS]
 }
 
-#ifndef RCT_REMOVE_LEGACY_ARCH
-- (instancetype)initWithWindow:(RCTPlatformWindow *)window bridge:(RCTBridge *)bridge // [macOS]
-{
-#if !TARGET_OS_OSX // [macOS]
-  self = [super initWithWindowScene:window.windowScene];
-
-#if !TARGET_OS_TV
-  self.windowLevel = UIWindowLevelStatusBar - 1;
-#endif
-  self.backgroundColor = [UIColor clearColor];
-#else // [macOS
-  NSRect bounds = NSMakeRect(0, 0, 600, 800);
-  self = [super initWithContentRect:bounds styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:YES];
-
-  self.level = NSStatusWindowLevel;
-  self.backgroundColor = [NSColor clearColor];
-
-  _window = window;
-#endif // macOS]
-
-  _surface = [[RCTSurface alloc] initWithBridge:bridge moduleName:@"LogBox" initialProperties:@{}];
-  [_surface start];
-
-  if (![_surface synchronouslyWaitForStage:RCTSurfaceStageSurfaceDidInitialMounting timeout:1]) {
-    RCTLogInfo(@"Failed to mount LogBox within 1s");
-  }
-  [self createRootViewController:(RCTUIView *)_surface.view]; // [macOS]
-
-  return self;
-}
-#endif // RCT_REMOVE_LEGACY_ARCH
-
 - (instancetype)initWithWindow:(RCTPlatformWindow *)window surfacePresenter:(id<RCTSurfacePresenterStub>)surfacePresenter // [macOS]
 {
 #if !TARGET_OS_OSX // [macOS]
@@ -106,9 +71,6 @@
 - (void)layoutSubviews
 {
   [super layoutSubviews];
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  [_surface setSize:self.frame.size];
-#endif // RCT_REMOVE_LEGACY_ARCH
 }
 #else // [macOS
 - (void)layoutIfNeeded
@@ -116,18 +78,12 @@
   [super layoutIfNeeded];
   NSRect frame = NSMakeRect(self.frame.origin.x, self.frame.origin.y, 600, 800);
   [self setFrame:frame display:NO];
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  [_surface setSize:self.frame.size];
-#endif // RCT_REMOVE_LEGACY_ARCH
 }
 #endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 - (void)dealloc
 {
-#if !TARGET_OS_MACCATALYST // sharedApplication.delegate is not available on Mac Catalyst
-  [RCTSharedApplication().delegate.window makeKeyWindow];
-#endif
 }
 #endif // [macOS]
 
