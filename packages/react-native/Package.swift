@@ -676,7 +676,12 @@ let reactRCTUIKit = RNTarget(
   // [macOS: UIKit on iOS/visionOS, AppKit on macOS
   platformLinkerSettings: [
     .linkedFramework("UIKit", .when(platforms: [.iOS, .visionOS])),
-    .linkedFramework("AppKit", .when(platforms: [.macOS])),
+    .linkedFramework(
+      "AppKit",
+      .when(platforms: [
+        .macOS,
+      ])
+    ),
   ],
   // macOS]
   excludedPaths: ["README.md"]
