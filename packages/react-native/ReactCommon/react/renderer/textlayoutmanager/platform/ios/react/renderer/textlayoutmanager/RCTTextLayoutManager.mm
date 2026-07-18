@@ -171,7 +171,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                       return;
                     }
                     NSArray<NSString *> *lines = attrs[@"lines"];
-                    UIColor *strokeColor = attrs[@"color"];
+                    RCTPlatformColor *strokeColor = attrs[@"color"]; // [macOS]
                     NSString *style = attrs[@"style"];
                     UIFont *font = [textStorage attribute:NSFontAttributeName
                                                   atIndex:attrRange.location

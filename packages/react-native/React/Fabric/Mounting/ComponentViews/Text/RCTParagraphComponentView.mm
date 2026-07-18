@@ -123,7 +123,6 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
     self.opaque = NO;
 #endif // [macOS]
     _textView = [RCTParagraphTextView new];
-    _textView.backgroundColor = UIColor.clearColor;
     _textView.drawingFrame = self.bounds;
     _textView.backgroundColor = RCTPlatformColor.clearColor; // [macOS]
     self.contentView = _textView;

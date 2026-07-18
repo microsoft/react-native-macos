@@ -457,7 +457,6 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   // When disabling centerContent, reset inset to prop value
   // (enabling is handled automatically by the setCenterContent: setter)
   if (oldScrollViewProps.centerContent && !newScrollViewProps.centerContent) {
-  if (oldScrollViewProps.contentInset != newScrollViewProps.contentInset) {
 #if !TARGET_OS_OSX // [macOS]
     _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
 #else // [macOS
@@ -468,7 +467,11 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   // Only apply contentInset from props if centerContent is disabled
   // When centerContent is enabled, the inset is calculated by centerContentIfNeeded
   if (oldScrollViewProps.contentInset != newScrollViewProps.contentInset && !newScrollViewProps.centerContent) {
+#if !TARGET_OS_OSX // [macOS]
     _scrollView.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+#else // [macOS
+    self.contentInset = RCTUIEdgeInsetsFromEdgeInsets(newScrollViewProps.contentInset);
+#endif // macOS]
   }
   if (oldScrollViewProps.contentOffset != newScrollViewProps.contentOffset) {
     _scrollView.contentOffset = RCTCGPointFromPoint(newScrollViewProps.contentOffset);
