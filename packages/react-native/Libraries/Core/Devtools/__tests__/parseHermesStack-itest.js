@@ -239,6 +239,7 @@ describe('parseHermesStack', () => {
     `);
   });
 
+  // [macOS Preserve the fork regression while adopting the renamed 0.87 test.
   test('treats a long malformed frame as message text', () => {
     const malformedFrame = `    at ${'functionName ('.repeat(10_000)}`;
 
@@ -247,4 +248,5 @@ describe('parseHermesStack', () => {
       message: '',
     });
   });
+  // macOS]
 });

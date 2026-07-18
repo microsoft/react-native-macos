@@ -8,6 +8,8 @@
  * @format
  */
 
+// [macOS]
+
 import type {KeyDownEvent} from '../../Types/CoreEventTypes';
 
 import processLegacyKeyProps, {

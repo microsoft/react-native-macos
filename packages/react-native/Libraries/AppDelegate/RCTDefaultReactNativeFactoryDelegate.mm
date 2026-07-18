@@ -38,8 +38,8 @@
   return [RCTPlatformViewController new]; // [macOS]
 }
 
-- (void)setRootView:(RCTPlatformView *)rootView // [macOS]
-    toRootViewController:(RCTPlatformViewController *)rootViewController
+- (void)setRootView:(RCTPlatformView *)rootView // [macOS
+    toRootViewController:(RCTPlatformViewController *)rootViewController // macOS]
 {
   rootViewController.view = rootView;
 }

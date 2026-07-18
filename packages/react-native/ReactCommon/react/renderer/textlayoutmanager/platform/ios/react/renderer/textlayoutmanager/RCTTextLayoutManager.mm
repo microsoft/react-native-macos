@@ -313,7 +313,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
                                                       bezierPathWithRoundedRect:CGRectInset(enclosingRect, -2, -2)
                                                                         xRadius:2
                                                                         yRadius:2];
-#endif // macOS[
+#endif // macOS]
                                                   if (highlightPath != nullptr) {
 #if !TARGET_OS_OSX // [macOS]
                                                     [highlightPath appendPath:path];
@@ -647,7 +647,7 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
   return TextMeasurement{.size = {.width = size.width, .height = size.height}, .attachments = attachments};
 }
 
-// [macOS iOS
+// [macOS Expose text storage for shared Apple-platform measurement.
 - (NSTextStorage *)getTextStorageForAttributedString:(AttributedString)attributedString
                                  paragraphAttributes:(ParagraphAttributes)paragraphAttributes
                                                 size:(CGSize)size
@@ -659,6 +659,6 @@ static NSLineBreakMode RCTNSLineBreakModeFromEllipsizeMode(EllipsizeMode ellipsi
 
   return textStorage;
 }
-// macOS iOS]
+// macOS]
 
 @end
