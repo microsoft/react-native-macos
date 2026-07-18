@@ -8,12 +8,12 @@
  * @format
  */
 
-const {execSync} = require('child_process');
 const {
   findMatchingHermesVersion,
   hermesCommitAtMergeBase,
 } = require('./microsoft-hermes'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
+const {execSync} = require('child_process');
 const {execFileSync} = require('child_process');
 const fs = require('fs');
 const os = require('os'); // [macOS]
