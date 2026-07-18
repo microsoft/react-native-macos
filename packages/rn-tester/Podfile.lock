@@ -8,7 +8,7 @@ PODS:
   - hermes-engine (0.86.0):
     - hermes-engine/Pre-built (= 0.86.0)
   - hermes-engine/Pre-built (0.86.0)
-  - MyNativeView (0.86.0-main):
+  - MyNativeView (0.86.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -36,7 +36,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - NativeCxxModuleExample (0.86.0-main):
+  - NativeCxxModuleExample (0.86.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2614,7 +2614,7 @@ PODS:
     - React-perflogger (= 0.86.0-rc0)
     - React-utils (= 0.86.0-rc0)
     - SocketRocket
-  - ScreenshotManager (0.86.0-main):
+  - ScreenshotManager (0.86.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2924,8 +2924,8 @@ SPEC CHECKSUMS:
   fmt: 4cf0c5ec5864511c96d8d4bd7b03c3c69040af06
   glog: 8fb6f603b9feab8ebedb130c6e0683bbeafa6fb0
   hermes-engine: e442b1d2eedfbf9643d0232183d43ae8ef16329e
-  MyNativeView: 0190c023cc3664a9122cecb523189fa8e3f7b75c
-  NativeCxxModuleExample: 1a3b8d5824dc1c5ce2c32475a2d1bedccd22d2f7
+  MyNativeView: 5c2c9b54e9cddff590825856279eec7ce048be58
+  NativeCxxModuleExample: eb82ff94f5aa63ec2165b9776906e7e5ec9952a1
   OCMock: 589f2c84dacb1f5aaf6e4cec1f292551fe748e74
   RCT-Folly: e10aa376c9d355431790daf20769ccf9d5ac0bb3
   RCTDeprecation: ad9fa4348f51ad5b236b59311c177e14cfd262cf
@@ -3002,7 +3002,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 936978fa595fb177ce3ab2dd00345268bd09c5ef
   ReactCommon: 409b4918b6fb006f3aad25e2fa58b7d8b2464ef0
   ReactCommon-Samples: 270d1769e1d93f670695f6867310e09d364d66d7
-  ScreenshotManager: 4cc0ee03e706570714863decfb45c1637711b465
+  ScreenshotManager: 28ae4d04f6e467c76182bdf71fd485ddf4ef09ad
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 5fb1e761b136d83ae4023aa82468adde6ea394f5
 
