@@ -289,12 +289,7 @@ let reactGraphicsApple = RNTarget(
   // [macOS] UIKit/AppKit linked conditionally for cross-compilation
   platformLinkerSettings: [
     .linkedFramework("UIKit", .when(platforms: [.iOS, .visionOS])),
-    .linkedFramework(
-      "AppKit",
-      .when(platforms: [
-        .macOS,
-      ])
-    ),
+    .linkedFramework("AppKit", .when(platforms: [.macOS])),
   ],
   dependencies: [.reactDebug, .jsi, .reactUtils, .reactNativeDependencies]
 )
