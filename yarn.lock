@@ -4597,7 +4597,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native-macos/virtualized-lists@workspace:*, @react-native-macos/virtualized-lists@workspace:packages/virtualized-lists":
+"@react-native-macos/virtualized-lists@npm:0.86.0-rc0, @react-native-macos/virtualized-lists@workspace:packages/virtualized-lists":
   version: 0.0.0-use.local
   resolution: "@react-native-macos/virtualized-lists@workspace:packages/virtualized-lists"
   dependencies:
@@ -4607,14 +4607,14 @@ __metadata:
   peerDependencies:
     "@types/react": ^19.2.0
     react: "*"
-    react-native: 1000.0.0
+    react-native: 0.86.0
   peerDependenciesMeta:
     "@types/react":
       optional: true
   languageName: unknown
   linkType: soft
 
-"@react-native/assets-registry@workspace:*, @react-native/assets-registry@workspace:packages/assets":
+"@react-native/assets-registry@npm:0.86.0, @react-native/assets-registry@workspace:packages/assets":
   version: 0.0.0-use.local
   resolution: "@react-native/assets-registry@workspace:packages/assets"
   languageName: unknown
@@ -4707,7 +4707,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/codegen@workspace:*, @react-native/codegen@workspace:packages/react-native-codegen":
+"@react-native/codegen@npm:0.86.0, @react-native/codegen@workspace:*, @react-native/codegen@workspace:packages/react-native-codegen":
   version: 0.0.0-use.local
   resolution: "@react-native/codegen@workspace:packages/react-native-codegen"
   dependencies:
@@ -4735,7 +4735,30 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/community-cli-plugin@workspace:*, @react-native/community-cli-plugin@workspace:packages/community-cli-plugin":
+"@react-native/community-cli-plugin@npm:0.86.0":
+  version: 0.86.0
+  resolution: "@react-native/community-cli-plugin@npm:0.86.0"
+  dependencies:
+    "@react-native/dev-middleware": "npm:0.86.0"
+    debug: "npm:^4.4.0"
+    invariant: "npm:^2.2.4"
+    metro: "npm:^0.84.3"
+    metro-config: "npm:^0.84.3"
+    metro-core: "npm:^0.84.3"
+    semver: "npm:^7.1.3"
+  peerDependencies:
+    "@react-native-community/cli": "*"
+    "@react-native/metro-config": 0.86.0
+  peerDependenciesMeta:
+    "@react-native-community/cli":
+      optional: true
+    "@react-native/metro-config":
+      optional: true
+  checksum: 10c0/62c70f1e99eb48dad8516fed9a15415e8de85ee76018f00231f4473e9fedbfc8c9b4932fc531b9307c3a6d681278b61fa7e63ba2fa250628451662f815a3366e
+  languageName: node
+  linkType: hard
+
+"@react-native/community-cli-plugin@workspace:packages/community-cli-plugin":
   version: 0.0.0-use.local
   resolution: "@react-native/community-cli-plugin@workspace:packages/community-cli-plugin"
   dependencies:
@@ -4775,13 +4798,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/debugger-frontend@workspace:*, @react-native/debugger-frontend@workspace:packages/debugger-frontend":
+"@react-native/debugger-frontend@npm:0.86.0, @react-native/debugger-frontend@workspace:*, @react-native/debugger-frontend@workspace:packages/debugger-frontend":
   version: 0.0.0-use.local
   resolution: "@react-native/debugger-frontend@workspace:packages/debugger-frontend"
   languageName: unknown
   linkType: soft
 
-"@react-native/debugger-shell@workspace:*, @react-native/debugger-shell@workspace:packages/debugger-shell":
+"@react-native/debugger-shell@npm:0.86.0, @react-native/debugger-shell@workspace:*, @react-native/debugger-shell@workspace:packages/debugger-shell":
   version: 0.0.0-use.local
   resolution: "@react-native/debugger-shell@workspace:packages/debugger-shell"
   dependencies:
@@ -4792,6 +4815,26 @@ __metadata:
     semver: "npm:^7.1.3"
   languageName: unknown
   linkType: soft
+
+"@react-native/dev-middleware@npm:0.86.0":
+  version: 0.86.0
+  resolution: "@react-native/dev-middleware@npm:0.86.0"
+  dependencies:
+    "@isaacs/ttlcache": "npm:^1.4.1"
+    "@react-native/debugger-frontend": "npm:0.86.0"
+    "@react-native/debugger-shell": "npm:0.86.0"
+    chrome-launcher: "npm:^0.15.2"
+    chromium-edge-launcher: "npm:^0.3.0"
+    connect: "npm:^3.6.5"
+    debug: "npm:^4.4.0"
+    invariant: "npm:^2.2.4"
+    nullthrows: "npm:^1.1.1"
+    open: "npm:^7.0.3"
+    serve-static: "npm:^1.16.2"
+    ws: "npm:^7.5.10"
+  checksum: 10c0/14e704d723d7c3eaae94552251b50b31b3769dbfbc2b48f6cabe422b1bfc640dae20751997d8fd8bbe26a22c6865a46083e4d3621d7b200b19c79e515ef54bb9
+  languageName: node
+  linkType: hard
 
 "@react-native/dev-middleware@workspace:*, @react-native/dev-middleware@workspace:packages/dev-middleware":
   version: 0.0.0-use.local
@@ -4884,7 +4927,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/gradle-plugin@workspace:*, @react-native/gradle-plugin@workspace:packages/gradle-plugin":
+"@react-native/gradle-plugin@npm:0.86.0, @react-native/gradle-plugin@workspace:packages/gradle-plugin":
   version: 0.0.0-use.local
   resolution: "@react-native/gradle-plugin@workspace:packages/gradle-plugin"
   languageName: unknown
@@ -4905,7 +4948,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/js-polyfills@workspace:*, @react-native/js-polyfills@workspace:packages/polyfills":
+"@react-native/js-polyfills@npm:0.86.0, @react-native/js-polyfills@workspace:*, @react-native/js-polyfills@workspace:packages/polyfills":
   version: 0.0.0-use.local
   resolution: "@react-native/js-polyfills@workspace:packages/polyfills"
   languageName: unknown
@@ -4947,14 +4990,14 @@ __metadata:
   peerDependencies:
     "@types/react": ^19.1.0
     react: "*"
-    react-native: 1000.0.0
+    react-native: 0.86.0
   peerDependenciesMeta:
     "@types/react":
       optional: true
   languageName: unknown
   linkType: soft
 
-"@react-native/normalize-colors@workspace:*, @react-native/normalize-colors@workspace:packages/normalize-color":
+"@react-native/normalize-colors@npm:0.86.0, @react-native/normalize-colors@workspace:packages/normalize-color":
   version: 0.0.0-use.local
   resolution: "@react-native/normalize-colors@workspace:packages/normalize-color"
   languageName: unknown
@@ -9932,10 +9975,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hermes-compiler@npm:250829098.0.12":
-  version: 250829098.0.12
-  resolution: "hermes-compiler@npm:250829098.0.12"
-  checksum: 10c0/068efecbc91286393ac52b10b7f6ca3c51884fa4fa500e65aaaa6ba74cc137786ec0ffa8bf7a2f39f27278822246d8108ad63053a88aca5de69fe599ec0028b9
+"hermes-compiler@npm:250829098.0.14":
+  version: 250829098.0.14
+  resolution: "hermes-compiler@npm:250829098.0.14"
+  checksum: 10c0/b9f4024ac7377bebec61b91e1cee8f3909a8ecad0ea786c6b7c3863f8b65bd94f928850b341c82865a9435b8390d33f03e149e9d479c6870b6f5a754d101fde7
   languageName: node
   linkType: hard
 
@@ -14645,13 +14688,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "react-native-macos@workspace:packages/react-native"
   dependencies:
-    "@react-native-macos/virtualized-lists": "workspace:*"
-    "@react-native/assets-registry": "workspace:*"
-    "@react-native/codegen": "workspace:*"
-    "@react-native/community-cli-plugin": "workspace:*"
-    "@react-native/gradle-plugin": "workspace:*"
-    "@react-native/js-polyfills": "workspace:*"
-    "@react-native/normalize-colors": "workspace:*"
+    "@react-native-macos/virtualized-lists": "npm:0.86.0-rc0"
+    "@react-native/assets-registry": "npm:0.86.0"
+    "@react-native/codegen": "npm:0.86.0"
+    "@react-native/community-cli-plugin": "npm:0.86.0"
+    "@react-native/gradle-plugin": "npm:0.86.0"
+    "@react-native/js-polyfills": "npm:0.86.0"
+    "@react-native/normalize-colors": "npm:0.86.0"
     abort-controller: "npm:^3.0.0"
     anser: "npm:^1.4.9"
     ansi-regex: "npm:^5.0.0"
@@ -14660,7 +14703,7 @@ __metadata:
     commander: "npm:^12.0.0"
     flow-enums-runtime: "npm:^0.0.6"
     glob: "npm:^7.1.1"
-    hermes-compiler: "npm:250829098.0.12"
+    hermes-compiler: "npm:250829098.0.14"
     invariant: "npm:^2.2.4"
     memoize-one: "npm:^5.0.0"
     metro-runtime: "npm:^0.84.3"
@@ -14679,9 +14722,10 @@ __metadata:
     ws: "npm:^7.5.10"
     yargs: "npm:^17.6.2"
   peerDependencies:
-    "@react-native/jest-preset": "workspace:*"
+    "@react-native/jest-preset": 0.86.0
     "@types/react": ^19.1.1
     react: ^19.2.3
+    react-native: 0.86.0
   peerDependenciesMeta:
     "@react-native/jest-preset":
       optional: true
