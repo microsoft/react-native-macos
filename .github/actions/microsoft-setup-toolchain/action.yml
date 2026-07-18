@@ -12,16 +12,16 @@ inputs:
     default: yarn
   java-version:
     description: Desired Java version
-    default: "17"
+    default: '17'
   node-version:
     description: Desired Node version
-    default: "22"
+    default: '22'
   xcode-developer-dir:
     description: Set the path for the active Xcode developer directory
-    default: "/Applications/Xcode_26.2.app"
+    default: '/Applications/Xcode_26.2.app'
   cmake-version:
     description: CMake version to install. Set to 'system' to skip installation and use the runner's pre-installed cmake.
-    default: "3.31.9"
+    default: '3.31.9'
 runs:
   using: composite
   steps:

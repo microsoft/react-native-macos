@@ -3,7 +3,7 @@ name: Changesets Version Bump
 on:
   push:
     branches:
-      - "*-stable"
+      - '*-stable'
   workflow_dispatch:
 
 jobs:

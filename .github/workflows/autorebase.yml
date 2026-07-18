@@ -25,4 +25,4 @@ jobs:
         uses: cirrus-actions/rebase@1.8
         env:
           GITHUB_TOKEN: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
-    continue-on-error: true  # [macOS]
+    continue-on-error: true # [macOS]

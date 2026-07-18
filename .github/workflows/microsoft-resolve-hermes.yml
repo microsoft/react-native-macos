@@ -19,7 +19,7 @@ jobs:
   # Fast path: download upstream tarball and recompose, or resolve commit + cache
   # ---------------------------------------------------------------------------
   resolve-hermes:
-    name: "Resolve Hermes"
+    name: 'Resolve Hermes'
     runs-on: macos-15
     timeout-minutes: 15
     outputs:
@@ -96,7 +96,7 @@ jobs:
   # Pipeline: hermesc (host compiler) → 5 platform slices → assemble xcframework
   # ---------------------------------------------------------------------------
   build-hermesc:
-    name: "Build hermesc"
+    name: 'Build hermesc'
     if: ${{ needs.resolve-hermes.outputs.recomposed != 'true' && needs.resolve-hermes.outputs.cache-hit != 'true' }}
     needs: resolve-hermes
     runs-on: macos-15
@@ -137,7 +137,7 @@ jobs:
           retention-days: 30
 
   build-hermes-slice:
-    name: "Hermes ${{ matrix.slice }}"
+    name: 'Hermes ${{ matrix.slice }}'
     if: ${{ needs.resolve-hermes.outputs.recomposed != 'true' && needs.resolve-hermes.outputs.cache-hit != 'true' }}
     needs: [resolve-hermes, build-hermesc]
     runs-on: macos-15
@@ -205,7 +205,7 @@ jobs:
           retention-days: 30
 
   assemble-hermes:
-    name: "Assemble Hermes xcframework"
+    name: 'Assemble Hermes xcframework'
     if: ${{ needs.resolve-hermes.outputs.recomposed != 'true' && needs.resolve-hermes.outputs.cache-hit != 'true' }}
     needs: [resolve-hermes, build-hermes-slice]
     runs-on: macos-15

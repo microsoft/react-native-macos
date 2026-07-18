@@ -4,12 +4,12 @@ on:
   workflow_call:
     outputs:
       build-path:
-        description: "Path to the build directory"
+        description: 'Path to the build directory'
         value: ${{ jobs.build.outputs.build-path }}
 
 jobs:
   build:
-    name: "Build the website"
+    name: 'Build the website'
     runs-on: ubuntu-24.04
     outputs:
       build-path: ./build

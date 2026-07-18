@@ -162,8 +162,7 @@ component View(ref?: React.RefSetter<ViewInstance>, ...props: ViewProps) {
   if (resolvedProps.onKeyDown != null || resolvedProps.onKeyUp != null) {
     resolvedProps.onKeyDown =
       resolvedProps.onKeyDown != null ? onKeyDown : undefined;
-    resolvedProps.onKeyUp =
-      resolvedProps.onKeyUp != null ? onKeyUp : undefined;
+    resolvedProps.onKeyUp = resolvedProps.onKeyUp != null ? onKeyUp : undefined;
   }
   // macOS]
 

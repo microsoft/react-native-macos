@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-rntester:
-    name: "${{ matrix.platform }}, ${{ matrix.linkage }}"
+    name: '${{ matrix.platform }}, ${{ matrix.linkage }}'
     runs-on: macos-26
     timeout-minutes: 90
     strategy:
