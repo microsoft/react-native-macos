@@ -31,12 +31,12 @@
   "dependencies": {
     "@babel/core": "^7.25.2",
     "@babel/parser": "^7.29.0",
+    "glob": "^7.1.1",
     "hermes-parser": "0.36.0",
     "invariant": "^2.2.4",
     "nullthrows": "^1.1.1",
     "tinyglobby": "^0.2.15",
-    "yargs": "^17.6.2",
-    "glob": "^7.1.1"
+    "yargs": "^17.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
