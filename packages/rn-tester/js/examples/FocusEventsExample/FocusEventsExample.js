@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ({
+export default {
   title: 'Focus Events',
   description: 'Examples that show how Focus events can be used.',
   examples: [
@@ -175,4 +175,4 @@ export default ({
       },
     },
   ],
-}: RNTesterModule);
+} as RNTesterModule;

@@ -149,7 +149,7 @@ export type TextInputEditingEvent =
 
 // [macOS macOS-only
 export type SettingChangeEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
+  Readonly<{|
     autoCorrectEnabled: boolean,
     spellCheckEnabled: boolean,
     grammarCheckEnabled: boolean,
@@ -157,12 +157,12 @@ export type SettingChangeEvent = NativeSyntheticEvent<
 >;
 
 export type PasteEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
+  Readonly<{|
     dataTransfer: DataTransfer,
   |}>,
 >;
 
-export type SubmitKeyEvent = $ReadOnly<{|
+export type SubmitKeyEvent = Readonly<{|
   key: string,
   altKey?: ?boolean,
   ctrlKey?: ?boolean,
@@ -490,7 +490,7 @@ type TextInputMacOSProps = Readonly<{
    *
    * @platform macos
    */
-  onAutoCorrectChange?: ?(e: SettingChangeEvent) => mixed,
+  onAutoCorrectChange?: ?(e: SettingChangeEvent) => unknown,
 
   /**
    * Callback that is called when the text input's spellCheck setting changes.
@@ -500,7 +500,7 @@ type TextInputMacOSProps = Readonly<{
    *
    * @platform macos
    */
-  onSpellCheckChange?: ?(e: SettingChangeEvent) => mixed,
+  onSpellCheckChange?: ?(e: SettingChangeEvent) => unknown,
 
   /**
    * Callback that is called when the text input's grammarCheck setting changes.
@@ -510,7 +510,7 @@ type TextInputMacOSProps = Readonly<{
    *
    * @platform macos
    */
-  onGrammarCheckChange?: ?(e: SettingChangeEvent) => mixed,
+  onGrammarCheckChange?: ?(e: SettingChangeEvent) => unknown,
 
   /**
    * Enables Paste support for certain types of pasted types
@@ -556,13 +556,13 @@ type TextInputMacOSProps = Readonly<{
    * Callback that is called when a key is pressed down.
    * @platform macos
    */
-  onKeyDown?: ?(e: KeyDownEvent) => mixed,
+  onKeyDown?: ?(e: KeyDownEvent) => unknown,
 
   /**
    * Callback that is called when a key is released.
    * @platform macos
    */
-  onKeyUp?: ?(e: KeyUpEvent) => mixed,
+  onKeyUp?: ?(e: KeyUpEvent) => unknown,
 }>;
 // macOS]
 

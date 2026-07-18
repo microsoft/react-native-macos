@@ -63,13 +63,13 @@ type DirectEventProps = Readonly<{
    * This event is fired when the scrollView's inverted property changes.
    * @platform macos
    */
-  onInvertedDidChange?: ?() => mixed,
+  onInvertedDidChange?: ?() => unknown,
 
   /**
    * This event is fired when the system's preferred scroller style changes.
    * The `preferredScrollerStyle` key will be `legacy` or `overlay`.
    */
-  onPreferredScrollerStyleDidChange?: ?(event: ScrollEvent) => mixed,
+  onPreferredScrollerStyleDidChange?: ?(event: ScrollEvent) => unknown,
   // macOS]
 
   /**

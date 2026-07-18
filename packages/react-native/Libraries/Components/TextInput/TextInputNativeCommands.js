@@ -24,7 +24,7 @@ export interface TextInputNativeCommands<T> {
   ) => void;
   // [macOS
   // NYI on Android
-  +setGhostText: (
+  readonly setGhostText: (
     viewRef: React.ElementRef<T>,
     value: ?string, // in theory this is nullable
   ) => void;

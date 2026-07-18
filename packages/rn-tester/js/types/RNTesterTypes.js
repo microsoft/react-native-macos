@@ -31,7 +31,7 @@ export type RNTesterModule = Readonly<{
   documentationURL?: ?string,
   category?: ?string,
   framework?: string,
-  examples: $ReadOnlyArray<RNTesterModuleExample>,
+  examples: ReadonlyArray<RNTesterModuleExample>,
   category?: string,
   documentationURL?: string,
   showIndividualExamples?: boolean,

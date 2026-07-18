@@ -14,9 +14,9 @@
 
 export type DraggedType = 'fileUrl' | 'image' | 'string';
 
-export type DraggedTypesType = DraggedType | $ReadOnlyArray<DraggedType>;
+export type DraggedTypesType = DraggedType | ReadonlyArray<DraggedType>;
 
-export const DraggedTypes: $ReadOnlyArray<DraggedType> = [
+export const DraggedTypes: ReadonlyArray<DraggedType> = [
   'fileUrl',
   'image',
   'string',

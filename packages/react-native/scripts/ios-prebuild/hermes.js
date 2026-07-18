@@ -165,10 +165,10 @@ type HermesEngineSourceType =
 */
 
 const HermesEngineSourceTypes /*:{
-  +BUILD_FROM_HERMES_COMMIT: "build_from_hermes_commit",
-  +DOWNLOAD_PREBUILD_TARBALL: "download_prebuild_tarball",
-  +DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: "download_prebuilt_nightly_tarball",
-  +LOCAL_PREBUILT_TARBALL: "local_prebuilt_tarball"
+  readonly BUILD_FROM_HERMES_COMMIT: "build_from_hermes_commit",
+  readonly DOWNLOAD_PREBUILD_TARBALL: "download_prebuild_tarball",
+  readonly DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: "download_prebuilt_nightly_tarball",
+  readonly LOCAL_PREBUILT_TARBALL: "local_prebuilt_tarball",
 } */ = {
   LOCAL_PREBUILT_TARBALL: 'local_prebuilt_tarball',
   DOWNLOAD_PREBUILD_TARBALL: 'download_prebuild_tarball',
@@ -240,12 +240,14 @@ async function getNightlyTarballUrl(
   version /*: string */,
   buildType /*: BuildFlavor */,
 ) /*: Promise<string> */ {
+  const artifactCoordinate = 'hermes-ios';
+  const artifactName = `hermes-ios-${buildType.toLowerCase()}.tar.gz`;
   return await computeNightlyTarballURL(
     version,
     buildType,
     'hermes',
-    'hermes-ios',
-    `hermes-ios-${buildType.toLowerCase()}.tar.gz`,
+    artifactCoordinate,
+    artifactName,
   );
 }
 

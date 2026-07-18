@@ -32,11 +32,11 @@ export type StatusBarStyle = keyof {
   /**
    * Dark background, white texts and icons
    */
-  'light-content': ColorValue, // [macOS]
+  'light-content': string,
   /**
    * Light background, dark texts and icons
    */
-  'dark-content': ColorValue, // [macOS]
+  'dark-content': string,
   ...
 };
 
