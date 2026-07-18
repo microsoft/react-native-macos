@@ -39,18 +39,10 @@
 
 [libs]
 flow-typed/
-packages/react-native/interface.js
 packages/react-native/flow/
 
 [options]
-enums=true
-experimental.pattern_matching=true
-casting_syntax=both
-component_syntax=true
-
 emoji=true
-
-exact_by_default=true
 
 format.bracket_spacing=false
 
@@ -100,4 +92,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.312.0
+^0.319.0

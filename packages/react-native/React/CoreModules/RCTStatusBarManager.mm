@@ -98,7 +98,6 @@ RCT_EXPORT_MODULE()
 
 - (void)startObserving
 {
-#if TARGET_OS_IOS // [visionOS]
   NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -110,7 +109,6 @@ RCT_EXPORT_MODULE()
          selector:@selector(applicationWillChangeStatusBarFrame:)
              name:UIApplicationWillChangeStatusBarFrameNotification
            object:nil];
-#endif // [visionOS]
 #pragma clang diagnostic pop
 }
 
@@ -121,7 +119,6 @@ RCT_EXPORT_MODULE()
 
 - (void)emitEvent:(NSString *)eventName forNotification:(NSNotification *)notification
 {
-#if TARGET_OS_IOS // [visionOS]
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   CGRect frame = [notification.userInfo[UIApplicationStatusBarFrameUserInfoKey] CGRectValue];
@@ -135,7 +132,6 @@ RCT_EXPORT_MODULE()
     },
   };
   [self sendEventWithName:eventName body:event];
-#endif // [visionOS]
 }
 
 - (void)applicationDidChangeStatusBarFrame:(NSNotification *)notification

@@ -5,6 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
+#import <UIKit/UIKit.h>
 #import <React/RCTUIKit.h> // [macOS]
 
 #import <React/RCTViewComponentView.h>
@@ -30,3 +33,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

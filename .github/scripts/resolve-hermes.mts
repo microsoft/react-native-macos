@@ -39,12 +39,12 @@ function setActionOutput(key: string, value: string) {
  * packages/react-native/sdks/hermes-engine/version.properties.
  *
  * Uses the same version key and validation as the local prebuild script.
- * Defaults to Hermes V1 unless RCT_HERMES_V1_ENABLED=0.
+ * Uses the single 0.87 artifact key, regardless of RCT_HERMES_V1_ENABLED.
  * A missing file permits a source build; malformed metadata must fail CI.
  */
 function resolveHermesArtifactVersion(): string | null {
   try {
-    const {version, versionKey} = readHermesMetadata('v1-default');
+    const {version, versionKey} = readHermesMetadata('single');
     echo(`Using ${versionKey}=${version}`);
     return version;
   } catch (error: any) {
@@ -56,14 +56,12 @@ function resolveHermesArtifactVersion(): string | null {
 }
 
 /**
- * Reads the pinned Hermes ref from packages/react-native/sdks/.hermesversion
- * (or .hermesv1version unless RCT_HERMES_V1_ENABLED=0). The value is a tag or commit in
+ * Reads the pinned Hermes ref from packages/react-native/sdks/.hermesv1version.
+ * The single 0.87 policy ignores RCT_HERMES_V1_ENABLED. The value is a tag or commit in
  * facebook/hermes. Returns null if the file is missing or empty.
  */
 function resolveHermesTag(): string | null {
-  const {tagFile} = selectHermesMetadata(
-    'v1-default', process.env.RCT_HERMES_V1_ENABLED,
-  );
+  const {tagFile} = selectHermesMetadata('single');
   const tagPath = path.resolve(
     import.meta.dirname!, '..', '..',
     'packages', 'react-native', 'sdks', tagFile,
@@ -272,7 +270,7 @@ switch (command) {
     // Concrete versions and missing metadata retain the independent source pin.
     const tag = resolveHermesTag();
     if (tag == null) {
-      echo('Could not read pinned Hermes ref from sdks/.hermesversion or sdks/.hermesv1version');
+      echo('Could not read pinned Hermes ref from sdks/.hermesv1version');
       process.exit(1);
     }
     setActionOutput('hermes-commit', tag);

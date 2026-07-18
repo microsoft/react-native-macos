@@ -26,6 +26,7 @@
 #include <unordered_map>
 
 #ifdef RN_SERIALIZABLE_STATE
+#include <folly/json.h>
 #include <react/renderer/mapbuffer/MapBuffer.h>
 #include <react/renderer/mapbuffer/MapBufferBuilder.h>
 #endif
@@ -628,8 +629,12 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
   react_native_expect(value.hasType<std::string>());
   if (value.hasType<std::string>()) {
     auto string = (std::string)value;
-    if (string == "auto" || string == "start") {
+    if (string == "auto") {
       result = TextAlignment::Natural;
+    } else if (string == "start") {
+      result = TextAlignment::Start;
+    } else if (string == "end") {
+      result = TextAlignment::End;
     } else if (string == "left") {
       result = TextAlignment::Left;
     } else if (string == "center") {
@@ -664,6 +669,10 @@ inline std::string toString(const TextAlignment &textAlignment)
       return "right";
     case TextAlignment::Justified:
       return "justified";
+    case TextAlignment::Start:
+      return "start";
+    case TextAlignment::End:
+      return "end";
   }
 
   LOG(ERROR) << "Unsupported TextAlignment value";
@@ -916,6 +925,8 @@ inline void fromRawValue(const PropsParserContext &context, const RawValue &valu
       result = TextDecorationStyle::Dotted;
     } else if (string == "dashed") {
       result = TextDecorationStyle::Dashed;
+    } else if (string == "wavy") {
+      result = TextDecorationStyle::Wavy;
     } else {
       LOG(ERROR) << "Unsupported TextDecorationStyle value: " << string;
       react_native_expect(false);
@@ -941,6 +952,8 @@ inline std::string toString(const TextDecorationStyle &textDecorationStyle)
       return "dotted";
     case TextDecorationStyle::Dashed:
       return "dashed";
+    case TextDecorationStyle::Wavy:
+      return "wavy";
   }
 
   LOG(ERROR) << "Unsupported TextDecorationStyle value";
@@ -1128,6 +1141,11 @@ constexpr static MapBuffer::Key TA_KEY_ROLE = 26;
 constexpr static MapBuffer::Key TA_KEY_TEXT_TRANSFORM = 27;
 constexpr static MapBuffer::Key TA_KEY_ALIGNMENT_VERTICAL = 28;
 constexpr static MapBuffer::Key TA_KEY_MAX_FONT_SIZE_MULTIPLIER = 29;
+constexpr static MapBuffer::Key TA_KEY_TEXT_EFFECTS = 30;
+
+// Keys within each text effect entry MapBuffer
+constexpr static MapBuffer::Key TE_KEY_NAME = 0;
+constexpr static MapBuffer::Key TE_KEY_PROPS = 1;
 
 // constants for ParagraphAttributes serialization
 constexpr static MapBuffer::Key PA_KEY_MAX_NUMBER_OF_LINES = 0;
@@ -1331,6 +1349,16 @@ inline MapBuffer toMapBuffer(const TextAttributes &textAttributes)
   }
   if (textAttributes.role.has_value()) {
     builder.putInt(TA_KEY_ROLE, static_cast<int32_t>(*textAttributes.role));
+  }
+  if (!textAttributes.textEffects.empty()) {
+    auto effectsBuilder = MapBufferBuilder();
+    for (size_t i = 0; i < textAttributes.textEffects.size(); i++) {
+      auto effectBuilder = MapBufferBuilder();
+      effectBuilder.putString(TE_KEY_NAME, textAttributes.textEffects[i].name);
+      effectBuilder.putString(TE_KEY_PROPS, folly::toJson(textAttributes.textEffects[i].props));
+      effectsBuilder.putMapBuffer(i, effectBuilder.build());
+    }
+    builder.putMapBuffer(TA_KEY_TEXT_EFFECTS, effectsBuilder.build());
   }
   return builder.build();
 }

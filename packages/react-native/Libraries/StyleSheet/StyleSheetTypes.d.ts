@@ -556,6 +556,7 @@ export interface ViewStyle extends FlexStyle, ShadowStyleIOS, TransformsStyle {
   filter?: ReadonlyArray<FilterFunction> | string | undefined;
 
   mixBlendMode?: BlendMode | undefined;
+  backgroundImage?: ReadonlyArray<BackgroundImageValue> | string | undefined;
   experimental_backgroundImage?:
     | ReadonlyArray<BackgroundImageValue>
     | string
@@ -611,7 +612,13 @@ export type FontVariant =
 export interface TextStyleIOS extends ViewStyle {
   fontVariant?: FontVariant[] | undefined;
   textDecorationColor?: ColorValue | undefined;
-  textDecorationStyle?: 'solid' | 'double' | 'dotted' | 'dashed' | undefined;
+  textDecorationStyle?:
+    | 'solid'
+    | 'double'
+    | 'dotted'
+    | 'dashed'
+    | 'wavy'
+    | undefined;
   writingDirection?: 'auto' | 'ltr' | 'rtl' | undefined;
 }
 
@@ -666,14 +673,28 @@ export interface TextStyle extends TextStyleIOS, TextStyleAndroid, ViewStyle {
     | undefined;
   letterSpacing?: number | undefined;
   lineHeight?: number | undefined;
-  textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify' | undefined;
+  textAlign?:
+    | 'auto'
+    | 'left'
+    | 'right'
+    | 'center'
+    | 'justify'
+    | 'start'
+    | 'end'
+    | undefined;
   textDecorationLine?:
     | 'none'
     | 'underline'
     | 'line-through'
     | 'underline line-through'
     | undefined;
-  textDecorationStyle?: 'solid' | 'double' | 'dotted' | 'dashed' | undefined;
+  textDecorationStyle?:
+    | 'solid'
+    | 'double'
+    | 'dotted'
+    | 'dashed'
+    | 'wavy'
+    | undefined;
   textDecorationColor?: ColorValue | undefined;
   textShadowColor?: ColorValue | undefined;
   textShadowOffset?: {width: number; height: number} | undefined;

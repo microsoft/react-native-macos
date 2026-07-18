@@ -27,9 +27,14 @@ namespace {
 
 class TestFlagsWithUnflattenFix : public ReactNativeFeatureFlagsDefaults {
  public:
+  explicit TestFlagsWithUnflattenFix(bool enabled) : enabled_(enabled) {}
+
   bool fixDifferentiatorParentTagForUnflattenCase() override {
-    return true;
+    return enabled_;
   }
+
+ private:
+  bool enabled_;
 };
 
 } // namespace
@@ -107,7 +112,7 @@ class DifferentiatorUnflattenTest : public ::testing::Test {
     rootShadowNode_ =
         std::static_pointer_cast<RootShadowNode>(rootShadowNode_->cloneTree(
             node->getFamily(), [&](const ShadowNode& oldShadowNode) {
-              auto viewProps = std::make_shared<ViewShadowNodeProps>();
+              auto viewProps = std::make_shared<ViewProps>();
               callback(*viewProps);
               return oldShadowNode.clone(
                   ShadowNodeFragment{.props = viewProps});
@@ -164,6 +169,9 @@ class DifferentiatorUnflattenTest : public ::testing::Test {
 TEST_F(
     DifferentiatorUnflattenTest,
     withoutFix_updateMutationHasWrongParentTag) {
+  ReactNativeFeatureFlags::dangerouslyForceOverride(
+      std::make_unique<TestFlagsWithUnflattenFix>(false));
+
   applyUnflattenSetup_();
 
   auto mutations = calculateMutations_();
@@ -186,7 +194,7 @@ TEST_F(
 // as parentTag, and StubViewTree::mutate() succeeds without assertion failure.
 TEST_F(DifferentiatorUnflattenTest, withFix_updateMutationHasCorrectParentTag) {
   ReactNativeFeatureFlags::dangerouslyForceOverride(
-      std::make_unique<TestFlagsWithUnflattenFix>());
+      std::make_unique<TestFlagsWithUnflattenFix>(true));
 
   applyUnflattenSetup_();
 

@@ -97,7 +97,9 @@ enum class TextAlignment {
   Left, // Visually left aligned.
   Center, // Visually centered.
   Right, // Visually right aligned.
-  Justified // Fully-justified. The last line in a paragraph is natural-aligned.
+  Justified, // Fully-justified. The last line in a paragraph is natural-aligned.
+  Start, // Aligned to the start side of the paragraph direction.
+  End // Aligned to the end side of the paragraph direction.
 };
 
 enum class TextAlignmentVertical {
@@ -134,7 +136,7 @@ enum class LineBreakMode {
 
 enum class TextDecorationLineType { None, Underline, Strikethrough, UnderlineStrikethrough };
 
-enum class TextDecorationStyle { Solid, Double, Dotted, Dashed };
+enum class TextDecorationStyle { Solid, Double, Dotted, Dashed, Wavy };
 
 enum class TextTransform {
   None,

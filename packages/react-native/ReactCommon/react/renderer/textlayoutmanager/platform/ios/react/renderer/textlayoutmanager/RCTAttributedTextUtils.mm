@@ -18,6 +18,23 @@
 
 using namespace facebook::react;
 
+inline static TextAlignment RCTResolveTextAlignment(TextAlignment textAlignment, LayoutDirection layoutDirection)
+{
+  const bool isRTL = layoutDirection == LayoutDirection::RightToLeft;
+  switch (textAlignment) {
+    case TextAlignment::Start:
+      return isRTL ? TextAlignment::Right : TextAlignment::Left;
+    case TextAlignment::End:
+      return isRTL ? TextAlignment::Left : TextAlignment::Right;
+    case TextAlignment::Right:
+      return isRTL ? TextAlignment::Left : TextAlignment::Right;
+    case TextAlignment::Left:
+      return isRTL ? TextAlignment::Right : TextAlignment::Left;
+    default:
+      return textAlignment;
+  }
+}
+
 inline static UIFontWeight RCTUIFontWeightFromInteger(NSInteger fontWeight)
 {
   assert(fontWeight > 50);
@@ -213,14 +230,9 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
   BOOL isParagraphStyleUsed = NO;
   if (textAttributes.alignment.has_value()) {
-    TextAlignment textAlignment = textAttributes.alignment.value_or(TextAlignment::Natural);
-    if (textAttributes.layoutDirection.value_or(LayoutDirection::LeftToRight) == LayoutDirection::RightToLeft) {
-      if (textAlignment == TextAlignment::Right) {
-        textAlignment = TextAlignment::Left;
-      } else if (textAlignment == TextAlignment::Left) {
-        textAlignment = TextAlignment::Right;
-      }
-    }
+    TextAlignment textAlignment = RCTResolveTextAlignment(
+        textAttributes.alignment.value_or(TextAlignment::Natural),
+        textAttributes.layoutDirection.value_or(LayoutDirection::LeftToRight));
 
     paragraphStyle.alignment = RCTNSTextAlignmentFromTextAlignment(textAlignment);
     isParagraphStyleUsed = YES;
@@ -257,29 +269,61 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
   // Decoration
   if (textAttributes.textDecorationLineType.value_or(TextDecorationLineType::None) != TextDecorationLineType::None) {
     auto textDecorationLineType = textAttributes.textDecorationLineType.value();
+    auto textDecorationStyleValue = textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid);
+    UIColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor);
 
     NSUnderlineStyle style = RCTNSUnderlineStyleFromTextDecorationStyle(
         textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid));
 
     RCTPlatformColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor); // [macOS]
 
-    // Underline
-    if (textDecorationLineType == TextDecorationLineType::Underline ||
-        textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
-      attributes[NSUnderlineStyleAttributeName] = @(style);
-
-      if (textDecorationColor) {
-        attributes[NSUnderlineColorAttributeName] = textDecorationColor;
+    // Custom drawing for styles UIKit can't render faithfully: wavy (no
+    // native value), and dotted/dashed (UIKit's pattern bits don't match
+    // browser geometry). The other styles continue to use NSUnderlineStyle.
+    bool needsCustomDrawing = textDecorationStyleValue == TextDecorationStyle::Wavy ||
+        textDecorationStyleValue == TextDecorationStyle::Dotted ||
+        textDecorationStyleValue == TextDecorationStyle::Dashed;
+    if (needsCustomDrawing) {
+      UIColor *strokeColor = (textDecorationColor != nil) ? textDecorationColor
+                                                          : RCTUIColorFromSharedColor(textAttributes.foregroundColor);
+      NSMutableArray<NSString *> *lines = [NSMutableArray array];
+      if (textDecorationLineType == TextDecorationLineType::Underline ||
+          textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
+        [lines addObject:@"underline"];
       }
-    }
+      if (textDecorationLineType == TextDecorationLineType::Strikethrough ||
+          textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
+        [lines addObject:@"line-through"];
+      }
+      NSString *styleKey = textDecorationStyleValue == TextDecorationStyle::Wavy
+          ? @"wavy"
+          : (textDecorationStyleValue == TextDecorationStyle::Dotted ? @"dotted" : @"dashed");
+      attributes[RCTCustomDecorationAttributeName] = @{
+        @"lines" : lines,
+        @"color" : (strokeColor != nil) ? strokeColor : [UIColor labelColor],
+        @"style" : styleKey
+      };
+    } else {
+      NSUnderlineStyle style = RCTNSUnderlineStyleFromTextDecorationStyle(textDecorationStyleValue);
 
-    // Strikethrough
-    if (textDecorationLineType == TextDecorationLineType::Strikethrough ||
-        textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
-      attributes[NSStrikethroughStyleAttributeName] = @(style);
+      // Underline
+      if (textDecorationLineType == TextDecorationLineType::Underline ||
+          textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
+        attributes[NSUnderlineStyleAttributeName] = @(style);
 
-      if (textDecorationColor) {
-        attributes[NSStrikethroughColorAttributeName] = textDecorationColor;
+        if (textDecorationColor != nil) {
+          attributes[NSUnderlineColorAttributeName] = textDecorationColor;
+        }
+      }
+
+      // Strikethrough
+      if (textDecorationLineType == TextDecorationLineType::Strikethrough ||
+          textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {
+        attributes[NSStrikethroughStyleAttributeName] = @(style);
+
+        if (textDecorationColor != nil) {
+          attributes[NSStrikethroughColorAttributeName] = textDecorationColor;
+        }
       }
     }
   }
@@ -347,7 +391,7 @@ static void RCTApplyBaselineOffsetForRange(NSMutableAttributedString *attributed
                             maximumFontLineHeight = MAX(UIFontLineHeight(font), maximumFontLineHeight); // [macOS]
                           }];
 
-  if (maximumLineHeight < maximumFontLineHeight) {
+  if (maximumLineHeight < maximumFontLineHeight && !ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment()) {
     return;
   }
 

@@ -21,7 +21,6 @@
 #import "RCTI18nUtil.h"
 #import "RCTLocalizedString.h"
 #import "RCTLog.h"
-#import "RCTRootContentView.h" // [macOS]
 #import "RCTViewUtils.h"
 #import "UIView+React.h"
 #import "RCTViewKeyboardEvent.h"

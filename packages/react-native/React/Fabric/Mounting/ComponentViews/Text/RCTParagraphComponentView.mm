@@ -10,6 +10,7 @@
 
 #if !TARGET_OS_OSX // [macOS]
 #import <MobileCoreServices/UTCoreTypes.h>
+#import <react/featureflags/ReactNativeFeatureFlags.h>
 #endif // [macOS]
 #if TARGET_OS_OSX // [macOS
 #import <QuartzCore/CAShapeLayer.h>
@@ -33,6 +34,15 @@
 #endif // macOS]
 
 using namespace facebook::react;
+
+@interface RCTTextLayoutManager (RCTParagraphComponentViewPrivate)
+
+- (CGRect)drawingFrameForAttributedString:(facebook::react::AttributedString)attributedString
+                      paragraphAttributes:(facebook::react::ParagraphAttributes)paragraphAttributes
+                                    frame:(CGRect)frame
+                           containerFrame:(CGRect *)containerFrame;
+
+@end
 
 #if TARGET_OS_OSX // [macOS
 // Cancel React Native's touch handling by finding the RCTSurfaceTouchHandler
@@ -62,6 +72,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 @property (nonatomic) ParagraphShadowNode::ConcreteState::Shared state;
 @property (nonatomic) ParagraphAttributes paragraphAttributes;
 @property (nonatomic) LayoutMetrics layoutMetrics;
+@property (nonatomic) CGRect drawingFrame;
 
 @end
 
@@ -99,6 +110,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   UILongPressGestureRecognizer *_longPressGestureRecognizer;
 #endif // [macOS]
   RCTParagraphTextView *_textView;
+  CGRect _textLayoutFrame;
   RCTParagraphSelectableTextView *_selectableTextView; // [macOS]
 }
 
@@ -111,6 +123,8 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
     self.opaque = NO;
 #endif // [macOS]
     _textView = [RCTParagraphTextView new];
+    _textView.backgroundColor = UIColor.clearColor;
+    _textView.drawingFrame = self.bounds;
     _textView.backgroundColor = RCTPlatformColor.clearColor; // [macOS]
     self.contentView = _textView;
   }
@@ -193,6 +207,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
   // re-applying individual sub-values which weren't changed.
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:_layoutMetrics];
   _textView.layoutMetrics = _layoutMetrics;
+  _textLayoutFrame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
 
@@ -215,6 +230,28 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 {
   [super layoutSubviews];
 
+  CGRect textViewFrame = self.bounds;
+  CGRect drawingFrame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+
+  if (ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment() && _textView.state &&
+      drawingFrame.size.height > 0) {
+    const auto &stateData = _textView.state->getData();
+    auto textLayoutManager = stateData.layoutManager.lock();
+    if (textLayoutManager) {
+      RCTTextLayoutManager *nativeTextLayoutManager =
+          (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
+      CGRect drawingContainerFrame = drawingFrame;
+      drawingFrame = [nativeTextLayoutManager drawingFrameForAttributedString:stateData.attributedString
+                                                          paragraphAttributes:_paragraphAttributes
+                                                                        frame:drawingFrame
+                                                               containerFrame:&drawingContainerFrame];
+      textViewFrame = CGRectUnion(textViewFrame, drawingContainerFrame);
+    }
+  }
+
+  _textLayoutFrame = drawingFrame;
+  _textView.frame = textViewFrame;
+  _textView.drawingFrame = CGRectOffset(drawingFrame, -textViewFrame.origin.x, -textViewFrame.origin.y);
   if (_selectableTextView) {
     _selectableTextView.frame = self.bounds;
   } else {
@@ -368,7 +405,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
     if (textLayoutManager) {
       RCTTextLayoutManager *nativeTextLayoutManager =
           (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
-      CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+      CGRect frame = _textLayoutFrame;
       _accessibilityProvider =
           [[RCTParagraphComponentAccessibilityProvider alloc] initWithString:data.attributedString
                                                                layoutManager:nativeTextLayoutManager
@@ -448,7 +485,7 @@ static void RCTCancelTouchesForView(RCTPlatformView *view)
 
   RCTTextLayoutManager *nativeTextLayoutManager =
       (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
-  CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+  CGRect frame = _textLayoutFrame;
 
   auto eventEmitter = [nativeTextLayoutManager getEventEmitterWithAttributeString:stateData.attributedString
                                                               paragraphAttributes:_paragraphAttributes
@@ -691,7 +728,7 @@ Class<RCTComponentViewProtocol> RCTParagraphCls(void)
   RCTTextLayoutManager *nativeTextLayoutManager =
       (RCTTextLayoutManager *)unwrapManagedObject(textLayoutManager->getNativeTextLayoutManager());
 
-  CGRect frame = RCTCGRectFromRect(_layoutMetrics.getContentFrame());
+  CGRect frame = _drawingFrame;
 
   [nativeTextLayoutManager drawAttributedString:stateData.attributedString
                             paragraphAttributes:_paragraphAttributes

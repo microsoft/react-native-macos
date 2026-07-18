@@ -17,10 +17,10 @@ import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaScriptContextHolder
 import com.facebook.react.bridge.JavaScriptModule
 import com.facebook.react.bridge.JavaScriptModuleRegistry
-import com.facebook.react.bridge.NativeArray
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactSoftExceptionLogger.logSoftException
+import com.facebook.react.bridge.RuntimeExecutor
 import com.facebook.react.bridge.UIManager
 import com.facebook.react.common.annotations.FrameworkAPI
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
@@ -56,7 +56,10 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
     get() = reactHost.defaultBackButtonHandler
 
   init {
-    if (ReactNativeNewArchitectureFeatureFlags.useFabricInterop()) {
+    if (
+        !ReactBuildConfig.UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP &&
+            ReactNativeNewArchitectureFeatureFlags.useFabricInterop()
+    ) {
       initializeInteropModules()
     }
   }
@@ -117,8 +120,8 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
       private val reactHost: ReactHostImpl,
       private val jsModuleInterface: Class<out JavaScriptModule>,
   ) : InvocationHandler {
-    override fun invoke(proxy: Any, method: Method, args: Array<Any?>): Any? {
-      val jsArgs: NativeArray = Arguments.fromJavaArgs(args)
+    override fun invoke(proxy: Any, method: Method, args: Array<Any?>?): Any? {
+      val jsArgs = if (args != null) Arguments.fromJavaArgs(args) else null
       reactHost.callFunctionOnModule(
           JavaScriptModuleRegistry.getJSModuleName(jsModuleInterface),
           method.name,
@@ -181,4 +184,6 @@ internal class BridgelessReactContext(context: Context, private val reactHost: R
   }
 
   override fun getJSCallInvokerHolder(): CallInvokerHolder? = reactHost.jsCallInvokerHolder
+
+  override fun getRuntimeExecutor(): RuntimeExecutor? = reactHost.runtimeExecutor
 }

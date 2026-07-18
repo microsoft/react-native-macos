@@ -32,11 +32,13 @@ test.each([
   ['single', undefined, false],
   ['single', '0', false],
   ['single', '1', false],
+  ['single', '', false],
+  ['single', 'true', false],
 ])('%s with flag %s selects the exact key and tag file', (policy, flag, v1) => {
   expect(parseHermesMetadata(properties, policy, flag)).toEqual({
     version: v1 ? '234.5.67' : '123.4.56',
     versionKey: v1 ? 'HERMES_V1_VERSION_NAME' : 'HERMES_VERSION_NAME',
-    tagFile: v1 ? '.hermesv1version' : '.hermesversion',
+    tagFile: v1 || policy === 'single' ? '.hermesv1version' : '.hermesversion',
   });
 });
 
@@ -124,12 +126,19 @@ test('reads checked-in metadata relative to the helper', () => {
       'utf8',
     ),
   );
-  expect(readHermesMetadata('legacy-default', '0').version).toBe(
-    metadata.HERMES_VERSION_NAME,
-  );
-  expect(readHermesMetadata('legacy-default', '1').version).toBe(
-    metadata.HERMES_V1_VERSION_NAME,
-  );
+  for (const flag of [undefined, '0', '1', '', 'true']) {
+    const selected = readHermesMetadata('single', flag);
+    expect(selected.version).toBe(metadata.HERMES_VERSION_NAME);
+    expect(selected.tagFile).toBe('.hermesv1version');
+    expect(
+      fs
+        .readFileSync(
+          path.resolve(__dirname, '../../../sdks', selected.tagFile),
+          'utf8',
+        )
+        .trim(),
+    ).not.toBe('');
+  }
 });
 
 test('the default runtime, compiler, and source tag versions agree', () => {
