@@ -8,7 +8,6 @@
  * @format
  */
 
-const {createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const {
   findMatchingHermesVersion,
@@ -168,12 +167,10 @@ type HermesEngineSourceType =
 */
 
 const HermesEngineSourceTypes /*:{
+  readonly BUILD_FROM_HERMES_COMMIT: "build_from_hermes_commit",
   readonly DOWNLOAD_PREBUILD_TARBALL: "download_prebuild_tarball",
-  readonly LOCAL_PREBUILT_TARBALL: "local_prebuilt_tarball"
-  +BUILD_FROM_HERMES_COMMIT: "build_from_hermes_commit",
-  +DOWNLOAD_PREBUILD_TARBALL: "download_prebuild_tarball",
-  +DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: "download_prebuilt_nightly_tarball",
-  +LOCAL_PREBUILT_TARBALL: "local_prebuilt_tarball"
+  readonly DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: "download_prebuilt_nightly_tarball",
+  readonly LOCAL_PREBUILT_TARBALL: "local_prebuilt_tarball",
 } */ = {
   LOCAL_PREBUILT_TARBALL: 'local_prebuilt_tarball',
   DOWNLOAD_PREBUILD_TARBALL: 'download_prebuild_tarball',
@@ -238,6 +235,21 @@ function getTarballUrl(
     process.env.ENTERPRISE_REPOSITORY ?? 'https://repo1.maven.org/maven2';
   const namespace = 'com/facebook/hermes';
   return `${mavenRepoUrl}/${namespace}/hermes-ios/${version}/hermes-ios-${version}-hermes-ios-${buildType.toLowerCase()}.tar.gz`;
+}
+
+async function getNightlyTarballUrl(
+  version /*: string */,
+  buildType /*: BuildFlavor */,
+) /*: Promise<string> */ {
+  const artifactCoordinate = 'hermes-ios';
+  const artifactName = `hermes-ios-${buildType.toLowerCase()}.tar.gz`;
+  return await computeNightlyTarballURL(
+    version,
+    buildType,
+    'hermes',
+    artifactCoordinate,
+    artifactName,
+  );
 }
 
 /**
@@ -343,6 +355,16 @@ async function downloadPrebuildTarball(
   const url = getTarballUrl(version, buildType);
   hermesLog(`Using release tarball from URL: ${url}`);
   return downloadStableHermes(version, buildType, artifactsPath);
+}
+
+async function downloadPrebuiltNightlyTarball(
+  version /*: string */,
+  buildType /*: BuildFlavor */,
+  artifactsPath /*: string*/,
+) /*: Promise<string> */ {
+  const url = await getNightlyTarballUrl(version, buildType);
+  hermesLog(`Using nightly tarball from URL: ${url}`);
+  return downloadHermesTarball(url, version, buildType, artifactsPath);
 }
 
 async function downloadStableHermes(

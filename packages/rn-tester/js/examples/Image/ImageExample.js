@@ -24,14 +24,13 @@ import {
   Image,
   ImageBackground,
   PixelRatio,
+  Platform, // [macOS]
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 
 const ALPHA_PNG_ASSET = require('../../assets/alpha-hotdog.png');
-import {Image, ImageBackground, StyleSheet, Text, View} from 'react-native';
-import {Platform} from 'react-native'; // [macOS]
 
 const IMAGE1 =
   'https://www.facebook.com/assets/fb_lite_messaging/E2EE-settings@3x.png';

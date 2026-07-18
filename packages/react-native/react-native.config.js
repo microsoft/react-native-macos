@@ -180,24 +180,30 @@ if (apple) {
     linkConfig: () => {
       return {
         isInstalled: (
-          _projectConfig /*: mixed */,
-          _package /*: mixed */,
-          _dependencyConfig /*: mixed */,
+          _projectConfig /*: unknown */,
+          _package /*: unknown */,
+          _dependencyConfig /*: unknown */,
         ) => false,
         register: (
-          _package /*: mixed */,
-          _dependencyConfig /*: mixed */,
-          _obj /*: mixed */,
-          _projectConfig /*: mixed */,
+          _package /*: unknown */,
+          _dependencyConfig /*: unknown */,
+          _obj /*: unknown */,
+          _projectConfig /*: unknown */,
         ) => {},
         unregister: (
-          _package /*: mixed */,
-          _dependencyConfig /*: mixed */,
-          _projectConfig /*: mixed */,
-          _dependencyConfigs /*: mixed */,
+          _package /*: unknown */,
+          _dependencyConfig /*: unknown */,
+          _projectConfig /*: unknown */,
+          _dependencyConfigs /*: unknown */,
         ) => {},
-        copyAssets: (_assets /*: mixed */, _projectConfig /*: mixed */) => {},
-        unlinkAssets: (_assets /*: mixed */, _projectConfig /*: mixed */) => {},
+        copyAssets: (
+          _assets /*: unknown */,
+          _projectConfig /*: unknown */,
+        ) => {},
+        unlinkAssets: (
+          _assets /*: unknown */,
+          _projectConfig /*: unknown */,
+        ) => {},
       };
     },
     projectConfig: apple.getProjectConfig({platformName: 'macos'}),

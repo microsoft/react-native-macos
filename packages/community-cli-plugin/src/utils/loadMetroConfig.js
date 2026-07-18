@@ -9,7 +9,7 @@
  */
 
 import type {Config} from '@react-native-community/cli-types';
-import type {MetroConfig} from 'metro';
+import type {InputConfigT} from 'metro-config';
 
 import {CLIError} from './errors';
 import {reactNativePlatformResolver} from './metroPlatformResolver';
@@ -36,26 +36,27 @@ export type ConfigLoadingContext = Readonly<{
 function getCommunityCliDefaultConfig(
   ctx: ConfigLoadingContext,
   config: HydratedMetroConfig,
-): MetroConfig {
+): InputConfigT {
   const outOfTreePlatforms = Object.keys(ctx.platforms).filter(
     platform => ctx.platforms[platform].npmPackageName,
   );
-  const resolver: Partial<{...HydratedMetroConfig['resolver']}> = {
+  const resolver: NonNullable<InputConfigT['resolver']> = {
     platforms: [...Object.keys(ctx.platforms), 'native'],
+    ...(outOfTreePlatforms.length > 0
+      ? {
+          resolveRequest: reactNativePlatformResolver(
+            outOfTreePlatforms.reduce<{[platform: string]: string}>(
+              (result, platform) => {
+                result[platform] = ctx.platforms[platform].npmPackageName;
+                return result;
+              },
+              {},
+            ),
+            config.resolver?.resolveRequest,
+          ),
+        }
+      : {}),
   };
-
-  if (outOfTreePlatforms.length) {
-    resolver.resolveRequest = reactNativePlatformResolver(
-      outOfTreePlatforms.reduce<{[platform: string]: string}>(
-        (result, platform) => {
-          result[platform] = ctx.platforms[platform].npmPackageName;
-          return result;
-        },
-        {},
-      ),
-      config.resolver?.resolveRequest,
-    );
-  }
 
   return {
     resolver,

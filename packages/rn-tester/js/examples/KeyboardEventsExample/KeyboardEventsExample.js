@@ -43,7 +43,7 @@ function formatKeyEvent(event: KeyboardEvent) {
 
 function isKeyBlocked(
   event: KeyboardEvent,
-  keyEvents: $ReadOnlyArray<HandledKeyEvent>,
+  keyEvents: ReadonlyArray<HandledKeyEvent>,
 ) {
   return keyEvents.some(
     ({key, metaKey, ctrlKey, altKey, shiftKey}) =>
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
 
 exports.title = 'Keyboard Events';
 exports.description = 'Examples that show how Key events can be used.';
-exports.examples = ([
+exports.examples = [
   {
     title: 'Bubbling Example',
     render: function (): React.Node {
@@ -579,4 +579,4 @@ exports.examples = ([
       return <LegacyValidKeysExample />;
     },
   },
-]: Array<RNTesterModuleExample>);
+] as Array<RNTesterModuleExample>;

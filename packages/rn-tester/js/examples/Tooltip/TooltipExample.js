@@ -52,7 +52,7 @@ exports.description = 'Examples that showcase tooltip in various components.';
 exports.examples = [
   {
     title: 'Button',
-    description: ('Simple button to showcase tooltip.': string),
+    description: 'Simple button to showcase tooltip.' as string,
     render: function (): React.Node {
       return (
         <Button
@@ -65,7 +65,7 @@ exports.examples = [
   },
   {
     title: 'Text',
-    description: ('Simple text string to showcase tooltip.': string),
+    description: 'Simple text string to showcase tooltip.' as string,
     render: function (): React.Node {
       return (
         <Text tooltip={'Text tooltip'}>
@@ -76,7 +76,7 @@ exports.examples = [
   },
   {
     title: 'Image',
-    description: ('Image to showcase tooltip.': string),
+    description: 'Image to showcase tooltip.' as string,
     render: function (): React.Node {
       return (
         <Image source={image} style={styles.image} tooltip={'Facebook logo'} />
@@ -85,7 +85,7 @@ exports.examples = [
   },
   {
     title: 'View',
-    description: ('Background color view to showcase tooltip.': string),
+    description: 'Background color view to showcase tooltip.' as string,
     render: function (): React.Node {
       return <View style={styles.view} tooltip={'Turquoise'} />;
     },

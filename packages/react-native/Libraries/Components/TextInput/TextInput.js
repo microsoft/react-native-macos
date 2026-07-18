@@ -293,7 +293,7 @@ function InternalTextInput(props: TextInputProps): React.Node {
     cursorColor,
     ...otherProps
     // $FlowFixMe[unclear-type]
-  } = ({...props, ...legacyKeyOverrides}: any); // [macOS]
+  } = {...props, ...legacyKeyOverrides} as any; // [macOS]
   stripLegacyKeyProps(otherProps); // [macOS]
 
   const inputRef = useRef<null | TextInputInstance>(null);
