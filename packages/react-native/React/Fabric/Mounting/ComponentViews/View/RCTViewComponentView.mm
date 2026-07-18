@@ -48,6 +48,7 @@ using namespace facebook::react;
 
 const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
+// [macOS 0.87 merge: declare surviving helpers before their new upstream call sites.
 @interface RCTViewComponentView ()
 
 - (void)updateAccessibilityElements;
@@ -59,6 +60,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 - (void)clearExistingBackgroundImageLayers;
 
 @end
+// macOS]
 
 @implementation RCTViewComponentView {
   RCTPlatformColor *_backgroundColor; // [macOS]

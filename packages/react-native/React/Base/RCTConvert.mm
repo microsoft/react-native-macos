@@ -561,6 +561,7 @@ RCT_ENUM_CONVERTER(
 #endif // [macOS]
 
 RCT_ENUM_CONVERTER(
+// [macOS
     RCTCursor,
     (@{
       @"auto" : @(RCTCursorAuto),

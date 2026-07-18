@@ -408,7 +408,7 @@ function Pressable({
     accessibilityLiveRegion,
     accessibilityLabel,
     accessibilityState: _accessibilityState,
-    focusable: focusable !== false && !disabled, // macOS]
+    focusable: focusable !== false && !disabled, // [macOS]
     accessibilityValue,
     hitSlop,
     // [macOS

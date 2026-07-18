@@ -271,9 +271,6 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
     auto textDecorationLineType = textAttributes.textDecorationLineType.value();
     auto textDecorationStyleValue = textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid);
 
-    NSUnderlineStyle style = RCTNSUnderlineStyleFromTextDecorationStyle(
-        textAttributes.textDecorationStyle.value_or(TextDecorationStyle::Solid));
-
     RCTPlatformColor *textDecorationColor = RCTUIColorFromSharedColor(textAttributes.textDecorationColor); // [macOS]
 
     // Custom drawing for styles UIKit can't render faithfully: wavy (no
@@ -283,9 +280,9 @@ NSMutableDictionary<NSAttributedStringKey, id> *RCTNSTextAttributesFromTextAttri
         textDecorationStyleValue == TextDecorationStyle::Dotted ||
         textDecorationStyleValue == TextDecorationStyle::Dashed;
     if (needsCustomDrawing) {
-      RCTPlatformColor *strokeColor = (textDecorationColor != nil)
+      RCTPlatformColor *strokeColor = (textDecorationColor != nil) // [macOS
           ? textDecorationColor
-          : RCTUIColorFromSharedColor(textAttributes.foregroundColor); // [macOS]
+          : RCTUIColorFromSharedColor(textAttributes.foregroundColor); // macOS]
       NSMutableArray<NSString *> *lines = [NSMutableArray array];
       if (textDecorationLineType == TextDecorationLineType::Underline ||
           textDecorationLineType == TextDecorationLineType::UnderlineStrikethrough) {

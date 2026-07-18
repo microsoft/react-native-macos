@@ -103,6 +103,6 @@
 {
   [_window endSheet:self];
 }
-#endif // [macOS]
+#endif // macOS]
 
 @end
