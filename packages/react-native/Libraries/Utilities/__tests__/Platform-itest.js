@@ -16,9 +16,11 @@ import type {PlatformSelectSpec} from '../PlatformTypes';
 import PlatformAndroid from '../Platform.android';
 // $FlowFixMe[missing-platform-support]
 import PlatformIOS from '../Platform.ios';
+// [macOS
 // $FlowFixMe[missing-platform-support]
 // $FlowFixMe[cannot-resolve-module]
-import PlatformMacOS from '../Platform.macos'; // [macOS]
+import PlatformMacOS from '../Platform.macos';
+// macOS]
 
 describe('Platform', () => {
   describe('OS', () => {

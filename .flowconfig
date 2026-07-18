@@ -58,7 +58,7 @@ munge_underscores=true
 module.name_mapper='^react-native$' -> '<PROJECT_ROOT>/packages/react-native/index.js'
 module.name_mapper='^react-native/\(.*\)$' -> '<PROJECT_ROOT>/packages/react-native/\1'
 module.name_mapper='^@react-native/dev-middleware$' -> '<PROJECT_ROOT>/packages/dev-middleware'
-; [macOS] Resolve workspace self-references (incl. @react-native/fantom) in yarn pnpm mode
+; [macOS Resolve workspace self-references (incl. @react-native/fantom) in yarn pnpm mode
 module.name_mapper='^@react-native/fantom$' -> '<PROJECT_ROOT>/private/react-native-fantom/src/index.js'
 module.name_mapper='^@react-native/fantom/\(.*\)$' -> '<PROJECT_ROOT>/private/react-native-fantom/\1'
 module.name_mapper='^@react-native/core-cli-utils$' -> '<PROJECT_ROOT>/private/core-cli-utils/src/index.js'
