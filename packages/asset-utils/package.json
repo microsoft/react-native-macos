@@ -27,5 +27,6 @@
     "!**/__fixtures__/**",
     "!**/__mocks__/**",
     "!**/__tests__/**"
-  ]
+  ],
+  "private": true
 }
