@@ -17,17 +17,12 @@
 #import "RCTAutoInsetsProtocol.h"
 #import "RCTBorderCurve.h"
 #import "RCTBorderDrawing.h"
-#import "RCTFocusChangeEvent.h" // [macOS]
 #import "RCTI18nUtil.h"
 #import "RCTLocalizedString.h"
 #import "RCTLog.h"
-#import "RCTRootContentView.h" // [macOS]
 #import "RCTViewUtils.h"
 #import "UIView+React.h"
 #import "RCTViewKeyboardEvent.h"
-#if TARGET_OS_OSX // [macOS
-#import "RCTTextView.h"
-#endif // macOS]
 
 RCT_MOCK_DEF(RCTView, RCTContentInsets);
 #define RCTContentInsets RCT_MOCK_USE(RCTView, RCTContentInsets)
@@ -111,18 +106,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     NSString *label = subview.accessibilityLabel;
 #else // [macOS
-    NSString *label;
-#ifndef RCT_REMOVE_LEGACY_ARCH
-    if ([subview isKindOfClass:[RCTTextView class]]) {
-      // on macOS VoiceOver a text element will always have its accessibilityValue read, but will only read it's accessibilityLabel if it's value is set.
-      // the macOS RCTTextView accessibilityValue will return its accessibilityLabel if set otherwise return its text.
-      label = subview.accessibilityValue;
-    } else {
-#endif // RCT_REMOVE_LEGACY_ARCH
-      label = subview.accessibilityLabel;
-#ifndef RCT_REMOVE_LEGACY_ARCH
-    }
-#endif // RCT_REMOVE_LEGACY_ARCH
+    NSString *label = subview.accessibilityLabel;
 #endif // macOS]
     if (!label) {
       label = RCTRecursiveAccessibilityLabel(subview);

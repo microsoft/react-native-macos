@@ -107,12 +107,10 @@ def use_react_native! (
   # excluding the legacy arch unless the user turns this flag off explicitly.
   ENV['RCT_REMOVE_LEGACY_ARCH'] = ENV['RCT_REMOVE_LEGACY_ARCH'] == '0' ? '0' : '1'
 
-  # Enable Hermes V1 by default.
-  # Users can still turn it off and use legacy hermes by setting the RCT_HERMES_V1_ENABLED
-  # environment variable to '0'.
-  ENV['RCT_HERMES_V1_ENABLED']= ENV['RCT_HERMES_V1_ENABLED'] == '0' ? '0' : '1'
-
   ReactNativePodsUtils.check_minimum_required_xcode()
+
+  # Enable Hermes V1 by default. Keep the env var setup for backward compatibility.
+  ENV['RCT_HERMES_V1_ENABLED'] = '1'
 
   # Current target definition is provided by Cocoapods and it refers to the target
   # that has invoked the `use_react_native!` function.
@@ -163,6 +161,7 @@ def use_react_native! (
   pod 'React-RCTVibration', :path => "#{prefix}/Libraries/Vibration"
   pod 'React-Core/RCTWebSocket', :path => "#{prefix}/"
   pod 'React-cxxreact', :path => "#{prefix}/ReactCommon/cxxreact"
+  pod 'React-cxxstableapi', :path => "#{prefix}/ReactCommon/react/cxxstableapi"
   pod 'React-debug', :path => "#{prefix}/ReactCommon/react/debug"
   pod 'React-utils', :path => "#{prefix}/ReactCommon/react/utils"
   pod 'React-featureflags', :path => "#{prefix}/ReactCommon/react/featureflags"
@@ -176,12 +175,14 @@ def use_react_native! (
   pod 'React-domnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/dom"
   pod 'React-defaultsnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/defaults"
   pod 'React-Mapbuffer', :path => "#{prefix}/ReactCommon"
+  pod 'React-bridging', :path => "#{prefix}/ReactCommon/react/bridging", :modular_headers => true
   pod 'React-jserrorhandler', :path => "#{prefix}/ReactCommon/jserrorhandler"
   pod 'RCTDeprecation', :path => "#{prefix}/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
   pod 'React-RCTFBReactNativeSpec', :path => "#{prefix}/React"
   pod 'React-jsi', :path => "#{prefix}/ReactCommon/jsi"
   pod 'RCTSwiftUI', :path => "#{prefix}/ReactApple/RCTSwiftUI"
   pod 'RCTSwiftUIWrapper', :path => "#{prefix}/ReactApple/RCTSwiftUIWrapper"
+  pod 'React-RCTAnimatedModuleProvider', :path => "#{prefix}/ReactApple/RCTAnimatedModuleProvider"
 
   if hermes_enabled
     setup_hermes!(:react_native_path => prefix)
@@ -552,8 +553,21 @@ def react_native_post_install(
   rn_relative_to_pods = rn_real.relative_path_from(pods_dir_real)
   ReactNativePodsUtils.set_build_setting(installer, build_setting: "REACT_NATIVE_PATH", value: File.join("${PODS_ROOT}", rn_relative_to_pods.to_s))
   # Store the Podfile directory as a build setting so that shell scripts can
-  # locate it without relying on PODS_ROOT/.. (breaks when Pods/ is a symlink).
-  ReactNativePodsUtils.set_build_setting(installer, build_setting: "PODFILE_DIR", value: Pod::Config.instance.installation_root.to_s)
+  # locate it without hardcoding an absolute path. Use Xcode variable
+  # substitution per-project so the value persisted in project.pbxproj is
+  # portable across machines: $(SRCROOT) is the Podfile dir for user projects
+  # (also avoids the PODS_ROOT/.. traversal that breaks when Pods/ is a
+  # symlink), and $(SRCROOT)/.. for the Pods project.
+  installer.aggregate_targets.map(&:user_project).uniq(&:path).each do |user_project|
+    user_project.build_configurations.each do |config|
+      config.build_settings['PODFILE_DIR'] = '$(SRCROOT)'
+    end
+    user_project.save
+  end
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['PODFILE_DIR'] = '$(SRCROOT)/..'
+  end
+  installer.pods_project.save
   ReactNativePodsUtils.set_build_setting(installer, build_setting: "SWIFT_ACTIVE_COMPILATION_CONDITIONS", value: ['$(inherited)', 'DEBUG'], config_name: "Debug")
 
   if (ENV['RCT_REMOVE_LEGACY_ARCH'] == '1')

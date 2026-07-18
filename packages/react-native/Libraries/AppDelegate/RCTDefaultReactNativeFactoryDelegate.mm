@@ -13,9 +13,16 @@
 #import <React/RCTHermesInstanceFactory.h>
 #endif
 
+#import <RCTAnimatedModuleProvider/RCTAnimatedModuleProvider.h>
+#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/nativemodule/defaults/DefaultTurboModules.h>
 
-@implementation RCTDefaultReactNativeFactoryDelegate
+@implementation RCTDefaultReactNativeFactoryDelegate {
+  // C++ Native Animated provider, created once on first use (getTurboModule: may be called
+  // concurrently for different module names).
+  RCTAnimatedModuleProvider *_animatedModuleProvider;
+  dispatch_once_t _animatedModuleProviderToken;
+}
 
 @synthesize dependencyProvider;
 
@@ -31,12 +38,7 @@
   return [UIViewController new];
 }
 
-- (RCTBridge *)createBridgeWithDelegate:(id<RCTBridgeDelegate>)delegate launchOptions:(NSDictionary *)launchOptions
-{
-  return [[RCTBridge alloc] initWithDelegate:delegate launchOptions:launchOptions];
-}
-
-- (void)setRootView:(RCTPlatformView *)rootView toRootViewController:(RCTPlatformViewController *)rootViewController
+- (void)setRootView:(UIView *)rootView toRootViewController:(UIViewController *)rootViewController
 {
   rootViewController.view = rootView;
 }
@@ -55,25 +57,6 @@
 - (void)customizeRootView:(RCTRootView *)rootView
 {
   // Override point for customization after application launch.
-}
-
-- (RCTPlatformView *)createRootViewWithBridge:(RCTBridge *)bridge
-                          moduleName:(NSString *)moduleName
-                           initProps:(NSDictionary *)initProps
-{
-  RCTUIView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, YES);
-
-#if !TARGET_OS_OSX // [macOS]
-#if TARGET_OS_TV
-  rootView.backgroundColor = [UIColor clearColor];
-#else
-  rootView.backgroundColor = [UIColor systemBackgroundColor];
-#endif
-#else // [macOS
-  rootView.backgroundColor = [NSColor windowBackgroundColor];
-#endif // macOS]
-
-  return rootView;
 }
 
 - (RCTColorSpace)defaultColorSpace
@@ -113,6 +96,16 @@
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
                                                       jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
 {
+  // The dedicated provider supplies the platform-driven C++ Animated module only when the shared
+  // animated backend is off; with it on, DefaultTurboModules serves AnimatedModule instead.
+  if (!facebook::react::ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+    dispatch_once(&_animatedModuleProviderToken, ^{
+      _animatedModuleProvider = [RCTAnimatedModuleProvider new];
+    });
+    if (auto animatedModule = [_animatedModuleProvider getTurboModule:name jsInvoker:jsInvoker]) {
+      return animatedModule;
+    }
+  }
   return facebook::react::DefaultTurboModules::getTurboModule(name, jsInvoker);
 }
 

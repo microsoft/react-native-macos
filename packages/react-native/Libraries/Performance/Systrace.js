@@ -8,6 +8,14 @@
  * @format
  */
 
+/**
+ * `Systrace` provides performance tracing for React Native applications.
+ * Methods in this module allow marking synchronous and asynchronous events
+ * that are visualized in supported system tracing tools.
+ *
+ * @see https://reactnative.dev/docs/systrace
+ */
+
 import typeof * as SystraceModule from './Systrace';
 
 const TRACE_TAG_REACT = 1 << 13; // eslint-disable-line no-bitwise
@@ -63,6 +71,33 @@ export function endEvent(args?: EventArgs): void {
   if (isEnabled()) {
     global.nativeTraceEndSection(TRACE_TAG_REACT, args);
   }
+}
+
+/**
+ * Traces the execution of the given function by marking its start with
+ * `beginEvent` and its end with `endEvent`, even if the function throws.
+ *
+ * @example
+ * Systrace.trace('myEvent', () => {
+ *   // logic to trace
+ * });
+ */
+export function trace<T>(
+  eventName: EventName,
+  fn: () => T,
+  args?: EventArgs,
+): T {
+  if (isEnabled()) {
+    const eventNameString =
+      typeof eventName === 'function' ? eventName() : eventName;
+    global.nativeTraceBeginSection(TRACE_TAG_REACT, eventNameString, args);
+    try {
+      return fn();
+    } finally {
+      global.nativeTraceEndSection(TRACE_TAG_REACT);
+    }
+  }
+  return fn();
 }
 
 /**
@@ -128,6 +163,7 @@ if (__DEV__) {
     setEnabled,
     beginEvent,
     endEvent,
+    trace,
     beginAsyncEvent,
     endAsyncEvent,
     counterEvent,

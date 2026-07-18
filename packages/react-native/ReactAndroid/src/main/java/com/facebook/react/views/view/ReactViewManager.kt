@@ -150,6 +150,14 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
     }
   }
 
+  @ReactProp(name = ViewProps.EXPERIMENTAL_BACKGROUND_IMAGE, customType = "BackgroundImage")
+  public open fun setExperimentalBackgroundImage(
+      view: ReactViewGroup,
+      backgroundImage: ReadableArray?,
+  ) {
+    setBackgroundImage(view, backgroundImage)
+  }
+
   @ReactProp(name = ViewProps.BACKGROUND_SIZE, customType = "BackgroundSize")
   public open fun setBackgroundSize(view: ReactViewGroup, backgroundSize: ReadableArray?) {
     if (backgroundSize != null && backgroundSize.size() > 0) {
@@ -305,17 +313,12 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
 
   @ReactProp(name = "nativeBackgroundAndroid")
   public open fun setNativeBackground(view: ReactViewGroup, background: ReadableMap?) {
-    val bg = background?.let {
-      ReactDrawableHelper.createDrawableFromJSDescription(view.context, it)
-    }
-    BackgroundStyleApplicator.setFeedbackUnderlay(view, bg)
+    view.applyNativeBackground(background)
   }
 
   @ReactProp(name = "nativeForegroundAndroid")
   public open fun setNativeForeground(view: ReactViewGroup, foreground: ReadableMap?) {
-    view.foreground = foreground?.let {
-      ReactDrawableHelper.createDrawableFromJSDescription(view.context, it)
-    }
+    view.applyNativeForeground(foreground)
   }
 
   @ReactProp(name = ViewProps.NEEDS_OFFSCREEN_ALPHA_COMPOSITING)

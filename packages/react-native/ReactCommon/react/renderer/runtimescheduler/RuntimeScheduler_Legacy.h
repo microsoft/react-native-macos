@@ -7,6 +7,8 @@
 
 #pragma once
 
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #include <ReactCommon/RuntimeExecutor.h>
 #include <react/renderer/consistency/ShadowTreeRevisionConsistencyManager.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
@@ -37,6 +39,11 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
   RuntimeScheduler_Legacy &operator=(RuntimeScheduler_Legacy &&) = delete;
 
   void scheduleWork(RawCallback &&callback) noexcept override;
+
+  /// IEventLoopControl implementation. No-op for legacy scheduler.
+  void scheduleTask(const std::function<void()> &task) override;
+  uint64_t registerTaskQueueSource() override;
+  void unregisterTaskQueueSource(uint64_t sourceId) override;
 
   /*
    * Grants access to the runtime synchronously on the caller's thread.
@@ -172,3 +179,5 @@ class RuntimeScheduler_Legacy final : public RuntimeSchedulerBase {
 };
 
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_ARCH

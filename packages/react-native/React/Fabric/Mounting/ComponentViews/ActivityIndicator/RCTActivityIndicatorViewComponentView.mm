@@ -8,7 +8,7 @@
 #import "RCTActivityIndicatorViewComponentView.h"
 
 #import <React/RCTConversions.h>
-#import <React/RCTActivityIndicatorView.h> // [macOS]
+#import <React/RCTUIKit.h> // [macOS]
 
 #import <react/renderer/components/FBReactNativeSpec/ComponentDescriptors.h>
 #import <react/renderer/components/FBReactNativeSpec/EventEmitters.h>

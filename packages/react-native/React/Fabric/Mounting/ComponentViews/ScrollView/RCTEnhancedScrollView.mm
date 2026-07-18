@@ -120,6 +120,20 @@
 #endif // macOS]
 }
 
+- (void)setCenterContent:(BOOL)centerContent
+{
+  if (_centerContent != centerContent) {
+    _centerContent = centerContent;
+    [self centerContentIfNeeded];
+  }
+}
+
+- (void)setContentSize:(CGSize)contentSize
+{
+  [super setContentSize:contentSize];
+  [self centerContentIfNeeded];
+}
+
 - (void)setFrame:(CGRect)frame
 {
 #if !TARGET_OS_OSX // [macOS]

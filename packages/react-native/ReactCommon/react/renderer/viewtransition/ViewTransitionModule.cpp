@@ -7,6 +7,7 @@
 
 #include "ViewTransitionModule.h"
 
+#include <cxxreact/TraceSection.h>
 #include <glog/logging.h>
 #include <react/renderer/components/root/RootShadowNode.h>
 #include <react/renderer/core/LayoutableShadowNode.h>
@@ -16,6 +17,19 @@
 #include <react/renderer/uimanager/UIManager.h>
 
 namespace facebook::react {
+
+namespace {
+
+RawProps makePseudoElementRawProps(
+    const ViewTransitionModule::AnimationKeyFrameViewLayoutMetrics& metrics) {
+  return RawProps(
+      folly::dynamic::object("position", "absolute")(
+          "left", metrics.originFromRoot.x)("top", metrics.originFromRoot.y)(
+          "width", metrics.size.width)("height", metrics.size.height)(
+          "pointerEvents", "none")("opacity", 0)("collapsable", false));
+}
+
+} // namespace
 
 ViewTransitionModule::~ViewTransitionModule() {
   if (uiManager_ != nullptr) {
@@ -45,7 +59,7 @@ void ViewTransitionModule::initialize(
         });
 
     // Register on surfaces started in the future
-    uiManager_->setOnSurfaceStartCallback(
+    uiManager_->addOnSurfaceStartCallback(
         [weakThis](const ShadowTree& shadowTree) {
           shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
               weakThis);
@@ -59,6 +73,7 @@ void ViewTransitionModule::applyViewTransitionName(
     const ShadowNode& shadowNode,
     const std::string& name,
     const std::string& /*className*/) {
+  TraceSection s("ViewTransitionModule::applyViewTransitionName", "name", name);
   auto tag = shadowNode.getTag();
   auto surfaceId = shadowNode.getSurfaceId();
 
@@ -73,14 +88,22 @@ void ViewTransitionModule::applyViewTransitionName(
       .size = layoutMetrics.frame.size,
       .pointScaleFactor = layoutMetrics.pointScaleFactor};
 
-  nameRegistry_[tag].insert(name);
+  // Calls outside mutationCallback are from the before-mutation phase (old
+  // state for an upcoming transition). Assign a provisional next transition ID
+  // so startViewTransitionEnd cleanup preserves these entries.
+  auto currentTransitionId =
+      insideMutationCallback_ ? activeTransitionId_ : activeTransitionId_ + 1;
+  nameRegistry_[tag].names.insert(name);
+  nameRegistry_[tag].transitionId = currentTransitionId;
 
-  // If applyViewTransitionName is called after transition started, this is the
-  // "new" state (end snapshot). Otherwise, this is the "old" state (start
-  // snapshot)
-  if (!transitionStarted_) {
+  // Old state: called outside mutationCallback (before-mutation phase).
+  // New state: called inside mutationCallback (after-mutation phase).
+  if (!insideMutationCallback_) {
     AnimationKeyFrameView oldView{
-        .layoutMetrics = keyframeMetrics, .tag = tag, .surfaceId = surfaceId};
+        .layoutMetrics = keyframeMetrics,
+        .tag = tag,
+        .surfaceId = surfaceId,
+        .transitionId = currentTransitionId};
     oldLayout_[name] = oldView;
 
     // Request the platform to capture a bitmap snapshot of the old view
@@ -88,6 +111,10 @@ void ViewTransitionModule::applyViewTransitionName(
     if (uiManager_ != nullptr) {
       auto* delegate = uiManager_->getDelegate();
       if (delegate != nullptr) {
+        TraceSection snapshotSection(
+            "ViewTransitionModule::applyViewTransitionName - uiManagerDidCaptureViewSnapshot",
+            "name",
+            name);
         delegate->uiManagerDidCaptureViewSnapshot(tag, surfaceId);
       }
     }
@@ -97,6 +124,11 @@ void ViewTransitionModule::applyViewTransitionName(
       // Find the pseudo element created from this specific source tag
       auto& pseudoElementsBySourceTag = it->second;
       auto innerIt = pseudoElementsBySourceTag.find(tag);
+
+      TraceSection clonePseudoElementSection(
+          "ViewTransitionModule::applyViewTransitionName - maybeClonePseudoElement",
+          "name",
+          name);
 
       if (innerIt != pseudoElementsBySourceTag.end()) {
         // Only clone the pseudo-element if the layout metrics changed
@@ -109,13 +141,7 @@ void ViewTransitionModule::applyViewTransitionName(
                 keyframeMetrics.originFromRoot.y ||
             cachedMetrics.size.width != keyframeMetrics.size.width ||
             cachedMetrics.size.height != keyframeMetrics.size.height) {
-          auto updatedRawProps = RawProps(
-              folly::dynamic::object("left", keyframeMetrics.originFromRoot.x)(
-                  "top", keyframeMetrics.originFromRoot.y)(
-                  "width", keyframeMetrics.size.width)(
-                  "height", keyframeMetrics.size.height)(
-                  "pointerEvents", "none")("opacity", 0)("collapsable", false)(
-                  "position", "absolute"));
+          auto updatedRawProps = makePseudoElementRawProps(keyframeMetrics);
 
           auto updatedNode = uiManager_->cloneNode(
               *innerIt->second.node,
@@ -140,7 +166,10 @@ void ViewTransitionModule::applyViewTransitionName(
 
   } else {
     AnimationKeyFrameView newView{
-        .layoutMetrics = keyframeMetrics, .tag = tag, .surfaceId = surfaceId};
+        .layoutMetrics = keyframeMetrics,
+        .tag = tag,
+        .surfaceId = surfaceId,
+        .transitionId = activeTransitionId_};
     newLayout_[name] = newView;
   }
 }
@@ -148,6 +177,8 @@ void ViewTransitionModule::applyViewTransitionName(
 void ViewTransitionModule::createViewTransitionInstance(
     const std::string& name,
     Tag pseudoElementTag) {
+  TraceSection s(
+      "ViewTransitionModule::createViewTransitionInstance", "name", name);
   if (uiManager_ == nullptr) {
     return;
   }
@@ -171,30 +202,16 @@ void ViewTransitionModule::createViewTransitionInstance(
 
   // Build props: absolute position matching old element, non-interactive
   if (pseudoElementTag > 0 && view.tag > 0) {
-    // Create a base node with layout props via createNode
     // TODO: T262559684 created dedicated shadow node type for old pseudo
     // element
-    auto rawProps = RawProps(
-        folly::dynamic::object("position", "absolute")(
-            "left", view.layoutMetrics.originFromRoot.x)(
-            "top", view.layoutMetrics.originFromRoot.y)(
-            "width", view.layoutMetrics.size.width)(
-            "height", view.layoutMetrics.size.height)("pointerEvents", "none")(
-            "opacity", 0)("collapsable", false));
+    auto rawProps = makePseudoElementRawProps(view.layoutMetrics);
 
-    auto baseNode = uiManager_->createNode(
+    auto pseudoElementNode = uiManager_->createNode(
         pseudoElementTag,
         "View",
         view.surfaceId,
         std::move(rawProps),
         nullptr /* instanceHandle */);
-
-    if (baseNode == nullptr) {
-      return;
-    }
-
-    // Clone the shadow node — bitmap will be set by platform
-    auto pseudoElementNode = baseNode->clone({});
 
     if (pseudoElementNode != nullptr) {
       if (!forNextTransition) {
@@ -216,6 +233,7 @@ RootShadowNode::Unshared ViewTransitionModule::shadowTreeWillCommit(
   if (oldPseudoElementNodes_.empty()) {
     return newRootShadowNode;
   }
+  TraceSection s("ViewTransitionModule::shadowTreeWillCommit");
 
   auto surfaceId = shadowTree.getSurfaceId();
 
@@ -323,12 +341,14 @@ void ViewTransitionModule::cancelViewTransitionName(
 
 void ViewTransitionModule::restoreViewTransitionName(
     const ShadowNode& shadowNode) {
-  nameRegistry_[shadowNode.getTag()].merge(
+  nameRegistry_[shadowNode.getTag()].names.merge(
       cancelledNameRegistry_[shadowNode.getTag()]);
   cancelledNameRegistry_.erase(shadowNode.getTag());
 }
 
 void ViewTransitionModule::applySnapshotsOnPseudoElementShadowNodes() {
+  TraceSection s(
+      "ViewTransitionModule::applySnapshotsOnPseudoElementShadowNodes");
   if (oldPseudoElementNodes_.empty() || uiManager_ == nullptr) {
     return;
   }
@@ -349,6 +369,7 @@ void ViewTransitionModule::applySnapshotsOnPseudoElementShadowNodes() {
 
 LayoutMetrics ViewTransitionModule::captureLayoutMetricsFromRoot(
     const ShadowNode& shadowNode) {
+  TraceSection s("ViewTransitionModule::captureLayoutMetricsFromRoot");
   if (uiManager_ == nullptr) {
     return EmptyLayoutMetrics;
   }
@@ -394,13 +415,22 @@ void ViewTransitionModule::startViewTransition(
 
   // Mark transition as started
   transitionStarted_ = true;
+  activeTransitionId_ = ++transitionIdCounter_;
+
+  TraceSection s(
+      "ViewTransitionModule::startViewTransition",
+      "transitionId",
+      activeTransitionId_);
+
   pendingAnimationIds_.clear();
   onCompleteCallback_ = onCompleteCallback;
 
   // Call mutation callback (including commitRoot, measureInstance,
   // applyViewTransitionName, createViewTransitionInstance for old & new)
   if (mutationCallback) {
+    insideMutationCallback_ = true;
     mutationCallback();
+    insideMutationCallback_ = false;
   }
 
   applySnapshotsOnPseudoElementShadowNodes();
@@ -449,13 +479,32 @@ void ViewTransitionModule::suspendOnActiveViewTransition() {
 }
 
 void ViewTransitionModule::startViewTransitionEnd() {
-  for (const auto& [tag, names] : nameRegistry_) {
-    for (const auto& name : names) {
-      oldLayout_.erase(name);
-      newLayout_.erase(name);
+  TraceSection s(
+      "ViewTransitionModule::startViewTransitionEnd",
+      "transitionId",
+      activeTransitionId_);
+  auto finishedId = activeTransitionId_;
+
+  // Only clear layout and registry entries belonging to the finished
+  // transition. A suspended transition's before-mutation phase may have
+  // already written entries with a newer transitionId — preserve those.
+  for (auto it = nameRegistry_.begin(); it != nameRegistry_.end();) {
+    if (it->second.transitionId == finishedId) {
+      for (const auto& name : it->second.names) {
+        if (auto oit = oldLayout_.find(name);
+            oit != oldLayout_.end() && oit->second.transitionId == finishedId) {
+          oldLayout_.erase(oit);
+        }
+        if (auto nit = newLayout_.find(name);
+            nit != newLayout_.end() && nit->second.transitionId == finishedId) {
+          newLayout_.erase(nit);
+        }
+      }
+      it = nameRegistry_.erase(it);
+    } else {
+      ++it;
     }
   }
-  nameRegistry_.clear();
   oldPseudoElementNodes_.clear();
 
   // Clear any pending bitmap snapshots that were captured but never consumed.

@@ -8,13 +8,12 @@
  * @format
  */
 
-import type {ColorValue} from '../../StyleSheet/StyleSheet';
+import type {EventSubscription} from '../../vendor/emitter/EventEmitter';
 
-import processColor from '../../StyleSheet/processColor';
+import * as Appearance from '../../Utilities/Appearance';
 import Platform from '../../Utilities/Platform';
 import NativeStatusBarManagerAndroid from './NativeStatusBarManagerAndroid';
 import NativeStatusBarManagerIOS from './NativeStatusBarManagerIOS';
-import invariant from 'invariant';
 import * as React from 'react';
 
 /**
@@ -25,6 +24,11 @@ export type StatusBarStyle = keyof {
    * Default status bar style (dark for iOS, light for Android)
    */
   default: string,
+  /**
+   * Automatically picks `light-content` or `dark-content` based on the current
+   * color scheme. Updates whenever the color scheme changes.
+   */
+  auto: string,
   /**
    * Dark background, white texts and icons
    */
@@ -55,38 +59,12 @@ export type StatusBarAnimation = keyof {
   ...
 };
 
-export type StatusBarPropsAndroid = Readonly<{
-  /**
-   * The background color of the status bar.
-   *
-   * Please note that this prop has no effect on Android 15+
-   *
-   * @platform android
-   */
-  backgroundColor?: ?ColorValue,
-  /**
-   * If the status bar is translucent.
-   * When translucent is set to true, the app will draw under the status bar.
-   * This is useful when using a semi transparent status bar color.
-   *
-   * Please note that this prop has no effect on Android 15+
-   *
-   * @platform android
-   */
-  translucent?: ?boolean,
-}>;
-
 export type StatusBarPropsIOS = Readonly<{
   /**
-   * If the network activity indicator should be visible.
+   * The transition effect when showing and hiding the status bar using the
+   * `hidden` prop.
    *
-   * @platform ios
-   */
-  networkActivityIndicatorVisible?: ?boolean,
-  /**
-   * The transition effect when showing and hiding the status bar using the `hidden`
-   * prop. Defaults to 'fade'.
-   *
+   * @default `'fade'`
    * @platform ios
    */
   showHideTransition?: ?('fade' | 'slide' | 'none'),
@@ -95,51 +73,63 @@ export type StatusBarPropsIOS = Readonly<{
 type StatusBarBaseProps = Readonly<{
   /**
    * If the status bar is hidden.
+   *
+   * @default `false`
    */
   hidden?: ?boolean,
+
   /**
    * If the transition between status bar property changes should be animated.
-   * Supported for backgroundColor, barStyle and hidden.
+   * Supported for `barStyle` and `hidden`.
+   *
+   * @default `false`
    */
   animated?: ?boolean,
+
   /**
    * Sets the color of the status bar text.
+   *
+   * @default `'default'`
    */
-  barStyle?: ?('default' | 'light-content' | 'dark-content'),
+  barStyle?: ?('default' | 'auto' | 'light-content' | 'dark-content'),
 }>;
 
 export type StatusBarProps = Readonly<{
-  ...StatusBarPropsAndroid,
   ...StatusBarPropsIOS,
   ...StatusBarBaseProps,
 }>;
 
 type StackProps = {
-  backgroundColor: ?{
-    value: StatusBarProps['backgroundColor'],
-    animated: boolean,
-  },
   barStyle: ?{
     value: StatusBarProps['barStyle'],
     animated: boolean,
   },
-  translucent: StatusBarProps['translucent'],
   hidden: ?{
     value: boolean,
     animated: boolean,
     transition: StatusBarProps['showHideTransition'],
   },
-  networkActivityIndicatorVisible: StatusBarProps['networkActivityIndicatorVisible'],
 };
 
 /**
- * Merges the prop stack with the default values.
+ * Returns the bar style to use when `barStyle` is `'auto'`, picked against
+ * the current color scheme.
+ */
+function getAutoBarStyle(): 'light-content' | 'dark-content' {
+  return Appearance.getColorScheme() === 'dark'
+    ? 'light-content'
+    : 'dark-content';
+}
+
+/**
+ * Merges the prop stack with the default values, resolving the `'auto'`
+ * barStyle to a concrete value.
  */
 function mergePropsStack(
   propsStack: Array<Object>,
   defaultValues: Object,
 ): Object {
-  return propsStack.reduce(
+  const merged: StackProps = propsStack.reduce(
     (prev, cur) => {
       for (const prop in cur) {
         if (cur[prop] != null) {
@@ -150,6 +140,12 @@ function mergePropsStack(
     },
     {...defaultValues},
   );
+
+  if (merged.barStyle?.value === 'auto') {
+    merged.barStyle = {...merged.barStyle, value: getAutoBarStyle()};
+  }
+
+  return merged;
 }
 
 /**
@@ -160,13 +156,6 @@ function createStackEntry(props: StatusBarProps): StackProps {
   const animated = props.animated ?? false;
   const showHideTransition = props.showHideTransition ?? 'fade';
   return {
-    backgroundColor:
-      props.backgroundColor != null
-        ? {
-            value: props.backgroundColor,
-            animated,
-          }
-        : null,
     barStyle:
       props.barStyle != null
         ? {
@@ -174,7 +163,6 @@ function createStackEntry(props: StatusBarProps): StackProps {
             animated,
           }
         : null,
-    translucent: props.translucent,
     hidden:
       props.hidden != null
         ? {
@@ -183,16 +171,16 @@ function createStackEntry(props: StatusBarProps): StackProps {
             transition: showHideTransition,
           }
         : null,
-    networkActivityIndicatorVisible: props.networkActivityIndicatorVisible,
   };
 }
 
 /**
- * Component to control the app status bar.
+ * Component to control the app's status bar. The status bar is the zone,
+ * typically at the top of the screen, that displays the current time, Wi-Fi and
+ * cellular network information, battery level and/or other status icons.
  *
- * It is possible to have multiple `StatusBar` components mounted at the same
- * time. The props will be merged in the order the `StatusBar` components were
- * mounted.
+ * Multiple `StatusBar` components can be mounted simultaneously; props merge in
+ * mount order.
  *
  * ### Imperative API
  *
@@ -204,7 +192,9 @@ function createStackEntry(props: StatusBarProps): StackProps {
  * before launching a third-party native UI component, and then call
  * `StatusBar.popStackEntry` when completed.
  *
- * ```
+ * Example:
+ *
+ * ```tsx
  * const openThirdPartyBugReporter = async () => {
  *   // The bug reporter has a dark background, so we push a new status bar style.
  *   const stackEntry = StatusBar.pushStackEntry({barStyle: 'light-content'});
@@ -228,27 +218,29 @@ function createStackEntry(props: StatusBarProps): StackProps {
  * ### Constants
  *
  * `currentHeight` (Android only) The height of the status bar.
+ *
+ * @see https://reactnative.dev/docs/statusbar
  */
 class StatusBar extends React.Component<StatusBarProps> {
   static _propsStack: Array<StackProps> = [];
 
   static _defaultProps: any = createStackEntry({
-    backgroundColor:
-      Platform.OS === 'android'
-        ? (NativeStatusBarManagerAndroid.getConstants()
-            .DEFAULT_BACKGROUND_COLOR ?? 'black')
-        : 'black',
     barStyle: 'default',
-    translucent: false,
     hidden: false,
-    networkActivityIndicatorVisible: false,
   });
 
   // Timer for updating the native module values at the end of the frame.
   static _updateImmediate: ?number = null;
 
-  // The current merged values from the props stack.
+  // The current merged values from the props stack. `barStyle.value` is stored
+  // in its resolved form (never `'auto'`), so diff comparisons reflect what
+  // was actually sent to the native module.
   static _currentValues: ?StackProps = null;
+
+  // Number of mounted `StatusBar` instances. Used to lazily subscribe to color
+  // scheme changes only while at least one instance is on screen.
+  static _mountedCount: number = 0;
+  static _appearanceSubscription: ?EventSubscription = null;
 
   // TODO(janic): Provide a real API to deal with status bar height. See the
   // discussion in #6195.
@@ -289,69 +281,12 @@ class StatusBar extends React.Component<StatusBarProps> {
   static setBarStyle(style: StatusBarStyle, animated?: boolean) {
     animated = animated || false;
     StatusBar._defaultProps.barStyle.value = style;
+    const resolvedStyle = style === 'auto' ? getAutoBarStyle() : style;
     if (Platform.OS === 'ios') {
-      NativeStatusBarManagerIOS.setStyle(style, animated);
+      NativeStatusBarManagerIOS.setStyle(resolvedStyle, animated);
     } else if (Platform.OS === 'android') {
-      NativeStatusBarManagerAndroid.setStyle(style);
+      NativeStatusBarManagerAndroid.setStyle(resolvedStyle);
     }
-  }
-
-  /**
-   * DEPRECATED - The status bar network activity indicator is not supported in iOS 13 and later. This will be removed in a future release.
-   * @param visible Show the indicator.
-   *
-   * @deprecated
-   */
-  static setNetworkActivityIndicatorVisible(visible: boolean) {
-    if (Platform.OS !== 'ios') {
-      console.warn(
-        '`setNetworkActivityIndicatorVisible` is only available on iOS',
-      );
-      return;
-    }
-    StatusBar._defaultProps.networkActivityIndicatorVisible = visible;
-    NativeStatusBarManagerIOS.setNetworkActivityIndicatorVisible(visible);
-  }
-
-  /**
-   * Set the background color for the status bar
-   * @param color Background color.
-   * @param animated Animate the style change.
-   */
-  static setBackgroundColor(color: ColorValue, animated?: boolean): void {
-    if (Platform.OS !== 'android') {
-      console.warn('`setBackgroundColor` is only available on Android');
-      return;
-    }
-    animated = animated || false;
-    StatusBar._defaultProps.backgroundColor.value = color;
-
-    const processedColor = processColor(color);
-    if (processedColor == null) {
-      console.warn(
-        `\`StatusBar.setBackgroundColor\`: Color ${String(color)} parsed to null or undefined`,
-      );
-      return;
-    }
-    invariant(
-      typeof processedColor === 'number',
-      'Unexpected color given for StatusBar.setBackgroundColor',
-    );
-
-    NativeStatusBarManagerAndroid.setColor(processedColor, animated);
-  }
-
-  /**
-   * Control the translucency of the status bar
-   * @param translucent Set as translucent.
-   */
-  static setTranslucent(translucent: boolean) {
-    if (Platform.OS !== 'android') {
-      console.warn('`setTranslucent` is only available on Android');
-      return;
-    }
-    StatusBar._defaultProps.translucent = translucent;
-    NativeStatusBarManagerAndroid.setTranslucent(translucent);
   }
 
   /**
@@ -407,6 +342,16 @@ class StatusBar extends React.Component<StatusBarProps> {
     // stack. This allows having multiple StatusBar components and the one that is
     // added last or is deeper in the view hierarchy will have priority.
     this._stackEntry = StatusBar.pushStackEntry(this.props);
+
+    if (StatusBar._mountedCount === 0) {
+      // Re-run the native update when the system color scheme changes so any
+      // `barStyle: 'auto'` entries resolve to the new appropriate value.
+      StatusBar._appearanceSubscription = Appearance.addChangeListener(() => {
+        StatusBar._updatePropsStack();
+      });
+    }
+
+    StatusBar._mountedCount++;
   }
 
   componentWillUnmount() {
@@ -414,6 +359,16 @@ class StatusBar extends React.Component<StatusBarProps> {
     // the native bar with the next props.
     if (this._stackEntry != null) {
       StatusBar.popStackEntry(this._stackEntry);
+    }
+
+    StatusBar._mountedCount--;
+
+    if (
+      StatusBar._appearanceSubscription != null &&
+      StatusBar._mountedCount === 0
+    ) {
+      StatusBar._appearanceSubscription.remove();
+      StatusBar._appearanceSubscription = null;
     }
   }
 
@@ -458,45 +413,12 @@ class StatusBar extends React.Component<StatusBarProps> {
               : 'none',
           );
         }
-
-        if (
-          !oldProps ||
-          oldProps.networkActivityIndicatorVisible !==
-            mergedProps.networkActivityIndicatorVisible
-        ) {
-          NativeStatusBarManagerIOS.setNetworkActivityIndicatorVisible(
-            mergedProps.networkActivityIndicatorVisible,
-          );
-        }
       } else if (Platform.OS === 'android') {
-        //todo(T60684787): Add back optimization to only update bar style and
-        //background color if the new value is different from the old value.
+        //todo(T60684787): Add back optimization to only update bar style if the
+        //new value is different from the old value.
         NativeStatusBarManagerAndroid.setStyle(mergedProps.barStyle.value);
-        const processedColor = processColor(mergedProps.backgroundColor.value);
-        if (processedColor == null) {
-          console.warn(
-            `\`StatusBar._updatePropsStack\`: Color ${mergedProps.backgroundColor.value} parsed to null or undefined`,
-          );
-        } else {
-          invariant(
-            typeof processedColor === 'number',
-            'Unexpected color given in StatusBar._updatePropsStack',
-          );
-          NativeStatusBarManagerAndroid.setColor(
-            processedColor,
-            mergedProps.backgroundColor.animated,
-          );
-        }
         if (!oldProps || oldProps.hidden?.value !== mergedProps.hidden.value) {
           NativeStatusBarManagerAndroid.setHidden(mergedProps.hidden.value);
-        }
-        // Activities are not translucent by default, so always set if true.
-        if (
-          !oldProps ||
-          oldProps.translucent !== mergedProps.translucent ||
-          mergedProps.translucent
-        ) {
-          NativeStatusBarManagerAndroid.setTranslucent(mergedProps.translucent);
         }
       }
       // Update the current prop values.
@@ -508,5 +430,7 @@ class StatusBar extends React.Component<StatusBarProps> {
     return null;
   }
 }
+
+export type StatusBarInstance = StatusBar;
 
 export default StatusBar;

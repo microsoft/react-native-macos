@@ -51,7 +51,8 @@ type ReturnJSType =
   | 'ObjectKind'
   | 'ArrayKind'
   | 'NumberKind'
-  | 'StringKind';
+  | 'StringKind'
+  | 'ArrayBufferKind';
 
 export type MethodSerializationOutput = Readonly<{
   methodName: string,
@@ -218,6 +219,9 @@ function getParamObjCType(
        *   Array<Animal> => NSArray<JS::NativeSampleTurboModule::Animal *>, etc.
        */
       return notStruct(wrapOptional('NSArray *', !nullable));
+    }
+    case 'ArrayBufferTypeAnnotation': {
+      return notStruct(wrapOptional('NSMutableData *', !nullable));
     }
   }
 
@@ -387,6 +391,8 @@ function getReturnObjCType(
       }
     case 'GenericObjectTypeAnnotation':
       return wrapOptional('NSDictionary *', isRequired);
+    case 'ArrayBufferTypeAnnotation':
+      return wrapOptional('NSMutableData *', isRequired);
     default:
       typeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(
@@ -459,6 +465,8 @@ function getReturnJSType(
           validUnionType as empty;
           throw new Error(`Unsupported union member types`);
       }
+    case 'ArrayBufferTypeAnnotation':
+      return 'ArrayBufferKind';
     default:
       typeAnnotation.type as 'MixedTypeAnnotation';
       throw new Error(

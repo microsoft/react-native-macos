@@ -52,6 +52,7 @@ export type TouchableWithoutFeedbackPropsAndroid = {
   touchSoundDisabled?: ?boolean,
 };
 
+/** @build-types emit-as-interface Expo compatibility */
 export type TouchableWithoutFeedbackProps = Readonly<
   {
     children?: ?React.Node,
@@ -180,9 +181,9 @@ const PASSTHROUGH_PROPS = [
 ] as const;
 
 /**
- * Do not use unless you have a very good reason.
- * All the elements that respond to press should have a visual feedback when touched.
- * This is one of the primary reason a "web" app doesn't feel "native".
+ * Do not use unless you have a very good reason. All elements that respond to press should have a visual feedback when touched.
+ *
+ * Supports only one child. If you need more extensive and future-proof touch handling, use `Pressable`.
  *
  * @see https://reactnative.dev/docs/touchablewithoutfeedback
  */

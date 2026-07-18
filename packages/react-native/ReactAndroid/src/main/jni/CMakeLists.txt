@@ -22,8 +22,6 @@ file(TO_CMAKE_PATH "${REACT_ANDROID_DIR}" REACT_ANDROID_DIR)
 file(TO_CMAKE_PATH "${REACT_BUILD_DIR}" REACT_BUILD_DIR)
 file(TO_CMAKE_PATH "${REACT_COMMON_DIR}" REACT_COMMON_DIR)
 
-set(HERMES_V1_ENABLED OFF CACHE BOOL "Build with support for Hermes v1")
-
 # If you have ccache installed, we're going to honor it.
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
@@ -77,6 +75,7 @@ add_react_common_subdir(jsinspector-modern/network)
 add_react_common_subdir(jsinspector-modern/tracing)
 add_react_common_subdir(hermes/executor)
 add_react_common_subdir(hermes/inspector-modern)
+add_react_common_subdir(react/cxxstableapi)
 add_react_common_subdir(react/renderer/runtimescheduler)
 add_react_common_subdir(react/debug)
 add_react_common_subdir(react/featureflags)

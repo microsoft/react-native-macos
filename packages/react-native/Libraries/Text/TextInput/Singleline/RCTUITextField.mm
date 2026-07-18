@@ -9,7 +9,6 @@
 
 #import <React/RCTBackedTextInputDelegateAdapter.h>
 #import <React/RCTBackedTextInputDelegate.h> // [macOS]
-#import <React/RCTTextAttributes.h>
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
 

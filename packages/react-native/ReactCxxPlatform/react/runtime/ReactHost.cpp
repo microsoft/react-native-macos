@@ -114,7 +114,12 @@ ReactHost::~ReactHost() noexcept {
 
 void ReactHost::createReactInstance() {
   // Set up timers
-  auto platformTimers = std::make_unique<PlatformTimerRegistryImpl>();
+  std::unique_ptr<PlatformTimerRegistry> platformTimers;
+  if (reactInstanceConfig_.platformTimerRegistryFactory) {
+    platformTimers = reactInstanceConfig_.platformTimerRegistryFactory();
+  } else {
+    platformTimers = std::make_unique<PlatformTimerRegistryImpl>();
+  }
   auto* platformTimersPtr = platformTimers.get();
   auto timerManager = std::make_shared<TimerManager>(std::move(platformTimers));
   platformTimersPtr->setTimerManager(timerManager);
@@ -261,7 +266,8 @@ void ReactHost::createReactInstance() {
       reactInstanceData_->logBoxSurfaceDelegate,
       httpClientFactory,
       webSocketClientFactory,
-      std::move(liveReloadCallback));
+      std::move(liveReloadCallback),
+      sourceURL_);
 
   reactInstance_->initializeRuntime(
       {
@@ -313,9 +319,6 @@ void ReactHost::destroyReactInstance() {
 
   reactInstanceData_->contextContainer->erase(RuntimeSchedulerKey);
   reactInstanceData_->mountingManager->setSchedulerTaskExecutor(nullptr);
-  reactInstanceData_->mountingManager = nullptr;
-  reactInstanceData_->contextContainer = nullptr;
-  reactInstanceData_->turboModuleProviders.clear();
   reactInstance_ = nullptr;
   reactInstanceData_->messageQueueThread = nullptr;
 }
@@ -392,11 +395,11 @@ bool ReactHost::loadScriptFromDevServer() {
                 })
             .get();
     auto script = std::make_unique<JSBigStdString>(std::move(response));
+    *sourceURL_ = bundleUrl;
     reactInstance_->loadScript(std::move(script), bundleUrl);
     devServerHelper_->setupHMRClient();
     return true;
   } catch (...) {
-    devServerHelper_->setSourcePath("");
     LOG(WARNING)
         << "Unable to download JS bundle from Metro, falling back to prebuilt JS bundle. "
         << "To start Metro, run in command line: 'cd ~/fbsource/xplat/js && js1 run'";
@@ -408,6 +411,7 @@ bool ReactHost::loadScriptFromBundlePath(const std::string& bundlePath) {
   try {
     LOG(INFO) << "Loading JS bundle from bundle path: " << bundlePath;
     auto script = ResourceLoader::getFileContents(bundlePath);
+    *sourceURL_ = "";
     reactInstance_->loadScript(std::move(script), bundlePath);
     LOG(INFO) << "Loaded JS bundle from bundle path: " << bundlePath;
     return true;

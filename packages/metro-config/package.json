@@ -1,22 +1,22 @@
 {
   "name": "@react-native/metro-config",
-  "version": "0.86.0-main",
+  "version": "0.87.0-main",
   "description": "Metro configuration for React Native.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/metro-config"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/metro-config#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/metro-config#readme",
   "keywords": [
     "metro",
     "config",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
-    "node": "^20.19.4 || ^22.13.0 || ^24.3.0 || >= 25.0.0"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "exports": {
     ".": "./src/index.js",
@@ -37,8 +37,8 @@
   "dependencies": {
     "@react-native/js-polyfills": "workspace:*",
     "@react-native/metro-babel-transformer": "workspace:*",
-    "metro-config": "^0.84.3",
-    "metro-runtime": "^0.84.3"
+    "metro-config": "^0.86.0",
+    "metro-runtime": "^0.86.0"
   },
   "private": true
 }

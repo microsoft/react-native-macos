@@ -14,6 +14,7 @@ import type {FantomTestConfig} from './getFantomTestConfigs';
 
 import * as EnvironmentOptions from './EnvironmentOptions';
 import formatFantomConfig from './formatFantomConfig';
+import getHostPlatform from './getHostPlatform';
 
 module.exports = function entrypointTemplate({
   testPath,
@@ -42,6 +43,7 @@ module.exports = function entrypointTemplate({
     jsTraceOutputPath,
     jsHeapSnapshotOutputPathTemplate,
     jsHeapSnapshotOutputPathTemplateToken,
+    hostPlatform: getHostPlatform(),
   };
 
   return `/**

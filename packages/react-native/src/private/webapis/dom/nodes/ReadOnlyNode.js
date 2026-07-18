@@ -50,6 +50,7 @@ const ReadOnlyNodeBase: typeof Object =
 // extend this class so it inherits all the methods and it sets the class
 // hierarchy correctly.
 
+/** @build-types protected-constructor */
 class ReadOnlyNode extends ReadOnlyNodeBase {
   constructor(
     instanceHandle: InstanceHandle,
@@ -61,13 +62,6 @@ class ReadOnlyNode extends ReadOnlyNodeBase {
     // this make sure that their implementation stays in sync.
     setOwnerDocument(this, ownerDocument);
     setInstanceHandle(this, instanceHandle);
-  }
-
-  // Implement the "get the parent" algorithm for EventTarget.
-  // This enables event propagation (capture/bubble) through the node tree.
-  // $FlowExpectedError[unsupported-syntax]
-  [EVENT_TARGET_GET_THE_PARENT_KEY](): EventTarget | null {
-    return this.parentNode;
   }
 
   get childNodes(): NodeList<ReadOnlyNode> {
@@ -326,6 +320,24 @@ class ReadOnlyNode extends ReadOnlyNodeBase {
 
 setPlatformObject(ReadOnlyNode);
 
+// Implement the "get the parent" algorithm for EventTarget by aliasing
+// `[EVENT_TARGET_GET_THE_PARENT_KEY]` directly to the `parentNode` getter
+// function on the prototype. This enables event propagation (capture/bubble)
+// through the node tree and avoids the extra function call that a
+// trampoline method (e.g. `() { return this.parentNode; }`) would add per
+// ancestor on the hot event-dispatch path.
+{
+  const parentNodeGetter = Object.getOwnPropertyDescriptor(
+    ReadOnlyNode.prototype,
+    'parentNode',
+  )?.get;
+  if (parentNodeGetter != null) {
+    // $FlowExpectedError[prop-missing]
+    // $FlowExpectedError[invalid-computed-prop]
+    ReadOnlyNode.prototype[EVENT_TARGET_GET_THE_PARENT_KEY] = parentNodeGetter;
+  }
+}
+
 type ReadOnlyNodeT = ReadOnlyNode;
 
 function replaceConstructorWithoutSuper(
@@ -359,6 +371,21 @@ function replaceConstructorWithoutSuper(
 export default replaceConstructorWithoutSuper(
   ReadOnlyNode,
 ) as typeof ReadOnlyNode;
+
+export const ReadOnlyNode_public: typeof ReadOnlyNode =
+  // $FlowExpectedError[incompatible-type]
+  function Node() {
+    throw new TypeError("Failed to construct 'Node': Illegal constructor");
+  };
+
+// $FlowExpectedError[prop-missing]
+ReadOnlyNode_public.prototype = ReadOnlyNode.prototype;
+// Copy static properties (ELEMENT_NODE, DOCUMENT_NODE, TEXT_NODE,
+// DOCUMENT_POSITION_*, etc.) so that callers accessing them via the public
+// constructor (e.g. `Node.ELEMENT_NODE`) still work.
+// $FlowFixMe[unsafe-object-assign]
+// $FlowFixMe[not-an-object]
+Object.assign(ReadOnlyNode_public, ReadOnlyNode);
 
 // Temporary type until we ship ReadOnlyNode extending EventTarget ungated.
 export type ReadOnlyNodeWithEventTarget = ReadOnlyNode & EventTarget;

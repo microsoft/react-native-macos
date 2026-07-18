@@ -45,6 +45,7 @@ Pod::Spec.new do |s|
   s.dependency "React-featureflags"
   s.dependency "React-runtimescheduler"
   s.dependency "React-cxxreact"
+  s.dependency "React-bridging"
 
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   add_dependency(s, "React-rendererdebug")
@@ -179,6 +180,7 @@ Pod::Spec.new do |s|
 
   s.subspec "scheduler" do |ss|
     ss.source_files         = podspec_sources("react/renderer/scheduler/**/*.{m,mm,cpp,h}", "react/renderer/scheduler/**/*.h")
+    ss.exclude_files        = "react/renderer/scheduler/tests"
     ss.header_dir           = "react/renderer/scheduler"
 
     ss.dependency             "React-Fabric/animationbackend"

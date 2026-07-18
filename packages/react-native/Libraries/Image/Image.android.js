@@ -31,6 +31,8 @@ import resolveAssetSource from './resolveAssetSource';
 import * as React from 'react';
 import {use} from 'react';
 
+export type ImageInstance = HostInstance;
+
 let _requestId = 1;
 function generateRequestId() {
   return _requestId++;
@@ -124,6 +126,7 @@ const EMPTY_IMAGE_SOURCE = {
   uri: undefined,
   width: undefined,
   height: undefined,
+  headers: undefined,
 };
 
 /**
@@ -166,7 +169,7 @@ let BaseImage: AbstractImageAndroid = ({
   resizeMode,
   ...restProps
 }: {
-  ref?: React.RefSetter<HostInstance>,
+  ref?: React.RefSetter<ImageInstance>,
   ...ImageProps,
 }) => {
   let source_ =
@@ -215,9 +218,17 @@ let BaseImage: AbstractImageAndroid = ({
     ];
     nativeProps.source = source_;
   } else {
-    const {uri, width: sourceWidth, height: sourceHeight} = source_;
+    const {
+      uri,
+      width: sourceWidth,
+      height: sourceHeight,
+      headers: sourceHeaders,
+    } = source_;
     if (uri === '') {
       console.warn('source.uri should not be an empty string');
+    }
+    if (sourceHeaders != null) {
+      nativeProps.headers = sourceHeaders;
     }
     nativeProps.style = [
       {width: sourceWidth ?? width, height: sourceHeight ?? height},

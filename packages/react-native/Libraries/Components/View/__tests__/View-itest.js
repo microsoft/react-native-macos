@@ -5,7 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @flow strict-local
- * @fantom_flags enableNativeCSSParsing:* enableNativeViewPropTransformations:*
+ * @fantom_flags enableNativeCSSParsing:*
+ * @fantom_flags enableCppPropsIteratorSetter:*
  * @format
  */
 
@@ -21,6 +22,10 @@ import {View} from 'react-native';
 import ReactNativeElement from 'react-native/src/private/webapis/dom/nodes/ReactNativeElement';
 
 describe('<View>', () => {
+  it('has displayName', () => {
+    expect(View.displayName ?? View.name).toBe('View');
+  });
+
   describe('props', () => {
     describe('style', () => {
       describe('width and height style', () => {
@@ -335,13 +340,12 @@ describe('<View>', () => {
               <>
                 <View
                   style={{
-                    experimental_backgroundImage:
-                      'radial-gradient(#e66465, #9198e5)',
+                    backgroundImage: 'radial-gradient(#e66465, #9198e5)',
                   }}
                 />
                 <View
                   style={{
-                    experimental_backgroundImage: [
+                    backgroundImage: [
                       {
                         type: 'radial-gradient',
                         shape: 'ellipse',
@@ -1088,6 +1092,20 @@ describe('<View>', () => {
           <rn-view />,
         );
       });
+    });
+  });
+
+  describe('testID', () => {
+    it('is propagated to the mounting layer', () => {
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(<View testID="testID" collapsable={false} />);
+      });
+
+      expect(root.getRenderedOutput({props: ['testID']}).toJSX()).toEqual(
+        <rn-view testID="testID" />,
+      );
     });
   });
 

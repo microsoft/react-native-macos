@@ -9,7 +9,6 @@ package com.facebook.react.fabric.mounting
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.os.SystemClock
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
@@ -56,7 +55,6 @@ import com.facebook.systrace.Systrace
 import java.util.ArrayDeque
 import java.util.LinkedList
 import java.util.Queue
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.Volatile
 import kotlin.concurrent.read
@@ -88,19 +86,8 @@ internal constructor(
   public var context: ThemedReactContext? = reactContext
     private set
 
-  private val tagToViewState: ConcurrentHashMap<Int, ViewState>?
-  private val optimizedTagToViewState: MutableIntObjectMap<ViewState>?
+  private val tagToViewState: MutableIntObjectMap<ViewState> = MutableIntObjectMap()
   private val registryLock = ReentrantReadWriteLock()
-
-  init {
-    if (ReactNativeFeatureFlags.useOptimizedViewRegistryOnAndroid()) {
-      tagToViewState = null
-      optimizedTagToViewState = MutableIntObjectMap()
-    } else {
-      tagToViewState = ConcurrentHashMap()
-      optimizedTagToViewState = null
-    }
-  }
 
   private val onViewAttachMountItems: Queue<MountItem> = ArrayDeque()
 
@@ -143,7 +130,9 @@ internal constructor(
       return
     }
 
-    registryPut(surfaceId, ViewState(surfaceId, rootView, rootViewManager, true))
+    registryLock.write {
+      tagToViewState[surfaceId] = ViewState(surfaceId, rootView, rootViewManager, true)
+    }
 
     val runnable: Runnable =
         object : GuardedRunnable(checkNotNull(context)) {
@@ -207,7 +196,7 @@ internal constructor(
     if (tagSetForStoppedSurface?.containsKey(tag) == true) {
       return true
     }
-    return registryContains(tag)
+    return registryLock.read { tagToViewState.containsKey(tag) }
   }
 
   @UiThread
@@ -253,12 +242,14 @@ internal constructor(
     // Reset all StateWrapper objects
     // Since this can happen on any thread, is it possible to race between StateWrapper destruction
     // and some accesses from View classes in the UI thread?
-    registryForEachValue { viewState ->
-      viewState.stateWrapper?.destroyState()
-      viewState.stateWrapper = null
+    registryLock.read {
+      tagToViewState.forEachValue { viewState ->
+        viewState.stateWrapper?.destroyState()
+        viewState.stateWrapper = null
 
-      viewState.eventEmitter?.destroy()
-      viewState.eventEmitter = null
+        viewState.eventEmitter?.destroy()
+        viewState.eventEmitter = null
+      }
     }
 
     val runnable = Runnable {
@@ -266,29 +257,23 @@ internal constructor(
         viewManagerRegistry?.onSurfaceStopped(surfaceId)
       }
 
-      if (optimizedTagToViewState != null) {
-        val viewStatesToDelete: ArrayList<ViewState>
-        registryLock.write {
-          val tagSetForStoppedSurface =
-              SparseArrayCompat<Any>().also { this.tagSetForStoppedSurface = it }
-          viewStatesToDelete = ArrayList(optimizedTagToViewState.size)
-          optimizedTagToViewState.forEach { key, value ->
-            tagSetForStoppedSurface[key] = this@SurfaceMountingManager
-            viewStatesToDelete.add(value)
-          }
-          optimizedTagToViewState.clear()
+      // Using this as a placeholder value in the map. We're using SparseArrayCompat
+      // since it can efficiently represent the list of pending tags
+      val tagSetForStoppedSurface =
+          SparseArrayCompat<Any>().also { this.tagSetForStoppedSurface = it }
+
+      val viewStatesToDelete: ArrayList<ViewState>
+      registryLock.write {
+        viewStatesToDelete = ArrayList(tagToViewState.size)
+        tagToViewState.forEach { key, value ->
+          tagSetForStoppedSurface[key] = this@SurfaceMountingManager
+          viewStatesToDelete.add(value)
         }
-        for (viewState in viewStatesToDelete) {
-          onViewStateDeleted(viewState)
-        }
-      } else {
-        val tagSetForStoppedSurface =
-            SparseArrayCompat<Any>().also { this.tagSetForStoppedSurface = it }
-        for ((key, value) in tagToViewState!!) {
-          tagSetForStoppedSurface[key] = this
-          onViewStateDeleted(value)
-        }
-        tagToViewState!!.clear()
+        tagToViewState.clear()
+      }
+      for (viewState in viewStatesToDelete) {
+        // We must call `onDropViewInstance` on all remaining Views
+        onViewStateDeleted(viewState)
       }
 
       // Evict all views from cache and memory
@@ -323,13 +308,16 @@ internal constructor(
       )
       return
     }
-    if (parentViewState.view !is ViewGroup) {
+
+    val parentView = parentViewState.view
+    checkNotNull(parentView) { "Unable to find parentView for tag $parentTag" }
+    if (parentView !is ViewGroup) {
       val message =
-          "Unable to add a view into a view that is not a ViewGroup. ParentTag: $parentTag - Tag: $tag - Index: $index"
+          "Unable to add a view into a non-ViewGroup ${parentView.javaClass.simpleName} when inserting [$tag] into parent [$parentTag]"
       FLog.e(TAG, message)
       throw IllegalStateException(message)
     }
-    val parentView = parentViewState.view as ViewGroup
+
     val viewState = getNullableViewState(tag)
     if (viewState == null) {
       ReactSoftExceptionLogger.logSoftException(
@@ -347,13 +335,13 @@ internal constructor(
       logViewHierarchy(parentView, false)
     }
 
-    val viewParent = view.parent
-    if (viewParent != null) {
-      val actualParentId = if (viewParent is ViewGroup) viewParent.id else View.NO_ID
+    val currParentView = view.parent
+    if (currParentView != null) {
+      val actualParentId = if (currParentView is ViewGroup) currParentView.id else View.NO_ID
       ReactSoftExceptionLogger.logSoftException(
           TAG,
           IllegalStateException(
-              "addViewAt: cannot insert view [$tag] into parent [$parentTag]: View already has a parent: [$actualParentId]  Parent: ${viewParent.javaClass.simpleName} View: ${view.javaClass.simpleName}"
+              "addViewAt: cannot insert view [$tag] into parent [$parentTag]: View already has a parent: [$actualParentId] Parent: ${currParentView.javaClass.simpleName} View: ${view.javaClass.simpleName}"
           ),
       )
 
@@ -371,8 +359,8 @@ internal constructor(
       // should be impossible - we mark this as a "readded" View and
       // thus prevent the RemoveDeleteTree worker from deleting this
       // View in the future.
-      if (viewParent is ViewGroup) {
-        viewParent.removeView(view)
+      if (currParentView is ViewGroup) {
+        currParentView.removeView(view)
       }
       erroneouslyReaddedReactTags.add(tag)
     }
@@ -409,6 +397,7 @@ internal constructor(
 
   @UiThread
   public fun removeViewAt(tag: Int, parentTag: Int, index: Int): Unit {
+    UiThreadUtil.assertOnUiThread()
     if (isStopped) {
       return
     }
@@ -424,22 +413,22 @@ internal constructor(
       return
     }
 
-    UiThreadUtil.assertOnUiThread()
     val parentViewState = getNullableViewState(parentTag)
-
-    // TODO: throw exception here?
     if (parentViewState == null) {
       ReactSoftExceptionLogger.logSoftException(
           ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
-          IllegalStateException("Unable to find viewState for tag: [$parentTag] for removeViewAt"),
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag: [$parentTag] for removeViewAt"
+          ),
       )
       return
     }
 
     val parentView = parentViewState.view
+    checkNotNull(parentView) { "Unable to find parentView for tag $parentTag" }
     if (parentView !is ViewGroup) {
       val message =
-          "Unable to remove a view from a view that is not a ViewGroup. ParentTag: $parentTag - Tag: $tag - Index: $index"
+          "Unable to remove a view from a a non-ViewGroup ${parentView.javaClass.simpleName} when removing [$tag] from parent [$parentTag]"
       FLog.e(TAG, message)
       throw IllegalStateException(message)
     }
@@ -493,7 +482,7 @@ internal constructor(
       logViewHierarchy(parentView, true)
       ReactSoftExceptionLogger.logSoftException(
           TAG,
-          IllegalStateException(
+          ReactNoCrashSoftException(
               "Tried to remove view [$tag] of parent [$parentTag] at index $index, but got view tag $actualTag - actual index of view: $tagActualIndex"
           ),
       )
@@ -603,7 +592,7 @@ internal constructor(
             this.stateWrapper = stateWrapper
             this.eventEmitter = eventEmitterWrapper
           }
-      registryPut(reactTag, viewState)
+      registryLock.write { tagToViewState[reactTag] = viewState }
 
       if (isLayoutable) {
         @Suppress("UNCHECKED_CAST")
@@ -626,14 +615,15 @@ internal constructor(
 
   public fun storeSynchronousMountPropsOverride(reactTag: Int, props: ReadableMap): Unit {
     if (ReactNativeFeatureFlags.overrideBySynchronousMountPropsAtMountingAndroid()) {
-      val propsMap = getMapFromPropsReadableMap(props)
-      var synchronousMountProps = tagToSynchronousMountProps[reactTag]
-      if (synchronousMountProps != null) {
-        synchronousMountProps.putAll(propsMap)
+      val propsMap = getAnimatedPropsMap(props)
+      val synchronousMountProps = tagToSynchronousMountProps[reactTag] ?: mutableMapOf()
+      clearAnimatedNullPropsMapKeys(props, synchronousMountProps)
+      synchronousMountProps.putAll(propsMap)
+      if (synchronousMountProps.isEmpty()) {
+        tagToSynchronousMountProps.remove(reactTag)
       } else {
-        synchronousMountProps = propsMap
+        tagToSynchronousMountProps[reactTag] = synchronousMountProps
       }
-      tagToSynchronousMountProps[reactTag] = synchronousMountProps
     }
   }
 
@@ -770,9 +760,16 @@ internal constructor(
       return
     }
 
-    val view = getViewState(reactTag).view
+    val viewState = getNullableViewState(reactTag)
+    val view = viewState?.view
     if (view == null) {
-      throw RetryableMountingLayerException("Unable to find viewState view for tag $reactTag")
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag $reactTag for sendAccessibilityEvent"
+          ),
+      )
+      return
     }
 
     view.sendAccessibilityEvent(eventType)
@@ -873,7 +870,14 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
+    val viewState = getNullableViewState(reactTag)
+    if (viewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("Unable to find viewState for tag $reactTag for updatePadding"),
+      )
+      return
+    }
     // Do not layout Root Views
     if (viewState.isRoot) {
       return
@@ -899,7 +903,16 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
+    val viewState = getNullableViewState(reactTag)
+    if (viewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag $reactTag for updateOverflowInset"
+          ),
+      )
+      return
+    }
     // Do not layout Root Views
     if (viewState.isRoot) {
       return
@@ -925,7 +938,14 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
+    val viewState = getNullableViewState(reactTag)
+    if (viewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("Unable to find viewState for tag $reactTag for updateState"),
+      )
+      return
+    }
 
     val prevStateWrapper = viewState.stateWrapper
     viewState.stateWrapper = stateWrapper
@@ -954,32 +974,21 @@ internal constructor(
 
     // TODO T62717437 - Use a flag to determine that these event emitters belong to virtual nodes
     // only.
-    val viewState: ViewState =
-        if (optimizedTagToViewState != null) {
-          registryLock.write { optimizedTagToViewState.getOrPut(reactTag) { ViewState(reactTag) } }
-        } else {
-          var vs = tagToViewState!![reactTag]
-          if (vs == null) {
-            vs = ViewState(reactTag)
-            tagToViewState!![reactTag] = vs
-          }
-          vs
-        }
+    val viewState: ViewState = registryLock.write {
+      tagToViewState.getOrPut(reactTag) { ViewState(reactTag) }
+    }
+
     val previousEventEmitterWrapper = viewState.eventEmitter
-    viewState.eventEmitter = eventEmitter
+    synchronized(viewState) {
+      viewState.eventEmitter = eventEmitter
+      // Invoke pending events queued to the view state
+      viewState.pendingEventQueue?.forEach { it.dispatch(eventEmitter) }
+      viewState.pendingEventQueue = null
+    }
 
     // Immediately destroy native side of wrapper, instead of waiting for Java GC.
     if (previousEventEmitterWrapper != eventEmitter && previousEventEmitterWrapper != null) {
       previousEventEmitterWrapper.destroy()
-    }
-
-    val pendingEventQueue = viewState.pendingEventQueue
-    if (pendingEventQueue != null) {
-      // Invoke pending event queued to the view state
-      for (viewEvent in pendingEventQueue) {
-        viewEvent.dispatch(eventEmitter)
-      }
-      viewState.pendingEventQueue = null
     }
   }
 
@@ -1002,15 +1011,23 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
-    val view = viewState.view
+    val viewState = getNullableViewState(reactTag)
+
+    val view = viewState?.view
+    if (view == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag $reactTag for setJSResponder"
+          ),
+      )
+      return
+    }
+
     if (initialReactTag != reactTag && view is ViewParent) {
       // In this case, initialReactTag corresponds to a virtual/layout-only View, and we already
       // have a parent of that View in reactTag, so we can use it.
       jsResponderHandler.setJSResponder(initialReactTag, view as ViewParent)
-      return
-    } else if (view == null) {
-      SoftAssertions.assertUnreachable("Cannot find view for tag [$reactTag].")
       return
     }
 
@@ -1076,7 +1093,7 @@ internal constructor(
       // To delete we simply remove the tag from the registry.
       // We want to rely on the correct set of MountInstructions being sent to the platform,
       // or StopSurface being called, so we do not handle deleting descendants of the View.
-      registryRemove(reactTag)
+      registryLock.write { tagToViewState.remove(reactTag) }
 
       onViewStateDeleted(viewState)
     }
@@ -1120,52 +1137,8 @@ internal constructor(
         )
   }
 
-  private fun getViewState(reactTag: Int): ViewState =
-      registryGet(reactTag)
-          ?: throw RetryableMountingLayerException(
-              "Unable to find viewState for tag $reactTag. Surface stopped: $isStopped"
-          )
-
-  private fun getNullableViewState(reactTag: Int): ViewState? = registryGet(reactTag)
-
-  private fun registryGet(tag: Int): ViewState? {
-    return if (optimizedTagToViewState != null) {
-      registryLock.read { optimizedTagToViewState[tag] }
-    } else {
-      tagToViewState!![tag]
-    }
-  }
-
-  private fun registryPut(tag: Int, state: ViewState) {
-    if (optimizedTagToViewState != null) {
-      registryLock.write { optimizedTagToViewState[tag] = state }
-    } else {
-      tagToViewState!![tag] = state
-    }
-  }
-
-  private fun registryRemove(tag: Int) {
-    if (optimizedTagToViewState != null) {
-      registryLock.write { optimizedTagToViewState.remove(tag) }
-    } else {
-      tagToViewState!!.remove(tag)
-    }
-  }
-
-  private fun registryContains(tag: Int): Boolean {
-    return if (optimizedTagToViewState != null) {
-      registryLock.read { optimizedTagToViewState.containsKey(tag) }
-    } else {
-      tagToViewState!!.containsKey(tag)
-    }
-  }
-
-  private inline fun registryForEachValue(action: (ViewState) -> Unit) {
-    if (optimizedTagToViewState != null) {
-      registryLock.read { optimizedTagToViewState.forEachValue(action) }
-    } else {
-      tagToViewState!!.values.forEach(action)
-    }
+  private fun getNullableViewState(reactTag: Int): ViewState? = registryLock.read {
+    tagToViewState[reactTag]
   }
 
   /** Applies a bitmap as the background of the view with the given tag, if it exists. */
@@ -1177,67 +1150,69 @@ internal constructor(
 
   public fun printSurfaceState(): Unit {
     FLog.e(TAG, "Views created for surface $surfaceId:")
-    registryForEachValue { viewState ->
-      val viewManagerName = viewState.viewManager?.name
-      val view = viewState.view
-      val parent = if (view != null) view.parent as View? else null
-      val parentTag = parent?.id
+    registryLock.read {
+      tagToViewState.forEachValue { viewState ->
+        val viewManagerName = viewState.viewManager?.name
+        val view = viewState.view
+        val parent = if (view != null) view.parent as View? else null
+        val parentTag = parent?.id
 
-      FLog.e(
-          TAG,
-          "<$viewManagerName id=${viewState.reactTag} parentTag=$parentTag isRoot=${viewState.isRoot} />",
-      )
+        FLog.e(
+            TAG,
+            "<$viewManagerName id=${viewState.reactTag} parentTag=$parentTag isRoot=${viewState.isRoot} />",
+        )
+      }
     }
   }
 
   @AnyThread
-  public fun enqueuePendingEvent(
-      reactTag: Int,
-      eventName: String,
-      canCoalesceEvent: Boolean,
-      params: WritableMap?,
-      @EventCategoryDef eventCategory: Int,
-  ): Unit {
-    enqueuePendingEvent(
-        reactTag,
-        eventName,
-        canCoalesceEvent,
-        params,
-        eventCategory,
-        SystemClock.uptimeMillis(),
-    )
-  }
-
-  @AnyThread
-  public fun enqueuePendingEvent(
+  internal fun dispatchEvent(
       reactTag: Int,
       eventName: String,
       canCoalesceEvent: Boolean,
       params: WritableMap?,
       @EventCategoryDef eventCategory: Int,
       eventTimestamp: Long,
-  ): Unit {
-    // When the surface stopped we will reset the view state map. We are not going to enqueue
-    // pending events as they are not expected to be dispatched anyways.
-    val viewState = registryGet(reactTag)
-
+  ) {
+    val viewState = getNullableViewState(reactTag)
     if (viewState == null) {
-      // Cannot queue event without view state. Do nothing here.
+      FLog.i(TAG, "Unable to invoke event: %s for reactTag: %d", eventName, reactTag)
       return
     }
 
-    val viewEvent =
-        PendingViewEvent(eventName, params, eventCategory, canCoalesceEvent, eventTimestamp)
-    UiThreadUtil.runOnUiThread {
-      val eventEmitter = viewState.eventEmitter
-      if (eventEmitter != null) {
-        viewEvent.dispatch(eventEmitter)
-      } else {
-        val queue =
-            viewState.pendingEventQueue
-                ?: LinkedList<PendingViewEvent>().also { viewState.pendingEventQueue = it }
-        queue.add(viewEvent)
+    var emitter = viewState.eventEmitter
+    if (emitter == null) {
+      synchronized(viewState) {
+        val emitterUnderLock = viewState.eventEmitter
+        if (emitterUnderLock != null) {
+          emitter = emitterUnderLock
+        } else {
+          // The view is pre-allocated and created. However, it hasn't been mounted yet. We will
+          // have access to the event emitter later when the view is mounted. For now just save the
+          // event in the view state and trigger it later.
+          val queue =
+              viewState.pendingEventQueue
+                  ?: LinkedList<PendingViewEvent>().also { viewState.pendingEventQueue = it }
+          queue.add(
+              PendingViewEvent(eventName, params, eventCategory, canCoalesceEvent, eventTimestamp)
+          )
+          return
+        }
       }
+    }
+
+    if (viewState.pendingEventQueue != null) {
+      // We have an emitter and also a pending event queue - we must lock
+      // and wait for the pending event queue to be cleared.
+      synchronized<Unit>(viewState) {}
+      assert(viewState.pendingEventQueue == null)
+    }
+
+    checkNotNull(emitter)
+    if (canCoalesceEvent) {
+      emitter.dispatchUnique(eventName, params, eventTimestamp)
+    } else {
+      emitter.dispatch(eventName, params, eventCategory, eventTimestamp)
     }
   }
 
@@ -1265,9 +1240,8 @@ internal constructor(
   ) {
     var currentProps: ReactStylesDiffMap? = null
     var stateWrapper: StateWrapper? = null
-    var eventEmitter: EventEmitterWrapper? = null
-
-    @ThreadConfined(ThreadConfined.UI) var pendingEventQueue: Queue<PendingViewEvent>? = null
+    @Volatile var eventEmitter: EventEmitterWrapper? = null
+    @Volatile var pendingEventQueue: Queue<PendingViewEvent>? = null
 
     override fun toString(): String {
       val isLayoutOnly = viewManager == null
@@ -1328,7 +1302,11 @@ internal constructor(
       for ((propKey, propValue) in patchMap) {
         if (outputReadableMap.hasKey(propKey)) {
           if (propKey == PROP_TRANSFORM) {
-            assert(outputReadableMap.getType(propKey) == ReadableType.Array && propValue is List<*>)
+            val outputType = outputReadableMap.getType(propKey)
+            assert(
+                (outputType == ReadableType.Array || outputType == ReadableType.Null) &&
+                    propValue is List<*>
+            )
             val array = WritableNativeArray()
             for (item in propValue as List<*>) {
               if (item is Map<*, *>) {
@@ -1346,14 +1324,18 @@ internal constructor(
             }
             outputReadableMap.putArray(propKey, array)
           } else if (propKey == PROP_OPACITY) {
-            assert(outputReadableMap.getType(propKey) == ReadableType.Number && propValue is Number)
+            val outputType = outputReadableMap.getType(propKey)
+            assert(
+                (outputType == ReadableType.Number || outputType == ReadableType.Null) &&
+                    propValue is Number
+            )
             outputReadableMap.putDouble(propKey, (propValue as Number).toDouble())
           }
         }
       }
     }
 
-    private fun getMapFromPropsReadableMap(readableMap: ReadableMap): MutableMap<String, Any> {
+    private fun getAnimatedPropsMap(readableMap: ReadableMap): MutableMap<String, Any> {
       val outputMap = mutableMapOf<String, Any>()
 
       if (
@@ -1381,6 +1363,25 @@ internal constructor(
       }
 
       return outputMap
+    }
+
+    private fun clearAnimatedNullPropsMapKeys(
+        readableMap: ReadableMap,
+        outputMap: MutableMap<String, Any>,
+    ) {
+      // Native Animated uses synchronous null updates to restore animated-managed props.
+      // Keep this scoped to props stored by this override path today.
+      if (
+          readableMap.hasKey(PROP_TRANSFORM) &&
+              readableMap.getType(PROP_TRANSFORM) == ReadableType.Null
+      ) {
+        outputMap.remove(PROP_TRANSFORM)
+      }
+      if (
+          readableMap.hasKey(PROP_OPACITY) && readableMap.getType(PROP_OPACITY) == ReadableType.Null
+      ) {
+        outputMap.remove(PROP_OPACITY)
+      }
     }
 
     // prevents unchecked conversion warn of the <ViewGroup> type

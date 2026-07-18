@@ -14,10 +14,9 @@ import type {
   VirtualizedListProps,
   ViewabilityConfig,
 } from '@react-native-macos/virtualized-lists'; // [macOS]
-import type {ScrollViewComponent} from '../Components/ScrollView/ScrollView';
+import type {PublicScrollViewInstance} from '../Components/ScrollView/ScrollView';
 import type {StyleProp} from '../StyleSheet/StyleSheet';
 import type {ViewStyle} from '../StyleSheet/StyleSheetTypes';
-import type {View} from '../Components/View/View';
 
 export interface FlatListProps<ItemT> extends VirtualizedListProps<ItemT> {
   /**
@@ -30,15 +29,8 @@ export interface FlatListProps<ItemT> extends VirtualizedListProps<ItemT> {
    * - 'never' (the default), tapping outside of the focused text input when the keyboard is up dismisses the keyboard. When this happens, children won't receive the tap.
    * - 'always', the keyboard will not dismiss automatically, and the scroll view will not catch taps, but children of the scroll view can catch taps.
    * - 'handled', the keyboard will not dismiss automatically when the tap was handled by a children, (or captured by an ancestor).
-   * - false, deprecated, use 'never' instead
-   * - true, deprecated, use 'always' instead
    */
-  keyboardShouldPersistTaps?:
-    | boolean
-    | 'always'
-    | 'never'
-    | 'handled'
-    | undefined;
+  keyboardShouldPersistTaps?: 'always' | 'never' | 'handled' | undefined;
 
   /**
    * An array (or array-like list) of items to render. Other data types can be
@@ -229,13 +221,10 @@ export abstract class FlatListComponent<
   getScrollResponder: () => React.JSX.Element | null | undefined;
 
   /**
-   * Provides a reference to the underlying host component
+   * Returns a reference to the underlying native scroll view, or null if the
+   * native instance is not mounted.
    */
-  getNativeScrollRef: () =>
-    | React.ComponentRef<typeof View>
-    | React.ComponentRef<typeof ScrollViewComponent>
-    | null
-    | undefined;
+  getNativeScrollRef: () => PublicScrollViewInstance | null;
 
   getScrollableNode: () => any;
 

@@ -12,6 +12,7 @@ package com.facebook.react.views.view
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.BlendMode
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -28,6 +29,7 @@ import com.facebook.react.R
 import com.facebook.react.bridge.ReactNoCrashSoftException
 import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.ReactSoftExceptionLogger.logSoftException
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.UiThreadUtil.assertOnUiThread
 import com.facebook.react.bridge.UiThreadUtil.runOnUiThread
 import com.facebook.react.common.ReactConstants.TAG
@@ -58,7 +60,6 @@ import com.facebook.react.uimanager.ReactClippingViewGroup
 import com.facebook.react.uimanager.ReactClippingViewGroupHelper.calculateClippingRect
 import com.facebook.react.uimanager.ReactOverflowViewWithInset
 import com.facebook.react.uimanager.ReactPointerEventsView
-import com.facebook.react.uimanager.ReactZIndexedViewGroup
 import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.uimanager.style.BorderStyle
 import com.facebook.react.uimanager.style.LogicalEdge
@@ -81,7 +82,6 @@ public open class ReactViewGroup public constructor(context: Context?) :
     ReactClippingViewGroup,
     ReactPointerEventsView,
     ReactHitSlopView,
-    ReactZIndexedViewGroup,
     ReactOverflowViewWithInset {
 
   public override val overflowInset: Rect = Rect()
@@ -127,7 +127,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
    * override all possible add methods for [ViewGroup] so that we can control this process whenever
    * the option is set. We also override [ViewGroup#getChildAt] and [ViewGroup#getChildCount] so
    * those methods may return views that are not attached. This is risky but allows us to perform a
-   * correct cleanup in `NativeViewHierarchyManager`.
+   * correct cleanup.
    */
   internal var _removeClippedSubviews = false
 
@@ -153,6 +153,9 @@ public open class ReactViewGroup public constructor(context: Context?) :
       AccessibilityManager.AccessibilityStateChangeListener? =
       null
   private var focusOnAttach = false
+
+  internal var nativeBackgroundMap: ReadableMap? = null
+  internal var nativeForegroundMap: ReadableMap? = null
 
   init {
     initView()
@@ -181,6 +184,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
     backfaceOpacity = 1f
     backfaceVisible = true
     childrenRemovedWhileTransitioning = null
+    nativeBackgroundMap = null
+    nativeForegroundMap = null
   }
 
   internal open fun recycleView() {
@@ -233,7 +238,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
   @SuppressLint("MissingSuperCall")
   override fun requestLayout() {
     // No-op, terminate `requestLayout` here, UIManager handles laying out children and
-    // `layout` is called on all RN-managed views by `NativeViewHierarchyManager`
+    // `layout` is called on all RN-managed views by the UIManager
   }
 
   @TargetApi(23)
@@ -587,6 +592,29 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
   }
 
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
+    if (nativeBackgroundMap != null) {
+      applyNativeBackground(nativeBackgroundMap)
+    }
+    if (nativeForegroundMap != null) {
+      applyNativeForeground(nativeForegroundMap)
+    }
+  }
+
+  internal fun applyNativeBackground(map: ReadableMap?) {
+    nativeBackgroundMap = map
+    setFeedbackUnderlay(
+        this,
+        map?.let { ReactDrawableHelper.createDrawableFromJSDescription(context, it) },
+    )
+  }
+
+  internal fun applyNativeForeground(map: ReadableMap?) {
+    nativeForegroundMap = map
+    foreground = map?.let { ReactDrawableHelper.createDrawableFromJSDescription(context, it) }
+  }
+
   override fun onViewAdded(child: View) {
     assertOnUiThread()
     checkViewClippingTag(child, false)
@@ -622,19 +650,7 @@ public open class ReactViewGroup public constructor(context: Context?) :
     }
   }
 
-  /**
-   * No-op implementation for backward compatibility. Z-order is now managed at the C++ layer in
-   * Fabric.
-   */
-  override fun getZIndexMappedChildIndex(index: Int): Int = index
-
-  /**
-   * No-op implementation for backward compatibility. Z-order is now managed at the C++ layer in
-   * Fabric.
-   */
-  override fun updateDrawingOrder() {
-    // No-op: Z-order is managed at the C++ layer
-  }
+  override fun shouldDelayChildPressedState(): Boolean = false
 
   override fun dispatchSetPressed(pressed: Boolean) {
     // Prevents the ViewGroup from dispatching the pressed state
