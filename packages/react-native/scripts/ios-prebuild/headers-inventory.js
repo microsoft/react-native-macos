@@ -35,6 +35,49 @@ const {DEPS_NAMESPACES} = require('./headers-spec');
 const fs = require('fs');
 const path = require('path');
 
+// The macOS fork keeps top-level HostPlatform* dispatch headers that select the
+// macOS or generic implementation. Podspec globs also discover the nested
+// implementations at the same natural include path, so choose the dispatch
+// header explicitly. Legacy interop is the inverse: upstream's platform/ios
+// header is the guarded canonical implementation and already carries the macOS
+// type adaptations.
+const NATURAL_PATH_SOURCE_PREFERENCES /*: Map<string, string> */ = new Map([
+  [
+    'react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h',
+    'ReactCommon/react/renderer/components/legacyviewmanagerinterop/platform/ios/react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h',
+  ],
+  ...[
+    'HostPlatformTouch.h',
+    'HostPlatformViewEventEmitter.h',
+    'HostPlatformViewProps.h',
+    'HostPlatformViewTraitsInitializer.h',
+  ].map(name => [
+    `react/renderer/components/view/${name}`,
+    `ReactCommon/react/renderer/components/view/${name}`,
+  ]),
+]);
+
+const PLATFORM_DISPATCH_IMPLEMENTATIONS /*: Map<string, string> */ = new Map(
+  [
+    'HostPlatformTouch.h',
+    'HostPlatformViewEventEmitter.h',
+    'HostPlatformViewProps.h',
+    'HostPlatformViewTraitsInitializer.h',
+    'KeyEvent.h',
+    'MouseEvent.h',
+  ].map(name => [
+    `react/renderer/components/view/${name}`,
+    `ReactCommon/react/renderer/components/view/platform/macos/react/renderer/components/view/${name}`,
+  ]),
+);
+
+const PLATFORM_DISPATCH_AUXILIARY_HEADERS /*: Map<string, string> */ = new Map([
+  [
+    'ReactCommon/react/renderer/components/view/platform/macos/react/renderer/components/view/HostPlatformViewEvents.h',
+    'react/renderer/components/view/HostPlatformViewProps.h',
+  ],
+]);
+
 /*::
 type Identity = {
   pod: string, // pod folder name in Headers/ (specName with '-' -> '_')
@@ -84,6 +127,7 @@ const THIRD_PARTY_LIBS /*: Set<string> */ = new Set(DEPS_NAMESPACES);
 const SDK_PREFIXES = new Set([
   'Accelerate',
   'Accessibility',
+  'AppKit',
   'AVFoundation',
   'AVKit',
   'CFNetwork',
@@ -369,6 +413,31 @@ function buildInventory(rootFolder /*: string */) /*: {
         };
         addIdentity(naturalPath, identity, header.source);
 
+        // Podspec header maps flatten platform implementations to their public
+        // include spelling. Dispatch headers include those implementations by
+        // their full ReactCommon path, so ship that physical spelling too.
+        const sourcePath = path.relative(rootFolder, header.source);
+        const reactCommonPrefix = 'ReactCommon/';
+        if (
+          sourcePath.startsWith(reactCommonPrefix) &&
+          sourcePath.includes('/platform/') &&
+          sourcePath.endsWith(path.basename(naturalPath))
+        ) {
+          const physicalNaturalPath = sourcePath.slice(
+            reactCommonPrefix.length,
+          );
+          if (physicalNaturalPath !== naturalPath) {
+            addIdentity(
+              physicalNaturalPath,
+              {
+                ...identity,
+                namespacedPath: path.join(podName, physicalNaturalPath),
+              },
+              header.source,
+            );
+          }
+        }
+
         // The merged ReactCoreHeaders tree ALSO exposes React_RCTAppDelegate
         // headers bare at the root (hosts write #import <RCTDefaultReactNativeFactoryDelegate.h>).
         // Model that second identity explicitly.
@@ -382,6 +451,97 @@ function buildInventory(rootFolder /*: string */) /*: {
             header.source,
           );
         }
+      }
+    }
+  }
+
+  for (const [
+    wrapperPath,
+    implementationSource,
+  ] of PLATFORM_DISPATCH_IMPLEMENTATIONS) {
+    const wrapper = entries.get(wrapperPath);
+    const implementationPath = implementationSource.slice(
+      'ReactCommon/'.length,
+    );
+    const implementationAbsSource = path.join(rootFolder, implementationSource);
+    if (
+      wrapper == null ||
+      entries.has(implementationPath) ||
+      !fs.existsSync(implementationAbsSource)
+    ) {
+      continue;
+    }
+    const wrapperIdentity = wrapper.identities[0];
+    addIdentity(
+      implementationPath,
+      {
+        ...wrapperIdentity,
+        namespacedPath: path.join(wrapperIdentity.pod, implementationPath),
+        source: implementationSource,
+      },
+      implementationAbsSource,
+    );
+  }
+
+  for (const [
+    implementationSource,
+    wrapperPath,
+  ] of PLATFORM_DISPATCH_AUXILIARY_HEADERS) {
+    const wrapper = entries.get(wrapperPath);
+    const implementationPath = implementationSource.slice(
+      'ReactCommon/'.length,
+    );
+    const implementationAbsSource = path.join(rootFolder, implementationSource);
+    if (
+      wrapper == null ||
+      entries.has(implementationPath) ||
+      !fs.existsSync(implementationAbsSource)
+    ) {
+      continue;
+    }
+    const wrapperIdentity = wrapper.identities[0];
+    addIdentity(
+      implementationPath,
+      {
+        ...wrapperIdentity,
+        namespacedPath: path.join(wrapperIdentity.pod, implementationPath),
+        source: implementationSource,
+      },
+      implementationAbsSource,
+    );
+  }
+
+  for (const [
+    naturalPath,
+    preferredSource,
+  ] of NATURAL_PATH_SOURCE_PREFERENCES) {
+    const sources = naturalToSources.get(naturalPath);
+    const preferredAbsSource = path.join(rootFolder, preferredSource);
+    if (
+      sources == null ||
+      sources.size < 2 ||
+      !sources.has(preferredAbsSource)
+    ) {
+      continue;
+    }
+
+    naturalToSources.set(naturalPath, new Set([preferredAbsSource]));
+    const entry = entries.get(naturalPath);
+    if (entry != null) {
+      entry.identities = entry.identities.filter(
+        identity => identity.source === preferredSource,
+      );
+    }
+    for (const source of sources) {
+      if (source === preferredAbsSource) {
+        continue;
+      }
+      const naturals = sourceToNatural.get(source);
+      if (naturals != null) {
+        sourceToNatural.set(
+          source,
+          naturals.filter(candidate => candidate !== naturalPath),
+        );
       }
     }
   }
@@ -453,6 +613,20 @@ function classifyEntries(
             cxxGuarded: inc.cxxGuarded,
           });
         } else {
+          const quotedPath = token.slice(1, -1);
+          const packagedSibling = quotedPath.includes('/')
+            ? quotedPath
+            : path.posix.join(
+                path.posix.dirname(entry.naturalPath),
+                quotedPath,
+              );
+          if (entries.has(packagedSibling)) {
+            entry.includes.internal.push({
+              naturalPath: packagedSibling,
+              cxxGuarded: inc.cxxGuarded,
+            });
+            continue;
+          }
           // A quoted include in a SHIPPED header that doesn't land on another
           // shipped header: works in source builds (pod header maps / sibling
           // files) but has no resolution target in the packaged layout when a
@@ -622,4 +796,7 @@ module.exports = {
   scanHeader,
   THIRD_PARTY_LIBS,
   META_INTERNAL_RE,
+  NATURAL_PATH_SOURCE_PREFERENCES,
+  PLATFORM_DISPATCH_IMPLEMENTATIONS,
+  PLATFORM_DISPATCH_AUXILIARY_HEADERS,
 };

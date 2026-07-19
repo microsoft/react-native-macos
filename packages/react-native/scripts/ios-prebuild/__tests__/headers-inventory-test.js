@@ -10,7 +10,14 @@
 
 'use strict';
 
-const {scanHeader} = require('../headers-inventory');
+const path = require('path');
+const {
+  computeInventory,
+  NATURAL_PATH_SOURCE_PREFERENCES,
+  PLATFORM_DISPATCH_AUXILIARY_HEADERS,
+  PLATFORM_DISPATCH_IMPLEMENTATIONS,
+  scanHeader,
+} = require('../headers-inventory');
 
 describe('scanHeader include classification', () => {
   test('an unguarded include is not cxx-guarded', () => {
@@ -114,5 +121,54 @@ describe('scanHeader comment handling', () => {
 
   test('a // line comment mentioning a keyword does not trip the detector', () => {
     expect(scanHeader('// using namespace std;\n').hasUnguardedCxx).toBe(false);
+  });
+});
+
+describe('header source precedence', () => {
+  test('resolves known platform dispatch collisions explicitly', () => {
+    const rnRoot = path.join(__dirname, '..', '..', '..');
+    const inventory = computeInventory(rnRoot);
+
+    expect(inventory.collisions).toEqual([]);
+    for (const [naturalPath, source] of NATURAL_PATH_SOURCE_PREFERENCES) {
+      const header = inventory.headers.find(
+        candidate => candidate.naturalPath === naturalPath,
+      );
+      expect(header?.identities.map(identity => identity.source)).toEqual([
+        source,
+      ]);
+    }
+    for (const source of PLATFORM_DISPATCH_IMPLEMENTATIONS.values()) {
+      const naturalPath = source.slice('ReactCommon/'.length);
+      const header = inventory.headers.find(
+        candidate => candidate.naturalPath === naturalPath,
+      );
+      expect(header?.identities.map(identity => identity.source)).toEqual([
+        source,
+      ]);
+    }
+    for (const source of PLATFORM_DISPATCH_AUXILIARY_HEADERS.keys()) {
+      const naturalPath = source.slice('ReactCommon/'.length);
+      const header = inventory.headers.find(
+        candidate => candidate.naturalPath === naturalPath,
+      );
+      expect(header?.identities.map(identity => identity.source)).toEqual([
+        source,
+      ]);
+    }
+    const textUIKitConsumers = inventory.headers.filter(header =>
+      [
+        'RCTText/RCTUITextField.h',
+        'RCTText/RCTUITextView.h',
+        'RCTText/RCTWrappedTextView.h',
+        'React/RCTUITextField.h',
+        'React/RCTUITextView.h',
+        'React/RCTUnimplementedNativeComponentView.h',
+        'React/RCTWrappedTextView.h',
+      ].includes(header.naturalPath),
+    );
+    expect(
+      textUIKitConsumers.flatMap(header => header.includes.quotedNotShipped),
+    ).toEqual([]);
   });
 });
