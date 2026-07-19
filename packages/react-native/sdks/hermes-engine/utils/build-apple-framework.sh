@@ -61,7 +61,7 @@ function get_mac_deployment_target {
 function build_host_hermesc {
   echo "Building hermesc"
   pushd "$HERMES_PATH" > /dev/null || exit 1
-    cmake -S . -B build_host_hermesc -DJSI_DIR="$JSI_PATH"
+    cmake -S . -B build_host_hermesc -DJSI_DIR="$JSI_PATH" -DCMAKE_BUILD_TYPE="$BUILD_TYPE" # [macOS]
     cmake --build ./build_host_hermesc --target hermesc -j "${NUM_CORES}"
   popd > /dev/null || exit 1
 }
