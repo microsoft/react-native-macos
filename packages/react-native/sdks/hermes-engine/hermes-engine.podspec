@@ -153,7 +153,7 @@ Pod::Spec.new do |spec|
       'HERMES_CLI_PATH' => "#{hermesc_path}/bin/hermesc"
     }
 
-    spec.prepare_command = ". '#{react_native_path}/sdks/hermes-engine/utils/create-dummy-hermes-xcframework.sh'"
+    spec.prepare_command = File.read(File.join(__dir__, "utils", "create-dummy-hermes-xcframework.sh")) # [macOS] Keep local podspec checksums independent of the checkout path.
 
     # This podspec is also run in CI to build Hermes without using Pod install
     # and sometimes CI fails because `Pod::Executable` does not exist if it is not run with Pod Install.
