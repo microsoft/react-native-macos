@@ -9,14 +9,17 @@
  */
 
 import type {Config} from '@react-native-community/cli-types';
-import type {ConfigT, InputConfigT, YargArguments} from 'metro-config';
+import type {InputConfigT} from 'metro-config';
 
 import {CLIError} from './errors';
 import {reactNativePlatformResolver} from './metroPlatformResolver';
-import {loadConfig, resolveConfig} from 'metro-config';
+import {loadConfig, resolveConfig} from 'metro';
 import path from 'path';
 
 const debug = require('debug')('ReactNative:CommunityCliPlugin');
+
+type HydratedMetroConfig = Awaited<ReturnType<typeof loadConfig>>;
+type ArgvInput = Parameters<typeof loadConfig>[0];
 
 export type {Config};
 
@@ -32,27 +35,28 @@ export type ConfigLoadingContext = Readonly<{
  */
 function getCommunityCliDefaultConfig(
   ctx: ConfigLoadingContext,
-  config: ConfigT,
+  config: HydratedMetroConfig,
 ): InputConfigT {
   const outOfTreePlatforms = Object.keys(ctx.platforms).filter(
     platform => ctx.platforms[platform].npmPackageName,
   );
-  const resolver: Partial<{...ConfigT['resolver']}> = {
+  const resolver: NonNullable<InputConfigT['resolver']> = {
     platforms: [...Object.keys(ctx.platforms), 'native'],
+    ...(outOfTreePlatforms.length > 0
+      ? {
+          resolveRequest: reactNativePlatformResolver(
+            outOfTreePlatforms.reduce<{[platform: string]: string}>(
+              (result, platform) => {
+                result[platform] = ctx.platforms[platform].npmPackageName;
+                return result;
+              },
+              {},
+            ),
+            config.resolver?.resolveRequest,
+          ),
+        }
+      : {}),
   };
-
-  if (outOfTreePlatforms.length) {
-    resolver.resolveRequest = reactNativePlatformResolver(
-      outOfTreePlatforms.reduce<{[platform: string]: string}>(
-        (result, platform) => {
-          result[platform] = ctx.platforms[platform].npmPackageName;
-          return result;
-        },
-        {},
-      ),
-      config.resolver?.resolveRequest,
-    );
-  }
 
   return {
     resolver,
@@ -83,8 +87,8 @@ function getCommunityCliDefaultConfig(
  */
 export default async function loadMetroConfig(
   ctx: ConfigLoadingContext,
-  options: YargArguments = {},
-): Promise<ConfigT> {
+  options: NonNullable<ArgvInput> = {},
+): Promise<HydratedMetroConfig> {
   let RNMetroConfig = null;
   try {
     RNMetroConfig = require('@react-native/metro-config');

@@ -380,9 +380,6 @@ RCT_EXPORT_MODULE_LOAD // [macOS]
  * A class that allows NativeModules and TurboModules to look up one another.
  */
 @interface RCTModuleRegistry : NSObject
-#ifndef RCT_REMOVE_LEGACY_ARCH
-- (void)setBridge:(RCTBridge *)bridge;
-#endif // RCT_REMOVE_LEGACY_ARCH
 - (void)setTurboModuleRegistry:(id<RCTTurboModuleRegistry>)turboModuleRegistry;
 
 - (id)moduleForName:(const char *)moduleName;
@@ -401,9 +398,6 @@ typedef void (^RCTViewRegistryUIBlock)(RCTViewRegistry *viewRegistry);
  * A class that allows NativeModules to query for views, given React Tags.
  */
 @interface RCTViewRegistry : NSObject
-#ifndef RCT_REMOVE_LEGACY_ARCH
-- (void)setBridge:(RCTBridge *)bridge;
-#endif // RCT_REMOVE_LEGACY_ARCH
 - (void)setBridgelessComponentViewProvider:(RCTBridgelessComponentViewProvider)bridgelessComponentViewProvider;
 
 - (RCTPlatformView *)viewForReactTag:(NSNumber *)reactTag; // [macOS]
@@ -421,9 +415,6 @@ typedef void (^RCTBridgelessJSModuleMethodInvoker)(
  * as callable with React Native.
  */
 @interface RCTCallableJSModules : NSObject
-#ifndef RCT_REMOVE_LEGACY_ARCH
-- (void)setBridge:(RCTBridge *)bridge;
-#endif // RCT_REMOVE_LEGACY_ARCH
 - (void)setBridgelessJSModuleMethodInvoker:(RCTBridgelessJSModuleMethodInvoker)bridgelessJSModuleMethodInvoker;
 
 - (void)invokeModule:(NSString *)moduleName method:(NSString *)methodName withArgs:(NSArray *)args;

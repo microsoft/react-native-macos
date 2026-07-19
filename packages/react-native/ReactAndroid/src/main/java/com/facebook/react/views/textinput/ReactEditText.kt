@@ -22,6 +22,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
+import android.text.TextUtils
 import android.text.TextWatcher
 import android.text.method.KeyListener
 import android.text.method.QwertyKeyListener
@@ -40,6 +41,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.graphics.withTranslation
 import androidx.core.util.Predicate
 import androidx.core.view.ViewCompat
 import com.facebook.common.logging.FLog
@@ -69,10 +71,12 @@ import com.facebook.react.uimanager.style.LogicalEdge
 import com.facebook.react.uimanager.style.Overflow
 import com.facebook.react.views.text.ReactTextUpdate
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
+import com.facebook.react.views.text.ReactTypefaceUtils.getFontWeightAdjustment
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.react.views.text.TextAttributes
 import com.facebook.react.views.text.TextLayoutManager
+import com.facebook.react.views.text.internal.span.CanvasEffectSpan
 import com.facebook.react.views.text.internal.span.CustomLetterSpacingSpan
 import com.facebook.react.views.text.internal.span.CustomLineHeightSpan
 import com.facebook.react.views.text.internal.span.CustomStyleSpan
@@ -137,6 +141,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   private var selectTextOnFocus = false
   private var placeholder: String? = null
   private var overflow = Overflow.VISIBLE
+  private var wasMultiline = false
 
   public var stateWrapper: StateWrapper? = null
   internal var disableTextDiffing: Boolean = false
@@ -375,11 +380,20 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       // Avoid refocusing to a new view on old versions of Android by default
       // by preventing `requestFocus()` on the rootView from moving focus to any child.
       // https://cs.android.com/android/_/android/platform/frameworks/base/+/bdc66cb5a0ef513f4306edf9156cc978b08e06e4
-      val rootViewGroup = rootView as ViewGroup
-      val oldDescendantFocusability = rootViewGroup.descendantFocusability
-      rootViewGroup.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
-      super.clearFocus()
-      rootViewGroup.descendantFocusability = oldDescendantFocusability
+      //
+      // getRootView() returns the view itself when it is detached from the window, so the root
+      // is not necessarily a ViewGroup: an IME editor action delivered over Binder can race the
+      // removal of this view from the hierarchy. There is no focus to move in that case, so a
+      // plain clearFocus() is enough.
+      val rootViewGroup = rootView as? ViewGroup
+      if (rootViewGroup != null) {
+        val oldDescendantFocusability = rootViewGroup.descendantFocusability
+        rootViewGroup.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+        super.clearFocus()
+        rootViewGroup.descendantFocusability = oldDescendantFocusability
+      } else {
+        super.clearFocus()
+      }
     }
     hideSoftKeyboard()
   }
@@ -541,14 +555,41 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     super.setTypeface(tf)
 
     /**
-     * If set forces multiline on input, because of a restriction on Android source that enables
-     * multiline only for inputs of type Text and Multiline on method
+     * Keep the single-line state in sync with the multiline input type flag.
+     *
+     * When multiline is on we must force [isSingleLine] off, because of a restriction on Android
+     * source that enables multiline only for inputs of type Text and Multiline on method
      * [android.widget.TextView.isMultilineInputType]} Source:
      * [TextView.java](https://android.googlesource.com/platform/frameworks/base/+/jb-release/core/java/android/widget/TextView.java)
+     *
+     * When multiline is off we must force [isSingleLine] back on. [TextView.setInputType] only
+     * re-applies the single-line layout (maxLines, horizontal scrolling) when its internal
+     * single-line flag actually changes; because we force it off above whenever multiline is on,
+     * that flag can be stale and the reset is skipped, leaving the placeholder/hint wrapped across
+     * multiple lines after multiline is toggled back off. Setting it explicitly guarantees the
+     * reset. We skip secure text so we don't replace its password transformation method with the
+     * single-line one.
      */
     if (isMultiline) {
       isSingleLine = false
+    } else if (!isSecureText) {
+      isSingleLine = true
     }
+
+    // Restoring the single-line input type above is not enough on its own when multiline is toggled
+    // off: under Fabric the view is not re-measured while its measured size is unchanged, so the
+    // placeholder/hint is rebuilt at draw time (which lays the hint out at the view's physical
+    // width) and stays wrapped across multiple lines. Forcing a re-measure at the current bounds
+    // rebuilds the hint as a single line, matching the initial mount.
+    if (wasMultiline && !isMultiline && isLaidOut && width > 0 && height > 0) {
+      forceLayout()
+      measure(
+          View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+          View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
+      )
+      layout(left, top, right, bottom)
+    }
+    wasMultiline = isMultiline
 
     // We override the KeyListener so that all keys on the soft input keyboard as well as hardware
     // keyboards work. Some KeyListeners like DigitsKeyListener will display the keyboard but not
@@ -648,7 +689,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   public fun canUpdateWithEventCount(eventCounter: Int): Boolean = eventCounter >= nativeEventCount
 
   private fun maybeSetText(reactTextUpdate: ReactTextUpdate) {
-    if (isSecureText && (text == reactTextUpdate.text)) {
+    if (isSecureText && TextUtils.equals(text, reactTextUpdate.text)) {
       return
     }
 
@@ -846,7 +887,14 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
             fontFeatureSettings != null
     ) {
       workingText.setSpan(
-          CustomStyleSpan(fontStyle, fontWeight, fontFeatureSettings, fontFamily, context.assets),
+          CustomStyleSpan(
+              fontStyle,
+              fontWeight,
+              fontFeatureSettings,
+              fontFamily,
+              context.assets,
+              getFontWeightAdjustment(context),
+          ),
           0,
           workingText.length,
           spanFlags,
@@ -1127,6 +1175,30 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   public override fun onDraw(canvas: Canvas) {
     if (overflow != Overflow.VISIBLE) {
       clipToPaddingBox(this, canvas)
+    }
+
+    val spanned = text as? Spanned
+    if (spanned != null) {
+      val layout = layout
+      if (layout != null) {
+        val drawSpans = spanned.getSpans(0, spanned.length, CanvasEffectSpan::class.java)
+        if (drawSpans.isNotEmpty()) {
+          canvas.withTranslation(compoundPaddingLeft.toFloat(), extendedPaddingTop.toFloat()) {
+            for (span in drawSpans) {
+              span.onPreDraw(spanned.getSpanStart(span), spanned.getSpanEnd(span), this, layout)
+            }
+          }
+
+          super.onDraw(canvas)
+
+          canvas.withTranslation(compoundPaddingLeft.toFloat(), extendedPaddingTop.toFloat()) {
+            for (span in drawSpans) {
+              span.onDraw(spanned.getSpanStart(span), spanned.getSpanEnd(span), this, layout)
+            }
+          }
+          return
+        }
+      }
     }
 
     super.onDraw(canvas)

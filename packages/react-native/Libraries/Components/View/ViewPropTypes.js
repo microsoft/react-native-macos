@@ -11,6 +11,7 @@
 'use strict';
 
 import type {EdgeInsetsOrSizeProp} from '../../StyleSheet/EdgeInsetsPropType';
+import type {ProcessedColorValue} from '../../StyleSheet/processColor';
 import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import type {
   BlurEvent,
@@ -62,13 +63,13 @@ type DirectEventProps = Readonly<{
    * This event is fired when the scrollView's inverted property changes.
    * @platform macos
    */
-  onInvertedDidChange?: ?() => mixed,
+  onInvertedDidChange?: ?() => unknown,
 
   /**
    * This event is fired when the system's preferred scroller style changes.
    * The `preferredScrollerStyle` key will be `legacy` or `overlay`.
    */
-  onPreferredScrollerStyleDidChange?: ?(event: ScrollEvent) => mixed,
+  onPreferredScrollerStyleDidChange?: ?(event: ScrollEvent) => unknown,
   // macOS]
 
   /**
@@ -167,8 +168,18 @@ type PointerEventProps = Readonly<{
 }>;
 
 type FocusEventProps = Readonly<{
+  /**
+   * Callback that is called when the view is blurred.
+   *
+   * Note: This will only be called if the view is focusable.
+   */
   onBlur?: ?(event: BlurEvent) => void,
   onBlurCapture?: ?(event: BlurEvent) => void,
+  /**
+   * Callback that is called when the view is focused.
+   *
+   * Note: This will only be called if the view is focusable.
+   */
   onFocus?: ?(event: FocusEvent) => void,
   onFocusCapture?: ?(event: FocusEvent) => void,
 }>;
@@ -320,9 +331,10 @@ type AndroidDrawableThemeAttr = Readonly<{
 
 type AndroidDrawableRipple = Readonly<{
   type: 'RippleAndroid',
-  color?: ?number,
+  color?: ?ProcessedColorValue,
   borderless?: ?boolean,
   rippleRadius?: ?number,
+  alpha?: ?number,
 }>;
 
 type AndroidDrawable = AndroidDrawableThemeAttr | AndroidDrawableRipple;
@@ -335,9 +347,17 @@ export type ViewPropsAndroid = Readonly<{
    * Whether this `View` should render itself (and all of its children) into a
    * single hardware texture on the GPU.
    *
-   * @platform android
+   * On Android, this is useful for animations and interactions that only
+   * modify opacity, rotation, translation and/or scale: in those cases, the
+   * view does not have to be redrawn and display lists do not need to be
+   * re-executed. The texture can be re-used and re-composited with different
+   * parameters. The downside is that this can use up limited video memory, so
+   * this prop should be set back to `false` at the end of the interaction/
+   * animation.
    *
-   * See https://reactnative.dev/docs/view#rendertohardwaretextureandroid
+   * @default `false`
+   *
+   * @platform android
    */
   renderToHardwareTextureAndroid?: ?boolean,
 
@@ -350,35 +370,40 @@ export type ViewPropsAndroid = Readonly<{
   hasTVPreferredFocus?: ?boolean,
 
   /**
-   * TV next focus down (see documentation for the View component).
+   * Designates the next view to receive focus when the user navigates down.
+   * The value is the `nativeID` of the target view.
    *
    * @platform android
    */
   nextFocusDown?: ?number,
 
   /**
-   * TV next focus forward (see documentation for the View component).
+   * Designates the next view to receive focus when the user navigates
+   * forward. The value is the `nativeID` of the target view.
    *
    * @platform android
    */
   nextFocusForward?: ?number,
 
   /**
-   * TV next focus left (see documentation for the View component).
+   * Designates the next view to receive focus when the user navigates left.
+   * The value is the `nativeID` of the target view.
    *
    * @platform android
    */
   nextFocusLeft?: ?number,
 
   /**
-   * TV next focus right (see documentation for the View component).
+   * Designates the next view to receive focus when the user navigates right.
+   * The value is the `nativeID` of the target view.
    *
    * @platform android
    */
   nextFocusRight?: ?number,
 
   /**
-   * TV next focus up (see documentation for the View component).
+   * Designates the next view to receive focus when the user navigates up.
+   * The value is the `nativeID` of the target view.
    *
    * @platform android
    */
@@ -425,6 +450,7 @@ export type TVViewPropsIOS = Readonly<{
    * *(Apple TV only)* May be set to true to force the Apple TV focus engine to move focus to this view.
    *
    * @platform ios
+   * @deprecated Use `focusable` instead
    */
   hasTVPreferredFocus?: boolean,
 
@@ -461,9 +487,18 @@ export type ViewPropsIOS = Readonly<{
   /**
    * Whether this `View` should be rendered as a bitmap before compositing.
    *
-   * @platform ios
+   * On iOS, this is useful for animations and interactions that do not
+   * modify this component's dimensions nor its children; for example, when
+   * translating the position of a static view, rasterization allows the
+   * renderer to skip re-rendering the view frame and re-use the cached
+   * bitmap.
    *
-   * See https://reactnative.dev/docs/view#shouldrasterizeios
+   * Rasterization incurs an offscreen drawing pass and the bitmap consumes
+   * memory. Test and measure when using this property.
+   *
+   * @default `false`
+   *
+   * @platform ios
    */
   shouldRasterizeIOS?: ?boolean,
 }>;
@@ -561,7 +596,7 @@ type ViewBaseProps = Readonly<{
    * optimization. Set this property to `false` to disable this optimization and
    * ensure that this `View` exists in the native view hierarchy.
    *
-   * See https://reactnative.dev/docs/view#collapsable
+   * @default `true`
    */
   collapsable?: ?boolean,
 
@@ -569,6 +604,8 @@ type ViewBaseProps = Readonly<{
    * Setting to false prevents direct children of the view from being removed
    * from the native view hierarchy, similar to the effect of setting
    * `collapsable={false}` on each child.
+   *
+   * @default `true`
    */
   collapsableChildren?: ?boolean,
 
@@ -600,10 +637,21 @@ type ViewBaseProps = Readonly<{
   nativeID?: ?string,
 
   /**
-   * Whether this `View` needs to rendered offscreen and composited with an
+   * Whether this `View` needs to be rendered offscreen and composited with an
    * alpha in order to preserve 100% correct colors and blending behavior.
+   * The default (`false`) falls back to drawing the component and its children
+   * with reduced alpha applied to the paint used to draw each element
+   * instead of rendering the full component offscreen and compositing it back
+   * with an alpha value. This default may be noticeable and undesired in the
+   * case where the `View` you are setting an opacity on has multiple
+   * overlapping elements (e.g. multiple overlapping `View`s, or text and a
+   * background).
    *
-   * See https://reactnative.dev/docs/view#needsoffscreenalphacompositing
+   * Rendering offscreen to preserve correct alpha behavior is extremely
+   * expensive and hard to debug for non-native developers, which is why it is
+   * not turned on by default.
+   *
+   * @default `false`
    */
   needsOffscreenAlphaCompositing?: ?boolean,
 
@@ -623,7 +671,12 @@ type ViewBaseProps = Readonly<{
   /**
    * Controls whether the `View` can be the target of touch events.
    *
-   * See https://reactnative.dev/docs/view#pointerevents
+   * - `'auto'`: The view can be the target of touch events.
+   * - `'none'`: The view is never the target of touch events.
+   * - `'box-none'`: The view is never the target of touch events but its
+   *   subviews can be.
+   * - `'box-only'`: The view can be the target of touch events but its
+   *   subviews cannot be.
    */
   pointerEvents?: ?('auto' | 'box-none' | 'box-only' | 'none'),
 
@@ -647,6 +700,7 @@ type ViewBaseProps = Readonly<{
   experimental_accessibilityOrder?: ?Array<string>,
 }>;
 
+/** @build-types emit-as-interface Nativewind, Expo compatibility */
 export type ViewProps = Readonly<{
   ...DirectEventProps,
   ...GestureResponderHandlers,

@@ -39,18 +39,10 @@
 
 [libs]
 flow-typed/
-packages/react-native/interface.js
 packages/react-native/flow/
 
 [options]
-enums=true
-experimental.pattern_matching=true
-casting_syntax=both
-component_syntax=true
-
 emoji=true
-
-exact_by_default=true
 
 format.bracket_spacing=false
 
@@ -66,10 +58,10 @@ munge_underscores=true
 module.name_mapper='^react-native$' -> '<PROJECT_ROOT>/packages/react-native/index.js'
 module.name_mapper='^react-native/\(.*\)$' -> '<PROJECT_ROOT>/packages/react-native/\1'
 module.name_mapper='^@react-native/dev-middleware$' -> '<PROJECT_ROOT>/packages/dev-middleware'
-; [macOS] Resolve workspace self-references (incl. @react-native/fantom) in yarn pnpm mode
+; [macOS Resolve workspace self-references (incl. @react-native/fantom) in yarn pnpm mode
 module.name_mapper='^@react-native/fantom$' -> '<PROJECT_ROOT>/private/react-native-fantom/src/index.js'
 module.name_mapper='^@react-native/fantom/\(.*\)$' -> '<PROJECT_ROOT>/private/react-native-fantom/\1'
-module.name_mapper='^@react-native/core-cli-utils$' -> '<PROJECT_ROOT>/packages/core-cli-utils/src/index.flow.js'
+module.name_mapper='^@react-native/core-cli-utils$' -> '<PROJECT_ROOT>/private/core-cli-utils/src/index.js'
 ; macOS]
 module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\|xml\|ktx\|heic\|heif\)$' -> '<PROJECT_ROOT>/packages/react-native/Libraries/Image/RelativeImageStub'
 
@@ -100,4 +92,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.312.0
+^0.319.0

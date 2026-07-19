@@ -13,9 +13,9 @@ import type {Int32} from '../../Types/CodegenTypes';
 import * as React from 'react';
 
 export interface TextInputNativeCommands<T> {
-  +focus: (viewRef: React.ElementRef<T>) => void;
-  +blur: (viewRef: React.ElementRef<T>) => void;
-  +setTextAndSelection: (
+  readonly focus: (viewRef: React.ElementRef<T>) => void;
+  readonly blur: (viewRef: React.ElementRef<T>) => void;
+  readonly setTextAndSelection: (
     viewRef: React.ElementRef<T>,
     mostRecentEventCount: Int32,
     value: ?string, // in theory this is nullable
@@ -24,7 +24,7 @@ export interface TextInputNativeCommands<T> {
   ) => void;
   // [macOS
   // NYI on Android
-  +setGhostText: (
+  readonly setGhostText: (
     viewRef: React.ElementRef<T>,
     value: ?string, // in theory this is nullable
   ) => void;

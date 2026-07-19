@@ -6,12 +6,16 @@
  */
 
 #include "RuntimeScheduler.h"
-#include "RuntimeScheduler_Legacy.h"
 #include "RuntimeScheduler_Modern.h"
+#ifndef RCT_REMOVE_LEGACY_ARCH
+#include "RuntimeScheduler_Legacy.h"
+#endif
 
-#include <cxxreact/ErrorUtils.h>
 #include <cxxreact/TraceSection.h>
+#include <jserrorhandler/ErrorUtils.h>
+#ifndef RCT_REMOVE_LEGACY_ARCH
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#endif
 #include <utility>
 
 namespace facebook::react {
@@ -23,13 +27,17 @@ std::unique_ptr<RuntimeSchedulerBase> getRuntimeSchedulerImplementation(
     RuntimeExecutor runtimeExecutor,
     std::function<HighResTimeStamp()> now,
     RuntimeSchedulerTaskErrorHandler onTaskError) {
+#ifndef RCT_REMOVE_LEGACY_ARCH
   if (ReactNativeFeatureFlags::enableBridgelessArchitecture()) {
+#endif
     return std::make_unique<RuntimeScheduler_Modern>(
         std::move(runtimeExecutor), std::move(now), std::move(onTaskError));
+#ifndef RCT_REMOVE_LEGACY_ARCH
   } else {
     return std::make_unique<RuntimeScheduler_Legacy>(
         std::move(runtimeExecutor), std::move(now), std::move(onTaskError));
   }
+#endif
 }
 
 } // namespace
@@ -51,6 +59,18 @@ RuntimeScheduler::RuntimeScheduler(
 
 void RuntimeScheduler::scheduleWork(RawCallback&& callback) noexcept {
   return runtimeSchedulerImpl_->scheduleWork(std::move(callback));
+}
+
+void RuntimeScheduler::scheduleTask(const std::function<void()>& task) {
+  return runtimeSchedulerImpl_->scheduleTask(task);
+}
+
+uint64_t RuntimeScheduler::registerTaskQueueSource() {
+  return runtimeSchedulerImpl_->registerTaskQueueSource();
+}
+
+void RuntimeScheduler::unregisterTaskQueueSource(uint64_t sourceId) {
+  return runtimeSchedulerImpl_->unregisterTaskQueueSource(sourceId);
 }
 
 std::shared_ptr<Task> RuntimeScheduler::scheduleTask(

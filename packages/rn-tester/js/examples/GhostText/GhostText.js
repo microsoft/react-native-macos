@@ -44,7 +44,7 @@ function determinePrefixAndSuffix(
   newText: string,
 ): {
   previousText: string,
-  range: $ReadOnly<{start: number, end: number}>,
+  range: Readonly<{start: number, end: number}>,
   text: string,
 } {
   const oldTextLength = oldText.length;
@@ -78,7 +78,7 @@ function determinePrefixAndSuffix(
 
 function determineGhostText(
   text: string,
-  selection: $ReadOnly<{start: number, end: number}>,
+  selection: Readonly<{start: number, end: number}>,
   input: string,
 ): ?string {
   if (!input || selection.start !== selection.end) {

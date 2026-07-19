@@ -26,6 +26,7 @@ import com.facebook.react.bridge.interop.InteropModuleRegistry;
 import com.facebook.react.bridge.queue.MessageQueueThread;
 import com.facebook.react.bridge.queue.ReactQueueConfiguration;
 import com.facebook.react.common.LifecycleState;
+import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.interfaces.ExtraWindowEventListener;
 import com.facebook.react.turbomodule.core.interfaces.CallInvokerHolder;
 import java.lang.ref.WeakReference;
@@ -110,6 +111,9 @@ public abstract class ReactContext extends ContextWrapper {
   }
 
   protected void initializeInteropModules() {
+    if (ReactBuildConfig.UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP) {
+      return;
+    }
     mInteropModuleRegistry = new InteropModuleRegistry();
   }
 
@@ -201,6 +205,12 @@ public abstract class ReactContext extends ContextWrapper {
   }
 
   /**
+   * Returns the {@link RuntimeExecutor} for the underlying JavaScript runtime, or {@code null} if
+   * the runtime has not been initialized. Works in both bridged and bridgeless modes.
+   */
+  public abstract @Nullable RuntimeExecutor getRuntimeExecutor();
+
+  /**
    * This allows scroll views to notify NativeAnimatedModule when user-driven scrolling ends.
    *
    * @return The ScrollEndedListeners instance
@@ -270,7 +280,7 @@ public abstract class ReactContext extends ContextWrapper {
   @ThreadConfined(UI)
   public void onHostResume(@Nullable Activity activity) {
     mLifecycleState = LifecycleState.RESUMED;
-    mCurrentActivity = new WeakReference(activity);
+    mCurrentActivity = new WeakReference<>(activity);
     ReactMarker.logMarker(ReactMarkerConstants.ON_HOST_RESUME_START);
     for (LifecycleEventListener listener : mLifecycleEventListeners) {
       try {
@@ -298,7 +308,7 @@ public abstract class ReactContext extends ContextWrapper {
   @ThreadConfined(UI)
   public void onNewIntent(@Nullable Activity activity, Intent intent) {
     UiThreadUtil.assertOnUiThread();
-    mCurrentActivity = new WeakReference(activity);
+    mCurrentActivity = new WeakReference<>(activity);
     for (ActivityEventListener listener : mActivityEventListeners) {
       try {
         listener.onNewIntent(intent);
@@ -573,6 +583,9 @@ public abstract class ReactContext extends ContextWrapper {
    */
   public <T extends JavaScriptModule> void internal_registerInteropModule(
       Class<T> interopModuleInterface, Object interopModule) {
+    if (ReactBuildConfig.UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP) {
+      return;
+    }
     if (mInteropModuleRegistry != null) {
       mInteropModuleRegistry.registerInteropModule(interopModuleInterface, interopModule);
     }

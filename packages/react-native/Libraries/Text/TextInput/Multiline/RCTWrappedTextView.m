@@ -12,7 +12,6 @@
 #import <React/RCTWrappedTextView.h>
 
 #import <React/RCTUITextView.h>
-#import <React/RCTTextAttributes.h>
 
 @implementation RCTWrappedTextView {
   RCTUITextView *_forwardingTextView;

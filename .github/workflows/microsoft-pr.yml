@@ -3,7 +3,7 @@ name: PR
 on:
   pull_request:
     types: [opened, synchronize, edited]
-    branches: [ "main", "*-stable", "release/*", "*-merge" ]
+    branches: ['main', '*-stable', 'release/*', '*-merge']
 
 concurrency:
   # Ensure single build of a pull request. `main` should not be affected.
@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   lint-title:
-    name: "Lint PR title"
+    name: 'Lint PR title'
     permissions: {}
     runs-on: ubuntu-latest
     steps:
@@ -33,15 +33,15 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           echo "$PR_TITLE" | npx @rnx-kit/commitlint-lite@2.0.0
-  
+
   build-website:
-    name: "Build the website"
+    name: 'Build the website'
     permissions: {}
     if: github.base_ref == 'main'
     uses: ./.github/workflows/microsoft-build-website.yml
 
   npm-publish-dry-run:
-    name: "NPM Publish (Dry Run)"
+    name: 'NPM Publish (Dry Run)'
     permissions: {}
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +64,7 @@ jobs:
           yarn workspaces foreach -vv --all --topological --no-private npm publish --tag dry-run --tolerate-republish --dry-run
 
   check-changesets:
-    name: "Check for Changesets"
+    name: 'Check for Changesets'
     permissions: {}
     runs-on: ubuntu-latest
     # Only required for PRs targeting stable branches; skip the version bump PR itself
@@ -84,9 +84,9 @@ jobs:
         run: yarn install --immutable
       - name: Validate changesets
         run: yarn change:check
-  
+
   yarn-constraints:
-    name: "Check Yarn Constraints"
+    name: 'Check Yarn Constraints'
     permissions: {}
     runs-on: ubuntu-latest
     steps:
@@ -104,7 +104,7 @@ jobs:
         run: yarn constraints
 
   javascript-tests:
-    name: "JavaScript Tests"
+    name: 'JavaScript Tests'
     permissions: {}
     runs-on: ubuntu-latest
     steps:
@@ -112,51 +112,51 @@ jobs:
         with:
           filter: blob:none
           fetch-depth: 0
-      
+
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
-      
+
       - name: Install npm dependencies
         run: yarn install
-      
+
       - name: Run Jest tests
         run: yarn test-ci
-      
+
       - name: Run Flow type checker
         run: yarn flow-check
-      
+
       - name: Run ESLint
         run: yarn lint
-      
+
       - name: Run Prettier format check
         run: yarn format-check
 
   build-rntester:
-    name: "Build RNTester"
+    name: 'Build RNTester'
     permissions: {}
     uses: ./.github/workflows/microsoft-build-rntester.yml
 
   prebuild-macos-core:
-    name: "Prebuild macOS Core"
+    name: 'Prebuild macOS Core'
     permissions: {}
     uses: ./.github/workflows/microsoft-prebuild-macos-core.yml
 
   test-react-native-macos-init:
-    name: "Test react-native-macos init"
+    name: 'Test react-native-macos init'
     permissions: {}
     if: ${{ endsWith(github.base_ref, '-stable') }}
     uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
 
   react-native-test-app-integration:
-    name: "Test react-native-test-app integration"
+    name: 'Test react-native-test-app integration'
     permissions: {}
     if: ${{ endsWith(github.base_ref, '-stable') }}
     uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
 
   PR:
-    name: "PR"
+    name: 'PR'
     if: always()
     permissions: {}
     runs-on: ubuntu-latest

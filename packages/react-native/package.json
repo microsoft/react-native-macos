@@ -19,9 +19,9 @@
     "app-framework",
     "mobile-development"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
-    "node": "^20.19.4 || ^22.13.0 || ^24.3.0 || >= 25.0.0"
+    "node": "^22.13.0 || ^24.3.0 || >= 26.0.0"
   },
   "bin": {
     "react-native": "cli.js",
@@ -35,38 +35,27 @@
       "types": "./types/index.d.ts",
       "default": "./index.js"
     },
-    "./*": {
+    "./Libraries/*": {
       "react-native-strict-api": null,
-      "types": "./*.d.ts",
-      "default": "./*.js"
+      "types": "./Libraries/*.d.ts",
+      "default": "./Libraries/*.js"
     },
-    "./*.js": {
+    "./Libraries/*.js": {
       "react-native-strict-api": null,
-      "default": "./*.js"
-    },
-    "./Libraries/*.d.ts": {
-      "react-native-strict-api": null,
-      "default": "./Libraries/*.d.ts"
+      "default": "./Libraries/*.js"
     },
     "./scripts/*": "./scripts/*",
     "./src/*": {
-      "react-native-strict-api": null,
+      "types": null,
       "default": "./src/*.js"
     },
-    "./types/*.d.ts": {
-      "react-native-strict-api": null,
-      "default": "./types/*.d.ts"
+    "./asset-registry": {
+      "types": null,
+      "default": "./src/asset-registry.js"
     },
-    "./gradle/*": null,
-    "./React/*": null,
-    "./ReactAndroid/*": null,
-    "./ReactApple/*": null,
-    "./ReactCommon/*": null,
-    "./sdks/*": null,
+    "./jest-preset": "./jest-preset.js",
+    "./rn-get-polyfills": "./rn-get-polyfills.js",
     "./src/fb_internal/*": "./src/fb_internal/*",
-    "./third-party-podspecs/*": null,
-    "./types/*": null,
-    "./types_generated/*": null,
     "./package.json": "./package.json"
   },
   "jest-junit": {
@@ -81,7 +70,6 @@
     "gradle/libs.versions.toml",
     "index.js",
     "index.js.flow",
-    "interface.js",
     "jest-preset.js",
     "Libraries",
     "LICENSE",
@@ -128,7 +116,6 @@
     "scripts/xcode/ccache-clang++.sh",
     "scripts/xcode/ccache.conf",
     "scripts/xcode/with-environment.sh",
-    "sdks/.hermesversion",
     "sdks/.hermesv1version",
     "sdks/hermes-engine",
     "sdks/hermesc",
@@ -163,24 +150,25 @@
     }
   },
   "dependencies": {
-    "@react-native/assets-registry": "workspace:*",
+    "@react-native-macos/virtualized-lists": "workspace:*",
+    "@react-native/asset-utils": "workspace:*",
     "@react-native/codegen": "workspace:*",
     "@react-native/community-cli-plugin": "workspace:*",
     "@react-native/gradle-plugin": "workspace:*",
     "@react-native/js-polyfills": "workspace:*",
     "@react-native/normalize-colors": "workspace:*",
-    "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
-    "babel-plugin-syntax-hermes-parser": "0.36.0",
+    "babel-plugin-syntax-hermes-parser": "0.36.1",
     "base64-js": "^1.5.1",
     "commander": "^12.0.0",
     "flow-enums-runtime": "^0.0.6",
+    "glob": "^7.1.1",
     "hermes-compiler": "250829098.0.12",
     "invariant": "^2.2.4",
     "memoize-one": "^5.0.0",
-    "metro-runtime": "^0.84.3",
-    "metro-source-map": "^0.84.3",
+    "metro-runtime": "^0.86.0",
+    "metro-source-map": "^0.86.0",
     "nullthrows": "^1.1.1",
     "pretty-format": "^29.7.0",
     "promise": "^8.3.0",
@@ -193,9 +181,7 @@
     "tinyglobby": "^0.2.15",
     "whatwg-fetch": "^3.0.0",
     "ws": "^7.5.10",
-    "yargs": "^17.6.2",
-    "@react-native-macos/virtualized-lists": "workspace:*",
-    "glob": "^7.1.1"
+    "yargs": "^17.6.2"
   },
   "codegenConfig": {
     "libraries": [
@@ -220,6 +206,9 @@
               "unstableRequiresMainQueueSetup": true
             },
             "StatusBarManager": {
+              "unstableRequiresMainQueueSetup": true
+            },
+            "SampleTurboModule": {
               "unstableRequiresMainQueueSetup": true
             }
           }

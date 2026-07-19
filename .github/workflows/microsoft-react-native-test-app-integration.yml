@@ -5,7 +5,7 @@ on:
 
 jobs:
   react-native-test-app-integration:
-    name: "Test react-native-test-app integration"
+    name: 'Test react-native-test-app integration'
     runs-on: macos-26
     timeout-minutes: 60
     steps:

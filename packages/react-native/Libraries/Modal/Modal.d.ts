@@ -14,10 +14,6 @@ import {ColorValue} from '../StyleSheet/StyleSheet';
 
 export interface ModalBaseProps {
   /**
-   * @deprecated Use animationType instead
-   */
-  animated?: boolean | undefined;
-  /**
    * The `animationType` prop controls how the modal animates.
    *
    * - `slide` slides in from the bottom
@@ -50,6 +46,11 @@ export interface ModalBaseProps {
    * Defaults to `white` if not provided and transparent is `false`. Ignored if `transparent` is `true`.
    */
   backdropColor?: ColorValue | undefined;
+
+  /**
+   * A ref to the native Modal component.
+   */
+  modalRef?: React.RefObject<Modal | null> | undefined;
 }
 
 export interface ModalPropsIOS {

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9e5b3192d1bec953c116d959ad63283d>>
+ * @generated SignedSource<<5c36c0a5e9e67b43016ab02eab0ecd8f>>
  */
 
 /**
@@ -47,6 +47,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = false
 
+  override fun enableAndroidFontWeightAdjustment(): Boolean = true
+
   override fun enableAndroidTextMeasurementOptimizations(): Boolean = false
 
   override fun enableBridgelessArchitecture(): Boolean = false
@@ -57,11 +59,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableDestroyShadowTreeRevisionAsync(): Boolean = false
 
-  override fun enableDifferentiatorMutationVectorPreallocation(): Boolean = false
-
   override fun enableDoubleMeasurementFixAndroid(): Boolean = false
-
-  override fun enableEagerMainQueueModulesOnIOS(): Boolean = false
 
   override fun enableEagerRootViewAttachment(): Boolean = false
 
@@ -71,9 +69,11 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableFabricLogs(): Boolean = false
 
-  override fun enableFabricRenderer(): Boolean = false
+  override fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = false
 
   override fun enableFontScaleChangesUpdatingLayout(): Boolean = true
+
+  override fun enableIOSCompressedTextFrameAdjustment(): Boolean = false
 
   override fun enableIOSTextBaselineOffsetPerLine(): Boolean = false
 
@@ -95,21 +95,19 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableLayoutAnimationsOnIOS(): Boolean = true
 
-  override fun enableMainQueueCoordinatorOnIOS(): Boolean = false
-
   override fun enableModuleArgumentNSNullConversionIOS(): Boolean = false
 
   override fun enableMutationObserverByDefault(): Boolean = false
 
   override fun enableNativeCSSParsing(): Boolean = false
 
-  override fun enableNativeViewPropTransformations(): Boolean = false
-
   override fun enableNetworkEventReporting(): Boolean = true
 
   override fun enablePreparedTextLayout(): Boolean = false
 
   override fun enablePropsUpdateReconciliationAndroid(): Boolean = false
+
+  override fun enableRuntimeSchedulerQueueClearingOnError(): Boolean = false
 
   override fun enableSchedulerDelegateInvalidation(): Boolean = false
 
@@ -129,11 +127,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableVirtualViewContainerStateExperimental(): Boolean = false
 
-  override fun enableVirtualViewDebugFeatures(): Boolean = false
-
-  override fun fixDifferentiatorParentTagForUnflattenCase(): Boolean = false
-
-  override fun fixFindShadowNodeByTagRaceCondition(): Boolean = false
+  override fun fixDifferentiatorParentTagForUnflattenCase(): Boolean = true
 
   override fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = false
 
@@ -149,7 +143,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fuseboxScreenshotCaptureEnabled(): Boolean = false
 
-  override fun hideOffscreenVirtualViewsOnIOS(): Boolean = false
+  override fun optimizedAnimatedPropUpdates(): Boolean = false
 
   override fun overrideBySynchronousMountPropsAtMountingAndroid(): Boolean = true
 
@@ -183,13 +177,9 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun useFabricInterop(): Boolean = true
 
-  override fun useLISAlgorithmInDifferentiator(): Boolean = false
-
   override fun useNativeViewConfigsInBridgelessMode(): Boolean = false
 
   override fun useNestedScrollViewAndroid(): Boolean = false
-
-  override fun useOptimizedViewRegistryOnAndroid(): Boolean = false
 
   override fun useSharedAnimatedBackend(): Boolean = false
 
@@ -197,13 +187,11 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun useTurboModuleInterop(): Boolean = false
 
-  override fun useTurboModules(): Boolean = false
-
-  override fun useUnorderedMapInDifferentiator(): Boolean = false
-
   override fun viewCullingOutsetRatio(): Double = 0.0
 
   override fun viewTransitionEnabled(): Boolean = false
+
+  override fun viewTransitionUseHardwareBitmapAndroid(): Boolean = false
 
   override fun virtualViewPrerenderRatio(): Double = 5.0
 }

@@ -13,6 +13,7 @@ const {
   hermesCommitAtMergeBase,
 } = require('./microsoft-hermes'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
+const {execSync} = require('child_process');
 const {execFileSync} = require('child_process');
 const fs = require('fs');
 const os = require('os'); // [macOS]
@@ -28,10 +29,15 @@ import type {BuildFlavor, Destination, Platform} from './types';
 */
 
 /**
- * Downloads hermes artifacts from the specified version and build type. If you want to specify a specific
- * version of hermes, use the HERMES_VERSION environment variable. The path to the artifacts will be inside
- * the .build/artifacts/hermes folder, but this can be overridden by setting the HERMES_ENGINE_TARBALL_PATH
- * environment variable. If this varuable is set, the script will use the local tarball instead of downloading it.
+ * Downloads hermes artifacts from the specified version and build type.
+ *
+ * Version resolution (in order):
+ * 1. `HERMES_ENGINE_TARBALL_PATH` env var → use that local file directly
+ * 2. `HERMES_VERSION` env var:
+ *    - `"latest-v1"` (default) → resolve latest version from npm's `latest-v1` dist-tag
+ *    - any semver string → use that exact version from Maven Central
+ * The resolved version is downloaded from Maven Central (stable) or from a
+ * Maven snapshot repo as fallback.
  */
 async function prepareHermesArtifactsAsync(
   reactNativeVersion /*:string*/,
@@ -84,12 +90,9 @@ async function prepareHermesArtifactsAsync(
     // macOS]
 
     if (resolvedVersion === 'latest-v1') {
+      // TODO: rename 'latest-v1' to 'latest' once V1 is the only Hermes on npm
       hermesLog('Using latest-v1 tarball');
-      const hermesVersion = await getLatestV1VersionFromNPM();
-      resolvedVersion = hermesVersion;
-    } else if (resolvedVersion === 'nightly') {
-      hermesLog('Using latest nightly tarball');
-      const hermesVersion = await getNightlyVersionFromNPM();
+      const hermesVersion = await getLatestHermesVersionFromNPM();
       resolvedVersion = hermesVersion;
     }
 
@@ -125,7 +128,7 @@ async function prepareHermesArtifactsAsync(
   }
 
   // Extract the tar.gz
-  execFileSync('tar', ['-xzf', localPath, '-C', artifactsPath], {
+  execSync(`tar -xzf "${localPath}" -C "${artifactsPath}"`, {
     stdio: 'inherit',
   });
 
@@ -137,7 +140,8 @@ async function prepareHermesArtifactsAsync(
   return artifactsPath;
 }
 
-async function getLatestV1VersionFromNPM() /*: Promise<string> */ {
+async function getLatestHermesVersionFromNPM() /*: Promise<string> */ {
+  // TODO: rename 'latest-v1' to 'latest' once V1 is the only Hermes on npm
   const npmResponse /*: Response */ = await fetch(
     'https://registry.npmjs.org/hermes-compiler/latest-v1',
   );
@@ -149,26 +153,9 @@ async function getLatestV1VersionFromNPM() /*: Promise<string> */ {
   }
 
   const json = await npmResponse.json();
-  const latestV1 = json.version;
-  hermesLog(`Using version ${latestV1}`);
-  return latestV1;
-}
-
-async function getNightlyVersionFromNPM() /*: Promise<string> */ {
-  const npmResponse /*: Response */ = await fetch(
-    'https://registry.npmjs.org/hermes-compiler/nightly',
-  );
-
-  if (!npmResponse.ok) {
-    throw new Error(
-      `Couldn't get a response from NPM: ${npmResponse.status} ${npmResponse.statusText}`,
-    );
-  }
-
-  const json = await npmResponse.json();
-  const latestNightly = json.version;
-  hermesLog(`Using version ${latestNightly}`);
-  return latestNightly;
+  const latestVersion = json.version;
+  hermesLog(`Using version ${latestVersion}`);
+  return latestVersion;
 }
 
 /*::
@@ -180,10 +167,10 @@ type HermesEngineSourceType =
 */
 
 const HermesEngineSourceTypes /*:{
-  +BUILD_FROM_HERMES_COMMIT: "build_from_hermes_commit",
-  +DOWNLOAD_PREBUILD_TARBALL: "download_prebuild_tarball",
-  +DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: "download_prebuilt_nightly_tarball",
-  +LOCAL_PREBUILT_TARBALL: "local_prebuilt_tarball"
+  readonly BUILD_FROM_HERMES_COMMIT: "build_from_hermes_commit",
+  readonly DOWNLOAD_PREBUILD_TARBALL: "download_prebuild_tarball",
+  readonly DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: "download_prebuilt_nightly_tarball",
+  readonly LOCAL_PREBUILT_TARBALL: "local_prebuilt_tarball",
 } */ = {
   LOCAL_PREBUILT_TARBALL: 'local_prebuilt_tarball',
   DOWNLOAD_PREBUILD_TARBALL: 'download_prebuild_tarball',
@@ -318,9 +305,9 @@ async function hermesSourceType(
   // macOS]
 
   hermesLog(
-    'Using download prebuild nightly tarball - this is a fallback and might not work.',
+    `No prebuilt tarball found for version ${version}. Falling back to DOWNLOAD_PREBUILD_TARBALL, which may fail.`,
   );
-  return HermesEngineSourceTypes.DOWNLOAD_PREBUILT_NIGHTLY_TARBALL;
+  return HermesEngineSourceTypes.DOWNLOAD_PREBUILD_TARBALL;
 }
 
 async function resolveSourceFromSourceType(

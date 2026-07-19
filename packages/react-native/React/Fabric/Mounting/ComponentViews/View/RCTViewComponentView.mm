@@ -48,6 +48,20 @@ using namespace facebook::react;
 
 const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
+// [macOS 0.87 merge: declare surviving helpers before their new upstream call sites.
+@interface RCTViewComponentView ()
+
+- (void)updateAccessibilityElements;
+- (BOOL)styleNeedsSwiftUIContainer;
+- (void)transferVisualPropertiesFromView:(RCTPlatformView *)sourceView
+                                  toView:(RCTPlatformView *)destinationView;
+- (void)shapeLayerToMatchView:(CALayer *)layer borderMetrics:(BorderMetrics)borderMetrics;
+- (CAShapeLayer *)createMaskLayer:(CGRect)bounds cornerInsets:(RCTCornerInsets)cornerInsets;
+- (void)clearExistingBackgroundImageLayers;
+
+@end
+// macOS]
+
 @implementation RCTViewComponentView {
   RCTPlatformColor *_backgroundColor; // [macOS]
   CALayer *_backgroundColorLayer;
@@ -847,7 +861,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 
   // Clean up box shadow layers to prevent cross-component contamination
   if (_boxShadowLayers != nullptr) {
-    for (CALayer *boxShadowLayer = nullptr in _boxShadowLayers) {
+    for (CALayer *boxShadowLayer in _boxShadowLayers) {
       [boxShadowLayer removeFromSuperlayer];
     }
     [_boxShadowLayers removeAllObjects];
@@ -1290,7 +1304,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   const bool useCoreAnimationBorderRendering =
       borderMetrics.borderColors.isUniform() && borderMetrics.borderWidths.isUniform() &&
       borderMetrics.borderStyles.isUniform() && borderMetrics.borderStyles.left == BorderStyle::Solid &&
-      borderMetrics.borderRadii.isUniform() &&
+      areBorderRadiiCircular(borderMetrics.borderRadii) &&
       (
           // iOS draws borders in front of the content whereas CSS draws them behind
           // the content. For this reason, only use iOS border drawing when clipping
@@ -1570,7 +1584,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   if (self.currentContainerView.clipsToBounds) {
     BOOL clipToPaddingBox = ReactNativeFeatureFlags::enableIOSViewClipToPaddingBox();
     if (!clipToPaddingBox) {
-      if (borderMetrics.borderRadii.isUniform()) {
+      if (areBorderRadiiCircular(borderMetrics.borderRadii)) {
         self.currentContainerView.layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
       } else {
         CALayer *maskLayer =
@@ -1593,7 +1607,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       }
     } else if (
         !borderMetrics.borderWidths.isUniform() || borderMetrics.borderWidths.left != 0 ||
-        !borderMetrics.borderRadii.isUniform()) {
+        !areBorderRadiiCircular(borderMetrics.borderRadii)) {
       CALayer *maskLayer = [self createMaskLayer:RCTCGRectFromRect(_layoutMetrics.getPaddingFrame())
                                     cornerInsets:RCTGetCornerInsets(
                                                      RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii),
@@ -1612,7 +1626,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   // Bounds is needed here to account for scaling transforms properly and ensure
   // we do not scale twice
   layer.frame = CGRectMake(0, 0, self.layer.bounds.size.width, self.layer.bounds.size.height);
-  if (borderMetrics.borderRadii.isUniform()) {
+  if (areBorderRadiiCircular(borderMetrics.borderRadii)) {
     layer.mask = nil;
     layer.cornerRadius = borderMetrics.borderRadii.topLeft.horizontal;
     layer.cornerCurve = CornerCurveFromBorderCurve(borderMetrics.borderCurves.topLeft);
