@@ -5,6 +5,7 @@
   // hand-written types in `types/`.
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "customConditions": ["react-native-legacy-deep-imports"]
+    "customConditions": ["react-native-legacy-deep-imports"],
+    "ignoreDeprecations": "6.0"
   }
 }

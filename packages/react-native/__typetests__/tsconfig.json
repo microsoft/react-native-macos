@@ -10,7 +10,13 @@
     "jsx": "react",
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "baseUrl": "..",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "react-native": ["types_generated/index.d.ts"],
+      "react-native/*": ["*"]
+    }
   },
   "include": ["**/*"]
 }
