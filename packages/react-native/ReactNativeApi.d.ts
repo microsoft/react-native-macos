@@ -414,16 +414,6 @@ declare const staggerImpl: (
   time: number,
   animations: Array<CompositeAnimation>,
 ) => CompositeAnimation
-declare const States: {
-  ERROR: "ERROR"
-  NOT_RESPONDER: "NOT_RESPONDER"
-  RESPONDER_ACTIVE_LONG_PRESS_IN: "RESPONDER_ACTIVE_LONG_PRESS_IN"
-  RESPONDER_ACTIVE_LONG_PRESS_OUT: "RESPONDER_ACTIVE_LONG_PRESS_OUT"
-  RESPONDER_ACTIVE_PRESS_IN: "RESPONDER_ACTIVE_PRESS_IN"
-  RESPONDER_ACTIVE_PRESS_OUT: "RESPONDER_ACTIVE_PRESS_OUT"
-  RESPONDER_INACTIVE_PRESS_IN: "RESPONDER_INACTIVE_PRESS_IN"
-  RESPONDER_INACTIVE_PRESS_OUT: "RESPONDER_INACTIVE_PRESS_OUT"
-}
 declare const subtract: typeof $$AnimatedImplementation.subtract
 declare const subtractImpl: (
   a: AnimatedNode_default | number,
@@ -467,7 +457,6 @@ declare const ToastAndroid_default: {
     yOffset: number,
   ) => void
 }
-declare const Touchable: typeof TouchableImpl_default
 declare const Touchable_default: (
   props: TouchableOpacityProps & {
     ref?: React.Ref<TouchableOpacityInstance>
@@ -479,33 +468,6 @@ declare const TouchableHighlight_default: (
     ref?: React.Ref<TouchableHighlightInstance>
   },
 ) => React.ReactNode
-declare const TouchableImpl_default: {
-  Mixin: typeof TouchableMixinImpl
-  renderDebugView: ($$PARAM_0$$: {
-    color: ColorValue
-    hitSlop?: EdgeInsetsProp
-  }) => null | React.ReactNode
-}
-declare const TouchableMixinImpl: {
-  withoutDefaultFocusAndBlur: {}
-  componentDidMount: () => void
-  componentWillUnmount: () => void
-  touchableGetInitialState: () => {
-    touchable: {
-      responderID: GestureResponderEvent["currentTarget"] | undefined
-      touchState: TouchableState | undefined
-    }
-  }
-  touchableHandleBlur: (e: BlurEvent) => void
-  touchableHandleFocus: (e: FocusEvent) => void
-  touchableHandleResponderGrant: (e: GestureResponderEvent) => void
-  touchableHandleResponderMove: (e: GestureResponderEvent) => void
-  touchableHandleResponderRelease: (e: GestureResponderEvent) => void
-  touchableHandleResponderTerminate: (e: GestureResponderEvent) => void
-  touchableHandleResponderTerminationRequest: () => any
-  touchableHandleStartShouldSetResponder: () => any
-  touchableLongPressCancelsPress: () => boolean
-}
 declare const TouchableOpacity: typeof Touchable_default
 declare const UIManager: typeof UIManager_default
 declare const UIManager_default: UIManagerJSInterface
@@ -5322,7 +5284,6 @@ declare type TimingAnimationConfig = Readonly<
   }
 >
 declare type ToastAndroid = typeof ToastAndroid
-declare type Touchable = typeof Touchable
 declare type TouchableHighlight = typeof TouchableHighlight
 declare type TouchableHighlightBaseProps = {
   readonly activeOpacity?: number
@@ -5429,15 +5390,6 @@ declare type TouchableOpacityTVProps = {
   readonly nextFocusRight?: number
   readonly nextFocusUp?: number
 }
-declare type TouchableState =
-  | typeof States.ERROR
-  | typeof States.NOT_RESPONDER
-  | typeof States.RESPONDER_ACTIVE_LONG_PRESS_IN
-  | typeof States.RESPONDER_ACTIVE_LONG_PRESS_OUT
-  | typeof States.RESPONDER_ACTIVE_PRESS_IN
-  | typeof States.RESPONDER_ACTIVE_PRESS_OUT
-  | typeof States.RESPONDER_INACTIVE_PRESS_IN
-  | typeof States.RESPONDER_INACTIVE_PRESS_OUT
 declare function TouchableWithoutFeedback(
   props: TouchableWithoutFeedbackProps,
 ): React.ReactNode
@@ -5755,6 +5707,7 @@ declare function Wrapper_default(
 ): React.ReactNode
 declare type WrapperComponentProvider = (
   appParameters: Object,
+  appKey?: string,
 ) => React.ComponentType<any>
 export {
   AccessibilityActionEvent, // a0d4daa0
@@ -5777,7 +5730,7 @@ export {
   AndroidKeyboardEvent, // e03becc8
   Animated, // be5ea01d
   AppConfig, // 35c0ca70
-  AppRegistry, // 5ee0a63b
+  AppRegistry, // 1e8c5a00
   AppState, // 12012be5
   AppStateEvent, // 80f034c3
   AppStateStatus, // 447e5ef2
@@ -6031,7 +5984,6 @@ export {
   TextProps, // 7e0b961b
   TextStyle, // 694c5ffb
   ToastAndroid, // 88a8969a
-  Touchable, // e8712e89
   TouchableHighlight, // 2ce6532d
   TouchableHighlightInstance, // b510c0eb
   TouchableHighlightProps, // d786ab40
@@ -6062,7 +6014,7 @@ export {
   VirtualizedSectionList, // 486a3a9d
   VirtualizedSectionListInstance, // b8db2acd
   VirtualizedSectionListProps,
-  WrapperComponentProvider, // 4b8c7962
+  WrapperComponentProvider, // 9ef54e61
   codegenNativeCommands, // 628a7c0a
   codegenNativeComponent, // 32a1bca6
   findNodeHandle, // 93f80214

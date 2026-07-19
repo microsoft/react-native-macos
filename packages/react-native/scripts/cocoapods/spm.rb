@@ -53,6 +53,29 @@ class SPMManager
 
   private
 
+  # Creates a new object in the project with a UUID guaranteed not to collide
+  # with any UUID already present in the project.
+  #
+  # `Pod::Project` overrides `generate_available_uuid_list` with a fast,
+  # counter-based scheme (`<sha prefix><counter>0`) that deliberately skips
+  # collision checks, on the assumption that the whole Pods project is generated
+  # in a single pass. That assumption does not hold here: we run in a
+  # `post_install` hook, and the generator's counter can be out of sync with the
+  # UUIDs already assigned to existing objects (e.g. when the project has been
+  # reloaded from disk during an incremental install, the counter restarts at 0
+  # while the root object still occupies `<prefix>00000000`). Using `project.new`
+  # directly can therefore hand back a UUID that is already in use and overwrite
+  # an existing object (notably the root `PBXProject`), producing a Pods project
+  # Xcode refuses to load. We keep the deterministic scheme but probe forward
+  # until we find a UUID that is actually free.
+  def new_object(project, klass)
+    uuid = project.generate_uuid
+    uuid = project.generate_uuid while project.objects_by_uuid.key?(uuid)
+    object = klass.new(project, uuid)
+    object.initialize_defaults
+    object
+  end
+
   def log(msg)
     ::Pod::UI.puts "[SPM] #{msg}"
   end
@@ -76,7 +99,7 @@ class SPMManager
       pkg_class = Xcodeproj::Project::Object::XCLocalSwiftPackageReference
       pkg = project.root_object.package_references.find { |p| p.class == pkg_class && p.relative_path == url }
       if !pkg
-        pkg = project.new(pkg_class)
+        pkg = new_object(project, pkg_class)
         pkg.relative_path = url
         log(" Adding local package to workspace: #{pkg.inspect}")
         project.root_object.package_references << pkg
@@ -85,7 +108,7 @@ class SPMManager
       pkg_class = Xcodeproj::Project::Object::XCRemoteSwiftPackageReference
       pkg = project.root_object.package_references.find { |p| p.class == pkg_class && p.repositoryURL == url }
       if !pkg
-        pkg = project.new(pkg_class)
+        pkg = new_object(project, pkg_class)
         pkg.repositoryURL = url
         pkg.requirement = requirement
         log(" Adding remote package to workspace: #{pkg.inspect}")
@@ -101,7 +124,7 @@ class SPMManager
       next if ref
 
       log(" Adding product dependency #{product_name} to #{target.name}")
-      ref = project.new(ref_class)
+      ref = new_object(project, ref_class)
       ref.package = pkg
       ref.product_name = product_name
       target.package_product_dependencies << ref

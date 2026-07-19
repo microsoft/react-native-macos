@@ -1,6 +1,6 @@
 {
   "name": "@react-native/metro-config",
-  "version": "0.87.0-main",
+  "version": "0.87.0-rc.1",
   "description": "Metro configuration for React Native.",
   "license": "MIT",
   "repository": {
@@ -37,8 +37,8 @@
   "dependencies": {
     "@react-native/js-polyfills": "workspace:*",
     "@react-native/metro-babel-transformer": "workspace:*",
-    "metro-config": "^0.86.0",
-    "metro-runtime": "^0.86.0"
+    "metro-config": "^0.87.0",
+    "metro-runtime": "^0.87.0"
   },
   "private": true
 }
