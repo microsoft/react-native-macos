@@ -10,14 +10,14 @@
 
 'use strict';
 
-const path = require('path');
 const {
-  computeInventory,
   NATURAL_PATH_SOURCE_PREFERENCES,
   PLATFORM_DISPATCH_AUXILIARY_HEADERS,
   PLATFORM_DISPATCH_IMPLEMENTATIONS,
+  computeInventory,
   scanHeader,
 } = require('../headers-inventory');
+const path = require('path');
 
 describe('scanHeader include classification', () => {
   test('an unguarded include is not cxx-guarded', () => {
