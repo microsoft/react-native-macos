@@ -3660,7 +3660,7 @@ __metadata:
     react-native-macos: "workspace:*"
   peerDependencies:
     react: "*"
-    react-native-macos: "*"
+    react-native-macos: 0.87.0-rc.0
   languageName: unknown
   linkType: soft
 
