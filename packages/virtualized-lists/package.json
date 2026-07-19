@@ -53,12 +53,11 @@
   "peerDependencies": {
     "@types/react": "^19.2.0",
     "react": "*",
-    "react-native": "1000.0.0"
+    "react-native": "0.87.0-rc.1"
   },
   "peerDependenciesMeta": {
     "@types/react": {
       "optional": true
     }
-  },
-  "private": true
+  }
 }

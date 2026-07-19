@@ -1,6 +1,6 @@
 {
   "name": "@react-native/popup-menu-android",
-  "version": "0.87.0-main",
+  "version": "0.87.0-rc.1",
   "description": "PopupMenu for the Android platform",
   "repository": {
     "type": "git",
@@ -31,7 +31,7 @@
   "peerDependencies": {
     "@types/react": "^19.1.0",
     "react": "*",
-    "react-native": "1000.0.0"
+    "react-native": "0.87.0-rc.1"
   },
   "peerDependenciesMeta": {
     "@types/react": {
