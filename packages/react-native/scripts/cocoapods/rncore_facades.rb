@@ -108,7 +108,7 @@ module RNCoreFacades
     # the prebuilt artifact; see the note in the loop). A facaded pod whose real
     # podspec can't be read is a hard error (see load_real_spec) — silently shipping
     # an empty facade would hide exactly the drift this guards against.
-    def self.generate(react_native_path, install_root, version, ios_version)
+    def self.generate(react_native_path, install_root, version, supported_versions)
         @@install_root = install_root.to_s
         abs_base = File.join(@@install_root, FACADE_RELDIR)
         FileUtils.mkdir_p(abs_base)
@@ -126,7 +126,7 @@ module RNCoreFacades
                 "homepage" => "https://reactnative.dev/",
                 "license" => "MIT",
                 "authors" => "Meta Platforms, Inc. and its affiliates",
-                "platforms" => { "ios" => ios_version },
+                "platforms" => supported_versions.transform_keys(&:to_s),
                 # Required podspec attribute, but never fetched: the pod is installed
                 # as a LOCAL pod (`:path => <dir>`), which uses this spec in place and
                 # ships no source_files. Placeholder only.

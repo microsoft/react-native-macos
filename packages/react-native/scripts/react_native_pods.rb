@@ -162,7 +162,7 @@ def use_react_native! (
   # In prebuilt mode, generate the facade podspecs the core pods are installed as
   # (instead of their source podspecs) so they don't ship shadowing headers.
   unless ReactNativeCoreUtils.build_rncore_from_source()
-    RNCoreFacades.generate(react_native_path, Pod::Config.instance.installation_root, react_native_version, min_ios_version_supported)
+    RNCoreFacades.generate(react_native_path, Pod::Config.instance.installation_root, react_native_version, min_supported_versions)
   end
 
   Pod::UI.puts "Configuring the target with the New Architecture\n"
@@ -259,7 +259,7 @@ def use_react_native! (
 
     # Facades: community pods' hardcoded s.dependency "RCT-Folly"/"glog"/... must
     # resolve locally instead of from trunk. See __docs__/prebuilt-deps.md.
-    RNDepsFacades.generate(react_native_path, Pod::Config.instance.installation_root, min_ios_version_supported)
+    RNDepsFacades.generate(react_native_path, Pod::Config.instance.installation_root, min_supported_versions)
     pod 'DoubleConversion', :path => RNDepsFacades.facade_path('DoubleConversion')
     pod 'glog', :path => RNDepsFacades.facade_path('glog')
     pod 'boost', :path => RNDepsFacades.facade_path('boost')

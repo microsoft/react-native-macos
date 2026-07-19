@@ -56,7 +56,7 @@ module RNDepsFacades
     # NO headers are emitted — the ReactNativeDependencies pod supplies both. A
     # facaded pod whose real podspec can't be read is a hard error (see
     # load_real_spec) — silently shipping an empty facade would hide drift.
-    def self.generate(react_native_path, install_root, ios_version)
+    def self.generate(react_native_path, install_root, supported_versions)
         abs_base = File.join(install_root.to_s, FACADE_RELDIR)
         FileUtils.mkdir_p(abs_base)
         FACADE_PODS.each do |name, podspec_rel_path|
@@ -64,11 +64,11 @@ module RNDepsFacades
             FileUtils.mkdir_p(dir)
 
             if podspec_rel_path == :synthesized
-                spec = synthesized_spec(name, ios_version)
+                spec = synthesized_spec(name, supported_versions)
             else
                 podspec_path = File.join(react_native_path.to_s, podspec_rel_path)
                 real = load_real_spec(podspec_path, name)
-                spec = derived_spec(name, real, ios_version)
+                spec = derived_spec(name, real, supported_versions)
             end
 
             File.write(File.join(dir, "#{name}.podspec.json"), JSON.pretty_generate(spec))
@@ -85,7 +85,7 @@ module RNDepsFacades
 
     # Base spec skeleton shared by derived + synthesized facades: dependency-only,
     # no source_files, no headers. Depends solely on ReactNativeDependencies.
-    def self.base_spec(name, version, ios_version)
+    def self.base_spec(name, version, supported_versions)
         {
             "name" => name,
             "version" => version,
@@ -93,7 +93,7 @@ module RNDepsFacades
             "homepage" => "https://reactnative.dev/",
             "license" => "MIT",
             "authors" => "Meta Platforms, Inc. and its affiliates",
-            "platforms" => { "ios" => ios_version },
+            "platforms" => supported_versions.transform_keys(&:to_s),
             # Required podspec attribute, but never fetched: installed as a LOCAL
             # pod (`:path => <dir>`), which uses this spec in place and ships no
             # source_files. Placeholder only.
@@ -113,8 +113,8 @@ module RNDepsFacades
     # NOT carried. In prebuilt-deps mode the third-party code — and its privacy
     # manifest — is embedded in the ReactNativeDependencies artifact; the facade
     # only needs to declare the dependency (see the design note in the PR).
-    def self.derived_spec(name, real, ios_version)
-        spec = base_spec(name, real.version.to_s, ios_version)
+    def self.derived_spec(name, real, supported_versions)
+        spec = base_spec(name, real.version.to_s, supported_versions)
 
         defaults = Array(real.default_subspecs)
         spec["default_subspecs"] = defaults unless defaults.empty?
@@ -136,9 +136,9 @@ module RNDepsFacades
     # versionless facade — a bare `pod 'SocketRocket'` in the source path is
     # `"~> #{socket_rocket_config[:version]}"`, so the facade MUST carry a version
     # that satisfies that constraint.
-    def self.synthesized_spec(name, ios_version)
+    def self.synthesized_spec(name, supported_versions)
         version = synthesized_version(name)
-        base_spec(name, version, ios_version)
+        base_spec(name, version, supported_versions)
     end
     private_class_method :synthesized_spec
 
