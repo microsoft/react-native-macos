@@ -1,0 +1,43 @@
+jobs:
+  - job: NpmPack
+    displayName: NPM Pack
+    pool:
+      name: cxeiss-ubuntu-20-04-large
+      image: cxe-ubuntu-20-04-1es-pt
+      os: linux
+    variables:
+      - name: BUILDSECMON_OPT_IN
+        value: true
+    timeoutInMinutes: 90
+    cancelTimeoutInMinutes: 5
+    templateContext:
+      outputs:
+        - output: pipelineArtifact
+          targetPath: $(Build.ArtifactStagingDirectory)/npm-packed-tarballs
+          artifactName: NpmPackedTarballs
+    steps:
+      - checkout: self
+        clean: true
+        fetchFilter: blob:none
+        persistCredentials: true
+
+      - task: UseNode@1
+        inputs:
+          version: '22.22.0'
+        displayName: Use Node.js 22.22.0
+
+      - template: /.ado/templates/configure-git.yml@self
+
+      - script: yarn install
+        displayName: Install npm dependencies
+
+      - script: mkdir -p "$(Build.ArtifactStagingDirectory)/npm-packed-tarballs"
+        displayName: Prepare npm artifact directory
+
+      - script: node .ado/scripts/configure-publish.mts --verbose --skip-auth
+        name: config
+        displayName: Verify release config
+
+      - script: node .ado/scripts/npm-pack.mts --clean "$(Build.ArtifactStagingDirectory)/npm-packed-tarballs"
+        displayName: Pack npm packages
+        condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))

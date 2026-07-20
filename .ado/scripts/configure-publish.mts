@@ -31,7 +31,23 @@ interface Options {
  * enable publishing on Azure Pipelines.
  */
 function enablePublishingOnAzurePipelines() {
-  echo(`##vso[task.setvariable variable=publish_react_native_macos]1`);
+  setAzurePipelineVariable('publish_react_native_macos', '1');
+}
+
+export function getAzurePipelineVariableCommands(
+  name: string,
+  value: string,
+): string[] {
+  return [
+    `##vso[task.setvariable variable=${name}]${value}`,
+    `##vso[task.setvariable variable=${name};isOutput=true]${value}`,
+  ];
+}
+
+function setAzurePipelineVariable(name: string, value: string) {
+  for (const command of getAzurePipelineVariableCommands(name, value)) {
+    echo(command);
+  }
 }
 
 export function isMainBranch(branch: string): boolean {
@@ -181,7 +197,7 @@ async function enablePublishing(tagInfo: TagInfo, options: Options) {
   const [primaryTag, ...additionalTags] = tagInfo.npmTags;
 
   // Output publishTag for subsequent pipeline steps
-  echo(`##vso[task.setvariable variable=publishTag]${primaryTag}`);
+  setAzurePipelineVariable('publishTag', primaryTag);
   if (process.env['GITHUB_OUTPUT']) {
     fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publishTag=${primaryTag}\n`);
   }
@@ -189,7 +205,7 @@ async function enablePublishing(tagInfo: TagInfo, options: Options) {
   // Output additional tags
   if (additionalTags.length > 0) {
     const tagsValue = additionalTags.join(',');
-    echo(`##vso[task.setvariable variable=additionalTags]${tagsValue}`);
+    setAzurePipelineVariable('additionalTags', tagsValue);
     if (process.env['GITHUB_OUTPUT']) {
       fs.appendFileSync(process.env['GITHUB_OUTPUT'], `additionalTags=${tagsValue}\n`);
     }
