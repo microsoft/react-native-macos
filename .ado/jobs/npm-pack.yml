@@ -13,6 +13,7 @@ jobs:
     templateContext:
       outputs:
         - output: pipelineArtifact
+          condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
           targetPath: $(Build.ArtifactStagingDirectory)/npm-packed-tarballs
           artifactName: NpmPackedTarballs
     steps:
