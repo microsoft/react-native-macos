@@ -1,64 +1,109 @@
+parameters:
+  - name: dryRun
+    type: boolean
+    default: false
+
 jobs:
-- job: NPMPublish
-  displayName: NPM Publish
-  pool:
-    name: cxeiss-ubuntu-20-04-large
-    image: cxe-ubuntu-20-04-1es-pt
-    os: linux
-  variables:
-    - name: BUILDSECMON_OPT_IN
-      value: true
+  - job: NpmPack
+    displayName: NPM Pack
+    pool:
+      name: cxeiss-ubuntu-20-04-large
+      image: cxe-ubuntu-20-04-1es-pt
+      os: linux
+    variables:
+      - name: BUILDSECMON_OPT_IN
+        value: true
+    timeoutInMinutes: 90
+    cancelTimeoutInMinutes: 5
+    templateContext:
+      outputs:
+        - output: pipelineArtifact
+          condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
+          targetPath: $(Build.ArtifactStagingDirectory)/npm-packed-tarballs
+          artifactName: NpmPackedTarballs
+    steps:
+      - checkout: self
+        clean: true
+        fetchFilter: blob:none
+        persistCredentials: true
 
-  timeoutInMinutes: 90
-  cancelTimeoutInMinutes: 5
-  templateContext:
-    outputs:
-      - output: pipelineArtifact
-        targetPath: $(System.DefaultWorkingDirectory)
-        artifactName: github-npm-js-publish
-  steps:
-    - checkout: self
-      clean: true
-      fetchFilter: blob:none
-      persistCredentials: true
+      - task: UseNode@1
+        inputs:
+          version: '22.22.0'
+        displayName: Use Node.js 22.22.0
 
-    - task: UseNode@1
+      - template: /.ado/templates/configure-git.yml@self
+
+      - script: yarn install
+        displayName: Install npm dependencies
+
+      - script: yarn workspaces foreach --all --topological --no-private run build
+        displayName: Build publishable workspaces
+
+      - script: node .ado/scripts/configure-publish.mts --verbose --skip-auth
+        name: config
+        displayName: Verify release config
+
+      - script: node .ado/scripts/npm-pack.mts --clean "$(Build.ArtifactStagingDirectory)/npm-packed-tarballs"
+        displayName: Pack npm packages
+        condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
+
+  - job: NpmEsrpRelease
+    displayName: NPM ESRP Release
+    dependsOn: NpmPack
+    condition: and(succeeded(), eq(dependencies.NpmPack.outputs['config.publish_react_native_macos'], '1'))
+    variables:
+      - name: publish_react_native_macos
+        value: $[ dependencies.NpmPack.outputs['config.publish_react_native_macos'] ]
+      - name: publishTag
+        value: $[ dependencies.NpmPack.outputs['config.publishTag'] ]
+    timeoutInMinutes: 30
+    templateContext:
+      type: releaseJob
+      isProduction: true
       inputs:
-        version: '22.22.0'
-      displayName: 'Use Node.js 22.22.0'
+        - input: pipelineArtifact
+          artifactName: NpmPackedTarballs
+          targetPath: $(Pipeline.Workspace)/npm-packed-tarballs
+    steps:
+      - checkout: self
+        clean: true
+        fetchFilter: blob:none
 
-    - template: /.ado/templates/configure-git.yml@self
+      - task: UseNode@1
+        inputs:
+          version: '22.22.0'
+        displayName: Use Node.js 22.22.0
 
-    - script: |
-        yarn install
-      displayName: Install npm dependencies
+      - script: node .ado/scripts/npm-pack.mts --no-pack --check-npm "$(Pipeline.Workspace)/npm-packed-tarballs"
+        displayName: Remove already-published packages
 
-    - script: |
-        node .ado/scripts/configure-publish.mts --verbose --skip-auth
-      displayName: Verify release config
+      - script: node .ado/scripts/validate-esrp-config.mts
+        displayName: Validate ESRP onboarding
+        env:
+          EsrpConnectedServiceName: $(EsrpConnectedServiceName)
+          EsrpKeyVaultName: $(EsrpKeyVaultName)
+          EsrpAuthCertName: $(EsrpAuthCertName)
+          EsrpSignCertName: $(EsrpSignCertName)
+          EsrpClientId: $(EsrpClientId)
+          EsrpTenantId: $(EsrpTenantId)
+          EsrpOwners: $(EsrpOwners)
+          EsrpApprovers: $(EsrpApprovers)
+          publishTag: $(publishTag)
 
-    # Disable Nightly publishing on the main branch
-    - ${{ if endsWith(variables['Build.SourceBranchName'], '-stable') }}:
-      - script: |
-          yarn config set npmPublishAccess public
-          yarn config set npmPublishRegistry "https://registry.npmjs.org"
-          yarn config set npmAuthToken $(npmAuthToken)
-        displayName: Configure yarn for npm publishing
-        condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
-
-      - script: |
-          yarn workspaces foreach -vv --all --topological --no-private npm publish --tag $(publishTag) --tolerate-republish
-        displayName: Publish packages
-        condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
-
-      - script: |
-          node .ado/scripts/apply-additional-tags.mjs --tags "$(additionalTags)" --token "$(npmAuthToken)"
-        displayName: Apply additional dist-tags
-        condition: and(succeeded(), eq(variables['publish_react_native_macos'], '1'))
-
-    - script: |
-        yarn config unset npmPublishAccess || true
-        yarn config unset npmAuthToken || true
-        yarn config unset npmPublishRegistry || true
-      displayName: Remove NPM auth configuration
-      condition: always()
+      - task: EsrpRelease@11
+        displayName: ESRP release to npmjs.com
+        condition: and(succeeded(), eq(variables['HasPackagesToPublish'], 'true'), eq('${{ parameters.dryRun }}', 'false'))
+        inputs:
+          connectedservicename: $(EsrpConnectedServiceName)
+          usemanagedidentity: false
+          keyvaultname: $(EsrpKeyVaultName)
+          authcertname: $(EsrpAuthCertName)
+          signcertname: $(EsrpSignCertName)
+          clientid: $(EsrpClientId)
+          domaintenantid: $(EsrpTenantId)
+          contenttype: npm
+          folderlocation: $(Pipeline.Workspace)/npm-packed-tarballs
+          productstate: $(publishTag)
+          owners: $(EsrpOwners)
+          approvers: $(EsrpApprovers)
