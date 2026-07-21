@@ -104,6 +104,21 @@ export async function filterPublishedTarballs(
   return remaining;
 }
 
+export function getHasPackagesToPublishCommand(packageCount: number): string {
+  return `##vso[task.setvariable variable=HasPackagesToPublish]${packageCount > 0}`;
+}
+
+export async function checkPublishedTarballs(
+  output: string,
+  run: CommandRunner = runCommand,
+  log: (message: string) => void = console.log,
+): Promise<string[]> {
+  const remaining = await filterPublishedTarballs(output, run);
+  log(`Found ${remaining.length} unpublished package(s)`);
+  log(getHasPackagesToPublishCommand(remaining.length));
+  return remaining;
+}
+
 const isDirectRun = process.argv[1] != null && resolve(process.argv[1]) === resolve(import.meta.filename);
 if (isDirectRun) {
   const {values, positionals} = parseArgs({
@@ -120,5 +135,7 @@ if (isDirectRun) {
   if (values.clean) await rm(output, {recursive: true, force: true});
   await mkdir(output, {recursive: true});
   if (!values['no-pack']) await packWorkspaces(process.cwd(), output);
-  if (values['check-npm']) await filterPublishedTarballs(output);
+  if (values['check-npm']) {
+    await checkPublishedTarballs(output);
+  }
 }

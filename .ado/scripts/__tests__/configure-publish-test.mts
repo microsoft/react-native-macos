@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
+import {execFile as execFileCallback} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {promisify} from 'node:util';
 import {describe, it} from 'node:test';
 
 import {
   getAzurePipelineVariableCommands,
-  getPublishTag,
+  getPublishTags,
 } from '../configure-publish.mts';
+
+const execFile = promisify(execFileCallback);
 
 describe('configure-publish', () => {
   it('emits plain and named-step output variables', () => {
@@ -23,33 +28,46 @@ describe('configure-publish', () => {
 
   it('uses one tag per release line', () => {
     assert.deepEqual(
-      getPublishTag(
+      getPublishTags(
         {state: 'STABLE_IS_LATEST', currentVersion: 83, latestVersion: 83, nextVersion: 84},
         '0.83-stable',
       ),
-      {npmTag: 'latest'},
+      {npmTags: ['latest']},
     );
     assert.deepEqual(
-      getPublishTag(
+      getPublishTags(
         {state: 'STABLE_IS_OLD', currentVersion: 82, latestVersion: 83, nextVersion: 84},
         '0.82-stable',
       ),
-      {npmTag: '0.82-stable'},
+      {npmTags: ['0.82-stable']},
     );
     assert.deepEqual(
-      getPublishTag(
+      getPublishTags(
         {state: 'STABLE_IS_NEW', currentVersion: 84, latestVersion: 83, nextVersion: 84},
         '0.84-stable',
       ),
-      {npmTag: 'next', prerelease: 'rc'},
+      {npmTags: ['next'], prerelease: 'rc'},
     );
     assert.deepEqual(
-      getPublishTag(
+      getPublishTags(
         {state: 'STABLE_IS_NEW', currentVersion: 84, latestVersion: 83, nextVersion: 83},
         '0.84-stable',
         'latest',
       ),
-      {npmTag: 'latest'},
+      {npmTags: ['latest']},
     );
+  });
+
+  it('does not emit publish variables on main', async () => {
+    const script = fileURLToPath(new URL('../configure-publish.mts', import.meta.url));
+    const {stdout} = await execFile(process.execPath, [
+      script,
+      '--mock-branch',
+      'main',
+      '--skip-auth',
+    ]);
+
+    assert.match(stdout, /nightly publishing is currently disabled/);
+    assert.doesNotMatch(stdout, /##vso\[task\.setvariable/);
   });
 });

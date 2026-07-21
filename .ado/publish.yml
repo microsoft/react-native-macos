@@ -1,5 +1,11 @@
 name: $(Date:yyyyMMdd).$(Rev:.r)
 
+parameters:
+  - name: dryRun
+    displayName: Validate npm release without publishing
+    type: boolean
+    default: false
+
 trigger:
   batch: true
   branches:
@@ -49,15 +55,9 @@ extends:
         # Justification: js files in this repo are flow files. the built-in eslint does not support this. Adding a separate step to run the sdl rules for flow files.
         exclusionPatterns: '**/*.js'
     stages:
-      - stage: NpmPack
-        displayName: Pack npm packages
+      - stage: NPM
         dependsOn: []
         jobs:
-          - template: /.ado/jobs/npm-pack.yml@self
-
-      - stage: Release
-        displayName: Release npm packages
-        dependsOn: NpmPack
-        condition: and(succeeded(), eq(dependencies.NpmPack.outputs['NpmPack.config.publish_react_native_macos'], '1'))
-        jobs:
-          - template: /.ado/jobs/npm-esrp-release.yml@self
+          - template: /.ado/jobs/npm-publish.yml@self
+            parameters:
+              dryRun: ${{ parameters.dryRun }}

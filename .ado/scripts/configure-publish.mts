@@ -2,6 +2,7 @@
 import {$, argv, echo, fs} from 'zx';
 import { resolve } from 'node:path';
 
+const NPM_DEFAULT_REGISTRY = 'https://registry.npmjs.org/';
 const NPM_TAG_NEXT = 'next';
 
 export type ReleaseState = 'STABLE_IS_LATEST' | 'STABLE_IS_NEW' | 'STABLE_IS_OLD';
@@ -14,12 +15,13 @@ export interface ReleaseStateInfo {
 }
 
 export interface TagInfo {
-  npmTag: string;
+  npmTags: string[];
   prerelease?: string;
 }
 
 interface Options {
   'mock-branch'?: string;
+  'skip-auth'?: boolean;
   tag?: string;
   verbose?: boolean;
 }
@@ -136,7 +138,7 @@ export function getReleaseState(
   return { state, currentVersion, latestVersion, nextVersion };
 }
 
-export function getPublishTag(
+export function getPublishTags(
   stateInfo: ReleaseStateInfo,
   branch: string,
   tag: string = NPM_TAG_NEXT,
@@ -146,14 +148,14 @@ export function getPublishTag(
   switch (state) {
     case 'STABLE_IS_LATEST':
       // The current release line follows RNW's latest-only model.
-      return {npmTag: 'latest'};
+      return {npmTags: ['latest']};
 
     case 'STABLE_IS_OLD':
-      return {npmTag: branch};
+      return {npmTags: [branch]};
 
     case 'STABLE_IS_NEW': {
       if (tag === 'latest') {
-        return {npmTag: 'latest'};
+        return {npmTags: ['latest']};
       }
 
       // Publishing a release candidate
@@ -163,15 +165,40 @@ export function getPublishTag(
         );
       }
 
-      return {npmTag: NPM_TAG_NEXT, prerelease: 'rc'};
+      return {npmTags: [NPM_TAG_NEXT], prerelease: 'rc'};
     }
   }
 }
 
-function enablePublishing(tagInfo: TagInfo) {
-  setAzurePipelineVariable('publishTag', tagInfo.npmTag);
+async function verifyNpmAuth(registry = NPM_DEFAULT_REGISTRY) {
+  const whoami = await $`npm whoami --registry ${registry}`.nothrow();
+  if (whoami.exitCode !== 0) {
+    const errText = whoami.stderr;
+    const m = errText.match(/npm error code (\w+)/);
+    const errorCode = m && m[1];
+    switch (errorCode) {
+      case 'EINVALIDNPMTOKEN':
+        throw new Error(`Invalid auth token for npm registry: ${registry}`);
+      case 'ENEEDAUTH':
+        throw new Error(`Missing auth token for npm registry: ${registry}`);
+      default:
+        throw new Error(errText);
+    }
+  }
+}
+
+async function enablePublishing(tagInfo: TagInfo, options: Options) {
+  const [primaryTag] = tagInfo.npmTags;
+
+  setAzurePipelineVariable('publishTag', primaryTag);
   if (process.env['GITHUB_OUTPUT']) {
-    fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publishTag=${tagInfo.npmTag}\n`);
+    fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publishTag=${primaryTag}\n`);
+  }
+
+  if (options['skip-auth']) {
+    echo('ℹ️ Skipped npm auth validation');
+  } else {
+    await verifyNpmAuth();
   }
 
   // Don't enable publishing in PRs
@@ -188,6 +215,7 @@ if (isDirectRun) {
   // Parse CLI args using zx's argv (minimist)
   const options: Options = {
     'mock-branch': argv['mock-branch'] as string | undefined,
+    'skip-auth': Boolean(argv['skip-auth']),
     tag: typeof argv['tag'] === 'string' ? argv['tag'] : NPM_TAG_NEXT,
     verbose: Boolean(argv['verbose']),
   };
@@ -211,10 +239,10 @@ if (isDirectRun) {
       log(`Current version: ${stateInfo.currentVersion}`);
       log(`Release state: ${stateInfo.state}`);
 
-      const tagInfo = getPublishTag(stateInfo, branch, options.tag);
-      log(`Expected npm tag: ${tagInfo.npmTag}`);
+      const tagInfo = getPublishTags(stateInfo, branch, options.tag);
+      log(`Expected npm tag: ${tagInfo.npmTags[0]}`);
 
-      enablePublishing(tagInfo);
+      await enablePublishing(tagInfo, options);
     } else {
       echo(`ℹ️ Branch '${branch}' is not main or a stable branch — skipping`);
     }

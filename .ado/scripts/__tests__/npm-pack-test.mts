@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
-import {mkdtemp, mkdir, readFile, writeFile} from 'node:fs/promises';
+import {mkdtemp, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {describe, it} from 'node:test';
 
 import {
+  checkPublishedTarballs,
   filterPublishedTarballs,
+  getHasPackagesToPublishCommand,
   getPublishableWorkspaces,
   getRegistryStatus,
   packWorkspaces,
@@ -16,6 +18,17 @@ import {
 const temporaryDirectory = () => mkdtemp(join(tmpdir(), 'rnm-npm-pack-'));
 
 describe('npm-pack', () => {
+  it('emits the Azure package availability variable', () => {
+    assert.equal(
+      getHasPackagesToPublishCommand(1),
+      '##vso[task.setvariable variable=HasPackagesToPublish]true',
+    );
+    assert.equal(
+      getHasPackagesToPublishCommand(0),
+      '##vso[task.setvariable variable=HasPackagesToPublish]false',
+    );
+  });
+
   it('selects only public workspaces and creates safe names', async () => {
     const root = await temporaryDirectory();
     for (const [directory, manifest] of [
@@ -80,6 +93,44 @@ describe('npm-pack', () => {
     assert.deepEqual(await filterPublishedTarballs(output, run), [unpublished]);
     await assert.rejects(readFile(published), {code: 'ENOENT'});
     assert.equal(await readFile(unpublished, 'utf8'), 'unpublished');
+  });
+
+  it('reports whether filtered tarballs remain', async () => {
+    const output = await temporaryDirectory();
+    const unpublished = join(output, 'unpublished.tgz');
+    await writeFile(unpublished, 'unpublished');
+    const run: CommandRunner = async (command, args) => {
+      if (command === 'tar') {
+        return {
+          stderr: '',
+          stdout: JSON.stringify({name: 'unpublished', version: '1.0.0'}),
+        };
+      }
+      const error = new Error('not found') as Error & {stderr: string};
+      error.stderr = 'npm error code E404';
+      throw error;
+    };
+    const messages: string[] = [];
+
+    assert.deepEqual(
+      await checkPublishedTarballs(output, run, message => messages.push(message)),
+      [unpublished],
+    );
+    assert.deepEqual(messages, [
+      'Found 1 unpublished package(s)',
+      '##vso[task.setvariable variable=HasPackagesToPublish]true',
+    ]);
+
+    await rm(unpublished);
+    messages.length = 0;
+    assert.deepEqual(
+      await checkPublishedTarballs(output, run, message => messages.push(message)),
+      [],
+    );
+    assert.deepEqual(messages, [
+      'Found 0 unpublished package(s)',
+      '##vso[task.setvariable variable=HasPackagesToPublish]false',
+    ]);
   });
 
   it('fails on registry errors and malformed responses', async () => {
