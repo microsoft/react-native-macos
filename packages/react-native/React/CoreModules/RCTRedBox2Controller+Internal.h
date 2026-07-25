@@ -9,11 +9,15 @@
 
 #import "RCTRedBox+Internal.h"
 
-#if RCT_DEV_MENU && !TARGET_OS_OSX // [macOS]
+#if RCT_DEV_MENU
 
 typedef void (^RCTRedBox2ButtonPressHandler)(void);
 
+#if !TARGET_OS_OSX // [macOS]
 @interface RCTRedBox2Controller : UIViewController <RCTRedBox2Controlling, UITableViewDelegate, UITableViewDataSource>
+#else // [macOS
+@interface RCTRedBox2Controller : NSViewController <RCTRedBox2Controlling, NSTableViewDelegate, NSTableViewDataSource>
+#endif // macOS]
 
 @property (nonatomic, weak) id<RCTRedBoxControllerActionDelegate> actionDelegate;
 
