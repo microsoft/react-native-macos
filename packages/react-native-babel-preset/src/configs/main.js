@@ -21,6 +21,10 @@ const EXCLUDED_FIRST_PARTY_PATHS = [
   /[/\\]private[/\\]react-native-fantom[/\\]/,
 ];
 
+// customTransformOptions may be strings from URL params, or booleans passed
+// programatically. For strings, handle them as Metro does when parsing URLs.
+const TRUE_VALS = new Set([true, 'true', '1']);
+
 function isTypeScriptSource(fileName) {
   return !!fileName && fileName.endsWith('.ts');
 }
@@ -51,7 +55,7 @@ const getPreset = (src, options, babel) => {
   const transformProfile =
     options?.unstable_transformProfile ?? babel?.caller(getTransformProfile);
 
-  const dev = options?.dev ?? babel.env('development');
+  const dev = options?.dev ?? babel?.env('development') ?? false;
 
   // Hermes V1 (aka Static Hermes) uses more optimised profiles.
   // There is currently no difference between stable and canary, but canary
@@ -72,6 +76,16 @@ const getPreset = (src, options, babel) => {
 
   // Preserve class syntax and related if we're using Hermes V1.
   const preserveClasses = isHermesV1;
+
+  // Preserve private class fields and methods if the experiment is enabled.
+  const preserveClassPrivate = TRUE_VALS.has(
+    options?.customTransformOptions?.unstable_preserveClassPrivate,
+  );
+
+  // Preserve async/await syntax if the experiment is enabled.
+  const preserveAsync = TRUE_VALS.has(
+    options?.customTransformOptions?.unstable_preserveAsync,
+  );
 
   const isNull = src == null;
   const hasClass = isNull || src.indexOf('class') !== -1;
@@ -129,7 +143,7 @@ const getPreset = (src, options, babel) => {
     require('@babel/plugin-transform-destructuring'),
     {useBuiltIns: true},
   ]);
-  if (isNull || src.indexOf('async') !== -1) {
+  if (!preserveAsync && (isNull || src.indexOf('async') !== -1)) {
     extraPlugins.push([
       require('@babel/plugin-transform-async-generator-functions'),
     ]);
@@ -217,11 +231,15 @@ const getPreset = (src, options, babel) => {
           ...(preserveClasses
             ? []
             : [[require('@babel/plugin-transform-class-properties'), {loose}]]),
-          [require('@babel/plugin-transform-private-methods'), {loose}],
-          [
-            require('@babel/plugin-transform-private-property-in-object'),
-            {loose},
-          ],
+          ...(preserveClassPrivate
+            ? []
+            : [
+                [require('@babel/plugin-transform-private-methods'), {loose}],
+                [
+                  require('@babel/plugin-transform-private-property-in-object'),
+                  {loose},
+                ],
+              ]),
           [require('@babel/plugin-syntax-dynamic-import')],
           [require('@babel/plugin-syntax-export-default-from')],
           ...passthroughSyntaxPlugins,

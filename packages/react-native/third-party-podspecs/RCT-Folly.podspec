@@ -25,7 +25,7 @@ Pod::Spec.new do |spec|
   spec.dependency "DoubleConversion"
   spec.dependency "glog"
   spec.dependency "fast_float", "8.0.0"
-  spec.dependency "fmt", "12.1.0" # [macOS]
+  spec.dependency "fmt", "12.1.0"
   spec.compiler_flags = '-Wno-documentation -faligned-new'
   spec.source_files = 'folly/String.cpp',
                       'folly/Conv.cpp',
@@ -49,7 +49,6 @@ Pod::Spec.new do |spec|
                       'folly/lang/CString.cpp',
                       'folly/lang/Exception.cpp',
                       'folly/memory/ReentrantAllocator.cpp',
-                      'folly/memory/SanitizeLeak.cpp', # [macOS]
                       'folly/memory/detail/MallocImpl.cpp',
                       'folly/memory/SanitizeLeak.cpp',
                       'folly/net/NetOps.cpp',
