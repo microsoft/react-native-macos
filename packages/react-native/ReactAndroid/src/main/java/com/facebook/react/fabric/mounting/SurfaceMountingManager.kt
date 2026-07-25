@@ -8,12 +8,15 @@
 package com.facebook.react.fabric.mounting
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.os.SystemClock
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
 import androidx.annotation.AnyThread
 import androidx.annotation.UiThread
 import androidx.collection.SparseArrayCompat
+import androidx.core.graphics.drawable.toDrawable
 import com.facebook.common.logging.FLog
 import com.facebook.infer.annotation.ThreadConfined
 import com.facebook.react.bridge.GuardedRunnable
@@ -281,7 +284,14 @@ internal constructor(
       return
     }
 
-    val parentViewState = getViewState(parentTag)
+    val parentViewState = getNullableViewState(parentTag)
+    if (parentViewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("Unable to find viewState for tag: [$parentTag] for addViewAt"),
+      )
+      return
+    }
     if (parentViewState.view !is ViewGroup) {
       val message =
           "Unable to add a view into a view that is not a ViewGroup. ParentTag: $parentTag - Tag: $tag - Index: $index"
@@ -289,7 +299,14 @@ internal constructor(
       throw IllegalStateException(message)
     }
     val parentView = parentViewState.view as ViewGroup
-    val viewState = getViewState(tag)
+    val viewState = getNullableViewState(tag)
+    if (viewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("Unable to find viewState for tag: [$tag] for addViewAt"),
+      )
+      return
+    }
     val view = viewState.view
     checkNotNull(view) { "Unable to find view for viewState $viewState and tag $tag" }
 
@@ -607,7 +624,14 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
+    val viewState = getNullableViewState(reactTag)
+    if (viewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("Unable to find viewState for tag $reactTag for updateProps"),
+      )
+      return
+    }
 
     if (
         ReactNativeFeatureFlags.overrideBySynchronousMountPropsAtMountingAndroid() &&
@@ -623,7 +647,7 @@ internal constructor(
       viewState.currentProps = ReactStylesDiffMap(props)
     }
 
-    val view: View = checkNotNull(viewState.view) { "Unable to find view for tag [$reactTag]" }
+    val view: View = viewState.view ?: return
     checkNotNull(viewState.viewManager).updateProperties(view, viewState.currentProps)
   }
 
@@ -738,13 +762,20 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
+    val viewState = getNullableViewState(reactTag)
+    if (viewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("Unable to find viewState for tag $reactTag for updateLayout"),
+      )
+      return
+    }
     // Do not layout Root Views
     if (viewState.isRoot) {
       return
     }
 
-    val viewToUpdate = checkNotNull(viewState.view) { "Unable to find View for tag: $reactTag" }
+    val viewToUpdate = viewState.view ?: return
 
     viewToUpdate.layoutDirection =
         when (layoutDirection) {
@@ -1060,6 +1091,13 @@ internal constructor(
 
   private fun getNullableViewState(reactTag: Int): ViewState? = tagToViewState[reactTag]
 
+  /** Applies a bitmap as the background of the view with the given tag, if it exists. */
+  @UiThread
+  public fun applyViewSnapshot(tag: Int, bitmap: Bitmap) {
+    val view = getNullableViewState(tag)?.view ?: return
+    view.background = bitmap.toDrawable(view.resources)
+  }
+
   public fun printSurfaceState(): Unit {
     FLog.e(TAG, "Views created for surface $surfaceId:")
     for (viewState in tagToViewState.values) {
@@ -1083,6 +1121,25 @@ internal constructor(
       params: WritableMap?,
       @EventCategoryDef eventCategory: Int,
   ): Unit {
+    enqueuePendingEvent(
+        reactTag,
+        eventName,
+        canCoalesceEvent,
+        params,
+        eventCategory,
+        SystemClock.uptimeMillis(),
+    )
+  }
+
+  @AnyThread
+  public fun enqueuePendingEvent(
+      reactTag: Int,
+      eventName: String,
+      canCoalesceEvent: Boolean,
+      params: WritableMap?,
+      @EventCategoryDef eventCategory: Int,
+      eventTimestamp: Long,
+  ): Unit {
     // When the surface stopped we will reset the view state map. We are not going to enqueue
     // pending events as they are not expected to be dispatched anyways.
     val viewState = tagToViewState[reactTag]
@@ -1092,7 +1149,8 @@ internal constructor(
       return
     }
 
-    val viewEvent = PendingViewEvent(eventName, params, eventCategory, canCoalesceEvent)
+    val viewEvent =
+        PendingViewEvent(eventName, params, eventCategory, canCoalesceEvent, eventTimestamp)
     UiThreadUtil.runOnUiThread {
       val eventEmitter = viewState.eventEmitter
       if (eventEmitter != null) {
@@ -1145,12 +1203,13 @@ internal constructor(
       private val params: WritableMap?,
       @field:EventCategoryDef private val eventCategory: Int,
       private val canCoalesceEvent: Boolean,
+      private val eventTimestamp: Long,
   ) {
     fun dispatch(eventEmitter: EventEmitterWrapper) {
       if (canCoalesceEvent) {
-        eventEmitter.dispatchUnique(eventName, params)
+        eventEmitter.dispatchUnique(eventName, params, eventTimestamp)
       } else {
-        eventEmitter.dispatch(eventName, params, eventCategory)
+        eventEmitter.dispatch(eventName, params, eventCategory, eventTimestamp)
       }
     }
   }

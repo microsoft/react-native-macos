@@ -148,7 +148,7 @@ class KeyboardImpl {
    *
    * @param {function} callback function to be called when the event fires.
    */
-  addListener<K: keyof KeyboardEventDefinitions>(
+  addListener<K extends keyof KeyboardEventDefinitions>(
     eventType: K,
     listener: (...KeyboardEventDefinitions[K]) => unknown,
     context?: unknown,
@@ -161,7 +161,9 @@ class KeyboardImpl {
    *
    * @param {string} eventType The native event string listeners are watching which will be removed.
    */
-  removeAllListeners<K: keyof KeyboardEventDefinitions>(eventType: ?K): void {
+  removeAllListeners<K extends keyof KeyboardEventDefinitions>(
+    eventType: ?K,
+  ): void {
     this._emitter.removeAllListeners(eventType);
   }
 
