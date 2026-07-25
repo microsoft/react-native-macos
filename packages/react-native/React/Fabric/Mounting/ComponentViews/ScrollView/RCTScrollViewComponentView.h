@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*
  * Returns an actual UIScrollView that this component uses under the hood.
  */
-@property (nonatomic, strong, readonly) RCTUIScrollView *scrollView; // [macOS]
+@property (nonatomic, strong, readwrite) RCTUIScrollView *scrollView; // [macOS]
 
 /** Focus area of newly-activated text input relative to the window to compare against UIKeyboardFrameBegin/End */
 @property (nonatomic, assign) CGRect firstResponderFocus;

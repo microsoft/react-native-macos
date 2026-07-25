@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0bbe4d41581432dfad7adbc2db133d00>>
+ * @generated SignedSource<<8e9b09843bf4a0312b254559a975f612>>
  */
 
 /**
@@ -100,16 +100,6 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
 
   /**
-   * Enable antialiased border radius clipping for Android API 28 and below using manual masking with Porter-Duff compositing
-   */
-  RN_EXPORT static bool enableAndroidAntialiasedBorderRadiusClipping();
-
-  /**
-   * Enables linear text rendering on Android wherever subpixel text rendering is enabled
-   */
-  RN_EXPORT static bool enableAndroidLinearText();
-
-  /**
    * Enables various optimizations throughout the path of measuring text on Android.
    */
   RN_EXPORT static bool enableAndroidTextMeasurementOptimizations();
@@ -133,6 +123,11 @@ class ReactNativeFeatureFlags {
    * Enables destructor calls for ShadowTreeRevision in the background to reduce UI thread work.
    */
   RN_EXPORT static bool enableDestroyShadowTreeRevisionAsync();
+
+  /**
+   * Pre-allocate mutation vectors in the Differentiator to reduce reallocation overhead during shadow view diffing.
+   */
+  RN_EXPORT static bool enableDifferentiatorMutationVectorPreallocation();
 
   /**
    * When enabled a subset of components will avoid double measurement on Android.
@@ -245,9 +240,19 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableModuleArgumentNSNullConversionIOS();
 
   /**
+   * Enables the MutationObserver Web API in React Native.
+   */
+  RN_EXPORT static bool enableMutationObserverByDefault();
+
+  /**
    * Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing
    */
   RN_EXPORT static bool enableNativeCSSParsing();
+
+  /**
+   * When enabled, View.js passes aria-*, id, and tabIndex props directly to native, relying on C++ prop parsing instead of JS-side transformations.
+   */
+  RN_EXPORT static bool enableNativeViewPropTransformations();
 
   /**
    * Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.
@@ -310,6 +315,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableVirtualViewDebugFeatures();
 
   /**
+   * Fix incorrect parentTag passed as parentTagForUpdate in the unflatten-unflatten branch of calculateShadowViewMutationsFlattener, which causes UPDATE mutations to reference a parent being created in the same batch.
+   */
+  RN_EXPORT static bool fixDifferentiatorParentTagForUnflattenCase();
+
+  /**
    * Fix a use-after-free race condition in findShadowNodeByTag_DEPRECATED by using getCurrentRevision() instead of tryCommit() with a raw pointer.
    */
   RN_EXPORT static bool fixFindShadowNodeByTagRaceCondition();
@@ -320,9 +330,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool fixMappingOfEventPrioritiesBetweenFabricAndReact();
 
   /**
-   * Fix text clipping starting in Android 15 due to usage of useBoundsForWidth
+   * Fix flex basis computation to not apply FitContent constraint in the main axis for non-measure container nodes, preventing unnecessary re-measurement in scroll containers.
    */
-  RN_EXPORT static bool fixTextClippingAndroid15useBoundsForWidth();
+  RN_EXPORT static bool fixYogaFlexBasisFitContentInMainAxis();
 
   /**
    * Enable system assertion validating that Fusebox is configured with a single host. When set, the CDP backend will dynamically disable features (Perf and Network) in the event that multiple hosts are registered (undefined behaviour), and broadcast this over `ReactNativeApplication.systemStateChanged`.
@@ -335,9 +345,19 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool fuseboxEnabledRelease();
 
   /**
+   * Enable frame timings and screenshots support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
+   */
+  RN_EXPORT static bool fuseboxFrameRecordingEnabled();
+
+  /**
    * Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.
    */
   RN_EXPORT static bool fuseboxNetworkInspectionEnabled();
+
+  /**
+   * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
+   */
+  RN_EXPORT static bool fuseboxScreenshotCaptureEnabled();
 
   /**
    * Hides offscreen VirtualViews on iOS by setting hidden = YES to avoid extra cost of views
@@ -370,6 +390,16 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool preventShadowTreeCommitExhaustion();
 
   /**
+   * Use the redesigned RedBox error overlay on Android, styled to match the LogBox visual language.
+   */
+  RN_EXPORT static bool redBoxV2Android();
+
+  /**
+   * Use the redesigned RedBox error overlay on iOS, styled to match the LogBox visual language.
+   */
+  RN_EXPORT static bool redBoxV2IOS();
+
+  /**
    * Function used to enable / disable Pressibility from using W3C Pointer Events for its hover callbacks
    */
   RN_EXPORT static bool shouldPressibilityUseW3CPointerEventsForHover();
@@ -385,9 +415,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool skipActivityIdentityAssertionOnHostPause();
 
   /**
-   * Sync clipToPadding on Android views with the overflow property
+   * Override getClipBounds on Android views to return the padding box when overflow is hidden
    */
-  RN_EXPORT static bool syncAndroidClipToPaddingWithOverflow();
+  RN_EXPORT static bool syncAndroidClipBoundsWithOverflow();
 
   /**
    * Enables storing js caller stack when creating promise in native module. This is useful in case of Promise rejection and tracing the cause.
@@ -413,6 +443,11 @@ class ReactNativeFeatureFlags {
    * Should this application enable the Fabric Interop Layer for Android? If yes, the application will behave so that it can accept non-Fabric components and render them on Fabric. This toggle is controlling extra logic such as custom event dispatching that are needed for the Fabric Interop Layer to work correctly.
    */
   RN_EXPORT static bool useFabricInterop();
+
+  /**
+   * Use Longest Increasing Subsequence algorithm in the Differentiator to minimize REMOVE/INSERT mutations during child list reconciliation.
+   */
+  RN_EXPORT static bool useLISAlgorithmInDifferentiator();
 
   /**
    * When enabled, the native view configs are used in bridgeless mode.

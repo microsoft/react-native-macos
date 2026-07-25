@@ -47,7 +47,10 @@ extern
  * like any ordinary UIView. You can have multiple RCTRootViews on screen at
  * once, all controlled by the same JavaScript application.
  */
+#pragma clang diagnostic push
+#pragma clang diagnostic warning "-Wdeprecated"
 __deprecated_msg("This API will be removed along with the legacy architecture.") @interface RCTRootView : RCTUIView // [macOS]
+#pragma clang diagnostic pop
 
 /**
  * - Designated initializer -
@@ -177,5 +180,7 @@ __deprecated_msg("This API will be removed along with the legacy architecture.")
 - (void)cancelTouches;
 
 @end
+
+#pragma clang diagnostic pop
 
 NS_ASSUME_NONNULL_END

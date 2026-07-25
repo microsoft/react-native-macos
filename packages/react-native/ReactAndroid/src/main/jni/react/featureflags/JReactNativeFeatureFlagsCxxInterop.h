@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6b7e2af51ba9d64ae4e474dfa104a7c3>>
+ * @generated SignedSource<<4be32bad403baeca1a28f19ad181c42c>>
  */
 
 /**
@@ -66,12 +66,6 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool enableAccumulatedUpdatesInRawPropsAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool enableAndroidAntialiasedBorderRadiusClipping(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool enableAndroidLinearText(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
   static bool enableAndroidTextMeasurementOptimizations(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
@@ -85,6 +79,9 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableDestroyShadowTreeRevisionAsync(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableDifferentiatorMutationVectorPreallocation(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableDoubleMeasurementFixAndroid(
@@ -153,7 +150,13 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool enableModuleArgumentNSNullConversionIOS(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
+  static bool enableMutationObserverByDefault(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
   static bool enableNativeCSSParsing(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableNativeViewPropTransformations(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableNetworkEventReporting(
@@ -192,13 +195,16 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool enableVirtualViewDebugFeatures(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
+  static bool fixDifferentiatorParentTagForUnflattenCase(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
   static bool fixFindShadowNodeByTagRaceCondition(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool fixMappingOfEventPrioritiesBetweenFabricAndReact(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool fixTextClippingAndroid15useBoundsForWidth(
+  static bool fixYogaFlexBasisFitContentInMainAxis(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool fuseboxAssertSingleHostState(
@@ -207,7 +213,13 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool fuseboxEnabledRelease(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
+  static bool fuseboxFrameRecordingEnabled(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
   static bool fuseboxNetworkInspectionEnabled(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool fuseboxScreenshotCaptureEnabled(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool hideOffscreenVirtualViewsOnIOS(
@@ -228,6 +240,12 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool preventShadowTreeCommitExhaustion(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
+  static bool redBoxV2Android(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool redBoxV2IOS(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
   static bool shouldPressibilityUseW3CPointerEventsForHover(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
@@ -237,7 +255,7 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool skipActivityIdentityAssertionOnHostPause(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool syncAndroidClipToPaddingWithOverflow(
+  static bool syncAndroidClipBoundsWithOverflow(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool traceTurboModulePromiseRejectionsOnAndroid(
@@ -253,6 +271,9 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool useFabricInterop(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool useLISAlgorithmInDifferentiator(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool useNativeViewConfigsInBridgelessMode(

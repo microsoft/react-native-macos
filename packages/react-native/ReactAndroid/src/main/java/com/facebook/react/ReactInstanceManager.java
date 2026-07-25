@@ -10,15 +10,11 @@ package com.facebook.react;
 import static com.facebook.infer.annotation.ThreadConfined.UI;
 import static com.facebook.react.bridge.ReactMarkerConstants.ATTACH_MEASURED_ROOT_VIEWS_END;
 import static com.facebook.react.bridge.ReactMarkerConstants.ATTACH_MEASURED_ROOT_VIEWS_START;
-import static com.facebook.react.bridge.ReactMarkerConstants.BUILD_NATIVE_MODULE_REGISTRY_END;
-import static com.facebook.react.bridge.ReactMarkerConstants.BUILD_NATIVE_MODULE_REGISTRY_START;
 import static com.facebook.react.bridge.ReactMarkerConstants.CHANGE_THREAD_PRIORITY;
 import static com.facebook.react.bridge.ReactMarkerConstants.CREATE_VIEW_MANAGERS_END;
 import static com.facebook.react.bridge.ReactMarkerConstants.CREATE_VIEW_MANAGERS_START;
 import static com.facebook.react.bridge.ReactMarkerConstants.PRE_SETUP_REACT_CONTEXT_END;
 import static com.facebook.react.bridge.ReactMarkerConstants.PRE_SETUP_REACT_CONTEXT_START;
-import static com.facebook.react.bridge.ReactMarkerConstants.PROCESS_PACKAGES_END;
-import static com.facebook.react.bridge.ReactMarkerConstants.PROCESS_PACKAGES_START;
 import static com.facebook.react.bridge.ReactMarkerConstants.REACT_CONTEXT_THREAD_END;
 import static com.facebook.react.bridge.ReactMarkerConstants.REACT_CONTEXT_THREAD_START;
 import static com.facebook.react.bridge.ReactMarkerConstants.SETUP_REACT_CONTEXT_END;
@@ -27,6 +23,7 @@ import static com.facebook.react.bridge.ReactMarkerConstants.VM_INIT;
 import static com.facebook.react.uimanager.common.UIManagerType.FABRIC;
 import static com.facebook.systrace.Systrace.TRACE_TAG_REACT;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -51,7 +48,6 @@ import com.facebook.react.bridge.JSBundleLoader;
 import com.facebook.react.bridge.JSExceptionHandler;
 import com.facebook.react.bridge.JavaScriptExecutor;
 import com.facebook.react.bridge.JavaScriptExecutorFactory;
-import com.facebook.react.bridge.NativeModuleRegistry;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactMarker;
@@ -81,7 +77,6 @@ import com.facebook.react.internal.AndroidChoreographerProvider;
 import com.facebook.react.internal.ChoreographerProvider;
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags;
 import com.facebook.react.modules.appearance.AppearanceModule;
-import com.facebook.react.modules.appregistry.AppRegistry;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.ReactChoreographer;
@@ -91,7 +86,6 @@ import com.facebook.react.uimanager.ReactRoot;
 import com.facebook.react.uimanager.ReactStage;
 import com.facebook.react.uimanager.UIManagerHelper;
 import com.facebook.react.uimanager.ViewManager;
-import com.facebook.react.uimanager.common.UIManagerType;
 import com.facebook.react.views.imagehelper.ResourceDrawableIdHelper;
 import com.facebook.soloader.SoLoader;
 import com.facebook.systrace.Systrace;
@@ -593,12 +587,14 @@ public class ReactInstanceManager {
 
   /**
    * Call this from {@link Activity#onPause()}. This notifies any listening modules so they can do
-   * any necessary cleanup. The passed Activity is the current Activity being paused. This will
-   * always be the foreground activity that would be returned by {@link
-   * ReactContext#getCurrentActivity()}.
+   * any necessary cleanup. The passed Activity is the current Activity being paused. This is
+   * expected to be the foreground activity that would be returned by {@link
+   * ReactContext#getCurrentActivity()}. If the passed activity does not match the current activity,
+   * a warning will be logged instead of crashing.
    *
    * @param activity the activity being paused
    */
+  @SuppressLint("ReflectionMethodUse")
   @ThreadConfined(UI)
   public void onHostPause(@Nullable Activity activity) {
     if (mRequireActivity) {
@@ -612,15 +608,15 @@ public class ReactInstanceManager {
       }
       Assertions.assertCondition(mCurrentActivity != null);
     }
-    if (mCurrentActivity != null) {
-      Assertions.assertCondition(
-          activity == mCurrentActivity,
+    if (mCurrentActivity != null && activity != mCurrentActivity) {
+      FLog.w(
+          TAG,
           "Pausing an activity that is not the current activity, this is incorrect! "
               + "Current activity: "
               + mCurrentActivity.getClass().getSimpleName()
               + " "
               + "Paused activity: "
-              + activity.getClass().getSimpleName());
+              + (activity == null ? "null" : activity.getClass().getSimpleName()));
     }
     onHostPause();
   }
@@ -769,10 +765,7 @@ public class ReactInstanceManager {
       synchronized (mReactContextLock) {
         if (mCurrentReactContext != null) {
           for (ReactRoot reactRoot : mAttachedReactRoots) {
-            // Fabric surfaces must be cleaned up when React Native is destroyed.
-            if (reactRoot.getUIManagerType() == UIManagerType.FABRIC) {
-              detachRootViewFromInstance(reactRoot, mCurrentReactContext);
-            }
+            detachRootViewFromInstance(reactRoot, mCurrentReactContext);
           }
 
           mCurrentReactContext.destroy();
@@ -1273,9 +1266,7 @@ public class ReactInstanceManager {
 
     Systrace.beginSection(TRACE_TAG_REACT, "attachRootViewToInstance");
 
-    @Nullable
-    UIManager uiManager =
-        UIManagerHelper.getUIManager(mCurrentReactContext, reactRoot.getUIManagerType());
+    @Nullable UIManager uiManager = UIManagerHelper.getUIManager(mCurrentReactContext, FABRIC);
 
     // If we can't get a UIManager something has probably gone horribly wrong
     if (uiManager == null) {
@@ -1286,28 +1277,16 @@ public class ReactInstanceManager {
 
     @Nullable Bundle initialProperties = reactRoot.getAppProperties();
 
-    final int rootTag;
-    if (reactRoot.getUIManagerType() == FABRIC) {
-      rootTag =
-          uiManager.startSurface(
-              reactRoot.getRootViewGroup(),
-              reactRoot.getJSModuleName(),
-              initialProperties == null
-                  ? new WritableNativeMap()
-                  : Arguments.fromBundle(initialProperties),
-              reactRoot.getWidthMeasureSpec(),
-              reactRoot.getHeightMeasureSpec());
-      reactRoot.setShouldLogContentAppeared(true);
-    } else {
-      rootTag =
-          uiManager.addRootView(
-              reactRoot.getRootViewGroup(),
-              initialProperties == null
-                  ? new WritableNativeMap()
-                  : Arguments.fromBundle(initialProperties));
-      reactRoot.setRootViewTag(rootTag);
-      reactRoot.runApplication();
-    }
+    final int rootTag =
+        uiManager.startSurface(
+            reactRoot.getRootViewGroup(),
+            reactRoot.getJSModuleName(),
+            initialProperties == null
+                ? new WritableNativeMap()
+                : Arguments.fromBundle(initialProperties),
+            reactRoot.getWidthMeasureSpec(),
+            reactRoot.getHeightMeasureSpec());
+    reactRoot.setShouldLogContentAppeared(true);
 
     Systrace.beginAsyncSection(TRACE_TAG_REACT, "pre_rootView.onAttachedToReactInstance", rootTag);
     UiThreadUtil.runOnUiThread(
@@ -1328,36 +1307,28 @@ public class ReactInstanceManager {
       return;
     }
 
-    @UIManagerType int uiManagerType = reactRoot.getUIManagerType();
-    if (uiManagerType == UIManagerType.FABRIC) {
-      // Stop surface in Fabric.
-      // Calling FabricUIManager.stopSurface causes the C++ Binding.stopSurface
-      // to be called synchronously over the JNI, which causes an empty tree
-      // to be committed via the Scheduler, which will cause mounting instructions
-      // to be queued up and synchronously executed to delete and remove
-      // all the views in the hierarchy.
-      final int surfaceId = reactRoot.getRootViewTag();
-      if (surfaceId != View.NO_ID) {
-        UIManager uiManager = UIManagerHelper.getUIManager(reactContext, uiManagerType);
-        if (uiManager != null) {
-          uiManager.stopSurface(surfaceId);
-        } else {
-          FLog.w(ReactConstants.TAG, "Failed to stop surface, UIManager has already gone away");
-        }
+    // Stop surface in Fabric.
+    // Calling FabricUIManager.stopSurface causes the C++ Binding.stopSurface
+    // to be called synchronously over the JNI, which causes an empty tree
+    // to be committed via the Scheduler, which will cause mounting instructions
+    // to be queued up and synchronously executed to delete and remove
+    // all the views in the hierarchy.
+    final int surfaceId = reactRoot.getRootViewTag();
+    if (surfaceId != View.NO_ID) {
+      UIManager uiManager = UIManagerHelper.getUIManager(reactContext, FABRIC);
+      if (uiManager != null) {
+        uiManager.stopSurface(surfaceId);
       } else {
-        ReactSoftExceptionLogger.logSoftException(
-            TAG,
-            new RuntimeException(
-                "detachRootViewFromInstance called with ReactRootView with invalid id"));
+        FLog.w(ReactConstants.TAG, "Failed to stop surface, UIManager has already gone away");
       }
-
-      clearReactRoot(reactRoot);
     } else {
-      reactContext
-          .getCatalystInstance()
-          .getJSModule(AppRegistry.class)
-          .unmountApplicationComponentAtRootTag(reactRoot.getRootViewTag());
+      ReactSoftExceptionLogger.logSoftException(
+          TAG,
+          new RuntimeException(
+              "detachRootViewFromInstance called with ReactRootView with invalid id"));
     }
+
+    clearReactRoot(reactRoot);
   }
 
   @ThreadConfined(UI)
@@ -1391,46 +1362,5 @@ public class ReactInstanceManager {
     throw new UnsupportedOperationException(
         "ReactInstanceManager.createReactContext is unsupported. CatalystInstanceImpl has been"
             + " removed.");
-  }
-
-  private NativeModuleRegistry processPackages(
-      ReactApplicationContext reactContext, List<ReactPackage> packages) {
-    NativeModuleRegistryBuilder nativeModuleRegistryBuilder =
-        new NativeModuleRegistryBuilder(reactContext);
-
-    ReactMarker.logMarker(PROCESS_PACKAGES_START);
-
-    synchronized (mPackages) {
-      for (ReactPackage reactPackage : packages) {
-        Systrace.beginSection(TRACE_TAG_REACT, "createAndProcessCustomReactPackage");
-        try {
-          processPackage(reactPackage, nativeModuleRegistryBuilder);
-        } finally {
-          Systrace.endSection(TRACE_TAG_REACT);
-        }
-      }
-    }
-    ReactMarker.logMarker(PROCESS_PACKAGES_END);
-
-    ReactMarker.logMarker(BUILD_NATIVE_MODULE_REGISTRY_START);
-    Systrace.beginSection(TRACE_TAG_REACT, "buildNativeModuleRegistry");
-    NativeModuleRegistry nativeModuleRegistry;
-    try {
-      nativeModuleRegistry = nativeModuleRegistryBuilder.build();
-    } finally {
-      Systrace.endSection(TRACE_TAG_REACT);
-      ReactMarker.logMarker(BUILD_NATIVE_MODULE_REGISTRY_END);
-    }
-
-    return nativeModuleRegistry;
-  }
-
-  private void processPackage(
-      ReactPackage reactPackage, NativeModuleRegistryBuilder nativeModuleRegistryBuilder) {
-    SystraceMessage.beginSection(TRACE_TAG_REACT, "processPackage")
-        .arg("className", reactPackage.getClass().getSimpleName())
-        .flush();
-    nativeModuleRegistryBuilder.processPackage(reactPackage);
-    SystraceMessage.endSection(TRACE_TAG_REACT).flush();
   }
 }

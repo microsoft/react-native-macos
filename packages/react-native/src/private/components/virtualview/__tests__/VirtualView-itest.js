@@ -158,12 +158,7 @@ describe('styles', () => {
 
     expect(
       root.getRenderedOutput({props: ['minHeight', 'minWidth']}).toJSX(),
-    ).toEqual(
-      <rn-virtualViewExperimental
-        minHeight="100.000000"
-        minWidth="100.000000"
-      />,
-    );
+    ).toEqual(<rn-virtualViewExperimental minHeight="100" minWidth="100" />);
   });
 });
 
@@ -360,7 +355,9 @@ export function dispatchModeChangeEvent(
 /**
  * Helper to create a callback ref that records instances using WeakRefs.
  */
-function createWeakRefCallback<T: interface {} = interface {}>(): Readonly<{
+function createWeakRefCallback<
+  T extends interface {} = interface {},
+>(): Readonly<{
   weakRefs: ReadonlyArray<WeakRef<T>>,
   callbackRef: React.RefSetter<T>,
 }> {
