@@ -194,17 +194,13 @@ RCT_EXPORT_MODULE()
     errorInfo = [self _customizeError:errorInfo];
 
     if (self->_controller == nullptr) {
-#if !TARGET_OS_OSX // [macOS]
       if (facebook::react::ReactNativeFeatureFlags::redBoxV2IOS()) {
         self->_controller = [[RCTRedBox2Controller alloc] initWithCustomButtonTitles:self->_customButtonTitles
                                                                 customButtonHandlers:self->_customButtonHandlers];
       } else {
-#endif // [macOS]
         self->_controller = [[RCTRedBoxController alloc] initWithCustomButtonTitles:self->_customButtonTitles
                                                                customButtonHandlers:self->_customButtonHandlers];
-#if !TARGET_OS_OSX // [macOS]
       }
-#endif // [macOS]
       self->_controller.actionDelegate = self;
     }
     [self _redBox2Controller].bundleURL = self->_overrideBundleURL ?: self->_bundleManager.bundleURL;

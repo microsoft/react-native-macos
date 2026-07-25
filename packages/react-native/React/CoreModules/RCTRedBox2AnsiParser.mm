@@ -10,21 +10,32 @@
 #import <React/RCTDefines.h>
 #import <react/debug/redbox/AnsiParser.h>
 
-#if !TARGET_OS_OSX // [macOS]
-
 #if RCT_DEV_MENU
 
 using facebook::react::unstable_redbox::AnsiColor;
 using facebook::react::unstable_redbox::parseAnsi;
 
+#if !TARGET_OS_OSX // [macOS]
 static UIColor *RCTUIColorFromAnsiColor(const AnsiColor &c)
 {
   return [UIColor colorWithRed:c.r / 255.0 green:c.g / 255.0 blue:c.b / 255.0 alpha:1.0];
 }
+#else // [macOS
+static RCTPlatformColor *RCTUIColorFromAnsiColor(const AnsiColor &c)
+{
+  return [RCTPlatformColor colorWithRed:c.r / 255.0 green:c.g / 255.0 blue:c.b / 255.0 alpha:1.0];
+}
+#endif // macOS]
 
 @implementation RCTRedBox2AnsiParser
 
+#if !TARGET_OS_OSX // [macOS]
 + (NSAttributedString *)attributedStringFromAnsiText:(NSString *)text baseFont:(UIFont *)font baseColor:(UIColor *)color
+#else // [macOS
++ (NSAttributedString *)attributedStringFromAnsiText:(NSString *)text
+                                            baseFont:(UIFont *)font
+                                           baseColor:(RCTPlatformColor *)color
+#endif // macOS]
 {
   if (text == nil) {
     return [[NSAttributedString alloc] init];
@@ -55,5 +66,3 @@ static UIColor *RCTUIColorFromAnsiColor(const AnsiColor &c)
 @end
 
 #endif
-
-#endif // [macOS]
