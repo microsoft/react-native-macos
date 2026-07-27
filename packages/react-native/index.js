@@ -365,6 +365,11 @@ module.exports = {
     return require('./src/private/components/virtualview/VirtualView')
       .VirtualViewMode;
   },
+  // [macOS
+  get WindowManagerMacOS() {
+    return require('./Libraries/WindowManager/WindowManagerMacOS').default;
+  },
+  // macOS]
   // #endregion
 } as ReactNativePublicAPI;
 
