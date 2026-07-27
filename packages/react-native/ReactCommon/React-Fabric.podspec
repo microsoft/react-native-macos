@@ -154,19 +154,12 @@ Pod::Spec.new do |s|
 
     ss.subspec "legacyviewmanagerinterop" do |sss|
       sss.source_files         = podspec_sources("react/renderer/components/legacyviewmanagerinterop/**/*.{m,mm,cpp,h}", "react/renderer/components/legacyviewmanagerinterop/**/*.{h}")
-      sss.exclude_files        = "react/renderer/components/legacyviewmanagerinterop/tests"
       # [macOS
-      sss.osx.exclude_files    = [
-        "react/renderer/components/legacyviewmanagerinterop/platform/ios/**/RCTLegacyViewManagerInteropCoordinator.h",
-        "react/renderer/components/legacyviewmanagerinterop/platform/ios/**/RCTLegacyViewManagerInteropCoordinator.mm",
-      ]
-      platform_coordinator_files = [
+      sss.exclude_files = [
+        "react/renderer/components/legacyviewmanagerinterop/tests",
         "react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h",
         "react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.mm",
       ]
-      sss.ios.exclude_files      = platform_coordinator_files
-      sss.tvos.exclude_files     = platform_coordinator_files
-      sss.visionos.exclude_files = platform_coordinator_files
       # macOS]
       sss.header_dir           = "react/renderer/components/legacyviewmanagerinterop"
     end

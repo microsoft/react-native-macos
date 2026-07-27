@@ -10,7 +10,7 @@
 #import <React/RCTDefines.h>
 #import <react/debug/redbox/AnsiParser.h>
 
-#if RCT_DEV_MENU
+#if RCT_DEV_MENU && !TARGET_OS_OSX // [macOS]
 
 using facebook::react::unstable_redbox::AnsiColor;
 using facebook::react::unstable_redbox::parseAnsi;
