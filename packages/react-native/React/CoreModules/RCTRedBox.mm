@@ -401,12 +401,14 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     cell.textLabel.font = [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightBold];
 
     cell.detailTextLabel.textColor = [RCTUIColor whiteColor]; // [macOS]
-    cell.backgroundColor = [RCTUIColor colorWithRed:0.82 green:0.10 blue:0.15 alpha:1.0]; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
+    cell.backgroundColor = [UIColor colorWithRed:0.82 green:0.10 blue:0.15 alpha:1.0];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
 #else // [macOS
-    cell.contentView.layer.cornerRadius = 8.0;
-    cell.contentView.layer.cornerCurve = kCACornerCurveContinuous;
+    cell.wantsLayer = YES;
+    cell.layer.backgroundColor = [NSColor colorWithRed:0.82 green:0.10 blue:0.15 alpha:1.0].CGColor;
+    cell.layer.cornerRadius = 8.0;
+    cell.layer.cornerCurve = kCACornerCurveContinuous;
     cell.textLabel.selectable = YES;
 #endif // macOS]
   }
