@@ -444,7 +444,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     cell.selectedBackgroundView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.2];
 #else // [macOS
     [cell.detailTextLabel removeFromSuperview];
-    [cell.textLabel.bottomAnchor constraintEqualToAnchor:cell.contentView.bottomAnchor].active = YES;
+    [cell.textLabel.bottomAnchor constraintEqualToAnchor:cell.contentView.bottomAnchor constant:-5].active = YES;
     cell.textLabel.selectable = YES;
 #endif // macOS]
   }
