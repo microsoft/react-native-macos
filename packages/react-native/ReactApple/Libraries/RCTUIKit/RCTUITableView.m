@@ -130,12 +130,12 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
 
     [NSLayoutConstraint activateConstraints:@[
       [_textLabel.leadingAnchor constraintEqualToAnchor:_contentView.leadingAnchor constant:5],
-      [_textLabel.topAnchor constraintEqualToAnchor:_contentView.topAnchor],
+      [_textLabel.topAnchor constraintEqualToAnchor:_contentView.topAnchor constant:5],
       [_textLabel.trailingAnchor constraintEqualToAnchor:_contentView.trailingAnchor constant:-5],
       [_detailTextLabel.leadingAnchor constraintEqualToAnchor:_contentView.leadingAnchor constant:5],
       [_detailTextLabel.topAnchor constraintEqualToAnchor:_textLabel.bottomAnchor],
       [_detailTextLabel.trailingAnchor constraintEqualToAnchor:_contentView.trailingAnchor constant:-5],
-      [_detailTextLabel.bottomAnchor constraintEqualToAnchor:_contentView.bottomAnchor],
+      [_detailTextLabel.bottomAnchor constraintEqualToAnchor:_contentView.bottomAnchor constant:-5],
     ]];
   } else {
     [NSLayoutConstraint activateConstraints:@[
