@@ -161,6 +161,15 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   self.detailTextLabel.maximumNumberOfLines = 1;
 }
 
+- (void)layout
+{
+  [super layout];
+
+  CGFloat preferredWidth = MAX(NSWidth(self.contentView.bounds) - 10, 0);
+  self.textLabel.preferredMaxLayoutWidth = preferredWidth;
+  self.detailTextLabel.preferredMaxLayoutWidth = preferredWidth;
+}
+
 @end
 
 @interface RCTUITableView () <NSTableViewDataSource, NSTableViewDelegate>
@@ -170,8 +179,6 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   NSTableView *_tableView;
   NSArray<RCTUITableViewSlot *> *_slots;
   NSMutableDictionary<NSNumber *, RCTPlatformView *> *_headerViews;
-  NSMutableDictionary<NSNumber *, NSView *> *_pendingViews;
-  NSMutableDictionary<NSNumber *, NSNumber *> *_automaticHeights;
   NSMutableIndexSet *_automaticRows;
   CGFloat _lastContentWidth;
 }
@@ -183,8 +190,6 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
 
     _slots = @[];
     _headerViews = [NSMutableDictionary new];
-    _pendingViews = [NSMutableDictionary new];
-    _automaticHeights = [NSMutableDictionary new];
     _automaticRows = [NSMutableIndexSet new];
 
     _tableView = [[NSTableView alloc] initWithFrame:self.contentView.bounds];
@@ -198,6 +203,7 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
     _tableView.columnAutoresizingStyle = NSTableViewFirstColumnOnlyAutoresizingStyle;
     _tableView.backgroundColor = NSColor.clearColor;
     _tableView.style = NSTableViewStyleInset;
+    _tableView.usesAutomaticRowHeights = YES;
     _tableView.accessibilityRole = NSAccessibilityTableRole;
 
     NSTableColumn *column = [[NSTableColumn alloc] initWithIdentifier:@"RCTUITableViewColumn"];
@@ -228,11 +234,6 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   }
 }
 
-- (CGRect)visibleRect
-{
-  return _tableView.visibleRect;
-}
-
 - (void)setFrameSize:(NSSize)newSize
 {
   [super setFrameSize:newSize];
@@ -240,7 +241,6 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   CGFloat contentWidth = self.contentSize.width;
   if (_lastContentWidth != contentWidth) {
     _lastContentWidth = contentWidth;
-    [_automaticHeights removeAllObjects];
     if (_automaticRows.count > 0) {
       [_tableView noteHeightOfRowsWithIndexesChanged:_automaticRows];
     }
@@ -250,8 +250,6 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
 - (void)reloadData
 {
   [_headerViews removeAllObjects];
-  [_pendingViews removeAllObjects];
-  [_automaticHeights removeAllObjects];
   [_automaticRows removeAllIndexes];
 
   NSInteger sectionCount = 1;
@@ -287,9 +285,7 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
 
 - (__kindof RCTUITableViewCell *)dequeueReusableCellWithIdentifier:(NSString *)identifier
 {
-  RCTUITableViewCell *cell = [_tableView makeViewWithIdentifier:identifier owner:self];
-  [cell prepareForReuse];
-  return cell;
+  return [_tableView makeViewWithIdentifier:identifier owner:self];
 }
 
 - (void)scrollToRowAtIndexPath:(NSIndexPath *)indexPath
@@ -313,7 +309,7 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
 - (void)deselectRowAtIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated
 {
   NSInteger backingRow = [self backingRowForIndexPath:indexPath];
-  if (backingRow != NSNotFound) {
+  if (backingRow != NSNotFound && [_tableView.selectedRowIndexes containsIndex:backingRow]) {
     [_tableView deselectRow:backingRow];
   }
 }
@@ -338,13 +334,6 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
     viewForTableColumn:(NSTableColumn *)tableColumn
                    row:(NSInteger)row
 {
-  NSNumber *rowKey = @(row);
-  NSView *pendingView = _pendingViews[rowKey];
-  if (pendingView != nil) {
-    [_pendingViews removeObjectForKey:rowKey];
-    return pendingView;
-  }
-
   return [self viewForBackingRow:row];
 }
 
@@ -387,29 +376,7 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   }
 
   [_automaticRows addIndex:row];
-  NSNumber *rowKey = @(row);
-  NSNumber *cachedHeight = _automaticHeights[rowKey];
-  if (cachedHeight != nil) {
-    return cachedHeight.doubleValue;
-  }
-
-  RCTUITableViewCell *cell = (RCTUITableViewCell *)[tableView viewAtColumn:0 row:row makeIfNecessary:NO];
-  if (cell == nil) {
-    cell = (RCTUITableViewCell *)_pendingViews[rowKey];
-  }
-  if (cell == nil) {
-    cell = (RCTUITableViewCell *)[self viewForBackingRow:row];
-    _pendingViews[rowKey] = cell;
-  }
-
-  NSSize previousSize = cell.frame.size;
-  cell.frame = NSMakeRect(0, 0, self.contentSize.width, previousSize.height);
-  [cell layoutSubtreeIfNeeded];
-  CGFloat fittingHeight = cell.fittingSize.height;
-  cell.frame = NSMakeRect(cell.frame.origin.x, cell.frame.origin.y, previousSize.width, previousSize.height);
-
-  _automaticHeights[rowKey] = @(fittingHeight);
-  return fittingHeight;
+  return tableView.rowHeight;
 }
 
 - (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)row
