@@ -96,7 +96,6 @@ extern const CGFloat RCTUITableViewAutomaticDimension;
 @property (nonatomic, weak, nullable) id<RCTUITableViewDataSource> dataSource;
 @property (nonatomic, weak, nullable) id<RCTUITableViewDelegate> delegate;
 @property (nonatomic, nullable, copy) RCTUIColor *separatorColor;
-@property (nonatomic, readonly) CGRect visibleRect;
 
 - (void)reloadData;
 - (nullable __kindof RCTUITableViewCell *)dequeueReusableCellWithIdentifier:(NSString *)identifier;
