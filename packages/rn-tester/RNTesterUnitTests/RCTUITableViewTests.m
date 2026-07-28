@@ -451,9 +451,9 @@ static NSInteger RCTUITrackingCellAllocationCount;
       automaticCell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
       automaticCell.textLabel.numberOfLines = 0;
       automaticCell.textLabel.text = text;
-      automaticCell.contentView.wantsLayer = YES;
-      automaticCell.contentView.layer.cornerRadius = 8;
-      automaticCell.contentView.layer.cornerCurve = kCACornerCurveContinuous;
+      automaticCell.wantsLayer = YES;
+      automaticCell.layer.cornerRadius = 8;
+      automaticCell.layer.cornerCurve = kCACornerCurveContinuous;
       return automaticCell;
     }
 
@@ -497,8 +497,8 @@ static NSInteger RCTUITrackingCellAllocationCount;
   XCTAssertGreaterThan(wideAutomaticHeight, 50);
   XCTAssertGreaterThan(automaticCell.textLabel.preferredMaxLayoutWidth, 0);
   CGFloat widePreferredWidth = automaticCell.textLabel.preferredMaxLayoutWidth;
-  XCTAssertEqual(automaticCell.contentView.layer.cornerRadius, 8);
-  XCTAssertEqualObjects(automaticCell.contentView.layer.cornerCurve, kCACornerCurveContinuous);
+  XCTAssertEqual(automaticCell.layer.cornerRadius, 8);
+  XCTAssertEqualObjects(automaticCell.layer.cornerCurve, kCACornerCurveContinuous);
 
   [self setContentWidth:320];
   NSTableView *narrowControlTable =
@@ -520,6 +520,57 @@ static NSInteger RCTUITrackingCellAllocationCount;
   XCTAssertEqualWithAccuracy(NSHeight([backingTable rectOfRow:2]), wideFixedHeight, 0.5);
   XCTAssertEqual([backingTable.delegate tableView:backingTable heightOfRow:1], 50);
   XCTAssertEqual([backingTable.delegate tableView:backingTable heightOfRow:2], 50);
+}
+
+- (void)testCellLayoutInsetsAndMessageCardLayer
+{
+  RCTUITableViewTestDataSource *dataSource = [RCTUITableViewTestDataSource new];
+  dataSource.rowCounts = @[@2];
+  dataSource.heightProvider = ^CGFloat(NSIndexPath *indexPath) {
+    return 80;
+  };
+  dataSource.cellProvider = ^RCTUITableViewCell *(RCTUITableView *tableView, NSIndexPath *indexPath) {
+    RCTUITableViewCellStyle style =
+        indexPath.row == 0 ? RCTUITableViewCellStyleDefault : RCTUITableViewCellStyleSubtitle;
+    NSString *identifier = indexPath.row == 0 ? @"message-layout" : @"stack-layout";
+    RCTUITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
+    if (cell == nil) {
+      cell = [[RCTUITableViewCell alloc] initWithStyle:style reuseIdentifier:identifier];
+    }
+    cell.textLabel.text = indexPath.row == 0 ? @"Message" : @"Stack frame";
+    cell.detailTextLabel.text = @"RCTUITableViewParity.js:42:7";
+    if (indexPath.row == 0) {
+      cell.wantsLayer = YES;
+      cell.layer.backgroundColor = [NSColor colorWithRed:0.82 green:0.10 blue:0.15 alpha:1].CGColor;
+      cell.layer.cornerRadius = 8;
+      cell.layer.cornerCurve = kCACornerCurveContinuous;
+    }
+    return cell;
+  };
+
+  [self installDataSource:dataSource delegate:dataSource];
+  [self reloadAndDisplay];
+
+  NSTableView *backingTable = RCTUIBackingTable(_tableView);
+  for (NSInteger row = 0; row < 2; row++) {
+    RCTUITableViewCell *cell = [backingTable viewAtColumn:0 row:row makeIfNecessary:YES];
+    [cell layoutSubtreeIfNeeded];
+
+    XCTAssertEqual(cell.rowSizeStyle, NSTableViewRowSizeStyleCustom);
+    XCTAssertGreaterThanOrEqual(NSMinX(cell.textLabel.frame), 5);
+    XCTAssertGreaterThanOrEqual(NSMinY(cell.textLabel.frame), 5);
+    XCTAssertLessThanOrEqual(NSMaxX(cell.textLabel.frame), NSMaxX(cell.contentView.bounds) - 5);
+    XCTAssertLessThanOrEqual(NSMaxY(cell.textLabel.frame), NSMaxY(cell.contentView.bounds) - 5);
+    XCTAssertTrue(NSContainsRect(cell.contentView.bounds, cell.textLabel.frame));
+    XCTAssertTrue(NSContainsRect(cell.textLabel.bounds, cell.textLabel.visibleRect));
+    XCTAssertTrue(
+        NSContainsRect(cell.textLabel.bounds, [cell.textLabel.cell drawingRectForBounds:cell.textLabel.bounds]));
+  }
+
+  RCTUITableViewCell *messageCell = [backingTable viewAtColumn:0 row:0 makeIfNecessary:YES];
+  XCTAssertEqual(messageCell.layer.cornerRadius, 8);
+  XCTAssertEqualObjects(messageCell.layer.cornerCurve, kCACornerCurveContinuous);
+  XCTAssertNotNil((__bridge id)messageCell.layer.backgroundColor);
 }
 
 - (void)testHeadersAreLazyStablePerReloadAndHeightZeroHasNoSlot
@@ -594,6 +645,40 @@ static NSInteger RCTUITrackingCellAllocationCount;
                                                     row:0];
   XCTAssertNotNil(emptyHeader);
   XCTAssertTrue([emptyHeader isKindOfClass:RCTPlatformView.class]);
+}
+
+- (void)testReusedHeaderViewMaintainsOnePrimitiveHeightConstraint
+{
+  RCTUITableViewTestDataSource *dataSource = [RCTUITableViewTestDataSource new];
+  dataSource.rowCounts = @[@1];
+  dataSource.headerHeights = @[@30];
+  RCTPlatformView *sharedHeader = [RCTPlatformView new];
+  dataSource.headerProvider = ^RCTPlatformView *(NSInteger section) {
+    return sharedHeader;
+  };
+  [self installDataSource:dataSource delegate:dataSource];
+  [self reloadAndDisplay];
+
+  NSTableView *backingTable = RCTUIBackingTable(_tableView);
+  XCTAssertEqual([backingTable viewAtColumn:0 row:0 makeIfNecessary:YES], sharedHeader);
+  NSPredicate *primitiveConstraint =
+      [NSPredicate predicateWithFormat:@"identifier == %@", @"RCTUITableViewHeaderHeight"];
+  NSArray<NSLayoutConstraint *> *heightConstraints =
+      [sharedHeader.constraints filteredArrayUsingPredicate:primitiveConstraint];
+  XCTAssertFalse(sharedHeader.translatesAutoresizingMaskIntoConstraints);
+  XCTAssertEqual(heightConstraints.count, 1);
+  XCTAssertTrue(heightConstraints.firstObject.active);
+  XCTAssertEqual(heightConstraints.firstObject.constant, 30);
+  NSLayoutConstraint *originalHeightConstraint = heightConstraints.firstObject;
+
+  dataSource.headerHeights = @[@44];
+  [self reloadAndDisplay];
+  XCTAssertEqual([backingTable viewAtColumn:0 row:0 makeIfNecessary:YES], sharedHeader);
+  heightConstraints = [sharedHeader.constraints filteredArrayUsingPredicate:primitiveConstraint];
+  XCTAssertEqual(heightConstraints.count, 1);
+  XCTAssertEqual(heightConstraints.firstObject, originalHeightConstraint);
+  XCTAssertTrue(heightConstraints.firstObject.active);
+  XCTAssertEqual(heightConstraints.firstObject.constant, 44);
 }
 
 - (void)testAccessibilityContainerAndCellIdentifiersSurviveReuse
