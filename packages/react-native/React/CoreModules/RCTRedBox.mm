@@ -286,9 +286,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     [_stackTraceTableView reloadData];
 
     if (!isRootViewControllerPresented) {
-      [_stackTraceTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
-                                  atScrollPosition:RCTUITableViewScrollPositionTop
-                                          animated:NO]; // [macOS]
+      if (_lastErrorMessage != nil) { // [macOS
+        [_stackTraceTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
+                                    atScrollPosition:RCTUITableViewScrollPositionTop
+                                            animated:NO];
+      } // macOS]
 #if !TARGET_OS_OSX // [macOS]
       [RCTKeyWindow().rootViewController presentViewController:self animated:YES completion:nil];
 #else // [macOS
@@ -405,6 +407,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 #else // [macOS
     cell.contentView.layer.cornerRadius = 8.0;
     cell.contentView.layer.cornerCurve = kCACornerCurveContinuous;
+    cell.textLabel.selectable = YES;
 #endif // macOS]
   }
 
@@ -440,6 +443,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 #else // [macOS
     [cell.detailTextLabel removeFromSuperview];
     [cell.textLabel.bottomAnchor constraintEqualToAnchor:cell.contentView.bottomAnchor].active = YES;
+    cell.textLabel.selectable = YES;
 #endif // macOS]
   }
 
@@ -503,8 +507,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
       NSFontAttributeName : [UIFont boldSystemFontOfSize:16],
       NSParagraphStyleAttributeName : paragraphStyle
     }; // [macOS]
+    CGFloat tableWidth = tableView.frame.size.width;
+#if TARGET_OS_OSX // [macOS
+    tableWidth = tableView.contentSize.width;
+#endif // macOS]
     CGRect boundingRect =
-        [_lastErrorMessage boundingRectWithSize:CGSizeMake(tableView.frame.size.width - 30, CGFLOAT_MAX)
+        [_lastErrorMessage boundingRectWithSize:CGSizeMake(tableWidth - 30, CGFLOAT_MAX)
                                         options:NSStringDrawingUsesLineFragmentOrigin
                                      attributes:attributes
                                         context:nil];
