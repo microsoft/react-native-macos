@@ -382,6 +382,7 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
     if (headerView == nil) {
       headerView = [RCTPlatformView new];
     }
+    [headerView.heightAnchor constraintEqualToConstant:slot.headerHeight].active = YES;
     _headerViews[sectionKey] = headerView;
   }
   return headerView;
