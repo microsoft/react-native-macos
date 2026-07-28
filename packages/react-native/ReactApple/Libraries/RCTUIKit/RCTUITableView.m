@@ -11,7 +11,11 @@
 
 #if TARGET_OS_OSX
 
+#import <objc/runtime.h>
+
 const CGFloat RCTUITableViewAutomaticDimension = -1.0;
+static NSString *const RCTUITableViewHeaderHeightConstraintIdentifier = @"RCTUITableViewHeaderHeight";
+static char RCTUITableViewHeaderHeightConstraintKey;
 
 typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   RCTUITableViewSlotKindHeader,
@@ -275,6 +279,11 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
 
 - (void)reloadData
 {
+  for (RCTPlatformView *headerView in _headerViews.allValues) {
+    NSLayoutConstraint *heightConstraint =
+        objc_getAssociatedObject(headerView, &RCTUITableViewHeaderHeightConstraintKey);
+    heightConstraint.active = NO;
+  }
   [_headerViews removeAllObjects];
   [_automaticRows removeAllIndexes];
 
@@ -383,7 +392,21 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
     if (headerView == nil) {
       headerView = [RCTPlatformView new];
     }
-    [headerView.heightAnchor constraintEqualToConstant:slot.headerHeight].active = YES;
+    headerView.translatesAutoresizingMaskIntoConstraints = NO;
+    NSLayoutConstraint *heightConstraint =
+        objc_getAssociatedObject(headerView, &RCTUITableViewHeaderHeightConstraintKey);
+    if (heightConstraint == nil) {
+      heightConstraint = [headerView.heightAnchor constraintEqualToConstant:slot.headerHeight];
+      heightConstraint.identifier = RCTUITableViewHeaderHeightConstraintIdentifier;
+      objc_setAssociatedObject(
+          headerView,
+          &RCTUITableViewHeaderHeightConstraintKey,
+          heightConstraint,
+          OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    } else {
+      heightConstraint.constant = slot.headerHeight;
+    }
+    heightConstraint.active = YES;
     _headerViews[sectionKey] = headerView;
   }
   return headerView;
