@@ -36,8 +36,30 @@ static void RCTUIPumpRunLoop(NSTimeInterval duration)
 
 static NSTableView *RCTUIBackingTable(RCTUITableView *tableView)
 {
-  XCTAssertTrue([tableView.documentView isKindOfClass:NSTableView.class]);
-  return (NSTableView *)tableView.documentView;
+  NSTableView *backingTable = [tableView valueForKey:@"tableView"];
+  XCTAssertTrue([backingTable isKindOfClass:NSTableView.class]);
+  return backingTable;
+}
+
+static BOOL RCTUIAccessibilityTreeContainsIdentifier(id element, NSString *identifier, NSUInteger depth)
+{
+  if (depth == 0 || element == nil) {
+    return NO;
+  }
+  if ([element respondsToSelector:@selector(accessibilityIdentifier)] &&
+      [[element accessibilityIdentifier] isEqualToString:identifier]) {
+    return YES;
+  }
+  if (![element respondsToSelector:@selector(accessibilityChildren)]) {
+    return NO;
+  }
+
+  for (id child in [element accessibilityChildren]) {
+    if (RCTUIAccessibilityTreeContainsIdentifier(child, identifier, depth - 1)) {
+      return YES;
+    }
+  }
+  return NO;
 }
 
 @interface RCTUITableViewTestDataSource : NSObject <RCTUITableViewDataSource, RCTUITableViewDelegate>
@@ -49,6 +71,8 @@ static NSTableView *RCTUIBackingTable(RCTUITableView *tableView)
 @property (nonatomic, copy) RCTUITableViewTestHeaderProvider headerProvider;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSNumber *> *headerViewCallCounts;
 @property (nonatomic, strong) NSIndexPath *selectedIndexPath;
+@property (nonatomic, assign) NSInteger selectionCallCount;
+@property (nonatomic, assign) BOOL deselectDuringSelection;
 
 @end
 
@@ -108,7 +132,11 @@ static NSTableView *RCTUIBackingTable(RCTUITableView *tableView)
 
 - (void)tableView:(RCTUITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+  self.selectionCallCount++;
   self.selectedIndexPath = indexPath;
+  if (self.deselectDuringSelection) {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+  }
 }
 
 @end
@@ -137,6 +165,43 @@ static NSTableView *RCTUIBackingTable(RCTUITableView *tableView)
 
 @end
 
+@interface RCTUIInsetControlDataSource : NSObject <NSTableViewDataSource, NSTableViewDelegate>
+@end
+
+@implementation RCTUIInsetControlDataSource
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
+{
+  return 1;
+}
+
+- (NSView *)tableView:(NSTableView *)tableView
+    viewForTableColumn:(NSTableColumn *)tableColumn
+                   row:(NSInteger)row
+{
+  return [NSTableCellView new];
+}
+
+@end
+
+static NSTableView *RCTUICreateInsetControlTable(CGFloat width, RCTUIInsetControlDataSource *dataSource)
+{
+  NSTableView *tableView = [[NSTableView alloc] initWithFrame:NSMakeRect(0, 0, width, 400)];
+  tableView.dataSource = dataSource;
+  tableView.delegate = dataSource;
+  tableView.headerView = nil;
+  tableView.allowsColumnReordering = NO;
+  tableView.allowsColumnResizing = NO;
+  tableView.allowsTypeSelect = NO;
+  tableView.columnAutoresizingStyle = NSTableViewFirstColumnOnlyAutoresizingStyle;
+  tableView.backgroundColor = NSColor.clearColor;
+  tableView.style = NSTableViewStyleInset;
+  [tableView addTableColumn:[[NSTableColumn alloc] initWithIdentifier:@"ControlColumn"]];
+  [tableView reloadData];
+  [tableView layoutSubtreeIfNeeded];
+  return tableView;
+}
+
 static NSInteger RCTUITrackingCellAllocationCount;
 
 @interface RCTUITrackingTableCell : RCTUITableViewCell
@@ -160,38 +225,6 @@ static NSInteger RCTUITrackingCellAllocationCount;
 {
   [super prepareForReuse];
   self.prepareForReuseCount++;
-}
-
-@end
-
-static CGFloat RCTUIExpectedTextHeight(NSString *text, NSFont *font, CGFloat width)
-{
-  NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
-  paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-  NSRect bounds = [text boundingRectWithSize:NSMakeSize(width, CGFLOAT_MAX)
-                                     options:NSStringDrawingUsesLineFragmentOrigin
-                                  attributes:@{
-                                    NSFontAttributeName : font,
-                                    NSParagraphStyleAttributeName : paragraphStyle,
-                                  }];
-  return ceil(NSHeight(bounds)) + 10;
-}
-
-@interface RCTUISizingTableCell : RCTUITableViewCell
-
-@property (nonatomic, copy) NSString *sizingText;
-@property (nonatomic, strong) NSFont *sizingFont;
-@property (nonatomic, assign) CGFloat lastFittingWidth;
-
-@end
-
-@implementation RCTUISizingTableCell
-
-- (NSSize)fittingSize
-{
-  self.lastFittingWidth = NSWidth(self.frame);
-  return NSMakeSize(
-      self.lastFittingWidth, RCTUIExpectedTextHeight(self.sizingText, self.sizingFont, self.lastFittingWidth));
 }
 
 @end
@@ -303,10 +336,11 @@ static CGFloat RCTUIExpectedTextHeight(NSString *text, NSFont *font, CGFloat wid
   for (NSNumber *rowCount in @[@2, @9, @1, @0]) {
     dataSource.rowCounts = @[rowCount];
     [self reloadAndDisplay];
-    XCTAssertEqual(RCTUIBackingTable(_tableView).numberOfRows, rowCount.integerValue);
-    XCTAssertTrue(isfinite(NSMinY(_tableView.visibleRect)));
-    XCTAssertGreaterThanOrEqual(NSWidth(_tableView.visibleRect), 0);
-    XCTAssertGreaterThanOrEqual(NSHeight(_tableView.visibleRect), 0);
+    NSTableView *backingTable = RCTUIBackingTable(_tableView);
+    XCTAssertEqual(backingTable.numberOfRows, rowCount.integerValue);
+    XCTAssertTrue(isfinite(NSMinY(backingTable.visibleRect)));
+    XCTAssertGreaterThanOrEqual(NSWidth(backingTable.visibleRect), 0);
+    XCTAssertGreaterThanOrEqual(NSHeight(backingTable.visibleRect), 0);
   }
 }
 
@@ -376,16 +410,19 @@ static CGFloat RCTUIExpectedTextHeight(NSString *text, NSFont *font, CGFloat wid
   RCTUITableViewTestDataSource *dataSource = [RCTUITableViewTestDataSource new];
   dataSource.rowCounts = @[@1, @2];
   dataSource.headerHeights = @[@24, @0];
+  dataSource.deselectDuringSelection = YES;
   [self installDataSource:dataSource delegate:dataSource];
   [self reloadAndDisplay];
 
   NSTableView *backingTable = RCTUIBackingTable(_tableView);
   XCTAssertFalse([backingTable.delegate tableView:backingTable shouldSelectRow:0]);
   XCTAssertNil(dataSource.selectedIndexPath);
+  XCTAssertEqual(dataSource.selectionCallCount, 0);
 
   XCTAssertFalse([backingTable.delegate tableView:backingTable shouldSelectRow:3]);
   XCTAssertEqual(dataSource.selectedIndexPath.section, 1);
   XCTAssertEqual(dataSource.selectedIndexPath.row, 1);
+  XCTAssertEqual(dataSource.selectionCallCount, 1);
   XCTAssertEqual(backingTable.selectedRow, -1);
 
   XCTAssertNoThrow([_tableView deselectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:1] animated:YES]);
@@ -399,29 +436,33 @@ static CGFloat RCTUIExpectedTextHeight(NSString *text, NSFont *font, CGFloat wid
        "a narrow content width while preserving fixed rows. The compatibility layer must measure against the clip "
        "view's content width every time the window changes size, without allowing the two fixed rows to drift. This "
        "additional sentence keeps the wide layout above fifty points and makes the narrow reflow unambiguous.";
-  NSFont *font = [NSFont systemFontOfSize:14];
   RCTUITableViewTestDataSource *dataSource = [RCTUITableViewTestDataSource new];
   dataSource.rowCounts = @[@1, @2];
 
-  __block RCTUISizingTableCell *sizingCell;
+  __block RCTUITableViewCell *automaticCell;
   dataSource.cellProvider = ^RCTUITableViewCell *(RCTUITableView *tableView, NSIndexPath *indexPath) {
     if (indexPath.section == 0) {
-      sizingCell = [tableView dequeueReusableCellWithIdentifier:@"sizing"];
-      if (sizingCell == nil) {
-        sizingCell = [[RCTUISizingTableCell alloc] initWithStyle:RCTUITableViewCellStyleDefault
-                                                 reuseIdentifier:@"sizing"];
+      automaticCell = [tableView dequeueReusableCellWithIdentifier:@"automatic"];
+      if (automaticCell == nil) {
+        automaticCell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleDefault
+                                                  reuseIdentifier:@"automatic"];
       }
-      sizingCell.sizingText = text;
-      sizingCell.sizingFont = font;
-      sizingCell.textLabel.text = text;
-      sizingCell.contentView.wantsLayer = YES;
-      sizingCell.contentView.layer.cornerRadius = 8;
-      sizingCell.contentView.layer.cornerCurve = kCACornerCurveContinuous;
-      return sizingCell;
+      automaticCell.textLabel.font = [NSFont systemFontOfSize:14];
+      automaticCell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+      automaticCell.textLabel.numberOfLines = 0;
+      automaticCell.textLabel.text = text;
+      automaticCell.contentView.wantsLayer = YES;
+      automaticCell.contentView.layer.cornerRadius = 8;
+      automaticCell.contentView.layer.cornerCurve = kCACornerCurveContinuous;
+      return automaticCell;
     }
 
     RCTUITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"fixed"];
-    return cell ?: [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleDefault reuseIdentifier:@"fixed"];
+    if (cell == nil) {
+      cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleDefault reuseIdentifier:@"fixed"];
+    }
+    cell.textLabel.text = @"Fixed";
+    return cell;
   };
   dataSource.heightProvider = ^CGFloat(NSIndexPath *indexPath) {
     return indexPath.section == 0 ? RCTUITableViewAutomaticDimension : 50;
@@ -432,33 +473,53 @@ static CGFloat RCTUIExpectedTextHeight(NSString *text, NSFont *font, CGFloat wid
   [self reloadAndDisplay];
 
   NSTableView *backingTable = RCTUIBackingTable(_tableView);
+  XCTAssertTrue(backingTable.usesAutomaticRowHeights);
   XCTAssertEqual(backingTable.effectiveStyle, NSTableViewStyleInset);
-  NSRect wideCellFrame = [backingTable frameOfCellAtColumn:0 row:0];
-  XCTAssertEqual(NSMinX(wideCellFrame), 16);
-  XCTAssertEqual(NSWidth(wideCellFrame), 848);
 
-  CGFloat wideContentWidth = _tableView.contentSize.width;
-  CGFloat wideHeight = NSHeight([backingTable rectOfRow:0]);
-  XCTAssertEqual(sizingCell.lastFittingWidth, wideContentWidth);
-  XCTAssertEqualWithAccuracy(wideHeight, RCTUIExpectedTextHeight(text, font, wideContentWidth), 0.5);
-  XCTAssertGreaterThan(wideHeight, 50);
-  XCTAssertEqualWithAccuracy(NSHeight([backingTable rectOfRow:1]), 50, 0.5);
-  XCTAssertEqualWithAccuracy(NSHeight([backingTable rectOfRow:2]), 50, 0.5);
-  XCTAssertEqual(sizingCell.contentView.layer.cornerRadius, 8);
-  XCTAssertEqualObjects(sizingCell.contentView.layer.cornerCurve, kCACornerCurveContinuous);
+  RCTUIInsetControlDataSource *controlDataSource = [RCTUIInsetControlDataSource new];
+  NSTableView *wideControlTable =
+      RCTUICreateInsetControlTable(NSWidth(backingTable.bounds), controlDataSource);
+  NSRect wideCellFrame = [backingTable frameOfCellAtColumn:0 row:0];
+  NSRect wideControlFrame = [wideControlTable frameOfCellAtColumn:0 row:0];
+  XCTAssertEqual(wideCellFrame.origin.x, wideControlFrame.origin.x);
+  XCTAssertEqual(wideCellFrame.size.width, wideControlFrame.size.width);
+  CGFloat wideLeftInset = NSMinX(wideCellFrame);
+  CGFloat wideRightInset = NSWidth(backingTable.bounds) - NSMaxX(wideCellFrame);
+  XCTAssertEqualWithAccuracy(wideLeftInset, wideRightInset, 0.5);
+
+  CGFloat rowSpacing = backingTable.intercellSpacing.height;
+  CGFloat wideAutomaticHeight = NSHeight([backingTable rectOfRow:0]) - rowSpacing;
+  CGFloat wideFixedHeight = NSHeight([backingTable rectOfRow:1]);
+  XCTAssertEqual([backingTable.delegate tableView:backingTable heightOfRow:1], 50);
+  XCTAssertEqual([backingTable.delegate tableView:backingTable heightOfRow:2], 50);
+  XCTAssertEqualWithAccuracy(wideFixedHeight, 50 + rowSpacing, 0.5);
+  XCTAssertEqualWithAccuracy(NSHeight([backingTable rectOfRow:2]), wideFixedHeight, 0.5);
+  XCTAssertGreaterThan(wideAutomaticHeight, 50);
+  XCTAssertGreaterThan(automaticCell.textLabel.preferredMaxLayoutWidth, 0);
+  CGFloat widePreferredWidth = automaticCell.textLabel.preferredMaxLayoutWidth;
+  XCTAssertEqual(automaticCell.contentView.layer.cornerRadius, 8);
+  XCTAssertEqualObjects(automaticCell.contentView.layer.cornerCurve, kCACornerCurveContinuous);
 
   [self setContentWidth:320];
+  NSTableView *narrowControlTable =
+      RCTUICreateInsetControlTable(NSWidth(backingTable.bounds), controlDataSource);
   NSRect narrowCellFrame = [backingTable frameOfCellAtColumn:0 row:0];
-  XCTAssertEqual(NSMinX(narrowCellFrame), 16);
-  XCTAssertEqual(NSWidth(narrowCellFrame), 288);
+  NSRect narrowControlFrame = [narrowControlTable frameOfCellAtColumn:0 row:0];
+  XCTAssertEqual(narrowCellFrame.origin.x, narrowControlFrame.origin.x);
+  XCTAssertEqual(narrowCellFrame.size.width, narrowControlFrame.size.width);
+  CGFloat narrowLeftInset = NSMinX(narrowCellFrame);
+  CGFloat narrowRightInset = NSWidth(backingTable.bounds) - NSMaxX(narrowCellFrame);
+  XCTAssertEqualWithAccuracy(narrowLeftInset, narrowRightInset, 0.5);
+  XCTAssertEqualWithAccuracy(narrowLeftInset, wideLeftInset, 0.5);
 
-  CGFloat narrowContentWidth = _tableView.contentSize.width;
-  CGFloat narrowHeight = NSHeight([backingTable rectOfRow:0]);
-  XCTAssertEqual(sizingCell.lastFittingWidth, narrowContentWidth);
-  XCTAssertEqualWithAccuracy(narrowHeight, RCTUIExpectedTextHeight(text, font, narrowContentWidth), 0.5);
-  XCTAssertGreaterThan(narrowHeight, wideHeight);
-  XCTAssertEqualWithAccuracy(NSHeight([backingTable rectOfRow:1]), 50, 0.5);
-  XCTAssertEqualWithAccuracy(NSHeight([backingTable rectOfRow:2]), 50, 0.5);
+  CGFloat narrowAutomaticHeight = NSHeight([backingTable rectOfRow:0]) - rowSpacing;
+  CGFloat narrowFixedHeight = NSHeight([backingTable rectOfRow:1]);
+  XCTAssertGreaterThan(narrowAutomaticHeight, wideAutomaticHeight);
+  XCTAssertLessThan(automaticCell.textLabel.preferredMaxLayoutWidth, widePreferredWidth);
+  XCTAssertEqualWithAccuracy(narrowFixedHeight, wideFixedHeight, 0.5);
+  XCTAssertEqualWithAccuracy(NSHeight([backingTable rectOfRow:2]), wideFixedHeight, 0.5);
+  XCTAssertEqual([backingTable.delegate tableView:backingTable heightOfRow:1], 50);
+  XCTAssertEqual([backingTable.delegate tableView:backingTable heightOfRow:2], 50);
 }
 
 - (void)testHeadersAreLazyStablePerReloadAndHeightZeroHasNoSlot
@@ -476,8 +537,12 @@ static CGFloat RCTUIExpectedTextHeight(NSString *text, NSFont *font, CGFloat wid
 
   NSTableView *backingTable = RCTUIBackingTable(_tableView);
   XCTAssertEqual(backingTable.numberOfRows, 82);
-  XCTAssertEqualWithAccuracy(NSHeight([backingTable rectOfRow:0]), 30, 0.5);
-  XCTAssertEqualWithAccuracy(NSHeight([backingTable rectOfRow:41]), 25, 0.5);
+  XCTAssertEqual([backingTable.delegate tableView:backingTable heightOfRow:0], 30);
+  XCTAssertEqual([backingTable.delegate tableView:backingTable heightOfRow:41], 25);
+  XCTAssertEqualWithAccuracy(
+      NSHeight([backingTable rectOfRow:0]), 30 + backingTable.intercellSpacing.height, 0.5);
+  XCTAssertEqualWithAccuracy(
+      NSHeight([backingTable rectOfRow:41]), 25 + backingTable.intercellSpacing.height, 0.5);
   XCTAssertFalse([backingTable.delegate tableView:backingTable shouldSelectRow:0]);
   XCTAssertFalse([backingTable.delegate tableView:backingTable shouldSelectRow:41]);
 
@@ -556,11 +621,13 @@ static CGFloat RCTUIExpectedTextHeight(NSString *text, NSFont *font, CGFloat wid
 
   RCTUITableViewCell *firstCell = [backingTable viewAtColumn:0 row:0 makeIfNecessary:YES];
   XCTAssertEqualObjects(firstCell.textLabel.accessibilityIdentifier, @"redbox-error");
+  XCTAssertTrue(RCTUIAccessibilityTreeContainsIdentifier(backingTable, @"redbox-error", 6));
 
   [_tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:99 inSection:0]
                     atScrollPosition:RCTUITableViewScrollPositionTop
                             animated:NO];
   [self forceLayoutAndDisplay];
+  XCTAssertTrue(RCTUIAccessibilityTreeContainsIdentifier(backingTable, @"cell-99", 6));
   [_tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
                     atScrollPosition:RCTUITableViewScrollPositionTop
                             animated:NO];
@@ -568,8 +635,7 @@ static CGFloat RCTUIExpectedTextHeight(NSString *text, NSFont *font, CGFloat wid
 
   firstCell = [backingTable viewAtColumn:0 row:0 makeIfNecessary:YES];
   XCTAssertEqualObjects(firstCell.textLabel.accessibilityIdentifier, @"redbox-error");
-  XCTAssertEqual(
-      backingTable.accessibilityChildren.count, [backingTable rowsInRect:backingTable.visibleRect].length);
+  XCTAssertTrue(RCTUIAccessibilityTreeContainsIdentifier(backingTable, @"redbox-error", 6));
 }
 
 - (void)testScrollToTopPositionAndReturnToFirstRow
@@ -589,14 +655,14 @@ static CGFloat RCTUIExpectedTextHeight(NSString *text, NSFont *font, CGFloat wid
   [self forceLayoutAndDisplay];
 
   NSRect targetRect = [backingTable rectOfRow:80];
-  XCTAssertEqualWithAccuracy(NSMinY(targetRect), NSMinY(_tableView.visibleRect), 1);
-  XCTAssertTrue(NSContainsRect(_tableView.visibleRect, targetRect));
+  XCTAssertEqualWithAccuracy(NSMinY(targetRect), NSMinY(backingTable.visibleRect), 1);
+  XCTAssertTrue(NSContainsRect(backingTable.visibleRect, targetRect));
 
   [_tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
                     atScrollPosition:RCTUITableViewScrollPositionTop
                             animated:NO];
   [self forceLayoutAndDisplay];
-  XCTAssertEqualWithAccuracy(NSMinY(_tableView.visibleRect), 0, 0.5);
+  XCTAssertEqualWithAccuracy(NSMinY(backingTable.visibleRect), 0, 0.5);
 }
 
 - (void)testLabelButtonActionAndIdentifierForwarding
