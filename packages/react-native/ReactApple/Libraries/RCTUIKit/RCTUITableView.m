@@ -170,11 +170,11 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   self.detailTextLabel.maximumNumberOfLines = 1;
 }
 
-- (void)layout
+- (void)setFrameSize:(NSSize)newSize
 {
-  [super layout];
+  [super setFrameSize:newSize];
 
-  CGFloat preferredWidth = MAX(NSWidth(self.contentView.bounds) - 10, 0);
+  CGFloat preferredWidth = MAX(newSize.width - 10, 0);
   self.textLabel.preferredMaxLayoutWidth = preferredWidth;
   self.detailTextLabel.preferredMaxLayoutWidth = preferredWidth;
 }
