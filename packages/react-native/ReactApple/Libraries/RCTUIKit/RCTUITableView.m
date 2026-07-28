@@ -72,9 +72,12 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
 @property (nonatomic, readwrite, strong) RCTUILabel *textLabel;
 @property (nonatomic, readwrite, nullable, strong) RCTUILabel *detailTextLabel;
 
+- (void)setFixedHeight:(nullable NSNumber *)fixedHeight;
+
 @end
 
 @implementation RCTUITableViewCell {
+  NSLayoutConstraint *_fixedHeightConstraint;
   RCTUITableViewCellStyle _style;
 }
 
@@ -174,6 +177,22 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   CGFloat preferredWidth = MAX(NSWidth(self.contentView.bounds) - 10, 0);
   self.textLabel.preferredMaxLayoutWidth = preferredWidth;
   self.detailTextLabel.preferredMaxLayoutWidth = preferredWidth;
+}
+
+- (void)setFixedHeight:(NSNumber *)fixedHeight
+{
+  if (fixedHeight == nil) {
+    _fixedHeightConstraint.active = NO;
+    _fixedHeightConstraint = nil;
+    return;
+  }
+
+  if (_fixedHeightConstraint == nil) {
+    _fixedHeightConstraint = [self.heightAnchor constraintEqualToConstant:fixedHeight.doubleValue];
+    _fixedHeightConstraint.active = YES;
+  } else {
+    _fixedHeightConstraint.constant = fixedHeight.doubleValue;
+  }
 }
 
 @end
@@ -348,7 +367,10 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   RCTUITableViewSlot *slot = _slots[backingRow];
   if (slot.kind == RCTUITableViewSlotKindRow) {
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:slot.row inSection:slot.section];
-    return [self.dataSource tableView:self cellForRowAtIndexPath:indexPath];
+    RCTUITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:indexPath];
+    CGFloat height = [self requestedHeightForSlot:slot];
+    [cell setFixedHeight:height == RCTUITableViewAutomaticDimension ? nil : @(height)];
+    return cell;
   }
 
   NSNumber *sectionKey = @(slot.section);
@@ -372,17 +394,23 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
     return slot.headerHeight;
   }
 
-  CGFloat height = tableView.rowHeight;
-  if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:slot.row inSection:slot.section];
-    height = [self.delegate tableView:self heightForRowAtIndexPath:indexPath];
-  }
+  CGFloat height = [self requestedHeightForSlot:slot];
   if (height != RCTUITableViewAutomaticDimension) {
     return height;
   }
 
   [_automaticRows addIndex:row];
   return tableView.rowHeight;
+}
+
+- (CGFloat)requestedHeightForSlot:(RCTUITableViewSlot *)slot
+{
+  if (![self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
+    return _tableView.rowHeight;
+  }
+
+  NSIndexPath *indexPath = [NSIndexPath indexPathForRow:slot.row inSection:slot.section];
+  return [self.delegate tableView:self heightForRowAtIndexPath:indexPath];
 }
 
 - (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)row
