@@ -18,69 +18,11 @@
 #import <React/RCTUIKit.h> // [macOS]
 #import <React/RCTUtils.h>
 
-#import <objc/runtime.h>
-
 #import "CoreModulesPlugins.h"
 
 #if RCT_DEV_MENU
 
 @class RCTRedBoxController;
-
-#if !TARGET_OS_OSX // [macOS]
-@interface UIButton (RCTRedBox)
-#else // [macOS
-@interface NSButton (RCTRedBox)
-#endif // macOS]
-
-@property (nonatomic) RCTRedBoxButtonPressHandler rct_handler;
-
-#if !TARGET_OS_OSX // [macOS]
-- (void)rct_addBlock:(RCTRedBoxButtonPressHandler)handler forControlEvents:(UIControlEvents)controlEvents;
-#else // [macOS
-- (void)rct_addBlock:(RCTRedBoxButtonPressHandler)handler;
-#endif // macOS]
-
-@end
-
-#if !TARGET_OS_OSX // [macOS]
-@implementation UIButton (RCTRedBox)
-#else // [macOS
-@implementation NSButton (RCTRedBox)
-#endif // macOS]
-
-- (RCTRedBoxButtonPressHandler)rct_handler
-{
-  return objc_getAssociatedObject(self, @selector(rct_handler));
-}
-
-- (void)setRct_handler:(RCTRedBoxButtonPressHandler)rct_handler
-{
-  objc_setAssociatedObject(self, @selector(rct_handler), rct_handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (void)rct_callBlock
-{
-  if (self.rct_handler) {
-    self.rct_handler();
-  }
-}
-
-#if !TARGET_OS_OSX // [macOS]
-- (void)rct_addBlock:(RCTRedBoxButtonPressHandler)handler forControlEvents:(UIControlEvents)controlEvents;
-#else // [macOS
-- (void)rct_addBlock:(RCTRedBoxButtonPressHandler)handler
-#endif // macOS]
-{
-  self.rct_handler = handler;
-#if !TARGET_OS_OSX // [macOS]
-  [self addTarget:self action:@selector(rct_callBlock) forControlEvents:controlEvents];
-#else // [macOS
-  [self setTarget:self];
-  [self setAction:@selector(rct_callBlock)];
-#endif // macOS]
-}
-
-@end
 
 @protocol RCTRedBoxControllerActionDelegate <NSObject>
 
@@ -158,45 +100,28 @@
   NSString *extraText = @"Extra Info";
 #endif
 
-#if !TARGET_OS_OSX // [macOS]
-  UIButton *dismissButton = [self redBoxButton:dismissText
+  RCTUIButton *dismissButton = [self redBoxButton:dismissText // [macOS]
                        accessibilityIdentifier:@"redbox-dismiss"
                                       selector:@selector(dismiss)
                                          block:nil];
-  UIButton *reloadButton = [self redBoxButton:reloadText
+  RCTUIButton *reloadButton = [self redBoxButton:reloadText // [macOS]
                       accessibilityIdentifier:@"redbox-reload"
                                      selector:@selector(reload)
                                         block:nil];
-  UIButton *copyButton = [self redBoxButton:copyText
+  RCTUIButton *copyButton = [self redBoxButton:copyText // [macOS]
                     accessibilityIdentifier:@"redbox-copy"
                                    selector:@selector(copyStack)
                                       block:nil];
-  UIButton *extraButton = [self redBoxButton:extraText
+  RCTUIButton *extraButton = [self redBoxButton:extraText // [macOS]
                      accessibilityIdentifier:@"redbox-extra"
                                     selector:@selector(showExtraDataViewController)
                                        block:nil];
-#else // [macOS
-  NSButton *dismissButton = [self redBoxButton:dismissText
-                       accessibilityIdentifier:@"redbox-dismiss"
-                                      selector:@selector(dismiss)
-                                         block:nil];
+#if TARGET_OS_OSX // [macOS
   [dismissButton setKeyEquivalent:@"\e"];
-  NSButton *reloadButton = [self redBoxButton:reloadText
-                      accessibilityIdentifier:@"redbox-reload"
-                                     selector:@selector(reload)
-                                        block:nil];
   [reloadButton setKeyEquivalent:@"r"];
   [reloadButton setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
-  NSButton *copyButton = [self redBoxButton:copyText
-                    accessibilityIdentifier:@"redbox-copy"
-                                   selector:@selector(copyStack)
-                                      block:nil];
   [copyButton setKeyEquivalent:@"c"];
   [copyButton setKeyEquivalentModifierMask:NSEventModifierFlagOption | NSEventModifierFlagCommand];
-  NSButton *extraButton = [self redBoxButton:extraText
-                     accessibilityIdentifier:@"redbox-extra"
-                                    selector:@selector(showExtraDataViewController)
-                                       block:nil];
 #endif // macOS]
 
   [NSLayoutConstraint activateConstraints:@[
@@ -239,17 +164,10 @@
 
 
   for (NSUInteger i = 0; i < [_customButtonTitles count]; i++) {
-#if !TARGET_OS_OSX // [macOS]
-    UIButton *button = [self redBoxButton:_customButtonTitles[i]
+    RCTUIButton *button = [self redBoxButton:_customButtonTitles[i] // [macOS]
                   accessibilityIdentifier:@""
                                  selector:nil
                                     block:_customButtonHandlers[i]];
-#else // [macOS
-  NSButton *button = [self redBoxButton:_customButtonTitles[i]
-                  accessibilityIdentifier:@""
-                                 selector:nil
-                                    block:_customButtonHandlers[i]];
-#endif // macOS]
     [button.heightAnchor constraintEqualToConstant:buttonHeight].active = YES;
     [buttonStackView addArrangedSubview:button];
   }
@@ -282,16 +200,15 @@
 #endif // macOS]
 }
 
-#if !TARGET_OS_OSX // [macOS]
-- (UIButton *)redBoxButton:(NSString *)title
+- (RCTUIButton *)redBoxButton:(NSString *)title // [macOS]
     accessibilityIdentifier:(NSString *)accessibilityIdentifier
                    selector:(SEL)selector
                       block:(RCTRedBoxButtonPressHandler)block
 {
-  UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+#if !TARGET_OS_OSX // [macOS]
+  RCTUIButton *button = [RCTUIButton buttonWithType:UIButtonTypeCustom]; // [macOS]
   button.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin;
-  button.accessibilityIdentifier = accessibilityIdentifier;
   button.titleLabel.font = [UIFont systemFontOfSize:13];
   button.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
   button.titleLabel.textAlignment = NSTextAlignmentCenter;
@@ -299,37 +216,30 @@
   [button setTitle:title forState:UIControlStateNormal];
   [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
   [button setTitleColor:[UIColor colorWithWhite:1 alpha:0.5] forState:UIControlStateHighlighted];
-  if (selector) {
-    [button addTarget:self action:selector forControlEvents:UIControlEventTouchUpInside];
-  } else if (block) {
-    [button rct_addBlock:block forControlEvents:UIControlEventTouchUpInside];
-  }
-  return button;
-}
 #else // [macOS
-- (NSButton *)redBoxButton:(NSString *)title
-   accessibilityIdentifier:(NSString *)accessibilityIdentifier
-                  selector:(SEL)selector
-                     block:(RCTRedBoxButtonPressHandler)block
-{
-  NSButton *button = [[NSButton alloc] initWithFrame:NSZeroRect];
+  RCTUIButton *button = [[RCTUIButton alloc] initWithFrame:NSZeroRect];
   button.translatesAutoresizingMaskIntoConstraints = NO;
-  button.accessibilityIdentifier = @"accessibilityIdentifier";
   button.bordered = NO;
   NSAttributedString *attributedTitle = [[NSAttributedString alloc]
                                          initWithString:title
                                          attributes:@{NSForegroundColorAttributeName : [ NSColor whiteColor] }];
   button.attributedTitle = attributedTitle;
   [button setButtonType:NSButtonTypeMomentaryPushIn];
+#endif // macOS]
+  button.accessibilityIdentifier = accessibilityIdentifier;
+
   if (selector) {
+#if !TARGET_OS_OSX // [macOS]
+    [button addTarget:self action:selector forControlEvents:UIControlEventTouchUpInside];
+#else // [macOS
     button.target = self;
     button.action = selector;
+#endif // macOS]
   } else if (block) {
-    [button rct_addBlock:block];
+    [button rct_setPrimaryAction:[RCTUIAction actionWithHandler:block]]; // [macOS]
   }
   return button;
 }
-#endif // macOS]
 
 - (NSInteger)bottomSafeViewHeight
 {
