@@ -1,8 +1,3 @@
-parameters:
-  - name: dryRun
-    type: boolean
-    default: false
-
 jobs:
   - job: NpmPack
     displayName: NPM Pack
@@ -93,7 +88,7 @@ jobs:
 
       - task: EsrpRelease@11
         displayName: ESRP release to npmjs.com
-        condition: and(succeeded(), eq(variables['HasPackagesToPublish'], 'true'), eq('${{ parameters.dryRun }}', 'false'))
+        condition: and(succeeded(), eq(variables['HasPackagesToPublish'], 'true'))
         inputs:
           connectedservicename: $(EsrpConnectedServiceName)
           usemanagedidentity: false

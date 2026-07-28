@@ -1,11 +1,5 @@
 name: $(Date:yyyyMMdd).$(Rev:.r)
 
-parameters:
-  - name: dryRun
-    displayName: Validate npm release without publishing
-    type: boolean
-    default: false
-
 trigger:
   batch: true
   branches:
@@ -59,5 +53,3 @@ extends:
         dependsOn: []
         jobs:
           - template: /.ado/jobs/npm-publish.yml@self
-            parameters:
-              dryRun: ${{ parameters.dryRun }}
