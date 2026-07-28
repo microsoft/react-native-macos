@@ -102,6 +102,7 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   _style = style;
   _reuseIdentifier = [reuseIdentifier copy];
   self.identifier = reuseIdentifier;
+  self.rowSizeStyle = NSTableViewRowSizeStyleCustom;
 
   _contentView = [[RCTPlatformView alloc] initWithFrame:NSZeroRect];
   _contentView.translatesAutoresizingMaskIntoConstraints = NO;
