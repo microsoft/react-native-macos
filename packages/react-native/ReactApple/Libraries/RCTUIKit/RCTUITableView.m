@@ -100,9 +100,15 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   _reuseIdentifier = [reuseIdentifier copy];
   self.identifier = reuseIdentifier;
 
-  _contentView = [[RCTPlatformView alloc] initWithFrame:self.bounds];
-  _contentView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+  _contentView = [[RCTPlatformView alloc] initWithFrame:NSZeroRect];
+  _contentView.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:_contentView];
+  [NSLayoutConstraint activateConstraints:@[
+    [_contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [_contentView.topAnchor constraintEqualToAnchor:self.topAnchor],
+    [_contentView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [_contentView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+  ]];
 
   _textLabel = [[RCTUILabel alloc] initWithFrame:NSZeroRect];
   _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
