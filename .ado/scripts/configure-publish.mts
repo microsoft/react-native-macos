@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-import {$, argv, echo, fs} from 'zx';
+import { $, argv, echo, fs } from 'zx';
 import { resolve } from 'node:path';
 
 const NPM_DEFAULT_REGISTRY = 'https://registry.npmjs.org/';
 const NPM_TAG_NEXT = 'next';
 
 export type ReleaseState = 'STABLE_IS_LATEST' | 'STABLE_IS_NEW' | 'STABLE_IS_OLD';
+export type StableBranch = `${number}.${number}-stable`;
+export type NpmTag = 'latest' | 'next' | StableBranch;
 
 export interface ReleaseStateInfo {
   state: ReleaseState;
@@ -15,7 +17,7 @@ export interface ReleaseStateInfo {
 }
 
 export interface TagInfo {
-  npmTags: string[];
+  npmTag: NpmTag;
   prerelease?: string;
 }
 
@@ -34,6 +36,11 @@ function enablePublishingOnAzurePipelines() {
   setAzurePipelineVariable('publish_react_native_macos', '1');
 }
 
+/**
+ * Plain task.setvariable is same-job scope, consumed by Pack npm packages via
+ * variables['publish_react_native_macos']. isOutput=true exposes the named-step
+ * output to NpmEsrpRelease via dependencies.NpmPack.outputs['config.<name>'].
+ */
 export function getAzurePipelineVariableCommands(
   name: string,
   value: string,
@@ -54,7 +61,7 @@ export function isMainBranch(branch: string): boolean {
   return branch === 'main';
 }
 
-export function isStableBranch(branch: string): boolean {
+export function isStableBranch(branch: string): branch is StableBranch {
   return /^\d+\.\d+-stable$/.test(branch);
 }
 
@@ -140,22 +147,24 @@ export function getReleaseState(
 
 export function getPublishTags(
   stateInfo: ReleaseStateInfo,
-  branch: string,
+  branch: StableBranch,
   tag: string = NPM_TAG_NEXT,
 ): TagInfo {
   const { state, currentVersion, nextVersion } = stateInfo;
 
   switch (state) {
     case 'STABLE_IS_LATEST':
-      // The current release line follows RNW's latest-only model.
-      return {npmTags: ['latest']};
+      // Patching the current latest version
+      return { npmTag: 'latest' };
 
     case 'STABLE_IS_OLD':
-      return {npmTags: [branch]};
+      // Patching an older stable version
+      return { npmTag: branch };
 
     case 'STABLE_IS_NEW': {
       if (tag === 'latest') {
-        return {npmTags: ['latest']};
+        // Promoting this branch to latest
+        return { npmTag: 'latest' };
       }
 
       // Publishing a release candidate
@@ -165,7 +174,7 @@ export function getPublishTags(
         );
       }
 
-      return {npmTags: [NPM_TAG_NEXT], prerelease: 'rc'};
+      return { npmTag: NPM_TAG_NEXT, prerelease: 'rc' };
     }
   }
 }
@@ -188,11 +197,9 @@ async function verifyNpmAuth(registry = NPM_DEFAULT_REGISTRY) {
 }
 
 async function enablePublishing(tagInfo: TagInfo, options: Options) {
-  const [primaryTag] = tagInfo.npmTags;
-
-  setAzurePipelineVariable('publishTag', primaryTag);
+  setAzurePipelineVariable('publishTag', tagInfo.npmTag);
   if (process.env['GITHUB_OUTPUT']) {
-    fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publishTag=${primaryTag}\n`);
+    fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publishTag=${tagInfo.npmTag}\n`);
   }
 
   if (options['skip-auth']) {
@@ -240,7 +247,7 @@ if (isDirectRun) {
       log(`Release state: ${stateInfo.state}`);
 
       const tagInfo = getPublishTags(stateInfo, branch, options.tag);
-      log(`Expected npm tag: ${tagInfo.npmTags[0]}`);
+      log(`Expected npm tag: ${tagInfo.npmTag}`);
 
       await enablePublishing(tagInfo, options);
     } else {

@@ -24,8 +24,8 @@ jobs:
 
       - task: UseNode@1
         inputs:
-          version: '22.22.0'
-        displayName: Use Node.js 22.22.0
+          version: '22'
+        displayName: Use Node.js 22
 
       - template: /.ado/templates/configure-git.yml@self
 
@@ -67,38 +67,25 @@ jobs:
 
       - task: UseNode@1
         inputs:
-          version: '22.22.0'
-        displayName: Use Node.js 22.22.0
+          version: '22'
+        displayName: Use Node.js 22
 
       - script: node .ado/scripts/npm-pack.mts --no-pack --check-npm "$(Pipeline.Workspace)/npm-packed-tarballs"
         displayName: Remove already-published packages
-
-      - script: node .ado/scripts/validate-esrp-config.mts
-        displayName: Validate ESRP onboarding
-        env:
-          EsrpConnectedServiceName: $(EsrpConnectedServiceName)
-          EsrpKeyVaultName: $(EsrpKeyVaultName)
-          EsrpAuthCertName: $(EsrpAuthCertName)
-          EsrpSignCertName: $(EsrpSignCertName)
-          EsrpClientId: $(EsrpClientId)
-          EsrpTenantId: $(EsrpTenantId)
-          EsrpOwners: $(EsrpOwners)
-          EsrpApprovers: $(EsrpApprovers)
-          publishTag: $(publishTag)
 
       - task: EsrpRelease@11
         displayName: ESRP release to npmjs.com
         condition: and(succeeded(), eq(variables['HasPackagesToPublish'], 'true'))
         inputs:
-          connectedservicename: $(EsrpConnectedServiceName)
+          connectedservicename: 'ESRP-JSHost3'
           usemanagedidentity: false
-          keyvaultname: $(EsrpKeyVaultName)
-          authcertname: $(EsrpAuthCertName)
-          signcertname: $(EsrpSignCertName)
-          clientid: $(EsrpClientId)
-          domaintenantid: $(EsrpTenantId)
+          keyvaultname: 'OGX-JSHost-KV'
+          authcertname: 'OGX-JSHost-Auth4'
+          signcertname: 'OGX-JSHost-Sign3'
+          clientid: '0a35e01f-eadf-420a-a2bf-def002ba898d'
+          domaintenantid: 'cdc5aeea-15c5-4db6-b079-fcadd2505dc2'
           contenttype: npm
           folderlocation: $(Pipeline.Workspace)/npm-packed-tarballs
           productstate: $(publishTag)
-          owners: $(EsrpOwners)
-          approvers: $(EsrpApprovers)
+          owners: 'vmorozov@microsoft.com'
+          approvers: 'khosany@microsoft.com'

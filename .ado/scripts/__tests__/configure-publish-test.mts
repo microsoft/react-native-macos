@@ -32,21 +32,21 @@ describe('configure-publish', () => {
         {state: 'STABLE_IS_LATEST', currentVersion: 83, latestVersion: 83, nextVersion: 84},
         '0.83-stable',
       ),
-      {npmTags: ['latest']},
+      {npmTag: 'latest'},
     );
     assert.deepEqual(
       getPublishTags(
         {state: 'STABLE_IS_OLD', currentVersion: 82, latestVersion: 83, nextVersion: 84},
         '0.82-stable',
       ),
-      {npmTags: ['0.82-stable']},
+      {npmTag: '0.82-stable'},
     );
     assert.deepEqual(
       getPublishTags(
         {state: 'STABLE_IS_NEW', currentVersion: 84, latestVersion: 83, nextVersion: 84},
         '0.84-stable',
       ),
-      {npmTags: ['next'], prerelease: 'rc'},
+      {npmTag: 'next', prerelease: 'rc'},
     );
     assert.deepEqual(
       getPublishTags(
@@ -54,7 +54,7 @@ describe('configure-publish', () => {
         '0.84-stable',
         'latest',
       ),
-      {npmTags: ['latest']},
+      {npmTag: 'latest'},
     );
   });
 
