@@ -32,8 +32,7 @@
 
 @end
 
-@interface RCTRedBoxController
-    : RCTPlatformViewController <RCTUITableViewDelegate, RCTUITableViewDataSource> // [macOS]
+@interface RCTRedBoxController : RCTPlatformViewController <RCTUITableViewDelegate, RCTUITableViewDataSource> // [macOS]
 @property (nonatomic, weak) id<RCTRedBoxControllerActionDelegate> actionDelegate;
 @end
 
@@ -84,9 +83,11 @@
   _stackTraceTableView = [[RCTUITableView alloc] initWithFrame:NSZeroRect];
   _stackTraceTableView.translatesAutoresizingMaskIntoConstraints = NO;
 #endif // macOS]
-  _stackTraceTableView.dataSource = self;
+  // [macOS hoisted out of the platform branches so macOS shares the same setup
   _stackTraceTableView.delegate = self;
+  _stackTraceTableView.dataSource = self;
   [self.view addSubview:_stackTraceTableView];
+  // macOS]
 
 #if TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST || TARGET_OS_OSX // [macOS]
   NSString *reloadText = @"Reload\n(\u2318R)";
@@ -101,21 +102,21 @@
 #endif
 
   RCTUIButton *dismissButton = [self redBoxButton:dismissText // [macOS]
-                       accessibilityIdentifier:@"redbox-dismiss"
-                                      selector:@selector(dismiss)
-                                         block:nil];
+                          accessibilityIdentifier:@"redbox-dismiss"
+                                         selector:@selector(dismiss)
+                                            block:nil];
   RCTUIButton *reloadButton = [self redBoxButton:reloadText // [macOS]
-                      accessibilityIdentifier:@"redbox-reload"
-                                     selector:@selector(reload)
-                                        block:nil];
+                         accessibilityIdentifier:@"redbox-reload"
+                                        selector:@selector(reload)
+                                           block:nil];
   RCTUIButton *copyButton = [self redBoxButton:copyText // [macOS]
-                    accessibilityIdentifier:@"redbox-copy"
-                                   selector:@selector(copyStack)
-                                      block:nil];
+                       accessibilityIdentifier:@"redbox-copy"
+                                      selector:@selector(copyStack)
+                                         block:nil];
   RCTUIButton *extraButton = [self redBoxButton:extraText // [macOS]
-                     accessibilityIdentifier:@"redbox-extra"
-                                    selector:@selector(showExtraDataViewController)
-                                       block:nil];
+                        accessibilityIdentifier:@"redbox-extra"
+                                       selector:@selector(showExtraDataViewController)
+                                          block:nil];
 #if TARGET_OS_OSX // [macOS
   [dismissButton setKeyEquivalent:@"\e"];
   [reloadButton setKeyEquivalent:@"r"];
@@ -165,9 +166,9 @@
 
   for (NSUInteger i = 0; i < [_customButtonTitles count]; i++) {
     RCTUIButton *button = [self redBoxButton:_customButtonTitles[i] // [macOS]
-                  accessibilityIdentifier:@""
-                                 selector:nil
-                                    block:_customButtonHandlers[i]];
+                     accessibilityIdentifier:@""
+                                    selector:nil
+                                       block:_customButtonHandlers[i]];
     [button.heightAnchor constraintEqualToConstant:buttonHeight].active = YES;
     [buttonStackView addArrangedSubview:button];
   }
@@ -201,9 +202,9 @@
 }
 
 - (RCTUIButton *)redBoxButton:(NSString *)title // [macOS]
-    accessibilityIdentifier:(NSString *)accessibilityIdentifier
-                   selector:(SEL)selector
-                      block:(RCTRedBoxButtonPressHandler)block
+      accessibilityIdentifier:(NSString *)accessibilityIdentifier
+                     selector:(SEL)selector
+                        block:(RCTRedBoxButtonPressHandler)block
 {
 #if !TARGET_OS_OSX // [macOS]
   RCTUIButton *button = [RCTUIButton buttonWithType:UIButtonTypeCustom]; // [macOS]
@@ -226,7 +227,7 @@
   button.attributedTitle = attributedTitle;
   [button setButtonType:NSButtonTypeMomentaryPushIn];
 #endif // macOS]
-  button.accessibilityIdentifier = accessibilityIdentifier;
+  button.accessibilityIdentifier = accessibilityIdentifier; // [macOS]
 
   if (selector) {
 #if !TARGET_OS_OSX // [macOS]
@@ -374,17 +375,16 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
 - (NSInteger)tableView:(__unused RCTUITableView *)tableView numberOfRowsInSection:(NSInteger)section // [macOS]
 {
-  return section == 0 ? (_lastErrorMessage != nil) : _lastStackTrace.count;
+  return section == 0 ? (_lastErrorMessage != nil) : _lastStackTrace.count; // [macOS]
 }
 
-- (RCTUITableViewCell *)tableView:(RCTUITableView *)tableView
-           cellForRowAtIndexPath:(NSIndexPath *)indexPath // [macOS]
+- (RCTUITableViewCell *)tableView:(RCTUITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath // [macOS]
 {
   if (indexPath.section == 0) {
-    RCTUITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"msg-cell"];
+    RCTUITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"msg-cell"]; // [macOS]
     return [self reuseCell:cell forErrorMessage:_lastErrorMessage];
   }
-  RCTUITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+  RCTUITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"]; // [macOS]
   NSUInteger index = indexPath.row;
   RCTJSStackFrame *stackFrame = _lastStackTrace[index];
   return [self reuseCell:cell forStackFrame:stackFrame];
@@ -393,7 +393,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 - (RCTUITableViewCell *)reuseCell:(RCTUITableViewCell *)cell forErrorMessage:(NSString *)message // [macOS]
 {
   if (!cell) {
-    cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleDefault reuseIdentifier:@"msg-cell"];
+    cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleDefault
+                                     reuseIdentifier:@"msg-cell"]; // [macOS]
     cell.textLabel.textColor = [RCTUIColor whiteColor]; // [macOS]
 
     // Prefer a monofont for formatting messages that were designed
@@ -413,9 +414,11 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 #endif // macOS]
   }
 
+  // [macOS
   cell.textLabel.accessibilityIdentifier = @"redbox-error";
   cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
   cell.textLabel.numberOfLines = 0;
+  // macOS]
 #if !TARGET_OS_OSX // [macOS]
   cell.textLabel.text = message;
 #else // [macOS
@@ -433,7 +436,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 - (RCTUITableViewCell *)reuseCell:(RCTUITableViewCell *)cell forStackFrame:(RCTJSStackFrame *)stackFrame // [macOS]
 {
   if (!cell) {
-    cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleSubtitle reuseIdentifier:@"cell"];
+    cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleSubtitle
+                                     reuseIdentifier:@"cell"]; // [macOS]
     cell.textLabel.font = [UIFont fontWithName:@"Menlo-Regular" size:14];
     cell.detailTextLabel.textColor = [RCTUIColor colorWithRed:0.70 green:0.70 blue:0.70 alpha:1.0]; // [macOS]
     cell.detailTextLabel.font = [UIFont fontWithName:@"Menlo-Regular" size:11];
@@ -449,13 +453,15 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 #endif // macOS]
   }
 
+  // [macOS
   NSString *text = stackFrame.methodName ?: @"(unnamed method)";
   cell.textLabel.lineBreakMode = NSLineBreakByCharWrapping;
   cell.textLabel.numberOfLines = 2;
+  // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
-  cell.textLabel.text = text;
-  cell.detailTextLabel.text = stackFrame.file ? [self formatFrameSource:stackFrame] : @"";
+  cell.textLabel.text = text; // [macOS]
+  cell.detailTextLabel.text = stackFrame.file ? [self formatFrameSource:stackFrame] : @""; // [macOS]
   cell.textLabel.textColor = stackFrame.collapse ? [UIColor lightGrayColor] : [UIColor whiteColor];
   cell.detailTextLabel.textColor = stackFrame.collapse ? [UIColor colorWithRed:0.50 green:0.50 blue:0.50 alpha:1.0]
                                                        : [UIColor colorWithRed:0.70 green:0.70 blue:0.70 alpha:1.0];
@@ -509,7 +515,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
       NSFontAttributeName : [UIFont boldSystemFontOfSize:16],
       NSParagraphStyleAttributeName : paragraphStyle
     }; // [macOS]
-    CGFloat tableWidth = tableView.frame.size.width;
+    CGFloat tableWidth = tableView.frame.size.width; // [macOS]
 #if TARGET_OS_OSX // [macOS
     tableWidth = tableView.contentSize.width;
 #endif // macOS]
@@ -517,7 +523,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
         [_lastErrorMessage boundingRectWithSize:CGSizeMake(tableWidth - 30, CGFLOAT_MAX)
                                         options:NSStringDrawingUsesLineFragmentOrigin
                                      attributes:attributes
-                                        context:nil];
+                                        context:nil]; // [macOS]
     return ceil(boundingRect.size.height) + 40;
   } else {
     return 50;
