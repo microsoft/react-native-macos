@@ -10,7 +10,6 @@ package com.facebook.react.uimanager;
 import static com.facebook.react.bridge.ReactMarkerConstants.CREATE_UI_MANAGER_MODULE_CONSTANTS_END;
 import static com.facebook.react.bridge.ReactMarkerConstants.CREATE_UI_MANAGER_MODULE_CONSTANTS_START;
 import static com.facebook.react.uimanager.common.UIManagerType.FABRIC;
-import static com.facebook.react.uimanager.common.UIManagerType.LEGACY;
 
 import android.content.ComponentCallbacks2;
 import android.content.res.Configuration;
@@ -44,7 +43,6 @@ import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.uimanager.common.ViewUtil;
 import com.facebook.react.uimanager.events.EventDispatcher;
-import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.facebook.react.uimanager.internal.LegacyArchitectureShadowNodeLogger;
 import com.facebook.systrace.Systrace;
 import com.facebook.systrace.SystraceMessage;
@@ -511,9 +509,7 @@ public class UIManagerModule extends ReactContextBaseJavaModule
       int reactTag, Dynamic commandId, @Nullable ReadableArray commandArgs) {
     // Fabric dispatchCommands should go through the JSI API - this will crash in Fabric.
     @Nullable
-    UIManager uiManager =
-        UIManagerHelper.getUIManager(
-            getReactApplicationContext(), ViewUtil.getUIManagerType(reactTag));
+    UIManager uiManager = UIManagerHelper.getUIManager(getReactApplicationContext(), FABRIC);
     if (uiManager == null) {
       return;
     }
@@ -567,16 +563,13 @@ public class UIManagerModule extends ReactContextBaseJavaModule
     return null;
   }
 
+  @Override
   @ReactMethod
   public void sendAccessibilityEvent(int tag, int eventType) {
-    int uiManagerType = ViewUtil.getUIManagerType(tag);
-    if (uiManagerType == FABRIC) {
-      // TODO: T65793557 Refactor sendAccessibilityEvent to use ViewCommands
-      UIManager fabricUIManager =
-          UIManagerHelper.getUIManager(getReactApplicationContext(), uiManagerType);
-      if (fabricUIManager != null) {
-        fabricUIManager.sendAccessibilityEvent(tag, eventType);
-      }
+    // TODO: T65793557 Refactor sendAccessibilityEvent to use ViewCommands
+    UIManager fabricUIManager = UIManagerHelper.getUIManager(getReactApplicationContext(), FABRIC);
+    if (fabricUIManager != null) {
+      fabricUIManager.sendAccessibilityEvent(tag, eventType);
     }
   }
 
@@ -601,10 +594,12 @@ public class UIManagerModule extends ReactContextBaseJavaModule
    */
   public void prependUIBlock(UIBlock block) {}
 
+  @Override
   public void addUIManagerEventListener(UIManagerListener listener) {
     mUIManagerListeners.add(listener);
   }
 
+  @Override
   public void removeUIManagerEventListener(UIManagerListener listener) {
     mUIManagerListeners.remove(listener);
   }
@@ -631,6 +626,7 @@ public class UIManagerModule extends ReactContextBaseJavaModule
    * Updates the styles of the {@link ReactShadowNode} based on the Measure specs received by
    * parameters. offsetX and offsetY aren't used in non-Fabric, so they're ignored here.
    */
+  @Override
   public void updateRootLayoutSpecs(
       final int rootViewTag,
       final int widthMeasureSpec,
@@ -665,9 +661,6 @@ public class UIManagerModule extends ReactContextBaseJavaModule
   @Override
   public void receiveEvent(
       int surfaceId, int reactTag, String eventName, @Nullable WritableMap event) {
-    assert ViewUtil.getUIManagerType(reactTag) == LEGACY;
-    getReactApplicationContext()
-        .getJSModule(RCTEventEmitter.class)
-        .receiveEvent(reactTag, eventName, event);
+    assert false;
   }
 }

@@ -67,6 +67,14 @@ export const transformOriginAttribute: AnyAttributeType = nativeCSSParsing
   ? true
   : {process: processTransformOrigin};
 
+export const fontVariantAttribute: AnyAttributeType = nativeCSSParsing
+  ? true
+  : {process: processFontVariant};
+
+export const aspectRatioAttribute: AnyAttributeType = nativeCSSParsing
+  ? true
+  : {process: processAspectRatio};
+
 const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   /**
    * Layout
@@ -74,7 +82,7 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   alignContent: true,
   alignItems: true,
   alignSelf: true,
-  aspectRatio: {process: processAspectRatio},
+  aspectRatio: aspectRatioAttribute,
   borderBottomWidth: true,
   borderEndWidth: true,
   borderLeftWidth: true,
@@ -248,7 +256,7 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   fontFamily: true,
   fontSize: true,
   fontStyle: true,
-  fontVariant: {process: processFontVariant},
+  fontVariant: fontVariantAttribute,
   fontWeight: true,
   includeFontPadding: true,
   letterSpacing: true,

@@ -15,6 +15,7 @@ const {
   codegenLog,
   isReactNativeCoreLibrary,
   parseiOSAnnotations,
+  writeFileSyncIfChanged,
 } = require('./utils');
 const fs = require('fs');
 const path = require('path');
@@ -30,7 +31,7 @@ const THIRD_PARTY_COMPONENTS_MM_TEMPLATE_PATH = path.join(
 );
 
 function generateRCTThirdPartyComponents(
-  libraries /*: $ReadOnlyArray<$FlowFixMe> */,
+  libraries /*: ReadonlyArray<$FlowFixMe> */,
   outputDir /*: string */,
 ) {
   fs.mkdirSync(outputDir, {recursive: true});
@@ -41,7 +42,7 @@ function generateRCTThirdPartyComponents(
     'utf8',
   );
   const finalPathH = path.join(outputDir, 'RCTThirdPartyComponentsProvider.h');
-  fs.writeFileSync(finalPathH, templateH);
+  writeFileSyncIfChanged(finalPathH, templateH);
   codegenLog(`Generated artifact: ${finalPathH}`);
 
   codegenLog('Generating RCTThirdPartyComponentsProvider.mm');
@@ -150,7 +151,7 @@ function generateRCTThirdPartyComponents(
     outputDir,
     'RCTThirdPartyComponentsProvider.mm',
   );
-  fs.writeFileSync(finalPathMM, templateMM);
+  writeFileSyncIfChanged(finalPathMM, templateMM);
   codegenLog(`Generated artifact: ${finalPathMM}`);
 }
 

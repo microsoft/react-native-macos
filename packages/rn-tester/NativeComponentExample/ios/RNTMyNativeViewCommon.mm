@@ -11,7 +11,9 @@
 
 - (void)setBackgroundColorWithColorString:(NSString *)colorString
 {
-  RCTPlatformColor *color = [RCTPlatformView RCTUIColorFromHexString:std::string([colorString UTF8String])]; // [macOS]
+  const char *colorUTF8 = [colorString UTF8String];
+  RCTPlatformColor *color =
+      [RCTPlatformView RCTUIColorFromHexString:std::string(colorUTF8 != nullptr ? colorUTF8 : "")]; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
   self.backgroundColor = color;
 #else // [macOS
@@ -28,7 +30,9 @@
     id colorString = [overlayColors objectAtIndex:i];
     CGRect rect = CGRectMake(viewBounds.origin.x + width * i, viewBounds.origin.y, width, viewBounds.size.height);
     RCTUIView *overlayView = [[RCTUIView alloc] initWithFrame:rect]; // [macOS]
-    RCTPlatformColor *color = [RCTPlatformView RCTUIColorFromHexString:std::string([colorString UTF8String])]; // [macOS]
+    const char *colorUTF8 = [colorString UTF8String];
+    RCTPlatformColor *color =
+        [RCTPlatformView RCTUIColorFromHexString:std::string(colorUTF8 != nullptr ? colorUTF8 : "")]; // [macOS]
     overlayView.backgroundColor = color;
     [self addSubview:overlayView];
   }

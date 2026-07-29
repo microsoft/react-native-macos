@@ -116,6 +116,27 @@ def _find_matching_angle(s: str, start: int = 0) -> int:
     return _find_matching_bracket(s, start, "<", ">", ignore_inside="(")
 
 
+def has_scope_resolution_outside_angles(name: str) -> bool:
+    """Check if '::' appears outside angle brackets in a name.
+
+    Returns True for class-prefixed out-of-class definitions
+    (e.g. 'Strct< T >::VALUE') but False when '::' only appears inside
+    template arguments (e.g. 'func<std::string>').
+    """
+    depth = 0
+    i = 0
+    while i < len(name):
+        ch = name[i]
+        if ch == "<":
+            depth += 1
+        elif ch == ">":
+            depth -= 1
+        elif ch == ":" and depth == 0 and i + 1 < len(name) and name[i + 1] == ":":
+            return True
+        i += 1
+    return False
+
+
 def _iter_at_depth_zero(s: str):
     """Iterate over string, yielding (index, char, at_depth_zero) tuples.
 
@@ -164,6 +185,22 @@ def _split_arguments(args_str: str) -> list[str]:
         result.append("".join(current).strip())
 
     return [arg for arg in result if arg]
+
+
+def split_specialization(name: str) -> tuple[str, list[str] | None]:
+    """Split a potentially specialized name into base name and specialization args.
+
+    Examples:
+        "Foo" -> ("Foo", None)
+        "Foo<int>" -> ("Foo", ["int"])
+        "Foo<int, float>" -> ("Foo", ["int", "float"])
+        "Foo<Bar<int>>" -> ("Foo", ["Bar<int>"])
+    """
+    angle_start = name.find("<")
+    if angle_start == -1 or not name.endswith(">"):
+        return (name, None)
+    args = _split_arguments(name[angle_start + 1 : -1])
+    return (name[:angle_start], args if args else None)
 
 
 def _prefix_is_all_qualifiers(prefix: str) -> bool:
@@ -297,6 +334,13 @@ def _parse_single_argument(arg: str) -> Argument:
             )
         ):
             return (qualifiers, base_arg, None, default_value)
+        # C++ parameter names cannot contain "::". Doxygen may
+        # incorrectly cross-reference a parameter name to a member
+        # variable, producing a qualified path (e.g. "bool
+        # ns::Class::isActive" instead of "bool isActive"). Strip
+        # the namespace prefix to recover the original name.
+        if "::" in potential_name:
+            potential_name = potential_name.rsplit("::", 1)[-1]
         return (qualifiers, prefix, potential_name, default_value)
     else:
         return (qualifiers, base_arg, None, default_value)
@@ -482,6 +526,14 @@ def parse_type_with_argstrings(
             if stripped in ("*", "&") or re.match(
                 r"^[a-zA-Z_][a-zA-Z0-9_]*\s*::\s*[*&]$", stripped
             ):
+                current_text.append(type_str[i : close + 1])
+                i = close + 1
+                continue
+
+            # Complex declarator starting with * or &, e.g. *(*fp)(int)
+            # in "int(*(*fp)(int))(double)".  Argument lists never start
+            # with pointer/reference characters.
+            if stripped and stripped[0] in ("*", "&"):
                 current_text.append(type_str[i : close + 1])
                 i = close + 1
                 continue

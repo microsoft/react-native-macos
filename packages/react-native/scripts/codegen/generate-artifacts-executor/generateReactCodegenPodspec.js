@@ -15,7 +15,7 @@ const {
   TEMPLATES_FOLDER_PATH,
   packageJson,
 } = require('./constants');
-const {codegenLog} = require('./utils');
+const {codegenLog, writeFileSyncIfChanged} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -39,7 +39,7 @@ function generateReactCodegenPodspec(
     .replace(/{input-files}/, inputFiles)
     .replace(/{codegen-script}/, codegenScript);
   const finalPathPodspec = path.join(outputPath, 'ReactCodegen.podspec');
-  fs.writeFileSync(finalPathPodspec, finalPodspec);
+  writeFileSyncIfChanged(finalPathPodspec, finalPodspec);
   codegenLog(`Generated podspec: ${finalPathPodspec}`);
 }
 
@@ -82,10 +82,16 @@ function codegenScripts(appPath /*: string */, baseOutputPath /*: string */) {
     baseOutputPath,
     REACT_NATIVE_PACKAGE_ROOT_FOLDER,
   );
+  // Use PODFILE_DIR (set by react_native_post_install) to locate the Podfile
+  // directory. PODS_ROOT/.. does not work when Pods/ is a symlink.
   return `<<-SCRIPT
-pushd "$PODS_ROOT/../" > /dev/null
-RCT_SCRIPT_POD_INSTALLATION_ROOT=$(pwd)
-popd >/dev/null
+if [ -n "$PODFILE_DIR" ]; then
+  RCT_SCRIPT_POD_INSTALLATION_ROOT="$PODFILE_DIR"
+else
+  pushd "$PODS_ROOT/../" > /dev/null
+  RCT_SCRIPT_POD_INSTALLATION_ROOT=$(pwd)
+  popd >/dev/null
+fi
 
 export RCT_SCRIPT_RN_DIR="$RCT_SCRIPT_POD_INSTALLATION_ROOT/${relativeReactNativeRootFolder}"
 export RCT_SCRIPT_APP_PATH="$RCT_SCRIPT_POD_INSTALLATION_ROOT/${relativeAppPath.length === 0 ? '.' : relativeAppPath}"

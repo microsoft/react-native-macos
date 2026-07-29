@@ -56,8 +56,29 @@ RCT_EXPORT_MODULE()
                                              selector:@selector(hide)
                                                  name:RCTJavaScriptDidFailToLoadNotification
                                                object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(hide)
+                                                 name:@"RCTInstanceDidLoadBundle"
+                                               object:nil];
   }
   return self;
+}
+
+- (void)dealloc
+{
+  [self clearInitialMessageDelay];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  RCTPlatformWindow *window = _window; // [macOS]
+  _window = nil;
+  if (window) {
+    RCTExecuteOnMainQueue(^{
+#if !TARGET_OS_OSX // [macOS]
+      window.hidden = YES;
+#else // [macOS
+      [window orderOut:nil];
+#endif // macOS]
+    });
+  }
 }
 
 + (void)setEnabled:(BOOL)enabled

@@ -78,6 +78,7 @@ static void UpdateActiveTouchWithUITouch(
   activeTouch.touch.pagePoint = RCTPointFromCGPoint(pagePoint);
 
   activeTouch.touch.timestamp = uiTouch.timestamp;
+  activeTouch.touch.timeStamp = RCTHighResTimeStampFromSeconds(uiTouch.timestamp);
 
 #if !TARGET_OS_OSX // [macOS]
   if (RCTForceTouchAvailable()) {
