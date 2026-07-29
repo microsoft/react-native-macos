@@ -6,6 +6,7 @@
  */
 
 #import <React/RCTDefines.h>
+#import <React/RCTUIKit.h> // [macOS]
 
 #import "RCTRedBox+Internal.h"
 
@@ -13,11 +14,8 @@
 
 typedef void (^RCTRedBox2ButtonPressHandler)(void);
 
-#if !TARGET_OS_OSX // [macOS]
-@interface RCTRedBox2Controller : UIViewController <RCTRedBox2Controlling, UITableViewDelegate, UITableViewDataSource>
-#else // [macOS
-@interface RCTRedBox2Controller : NSViewController <RCTRedBox2Controlling, NSTableViewDelegate, NSTableViewDataSource>
-#endif // macOS]
+@interface RCTRedBox2Controller
+    : RCTPlatformViewController <RCTRedBox2Controlling, RCTUITableViewDelegate, RCTUITableViewDataSource> // [macOS]
 
 @property (nonatomic, weak) id<RCTRedBoxControllerActionDelegate> actionDelegate;
 
