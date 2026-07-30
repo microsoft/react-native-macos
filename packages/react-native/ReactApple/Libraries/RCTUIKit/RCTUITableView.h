@@ -20,6 +20,7 @@
 @compatibility_alias RCTUITableViewCell UITableViewCell;
 #define RCTUITableViewDataSource UITableViewDataSource
 #define RCTUITableViewDelegate UITableViewDelegate
+#define RCTUITableViewStylePlain UITableViewStylePlain
 #define RCTUITableViewCellStyleDefault UITableViewCellStyleDefault
 #define RCTUITableViewCellStyleSubtitle UITableViewCellStyleSubtitle
 #define RCTUITableViewScrollPositionTop UITableViewScrollPositionTop
@@ -30,6 +31,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class RCTUITableView;
+
+typedef NS_ENUM(NSInteger, RCTUITableViewStyle) {
+  RCTUITableViewStylePlain,
+};
 
 typedef NS_ENUM(NSInteger, RCTUITableViewCellStyle) {
   RCTUITableViewCellStyleDefault,
@@ -93,6 +98,7 @@ extern const CGFloat RCTUITableViewAutomaticDimension;
 @property (nonatomic, weak, nullable) id<RCTUITableViewDelegate> delegate;
 @property (nonatomic, nullable, copy) RCTPlatformColor *separatorColor;
 
+- (instancetype)initWithFrame:(NSRect)frameRect style:(RCTUITableViewStyle)style;
 - (void)reloadData;
 - (nullable __kindof RCTUITableViewCell *)dequeueReusableCellWithIdentifier:(NSString *)identifier;
 - (void)scrollToRowAtIndexPath:(NSIndexPath *)indexPath
