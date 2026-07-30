@@ -482,13 +482,13 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   if (!cell) {
     cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleDefault
                                      reuseIdentifier:@"msg-cell"]; // [macOS]
-    cell.textLabel.textColor = [RCTUIColor whiteColor]; // [macOS]
+    cell.textLabel.textColor = [RCTPlatformColor whiteColor]; // [macOS]
 
     // Prefer a monofont for formatting messages that were designed
     // to be displayed in a terminal.
     cell.textLabel.font = [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightBold];
 
-    cell.detailTextLabel.textColor = [RCTUIColor whiteColor]; // [macOS]
+    cell.detailTextLabel.textColor = [RCTPlatformColor whiteColor]; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     cell.backgroundColor = [UIColor colorWithRed:0.82 green:0.10 blue:0.15 alpha:1.0];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -526,10 +526,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleSubtitle
                                      reuseIdentifier:@"cell"]; // [macOS]
     cell.textLabel.font = [UIFont fontWithName:@"Menlo-Regular" size:14];
-    cell.detailTextLabel.textColor = [RCTUIColor colorWithRed:0.70 green:0.70 blue:0.70 alpha:1.0]; // [macOS]
+    cell.detailTextLabel.textColor = [RCTPlatformColor colorWithRed:0.70 green:0.70 blue:0.70 alpha:1.0]; // [macOS]
     cell.detailTextLabel.font = [UIFont fontWithName:@"Menlo-Regular" size:11];
     cell.detailTextLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
-    cell.backgroundColor = [RCTUIColor clearColor]; // [macOS]
+    cell.backgroundColor = [RCTPlatformColor clearColor]; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     cell.selectedBackgroundView = [UIView new];
     cell.selectedBackgroundView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.2];
