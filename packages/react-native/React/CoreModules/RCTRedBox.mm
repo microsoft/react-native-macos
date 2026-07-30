@@ -130,22 +130,19 @@
   CGRect detailsFrame = self.view.bounds;
   detailsFrame.size.height -= buttonHeight + (double)[self bottomSafeViewHeight];
 
-#if !TARGET_OS_OSX // [macOS]
-  _stackTraceTableView = [[RCTUITableView alloc] initWithFrame:detailsFrame style:UITableViewStylePlain]; // [macOS]
+  _stackTraceTableView = [[RCTUITableView alloc] initWithFrame:detailsFrame style:RCTUITableViewStylePlain]; // [macOS]
   _stackTraceTableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  _stackTraceTableView.backgroundColor = [UIColor clearColor];
+  _stackTraceTableView.delegate = self;
+  _stackTraceTableView.dataSource = self;
+  _stackTraceTableView.backgroundColor = [RCTPlatformColor clearColor]; // [macOS]
+#if !TARGET_OS_OSX // [macOS]
   _stackTraceTableView.separatorColor = [UIColor colorWithWhite:1 alpha:0.3];
   _stackTraceTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   _stackTraceTableView.indicatorStyle = UIScrollViewIndicatorStyleWhite;
 #else // [macOS
-  _stackTraceTableView = [[RCTUITableView alloc] initWithFrame:NSZeroRect];
   _stackTraceTableView.translatesAutoresizingMaskIntoConstraints = NO;
 #endif // macOS]
-  // [macOS hoisted out of the platform branches so macOS shares the same setup
-  _stackTraceTableView.delegate = self;
-  _stackTraceTableView.dataSource = self;
   [self.view addSubview:_stackTraceTableView];
-  // macOS]
 
 #if TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST || TARGET_OS_OSX // [macOS]
   NSString *reloadText = @"Reload\n(\u2318R)";
