@@ -482,12 +482,15 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   if (!cell) {
     cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleDefault
                                      reuseIdentifier:@"msg-cell"]; // [macOS]
+    cell.textLabel.accessibilityIdentifier = @"redbox-error";
     cell.textLabel.textColor = [RCTPlatformColor whiteColor]; // [macOS]
 
     // Prefer a monofont for formatting messages that were designed
     // to be displayed in a terminal.
     cell.textLabel.font = [UIFont monospacedSystemFontOfSize:14 weight:UIFontWeightBold];
 
+    cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    cell.textLabel.numberOfLines = 0;
     cell.detailTextLabel.textColor = [RCTPlatformColor whiteColor]; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
     cell.backgroundColor = [UIColor colorWithRed:0.82 green:0.10 blue:0.15 alpha:1.0];
@@ -501,14 +504,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 #endif // macOS]
   }
 
-  // [macOS
-  cell.textLabel.accessibilityIdentifier = @"redbox-error";
-  cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
-  cell.textLabel.numberOfLines = 0;
-  // macOS]
 #if !TARGET_OS_OSX // [macOS]
   cell.textLabel.text = message;
 #else // [macOS
+  // RCTUITableViewCell's -prepareForReuse clamps a default-style cell back to one line, so restore
+  // the unlimited line count on every row.
+  cell.textLabel.numberOfLines = 0;
   NSDictionary<NSString *, id> *attributes = @{
     NSForegroundColorAttributeName : [NSColor whiteColor],
     NSFontAttributeName : [NSFont systemFontOfSize:16],
