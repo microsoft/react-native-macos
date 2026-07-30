@@ -526,6 +526,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleSubtitle
                                      reuseIdentifier:@"cell"]; // [macOS]
     cell.textLabel.font = [UIFont fontWithName:@"Menlo-Regular" size:14];
+    cell.textLabel.lineBreakMode = NSLineBreakByCharWrapping;
+    cell.textLabel.numberOfLines = 2;
     cell.detailTextLabel.textColor = [RCTPlatformColor colorWithRed:0.70 green:0.70 blue:0.70 alpha:1.0]; // [macOS]
     cell.detailTextLabel.font = [UIFont fontWithName:@"Menlo-Regular" size:11];
     cell.detailTextLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
@@ -540,19 +542,19 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 #endif // macOS]
   }
 
-  // [macOS
-  NSString *text = stackFrame.methodName ?: @"(unnamed method)";
-  cell.textLabel.lineBreakMode = NSLineBreakByCharWrapping;
-  cell.textLabel.numberOfLines = 2;
-  // macOS]
-
 #if !TARGET_OS_OSX // [macOS]
-  cell.textLabel.text = text; // [macOS]
-  cell.detailTextLabel.text = stackFrame.file ? [self formatFrameSource:stackFrame] : @""; // [macOS]
+  cell.textLabel.text = stackFrame.methodName ?: @"(unnamed method)";
+  if (stackFrame.file) {
+    cell.detailTextLabel.text = [self formatFrameSource:stackFrame];
+  } else {
+    cell.detailTextLabel.text = @"";
+  }
   cell.textLabel.textColor = stackFrame.collapse ? [UIColor lightGrayColor] : [UIColor whiteColor];
   cell.detailTextLabel.textColor = stackFrame.collapse ? [UIColor colorWithRed:0.50 green:0.50 blue:0.50 alpha:1.0]
                                                        : [UIColor colorWithRed:0.70 green:0.70 blue:0.70 alpha:1.0];
 #else // [macOS
+  NSString *text = stackFrame.methodName ?: @"(unnamed method)";
+
   NSMutableParagraphStyle *textParagraphStyle = [NSMutableParagraphStyle new];
   textParagraphStyle.lineBreakMode = NSLineBreakByCharWrapping;
 
