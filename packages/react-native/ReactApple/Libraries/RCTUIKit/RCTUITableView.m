@@ -147,7 +147,7 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   }
 }
 
-- (void)setBackgroundColor:(RCTUIColor *)backgroundColor
+- (void)setBackgroundColor:(RCTPlatformColor *)backgroundColor
 {
   _backgroundColor = [backgroundColor copy];
   self.contentView.wantsLayer = YES;
@@ -253,7 +253,7 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   _tableView.accessibilityIdentifier = accessibilityIdentifier;
 }
 
-- (void)setSeparatorColor:(RCTUIColor *)separatorColor
+- (void)setSeparatorColor:(RCTPlatformColor *)separatorColor
 {
   _separatorColor = [separatorColor copy];
   if (separatorColor == nil) {
@@ -454,4 +454,4 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
 
 @end
 
-#endif
+#endif // TARGET_OS_OSX
