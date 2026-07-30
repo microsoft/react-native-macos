@@ -16,8 +16,6 @@
 
 #if !TARGET_OS_OSX
 
-#import <UIKit/UIKit.h>
-
 @compatibility_alias RCTUITableView UITableView;
 @compatibility_alias RCTUITableViewCell UITableViewCell;
 #define RCTUITableViewDataSource UITableViewDataSource
@@ -27,9 +25,7 @@
 #define RCTUITableViewScrollPositionTop UITableViewScrollPositionTop
 #define RCTUITableViewAutomaticDimension UITableViewAutomaticDimension
 
-#else // TARGET_OS_OSX [
-
-#import <AppKit/AppKit.h>
+#else // TARGET_OS_OSX
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -63,7 +59,7 @@ extern const CGFloat RCTUITableViewAutomaticDimension;
 @property (nonatomic, readonly, strong) RCTPlatformView *contentView;
 @property (nonatomic, readonly, strong) RCTUILabel *textLabel;
 @property (nonatomic, readonly, nullable, strong) RCTUILabel *detailTextLabel;
-@property (nonatomic, nullable, strong) RCTUIColor *backgroundColor;
+@property (nonatomic, nullable, strong) RCTPlatformColor *backgroundColor;
 
 - (void)prepareForReuse;
 
@@ -95,7 +91,7 @@ extern const CGFloat RCTUITableViewAutomaticDimension;
 
 @property (nonatomic, weak, nullable) id<RCTUITableViewDataSource> dataSource;
 @property (nonatomic, weak, nullable) id<RCTUITableViewDelegate> delegate;
-@property (nonatomic, nullable, copy) RCTUIColor *separatorColor;
+@property (nonatomic, nullable, copy) RCTPlatformColor *separatorColor;
 
 - (void)reloadData;
 - (nullable __kindof RCTUITableViewCell *)dequeueReusableCellWithIdentifier:(NSString *)identifier;
@@ -108,4 +104,4 @@ extern const CGFloat RCTUITableViewAutomaticDimension;
 
 NS_ASSUME_NONNULL_END
 
-#endif // ] TARGET_OS_OSX
+#endif // TARGET_OS_OSX
