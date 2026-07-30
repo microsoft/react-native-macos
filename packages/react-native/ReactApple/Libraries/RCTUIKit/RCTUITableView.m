@@ -247,6 +247,11 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   return self;
 }
 
+- (instancetype)initWithFrame:(NSRect)frameRect style:(__unused RCTUITableViewStyle)style
+{
+  return [self initWithFrame:frameRect];
+}
+
 - (void)setAccessibilityIdentifier:(NSString *)accessibilityIdentifier
 {
   [super setAccessibilityIdentifier:accessibilityIdentifier];
