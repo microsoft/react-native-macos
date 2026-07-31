@@ -5,13 +5,11 @@ import * as util from "node:util";
 
 /**
  * Apply additional dist-tags to published packages
- * Usage: node apply-additional-tags.mjs --tags <tags> --token <token>
+ * Usage: node apply-additional-tags.mjs --tags <tags>
  *        node apply-additional-tags.mjs --tags <tags> --dry-run
  * Where tags is a comma-separated list of tags (e.g., "next,v0.79-stable")
  *
- * When running in GitHub Actions with actions/setup-node configured, the auth
- * token can be provided via the NODE_AUTH_TOKEN environment variable instead
- * of the --token flag.
+ * Auth token is read from the NODE_AUTH_TOKEN environment variable.
  */
 
 const registry = "https://registry.npmjs.org/";
@@ -23,7 +21,6 @@ const packages = [
 /**
  * @typedef {{
  *   tags?: string;
- *   token?: string;
  *   "dry-run"?: boolean;
  * }} Options;
  */
@@ -32,18 +29,17 @@ const packages = [
  * @param {Options} options
  * @returns {number}
  */
-function main({ tags, token: tokenArg, "dry-run": dryRun }) {
+function main({ tags, "dry-run": dryRun }) {
   if (!tags) {
     console.log("No additional tags to apply");
     return 0;
   }
 
-  // Prefer explicit --token arg (ADO), fall back to NODE_AUTH_TOKEN env var (GHA OIDC).
-  const token = tokenArg ?? process.env.NODE_AUTH_TOKEN;
+  const token = process.env.NODE_AUTH_TOKEN;
 
   if (!dryRun && !token) {
     console.error(
-      "Error: npm auth token is required (use --token, set NODE_AUTH_TOKEN, or use --dry-run to preview)"
+      "Error: NODE_AUTH_TOKEN is required (use --dry-run to preview)"
     );
     return 1;
   }
@@ -68,11 +64,6 @@ function main({ tags, token: tokenArg, "dry-run": dryRun }) {
     for (const pkg of packages) {
       console.log(`Adding dist-tag '${tag}' to ${pkg}@${version}`);
 
-      // When --token is explicitly provided (ADO path), pass auth inline so
-      // that npm picks it up without a pre-configured .npmrc.
-      // When NODE_AUTH_TOKEN is used instead (GHA OIDC path), actions/setup-node
-      // has already written .npmrc with `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`,
-      // so no inline auth argument is needed.
       const npmArgs = [
         "dist-tag",
         "add",
@@ -81,9 +72,6 @@ function main({ tags, token: tokenArg, "dry-run": dryRun }) {
         "--registry",
         registry,
       ];
-      if (tokenArg) {
-        npmArgs.push(`--//registry.npmjs.org/:_authToken=${tokenArg}`);
-      }
 
       const result = spawnSync(
         "npm",
@@ -105,9 +93,6 @@ const { values } = util.parseArgs({
   args: process.argv.slice(2),
   options: {
     tags: {
-      type: "string",
-    },
-    token: {
       type: "string",
     },
     "dry-run": {

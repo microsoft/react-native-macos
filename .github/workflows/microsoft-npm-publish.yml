@@ -1,7 +1,5 @@
 name: Publish to npm
 
-# Mirrors the trigger used by the Azure Pipelines publish.yml:
-# runs on every push to a stable release branch.
 on:
   push:
     branches:
@@ -12,19 +10,13 @@ jobs:
     name: Publish to npm
     runs-on: ubuntu-latest
 
-    # Only run in the upstream repo, not in forks.
     if: github.repository == 'microsoft/react-native-macos'
 
-    # The `npm-publish` GitHub environment should be configured with any
-    # required reviewers / protection rules.  It also must match the
-    # environment name registered as a Trusted Publisher on npmjs.com for
-    # each of the published packages.
+    # Matches the environment name registered as a Trusted Publisher on npmjs.com.
     environment: npm-publish
 
     permissions:
       contents: read
-      # Required for npm Trusted Publishing (OIDC): lets the job request a
-      # short-lived publish token from npmjs.com without storing credentials.
       id-token: write
 
     steps:
@@ -45,23 +37,18 @@ jobs:
       # Determine whether this branch/version should be published and, if so,
       # which dist-tag(s) to use.  Outputs:
       #   publish_react_native_macos – '1' when publishing should proceed
-      #   publishTag                 – the primary npm dist-tag (e.g. 'latest')
-      #   additionalTags             – comma-separated extra tags (may be empty)
+      #   publishTag                 – primary npm dist-tag (e.g. 'latest')
+      #   additionalTags             – extra tags to apply (e.g. 'next', may be empty)
       - name: Verify release config
         id: configure-publish
         run: node .ado/scripts/configure-publish.mts --verbose --skip-auth
 
-      # Configure yarn to target the public npm registry.
-      # Auth is handled by OIDC Trusted Publishing – do NOT set npmAuthToken here.
       - name: Configure yarn for npm publishing
         if: steps.configure-publish.outputs.publish_react_native_macos == '1'
         run: |
           yarn config set npmPublishAccess public
           yarn config set npmPublishRegistry "https://registry.npmjs.org"
 
-      # Publish all non-private workspace packages.
-      # --provenance enables npm Trusted Publishing: yarn requests an OIDC token
-      # from GitHub Actions and exchanges it with npmjs.com – no stored secret needed.
       - name: Publish packages
         if: steps.configure-publish.outputs.publish_react_native_macos == '1'
         run: |
@@ -70,11 +57,8 @@ jobs:
             --tag "${{ steps.configure-publish.outputs.publishTag }}" \
             --tolerate-republish
 
-      # Apply any additional dist-tags (e.g. promoting a branch tag to 'next').
-      # npm dist-tag add does not support OIDC, so a granular NPM_TOKEN secret
-      # is required for this step.  NODE_AUTH_TOKEN is the conventional env var
-      # that actions/setup-node (called inside microsoft-setup-toolchain) wires
-      # into the project-level .npmrc it creates.
+      # npm dist-tag add doesn't support OIDC, so NODE_AUTH_TOKEN (a granular
+      # NPM_TOKEN secret) is still required for this step.
       - name: Apply additional dist-tags
         if: >-
           steps.configure-publish.outputs.publish_react_native_macos == '1' &&

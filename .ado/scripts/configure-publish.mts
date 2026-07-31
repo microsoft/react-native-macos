@@ -2,6 +2,8 @@
 import { $, argv, echo, fs } from 'zx';
 import { resolve } from 'node:path';
 
+const isGitHubActions = process.env['GITHUB_ACTIONS'] === 'true';
+
 const NPM_DEFAULT_REGISTRY = 'https://registry.npmjs.org/';
 const NPM_TAG_NEXT = 'next';
 
@@ -34,10 +36,6 @@ function enablePublishingOnAzurePipelines() {
   echo(`##vso[task.setvariable variable=publish_react_native_macos]1`);
 }
 
-/**
- * Writes `publish_react_native_macos=1` to `GITHUB_OUTPUT` to signal that we
- * want to enable publishing on GitHub Actions.
- */
 function enablePublishingOnGitHubActions() {
   if (process.env['GITHUB_OUTPUT']) {
     fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publish_react_native_macos=1\n`);
@@ -213,8 +211,11 @@ async function enablePublishing(tagInfo: TagInfo, options: Options) {
 
   // Don't enable publishing in PRs
   if (!getTargetBranch()) {
-    enablePublishingOnAzurePipelines();
-    enablePublishingOnGitHubActions();
+    if (isGitHubActions) {
+      enablePublishingOnGitHubActions();
+    } else {
+      enablePublishingOnAzurePipelines();
+    }
   }
 }
 
