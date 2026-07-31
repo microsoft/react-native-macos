@@ -35,10 +35,9 @@ jobs:
         run: yarn install --immutable
 
       # Determine whether this branch/version should be published and, if so,
-      # which dist-tag(s) to use.  Outputs:
+      # which dist-tag to use.  Outputs:
       #   publish_react_native_macos – '1' when publishing should proceed
-      #   publishTag                 – primary npm dist-tag (e.g. 'latest')
-      #   additionalTags             – extra tags to apply (e.g. 'next', may be empty)
+      #   publishTag                 – npm dist-tag (e.g. 'latest')
       - name: Verify release config
         id: configure-publish
         run: node .ado/scripts/configure-publish.mts --verbose --skip-auth
@@ -56,15 +55,3 @@ jobs:
             --provenance \
             --tag "${{ steps.configure-publish.outputs.publishTag }}" \
             --tolerate-republish
-
-      # npm dist-tag add doesn't support OIDC, so NODE_AUTH_TOKEN (a granular
-      # NPM_TOKEN secret) is still required for this step.
-      - name: Apply additional dist-tags
-        if: >-
-          steps.configure-publish.outputs.publish_react_native_macos == '1' &&
-          steps.configure-publish.outputs.additionalTags != ''
-        run: |
-          node .ado/scripts/apply-additional-tags.mjs \
-            --tags "${{ steps.configure-publish.outputs.additionalTags }}"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
