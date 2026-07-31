@@ -34,10 +34,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      # Determine whether this branch/version should be published and, if so,
-      # which dist-tag to use.  Outputs:
-      #   publish_react_native_macos – '1' when publishing should proceed
-      #   publishTag                 – npm dist-tag (e.g. 'latest')
       - name: Verify release config
         id: configure-publish
         run: node .ado/scripts/configure-publish.mts --verbose --skip-auth
