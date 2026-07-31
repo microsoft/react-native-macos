@@ -34,7 +34,7 @@ jobs:
       displayName: Install npm dependencies
 
     - script: |
-        node .ado/scripts/configure-publish.mts --verbose --skip-auth
+        node .ado/scripts/configure-publish.mts --verbose
       displayName: Verify release config
 
     # Disable Nightly publishing on the main branch

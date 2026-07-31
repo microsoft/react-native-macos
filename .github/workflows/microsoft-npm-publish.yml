@@ -36,7 +36,7 @@ jobs:
 
       - name: Verify release config
         id: configure-publish
-        run: node .ado/scripts/configure-publish.mts --verbose --skip-auth
+        run: node .ado/scripts/configure-publish.mts --verbose
 
       - name: Configure yarn for npm publishing
         if: steps.configure-publish.outputs.publish_react_native_macos == '1'
@@ -51,3 +51,9 @@ jobs:
             --provenance \
             --tag "${{ steps.configure-publish.outputs.publishTag }}" \
             --tolerate-republish
+
+      - name: Remove npm auth configuration
+        if: always()
+        run: |
+          yarn config unset npmPublishAccess || true
+          yarn config unset npmPublishRegistry || true

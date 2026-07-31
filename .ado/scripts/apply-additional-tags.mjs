@@ -64,18 +64,9 @@ function main({ tags, "dry-run": dryRun }) {
     for (const pkg of packages) {
       console.log(`Adding dist-tag '${tag}' to ${pkg}@${version}`);
 
-      const npmArgs = [
-        "dist-tag",
-        "add",
-        `${pkg}@${version}`,
-        tag,
-        "--registry",
-        registry,
-      ];
-
       const result = spawnSync(
         "npm",
-        npmArgs,
+        ["dist-tag", "add", `${pkg}@${version}`, tag, "--registry", registry],
         { stdio: "inherit", shell: true }
       );
 
