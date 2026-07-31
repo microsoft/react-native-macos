@@ -34,6 +34,16 @@ function enablePublishingOnAzurePipelines() {
   echo(`##vso[task.setvariable variable=publish_react_native_macos]1`);
 }
 
+/**
+ * Writes `publish_react_native_macos=1` to `GITHUB_OUTPUT` to signal that we
+ * want to enable publishing on GitHub Actions.
+ */
+function enablePublishingOnGitHubActions() {
+  if (process.env['GITHUB_OUTPUT']) {
+    fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publish_react_native_macos=1\n`);
+  }
+}
+
 export function isMainBranch(branch: string): boolean {
   return branch === 'main';
 }
@@ -204,6 +214,7 @@ async function enablePublishing(tagInfo: TagInfo, options: Options) {
   // Don't enable publishing in PRs
   if (!getTargetBranch()) {
     enablePublishingOnAzurePipelines();
+    enablePublishingOnGitHubActions();
   }
 }
 
